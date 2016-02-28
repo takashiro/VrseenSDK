@@ -1,0 +1,8 @@
+*.apk
+*.pdf
+/Tools/
+/sdcard/
+/bin/
+*.pro.user
+/assets/
+/unity/

@@ -1,0 +1,1003 @@
+/************************************************************************************
+
+Filename    :   MetaDataManager.cpp
+Content     :   A class to manage metadata used by FolderBrowser
+Created     :   January 26, 2015
+Authors     :   Jonathan E. Wright, Warsam Osman, Madhu Kalva
+
+Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
+
+
+*************************************************************************************/
+
+#include "MetaDataManager.h"
+
+#include "Android/LogUtils.h"
+
+#include "VrCommon.h"
+#include "PackageFiles.h"
+#include "unistd.h"
+
+#include <fstream>
+
+using namespace NervGear;
+
+namespace NervGear {
+
+//==============================
+// OvrMetaData
+
+const char * const VERSION = "Version";
+const char * const CATEGORIES = "Categories";
+const char * const DATA = "Data";
+const char * const TITLE = "Title";
+const char * const URL = "Url";
+const char * const FAVORITES_TAG = "Favorites";
+const char * const TAG = "tag";
+const char * const LABEL = "label";
+const char * const TAGS = "tags";
+const char * const CATEGORY = "category";
+const char * const URL_INNER = "url";
+
+static bool OvrMetaDatumIdComparator( const OvrMetaDatum * a, const OvrMetaDatum * b)
+{
+	return a->id < b->id;
+}
+
+void OvrMetaData::initFromDirectory( const char * relativePath, const Array< String > & searchPaths, const OvrMetaDataFileExtensions & fileExtensions )
+{
+	LOG( "OvrMetaData::InitFromDirectory( %s )", relativePath );
+
+	// Find all the files - checks all search paths
+	StringHash< String > uniqueFileList = RelativeDirectoryFileList( searchPaths, relativePath );
+	Array<String> fileList;
+	for ( StringHash< String >::ConstIterator iter = uniqueFileList.Begin(); iter != uniqueFileList.End(); ++iter )
+	{
+		fileList.pushBack( iter->First );
+	}
+	SortStringArray( fileList );
+	Category currentCategory;
+	currentCategory.categoryTag = ExtractFileBase( relativePath );
+	// The label is the same as the tag by default.
+	//Will be replaced if definition found in loaded metadata
+	currentCategory.label = currentCategory.categoryTag;
+
+	LOG( "OvrMetaData start category: %s", currentCategory.categoryTag.toCString() );
+	Array< String > subDirs;
+	// Grab the categories and loose files
+	for ( int i = 0; i < fileList.sizeInt(); i++ )
+	{
+		const String & s = fileList[ i ];
+		const String fileBase = ExtractFileBase( s );
+		// subdirectory - add category
+		if ( MatchesExtension( s, "/" ) )
+		{
+			subDirs.pushBack( s );
+			continue;
+		}
+
+		// See if we want this loose-file
+		if ( !shouldAddFile( s.toCString(), fileExtensions ) )
+		{
+			continue;
+		}
+
+		// Add loose file
+		const int dataIndex = m_etaData.sizeInt();
+		OvrMetaDatum * datum = createMetaDatum( fileBase );
+		if ( datum )
+		{
+			datum->id = dataIndex;
+			datum->tags.pushBack( currentCategory.categoryTag );
+			if ( GetFullPath( searchPaths, s, datum->url ) )
+			{
+				StringHash< int >::ConstIterator iter = m_urlToIndex.FindCaseInsensitive( datum->url );
+				if ( iter == m_urlToIndex.End() )
+				{
+					m_urlToIndex.Add( datum->url, dataIndex );
+					m_etaData.pushBack( datum );
+					LOG( "OvrMetaData adding datum %s with index %d to %s", datum->url.toCString(), dataIndex, currentCategory.categoryTag.toCString() );
+					// Register with category
+					currentCategory.datumIndicies.pushBack( dataIndex );
+				}
+				else
+				{
+					WARN( "OvrMetaData::InitFromDirectory found duplicate url %s", datum->url.toCString() );
+				}
+			}
+			else
+			{
+				WARN( "OvrMetaData::InitFromDirectory failed to find %s", s.toCString() );
+			}
+		}
+	}
+
+	if ( !currentCategory.datumIndicies.isEmpty() )
+	{
+		m_categories.pushBack( currentCategory );
+	}
+
+	// Recurse into subdirs
+	for ( int i = 0; i < subDirs.sizeInt(); ++i )
+	{
+		const String & subDir = subDirs.at( i );
+        initFromDirectory( subDir.toCString(), searchPaths, fileExtensions );
+	}
+}
+
+void OvrMetaData::initFromFileList( const Array< String > & fileList, const OvrMetaDataFileExtensions & fileExtensions )
+{
+	// Create unique categories
+	StringHash< int > uniqueCategoryList;
+	for ( int i = 0; i < fileList.sizeInt(); ++i )
+	{
+		const String & filePath = fileList.at( i );
+		const String categoryTag = ExtractDirectory( fileList.at( i ) );
+		StringHash< int >::ConstIterator iter = uniqueCategoryList.Find( categoryTag );
+		int catIndex = -1;
+		if ( iter == uniqueCategoryList.End() )
+		{
+			LOG( " category: %s", categoryTag.toCString() );
+			Category cat;
+			cat.categoryTag = categoryTag;
+			// The label is the same as the tag by default.
+			// Will be replaced if definition found in loaded metadata
+			cat.label = cat.categoryTag;
+			catIndex = m_categories.sizeInt();
+			m_categories.pushBack( cat );
+			uniqueCategoryList.Add( categoryTag, catIndex );
+		}
+		else
+		{
+			catIndex = iter->Second;
+		}
+
+		OVR_ASSERT( catIndex > -1 );
+		Category & currentCategory = m_categories.at( catIndex );
+
+		// See if we want this loose-file
+		if ( !shouldAddFile( filePath.toCString(), fileExtensions ) )
+		{
+			continue;
+		}
+
+		// Add loose file
+		const int dataIndex = m_etaData.sizeInt();
+		OvrMetaDatum * datum = createMetaDatum( filePath );
+		if ( datum )
+		{
+			datum->id = dataIndex;
+			datum->url = filePath;
+			datum->tags.pushBack( currentCategory.categoryTag );
+
+			StringHash< int >::ConstIterator iter = m_urlToIndex.FindCaseInsensitive( datum->url );
+			if ( iter == m_urlToIndex.End() )
+			{
+				m_urlToIndex.Add( datum->url, dataIndex );
+				m_etaData.pushBack( datum );
+				LOG( "OvrMetaData::InitFromFileList adding datum %s with index %d to %s", datum->url.toCString(),
+					dataIndex, currentCategory.categoryTag.toCString() );
+				// Register with category
+				currentCategory.datumIndicies.pushBack( dataIndex );
+			}
+			else
+			{
+				WARN( "OvrMetaData::InitFromFileList found duplicate url %s", datum->url.toCString() );
+			}
+		}
+	}
+}
+
+void OvrMetaData::renameCategory( const char * currentTag, const char * newName )
+{
+	for ( int i = 0; i < m_categories.sizeInt(); ++i )
+	{
+		Category & cat = m_categories.at( i );
+		if ( cat.categoryTag == currentTag )
+		{
+			cat.label = newName;
+			break;
+		}
+	}
+}
+
+Json LoadPackageMetaFile( const char * metaFile )
+{
+	int bufferLength = 0;
+	void * 	buffer = NULL;
+	String assetsMetaFile = "assets/";
+	assetsMetaFile += metaFile;
+	ovr_ReadFileFromApplicationPackage( assetsMetaFile.toCString(), bufferLength, buffer );
+	if ( !buffer )
+	{
+		WARN( "LoadPackageMetaFile failed to read %s", assetsMetaFile.toCString() );
+	}
+	return Json::Parse( static_cast< const char * >( buffer ) );
+}
+
+Json OvrMetaData::createOrGetStoredMetaFile( const char * appFileStoragePath, const char * metaFile )
+{
+	m_filePath = appFileStoragePath;
+	m_filePath += metaFile;
+
+	LOG( "CreateOrGetStoredMetaFile FilePath: %s", m_filePath.toCString() );
+
+	Json dataFile = Json::Load( m_filePath );
+	if ( dataFile.isInvalid() )
+	{
+		// If this is the first run, or we had an error loading the file, we copy the meta file from assets to app's cache
+		writeMetaFile( metaFile );
+
+		// try loading it again
+		dataFile = Json::Load( m_filePath );
+		if ( dataFile.isInvalid() )
+		{
+			WARN( "OvrMetaData failed to load JSON meta file: %s", metaFile );
+		}
+	}
+	else
+	{
+		LOG( "OvrMetaData::CreateOrGetStoredMetaFile found %s", m_filePath.toCString() );
+	}
+	return dataFile;
+}
+
+void OvrMetaData::writeMetaFile( const char * metaFile ) const
+{
+	LOG( "Writing metafile from apk" );
+
+	if ( FILE * newMetaFile = fopen( m_filePath.toCString(), "w" ) )
+	{
+		int bufferLength = 0;
+		void * 	buffer = NULL;
+		String assetsMetaFile = "assets/";
+		assetsMetaFile += metaFile;
+		ovr_ReadFileFromApplicationPackage( assetsMetaFile.toCString(), bufferLength, buffer );
+		if ( !buffer )
+		{
+			WARN( "OvrMetaData failed to read %s", assetsMetaFile.toCString() );
+		}
+		else
+		{
+			int writtenCount = fwrite( buffer, 1, bufferLength, newMetaFile );
+			if ( writtenCount != bufferLength )
+			{
+				FAIL( "OvrMetaData::WriteMetaFile failed to write %s", metaFile );
+			}
+			free( buffer );
+		}
+		fclose( newMetaFile );
+	}
+	else
+	{
+		FAIL( "OvrMetaData failed to create %s - check app permissions", m_filePath.toCString() );
+	}
+}
+
+void OvrMetaData::initFromDirectoryMergeMeta( const char * relativePath, const Array< String > & searchPaths,
+	const OvrMetaDataFileExtensions & fileExtensions, const char * metaFile, const char * packageName )
+{
+	LOG( "OvrMetaData::InitFromDirectoryMergeMeta" );
+
+	String appFileStoragePath = "/data/data/";
+	appFileStoragePath += packageName;
+	appFileStoragePath += "/files/";
+
+	m_filePath = appFileStoragePath + metaFile;
+
+	OVR_ASSERT( HasPermission( m_filePath, R_OK ) );
+
+    Json dataFile = createOrGetStoredMetaFile( appFileStoragePath, metaFile );
+
+    initFromDirectory( relativePath, searchPaths, fileExtensions );
+	processMetaData( dataFile, searchPaths, metaFile );
+}
+
+void OvrMetaData::initFromFileListMergeMeta( const Array< String > & fileList, const Array< String > & searchPaths,
+	const OvrMetaDataFileExtensions & fileExtensions, const char * appFileStoragePath, const char * metaFile, const NervGear::Json &storedMetaData )
+{
+	LOG( "OvrMetaData::InitFromFileListMergeMeta" );
+
+    initFromFileList( fileList, fileExtensions );
+	processMetaData( storedMetaData, searchPaths, metaFile );
+}
+
+void OvrMetaData::processRemoteMetaFile( const char * metaFileString, const int startIndex )
+{
+	Json remoteMetaFile = Json::Parse( metaFileString );
+	if ( remoteMetaFile.isValid() )
+	{
+		// First grab the version
+		double remoteVersion = 0.0;
+		extractVersion( remoteMetaFile, remoteVersion );
+
+		if ( remoteVersion <= m_version ) // We already have this metadata, don't need to process further
+			return;
+
+		m_version = remoteVersion;
+
+		Array< Category > remoteCategories;
+		StringHash< OvrMetaDatum * > remoteMetaData;
+		extractCategories( remoteMetaFile , remoteCategories );
+		extractRemoteMetaData( remoteMetaFile , remoteMetaData );
+
+		// Merge in the remote categories
+		// Ignore any duplicate categories
+		StringHash< bool > CurrentCategoriesSet; // using as set
+		for ( int i = 0; i < m_categories.sizeInt(); ++i )
+		{
+			const Category & storedCategory = m_categories.at( i );
+			CurrentCategoriesSet.Add( storedCategory.categoryTag, true );
+		}
+
+		for ( int remoteIndex = 0; remoteIndex < remoteCategories.sizeInt(); ++remoteIndex )
+		{
+			const Category & remoteCat = remoteCategories.at( remoteIndex );
+
+			StringHash< bool >::ConstIterator iter = CurrentCategoriesSet.Find( remoteCat.categoryTag );
+			if ( iter == CurrentCategoriesSet.End() )
+			{
+				const int targetIndex = startIndex + remoteIndex;
+				LOG( "OvrMetaData::ProcessRemoteMetaFile merging %s into category index %d", remoteCat.categoryTag.toCString(), targetIndex );
+				if ( startIndex >= 0 && startIndex < m_categories.sizeInt() )
+				{
+					m_categories.insert( targetIndex, remoteCat );
+				}
+				else
+				{
+					m_categories.pushBack( remoteCat );
+				}
+			}
+			else
+			{
+				LOG( "OvrMetaData::ProcessRemoteMetaFile discarding duplicate category %s", remoteCat.categoryTag.toCString() );
+			}
+		}
+
+		// Append the remote data
+		reconcileMetaData( remoteMetaData );
+
+		// Recreate indices which may have changed after reconciliation
+		regenerateCategoryIndices();
+
+		// Serialize the new metadata
+		Json dataFile = metaDataToJson();
+		if ( dataFile.isValid() )
+		{
+			FAIL( "OvrMetaData::ProcessMetaData failed to generate JSON meta file" );
+		}
+
+		std::ofstream fp(m_filePath, std::ios::binary);
+		fp << dataFile;
+
+		LOG( "OvrMetaData::ProcessRemoteMetaFile updated %s", m_filePath.toCString() );
+	}
+}
+
+void OvrMetaData::processMetaData( const NervGear::Json &dataFile, const Array< String > & searchPaths, const char * metaFile )
+{
+	if ( dataFile.isValid() )
+	{
+		// Grab the version from the loaded data
+		extractVersion( dataFile, m_version );
+
+		Array< Category > storedCategories;
+		StringHash< OvrMetaDatum * > storedMetaData;
+		extractCategories( dataFile, storedCategories );
+
+		// Read in package data first
+		Json packageMeta = LoadPackageMetaFile( metaFile );
+		if ( packageMeta.isValid() )
+		{
+			// If we failed to find a version in the serialized data, need to set it from the assets version
+			if ( m_version < 0.0 )
+			{
+				extractVersion( packageMeta, m_version );
+				if ( m_version < 0.0 )
+				{
+					m_version = 0.0;
+				}
+			}
+			extractCategories( packageMeta, storedCategories );
+			extractMetaData( packageMeta, searchPaths, storedMetaData );
+		}
+		else
+		{
+			WARN( "ProcessMetaData LoadPackageMetaFile failed for %s", metaFile );
+		}
+
+		// Read in the stored data - overriding any found in the package
+		extractMetaData( dataFile, searchPaths, storedMetaData );
+
+		// Reconcile the stored data vs the data read in
+		reconcileCategories( storedCategories );
+		reconcileMetaData( storedMetaData );
+
+		// Recreate indices which may have changed after reconciliation
+		regenerateCategoryIndices();
+
+		// Delete any newly empty categories except Favorites
+		if ( !m_categories.isEmpty() )
+		{
+			Array< Category > finalCategories;
+			finalCategories.pushBack( m_categories.at( 0 ) );
+			for ( int catIndex = 1; catIndex < m_categories.sizeInt(); ++catIndex )
+			{
+				Category & cat = m_categories.at( catIndex );
+				if ( !cat.datumIndicies.isEmpty() )
+				{
+					finalCategories.pushBack( cat );
+				}
+				else
+				{
+					WARN( "OvrMetaData::ProcessMetaData discarding empty %s", cat.categoryTag.toCString() );
+				}
+			}
+			Alg::Swap( finalCategories, m_categories );
+		}
+	}
+	else
+	{
+		WARN( "OvrMetaData::ProcessMetaData NULL dataFile" );
+	}
+
+	// Rewrite new data
+	Json newDataFile = metaDataToJson();
+	if ( newDataFile.isInvalid() )
+	{
+		FAIL( "OvrMetaData::ProcessMetaData failed to generate JSON meta file" );
+	}
+
+	std::ofstream fp(m_filePath, std::ios::binary);
+	fp << newDataFile;
+
+	LOG( "OvrMetaData::ProcessMetaData created %s", m_filePath.toCString() );
+}
+
+void OvrMetaData::reconcileMetaData( StringHash< OvrMetaDatum * > & storedMetaData )
+{
+	if ( storedMetaData.IsEmpty() )
+	{
+		return;
+	}
+    dedupMetaData( m_etaData, storedMetaData );
+
+	// Now for any remaining stored data - check if it's remote and just add it, sorted by the
+	// assigned Id
+	Array< OvrMetaDatum * > sortedEntries;
+	StringHash< OvrMetaDatum * >::Iterator storedIter = storedMetaData.Begin();
+	for ( ; storedIter != storedMetaData.End(); ++storedIter )
+	{
+		OvrMetaDatum * storedDatum = storedIter->Second;
+		if ( isRemote( storedDatum ) )
+		{
+			LOG( "ReconcileMetaData metadata adding remote %s", storedDatum->url.toCString() );
+			sortedEntries.pushBack( storedDatum );
+		}
+	}
+	Alg::QuickSortSlicedSafe( sortedEntries, 0, sortedEntries.size(), OvrMetaDatumIdComparator);
+	Array< OvrMetaDatum * >::Iterator sortedIter = sortedEntries.begin();
+	for ( ; sortedIter != sortedEntries.end(); ++sortedIter )
+	{
+		m_etaData.pushBack( *sortedIter );
+	}
+	storedMetaData.Clear();
+}
+
+void OvrMetaData::dedupMetaData( const Array< OvrMetaDatum * > & existingData, StringHash< OvrMetaDatum * > & newData )
+{
+    // Fix the read in meta data using the stored
+    for ( int i = 0; i < existingData.sizeInt(); ++i )
+    {
+        OvrMetaDatum * metaDatum = existingData.at( i );
+
+        StringHash< OvrMetaDatum * >::Iterator iter = newData.FindCaseInsensitive( metaDatum->url );
+
+        if ( iter != newData.End() )
+        {
+            OvrMetaDatum * storedDatum = iter->Second;
+            LOG( "DedupMetaData metadata for %s", storedDatum->url.toCString() );
+            Alg::Swap( storedDatum->tags, metaDatum->tags );
+            swapExtendedData( storedDatum, metaDatum );
+            newData.Remove( iter->First );
+        }
+    }
+}
+
+void OvrMetaData::reconcileCategories( Array< Category > & storedCategories )
+{
+	if ( storedCategories.isEmpty() )
+	{
+		return;
+	}
+
+	// Reconcile categories
+	// We want Favorites always at the top
+	// Followed by user created categories
+	// Finally we want to maintain the order of the retail categories (defined in assets/meta.json)
+	Array< Category > finalCategories;
+
+	Category favorites = storedCategories.at( 0 );
+	if ( favorites.categoryTag != FAVORITES_TAG )
+	{
+		WARN( "OvrMetaData::ReconcileCategories failed to find expected category order -- missing assets/meta.json?" );
+	}
+
+	finalCategories.pushBack( favorites );
+
+	StringHash< bool > StoredCategoryMap; // using as set
+	for ( int i = 0; i < storedCategories.sizeInt(); ++i )
+	{
+		const Category & storedCategory = storedCategories.at( i );
+		LOG( "OvrMetaData::ReconcileCategories storedCategory: %s", storedCategory.categoryTag.toCString() );
+		StoredCategoryMap.Add( storedCategory.categoryTag, true );
+	}
+
+	// Now add the read in categories if they differ
+	for ( int i = 0; i < m_categories.sizeInt(); ++i )
+	{
+		const Category & readInCategory = m_categories.at( i );
+		StringHash< bool >::ConstIterator iter = StoredCategoryMap.Find( readInCategory.categoryTag );
+
+		if ( iter == StoredCategoryMap.End() )
+		{
+			LOG( "OvrMetaData::ReconcileCategories adding %s", readInCategory.categoryTag.toCString() );
+			finalCategories.pushBack( readInCategory );
+		}
+	}
+
+	// Finally fill in the stored in categories after user made ones
+	for ( int i = 1; i < storedCategories.sizeInt(); ++i )
+	{
+		const  Category & storedCat = storedCategories.at( i );
+		LOG( "OvrMetaData::ReconcileCategories adding stored category %s", storedCat.categoryTag.toCString() );
+		finalCategories.pushBack( storedCat );
+	}
+
+	// Now replace Categories
+	Alg::Swap( m_categories, finalCategories );
+}
+
+void OvrMetaData::extractVersion(const Json &dataFile, double & outVersion ) const
+{
+	if ( dataFile.isInvalid() )
+	{
+		return;
+	}
+
+	if ( dataFile.isObject() )
+	{
+		outVersion = dataFile.value( VERSION ).toDouble();
+	}
+}
+
+void OvrMetaData::extractCategories(const Json &dataFile, Array< Category > & outCategories ) const
+{
+	if ( dataFile.isInvalid() )
+	{
+		return;
+	}
+
+	const Json &categories( dataFile.value( CATEGORIES ) );
+	if ( categories.isArray() )
+	{
+        const JsonArray &elements = categories.toArray();
+		for (const Json &category : elements) {
+			if ( category.isObject() )
+			{
+				Category extractedCategory;
+				extractedCategory.categoryTag = category.value( TAG ).toString().c_str();
+				extractedCategory.label = category.value( LABEL ).toString().c_str();
+
+				// Check if we already have this category
+				bool exists = false;
+				for ( int i = 0; i < outCategories.sizeInt(); ++i )
+				{
+					const Category & existingCat = outCategories.at( i );
+					if ( extractedCategory.categoryTag == existingCat.categoryTag )
+					{
+						exists = true;
+						break;
+					}
+				}
+
+				if ( !exists )
+				{
+					LOG( "Extracting category: %s", extractedCategory.categoryTag.toCString() );
+					outCategories.pushBack( extractedCategory );
+				}
+			}
+		}
+	}
+}
+
+void OvrMetaData::extractMetaData(const Json &dataFile, const Array< String > & searchPaths, StringHash< OvrMetaDatum * > & outMetaData ) const
+{
+	if ( dataFile.isInvalid() )
+	{
+		return;
+	}
+
+	const Json &data( dataFile.value( DATA ) );
+	if ( data.isArray() )
+	{
+		int jsonIndex = m_etaData.sizeInt();
+
+        const JsonArray &datums = data.toArray();
+		for (const Json &datum : datums) {
+			if ( datum.isObject() )
+			{
+				OvrMetaDatum * metaDatum = createMetaDatum( "" );
+				if ( !metaDatum )
+				{
+					continue;
+				}
+
+				metaDatum->id = jsonIndex++;
+				const Json &tags( datum.value( TAGS ) );
+				if ( tags.isArray() )
+				{
+                    const JsonArray &elements = tags.toArray();
+					for (const Json &tag : elements) {
+						if ( tag.isObject() )
+						{
+							metaDatum->tags.pushBack(String(tag.value( CATEGORY ).toString().c_str()));
+						}
+					}
+				}
+
+				OVR_ASSERT( !metaDatum->tags.isEmpty() );
+
+				const String relativeUrl( datum.value( URL_INNER ).toString().c_str() );
+				metaDatum->url = relativeUrl;
+				bool foundPath = false;
+                const bool isRemote = this->isRemote( metaDatum );
+
+				// Get the absolute path if this is a local file
+				if ( !isRemote )
+				{
+					foundPath = GetFullPath( searchPaths, relativeUrl, metaDatum->url );
+					if ( !foundPath )
+					{
+						// if we fail to find the file, check for encrypted extension (TODO: Might put this into a virtual function if necessary, benign for now)
+						foundPath = GetFullPath( searchPaths, relativeUrl + ".x", metaDatum->url );
+					}
+				}
+
+				// if we fail to find the local file or it's a remote file, the Url is left as read in from the stored data
+				if ( isRemote || !foundPath )
+				{
+					metaDatum->url = relativeUrl;
+				}
+
+				extractExtendedData( datum, *metaDatum );
+				LOG( "OvrMetaData::ExtractMetaData adding datum %s", metaDatum->url.toCString() );
+
+				StringHash< OvrMetaDatum * >::Iterator iter = outMetaData.FindCaseInsensitive( metaDatum->url );
+				if ( iter == outMetaData.End() )
+				{
+					outMetaData.Add( metaDatum->url, metaDatum );
+				}
+				else
+				{
+					iter->Second = metaDatum;
+				}
+			}
+		}
+	}
+}
+
+void OvrMetaData::extractRemoteMetaData( const Json &dataFile, StringHash< OvrMetaDatum * > & outMetaData ) const
+{
+	if ( dataFile.isInvalid() )
+	{
+		return;
+	}
+
+	const Json &data( dataFile.value( DATA ) );
+	if ( data.isArray() )
+	{
+		int jsonIndex = m_etaData.sizeInt();
+
+        const JsonArray elements = data.toArray();
+		for (const Json &jsonDatum : elements) {
+			if ( jsonDatum.isObject() )
+			{
+				OvrMetaDatum * metaDatum = createMetaDatum( "" );
+				if ( !metaDatum )
+				{
+					continue;
+				}
+				metaDatum->id = jsonIndex++;
+				const Json &tags( jsonDatum.value( TAGS ) );
+				if ( tags.isArray() )
+				{
+                    const JsonArray &elements = tags.toArray();
+					for (const Json &tag : elements) {
+						if ( tag.isObject() )
+						{
+							metaDatum->tags.pushBack( String(tag.value( CATEGORY ).toString().c_str()) );
+						}
+					}
+				}
+
+				OVR_ASSERT( !metaDatum->tags.isEmpty() );
+
+				metaDatum->url = jsonDatum.value( URL_INNER ).toString().c_str();
+				extractExtendedData( jsonDatum, *metaDatum );
+
+				StringHash< OvrMetaDatum * >::Iterator iter = outMetaData.FindCaseInsensitive( metaDatum->url );
+				if ( iter == outMetaData.End() )
+				{
+					outMetaData.Add( metaDatum->url, metaDatum );
+				}
+				else
+				{
+					iter->Second = metaDatum;
+				}
+			}
+		}
+	}
+}
+
+
+void OvrMetaData::regenerateCategoryIndices()
+{
+	for ( int catIndex = 0; catIndex < m_categories.sizeInt(); ++catIndex )
+	{
+		Category & cat = m_categories.at( catIndex );
+		cat.datumIndicies.clear();
+	}
+
+	// Delete any data only tagged as "Favorite" - this is a fix for user created "Favorite" folder which is a special case
+	// Not doing this will show photos already favorited that the user cannot unfavorite
+	for ( int metaDataIndex = 0; metaDataIndex < m_etaData.sizeInt(); ++metaDataIndex )
+	{
+		OvrMetaDatum & metaDatum = *m_etaData.at( metaDataIndex );
+		Array< String > & tags = metaDatum.tags;
+
+		OVR_ASSERT( metaDatum.tags.sizeInt() > 0 );
+		if ( tags.sizeInt() == 1 )
+		{
+			if ( tags.at( 0 ) == FAVORITES_TAG )
+			{
+				LOG( "Removing broken metadatum %s", metaDatum.url.toCString() );
+				m_etaData.removeAtUnordered( metaDataIndex );
+			}
+		}
+	}
+
+	// Fix the indices
+	for ( int metaDataIndex = 0; metaDataIndex < m_etaData.sizeInt(); ++metaDataIndex )
+	{
+		OvrMetaDatum & datum = *m_etaData.at( metaDataIndex );
+		Array< String > & tags = datum.tags;
+
+		OVR_ASSERT( tags.sizeInt() > 0 );
+
+		if ( tags.sizeInt() == 1 )
+		{
+			OVR_ASSERT( tags.at( 0 ) != FAVORITES_TAG );
+		}
+
+		if ( tags.at( 0 ) == FAVORITES_TAG && tags.sizeInt() > 1 )
+		{
+			Alg::Swap( tags.at( 0 ), tags.at( 1 ) );
+		}
+
+		for ( int tagIndex = 0; tagIndex < tags.sizeInt(); ++tagIndex )
+		{
+			const String & tag = tags[ tagIndex ];
+			if ( !tag.isEmpty() )
+			{
+				if ( Category * category = getCategory( tag ) )
+				{
+					LOG( "OvrMetaData inserting index %d for datum %s to %s", metaDataIndex, datum.url.toCString(), category->categoryTag.toCString() );
+
+					// fix the metadata index itself
+					datum.id = metaDataIndex;
+
+					// Update the category with the new index
+					category->datumIndicies.pushBack( metaDataIndex );
+				}
+				else
+				{
+					WARN( "OvrMetaData::RegenerateCategoryIndices failed to find category with tag %s for datum %s at index %d",
+						tag.toCString(), datum.url.toCString(), metaDataIndex );
+				}
+			}
+		}
+	}
+}
+
+Json OvrMetaData::metaDataToJson() const
+{
+	Json DataFile(Json::Object);
+
+	// Add version
+	DataFile[VERSION] = m_version;
+
+	// Add categories
+	Json newCategoriesObject(Json::Array);
+
+	for ( int c = 0; c < m_categories.sizeInt(); ++c )
+	{
+		Json catObject(Json::Object);
+
+		const Category & cat = m_categories.at( c );
+		catObject[TAG] = std::string(cat.categoryTag.toCString());
+		catObject[LABEL] = std::string(cat.label.toCString());
+		LOG( "OvrMetaData::MetaDataToJson adding category %s", cat.categoryTag.toCString() );
+		newCategoriesObject.append( catObject );
+	}
+	DataFile[CATEGORIES] = newCategoriesObject;
+
+	// Add meta data
+	Json newDataObject(Json::Array);
+
+	for ( int i = 0; i < m_etaData.sizeInt(); ++i )
+	{
+		const OvrMetaDatum & metaDatum = *m_etaData.at( i );
+
+		Json datumObject(Json::Object);
+		extendedDataToJson( metaDatum, datumObject );
+		datumObject.insert( URL_INNER, std::string(metaDatum.url.toCString()) );
+		LOG( "OvrMetaData::MetaDataToJson adding datum url %s", metaDatum.url.toCString() );
+
+		Json newTagsObject(Json::Array);
+		for ( int t = 0; t < metaDatum.tags.sizeInt(); ++t )
+		{
+			Json tagObject(Json::Object);
+			tagObject.insert( CATEGORY, std::string(metaDatum.tags.at( t ).toCString()) );
+			newTagsObject.append( tagObject );
+		}
+
+		datumObject.insert( TAGS, newTagsObject );
+
+		newDataObject.append( datumObject );
+	}
+	DataFile[DATA] = newDataObject;
+
+	return DataFile;
+}
+
+TagAction OvrMetaData::toggleTag( OvrMetaDatum * metaDatum, const String & newTag )
+{
+	Json DataFile = Json::Load( m_filePath );
+	if ( DataFile.isInvalid() )
+	{
+		FAIL( "OvrMetaData failed to load JSON meta file: %s", m_filePath.toCString() );
+	}
+
+	OVR_ASSERT( DataFile.isValid() );
+	OVR_ASSERT( metaDatum );
+
+	// First update the local data
+	TagAction action = TAG_ERROR;
+	for ( int t = 0; t < metaDatum->tags.sizeInt(); ++t )
+	{
+		if ( metaDatum->tags.at( t ) == newTag )
+		{
+			// Handle case which leaves us with no tags - ie. broken state
+			if ( metaDatum->tags.sizeInt() < 2 )
+			{
+				WARN( "ToggleTag attempt to remove only tag: %s on %s", newTag.toCString(), metaDatum->url.toCString() );
+				return TAG_ERROR;
+			}
+			LOG( "ToggleTag TAG_REMOVED tag: %s on %s", newTag.toCString(), metaDatum->url.toCString() );
+			action = TAG_REMOVED;
+			metaDatum->tags.removeAt( t );
+			break;
+		}
+	}
+
+	if ( action == TAG_ERROR )
+	{
+		LOG( "ToggleTag TAG_ADDED tag: %s on %s", newTag.toCString(), metaDatum->url.toCString() );
+		metaDatum->tags.pushBack( newTag );
+		action = TAG_ADDED;
+	}
+
+	// Then serialize
+	Json newTagsObject(Json::Array);
+
+	for ( int t = 0; t < metaDatum->tags.sizeInt(); ++t )
+	{
+		Json tagObject(Json::Object);
+		tagObject.insert(CATEGORY, std::string(metaDatum->tags.at( t ).toCString()));
+		newTagsObject.append(tagObject);
+	}
+
+	const Json &data = DataFile.value( DATA );
+	if (data.isArray() && (int) data.size() > metaDatum->id) {
+		Json datum = data.at(metaDatum->id);
+		if (datum.contains(TAGS)) {
+			datum[TAGS] = newTagsObject;
+
+			std::ofstream fp(m_filePath, std::ios::binary);
+			fp << DataFile;
+		}
+	}
+
+	return action;
+}
+
+void OvrMetaData::addCategory( const String & name )
+{
+	Category cat;
+	cat.categoryTag = name;
+	m_categories.pushBack( cat );
+}
+
+OvrMetaData::Category * OvrMetaData::getCategory( const String & categoryName )
+{
+	const int numCategories = m_categories.sizeInt();
+	for ( int i = 0; i < numCategories; ++i )
+	{
+		Category & category = m_categories.at( i );
+		if ( category.categoryTag == categoryName )
+		{
+			return &category;
+		}
+	}
+	return NULL;
+}
+
+const OvrMetaDatum & OvrMetaData::getMetaDatum( const int index ) const
+{
+	OVR_ASSERT( index >= 0 && index < m_etaData.sizeInt() );
+	return *m_etaData.at( index );
+}
+
+
+bool OvrMetaData::getMetaData( const Category & category, Array< const OvrMetaDatum * > & outMetaData ) const
+{
+	const int numPanos = category.datumIndicies.sizeInt();
+	for ( int i = 0; i < numPanos; ++i )
+	{
+		const int metaDataIndex = category.datumIndicies.at( i );
+		OVR_ASSERT( metaDataIndex >= 0 && metaDataIndex < m_etaData.sizeInt() );
+		//const OvrMetaDatum * panoData = &MetaData.At( metaDataIndex );
+        //LOG( "Getting MetaData %d title %s from category %s", metaDataIndex, panoData->Title.toCString(), category.CategoryName.toCString() );
+		outMetaData.pushBack( m_etaData.at( metaDataIndex ) );
+	}
+	return true;
+}
+
+bool OvrMetaData::shouldAddFile( const char * filename, const OvrMetaDataFileExtensions & fileExtensions ) const
+{
+	const int pathLen = OVR_strlen( filename );
+	for ( int index = 0; index < fileExtensions.badExtensions.sizeInt(); ++index )
+	{
+		const String & ext = fileExtensions.badExtensions.at( index );
+        const int extLen = (int) ext.length();
+		if ( pathLen > extLen && OVR_stricmp( filename + pathLen - extLen, ext.toCString() ) == 0 )
+		{
+			return false;
+		}
+	}
+
+	for ( int index = 0; index < fileExtensions.goodExtensions.sizeInt(); ++index )
+	{
+		const String & ext = fileExtensions.goodExtensions.at( index );
+        const int extLen = (int) ext.length();
+		if ( pathLen > extLen && OVR_stricmp( filename + pathLen - extLen, ext.toCString() ) == 0 )
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void OvrMetaData::setCategoryDatumIndicies( const int index, const Array< int >& datumIndicies )
+{
+	OVR_ASSERT( index < m_categories.sizeInt() );
+
+	if ( index < m_categories.sizeInt() )
+	{
+        m_categories[index].datumIndicies = datumIndicies;
+	}
+}
+
+}
