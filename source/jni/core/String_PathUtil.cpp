@@ -235,7 +235,7 @@ void    VString::stripProtocol()
 {
     const char* protocol = ScanPathProtocol(toCString());
     if (protocol)
-        assign(protocol, OVR_strlen(protocol));
+        assign(protocol, strlen(protocol));
 }
 #if 0
 void    String::StripPath()

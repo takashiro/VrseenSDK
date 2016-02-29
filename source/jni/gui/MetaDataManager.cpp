@@ -966,7 +966,7 @@ bool OvrMetaData::getMetaData( const Category & category, Array< const OvrMetaDa
 
 bool OvrMetaData::shouldAddFile( const char * filename, const OvrMetaDataFileExtensions & fileExtensions ) const
 {
-	const int pathLen = OVR_strlen( filename );
+	const int pathLen = strlen( filename );
 	for ( int index = 0; index < fileExtensions.badExtensions.sizeInt(); ++index )
 	{
 		const VString & ext = fileExtensions.badExtensions.at( index );

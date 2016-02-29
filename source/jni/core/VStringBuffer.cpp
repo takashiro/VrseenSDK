@@ -144,7 +144,7 @@ void      VStringBuffer::append(const char* putf8str, SPInt utf8StrSz)
     if (!putf8str || !utf8StrSz)
         return;
     if (utf8StrSz == -1)
-        utf8StrSz = (SPInt)OVR_strlen(putf8str);
+        utf8StrSz = (SPInt)strlen(putf8str);
 
     UPInt   origSize    = size();
     UPInt   size        = utf8StrSz + origSize;
@@ -157,7 +157,7 @@ void      VStringBuffer::append(const char* putf8str, SPInt utf8StrSz)
 void      VStringBuffer::operator = (const char* pstr)
 {
     pstr = pstr ? pstr : "";
-    UPInt size = OVR_strlen(pstr);
+    UPInt size = strlen(pstr);
     resize(size);
     memcpy(m_data, pstr, size);
 }
@@ -187,7 +187,7 @@ void      VStringBuffer::operator = (const VStringBuffer& src)
 void      VStringBuffer::insert(const char* substr, UPInt posAt, SPInt len)
 {
     UPInt     oldSize    = m_size;
-    UPInt     insertSize = (len < 0) ? OVR_strlen(substr) : (UPInt)len;
+    UPInt     insertSize = (len < 0) ? strlen(substr) : (UPInt)len;
     UPInt     byteIndex  = m_lengthIsSize ? posAt :
                            (UPInt)UTF8Util::GetByteIndex(posAt, m_data, (SPInt)m_size);
 

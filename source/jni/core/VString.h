@@ -392,7 +392,7 @@ public:
     StringDataPtr(const char* pstr, UPInt sz)
         : m_str(pstr), m_size(sz) {}
     StringDataPtr(const char* pstr)
-        : m_str(pstr), m_size((pstr != NULL) ? OVR_strlen(pstr) : 0) {}
+        : m_str(pstr), m_size((pstr != NULL) ? strlen(pstr) : 0) {}
     explicit StringDataPtr(const VString& str)
         : m_str(str.toCString()), m_size(str.size()) {}
     template <typename T, int N>

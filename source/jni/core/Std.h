@@ -20,115 +20,13 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <stdlib.h>
 #include <ctype.h>
 
-#if !defined(OVR_OS_WINCE) && defined(OVR_CC_MSVC) && (OVR_CC_MSVC >= 1400)
-#define OVR_MSVC_SAFESTRING
-#include <errno.h>
-#endif
-
 // Wide-char funcs
 #include <wchar.h>
 #include <wctype.h>
 
 namespace NervGear {
 
-#if defined(OVR_OS_WIN32)
-inline char* OVR_CDECL OVR_itoa(int val, char *dest, UPInt destsize, int radix)
-{
-#if defined(OVR_MSVC_SAFESTRING)
-    _itoa_s(val, dest, destsize, radix);
-    return dest;
-#else
-    OVR_UNUSED(destsize);
-    return itoa(val, dest, radix);
-#endif
-}
-#else // OVR_OS_WIN32
-inline char* OVR_itoa(int val, char* dest, unsigned int len, int radix)
-{
-    if (val == 0)
-    {
-        if (len > 1)
-        {
-            dest[0] = '0';
-            dest[1] = '\0';
-        }
-        return dest;
-    }
-
-    int cur = val;
-    unsigned int i    = 0;
-    unsigned int sign = 0;
-
-    if (val < 0)
-    {
-        val = -val;
-        sign = 1;
-    }
-
-    while ((val != 0) && (i < (len - 1 - sign)))
-    {
-        cur    = val % radix;
-        val   /= radix;
-
-        if (radix == 16)
-        {
-            switch(cur)
-            {
-            case 10:
-                dest[i] = 'a';
-                break;
-            case 11:
-                dest[i] = 'b';
-                break;
-            case 12:
-                dest[i] = 'c';
-                break;
-            case 13:
-                dest[i] = 'd';
-                break;
-            case 14:
-                dest[i] = 'e';
-                break;
-            case 15:
-                dest[i] = 'f';
-                break;
-            default:
-                dest[i] = (char)('0' + cur);
-                break;
-            }
-        }
-        else
-        {
-            dest[i] = (char)('0' + cur);
-        }
-        ++i;
-    }
-
-    if (sign)
-    {
-        dest[i++] = '-';
-    }
-
-    for (unsigned int j = 0; j < i / 2; ++j)
-    {
-        char tmp        = dest[j];
-        dest[j]         = dest[i - 1 - j];
-        dest[i - 1 - j] = tmp;
-    }
-    dest[i] = '\0';
-
-    return dest;
-}
-
-#endif
-
-
 // String functions
-
-inline UPInt OVR_CDECL OVR_strlen(const char* str)
-{
-    return strlen(str);
-}
 
 inline char* OVR_CDECL OVR_strcpy(char* dest, UPInt destsize, const char* src)
 {
@@ -210,7 +108,7 @@ inline char* OVR_CDECL OVR_strchr(char* str, char c)
 
 inline const char* OVR_strrchr(const char* str, char c)
 {
-    UPInt len = OVR_strlen(str);
+    UPInt len = strlen(str);
     for (UPInt i=len; i>0; i--)
         if (str[i]==c)
             return str+i;
@@ -229,7 +127,7 @@ inline const UByte* OVR_CDECL OVR_memrchr(const UByte* str, UPInt size, UByte c)
 
 inline char* OVR_CDECL OVR_strrchr(char* str, char c)
 {
-    UPInt len = OVR_strlen(str);
+    UPInt len = strlen(str);
     for (UPInt i=len; i>0; i--)
         if (str[i]==c)
             return str+i;

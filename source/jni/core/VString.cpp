@@ -32,7 +32,7 @@ VString::VString()
 VString::VString(const char* pdata)
 {
     // Obtain length in bytes; it doesn't matter if _data is UTF8.
-    UPInt size = pdata ? OVR_strlen(pdata) : 0;
+    UPInt size = pdata ? strlen(pdata) : 0;
     pData = allocDataCopy1(size, 0, pdata, size);
 }
 
@@ -45,9 +45,9 @@ VString::VString(const std::string &data)
 VString::VString(const char* pdata1, const char* pdata2, const char* pdata3)
 {
     // Obtain length in bytes; it doesn't matter if _data is UTF8.
-    UPInt size1 = pdata1 ? OVR_strlen(pdata1) : 0;
-    UPInt size2 = pdata2 ? OVR_strlen(pdata2) : 0;
-    UPInt size3 = pdata3 ? OVR_strlen(pdata3) : 0;
+    UPInt size1 = pdata1 ? strlen(pdata1) : 0;
+    UPInt size2 = pdata2 ? strlen(pdata2) : 0;
+    UPInt size3 = pdata3 ? strlen(pdata3) : 0;
 
     DataDesc *pdataDesc = allocDataCopy2(size1 + size2 + size3, 0,
                                          pdata1, size1, pdata2, size2);
@@ -232,7 +232,7 @@ void VString::append(const char* putf8str, SPInt utf8StrSz)
     if (!putf8str || !utf8StrSz)
         return;
     if (utf8StrSz == -1)
-        utf8StrSz = (SPInt)OVR_strlen(putf8str);
+        utf8StrSz = (SPInt)strlen(putf8str);
 
     DataDesc*   pdata = data();
     UPInt       oldSize = pdata->size();
@@ -251,7 +251,7 @@ void    VString::assign(const char* putf8str, UPInt size)
 
 void    VString::operator = (const char* pstr)
 {
-    assign(pstr, pstr ? OVR_strlen(pstr) : 0);
+    assign(pstr, pstr ? strlen(pstr) : 0);
 }
 
 void    VString::operator = (const wchar_t* pwstr)
@@ -417,7 +417,7 @@ VString& VString::insert(const char* substr, UPInt posAt, SPInt strSize)
 {
     DataDesc* poldData   = data();
     UPInt     oldSize    = poldData->size();
-    UPInt     insertSize = (strSize < 0) ? OVR_strlen(substr) : (UPInt)strSize;
+    UPInt     insertSize = (strSize < 0) ? strlen(substr) : (UPInt)strSize;
     UPInt     byteIndex  =  (poldData->lengthIsSize()) ?
                             posAt : (UPInt)UTF8Util::GetByteIndex(posAt, poldData->data, oldSize);
 
@@ -458,7 +458,7 @@ UPInt VString::insert(UInt32 c, UPInt posAt)
 
 void VString::stripTrailing(const char * s)
 {
-	const UPInt len = OVR_strlen(s);
+    const UPInt len = strlen(s);
     if (length() >= len && right(len) == s)
 	{
         *this = left(length() - len);
@@ -485,14 +485,14 @@ int VString::CompareNoCase(const char* a, const char* b, SPInt len)
         if (f == l && (len != 0 || *b != 0))
         {
             f = (SPInt)slen;
-            l = (SPInt)OVR_strlen(s);
+            l = (SPInt)strlen(s);
             return int(f - l);
         }
 
         return int(f - l);
     }
     else
-        return (0-(int)OVR_strlen(b));
+        return (0-(int)strlen(b));
 }
 
 // ***** Implement hash static functions

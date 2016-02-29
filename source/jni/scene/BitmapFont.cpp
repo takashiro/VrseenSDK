@@ -644,7 +644,7 @@ FontGlyphType const & FontInfoType::GlyphForCharCode(
 // TODO: we really need a decent set of functions for path manipulation. OVR_String_PathUtil has
 // some bugs and doesn't have functionality for cross-platform path conversion.
 static void MakePathCanonical(char * path) {
-	int n = OVR_strlen(path);
+	int n = strlen(path);
 	for (int i = 0; i < n; ++i) {
 		if (path[i] == PATH_SEPARATOR_NON_CANONICAL) {
 			path[i] = PATH_SEPARATOR;
@@ -683,7 +683,7 @@ static void AppendPath(char * path, size_t pathsize, char const * append) {
 	char appendCanonical[512];
 	OVR_strcpy(appendCanonical, sizeof(appendCanonical), append);
 	MakePathCanonical(path);
-	int n = OVR_strlen(path);
+	int n = strlen(path);
 	if (n
 			> 0&& path[n - 1] != PATH_SEPARATOR && appendCanonical[0] != PATH_SEPARATOR) {OVR_strcat( path, pathsize, PATH_SEPARATOR_STR );
 }
@@ -695,7 +695,7 @@ static void StripPath(char const * path, char * outName, size_t const outSize) {
 		outName[0] = '\0';
 		return;
 	}
-	size_t n = OVR_strlen(path);
+	size_t n = strlen(path);
 	char const * fnameStart = NULL;
 	for (int i = n - 1; i >= 0; --i) {
 		if (path[i] == PATH_SEPARATOR) {
@@ -713,7 +713,7 @@ static void StripPath(char const * path, char * outName, size_t const outSize) {
 
 static void StripFileName(char const * path, char * outPath,
 		size_t const outSize) {
-	size_t n = OVR_strlen(path);
+	size_t n = strlen(path);
 	char const * fnameStart = NULL;
 	for (int i = n - 1; i >= 0; --i) {
 		if (path[i] == PATH_SEPARATOR) {
@@ -732,8 +732,8 @@ static bool ExtensionMatches(char const * fileName, char const * ext) {
 	if (fileName == NULL || ext == NULL) {
 		return false;
 	}
-	size_t extLen = OVR_strlen(ext);
-	size_t fileNameLen = OVR_strlen(fileName);
+	size_t extLen = strlen(ext);
+	size_t fileNameLen = strlen(fileName);
 	if (extLen > fileNameLen) {
 		return false;
 	}

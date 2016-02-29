@@ -178,7 +178,7 @@ namespace NervGear
 
 		if ( FileExists( relativePath ) )
 		{
-			OVR_sprintf( outPath, OVR_strlen( relativePath ) + 1, "%s", relativePath );
+			OVR_sprintf( outPath, strlen( relativePath ) + 1, "%s", relativePath );
 			return true;
 		}
 
@@ -215,7 +215,7 @@ namespace NervGear
             char const * path = searchPaths[i].toCString();
 			if ( strstr( fullPath, path ) == fullPath )
 			{
-				size_t len = OVR_strlen( path );
+				size_t len = strlen( path );
 				OVR_sprintf( outPath, outMaxLen, "%s", fullPath + len );
 				return true;
 			}

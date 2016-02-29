@@ -79,7 +79,7 @@ void Log::FormatLog(char* buffer, unsigned bufferSize, LogMessageType messageTyp
         break;
     }
 
-    UPInt prefixLength = OVR_strlen(buffer);
+    UPInt prefixLength = strlen(buffer);
     char *buffer2      = buffer + prefixLength;
     OVR_vsprintf(buffer2, bufferSize - prefixLength, fmt, argList);
 

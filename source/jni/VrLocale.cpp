@@ -19,7 +19,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 namespace NervGear {
 
 char const *	VrLocale::LOCALIZED_KEY_PREFIX = "@string/";
-size_t			VrLocale::LOCALIZED_KEY_PREFIX_LEN = OVR_strlen( LOCALIZED_KEY_PREFIX );
+size_t			VrLocale::LOCALIZED_KEY_PREFIX_LEN = strlen( LOCALIZED_KEY_PREFIX );
 jclass			VrLocale::VrActivityClass;
 
 //==============================
@@ -163,7 +163,7 @@ VString VrLocale::MakeStringIdFromANSI( char const * str )
 	eLastOutputType lastOutputType = LO_MAX;
 	VString out = LOCALIZED_KEY_PREFIX;
 	char const * ptr = strstr( str, LOCALIZED_KEY_PREFIX ) == str ? str + LOCALIZED_KEY_PREFIX_LEN : str;
-	int n = OVR_strlen( ptr );
+	int n = strlen( ptr );
 	for ( int i = 0; i < n; ++i )
 	{
 		unsigned char c = ptr[i];

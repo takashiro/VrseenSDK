@@ -225,14 +225,14 @@ void SystemActivities_ShutdownEventQueues()
 
 void SystemActivities_AddInternalEvent( char const * data )
 {
-	EventData * eventData = new EventData( data, OVR_strlen( data ) + 1 );
+	EventData * eventData = new EventData( data, strlen( data ) + 1 );
 	InternalEventQueue->Enqueue( eventData );
 	LOG( "SystemActivities: queued internal event '%s'", data );
 }
 
 void SystemActivities_AddEvent( char const * data )
 {
-	EventData * eventData = new EventData( data, OVR_strlen( data ) + 1 );
+	EventData * eventData = new EventData( data, strlen( data ) + 1 );
 	MainEventQueue->Enqueue( eventData );
 	LOG( "SystemActivities: queued event '%s'", data );
 }

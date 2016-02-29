@@ -171,8 +171,8 @@ bool FileExists( const char * filename )
 
 bool MatchesExtension( const char * fileName, const char * ext )
 {
-	const int extLen = OVR_strlen( ext );
-	const int sLen = OVR_strlen( fileName );
+	const int extLen = strlen( ext );
+	const int sLen = strlen( fileName );
 	if ( sLen < extLen + 1 )
 	{
 		return false;
@@ -292,7 +292,7 @@ void MakePath( const char * dirPath, mode_t mode )
 // Returns true if head equals check plus zero or more characters.
 bool MatchesHead( const char * head, const char * check )
 {
-	const int l = OVR_strlen( head );
+	const int l = strlen( head );
 	return 0 == OVR_strncmp( head, check, l );
 }
 

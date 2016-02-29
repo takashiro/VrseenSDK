@@ -1312,7 +1312,7 @@ void AppLocal::Command( const char *msg )
 		// the JSON string is at the end and will come after the third space.
 		sscanf( msg, "intent %s %s", fromPackageName, uri );
 		char const * jsonStart = NULL;
-		size_t msgLen = OVR_strlen( msg );
+		size_t msgLen = strlen( msg );
 		int spaceCount = 0;
 		for ( size_t i = 0; i < msgLen; ++i ) {
 			if ( msg[i] == ' ' ) {
