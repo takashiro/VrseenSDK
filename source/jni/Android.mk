@@ -35,6 +35,7 @@ LOCAL_EXPORT_C_INCLUDES := $(LOCAL_C_INCLUDES)
 LOCAL_SRC_FILES  := core/Alg.cpp \
                     core/Allocator.cpp \
                     core/Atomic.cpp \
+                    core/VChar.cpp \
                     core/File.cpp \
                     core/FileFILE.cpp \
                     core/VJson.cpp \ \
@@ -44,6 +45,7 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     core/RefCount.cpp \
                     core/Std.cpp \
                     core/VString.cpp \
+                    core/VStringBuffer.cpp \
                     core/String_FormatUtil.cpp \
                     core/String_PathUtil.cpp \
                     core/SysFile.cpp \
@@ -60,7 +62,6 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     core/android/LogUtils.cpp \
                     core/android/NativeBuildStrings.cpp \
                     core/android/OVRVersion.cpp \
-                    core/char.cpp \
                     api/VrApi.cpp \
                     api/Vsync.cpp \
                     api/DirectRender.cpp \
