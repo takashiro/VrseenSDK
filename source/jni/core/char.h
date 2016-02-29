@@ -1,10 +1,10 @@
 #pragma once
 
-#include "global.h"
+#include "vglobal.h"
 
 #include <ctype.h>
 
-NERVGEAR_NAMESPACE_BEGIN
+NV_NAMESPACE_BEGIN
 
 class Char
 {
@@ -48,4 +48,4 @@ private:
     wchar_t value;
 };
 
-NERVGEAR_NAMESPACE_END
+NV_NAMESPACE_END
