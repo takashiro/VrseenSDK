@@ -193,8 +193,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 namespace NervGear {
 
-typedef char            Char;
-
 // Pointer-sized integer
 typedef size_t          UPInt;
 typedef ptrdiff_t       SPInt;

@@ -1,4 +1,4 @@
-#include "char.h"
+#include "VChar.h"
 
 NV_NAMESPACE_BEGIN
 

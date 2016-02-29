@@ -19,6 +19,7 @@ SOURCES += \
     jni/core/Alg.cpp \
     jni/core/Allocator.cpp \
     jni/core/Atomic.cpp \
+    jni/core/VChar.cpp \
     jni/core/File.cpp \
     jni/core/FileFILE.cpp \
     jni/core/VJson.cpp \
@@ -45,7 +46,6 @@ SOURCES += \
     jni/core/android/LogUtils.cpp \
     jni/core/android/NativeBuildStrings.cpp \
     jni/core/android/OVRVersion.cpp \
-    jni/core/char.cpp \
     jni/api/VrApi.cpp \
     jni/api/Vsync.cpp \
     jni/api/DirectRender.cpp \
@@ -144,6 +144,7 @@ HEADERS += \
     jni/core/Allocator.h \
     jni/core/Atomic.h \
     jni/core/Array.h \
+    jni/core/VChar.h \
     jni/core/ContainerAllocator.h \
     jni/core/Deque.h \
     jni/core/File.h \
@@ -170,7 +171,6 @@ HEADERS += \
     jni/core/Hash.h \
     jni/core/KeyCodes.h \
     jni/core/List.h \
-    jni/core/char.h \
     jni/core/BitFlags.h \
     jni/core/Color.h \
     jni/core/OVR.h \
