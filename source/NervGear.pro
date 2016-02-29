@@ -167,7 +167,6 @@ HEADERS += \
     jni/core/KeyCodes.h \
     jni/core/List.h \
     jni/core/char.h \
-    jni/core/global.h \
     jni/core/BitFlags.h \
     jni/core/Color.h \
     jni/core/OVR.h \
