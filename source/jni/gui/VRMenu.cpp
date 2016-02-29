@@ -368,8 +368,8 @@ bool VRMenu::onKeyEvent( App * app, int const keyCode, KeyState::eKeyEventType c
 				{
 					if ( m_flags & VRMENU_FLAG_BACK_KEY_EXITS_APP )
 					{
-						app->StartSystemActivity( PUI_CONFIRM_QUIT );
-						return true;
+                        //app->StartSystemActivity( PUI_CONFIRM_QUIT );
+                        return false;
 					}
 					else if ( m_flags & VRMENU_FLAG_SHORT_PRESS_HANDLED_BY_APP )
 					{

@@ -428,51 +428,6 @@ JNIEXPORT void Java_me_takashiro_nervgear_DockReceiver_nativeDockEvent(JNIEnv *j
 	}
 }
 
-JNIEXPORT void Java_me_takashiro_nervgear_ProximityReceiver_nativeSystemActivityIntent(JNIEnv *jni, jclass clazz,
-		jobject activityObject, jstring javaFromPackageName, jstring javaCommand, jstring javaUri )
-{
-	JavaUTFChars utfFromPackageName( jni, javaFromPackageName );
-	JavaUTFChars utfCommand( jni, javaCommand );
-	JavaUTFChars utfUri( jni, javaUri );
-	char currentPackageName[256];
-	ovr_GetCurrentPackageName( jni, clazz, activityObject, currentPackageName, sizeof( currentPackageName ) );
-	LOG( "nativeSystemActivityIntent in '%s': '%s' '%s' '%s'", currentPackageName, utfFromPackageName.ToStr(), utfCommand.ToStr(), utfUri.ToStr() );
-
-	// an app should never ever respond to its own message
-	if ( NervGear::OVR_stricmp( currentPackageName, utfFromPackageName.ToStr() ) == 0 )
-	{
-		return;
-	}
-
-    Json jsonObj = Json::Parse(utfCommand.ToStr());
-    if (jsonObj.isObject()) {
-        std::string command = jsonObj.value( "Command" ).toString();
-        std::string ovrVersion = jsonObj.value( "OVRVersion" ).toString();
-        int32_t platformUIVersion = jsonObj.value( "PlatformUIVersion" ).toInt();
-        std::string toPackageName = jsonObj.value( "ToPackage" ).toString();
-
-		// if we got the message from a version 1 System Activity then respond to it anyway becaose
-		// it will never send a package name and it will also never send an exitToHome.
-        if (toPackageName == currentPackageName || platformUIVersion == 1 )
-		{
-			if ( command == SYSTEM_ACTIVITY_EVENT_EXIT_TO_HOME )
-			{
-				// exit to home exits immediately!
-				exit( 0 );
-			}
-			else
-			{
-				NervGear::SystemActivities_AddEvent( utfCommand.ToStr() );
-			}
-		}
-		else
-		{
-			// this message is for another package, so ignore it
-            LOG( "Package '%s': ignoring SystemActivities intent for '%s'.", currentPackageName, toPackageName.c_str() );
-		}
-	}
-}
-
 } // extern "C"
 
 char const * ovr_GetVersionString()
@@ -741,30 +696,6 @@ void ovr_SendLaunchIntent( ovrMobile * ovr, const char * toPackageName, const ch
 
 bool ovr_StartSystemActivity_JSON( ovrMobile * ovr, const char * jsonText )
 {
-	LOG( "ovr_StartSystemActivity: %s", jsonText );
-	DROIDLOG( "OVRTimer", "ovr_StartSystemActivity" );
-
-	// Determine if the SystemActivities application is installed.
-	const char * destPackage = "com.oculus.systemactivities";
-	{
-		JavaString javaSystemActivityPackageName( ovr->Jni, destPackage );
-
-		const jmethodID mid = ovr_GetStaticMethodID( ovr->Jni, VrLibClass,
-			"packageIsInstalled", "(Landroid/app/Activity;Ljava/lang/String;)Z" );
-
-		bool isInstalled = ovr->Jni->CallStaticBooleanMethod( VrLibClass, mid,
-			*static_cast< jobject* >( &ovr->Parms.ActivityObject ), javaSystemActivityPackageName.GetJString() );
-
-		if ( !isInstalled )
-		{
-			WARN( "WARNING: failed to find PlatformActivity in System Activities package!" );
-			return false;
-		}
-
-		LOG( "Package %s : %s", destPackage, ( isInstalled ) ? "INSTALLED" : "NOT INSTALLED" );
-	}
-
-	ovr_SendIntent( ovr, "", destPackage, PUI_CLASS_NAME, jsonText, "", EXIT_TYPE_NONE );
 	return true;
 }
 

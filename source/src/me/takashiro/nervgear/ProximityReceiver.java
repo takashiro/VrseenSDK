@@ -25,11 +25,9 @@ public class ProximityReceiver extends BroadcastReceiver {
 
 	public static String MOUNT_HANDLED_INTENT = "com.oculus.mount_handled";
 	public static String PROXIMITY_SENSOR_INTENT = "android.intent.action.proximity_sensor";
-	public static String SYSTEM_ACTIVITY_INTENT = "com.oculus.system_activity";
 	
 	public static native void nativeProximitySensor(int onHead);
 	public static native void nativeMountHandled();
-	public static native void nativeSystemActivityIntent( Context context, String fromPackageName, String command, String uri );
 
 	static ProximityReceiver Receiver = new ProximityReceiver();
 	static boolean RegisteredReceiver = false;
@@ -43,7 +41,6 @@ public class ProximityReceiver extends BroadcastReceiver {
 			IntentFilter filter = new IntentFilter();
 			filter.addAction( PROXIMITY_SENSOR_INTENT );
 			filter.addAction( MOUNT_HANDLED_INTENT );
-			filter.addAction( SYSTEM_ACTIVITY_INTENT );
 
 			act.registerReceiver( Receiver, filter );
 			RegisteredReceiver = true;
@@ -74,17 +71,6 @@ public class ProximityReceiver extends BroadcastReceiver {
 		else if ( intent.getAction().equals( MOUNT_HANDLED_INTENT ) )
 		{
 			nativeMountHandled();
-		}
-		else if ( intent.getAction().equals( SYSTEM_ACTIVITY_INTENT ) ) 
-		{
-			String fromPackageName = VrLib.getPackageStringFromIntent( intent );
-			String command = VrLib.getCommandStringFromIntent( intent );
-			String uri = VrLib.getUriStringFromIntent( intent );
-			Log.d( TAG, "fromPackageName: '" + fromPackageName + "'" );
-			Log.d( TAG, "command: '" + command + "'" );
-			Log.d( TAG, "uri: '" + uri + "'" );
-
-			nativeSystemActivityIntent( context, fromPackageName, command, uri );
 		}
 	}
 

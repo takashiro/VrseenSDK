@@ -1985,7 +1985,8 @@ void AppLocal::VrThreadFunction()
 				}
 				else if ( event == KeyState::KEY_EVENT_LONG_PRESS )
 				{
-					StartSystemActivity( PUI_GLOBAL_MENU );
+                    //StartSystemActivity( PUI_GLOBAL_MENU );
+                    ovr_ExitActivity(OvrMobile, EXIT_TYPE_FINISH);
 				}
 			}
 
@@ -2003,8 +2004,8 @@ void AppLocal::VrThreadFunction()
 				if ( event == KeyState::KEY_EVENT_SHORT_PRESS )
 				{
 					consumedKey = true;
-					LOG( "BUTTON_BACK: confirming quit in platformUI" );
-					StartSystemActivity( PUI_CONFIRM_QUIT );
+                    LOG( "BUTTON_BACK: confirming quit in platformUI" );
+                    ovr_ExitActivity(OvrMobile, EXIT_TYPE_FINISH);
 				}
 			}
 		}
