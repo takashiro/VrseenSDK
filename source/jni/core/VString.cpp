@@ -37,7 +37,13 @@ String::String(const char* pdata)
     // Obtain length in bytes; it doesn't matter if _data is UTF8.
     UPInt size = pdata ? OVR_strlen(pdata) : 0;
     pData = allocDataCopy1(size, 0, pdata, size);
-};
+}
+
+String::String(const std::string &data)
+{
+    UPInt size = data.length();
+    pData = allocDataCopy1(size, 0, data.c_str(), size);
+}
 
 String::String(const char* pdata1, const char* pdata2, const char* pdata3)
 {

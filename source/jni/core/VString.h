@@ -20,6 +20,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "Std.h"
 #include "Alg.h"
 
+#include <string>
+
 namespace NervGear {
 
 // ***** Classes
@@ -134,6 +136,7 @@ public:
     // Constructors / Destructors.
     String();
     String(const char* data);
+    String(const std::string &data);
     String(const char* data1, const char* pdata2, const char* pdata3 = 0);
     String(const char* data, UPInt buflen);
     String(const String& src);
