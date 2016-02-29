@@ -1,26 +1,27 @@
 #pragma once
 
-namespace NervGear
-{
+#include "vglobal.h"
+
+NV_NAMESPACE_BEGIN
 
 template<class T>
-class SharedPointer
+class VSharedPointer
 {
 public:
-	SharedPointer()
+    VSharedPointer()
         : m_ref(new int(1))
         , m_data(new T)
     {
 	}
 
-	SharedPointer(const SharedPointer<T> &source)
+    VSharedPointer(const VSharedPointer<T> &source)
         : m_ref(source.m_ref)
         , m_data(source.m_data)
 	{
         (*m_ref)++;
     }
 
-	~SharedPointer()
+    ~VSharedPointer()
 	{
         (*m_ref)--;
         if (*m_ref == 0) {
@@ -29,7 +30,7 @@ public:
         }
 	}
 
-    SharedPointer<T> &operator=(const SharedPointer<T> &source)
+    VSharedPointer<T> &operator=(const VSharedPointer<T> &source)
     {
         m_ref = source.m_ref;
         m_data = source.m_data;
@@ -76,4 +77,4 @@ private:
     T *m_data;
 };
 
-}
+NV_NAMESPACE_END

@@ -175,7 +175,7 @@ HEADERS += \
     jni/core/Color.h \
     jni/core/OVR.h \
     jni/core/OVRVersion.h \
-    jni/core/sharedpointer.h \
+    jni/core/VSharedPointer.h \
     jni/core/String_Utils.h \
     jni/core/StringHash.h \
     jni/core/TypesafeNumber.h \

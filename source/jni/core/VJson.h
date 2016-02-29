@@ -6,7 +6,7 @@
 #include <istream>
 #include <ostream>
 
-#include "SharedPointer.h"
+#include "VSharedPointer.h"
 
 namespace NervGear
 {
@@ -99,7 +99,7 @@ protected:
 	std::vector<Json> &array();
 	std::map<std::string, Json> &object();
 
-	SharedPointer<JsonData> p_ptr;
+	VSharedPointer<JsonData> p_ptr;
 };
 
 class JsonData
