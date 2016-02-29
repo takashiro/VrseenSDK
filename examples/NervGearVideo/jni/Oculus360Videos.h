@@ -98,7 +98,7 @@ private:
 	GlProgram			FadedPanoramaProgram;
 	GlProgram			SingleColorTextureProgram;
 
-	Array< String > 	SearchPaths;
+	Array< VString > 	SearchPaths;
 	OvrVideosMetaData *	MetaData;
 	VideoBrowser *		Browser;
 	OvrVideoMenu *		VideoMenu;
@@ -114,7 +114,7 @@ private:
 	bool				UseSrgb;
 
 	// video vars
-	String				VideoName;
+	VString				VideoName;
 	SurfaceTexture	* 	MovieTexture;
 
 	// Set when MediaPlayer knows what the stream size is.

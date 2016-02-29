@@ -612,7 +612,7 @@ void AppLocal::InitFonts()
 {
     defaultFont = BitmapFont::Create();
 
-	String fontName;
+	VString fontName;
 	VrLocale::GetString( GetVrJni(), GetJavaObject(), "@string/font_name", "efigs.fnt", fontName );
 	fontName.insert( "res/raw/", 0 );
     if ( !defaultFont->Load( languagePackagePath.toCString(), fontName ) )
@@ -699,7 +699,7 @@ void AppLocal::CreateToast( const char * fmt, ... )
 void AppLocal::PlaySound( const char * name )
 {
 	// Get sound from SoundManager
-	String soundFile;
+	VString soundFile;
 
     if ( soundManager.GetSound( name, soundFile ) )
 	{
@@ -731,7 +731,7 @@ void AppLocal::StartSystemActivity( const char * command )
         vrJni->ExceptionClear();
 	}
 
-	NervGear::String imageName = "dependency_error";
+	NervGear::VString imageName = "dependency_error";
 	char language[128];
 	ovr_GetCurrentLanguage( OvrMobile, language, sizeof( language ) );
 	imageName += "_";
@@ -778,7 +778,7 @@ void AppLocal::OpenApplicationPackage()
 	ovr_OpenApplicationPackage( packageCodePath );
 }
 
-String AppLocal::GetInstalledPackagePath( const char * packageName ) const
+VString AppLocal::GetInstalledPackagePath( const char * packageName ) const
 {
 	jmethodID getInstalledPackagePathId = GetMethodID( "getInstalledPackagePath", "(Ljava/lang/String;)Ljava/lang/String;" );
 	if ( getInstalledPackagePathId != NULL )
@@ -787,10 +787,10 @@ String AppLocal::GetInstalledPackagePath( const char * packageName ) const
         JavaUTFChars resultStr( uiJni, static_cast< jstring >( uiJni->CallObjectMethod( javaObject, getInstalledPackagePathId, packageNameObj.GetJString() ) ) );
         if ( !uiJni->ExceptionOccurred() )
 		{
-			return String( resultStr );
+			return VString( resultStr );
 		}
 	}
-	return String();
+	return VString();
 }
 
 const char * AppLocal::GetLanguagePackagePath() const

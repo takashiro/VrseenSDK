@@ -63,7 +63,7 @@ namespace NervGear {
 		// ---
 		// Message
 		{
-			String outOfSpaceMsg;
+			VString outOfSpaceMsg;
 			VrLocale::GetString( m_app->GetVrJni(), m_app->GetJavaObject(),
 					"@string/out_of_memory",
 					"To use this app, please free up at least %dKB of storage space on your phone.",

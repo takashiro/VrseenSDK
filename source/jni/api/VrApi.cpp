@@ -604,7 +604,7 @@ void ovr_SendIntent( ovrMobile * ovr, const char * actionName, const char * toPa
 }
 
 void CreateSystemActivitiesCommand( const char * toPackageName, const char * command, const char * jsonExtra,
-		const char * uri, NervGear::String & out )
+		const char * uri, NervGear::VString & out )
 {
 	// serialize the command to a JSON object with version inf
     Json obj(Json::Object);
@@ -637,7 +637,7 @@ void ovr_BroadcastSystemActivityEvent( ovrMobile * ovr, const char * actionName,
 			( jsonExtra != NULL ) ? jsonExtra : "<NULL>",
 			( uri != NULL ) ? uri : "<NULL>" );
 
-	NervGear::String commandJson;
+	NervGear::VString commandJson;
 	CreateSystemActivitiesCommand( toPackageName, command, jsonExtra, uri, commandJson );
 
 	JavaString actionString( ovr->Jni, actionName );
@@ -851,9 +851,9 @@ static const char * ReadSmallFile( const char * path )
 	return buffer;
 }
 
-static NervGear::String StripLinefeed( const NervGear::String s )
+static NervGear::VString StripLinefeed( const NervGear::VString s )
 {
-	NervGear::String copy;
+	NervGear::VString copy;
     for ( int i = 0; i < (int) s.length() && s.at( i ) != '\n'; i++ )
 	{
         copy += s.at( i );
@@ -870,7 +870,7 @@ static int ReadFreq( const char * pathFormat, ... )
 	vsnprintf( fullPath, sizeof( fullPath ) - 1, pathFormat, argptr );
 	va_end( argptr );
 
-	NervGear::String clock = ReadSmallFile( fullPath );
+	NervGear::VString clock = ReadSmallFile( fullPath );
 	clock = StripLinefeed( clock );
 	if ( clock == "" )
 	{
@@ -1513,7 +1513,7 @@ ovrMobile * ovr_EnterVrMode( ovrModeParms parms, ovrHmdInfo * returnedHmdInfo )
 	const jmethodID getExternalStorageDirectoryMethodId = ovr_GetStaticMethodID( ovr->Jni, VrLibClass, "getExternalStorageDirectory", "()Ljava/lang/String;" );
 	jstring externalStorageDirectoryString = (jstring)ovr->Jni->CallStaticObjectMethod( VrLibClass, getExternalStorageDirectoryMethodId );
 	const char *externalStorageDirectoryStringUTFChars = ovr_GetStringUTFChars( ovr->Jni, externalStorageDirectoryString, NULL );
-	NervGear::String externalStorageDirectory = externalStorageDirectoryStringUTFChars;
+	NervGear::VString externalStorageDirectory = externalStorageDirectoryStringUTFChars;
 	ovr->Jni->ReleaseStringUTFChars( externalStorageDirectoryString, externalStorageDirectoryStringUTFChars );
 	ovr->Jni->DeleteLocalRef( externalStorageDirectoryString );
 
@@ -1785,7 +1785,7 @@ void ovr_HandleHmdEvents( ovrMobile * ovr )
 				// broadcast to background apps that mount has been handled
 				ovr_notifyMountHandled( ovr );
 
-				NervGear::String reorientMessage;
+				NervGear::VString reorientMessage;
 				CreateSystemActivitiesCommand( "", SYSTEM_ACTIVITY_EVENT_REORIENT, "", "", reorientMessage );
 				NervGear::SystemActivities_AddEvent( reorientMessage.toCString() );
 			}
@@ -2038,7 +2038,7 @@ const char * ovr_CreateSchedulingReport( ovrMobile * ovr )
 		}
 
 		snprintf( path, sizeof( path ) - 1, "/sys/devices/system/cpu/cpu%i/cpufreq/scaling_governor", core );
-		NervGear::String governor = ReadSmallFile( path );
+		NervGear::VString governor = ReadSmallFile( path );
 		governor = StripLinefeed( governor );
 
 		// we won't be able to read the cpu clock unless it has been chmod'd to 0666, but try anyway.
@@ -2052,7 +2052,7 @@ const char * ovr_CreateSchedulingReport( ovrMobile * ovr )
 									core, governor.toCString(), curFreqGHz, minFreqGHz, maxFreqGHz ) );
 	}
 
-	NervGear::String governor = ReadSmallFile( "/sys/class/kgsl/kgsl-3d0/pwrscale/trustzone/governor" );
+	NervGear::VString governor = ReadSmallFile( "/sys/class/kgsl/kgsl-3d0/pwrscale/trustzone/governor" );
 	governor = StripLinefeed( governor );
 
 	const uint64_t gpuUnit = ( ( NervGear::EglGetGpuType() & NervGear::GPU_TYPE_MALI ) != 0 ) ? 1000000LL : 1000LL;

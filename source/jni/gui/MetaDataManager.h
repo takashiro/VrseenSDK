@@ -26,8 +26,8 @@ namespace NervGear {
 struct OvrMetaDatum
 {
     int						id;
-    Array< String >			tags;
-    String					url;
+    Array< VString >			tags;
+    VString					url;
 
 protected:
 	OvrMetaDatum() {}
@@ -42,8 +42,8 @@ enum TagAction
 
 struct OvrMetaDataFileExtensions
 {
-    Array< String > goodExtensions;
-    Array< String > badExtensions;
+    Array< VString > goodExtensions;
+    Array< VString > badExtensions;
 };
 
 class OvrMetaData
@@ -54,8 +54,8 @@ public:
 		Category()
             : dirty( true )
 		{}
-        String 			categoryTag;
-        String 			label;
+        VString 			categoryTag;
+        VString 			label;
         Array< int > 	datumIndicies;
         bool 			dirty;
 	};
@@ -67,17 +67,17 @@ public:
 	virtual ~OvrMetaData() {}
 
 	// Init meta data from contents on disk
-    void					initFromDirectory( const char * relativePath, const Array< String > & searchPaths, const OvrMetaDataFileExtensions & fileExtensions );
+    void					initFromDirectory( const char * relativePath, const Array< VString > & searchPaths, const OvrMetaDataFileExtensions & fileExtensions );
 
 	// Init meta data from a passed in list of files
-    void					initFromFileList( const Array< String > & fileList, const OvrMetaDataFileExtensions & fileExtensions );
+    void					initFromFileList( const Array< VString > & fileList, const OvrMetaDataFileExtensions & fileExtensions );
 
 	// Check specific paths for media and reconcile against stored/new metadata (Maintained for SDK)
-    void					initFromDirectoryMergeMeta( const char * relativePath, const Array< String > & searchPaths,
+    void					initFromDirectoryMergeMeta( const char * relativePath, const Array< VString > & searchPaths,
 		const OvrMetaDataFileExtensions & fileExtensions, const char * metaFile, const char * packageName );
 
 	// File list passed in and we reconcile against stored/new metadata
-    void					initFromFileListMergeMeta( const Array< String > & fileList, const Array< String > & searchPaths,
+    void					initFromFileListMergeMeta( const Array< VString > & fileList, const Array< VString > & searchPaths,
 		const OvrMetaDataFileExtensions & fileExtensions, const char * appFileStoragePath, const char * metaFile, const NervGear::Json &storedMetaData );
 
     void					processRemoteMetaFile( const char * metaFileString, const int startInsertionIndex /* index to insert remote categories*/ );
@@ -86,11 +86,11 @@ public:
     void					renameCategory( const char * currentTag, const char * newName );
 
 	// Adds or removes tag and returns action taken
-    TagAction				toggleTag( OvrMetaDatum * data, const String & tag );
+    TagAction				toggleTag( OvrMetaDatum * data, const VString & tag );
 
 	// Returns metaData file if one is found, otherwise creates one using the default meta.json in the assets folder
     NervGear::Json createOrGetStoredMetaFile( const char * appFileStoragePath, const char * metaFile );
-    void					addCategory( const String & name );
+    void					addCategory( const VString & name );
 
     const Array< Category > categories() const 							{ return m_categories; }
     const Category & 		getCategory( const int index ) const 			{ return m_categories.at( index ); }
@@ -113,8 +113,8 @@ protected:
     virtual void            dedupMetaData( const Array< OvrMetaDatum * > & existingData, StringHash< OvrMetaDatum * > & newData );
 
 private:
-    Category * 				getCategory( const String & categoryName );
-    void					processMetaData( const NervGear::Json &dataFile, const Array< String > & searchPaths, const char * metaFile );
+    Category * 				getCategory( const VString & categoryName );
+    void					processMetaData( const NervGear::Json &dataFile, const Array< VString > & searchPaths, const char * metaFile );
     void					regenerateCategoryIndices();
     void					reconcileMetaData( StringHash< OvrMetaDatum * > & storedMetaData );
     void					reconcileCategories( Array< Category > & storedCategories );
@@ -124,10 +124,10 @@ private:
     bool 					shouldAddFile( const char * filename, const OvrMetaDataFileExtensions & fileExtensions ) const;
     void					extractVersion( const NervGear::Json &dataFile, double & outVersion ) const;
     void					extractCategories( const NervGear::Json &dataFile, Array< Category > & outCategories ) const;
-    void					extractMetaData( const NervGear::Json &dataFile, const Array< String > & searchPaths, StringHash< OvrMetaDatum * > & outMetaData ) const;
+    void					extractMetaData( const NervGear::Json &dataFile, const Array< VString > & searchPaths, StringHash< OvrMetaDatum * > & outMetaData ) const;
     void					extractRemoteMetaData( const NervGear::Json &dataFile, StringHash< OvrMetaDatum * > & outMetaData ) const;
 
-    String 					m_filePath;
+    VString 					m_filePath;
     Array< Category >		m_categories;
     Array< OvrMetaDatum * >	m_etaData;
     StringHash< int >		m_urlToIndex;

@@ -89,7 +89,7 @@ void MovieManager::LoadMovies()
 
 	const double start = ovr_GetTimeInSeconds();
 
-	Array<String> movieFiles = ScanMovieDirectories();
+	Array<VString> movieFiles = ScanMovieDirectories();
     LOG( "%i movies scanned, %3.1f seconds", movieFiles.sizeInt(), ovr_GetTimeInSeconds() - start );
 
     for( UPInt i = 0; i < movieFiles.size(); i++ )
@@ -129,9 +129,9 @@ void MovieManager::LoadMovies()
     LOG( "%i movies panels loaded, %3.1f seconds", Movies.sizeInt(), ovr_GetTimeInSeconds() - start );
 }
 
-MovieFormat MovieManager::FormatFromString( const String &formatString ) const
+MovieFormat MovieManager::FormatFromString( const VString &formatString ) const
 {
-    String format = formatString.toUpper();
+    VString format = formatString.toUpper();
 	if ( format == "2D" )
 	{
 		return VT_2D;
@@ -160,9 +160,9 @@ MovieFormat MovieManager::FormatFromString( const String &formatString ) const
 	return VT_UNKNOWN;
 }
 
-MovieCategory MovieManager::CategoryFromString( const String &categoryString ) const
+MovieCategory MovieManager::CategoryFromString( const VString &categoryString ) const
 {
-    String category = categoryString.toUpper();
+    VString category = categoryString.toUpper();
 	if ( category == "TRAILERS" )
 	{
 		return CATEGORY_TRAILERS;
@@ -173,7 +173,7 @@ MovieCategory MovieManager::CategoryFromString( const String &categoryString ) c
 
 void MovieManager::ReadMetaData( MovieDef *movie )
 {
-	String filename = movie->Filename;
+	VString filename = movie->Filename;
     filename.stripExtension();
     filename.append( ".txt" );
 
@@ -223,7 +223,7 @@ void MovieManager::ReadMetaData( MovieDef *movie )
 
 void MovieManager::LoadPoster( MovieDef *movie )
 {
-	String posterFilename = movie->Filename;
+	VString posterFilename = movie->Filename;
     posterFilename.stripExtension();
     posterFilename.append( ".png" );
 
@@ -274,7 +274,7 @@ void MovieManager::LoadPoster( MovieDef *movie )
 	MakeTextureClamped( movie->Poster );
 }
 
-bool MovieManager::IsSupportedMovieFormat( const String &extension ) const
+bool MovieManager::IsSupportedMovieFormat( const VString &extension ) const
 {
 	for( int i = 0; SupportedFormats[ i ] != NULL; i++ )
 	{
@@ -286,7 +286,7 @@ bool MovieManager::IsSupportedMovieFormat( const String &extension ) const
 	return false;
 }
 
-void MovieManager::MoviesInDirectory( Array<String> &movies, const char * dirName ) const {
+void MovieManager::MoviesInDirectory( Array<VString> &movies, const char * dirName ) const {
 	LOG( "scanning directory: %s", dirName );
 	DIR * dir = opendir( dirName );
 	if ( dir != NULL )
@@ -320,11 +320,11 @@ void MovieManager::MoviesInDirectory( Array<String> &movies, const char * dirNam
 	        	continue;
 	        }
 
-			String filename = entry->d_name;
-            String ext = filename.extension().toLower();
+			VString filename = entry->d_name;
+            VString ext = filename.extension().toLower();
 			if ( IsSupportedMovieFormat( ext ) )
 			{
-				String fullpath = dirName;
+				VString fullpath = dirName;
                 fullpath.append( "/" );
                 fullpath.append( filename );
                 LOG( "Adding movie: %s", fullpath.toCString() );
@@ -336,8 +336,8 @@ void MovieManager::MoviesInDirectory( Array<String> &movies, const char * dirNam
 	}
 }
 
-Array<String> MovieManager::ScanMovieDirectories() const {
-	Array<String> movies;
+Array<VString> MovieManager::ScanMovieDirectories() const {
+	Array<VString> movies;
 
 	for( int i = 0; searchDirs[ i ] != NULL; i++ )
 	{
@@ -350,12 +350,12 @@ Array<String> MovieManager::ScanMovieDirectories() const {
 	return movies;
 }
 
-const String MovieManager::GetMovieTitleFromFilename( const char *filepath )
+const VString MovieManager::GetMovieTitleFromFilename( const char *filepath )
 {
-	String filename = StringUtils::GetFileBaseString( filepath );
+	VString filename = StringUtils::GetFileBaseString( filepath );
 
 	// change _ to space
-    String displayName = StringUtils::ReplaceChar( filename.toCString(), '_', ' ' );
+    VString displayName = StringUtils::ReplaceChar( filename.toCString(), '_', ' ' );
 	return displayName;
 }
 

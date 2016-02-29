@@ -106,25 +106,25 @@ namespace NervGear
 		}
 	}
 
-	void OvrStoragePaths::PushBackSearchPathIfValid( EStorageType toStorage, EFolderType toFolder, const char * subfolder, Array<String> & searchPaths ) const
+	void OvrStoragePaths::PushBackSearchPathIfValid( EStorageType toStorage, EFolderType toFolder, const char * subfolder, Array<VString> & searchPaths ) const
 	{
 		PushBackSearchPathIfValidPermission( toStorage, toFolder, subfolder, R_OK, searchPaths );
 	}
 
-	void OvrStoragePaths::PushBackSearchPathIfValidPermission( EStorageType toStorage, EFolderType toFolder, const char * subfolder, mode_t permission, Array<String> & searchPaths ) const
+	void OvrStoragePaths::PushBackSearchPathIfValidPermission( EStorageType toStorage, EFolderType toFolder, const char * subfolder, mode_t permission, Array<VString> & searchPaths ) const
 	{
-		String checkPath;
+		VString checkPath;
 		if ( GetPathIfValidPermission( toStorage, toFolder, subfolder, permission, checkPath ) )
 		{
 			searchPaths.append( checkPath );
 		}
 	}
 
-	bool OvrStoragePaths::GetPathIfValidPermission( EStorageType toStorage, EFolderType toFolder, const char * subfolder, mode_t permission, String & outPath ) const
+	bool OvrStoragePaths::GetPathIfValidPermission( EStorageType toStorage, EFolderType toFolder, const char * subfolder, mode_t permission, VString & outPath ) const
 	{
 		if ( StorageFolderPaths[ toStorage ][ toFolder ].size() > 0 )
 		{
-			String checkPath = StorageFolderPaths[ toStorage ][ toFolder ] + subfolder;
+			VString checkPath = StorageFolderPaths[ toStorage ][ toFolder ] + subfolder;
 			if ( HasPermission( checkPath, permission ) )
 			{
 				outPath = checkPath;
@@ -152,7 +152,7 @@ namespace NervGear
 		return (long long )( jni->CallStaticLongMethod( VrLibClass, InternalCacheMemoryID, activityObj ) );
 	}
 
-	String GetFullPath( const Array<String>& searchPaths, const String & relativePath )
+	VString GetFullPath( const Array<VString>& searchPaths, const VString & relativePath )
 	{
 		if ( FileExists( relativePath ) )
 		{
@@ -162,17 +162,17 @@ namespace NervGear
 		const int numSearchPaths = searchPaths.sizeInt();
 		for ( int index = 0; index < numSearchPaths; ++index )
 		{
-			const String fullPath = searchPaths.at( index ) + String( relativePath );
+			const VString fullPath = searchPaths.at( index ) + VString( relativePath );
 			if ( FileExists( fullPath ) )
 			{
 				return fullPath;
 			}
 		}
 
-		return String();
+		return VString();
 	}
 
-	bool GetFullPath( const Array<String>& searchPaths, char const * relativePath, char * outPath, const int outMaxLen )
+	bool GetFullPath( const Array<VString>& searchPaths, char const * relativePath, char * outPath, const int outMaxLen )
 	{
 		OVR_ASSERT( outPath != NULL && outMaxLen >= 1 );
 
@@ -195,7 +195,7 @@ namespace NervGear
 		return false;
 	}
 
-	bool GetFullPath( const Array<String>& searchPaths, char const * relativePath, String & outPath )
+	bool GetFullPath( const Array<VString>& searchPaths, char const * relativePath, VString & outPath )
 	{
 		char largePath[1024];
 		bool result = GetFullPath( searchPaths, relativePath, largePath, sizeof( largePath ) );
@@ -206,7 +206,7 @@ namespace NervGear
 		return result;
 	}
 
-	bool ToRelativePath( const Array<String>& searchPaths, char const * fullPath, char * outPath, const int outMaxLen )
+	bool ToRelativePath( const Array<VString>& searchPaths, char const * fullPath, char * outPath, const int outMaxLen )
 	{
 		// check if the path starts with any of the search paths
 		const int n = searchPaths.sizeInt();
@@ -224,7 +224,7 @@ namespace NervGear
 		return false;
 	}
 
-	bool ToRelativePath( const Array<String>& searchPaths, char const * fullPath, String & outPath )
+	bool ToRelativePath( const Array<VString>& searchPaths, char const * fullPath, VString & outPath )
 	{
 		char largePath[1024];
 		bool result = ToRelativePath( searchPaths, fullPath, largePath, sizeof( largePath ) );

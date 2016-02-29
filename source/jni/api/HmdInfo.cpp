@@ -35,7 +35,7 @@ enum hmdType_t
 
 static void LogHmdType( hmdType_t hmdType )
 {
-	String str;
+	VString str;
 
 	switch ( hmdType )
 	{

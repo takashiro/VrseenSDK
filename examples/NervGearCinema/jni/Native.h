@@ -1,18 +1,3 @@
-/************************************************************************************
-
-Filename    :   Native.h
-Content     :
-Created     :	8/8/2014
-Authors     :   Jim Dosé
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-This source code is licensed under the BSD-style license found in the
-LICENSE file in the Cinema/ directory. An additional grant 
-of patent rights can be found in the PATENTS file in the same directory.
-
-*************************************************************************************/
-
 #if !defined( Native_h )
 #define Native_h
 
@@ -23,7 +8,7 @@ public:
 	static void			OneTimeInit( App *app, jclass mainActivityClass );
 	static void			OneTimeShutdown();
 
-	static String		GetExternalCacheDirectory( App *app );  	// returns path to app specific writable directory
+    static VString		GetExternalCacheDirectory( App *app );  	// returns path to app specific writable directory
 	static bool 		CreateVideoThumbnail( App *app, const char *videoFilePath, const char *outputFilePath, const int width, const int height );
 	static bool			CheckForMovieResume( App *app, const char * movieName );
 

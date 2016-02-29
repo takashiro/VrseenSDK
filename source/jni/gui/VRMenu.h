@@ -158,7 +158,7 @@ private:
 
     VRMenuEventHandler *	m_eventHandler;
 
-    String                  m_name;				// name of the menu
+    VString                  m_name;				// name of the menu
 
     VRMenuFlags_t			m_flags;				// various flags that dictate menu behavior
     float					m_menuDistance;		// distance from eyes

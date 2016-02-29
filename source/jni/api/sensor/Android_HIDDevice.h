@@ -46,7 +46,7 @@ public:
 
     virtual ~HIDDevice();
 
-    bool HIDInitialize(const String& path);
+    bool HIDInitialize(const VString& path);
     void HIDShutdown();
 
     virtual bool SetFeatureReport(UByte* data, UInt32 length);
@@ -60,7 +60,7 @@ public:
                             	HIDDeviceDesc* devDesc,
                             	bool* error);
 
-    bool OnDeviceAddedNotification(	const String& devNodePath,
+    bool OnDeviceAddedNotification(	const VString& devNodePath,
                          	 	 	HIDDeviceDesc* devDesc,
                          	 	 	bool* error);
 
@@ -75,7 +75,7 @@ private:
     HIDDeviceManager*       HIDManager;
 
     int                     Device;     // File handle to the device.
-    String                  DevNodePath;
+    VString                  DevNodePath;
     eDeviceMode             DeviceMode;
 
     HIDDeviceDesc           DevDesc;
@@ -104,11 +104,11 @@ public:
     virtual void Shutdown();
 
     virtual bool Enumerate(HIDEnumerateVisitor* enumVisitor);
-    virtual NervGear::HIDDevice* Open(const String& path);
+    virtual NervGear::HIDDevice* Open(const VString& path);
 
     // Fills HIDDeviceDesc by using the path.
     // Returns 'true' if successful, 'false' otherwise.
-    bool GetHIDDeviceDesc(const String& path, HIDDeviceDesc* pdevDesc) const;
+    bool GetHIDDeviceDesc(const VString& path, HIDDeviceDesc* pdevDesc) const;
 
     static HIDDeviceManager* CreateInternal(DeviceManager* manager);
 
@@ -120,23 +120,23 @@ private:
     bool initializeManager();
 
     bool initVendorProduct(int deviceHandle, HIDDeviceDesc* desc) const;
-    bool getFullDesc(int deviceHandle, const String& devNodePath, HIDDeviceDesc* desc) const;
+    bool getFullDesc(int deviceHandle, const VString& devNodePath, HIDDeviceDesc* desc) const;
 
-    bool getStringProperty(const String& devNodePath, const char* propertyName, NervGear::String* pResult) const;
-    bool getPath(int deviceHandle, const String& devNodePath, String* pPath) const;
+    bool getStringProperty(const VString& devNodePath, const char* propertyName, NervGear::VString* pResult) const;
+    bool getPath(int deviceHandle, const VString& devNodePath, VString* pPath) const;
 
     bool AddNotificationDevice(HIDDevice* device);
     bool RemoveNotificationDevice(HIDDevice* device);
 
 
     void scanForDevices(bool firstScan = false);
-    void getCurrentDevices(Array<String>* deviceList);
+    void getCurrentDevices(Array<VString>* deviceList);
     void removeDevicePath(HIDDevice* device);
 
     DeviceManager*        	DevManager;
 
     Array<HIDDevice*>     	NotificationDevices;
-    Array<String>			ScannedDevicePaths;
+    Array<VString>			ScannedDevicePaths;
     double 					TimeToPollForDevicesSeconds;
 };
 

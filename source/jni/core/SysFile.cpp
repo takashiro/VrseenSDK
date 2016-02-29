@@ -68,10 +68,10 @@ SysFile::SysFile() : DelegatedFile(0)
     m_file = *new UnopenedFile;
 }
 
-File* FileFILEOpen(const String& path, int flags, int mode);
+File* FileFILEOpen(const VString& path, int flags, int mode);
 
 // Opens a file
-SysFile::SysFile(const String& path, int flags, int mode) : DelegatedFile(0)
+SysFile::SysFile(const VString& path, int flags, int mode) : DelegatedFile(0)
 {
     open(path, flags, mode);
 }
@@ -79,7 +79,7 @@ SysFile::SysFile(const String& path, int flags, int mode) : DelegatedFile(0)
 
 // ** Open & management
 // Will fail if file's already open
-bool SysFile::open(const String& path, int flags, int mode)
+bool SysFile::open(const VString& path, int flags, int mode)
 {
     m_file = *FileFILEOpen(path, flags, mode);
     if ((!m_file) || (!m_file->isValid()))

@@ -1,18 +1,3 @@
-/************************************************************************************
-
-Filename    :   CinemaStrings.cpp
-Content     :	Text strings used by app.  Located in one place to make translation easier.
-Created     :	9/30/2014
-Authors     :   Jim Dosé
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-This source code is licensed under the BSD-style license found in the
-LICENSE file in the Cinema/ directory. An additional grant 
-of patent rights can be found in the PATENTS file in the same directory.
-
-*************************************************************************************/
-
 #include "CinemaStrings.h"
 #include "VrLocale.h"
 #include "CinemaApp.h"
@@ -20,25 +5,26 @@ of patent rights can be found in the PATENTS file in the same directory.
 
 namespace OculusCinema
 {
-String CinemaStrings::LoadingMenu_Title;
 
-String CinemaStrings::Category_Trailers;
-String CinemaStrings::Category_MyVideos;
+VString CinemaStrings::LoadingMenu_Title;
 
-String CinemaStrings::MovieSelection_Resume;
-String CinemaStrings::MovieSelection_Next;
+VString CinemaStrings::Category_Trailers;
+VString CinemaStrings::Category_MyVideos;
 
-String CinemaStrings::ResumeMenu_Title;
-String CinemaStrings::ResumeMenu_Resume;
-String CinemaStrings::ResumeMenu_Restart;
+VString CinemaStrings::MovieSelection_Resume;
+VString CinemaStrings::MovieSelection_Next;
 
-String CinemaStrings::TheaterSelection_Title;
+VString CinemaStrings::ResumeMenu_Title;
+VString CinemaStrings::ResumeMenu_Resume;
+VString CinemaStrings::ResumeMenu_Restart;
 
-String CinemaStrings::Error_NoVideosOnPhone;
-String CinemaStrings::Error_NoVideosInMyVideos;
-String CinemaStrings::Error_UnableToPlayMovie;
+VString CinemaStrings::TheaterSelection_Title;
 
-String CinemaStrings::MoviePlayer_Reorient;
+VString CinemaStrings::Error_NoVideosOnPhone;
+VString CinemaStrings::Error_NoVideosInMyVideos;
+VString CinemaStrings::Error_UnableToPlayMovie;
+
+VString CinemaStrings::MoviePlayer_Reorient;
 
 void CinemaStrings::OneTimeInit( CinemaApp &cinema )
 {

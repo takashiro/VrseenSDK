@@ -30,12 +30,12 @@ static const char * APP_SOUNDS = "assets/sound_assets.json";
 
 void OvrSoundManager::LoadSoundAssets()
 {
-	Array<String> searchPaths;
+	Array<VString> searchPaths;
 	searchPaths.append( "/storage/extSdCard/" );
 	searchPaths.append( "/sdcard/" );
 
 	// First look for sound definition using SearchPaths for dev
-	String foundPath;
+	VString foundPath;
 	if ( GetFullPath( searchPaths, DEV_SOUNDS_RELATIVE, foundPath ) )
 	{
 		std::ifstream fp(foundPath.toCString(), std::ios::binary);
@@ -76,12 +76,12 @@ bool OvrSoundManager::HasSound( const char * soundName )
 	return ( soundMapping != SoundMap.end() );
 }
 
-bool OvrSoundManager::GetSound( const char * soundName, String & outSound )
+bool OvrSoundManager::GetSound( const char * soundName, VString & outSound )
 {
 	auto soundMapping = SoundMap.find( std::string(soundName) );
 	if ( soundMapping != SoundMap.end() )
 	{
-		outSound = String(soundMapping->second.c_str());
+		outSound = VString(soundMapping->second.c_str());
 		return true;
 	}
 	else
@@ -92,7 +92,7 @@ bool OvrSoundManager::GetSound( const char * soundName, String & outSound )
 	return false;
 }
 
-void OvrSoundManager::LoadSoundAssetsFromPackage( const String & url, const char * jsonFile )
+void OvrSoundManager::LoadSoundAssetsFromPackage( const VString & url, const char * jsonFile )
 {
 	int bufferLength = 0;
 	void * 	buffer = NULL;
@@ -115,7 +115,7 @@ void OvrSoundManager::LoadSoundAssetsFromPackage( const String & url, const char
 	LoadSoundAssetsFromJsonObject( url, dataFile );
 }
 
-void OvrSoundManager::LoadSoundAssetsFromJsonObject( const String & url, const Json &dataFile )
+void OvrSoundManager::LoadSoundAssetsFromJsonObject( const VString & url, const Json &dataFile )
 {
 	OVR_ASSERT( dataFile.isValid() );
 

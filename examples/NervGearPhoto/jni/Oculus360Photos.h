@@ -122,12 +122,12 @@ private:
     SineFader			m_fader;
 
 	// Pano data and menus
-    Array< String > 			m_searchPaths;
+    Array< VString > 			m_searchPaths;
     OvrPhotosMetaData *			m_metaData;
     OvrPanoMenu *				m_panoMenu;
     PanoBrowser *				m_browser;
     const OvrPhotosMetaDatum *	m_activePano;
-    String						m_startupPano;
+    VString						m_startupPano;
 
 	// panorama vars
     DoubleBufferedTextureData	m_backgroundPanoTexData;

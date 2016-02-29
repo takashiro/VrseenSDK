@@ -28,9 +28,9 @@ enum MovieCategory {
 class MovieDef
 {
 public:
-	String			Filename;
+	VString			Filename;
 
-	String			Title;
+	VString			Title;
 
 	bool			Is3D;
 	MovieFormat 	Format;
@@ -39,7 +39,7 @@ public:
 	int				PosterWidth;
 	int				PosterHeight;
 
-	String			Theater;
+	VString			Theater;
 	MovieCategory	Category;
 
 	bool            IsEncrypted;
@@ -61,7 +61,7 @@ public:
 
 	Array<const MovieDef *>	GetMovieList( MovieCategory category ) const;
 
-	static const String 	GetMovieTitleFromFilename( const char *filepath );
+	static const VString 	GetMovieTitleFromFilename( const char *filepath );
 
 public:
     Array<MovieDef *> 		Movies;
@@ -75,13 +75,13 @@ private:
 	CinemaApp &				Cinema;
 
 	void					LoadMovies();
-	MovieFormat				FormatFromString( const String &formatString ) const;
-	MovieCategory 			CategoryFromString( const String &categoryString ) const;
+	MovieFormat				FormatFromString( const VString &formatString ) const;
+	MovieCategory 			CategoryFromString( const VString &categoryString ) const;
 	void 					ReadMetaData( MovieDef *movie );
 	void 					LoadPoster( MovieDef *movie );
-	void 					MoviesInDirectory( Array<String> &movies, const char * dirName ) const;
-	Array<String> 			ScanMovieDirectories() const;
-	bool					IsSupportedMovieFormat( const String &extension ) const;
+	void 					MoviesInDirectory( Array<VString> &movies, const char * dirName ) const;
+	Array<VString> 			ScanMovieDirectories() const;
+	bool					IsSupportedMovieFormat( const VString &extension ) const;
 };
 
 } // namespace OculusCinema

@@ -546,7 +546,7 @@ Ptr<DeviceCreateDesc> DeviceManagerImpl::AddDevice_NeedsLock(
 }
 
 Ptr<DeviceCreateDesc> DeviceManagerImpl::FindDevice(
-    const String& path,
+    const VString& path,
     DeviceType deviceType)
 {
     Lock::Locker deviceLock(GetLock());

@@ -24,14 +24,14 @@ namespace NervGear {
 // OvrVideosMetaDatum
 struct OvrVideosMetaDatum : public OvrMetaDatum
 {
-	String	Author;
-	String	Title;
-	String	ThumbnailUrl;
-	String  StreamingType;
-	String  StreamingProxy;
-	String  StreamingSecurityLevel;
+	VString	Author;
+	VString	Title;
+	VString	ThumbnailUrl;
+	VString  StreamingType;
+	VString  StreamingProxy;
+	VString  StreamingSecurityLevel;
 
-	OvrVideosMetaDatum( const String& url );
+	OvrVideosMetaDatum( const VString& url );
 };
 
 //==============================================================

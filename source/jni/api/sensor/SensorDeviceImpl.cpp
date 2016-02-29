@@ -939,7 +939,7 @@ void SensorDeviceImpl::openDevice()
 	if (pCalibration != NULL)
 	{
 		// Read the temperature data from the device.
-		StringBuffer str;
+		VStringBuffer str;
 
 #if 0
 		// Get device code from uuid.
@@ -971,7 +971,7 @@ void SensorDeviceImpl::openDevice()
 
 		LogText("NervGear::SensorDeviceImpl::openDevice - with serial code '%s'.\n", str.toCString());
 
-		pCalibration->Initialize(String(str));
+		pCalibration->Initialize(VString(str));
 	}
 }
 

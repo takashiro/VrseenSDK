@@ -63,17 +63,17 @@ public:
     // ** Constructor
     SysFile();
     // Opens a file
-    SysFile(const String& path, int flags = Open_Read|Open_Buffered, int mode = ReadWrite);
+    SysFile(const VString& path, int flags = Open_Read|Open_Buffered, int mode = ReadWrite);
 
     // ** Open & management
-    bool  open(const String& path, int flags = Open_Read|Open_Buffered, int mode = ReadWrite);
+    bool  open(const VString& path, int flags = Open_Read|Open_Buffered, int mode = ReadWrite);
 
-    OVR_FORCE_INLINE bool  Create(const String& path, int mode = ReadWrite)
+    OVR_FORCE_INLINE bool  Create(const VString& path, int mode = ReadWrite)
     { return open(path, Open_ReadWrite|Open_Create, mode); }
 
     // Helper function: obtain file statistics information. In OVR, this is used to detect file changes.
     // Return 0 if function failed, most likely because the file doesn't exist.
-    static bool OVR_CDECL getFileStat(FileStat* pfileStats, const String& path);
+    static bool OVR_CDECL getFileStat(FileStat* pfileStats, const VString& path);
 
     // ** Overrides
     // Overridden to provide re-open support

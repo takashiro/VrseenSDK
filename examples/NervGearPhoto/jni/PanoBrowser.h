@@ -59,10 +59,10 @@ namespace NervGear
         unsigned char *loadThumbnail( const char * filename, int & width, int & height ) override;
 
 		// Adds thumbnail extension to a file to find/create its thumbnail
-        String thumbName( const String & s ) override;
+        VString thumbName( const VString & s ) override;
 
 		// Called when no media found
-        void onMediaNotFound( App * app, String & title, String & imageFile, String & message ) override;
+        void onMediaNotFound( App * app, VString & title, VString & imageFile, VString & message ) override;
 
 		// Called if touch up is activated without a focused item
         bool onTouchUpNoFocused() override;
@@ -71,10 +71,10 @@ namespace NervGear
 
 	protected:
 		// Called from the base class when building category.
-        String getCategoryTitle( char const * key, char const * defaultStr ) const override;
+        VString getCategoryTitle( char const * key, char const * defaultStr ) const override;
 
 		// Called from the base class when building a panel.
-        String getPanelTitle( const OvrMetaDatum & panelData ) const override;
+        VString getPanelTitle( const OvrMetaDatum & panelData ) const override;
 
 	private:
 		PanoBrowser(

@@ -49,20 +49,20 @@ public:
 	virtual	unsigned char * loadThumbnail( const char * filename, int & width, int & height );
 
 	// Adds thumbnail extension to a file to find/create its thumbnail
-	virtual String	thumbName( const String & s );
+	virtual VString	thumbName( const VString & s );
 
 	// If we fail to load one type of thumbnail, try an alternative
-	virtual String	alternateThumbName( const String & s );
+	virtual VString	alternateThumbName( const VString & s );
 
 	// Display appropriate info if we fail to find media
-	virtual void onMediaNotFound( App * app, String & title, String & imageFile, String & message );
+	virtual void onMediaNotFound( App * app, VString & title, VString & imageFile, VString & message );
 
 protected:
 	// Called from the base class when building a cateory.
-	virtual String				getCategoryTitle( char const * key, char const * defaultStr ) const;
+	virtual VString				getCategoryTitle( char const * key, char const * defaultStr ) const;
 
 	// Called from the base class when building a panel
-	virtual String				getPanelTitle( const OvrMetaDatum & panelData ) const;
+	virtual VString				getPanelTitle( const OvrMetaDatum & panelData ) const;
 
 private:
 	VideoBrowser(

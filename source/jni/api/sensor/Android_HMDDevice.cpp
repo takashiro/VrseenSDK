@@ -19,7 +19,7 @@ namespace NervGear { namespace Android {
 
 //-------------------------------------------------------------------------------------
 
-HMDDeviceCreateDesc::HMDDeviceCreateDesc(DeviceFactory* factory, const String& displayDeviceName, long dispId)
+HMDDeviceCreateDesc::HMDDeviceCreateDesc(DeviceFactory* factory, const VString& displayDeviceName, long dispId)
         : DeviceCreateDesc(factory, Device_HMD),
           DisplayDeviceName(displayDeviceName),
           Contents(0),
@@ -158,7 +158,7 @@ bool HMDDeviceCreateDesc::UpdateMatchedCandidate(const DeviceCreateDesc& other,
     return true;
 }
 
-bool HMDDeviceCreateDesc::MatchDeviceByPath(const String& path)
+bool HMDDeviceCreateDesc::MatchDeviceByPath(const VString& path)
 {
     return DeviceId.CompareNoCase(path) == 0;
 }
@@ -175,7 +175,7 @@ HMDDeviceFactory &HMDDeviceFactory::GetInstance()
 void HMDDeviceFactory::EnumerateDevices(EnumerateVisitor& visitor)
 {
     // LDC - Use zero data for now.
-    HMDDeviceCreateDesc hmdCreateDesc(this, String("Android Device"), 0);
+    HMDDeviceCreateDesc hmdCreateDesc(this, VString("Android Device"), 0);
     hmdCreateDesc.SetScreenParameters(0, 0, 0, 0, 0.0f, 0.0f);
 
     // Notify caller about detected device. This will call EnumerateAddDevice

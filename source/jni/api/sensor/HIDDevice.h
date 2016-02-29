@@ -32,10 +32,10 @@ struct HIDDeviceDesc
     UInt16  VersionNumber;
     UInt16  Usage;
     UInt16  UsagePage;
-    String  Path;           // Platform specific.
-    String  Manufacturer;
-    String  Product;
-    String  SerialNumber;
+    VString  Path;           // Platform specific.
+    VString  Manufacturer;
+    VString  Product;
+    VString  SerialNumber;
 };
 
 // HIDEnumerateVisitor exposes a Visit interface called for every detected device
@@ -74,7 +74,7 @@ public:
     virtual bool Enumerate(HIDEnumerateVisitor* enumVisitor) = 0;
 
     // Open a HID device with the specified path.
-    virtual HIDDevice* Open(const String& path) = 0;
+    virtual HIDDevice* Open(const VString& path) = 0;
 
 protected:
     HIDDeviceManager()

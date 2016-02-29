@@ -23,10 +23,10 @@ namespace NervGear {
 //==============================================================
 // OvrPhotosMetaDatum
 struct OvrPhotosMetaDatum: public OvrMetaDatum {
-    String author;
-    String title;
+    VString author;
+    VString title;
 
-	OvrPhotosMetaDatum(const String& url);
+	OvrPhotosMetaDatum(const VString& url);
 };
 
 //==============================================================

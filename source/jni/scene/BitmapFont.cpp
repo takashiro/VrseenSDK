@@ -168,10 +168,10 @@ public:
 			float & height, float & ascent, float & descent, float & fontHeight,
 			float * lineWidths, int const maxLines, int & numLines) const;
 
-	void WordWrapText(String & inOutText, const float widthMeters,
+	void WordWrapText(VString & inOutText, const float widthMeters,
 			const float fontScale = 1.0f) const;
-	void WordWrapText(String & inOutText, const float widthMeters,
-			NervGear::Array<NervGear::String> wholeStrsList,
+	void WordWrapText(VString & inOutText, const float widthMeters,
+			NervGear::Array<NervGear::VString> wholeStrsList,
 			const float fontScale = 1.0f) const;
 
 	FontGlyphType const & GlyphForCharCode(uint32_t const charCode) const {
@@ -752,7 +752,7 @@ bool BitmapFontLocal::Load(char const * languagePackageName,
 
 	// strip any path from the image file name path and prepend the path from the .fnt file -- i.e. always
 	// require them to be loaded from the same directory.
-    String baseName = String(FontInfo.ImageFileName.c_str()).fileName();
+    VString baseName = VString(FontInfo.ImageFileName.c_str()).fileName();
 	LOG( "fontInfoFileName = %s", fontInfoFileName);
 	LOG( "image baseName = %s", baseName.toCString());
 
@@ -857,15 +857,15 @@ bool BitmapFontLocal::LoadImageFromBuffer(char const * imageName,
 
 //==============================
 // BitmapFontLocal::WordWrapText
-void BitmapFontLocal::WordWrapText(String & inOutText, const float widthMeters,
+void BitmapFontLocal::WordWrapText(VString & inOutText, const float widthMeters,
 		const float fontScale) const {
-	WordWrapText(inOutText, widthMeters, NervGear::Array<NervGear::String>(), fontScale);
+	WordWrapText(inOutText, widthMeters, NervGear::Array<NervGear::VString>(), fontScale);
 }
 
 //==============================
 // BitmapFontLocal::WordWrapText
-void BitmapFontLocal::WordWrapText(String & inOutText, const float widthMeters,
-		NervGear::Array<NervGear::String> wholeStrsList, const float fontScale) const {
+void BitmapFontLocal::WordWrapText(VString & inOutText, const float widthMeters,
+		NervGear::Array<NervGear::VString> wholeStrsList, const float fontScale) const {
 	float const xScale = FontInfo.ScaleFactorX * fontScale;
     const int32_t totalLength = (int) inOutText.length();
 	int32_t lastWhitespaceIndex = -1;
@@ -890,7 +890,7 @@ void BitmapFontLocal::WordWrapText(String & inOutText, const float widthMeters,
 			int endPos = pos + curWholeStrLen;
 
 			if (endPos < totalLength) {
-                String subInStr = inOutText.mid(pos, endPos);
+                VString subInStr = inOutText.mid(pos, endPos);
 				if (subInStr == wholeStrsList[i]) {
 					dontSplitUntilIdx = Alg::Max(dontSplitUntilIdx, endPos);
 				}

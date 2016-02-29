@@ -39,7 +39,7 @@ public:
 							Loaded( false ) { }
 
 	ModelFile *			SceneModel;
-	String				Filename;
+	VString				Filename;
 	GLuint				IconTexture;
 	bool				UseScreenGeometry;	// set to true to draw using the screen geoemetry (for curved screens)
 	bool				LobbyScreen;
@@ -70,7 +70,7 @@ public:
 	SceneDef *			BoxOffice;
 	SceneDef *			VoidScene;
 
-	String				LaunchIntent;
+	VString				LaunchIntent;
 
 	ModelFile *			DefaultSceneModel;
 

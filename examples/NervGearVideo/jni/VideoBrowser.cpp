@@ -112,47 +112,47 @@ unsigned char * VideoBrowser::loadThumbnail( const char * filename, int & width,
 	return NULL;
 }
 
-String VideoBrowser::thumbName( const String & s )
+VString VideoBrowser::thumbName( const VString & s )
 {
-	String	ts( s );
+	VString	ts( s );
 	ts = NervGear::StringUtils::SetFileExtensionString( ts, ".pvr" );
 	return ts;
 }
 
-String VideoBrowser::alternateThumbName( const String & s )
+VString VideoBrowser::alternateThumbName( const VString & s )
 {
-	String	ts( s );
+	VString	ts( s );
 	ts = NervGear::StringUtils::SetFileExtensionString( ts, ".thm" );
 	return ts;
 }
 
 
-void VideoBrowser::onMediaNotFound( App * app, String & title, String & imageFile, String & message )
+void VideoBrowser::onMediaNotFound( App * app, VString & title, VString & imageFile, VString & message )
 {
 	VrLocale::GetString( app->GetVrJni(), app->GetJavaObject(), "@string/app_name", "@string/app_name", title );
 	imageFile = "assets/sdcard.png";
 	VrLocale::GetString( app->GetVrJni(), app->GetJavaObject(), "@string/media_not_found", "@string/media_not_found", message );
 	BitmapFont & font = app->GetDefaultFont();
-	NervGear::Array< NervGear::String > wholeStrs;
+	NervGear::Array< NervGear::VString > wholeStrs;
 	wholeStrs.append( "Gear VR" );
 	font.WordWrapText( message, 1.4f, wholeStrs );
 }
 
-String VideoBrowser::getCategoryTitle( char const * key, char const * defaultStr ) const
+VString VideoBrowser::getCategoryTitle( char const * key, char const * defaultStr ) const
 {
-	String outStr;
+	VString outStr;
 	VrLocale::GetString( m_app->GetVrJni(), m_app->GetJavaObject(), key, defaultStr, outStr );
 	return outStr;
 }
 
-String VideoBrowser::getPanelTitle( const OvrMetaDatum & panelData ) const
+VString VideoBrowser::getPanelTitle( const OvrMetaDatum & panelData ) const
 {
 	const OvrVideosMetaDatum * const videosDatum = static_cast< const OvrVideosMetaDatum * const >( &panelData );
 	if ( videosDatum != NULL )
 	{
 		return videosDatum->Title;
 	}
-	return String();
+	return VString();
 }
 
 }

@@ -50,16 +50,16 @@ static Vector3f	MatrixForward( const Matrix4f & m )
 
 int StringCompare( const void *a, const void * b )
 {
-	const String *sa = ( String * )a;
-	const String *sb = ( String * )b;
+	const VString *sa = ( VString * )a;
+	const VString *sb = ( VString * )b;
 	return sa->CompareNoCase( *sb );
 }
 
-void SortStringArray( Array<String> & strings )
+void SortStringArray( Array<VString> & strings )
 {
 	if ( strings.size() > 1 )
 	{
-		qsort( ( void * )&strings[ 0 ], strings.size(), sizeof( String ), StringCompare );
+		qsort( ( void * )&strings[ 0 ], strings.size(), sizeof( VString ), StringCompare );
 	}
 }
 
@@ -67,15 +67,15 @@ void SortStringArray( Array<String> & strings )
 // Returns all files in all search paths, as unique relative paths.
 // Subdirectories will have a trailing slash.
 // All files and directories that start with . are skipped.
-StringHash< String > RelativeDirectoryFileList( const Array< String > & searchPaths, const char * RelativeDirPath )
+StringHash< VString > RelativeDirectoryFileList( const Array< VString > & searchPaths, const char * RelativeDirPath )
 {
 	//Check each of the mirrors in searchPaths and build up a list of unique strings
-	StringHash< String >	uniqueStrings;
+	StringHash< VString >	uniqueStrings;
 
 	const int numSearchPaths = searchPaths.sizeInt();
 	for ( int index = 0; index < numSearchPaths; ++index )
 	{
-		const String fullPath = searchPaths[index] + String( RelativeDirPath );
+		const VString fullPath = searchPaths[index] + VString( RelativeDirPath );
 
 		DIR * dir = opendir( fullPath.toCString() );
 		if ( dir != NULL )
@@ -89,14 +89,14 @@ StringHash< String > RelativeDirectoryFileList( const Array< String > & searchPa
 				}
 				if ( entry->d_type == DT_DIR )
 				{
-					String s( RelativeDirPath );
+					VString s( RelativeDirPath );
 					s += entry->d_name;
 					s += "/";
 					uniqueStrings.SetCaseInsensitive( s, s );
 				}
 				else if ( entry->d_type == DT_REG )
 				{
-					String s( RelativeDirPath );
+					VString s( RelativeDirPath );
 					s += entry->d_name;
 					uniqueStrings.SetCaseInsensitive( s, s );
 				}
@@ -112,9 +112,9 @@ StringHash< String > RelativeDirectoryFileList( const Array< String > & searchPa
 // Returns all files in the directory, already prepended by root.
 // Subdirectories will have a trailing slash.
 // All files and directories that start with . are skipped.
-Array<String> DirectoryFileList( const char * DirPath )
+Array<VString> DirectoryFileList( const char * DirPath )
 {
-	Array<String>	strings;
+	Array<VString>	strings;
 
 	DIR * dir = opendir( DirPath );
 	if ( dir != NULL )
@@ -128,14 +128,14 @@ Array<String> DirectoryFileList( const char * DirPath )
 			}
 			if ( entry->d_type == DT_DIR )
 			{
-				String s( DirPath );
+				VString s( DirPath );
 				s += entry->d_name;
 				s += "/";
 				strings.append( s );
 			}
 			else if ( entry->d_type == DT_REG )
 			{
-				String s( DirPath );
+				VString s( DirPath );
 				s += entry->d_name;
 				strings.append( s );
 			}
@@ -150,14 +150,14 @@ Array<String> DirectoryFileList( const char * DirPath )
 
 bool HasPermission( const char * fileOrDirName, mode_t mode )
 {
-	String s( fileOrDirName );
+	VString s( fileOrDirName );
 	int len = s.size();
 	if ( s[ len - 1 ] != '/' )
 	{	// directory ends in a slash
 		int	end = len - 1;
 		for ( ; end > 0 && s[ end ] != '/'; end-- )
 			;
-		s = String( &s[ 0 ], end );
+		s = VString( &s[ 0 ], end );
 	}
 	return access( s.toCString(), mode ) == 0;
 }
@@ -180,12 +180,12 @@ bool MatchesExtension( const char * fileName, const char * ext )
 	return ( 0 == strcmp( &fileName[ sLen - extLen ], ext ) );
 }
 
-String ExtractFileBase( const String & s )
+VString ExtractFileBase( const VString & s )
 {
 	const int l = s.size();
 	if ( l == 0 )
 	{
-		return String( "" );
+		return VString( "" );
 	}
 
 	int	end;
@@ -207,15 +207,15 @@ String ExtractFileBase( const String & s )
 		;
 	start++;
 
-	return String( &s[ start ], end - start );
+	return VString( &s[ start ], end - start );
 }
 
-String ExtractFile( const String & s )
+VString ExtractFile( const VString & s )
 {
 	const int l = s.size();
 	if ( l == 0 )
 	{
-		return String( "" );
+		return VString( "" );
 	}
 
 	int	end = l;
@@ -229,15 +229,15 @@ String ExtractFile( const String & s )
 		;
 	start++;
 
-	return String( &s[ start ], end - start );
+	return VString( &s[ start ], end - start );
 }
 
-String ExtractDirectory( const String & s )
+VString ExtractDirectory( const VString & s )
 {
 	const int l = s.size();
 	if ( l == 0 )
 	{
-		return String( "" );
+		return VString( "" );
 	}
 
 	int	end;
@@ -259,7 +259,7 @@ String ExtractDirectory( const String & s )
 		;
 	start++;
 
-	return String( &s[ start ], end - start );
+	return VString( &s[ start ], end - start );
 }
 
 void MakePath( const char * dirPath, mode_t mode )

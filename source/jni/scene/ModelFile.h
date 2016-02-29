@@ -39,7 +39,7 @@ struct MaterialParms
 
 struct ModelTexture
 {
-	String		name;
+	VString		name;
 	GlTexture	texid;
 };
 
@@ -54,7 +54,7 @@ enum ModelJointAnimation
 struct ModelJoint
 {
 	int					index;
-	String				name;
+	VString				name;
 	Matrix4f			transform;
 	ModelJointAnimation	animation;
 	Vector3f			parameters;
@@ -64,7 +64,7 @@ struct ModelJoint
 
 struct ModelTag
 {
-	String		name;
+	VString		name;
 	Matrix4f	matrix;
 	Vector4i	jointIndices;
 	Vector4f	jointWeights;
@@ -90,7 +90,7 @@ public:
 	Bounds3f					GetBounds() const;
 
 public:
-	String						FileName;
+	VString						FileName;
 	bool						UsingSrgbTextures;
 
 	// Textures will need to be freed if the model is unloaded,

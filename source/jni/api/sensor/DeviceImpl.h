@@ -186,7 +186,7 @@ public:
     virtual bool              MatchHIDDevice(const HIDDeviceDesc&) const { return false; }
 
     // Matches device by path.
-    virtual bool              MatchDeviceByPath(const String& /*path*/) { return false; }
+    virtual bool              MatchDeviceByPath(const VString& /*path*/) { return false; }
 //protected:
     DeviceFactory* const        pFactory;
     const DeviceType            Type;
@@ -423,7 +423,7 @@ public:
     virtual Ptr<DeviceCreateDesc> AddDevice_NeedsLock(const DeviceCreateDesc& createDesc);
 
     // Finds a device descriptor by path and optional type.
-    Ptr<DeviceCreateDesc> FindDevice(const String& path, DeviceType = Device_None);
+    Ptr<DeviceCreateDesc> FindDevice(const VString& path, DeviceType = Device_None);
 
     // Finds HID device by HIDDeviceDesc.
     Ptr<DeviceCreateDesc> FindHIDDevice(const HIDDeviceDesc&);

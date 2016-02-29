@@ -71,12 +71,12 @@ public:
 
 	// Word wraps passed in text based on the passed in width in meters.
 	// Turns any pre-existing escape characters into spaces.
-	virtual void WordWrapText(String & inOutText, const float widthMeters,
+	virtual void WordWrapText(VString & inOutText, const float widthMeters,
 			const float fontScale = 1.0f) const = 0;
 	// Another version of WordWrapText which doesn't break in between strings that are listed in wholeStrsList array
 	// Ex : "Gear VR", we don't want to break in between "Gear" & "VR" so we need to pass "Gear VR" string in wholeStrsList
-	virtual void WordWrapText(String & inOutText, const float widthMeters,
-			NervGear::Array<NervGear::String> wholeStrsList,
+	virtual void WordWrapText(VString & inOutText, const float widthMeters,
+			NervGear::Array<NervGear::VString> wholeStrsList,
 			const float fontScale = 1.0f) const = 0;
 
 protected:

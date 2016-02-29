@@ -23,7 +23,7 @@ class GyroTempCalibration
 public:
 	GyroTempCalibration();
 
-	void Initialize(const String& deviceSerialNumber);
+	void Initialize(const VString& deviceSerialNumber);
 
 	void GetAllTemperatureReports(Array<Array<TemperatureReport> >* tempReports);
 	void SetTemperatureReport(const TemperatureReport& tempReport);
@@ -39,17 +39,17 @@ private:
 		UInt32      Time;
 		Vector3d    Offset;
 	};
-	String GetBaseOVRPath(bool create_dir);
-	String GetCalibrationPath(bool create_dir);
-	void TokenizeString(Array<String>* tokens, const String& str, char separator);
-	void GyroCalibrationFromString(const String& str);
-	String GyroCalibrationToString();
+	VString GetBaseOVRPath(bool create_dir);
+	VString GetCalibrationPath(bool create_dir);
+	void TokenizeString(Array<VString>* tokens, const VString& str, char separator);
+	void GyroCalibrationFromString(const VString& str);
+	VString GyroCalibrationToString();
 	void GetTemperatureReport(int binIndex, int sampleIndex, TemperatureReport* tempReport);
 
 	void LoadFile();
 	void SaveFile();
 
-	String DeviceSerialNumber;
+	VString DeviceSerialNumber;
 	GyroCalibrationEntry GyroCalibration[GyroCalibrationNumBins][GyroCalibrationNumSamples];
 };
 

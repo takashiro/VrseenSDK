@@ -21,31 +21,31 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 namespace NervGear {
 
-#define String_LengthIsSize (UPInt(1) << String::Flag_LengthIsSizeShift)
+#define String_LengthIsSize (UPInt(1) << VString::Flag_LengthIsSizeShift)
 
-String::DataDesc String::NullData = {String_LengthIsSize, 1, {0} };
+VString::DataDesc VString::NullData = {String_LengthIsSize, 1, {0} };
 
 
-String::String()
+VString::VString()
 {
     pData = &NullData;
     pData->addRef();
 };
 
-String::String(const char* pdata)
+VString::VString(const char* pdata)
 {
     // Obtain length in bytes; it doesn't matter if _data is UTF8.
     UPInt size = pdata ? OVR_strlen(pdata) : 0;
     pData = allocDataCopy1(size, 0, pdata, size);
 }
 
-String::String(const std::string &data)
+VString::VString(const std::string &data)
 {
     UPInt size = data.length();
     pData = allocDataCopy1(size, 0, data.c_str(), size);
 }
 
-String::String(const char* pdata1, const char* pdata2, const char* pdata3)
+VString::VString(const char* pdata1, const char* pdata2, const char* pdata3)
 {
     // Obtain length in bytes; it doesn't matter if _data is UTF8.
     UPInt size1 = pdata1 ? OVR_strlen(pdata1) : 0;
@@ -58,24 +58,24 @@ String::String(const char* pdata1, const char* pdata2, const char* pdata3)
     pData = pdataDesc;
 }
 
-String::String(const char* pdata, UPInt size)
+VString::VString(const char* pdata, UPInt size)
 {
     OVR_ASSERT((size == 0) || (pdata != 0));
     pData = allocDataCopy1(size, 0, pdata, size);
 }
 
-String::String(const String& src)
+VString::VString(const VString& src)
 {
     pData = src.data();
     pData->addRef();
 }
 
-String::String(const StringBuffer& src)
+VString::VString(const VStringBuffer& src)
 {
     pData = allocDataCopy1(src.size(), 0, src.toCString(), src.size());
 }
 
-String::String(const wchar_t* data)
+VString::VString(const wchar_t* data)
 {
     pData = &NullData;
     pData->addRef();
@@ -85,9 +85,9 @@ String::String(const wchar_t* data)
 }
 
 
-String::DataDesc* String::allocData(UPInt size, UPInt lengthIsSize)
+VString::DataDesc* VString::allocData(UPInt size, UPInt lengthIsSize)
 {
-    String::DataDesc* pdesc;
+    VString::DataDesc* pdesc;
 
     if (size == 0)
     {
@@ -104,26 +104,26 @@ String::DataDesc* String::allocData(UPInt size, UPInt lengthIsSize)
 }
 
 
-String::DataDesc* String::allocDataCopy1(UPInt size, UPInt lengthIsSize,
+VString::DataDesc* VString::allocDataCopy1(UPInt size, UPInt lengthIsSize,
                                          const char* pdata, UPInt copySize)
 {
-    String::DataDesc* pdesc = allocData(size, lengthIsSize);
+    VString::DataDesc* pdesc = allocData(size, lengthIsSize);
     memcpy(pdesc->data, pdata, copySize);
     return pdesc;
 }
 
-String::DataDesc* String::allocDataCopy2(UPInt size, UPInt lengthIsSize,
+VString::DataDesc* VString::allocDataCopy2(UPInt size, UPInt lengthIsSize,
                                          const char* pdata1, UPInt copySize1,
                                          const char* pdata2, UPInt copySize2)
 {
-    String::DataDesc* pdesc = allocData(size, lengthIsSize);
+    VString::DataDesc* pdesc = allocData(size, lengthIsSize);
     memcpy(pdesc->data, pdata1, copySize1);
     memcpy(pdesc->data + copySize1, pdata2, copySize2);
     return pdesc;
 }
 
 
-UPInt String::length() const
+UPInt VString::length() const
 {
     // Optimize length accesses for non-UTF8 character strings.
     DataDesc* pdata = data();
@@ -144,7 +144,7 @@ UPInt String::length() const
 //static UInt32 String_CharSearch(const char* buf, )
 
 
-UInt32 String::at(UPInt index) const
+UInt32 VString::at(UPInt index) const
 {
     SPInt       i = (SPInt) index;
     DataDesc*   pdata = data();
@@ -162,7 +162,7 @@ UInt32 String::at(UPInt index) const
     return c;
 }
 
-UInt32 String::firstCharAt(UPInt index, const char** offset) const
+UInt32 VString::firstCharAt(UPInt index, const char** offset) const
 {
     DataDesc*   pdata = data();
     SPInt       i = (SPInt) index;
@@ -188,14 +188,14 @@ UInt32 String::firstCharAt(UPInt index, const char** offset) const
     return c;
 }
 
-UInt32 String::nextChar(const char** offset) const
+UInt32 VString::nextChar(const char** offset) const
 {
     return UTF8Util::DecodeNextChar(offset);
 }
 
 
 
-void String::append(UInt32 ch)
+void VString::append(UInt32 ch)
 {
     DataDesc*   pdata = data();
     UPInt       size = pdata->size();
@@ -212,7 +212,7 @@ void String::append(UInt32 ch)
 }
 
 
-void String::append(const wchar_t* pstr, SPInt len)
+void VString::append(const wchar_t* pstr, SPInt len)
 {
     if (!pstr)
         return;
@@ -230,7 +230,7 @@ void String::append(const wchar_t* pstr, SPInt len)
 }
 
 
-void String::append(const char* putf8str, SPInt utf8StrSz)
+void VString::append(const char* putf8str, SPInt utf8StrSz)
 {
     if (!putf8str || !utf8StrSz)
         return;
@@ -245,19 +245,19 @@ void String::append(const char* putf8str, SPInt utf8StrSz)
     pdata->release();
 }
 
-void    String::assign(const char* putf8str, UPInt size)
+void    VString::assign(const char* putf8str, UPInt size)
 {
     DataDesc* poldData = data();
     setData(allocDataCopy1(size, 0, putf8str, size));
     poldData->release();
 }
 
-void    String::operator = (const char* pstr)
+void    VString::operator = (const char* pstr)
 {
     assign(pstr, pstr ? OVR_strlen(pstr) : 0);
 }
 
-void    String::operator = (const wchar_t* pwstr)
+void    VString::operator = (const wchar_t* pwstr)
 {
     DataDesc*   poldData = data();
     UPInt       size = pwstr ? (UPInt)UTF8Util::GetEncodeStringSize(pwstr) : 0;
@@ -269,7 +269,7 @@ void    String::operator = (const wchar_t* pwstr)
 }
 
 
-void    String::operator = (const String& src)
+void    VString::operator = (const VString& src)
 {
     DataDesc*    psdata = src.data();
     DataDesc*    pdata = data();
@@ -280,14 +280,14 @@ void    String::operator = (const String& src)
 }
 
 
-void    String::operator = (const StringBuffer& src)
+void    VString::operator = (const VStringBuffer& src)
 {
     DataDesc* polddata = data();
     setData(allocDataCopy1(src.size(), 0, src.toCString(), src.size()));
     polddata->release();
 }
 
-void    String::operator += (const String& src)
+void    VString::operator += (const VString& src)
 {
     DataDesc   *pourData = data(),
                *psrcData = src.data();
@@ -301,21 +301,21 @@ void    String::operator += (const String& src)
 }
 
 
-String   String::operator + (const char* str) const
+VString   VString::operator + (const char* str) const
 {
-    String tmp1(*this);
+    VString tmp1(*this);
     tmp1 += (str ? str : "");
     return tmp1;
 }
 
-String   String::operator + (const String& src) const
+VString   VString::operator + (const VString& src) const
 {
-    String tmp1(*this);
+    VString tmp1(*this);
     tmp1 += src;
     return tmp1;
 }
 
-void    String::remove(UPInt posAt, SPInt removeLength)
+void    VString::remove(UPInt posAt, SPInt removeLength)
 {
     DataDesc*   pdata = data();
     UPInt       oldSize = pdata->size();
@@ -340,25 +340,25 @@ void    String::remove(UPInt posAt, SPInt removeLength)
 }
 
 
-String   String::mid(UPInt start, UPInt end) const
+VString   VString::mid(UPInt start, UPInt end) const
 {
     UPInt length = this->length();
     if ((start >= length) || (start >= end))
-        return String();
+        return VString();
 
     DataDesc* pdata = data();
 
     // If size matches, we know the exact index range.
     if (pdata->lengthIsSize())
-        return String(pdata->data + start, end - start);
+        return VString(pdata->data + start, end - start);
 
     // Get position of starting character.
     SPInt byteStart = UTF8Util::GetByteIndex(start, pdata->data, pdata->size());
     SPInt byteSize  = UTF8Util::GetByteIndex(end - start, pdata->data + byteStart, pdata->size()-byteStart);
-    return String(pdata->data + byteStart, (UPInt)byteSize);
+    return VString(pdata->data + byteStart, (UPInt)byteSize);
 }
 
-void String::clear()
+void VString::clear()
 {
     NullData.addRef();
     data()->release();
@@ -366,12 +366,12 @@ void String::clear()
 }
 
 
-String   String::toUpper() const
+VString   VString::toUpper() const
 {
     UInt32      c;
     const char* psource = data()->data;
     const char* pend = psource + data()->size();
-    String      str;
+    VString      str;
     SPInt       bufferOffset = 0;
     char        buffer[512];
 
@@ -390,12 +390,12 @@ String   String::toUpper() const
     return str;
 }
 
-String   String::toLower() const
+VString   VString::toLower() const
 {
     UInt32      c;
     const char* psource = data()->data;
     const char* pend = psource + data()->size();
-    String      str;
+    VString      str;
     SPInt       bufferOffset = 0;
     char        buffer[512];
 
@@ -416,7 +416,7 @@ String   String::toLower() const
 
 
 
-String& String::insert(const char* substr, UPInt posAt, SPInt strSize)
+VString& VString::insert(const char* substr, UPInt posAt, SPInt strSize)
 {
     DataDesc* poldData   = data();
     UPInt     oldSize    = poldData->size();
@@ -447,7 +447,7 @@ String& String::Insert(const UInt32* substr, UPInt posAt, SPInt len)
 }
 */
 
-UPInt String::insert(UInt32 c, UPInt posAt)
+UPInt VString::insert(UInt32 c, UPInt posAt)
 {
     char    buf[8];
     SPInt   index = 0;
@@ -459,7 +459,7 @@ UPInt String::insert(UInt32 c, UPInt posAt)
     return (UPInt)index;
 }
 
-void String::stripTrailing(const char * s)
+void VString::stripTrailing(const char * s)
 {
 	const UPInt len = OVR_strlen(s);
     if (length() >= len && right(len) == s)
@@ -468,12 +468,12 @@ void String::stripTrailing(const char * s)
 	}
 }
 
-int String::CompareNoCase(const char* a, const char* b)
+int VString::CompareNoCase(const char* a, const char* b)
 {
     return OVR_stricmp(a, b);
 }
 
-int String::CompareNoCase(const char* a, const char* b, SPInt len)
+int VString::CompareNoCase(const char* a, const char* b, SPInt len)
 {
     if (len)
     {
@@ -501,7 +501,7 @@ int String::CompareNoCase(const char* a, const char* b, SPInt len)
 // ***** Implement hash static functions
 
 // Hash function
-UPInt String::BernsteinHashFunction(const void* pdataIn, UPInt size, UPInt seed)
+UPInt VString::BernsteinHashFunction(const void* pdataIn, UPInt size, UPInt seed)
 {
     const UByte*    pdata   = (const UByte*) pdataIn;
     UPInt           h       = seed;
@@ -515,7 +515,7 @@ UPInt String::BernsteinHashFunction(const void* pdataIn, UPInt size, UPInt seed)
 }
 
 // Hash function, case-insensitive
-UPInt String::BernsteinHashFunctionCIS(const void* pdataIn, UPInt size, UPInt seed)
+UPInt VString::BernsteinHashFunctionCIS(const void* pdataIn, UPInt size, UPInt seed)
 {
     const UByte*    pdata = (const UByte*) pdataIn;
     UPInt           h = seed;
@@ -538,53 +538,53 @@ UPInt String::BernsteinHashFunctionCIS(const void* pdataIn, UPInt size, UPInt se
 
 #define OVR_SBUFF_DEFAULT_GROW_SIZE 512
 // Constructors / Destructor.
-StringBuffer::StringBuffer()
+VStringBuffer::VStringBuffer()
     : m_data(NULL), m_size(0), m_bufferSize(0), m_growSize(OVR_SBUFF_DEFAULT_GROW_SIZE), m_lengthIsSize(false)
 {
 }
 
-StringBuffer::StringBuffer(UPInt growSize)
+VStringBuffer::VStringBuffer(UPInt growSize)
     : m_data(NULL), m_size(0), m_bufferSize(0), m_growSize(OVR_SBUFF_DEFAULT_GROW_SIZE), m_lengthIsSize(false)
 {
     setGrowSize(growSize);
 }
 
-StringBuffer::StringBuffer(const char* data)
+VStringBuffer::VStringBuffer(const char* data)
     : m_data(NULL), m_size(0), m_bufferSize(0), m_growSize(OVR_SBUFF_DEFAULT_GROW_SIZE), m_lengthIsSize(false)
 {
     append(data);
 }
 
-StringBuffer::StringBuffer(const char* data, UPInt dataSize)
+VStringBuffer::VStringBuffer(const char* data, UPInt dataSize)
     : m_data(NULL), m_size(0), m_bufferSize(0), m_growSize(OVR_SBUFF_DEFAULT_GROW_SIZE), m_lengthIsSize(false)
 {
     append(data, dataSize);
 }
 
-StringBuffer::StringBuffer(const String& src)
+VStringBuffer::VStringBuffer(const VString& src)
     : m_data(NULL), m_size(0), m_bufferSize(0), m_growSize(OVR_SBUFF_DEFAULT_GROW_SIZE), m_lengthIsSize(false)
 {
     append(src.toCString(), src.size());
 }
 
-StringBuffer::StringBuffer(const StringBuffer& src)
+VStringBuffer::VStringBuffer(const VStringBuffer& src)
     : m_data(NULL), m_size(0), m_bufferSize(0), m_growSize(OVR_SBUFF_DEFAULT_GROW_SIZE), m_lengthIsSize(false)
 {
     append(src.toCString(), src.size());
 }
 
-StringBuffer::StringBuffer(const wchar_t* data)
+VStringBuffer::VStringBuffer(const wchar_t* data)
     : m_data(NULL), m_size(0), m_bufferSize(0), m_growSize(OVR_SBUFF_DEFAULT_GROW_SIZE), m_lengthIsSize(false)
 {
     *this = data;
 }
 
-StringBuffer::~StringBuffer()
+VStringBuffer::~VStringBuffer()
 {
     if (m_data)
         OVR_FREE(m_data);
 }
-void StringBuffer::setGrowSize(UPInt growSize)
+void VStringBuffer::setGrowSize(UPInt growSize)
 {
     if (growSize <= 16)
         m_growSize = 16;
@@ -596,7 +596,7 @@ void StringBuffer::setGrowSize(UPInt growSize)
     }
 }
 
-UPInt StringBuffer::length() const
+UPInt VStringBuffer::length() const
 {
     UPInt length, size = this->size();
     if (m_lengthIsSize)
@@ -609,7 +609,7 @@ UPInt StringBuffer::length() const
     return length;
 }
 
-void    StringBuffer::reserve(UPInt _size)
+void    VStringBuffer::reserve(UPInt _size)
 {
     if (_size >= m_bufferSize) // >= because of trailing zero! (!AB)
     {
@@ -620,7 +620,7 @@ void    StringBuffer::reserve(UPInt _size)
             m_data = (char*)OVR_REALLOC(m_data, m_bufferSize);
     }
 }
-void    StringBuffer::resize(UPInt _size)
+void    VStringBuffer::resize(UPInt _size)
 {
     reserve(_size);
     m_lengthIsSize = false;
@@ -629,7 +629,7 @@ void    StringBuffer::resize(UPInt _size)
         m_data[m_size] = 0;
 }
 
-void StringBuffer::clear()
+void VStringBuffer::clear()
 {
     resize(0);
     /*
@@ -643,7 +643,7 @@ void StringBuffer::clear()
     */
 }
 // Appends a character
-void     StringBuffer::append(UInt32 ch)
+void     VStringBuffer::append(UInt32 ch)
 {
     char    buff[8];
     UPInt   origSize = size();
@@ -660,7 +660,7 @@ void     StringBuffer::append(UInt32 ch)
 }
 
 // Append a string
-void     StringBuffer::append(const wchar_t* pstr, SPInt len)
+void     VStringBuffer::append(const wchar_t* pstr, SPInt len)
 {
     if (!pstr)
         return;
@@ -673,7 +673,7 @@ void     StringBuffer::append(const wchar_t* pstr, SPInt len)
     UTF8Util::EncodeString(m_data + origSize,  pstr, len);
 }
 
-void      StringBuffer::append(const char* putf8str, SPInt utf8StrSz)
+void      VStringBuffer::append(const char* putf8str, SPInt utf8StrSz)
 {
     if (!putf8str || !utf8StrSz)
         return;
@@ -688,7 +688,7 @@ void      StringBuffer::append(const char* putf8str, SPInt utf8StrSz)
 }
 
 
-void      StringBuffer::operator = (const char* pstr)
+void      VStringBuffer::operator = (const char* pstr)
 {
     pstr = pstr ? pstr : "";
     UPInt size = OVR_strlen(pstr);
@@ -696,7 +696,7 @@ void      StringBuffer::operator = (const char* pstr)
     memcpy(m_data, pstr, size);
 }
 
-void      StringBuffer::operator = (const wchar_t* pstr)
+void      VStringBuffer::operator = (const wchar_t* pstr)
 {
     pstr = pstr ? pstr : L"";
     UPInt size = (UPInt)UTF8Util::GetEncodeStringSize(pstr);
@@ -704,13 +704,13 @@ void      StringBuffer::operator = (const wchar_t* pstr)
     UTF8Util::EncodeString(m_data, pstr);
 }
 
-void      StringBuffer::operator = (const String& src)
+void      VStringBuffer::operator = (const VString& src)
 {
     resize(src.size());
     memcpy(m_data, src.toCString(), src.size());
 }
 
-void      StringBuffer::operator = (const StringBuffer& src)
+void      VStringBuffer::operator = (const VStringBuffer& src)
 {
     clear();
     append(src.toCString(), src.size());
@@ -718,7 +718,7 @@ void      StringBuffer::operator = (const StringBuffer& src)
 
 
 // Inserts substr at posAt
-void      StringBuffer::insert(const char* substr, UPInt posAt, SPInt len)
+void      VStringBuffer::insert(const char* substr, UPInt posAt, SPInt len)
 {
     UPInt     oldSize    = m_size;
     UPInt     insertSize = (len < 0) ? OVR_strlen(substr) : (UPInt)len;
@@ -736,7 +736,7 @@ void      StringBuffer::insert(const char* substr, UPInt posAt, SPInt len)
 }
 
 // Inserts character at posAt
-UPInt     StringBuffer::insert(UInt32 c, UPInt posAt)
+UPInt     VStringBuffer::insert(UInt32 c, UPInt posAt)
 {
     char    buf[8];
     SPInt   len = 0;

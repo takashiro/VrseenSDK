@@ -58,9 +58,9 @@ GyroTempCalibration::GyroTempCalibration()
 	}
 }
 
-String GyroTempCalibration::GetBaseOVRPath(bool create_dir)
+VString GyroTempCalibration::GetBaseOVRPath(bool create_dir)
 {
-    String path;
+    VString path;
 
 #if defined(OVR_OS_WIN32)
 
@@ -147,16 +147,16 @@ String GyroTempCalibration::GetBaseOVRPath(bool create_dir)
     return path;
 }
 
-void GyroTempCalibration::Initialize(const String& deviceSerialNumber)
+void GyroTempCalibration::Initialize(const VString& deviceSerialNumber)
 {
 	DeviceSerialNumber = deviceSerialNumber;
 
 	LoadFile();
 }
 
-String GyroTempCalibration::GetCalibrationPath(bool create_dir)
+VString GyroTempCalibration::GetCalibrationPath(bool create_dir)
 {
-    String path = GetBaseOVRPath(create_dir);
+    VString path = GetBaseOVRPath(create_dir);
     path += "/";
 	path += "GyroCalibration_";
 	path += DeviceSerialNumber;
@@ -165,7 +165,7 @@ String GyroTempCalibration::GetCalibrationPath(bool create_dir)
     return path;
 }
 
-void GyroTempCalibration::TokenizeString(Array<String>* tokens, const String& str, char separator)
+void GyroTempCalibration::TokenizeString(Array<VString>* tokens, const VString& str, char separator)
 {
 //	OVR_ASSERT(tokens != NULL);	// LDC - Asserts are currently not handled well on mobile.
 
@@ -181,7 +181,7 @@ void GyroTempCalibration::TokenizeString(Array<String>* tokens, const String& st
 			if (foundToken)
 			{
 				// Found end of token.
-                String token = str.mid(tokenStart, i);
+                VString token = str.mid(tokenStart, i);
 				tokens->append(token);
 				foundToken = false;
 			}
@@ -194,10 +194,10 @@ void GyroTempCalibration::TokenizeString(Array<String>* tokens, const String& st
 	}
 }
 
-void GyroTempCalibration::GyroCalibrationFromString(const String& str)
+void GyroTempCalibration::GyroCalibrationFromString(const VString& str)
 {
 
-	Array<String> tokens;
+	Array<VString> tokens;
 	TokenizeString(&tokens, str, ' ');
 
 	if (tokens.size() != GyroCalibrationNumBins * GyroCalibrationNumSamples * 6)
@@ -225,9 +225,9 @@ void GyroTempCalibration::GyroCalibrationFromString(const String& str)
 	}
 }
 
-String GyroTempCalibration::GyroCalibrationToString()
+VString GyroTempCalibration::GyroCalibrationToString()
 {
-	StringBuffer sb;
+	VStringBuffer sb;
 	for (int binIndex = 0; binIndex < GyroCalibrationNumBins; binIndex++)
 	{
 		for (int sampleIndex = 0; sampleIndex < GyroCalibrationNumSamples; sampleIndex++)
@@ -237,12 +237,12 @@ String GyroTempCalibration::GyroCalibrationToString()
 		}
 	}
 
-	return String(sb);
+	return VString(sb);
 }
 
 void GyroTempCalibration::LoadFile()
 {
-    String path = GetCalibrationPath(false);
+    VString path = GetCalibrationPath(false);
 
     Json root = Json::Load(path);
     if (!root.isObject() || root.size() < 2)
@@ -278,7 +278,7 @@ void GyroTempCalibration::LoadFile()
 
     // Parse calibration data.
     Json dataItem = root.value("Data");
-    String calibData(dataItem.toString().c_str());
+    VString calibData(dataItem.toString().c_str());
 	GyroCalibrationFromString(calibData);
 }
 
@@ -287,10 +287,10 @@ void GyroTempCalibration::SaveFile()
     Json root(Json::Object);
     root.insert("Calibration Version", TEMP_CALIBRATION_FILE_VERSION_2);
 
-	String str = GyroCalibrationToString();
+	VString str = GyroCalibrationToString();
     root.insert("Data", std::string(str.toCString()));
 
-	String path = GetCalibrationPath(true);
+	VString path = GetCalibrationPath(true);
     std::ofstream fp(path.toCString(), std::ios::binary);
     fp << root;
 }

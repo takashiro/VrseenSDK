@@ -49,8 +49,8 @@ protected:
         Contents_Distortion = 2,
         Contents_7Inch      = 4,
     };
-    String              DeviceId;
-    String              DisplayDeviceName;
+    VString              DeviceId;
+    VString              DisplayDeviceName;
     struct
     {
         int             X, Y;
@@ -67,7 +67,7 @@ protected:
     long                DisplayId;
 
 public:
-    HMDDeviceCreateDesc(DeviceFactory* factory, const String& displayDeviceName, long dispId);
+    HMDDeviceCreateDesc(DeviceFactory* factory, const VString& displayDeviceName, long dispId);
     HMDDeviceCreateDesc(const HMDDeviceCreateDesc& other);
 
     DeviceCreateDesc* Clone() const override
@@ -80,7 +80,7 @@ public:
     MatchResult MatchDevice(const DeviceCreateDesc& other, DeviceCreateDesc**) const override;
 
     // Matches device by path.
-    bool MatchDeviceByPath(const String& path) override;
+    bool MatchDeviceByPath(const VString& path) override;
 
     bool UpdateMatchedCandidate(const DeviceCreateDesc&, bool* newDeviceFlag = NULL) override;
 
@@ -144,7 +144,7 @@ protected:
     HMDDeviceCreateDesc* getDesc() const { return (HMDDeviceCreateDesc*)pCreateDesc.GetPtr(); }
 
     // User name for the profile used with this device.
-    String               m_profileName;
+    VString               m_profileName;
     mutable Ptr<Profile> m_pCachedProfile;
 };
 

@@ -27,7 +27,7 @@ SensorCalibration::SensorCalibration(SensorDevice* pSensor)
     this->pSensor = pSensor;
 };
 
-void SensorCalibration::Initialize(const String& deviceSerialNumber)
+void SensorCalibration::Initialize(const VString& deviceSerialNumber)
 {
 
 #ifdef USE_LOCAL_TEMPERATURE_CALIBRATION_STORAGE

@@ -2461,7 +2461,7 @@ void TimeWarpLocal::createFrameworkGraphics()
 	}
 	else
 	{	// Look for the default file
-		String fullPath = m_initParms.externalStorageDirectory + DefaultDistortionFile;
+		VString fullPath = m_initParms.externalStorageDirectory + DefaultDistortionFile;
 		LOG( "Loading distortion file: %s", fullPath.toCString() );
 		MemBufferFile defaultFile( fullPath );
 		if ( defaultFile.length > 0 )

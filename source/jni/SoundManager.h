@@ -50,11 +50,11 @@ public:
 
 	void	LoadSoundAssets();
 	bool	HasSound( const char * soundName );
-	bool	GetSound( const char * soundName, String & outSound );
+	bool	GetSound( const char * soundName, VString & outSound );
 
 private:
-	void	LoadSoundAssetsFromJsonObject( const String & url, const NervGear::Json &dataFile );
-	void	LoadSoundAssetsFromPackage( const String & url, const char * jsonFile );
+	void	LoadSoundAssetsFromJsonObject( const VString & url, const NervGear::Json &dataFile );
+	void	LoadSoundAssetsFromPackage( const VString & url, const char * jsonFile );
 
 	std::map<std::string, std::string> SoundMap;	// Maps hashed sound name to sound asset url
 };

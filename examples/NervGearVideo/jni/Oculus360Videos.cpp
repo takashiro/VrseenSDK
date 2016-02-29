@@ -311,7 +311,7 @@ void Oculus360Videos::OneTimeInit( const char * fromPackage, const char * launch
 
 	MetaData->initFromDirectory( videosDirectory, SearchPaths, fileExtensions );
 
-	String localizedAppName;
+	VString localizedAppName;
 	VrLocale::GetString( app->GetVrJni(), app->GetJavaObject(), videosLabel, videosLabel, localizedAppName );
 	MetaData->renameCategory( ExtractFileBase( videosDirectory ), localizedAppName );
 
@@ -479,9 +479,9 @@ void Oculus360Videos::Command( const char * msg )
 	else if ( MatchesHead( "startError", msg ) )
 	{
 		// FIXME: this needs to do some parameter magic to fix xliff tags
-		String message;
+		VString message;
 		VrLocale::GetString( app->GetVrJni(), app->GetJavaObject(), "@string/playback_failed", "@string/playback_failed", message );
-		String fileName = ExtractFile( ActiveVideo->url );
+		VString fileName = ExtractFile( ActiveVideo->url );
 		message = VrLocale::GetXliffFormattedString( message, fileName );
 		BitmapFont & font = app->GetDefaultFont();
 		font.WordWrapText( message, 1.0f );

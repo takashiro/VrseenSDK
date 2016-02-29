@@ -476,7 +476,7 @@ public:
 
 public:
 
-    MemoryFile (const String& fileName, const UByte *pBuffer, int buffSize)
+    MemoryFile (const VString& fileName, const UByte *pBuffer, int buffSize)
         : FilePath(fileName)
     {
         FileData  = pBuffer;
@@ -496,7 +496,7 @@ public:
     }
 private:
 
-    String       FilePath;
+    VString       FilePath;
     const UByte *FileData;
     int          FileSize;
     int          FileIndex;

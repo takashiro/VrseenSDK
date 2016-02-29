@@ -25,13 +25,13 @@ static const char * localPrefsFile = "/sdcard/.oculusprefs";
 class KeyPair
 {
 public:
-	NervGear::String	Key;
-	NervGear::String	Value;
+	NervGear::VString	Key;
+	NervGear::VString	Value;
 };
 
 NervGear::Array<KeyPair>	LocalPreferences;
 
-static NervGear::String ParseToken( const char * txt, const int start, const int stop, int & stopPoint  )
+static NervGear::VString ParseToken( const char * txt, const int start, const int stop, int & stopPoint  )
 {
 	// skip leading whitespace
 	int	startPoint = start;
@@ -43,7 +43,7 @@ static NervGear::String ParseToken( const char * txt, const int start, const int
 	{
 	}
 
-	return NervGear::String( txt + startPoint, stopPoint - startPoint );
+	return NervGear::VString( txt + startPoint, stopPoint - startPoint );
 }
 
 // Called on each resume, synchronously fetches the data.

@@ -381,7 +381,7 @@ void LoadModelFileJson( ModelFile & model,
 						const Json &material( surface.value( "material" ) );
 						if ( material.isObject() )
 						{
-							const String type = material.value( "type" ).toString().c_str();
+							const VString type = material.value( "type" ).toString().c_str();
 
 							if ( type == "opaque" )				{ materialType = MATERIAL_TYPE_OPAQUE; }
 							else if ( type == "perforated" )	{ materialType = MATERIAL_TYPE_PERFORATED; }

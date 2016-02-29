@@ -26,8 +26,8 @@ namespace NervGear {
 
 // ***** Classes
 
-class String;
-class StringBuffer;
+class VString;
+class VStringBuffer;
 
 
 //-----------------------------------------------------------------------------------
@@ -36,7 +36,7 @@ class StringBuffer;
 // String is UTF8 based string class with copy-on-write implementation
 // for assignment.
 
-class String
+class VString
 {
 protected:
 
@@ -130,21 +130,21 @@ protected:
 
     // Special constructor to avoid data initalization when used in derived class.
     struct NoConstructor { };
-    String(const NoConstructor&) { }
+    VString(const NoConstructor&) { }
 
 public:
     // Constructors / Destructors.
-    String();
-    String(const char* data);
-    String(const std::string &data);
-    String(const char* data1, const char* pdata2, const char* pdata3 = 0);
-    String(const char* data, UPInt buflen);
-    String(const String& src);
-    String(const StringBuffer& src);
-    explicit String(const wchar_t* data);
+    VString();
+    VString(const char* data);
+    VString(const std::string &data);
+    VString(const char* data1, const char* pdata2, const char* pdata3 = 0);
+    VString(const char* data, UPInt buflen);
+    VString(const VString& src);
+    VString(const VStringBuffer& src);
+    explicit VString(const wchar_t* data);
 
     // Destructor (Captain Obvious guarantees!)
-    ~String()
+    ~VString()
     {
         data()->release();
     }
@@ -194,17 +194,17 @@ public:
     // Returns a String that's a substring of this.
     //  -start is the index of the first UTF8 character you want to include.
     //  -end is the index one past the last UTF8 character you want to include.
-    String		mid(UPInt start, UPInt end) const;
+    VString		mid(UPInt start, UPInt end) const;
 
-    String		left(UPInt count) const { return mid(0, count); }
-    String		right(UPInt count) const { return mid(length() - count, length()); }
+    VString		left(UPInt count) const { return mid(0, count); }
+    VString		right(UPInt count) const { return mid(length() - count, length()); }
 
     // Case-conversion
-    String		toUpper() const;
-    String		toLower() const;
+    VString		toUpper() const;
+    VString		toLower() const;
 
     // Inserts substr at posAt
-    String&		insert(const char* substr, UPInt posAt, SPInt len = -1);
+    VString&		insert(const char* substr, UPInt posAt, SPInt len = -1);
 
     // Inserts character at posAt
     UPInt       insert(UInt32 c, UPInt posAt);
@@ -246,10 +246,10 @@ public:
     bool    hasExtension() const    { return HasExtension(toCString()); }
     bool    hHasProtocol() const     { return HasProtocol(toCString()); }
 
-    String  protocol() const;    // Returns protocol, if any, with trailing '://'.
-    String  path() const;        // Returns path with trailing '/'.
-    String  fileName() const;    // Returns filename, including extension.
-    String  extension() const;   // Returns extension with a dot.
+    VString  protocol() const;    // Returns protocol, if any, with trailing '://'.
+    VString  path() const;        // Returns path with trailing '/'.
+    VString  fileName() const;    // Returns filename, including extension.
+    VString  extension() const;   // Returns extension with a dot.
 
     void    stripProtocol();        // Strips front protocol, if any, from the string.
     void    stripExtension();       // Strips off trailing extension.
@@ -259,24 +259,24 @@ public:
     // Assignment
     void        operator =  (const char* str);
     void        operator =  (const wchar_t* str);
-    void        operator =  (const String& src);
-    void        operator =  (const StringBuffer& src);
+    void        operator =  (const VString& src);
+    void        operator =  (const VStringBuffer& src);
 
     // Addition
-    void        operator += (const String& src);
+    void        operator += (const VString& src);
     void        operator += (const char* psrc)       { append(psrc); }
     void        operator += (const wchar_t* psrc)    { append(psrc); }
     void        operator += (char  ch)               { append(ch); }
-    String      operator +  (const char* str) const;
-    String      operator +  (const String& src)  const;
+    VString      operator +  (const char* str) const;
+    VString      operator +  (const VString& src)  const;
 
     // Comparison
-    bool        operator == (const String& str) const
+    bool        operator == (const VString& str) const
     {
         return (OVR_strcmp(data()->data, str.data()->data)== 0);
     }
 
-    bool        operator != (const String& str) const
+    bool        operator != (const VString& str) const
     {
         return !operator == (str);
     }
@@ -296,7 +296,7 @@ public:
         return OVR_strcmp(data()->data, pstr) < 0;
     }
 
-    bool        operator <  (const String& str) const
+    bool        operator <  (const VString& str) const
     {
         return *this < str.data()->data;
     }
@@ -306,7 +306,7 @@ public:
         return OVR_strcmp(data()->data, pstr) > 0;
     }
 
-    bool        operator >  (const String& str) const
+    bool        operator >  (const VString& str) const
     {
         return *this > str.data()->data;
     }
@@ -315,7 +315,7 @@ public:
     {
         return CompareNoCase(data()->data, pstr);
     }
-    int CompareNoCase(const String& str) const
+    int CompareNoCase(const VString& str) const
     {
         return CompareNoCase(data()->data, str.toCString());
     }
@@ -337,8 +337,8 @@ public:
     // for SWF files with version before SWF 7.
     struct NoCaseKey
     {
-        const String* pStr;
-        NoCaseKey(const String &str) : pStr(&str){};
+        const VString* pStr;
+        NoCaseKey(const VString &str) : pStr(&str){};
     };
 
     bool    operator == (const NoCaseKey& strKey) const
@@ -353,25 +353,25 @@ public:
     // Hash functor used for strings.
     struct HashFunctor
     {
-        UPInt  operator()(const String& data) const
+        UPInt  operator()(const VString& data) const
         {
             UPInt  size = data.size();
-            return String::BernsteinHashFunction((const char*)data, size);
+            return VString::BernsteinHashFunction((const char*)data, size);
         }
     };
     // Case-insensitive hash functor used for strings. Supports additional
     // lookup based on NoCaseKey.
     struct NoCaseHashFunctor
     {
-        UPInt  operator()(const String& data) const
+        UPInt  operator()(const VString& data) const
         {
             UPInt  size = data.size();
-            return String::BernsteinHashFunctionCIS((const char*)data, size);
+            return VString::BernsteinHashFunctionCIS((const char*)data, size);
         }
         UPInt  operator()(const NoCaseKey& data) const
         {
             UPInt  size = data.pStr->size();
-            return String::BernsteinHashFunctionCIS((const char*)data.pStr->toCString(), size);
+            return VString::BernsteinHashFunctionCIS((const char*)data.pStr->toCString(), size);
         }
     };
 
@@ -381,7 +381,7 @@ public:
 //-----------------------------------------------------------------------------------
 // ***** String Buffer used for Building Strings
 
-class StringBuffer
+class VStringBuffer
 {
     char*           m_data;
     UPInt           m_size;
@@ -392,14 +392,14 @@ class StringBuffer
 public:
 
     // Constructors / Destructor.
-    StringBuffer();
-    explicit StringBuffer(UPInt growSize);
-    StringBuffer(const char* data);
-    StringBuffer(const char* data, UPInt buflen);
-    StringBuffer(const String& src);
-    StringBuffer(const StringBuffer& src);
-    explicit StringBuffer(const wchar_t* data);
-    ~StringBuffer();
+    VStringBuffer();
+    explicit VStringBuffer(UPInt growSize);
+    VStringBuffer(const char* data);
+    VStringBuffer(const char* data, UPInt buflen);
+    VStringBuffer(const VString& src);
+    VStringBuffer(const VStringBuffer& src);
+    explicit VStringBuffer(const wchar_t* data);
+    ~VStringBuffer();
 
 
     // Modify grow size used for growing/shrinking the buffer.
@@ -453,11 +453,11 @@ public:
     // Assignment
     void        operator =  (const char* str);
     void        operator =  (const wchar_t* str);
-    void        operator =  (const String& src);
-    void        operator =  (const StringBuffer& src);
+    void        operator =  (const VString& src);
+    void        operator =  (const VStringBuffer& src);
 
     // Addition
-    void        operator += (const String& src)      { append(src.toCString(),src.size()); }
+    void        operator += (const VString& src)      { append(src.toCString(),src.size()); }
     void        operator += (const char* psrc)       { append(psrc); }
     void        operator += (const wchar_t* psrc)    { append(psrc); }
     void        operator += (char  ch)               { append(ch); }
@@ -504,7 +504,7 @@ public:
         : m_str(pstr), m_size(sz) {}
     StringDataPtr(const char* pstr)
         : m_str(pstr), m_size((pstr != NULL) ? OVR_strlen(pstr) : 0) {}
-    explicit StringDataPtr(const String& str)
+    explicit StringDataPtr(const VString& str)
         : m_str(str.toCString()), m_size(str.size()) {}
     template <typename T, int N>
     StringDataPtr(const T (&v)[N])
@@ -618,7 +618,7 @@ public:
     {
         UPInt operator()(const StringDataPtr& data) const
         {
-            return String::BernsteinHashFunction(data.toCString(), data.size());
+            return VString::BernsteinHashFunction(data.toCString(), data.size());
         }
     };
 

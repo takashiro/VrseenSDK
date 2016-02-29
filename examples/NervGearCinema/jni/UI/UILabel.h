@@ -20,9 +20,9 @@ public:
 	void 								AddToMenu( UIMenu *menu, UIWidget *parent = NULL );
 
 	void								SetText( const char *text );
-	void								SetText( const String &text );
+	void								SetText( const VString &text );
 	void								SetTextWordWrapped( char const * text, class BitmapFont const & font, float const widthInMeters );
-	const String & 						GetText() const;
+	const VString & 						GetText() const;
 
 	void								SetFontScale( float const scale );
 	float 								GetFontScale() const;

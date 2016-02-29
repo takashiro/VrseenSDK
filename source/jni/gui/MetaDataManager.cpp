@@ -44,14 +44,14 @@ static bool OvrMetaDatumIdComparator( const OvrMetaDatum * a, const OvrMetaDatum
 	return a->id < b->id;
 }
 
-void OvrMetaData::initFromDirectory( const char * relativePath, const Array< String > & searchPaths, const OvrMetaDataFileExtensions & fileExtensions )
+void OvrMetaData::initFromDirectory( const char * relativePath, const Array< VString > & searchPaths, const OvrMetaDataFileExtensions & fileExtensions )
 {
 	LOG( "OvrMetaData::InitFromDirectory( %s )", relativePath );
 
 	// Find all the files - checks all search paths
-	StringHash< String > uniqueFileList = RelativeDirectoryFileList( searchPaths, relativePath );
-	Array<String> fileList;
-	for ( StringHash< String >::ConstIterator iter = uniqueFileList.Begin(); iter != uniqueFileList.End(); ++iter )
+	StringHash< VString > uniqueFileList = RelativeDirectoryFileList( searchPaths, relativePath );
+	Array<VString> fileList;
+	for ( StringHash< VString >::ConstIterator iter = uniqueFileList.Begin(); iter != uniqueFileList.End(); ++iter )
 	{
 		fileList.append( iter->First );
 	}
@@ -63,12 +63,12 @@ void OvrMetaData::initFromDirectory( const char * relativePath, const Array< Str
 	currentCategory.label = currentCategory.categoryTag;
 
 	LOG( "OvrMetaData start category: %s", currentCategory.categoryTag.toCString() );
-	Array< String > subDirs;
+	Array< VString > subDirs;
 	// Grab the categories and loose files
 	for ( int i = 0; i < fileList.sizeInt(); i++ )
 	{
-		const String & s = fileList[ i ];
-		const String fileBase = ExtractFileBase( s );
+		const VString & s = fileList[ i ];
+		const VString fileBase = ExtractFileBase( s );
 		// subdirectory - add category
 		if ( MatchesExtension( s, "/" ) )
 		{
@@ -120,19 +120,19 @@ void OvrMetaData::initFromDirectory( const char * relativePath, const Array< Str
 	// Recurse into subdirs
 	for ( int i = 0; i < subDirs.sizeInt(); ++i )
 	{
-		const String & subDir = subDirs.at( i );
+		const VString & subDir = subDirs.at( i );
         initFromDirectory( subDir.toCString(), searchPaths, fileExtensions );
 	}
 }
 
-void OvrMetaData::initFromFileList( const Array< String > & fileList, const OvrMetaDataFileExtensions & fileExtensions )
+void OvrMetaData::initFromFileList( const Array< VString > & fileList, const OvrMetaDataFileExtensions & fileExtensions )
 {
 	// Create unique categories
 	StringHash< int > uniqueCategoryList;
 	for ( int i = 0; i < fileList.sizeInt(); ++i )
 	{
-		const String & filePath = fileList.at( i );
-		const String categoryTag = ExtractDirectory( fileList.at( i ) );
+		const VString & filePath = fileList.at( i );
+		const VString categoryTag = ExtractDirectory( fileList.at( i ) );
 		StringHash< int >::ConstIterator iter = uniqueCategoryList.Find( categoryTag );
 		int catIndex = -1;
 		if ( iter == uniqueCategoryList.End() )
@@ -205,7 +205,7 @@ Json LoadPackageMetaFile( const char * metaFile )
 {
 	int bufferLength = 0;
 	void * 	buffer = NULL;
-	String assetsMetaFile = "assets/";
+	VString assetsMetaFile = "assets/";
 	assetsMetaFile += metaFile;
 	ovr_ReadFileFromApplicationPackage( assetsMetaFile.toCString(), bufferLength, buffer );
 	if ( !buffer )
@@ -250,7 +250,7 @@ void OvrMetaData::writeMetaFile( const char * metaFile ) const
 	{
 		int bufferLength = 0;
 		void * 	buffer = NULL;
-		String assetsMetaFile = "assets/";
+		VString assetsMetaFile = "assets/";
 		assetsMetaFile += metaFile;
 		ovr_ReadFileFromApplicationPackage( assetsMetaFile.toCString(), bufferLength, buffer );
 		if ( !buffer )
@@ -274,12 +274,12 @@ void OvrMetaData::writeMetaFile( const char * metaFile ) const
 	}
 }
 
-void OvrMetaData::initFromDirectoryMergeMeta( const char * relativePath, const Array< String > & searchPaths,
+void OvrMetaData::initFromDirectoryMergeMeta( const char * relativePath, const Array< VString > & searchPaths,
 	const OvrMetaDataFileExtensions & fileExtensions, const char * metaFile, const char * packageName )
 {
 	LOG( "OvrMetaData::InitFromDirectoryMergeMeta" );
 
-	String appFileStoragePath = "/data/data/";
+	VString appFileStoragePath = "/data/data/";
 	appFileStoragePath += packageName;
 	appFileStoragePath += "/files/";
 
@@ -293,7 +293,7 @@ void OvrMetaData::initFromDirectoryMergeMeta( const char * relativePath, const A
 	processMetaData( dataFile, searchPaths, metaFile );
 }
 
-void OvrMetaData::initFromFileListMergeMeta( const Array< String > & fileList, const Array< String > & searchPaths,
+void OvrMetaData::initFromFileListMergeMeta( const Array< VString > & fileList, const Array< VString > & searchPaths,
 	const OvrMetaDataFileExtensions & fileExtensions, const char * appFileStoragePath, const char * metaFile, const NervGear::Json &storedMetaData )
 {
 	LOG( "OvrMetaData::InitFromFileListMergeMeta" );
@@ -374,7 +374,7 @@ void OvrMetaData::processRemoteMetaFile( const char * metaFileString, const int 
 	}
 }
 
-void OvrMetaData::processMetaData( const NervGear::Json &dataFile, const Array< String > & searchPaths, const char * metaFile )
+void OvrMetaData::processMetaData( const NervGear::Json &dataFile, const Array< VString > & searchPaths, const char * metaFile )
 {
 	if ( dataFile.isValid() )
 	{
@@ -611,7 +611,7 @@ void OvrMetaData::extractCategories(const Json &dataFile, Array< Category > & ou
 	}
 }
 
-void OvrMetaData::extractMetaData(const Json &dataFile, const Array< String > & searchPaths, StringHash< OvrMetaDatum * > & outMetaData ) const
+void OvrMetaData::extractMetaData(const Json &dataFile, const Array< VString > & searchPaths, StringHash< OvrMetaDatum * > & outMetaData ) const
 {
 	if ( dataFile.isInvalid() )
 	{
@@ -641,14 +641,14 @@ void OvrMetaData::extractMetaData(const Json &dataFile, const Array< String > & 
 					for (const Json &tag : elements) {
 						if ( tag.isObject() )
 						{
-							metaDatum->tags.append(String(tag.value( CATEGORY ).toString().c_str()));
+							metaDatum->tags.append(VString(tag.value( CATEGORY ).toString().c_str()));
 						}
 					}
 				}
 
 				OVR_ASSERT( !metaDatum->tags.isEmpty() );
 
-				const String relativeUrl( datum.value( URL_INNER ).toString().c_str() );
+				const VString relativeUrl( datum.value( URL_INNER ).toString().c_str() );
 				metaDatum->url = relativeUrl;
 				bool foundPath = false;
                 const bool isRemote = this->isRemote( metaDatum );
@@ -716,7 +716,7 @@ void OvrMetaData::extractRemoteMetaData( const Json &dataFile, StringHash< OvrMe
 					for (const Json &tag : elements) {
 						if ( tag.isObject() )
 						{
-							metaDatum->tags.append( String(tag.value( CATEGORY ).toString().c_str()) );
+							metaDatum->tags.append( VString(tag.value( CATEGORY ).toString().c_str()) );
 						}
 					}
 				}
@@ -754,7 +754,7 @@ void OvrMetaData::regenerateCategoryIndices()
 	for ( int metaDataIndex = 0; metaDataIndex < m_etaData.sizeInt(); ++metaDataIndex )
 	{
 		OvrMetaDatum & metaDatum = *m_etaData.at( metaDataIndex );
-		Array< String > & tags = metaDatum.tags;
+		Array< VString > & tags = metaDatum.tags;
 
 		OVR_ASSERT( metaDatum.tags.sizeInt() > 0 );
 		if ( tags.sizeInt() == 1 )
@@ -771,7 +771,7 @@ void OvrMetaData::regenerateCategoryIndices()
 	for ( int metaDataIndex = 0; metaDataIndex < m_etaData.sizeInt(); ++metaDataIndex )
 	{
 		OvrMetaDatum & datum = *m_etaData.at( metaDataIndex );
-		Array< String > & tags = datum.tags;
+		Array< VString > & tags = datum.tags;
 
 		OVR_ASSERT( tags.sizeInt() > 0 );
 
@@ -787,7 +787,7 @@ void OvrMetaData::regenerateCategoryIndices()
 
 		for ( int tagIndex = 0; tagIndex < tags.sizeInt(); ++tagIndex )
 		{
-			const String & tag = tags[ tagIndex ];
+			const VString & tag = tags[ tagIndex ];
 			if ( !tag.isEmpty() )
 			{
 				if ( Category * category = getCategory( tag ) )
@@ -861,7 +861,7 @@ Json OvrMetaData::metaDataToJson() const
 	return DataFile;
 }
 
-TagAction OvrMetaData::toggleTag( OvrMetaDatum * metaDatum, const String & newTag )
+TagAction OvrMetaData::toggleTag( OvrMetaDatum * metaDatum, const VString & newTag )
 {
 	Json DataFile = Json::Load( m_filePath );
 	if ( DataFile.isInvalid() )
@@ -922,14 +922,14 @@ TagAction OvrMetaData::toggleTag( OvrMetaDatum * metaDatum, const String & newTa
 	return action;
 }
 
-void OvrMetaData::addCategory( const String & name )
+void OvrMetaData::addCategory( const VString & name )
 {
 	Category cat;
 	cat.categoryTag = name;
 	m_categories.append( cat );
 }
 
-OvrMetaData::Category * OvrMetaData::getCategory( const String & categoryName )
+OvrMetaData::Category * OvrMetaData::getCategory( const VString & categoryName )
 {
 	const int numCategories = m_categories.sizeInt();
 	for ( int i = 0; i < numCategories; ++i )
@@ -969,7 +969,7 @@ bool OvrMetaData::shouldAddFile( const char * filename, const OvrMetaDataFileExt
 	const int pathLen = OVR_strlen( filename );
 	for ( int index = 0; index < fileExtensions.badExtensions.sizeInt(); ++index )
 	{
-		const String & ext = fileExtensions.badExtensions.at( index );
+		const VString & ext = fileExtensions.badExtensions.at( index );
         const int extLen = (int) ext.length();
 		if ( pathLen > extLen && OVR_stricmp( filename + pathLen - extLen, ext.toCString() ) == 0 )
 		{
@@ -979,7 +979,7 @@ bool OvrMetaData::shouldAddFile( const char * filename, const OvrMetaDataFileExt
 
 	for ( int index = 0; index < fileExtensions.goodExtensions.sizeInt(); ++index )
 	{
-		const String & ext = fileExtensions.goodExtensions.at( index );
+		const VString & ext = fileExtensions.goodExtensions.at( index );
         const int extLen = (int) ext.length();
 		if ( pathLen > extLen && OVR_stricmp( filename + pathLen - extLen, ext.toCString() ) == 0 )
 		{

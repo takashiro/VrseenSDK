@@ -94,7 +94,7 @@ public:
     Vector2f					offsets;			// offsets based on anchors (width / height * anchor.x / .y)
     Vector3f					fadeDirection;		// Fades vertices based on direction - default is zero vector which indicates off
 #if defined( OVR_BUILD_DEBUG )
-	String						SurfaceName;		// for debugging only
+	VString						SurfaceName;		// for debugging only
 #endif
 };
 
@@ -150,7 +150,7 @@ public:
     bool							isVisible() const { return m_visible; }
     void							setVisible( bool const v ) { m_visible = v; }
 
-    String const &					name() const { return m_furfaceName; }
+    VString const &					name() const { return m_furfaceName; }
 
 private:
     VRMenuSurfaceTexture			m_textures[VRMENUSURFACE_IMAGE_MAX];
@@ -161,7 +161,7 @@ private:
     Vector2f						m_dims;				// width and height
     Vector2f						m_anchors;			// anchors
     Vector4f						m_border;				// border size for sliced sprite
-    String      					m_furfaceName;		// name of the surface for debugging
+    VString      					m_furfaceName;		// name of the surface for debugging
     ContentFlags_t					m_contents;
     bool							m_visible;			// must be true to render -- used to animate between different surfaces
 
@@ -244,7 +244,7 @@ public:
     virtual	void				addFlags( VRMenuObjectFlags_t const & flags ) { m_flags |= flags; }
     virtual	void				removeFlags( VRMenuObjectFlags_t const & flags ) { m_flags &= ~flags; }
 
-    virtual NervGear::String const &	text() const { return m_text; }
+    virtual NervGear::VString const &	text() const { return m_text; }
     virtual void				setText( char const * text ) { m_text = text; m_textDirty = true; }
     virtual void				setTextWordWrapped( char const * text, class BitmapFont const & font, float const widthInMeters );
 
@@ -365,7 +365,7 @@ private:
     float                       m_hilightScale;   // additional scale when hilighted
     Posef                       m_textLocalPose;  // local-space position and orientation of text, local to this node (i.e. after LocalPose / LocalScale are applied)
     Vector3f                    m_textLocalScale; // local-space scale of the text at this node
-    String					m_text;			// text to display on this object
+    VString					m_text;			// text to display on this object
     Array< menuHandle_t >		m_children;		// array of direct children of this object
     Array< VRMenuComponent* >	m_components;		// array of components on this object
     OvrCollisionPrimitive *		m_collisionPrimitive;		// collision surface, if any

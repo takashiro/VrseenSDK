@@ -85,7 +85,7 @@ private:
 	{
 		if ( CurrentPano )
 		{
-			String attribution = CurrentPano->title + "\n";
+			VString attribution = CurrentPano->title + "\n";
 			attribution += "by ";
 			attribution += CurrentPano->author;
 			self->setText( attribution );

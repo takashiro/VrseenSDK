@@ -49,24 +49,24 @@ bool MatchesExtension( const char * fileName, const char * ext );
 
 int StringCompare( const void *a, const void * b );
 
-void SortStringArray( Array<String> & strings );
+void SortStringArray( Array<VString> & strings );
 
-StringHash< String > RelativeDirectoryFileList( const Array< String > & searchPaths, const char * RelativeDirPath );
+StringHash< VString > RelativeDirectoryFileList( const Array< VString > & searchPaths, const char * RelativeDirPath );
 
 // DirPath should by a directory with a trailing slash.
 // Returns all files in the directory, already prepended by root.
 // Subdirectories will have a trailing slash.
 // All files and directories that start with . are skipped.
-Array<String> DirectoryFileList( const char * DirPath );
+Array<VString> DirectoryFileList( const char * DirPath );
 
 // Returns the last token in path s with slashes and file extension stripped
-String ExtractFileBase( const String & s );
+VString ExtractFileBase( const VString & s );
 
 // Returns the filename with extension from a passed in path
-String ExtractFile( const String & s );
+VString ExtractFile( const VString & s );
 
 // Returns the directory name before the fileName - stripping out parent directories and file
-String ExtractDirectory( const String & s );
+VString ExtractDirectory( const VString & s );
 
 // Creates all the intermediate directories if they don't exist
 void MakePath( const char * dirPath, mode_t mode );

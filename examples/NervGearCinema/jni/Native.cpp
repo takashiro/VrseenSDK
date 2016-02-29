@@ -100,12 +100,12 @@ void Native::OneTimeShutdown()
 	LOG( "Native::OneTimeShutdown" );
 }
 
-String Native::GetExternalCacheDirectory( App *app )
+VString Native::GetExternalCacheDirectory( App *app )
 {
 	jstring externalCacheDirectoryString = (jstring)app->GetVrJni()->CallObjectMethod( app->GetJavaObject(), getExternalCacheDirectoryMethodId );
 
 	const char *externalCacheDirectoryStringUTFChars = app->GetVrJni()->GetStringUTFChars( externalCacheDirectoryString, NULL );
-	String externalCacheDirectory = externalCacheDirectoryStringUTFChars;
+	VString externalCacheDirectory = externalCacheDirectoryStringUTFChars;
 
 	app->GetVrJni()->ReleaseStringUTFChars( externalCacheDirectoryString, externalCacheDirectoryStringUTFChars );
 	app->GetVrJni()->DeleteLocalRef( externalCacheDirectoryString );

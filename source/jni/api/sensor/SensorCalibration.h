@@ -36,7 +36,7 @@ public:
     SensorCalibration(SensorDevice* pSensor);
 
     // Load data from the HW and perform the necessary preprocessing
-    void Initialize(const String& deviceSerialNumber);
+    void Initialize(const VString& deviceSerialNumber);
     // Apply the calibration
     void Apply(MessageBodyFrame& msg);
 

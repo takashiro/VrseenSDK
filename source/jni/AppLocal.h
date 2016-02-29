@@ -244,7 +244,7 @@ public:
 
 	jclass			GetGlobalClassReference( const char * className ) const;
 
-	String			GetInstalledPackagePath( const char * packageName ) const;
+	VString			GetInstalledPackagePath( const char * packageName ) const;
 
         // Primary apps will exit(0) when they get an onDestroy() so we
         // never leave any cpu-sucking process running, but the platformUI
@@ -296,12 +296,12 @@ public:
         jmethodID		isAirplaneModeEnabledMethodId;
         jmethodID		isTime24HourFormatId;
 
-        String			launchIntentURI;			// URI app was launched with
-        String			launchIntentJSON;			// extra JSON data app was launched with
-        String			launchIntentFromPackage;	// package that sent us the launch intent
+        VString			launchIntentURI;			// URI app was launched with
+        VString			launchIntentJSON;			// extra JSON data app was launched with
+        VString			launchIntentFromPackage;	// package that sent us the launch intent
 
-        String			packageCodePath;	// path to apk to open as zip and load resources
-        String			packageName;		// package name
+        VString			packageCodePath;	// path to apk to open as zip and load resources
+        VString			packageName;		// package name
 
         bool			paused;				// set/cleared by onPause / onResume
 
@@ -381,7 +381,7 @@ public:
 
         VrViewParms		viewParms;
 
-        String			infoText;			// informative text to show in front of the view
+        VString			infoText;			// informative text to show in front of the view
         Vector4f		infoTextColor;		// color of info text
         Vector3f		infoTextOffset;		// offset from center of screen in view space
         long long		infoTextEndFrame;	// time to stop showing text
@@ -411,7 +411,7 @@ public:
     OvrDebugLines *     debugLines;
     KeyState            backKeyState;
         OvrStoragePaths*	storagePaths;
-        String				languagePackagePath;
+        VString				languagePackagePath;
         GlTexture			errorTexture;
         int					errorTextureSize;
         double				errorMessageEndTime;

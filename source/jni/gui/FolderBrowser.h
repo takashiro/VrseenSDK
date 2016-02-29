@@ -44,13 +44,13 @@ public:
 
 	struct FolderView
 	{
-		FolderView( const String & name, const String & tag ) 
+		FolderView( const VString & name, const VString & tag ) 
             : categoryTag( tag )
             , localizedName( name )
             , maxRotation( 0.0f )
 		{}
-        const String			categoryTag;
-        const String			localizedName;		// Store for rebuild of title
+        const VString			categoryTag;
+        const VString			localizedName;		// Store for rebuild of title
         menuHandle_t			handle;				// Handle to main root - parent to both Title and Panels
         menuHandle_t			titleRootHandle;	// Handle to the folder title root
         menuHandle_t			titleHandle;		// Handle to the folder title
@@ -74,7 +74,7 @@ public:
 	// User returns true if consumed
     virtual bool						onTouchUpNoFocused()							{ return false; }
 
-    FolderView *						getFolderView( const String & categoryTag );
+    FolderView *						getFolderView( const VString & categoryTag );
     FolderView *						getFolderView( int index );
     MessageQueue &						textureCommands()							{ return m_textureCommands;  }
     void								setPanelTextSpacingScale( const float scale )	{ m_panelTextSpacingScale = scale; }
@@ -147,10 +147,10 @@ protected:
 	// Subclass protected interface
 
 	// Called from the base class when building a cateory.
-    virtual String				getCategoryTitle( char const * key, char const * defaultStr ) const = 0;
+    virtual VString				getCategoryTitle( char const * key, char const * defaultStr ) const = 0;
 
 	// Called from the base class when building a panel
-    virtual String				getPanelTitle( const OvrMetaDatum & panelData ) const = 0;
+    virtual VString				getPanelTitle( const OvrMetaDatum & panelData ) const = 0;
 
 	// Called when a panel is activated
     virtual void				onPanelActivated( const OvrMetaDatum * panelData ) = 0;
@@ -164,13 +164,13 @@ protected:
     virtual	unsigned char *		loadThumbnail( const char * filename, int & width, int & height ) = 0;
 
 	// Returns the proper thumbnail URL
-    virtual String				thumbUrl( const OvrMetaDatum * item ) { return item->url; }
+    virtual VString				thumbUrl( const OvrMetaDatum * item ) { return item->url; }
 
 	// Adds thumbnail extension to a file to find/create its thumbnail
-    virtual String				thumbName( const String & s ) = 0;
+    virtual VString				thumbName( const VString & s ) = 0;
 
 	// Media not found - have subclass set the title, image and caption to display
-    virtual void				onMediaNotFound( App * app, String & title, String & imageFile, String & message ) = 0;
+    virtual void				onMediaNotFound( App * app, VString & title, VString & imageFile, VString & message ) = 0;
 
 	// Optional interface
 	//
@@ -184,7 +184,7 @@ protected:
 			int & outHeight ) { return NULL; }
 
 	// If we fail to load one type of thumbnail, try an alternative
-    virtual String				alternateThumbName( const String & s ) { return String(); }
+    virtual VString				alternateThumbName( const VString & s ) { return VString(); }
 
 	// Called on opening menu
     virtual void				onBrowserOpen() {}
@@ -255,14 +255,14 @@ private:
 	// Create / load thumbnails by background thread
 	struct OvrCreateThumbCmd
 	{
-        String sourceImagePath;
-        String thumbDestination;
-        String loadCmd;
+        VString sourceImagePath;
+        VString thumbDestination;
+        VString loadCmd;
 	};
     Array< OvrCreateThumbCmd > m_thumbCreateAndLoadCommands;
     MessageQueue		m_backgroundCommands;
-    Array< String >		m_thumbSearchPaths;
-    String				m_appCachePath;
+    Array< VString >		m_thumbSearchPaths;
+    VString				m_appCachePath;
 
 	// Keep a reference to Panel texture used for AA alpha when creating thumbnails
 	static unsigned char *		ThumbPanelBG;

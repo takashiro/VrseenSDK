@@ -26,7 +26,7 @@ public:
     HIDDeviceCreateDesc(const HIDDeviceCreateDesc& other)
         : DeviceCreateDesc(other.pFactory, other.Type), HIDDesc(other.HIDDesc) { }
 
-    virtual bool MatchDeviceByPath(const String& path)
+    virtual bool MatchDeviceByPath(const VString& path)
     {
         // should it be case insensitive?
         return HIDDesc.Path.CompareNoCase(path) == 0;

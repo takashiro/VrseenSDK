@@ -118,11 +118,11 @@ void ModelManager::ScanDirectoryForScenes( const char * directory, bool useDynam
 	{
 		struct dirent * entry;
 		while( ( entry = readdir( dir ) ) != NULL ) {
-			String filename = entry->d_name;
-            String ext = filename.extension().toLower();
+			VString filename = entry->d_name;
+            VString ext = filename.extension().toLower();
 			if ( ( ext == ".ovrscene" ) )
 			{
-				String fullpath = directory;
+				VString fullpath = directory;
                 fullpath.append( "/" );
                 fullpath.append( filename );
                 SceneDef *def = LoadScene( fullpath.toCString(), useDynamicProgram, useScreenGeometry, false );
@@ -136,7 +136,7 @@ void ModelManager::ScanDirectoryForScenes( const char * directory, bool useDynam
 
 SceneDef * ModelManager::LoadScene( const char *sceneFilename, bool useDynamicProgram, bool useScreenGeometry, bool loadFromApplicationPackage ) const
 {
-	String filename;
+	VString filename;
 
 	if ( loadFromApplicationPackage && !ovr_PackageFileExists( sceneFilename ) )
 	{
@@ -186,7 +186,7 @@ SceneDef * ModelManager::LoadScene( const char *sceneFilename, bool useDynamicPr
 
 	ModelGlPrograms glPrograms = ( useDynamicProgram ) ? Cinema.shaderMgr.DynamicPrograms : Cinema.shaderMgr.DefaultPrograms;
 
-    String iconFilename = StringUtils::SetFileExtensionString( filename.toCString(), "png" );
+    VString iconFilename = StringUtils::SetFileExtensionString( filename.toCString(), "png" );
 
 	int textureWidth = 0, textureHeight = 0;
 

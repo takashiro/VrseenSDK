@@ -118,7 +118,7 @@ struct SurfaceDef
 	// Name from the model file, can be used to control surfaces with code.
 	// May be multiple semi-colon separated names if multiple source meshes
 	// were merged into one surface.
-	String			surfaceName;
+	VString			surfaceName;
 
 	// We may want a do-not-cull flag for trivial quads and
 	// skybox sorts of geometry.

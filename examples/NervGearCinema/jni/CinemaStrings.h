@@ -13,25 +13,25 @@ class CinemaStrings {
 public:
 	static void		OneTimeInit( CinemaApp &cinema );
 
-	static String	LoadingMenu_Title;
+	static VString	LoadingMenu_Title;
 
-	static String	Category_Trailers;
-	static String	Category_MyVideos;
+	static VString	Category_Trailers;
+	static VString	Category_MyVideos;
 
-	static String	MovieSelection_Resume;
-	static String	MovieSelection_Next;
+	static VString	MovieSelection_Resume;
+	static VString	MovieSelection_Next;
 
-	static String	ResumeMenu_Title;
-	static String	ResumeMenu_Resume;
-	static String	ResumeMenu_Restart;
+	static VString	ResumeMenu_Title;
+	static VString	ResumeMenu_Resume;
+	static VString	ResumeMenu_Restart;
 
-	static String	TheaterSelection_Title;
+	static VString	TheaterSelection_Title;
 
-	static String	Error_NoVideosOnPhone;
-	static String	Error_NoVideosInMyVideos;
-	static String	Error_UnableToPlayMovie;
+	static VString	Error_NoVideosOnPhone;
+	static VString	Error_NoVideosInMyVideos;
+	static VString	Error_UnableToPlayMovie;
 
-	static String	MoviePlayer_Reorient;
+	static VString	MoviePlayer_Reorient;
 };
 
 } // namespace OculusCinema

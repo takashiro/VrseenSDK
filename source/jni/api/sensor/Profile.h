@@ -230,7 +230,7 @@ protected:
 };
 
 
-String GetBaseOVRPath(bool create_dir);
+VString GetBaseOVRPath(bool create_dir);
 
 }
 

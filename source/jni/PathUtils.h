@@ -58,27 +58,27 @@ namespace NervGear
 	{
 	public:
 					OvrStoragePaths( JNIEnv * jni, jobject activityObj );
-		void		PushBackSearchPathIfValid( EStorageType toStorage, EFolderType toFolder, const char * subfolder, Array<String> & searchPaths ) const;
-		void		PushBackSearchPathIfValidPermission( EStorageType toStorage, EFolderType toFolder, const char * subfolder, mode_t permission, Array<String> & searchPaths ) const;
-		bool		GetPathIfValidPermission( EStorageType toStorage, EFolderType toFolder, const char * subfolder, mode_t permission, String & outPath ) const;
+		void		PushBackSearchPathIfValid( EStorageType toStorage, EFolderType toFolder, const char * subfolder, Array<VString> & searchPaths ) const;
+		void		PushBackSearchPathIfValidPermission( EStorageType toStorage, EFolderType toFolder, const char * subfolder, mode_t permission, Array<VString> & searchPaths ) const;
+		bool		GetPathIfValidPermission( EStorageType toStorage, EFolderType toFolder, const char * subfolder, mode_t permission, VString & outPath ) const;
 		bool		HasStoragePath( const EStorageType toStorage, const EFolderType toFolder ) const;
 		long long 	GetAvailableInternalMemoryInBytes( JNIEnv * jni, jobject activityObj ) const;
 
 	private:
 		// contains all the folder paths for future reference
-		String 			StorageFolderPaths[EST_COUNT][EFT_COUNT];
+		VString 			StorageFolderPaths[EST_COUNT][EFT_COUNT];
 		jclass			VrLibClass;
 		jmethodID		InternalCacheMemoryID;
 	};
 
-	String	GetFullPath		( const Array< String > & searchPaths, const String & relativePath );
+	VString	GetFullPath		( const Array< VString > & searchPaths, const VString & relativePath );
 
 	// Return false if it fails to find the relativePath in any of the search locations
-	bool	GetFullPath		( const Array< String > & searchPaths, char const * relativePath, 	char * outPath, 	const int outMaxLen );
-	bool	GetFullPath		( const Array< String > & searchPaths, char const * relativePath, 	String & outPath 						);
+	bool	GetFullPath		( const Array< VString > & searchPaths, char const * relativePath, 	char * outPath, 	const int outMaxLen );
+	bool	GetFullPath		( const Array< VString > & searchPaths, char const * relativePath, 	VString & outPath 						);
 
-	bool	ToRelativePath	( const Array< String > & searchPaths, char const * fullPath, 		char * outPath, 	const int outMaxLen );
-	bool	ToRelativePath	( const Array< String > & searchPaths, char const * fullPath, 		String & outPath 						);
+	bool	ToRelativePath	( const Array< VString > & searchPaths, char const * fullPath, 		char * outPath, 	const int outMaxLen );
+	bool	ToRelativePath	( const Array< VString > & searchPaths, char const * fullPath, 		VString & outPath 						);
 
 } // namespace NervGear
 

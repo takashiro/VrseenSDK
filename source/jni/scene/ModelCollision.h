@@ -36,7 +36,7 @@ public:
 	bool	PopOut( Vector3f & p ) const;
 
 public:
-	String			Name;
+	VString			Name;
 	Array< Planef > Planes;
 };
 

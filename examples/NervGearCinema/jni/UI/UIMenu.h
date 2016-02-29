@@ -31,7 +31,7 @@ public:
 
 private:
     CinemaApp &							Cinema;
-    String								MenuName;
+    VString								MenuName;
 	VRMenu *							Menu;
 
 	bool								MenuOpen;

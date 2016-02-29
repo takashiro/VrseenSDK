@@ -1189,7 +1189,7 @@ void OvrFolderBrowser::buildDirtyMenu( OvrMetaData & metaData )
 			if ( folder == NULL )
 			{
 				// Create internal folder struct
-				String localizedCategoryName;
+				VString localizedCategoryName;
 
 				// Get localized tag (folder title)
 				localizedCategoryName = getCategoryTitle( VrLocale::MakeStringIdFromANSI( currentCategory.categoryTag ), currentCategory.categoryTag );
@@ -1239,15 +1239,15 @@ void OvrFolderBrowser::buildDirtyMenu( OvrMetaData & metaData )
 	// Show no media menu if no media found
 	if ( m_mediaCount == 0 )
 	{
-		String title;
-		String imageFile;
-		String message;
+		VString title;
+		VString imageFile;
+		VString message;
 		onMediaNotFound( m_app, title, imageFile, message );
 
 		// Create a folder if we didn't create at least one to display no media info
 		if ( m_folders.sizeInt() < 1 )
 		{
-			const String noMediaTag( "No Media" );
+			const VString noMediaTag( "No Media" );
 			const_cast< OvrMetaData & >( metaData ).addCategory( noMediaTag );
 			OvrMetaData::Category & noMediaCategory = metaData.getCategory( 0 );
 			FolderView * noMediaView = new FolderView( noMediaTag, noMediaTag );
@@ -1654,7 +1654,7 @@ void OvrFolderBrowser::updateFolderTitle( const FolderView * folder )
 	{
 		const int numPanels = folder->panels.sizeInt();
 
-		String folderTitle = folder->localizedName;
+		VString folderTitle = folder->localizedName;
 		VRMenuObject * folderTitleObject = m_app->GetVRMenuMgr().toObject( folder->titleHandle );
 		OVR_ASSERT( folderTitleObject != NULL );
 		folderTitleObject->setText( folderTitle );
@@ -1716,7 +1716,7 @@ void * OvrFolderBrowser::ThumbnailThread( void * v )
 
 			const char * fileName = strstr( msg, ":" ) + 1;
 
-			const String fullPath( fileName );
+			const VString fullPath( fileName );
 
 			int		width;
 			int		height;
@@ -1950,7 +1950,7 @@ void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const in
 	panel.size.x = m_panelWidth;
 	panel.size.y = m_panelHeight;
 
-	String panelTitle = getPanelTitle( *panoData );
+	VString panelTitle = getPanelTitle( *panoData );
 	// This is now done at the application left so that an app can localize any way it wishes
 	//VrLocale::GetString(  AppPtr->GetVrJni(), AppPtr->GetJavaObject(), panoTitle, panoTitle, panelTitle );
 
@@ -2000,9 +2000,9 @@ void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const in
 	OVR_ASSERT( folderIndex < m_folders.sizeInt() );
 
 	// Create or load thumbnail - request built up here to be processed ThumbnailThread
-    const String & panoUrl = this->thumbUrl( panoData );
-    const String thumbName = this->thumbName( panoUrl );
-	String finalThumb;
+    const VString & panoUrl = this->thumbUrl( panoData );
+    const VString thumbName = this->thumbName( panoUrl );
+	VString finalThumb;
 	char relativeThumbPath[ 1024 ];
 	ToRelativePath( m_thumbSearchPaths, panoUrl, relativeThumbPath, 1024 );
 
@@ -2036,7 +2036,7 @@ void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const in
 			}
 			else
 			{
-				const String altThumbPath = alternateThumbName( panoUrl );
+				const VString altThumbPath = alternateThumbName( panoUrl );
 				if ( altThumbPath.isEmpty() || !GetFullPath( m_thumbSearchPaths, altThumbPath, finalThumb ) )
 				{
                     int pathLen = (int) panoUrl.length();
@@ -2136,7 +2136,7 @@ OvrFolderBrowser::FolderView * OvrFolderBrowser::getFolderView( int index )
 	return m_folders.at( index );
 }
 
-OvrFolderBrowser::FolderView * OvrFolderBrowser::getFolderView( const String & categoryTag )
+OvrFolderBrowser::FolderView * OvrFolderBrowser::getFolderView( const VString & categoryTag )
 {
 	if ( m_folders.isEmpty() )
 	{

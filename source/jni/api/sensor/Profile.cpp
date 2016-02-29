@@ -48,9 +48,9 @@ namespace NervGear {
 
 //-----------------------------------------------------------------------------
 // Returns the pathname of the JSON file containing the stored profiles
-String GetBaseOVRPath(bool create_dir)
+VString GetBaseOVRPath(bool create_dir)
 {
-    String path;
+    VString path;
 
 #if defined(OVR_OS_WIN32)
 
@@ -137,9 +137,9 @@ String GetBaseOVRPath(bool create_dir)
     return path;
 }
 
-String GetProfilePath(bool create_dir)
+VString GetProfilePath(bool create_dir)
 {
-    String path = GetBaseOVRPath(create_dir);
+    VString path = GetBaseOVRPath(create_dir);
     path += "/Profiles.json";
     return path;
 }
@@ -215,7 +215,7 @@ void ProfileManager::LoadCache(ProfileType device)
 
     ClearCache();
 
-    String path = GetProfilePath(false);
+    VString path = GetProfilePath(false);
 
     Json root = Json::Load(path);
     if (!root.isObject() || root.size() < 3)
@@ -276,7 +276,7 @@ void ProfileManager::LoadCache(ProfileType device)
 // Serializes the profiles to disk.
 void ProfileManager::SaveCache()
 {
-	String path = GetProfilePath(true);
+	VString path = GetProfilePath(true);
 
     Lock::Locker lockScope(&ProfileLock);
 

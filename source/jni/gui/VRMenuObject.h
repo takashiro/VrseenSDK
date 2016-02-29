@@ -256,8 +256,8 @@ public:
 		ImageHeight[VRMENUSURFACE_IMAGE_2] = height2;
     }
 
-    String              SurfaceName;		// for debugging only
-	String              ImageNames[VRMENUSURFACE_IMAGE_MAX];
+    VString              SurfaceName;		// for debugging only
+	VString              ImageNames[VRMENUSURFACE_IMAGE_MAX];
 	GLuint				ImageTexId[VRMENUSURFACE_IMAGE_MAX];
 	short				ImageWidth[VRMENUSURFACE_IMAGE_MAX];
 	short				ImageHeight[VRMENUSURFACE_IMAGE_MAX];
@@ -484,7 +484,7 @@ public:
 	VRMenuObjectInitFlags_t	    InitFlags;						// intialization-only flags (not referenced beyond object initialization)
     Array< VRMenuComponent* >   Components;						// list of pointers to components
 	Array< VRMenuSurfaceParms >	SurfaceParms;					// list of surface parameters for the object. Each parm will result in one surface, and surfaces will render in the same order as this list.
-	String      			    Text;							// text to display on this object (if any)
+	VString      			    Text;							// text to display on this object (if any)
 	Posef					    LocalPose;						// local-space position and orientation
 	Vector3f				    LocalScale;						// local-space scale
     Posef                       TextLocalPose;                  // offset of text, local to surface
@@ -592,7 +592,7 @@ public:
 	virtual	void				addFlags( VRMenuObjectFlags_t const & flags ) = 0;
 	virtual	void				removeFlags( VRMenuObjectFlags_t const & flags ) = 0;
 
-	virtual NervGear::String const &	text() const = 0;
+	virtual NervGear::VString const &	text() const = 0;
 	virtual void				setText( char const * text ) = 0;
 	virtual void				setTextWordWrapped( char const * text, class BitmapFont const & font, float const widthInMeters ) = 0;
 

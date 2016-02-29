@@ -51,12 +51,12 @@ private:
     {
     public:
     	MovieCategory 	Category;
-    	String			Text;
+    	VString			Text;
     	UILabel *		Button;
     	float			Width;
     	float			Height;
 
-    					MovieCategoryButton( const MovieCategory category, const String &text ) :
+    					MovieCategoryButton( const MovieCategory category, const VString &text ) :
     						Category( category ), Text( text ), Button( NULL ), Width( 0.0f ), Height( 0.0f ) {}
     };
 

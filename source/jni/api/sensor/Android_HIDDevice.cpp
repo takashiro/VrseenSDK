@@ -136,7 +136,7 @@ bool HIDDeviceManager::initVendorProduct(int deviceHandle, HIDDeviceDesc* desc) 
 }
 
 //-----------------------------------------------------------------------------
-bool HIDDeviceManager::getStringProperty(const String& devNodePath, const char* propertyName, NervGear::String* pResult) const
+bool HIDDeviceManager::getStringProperty(const VString& devNodePath, const char* propertyName, NervGear::VString* pResult) const
 {
 	// LDC - In order to get device data on Android we walk the sysfs folder hierarchy. Normally this would be handled by
 	// libudev but that doesn't seem available through the ndk. For the device '/dev/ovr0' we find the physical
@@ -256,7 +256,7 @@ bool HIDDeviceManager::Enumerate(HIDEnumerateVisitor* enumVisitor)
                     if (initVendorProduct(device, &devDesc) &&
                         enumVisitor->MatchVendorProduct(devDesc.VendorId, devDesc.ProductId))
                     {
-                    	getFullDesc(device, String(devicePath), &devDesc);
+                    	getFullDesc(device, VString(devicePath), &devDesc);
 
                         // Look for the device to check if it is already opened.
                         Ptr<DeviceCreateDesc> existingDevice = DevManager->FindHIDDevice(devDesc);
@@ -291,7 +291,7 @@ bool HIDDeviceManager::Enumerate(HIDEnumerateVisitor* enumVisitor)
 }
 
 //-----------------------------------------------------------------------------
-bool HIDDeviceManager::getPath(int deviceHandle, const String& devNodePath, String* pPath) const
+bool HIDDeviceManager::getPath(int deviceHandle, const VString& devNodePath, VString* pPath) const
 {
 
 	HIDDeviceDesc desc;
@@ -304,19 +304,19 @@ bool HIDDeviceManager::getPath(int deviceHandle, const String& devNodePath, Stri
     getStringProperty(devNodePath, "serial", &(desc.SerialNumber));
 
     // Compose the path.
-	StringBuffer buffer;
+	VStringBuffer buffer;
 	buffer.appendFormat(	"vid=%04hx:pid=%04hx:ser=%s",
 							desc.VendorId,
 							desc.ProductId,
 							desc.SerialNumber.toCString());
 
-	*pPath = String(buffer);
+	*pPath = VString(buffer);
 
     return true;
 }
 
 //-----------------------------------------------------------------------------
-bool HIDDeviceManager::getFullDesc(int deviceHandle, const String& devNodePath, HIDDeviceDesc* desc) const
+bool HIDDeviceManager::getFullDesc(int deviceHandle, const VString& devNodePath, HIDDeviceDesc* desc) const
 {
 
     if (!initVendorProduct(deviceHandle, desc))
@@ -324,7 +324,7 @@ bool HIDDeviceManager::getFullDesc(int deviceHandle, const String& devNodePath, 
         return false;
     }
 
-    String versionStr;
+    VString versionStr;
     getStringProperty(devNodePath, "bcdDevice", &versionStr);
     SInt32 versionNum;
     sscanf(versionStr.toCString(), "%x", &versionNum);
@@ -341,7 +341,7 @@ bool HIDDeviceManager::getFullDesc(int deviceHandle, const String& devNodePath, 
 }
 
 //-----------------------------------------------------------------------------
-bool HIDDeviceManager::GetHIDDeviceDesc(const String& devNodePath, HIDDeviceDesc* pdevDesc) const
+bool HIDDeviceManager::GetHIDDeviceDesc(const VString& devNodePath, HIDDeviceDesc* pdevDesc) const
 {
 
     int deviceHandle = open(devNodePath.toCString(), O_RDONLY);
@@ -358,7 +358,7 @@ bool HIDDeviceManager::GetHIDDeviceDesc(const String& devNodePath, HIDDeviceDesc
 }
 
 //-----------------------------------------------------------------------------
-NervGear::HIDDevice* HIDDeviceManager::Open(const String& path)
+NervGear::HIDDevice* HIDDeviceManager::Open(const VString& path)
 {
 
     Ptr<Android::HIDDevice> device = *new Android::HIDDevice(this);
@@ -406,7 +406,7 @@ HIDDevice::~HIDDevice()
 }
 
 //-----------------------------------------------------------------------------
-bool HIDDevice::HIDInitialize(const String& path)
+bool HIDDevice::HIDInitialize(const VString& path)
 {
 
 	DevDesc.Path = path;
@@ -524,7 +524,7 @@ bool HIDDevice::openDevice()
 
 				if (device >= 0)
 				{
-					String path;
+					VString path;
 					if (!HIDManager->getPath(device, devicePath, &path) ||
 						path != DevDesc.Path)
 					{
@@ -533,7 +533,7 @@ bool HIDDevice::openDevice()
 					}
 
 					Device = device;
-					DevNodePath = String(devicePath);
+					DevNodePath = VString(devicePath);
 					LogText("NervGear::Android::HIDDevice - device mode %s", deviceModeNames[DeviceMode] );
 					break;
 				}
@@ -675,12 +675,12 @@ void HIDDevice::onEvent(int i, int fd)
 }
 
 //-----------------------------------------------------------------------------
-bool HIDDevice::OnDeviceAddedNotification(	const String& devNodePath,
+bool HIDDevice::OnDeviceAddedNotification(	const VString& devNodePath,
                                      	 	HIDDeviceDesc* devDesc,
                                      	 	bool* error)
 {
 
-	String devicePath = devDesc->Path;
+	VString devicePath = devDesc->Path;
 
     // Is this the correct device?
     if (DevDesc.Path.CompareNoCase(devicePath) != 0)
@@ -714,7 +714,7 @@ bool HIDDevice::OnDeviceNotification(MessageType messageType,
                                      bool* error)
 {
 
-	String devicePath = devDesc->Path;
+	VString devicePath = devDesc->Path;
 
     // Is this the correct device?
     if (DevDesc.Path.CompareNoCase(devicePath) != 0)
@@ -773,7 +773,7 @@ HIDDeviceManager* HIDDeviceManager::CreateInternal(Android::DeviceManager* devMa
 }
 
 //-----------------------------------------------------------------------------
-void HIDDeviceManager::getCurrentDevices(Array<String>* deviceList)
+void HIDDeviceManager::getCurrentDevices(Array<VString>* deviceList)
 {
 	deviceList->clear();
 
@@ -788,7 +788,7 @@ void HIDDeviceManager::getCurrentDevices(Array<String>* deviceList)
 				char dev_path[32];
 				sprintf(dev_path, "/dev/%s", entry->d_name);
 
-				deviceList->append(String(dev_path));
+				deviceList->append(VString(dev_path));
 			}
 
 			entry = readdir(dir);
@@ -803,7 +803,7 @@ void HIDDeviceManager::scanForDevices(bool firstScan)
 {
 
 	// Create current device list.
-	Array<String> currentDeviceList;
+	Array<VString> currentDeviceList;
 	getCurrentDevices(&currentDeviceList);
 
 	if (firstScan)
@@ -813,14 +813,14 @@ void HIDDeviceManager::scanForDevices(bool firstScan)
 	}
 
 	// Check for new devices.
-    for (Array<String>::Iterator itCurrent = currentDeviceList.begin();
+    for (Array<VString>::Iterator itCurrent = currentDeviceList.begin();
     			itCurrent != currentDeviceList.end(); ++itCurrent)
 	{
-    	String devNodePath = *itCurrent;
+    	VString devNodePath = *itCurrent;
     	bool found = false;
 
     	// Was it in the previous scan?
-    	for (Array<String>::Iterator itScanned = ScannedDevicePaths.begin();
+    	for (Array<VString>::Iterator itScanned = ScannedDevicePaths.begin();
         		itScanned != ScannedDevicePaths.end(); ++itScanned)
     	{
         	if (devNodePath.CompareNoCase(*itScanned) == 0)

@@ -24,7 +24,7 @@ jclass			VrLocale::VrActivityClass;
 //==============================
 // VrLocale::GetString
 // Get's a localized UTF-8-encoded string from the string table.
-bool VrLocale::GetString( JNIEnv* jni, jobject activityObject, char const * key, char const * defaultOut, String & out )
+bool VrLocale::GetString( JNIEnv* jni, jobject activityObject, char const * key, char const * defaultOut, VString & out )
 {
 	if ( jni == NULL )
 	{
@@ -82,7 +82,7 @@ bool VrLocale::GetString( JNIEnv* jni, jobject activityObject, char const * key,
 // - Deletes any character that is not a space, letter or number.
 // - Turn spaces into underscores.
 // - Ignore contiguous spaces.
-String VrLocale::MakeStringIdFromUTF8( char const * str )
+VString VrLocale::MakeStringIdFromUTF8( char const * str )
 {
 	enum eLastOutputType
 	{
@@ -92,7 +92,7 @@ String VrLocale::MakeStringIdFromUTF8( char const * str )
 		LO_MAX
 	};
 	eLastOutputType lastOutputType = LO_MAX;
-	String out = LOCALIZED_KEY_PREFIX;
+	VString out = LOCALIZED_KEY_PREFIX;
 	char const * ptr = str;
 	if ( strstr( str, LOCALIZED_KEY_PREFIX ) == str )
 	{
@@ -149,7 +149,7 @@ String VrLocale::MakeStringIdFromUTF8( char const * str )
 // - Deletes any character that is not a space, letter or number.
 // - Turn spaces into underscores.
 // - Ignore contiguous spaces.
-String VrLocale::MakeStringIdFromANSI( char const * str )
+VString VrLocale::MakeStringIdFromANSI( char const * str )
 {
 	enum eLastOutputType
 	{
@@ -160,7 +160,7 @@ String VrLocale::MakeStringIdFromANSI( char const * str )
 		LO_MAX
 	};
 	eLastOutputType lastOutputType = LO_MAX;
-	String out = LOCALIZED_KEY_PREFIX;
+	VString out = LOCALIZED_KEY_PREFIX;
 	char const * ptr = strstr( str, LOCALIZED_KEY_PREFIX ) == str ? str + LOCALIZED_KEY_PREFIX_LEN : str;
 	int n = OVR_strlen( ptr );
 	for ( int i = 0; i < n; ++i )
@@ -205,7 +205,7 @@ String VrLocale::MakeStringIdFromANSI( char const * str )
 
 //==============================
 // Supports up to 9 arguments and %s format only
-String private_GetXliffFormattedString( const String & inXliffStr, ... )
+VString private_GetXliffFormattedString( const VString & inXliffStr, ... )
 {
 	// format spec looks like: %1$s - we expect at least 3 chars after %
 	const int MIN_NUM_EXPECTED_FORMAT_CHARS = 3;
@@ -217,7 +217,7 @@ String private_GetXliffFormattedString( const String & inXliffStr, ... )
 	}
 
 	// Buffer that holds formatted return string
-	StringBuffer retStrBuffer;
+	VStringBuffer retStrBuffer;
 
 	char const * p = inXliffStr.toCString();
 	for ( ; ; )
@@ -280,36 +280,36 @@ String private_GetXliffFormattedString( const String & inXliffStr, ... )
 		}
 	}
 
-	return String(retStrBuffer);
+	return VString(retStrBuffer);
 }
 
-String VrLocale::GetXliffFormattedString( const String & inXliffStr, const char * arg1 )
+VString VrLocale::GetXliffFormattedString( const VString & inXliffStr, const char * arg1 )
 {
 	return private_GetXliffFormattedString( inXliffStr, arg1 );
 }
 
-String VrLocale::GetXliffFormattedString( const String & inXliffStr, const char * arg1, const char * arg2 )
+VString VrLocale::GetXliffFormattedString( const VString & inXliffStr, const char * arg1, const char * arg2 )
 {
 	return private_GetXliffFormattedString( inXliffStr, arg1, arg2 );
 }
 
-NervGear::String VrLocale::GetXliffFormattedString( const String & inXliffStr, const char * arg1, const char * arg2, const char * arg3 )
+NervGear::VString VrLocale::GetXliffFormattedString( const VString & inXliffStr, const char * arg1, const char * arg2, const char * arg3 )
 {
 	return private_GetXliffFormattedString( inXliffStr, arg1, arg2, arg3 );
 }
 
-String VrLocale::ToString( char const * fmt, float const f )
+VString VrLocale::ToString( char const * fmt, float const f )
 {
 	char buffer[128];
 	OVR_sprintf( buffer, 128, fmt, f );
-	return String( buffer );
+	return VString( buffer );
 }
 
-String VrLocale::ToString( char const * fmt, int const i )
+VString VrLocale::ToString( char const * fmt, int const i )
 {
 	char buffer[128];
 	OVR_sprintf( buffer, 128, fmt, i );
-	return String( buffer );
+	return VString( buffer );
 }
 
 } // namespace NervGear

@@ -147,8 +147,8 @@ private:
 
     MeasurementResult*          getActiveResult();
 
-    StringBuffer			    ResultsString;
-	String					    ReturnedResultString;
+    VStringBuffer			    ResultsString;
+	VString					    ReturnedResultString;
 };
 
 } // namespace NervGear

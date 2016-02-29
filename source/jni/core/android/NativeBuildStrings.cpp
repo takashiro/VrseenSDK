@@ -25,11 +25,11 @@ public:
 	char const * GetBuildString( eBuildString const str ) const;
 
 private:
-	String	BuildStrings[BUILDSTR_MAX];
+	VString	BuildStrings[BUILDSTR_MAX];
 
 	JNIEnv *env;
 	jclass	BuildClass;
-	String	GetFieldString( const char * name );
+	VString	GetFieldString( const char * name );
 };
 
 NativeBuildStrings::NativeBuildStrings( JNIEnv *env_ )
@@ -58,7 +58,7 @@ NativeBuildStrings::NativeBuildStrings( JNIEnv *env_ )
 	BuildClass = 0;
 }
 
-String NativeBuildStrings::GetFieldString( const char * name )
+VString NativeBuildStrings::GetFieldString( const char * name )
 {
 	jfieldID field = env->GetStaticFieldID(BuildClass, name , "Ljava/lang/String;");
 
@@ -69,7 +69,7 @@ String NativeBuildStrings::GetFieldString( const char * name )
 	const char * cstr = ovr_GetStringUTFChars( env, jstr, &isCopy );
 	LogText( "Buildstring %s: %s", name, cstr );
 
-	String	str = String( cstr );
+	VString	str = VString( cstr );
 
 	env->ReleaseStringUTFChars( jstr, cstr );
 	env->DeleteLocalRef( jstr );

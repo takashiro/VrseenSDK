@@ -26,7 +26,7 @@ namespace OculusCinema {
 class CarouselItem
 {
 public:
-	String		name;
+	VString		name;
 	GLuint		texture;
 	int			textureWidth;
 	int			textureHeight;

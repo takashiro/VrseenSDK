@@ -31,22 +31,22 @@ public:
 	static size_t		LOCALIZED_KEY_PREFIX_LEN;
 
 	// Get's a localized UTF-8-encoded string from the string table.
-	static bool 	GetString( JNIEnv* jni, jobject activityObject, char const * key, char const * defaultOut, String & out );
+	static bool 	GetString( JNIEnv* jni, jobject activityObject, char const * key, char const * defaultOut, VString & out );
 
 	// Takes a UTF8 string and returns an identifier that can be used as an Android string id.
-	static String	MakeStringIdFromUTF8( char const * str );
+	static VString	MakeStringIdFromUTF8( char const * str );
 
 	// Takes an ANSI string and returns an identifier that can be used as an Android string id.
-	static String	MakeStringIdFromANSI( char const * str );
+	static VString	MakeStringIdFromANSI( char const * str );
 
 	// Localization : Returns xliff formatted string
 	// These are set to const char * to make sure that's all that's passed in - we support up to 9, add more functions as needed
-	static String GetXliffFormattedString( const String & inXliffStr, const char * arg1 );
-	static String GetXliffFormattedString( const String & inXliffStr, const char * arg1, const char * arg2 );
-	static String GetXliffFormattedString( const String & inXliffStr, const char * arg1, const char * arg2, const char * arg3 );
+	static VString GetXliffFormattedString( const VString & inXliffStr, const char * arg1 );
+	static VString GetXliffFormattedString( const VString & inXliffStr, const char * arg1, const char * arg2 );
+	static VString GetXliffFormattedString( const VString & inXliffStr, const char * arg1, const char * arg2, const char * arg3 );
 
-	static String ToString( char const * fmt, float const f );
-	static String ToString( char const * fmt, int const i );
+	static VString ToString( char const * fmt, float const f );
+	static VString ToString( char const * fmt, int const i );
 
 	static jclass VrActivityClass;
 };

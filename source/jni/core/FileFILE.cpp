@@ -94,7 +94,7 @@ class FILEFile : public File
 protected:
 
     // Allocated filename
-    String      FileName;
+    VString      FileName;
 
     // File handle & open mode
     bool        Opened;
@@ -124,7 +124,7 @@ public:
 #endif
     }
     // Initialize file by opening it
-    FILEFile(const String& fileName, int flags, int Mode);
+    FILEFile(const VString& fileName, int flags, int Mode);
     // The 'pfileName' should be encoded as UTF-8 to support international file names.
     FILEFile(const char* pfileName, int flags, int Mode);
 
@@ -166,7 +166,7 @@ private:
 
 
 // Initialize file by opening it
-FILEFile::FILEFile(const String& fileName, int flags, int mode)
+FILEFile::FILEFile(const VString& fileName, int flags, int mode)
   : FileName(fileName), OpenFlags(flags)
 {
     OVR_UNUSED(mode);
@@ -546,13 +546,13 @@ bool    FILEFile::CloseCancel()
 }
 */
 
-File *FileFILEOpen(const String& path, int flags, int mode)
+File *FileFILEOpen(const VString& path, int flags, int mode)
 {
     return new FILEFile(path, flags, mode);
 }
 
 // Helper function: obtain file information time.
-bool    SysFile::getFileStat(FileStat* pfileStat, const String& path)
+bool    SysFile::getFileStat(FileStat* pfileStat, const VString& path)
 {
 #if defined(OVR_OS_WIN32)
     // 64-bit implementation on Windows.

@@ -26,7 +26,7 @@ const char * const STREAMING_PROXY_INNER 			= "streaming_proxy";
 const char * const STREAMING_SECURITY_LEVEL_INNER 	= "streaming_security_level";
 const char * const DEFAULT_AUTHOR_NAME				= "Unspecified Author";
 
-OvrVideosMetaDatum::OvrVideosMetaDatum( const String& url )
+OvrVideosMetaDatum::OvrVideosMetaDatum( const VString& url )
 	: Author( DEFAULT_AUTHOR_NAME )
 {
 	Title = ExtractFileBase( url );

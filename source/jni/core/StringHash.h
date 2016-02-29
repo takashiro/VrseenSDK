@@ -27,46 +27,46 @@ namespace NervGear {
 // This class is used for Flash labels, exports and other case-insensitive tables.
 
 template<class U, class Allocator = ContainerAllocator<U> >
-class StringHash : public Hash<String, U, String::NoCaseHashFunctor, Allocator>
+class StringHash : public Hash<VString, U, VString::NoCaseHashFunctor, Allocator>
 {
 public:
     typedef U                                                        ValueType;
     typedef StringHash<U, Allocator>                                 SelfType;
-    typedef Hash<String, U, String::NoCaseHashFunctor, Allocator>    BaseType;
+    typedef Hash<VString, U, VString::NoCaseHashFunctor, Allocator>    BaseType;
 
 public:
 
     void    operator = (const SelfType& src) { BaseType::operator = (src); }
 
-    bool    GetCaseInsensitive(const String& key, U* pvalue) const
+    bool    GetCaseInsensitive(const VString& key, U* pvalue) const
     {
-        String::NoCaseKey ikey(key);
+        VString::NoCaseKey ikey(key);
         return BaseType::GetAlt(ikey, pvalue);
     }
     // Pointer-returning get variety.
-    const U* GetCaseInsensitive(const String& key) const
+    const U* GetCaseInsensitive(const VString& key) const
     {
-        String::NoCaseKey ikey(key);
+        VString::NoCaseKey ikey(key);
         return BaseType::GetAlt(ikey);
     }
-    U*  GetCaseInsensitive(const String& key)
+    U*  GetCaseInsensitive(const VString& key)
     {
-        String::NoCaseKey ikey(key);
+        VString::NoCaseKey ikey(key);
         return BaseType::GetAlt(ikey);
     }
 
 
     typedef typename BaseType::Iterator base_iterator;
 
-    base_iterator    FindCaseInsensitive(const String& key)
+    base_iterator    FindCaseInsensitive(const VString& key)
     {
-        String::NoCaseKey ikey(key);
+        VString::NoCaseKey ikey(key);
         return BaseType::FindAlt(ikey);
     }
 
     // Set just uses a find and assigns value if found. The key is not modified;
     // this behavior is identical to Flash string variable assignment.
-    void    SetCaseInsensitive(const String& key, const U& value)
+    void    SetCaseInsensitive(const VString& key, const U& value)
     {
         base_iterator it = FindCaseInsensitive(key);
         if (it != BaseType::End())

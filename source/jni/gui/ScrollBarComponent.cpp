@@ -170,7 +170,7 @@ enum eScrollBarImage
 	SCROLLBAR_IMAGE_MAX
 };
 
-String GetImage( eScrollBarImage const type, const bool vertical )
+VString GetImage( eScrollBarImage const type, const bool vertical )
 {
 	static char const * images[ SCROLLBAR_IMAGE_MAX ] =
 	{
@@ -180,7 +180,7 @@ String GetImage( eScrollBarImage const type, const bool vertical )
 
 	char buff[ 256 ];
 	OVR_sprintf( buff, sizeof( buff ), images[ type ], vertical ? "vert" : "horz" );
-	return String( buff );
+	return VString( buff );
 }
 
 void OvrScrollBarComponent::getScrollBarParms( VRMenu & menu, float scrollBarLength, const VRMenuId_t parentId, const VRMenuId_t rootId, const VRMenuId_t xformId,

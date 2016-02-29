@@ -31,9 +31,9 @@ namespace StringUtils
 		return dest;
 	}
 
-	inline String ReplaceChar( const char *text, const char charToReplace, const char newChar )
+	inline VString ReplaceChar( const char *text, const char charToReplace, const char newChar )
 	{
-		String result;
+		VString result;
 
 		for( UPInt index = 0; text[ index ]  != '\0'; index++ )
 		{
@@ -265,13 +265,13 @@ namespace StringUtils
 		dest[extensionOffset + index] = '\0';
 	}
 
-	inline String GetCleanPathString( const char * path, const char separator = '/' ) { char buffer[MAX_PATH_LENGTH]; GetCleanPath( buffer, path, separator ); return String( buffer ); }
-	inline String GetRelativePathString( const char * path, const char * relativeTo, const char separator = '/' ) { char buffer[MAX_PATH_LENGTH]; GetRelativePath( buffer, path, relativeTo, separator ); return String( buffer ); }
-	inline String GetFolderString( const char * path ) { char buffer[MAX_PATH_LENGTH]; GetFolder( buffer, path ); return String( buffer ); }
-	inline String GetFileNameString( const char * path ) { char buffer[MAX_PATH_LENGTH]; GetFileName( buffer, path ); return String( buffer ); }
-	inline String GetFileBaseString( const char * path ) { char buffer[MAX_PATH_LENGTH]; GetFileBase( buffer, path ); return String( buffer ); }
-	inline String GetFileExtensionString( const char * path ) { char buffer[MAX_PATH_LENGTH]; GetFileExtension( buffer, path ); return String( buffer ); }
-	inline String SetFileExtensionString( const char * path, const char * extension ) { char buffer[MAX_PATH_LENGTH]; SetFileExtension( buffer, path, extension ); return String( buffer ); }
+	inline VString GetCleanPathString( const char * path, const char separator = '/' ) { char buffer[MAX_PATH_LENGTH]; GetCleanPath( buffer, path, separator ); return VString( buffer ); }
+	inline VString GetRelativePathString( const char * path, const char * relativeTo, const char separator = '/' ) { char buffer[MAX_PATH_LENGTH]; GetRelativePath( buffer, path, relativeTo, separator ); return VString( buffer ); }
+	inline VString GetFolderString( const char * path ) { char buffer[MAX_PATH_LENGTH]; GetFolder( buffer, path ); return VString( buffer ); }
+	inline VString GetFileNameString( const char * path ) { char buffer[MAX_PATH_LENGTH]; GetFileName( buffer, path ); return VString( buffer ); }
+	inline VString GetFileBaseString( const char * path ) { char buffer[MAX_PATH_LENGTH]; GetFileBase( buffer, path ); return VString( buffer ); }
+	inline VString GetFileExtensionString( const char * path ) { char buffer[MAX_PATH_LENGTH]; GetFileExtension( buffer, path ); return VString( buffer ); }
+	inline VString SetFileExtensionString( const char * path, const char * extension ) { char buffer[MAX_PATH_LENGTH]; SetFileExtension( buffer, path, extension ); return VString( buffer ); }
 
 	// String format functor.
 	class Va
@@ -300,11 +300,11 @@ namespace StringUtils
 	// Convert a common type to a string.
 	//
 
-	template< typename _type_ > inline String ToString( const _type_ & value ) { return String(); }
+	template< typename _type_ > inline VString ToString( const _type_ & value ) { return VString(); }
 
-	template< typename _type_ > inline String ToString( const _type_ * valueArray, const int count )
+	template< typename _type_ > inline VString ToString( const _type_ * valueArray, const int count )
 	{
-		String string = "{";
+		VString string = "{";
 		for ( int i = 0; i < count; i++ )
 		{
 			string += ToString( valueArray[i] );
@@ -313,9 +313,9 @@ namespace StringUtils
 		return string;
 	}
 
-	template< typename _type_ > inline String ToString( const Array< _type_ > & valueArray )
+	template< typename _type_ > inline VString ToString( const Array< _type_ > & valueArray )
 	{
-		String string = "{";
+		VString string = "{";
 		for ( int i = 0; i < valueArray.sizeInt(); i++ )
 		{
 			string += ToString( valueArray[i] );
@@ -326,36 +326,36 @@ namespace StringUtils
 
 	// specializations
 
-	template<> inline String ToString( const short &          value ) { return String( Va( " %hi", value ) ); }
-	template<> inline String ToString( const unsigned short & value ) { return String( Va( " %uhi", value ) ); }
-	template<> inline String ToString( const int &            value ) { return String( Va( " %li", value ) ); }
-	template<> inline String ToString( const unsigned int &   value ) { return String( Va( " %uli", value ) ); }
-	template<> inline String ToString( const float &          value ) { return String( Va( " %f", value ) ); }
-	template<> inline String ToString( const double &         value ) { return String( Va( " %f", value ) ); }
+	template<> inline VString ToString( const short &          value ) { return VString( Va( " %hi", value ) ); }
+	template<> inline VString ToString( const unsigned short & value ) { return VString( Va( " %uhi", value ) ); }
+	template<> inline VString ToString( const int &            value ) { return VString( Va( " %li", value ) ); }
+	template<> inline VString ToString( const unsigned int &   value ) { return VString( Va( " %uli", value ) ); }
+	template<> inline VString ToString( const float &          value ) { return VString( Va( " %f", value ) ); }
+	template<> inline VString ToString( const double &         value ) { return VString( Va( " %f", value ) ); }
 
-	template<> inline String ToString( const Vector2f & value ) { return String( Va( "{ %f %f }", value.x, value.y ) ); }
-	template<> inline String ToString( const Vector2d & value ) { return String( Va( "{ %f %f }", value.x, value.y ) ); }
-	template<> inline String ToString( const Vector2i & value ) { return String( Va( "{ %d %d }", value.x, value.y ) ); }
+	template<> inline VString ToString( const Vector2f & value ) { return VString( Va( "{ %f %f }", value.x, value.y ) ); }
+	template<> inline VString ToString( const Vector2d & value ) { return VString( Va( "{ %f %f }", value.x, value.y ) ); }
+	template<> inline VString ToString( const Vector2i & value ) { return VString( Va( "{ %d %d }", value.x, value.y ) ); }
 
-	template<> inline String ToString( const Vector3f & value ) { return String( Va( "{ %f %f %f }", value.x, value.y, value.z ) ); }
-	template<> inline String ToString( const Vector3d & value ) { return String( Va( "{ %f %f %f }", value.x, value.y, value.z ) ); }
-	template<> inline String ToString( const Vector3i & value ) { return String( Va( "{ %d %d %d }", value.x, value.y, value.z ) ); }
+	template<> inline VString ToString( const Vector3f & value ) { return VString( Va( "{ %f %f %f }", value.x, value.y, value.z ) ); }
+	template<> inline VString ToString( const Vector3d & value ) { return VString( Va( "{ %f %f %f }", value.x, value.y, value.z ) ); }
+	template<> inline VString ToString( const Vector3i & value ) { return VString( Va( "{ %d %d %d }", value.x, value.y, value.z ) ); }
 
-	template<> inline String ToString( const Vector4f & value ) { return String( Va( "{ %f %f %f %f }", value.x, value.y, value.z, value.w ) ); }
-	template<> inline String ToString( const Vector4d & value ) { return String( Va( "{ %f %f %f %f }", value.x, value.y, value.z, value.w ) ); }
-	template<> inline String ToString( const Vector4i & value ) { return String( Va( "{ %d %d %d %d }", value.x, value.y, value.z, value.w ) ); }
+	template<> inline VString ToString( const Vector4f & value ) { return VString( Va( "{ %f %f %f %f }", value.x, value.y, value.z, value.w ) ); }
+	template<> inline VString ToString( const Vector4d & value ) { return VString( Va( "{ %f %f %f %f }", value.x, value.y, value.z, value.w ) ); }
+	template<> inline VString ToString( const Vector4i & value ) { return VString( Va( "{ %d %d %d %d }", value.x, value.y, value.z, value.w ) ); }
 
-	template<> inline String ToString( const Matrix4f & value ) { return String( Va( "{ %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f }", value.M[ 0 ][ 0 ], value.M[ 0 ][ 1 ], value.M[ 0 ][ 2 ], value.M[ 0 ][ 3 ], value.M[ 1 ][ 0 ], value.M[ 1 ][ 1 ], value.M[ 1 ][ 2 ], value.M[ 1 ][ 3 ], value.M[ 2 ][ 0 ], value.M[ 2 ][ 1 ], value.M[ 2 ][ 2 ], value.M[ 2 ][ 3 ], value.M[ 3 ][ 0 ], value.M[ 3 ][ 1 ], value.M[ 3 ][ 2 ], value.M[ 3 ][ 3 ] ) ); }
-	template<> inline String ToString( const Matrix4d & value ) { return String( Va( "{ %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f }", value.M[ 0 ][ 0 ], value.M[ 0 ][ 1 ], value.M[ 0 ][ 2 ], value.M[ 0 ][ 3 ], value.M[ 1 ][ 0 ], value.M[ 1 ][ 1 ], value.M[ 1 ][ 2 ], value.M[ 1 ][ 3 ], value.M[ 2 ][ 0 ], value.M[ 2 ][ 1 ], value.M[ 2 ][ 2 ], value.M[ 2 ][ 3 ], value.M[ 3 ][ 0 ], value.M[ 3 ][ 1 ], value.M[ 3 ][ 2 ], value.M[ 3 ][ 3 ] ) ); }
+	template<> inline VString ToString( const Matrix4f & value ) { return VString( Va( "{ %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f }", value.M[ 0 ][ 0 ], value.M[ 0 ][ 1 ], value.M[ 0 ][ 2 ], value.M[ 0 ][ 3 ], value.M[ 1 ][ 0 ], value.M[ 1 ][ 1 ], value.M[ 1 ][ 2 ], value.M[ 1 ][ 3 ], value.M[ 2 ][ 0 ], value.M[ 2 ][ 1 ], value.M[ 2 ][ 2 ], value.M[ 2 ][ 3 ], value.M[ 3 ][ 0 ], value.M[ 3 ][ 1 ], value.M[ 3 ][ 2 ], value.M[ 3 ][ 3 ] ) ); }
+	template<> inline VString ToString( const Matrix4d & value ) { return VString( Va( "{ %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f }", value.M[ 0 ][ 0 ], value.M[ 0 ][ 1 ], value.M[ 0 ][ 2 ], value.M[ 0 ][ 3 ], value.M[ 1 ][ 0 ], value.M[ 1 ][ 1 ], value.M[ 1 ][ 2 ], value.M[ 1 ][ 3 ], value.M[ 2 ][ 0 ], value.M[ 2 ][ 1 ], value.M[ 2 ][ 2 ], value.M[ 2 ][ 3 ], value.M[ 3 ][ 0 ], value.M[ 3 ][ 1 ], value.M[ 3 ][ 2 ], value.M[ 3 ][ 3 ] ) ); }
 
-	template<> inline String ToString( const Quatf &    value ) { return String( Va( "{ %f %f %f %f }", value.x, value.y, value.z, value.w ) ); }
-	template<> inline String ToString( const Quatd &    value ) { return String( Va( "{ %f %f %f %f }", value.x, value.y, value.z, value.w ) ); }
+	template<> inline VString ToString( const Quatf &    value ) { return VString( Va( "{ %f %f %f %f }", value.x, value.y, value.z, value.w ) ); }
+	template<> inline VString ToString( const Quatd &    value ) { return VString( Va( "{ %f %f %f %f }", value.x, value.y, value.z, value.w ) ); }
 
-	template<> inline String ToString( const Planef &   value ) { return String( Va( "{ %f %f %f %f }", value.N.x, value.N.y, value.N.z, value.D ) ); }
-	template<> inline String ToString( const Planed &   value ) { return String( Va( "{ %f %f %f %f }", value.N.x, value.N.y, value.N.z, value.D ) ); }
+	template<> inline VString ToString( const Planef &   value ) { return VString( Va( "{ %f %f %f %f }", value.N.x, value.N.y, value.N.z, value.D ) ); }
+	template<> inline VString ToString( const Planed &   value ) { return VString( Va( "{ %f %f %f %f }", value.N.x, value.N.y, value.N.z, value.D ) ); }
 
-	template<> inline String ToString( const Bounds3f & value ) { return String( Va( "{{ %f %f %f }{ %f %f %f }}", value.b[0].x, value.b[0].y, value.b[0].z, value.b[1].x, value.b[1].y, value.b[1].z ) ); }
-	template<> inline String ToString( const Bounds3d & value ) { return String( Va( "{{ %f %f %f }{ %f %f %f }}", value.b[0].x, value.b[0].y, value.b[0].z, value.b[1].x, value.b[1].y, value.b[1].z ) ); }
+	template<> inline VString ToString( const Bounds3f & value ) { return VString( Va( "{{ %f %f %f }{ %f %f %f }}", value.b[0].x, value.b[0].y, value.b[0].z, value.b[1].x, value.b[1].y, value.b[1].z ) ); }
+	template<> inline VString ToString( const Bounds3d & value ) { return VString( Va( "{{ %f %f %f }{ %f %f %f }}", value.b[0].x, value.b[0].y, value.b[0].z, value.b[1].x, value.b[1].y, value.b[1].z ) ); }
 
 	//
 	// Convert a string to a common type.

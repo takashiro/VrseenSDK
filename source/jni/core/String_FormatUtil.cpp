@@ -14,7 +14,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 namespace NervGear {
 
-void StringBuffer::appendFormat(const char* format, ...)
+void VStringBuffer::appendFormat(const char* format, ...)
 {
     va_list argList;
 

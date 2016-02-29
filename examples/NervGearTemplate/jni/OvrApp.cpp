@@ -29,8 +29,8 @@ void OvrApp::OneTimeInit( const char * fromPackage, const char * launchIntentJSO
 	materialParms.UseSrgbTextureFormats = false;
         
 	const char * scenePath = "Oculus/tuscany.ovrscene";
-	String	        SceneFile;
-	Array<String>   SearchPaths;
+	VString	        SceneFile;
+	Array<VString>   SearchPaths;
 
 	const OvrStoragePaths & paths = app->GetStoragePaths();
 

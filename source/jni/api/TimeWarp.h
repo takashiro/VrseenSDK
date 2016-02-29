@@ -73,7 +73,7 @@ public:
     const char *		distortionFileName;
 
 	// directory to load external data from
-    String				externalStorageDirectory;
+    VString				externalStorageDirectory;
 
     hmdInfoInternal_t	hmdInfo;
 

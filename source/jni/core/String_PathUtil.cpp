@@ -117,7 +117,7 @@ const char* ScanPathProtocol(const char* url)
 //--------------------------------------------------------------------
 // ***** String Path API implementation
 
-bool String::HasAbsolutePath(const char* url)
+bool VString::HasAbsolutePath(const char* url)
 {
     // Absolute paths can star with:
     //  - protocols:        'file://', 'http://'
@@ -168,19 +168,19 @@ bool String::HasAbsolutePath(const char* url)
 }
 
 
-bool String::HasExtension(const char* path)
+bool VString::HasExtension(const char* path)
 {
     const char* ext = 0;
     ScanFilePath(path, 0, &ext);
     return ext != 0;
 }
-bool String::HasProtocol(const char* path)
+bool VString::HasProtocol(const char* path)
 {
     return ScanPathProtocol(path) != 0;
 }
 
 
-String  String::path() const
+VString  VString::path() const
 {
     const char* filename = 0;
     ScanFilePath(toCString(), &filename, 0);
@@ -188,20 +188,20 @@ String  String::path() const
     // Technically we can have extra logic somewhere for paths,
     // such as enforcing protocol and '/' only based on flags,
     // but we keep it simple for now.
-    return String(toCString(), filename ? (filename-toCString()) : size());
+    return VString(toCString(), filename ? (filename-toCString()) : size());
 }
 
-String  String::protocol() const
+VString  VString::protocol() const
 {
     const char* protocolEnd = ScanPathProtocol(toCString());
-    return String(toCString(), protocolEnd ? (protocolEnd-toCString()) : 0);
+    return VString(toCString(), protocolEnd ? (protocolEnd-toCString()) : 0);
 }
 
-String  String::fileName() const
+VString  VString::fileName() const
 {
     const char* filename = 0;
     ScanFilePath(toCString(), &filename, 0);
-    return String(filename);
+    return VString(filename);
 }
 
 // FIXME: get rid of this when ScanFilePath is fixed
@@ -214,24 +214,24 @@ String  String::GetFilename2() const
 }
 #endif
 
-String  String::extension() const
+VString  VString::extension() const
 {
     const char* ext = 0;
     ScanFilePath(toCString(), 0, &ext);
-    return String(ext);
+    return VString(ext);
 }
 
-void    String::stripExtension()
+void    VString::stripExtension()
 {
     const char* ext = 0;
     ScanFilePath(toCString(), 0, &ext);
     if (ext)
     {
-        *this = String(toCString(), ext-toCString());
+        *this = VString(toCString(), ext-toCString());
     }
 }
 
-void    String::stripProtocol()
+void    VString::stripProtocol()
 {
     const char* protocol = ScanPathProtocol(toCString());
     if (protocol)

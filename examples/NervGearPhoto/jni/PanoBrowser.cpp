@@ -59,10 +59,10 @@ unsigned char * CubeMapVista( const char * nzName, float const ratio, int & widt
 	{
 		return NULL;
 	}
-	StringBuffer	pxName( nzName );
+	VStringBuffer	pxName( nzName );
 	pxName[ len - 6 ] = 'p';
 	pxName[ len - 5 ] = 'x';
-	StringBuffer	nxName( nzName );
+	VStringBuffer	nxName( nzName );
 	nxName[ len - 5 ] = 'x';
 
 	nzData = TurboJpegLoadFromFile( nzName, &faceWidth, &faceHeight );
@@ -134,24 +134,24 @@ PanoBrowser * PanoBrowser::Create(
 		thumbHeight );
 }
 
-String PanoBrowser::getCategoryTitle( char const * key, char const * defaultStr ) const
+VString PanoBrowser::getCategoryTitle( char const * key, char const * defaultStr ) const
 {
-	String outStr;
+	VString outStr;
     VrLocale::GetString(  m_app->GetVrJni(), m_app->GetJavaObject(), key, defaultStr, outStr );
 	return outStr;
 }
 
-String PanoBrowser::getPanelTitle( const OvrMetaDatum & panelData ) const
+VString PanoBrowser::getPanelTitle( const OvrMetaDatum & panelData ) const
 {
 	const OvrPhotosMetaDatum * const photosDatum = static_cast< const OvrPhotosMetaDatum * const >( &panelData );
 	if ( photosDatum != NULL )
 	{
 		// look first in our own locale table for titles that were downloaded at run-time.
-		String outStr;
+		VString outStr;
         VrLocale::GetString(  m_app->GetVrJni(), m_app->GetJavaObject(), photosDatum->title, photosDatum->title, outStr );
 		return outStr;
 	}
-	return String();
+	return VString();
 }
 
 
@@ -422,22 +422,22 @@ unsigned char * PanoBrowser::loadThumbnail( const char * filename, int & width, 
 	return TurboJpegLoadFromFile( filename, &width, &height );
 }
 
-String PanoBrowser::thumbName( const String & s )
+VString PanoBrowser::thumbName( const VString & s )
 {
-	String	ts( s );
+	VString	ts( s );
     ts.stripTrailing( ".x" );
 	ts = NervGear::StringUtils::SetFileExtensionString( ts, ".thm" );
 	//ts += ".jpg";
 	return ts;
 }
 
-void PanoBrowser::onMediaNotFound( App * app, String & title, String & imageFile, String & message )
+void PanoBrowser::onMediaNotFound( App * app, VString & title, VString & imageFile, VString & message )
 {
 	VrLocale::GetString( app->GetVrJni(), app->GetJavaObject(), "@string/app_name", "@string/app_name", title );
 	imageFile = "assets/sdcard.png";
 	VrLocale::GetString( app->GetVrJni(), app->GetJavaObject(), "@string/media_not_found", "@string/media_not_found", message );
 	BitmapFont & font = app->GetDefaultFont();
-    Array<String> wholeStrs;
+    Array<VString> wholeStrs;
     wholeStrs.append( "Gear VR" );
 	font.WordWrapText( message, 1.4f, wholeStrs );
 }

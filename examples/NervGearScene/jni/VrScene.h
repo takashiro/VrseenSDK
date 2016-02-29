@@ -39,12 +39,12 @@ public:
 
 	bool				ModelLoaded;
 
-	String				SceneFile;	// for reload
+	VString				SceneFile;	// for reload
 	OvrSceneView		Scene;
 
 	ModelInScene		TestObject;		// bouncing object
 
-	Array<String> 		SearchPaths;
+	Array<VString> 		SearchPaths;
 };
 
 #endif
