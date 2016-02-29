@@ -34,7 +34,7 @@ public:
 			}
 		}
 		LOG( "Registered console function '%s'", name );
-		ConsoleFunctions.pushBack( OvrConsoleFunction( name, function ) );
+		ConsoleFunctions.append( OvrConsoleFunction( name, function ) );
 	}
 
 	void UnRegisterConsoleFunctions()

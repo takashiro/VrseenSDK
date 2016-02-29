@@ -413,7 +413,7 @@ public:
 		Id( id ),
 		Contents( CONTENT_SOLID )
 	{
-		SurfaceParms.pushBack( surfaceParms );
+		SurfaceParms.append( surfaceParms );
 	}
 
     // same as above with additional text local parms
@@ -445,7 +445,7 @@ public:
 		Id( id ),
 		Contents( CONTENT_SOLID )
     {
-		SurfaceParms.pushBack( surfaceParms );
+		SurfaceParms.append( surfaceParms );
     }
 
     // takes an array of surface parms

@@ -182,7 +182,7 @@ void GyroTempCalibration::TokenizeString(Array<String>* tokens, const String& st
 			{
 				// Found end of token.
                 String token = str.mid(tokenStart, i);
-				tokens->pushBack(token);
+				tokens->append(token);
 				foundToken = false;
 			}
 		}

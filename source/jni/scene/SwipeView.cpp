@@ -816,14 +816,14 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 			}
 			else
 			{
-				PanelRenderList.pushBack( info );
+				PanelRenderList.append( info );
 			}
 		}
 
 		// now push the selected panel at the end, so it always draws on top
 		if ( selectedPanelInfo.PanelIndex != -1 )
 		{
-			PanelRenderList.pushBack( selectedPanelInfo );
+			PanelRenderList.append( selectedPanelInfo );
 		}
 
 		if ( updatedSelectedPanel != SelectedPanel )

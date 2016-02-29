@@ -1303,7 +1303,7 @@ void BitmapFontSurfaceLocal::DrawText3D(BitmapFont const & font,
 		curPos += r * (g.AdvanceX * xScale);
 	}
 	// add the new vertex block to the array of vertex blocks
-	VertexBlocks.pushBack(vb);
+	VertexBlocks.append(vb);
 }
 
 //==============================

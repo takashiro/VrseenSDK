@@ -97,7 +97,7 @@ void HIDDeviceManager::Shutdown()
 //-------------------------------------------------------------------------------
 bool HIDDeviceManager::AddNotificationDevice(HIDDevice* device)
 {
-    NotificationDevices.pushBack(device);
+    NotificationDevices.append(device);
     return true;
 }
 
@@ -788,7 +788,7 @@ void HIDDeviceManager::getCurrentDevices(Array<String>* deviceList)
 				char dev_path[32];
 				sprintf(dev_path, "/dev/%s", entry->d_name);
 
-				deviceList->pushBack(String(dev_path));
+				deviceList->append(String(dev_path));
 			}
 
 			entry = readdir(dir);

@@ -485,7 +485,7 @@ void ModelState::SetSurfaceTextureOverload( const int surfaceIndex, const GLuint
 	SurfaceTextureOverload overload;
 	overload.SurfaceIndex = surfaceIndex;
 	overload.TextureId = textureId;
-	SurfaceTextureOverloads.pushBack( overload );
+	SurfaceTextureOverloads.append( overload );
 }
 
 void ModelState::ClearSurfaceTextureOverload( const int surfaceIndex )

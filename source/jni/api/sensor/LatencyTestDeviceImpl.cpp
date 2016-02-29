@@ -706,7 +706,7 @@ void LatencyTestDeviceImpl::onLatencyTestSamplesMessage(LatencyTestSamplesMessag
         MessageLatencyTestSamples samples(this);
         for (UByte i = 0; i < s.SampleCount; i++)
         {
-            samples.Samples.pushBack(Color(s.Samples[i].Value[0], s.Samples[i].Value[1], s.Samples[i].Value[2]));
+            samples.Samples.append(Color(s.Samples[i].Value[0], s.Samples[i].Value[1], s.Samples[i].Value[2]));
         }
 
         HandlerRef.GetHandler()->onMessage(samples);

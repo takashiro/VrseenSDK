@@ -384,7 +384,7 @@ namespace StringUtils
 			_type_ value;
 			size_t s = StringTo< _type_ >( value, string + length );
 			if ( s == 0 ) break;
-			valueArray.pushBack( value );
+			valueArray.append( value );
 			length += s;
 		}
 		length += strspn( string + length, "} \t\n\r" );

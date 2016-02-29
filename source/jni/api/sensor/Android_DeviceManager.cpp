@@ -160,8 +160,8 @@ bool DeviceManagerThread::addSelectFd(Notifier* notify, int fd)
     pfd.events = POLLIN|POLLHUP|POLLERR;
     pfd.revents = 0;
 
-    m_fdNotifiers.pushBack(notify);
-    m_pollFds.pushBack(pfd);
+    m_fdNotifiers.append(notify);
+    m_pollFds.append(pfd);
 
     OVR_ASSERT(m_fdNotifiers.size() == m_pollFds.size());
     LogText( "DeviceManagerThread::AddSelectFd %d (Tid=%d)\n", fd, threadTid() );
@@ -315,7 +315,7 @@ int DeviceManagerThread::run()
 
 bool DeviceManagerThread::addTicksNotifier(Notifier* notify)
 {
-     m_ticksNotifiers.pushBack(notify);
+     m_ticksNotifiers.append(notify);
      return true;
 }
 

@@ -75,7 +75,7 @@ void VRMenuEventHandler::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr
 		{
 			// setup event for item losing the focus
 			VRMenuEvent event( VRMENU_EVENT_FOCUS_LOST, EVENT_DISPATCH_TARGET, m_focusedHandle, Vector3f( 0.0f ), result );
-			events.pushBack( event );
+			events.append( event );
 		}
 		if ( hit != NULL )
 		{
@@ -83,7 +83,7 @@ void VRMenuEventHandler::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr
 			{
 				// set up event for item gaining the focus
 				VRMenuEvent event( VRMENU_EVENT_FOCUS_GAINED, EVENT_DISPATCH_FOCUS, hitHandle, Vector3f( 0.0f ), result );
-				events.pushBack( event );
+				events.append( event );
 			}
 		}
 		m_focusedHandle = hitHandle;
@@ -96,24 +96,24 @@ void VRMenuEventHandler::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr
     if ( ( vrFrame.Input.buttonPressed & BUTTON_SWIPE_UP ) != 0 )
     {
 		VRMenuEvent event( VRMENU_EVENT_SWIPE_UP, EVENT_DISPATCH_FOCUS, m_focusedHandle, Vector3f( 0.0f ), result );
-		events.pushBack( event );
+		events.append( event );
     }
     if ( ( vrFrame.Input.buttonPressed & BUTTON_SWIPE_DOWN ) != 0 )
     {
 		VRMenuEvent event( VRMENU_EVENT_SWIPE_DOWN, EVENT_DISPATCH_FOCUS, m_focusedHandle, Vector3f( 0.0f ), result );
-		events.pushBack( event );
+		events.append( event );
 
     }
     if ( ( vrFrame.Input.buttonPressed & BUTTON_SWIPE_FORWARD ) != 0 )
     {
 		VRMenuEvent event( VRMENU_EVENT_SWIPE_FORWARD, EVENT_DISPATCH_FOCUS, m_focusedHandle, Vector3f( 0.0f ), result );
-		events.pushBack( event );
+		events.append( event );
 
     }
     if ( ( vrFrame.Input.buttonPressed & BUTTON_SWIPE_BACK ) != 0 )
     {
 		VRMenuEvent event( VRMENU_EVENT_SWIPE_BACK, EVENT_DISPATCH_FOCUS, m_focusedHandle, Vector3f( 0.0f ), result );
-		events.pushBack( event );
+		events.append( event );
     }
 
  /*   
@@ -134,28 +134,28 @@ void VRMenuEventHandler::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr
 	if ( touchPressed )
 	{
 		VRMenuEvent event( VRMENU_EVENT_TOUCH_DOWN, EVENT_DISPATCH_FOCUS, m_focusedHandle, Vector3f( 0.0f ), result );
-		events.pushBack( event );
+		events.append( event );
 	}
 	if ( touchReleased )
 	{
 		VRMenuEvent event( VRMENU_EVENT_TOUCH_UP, EVENT_DISPATCH_FOCUS, m_focusedHandle, Vector3f( vrFrame.Input.touchRelative, 0.0f ), result );
-		events.pushBack( event );
+		events.append( event );
 	}
     if ( touchDown )
     {
         if ( vrFrame.Input.touchRelative.LengthSq() > Mathf::SmallestNonDenormal )
         {
             VRMenuEvent event( VRMENU_EVENT_TOUCH_RELATIVE, EVENT_DISPATCH_FOCUS, m_focusedHandle, Vector3f( vrFrame.Input.touchRelative, 0.0f ), result );
-            events.pushBack( event );
+            events.append( event );
         }
         VRMenuEvent event( VRMENU_EVENT_TOUCH_ABSOLUTE, EVENT_DISPATCH_FOCUS, m_focusedHandle, Vector3f( vrFrame.Input.touch, 0.0f ), result );
-        events.pushBack( event );
+        events.append( event );
     }
 
     {
         // always post the frame event to the root
         VRMenuEvent event( VRMENU_EVENT_FRAME_UPDATE, EVENT_DISPATCH_BROADCAST, menuHandle_t(), Vector3f( 0.0f ), result );
-        events.pushBack( event );
+        events.append( event );
     }
 }
 
@@ -164,7 +164,7 @@ void VRMenuEventHandler::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr
 void VRMenuEventHandler::initComponents( Array< VRMenuEvent > & events )
 {
 	VRMenuEvent event( VRMENU_EVENT_INIT, EVENT_DISPATCH_BROADCAST, menuHandle_t(), Vector3f( 0.0f ), HitTestResult() );
-	events.pushBack( event );
+	events.append( event );
 }
 
 //==============================
@@ -174,7 +174,7 @@ void VRMenuEventHandler::opening( Array< VRMenuEvent > & events )
 	LOG( "Opening" );
 	// broadcast the opening event
 	VRMenuEvent event( VRMENU_EVENT_OPENING, EVENT_DISPATCH_BROADCAST, menuHandle_t(), Vector3f( 0.0f ), HitTestResult() );
-	events.pushBack( event );
+	events.append( event );
 }
 
 //==============================
@@ -184,7 +184,7 @@ void VRMenuEventHandler::opened( Array< VRMenuEvent > & events )
 	LOG( "Opened" );
 	// broadcast the opened event
 	VRMenuEvent event( VRMENU_EVENT_OPENED, EVENT_DISPATCH_BROADCAST, menuHandle_t(), Vector3f( 0.0f ), HitTestResult() );
-	events.pushBack( event );
+	events.append( event );
 }
 
 //==============================
@@ -194,7 +194,7 @@ void VRMenuEventHandler::closing( Array< VRMenuEvent > & events )
 	LOG( "Closing" );
 	// broadcast the closing event
 	VRMenuEvent event( VRMENU_EVENT_CLOSING, EVENT_DISPATCH_BROADCAST, menuHandle_t(), Vector3f( 0.0f ), HitTestResult() );
-	events.pushBack( event );
+	events.append( event );
 }
 
 //==============================
@@ -204,12 +204,12 @@ void VRMenuEventHandler::closed( Array< VRMenuEvent > & events )
 	LOG( "Closed" );
 	// broadcast the closed event
 	VRMenuEvent event( VRMENU_EVENT_CLOSED, EVENT_DISPATCH_BROADCAST, menuHandle_t(), Vector3f( 0.0f ), HitTestResult() );
-	events.pushBack( event );
+	events.append( event );
 
 	if ( m_focusedHandle.IsValid() )
 	{
 		VRMenuEvent event( VRMENU_EVENT_FOCUS_LOST, EVENT_DISPATCH_TARGET, m_focusedHandle, Vector3f( 0.0f ), HitTestResult() );
-		events.pushBack( event );
+		events.append( event );
 		m_focusedHandle.Release();
 		LOG( "Released FocusHandle" );
 	}
@@ -247,7 +247,7 @@ static void FindTargetPath( OvrVRMenuMgr const & menuMgr,
     if ( obj != NULL )
     {
         FindTargetPath( menuMgr, obj->parentHandle(), targetPath );
-        targetPath.pushBack( curHandle );
+        targetPath.append( curHandle );
     }
 }
 
@@ -259,7 +259,7 @@ static void FindTargetPath( OvrVRMenuMgr const & menuMgr, menuHandle_t const roo
     FindTargetPath( menuMgr, curHandle, targetPath );
     if ( targetPath.sizeInt() == 0 )
     {
-        targetPath.pushBack( rootHandle );   // ensure at least root is in the path
+        targetPath.append( rootHandle );   // ensure at least root is in the path
     }
 }
 

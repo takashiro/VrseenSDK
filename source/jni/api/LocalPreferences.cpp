@@ -73,7 +73,7 @@ void ovr_UpdateLocalPreferences()
 		if ( kp.Key.size() > 0 )
 		{
 			LOG( "%s = %s", kp.Key.toCString(), kp.Value.toCString() );
-			LocalPreferences.pushBack( kp );
+			LocalPreferences.append( kp );
 		}
 	}
 }
@@ -113,7 +113,7 @@ void ovr_SetLocalPreferenceValueForKey( const char * keyName, const char * keyVa
 		KeyPair	kp;
 		kp.Key = keyName;
 		kp.Value = keyValue;
-		LocalPreferences.pushBack( kp );
+		LocalPreferences.append( kp );
 	}
 
 	// don't write out if prefs are disabled because we could overwrite with default values

@@ -194,7 +194,7 @@ void OvrScrollBarComponent::getScrollBarParms( VRMenu & menu, float scrollBarLen
 	// parms for the root object that holds all the scrollbar components
 	{
 		Array< VRMenuComponent* > comps;
-		comps.pushBack( scrollComponent );
+		comps.append( scrollComponent );
 		Array< VRMenuSurfaceParms > surfParms;
 		char const * text = "scrollBarRoot";
 		Vector3f scale( 1.0f );
@@ -209,7 +209,7 @@ void OvrScrollBarComponent::getScrollBarParms( VRMenu & menu, float scrollBarLen
 			surfParms, text, pose, scale, textPose, textScale, fontParms, rootId,
 			objectFlags, initFlags );
 		itemParms->ParentId = parentId;
-		parms.pushBack( itemParms );
+		parms.append( itemParms );
 	}
 
 	// add parms for the object that serves as a transform 
@@ -229,7 +229,7 @@ void OvrScrollBarComponent::getScrollBarParms( VRMenu & menu, float scrollBarLen
 			surfParms, text, pose, scale, textPose, textScale, fontParms, xformId,
 			objectFlags, initFlags );
 		itemParms->ParentId = rootId;
-		parms.pushBack( itemParms );
+		parms.append( itemParms );
 	}
 
 	// add parms for the base image that underlays the whole scrollbar
@@ -254,7 +254,7 @@ void OvrScrollBarComponent::getScrollBarParms( VRMenu & menu, float scrollBarLen
 				sbTexture, sbWidth, sbHeight, SURFACE_TEXTURE_DIFFUSE,
 				0, 0, 0, SURFACE_TEXTURE_MAX,
 				0, 0, 0, SURFACE_TEXTURE_MAX );
-		surfParms.pushBack( baseParms );
+		surfParms.append( baseParms );
 		Vector3f scale( 1.0f );
 		Posef pose( Quatf(), Vector3f( 0.0f ) );
 		Posef textPose( Quatf(), Vector3f( 0.0f ) );
@@ -267,7 +267,7 @@ void OvrScrollBarComponent::getScrollBarParms( VRMenu & menu, float scrollBarLen
 			surfParms, text, pose, scale, textPose, textScale, fontParms, baseId,
 			objectFlags, initFlags );
 		itemParms->ParentId = xformId;
-		parms.pushBack( itemParms );
+		parms.append( itemParms );
 	}
 
 	// add parms for the thumb image of the scrollbar
@@ -285,7 +285,7 @@ void OvrScrollBarComponent::getScrollBarParms( VRMenu & menu, float scrollBarLen
 				0, 0, 0, SURFACE_TEXTURE_MAX,
 				0, 0, 0, SURFACE_TEXTURE_MAX );
 		//thumbParms.Border = thumbBorder;
-		surfParms.pushBack( thumbParms );
+		surfParms.append( thumbParms );
 		Vector3f scale( 1.0f );
 		Posef pose( Quatf(), -FWD * THUMB_FROM_BASE_OFFSET );
 		// Since we use left aligned anchors on the base and thumb, we offset the root once to center the scrollbar
@@ -300,7 +300,7 @@ void OvrScrollBarComponent::getScrollBarParms( VRMenu & menu, float scrollBarLen
 			surfParms, text, pose, scale, textPose, textScale, fontParms, thumbId,
 			objectFlags, initFlags );
 		itemParms->ParentId = xformId;
-		parms.pushBack( itemParms );
+		parms.append( itemParms );
 	}
 }
 

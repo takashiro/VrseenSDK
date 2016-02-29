@@ -159,7 +159,7 @@ void LoadModelFileTexture( ModelFile & model, const char * textureName,
 		MakeTextureClamped( tex.texid );
 	}
 
-	model.Textures.pushBack( tex );
+	model.Textures.append( tex );
 }
 
 template< typename _type_ >
@@ -246,7 +246,7 @@ void LoadModelFileJson( ModelFile & model,
 							// Create a default texture.
 							LoadModelFileTexture( model, name.c_str(), NULL, 0, materialParms );
 						}
-						glTextures.pushBack( model.Textures[i].texid );
+						glTextures.append( model.Textures[i].texid );
 
 						const std::string usage = texture.value( "usage" ).toString();
 						if ( usage == "diffuse" )

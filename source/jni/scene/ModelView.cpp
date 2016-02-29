@@ -122,7 +122,7 @@ int OvrSceneView::AddModel( ModelInScene * model )
 		}
 	}
 
-	Models.pushBack( model );
+	Models.append( model );
 
 	return Models.sizeInt() - 1;
 }
@@ -444,7 +444,7 @@ void OvrSceneView::UpdateSceneModels( const VrFrame vrFrame, const long long sup
 		if ( Models[i] != NULL && Models[i]->DontRenderForClientUid != supressModelsWithClientId )
 		{
 			Models[i]->AnimateJoints( vrFrame.PoseState.TimeInSeconds );
-			RenderModels.pushBack( Models[i]->State );
+			RenderModels.append( Models[i]->State );
 		}
 	}
 }

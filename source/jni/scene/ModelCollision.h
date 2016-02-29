@@ -22,7 +22,7 @@ namespace NervGear
 class CollisionPolytope
 {
 public:
-	void	Add( const Planef & p ) { Planes.pushBack( p ); }
+	void	Add( const Planef & p ) { Planes.append( p ); }
 
 	// Returns true if the given point is inside this polytope.
 	bool	TestPoint( const Vector3f & p ) const;

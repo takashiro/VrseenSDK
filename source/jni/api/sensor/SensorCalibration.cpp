@@ -277,7 +277,7 @@ const TemperatureReport& median(const Array<TemperatureReport>& temperatureRepor
     values.reserve(temperatureReportsBin.size());
     for (unsigned i = 0; i < temperatureReportsBin.size(); i++)
         if (temperatureReportsBin[i].ActualTemperature != 0)
-            values.pushBack(temperatureReportsBin[i].Offset[coord]);
+            values.append(temperatureReportsBin[i].Offset[coord]);
     if (values.size() > 0)
     {
         double med = Median(values);
@@ -305,8 +305,8 @@ void OffsetInterpolator::Initialize(Array<Array<TemperatureReport> > const& temp
         const TemperatureReport& report = median(temperatureReports[bin], coord);
         if (report.Version > 0 && report.Version <= MAX_COMPAT_VERSION)
         {
-            Temperatures.pushBack(report.ActualTemperature);
-            Values.pushBack(report.Offset[coord]);
+            Temperatures.append(report.ActualTemperature);
+            Values.append(report.Offset[coord]);
         }
     }
 }

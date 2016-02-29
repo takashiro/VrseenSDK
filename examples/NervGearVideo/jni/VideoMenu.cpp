@@ -129,7 +129,7 @@ OvrVideoMenu::OvrVideoMenu( App * app, Oculus360Videos * videos, OvrVRMenuMgr & 
 	Array< VRMenuComponent* > comps;
 	VRMenuId_t attributionPanelId( ID_CENTER_ROOT.Get() + 10 );
 
-	comps.pushBack( new OvrVideoMenuRootComponent( *this ) );
+	comps.append( new OvrVideoMenuRootComponent( *this ) );
 
 	Quatf rot( DOWN, 0.0f );
 	Vector3f dir( -FWD );
@@ -142,7 +142,7 @@ OvrVideoMenu::OvrVideoMenu( App * app, Oculus360Videos * videos, OvrVRMenuMgr & 
 		VRMenuSurfaceParms(), "Attribution Panel", panelPose, panelScale, Posef(), Vector3f( 1.0f ), fontParms, attributionPanelId,
 		VRMenuObjectFlags_t(), VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 
-	parms.pushBack( &attrParms );
+	parms.append( &attrParms );
 
 	addItems( MenuMgr, Font, parms, rootHandle(), false );
 	parms.clear();
@@ -158,20 +158,20 @@ OvrVideoMenu::OvrVideoMenu( App * app, Oculus360Videos * videos, OvrVRMenuMgr & 
 
 	Posef browserButtonPose( Quatf(), UP * ICON_HEIGHT * 2.0f );
 
-	comps.pushBack( new OvrDefaultComponent( Vector3f( 0.0f, 0.0f, 0.05f ), 1.05f, 0.25f, 0.0f, Vector4f( 1.0f ), Vector4f( 1.0f ) ) );
-	comps.pushBack( new OvrButton_OnUp( this, ID_BROWSER_BUTTON ) );
-	comps.pushBack( new OvrSurfaceToggleComponent( ) );
-	surfParms.pushBack( VRMenuSurfaceParms( "browser",
+	comps.append( new OvrDefaultComponent( Vector3f( 0.0f, 0.0f, 0.05f ), 1.05f, 0.25f, 0.0f, Vector4f( 1.0f ), Vector4f( 1.0f ) ) );
+	comps.append( new OvrButton_OnUp( this, ID_BROWSER_BUTTON ) );
+	comps.append( new OvrSurfaceToggleComponent( ) );
+	surfParms.append( VRMenuSurfaceParms( "browser",
 		"assets/nav_home_off.png", SURFACE_TEXTURE_DIFFUSE,
 		NULL, SURFACE_TEXTURE_MAX, NULL, SURFACE_TEXTURE_MAX ) );
-	surfParms.pushBack( VRMenuSurfaceParms( "browser",
+	surfParms.append( VRMenuSurfaceParms( "browser",
 		"assets/nav_home_on.png", SURFACE_TEXTURE_DIFFUSE,
 		NULL, SURFACE_TEXTURE_MAX, NULL, SURFACE_TEXTURE_MAX ) );
 	VRMenuObjectParms browserButtonParms( VRMENU_BUTTON, comps, surfParms, "",
 		browserButtonPose, Vector3f( 1.0f ), Posef(), Vector3f( 1.0f ), fontParms,
 		ID_BROWSER_BUTTON, VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_TEXT ),
 		VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
-	parms.pushBack( &browserButtonParms );
+	parms.append( &browserButtonParms );
 
 	addItems( MenuMgr, Font, parms, AttributionHandle, false );
 	parms.clear();
@@ -186,20 +186,20 @@ OvrVideoMenu::OvrVideoMenu( App * app, Oculus360Videos * videos, OvrVRMenuMgr & 
 	//Video control button 
 	Posef videoButtonPose( Quatf(), DOWN * ICON_HEIGHT * 2.0f );
 
-	comps.pushBack( new OvrDefaultComponent( Vector3f( 0.0f, 0.0f, 0.05f ), 1.05f, 0.25f, 0.0f, Vector4f( 1.0f ), Vector4f( 1.0f ) ) );
-	comps.pushBack( new OvrButton_OnUp( this, ID_VIDEO_BUTTON ) );
-	comps.pushBack( new OvrSurfaceToggleComponent( ) );
-	surfParms.pushBack( VRMenuSurfaceParms( "browser",
+	comps.append( new OvrDefaultComponent( Vector3f( 0.0f, 0.0f, 0.05f ), 1.05f, 0.25f, 0.0f, Vector4f( 1.0f ), Vector4f( 1.0f ) ) );
+	comps.append( new OvrButton_OnUp( this, ID_VIDEO_BUTTON ) );
+	comps.append( new OvrSurfaceToggleComponent( ) );
+	surfParms.append( VRMenuSurfaceParms( "browser",
 		"assets/nav_restart_off.png", SURFACE_TEXTURE_DIFFUSE,
 		NULL, SURFACE_TEXTURE_MAX, NULL, SURFACE_TEXTURE_MAX ) );
-	surfParms.pushBack( VRMenuSurfaceParms( "browser",
+	surfParms.append( VRMenuSurfaceParms( "browser",
 		"assets/nav_restart_on.png", SURFACE_TEXTURE_DIFFUSE,
 		NULL, SURFACE_TEXTURE_MAX, NULL, SURFACE_TEXTURE_MAX ) );
 	VRMenuObjectParms controlButtonParms( VRMENU_BUTTON, comps, surfParms, "",
 		videoButtonPose, Vector3f( 1.0f ), Posef(), Vector3f( 1.0f ), fontParms,
 		ID_VIDEO_BUTTON, VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_TEXT ),
 		VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
-	parms.pushBack( &controlButtonParms );
+	parms.append( &controlButtonParms );
 
 	addItems( MenuMgr, Font, parms, AttributionHandle, false );
 	parms.clear();

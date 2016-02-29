@@ -55,7 +55,7 @@ namespace NervGear {
 					Vector3f( 1.0f ), fontParms, VRMenuId_t( ++menuId ),
 					VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_ALL ),
 					VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
-			parms.pushBack( &iconParms );
+			parms.append( &iconParms );
 			addItems( m_app->GetVRMenuMgr(), m_app->GetDefaultFont(), parms, rootHandle(), true );
 			parms.clear();
 		}
@@ -87,7 +87,7 @@ namespace NervGear {
 				VRMenuId_t( ++menuId ),
 				VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_TEXT ),
 				VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
-			parms.pushBack( &titleParms );
+			parms.append( &titleParms );
 			addItems( m_app->GetVRMenuMgr(), m_app->GetDefaultFont(), parms, rootHandle(), true );
 			parms.clear();
 		}

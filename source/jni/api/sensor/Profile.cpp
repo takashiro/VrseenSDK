@@ -267,7 +267,7 @@ void ProfileManager::LoadCache(ProfileType device)
         }
 
         // Add the new profile
-        ProfileCache.pushBack(profile);
+        ProfileCache.append(profile);
     }
 
     CacheDevice = device;
@@ -591,7 +591,7 @@ bool ProfileManager::Save(const Profile* profile)
 
     if (!added)
     {
-        ProfileCache.pushBack(*profile->Clone());
+        ProfileCache.append(*profile->Clone());
         if (ProfileCache.size() == 1)
             CacheDevice = profile->Type;
 

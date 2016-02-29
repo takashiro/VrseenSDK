@@ -53,7 +53,7 @@ void OvrMetaData::initFromDirectory( const char * relativePath, const Array< Str
 	Array<String> fileList;
 	for ( StringHash< String >::ConstIterator iter = uniqueFileList.Begin(); iter != uniqueFileList.End(); ++iter )
 	{
-		fileList.pushBack( iter->First );
+		fileList.append( iter->First );
 	}
 	SortStringArray( fileList );
 	Category currentCategory;
@@ -72,7 +72,7 @@ void OvrMetaData::initFromDirectory( const char * relativePath, const Array< Str
 		// subdirectory - add category
 		if ( MatchesExtension( s, "/" ) )
 		{
-			subDirs.pushBack( s );
+			subDirs.append( s );
 			continue;
 		}
 
@@ -88,17 +88,17 @@ void OvrMetaData::initFromDirectory( const char * relativePath, const Array< Str
 		if ( datum )
 		{
 			datum->id = dataIndex;
-			datum->tags.pushBack( currentCategory.categoryTag );
+			datum->tags.append( currentCategory.categoryTag );
 			if ( GetFullPath( searchPaths, s, datum->url ) )
 			{
 				StringHash< int >::ConstIterator iter = m_urlToIndex.FindCaseInsensitive( datum->url );
 				if ( iter == m_urlToIndex.End() )
 				{
 					m_urlToIndex.Add( datum->url, dataIndex );
-					m_etaData.pushBack( datum );
+					m_etaData.append( datum );
 					LOG( "OvrMetaData adding datum %s with index %d to %s", datum->url.toCString(), dataIndex, currentCategory.categoryTag.toCString() );
 					// Register with category
-					currentCategory.datumIndicies.pushBack( dataIndex );
+					currentCategory.datumIndicies.append( dataIndex );
 				}
 				else
 				{
@@ -114,7 +114,7 @@ void OvrMetaData::initFromDirectory( const char * relativePath, const Array< Str
 
 	if ( !currentCategory.datumIndicies.isEmpty() )
 	{
-		m_categories.pushBack( currentCategory );
+		m_categories.append( currentCategory );
 	}
 
 	// Recurse into subdirs
@@ -144,7 +144,7 @@ void OvrMetaData::initFromFileList( const Array< String > & fileList, const OvrM
 			// Will be replaced if definition found in loaded metadata
 			cat.label = cat.categoryTag;
 			catIndex = m_categories.sizeInt();
-			m_categories.pushBack( cat );
+			m_categories.append( cat );
 			uniqueCategoryList.Add( categoryTag, catIndex );
 		}
 		else
@@ -168,17 +168,17 @@ void OvrMetaData::initFromFileList( const Array< String > & fileList, const OvrM
 		{
 			datum->id = dataIndex;
 			datum->url = filePath;
-			datum->tags.pushBack( currentCategory.categoryTag );
+			datum->tags.append( currentCategory.categoryTag );
 
 			StringHash< int >::ConstIterator iter = m_urlToIndex.FindCaseInsensitive( datum->url );
 			if ( iter == m_urlToIndex.End() )
 			{
 				m_urlToIndex.Add( datum->url, dataIndex );
-				m_etaData.pushBack( datum );
+				m_etaData.append( datum );
 				LOG( "OvrMetaData::InitFromFileList adding datum %s with index %d to %s", datum->url.toCString(),
 					dataIndex, currentCategory.categoryTag.toCString() );
 				// Register with category
-				currentCategory.datumIndicies.pushBack( dataIndex );
+				currentCategory.datumIndicies.append( dataIndex );
 			}
 			else
 			{
@@ -345,7 +345,7 @@ void OvrMetaData::processRemoteMetaFile( const char * metaFileString, const int 
 				}
 				else
 				{
-					m_categories.pushBack( remoteCat );
+					m_categories.append( remoteCat );
 				}
 			}
 			else
@@ -420,13 +420,13 @@ void OvrMetaData::processMetaData( const NervGear::Json &dataFile, const Array< 
 		if ( !m_categories.isEmpty() )
 		{
 			Array< Category > finalCategories;
-			finalCategories.pushBack( m_categories.at( 0 ) );
+			finalCategories.append( m_categories.at( 0 ) );
 			for ( int catIndex = 1; catIndex < m_categories.sizeInt(); ++catIndex )
 			{
 				Category & cat = m_categories.at( catIndex );
 				if ( !cat.datumIndicies.isEmpty() )
 				{
-					finalCategories.pushBack( cat );
+					finalCategories.append( cat );
 				}
 				else
 				{
@@ -472,14 +472,14 @@ void OvrMetaData::reconcileMetaData( StringHash< OvrMetaDatum * > & storedMetaDa
 		if ( isRemote( storedDatum ) )
 		{
 			LOG( "ReconcileMetaData metadata adding remote %s", storedDatum->url.toCString() );
-			sortedEntries.pushBack( storedDatum );
+			sortedEntries.append( storedDatum );
 		}
 	}
 	Alg::QuickSortSlicedSafe( sortedEntries, 0, sortedEntries.size(), OvrMetaDatumIdComparator);
 	Array< OvrMetaDatum * >::Iterator sortedIter = sortedEntries.begin();
 	for ( ; sortedIter != sortedEntries.end(); ++sortedIter )
 	{
-		m_etaData.pushBack( *sortedIter );
+		m_etaData.append( *sortedIter );
 	}
 	storedMetaData.Clear();
 }
@@ -523,7 +523,7 @@ void OvrMetaData::reconcileCategories( Array< Category > & storedCategories )
 		WARN( "OvrMetaData::ReconcileCategories failed to find expected category order -- missing assets/meta.json?" );
 	}
 
-	finalCategories.pushBack( favorites );
+	finalCategories.append( favorites );
 
 	StringHash< bool > StoredCategoryMap; // using as set
 	for ( int i = 0; i < storedCategories.sizeInt(); ++i )
@@ -542,7 +542,7 @@ void OvrMetaData::reconcileCategories( Array< Category > & storedCategories )
 		if ( iter == StoredCategoryMap.End() )
 		{
 			LOG( "OvrMetaData::ReconcileCategories adding %s", readInCategory.categoryTag.toCString() );
-			finalCategories.pushBack( readInCategory );
+			finalCategories.append( readInCategory );
 		}
 	}
 
@@ -551,7 +551,7 @@ void OvrMetaData::reconcileCategories( Array< Category > & storedCategories )
 	{
 		const  Category & storedCat = storedCategories.at( i );
 		LOG( "OvrMetaData::ReconcileCategories adding stored category %s", storedCat.categoryTag.toCString() );
-		finalCategories.pushBack( storedCat );
+		finalCategories.append( storedCat );
 	}
 
 	// Now replace Categories
@@ -604,7 +604,7 @@ void OvrMetaData::extractCategories(const Json &dataFile, Array< Category > & ou
 				if ( !exists )
 				{
 					LOG( "Extracting category: %s", extractedCategory.categoryTag.toCString() );
-					outCategories.pushBack( extractedCategory );
+					outCategories.append( extractedCategory );
 				}
 			}
 		}
@@ -641,7 +641,7 @@ void OvrMetaData::extractMetaData(const Json &dataFile, const Array< String > & 
 					for (const Json &tag : elements) {
 						if ( tag.isObject() )
 						{
-							metaDatum->tags.pushBack(String(tag.value( CATEGORY ).toString().c_str()));
+							metaDatum->tags.append(String(tag.value( CATEGORY ).toString().c_str()));
 						}
 					}
 				}
@@ -716,7 +716,7 @@ void OvrMetaData::extractRemoteMetaData( const Json &dataFile, StringHash< OvrMe
 					for (const Json &tag : elements) {
 						if ( tag.isObject() )
 						{
-							metaDatum->tags.pushBack( String(tag.value( CATEGORY ).toString().c_str()) );
+							metaDatum->tags.append( String(tag.value( CATEGORY ).toString().c_str()) );
 						}
 					}
 				}
@@ -798,7 +798,7 @@ void OvrMetaData::regenerateCategoryIndices()
 					datum.id = metaDataIndex;
 
 					// Update the category with the new index
-					category->datumIndicies.pushBack( metaDataIndex );
+					category->datumIndicies.append( metaDataIndex );
 				}
 				else
 				{
@@ -894,7 +894,7 @@ TagAction OvrMetaData::toggleTag( OvrMetaDatum * metaDatum, const String & newTa
 	if ( action == TAG_ERROR )
 	{
 		LOG( "ToggleTag TAG_ADDED tag: %s on %s", newTag.toCString(), metaDatum->url.toCString() );
-		metaDatum->tags.pushBack( newTag );
+		metaDatum->tags.append( newTag );
 		action = TAG_ADDED;
 	}
 
@@ -926,7 +926,7 @@ void OvrMetaData::addCategory( const String & name )
 {
 	Category cat;
 	cat.categoryTag = name;
-	m_categories.pushBack( cat );
+	m_categories.append( cat );
 }
 
 OvrMetaData::Category * OvrMetaData::getCategory( const String & categoryName )
@@ -959,7 +959,7 @@ bool OvrMetaData::getMetaData( const Category & category, Array< const OvrMetaDa
 		OVR_ASSERT( metaDataIndex >= 0 && metaDataIndex < m_etaData.sizeInt() );
 		//const OvrMetaDatum * panoData = &MetaData.At( metaDataIndex );
         //LOG( "Getting MetaData %d title %s from category %s", metaDataIndex, panoData->Title.toCString(), category.CategoryName.toCString() );
-		outMetaData.pushBack( m_etaData.at( metaDataIndex ) );
+		outMetaData.append( m_etaData.at( metaDataIndex ) );
 	}
 	return true;
 }

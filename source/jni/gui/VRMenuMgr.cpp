@@ -456,7 +456,7 @@ menuHandle_t VRMenuMgrLocal::createObject( VRMenuObjectParms const & parms )
 	if ( index == ObjectList.sizeInt() )
 	{
 		// we have to grow the array
-		ObjectList.pushBack( obj );
+		ObjectList.append( obj );
 	}
 	else
 	{
@@ -506,7 +506,7 @@ void VRMenuMgrLocal::freeObject( menuHandle_t const handle )
 	// empty the slot
 	ObjectList[index] = NULL;
 	// add the index to the free list
-	FreeList.pushBack( index );
+	FreeList.append( index );
 	
 	CondenseList();
 }
@@ -535,7 +535,7 @@ void VRMenuMgrLocal::CondenseList()
 	{
 		if ( FreeList[i] <= ObjectList.sizeInt() )
 		{
-			newFreeList.pushBack( FreeList[i] );
+			newFreeList.append( FreeList[i] );
 		}
 	}
 	FreeList = newFreeList;

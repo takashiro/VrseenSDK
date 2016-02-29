@@ -327,11 +327,11 @@ void OvrDebugLinesLocal::AddLine( const Vector3f & start, const Vector3f & end,
 	DebugLine_t line( start, end, startColor, endColor, endFrame );
 	if ( depthTest )
 	{
-		DepthTestedLines.pushBack( line );
+		DepthTestedLines.append( line );
 	}
 	else
 	{
-		NonDepthTestedLines.pushBack( line );
+		NonDepthTestedLines.append( line );
 	}
     //OVR_ASSERT( DepthTestedLines.GetSizeI() < MAX_DEBUG_LINES );
     //OVR_ASSERT( NonDepthTestedLines.GetSizeI() < MAX_DEBUG_LINES );

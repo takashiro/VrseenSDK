@@ -156,7 +156,7 @@ void VRMenu::addItems( OvrVRMenuMgr & menuMgr, BitmapFont const & font,
 		menuHandle_t handle = menuMgr.createObject( *parms );
 		if ( handle.IsValid() && root != NULL )
 		{
-			pairs.pushBack( ChildParmsPair( handle, parms ) );
+			pairs.append( ChildParmsPair( handle, parms ) );
 			root->addChild( menuMgr, handle );
 			VRMenuObject * obj = menuMgr.toObject( root->getChildHandleForIndex( childIndex++ ) );
 			if ( obj != NULL && ( parms->InitFlags & VRMENUOBJECT_INIT_FORCE_POSITION ) == 0 )

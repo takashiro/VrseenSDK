@@ -85,7 +85,7 @@ void OvrGuiSysLocal::addMenu( VRMenu * menu )
 		WARN( "Duplicate menu name '%s'", menu->name() );
 		OVR_ASSERT( menuIndex < 0 );
 	}
-	Menus.pushBack( menu );
+    Menus.append( menu );
 }
 
 //==============================
@@ -203,7 +203,7 @@ void OvrGuiSysLocal::MakeActive( VRMenu * menu )
 	int idx = FindActiveMenuIndex( menu );
 	if ( idx < 0 )
 	{
-		ActiveMenus.pushBack( menu );
+        ActiveMenus.append( menu );
 	}
 }
 

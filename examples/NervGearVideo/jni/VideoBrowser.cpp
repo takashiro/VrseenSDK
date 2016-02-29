@@ -134,7 +134,7 @@ void VideoBrowser::onMediaNotFound( App * app, String & title, String & imageFil
 	VrLocale::GetString( app->GetVrJni(), app->GetJavaObject(), "@string/media_not_found", "@string/media_not_found", message );
 	BitmapFont & font = app->GetDefaultFont();
 	NervGear::Array< NervGear::String > wholeStrs;
-	wholeStrs.pushBack( "Gear VR" );
+	wholeStrs.append( "Gear VR" );
 	font.WordWrapText( message, 1.4f, wholeStrs );
 }
 

@@ -106,7 +106,7 @@ OvrVolumePopup * OvrVolumePopup::Create( App * app, OvrVRMenuMgr & menuMgr, Bitm
 										 backgroundPose, Vector3f( 1.0f ), fontParms,
 										 OvrVolumePopup::ID_BACKGROUND, VRMenuObjectFlags_t( VRMENUOBJECT_BOUND_ALL ) | VRMENUOBJECT_DONT_HIT_TEXT,
 										 VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
-			defaultAppMenuItems.pushBack( backgroundParms );
+			defaultAppMenuItems.append( backgroundParms );
 
 			// speaker icon
 			VRMenuSurfaceParms speakerIconSurfaceParms( "speakerIcon",
@@ -121,7 +121,7 @@ OvrVolumePopup * OvrVolumePopup::Create( App * app, OvrVRMenuMgr & menuMgr, Bitm
 										 speakerIconPose, Vector3f( 1.0f ), fontParms,
 										 OvrVolumePopup::ID_VOLUME_ICON, VRMenuObjectFlags_t( VRMENUOBJECT_BOUND_ALL ) | VRMENUOBJECT_DONT_HIT_TEXT,
 										 VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
-			defaultAppMenuItems.pushBack( speakerIconParms );
+			defaultAppMenuItems.append( speakerIconParms );
 
 			// volume ticks
 			VRMenuSurfaceParms volumeTickSurfaceParms( "volumeTick",
@@ -140,7 +140,7 @@ OvrVolumePopup * OvrVolumePopup::Create( App * app, OvrVRMenuMgr & menuMgr, Bitm
 											 VRMenuId_t( OvrVolumePopup::ID_VOLUME_TICKS.Get() + i ), VRMenuObjectFlags_t( VRMENUOBJECT_BOUND_ALL ) | VRMENUOBJECT_DONT_HIT_TEXT,
 											 VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 
-				defaultAppMenuItems.pushBack( volumeTickParms );
+				defaultAppMenuItems.append( volumeTickParms );
 			}
 
 			// volume text
@@ -152,7 +152,7 @@ OvrVolumePopup * OvrVolumePopup::Create( App * app, OvrVRMenuMgr & menuMgr, Bitm
 										 OvrVolumePopup::ID_VOLUME_TEXT, VRMenuObjectFlags_t( VRMENUOBJECT_BOUND_ALL ) | VRMENUOBJECT_DONT_HIT_TEXT,
 										 VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 
-			defaultAppMenuItems.pushBack( volumeTextParms );
+			defaultAppMenuItems.append( volumeTextParms );
 		}
 	}
 
@@ -162,7 +162,7 @@ OvrVolumePopup * OvrVolumePopup::Create( App * app, OvrVRMenuMgr & menuMgr, Bitm
 	for ( int i = 0; i < defaultAppMenuItems.sizeInt(); ++i )
 	{
 		VRMenuObjectParms * defaultParms = new VRMenuObjectParms( defaultAppMenuItems[i] );
-		parms.pushBack( defaultParms );
+		parms.append( defaultParms );
 	}
 
 	menu->initWithItems( menuMgr, font, 1.8f, VRMenuFlags_t( VRMENU_FLAG_TRACK_GAZE ) | VRMENU_FLAG_SHORT_PRESS_HANDLED_BY_APP, parms );

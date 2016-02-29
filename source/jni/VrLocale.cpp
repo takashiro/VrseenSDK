@@ -235,7 +235,7 @@ String private_GetXliffFormattedString( const String & inXliffStr, ... )
 			for ( int count = 0; count < MIN_NUM_EXPECTED_FORMAT_CHARS; ++count )
 			{
 				uint32_t formatCharCode = UTF8Util::DecodeNextChar( &p );
-				formatSpec.pushBack( formatCharCode );
+				formatSpec.append( formatCharCode );
 			}
 
 			OVR_ASSERT( formatSpec.size() >= MIN_NUM_EXPECTED_FORMAT_CHARS );

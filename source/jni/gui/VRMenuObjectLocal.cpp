@@ -753,7 +753,7 @@ bool VRMenuObjectLocal::isDescendant( OvrVRMenuMgr & menuMgr, menuHandle_t const
 // VRMenuObjectLocal::AddChild
 void VRMenuObjectLocal::addChild( OvrVRMenuMgr & menuMgr, menuHandle_t const handle )
 {
-	m_children.pushBack( handle );
+	m_children.append( handle );
 
 	VRMenuObject * child = menuMgr.toObject( handle );
 	if ( child != NULL )
@@ -1169,7 +1169,7 @@ void VRMenuObjectLocal::addComponent( VRMenuComponent * component )
 		DROID_ASSERT( componentIndex < 0, "VRMenu" );
 		return;
 	}
-	m_components.pushBack( component );
+	m_components.append( component );
 }
 
 //==============================

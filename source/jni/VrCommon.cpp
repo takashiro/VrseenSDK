@@ -131,13 +131,13 @@ Array<String> DirectoryFileList( const char * DirPath )
 				String s( DirPath );
 				s += entry->d_name;
 				s += "/";
-				strings.pushBack( s );
+				strings.append( s );
 			}
 			else if ( entry->d_type == DT_REG )
 			{
 				String s( DirPath );
 				s += entry->d_name;
-				strings.pushBack( s );
+				strings.append( s );
 			}
 		}
 		closedir( dir );

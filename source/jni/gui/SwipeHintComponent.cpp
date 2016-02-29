@@ -51,7 +51,7 @@ namespace NervGear
 								"swipe hint root", pose, Vector3f( 1.0f ), VRMenuFontParms(),
 								swipeHintId, VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_ALL ),
 								VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
-		parms.pushBack( &parm );
+		parms.append( &parm );
 		rootMenu->addItems( menuManager, appPtr->GetDefaultFont(), parms, rootHandle, false );
 		parms.clear();
 
@@ -70,14 +70,14 @@ namespace NervGear
 
 			Array< VRMenuComponent* > hintArrowComps;
 			OvrSwipeHintComponent* hintArrowComp = new OvrSwipeHintComponent(false, 1.3333f, 0.4f + (float)i * 0.13333f, 5.0f);
-			hintArrowComps.pushBack( hintArrowComp );
+			hintArrowComps.append( hintArrowComp );
 			hintArrowComp->show( ovr_GetTimeInSeconds() );
 
 			VRMenuObjectParms * swipeIconLeftParms = new VRMenuObjectParms( VRMENU_STATIC, hintArrowComps,
 				swipeHintSurfParms, "", swipePose, Vector3f( 1.0f ), fontParms, VRMenuId_t(),
 				VRMenuObjectFlags_t( VRMENUOBJECT_FLAG_NO_DEPTH ) | VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_ALL ),
 				VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
-			parms.pushBack( swipeIconLeftParms );
+			parms.append( swipeIconLeftParms );
 		}
 
 		rootMenu->addItems( menuManager, appPtr->GetDefaultFont(), parms, scrollHintHandle, false );

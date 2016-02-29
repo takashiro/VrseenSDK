@@ -116,7 +116,7 @@ namespace NervGear
 		String checkPath;
 		if ( GetPathIfValidPermission( toStorage, toFolder, subfolder, permission, checkPath ) )
 		{
-			searchPaths.pushBack( checkPath );
+			searchPaths.append( checkPath );
 		}
 	}
 

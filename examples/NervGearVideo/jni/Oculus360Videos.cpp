@@ -297,17 +297,17 @@ void Oculus360Videos::OneTimeInit( const char * fromPackage, const char * launch
 	storagePaths.PushBackSearchPathIfValid( EST_PRIMARY_EXTERNAL_STORAGE, EFT_ROOT, "", SearchPaths );
 
 	OvrMetaDataFileExtensions fileExtensions;
-	fileExtensions.goodExtensions.pushBack( ".mp4" );
-	fileExtensions.goodExtensions.pushBack( ".m4v" );
-	fileExtensions.goodExtensions.pushBack( ".3gp" );
-	fileExtensions.goodExtensions.pushBack( ".3g2" );
-	fileExtensions.goodExtensions.pushBack( ".ts" );
-	fileExtensions.goodExtensions.pushBack( ".webm" );
-	fileExtensions.goodExtensions.pushBack( ".mkv" );
-	fileExtensions.goodExtensions.pushBack( ".wmv" );
-	fileExtensions.goodExtensions.pushBack( ".asf" );
-	fileExtensions.goodExtensions.pushBack( ".avi" );
-	fileExtensions.goodExtensions.pushBack( ".flv" );
+	fileExtensions.goodExtensions.append( ".mp4" );
+	fileExtensions.goodExtensions.append( ".m4v" );
+	fileExtensions.goodExtensions.append( ".3gp" );
+	fileExtensions.goodExtensions.append( ".3g2" );
+	fileExtensions.goodExtensions.append( ".ts" );
+	fileExtensions.goodExtensions.append( ".webm" );
+	fileExtensions.goodExtensions.append( ".mkv" );
+	fileExtensions.goodExtensions.append( ".wmv" );
+	fileExtensions.goodExtensions.append( ".asf" );
+	fileExtensions.goodExtensions.append( ".avi" );
+	fileExtensions.goodExtensions.append( ".flv" );
 
 	MetaData->initFromDirectory( videosDirectory, SearchPaths, fileExtensions );
 

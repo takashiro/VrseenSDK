@@ -385,7 +385,7 @@ void SensorFusion::applyMagYawCorrection(const Vector3f& magUncalibrated, const 
         // Create one if needed
         if (MagRefIdx < 0 && MagRefs.size() < MagMaxReferences)
 		{
-            MagRefs.pushBack(MagReferencePoint(magUncalibrated, orientation, 1000));
+            MagRefs.append(MagReferencePoint(magUncalibrated, orientation, 1000));
 
 #ifdef YAW_LOGGING
             LogText("YAW - Created ref point [%d] %f %f %f\n", MagRefs.GetSize()-1, magUncalibrated.x, magUncalibrated.y, magUncalibrated.z);

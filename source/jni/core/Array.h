@@ -419,7 +419,7 @@ public:
           ValueType* dataPtr()       { return m_data.data; }
 
     // Insert the given element at the end of the array.
-    void    pushBack(const ValueType& val)
+    void    append(const ValueType& val)
     {
         // DO NOT pass elements of your own vector into
         // push_back()!  Since we're using references,
