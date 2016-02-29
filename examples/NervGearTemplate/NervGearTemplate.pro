@@ -11,7 +11,7 @@ SOURCES += jni/OvrApp.cpp
 
 HEADERS += jni/OvrApp.h
 
-ANDROID_APP_DIRS = ../../source $$PWD
+ANDROID_APP_DIRS = $$absolute_path(../../source) $$PWD
 include(../../source/makeApk.pri)
 
 include(../../source/dynamicVrLib.pri)
