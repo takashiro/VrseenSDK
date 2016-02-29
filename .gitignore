@@ -6,3 +6,6 @@
 *.pro.user
 /assets/
 /unity/
+*.a
+*.so
+*.dll

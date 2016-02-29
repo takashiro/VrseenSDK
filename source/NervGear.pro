@@ -10,8 +10,7 @@ DEFINES += NV_NAMESPACE=NervGear
 
 INCLUDEPATH += \
     jni \
-    jni/core \
-    jni/3rdparty/minizip
+    jni/core
 
 SOURCES += \
     jni/core/Alg.cpp \
@@ -32,6 +31,7 @@ SOURCES += \
     jni/core/ThreadCommandQueue.cpp \
     jni/core/ThreadsPthread.cpp \
     jni/core/Timer.cpp \
+    jni/core/TypesafeNumber.cpp \
     jni/core/UTF8Util.cpp \
     jni/core/BinaryFile.cpp \
     jni/core/MappedFile.cpp \
@@ -96,37 +96,47 @@ SOURCES += \
     jni/gui/SwipeHintComponent.cpp \
     jni/gui/MetaDataManager.cpp \
     jni/gui/OutOfSpaceMenu.cpp \
-    jni/BitmapFont.cpp \
-    jni/ImageData.cpp \
-    jni/GlSetup.cpp \
-    jni/GlTexture.cpp \
-    jni/GlProgram.cpp \
-    jni/GlGeometry.cpp \
-    jni/PackageFiles.cpp \
-    jni/SurfaceTexture.cpp \
-    jni/VrCommon.cpp \
-    jni/EyeBuffers.cpp \
-    jni/MessageQueue.cpp \
-    jni/TalkToJava.cpp \
-    jni/KeyState.cpp \
     jni/App.cpp \
     jni/AppRender.cpp \
-    jni/PathUtils.cpp \
+    jni/BitmapFont.cpp \
+    jni/Console.cpp \
+    jni/DebugLines.cpp \
+    jni/EyeBuffers.cpp \
     jni/EyePostRender.cpp \
-    jni/ModelRender.cpp \
-    jni/ModelFile.cpp \
+    jni/GazeCursor.cpp \
+    jni/GlGeometry.cpp \
+    jni/GlProgram.cpp \
+    jni/GlSetup.cpp \
+    jni/GlTexture.cpp \
+    jni/ImageData.cpp \
+    jni/KeyState.cpp \
+    jni/MessageQueue.cpp \
     jni/ModelCollision.cpp \
+    jni/ModelFile.cpp \
+    jni/ModelRender.cpp \
     jni/ModelTrace.cpp \
     jni/ModelView.cpp \
-    jni/DebugLines.cpp \
-    jni/GazeCursor.cpp \
-    jni/SwipeView.cpp \
+    jni/PackageFiles.cpp \
+    jni/PathUtils.cpp \
     jni/SoundManager.cpp \
+    jni/SurfaceTexture.cpp \
+    jni/SwipeView.cpp \
+    jni/TalkToJava.cpp \
     jni/UserProfile.cpp \
-    jni/VrLocale.cpp \
-    jni/Console.cpp
+    jni/VrCommon.cpp \
+    jni/VrLocale.cpp
 
 HEADERS += \
+    jni/core/android/GlUtils.h \
+    jni/core/android/JniUtils.h \
+    jni/core/android/LogUtils.h \
+    jni/core/android/NativeBuildStrings.h \
+    jni/core/android/OVRVersion.h \
+    jni/core/capture/Capture.h \
+    jni/core/capture/Capture_Config.h \
+    jni/core/capture/Capture_LegacyPackets.h \
+    jni/core/capture/Capture_Packets.h \
+    jni/core/capture/Capture_Types.h \
     jni/core/Alg.h \
     jni/core/Allocator.h \
     jni/core/Atomic.h \
@@ -156,14 +166,25 @@ HEADERS += \
     jni/core/Hash.h \
     jni/core/KeyCodes.h \
     jni/core/List.h \
-    jni/core/android/GlUtils.h \
-    jni/core/android/JniUtils.h \
-    jni/core/android/LogUtils.h \
-    jni/core/android/NativeBuildStrings.h \
-    jni/core/android/OVRVersion.h \
     jni/core/char.h \
     jni/core/global.h \
+    jni/core/BitFlags.h \
+    jni/core/Color.h \
+    jni/core/OVR.h \
+    jni/core/OVRVersion.h \
+    jni/core/sharedpointer.h \
+    jni/core/String_Utils.h \
+    jni/core/StringHash.h \
+    jni/core/TypesafeNumber.h \
     jni/core/json.h \
+    jni/embedded/dependency_error_de.h \
+    jni/embedded/dependency_error_en.h \
+    jni/embedded/dependency_error_es.h \
+    jni/embedded/dependency_error_fr.h \
+    jni/embedded/dependency_error_it.h \
+    jni/embedded/dependency_error_ja.h \
+    jni/embedded/dependency_error_ko.h \
+    jni/embedded/oculus_loading_indicator.h \
     jni/api/VrApi.h \
     jni/api/Vsync.h \
     jni/api/DirectRender.h \
@@ -201,7 +222,10 @@ HEADERS += \
     jni/api/sensor/Stereo.h \
     jni/api/sensor/PhoneSensors.h \
     jni/api/sensor/Device.h \
-    jni/api/sensor/HIDevice.h \
+    jni/api/sensor/DeviceMessages.h \
+    jni/api/sensor/HIDDevice.h \
+    jni/api/sensor/HIDDeviceBase.h \
+    jni/api/sensor/HIDDeviceImpl.h \
     jni/gui/VRMenuComponent.h \
     jni/gui/VRMenuMgr.h \
     jni/gui/VRMenuObjectLocal.h \
@@ -225,6 +249,8 @@ HEADERS += \
     jni/gui/SwipeHintComponent.h \
     jni/gui/MetaDataManager.h \
     jni/gui/OutOfSpaceMenu.h \
+    jni/gui/GuiSysLocal.h \
+    jni/gui/ui_default.h \
     jni/BitmapFont.h \
     jni/ImageData.h \
     jni/GlSetup.h \
@@ -254,18 +280,15 @@ HEADERS += \
     jni/UserProfile.h \
     jni/VrLocale.h \
     jni/Console.h \
-    jni/vglobal.h
+    jni/vglobal.h \
+    jni/AppLocal.h \
+    jni/GazeCursorLocal.h \
+    jni/Input.h \
+    jni/PointTracker.h \
+    jni/UniversalMenu_Commands.h
 
-SOURCES += \
-    jni/3rdparty/stb/stb_image.c \
-    jni/3rdparty/stb/stb_image_write.c
-
-SOURCES += \
-    jni/3rdparty/minizip/ioapi.c \
-    jni/3rdparty/minizip/miniunz.c \
-    jni/3rdparty/minizip/mztools.c \
-    jni/3rdparty/minizip/unzip.c \
-    jni/3rdparty/minizip/zip.c
+include(jni/3rdparty/minizip/minizip.pri)
+include(jni/3rdparty/stb/stb.pri)
 
 # NervGear::Capture support...
 nervgear_capture{
@@ -309,6 +332,10 @@ SOURCES += \
     jni/Integrations/Unity/MediaSurface.cpp \
     jni/Integrations/Unity/SensorPlugin.cpp \
     jni/Integrations/Unity/RenderingPlugin.cpp
+
+HEADERS += \
+    jni/Integrations/Unity/GlStateSave.h \
+    jni/Integrations/Unity/MediaSurface.h
 
 linux {
     CONFIG(staticlib) {
