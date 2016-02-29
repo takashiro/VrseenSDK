@@ -1,7 +1,7 @@
 LOCAL_PATH := $(call my-dir)
 
 # jni is always prepended to this, unfortunately
-OCULUS := ../../source/jni
+NV_ROOT := ../../source/jni
 
 include $(CLEAR_VARS)				# clean everything up to prepare for a module
 
@@ -22,9 +22,10 @@ LOCAL_ARM_NEON  := true				# compile with neon support enabled
 
 include $(LOCAL_PATH)/../cflags.mk
 
-LOCAL_C_INCLUDES := $(LOCAL_PATH)/$(OCULUS)/core \
-                    $(LOCAL_PATH)/$(OCULUS)/3rdparty/minizip \
-                    $(LOCAL_PATH)/$(OCULUS)
+LOCAL_C_INCLUDES := $(LOCAL_PATH)/$(NV_ROOT)/core \
+					$(LOCAL_PATH)/$(NV_ROOT)/scene \
+                    $(LOCAL_PATH)/$(NV_ROOT)/3rdparty/minizip \
+                    $(LOCAL_PATH)/$(NV_ROOT)
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_C_INCLUDES)
 
 LOCAL_SRC_FILES  := core/Alg.cpp \
@@ -109,31 +110,31 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     gui/SwipeHintComponent.cpp \
                     gui/MetaDataManager.cpp \
                     gui/OutOfSpaceMenu.cpp \
-                    BitmapFont.cpp \
-                    ImageData.cpp \
-                    GlSetup.cpp \
-                    GlTexture.cpp \
-                    GlProgram.cpp \
-                    GlGeometry.cpp \
+                    scene/BitmapFont.cpp \
+                    scene/EyeBuffers.cpp \
+                    scene/EyePostRender.cpp \
+                    scene/GazeCursor.cpp \
+                    scene/GlSetup.cpp \
+                    scene/GlTexture.cpp \
+                    scene/GlProgram.cpp \
+                    scene/GlGeometry.cpp \
+                    scene/ImageData.cpp \
+                    scene/ModelRender.cpp \
+                    scene/ModelFile.cpp \
+                    scene/ModelCollision.cpp \
+                    scene/ModelTrace.cpp \
+                    scene/ModelView.cpp \
+                    scene/SurfaceTexture.cpp \
+                    scene/SwipeView.cpp \
                     PackageFiles.cpp \
-                    SurfaceTexture.cpp \
                     VrCommon.cpp \
-                    EyeBuffers.cpp \
                     MessageQueue.cpp \
                     TalkToJava.cpp \
                     KeyState.cpp \
                     App.cpp \
                     AppRender.cpp \
                     PathUtils.cpp \
-                    EyePostRender.cpp \
-                    ModelRender.cpp \
-                    ModelFile.cpp \
-                    ModelCollision.cpp \
-                    ModelTrace.cpp \
-                    ModelView.cpp \
                     DebugLines.cpp \
-                    GazeCursor.cpp \
-                    SwipeView.cpp \
                     SoundManager.cpp \
                     UserProfile.cpp \
                     VrLocale.cpp \
@@ -178,17 +179,17 @@ include $(BUILD_STATIC_LIBRARY)		# start building based on everything since CLEA
 #--------------------------------------------------------
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := OculusPlugin
+LOCAL_MODULE := NV_ROOTPlugin
 
 LOCAL_STATIC_LIBRARIES := nervgear
 #LOCAL_STATIC_LIBRARIES += android-ndk-profiler
 
 LOCAL_CFLAGS += -DNV_NAMESPACE=NervGear
 
-LOCAL_SRC_FILES  := $(OCULUS)/Integrations/Unity/UnityPlugin.cpp \
-                    $(OCULUS)/Integrations/Unity/MediaSurface.cpp \
-                    $(OCULUS)/Integrations/Unity/SensorPlugin.cpp \
-                    $(OCULUS)/Integrations/Unity/RenderingPlugin.cpp
+LOCAL_SRC_FILES  := $(NV_ROOT)/Integrations/Unity/UnityPlugin.cpp \
+                    $(NV_ROOT)/Integrations/Unity/MediaSurface.cpp \
+                    $(NV_ROOT)/Integrations/Unity/SensorPlugin.cpp \
+                    $(NV_ROOT)/Integrations/Unity/RenderingPlugin.cpp
 
 include $(BUILD_SHARED_LIBRARY)
 
@@ -209,7 +210,7 @@ LOCAL_STATIC_LIBRARIES := nervgear
 
 LOCAL_CFLAGS += -DNV_NAMESPACE=NervGear
 
-LOCAL_SRC_FILES  := $(OCULUS)/Integrations/PureJava/PureJava.cpp
+LOCAL_SRC_FILES  := $(NV_ROOT)/Integrations/PureJava/PureJava.cpp
 
 include $(BUILD_SHARED_LIBRARY)
 

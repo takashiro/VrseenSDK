@@ -15,7 +15,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "VRMenuObject.h"
 #include "VRMenuEvent.h"
-#include "../GazeCursor.h"
+#include "GazeCursor.h"
 #include "SoundLimiter.h"
 
 namespace NervGear {

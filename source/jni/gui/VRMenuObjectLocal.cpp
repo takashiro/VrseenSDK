@@ -12,10 +12,10 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "VRMenuObjectLocal.h"
 
-#include "../GlTexture.h"
-#include "../App.h"			// for loading images from the assets folder
-#include "../ModelTrace.h"
-#include "../BitmapFont.h"
+#include "GlTexture.h"
+#include "App.h"			// for loading images from the assets folder
+#include "ModelTrace.h"
+#include "BitmapFont.h"
 #include "VRMenuMgr.h"
 #include "VRMenuComponent.h"
 #include "ui_default.h"	// embedded default UI texture (loaded as a placeholder when something doesn't load)

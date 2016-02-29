@@ -14,12 +14,12 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include <android/keycodes.h>
 #include "Android/GlUtils.h"
-#include "../GlProgram.h"
-#include "../GlTexture.h"
-#include "../GlGeometry.h"
-#include "../VrCommon.h"
-#include "../App.h"
-#include "../GazeCursor.h"
+#include "GlProgram.h"
+#include "GlTexture.h"
+#include "GlGeometry.h"
+#include "VrCommon.h"
+#include "App.h"
+#include "GazeCursor.h"
 #include "VRMenuMgr.h"
 #include "VRMenuComponent.h"
 #include "SoundLimiter.h"
@@ -27,8 +27,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "FolderBrowser.h"
 #include "Input.h"
 #include "DefaultComponent.h"
-
-
 
 namespace NervGear {
 

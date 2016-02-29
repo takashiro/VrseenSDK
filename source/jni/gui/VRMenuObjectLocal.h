@@ -16,7 +16,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VRMenuObject.h"
 #include "VRMenuMgr.h"
 #include "CollisionPrimitive.h"
-#include "../BitmapFont.h"
+#include "BitmapFont.h"
 
 namespace NervGear {
 

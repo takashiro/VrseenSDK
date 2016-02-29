@@ -27,8 +27,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "MediaSurface.h"
 
 // App.h should NOT be included, only stand-alone code!
-#include "../../EyePostRender.h"
-#include "../../UserProfile.h"
+#include "EyePostRender.h"
+#include "UserProfile.h"
 #include "PackageFiles.h"
 #include "VrLocale.h"
 #include "Console.h"

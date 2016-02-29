@@ -15,7 +15,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "Types.h"
 #include "BitFlags.h"
-#include "../GlGeometry.h" // For TriangleIndex
+#include "GlGeometry.h" // For TriangleIndex
 
 namespace NervGear {
 

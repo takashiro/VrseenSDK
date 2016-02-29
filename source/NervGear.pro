@@ -10,7 +10,8 @@ DEFINES += NV_NAMESPACE=NervGear
 
 INCLUDEPATH += \
     jni \
-    jni/core
+    jni/core \
+    jni/scene
 
 SOURCES += \
     jni/core/Alg.cpp \
@@ -96,31 +97,31 @@ SOURCES += \
     jni/gui/SwipeHintComponent.cpp \
     jni/gui/MetaDataManager.cpp \
     jni/gui/OutOfSpaceMenu.cpp \
+    jni/scene/BitmapFont.cpp \
+    jni/scene/EyeBuffers.cpp \
+    jni/scene/EyePostRender.cpp \
+    jni/scene/GazeCursor.cpp \
+    jni/scene/GlGeometry.cpp \
+    jni/scene/GlProgram.cpp \
+    jni/scene/GlSetup.cpp \
+    jni/scene/GlTexture.cpp \
+    jni/scene/ImageData.cpp \
+    jni/scene/ModelCollision.cpp \
+    jni/scene/ModelFile.cpp \
+    jni/scene/ModelRender.cpp \
+    jni/scene/ModelTrace.cpp \
+    jni/scene/ModelView.cpp \
+    jni/scene/SurfaceTexture.cpp \
+    jni/scene/SwipeView.cpp \
     jni/App.cpp \
     jni/AppRender.cpp \
-    jni/BitmapFont.cpp \
     jni/Console.cpp \
     jni/DebugLines.cpp \
-    jni/EyeBuffers.cpp \
-    jni/EyePostRender.cpp \
-    jni/GazeCursor.cpp \
-    jni/GlGeometry.cpp \
-    jni/GlProgram.cpp \
-    jni/GlSetup.cpp \
-    jni/GlTexture.cpp \
-    jni/ImageData.cpp \
     jni/KeyState.cpp \
     jni/MessageQueue.cpp \
-    jni/ModelCollision.cpp \
-    jni/ModelFile.cpp \
-    jni/ModelRender.cpp \
-    jni/ModelTrace.cpp \
-    jni/ModelView.cpp \
     jni/PackageFiles.cpp \
     jni/PathUtils.cpp \
     jni/SoundManager.cpp \
-    jni/SurfaceTexture.cpp \
-    jni/SwipeView.cpp \
     jni/TalkToJava.cpp \
     jni/UserProfile.cpp \
     jni/VrCommon.cpp \
@@ -250,38 +251,38 @@ HEADERS += \
     jni/gui/OutOfSpaceMenu.h \
     jni/gui/GuiSysLocal.h \
     jni/gui/ui_default.h \
-    jni/BitmapFont.h \
-    jni/ImageData.h \
-    jni/GlSetup.h \
-    jni/GlTexture.h \
-    jni/GlProgram.h \
-    jni/GlGeometry.h \
+    jni/scene/BitmapFont.h \
+    jni/scene/EyeBuffers.h \
+    jni/scene/EyePostRender.h \
+    jni/scene/GazeCursor.h \
+    jni/scene/GazeCursorLocal.h \
+    jni/scene/GlGeometry.h \
+    jni/scene/GlProgram.h \
+    jni/scene/GlSetup.h \
+    jni/scene/GlTexture.h \
+    jni/scene/ImageData.h \
+    jni/scene/ModelCollision.h \
+    jni/scene/ModelFile.h \
+    jni/scene/ModelRender.h \
+    jni/scene/ModelTrace.h \
+    jni/scene/ModelView.h \
+    jni/scene/SurfaceTexture.h \
+    jni/scene/SwipeView.h \
     jni/PackageFiles.h \
-    jni/SurfaceTexture.h \
     jni/VrCommon.h \
-    jni/EyeBuffers.h \
     jni/MessageQueue.h \
     jni/TalkToJava.h \
     jni/KeyState.h \
     jni/App.h \
     jni/AppRender.h \
     jni/PathUtils.h \
-    jni/EyePostRender.h \
-    jni/ModelRender.h \
-    jni/ModelFile.h \
-    jni/ModelCollision.h \
-    jni/ModelTrace.h \
-    jni/ModelView.h \
     jni/DebugLines.h \
-    jni/GazeCursor.h \
-    jni/SwipeView.h \
     jni/SoundManager.h \
     jni/UserProfile.h \
     jni/VrLocale.h \
     jni/Console.h \
     jni/vglobal.h \
     jni/AppLocal.h \
-    jni/GazeCursorLocal.h \
     jni/Input.h \
     jni/PointTracker.h \
     jni/UniversalMenu_Commands.h

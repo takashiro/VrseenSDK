@@ -22,6 +22,7 @@ LOCAL_MODULE := nervgear
 
 LOCAL_EXPORT_C_INCLUDES := \
   $(LOCAL_PATH)/jni/core \
+  $(LOCAL_PATH)/jni/scene \
   $(LOCAL_PATH)/jni/3rdParty/TinyXml \
   $(LOCAL_PATH)/jni/3rdParty/minizip \
   $(LOCAL_PATH)/jni

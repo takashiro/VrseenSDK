@@ -12,8 +12,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "CollisionPrimitive.h"
 
-#include "../ModelTrace.h"
-#include "../DebugLines.h"
+#include "ModelTrace.h"
+#include "DebugLines.h"
 
 namespace NervGear {
 
