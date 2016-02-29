@@ -15,6 +15,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VJson.h"
 #include "Log.h"
 #include "String_Utils.h"
+#include "VStringBuffer.h"
 
 #include <fstream>
 

@@ -29,6 +29,7 @@ SOURCES += \
     jni/core/RefCount.cpp \
     jni/core/Std.cpp \
     jni/core/VString.cpp \
+    jni/core/VStringBuffer.cpp \
     jni/core/String_FormatUtil.cpp \
     jni/core/String_PathUtil.cpp \
     jni/core/SysFile.cpp \
@@ -156,6 +157,7 @@ HEADERS += \
     jni/core/RefCount.h \
     jni/core/Std.h \
     jni/core/VString.h \
+    jni/core/VStringBuffer.h \
     jni/core/String_FormatUtil.h \
     jni/core/String_PathUtil.h \
     jni/core/SysFile.h \

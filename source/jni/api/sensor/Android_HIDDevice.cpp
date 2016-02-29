@@ -9,6 +9,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 *************************************************************************************/
 
 #include "Android_HIDDevice.h"
+#include "VStringBuffer.h"
 
 #include <sys/ioctl.h>
 #include <fcntl.h>

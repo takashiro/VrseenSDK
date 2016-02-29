@@ -10,6 +10,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 ************************************************************************************/
 
 #include "VString.h"
+#include "VStringBuffer.h"
 #include "Log.h"
 
 namespace NervGear {

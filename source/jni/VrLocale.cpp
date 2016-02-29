@@ -12,8 +12,9 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VrLocale.h"
 
 #include "Array.h"
-#include "Android/JniUtils.h"
-#include "Android/LogUtils.h"
+#include "VStringBuffer.h"
+#include "android/JniUtils.h"
+#include "android/LogUtils.h"
 
 namespace NervGear {
 

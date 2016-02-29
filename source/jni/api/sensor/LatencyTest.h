@@ -14,6 +14,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #define OVR_LatencyTest_h
 
 #include "VString.h"
+#include "VStringBuffer.h"
 #include "List.h"
 
 #include "Device.h"

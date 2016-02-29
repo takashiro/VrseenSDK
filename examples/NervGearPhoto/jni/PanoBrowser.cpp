@@ -23,7 +23,9 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "PhotosMetaData.h"
 #include "OVR_TurboJpeg.h"
 #include "linux/stat.h"
+
 #include <unistd.h>
+#include <VStringBuffer.h>
 
 namespace NervGear
 {
