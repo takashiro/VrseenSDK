@@ -457,7 +457,7 @@ bool ProfileManager::HasProfile(ProfileType device, const char* name)
 
     for (unsigned i = 0; i< ProfileCache.size(); i++)
     {
-        if (ProfileCache[i] && OVR_strcmp(ProfileCache[i]->Name, name) == 0)
+        if (ProfileCache[i] && strcmp(ProfileCache[i]->Name, name) == 0)
             return true;
     }
     return false;
@@ -500,7 +500,7 @@ Profile* ProfileManager::LoadProfile(ProfileType device, const char* user)
 
     for (unsigned int i=0; i<ProfileCache.size(); i++)
     {
-        if (OVR_strcmp(user, ProfileCache[i]->Name) == 0)
+        if (strcmp(user, ProfileCache[i]->Name) == 0)
         {   // Found the requested user profile
             Profile* profile = ProfileCache[i];
             return profile->Clone();
@@ -563,7 +563,7 @@ bool ProfileManager::Save(const Profile* profile)
 {
     Lock::Locker lockScope(&ProfileLock);
 
-    if (OVR_strcmp(profile->Name, "default") == 0)
+    if (strcmp(profile->Name, "default") == 0)
         return false;  // don't save a default profile
 
     // TODO: I should also verify that this profile type matches the current cache
@@ -574,7 +574,7 @@ bool ProfileManager::Save(const Profile* profile)
     bool added = false;
     for (unsigned int i=0; i<ProfileCache.size(); i++)
     {
-        int compare = OVR_strcmp(profile->Name, ProfileCache[i]->Name);
+        int compare = strcmp(profile->Name, ProfileCache[i]->Name);
 
         if (compare == 0)
         {
@@ -607,7 +607,7 @@ bool ProfileManager::Delete(const Profile* profile)
 {
     Lock::Locker lockScope(&ProfileLock);
 
-    if (OVR_strcmp(profile->Name, "default") == 0)
+    if (strcmp(profile->Name, "default") == 0)
         return false;  // don't delete a default profile
 
     if (CacheDevice == Profile_Unknown)
@@ -616,7 +616,7 @@ bool ProfileManager::Delete(const Profile* profile)
     // Look for the existence of this profile
     for (unsigned int i=0; i<ProfileCache.size(); i++)
     {
-        if (OVR_strcmp(profile->Name, ProfileCache[i]->Name) == 0)
+        if (strcmp(profile->Name, ProfileCache[i]->Name) == 0)
         {
             if (profile->Name == DefaultProfile)
                 DefaultProfile.clear();
@@ -651,43 +651,43 @@ Profile::Profile(ProfileType device, const char* name)
 
 bool Profile::ParseProperty(const char* prop, const char* sval)
 {
-    if (OVR_strcmp(prop, "Name") == 0)
+    if (strcmp(prop, "Name") == 0)
     {
         OVR_strcpy(Name, MaxNameLen, sval);
         return true;
     }
-    else if (OVR_strcmp(prop, "CloudUser") == 0)
+    else if (strcmp(prop, "CloudUser") == 0)
         {
             OVR_strcpy(CloudUser, MaxNameLen, sval);
             return true;
         }
-    else if (OVR_strcmp(prop, "Gender") == 0)
+    else if (strcmp(prop, "Gender") == 0)
     {
-        if (OVR_strcmp(sval, "Male") == 0)
+        if (strcmp(sval, "Male") == 0)
             Gender = Gender_Male;
-        else if (OVR_strcmp(sval, "Female") == 0)
+        else if (strcmp(sval, "Female") == 0)
             Gender = Gender_Female;
         else
             Gender = Gender_Unspecified;
 
         return true;
     }
-    else if (OVR_strcmp(prop, "PlayerHeight") == 0)
+    else if (strcmp(prop, "PlayerHeight") == 0)
     {
         PlayerHeight = (float)atof(sval);
         return true;
     }
-    else if (OVR_strcmp(prop, "IPD") == 0)
+    else if (strcmp(prop, "IPD") == 0)
     {
         IPD = (float)atof(sval);
         return true;
     }
-    else if (OVR_strcmp(prop, "NeckEyeHori") == 0)
+    else if (strcmp(prop, "NeckEyeHori") == 0)
     {
         NeckEyeHori = (float)atof(sval);
         return true;
     }
-    else if (OVR_strcmp(prop, "NeckEyeVert") == 0)
+    else if (strcmp(prop, "NeckEyeVert") == 0)
     {
         NeckEyeVert = (float)atof(sval);
         return true;
@@ -731,35 +731,35 @@ HMDProfile::HMDProfile(ProfileType type, const char* name) : Profile(type, name)
 
 bool HMDProfile::ParseProperty(const char* prop, const char* sval)
 {
-    if (OVR_strcmp(prop, "LL") == 0)
+    if (strcmp(prop, "LL") == 0)
     {
         LL = atoi(sval);
         return true;
     }
-    else if (OVR_strcmp(prop, "LR") == 0)
+    else if (strcmp(prop, "LR") == 0)
     {
         LR = atoi(sval);
         return true;
     }
-    else if (OVR_strcmp(prop, "RL") == 0)
+    else if (strcmp(prop, "RL") == 0)
     {
         RL = atoi(sval);
         return true;
     }
-    else if (OVR_strcmp(prop, "RR") == 0)
+    else if (strcmp(prop, "RR") == 0)
     {
         RR = atoi(sval);
         return true;
     }
 
-    if (OVR_strcmp(prop, "EyeCup") == 0)
+    if (strcmp(prop, "EyeCup") == 0)
     {
-        if      ( 0 == OVR_strcmp ( sval, "A"        ) ) { EyeCups = EyeCup_BlackA; }
-        else if ( 0 == OVR_strcmp ( sval, "B"        ) ) { EyeCups = EyeCup_BlackB; }
-        else if ( 0 == OVR_strcmp ( sval, "C"        ) ) { EyeCups = EyeCup_BlackC; }
-        else if ( 0 == OVR_strcmp ( sval, "Orange A" ) ) { EyeCups = EyeCup_OrangeA; }
-        else if ( 0 == OVR_strcmp ( sval, "Red A"    ) ) { EyeCups = EyeCup_RedA; }
-        else if ( 0 == OVR_strcmp ( sval, "Blue A"   ) ) { EyeCups = EyeCup_BlueA; }
+        if      ( 0 == strcmp ( sval, "A"        ) ) { EyeCups = EyeCup_BlackA; }
+        else if ( 0 == strcmp ( sval, "B"        ) ) { EyeCups = EyeCup_BlackB; }
+        else if ( 0 == strcmp ( sval, "C"        ) ) { EyeCups = EyeCup_BlackC; }
+        else if ( 0 == strcmp ( sval, "Orange A" ) ) { EyeCups = EyeCup_OrangeA; }
+        else if ( 0 == strcmp ( sval, "Red A"    ) ) { EyeCups = EyeCup_RedA; }
+        else if ( 0 == strcmp ( sval, "Blue A"   ) ) { EyeCups = EyeCup_BlueA; }
         else
         {
             OVR_ASSERT ( !"Unknown lens type in profile" );

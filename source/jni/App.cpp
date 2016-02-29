@@ -1324,11 +1324,11 @@ void AppLocal::Command( const char *msg )
 			}
 		}
 
-		if ( OVR_strcmp( fromPackageName, EMPTY_INTENT_STR ) == 0 )
+		if ( strcmp( fromPackageName, EMPTY_INTENT_STR ) == 0 )
 		{
 			fromPackageName[0] = '\0';
 		}
-		if ( OVR_strcmp( uri, EMPTY_INTENT_STR ) == 0 )
+		if ( strcmp( uri, EMPTY_INTENT_STR ) == 0 )
 		{
 			uri[0] = '\0';
 		}

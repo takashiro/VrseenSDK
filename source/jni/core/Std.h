@@ -91,21 +91,6 @@ inline char * OVR_CDECL OVR_strcat(char* dest, UPInt destsize, const char* src)
 #endif
 }
 
-inline int OVR_CDECL OVR_strcmp(const char* dest, const char* src)
-{
-    return strcmp(dest, src);
-}
-
-inline const char* OVR_CDECL OVR_strchr(const char* str, char c)
-{
-    return strchr(str, c);
-}
-
-inline char* OVR_CDECL OVR_strchr(char* str, char c)
-{
-    return strchr(str, c);
-}
-
 inline const char* OVR_strrchr(const char* str, char c)
 {
     UPInt len = strlen(str);

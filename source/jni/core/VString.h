@@ -273,7 +273,7 @@ public:
     // Comparison
     bool        operator == (const VString& str) const
     {
-        return (OVR_strcmp(data()->data, str.data()->data)== 0);
+        return (strcmp(data()->data, str.data()->data)== 0);
     }
 
     bool        operator != (const VString& str) const
@@ -283,7 +283,7 @@ public:
 
     bool        operator == (const char* str) const
     {
-        return OVR_strcmp(data()->data, str) == 0;
+        return strcmp(data()->data, str) == 0;
     }
 
     bool        operator != (const char* str) const
@@ -293,7 +293,7 @@ public:
 
     bool        operator <  (const char* pstr) const
     {
-        return OVR_strcmp(data()->data, pstr) < 0;
+        return strcmp(data()->data, pstr) < 0;
     }
 
     bool        operator <  (const VString& str) const
@@ -303,7 +303,7 @@ public:
 
     bool        operator >  (const char* pstr) const
     {
-        return OVR_strcmp(data()->data, pstr) > 0;
+        return strcmp(data()->data, pstr) > 0;
     }
 
     bool        operator >  (const VString& str) const
