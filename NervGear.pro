@@ -1,11 +1,11 @@
 TEMPLATE = subdirs
 
-SUBDIRS += VrLib NervGearPhoto NervGearVideo
+SUBDIRS += NervGear NervGearPhoto NervGearVideo
 
-VrLib.file = source/NervGear.pro
+NervGear.file = source/NervGear.pro
 
 NervGearPhoto.subdir = examples/NervGearPhoto
-NervGearPhoto.depends = VrLib
+NervGearPhoto.depends = NervGear
 
 NervGearVideo.subdir = examples/NervGearVideo
-NervGearVideo.depends = VrLib
+NervGearVideo.depends = NervGear
