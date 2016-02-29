@@ -404,7 +404,7 @@ void Oculus360Videos::ConfigureVrMode( ovrModeParms & modeParms )
 	app->GetVrParms().multisamples = 1;
 }
 
-bool Oculus360Videos::OnKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType )
+bool Oculus360Videos::onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType )
 {
 	if ( ( ( keyCode == AKEYCODE_BACK ) && ( eventType == KeyState::KEY_EVENT_SHORT_PRESS ) ) ||
 		( ( keyCode == KEYCODE_B ) && ( eventType == KeyState::KEY_EVENT_UP ) ) )

@@ -329,7 +329,7 @@ Matrix4f VrAppInterface::DrawEyeView( const int eye, const float fovDegrees )
 	return Matrix4f();
 }
 
-bool VrAppInterface::OnKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType )
+bool VrAppInterface::onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType )
 {
 	LOG( "VrAppInterface::OnKeyEvent - default handler called" );
 	return false;
@@ -346,7 +346,7 @@ bool VrAppInterface::ShouldShowLoadingIcon() const
 	return true;
 }
 
-bool VrAppInterface::GetWantSrgbFramebuffer() const
+bool VrAppInterface::wantSrgbFramebuffer() const
 {
 	return false;
 }
@@ -1190,7 +1190,7 @@ void AppLocal::Command( const char *msg )
 
 		// Set the colorspace on the window
 		windowSurface = EGL_NO_SURFACE;
-		if ( appInterface->GetWantSrgbFramebuffer() )
+		if ( appInterface->wantSrgbFramebuffer() )
 		{
 			attribs[numAttribs++] = EGL_GL_COLORSPACE_KHR;
 			attribs[numAttribs++] = EGL_GL_COLORSPACE_SRGB_KHR;
@@ -1225,7 +1225,7 @@ void AppLocal::Command( const char *msg )
 		}
 		else
 		{
-            framebufferIsSrgb = appInterface->GetWantSrgbFramebuffer();
+            framebufferIsSrgb = appInterface->wantSrgbFramebuffer();
             framebufferIsProtected = appInterface->GetWantProtectedFramebuffer();
 		}
 		LOG( "NativeWindow %p gives surface %p", nativeWindow, windowSurface );
@@ -1996,7 +1996,7 @@ void AppLocal::VrThreadFunction()
 			// pass to the app if nothing handled it before this
 			if ( !consumedKey )
 			{
-				consumedKey = appInterface->OnKeyEvent( AKEYCODE_BACK, event );
+				consumedKey = appInterface->onKeyEvent( AKEYCODE_BACK, event );
 			}
 			// if nothing consumed the key and it's a short-press, exit the application to OculusHome
 			if ( !consumedKey )
@@ -2223,7 +2223,7 @@ void AppLocal::KeyEvent( const int keyCode, const bool down, const int repeatCou
 	// for all other keys, allow VrAppInterface the chance to handle and consume the key first
 	if ( !consumedKey )
 	{
-		consumedKey = appInterface->OnKeyEvent( keyCode, down ? KeyState::KEY_EVENT_DOWN : KeyState::KEY_EVENT_UP );
+		consumedKey = appInterface->onKeyEvent( keyCode, down ? KeyState::KEY_EVENT_DOWN : KeyState::KEY_EVENT_UP );
 	}
 
 	// ALL VRLIB KEY HANDLING OTHER THAN APP MENU SHOULD GO HERE

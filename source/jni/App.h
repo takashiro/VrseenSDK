@@ -150,7 +150,7 @@ public:
 	virtual void Command( const char * msg );
 
 	// The VrApp should return true if it consumes the key.
-	virtual bool OnKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType );
+	virtual bool onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType );
 
 	// Called by the application framework when the VR warning message is closed by the user.
 	virtual bool OnVrWarningDismissed( const bool accepted );
@@ -160,7 +160,7 @@ public:
 
 	// Overload and return true to have these attributes added to the window surface:
 	// EGL_GL_COLORSPACE_KHR,  EGL_GL_COLORSPACE_SRGB_KHR
-	virtual bool GetWantSrgbFramebuffer() const;
+	virtual bool wantSrgbFramebuffer() const;
 
 	// Overload and return true to have these attributes added to the window surface:
 	// EGL_PROTECTED_CONTENT_EXT, EGL_TRUE

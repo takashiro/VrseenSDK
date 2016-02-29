@@ -3,6 +3,7 @@ DEFINES += NV_NAMESPACE=NervGear
 
 INCLUDEPATH += \
     $$PWD/jni/core \
+    $$PWD/jni/scene \
     $PWD/jni/3rdparty/TinyXml \
     $$PWD/jni/3rdparty/minizip \
     $$PWD/jni

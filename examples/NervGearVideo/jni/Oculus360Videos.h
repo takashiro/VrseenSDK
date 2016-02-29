@@ -58,7 +58,7 @@ public:
 	virtual Matrix4f 	DrawEyeView( const int eye, const float fovDegrees );
 	virtual Matrix4f 	Frame( VrFrame vrFrame );
 	virtual void		Command( const char * msg );
-	virtual bool 		OnKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType );
+	virtual bool 		onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType );
 
 	void 				StopVideo();
 	void 				PauseVideo( bool const force );
