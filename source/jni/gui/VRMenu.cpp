@@ -161,7 +161,7 @@ void VRMenu::addItems( OvrVRMenuMgr & menuMgr, BitmapFont const & font,
 			VRMenuObject * obj = menuMgr.toObject( root->getChildHandleForIndex( childIndex++ ) );
 			if ( obj != NULL && ( parms->InitFlags & VRMENUOBJECT_INIT_FORCE_POSITION ) == 0 )
 			{
-				Bounds3f const & lb = obj->getLocalBounds( font );
+				Bounds3f const & lb = obj->getTextLocalBounds( font );
 				Vector3f size = lb.GetSize() * obj->localScale();
 				Vector3f centerOfs( left * ( size.x * -0.5f ) );
 				if ( !parms->ParentId.IsValid() )	// only contribute to height if not being reparented

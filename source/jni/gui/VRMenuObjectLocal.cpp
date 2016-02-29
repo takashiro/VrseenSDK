@@ -942,7 +942,7 @@ bool VRMenuObjectLocal:: hitTest_r( App * app, OvrVRMenuMgr & menuMgr, BitmapFon
         if ( m_flags & VRMENUOBJECT_BOUND_ALL )
         {
             // local bounds are the union of surface bounds and text bounds
-            Bounds3f localBounds = getLocalBounds( font ) * parentScale;
+            Bounds3f localBounds = getTextLocalBounds( font ) * parentScale;
             float t0;
 	        float t1;
 	        bool hit = intersectRayBounds( localStart, localDir, localBounds.GetMins(), localBounds.GetMaxs(), testContents, t0, t1 );
@@ -958,7 +958,7 @@ bool VRMenuObjectLocal:: hitTest_r( App * app, OvrVRMenuMgr & menuMgr, BitmapFon
 	        float selfT0;
 	        float selfT1;
 			OvrCollisionResult cresult;
-	        Bounds3f const & localBounds = getLocalBounds( font ) * parentScale;
+	        Bounds3f const & localBounds = getTextLocalBounds( font ) * parentScale;
             OVR_ASSERT( !localBounds.IsInverted() );
 
 	        bool hit = intersectRay( localStart, localDir, parentScale, localBounds, selfT0, selfT1, testContents, cresult );
@@ -1022,7 +1022,8 @@ void VRMenuObjectLocal::renderSurface( OvrVRMenuMgr const & menuMgr, Matrix4f co
 
 //==============================
 // VRMenuObjectLocal::GetLocalBounds
-Bounds3f VRMenuObjectLocal::getLocalBounds( BitmapFont const & font ) const { 
+Bounds3f VRMenuObjectLocal::getTextLocalBounds( BitmapFont const & font ) const
+{
 	Bounds3f bounds;
 	bounds.Clear();
     Vector3f const localScale = this->localScale();

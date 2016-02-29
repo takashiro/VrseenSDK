@@ -280,7 +280,7 @@ public:
 
     virtual	void				setLocalBoundsExpand( Vector3f const mins, Vector3f const & maxs );
 
-    virtual Bounds3f			getLocalBounds( BitmapFont const & font ) const;
+    virtual Bounds3f			getTextLocalBounds( BitmapFont const & font ) const;
     virtual Bounds3f            setTextLocalBounds( BitmapFont const & font ) const;
 
     virtual Bounds3f const &	cullBounds() const { return m_cullBounds; }

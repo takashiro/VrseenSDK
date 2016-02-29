@@ -628,7 +628,7 @@ public:
 
 	virtual	void				setLocalBoundsExpand( Vector3f const mins, Vector3f const & maxs ) = 0;
 
-	virtual Bounds3f			getLocalBounds( BitmapFont const & font ) const = 0;
+    virtual Bounds3f			getTextLocalBounds( BitmapFont const & font ) const = 0;
 	virtual Bounds3f            setTextLocalBounds( BitmapFont const & font ) const = 0;
 
 	virtual Bounds3f const &	cullBounds() const = 0;

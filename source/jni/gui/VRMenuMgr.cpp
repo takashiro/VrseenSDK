@@ -750,7 +750,7 @@ void VRMenuMgrLocal::SubmitForRenderingRecursive( OvrDebugLines & debugLines, Bi
 		//GetDebugLines().AddPoint( curModelPose.Position, 0.05f, 1, true );
 	}
 
-    cullBounds = obj->getLocalBounds( font ) * parentScale;
+    cullBounds = obj->getTextLocalBounds( font ) * parentScale;
 
 	// submit all children
     if ( obj->m_children.sizeInt() > 0 )
@@ -799,7 +799,7 @@ void VRMenuMgrLocal::SubmitForRenderingRecursive( OvrDebugLines & debugLines, Bi
 			debugLines.AddBounds( curModelPose, obj->cullBounds(), Vector4f( 0.0f, 1.0f, 1.0f, 1.0f ) );
 		}
 		{
-			Bounds3f localBounds = obj->getLocalBounds( font ) * parentScale;
+			Bounds3f localBounds = obj->getTextLocalBounds( font ) * parentScale;
             //LogBounds( obj->GetText().toCString(), "localBounds", localBounds );
     		debugLines.AddBounds( curModelPose, localBounds, Vector4f( 1.0f, 0.0f, 0.0f, 1.0f ) );
 			Bounds3f textLocalBounds = obj->setTextLocalBounds( font );
