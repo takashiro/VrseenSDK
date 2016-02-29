@@ -2,11 +2,13 @@
 DEFINES += NV_NAMESPACE=NervGear
 
 INCLUDEPATH += \
+    $$PWD/jni \
+    $$PWD/jni/api \
     $$PWD/jni/core \
+    $$PWD/jni/gui \
     $$PWD/jni/scene \
     $PWD/jni/3rdparty/TinyXml \
-    $$PWD/jni/3rdparty/minizip \
-    $$PWD/jni
+    $$PWD/jni/3rdparty/minizip
 
 # OpenGL ES 3.0
 LIBS += -lGLESv3

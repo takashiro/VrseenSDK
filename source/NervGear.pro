@@ -10,7 +10,9 @@ DEFINES += NV_NAMESPACE=NervGear
 
 INCLUDEPATH += \
     jni \
+    jni/api \
     jni/core \
+    jni/gui \
     jni/scene
 
 SOURCES += \
