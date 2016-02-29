@@ -1,22 +1,11 @@
-/************************************************************************************
-
-Filename    :   App.h
-Content     :   Native counterpart to VrActivity
-Created     :   September 30, 2013
-Authors     :   John Carmack
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
 #pragma once
 
 #include "vglobal.h"
 
 #include <pthread.h>
 #include "OVR.h"
-#include "Android/GlUtils.h"
-#include "Android/LogUtils.h"
+#include "android/GlUtils.h"
+#include "android/LogUtils.h"
 #include "api/VrApi.h"
 #include "api/VrApi_Android.h"
 #include "GlProgram.h"

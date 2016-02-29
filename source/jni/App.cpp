@@ -48,7 +48,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "gui/VolumePopup.h"
 #include "PackageFiles.h"
 #include "VrLocale.h"
-#include "UserProfile.h"
+#include "VUserProfile.h"
 #include "Console.h"
 
 //#define TEST_TIMEWARP_WATCHDOG
@@ -544,11 +544,12 @@ AppLocal::AppLocal( JNIEnv & jni_, jobject activityObject_, VrAppInterface & int
 	appInterface->app = this;
 
 	// Load user profile data relevant to rendering
-    UserProfile profile = LoadProfile();
-    viewParms.InterpupillaryDistance = profile.Ipd;
-    viewParms.EyeHeight = profile.EyeHeight;
-    viewParms.HeadModelDepth = profile.HeadModelDepth;
-    viewParms.HeadModelHeight = profile.HeadModelHeight;
+    VUserProfile profile;
+    profile.load();
+    viewParms.InterpupillaryDistance = profile.ipd;
+    viewParms.EyeHeight = profile.eyeHeight;
+    viewParms.HeadModelDepth = profile.headModelDepth;
+    viewParms.HeadModelHeight = profile.headModelHeight;
 
 	// Register console functions
 	InitConsole();

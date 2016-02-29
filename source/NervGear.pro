@@ -122,8 +122,8 @@ SOURCES += \
     jni/PackageFiles.cpp \
     jni/PathUtils.cpp \
     jni/SoundManager.cpp \
+    jni/VUserProfile.cpp \
     jni/TalkToJava.cpp \
-    jni/UserProfile.cpp \
     jni/VrCommon.cpp \
     jni/VrLocale.cpp
 
@@ -278,7 +278,7 @@ HEADERS += \
     jni/PathUtils.h \
     jni/DebugLines.h \
     jni/SoundManager.h \
-    jni/UserProfile.h \
+    jni/VUserProfile.h \
     jni/VrLocale.h \
     jni/Console.h \
     jni/vglobal.h \

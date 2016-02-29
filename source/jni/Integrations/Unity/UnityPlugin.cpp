@@ -28,7 +28,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 // App.h should NOT be included, only stand-alone code!
 #include "EyePostRender.h"
-#include "UserProfile.h"
+#include "VUserProfile.h"
 #include "PackageFiles.h"
 #include "VrLocale.h"
 #include "Console.h"
@@ -1054,7 +1054,9 @@ OCULUS_EXPORT bool OVR_SetProfileEditable(bool allowProfileEdit)
 // TODO: Rename this from "Get" to "Load"
 OCULUS_EXPORT bool OVR_GetPlayerEyeHeight(float &eyeHeight)
 {
-    eyeHeight = LoadProfile().EyeHeight;
+    VUserProfile profile;
+    profile.load();
+    eyeHeight = profile.eyeHeight;
 	return true;
 }
 
@@ -1067,9 +1069,10 @@ OCULUS_EXPORT bool OVR_SavePlayerEyeHeight(float eyeHeight)
         return false;
     }
 
-    UserProfile profile = LoadProfile();
-    profile.EyeHeight = eyeHeight;
-    SaveProfile(profile);
+    VUserProfile profile;
+    profile.load();
+    profile.eyeHeight = eyeHeight;
+    profile.save();
     return true;
 }
 
@@ -1077,7 +1080,9 @@ OCULUS_EXPORT bool OVR_SavePlayerEyeHeight(float eyeHeight)
 // TODO: Rename this from "Get" to "Load"
 OCULUS_EXPORT bool OVR_GetInterpupillaryDistance(float &interpupillaryDistance)
 {
-    interpupillaryDistance = LoadProfile().Ipd;
+    VUserProfile profile;
+    profile.load();
+    interpupillaryDistance = profile.ipd;
 	return true;
 }
 
@@ -1090,9 +1095,10 @@ OCULUS_EXPORT bool OVR_SaveInterpupillaryDistance(float interpupillaryDistance)
         return false;
     }
 
-    UserProfile profile = LoadProfile();
-    profile.Ipd = interpupillaryDistance;
-    SaveProfile(profile);
+    VUserProfile profile;
+    profile.load();
+    profile.ipd = interpupillaryDistance;
+    profile.save();
     return true;
 }
 
@@ -1100,9 +1106,10 @@ OCULUS_EXPORT bool OVR_SaveInterpupillaryDistance(float interpupillaryDistance)
 // TODO: Rename this from "Get" to "Load"
 OCULUS_EXPORT bool OVR_GetPlayerHeadModel(float &neckToEyeDepth, float &neckToEyeHeight)
 {
-    UserProfile profile = LoadProfile();
-    neckToEyeDepth = profile.HeadModelDepth;
-    neckToEyeHeight = profile.HeadModelHeight;
+    VUserProfile profile;
+    profile.load();
+    neckToEyeDepth = profile.headModelDepth;
+    neckToEyeHeight = profile.headModelHeight;
     return true;
 }
 
@@ -1115,10 +1122,11 @@ OCULUS_EXPORT bool OVR_SavePlayerHeadModel(float neckToEyeDepth, float neckToEye
         return false;
     }
 
-    UserProfile profile = LoadProfile();
-    profile.HeadModelDepth = neckToEyeDepth;
-    profile.HeadModelHeight = neckToEyeHeight;
-    SaveProfile(profile);
+    VUserProfile profile;
+    profile.load();
+    profile.headModelDepth = neckToEyeDepth;
+    profile.headModelHeight = neckToEyeHeight;
+    profile.save();
     return true;
 }
 
