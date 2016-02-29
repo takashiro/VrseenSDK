@@ -4,8 +4,6 @@ CONFIG -= app_bundle
 CONFIG -= qt
 TARGET = nervgearvideo
 
-CONFIG(debug, debug|release): DEFINES += OVR_DEBUG=1 NDK_DEBUG=1
-
 SOURCES += \
     jni/Oculus360Videos.cpp \
     jni/VideoBrowser.cpp \

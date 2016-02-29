@@ -5,8 +5,6 @@ QT -= core
 QT -= gui
 TARGET = vrscene
 
-CONFIG(debug, debug|release): DEFINES += OVR_DEBUG=1 NDK_DEBUG=1
-
 SOURCES += jni/VrScene.cpp
 
 HEADERS += jni/VrScene.h

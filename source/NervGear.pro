@@ -4,7 +4,7 @@ CONFIG -= app_bundle
 CONFIG -= qt
 
 CONFIG += nervgear_capture
-CONFIG(debug, debug|release): DEFINES += OVR_DEBUG=1 NDK_DEBUG=1
+CONFIG(debug, debug|release): DEFINES += OVR_DEBUG=1 NDK_DEBUG=1 OVR_BUILD_DEBUG
 
 DEFINES += NV_NAMESPACE=NervGear
 
