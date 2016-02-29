@@ -33,6 +33,7 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     core/Atomic.cpp \
                     core/File.cpp \
                     core/FileFILE.cpp \
+                    core/VJson.cpp \ \
                     core/Log.cpp \
                     core/Lockless.cpp \
                     core/VMath.cpp \
@@ -56,7 +57,6 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     core/android/NativeBuildStrings.cpp \
                     core/android/OVRVersion.cpp \
                     core/char.cpp \
-                    core/json.cpp \
                     api/VrApi.cpp \
                     api/Vsync.cpp \
                     api/DirectRender.cpp \
@@ -136,7 +136,7 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     PathUtils.cpp \
                     DebugLines.cpp \
                     SoundManager.cpp \
-                    UserProfile.cpp \
+                    VUserProfile.cpp \
                     VrLocale.cpp \
                     Console.cpp
 

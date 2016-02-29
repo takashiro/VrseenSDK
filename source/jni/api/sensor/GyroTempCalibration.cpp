@@ -12,7 +12,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "GyroTempCalibration.h"
 
-#include "json.h"
+#include "VJson.h"
 #include "Log.h"
 #include "String_Utils.h"
 

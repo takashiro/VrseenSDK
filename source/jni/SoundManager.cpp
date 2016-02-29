@@ -11,7 +11,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 *************************************************************************************/
 #include "SoundManager.h"
 
-#include "json.h"
+#include "VJson.h"
 #include "Android/LogUtils.h"
 
 #include "PathUtils.h"

@@ -1,6 +1,6 @@
 #include "VUserProfile.h"
 
-#include "json.h"
+#include "VJson.h"
 #include "android/LogUtils.h"
 
 #include <fstream>

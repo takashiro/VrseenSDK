@@ -12,7 +12,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "JniUtils.h"
 
 #include "Std.h"
-#include "json.h"
+#include "VJson.h"
 
 #include <fstream>
 

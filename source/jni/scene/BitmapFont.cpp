@@ -29,7 +29,7 @@
 
 #include "UTF8Util.h"
 #include "VString.h"
-#include "json.h"
+#include "VJson.h"
 #include "Android/GlUtils.h"
 #include "Android/LogUtils.h"
 

@@ -18,7 +18,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "Array.h"
 #include "VString.h"
 #include "String_Utils.h"
-#include "json.h"
+#include "VJson.h"
 #include "BinaryFile.h"
 #include "MappedFile.h"
 #include "Android/GlUtils.h"

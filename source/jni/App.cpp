@@ -25,7 +25,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "System.h"
 #include "VMath.h"
 #include "TypesafeNumber.h"
-#include "json.h"
+#include "VJson.h"
 #include "Android/JniUtils.h"
 #include "Android/NativeBuildStrings.h"
 

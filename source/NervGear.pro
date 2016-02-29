@@ -19,6 +19,7 @@ SOURCES += \
     jni/core/Atomic.cpp \
     jni/core/File.cpp \
     jni/core/FileFILE.cpp \
+    jni/core/VJson.cpp \
     jni/core/Log.cpp \
     jni/core/Lockless.cpp \
     jni/core/VMath.cpp \
@@ -43,7 +44,6 @@ SOURCES += \
     jni/core/android/NativeBuildStrings.cpp \
     jni/core/android/OVRVersion.cpp \
     jni/core/char.cpp \
-    jni/core/json.cpp \
     jni/api/VrApi.cpp \
     jni/api/Vsync.cpp \
     jni/api/DirectRender.cpp \
@@ -146,6 +146,7 @@ HEADERS += \
     jni/core/Deque.h \
     jni/core/File.h \
     jni/core/FileFILE.h \
+    jni/core/VJson.h \
     jni/core/Log.h \
     jni/core/Lockless.h \
     jni/core/VMath.h \
@@ -176,7 +177,6 @@ HEADERS += \
     jni/core/String_Utils.h \
     jni/core/StringHash.h \
     jni/core/TypesafeNumber.h \
-    jni/core/json.h \
     jni/embedded/dependency_error_de.h \
     jni/embedded/dependency_error_en.h \
     jni/embedded/dependency_error_es.h \

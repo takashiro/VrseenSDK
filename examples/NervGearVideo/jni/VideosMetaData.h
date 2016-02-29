@@ -16,7 +16,7 @@ Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
 
 #include "VString.h"
 #include "gui/MetaDataManager.h"
-#include "json.h"
+#include "VJson.h"
 
 namespace NervGear {
 

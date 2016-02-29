@@ -13,7 +13,7 @@
 #if !defined( OVR_PhotosMetaData_h )
 #define OVR_PhotosMetaData_h
 
-#include <Json.h>
+#include <VJson.h>
 
 #include <VString.h>
 #include <gui/MetaDataManager.h>

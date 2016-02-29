@@ -18,7 +18,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "Profile.h"
 
-#include "json.h"
+#include "VJson.h"
 #include "Types.h"
 #include "SysFile.h"
 #include "Allocator.h"
