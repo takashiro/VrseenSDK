@@ -169,7 +169,6 @@ HEADERS += \
     jni/core/MappedFile.h \
     jni/core/MemBuffer.h \
     jni/core/Types.h \
-    jni/core/Hash.h \
     jni/core/KeyCodes.h \
     jni/core/List.h \
     jni/core/BitFlags.h \

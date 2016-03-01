@@ -10,7 +10,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 ************************************************************************************/
 
 #include "Threads.h"
-#include "Hash.h"
 
 #ifdef OVR_ENABLE_THREADS
 
@@ -19,6 +18,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include <pthread.h>
 #include <time.h>
+#include <set>
 
 #ifdef OVR_OS_PS3
 #include <sys/sys_time.h>
@@ -481,7 +481,7 @@ class ThreadList : public NewOverrideBase
         }
     };
 
-    HashSet<Thread*, ThreadHashOp>        ThreadSet;
+    std::set<Thread*>        ThreadSet;
     Mutex                                 ThreadMutex;
     WaitCondition                         ThreadsEmpty;
     // Track the root thread that created us.
@@ -492,14 +492,14 @@ class ThreadList : public NewOverrideBase
     void addThread(Thread *pthread)
     {
         Mutex::Locker lock(&ThreadMutex);
-        ThreadSet.Add(pthread);
+        ThreadSet.insert(pthread);
     }
 
     void removeThread(Thread *pthread)
     {
         Mutex::Locker lock(&ThreadMutex);
-        ThreadSet.Remove(pthread);
-        if (ThreadSet.GetSize() == 0)
+        ThreadSet.erase(pthread);
+        if (ThreadSet.size() == 0)
             ThreadsEmpty.notify();
     }
 
@@ -509,7 +509,7 @@ class ThreadList : public NewOverrideBase
         OVR_ASSERT(pthread_self() == RootThreadId);
 
         Mutex::Locker lock(&ThreadMutex);
-        while (ThreadSet.GetSize() != 0)
+        while (ThreadSet.size() != 0)
             ThreadsEmpty.wait(&ThreadMutex);
     }
 
