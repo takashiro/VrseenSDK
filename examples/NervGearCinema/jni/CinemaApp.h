@@ -23,7 +23,7 @@ public:
 
     Matrix4f DrawEyeView( const int eye, const float fovDegrees ) override;
 
-    void ConfigureVrMode( ovrModeParms & modeParms ) override;
+    void ConfigureVrMode(ovrModeParms & modeParms) override;
 
     void Command( const char * msg ) override;
     bool onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType ) override;

@@ -1,23 +1,9 @@
-/************************************************************************************
-
-Filename    :   ShaderManager.h
-Content     :	Allocates and builds shader programs.
-Created     :	7/3/2014
-Authors     :   Jim Dosé and John Carmack
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-This source code is licensed under the BSD-style license found in the
-LICENSE file in the Cinema/ directory. An additional grant 
-of patent rights can be found in the PATENTS file in the same directory.
-
-*************************************************************************************/
-
-#if !defined( ShaderManager_h )
-#define ShaderManager_h
+#pragma once
 
 #include "GlProgram.h"
 #include "ModelFile.h"
+
+NV_USING_NAMESPACE
 
 namespace OculusCinema {
 
@@ -65,5 +51,3 @@ public:
 };
 
 } // namespace OculusCinema
-
-#endif // ShaderManager_h

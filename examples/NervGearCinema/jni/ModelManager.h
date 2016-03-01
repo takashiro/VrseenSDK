@@ -20,6 +20,8 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "VString.h"
 #include "Array.h"
 
+NV_USING_NAMESPACE
+
 namespace OculusCinema {
 
 class CinemaApp;

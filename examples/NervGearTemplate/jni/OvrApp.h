@@ -4,6 +4,8 @@
 #include "App.h"
 #include "ModelView.h"
 
+NV_USING_NAMESPACE
+
 class OvrApp : public NervGear::VrAppInterface
 {
 public:

@@ -278,7 +278,7 @@ void CinemaApp::theaterSelection()
 
 void CinemaApp::setMovieSelection( bool inLobby )
 {
-	inLobby = inLobby;
+	this->inLobby = inLobby;
 	m_viewMgr.openView( m_movieSelectionMenu );
 }
 
@@ -310,7 +310,8 @@ Matrix4f CinemaApp::DrawEyeView( const int eye, const float fovDegrees ) {
 	return m_viewMgr.drawEyeView( eye, fovDegrees );
 }
 
-void CinemaApp::ConfigureVrMode( ovrModeParms & modeParms ) {
+void CinemaApp::ConfigureVrMode(ovrModeParms &modeParms)
+{
 	// We need very little CPU for movie playing, but a fair amount of GPU.
 	// The CPU clock should ramp up above the minimum when necessary.
 	LOG( "ConfigureClocks: Cinema only needs minimal clocks" );

@@ -15,6 +15,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "App.h"
 #include "ModelView.h"
 
+NV_USING_NAMESPACE
+
 class VrScene : public NervGear::VrAppInterface
 {
 public:

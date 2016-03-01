@@ -24,6 +24,8 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "PackageFiles.h"
 #include "PhotosMetaData.h"
 
+NV_NAMESPACE_BEGIN
+
 static const char * DEFAULT_PANO = "assets/placeholderBackground.jpg";
 
 // Comment out to disable all VRMenus - renders only the startup pano and nothing else
@@ -40,9 +42,6 @@ long Java_me_takashiro_nervgear_photo_MainActivity_nativeSetAppInterface( JNIEnv
 }
 
 } // extern "C"
-
-namespace NervGear
-{
 
 Oculus360Photos::DoubleBufferedTextureData::DoubleBufferedTextureData()
 	: CurrentIndex( 0 )
@@ -1058,4 +1057,4 @@ bool Oculus360Photos::allowPanoInput() const
 	return m_browser->isClosed() && m_menuState == MENU_PANO_FULLY_VISIBLE;
 }
 
-}
+NV_NAMESPACE_END
