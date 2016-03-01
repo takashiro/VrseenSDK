@@ -54,6 +54,9 @@ static const char * videosLabel = "@string/app_name";
 static const float	FadeOutTime = 0.25f;
 static const float	FadeOverTime = 1.0f;
 
+namespace NervGear
+{
+
 extern "C" {
 
 static jclass	GlobalActivityClass;
@@ -113,8 +116,7 @@ void Java_me_takashiro_nervgear_video_MainActivity_nativeVideoStartError( JNIEnv
 
 } // extern "C"
 
-namespace NervGear
-{
+
 
 Oculus360Videos::Oculus360Videos()
 	: MainActivityClass( GlobalActivityClass )
