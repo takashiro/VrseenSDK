@@ -1,17 +1,4 @@
-/************************************************************************************
-
-Filename    :   MetaDataManager.h
-Content     :   A class to manage metadata used by FolderBrowser
-Created     :   January 26, 2015
-Authors     :   Jonathan E. Wright, Warsam Osman, Madhu Kalva
-
-Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
-
-
-*************************************************************************************/
-
-#if !defined( OVR_MetaDataManager_h )
-#define OVR_MetaDataManager_h
+#pragma once
 
 #include "Array.h"
 #include "VString.h"
@@ -21,13 +8,11 @@ Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
 
 NV_NAMESPACE_BEGIN
 
-//==============================================================
-// OvrMetaData
 struct OvrMetaDatum
 {
-    int						id;
-    Array< VString >			tags;
-    VString					url;
+    int id;
+    Array<VString> tags;
+    VString	url;
 
 protected:
 	OvrMetaDatum() {}
@@ -134,6 +119,4 @@ private:
     double					m_version;
 };
 
-}
-
-#endif // OVR_MetaDataManager_h
+NV_NAMESPACE_END

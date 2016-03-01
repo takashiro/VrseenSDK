@@ -92,13 +92,13 @@ StringHash< VString > RelativeDirectoryFileList( const Array< VString > & search
 					VString s( RelativeDirPath );
 					s += entry->d_name;
 					s += "/";
-					uniqueStrings.SetCaseInsensitive( s, s );
+                    uniqueStrings.insert( s, s );
 				}
 				else if ( entry->d_type == DT_REG )
 				{
 					VString s( RelativeDirPath );
 					s += entry->d_name;
-					uniqueStrings.SetCaseInsensitive( s, s );
+                    uniqueStrings.insert( s, s );
 				}
 			}
 			closedir( dir );

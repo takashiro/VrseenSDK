@@ -116,11 +116,6 @@ protected:
     DataDesc*   allocDataCopy2(uint size, uint lengthIsSize,
                                const char* pdata1, uint copySize1,
                                const char* pdata2, uint copySize2);
-
-    // Special constructor to avoid data initalization when used in derived class.
-    struct NoConstructor { };
-    VString(const NoConstructor&) { }
-
 public:
     // Constructors / Destructors.
     VString();

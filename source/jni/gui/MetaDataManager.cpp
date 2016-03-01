@@ -51,9 +51,8 @@ void OvrMetaData::initFromDirectory( const char * relativePath, const Array< VSt
 	// Find all the files - checks all search paths
 	StringHash< VString > uniqueFileList = RelativeDirectoryFileList( searchPaths, relativePath );
 	Array<VString> fileList;
-	for ( StringHash< VString >::ConstIterator iter = uniqueFileList.Begin(); iter != uniqueFileList.End(); ++iter )
-	{
-		fileList.append( iter->First );
+    for (const std::pair<VString, VString> &iter : uniqueFileList) {
+        fileList.append(iter.first);
 	}
 	SortStringArray( fileList );
 	Category currentCategory;
@@ -91,17 +90,14 @@ void OvrMetaData::initFromDirectory( const char * relativePath, const Array< VSt
 			datum->tags.append( currentCategory.categoryTag );
 			if ( GetFullPath( searchPaths, s, datum->url ) )
 			{
-				StringHash< int >::ConstIterator iter = m_urlToIndex.FindCaseInsensitive( datum->url );
-				if ( iter == m_urlToIndex.End() )
-				{
-					m_urlToIndex.Add( datum->url, dataIndex );
-					m_etaData.append( datum );
+                StringHash<int>::const_iterator iter = m_urlToIndex.find(datum->url);
+                if ( iter == m_urlToIndex.end() ) {
+                    m_urlToIndex.insert(datum->url, dataIndex);
+                    m_etaData.append(datum);
 					LOG( "OvrMetaData adding datum %s with index %d to %s", datum->url.toCString(), dataIndex, currentCategory.categoryTag.toCString() );
 					// Register with category
 					currentCategory.datumIndicies.append( dataIndex );
-				}
-				else
-				{
+                } else {
 					WARN( "OvrMetaData::InitFromDirectory found duplicate url %s", datum->url.toCString() );
 				}
 			}
@@ -133,9 +129,9 @@ void OvrMetaData::initFromFileList( const Array< VString > & fileList, const Ovr
 	{
 		const VString & filePath = fileList.at( i );
 		const VString categoryTag = ExtractDirectory( fileList.at( i ) );
-		StringHash< int >::ConstIterator iter = uniqueCategoryList.Find( categoryTag );
+        StringHash< int >::ConstIterator iter = uniqueCategoryList.find( categoryTag );
 		int catIndex = -1;
-		if ( iter == uniqueCategoryList.End() )
+        if ( iter == uniqueCategoryList.end() )
 		{
 			LOG( " category: %s", categoryTag.toCString() );
 			Category cat;
@@ -145,11 +141,11 @@ void OvrMetaData::initFromFileList( const Array< VString > & fileList, const Ovr
 			cat.label = cat.categoryTag;
 			catIndex = m_categories.sizeInt();
 			m_categories.append( cat );
-			uniqueCategoryList.Add( categoryTag, catIndex );
+            uniqueCategoryList.insert( categoryTag, catIndex );
 		}
 		else
 		{
-			catIndex = iter->Second;
+            catIndex = iter->second;
 		}
 
 		OVR_ASSERT( catIndex > -1 );
@@ -170,10 +166,10 @@ void OvrMetaData::initFromFileList( const Array< VString > & fileList, const Ovr
 			datum->url = filePath;
 			datum->tags.append( currentCategory.categoryTag );
 
-			StringHash< int >::ConstIterator iter = m_urlToIndex.FindCaseInsensitive( datum->url );
-			if ( iter == m_urlToIndex.End() )
+            StringHash< int >::ConstIterator iter = m_urlToIndex.find( datum->url );
+            if ( iter == m_urlToIndex.end() )
 			{
-				m_urlToIndex.Add( datum->url, dataIndex );
+                m_urlToIndex.insert( datum->url, dataIndex );
 				m_etaData.append( datum );
 				LOG( "OvrMetaData::InitFromFileList adding datum %s with index %d to %s", datum->url.toCString(),
 					dataIndex, currentCategory.categoryTag.toCString() );
@@ -327,15 +323,15 @@ void OvrMetaData::processRemoteMetaFile( const char * metaFileString, const int 
 		for ( int i = 0; i < m_categories.sizeInt(); ++i )
 		{
 			const Category & storedCategory = m_categories.at( i );
-			CurrentCategoriesSet.Add( storedCategory.categoryTag, true );
+            CurrentCategoriesSet.insert( storedCategory.categoryTag, true );
 		}
 
 		for ( int remoteIndex = 0; remoteIndex < remoteCategories.sizeInt(); ++remoteIndex )
 		{
 			const Category & remoteCat = remoteCategories.at( remoteIndex );
 
-			StringHash< bool >::ConstIterator iter = CurrentCategoriesSet.Find( remoteCat.categoryTag );
-			if ( iter == CurrentCategoriesSet.End() )
+            StringHash< bool >::ConstIterator iter = CurrentCategoriesSet.find( remoteCat.categoryTag );
+            if ( iter == CurrentCategoriesSet.end() )
 			{
 				const int targetIndex = startIndex + remoteIndex;
 				LOG( "OvrMetaData::ProcessRemoteMetaFile merging %s into category index %d", remoteCat.categoryTag.toCString(), targetIndex );
@@ -456,7 +452,7 @@ void OvrMetaData::processMetaData( const NervGear::Json &dataFile, const Array< 
 
 void OvrMetaData::reconcileMetaData( StringHash< OvrMetaDatum * > & storedMetaData )
 {
-	if ( storedMetaData.IsEmpty() )
+    if ( storedMetaData.isEmpty() )
 	{
 		return;
 	}
@@ -465,10 +461,10 @@ void OvrMetaData::reconcileMetaData( StringHash< OvrMetaDatum * > & storedMetaDa
 	// Now for any remaining stored data - check if it's remote and just add it, sorted by the
 	// assigned Id
 	Array< OvrMetaDatum * > sortedEntries;
-	StringHash< OvrMetaDatum * >::Iterator storedIter = storedMetaData.Begin();
-	for ( ; storedIter != storedMetaData.End(); ++storedIter )
+    StringHash< OvrMetaDatum * >::Iterator storedIter = storedMetaData.begin();
+    for ( ; storedIter != storedMetaData.end(); ++storedIter )
 	{
-		OvrMetaDatum * storedDatum = storedIter->Second;
+        OvrMetaDatum * storedDatum = storedIter->second;
 		if ( isRemote( storedDatum ) )
 		{
 			LOG( "ReconcileMetaData metadata adding remote %s", storedDatum->url.toCString() );
@@ -481,7 +477,7 @@ void OvrMetaData::reconcileMetaData( StringHash< OvrMetaDatum * > & storedMetaDa
 	{
 		m_etaData.append( *sortedIter );
 	}
-	storedMetaData.Clear();
+    storedMetaData.clear();
 }
 
 void OvrMetaData::dedupMetaData( const Array< OvrMetaDatum * > & existingData, StringHash< OvrMetaDatum * > & newData )
@@ -491,15 +487,15 @@ void OvrMetaData::dedupMetaData( const Array< OvrMetaDatum * > & existingData, S
     {
         OvrMetaDatum * metaDatum = existingData.at( i );
 
-        StringHash< OvrMetaDatum * >::Iterator iter = newData.FindCaseInsensitive( metaDatum->url );
+        StringHash< OvrMetaDatum * >::Iterator iter = newData.find( metaDatum->url );
 
-        if ( iter != newData.End() )
+        if ( iter != newData.end() )
         {
-            OvrMetaDatum * storedDatum = iter->Second;
+            OvrMetaDatum * storedDatum = iter->second;
             LOG( "DedupMetaData metadata for %s", storedDatum->url.toCString() );
             Alg::Swap( storedDatum->tags, metaDatum->tags );
             swapExtendedData( storedDatum, metaDatum );
-            newData.Remove( iter->First );
+            newData.remove( iter->first );
         }
     }
 }
@@ -530,16 +526,16 @@ void OvrMetaData::reconcileCategories( Array< Category > & storedCategories )
 	{
 		const Category & storedCategory = storedCategories.at( i );
 		LOG( "OvrMetaData::ReconcileCategories storedCategory: %s", storedCategory.categoryTag.toCString() );
-		StoredCategoryMap.Add( storedCategory.categoryTag, true );
+        StoredCategoryMap.insert( storedCategory.categoryTag, true );
 	}
 
 	// Now add the read in categories if they differ
 	for ( int i = 0; i < m_categories.sizeInt(); ++i )
 	{
 		const Category & readInCategory = m_categories.at( i );
-		StringHash< bool >::ConstIterator iter = StoredCategoryMap.Find( readInCategory.categoryTag );
+        StringHash< bool >::ConstIterator iter = StoredCategoryMap.find( readInCategory.categoryTag );
 
-		if ( iter == StoredCategoryMap.End() )
+        if ( iter == StoredCategoryMap.end() )
 		{
 			LOG( "OvrMetaData::ReconcileCategories adding %s", readInCategory.categoryTag.toCString() );
 			finalCategories.append( readInCategory );
@@ -673,14 +669,14 @@ void OvrMetaData::extractMetaData(const Json &dataFile, const Array< VString > &
 				extractExtendedData( datum, *metaDatum );
 				LOG( "OvrMetaData::ExtractMetaData adding datum %s", metaDatum->url.toCString() );
 
-				StringHash< OvrMetaDatum * >::Iterator iter = outMetaData.FindCaseInsensitive( metaDatum->url );
-				if ( iter == outMetaData.End() )
+                StringHash< OvrMetaDatum * >::Iterator iter = outMetaData.find( metaDatum->url );
+                if ( iter == outMetaData.end() )
 				{
-					outMetaData.Add( metaDatum->url, metaDatum );
+                    outMetaData.insert( metaDatum->url, metaDatum );
 				}
 				else
 				{
-					iter->Second = metaDatum;
+                    iter->second = metaDatum;
 				}
 			}
 		}
@@ -726,14 +722,14 @@ void OvrMetaData::extractRemoteMetaData( const Json &dataFile, StringHash< OvrMe
 				metaDatum->url = jsonDatum.value( URL_INNER ).toString().c_str();
 				extractExtendedData( jsonDatum, *metaDatum );
 
-				StringHash< OvrMetaDatum * >::Iterator iter = outMetaData.FindCaseInsensitive( metaDatum->url );
-				if ( iter == outMetaData.End() )
+                StringHash< OvrMetaDatum * >::Iterator iter = outMetaData.find( metaDatum->url );
+                if ( iter == outMetaData.end() )
 				{
-					outMetaData.Add( metaDatum->url, metaDatum );
+                    outMetaData.insert( metaDatum->url, metaDatum );
 				}
 				else
 				{
-					iter->Second = metaDatum;
+                    iter->second = metaDatum;
 				}
 			}
 		}
