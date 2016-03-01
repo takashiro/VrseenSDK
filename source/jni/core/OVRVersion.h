@@ -1,22 +1,12 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   OVRVersion.h
-Content     :
+#define NV_MAJOR_VERSION 0
+#define NV_MINOR_VERSION 0
+#define NV_BUILD_VERSION 0
+#define NV_PATCH_VERSION 0
 
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
+#define NV_VERSION_CHECK(major, minor, build, patch) ((major<<24)|(minor<<16)|(build<<8)|patch)
+#define NV_VERSION NV_VERSION_CHECK(NV_MAJOR_VERSION, NV_MINOR_VERSION, NV_BUILD_VERSION, NV_PATCH_VERSION)
 
-*************************************************************************************/
-
-#ifndef _OVR_VERSION_H
-#define _OVR_VERSION_H
-
-#define OVR_MAJOR_VERSION 0
-#define OVR_MINOR_VERSION 5
-#define OVR_BUILD_VERSION 0
-#define OVR_REV_VERSION	  0
-
-// Note: this is an array rather than a char* because this makes it
-// more convenient to extract the value of the symbol from the binary
-extern const char OVR_VERSION_STRING[];
-
-#endif
+//@to-do: remove this
+#define NV_VERSION_STRING "0.0.0"

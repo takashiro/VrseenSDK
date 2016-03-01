@@ -46,7 +46,6 @@ SOURCES += \
     jni/core/android/JniUtils.cpp \
     jni/core/android/LogUtils.cpp \
     jni/core/android/NativeBuildStrings.cpp \
-    jni/core/android/OVRVersion.cpp \
     jni/api/VrApi.cpp \
     jni/api/Vsync.cpp \
     jni/api/DirectRender.cpp \

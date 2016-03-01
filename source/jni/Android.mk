@@ -27,8 +27,7 @@ LOCAL_C_INCLUDES :=  \
 	$(LOCAL_PATH)/$(NV_ROOT)/api \
 	$(LOCAL_PATH)/$(NV_ROOT)/core \
 	$(LOCAL_PATH)/$(NV_ROOT)/gui \
-	$(LOCAL_PATH)/$(NV_ROOT)/scene \
-    $(LOCAL_PATH)/$(NV_ROOT)/3rdparty/minizip
+	$(LOCAL_PATH)/$(NV_ROOT)/scene
 
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_C_INCLUDES)
 
@@ -61,7 +60,6 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     core/android/JniUtils.cpp \
                     core/android/LogUtils.cpp \
                     core/android/NativeBuildStrings.cpp \
-                    core/android/OVRVersion.cpp \
                     api/VrApi.cpp \
                     api/Vsync.cpp \
                     api/DirectRender.cpp \
@@ -150,6 +148,8 @@ LOCAL_SRC_FILES +=	3rdParty/stb/stb_image.c \
 					3rdParty/stb/stb_image_write.c
 
 # minizip for loading ovrscene files
+LOCAL_C_INCLUDES += $(LOCAL_PATH)/$(NV_ROOT)/3rdparty/minizip
+
 LOCAL_SRC_FILES +=	3rdParty/minizip/ioapi.c \
 					3rdParty/minizip/miniunz.c \
 					3rdParty/minizip/mztools.c \

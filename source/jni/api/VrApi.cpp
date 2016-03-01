@@ -430,9 +430,9 @@ JNIEXPORT void Java_me_takashiro_nervgear_DockReceiver_nativeDockEvent(JNIEnv *j
 
 } // extern "C"
 
-char const * ovr_GetVersionString()
+const char *ovr_GetVersionString()
 {
-	return OVR_VERSION_STRING;
+    return NV_VERSION_STRING;
 }
 
 double ovr_GetTimeInSeconds()
