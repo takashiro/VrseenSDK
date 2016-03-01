@@ -21,7 +21,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "GazeCursor.h"
 #include "KeyState.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 class App;
 struct VrFrame;
@@ -90,7 +90,7 @@ public:
     void					initWithItems( OvrVRMenuMgr & menuMgr, BitmapFont const & font, float const menuDistance,
 									VRMenuFlags_t const & flags, Array< VRMenuObjectParms const * > & itemParms );
     void                    addItems( OvrVRMenuMgr & menuMgr, BitmapFont const & font,
-                                    NervGear::Array< VRMenuObjectParms const * > & itemParms,
+                                    Array< VRMenuObjectParms const * > & itemParms,
                                     menuHandle_t parentHandle, bool const recenter );
     void					shutdown( OvrVRMenuMgr & menuMgr );
     void					frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font,
@@ -189,6 +189,6 @@ private:
     virtual bool	isFinishedClosing() const { return true; }
 };
 
-} // namespace NervGear
+NV_NAMESPACE_END
 
 #endif // OVR_VRMenu_h

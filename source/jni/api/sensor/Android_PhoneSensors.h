@@ -1,24 +1,15 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   OVR_Android_PhoneSensors.h
-Content     :   Android sensor interface.
-Created     :
-Authors     :	Lee Cooper
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
-#ifndef OVR_Android_PhoneSensors_h
-#define OVR_Android_PhoneSensors_h
-
+#include "vglobal.h"
 #include "PhoneSensors.h"
 #include "VMath.h"
 #include "Threads.h"
 
 #include <android/sensor.h>
 
-namespace NervGear { namespace Android {
+NV_NAMESPACE_BEGIN
+
+namespace Android {
 
 class PhoneSensors : public NervGear::PhoneSensors
 {
@@ -38,6 +29,6 @@ private:
 	ASensorRef 			MagSensorUncalibrated;
 };
 
-}} // namespace NervGear::Android
+}
 
-#endif // OVR_Android_PhoneSensors_h
+NV_NAMESPACE_END

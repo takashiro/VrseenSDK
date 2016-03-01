@@ -1,20 +1,8 @@
-/************************************************************************************
-
-Filename    :   OVR_LatencyTestDeviceImpl.h
-Content     :   Latency Tester specific implementation.
-Created     :   March 7, 2013
-Authors     :   Lee Cooper
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
-#ifndef OVR_LatencyTestImpl_h
-#define OVR_LatencyTestImpl_h
+#pragma once
 
 #include "HIDDeviceImpl.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 struct LatencyTestSamplesMessage;
 struct LatencyTestButtonMessage;
@@ -76,11 +64,11 @@ public:
 
 
 //-------------------------------------------------------------------------------------
-// ***** NervGear::LatencyTestDeviceImpl
+// ***** LatencyTestDeviceImpl
 
 // Oculus Latency Tester interface.
 
-class LatencyTestDeviceImpl : public HIDDeviceImpl<NervGear::LatencyTestDevice>
+class LatencyTestDeviceImpl : public HIDDeviceImpl<LatencyTestDevice>
 {
 public:
      LatencyTestDeviceImpl(LatencyTestDeviceCreateDesc* createDesc);
@@ -94,8 +82,8 @@ public:
     virtual void OnInputReport(UByte* pData, UInt32 length);
 
     // LatencyTesterDevice interface
-    virtual bool SetConfiguration(const NervGear::LatencyTestConfiguration& configuration, bool waitFlag = false);
-    virtual bool GetConfiguration(NervGear::LatencyTestConfiguration* configuration);
+    virtual bool SetConfiguration(const LatencyTestConfiguration& configuration, bool waitFlag = false);
+    virtual bool GetConfiguration(LatencyTestConfiguration* configuration);
 
     virtual bool SetCalibrate(const Color& calibrationColor, bool waitFlag = false);
 
@@ -110,11 +98,11 @@ protected:
     bool    initializeRead();
     bool    processReadResult();
 
-    bool    setConfiguration(const NervGear::LatencyTestConfiguration& configuration);
-    bool    getConfiguration(NervGear::LatencyTestConfiguration* configuration);
+    bool    setConfiguration(const LatencyTestConfiguration& configuration);
+    bool    getConfiguration(LatencyTestConfiguration* configuration);
     bool    setCalibrate(const Color& calibrationColor);
     bool    setStartTest(const Color& targetColor);
-    bool    setDisplay(const NervGear::LatencyTestDisplay& display);
+    bool    setDisplay(const LatencyTestDisplay& display);
 
     // Called for decoded messages
     void onLatencyTestSamplesMessage(LatencyTestSamplesMessage* message);
@@ -124,6 +112,6 @@ protected:
 
 };
 
-} // namespace NervGear
+NV_NAMESPACE_END
 
-#endif // OVR_LatencyTestImpl_h
+

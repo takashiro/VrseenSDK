@@ -16,7 +16,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VRMenu.h"
 #include "GuiSys.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 //==============================================================
 // OvrGuiSysLocal
@@ -65,6 +65,6 @@ private:
     Array< VRMenuComponent* > GetDefaultComponents();
 };
 
-} // namespace NervGear
+NV_NAMESPACE_END
 
 #endif // OVR_OvrGuiSysLocal_h

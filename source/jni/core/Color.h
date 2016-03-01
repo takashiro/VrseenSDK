@@ -1,20 +1,10 @@
-/************************************************************************************
+#pragma once
 
-PublicHeader:   OVR.h
-Filename    :   OVR_Color.h
-Content     :   Contains color struct.
-Created     :   February 7, 2013
-Notes       :
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-#ifndef OVR_Color_h
-#define OVR_Color_h
+#include "vglobal.h"
 
 #include "Types.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 struct Color
 {
@@ -46,6 +36,4 @@ struct Color
     }
 };
 
-}
-
-#endif
+NV_NAMESPACE_END

@@ -1,15 +1,4 @@
-/************************************************************************************
-
-Filename    :   VrApi.h
-Content     :   Minimum necessary API for mobile VR
-Created     :   June 25, 2014
-Authors     :   John Carmack, J.M.P. van Waveren
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-#ifndef OVR_VrApi_h
-#define OVR_VrApi_h
+#pragma once
 
 #if defined( ANDROID )
 #include <jni.h>
@@ -299,7 +288,7 @@ typedef struct
 	// thread is still current on the window.
 	bool	AsynchronousTimeWarp;
 
-	// If true, warn and allow the app to continue at 30fps when 
+	// If true, warn and allow the app to continue at 30fps when
 	// throttling occurs.
 	// If false, display the level 2 error message which requires
 	// the user to undock.
@@ -367,7 +356,7 @@ void		ovr_HandleDeviceStateChanges( ovrMobile * ovr );	// FIXME:VRAPI move into 
 
 typedef struct ovrQuatf_
 {
-    float x, y, z, w;  
+    float x, y, z, w;
 } ovrQuatf;
 
 typedef struct ovrVector3f_
@@ -379,7 +368,7 @@ typedef struct ovrVector3f_
 typedef struct ovrPosef_
 {
 	ovrQuatf	Orientation;
-	ovrVector3f	Position;    
+	ovrVector3f	Position;
 } ovrPosef;
 
 // Full pose (rigid body) configuration with first and second derivatives.
@@ -636,4 +625,4 @@ void		ovr_WarpSwap( ovrMobile * ovr, const ovrTimeWarpParms * parms );
 
 }	// extern "C"
 
-#endif	// OVR_VrApi_h
+

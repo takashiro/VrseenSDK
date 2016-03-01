@@ -174,7 +174,7 @@ bool DeviceManagerThread::removeSelectFd(Notifier* notify, int fd)
     // can use this function to remove it.
 
     LogText( "DeviceManagerThread::RemoveSelectFd %d (Tid=%d)\n", fd, threadTid() );
-    for (UPInt i = 0; i < m_fdNotifiers.size(); i++)
+    for (uint i = 0; i < m_fdNotifiers.size(); i++)
     {
         if ((m_fdNotifiers[i] == notify) && (m_pollFds[i].fd == fd))
         {
@@ -225,7 +225,7 @@ int DeviceManagerThread::run()
                     double timeSeconds = Timer::GetSeconds();
                     int    waitAllowed;
 
-                    for (UPInt j = 0; j < m_ticksNotifiers.size(); j++)
+                    for (uint j = 0; j < m_ticksNotifiers.size(); j++)
                     {
                         waitAllowed = (int)(m_ticksNotifiers[j]->onTicks(timeSeconds) * Timer::MsPerSecond);
                         if (waitAllowed < (int)waitMs)
@@ -321,7 +321,7 @@ bool DeviceManagerThread::addTicksNotifier(Notifier* notify)
 
 bool DeviceManagerThread::removeTicksNotifier(Notifier* notify)
 {
-    for (UPInt i = 0; i < m_ticksNotifiers.size(); i++)
+    for (uint i = 0; i < m_ticksNotifiers.size(); i++)
     {
         if (m_ticksNotifiers[i] == notify)
         {

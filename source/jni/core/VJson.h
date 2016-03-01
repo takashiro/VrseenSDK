@@ -8,8 +8,9 @@
 
 #include "VSharedPointer.h"
 
-namespace NervGear
-{
+#pragma once
+
+NV_NAMESPACE_BEGIN
 
 class Json;
 class JsonData;

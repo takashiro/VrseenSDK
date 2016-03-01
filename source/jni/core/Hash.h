@@ -1,17 +1,6 @@
-/************************************************************************************
+#pragma once
 
-PublicHeader:   None
-Filename    :   OVR_Hash.h
-Content     :   Template hash-table/set implementation
-Created     :   September 19, 2012
-Notes       :
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-
-#ifndef OVR_Hash_h
-#define OVR_Hash_h
+#include "vglobal.h"
 
 #include "ContainerAllocator.h"
 #include "Alg.h"
@@ -19,7 +8,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 // 'new' operator is redefined/used in this file.
 #undef new
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 //-----------------------------------------------------------------------------------
 // ***** Hash Table Implementation
@@ -56,8 +45,8 @@ template<class C>
 class IdentityHash
 {
 public:
-    UPInt operator()(const C& data) const
-    { return (UPInt) data; }
+    uint operator()(const C& data) const
+    { return (uint) data; }
 };
 
 // Computes a hash of an object's representation.
@@ -69,19 +58,19 @@ public:
     // above, http::/www.cs.yorku.ca/~oz/hash.html
     // This is somewhat slower then Bernstein, but it works way better than the above
     // hash function for hashing large numbers of 32-bit ints.
-    static OVR_FORCE_INLINE UPInt SDBM_Hash(const void* data_in, UPInt size, UPInt seed = 5381)
+    static OVR_FORCE_INLINE uint SDBM_Hash(const void* data_in, uint size, uint seed = 5381)
     {
         const UByte* data = (const UByte*) data_in;
-        UPInt        h = seed;
+        uint        h = seed;
         while (size > 0)
         {
             size--;
-            h = (h << 16) + (h << 6) - h + (UPInt)data[size];
+            h = (h << 16) + (h << 6) - h + (uint)data[size];
         }
         return h;
     }
 
-    UPInt operator()(const C& data) const
+    uint operator()(const C& data) const
     {
         unsigned char*  p = (unsigned char*) &data;
         int size = sizeof(C);
@@ -101,14 +90,14 @@ class HashsetEntry
 {
 public:
     // Internal chaining for collisions.
-    SPInt       NextInChain;
+    int       NextInChain;
     C           Value;
 
     HashsetEntry()
         : NextInChain(-2) { }
     HashsetEntry(const HashsetEntry& e)
         : NextInChain(e.NextInChain), Value(e.Value) { }
-    HashsetEntry(const C& key, SPInt next)
+    HashsetEntry(const C& key, int next)
         : NextInChain(next), Value(key) { }
 
     bool    IsEmpty() const          { return NextInChain == -2;  }
@@ -116,8 +105,8 @@ public:
 
     // Cached hash value access - can be optimized bu storing hash locally.
     // Mask value only needs to be used if SetCachedHash is not implemented.
-    UPInt   GetCachedHash(UPInt maskValue) const  { return HashF()(Value) & maskValue; }
-    void    SetCachedHash(UPInt)                  {}
+    uint   GetCachedHash(uint maskValue) const  { return HashF()(Value) & maskValue; }
+    void    SetCachedHash(uint)                  {}
 
     void    Clear()
     {
@@ -136,15 +125,15 @@ class HashsetCachedEntry
 {
 public:
     // Internal chaining for collisions.
-    SPInt       NextInChain;
-    UPInt       HashValue;
+    int       NextInChain;
+    uint       HashValue;
     C           Value;
 
     HashsetCachedEntry()
         : NextInChain(-2) { }
     HashsetCachedEntry(const HashsetCachedEntry& e)
         : NextInChain(e.NextInChain), HashValue(e.HashValue), Value(e.Value) { }
-    HashsetCachedEntry(const C& key, SPInt next)
+    HashsetCachedEntry(const C& key, int next)
         : NextInChain(next), Value(key) { }
 
     bool    IsEmpty() const          { return NextInChain == -2;  }
@@ -152,8 +141,8 @@ public:
 
     // Cached hash value access - can be optimized bu storing hash locally.
     // Mask value only needs to be used if SetCachedHash is not implemented.
-    UPInt   GetCachedHash(UPInt maskValue) const  { OVR_UNUSED(maskValue); return HashValue; }
-    void    SetCachedHash(UPInt hashValue)        { HashValue = hashValue; }
+    uint   GetCachedHash(uint maskValue) const  { OVR_UNUSED(maskValue); return HashValue; }
+    void    SetCachedHash(uint hashValue)        { HashValue = hashValue; }
 
     void    Clear()
     {
@@ -195,7 +184,7 @@ public:
         if (pTable)
         {
             // Delete the entries.
-            for (UPInt i = 0, n = pTable->SizeMask; i <= n; i++)
+            for (uint i = 0, n = pTable->SizeMask; i <= n; i++)
             {
                 Entry*  e = &E(i);
                 if (!e->IsEmpty())
@@ -229,7 +218,7 @@ public:
         if (pTable)
         {
             // Delete the entries.
-            for (UPInt i = 0, n = pTable->SizeMask; i <= n; i++)
+            for (uint i = 0, n = pTable->SizeMask; i <= n; i++)
             {
                 Entry*  e = &E(i);
                 if (!e->IsEmpty())
@@ -254,8 +243,8 @@ public:
     template<class CRef>
     void Set(const CRef& key)
     {
-        UPInt  hashValue = HashF()(key);
-        SPInt  index     = (SPInt)-1;
+        uint  hashValue = HashF()(key);
+        int  index     = (int)-1;
 
         if (pTable != NULL)
             index = findIndexCore(key, hashValue & pTable->SizeMask);
@@ -274,7 +263,7 @@ public:
     template<class CRef>
     inline void Add(const CRef& key)
     {
-        UPInt hashValue = HashF()(key);
+        uint hashValue = HashF()(key);
         add(key, hashValue);
     }
 
@@ -285,20 +274,20 @@ public:
         if (pTable == NULL)
             return;
 
-        UPInt   hashValue = AltHashF()(key);
-        SPInt   index     = hashValue & pTable->SizeMask;
+        uint   hashValue = AltHashF()(key);
+        int   index     = hashValue & pTable->SizeMask;
 
         Entry*  e = &E(index);
 
         // If empty node or occupied by collider, we have nothing to remove.
-        if (e->IsEmpty() || (e->GetCachedHash(pTable->SizeMask) != (UPInt)index))
+        if (e->IsEmpty() || (e->GetCachedHash(pTable->SizeMask) != (uint)index))
             return;
 
         // Save index
-        SPInt   naturalIndex = index;
-        SPInt   prevIndex    = -1;
+        int   naturalIndex = index;
+        int   prevIndex    = -1;
 
-        while ((e->GetCachedHash(pTable->SizeMask) != (UPInt)naturalIndex) || !(e->Value == key))
+        while ((e->GetCachedHash(pTable->SizeMask) != (uint)naturalIndex) || !(e->Value == key))
         {
             // Keep looking through the chain.
             prevIndex   = index;
@@ -346,7 +335,7 @@ public:
     template<class K>
     C* Get(const K& key)
     {
-        SPInt   index = findIndex(key);
+        int   index = findIndex(key);
         if (index >= 0)
             return &E(index).Value;
         return 0;
@@ -355,7 +344,7 @@ public:
     template<class K>
     const C* Get(const K& key) const
     {
-        SPInt   index = findIndex(key);
+        int   index = findIndex(key);
         if (index >= 0)
             return &E(index).Value;
         return 0;
@@ -365,7 +354,7 @@ public:
     template<class K>
     const C* GetAlt(const K& key) const
     {
-        SPInt   index = findIndexAlt(key);
+        int   index = findIndexAlt(key);
         if (index >= 0)
             return &E(index).Value;
         return 0;
@@ -374,7 +363,7 @@ public:
     template<class K>
     C* GetAlt(const K& key)
     {
-        SPInt   index = findIndexAlt(key);
+        int   index = findIndexAlt(key);
         if (index >= 0)
             return &E(index).Value;
         return 0;
@@ -383,7 +372,7 @@ public:
     template<class K>
     bool GetAlt(const K& key, C* pval) const
     {
-        SPInt   index = findIndexAlt(key);
+        int   index = findIndexAlt(key);
         if (index >= 0)
         {
             if (pval)
@@ -394,9 +383,9 @@ public:
     }
 
 
-    UPInt GetSize() const
+    uint GetSize() const
     {
-        return pTable == NULL ? 0 : (UPInt)pTable->EntryCount;
+        return pTable == NULL ? 0 : (uint)pTable->EntryCount;
     }
 
 
@@ -417,7 +406,7 @@ public:
     }
 
     // Hint the bucket count to >= n.
-    void Resize(UPInt n)
+    void Resize(uint n)
     {
         // Not really sure what this means in relation to
         // STLport's hash_map... they say they "increase the
@@ -431,9 +420,9 @@ public:
     // Size the HashSet so that it can comfortably contain the given
     // number of elements.  If the HashSet already contains more
     // elements than newSize, then this may be a no-op.
-    void setCapacity(UPInt newSize)
+    void setCapacity(uint newSize)
     {
-        UPInt newRawSize = (newSize * 5) / 4;
+        uint newRawSize = (newSize * 5) / 4;
         if (newRawSize <= GetSize())
             return;
         setRawCapacity(newRawSize);
@@ -451,23 +440,23 @@ public:
     {
         const C&    operator * () const
         {
-            OVR_ASSERT(Index >= 0 && Index <= (SPInt)pHash->pTable->SizeMask);
+            OVR_ASSERT(Index >= 0 && Index <= (int)pHash->pTable->SizeMask);
             return pHash->E(Index).Value;
         }
 
         const C*    operator -> () const
         {
-            OVR_ASSERT(Index >= 0 && Index <= (SPInt)pHash->pTable->SizeMask);
+            OVR_ASSERT(Index >= 0 && Index <= (int)pHash->pTable->SizeMask);
             return &pHash->E(Index).Value;
         }
 
         void    operator ++ ()
         {
             // Find next non-empty Entry.
-            if (Index <= (SPInt)pHash->pTable->SizeMask)
+            if (Index <= (int)pHash->pTable->SizeMask)
             {
                 Index++;
-                while ((UPInt)Index <= pHash->pTable->SizeMask &&
+                while ((uint)Index <= pHash->pTable->SizeMask &&
                     pHash->E(Index).IsEmpty())
                 {
                     Index++;
@@ -497,7 +486,7 @@ public:
         {
             return (pHash == NULL) ||
                 (pHash->pTable == NULL) ||
-                (Index > (SPInt)pHash->pTable->SizeMask);
+                (Index > (int)pHash->pTable->SizeMask);
         }
 
         ConstIterator()
@@ -507,7 +496,7 @@ public:
     public:
         // Constructor was intentionally made public to allow create
         // iterator with arbitrary index.
-        ConstIterator(const SelfType* h, SPInt index)
+        ConstIterator(const SelfType* h, int index)
             : pHash(h), Index(index)
         { }
 
@@ -515,7 +504,7 @@ public:
         {
             return pHash;
         }
-        SPInt GetIndex() const
+        int GetIndex() const
         {
             return Index;
         }
@@ -524,7 +513,7 @@ public:
         friend class HashSetBase<C, HashF, AltHashF, Allocator, Entry>;
 
         const SelfType* pHash;
-        SPInt           Index;
+        int           Index;
     };
 
     friend struct ConstIterator;
@@ -536,7 +525,7 @@ public:
         // Allow non-const access to entries.
         C&  operator*() const
         {
-            OVR_ASSERT(ConstIterator::Index >= 0 && ConstIterator::Index <= (SPInt)ConstIterator::pHash->pTable->SizeMask);
+            OVR_ASSERT(ConstIterator::Index >= 0 && ConstIterator::Index <= (int)ConstIterator::pHash->pTable->SizeMask);
             return const_cast<SelfType*>(ConstIterator::pHash)->E(ConstIterator::Index).Value;
         }
 
@@ -562,20 +551,20 @@ public:
             //Entry*      ee = &phash->E(ConstIterator::Index);
             //const C&    key = ee->Value;
 
-            UPInt       hashValue = AltHashF()(key);
-            SPInt       index     = hashValue & phash->pTable->SizeMask;
+            uint       hashValue = AltHashF()(key);
+            int       index     = hashValue & phash->pTable->SizeMask;
 
             Entry*      e = &phash->E(index);
 
             // If empty node or occupied by collider, we have nothing to remove.
-            if (e->IsEmpty() || (e->GetCachedHash(phash->pTable->SizeMask) != (UPInt)index))
+            if (e->IsEmpty() || (e->GetCachedHash(phash->pTable->SizeMask) != (uint)index))
                 return;
 
             // Save index
-            SPInt   naturalIndex = index;
-            SPInt   prevIndex    = -1;
+            int   naturalIndex = index;
+            int   prevIndex    = -1;
 
-            while ((e->GetCachedHash(phash->pTable->SizeMask) != (UPInt)naturalIndex) || !(e->Value == key))
+            while ((e->GetCachedHash(phash->pTable->SizeMask) != (uint)naturalIndex) || !(e->Value == key))
             {
                 // Keep looking through the chain.
                 prevIndex   = index;
@@ -585,7 +574,7 @@ public:
                 e = &phash->E(index);
             }
 
-            if (index == (SPInt)ConstIterator::Index)
+            if (index == (int)ConstIterator::Index)
             {
                 // Found it - our item is at index
                 if (naturalIndex == index)
@@ -618,7 +607,7 @@ public:
     private:
         friend class HashSetBase<C, HashF, AltHashF, Allocator, Entry>;
 
-        Iterator(SelfType* h, SPInt i0)
+        Iterator(SelfType* h, int i0)
             : ConstIterator(h, i0)
         { }
     };
@@ -631,7 +620,7 @@ public:
             return Iterator(NULL, 0);
 
         // Scan till we hit the First valid Entry.
-        UPInt  i0 = 0;
+        uint  i0 = 0;
         while (i0 <= pTable->SizeMask && E(i0).IsEmpty())
         {
             i0++;
@@ -646,7 +635,7 @@ public:
     template<class K>
     Iterator Find(const K& key)
     {
-        SPInt index = findIndex(key);
+        int index = findIndex(key);
         if (index >= 0)
             return Iterator(this, index);
         return Iterator(NULL, 0);
@@ -655,7 +644,7 @@ public:
     template<class K>
     Iterator FindAlt(const K& key)
     {
-        SPInt index = findIndexAlt(key);
+        int index = findIndexAlt(key);
         if (index >= 0)
             return Iterator(this, index);
         return Iterator(NULL, 0);
@@ -670,33 +659,33 @@ public:
 private:
     // Find the index of the matching Entry.  If no match, then return -1.
     template<class K>
-    SPInt findIndex(const K& key) const
+    int findIndex(const K& key) const
     {
         if (pTable == NULL)
             return -1;
-        UPInt hashValue = HashF()(key) & pTable->SizeMask;
+        uint hashValue = HashF()(key) & pTable->SizeMask;
         return findIndexCore(key, hashValue);
     }
 
     template<class K>
-    SPInt findIndexAlt(const K& key) const
+    int findIndexAlt(const K& key) const
     {
         if (pTable == NULL)
             return -1;
-        UPInt hashValue = AltHashF()(key) & pTable->SizeMask;
+        uint hashValue = AltHashF()(key) & pTable->SizeMask;
         return findIndexCore(key, hashValue);
     }
 
     // Find the index of the matching Entry.  If no match, then return -1.
     template<class K>
-    SPInt findIndexCore(const K& key, UPInt hashValue) const
+    int findIndexCore(const K& key, uint hashValue) const
     {
         // Table must exist.
         OVR_ASSERT(pTable != 0);
         // Hash key must be 'and-ed' by the caller.
         OVR_ASSERT((hashValue & ~pTable->SizeMask) == 0);
 
-        UPInt           index = hashValue;
+        uint           index = hashValue;
         const Entry*    e     = &E(index);
 
         // If empty or occupied by a collider, not found.
@@ -718,7 +707,7 @@ private:
 
             // Keep looking through the chain.
             index = e->NextInChain;
-            if (index == (UPInt)-1)
+            if (index == (uint)-1)
                 break; // end of chain
 
             e = &E(index);
@@ -730,14 +719,14 @@ private:
 
     // Add a new value to the HashSet table, under the specified key.
     template<class CRef>
-    void add(const CRef& key, UPInt hashValue)
+    void add(const CRef& key, uint hashValue)
     {
         CheckExpand();
         hashValue &= pTable->SizeMask;
 
         pTable->EntryCount++;
 
-        SPInt   index        = hashValue;
+        int   index        = hashValue;
         Entry*  naturalEntry = &(E(index));
 
         if (naturalEntry->IsEmpty())
@@ -748,14 +737,14 @@ private:
         else
         {
             // Find a blank spot.
-            SPInt blankIndex = index;
+            int blankIndex = index;
             do {
                 blankIndex = (blankIndex + 1) & pTable->SizeMask;
             } while(!E(blankIndex).IsEmpty());
 
             Entry*  blankEntry = &E(blankIndex);
 
-            if (naturalEntry->GetCachedHash(pTable->SizeMask) == (UPInt)index)
+            if (naturalEntry->GetCachedHash(pTable->SizeMask) == (uint)index)
             {
                 // Collision.  Link into this chain.
 
@@ -773,8 +762,8 @@ private:
                 // Entry must be moved.
 
                 // Find natural location of collided element (i.e. root of chain)
-                SPInt collidedIndex = naturalEntry->GetCachedHash(pTable->SizeMask);
-                OVR_ASSERT(collidedIndex >= 0 && collidedIndex <= (SPInt)pTable->SizeMask);
+                int collidedIndex = naturalEntry->GetCachedHash(pTable->SizeMask);
+                OVR_ASSERT(collidedIndex >= 0 && collidedIndex <= (int)pTable->SizeMask);
                 for (;;)
                 {
                     Entry*  e = &E(collidedIndex);
@@ -786,7 +775,7 @@ private:
                         break;
                     }
                     collidedIndex = e->NextInChain;
-                    OVR_ASSERT(collidedIndex >= 0 && collidedIndex <= (SPInt)pTable->SizeMask);
+                    OVR_ASSERT(collidedIndex >= 0 && collidedIndex <= (int)pTable->SizeMask);
                 }
 
                 // Put the new data in the natural Entry.
@@ -800,13 +789,13 @@ private:
     }
 
     // Index access helpers.
-    Entry& E(UPInt index)
+    Entry& E(uint index)
     {
         // Must have pTable and access needs to be within bounds.
         OVR_ASSERT(index <= pTable->SizeMask);
         return *(((Entry*) (pTable + 1)) + index);
     }
-    const Entry& E(UPInt index) const
+    const Entry& E(uint index) const
     {
         OVR_ASSERT(index <= pTable->SizeMask);
         return *(((Entry*) (pTable + 1)) + index);
@@ -817,7 +806,7 @@ private:
     // contents of the current table).  The arg is the number of
     // HashSet table entries, not the number of elements we should
     // actually contain (which will be less than this).
-    void    setRawCapacity(UPInt newSize)
+    void    setRawCapacity(uint newSize)
     {
         if (newSize == 0)
         {
@@ -835,8 +824,8 @@ private:
         {
             // Force newSize to be a power of two.
             int bits = Alg::UpperBit(newSize-1) + 1; // Chop( Log2f((float)(newSize-1)) + 1);
-            OVR_ASSERT((UPInt(1) << bits) >= newSize);
-            newSize = UPInt(1) << bits;
+            OVR_ASSERT((uint(1) << bits) >= newSize);
+            newSize = uint(1) << bits;
         }
 
         SelfType  newHash;
@@ -848,7 +837,7 @@ private:
 
         newHash.pTable->EntryCount = 0;
         newHash.pTable->SizeMask = newSize - 1;
-        UPInt i, n;
+        uint i, n;
 
         // Mark all entries as empty.
         for (i = 0; i < newSize; i++)
@@ -880,8 +869,8 @@ private:
 
     struct TableType
     {
-        UPInt EntryCount;
-        UPInt SizeMask;
+        uint EntryCount;
+        uint SizeMask;
         // Entry array follows this structure
         // in memory.
     };
@@ -924,7 +913,7 @@ public:
     }
 
     // Hint the bucket count to >= n.
-    void Resize(UPInt n)
+    void Resize(uint n)
     {
         BaseType::setCapacity(n);
     }
@@ -932,7 +921,7 @@ public:
     // Size the HashSet so that it can comfortably contain the given
     // number of elements.  If the HashSet already contains more
     // elements than newSize, then this may be a no-op.
-    void setCapacity(UPInt newSize)
+    void setCapacity(uint newSize)
     {
         BaseType::setCapacity(newSize);
     }
@@ -989,7 +978,7 @@ struct HashNode
         NodeRef(const NodeRef& src)     : pFirst(src.pFirst), pSecond(src.pSecond) { }
 
         // Enable computation of ghash_node_hashf.
-        inline UPInt GetHash() const            { return HashF()(*pFirst); }
+        inline uint GetHash() const            { return HashF()(*pFirst); }
         // Necessary conversion to allow HashNode::operator == to work.
         operator const C& () const              { return *pFirst; }
     };
@@ -1003,20 +992,20 @@ struct HashNode
     bool operator == (const K& src) const   { return (First == src); }
 
     template<class K>
-    static UPInt CalcHash(const K& data)   { return HashF()(data); }
-    inline UPInt GetHash() const           { return HashF()(First); }
+    static uint CalcHash(const K& data)   { return HashF()(data); }
+    inline uint GetHash() const           { return HashF()(First); }
 
     // Hash functors used with this node. A separate functor is used for alternative
     // key lookup so that it does not need to access the '.First' element.
     struct NodeHashF
     {
         template<class K>
-        UPInt operator()(const K& data) const { return data.GetHash(); }
+        uint operator()(const K& data) const { return data.GetHash(); }
     };
     struct NodeAltHashF
     {
         template<class K>
-        UPInt operator()(const K& data) const { return HashNode<C,U,HashF>::CalcHash(data); }
+        uint operator()(const K& data) const { return HashNode<C,U,HashF>::CalcHash(data); }
     };
 };
 
@@ -1035,22 +1024,22 @@ class HashsetNodeEntry
 {
 public:
     // Internal chaining for collisions.
-    SPInt NextInChain;
+    int NextInChain;
     C     Value;
 
     HashsetNodeEntry()
         : NextInChain(-2) { }
     HashsetNodeEntry(const HashsetNodeEntry& e)
         : NextInChain(e.NextInChain), Value(e.Value) { }
-    HashsetNodeEntry(const C& key, SPInt next)
+    HashsetNodeEntry(const C& key, int next)
         : NextInChain(next), Value(key) { }
-    HashsetNodeEntry(const typename C::NodeRef& keyRef, SPInt next)
+    HashsetNodeEntry(const typename C::NodeRef& keyRef, int next)
         : NextInChain(next), Value(keyRef) { }
 
     bool    IsEmpty() const             { return NextInChain == -2;  }
     bool    IsEndOfChain() const        { return NextInChain == -1;  }
-    UPInt   GetCachedHash(UPInt maskValue) const  { return HashF()(Value) & maskValue; }
-    void    SetCachedHash(UPInt hashValue)        { OVR_UNUSED(hashValue); }
+    uint   GetCachedHash(uint maskValue) const  { return HashF()(Value) & maskValue; }
+    void    SetCachedHash(uint hashValue)        { OVR_UNUSED(hashValue); }
 
     void    Clear()
     {
@@ -1069,23 +1058,23 @@ class HashsetCachedNodeEntry
 {
 public:
     // Internal chaining for collisions.
-    SPInt NextInChain;
-    UPInt HashValue;
+    int NextInChain;
+    uint HashValue;
     C     Value;
 
     HashsetCachedNodeEntry()
         : NextInChain(-2) { }
     HashsetCachedNodeEntry(const HashsetCachedNodeEntry& e)
         : NextInChain(e.NextInChain), HashValue(e.HashValue), Value(e.Value) { }
-    HashsetCachedNodeEntry(const C& key, SPInt next)
+    HashsetCachedNodeEntry(const C& key, int next)
         : NextInChain(next), Value(key) { }
-    HashsetCachedNodeEntry(const typename C::NodeRef& keyRef, SPInt next)
+    HashsetCachedNodeEntry(const typename C::NodeRef& keyRef, int next)
         : NextInChain(next), Value(keyRef) { }
 
     bool    IsEmpty() const            { return NextInChain == -2;  }
     bool    IsEndOfChain() const       { return NextInChain == -1;  }
-    UPInt   GetCachedHash(UPInt maskValue) const  { OVR_UNUSED(maskValue); return HashValue; }
-    void    SetCachedHash(UPInt hashValue)        { HashValue = hashValue; }
+    uint   GetCachedHash(uint maskValue) const  { OVR_UNUSED(maskValue); return HashValue; }
+    void    SetCachedHash(uint hashValue)        { HashValue = hashValue; }
 
     void    Clear()
     {
@@ -1102,7 +1091,7 @@ public:
 template<class C, class U,
          class HashF = FixedSizeHash<C>,
          class Allocator = ContainerAllocator<C>,
-         class HashNode = NervGear::HashNode<C,U,HashF>,
+         class HashNode = HashNode<C,U,HashF>,
          class Entry = HashsetCachedNodeEntry<HashNode, typename HashNode::NodeHashF>,
          class Container =  HashSet<HashNode, typename HashNode::NodeHashF,
              typename HashNode::NodeAltHashF, Allocator,
@@ -1212,9 +1201,9 @@ public:
     }
 
     // Sizing methods - delegate to Hash.
-    inline UPInt   GetSize() const              { return mHash.GetSize(); }
-    inline void    Resize(UPInt n)              { mHash.Resize(n); }
-    inline void    setCapacity(UPInt newSize)   { mHash.setCapacity(newSize); }
+    inline uint   GetSize() const              { return mHash.GetSize(); }
+    inline void    Resize(uint n)              { mHash.Resize(n); }
+    inline void    setCapacity(uint newSize)   { mHash.setCapacity(newSize); }
 
     // Iterator API, like STL.
     typedef typename Container::ConstIterator   ConstIterator;
@@ -1277,11 +1266,10 @@ public:
 };
 
 
-} // OVR
+NV_NAMESPACE_END
 
 
 #ifdef OVR_DEFINE_NEW
 #define new OVR_DEFINE_NEW
 #endif
 
-#endif

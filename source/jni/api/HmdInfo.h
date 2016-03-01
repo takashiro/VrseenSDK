@@ -1,21 +1,9 @@
-/************************************************************************************
-
-Filename    :   HmdInfo.h
-Content     :   Head Mounted Display Info
-Created     :   January 30, 2014
-Authors     :   John Carmack
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-#ifndef OVR_HmdInfo_h
-#define OVR_HmdInfo_h
+#pragma once
 
 #include <jni.h>
 #include "sensor/Stereo.h"		// for LensConfig
 
-namespace NervGear
-{
+NV_NAMESPACE_BEGIN
 
 struct hmdInfoInternal_t
 {
@@ -59,4 +47,4 @@ struct hmdInfoInternal_t
 hmdInfoInternal_t GetDeviceHmdInfo( const char * buildModel, JNIEnv * env, jobject activity, jclass vrActivityClass );
 }
 
-#endif	// OVR_HmdInfo_h
+

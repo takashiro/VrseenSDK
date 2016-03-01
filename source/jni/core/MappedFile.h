@@ -1,17 +1,6 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   OVR_MappedFile.h
-Content     :   Cross-platform memory-mapped file wrapper.
-Created     :   May 12, 2014
-Authors     :   Chris Taylor
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-
-*************************************************************************************/
-
-#ifndef OVR_MappedFile_h
-#define OVR_MappedFile_h
+#include "vglobal.h"
 
 #include "Types.h"
 
@@ -35,8 +24,9 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 	database-like file type, which is much better implemented using asynch IO.
 */
 
-namespace NervGear
-{
+#pragma once
+
+NV_NAMESPACE_BEGIN
 
 // Read-only memory mapped file
 class MappedFile
@@ -52,12 +42,12 @@ public:
     bool			openRead( const char * path, bool read_ahead = false, bool no_cache = false );
 
 	// Creates and opens the file for exclusive read/write access
-    bool			openWrite( const char * path, UPInt size );
+    bool			openWrite( const char * path, uint size );
 
     void			close();
 
     bool			isReadOnly() const { return m_readOnly; }
-    UPInt			length() const { return m_length; }
+    uint			length() const { return m_length; }
     bool			isValid() const { return ( m_length != 0 ); }
 
 private:
@@ -68,7 +58,7 @@ private:
 #endif
 
     bool			m_readOnly;
-    UPInt			m_length;
+    uint			m_length;
 };
 
 
@@ -80,11 +70,11 @@ public:
 					~MappedView();
 
     bool			open( MappedFile * file ); // Returns false on error
-    UByte *			mapView( UPInt offset = 0, UInt32 length = 0 ); // Returns 0 on error, 0 length means whole file
+    UByte *			mapView( uint offset = 0, UInt32 length = 0 ); // Returns 0 on error, 0 length means whole file
     void			close();
 
     bool			isValid() const { return ( m_data != 0 ); }
-    UPInt			offset() const { return m_offset; }
+    uint			offset() const { return m_offset; }
     UInt32			length() const { return m_length; }
     MappedFile *	file() { return m_file; }
     UByte *			front() { return m_data; }
@@ -98,10 +88,10 @@ private:
 
     MappedFile *	m_file;
     UByte *			m_data;
-    UPInt			m_offset;
+    uint			m_offset;
     UInt32			m_length;
 };
 
-} // namespace NervGear
+NV_NAMESPACE_END
 
-#endif // OVR_MappedFile_h
+

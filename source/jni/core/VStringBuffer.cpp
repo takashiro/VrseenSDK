@@ -9,7 +9,7 @@ VStringBuffer::VStringBuffer()
 {
 }
 
-VStringBuffer::VStringBuffer(UPInt growSize)
+VStringBuffer::VStringBuffer(uint growSize)
     : m_data(NULL), m_size(0), m_bufferSize(0), m_growSize(OVR_SBUFF_DEFAULT_GROW_SIZE), m_lengthIsSize(false)
 {
     setGrowSize(growSize);
@@ -21,7 +21,7 @@ VStringBuffer::VStringBuffer(const char* data)
     append(data);
 }
 
-VStringBuffer::VStringBuffer(const char* data, UPInt dataSize)
+VStringBuffer::VStringBuffer(const char* data, uint dataSize)
     : m_data(NULL), m_size(0), m_bufferSize(0), m_growSize(OVR_SBUFF_DEFAULT_GROW_SIZE), m_lengthIsSize(false)
 {
     append(data, dataSize);
@@ -50,32 +50,32 @@ VStringBuffer::~VStringBuffer()
     if (m_data)
         OVR_FREE(m_data);
 }
-void VStringBuffer::setGrowSize(UPInt growSize)
+void VStringBuffer::setGrowSize(uint growSize)
 {
     if (growSize <= 16)
         m_growSize = 16;
     else
     {
         UByte bits = Alg::UpperBit(UInt32(growSize-1));
-        UPInt size = 1<<bits;
+        uint size = 1<<bits;
         m_growSize = size == growSize ? growSize : size;
     }
 }
 
-UPInt VStringBuffer::length() const
+uint VStringBuffer::length() const
 {
-    UPInt length, size = this->size();
+    uint length, size = this->size();
     if (m_lengthIsSize)
         return size;
 
-    length = (UPInt)UTF8Util::GetLength(m_data, (UPInt) this->size());
+    length = (uint)UTF8Util::GetLength(m_data, (uint) this->size());
 
     if (length == this->size())
         m_lengthIsSize = true;
     return length;
 }
 
-void    VStringBuffer::reserve(UPInt _size)
+void    VStringBuffer::reserve(uint _size)
 {
     if (_size >= m_bufferSize) // >= because of trailing zero! (!AB)
     {
@@ -86,7 +86,7 @@ void    VStringBuffer::reserve(UPInt _size)
             m_data = (char*)OVR_REALLOC(m_data, m_bufferSize);
     }
 }
-void    VStringBuffer::resize(UPInt _size)
+void    VStringBuffer::resize(uint _size)
 {
     reserve(_size);
     m_lengthIsSize = false;
@@ -112,42 +112,42 @@ void VStringBuffer::clear()
 void     VStringBuffer::append(UInt32 ch)
 {
     char    buff[8];
-    UPInt   origSize = size();
+    uint   origSize = size();
 
     // Converts ch into UTF8 string and fills it into buff. Also increments index according to the number of bytes
     // in the UTF8 string.
-    SPInt   srcSize = 0;
+    int   srcSize = 0;
     UTF8Util::EncodeChar(buff, &srcSize, ch);
     OVR_ASSERT(srcSize >= 0);
 
-    UPInt size = origSize + srcSize;
+    uint size = origSize + srcSize;
     resize(size);
     memcpy(m_data + origSize, buff, srcSize);
 }
 
 // Append a string
-void     VStringBuffer::append(const wchar_t* pstr, SPInt len)
+void     VStringBuffer::append(const wchar_t* pstr, int len)
 {
     if (!pstr)
         return;
 
-    SPInt   srcSize     = UTF8Util::GetEncodeStringSize(pstr, len);
-    UPInt   origSize    = size();
-    UPInt   size        = srcSize + origSize;
+    int   srcSize     = UTF8Util::GetEncodeStringSize(pstr, len);
+    uint   origSize    = size();
+    uint   size        = srcSize + origSize;
 
     resize(size);
     UTF8Util::EncodeString(m_data + origSize,  pstr, len);
 }
 
-void      VStringBuffer::append(const char* putf8str, SPInt utf8StrSz)
+void      VStringBuffer::append(const char* putf8str, int utf8StrSz)
 {
     if (!putf8str || !utf8StrSz)
         return;
     if (utf8StrSz == -1)
-        utf8StrSz = (SPInt)strlen(putf8str);
+        utf8StrSz = (int)strlen(putf8str);
 
-    UPInt   origSize    = size();
-    UPInt   size        = utf8StrSz + origSize;
+    uint   origSize    = size();
+    uint   size        = utf8StrSz + origSize;
 
     resize(size);
     memcpy(m_data + origSize, putf8str, utf8StrSz);
@@ -157,7 +157,7 @@ void      VStringBuffer::append(const char* putf8str, SPInt utf8StrSz)
 void      VStringBuffer::operator = (const char* pstr)
 {
     pstr = pstr ? pstr : "";
-    UPInt size = strlen(pstr);
+    uint size = strlen(pstr);
     resize(size);
     memcpy(m_data, pstr, size);
 }
@@ -165,7 +165,7 @@ void      VStringBuffer::operator = (const char* pstr)
 void      VStringBuffer::operator = (const wchar_t* pstr)
 {
     pstr = pstr ? pstr : L"";
-    UPInt size = (UPInt)UTF8Util::GetEncodeStringSize(pstr);
+    uint size = (uint)UTF8Util::GetEncodeStringSize(pstr);
     resize(size);
     UTF8Util::EncodeString(m_data, pstr);
 }
@@ -184,12 +184,12 @@ void      VStringBuffer::operator = (const VStringBuffer& src)
 
 
 // Inserts substr at posAt
-void      VStringBuffer::insert(const char* substr, UPInt posAt, SPInt len)
+void      VStringBuffer::insert(const char* substr, uint posAt, int len)
 {
-    UPInt     oldSize    = m_size;
-    UPInt     insertSize = (len < 0) ? strlen(substr) : (UPInt)len;
-    UPInt     byteIndex  = m_lengthIsSize ? posAt :
-                           (UPInt)UTF8Util::GetByteIndex(posAt, m_data, (SPInt)m_size);
+    uint     oldSize    = m_size;
+    uint     insertSize = (len < 0) ? strlen(substr) : (uint)len;
+    uint     byteIndex  = m_lengthIsSize ? posAt :
+                           (uint)UTF8Util::GetByteIndex(posAt, m_data, (int)m_size);
 
     OVR_ASSERT(byteIndex <= oldSize);
     reserve(oldSize + insertSize);
@@ -202,16 +202,16 @@ void      VStringBuffer::insert(const char* substr, UPInt posAt, SPInt len)
 }
 
 // Inserts character at posAt
-UPInt     VStringBuffer::insert(UInt32 c, UPInt posAt)
+uint     VStringBuffer::insert(UInt32 c, uint posAt)
 {
     char    buf[8];
-    SPInt   len = 0;
+    int   len = 0;
     UTF8Util::EncodeChar(buf, &len, c);
     OVR_ASSERT(len >= 0);
-    buf[(UPInt)len] = 0;
+    buf[(uint)len] = 0;
 
     insert(buf, posAt, len);
-    return (UPInt)len;
+    return (uint)len;
 }
 
 NV_NAMESPACE_END

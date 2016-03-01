@@ -1,17 +1,8 @@
-/************************************************************************************
-
-Filename    :   OVR_Alg.cpp
-Content     :   Static lookup tables for Alg functions
-Created     :   September 19, 2012
-Notes       :
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-
 #include "Types.h"
 
-namespace NervGear { namespace Alg {
+NV_NAMESPACE_BEGIN
+
+namespace Alg {
 
 //------------------------------------------------------------------------
 extern const UByte UpperBitTable[256] =
@@ -38,5 +29,6 @@ extern const UByte LowerBitTable[256] =
     5,0,1,0,2,0,1,0,3,0,1,0,2,0,1,0,4,0,1,0,2,0,1,0,3,0,1,0,2,0,1,0
 };
 
+}
 
-}} // OVE::Alg
+NV_NAMESPACE_END

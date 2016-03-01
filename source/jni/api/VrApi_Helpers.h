@@ -1,15 +1,4 @@
-/************************************************************************************
-
-Filename    :   VrApi_Helpers.h
-Content     :   API helper functions.
-Created     :   March 2, 2015
-Authors     :   J.M.P. van Waveren
-
-Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-#ifndef OVR_VrApi_Helpers_h
-#define OVR_VrApi_Helpers_h
+#pragma once
 
 #include "math.h"
 #include "string.h"		// for memset()
@@ -62,7 +51,7 @@ inline float ovrMatrix4f_Minor( const ovrMatrix4f * m, int r0, int r1, int r2, i
 			m->M[r0][c1] * ( m->M[r1][c0] * m->M[r2][c2] - m->M[r2][c0] * m->M[r1][c2] ) +
 			m->M[r0][c2] * ( m->M[r1][c0] * m->M[r2][c1] - m->M[r2][c0] * m->M[r1][c1] );
 }
- 
+
 // Returns the inverse of a 4x4 matrix.
 inline ovrMatrix4f ovrMatrix4f_Inverse( const ovrMatrix4f * m )
 {
@@ -417,4 +406,4 @@ inline ovrTimeWarpParms InitTimeWarpParms( const ovrWarpInit init = WARP_INIT_DE
 	return parms;
 }
 
-#endif	// OVR_VrApi_Helpers_h
+

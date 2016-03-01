@@ -92,7 +92,7 @@ private:
 	UIImage *							SelectionFrame;
 
 	UIImage *							CenterPoster;
-	UPInt								CenterIndex;
+	uint								CenterIndex;
 	Vector3f							CenterPosition;
 
 	UIImage *							LeftSwipes[ 3 ];

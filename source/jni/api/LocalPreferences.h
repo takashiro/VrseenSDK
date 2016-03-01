@@ -1,16 +1,4 @@
-/************************************************************************************
-
-Filename    :   LocalPreferences.h
-Content     :   Interface for device-local preferences
-Created     :   July 8, 2014
-Authors     :   John Carmack
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-
-*************************************************************************************/
-#ifndef OVR_LocalPreferences_h
-#define OVR_LocalPreferences_h
+#pragma once
 
 extern "C" {
 
@@ -64,4 +52,4 @@ void	ovr_SetAllowLocalPreferencesFile( const bool allow );
 
 }	// extern "C"
 
-#endif	// OVR_LocalPreferences_h
+

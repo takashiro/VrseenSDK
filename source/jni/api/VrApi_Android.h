@@ -1,15 +1,4 @@
-/************************************************************************************
-
-Filename    :   VrApi_Android.h
-Content     :   Android specific API.
-Created     :   February 20, 2015
-Authors     :   J.M.P. van Waveren
-
-Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-#ifndef OVR_VrApi_Android_h
-#define OVR_VrApi_Android_h
+#pragma once
 
 extern "C" {
 
@@ -128,8 +117,8 @@ void		ovr_ReleaseAudioFocus( ovrMobile * ovr );
 
 // version 0 is pre-json
 // #define PLATFORM_UI_VERSION 1	// initial version
-#define PLATFORM_UI_VERSION 2		// added "exitToHome" - apps built with current versions only respond to "returnToLauncher" if 
-									// the Systems Activity that sent it is version 1 (meaning they'll never get an "exitToHome" 
+#define PLATFORM_UI_VERSION 2		// added "exitToHome" - apps built with current versions only respond to "returnToLauncher" if
+									// the Systems Activity that sent it is version 1 (meaning they'll never get an "exitToHome"
 									// from System Activities)
 
 typedef enum
@@ -144,15 +133,15 @@ typedef enum
 void ovr_ExitActivity( ovrMobile * ovr, eExitType type );
 void ovr_ReturnToHome( ovrMobile * ovr );
 
-void ovr_SendIntent( ovrMobile * ovr, const char * actionName, const char * toPackageName, 
+void ovr_SendIntent( ovrMobile * ovr, const char * actionName, const char * toPackageName,
 		const char * toClassName, const char * command, const char * uri, eExitType exitType );
-void ovr_BroadcastSystemActivityEvent( ovrMobile * ovr, const char * actionName, const char * toPackageName, 
+void ovr_BroadcastSystemActivityEvent( ovrMobile * ovr, const char * actionName, const char * toPackageName,
 		const char * toClassName, const char * command, const char * jsonExtra, const char * uri );
-void ovr_SendLaunchIntent( ovrMobile * ovr, const char * toPackageName, const char * command, 
+void ovr_SendLaunchIntent( ovrMobile * ovr, const char * toPackageName, const char * command,
 		const char * uri, eExitType exitType );
 bool ovr_StartSystemActivity( ovrMobile * ovr, const char * command, const char * jsonText );
 // fills outBuffer with a JSON text object with the required versioning info, the passed command, and embedded extraJsonText.
-bool ovr_CreateSystemActivityIntent( ovrMobile * ovr, const char * command, const char * extraJsonText, 
+bool ovr_CreateSystemActivityIntent( ovrMobile * ovr, const char * command, const char * extraJsonText,
 		char * outBuffer, unsigned long long const outBufferSize, unsigned long long & outRequiredBufferSize );
 
 //-----------------------------------------------------------------
@@ -166,7 +155,7 @@ bool ovr_CreateSystemActivityIntent( ovrMobile * ovr, const char * command, cons
 #define SYSTEM_ACTIVITY_EVENT_EXIT_TO_HOME "exitToHome"
 
 // return values for ovr_nextPendingEvent
-enum eVrApiEventStatus 
+enum eVrApiEventStatus
 {
 	VRAPI_EVENT_ERROR_INTERNAL = -2,		// queue isn't created, etc.
 	VRAPI_EVENT_ERROR_INVALID_BUFFER = -1,	// the buffer passed in was invalid
@@ -197,4 +186,4 @@ void ovr_InitLocalPreferences( JNIEnv * jni, jobject activityObject );
 
 }	// extern "C"
 
-#endif	// OVR_VrApi_Android_h
+

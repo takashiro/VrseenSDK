@@ -1,27 +1,18 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   ModelView.h
-Content     :   Basic viewing and movement in a scene.
-Created     :   December 19, 2013
-Authors     :   John Carmack
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-
-#ifndef MODELVIEW_H
-#define MODELVIEW_H
+#include "vglobal.h"
 
 #include "ModelFile.h"
 #include "App.h"		// VrFrame
 #include "DebugLines.h"
 
-namespace NervGear
-{
+#pragma once
+
+NV_NAMESPACE_BEGIN
 
 //-----------------------------------------------------------------------------------
 // ModelInScene
-// 
+//
 class ModelInScene
 {
 public:
@@ -40,7 +31,7 @@ public:
 
 //-----------------------------------------------------------------------------------
 // OvrSceneView
-// 
+//
 class OvrSceneView
 {
 public:
@@ -176,6 +167,6 @@ public:
     Vector3f				FootPos;
 };
 
-}	// namespace NervGear
+NV_NAMESPACE_END
 
-#endif // MODELVIEW_H
+

@@ -14,7 +14,7 @@ Copyright   :   Copyright 2014 Oculus VR, Inc. All Rights reserved.
 
 #include "VRMenuComponent.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 	class VRMenu;
 
@@ -33,7 +33,7 @@ namespace NervGear {
 
             double	value( double domain ) const
 			{
-				const double f = NervGear::Alg::Clamp( ( domain - startDomain ) / ( endDomain - startDomain ), 0.0, 1.0 );
+                const double f = Alg::Clamp( ( domain - startDomain ) / ( endDomain - startDomain ), 0.0, 1.0 );
 				return startValue * ( 1.0 - f ) + endValue * f;
 			}
 

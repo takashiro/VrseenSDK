@@ -1,24 +1,13 @@
-/************************************************************************************
+#pragma once
 
-PublicHeader:   OVR.h
-Filename    :   OVR_Lockless.h
-Content     :   Lock-less producer/consumer communication
-Created     :   November 9, 2013
-Authors     :   John Carmack
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
-#ifndef OVR_Lockless_h
-#define OVR_Lockless_h
+#include "vglobal.h"
 
 #include "Atomic.h"
 
 // Define this to compile-in Lockless test logic
 //#define OVR_LOCKLESS_TEST
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 // ***** LocklessUpdater
 
@@ -87,6 +76,6 @@ void StartLocklessTest();
 #endif
 
 
-} // namespace NervGear
+NV_NAMESPACE_END
 
-#endif // OVR_Lockless_h
+

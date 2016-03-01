@@ -1,16 +1,6 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   ModelFile.h
-Content     :   Model file loading.
-Created     :   December 2013
-Authors     :   John Carmack, J.M.P. van Waveren
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
-#ifndef MODELFILE_H
-#define MODELFILE_H
+#include "vglobal.h"
 
 #include "System.h"	// Array
 #include "VString.h"	// String
@@ -19,7 +9,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "ModelCollision.h"
 #include "ModelTrace.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 struct MaterialParms
 {
@@ -165,6 +155,6 @@ ModelFile * LoadModelFile( const char * fileName,
 		const ModelGlPrograms & programs,
 		const MaterialParms & materialParms );
 
-} // namespace NervGear
+NV_NAMESPACE_END
 
-#endif	// MODELFILE_H
+

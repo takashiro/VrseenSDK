@@ -1,16 +1,6 @@
-/************************************************************************************
+#pragma once
 
-PublicHeader:   None
-Filename    :   OVR_Threads.h
-Content     :   Contains thread-related (safe) functionality
-Created     :   September 19, 2012
-Notes       :
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-#ifndef OVR_Threads_h
-#define OVR_Threads_h
+#include "vglobal.h"
 
 #include "Types.h"
 #include "Atomic.h"
@@ -24,7 +14,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #ifdef OVR_ENABLE_THREADS
 
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 //-----------------------------------------------------------------------------------
 // ****** Declared classes
@@ -219,13 +209,13 @@ public:
     // Thread constructor parameters
     struct CreateParams
     {
-        CreateParams(ThreadFn func = 0, void* hand = 0, UPInt ssize = 128 * 1024,
+        CreateParams(ThreadFn func = 0, void* hand = 0, uint ssize = 128 * 1024,
                      int proc = -1, ThreadState state = NotRunning, ThreadPriority prior = NormalPriority)
                      : threadFunction(func), userHandle(hand), stackSize(ssize),
                        processor(proc), initialState(state), priority(prior) {}
         ThreadFn       threadFunction;   // Thread function
         void*          userHandle;       // User handle passes to a thread
-        UPInt          stackSize;        // Thread stack size
+        uint          stackSize;        // Thread stack size
         int            processor;        // Thread hardware processor
         ThreadState    initialState;     //
         ThreadPriority priority;         // Thread priority
@@ -237,12 +227,12 @@ public:
     // the derived class has not yet been initialized. The derived class can call Start explicitly.
     // "processor" parameter specifies which hardware processor this thread will be run on.
     // -1 means OS decides this. Implemented only on Win32
-    Thread(UPInt stackSize = 128 * 1024, int processor = -1);
+    Thread(uint stackSize = 128 * 1024, int processor = -1);
     // Constructors that initialize the thread with a pointer to function.
     // An option to start a thread is available, but it should not be used if classes are derived from Thread.
     // "processor" parameter specifies which hardware processor this thread will be run on.
     // -1 means OS decides this. Implemented only on Win32
-    Thread(ThreadFn threadFunction, void*  userHandle = 0, UPInt stackSize = 128 * 1024,
+    Thread(ThreadFn threadFunction, void*  userHandle = 0, uint stackSize = 128 * 1024,
            int processor = -1, ThreadState initialState = NotRunning);
     // Constructors that initialize the thread with a create parameters structure.
     explicit Thread(const CreateParams& params);
@@ -348,7 +338,7 @@ protected:
     // Thread state flags
     AtomicInt<UInt32>   m_threadFlags;
     AtomicInt<SInt32>   m_suspendCount;
-    UPInt               m_stackSize;
+    uint               m_stackSize;
 
     // Hardware processor which this thread is running on.
     int                 m_processor;
@@ -378,4 +368,4 @@ ThreadId GetCurrentThreadId();
 } // OVR
 
 #endif // OVR_ENABLE_THREADS
-#endif // OVR_Threads_h
+

@@ -15,7 +15,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "VRMenuObject.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 class BitmapFont;
 class BitmapFontSurface;
@@ -76,6 +76,6 @@ public:
     virtual GlProgram const *   getGUIGlProgram( eGUIProgramType const programType ) const = 0;
 };
 
-} // namespace NervGear
+NV_NAMESPACE_END
 
 #endif // OVR_VRMenuMgr_h

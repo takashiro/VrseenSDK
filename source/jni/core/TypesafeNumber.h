@@ -1,8 +1,8 @@
+#pragma once
 
-#if !defined( OVR_TypesafeNumber_h )
-#define OVR_TypesafeNumber_h
+#include "vglobal.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 //----------------------------------------------
 // TypesafeNumberT
@@ -296,6 +296,5 @@ void TypesafeNumberT< T, UniqueType, InitialValue >::Set( T const value )
     this->Value = value;
 }
 
-}   // namespace NervGear
+NV_NAMESPACE_END
 
-#endif // OVR_TypesafeNumber_h

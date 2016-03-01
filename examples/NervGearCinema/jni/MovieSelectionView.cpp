@@ -327,7 +327,7 @@ void MovieSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFo
     // add shadow and 3D icon to movie poster panels
     //
 	Array<VRMenuObject *> menuObjs;
-    for ( UPInt i = 0; i < MoviePanelPositions.size(); ++i )
+    for ( uint i = 0; i < MoviePanelPositions.size(); ++i )
 	{
 		UIContainer *posterContainer = new UIContainer( Cinema );
 		posterContainer->AddToMenu( Menu, MovieRoot );
@@ -393,7 +393,7 @@ void MovieSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFo
     // create the buttons and calculate their size
     const float itemWidth = 1.10f;
     float categoryBarWidth = 0.0f;
-    for ( UPInt i = 0; i < Categories.size(); ++i )
+    for ( uint i = 0; i < Categories.size(); ++i )
 	{
 		Categories[ i ].Button = new UILabel( Cinema );
 		Categories[ i ].Button->AddToMenu( Menu, CategoryRoot );
@@ -409,7 +409,7 @@ void MovieSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFo
 
 	// reposition the buttons and set the background and border
 	float startX = categoryBarWidth * -0.5f;
-    for ( UPInt i = 0; i < Categories.size(); ++i )
+    for ( uint i = 0; i < Categories.size(); ++i )
 	{
 		VRMenuSurfaceParms panelSurfParms( "",
 				BorderTexture.Texture, BorderTexture.Width, BorderTexture.Height, SURFACE_TEXTURE_ADDITIVE,
@@ -619,7 +619,7 @@ void MovieSelectionView::SetMovieList( const Array<const MovieDef *> &movies, co
 
 	MovieList = movies;
 	DeletePointerArray( MovieBrowserItems );
-    for( UPInt i = 0; i < MovieList.size(); i++ )
+    for( uint i = 0; i < MovieList.size(); i++ )
 	{
 		const MovieDef *movie = MovieList[ i ];
 
@@ -640,7 +640,7 @@ void MovieSelectionView::SetMovieList( const Array<const MovieDef *> &movies, co
 	MoviesIndex = 0;
 	if ( nextMovie != NULL )
 	{
-        for( UPInt i = 0; i < MovieList.size(); i++ )
+        for( uint i = 0; i < MovieList.size(); i++ )
 		{
 			if ( movies[ i ] == nextMovie )
 			{
@@ -673,8 +673,8 @@ void MovieSelectionView::SetMovieList( const Array<const MovieDef *> &movies, co
 void MovieSelectionView::SetCategory( const MovieCategory category )
 {
 	// default to category in index 0
-	UPInt categoryIndex = 0;
-    for( UPInt i = 0; i < Categories.size(); ++i )
+	uint categoryIndex = 0;
+    for( uint i = 0; i < Categories.size(); ++i )
 	{
 		if ( category == Categories[ i ].Category )
 		{
@@ -685,7 +685,7 @@ void MovieSelectionView::SetCategory( const MovieCategory category )
 
 	LOG( "SetCategory: %s", Categories[ categoryIndex ].Text.toCString() );
 	CurrentCategory = Categories[ categoryIndex ].Category;
-    for( UPInt i = 0; i < Categories.size(); ++i )
+    for( uint i = 0; i < Categories.size(); ++i )
 	{
 		Categories[ i ].Button->SetHilighted( i == categoryIndex );
 	}

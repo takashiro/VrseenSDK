@@ -18,7 +18,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "CollisionPrimitive.h"
 #include "BitmapFont.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 typedef SInt16 guiIndex_t;
 
@@ -244,7 +244,7 @@ public:
     virtual	void				addFlags( VRMenuObjectFlags_t const & flags ) { m_flags |= flags; }
     virtual	void				removeFlags( VRMenuObjectFlags_t const & flags ) { m_flags &= ~flags; }
 
-    virtual NervGear::VString const &	text() const { return m_text; }
+    virtual VString const &	text() const { return m_text; }
     virtual void				setText( char const * text ) { m_text = text; m_textDirty = true; }
     virtual void				setTextWordWrapped( char const * text, class BitmapFont const & font, float const widthInMeters );
 
@@ -414,6 +414,6 @@ private:
     int							getComponentIndex( VRMenuComponent * component ) const;
 };
 
-} // namespace NervGear
+NV_NAMESPACE_END
 
 #endif // OVR_VRMenuObjectLocal_h

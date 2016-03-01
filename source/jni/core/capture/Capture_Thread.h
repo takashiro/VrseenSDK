@@ -1,23 +1,6 @@
-/************************************************************************************
+#pragma once
 
-PublicHeader:   OVR.h
-Filename    :   OVR_Capture_Thread.h
-Content     :   Misc Threading functionality....
-Created     :   January, 2015
-Notes       :   Will be replaced by OVR Kernel versions soon! But first we really
-                need to add support for joinable threads in OVR Kernel.
-                NervGear::Capture::Thread replace with NervGear::Thread
-                NervGear::Capture::ThreadGate replace with NervGear::Event
-                NervGear::Capture::CriticalSection replace with NervGear::Mutex
-                NervGear::Capture::Atomic* replace with OVR_Atomic.h
-                Is there a replacement for SpinLock?
-
-Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-
-#ifndef OVR_CAPTURE_THREAD_H
-#define OVR_CAPTURE_THREAD_H
+#include "vglobal.h"
 
 #include "Capture.h"
 #include "Capture_Types.h"
@@ -30,8 +13,9 @@ Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
     #include <unistd.h>
 #endif
 
-namespace NervGear
-{
+#pragma once
+
+NV_NAMESPACE_BEGIN
 namespace Capture
 {
 
@@ -219,6 +203,4 @@ namespace Capture
     };
 
 } // namespace Capture
-} // namespace NervGear
-
-#endif
+NV_NAMESPACE_END

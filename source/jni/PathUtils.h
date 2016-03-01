@@ -1,22 +1,14 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   PathUtils.h
-Content     :
-Created     :   November 26, 2014
-Authors     :   Warsam Osman, Madhu Kalva
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-#ifndef OVR_PathUtils_h
-#define OVR_PathUtils_h
+#include "vglobal.h"
 
 #include <jni.h>
 #include "VString.h"
 #include "Array.h"
 
-namespace NervGear
-{
+#pragma once
+
+NV_NAMESPACE_BEGIN
 	class App;
 
 	enum EStorageType
@@ -80,7 +72,6 @@ namespace NervGear
 	bool	ToRelativePath	( const Array< VString > & searchPaths, char const * fullPath, 		char * outPath, 	const int outMaxLen );
 	bool	ToRelativePath	( const Array< VString > & searchPaths, char const * fullPath, 		VString & outPath 						);
 
-} // namespace NervGear
+NV_NAMESPACE_END
 
-#endif // OVR_PathUtils_h
 

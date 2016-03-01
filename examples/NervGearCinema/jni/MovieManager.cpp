@@ -92,7 +92,7 @@ void MovieManager::LoadMovies()
 	Array<VString> movieFiles = ScanMovieDirectories();
     LOG( "%i movies scanned, %3.1f seconds", movieFiles.sizeInt(), ovr_GetTimeInSeconds() - start );
 
-    for( UPInt i = 0; i < movieFiles.size(); i++ )
+    for( uint i = 0; i < movieFiles.size(); i++ )
 	{
 		MovieDef *movie = new MovieDef();
         Movies.append( movie );
@@ -363,7 +363,7 @@ Array<const MovieDef *> MovieManager::GetMovieList( MovieCategory category ) con
 {
 	Array<const MovieDef *> result;
 
-    for( UPInt i = 0; i < Movies.size(); i++ )
+    for( uint i = 0; i < Movies.size(); i++ )
 	{
 		if ( Movies[ i ]->Category == category )
 		{

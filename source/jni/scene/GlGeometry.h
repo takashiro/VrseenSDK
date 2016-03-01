@@ -1,13 +1,3 @@
-/************************************************************************************
-
-Filename    :   GlGeometry.h
-Content     :   OpenGL geometry setup.
-Created     :   October 8, 2013
-Authors     :   John Carmack
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
 #pragma once
 
 #include "vglobal.h"

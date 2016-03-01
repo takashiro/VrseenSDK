@@ -1,15 +1,4 @@
-/************************************************************************************
-
-Filename    :   Vsync.h
-Content     :   Global native code interface to the raster vsync information
-Created     :   September 19, 2013
-Authors     :   John Carmack
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-#ifndef OVR_Vsync_h
-#define OVR_Vsync_h
+#pragma once
 
 #include "Lockless.h"	// for LocklessUpdater
 
@@ -24,8 +13,9 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 // once a second after timing is established.
 //	void Java_me_takashiro_nervgear_VrLib_nativeVsync( JNIEnv *jni, jclass clazz, jlong nanoSeconds );
 
-namespace NervGear
-{
+#pragma once
+
+NV_NAMESPACE_BEGIN
 
 class VsyncState
 {
@@ -37,7 +27,7 @@ public:
 
 // This can be read without any locks, so a high priority rendering thread doesn't
 // have to worry about being blocked by a sensor thread that got preempted.
-extern NervGear::LocklessUpdater<VsyncState>	UpdatedVsyncState;
+extern LocklessUpdater<VsyncState> UpdatedVsyncState;
 
 // Estimates the current vsync count and fraction based on the most
 // current timing provided from java.  This does not interact with
@@ -56,7 +46,6 @@ double			FramePointTimeInSecondsWithBlanking( const double framePoint );
 // framePoint.
 float 			SleepUntilTimePoint( const double targetSeconds, const bool busyWait );
 
-}	// namespace NervGear
+NV_NAMESPACE_END
 
-#endif		// OVR_Vsync_h
 

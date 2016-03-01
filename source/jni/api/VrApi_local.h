@@ -1,19 +1,10 @@
-/************************************************************************************
-
-Filename    :   VrApi_local.h
-Content     :   Minimum necessary API for mobile VR
-Created     :   June 25, 2014
-Authors     :   John Carmack
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-#ifndef OVR_VrApi_Local_h
-#define OVR_VrApi_Local_h
+#pragma once
 
 #include "DirectRender.h"
 #include "HmdInfo.h"
 #include "TimeWarp.h"
+
+NV_USING_NAMESPACE
 
 struct ovrMobile
 {
@@ -28,11 +19,8 @@ struct ovrMobile
 	// Thread from which VR mode was entered.
 	pid_t					EnterTid;
 
-    NervGear::TimeWarp *			Warp;
-    NervGear::hmdInfoInternal_t	HmdInfo;
+    TimeWarp *			Warp;
+    hmdInfoInternal_t	HmdInfo;
 	ovrModeParms			Parms;
-    NervGear::TimeWarpInitParms	Twp;
+    TimeWarpInitParms	Twp;
 };
-
-#endif	// OVR_VrApi_Local_h
-

@@ -1,53 +1,9 @@
-/************************************************************************************
+#pragma once
 
-PublicHeader:   OVR.h
-Filename    :   OVR_Allocator.h
-Content     :   Installable memory allocator
-Created     :   September 19, 2012
-Notes       :
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-
-#ifndef OVR_Allocator_h
-#define OVR_Allocator_h
-
+#include "vglobal.h"
 #include "Types.h"
 
-//-----------------------------------------------------------------------------------
-
-// ***** Disable template-unfriendly MS VC++ warnings
-#if defined(OVR_CC_MSVC)
-// Pragma to prevent long name warnings in in VC++
-#pragma warning(disable : 4503)
-#pragma warning(disable : 4786)
-// In MSVC 7.1, warning about placement new POD default initializer
-#pragma warning(disable : 4345)
-#endif
-
-// Un-define new so that placement constructors work
-#undef new
-
-
-//-----------------------------------------------------------------------------------
-// ***** Placement new overrides
-
-// Calls constructor on own memory created with "new(ptr) type"
-#ifndef __PLACEMENT_NEW_INLINE
-#define __PLACEMENT_NEW_INLINE
-
-#   if defined(OVR_CC_MWERKS) || defined(OVR_CC_BORLAND) || defined(OVR_CC_GNU)
-#      include <new>
-#   else
-    // Useful on MSVC
-    OVR_FORCE_INLINE void* operator new     (NervGear::UPInt n, void *ptr) { OVR_UNUSED(n); return ptr; }
-    OVR_FORCE_INLINE void  operator delete  (void *, void *)     { }
-#   endif
-
-#endif // __PLACEMENT_NEW_INLINE
-
-
+#include <new>
 
 //------------------------------------------------------------------------
 // ***** Macros to redefine class new/delete operators
@@ -56,9 +12,9 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 // class member operator new.
 
 #define OVR_MEMORY_REDEFINE_NEW_IMPL(class_name, check_delete)                          \
-    void*   operator new(UPInt sz)                                                      \
+    void*   operator new(uint sz)                                                      \
     { void *p = OVR_ALLOC_DEBUG(sz, __FILE__, __LINE__); return p; }                                              \
-    void*   operator new(UPInt sz, const char* file, int line)                          \
+    void*   operator new(uint sz, const char* file, int line)                          \
     { void* p = OVR_ALLOC_DEBUG(sz, file, line); OVR_UNUSED2(file, line); return p; }   \
     void    operator delete(void *p)                                                    \
     { check_delete(class_name, p); OVR_FREE(p); }                                       \
@@ -77,7 +33,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
     OVR_MEMORY_REDEFINE_NEW_IMPL(class_name, OVR_MEMORY_CHECK_DELETE_NONE)
 
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 //-----------------------------------------------------------------------------------
 // ***** Construct / Destruct
@@ -112,20 +68,20 @@ OVR_FORCE_INLINE T*  ConstructAlt(void *p, const S1& src1, const S2& src2)
 }
 
 template <class T>
-OVR_FORCE_INLINE void ConstructArray(void *p, UPInt count)
+OVR_FORCE_INLINE void ConstructArray(void *p, uint count)
 {
     UByte *pdata = (UByte*)p;
-    for (UPInt i=0; i< count; ++i, pdata += sizeof(T))
+    for (uint i=0; i< count; ++i, pdata += sizeof(T))
     {
         Construct<T>(pdata);
     }
 }
 
 template <class T>
-OVR_FORCE_INLINE void ConstructArray(void *p, UPInt count, const T& source)
+OVR_FORCE_INLINE void ConstructArray(void *p, uint count, const T& source)
 {
     UByte *pdata = (UByte*)p;
-    for (UPInt i=0; i< count; ++i, pdata += sizeof(T))
+    for (uint i=0; i< count; ++i, pdata += sizeof(T))
     {
         Construct<T>(pdata, source);
     }
@@ -139,9 +95,9 @@ OVR_FORCE_INLINE void Destruct(T *pobj)
 }
 
 template <class T>
-OVR_FORCE_INLINE void DestructArray(T *pobj, UPInt count)
+OVR_FORCE_INLINE void DestructArray(T *pobj, uint count)
 {
-    for (UPInt i=0; i<count; ++i, ++pobj)
+    for (uint i=0; i<count; ++i, ++pobj)
         pobj->~T();
 }
 
@@ -151,7 +107,7 @@ OVR_FORCE_INLINE void DestructArray(T *pobj, UPInt count)
 
 // Allocator defines a memory allocation interface that developers can override
 // to to provide memory for OVR; an instance of this class is typically created on
-// application startup and passed into System or NervGear::System constructor.
+// application startup and passed into System or System constructor.
 //
 //
 // Users implementing this interface must provide three functions: Alloc, Free,
@@ -169,9 +125,9 @@ public:
     // Allocate memory of specified size with default alignment.
     // Alloc of size==0 will allocate a tiny block & return a valid pointer;
     // this makes it suitable for new operator.
-    virtual void*   Alloc(UPInt size) = 0;
+    virtual void*   Alloc(uint size) = 0;
     // Same as Alloc, but provides an option of passing debug data.
-    virtual void*   AllocDebug(UPInt size, const char* file, unsigned line)
+    virtual void*   AllocDebug(uint size, const char* file, unsigned line)
     { OVR_UNUSED2(file, line); return Alloc(size); }
 
     // Reallocate memory block to a new size, copying data if necessary. Returns the pointer to
@@ -180,7 +136,7 @@ public:
     // Realloc to decrease size will never fail.
     // Realloc of pointer == 0 is equivalent to Alloc
     // Realloc to size == 0, shrinks to the minimal size, pointer remains valid and requires Free().
-    virtual void*   Realloc(void* p, UPInt newSize) = 0;
+    virtual void*   Realloc(void* p, uint newSize) = 0;
 
     // Frees memory allocated by Alloc/Realloc.
     // Free of null pointer is valid and will do nothing.
@@ -192,7 +148,7 @@ public:
     // Allocate memory of specified alignment.
     // Memory allocated with AllocAligned MUST be freed with FreeAligned.
     // Default implementation will delegate to Alloc/Free after doing rounding.
-    virtual void*   AllocAligned(UPInt size, UPInt align);
+    virtual void*   AllocAligned(uint size, uint align);
     // Frees memory allocated with AllocAligned.
     virtual void    FreeAligned(void* p);
 
@@ -225,7 +181,7 @@ private:
 
 // Allocator_SingletonSupport is a Allocator wrapper class that implements
 // the InitSystemSingleton static function, used to create a global singleton
-// used for the NervGear::System default argument initialization.
+// used for the System default argument initialization.
 //
 // End users implementing custom Allocator interface don't need to make use of this base
 // class; they can just create an instance of their own class on stack and pass it to System.
@@ -235,7 +191,7 @@ class Allocator_SingletonSupport : public Allocator
 {
     struct AllocContainer
     {
-        UPInt Data[(sizeof(D) + sizeof(UPInt)-1) / sizeof(UPInt)];
+        uint Data[(sizeof(D) + sizeof(uint)-1) / sizeof(uint)];
         bool  Initialized;
         AllocContainer() : Initialized(0) { }
     };
@@ -280,9 +236,9 @@ protected:
 class DefaultAllocator : public Allocator_SingletonSupport<DefaultAllocator>
 {
 public:
-    virtual void*   Alloc(UPInt size);
-    virtual void*   AllocDebug(UPInt size, const char* file, unsigned line);
-    virtual void*   Realloc(void* p, UPInt newSize);
+    virtual void*   Alloc(uint size);
+    virtual void*   AllocDebug(uint size, const char* file, unsigned line);
+    virtual void*   Realloc(void* p, uint newSize);
     virtual void    Free(void *p);
 };
 
@@ -294,17 +250,17 @@ public:
 // macros will allows allocation to be extended with debug file/line information
 // if necessary.
 
-#define OVR_REALLOC(p,s)        NervGear::Allocator::GetInstance()->Realloc((p),(s))
-#define OVR_FREE(p)             NervGear::Allocator::GetInstance()->Free((p))
-#define OVR_ALLOC_ALIGNED(s,a)  NervGear::Allocator::GetInstance()->AllocAligned((s),(a))
-#define OVR_FREE_ALIGNED(p)     NervGear::Allocator::GetInstance()->FreeAligned((p))
+#define OVR_REALLOC(p,s)        NV_NAMESPACE::Allocator::GetInstance()->Realloc((p),(s))
+#define OVR_FREE(p)             NV_NAMESPACE::Allocator::GetInstance()->Free((p))
+#define OVR_ALLOC_ALIGNED(s,a)  NV_NAMESPACE::Allocator::GetInstance()->AllocAligned((s),(a))
+#define OVR_FREE_ALIGNED(p)     NV_NAMESPACE::Allocator::GetInstance()->FreeAligned((p))
 
 #ifdef OVR_BUILD_DEBUG
-#define OVR_ALLOC(s)            NervGear::Allocator::GetInstance()->AllocDebug((s), __FILE__, __LINE__)
-#define OVR_ALLOC_DEBUG(s,f,l)  NervGear::Allocator::GetInstance()->AllocDebug((s), f, l)
+#define OVR_ALLOC(s)            NV_NAMESPACE::Allocator::GetInstance()->AllocDebug((s), __FILE__, __LINE__)
+#define OVR_ALLOC_DEBUG(s,f,l)  NV_NAMESPACE::Allocator::GetInstance()->AllocDebug((s), f, l)
 #else
-#define OVR_ALLOC(s)            NervGear::Allocator::GetInstance()->Alloc((s))
-#define OVR_ALLOC_DEBUG(s,f,l)  NervGear::Allocator::GetInstance()->Alloc((s))
+#define OVR_ALLOC(s)            NV_NAMESPACE::Allocator::GetInstance()->Alloc((s))
+#define OVR_ALLOC_DEBUG(s,f,l)  NV_NAMESPACE::Allocator::GetInstance()->Alloc((s))
 #endif
 
 //------------------------------------------------------------------------
@@ -328,5 +284,3 @@ public:
 #define new OVR_DEFINE_NEW
 #endif
 
-
-#endif // OVR_Memory

@@ -1,21 +1,10 @@
-/************************************************************************************
+#pragma once
 
-PublicHeader:   OVR
-Filename    :   OVR_List.h
-Content     :   Template implementation for doubly-connected linked List
-Created     :   September 19, 2012
-Notes       :
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-
-#ifndef OVR_List_h
-#define OVR_List_h
+#include "vglobal.h"
 
 #include "Types.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 //-----------------------------------------------------------------------------------
 // ***** ListNode
@@ -316,6 +305,4 @@ void FreeListElements(List& list, Allocator& allocator)
     list.clear();
 }
 
-} // NervGear
-
-#endif
+NV_NAMESPACE_END

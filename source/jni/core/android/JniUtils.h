@@ -1,15 +1,6 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   JniUtils.h
-Content     :   JNI utility functions
-Created     :   October 21, 2014
-Authors     :   J.M.P. van Waveren
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-#ifndef OVR_JniUtils_h
-#define OVR_JniUtils_h
+#include "vglobal.h"
 
 #include <jni.h>
 
@@ -171,4 +162,4 @@ void ovr_LoadDevConfig( bool const forceReload );
 const char * ovr_GetHomePackageName( char * packageName, int const maxLen );
 bool ovr_IsOculusHomePackage( JNIEnv * jni, jclass activityClass, jobject activityObject );
 
-#endif	// OVR_JniUtils_h
+

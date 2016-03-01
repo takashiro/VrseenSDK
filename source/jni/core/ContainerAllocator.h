@@ -1,23 +1,12 @@
-/************************************************************************************
+#pragma once
 
-PublicHeader:   OVR.h
-Filename    :   OVR_ContainerAllocator.h
-Content     :   Template allocators and constructors for containers.
-Created     :   September 19, 2012
-Notes       :
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-
-#ifndef OVR_ContainerAllocator_h
-#define OVR_ContainerAllocator_h
+#include "vglobal.h"
 
 #include "Allocator.h"
 #include <string.h>
 
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 
 //-----------------------------------------------------------------------------------
@@ -30,8 +19,8 @@ namespace NervGear {
 class ContainerAllocatorBase
 {
 public:
-    static void* Alloc(UPInt size)                { return OVR_ALLOC(size); }
-    static void* Realloc(void* p, UPInt newSize)  { return OVR_REALLOC(p, newSize); }
+    static void* Alloc(uint size)                { return OVR_ALLOC(size); }
+    static void* Realloc(void* p, uint newSize)  { return OVR_REALLOC(p, newSize); }
     static void  Free(void *p)                    { OVR_FREE(p); }
 };
 
@@ -58,29 +47,29 @@ public:
         *(T*)p = source;
     }
 
-    static void ConstructArray(void*, UPInt) {}
+    static void ConstructArray(void*, uint) {}
 
-    static void ConstructArray(void* p, UPInt count, const T& source)
+    static void ConstructArray(void* p, uint count, const T& source)
     {
         UByte *pdata = (UByte*)p;
-        for (UPInt i=0; i< count; ++i, pdata += sizeof(T))
+        for (uint i=0; i< count; ++i, pdata += sizeof(T))
             *(T*)pdata = source;
     }
 
-    static void ConstructArray(void* p, UPInt count, const T* psource)
+    static void ConstructArray(void* p, uint count, const T* psource)
     {
         memcpy(p, psource, sizeof(T) * count);
     }
 
     static void Destruct(T*) {}
-    static void DestructArray(T*, UPInt) {}
+    static void DestructArray(T*, uint) {}
 
-    static void CopyArrayForward(T* dst, const T* src, UPInt count)
+    static void CopyArrayForward(T* dst, const T* src, uint count)
     {
         memmove(dst, src, count * sizeof(T));
     }
 
-    static void CopyArrayBackward(T* dst, const T* src, UPInt count)
+    static void CopyArrayBackward(T* dst, const T* src, uint count)
     {
         memmove(dst, src, count * sizeof(T));
     }
@@ -114,24 +103,24 @@ public:
         NervGear::ConstructAlt<T,S>(p, source);
     }
 
-    static void ConstructArray(void* p, UPInt count)
+    static void ConstructArray(void* p, uint count)
     {
         UByte* pdata = (UByte*)p;
-        for (UPInt i=0; i< count; ++i, pdata += sizeof(T))
+        for (uint i=0; i< count; ++i, pdata += sizeof(T))
             Construct(pdata);
     }
 
-    static void ConstructArray(void* p, UPInt count, const T& source)
+    static void ConstructArray(void* p, uint count, const T& source)
     {
         UByte* pdata = (UByte*)p;
-        for (UPInt i=0; i< count; ++i, pdata += sizeof(T))
+        for (uint i=0; i< count; ++i, pdata += sizeof(T))
             Construct(pdata, source);
     }
 
-    static void ConstructArray(void* p, UPInt count, const T* psource)
+    static void ConstructArray(void* p, uint count, const T* psource)
     {
         UByte* pdata = (UByte*)p;
-        for (UPInt i=0; i< count; ++i, pdata += sizeof(T))
+        for (uint i=0; i< count; ++i, pdata += sizeof(T))
             Construct(pdata, *psource++);
     }
 
@@ -141,19 +130,19 @@ public:
         OVR_UNUSED(p); // Suppress silly MSVC warning
     }
 
-    static void DestructArray(T* p, UPInt count)
+    static void DestructArray(T* p, uint count)
     {
         p += count - 1;
-        for (UPInt i=0; i<count; ++i, --p)
+        for (uint i=0; i<count; ++i, --p)
             p->~T();
     }
 
-    static void CopyArrayForward(T* dst, const T* src, UPInt count)
+    static void CopyArrayForward(T* dst, const T* src, uint count)
     {
         memmove(dst, src, count * sizeof(T));
     }
 
-    static void CopyArrayBackward(T* dst, const T* src, UPInt count)
+    static void CopyArrayBackward(T* dst, const T* src, uint count)
     {
         memmove(dst, src, count * sizeof(T));
     }
@@ -187,24 +176,24 @@ public:
         NervGear::ConstructAlt<T,S>(p, source);
     }
 
-    static void ConstructArray(void* p, UPInt count)
+    static void ConstructArray(void* p, uint count)
     {
         UByte* pdata = (UByte*)p;
-        for (UPInt i=0; i< count; ++i, pdata += sizeof(T))
+        for (uint i=0; i< count; ++i, pdata += sizeof(T))
             Construct(pdata);
     }
 
-    static void ConstructArray(void* p, UPInt count, const T& source)
+    static void ConstructArray(void* p, uint count, const T& source)
     {
         UByte* pdata = (UByte*)p;
-        for (UPInt i=0; i< count; ++i, pdata += sizeof(T))
+        for (uint i=0; i< count; ++i, pdata += sizeof(T))
             Construct(pdata, source);
     }
 
-    static void ConstructArray(void* p, UPInt count, const T* psource)
+    static void ConstructArray(void* p, uint count, const T* psource)
     {
         UByte* pdata = (UByte*)p;
-        for (UPInt i=0; i< count; ++i, pdata += sizeof(T))
+        for (uint i=0; i< count; ++i, pdata += sizeof(T))
             Construct(pdata, *psource++);
     }
 
@@ -214,22 +203,22 @@ public:
         OVR_UNUSED(p); // Suppress silly MSVC warning
     }
 
-    static void DestructArray(T* p, UPInt count)
+    static void DestructArray(T* p, uint count)
     {
         p += count - 1;
-        for (UPInt i=0; i<count; ++i, --p)
+        for (uint i=0; i<count; ++i, --p)
             p->~T();
     }
 
-    static void CopyArrayForward(T* dst, const T* src, UPInt count)
+    static void CopyArrayForward(T* dst, const T* src, uint count)
     {
-        for(UPInt i = 0; i < count; ++i)
+        for(uint i = 0; i < count; ++i)
             dst[i] = src[i];
     }
 
-    static void CopyArrayBackward(T* dst, const T* src, UPInt count)
+    static void CopyArrayBackward(T* dst, const T* src, uint count)
     {
-        for(UPInt i = count; i; --i)
+        for(uint i = count; i; --i)
             dst[i-1] = src[i-1];
     }
 
@@ -246,7 +235,4 @@ template<class T> struct ContainerAllocator     : ContainerAllocatorBase, Constr
 template<class T> struct ContainerAllocator_CPP : ContainerAllocatorBase, ConstructorCPP<T> {};
 
 
-} // OVR
-
-
-#endif
+NV_NAMESPACE_END

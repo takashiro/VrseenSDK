@@ -18,7 +18,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "GazeCursor.h"
 #include "SoundLimiter.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 struct VrFrame;
 class App;
@@ -62,6 +62,6 @@ private:
                             VRMenuEvent const & event, VRMenuObject * receiver ) const;
 };
 
-} // namespace NervGear
+NV_NAMESPACE_END
 
 #endif // OVR_VRMenuFrame_h

@@ -24,7 +24,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "CollisionPrimitive.h"
 #include "BitmapFont.h" // HorizontalJustification & VerticalJustification
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 class App;
 class OvrVRMenuMgr;
@@ -90,7 +90,7 @@ enum eMenuIdType
 {
 	INVALID_MENU_OBJECT_ID = 0
 };
-typedef NervGear::TypesafeNumberT< uint64_t, eMenuIdType, INVALID_MENU_OBJECT_ID >	menuHandle_t;
+typedef TypesafeNumberT< uint64_t, eMenuIdType, INVALID_MENU_OBJECT_ID >	menuHandle_t;
 
 // menu render flags
 enum eVRMenuRenderFlags
@@ -592,7 +592,7 @@ public:
 	virtual	void				addFlags( VRMenuObjectFlags_t const & flags ) = 0;
 	virtual	void				removeFlags( VRMenuObjectFlags_t const & flags ) = 0;
 
-	virtual NervGear::VString const &	text() const = 0;
+    virtual VString const &	text() const = 0;
 	virtual void				setText( char const * text ) = 0;
 	virtual void				setTextWordWrapped( char const * text, class BitmapFont const & font, float const widthInMeters ) = 0;
 
@@ -696,6 +696,6 @@ public:
 	virtual ~VRMenuObject() { }
 };
 
-} // namespace NervGear
+NV_NAMESPACE_END
 
 #endif // OVR_VRMenuObject_h

@@ -1,22 +1,12 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   GlStateSave.h
-Content     :
-Created     :   July 14, 2014
-Authors     :   John Carmack
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-
-*************************************************************************************/
-
-#ifndef OVR_GLSTATESAVE_H
-#define OVR_GLSTATESAVE_H
+#include "vglobal.h"
 
 #include "Android/GlUtils.h"
 
-namespace NervGear
-{
+#pragma once
+
+NV_NAMESPACE_BEGIN
 
 class GLStateSave
 {
@@ -133,6 +123,6 @@ public:
 	GLint   CullFace;
 };
 
-}	// namespace NervGear
+NV_NAMESPACE_END
 
-#endif // OVR_GLSTATESAVE_H
+

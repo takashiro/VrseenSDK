@@ -1,19 +1,9 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   WarpGeometry.h
-Content     :   Geometry used by the time warp.
-Created     :   March 3, 2015
-Authors     :   J.M.P. van Waveren
-
-Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-#ifndef OVR_WarpGeometry_h
-#define OVR_WarpGeometry_h
-
+#include "vglobal.h"
 #include "Android/GlUtils.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 struct WarpGeometry
 {
@@ -34,6 +24,6 @@ struct WarpGeometry
 void CreateQuadWarpGeometry( WarpGeometry * geometry );
 void DestroyWarpGeometry( WarpGeometry * geometry );
 
-} // namespace NervGear
+NV_NAMESPACE_END
 
-#endif	// OVR_WarpGeometry_h
+

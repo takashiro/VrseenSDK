@@ -1,21 +1,10 @@
-/************************************************************************************
+#pragma once
 
-PublicHeader:   OVR.h
-Filename    :   OVR_Array.h
-Content     :   Template implementation for Array
-Created     :   September 19, 2012
-Notes       :
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-
-#ifndef OVR_Array_h
-#define OVR_Array_h
+#include "vglobal.h"
 
 #include "ContainerAllocator.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 //-----------------------------------------------------------------------------------
 // ***** ArrayDefaultPolicy
@@ -29,14 +18,14 @@ struct ArrayDefaultPolicy
     ArrayDefaultPolicy() : m_capacity(0) {}
     ArrayDefaultPolicy(const ArrayDefaultPolicy&) : m_capacity(0) {}
 
-    UPInt minCapacity() const { return 0; }
-    UPInt granularity() const { return 4; }
+    uint minCapacity() const { return 0; }
+    uint granularity() const { return 4; }
     bool  neverShrinking() const { return 0; }
 
-    UPInt capacity()    const      { return m_capacity; }
-    void  setCapacity(UPInt capacity) { m_capacity = capacity; }
+    uint capacity()    const      { return m_capacity; }
+    void  setCapacity(uint capacity) { m_capacity = capacity; }
 private:
-    UPInt m_capacity;
+    uint m_capacity;
 };
 
 
@@ -53,14 +42,14 @@ struct ArrayConstPolicy
     ArrayConstPolicy() : m_capacity(0) {}
     ArrayConstPolicy(const SelfType&) : m_capacity(0) {}
 
-    UPInt minCapacity() const { return MinCapacity; }
-    UPInt granularity() const { return Granularity; }
+    uint minCapacity() const { return MinCapacity; }
+    uint granularity() const { return Granularity; }
     bool  neverShrinking() const { return NeverShrink; }
 
-    UPInt capacity()    const      { return m_capacity; }
-    void  setCapacity(UPInt capacity) { m_capacity = capacity; }
+    uint capacity()    const      { return m_capacity; }
+    void  setCapacity(uint capacity) { m_capacity = capacity; }
 private:
-    UPInt m_capacity;
+    uint m_capacity;
 };
 
 //-----------------------------------------------------------------------------------
@@ -91,7 +80,7 @@ struct ArrayDataBase
         }
     }
 
-    UPInt capacity() const
+    uint capacity() const
     {
         return policy.capacity();
     }
@@ -108,7 +97,7 @@ struct ArrayDataBase
         policy.setCapacity(0);
     }
 
-    void reserve(UPInt newCapacity)
+    void reserve(uint newCapacity)
     {
         if (policy.neverShrinking() && newCapacity < capacity())
             return;
@@ -128,7 +117,7 @@ struct ArrayDataBase
         }
         else
         {
-            UPInt gran = policy.granularity();
+            uint gran = policy.granularity();
             newCapacity = (newCapacity + gran - 1) / gran * gran;
             if (data)
             {
@@ -139,7 +128,7 @@ struct ArrayDataBase
                 else
                 {
                     T* newData = (T*)Allocator::Alloc(sizeof(T) * newCapacity);
-                    UPInt i, s;
+                    uint i, s;
                     s = (size < newCapacity) ? size : newCapacity;
                     for (i = 0; i < s; ++i)
                     {
@@ -167,9 +156,9 @@ struct ArrayDataBase
     // This version of Resize DOES NOT construct the elements.
     // It's done to optimize PushBack, which uses a copy constructor
     // instead of the default constructor and assignment
-    void ResizeNoConstruct(UPInt newSize)
+    void ResizeNoConstruct(uint newSize)
     {
-        UPInt oldSize = size;
+        uint oldSize = size;
 
         if (newSize < oldSize)
         {
@@ -190,7 +179,7 @@ struct ArrayDataBase
     }
 
     ValueType*  data;
-    UPInt       size;
+    uint       size;
     SizePolicy  policy;
 };
 
@@ -220,9 +209,9 @@ struct ArrayData : ArrayDataBase<T, Allocator, SizePolicy>
         : BaseType(a.policy) { append(a.data, a.size); }
 
 
-    void resize(UPInt newSize)
+    void resize(uint newSize)
     {
-        UPInt oldSize = this->size;
+        uint oldSize = this->size;
         BaseType::ResizeNoConstruct(newSize);
         if(newSize > oldSize)
             Allocator::ConstructArray(this->data + oldSize, newSize - oldSize);
@@ -242,11 +231,11 @@ struct ArrayData : ArrayDataBase<T, Allocator, SizePolicy>
     }
 
     // Append the given data to the array.
-    void append(const ValueType other[], UPInt count)
+    void append(const ValueType other[], uint count)
     {
         if (count)
         {
-            UPInt oldSize = this->size;
+            uint oldSize = this->size;
             BaseType::ResizeNoConstruct(this->size + count);
             Allocator::ConstructArray(this->data + oldSize, count, other);
         }
@@ -279,9 +268,9 @@ struct ArrayDataCC : ArrayDataBase<T, Allocator, SizePolicy>
         : BaseType(a.policy), defaultValue(a.defaultValue) { append(a.data, a.size); }
 
 
-    void Resize(UPInt newSize)
+    void Resize(uint newSize)
     {
-        UPInt oldSize = this->size;
+        uint oldSize = this->size;
         BaseType::ResizeNoConstruct(newSize);
         if(newSize > oldSize)
             Allocator::ConstructArray(this->data + oldSize, newSize - oldSize, defaultValue);
@@ -301,11 +290,11 @@ struct ArrayDataCC : ArrayDataBase<T, Allocator, SizePolicy>
     }
 
     // Append the given data to the array.
-    void append(const ValueType other[], UPInt count)
+    void append(const ValueType other[], uint count)
     {
         if (count)
         {
-            UPInt oldSize = this->size;
+            uint oldSize = this->size;
             BaseType::ResizeNoConstruct(this->size + count);
             Allocator::ConstructArray(this->data + oldSize, count, other);
         }
@@ -364,51 +353,51 @@ public:
     void            setSizePolicy(const SizePolicyType& p) { m_data.policy = p; }
 
     bool    neverShrinking()const       { return m_data.policy.neverShrinking(); }
-    UPInt   size()       const       { return m_data.size;  }
+    uint   size()       const       { return m_data.size;  }
     // For those that prefer to avoid the hazards of working with unsigned values.
     // Note that on most platforms this will limit the capacity to 2 gig elements.
     int  	sizeInt()      const       { return (int)m_data.size;  }
     bool    isEmpty()       const       { return m_data.size == 0; }
-    UPInt   capacity()   const       { return m_data.capacity(); }
+    uint   capacity()   const       { return m_data.capacity(); }
     int		capacityInt()	const		{ return (int)m_data.capacity(); }
-    UPInt   numBytes()   const       { return m_data.capacity() * sizeof(ValueType); }
+    uint   numBytes()   const       { return m_data.capacity() * sizeof(ValueType); }
 
     void    clearAndRelease()           { m_data.clearAndRelease(); }
     void    clear()                     { m_data.resize(0); }
-    void    resize(UPInt newSize)       { m_data.resize(newSize); }
+    void    resize(uint newSize)       { m_data.resize(newSize); }
 
     // Reserve can only increase the capacity
-    void    reserve(UPInt newCapacity)
+    void    reserve(uint newCapacity)
     {
         if (newCapacity > m_data.capacity())
             m_data.reserve(newCapacity);
     }
 
     // Basic access.
-    ValueType& at(UPInt index)
+    ValueType& at(uint index)
     {
         OVR_ASSERT(index < m_data.size);
         return m_data.data[index];
     }
-    const ValueType& at(UPInt index) const
+    const ValueType& at(uint index) const
     {
         OVR_ASSERT(index < m_data.size);
         return m_data.data[index];
     }
 
-    ValueType value(UPInt index) const
+    ValueType value(uint index) const
     {
         OVR_ASSERT(index < m_data.size);
         return m_data.data[index];
     }
 
     // Basic access.
-    ValueType& operator [] (UPInt index)
+    ValueType& operator [] (uint index)
     {
         OVR_ASSERT(index < m_data.size);
         return m_data.data[index];
     }
-    const ValueType& operator [] (UPInt index) const
+    const ValueType& operator [] (uint index) const
     {
         OVR_ASSERT(index < m_data.size);
         return m_data.data[index];
@@ -449,15 +438,15 @@ public:
 
 	// Default initializes a new element at the end of the array and returns
 	// the index to the element.
-    UPInt	allocBack()
+    uint	allocBack()
 	{
-        UPInt size = m_data.size;
+        uint size = m_data.size;
         m_data.resize(size + 1);
 		return size;
 	}
 
     // Remove the last element.
-    void    popBack(UPInt count = 1)
+    void    popBack(uint count = 1)
     {
         OVR_ASSERT(m_data.size >= count);
         m_data.resize(m_data.size - count);
@@ -484,14 +473,14 @@ public:
     const SelfType& operator = (const SelfType& a)
     {
         resize(a.size());
-        for (UPInt i = 0; i < m_data.size; i++) {
+        for (uint i = 0; i < m_data.size; i++) {
             *(m_data.data + i) = a[i];
         }
         return *this;
     }
 
     // Removing multiple elements from the array.
-    void    remove(UPInt index, UPInt num)
+    void    remove(uint index, uint num)
     {
         OVR_ASSERT(index + num <= m_data.size);
         if (m_data.size == num)
@@ -514,7 +503,7 @@ public:
     // If order of elements in the array is not important then use
     // RemoveAtUnordered, that could be much faster than the regular
     // RemoveAt.
-    void    removeAt(UPInt index)
+    void    removeAt(uint index)
     {
         OVR_ASSERT(index < m_data.size);
         if (m_data.size == 1)
@@ -535,7 +524,7 @@ public:
     // Removes an element from the array without respecting of original order of
     // elements for better performance. Do not use on array where order of elements
     // is important, otherwise use it instead of regular RemoveAt().
-    void    removeAtUnordered(UPInt index)
+    void    removeAtUnordered(uint index)
     {
         OVR_ASSERT(index < m_data.size);
         if (m_data.size == 1)
@@ -547,7 +536,7 @@ public:
             // copy the last element into the 'index' position
             // and decrement the size (instead of moving all elements
             // in [index + 1 .. size - 1] range).
-            const UPInt lastElemIndex = m_data.size - 1;
+            const uint lastElemIndex = m_data.size - 1;
             if (index < lastElemIndex)
             {
                 AllocatorType::Destruct(m_data.data + index);
@@ -559,7 +548,7 @@ public:
     }
 
     // Insert the given object at the given index shifting all the elements up.
-    void    insert(UPInt index, const ValueType& val = ValueType())
+    void    insert(uint index, const ValueType& val = ValueType())
     {
         OVR_ASSERT(index <= m_data.size);
 
@@ -575,7 +564,7 @@ public:
     }
 
     // Insert the given object at the given index shifting all the elements up.
-    void    insertMultipleAt(UPInt index, UPInt num, const ValueType& val = ValueType())
+    void    insertMultipleAt(uint index, uint num, const ValueType& val = ValueType())
     {
         OVR_ASSERT(index <= m_data.size);
 
@@ -587,7 +576,7 @@ public:
                 m_data.data + index,
                 m_data.size - num - index);
         }
-        for (UPInt i = 0; i < num; ++i)
+        for (uint i = 0; i < num; ++i)
             AllocatorType::Construct(m_data.data + index + i, val);
     }
 
@@ -598,7 +587,7 @@ public:
     }
 
     // Append the given data to the array.
-    void    append(const ValueType other[], UPInt count)
+    void    append(const ValueType other[], uint count)
     {
         m_data.append(other, count);
     }
@@ -606,11 +595,11 @@ public:
     class Iterator
     {
         SelfType*       m_array;
-        SPInt           m_curIndex;
+        int           m_curIndex;
 
     public:
         Iterator() : m_array(0), m_curIndex(-1) {}
-        Iterator(SelfType* parr, SPInt idx = 0) : m_array(parr), m_curIndex(idx) {}
+        Iterator(SelfType* parr, int idx = 0) : m_array(parr), m_curIndex(idx) {}
 
         bool operator==(const Iterator& it) const { return m_array == it.m_array && m_curIndex == it.m_curIndex; }
         bool operator!=(const Iterator& it) const { return m_array != it.m_array || m_curIndex != it.m_curIndex; }
@@ -619,7 +608,7 @@ public:
         {
             if (m_array)
             {
-                if (m_curIndex < (SPInt)m_array->size())
+                if (m_curIndex < (int)m_array->size())
                     ++m_curIndex;
             }
             return *this;
@@ -653,7 +642,7 @@ public:
         {
             return Iterator(m_array, m_curIndex - delta);
         }
-        SPInt operator-(const Iterator& right) const
+        int operator-(const Iterator& right) const
         {
             OVR_ASSERT(m_array == right.m_array);
             return m_curIndex - right.m_curIndex;
@@ -670,21 +659,21 @@ public:
                 m_array->removeAt(m_curIndex);
         }
 
-        SPInt index() const { return m_curIndex; }
+        int index() const { return m_curIndex; }
     };
 
     Iterator begin() { return Iterator(this); }
-    Iterator end()   { return Iterator(this, (SPInt)size()); }
-    Iterator last()  { return Iterator(this, (SPInt)size() - 1); }
+    Iterator end()   { return Iterator(this, (int)size()); }
+    Iterator last()  { return Iterator(this, (int)size() - 1); }
 
     class ConstIterator
     {
         const SelfType* m_array;
-        SPInt           m_curIndex;
+        int           m_curIndex;
 
     public:
         ConstIterator() : m_array(0), m_curIndex(-1) {}
-        ConstIterator(const SelfType* parr, SPInt idx = 0) : m_array(parr), m_curIndex(idx) {}
+        ConstIterator(const SelfType* parr, int idx = 0) : m_array(parr), m_curIndex(idx) {}
 
         bool operator==(const ConstIterator& it) const { return m_array == it.m_array && m_curIndex == it.m_curIndex; }
         bool operator!=(const ConstIterator& it) const { return m_array != it.m_array || m_curIndex != it.m_curIndex; }
@@ -727,7 +716,7 @@ public:
         {
             return ConstIterator(m_array, m_curIndex - delta);
         }
-        SPInt operator-(const ConstIterator& right) const
+        int operator-(const ConstIterator& right) const
         {
             OVR_ASSERT(m_array == right.m_array);
             return m_curIndex - right.m_curIndex;
@@ -738,11 +727,11 @@ public:
 
         bool isFinished() const { return !m_array || m_curIndex < 0 || m_curIndex >= (int)m_array->size(); }
 
-        SPInt index()  const { return m_curIndex; }
+        int index()  const { return m_curIndex; }
     };
     ConstIterator begin() const { return ConstIterator(this); }
-    ConstIterator end() const   { return ConstIterator(this, (SPInt)size()); }
-    ConstIterator last() const  { return ConstIterator(this, (SPInt)size() - 1); }
+    ConstIterator end() const   { return ConstIterator(this, (int)size()); }
+    ConstIterator last() const  { return ConstIterator(this, (int)size() - 1); }
 
 protected:
     ArrayData   m_data;
@@ -840,6 +829,4 @@ public:
     const SelfType& operator=(const SelfType& a) { BaseType::operator=(a); return *this; }
 };
 
-} // OVR
-
-#endif
+NV_NAMESPACE_END

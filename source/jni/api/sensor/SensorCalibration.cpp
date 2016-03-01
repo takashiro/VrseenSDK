@@ -191,16 +191,16 @@ void SensorCalibration::StoreAutoOffset()
     const UInt32 minDelay = 24 * 3600; // 1 day in seconds
 
     // find the best bin
-    UPInt binIdx = 0;
-    for (UPInt i = 1; i < TemperatureReports.size(); i++)
+    uint binIdx = 0;
+    for (uint i = 1; i < TemperatureReports.size(); i++)
         if (Abs(GyroAutoTemperature - TemperatureReports[i][0].TargetTemperature) <
             Abs(GyroAutoTemperature - TemperatureReports[binIdx][0].TargetTemperature))
             binIdx = i;
 
     // find the oldest and newest samples
     // NB: uninitialized samples have Time == 0, so they will get picked as the oldest
-    UPInt newestIdx = 0, oldestIdx = 0;
-    for (UPInt i = 1; i < TemperatureReports[binIdx].size(); i++)
+    uint newestIdx = 0, oldestIdx = 0;
+    for (uint i = 1; i < TemperatureReports[binIdx].size(); i++)
     {
         // if the version is newer - do nothing
         if (TemperatureReports[binIdx][i].Version > VERSION)

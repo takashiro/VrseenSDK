@@ -1,21 +1,8 @@
-/************************************************************************************
-
-PublicHeader:   OVR.h
-Filename    :   OVR_Stereo.h
-Content     :   Stereo rendering functions
-Created     :   November 30, 2013
-Authors     :   Tom Fosyth
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
-#ifndef OVR_Stereo_h
-#define OVR_Stereo_h
+#pragma once
 
 #include "Device.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 //-----------------------------------------------------------------------------------
 // ***** Stereo Enumerations
@@ -399,6 +386,5 @@ Vector2f TransformRendertargetNDCToTanFovSpace( StereoEyeParams const &eyeParams
                                                 Vector2f const &textureUV );
 
 
-} //namespace NervGear
+NV_NAMESPACE_END
 
-#endif // OVR_Stereo_h

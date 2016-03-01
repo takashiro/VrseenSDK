@@ -1,22 +1,6 @@
-/************************************************************************************
+#pragma once
 
-PublicHeader:   Kernel
-Filename    :   OVR_File.h
-Content     :   Header for all internal file management - functions and structures
-                to be inherited by OS specific subclasses.
-Created     :   September 19, 2012
-Notes       :
-
-Notes       :   errno may not be preserved across use of BaseFile member functions
-            :   Directories cannot be deleted while files opened from them are in use
-                (For the GetFullName function)
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-
-#ifndef OVR_File_h
-#define OVR_File_h
+#include "vglobal.h"
 
 #include "RefCount.h"
 #include "Std.h"
@@ -25,7 +9,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <stdio.h>
 #include "VString.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 // ***** Declared classes
 class   FileConstants;
@@ -509,6 +493,4 @@ private:
 // Find trailing short filename in a path.
 const char* OVR_CDECL GetShortFilename(const char* purl);
 
-} // OVR
-
-#endif
+NV_NAMESPACE_END

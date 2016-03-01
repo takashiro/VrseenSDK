@@ -1,15 +1,6 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   TalkToJava.h
-Content     :   Thread and JNI management for making java calls in the background
-Created     :   February 26, 2014
-Authors     :   John Carmack
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-#ifndef OVR_TalkToJava_h
-#define OVR_TalkToJava_h
+#include "vglobal.h"
 
 /*
  * Any call to java from the VR thread is a potential hitch.  Some, like
@@ -27,8 +18,9 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <jni.h>
 #include <pthread.h>
 
-namespace NervGear
-{
+#pragma once
+
+NV_NAMESPACE_BEGIN
 
 class TalkToJavaInterface
 {
@@ -81,4 +73,4 @@ private:
 
 }
 
-#endif	// OVR_TalkToJava_h
+

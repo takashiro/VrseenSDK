@@ -1,26 +1,13 @@
-/************************************************************************************
+#pragma once
 
-PublicHeader:   OVR.h
-Filename    :   OVR_Capture_Packets.h
-Content     :   Oculus performance capture protocol description.
-Created     :   January, 2015
-Notes       :
-
-Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-
-// These structures/enums/types are the raw components of the network protocol used by NervGear::Capture...
-// For internal and tooling use only... normal applications will never need to use these directly.
-
-#ifndef OVR_CAPTURE_PACKETS_H
-#define OVR_CAPTURE_PACKETS_H
+#include "vglobal.h"
 
 #include "Capture_Config.h"
 #include "Capture_Types.h"
 
-namespace NervGear
-{
+#pragma once
+
+NV_NAMESPACE_BEGIN
 namespace Capture
 {
 
@@ -297,6 +284,6 @@ namespace Capture
 #pragma pack()
 
 } // namespace Capture
-} // namespace NervGear
 
-#endif
+NV_NAMESPACE_END
+

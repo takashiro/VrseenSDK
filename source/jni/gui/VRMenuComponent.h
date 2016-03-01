@@ -17,7 +17,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VRMenuEvent.h"
 #include "SoundLimiter.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 enum eMsgStatus
 {
@@ -160,6 +160,6 @@ public:
 	}
 };
 
-} // namespace NervGear
+NV_NAMESPACE_END
 
 #endif // OVR_VRMenuComponent_h

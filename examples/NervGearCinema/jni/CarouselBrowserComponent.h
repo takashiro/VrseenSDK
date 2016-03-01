@@ -30,7 +30,7 @@ public:
 	GLuint		texture;
 	int			textureWidth;
 	int			textureHeight;
-	UPInt		userFlags;
+	uint		userFlags;
 
 				CarouselItem() : texture( 0 ), textureWidth( 0 ), textureHeight( 0 ), userFlags( 0 ) {}
 };

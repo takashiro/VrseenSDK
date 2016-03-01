@@ -1,22 +1,12 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   ModelTrace.h
-Content     :   Ray tracer using a KD-Tree.
-Created     :   May, 2014
-Authors     :   J.M.P. van Waveren
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-#ifndef __MODELTRACE_H__
-#define __MODELTRACE_H__
+#include "vglobal.h"
 
 // Use explicit path for FbxConvert
 #include "VMath.h"
 #include "Array.h"
 
-namespace NervGear
-{
+NV_NAMESPACE_BEGIN
 
 /*
 	An Efficient and Robust Ray–Box Intersection Algorithm
@@ -28,8 +18,8 @@ namespace NervGear
 	1st intersection = rayStart + t0 * rayDir
 	2nd intersection = rayStart + t1 * rayDir
 */
-bool Intersect_RayBounds( const NervGear::Vector3f & rayStart, const NervGear::Vector3f & rayDir,
-				const NervGear::Vector3f & mins, const NervGear::Vector3f & maxs,
+bool Intersect_RayBounds( const Vector3f & rayStart, const Vector3f & rayDir,
+                const Vector3f & mins, const Vector3f & maxs,
 				float & t0, float & t1 );
 
 /*
@@ -44,8 +34,8 @@ bool Intersect_RayBounds( const NervGear::Vector3f & rayStart, const NervGear::V
 	'u' and 'v' are the barycentric coordinates.
 	intersection = ( 1 - u - v ) * v0 + u * v1 + v * v2
 */
-bool Intersect_RayTriangle( const NervGear::Vector3f & rayStart, const NervGear::Vector3f & rayDir,
-				const NervGear::Vector3f & v0, const NervGear::Vector3f & v1, const NervGear::Vector3f & v2,
+bool Intersect_RayTriangle( const Vector3f & rayStart, const Vector3f & rayDir,
+                const Vector3f & v0, const Vector3f & v1, const Vector3f & v2,
 				float & t0, float & u, float & v );
 
 const int RT_KDTREE_MAX_LEAF_TRIANGLES	= 4;
@@ -104,6 +94,4 @@ public:
 	Array< int >			overflow;
 };
 
-}	// namespace NervGear
-
-#endif // !__MODELTRACE_H__
+NV_NAMESPACE_END

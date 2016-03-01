@@ -1,20 +1,8 @@
-/************************************************************************************
+#pragma once
 
-PublicHeader:   OVR.h
-Filename    :   OVR_DeviceConstants.h
-Content     :   Device constants
-Created     :   February 5, 2013
-Authors     :   Lee Cooper
+#include "vglobal.h"
 
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
-#ifndef OVR_DeviceConstants_h
-#define OVR_DeviceConstants_h
-
-namespace NervGear {
-
+NV_NAMESPACE_BEGIN
 
 //-------------------------------------------------------------------------------------
 // Different device types supported by OVR; this type is reported by DeviceBase::GetType.
@@ -116,6 +104,4 @@ enum EyeCupType
 };
 
 
-} // namespace NervGear
-
-#endif
+NV_NAMESPACE_END

@@ -1,15 +1,6 @@
-/************************************************************************************
-Filename    :   OVR_Linux_HIDDevice.h
-Content     :   Linux HID device implementation.
-Created     :   June 13, 2013
-Authors     :   Brant Lewis
+#pragma once
 
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
-#ifndef OVR_LINUX_HIDDevice_h
-#define OVR_LINUX_HIDDevice_h
+#include "vglobal.h"
 
 #include "HIDDevice.h"
 #include "Linux_DeviceManager.h"
@@ -117,4 +108,4 @@ private:
 
 }} // namespace NervGear::Linux
 
-#endif // OVR_Linux_HIDDevice_h
+

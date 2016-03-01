@@ -1,24 +1,14 @@
-/************************************************************************************
+#pragma once
 
-PublicHeader:   OVR.h
-Filename    :   OVR_Capture_AsyncStream.h
-Content     :   Oculus performance capture library. Interface for async data streaming.
-Created     :   January, 2015
-Notes       :
-
-Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-
-#ifndef OVR_CAPTURE_ASYNCSTREAM_H
-#define OVR_CAPTURE_ASYNCSTREAM_H
+#include "vglobal.h"
 
 #include "Capture.h"
 #include "Capture_Packets.h"
 #include "Capture_Thread.h"
 
-namespace NervGear
-{
+#pragma once
+
+NV_NAMESPACE_BEGIN
 namespace Capture
 {
 
@@ -201,6 +191,5 @@ namespace Capture
     };
 
 } // namespace Capture
-} // namespace NervGear
+NV_NAMESPACE_END
 
-#endif

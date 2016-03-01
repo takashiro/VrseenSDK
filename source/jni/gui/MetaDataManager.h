@@ -19,7 +19,7 @@ Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
 
 #include "VJson.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 //==============================================================
 // OvrMetaData
@@ -78,7 +78,7 @@ public:
 
 	// File list passed in and we reconcile against stored/new metadata
     void					initFromFileListMergeMeta( const Array< VString > & fileList, const Array< VString > & searchPaths,
-		const OvrMetaDataFileExtensions & fileExtensions, const char * appFileStoragePath, const char * metaFile, const NervGear::Json &storedMetaData );
+        const OvrMetaDataFileExtensions & fileExtensions, const char * appFileStoragePath, const char * metaFile, const Json &storedMetaData );
 
     void					processRemoteMetaFile( const char * metaFileString, const int startInsertionIndex /* index to insert remote categories*/ );
 
@@ -89,7 +89,7 @@ public:
     TagAction				toggleTag( OvrMetaDatum * data, const VString & tag );
 
 	// Returns metaData file if one is found, otherwise creates one using the default meta.json in the assets folder
-    NervGear::Json createOrGetStoredMetaFile( const char * appFileStoragePath, const char * metaFile );
+    Json createOrGetStoredMetaFile( const char * appFileStoragePath, const char * metaFile );
     void					addCategory( const VString & name );
 
     const Array< Category > categories() const 							{ return m_categories; }
@@ -102,8 +102,8 @@ public:
 protected:
 	// Overload to fill extended data during initialization
     virtual OvrMetaDatum *	createMetaDatum( const char* fileName ) const = 0;
-    virtual	void			extractExtendedData( const NervGear::Json &jsonDatum, OvrMetaDatum & outDatum ) const = 0;
-    virtual	void			extendedDataToJson( const OvrMetaDatum & datum, NervGear::Json &outDatumObject ) const = 0;
+    virtual	void			extractExtendedData( const Json &jsonDatum, OvrMetaDatum & outDatum ) const = 0;
+    virtual	void			extendedDataToJson( const OvrMetaDatum & datum, Json &outDatumObject ) const = 0;
     virtual void			swapExtendedData( OvrMetaDatum * left, OvrMetaDatum * right ) const = 0;
 
 	// Optional protected interface
@@ -114,18 +114,18 @@ protected:
 
 private:
     Category * 				getCategory( const VString & categoryName );
-    void					processMetaData( const NervGear::Json &dataFile, const Array< VString > & searchPaths, const char * metaFile );
+    void					processMetaData( const Json &dataFile, const Array< VString > & searchPaths, const char * metaFile );
     void					regenerateCategoryIndices();
     void					reconcileMetaData( StringHash< OvrMetaDatum * > & storedMetaData );
     void					reconcileCategories( Array< Category > & storedCategories );
 
-    NervGear::Json			metaDataToJson() const;
+    Json			metaDataToJson() const;
     void					writeMetaFile( const char * metaFile ) const;
     bool 					shouldAddFile( const char * filename, const OvrMetaDataFileExtensions & fileExtensions ) const;
-    void					extractVersion( const NervGear::Json &dataFile, double & outVersion ) const;
-    void					extractCategories( const NervGear::Json &dataFile, Array< Category > & outCategories ) const;
-    void					extractMetaData( const NervGear::Json &dataFile, const Array< VString > & searchPaths, StringHash< OvrMetaDatum * > & outMetaData ) const;
-    void					extractRemoteMetaData( const NervGear::Json &dataFile, StringHash< OvrMetaDatum * > & outMetaData ) const;
+    void					extractVersion( const Json &dataFile, double & outVersion ) const;
+    void					extractCategories( const Json &dataFile, Array< Category > & outCategories ) const;
+    void					extractMetaData( const Json &dataFile, const Array< VString > & searchPaths, StringHash< OvrMetaDatum * > & outMetaData ) const;
+    void					extractRemoteMetaData( const Json &dataFile, StringHash< OvrMetaDatum * > & outMetaData ) const;
 
     VString 					m_filePath;
     Array< Category >		m_categories;

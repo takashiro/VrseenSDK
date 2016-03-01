@@ -1,21 +1,13 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   Input.h
-Content     :   Data passed each frame by app framework
-Created     :   February 6, 2014
-Authors     :   John Carmack
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-#ifndef OVR_Input_h
-#define OVR_Input_h
+#include "vglobal.h"
 
 #include "VMath.h"
 #include "api/VrApi.h"
 
-namespace NervGear
-{
+#pragma once
+
+NV_NAMESPACE_BEGIN
 
 //==============================================================
 // VrViewParms
@@ -189,6 +181,5 @@ struct VrFrame
 	VrInput			Input;
 };
 
-}	// namespace NervGear
+NV_NAMESPACE_END
 
-#endif	// OVR_Input

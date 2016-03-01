@@ -1,17 +1,4 @@
-/************************************************************************************
-
-PublicHeader:   OVR.h
-Filename    :   OVR_LatencyTest.h
-Content     :   Wraps the lower level LatencyTesterDevice and adds functionality.
-Created     :   February 14, 2013
-Authors     :   Lee Cooper
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
-#ifndef OVR_LatencyTest_h
-#define OVR_LatencyTest_h
+#pragma once
 
 #include "VString.h"
 #include "VStringBuffer.h"
@@ -19,7 +6,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "Device.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 
 //-------------------------------------------------------------------------------------
@@ -152,6 +139,6 @@ private:
 	VString					    ReturnedResultString;
 };
 
-} // namespace NervGear
+NV_NAMESPACE_END
 
-#endif // OVR_LatencyTest_h
+

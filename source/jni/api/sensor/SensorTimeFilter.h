@@ -1,23 +1,8 @@
-/************************************************************************************
-
-PublicHeader:   None
-Filename    :   OVR_SensorTimeFilter.h
-Content     :   Class to filter HMD time and convert it to system time
-Created     :   December 20, 2013
-Author      :   Michael Antonov
-Notes       :
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-
-#ifndef OVR_SensorTimeFilter_h
-#define OVR_SensorTimeFilter_h
+#pragma once
 
 #include "Types.h"
 
-namespace NervGear {
-
+NV_NAMESPACE_BEGIN
 
 //-----------------------------------------------------------------------------------
 // ***** SensorTimeFilter
@@ -206,6 +191,6 @@ private:
     MinRecordBuffer MinRecords;
 };
 
-} // namespace NervGear
+NV_NAMESPACE_END
 
-#endif // OVR_SensorTimeFilter_h
+

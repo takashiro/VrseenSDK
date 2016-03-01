@@ -1,17 +1,6 @@
-/************************************************************************************
+#pragma once
 
-PublicHeader:   OVR.h
-Filename    :   OVR_Capture.h
-Content     :   Oculus performance capture library
-Created     :   January, 2015
-Notes       :
-
-Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-
-#ifndef OVR_CAPTURE_H
-#define OVR_CAPTURE_H
+#include "vglobal.h"
 
 #include "Capture_Config.h"
 #include "Capture_Types.h"
@@ -45,8 +34,9 @@ Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
         NervGear::Capture::CounterAddValue(_ovrcap_label_##name, value);         \
     }
 
-namespace NervGear
-{
+#pragma once
+
+NV_NAMESPACE_BEGIN
 namespace Capture
 {
 
@@ -148,6 +138,5 @@ namespace Capture
 
 
 } // namespace Capture
-} // namespace NervGear
 
-#endif
+NV_NAMESPACE_END

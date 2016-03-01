@@ -18,7 +18,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 struct ovrMobile;
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 //==============================================================
 // VrLocale
@@ -51,6 +51,6 @@ public:
 	static jclass VrActivityClass;
 };
 
-} // namespace NervGear
+NV_NAMESPACE_END
 
 #endif	// OVR_VRLOCALE_H

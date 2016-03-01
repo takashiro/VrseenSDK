@@ -1,18 +1,6 @@
-/************************************************************************************
+#pragma once
 
-PublicHeader:   OVR.h
-Filename    :   OVR_Math.h
-Content     :   Implementation of 3D primitives such as vectors, matrices.
-Created     :   September 4, 2012
-Authors     :   Andrew Reisse, Michael Antonov, Steve LaValle,
-				Anna Yershova, Max Katsev, Dov Katz
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
-#ifndef OVR_Math_h
-#define OVR_Math_h
+#include "vglobal.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -20,7 +8,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "Types.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 template <typename T>
 const T OVRMath_Min(const T a, const T b)
@@ -78,7 +66,7 @@ struct WorldAxes
     { OVR_ASSERT(abs(x) != abs(y) && abs(y) != abs(z) && abs(z) != abs(x));}
 };
 
-} // namespace NervGear
+NV_NAMESPACE_END
 
 
 //------------------------------------------------------------------------------------//
@@ -101,7 +89,7 @@ typedef struct ovrPosef_ ovrPosef;
 typedef struct ovrPoseStatef_ ovrPoseStatef;
 typedef struct ovrSensorState_ ovrSensorState;
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 // Forward-declare our templates.
 template<class T> class Quat;
@@ -1637,9 +1625,9 @@ public:
         return result;
     }
 
-    void ToString(char* dest, UPInt destsize) const
+    void ToString(char* dest, uint destsize) const
     {
-        UPInt pos = 0;
+        uint pos = 0;
         for (int r=0; r<4; r++)
             for (int c=0; c<4; c++)
                 pos += OVR_sprintf(dest+pos, destsize-pos, "%g ", M[r][c]);
@@ -1853,16 +1841,16 @@ public:
     }
 
 
-    T SubDet (const UPInt* rows, const UPInt* cols) const
+    T SubDet (const uint* rows, const uint* cols) const
     {
         return M[rows[0]][cols[0]] * (M[rows[1]][cols[1]] * M[rows[2]][cols[2]] - M[rows[1]][cols[2]] * M[rows[2]][cols[1]])
              - M[rows[0]][cols[1]] * (M[rows[1]][cols[0]] * M[rows[2]][cols[2]] - M[rows[1]][cols[2]] * M[rows[2]][cols[0]])
              + M[rows[0]][cols[2]] * (M[rows[1]][cols[0]] * M[rows[2]][cols[1]] - M[rows[1]][cols[1]] * M[rows[2]][cols[0]]);
     }
 
-    T Cofactor(UPInt I, UPInt J) const
+    T Cofactor(uint I, uint J) const
     {
-        const UPInt indices[4][3] = {{1,2,3},{0,2,3},{0,1,3},{0,1,2}};
+        const uint indices[4][3] = {{1,2,3},{0,2,3},{0,1,3},{0,1,2}};
         return ((I+J)&1) ? -SubDet(indices[I],indices[J]) : SubDet(indices[I],indices[J]);
     }
 
@@ -2409,9 +2397,9 @@ public:
 		return result;
 	}
 
-	void ToString(char* dest, UPInt destsize) const
+	void ToString(char* dest, uint destsize) const
 	{
-		UPInt pos = 0;
+		uint pos = 0;
 		for (int r=0; r<3; r++)
 			for (int c=0; c<3; c++)
 				pos += OVR_sprintf(dest+pos, destsize-pos, "%g ", M[r][c]);
@@ -2599,7 +2587,7 @@ public:
 	}
 
 
-	T SubDet (const UPInt* rows, const UPInt* cols) const
+	T SubDet (const uint* rows, const uint* cols) const
 	{
 		return M[rows[0]][cols[0]] * (M[rows[1]][cols[1]] * M[rows[2]][cols[2]] - M[rows[1]][cols[2]] * M[rows[2]][cols[1]])
 			 - M[rows[0]][cols[1]] * (M[rows[1]][cols[0]] * M[rows[2]][cols[2]] - M[rows[1]][cols[2]] * M[rows[2]][cols[0]])
@@ -2993,6 +2981,4 @@ public:
 typedef Plane<float> Planef;
 typedef Plane<double> Planed;
 
-} // Namespace OVR
-
-#endif
+NV_NAMESPACE_END

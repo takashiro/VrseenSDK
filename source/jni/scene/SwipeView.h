@@ -1,16 +1,6 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   SwipeView.h
-Content     :   Gaze and swipe selection of panels.
-Created     :   February 28, 2014
-Authors     :   John Carmack
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-
-#ifndef OVR_SwipeView_h
-#define OVR_SwipeView_h
+#include "vglobal.h"
 
 #include "VMath.h"
 #include "Array.h"
@@ -21,8 +11,9 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "Input.h"
 #include "BitmapFont.h"
 
-namespace NervGear
-{
+#pragma once
+
+NV_NAMESPACE_BEGIN
 
 class OvrGazeCursor;
 
@@ -217,6 +208,6 @@ public:
 void	LoadTestSwipeTextures();
 void	PopulateTestSwipeView( SwipeView & sv, const int rows );
 
-}	// namespace NervGear
+NV_NAMESPACE_END
 
-#endif	// OVR_SwipeView_h
+

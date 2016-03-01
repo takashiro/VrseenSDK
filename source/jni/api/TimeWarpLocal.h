@@ -1,15 +1,4 @@
-/************************************************************************************
-
-Filename    :   TimeWarpLocal.h
-Content     :   Private header for TimeWarp
-Created     :   August 13, 2013
-Authors     :   John Carmack
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-#ifndef OVR_TimeWarpLocal_h
-#define OVR_TimeWarpLocal_h
+#pragma once
 
 #include "Lockless.h"
 #include "TimeWarp.h"
@@ -19,7 +8,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "WarpGeometry.h"
 #include "WarpProgram.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 /*
  * It is necessary to latch both eye images together as a unit.  If
@@ -278,6 +267,6 @@ Matrix4f CalculateTimeWarpMatrix( const Quatf &from, const Quatf &to,
 
 void	WarpTexCoord2( const hmdInfoInternal_t & hmdInfo, const float in[2], float out[2] );
 
-} // namespace NervGear
+NV_NAMESPACE_END
 
-#endif	// OVR_TimeWarpLocal_h
+

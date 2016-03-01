@@ -1,18 +1,8 @@
-/************************************************************************************
+#pragma once
 
-PublicHeader:   OVR.h
-Filename    :   OVR_KeyCodes.h
-Content     :   Common keyboard constants
-Created     :   September 19, 2012
+#include "vglobal.h"
 
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-
-#ifndef OVR_KeyCodes_h
-#define OVR_KeyCodes_h
-
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 //-----------------------------------------------------------------------------------
 // ***** KeyCode
@@ -23,7 +13,7 @@ namespace NervGear {
 enum KeyCode
 {
     // Key_None indicates that no key was specified.
-    Key_None            = 0, 
+    Key_None            = 0,
 
     // A through Z and numbers 0 through 9.
     Key_A               = 65,
@@ -80,7 +70,7 @@ enum KeyCode
     Key_KP_Subtract,
     Key_KP_Decimal,
     Key_KP_Divide,
-    
+
     // Function keys.
     Key_F1              = 0xb0,
     Key_F2,
@@ -97,7 +87,7 @@ enum KeyCode
     Key_F13,
     Key_F14,
     Key_F15,
-    
+
     // Other keys.
     Key_Backspace       = 8,
     Key_Tab,
@@ -122,14 +112,14 @@ enum KeyCode
     Key_Insert,
     Key_Delete,
     Key_Help,
-    
+
     Key_Comma           = 44,
     Key_Minus,
     Key_Slash           = 47,
     Key_Period,
     Key_NumLock         = 144, // Toggle
     Key_ScrollLock      = 145, // Toggle
-    
+
     Key_Semicolon       = 59,
     Key_Equal           = 61,
     Key_Backtick        = 96,   // ` and tilda~ when shifted (US keyboard)
@@ -151,7 +141,7 @@ enum KeyCode
 
 //-----------------------------------------------------------------------------------
 
-class KeyModifiers 
+class KeyModifiers
 {
 public:
     enum

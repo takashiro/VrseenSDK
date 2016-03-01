@@ -1,21 +1,10 @@
-/************************************************************************************
+#pragma once
 
-PublicHeader:   OVR
-Filename    :   OVR_Timer.h
-Content     :   Provides static functions for precise timing
-Created     :   September 19, 2012
-Notes       :
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-
-#ifndef OVR_Timer_h
-#define OVR_Timer_h
+#include "vglobal.h"
 
 #include "Types.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 //-----------------------------------------------------------------------------------
 // ***** Timer
@@ -55,8 +44,4 @@ private:
     static void ShutdownTimerSystem();
 };
 
-
-
-} // NervGear::Timer
-
-#endif
+NV_NAMESPACE_END

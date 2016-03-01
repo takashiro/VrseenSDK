@@ -1,17 +1,6 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   OVR_BinaryFile.h
-Content     :   Simple helper class to read a binary file.
-Created     :   Jun, 2014
-Authors     :   J.M.P. van Waveren
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-
-*************************************************************************************/
-
-#ifndef OVR_BinaryFile_h
-#define OVR_BinaryFile_h
+#include "vglobal.h"
 
 #include "Types.h"
 #include "Array.h"
@@ -20,8 +9,9 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 	This is a simple helper class to read binary data next to a JSON file.
 */
 
-namespace NervGear
-{
+#pragma once
+
+NV_NAMESPACE_BEGIN
 
 class BinaryReader
 {
@@ -73,6 +63,6 @@ private:
     bool			m_allocated;
 };
 
-} // namespace NervGear
+NV_NAMESPACE_END
 
-#endif // OVR_BinaryFile_h
+

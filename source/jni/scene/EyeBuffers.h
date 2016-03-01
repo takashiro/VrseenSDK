@@ -1,14 +1,3 @@
-/************************************************************************************
-
-Filename    :   EyeBuffers.h
-Content     :   Handling of different eye buffer formats
-Created     :   March 7, 2014
-Authors     :   John Carmack
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
 #pragma once
 
 #include <jni.h>

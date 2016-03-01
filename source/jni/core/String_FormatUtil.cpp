@@ -20,13 +20,13 @@ void VStringBuffer::appendFormat(const char* format, ...)
     va_list argList;
 
     va_start(argList, format);
-    UPInt size = OVR_vscprintf(format, argList);
+    uint size = OVR_vscprintf(format, argList);
     va_end(argList);
 
     char* buffer = (char*) OVR_ALLOC(sizeof(char) * (size+1));
 
     va_start(argList, format);
-    UPInt result = OVR_vsprintf(buffer, size+1, format, argList);
+    uint result = OVR_vsprintf(buffer, size+1, format, argList);
     OVR_UNUSED1(result);
     va_end(argList);
     OVR_ASSERT_LOG(result == size, ("Error in OVR_vsprintf"));

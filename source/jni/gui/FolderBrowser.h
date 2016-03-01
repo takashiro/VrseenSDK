@@ -18,7 +18,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "MetaDataManager.h"
 #include "ScrollManager.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 class OvrFolderBrowserRootComponent;
 class OvrFolderSwipeComponent;
@@ -282,6 +282,6 @@ private:
 
 };
 
-} // namespace NervGear
+NV_NAMESPACE_END
 
 #endif // OVR_FolderBrowser_h

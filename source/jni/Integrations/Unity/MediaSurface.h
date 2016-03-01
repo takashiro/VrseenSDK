@@ -1,15 +1,6 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   MediaSurface.h
-Content     :   Interface to copy/mip a SurfaceTexture stream onto a normal GL texture
-Created     :   July 14, 2014
-Authors     :   John Carmack
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-#ifndef OVRMEDIASURFACE_H
-#define OVRMEDIASURFACE_H
+#include "vglobal.h"
 
 #include <jni.h>
 #include "android/GlUtils.h"
@@ -17,7 +8,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "GlProgram.h"
 #include "SurfaceTexture.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 class MediaSurface
 {
@@ -47,6 +38,6 @@ public:
 	GLuint			Fbo;
 };
 
-}	// namespace NervGear
+NV_NAMESPACE_END
 
-#endif // OVRMEDIASURFACE_H
+

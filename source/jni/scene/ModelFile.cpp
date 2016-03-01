@@ -289,7 +289,7 @@ void LoadModelFileJson( ModelFile & model,
 				for ( const Json &joint : joints ) {
 					if ( joint.isObject() )
 					{
-						const UPInt index = model.Joints.allocBack();
+						const uint index = model.Joints.allocBack();
 						model.Joints[index].index = index;
 						model.Joints[index].name = joint.value( "name" ).toString().c_str();
 						StringUtils::StringTo( model.Joints[index].transform, joint.value( "transform" ).toString().c_str() );
@@ -321,7 +321,7 @@ void LoadModelFileJson( ModelFile & model,
 				for ( const Json &tag : tags ) {
 					if ( tag.isObject() )
 					{
-						const UPInt index = model.Tags.allocBack();
+						const uint index = model.Tags.allocBack();
 						model.Tags[index].name = tag.value( "name" ).toString().c_str();
 						StringUtils::StringTo( model.Tags[index].matrix, 		tag.value( "matrix" ).toString().c_str() );
 						StringUtils::StringTo( model.Tags[index].jointIndices, 	tag.value( "jointIndices" ).toString().c_str() );
@@ -341,7 +341,7 @@ void LoadModelFileJson( ModelFile & model,
 				for (const Json &surface : surfaces) {
 					if ( surface.isObject() )
 					{
-						const UPInt index = model.Def.surfaces.allocBack();
+						const uint index = model.Def.surfaces.allocBack();
 
 						//
 						// Source Meshes
@@ -649,7 +649,7 @@ void LoadModelFileJson( ModelFile & model,
 
             const JsonArray &polytopes = collision_model.toArray();
 			for (const Json &polytope : polytopes) {
-				const UPInt index = model.Collisions.Polytopes.allocBack();
+				const uint index = model.Collisions.Polytopes.allocBack();
 
 				if ( polytope.isObject() )
 				{
@@ -670,7 +670,7 @@ void LoadModelFileJson( ModelFile & model,
 
             const JsonArray &polytopes = ground_collision_model.toArray();
 			for (const Json &polytope : polytopes) {
-				const UPInt index = model.GroundCollisions.Polytopes.allocBack();
+				const uint index = model.GroundCollisions.Polytopes.allocBack();
 
 				if ( polytope.isObject() )
 				{
@@ -711,7 +711,7 @@ void LoadModelFileJson( ModelFile & model,
 				{
                     const JsonArray &nodes = nodes_array.toArray();
 					for (const Json &node : nodes) {
-						const UPInt index = traceModel.nodes.allocBack();
+						const uint index = traceModel.nodes.allocBack();
 
 						if ( node.isObject() )
 						{
@@ -729,7 +729,7 @@ void LoadModelFileJson( ModelFile & model,
 				{
                     const JsonArray &leafs = leafs_array.toArray();
 					for (const Json &leaf : leafs) {
-						const UPInt index = traceModel.leafs.allocBack();
+						const uint index = traceModel.leafs.allocBack();
 
 						if ( leaf.isObject() )
 						{

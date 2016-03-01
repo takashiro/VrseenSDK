@@ -1,17 +1,8 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   SystemActivities.h
-Content     :   Event handling for system activities
-Created     :   February 23, 2015
-Authors     :   Jonathan E. Wright
+#include "vglobal.h"
 
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-#ifndef OVR_SystemActivities_h
-#define OVR_SystemActivities_h
-
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 //==============================================================================================
 // Internal to VrAPI
@@ -23,6 +14,6 @@ void SystemActivities_AddInternalEvent( char const * data );
 eVrApiEventStatus SystemActivities_nextPendingInternalEvent( char * buffer, unsigned int const bufferSize );
 eVrApiEventStatus SystemActivities_nextPendingMainEvent( char * buffer, unsigned int const bufferSize );
 
-} // namespace NervGear
+NV_NAMESPACE_END
 
-#endif // OVR_SystemActivities_h
+

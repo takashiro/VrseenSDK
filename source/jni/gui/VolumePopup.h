@@ -15,7 +15,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "VRMenu.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 //==============================================================
 // OvrVolumePopup
@@ -57,6 +57,6 @@ private:
     void					createSubMenus( App * app, OvrVRMenuMgr & menuMgr, BitmapFont const & font );
 };
 
-} // namespace NervGear
+NV_NAMESPACE_END
 
 #endif // OVR_VolumePopup_h

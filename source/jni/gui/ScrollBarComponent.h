@@ -16,7 +16,7 @@ Copyright   :   Copyright 2014 Oculus VR, Inc. All Rights reserved.
 #include "VRMenuComponent.h"
 #include "Fader.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 class VRMenu;
 class App;
@@ -86,6 +86,6 @@ private:
     bool				m_isVertical;
 };
 
-} // namespace NervGear
+NV_NAMESPACE_END
 
 #endif // OVR_ScrollBarComponent_h

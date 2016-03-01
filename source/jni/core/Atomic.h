@@ -1,18 +1,6 @@
-/************************************************************************************
+#pragma once
 
-PublicHeader:   OVR.h
-Filename    :   OVR_Atomic.h
-Content     :   Contains atomic operations and inline fastest locking
-                functionality. Will contain #ifdefs for OS efficiency.
-                Have non-thread-safe implementaion if not available.
-Created     :   September 19, 2012
-Notes       :
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-#ifndef OVR_Atomic_h
-#define OVR_Atomic_h
+#include "vglobal.h"
 
 #include "Types.h"
 
@@ -24,7 +12,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #endif
 
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 
 // ****** Declared classes
@@ -849,8 +837,4 @@ public:
     };
 };
 
-
-
-} // OVR
-
-#endif
+NV_NAMESPACE_END

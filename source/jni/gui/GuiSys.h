@@ -16,7 +16,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VRMenuObject.h"
 #include "../KeyState.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 class VRMenuEvent;
 struct VrFrame;
@@ -66,6 +66,6 @@ public:
     virtual bool		isAnyMenuOpen() const = 0;
 };
 
-} // namespace NervGear
+NV_NAMESPACE_END
 
 #endif // OVR_OvrGuiSys_h

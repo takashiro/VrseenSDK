@@ -1,8 +1,8 @@
+#pragma once
 
-#if !defined( OVR_BitFlags_h )
-#define OVR_BitFlags_h
+#include "vglobal.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 //==============================================================
 // BitFlagsT
@@ -78,7 +78,7 @@ class BitFlagsT
 public:
 	static _storageType_ AllBits()
 	{
-		UPInt numBits = sizeof( _storageType_ ) * 8;
+        uint numBits = sizeof( _storageType_ ) * 8;
 		_storageType_ topBit = ( 1ULL << ( numBits -1 ) );
 		_storageType_ allButTopBit = topBit - 1ULL;
 		return allButTopBit | topBit;
@@ -158,6 +158,4 @@ private:
 	}
 };
 
-} // namespace NervGear
-
-#endif // OVR_BitFlags_h
+NV_NAMESPACE_END

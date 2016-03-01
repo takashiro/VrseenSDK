@@ -1,18 +1,4 @@
-
-/************************************************************************************
-
-Filename    :   ImageServer.h
-Content     :   Listen on network ports for requests to capture and send screenshots
-				for viewing testers.
-Created     :   July 4, 2014
-Authors     :   John Carmack
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-
-*************************************************************************************/
-#ifndef OVR_ImageServer_h
-#define OVR_ImageServer_h
+#pragma once
 
 #include "Lockless.h"
 #include "Android/GlUtils.h"
@@ -20,8 +6,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "WarpGeometry.h"
 #include "WarpProgram.h"
 
-namespace NervGear
-{
+NV_NAMESPACE_BEGIN
 
 class ImageServerRequest
 {
@@ -98,5 +83,4 @@ private:
 
 }
 
-#endif	// OVR_ImageServer_h
 

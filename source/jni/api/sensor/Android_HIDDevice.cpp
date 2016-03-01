@@ -105,7 +105,7 @@ bool HIDDeviceManager::AddNotificationDevice(HIDDevice* device)
 //-------------------------------------------------------------------------------
 bool HIDDeviceManager::RemoveNotificationDevice(HIDDevice* device)
 {
-    for (UPInt i = 0; i < NotificationDevices.size(); i++)
+    for (uint i = 0; i < NotificationDevices.size(); i++)
     {
         if (NotificationDevices[i] == device)
         {
@@ -846,7 +846,7 @@ void HIDDeviceManager::scanForDevices(bool firstScan)
 
     	bool error = false;
         bool deviceFound = false;
-    	for (UPInt i = 0; i < NotificationDevices.size(); i++)
+    	for (uint i = 0; i < NotificationDevices.size(); i++)
         {
     		if (NotificationDevices[i] &&
     			NotificationDevices[i]->OnDeviceAddedNotification(devNodePath, &devDesc, &error))

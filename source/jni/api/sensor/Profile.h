@@ -1,22 +1,4 @@
-/************************************************************************************
-
-PublicHeader:   OVR.h
-Filename    :   OVR_Profile.h
-Content     :   Structs and functions for loading and storing device profile settings
-Created     :   February 14, 2013
-Notes       :
-   Profiles are used to store per-user settings that can be transferred and used
-   across multiple applications.  For example, player IPD can be configured once
-   and reused for a unified experience across games.  Configuration and saving of profiles
-   can be accomplished in game via the Profile API or by the official Oculus Configuration
-   Utility.
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-
-#ifndef OVR_Profile_h
-#define OVR_Profile_h
+#pragma once
 
 #include "DeviceConstants.h"
 #include "VString.h"
@@ -25,7 +7,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include <string>
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 // Defines the profile object for each device type
 enum ProfileType
@@ -234,4 +216,4 @@ VString GetBaseOVRPath(bool create_dir);
 
 }
 
-#endif // OVR_Profile_h
+

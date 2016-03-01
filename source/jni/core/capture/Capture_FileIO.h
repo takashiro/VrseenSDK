@@ -1,17 +1,6 @@
-/************************************************************************************
+#pragma once
 
-PublicHeader:   OVR.h
-Filename    :   OVR_Capture_FileIO.h
-Content     :   Misc File IO functionality....
-Created     :   January, 2015
-Notes       :   Will be replaced by OVR Kernel versions soon!
-
-Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-
-#ifndef OVR_CAPTURE_FILEIO_H
-#define OVR_CAPTURE_FILEIO_H
+#include "vglobal.h"
 
 #include "Capture_Config.h"
 
@@ -26,8 +15,9 @@ Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
 #endif
 
 
-namespace NervGear
-{
+#pragma once
+
+NV_NAMESPACE_BEGIN
 namespace Capture
 {
 
@@ -55,6 +45,5 @@ namespace Capture
     void       WriteIntFile(const char *path, int value);
 
 } // namespace Capture
-} // namespace NervGear
+NV_NAMESPACE_END
 
-#endif

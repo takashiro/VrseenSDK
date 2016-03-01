@@ -1,16 +1,4 @@
-/************************************************************************************
-
-Filename    :   OVR_SensorDeviceImpl.h
-Content     :   Sensor device specific implementation.
-Created     :   March 7, 2013
-Authors     :   Lee Cooper
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
-#ifndef OVR_SensorImpl_h
-#define OVR_SensorImpl_h
+#pragma once
 
 #include "HIDDeviceImpl.h"
 #include "SensorTimeFilter.h"
@@ -18,7 +6,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "PhoneSensors.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 struct TrackerMessage;
 class ExternalVisitor;
@@ -124,7 +112,7 @@ public:
 
 
 //-------------------------------------------------------------------------------------
-// ***** NervGear::SensorDisplayInfoImpl
+// ***** SensorDisplayInfoImpl
 
 // DisplayInfo obtained from sensor; these values are used to report distortion
 // settings and other coefficients.
@@ -169,11 +157,11 @@ struct SensorDisplayInfoImpl
 
 
 //-------------------------------------------------------------------------------------
-// ***** NervGear::SensorDeviceImpl
+// ***** SensorDeviceImpl
 
 // Oculus Sensor interface.
 
-class SensorDeviceImpl : public HIDDeviceImpl<NervGear::SensorDevice>
+class SensorDeviceImpl : public HIDDeviceImpl<SensorDevice>
 {
 public:
      SensorDeviceImpl(SensorDeviceCreateDesc* createDesc);
@@ -310,6 +298,6 @@ protected:
 };
 
 
-} // namespace NervGear
+NV_NAMESPACE_END
 
-#endif // OVR_SensorImpl_h
+

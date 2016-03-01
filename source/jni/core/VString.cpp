@@ -18,7 +18,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 namespace NervGear {
 
-#define String_LengthIsSize (UPInt(1) << VString::Flag_LengthIsSizeShift)
+#define String_LengthIsSize (uint(1) << VString::Flag_LengthIsSizeShift)
 
 VString::DataDesc VString::NullData = {String_LengthIsSize, 1, {0} };
 
@@ -32,22 +32,22 @@ VString::VString()
 VString::VString(const char* pdata)
 {
     // Obtain length in bytes; it doesn't matter if _data is UTF8.
-    UPInt size = pdata ? strlen(pdata) : 0;
+    uint size = pdata ? strlen(pdata) : 0;
     pData = allocDataCopy1(size, 0, pdata, size);
 }
 
 VString::VString(const std::string &data)
 {
-    UPInt size = data.length();
+    uint size = data.length();
     pData = allocDataCopy1(size, 0, data.c_str(), size);
 }
 
 VString::VString(const char* pdata1, const char* pdata2, const char* pdata3)
 {
     // Obtain length in bytes; it doesn't matter if _data is UTF8.
-    UPInt size1 = pdata1 ? strlen(pdata1) : 0;
-    UPInt size2 = pdata2 ? strlen(pdata2) : 0;
-    UPInt size3 = pdata3 ? strlen(pdata3) : 0;
+    uint size1 = pdata1 ? strlen(pdata1) : 0;
+    uint size2 = pdata2 ? strlen(pdata2) : 0;
+    uint size3 = pdata3 ? strlen(pdata3) : 0;
 
     DataDesc *pdataDesc = allocDataCopy2(size1 + size2 + size3, 0,
                                          pdata1, size1, pdata2, size2);
@@ -55,7 +55,7 @@ VString::VString(const char* pdata1, const char* pdata2, const char* pdata3)
     pData = pdataDesc;
 }
 
-VString::VString(const char* pdata, UPInt size)
+VString::VString(const char* pdata, uint size)
 {
     OVR_ASSERT((size == 0) || (pdata != 0));
     pData = allocDataCopy1(size, 0, pdata, size);
@@ -82,7 +82,7 @@ VString::VString(const wchar_t* data)
 }
 
 
-VString::DataDesc* VString::allocData(UPInt size, UPInt lengthIsSize)
+VString::DataDesc* VString::allocData(uint size, uint lengthIsSize)
 {
     VString::DataDesc* pdesc;
 
@@ -101,17 +101,17 @@ VString::DataDesc* VString::allocData(UPInt size, UPInt lengthIsSize)
 }
 
 
-VString::DataDesc* VString::allocDataCopy1(UPInt size, UPInt lengthIsSize,
-                                         const char* pdata, UPInt copySize)
+VString::DataDesc* VString::allocDataCopy1(uint size, uint lengthIsSize,
+                                         const char* pdata, uint copySize)
 {
     VString::DataDesc* pdesc = allocData(size, lengthIsSize);
     memcpy(pdesc->data, pdata, copySize);
     return pdesc;
 }
 
-VString::DataDesc* VString::allocDataCopy2(UPInt size, UPInt lengthIsSize,
-                                         const char* pdata1, UPInt copySize1,
-                                         const char* pdata2, UPInt copySize2)
+VString::DataDesc* VString::allocDataCopy2(uint size, uint lengthIsSize,
+                                         const char* pdata1, uint copySize1,
+                                         const char* pdata2, uint copySize2)
 {
     VString::DataDesc* pdesc = allocData(size, lengthIsSize);
     memcpy(pdesc->data, pdata1, copySize1);
@@ -120,16 +120,16 @@ VString::DataDesc* VString::allocDataCopy2(UPInt size, UPInt lengthIsSize,
 }
 
 
-UPInt VString::length() const
+uint VString::length() const
 {
     // Optimize length accesses for non-UTF8 character strings.
     DataDesc* pdata = data();
-    UPInt     length, size = pdata->size();
+    uint     length, size = pdata->size();
 
     if (pdata->lengthIsSize())
         return size;
 
-    length = (UPInt)UTF8Util::GetLength(pdata->data, (UPInt)size);
+    length = (uint)UTF8Util::GetLength(pdata->data, (uint)size);
 
     if (length == size)
         pdata->m_size |= String_LengthIsSize;
@@ -141,9 +141,9 @@ UPInt VString::length() const
 //static UInt32 String_CharSearch(const char* buf, )
 
 
-UInt32 VString::at(UPInt index) const
+UInt32 VString::at(uint index) const
 {
-    SPInt       i = (SPInt) index;
+    int       i = (int) index;
     DataDesc*   pdata = data();
     const char* buf = pdata->data;
     UInt32      c;
@@ -159,10 +159,10 @@ UInt32 VString::at(UPInt index) const
     return c;
 }
 
-UInt32 VString::firstCharAt(UPInt index, const char** offset) const
+UInt32 VString::firstCharAt(uint index, const char** offset) const
 {
     DataDesc*   pdata = data();
-    SPInt       i = (SPInt) index;
+    int       i = (int) index;
     const char* buf = pdata->data;
     const char* end = buf + pdata->size();
     UInt32      c;
@@ -195,30 +195,30 @@ UInt32 VString::nextChar(const char** offset) const
 void VString::append(UInt32 ch)
 {
     DataDesc*   pdata = data();
-    UPInt       size = pdata->size();
+    uint       size = pdata->size();
     char        buff[8];
-    SPInt       encodeSize = 0;
+    int       encodeSize = 0;
 
     // Converts ch into UTF8 string and fills it into buff.
     UTF8Util::EncodeChar(buff, &encodeSize, ch);
     OVR_ASSERT(encodeSize >= 0);
 
-    setData(allocDataCopy2(size + (UPInt)encodeSize, 0,
-                           pdata->data, size, buff, (UPInt)encodeSize));
+    setData(allocDataCopy2(size + (uint)encodeSize, 0,
+                           pdata->data, size, buff, (uint)encodeSize));
     pdata->release();
 }
 
 
-void VString::append(const wchar_t* pstr, SPInt len)
+void VString::append(const wchar_t* pstr, int len)
 {
     if (!pstr)
         return;
 
     DataDesc*   pdata = data();
-    UPInt       oldSize = pdata->size();
-    UPInt       encodeSize = (UPInt)UTF8Util::GetEncodeStringSize(pstr, len);
+    uint       oldSize = pdata->size();
+    uint       encodeSize = (uint)UTF8Util::GetEncodeStringSize(pstr, len);
 
-    DataDesc*   pnewData = allocDataCopy1(oldSize + (UPInt)encodeSize, 0,
+    DataDesc*   pnewData = allocDataCopy1(oldSize + (uint)encodeSize, 0,
                                           pdata->data, oldSize);
     UTF8Util::EncodeString(pnewData->data + oldSize,  pstr, len);
 
@@ -227,22 +227,22 @@ void VString::append(const wchar_t* pstr, SPInt len)
 }
 
 
-void VString::append(const char* putf8str, SPInt utf8StrSz)
+void VString::append(const char* putf8str, int utf8StrSz)
 {
     if (!putf8str || !utf8StrSz)
         return;
     if (utf8StrSz == -1)
-        utf8StrSz = (SPInt)strlen(putf8str);
+        utf8StrSz = (int)strlen(putf8str);
 
     DataDesc*   pdata = data();
-    UPInt       oldSize = pdata->size();
+    uint       oldSize = pdata->size();
 
-    setData(allocDataCopy2(oldSize + (UPInt)utf8StrSz, 0,
-                           pdata->data, oldSize, putf8str, (UPInt)utf8StrSz));
+    setData(allocDataCopy2(oldSize + (uint)utf8StrSz, 0,
+                           pdata->data, oldSize, putf8str, (uint)utf8StrSz));
     pdata->release();
 }
 
-void    VString::assign(const char* putf8str, UPInt size)
+void    VString::assign(const char* putf8str, uint size)
 {
     DataDesc* poldData = data();
     setData(allocDataCopy1(size, 0, putf8str, size));
@@ -257,7 +257,7 @@ void    VString::operator = (const char* pstr)
 void    VString::operator = (const wchar_t* pwstr)
 {
     DataDesc*   poldData = data();
-    UPInt       size = pwstr ? (UPInt)UTF8Util::GetEncodeStringSize(pwstr) : 0;
+    uint       size = pwstr ? (uint)UTF8Util::GetEncodeStringSize(pwstr) : 0;
 
     DataDesc*   pnewData = allocData(size, 0);
     UTF8Util::EncodeString(pnewData->data, pwstr);
@@ -288,9 +288,9 @@ void    VString::operator += (const VString& src)
 {
     DataDesc   *pourData = data(),
                *psrcData = src.data();
-    UPInt       ourSize  = pourData->size(),
+    uint       ourSize  = pourData->size(),
                 srcSize  = psrcData->size();
-    UPInt       lflag    = pourData->lengthFlag() & psrcData->lengthFlag();
+    uint       lflag    = pourData->lengthFlag() & psrcData->lengthFlag();
 
     setData(allocDataCopy2(ourSize + srcSize, lflag,
                            pourData->data, ourSize, psrcData->data, srcSize));
@@ -312,12 +312,12 @@ VString   VString::operator + (const VString& src) const
     return tmp1;
 }
 
-void    VString::remove(UPInt posAt, SPInt removeLength)
+void    VString::remove(uint posAt, int removeLength)
 {
     DataDesc*   pdata = data();
-    UPInt       oldSize = pdata->size();
+    uint       oldSize = pdata->size();
     // Length indicates the number of characters to remove.
-    UPInt       length = this->length();
+    uint       length = this->length();
 
     // If index is past the string, nothing to remove.
     if (posAt >= length)
@@ -327,8 +327,8 @@ void    VString::remove(UPInt posAt, SPInt removeLength)
         removeLength = length - posAt;
 
     // Get the byte position of the UTF8 char at position posAt.
-    SPInt bytePos    = UTF8Util::GetByteIndex(posAt, pdata->data, oldSize);
-    SPInt removeSize = UTF8Util::GetByteIndex(removeLength, pdata->data + bytePos, oldSize-bytePos);
+    int bytePos    = UTF8Util::GetByteIndex(posAt, pdata->data, oldSize);
+    int removeSize = UTF8Util::GetByteIndex(removeLength, pdata->data + bytePos, oldSize-bytePos);
 
     setData(allocDataCopy2(oldSize - removeSize, pdata->lengthFlag(),
                            pdata->data, bytePos,
@@ -337,9 +337,9 @@ void    VString::remove(UPInt posAt, SPInt removeLength)
 }
 
 
-VString   VString::mid(UPInt start, UPInt end) const
+VString   VString::mid(uint start, uint end) const
 {
-    UPInt length = this->length();
+    uint length = this->length();
     if ((start >= length) || (start >= end))
         return VString();
 
@@ -350,9 +350,9 @@ VString   VString::mid(UPInt start, UPInt end) const
         return VString(pdata->data + start, end - start);
 
     // Get position of starting character.
-    SPInt byteStart = UTF8Util::GetByteIndex(start, pdata->data, pdata->size());
-    SPInt byteSize  = UTF8Util::GetByteIndex(end - start, pdata->data + byteStart, pdata->size()-byteStart);
-    return VString(pdata->data + byteStart, (UPInt)byteSize);
+    int byteStart = UTF8Util::GetByteIndex(start, pdata->data, pdata->size());
+    int byteSize  = UTF8Util::GetByteIndex(end - start, pdata->data + byteStart, pdata->size()-byteStart);
+    return VString(pdata->data + byteStart, (uint)byteSize);
 }
 
 void VString::clear()
@@ -369,7 +369,7 @@ VString   VString::toUpper() const
     const char* psource = data()->data;
     const char* pend = psource + data()->size();
     VString      str;
-    SPInt       bufferOffset = 0;
+    int       bufferOffset = 0;
     char        buffer[512];
 
     while(psource < pend)
@@ -377,7 +377,7 @@ VString   VString::toUpper() const
         do {
             c = UTF8Util::DecodeNextChar_Advance0(&psource);
             UTF8Util::EncodeChar(buffer, &bufferOffset, OVR_towupper(wchar_t(c)));
-        } while ((psource < pend) && (bufferOffset < SPInt(sizeof(buffer)-8)));
+        } while ((psource < pend) && (bufferOffset < int(sizeof(buffer)-8)));
 
         // Append string a piece at a time.
         str.append(buffer, bufferOffset);
@@ -393,7 +393,7 @@ VString   VString::toLower() const
     const char* psource = data()->data;
     const char* pend = psource + data()->size();
     VString      str;
-    SPInt       bufferOffset = 0;
+    int       bufferOffset = 0;
     char        buffer[512];
 
     while(psource < pend)
@@ -401,7 +401,7 @@ VString   VString::toLower() const
         do {
             c = UTF8Util::DecodeNextChar_Advance0(&psource);
             UTF8Util::EncodeChar(buffer, &bufferOffset, OVR_towlower(wchar_t(c)));
-        } while ((psource < pend) && (bufferOffset < SPInt(sizeof(buffer)-8)));
+        } while ((psource < pend) && (bufferOffset < int(sizeof(buffer)-8)));
 
         // Append string a piece at a time.
         str.append(buffer, bufferOffset);
@@ -413,13 +413,13 @@ VString   VString::toLower() const
 
 
 
-VString& VString::insert(const char* substr, UPInt posAt, SPInt strSize)
+VString& VString::insert(const char* substr, uint posAt, int strSize)
 {
     DataDesc* poldData   = data();
-    UPInt     oldSize    = poldData->size();
-    UPInt     insertSize = (strSize < 0) ? strlen(substr) : (UPInt)strSize;
-    UPInt     byteIndex  =  (poldData->lengthIsSize()) ?
-                            posAt : (UPInt)UTF8Util::GetByteIndex(posAt, poldData->data, oldSize);
+    uint     oldSize    = poldData->size();
+    uint     insertSize = (strSize < 0) ? strlen(substr) : (uint)strSize;
+    uint     byteIndex  =  (poldData->lengthIsSize()) ?
+                            posAt : (uint)UTF8Util::GetByteIndex(posAt, poldData->data, oldSize);
 
     OVR_ASSERT(byteIndex <= oldSize);
 
@@ -444,21 +444,21 @@ String& String::Insert(const UInt32* substr, UPInt posAt, SPInt len)
 }
 */
 
-UPInt VString::insert(UInt32 c, UPInt posAt)
+uint VString::insert(UInt32 c, uint posAt)
 {
     char    buf[8];
-    SPInt   index = 0;
+    int   index = 0;
     UTF8Util::EncodeChar(buf, &index, c);
     OVR_ASSERT(index >= 0);
-    buf[(UPInt)index] = 0;
+    buf[(uint)index] = 0;
 
     insert(buf, posAt, index);
-    return (UPInt)index;
+    return (uint)index;
 }
 
 void VString::stripTrailing(const char * s)
 {
-    const UPInt len = strlen(s);
+    const uint len = strlen(s);
     if (length() >= len && right(len) == s)
 	{
         *this = left(length() - len);
@@ -470,22 +470,22 @@ int VString::CompareNoCase(const char* a, const char* b)
     return OVR_stricmp(a, b);
 }
 
-int VString::CompareNoCase(const char* a, const char* b, SPInt len)
+int VString::CompareNoCase(const char* a, const char* b, int len)
 {
     if (len)
     {
-        SPInt f,l;
-        SPInt slen = len;
+        int f,l;
+        int slen = len;
         const char *s = b;
         do {
-            f = (SPInt)OVR_tolower((int)(*(a++)));
-            l = (SPInt)OVR_tolower((int)(*(b++)));
+            f = (int)OVR_tolower((int)(*(a++)));
+            l = (int)OVR_tolower((int)(*(b++)));
         } while (--len && f && (f == l) && *b != 0);
 
         if (f == l && (len != 0 || *b != 0))
         {
-            f = (SPInt)slen;
-            l = (SPInt)strlen(s);
+            f = (int)slen;
+            l = (int)strlen(s);
             return int(f - l);
         }
 
@@ -498,10 +498,10 @@ int VString::CompareNoCase(const char* a, const char* b, SPInt len)
 // ***** Implement hash static functions
 
 // Hash function
-UPInt VString::BernsteinHashFunction(const void* pdataIn, UPInt size, UPInt seed)
+uint VString::BernsteinHashFunction(const void* pdataIn, uint size, uint seed)
 {
     const UByte*    pdata   = (const UByte*) pdataIn;
-    UPInt           h       = seed;
+    uint           h       = seed;
     while (size > 0)
     {
         size--;
@@ -512,10 +512,10 @@ UPInt VString::BernsteinHashFunction(const void* pdataIn, UPInt size, UPInt seed
 }
 
 // Hash function, case-insensitive
-UPInt VString::BernsteinHashFunctionCIS(const void* pdataIn, UPInt size, UPInt seed)
+uint VString::BernsteinHashFunctionCIS(const void* pdataIn, uint size, uint seed)
 {
     const UByte*    pdata = (const UByte*) pdataIn;
-    UPInt           h = seed;
+    uint           h = seed;
     while (size > 0)
     {
         size--;

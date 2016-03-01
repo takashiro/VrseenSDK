@@ -1,19 +1,8 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   Fader.h
-Content     :   Utility classes for animation based on alpha values
-Created     :   July 25, 2014
-Authors     :   Jonathan E. Wright
+#include "vglobal.h"
 
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-
-*************************************************************************************/
-
-#if !defined( OVR_Fader_h )
-#define OVR_Fader_h
-
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 //==============================================================
 // Fader
@@ -64,6 +53,5 @@ public:
     float   finalAlpha() const;
 };
 
-} // namespace NervGear
+NV_NAMESPACE_END
 
-#endif // OVR_Fader_h

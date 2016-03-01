@@ -1,24 +1,14 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   OVR_Android_DeviceManager.h
-Content     :   Android-specific DeviceManager header.
-Created     :
-Authors     :
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
-#ifndef OVR_Android_DeviceManager_h
-#define OVR_Android_DeviceManager_h
-
+#include "vglobal.h"
 #include "DeviceImpl.h"
 
 #include <unistd.h>
 #include <sys/poll.h>
 
+NV_NAMESPACE_BEGIN
 
-namespace NervGear { namespace Android {
+namespace Android {
 
 class DeviceManagerThread;
 
@@ -112,6 +102,6 @@ private:
     Array<Notifier*>        m_ticksNotifiers;
 };
 
-}} // namespace Android::OVR
+}
 
-#endif // OVR_Android_DeviceManager_h
+NV_NAMESPACE_END

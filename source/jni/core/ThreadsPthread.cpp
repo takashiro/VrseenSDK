@@ -390,7 +390,7 @@ Thread*    Thread::GetThread()
 
 // *** Thread constructors.
 
-Thread::Thread(UPInt stackSize, int processor)
+Thread::Thread(uint stackSize, int processor)
 {
     // NOTE: RefCount mode already thread-safe for all Waitable objects.
     CreateParams params;
@@ -399,7 +399,7 @@ Thread::Thread(UPInt stackSize, int processor)
     init(params);
 }
 
-Thread::Thread(Thread::ThreadFn threadFunction, void*  userHandle, UPInt stackSize,
+Thread::Thread(Thread::ThreadFn threadFunction, void*  userHandle, uint stackSize,
                  int processor, Thread::ThreadState initialState)
 {
     CreateParams params(threadFunction, userHandle, stackSize, processor, initialState);

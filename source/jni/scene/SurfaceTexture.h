@@ -1,20 +1,10 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   SurfaceTexture.h
-Content     :   Interface to Android SurfaceTexture objects
-Created     :   September 17, 2013
-Authors		:	John Carmack
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
-#ifndef OVR_SurfaceTexture_h
-#define OVR_SurfaceTexture_h
+#include "vglobal.h"
 
 #include <jni.h>
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 // SurfaceTextures are used to get movie frames, Camera
 // previews, and Android canvas views.
@@ -58,6 +48,6 @@ public:
 	void 			Update();
 };
 
-}	// namespace NervGear
+NV_NAMESPACE_END
 
-#endif	// OVR_SurfaceTexture_h
+

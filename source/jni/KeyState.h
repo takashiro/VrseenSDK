@@ -1,14 +1,3 @@
-/************************************************************************************
-
-Filename    :   KeyState.h
-Content     :   Tracking of short-press, long-press and double-tapping of keys.
-Created     :   June 18, 2014
-Authors     :   Jonathan E. Wright
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
 #pragma once
 
 #include "vglobal.h"
@@ -31,8 +20,8 @@ NV_NAMESPACE_BEGIN
 // the down time has exceeded the long-press time. If we didn't do this, the
 // user would not have any indication of when they exceeded the long-press
 // time (unless we add a sound - which doesn't work if the device is muted -
-// or something like a cursor change). Because we are acting on the time 
-// threshold and not a button up, the up will come after the long-press is 
+// or something like a cursor change). Because we are acting on the time
+// threshold and not a button up, the up will come after the long-press is
 // released and we need to ignore that button up to avoid it being treated
 // as if it were the up from a short-press or double-tap.
 //
@@ -40,11 +29,11 @@ NV_NAMESPACE_BEGIN
 // |--------------------------- Total Time --------------------------------|
 // |----------------- Double-tap Time --------------|
 // down ---> down_time ---> up ---> up_time ---> down ---> down_time ---> up
-// 
-// In addition to differentiating short- and long- presses, we must 
+//
+// In addition to differentiating short- and long- presses, we must
 // differentiate short-press and double-tap.  We cannot know on an initial
 // button-up if the user intends a double-tap.  We must wait for some time
-// threshold from the initial down to be exceeded without another down before 
+// threshold from the initial down to be exceeded without another down before
 // we know it's not a double-tap.
 //
 // Long Press

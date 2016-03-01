@@ -1,17 +1,6 @@
-/************************************************************************************
+#pragma once
 
-PublicHeader:   OVR.h
-Filename    :   OVR_Std.h
-Content     :   Standard C function interface
-Created     :   September 19, 2012
-Notes       :
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-
-#ifndef OVR_Std_h
-#define OVR_Std_h
+#include "vglobal.h"
 
 #include "Types.h"
 #include <stdarg.h> // for va_list args
@@ -24,11 +13,11 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <wchar.h>
 #include <wctype.h>
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 // String functions
 
-inline char* OVR_CDECL OVR_strcpy(char* dest, UPInt destsize, const char* src)
+inline char* OVR_CDECL OVR_strcpy(char* dest, uint destsize, const char* src)
 {
 #if defined(OVR_MSVC_SAFESTRING)
     strcpy_s(dest, destsize, src);
@@ -42,7 +31,7 @@ inline char* OVR_CDECL OVR_strcpy(char* dest, UPInt destsize, const char* src)
 #endif
 }
 
-inline char* OVR_CDECL OVR_strncpy(char* dest, UPInt destsize, const char* src, UPInt count)
+inline char* OVR_CDECL OVR_strncpy(char* dest, uint destsize, const char* src, uint count)
 {
 	// handle an invalid destination the same way for all cases
 	if ( destsize == 0 || dest == NULL || src == NULL )
@@ -77,7 +66,7 @@ inline char* OVR_CDECL OVR_strncpy(char* dest, UPInt destsize, const char* src, 
 	return dest;
 }
 
-inline char * OVR_CDECL OVR_strcat(char* dest, UPInt destsize, const char* src)
+inline char * OVR_CDECL OVR_strcat(char* dest, uint destsize, const char* src)
 {
 #if defined(OVR_MSVC_SAFESTRING)
     strcat_s(dest, destsize, src);
@@ -93,16 +82,16 @@ inline char * OVR_CDECL OVR_strcat(char* dest, UPInt destsize, const char* src)
 
 inline const char* OVR_strrchr(const char* str, char c)
 {
-    UPInt len = strlen(str);
-    for (UPInt i=len; i>0; i--)
+    uint len = strlen(str);
+    for (uint i=len; i>0; i--)
         if (str[i]==c)
             return str+i;
     return 0;
 }
 
-inline const UByte* OVR_CDECL OVR_memrchr(const UByte* str, UPInt size, UByte c)
+inline const UByte* OVR_CDECL OVR_memrchr(const UByte* str, uint size, UByte c)
 {
-    for (SPInt i = (SPInt)size - 1; i >= 0; i--)
+    for (int i = (int)size - 1; i >= 0; i--)
     {
         if (str[i] == c)
             return str + i;
@@ -112,8 +101,8 @@ inline const UByte* OVR_CDECL OVR_memrchr(const UByte* str, UPInt size, UByte c)
 
 inline char* OVR_CDECL OVR_strrchr(char* str, char c)
 {
-    UPInt len = strlen(str);
-    for (UPInt i=len; i>0; i--)
+    uint len = strlen(str);
+    for (uint i=len; i>0; i--)
         if (str[i]==c)
             return str+i;
     return 0;
@@ -132,7 +121,7 @@ inline long OVR_CDECL OVR_strtoul(const char* string, char** tailptr, int radix)
     return strtoul(string, tailptr, radix);
 }
 
-inline int OVR_CDECL OVR_strncmp(const char* ws1, const char* ws2, UPInt size)
+inline int OVR_CDECL OVR_strncmp(const char* ws1, const char* ws2, uint size)
 {
     return strncmp(ws1, ws2, size);
 }
@@ -173,9 +162,9 @@ inline UInt64 OVR_CDECL OVR_atouq(const char* string)
 
 // Implemented in GStd.cpp in platform-specific manner.
 int OVR_CDECL OVR_stricmp(const char* dest, const char* src);
-int OVR_CDECL OVR_strnicmp(const char* dest, const char* src, UPInt count);
+int OVR_CDECL OVR_strnicmp(const char* dest, const char* src, uint count);
 
-inline int OVR_CDECL OVR_sprintf(char *dest, UPInt destsize, const char* format, ...)
+inline int OVR_CDECL OVR_sprintf(char *dest, uint destsize, const char* format, ...)
 {
 	if ( destsize <= 0 || dest == NULL )
 	{
@@ -216,9 +205,9 @@ inline int OVR_CDECL OVR_sprintf(char *dest, UPInt destsize, const char* format,
     return ret;
 }
 
-inline UPInt OVR_CDECL OVR_vsprintf(char *dest, UPInt destsize, const char * format, va_list argList)
+inline uint OVR_CDECL OVR_vsprintf(char *dest, uint destsize, const char * format, va_list argList)
 {
-    UPInt ret;
+    uint ret;
 #if defined(OVR_CC_MSVC)
     #if defined(OVR_MSVC_SAFESTRING)
         dest[0] = '\0';
@@ -239,29 +228,29 @@ inline UPInt OVR_CDECL OVR_vsprintf(char *dest, UPInt destsize, const char * for
     #endif
 #else
     OVR_UNUSED(destsize);
-    ret = (UPInt)vsprintf(dest, format, argList);
+    ret = (uint)vsprintf(dest, format, argList);
     OVR_ASSERT(ret < destsize);
 #endif
     return ret;
 }
 
 // Returns the number of characters in the formatted string.
-inline UPInt OVR_CDECL OVR_vscprintf(const char * format, va_list argList)
+inline uint OVR_CDECL OVR_vscprintf(const char * format, va_list argList)
 {
-    UPInt ret;
+    uint ret;
 #if defined(OVR_CC_MSVC)
     ret = (UPInt) _vscprintf(format, argList);
 #else
-    ret = (UPInt) vsnprintf(NULL, 0, format, argList);
+    ret = (uint) vsnprintf(NULL, 0, format, argList);
 #endif
     return ret;
 }
 
 
-wchar_t* OVR_CDECL OVR_wcscpy(wchar_t* dest, UPInt destsize, const wchar_t* src);
-wchar_t* OVR_CDECL OVR_wcsncpy(wchar_t* dest, UPInt destsize, const wchar_t* src, UPInt count);
-wchar_t* OVR_CDECL OVR_wcscat(wchar_t* dest, UPInt destsize, const wchar_t* src);
-UPInt    OVR_CDECL OVR_wcslen(const wchar_t* str);
+wchar_t* OVR_CDECL OVR_wcscpy(wchar_t* dest, uint destsize, const wchar_t* src);
+wchar_t* OVR_CDECL OVR_wcsncpy(wchar_t* dest, uint destsize, const wchar_t* src, uint count);
+wchar_t* OVR_CDECL OVR_wcscat(wchar_t* dest, uint destsize, const wchar_t* src);
+uint    OVR_CDECL OVR_wcslen(const wchar_t* str);
 int      OVR_CDECL OVR_wcscmp(const wchar_t* a, const wchar_t* b);
 int      OVR_CDECL OVR_wcsicmp(const wchar_t* a, const wchar_t* b);
 
@@ -426,4 +415,4 @@ inline long OVR_CDECL OVR_wcstol(const wchar_t* string, wchar_t** tailptr, int r
 
 } // OVR
 
-#endif // OVR_Std_h
+

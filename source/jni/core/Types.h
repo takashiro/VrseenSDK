@@ -1,17 +1,6 @@
-/************************************************************************************
+#pragma once
 
-PublicHeader:   OVR.h
-Filename    :   OVR_Types.h
-Content     :   Standard library defines and simple types
-Created     :   September 19, 2012
-Notes       : 
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-
-#ifndef OVR_Types_H
-#define OVR_Types_H
+#include "vglobal.h"
 
 //-----------------------------------------------------------------------------------
 // ****** Operating System
@@ -137,24 +126,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #  error "Oculus does not support this Compiler"
 #endif
 
-
-//-----------------------------------------------------------------------------------
-// ***** Compiler Warnings
-
-// Disable MSVC warnings
-#if defined(OVR_CC_MSVC)
-#  pragma warning(disable : 4127)    // Inconsistent dll linkage
-#  pragma warning(disable : 4530)    // Exception handling
-#  if (OVR_CC_MSVC<1300)
-#    pragma warning(disable : 4514)  // Unreferenced inline function has been removed
-#    pragma warning(disable : 4710)  // Function not inlined
-#    pragma warning(disable : 4714)  // _force_inline not inlined
-#    pragma warning(disable : 4786)  // Debug variable name longer than 255 chars
-#  endif // (OVR_CC_MSVC<1300)
-#endif // (OVR_CC_MSVC)
-
-
-
 // *** Linux Unicode - must come before Standard Includes
 
 #ifdef OVR_OS_LINUX
@@ -171,46 +142,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include    <limits.h>
 #include    <float.h>
 
-
-// MSVC Based Memory Leak checking - for now
-#if defined(OVR_CC_MSVC) && defined(OVR_BUILD_DEBUG)
-#  define _CRTDBG_MAP_ALLOC
-#  include <stdlib.h>
-#  include <crtdbg.h>
-
-// Uncomment this to help debug memory leaks under Visual Studio in OVR apps only.
-// This shouldn't be defined in customer releases.
-#  ifndef OVR_DEFINE_NEW
-#    define OVR_DEFINE_NEW new(__FILE__, __LINE__)
-#    define new OVR_DEFINE_NEW
-#  endif
-
-#endif
-
-
-//-----------------------------------------------------------------------------------
-// ***** Type definitions for Common Systems
-
-namespace NervGear {
-
-// Pointer-sized integer
-typedef size_t          UPInt;
-typedef ptrdiff_t       SPInt;
-
-
-#if defined(OVR_OS_WIN32)
-
-typedef char            SByte;  // 8 bit Integer (Byte)
-typedef unsigned char   UByte;
-typedef short           SInt16; // 16 bit Integer (Word)
-typedef unsigned short  UInt16;
-typedef long            SInt32; // 32 bit Integer
-typedef unsigned long   UInt32;
-typedef __int64         SInt64; // 64 bit Integer (QWord)
-typedef unsigned __int64 UInt64;
-
- 
-#elif defined(OVR_OS_MAC) || defined(OVR_OS_IPHONE) || defined(OVR_CC_GNU)
+NV_NAMESPACE_BEGIN
 
 typedef int             SByte  __attribute__((__mode__ (__QI__)));
 typedef unsigned int    UByte  __attribute__((__mode__ (__QI__)));
@@ -221,45 +153,7 @@ typedef unsigned int    UInt32 __attribute__((__mode__ (__SI__)));
 typedef int             SInt64 __attribute__((__mode__ (__DI__)));
 typedef unsigned int    UInt64 __attribute__((__mode__ (__DI__)));
 
-#else
-
-#include <sys/types.h>
-typedef int8_t          SByte;
-typedef uint8_t         UByte;
-typedef int16_t         SInt16;
-typedef uint16_t        UInt16;
-typedef int32_t         SInt32;
-typedef uint32_t        UInt32;
-typedef int64_t         SInt64;
-typedef uint64_t        UInt64;
-
-#endif
-
-
-// ***** BaseTypes Namespace
-
-// BaseTypes namespace is explicitly declared to allow base types to be used
-// by customers directly without other contents of OVR namespace.
-//
-// Its is expected that GFx samples will declare 'using namespace NervGear::BaseTypes'
-// to allow using these directly without polluting the target scope with other
-// OVR declarations, such as Ptr<>, String or Mutex.
-namespace BaseTypes
-{
-    using NervGear::UPInt;
-    using NervGear::SPInt;
-    using NervGear::UByte;
-    using NervGear::SByte;
-    using NervGear::UInt16;
-    using NervGear::SInt16;
-    using NervGear::UInt32;
-    using NervGear::SInt32;
-    using NervGear::UInt64;
-    using NervGear::SInt64;
-} // NervGear::BaseTypes
-
-} // OVR
-
+NV_NAMESPACE_END
 
 //-----------------------------------------------------------------------------------
 // ***** Macro Definitions
@@ -270,7 +164,7 @@ namespace BaseTypes
 //  OVR_FORCE_INLINE    - Forces inline expansion of function
 //  OVR_ASM             - Assembly language prefix
 //  OVR_STR             - Prefixes string with L"" if building unicode
-// 
+//
 //  OVR_STDCALL         - Use stdcall calling convention (Pascal arg order)
 //  OVR_CDECL           - Use cdecl calling convention (C argument order)
 //  OVR_FASTCALL        - Use fastcall calling convention (registers)
@@ -292,7 +186,7 @@ namespace BaseTypes
 
 
 #if defined(OVR_OS_WIN32)
-    
+
     // ***** Win32
 
     // Byte order
@@ -334,12 +228,12 @@ namespace BaseTypes
     #else
     #  define OVR_BYTE_ORDER    OVR_LITTLE_ENDIAN
     #endif
-    
+
     // Assembly macros
     #define OVR_ASM                  __asm__
     #define OVR_ASM_PROC(procname)   OVR_ASM
     #define OVR_ASM_END              OVR_ASM
-    
+
     // Calling convention - goes after function return type but before function name
     #define OVR_FASTCALL
     #define OVR_STDCALL
@@ -358,7 +252,7 @@ namespace BaseTypes
 #  define OVR_DEBUG_BREAK  ((void)0)
 #  define OVR_ASSERT(p)    ((void)0)
 
-#else 
+#else
 
 // Microsoft Win32 specific debugging support
 #if defined(OVR_OS_WIN32)
@@ -448,6 +342,3 @@ namespace BaseTypes
 // - used with OVR_DEFINE_NEW macro
 //# define OVR_BUILD_DEFINE_NEW
 //
-
-
-#endif  // OVR_Types_h

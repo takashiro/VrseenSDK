@@ -1,15 +1,3 @@
-/************************************************************************************
-
-Filename    :   EyePostRender.h
-Content     :   Render on top of an eye render, portable between native and Unity.
-Created     :   May 23, 2014
-Authors     :   John Carmack
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-
-*************************************************************************************/
-
 #pragma once
 
 #include "vglobal.h"

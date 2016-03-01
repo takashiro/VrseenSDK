@@ -1,19 +1,8 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   SoundLimiter.cpp
-Content     :   Utility class for limiting how often sounds play.
-Created     :   June 23, 2014
-Authors     :   Jonathan E. Wright
+#include "vglobal.h"
 
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-
-*************************************************************************************/
-
-#if !defined( OVR_SoundLimiter_h )
-#define OVR_SoundLimiter_h
-
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 //==============================================================
 // SoundLimiter
@@ -33,6 +22,5 @@ private:
     double			m_lastPlayTime;
 };
 
-} // namespace NervGear
+NV_NAMESPACE_END
 
-#endif // OVR_SoundLimiter_h

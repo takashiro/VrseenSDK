@@ -1,17 +1,6 @@
-/************************************************************************************
-
-PublicHeader:   OVR.h
-Filename    :   OVR_String.h
-Content     :   String UTF8 string implementation with copy-on-write semantics
-                (thread-safe for assignment but not modification).
-Created     :   September 19, 2012
-Notes       :
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-
 #pragma once
+
+#include "vglobal.h"
 
 #include "Types.h"
 #include "Allocator.h"
@@ -22,7 +11,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include <string>
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 // ***** Classes
 
@@ -45,7 +34,7 @@ protected:
         //Flag_GetLength      = 0x7FFFFFFF,
         // This flag is set if GetLength() == GetSize() for a string.
         // Avoid extra scanning is Substring and indexing logic.
-        Flag_LengthIsSizeShift   = (sizeof(UPInt)*8 - 1)
+        Flag_LengthIsSizeShift   = (sizeof(uint)*8 - 1)
     };
 
 
@@ -54,7 +43,7 @@ protected:
     {
         // Number of bytes. Will be the same as the number of chars if the characters
         // are ascii, may not be equal to number of chars in case string data is UTF8.
-        UPInt   m_size;
+        uint   m_size;
         volatile SInt32 refCount;
         char    data[1];
 
@@ -78,9 +67,9 @@ protected:
                 OVR_FREE(this);
         }
 
-        static UPInt lengthFlagBit()     { return UPInt(1) << Flag_LengthIsSizeShift; }
-        UPInt       size() const         { return m_size & ~lengthFlagBit() ; }
-        UPInt       lengthFlag()  const  { return m_size & lengthFlagBit(); }
+        static uint lengthFlagBit()     { return uint(1) << Flag_LengthIsSizeShift; }
+        uint       size() const         { return m_size & ~lengthFlagBit() ; }
+        uint       lengthFlag()  const  { return m_size & lengthFlagBit(); }
         bool        lengthIsSize() const    { return lengthFlag() != 0; }
     };
 
@@ -95,11 +84,11 @@ protected:
 
     union {
         DataDesc* pData;
-        UPInt     heapTypeBits;
+        uint     heapTypeBits;
     };
     typedef union {
         DataDesc* pData;
-        UPInt     heapTypeBits;
+        uint     heapTypeBits;
     } DataDescUnion;
 
     inline HeapType    heapType() const { return (HeapType) (heapTypeBits & HT_Mask); }
@@ -108,7 +97,7 @@ protected:
     {
         DataDescUnion u;
         u.pData    = pData;
-        u.heapTypeBits = (u.heapTypeBits & ~(UPInt)HT_Mask);
+        u.heapTypeBits = (u.heapTypeBits & ~(uint)HT_Mask);
         return u.pData;
     }
 
@@ -121,12 +110,12 @@ protected:
     }
 
 
-    DataDesc*   allocData(UPInt size, UPInt lengthIsSize);
-    DataDesc*   allocDataCopy1(UPInt size, UPInt lengthIsSize,
-                               const char* pdata, UPInt copySize);
-    DataDesc*   allocDataCopy2(UPInt size, UPInt lengthIsSize,
-                               const char* pdata1, UPInt copySize1,
-                               const char* pdata2, UPInt copySize2);
+    DataDesc*   allocData(uint size, uint lengthIsSize);
+    DataDesc*   allocDataCopy1(uint size, uint lengthIsSize,
+                               const char* pdata, uint copySize);
+    DataDesc*   allocDataCopy2(uint size, uint lengthIsSize,
+                               const char* pdata1, uint copySize1,
+                               const char* pdata2, uint copySize2);
 
     // Special constructor to avoid data initalization when used in derived class.
     struct NoConstructor { };
@@ -138,7 +127,7 @@ public:
     VString(const char* data);
     VString(const std::string &data);
     VString(const char* data1, const char* pdata2, const char* pdata3 = 0);
-    VString(const char* data, UPInt buflen);
+    VString(const char* data, uint buflen);
     VString(const VString& src);
     VString(const VStringBuffer& src);
     explicit VString(const wchar_t* data);
@@ -163,71 +152,71 @@ public:
     const char* toCString() const          { return data()->data; }
 
     // Returns number of bytes
-    UPInt       size() const         { return data()->size() ; }
+    uint       size() const         { return data()->size() ; }
     // Tells whether or not the string is empty
     bool        isEmpty() const         { return size() == 0; }
 
     // Returns  number of characters
-    UPInt       length() const;
+    uint       length() const;
 
     // Returns  character at the specified index
-    UInt32      at(UPInt index) const;
-    UInt32      firstCharAt(UPInt index, const char** offset) const;
+    UInt32      at(uint index) const;
+    UInt32      firstCharAt(uint index, const char** offset) const;
     UInt32      nextChar(const char** offset) const;
 
     // Appends a character
     void        append(UInt32 ch);
 
     // Append a string
-    void        append(const wchar_t* pstr, SPInt len = -1);
-    void        append(const char* putf8str, SPInt utf8StrSz = -1);
+    void        append(const wchar_t* pstr, int len = -1);
+    void        append(const char* putf8str, int utf8StrSz = -1);
 
     // Assigns string with known size.
-    void        assign(const char* putf8str, UPInt size);
+    void        assign(const char* putf8str, uint size);
 
     //  Resize the string to the new size
 //  void        Resize(UPInt _size);
 
     // Removes the character at posAt
-    void        remove(UPInt posAt, SPInt len = 1);
+    void        remove(uint posAt, int len = 1);
 
     // Returns a String that's a substring of this.
     //  -start is the index of the first UTF8 character you want to include.
     //  -end is the index one past the last UTF8 character you want to include.
-    VString		mid(UPInt start, UPInt end) const;
+    VString		mid(uint start, uint end) const;
 
-    VString		left(UPInt count) const { return mid(0, count); }
-    VString		right(UPInt count) const { return mid(length() - count, length()); }
+    VString		left(uint count) const { return mid(0, count); }
+    VString		right(uint count) const { return mid(length() - count, length()); }
 
     // Case-conversion
     VString		toUpper() const;
     VString		toLower() const;
 
     // Inserts substr at posAt
-    VString&		insert(const char* substr, UPInt posAt, SPInt len = -1);
+    VString&		insert(const char* substr, uint posAt, int len = -1);
 
     // Inserts character at posAt
-    UPInt       insert(UInt32 c, UPInt posAt);
+    uint       insert(UInt32 c, uint posAt);
 
     // Inserts substr at posAt, which is an index of a character (not byte).
     // Of size is specified, it is in bytes.
 //  String&    Insert(const UInt32* substr, UPInt posAt, SPInt size = -1);
 
     // Get Byte index of the character at position = index
-    UPInt       byteIndex(UPInt index) const { return (UPInt)UTF8Util::GetByteIndex(index, data()->data); }
+    uint       byteIndex(uint index) const { return (uint)UTF8Util::GetByteIndex(index, data()->data); }
 
     void		stripTrailing(const char * str);
 
     // Utility: case-insensitive string compare.  stricmp() & strnicmp() are not
     // ANSI or POSIX, do not seem to appear in Linux.
     static int OVR_STDCALL   CompareNoCase(const char* a, const char* b);
-    static int OVR_STDCALL   CompareNoCase(const char* a, const char* b, SPInt len);
+    static int OVR_STDCALL   CompareNoCase(const char* a, const char* b, int len);
 
     // Hash function, case-insensitive
-    static UPInt OVR_STDCALL BernsteinHashFunctionCIS(const void* pdataIn, UPInt size, UPInt seed = 5381);
+    static uint OVR_STDCALL BernsteinHashFunctionCIS(const void* pdataIn, uint size, uint seed = 5381);
 
     // Hash function, case-sensitive
-    static UPInt OVR_STDCALL BernsteinHashFunction(const void* pdataIn, UPInt size, UPInt seed = 5381);
+    static uint OVR_STDCALL BernsteinHashFunction(const void* pdataIn, uint size, uint seed = 5381);
 
 
     // ***** File path parsing helper functions.
@@ -323,10 +312,10 @@ public:
     // Accesses raw bytes
     const char&     operator [] (int index) const
     {
-        OVR_ASSERT(index >= 0 && (UPInt)index < size());
+        OVR_ASSERT(index >= 0 && (uint)index < size());
         return data()->data[index];
     }
-    const char&     operator [] (UPInt index) const
+    const char&     operator [] (uint index) const
     {
         OVR_ASSERT(index < size());
         return data()->data[index];
@@ -353,9 +342,9 @@ public:
     // Hash functor used for strings.
     struct HashFunctor
     {
-        UPInt  operator()(const VString& data) const
+        uint  operator()(const VString& data) const
         {
-            UPInt  size = data.size();
+            uint  size = data.size();
             return VString::BernsteinHashFunction((const char*)data, size);
         }
     };
@@ -363,14 +352,14 @@ public:
     // lookup based on NoCaseKey.
     struct NoCaseHashFunctor
     {
-        UPInt  operator()(const VString& data) const
+        uint  operator()(const VString& data) const
         {
-            UPInt  size = data.size();
+            uint  size = data.size();
             return VString::BernsteinHashFunctionCIS((const char*)data, size);
         }
-        UPInt  operator()(const NoCaseKey& data) const
+        uint  operator()(const NoCaseKey& data) const
         {
-            UPInt  size = data.pStr->size();
+            uint  size = data.pStr->size();
             return VString::BernsteinHashFunctionCIS((const char*)data.pStr->toCString(), size);
         }
     };
@@ -389,7 +378,7 @@ public:
     StringDataPtr() : m_str(NULL), m_size(0) {}
     StringDataPtr(const StringDataPtr& p)
         : m_str(p.m_str), m_size(p.m_size) {}
-    StringDataPtr(const char* pstr, UPInt sz)
+    StringDataPtr(const char* pstr, uint sz)
         : m_str(pstr), m_size(sz) {}
     StringDataPtr(const char* pstr)
         : m_str(pstr), m_size((pstr != NULL) ? strlen(pstr) : 0) {}
@@ -401,7 +390,7 @@ public:
 
 public:
     const char* toCString() const { return m_str; }
-    UPInt       size() const { return m_size; }
+    uint       size() const { return m_size; }
     bool        isEmpty() const { return size() == 0; }
 
     // value is a prefix of this string
@@ -419,33 +408,33 @@ public:
 
     // Find first character.
     // init_ind - initial index.
-    SPInt       find(char c, UPInt init_ind = 0) const
+    int       find(char c, uint init_ind = 0) const
     {
-        for (UPInt i = init_ind; i < size(); ++i)
+        for (uint i = init_ind; i < size(); ++i)
             if (m_str[i] == c)
-                return static_cast<SPInt>(i);
+                return static_cast<int>(i);
 
         return -1;
     }
 
     // Find last character.
     // init_ind - initial index.
-    SPInt       findLast(char c, UPInt init_ind = ~0) const
+    int       findLast(char c, uint init_ind = ~0) const
     {
-        if (init_ind == (UPInt)~0 || init_ind > size())
+        if (init_ind == (uint)~0 || init_ind > size())
             init_ind = size();
         else
             ++init_ind;
 
-        for (UPInt i = init_ind; i > 0; --i)
+        for (uint i = init_ind; i > 0; --i)
             if (m_str[i - 1] == c)
-                return static_cast<SPInt>(i - 1);
+                return static_cast<int>(i - 1);
 
         return -1;
     }
 
     // Create new object and trim size bytes from the left.
-    StringDataPtr  trimLeft(UPInt size) const
+    StringDataPtr  trimLeft(uint size) const
     {
         // Limit trim size to the size of the string.
         size = Alg::PMin(this->size(), size);
@@ -453,7 +442,7 @@ public:
         return StringDataPtr(toCString() + size, this->size() - size);
     }
     // Create new object and trim size bytes from the right.
-    StringDataPtr  trimRight(UPInt size) const
+    StringDataPtr  trimRight(uint size) const
     {
         // Limit trim to the size of the string.
         size = Alg::PMin(this->size(), size);
@@ -465,7 +454,7 @@ public:
     // Useful for parsing.
     StringDataPtr nextToken(char separator = ':') const
     {
-        UPInt cur_pos = 0;
+        uint cur_pos = 0;
         const char* cur_str = toCString();
 
         for (; cur_pos < size() && cur_str[cur_pos]; ++cur_pos)
@@ -480,7 +469,7 @@ public:
     }
 
     // Trim size bytes from the left.
-    StringDataPtr& trimLeft(UPInt size)
+    StringDataPtr& trimLeft(uint size)
     {
         // Limit trim size to the size of the string.
         size = Alg::PMin(this->size(), size);
@@ -490,7 +479,7 @@ public:
         return *this;
     }
     // Trim size bytes from the right.
-    StringDataPtr& trimRight(UPInt size)
+    StringDataPtr& trimRight(uint size)
     {
         // Limit trim to the size of the string.
         size = Alg::PMin(this->size(), size);
@@ -505,7 +494,7 @@ public:
     // Hash functor used string data pointers
     struct HashFunctor
     {
-        UPInt operator()(const StringDataPtr& data) const
+        uint operator()(const StringDataPtr& data) const
         {
             return VString::BernsteinHashFunction(data.toCString(), data.size());
         }
@@ -518,7 +507,7 @@ public:
 
 protected:
     const char* m_str;
-    UPInt       m_size;
+    uint       m_size;
 };
 
 } // OVR

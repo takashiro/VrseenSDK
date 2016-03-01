@@ -1,14 +1,3 @@
-/************************************************************************************
-
-Filename    :   ImageData.h
-Content     :   Operations on byte arrays that don't interact with the GPU.
-Created     :   July 9, 2014
-Authors     :   John Carmack
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-
-*************************************************************************************/
 #pragma once
 
 #include "vglobal.h"

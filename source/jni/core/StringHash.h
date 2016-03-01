@@ -1,23 +1,11 @@
-/************************************************************************************
+#pragma once
 
-PublicHeader:   None
-Filename    :   OVR_StringHash.h
-Content     :   String hash table used when optional case-insensitive
-                lookup is required.
-Created     :   September 19, 2012
-Notes       :
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-
-#ifndef OVR_StringHash_h
-#define OVR_StringHash_h
+#include "vglobal.h"
 
 #include "VString.h"
 #include "Hash.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 //-----------------------------------------------------------------------------------
 // *** StringHash
@@ -80,6 +68,4 @@ public:
     }
 };
 
-} // OVR
-
-#endif
+NV_NAMESPACE_END

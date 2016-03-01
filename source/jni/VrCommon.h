@@ -1,22 +1,13 @@
 
-/************************************************************************************
+#pragma once
 
-Filename    :   VrCommon.h
-Content     :   Unorganized common code
-Created     :   Septembet 30, 2013
-Authors     :   John Carmack
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-#ifndef OVR_VrCommon_h
-#define OVR_VrCommon_h
+#include "vglobal.h"
 
 #include "OVR.h"	// Matrix4f, etc
 #include "StringHash.h"
 #include "PathUtils.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 // Debug tool
 void LogMatrix( const char * title, const Matrix4f & m );
@@ -76,6 +67,6 @@ bool MatchesHead( const char * head, const char * check );
 
 float LinearRangeMapFloat( float inValue, float inStart, float inEnd, float outStart, float outEnd );
 
-}	// namespace NervGear
+NV_NAMESPACE_END
 
-#endif	// OVR_VrCommon_h
+

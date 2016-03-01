@@ -556,8 +556,8 @@ bool    BufferedFile::close()
 // Find trailing short filename in a path.
 const char* OVR_CDECL GetShortFilename(const char* purl)
 {
-    UPInt len = strlen(purl);
-    for (UPInt i=len; i>0; i--)
+    uint len = strlen(purl);
+    for (uint i=len; i>0; i--)
         if (purl[i]=='\\' || purl[i]=='/')
             return purl+i+1;
     return purl;

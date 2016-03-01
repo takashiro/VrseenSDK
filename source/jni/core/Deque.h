@@ -1,20 +1,10 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   OVR_Deque.h
-Content     :   Deque container
-Created     :   Nov. 15, 2013
-Authors     :   Dov Katz
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
-#ifndef OVR_Deque_h
-#define OVR_Deque_h
+#include "vglobal.h"
 
 #include "Allocator.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 template <class Elem>
 class Deque
@@ -246,6 +236,4 @@ void CircularBuffer<Elem>::prepend(const Elem &Item)
     Deque<Elem>::prepend(Item);
 }
 
-};
-
-#endif
+NV_NAMESPACE_END

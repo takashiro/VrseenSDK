@@ -1,16 +1,6 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   OVR_DeviceImpl.h
-Content     :   Partial back-end independent implementation of Device interfaces
-Created     :   October 10, 2012
-Authors     :   Michael Antonov
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
-#ifndef OVR_DeviceImpl_h
-#define OVR_DeviceImpl_h
+#include "vglobal.h"
 
 #include "Device.h"
 #include "Atomic.h"
@@ -21,7 +11,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "ThreadCommandQueue.h"
 #include "HIDDevice.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 class DeviceManagerImpl;
 class DeviceFactory;
@@ -345,7 +335,7 @@ protected:
 // DeviceManagerImpl is a partial default DeviceManager implementation that
 // maintains a list of devices and supports their enumeration.
 
-class DeviceManagerImpl : public DeviceImpl<NervGear::DeviceManager>, public ThreadCommandQueue
+class DeviceManagerImpl : public DeviceImpl<DeviceManager>, public ThreadCommandQueue
 {
 public:
     DeviceManagerImpl();
@@ -389,11 +379,11 @@ public:
 
     void CallOnDeviceAdded(DeviceCreateDesc* desc)
     {
-        HandlerRef.Call(MessageDeviceStatus(Message_DeviceAdded, this, DeviceHandle(desc)));
+        HandlerRef.Call(MessageDeviceStatus(Message_DeviceAdded, this, NervGear::DeviceHandle(desc)));
     }
     void CallOnDeviceRemoved(DeviceCreateDesc* desc)
     {
-        HandlerRef.Call(MessageDeviceStatus(Message_DeviceRemoved, this, DeviceHandle(desc)));
+        HandlerRef.Call(MessageDeviceStatus(Message_DeviceRemoved, this, NervGear::DeviceHandle(desc)));
     }
 
     // Helper to access Common data for a device.
@@ -440,7 +430,4 @@ protected:
     Ptr<ProfileManager>     pProfileManager;
 };
 
-
-} // namespace NervGear
-
-#endif
+NV_NAMESPACE_END

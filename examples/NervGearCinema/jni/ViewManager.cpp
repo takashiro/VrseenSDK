@@ -23,7 +23,7 @@ void ViewManager::addView( View * view )
 
 void ViewManager::removeView( View * view )
 {
-    for( UPInt i = 0; i < m_views.size(); i++ )
+    for( uint i = 0; i < m_views.size(); i++ )
 	{
 		if ( m_views[ i ] == view )
 		{
@@ -56,7 +56,7 @@ void ViewManager::closeView()
 bool ViewManager::command( const char * msg )
 {
 	bool result = false;
-    for( UPInt i = 0; i < m_views.size(); i++ )
+    for( uint i = 0; i < m_views.size(); i++ )
 	{
 		result = m_views[ i ]->Command( msg );
 		if ( result )

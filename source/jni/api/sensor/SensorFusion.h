@@ -1,17 +1,4 @@
-/************************************************************************************
-
-PublicHeader:   OVR.h
-Filename    :   OVR_SensorFusion.h
-Content     :   Methods that determine head orientation from sensor data over time
-Created     :   October 9, 2012
-Authors     :   Michael Antonov, Steve LaValle, Dov Katz, Max Katsev, Dan Gierl
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
-#ifndef OVR_SensorFusion_h
-#define OVR_SensorFusion_h
+#pragma once
 
 #include "Device.h"
 #include "SensorFilter.h"
@@ -23,7 +10,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 typedef struct ovrPoseStatef_ ovrPoseStatef;
 typedef struct ovrSensorState_ ovrSensorState;
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 //-------------------------------------------------------------------------------------
 // ***** Sensor State
@@ -320,6 +307,4 @@ private:
 };
 
 
-} // namespace NervGear
-
-#endif
+NV_NAMESPACE_END

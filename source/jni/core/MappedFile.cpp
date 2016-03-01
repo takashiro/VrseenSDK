@@ -145,7 +145,7 @@ bool MappedFile::openRead( const char * path, bool read_ahead, bool no_cache )
 	return true;
 }
 
-bool MappedFile::openWrite( const char * path, UPInt size )
+bool MappedFile::openWrite( const char * path, uint size )
 {
 	close();
 
@@ -290,7 +290,7 @@ bool MappedView::open( MappedFile * file )
 	return true;
 }
 
-UByte * MappedView::mapView( UPInt offset, UInt32 length )
+UByte * MappedView::mapView( uint offset, UInt32 length )
 {
 	if ( length == 0)
 	{

@@ -1,14 +1,3 @@
-/************************************************************************************
-
-Filename    :   DebugLines.h
-Content     :   Class that manages and renders debug lines.
-Created     :   April 22, 2014
-Authors     :   Jonathan E. Wright
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
 #pragma once
 
 #include "vglobal.h"

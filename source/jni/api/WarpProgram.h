@@ -1,20 +1,9 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   WarpProgram.h
-Content     :   Time warp shader program compilation.
-Created     :   March 3, 2015
-Authors     :   J.M.P. van Waveren
-
-Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-#ifndef OVR_WarpProgram_h
-#define OVR_WarpProgram_h
-
+#include "vglobal.h"
 #include "Android/GlUtils.h"
 
-namespace NervGear
-{
+NV_NAMESPACE_BEGIN
 
 // Shader uniforms Texture0 - Texture7 are bound to texture units 0 - 7
 
@@ -73,6 +62,6 @@ struct WarpProgram
 void CreateWarpProgram( WarpProgram * prog, const char * vertexSrc, const char * fragmentSrc );
 void DestroyWarpProgram( WarpProgram * prog );
 
-}	// namespace NervGear
+NV_NAMESPACE_END
 
-#endif	// OVR_WarpProgram_h
+

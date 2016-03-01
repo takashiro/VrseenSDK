@@ -1,22 +1,13 @@
-/************************************************************************************
+#pragma once
 
-PublicHeader:   OVR.h
-Filename    :   OVR_Alg.h
-Content     :   Simple general purpose algorithms: Sort, Binary Search, etc.
-Created     :   September 19, 2012
-Notes       :
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-
-#ifndef OVR_Alg_h
-#define OVR_Alg_h
+#include "vglobal.h"
 
 #include "Types.h"
 #include <string.h>
 
-namespace NervGear { namespace Alg {
+NV_NAMESPACE_BEGIN
+
+namespace Alg {
 
 
 //-----------------------------------------------------------------------------------
@@ -51,12 +42,12 @@ template <typename T> OVR_FORCE_INLINE T       Lerp(T a, T b, T f)
 // absolutelly the same as regular gmin/gmax.
 template <typename T>   OVR_FORCE_INLINE const T PMin(const T a, const T b)
 {
-    OVR_COMPILER_ASSERT(sizeof(T) == sizeof(UPInt));
+    OVR_COMPILER_ASSERT(sizeof(T) == sizeof(uint));
     return (a < b) ? a : b;
 }
 template <typename T>   OVR_FORCE_INLINE const T PMax(const T a, const T b)
 {
-    OVR_COMPILER_ASSERT(sizeof(T) == sizeof(UPInt));
+    OVR_COMPILER_ASSERT(sizeof(T) == sizeof(uint));
     return (b < a) ? a : b;
 }
 
@@ -84,7 +75,7 @@ template<class T> struct OperatorLess
 // The range is specified with start, end, where "end" is exclusive!
 // The comparison predicate must be specified.
 template<class Array, class Less>
-void QuickSortSliced(Array& arr, UPInt start, UPInt end, Less less)
+void QuickSortSliced(Array& arr, uint start, uint end, Less less)
 {
     enum
     {
@@ -93,15 +84,15 @@ void QuickSortSliced(Array& arr, UPInt start, UPInt end, Less less)
 
     if(end - start <  2) return;
 
-    SPInt  stack[80];
-    SPInt* top   = stack;
-    SPInt  base  = (SPInt)start;
-    SPInt  limit = (SPInt)end;
+    int  stack[80];
+    int* top   = stack;
+    int  base  = (int)start;
+    int  limit = (int)end;
 
     for(;;)
     {
-        SPInt len = limit - base;
-        SPInt i, j, pivot;
+        int len = limit - base;
+        int i, j, pivot;
 
         if(len > Threshold)
         {
@@ -186,7 +177,7 @@ void QuickSortSliced(Array& arr, UPInt start, UPInt end, Less less)
 // The range is specified with start, end, where "end" is exclusive!
 // The data type must have a defined "<" operator.
 template<class Array>
-void QuickSortSliced(Array& arr, UPInt start, UPInt end)
+void QuickSortSliced(Array& arr, uint start, uint end)
 {
     typedef typename Array::ValueType ValueType;
     QuickSortSliced(arr, start, end, OperatorLess<ValueType>::Compare);
@@ -195,7 +186,7 @@ void QuickSortSliced(Array& arr, UPInt start, UPInt end)
 // Same as corresponding G_QuickSortSliced but with checking array limits to avoid
 // crash in the case of wrong comparator functor.
 template<class Array, class Less>
-bool QuickSortSlicedSafe(Array& arr, UPInt start, UPInt end, Less less)
+bool QuickSortSlicedSafe(Array& arr, uint start, uint end, Less less)
 {
     enum
     {
@@ -204,15 +195,15 @@ bool QuickSortSlicedSafe(Array& arr, UPInt start, UPInt end, Less less)
 
     if(end - start <  2) return true;
 
-    SPInt  stack[80];
-    SPInt* top   = stack;
-    SPInt  base  = (SPInt)start;
-    SPInt  limit = (SPInt)end;
+    int  stack[80];
+    int* top   = stack;
+    int  base  = (int)start;
+    int  limit = (int)end;
 
     for(;;)
     {
-        SPInt len = limit - base;
-        SPInt i, j, pivot;
+        int len = limit - base;
+        int i, j, pivot;
 
         if(len > Threshold)
         {
@@ -301,7 +292,7 @@ bool QuickSortSlicedSafe(Array& arr, UPInt start, UPInt end, Less less)
 }
 
 template<class Array>
-bool QuickSortSlicedSafe(Array& arr, UPInt start, UPInt end)
+bool QuickSortSlicedSafe(Array& arr, uint start, uint end)
 {
     typedef typename Array::ValueType ValueType;
     return QuickSortSlicedSafe(arr, start, end, OperatorLess<ValueType>::Compare);
@@ -359,11 +350,11 @@ bool QuickSortSafe(Array& arr)
 // an array with all equal elements will remain "untouched", while
 // Quick Sort will considerably shuffle the elements in this case.
 template<class Array, class Less>
-void InsertionSortSliced(Array& arr, UPInt start, UPInt end, Less less)
+void InsertionSortSliced(Array& arr, uint start, uint end, Less less)
 {
-    UPInt j = start;
-    UPInt i = j + 1;
-    UPInt limit = end;
+    uint j = start;
+    uint i = j + 1;
+    uint limit = end;
 
     for(; i < limit; j = i, i++)
     {
@@ -386,7 +377,7 @@ void InsertionSortSliced(Array& arr, UPInt start, UPInt end, Less less)
 // The range is specified with start, end, where "end" is exclusive!
 // The data type must have a defined "<" operator.
 template<class Array>
-void InsertionSortSliced(Array& arr, UPInt start, UPInt end)
+void InsertionSortSliced(Array& arr, uint start, uint end)
 {
     typedef typename Array::ValueType ValueType;
     InsertionSortSliced(arr, start, end, OperatorLess<ValueType>::Compare);
@@ -427,14 +418,14 @@ void InsertionSort(Array& arr)
 template<class Array>
 typename Array::ValueType& Median(Array& arr)
 {
-    UPInt count = arr.size();
-    UPInt mid = (count - 1) / 2;
+    uint count = arr.size();
+    uint mid = (count - 1) / 2;
     OVR_ASSERT(count > 0);
 
-    for (UPInt j = 0; j <= mid; j++)
+    for (uint j = 0; j <= mid; j++)
     {
-        UPInt min = j;
-        for (UPInt k = j + 1; k < count; k++)
+        uint min = j;
+        for (uint k = j + 1; k < count; k++)
             if (arr[k] < arr[min])
                 min = k;
         Swap(arr[j], arr[min]);
@@ -446,12 +437,12 @@ typename Array::ValueType& Median(Array& arr)
 // ***** LowerBoundSliced
 //
 template<class Array, class Value, class Less>
-UPInt LowerBoundSliced(const Array& arr, UPInt start, UPInt end, const Value& val, Less less)
+uint LowerBoundSliced(const Array& arr, uint start, uint end, const Value& val, Less less)
 {
-    SPInt first = (SPInt)start;
-    SPInt len   = (SPInt)(end - start);
-    SPInt half;
-    SPInt middle;
+    int first = (int)start;
+    int len   = (int)(end - start);
+    int half;
+    int middle;
 
     while(len > 0)
     {
@@ -467,7 +458,7 @@ UPInt LowerBoundSliced(const Array& arr, UPInt start, UPInt end, const Value& va
             len = half;
         }
     }
-    return (UPInt)first;
+    return (uint)first;
 }
 
 
@@ -475,7 +466,7 @@ UPInt LowerBoundSliced(const Array& arr, UPInt start, UPInt end, const Value& va
 // ***** LowerBoundSliced
 //
 template<class Array, class Value>
-UPInt LowerBoundSliced(const Array& arr, UPInt start, UPInt end, const Value& val)
+uint LowerBoundSliced(const Array& arr, uint start, uint end, const Value& val)
 {
     return LowerBoundSliced(arr, start, end, val, OperatorLess<Value>::Compare);
 }
@@ -484,7 +475,7 @@ UPInt LowerBoundSliced(const Array& arr, UPInt start, UPInt end, const Value& va
 // ***** LowerBoundSized
 //
 template<class Array, class Value>
-UPInt LowerBoundSized(const Array& arr, UPInt size, const Value& val)
+uint LowerBoundSized(const Array& arr, uint size, const Value& val)
 {
     return LowerBoundSliced(arr, 0, size, val, OperatorLess<Value>::Compare);
 }
@@ -493,7 +484,7 @@ UPInt LowerBoundSized(const Array& arr, UPInt size, const Value& val)
 // ***** LowerBound
 //
 template<class Array, class Value, class Less>
-UPInt LowerBound(const Array& arr, const Value& val, Less less)
+uint LowerBound(const Array& arr, const Value& val, Less less)
 {
     return LowerBoundSliced(arr, 0, arr.GetSize(), val, less);
 }
@@ -503,7 +494,7 @@ UPInt LowerBound(const Array& arr, const Value& val, Less less)
 // ***** LowerBound
 //
 template<class Array, class Value>
-UPInt LowerBound(const Array& arr, const Value& val)
+uint LowerBound(const Array& arr, const Value& val)
 {
     return LowerBoundSliced(arr, 0, arr.GetSize(), val, OperatorLess<Value>::Compare);
 }
@@ -514,12 +505,12 @@ UPInt LowerBound(const Array& arr, const Value& val)
 // ***** UpperBoundSliced
 //
 template<class Array, class Value, class Less>
-UPInt UpperBoundSliced(const Array& arr, UPInt start, UPInt end, const Value& val, Less less)
+uint UpperBoundSliced(const Array& arr, uint start, uint end, const Value& val, Less less)
 {
-    SPInt first = (SPInt)start;
-    SPInt len   = (SPInt)(end - start);
-    SPInt half;
-    SPInt middle;
+    int first = (int)start;
+    int len   = (int)(end - start);
+    int half;
+    int middle;
 
     while(len > 0)
     {
@@ -535,7 +526,7 @@ UPInt UpperBoundSliced(const Array& arr, UPInt start, UPInt end, const Value& va
             len   = len - half - 1;
         }
     }
-    return (UPInt)first;
+    return (uint)first;
 }
 
 
@@ -543,7 +534,7 @@ UPInt UpperBoundSliced(const Array& arr, UPInt start, UPInt end, const Value& va
 // ***** UpperBoundSliced
 //
 template<class Array, class Value>
-UPInt UpperBoundSliced(const Array& arr, UPInt start, UPInt end, const Value& val)
+uint UpperBoundSliced(const Array& arr, uint start, uint end, const Value& val)
 {
     return UpperBoundSliced(arr, start, end, val, OperatorLess<Value>::Compare);
 }
@@ -553,7 +544,7 @@ UPInt UpperBoundSliced(const Array& arr, UPInt start, UPInt end, const Value& va
 // ***** UpperBoundSized
 //
 template<class Array, class Value>
-UPInt UpperBoundSized(const Array& arr, UPInt size, const Value& val)
+uint UpperBoundSized(const Array& arr, uint size, const Value& val)
 {
     return UpperBoundSliced(arr, 0, size, val, OperatorLess<Value>::Compare);
 }
@@ -563,7 +554,7 @@ UPInt UpperBoundSized(const Array& arr, UPInt size, const Value& val)
 // ***** UpperBound
 //
 template<class Array, class Value, class Less>
-UPInt UpperBound(const Array& arr, const Value& val, Less less)
+uint UpperBound(const Array& arr, const Value& val, Less less)
 {
     return UpperBoundSliced(arr, 0, arr.GetSize(), val, less);
 }
@@ -573,7 +564,7 @@ UPInt UpperBound(const Array& arr, const Value& val, Less less)
 // ***** UpperBound
 //
 template<class Array, class Value>
-UPInt UpperBound(const Array& arr, const Value& val)
+uint UpperBound(const Array& arr, const Value& val)
 {
     return UpperBoundSliced(arr, 0, arr.GetSize(), val, OperatorLess<Value>::Compare);
 }
@@ -584,8 +575,8 @@ UPInt UpperBound(const Array& arr, const Value& val)
 //
 template<class Array> void ReverseArray(Array& arr)
 {
-    SPInt from = 0;
-    SPInt to   = arr.GetSize() - 1;
+    int from = 0;
+    int to   = arr.GetSize() - 1;
     while(from < to)
     {
         Swap(arr[from], arr[to]);
@@ -600,7 +591,7 @@ template<class Array> void ReverseArray(Array& arr)
 template<class CDst, class CSrc>
 void AppendArray(CDst& dst, const CSrc& src)
 {
-    UPInt i;
+    uint i;
     for(i = 0; i < src.GetSize(); i++)
         dst.PushBack(src[i]);
 }
@@ -611,9 +602,9 @@ void AppendArray(CDst& dst, const CSrc& src)
 template<class CDst, class CSrc, class Less>
 void MergeArray( CDst & dst, const CSrc & src, Less less )
 {
-	UPInt dstIndex = dst.GetSize();
-	UPInt srcIndex = src.GetSize();
-	UPInt finalIndex = dstIndex + srcIndex;
+	uint dstIndex = dst.GetSize();
+	uint srcIndex = src.GetSize();
+	uint finalIndex = dstIndex + srcIndex;
 	dst.Resize( finalIndex );
 	while ( srcIndex > 0 )
 	{
@@ -648,13 +639,13 @@ template<class T> class ArrayAdaptor
 public:
     typedef T ValueType;
     ArrayAdaptor() : Data(0), Size(0) {}
-    ArrayAdaptor(T* ptr, UPInt size) : Data(ptr), Size(size) {}
-    UPInt GetSize() const { return Size; }
-    const T& operator [] (UPInt i) const { return Data[i]; }
-          T& operator [] (UPInt i)       { return Data[i]; }
+    ArrayAdaptor(T* ptr, uint size) : Data(ptr), Size(size) {}
+    uint GetSize() const { return Size; }
+    const T& operator [] (uint i) const { return Data[i]; }
+          T& operator [] (uint i)       { return Data[i]; }
 private:
     T*      Data;
-    UPInt   Size;
+    uint   Size;
 };
 
 
@@ -668,12 +659,12 @@ template<class T> class ConstArrayAdaptor
 public:
     typedef T ValueType;
     ConstArrayAdaptor() : Data(0), Size(0) {}
-    ConstArrayAdaptor(const T* ptr, UPInt size) : Data(ptr), Size(size) {}
-    UPInt GetSize() const { return Size; }
-    const T& operator [] (UPInt i) const { return Data[i]; }
+    ConstArrayAdaptor(const T* ptr, uint size) : Data(ptr), Size(size) {}
+    uint GetSize() const { return Size; }
+    const T& operator [] (uint i) const { return Data[i]; }
 private:
     const T* Data;
-    UPInt    Size;
+    uint    Size;
 };
 
 
@@ -685,7 +676,7 @@ extern const UByte LowerBitTable[256];
 
 
 //-----------------------------------------------------------------------------------
-inline UByte UpperBit(UPInt val)
+inline UByte UpperBit(uint val)
 {
 #ifndef OVR_64BIT_POINTERS
 
@@ -730,7 +721,7 @@ inline UByte UpperBit(UPInt val)
 }
 
 //-----------------------------------------------------------------------------------
-inline UByte LowerBit(UPInt val)
+inline UByte LowerBit(uint val)
 {
 #ifndef OVR_64BIT_POINTERS
 
@@ -783,15 +774,15 @@ class MemUtil
 public:
 
     // Memory compare
-    static int      Cmp  (const void* p1, const void* p2, UPInt byteCount)      { return memcmp(p1, p2, byteCount); }
-    static int      Cmp16(const void* p1, const void* p2, UPInt int16Count);
-    static int      Cmp32(const void* p1, const void* p2, UPInt int32Count);
-    static int      Cmp64(const void* p1, const void* p2, UPInt int64Count);
+    static int      Cmp  (const void* p1, const void* p2, uint byteCount)      { return memcmp(p1, p2, byteCount); }
+    static int      Cmp16(const void* p1, const void* p2, uint int16Count);
+    static int      Cmp32(const void* p1, const void* p2, uint int32Count);
+    static int      Cmp64(const void* p1, const void* p2, uint int64Count);
 };
 
 // ** Inline Implementation
 
-inline int MemUtil::Cmp16(const void* p1, const void* p2, UPInt int16Count)
+inline int MemUtil::Cmp16(const void* p1, const void* p2, uint int16Count)
 {
     SInt16*  pa  = (SInt16*)p1;
     SInt16*  pb  = (SInt16*)p2;
@@ -803,7 +794,7 @@ inline int MemUtil::Cmp16(const void* p1, const void* p2, UPInt int16Count)
             return 0;
     return pa[ic] > pb[ic] ? 1 : -1;
 }
-inline int MemUtil::Cmp32(const void* p1, const void* p2, UPInt int32Count)
+inline int MemUtil::Cmp32(const void* p1, const void* p2, uint int32Count)
 {
     SInt32*  pa  = (SInt32*)p1;
     SInt32*  pb  = (SInt32*)p2;
@@ -815,7 +806,7 @@ inline int MemUtil::Cmp32(const void* p1, const void* p2, UPInt int32Count)
             return 0;
     return pa[ic] > pb[ic] ? 1 : -1;
 }
-inline int MemUtil::Cmp64(const void* p1, const void* p2, UPInt int64Count)
+inline int MemUtil::Cmp64(const void* p1, const void* p2, uint int64Count)
 {
     SInt64*  pa  = (SInt64*)p1;
     SInt64*  pb  = (SInt64*)p2;
@@ -985,6 +976,6 @@ inline SByte DecodeBCD(UByte byte)
 }
 
 
-}} // NervGear::Alg
+}
 
-#endif
+NV_NAMESPACE_END

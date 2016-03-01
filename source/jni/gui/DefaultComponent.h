@@ -16,7 +16,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VRMenuComponent.h"
 #include "Fader.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 //==============================================================
 // OvrDefaultComponent
@@ -93,6 +93,6 @@ private:
     int m_groupIndex;
 };
 
-} // namespace NervGear
+NV_NAMESPACE_END
 
 #endif // Ovr_Default_Component

@@ -13,7 +13,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #if !defined( OvrPointTracker_h_ )
 #define OvrPointTracker_h_
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 class OvrPointTracker
 {
@@ -64,6 +64,6 @@ private:
 };
 
 
-} // namespace NervGear
+NV_NAMESPACE_END
 
 #endif // OvrPointTracker_h_

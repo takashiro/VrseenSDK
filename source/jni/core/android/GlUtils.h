@@ -1,15 +1,6 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   GlUtils.h
-Content     :   Policy-free OpenGL convenience functions
-Created     :   August 24, 2013
-Authors     :   John Carmack
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-#ifndef OVR_GlUtils_h
-#define OVR_GlUtils_h
+#include "vglobal.h"
 
 // Everyone else should include GlUtils.h to get the GL headers instead of
 // individually including them, so if we have to change what we include,
@@ -31,8 +22,9 @@ static const int GL_ES_VERSION = 2;	// This will be passed to EglSetup() by App.
 
 // TODO: unify the naming
 
-namespace NervGear
-{
+#pragma once
+
+NV_NAMESPACE_BEGIN
 
 enum GpuType
 {
@@ -81,7 +73,7 @@ enum invalidateTarget_t {
 };
 void GL_InvalidateFramebuffer( const invalidateTarget_t isFBO, const bool colorBuffer, const bool depthBuffer );
 
-}	// namespace NervGear
+NV_NAMESPACE_END
 
 // extensions
 
@@ -193,4 +185,4 @@ extern PFNGLUNMAPBUFFEROESPROC_				glUnmapBuffer_;
 static const int EGL_PROTECTED_CONTENT_EXT = 0x32c0;
 #endif
 
-#endif	// OVR_GlUtils_h
+

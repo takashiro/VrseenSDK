@@ -15,10 +15,10 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 namespace NervGear { namespace UTF8Util {
 
-SPInt OVR_STDCALL GetLength(const char* buf, SPInt buflen)
+int OVR_STDCALL GetLength(const char* buf, int buflen)
 {
     const char* p = buf;
-    SPInt length = 0;
+    int length = 0;
 
     if (buflen != -1)
     {
@@ -38,7 +38,7 @@ SPInt OVR_STDCALL GetLength(const char* buf, SPInt buflen)
     return length;
 }
 
-UInt32 OVR_STDCALL GetCharAt(SPInt index, const char* putf8str, SPInt length)
+UInt32 OVR_STDCALL GetCharAt(int index, const char* putf8str, int length)
 {
     const char* buf = putf8str;
     UInt32  c = 0;
@@ -72,7 +72,7 @@ UInt32 OVR_STDCALL GetCharAt(SPInt index, const char* putf8str, SPInt length)
     return c;
 }
 
-SPInt OVR_STDCALL GetByteIndex(SPInt index, const char *putf8str, SPInt length)
+int OVR_STDCALL GetByteIndex(int index, const char *putf8str, int length)
 {
     const char* buf = putf8str;
 
@@ -221,7 +221,7 @@ UInt32 OVR_STDCALL DecodeNextChar_Advance0(const char** putf8Buffer)
 }
 
 
-void OVR_STDCALL EncodeChar(char* pbuffer, SPInt* pindex, UInt32 ucs_character)
+void OVR_STDCALL EncodeChar(char* pbuffer, int* pindex, UInt32 ucs_character)
 {
     if (ucs_character <= 0x7F)
     {
@@ -274,9 +274,9 @@ void OVR_STDCALL EncodeChar(char* pbuffer, SPInt* pindex, UInt32 ucs_character)
     }
 }
 
-SPInt OVR_STDCALL GetEncodeStringSize(const wchar_t* pchar, SPInt length)
+int OVR_STDCALL GetEncodeStringSize(const wchar_t* pchar, int length)
 {
-    SPInt len = 0;
+    int len = 0;
     if (length != -1)
         for (int i = 0; i < length; i++)
         {
@@ -292,9 +292,9 @@ SPInt OVR_STDCALL GetEncodeStringSize(const wchar_t* pchar, SPInt length)
     return len;
 }
 
-void OVR_STDCALL EncodeString(char *pbuff, const wchar_t* pchar, SPInt length)
+void OVR_STDCALL EncodeString(char *pbuff, const wchar_t* pchar, int length)
 {
-    SPInt ofs = 0;
+    int ofs = 0;
     if (length != -1)
     {
         for (int i = 0; i < length; i++)
@@ -314,7 +314,7 @@ void OVR_STDCALL EncodeString(char *pbuff, const wchar_t* pchar, SPInt length)
     pbuff[ofs] = 0;
 }
 
-UPInt OVR_STDCALL DecodeString(wchar_t *pbuff, const char* putf8str, SPInt bytesLen)
+uint OVR_STDCALL DecodeString(wchar_t *pbuff, const char* putf8str, int bytesLen)
 {
     wchar_t *pbegin = pbuff;
     if (bytesLen == -1)

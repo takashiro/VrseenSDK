@@ -1,21 +1,11 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   OVR_PhoneSensors.h
-Content     :   Cross platform interface for non-tracker sensors.
-Created     :   December 16, 2013
-Authors     :   Lee Cooper
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
-#ifndef OVR_PhoneSensors_h
-#define OVR_PhoneSensors_h
+#include "vglobal.h"
 
 #include "VMath.h"
 #include "RefCount.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 class PhoneSensors : public RefCountBase<PhoneSensors>
 {
@@ -33,6 +23,4 @@ private:
 	static PhoneSensors *Instance;
 };
 
-} // namespace NervGear
-
-#endif
+NV_NAMESPACE_END

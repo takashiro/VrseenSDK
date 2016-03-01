@@ -1,21 +1,13 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   OVR_Android_HMDDevice.h
-Content     :   Android HMDDevice implementation
-Created     :
-Authors     :
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
-#ifndef OVR_Android_HMDDevice_h
-#define OVR_Android_HMDDevice_h
+#include "vglobal.h"
 
 #include "Android_DeviceManager.h"
 #include "Profile.h"
 
-namespace NervGear { namespace Android {
+NV_NAMESPACE_BEGIN
+
+namespace Android {
 
 class HMDDevice;
 
@@ -149,7 +141,6 @@ protected:
 };
 
 
-}} // namespace NervGear::Android
+}
 
-#endif // OVR_Android_HMDDevice_h
-
+NV_NAMESPACE_END

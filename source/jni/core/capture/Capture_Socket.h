@@ -1,17 +1,6 @@
-/************************************************************************************
+#pragma once
 
-PublicHeader:   OVR.h
-Filename    :   OVR_Capture_Socket.h
-Content     :   Misc network communication functionality.
-Created     :   January, 2015
-Notes       :
-
-Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-
-#ifndef OVR_CAPTURE_SOCKET_H
-#define OVR_CAPTURE_SOCKET_H
+#include "vglobal.h"
 
 #include "Capture.h"
 #include "Capture_Packets.h"
@@ -23,8 +12,9 @@ Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
     #include <unistd.h>
 #endif
 
-namespace NervGear
-{
+#pragma once
+
+NV_NAMESPACE_BEGIN
 namespace Capture
 {
 
@@ -101,6 +91,5 @@ namespace Capture
     };
 
 } // namespace Capture
-} // namespace NervGear
+NV_NAMESPACE_END
 
-#endif

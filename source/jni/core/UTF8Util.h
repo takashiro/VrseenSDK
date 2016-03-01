@@ -1,21 +1,12 @@
-/************************************************************************************
+#pragma once
 
-PublicHeader:   OVR.h
-Filename    :   OVR_UTF8Util.h
-Content     :   UTF8 Unicode character encoding/decoding support
-Created     :   September 19, 2012
-Notes       :
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-
-#ifndef OVR_UTF8Util_h
-#define OVR_UTF8Util_h
+#include "vglobal.h"
 
 #include "Types.h"
 
-namespace NervGear { namespace UTF8Util {
+NV_NAMESPACE_BEGIN
+
+namespace UTF8Util {
 
 //-----------------------------------------------------------------------------------
 
@@ -23,31 +14,31 @@ namespace NervGear { namespace UTF8Util {
 
 // Determines the length of UTF8 string in characters.
 // If source length is specified (in bytes), null 0 character is counted properly.
-SPInt    OVR_STDCALL GetLength(const char* putf8str, SPInt length = -1);
+int    OVR_STDCALL GetLength(const char* putf8str, int length = -1);
 
 // Gets a decoded UTF8 character at index; you can access up to the index returned
 // by GetLength. 0 will be returned for out of bounds access.
-UInt32   OVR_STDCALL GetCharAt(SPInt index, const char* putf8str, SPInt length = -1);
+UInt32   OVR_STDCALL GetCharAt(int index, const char* putf8str, int length = -1);
 
 // Converts UTF8 character index into byte offset.
 // -1 is returned if index was out of bounds.
-SPInt    OVR_STDCALL GetByteIndex(SPInt index, const char* putf8str, SPInt length = -1);
+int    OVR_STDCALL GetByteIndex(int index, const char* putf8str, int length = -1);
 
 
 // *** 16-bit Unicode string Encoding/Decoding routines.
 
 // Determines the number of bytes necessary to encode a string.
 // Does not count the terminating 0 (null) character.
-SPInt    OVR_STDCALL GetEncodeStringSize(const wchar_t* pchar, SPInt length = -1);
+int    OVR_STDCALL GetEncodeStringSize(const wchar_t* pchar, int length = -1);
 
 // Encodes a unicode (UCS-2 only) string into a buffer. The size of buffer must be at
 // least GetEncodeStringSize() + 1.
-void     OVR_STDCALL EncodeString(char *pbuff, const wchar_t* pchar, SPInt length = -1);
+void     OVR_STDCALL EncodeString(char *pbuff, const wchar_t* pchar, int length = -1);
 
 // Decode UTF8 into a wchar_t buffer. Must have GetLength()+1 characters available.
 // Characters over 0xFFFF are replaced with 0xFFFD.
 // Returns the length of resulting string (number of characters)
-UPInt    OVR_STDCALL DecodeString(wchar_t *pbuff, const char* putf8str, SPInt bytesLen = -1);
+uint    OVR_STDCALL DecodeString(wchar_t *pbuff, const char* putf8str, int bytesLen = -1);
 
 
 // *** Individual character Encoding/Decoding.
@@ -59,7 +50,7 @@ int      OVR_STDCALL GetEncodeCharSize(UInt32 ucsCharacter);
 // Writes the data starting at buffer[offset], and
 // increments offset by the number of bytes written.
 // May write up to 6 bytes, so make sure there's room in the buffer
-void     OVR_STDCALL EncodeChar(char* pbuffer, SPInt* poffset, UInt32 ucsCharacter);
+void     OVR_STDCALL EncodeChar(char* pbuffer, int* poffset, UInt32 ucsCharacter);
 
 // Return the next Unicode character in the UTF-8 encoded buffer.
 // Invalid UTF-8 sequences produce a U+FFFD character as output.
@@ -79,6 +70,6 @@ inline UInt32 DecodeNextChar(const char** putf8Buffer)
 }
 
 
-}} // NervGear::UTF8Util
+}
 
-#endif
+NV_NAMESPACE_END

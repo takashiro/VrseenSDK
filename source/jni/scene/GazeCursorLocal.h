@@ -18,7 +18,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "GlProgram.h"
 #include "GlGeometry.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 //==============================================================
 // OvrGazeCursorLocal
@@ -132,6 +132,6 @@ private:
 	bool						TimerActive() const;
 };
 
-} // namespace NervGear
+NV_NAMESPACE_END
 
 #endif  // OVR_GazeCursorLocal_h

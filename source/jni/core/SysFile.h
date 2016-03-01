@@ -1,26 +1,10 @@
-/************************************************************************************
+#pragma once
 
-PublicHeader:   Kernel
-Filename    :   OVR_SysFile.h
-Content     :   Header for all internal file management - functions and structures
-                to be inherited by OS specific subclasses.
-Created     :   September 19, 2012
-Notes       :
-
-Notes       :   errno may not be preserved across use of GBaseFile member functions
-            :   Directories cannot be deleted while files opened from them are in use
-                (For the GetFullName function)
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-
-#ifndef OVR_SysFile_h
-#define OVR_SysFile_h
+#include "vglobal.h"
 
 #include "File.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 // ***** Declared classes
 class   SysFile;
@@ -84,6 +68,4 @@ public:
     virtual bool  close();
 };
 
-} // Namespace OVR
-
-#endif
+NV_NAMESPACE_END

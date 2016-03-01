@@ -1,22 +1,11 @@
-/************************************************************************************
+#pragma once
 
-PublicHeader:   OVR
-Filename    :   OVR_Log.h
-Content     :   Logging support
-Created     :   September 19, 2012
-Notes       :
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-
-#ifndef OVR_Log_h
-#define OVR_Log_h
+#include "vglobal.h"
 
 #include "Types.h"
 #include <stdarg.h>
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 //-----------------------------------------------------------------------------------
 // ***** Logging Constants
@@ -185,6 +174,4 @@ void LogError(const char* fmt, ...) OVR_LOG_VAARG_ATTRIBUTE(1,2);
 
 #endif
 
-} // OVR
-
-#endif
+NV_NAMESPACE_END

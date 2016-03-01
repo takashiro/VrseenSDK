@@ -1,16 +1,6 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   OVR_HIDDevice.h
-Content     :   Cross platform HID device interface.
-Created     :   February 22, 2013
-Authors     :   Lee Cooper
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
-#ifndef OVR_HIDDevice_h
-#define OVR_HIDDevice_h
+#include "vglobal.h"
 
 #include "HIDDeviceBase.h"
 
@@ -18,7 +8,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VString.h"
 #include "Timer.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 class HIDDevice;
 class DeviceManager;
@@ -60,7 +50,7 @@ public:
 // ***** HIDDeviceManager
 
 // Internal manager for enumerating and opening HID devices.
-// If an NervGear::DeviceManager is created then an NervGear::HIDDeviceManager will automatically be created and can be accessed from the
+// If an DeviceManager is created then an HIDDeviceManager will automatically be created and can be accessed from the
 // DeviceManager by calling 'GetHIDDeviceManager()'. When using HIDDeviceManager in standalone mode, the client must call
 // 'Create' below.
 class HIDDeviceManager : public RefCountBase<HIDDeviceManager>
@@ -135,6 +125,4 @@ protected:
     HIDHandler* Handler;
 };
 
-} // namespace NervGear
-
-#endif
+NV_NAMESPACE_END

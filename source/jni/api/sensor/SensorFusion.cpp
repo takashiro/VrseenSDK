@@ -365,7 +365,7 @@ void SensorFusion::applyMagYawCorrection(const Vector3f& magUncalibrated, const 
         // Find a new one
         MagRefIdx = -1;
         float bestDist = maxAngleRefDist;
-        for (UPInt i = 0; i < MagRefs.size(); ++i)
+        for (uint i = 0; i < MagRefs.size(); ++i)
         {
             float dist = orientation.Angle(MagRefs[i].WorldFromImu);
             if (bestDist > dist)

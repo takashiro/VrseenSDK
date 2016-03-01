@@ -1,15 +1,6 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   ModelRender.h
-Content     :   Optimized OpenGL rendering path
-Created     :   August 9, 2013
-Authors     :   John Carmack
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-#ifndef OVR_ModelRender_h
-#define OVR_ModelRender_h
+#include "vglobal.h"
 
 #include "VMath.h"
 #include "Array.h"
@@ -19,10 +10,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "GlTexture.h"
 #include "GlGeometry.h"
 
-using namespace NervGear;
-
-namespace NervGear
-{
+NV_NAMESPACE_BEGIN
 
 // can be made as high as 16
 static const int MAX_PROGRAM_TEXTURES = 5;
@@ -141,7 +129,7 @@ struct ModelDef
 {
 	ModelDef() {};
 
-	NervGear::Array<SurfaceDef>	surfaces;
+    Array<SurfaceDef>	surfaces;
 };
 
 struct SurfaceTextureOverload
@@ -183,7 +171,7 @@ struct ModelState
 	void	ClearSurfaceTextureOverload( const int surfaceIndex );
 
 	// Other surface customization data will be added here.
-	NervGear::ArrayPOD< SurfaceTextureOverload > SurfaceTextureOverloads;
+    ArrayPOD< SurfaceTextureOverload > SurfaceTextureOverloads;
 };
 
 struct DrawCounters
@@ -231,13 +219,13 @@ struct DrawSurfaceList
 // Not thread safe, uses a static buffer for the surfaces.
 // Additional, application specific culling or surface insertion can be done on the
 // results of this call before calling DrawSurfaceList.
-const DrawSurfaceList & BuildDrawSurfaceList( const NervGear::Array<ModelState> & modelRenderList,
+const DrawSurfaceList & BuildDrawSurfaceList( const Array<ModelState> & modelRenderList,
 							const Matrix4f & viewMatrix, const Matrix4f & projectionMatrix );
 
 // Draws a list of surfaces in order.
 // Any sorting or culling should be performed before calling.
 DrawCounters RenderSurfaceList( const DrawSurfaceList & drawSurfaceList );
 
-} // namespace NervGear
+NV_NAMESPACE_END
 
-#endif	// OVR_ModelRender_h
+

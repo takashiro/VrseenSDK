@@ -8,18 +8,18 @@ NV_NAMESPACE_BEGIN
 class VStringBuffer
 {
     char*           m_data;
-    UPInt           m_size;
-    UPInt           m_bufferSize;
-    UPInt           m_growSize;
+    uint           m_size;
+    uint           m_bufferSize;
+    uint           m_growSize;
     mutable bool    m_lengthIsSize;
 
 public:
 
     // Constructors / Destructor.
     VStringBuffer();
-    explicit VStringBuffer(UPInt growSize);
+    explicit VStringBuffer(uint growSize);
     VStringBuffer(const char* data);
-    VStringBuffer(const char* data, UPInt buflen);
+    VStringBuffer(const char* data, uint buflen);
     VStringBuffer(const VString& src);
     VStringBuffer(const VStringBuffer& src);
     explicit VStringBuffer(const wchar_t* data);
@@ -27,8 +27,8 @@ public:
 
 
     // Modify grow size used for growing/shrinking the buffer.
-    UPInt       growSize() const         { return m_growSize; }
-    void        setGrowSize(UPInt growSize);
+    uint       growSize() const         { return m_growSize; }
+    void        setGrowSize(uint growSize);
 
 
     // *** General Functions
@@ -41,38 +41,38 @@ public:
     const char* toCString() const          { return (m_data) ? m_data : ""; }
 
     // Returns number of bytes.
-    UPInt       size() const         { return m_size ; }
+    uint       size() const         { return m_size ; }
     // Tells whether or not the string is empty.
     bool        isEmpty() const         { return size() == 0; }
 
     // Returns  number of characters
-    UPInt       length() const;
+    uint       length() const;
 
     // Returns  character at the specified index
-    UInt32      charAt(UPInt index) const;
-    UInt32      firstCharAt(UPInt index, const char** offset) const;
+    UInt32      charAt(uint index) const;
+    UInt32      firstCharAt(uint index, const char** offset) const;
     UInt32      nextChar(const char** offset) const;
 
 
     //  Resize the string to the new size
-    void        resize(UPInt _size);
-    void        reserve(UPInt _size);
+    void        resize(uint _size);
+    void        reserve(uint _size);
 
     // Appends a character
     void        append(UInt32 ch);
 
     // Append a string
-    void        append(const wchar_t* pstr, SPInt len = -1);
-    void        append(const char* putf8str, SPInt utf8StrSz = -1);
+    void        append(const wchar_t* pstr, int len = -1);
+    void        append(const char* putf8str, int utf8StrSz = -1);
     void        appendFormat(const char* format, ...);
 
     // Assigned a string with dynamic data (copied through initializer).
     //void        AssignString(const InitStruct& src, UPInt size);
 
     // Inserts substr at posAt
-    void        insert (const char* substr, UPInt posAt, SPInt len = -1);
+    void        insert (const char* substr, uint posAt, int len = -1);
     // Inserts character at posAt
-    UPInt       insert(UInt32 c, UPInt posAt);
+    uint       insert(UInt32 c, uint posAt);
 
     // Assignment
     void        operator =  (const char* str);
@@ -91,10 +91,10 @@ public:
     // Accesses raw bytes
     char&       operator [] (int index)
     {
-        OVR_ASSERT(((UPInt)index) < size());
+        OVR_ASSERT(((uint)index) < size());
         return m_data[index];
     }
-    char&       operator [] (UPInt index)
+    char&       operator [] (uint index)
     {
         OVR_ASSERT(index < size());
         return m_data[index];
@@ -102,10 +102,10 @@ public:
 
     const char&     operator [] (int index) const
     {
-        OVR_ASSERT(((UPInt)index) < size());
+        OVR_ASSERT(((uint)index) < size());
         return m_data[index];
     }
-    const char&     operator [] (UPInt index) const
+    const char&     operator [] (uint index) const
     {
         OVR_ASSERT(index < size());
         return m_data[index];

@@ -1,23 +1,10 @@
-/************************************************************************************
-
-PublicHeader:   OVR.h
-Filename    :   OVR_SensorFilter.h
-Content     :   Basic filtering of sensor data
-Created     :   March 7, 2013
-Authors     :   Steve LaValle, Anna Yershova, Max Katsev
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
-#ifndef OVR_SensorFilter_h
-#define OVR_SensorFilter_h
+#pragma once
 
 #include "VMath.h"
 #include "Deque.h"
 #include "Alg.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 // A base class for filters that maintains a buffer of sensor data taken over time and implements
 // various simple filters, most of which are linear functions of the data history.
@@ -287,6 +274,6 @@ public:
     }
 };
 
-} //namespace NervGear
+NV_NAMESPACE_END
 
-#endif // OVR_SensorFilter_h
+

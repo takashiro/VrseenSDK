@@ -1,17 +1,6 @@
-/************************************************************************************
+#pragma once
 
-PublicHeader:   OVR.h
-Filename    :   OVR_Device.h
-Content     :   Definition of HMD-related Device interfaces
-Created     :   September 21, 2012
-Authors     :   Michael Antonov
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
-#ifndef OVR_Device_h
-#define OVR_Device_h
+#include "vglobal.h"
 
 #include "DeviceConstants.h"
 #include "DeviceHandle.h"
@@ -22,8 +11,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "RefCount.h"
 #include "VString.h"
 
-
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 // Declared externally
 class Profile;
@@ -65,7 +53,7 @@ public:
     virtual bool SupportsMessageType(MessageType) const { return true; }
 
 private:
-    UPInt Internal[4];
+    uint Internal[4];
 };
 
 
@@ -736,6 +724,4 @@ public:
     virtual DeviceBase* GetDevice() { return this; }
 };
 
-} // namespace NervGear
-
-#endif
+NV_NAMESPACE_END

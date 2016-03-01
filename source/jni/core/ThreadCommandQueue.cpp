@@ -29,17 +29,17 @@ class CircularBuffer
     };
 
     UByte*  pBuffer;
-    UPInt   Size;
-    UPInt   Tail;   // Byte offset of next item to be popped.
-    UPInt   Head;   // Byte offset of where next push will take place.
-    UPInt   End;    // When Head < Tail, this is used instead of Size.
+    uint   Size;
+    uint   Tail;   // Byte offset of next item to be popped.
+    uint   Head;   // Byte offset of where next push will take place.
+    uint   End;    // When Head < Tail, this is used instead of Size.
 
-    inline UPInt roundUpSize(UPInt size)
-    { return (size + AlignMask) & ~(UPInt)AlignMask; }
+    inline uint roundUpSize(uint size)
+    { return (size + AlignMask) & ~(uint)AlignMask; }
 
 public:
 
-    CircularBuffer(UPInt size)
+    CircularBuffer(uint size)
         : Size(size), Tail(0), Head(0), End(0)
     {
         pBuffer = (UByte*)OVR_ALLOC_ALIGNED(roundUpSize(size), AlignSize);
@@ -55,19 +55,19 @@ public:
 
     // Allocates a state block of specified size and advances pointers,
     // returning 0 if buffer is full.
-    UByte*  Write(UPInt size);
+    UByte*  Write(uint size);
 
     // Returns a pointer to next available data block; 0 if none available.
     UByte*  ReadBegin()
     { return (Head != Tail) ? (pBuffer + Tail) : 0; }
     // Consumes data of specified size; this must match size passed to Write.
-    void    ReadEnd(UPInt size);
+    void    ReadEnd(uint size);
 };
 
 
 // Allocates a state block of specified size and advances pointers,
 // returning 0 if buffer is full.
-UByte* CircularBuffer::Write(UPInt size)
+UByte* CircularBuffer::Write(uint size)
 {
     UByte* p = 0;
 
@@ -107,7 +107,7 @@ UByte* CircularBuffer::Write(UPInt size)
     return p;
 }
 
-void CircularBuffer::ReadEnd(UPInt size)
+void CircularBuffer::ReadEnd(uint size)
 {
     OVR_ASSERT(Head != Tail);
     size = roundUpSize(size);

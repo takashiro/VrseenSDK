@@ -1,15 +1,6 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   DirectRender.h
-Content     :   Handles multi window front buffer setup
-Created     :   October 1, 2013
-Authors     :   John Carmack
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-#ifndef OVR_DirectRender_h
-#define OVR_DirectRender_h
+#include "vglobal.h"
 
 // A key aspect of our performance is the ability to render directly
 // to a buffer being scanned out for display, instead of going through
@@ -19,8 +10,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <jni.h>
 #include "Android/GlUtils.h"
 
-namespace NervGear
-{
+NV_NAMESPACE_BEGIN
 
 class VrSurfaceManager
 {
@@ -105,7 +95,5 @@ private:
 };
 
 
-}	// namespace NervGear
-
-#endif	// OVR_Direct_render
+NV_NAMESPACE_END
 

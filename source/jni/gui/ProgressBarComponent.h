@@ -16,7 +16,7 @@ Copyright   :   Copyright 2015 Oculus VR, Inc. All Rights reserved.
 #include "VRMenuComponent.h"
 #include "Fader.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 class VRMenu;
 class App;
@@ -89,6 +89,6 @@ private:
     eProgressBarState	m_currentProgressBarState;
 };
 
-} // namespace NervGear
+NV_NAMESPACE_END
 
 #endif // OVR_ProgressBarComponent_h

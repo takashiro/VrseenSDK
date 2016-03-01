@@ -1,18 +1,6 @@
-/************************************************************************************
+#pragma once
 
-PublicHeader:   OVR.h
-Filename    :   OVR_Capture_GLES3.h
-Content     :   Oculus performance capture library. OpenGL ES 3 interfaces.
-Created     :   January, 2015
-Notes       :
-
-Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-
-#ifndef OVR_CAPTURE_GLES3_H
-#define OVR_CAPTURE_GLES3_H
-
+#include "vglobal.h"
 #include "Capture.h"
 
 #if defined(OVR_CAPTURE_HAS_GLES3)
@@ -22,8 +10,9 @@ Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
     OVR_CAPTURE_CREATE_LABEL(GL##name);                                     \
     NervGear::Capture::GPUScopeGLES3 _ovrcap_gpuscope_##name(_ovrcap_label_##name);
 
-namespace NervGear
-{
+#pragma once
+
+NV_NAMESPACE_BEGIN
 namespace Capture
 {
 
@@ -51,8 +40,6 @@ namespace Capture
     };
 
 } // namespace Capture
-} // namespace NervGear
+NV_NAMESPACE_END
 
 #endif // #if defined(OVR_CAPTURE_HAS_GLES3)
-
-#endif

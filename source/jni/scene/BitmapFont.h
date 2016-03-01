@@ -1,14 +1,3 @@
-/************************************************************************************
-
- Filename    :   BitmapFont.h
- Content     :   Bitmap font rendering.
- Created     :   March 11, 2014
- Authors     :   Jonathan E. Wright
-
- Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
- *************************************************************************************/
-
 #pragma once
 
 #include "vglobal.h"
@@ -76,7 +65,7 @@ public:
 	// Another version of WordWrapText which doesn't break in between strings that are listed in wholeStrsList array
 	// Ex : "Gear VR", we don't want to break in between "Gear" & "VR" so we need to pass "Gear VR" string in wholeStrsList
 	virtual void WordWrapText(VString & inOutText, const float widthMeters,
-			NervGear::Array<NervGear::VString> wholeStrsList,
+            Array<VString> wholeStrsList,
 			const float fontScale = 1.0f) const = 0;
 
 protected:

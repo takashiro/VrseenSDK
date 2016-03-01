@@ -1,22 +1,12 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   String_Utils.h
-Content     :   String utility functions.
-Created     :   May, 2014
-Authors     :   J.M.P. van Waveren
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-#ifndef __STRING_UTILS_H__
-#define __STRING_UTILS_H__
+#include "vglobal.h"
 
 #include "VMath.h"
 #include "VString.h"
 #include "Array.h"
 
-namespace NervGear
-{
+NV_NAMESPACE_BEGIN
 
 namespace StringUtils
 {
@@ -35,7 +25,7 @@ namespace StringUtils
 	{
 		VString result;
 
-		for( UPInt index = 0; text[ index ]  != '\0'; index++ )
+		for( uint index = 0; text[ index ]  != '\0'; index++ )
 		{
 			char ch = text[ index ];
 			if ( ch == charToReplace )
@@ -426,6 +416,4 @@ namespace StringUtils
 
 } // StringUtils
 
-} // OVR
-
-#endif // !__STRING_UTILS_H__
+NV_NAMESPACE_END

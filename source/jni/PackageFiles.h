@@ -1,16 +1,6 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   PackageFiles.h
-Content     :   Read files from the application package zip
-Created     :   August 18, 2014
-Authors     :   John Carmack
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-
-*************************************************************************************/
-#ifndef OVRPACKAGEFILES_H
-#define OVRPACKAGEFILES_H
+#include "vglobal.h"
 
 #include "GlTexture.h"
 
@@ -19,7 +9,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 // an App pointer to be handed around to everything that might want to load
 // a texture or model.
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 class ModelFile;
 class ModelGlPrograms;
@@ -104,6 +94,6 @@ ModelFile *		LoadModelFileFromApplicationPackage( const char* nameInZip,
 									const MaterialParms & materialParms );
 
 
-}	// namespace NervGear
+NV_NAMESPACE_END
 
-#endif	// !OVRGLTEXTURE_H
+

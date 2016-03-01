@@ -15,7 +15,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "VMath.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 template< typename _type_, int _size_ >
 class CircularArrayT
@@ -216,6 +216,6 @@ private:
     bool									needsJumpDuringWrapAround();
 };
 
-} // namespace NervGear
+NV_NAMESPACE_END
 
 #endif // OVR_ScrollManager_h

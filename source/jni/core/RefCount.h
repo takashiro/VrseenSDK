@@ -1,22 +1,11 @@
-/************************************************************************************
+#pragma once
 
-PublicHeader:   Kernel
-Filename    :   OVR_RefCount.h
-Content     :   Reference counting implementation headers
-Created     :   September 19, 2012
-Notes       :
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-
-#ifndef OVR_RefCount_h
-#define OVR_RefCount_h
+#include "vglobal.h"
 
 #include "Types.h"
 #include "Allocator.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 //-----------------------------------------------------------------------------------
 // ***** Reference Counting
@@ -513,6 +502,4 @@ public:
     }
 };
 
-} // OVR
-
-#endif
+NV_NAMESPACE_END

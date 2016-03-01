@@ -1,18 +1,8 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   MemBuffer.h
-Content     :	Memory buffer.
-Created     :	May 13, 2014
-Authors     :   John Carmack
+#include "vglobal.h"
 
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-
-*************************************************************************************/
-#ifndef MEMBUFFER_H
-#define MEMBUFFER_H
-
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 
 // This does NOT free the memory on delete, it is just a wrapper around
@@ -89,7 +79,7 @@ public:
 
 	// returns a const pointer to the buffer
     operator C const * () const { return m_buffer; }
-	
+
 	// returns a non-const pointer to the buffer
     operator C * () { return m_buffer; }
 
@@ -136,6 +126,6 @@ private:
 	}
 };
 
-}	// namespace NervGear
+NV_NAMESPACE_END
 
-#endif // MEMBUFFER_H
+

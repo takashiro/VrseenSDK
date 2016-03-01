@@ -53,6 +53,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 //#define TEST_TIMEWARP_WATCHDOG
 
+NV_NAMESPACE_BEGIN
+
 static const char * activityClassName = "me/takashiro/nervgear/VrActivity";
 static const char * vrLibClassName = "me/takashiro/nervgear/VrLib";
 
@@ -71,8 +73,6 @@ void ComposeIntentMessage( char const * packageName, char const * uri, char cons
 			uri == NULL || uri[0] == '\0' ? EMPTY_INTENT_STR : uri,
 			jsonText == NULL || jsonText[0] == '\0' ? "" : jsonText );
 }
-
-NV_NAMESPACE_BEGIN
 
 extern "C"
 {

@@ -1,21 +1,10 @@
-/************************************************************************************
+#pragma once
 
-PublicHeader:   OVR.h
-Filename    :   OVR_DeviceHandle.h
-Content     :   Handle to a device that was enumerated
-Created     :   February 5, 2013
-Authors     :   Lee Cooper
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
-#ifndef OVR_DeviceHandle_h
-#define OVR_DeviceHandle_h
+#include "vglobal.h"
 
 #include "DeviceConstants.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 class DeviceBase;
 class DeviceInfo;
@@ -88,6 +77,4 @@ protected:
     DeviceCreateDesc* m_pImpl;
 };
 
-} // namespace NervGear
-
-#endif
+NV_NAMESPACE_END

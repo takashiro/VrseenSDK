@@ -16,7 +16,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VRMenuComponent.h"
 #include "VRMenu.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 class VRMenu;
 

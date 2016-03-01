@@ -1,23 +1,12 @@
-/************************************************************************************
+#pragma once
 
-PublicHeader:   OVR.h
-Filename    :   OVR_Capture_Types.h
-Content     :   Oculus performance capture library.
-Created     :   January, 2015
-Notes       :   Pull types from kernel? Although that would lead to OVRMonitor needing
-                to depend on Kernel as well.
-
-Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-
-#ifndef OVR_CAPTURE_TYPES_H
-#define OVR_CAPTURE_TYPES_H
+#include "vglobal.h"
 
 #include "Capture_Config.h"
 
-namespace NervGear
-{
+#pragma once
+
+NV_NAMESPACE_BEGIN
 namespace Capture
 {
 
@@ -106,6 +95,7 @@ namespace Capture
     };
 
 } // namespace Capture
-} // namespace NervGear
 
-#endif
+NV_NAMESPACE_END
+
+

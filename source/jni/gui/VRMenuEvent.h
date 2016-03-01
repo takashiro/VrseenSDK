@@ -15,7 +15,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "VRMenuObject.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 enum eVRMenuEventType
 {
@@ -75,6 +75,6 @@ public:
     HitTestResult		hitResult;
 };
 
-} // namespace NervGear
+NV_NAMESPACE_END
 
 #endif // OVR_VRMenuEvent_h

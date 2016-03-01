@@ -1,22 +1,11 @@
-/************************************************************************************
+#pragma once
 
-PublicHeader:   OVR.h
-Filename    :   OVR_GyroTempCalibration.h
-Content     :   Used to store gyro temperature calibration to local storage.
-Created     :   June 26, 2014
-Notes       :
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-
-#ifndef OVR_GyroTempCalibration_h
-#define OVR_GyroTempCalibration_h
+#include "vglobal.h"
 
 #include "Device.h"
 #include "Array.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 class GyroTempCalibration
 {
@@ -53,6 +42,4 @@ private:
 	GyroCalibrationEntry GyroCalibration[GyroCalibrationNumBins][GyroCalibrationNumSamples];
 };
 
-} // namespace NervGear
-
-#endif // OVR_GyroTempCalibration_h
+NV_NAMESPACE_END

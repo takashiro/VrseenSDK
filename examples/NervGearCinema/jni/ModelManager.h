@@ -60,8 +60,8 @@ public:
 
 	bool 				Command( const char * msg );
 
-    UPInt				GetTheaterCount() const { return Theaters.size(); }
-	const SceneDef & 	GetTheater( UPInt index ) const;
+    uint				GetTheaterCount() const { return Theaters.size(); }
+	const SceneDef & 	GetTheater( uint index ) const;
 
 public:
 	CinemaApp &			Cinema;

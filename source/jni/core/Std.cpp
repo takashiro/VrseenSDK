@@ -34,7 +34,7 @@ int OVR_CDECL OVR_stricmp(const char* a, const char* b)
 #endif
 }
 
-int OVR_CDECL OVR_strnicmp(const char* a, const char* b, UPInt count)
+int OVR_CDECL OVR_strnicmp(const char* a, const char* b, uint count)
 {
 #if defined(OVR_OS_WIN32)
 #if defined(OVR_CC_MSVC) && (OVR_CC_MSVC >= 1400)
@@ -48,7 +48,7 @@ int OVR_CDECL OVR_strnicmp(const char* a, const char* b, UPInt count)
 #endif
 }
 
-wchar_t* OVR_CDECL OVR_wcscpy(wchar_t* dest, UPInt destsize, const wchar_t* src)
+wchar_t* OVR_CDECL OVR_wcscpy(wchar_t* dest, uint destsize, const wchar_t* src)
 {
 #if defined(OVR_MSVC_SAFESTRING)
     wcscpy_s(dest, destsize, src);
@@ -58,26 +58,26 @@ wchar_t* OVR_CDECL OVR_wcscpy(wchar_t* dest, UPInt destsize, const wchar_t* src)
     wcscpy(dest, src);
     return dest;
 #else
-    UPInt l = OVR_wcslen(src) + 1; // incl term null
+    uint l = OVR_wcslen(src) + 1; // incl term null
     l = (l < destsize) ? l : destsize;
     memcpy(dest, src, l * sizeof(wchar_t));
     return dest;
 #endif
 }
 
-wchar_t* OVR_CDECL OVR_wcsncpy(wchar_t* dest, UPInt destsize, const wchar_t* src, UPInt count)
+wchar_t* OVR_CDECL OVR_wcsncpy(wchar_t* dest, uint destsize, const wchar_t* src, uint count)
 {
 #if defined(OVR_MSVC_SAFESTRING)
     wcsncpy_s(dest, destsize, src, count);
     return dest;
 #else
-    UPInt srclen = OVR_wcslen(src);
-    UPInt l = Alg::Min(srclen, count);
+    uint srclen = OVR_wcslen(src);
+    uint l = Alg::Min(srclen, count);
     l = (l < destsize) ? l : destsize;
     memcpy(dest, src, l * sizeof(wchar_t));
     if (count > srclen)
     {
-        UPInt remLen = Alg::Min(destsize - l, (count - srclen));
+        uint remLen = Alg::Min(destsize - l, (count - srclen));
         memset(&dest[l], 0, sizeof(wchar_t)*remLen);
     }
     else if (l < destsize)
@@ -87,7 +87,7 @@ wchar_t* OVR_CDECL OVR_wcsncpy(wchar_t* dest, UPInt destsize, const wchar_t* src
 }
 
 
-wchar_t* OVR_CDECL OVR_wcscat(wchar_t* dest, UPInt destsize, const wchar_t* src)
+wchar_t* OVR_CDECL OVR_wcscat(wchar_t* dest, uint destsize, const wchar_t* src)
 {
 #if defined(OVR_MSVC_SAFESTRING)
     wcscat_s(dest, destsize, src);
@@ -97,20 +97,20 @@ wchar_t* OVR_CDECL OVR_wcscat(wchar_t* dest, UPInt destsize, const wchar_t* src)
     wcscat(dest, src);
     return dest;
 #else
-    UPInt dstlen = OVR_wcslen(dest); // do not incl term null
-    UPInt srclen = OVR_wcslen(src) + 1; // incl term null
-    UPInt copylen = (dstlen + srclen < destsize) ? srclen : destsize - dstlen;
+    uint dstlen = OVR_wcslen(dest); // do not incl term null
+    uint srclen = OVR_wcslen(src) + 1; // incl term null
+    uint copylen = (dstlen + srclen < destsize) ? srclen : destsize - dstlen;
     memcpy(dest + dstlen, src, copylen * sizeof(wchar_t));
     return dest;
 #endif
 }
 
-UPInt   OVR_CDECL OVR_wcslen(const wchar_t* str)
+uint   OVR_CDECL OVR_wcslen(const wchar_t* str)
 {
 #if defined(OVR_OS_WIN32)
     return wcslen(str);
 #else
-    UPInt i = 0;
+    uint i = 0;
     while(str[i] != '\0')
         ++i;
     return i;
@@ -987,7 +987,7 @@ int OVR_CDECL OVR_towupper(wchar_t charCode)
     {
         // To protect from memory overrun in case the character is not found
         // we use one extra fake element in the table {65536, 0}.
-        UPInt idx = Alg::LowerBoundSliced(
+        uint idx = Alg::LowerBoundSliced(
             UnicodeToUpperTable,
             0,
             sizeof(UnicodeToUpperTable) / sizeof(UnicodeToUpperTable[0]) - 1,
@@ -1005,7 +1005,7 @@ int OVR_CDECL OVR_towlower(wchar_t charCode)
     {
         // To protect from memory overrun in case the character is not found
         // we use one extra fake element in the table {65536, 0}.
-        UPInt idx = Alg::LowerBoundSliced(
+        uint idx = Alg::LowerBoundSliced(
             UnicodeToLowerTable,
             0,
             sizeof(UnicodeToLowerTable) / sizeof(UnicodeToLowerTable[0]) - 1,

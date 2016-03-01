@@ -1,22 +1,15 @@
-/************************************************************************************
-Filename    :   OVR_Android_HIDDevice.h
-Content     :   Android HID device implementation.
-Created     :   July 10, 2013
-Authors     :   Brant Lewis
+#pragma once
 
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
-#ifndef OVR_Android_HIDDevice_h
-#define OVR_Android_HIDDevice_h
+#include "vglobal.h"
 
 #include "HIDDevice.h"
 #include "Android_DeviceManager.h"
 
 #include <jni.h>
 
-namespace NervGear { namespace Android {
+NV_NAMESPACE_BEGIN
+
+namespace Android {
 
 class HIDDeviceManager;
 
@@ -113,7 +106,7 @@ public:
     static HIDDeviceManager* CreateInternal(DeviceManager* manager);
 
     // DeviceManagerThread::Notifier - OnTicks is used to initiate poll for new devices.
-    void onEvent(int /*i*/, int /*fd*/) {};
+    void onEvent(int /*i*/, int /*fd*/) {}
     double onTicks(double tickSeconds);
 
 private:
@@ -122,7 +115,7 @@ private:
     bool initVendorProduct(int deviceHandle, HIDDeviceDesc* desc) const;
     bool getFullDesc(int deviceHandle, const VString& devNodePath, HIDDeviceDesc* desc) const;
 
-    bool getStringProperty(const VString& devNodePath, const char* propertyName, NervGear::VString* pResult) const;
+    bool getStringProperty(const VString& devNodePath, const char* propertyName, VString* pResult) const;
     bool getPath(int deviceHandle, const VString& devNodePath, VString* pPath) const;
 
     bool AddNotificationDevice(HIDDevice* device);
@@ -140,6 +133,6 @@ private:
     double 					TimeToPollForDevicesSeconds;
 };
 
-}} // namespace NervGear::Android
+}
 
-#endif // OVR_Android_HIDDevice_h
+NV_NAMESPACE_END

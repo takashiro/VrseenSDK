@@ -1,15 +1,4 @@
-/************************************************************************************
-
-Filename    :   TimeWarp.h
-Content     :   Public interface for time warp latency reduction / frame interpolation
-Created     :   August 12, 2013
-Authors     :   John Carmack
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-#ifndef OVR_TimeWarp_h
-#define OVR_TimeWarp_h
+#pragma once
 
 /*
  * Overview:
@@ -32,8 +21,7 @@ const int SCHED_FIFO_PRIORITY_VRTHREAD		= 1;
 const int SCHED_FIFO_PRIORITY_DEVICEMNGR	= 2;
 const int SCHED_FIFO_PRIORITY_TIMEWARP		= 3;
 
-namespace NervGear
-{
+NV_NAMESPACE_BEGIN
 
 enum TimeWarpMode_t
 {
@@ -142,6 +130,6 @@ public:
     virtual pthread_t	warpThread() const = 0;
 };
 
-}		// namespace NervGear
+NV_NAMESPACE_END
 
-#endif	// OVR_TimeWarp_h
+

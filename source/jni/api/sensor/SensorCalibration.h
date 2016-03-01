@@ -1,16 +1,4 @@
-/************************************************************************************
-
-Filename    :   OVR_SensorCalibration.h
-Content     :   Calibration data implementation for the IMU messages
-Created     :   January 28, 2014
-Authors     :   Max Katsev
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
-#ifndef OVR_SensorCalibration_h
-#define OVR_SensorCalibration_h
+#pragma once
 
 #include "Device.h"
 #include "SensorFilter.h"
@@ -18,7 +6,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #define USE_LOCAL_TEMPERATURE_CALIBRATION_STORAGE 1
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 class OffsetInterpolator
 {
@@ -67,5 +55,5 @@ protected:
 #endif
 };
 
-} // namespace NervGear
-#endif //OVR_SensorCalibration_h
+NV_NAMESPACE_END
+

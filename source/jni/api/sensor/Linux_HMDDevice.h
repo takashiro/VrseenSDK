@@ -1,16 +1,6 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   OVR_Linux_HMDDevice.h
-Content     :   Linux HMDDevice implementation
-Created     :   June 17, 2013
-Authors     :   Brant Lewis
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
-#ifndef OVR_Linux_HMDDevice_h
-#define OVR_Linux_HMDDevice_h
+#include "vglobal.h"
 
 #include "Linux_DeviceManager.h"
 #include "Profile.h"
@@ -153,5 +143,4 @@ protected:
 
 }} // namespace NervGear::Linux
 
-#endif // OVR_Linux_HMDDevice_h
 

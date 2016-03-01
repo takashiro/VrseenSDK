@@ -17,7 +17,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "BitFlags.h"
 #include "GlGeometry.h" // For TriangleIndex
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 class OvrDebugLines;
 
@@ -120,6 +120,6 @@ private:
     Array< TriangleIndex >	m_indices;	// indices indicating which vertices make up each triangle
 };
 
-} // namespace NervGear
+NV_NAMESPACE_END
 
 #endif // OVR_CollisionPrimitive_h

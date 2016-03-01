@@ -1,16 +1,6 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   OVR_Linux_DeviceManager.h
-Content     :   Linux-specific DeviceManager header.
-Created     :
-Authors     :
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
-#ifndef OVR_Linux_DeviceManager_h
-#define OVR_Linux_DeviceManager_h
+#include "vglobal.h"
 
 #include "DeviceImpl.h"
 
@@ -107,4 +97,4 @@ private:
 
 }} // namespace Linux::OVR
 
-#endif // OVR_Linux_DeviceManager_h
+

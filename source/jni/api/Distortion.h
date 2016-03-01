@@ -1,22 +1,9 @@
-/************************************************************************************
-
-Filename    :   Distortion.h
-Content     :   Distortion file
-Created     :   September 12, 2014
-Authors     :   John Carmack
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-
-*************************************************************************************/
-#ifndef OVR_Distortion_h
-#define OVR_Distortion_h
+#pragma once
 
 #include "MemBuffer.h"
 #include "HmdInfo.h"
 
-namespace NervGear
-{
+NV_NAMESPACE_BEGIN
 
 /*
  The entire screen is covered with a mesh of verts,
@@ -50,6 +37,6 @@ static const int DISTORTION_BUFFER_MAGIC = 0x56347805;
 MemBuffer BuildDistortionBuffer( const hmdInfoInternal_t & hmdInfo,
 		int eyeBlocksWide, int eyeBlocksHigh );
 
-}	// namespace NervGear
+NV_NAMESPACE_END
 
-#endif	// OVR_Distortion_h
+

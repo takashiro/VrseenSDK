@@ -1,21 +1,11 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   OVR_HIDDeviceImpl.h
-Content     :   Implementation of HIDDevice.
-Created     :   March 7, 2013
-Authors     :   Lee Cooper
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
-#ifndef OVR_HIDDeviceImpl_h
-#define OVR_HIDDeviceImpl_h
+#include "vglobal.h"
 
 //#include "Device.h"
 #include "DeviceImpl.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 //-------------------------------------------------------------------------------------
 class HIDDeviceCreateDesc : public DeviceCreateDesc
@@ -69,7 +59,7 @@ public:
 
             if (this->HandlerRef.GetHandler())
             {
-                MessageDeviceStatus status(handlerMessageType, this, NervGear::DeviceHandle(this->pCreateDesc));
+                MessageDeviceStatus status(handlerMessageType, this, DeviceHandle(this->pCreateDesc));
                 this->HandlerRef.GetHandler()->onMessage(status);
             }
         }
@@ -136,9 +126,9 @@ public:
     {
         enum { BufferSize = 64 };
         UByte Buffer[64];
-        UPInt Size;
+        uint Size;
 
-        WriteData(UByte* data, UPInt size) : Size(size)
+        WriteData(UByte* data, uint size) : Size(size)
         {
             OVR_ASSERT(size <= BufferSize);
             memcpy(Buffer, data, size);
@@ -196,6 +186,4 @@ private:
     Ptr<HIDDevice> InternalDevice;
 };
 
-} // namespace NervGear
-
-#endif
+NV_NAMESPACE_END

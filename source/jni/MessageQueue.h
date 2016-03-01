@@ -1,13 +1,3 @@
-/************************************************************************************
-
-Filename    :   MessageQueue.h
-Content     :   Thread communication by string commands
-Created     :   October 15, 2013
-Authors     :   John Carmack
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
 #pragma once
 
 #include "vglobal.h"

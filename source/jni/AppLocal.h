@@ -1,22 +1,13 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   App.h
-Content     :   Native counterpart to VrActivity
-Created     :   September 30, 2013
-Authors     :   John Carmack
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-#ifndef OVR_AppLocal_h
-#define OVR_AppLocal_h
+#include "vglobal.h"
 
 #include "App.h"
 #include "SoundManager.h"
 #include "GlSetup.h"
 #include "PointTracker.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 class OvrGuiSys;
 class GazeCursor;
@@ -421,6 +412,6 @@ private:
     void                ShutdownFonts();
 };
 
-} // namespace NervGear
+NV_NAMESPACE_END
 
-#endif // OVR_AppLocal_h
+

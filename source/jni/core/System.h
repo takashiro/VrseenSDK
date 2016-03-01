@@ -1,23 +1,11 @@
-/************************************************************************************
+#pragma once
 
-PublicHeader:   OVR
-Filename    :   OVR_System.h
-Content     :   General kernel initialization/cleanup, including that
-                of the memory allocator.
-Created     :   September 19, 2012
-Notes       :
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-
-#ifndef OVR_System_h
-#define OVR_System_h
+#include "vglobal.h"
 
 #include "Allocator.h"
 #include "Log.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 // ***** System Core Initialization class
 
@@ -58,6 +46,4 @@ public:
     static void OVR_CDECL Destroy();
 };
 
-} // OVR
-
-#endif
+NV_NAMESPACE_END

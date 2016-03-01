@@ -1,24 +1,13 @@
-/************************************************************************************
+#pragma once
 
-PublicHeader:   None
-Filename    :   OVR_ThreadCommandQueue.h
-Content     :   Command queue for operations executed on a thread
-Created     :   October 29, 2012
-Author      :   Michael Antonov
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-
-#ifndef OVR_ThreadCommandQueue_h
-#define OVR_ThreadCommandQueue_h
+#include "vglobal.h"
 
 #include "Types.h"
 #include "List.h"
 #include "Atomic.h"
 #include "Threads.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 class ThreadCommand;
 class ThreadCommandQueue;
@@ -50,10 +39,10 @@ public:
     {
         enum { MaxSize = 256 };
 
-        UPInt Size;
+        uint Size;
         union {
             UByte Buffer[MaxSize];
-            UPInt Align;
+            uint Align;
         };
 
         ThreadCommand* toCommand() const { return (ThreadCommand*)Buffer; }
@@ -65,7 +54,7 @@ public:
         void        InitFromBuffer(void* data);
 
         bool        HasCommand() const  { return Size != 0; }
-        UPInt       GetSize() const     { return Size; }
+        uint       GetSize() const     { return Size; }
         bool        NeedsWait() const   { return toCommand()->NeedsWait(); }
         NotifyEvent* GetEvent() const   { return toCommand()->pEvent; }
 
@@ -79,12 +68,12 @@ public:
     bool         ExitFlag; // Marks the last exit command.
     NotifyEvent* pEvent;
 
-    ThreadCommand(UPInt size, bool waitFlag, bool exitFlag = false)
+    ThreadCommand(uint size, bool waitFlag, bool exitFlag = false)
         : Size((UInt16)size), WaitFlag(waitFlag), ExitFlag(exitFlag), pEvent(0) { }
     virtual ~ThreadCommand() { }
 
     bool          NeedsWait() const { return WaitFlag; }
-    UPInt         GetSize() const   { return Size; }
+    uint         GetSize() const   { return Size; }
 
     virtual void            Execute() const = 0;
     // Copy constructor used for serializing this to memory buffer.
@@ -301,4 +290,4 @@ private:
 
 }
 
-#endif // OVR_ThreadCommandQueue_h
+

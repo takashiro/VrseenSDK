@@ -60,7 +60,7 @@ void ModelManager::OneTimeShutdown()
 
 	// Free GL resources
 
-    for( UPInt i = 0; i < Theaters.size(); i++ )
+    for( uint i = 0; i < Theaters.size(); i++ )
 	{
 		delete Theaters[ i ];
 	}
@@ -233,7 +233,7 @@ SceneDef * ModelManager::LoadScene( const char *sceneFilename, bool useDynamicPr
 	return def;
 }
 
-const SceneDef & ModelManager::GetTheater( UPInt index ) const
+const SceneDef & ModelManager::GetTheater( uint index ) const
 {
     if ( index < Theaters.size() )
 	{
