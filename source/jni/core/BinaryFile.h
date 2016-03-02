@@ -9,8 +9,6 @@
 	This is a simple helper class to read binary data next to a JSON file.
 */
 
-#pragma once
-
 NV_NAMESPACE_BEGIN
 
 class BinaryReader
