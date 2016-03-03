@@ -117,12 +117,6 @@ const char* ScanPathProtocol(const char* url)
 //--------------------------------------------------------------------
 // ***** String Path API implementation
 
-bool VString::HasExtension(const char* path)
-{
-    const char* ext = 0;
-    ScanFilePath(path, 0, &ext);
-    return ext != 0;
-}
 bool VString::HasProtocol(const char* path)
 {
     return ScanPathProtocol(path) != 0;
@@ -162,13 +156,6 @@ String  String::GetFilename2() const
     return String(filename);
 }
 #endif
-
-VString  VString::extension() const
-{
-    const char* ext = 0;
-    ScanFilePath(toCString(), 0, &ext);
-    return VString(ext);
-}
 
 void VString::stripExtension()
 {

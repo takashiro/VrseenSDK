@@ -18,6 +18,8 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include <dirent.h>
 #include <fstream>
 
+#include <VPath.h>
+
 #include "String_Utils.h"
 #include "VJson.h"
 
@@ -321,7 +323,7 @@ void MovieManager::MoviesInDirectory( Array<VString> &movies, const char * dirNa
 	        }
 
 			VString filename = entry->d_name;
-            VString ext = filename.extension().toLower();
+            VString ext = VPath(filename).extension().toLower();
 			if ( IsSupportedMovieFormat( ext ) )
 			{
 				VString fullpath = dirName;

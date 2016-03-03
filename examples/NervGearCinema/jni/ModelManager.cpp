@@ -19,6 +19,8 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "CinemaApp.h"
 #include "PackageFiles.h"
 
+#include <VPath.h>
+
 
 namespace OculusCinema {
 
@@ -119,7 +121,7 @@ void ModelManager::ScanDirectoryForScenes( const char * directory, bool useDynam
 		struct dirent * entry;
 		while( ( entry = readdir( dir ) ) != NULL ) {
 			VString filename = entry->d_name;
-            VString ext = filename.extension().toLower();
+            VString ext = VPath(filename).extension().toLower();
 			if ( ( ext == ".ovrscene" ) )
 			{
 				VString fullpath = directory;

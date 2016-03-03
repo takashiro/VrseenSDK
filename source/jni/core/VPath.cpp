@@ -35,4 +35,46 @@ bool VPath::isAbsolute() const
     return false;
 }
 
+bool VPath::hasExtension() const
+{
+    uint i = size() - 1;
+    forever {
+        if (at(i) == '/' || at(i) == '\\') {
+            return false;
+        }
+
+        if (at(i) == '.') {
+            return true;
+        }
+
+        if (i > 0) {
+            i--;
+        } else {
+            return false;
+        }
+    }
+    return false;
+}
+
+VString VPath::extension() const
+{
+    uint i = size() - 1;
+    forever {
+        if (at(i) == '/' || at(i) == '\\') {
+            return VString();
+        }
+
+        if (at(i) == '.') {
+            return mid(i + 1);
+        }
+
+        if (i > 0) {
+            i--;
+        } else {
+            return VString();
+        }
+    }
+    return VString();
+}
+
 NV_NAMESPACE_END

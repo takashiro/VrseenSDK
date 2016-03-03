@@ -13,6 +13,9 @@ public:
     VPath(const VPath &path) : VString(path.data(), path.size()) {}
 
     bool isAbsolute() const;
+
+    bool hasExtension() const;
+    VString extension() const;
 };
 
 NV_NAMESPACE_END

@@ -11,6 +11,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "GlTexture.h"
 
+#include "VPath.h"
 #include "OVR.h"
 #include "SysFile.h"
 #include "Android/GlUtils.h"
@@ -1032,7 +1033,7 @@ GlTexture LoadTextureKTX( const char * fileName, const unsigned char * buffer, c
 GlTexture LoadTextureFromBuffer( const char * fileName, const MemBuffer & buffer,
 		const TextureFlags_t & flags, int & width, int & height )
 {
-	const VString ext = VString( fileName ).extension().toLower();
+	const VString ext = VPath(VString(fileName)).extension().toLower();
 
     // LOG( "Loading texture buffer %s (%s), length %i", fileName, ext.toCString(), buffer.Length );
 

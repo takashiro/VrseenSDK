@@ -21,6 +21,14 @@ void test()
     {
         VPath path("D:/Project/NervGear");
         assert(path.isAbsolute());
+        assert(!path.hasExtension());
+        assert(path.extension().isEmpty());
+    }
+
+    {
+        VPath path("Project/NervGear.git");
+        assert(!path.isAbsolute());
+        assert(path.extension() == "git");
     }
 }
 

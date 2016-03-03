@@ -45,7 +45,7 @@ public:
 
     void remove(uint index, uint length = 1) { basic_string::erase(index, length); }
 
-    VString mid(uint from, uint length = 0) const { return substr(from, length); }
+    VString mid(uint from, uint length = 0) const { return substr(from, length ? length : size() - from); }
     VString range(uint start, uint end) const { return mid(start, end - start); }
     VString left(uint count) const { return mid(0, count); }
     VString right(uint count) const { return mid(size() - count, count); }
@@ -67,16 +67,13 @@ public:
 
     void stripTrailing(const char *str);
 
-    static bool HasExtension(const char* path);
     static bool HasProtocol(const char* path);
 
-    bool    hasExtension() const    { return HasExtension(toCString()); }
     bool    hHasProtocol() const     { return HasProtocol(toCString()); }
 
     VString  protocol() const;    // Returns protocol, if any, with trailing '://'.
     VString  path() const;        // Returns path with trailing '/'.
     VString  fileName() const;    // Returns filename, including extension.
-    VString  extension() const;   // Returns extension with a dot.
 
     void    stripProtocol();        // Strips front protocol, if any, from the string.
     void    stripExtension();       // Strips off trailing extension.
