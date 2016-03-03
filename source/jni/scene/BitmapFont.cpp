@@ -29,7 +29,7 @@
 #include <sstream>
 
 #include "UTF8Util.h"
-#include "VString.h"
+#include "VPath.h"
 #include "VJson.h"
 #include "Android/GlUtils.h"
 #include "Android/LogUtils.h"
@@ -752,7 +752,7 @@ bool BitmapFontLocal::Load(const VString &languagePackageName, const VString &fo
 
 	// strip any path from the image file name path and prepend the path from the .fnt file -- i.e. always
 	// require them to be loaded from the same directory.
-    VString baseName = VString(FontInfo.ImageFileName).fileName();
+    VString baseName = VPath(FontInfo.ImageFileName).fileName();
     LOG( "fontInfoFileName = %s", fontInfoFileName.toCString());
 	LOG( "image baseName = %s", baseName.toCString());
 

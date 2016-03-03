@@ -1033,7 +1033,7 @@ GlTexture LoadTextureKTX( const char * fileName, const unsigned char * buffer, c
 GlTexture LoadTextureFromBuffer( const char * fileName, const MemBuffer & buffer,
 		const TextureFlags_t & flags, int & width, int & height )
 {
-	const VString ext = VPath(VString(fileName)).extension().toLower();
+	const VString ext = VPath(fileName).extension().toLower();
 
     // LOG( "Loading texture buffer %s (%s), length %i", fileName, ext.toCString(), buffer.Length );
 

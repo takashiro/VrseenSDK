@@ -5,6 +5,7 @@
 
 #include <string>
 #include <string.h>
+#include <iostream>
 
 NV_NAMESPACE_BEGIN
 
@@ -73,7 +74,6 @@ public:
 
     VString  protocol() const;    // Returns protocol, if any, with trailing '://'.
     VString  path() const;        // Returns path with trailing '/'.
-    VString  fileName() const;    // Returns filename, including extension.
 
     void    stripProtocol();        // Strips front protocol, if any, from the string.
     void    stripExtension();       // Strips off trailing extension.
@@ -107,6 +107,8 @@ public:
 
     static VString number(int num);
     int toInt() const;
+
+    friend std::ostream &operator << (std::ostream &out, const VString &str) { out << str.toStdString(); return out; }
 };
 
 NV_NAMESPACE_END

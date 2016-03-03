@@ -23,12 +23,16 @@ void test()
         assert(path.isAbsolute());
         assert(!path.hasExtension());
         assert(path.extension().isEmpty());
+        assert(path.fileName() == path.baseName());
     }
 
     {
         VPath path("Project/NervGear.git");
         assert(!path.isAbsolute());
         assert(path.extension() == "git");
+        assert(path.fileName() == "NervGear.git");
+        std::cout << path.baseName() << std::endl;
+        assert(path.baseName() == "NervGear");
     }
 }
 

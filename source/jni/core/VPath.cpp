@@ -77,4 +77,43 @@ VString VPath::extension() const
     return VString();
 }
 
+VString VPath::fileName() const
+{
+    uint i = size() - 1;
+    forever {
+        if (at(i) == '/' || at(i) == '\\') {
+            return mid(i + 1);
+        }
+
+        if (i > 0) {
+            i--;
+        } else {
+            return VString();
+        }
+    }
+    return VString();
+}
+
+VString VPath::baseName() const
+{
+    VString fileName = this->fileName();
+    if (fileName.isEmpty()) {
+        return fileName;
+    }
+
+    uint i = fileName.size() - 1;
+    forever {
+        if (fileName.at(i) == '.') {
+            return fileName.mid(0, i);
+        }
+
+        if (i > 0) {
+            i--;
+        } else {
+            return fileName;
+        }
+    }
+    return fileName;
+}
+
 NV_NAMESPACE_END

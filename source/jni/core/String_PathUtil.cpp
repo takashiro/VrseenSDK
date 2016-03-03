@@ -140,13 +140,6 @@ VString  VString::protocol() const
     return VString(toCString(), protocolEnd ? (protocolEnd-toCString()) : 0);
 }
 
-VString  VString::fileName() const
-{
-    const char* filename = 0;
-    ScanFilePath(toCString(), &filename, 0);
-    return VString(filename);
-}
-
 // FIXME: get rid of this when ScanFilePath is fixed
 #if 0
 String  String::GetFilename2() const

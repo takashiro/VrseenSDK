@@ -16,6 +16,9 @@ public:
 
     bool hasExtension() const;
     VString extension() const;
+
+    VString fileName() const;
+    VString baseName() const;
 };
 
 NV_NAMESPACE_END
