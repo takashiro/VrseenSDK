@@ -221,21 +221,17 @@ VString  VString::extension() const
     return VString(ext);
 }
 
-void    VString::stripExtension()
+void VString::stripExtension()
 {
-    const char* ext = 0;
-    ScanFilePath(toCString(), 0, &ext);
-    if (ext)
-    {
-        *this = VString(toCString(), ext-toCString());
-    }
+    uint dot = rfind('.');
+    remove(dot, size() - dot);
 }
 
 void    VString::stripProtocol()
 {
     const char* protocol = ScanPathProtocol(toCString());
     if (protocol)
-        assign(protocol, strlen(protocol));
+        assign(protocol);
 }
 #if 0
 void    String::StripPath()

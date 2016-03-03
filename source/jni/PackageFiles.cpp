@@ -38,7 +38,7 @@ void *	ovr_GetApplicationPackageFile()
 	return packageZipFile;
 }
 
-void ovr_OpenApplicationPackage( const char * packageCodePath )
+void ovr_OpenApplicationPackage(const VString &packageCodePath )
 {
 	if ( packageZipFile )
 	{
@@ -47,9 +47,9 @@ void ovr_OpenApplicationPackage( const char * packageCodePath )
 	packageZipFile = ovr_OpenOtherApplicationPackage( packageCodePath );
 }
 
-void* ovr_OpenOtherApplicationPackage( const char * packageCodePath )
+void* ovr_OpenOtherApplicationPackage( const VString &packageCodePath )
 {
-	void * zipFile = unzOpen( packageCodePath );
+    void * zipFile = unzOpen( packageCodePath.toCString() );
 
 // enable the following block if you need to see the list of files in the application package
 // This is useful for finding a file added in one of the res/ sub-folders (necesary if you want
@@ -133,8 +133,9 @@ bool ovr_ReadFileFromApplicationPackage( const char * nameInZip, MemBufferFile &
 }
 
 // This is DEFINITELY NOT thread safe! 
-bool ovr_ReadFileFromOtherApplicationPackage( void * zipFile, const char * nameInZip, int & length, void * & buffer )
+bool ovr_ReadFileFromOtherApplicationPackage( void * zipFile, const char *nameInZip, int & length, void * & buffer )
 {
+    LOG("nameInZip is %s", nameInZip);
 	length = 0;
 	buffer = NULL;
 	if ( zipFile == 0 )
@@ -181,12 +182,12 @@ bool ovr_ReadFileFromOtherApplicationPackage( void * zipFile, const char * nameI
 	return true;
 }
 
-unsigned int LoadTextureFromApplicationPackage( const char * nameInZip, const TextureFlags_t & flags, int & width, int & height )
+unsigned int LoadTextureFromApplicationPackage( const VString &nameInZip, const TextureFlags_t & flags, int & width, int & height )
 {
 	return LoadTextureFromOtherApplicationPackage( packageZipFile, nameInZip, flags, width, height );
 }
 
-unsigned int LoadTextureFromOtherApplicationPackage( void * zipFile, const char * nameInZip, const TextureFlags_t & flags, int & width, int & height )
+unsigned int LoadTextureFromOtherApplicationPackage( void * zipFile, const VString &nameInZip, const TextureFlags_t & flags, int & width, int & height )
 {
 	width = 0;
 	height = 0;
@@ -198,12 +199,12 @@ unsigned int LoadTextureFromOtherApplicationPackage( void * zipFile, const char 
 	void * 	buffer;
 	int		bufferLength;
 
-	ovr_ReadFileFromOtherApplicationPackage( zipFile, nameInZip, bufferLength, buffer );
+    ovr_ReadFileFromOtherApplicationPackage( zipFile, nameInZip.toCString(), bufferLength, buffer );
 	if ( !buffer )
 	{
 		return 0;
 	}
-	unsigned texId = LoadTextureFromBuffer( nameInZip, MemBuffer( buffer, bufferLength ),
+    unsigned texId = LoadTextureFromBuffer( nameInZip.toCString(), MemBuffer( buffer, bufferLength ),
 			flags, width, height );
 	free( buffer );
 	return texId;

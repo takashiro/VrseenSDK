@@ -277,8 +277,10 @@ NV_NAMESPACE_END
 #  define OVR_DEBUG_BREAK       do { *((int *) 0) = 1; } while(0)
 #endif
 
+#include <android/log.h>
+
 // This will cause compiler breakpoint
-#define OVR_ASSERT(p)           do { if (!(p))  { OVR_DEBUG_BREAK; } } while(0)
+#define OVR_ASSERT(p)           do { if (!(p))  { __android_log_write(ANDROID_LOG_ERROR, "NervGear", #p); OVR_DEBUG_BREAK; } } while(0)
 
 #endif // OVR_BUILD_DEBUG
 

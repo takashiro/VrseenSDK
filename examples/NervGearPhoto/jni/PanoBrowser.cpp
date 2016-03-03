@@ -150,7 +150,7 @@ VString PanoBrowser::getPanelTitle( const OvrMetaDatum & panelData ) const
 	{
 		// look first in our own locale table for titles that were downloaded at run-time.
 		VString outStr;
-        VrLocale::GetString(  m_app->GetVrJni(), m_app->GetJavaObject(), photosDatum->title, photosDatum->title, outStr );
+        VrLocale::GetString(  m_app->GetVrJni(), m_app->GetJavaObject(), photosDatum->title.toCString(), photosDatum->title.toCString(), outStr );
 		return outStr;
 	}
 	return VString();
@@ -428,7 +428,7 @@ VString PanoBrowser::thumbName( const VString & s )
 {
 	VString	ts( s );
     ts.stripTrailing( ".x" );
-	ts = NervGear::StringUtils::SetFileExtensionString( ts, ".thm" );
+    ts = NervGear::StringUtils::SetFileExtensionString( ts, ".thm" );
 	//ts += ".jpg";
 	return ts;
 }

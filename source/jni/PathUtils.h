@@ -66,8 +66,8 @@ NV_NAMESPACE_BEGIN
 	VString	GetFullPath		( const Array< VString > & searchPaths, const VString & relativePath );
 
 	// Return false if it fails to find the relativePath in any of the search locations
-	bool	GetFullPath		( const Array< VString > & searchPaths, char const * relativePath, 	char * outPath, 	const int outMaxLen );
-	bool	GetFullPath		( const Array< VString > & searchPaths, char const * relativePath, 	VString & outPath 						);
+	bool	GetFullPath		(const Array< VString > & searchPaths, const VString &relativePath, 	char * outPath, 	const int outMaxLen );
+	bool	GetFullPath		(const Array< VString > & searchPaths, const VString &relativePath, 	VString & outPath 						);
 
 	bool	ToRelativePath	( const Array< VString > & searchPaths, char const * fullPath, 		char * outPath, 	const int outMaxLen );
 	bool	ToRelativePath	( const Array< VString > & searchPaths, char const * fullPath, 		VString & outPath 						);

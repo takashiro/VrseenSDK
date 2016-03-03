@@ -88,7 +88,7 @@ private:
 			VString attribution = CurrentPano->title + "\n";
 			attribution += "by ";
 			attribution += CurrentPano->author;
-			self->setText( attribution );
+            self->setText(attribution);
 		}
 	}
 

@@ -8,15 +8,12 @@
 
 #include "VSharedPointer.h"
 
-#pragma once
-
 NV_NAMESPACE_BEGIN
 
 class Json;
 class JsonData;
 typedef std::vector<Json> JsonArray;
 typedef std::map<std::string, Json> JsonObject;
-
 
 class Json
 {
@@ -33,11 +30,12 @@ public:
 	};
 
 	Json();
-	explicit Json(bool value);
-	Json(double value);
+    Json(bool value);
+    Json(int value);
+    Json(double value);
 	Json(const std::string &value);
-        Json(const char *value);
-        Json(Type type);
+    Json(const char *value);
+    Json(Type type);
 
 	Type type() const;
 	bool isValid() const { return type() != Json::None; }
@@ -124,7 +122,7 @@ public:
         cloneData(source);
     }
 
-    JsonData &operator=(const JsonData &source)
+    const JsonData &operator = (const JsonData &source)
     {
         cloneData(source);
         return *this;
@@ -134,4 +132,4 @@ private:
     void cloneData(const JsonData &source);
 };
 
-}
+NV_NAMESPACE_END

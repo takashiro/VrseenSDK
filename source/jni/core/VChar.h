@@ -9,43 +9,49 @@ NV_NAMESPACE_BEGIN
 class VChar
 {
 public:
-    VChar() { value = '\0'; }
-    VChar(char ch) { value = ch; }
-    VChar(wchar_t ch) { value = ch; }
-    VChar(short ch) { value = ch; }
-    VChar(ushort ch) { value = ch; }
-    VChar(int ch) { value = ch; }
-    VChar(uint ch) { value = ch; }
+    VChar() { m_value = '\0'; }
+    VChar(char ch) { m_value = ch; }
+    VChar(uchar ch) { m_value = ch; }
+    VChar(short ch) { m_value = ch; }
+    VChar(ushort ch) { m_value = ch; }
+    VChar(int ch) { m_value = ch; }
+    VChar(uint ch) { m_value = ch; }
+    VChar(const VChar &ch) { m_value = ch.m_value; }
 
-    operator char() const { return value; }
-    operator wchar_t() const { return value; }
-    operator short() const { return value; }
-    operator ushort() const { return value; }
-    operator int() const { return value; }
-    operator uint() const { return value; }
+    bool operator == (const VChar &ch) const { return m_value == ch.m_value; }
+    bool operator != (const VChar &ch) const { return m_value != ch.m_value; }
 
-    VChar &operator = (char ch) { value = ch; return *this; }
-    VChar &operator = (wchar_t ch) { value = ch; return *this; }
-    VChar &operator = (short ch) { value = ch; return *this; }
-    VChar &operator = (ushort ch) { value = ch; return *this; }
-    VChar &operator = (int ch) { value = ch; return *this; }
-    VChar &operator = (uint ch) { value = ch; return *this; }
+    bool operator < (const VChar &ch) const { return m_value < ch.m_value; }
+    bool operator <= (const VChar &ch) const { return m_value <= ch.m_value; }
 
-    bool isSpace() const { return isspace(value); }
-    bool isAlpha() const { return isalpha(value); }
-    bool isControl() const { return iscntrl(value); }
-    bool isDigit() const { return isdigit(value); }
-    bool isGraph() const { return isgraph(value); }
-    bool isLower() const { return islower(value); }
-    bool isPrint() const { return isprint(value); }
-    bool isPunct() const { return ispunct(value); }
-    bool isUpper() const { return isupper(value); }
+    bool operator > (const VChar &ch) const { return m_value > ch.m_value; }
+    bool operator >= (const VChar &ch) const { return m_value >= ch.m_value; }
 
-    VChar toLower() const { return tolower(value); }
-    VChar toUpper() const { return toupper(value); }
+    VChar operator++() { return ++m_value; }
+    VChar operator++(int) { return m_value++; }
+
+    VChar operator--() { return --m_value; }
+    VChar operator--(int) { return m_value--; }
+
+    bool isSpace() const { return isspace(m_value); }
+    bool isAlpha() const { return isalpha(m_value); }
+    bool isControl() const { return iscntrl(m_value); }
+    bool isDigit() const { return isdigit(m_value); }
+    bool isGraph() const { return isgraph(m_value); }
+    bool isLower() const { return islower(m_value); }
+    bool isPrint() const { return isprint(m_value); }
+    bool isPunct() const { return ispunct(m_value); }
+    bool isUpper() const { return isupper(m_value); }
+
+    VChar toLower() const { return tolower(m_value); }
+    VChar toUpper() const { return toupper(m_value); }
+    char toLatin1() const { return m_value; }
+
+    short unicode() const { return m_value; }
+    short &unicode() { return m_value; }
 
 private:
-    wchar_t value;
+    short m_value;
 };
 
 NV_NAMESPACE_END

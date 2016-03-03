@@ -222,13 +222,13 @@ namespace StringUtils
 	}
 
 	template < size_t size >
-	inline void SetFileExtension( char (&dest)[size], const char * path, const char * extension )
+    inline void SetFileExtension( char (&dest)[size], const VString &path, const char * extension )
 	{
 		int extensionOffset = -1;
 		int length = 0;
 		for ( int index = 0; path[index] != '\0' && index < (int)size - 1; index++, length++ )
 		{
-			dest[index] = path[index];
+            dest[index] = path[index].toLatin1();
 			if ( path[index] == '.' )
 			{
 				extensionOffset = index;
@@ -261,7 +261,7 @@ namespace StringUtils
 	inline VString GetFileNameString( const char * path ) { char buffer[MAX_PATH_LENGTH]; GetFileName( buffer, path ); return VString( buffer ); }
 	inline VString GetFileBaseString( const char * path ) { char buffer[MAX_PATH_LENGTH]; GetFileBase( buffer, path ); return VString( buffer ); }
 	inline VString GetFileExtensionString( const char * path ) { char buffer[MAX_PATH_LENGTH]; GetFileExtension( buffer, path ); return VString( buffer ); }
-	inline VString SetFileExtensionString( const char * path, const char * extension ) { char buffer[MAX_PATH_LENGTH]; SetFileExtension( buffer, path, extension ); return VString( buffer ); }
+    inline VString SetFileExtensionString( const VString &path, const char * extension ) { char buffer[MAX_PATH_LENGTH]; SetFileExtension( buffer, path, extension ); return VString( buffer ); }
 
 	// String format functor.
 	class Va

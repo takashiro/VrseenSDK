@@ -593,7 +593,7 @@ public:
 	virtual	void				removeFlags( VRMenuObjectFlags_t const & flags ) = 0;
 
     virtual VString const &	text() const = 0;
-	virtual void				setText( char const * text ) = 0;
+    virtual void				setText( const VString &text ) = 0;
 	virtual void				setTextWordWrapped( char const * text, class BitmapFont const & font, float const widthInMeters ) = 0;
 
 	virtual bool				isHilighted() const = 0;

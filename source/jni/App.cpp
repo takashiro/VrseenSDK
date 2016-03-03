@@ -620,8 +620,9 @@ void AppLocal::InitFonts()
 		// reset the locale to english and try to load the font again
         jmethodID setDefaultLocaleId = vrJni->GetMethodID( vrActivityClass, "setDefaultLocale", "()V" );
 		if ( setDefaultLocaleId != NULL )
-		{
-            vrJni->CallObjectMethod( javaObject, setDefaultLocaleId );
+        {
+            LOG("AppLocal::Init CallObjectMethod");
+            vrJni->CallVoidMethod(javaObject, setDefaultLocaleId );
             if ( vrJni->ExceptionOccurred() )
 			{
                 vrJni->ExceptionClear();
@@ -629,8 +630,10 @@ void AppLocal::InitFonts()
 			}
 			// re-get the font name for the new locale
 			VrLocale::GetString( GetVrJni(), GetJavaObject(), "@string/font_name", "efigs.fnt", fontName );
-			fontName.insert( "res/raw/", 0 );
-			// try to load the font
+            LOG(fontName.toCString());
+            fontName.insert( "res/raw/", 0 );
+            LOG(fontName.toCString());
+            // try to load the font
             if ( !defaultFont->Load( languagePackagePath.toCString(), fontName ) )
 			{
 				FAIL( "Failed to load font for default locale!" );
@@ -2597,7 +2600,7 @@ void AppLocal::SetRenderMonoMode( bool const mono )
 
 char const * AppLocal::GetPackageCodePath() const
 {
-	return packageCodePath;
+    return packageCodePath.toCString();
 }
 
 Matrix4f const & AppLocal::GetLastViewMatrix() const
@@ -2793,7 +2796,7 @@ bool AppLocal::GetShowVolumePopup() const
 
 const char * AppLocal::GetPackageName( ) const
 {
-	return packageName;
+    return packageName.toCString();
 }
 
 bool AppLocal::IsWifiConnected() const

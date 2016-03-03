@@ -402,7 +402,7 @@ OCULUS_EXPORT void OVR_Platform_StartUI( const char * commandString )
 	int h = 0;
 	// Note that the extension used on the filename passed here is important! It must match the type
 	// of file that was embedded.
-	up.ErrorTexture = LoadTextureFromBuffer( imageName, memBuffer, NervGear::TextureFlags_t(), up.ErrorTextureSize, h );
+    up.ErrorTexture = LoadTextureFromBuffer( imageName.toCString(), memBuffer, NervGear::TextureFlags_t(), up.ErrorTextureSize, h );
 	OVR_ASSERT( up.ErrorTextureSize == h );
 
 	up.ErrorMessageEndTime = ovr_GetTimeInSeconds() + 7.5;

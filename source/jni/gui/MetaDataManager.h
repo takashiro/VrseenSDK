@@ -68,13 +68,13 @@ public:
     void					processRemoteMetaFile( const char * metaFileString, const int startInsertionIndex /* index to insert remote categories*/ );
 
 	// Rename a category after construction
-    void					renameCategory( const char * currentTag, const char * newName );
+    void					renameCategory( const VString &currentTag, const VString &newName );
 
 	// Adds or removes tag and returns action taken
     TagAction				toggleTag( OvrMetaDatum * data, const VString & tag );
 
 	// Returns metaData file if one is found, otherwise creates one using the default meta.json in the assets folder
-    Json createOrGetStoredMetaFile( const char * appFileStoragePath, const char * metaFile );
+    Json createOrGetStoredMetaFile(const VString &appFileStoragePath, const char * metaFile );
     void					addCategory( const VString & name );
 
     const Array< Category > categories() const 							{ return m_categories; }

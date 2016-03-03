@@ -161,9 +161,9 @@ ModelGlPrograms OvrSceneView::GetDefaultGLPrograms()
 	return programs;
 }
 
-void OvrSceneView::LoadWorldModel( const char * sceneFileName, const MaterialParms & materialParms )
+void OvrSceneView::LoadWorldModel(const VString &sceneFileName, const MaterialParms & materialParms )
 {
-	LOG( "OvrSceneView::LoadScene( %s )", sceneFileName );
+    LOG( "OvrSceneView::LoadScene( %s )", sceneFileName.toCString() );
 
 	if ( GlPrograms.ProgSingleTexture == NULL )
 	{
@@ -171,7 +171,7 @@ void OvrSceneView::LoadWorldModel( const char * sceneFileName, const MaterialPar
 	}
 
 	// Load the scene we are going to draw
-	ModelFile * model = LoadModelFile( sceneFileName, GlPrograms, materialParms );
+    ModelFile * model = LoadModelFile( sceneFileName.toCString(), GlPrograms, materialParms );
 
 	SetWorldModel( *model );
 

@@ -271,7 +271,7 @@ VString private_GetXliffFormattedString( const VString & inXliffStr, ... )
 			}
 			else
 			{
-				LOG( "%s has invalid xliff format - has unsupported format specifier.", (const char*)(inXliffStr) );
+                LOG( "%s has invalid xliff format - has unsupported format specifier.", inXliffStr.toCString() );
 				return inXliffStr;
 			}
 		}
@@ -294,7 +294,7 @@ VString VrLocale::GetXliffFormattedString( const VString & inXliffStr, const cha
 	return private_GetXliffFormattedString( inXliffStr, arg1, arg2 );
 }
 
-NervGear::VString VrLocale::GetXliffFormattedString( const VString & inXliffStr, const char * arg1, const char * arg2, const char * arg3 )
+VString VrLocale::GetXliffFormattedString( const VString & inXliffStr, const char * arg1, const char * arg2, const char * arg3 )
 {
 	return private_GetXliffFormattedString( inXliffStr, arg1, arg2, arg3 );
 }

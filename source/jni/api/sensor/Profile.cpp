@@ -101,10 +101,10 @@ VString GetBaseOVRPath(bool create_dir)
 
     if (create_dir)
     {   // Create the Oculus directory if it doesn't exist
-        DIR* dir = opendir(path);
+        DIR* dir = opendir(path.toCString());
         if (dir == NULL)
         {
-            mkdir(path, S_IRWXU | S_IRWXG | S_IRWXO);
+            mkdir(path.toCString(), S_IRWXU | S_IRWXG | S_IRWXO);
         }
         else
         {
@@ -217,7 +217,7 @@ void ProfileManager::LoadCache(ProfileType device)
 
     VString path = GetProfilePath(false);
 
-    Json root = Json::Load(path);
+    Json root = Json::Load(path.toCString());
     if (!root.isObject() || root.size() < 3)
         return;
 
@@ -411,7 +411,7 @@ void ProfileManager::SaveCache()
     root.insert("Profiles", profiles);
 
     // Save the profile to disk
-    std::ofstream fp(path, std::ios::binary);
+    std::ofstream fp(path.toCString(), std::ios::binary);
     fp << root;
 }
 

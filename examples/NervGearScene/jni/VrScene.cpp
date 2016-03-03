@@ -101,7 +101,7 @@ void VrScene::LoadScene( const char * path )
 	MaterialParms materialParms;
 	materialParms.UseSrgbTextureFormats = ( app->GetVrParms().colorFormat == COLOR_8888_sRGB );
 	LOG( "VrScene::LoadScene loading %s", SceneFile.toCString() );
-	Scene.LoadWorldModel( SceneFile, materialParms );
+    Scene.LoadWorldModel( SceneFile, materialParms );
 	ModelLoaded = true; 
 	LOG( "VrScene::LoadScene model is loaded" );
 	Scene.YawOffset = -M_PI / 2;
@@ -136,7 +136,7 @@ void VrScene::ReloadScene()
 
 	MaterialParms materialParms;
 	materialParms.UseSrgbTextureFormats = ( app->GetVrParms().colorFormat == COLOR_8888_sRGB );
-	Scene.LoadWorldModel( SceneFile, materialParms );
+    Scene.LoadWorldModel( SceneFile, materialParms );
 
 	Scene.YawOffset = yaw;
 	Scene.FootPos = pos;

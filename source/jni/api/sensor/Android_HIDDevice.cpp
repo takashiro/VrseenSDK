@@ -137,7 +137,7 @@ bool HIDDeviceManager::initVendorProduct(int deviceHandle, HIDDeviceDesc* desc) 
 }
 
 //-----------------------------------------------------------------------------
-bool HIDDeviceManager::getStringProperty(const VString& devNodePath, const char* propertyName, NervGear::VString* pResult) const
+bool HIDDeviceManager::getStringProperty(const VString &devNodePath, const char* propertyName, NervGear::VString* pResult) const
 {
 	// LDC - In order to get device data on Android we walk the sysfs folder hierarchy. Normally this would be handled by
 	// libudev but that doesn't seem available through the ndk. For the device '/dev/ovr0' we find the physical
@@ -148,7 +148,7 @@ bool HIDDeviceManager::getStringProperty(const VString& devNodePath, const char*
 
 	// Create the command string using the last character of the device path.
 	char cmdStr[1024];
-	sprintf(cmdStr, "cd -P /sys/class/ovr/ovr%c; pwd", devNodePath[devNodePath.length()-1]);
+    sprintf(cmdStr, "cd -P /sys/class/ovr/ovr%c; pwd", devNodePath.at(devNodePath.length() - 1).toLatin1());
 
 	// Execute the command and get stdout.
 	FILE* cmdFile = popen(cmdStr, "r");
@@ -684,7 +684,7 @@ bool HIDDevice::OnDeviceAddedNotification(	const VString& devNodePath,
 	VString devicePath = devDesc->Path;
 
     // Is this the correct device?
-    if (DevDesc.Path.CompareNoCase(devicePath) != 0)
+    if (DevDesc.Path.icompare(devicePath) != 0)
     {
         return false;
     }
@@ -718,7 +718,7 @@ bool HIDDevice::OnDeviceNotification(MessageType messageType,
 	VString devicePath = devDesc->Path;
 
     // Is this the correct device?
-    if (DevDesc.Path.CompareNoCase(devicePath) != 0)
+    if (DevDesc.Path.icompare(devicePath) != 0)
     {
         return false;
     }
@@ -824,7 +824,7 @@ void HIDDeviceManager::scanForDevices(bool firstScan)
     	for (Array<VString>::Iterator itScanned = ScannedDevicePaths.begin();
         		itScanned != ScannedDevicePaths.end(); ++itScanned)
     	{
-        	if (devNodePath.CompareNoCase(*itScanned) == 0)
+        	if (devNodePath.icompare(*itScanned) == 0)
         	{
         		found = true;
         		break;

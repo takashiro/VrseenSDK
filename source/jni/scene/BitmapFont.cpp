@@ -112,7 +112,7 @@ public:
 					1.0f), CenterOffset(0.0f), MaxAscent(0.0f), MaxDescent(0.0f) {
 	}
 
-	bool Load(OvrApkFile const & languagePackageFile, char const * fileName);
+    bool Load(OvrApkFile const & languagePackageFile, const VString &fileName);
 	FontGlyphType const & GlyphForCharCode(uint32_t const charCode) const;
 
 	std::string FontName; // name of the font (not necessarily the file name)
@@ -133,7 +133,7 @@ public:
 	NervGear::Array<int32_t> CharCodeMap; // index by character code to get the index of a glyph for the character
 
 private:
-	bool LoadFromPackage(void* packageFile, char const * fileName);
+    bool LoadFromPackage(void* packageFile, const VString &fileName);
 	bool LoadFromBuffer(void const * buffer, size_t const bufferSize);
 };
 
@@ -154,8 +154,7 @@ public:
 		Texture = 0;
 	}
 
-	virtual bool Load(const char * languagePackageFileName,
-			char const * fontInfoFileName);
+    bool Load(const VString &languagePackageFileName, const VString &fontInfoFileName) override;
 
 	// Calculates the native (unscaled) width of the text string. Line endings are ignored.
 	virtual float CalcTextWidth(char const * text) const;
@@ -401,11 +400,12 @@ static size_t FileSize(FILE * f) {
 
 //==============================
 // FontInfoType::LoadFromPackage
-bool FontInfoType::LoadFromPackage(void* packageFile, char const * fileName) {
+bool FontInfoType::LoadFromPackage(void* packageFile, const VString &fileName) {
 	int length = 0;
 	void * packageBuffer = NULL;
 
-	ovr_ReadFileFromOtherApplicationPackage(packageFile, fileName, length,
+    LOG("fileName is %s", fileName.toCString());
+    ovr_ReadFileFromOtherApplicationPackage(packageFile, fileName.toCString(), length,
 			packageBuffer);
 	if (packageBuffer == NULL) {
 		return false;
@@ -430,7 +430,7 @@ bool FontInfoType::LoadFromPackage(void* packageFile, char const * fileName) {
 //==============================
 // FontInfoType::Load
 bool FontInfoType::Load(OvrApkFile const & languagePackageFile,
-		char const * fileName) {
+        const VString &fileName) {
 	if (languagePackageFile && LoadFromPackage(languagePackageFile, fileName)) {
 		return true;
 	}
@@ -713,7 +713,7 @@ static void StripPath(char const * path, char * outName, size_t const outSize) {
 
 static void StripFileName(char const * path, char * outPath,
 		size_t const outSize) {
-	size_t n = strlen(path);
+    size_t n = strlen(path);
 	char const * fnameStart = NULL;
 	for (int i = n - 1; i >= 0; --i) {
 		if (path[i] == PATH_SEPARATOR) {
@@ -742,8 +742,7 @@ static bool ExtensionMatches(char const * fileName, char const * ext) {
 
 //==============================
 // BitmapFontLocal::Load
-bool BitmapFontLocal::Load(char const * languagePackageName,
-		char const * fontInfoFileName) {
+bool BitmapFontLocal::Load(const VString &languagePackageName, const VString &fontInfoFileName) {
 	OvrApkFile languagePackageFile(
 			ovr_OpenOtherApplicationPackage(languagePackageName));
 	if (!FontInfo.Load(languagePackageFile, fontInfoFileName)) {
@@ -752,19 +751,20 @@ bool BitmapFontLocal::Load(char const * languagePackageName,
 
 	// strip any path from the image file name path and prepend the path from the .fnt file -- i.e. always
 	// require them to be loaded from the same directory.
-    VString baseName = VString(FontInfo.ImageFileName.c_str()).fileName();
-	LOG( "fontInfoFileName = %s", fontInfoFileName);
+    VString baseName = VString(FontInfo.ImageFileName).fileName();
+    LOG( "fontInfoFileName = %s", fontInfoFileName.toCString());
 	LOG( "image baseName = %s", baseName.toCString());
 
 	char imagePath[512];
-	StripFileName(fontInfoFileName, imagePath, sizeof(imagePath));
+    StripFileName(fontInfoFileName.toCString(), imagePath, sizeof(imagePath));
 	LOG( "imagePath = %s", imagePath);
 
 	char imageFileName[512];
-	StripPath(fontInfoFileName, imageFileName, sizeof(imageFileName));
+    StripPath(fontInfoFileName.toCString(), imageFileName, sizeof(imageFileName));
 	LOG( "imageFileName = %s", imageFileName);
 
 	AppendPath(imagePath, sizeof(imagePath), baseName.toCString());
+    LOG( "imagePath = %s", imagePath);
 	if (!LoadImage(languagePackageFile, imagePath)) {
 		return false;
 	}
@@ -873,7 +873,7 @@ void BitmapFontLocal::WordWrapText(VString & inOutText, const float widthMeters,
 	double lineWidth = 0.0f;
 	int dontSplitUntilIdx = -1;
 	for (int32_t pos = 0; pos < totalLength; ++pos) {
-        uint32_t charCode = inOutText.at(pos);
+        uint32_t charCode = inOutText.at(pos).unicode();
 
 		// Replace any existing character escapes with space as we recompute where to insert line breaks
 		if (charCode == '\r' || charCode == '\n' || charCode == '\t') {
@@ -890,7 +890,7 @@ void BitmapFontLocal::WordWrapText(VString & inOutText, const float widthMeters,
 			int endPos = pos + curWholeStrLen;
 
 			if (endPos < totalLength) {
-                VString subInStr = inOutText.mid(pos, endPos);
+                VString subInStr = inOutText.range(pos, endPos);
 				if (subInStr == wholeStrsList[i]) {
 					dontSplitUntilIdx = Alg::Max(dontSplitUntilIdx, endPos);
 				}

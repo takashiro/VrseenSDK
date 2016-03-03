@@ -30,13 +30,13 @@ inline Vector3f GetViewMatrixForward( Matrix4f const & m )
 }
 
 // Returns true if the folder has specified permission
-bool HasPermission( const char * fileOrDirName, mode_t mode );
+bool HasPermission(VString fileOrDirName, mode_t mode );
 
 // Returns true if the file exists
-bool FileExists( const char * filename );
+bool FileExists(const VString &filename );
 
 // Returns true if ext is the end of fileName
-bool MatchesExtension( const char * fileName, const char * ext );
+bool MatchesExtension(const VString &file, const char * ext );
 
 int StringCompare( const void *a, const void * b );
 
@@ -60,7 +60,7 @@ VString ExtractFile( const VString & s );
 VString ExtractDirectory( const VString & s );
 
 // Creates all the intermediate directories if they don't exist
-void MakePath( const char * dirPath, mode_t mode );
+void MakePath(const VString &dirPath, mode_t mode );
 
 // Returns true if head equals check plus zero or more characters.
 bool MatchesHead( const char * head, const char * check );

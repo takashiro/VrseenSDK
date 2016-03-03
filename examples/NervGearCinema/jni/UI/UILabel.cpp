@@ -41,7 +41,7 @@ void UILabel::SetText( const VString &text )
 {
 	VRMenuObject * object = GetMenuObject();
 	assert( object );
-    object->setText( text.toCString() );
+    object->setText(text);
 }
 
 void UILabel::SetTextWordWrapped( char const * text, class BitmapFont const & font, float const widthInMeters )

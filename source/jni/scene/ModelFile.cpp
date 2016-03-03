@@ -66,7 +66,7 @@ SurfaceDef * ModelFile::FindNamedSurface( const char * name ) const
 	for ( int j = 0; j < Def.surfaces.sizeInt(); j++ )
 	{
 		const SurfaceDef & sd = Def.surfaces[j];
-		if ( sd.surfaceName.CompareNoCase( name ) == 0 )
+		if ( sd.surfaceName.icompare( name ) == 0 )
 		{
 			LOG( "Found named surface %s", name );
 			return const_cast<SurfaceDef*>(&sd);
@@ -81,7 +81,7 @@ const ModelTexture * ModelFile::FindNamedTexture( const char * name ) const
 	for ( int i = 0; i < Textures.sizeInt(); i++ )
 	{
 		const ModelTexture & st = Textures[i];
-		if ( st.name.CompareNoCase( name ) == 0 )
+		if ( st.name.icompare( name ) == 0 )
 		{
 			LOG( "Found named texture %s", name );
 			return &st;
@@ -96,7 +96,7 @@ const ModelJoint * ModelFile::FindNamedJoint( const char *name ) const
 	for ( int i = 0; i < Joints.sizeInt(); i++ )
 	{
 		const ModelJoint & joint = Joints[i];
-		if ( joint.name.CompareNoCase( name ) == 0 )
+		if ( joint.name.icompare( name ) == 0 )
 		{
 			LOG( "Found named joint %s", name );
 			return &joint;
@@ -111,7 +111,7 @@ const ModelTag * ModelFile::FindNamedTag( const char *name ) const
 	for ( int i = 0; i < Tags.sizeInt(); i++ )
 	{
 		const ModelTag & tag = Tags[i];
-		if ( tag.name.CompareNoCase( name ) == 0 )
+		if ( tag.name.icompare( name ) == 0 )
 		{
 			LOG( "Found named tag %s", name );
 			return &tag;
@@ -235,7 +235,7 @@ void LoadModelFileJson( ModelFile & model,
 						int i = 0;
 						for ( ; i < model.Textures.sizeInt(); i++ )
 						{
-							if ( model.Textures[i].name.CompareNoCase( name.c_str() ) == 0 )
+                            if ( model.Textures[i].name.icompare(name.c_str()) == 0 )
 							{
 								break;
 							}

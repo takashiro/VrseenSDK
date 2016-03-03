@@ -1,7 +1,7 @@
 #pragma once
 
 #include "vglobal.h"
-
+#include "VString.h"
 #include "GlTexture.h"
 
 // The application package is the moral equivalent of the filesystem, so
@@ -38,7 +38,7 @@ private:
 
 // Call this to open a specific package and use the returned handle in calls to functions for
 // loading from other application packages.
-void* ovr_OpenOtherApplicationPackage( const char * packageName );
+void* ovr_OpenOtherApplicationPackage(const VString &packageName );
 
 // Call this to close another application package after loading resources from it.
 void ovr_CloseOtherApplicationPackage( void * & zipFile );
@@ -47,13 +47,13 @@ void ovr_CloseOtherApplicationPackage( void * & zipFile );
 bool ovr_OtherPackageFileExists( void * zipFile, const char * nameInZip );
 
 // Returns NULL buffer if the file is not found.
-bool ovr_ReadFileFromOtherApplicationPackage( void * zipFile, const char * nameInZip, int &length, void * & buffer );
+bool ovr_ReadFileFromOtherApplicationPackage(void * zipFile, const char *nameInZip, int &length, void * & buffer );
 
 // Returns 0 if the file is not found.
 // For a file placed in the project assets folder, nameInZip would be
 // something like "assets/cube.pvr".
 // See GlTexture.h for supported formats.
-unsigned int	LoadTextureFromOtherApplicationPackage( void * zipFile, const char * nameInZip,
+unsigned int	LoadTextureFromOtherApplicationPackage( void * zipFile, const VString &nameInZip,
 									const TextureFlags_t & flags, int & width, int & height );
 
 // Returns NULL if the file is not found.
@@ -70,7 +70,7 @@ ModelFile *		LoadModelFileFromOtherApplicationPackage( void * zipFile, const cha
 void *			ovr_GetApplicationPackageFile();
 
 // This can be called multiple times, but it is ignored after the first one.
-void ovr_OpenApplicationPackage( const char * packageName );
+void ovr_OpenApplicationPackage(const NervGear::VString &packageName );
 
 // These are probably NOT thread safe!
 bool ovr_PackageFileExists( const char * nameInZip );
@@ -85,7 +85,7 @@ bool ovr_ReadFileFromApplicationPackage( const char * nameInZip, MemBufferFile &
 // For a file placed in the project assets folder, nameInZip would be
 // something like "assets/cube.pvr".
 // See GlTexture.h for supported formats.
-unsigned int	LoadTextureFromApplicationPackage( const char * nameInZip,
+unsigned int	LoadTextureFromApplicationPackage(const NervGear::VString &nameInZip,
 									const TextureFlags_t & flags, int & width, int & height );
 
 // Returns NULL if the file is not found.

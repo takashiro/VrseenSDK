@@ -643,7 +643,7 @@ void ovr_BroadcastSystemActivityEvent( ovrMobile * ovr, const char * actionName,
 	JavaString actionString( ovr->Jni, actionName );
 	JavaString packageString( ovr->Jni, toPackageName );
 	JavaString className( ovr->Jni, toClassName );
-	JavaString commandString( ovr->Jni, commandJson );
+    JavaString commandString( ovr->Jni, commandJson.toCString() );
 	JavaString uriString( ovr->Jni, uri == NULL ? "" : uri );
 
 	jmethodID sendIntentFromNativeId = ovr_GetStaticMethodID( ovr->Jni, VrLibClass,

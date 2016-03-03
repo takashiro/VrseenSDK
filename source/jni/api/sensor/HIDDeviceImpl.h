@@ -19,7 +19,7 @@ public:
     virtual bool MatchDeviceByPath(const VString& path)
     {
         // should it be case insensitive?
-        return HIDDesc.Path.CompareNoCase(path) == 0;
+        return HIDDesc.Path.icompare(path) == 0;
     }
 
     HIDDeviceDesc HIDDesc;

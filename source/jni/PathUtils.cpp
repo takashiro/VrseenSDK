@@ -172,30 +172,30 @@ namespace NervGear
 		return VString();
 	}
 
-	bool GetFullPath( const Array<VString>& searchPaths, char const * relativePath, char * outPath, const int outMaxLen )
+    bool GetFullPath( const Array<VString>& searchPaths, const VString &relativePath, char * outPath, const int outMaxLen )
 	{
 		OVR_ASSERT( outPath != NULL && outMaxLen >= 1 );
 
 		if ( FileExists( relativePath ) )
 		{
-			OVR_sprintf( outPath, strlen( relativePath ) + 1, "%s", relativePath );
+            OVR_sprintf( outPath, relativePath.size() + 1, "%s", relativePath.toCString() );
 			return true;
 		}
 
 		for ( int i = 0; i < searchPaths.sizeInt(); ++i )
 		{
-            OVR_sprintf( outPath, outMaxLen, "%s%s", searchPaths[i].toCString(), relativePath );
+            OVR_sprintf( outPath, outMaxLen, "%s%s", searchPaths[i].toCString(), relativePath.toCString() );
 			if ( FileExists( outPath ) )
 			{
 				return true;	// outpath is now set to the full path
 			}
 		}
 		// just return the relative path if we never found the file
-		OVR_sprintf( outPath, outMaxLen, "%s", relativePath );
+        OVR_sprintf( outPath, outMaxLen, "%s", relativePath.toCString() );
 		return false;
 	}
 
-	bool GetFullPath( const Array<VString>& searchPaths, char const * relativePath, VString & outPath )
+    bool GetFullPath( const Array<VString>& searchPaths, const VString &relativePath, VString & outPath )
 	{
 		char largePath[1024];
 		bool result = GetFullPath( searchPaths, relativePath, largePath, sizeof( largePath ) );

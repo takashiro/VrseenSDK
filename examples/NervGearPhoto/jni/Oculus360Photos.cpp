@@ -839,7 +839,7 @@ void Oculus360Photos::SetMenuState( const OvrMenuState state )
 	case MENU_NONE:
 		break;
 	case MENU_BACKGROUND_INIT:
-		startBackgroundPanoLoad( m_startupPano );
+        startBackgroundPanoLoad( m_startupPano.toCString() );
 		break;
 	case MENU_BROWSER:
 #ifdef ENABLE_MENU
@@ -855,7 +855,7 @@ void Oculus360Photos::SetMenuState( const OvrMenuState state )
 #endif
 		m_currentFadeRate = m_fadeOutRate;
 		m_fader.startFadeOut();
-		startBackgroundPanoLoad( m_activePano->url );
+        startBackgroundPanoLoad( m_activePano->url.toCString() );
 
 #ifdef ENABLE_MENU
 		m_panoMenu->updateButtonsState( m_activePano );

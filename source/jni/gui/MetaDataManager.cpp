@@ -83,7 +83,7 @@ void OvrMetaData::initFromDirectory( const char * relativePath, const Array< VSt
 
 		// Add loose file
 		const int dataIndex = m_etaData.sizeInt();
-		OvrMetaDatum * datum = createMetaDatum( fileBase );
+        OvrMetaDatum * datum = createMetaDatum( fileBase.toCString() );
 		if ( datum )
 		{
 			datum->id = dataIndex;
@@ -159,7 +159,7 @@ void OvrMetaData::initFromFileList( const Array< VString > & fileList, const Ovr
 
 		// Add loose file
 		const int dataIndex = m_etaData.sizeInt();
-		OvrMetaDatum * datum = createMetaDatum( filePath );
+        OvrMetaDatum * datum = createMetaDatum( filePath.toCString() );
 		if ( datum )
 		{
 			datum->id = dataIndex;
@@ -184,7 +184,7 @@ void OvrMetaData::initFromFileList( const Array< VString > & fileList, const Ovr
 	}
 }
 
-void OvrMetaData::renameCategory( const char * currentTag, const char * newName )
+void OvrMetaData::renameCategory(const VString &currentTag, const VString &newName )
 {
 	for ( int i = 0; i < m_categories.sizeInt(); ++i )
 	{
@@ -211,21 +211,21 @@ Json LoadPackageMetaFile( const char * metaFile )
 	return Json::Parse( static_cast< const char * >( buffer ) );
 }
 
-Json OvrMetaData::createOrGetStoredMetaFile( const char * appFileStoragePath, const char * metaFile )
+Json OvrMetaData::createOrGetStoredMetaFile( const VString &appFileStoragePath, const char * metaFile )
 {
 	m_filePath = appFileStoragePath;
 	m_filePath += metaFile;
 
 	LOG( "CreateOrGetStoredMetaFile FilePath: %s", m_filePath.toCString() );
 
-	Json dataFile = Json::Load( m_filePath );
+    Json dataFile = Json::Load( m_filePath.toCString() );
 	if ( dataFile.isInvalid() )
 	{
 		// If this is the first run, or we had an error loading the file, we copy the meta file from assets to app's cache
 		writeMetaFile( metaFile );
 
 		// try loading it again
-		dataFile = Json::Load( m_filePath );
+        dataFile = Json::Load( m_filePath.toCString() );
 		if ( dataFile.isInvalid() )
 		{
 			WARN( "OvrMetaData failed to load JSON meta file: %s", metaFile );
@@ -363,7 +363,7 @@ void OvrMetaData::processRemoteMetaFile( const char * metaFileString, const int 
 			FAIL( "OvrMetaData::ProcessMetaData failed to generate JSON meta file" );
 		}
 
-		std::ofstream fp(m_filePath, std::ios::binary);
+        std::ofstream fp(m_filePath.toCString(), std::ios::binary);
 		fp << dataFile;
 
 		LOG( "OvrMetaData::ProcessRemoteMetaFile updated %s", m_filePath.toCString() );
@@ -444,7 +444,7 @@ void OvrMetaData::processMetaData( const NervGear::Json &dataFile, const Array< 
 		FAIL( "OvrMetaData::ProcessMetaData failed to generate JSON meta file" );
 	}
 
-	std::ofstream fp(m_filePath, std::ios::binary);
+    std::ofstream fp(m_filePath.toCString(), std::ios::binary);
 	fp << newDataFile;
 
 	LOG( "OvrMetaData::ProcessMetaData created %s", m_filePath.toCString() );
@@ -859,7 +859,7 @@ Json OvrMetaData::metaDataToJson() const
 
 TagAction OvrMetaData::toggleTag( OvrMetaDatum * metaDatum, const VString & newTag )
 {
-	Json DataFile = Json::Load( m_filePath );
+    Json DataFile = Json::Load( m_filePath.toCString() );
 	if ( DataFile.isInvalid() )
 	{
 		FAIL( "OvrMetaData failed to load JSON meta file: %s", m_filePath.toCString() );
@@ -910,7 +910,7 @@ TagAction OvrMetaData::toggleTag( OvrMetaDatum * metaDatum, const VString & newT
 		if (datum.contains(TAGS)) {
 			datum[TAGS] = newTagsObject;
 
-			std::ofstream fp(m_filePath, std::ios::binary);
+            std::ofstream fp(m_filePath.toCString(), std::ios::binary);
 			fp << DataFile;
 		}
 	}

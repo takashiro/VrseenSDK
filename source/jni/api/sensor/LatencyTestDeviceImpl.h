@@ -56,7 +56,7 @@ public:
     virtual bool MatchHIDDevice(const HIDDeviceDesc& hidDesc) const
     {
         // should paths comparison be case insensitive?
-        return ((HIDDesc.Path.CompareNoCase(hidDesc.Path) == 0) &&
+        return ((HIDDesc.Path.icompare(hidDesc.Path) == 0) &&
                 (HIDDesc.SerialNumber == hidDesc.SerialNumber));
     }
     virtual bool        GetDeviceInfo(DeviceInfo* info) const;

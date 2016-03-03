@@ -46,8 +46,8 @@ public:
 	static BitmapFont * Create();
 	static void Free(BitmapFont * & font);
 
-	virtual bool Load(const char * languagePackageFileName,
-			char const * fontInfoFileName) = 0;
+    virtual bool Load(const VString &languagePackageFileName,
+            const VString & fontInfoFileName) = 0;
 	// Calculates the native (unscaled) width of the text string. Line endings are ignored.
 	virtual float CalcTextWidth(char const * text) const = 0;
 	// Calculates the native (unscaled) width of the text string. Each '\n' will start a new line

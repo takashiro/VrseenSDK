@@ -194,7 +194,7 @@ int DeviceManagerThread::run()
 {
     ThreadCommand::PopBuffer command;
 
-    setThreadName("NervGear::DeviceMngr");
+    setThreadName("NVDeviceMgr");
 
     LogText( "DeviceManagerThread - running (Tid=%d).\n", threadTid() );
 

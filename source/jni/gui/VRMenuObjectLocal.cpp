@@ -453,7 +453,7 @@ void VRMenuSurface::createFromSurfaceParms( VRMenuSurfaceParms const & parms )
             ( parms.TextureTypes[i] >= 0 && parms.TextureTypes[i] < SURFACE_TEXTURE_MAX ) )
 	    {
     		isValid = true;
-            m_textures[i].loadTexture( parms.TextureTypes[i], parms.ImageNames[i], true );
+            m_textures[i].loadTexture( parms.TextureTypes[i], parms.ImageNames[i].toCString(), true );
 		}
 		else if ( ( parms.ImageTexId[i] != 0 ) &&
             ( parms.TextureTypes[i] >= 0 && parms.TextureTypes[i] < SURFACE_TEXTURE_MAX ) )

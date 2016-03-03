@@ -112,10 +112,10 @@ VString GyroTempCalibration::GetBaseOVRPath(bool create_dir)
 
     if (create_dir)
     {   // Create the Oculus directory if it doesn't exist
-        DIR* dir = opendir(path);
+        DIR* dir = opendir(path.toCString());
         if (dir == NULL)
         {
-            mkdir(path, S_IRWXU | S_IRWXG | S_IRWXO);
+            mkdir(path.toCString(), S_IRWXU | S_IRWXG | S_IRWXO);
         }
         else
         {
@@ -182,7 +182,7 @@ void GyroTempCalibration::TokenizeString(Array<VString>* tokens, const VString& 
 			if (foundToken)
 			{
 				// Found end of token.
-                VString token = str.mid(tokenStart, i);
+                VString token = str.range(tokenStart, i);
 				tokens->append(token);
 				foundToken = false;
 			}
@@ -245,7 +245,7 @@ void GyroTempCalibration::LoadFile()
 {
     VString path = GetCalibrationPath(false);
 
-    Json root = Json::Load(path);
+    Json root = Json::Load(path.toCString());
     if (!root.isObject() || root.size() < 2)
         return;
 

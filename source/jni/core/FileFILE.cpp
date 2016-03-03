@@ -567,7 +567,7 @@ bool    SysFile::getFileStat(FileStat* pfileStat, const VString& path)
 #else
     struct stat fileStat;
     // Stat returns 0 for success.
-    if (stat(path, &fileStat) != 0)
+    if (stat(path.toCString(), &fileStat) != 0)
         return false;
 #endif
     pfileStat->accessTime = fileStat.st_atime;

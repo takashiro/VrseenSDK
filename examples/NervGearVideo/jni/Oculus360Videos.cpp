@@ -315,7 +315,7 @@ void Oculus360Videos::OneTimeInit( const char * fromPackage, const char * launch
 
 	VString localizedAppName;
 	VrLocale::GetString( app->GetVrJni(), app->GetJavaObject(), videosLabel, videosLabel, localizedAppName );
-	MetaData->renameCategory( ExtractFileBase( videosDirectory ), localizedAppName );
+    MetaData->renameCategory( ExtractFileBase( videosDirectory ), localizedAppName );
 
 	// Start building the VideoMenu
 	VideoMenu = ( OvrVideoMenu * )app->GetGuiSys().getMenu( OvrVideoMenu::MENU_NAME );
@@ -484,10 +484,10 @@ void Oculus360Videos::Command( const char * msg )
 		VString message;
 		VrLocale::GetString( app->GetVrJni(), app->GetJavaObject(), "@string/playback_failed", "@string/playback_failed", message );
 		VString fileName = ExtractFile( ActiveVideo->url );
-		message = VrLocale::GetXliffFormattedString( message, fileName );
+        message = VrLocale::GetXliffFormattedString( message, fileName.toCString() );
 		BitmapFont & font = app->GetDefaultFont();
 		font.WordWrapText( message, 1.0f );
-		app->ShowInfoText( 4.5f, message );
+        app->ShowInfoText( 4.5f, message.toCString() );
 		SetMenuState( MENU_BROWSER );
 		return;
 	}
@@ -736,7 +736,7 @@ void Oculus360Videos::StartVideo( const double nowTime )
 		}
 
 		LOG( "moviePath = '%s'", ActiveVideo->url.toCString() );
-		jstring jstr = app->GetVrJni()->NewStringUTF( ActiveVideo->url );
+        jstring jstr = app->GetVrJni()->NewStringUTF( ActiveVideo->url.toCString() );
 		app->GetVrJni()->CallVoidMethod( app->GetJavaObject(), startMovieMethodId, jstr );
 		app->GetVrJni()->DeleteLocalRef( jstr );
 

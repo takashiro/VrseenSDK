@@ -84,7 +84,7 @@ const char * ovr_GetLocalPreferenceValueForKey( const char * keyName, const char
 {
 	for ( int i = 0 ; i < LocalPreferences.sizeInt() ; i++ )
 	{
-		if ( 0 == LocalPreferences[i].Key.CompareNoCase( keyName ) )
+        if ( 0 == LocalPreferences[i].Key.icompare( keyName ) )
 		{
             LOG( "Key %s = %s", keyName, LocalPreferences[i].Value.toCString() );
             return LocalPreferences[i].Value.toCString();
