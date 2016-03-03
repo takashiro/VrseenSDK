@@ -11,7 +11,7 @@ Copyright   :   Copyright 2014 Oculus VR, Inc. All Rights reserved.
 *************************************************************************************/
 
 #include "AnimComponents.h"
-
+#include "Alg.h"
 #include "VRMenuObject.h"
 #include "../api/VrApi.h"
 #include "VRMenuMgr.h"

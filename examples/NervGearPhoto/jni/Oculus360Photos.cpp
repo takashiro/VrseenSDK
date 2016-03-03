@@ -13,6 +13,8 @@ of patent rights can be found in the PATENTS file in the same directory.
 
 *************************************************************************************/
 
+#include <Alg.h>
+
 #include "Oculus360Photos.h"
 #include <android/keycodes.h>
 #include "Threads.h"

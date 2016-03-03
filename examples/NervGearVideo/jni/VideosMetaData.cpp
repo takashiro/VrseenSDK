@@ -9,9 +9,9 @@ Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
 
 
 *************************************************************************************/
+#include <Alg.h>
 
 #include "VideosMetaData.h"
-
 #include "VrCommon.h"
 
 using namespace NervGear;

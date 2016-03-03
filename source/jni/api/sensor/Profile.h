@@ -4,6 +4,7 @@
 #include "VString.h"
 #include "RefCount.h"
 #include "Array.h"
+#include "Atomic.h"
 
 #include <string>
 

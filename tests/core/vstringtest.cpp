@@ -94,7 +94,7 @@ void test()
         VString str;
         str = str3;
         assert(str == str3);
-        str.insert("res/raw/", 0);
+        str.insert(0, "res/raw/");
         assert(str == "res/raw/efigs.fnt");
     }
 
@@ -146,13 +146,13 @@ void test()
     {
         VString str1("this is test");
         uint size1 = str1.size();
-        str1.insert(" a", 7);
+        str1.insert(7, " a");
         assert(size1 + 2 == str1.size());
         std::cout << str1.toStdString() << std::endl;
         assert(str1 == "this is a test");
 
         VString str2("test");
-        str2.insert("this is a ", 0);
+        str2.insert(0, "this is a ");
         assert(str2 == "this is a test");
     }
 

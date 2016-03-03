@@ -368,8 +368,7 @@ public:
     bool IsSameDisplay(const HMDInfo& o) const
     {
         return DisplayId == o.DisplayId &&
-               VString::icompare(DisplayDeviceName,
-                                     o.DisplayDeviceName) == 0;
+               strcasecmp(DisplayDeviceName, o.DisplayDeviceName) == 0;
     }
 
 };

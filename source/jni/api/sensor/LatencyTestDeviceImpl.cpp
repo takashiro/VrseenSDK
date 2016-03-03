@@ -9,6 +9,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 *************************************************************************************/
 
+#include "Std.h"
 #include "LatencyTestDeviceImpl.h"
 
 namespace NervGear {

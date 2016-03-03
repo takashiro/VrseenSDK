@@ -14,6 +14,7 @@
 // - in-world text really should sort with all other transparent surfaces
 //
 #include "BitmapFont.h"
+#include "Alg.h"
 
 #include <errno.h>
 #include <math.h>
@@ -877,8 +878,7 @@ void BitmapFontLocal::WordWrapText(VString & inOutText, const float widthMeters,
 
 		// Replace any existing character escapes with space as we recompute where to insert line breaks
 		if (charCode == '\r' || charCode == '\n' || charCode == '\t') {
-            inOutText.remove(pos);
-            inOutText.insert(' ', pos);
+            inOutText[pos] = ' ';
 			charCode = ' ';
 		}
 
@@ -907,8 +907,7 @@ void BitmapFontLocal::WordWrapText(VString & inOutText, const float widthMeters,
 			// the last whitespace. This ensure's the text always fits within the width.
 			if (lineWidth >= widthMeters && lastWhitespaceIndex >= 0) {
 				dontSplitUntilIdx = -1;
-                inOutText.remove(lastWhitespaceIndex);
-                inOutText.insert('\n', lastWhitespaceIndex);
+                inOutText[lastWhitespaceIndex] = '\n';
 				// subtract the width after the last whitespace so that we don't lose any
 				// of the accumulated width since then.
 				lineWidth -= lineWidthAtLastWhitespace;

@@ -1,17 +1,10 @@
 #pragma once
 
 #include "vglobal.h"
-
-#include "Types.h"
-#include "Allocator.h"
-#include "UTF8Util.h"
-#include "Atomic.h"
-#include "Std.h"
-#include "Alg.h"
-
 #include "VChar.h"
 
 #include <string>
+#include <string.h>
 
 NV_NAMESPACE_BEGIN
 
@@ -26,25 +19,27 @@ public:
     VString(const basic_string<VChar> &source) : basic_string(source) {}
     VString(const VString &source) : basic_string(source) {}
 
-    //@to-do: remove this function
-    VString(const char *str1, const char *str2, const char *str3 = nullptr);
-
     // Returns number of bytes
     int length() const { return size(); }
 
     bool isEmpty() const { return empty(); }
 
-    // Appends a character
-    void append(VChar ch) { basic_string::operator +=(ch); }
+    // Assigns string with known size.
+    void assign(const VChar *str, uint size) { basic_string::assign(str, str + size); }
+    void assign(const char *str);
 
-    // Append a string
+    void append(VChar ch) { basic_string::operator +=(ch); }
     void append(const VString &str) { basic_string::append(str.data()); }
     void append(const char *str) { append(str, strlen(str)); }
     void append(const char *str, uint length);
 
-    // Assigns string with known size.
-    void assign(const VChar *str, uint size) { basic_string::assign(str, str + size); }
-    void assign(const char *str);
+    void insert(uint pos, VChar ch);
+    void insert(uint pos, const VString &str) { basic_string::insert(pos, str.data()); }
+    void insert(uint pos, const char *str);
+
+    void prepend(VChar ch) { insert(0, ch); }
+    void prepend(const VString &str) { insert(0, str); }
+    void prepend(const char *str) { insert(0, str); }
 
     void remove(uint index, uint length = 1) { basic_string::erase(index, length); }
 
@@ -57,15 +52,7 @@ public:
     VString toUpper() const;
     VString toLower() const;
 
-    void insert(const char *substr, uint pos);
-    void insert(UInt32 c, uint posAt);
-
     void stripTrailing(const char *str);
-
-    // Utility: case-insensitive string compare.  stricmp() & strnicmp() are not
-    // ANSI or POSIX, do not seem to appear in Linux.
-    static int OVR_STDCALL icompare(const char* a, const char* b);
-    static int OVR_STDCALL icompare(const char* a, const char* b, int len);
 
     static bool HasAbsolutePath(const char* path);
     static bool HasExtension(const char* path);

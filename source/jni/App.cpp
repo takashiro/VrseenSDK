@@ -10,7 +10,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 *************************************************************************************/
 
 #include "App.h"
-
+#include "Alg.h"
 #include <math.h>
 #include <jni.h>
 
@@ -614,7 +614,7 @@ void AppLocal::InitFonts()
 
 	VString fontName;
 	VrLocale::GetString( GetVrJni(), GetJavaObject(), "@string/font_name", "efigs.fnt", fontName );
-	fontName.insert( "res/raw/", 0 );
+    fontName.prepend("res/raw/");
     if ( !defaultFont->Load( languagePackagePath.toCString(), fontName ) )
 	{
 		// reset the locale to english and try to load the font again
@@ -631,7 +631,7 @@ void AppLocal::InitFonts()
 			// re-get the font name for the new locale
 			VrLocale::GetString( GetVrJni(), GetJavaObject(), "@string/font_name", "efigs.fnt", fontName );
             LOG(fontName.toCString());
-            fontName.insert( "res/raw/", 0 );
+            fontName.prepend("res/raw/");
             LOG(fontName.toCString());
             // try to load the font
             if ( !defaultFont->Load( languagePackagePath.toCString(), fontName ) )

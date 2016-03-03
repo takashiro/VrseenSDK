@@ -10,6 +10,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 *************************************************************************************/
 
 #include "Stereo.h"
+#include "Alg.h"
 #include "Profile.h"
 
 namespace NervGear {

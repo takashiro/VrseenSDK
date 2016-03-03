@@ -16,6 +16,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "Android/LogUtils.h"
 
+#include "Std.h"
 #include "VRMenuObject.h"
 #include "SoundLimiter.h"
 #include "GazeCursor.h"

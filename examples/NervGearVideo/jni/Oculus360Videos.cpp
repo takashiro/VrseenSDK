@@ -19,6 +19,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include <jni.h>
 #include <android/keycodes.h>
 
+#include <Alg.h>
 #include "VMath.h"
 #include "TypesafeNumber.h"
 #include "Array.h"

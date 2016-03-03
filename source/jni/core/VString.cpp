@@ -1,10 +1,6 @@
 #include "VString.h"
 
-#include <string.h>
 #include <sstream>
-
-#define SLOG(text)
-//__android_log_write(ANDROID_LOG_INFO, "VString", text)
 
 NV_NAMESPACE_BEGIN
 
@@ -85,13 +81,6 @@ VString::VString(const char *data, uint length)
     }
 }
 
-VString::VString(const char *str1, const char *str2, const char *str3)
-{
-    assign(str1);
-    append(str2);
-    append(str3);
-}
-
 void VString::append(const char *str, uint length)
 {
     for (uint i = 0; i < length; i++) {
@@ -131,20 +120,19 @@ VString VString::toLower() const
     return str;
 }
 
-void VString::insert(const char *substr, uint pos)
+void VString::insert(uint pos, const char *str)
 {
-    VString str(substr);
-    basic_string::insert(pos, str.data());
+    VString vstring(str);
+    basic_string::insert(pos, vstring.data());
 }
 
-void VString::insert(UInt32 c, uint posAt)
+void VString::insert(uint pos, VChar ch)
 {
-    basic_string::insert(begin() + posAt, c);
+    basic_string::insert(begin() + pos, ch);
 }
 
 const VString &VString::operator = (const char *str)
 {
-    SLOG("VString::operator = (const char *str)");
     assign(str);
     return *this;
 }
@@ -224,35 +212,6 @@ void VString::stripTrailing(const char *str)
     if (size() >= len && right(len) == str) {
         *this = left(length() - len);
 	}
-}
-
-int VString::icompare(const char *a, const char* b)
-{
-    return strcasecmp(a, b);
-}
-
-int VString::icompare(const char *a, const char *b, int len)
-{
-    if (len) {
-        int f,l;
-        int slen = len;
-        const char *s = b;
-        do {
-            f = (int)OVR_tolower((int)(*(a++)));
-            l = (int)OVR_tolower((int)(*(b++)));
-        } while (--len && f && (f == l) && *b != 0);
-
-        if (f == l && (len != 0 || *b != 0))
-        {
-            f = (int)slen;
-            l = (int)strlen(s);
-            return int(f - l);
-        }
-
-        return int(f - l);
-    }
-    else
-        return (0-(int)strlen(b));
 }
 
 // ***** Implement hash static functions

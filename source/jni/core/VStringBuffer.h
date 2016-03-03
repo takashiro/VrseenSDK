@@ -3,6 +3,12 @@
 #include "vglobal.h"
 #include "VString.h"
 
+#include "Types.h"
+#include "Alg.h"
+#include "Allocator.h"
+#include "Std.h"
+#include "UTF8Util.h"
+
 NV_NAMESPACE_BEGIN
 
 class VStringBuffer
