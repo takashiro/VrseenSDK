@@ -184,7 +184,7 @@ include $(BUILD_STATIC_LIBRARY)		# start building based on everything since CLEA
 #--------------------------------------------------------
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := NV_ROOTPlugin
+LOCAL_MODULE := UnityPlugin
 
 LOCAL_STATIC_LIBRARIES := nervgear
 #LOCAL_STATIC_LIBRARIES += android-ndk-profiler
