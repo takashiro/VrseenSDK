@@ -68,11 +68,6 @@ public:
 
     void stripTrailing(const char *str);
 
-    VString  path() const;        // Returns path with trailing '/'.
-
-    void    stripProtocol();        // Strips front protocol, if any, from the string.
-    void    stripExtension();       // Strips off trailing extension.
-
     const VString &operator += (const VString &str) { append(str); return *this; }
     const VString &operator += (const char *str) { append(str); return *this; }
     const VString &operator += (VChar ch) { basic_string::operator +=(ch); return *this; }

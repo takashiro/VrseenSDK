@@ -32,7 +32,6 @@ SOURCES += \
     jni/core/VString.cpp \
     jni/core/VStringBuffer.cpp \
     jni/core/String_FormatUtil.cpp \
-    jni/core/String_PathUtil.cpp \
     jni/core/SysFile.cpp \
     jni/core/System.cpp \
     jni/core/ThreadCommandQueue.cpp \

@@ -23,6 +23,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "MappedFile.h"
 #include "Android/GlUtils.h"
 #include "Android/LogUtils.h"
+#include "VPath.h"
 
 #include "unzip.h"
 #include "GlTexture.h"
@@ -142,8 +143,7 @@ void LoadModelFileTexture( ModelFile & model, const char * textureName,
 							const char * buffer, const int size, const MaterialParms & materialParms )
 {
 	ModelTexture tex;
-	tex.name = textureName;
-	tex.name.stripExtension();
+    tex.name = VPath(textureName).baseName();
     int width;
     int height;
 	tex.texid = LoadTextureFromBuffer( textureName, MemBuffer( buffer, size ),

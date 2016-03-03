@@ -175,9 +175,8 @@ MovieCategory MovieManager::CategoryFromString( const VString &categoryString ) 
 
 void MovieManager::ReadMetaData( MovieDef *movie )
 {
-	VString filename = movie->Filename;
-    filename.stripExtension();
-    filename.append( ".txt" );
+    VString filename = VPath(movie->Filename).baseName();
+    filename.append(".txt");
 
 	const char* error = NULL;
 
@@ -225,9 +224,8 @@ void MovieManager::ReadMetaData( MovieDef *movie )
 
 void MovieManager::LoadPoster( MovieDef *movie )
 {
-	VString posterFilename = movie->Filename;
-    posterFilename.stripExtension();
-    posterFilename.append( ".png" );
+    VString posterFilename = VPath(movie->Filename).baseName();
+    posterFilename.append(".png");
 
     movie->Poster = LoadTextureFromBuffer( posterFilename.toCString(), MemBufferFile( posterFilename.toCString() ),
 			TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), movie->PosterWidth, movie->PosterHeight );
