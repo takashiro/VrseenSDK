@@ -14,6 +14,9 @@ public:
 
     bool isAbsolute() const;
 
+    bool hasProtocol() const;
+    VString protocol() const;
+
     bool hasExtension() const;
     VString extension() const;
 

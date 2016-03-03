@@ -68,11 +68,6 @@ public:
 
     void stripTrailing(const char *str);
 
-    static bool HasProtocol(const char* path);
-
-    bool    hHasProtocol() const     { return HasProtocol(toCString()); }
-
-    VString  protocol() const;    // Returns protocol, if any, with trailing '://'.
     VString  path() const;        // Returns path with trailing '/'.
 
     void    stripProtocol();        // Strips front protocol, if any, from the string.

@@ -35,6 +35,29 @@ bool VPath::isAbsolute() const
     return false;
 }
 
+bool VPath::hasProtocol() const
+{
+    return !protocol().isEmpty();
+}
+
+VString VPath::protocol() const
+{
+    uint i = 0;
+    uint max = size();
+    while (i < max) {
+        // Treat a colon followed by a slash as absolute.
+        if (at(i) == ':' && i + 2 < max) {
+            VChar ch1 = at(i + 1);
+            VChar ch2 = at(i + 2);
+            if ((ch1 == '/' && ch2 == '/') || (ch1 == '\\' && ch2 == '\\')) {
+                return left(i + 3);
+            }
+        }
+        i++;
+    }
+    return VString();
+}
+
 bool VPath::hasExtension() const
 {
     uint i = size() - 1;

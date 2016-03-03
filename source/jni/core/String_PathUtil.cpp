@@ -117,12 +117,6 @@ const char* ScanPathProtocol(const char* url)
 //--------------------------------------------------------------------
 // ***** String Path API implementation
 
-bool VString::HasProtocol(const char* path)
-{
-    return ScanPathProtocol(path) != 0;
-}
-
-
 VString  VString::path() const
 {
     const char* filename = 0;
@@ -133,22 +127,6 @@ VString  VString::path() const
     // but we keep it simple for now.
     return VString(toCString(), filename ? (filename-toCString()) : size());
 }
-
-VString  VString::protocol() const
-{
-    const char* protocolEnd = ScanPathProtocol(toCString());
-    return VString(toCString(), protocolEnd ? (protocolEnd-toCString()) : 0);
-}
-
-// FIXME: get rid of this when ScanFilePath is fixed
-#if 0
-String  String::GetFilename2() const
-{
-    const char* filename = 0;
-    ScanFilePath2(toCString(), &filename, 0);
-    return String(filename);
-}
-#endif
 
 void VString::stripExtension()
 {
