@@ -180,6 +180,21 @@ void test()
         const VString &str("res/raw/efigs_sdf.ktx");
         assert(strcmp(str.toCString(), "res/raw/efigs_sdf.ktx") == 0);
     }
+
+    //contains, startsWith, endsWith
+    {
+        VString str("this is a test.");
+        assert(str.contains("is"));
+        assert(str.contains('.'));
+
+        assert(str.startsWith('t'));
+        assert(str.startsWith("t"));
+        assert(str.startsWith("this"));
+
+        assert(str.endsWith('.'));
+        assert(str.endsWith("."));
+        assert(str.endsWith("test."));
+    }
 }
 
 ADD_TEST(VString, test)

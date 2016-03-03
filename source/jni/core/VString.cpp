@@ -126,6 +126,34 @@ void VString::insert(uint pos, const char *str)
     basic_string::insert(pos, vstring.data());
 }
 
+bool VString::startsWith(const VString &prefix) const
+{
+    if (prefix.size() > this->size()) {
+        return false;
+    }
+
+    for (uint i = 0; i < prefix.size(); i++) {
+        if (prefix[i] != this->at(i)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool VString::endsWith(const VString &postfix) const
+{
+    if (postfix.size() > this->size()) {
+        return false;
+    }
+
+    for (uint i = this->size() - postfix.size(), j = 0; j < postfix.size(); i++, j++) {
+        if (this->at(i) != postfix[j]) {
+            return false;
+        }
+    }
+    return true;
+}
+
 void VString::insert(uint pos, VChar ch)
 {
     basic_string::insert(begin() + pos, ch);

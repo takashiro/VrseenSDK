@@ -24,9 +24,11 @@ public:
 
     bool isEmpty() const { return empty(); }
 
-    // Assigns string with known size.
     void assign(const VChar *str, uint size) { basic_string::assign(str, str + size); }
     void assign(const char *str);
+
+    const VString &operator = (const char *str);
+    const VString &operator = (const VString &src);
 
     void append(VChar ch) { basic_string::operator +=(ch); }
     void append(const VString &str) { basic_string::append(str.data()); }
@@ -48,7 +50,18 @@ public:
     VString left(uint count) const { return mid(0, count); }
     VString right(uint count) const { return mid(size() - count, count); }
 
-    // Case-conversion
+    VChar first() const { return front(); }
+    VChar last() const { return back(); }
+
+    bool contains(VChar ch) const { return find(ch) != npos; }
+    bool contains(const VString &substr) const { return find(substr) != npos; }
+
+    bool startsWith(VChar ch) const { return front() == ch; }
+    bool startsWith(const VString &prefix) const;
+
+    bool endsWith(VChar ch) const { return back() == ch; }
+    bool endsWith(const VString &postfix) const;
+
     VString toUpper() const;
     VString toLower() const;
 
@@ -70,22 +83,15 @@ public:
     void    stripProtocol();        // Strips front protocol, if any, from the string.
     void    stripExtension();       // Strips off trailing extension.
 
-    // Assignment
-    const VString &operator = (const char *str);
-    const VString &operator = (const VString &src);
-
-    // Addition
     const VString &operator += (const VString &str) { append(str); return *this; }
     const VString &operator += (const char *str) { append(str); return *this; }
     const VString &operator += (VChar ch) { basic_string::operator +=(ch); return *this; }
 
     friend VString operator + (const VString &str1, const VString &str2);
 
-    // Conversion
     std::string toStdString() const;
     const char *toCString() const;
 
-    // Comparison
     int compare(const VString &str) const { return basic_string::compare(str.data()); }
     int compare(const char *str) const;
 
