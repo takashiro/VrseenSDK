@@ -65,7 +65,7 @@ HEADERS += \
     jni/UI/UIImage.h \
     jni/UI/UIButton.h
 
-ANDROID_APP_DIRS = $$absolute_path(../../source) $$PWD
+ANDROID_APP_DIR = $$PWD
 include(../../source/makeApk.pri)
 
 include(../../source/dynamicVrLib.pri)
