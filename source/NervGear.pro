@@ -26,6 +26,7 @@ SOURCES += \
     jni/core/Log.cpp \
     jni/core/Lockless.cpp \
     jni/core/VMath.cpp \
+    jni/core/VPath.cpp \
     jni/core/RefCount.cpp \
     jni/core/Std.cpp \
     jni/core/VString.cpp \
@@ -153,6 +154,7 @@ HEADERS += \
     jni/core/Log.h \
     jni/core/Lockless.h \
     jni/core/VMath.h \
+    jni/core/VPath.h \
     jni/core/RefCount.h \
     jni/core/Std.h \
     jni/core/VString.h \

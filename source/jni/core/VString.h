@@ -67,11 +67,9 @@ public:
 
     void stripTrailing(const char *str);
 
-    static bool HasAbsolutePath(const char* path);
     static bool HasExtension(const char* path);
     static bool HasProtocol(const char* path);
 
-    bool    hasAbsolutePath() const { return HasAbsolutePath(toCString()); }
     bool    hasExtension() const    { return HasExtension(toCString()); }
     bool    hHasProtocol() const     { return HasProtocol(toCString()); }
 

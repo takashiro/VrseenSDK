@@ -41,6 +41,7 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     core/Log.cpp \
                     core/Lockless.cpp \
                     core/VMath.cpp \
+                    core/VPath.cpp \
                     core/RefCount.cpp \
                     core/Std.cpp \
                     core/VString.cpp \

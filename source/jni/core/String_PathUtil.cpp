@@ -117,57 +117,6 @@ const char* ScanPathProtocol(const char* url)
 //--------------------------------------------------------------------
 // ***** String Path API implementation
 
-bool VString::HasAbsolutePath(const char* url)
-{
-    // Absolute paths can star with:
-    //  - protocols:        'file://', 'http://'
-    //  - windows drive:    'c:\'
-    //  - UNC share name:   '\\share'
-    //  - unix root         '/'
-
-    // On the other hand, relative paths are:
-    //  - directory:        'directory/file'
-    //  - this directory:   './file'
-    //  - parent directory: '../file'
-    //
-    // For now, we don't parse '.' or '..' out, but instead let it be concatenated
-    // to string and let the OS figure it out. This, however, is not good for file
-    // name matching in library/etc, so it should be improved.
-
-    if (!url || !*url)
-        return true; // Treat empty strings as absolute.
-
-    UInt32 charVal = UTF8Util::DecodeNextChar(&url);
-
-    // Fist character of '/' or '\\' means absolute url.
-    if ((charVal == '/') || (charVal == '\\'))
-        return true;
-
-    while (charVal != 0)
-    {
-        // Treat a colon followed by a slash as absolute.
-        if (charVal == ':')
-        {
-            charVal = UTF8Util::DecodeNextChar(&url);
-            // Protocol or windows drive. Absolute.
-            if ((charVal == '/') || (charVal == '\\'))
-                return true;
-        }
-        else if ((charVal == '/') || (charVal == '\\'))
-        {
-            // Not a first character (else 'if' above the loop would have caught it).
-            // Must be a relative url.
-            break;
-        }
-
-        charVal = UTF8Util::DecodeNextChar(&url);
-    }
-
-    // We get here for relative paths.
-    return false;
-}
-
-
 bool VString::HasExtension(const char* path)
 {
     const char* ext = 0;
