@@ -187,6 +187,20 @@ VString operator + (const VString &str1, const VString &str2)
     return str;
 }
 
+VString operator + (const VString &str, VChar ch)
+{
+    VString result(str);
+    result.append(ch);
+    return result;
+}
+
+VString operator + (VChar ch, const VString &str)
+{
+    VString result(&ch, 1);
+    result.append(str);
+    return result;
+}
+
 std::string VString::toStdString() const
 {
     uint size = this->size();
@@ -248,7 +262,7 @@ void VString::stripTrailing(const char *str)
     //@to-do: add compare(int from, int to, const char *).
     if (size() >= len && right(len) == str) {
         *this = left(length() - len);
-	}
+    }
 }
 
 // ***** Implement hash static functions

@@ -53,13 +53,13 @@ public:
     bool 					allowTheaterSelection() const;
     bool 					isMovieFinished() const;
 
-    const char *			retailDir( const char *dir ) const;
-    const char *			externalRetailDir( const char *dir ) const;
-    const char *			sdcardDir( const char *dir ) const;
-    const char * 			externalSDCardDir( const char *dir ) const;
-    const char * 			externalCacheDir( const char *dir ) const;
-    bool 					isExternalSDCardDir( const char *dir ) const;
-    bool 					fileExists( const char *filename ) const;
+    VString retailDir(const VString &dir) const;
+    VString externalRetailDir(const VString &dir) const;
+    VString sdcardDir(const VString &dir) const;
+    VString externalSDCardDir(const VString &dir) const;
+    VString externalCacheDir(const VString &dir) const;
+    bool isExternalSDCardDir(const VString &dir ) const;
+    bool fileExists(const VString &filename ) const;
 
 public:
     double					startTime;

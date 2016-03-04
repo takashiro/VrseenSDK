@@ -79,7 +79,7 @@ private:
 	MovieCategory 			CategoryFromString( const VString &categoryString ) const;
 	void 					ReadMetaData( MovieDef *movie );
 	void 					LoadPoster( MovieDef *movie );
-	void 					MoviesInDirectory( Array<VString> &movies, const char * dirName ) const;
+	void 					MoviesInDirectory(Array<VString> &movies, const VString &dirName ) const;
 	Array<VString> 			ScanMovieDirectories() const;
 	bool					IsSupportedMovieFormat( const VString &extension ) const;
 };

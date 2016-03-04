@@ -75,6 +75,8 @@ public:
     const VString &operator += (VChar ch) { basic_string::operator +=(ch); return *this; }
 
     friend VString operator + (const VString &str1, const VString &str2);
+    friend VString operator + (const VString &str, VChar ch);
+    friend VString operator + (VChar ch, const VString &str);
 
     std::string toStdString() const;
     const char *toCString() const;

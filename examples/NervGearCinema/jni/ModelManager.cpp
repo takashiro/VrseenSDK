@@ -113,9 +113,9 @@ void ModelManager::LoadModels()
     LOG( "ModelManager::LoadModels: %i theaters loaded, %3.1f seconds", Theaters.sizeInt(), ovr_GetTimeInSeconds() - start );
 }
 
-void ModelManager::ScanDirectoryForScenes( const char * directory, bool useDynamicProgram, bool useScreenGeometry, Array<SceneDef *> &scenes ) const
+void ModelManager::ScanDirectoryForScenes(const VString &directory, bool useDynamicProgram, bool useScreenGeometry, Array<SceneDef *> &scenes ) const
 {
-	DIR * dir = opendir( directory );
+    DIR * dir = opendir( directory.toCString() );
 	if ( dir != NULL )
 	{
 		struct dirent * entry;

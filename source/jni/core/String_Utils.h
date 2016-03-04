@@ -13,25 +13,6 @@ namespace StringUtils
 	static const int MAX_PATH_LENGTH	= 1024;
 
 	template < size_t size >
-	inline const char * Copy( char (&dest)[size], const char * src )
-	{
-		size_t length = strlen( src ) + 1;
-		strncpy( dest, src, length < size ? length : size );
-		dest[size - 1] = '\0';
-		return dest;
-    }
-
-	template < size_t size >
-	inline const char * SPrintf( char (&dest)[size], const char * format, ... )
-	{
-		va_list args;
-		va_start( args, format );
-		vsnprintf( dest, size, format, args );
-		dest[size - 1] = '\0';
-		return dest;
-	}
-
-	template < size_t size >
 	inline const char * VSPrintf( char (&dest)[size], const char * format, va_list args )
 	{
 		vsnprintf( dest, size, format, args );

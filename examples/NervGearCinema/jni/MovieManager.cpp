@@ -34,12 +34,12 @@ namespace OculusCinema {
 const int MovieManager::PosterWidth = 228;
 const int MovieManager::PosterHeight = 344;
 
-static const char * searchDirs[] =
+static const VString searchDirs[] =
 {
 	"DCIM",
 	"Movies",
 	"Oculus/Movies",
-	NULL
+    ""
 };
 
 const char *MovieManager::SupportedFormats[] =
@@ -232,8 +232,7 @@ void MovieManager::LoadPoster( MovieDef *movie )
 
 	if ( movie->Poster == 0 )
 	{
-        if ( Cinema.isExternalSDCardDir( posterFilename.toCString() ) )
-		{
+        if (Cinema.isExternalSDCardDir(posterFilename)) {
 			// Since we're unable to write to the external sd card and writing to the
 			// cache directory doesn't seem to work, just disable generation of
 			// thumbnails for the external sd card.
@@ -286,9 +285,11 @@ bool MovieManager::IsSupportedMovieFormat( const VString &extension ) const
 	return false;
 }
 
-void MovieManager::MoviesInDirectory( Array<VString> &movies, const char * dirName ) const {
-	LOG( "scanning directory: %s", dirName );
-	DIR * dir = opendir( dirName );
+void MovieManager::MoviesInDirectory(Array<VString> &movies, const VString &dirName) const
+{
+    const char *dirNameCStr = dirName.toCString();
+    LOG("scanning directory: %s", dirNameCStr);
+    DIR * dir = opendir(dirNameCStr);
 	if ( dir != NULL )
 	{
 		struct dirent * entry;
@@ -307,9 +308,8 @@ void MovieManager::MoviesInDirectory( Array<VString> &movies, const char * dirNa
 
 	        if ( S_ISDIR( st.st_mode ) )
 	        {
-	        	char subDir[ 1000 ];
-	        	StringUtils::SPrintf( subDir, "%s/%s", dirName, entry->d_name );
-	        	MoviesInDirectory( movies, subDir );
+                VString subDir = dirName + '/' + entry->d_name;
+                MoviesInDirectory(movies, subDir);
 	        	continue;
 	        }
 
@@ -339,12 +339,11 @@ void MovieManager::MoviesInDirectory( Array<VString> &movies, const char * dirNa
 Array<VString> MovieManager::ScanMovieDirectories() const {
 	Array<VString> movies;
 
-	for( int i = 0; searchDirs[ i ] != NULL; i++ )
-	{
-		MoviesInDirectory( movies, Cinema.externalRetailDir( searchDirs[ i ] ) );
-		MoviesInDirectory( movies, Cinema.retailDir( searchDirs[ i ] ) );
-		MoviesInDirectory( movies, Cinema.sdcardDir( searchDirs[ i ] ) );
-		MoviesInDirectory( movies, Cinema.externalSDCardDir( searchDirs[ i ] ) );
+    for (const VString &searchDir : searchDirs) {
+        MoviesInDirectory(movies, Cinema.externalRetailDir(searchDir));
+        MoviesInDirectory(movies, Cinema.retailDir(searchDir));
+        MoviesInDirectory(movies, Cinema.sdcardDir(searchDir));
+        MoviesInDirectory(movies, Cinema.externalSDCardDir(searchDir));
 	}
 
 	return movies;
