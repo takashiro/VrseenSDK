@@ -18,6 +18,7 @@ public:
     VString protocol() const;
 
     bool hasExtension() const;
+    void setExtension(const VString &ext);
     VString extension() const;
 
     VString fileName() const;

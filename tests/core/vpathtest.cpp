@@ -33,8 +33,14 @@ void test()
         assert(!path.isAbsolute());
         assert(path.extension() == "git");
         assert(path.fileName() == "NervGear.git");
-        std::cout << path.baseName() << std::endl;
         assert(path.baseName() == "NervGear");
+
+        path.setExtension("svn");
+        assert(path == "Project/NervGear.svn");
+
+        VPath baseName = path.baseName();
+        baseName.setExtension("jpg");
+        assert(baseName == "NervGear.jpg");
     }
 }
 

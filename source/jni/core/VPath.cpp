@@ -79,6 +79,31 @@ bool VPath::hasExtension() const
     return false;
 }
 
+void VPath::setExtension(const VString &ext)
+{
+    uint i = size() - 1;
+    forever {
+        if (at(i) == '/' || at(i) == '\\') {
+            break;
+        }
+
+        if (at(i) == '.') {
+            remove(i + 1, size() - i - 1);
+            append(ext);
+            return;
+        }
+
+        if (i > 0) {
+            i--;
+        } else {
+            break;
+        }
+    }
+
+    append('.');
+    append(ext);
+}
+
 VString VPath::extension() const
 {
     uint i = size() - 1;

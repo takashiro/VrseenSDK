@@ -188,7 +188,8 @@ SceneDef * ModelManager::LoadScene( const char *sceneFilename, bool useDynamicPr
 
 	ModelGlPrograms glPrograms = ( useDynamicProgram ) ? Cinema.shaderMgr.DynamicPrograms : Cinema.shaderMgr.DefaultPrograms;
 
-    VString iconFilename = StringUtils::SetFileExtensionString( filename, "png" );
+    VPath iconFilename = filename;
+    iconFilename.setExtension("png");
 
 	int textureWidth = 0, textureHeight = 0;
 

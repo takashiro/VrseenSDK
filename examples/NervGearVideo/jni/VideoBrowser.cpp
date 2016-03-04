@@ -26,6 +26,8 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "linux/stat.h"
 #include <unistd.h>
 
+#include <VPath.h>
+
 namespace NervGear
 {
 
@@ -114,18 +116,17 @@ unsigned char * VideoBrowser::loadThumbnail( const char * filename, int & width,
 
 VString VideoBrowser::thumbName( const VString & s )
 {
-	VString	ts( s );
-	ts = NervGear::StringUtils::SetFileExtensionString( ts, ".pvr" );
+    VPath ts = s;
+    ts.setExtension("pvr");
 	return ts;
 }
 
 VString VideoBrowser::alternateThumbName( const VString & s )
 {
-	VString	ts( s );
-	ts = NervGear::StringUtils::SetFileExtensionString( ts, ".thm" );
+    VPath ts = s;
+    ts.setExtension("thm");
 	return ts;
 }
-
 
 void VideoBrowser::onMediaNotFound( App * app, VString & title, VString & imageFile, VString & message )
 {
