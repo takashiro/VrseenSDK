@@ -20,36 +20,6 @@ namespace StringUtils
 		return dest;
 	}
 
-	template < size_t size >
-	inline const char * GetCleanPath( char (&dest)[size], const char * path, const char separator = '/' )
-	{
-		for ( int i = 0; i < (int)size; path++ )
-		{
-			if ( path[0] == '/' || path[0] == '\\' )
-			{
-				if ( i == 0 || dest[i - 1] != separator )
-				{
-					dest[i++] = separator;
-				}
-			}
-			else if ( path[0] == '.' && path[1] == '.' &&
-						i > 2 && dest[i - 1] == separator && dest[i - 2] != '.' )
-			{
-				for ( --i; i > 0 && dest[i - 1] != separator; --i ) {}
-				path++;
-			}
-			else
-			{
-				dest[i++] = path[0];
-				if ( path[0] == '\0' )
-				{
-					break;
-				}
-			}
-		}
-		return dest;
-	}
-
 	inline int PathCharCmp( const char a, const char b )
 	{
 		const char c = tolower( a );
@@ -64,8 +34,6 @@ namespace StringUtils
 		}
 		return c - d;
 	}
-
-	inline VString GetCleanPathString( const char * path, const char separator = '/' ) { char buffer[MAX_PATH_LENGTH]; GetCleanPath( buffer, path, separator ); return VString( buffer ); }
 
 	// String format functor.
 	class Va
