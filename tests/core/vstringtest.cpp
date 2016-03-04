@@ -6,6 +6,10 @@ NV_USING_NAMESPACE
 
 namespace {
 
+inline double abs(double num) {
+    return num >= 0 ? num : -num;
+}
+
 void test()
 {
     //Empty String
@@ -197,6 +201,15 @@ void test()
         //replace
         str.replace(' ', '_');
         assert(str == "this_is_a_test.");
+    }
+
+    //Double conversion
+    {
+        double pi = 3.1415;
+        VString piStr = VString::number(pi);
+        assert(piStr == "3.1415");
+        double pi2 = piStr.toDouble();
+        assert(abs(pi - pi2) <= 1e-4);
     }
 }
 

@@ -100,7 +100,9 @@ public:
     int icompare(const char* str) const;
 
     static VString number(int num);
+    static VString number(double num);
     int toInt() const;
+    double toDouble() const;
 
     friend std::ostream &operator << (std::ostream &out, const VString &str) { out << str.toStdString(); return out; }
 };

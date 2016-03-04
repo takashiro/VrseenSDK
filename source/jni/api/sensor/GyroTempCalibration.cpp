@@ -216,12 +216,12 @@ void GyroTempCalibration::GyroCalibrationFromString(const VString& str)
 
 			int index = binIndex * GyroCalibrationNumSamples + sampleIndex;
 
-            StringUtils::StringTo<UInt32>(entry.Version, tokens[index * 6 + 0].toCString());
-            StringUtils::StringTo<double>(entry.ActualTemperature, tokens[index * 6 + 1].toCString());
-            StringUtils::StringTo<UInt32>(entry.Time, tokens[index * 6 + 2].toCString());
-            StringUtils::StringTo<double>(entry.Offset.x, tokens[index * 6 + 3].toCString());
-            StringUtils::StringTo<double>(entry.Offset.y, tokens[index * 6 + 4].toCString());
-            StringUtils::StringTo<double>(entry.Offset.z, tokens[index * 6 + 5].toCString());
+            entry.Version = tokens[index * 6 + 0].toInt();
+            entry.ActualTemperature = tokens[index * 6 + 1].toDouble();
+            entry.Time = tokens[index * 6 + 2].toDouble();
+            entry.Offset.x = tokens[index * 6 + 3].toDouble();
+            entry.Offset.y = tokens[index * 6 + 4].toDouble();
+            entry.Offset.z = tokens[index * 6 + 5].toDouble();
 		}
 	}
 }

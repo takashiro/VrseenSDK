@@ -247,11 +247,29 @@ VString VString::number(int num)
     return str;
 }
 
+VString VString::number(double num)
+{
+    std::stringstream ss;
+    ss << num;
+    std::string str;
+    ss >> str;
+    return str;
+}
+
 int VString::toInt() const
 {
     std::stringstream ss;
     ss << toStdString();
     int num;
+    ss >> num;
+    return num;
+}
+
+double VString::toDouble() const
+{
+    std::stringstream ss;
+    ss << toStdString();
+    double num;
     ss >> num;
     return num;
 }
