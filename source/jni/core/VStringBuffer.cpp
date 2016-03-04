@@ -1,4 +1,5 @@
 #include "VStringBuffer.h"
+#include "Log.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -212,6 +213,27 @@ uint     VStringBuffer::insert(UInt32 c, uint posAt)
 
     insert(buf, posAt, len);
     return (uint)len;
+}
+
+void VStringBuffer::appendFormat(const char* format, ...)
+{
+    va_list argList;
+
+    va_start(argList, format);
+    uint size = OVR_vscprintf(format, argList);
+    va_end(argList);
+
+    char* buffer = (char*) OVR_ALLOC(sizeof(char) * (size+1));
+
+    va_start(argList, format);
+    uint result = OVR_vsprintf(buffer, size+1, format, argList);
+    OVR_UNUSED1(result);
+    va_end(argList);
+    OVR_ASSERT_LOG(result == size, ("Error in OVR_vsprintf"));
+
+    append(buffer);
+
+    OVR_FREE(buffer);
 }
 
 NV_NAMESPACE_END

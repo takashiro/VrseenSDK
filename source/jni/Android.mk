@@ -46,7 +46,6 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     core/Std.cpp \
                     core/VString.cpp \
                     core/VStringBuffer.cpp \
-                    core/String_FormatUtil.cpp \
                     core/SysFile.cpp \
                     core/System.cpp \
                     core/ThreadCommandQueue.cpp \

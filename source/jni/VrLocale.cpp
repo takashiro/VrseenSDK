@@ -12,7 +12,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VrLocale.h"
 
 #include "Array.h"
-#include "VStringBuffer.h"
+#include "UTF8Util.h"
+#include "Std.h"
 #include "android/JniUtils.h"
 #include "android/LogUtils.h"
 
@@ -218,7 +219,7 @@ VString private_GetXliffFormattedString( const VString & inXliffStr, ... )
 	}
 
 	// Buffer that holds formatted return string
-	VStringBuffer retStrBuffer;
+    VString retStrBuffer;
 
 	char const * p = inXliffStr.toCString();
 	for ( ; ; )
@@ -262,7 +263,7 @@ VString private_GetXliffFormattedString( const VString & inXliffStr, ... )
 					const char* tempArg = va_arg( args, const char* );
 					if( j == ( desiredArgIdxint - 1 ) ) // found desired argument
 					{
-						retStrBuffer.appendFormat( "%s", tempArg );
+                        retStrBuffer.append(tempArg);
 						break;
 					}
 				}
@@ -281,7 +282,7 @@ VString private_GetXliffFormattedString( const VString & inXliffStr, ... )
 		}
 	}
 
-	return VString(retStrBuffer);
+    return retStrBuffer;
 }
 
 VString VrLocale::GetXliffFormattedString( const VString & inXliffStr, const char * arg1 )
