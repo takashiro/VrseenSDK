@@ -20,21 +20,6 @@ namespace StringUtils
 		return dest;
 	}
 
-	inline int PathCharCmp( const char a, const char b )
-	{
-		const char c = tolower( a );
-		const char d = tolower( b );
-		if ( c == d )
-		{
-			return 0;
-		}
-		if ( ( c == '\\' || c == '/' ) && ( d == '\\' || d == '/' ) )
-		{
-			return 0;
-		}
-		return c - d;
-	}
-
 	// String format functor.
 	class Va
 	{
