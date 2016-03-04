@@ -105,6 +105,7 @@ public:
     double toDouble() const;
 
     friend std::ostream &operator << (std::ostream &out, const VString &str) { out << str.toStdString(); return out; }
+    void sprintf(const char *format, ...);
 };
 
 NV_NAMESPACE_END

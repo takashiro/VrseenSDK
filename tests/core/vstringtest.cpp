@@ -211,6 +211,24 @@ void test()
         double pi2 = piStr.toDouble();
         assert(abs(pi - pi2) <= 1e-4);
     }
+
+    //Format input
+    {
+        VString str;
+        str.sprintf("%d", 100);
+        assert(str == "100");
+    }
+    {
+        VString str;
+        str.sprintf("vid=%04hx:pid=%04hx:ser=%s", 123, 456, "NervGear");
+        assert(str == "vid=007b:pid=01c8:ser=NervGear");
+    }
+    {
+        VString str;
+        str.sprintf("%d %lf", 10, 10.10);
+        str.sprintf("%d %g", 5, 26.1010);
+        assert(str == "10 10.1000005 26.101");
+    }
 }
 
 ADD_TEST(VString, test)

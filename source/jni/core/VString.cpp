@@ -1,5 +1,6 @@
 #include "VString.h"
 
+#include <stdarg.h>
 #include <sstream>
 
 NV_NAMESPACE_BEGIN
@@ -272,6 +273,18 @@ double VString::toDouble() const
     double num;
     ss >> num;
     return num;
+}
+
+void VString::sprintf(const char *format, ...)
+{
+    va_list arguments;
+    va_start(arguments, format);
+    int length = vsnprintf(nullptr, 0, format, arguments);
+    char *bytes = new char[length + 1];
+    vsprintf(bytes, format, arguments);
+    va_end(arguments);
+    append(bytes);
+    delete[] bytes;
 }
 
 void VString::stripTrailing(const char *str)
