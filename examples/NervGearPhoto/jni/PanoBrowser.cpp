@@ -62,15 +62,19 @@ unsigned char * CubeMapVista( const char * nzName, float const ratio, int & widt
 	{
 		return NULL;
 	}
-	VStringBuffer	pxName( nzName );
-	pxName[ len - 6 ] = 'p';
-	pxName[ len - 5 ] = 'x';
-	VStringBuffer	nxName( nzName );
-	nxName[ len - 5 ] = 'x';
+    VString	pxName( nzName );
+    pxName[len - 6] = 'p';
+    pxName[len - 5] = 'x';
+    VString nxName( nzName );
+    nxName[len - 5] = 'x';
 
+    const char *pxNameStr = pxName.toCString();
+    const char *nxNameStr = nxName.toCString();
 	nzData = TurboJpegLoadFromFile( nzName, &faceWidth, &faceHeight );
-	pxData = TurboJpegLoadFromFile( pxName, &faceWidth2, &faceHeight2 );
-	nxData = TurboJpegLoadFromFile( nxName, &faceWidth3, &faceHeight3 );
+    pxData = TurboJpegLoadFromFile( pxNameStr, &faceWidth2, &faceHeight2 );
+    nxData = TurboJpegLoadFromFile( nxNameStr, &faceWidth3, &faceHeight3 );
+    delete[] pxNameStr;
+    delete[] nxNameStr;
 
 	if ( nzData && pxData && nxData && ( faceWidth & 1 ) == 0 && faceWidth == faceHeight
 		&& faceWidth2 == faceWidth && faceHeight2 == faceHeight

@@ -374,7 +374,7 @@ bool LatencyTest::DisplayScreenColor(VColor& colorToDisplay)
 
 const char*	LatencyTest::GetResultsString()
 {
-	if (!ResultsString.isEmpty() && ReturnedResultString != ResultsString.toCString())
+    if (!ResultsString.isEmpty() && ReturnedResultString != ResultsString)
 	{
 		ReturnedResultString = ResultsString;
 		return ReturnedResultString.toCString();
@@ -519,7 +519,7 @@ void LatencyTest::processResults()
     finalResult += averageUSBTripMilliS;
 
     ResultsString.clear();
-    ResultsString.appendFormat("RESULT=%.1f (add half Tracker period) [b->w %d|%.1f|%d] [w->b %d|%.1f|%d] [usb rndtrp %.1f|%.1f|%.1f] [cnt %d] [tmouts %d]",
+    ResultsString.sprintf("RESULT=%.1f (add half Tracker period) [b->w %d|%.1f|%d] [w->b %d|%.1f|%d] [usb rndtrp %.1f|%.1f|%.1f] [cnt %d] [tmouts %d]",
                 finalResult,
                 minTime1To2, averageTime1To2, maxTime1To2,
                 minTime2To1, averageTime2To1, maxTime2To1,

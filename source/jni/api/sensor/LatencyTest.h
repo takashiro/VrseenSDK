@@ -135,8 +135,8 @@ private:
 
     MeasurementResult*          getActiveResult();
 
-    VStringBuffer			    ResultsString;
-	VString					    ReturnedResultString;
+    VString ResultsString;
+    VString ReturnedResultString;
 };
 
 NV_NAMESPACE_END

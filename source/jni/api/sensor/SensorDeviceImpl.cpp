@@ -940,7 +940,7 @@ void SensorDeviceImpl::openDevice()
 	if (pCalibration != NULL)
 	{
 		// Read the temperature data from the device.
-		VStringBuffer str;
+        VString str;
 
 #if 0
 		// Get device code from uuid.
@@ -953,7 +953,7 @@ void SensorDeviceImpl::openDevice()
 		// Convert to string.
 		for (int i=0; i<UUIDReport::UUID_SIZE; i++)
 		{
-			str.AppendFormat("%02X", uuid.UUIDValue[i]);
+            str.sprintf("%02X", uuid.UUIDValue[i]);
 		}
 #else
 		// Get device code from serial number.
@@ -966,11 +966,13 @@ void SensorDeviceImpl::openDevice()
 		// Convert to string.
 		for (int i=0; i<SerialReport::SERIAL_NUMBER_SIZE; i++)
 		{
-			str.appendFormat("%02X", serial.SerialNumberValue[i]);
+            str.sprintf("%02X", serial.SerialNumberValue[i]);
 		}
 #endif
 
-		LogText("NervGear::SensorDeviceImpl::openDevice - with serial code '%s'.\n", str.toCString());
+        const char *cstr = str.toStdString();
+        LogText("NervGear::SensorDeviceImpl::openDevice - with serial code '%s'.\n", cstr);
+        delete[] cstr;
 
 		pCalibration->Initialize(VString(str));
 	}

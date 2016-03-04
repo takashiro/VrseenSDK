@@ -305,13 +305,11 @@ bool HIDDeviceManager::getPath(int deviceHandle, const VString& devNodePath, VSt
     getStringProperty(devNodePath, "serial", &(desc.SerialNumber));
 
     // Compose the path.
-	VStringBuffer buffer;
-	buffer.appendFormat(	"vid=%04hx:pid=%04hx:ser=%s",
+    pPath->clear();
+    pPath->sprintf("vid=%04hx:pid=%04hx:ser=%s",
 							desc.VendorId,
 							desc.ProductId,
 							desc.SerialNumber.toCString());
-
-	*pPath = VString(buffer);
 
     return true;
 }

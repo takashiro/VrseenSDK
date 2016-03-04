@@ -228,17 +228,17 @@ void GyroTempCalibration::GyroCalibrationFromString(const VString& str)
 
 VString GyroTempCalibration::GyroCalibrationToString()
 {
-	VStringBuffer sb;
+    VString sb;
 	for (int binIndex = 0; binIndex < GyroCalibrationNumBins; binIndex++)
 	{
 		for (int sampleIndex = 0; sampleIndex < GyroCalibrationNumSamples; sampleIndex++)
 		{
 			const GyroCalibrationEntry& entry = GyroCalibration[binIndex][sampleIndex];
-            sb.appendFormat("%d %lf %d %lf %lf %lf ", entry.Version, entry.ActualTemperature, entry.Time, entry.Offset.x, entry.Offset.y, entry.Offset.z);
+            sb.sprintf("%d %lf %d %lf %lf %lf ", entry.Version, entry.ActualTemperature, entry.Time, entry.Offset.x, entry.Offset.y, entry.Offset.z);
 		}
 	}
 
-	return VString(sb);
+    return sb;
 }
 
 void GyroTempCalibration::LoadFile()
