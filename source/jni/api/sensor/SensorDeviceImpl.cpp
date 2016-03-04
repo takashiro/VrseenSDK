@@ -13,9 +13,9 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 // HMDDeviceDesc can be created/updated through Sensor carrying DisplayInfo.
 
-#include "VStringBuffer.h"
 #include "Timer.h"
 #include "Alg.h"
+#include "Std.h"
 
 namespace NervGear {
 
@@ -970,7 +970,7 @@ void SensorDeviceImpl::openDevice()
 		}
 #endif
 
-        const char *cstr = str.toStdString();
+        const char *cstr = str.toCString();
         LogText("NervGear::SensorDeviceImpl::openDevice - with serial code '%s'.\n", cstr);
         delete[] cstr;
 

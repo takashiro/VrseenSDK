@@ -13,6 +13,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "Log.h"
 #include "Timer.h"
+#include "Alg.h"
 
 namespace NervGear {
 
