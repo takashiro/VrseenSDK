@@ -352,11 +352,9 @@ Array<VString> MovieManager::ScanMovieDirectories() const {
 
 const VString MovieManager::GetMovieTitleFromFilename( const char *filepath )
 {
-	VString filename = StringUtils::GetFileBaseString( filepath );
-
-	// change _ to space
-    VString displayName = StringUtils::ReplaceChar( filename.toCString(), '_', ' ' );
-	return displayName;
+    VString fileName = StringUtils::GetFileBaseString( filepath );
+    fileName.replace('_', ' ');
+    return fileName;
 }
 
 Array<const MovieDef *> MovieManager::GetMovieList( MovieCategory category ) const

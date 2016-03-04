@@ -44,6 +44,8 @@ public:
     void prepend(const VString &str) { insert(0, str); }
     void prepend(const char *str) { insert(0, str); }
 
+    void replace(VChar from, VChar to);
+
     void remove(uint index, uint length = 1) { basic_string::erase(index, length); }
 
     VString mid(uint from, uint length = 0) const { return substr(from, length ? length : size() - from); }

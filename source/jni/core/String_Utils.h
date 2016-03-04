@@ -19,24 +19,7 @@ namespace StringUtils
 		strncpy( dest, src, length < size ? length : size );
 		dest[size - 1] = '\0';
 		return dest;
-	}
-
-	inline VString ReplaceChar( const char *text, const char charToReplace, const char newChar )
-	{
-		VString result;
-
-		for( uint index = 0; text[ index ]  != '\0'; index++ )
-		{
-			char ch = text[ index ];
-			if ( ch == charToReplace )
-			{
-				ch = newChar;
-			}
-			result.append( ch );
-		}
-
-		return result;
-	}
+    }
 
 	template < size_t size >
 	inline const char * SPrintf( char (&dest)[size], const char * format, ... )

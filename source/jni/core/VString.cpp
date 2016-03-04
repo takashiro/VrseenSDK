@@ -126,6 +126,15 @@ void VString::insert(uint pos, const char *str)
     basic_string::insert(pos, vstring.data());
 }
 
+void VString::replace(VChar from, VChar to)
+{
+    for (VChar &ch : *this) {
+        if (ch == from) {
+            ch = to;
+        }
+    }
+}
+
 bool VString::startsWith(const VString &prefix) const
 {
     if (prefix.size() > this->size()) {

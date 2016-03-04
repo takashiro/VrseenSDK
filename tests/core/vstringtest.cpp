@@ -148,7 +148,6 @@ void test()
         uint size1 = str1.size();
         str1.insert(7, " a");
         assert(size1 + 2 == str1.size());
-        std::cout << str1.toStdString() << std::endl;
         assert(str1 == "this is a test");
 
         VString str2("test");
@@ -181,8 +180,8 @@ void test()
         assert(strcmp(str.toCString(), "res/raw/efigs_sdf.ktx") == 0);
     }
 
-    //contains, startsWith, endsWith
     {
+        //contains, startsWith, endsWith
         VString str("this is a test.");
         assert(str.contains("is"));
         assert(str.contains('.'));
@@ -194,6 +193,10 @@ void test()
         assert(str.endsWith('.'));
         assert(str.endsWith("."));
         assert(str.endsWith("test."));
+
+        //replace
+        str.replace(' ', '_');
+        assert(str == "this_is_a_test.");
     }
 }
 
