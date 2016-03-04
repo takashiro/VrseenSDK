@@ -85,126 +85,6 @@ namespace StringUtils
 	}
 
 	template < size_t size >
-	inline void GetRelativePath( char (&dest)[size], const char * path, const char * relativeTo, const char separator = '/' )
-	{
-		int match = 0;
-		for ( ; path[match] != '\0' && PathCharCmp( path[match], relativeTo[match] ) == 0; match++ ) {}
-		if ( match == 0 )
-		{
-			Copy( dest, path );
-			return;
-		}
-		int folders = 0;
-		for ( int i = match; relativeTo[i] != '\0'; i++ )
-		{
-			if ( relativeTo[i] == '/' || relativeTo[i] == '\\' )
-			{
-				folders++;
-			}
-		}
-		int length = 0;
-		for ( int i = 0; i < folders && length < (int)size - 4; i++ )
-		{
-			dest[length++] = '.';
-			dest[length++] = '.';
-			dest[length++] = separator;
-		}
-		for ( ; path[match] == '\\' || path[match] == '/'; match++ ) {}
-		for ( int i = match; path[i] != '\0' && length < (int)size - 1; i++ )
-		{
-			dest[length++] = path[i];
-		}
-		dest[length] = '\0';
-	}
-
-	template < size_t size >
-	inline void GetFolder( char (&dest)[size], const char * path )
-	{
-		int nameOffset = 0;
-		int length = 0;
-		for ( int index = 0; path[index] != '\0' && index < (int)size - 1; index++, length++ )
-		{
-			dest[index] = path[index];
-			if ( path[index] == '/' || path[index] == '\\' || path[index] == ':' )
-			{
-				nameOffset = index + 1;
-			}
-		}
-		dest[nameOffset] = '\0';
-	}
-
-	template < size_t size >
-	inline void GetFileName( char (&dest)[size], const char * path )
-	{
-		int nameOffset = 0;
-		int length = 0;
-		for ( int index = 0; path[index] != '\0'; index++, length++ )
-		{
-			if ( path[index] == '/' || path[index] == '\\' || path[index] == ':' )
-			{
-				nameOffset = index + 1;
-			}
-		}
-		int index = 0;
-		for ( ; nameOffset + index < length && index < (int)size - 1; index++ )
-		{
-			dest[index] = path[nameOffset + index];
-		}
-		dest[index] = '\0';
-	}
-
-	template < size_t size >
-	inline void GetFileBase( char (&dest)[size], const char * path )
-	{
-		int nameOffset = 0;
-		int extensionOffset = -1;
-		int length = 0;
-		for ( int index = 0; path[index] != '\0'; index++, length++ )
-		{
-			if ( path[index] == '/' || path[index] == '\\' || path[index] == ':' )
-			{
-				nameOffset = index + 1;
-			}
-			else if ( path[index] == '.' )
-			{
-				extensionOffset = index;
-			}
-		}
-		if ( extensionOffset == -1 )
-		{
-			extensionOffset = length;
-		}
-		int index = 0;
-		for ( ; nameOffset + index < extensionOffset && index < (int)size - 1; index++ )
-		{
-			dest[index] = path[nameOffset + index];
-		}
-		dest[index] = '\0';
-	}
-
-	template < size_t size >
-	inline void GetFileExtension( char (&dest)[size], const char * path )
-	{
-		int extensionOffset = -1;
-		for ( int index = 0; path[index] != '\0'; index++ )
-		{
-			if ( path[index] == '.' )
-			{
-				extensionOffset = index + 1;
-			}
-		}
-		int index = 0;
-		if ( extensionOffset != -1 )
-		{
-			for ( ; path[extensionOffset + index] != '\0' && index < (int)size - 1; index++ )
-			{
-				dest[index] = path[extensionOffset + index];
-			}
-		}
-		dest[index] = '\0';
-	}
-
-	template < size_t size >
     inline void SetFileExtension( char (&dest)[size], const VString &path, const char * extension )
 	{
 		int extensionOffset = -1;
@@ -239,11 +119,6 @@ namespace StringUtils
 	}
 
 	inline VString GetCleanPathString( const char * path, const char separator = '/' ) { char buffer[MAX_PATH_LENGTH]; GetCleanPath( buffer, path, separator ); return VString( buffer ); }
-	inline VString GetRelativePathString( const char * path, const char * relativeTo, const char separator = '/' ) { char buffer[MAX_PATH_LENGTH]; GetRelativePath( buffer, path, relativeTo, separator ); return VString( buffer ); }
-	inline VString GetFolderString( const char * path ) { char buffer[MAX_PATH_LENGTH]; GetFolder( buffer, path ); return VString( buffer ); }
-	inline VString GetFileNameString( const char * path ) { char buffer[MAX_PATH_LENGTH]; GetFileName( buffer, path ); return VString( buffer ); }
-	inline VString GetFileBaseString( const char * path ) { char buffer[MAX_PATH_LENGTH]; GetFileBase( buffer, path ); return VString( buffer ); }
-	inline VString GetFileExtensionString( const char * path ) { char buffer[MAX_PATH_LENGTH]; GetFileExtension( buffer, path ); return VString( buffer ); }
     inline VString SetFileExtensionString( const VString &path, const char * extension ) { char buffer[MAX_PATH_LENGTH]; SetFileExtension( buffer, path, extension ); return VString( buffer ); }
 
 	// String format functor.

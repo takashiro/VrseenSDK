@@ -352,7 +352,7 @@ Array<VString> MovieManager::ScanMovieDirectories() const {
 
 const VString MovieManager::GetMovieTitleFromFilename( const char *filepath )
 {
-    VString fileName = StringUtils::GetFileBaseString( filepath );
+    VString fileName = VPath(filepath).baseName();
     fileName.replace('_', ' ');
     return fileName;
 }

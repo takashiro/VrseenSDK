@@ -104,7 +104,7 @@ VString VPath::fileName() const
 {
     uint i = size() - 1;
     forever {
-        if (at(i) == '/' || at(i) == '\\') {
+        if (at(i) == '/' || at(i) == '\\' || at(i) == ':') {
             return mid(i + 1);
         }
 
