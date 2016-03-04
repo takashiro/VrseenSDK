@@ -144,6 +144,7 @@ HEADERS += \
     jni/core/Allocator.h \
     jni/core/Atomic.h \
     jni/core/Array.h \
+    jni/core/VColor.h \
     jni/core/VChar.h \
     jni/core/ContainerAllocator.h \
     jni/core/Deque.h \
@@ -173,7 +174,6 @@ HEADERS += \
     jni/core/KeyCodes.h \
     jni/core/List.h \
     jni/core/BitFlags.h \
-    jni/core/Color.h \
     jni/core/OVR.h \
     jni/core/OVRVersion.h \
     jni/core/VSharedPointer.h \

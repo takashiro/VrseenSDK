@@ -6,7 +6,7 @@
 
 #include "VMath.h"
 #include "Array.h"
-#include "Color.h"
+#include "VColor.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -121,7 +121,7 @@ public:
     {
     }
 
-    Array<Color>     Samples;
+    Array<VColor>     Samples;
 };
 
 // Sent when a Latency Tester 'color detected' event occurs.
@@ -134,8 +134,8 @@ public:
     }
 
     UInt16      Elapsed;
-    Color       DetectedValue;
-    Color       TargetValue;
+    VColor       DetectedValue;
+    VColor       TargetValue;
 };
 
 // Sent when a Latency Tester 'change color' event occurs.
@@ -147,7 +147,7 @@ public:
     {
     }
 
-    Color    TargetValue;
+    VColor    TargetValue;
 };
 
 // Sent when a Latency Tester 'button' event occurs.

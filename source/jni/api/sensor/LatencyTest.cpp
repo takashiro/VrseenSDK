@@ -24,11 +24,11 @@ static const UInt32     DEFAULT_NUMBER_OF_SAMPLES = 10;                 // For b
 static const UInt32     INITIAL_SAMPLES_TO_IGNORE = 4;
 static const UInt32     TIMEOUT_WAITING_FOR_TEST_STARTED = 1000;
 static const UInt32     TIMEOUT_WAITING_FOR_COLOR_DETECTED = 4000;
-static const Color      CALIBRATE_BLACK(0, 0, 0);
-static const Color      CALIBRATE_WHITE(255, 255, 255);
-static const Color      COLOR1(0, 0, 0);
-static const Color      COLOR2(255, 255, 255);
-static const Color      SENSOR_DETECT_THRESHOLD(128, 255, 255);
+static const VColor      CALIBRATE_BLACK(0, 0, 0);
+static const VColor      CALIBRATE_WHITE(255, 255, 255);
+static const VColor      COLOR1(0, 0, 0);
+static const VColor      COLOR2(255, 255, 255);
+static const VColor      SENSOR_DETECT_THRESHOLD(128, 255, 255);
 static const float      BIG_FLOAT = 1000000.0f;
 static const float      SMALL_FLOAT = -1000000.0f;
 
@@ -276,9 +276,9 @@ void LatencyTest::handleMessage(const Message& msg, LatencyTestMessageType laten
             MessageLatencyTestColorDetected* pDetected = (MessageLatencyTestColorDetected*) &msg;
             UInt16 elapsedTime = pDetected->Elapsed;
 
-			Color col = getActiveResult()->TargetColor;
+			VColor col = getActiveResult()->TargetColor;
 			OVR_UNUSED( col );
-            OVR_DEBUG_LOG(("Time to 'ColorDetected' (%d,%d,%d) = %d", col.R, col.G, col.B, elapsedTime));
+            OVR_DEBUG_LOG(("Time to 'ColorDetected' (%d,%d,%d) = %d", col.red, col.green, col.blue, elapsedTime));
 
             getActiveResult()->DeviceMeasuredElapsedMilliS = elapsedTime;
 
@@ -359,7 +359,7 @@ void LatencyTest::ProcessInputs()
     handleMessage(Message(), LatencyTest_ProcessInputs);
 }
 
-bool LatencyTest::DisplayScreenColor(Color& colorToDisplay)
+bool LatencyTest::DisplayScreenColor(VColor& colorToDisplay)
 {
     updateForTimeouts();
 
