@@ -36,7 +36,6 @@ SOURCES += \
     jni/core/ThreadCommandQueue.cpp \
     jni/core/ThreadsPthread.cpp \
     jni/core/Timer.cpp \
-    jni/core/TypesafeNumber.cpp \
     jni/core/UTF8Util.cpp \
     jni/core/BinaryFile.cpp \
     jni/core/MappedFile.cpp \
