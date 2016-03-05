@@ -24,7 +24,7 @@ public:
 
     // NotifyEvent is used by ThreadCommandQueue::PushCallAndWait to notify the
     // calling (producer)  thread when command is completed or queue slot is available.
-    class NotifyEvent : public ListNode<NotifyEvent>, public NewOverrideBase
+    class NotifyEvent : public NewOverrideBase
     {
         VSignal E;
     public:
