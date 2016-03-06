@@ -182,7 +182,9 @@ void SceneManager::SetSceneModel( const SceneDef &sceneDef )
 
 	for ( SceneSeatCount = 0; SceneSeatCount < MAX_SEATS; SceneSeatCount++ )
 	{
-		const ModelTag * tag = Scene.FindNamedTag( StringUtils::Va( "cameraPos%d", SceneSeatCount + 1 ) );
+        VString namedTag;
+        namedTag.sprintf("cameraPos%d", SceneSeatCount + 1);
+        const ModelTag * tag = Scene.FindNamedTag(namedTag);
 		if ( tag == NULL )
 		{
 			break;

@@ -213,9 +213,9 @@ const ModelTexture * OvrSceneView::FindNamedTexture( const char * name ) const
 	return ( WorldModel.Definition == NULL ) ? NULL : WorldModel.Definition->FindNamedTexture( name );
 }
 
-const ModelTag * OvrSceneView::FindNamedTag( const char * name ) const
+const ModelTag * OvrSceneView::FindNamedTag(const VString &name) const
 {
-	return ( WorldModel.Definition == NULL ) ? NULL : WorldModel.Definition->FindNamedTag( name );
+    return ( WorldModel.Definition == NULL ) ? NULL : WorldModel.Definition->FindNamedTag(name);
 }
 
 Bounds3f OvrSceneView::GetBounds() const

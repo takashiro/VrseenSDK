@@ -74,7 +74,7 @@ public:
 	// Passed on to world model
 	SurfaceDef *			FindNamedSurface( const char *name ) const;
 	const ModelTexture *	FindNamedTexture( const char *name ) const;
-	const ModelTag *		FindNamedTag( const char *name ) const;
+	const ModelTag *		FindNamedTag(const VString &name ) const;
 	Bounds3f				GetBounds() const;
 
 

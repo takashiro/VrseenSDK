@@ -73,7 +73,7 @@ public:
 	SurfaceDef *				FindNamedSurface( const char * name ) const;
 	const ModelTexture *		FindNamedTexture( const char * name ) const;
 	const ModelJoint *			FindNamedJoint( const char * name ) const;
-	const ModelTag *			FindNamedTag( const char * name ) const;
+	const ModelTag *			FindNamedTag(const VString &name ) const;
 
 	int							GetJointCount() const { return Joints.sizeInt(); }
 	const ModelJoint *			GetJoint( const int index ) const { return &Joints[index]; }

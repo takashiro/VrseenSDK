@@ -107,18 +107,22 @@ const ModelJoint * ModelFile::FindNamedJoint( const char *name ) const
 	return NULL;
 }
 
-const ModelTag * ModelFile::FindNamedTag( const char *name ) const
+const ModelTag * ModelFile::FindNamedTag(const VString &name) const
 {
 	for ( int i = 0; i < Tags.sizeInt(); i++ )
 	{
 		const ModelTag & tag = Tags[i];
 		if ( tag.name.icompare( name ) == 0 )
 		{
-			LOG( "Found named tag %s", name );
+            const char *s = name.toCString();
+            LOG("Found named tag %s", s);
+            delete[] s;
 			return &tag;
 		}
 	}
-	LOG( "Did not find named tag %s", name );
+    const char *s = name.toCString();
+    LOG("Did not find named tag %s", s);
+    delete[] s;
 	return NULL;
 }
 

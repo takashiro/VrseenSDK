@@ -10,34 +10,6 @@ NV_NAMESPACE_BEGIN
 
 namespace StringUtils
 {
-	static const int MAX_PATH_LENGTH	= 1024;
-
-	template < size_t size >
-	inline const char * VSPrintf( char (&dest)[size], const char * format, va_list args )
-	{
-		vsnprintf( dest, size, format, args );
-		dest[size - 1] = '\0';
-		return dest;
-	}
-
-	// String format functor.
-	class Va
-	{
-	public:
-
-		Va( const char * format, ... )
-		{
-			va_list args;
-			va_start( args, format );
-			VSPrintf( buffer, format, args );
-		}
-
-		operator const char * () { return buffer; }
-
-	private:
-		char buffer[MAX_PATH_LENGTH];
-	};
-
 	//
 	// Convert a string to a common type.
 	//

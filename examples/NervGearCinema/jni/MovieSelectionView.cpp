@@ -781,9 +781,8 @@ void MovieSelectionView::UpdateSelectionFrame( const VrFrame & vrFrame )
 		int seconds = TimerTotalTime - ( int )( TimerTotalTime * frac );
 		if ( TimerValue != seconds )
 		{
-			TimerValue = seconds;
-			const char * text = StringUtils::Va( "%d", seconds );
-			TimerIcon->SetText( text );
+            TimerValue = seconds;
+            TimerIcon->SetText(VString::number(seconds));
 		}
 		TimerIcon->SetVisible( true );
 		CenterPoster->SetColor( Vector4f( 0.55f, 0.55f, 0.55f, 1.0f ) );
