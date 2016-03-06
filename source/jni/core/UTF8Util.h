@@ -20,11 +20,6 @@ int    OVR_STDCALL GetLength(const char* putf8str, int length = -1);
 // by GetLength. 0 will be returned for out of bounds access.
 UInt32   OVR_STDCALL GetCharAt(int index, const char* putf8str, int length = -1);
 
-// Converts UTF8 character index into byte offset.
-// -1 is returned if index was out of bounds.
-int    OVR_STDCALL GetByteIndex(int index, const char* putf8str, int length = -1);
-
-
 // *** 16-bit Unicode string Encoding/Decoding routines.
 
 // Determines the number of bytes necessary to encode a string.

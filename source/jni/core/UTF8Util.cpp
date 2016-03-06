@@ -72,33 +72,6 @@ UInt32 OVR_STDCALL GetCharAt(int index, const char* putf8str, int length)
     return c;
 }
 
-int OVR_STDCALL GetByteIndex(int index, const char *putf8str, int length)
-{
-    const char* buf = putf8str;
-
-    if (length != -1)
-    {
-        while ((buf - putf8str) < length && index > 0)
-        {
-            UTF8Util::DecodeNextChar_Advance0(&buf);
-            index--;
-        }
-
-        return buf-putf8str;
-    }
-
-    while (index > 0)
-    {
-        UInt32 c = UTF8Util::DecodeNextChar_Advance0(&buf);
-        index--;
-
-        if (c == 0)
-            return buf-putf8str;
-    };
-
-    return buf-putf8str;
-}
-
 int OVR_STDCALL GetEncodeCharSize(UInt32 ucs_character)
 {
     if (ucs_character <= 0x7F)
