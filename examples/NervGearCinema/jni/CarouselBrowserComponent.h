@@ -1,20 +1,4 @@
-/************************************************************************************
-
-Filename    :   CarouselBrowserComponent.h
-Content     :   A menu for browsing a hierarchy of folders with items represented by thumbnails.
-Created     :   July 25, 2014
-Authors     :   Jim Dos�
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-This source code is licensed under the BSD-style license found in the
-LICENSE file in the Cinema/ directory. An additional grant
-of patent rights can be found in the PATENTS file in the same directory.
-
-*************************************************************************************/
-
-#if !defined( OVR_CarouselBrowser_h )
-#define OVR_CarouselBrowser_h
+#pragma once
 
 #include "gui/VRMenu.h"
 #include "gui/VRMenuComponent.h"
@@ -117,4 +101,3 @@ private:
 
 } // namespace OculusCinema
 
-#endif // OVR_CarouselBrowser_h

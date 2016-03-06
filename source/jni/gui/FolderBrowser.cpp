@@ -1071,14 +1071,14 @@ void OvrFolderBrowser::openImpl( App * app, OvrGazeCursor & gazeCursor )
 
 void OvrFolderBrowser::oneTimeInit()
 {
-	const OvrStoragePaths & storagePaths = m_app->GetStoragePaths();
-	storagePaths.GetPathIfValidPermission( EST_PRIMARY_EXTERNAL_STORAGE, EFT_CACHE, "", W_OK, m_appCachePath );
+	const VStandardPath & storagePaths = m_app->GetStoragePaths();
+    storagePaths.GetPathIfValidPermission(VStandardPath::PrimaryExternalStorage, VStandardPath::CacheFolder, "", W_OK, m_appCachePath );
 	OVR_ASSERT( !m_appCachePath.isEmpty() );
 
-	storagePaths.PushBackSearchPathIfValid( EST_SECONDARY_EXTERNAL_STORAGE, EFT_ROOT, "RetailMedia/", m_thumbSearchPaths );
-	storagePaths.PushBackSearchPathIfValid( EST_SECONDARY_EXTERNAL_STORAGE, EFT_ROOT, "", m_thumbSearchPaths );
-	storagePaths.PushBackSearchPathIfValid( EST_PRIMARY_EXTERNAL_STORAGE, EFT_ROOT, "RetailMedia/", m_thumbSearchPaths );
-	storagePaths.PushBackSearchPathIfValid( EST_PRIMARY_EXTERNAL_STORAGE, EFT_ROOT, "", m_thumbSearchPaths );
+    storagePaths.PushBackSearchPathIfValid(VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", m_thumbSearchPaths );
+    storagePaths.PushBackSearchPathIfValid(VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "", m_thumbSearchPaths );
+    storagePaths.PushBackSearchPathIfValid(VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", m_thumbSearchPaths );
+    storagePaths.PushBackSearchPathIfValid(VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "", m_thumbSearchPaths );
 	OVR_ASSERT( !m_thumbSearchPaths.isEmpty() );
 
 	// move the root up to eye height

@@ -28,6 +28,7 @@ SOURCES += \
     jni/core/VMath.cpp \
     jni/core/VPath.cpp \
     jni/core/RefCount.cpp \
+    jni/core/VStandardPath.cpp \
     jni/core/Std.cpp \
     jni/core/VString.cpp \
     jni/core/SysFile.cpp \
@@ -119,7 +120,6 @@ SOURCES += \
     jni/KeyState.cpp \
     jni/MessageQueue.cpp \
     jni/PackageFiles.cpp \
-    jni/PathUtils.cpp \
     jni/SoundManager.cpp \
     jni/VUserProfile.cpp \
     jni/TalkToJava.cpp \
@@ -154,6 +154,7 @@ HEADERS += \
     jni/core/VMath.h \
     jni/core/VPath.h \
     jni/core/RefCount.h \
+    jni/core/VStandardPath.h \
     jni/core/Std.h \
     jni/core/VString.h \
     jni/core/String_FormatUtil.h \
@@ -275,7 +276,6 @@ HEADERS += \
     jni/KeyState.h \
     jni/App.h \
     jni/AppRender.h \
-    jni/PathUtils.h \
     jni/DebugLines.h \
     jni/SoundManager.h \
     jni/VUserProfile.h \

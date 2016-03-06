@@ -42,7 +42,7 @@ class OvrVRMenuMgr;
 class OvrDebugLines;
 class App;
 class VrViewParms;
-class OvrStoragePaths;
+class VStandardPath;
 class OvrSoundManager;
 
 //==============================================================
@@ -223,7 +223,7 @@ public:
     virtual BitmapFontSurface & 	GetMenuFontSurface() = 0;
     virtual OvrVRMenuMgr &      	GetVRMenuMgr() = 0;
     virtual OvrDebugLines &     	GetDebugLines() = 0;
-	virtual const OvrStoragePaths &	GetStoragePaths() = 0;
+	virtual const VStandardPath &	GetStoragePaths() = 0;
 	virtual OvrSoundManager &		GetSoundMgr() = 0;
 
 	//-----------------------------------------------------------------

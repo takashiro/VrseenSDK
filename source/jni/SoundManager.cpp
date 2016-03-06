@@ -14,7 +14,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VJson.h"
 #include "Android/LogUtils.h"
 
-#include "PathUtils.h"
+#include "VStandardPath.h"
 #include "PackageFiles.h"
 
 

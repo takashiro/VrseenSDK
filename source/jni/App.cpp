@@ -465,7 +465,7 @@ AppLocal::AppLocal( JNIEnv & jni_, jobject activityObject_, VrAppInterface & int
 {
 	LOG( "----------------- AppLocal::AppLocal() -----------------");
 
-    storagePaths = new OvrStoragePaths( &jni_, activityObject_);
+    storagePaths = new VStandardPath( &jni_, activityObject_);
 
 	//WaitForDebuggerToAttach();
 
@@ -2444,7 +2444,7 @@ OvrDebugLines & AppLocal::GetDebugLines()
 {
     return *debugLines;
 }
-const OvrStoragePaths & AppLocal::GetStoragePaths()
+const VStandardPath & AppLocal::GetStoragePaths()
 {
     return *storagePaths;
 }

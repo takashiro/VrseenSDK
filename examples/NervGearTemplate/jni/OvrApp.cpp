@@ -1,7 +1,7 @@
 #include <jni.h>
+#include <VStandardPath.h>
 
 #include "OvrApp.h"
-#include "PathUtils.h"
 
 extern "C" {
 
@@ -32,12 +32,11 @@ void OvrApp::OneTimeInit( const char * fromPackage, const char * launchIntentJSO
 	VString	        SceneFile;
 	Array<VString>   SearchPaths;
 
-	const OvrStoragePaths & paths = app->GetStoragePaths();
-
-	paths.PushBackSearchPathIfValid(EST_SECONDARY_EXTERNAL_STORAGE, EFT_ROOT, "RetailMedia/", SearchPaths);
-	paths.PushBackSearchPathIfValid(EST_SECONDARY_EXTERNAL_STORAGE, EFT_ROOT, "", SearchPaths);
-	paths.PushBackSearchPathIfValid(EST_PRIMARY_EXTERNAL_STORAGE, EFT_ROOT, "RetailMedia/", SearchPaths);
-	paths.PushBackSearchPathIfValid(EST_PRIMARY_EXTERNAL_STORAGE, EFT_ROOT, "", SearchPaths);
+    const VStandardPath &paths = app->GetStoragePaths();
+    paths.PushBackSearchPathIfValid(VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", SearchPaths);
+    paths.PushBackSearchPathIfValid(VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "", SearchPaths);
+    paths.PushBackSearchPathIfValid(VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", SearchPaths);
+    paths.PushBackSearchPathIfValid(VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "", SearchPaths);
 
 	if ( GetFullPath( SearchPaths, scenePath, SceneFile ) )
 	{

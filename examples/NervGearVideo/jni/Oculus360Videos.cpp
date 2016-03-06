@@ -44,7 +44,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "VideoBrowser.h"
 #include "VideoMenu.h"
 #include "VrLocale.h"
-#include "PathUtils.h"
+#include "VStandardPath.h"
 
 #include "VideosMetaData.h"
 
@@ -293,11 +293,11 @@ void Oculus360Videos::OneTimeInit( const char * fromPackage, const char * launch
 		FAIL( "Oculus360Photos::OneTimeInit failed to create MetaData" );
 	}
 
-	const OvrStoragePaths & storagePaths = app->GetStoragePaths();
-	storagePaths.PushBackSearchPathIfValid( EST_SECONDARY_EXTERNAL_STORAGE, EFT_ROOT, "RetailMedia/", SearchPaths );
-	storagePaths.PushBackSearchPathIfValid( EST_SECONDARY_EXTERNAL_STORAGE, EFT_ROOT, "", SearchPaths );
-	storagePaths.PushBackSearchPathIfValid( EST_PRIMARY_EXTERNAL_STORAGE, EFT_ROOT, "RetailMedia/", SearchPaths );
-	storagePaths.PushBackSearchPathIfValid( EST_PRIMARY_EXTERNAL_STORAGE, EFT_ROOT, "", SearchPaths );
+    const VStandardPath &storagePaths = app->GetStoragePaths();
+    storagePaths.PushBackSearchPathIfValid( VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", SearchPaths );
+    storagePaths.PushBackSearchPathIfValid( VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "", SearchPaths );
+    storagePaths.PushBackSearchPathIfValid( VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", SearchPaths );
+    storagePaths.PushBackSearchPathIfValid( VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "", SearchPaths );
 
 	OvrMetaDataFileExtensions fileExtensions;
 	fileExtensions.goodExtensions.append( ".mp4" );

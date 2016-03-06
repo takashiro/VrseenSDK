@@ -261,11 +261,11 @@ void Oculus360Photos::OneTimeInit( const char * fromPackage, const char * launch
 	fileExtensions.badExtensions.append( "_nx.jpg" );
 	fileExtensions.badExtensions.append( "_ny.jpg" );
 
-	const OvrStoragePaths & storagePaths = app->GetStoragePaths();
-	storagePaths.PushBackSearchPathIfValid( EST_SECONDARY_EXTERNAL_STORAGE, EFT_ROOT, "RetailMedia/", m_searchPaths );
-	storagePaths.PushBackSearchPathIfValid( EST_SECONDARY_EXTERNAL_STORAGE, EFT_ROOT, "", m_searchPaths );
-	storagePaths.PushBackSearchPathIfValid( EST_PRIMARY_EXTERNAL_STORAGE, EFT_ROOT, "RetailMedia/", m_searchPaths );
-	storagePaths.PushBackSearchPathIfValid( EST_PRIMARY_EXTERNAL_STORAGE, EFT_ROOT, "", m_searchPaths );
+    const VStandardPath &storagePaths = app->GetStoragePaths();
+    storagePaths.PushBackSearchPathIfValid( VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", m_searchPaths );
+    storagePaths.PushBackSearchPathIfValid( VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "", m_searchPaths );
+    storagePaths.PushBackSearchPathIfValid( VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", m_searchPaths );
+    storagePaths.PushBackSearchPathIfValid( VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "", m_searchPaths );
 
 	LOG( "360 PHOTOS using %d searchPaths", m_searchPaths.sizeInt() );
 
