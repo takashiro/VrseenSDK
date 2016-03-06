@@ -141,6 +141,7 @@ HEADERS += \
     jni/core/Allocator.h \
     jni/core/Atomic.h \
     jni/core/Array.h \
+    jni/core/VArray.h \
     jni/core/VColor.h \
     jni/core/VChar.h \
     jni/core/ContainerAllocator.h \
