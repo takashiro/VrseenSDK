@@ -22,6 +22,7 @@ public:
     VString(const std::u16string &source);
 
     VString(const VString &source) : basic_string(source) {}
+    VString(VString &&source) : basic_string(source) {}
 
     // Returns number of bytes
     int length() const { return size(); }
