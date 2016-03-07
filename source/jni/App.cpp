@@ -615,7 +615,7 @@ void AppLocal::InitFonts()
 	VString fontName;
 	VrLocale::GetString( GetVrJni(), GetJavaObject(), "@string/font_name", "efigs.fnt", fontName );
     fontName.prepend("res/raw/");
-    if ( !defaultFont->Load( languagePackagePath.toCString(), fontName ) )
+    if ( !defaultFont->Load(languagePackagePath, fontName ) )
 	{
 		// reset the locale to english and try to load the font again
         jmethodID setDefaultLocaleId = vrJni->GetMethodID( vrActivityClass, "setDefaultLocale", "()V" );
@@ -634,7 +634,7 @@ void AppLocal::InitFonts()
             fontName.prepend("res/raw/");
             LOG(fontName.toCString());
             // try to load the font
-            if ( !defaultFont->Load( languagePackagePath.toCString(), fontName ) )
+            if ( !defaultFont->Load(languagePackagePath, fontName ) )
 			{
 				FAIL( "Failed to load font for default locale!" );
 			}
