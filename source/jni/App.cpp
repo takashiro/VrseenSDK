@@ -50,6 +50,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VrLocale.h"
 #include "VUserProfile.h"
 #include "Console.h"
+#include "VLog.h"
 
 //#define TEST_TIMEWARP_WATCHDOG
 
@@ -630,9 +631,7 @@ void AppLocal::InitFonts()
 			}
 			// re-get the font name for the new locale
 			VrLocale::GetString( GetVrJni(), GetJavaObject(), "@string/font_name", "efigs.fnt", fontName );
-            LOG(fontName.toCString());
             fontName.prepend("res/raw/");
-            LOG(fontName.toCString());
             // try to load the font
             if ( !defaultFont->Load(languagePackagePath, fontName ) )
 			{
@@ -1841,8 +1840,8 @@ void AppLocal::VrThreadFunction()
 				const ovrTimeWarpParms warpSwapLoadingIconParms = InitTimeWarpParms( WARP_INIT_LOADING_ICON, loadingIconTexId );
 				ovr_WarpSwap( OvrMobile, &warpSwapLoadingIconParms );
 			}
-            LOG( "launchIntentJSON: %s", launchIntentJSON.toCString() );
-            LOG( "launchIntentURI: %s", launchIntentURI.toCString() );
+            vInfo("launchIntentJSON:" << launchIntentJSON);
+            vInfo("launchIntentURI:" << launchIntentURI);
 
             appInterface->OneTimeInit( launchIntentFromPackage.toCString(), launchIntentJSON.toCString(), launchIntentURI.toCString() );
             oneTimeInitCalled = true;

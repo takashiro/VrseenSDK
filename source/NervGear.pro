@@ -37,7 +37,7 @@ SOURCES += \
     jni/core/System.cpp \
     jni/core/ThreadCommandQueue.cpp \
     jni/core/ThreadsPthread.cpp \
-    jni/core/Timer.cpp \
+    jni/core/VTimer.cpp \
     jni/core/BinaryFile.cpp \
     jni/core/MappedFile.cpp \
     jni/core/MemBuffer.cpp \
@@ -166,7 +166,7 @@ HEADERS += \
     jni/core/System.h \
     jni/core/ThreadCommandQueue.h \
     jni/core/Threads.h \
-    jni/core/Timer.h \
+    jni/core/VTimer.h \
     jni/core/BinaryFile.h \
     jni/core/MappedFile.h \
     jni/core/MemBuffer.h \

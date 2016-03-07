@@ -12,7 +12,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "LatencyTest.h"
 
 #include "Log.h"
-#include "Timer.h"
+#include "VTimer.h"
 #include "Alg.h"
 
 namespace NervGear {
@@ -46,7 +46,7 @@ LatencyTest::LatencyTest(LatencyTestDevice* device)
 
     reset();
 
-    srand(Timer::GetTicksMs());
+    srand(VTimer::TicksMs());
 }
 
 LatencyTest::~LatencyTest()
@@ -237,7 +237,7 @@ void LatencyTest::handleMessage(const Message& msg, LatencyTestMessageType laten
             getActiveResult()->TargetColor = RenderColor;
 
             // Record time so we can determine usb roundtrip time.
-            getActiveResult()->StartTestSeconds = Timer::GetSeconds();
+            getActiveResult()->StartTestSeconds = VTimer::Seconds();
 
             Device->SetStartTest(RenderColor);
 
@@ -261,7 +261,7 @@ void LatencyTest::handleMessage(const Message& msg, LatencyTestMessageType laten
             clearTimer();
 
             // Record time so we can determine usb roundtrip time.
-            getActiveResult()->TestStartedSeconds = Timer::GetSeconds();
+            getActiveResult()->TestStartedSeconds = VTimer::Seconds();
 
             State = State_WaitingForColorDetected;
             OVR_DEBUG_LOG(("State_WaitingForTestStarted -> State_WaitingForColorDetected."));
@@ -490,7 +490,7 @@ void LatencyTest::processResults()
                     }
                 }
 
-                float usbRountripElapsedMilliS = Timer::MsPerSecond * (float) (pCurr->TestStartedSeconds - pCurr->StartTestSeconds);
+                float usbRountripElapsedMilliS = 1000 * (float) (pCurr->TestStartedSeconds - pCurr->StartTestSeconds);
                 minUSBTripMilliS = Alg::Min(usbRountripElapsedMilliS, minUSBTripMilliS);
                 maxUSBTripMilliS = Alg::Max(usbRountripElapsedMilliS, maxUSBTripMilliS);
                 averageUSBTripMilliS += usbRountripElapsedMilliS;
@@ -537,11 +537,11 @@ void LatencyTest::updateForTimeouts()
     if (!HaveOldTime)
     {
         HaveOldTime = true;
-        OldTime = Timer::GetTicksMs();
+        OldTime = VTimer::TicksMs();
         return;
     }
 
-    UInt32 newTime = Timer::GetTicksMs();
+    UInt32 newTime = VTimer::TicksMs();
     UInt32 elapsedMilliS = newTime - OldTime;
     if (newTime < OldTime)
     {

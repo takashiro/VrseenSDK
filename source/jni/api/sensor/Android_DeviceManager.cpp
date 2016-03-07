@@ -17,7 +17,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "Android_HIDDevice.h"
 #include "Android_HMDDevice.h"
 
-#include "Timer.h"
+#include "VTimer.h"
 #include "Std.h"
 #include "Log.h"
 
@@ -222,12 +222,12 @@ int DeviceManagerThread::run()
                 // allowed based on current ticks.
                 if (!m_ticksNotifiers.isEmpty())
                 {
-                    double timeSeconds = Timer::GetSeconds();
+                    double timeSeconds = VTimer::Seconds();
                     int    waitAllowed;
 
                     for (uint j = 0; j < m_ticksNotifiers.size(); j++)
                     {
-                        waitAllowed = (int)(m_ticksNotifiers[j]->onTicks(timeSeconds) * Timer::MsPerSecond);
+                        waitAllowed = (int)(m_ticksNotifiers[j]->onTicks(timeSeconds) * 1000);
                         if (waitAllowed < (int)waitMs)
                         {
                             waitMs = waitAllowed;
@@ -271,7 +271,7 @@ int DeviceManagerThread::run()
                                 event_count++;
                                 if ( event_count >= 500 )
                                 {
-                                    const double current_time = Timer::GetSeconds();
+                                    const double current_time = VTimer::Seconds();
                                     const int eventHz = (int)( event_count / ( current_time - event_time ) + 0.5 );
                                     LogText( "DeviceManagerThread - event %d (%dHz) (Tid=%d)\n", m_pollFds[i].fd, eventHz, threadTid() );
                                     event_count = 0;

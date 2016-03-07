@@ -13,7 +13,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 // HMDDeviceDesc can be created/updated through Sensor carrying DisplayInfo.
 
-#include "Timer.h"
+#include "VTimer.h"
 #include "Alg.h"
 #include "Std.h"
 
@@ -1474,7 +1474,7 @@ void SensorDeviceImpl::onTrackerMessage(TrackerMessage* message)
     // Call OnMessage() within a lock to avoid conflicts with handlers.
     Lock::Locker scopeLock(HandlerRef.GetLock());
 
-    const double now                 = NervGear::Timer::GetSeconds();
+    const double now                 = NervGear::VTimer::Seconds();
     double absoluteTimeSeconds       = 0.0;
 
 

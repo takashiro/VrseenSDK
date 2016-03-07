@@ -52,7 +52,7 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     core/System.cpp \
                     core/ThreadCommandQueue.cpp \
                     core/ThreadsPthread.cpp \
-                    core/Timer.cpp \
+                    core/VTimer.cpp \
                     core/BinaryFile.cpp \
                     core/MappedFile.cpp \
                     core/MemBuffer.cpp \

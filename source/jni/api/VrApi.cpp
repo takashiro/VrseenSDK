@@ -438,7 +438,7 @@ const char *ovr_GetVersionString()
 
 double ovr_GetTimeInSeconds()
 {
-	return NervGear::Timer::GetSeconds();
+	return NervGear::VTimer::Seconds();
 }
 
 // This must be called by a function called directly from a java thread,

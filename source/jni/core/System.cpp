@@ -1,6 +1,6 @@
 #include "System.h"
 #include "Threads.h"
-#include "Timer.h"
+#include "VTimer.h"
 
 #include "VLog.h"
 
@@ -13,7 +13,6 @@ void System::Init(Log* log, Allocator *palloc)
 {
     if (!Allocator::GetInstance()) {
         Log::SetGlobalLog(log);
-        Timer::InitializeTimerSystem();
         Allocator::setInstance(palloc);
 #ifdef OVR_ENABLE_THREADS
         Thread::InitThreadList();
@@ -36,7 +35,6 @@ void System::Destroy()
         Allocator::GetInstance()->onSystemShutdown();
         Allocator::setInstance(0);
 
-        Timer::ShutdownTimerSystem();
         Log::SetGlobalLog(Log::GetDefaultLog());
     } else {
         vFatal("System::Destroy failed - System not initialized.");
