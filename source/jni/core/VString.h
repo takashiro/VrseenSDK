@@ -1,7 +1,6 @@
 #pragma once
 
 #include "vglobal.h"
-#include "VChar.h"
 
 #include <string>
 #include <string.h>
@@ -9,15 +8,18 @@
 
 NV_NAMESPACE_BEGIN
 
-class VString : public std::basic_string<VChar>
+class VString : public std::u16string
 {
 public:
     VString();
+
     VString(const char *str);
-    VString(const std::string &str);
     VString(const char *data, uint length);
-    VString(const VChar *data, uint length) : basic_string(data, length) {}
-    VString(const basic_string<VChar> &source) : basic_string(source) {}
+    VString(const std::string &str);
+
+    VString(const char16_t *data, uint length) { assign(data, length); }
+    VString(const std::u16string &source);
+
     VString(const VString &source) : basic_string(source) {}
 
     // Returns number of bytes
@@ -25,26 +27,28 @@ public:
 
     bool isEmpty() const { return empty(); }
 
-    void assign(const VChar *str, uint size) { basic_string::assign(str, str + size); }
-    void assign(const char *str);
+    void assign(const char *str) { assign(str, strlen(str)); }
+    void assign(const char *str, uint size);
+    void assign(const char16_t *str);
+    void assign(const char16_t *str, uint size);
 
     const VString &operator = (const char *str);
     const VString &operator = (const VString &src);
 
-    void append(VChar ch) { basic_string::operator +=(ch); }
+    void append(char16_t ch) { basic_string::operator +=(ch); }
     void append(const VString &str) { basic_string::append(str.data()); }
     void append(const char *str) { append(str, strlen(str)); }
     void append(const char *str, uint length);
 
-    void insert(uint pos, VChar ch);
+    void insert(uint pos, char16_t ch);
     void insert(uint pos, const VString &str) { basic_string::insert(pos, str.data()); }
     void insert(uint pos, const char *str);
 
-    void prepend(VChar ch) { insert(0, ch); }
+    void prepend(char16_t ch) { insert(0, ch); }
     void prepend(const VString &str) { insert(0, str); }
     void prepend(const char *str) { insert(0, str); }
 
-    void replace(VChar from, VChar to);
+    void replace(char16_t from, char16_t to);
 
     void remove(uint index, uint length = 1) { basic_string::erase(index, length); }
 
@@ -53,16 +57,16 @@ public:
     VString left(uint count) const { return mid(0, count); }
     VString right(uint count) const { return mid(size() - count, count); }
 
-    VChar first() const { return front(); }
-    VChar last() const { return back(); }
+    char16_t first() const { return front(); }
+    char16_t last() const { return back(); }
 
-    bool contains(VChar ch) const { return find(ch) != npos; }
+    bool contains(char16_t ch) const { return find(ch) != npos; }
     bool contains(const VString &substr) const { return find(substr) != npos; }
 
-    bool startsWith(VChar ch) const { return front() == ch; }
+    bool startsWith(char16_t ch) const { return front() == ch; }
     bool startsWith(const VString &prefix) const;
 
-    bool endsWith(VChar ch) const { return back() == ch; }
+    bool endsWith(char16_t ch) const { return back() == ch; }
     bool endsWith(const VString &postfix) const;
 
     VString toUpper() const;
@@ -72,11 +76,11 @@ public:
 
     const VString &operator += (const VString &str) { append(str); return *this; }
     const VString &operator += (const char *str) { append(str); return *this; }
-    const VString &operator += (VChar ch) { basic_string::operator +=(ch); return *this; }
+    const VString &operator += (char16_t ch) { basic_string::operator +=(ch); return *this; }
 
     friend VString operator + (const VString &str1, const VString &str2);
-    friend VString operator + (const VString &str, VChar ch);
-    friend VString operator + (VChar ch, const VString &str);
+    friend VString operator + (const VString &str, char16_t ch);
+    friend VString operator + (char16_t ch, const VString &str);
 
     std::string toStdString() const;
     const char *toCString() const;

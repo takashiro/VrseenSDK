@@ -6,16 +6,16 @@
 NV_NAMESPACE_BEGIN
 
 namespace {
-    template<class T>
-    void CopyString(VChar *to, const T *from, uint length)
+    template<class C, class T>
+    void CopyString(C *to, const T *from, uint length)
     {
         for (uint i = 0; i < length; i++) {
             to[i] = from[i];
         }
     }
 
-    template<class T>
-    int StringCompare(const VChar *str1, const T *str2)
+    template<class C, class T>
+    int StringCompare(const C *str1, const T *str2)
     {
         if (str1 == nullptr) {
             return str2 == nullptr ? 0 : -1;
@@ -31,14 +31,14 @@ namespace {
         return *str1 < *str2 ? -1 : 1;
     }
 
-    template<class T>
-    int CaseCompareString(const VChar *str1, const T *str2)
+    template<class C, class T>
+    int CaseCompareString(const C *str1, const T *str2)
     {
         if (str1 == nullptr) {
             return str2 == nullptr ? 0 : -1;
         }
 
-        VChar ch1;
+        C ch1;
         T ch2;
         forever {
             ch1 = *str1;
@@ -82,6 +82,15 @@ VString::VString(const char *data, uint length)
     }
 }
 
+VString::VString(const std::u16string &source)
+{
+    uint length = source.length();
+    this->resize(length);
+    for (uint i = 0; i < length; i++) {
+        at(i) = source[i];
+    }
+}
+
 void VString::append(const char *str, uint length)
 {
     for (uint i = 0; i < length; i++) {
@@ -89,15 +98,40 @@ void VString::append(const char *str, uint length)
     }
 }
 
-void VString::assign(const char *str)
+void VString::assign(const char *str, uint size)
 {
     if (str == nullptr) {
         clear();
         return;
     }
 
-    uint size = strlen(str);
     resize(size);
+    for (uint i = 0; i < size; i++) {
+        at(i) = str[i];
+    }
+}
+
+void VString::assign(const char16_t *str)
+{
+    if (str == nullptr) {
+        clear();
+        return;
+    }
+
+    uint size = 0;
+    while (str[size++]) {}
+    resize(size);
+
+    assign(str, size);
+}
+
+void VString::assign(const char16_t *str, uint size)
+{
+    if (str == nullptr) {
+        clear();
+        return;
+    }
+
     for (uint i = 0; i < size; i++) {
         at(i) = str[i];
     }
@@ -106,8 +140,10 @@ void VString::assign(const char *str)
 VString VString::toUpper() const
 {
     VString str(*this);
-    for (VChar &ch : str) {
-        ch = ch.toUpper();
+    for (char16_t &ch : str) {
+        if (ch >= 'a' && ch <= 'z') {
+            ch -= 0x20;
+        }
     }
     return str;
 }
@@ -115,8 +151,10 @@ VString VString::toUpper() const
 VString VString::toLower() const
 {
     VString str(*this);
-    for (VChar &ch : str) {
-        ch = ch.toLower();
+    for (char16_t &ch : str) {
+        if (ch >= 'A' && ch <= 'Z') {
+            ch += 0x20;
+        }
     }
     return str;
 }
@@ -127,9 +165,9 @@ void VString::insert(uint pos, const char *str)
     basic_string::insert(pos, vstring.data());
 }
 
-void VString::replace(VChar from, VChar to)
+void VString::replace(char16_t from, char16_t to)
 {
-    for (VChar &ch : *this) {
+    for (char16_t &ch : *this) {
         if (ch == from) {
             ch = to;
         }
@@ -164,7 +202,7 @@ bool VString::endsWith(const VString &postfix) const
     return true;
 }
 
-void VString::insert(uint pos, VChar ch)
+void VString::insert(uint pos, char16_t ch)
 {
     basic_string::insert(begin() + pos, ch);
 }
@@ -177,7 +215,7 @@ const VString &VString::operator = (const char *str)
 
 const VString &VString::operator = (const VString &src)
 {
-    assign(src.data(), src.size());
+    std::u16string::assign(src.data(), src.size());
     return *this;
 }
 
@@ -188,16 +226,17 @@ VString operator + (const VString &str1, const VString &str2)
     return str;
 }
 
-VString operator + (const VString &str, VChar ch)
+VString operator + (const VString &str, char16_t ch)
 {
     VString result(str);
     result.append(ch);
     return result;
 }
 
-VString operator + (VChar ch, const VString &str)
+VString operator + (char16_t ch, const VString &str)
 {
-    VString result(&ch, 1);
+    VString result;
+    result.append(ch);
     result.append(str);
     return result;
 }
@@ -208,7 +247,7 @@ std::string VString::toStdString() const
     std::string str;
     str.resize(size);
     for (uint i = 0; i < size; i++) {
-        str[i] = at(i).toLatin1();
+        str[i] = at(i);
     }
     return str;
 }
@@ -218,7 +257,7 @@ const char *VString::toCString() const
     //@to-do: fix the memory leak
     char *str = new char[size() + 1];
     for (uint i = 0; i < size(); i++) {
-        str[i] = at(i).toLatin1();
+        str[i] = at(i);
     }
     str[size()] = '\0';
     return str;

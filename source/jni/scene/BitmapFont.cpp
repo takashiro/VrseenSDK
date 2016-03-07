@@ -874,7 +874,7 @@ void BitmapFontLocal::WordWrapText(VString & inOutText, const float widthMeters,
 	double lineWidth = 0.0f;
 	int dontSplitUntilIdx = -1;
 	for (int32_t pos = 0; pos < totalLength; ++pos) {
-        uint32_t charCode = inOutText.at(pos).unicode();
+        uint32_t charCode = inOutText.at(pos);
 
 		// Replace any existing character escapes with space as we recompute where to insert line breaks
 		if (charCode == '\r' || charCode == '\n' || charCode == '\t') {
