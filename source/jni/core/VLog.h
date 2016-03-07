@@ -50,6 +50,7 @@ private:
 #  define vWarn(args) { VLog(VLog::Warn) << args ; }
 #  define vError(args) { VLog(VLog::Error) << args ; }
 #  define vFatal(args) { VLog(VLog::Verbose) << args; __builtin_trap() ; }
+#  define vAssert(expr) { if (!(expr)) { vFatal(#expr); } }
 #else
 #  define vVerbose(args)
 #  define vDebug(args)
@@ -57,6 +58,7 @@ private:
 #  define vWarn(args)
 #  define vError(args)
 #  define vFatal(args)
+#  define vAssert(expr)
 #endif
 
 NV_NAMESPACE_END
