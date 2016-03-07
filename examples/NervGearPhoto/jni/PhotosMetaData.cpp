@@ -72,8 +72,8 @@ void OvrPhotosMetaData::swapExtendedData( OvrMetaDatum * left, OvrMetaDatum * ri
 	OvrPhotosMetaDatum * rightPhotoData = static_cast< OvrPhotosMetaDatum * >( right );
 	if ( leftPhotoData && rightPhotoData )
 	{
-		Alg::Swap( leftPhotoData->title, rightPhotoData->title );
-		Alg::Swap( leftPhotoData->author, rightPhotoData->author );
+        std::swap(leftPhotoData->title, rightPhotoData->title);
+        std::swap(leftPhotoData->author, rightPhotoData->author);
 	}
 }
 

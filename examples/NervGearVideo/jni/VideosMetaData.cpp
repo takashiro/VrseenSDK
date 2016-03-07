@@ -84,8 +84,8 @@ void OvrVideosMetaData::swapExtendedData( OvrMetaDatum * left, OvrMetaDatum * ri
 	OvrVideosMetaDatum * rightVideoData = static_cast< OvrVideosMetaDatum * >( right );
 	if ( leftVideoData && rightVideoData )
 	{
-		Alg::Swap( leftVideoData->Title, rightVideoData->Title );
-		Alg::Swap( leftVideoData->Author, rightVideoData->Author );
+        std::swap(leftVideoData->Title, rightVideoData->Title);
+        std::swap(leftVideoData->Author, rightVideoData->Author);
 	}
 }
 

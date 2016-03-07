@@ -299,8 +299,8 @@ void SceneManager::SetSceneProgram( const sceneProgram_t opaqueProgram, const sc
 			if ( materialDef.programObject != opaqueProg.program &&
 				( materialDef.programObject == dynamicOnlyProg.program ||
 					opaqueProg.program == dynamicOnlyProg.program ) )
-			{
-				Alg::Swap( materialDef.textures[0], materialDef.textures[1] );
+            {
+                std::swap(materialDef.textures[0], materialDef.textures[1]);
 			}
 
 			materialDef.programObject = opaqueProg.program;

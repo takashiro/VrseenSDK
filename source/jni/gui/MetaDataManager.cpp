@@ -429,7 +429,7 @@ void OvrMetaData::processMetaData( const NervGear::Json &dataFile, const Array< 
 					WARN( "OvrMetaData::ProcessMetaData discarding empty %s", cat.categoryTag.toCString() );
 				}
 			}
-			Alg::Swap( finalCategories, m_categories );
+            std::swap(finalCategories, m_categories);
 		}
 	}
 	else
@@ -493,7 +493,7 @@ void OvrMetaData::dedupMetaData( const Array< OvrMetaDatum * > & existingData, S
         {
             OvrMetaDatum * storedDatum = iter->second;
             LOG( "DedupMetaData metadata for %s", storedDatum->url.toCString() );
-            Alg::Swap( storedDatum->tags, metaDatum->tags );
+            std::swap(storedDatum->tags, metaDatum->tags);
             swapExtendedData( storedDatum, metaDatum );
             newData.remove( iter->first );
         }
@@ -551,7 +551,7 @@ void OvrMetaData::reconcileCategories( Array< Category > & storedCategories )
 	}
 
 	// Now replace Categories
-	Alg::Swap( m_categories, finalCategories );
+    std::swap(m_categories, finalCategories);
 }
 
 void OvrMetaData::extractVersion(const Json &dataFile, double & outVersion ) const
@@ -776,9 +776,8 @@ void OvrMetaData::regenerateCategoryIndices()
 			OVR_ASSERT( tags.at( 0 ) != FAVORITES_TAG );
 		}
 
-		if ( tags.at( 0 ) == FAVORITES_TAG && tags.sizeInt() > 1 )
-		{
-			Alg::Swap( tags.at( 0 ), tags.at( 1 ) );
+        if ( tags.at( 0 ) == FAVORITES_TAG && tags.sizeInt() > 1 ) {
+            std::swap(tags.at(0), tags.at(1));
 		}
 
 		for ( int tagIndex = 0; tagIndex < tags.sizeInt(); ++tagIndex )
