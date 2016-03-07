@@ -1045,10 +1045,10 @@ GlTexture LoadTextureFromBuffer( const char * fileName, const MemBuffer & buffer
 	{
 		// can't load anything from an empty buffer
 	}
-	else if (	ext == ".jpg" || ext == ".tga" ||
-				ext == ".png" || ext == ".bmp" ||
-				ext == ".psd" || ext == ".gif" ||
-				ext == ".hdr" || ext == ".pic" )
+	else if (	ext == "jpg" || ext == "tga" ||
+				ext == "png" || ext == "bmp" ||
+				ext == "psd" || ext == "gif" ||
+				ext == "hdr" || ext == "pic" )
 	{
 		// Uncompressed files loaded by stb_image
 		int comp;
@@ -1067,21 +1067,21 @@ GlTexture LoadTextureFromBuffer( const char * fileName, const MemBuffer & buffer
 			}
 	    }
 	}
-	else if ( ext == ".pvr" )
+	else if ( ext == "pvr" )
 	{
 		texId = LoadTexturePVR( fileName, (const unsigned char *)buffer.buffer, buffer.length,
 						( flags & TEXTUREFLAG_USE_SRGB ),
 						( flags & TEXTUREFLAG_NO_MIPMAPS ),
 						width, height );
 	}
-	else if ( ext == ".ktx" )
+	else if ( ext == "ktx" )
 	{
 		texId = LoadTextureKTX( fileName, (const unsigned char *)buffer.buffer, buffer.length,
 						( flags & TEXTUREFLAG_USE_SRGB ),
 						( flags & TEXTUREFLAG_NO_MIPMAPS ),
 						width, height );
 	}
-	else if ( ext == ".pkm" )
+	else if ( ext == "pkm" )
 	{
 		LOG( "PKM format not supported" );
 	}

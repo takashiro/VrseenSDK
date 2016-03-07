@@ -122,7 +122,7 @@ void ModelManager::ScanDirectoryForScenes(const VString &directory, bool useDyna
 		while( ( entry = readdir( dir ) ) != NULL ) {
 			VString filename = entry->d_name;
             VString ext = VPath(filename).extension().toLower();
-			if ( ( ext == ".ovrscene" ) )
+            if ( ( ext == "ovrscene" ) )
 			{
 				VString fullpath = directory;
                 fullpath.append( "/" );

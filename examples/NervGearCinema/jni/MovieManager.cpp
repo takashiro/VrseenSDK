@@ -44,17 +44,17 @@ static const VString searchDirs[] =
 
 const char *MovieManager::SupportedFormats[] =
 {
-	".mp4",
-	".m4v",
-	".3gp",
-	".3g2",
-	".ts",
-	".webm",
-	".mkv",
-	".wmv",
-	".asf",
-	".avi",
-	".flv",
+    "mp4",
+    "m4v",
+    "3gp",
+    "3g2",
+    "ts",
+    "webm",
+    "mkv",
+    "wmv",
+    "asf",
+    "avi",
+    "flv",
 	NULL
 };
 
