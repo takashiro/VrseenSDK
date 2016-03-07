@@ -53,9 +53,9 @@ bool VrLocale::GetString( JNIEnv* jni, jobject activityObject, char const * key,
         jstring jstr = static_cast<jstring>(jni->CallObjectMethod(activityObject, getLocalizedStringId, keyObj.GetJString()));
         if (!jni->ExceptionOccurred()) {
             const jchar *chars = jni->GetStringChars(jstr, NULL);
-            while (*chars) {
-                out.append(*chars);
-                chars++;
+            jsize length = jni->GetStringLength(jstr);
+            for (jsize i = 0; i < length; i++) {
+                out.append(chars[i]);
             }
             jni->ReleaseStringChars(jstr, chars);
 

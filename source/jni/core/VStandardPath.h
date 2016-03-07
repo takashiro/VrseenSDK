@@ -48,6 +48,8 @@ public:
     };
 
     VStandardPath( JNIEnv * jni, jobject activityObj );
+    ~VStandardPath();
+
     void PushBackSearchPathIfValid( StorageType toStorage, FolderType toFolder, const char * subfolder, Array<VString> & searchPaths ) const;
     void PushBackSearchPathIfValidPermission( StorageType toStorage, FolderType toFolder, const char * subfolder, mode_t permission, Array<VString> & searchPaths ) const;
     bool GetPathIfValidPermission( StorageType toStorage, FolderType toFolder, const char * subfolder, mode_t permission, VString & outPath ) const;
