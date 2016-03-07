@@ -41,6 +41,7 @@ SOURCES += \
     jni/core/BinaryFile.cpp \
     jni/core/MappedFile.cpp \
     jni/core/MemBuffer.cpp \
+    jni/core/VMutex.cpp \
     jni/core/android/GlUtils.cpp \
     jni/core/android/JniUtils.cpp \
     jni/core/android/LogUtils.cpp \
@@ -170,6 +171,7 @@ HEADERS += \
     jni/core/BinaryFile.h \
     jni/core/MappedFile.h \
     jni/core/MemBuffer.h \
+    jni/core/VMutex.h \
     jni/core/Types.h \
     jni/core/KeyCodes.h \
     jni/core/List.h \
