@@ -12,7 +12,7 @@ NV_NAMESPACE_BEGIN
 // Buffered file never fails by itself; if there's not
 // enough memory for buffer, no buffer's used
 
-class VBufferedFile : public VDelegatedFile
+class VBuffer : public VDelegatedFile
 {
 protected:
     enum BufferModeType
@@ -42,14 +42,14 @@ protected:
     void    loadBuffer();
 
     // Hidden constructor
-    VBufferedFile();
-    inline VBufferedFile(const VBufferedFile &source) : VDelegatedFile() { OVR_UNUSED(source); }
+    VBuffer();
+    inline VBuffer(const VBuffer &source) : VDelegatedFile() { OVR_UNUSED(source); }
 public:
 
     // Constructor
     // - takes another file as source
-    VBufferedFile(VFile *pfile);
-    ~VBufferedFile();
+    VBuffer(VFile *pfile);
+    ~VBuffer();
 
 
     // ** Overridden functions

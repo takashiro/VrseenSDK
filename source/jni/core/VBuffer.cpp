@@ -5,7 +5,7 @@
  *      Author: WZTCM
  */
 
-#include "VBufferedFile.h"
+#include "VBuffer.h"
 
 
 NV_NAMESPACE_BEGIN
@@ -14,41 +14,55 @@ NV_NAMESPACE_BEGIN
 // FILE_BUFFER_SIZE defines the size of internal buffer, while
 // FILEBUFFER_TOLERANCE controls the amount of data we'll effectively try to buffer
 #define BUFFER_LENGTH         (8192 - 8)
-#define BUFFER_TOLERANCE   4096
+#define BUFFER_TOLERANCE      4096
 
 // ** Constructor/Destructor
 
 // Hidden constructor
 // Not supposed to be used
-VBufferedFile::VBufferedFile() : VDelegatedFile(0)
+VBuffer::VBuffer()
+    : VDelegatedFile(0)
+    , m_buffer((UByte*)OVR_ALLOC(BUFFER_LENGTH))
+    , m_bufferMode(NoBuffer)
+    , m_filePos(0)
+    , m_pos(0)
+    , m_dataSize(0)
 {
-    m_buffer      = (UByte*)OVR_ALLOC(BUFFER_LENGTH);
-    m_bufferMode  = NoBuffer;
-    m_filePos     = 0;
-    m_pos         = 0;
-    m_dataSize    = 0;
+//    m_buffer      = (UByte*)OVR_ALLOC(BUFFER_LENGTH);
+//    m_bufferMode  = NoBuffer;
+//    m_filePos     = 0;
+//    m_pos         = 0;
+//    m_dataSize    = 0;
 }
 
 // Takes another file as source
-VBufferedFile::VBufferedFile(VFile *pfile) : VDelegatedFile(pfile)
+VBuffer::VBuffer(VFile *pfile)
+    : VDelegatedFile(pfile)
+    , m_buffer((UByte*)OVR_ALLOC(BUFFER_LENGTH))
+    , m_bufferMode(NoBuffer)
+    , m_filePos(pfile->tell64())
+    , m_pos(0)
+    , m_dataSize(0)
 {
-    m_buffer      = (UByte*)OVR_ALLOC(BUFFER_LENGTH);
-    m_bufferMode  = NoBuffer;
-    m_filePos     = pfile->tell64();
-    m_pos         = 0;
-    m_dataSize    = 0;
+//    m_buffer      = (UByte*)OVR_ALLOC(BUFFER_LENGTH);
+//    m_bufferMode  = NoBuffer;
+//    m_filePos     = pfile->tell64();
+//    m_pos         = 0;
+//    m_dataSize    = 0;
 }
 
 
 // Destructor
-VBufferedFile::~VBufferedFile()
+VBuffer::~VBuffer()
 {
     // Flush in case there's data
-    if (m_file)
+    if (m_file) {
         flushBuffer();
+    }
     // Get rid of buffer
-    if (m_buffer)
+    if (m_buffer) {
         OVR_FREE(m_buffer);
+    }
 }
 
 /*
@@ -70,12 +84,14 @@ bool    BufferedFile::VCopy(const Object &source)
 */
 
 // Initializes buffering to a certain mode
-bool    VBufferedFile::setBufferMode(BufferModeType mode)
+bool    VBuffer::setBufferMode(BufferModeType mode)
 {
-    if (!m_buffer)
+    if (!m_buffer) {
         return false;
-    if (mode == m_bufferMode)
+    }
+    if (mode == m_bufferMode) {
         return true;
+    }
 
     flushBuffer();
 
@@ -91,7 +107,7 @@ bool    VBufferedFile::setBufferMode(BufferModeType mode)
 }
 
 // Flushes buffer
-void    VBufferedFile::flushBuffer()
+void    VBuffer::flushBuffer()
 {
     switch(m_bufferMode)
     {
@@ -115,7 +131,7 @@ void    VBufferedFile::flushBuffer()
 }
 
 // Reloads data for ReadBuffer
-void    VBufferedFile::loadBuffer()
+void    VBuffer::loadBuffer()
 {
     if (m_bufferMode == ReadBuffer)
     {
@@ -137,7 +153,7 @@ void    VBufferedFile::loadBuffer()
 // require buffer mode switch, flush, or extra calculations
 
 // Tell() requires buffer adjustment
-int     VBufferedFile::tell()
+int     VBuffer::tell()
 {
     if (m_bufferMode == ReadBuffer)
         return int (m_filePos - m_dataSize + m_pos);
@@ -153,7 +169,7 @@ int     VBufferedFile::tell()
     return pos;
 }
 
-SInt64  VBufferedFile::tell64()
+SInt64  VBuffer::tell64()
 {
     if (m_bufferMode == ReadBuffer)
         return m_filePos - m_dataSize + m_pos;
@@ -168,7 +184,7 @@ SInt64  VBufferedFile::tell64()
     return pos;
 }
 
-int     VBufferedFile::length()
+int     VBuffer::length()
 {
     int len = m_file->length();
     // If writing through buffer, file length may actually be bigger
@@ -180,7 +196,7 @@ int     VBufferedFile::length()
     }
     return len;
 }
-SInt64  VBufferedFile::length64()
+SInt64  VBuffer::length64()
 {
     SInt64 len = m_file->length64();
     // If writing through buffer, file length may actually be bigger
@@ -194,7 +210,7 @@ SInt64  VBufferedFile::length64()
 }
 
 /*
-bool    VBufferedFile::Stat(FileStats *pfs)
+bool    VBuffer::Stat(FileStats *pfs)
 {
     // Have to fix up length is stat
     if (pFile->Stat(pfs))
@@ -215,7 +231,7 @@ bool    VBufferedFile::Stat(FileStats *pfs)
 }
 */
 
-int     VBufferedFile::write(const UByte *psourceBuffer, int numBytes)
+int     VBuffer::write(const UByte *psourceBuffer, int numBytes)
 {
     if ( (m_bufferMode==WriteBuffer) || setBufferMode(WriteBuffer))
     {
@@ -244,7 +260,7 @@ int     VBufferedFile::write(const UByte *psourceBuffer, int numBytes)
     return sz;
 }
 
-int     VBufferedFile::read(UByte *pdestBuffer, int numBytes)
+int     VBuffer::read(UByte *pdestBuffer, int numBytes)
 {
     if ( (m_bufferMode==ReadBuffer) || setBufferMode(ReadBuffer))
     {
@@ -317,7 +333,7 @@ int     VBufferedFile::read(UByte *pdestBuffer, int numBytes)
 }
 
 
-int     VBufferedFile::skipBytes(int numBytes)
+int     VBuffer::skipBytes(int numBytes)
 {
     int skippedBytes = 0;
 
@@ -345,7 +361,7 @@ int     VBufferedFile::skipBytes(int numBytes)
     return skippedBytes;
 }
 
-int     VBufferedFile::bytesAvailable()
+int     VBuffer::bytesAvailable()
 {
     int available = m_file->bytesAvailable();
     // Adjust available size based on buffers
@@ -365,14 +381,14 @@ int     VBufferedFile::bytesAvailable()
     return available;
 }
 
-bool    VBufferedFile::flush()
+bool    VBuffer::flush()
 {
     flushBuffer();
     return m_file->flush();
 }
 
 // Seeking could be optimized better..
-int     VBufferedFile::seek(int offset, int origin)
+int     VBuffer::seek(int offset, int origin)
 {
     if (m_bufferMode == ReadBuffer)
     {
@@ -437,7 +453,7 @@ int     VBufferedFile::seek(int offset, int origin)
     return int (m_filePos);
 }
 
-SInt64  VBufferedFile::seek64(SInt64 offset, int origin)
+SInt64  VBuffer::seek64(SInt64 offset, int origin)
 {
     if (m_bufferMode == ReadBuffer)
     {
@@ -497,7 +513,7 @@ SInt64  VBufferedFile::seek64(SInt64 offset, int origin)
     return m_filePos;
 }
 
-int    VBufferedFile::copyFromStream(VFile *pstream, int byteSize)
+int    VBuffer::copyFromStream(VFile *pstream, int byteSize)
 {
     // We can't rely on overridden Write()
     // because delegation doesn't override virtual pointers
@@ -524,7 +540,7 @@ int    VBufferedFile::copyFromStream(VFile *pstream, int byteSize)
 }
 
 // Closing files
-bool    VBufferedFile::close()
+bool    VBuffer::close()
 {
     switch(m_bufferMode)
     {
