@@ -63,17 +63,15 @@ void OvrVideosMetaData::extractExtendedData( const Json &jsonDatum, OvrMetaDatum
 
 void OvrVideosMetaData::extendedDataToJson( const OvrMetaDatum & datum, Json &outDatumObject ) const
 {
-	if ( outDatumObject.isObject() )
-	{
+    if ( outDatumObject.isObject() ) {
 		const OvrVideosMetaDatum * const videoData = static_cast< const OvrVideosMetaDatum * const >( &datum );
-		if ( videoData )
-		{
-			outDatumObject.insert( TITLE_INNER, 					std::string(videoData->Title.toCString()) );
-			outDatumObject.insert( AUTHOR_INNER, 					std::string(videoData->Author.toCString()) );
-			outDatumObject.insert( THUMBNAIL_URL_INNER, 			std::string(videoData->ThumbnailUrl.toCString()) );
-			outDatumObject.insert( STREAMING_TYPE_INNER, 			std::string(videoData->StreamingType.toCString()) );
-			outDatumObject.insert( STREAMING_PROXY_INNER, 			std::string(videoData->StreamingProxy.toCString()) );
-			outDatumObject.insert( STREAMING_SECURITY_LEVEL_INNER, 	std::string(videoData->StreamingSecurityLevel.toCString()) );
+        if ( videoData ) {
+            outDatumObject.insert(TITLE_INNER, videoData->Title.toUtf8());
+            outDatumObject.insert(AUTHOR_INNER, videoData->Author.toUtf8());
+            outDatumObject.insert(THUMBNAIL_URL_INNER, videoData->ThumbnailUrl.toUtf8());
+            outDatumObject.insert(STREAMING_TYPE_INNER, videoData->StreamingType.toUtf8());
+            outDatumObject.insert(STREAMING_PROXY_INNER, videoData->StreamingProxy.toUtf8());
+            outDatumObject.insert(STREAMING_SECURITY_LEVEL_INNER, videoData->StreamingSecurityLevel.toUtf8());
 		}
 	}
 }
