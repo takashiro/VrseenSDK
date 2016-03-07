@@ -127,7 +127,11 @@ SOURCES += \
     jni/VUserProfile.cpp \
     jni/TalkToJava.cpp \
     jni/VrCommon.cpp \
-    jni/VrLocale.cpp
+    jni/VrLocale.cpp \
+    jni/core/VFile.cpp \
+    jni/core/VFileFILE.cpp \
+    jni/core/VSysFile.cpp \
+    jni/core/VBufferedFile.cpp
 
 HEADERS += \
     jni/core/android/GlUtils.h \
@@ -149,6 +153,7 @@ HEADERS += \
     jni/core/Deque.h \
     jni/core/File.h \
     jni/core/FileFILE.h \
+    jni/core/VBufferedFile.h \
     jni/core/VJson.h \
     jni/core/Log.h \
     jni/core/Lockless.h \
@@ -287,7 +292,13 @@ HEADERS += \
     jni/AppLocal.h \
     jni/Input.h \
     jni/PointTracker.h \
-    jni/UniversalMenu_Commands.h
+    jni/UniversalMenu_Commands.h \
+    jni/core/VBufferedFile.h \
+    jni/core/VFile.h \
+    jni/core/VFileFlags.h \
+    jni/core/VDelegatedFile.h \
+    jni/core/VSysFile.h \
+    jni/core/VUnopenedFile.h
 
 include(jni/3rdparty/minizip/minizip.pri)
 include(jni/3rdparty/stb/stb.pri)
