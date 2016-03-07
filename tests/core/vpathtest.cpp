@@ -42,6 +42,13 @@ void test()
         baseName.setExtension("jpg");
         assert(baseName == "NervGear.jpg");
     }
+
+    {
+        std::string fileName = "efigs_sdf.ktx";
+        VPath path(fileName);
+        assert(path.fileName() == fileName);
+        assert(path.baseName() == "efigs_sdf");
+    }
 }
 
 ADD_TEST(VPath, test)
