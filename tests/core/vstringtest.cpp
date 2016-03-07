@@ -1,6 +1,7 @@
 #include "test.h"
 
 #include <VString.h>
+#include <string>
 
 NV_USING_NAMESPACE
 
@@ -228,6 +229,40 @@ void test()
         str.sprintf("%d %lf", 10, 10.10);
         str.sprintf("%d %g", 5, 26.1010);
         assert(str == "10 10.1000005 26.101");
+    }
+
+    //UTF-8/UTF-16 Conversion
+    {
+        const char16_t *rawUtf16 = u"私はあなただけをずっと見つめている";
+        const char *rawUTf8 = "私はあなただけをずっと見つめている";
+        VString utf16(rawUtf16);
+        VByteArray utf8 = utf16.toUtf8();
+        assert(utf8 == rawUTf8);
+
+        VString newUtf16 = VString::fromUtf8(utf8);
+        assert(utf16 == newUtf16);
+    }
+
+    //Latin1/UTF-16 Conversion
+    {
+        const char16_t *utf16 = u"You are the only one in my eyes";
+        const char *latin1 = "You are the only one in my eyes";
+
+        VString str1(utf16);
+        assert(str1 == latin1);
+
+        VByteArray str2 = str1.toLatin1();
+        assert(str2 == latin1);
+
+        VString str3 = VString::fromLatin1(str2);
+        assert(str1 == str3);
+    }
+
+    //UTF-32/UTF-16 Conversion
+    {
+        std::u32string utf32 = U"向日葵的约定";
+        VString str = VString::fromUcs4(utf32);
+        assert(str == u"向日葵的约定");
     }
 }
 

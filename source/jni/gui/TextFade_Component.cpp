@@ -25,9 +25,9 @@ float const  OvrTextFade_Component::FADE_DURATION = 0.25f;
 
 //==============================
 // OvrTextFade_Component::CalcIconFadeOffset
-Vector3f OvrTextFade_Component::CalcIconFadeOffset( char const * text, BitmapFont const & font, Vector3f const & axis, float const iconWidth )
+Vector3f OvrTextFade_Component::CalcIconFadeOffset(const VString &text, BitmapFont const & font, Vector3f const & axis, float const iconWidth )
 {
-    float textWidth = font.CalcTextWidth( text );
+    float textWidth = font.CalcTextWidth(text);
     float const fullWidth = textWidth + iconWidth;
     return axis * ( ( fullWidth * 0.5f ) - ( iconWidth * 0.5f ) );  // this is a bit odd, but that's because the icon's origin is its center
 }

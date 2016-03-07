@@ -1192,7 +1192,7 @@ void OvrFolderBrowser::buildDirtyMenu( OvrMetaData & metaData )
 				VString localizedCategoryName;
 
 				// Get localized tag (folder title)
-                localizedCategoryName = getCategoryTitle( VrLocale::MakeStringIdFromANSI( currentCategory.categoryTag.toCString() ).toCString(), currentCategory.categoryTag.toCString() );
+                localizedCategoryName = getCategoryTitle( VrLocale::MakeStringId(currentCategory.categoryTag).toCString(), currentCategory.categoryTag.toCString() );
 
 				// the localization is now done app-side
 //				VrLocale::GetString( AppPtr->GetVrJni(), AppPtr->GetJavaObject(),

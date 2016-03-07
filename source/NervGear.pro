@@ -19,6 +19,7 @@ SOURCES += \
     jni/core/Alg.cpp \
     jni/core/Allocator.cpp \
     jni/core/Atomic.cpp \
+    jni/core/VByteArray.cpp \
     jni/core/VChar.cpp \
     jni/core/File.cpp \
     jni/core/FileFILE.cpp \
@@ -36,7 +37,6 @@ SOURCES += \
     jni/core/ThreadCommandQueue.cpp \
     jni/core/ThreadsPthread.cpp \
     jni/core/Timer.cpp \
-    jni/core/UTF8Util.cpp \
     jni/core/BinaryFile.cpp \
     jni/core/MappedFile.cpp \
     jni/core/MemBuffer.cpp \
@@ -142,6 +142,7 @@ HEADERS += \
     jni/core/Atomic.h \
     jni/core/Array.h \
     jni/core/VArray.h \
+    jni/core/VByteArray.h \
     jni/core/VColor.h \
     jni/core/VChar.h \
     jni/core/ContainerAllocator.h \
@@ -164,7 +165,6 @@ HEADERS += \
     jni/core/ThreadCommandQueue.h \
     jni/core/Threads.h \
     jni/core/Timer.h \
-    jni/core/UTF8Util.h \
     jni/core/BinaryFile.h \
     jni/core/MappedFile.h \
     jni/core/MemBuffer.h \

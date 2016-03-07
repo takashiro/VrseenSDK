@@ -10,12 +10,12 @@ class VChar
 {
 public:
     VChar() { m_value = '\0'; }
-    VChar(char ch) { m_value = ch; }
     VChar(uchar ch) { m_value = ch; }
     VChar(short ch) { m_value = ch; }
     VChar(ushort ch) { m_value = ch; }
     VChar(int ch) { m_value = ch; }
     VChar(uint ch) { m_value = ch; }
+    VChar(char16_t ch) { m_value = ch; }
     VChar(const VChar &ch) { m_value = ch.m_value; }
 
     bool operator == (const VChar &ch) const { return m_value == ch.m_value; }
@@ -47,11 +47,11 @@ public:
     VChar toUpper() const { return toupper(m_value); }
     char toLatin1() const { return m_value; }
 
-    short unicode() const { return m_value; }
-    short &unicode() { return m_value; }
+    char16_t unicode() const { return m_value; }
+    char16_t &unicode() { return m_value; }
 
 private:
-    short m_value;
+    char16_t m_value;
 };
 
 NV_NAMESPACE_END

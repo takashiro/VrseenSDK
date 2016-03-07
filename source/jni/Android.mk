@@ -34,6 +34,7 @@ LOCAL_EXPORT_C_INCLUDES := $(LOCAL_C_INCLUDES)
 LOCAL_SRC_FILES  := core/Alg.cpp \
                     core/Allocator.cpp \
                     core/Atomic.cpp \
+                    core/VByteArray.cpp \
                     core/VChar.cpp \
                     core/File.cpp \
                     core/FileFILE.cpp \
@@ -51,7 +52,6 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     core/ThreadCommandQueue.cpp \
                     core/ThreadsPthread.cpp \
                     core/Timer.cpp \
-                    core/UTF8Util.cpp \
                     core/BinaryFile.cpp \
                     core/MappedFile.cpp \
                     core/MemBuffer.cpp \

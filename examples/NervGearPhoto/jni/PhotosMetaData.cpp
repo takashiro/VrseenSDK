@@ -43,7 +43,7 @@ void OvrPhotosMetaData::extractExtendedData( const NervGear::Json & jsonDatum, O
 
 		if ( photoData->title.isEmpty() )
 		{
-			photoData->title = ExtractFileBase( datum.url.toCString() );
+            photoData->title = ExtractFileBase(datum.url);
 		}
 
 		if ( photoData->author.isEmpty() )

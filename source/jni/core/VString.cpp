@@ -6,16 +6,16 @@
 NV_NAMESPACE_BEGIN
 
 namespace {
-    template<class T>
-    void CopyString(VChar *to, const T *from, uint length)
+    template<class C, class T>
+    void CopyString(C *to, const T *from, uint length)
     {
         for (uint i = 0; i < length; i++) {
             to[i] = from[i];
         }
     }
 
-    template<class T>
-    int StringCompare(const VChar *str1, const T *str2)
+    template<class C, class T>
+    int StringCompare(const C *str1, const T *str2)
     {
         if (str1 == nullptr) {
             return str2 == nullptr ? 0 : -1;
@@ -31,14 +31,14 @@ namespace {
         return *str1 < *str2 ? -1 : 1;
     }
 
-    template<class T>
-    int CaseCompareString(const VChar *str1, const T *str2)
+    template<class C, class T>
+    int CaseCompareString(const C *str1, const T *str2)
     {
         if (str1 == nullptr) {
             return str2 == nullptr ? 0 : -1;
         }
 
-        VChar ch1;
+        C ch1;
         T ch2;
         forever {
             ch1 = *str1;
@@ -82,10 +82,12 @@ VString::VString(const char *data, uint length)
     }
 }
 
-void VString::append(const char *str, uint length)
+VString::VString(const std::u16string &source)
 {
+    uint length = source.length();
+    this->resize(length);
     for (uint i = 0; i < length; i++) {
-        append(str[i]);
+        at(i) = source[i];
     }
 }
 
@@ -96,8 +98,50 @@ void VString::assign(const char *str)
         return;
     }
 
-    uint size = strlen(str);
+    assign(str, strlen(str));
+}
+
+void VString::append(const char *str, uint length)
+{
+    for (uint i = 0; i < length; i++) {
+        append(str[i]);
+    }
+}
+
+void VString::assign(const char *str, uint size)
+{
+    if (str == nullptr) {
+        clear();
+        return;
+    }
+
     resize(size);
+    for (uint i = 0; i < size; i++) {
+        at(i) = str[i];
+    }
+}
+
+void VString::assign(const char16_t *str)
+{
+    if (str == nullptr) {
+        clear();
+        return;
+    }
+
+    uint size = 0;
+    while (str[size++]) {}
+    resize(size);
+
+    assign(str, size);
+}
+
+void VString::assign(const char16_t *str, uint size)
+{
+    if (str == nullptr) {
+        clear();
+        return;
+    }
+
     for (uint i = 0; i < size; i++) {
         at(i) = str[i];
     }
@@ -106,8 +150,10 @@ void VString::assign(const char *str)
 VString VString::toUpper() const
 {
     VString str(*this);
-    for (VChar &ch : str) {
-        ch = ch.toUpper();
+    for (char16_t &ch : str) {
+        if (ch >= 'a' && ch <= 'z') {
+            ch -= 0x20;
+        }
     }
     return str;
 }
@@ -115,8 +161,10 @@ VString VString::toUpper() const
 VString VString::toLower() const
 {
     VString str(*this);
-    for (VChar &ch : str) {
-        ch = ch.toLower();
+    for (char16_t &ch : str) {
+        if (ch >= 'A' && ch <= 'Z') {
+            ch += 0x20;
+        }
     }
     return str;
 }
@@ -127,9 +175,9 @@ void VString::insert(uint pos, const char *str)
     basic_string::insert(pos, vstring.data());
 }
 
-void VString::replace(VChar from, VChar to)
+void VString::replace(char16_t from, char16_t to)
 {
-    for (VChar &ch : *this) {
+    for (char16_t &ch : *this) {
         if (ch == from) {
             ch = to;
         }
@@ -164,7 +212,7 @@ bool VString::endsWith(const VString &postfix) const
     return true;
 }
 
-void VString::insert(uint pos, VChar ch)
+void VString::insert(uint pos, char16_t ch)
 {
     basic_string::insert(begin() + pos, ch);
 }
@@ -177,7 +225,7 @@ const VString &VString::operator = (const char *str)
 
 const VString &VString::operator = (const VString &src)
 {
-    assign(src.data(), src.size());
+    std::u16string::assign(src.data(), src.size());
     return *this;
 }
 
@@ -188,16 +236,17 @@ VString operator + (const VString &str1, const VString &str2)
     return str;
 }
 
-VString operator + (const VString &str, VChar ch)
+VString operator + (const VString &str, char16_t ch)
 {
     VString result(str);
     result.append(ch);
     return result;
 }
 
-VString operator + (VChar ch, const VString &str)
+VString operator + (char16_t ch, const VString &str)
 {
-    VString result(&ch, 1);
+    VString result;
+    result.append(ch);
     result.append(str);
     return result;
 }
@@ -208,7 +257,7 @@ std::string VString::toStdString() const
     std::string str;
     str.resize(size);
     for (uint i = 0; i < size; i++) {
-        str[i] = at(i).toLatin1();
+        str[i] = at(i);
     }
     return str;
 }
@@ -218,10 +267,140 @@ const char *VString::toCString() const
     //@to-do: fix the memory leak
     char *str = new char[size() + 1];
     for (uint i = 0; i < size(); i++) {
-        str[i] = at(i).toLatin1();
+        str[i] = at(i);
     }
     str[size()] = '\0';
     return str;
+}
+
+VByteArray VString::toUtf8() const
+{
+    VByteArray utf8;
+    uint code = 0;
+    for (const char16_t &in : *this) {
+        if (in >= 0xd800 && in <= 0xdbff) {
+            code = ((in - 0xd800) << 10) + 0x10000;
+        } else {
+            if (in >= 0xdc00 && in <= 0xdfff) {
+                code |= in - 0xdc00;
+            } else {
+                code = in;
+            }
+
+            if (code <= 0x7f) {
+                utf8.append(static_cast<char>(code));
+            } else if (code <= 0x7ff) {
+                utf8.append(static_cast<char>(0xc0 | ((code >> 6) & 0x1f)));
+                utf8.append(static_cast<char>(0x80 | (code & 0x3f)));
+            } else if (code <= 0xffff) {
+                utf8.append(static_cast<char>(0xe0 | ((code >> 12) & 0x0f)));
+                utf8.append(static_cast<char>(0x80 | ((code >> 6) & 0x3f)));
+                utf8.append(static_cast<char>(0x80 | (code & 0x3f)));
+            } else {
+                utf8.append(static_cast<char>(0xf0 | ((code >> 18) & 0x07)));
+                utf8.append(static_cast<char>(0x80 | ((code >> 12) & 0x3f)));
+                utf8.append(static_cast<char>(0x80 | ((code >> 6) & 0x3f)));
+                utf8.append(static_cast<char>(0x80 | (code & 0x3f)));
+            }
+            code = 0;
+        }
+    }
+    return utf8;
+}
+
+VString VString::fromUtf8(const VByteArray &utf8)
+{
+    VString utf16;
+    unsigned int code = 0;
+    int following = 0;
+    for (const uchar &ch : utf8) {
+        if (ch <= 0x7f) {
+            code = ch;
+            following = 0;
+        } else if (ch <= 0xbf) {
+            if (following > 0) {
+                code = (code << 6) | (ch & 0x3f);
+                --following;
+            }
+        } else if (ch <= 0xdf) {
+            code = ch & 0x1f;
+            following = 1;
+        } else if (ch <= 0xef) {
+            code = ch & 0x0f;
+            following = 2;
+        } else {
+            code = ch & 0x07;
+            following = 3;
+        }
+
+        if (following == 0) {
+            if (code > 0xffff) {
+                utf16.append(static_cast<char16_t>(0xd800 + (code >> 10)));
+                utf16.append(static_cast<char16_t>(0xdc00 + (code & 0x03ff)));
+            } else {
+                utf16.append(static_cast<char16_t>(code));
+            }
+            code = 0;
+        }
+    }
+    return utf16;
+}
+
+VByteArray VString::toLatin1() const
+{
+    uint size = this->size();
+    VByteArray latin1;
+    latin1.resize(size);
+    for (uint i = 0; i < size; i++) {
+        latin1[i] = at(i);
+    }
+    return latin1;
+}
+
+VString VString::fromLatin1(const VByteArray &latin1)
+{
+    uint size = latin1.size();
+    VString utf16;
+    utf16.resize(size);
+    for (uint i = 0; i < size; i++) {
+        utf16.at(i) = latin1[i];
+    }
+    return utf16;
+}
+
+std::u32string VString::toUcs4() const
+{
+    std::u32string ucs4;
+    char32_t code = 0;
+    for (const char16_t &in : *this) {
+        if (in >= 0xd800 && in <= 0xdbff) {
+            code = ((in - 0xd800) << 10) + 0x10000;
+        } else {
+            if (in >= 0xdc00 && in <= 0xdfff) {
+                code |= in - 0xdc00;
+            } else {
+                code = in;
+            }
+
+            ucs4.append(1, code);
+            code = 0;
+        }
+    }
+    return ucs4;
+}
+
+VString VString::fromUcs4(const std::u32string &ucs4)
+{
+    VString utf16;
+    for (const char32_t &code : ucs4) {
+        if (code > 0xffff) {
+            utf16.append(static_cast<char16_t>(0xd800 + (code >> 10)));
+            utf16.append(static_cast<char16_t>(0xdc00 + (code & 0x03ff)));
+        } else {
+            utf16.append(static_cast<char16_t>(code));
+        }
+    }
+    return utf16;
 }
 
 int VString::compare(const char *str) const

@@ -14,7 +14,7 @@ bool VPath::isAbsolute() const
         return true;
     }
 
-    const VChar *iter = data() + 1;
+    const char16_t *iter = data() + 1;
     while (*iter != '\0') {
         // Treat a colon followed by a slash as absolute.
         if (*iter == ':') {
@@ -47,8 +47,8 @@ VString VPath::protocol() const
     while (i < max) {
         // Treat a colon followed by a slash as absolute.
         if (at(i) == ':' && i + 2 < max) {
-            VChar ch1 = at(i + 1);
-            VChar ch2 = at(i + 2);
+            char16_t ch1 = at(i + 1);
+            char16_t ch2 = at(i + 2);
             if ((ch1 == '/' && ch2 == '/') || (ch1 == '\\' && ch2 == '\\')) {
                 return left(i + 3);
             }

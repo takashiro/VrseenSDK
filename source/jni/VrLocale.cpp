@@ -12,7 +12,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VrLocale.h"
 
 #include "Array.h"
-#include "UTF8Util.h"
 #include "Std.h"
 #include "android/JniUtils.h"
 #include "android/LogUtils.h"
@@ -23,9 +22,6 @@ char const *	VrLocale::LOCALIZED_KEY_PREFIX = "@string/";
 size_t			VrLocale::LOCALIZED_KEY_PREFIX_LEN = strlen( LOCALIZED_KEY_PREFIX );
 jclass			VrLocale::VrActivityClass;
 
-//==============================
-// VrLocale::GetString
-// Get's a localized UTF-8-encoded string from the string table.
 bool VrLocale::GetString( JNIEnv* jni, jobject activityObject, char const * key, char const * defaultOut, VString & out )
 {
 	if ( jni == NULL )
@@ -50,19 +46,22 @@ bool VrLocale::GetString( JNIEnv* jni, jobject activityObject, char const * key,
 	char const * realKey = key + LOCALIZED_KEY_PREFIX_LEN;
 	//LOG( "realKey = %s", realKey );
 
-#if defined( OVR_OS_ANDROID )
 	jmethodID const getLocalizedStringId = ovr_GetMethodID( jni, VrActivityClass, "getLocalizedString", "(Ljava/lang/String;)Ljava/lang/String;" );
 	if ( getLocalizedStringId != NULL )
 	{
 		JavaString keyObj( jni, realKey );
-		JavaUTFChars resultStr( jni, static_cast< jstring >( jni->CallObjectMethod( activityObject, getLocalizedStringId, keyObj.GetJString() ) ) );
-		if ( !jni->ExceptionOccurred() )
-		{
-			out = resultStr;
-			if ( out.isEmpty() )
-			{
+        jstring jstr = static_cast<jstring>(jni->CallObjectMethod(activityObject, getLocalizedStringId, keyObj.GetJString()));
+        if (!jni->ExceptionOccurred()) {
+            const jchar *chars = jni->GetStringChars(jstr, NULL);
+            jsize length = jni->GetStringLength(jstr);
+            for (jsize i = 0; i < length; i++) {
+                out.append(chars[i]);
+            }
+            jni->ReleaseStringChars(jstr, chars);
+
+            if (out.isEmpty()) {
 				out = defaultOut;
-				LOG( "key not found, localized to '%s'", out.toCString() );
+                LOG("key not found, localized to '%s'", out.toCString());
 				return false;
 			}
 
@@ -70,79 +69,10 @@ bool VrLocale::GetString( JNIEnv* jni, jobject activityObject, char const * key,
 			return true;
 		}
 	}
-#else
-	OVR_COMPILER_ASSERT( false );
-#endif
-	out = "JAVAERROR";
-	OVR_ASSERT( false );	// the java code is missing getLocalizedString or an exception occured while calling it
-	return false;
-}
 
-//==============================
-// VrLocale::MakeStringIdFromUTF8
-// Turns an arbitray ansi string into a string id.
-// - Deletes any character that is not a space, letter or number.
-// - Turn spaces into underscores.
-// - Ignore contiguous spaces.
-VString VrLocale::MakeStringIdFromUTF8( char const * str )
-{
-	enum eLastOutputType
-	{
-		LO_LETTER,
-		LO_DIGIT,
-		LO_SPACE,
-		LO_MAX
-	};
-	eLastOutputType lastOutputType = LO_MAX;
-	VString out = LOCALIZED_KEY_PREFIX;
-	char const * ptr = str;
-	if ( strstr( str, LOCALIZED_KEY_PREFIX ) == str )
-	{
-		// skip UTF-8 chars... technically could just += LOCALIZED_KEY_PREFIX_LEN if the key prefix is only ANSI chars...
-		for ( size_t i = 0; i < LOCALIZED_KEY_PREFIX_LEN; ++i )
-		{
-			UTF8Util::DecodeNextChar( &ptr );
-		}
-	}
-	int n = static_cast< int >( UTF8Util::GetLength( ptr ) );
-	for ( int i = 0; i < n; ++i )
-	{
-		uint32_t c = UTF8Util::DecodeNextChar( &ptr );
-		if ( ( c >= '0' && c <= '9' ) )
-		{
-			if ( i == 0 )
-			{
-				// string identifiers in Android cannot start with a number because they
-				// are also encoded as Java identifiers, so output an underscore first.
-				out.append( '_' );
-			}
-			out.append( c );
-			lastOutputType = LO_DIGIT;
-		}
-		else if ( ( c >= 'a' && c <= 'z' ) )
-		{
-			// just output the character
-			out.append( c );
-			lastOutputType = LO_LETTER;
-		}
-		else if ( ( c >= 'A' && c <= 'Z' ) )
-		{
-			// just output the character as lowercase
-			out.append( c + 32 );
-			lastOutputType = LO_LETTER;
-		}
-		else if ( c == 0x20 )
-		{
-			if ( lastOutputType != LO_SPACE )
-			{
-				out.append( '_' );
-				lastOutputType = LO_SPACE;
-			}
-			continue;
-		}
-		// ignore everything else
-	}
-	return out;
+	out = "JAVAERROR";
+    OVR_ASSERT(false);
+	return false;
 }
 
 //==============================
@@ -151,7 +81,7 @@ VString VrLocale::MakeStringIdFromUTF8( char const * str )
 // - Deletes any character that is not a space, letter or number.
 // - Turn spaces into underscores.
 // - Ignore contiguous spaces.
-VString VrLocale::MakeStringIdFromANSI( char const * str )
+VString VrLocale::MakeStringId(const VString &str)
 {
 	enum eLastOutputType
 	{
@@ -163,11 +93,14 @@ VString VrLocale::MakeStringIdFromANSI( char const * str )
 	};
 	eLastOutputType lastOutputType = LO_MAX;
 	VString out = LOCALIZED_KEY_PREFIX;
-	char const * ptr = strstr( str, LOCALIZED_KEY_PREFIX ) == str ? str + LOCALIZED_KEY_PREFIX_LEN : str;
-	int n = strlen( ptr );
-	for ( int i = 0; i < n; ++i )
-	{
-		unsigned char c = ptr[i];
+    int i = 0;
+    int n = str.length();
+    if (str.startsWith(out)) {
+        i += out.length();
+        n -= out.length();
+    }
+    for (; i < n; i++) {
+        char16_t c = str.at(i);
 		if ( ( c >= '0' && c <= '9' ) )
 		{
 			if ( i == 0 )
@@ -221,22 +154,21 @@ VString private_GetXliffFormattedString( const VString & inXliffStr, ... )
 	// Buffer that holds formatted return string
     VString retStrBuffer;
 
-	char const * p = inXliffStr.toCString();
-	for ( ; ; )
-	{
-		uint32_t charCode = UTF8Util::DecodeNextChar( &p );
-		if ( charCode == '\0' )
-		{
+    std::u32string ucs4 = inXliffStr.toUcs4();
+    std::u32string::iterator p = ucs4.begin();
+    forever {
+        uint32_t charCode = *p;
+        p++;
+        if (charCode == '\0') {
 			break;
-		}
-		else if( charCode == '%' )
-		{
+        } else if (charCode == '%') {
 			// We found the start of the format specifier
 			// Now check that there are at least three more characters which contain the format specification
 			Array< uint32_t > formatSpec;
 			for ( int count = 0; count < MIN_NUM_EXPECTED_FORMAT_CHARS; ++count )
 			{
-				uint32_t formatCharCode = UTF8Util::DecodeNextChar( &p );
+                uint32_t formatCharCode = *p;
+                p++;
 				formatSpec.append( formatCharCode );
 			}
 

@@ -731,7 +731,7 @@ void VRMenuMgrLocal::SubmitForRenderingRecursive( OvrDebugLines & debugLines, Bi
 			fontParms.AlphaCenter = fp.AlphaCenter;
 
 			fontSurface.DrawText3D( font, fontParms, position, itemNormal, itemUp, 
-					textScale.x * fp.Scale, textColor, text.toCString() );
+                    textScale.x * fp.Scale, textColor, text);
 
 			if ( ShowDebugBounds )
 			{

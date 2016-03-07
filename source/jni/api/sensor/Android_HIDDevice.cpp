@@ -147,7 +147,7 @@ bool HIDDeviceManager::getStringProperty(const VString &devNodePath, const char*
 
 	// Create the command string using the last character of the device path.
 	char cmdStr[1024];
-    sprintf(cmdStr, "cd -P /sys/class/ovr/ovr%c; pwd", devNodePath.at(devNodePath.length() - 1).toLatin1());
+    sprintf(cmdStr, "cd -P /sys/class/ovr/ovr%c; pwd", devNodePath.at(devNodePath.length() - 1));
 
 	// Execute the command and get stdout.
 	FILE* cmdFile = popen(cmdStr, "r");
