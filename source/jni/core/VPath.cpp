@@ -136,10 +136,10 @@ VString VPath::fileName() const
         if (i > 0) {
             i--;
         } else {
-            return VString();
+            return *this;
         }
     }
-    return VString();
+    return *this;
 }
 
 VString VPath::baseName() const
