@@ -13,8 +13,8 @@ NV_NAMESPACE_BEGIN
 // Buffered file adds buffering to an existing file
 // FILE_BUFFER_SIZE defines the size of internal buffer, while
 // FILEBUFFER_TOLERANCE controls the amount of data we'll effectively try to buffer
-#define FILE_BUFFER_SIZE         (8192 - 8)
-#define FILE_BUFFER_TOLERANCE    4096
+#define BUFFER_LENGTH         (8192 - 8)
+#define BUFFER_TOLERANCE   4096
 
 // ** Constructor/Destructor
 
@@ -22,7 +22,7 @@ NV_NAMESPACE_BEGIN
 // Not supposed to be used
 VBufferedFile::VBufferedFile() : VDelegatedFile(0)
 {
-    m_buffer      = (UByte*)OVR_ALLOC(FILE_BUFFER_SIZE);
+    m_buffer      = (UByte*)OVR_ALLOC(BUFFER_LENGTH);
     m_bufferMode  = NoBuffer;
     m_filePos     = 0;
     m_pos         = 0;
@@ -32,7 +32,7 @@ VBufferedFile::VBufferedFile() : VDelegatedFile(0)
 // Takes another file as source
 VBufferedFile::VBufferedFile(VFile *pfile) : VDelegatedFile(pfile)
 {
-    m_buffer      = (UByte*)OVR_ALLOC(FILE_BUFFER_SIZE);
+    m_buffer      = (UByte*)OVR_ALLOC(BUFFER_LENGTH);
     m_bufferMode  = NoBuffer;
     m_filePos     = pfile->tell64();
     m_pos         = 0;
@@ -123,7 +123,7 @@ void    VBufferedFile::loadBuffer()
         OVR_ASSERT(m_pos == m_dataSize);
 
         // WARNING: Right now LoadBuffer() assumes the buffer's empty
-        int sz   = m_file->read(m_buffer,FILE_BUFFER_SIZE);
+        int sz   = m_file->read(m_buffer,BUFFER_LENGTH);
         m_dataSize = sz<0 ? 0 : (unsigned)sz;
         m_pos      = 0;
         m_filePos  += m_dataSize;
@@ -220,11 +220,11 @@ int     VBufferedFile::write(const UByte *psourceBuffer, int numBytes)
     if ( (m_bufferMode==WriteBuffer) || setBufferMode(WriteBuffer))
     {
         // If not data space in buffer, flush
-        if ((FILE_BUFFER_SIZE-(int)m_pos)<numBytes)
+        if ((BUFFER_LENGTH-(int)m_pos)<numBytes)
         {
             flushBuffer();
             // If bigger then tolerance, just write directly
-            if (numBytes>FILE_BUFFER_TOLERANCE)
+            if (numBytes>BUFFER_TOLERANCE)
             {
                 int sz = m_file->write(psourceBuffer,numBytes);
                 if (sz > 0)
@@ -265,7 +265,7 @@ int     VBufferedFile::read(UByte *pdestBuffer, int numBytes)
 
         // Don't reload buffer if more then tolerance
         // (No major advantage, and we don't want to write a loop)
-        if (numBytes>FILE_BUFFER_TOLERANCE)
+        if (numBytes>BUFFER_TOLERANCE)
         {
             numBytes = m_file->read(pdestBuffer,numBytes);
             if (numBytes > 0)
