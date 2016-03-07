@@ -81,7 +81,7 @@ bool VSysFile::open(const VString& path, int flags, int mode)
     }
     //pFile = *OVR_NEW DelegatedFile(pFile); // MA Testing
     if (flags & Open_Buffered)
-        m_file = *new VBufferedFile(m_file);
+        m_file = *new VBuffer(m_file);
     return 1;
 }
 

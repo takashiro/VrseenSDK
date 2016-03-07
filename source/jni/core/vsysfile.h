@@ -3,7 +3,7 @@
 #include "vglobal.h"
 
 #include "VDelegatedFile.h"
-#include "VBufferedFile.h"
+#include "VBuffer.h"
 
 NV_NAMESPACE_BEGIN
 
