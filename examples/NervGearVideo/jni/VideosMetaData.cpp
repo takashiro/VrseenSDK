@@ -51,7 +51,7 @@ void OvrVideosMetaData::extractExtendedData( const Json &jsonDatum, OvrMetaDatum
 
 		if ( videoData->Title.isEmpty() )
 		{
-			videoData->Title = ExtractFileBase( datum.url.toCString() );
+            videoData->Title = ExtractFileBase(datum.url);
 		}
 
 		if ( videoData->Author.isEmpty() )
