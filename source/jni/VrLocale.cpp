@@ -23,9 +23,6 @@ char const *	VrLocale::LOCALIZED_KEY_PREFIX = "@string/";
 size_t			VrLocale::LOCALIZED_KEY_PREFIX_LEN = strlen( LOCALIZED_KEY_PREFIX );
 jclass			VrLocale::VrActivityClass;
 
-//==============================
-// VrLocale::GetString
-// Get's a localized UTF-8-encoded string from the string table.
 bool VrLocale::GetString( JNIEnv* jni, jobject activityObject, char const * key, char const * defaultOut, VString & out )
 {
 	if ( jni == NULL )
@@ -50,19 +47,22 @@ bool VrLocale::GetString( JNIEnv* jni, jobject activityObject, char const * key,
 	char const * realKey = key + LOCALIZED_KEY_PREFIX_LEN;
 	//LOG( "realKey = %s", realKey );
 
-#if defined( OVR_OS_ANDROID )
 	jmethodID const getLocalizedStringId = ovr_GetMethodID( jni, VrActivityClass, "getLocalizedString", "(Ljava/lang/String;)Ljava/lang/String;" );
 	if ( getLocalizedStringId != NULL )
 	{
 		JavaString keyObj( jni, realKey );
-		JavaUTFChars resultStr( jni, static_cast< jstring >( jni->CallObjectMethod( activityObject, getLocalizedStringId, keyObj.GetJString() ) ) );
-		if ( !jni->ExceptionOccurred() )
-		{
-			out = resultStr;
-			if ( out.isEmpty() )
-			{
+        jstring jstr = static_cast<jstring>(jni->CallObjectMethod(activityObject, getLocalizedStringId, keyObj.GetJString()));
+        if (!jni->ExceptionOccurred()) {
+            const jchar *chars = jni->GetStringChars(jstr, NULL);
+            while (*chars) {
+                out.append(*chars);
+                chars++;
+            }
+            jni->ReleaseStringChars(jstr, chars);
+
+            if (out.isEmpty()) {
 				out = defaultOut;
-				LOG( "key not found, localized to '%s'", out.toCString() );
+                LOG("key not found, localized to '%s'", out.toCString());
 				return false;
 			}
 
@@ -70,11 +70,9 @@ bool VrLocale::GetString( JNIEnv* jni, jobject activityObject, char const * key,
 			return true;
 		}
 	}
-#else
-	OVR_COMPILER_ASSERT( false );
-#endif
+
 	out = "JAVAERROR";
-	OVR_ASSERT( false );	// the java code is missing getLocalizedString or an exception occured while calling it
+    OVR_ASSERT(false);
 	return false;
 }
 
@@ -157,22 +155,21 @@ VString private_GetXliffFormattedString( const VString & inXliffStr, ... )
 	// Buffer that holds formatted return string
     VString retStrBuffer;
 
-	char const * p = inXliffStr.toCString();
-	for ( ; ; )
-	{
-		uint32_t charCode = UTF8Util::DecodeNextChar( &p );
-		if ( charCode == '\0' )
-		{
+    std::u32string ucs4 = inXliffStr.toUcs4();
+    std::u32string::iterator p = ucs4.begin();
+    forever {
+        uint32_t charCode = *p;
+        p++;
+        if (charCode == '\0') {
 			break;
-		}
-		else if( charCode == '%' )
-		{
+        } else if (charCode == '%') {
 			// We found the start of the format specifier
 			// Now check that there are at least three more characters which contain the format specification
 			Array< uint32_t > formatSpec;
 			for ( int count = 0; count < MIN_NUM_EXPECTED_FORMAT_CHARS; ++count )
 			{
-				uint32_t formatCharCode = UTF8Util::DecodeNextChar( &p );
+                uint32_t formatCharCode = *p;
+                p++;
 				formatSpec.append( formatCharCode );
 			}
 

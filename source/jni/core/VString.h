@@ -28,7 +28,7 @@ public:
 
     bool isEmpty() const { return empty(); }
 
-    void assign(const char *str) { assign(str, strlen(str)); }
+    void assign(const char *str);
     void assign(const char *str, uint size);
     void assign(const char16_t *str);
     void assign(const char16_t *str, uint size);

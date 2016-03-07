@@ -91,6 +91,16 @@ VString::VString(const std::u16string &source)
     }
 }
 
+void VString::assign(const char *str)
+{
+    if (str == nullptr) {
+        clear();
+        return;
+    }
+
+    assign(str, strlen(str));
+}
+
 void VString::append(const char *str, uint length)
 {
     for (uint i = 0; i < length; i++) {
