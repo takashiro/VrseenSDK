@@ -118,7 +118,7 @@ public:
     int toInt() const;
     double toDouble() const;
 
-    friend std::ostream &operator << (std::ostream &out, const VString &str) { out << str.toStdString(); return out; }
+    friend std::ostream &operator << (std::ostream &out, const VString &str) { out << str.toUtf8(); return out; }
     void sprintf(const char *format, ...);
 };
 
