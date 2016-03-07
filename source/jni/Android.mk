@@ -134,7 +134,6 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     KeyState.cpp \
                     App.cpp \
                     AppRender.cpp \
-                    PathUtils.cpp \
                     DebugLines.cpp \
                     SoundManager.cpp \
                     VUserProfile.cpp \
