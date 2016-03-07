@@ -25,6 +25,7 @@ SOURCES += \
     jni/core/FileFILE.cpp \
     jni/core/VJson.cpp \
     jni/core/Log.cpp \
+    jni/core/VLog.cpp \
     jni/core/Lockless.cpp \
     jni/core/VMath.cpp \
     jni/core/VPath.cpp \
@@ -151,6 +152,7 @@ HEADERS += \
     jni/core/FileFILE.h \
     jni/core/VJson.h \
     jni/core/Log.h \
+    jni/core/VLog.h \
     jni/core/Lockless.h \
     jni/core/VMath.h \
     jni/core/VPath.h \

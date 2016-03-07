@@ -40,6 +40,7 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     core/FileFILE.cpp \
                     core/VJson.cpp \ \
                     core/Log.cpp \
+                    core/VLog.cpp \
                     core/Lockless.cpp \
                     core/VMath.cpp \
                     core/VPath.cpp \
