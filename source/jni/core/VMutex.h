@@ -6,6 +6,8 @@ NV_NAMESPACE_BEGIN
 
 class VMutex
 {
+    friend class VWaitCondition;
+
 public:
     class Locker
     {
@@ -30,7 +32,13 @@ public:
     bool tryLock();
     void unlock();
 
+    uint lockCount() const;
+    bool isRecursive() const;
+
 private:
+    void setLockCount(uint count);
+    void _unlock();
+
     NV_DECLARE_PRIVATE
     NV_DISABLE_COPY(VMutex)
 };

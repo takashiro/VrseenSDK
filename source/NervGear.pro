@@ -42,6 +42,7 @@ SOURCES += \
     jni/core/MappedFile.cpp \
     jni/core/MemBuffer.cpp \
     jni/core/VMutex.cpp \
+    jni/core/VWaitCondition.cpp \
     jni/core/android/GlUtils.cpp \
     jni/core/android/JniUtils.cpp \
     jni/core/android/LogUtils.cpp \
@@ -182,6 +183,7 @@ HEADERS += \
     jni/core/String_Utils.h \
     jni/core/StringHash.h \
     jni/core/TypesafeNumber.h \
+    jni/core/VWaitCondition.h \
     jni/embedded/dependency_error_de.h \
     jni/embedded/dependency_error_en.h \
     jni/embedded/dependency_error_es.h \

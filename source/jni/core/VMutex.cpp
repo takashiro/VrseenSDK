@@ -64,4 +64,24 @@ void VMutex::unlock()
     pthread_mutex_unlock(&d->mutex);
 }
 
+uint VMutex::lockCount() const
+{
+    return d->lockCount;
+}
+
+bool VMutex::isRecursive() const
+{
+    return d->recursive;
+}
+
+void VMutex::setLockCount(uint count)
+{
+    d->lockCount = count;
+}
+
+void VMutex::_unlock()
+{
+    pthread_mutex_unlock(&d->mutex);
+}
+
 NV_NAMESPACE_END
