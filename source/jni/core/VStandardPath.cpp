@@ -30,7 +30,8 @@ const char* FolderName[VStandardPath::FolderTypeCount] =
 };
 
 	VStandardPath::VStandardPath( JNIEnv * jni, jobject activityObj )
-	{
+        : d(new Private)
+    {
         d->vrLibClass = ovr_GetGlobalClassReference( jni, "me/takashiro/nervgear/VrLib" );
 
 		// Internal memory
@@ -99,8 +100,13 @@ const char* FolderName[VStandardPath::FolderTypeCount] =
 		{
             JavaUTFChars returnString( jni, (jstring)jni->CallStaticObjectMethod( d->vrLibClass, secondaryCacheDirID, activityObj ) );
             d->storageFolderPaths[SecondaryExternalStorage][CacheFolder] = returnString.ToStr();
-		}
-	}
+        }
+    }
+
+    VStandardPath::~VStandardPath()
+    {
+        delete d;
+    }
 
     void VStandardPath::PushBackSearchPathIfValid( StorageType toStorage, FolderType toFolder, const char * subfolder, Array<VString> & searchPaths ) const
 	{
