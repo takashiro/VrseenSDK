@@ -87,7 +87,7 @@ protected:
     // File handle & open mode
     bool        Opened;
     FILE*       fs;
-    int         OpenFlags;
+    int         OpenFlag;
     // Error code for last request
     int         ErrorCode;
 
@@ -155,7 +155,7 @@ private:
 
 // Initialize file by opening it
 VFILEFile::VFILEFile(const VString& fileName, int flags, int mode)
-  : FileName(fileName), OpenFlags(flags)
+  : FileName(fileName), OpenFlag(flags)
 {
     OVR_UNUSED(mode);
     init();
@@ -163,7 +163,7 @@ VFILEFile::VFILEFile(const VString& fileName, int flags, int mode)
 
 // The 'pfileName' should be encoded as UTF-8 to support international file names.
 VFILEFile::VFILEFile(const char* pfileName, int flags, int mode)
-  : FileName(pfileName), OpenFlags(flags)
+  : FileName(pfileName), OpenFlag(flags)
 {
     OVR_UNUSED(mode);
     init();
@@ -174,21 +174,21 @@ void VFILEFile::init()
     // Open mode for file's open
     const char *omode = "rb";
 
-    if (OpenFlags & Open_Truncate)
+    if (OpenFlag & Open_Truncate)
     {
-        if (OpenFlags & Open_Read)
+        if (OpenFlag & Open_Read)
             omode = "w+b";
         else
             omode = "wb";
     }
-    else if (OpenFlags & Open_Create)
+    else if (OpenFlag & Open_Create)
     {
-        if (OpenFlags & Open_Read)
+        if (OpenFlag & Open_Read)
             omode = "a+b";
         else
             omode = "ab";
     }
-    else if (OpenFlags & Open_Write)
+    else if (OpenFlag & Open_Write)
         omode = "r+b";
 
 #ifdef OVR_OS_WIN32
@@ -248,12 +248,12 @@ bool    VFILEFile::isValid()
 }
 bool    VFILEFile::isWritable()
 {
-    return isValid() && (OpenFlags&Open_Write);
+    return isValid() && (OpenFlag&Open_Write);
 }
 /*
 bool    VFILEFile::IsRecoverable()
 {
-    return IsValid() && ((OpenFlags&OVR_FO_SAFETRUNC) == OVR_FO_SAFETRUNC);
+    return IsValid() && ((OpenFlag&OVR_FO_SAFETRUNC) == OVR_FO_SAFETRUNC);
 }
 */
 
@@ -481,7 +481,7 @@ bool VFILEFile::close()
 
     // Handle safe truncate
     /*
-    if ((OpenFlags & OVR_FO_SAFETRUNC) == OVR_FO_SAFETRUNC)
+    if ((OpenFlag & OVR_FO_SAFETRUNC) == OVR_FO_SAFETRUNC)
     {
         // Delete original file (if it existed)
         DWORD oldAttributes = FileUtilWin32::GetFileAttributes(FileName);
@@ -524,7 +524,7 @@ bool    VFILEFile::CloseCancel()
     }
 
     // Handle safe truncate (delete tmp file, leave original unchanged)
-    if ((OpenFlags&OVR_FO_SAFETRUNC) == OVR_FO_SAFETRUNC)
+    if ((OpenFlag&OVR_FO_SAFETRUNC) == OVR_FO_SAFETRUNC)
         if (!FileUtilWin32::DeleteFile(TempName))
         {
             //ErrorCode = errno;
