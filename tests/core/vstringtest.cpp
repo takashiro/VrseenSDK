@@ -1,6 +1,7 @@
 #include "test.h"
 
 #include <VString.h>
+#include <string>
 
 NV_USING_NAMESPACE
 
@@ -255,6 +256,13 @@ void test()
 
         VString str3 = VString::fromLatin1(str2);
         assert(str1 == str3);
+    }
+
+    //UTF-32/UTF-16 Conversion
+    {
+        std::u32string utf32 = U"向日葵的约定";
+        VString str = VString::fromUcs4(utf32);
+        assert(str == u"向日葵的约定");
     }
 }
 

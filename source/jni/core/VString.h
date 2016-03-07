@@ -82,6 +82,9 @@ public:
     VByteArray toLatin1() const;
     static VString fromLatin1(const VByteArray &latin1);
 
+    std::u32string toUcs4() const;
+    static VString fromUcs4(const std::u32string &ucs4);
+
     void stripTrailing(const char *str);
 
     const VString &operator += (const VString &str) { append(str); return *this; }

@@ -358,6 +358,41 @@ VString VString::fromLatin1(const VByteArray &latin1)
     return utf16;
 }
 
+std::u32string VString::toUcs4() const
+{
+    std::u32string ucs4;
+    char32_t code = 0;
+    for (const char16_t &in : *this) {
+        if (in >= 0xd800 && in <= 0xdbff) {
+            code = ((in - 0xd800) << 10) + 0x10000;
+        } else {
+            if (in >= 0xdc00 && in <= 0xdfff) {
+                code |= in - 0xdc00;
+            } else {
+                code = in;
+            }
+
+            ucs4.append(1, code);
+            code = 0;
+        }
+    }
+    return ucs4;
+}
+
+VString VString::fromUcs4(const std::u32string &ucs4)
+{
+    VString utf16;
+    for (const char32_t &code : ucs4) {
+        if (code > 0xffff) {
+            utf16.append(static_cast<char16_t>(0xd800 + (code >> 10)));
+            utf16.append(static_cast<char16_t>(0xdc00 + (code & 0x03ff)));
+        } else {
+            utf16.append(static_cast<char16_t>(code));
+        }
+    }
+    return utf16;
+}
+
 int VString::compare(const char *str) const
 {
     return StringCompare(data(), str);
