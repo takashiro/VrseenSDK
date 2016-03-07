@@ -28,7 +28,6 @@
 #include <sys/stat.h>
 #include <sstream>
 
-#include "UTF8Util.h"
 #include "VPath.h"
 #include "VJson.h"
 #include "Android/GlUtils.h"
