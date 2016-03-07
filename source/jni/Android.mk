@@ -34,6 +34,7 @@ LOCAL_EXPORT_C_INCLUDES := $(LOCAL_C_INCLUDES)
 LOCAL_SRC_FILES  := core/Alg.cpp \
                     core/Allocator.cpp \
                     core/Atomic.cpp \
+                    core/VByteArray.cpp \
                     core/VChar.cpp \
                     core/File.cpp \
                     core/FileFILE.cpp \

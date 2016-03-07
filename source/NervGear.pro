@@ -19,6 +19,7 @@ SOURCES += \
     jni/core/Alg.cpp \
     jni/core/Allocator.cpp \
     jni/core/Atomic.cpp \
+    jni/core/VByteArray.cpp \
     jni/core/VChar.cpp \
     jni/core/File.cpp \
     jni/core/FileFILE.cpp \
@@ -142,6 +143,7 @@ HEADERS += \
     jni/core/Atomic.h \
     jni/core/Array.h \
     jni/core/VArray.h \
+    jni/core/VByteArray.h \
     jni/core/VColor.h \
     jni/core/VChar.h \
     jni/core/ContainerAllocator.h \
