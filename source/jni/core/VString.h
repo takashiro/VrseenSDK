@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vglobal.h"
+#include "VByteArray.h"
 
 #include <string>
 #include <string.h>
@@ -72,6 +73,15 @@ public:
     VString toUpper() const;
     VString toLower() const;
 
+    std::string toStdString() const;
+    const char *toCString() const;
+
+    VByteArray toUtf8() const;
+    static VString fromUtf8(const VByteArray &utf8);
+
+    VByteArray toLatin1() const;
+    static VString fromLatin1(const VByteArray &latin1);
+
     void stripTrailing(const char *str);
 
     const VString &operator += (const VString &str) { append(str); return *this; }
@@ -81,9 +91,6 @@ public:
     friend VString operator + (const VString &str1, const VString &str2);
     friend VString operator + (const VString &str, char16_t ch);
     friend VString operator + (char16_t ch, const VString &str);
-
-    std::string toStdString() const;
-    const char *toCString() const;
 
     int compare(const VString &str) const { return basic_string::compare(str.data()); }
     int compare(const char *str) const;

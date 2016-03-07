@@ -263,6 +263,101 @@ const char *VString::toCString() const
     return str;
 }
 
+VByteArray VString::toUtf8() const
+{
+    VByteArray utf8;
+    uint code = 0;
+    for (const char16_t &in : *this) {
+        if (in >= 0xd800 && in <= 0xdbff) {
+            code = ((in - 0xd800) << 10) + 0x10000;
+        } else {
+            if (in >= 0xdc00 && in <= 0xdfff) {
+                code |= in - 0xdc00;
+            } else {
+                code = in;
+            }
+
+            if (code <= 0x7f) {
+                utf8.append(static_cast<char>(code));
+            } else if (code <= 0x7ff) {
+                utf8.append(static_cast<char>(0xc0 | ((code >> 6) & 0x1f)));
+                utf8.append(static_cast<char>(0x80 | (code & 0x3f)));
+            } else if (code <= 0xffff) {
+                utf8.append(static_cast<char>(0xe0 | ((code >> 12) & 0x0f)));
+                utf8.append(static_cast<char>(0x80 | ((code >> 6) & 0x3f)));
+                utf8.append(static_cast<char>(0x80 | (code & 0x3f)));
+            } else {
+                utf8.append(static_cast<char>(0xf0 | ((code >> 18) & 0x07)));
+                utf8.append(static_cast<char>(0x80 | ((code >> 12) & 0x3f)));
+                utf8.append(static_cast<char>(0x80 | ((code >> 6) & 0x3f)));
+                utf8.append(static_cast<char>(0x80 | (code & 0x3f)));
+            }
+            code = 0;
+        }
+    }
+    return utf8;
+}
+
+VString VString::fromUtf8(const VByteArray &utf8)
+{
+    VString utf16;
+    unsigned int code = 0;
+    int following = 0;
+    for (const uchar &ch : utf8) {
+        if (ch <= 0x7f) {
+            code = ch;
+            following = 0;
+        } else if (ch <= 0xbf) {
+            if (following > 0) {
+                code = (code << 6) | (ch & 0x3f);
+                --following;
+            }
+        } else if (ch <= 0xdf) {
+            code = ch & 0x1f;
+            following = 1;
+        } else if (ch <= 0xef) {
+            code = ch & 0x0f;
+            following = 2;
+        } else {
+            code = ch & 0x07;
+            following = 3;
+        }
+
+        if (following == 0) {
+            if (code > 0xffff) {
+                utf16.append(static_cast<char16_t>(0xd800 + (code >> 10)));
+                utf16.append(static_cast<char16_t>(0xdc00 + (code & 0x03ff)));
+            } else {
+                utf16.append(static_cast<char16_t>(code));
+            }
+            code = 0;
+        }
+    }
+    return utf16;
+}
+
+VByteArray VString::toLatin1() const
+{
+    uint size = this->size();
+    VByteArray latin1;
+    latin1.resize(size);
+    for (uint i = 0; i < size; i++) {
+        latin1[i] = at(i);
+    }
+    return latin1;
+}
+
+VString VString::fromLatin1(const VByteArray &latin1)
+{
+    uint size = latin1.size();
+    VString utf16;
+    utf16.resize(size);
+    for (uint i = 0; i < size; i++) {
+        utf16.at(i) = latin1[i];
+    }
+    return utf16;
+}
+
 int VString::compare(const char *str) const
 {
     return StringCompare(data(), str);
