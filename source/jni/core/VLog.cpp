@@ -1,5 +1,6 @@
 #include "VLog.h"
 
+#include <sstream>
 #include <android/log.h>
 
 NV_NAMESPACE_BEGIN
