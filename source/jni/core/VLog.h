@@ -3,8 +3,6 @@
 #include "vglobal.h"
 #include "VString.h"
 
-#include <sstream>
-
 NV_NAMESPACE_BEGIN
 
 class VLog

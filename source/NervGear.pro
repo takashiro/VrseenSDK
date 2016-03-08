@@ -152,6 +152,7 @@ HEADERS += \
     jni/core/Deque.h \
     jni/core/File.h \
     jni/core/FileFILE.h \
+    jni/core/VFlags.h \
     jni/core/VJson.h \
     jni/core/Log.h \
     jni/core/VLog.h \
@@ -176,7 +177,6 @@ HEADERS += \
     jni/core/Types.h \
     jni/core/KeyCodes.h \
     jni/core/List.h \
-    jni/core/BitFlags.h \
     jni/core/OVR.h \
     jni/core/OVRVersion.h \
     jni/core/VSharedPointer.h \
@@ -290,8 +290,7 @@ HEADERS += \
     jni/vglobal.h \
     jni/AppLocal.h \
     jni/Input.h \
-    jni/PointTracker.h \
-    jni/UniversalMenu_Commands.h
+    jni/PointTracker.h
 
 include(jni/3rdparty/minizip/minizip.pri)
 include(jni/3rdparty/stb/stb.pri)

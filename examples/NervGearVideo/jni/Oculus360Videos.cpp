@@ -20,6 +20,8 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include <android/keycodes.h>
 
 #include <Alg.h>
+#include <VPath.h>
+
 #include "VMath.h"
 #include "TypesafeNumber.h"
 #include "Array.h"
@@ -316,7 +318,7 @@ void Oculus360Videos::OneTimeInit( const char * fromPackage, const char * launch
 
 	VString localizedAppName;
 	VrLocale::GetString( app->GetVrJni(), app->GetJavaObject(), videosLabel, videosLabel, localizedAppName );
-    MetaData->renameCategory( ExtractFileBase( videosDirectory ), localizedAppName );
+    MetaData->renameCategory(VPath(videosDirectory).baseName(), localizedAppName);
 
 	// Start building the VideoMenu
 	VideoMenu = ( OvrVideoMenu * )app->GetGuiSys().getMenu( OvrVideoMenu::MENU_NAME );
@@ -484,7 +486,7 @@ void Oculus360Videos::Command( const char * msg )
 		// FIXME: this needs to do some parameter magic to fix xliff tags
 		VString message;
 		VrLocale::GetString( app->GetVrJni(), app->GetJavaObject(), "@string/playback_failed", "@string/playback_failed", message );
-		VString fileName = ExtractFile( ActiveVideo->url );
+        VString fileName = VPath(ActiveVideo->url).fileName();
         message = VrLocale::GetXliffFormattedString( message, fileName.toCString() );
 		BitmapFont & font = app->GetDefaultFont();
 		font.WordWrapText( message, 1.0f );

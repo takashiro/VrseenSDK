@@ -1,15 +1,5 @@
-/************************************************************************************
-
-Filename    :   VideosMetaData.cpp
-Content     :   A class to manage metadata used by FolderBrowser
-Created     :   February 19, 2015
-Authors     :   Jonathan E. Wright, Warsam Osman, Madhu Kalva
-
-Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
-
-
-*************************************************************************************/
 #include <Alg.h>
+#include <VPath.h>
 
 #include "VideosMetaData.h"
 #include "VrCommon.h"
@@ -29,7 +19,7 @@ const char * const DEFAULT_AUTHOR_NAME				= "Unspecified Author";
 OvrVideosMetaDatum::OvrVideosMetaDatum( const VString& url )
 	: Author( DEFAULT_AUTHOR_NAME )
 {
-	Title = ExtractFileBase( url );
+    Title = VPath(url).baseName();
 }
 
 OvrMetaDatum * OvrVideosMetaData::createMetaDatum( const char* url ) const
@@ -51,7 +41,7 @@ void OvrVideosMetaData::extractExtendedData( const Json &jsonDatum, OvrMetaDatum
 
 		if ( videoData->Title.isEmpty() )
 		{
-            videoData->Title = ExtractFileBase(datum.url);
+            videoData->Title = VPath(datum.url).baseName();
 		}
 
 		if ( videoData->Author.isEmpty() )

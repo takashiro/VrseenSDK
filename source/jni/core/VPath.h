@@ -23,6 +23,8 @@ public:
 
     VString fileName() const;
     VString baseName() const;
+
+    VString dirName() const;
 };
 
 NV_NAMESPACE_END

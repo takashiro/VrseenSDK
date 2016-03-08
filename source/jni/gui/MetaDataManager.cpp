@@ -18,6 +18,8 @@ Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
 #include "PackageFiles.h"
 #include "unistd.h"
 
+#include <VPath.h>
+
 #include <fstream>
 
 using namespace NervGear;
@@ -56,7 +58,7 @@ void OvrMetaData::initFromDirectory( const char * relativePath, const Array< VSt
 	}
 	SortStringArray( fileList );
 	Category currentCategory;
-	currentCategory.categoryTag = ExtractFileBase( relativePath );
+    currentCategory.categoryTag = VPath(relativePath).baseName();
 	// The label is the same as the tag by default.
 	//Will be replaced if definition found in loaded metadata
 	currentCategory.label = currentCategory.categoryTag;
@@ -67,11 +69,10 @@ void OvrMetaData::initFromDirectory( const char * relativePath, const Array< VSt
 	for ( int i = 0; i < fileList.sizeInt(); i++ )
 	{
 		const VString & s = fileList[ i ];
-		const VString fileBase = ExtractFileBase( s );
+        const VString fileBase = VPath(s).baseName();
 		// subdirectory - add category
-		if ( MatchesExtension( s, "/" ) )
-		{
-			subDirs.append( s );
+        if (s.endsWith('/')) {
+            subDirs.append(s);
 			continue;
 		}
 
@@ -128,7 +129,7 @@ void OvrMetaData::initFromFileList( const Array< VString > & fileList, const Ovr
 	for ( int i = 0; i < fileList.sizeInt(); ++i )
 	{
 		const VString & filePath = fileList.at( i );
-		const VString categoryTag = ExtractDirectory( fileList.at( i ) );
+        const VString categoryTag = VPath(fileList.at(i)).dirName();
         StringHash< int >::ConstIterator iter = uniqueCategoryList.find( categoryTag );
 		int catIndex = -1;
         if ( iter == uniqueCategoryList.end() )

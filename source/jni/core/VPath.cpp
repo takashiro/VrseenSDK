@@ -164,4 +164,35 @@ VString VPath::baseName() const
     return fileName;
 }
 
+VString VPath::dirName() const
+{
+    uint end = size() - 1;
+    forever {
+        if (at(end) == '/' || at(end) == '\\' || at(end) == ':') {
+            break;
+        }
+
+        if (end > 0) {
+            end--;
+        } else {
+            return VString();
+        }
+    }
+
+    uint start = end - 1;
+    forever {
+        if (at(start) == '/' || at(start) == '\\' || at(start) == ':') {
+            start++;
+            break;
+        }
+
+        if (start > 0) {
+            start--;
+        } else {
+            break;
+        }
+    }
+    return range(start, end);
+}
+
 NV_NAMESPACE_END

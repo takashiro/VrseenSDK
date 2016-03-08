@@ -35,11 +35,6 @@ bool HasPermission(VString fileOrDirName, mode_t mode );
 // Returns true if the file exists
 bool FileExists(const VString &filename );
 
-// Returns true if ext is the end of fileName
-bool MatchesExtension(const VString &file, const char * ext );
-
-int StringCompare( const void *a, const void * b );
-
 void SortStringArray( Array<VString> & strings );
 
 StringHash< VString > RelativeDirectoryFileList( const Array< VString > & searchPaths, const char * RelativeDirPath );
@@ -49,15 +44,6 @@ StringHash< VString > RelativeDirectoryFileList( const Array< VString > & search
 // Subdirectories will have a trailing slash.
 // All files and directories that start with . are skipped.
 Array<VString> DirectoryFileList( const char * DirPath );
-
-// Returns the last token in path s with slashes and file extension stripped
-VString ExtractFileBase( const VString & s );
-
-// Returns the filename with extension from a passed in path
-VString ExtractFile( const VString & s );
-
-// Returns the directory name before the fileName - stripping out parent directories and file
-VString ExtractDirectory( const VString & s );
 
 // Creates all the intermediate directories if they don't exist
 void MakePath(const VString &dirPath, mode_t mode );

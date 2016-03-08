@@ -2,7 +2,7 @@
 
 #include "vglobal.h"
 #include "Types.h"
-#include "BitFlags.h"
+#include "VFlags.h"
 #include "MemBuffer.h"
 #include "Android/GlUtils.h"
 
@@ -23,7 +23,7 @@ enum eTextureFlags
 	TEXTUREFLAG_NO_MIPMAPS
 };
 
-typedef BitFlagsT< eTextureFlags > TextureFlags_t;
+typedef VFlags<eTextureFlags> TextureFlags_t;
 
 // texture id/target pair
 // the auto-casting should be removed but allows the target to be ignored by the code that does not care

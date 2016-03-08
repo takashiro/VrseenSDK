@@ -40,7 +40,7 @@ void OvrSoundManager::LoadSoundAssets()
 	VString foundPath;
 	if ( GetFullPath( searchPaths, DEV_SOUNDS_RELATIVE, foundPath ) )
 	{
-		std::ifstream fp(foundPath.toCString(), std::ios::binary);
+        std::ifstream fp(foundPath.toStdString(), std::ios::binary);
 		Json dataFile;
 		fp >> dataFile;
 		if (dataFile.isInvalid())
