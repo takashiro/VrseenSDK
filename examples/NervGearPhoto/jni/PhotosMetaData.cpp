@@ -13,6 +13,7 @@ Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
 
 #include <Android/LogUtils.h>
 #include <Alg.h>
+#include <VPath.h>
 
 #include "VrCommon.h"
 
@@ -25,7 +26,7 @@ const char * const DEFAULT_AUTHOR_NAME	= "Unspecified Author";
 OvrPhotosMetaDatum::OvrPhotosMetaDatum( const VString& url )
 	: author( DEFAULT_AUTHOR_NAME )
 {
-	title = ExtractFileBase( url );
+    title = VPath(url).baseName();
 }
 
 OvrMetaDatum * OvrPhotosMetaData::createMetaDatum( const char* url ) const
@@ -43,7 +44,7 @@ void OvrPhotosMetaData::extractExtendedData( const NervGear::Json & jsonDatum, O
 
 		if ( photoData->title.isEmpty() )
 		{
-            photoData->title = ExtractFileBase(datum.url);
+            photoData->title = VPath(datum.url).baseName();
 		}
 
 		if ( photoData->author.isEmpty() )

@@ -50,9 +50,6 @@ StringHash< VString > RelativeDirectoryFileList( const Array< VString > & search
 // All files and directories that start with . are skipped.
 Array<VString> DirectoryFileList( const char * DirPath );
 
-// Returns the last token in path s with slashes and file extension stripped
-VString ExtractFileBase( const VString & s );
-
 // Returns the filename with extension from a passed in path
 VString ExtractFile( const VString & s );
 
