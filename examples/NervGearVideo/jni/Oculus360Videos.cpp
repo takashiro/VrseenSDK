@@ -486,7 +486,7 @@ void Oculus360Videos::Command( const char * msg )
 		// FIXME: this needs to do some parameter magic to fix xliff tags
 		VString message;
 		VrLocale::GetString( app->GetVrJni(), app->GetJavaObject(), "@string/playback_failed", "@string/playback_failed", message );
-		VString fileName = ExtractFile( ActiveVideo->url );
+        VString fileName = VPath(ActiveVideo->url).fileName();
         message = VrLocale::GetXliffFormattedString( message, fileName.toCString() );
 		BitmapFont & font = app->GetDefaultFont();
 		font.WordWrapText( message, 1.0f );
