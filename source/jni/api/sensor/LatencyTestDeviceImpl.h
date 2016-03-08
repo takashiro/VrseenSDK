@@ -56,7 +56,7 @@ public:
     virtual bool MatchHIDDevice(const HIDDeviceDesc& hidDesc) const
     {
         // should paths comparison be case insensitive?
-        return ((HIDDesc.Path.CompareNoCase(hidDesc.Path) == 0) &&
+        return ((HIDDesc.Path.icompare(hidDesc.Path) == 0) &&
                 (HIDDesc.SerialNumber == hidDesc.SerialNumber));
     }
     virtual bool        GetDeviceInfo(DeviceInfo* info) const;
@@ -85,9 +85,9 @@ public:
     virtual bool SetConfiguration(const LatencyTestConfiguration& configuration, bool waitFlag = false);
     virtual bool GetConfiguration(LatencyTestConfiguration* configuration);
 
-    virtual bool SetCalibrate(const Color& calibrationColor, bool waitFlag = false);
+    virtual bool SetCalibrate(const VColor& calibrationColor, bool waitFlag = false);
 
-    virtual bool SetStartTest(const Color& targetColor, bool waitFlag = false);
+    virtual bool SetStartTest(const VColor& targetColor, bool waitFlag = false);
     virtual bool SetDisplay(const LatencyTestDisplay& display, bool waitFlag = false);
 
 protected:
@@ -100,8 +100,8 @@ protected:
 
     bool    setConfiguration(const LatencyTestConfiguration& configuration);
     bool    getConfiguration(LatencyTestConfiguration* configuration);
-    bool    setCalibrate(const Color& calibrationColor);
-    bool    setStartTest(const Color& targetColor);
+    bool    setCalibrate(const VColor& calibrationColor);
+    bool    setStartTest(const VColor& targetColor);
     bool    setDisplay(const LatencyTestDisplay& display);
 
     // Called for decoded messages

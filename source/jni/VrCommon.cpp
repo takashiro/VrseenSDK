@@ -48,19 +48,17 @@ static Vector3f	MatrixForward( const Matrix4f & m )
 }
 #endif
 
-int StringCompare( const void *a, const void * b )
+void SortStringArray(Array<VString> &strings)
 {
-	const VString *sa = ( VString * )a;
-	const VString *sb = ( VString * )b;
-	return sa->CompareNoCase( *sb );
-}
-
-void SortStringArray( Array<VString> & strings )
-{
-	if ( strings.size() > 1 )
-	{
-		qsort( ( void * )&strings[ 0 ], strings.size(), sizeof( VString ), StringCompare );
+    if (strings.size() <= 1) {
+        return;
 	}
+
+    qsort(&strings[0], strings.size(), sizeof( VString ), [](const void *a, const void *b){
+        const VString *sa = ( VString * )a;
+        const VString *sb = ( VString * )b;
+        return sa->icompare( *sb );
+    });
 }
 
 // DirPath should by a directory with a trailing slash.
@@ -148,126 +146,32 @@ Array<VString> DirectoryFileList( const char * DirPath )
 	return strings;
 }
 
-bool HasPermission( const char * fileOrDirName, mode_t mode )
+bool HasPermission(VString fileOrDirName, mode_t mode )
 {
-	VString s( fileOrDirName );
-	int len = s.size();
-	if ( s[ len - 1 ] != '/' )
+    int len = fileOrDirName.size();
+    if ( fileOrDirName.at(len - 1) != '/' )
 	{	// directory ends in a slash
 		int	end = len - 1;
-		for ( ; end > 0 && s[ end ] != '/'; end-- )
+        for ( ; end > 0 && fileOrDirName.at(end) != '/'; end-- )
 			;
-		s = VString( &s[ 0 ], end );
+        fileOrDirName = VString(fileOrDirName.data(), end);
 	}
-	return access( s.toCString(), mode ) == 0;
+    return access( fileOrDirName.toCString(), mode ) == 0;
 }
 
-bool FileExists( const char * filename )
+bool FileExists(const VString &filename)
 {
 	struct stat st;
-	int result = stat( filename, &st );
+    int result = stat( filename.toCString(), &st );
 	return result == 0;
 }
 
-bool MatchesExtension( const char * fileName, const char * ext )
-{
-	const int extLen = strlen( ext );
-	const int sLen = strlen( fileName );
-	if ( sLen < extLen + 1 )
-	{
-		return false;
-	}
-	return ( 0 == strcmp( &fileName[ sLen - extLen ], ext ) );
-}
-
-VString ExtractFileBase( const VString & s )
-{
-	const int l = s.size();
-	if ( l == 0 )
-	{
-		return VString( "" );
-	}
-
-	int	end;
-	if ( s[ l - 1 ] == '/' )
-	{	// directory ends in a slash
-		end = l - 1;
-	}
-	else
-	{
-		for ( end = l - 1; end > 0 && s[ end ] != '.'; end-- )
-			;
-		if ( end == 0 )
-		{
-			end = l;
-		}
-	}
-	int	start;
-	for ( start = end - 1; start > -1 && s[ start ] != '/'; start-- )
-		;
-	start++;
-
-	return VString( &s[ start ], end - start );
-}
-
-VString ExtractFile( const VString & s )
-{
-	const int l = s.size();
-	if ( l == 0 )
-	{
-		return VString( "" );
-	}
-
-	int	end = l;
-	if ( s[ l - 1 ] == '/' )
-	{	// directory ends in a slash
-		end = l - 1;
-	}
-
-	int	start;
-	for ( start = end - 1; start > -1 && s[ start ] != '/'; start-- )
-		;
-	start++;
-
-	return VString( &s[ start ], end - start );
-}
-
-VString ExtractDirectory( const VString & s )
-{
-	const int l = s.size();
-	if ( l == 0 )
-	{
-		return VString( "" );
-	}
-
-	int	end;
-	if ( s[ l - 1 ] == '/' )
-	{	// directory ends in a slash
-		end = l - 1;
-	}
-	else
-	{
-		for ( end = l - 1; end > 0 && s[ end ] != '/'; end-- )
-			;
-		if ( end == 0 )
-		{
-			end = l - 1;
-		}
-	}
-	int	start;
-	for ( start = end - 1; start > -1 && s[ start ] != '/'; start-- )
-		;
-	start++;
-
-	return VString( &s[ start ], end - start );
-}
-
-void MakePath( const char * dirPath, mode_t mode )
+void MakePath( const VString &dirPath, mode_t mode )
 {
 	char path[ 256 ];
 	char * currentChar = NULL;
 
-	OVR_sprintf( path, sizeof( path ), "%s", dirPath );
+    OVR_sprintf( path, sizeof( path ), "%s", dirPath.toCString() );
 
 	for ( currentChar = path + 1; *currentChar; ++currentChar )
 	{

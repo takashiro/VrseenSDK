@@ -182,7 +182,9 @@ void SceneManager::SetSceneModel( const SceneDef &sceneDef )
 
 	for ( SceneSeatCount = 0; SceneSeatCount < MAX_SEATS; SceneSeatCount++ )
 	{
-		const ModelTag * tag = Scene.FindNamedTag( StringUtils::Va( "cameraPos%d", SceneSeatCount + 1 ) );
+        VString namedTag;
+        namedTag.sprintf("cameraPos%d", SceneSeatCount + 1);
+        const ModelTag * tag = Scene.FindNamedTag(namedTag);
 		if ( tag == NULL )
 		{
 			break;
@@ -297,8 +299,8 @@ void SceneManager::SetSceneProgram( const sceneProgram_t opaqueProgram, const sc
 			if ( materialDef.programObject != opaqueProg.program &&
 				( materialDef.programObject == dynamicOnlyProg.program ||
 					opaqueProg.program == dynamicOnlyProg.program ) )
-			{
-				Alg::Swap( materialDef.textures[0], materialDef.textures[1] );
+            {
+                std::swap(materialDef.textures[0], materialDef.textures[1]);
 			}
 
 			materialDef.programObject = opaqueProg.program;

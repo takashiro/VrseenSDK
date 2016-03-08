@@ -1071,14 +1071,14 @@ void OvrFolderBrowser::openImpl( App * app, OvrGazeCursor & gazeCursor )
 
 void OvrFolderBrowser::oneTimeInit()
 {
-	const OvrStoragePaths & storagePaths = m_app->GetStoragePaths();
-	storagePaths.GetPathIfValidPermission( EST_PRIMARY_EXTERNAL_STORAGE, EFT_CACHE, "", W_OK, m_appCachePath );
+	const VStandardPath & storagePaths = m_app->GetStoragePaths();
+    storagePaths.GetPathIfValidPermission(VStandardPath::PrimaryExternalStorage, VStandardPath::CacheFolder, "", W_OK, m_appCachePath );
 	OVR_ASSERT( !m_appCachePath.isEmpty() );
 
-	storagePaths.PushBackSearchPathIfValid( EST_SECONDARY_EXTERNAL_STORAGE, EFT_ROOT, "RetailMedia/", m_thumbSearchPaths );
-	storagePaths.PushBackSearchPathIfValid( EST_SECONDARY_EXTERNAL_STORAGE, EFT_ROOT, "", m_thumbSearchPaths );
-	storagePaths.PushBackSearchPathIfValid( EST_PRIMARY_EXTERNAL_STORAGE, EFT_ROOT, "RetailMedia/", m_thumbSearchPaths );
-	storagePaths.PushBackSearchPathIfValid( EST_PRIMARY_EXTERNAL_STORAGE, EFT_ROOT, "", m_thumbSearchPaths );
+    storagePaths.PushBackSearchPathIfValid(VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", m_thumbSearchPaths );
+    storagePaths.PushBackSearchPathIfValid(VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "", m_thumbSearchPaths );
+    storagePaths.PushBackSearchPathIfValid(VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", m_thumbSearchPaths );
+    storagePaths.PushBackSearchPathIfValid(VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "", m_thumbSearchPaths );
 	OVR_ASSERT( !m_thumbSearchPaths.isEmpty() );
 
 	// move the root up to eye height
@@ -1192,7 +1192,7 @@ void OvrFolderBrowser::buildDirtyMenu( OvrMetaData & metaData )
 				VString localizedCategoryName;
 
 				// Get localized tag (folder title)
-				localizedCategoryName = getCategoryTitle( VrLocale::MakeStringIdFromANSI( currentCategory.categoryTag ), currentCategory.categoryTag );
+                localizedCategoryName = getCategoryTitle( VrLocale::MakeStringId(currentCategory.categoryTag).toCString(), currentCategory.categoryTag.toCString() );
 
 				// the localization is now done app-side
 //				VrLocale::GetString( AppPtr->GetVrJni(), AppPtr->GetJavaObject(),
@@ -1260,7 +1260,7 @@ void OvrFolderBrowser::buildDirtyMenu( OvrMetaData & metaData )
 		OVR_ASSERT ( folder != NULL );
 		VRMenuObject * folderTitleObject = menuManager.toObject( folder->titleHandle );
 		OVR_ASSERT( folderTitleObject != NULL );
-		folderTitleObject->setText( title );
+        folderTitleObject->setText(title);
 		VRMenuObjectFlags_t flags = folderTitleObject->flags();
 		flags &= ~VRMenuObjectFlags_t( VRMENUOBJECT_DONT_RENDER );
 		folderTitleObject->setFlags( flags );
@@ -1272,12 +1272,12 @@ void OvrFolderBrowser::buildDirtyMenu( OvrMetaData & metaData )
 		const Posef textPose( Quatf(), Vector3f( 0.0f, -0.3f, 0.0f ) );
 
 		VRMenuSurfaceParms panelSurfParms( "panelSurface",
-			imageFile, SURFACE_TEXTURE_DIFFUSE,
+            imageFile.toCString(), SURFACE_TEXTURE_DIFFUSE,
 			NULL, SURFACE_TEXTURE_MAX,
 			NULL, SURFACE_TEXTURE_MAX );
 
 		VRMenuObjectParms * p = new VRMenuObjectParms( VRMENU_STATIC, Array< VRMenuComponent* >(),
-			panelSurfParms, message, panelPose, panelScale, textPose, Vector3f( 1.3f ), fontParms, VRMenuId_t(),
+            panelSurfParms, message.toCString(), panelPose, panelScale, textPose, Vector3f( 1.3f ), fontParms, VRMenuId_t(),
 			VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_ALL ), VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 
 		parms.append( p );
@@ -1657,7 +1657,7 @@ void OvrFolderBrowser::updateFolderTitle( const FolderView * folder )
 		VString folderTitle = folder->localizedName;
 		VRMenuObject * folderTitleObject = m_app->GetVRMenuMgr().toObject( folder->titleHandle );
 		OVR_ASSERT( folderTitleObject != NULL );
-		folderTitleObject->setText( folderTitle );
+        folderTitleObject->setText(folderTitle);
 
 		VRMenuObjectFlags_t flags = folderTitleObject->flags();
 		if ( numPanels > 0 )
@@ -1778,7 +1778,7 @@ void * OvrFolderBrowser::ThumbnailThread( void * v )
 				const OvrCreateThumbCmd & cmd = ThumbCreateAndLoadCommands->at( i );
 				int	width = 0;
 				int height = 0;
-				unsigned char * data = folderBrowser->createAndCacheThumbnail( cmd.sourceImagePath, cmd.thumbDestination.toCString(), width, height );
+                unsigned char * data = folderBrowser->createAndCacheThumbnail( cmd.sourceImagePath.toCString(), cmd.thumbDestination.toCString(), width, height );
 
 				if ( data != NULL )
 				{
@@ -1804,7 +1804,7 @@ void * OvrFolderBrowser::ThumbnailThread( void * v )
 						int folderId;
 						int panelId;
 
-						sscanf( cmd.loadCmd, "load %i %i", &folderId, &panelId );
+                        sscanf( cmd.loadCmd.toCString(), "load %i %i", &folderId, &panelId );
 
 						folderBrowser->m_textureCommands.PostPrintf( "thumb %i %i %p %i %i",
 							folderId, panelId, data, width, height );
@@ -1991,7 +1991,7 @@ void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const in
 
 	const VRMenuFontParms fontParms( HORIZONTAL_CENTER, VERTICAL_CENTER, false, false, true, 0.525f, 0.45f, 0.5f );
 	VRMenuObjectParms * p = new VRMenuObjectParms( VRMENU_BUTTON, panelComps,
-		panelSurfParms, panelTitle, panelPose, panelScale, textPose, Vector3f( 1.0f ), fontParms, id,
+        panelSurfParms, panelTitle.toCString(), panelPose, panelScale, textPose, Vector3f( 1.0f ), fontParms, id,
 		VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_TEXT ), VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 
 	outParms.append( p );
@@ -2004,13 +2004,13 @@ void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const in
     const VString thumbName = this->thumbName( panoUrl );
 	VString finalThumb;
 	char relativeThumbPath[ 1024 ];
-	ToRelativePath( m_thumbSearchPaths, panoUrl, relativeThumbPath, 1024 );
+    ToRelativePath( m_thumbSearchPaths, panoUrl.toCString(), relativeThumbPath, 1024 );
 
 	char appCacheThumbPath[ 1024 ];
     OVR_sprintf( appCacheThumbPath, 1024, "%s%s", m_appCachePath.toCString(), this->thumbName( relativeThumbPath ).toCString() );
 
 	// if this url doesn't exist locally
-	if ( !FileExists( panoUrl ) )
+    if ( !FileExists( panoUrl ) )
 	{
 		// Check app cache to see if we already downloaded it
 		if ( FileExists( appCacheThumbPath ) )
@@ -2027,7 +2027,7 @@ void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const in
 	if ( finalThumb.isEmpty() )
 	{
 		// Try search paths next to image for retail photos
-		if ( !GetFullPath( m_thumbSearchPaths, thumbName, finalThumb ) )
+        if ( !GetFullPath( m_thumbSearchPaths, thumbName.toCString(), finalThumb ) )
 		{
 			// Try app cache for cached user pano thumbs
 			if ( FileExists( appCacheThumbPath ) )
@@ -2037,7 +2037,7 @@ void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const in
 			else
 			{
 				const VString altThumbPath = alternateThumbName( panoUrl );
-				if ( altThumbPath.isEmpty() || !GetFullPath( m_thumbSearchPaths, altThumbPath, finalThumb ) )
+                if ( altThumbPath.isEmpty() || !GetFullPath( m_thumbSearchPaths, altThumbPath.toCString(), finalThumb ) )
 				{
                     int pathLen = (int) panoUrl.length();
 					if ( pathLen > 2 && OVR_stricmp( panoUrl.toCString() + pathLen - 2, ".x" ) == 0 )

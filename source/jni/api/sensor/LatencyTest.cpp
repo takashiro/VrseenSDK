@@ -12,7 +12,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "LatencyTest.h"
 
 #include "Log.h"
-#include "Timer.h"
+#include "VTimer.h"
+#include "Alg.h"
 
 namespace NervGear {
 
@@ -24,11 +25,11 @@ static const UInt32     DEFAULT_NUMBER_OF_SAMPLES = 10;                 // For b
 static const UInt32     INITIAL_SAMPLES_TO_IGNORE = 4;
 static const UInt32     TIMEOUT_WAITING_FOR_TEST_STARTED = 1000;
 static const UInt32     TIMEOUT_WAITING_FOR_COLOR_DETECTED = 4000;
-static const Color      CALIBRATE_BLACK(0, 0, 0);
-static const Color      CALIBRATE_WHITE(255, 255, 255);
-static const Color      COLOR1(0, 0, 0);
-static const Color      COLOR2(255, 255, 255);
-static const Color      SENSOR_DETECT_THRESHOLD(128, 255, 255);
+static const VColor      CALIBRATE_BLACK(0, 0, 0);
+static const VColor      CALIBRATE_WHITE(255, 255, 255);
+static const VColor      COLOR1(0, 0, 0);
+static const VColor      COLOR2(255, 255, 255);
+static const VColor      SENSOR_DETECT_THRESHOLD(128, 255, 255);
 static const float      BIG_FLOAT = 1000000.0f;
 static const float      SMALL_FLOAT = -1000000.0f;
 
@@ -45,7 +46,7 @@ LatencyTest::LatencyTest(LatencyTestDevice* device)
 
     reset();
 
-    srand(Timer::GetTicksMs());
+    srand(VTimer::TicksMs());
 }
 
 LatencyTest::~LatencyTest()
@@ -236,7 +237,7 @@ void LatencyTest::handleMessage(const Message& msg, LatencyTestMessageType laten
             getActiveResult()->TargetColor = RenderColor;
 
             // Record time so we can determine usb roundtrip time.
-            getActiveResult()->StartTestSeconds = Timer::GetSeconds();
+            getActiveResult()->StartTestSeconds = VTimer::Seconds();
 
             Device->SetStartTest(RenderColor);
 
@@ -260,7 +261,7 @@ void LatencyTest::handleMessage(const Message& msg, LatencyTestMessageType laten
             clearTimer();
 
             // Record time so we can determine usb roundtrip time.
-            getActiveResult()->TestStartedSeconds = Timer::GetSeconds();
+            getActiveResult()->TestStartedSeconds = VTimer::Seconds();
 
             State = State_WaitingForColorDetected;
             OVR_DEBUG_LOG(("State_WaitingForTestStarted -> State_WaitingForColorDetected."));
@@ -276,9 +277,9 @@ void LatencyTest::handleMessage(const Message& msg, LatencyTestMessageType laten
             MessageLatencyTestColorDetected* pDetected = (MessageLatencyTestColorDetected*) &msg;
             UInt16 elapsedTime = pDetected->Elapsed;
 
-			Color col = getActiveResult()->TargetColor;
+			VColor col = getActiveResult()->TargetColor;
 			OVR_UNUSED( col );
-            OVR_DEBUG_LOG(("Time to 'ColorDetected' (%d,%d,%d) = %d", col.R, col.G, col.B, elapsedTime));
+            OVR_DEBUG_LOG(("Time to 'ColorDetected' (%d,%d,%d) = %d", col.red, col.green, col.blue, elapsedTime));
 
             getActiveResult()->DeviceMeasuredElapsedMilliS = elapsedTime;
 
@@ -359,7 +360,7 @@ void LatencyTest::ProcessInputs()
     handleMessage(Message(), LatencyTest_ProcessInputs);
 }
 
-bool LatencyTest::DisplayScreenColor(Color& colorToDisplay)
+bool LatencyTest::DisplayScreenColor(VColor& colorToDisplay)
 {
     updateForTimeouts();
 
@@ -374,7 +375,7 @@ bool LatencyTest::DisplayScreenColor(Color& colorToDisplay)
 
 const char*	LatencyTest::GetResultsString()
 {
-	if (!ResultsString.isEmpty() && ReturnedResultString != ResultsString.toCString())
+    if (!ResultsString.isEmpty() && ReturnedResultString != ResultsString)
 	{
 		ReturnedResultString = ResultsString;
 		return ReturnedResultString.toCString();
@@ -489,7 +490,7 @@ void LatencyTest::processResults()
                     }
                 }
 
-                float usbRountripElapsedMilliS = Timer::MsPerSecond * (float) (pCurr->TestStartedSeconds - pCurr->StartTestSeconds);
+                float usbRountripElapsedMilliS = 1000 * (float) (pCurr->TestStartedSeconds - pCurr->StartTestSeconds);
                 minUSBTripMilliS = Alg::Min(usbRountripElapsedMilliS, minUSBTripMilliS);
                 maxUSBTripMilliS = Alg::Max(usbRountripElapsedMilliS, maxUSBTripMilliS);
                 averageUSBTripMilliS += usbRountripElapsedMilliS;
@@ -519,7 +520,7 @@ void LatencyTest::processResults()
     finalResult += averageUSBTripMilliS;
 
     ResultsString.clear();
-    ResultsString.appendFormat("RESULT=%.1f (add half Tracker period) [b->w %d|%.1f|%d] [w->b %d|%.1f|%d] [usb rndtrp %.1f|%.1f|%.1f] [cnt %d] [tmouts %d]",
+    ResultsString.sprintf("RESULT=%.1f (add half Tracker period) [b->w %d|%.1f|%d] [w->b %d|%.1f|%d] [usb rndtrp %.1f|%.1f|%.1f] [cnt %d] [tmouts %d]",
                 finalResult,
                 minTime1To2, averageTime1To2, maxTime1To2,
                 minTime2To1, averageTime2To1, maxTime2To1,
@@ -536,11 +537,11 @@ void LatencyTest::updateForTimeouts()
     if (!HaveOldTime)
     {
         HaveOldTime = true;
-        OldTime = Timer::GetTicksMs();
+        OldTime = VTimer::TicksMs();
         return;
     }
 
-    UInt32 newTime = Timer::GetTicksMs();
+    UInt32 newTime = VTimer::TicksMs();
     UInt32 elapsedMilliS = newTime - OldTime;
     if (newTime < OldTime)
     {

@@ -19,6 +19,9 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include <jni.h>
 #include <android/keycodes.h>
 
+#include <Alg.h>
+#include <VPath.h>
+
 #include "VMath.h"
 #include "TypesafeNumber.h"
 #include "Array.h"
@@ -43,7 +46,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "VideoBrowser.h"
 #include "VideoMenu.h"
 #include "VrLocale.h"
-#include "PathUtils.h"
+#include "VStandardPath.h"
 
 #include "VideosMetaData.h"
 
@@ -292,11 +295,11 @@ void Oculus360Videos::OneTimeInit( const char * fromPackage, const char * launch
 		FAIL( "Oculus360Photos::OneTimeInit failed to create MetaData" );
 	}
 
-	const OvrStoragePaths & storagePaths = app->GetStoragePaths();
-	storagePaths.PushBackSearchPathIfValid( EST_SECONDARY_EXTERNAL_STORAGE, EFT_ROOT, "RetailMedia/", SearchPaths );
-	storagePaths.PushBackSearchPathIfValid( EST_SECONDARY_EXTERNAL_STORAGE, EFT_ROOT, "", SearchPaths );
-	storagePaths.PushBackSearchPathIfValid( EST_PRIMARY_EXTERNAL_STORAGE, EFT_ROOT, "RetailMedia/", SearchPaths );
-	storagePaths.PushBackSearchPathIfValid( EST_PRIMARY_EXTERNAL_STORAGE, EFT_ROOT, "", SearchPaths );
+    const VStandardPath &storagePaths = app->GetStoragePaths();
+    storagePaths.PushBackSearchPathIfValid( VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", SearchPaths );
+    storagePaths.PushBackSearchPathIfValid( VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "", SearchPaths );
+    storagePaths.PushBackSearchPathIfValid( VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", SearchPaths );
+    storagePaths.PushBackSearchPathIfValid( VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "", SearchPaths );
 
 	OvrMetaDataFileExtensions fileExtensions;
 	fileExtensions.goodExtensions.append( ".mp4" );
@@ -315,7 +318,7 @@ void Oculus360Videos::OneTimeInit( const char * fromPackage, const char * launch
 
 	VString localizedAppName;
 	VrLocale::GetString( app->GetVrJni(), app->GetJavaObject(), videosLabel, videosLabel, localizedAppName );
-	MetaData->renameCategory( ExtractFileBase( videosDirectory ), localizedAppName );
+    MetaData->renameCategory(VPath(videosDirectory).baseName(), localizedAppName);
 
 	// Start building the VideoMenu
 	VideoMenu = ( OvrVideoMenu * )app->GetGuiSys().getMenu( OvrVideoMenu::MENU_NAME );
@@ -483,11 +486,11 @@ void Oculus360Videos::Command( const char * msg )
 		// FIXME: this needs to do some parameter magic to fix xliff tags
 		VString message;
 		VrLocale::GetString( app->GetVrJni(), app->GetJavaObject(), "@string/playback_failed", "@string/playback_failed", message );
-		VString fileName = ExtractFile( ActiveVideo->url );
-		message = VrLocale::GetXliffFormattedString( message, fileName );
+        VString fileName = VPath(ActiveVideo->url).fileName();
+        message = VrLocale::GetXliffFormattedString( message, fileName.toCString() );
 		BitmapFont & font = app->GetDefaultFont();
 		font.WordWrapText( message, 1.0f );
-		app->ShowInfoText( 4.5f, message );
+        app->ShowInfoText( 4.5f, message.toCString() );
 		SetMenuState( MENU_BROWSER );
 		return;
 	}
@@ -736,7 +739,7 @@ void Oculus360Videos::StartVideo( const double nowTime )
 		}
 
 		LOG( "moviePath = '%s'", ActiveVideo->url.toCString() );
-		jstring jstr = app->GetVrJni()->NewStringUTF( ActiveVideo->url );
+        jstring jstr = app->GetVrJni()->NewStringUTF( ActiveVideo->url.toCString() );
 		app->GetVrJni()->CallVoidMethod( app->GetJavaObject(), startMovieMethodId, jstr );
 		app->GetVrJni()->DeleteLocalRef( jstr );
 

@@ -1,41 +1,5 @@
-﻿/************************************************************************************
-
-Filename    :   TimeWarp.h
-Content     :   Background thread continuous frame warping
-Created     :   August 12, 2013
-Authors     :   John Carmack
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
-/*
- * This file should be as self-contained as possible, so it can be used in
- * both Unity and stand alone code.
- *
- * Should eye buffers be submitted to TimeWarp independently?
- * Definitely NOT -- If the left eye was picked up and used by time warp, but
- * the right eye wasn't ready in time, then the right eye would have to use an
- * older buffer, which could result in things briefly animating backwards.
- *
- * Should TimeWarp check for newly completed buffers before each eye, or
- * just at vsync?
- * Would reduce buffer latency on the right eye when an application is running
- * slower than vsync, but if an application ever got fast enough to complete
- * rendering in < 1/2 of a vsync, the right eye could stutter between 0 and 16
- * ms of latency with visible animation stutters.
- *
- * Should applications fetch latest HMD position before rendering each eye?
- * Probably.  No real downside other than needing to pass a sensor state for
- * each eye for TimeWarp.
- *
- * Should applications be allowed to generate more buffers than the vsync rate?
- * Probably not.  Reduces average latency at the expense of variability and
- * significant power waste.
- *
- */
-
-#include "TimeWarp.h"
+﻿#include "TimeWarp.h"
+#include "Alg.h"
 
 #include <errno.h>
 #include <math.h>
@@ -924,7 +888,7 @@ void TimeWarpLocal::warpThreadInit()
 	{
 		FAIL( "AttachCurrentThread() returned %i", rtn );
 	}
-	m_setSchedFifoMethodId = ovr_GetStaticMethodID( m_jni, m_initParms.vrLibClass, "setSchedFifoStatic", "(Landroid/app/Activity;II)I" );
+	m_setSchedFifoMethodId = JniUtils::GetStaticMethodID( m_jni, m_initParms.vrLibClass, "setSchedFifoStatic", "(Landroid/app/Activity;II)I" );
 
 	static const char * className = "android/graphics/SurfaceTexture";
 	const jclass surfaceTextureClass = m_jni->FindClass(className);
@@ -2463,7 +2427,7 @@ void TimeWarpLocal::createFrameworkGraphics()
 	{	// Look for the default file
 		VString fullPath = m_initParms.externalStorageDirectory + DefaultDistortionFile;
 		LOG( "Loading distortion file: %s", fullPath.toCString() );
-		MemBufferFile defaultFile( fullPath );
+        MemBufferFile defaultFile( fullPath.toCString() );
 		if ( defaultFile.length > 0 )
 		{
 			buf = defaultFile.toMemBuffer();

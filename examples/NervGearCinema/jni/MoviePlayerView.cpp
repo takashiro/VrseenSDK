@@ -1058,18 +1058,15 @@ void ScrubBarComponent::SetTimeText( UILabel *label, const int time )
 	seconds = seconds % 60;
 	minutes = minutes % 60;
 
-	if ( hours > 0 )
-	{
-		label->SetText( StringUtils::Va( "%d:%02d:%02d", hours, minutes, seconds ) );
+    VString text;
+    if (hours > 0) {
+        text.sprintf("%d:%02d:%02d", hours, minutes, seconds);
+    } else if (minutes > 0) {
+        text.sprintf("%d:%02d", minutes, seconds);
+    } else {
+        text.sprintf("0:%02d", seconds);
 	}
-	else if ( minutes > 0 )
-	{
-		label->SetText( StringUtils::Va( "%d:%02d", minutes, seconds ) );
-	}
-	else
-	{
-		label->SetText( StringUtils::Va( "0:%02d", seconds ) );
-	}
+    label->SetText(text);
 }
 
 eMsgStatus ScrubBarComponent::onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,

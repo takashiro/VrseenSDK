@@ -16,6 +16,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "Android/LogUtils.h"
 
+#include "Std.h"
 #include "VRMenuObject.h"
 #include "SoundLimiter.h"
 #include "GazeCursor.h"
@@ -62,7 +63,7 @@ enum eVRMenuFlags
 	VRMENU_FLAG_SHORT_PRESS_HANDLED_BY_APP
 };
 
-typedef BitFlagsT< eVRMenuFlags, int > VRMenuFlags_t;
+typedef VFlags<eVRMenuFlags> VRMenuFlags_t;
 
 //==============================================================
 // VRMenu
@@ -124,7 +125,7 @@ public:
 
     menuHandle_t			handleForId( OvrVRMenuMgr & menuMgr, VRMenuId_t const id ) const;
 
-    char const *			name() const { return m_name; }
+    char const *			name() const { return m_name.toCString(); }
     bool                    isMenu( char const * menuName ) const { return OVR_stricmp( m_name.toCString(), menuName ) == 0; }
 
 	// Use an arbitrary view matrix. This is used when updating the menus and passing the current matrix

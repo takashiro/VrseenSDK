@@ -13,7 +13,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #ifdef OVR_ENABLE_THREADS
 
-#include "Timer.h"
+#include "VTimer.h"
 #include "Log.h"
 
 #include <pthread.h>

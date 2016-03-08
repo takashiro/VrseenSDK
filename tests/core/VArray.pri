@@ -1,0 +1,3 @@
+
+SOURCES += \
+    $$PWD/varraytest.cpp

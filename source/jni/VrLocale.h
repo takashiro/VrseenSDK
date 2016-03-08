@@ -33,11 +33,8 @@ public:
 	// Get's a localized UTF-8-encoded string from the string table.
 	static bool 	GetString( JNIEnv* jni, jobject activityObject, char const * key, char const * defaultOut, VString & out );
 
-	// Takes a UTF8 string and returns an identifier that can be used as an Android string id.
-	static VString	MakeStringIdFromUTF8( char const * str );
-
 	// Takes an ANSI string and returns an identifier that can be used as an Android string id.
-	static VString	MakeStringIdFromANSI( char const * str );
+    static VString	MakeStringId(const VString &str);
 
 	// Localization : Returns xliff formatted string
 	// These are set to const char * to make sure that's all that's passed in - we support up to 9, add more functions as needed

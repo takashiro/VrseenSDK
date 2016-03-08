@@ -46,15 +46,15 @@ public:
 	static BitmapFont * Create();
 	static void Free(BitmapFont * & font);
 
-	virtual bool Load(const char * languagePackageFileName,
-			char const * fontInfoFileName) = 0;
+    virtual bool Load(const VString &languagePackageFileName,
+            const VString & fontInfoFileName) = 0;
 	// Calculates the native (unscaled) width of the text string. Line endings are ignored.
-	virtual float CalcTextWidth(char const * text) const = 0;
+    virtual float CalcTextWidth(const VString &text) const = 0;
 	// Calculates the native (unscaled) width of the text string. Each '\n' will start a new line
 	// and will increase the height by FontInfo.FontHeight. For multi-line strings, lineWidths will
 	// contain the width of each individual line of text and width will be the width of the widest
 	// line of text.
-	virtual void CalcTextMetrics(char const * text, size_t & len, float & width,
+    virtual void CalcTextMetrics(const VString &text, size_t & len, float & width,
 			float & height, float & ascent, float & descent, float & fontHeight,
 			float * lineWidths, int const maxLines, int & numLines) const = 0;
 
@@ -83,10 +83,10 @@ public:
 	virtual void Init(const int maxVertices) = 0;
 	virtual void DrawText3D(BitmapFont const & font, const fontParms_t & flags,
 			const Vector3f & pos, Vector3f const & normal, Vector3f const & up,
-			float const scale, Vector4f const & color, char const * text) = 0;
+            float const scale, Vector4f const & color, const VString &text) = 0;
 	virtual void DrawText3Df(BitmapFont const & font, const fontParms_t & flags,
 			const Vector3f & pos, Vector3f const & normal, Vector3f const & up,
-			float const scale, Vector4f const & color, char const * text,
+            float const scale, Vector4f const & color, const char *format,
 			...) = 0;
 
 	virtual void DrawTextBillboarded3D(BitmapFont const & font,

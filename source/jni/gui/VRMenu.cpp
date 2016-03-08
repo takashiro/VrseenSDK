@@ -274,7 +274,7 @@ void VRMenu::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
                 break;
 			case MENUSTATE_OPEN:
 				{
-					m_openSoundLimiter.playMenuSound( app, m_name, "sv_release_active", 0.1 );
+                    m_openSoundLimiter.playMenuSound( app, m_name.toCString(), "sv_release_active", 0.1 );
 					m_eventHandler->opened( events );
 				}
 				break;
@@ -283,7 +283,7 @@ void VRMenu::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
                 break;
 			case MENUSTATE_CLOSED:
 				{
-					m_closeSoundLimiter.playMenuSound( app, m_name, "sv_deselect", 0.1 );
+                    m_closeSoundLimiter.playMenuSound( app, m_name.toCString(), "sv_deselect", 0.1 );
 					m_eventHandler->closed( events );
 				}
 				break;

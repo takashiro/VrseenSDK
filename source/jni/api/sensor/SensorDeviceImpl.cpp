@@ -13,9 +13,9 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 // HMDDeviceDesc can be created/updated through Sensor carrying DisplayInfo.
 
-#include "VStringBuffer.h"
-#include "Timer.h"
+#include "VTimer.h"
 #include "Alg.h"
+#include "Std.h"
 
 namespace NervGear {
 
@@ -940,7 +940,7 @@ void SensorDeviceImpl::openDevice()
 	if (pCalibration != NULL)
 	{
 		// Read the temperature data from the device.
-		VStringBuffer str;
+        VString str;
 
 #if 0
 		// Get device code from uuid.
@@ -953,7 +953,7 @@ void SensorDeviceImpl::openDevice()
 		// Convert to string.
 		for (int i=0; i<UUIDReport::UUID_SIZE; i++)
 		{
-			str.AppendFormat("%02X", uuid.UUIDValue[i]);
+            str.sprintf("%02X", uuid.UUIDValue[i]);
 		}
 #else
 		// Get device code from serial number.
@@ -966,11 +966,13 @@ void SensorDeviceImpl::openDevice()
 		// Convert to string.
 		for (int i=0; i<SerialReport::SERIAL_NUMBER_SIZE; i++)
 		{
-			str.appendFormat("%02X", serial.SerialNumberValue[i]);
+            str.sprintf("%02X", serial.SerialNumberValue[i]);
 		}
 #endif
 
-		LogText("NervGear::SensorDeviceImpl::openDevice - with serial code '%s'.\n", str.toCString());
+        const char *cstr = str.toCString();
+        LogText("NervGear::SensorDeviceImpl::openDevice - with serial code '%s'.\n", cstr);
+        delete[] cstr;
 
 		pCalibration->Initialize(VString(str));
 	}
@@ -1472,7 +1474,7 @@ void SensorDeviceImpl::onTrackerMessage(TrackerMessage* message)
     // Call OnMessage() within a lock to avoid conflicts with handlers.
     Lock::Locker scopeLock(HandlerRef.GetLock());
 
-    const double now                 = NervGear::Timer::GetSeconds();
+    const double now                 = NervGear::VTimer::Seconds();
     double absoluteTimeSeconds       = 0.0;
 
 

@@ -14,6 +14,7 @@
 // - in-world text really should sort with all other transparent surfaces
 //
 #include "BitmapFont.h"
+#include "Alg.h"
 
 #include <errno.h>
 #include <math.h>
@@ -27,8 +28,7 @@
 #include <sys/stat.h>
 #include <sstream>
 
-#include "UTF8Util.h"
-#include "VString.h"
+#include "VPath.h"
 #include "VJson.h"
 #include "Android/GlUtils.h"
 #include "Android/LogUtils.h"
@@ -112,7 +112,7 @@ public:
 					1.0f), CenterOffset(0.0f), MaxAscent(0.0f), MaxDescent(0.0f) {
 	}
 
-	bool Load(OvrApkFile const & languagePackageFile, char const * fileName);
+    bool Load(OvrApkFile const & languagePackageFile, const VString &fileName);
 	FontGlyphType const & GlyphForCharCode(uint32_t const charCode) const;
 
 	std::string FontName; // name of the font (not necessarily the file name)
@@ -133,7 +133,7 @@ public:
 	NervGear::Array<int32_t> CharCodeMap; // index by character code to get the index of a glyph for the character
 
 private:
-	bool LoadFromPackage(void* packageFile, char const * fileName);
+    bool LoadFromPackage(void* packageFile, const VString &fileName);
 	bool LoadFromBuffer(void const * buffer, size_t const bufferSize);
 };
 
@@ -154,19 +154,18 @@ public:
 		Texture = 0;
 	}
 
-	virtual bool Load(const char * languagePackageFileName,
-			char const * fontInfoFileName);
+    bool Load(const VString &languagePackageFileName, const VString &fontInfoFileName) override;
 
 	// Calculates the native (unscaled) width of the text string. Line endings are ignored.
-	virtual float CalcTextWidth(char const * text) const;
+    float CalcTextWidth(const VString &text) const override;
 
 	// Calculates the native (unscaled) width of the text string. Each '\n' will start a new line
 	// and will increase the height by FontInfo.FontHeight. For multi-line strings, lineWidths will
 	// contain the width of each individual line of text and width will be the width of the widest
 	// line of text.
-	virtual void CalcTextMetrics(char const * text, size_t & len, float & width,
+    void CalcTextMetrics(const VString &text, size_t & len, float & width,
 			float & height, float & ascent, float & descent, float & fontHeight,
-			float * lineWidths, int const maxLines, int & numLines) const;
+            float * lineWidths, int const maxLines, int & numLines) const override;
 
 	void WordWrapText(VString & inOutText, const float widthMeters,
 			const float fontScale = 1.0f) const;
@@ -238,12 +237,12 @@ public:
 	void Free();
 
 	// add text to the VBO that will render in a 2D pass.
-	virtual void DrawText3D(BitmapFont const & font, const fontParms_t & flags,
+    void DrawText3D(BitmapFont const & font, const fontParms_t & flags,
 			const Vector3f & pos, Vector3f const & normal, Vector3f const & up,
-			float const scale, Vector4f const & color, char const * text);
-	virtual void DrawText3Df(BitmapFont const & font, const fontParms_t & flags,
-			const Vector3f & pos, Vector3f const & normal, Vector3f const & up,
-			float const scale, Vector4f const & color, char const * text, ...);
+            float const scale, Vector4f const & color, const VString &text) override;
+    void DrawText3Df(BitmapFont const & font, const fontParms_t & flags,
+            const Vector3f & pos, Vector3f const & normal, Vector3f const & up,
+            float const scale, Vector4f const & color, const char *text, ...) override;
 
 	virtual void DrawTextBillboarded3D(BitmapFont const & font,
 			fontParms_t const & flags, Vector3f const & pos, float const scale,
@@ -401,11 +400,12 @@ static size_t FileSize(FILE * f) {
 
 //==============================
 // FontInfoType::LoadFromPackage
-bool FontInfoType::LoadFromPackage(void* packageFile, char const * fileName) {
+bool FontInfoType::LoadFromPackage(void* packageFile, const VString &fileName) {
 	int length = 0;
 	void * packageBuffer = NULL;
 
-	ovr_ReadFileFromOtherApplicationPackage(packageFile, fileName, length,
+    LOG("fileName is %s", fileName.toCString());
+    ovr_ReadFileFromOtherApplicationPackage(packageFile, fileName.toCString(), length,
 			packageBuffer);
 	if (packageBuffer == NULL) {
 		return false;
@@ -430,7 +430,7 @@ bool FontInfoType::LoadFromPackage(void* packageFile, char const * fileName) {
 //==============================
 // FontInfoType::Load
 bool FontInfoType::Load(OvrApkFile const & languagePackageFile,
-		char const * fileName) {
+        const VString &fileName) {
 	if (languagePackageFile && LoadFromPackage(languagePackageFile, fileName)) {
 		return true;
 	}
@@ -713,7 +713,7 @@ static void StripPath(char const * path, char * outName, size_t const outSize) {
 
 static void StripFileName(char const * path, char * outPath,
 		size_t const outSize) {
-	size_t n = strlen(path);
+    size_t n = strlen(path);
 	char const * fnameStart = NULL;
 	for (int i = n - 1; i >= 0; --i) {
 		if (path[i] == PATH_SEPARATOR) {
@@ -742,8 +742,7 @@ static bool ExtensionMatches(char const * fileName, char const * ext) {
 
 //==============================
 // BitmapFontLocal::Load
-bool BitmapFontLocal::Load(char const * languagePackageName,
-		char const * fontInfoFileName) {
+bool BitmapFontLocal::Load(const VString &languagePackageName, const VString &fontInfoFileName) {
 	OvrApkFile languagePackageFile(
 			ovr_OpenOtherApplicationPackage(languagePackageName));
 	if (!FontInfo.Load(languagePackageFile, fontInfoFileName)) {
@@ -752,19 +751,20 @@ bool BitmapFontLocal::Load(char const * languagePackageName,
 
 	// strip any path from the image file name path and prepend the path from the .fnt file -- i.e. always
 	// require them to be loaded from the same directory.
-    VString baseName = VString(FontInfo.ImageFileName.c_str()).fileName();
-	LOG( "fontInfoFileName = %s", fontInfoFileName);
+    VString baseName = VPath(FontInfo.ImageFileName).fileName();
+    LOG( "fontInfoFileName = %s", fontInfoFileName.toCString());
 	LOG( "image baseName = %s", baseName.toCString());
 
 	char imagePath[512];
-	StripFileName(fontInfoFileName, imagePath, sizeof(imagePath));
+    StripFileName(fontInfoFileName.toCString(), imagePath, sizeof(imagePath));
 	LOG( "imagePath = %s", imagePath);
 
 	char imageFileName[512];
-	StripPath(fontInfoFileName, imageFileName, sizeof(imageFileName));
+    StripPath(fontInfoFileName.toCString(), imageFileName, sizeof(imageFileName));
 	LOG( "imageFileName = %s", imageFileName);
 
 	AppendPath(imagePath, sizeof(imagePath), baseName.toCString());
+    LOG( "imagePath = %s", imagePath);
 	if (!LoadImage(languagePackageFile, imagePath)) {
 		return false;
 	}
@@ -877,8 +877,7 @@ void BitmapFontLocal::WordWrapText(VString & inOutText, const float widthMeters,
 
 		// Replace any existing character escapes with space as we recompute where to insert line breaks
 		if (charCode == '\r' || charCode == '\n' || charCode == '\t') {
-            inOutText.remove(pos);
-            inOutText.insert(' ', pos);
+            inOutText[pos] = ' ';
 			charCode = ' ';
 		}
 
@@ -890,7 +889,7 @@ void BitmapFontLocal::WordWrapText(VString & inOutText, const float widthMeters,
 			int endPos = pos + curWholeStrLen;
 
 			if (endPos < totalLength) {
-                VString subInStr = inOutText.mid(pos, endPos);
+                VString subInStr = inOutText.range(pos, endPos);
 				if (subInStr == wholeStrsList[i]) {
 					dontSplitUntilIdx = Alg::Max(dontSplitUntilIdx, endPos);
 				}
@@ -907,8 +906,7 @@ void BitmapFontLocal::WordWrapText(VString & inOutText, const float widthMeters,
 			// the last whitespace. This ensure's the text always fits within the width.
 			if (lineWidth >= widthMeters && lastWhitespaceIndex >= 0) {
 				dontSplitUntilIdx = -1;
-                inOutText.remove(lastWhitespaceIndex);
-                inOutText.insert('\n', lastWhitespaceIndex);
+                inOutText[lastWhitespaceIndex] = '\n';
 				// subtract the width after the last whitespace so that we don't lose any
 				// of the accumulated width since then.
 				lineWidth -= lineWidthAtLastWhitespace;
@@ -919,17 +917,16 @@ void BitmapFontLocal::WordWrapText(VString & inOutText, const float widthMeters,
 
 //==============================
 // BitmapFontLocal::CalcTextWidth
-float BitmapFontLocal::CalcTextWidth(char const * text) const {
+float BitmapFontLocal::CalcTextWidth(const VString &text) const
+{
 	float width = 0.0f;
-	char const * p = text;
-	for (uint32_t charCode = UTF8Util::DecodeNextChar(&p);
-			*p != '\0' && charCode != '\0';
-			charCode = UTF8Util::DecodeNextChar(&p)) {
-		if (charCode == '\r' || charCode == '\n') {
+
+    std::u32string ucs4 = text.toUcs4();
+    for (char32_t ch : ucs4) {
+        if (ch == '\r' || ch == '\n') {
 			continue; // skip line endings
 		}
-
-		FontGlyphType const & g = GlyphForCharCode(charCode);
+        FontGlyphType const & g = GlyphForCharCode(ch);
 		width += g.AdvanceX * FontInfo.ScaleFactorX;
 	}
 	return width;
@@ -937,10 +934,10 @@ float BitmapFontLocal::CalcTextWidth(char const * text) const {
 
 //==============================
 // BitmapFontLocal::CalcTextMetrics
-void BitmapFontLocal::CalcTextMetrics(char const * text, size_t & len,
-		float & width, float & height, float & firstAscent, float & lastDescent,
-		float & fontHeight, float * lineWidths, int const maxLines,
-		int & numLines) const {
+void BitmapFontLocal::CalcTextMetrics(const VString &text, size_t & len,
+        float & width, float & height, float & firstAscent, float & lastDescent,
+        float & fontHeight, float * lineWidths, int const maxLines,
+        int & numLines) const {
 	len = 0;
 	numLines = 0;
 	width = 0.0f;
@@ -949,7 +946,7 @@ void BitmapFontLocal::CalcTextMetrics(char const * text, size_t & len,
 	if (lineWidths == NULL || maxLines <= 0) {
 		return;
 	}
-	if (text == NULL || text[0] == '\0') {
+    if (text.isEmpty()) {
 		return;
 	}
 
@@ -962,9 +959,11 @@ void BitmapFontLocal::CalcTextMetrics(char const * text, size_t & len,
 	int charsOnLine = 0;
 	lineWidths[0] = 0.0f;
 
-	char const * p = text;
-	for (;; len++) {
-		uint32_t charCode = UTF8Util::DecodeNextChar(&p);
+    std::u32string ucs4 = text.toUcs4();
+    std::u32string::iterator p = ucs4.begin();
+    for (;; len++) {
+        uint charCode = *p;
+        p++;
 		if (charCode == '\r') {
 			continue; // skip carriage returns
 		}
@@ -1132,10 +1131,10 @@ int32_t ColorToABGR(Vector4f const & color) {
 //==============================
 // BitmapFontSurfaceLocal::DrawText3D
 void BitmapFontSurfaceLocal::DrawText3D(BitmapFont const & font,
-		fontParms_t const & parms, Vector3f const & pos,
-		Vector3f const & normal, Vector3f const & up, float scale,
-		Vector4f const & color, char const * text) {
-	if (text == NULL || text[0] == '\0') {
+        fontParms_t const & parms, Vector3f const & pos,
+        Vector3f const & normal, Vector3f const & up, float scale,
+        Vector4f const & color, const VString &text) {
+    if (text.isEmpty()) {
 		return; // nothing to do here, move along
 	}
 
@@ -1237,10 +1236,11 @@ void BitmapFontSurfaceLocal::DrawText3D(BitmapFont const & font,
 
 	int curLine = 0;
 	fontVertex_t * v = vb.Verts;
-	char const * p = text;
+    std::u32string ucs4Text = text.toUcs4();
+    std::u32string::iterator p = ucs4Text.begin();
 	size_t i = 0;
-	uint32_t charCode = UTF8Util::DecodeNextChar(&p);
-	for (; charCode != '\0'; i++, charCode = UTF8Util::DecodeNextChar(&p)) {
+    uint32_t charCode = *p;
+    for (; charCode != '\0'; i++, charCode = *(++p)) {
 		OVR_ASSERT( i < len);
 		if (charCode == '\n' && curLine < numLines && curLine < MAX_LINES) {
 			// move to next line
@@ -1309,9 +1309,9 @@ void BitmapFontSurfaceLocal::DrawText3D(BitmapFont const & font,
 //==============================
 // BitmapFontSurfaceLocal::DrawText3Df
 void BitmapFontSurfaceLocal::DrawText3Df(BitmapFont const & font,
-		fontParms_t const & parms, Vector3f const & pos,
-		Vector3f const & normal, Vector3f const & up, float const scale,
-		Vector4f const & color, char const * fmt, ...) {
+        fontParms_t const & parms, Vector3f const & pos,
+        Vector3f const & normal, Vector3f const & up, float const scale,
+        Vector4f const & color, const char *fmt, ...) {
 	char buffer[256];
 	va_list args;
 	va_start( args, fmt);

@@ -217,7 +217,7 @@ void OvrVolumePopup::showVolume( App * app, const int current )
 		// update volume text
 		menuHandle_t volumeTextHandle = handleForId( app->GetVRMenuMgr(), OvrVolumePopup::ID_VOLUME_TEXT );
 		VRMenuObject *volumeText = app->GetVRMenuMgr().toObject( volumeTextHandle );
-		volumeText->setText( StringUtils::Va( "%d", current ) );
+        volumeText->setText(VString::number(current));
 
 		// center the text
 		Bounds3f bnds = volumeText->setTextLocalBounds( app->GetDefaultFont() );

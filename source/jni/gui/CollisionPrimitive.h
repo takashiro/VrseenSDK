@@ -14,7 +14,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #define OVR_CollisionPrimitive_h
 
 #include "Types.h"
-#include "BitFlags.h"
+#include "VFlags.h"
 #include "GlGeometry.h" // For TriangleIndex
 
 NV_NAMESPACE_BEGIN
@@ -27,7 +27,7 @@ enum eContentFlags
 	CONTENT_ALL = 0x7fffffff
 };
 
-typedef BitFlagsT< eContentFlags > ContentFlags_t;
+typedef VFlags<eContentFlags> ContentFlags_t;
 
 //==============================================================
 // OvrCollisionResult

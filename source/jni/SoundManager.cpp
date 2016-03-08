@@ -14,9 +14,11 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VJson.h"
 #include "Android/LogUtils.h"
 
-#include "PathUtils.h"
+#include "VStandardPath.h"
 #include "PackageFiles.h"
 
+
+#include <list>
 #include <fstream>
 #include <sstream>
 
@@ -30,7 +32,7 @@ static const char * APP_SOUNDS = "assets/sound_assets.json";
 
 void OvrSoundManager::LoadSoundAssets()
 {
-	Array<VString> searchPaths;
+    Array<VString> searchPaths;
 	searchPaths.append( "/storage/extSdCard/" );
 	searchPaths.append( "/sdcard/" );
 
@@ -38,7 +40,7 @@ void OvrSoundManager::LoadSoundAssets()
 	VString foundPath;
 	if ( GetFullPath( searchPaths, DEV_SOUNDS_RELATIVE, foundPath ) )
 	{
-		std::ifstream fp(foundPath.toCString(), std::ios::binary);
+        std::ifstream fp(foundPath.toStdString(), std::ios::binary);
 		Json dataFile;
 		fp >> dataFile;
 		if (dataFile.isInvalid())
@@ -128,7 +130,7 @@ void OvrSoundManager::LoadSoundAssetsFromJsonObject( const VString & url, const 
         const Json &sound = pair.second;
 		OVR_ASSERT( sound.isValid() );
 
-		std::string fullPath(url);
+        std::string fullPath(url.toStdString());
 		fullPath += sound.toString();
 
 		// Do we already have this sound?

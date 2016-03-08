@@ -21,7 +21,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <sys/time.h>
 #include <sys/resource.h>
 
-#include "Timer.h"
+#include "VTimer.h"
 #include "Android/LogUtils.h"
 #include "VrApi.h"			// for ovr_GetTimeInSeconds()
 
@@ -86,7 +86,7 @@ VsyncState GetVsyncState()
 	{	// constant
 		static VsyncState	state;
 		if ( state.vsyncBaseNano == 0 ) {
-			state.vsyncBaseNano = Timer::GetTicksNanos();
+			state.vsyncBaseNano = VTimer::TicksNanos();
 			state.vsyncPeriodNano = 1e9 / 60.0;
 		}
 		return state;
@@ -101,7 +101,7 @@ double GetFractionalVsync()
 {
 	const VsyncState state = GetVsyncState();
 
-	const jlong t = Timer::GetTicksNanos();
+	const jlong t = VTimer::TicksNanos();
 	if ( state.vsyncBaseNano == 0 )
 	{
 		return 0;

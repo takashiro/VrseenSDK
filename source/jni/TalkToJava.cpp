@@ -101,7 +101,7 @@ void TalkToJava::TtjThreadFunction()
 		Jni->PushLocalFrame( 100 );
 
 		// Let whoever initialized us do what they want.
-		Interface->TtjCommand( *Jni, msg );
+        Interface->TtjCommand(Jni, msg);
 
 		// If we don't clean up exceptions now, later
 		// calls may fail.

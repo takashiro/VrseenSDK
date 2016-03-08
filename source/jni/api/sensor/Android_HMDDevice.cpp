@@ -160,7 +160,7 @@ bool HMDDeviceCreateDesc::UpdateMatchedCandidate(const DeviceCreateDesc& other,
 
 bool HMDDeviceCreateDesc::MatchDeviceByPath(const VString& path)
 {
-    return DeviceId.CompareNoCase(path) == 0;
+    return DeviceId.icompare(path) == 0;
 }
 
 //-------------------------------------------------------------------------------------

@@ -453,7 +453,7 @@ void VRMenuSurface::createFromSurfaceParms( VRMenuSurfaceParms const & parms )
             ( parms.TextureTypes[i] >= 0 && parms.TextureTypes[i] < SURFACE_TEXTURE_MAX ) )
 	    {
     		isValid = true;
-            m_textures[i].loadTexture( parms.TextureTypes[i], parms.ImageNames[i], true );
+            m_textures[i].loadTexture( parms.TextureTypes[i], parms.ImageNames[i].toCString(), true );
 		}
 		else if ( ( parms.ImageTexId[i] != 0 ) &&
             ( parms.TextureTypes[i] >= 0 && parms.TextureTypes[i] < SURFACE_TEXTURE_MAX ) )
@@ -924,7 +924,8 @@ bool VRMenuObjectLocal:: hitTest_r( App * app, OvrVRMenuMgr & menuMgr, BitmapFon
 	    float cullT0;
 	    float cullT1;
 		// any contents will hit cull bounds
-		ContentFlags_t allContents( ALL_BITS );
+        ContentFlags_t allContents;
+        allContents.setAll();
 	    bool hitCullBounds = intersectRayBounds( localStart, localDir, m_cullBounds.GetMins(), m_cullBounds.GetMaxs(), 
 									allContents, cullT0, cullT1 );
 

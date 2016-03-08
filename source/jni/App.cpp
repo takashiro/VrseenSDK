@@ -10,7 +10,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 *************************************************************************************/
 
 #include "App.h"
-
+#include "Alg.h"
 #include <math.h>
 #include <jni.h>
 
@@ -26,8 +26,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VMath.h"
 #include "TypesafeNumber.h"
 #include "VJson.h"
-#include "Android/JniUtils.h"
-#include "Android/NativeBuildStrings.h"
+#include "android/JniUtils.h"
+#include "android/VOsBuild.h"
 
 #include "3rdParty/stb/stb_image_write.h"
 
@@ -50,6 +50,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VrLocale.h"
 #include "VUserProfile.h"
 #include "Console.h"
+#include "VLog.h"
 
 //#define TEST_TIMEWARP_WATCHDOG
 
@@ -65,13 +66,16 @@ static const char * vrLibClassName = "me/takashiro/nervgear/VrLib";
 // name and URI cannot. The handler will use sscanf() to parse the first two strings, then
 // assume the JSON text is everything immediately following the space after the URI string.
 static const char * EMPTY_INTENT_STR = "<EMPTY>";
-void ComposeIntentMessage( char const * packageName, char const * uri, char const * jsonText,
-		char * out, size_t outSize )
+
+VString ComposeIntentMessage(const VString &packageName, const VString &uri, const VString &jsonText)
 {
-	OVR_sprintf( out, outSize, "intent %s %s %s",
-			packageName == NULL || packageName[0] == '\0' ? EMPTY_INTENT_STR : packageName,
-			uri == NULL || uri[0] == '\0' ? EMPTY_INTENT_STR : uri,
-			jsonText == NULL || jsonText[0] == '\0' ? "" : jsonText );
+    VString out = "intent ";
+    out.append(packageName);
+    out.append(' ');
+    out.append(uri);
+    out.append(' ');
+    out.append(jsonText);
+    return out;
 }
 
 extern "C"
@@ -195,15 +199,14 @@ void Java_me_takashiro_nervgear_VrActivity_nativeNewIntent( JNIEnv *jni, jclass 
 		jlong appPtr, jstring fromPackageName, jstring command, jstring uriString )
 {
 	LOG( "%p nativeNewIntent", (void*)appPtr );
-	JavaUTFChars utfPackageName( jni, fromPackageName );
-	JavaUTFChars utfUri( jni, uriString );
-	JavaUTFChars utfJson( jni, command );
+    VString utfPackageName = JniUtils::Convert(jni, fromPackageName);
+    VString utfUri = JniUtils::Convert(jni, uriString);
+    VString utfJson = JniUtils::Convert(jni, command);
 
-	char intentMessage[4096];
-	ComposeIntentMessage( utfPackageName.ToStr(), utfUri.ToStr(), utfJson.ToStr(),
-			intentMessage, sizeof( intentMessage ) );
-	LOG( "nativeNewIntent: %s", intentMessage );
-	((AppLocal *)appPtr)->GetMessageQueue().PostPrintf( intentMessage );
+    VString intentMessage = ComposeIntentMessage(utfPackageName, utfUri, utfJson);
+    vInfo("nativeNewIntent:" << intentMessage);
+    VByteArray utf8Message = intentMessage.toUtf8();
+    ((AppLocal *)appPtr)->GetMessageQueue().PostPrintf(utf8Message.data());
 }
 
 }	// extern "C"
@@ -237,10 +240,10 @@ jlong VrAppInterface::SetActivity( JNIEnv * jni, jclass clazz, jobject activity,
 	}
 	ActivityClass = (jclass)jni->NewGlobalRef( clazz );
 
-	JavaUTFChars utfFromPackageString( jni, javaFromPackageNameString );
-	JavaUTFChars utfJsonString( jni, javaCommandString );
-	JavaUTFChars utfUriString( jni, javaUriString );
-	LOG( "VrAppInterface::SetActivity: %s %s %s", utfFromPackageString.ToStr(), utfJsonString.ToStr(), utfUriString.ToStr() );
+    VString utfFromPackageString = JniUtils::Convert(jni, javaFromPackageNameString);
+    VString utfJsonString = JniUtils::Convert(jni, javaCommandString);
+    VString utfUriString = JniUtils::Convert(jni, javaUriString);
+    vInfo("VrAppInterface::SetActivity:" << utfFromPackageString << utfJsonString << utfUriString);
 
 	if ( app == NULL )
 	{	// First time initialization
@@ -265,9 +268,9 @@ jlong VrAppInterface::SetActivity( JNIEnv * jni, jclass clazz, jobject activity,
 	}
 
 	// Send the intent and wait for it to complete.
-	char intentMessage[4096];
-	ComposeIntentMessage( utfFromPackageString.ToStr(), utfUriString.ToStr(), utfJsonString.ToStr(), intentMessage, sizeof( intentMessage ) );
-	static_cast< AppLocal * >( app )->GetMessageQueue().PostPrintf( intentMessage );
+    VString intentMessage = ComposeIntentMessage(utfFromPackageString, utfUriString, utfJsonString);
+    VByteArray utf8Intent = intentMessage.toUtf8();
+    static_cast< AppLocal * >( app )->GetMessageQueue().PostPrintf(utf8Intent.data());
 	static_cast< AppLocal * >( app )->SyncVrThread();
 
 	return (jlong)app;
@@ -465,7 +468,7 @@ AppLocal::AppLocal( JNIEnv & jni_, jobject activityObject_, VrAppInterface & int
 {
 	LOG( "----------------- AppLocal::AppLocal() -----------------");
 
-    storagePaths = new OvrStoragePaths( &jni_, activityObject_);
+    storagePaths = new VStandardPath( &jni_, activityObject_);
 
 	//WaitForDebuggerToAttach();
 
@@ -473,7 +476,7 @@ AppLocal::AppLocal( JNIEnv & jni_, jobject activityObject_, VrAppInterface & int
 
     sensorForNextWarp.Predicted.Pose.Orientation = Quatf();
 
-	ovr_LoadDevConfig( false );
+    JniUtils::LoadDevConfig( false );
 
 	// Default time warp parms
     swapParms = InitTimeWarpParms();
@@ -614,14 +617,15 @@ void AppLocal::InitFonts()
 
 	VString fontName;
 	VrLocale::GetString( GetVrJni(), GetJavaObject(), "@string/font_name", "efigs.fnt", fontName );
-	fontName.insert( "res/raw/", 0 );
-    if ( !defaultFont->Load( languagePackagePath.toCString(), fontName ) )
+    fontName.prepend("res/raw/");
+    if ( !defaultFont->Load(languagePackagePath, fontName ) )
 	{
 		// reset the locale to english and try to load the font again
         jmethodID setDefaultLocaleId = vrJni->GetMethodID( vrActivityClass, "setDefaultLocale", "()V" );
 		if ( setDefaultLocaleId != NULL )
-		{
-            vrJni->CallObjectMethod( javaObject, setDefaultLocaleId );
+        {
+            LOG("AppLocal::Init CallObjectMethod");
+            vrJni->CallVoidMethod(javaObject, setDefaultLocaleId );
             if ( vrJni->ExceptionOccurred() )
 			{
                 vrJni->ExceptionClear();
@@ -629,9 +633,9 @@ void AppLocal::InitFonts()
 			}
 			// re-get the font name for the new locale
 			VrLocale::GetString( GetVrJni(), GetJavaObject(), "@string/font_name", "efigs.fnt", fontName );
-			fontName.insert( "res/raw/", 0 );
-			// try to load the font
-            if ( !defaultFont->Load( languagePackagePath.toCString(), fontName ) )
+            fontName.prepend("res/raw/");
+            // try to load the font
+            if ( !defaultFont->Load(languagePackagePath, fontName ) )
 			{
 				FAIL( "Failed to load font for default locale!" );
 			}
@@ -659,27 +663,26 @@ MessageQueue & AppLocal::GetMessageQueue()
 
 // This callback happens from the java thread, after a string has been
 // pulled off the message queue
-void AppLocal::TtjCommand( JNIEnv & jni, const char * commandString )
+void AppLocal::TtjCommand(JNIEnv *jni, const char * commandString)
 {
 	if ( MatchesHead( "sound ", commandString ) )
 	{
-		jstring cmdString = (jstring) ovr_NewStringUTF( &jni, commandString + 6 );
-		jni.CallVoidMethod( javaObject, playSoundPoolSoundMethodId, cmdString );
-		jni.DeleteLocalRef( cmdString );
+        jstring cmdString = JniUtils::Convert(jni, commandString + 6);
+        jni->CallVoidMethod( javaObject, playSoundPoolSoundMethodId, cmdString );
+        jni->DeleteLocalRef( cmdString );
 		return;
 	}
 
 	if ( MatchesHead( "toast ", commandString ) )
 	{
-		jstring cmdString = (jstring) ovr_NewStringUTF( &jni, commandString + 6 );
-		jni.CallVoidMethod( javaObject, createVrToastMethodId, cmdString );
-		jni.DeleteLocalRef( cmdString );
+        jstring cmdString = JniUtils::Convert(jni, commandString + 6);
+        jni->CallVoidMethod( javaObject, createVrToastMethodId, cmdString );
+        jni->DeleteLocalRef( cmdString );
 	    return;
 	}
 
-	if ( MatchesHead( "finish ", commandString ) )
-	{
-		jni.CallVoidMethod( javaObject, finishActivityMethodId );
+    if ( MatchesHead( "finish ", commandString ) ) {
+        jni->CallVoidMethod(javaObject, finishActivityMethodId);
 	}
 }
 
@@ -731,9 +734,8 @@ void AppLocal::StartSystemActivity( const char * command )
         vrJni->ExceptionClear();
 	}
 
-	NervGear::VString imageName = "dependency_error";
-	char language[128];
-	ovr_GetCurrentLanguage( OvrMobile, language, sizeof( language ) );
+    VString imageName = "dependency_error";
+    VString language = ovr_GetCurrentLanguage(OvrMobile);
 	imageName += "_";
 	imageName += language;
 	imageName += ".png";
@@ -767,14 +769,8 @@ void AppLocal::ReadFileFromApplicationPackage( const char * nameInZip, int &leng
 
 void AppLocal::OpenApplicationPackage()
 {
-	// get package codepath
-	char temp[1024];
-    ovr_GetPackageCodePath( uiJni, vrActivityClass, javaObject, temp, sizeof( temp ) );
-	packageCodePath = strdup( temp );
-
-    ovr_GetCurrentPackageName( uiJni, vrActivityClass, javaObject, temp, sizeof( temp ) );
-	packageName = strdup( temp );
-
+    packageCodePath = JniUtils::GetPackageCodePath(uiJni, vrActivityClass, javaObject);
+    packageName = JniUtils::GetCurrentPackageName(uiJni, javaObject);
 	ovr_OpenApplicationPackage( packageCodePath );
 }
 
@@ -784,10 +780,9 @@ VString AppLocal::GetInstalledPackagePath( const char * packageName ) const
 	if ( getInstalledPackagePathId != NULL )
 	{
         JavaString packageNameObj( uiJni, packageName );
-        JavaUTFChars resultStr( uiJni, static_cast< jstring >( uiJni->CallObjectMethod( javaObject, getInstalledPackagePathId, packageNameObj.GetJString() ) ) );
-        if ( !uiJni->ExceptionOccurred() )
-		{
-			return VString( resultStr );
+        VString resultStr = JniUtils::Convert(uiJni, static_cast< jstring >( uiJni->CallObjectMethod( javaObject, getInstalledPackagePathId, packageNameObj.toJString())));
+        if ( !uiJni->ExceptionOccurred() ) {
+            return resultStr;
 		}
 	}
 	return VString();
@@ -1029,7 +1024,7 @@ void AppLocal::Resume()
 	DROIDLOG( "OVRTimer", "AppLocal::Resume" );
 
 	// always reload the dev config on a resume
-	ovr_LoadDevConfig( true );
+    JniUtils::LoadDevConfig( true );
 
 	// Make sure the window surface is current, which it won't be
 	// if we were previously in async mode
@@ -1838,8 +1833,8 @@ void AppLocal::VrThreadFunction()
 				const ovrTimeWarpParms warpSwapLoadingIconParms = InitTimeWarpParms( WARP_INIT_LOADING_ICON, loadingIconTexId );
 				ovr_WarpSwap( OvrMobile, &warpSwapLoadingIconParms );
 			}
-            LOG( "launchIntentJSON: %s", launchIntentJSON.toCString() );
-            LOG( "launchIntentURI: %s", launchIntentURI.toCString() );
+            vInfo("launchIntentJSON:" << launchIntentJSON);
+            vInfo("launchIntentURI:" << launchIntentURI);
 
             appInterface->OneTimeInit( launchIntentFromPackage.toCString(), launchIntentJSON.toCString(), launchIntentURI.toCString() );
             oneTimeInitCalled = true;
@@ -1973,8 +1968,7 @@ void AppLocal::VrThreadFunction()
 		{
 			//LOG( "BackKey: event %s", KeyState::EventNames[ event ] );
 			// always allow the gaze cursor to peek at the event so it can start the gaze timer if necessary
-            if ( !ovr_IsCurrentActivity( vrJni, javaObject, PUI_CLASS_NAME ) )
-			{
+            if (JniUtils::GetCurrentActivityName(vrJni, javaObject).icompare(PUI_CLASS_NAME) != 0) {
 				// update the gaze cursor timer
 				if ( event == KeyState::KEY_EVENT_DOWN )
 				{
@@ -2441,7 +2435,7 @@ OvrDebugLines & AppLocal::GetDebugLines()
 {
     return *debugLines;
 }
-const OvrStoragePaths & AppLocal::GetStoragePaths()
+const VStandardPath & AppLocal::GetStoragePaths()
 {
     return *storagePaths;
 }
@@ -2470,7 +2464,7 @@ int AppLocal::GetSystemBrightness() const
 	int cur = 255;
 	// FIXME: this specifically checks for Note4 before calling the function because calling it on other
 	// models right now can break rendering. Eventually this needs to be supported on all models.
-	if ( getSysBrightnessMethodId != NULL && OVR_stricmp( ovr_GetBuildString( BUILDSTR_MODEL ), "SM-G906S" ) != 0 )
+    if ( getSysBrightnessMethodId != NULL && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0)
 	{
         cur = vrJni->CallStaticIntMethod( vrLibClass, getSysBrightnessMethodId, javaObject );
 	}
@@ -2482,7 +2476,7 @@ void AppLocal::SetSystemBrightness( int const v )
 	int v2 = Alg::Clamp( v, 0, 255 );
 	// FIXME: this specifically checks for Note4 before calling the function because calling it on other
 	// models right now can break rendering. Eventually this needs to be supported on all models.
-	if ( setSysBrightnessMethodId != NULL && OVR_stricmp( ovr_GetBuildString( BUILDSTR_MODEL ), "SM-G906S" ) != 0 )
+    if ( setSysBrightnessMethodId != NULL && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0)
 	{
         vrJni->CallStaticVoidMethod( vrLibClass, setSysBrightnessMethodId, javaObject, v2 );
 	}
@@ -2491,7 +2485,7 @@ void AppLocal::SetSystemBrightness( int const v )
 bool AppLocal::GetComfortModeEnabled() const
 {
 	bool r = true;
-	if ( getComfortViewModeMethodId != NULL && OVR_stricmp( ovr_GetBuildString( BUILDSTR_MODEL ), "SM-G906S" ) != 0 )
+    if ( getComfortViewModeMethodId != NULL && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0)
 	{
         r = vrJni->CallStaticBooleanMethod( vrLibClass, getComfortViewModeMethodId, javaObject );
 	}
@@ -2500,7 +2494,7 @@ bool AppLocal::GetComfortModeEnabled() const
 
 void AppLocal::SetComfortModeEnabled( bool const enabled )
 {
-	if ( enableComfortViewModeMethodId != NULL && OVR_stricmp( ovr_GetBuildString( BUILDSTR_MODEL ), "SM-G906S" ) != 0 )
+    if ( enableComfortViewModeMethodId != NULL && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0)
 	{
         vrJni->CallStaticVoidMethod( vrLibClass, enableComfortViewModeMethodId, javaObject, enabled );
 	}
@@ -2508,7 +2502,7 @@ void AppLocal::SetComfortModeEnabled( bool const enabled )
 
 void AppLocal::SetDoNotDisturbMode( bool const enable )
 {
-	if ( setDoNotDisturbModeMethodId != NULL && OVR_stricmp( ovr_GetBuildString( BUILDSTR_MODEL ), "SM-G906S" ) != 0 )
+    if ( setDoNotDisturbModeMethodId != NULL && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0)
 	{
         vrJni->CallStaticVoidMethod( vrLibClass, setDoNotDisturbModeMethodId, javaObject, enable );
 	}
@@ -2517,7 +2511,7 @@ void AppLocal::SetDoNotDisturbMode( bool const enable )
 bool AppLocal::GetDoNotDisturbMode() const
 {
 	bool r = false;
-	if ( getDoNotDisturbModeMethodId != NULL && OVR_stricmp( ovr_GetBuildString( BUILDSTR_MODEL ), "SM-G906S" ) != 0 )
+    if ( getDoNotDisturbModeMethodId != NULL && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0)
 	{
         r = vrJni->CallStaticBooleanMethod( vrLibClass, getDoNotDisturbModeMethodId, javaObject );
 	}
@@ -2597,7 +2591,7 @@ void AppLocal::SetRenderMonoMode( bool const mono )
 
 char const * AppLocal::GetPackageCodePath() const
 {
-	return packageCodePath;
+    return packageCodePath.toCString();
 }
 
 Matrix4f const & AppLocal::GetLastViewMatrix() const
@@ -2793,12 +2787,12 @@ bool AppLocal::GetShowVolumePopup() const
 
 const char * AppLocal::GetPackageName( ) const
 {
-	return packageName;
+    return packageName.toCString();
 }
 
 bool AppLocal::IsWifiConnected() const
 {
-    jmethodID isWififConnectedMethodId = ovr_GetStaticMethodID( vrJni, vrLibClass, "isWifiConnected", "(Landroid/app/Activity;)Z" );
+    jmethodID isWififConnectedMethodId = JniUtils::GetStaticMethodID( vrJni, vrLibClass, "isWifiConnected", "(Landroid/app/Activity;)Z" );
     return vrJni->CallStaticBooleanMethod( vrLibClass, isWififConnectedMethodId, javaObject );
 }
 

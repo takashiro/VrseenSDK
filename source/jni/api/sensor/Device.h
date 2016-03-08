@@ -368,8 +368,7 @@ public:
     bool IsSameDisplay(const HMDInfo& o) const
     {
         return DisplayId == o.DisplayId &&
-               VString::CompareNoCase(DisplayDeviceName,
-                                     o.DisplayDeviceName) == 0;
+               strcasecmp(DisplayDeviceName, o.DisplayDeviceName) == 0;
     }
 
 };
@@ -661,13 +660,13 @@ public:
 // LatencyTestConfiguration specifies configuration information for the Oculus Latency Tester device.
 struct LatencyTestConfiguration
 {
-    LatencyTestConfiguration(const Color& threshold, bool sendSamples = false)
+    LatencyTestConfiguration(const VColor& threshold, bool sendSamples = false)
         : Threshold(threshold), SendSamples(sendSamples)
     {
     }
 
     // The color threshold for triggering a detected display change.
-    Color    Threshold;
+    VColor    Threshold;
     // Flag specifying whether we wish to receive a stream of color values from the sensor.
     bool        SendSamples;
 };
@@ -712,11 +711,11 @@ public:
     // Used to calibrate the latency tester at the start of a test. Display the specified color on the screen
     // beneath the latency tester and then call this method. Calibration information is lost
     // when power is removed from the device.
-    virtual bool SetCalibrate(const Color& calibrationColor, bool waitFlag = false) = 0;
+    virtual bool SetCalibrate(const VColor& calibrationColor, bool waitFlag = false) = 0;
 
     // Triggers the start of a measurement. This starts the millisecond timer on the device and
     // causes it to respond with the 'MessageLatencyTestStarted' message.
-    virtual bool SetStartTest(const Color& targetColor, bool waitFlag = false) = 0;
+    virtual bool SetStartTest(const VColor& targetColor, bool waitFlag = false) = 0;
 
     // Used to set the value displayed on the LED display panel.
     virtual bool SetDisplay(const LatencyTestDisplay& display, bool waitFlag = false) = 0;

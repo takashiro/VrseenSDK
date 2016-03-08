@@ -53,10 +53,10 @@ void VrScene::OneTimeInit( const char * fromPackageName, const char * launchInte
 {
 	LOG( "VrScene::OneTimeInit" );
 
-	app->GetStoragePaths().PushBackSearchPathIfValid(EST_SECONDARY_EXTERNAL_STORAGE, EFT_ROOT, "RetailMedia/", SearchPaths);
-	app->GetStoragePaths().PushBackSearchPathIfValid(EST_SECONDARY_EXTERNAL_STORAGE, EFT_ROOT, "", SearchPaths);
-	app->GetStoragePaths().PushBackSearchPathIfValid(EST_PRIMARY_EXTERNAL_STORAGE, EFT_ROOT, "RetailMedia/", SearchPaths);
-	app->GetStoragePaths().PushBackSearchPathIfValid(EST_PRIMARY_EXTERNAL_STORAGE, EFT_ROOT, "", SearchPaths);
+    app->GetStoragePaths().PushBackSearchPathIfValid(VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", SearchPaths);
+    app->GetStoragePaths().PushBackSearchPathIfValid(VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "", SearchPaths);
+    app->GetStoragePaths().PushBackSearchPathIfValid(VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", SearchPaths);
+    app->GetStoragePaths().PushBackSearchPathIfValid(VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "", SearchPaths);
 
 	// Check if we already loaded the model through an intent
 	if ( !ModelLoaded )
@@ -101,7 +101,7 @@ void VrScene::LoadScene( const char * path )
 	MaterialParms materialParms;
 	materialParms.UseSrgbTextureFormats = ( app->GetVrParms().colorFormat == COLOR_8888_sRGB );
 	LOG( "VrScene::LoadScene loading %s", SceneFile.toCString() );
-	Scene.LoadWorldModel( SceneFile, materialParms );
+    Scene.LoadWorldModel( SceneFile, materialParms );
 	ModelLoaded = true; 
 	LOG( "VrScene::LoadScene model is loaded" );
 	Scene.YawOffset = -M_PI / 2;
@@ -136,7 +136,7 @@ void VrScene::ReloadScene()
 
 	MaterialParms materialParms;
 	materialParms.UseSrgbTextureFormats = ( app->GetVrParms().colorFormat == COLOR_8888_sRGB );
-	Scene.LoadWorldModel( SceneFile, materialParms );
+    Scene.LoadWorldModel( SceneFile, materialParms );
 
 	Scene.YawOffset = yaw;
 	Scene.FootPos = pos;

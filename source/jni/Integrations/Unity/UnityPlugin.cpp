@@ -12,6 +12,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <unistd.h>						// usleep, etc
 #include <sys/syscall.h>
 
+#include "Std.h"
+#include "Alg.h"
 #include "OVR.h"
 #include "android/GlUtils.h"
 #include "android/LogUtils.h"
@@ -380,8 +382,7 @@ OCULUS_EXPORT void OVR_Platform_StartUI( const char * commandString )
 	}
 
 	NervGear::VString imageName = "dependency_error";
-	char language[128];
-	ovr_GetCurrentLanguage( up.OvrMobile, language, sizeof( language ) );
+    VString language = ovr_GetCurrentLanguage(up.OvrMobile);
 	imageName += "_";
 	imageName += language;
 	imageName += ".png";
@@ -402,7 +403,7 @@ OCULUS_EXPORT void OVR_Platform_StartUI( const char * commandString )
 	int h = 0;
 	// Note that the extension used on the filename passed here is important! It must match the type
 	// of file that was embedded.
-	up.ErrorTexture = LoadTextureFromBuffer( imageName, memBuffer, NervGear::TextureFlags_t(), up.ErrorTextureSize, h );
+    up.ErrorTexture = LoadTextureFromBuffer( imageName.toCString(), memBuffer, NervGear::TextureFlags_t(), up.ErrorTextureSize, h );
 	OVR_ASSERT( up.ErrorTextureSize == h );
 
 	up.ErrorMessageEndTime = ovr_GetTimeInSeconds() + 7.5;

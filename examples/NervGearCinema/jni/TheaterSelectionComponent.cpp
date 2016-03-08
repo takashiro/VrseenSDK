@@ -33,7 +33,7 @@ void TheaterSelectionComponent::SetItem( VRMenuObject * self, const CarouselItem
 
 	if ( item != NULL )
 	{
-        self->setText( item->name.toCString() );
+        self->setText(item->name);
         self->setSurfaceTexture( 0, 0, SURFACE_TEXTURE_DIFFUSE,
 			item->texture, item->textureWidth, item->textureHeight );
         self->setColor( pose.Color );

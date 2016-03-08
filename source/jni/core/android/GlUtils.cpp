@@ -16,8 +16,9 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "NativeBuildStrings.h"
+#include "VOsBuild.h"
 #include "LogUtils.h"
+#include "VLog.h"
 
 #if defined(OVR_ENABLE_CAPTURE)
 	#include "capture/Capture.h"
@@ -437,17 +438,12 @@ GpuType EglGetGpuTypeLocal()
 	}
 	else if ( strstr( glRendererString, "Mali-T760") )
 	{
-		const char * hardware = ovr_GetBuildString( BUILDSTR_HARDWARE );
-		if ( strcmp( hardware, "universal5433" ) == 0 )
-		{
+        const VString &hardware = VOsBuild::getString(VOsBuild::Hardware);
+        if (hardware == "universal5433") {
 			gpuType = GPU_TYPE_MALI_T760_EXYNOS_5433;
-		}
-		else if ( strcmp( hardware, "samsungexynos7420" ) == 0 )
-		{
+        } else if (hardware == "samsungexynos7420") {
 			gpuType = GPU_TYPE_MALI_T760_EXYNOS_7420;
-		}
-		else
-		{
+        } else {
 			gpuType = GPU_TYPE_MALI_T760;
 		}
 	}
@@ -460,8 +456,8 @@ GpuType EglGetGpuTypeLocal()
 		gpuType = GPU_TYPE_UNKNOWN;
 	}
 
-	LOG( "SoC: %s", ovr_GetBuildString( BUILDSTR_HARDWARE ) );
-	LOG( "EglGetGpuType: %d", gpuType );
+    vInfo("SoC:" << VOsBuild::getString(VOsBuild::Hardware));
+    vInfo("EglGetGpuType:" << gpuType);
 
 	return gpuType;
 }

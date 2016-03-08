@@ -78,7 +78,7 @@ public:
 
 private:
 	void 				LoadModels();
-	void 				ScanDirectoryForScenes( const char * directory, bool useDynamicProgram, bool useScreenGeometry, Array<SceneDef *> &scenes ) const;
+    void 				ScanDirectoryForScenes(const VString &directory, bool useDynamicProgram, bool useScreenGeometry, Array<SceneDef *> &scenes ) const;
 	SceneDef *			LoadScene( const char *filename, bool useDynamicProgram, bool useScreenGeometry, bool loadFromApplicationPackage ) const;
 };
 

@@ -13,6 +13,8 @@ of patent rights can be found in the PATENTS file in the same directory.
 
 *************************************************************************************/
 
+#include <Alg.h>
+
 #include "Oculus360Photos.h"
 #include <android/keycodes.h>
 #include "Threads.h"
@@ -259,11 +261,11 @@ void Oculus360Photos::OneTimeInit( const char * fromPackage, const char * launch
 	fileExtensions.badExtensions.append( "_nx.jpg" );
 	fileExtensions.badExtensions.append( "_ny.jpg" );
 
-	const OvrStoragePaths & storagePaths = app->GetStoragePaths();
-	storagePaths.PushBackSearchPathIfValid( EST_SECONDARY_EXTERNAL_STORAGE, EFT_ROOT, "RetailMedia/", m_searchPaths );
-	storagePaths.PushBackSearchPathIfValid( EST_SECONDARY_EXTERNAL_STORAGE, EFT_ROOT, "", m_searchPaths );
-	storagePaths.PushBackSearchPathIfValid( EST_PRIMARY_EXTERNAL_STORAGE, EFT_ROOT, "RetailMedia/", m_searchPaths );
-	storagePaths.PushBackSearchPathIfValid( EST_PRIMARY_EXTERNAL_STORAGE, EFT_ROOT, "", m_searchPaths );
+    const VStandardPath &storagePaths = app->GetStoragePaths();
+    storagePaths.PushBackSearchPathIfValid( VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", m_searchPaths );
+    storagePaths.PushBackSearchPathIfValid( VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "", m_searchPaths );
+    storagePaths.PushBackSearchPathIfValid( VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", m_searchPaths );
+    storagePaths.PushBackSearchPathIfValid( VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "", m_searchPaths );
 
 	LOG( "360 PHOTOS using %d searchPaths", m_searchPaths.sizeInt() );
 
@@ -839,7 +841,7 @@ void Oculus360Photos::SetMenuState( const OvrMenuState state )
 	case MENU_NONE:
 		break;
 	case MENU_BACKGROUND_INIT:
-		startBackgroundPanoLoad( m_startupPano );
+        startBackgroundPanoLoad( m_startupPano.toCString() );
 		break;
 	case MENU_BROWSER:
 #ifdef ENABLE_MENU
@@ -855,7 +857,7 @@ void Oculus360Photos::SetMenuState( const OvrMenuState state )
 #endif
 		m_currentFadeRate = m_fadeOutRate;
 		m_fader.startFadeOut();
-		startBackgroundPanoLoad( m_activePano->url );
+        startBackgroundPanoLoad( m_activePano->url.toCString() );
 
 #ifdef ENABLE_MENU
 		m_panoMenu->updateButtonsState( m_activePano );

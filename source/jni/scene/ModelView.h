@@ -46,7 +46,7 @@ public:
 
 	// Blocking load of a scene from the filesystem.
 	// This model will be freed when a new world model is set.
-	void		LoadWorldModel( const char * sceneFileName, const MaterialParms & materialParms );
+    void		LoadWorldModel( const VString &sceneFileName, const MaterialParms & materialParms );
 
 	// Set an already loaded scene, which will not be freed when a new
 	// world model is set.
@@ -74,7 +74,7 @@ public:
 	// Passed on to world model
 	SurfaceDef *			FindNamedSurface( const char *name ) const;
 	const ModelTexture *	FindNamedTexture( const char *name ) const;
-	const ModelTag *		FindNamedTag( const char *name ) const;
+	const ModelTag *		FindNamedTag(const VString &name ) const;
 	Bounds3f				GetBounds() const;
 
 

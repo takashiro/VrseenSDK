@@ -94,51 +94,40 @@ void CinemaApp::OneTimeShutdown()
 	m_resumeMovieMenu.OneTimeShutdown();
 }
 
-const char * CinemaApp::retailDir( const char *dir ) const
+VString CinemaApp::retailDir(const VString &dir) const
 {
-	static char subDir[ 256 ];
-    StringUtils::SPrintf( subDir, "%s/%s", sdcardDir( "RetailMedia" ), dir );
-	return subDir;
+    return sdcardDir("RetailMedia") + '/' + dir;
 }
 
-const char * CinemaApp::externalRetailDir( const char *dir ) const
+VString CinemaApp::externalRetailDir(const VString &dir) const
 {
-	static char subDir[ 256 ];
-    StringUtils::SPrintf( subDir, "%s/%s", externalSDCardDir( "RetailMedia" ), dir );
-	return subDir;
+    return externalSDCardDir("RetailMedia") + '/' + dir;
 }
 
-const char * CinemaApp::sdcardDir( const char *dir ) const
+VString CinemaApp::sdcardDir(const VString &dir ) const
 {
-	static char subDir[ 256 ];
-	StringUtils::SPrintf( subDir, "/sdcard/%s", dir );
-	return subDir;
+    return "/sdcard/" + dir;
 }
 
-const char * CinemaApp::externalSDCardDir( const char *dir ) const
+VString CinemaApp::externalSDCardDir(const VString &dir) const
 {
-	static char subDir[ 256 ];
-	StringUtils::SPrintf( subDir, "/storage/extSdCard/%s", dir );
-	return subDir;
+    return "/storage/extSdCard/" + dir;
 }
 
-const char * CinemaApp::externalCacheDir( const char *dir ) const
+VString CinemaApp::externalCacheDir(const VString &dir) const
 {
-	static char subDir[ 256 ];
-    StringUtils::SPrintf( subDir, "%s/%s", Native::GetExternalCacheDirectory( app ).toCString(), dir );
-	return subDir;
+    return Native::GetExternalCacheDirectory(app) + '/' + dir;
 }
 
-bool CinemaApp::isExternalSDCardDir( const char *dir ) const
+bool CinemaApp::isExternalSDCardDir(const VString &dir) const
 {
-    const char * sdcardDir = externalSDCardDir( "" );
-	const int l = strlen( sdcardDir );
-	return ( 0 == strncmp( sdcardDir, dir, l ) );
+    VString sdcardDir = externalSDCardDir("");
+    return dir.startsWith(sdcardDir);
 }
 
-bool CinemaApp::fileExists( const char *filename ) const
+bool CinemaApp::fileExists(const VString &filename) const
 {
-	FILE *f = fopen( filename, "r" );
+    FILE *f = fopen( filename.toCString(), "r" );
 	if ( !f )
 	{
 		return false;

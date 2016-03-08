@@ -10,11 +10,12 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 *************************************************************************************/
 
 #include "Console.h"
-
+#include "Std.h"
 #include "Android/JniUtils.h"
 #include "Android/LogUtils.h"
 #include "Array.h"
 #include "VString.h"			// for ReadFreq()
+#include "VLog.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -126,21 +127,20 @@ void DebugPrint( void * appPtr, const char * cmd ) {
 
 NV_NAMESPACE_END
 
+NV_USING_NAMESPACE
+
 extern "C" {
 
 JNIEXPORT void Java_me_takashiro_nervgear_ConsoleReceiver_nativeConsoleCommand( JNIEnv * jni, jclass clazz, jlong appPtr, jstring command )
 {
-	char const * commandStr = ovr_GetStringUTFChars( jni, command, NULL );
-	LOG( "nativeConsoleCommand: %s", commandStr );
-	if ( NervGear::Console != NULL )
-	{
-		NervGear::Console->ExecuteConsoleFunction( appPtr, commandStr );
-	}
-	else
-	{
-		LOG( "Tried to execute console function without a console!" );
-	}
-	jni->ReleaseStringUTFChars( command, commandStr );
+    VString commandStr = JniUtils::Convert(jni, command);
+    vInfo("nativeConsoleCommand:" << commandStr);
+    if (NervGear::Console != NULL ) {
+        VByteArray utf8 = commandStr.toUtf8();
+        NervGear::Console->ExecuteConsoleFunction(appPtr, utf8.data());
+    } else {
+        vInfo("Tried to execute console function without a console!");
+    }
 }
 
 }

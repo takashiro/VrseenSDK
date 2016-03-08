@@ -1,17 +1,7 @@
-/************************************************************************************
-
-Filename    :   VideosMetaData.cpp
-Content     :   A class to manage metadata used by FolderBrowser
-Created     :   February 19, 2015
-Authors     :   Jonathan E. Wright, Warsam Osman, Madhu Kalva
-
-Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
-
-
-*************************************************************************************/
+#include <Alg.h>
+#include <VPath.h>
 
 #include "VideosMetaData.h"
-
 #include "VrCommon.h"
 
 using namespace NervGear;
@@ -29,7 +19,7 @@ const char * const DEFAULT_AUTHOR_NAME				= "Unspecified Author";
 OvrVideosMetaDatum::OvrVideosMetaDatum( const VString& url )
 	: Author( DEFAULT_AUTHOR_NAME )
 {
-	Title = ExtractFileBase( url );
+    Title = VPath(url).baseName();
 }
 
 OvrMetaDatum * OvrVideosMetaData::createMetaDatum( const char* url ) const
@@ -51,7 +41,7 @@ void OvrVideosMetaData::extractExtendedData( const Json &jsonDatum, OvrMetaDatum
 
 		if ( videoData->Title.isEmpty() )
 		{
-			videoData->Title = ExtractFileBase( datum.url.toCString() );
+            videoData->Title = VPath(datum.url).baseName();
 		}
 
 		if ( videoData->Author.isEmpty() )
@@ -63,17 +53,15 @@ void OvrVideosMetaData::extractExtendedData( const Json &jsonDatum, OvrMetaDatum
 
 void OvrVideosMetaData::extendedDataToJson( const OvrMetaDatum & datum, Json &outDatumObject ) const
 {
-	if ( outDatumObject.isObject() )
-	{
+    if ( outDatumObject.isObject() ) {
 		const OvrVideosMetaDatum * const videoData = static_cast< const OvrVideosMetaDatum * const >( &datum );
-		if ( videoData )
-		{
-			outDatumObject.insert( TITLE_INNER, 					std::string(videoData->Title.toCString()) );
-			outDatumObject.insert( AUTHOR_INNER, 					std::string(videoData->Author.toCString()) );
-			outDatumObject.insert( THUMBNAIL_URL_INNER, 			std::string(videoData->ThumbnailUrl.toCString()) );
-			outDatumObject.insert( STREAMING_TYPE_INNER, 			std::string(videoData->StreamingType.toCString()) );
-			outDatumObject.insert( STREAMING_PROXY_INNER, 			std::string(videoData->StreamingProxy.toCString()) );
-			outDatumObject.insert( STREAMING_SECURITY_LEVEL_INNER, 	std::string(videoData->StreamingSecurityLevel.toCString()) );
+        if ( videoData ) {
+            outDatumObject.insert(TITLE_INNER, videoData->Title.toUtf8());
+            outDatumObject.insert(AUTHOR_INNER, videoData->Author.toUtf8());
+            outDatumObject.insert(THUMBNAIL_URL_INNER, videoData->ThumbnailUrl.toUtf8());
+            outDatumObject.insert(STREAMING_TYPE_INNER, videoData->StreamingType.toUtf8());
+            outDatumObject.insert(STREAMING_PROXY_INNER, videoData->StreamingProxy.toUtf8());
+            outDatumObject.insert(STREAMING_SECURITY_LEVEL_INNER, videoData->StreamingSecurityLevel.toUtf8());
 		}
 	}
 }
@@ -84,8 +72,8 @@ void OvrVideosMetaData::swapExtendedData( OvrMetaDatum * left, OvrMetaDatum * ri
 	OvrVideosMetaDatum * rightVideoData = static_cast< OvrVideosMetaDatum * >( right );
 	if ( leftVideoData && rightVideoData )
 	{
-		Alg::Swap( leftVideoData->Title, rightVideoData->Title );
-		Alg::Swap( leftVideoData->Author, rightVideoData->Author );
+        std::swap(leftVideoData->Title, rightVideoData->Title);
+        std::swap(leftVideoData->Author, rightVideoData->Author);
 	}
 }
 

@@ -23,6 +23,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "MappedFile.h"
 #include "Android/GlUtils.h"
 #include "Android/LogUtils.h"
+#include "VPath.h"
 
 #include "unzip.h"
 #include "GlTexture.h"
@@ -66,7 +67,7 @@ SurfaceDef * ModelFile::FindNamedSurface( const char * name ) const
 	for ( int j = 0; j < Def.surfaces.sizeInt(); j++ )
 	{
 		const SurfaceDef & sd = Def.surfaces[j];
-		if ( sd.surfaceName.CompareNoCase( name ) == 0 )
+		if ( sd.surfaceName.icompare( name ) == 0 )
 		{
 			LOG( "Found named surface %s", name );
 			return const_cast<SurfaceDef*>(&sd);
@@ -81,7 +82,7 @@ const ModelTexture * ModelFile::FindNamedTexture( const char * name ) const
 	for ( int i = 0; i < Textures.sizeInt(); i++ )
 	{
 		const ModelTexture & st = Textures[i];
-		if ( st.name.CompareNoCase( name ) == 0 )
+		if ( st.name.icompare( name ) == 0 )
 		{
 			LOG( "Found named texture %s", name );
 			return &st;
@@ -96,7 +97,7 @@ const ModelJoint * ModelFile::FindNamedJoint( const char *name ) const
 	for ( int i = 0; i < Joints.sizeInt(); i++ )
 	{
 		const ModelJoint & joint = Joints[i];
-		if ( joint.name.CompareNoCase( name ) == 0 )
+		if ( joint.name.icompare( name ) == 0 )
 		{
 			LOG( "Found named joint %s", name );
 			return &joint;
@@ -106,18 +107,22 @@ const ModelJoint * ModelFile::FindNamedJoint( const char *name ) const
 	return NULL;
 }
 
-const ModelTag * ModelFile::FindNamedTag( const char *name ) const
+const ModelTag * ModelFile::FindNamedTag(const VString &name) const
 {
 	for ( int i = 0; i < Tags.sizeInt(); i++ )
 	{
 		const ModelTag & tag = Tags[i];
-		if ( tag.name.CompareNoCase( name ) == 0 )
+		if ( tag.name.icompare( name ) == 0 )
 		{
-			LOG( "Found named tag %s", name );
+            const char *s = name.toCString();
+            LOG("Found named tag %s", s);
+            delete[] s;
 			return &tag;
 		}
 	}
-	LOG( "Did not find named tag %s", name );
+    const char *s = name.toCString();
+    LOG("Did not find named tag %s", s);
+    delete[] s;
 	return NULL;
 }
 
@@ -142,8 +147,7 @@ void LoadModelFileTexture( ModelFile & model, const char * textureName,
 							const char * buffer, const int size, const MaterialParms & materialParms )
 {
 	ModelTexture tex;
-	tex.name = textureName;
-	tex.name.stripExtension();
+    tex.name = VPath(textureName).baseName();
     int width;
     int height;
 	tex.texid = LoadTextureFromBuffer( textureName, MemBuffer( buffer, size ),
@@ -235,7 +239,7 @@ void LoadModelFileJson( ModelFile & model,
 						int i = 0;
 						for ( ; i < model.Textures.sizeInt(); i++ )
 						{
-							if ( model.Textures[i].name.CompareNoCase( name.c_str() ) == 0 )
+                            if ( model.Textures[i].name.icompare(name.c_str()) == 0 )
 							{
 								break;
 							}

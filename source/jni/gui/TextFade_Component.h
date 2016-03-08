@@ -37,7 +37,7 @@ public:
 
     eMsgStatus focusLost( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event );
 
-	static Vector3f CalcIconFadeOffset( char const * text, BitmapFont const & font, Vector3f const & axis, float const iconWidth );
+    static Vector3f CalcIconFadeOffset(const VString &text, BitmapFont const & font, Vector3f const & axis, float const iconWidth );
 
 
 private:

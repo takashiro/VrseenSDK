@@ -41,7 +41,7 @@ enum eVRMenuEventType
 	VRMENU_EVENT_MAX
 };
 
-typedef BitFlagsT< eVRMenuEventType, uint64_t > VRMenuEventFlags_t;
+typedef VFlags<eVRMenuEventType, uint64_t> VRMenuEventFlags_t;
 
 enum eEventDispatchType
 {

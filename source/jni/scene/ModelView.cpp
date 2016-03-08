@@ -10,7 +10,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 *************************************************************************************/
 
 #include "ModelView.h"
-
+#include "Alg.h"
 #include "api/VrApi.h"
 #include "api/VrApi_Helpers.h"
 
@@ -18,8 +18,9 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "BitmapFont.h"
 #include "DebugLines.h"
 
-namespace NervGear
-{
+#include "VLog.h"
+
+NV_NAMESPACE_BEGIN
 
 void ModelInScene::SetModelFile( const ModelFile * mf ) 
 { 
@@ -161,9 +162,9 @@ ModelGlPrograms OvrSceneView::GetDefaultGLPrograms()
 	return programs;
 }
 
-void OvrSceneView::LoadWorldModel( const char * sceneFileName, const MaterialParms & materialParms )
+void OvrSceneView::LoadWorldModel(const VString &sceneFileName, const MaterialParms & materialParms )
 {
-	LOG( "OvrSceneView::LoadScene( %s )", sceneFileName );
+    vInfo("OvrSceneView::LoadScene(" << sceneFileName << ")");
 
 	if ( GlPrograms.ProgSingleTexture == NULL )
 	{
@@ -171,7 +172,7 @@ void OvrSceneView::LoadWorldModel( const char * sceneFileName, const MaterialPar
 	}
 
 	// Load the scene we are going to draw
-	ModelFile * model = LoadModelFile( sceneFileName, GlPrograms, materialParms );
+    ModelFile * model = LoadModelFile( sceneFileName.toCString(), GlPrograms, materialParms );
 
 	SetWorldModel( *model );
 
@@ -180,7 +181,7 @@ void OvrSceneView::LoadWorldModel( const char * sceneFileName, const MaterialPar
 
 void OvrSceneView::SetWorldModel( ModelFile & world )
 {
-	LOG( "OvrSceneView::SetWorldModel( %s )", world.FileName.toCString() );
+    vInfo("OvrSceneView::SetWorldModel(" << world.FileName << ")");
 
 	if ( FreeWorldModelOnChange && Models.sizeInt() > 0 )
 	{
@@ -213,9 +214,9 @@ const ModelTexture * OvrSceneView::FindNamedTexture( const char * name ) const
 	return ( WorldModel.Definition == NULL ) ? NULL : WorldModel.Definition->FindNamedTexture( name );
 }
 
-const ModelTag * OvrSceneView::FindNamedTag( const char * name ) const
+const ModelTag * OvrSceneView::FindNamedTag(const VString &name) const
 {
-	return ( WorldModel.Definition == NULL ) ? NULL : WorldModel.Definition->FindNamedTag( name );
+    return ( WorldModel.Definition == NULL ) ? NULL : WorldModel.Definition->FindNamedTag(name);
 }
 
 Bounds3f OvrSceneView::GetBounds() const
@@ -465,4 +466,4 @@ void OvrSceneView::Frame( const VrViewParms viewParms_, const VrFrame vrFrame,
 	timeWarpParmsExternalVelocity = CalculateExternalVelocity( &localViewMatrix, YawVelocity );
 }
 
-}	// namespace NervGear
+NV_NAMESPACE_END

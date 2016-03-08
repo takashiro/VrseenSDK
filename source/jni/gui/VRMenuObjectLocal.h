@@ -245,7 +245,7 @@ public:
     virtual	void				removeFlags( VRMenuObjectFlags_t const & flags ) { m_flags &= ~flags; }
 
     virtual VString const &	text() const { return m_text; }
-    virtual void				setText( char const * text ) { m_text = text; m_textDirty = true; }
+    void setText(const VString &text) override { m_text = text; m_textDirty = true; }
     virtual void				setTextWordWrapped( char const * text, class BitmapFont const & font, float const widthInMeters );
 
     virtual bool				isHilighted() const { return m_hilighted; }

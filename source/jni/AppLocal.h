@@ -58,7 +58,7 @@ public:
 	virtual BitmapFontSurface & 	GetMenuFontSurface();
 	virtual OvrVRMenuMgr &      	GetVRMenuMgr();
 	virtual OvrDebugLines &     	GetDebugLines();
-	virtual const OvrStoragePaths & GetStoragePaths();
+	virtual const VStandardPath & GetStoragePaths();
 	virtual OvrSoundManager &		GetSoundMgr();
 
 	//-----------------------------------------------------------------
@@ -231,7 +231,7 @@ public:
 	jmethodID		GetStaticMethodID( jclass cls, const char * name, const char * signature ) const;
 
 	// TalkToJavaInterface
-	virtual void	TtjCommand( JNIEnv & jni, const char * commandString );
+    void TtjCommand(JNIEnv *jni, const char * commandString) override;
 
 	jclass			GetGlobalClassReference( const char * className ) const;
 
@@ -401,7 +401,7 @@ public:
     OvrVolumePopup *	volumePopup;
     OvrDebugLines *     debugLines;
     KeyState            backKeyState;
-        OvrStoragePaths*	storagePaths;
+        VStandardPath*	storagePaths;
         VString				languagePackagePath;
         GlTexture			errorTexture;
         int					errorTextureSize;

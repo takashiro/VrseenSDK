@@ -1,18 +1,8 @@
-/************************************************************************************
-
-Filename    :   OVR_System.cpp
-Content     :   General kernel initialization/cleanup, including that
-                of the memory allocator.
-Created     :   September 19, 2012
-Notes       :
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-
 #include "System.h"
 #include "Threads.h"
-#include "Timer.h"
+#include "VTimer.h"
+
+#include "VLog.h"
 
 namespace NervGear {
 
@@ -21,25 +11,20 @@ namespace NervGear {
 // Initializes System core, installing allocator.
 void System::Init(Log* log, Allocator *palloc)
 {
-    if (!Allocator::GetInstance())
-    {
+    if (!Allocator::GetInstance()) {
         Log::SetGlobalLog(log);
-        Timer::InitializeTimerSystem();
         Allocator::setInstance(palloc);
 #ifdef OVR_ENABLE_THREADS
         Thread::InitThreadList();
 #endif
-    }
-    else
-    {
-        OVR_DEBUG_LOG(("System::Init failed - duplicate call."));
+    } else {
+        vFatal("System::Init failed - duplicate call.");
     }
 }
 
 void System::Destroy()
 {
-    if (Allocator::GetInstance())
-    {
+    if (Allocator::GetInstance()) {
 #ifdef OVR_ENABLE_THREADS
         // Wait for all threads to finish; this must be done so that memory
         // allocator and all destructors finalize correctly.
@@ -50,12 +35,9 @@ void System::Destroy()
         Allocator::GetInstance()->onSystemShutdown();
         Allocator::setInstance(0);
 
-        Timer::ShutdownTimerSystem();
         Log::SetGlobalLog(Log::GetDefaultLog());
-    }
-    else
-    {
-        OVR_DEBUG_LOG(("System::Destroy failed - System not initialized."));
+    } else {
+        vFatal("System::Destroy failed - System not initialized.");
     }
 }
 

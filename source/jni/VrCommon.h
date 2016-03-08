@@ -5,7 +5,7 @@
 
 #include "OVR.h"	// Matrix4f, etc
 #include "StringHash.h"
-#include "PathUtils.h"
+#include "VStandardPath.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -30,15 +30,10 @@ inline Vector3f GetViewMatrixForward( Matrix4f const & m )
 }
 
 // Returns true if the folder has specified permission
-bool HasPermission( const char * fileOrDirName, mode_t mode );
+bool HasPermission(VString fileOrDirName, mode_t mode );
 
 // Returns true if the file exists
-bool FileExists( const char * filename );
-
-// Returns true if ext is the end of fileName
-bool MatchesExtension( const char * fileName, const char * ext );
-
-int StringCompare( const void *a, const void * b );
+bool FileExists(const VString &filename );
 
 void SortStringArray( Array<VString> & strings );
 
@@ -50,17 +45,8 @@ StringHash< VString > RelativeDirectoryFileList( const Array< VString > & search
 // All files and directories that start with . are skipped.
 Array<VString> DirectoryFileList( const char * DirPath );
 
-// Returns the last token in path s with slashes and file extension stripped
-VString ExtractFileBase( const VString & s );
-
-// Returns the filename with extension from a passed in path
-VString ExtractFile( const VString & s );
-
-// Returns the directory name before the fileName - stripping out parent directories and file
-VString ExtractDirectory( const VString & s );
-
 // Creates all the intermediate directories if they don't exist
-void MakePath( const char * dirPath, mode_t mode );
+void MakePath(const VString &dirPath, mode_t mode );
 
 // Returns true if head equals check plus zero or more characters.
 bool MatchesHead( const char * head, const char * check );

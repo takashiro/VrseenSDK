@@ -19,6 +19,8 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "CinemaApp.h"
 #include "PackageFiles.h"
 
+#include <VPath.h>
+
 
 namespace OculusCinema {
 
@@ -111,16 +113,16 @@ void ModelManager::LoadModels()
     LOG( "ModelManager::LoadModels: %i theaters loaded, %3.1f seconds", Theaters.sizeInt(), ovr_GetTimeInSeconds() - start );
 }
 
-void ModelManager::ScanDirectoryForScenes( const char * directory, bool useDynamicProgram, bool useScreenGeometry, Array<SceneDef *> &scenes ) const
+void ModelManager::ScanDirectoryForScenes(const VString &directory, bool useDynamicProgram, bool useScreenGeometry, Array<SceneDef *> &scenes ) const
 {
-	DIR * dir = opendir( directory );
+    DIR * dir = opendir( directory.toCString() );
 	if ( dir != NULL )
 	{
 		struct dirent * entry;
 		while( ( entry = readdir( dir ) ) != NULL ) {
 			VString filename = entry->d_name;
-            VString ext = filename.extension().toLower();
-			if ( ( ext == ".ovrscene" ) )
+            VString ext = VPath(filename).extension().toLower();
+            if ( ( ext == "ovrscene" ) )
 			{
 				VString fullpath = directory;
                 fullpath.append( "/" );
@@ -186,7 +188,8 @@ SceneDef * ModelManager::LoadScene( const char *sceneFilename, bool useDynamicPr
 
 	ModelGlPrograms glPrograms = ( useDynamicProgram ) ? Cinema.shaderMgr.DynamicPrograms : Cinema.shaderMgr.DefaultPrograms;
 
-    VString iconFilename = StringUtils::SetFileExtensionString( filename.toCString(), "png" );
+    VPath iconFilename = filename;
+    iconFilename.setExtension("png");
 
 	int textureWidth = 0, textureHeight = 0;
 

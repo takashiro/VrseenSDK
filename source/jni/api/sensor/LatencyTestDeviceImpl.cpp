@@ -9,6 +9,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 *************************************************************************************/
 
+#include "Std.h"
 #include "LatencyTestDeviceImpl.h"
 
 namespace NervGear {
@@ -279,17 +280,17 @@ struct LatencyTestConfigurationImpl
     {
         Buffer[0] = 5;
 		Buffer[1] = UByte(Configuration.SendSamples);
-		Buffer[2] = Configuration.Threshold.R;
-        Buffer[3] = Configuration.Threshold.G;
-        Buffer[4] = Configuration.Threshold.B;
+		Buffer[2] = Configuration.Threshold.red;
+        Buffer[3] = Configuration.Threshold.green;
+        Buffer[4] = Configuration.Threshold.blue;
     }
 
     void Unpack()
     {
 		Configuration.SendSamples = Buffer[1] != 0 ? true : false;
-        Configuration.Threshold.R = Buffer[2];
-        Configuration.Threshold.G = Buffer[3];
-        Configuration.Threshold.B = Buffer[4];
+        Configuration.Threshold.red = Buffer[2];
+        Configuration.Threshold.green = Buffer[3];
+        Configuration.Threshold.blue = Buffer[4];
     }
 };
 
@@ -298,9 +299,9 @@ struct LatencyTestCalibrateImpl
     enum  { PacketSize = 4 };
     UByte   Buffer[PacketSize];
 
-    Color CalibrationColor;
+    VColor CalibrationColor;
 
-    LatencyTestCalibrateImpl(const Color& calibrationColor)
+    LatencyTestCalibrateImpl(const VColor& calibrationColor)
         : CalibrationColor(calibrationColor)
     {
         Pack();
@@ -309,16 +310,16 @@ struct LatencyTestCalibrateImpl
     void Pack()
     {
         Buffer[0] = 7;
-		Buffer[1] = CalibrationColor.R;
-		Buffer[2] = CalibrationColor.G;
-		Buffer[3] = CalibrationColor.B;
+		Buffer[1] = CalibrationColor.red;
+		Buffer[2] = CalibrationColor.green;
+		Buffer[3] = CalibrationColor.blue;
     }
 
     void Unpack()
     {
-        CalibrationColor.R = Buffer[1];
-        CalibrationColor.G = Buffer[2];
-        CalibrationColor.B = Buffer[3];
+        CalibrationColor.red = Buffer[1];
+        CalibrationColor.green = Buffer[2];
+        CalibrationColor.blue = Buffer[3];
     }
 };
 
@@ -327,9 +328,9 @@ struct LatencyTestStartTestImpl
     enum  { PacketSize = 6 };
     UByte   Buffer[PacketSize];
 
-    Color TargetColor;
+    VColor TargetColor;
 
-    LatencyTestStartTestImpl(const Color& targetColor)
+    LatencyTestStartTestImpl(const VColor& targetColor)
         : TargetColor(targetColor)
     {
         Pack();
@@ -342,17 +343,17 @@ struct LatencyTestStartTestImpl
         Buffer[0] = 8;
 		Buffer[1] = UByte(commandID  & 0xFF);
 		Buffer[2] = UByte(commandID >> 8);
-		Buffer[3] = TargetColor.R;
-		Buffer[4] = TargetColor.G;
-		Buffer[5] = TargetColor.B;
+		Buffer[3] = TargetColor.red;
+		Buffer[4] = TargetColor.green;
+		Buffer[5] = TargetColor.blue;
     }
 
     void Unpack()
     {
 //      UInt16 commandID = Buffer[1] | (UInt16(Buffer[2]) << 8);
-        TargetColor.R = Buffer[3];
-        TargetColor.G = Buffer[4];
-        TargetColor.B = Buffer[5];
+        TargetColor.red = Buffer[3];
+        TargetColor.green = Buffer[4];
+        TargetColor.blue = Buffer[5];
     }
 };
 
@@ -609,7 +610,7 @@ bool LatencyTestDeviceImpl::getConfiguration(NervGear::LatencyTestConfiguration*
     return false;
 }
 
-bool LatencyTestDeviceImpl::SetCalibrate(const Color& calibrationColor, bool waitFlag)
+bool LatencyTestDeviceImpl::SetCalibrate(const VColor& calibrationColor, bool waitFlag)
 {
     bool                result = false;
     ThreadCommandQueue* queue = GetManagerImpl()->threadQueue();
@@ -630,13 +631,13 @@ bool LatencyTestDeviceImpl::SetCalibrate(const Color& calibrationColor, bool wai
     return result;
 }
 
-bool LatencyTestDeviceImpl::setCalibrate(const Color& calibrationColor)
+bool LatencyTestDeviceImpl::setCalibrate(const VColor& calibrationColor)
 {
     LatencyTestCalibrateImpl ltc(calibrationColor);
     return GetInternalDevice()->SetFeatureReport(ltc.Buffer, LatencyTestCalibrateImpl::PacketSize);
 }
 
-bool LatencyTestDeviceImpl::SetStartTest(const Color& targetColor, bool waitFlag)
+bool LatencyTestDeviceImpl::SetStartTest(const VColor& targetColor, bool waitFlag)
 {
     bool                result = false;
     ThreadCommandQueue* queue = GetManagerImpl()->threadQueue();
@@ -657,7 +658,7 @@ bool LatencyTestDeviceImpl::SetStartTest(const Color& targetColor, bool waitFlag
     return result;
 }
 
-bool LatencyTestDeviceImpl::setStartTest(const Color& targetColor)
+bool LatencyTestDeviceImpl::setStartTest(const VColor& targetColor)
 {
     LatencyTestStartTestImpl ltst(targetColor);
     return GetInternalDevice()->SetFeatureReport(ltst.Buffer, LatencyTestStartTestImpl::PacketSize);
@@ -706,7 +707,7 @@ void LatencyTestDeviceImpl::onLatencyTestSamplesMessage(LatencyTestSamplesMessag
         MessageLatencyTestSamples samples(this);
         for (UByte i = 0; i < s.SampleCount; i++)
         {
-            samples.Samples.append(Color(s.Samples[i].Value[0], s.Samples[i].Value[1], s.Samples[i].Value[2]));
+            samples.Samples.append(VColor(s.Samples[i].Value[0], s.Samples[i].Value[1], s.Samples[i].Value[2]));
         }
 
         HandlerRef.GetHandler()->onMessage(samples);
@@ -727,8 +728,8 @@ void LatencyTestDeviceImpl::onLatencyTestColorDetectedMessage(LatencyTestColorDe
     {
         MessageLatencyTestColorDetected detected(this);
         detected.Elapsed = s.Elapsed;
-        detected.DetectedValue = Color(s.TriggerValue[0], s.TriggerValue[1], s.TriggerValue[2]);
-        detected.TargetValue = Color(s.TargetValue[0], s.TargetValue[1], s.TargetValue[2]);
+        detected.DetectedValue = VColor(s.TriggerValue[0], s.TriggerValue[1], s.TriggerValue[2]);
+        detected.TargetValue = VColor(s.TargetValue[0], s.TargetValue[1], s.TargetValue[2]);
 
         HandlerRef.GetHandler()->onMessage(detected);
     }
@@ -747,7 +748,7 @@ void LatencyTestDeviceImpl::onLatencyTestStartedMessage(LatencyTestStartedMessag
     if (HandlerRef.GetHandler())
     {
         MessageLatencyTestStarted started(this);
-        started.TargetValue = Color(ts.TargetValue[0], ts.TargetValue[1], ts.TargetValue[2]);
+        started.TargetValue = VColor(ts.TargetValue[0], ts.TargetValue[1], ts.TargetValue[2]);
 
         HandlerRef.GetHandler()->onMessage(started);
     }

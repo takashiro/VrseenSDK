@@ -1,7 +1,6 @@
 #pragma once
 
 #include "VString.h"
-#include "VStringBuffer.h"
 #include "List.h"
 
 #include "Device.h"
@@ -50,7 +49,7 @@ public:
     { return Handler.IsHandlerInstalled(); }
 
     void        ProcessInputs();
-    bool        DisplayScreenColor(Color& colorToDisplay);
+    bool        DisplayScreenColor(VColor& colorToDisplay);
 	const char*	GetResultsString();
 
     // Begin test. Equivalent to pressing the button on the latency tester.
@@ -107,7 +106,7 @@ private:
     UInt32                      OldTime;
     UInt32                      ActiveTimerMilliS;
 
-    Color                       RenderColor;
+    VColor                       RenderColor;
 
     struct MeasurementResult : public ListNode<MeasurementResult>, public NewOverrideBase
     {
@@ -119,7 +118,7 @@ private:
             TestStartedSeconds(0.0)
         {}
 
-        Color                   TargetColor;
+        VColor                   TargetColor;
 
         UInt32                  DeviceMeasuredElapsedMilliS;
 
@@ -135,8 +134,8 @@ private:
 
     MeasurementResult*          getActiveResult();
 
-    VStringBuffer			    ResultsString;
-	VString					    ReturnedResultString;
+    VString ResultsString;
+    VString ReturnedResultString;
 };
 
 NV_NAMESPACE_END

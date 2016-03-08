@@ -1,17 +1,6 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   SwipeHintComponent.h
-Content     :
-Created     :   Feb 12, 2015
-Authors     :   Madhu Kalva, Jim Dose
-
-Copyright   :   Copyright 2014 Oculus VR, Inc. All Rights reserved.
-
-*************************************************************************************/
-
-#if !defined( OVR_SwipeHintComponent_h )
-#define OVR_SwipeHintComponent_h
-
+#include "Alg.h"
 #include "VRMenuComponent.h"
 
 NV_NAMESPACE_BEGIN
@@ -77,5 +66,3 @@ NV_NAMESPACE_BEGIN
 
 
 }
-
-#endif // OVR_SwipeHintComponent_h

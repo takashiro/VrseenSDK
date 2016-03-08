@@ -6,7 +6,7 @@
 
 #include "RefCount.h"
 #include "VString.h"
-#include "Timer.h"
+#include "VTimer.h"
 
 NV_NAMESPACE_BEGIN
 

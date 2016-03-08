@@ -18,6 +18,8 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include <dirent.h>
 #include <fstream>
 
+#include <VPath.h>
+
 #include "String_Utils.h"
 #include "VJson.h"
 
@@ -32,27 +34,27 @@ namespace OculusCinema {
 const int MovieManager::PosterWidth = 228;
 const int MovieManager::PosterHeight = 344;
 
-static const char * searchDirs[] =
+static const VString searchDirs[] =
 {
 	"DCIM",
 	"Movies",
 	"Oculus/Movies",
-	NULL
+    ""
 };
 
 const char *MovieManager::SupportedFormats[] =
 {
-	".mp4",
-	".m4v",
-	".3gp",
-	".3g2",
-	".ts",
-	".webm",
-	".mkv",
-	".wmv",
-	".asf",
-	".avi",
-	".flv",
+    "mp4",
+    "m4v",
+    "3gp",
+    "3g2",
+    "ts",
+    "webm",
+    "mkv",
+    "wmv",
+    "asf",
+    "avi",
+    "flv",
 	NULL
 };
 
@@ -173,9 +175,8 @@ MovieCategory MovieManager::CategoryFromString( const VString &categoryString ) 
 
 void MovieManager::ReadMetaData( MovieDef *movie )
 {
-	VString filename = movie->Filename;
-    filename.stripExtension();
-    filename.append( ".txt" );
+    VString filename = VPath(movie->Filename).baseName();
+    filename.append(".txt");
 
 	const char* error = NULL;
 
@@ -223,17 +224,15 @@ void MovieManager::ReadMetaData( MovieDef *movie )
 
 void MovieManager::LoadPoster( MovieDef *movie )
 {
-	VString posterFilename = movie->Filename;
-    posterFilename.stripExtension();
-    posterFilename.append( ".png" );
+    VString posterFilename = VPath(movie->Filename).baseName();
+    posterFilename.append(".png");
 
     movie->Poster = LoadTextureFromBuffer( posterFilename.toCString(), MemBufferFile( posterFilename.toCString() ),
 			TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), movie->PosterWidth, movie->PosterHeight );
 
 	if ( movie->Poster == 0 )
 	{
-        if ( Cinema.isExternalSDCardDir( posterFilename.toCString() ) )
-		{
+        if (Cinema.isExternalSDCardDir(posterFilename)) {
 			// Since we're unable to write to the external sd card and writing to the
 			// cache directory doesn't seem to work, just disable generation of
 			// thumbnails for the external sd card.
@@ -286,9 +285,11 @@ bool MovieManager::IsSupportedMovieFormat( const VString &extension ) const
 	return false;
 }
 
-void MovieManager::MoviesInDirectory( Array<VString> &movies, const char * dirName ) const {
-	LOG( "scanning directory: %s", dirName );
-	DIR * dir = opendir( dirName );
+void MovieManager::MoviesInDirectory(Array<VString> &movies, const VString &dirName) const
+{
+    const char *dirNameCStr = dirName.toCString();
+    LOG("scanning directory: %s", dirNameCStr);
+    DIR * dir = opendir(dirNameCStr);
 	if ( dir != NULL )
 	{
 		struct dirent * entry;
@@ -307,9 +308,8 @@ void MovieManager::MoviesInDirectory( Array<VString> &movies, const char * dirNa
 
 	        if ( S_ISDIR( st.st_mode ) )
 	        {
-	        	char subDir[ 1000 ];
-	        	StringUtils::SPrintf( subDir, "%s/%s", dirName, entry->d_name );
-	        	MoviesInDirectory( movies, subDir );
+                VString subDir = dirName + '/' + entry->d_name;
+                MoviesInDirectory(movies, subDir);
 	        	continue;
 	        }
 
@@ -321,7 +321,7 @@ void MovieManager::MoviesInDirectory( Array<VString> &movies, const char * dirNa
 	        }
 
 			VString filename = entry->d_name;
-            VString ext = filename.extension().toLower();
+            VString ext = VPath(filename).extension().toLower();
 			if ( IsSupportedMovieFormat( ext ) )
 			{
 				VString fullpath = dirName;
@@ -339,12 +339,11 @@ void MovieManager::MoviesInDirectory( Array<VString> &movies, const char * dirNa
 Array<VString> MovieManager::ScanMovieDirectories() const {
 	Array<VString> movies;
 
-	for( int i = 0; searchDirs[ i ] != NULL; i++ )
-	{
-		MoviesInDirectory( movies, Cinema.externalRetailDir( searchDirs[ i ] ) );
-		MoviesInDirectory( movies, Cinema.retailDir( searchDirs[ i ] ) );
-		MoviesInDirectory( movies, Cinema.sdcardDir( searchDirs[ i ] ) );
-		MoviesInDirectory( movies, Cinema.externalSDCardDir( searchDirs[ i ] ) );
+    for (const VString &searchDir : searchDirs) {
+        MoviesInDirectory(movies, Cinema.externalRetailDir(searchDir));
+        MoviesInDirectory(movies, Cinema.retailDir(searchDir));
+        MoviesInDirectory(movies, Cinema.sdcardDir(searchDir));
+        MoviesInDirectory(movies, Cinema.externalSDCardDir(searchDir));
 	}
 
 	return movies;
@@ -352,11 +351,9 @@ Array<VString> MovieManager::ScanMovieDirectories() const {
 
 const VString MovieManager::GetMovieTitleFromFilename( const char *filepath )
 {
-	VString filename = StringUtils::GetFileBaseString( filepath );
-
-	// change _ to space
-    VString displayName = StringUtils::ReplaceChar( filename.toCString(), '_', ' ' );
-	return displayName;
+    VString fileName = VPath(filepath).baseName();
+    fileName.replace('_', ' ');
+    return fileName;
 }
 
 Array<const MovieDef *> MovieManager::GetMovieList( MovieCategory category ) const

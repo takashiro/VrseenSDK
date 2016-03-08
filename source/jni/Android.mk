@@ -34,32 +34,32 @@ LOCAL_EXPORT_C_INCLUDES := $(LOCAL_C_INCLUDES)
 LOCAL_SRC_FILES  := core/Alg.cpp \
                     core/Allocator.cpp \
                     core/Atomic.cpp \
+                    core/VByteArray.cpp \
                     core/VChar.cpp \
                     core/File.cpp \
                     core/FileFILE.cpp \
-                    core/VJson.cpp \ \
+                    core/VJson.cpp \
                     core/Log.cpp \
+                    core/VLog.cpp \
                     core/Lockless.cpp \
                     core/VMath.cpp \
+                    core/VPath.cpp \
                     core/RefCount.cpp \
+                    core/VStandardPath.cpp \
                     core/Std.cpp \
                     core/VString.cpp \
-                    core/VStringBuffer.cpp \
-                    core/String_FormatUtil.cpp \
-                    core/String_PathUtil.cpp \
                     core/SysFile.cpp \
                     core/System.cpp \
                     core/ThreadCommandQueue.cpp \
                     core/ThreadsPthread.cpp \
-                    core/Timer.cpp \
-                    core/UTF8Util.cpp \
+                    core/VTimer.cpp \
                     core/BinaryFile.cpp \
                     core/MappedFile.cpp \
                     core/MemBuffer.cpp \
                     core/android/GlUtils.cpp \
                     core/android/JniUtils.cpp \
                     core/android/LogUtils.cpp \
-                    core/android/NativeBuildStrings.cpp \
+                    core/android/VOsBuild.cpp \
                     api/VrApi.cpp \
                     api/Vsync.cpp \
                     api/DirectRender.cpp \
@@ -136,7 +136,6 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     KeyState.cpp \
                     App.cpp \
                     AppRender.cpp \
-                    PathUtils.cpp \
                     DebugLines.cpp \
                     SoundManager.cpp \
                     VUserProfile.cpp \
@@ -184,7 +183,7 @@ include $(BUILD_STATIC_LIBRARY)		# start building based on everything since CLEA
 #--------------------------------------------------------
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := NV_ROOTPlugin
+LOCAL_MODULE := UnityPlugin
 
 LOCAL_STATIC_LIBRARIES := nervgear
 #LOCAL_STATIC_LIBRARIES += android-ndk-profiler

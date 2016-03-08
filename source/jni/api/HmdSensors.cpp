@@ -226,14 +226,14 @@ bool HMDState::processLatencyTest( unsigned char rgbColorOut[3] )
 
 	if ( m_latencyTester != NULL )
 	{
-		NervGear::Color colorToDisplay;
+		NervGear::VColor colorToDisplay;
 
 		// NOTE: ProcessInputs() is not thread safe.
 		m_latencyUtil.ProcessInputs();
 		result = m_latencyUtil.DisplayScreenColor( colorToDisplay );
-		rgbColorOut[0] = colorToDisplay.R;
-		rgbColorOut[1] = colorToDisplay.G;
-		rgbColorOut[2] = colorToDisplay.B;
+		rgbColorOut[0] = colorToDisplay.red;
+		rgbColorOut[1] = colorToDisplay.green;
+		rgbColorOut[2] = colorToDisplay.blue;
 	}
 
 	return result;

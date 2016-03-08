@@ -25,7 +25,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "linux/stat.h"
 
 #include <unistd.h>
-#include <VStringBuffer.h>
+#include <VPath.h>
 
 namespace NervGear
 {
@@ -61,15 +61,19 @@ unsigned char * CubeMapVista( const char * nzName, float const ratio, int & widt
 	{
 		return NULL;
 	}
-	VStringBuffer	pxName( nzName );
-	pxName[ len - 6 ] = 'p';
-	pxName[ len - 5 ] = 'x';
-	VStringBuffer	nxName( nzName );
-	nxName[ len - 5 ] = 'x';
+    VString	pxName( nzName );
+    pxName[len - 6] = 'p';
+    pxName[len - 5] = 'x';
+    VString nxName( nzName );
+    nxName[len - 5] = 'x';
 
+    const char *pxNameStr = pxName.toCString();
+    const char *nxNameStr = nxName.toCString();
 	nzData = TurboJpegLoadFromFile( nzName, &faceWidth, &faceHeight );
-	pxData = TurboJpegLoadFromFile( pxName, &faceWidth2, &faceHeight2 );
-	nxData = TurboJpegLoadFromFile( nxName, &faceWidth3, &faceHeight3 );
+    pxData = TurboJpegLoadFromFile( pxNameStr, &faceWidth2, &faceHeight2 );
+    nxData = TurboJpegLoadFromFile( nxNameStr, &faceWidth3, &faceHeight3 );
+    delete[] pxNameStr;
+    delete[] nxNameStr;
 
 	if ( nzData && pxData && nxData && ( faceWidth & 1 ) == 0 && faceWidth == faceHeight
 		&& faceWidth2 == faceWidth && faceHeight2 == faceHeight
@@ -150,7 +154,7 @@ VString PanoBrowser::getPanelTitle( const OvrMetaDatum & panelData ) const
 	{
 		// look first in our own locale table for titles that were downloaded at run-time.
 		VString outStr;
-        VrLocale::GetString(  m_app->GetVrJni(), m_app->GetJavaObject(), photosDatum->title, photosDatum->title, outStr );
+        VrLocale::GetString(  m_app->GetVrJni(), m_app->GetJavaObject(), photosDatum->title.toCString(), photosDatum->title.toCString(), outStr );
 		return outStr;
 	}
 	return VString();
@@ -426,9 +430,9 @@ unsigned char * PanoBrowser::loadThumbnail( const char * filename, int & width, 
 
 VString PanoBrowser::thumbName( const VString & s )
 {
-	VString	ts( s );
-    ts.stripTrailing( ".x" );
-	ts = NervGear::StringUtils::SetFileExtensionString( ts, ".thm" );
+    VPath ts(s);
+    ts.stripTrailing(".x");
+    ts.setExtension("thm");
 	//ts += ".jpg";
 	return ts;
 }

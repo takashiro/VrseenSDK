@@ -19,33 +19,32 @@ SOURCES += \
     jni/core/Alg.cpp \
     jni/core/Allocator.cpp \
     jni/core/Atomic.cpp \
+    jni/core/VByteArray.cpp \
     jni/core/VChar.cpp \
     jni/core/File.cpp \
     jni/core/FileFILE.cpp \
     jni/core/VJson.cpp \
     jni/core/Log.cpp \
+    jni/core/VLog.cpp \
     jni/core/Lockless.cpp \
     jni/core/VMath.cpp \
+    jni/core/VPath.cpp \
     jni/core/RefCount.cpp \
+    jni/core/VStandardPath.cpp \
     jni/core/Std.cpp \
     jni/core/VString.cpp \
-    jni/core/VStringBuffer.cpp \
-    jni/core/String_FormatUtil.cpp \
-    jni/core/String_PathUtil.cpp \
     jni/core/SysFile.cpp \
     jni/core/System.cpp \
     jni/core/ThreadCommandQueue.cpp \
     jni/core/ThreadsPthread.cpp \
-    jni/core/Timer.cpp \
-    jni/core/TypesafeNumber.cpp \
-    jni/core/UTF8Util.cpp \
+    jni/core/VTimer.cpp \
     jni/core/BinaryFile.cpp \
     jni/core/MappedFile.cpp \
     jni/core/MemBuffer.cpp \
     jni/core/android/GlUtils.cpp \
     jni/core/android/JniUtils.cpp \
     jni/core/android/LogUtils.cpp \
-    jni/core/android/NativeBuildStrings.cpp \
+    jni/core/android/VOsBuild.cpp \
     jni/api/VrApi.cpp \
     jni/api/Vsync.cpp \
     jni/api/DirectRender.cpp \
@@ -122,7 +121,6 @@ SOURCES += \
     jni/KeyState.cpp \
     jni/MessageQueue.cpp \
     jni/PackageFiles.cpp \
-    jni/PathUtils.cpp \
     jni/SoundManager.cpp \
     jni/VUserProfile.cpp \
     jni/TalkToJava.cpp \
@@ -137,8 +135,7 @@ HEADERS += \
     jni/core/android/GlUtils.h \
     jni/core/android/JniUtils.h \
     jni/core/android/LogUtils.h \
-    jni/core/android/NativeBuildStrings.h \
-    jni/core/android/OVRVersion.h \
+    jni/core/android/VOsBuild.h \
     jni/core/capture/Capture.h \
     jni/core/capture/Capture_Config.h \
     jni/core/capture/Capture_LegacyPackets.h \
@@ -148,36 +145,39 @@ HEADERS += \
     jni/core/Allocator.h \
     jni/core/Atomic.h \
     jni/core/Array.h \
+    jni/core/VArray.h \
+    jni/core/VByteArray.h \
+    jni/core/VColor.h \
     jni/core/VChar.h \
     jni/core/ContainerAllocator.h \
     jni/core/Deque.h \
     jni/core/File.h \
     jni/core/FileFILE.h \
     jni/core/VBufferedFile.h \
+    jni/core/VFlags.h \
     jni/core/VJson.h \
     jni/core/Log.h \
+    jni/core/VLog.h \
     jni/core/Lockless.h \
     jni/core/VMath.h \
+    jni/core/VPath.h \
     jni/core/RefCount.h \
+    jni/core/VStandardPath.h \
     jni/core/Std.h \
     jni/core/VString.h \
-    jni/core/VStringBuffer.h \
     jni/core/String_FormatUtil.h \
     jni/core/String_PathUtil.h \
     jni/core/SysFile.h \
     jni/core/System.h \
     jni/core/ThreadCommandQueue.h \
     jni/core/Threads.h \
-    jni/core/Timer.h \
-    jni/core/UTF8Util.h \
+    jni/core/VTimer.h \
     jni/core/BinaryFile.h \
     jni/core/MappedFile.h \
     jni/core/MemBuffer.h \
     jni/core/Types.h \
     jni/core/KeyCodes.h \
     jni/core/List.h \
-    jni/core/BitFlags.h \
-    jni/core/Color.h \
     jni/core/OVR.h \
     jni/core/OVRVersion.h \
     jni/core/VSharedPointer.h \
@@ -282,7 +282,6 @@ HEADERS += \
     jni/KeyState.h \
     jni/App.h \
     jni/AppRender.h \
-    jni/PathUtils.h \
     jni/DebugLines.h \
     jni/SoundManager.h \
     jni/VUserProfile.h \
@@ -298,7 +297,8 @@ HEADERS += \
     jni/core/VFileFlags.h \
     jni/core/VDelegatedFile.h \
     jni/core/VSysFile.h \
-    jni/core/VUnopenedFile.h
+    jni/core/VUnopenedFile.h \
+    jni/PointTracker.h
 
 include(jni/3rdparty/minizip/minizip.pri)
 include(jni/3rdparty/stb/stb.pri)

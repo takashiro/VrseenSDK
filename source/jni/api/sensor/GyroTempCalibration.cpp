@@ -15,7 +15,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VJson.h"
 #include "Log.h"
 #include "String_Utils.h"
-#include "VStringBuffer.h"
 
 #include <fstream>
 
@@ -112,10 +111,10 @@ VString GyroTempCalibration::GetBaseOVRPath(bool create_dir)
 
     if (create_dir)
     {   // Create the Oculus directory if it doesn't exist
-        DIR* dir = opendir(path);
+        DIR* dir = opendir(path.toCString());
         if (dir == NULL)
         {
-            mkdir(path, S_IRWXU | S_IRWXG | S_IRWXO);
+            mkdir(path.toCString(), S_IRWXU | S_IRWXG | S_IRWXO);
         }
         else
         {
@@ -182,7 +181,7 @@ void GyroTempCalibration::TokenizeString(Array<VString>* tokens, const VString& 
 			if (foundToken)
 			{
 				// Found end of token.
-                VString token = str.mid(tokenStart, i);
+                VString token = str.range(tokenStart, i);
 				tokens->append(token);
 				foundToken = false;
 			}
@@ -216,36 +215,36 @@ void GyroTempCalibration::GyroCalibrationFromString(const VString& str)
 
 			int index = binIndex * GyroCalibrationNumSamples + sampleIndex;
 
-            StringUtils::StringTo<UInt32>(entry.Version, tokens[index * 6 + 0].toCString());
-            StringUtils::StringTo<double>(entry.ActualTemperature, tokens[index * 6 + 1].toCString());
-            StringUtils::StringTo<UInt32>(entry.Time, tokens[index * 6 + 2].toCString());
-            StringUtils::StringTo<double>(entry.Offset.x, tokens[index * 6 + 3].toCString());
-            StringUtils::StringTo<double>(entry.Offset.y, tokens[index * 6 + 4].toCString());
-            StringUtils::StringTo<double>(entry.Offset.z, tokens[index * 6 + 5].toCString());
+            entry.Version = tokens[index * 6 + 0].toInt();
+            entry.ActualTemperature = tokens[index * 6 + 1].toDouble();
+            entry.Time = tokens[index * 6 + 2].toDouble();
+            entry.Offset.x = tokens[index * 6 + 3].toDouble();
+            entry.Offset.y = tokens[index * 6 + 4].toDouble();
+            entry.Offset.z = tokens[index * 6 + 5].toDouble();
 		}
 	}
 }
 
 VString GyroTempCalibration::GyroCalibrationToString()
 {
-	VStringBuffer sb;
+    VString sb;
 	for (int binIndex = 0; binIndex < GyroCalibrationNumBins; binIndex++)
 	{
 		for (int sampleIndex = 0; sampleIndex < GyroCalibrationNumSamples; sampleIndex++)
 		{
 			const GyroCalibrationEntry& entry = GyroCalibration[binIndex][sampleIndex];
-            sb.appendFormat("%d %lf %d %lf %lf %lf ", entry.Version, entry.ActualTemperature, entry.Time, entry.Offset.x, entry.Offset.y, entry.Offset.z);
+            sb.sprintf("%d %lf %d %lf %lf %lf ", entry.Version, entry.ActualTemperature, entry.Time, entry.Offset.x, entry.Offset.y, entry.Offset.z);
 		}
 	}
 
-	return VString(sb);
+    return sb;
 }
 
 void GyroTempCalibration::LoadFile()
 {
     VString path = GetCalibrationPath(false);
 
-    Json root = Json::Load(path);
+    Json root = Json::Load(path.toCString());
     if (!root.isObject() || root.size() < 2)
         return;
 

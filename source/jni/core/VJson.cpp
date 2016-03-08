@@ -4,8 +4,7 @@
 #include <sstream>
 #include <fstream>
 
-namespace NervGear
-{
+NV_NAMESPACE_BEGIN
 
 Json::Json()
 {
@@ -16,6 +15,12 @@ Json::Json(bool value)
 {
     p_ptr->type = Boolean;
     p_ptr->boolean = value;
+}
+
+Json::Json(int value)
+{
+    p_ptr->type = Number;
+    p_ptr->number = value;
 }
 
 Json::Json(double value)
@@ -561,4 +566,4 @@ void JsonData::cloneData(const JsonData &source)
     }
 }
 
-}
+NV_NAMESPACE_END
