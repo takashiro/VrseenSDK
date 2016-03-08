@@ -1514,10 +1514,8 @@ ovrMobile * ovr_EnterVrMode( ovrModeParms parms, ovrHmdInfo * returnedHmdInfo )
 	// get external storage directory
 	const jmethodID getExternalStorageDirectoryMethodId = ovr_GetStaticMethodID( ovr->Jni, VrLibClass, "getExternalStorageDirectory", "()Ljava/lang/String;" );
 	jstring externalStorageDirectoryString = (jstring)ovr->Jni->CallStaticObjectMethod( VrLibClass, getExternalStorageDirectoryMethodId );
-	const char *externalStorageDirectoryStringUTFChars = ovr_GetStringUTFChars( ovr->Jni, externalStorageDirectoryString, NULL );
-	NervGear::VString externalStorageDirectory = externalStorageDirectoryStringUTFChars;
-	ovr->Jni->ReleaseStringUTFChars( externalStorageDirectoryString, externalStorageDirectoryStringUTFChars );
-	ovr->Jni->DeleteLocalRef( externalStorageDirectoryString );
+    VString externalStorageDirectory = JniUtils::Convert(ovr->Jni, externalStorageDirectoryString);
+    ovr->Jni->DeleteLocalRef(externalStorageDirectoryString);
 
 	// Enable cpu and gpu clock locking
 	SetVrSystemPerformance( ovr->Jni, VrLibClass, ovr->Parms.ActivityObject,

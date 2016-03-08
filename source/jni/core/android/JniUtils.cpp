@@ -100,15 +100,6 @@ jobject ovr_NewStringUTF( JNIEnv * jni, char const * str )
 	return jni->NewStringUTF( str );
 }
 
-char const * ovr_GetStringUTFChars( JNIEnv * jni, jstring javaStr, jboolean * isCopy )
-{
-	char const * str = jni->GetStringUTFChars( javaStr, isCopy );
-	//if ( strstr( str, "com.oculus.home" ) != NULL || strstr( str, "globalMenu" ) != NULL ) {
-	//	DROIDLOG( "OvrJNI", "ovr_GetStringUTFChars: These are not the strings your looking for: %s", str );
-	//}
-	return str;
-}
-
 jclass ovr_GetGlobalClassReference( JNIEnv * jni, const char * className )
 {
 	jclass lc = jni->FindClass(className);

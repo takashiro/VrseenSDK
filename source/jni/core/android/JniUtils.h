@@ -26,7 +26,6 @@ NV_NAMESPACE_END
 // Even better, use the JavaString / JavaUTFChars classes instead and they will free resources for
 // you automatically.
 jobject ovr_NewStringUTF( JNIEnv * jni, char const * str );
-char const * ovr_GetStringUTFChars( JNIEnv * jni, jstring javaStr, jboolean * isCopy );
 
 //==============================================================
 // JavaObject
