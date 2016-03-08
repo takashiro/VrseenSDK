@@ -1969,8 +1969,7 @@ void AppLocal::VrThreadFunction()
 		{
 			//LOG( "BackKey: event %s", KeyState::EventNames[ event ] );
 			// always allow the gaze cursor to peek at the event so it can start the gaze timer if necessary
-            if ( !ovr_IsCurrentActivity( vrJni, javaObject, PUI_CLASS_NAME ) )
-			{
+            if (JniUtils::GetCurrentActivityName(vrJni, javaObject).icompare(PUI_CLASS_NAME) != 0) {
 				// update the gaze cursor timer
 				if ( event == KeyState::KEY_EVENT_DOWN )
 				{

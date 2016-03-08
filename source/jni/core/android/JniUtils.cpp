@@ -43,7 +43,7 @@ namespace JniUtils {
 
         VString packageCodePath = Convert(jni, (jstring) jni->CallObjectMethod(activityObject, getPackageCodePathId));
         if (!jni->ExceptionOccurred()) {
-            vInfo("ovr_GetPackageCodePath() =" << packageCodePath);
+            vInfo("GetPackageCodePath() =" << packageCodePath);
             return packageCodePath;
         } else {
             jni->ExceptionClear();
@@ -61,11 +61,29 @@ namespace JniUtils {
         {
             VString packageName = Convert(jni, (jstring) jni->CallObjectMethod(activityObject, getPackageNameId));
             if (!jni->ExceptionOccurred()) {
-                vInfo("ovr_GetCurrentPackageName() =" << packageName);
+                vInfo("GetCurrentPackageName() =" << packageName);
                 return packageName;
             } else {
                 jni->ExceptionClear();
                 vInfo("Cleared JNI exception");
+            }
+        }
+        return VString();
+    }
+
+    VString GetCurrentActivityName(JNIEnv *jni, jobject activityObject)
+    {
+        JavaClass curActivityClass( jni, jni->GetObjectClass( activityObject ) );
+        jmethodID getClassMethodId = jni->GetMethodID(curActivityClass.GetJClass(), "getClass", "()Ljava/lang/Class;" );
+        if (getClassMethodId != 0) {
+            JavaObject classObj(jni, jni->CallObjectMethod(activityObject, getClassMethodId));
+            JavaClass activityClass(jni, jni->GetObjectClass(classObj.GetJObject()));
+
+            jmethodID getNameMethodId = jni->GetMethodID(activityClass.GetJClass(), "getName", "()Ljava/lang/String;" );
+            if (getNameMethodId != 0) {
+                VString name = Convert(jni, (jstring)jni->CallObjectMethod(classObj.GetJObject(), getNameMethodId));
+                vInfo("GetCurrentActivityName() =" << name);
+                return name;
             }
         }
         return VString();
@@ -124,42 +142,6 @@ jmethodID ovr_GetStaticMethodID( JNIEnv * jni, jclass jniclass, const char * nam
 		FAIL( "couldn't get %s, %s", name, signature );
 	}
 	return method;
-}
-
-const char * ovr_GetCurrentActivityName( JNIEnv * jni, jobject activityObject, char * className, int const maxLen )
-{
-	className[0] = '\0';
-
-	JavaClass curActivityClass( jni, jni->GetObjectClass( activityObject ) );
-	jmethodID getClassMethodId = jni->GetMethodID( curActivityClass.GetJClass(), "getClass", "()Ljava/lang/Class;" );
-	if ( getClassMethodId != 0 )
-	{
-		JavaObject classObj( jni, jni->CallObjectMethod( activityObject, getClassMethodId ) );
-		JavaClass activityClass( jni, jni->GetObjectClass( classObj.GetJObject() ) );
-
-		jmethodID getNameMethodId = jni->GetMethodID( activityClass.GetJClass(), "getName", "()Ljava/lang/String;" );
-		if ( getNameMethodId != 0 )
-		{
-			JavaUTFChars utfCurrentClassName( jni, (jstring)jni->CallObjectMethod( classObj.GetJObject(), getNameMethodId ) );
-			const char * currentClassName = utfCurrentClassName.ToStr();
-			if ( currentClassName != NULL )
-			{
-				NervGear::OVR_sprintf( className, maxLen, "%s", currentClassName );
-			}
-		}
-}
-
-	LOG( "ovr_GetCurrentActivityName() = %s", className );
-	return className;
-}
-
-bool ovr_IsCurrentActivity( JNIEnv * jni, jobject activityObject, const char * className )
-{
-    char currentClassName[128];
-    ovr_GetCurrentActivityName( jni, activityObject, currentClassName, sizeof( currentClassName ) );
-	const bool isCurrentActivity = ( NervGear::OVR_stricmp( currentClassName, className ) == 0 );
-	LOG( "ovr_IsCurrentActivity( %s ) = %s", className, isCurrentActivity ? "true" : "false" );
-	return isCurrentActivity;
 }
 
 static NervGear::Json *DevConfig = NULL;

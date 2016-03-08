@@ -1439,8 +1439,8 @@ ovrMobile * ovr_EnterVrMode( ovrModeParms parms, ovrHmdInfo * returnedHmdInfo )
 	jmethodID logApplicationVrType = ovr_GetStaticMethodID( Jni, VrLibClass, "logApplicationVrType", "(Landroid/app/Activity;)V" );
 	Jni->CallStaticVoidMethod( VrLibClass, logApplicationVrType, parms.ActivityObject );
 
-	char currentClassName[128];
-	LOG( "ACTIVITY = %s", ovr_GetCurrentActivityName( Jni, parms.ActivityObject, currentClassName, sizeof( currentClassName ) ) );
+    VString currentClassName = JniUtils::GetCurrentActivityName(Jni, parms.ActivityObject);
+    vInfo("ACTIVITY =" << currentClassName);
 
     vInfo("BUILD =" << VOsBuild::getString(VOsBuild::Display) << buildConfig);
     vInfo("MODEL =" << VOsBuild::getString(VOsBuild::Model));
@@ -1665,8 +1665,8 @@ void ovr_LeaveVrMode( ovrMobile * ovr )
 	jmethodID logApplicationVersionId = ovr_GetStaticMethodID( ovr->Jni, VrLibClass, "logApplicationVersion", "(Landroid/app/Activity;)V" );
 	ovr->Jni->CallStaticVoidMethod( VrLibClass, logApplicationVersionId, ovr->Parms.ActivityObject );
 
-	char currentClassName[128];
-	LOG( "ACTIVITY = %s", ovr_GetCurrentActivityName( ovr->Jni, ovr->Parms.ActivityObject, currentClassName, sizeof( currentClassName ) ) );
+    VString currentClassName = JniUtils::GetCurrentActivityName(ovr->Jni, ovr->Parms.ActivityObject);
+    vInfo("ACTIVITY =" << currentClassName);
 
 	delete ovr->Warp;
 	ovr->Warp = 0;
