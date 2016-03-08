@@ -150,6 +150,7 @@ HEADERS += \
     jni/core/Deque.h \
     jni/core/File.h \
     jni/core/FileFILE.h \
+    jni/core/VFlags.h \
     jni/core/VJson.h \
     jni/core/Log.h \
     jni/core/VLog.h \
