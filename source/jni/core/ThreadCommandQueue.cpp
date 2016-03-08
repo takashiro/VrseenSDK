@@ -159,6 +159,7 @@ void ThreadCommand::PopBuffer::Execute()
 class ThreadCommandQueueImpl : public NewOverrideBase
 {
     typedef ThreadCommand::NotifyEvent NotifyEvent;
+    typedef ThreadCommand::NotifyEventNode NotifyEventNode;
     friend class ThreadCommandQueue;
 
 public:
@@ -199,7 +200,7 @@ public:
     {
         NotifyEvent* p = new NotifyEvent;
         if (!AvailableEvents.isEmpty()) {
-            p = AvailableEvents.front();
+            p = AvailableEvents.front().pointToNotifyEvent;
             AvailableEvents.pop_front();
         }
         return p;
@@ -207,13 +208,13 @@ public:
 
     void         FreeNotifyEvent_NTS(NotifyEvent* p)
     {
-        AvailableEvents.append(p);
+        AvailableEvents.append(NotifyEventNode(p));
     }
 
     void        FreeNotifyEvents_NTS()
     {
-        for (NotifyEvent* p:AvailableEvents) {
-            delete p;
+        for (NotifyEventNode n:AvailableEvents) {
+            delete n.pointToNotifyEvent;
         }
         AvailableEvents.clear();
     }
@@ -222,8 +223,8 @@ public:
     Lock                QueueLock;
     volatile bool       ExitEnqueued;
     volatile bool       ExitProcessed;
-    VList<NotifyEvent*>   AvailableEvents;
-    VList<NotifyEvent*>   BlockedProducers;
+    VList<NotifyEventNode>   AvailableEvents;
+    VList<NotifyEventNode>   BlockedProducers;
     CircularBuffer      CommandBuffer;
 };
 
@@ -272,7 +273,7 @@ bool ThreadCommandQueueImpl::PushCommand(const ThreadCommand& command)
             }
 
             queueAvailableEvent = AllocNotifyEvent_NTS();
-            BlockedProducers.append(queueAvailableEvent);
+            BlockedProducers.append(NotifyEventNode(queueAvailableEvent));
         } // Lock Scope
 
         queueAvailableEvent->Wait();
@@ -309,7 +310,7 @@ bool ThreadCommandQueueImpl::PopCommand(ThreadCommand::PopBuffer* popBuffer)
 
     if (!BlockedProducers.isEmpty())
     {
-        ThreadCommand::NotifyEvent* queueAvailableEvent = BlockedProducers.first();
+        ThreadCommand::NotifyEvent* queueAvailableEvent = BlockedProducers.first().pointToNotifyEvent;
         BlockedProducers.pop_front();
         queueAvailableEvent->PulseEvent();
         // Event is freed later by waiter.

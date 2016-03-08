@@ -3,6 +3,7 @@
 #include "vglobal.h"
 
 #include "Types.h"
+#include "VList.h"
 #include "List.h"
 #include "Atomic.h"
 #include "Allocator.h"
@@ -32,6 +33,16 @@ public:
 
         void Wait()        { E.wait(); }
         void PulseEvent()  { E.pulse(); }
+    };
+
+    class NotifyEventNode : public NodeOfVList<VList<NotifyEventNode>>
+    {
+    public:
+        NotifyEvent* pointToNotifyEvent;
+        NotifyEventNode(NotifyEvent* p):pointToNotifyEvent(p)
+        {
+
+        }
     };
 
     // ThreadCommand::PopBuffer is temporary storage for a command popped off
