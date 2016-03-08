@@ -18,8 +18,9 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "BitmapFont.h"
 #include "DebugLines.h"
 
-namespace NervGear
-{
+#include "VLog.h"
+
+NV_NAMESPACE_BEGIN
 
 void ModelInScene::SetModelFile( const ModelFile * mf ) 
 { 
@@ -163,7 +164,7 @@ ModelGlPrograms OvrSceneView::GetDefaultGLPrograms()
 
 void OvrSceneView::LoadWorldModel(const VString &sceneFileName, const MaterialParms & materialParms )
 {
-    LOG( "OvrSceneView::LoadScene( %s )", sceneFileName.toCString() );
+    vInfo("OvrSceneView::LoadScene(" << sceneFileName << ")");
 
 	if ( GlPrograms.ProgSingleTexture == NULL )
 	{
@@ -180,7 +181,7 @@ void OvrSceneView::LoadWorldModel(const VString &sceneFileName, const MaterialPa
 
 void OvrSceneView::SetWorldModel( ModelFile & world )
 {
-	LOG( "OvrSceneView::SetWorldModel( %s )", world.FileName.toCString() );
+    vInfo("OvrSceneView::SetWorldModel(" << world.FileName << ")");
 
 	if ( FreeWorldModelOnChange && Models.sizeInt() > 0 )
 	{
@@ -465,4 +466,4 @@ void OvrSceneView::Frame( const VrViewParms viewParms_, const VrFrame vrFrame,
 	timeWarpParmsExternalVelocity = CalculateExternalVelocity( &localViewMatrix, YawVelocity );
 }
 
-}	// namespace NervGear
+NV_NAMESPACE_END
