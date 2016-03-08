@@ -66,13 +66,16 @@ static const char * vrLibClassName = "me/takashiro/nervgear/VrLib";
 // name and URI cannot. The handler will use sscanf() to parse the first two strings, then
 // assume the JSON text is everything immediately following the space after the URI string.
 static const char * EMPTY_INTENT_STR = "<EMPTY>";
-void ComposeIntentMessage( char const * packageName, char const * uri, char const * jsonText,
-		char * out, size_t outSize )
+
+VString ComposeIntentMessage(const VString &packageName, const VString &uri, const VString &jsonText)
 {
-	OVR_sprintf( out, outSize, "intent %s %s %s",
-			packageName == NULL || packageName[0] == '\0' ? EMPTY_INTENT_STR : packageName,
-			uri == NULL || uri[0] == '\0' ? EMPTY_INTENT_STR : uri,
-			jsonText == NULL || jsonText[0] == '\0' ? "" : jsonText );
+    VString out = "intent ";
+    out.append(packageName);
+    out.append(' ');
+    out.append(uri);
+    out.append(' ');
+    out.append(jsonText);
+    return out;
 }
 
 extern "C"
@@ -196,15 +199,14 @@ void Java_me_takashiro_nervgear_VrActivity_nativeNewIntent( JNIEnv *jni, jclass 
 		jlong appPtr, jstring fromPackageName, jstring command, jstring uriString )
 {
 	LOG( "%p nativeNewIntent", (void*)appPtr );
-	JavaUTFChars utfPackageName( jni, fromPackageName );
-	JavaUTFChars utfUri( jni, uriString );
-	JavaUTFChars utfJson( jni, command );
+    VString utfPackageName = JniUtils::Convert(jni, fromPackageName);
+    VString utfUri = JniUtils::Convert(jni, uriString);
+    VString utfJson = JniUtils::Convert(jni, command);
 
-	char intentMessage[4096];
-	ComposeIntentMessage( utfPackageName.ToStr(), utfUri.ToStr(), utfJson.ToStr(),
-			intentMessage, sizeof( intentMessage ) );
-	LOG( "nativeNewIntent: %s", intentMessage );
-	((AppLocal *)appPtr)->GetMessageQueue().PostPrintf( intentMessage );
+    VString intentMessage = ComposeIntentMessage(utfPackageName, utfUri, utfJson);
+    vInfo("nativeNewIntent:" << intentMessage);
+    VByteArray utf8Message = intentMessage.toUtf8();
+    ((AppLocal *)appPtr)->GetMessageQueue().PostPrintf(utf8Message.data());
 }
 
 }	// extern "C"
@@ -238,10 +240,10 @@ jlong VrAppInterface::SetActivity( JNIEnv * jni, jclass clazz, jobject activity,
 	}
 	ActivityClass = (jclass)jni->NewGlobalRef( clazz );
 
-	JavaUTFChars utfFromPackageString( jni, javaFromPackageNameString );
-	JavaUTFChars utfJsonString( jni, javaCommandString );
-	JavaUTFChars utfUriString( jni, javaUriString );
-	LOG( "VrAppInterface::SetActivity: %s %s %s", utfFromPackageString.ToStr(), utfJsonString.ToStr(), utfUriString.ToStr() );
+    VString utfFromPackageString = JniUtils::Convert(jni, javaFromPackageNameString);
+    VString utfJsonString = JniUtils::Convert(jni, javaCommandString);
+    VString utfUriString = JniUtils::Convert(jni, javaUriString);
+    vInfo("VrAppInterface::SetActivity:" << utfFromPackageString << utfJsonString << utfUriString);
 
 	if ( app == NULL )
 	{	// First time initialization
@@ -266,9 +268,9 @@ jlong VrAppInterface::SetActivity( JNIEnv * jni, jclass clazz, jobject activity,
 	}
 
 	// Send the intent and wait for it to complete.
-	char intentMessage[4096];
-	ComposeIntentMessage( utfFromPackageString.ToStr(), utfUriString.ToStr(), utfJsonString.ToStr(), intentMessage, sizeof( intentMessage ) );
-	static_cast< AppLocal * >( app )->GetMessageQueue().PostPrintf( intentMessage );
+    VString intentMessage = ComposeIntentMessage(utfFromPackageString, utfUriString, utfJsonString);
+    VByteArray utf8Intent = intentMessage.toUtf8();
+    static_cast< AppLocal * >( app )->GetMessageQueue().PostPrintf(utf8Intent.data());
 	static_cast< AppLocal * >( app )->SyncVrThread();
 
 	return (jlong)app;
@@ -770,8 +772,7 @@ void AppLocal::OpenApplicationPackage()
 {
 	// get package codepath
 	char temp[1024];
-    ovr_GetPackageCodePath( uiJni, vrActivityClass, javaObject, temp, sizeof( temp ) );
-	packageCodePath = strdup( temp );
+    packageCodePath = JniUtils::GetPackageCodePath(uiJni, vrActivityClass, javaObject);
 
     ovr_GetCurrentPackageName( uiJni, vrActivityClass, javaObject, temp, sizeof( temp ) );
 	packageName = strdup( temp );
@@ -785,10 +786,9 @@ VString AppLocal::GetInstalledPackagePath( const char * packageName ) const
 	if ( getInstalledPackagePathId != NULL )
 	{
         JavaString packageNameObj( uiJni, packageName );
-        JavaUTFChars resultStr( uiJni, static_cast< jstring >( uiJni->CallObjectMethod( javaObject, getInstalledPackagePathId, packageNameObj.GetJString() ) ) );
-        if ( !uiJni->ExceptionOccurred() )
-		{
-			return VString( resultStr );
+        VString resultStr = JniUtils::Convert(uiJni, static_cast< jstring >( uiJni->CallObjectMethod( javaObject, getInstalledPackagePathId, packageNameObj.GetJString())));
+        if ( !uiJni->ExceptionOccurred() ) {
+            return resultStr;
 		}
 	}
 	return VString();

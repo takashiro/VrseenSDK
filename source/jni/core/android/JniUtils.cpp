@@ -2,6 +2,7 @@
 
 #include "Std.h"
 #include "VJson.h"
+#include "VLog.h"
 
 #include <fstream>
 
@@ -30,6 +31,26 @@ namespace JniUtils {
         jstring jstr = jni->NewString(chars, len);
         delete[] chars;
         return jstr;
+    }
+
+    VString GetPackageCodePath(JNIEnv *jni, jclass activityClass, jobject activityObject)
+    {
+        jmethodID getPackageCodePathId = jni->GetMethodID( activityClass, "getPackageCodePath", "()Ljava/lang/String;" );
+        if (getPackageCodePathId == 0) {
+            vInfo( "Failed to find getPackageCodePath on class" << (ulonglong) activityClass << ", object" << (ulonglong) activityObject);
+            return;
+        }
+
+        VString result = Convert(jni, (jstring) jni->CallObjectMethod(activityObject, getPackageCodePathId));
+        if (!jni->ExceptionOccurred()) {
+            vInfo("ovr_GetPackageCodePath() =" << packageCodePath);
+            return result;
+        } else {
+            jni->ExceptionClear();
+            vInfo("Cleared JNI exception");
+        }
+
+        return VString();
     }
 }
 
@@ -85,41 +106,6 @@ jmethodID ovr_GetStaticMethodID( JNIEnv * jni, jclass jniclass, const char * nam
 		FAIL( "couldn't get %s, %s", name, signature );
 	}
 	return method;
-}
-
-const char * ovr_GetPackageCodePath( JNIEnv * jni, jclass activityClass, jobject activityObject, char * packageCodePath, int const maxLen )
-{
-	if ( packageCodePath == NULL || maxLen < 1 )
-	{
-		return packageCodePath;
-	}
-
-	packageCodePath[0] = '\0';
-
-	jmethodID getPackageCodePathId = jni->GetMethodID( activityClass, "getPackageCodePath", "()Ljava/lang/String;" );
-	if ( getPackageCodePathId == 0 )
-	{
-		LOG( "Failed to find getPackageCodePath on class %llu, object %llu", (long long unsigned int)activityClass, (long long unsigned int)activityObject );
-		return packageCodePath;
-	}
-
-	JavaUTFChars result( jni, (jstring)jni->CallObjectMethod( activityObject, getPackageCodePathId ) );
-	if ( !jni->ExceptionOccurred() )
-	{
-		const char * path = result.ToStr();
-		if ( path != NULL )
-		{
-			NervGear::OVR_sprintf( packageCodePath, maxLen, "%s", path );
-		}
-	}
-	else
-	{
-		jni->ExceptionClear();
-		LOG( "Cleared JNI exception" );
-	}
-
-	LOG( "ovr_GetPackageCodePath() = '%s'", packageCodePath );
-	return packageCodePath;
 }
 
 const char * ovr_GetCurrentPackageName( JNIEnv * jni, jclass activityClass, jobject activityObject, char * packageName, int const maxLen )

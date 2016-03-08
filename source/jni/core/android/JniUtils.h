@@ -14,6 +14,8 @@ NV_NAMESPACE_BEGIN
 namespace JniUtils {
     VString Convert(JNIEnv *jni, jstring jstr);
     jstring Convert(JNIEnv *jni, const VString &str);
+
+    VString GetPackageCodePath(JNIEnv *jni, jclass activityClass, jobject activityObject);
 }
 
 NV_NAMESPACE_END
@@ -117,32 +119,32 @@ public:
 class JavaUTFChars : public JavaString
 {
 public:
-	JavaUTFChars( JNIEnv * jni_, jstring const JString_ ) :
-		JavaString( jni_, JString_ ),
-		UTFString( NULL )
-	{
-		UTFString = ovr_GetStringUTFChars( GetJNI(), GetJString(), NULL );
-		if ( GetJNI()->ExceptionOccurred() )
-		{
-			LOG( "JNI exception occured calling GetStringUTFChars!" );
-		}
-	}
+    JavaUTFChars( JNIEnv * jni_, jstring const JString_ ) :
+        JavaString( jni_, JString_ ),
+        UTFString( NULL )
+    {
+        UTFString = ovr_GetStringUTFChars( GetJNI(), GetJString(), NULL );
+        if ( GetJNI()->ExceptionOccurred() )
+        {
+            LOG( "JNI exception occured calling GetStringUTFChars!" );
+        }
+    }
 
-	~JavaUTFChars()
-	{
-		OVR_ASSERT( UTFString != NULL );
-		GetJNI()->ReleaseStringUTFChars( GetJString(), UTFString );
-		if ( GetJNI()->ExceptionOccurred() )
-		{
-			LOG( "JNI exception occured calling ReleaseStringUTFChars!" );
-		}
-	}
+    ~JavaUTFChars()
+    {
+        OVR_ASSERT( UTFString != NULL );
+        GetJNI()->ReleaseStringUTFChars( GetJString(), UTFString );
+        if ( GetJNI()->ExceptionOccurred() )
+        {
+            LOG( "JNI exception occured calling ReleaseStringUTFChars!" );
+        }
+    }
 
-	char const * ToStr() const { return UTFString; }
-	operator char const * () const { return UTFString; }
+    char const * ToStr() const { return UTFString; }
+    operator char const * () const { return UTFString; }
 
 private:
-	char const *	UTFString;
+    char const *	UTFString;
 };
 
 // This must be called by a function called directly from a java thread,
@@ -155,7 +157,7 @@ jmethodID	ovr_GetMethodID( JNIEnv * jni, jclass jniclass, const char * name, con
 jmethodID	ovr_GetStaticMethodID( JNIEnv * jni, jclass jniclass, const char * name, const char * signature );
 
 // get the code path of the current package.
-const char * ovr_GetPackageCodePath( JNIEnv * jni, jclass activityClass, jobject activityObject, char * packageCodePath, int const maxLen );
+void ovr_GetPackageCodePath(JNIEnv * jni, jclass activityClass, jobject activityObject, const NervGear::VString &packageCodePath);
 
 // Get the current package name, for instance "com.oculus.home".
 const char * ovr_GetCurrentPackageName( JNIEnv * jni, jclass activityClass, jobject activityObject, char * packageName, int const maxLen );
