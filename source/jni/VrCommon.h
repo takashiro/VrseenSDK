@@ -35,9 +35,6 @@ bool HasPermission(VString fileOrDirName, mode_t mode );
 // Returns true if the file exists
 bool FileExists(const VString &filename );
 
-// Returns true if ext is the end of fileName
-bool MatchesExtension(const VString &file, const char * ext );
-
 int StringCompare( const void *a, const void * b );
 
 void SortStringArray( Array<VString> & strings );

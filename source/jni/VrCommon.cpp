@@ -168,18 +168,6 @@ bool FileExists(const VString &filename)
 	return result == 0;
 }
 
-bool MatchesExtension( const VString &file, const char * ext )
-{
-    const char * fileName = file.toCString();
-	const int extLen = strlen( ext );
-	const int sLen = strlen( fileName );
-	if ( sLen < extLen + 1 )
-	{
-		return false;
-	}
-	return ( 0 == strcmp( &fileName[ sLen - extLen ], ext ) );
-}
-
 void MakePath( const VString &dirPath, mode_t mode )
 {
 	char path[ 256 ];

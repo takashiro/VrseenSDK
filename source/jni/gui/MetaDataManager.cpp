@@ -71,9 +71,8 @@ void OvrMetaData::initFromDirectory( const char * relativePath, const Array< VSt
 		const VString & s = fileList[ i ];
         const VString fileBase = VPath(s).baseName();
 		// subdirectory - add category
-		if ( MatchesExtension( s, "/" ) )
-		{
-			subDirs.append( s );
+        if (s.endsWith('/')) {
+            subDirs.append(s);
 			continue;
 		}
 
