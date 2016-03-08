@@ -1,5 +1,6 @@
 #include "VOsBuild.h"
 #include "VLog.h"
+#include "android/JniUtils.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -9,22 +10,8 @@ namespace {
     VString GetFieldString(JNIEnv *env, jclass BuildClass, const char * name)
     {
         jfieldID field = env->GetStaticFieldID(BuildClass, name, "Ljava/lang/String;");
-
-        // get reference to the string
         jstring jstr = (jstring) env->GetStaticObjectField(BuildClass, field);
-        const jchar *chars = env->GetStringChars(jstr, nullptr);
-        jsize length = env->GetStringLength(jstr);
-
-        VString	str;
-        str.resize(length);
-        for (jsize i = 0; i < length; i++) {
-            str[i] = chars[i];
-        }
-
-        env->ReleaseStringChars(jstr, chars);
-        env->DeleteLocalRef(jstr);
-
-        return str;
+        return JniUtils::Convert(env, jstr);
     }
 }
 

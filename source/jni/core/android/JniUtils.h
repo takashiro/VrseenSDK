@@ -7,6 +7,16 @@
 #include "Types.h"
 #include "LogUtils.h"
 
+#include "VString.h"
+
+NV_NAMESPACE_BEGIN
+
+namespace JniUtils {
+    VString Convert(JNIEnv *jni, jstring jstr);
+}
+
+NV_NAMESPACE_END
+
 // Use this EVERYWHERE and you can insert your own catch here if you have string references leaking.
 // Even better, use the JavaString / JavaUTFChars classes instead and they will free resources for
 // you automatically.

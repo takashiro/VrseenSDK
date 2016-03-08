@@ -1,20 +1,30 @@
-/************************************************************************************
-
-Filename    :   JniUtils.h
-Content     :   JNI utility functions
-Created     :   October 21, 2014
-Authors     :   J.M.P. van Waveren
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
 #include "JniUtils.h"
 
 #include "Std.h"
 #include "VJson.h"
 
 #include <fstream>
+
+NV_NAMESPACE_BEGIN
+
+namespace JniUtils {
+    VString Convert(JNIEnv *jni, jstring jstr)
+    {
+        VString str;
+        jsize length = jni->GetStringLength(jstr);
+        if (length > 0) {
+            str.resize(length);
+            const jchar *chars = jni->GetStringChars(jstr, NULL);
+            for (jsize i = 0; i < length; i++) {
+                str[i] = chars[i];
+            }
+            jni->ReleaseStringChars(jstr, chars);
+        }
+        return str;
+    }
+}
+
+NV_NAMESPACE_END
 
 jobject ovr_NewStringUTF( JNIEnv * jni, char const * str )
 {
