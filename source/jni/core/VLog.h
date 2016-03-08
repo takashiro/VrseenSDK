@@ -25,12 +25,17 @@ public:
     VLog(Priority priority);
     ~VLog();
 
+    VLog &operator << (char ch);
+    VLog &operator << (char16_t ch);
+    VLog &operator << (char32_t ch);
     VLog &operator << (short num);
     VLog &operator << (ushort num);
     VLog &operator << (int num);
     VLog &operator << (uint num);
     VLog &operator << (float num);
     VLog &operator << (double num);
+    VLog &operator << (long long num);
+    VLog &operator << (ulonglong num);
 
     VLog &operator << (const char *str);
     VLog &operator << (const VString &str);

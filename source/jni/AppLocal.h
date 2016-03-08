@@ -231,7 +231,7 @@ public:
 	jmethodID		GetStaticMethodID( jclass cls, const char * name, const char * signature ) const;
 
 	// TalkToJavaInterface
-	virtual void	TtjCommand( JNIEnv & jni, const char * commandString );
+    void TtjCommand(JNIEnv *jni, const char * commandString) override;
 
 	jclass			GetGlobalClassReference( const char * className ) const;
 

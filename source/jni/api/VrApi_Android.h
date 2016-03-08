@@ -1,5 +1,10 @@
 #pragma once
 
+#include <VString.h>
+
+// return the current language for the application
+NervGear::VString ovr_GetCurrentLanguage(ovrMobile * ovr);
+
 extern "C" {
 
 //-----------------------------------------------------------------
@@ -171,9 +176,6 @@ eVrApiEventStatus ovr_nextPendingEvent( char * buffer, unsigned int const buffer
 //-----------------------------------------------------------------
 // Localization
 //-----------------------------------------------------------------
-
-// return the current language for the application
-void ovr_GetCurrentLanguage( ovrMobile * ovr, char * language, int const maxLanguageLen );
 
 // Note that the pointers returned are from data embedded in the executable and should not be freed.
 bool ovr_FindEmbeddedImage( ovrMobile * ovr, const char * imageName, void * & buffer, int & bufferSize );

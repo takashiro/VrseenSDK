@@ -1,17 +1,6 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   PointTracker.h
-Content     :   Utility class that handles tracking a moving point.
-Created     :   March 20, 2015
-Authors     :   Jonathan E. Wright
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-
-************************************************************************************/
-
-#if !defined( OvrPointTracker_h_ )
-#define OvrPointTracker_h_
+#include "vglobal.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -66,4 +55,3 @@ private:
 
 NV_NAMESPACE_END
 
-#endif // OvrPointTracker_h_

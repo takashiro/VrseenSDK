@@ -32,74 +32,74 @@ const char* FolderName[VStandardPath::FolderTypeCount] =
 	VStandardPath::VStandardPath( JNIEnv * jni, jobject activityObj )
         : d(new Private)
     {
-        d->vrLibClass = ovr_GetGlobalClassReference( jni, "me/takashiro/nervgear/VrLib" );
+        d->vrLibClass = JniUtils::GetGlobalClassReference( jni, "me/takashiro/nervgear/VrLib" );
 
 		// Internal memory
-        jmethodID internalRootDirID = ovr_GetStaticMethodID( jni, d->vrLibClass, "getInternalStorageRootDir", "()Ljava/lang/String;" );
+        jmethodID internalRootDirID = JniUtils::GetStaticMethodID( jni, d->vrLibClass, "getInternalStorageRootDir", "()Ljava/lang/String;" );
 		if( internalRootDirID )
 		{
-            JavaUTFChars returnString( jni, (jstring)jni->CallStaticObjectMethod( d->vrLibClass, internalRootDirID ) );
-            d->storageFolderPaths[InternalStorage][RootFolder] = returnString.ToStr();
+            VString returnString = JniUtils::Convert(jni, (jstring) jni->CallStaticObjectMethod(d->vrLibClass, internalRootDirID));
+            d->storageFolderPaths[InternalStorage][RootFolder] = returnString;
 		}
 
-        jmethodID internalFilesDirID = ovr_GetStaticMethodID( jni, d->vrLibClass, "getInternalStorageFilesDir", "(Landroid/app/Activity;)Ljava/lang/String;" );
+        jmethodID internalFilesDirID = JniUtils::GetStaticMethodID( jni, d->vrLibClass, "getInternalStorageFilesDir", "(Landroid/app/Activity;)Ljava/lang/String;" );
 		if( internalFilesDirID )
 		{
-            JavaUTFChars returnString( jni, (jstring)jni->CallStaticObjectMethod( d->vrLibClass, internalFilesDirID, activityObj ) );
-            d->storageFolderPaths[InternalStorage][FilesFolder] = returnString.ToStr();
+            VString returnString = JniUtils::Convert(jni, (jstring) jni->CallStaticObjectMethod(d->vrLibClass, internalFilesDirID, activityObj));
+            d->storageFolderPaths[InternalStorage][FilesFolder] = returnString;
 		}
 
-        jmethodID internalCacheDirID = ovr_GetStaticMethodID( jni, d->vrLibClass, "getInternalStorageCacheDir", "(Landroid/app/Activity;)Ljava/lang/String;" );
+        jmethodID internalCacheDirID = JniUtils::GetStaticMethodID( jni, d->vrLibClass, "getInternalStorageCacheDir", "(Landroid/app/Activity;)Ljava/lang/String;" );
 		if( internalCacheDirID )
 		{
-            JavaUTFChars returnString( jni, (jstring)jni->CallStaticObjectMethod( d->vrLibClass, internalCacheDirID, activityObj ) );
-            d->storageFolderPaths[InternalStorage][CacheFolder] = returnString.ToStr();
+            VString returnString = JniUtils::Convert(jni, (jstring) jni->CallStaticObjectMethod(d->vrLibClass, internalCacheDirID, activityObj));
+            d->storageFolderPaths[InternalStorage][CacheFolder] = returnString;
 		}
 
-        d->internalCacheMemoryId = ovr_GetStaticMethodID( jni, d->vrLibClass, "getInternalCacheMemoryInBytes", "(Landroid/app/Activity;)J" );
+        d->internalCacheMemoryId = JniUtils::GetStaticMethodID( jni, d->vrLibClass, "getInternalCacheMemoryInBytes", "(Landroid/app/Activity;)J" );
 
 		// Primary external memory
-        jmethodID primaryRootDirID = ovr_GetStaticMethodID( jni, d->vrLibClass, "getPrimaryExternalStorageRootDir", "(Landroid/app/Activity;)Ljava/lang/String;" );
+        jmethodID primaryRootDirID = JniUtils::GetStaticMethodID( jni, d->vrLibClass, "getPrimaryExternalStorageRootDir", "(Landroid/app/Activity;)Ljava/lang/String;" );
 		if( primaryRootDirID )
 		{
-            JavaUTFChars returnString( jni, (jstring)jni->CallStaticObjectMethod( d->vrLibClass, primaryRootDirID, activityObj ) );
-            d->storageFolderPaths[PrimaryExternalStorage][RootFolder] = returnString.ToStr();
+            VString returnString = JniUtils::Convert(jni, (jstring) jni->CallStaticObjectMethod(d->vrLibClass, primaryRootDirID, activityObj));
+            d->storageFolderPaths[PrimaryExternalStorage][RootFolder] = returnString;
 		}
 
-        jmethodID primaryFilesDirID = ovr_GetStaticMethodID( jni, d->vrLibClass, "getPrimaryExternalStorageFilesDir", "(Landroid/app/Activity;)Ljava/lang/String;" );
+        jmethodID primaryFilesDirID = JniUtils::GetStaticMethodID( jni, d->vrLibClass, "getPrimaryExternalStorageFilesDir", "(Landroid/app/Activity;)Ljava/lang/String;" );
 		if( primaryFilesDirID )
 		{
-            JavaUTFChars returnString( jni, (jstring)jni->CallStaticObjectMethod( d->vrLibClass, primaryFilesDirID, activityObj ) );
-            d->storageFolderPaths[PrimaryExternalStorage][FilesFolder] = returnString.ToStr();
+            VString returnString = JniUtils::Convert(jni, (jstring) jni->CallStaticObjectMethod(d->vrLibClass, primaryFilesDirID, activityObj));
+            d->storageFolderPaths[PrimaryExternalStorage][FilesFolder] = returnString;
 		}
 
-        jmethodID primaryCacheDirID = ovr_GetStaticMethodID( jni, d->vrLibClass, "getPrimaryExternalStorageCacheDir", "(Landroid/app/Activity;)Ljava/lang/String;" );
+        jmethodID primaryCacheDirID = JniUtils::GetStaticMethodID( jni, d->vrLibClass, "getPrimaryExternalStorageCacheDir", "(Landroid/app/Activity;)Ljava/lang/String;" );
 		if( primaryCacheDirID )
 		{
-            JavaUTFChars returnString( jni, (jstring)jni->CallStaticObjectMethod( d->vrLibClass, primaryCacheDirID, activityObj ) );
-            d->storageFolderPaths[PrimaryExternalStorage][CacheFolder] = returnString.ToStr();
+            VString returnString = JniUtils::Convert(jni, (jstring) jni->CallStaticObjectMethod(d->vrLibClass, primaryCacheDirID, activityObj));
+            d->storageFolderPaths[PrimaryExternalStorage][CacheFolder] = returnString;
 		}
 
 		// secondary external memory
-        jmethodID secondaryRootDirID = ovr_GetStaticMethodID( jni, d->vrLibClass, "getSecondaryExternalStorageRootDir", "()Ljava/lang/String;" );
+        jmethodID secondaryRootDirID = JniUtils::GetStaticMethodID( jni, d->vrLibClass, "getSecondaryExternalStorageRootDir", "()Ljava/lang/String;" );
 		if( secondaryRootDirID )
 		{
-            JavaUTFChars returnString( jni, (jstring)jni->CallStaticObjectMethod( d->vrLibClass, secondaryRootDirID ) );
-            d->storageFolderPaths[SecondaryExternalStorage][RootFolder] = returnString.ToStr();
+            VString returnString = JniUtils::Convert(jni, (jstring) jni->CallStaticObjectMethod(d->vrLibClass, secondaryRootDirID));
+            d->storageFolderPaths[SecondaryExternalStorage][RootFolder] = returnString;
 		}
 
-        jmethodID secondaryFilesDirID = ovr_GetStaticMethodID( jni, d->vrLibClass, "getSecondaryExternalStorageFilesDir", "(Landroid/app/Activity;)Ljava/lang/String;" );
+        jmethodID secondaryFilesDirID = JniUtils::GetStaticMethodID( jni, d->vrLibClass, "getSecondaryExternalStorageFilesDir", "(Landroid/app/Activity;)Ljava/lang/String;" );
 		if( secondaryFilesDirID )
 		{
-            JavaUTFChars returnString( jni, (jstring)jni->CallStaticObjectMethod( d->vrLibClass, secondaryFilesDirID, activityObj ) );
-            d->storageFolderPaths[SecondaryExternalStorage][FilesFolder] = returnString.ToStr();
+            VString returnString = JniUtils::Convert(jni, (jstring) jni->CallStaticObjectMethod(d->vrLibClass, secondaryFilesDirID, activityObj));
+            d->storageFolderPaths[SecondaryExternalStorage][FilesFolder] = returnString;
 		}
 
-        jmethodID secondaryCacheDirID = ovr_GetStaticMethodID( jni, d->vrLibClass, "getSecondaryExternalStorageCacheDir", "(Landroid/app/Activity;)Ljava/lang/String;" );
+        jmethodID secondaryCacheDirID = JniUtils::GetStaticMethodID( jni, d->vrLibClass, "getSecondaryExternalStorageCacheDir", "(Landroid/app/Activity;)Ljava/lang/String;" );
 		if( secondaryCacheDirID )
 		{
-            JavaUTFChars returnString( jni, (jstring)jni->CallStaticObjectMethod( d->vrLibClass, secondaryCacheDirID, activityObj ) );
-            d->storageFolderPaths[SecondaryExternalStorage][CacheFolder] = returnString.ToStr();
+            VString returnString = JniUtils::Convert(jni, (jstring) jni->CallStaticObjectMethod(d->vrLibClass, secondaryCacheDirID, activityObj));
+            d->storageFolderPaths[SecondaryExternalStorage][CacheFolder] = returnString;
         }
     }
 

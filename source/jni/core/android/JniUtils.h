@@ -1,165 +1,66 @@
 #pragma once
 
 #include "vglobal.h"
+#include "VString.h"
 
 #include <jni.h>
 
-#include "Types.h"
-#include "LogUtils.h"
+NV_NAMESPACE_BEGIN
 
-// Use this EVERYWHERE and you can insert your own catch here if you have string references leaking.
-// Even better, use the JavaString / JavaUTFChars classes instead and they will free resources for
-// you automatically.
-jobject ovr_NewStringUTF( JNIEnv * jni, char const * str );
-char const * ovr_GetStringUTFChars( JNIEnv * jni, jstring javaStr, jboolean * isCopy );
+namespace JniUtils {
+    VString Convert(JNIEnv *jni, jstring jstr);
+    jstring Convert(JNIEnv *jni, const VString &str);
+    inline jstring Convert(JNIEnv *jni, char const * str) { return jni->NewStringUTF(str); }
 
-//==============================================================
-// JavaObject
-//
-// Releases a java object reference on destruction
+    VString GetPackageCodePath(JNIEnv *jni, jclass activityClass, jobject activityObject);
+    VString GetCurrentPackageName(JNIEnv *jni, jobject activityObject);
+    VString GetCurrentActivityName(JNIEnv * jni, jobject activityObject);
+
+    jclass GetGlobalClassReference(JNIEnv *jni, const char *className);
+    jmethodID GetMethodID(JNIEnv *jni, jclass jniclass, const char *name, const char *signature);
+    jmethodID GetStaticMethodID(JNIEnv *jni, jclass jniclass, const char *name, const char *signature);
+    void LoadDevConfig(bool const forceReload);
+}
+
 class JavaObject
 {
 public:
-	JavaObject( JNIEnv * jni_, jobject const JObject_ ) :
-		jni( jni_ ),
-		JObject( JObject_ )
-	{
-		OVR_ASSERT( jni != NULL );
-	}
-	~JavaObject()
-	{
-		if ( jni->ExceptionOccurred() )
-		{
-			LOG( "JNI exception before DeleteLocalRef!" );
-			jni->ExceptionClear();
-		}
-		OVR_ASSERT( jni != NULL && JObject != NULL );
-		jni->DeleteLocalRef( JObject );
-		if ( jni->ExceptionOccurred() )
-		{
-			LOG( "JNI exception occured calling DeleteLocalRef!" );
-			jni->ExceptionClear();
-		}
-		jni = NULL;
-		JObject = NULL;
-	}
+    JavaObject(JNIEnv *jni, const jobject jObject);
+    ~JavaObject();
 
-	jobject			GetJObject() const { return JObject; }
-
-	JNIEnv *		GetJNI() const { return jni; }
+    jobject toJObject() const { return m_jobject; }
+    JNIEnv *jni() const { return m_jni; }
 
 protected:
-	void			SetJObject( jobject const & obj ) { JObject = obj; }
+    void setJObject(const jobject &obj) { m_jobject = obj; }
 
 private:
-	JNIEnv *		jni;
-	jobject			JObject;
+    JNIEnv *m_jni;
+    jobject m_jobject;
 };
 
-//==============================================================
-// JavaClass
 class JavaClass : public JavaObject
 {
 public:
-	JavaClass( JNIEnv * jni_, jobject const object ) :
-		JavaObject( jni_, object )
-	{
-	}
+    JavaClass(JNIEnv *jni, const jobject object)
+        : JavaObject(jni, object)
+    {
+    }
 
-	jclass			GetJClass() const { return static_cast< jclass >( GetJObject() ); }
+    jclass toJClass() const { return static_cast<jclass>(toJObject()); }
 };
 
-//==============================================================
-// JavaString
-//
-// Creates a java string on construction and releases it on destruction.
 class JavaString : public JavaObject
 {
 public:
-	JavaString( JNIEnv * jni_, char const * str ) :
-		JavaObject( jni_, NULL )
-	{
-		SetJObject( ovr_NewStringUTF( GetJNI(), str ) );
-		if ( GetJNI()->ExceptionOccurred() )
-		{
-			LOG( "JNI exception occured calling NewStringUTF!" );
-		}
-	}
+    JavaString(JNIEnv *jni, const VString &str);
 
-	JavaString( JNIEnv * jni_, jstring JString_ ) :
-		JavaObject( jni_, JString_ )
-	{
-		OVR_ASSERT( JString_ != NULL );
-	}
+    JavaString(JNIEnv *jni, jstring string)
+        : JavaObject(jni, string)
+    {
+    }
 
-	jstring			GetJString() const { return static_cast< jstring >( GetJObject() ); }
+    jstring toJString() const { return static_cast<jstring>(toJObject()); }
 };
 
-//==============================================================
-// JavaUTFChars
-//
-// Gets a java string object as a buffer of UTF characters and
-// releases the buffer on destruction.
-// Use this only if you need to store a string reference and access
-// the string as a char buffer of UTF8 chars.  If you only need
-// to store and release a reference to a string, use JavaString.
-class JavaUTFChars : public JavaString
-{
-public:
-	JavaUTFChars( JNIEnv * jni_, jstring const JString_ ) :
-		JavaString( jni_, JString_ ),
-		UTFString( NULL )
-	{
-		UTFString = ovr_GetStringUTFChars( GetJNI(), GetJString(), NULL );
-		if ( GetJNI()->ExceptionOccurred() )
-		{
-			LOG( "JNI exception occured calling GetStringUTFChars!" );
-		}
-	}
-
-	~JavaUTFChars()
-	{
-		OVR_ASSERT( UTFString != NULL );
-		GetJNI()->ReleaseStringUTFChars( GetJString(), UTFString );
-		if ( GetJNI()->ExceptionOccurred() )
-		{
-			LOG( "JNI exception occured calling ReleaseStringUTFChars!" );
-		}
-	}
-
-	char const * ToStr() const { return UTFString; }
-	operator char const * () const { return UTFString; }
-
-private:
-	char const *	UTFString;
-};
-
-// This must be called by a function called directly from a java thread,
-// preferably from JNI_OnLoad().  It will fail if called from a pthread created
-// in native code, or from a NativeActivity due to the class-lookup issue:
-// http://developer.android.com/training/articles/perf-jni.html#faq_FindClass
-jclass		ovr_GetGlobalClassReference( JNIEnv * jni, const char * className );
-
-jmethodID	ovr_GetMethodID( JNIEnv * jni, jclass jniclass, const char * name, const char * signature );
-jmethodID	ovr_GetStaticMethodID( JNIEnv * jni, jclass jniclass, const char * name, const char * signature );
-
-// get the code path of the current package.
-const char * ovr_GetPackageCodePath( JNIEnv * jni, jclass activityClass, jobject activityObject, char * packageCodePath, int const maxLen );
-
-// Get the current package name, for instance "com.oculus.home".
-const char * ovr_GetCurrentPackageName( JNIEnv * jni, jclass activityClass, jobject activityObject, char * packageName, int const maxLen );
-
-// Get the current activity class name, for instance "me/takashiro/nervgear.PlatformActivity".
-const char * ovr_GetCurrentActivityName( JNIEnv * jni, jobject activityObject, char * className, int const maxLen );
-
-// For instance packageName = "com.oculus.home".
-bool ovr_IsCurrentPackage( JNIEnv * jni, jclass activityClass, jobject activityObject, const char * packageName );
-
-// For instance className = "me/takashiro/nervgear.PlatformActivity".
-bool ovr_IsCurrentActivity( JNIEnv * jni, jobject activityObject, const char * className );
-
-void ovr_LoadDevConfig( bool const forceReload );
-const char * ovr_GetHomePackageName( char * packageName, int const maxLen );
-bool ovr_IsOculusHomePackage( JNIEnv * jni, jclass activityClass, jobject activityObject );
-
-
+NV_NAMESPACE_END

@@ -15,6 +15,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "Std.h"
 #include "android/JniUtils.h"
 #include "android/LogUtils.h"
+#include "VLog.h"
 
 namespace NervGear {
 
@@ -24,13 +25,11 @@ jclass			VrLocale::VrActivityClass;
 
 bool VrLocale::GetString( JNIEnv* jni, jobject activityObject, char const * key, char const * defaultOut, VString & out )
 {
-	if ( jni == NULL )
-	{
-		DROIDWARN( "OVR_ASSERT", "jni = NULL!" );
+    if (jni == NULL) {
+        vWarn("OVR_ASSERT jni = NULL!");
 	}
-	if ( activityObject == NULL )
-	{
-		DROIDWARN( "OVR_ASSERT", "activityObject = NULL!" );
+    if (activityObject == NULL) {
+        vWarn("OVR_ASSERT ctivityObject = NULL!");
 	}
 
 	//LOG( "Localizing key '%s'", key );
@@ -39,33 +38,25 @@ bool VrLocale::GetString( JNIEnv* jni, jobject activityObject, char const * key,
 	if ( strstr( key, LOCALIZED_KEY_PREFIX ) != key )
 	{
 		out = defaultOut;
-		LOG( "no prefix, localized to '%s'", out.toCString() );
+        vInfo("no prefix, localized to '%s'" << out);
 		return true;
 	}
 
 	char const * realKey = key + LOCALIZED_KEY_PREFIX_LEN;
-	//LOG( "realKey = %s", realKey );
 
-	jmethodID const getLocalizedStringId = ovr_GetMethodID( jni, VrActivityClass, "getLocalizedString", "(Ljava/lang/String;)Ljava/lang/String;" );
+    jmethodID const getLocalizedStringId = JniUtils::GetMethodID( jni, VrActivityClass, "getLocalizedString", "(Ljava/lang/String;)Ljava/lang/String;" );
 	if ( getLocalizedStringId != NULL )
 	{
 		JavaString keyObj( jni, realKey );
-        jstring jstr = static_cast<jstring>(jni->CallObjectMethod(activityObject, getLocalizedStringId, keyObj.GetJString()));
+        jstring jstr = static_cast<jstring>(jni->CallObjectMethod(activityObject, getLocalizedStringId, keyObj.toJString()));
         if (!jni->ExceptionOccurred()) {
-            const jchar *chars = jni->GetStringChars(jstr, NULL);
-            jsize length = jni->GetStringLength(jstr);
-            for (jsize i = 0; i < length; i++) {
-                out.append(chars[i]);
-            }
-            jni->ReleaseStringChars(jstr, chars);
+            out = JniUtils::Convert(jni, jstr);
 
             if (out.isEmpty()) {
 				out = defaultOut;
-                LOG("key not found, localized to '%s'", out.toCString());
+                vInfo("key not found, localized to '%s'" << out);
 				return false;
 			}
-
-			//LOG( "localized to '%s'", out.toCString() );
 			return true;
 		}
 	}
@@ -236,14 +227,14 @@ VString VrLocale::ToString( char const * fmt, float const f )
 {
 	char buffer[128];
 	OVR_sprintf( buffer, 128, fmt, f );
-	return VString( buffer );
+    return buffer;
 }
 
 VString VrLocale::ToString( char const * fmt, int const i )
 {
 	char buffer[128];
 	OVR_sprintf( buffer, 128, fmt, i );
-	return VString( buffer );
+    return buffer;
 }
 
 } // namespace NervGear
