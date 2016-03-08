@@ -598,8 +598,8 @@ void ovr_SendIntent( ovrMobile * ovr, const char * actionName, const char * toPa
 	if ( sendIntentFromNativeId != NULL )
 	{
 		ovr->Jni->CallStaticVoidMethod( VrLibClass, sendIntentFromNativeId, ovr->Parms.ActivityObject,
-				actionString.GetJString(), packageString.GetJString(), className.GetJString(),
-				commandString.GetJString(), uriString.GetJString() );
+				actionString.toJString(), packageString.toJString(), className.toJString(),
+				commandString.toJString(), uriString.toJString() );
 	}
 
 	if ( exitType != EXIT_TYPE_NONE )
@@ -656,8 +656,8 @@ void ovr_BroadcastSystemActivityEvent( ovrMobile * ovr, const char * actionName,
 	if ( sendIntentFromNativeId != NULL )
 	{
 		ovr->Jni->CallStaticVoidMethod( VrLibClass, sendIntentFromNativeId, ovr->Parms.ActivityObject,
-				actionString.GetJString(), packageString.GetJString(), className.GetJString(),
-				commandString.GetJString(), uriString.GetJString() );
+				actionString.toJString(), packageString.toJString(), className.toJString(),
+				commandString.toJString(), uriString.toJString() );
 	}
 }
 
@@ -690,7 +690,7 @@ void ovr_SendLaunchIntent( ovrMobile * ovr, const char * toPackageName, const ch
 	if ( sendLaunchIntentId != NULL )
 	{
 		ovr->Jni->CallStaticVoidMethod( VrLibClass, sendLaunchIntentId, ovr->Parms.ActivityObject,
-				packageString.GetJString(), commandString.GetJString(), uriString.GetJString() );
+				packageString.toJString(), commandString.toJString(), uriString.toJString() );
 	}
 
 	if ( exitType != EXIT_TYPE_NONE )

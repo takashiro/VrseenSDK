@@ -48,7 +48,7 @@ bool VrLocale::GetString( JNIEnv* jni, jobject activityObject, char const * key,
 	if ( getLocalizedStringId != NULL )
 	{
 		JavaString keyObj( jni, realKey );
-        jstring jstr = static_cast<jstring>(jni->CallObjectMethod(activityObject, getLocalizedStringId, keyObj.GetJString()));
+        jstring jstr = static_cast<jstring>(jni->CallObjectMethod(activityObject, getLocalizedStringId, keyObj.toJString()));
         if (!jni->ExceptionOccurred()) {
             out = JniUtils::Convert(jni, jstr);
 

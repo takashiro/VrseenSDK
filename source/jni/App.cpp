@@ -735,7 +735,7 @@ void AppLocal::StartSystemActivity( const char * command )
         vrJni->ExceptionClear();
 	}
 
-	NervGear::VString imageName = "dependency_error";
+    VString imageName = "dependency_error";
     VString language = ovr_GetCurrentLanguage(OvrMobile);
 	imageName += "_";
 	imageName += language;
@@ -781,7 +781,7 @@ VString AppLocal::GetInstalledPackagePath( const char * packageName ) const
 	if ( getInstalledPackagePathId != NULL )
 	{
         JavaString packageNameObj( uiJni, packageName );
-        VString resultStr = JniUtils::Convert(uiJni, static_cast< jstring >( uiJni->CallObjectMethod( javaObject, getInstalledPackagePathId, packageNameObj.GetJString())));
+        VString resultStr = JniUtils::Convert(uiJni, static_cast< jstring >( uiJni->CallObjectMethod( javaObject, getInstalledPackagePathId, packageNameObj.toJString())));
         if ( !uiJni->ExceptionOccurred() ) {
             return resultStr;
 		}

@@ -20,6 +20,74 @@ namespace JniUtils {
     VString GetCurrentActivityName(JNIEnv * jni, jobject activityObject);
 }
 
+class JavaObject
+{
+public:
+    JavaObject(JNIEnv *jni, const jobject jObject)
+        : m_jni(jni)
+        , m_jobject(jObject)
+    {
+        OVR_ASSERT(m_jni != nullptr);
+    }
+
+    ~JavaObject()
+    {
+        if(m_jni->ExceptionOccurred()) {
+            LOG( "JNI exception before DeleteLocalRef!" );
+            m_jni->ExceptionClear();
+        }
+        OVR_ASSERT( m_jni != NULL && m_jobject != NULL );
+        m_jni->DeleteLocalRef( m_jobject );
+        if ( m_jni->ExceptionOccurred() )
+        {
+            LOG( "JNI exception occured calling DeleteLocalRef!" );
+            m_jni->ExceptionClear();
+        }
+    }
+
+    jobject toJObject() const { return m_jobject; }
+    JNIEnv *jni() const { return m_jni; }
+
+protected:
+    void setJObject(const jobject &obj) { m_jobject = obj; }
+
+private:
+    JNIEnv *m_jni;
+    jobject m_jobject;
+};
+
+class JavaClass : public JavaObject
+{
+public:
+    JavaClass(JNIEnv * jni, const jobject object)
+        : JavaObject(jni, object)
+    {
+    }
+
+    jclass toJClass() const { return static_cast<jclass>(toJObject()); }
+};
+
+class JavaString : public JavaObject
+{
+public:
+    JavaString( JNIEnv * jni, const VString &str) :
+        JavaObject( jni, NULL )
+    {
+        setJObject(JniUtils::Convert(jni, str));
+        if (jni->ExceptionOccurred()) {
+            LOG( "JNI exception occured calling NewStringUTF!" );
+        }
+    }
+
+    JavaString(JNIEnv *jni, jstring string)
+        : JavaObject(jni, string)
+    {
+        OVR_ASSERT(string != nullptr);
+    }
+
+    jstring toJString() const { return static_cast<jstring>(toJObject()); }
+};
+
 NV_NAMESPACE_END
 
 // Use this EVERYWHERE and you can insert your own catch here if you have string references leaking.
@@ -31,83 +99,6 @@ jobject ovr_NewStringUTF( JNIEnv * jni, char const * str );
 // JavaObject
 //
 // Releases a java object reference on destruction
-class JavaObject
-{
-public:
-	JavaObject( JNIEnv * jni_, jobject const JObject_ ) :
-		jni( jni_ ),
-		JObject( JObject_ )
-	{
-		OVR_ASSERT( jni != NULL );
-	}
-	~JavaObject()
-	{
-		if ( jni->ExceptionOccurred() )
-		{
-			LOG( "JNI exception before DeleteLocalRef!" );
-			jni->ExceptionClear();
-		}
-		OVR_ASSERT( jni != NULL && JObject != NULL );
-		jni->DeleteLocalRef( JObject );
-		if ( jni->ExceptionOccurred() )
-		{
-			LOG( "JNI exception occured calling DeleteLocalRef!" );
-			jni->ExceptionClear();
-		}
-		jni = NULL;
-		JObject = NULL;
-	}
-
-	jobject			GetJObject() const { return JObject; }
-
-	JNIEnv *		GetJNI() const { return jni; }
-
-protected:
-	void			SetJObject( jobject const & obj ) { JObject = obj; }
-
-private:
-	JNIEnv *		jni;
-	jobject			JObject;
-};
-
-//==============================================================
-// JavaClass
-class JavaClass : public JavaObject
-{
-public:
-	JavaClass( JNIEnv * jni_, jobject const object ) :
-		JavaObject( jni_, object )
-	{
-	}
-
-	jclass			GetJClass() const { return static_cast< jclass >( GetJObject() ); }
-};
-
-//==============================================================
-// JavaString
-//
-// Creates a java string on construction and releases it on destruction.
-class JavaString : public JavaObject
-{
-public:
-	JavaString( JNIEnv * jni_, char const * str ) :
-		JavaObject( jni_, NULL )
-	{
-		SetJObject( ovr_NewStringUTF( GetJNI(), str ) );
-		if ( GetJNI()->ExceptionOccurred() )
-		{
-			LOG( "JNI exception occured calling NewStringUTF!" );
-		}
-	}
-
-	JavaString( JNIEnv * jni_, jstring JString_ ) :
-		JavaObject( jni_, JString_ )
-	{
-		OVR_ASSERT( JString_ != NULL );
-	}
-
-	jstring			GetJString() const { return static_cast< jstring >( GetJObject() ); }
-};
 
 // This must be called by a function called directly from a java thread,
 // preferably from JNI_OnLoad().  It will fail if called from a pthread created
@@ -118,10 +109,6 @@ jclass		ovr_GetGlobalClassReference( JNIEnv * jni, const char * className );
 jmethodID	ovr_GetMethodID( JNIEnv * jni, jclass jniclass, const char * name, const char * signature );
 jmethodID	ovr_GetStaticMethodID( JNIEnv * jni, jclass jniclass, const char * name, const char * signature );
 
-// get the code path of the current package.
-void ovr_GetPackageCodePath(JNIEnv * jni, jclass activityClass, jobject activityObject, const NervGear::VString &packageCodePath);
-
 void ovr_LoadDevConfig( bool const forceReload );
-const char * ovr_GetHomePackageName( char * packageName, int const maxLen );
 
 

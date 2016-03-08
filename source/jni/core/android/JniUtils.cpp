@@ -56,7 +56,7 @@ namespace JniUtils {
     VString GetCurrentPackageName(JNIEnv * jni, jobject activityObject)
     {
         JavaClass curActivityClass( jni, jni->GetObjectClass( activityObject ) );
-        jmethodID getPackageNameId = jni->GetMethodID( curActivityClass.GetJClass(), "getPackageName", "()Ljava/lang/String;");
+        jmethodID getPackageNameId = jni->GetMethodID( curActivityClass.toJClass(), "getPackageName", "()Ljava/lang/String;");
         if ( getPackageNameId != 0 )
         {
             VString packageName = Convert(jni, (jstring) jni->CallObjectMethod(activityObject, getPackageNameId));
@@ -74,14 +74,14 @@ namespace JniUtils {
     VString GetCurrentActivityName(JNIEnv *jni, jobject activityObject)
     {
         JavaClass curActivityClass( jni, jni->GetObjectClass( activityObject ) );
-        jmethodID getClassMethodId = jni->GetMethodID(curActivityClass.GetJClass(), "getClass", "()Ljava/lang/Class;" );
+        jmethodID getClassMethodId = jni->GetMethodID(curActivityClass.toJClass(), "getClass", "()Ljava/lang/Class;" );
         if (getClassMethodId != 0) {
             JavaObject classObj(jni, jni->CallObjectMethod(activityObject, getClassMethodId));
-            JavaClass activityClass(jni, jni->GetObjectClass(classObj.GetJObject()));
+            JavaClass activityClass(jni, jni->GetObjectClass(classObj.toJObject()));
 
-            jmethodID getNameMethodId = jni->GetMethodID(activityClass.GetJClass(), "getName", "()Ljava/lang/String;" );
+            jmethodID getNameMethodId = jni->GetMethodID(activityClass.toJClass(), "getName", "()Ljava/lang/String;" );
             if (getNameMethodId != 0) {
-                VString name = Convert(jni, (jstring)jni->CallObjectMethod(classObj.GetJObject(), getNameMethodId));
+                VString name = Convert(jni, (jstring)jni->CallObjectMethod(classObj.toJObject(), getNameMethodId));
                 vInfo("GetCurrentActivityName() =" << name);
                 return name;
             }
@@ -157,42 +157,5 @@ void ovr_LoadDevConfig( bool const forceReload )
 		DevConfig = new NervGear::Json;
 		fp >> (*DevConfig);
 	}
-#endif
-}
-
-//#define DEFAULT_DASHBOARD_PACKAGE_NAME "com.Oculus.UnitySample" -- for testing only
-#define DEFAULT_DASHBOARD_PACKAGE_NAME "com.oculus.home"
-
-const char * ovr_GetHomePackageName( char * packageName, int const maxLen )
-{
-#if defined( RETAIL )
-	NervGear::OVR_sprintf( packageName, maxLen, "%s", DEFAULT_DASHBOARD_PACKAGE_NAME );
-	return packageName;
-#else
-	// make sure the dev config is loaded
-	ovr_LoadDevConfig( false );
-
-	// set to default value
-	NervGear::OVR_sprintf( packageName, maxLen, "%s", DEFAULT_DASHBOARD_PACKAGE_NAME );
-
-	if ( DevConfig != NULL )
-	{
-		// try to get it from the Launcher/Packagename JSON entry
-		NervGear::Json jsonLauncher = DevConfig->value( "Launcher" );
-		if ( jsonLauncher.type() != NervGear::Json::None )
-		{
-			NervGear::Json jsonPackageName = jsonLauncher.value( "PackageName" );
-			if ( jsonPackageName.type() != NervGear::Json::None )
-			{
-				NervGear::OVR_sprintf( packageName, maxLen, "%s", jsonPackageName.toString().c_str() );
-				LOG( "Found Home package name: '%s'", packageName );
-			}
-			else
-			{
-				LOG( "No override for Home package name found." );
-			}
-		}
-	}
-	return packageName;
 #endif
 }
