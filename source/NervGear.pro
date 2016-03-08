@@ -286,8 +286,7 @@ HEADERS += \
     jni/vglobal.h \
     jni/AppLocal.h \
     jni/Input.h \
-    jni/PointTracker.h \
-    jni/UniversalMenu_Commands.h
+    jni/PointTracker.h
 
 include(jni/3rdparty/minizip/minizip.pri)
 include(jni/3rdparty/stb/stb.pri)
