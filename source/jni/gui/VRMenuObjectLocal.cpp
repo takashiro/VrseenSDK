@@ -924,7 +924,8 @@ bool VRMenuObjectLocal:: hitTest_r( App * app, OvrVRMenuMgr & menuMgr, BitmapFon
 	    float cullT0;
 	    float cullT1;
 		// any contents will hit cull bounds
-		ContentFlags_t allContents( ALL_BITS );
+        ContentFlags_t allContents;
+        allContents.setAll();
 	    bool hitCullBounds = intersectRayBounds( localStart, localDir, m_cullBounds.GetMins(), m_cullBounds.GetMaxs(), 
 									allContents, cullT0, cullT1 );
 

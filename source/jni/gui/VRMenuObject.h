@@ -18,7 +18,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "Array.h"
 #include "VString.h"
 #include "TypesafeNumber.h"
-#include "BitFlags.h"
 #include "Android/GlUtils.h"	// GLuint
 #include "Android/LogUtils.h"
 #include "CollisionPrimitive.h"

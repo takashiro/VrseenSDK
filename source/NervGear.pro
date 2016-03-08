@@ -174,7 +174,6 @@ HEADERS += \
     jni/core/Types.h \
     jni/core/KeyCodes.h \
     jni/core/List.h \
-    jni/core/BitFlags.h \
     jni/core/OVR.h \
     jni/core/OVRVersion.h \
     jni/core/VSharedPointer.h \
