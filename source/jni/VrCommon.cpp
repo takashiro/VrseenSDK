@@ -48,19 +48,17 @@ static Vector3f	MatrixForward( const Matrix4f & m )
 }
 #endif
 
-int StringCompare( const void *a, const void * b )
+void SortStringArray(Array<VString> &strings)
 {
-	const VString *sa = ( VString * )a;
-	const VString *sb = ( VString * )b;
-	return sa->icompare( *sb );
-}
-
-void SortStringArray( Array<VString> & strings )
-{
-	if ( strings.size() > 1 )
-	{
-		qsort( ( void * )&strings[ 0 ], strings.size(), sizeof( VString ), StringCompare );
+    if (strings.size() <= 1) {
+        return;
 	}
+
+    qsort(&strings[0], strings.size(), sizeof( VString ), [](const void *a, const void *b){
+        const VString *sa = ( VString * )a;
+        const VString *sb = ( VString * )b;
+        return sa->icompare( *sb );
+    });
 }
 
 // DirPath should by a directory with a trailing slash.

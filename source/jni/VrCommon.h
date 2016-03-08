@@ -35,8 +35,6 @@ bool HasPermission(VString fileOrDirName, mode_t mode );
 // Returns true if the file exists
 bool FileExists(const VString &filename );
 
-int StringCompare( const void *a, const void * b );
-
 void SortStringArray( Array<VString> & strings );
 
 StringHash< VString > RelativeDirectoryFileList( const Array< VString > & searchPaths, const char * RelativeDirPath );
