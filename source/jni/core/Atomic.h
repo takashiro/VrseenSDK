@@ -4,12 +4,7 @@
 
 #include "Types.h"
 
-// Include System thread functionality.
-#if defined(OVR_OS_WIN32)
-#include <windows.h>
-#else
 #include <pthread.h>
-#endif
 
 
 NV_NAMESPACE_BEGIN
