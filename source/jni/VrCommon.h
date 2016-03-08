@@ -50,9 +50,6 @@ StringHash< VString > RelativeDirectoryFileList( const Array< VString > & search
 // All files and directories that start with . are skipped.
 Array<VString> DirectoryFileList( const char * DirPath );
 
-// Returns the directory name before the fileName - stripping out parent directories and file
-VString ExtractDirectory( const VString & s );
-
 // Creates all the intermediate directories if they don't exist
 void MakePath(const VString &dirPath, mode_t mode );
 

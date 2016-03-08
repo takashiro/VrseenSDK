@@ -180,36 +180,6 @@ bool MatchesExtension( const VString &file, const char * ext )
 	return ( 0 == strcmp( &fileName[ sLen - extLen ], ext ) );
 }
 
-VString ExtractDirectory( const VString & s )
-{
-	const int l = s.size();
-	if ( l == 0 )
-	{
-		return VString( "" );
-	}
-
-	int	end;
-	if ( s[ l - 1 ] == '/' )
-	{	// directory ends in a slash
-		end = l - 1;
-	}
-	else
-	{
-		for ( end = l - 1; end > 0 && s[ end ] != '/'; end-- )
-			;
-		if ( end == 0 )
-		{
-			end = l - 1;
-		}
-	}
-	int	start;
-	for ( start = end - 1; start > -1 && s[ start ] != '/'; start-- )
-		;
-	start++;
-
-    return s.range(start, end);
-}
-
 void MakePath( const VString &dirPath, mode_t mode )
 {
 	char path[ 256 ];

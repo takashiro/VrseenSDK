@@ -130,7 +130,7 @@ void OvrMetaData::initFromFileList( const Array< VString > & fileList, const Ovr
 	for ( int i = 0; i < fileList.sizeInt(); ++i )
 	{
 		const VString & filePath = fileList.at( i );
-		const VString categoryTag = ExtractDirectory( fileList.at( i ) );
+        const VString categoryTag = VPath(fileList.at(i)).dirName();
         StringHash< int >::ConstIterator iter = uniqueCategoryList.find( categoryTag );
 		int catIndex = -1;
         if ( iter == uniqueCategoryList.end() )

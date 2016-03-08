@@ -26,6 +26,7 @@ void test()
         assert(!path.hasExtension());
         assert(path.extension().isEmpty());
         assert(path.fileName() == path.baseName());
+        assert(path.dirName() == "Project");
     }
 
     {
@@ -34,6 +35,7 @@ void test()
         assert(path.extension() == "git");
         assert(path.fileName() == "NervGear.git");
         assert(path.baseName() == "NervGear");
+        assert(path.dirName() == "Project");
 
         path.setExtension("svn");
         assert(path == "Project/NervGear.svn");
@@ -48,6 +50,7 @@ void test()
         VPath path(fileName);
         assert(path.fileName() == fileName);
         assert(path.baseName() == "efigs_sdf");
+        assert(path.dirName().isEmpty());
     }
 }
 
