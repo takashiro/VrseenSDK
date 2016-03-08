@@ -734,8 +734,7 @@ void AppLocal::StartSystemActivity( const char * command )
 	}
 
 	NervGear::VString imageName = "dependency_error";
-	char language[128];
-	ovr_GetCurrentLanguage( OvrMobile, language, sizeof( language ) );
+    VString language = ovr_GetCurrentLanguage(OvrMobile);
 	imageName += "_";
 	imageName += language;
 	imageName += ".png";

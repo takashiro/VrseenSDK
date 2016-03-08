@@ -2216,24 +2216,16 @@ void ovr_ReturnToHome( ovrMobile * ovr )
     ovr_ExitActivity(ovr, EXIT_TYPE_FINISH_AFFINITY);
 }
 
-void ovr_GetCurrentLanguage( ovrMobile * ovr, char * language, int const maxLanguageLen )
+VString ovr_GetCurrentLanguage(ovrMobile * ovr)
 {
-	if ( language == NULL || maxLanguageLen < 1 )
-	{
-		return;
-	}
-
-	language[0] = '\0';
-
-	jmethodID getCurrentLanguageMethodId = ovr_GetStaticMethodID( ovr->Jni, VrLibClass, "getCurrentLanguage", "()Ljava/lang/String;" );
-	if ( getCurrentLanguageMethodId != NULL )
-	{
-		JavaUTFChars utfCurrentLanguage( ovr->Jni, (jstring)ovr->Jni->CallStaticObjectMethod( VrLibClass, getCurrentLanguageMethodId ) );
-		if ( !ovr->Jni->ExceptionOccurred() )
-		{
-			NervGear::OVR_strcpy( language, maxLanguageLen, utfCurrentLanguage.ToStr() );
+    jmethodID getCurrentLanguageMethodId = ovr_GetStaticMethodID(ovr->Jni, VrLibClass, "getCurrentLanguage", "()Ljava/lang/String;");
+    if (getCurrentLanguageMethodId != NULL) {
+        VString language = JniUtils::Convert(ovr->Jni, (jstring) ovr->Jni->CallStaticObjectMethod(VrLibClass, getCurrentLanguageMethodId));
+        if (!ovr->Jni->ExceptionOccurred()) {
+            return language;
 		}
 	}
+    return VString();
 }
 
 #include "embedded/dependency_error_de.h"

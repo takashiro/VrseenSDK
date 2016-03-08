@@ -382,8 +382,7 @@ OCULUS_EXPORT void OVR_Platform_StartUI( const char * commandString )
 	}
 
 	NervGear::VString imageName = "dependency_error";
-	char language[128];
-	ovr_GetCurrentLanguage( up.OvrMobile, language, sizeof( language ) );
+    VString language = ovr_GetCurrentLanguage(up.OvrMobile);
 	imageName += "_";
 	imageName += language;
 	imageName += ".png";
