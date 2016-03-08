@@ -110,45 +110,6 @@ public:
 	jstring			GetJString() const { return static_cast< jstring >( GetJObject() ); }
 };
 
-//==============================================================
-// JavaUTFChars
-//
-// Gets a java string object as a buffer of UTF characters and
-// releases the buffer on destruction.
-// Use this only if you need to store a string reference and access
-// the string as a char buffer of UTF8 chars.  If you only need
-// to store and release a reference to a string, use JavaString.
-class JavaUTFChars : public JavaString
-{
-public:
-    JavaUTFChars( JNIEnv * jni_, jstring const JString_ ) :
-        JavaString( jni_, JString_ ),
-        UTFString( NULL )
-    {
-        UTFString = ovr_GetStringUTFChars( GetJNI(), GetJString(), NULL );
-        if ( GetJNI()->ExceptionOccurred() )
-        {
-            LOG( "JNI exception occured calling GetStringUTFChars!" );
-        }
-    }
-
-    ~JavaUTFChars()
-    {
-        OVR_ASSERT( UTFString != NULL );
-        GetJNI()->ReleaseStringUTFChars( GetJString(), UTFString );
-        if ( GetJNI()->ExceptionOccurred() )
-        {
-            LOG( "JNI exception occured calling ReleaseStringUTFChars!" );
-        }
-    }
-
-    char const * ToStr() const { return UTFString; }
-    operator char const * () const { return UTFString; }
-
-private:
-    char const *	UTFString;
-};
-
 // This must be called by a function called directly from a java thread,
 // preferably from JNI_OnLoad().  It will fail if called from a pthread created
 // in native code, or from a NativeActivity due to the class-lookup issue:
