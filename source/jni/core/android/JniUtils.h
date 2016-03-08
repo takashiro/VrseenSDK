@@ -1,13 +1,9 @@
 #pragma once
 
 #include "vglobal.h"
+#include "VString.h"
 
 #include <jni.h>
-
-#include "Types.h"
-#include "LogUtils.h"
-
-#include "VString.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -46,7 +42,7 @@ private:
 class JavaClass : public JavaObject
 {
 public:
-    JavaClass(JNIEnv * jni, const jobject object)
+    JavaClass(JNIEnv *jni, const jobject object)
         : JavaObject(jni, object)
     {
     }
@@ -57,7 +53,7 @@ public:
 class JavaString : public JavaObject
 {
 public:
-    JavaString( JNIEnv * jni, const VString &str);
+    JavaString(JNIEnv *jni, const VString &str);
 
     JavaString(JNIEnv *jni, jstring string)
         : JavaObject(jni, string)

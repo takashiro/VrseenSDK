@@ -1,6 +1,4 @@
 #include "JniUtils.h"
-
-#include "Std.h"
 #include "VJson.h"
 #include "VLog.h"
 
@@ -150,14 +148,12 @@ JavaObject::JavaObject(JNIEnv *jni, const jobject jObject)
 JavaObject::~JavaObject()
 {
     if(m_jni->ExceptionOccurred()) {
-        LOG( "JNI exception before DeleteLocalRef!" );
+        vError("JNI exception before DeleteLocalRef!");
         m_jni->ExceptionClear();
     }
-    OVR_ASSERT( m_jni != nullptr && m_jobject != nullptr );
-    m_jni->DeleteLocalRef( m_jobject );
-    if ( m_jni->ExceptionOccurred() )
-    {
-        LOG( "JNI exception occured calling DeleteLocalRef!" );
+    m_jni->DeleteLocalRef(m_jobject);
+    if (m_jni->ExceptionOccurred()) {
+        vError("JNI exception occured calling DeleteLocalRef!");
         m_jni->ExceptionClear();
     }
 }
@@ -167,7 +163,7 @@ JavaString::JavaString(JNIEnv *jni, const VString &str)
 {
     setJObject(JniUtils::Convert(jni, str));
     if (jni->ExceptionOccurred()) {
-        LOG( "JNI exception occured calling NewStringUTF!" );
+        vError("JNI exception occured calling NewStringUTF!");
     }
 }
 
