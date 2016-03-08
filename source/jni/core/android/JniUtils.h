@@ -16,6 +16,7 @@ namespace JniUtils {
     jstring Convert(JNIEnv *jni, const VString &str);
 
     VString GetPackageCodePath(JNIEnv *jni, jclass activityClass, jobject activityObject);
+    VString GetCurrentPackageName(JNIEnv *jni, jobject activityObject);
 }
 
 NV_NAMESPACE_END
@@ -159,20 +160,13 @@ jmethodID	ovr_GetStaticMethodID( JNIEnv * jni, jclass jniclass, const char * nam
 // get the code path of the current package.
 void ovr_GetPackageCodePath(JNIEnv * jni, jclass activityClass, jobject activityObject, const NervGear::VString &packageCodePath);
 
-// Get the current package name, for instance "com.oculus.home".
-const char * ovr_GetCurrentPackageName( JNIEnv * jni, jclass activityClass, jobject activityObject, char * packageName, int const maxLen );
-
 // Get the current activity class name, for instance "me/takashiro/nervgear.PlatformActivity".
 const char * ovr_GetCurrentActivityName( JNIEnv * jni, jobject activityObject, char * className, int const maxLen );
-
-// For instance packageName = "com.oculus.home".
-bool ovr_IsCurrentPackage( JNIEnv * jni, jclass activityClass, jobject activityObject, const char * packageName );
 
 // For instance className = "me/takashiro/nervgear.PlatformActivity".
 bool ovr_IsCurrentActivity( JNIEnv * jni, jobject activityObject, const char * className );
 
 void ovr_LoadDevConfig( bool const forceReload );
 const char * ovr_GetHomePackageName( char * packageName, int const maxLen );
-bool ovr_IsOculusHomePackage( JNIEnv * jni, jclass activityClass, jobject activityObject );
 
 

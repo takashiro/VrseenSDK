@@ -43,6 +43,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "capture/Capture.h"
 #endif
 
+NV_USING_NAMESPACE
+
 // FIXME:VRAPI move to ovrMobile
 static HMDState * OvrHmdState = NULL;
 float OvrHmdYaw;
@@ -1498,12 +1500,10 @@ ovrMobile * ovr_EnterVrMode( ovrModeParms parms, ovrHmdInfo * returnedHmdInfo )
 
 #if defined( OVR_ENABLE_CAPTURE )
 	const char *enableCapture = ovr_GetLocalPreferenceValueForKey(LOCAL_PREF_ENABLE_CAPTURE, "0");
-	if ( enableCapture && enableCapture[0]=='1' )
-	{
-		jclass activityClass   = ovr->Jni->GetObjectClass( ovr->Parms.ActivityObject );
-		char packageName[64] = { 0 };
-		NervGear::Capture::Init( ovr_GetCurrentPackageName( ovr->Jni, activityClass, ovr->Parms.ActivityObject, packageName, sizeof( packageName ) ) );
-		ovr->Jni->DeleteLocalRef( activityClass );
+    if ( enableCapture && enableCapture[0] == '1')  {
+        VString packageName = JniUtils::GetCurrentPackageName(ovr->Jni, ovr->Parms.ActivityObject);
+        VByteArray utf8 = packageName.toUtf8();
+        NervGear::Capture::Init(utf8.data());
 	}
 #endif
 

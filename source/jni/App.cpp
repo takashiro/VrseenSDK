@@ -770,13 +770,8 @@ void AppLocal::ReadFileFromApplicationPackage( const char * nameInZip, int &leng
 
 void AppLocal::OpenApplicationPackage()
 {
-	// get package codepath
-	char temp[1024];
     packageCodePath = JniUtils::GetPackageCodePath(uiJni, vrActivityClass, javaObject);
-
-    ovr_GetCurrentPackageName( uiJni, vrActivityClass, javaObject, temp, sizeof( temp ) );
-	packageName = strdup( temp );
-
+    packageName = JniUtils::GetCurrentPackageName(uiJni, javaObject);
 	ovr_OpenApplicationPackage( packageCodePath );
 }
 

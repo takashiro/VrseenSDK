@@ -37,19 +37,37 @@ namespace JniUtils {
     {
         jmethodID getPackageCodePathId = jni->GetMethodID( activityClass, "getPackageCodePath", "()Ljava/lang/String;" );
         if (getPackageCodePathId == 0) {
-            vInfo( "Failed to find getPackageCodePath on class" << (ulonglong) activityClass << ", object" << (ulonglong) activityObject);
-            return;
+            vInfo("Failed to find getPackageCodePath on class" << (ulonglong) activityClass << ", object" << (ulonglong) activityObject);
+            return VString();
         }
 
-        VString result = Convert(jni, (jstring) jni->CallObjectMethod(activityObject, getPackageCodePathId));
+        VString packageCodePath = Convert(jni, (jstring) jni->CallObjectMethod(activityObject, getPackageCodePathId));
         if (!jni->ExceptionOccurred()) {
             vInfo("ovr_GetPackageCodePath() =" << packageCodePath);
-            return result;
+            return packageCodePath;
         } else {
             jni->ExceptionClear();
             vInfo("Cleared JNI exception");
         }
 
+        return VString();
+    }
+
+    VString GetCurrentPackageName(JNIEnv * jni, jobject activityObject)
+    {
+        JavaClass curActivityClass( jni, jni->GetObjectClass( activityObject ) );
+        jmethodID getPackageNameId = jni->GetMethodID( curActivityClass.GetJClass(), "getPackageName", "()Ljava/lang/String;");
+        if ( getPackageNameId != 0 )
+        {
+            VString packageName = Convert(jni, (jstring) jni->CallObjectMethod(activityObject, getPackageNameId));
+            if (!jni->ExceptionOccurred()) {
+                vInfo("ovr_GetCurrentPackageName() =" << packageName);
+                return packageName;
+            } else {
+                jni->ExceptionClear();
+                vInfo("Cleared JNI exception");
+            }
+        }
         return VString();
     }
 }
@@ -108,33 +126,6 @@ jmethodID ovr_GetStaticMethodID( JNIEnv * jni, jclass jniclass, const char * nam
 	return method;
 }
 
-const char * ovr_GetCurrentPackageName( JNIEnv * jni, jclass activityClass, jobject activityObject, char * packageName, int const maxLen )
-{
-	packageName[0] = '\0';
-
-	JavaClass curActivityClass( jni, jni->GetObjectClass( activityObject ) );
-	jmethodID getPackageNameId = jni->GetMethodID( curActivityClass.GetJClass(), "getPackageName", "()Ljava/lang/String;");
-	if ( getPackageNameId != 0 )
-	{
-		JavaUTFChars result( jni, (jstring)jni->CallObjectMethod( activityObject, getPackageNameId ) );
-		if ( !jni->ExceptionOccurred() )
-		{
-			const char * currentPackageName = result.ToStr();
-			if ( currentPackageName != NULL )
-			{
-				NervGear::OVR_sprintf( packageName, maxLen, "%s", currentPackageName );
-			}
-		}
-		else
-		{
-			jni->ExceptionClear();
-			LOG( "Cleared JNI exception" );
-		}
-	}
-	LOG( "ovr_GetCurrentPackageName() = %s", packageName );
-	return packageName;
-}
-
 const char * ovr_GetCurrentActivityName( JNIEnv * jni, jobject activityObject, char * className, int const maxLen )
 {
 	className[0] = '\0';
@@ -162,19 +153,10 @@ const char * ovr_GetCurrentActivityName( JNIEnv * jni, jobject activityObject, c
 	return className;
 }
 
-bool ovr_IsCurrentPackage( JNIEnv * jni, jclass activityClass, jobject activityObject, const char * packageName )
-{
-	char currentPackageName[128];
-	ovr_GetCurrentPackageName( jni, activityClass, activityObject, currentPackageName, sizeof( currentPackageName ) );
-	const bool isCurrentPackage = ( NervGear::OVR_stricmp( currentPackageName, packageName ) == 0 );
-	LOG( "ovr_IsCurrentPackage( %s ) = %s", packageName, isCurrentPackage ? "true" : "false" );
-	return isCurrentPackage;
-}
-
 bool ovr_IsCurrentActivity( JNIEnv * jni, jobject activityObject, const char * className )
 {
-	char currentClassName[128];
-	ovr_GetCurrentActivityName( jni, activityObject, currentClassName, sizeof( currentClassName ) );
+    char currentClassName[128];
+    ovr_GetCurrentActivityName( jni, activityObject, currentClassName, sizeof( currentClassName ) );
 	const bool isCurrentActivity = ( NervGear::OVR_stricmp( currentClassName, className ) == 0 );
 	LOG( "ovr_IsCurrentActivity( %s ) = %s", className, isCurrentActivity ? "true" : "false" );
 	return isCurrentActivity;
@@ -240,11 +222,4 @@ const char * ovr_GetHomePackageName( char * packageName, int const maxLen )
 	}
 	return packageName;
 #endif
-}
-
-bool ovr_IsOculusHomePackage( JNIEnv * jni, jclass activityClass, jobject activityObject )
-{
-	char homePackageName[128];
-	ovr_GetHomePackageName( homePackageName, sizeof( homePackageName ) );
-	return ovr_IsCurrentPackage( jni, activityClass, activityObject, homePackageName );
 }
