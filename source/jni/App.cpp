@@ -663,27 +663,26 @@ MessageQueue & AppLocal::GetMessageQueue()
 
 // This callback happens from the java thread, after a string has been
 // pulled off the message queue
-void AppLocal::TtjCommand( JNIEnv & jni, const char * commandString )
+void AppLocal::TtjCommand(JNIEnv *jni, const char * commandString)
 {
 	if ( MatchesHead( "sound ", commandString ) )
 	{
-		jstring cmdString = (jstring) ovr_NewStringUTF( &jni, commandString + 6 );
-		jni.CallVoidMethod( javaObject, playSoundPoolSoundMethodId, cmdString );
-		jni.DeleteLocalRef( cmdString );
+        jstring cmdString = JniUtils::Convert(jni, commandString + 6);
+        jni->CallVoidMethod( javaObject, playSoundPoolSoundMethodId, cmdString );
+        jni->DeleteLocalRef( cmdString );
 		return;
 	}
 
 	if ( MatchesHead( "toast ", commandString ) )
 	{
-		jstring cmdString = (jstring) ovr_NewStringUTF( &jni, commandString + 6 );
-		jni.CallVoidMethod( javaObject, createVrToastMethodId, cmdString );
-		jni.DeleteLocalRef( cmdString );
+        jstring cmdString = JniUtils::Convert(jni, commandString + 6);
+        jni->CallVoidMethod( javaObject, createVrToastMethodId, cmdString );
+        jni->DeleteLocalRef( cmdString );
 	    return;
 	}
 
-	if ( MatchesHead( "finish ", commandString ) )
-	{
-		jni.CallVoidMethod( javaObject, finishActivityMethodId );
+    if ( MatchesHead( "finish ", commandString ) ) {
+        jni->CallVoidMethod(javaObject, finishActivityMethodId);
 	}
 }
 

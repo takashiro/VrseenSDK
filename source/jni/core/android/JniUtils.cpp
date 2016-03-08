@@ -92,14 +92,6 @@ namespace JniUtils {
 
 NV_NAMESPACE_END
 
-jobject ovr_NewStringUTF( JNIEnv * jni, char const * str )
-{
-	//if ( strstr( str, "com.oculus.home" ) != NULL || strstr( str, "globalMenu" ) != NULL ) {
-	//	DROIDLOG( "OvrJNI", "ovr_NewStringUTF: These are not the strings your looking for: %s", str );
-	//}
-	return jni->NewStringUTF( str );
-}
-
 jclass ovr_GetGlobalClassReference( JNIEnv * jni, const char * className )
 {
 	jclass lc = jni->FindClass(className);

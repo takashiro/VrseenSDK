@@ -14,6 +14,7 @@ NV_NAMESPACE_BEGIN
 namespace JniUtils {
     VString Convert(JNIEnv *jni, jstring jstr);
     jstring Convert(JNIEnv *jni, const VString &str);
+    inline jstring Convert(JNIEnv *jni, char const * str) { return jni->NewStringUTF(str); }
 
     VString GetPackageCodePath(JNIEnv *jni, jclass activityClass, jobject activityObject);
     VString GetCurrentPackageName(JNIEnv *jni, jobject activityObject);
@@ -89,11 +90,6 @@ public:
 };
 
 NV_NAMESPACE_END
-
-// Use this EVERYWHERE and you can insert your own catch here if you have string references leaking.
-// Even better, use the JavaString / JavaUTFChars classes instead and they will free resources for
-// you automatically.
-jobject ovr_NewStringUTF( JNIEnv * jni, char const * str );
 
 //==============================================================
 // JavaObject
