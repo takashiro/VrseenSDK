@@ -44,7 +44,7 @@ bool VrLocale::GetString( JNIEnv* jni, jobject activityObject, char const * key,
 
 	char const * realKey = key + LOCALIZED_KEY_PREFIX_LEN;
 
-	jmethodID const getLocalizedStringId = ovr_GetMethodID( jni, VrActivityClass, "getLocalizedString", "(Ljava/lang/String;)Ljava/lang/String;" );
+    jmethodID const getLocalizedStringId = JniUtils::GetMethodID( jni, VrActivityClass, "getLocalizedString", "(Ljava/lang/String;)Ljava/lang/String;" );
 	if ( getLocalizedStringId != NULL )
 	{
 		JavaString keyObj( jni, realKey );

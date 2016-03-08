@@ -489,10 +489,10 @@ void ovr_OnLoad( JavaVM * JavaVm_ )
 		LOG( "Using caller's JNIEnv" );
 	}
 
-	VrLibClass = ovr_GetGlobalClassReference( jni, "me/takashiro/nervgear/VrLib" );
-	ProximityReceiverClass = ovr_GetGlobalClassReference( jni, "me/takashiro/nervgear/ProximityReceiver" );
-	DockReceiverClass = ovr_GetGlobalClassReference( jni, "me/takashiro/nervgear/DockReceiver" );
-	ConsoleReceiverClass = ovr_GetGlobalClassReference( jni, "me/takashiro/nervgear/ConsoleReceiver" );
+	VrLibClass = JniUtils::GetGlobalClassReference( jni, "me/takashiro/nervgear/VrLib" );
+	ProximityReceiverClass = JniUtils::GetGlobalClassReference( jni, "me/takashiro/nervgear/ProximityReceiver" );
+	DockReceiverClass = JniUtils::GetGlobalClassReference( jni, "me/takashiro/nervgear/DockReceiver" );
+	ConsoleReceiverClass = JniUtils::GetGlobalClassReference( jni, "me/takashiro/nervgear/ConsoleReceiver" );
 
 	// Get the BuildVersion SDK
 	jclass versionClass = jni->FindClass( "android/os/Build$VERSION" );
@@ -593,7 +593,7 @@ void ovr_SendIntent( ovrMobile * ovr, const char * actionName, const char * toPa
 	JavaString commandString( ovr->Jni, command == NULL ? PUI_GLOBAL_MENU : command );
 	JavaString uriString( ovr->Jni, uri == NULL ? "" : uri );
 
-	jmethodID sendIntentFromNativeId = ovr_GetStaticMethodID( ovr->Jni, VrLibClass,
+	jmethodID sendIntentFromNativeId = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass,
 			"sendIntentFromNative", "(Landroid/app/Activity;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V" );
 	if ( sendIntentFromNativeId != NULL )
 	{
@@ -651,7 +651,7 @@ void ovr_BroadcastSystemActivityEvent( ovrMobile * ovr, const char * actionName,
     JavaString commandString( ovr->Jni, commandJson.toCString() );
 	JavaString uriString( ovr->Jni, uri == NULL ? "" : uri );
 
-	jmethodID sendIntentFromNativeId = ovr_GetStaticMethodID( ovr->Jni, VrLibClass,
+	jmethodID sendIntentFromNativeId = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass,
 			"broadcastIntent", "(Landroid/app/Activity;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V" );
 	if ( sendIntentFromNativeId != NULL )
 	{
@@ -685,7 +685,7 @@ void ovr_SendLaunchIntent( ovrMobile * ovr, const char * toPackageName, const ch
 	JavaString commandString( ovr->Jni, command == NULL ? PUI_GLOBAL_MENU : command );
 	JavaString uriString( ovr->Jni, uri == NULL ? "" : uri );
 
-	jmethodID sendLaunchIntentId = ovr_GetStaticMethodID( ovr->Jni, VrLibClass,
+	jmethodID sendLaunchIntentId = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass,
 			"sendLaunchIntent", "(Landroid/app/Activity;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V" );
 	if ( sendLaunchIntentId != NULL )
 	{
@@ -777,7 +777,7 @@ void ovr_ExitActivity( ovrMobile * ovr, eExitType exitType )
 
 	//	const char * name = "finish";
 		const char * name = "finishOnUiThread";
-		const jmethodID mid = ovr_GetStaticMethodID( ovr->Jni, VrLibClass,
+		const jmethodID mid = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass,
 				name, "(Landroid/app/Activity;)V" );
 
 		if ( ovr->Jni->ExceptionOccurred() )
@@ -798,7 +798,7 @@ void ovr_ExitActivity( ovrMobile * ovr, eExitType exitType )
 		ovr_LeaveVrMode( ovr );
 
 		const char * name = "finishAffinityOnUiThread";
-		const jmethodID mid = ovr_GetStaticMethodID( ovr->Jni, VrLibClass,
+		const jmethodID mid = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass,
 				name, "(Landroid/app/Activity;)V" );
 
 		if ( ovr->Jni->ExceptionOccurred() )
@@ -1242,14 +1242,14 @@ static void ReleaseVrSystemPerformance( JNIEnv * VrJni, jclass vrActivityClass, 
 	LOG( "ReleaseVrSystemPerformance" );
 
 	// Release the fixed cpu and gpu clock levels
-	const jmethodID releaseSystemPerformanceId = ovr_GetStaticMethodID( VrJni, vrActivityClass,
+	const jmethodID releaseSystemPerformanceId = JniUtils::GetStaticMethodID( VrJni, vrActivityClass,
 			"releaseSystemPerformanceStatic", "(Landroid/app/Activity;)V" );
 	VrJni->CallStaticVoidMethod( vrActivityClass, releaseSystemPerformanceId, activityObject );
 }
 
 static void SetSchedFifo( ovrMobile * ovr, int tid, int priority )
 {
-	const jmethodID setSchedFifoMethodId = ovr_GetStaticMethodID( ovr->Jni, VrLibClass, "setSchedFifoStatic", "(Landroid/app/Activity;II)I" );
+	const jmethodID setSchedFifoMethodId = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass, "setSchedFifoStatic", "(Landroid/app/Activity;II)I" );
 	const int r = ovr->Jni->CallStaticIntMethod( VrLibClass, setSchedFifoMethodId, ovr->Parms.ActivityObject, tid, priority );
 	if ( r >= 0 )
 	{
@@ -1317,7 +1317,7 @@ static void UpdateHmdInfo( ovrMobile * ovr )
 int ovr_GetSystemBrightness( ovrMobile * ovr )
 {
 	int cur = 255;
-	jmethodID getSysBrightnessMethodId = ovr_GetStaticMethodID( ovr->Jni, VrLibClass, "getSystemBrightness", "(Landroid/app/Activity;)I" );
+	jmethodID getSysBrightnessMethodId = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass, "getSystemBrightness", "(Landroid/app/Activity;)I" );
     if (getSysBrightnessMethodId != NULL && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0) {
 		cur = ovr->Jni->CallStaticIntMethod( VrLibClass, getSysBrightnessMethodId, ovr->Parms.ActivityObject );
 		LOG( "System brightness = %i", cur );
@@ -1329,7 +1329,7 @@ void ovr_SetSystemBrightness(  ovrMobile * ovr, int const v )
 {
 	int v2 = v < 0 ? 0 : v;
 	v2 = v2 > 255 ? 255 : v2;
-	jmethodID setSysBrightnessMethodId = ovr_GetStaticMethodID( ovr->Jni, VrLibClass, "setSystemBrightness", "(Landroid/app/Activity;I)V" );
+	jmethodID setSysBrightnessMethodId = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass, "setSystemBrightness", "(Landroid/app/Activity;I)V" );
     if (setSysBrightnessMethodId != NULL && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0) {
 		ovr->Jni->CallStaticVoidMethod( VrLibClass, setSysBrightnessMethodId, ovr->Parms.ActivityObject, v2 );
 		LOG( "Set brightness to %i", v2 );
@@ -1339,7 +1339,7 @@ void ovr_SetSystemBrightness(  ovrMobile * ovr, int const v )
 
 bool ovr_GetComfortModeEnabled( ovrMobile * ovr )
 {
-	jmethodID getComfortViewModeMethodId = ovr_GetStaticMethodID( ovr->Jni, VrLibClass, "getComfortViewModeEnabled", "(Landroid/app/Activity;)Z" );
+	jmethodID getComfortViewModeMethodId = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass, "getComfortViewModeEnabled", "(Landroid/app/Activity;)Z" );
 	bool r = true;
     if ( getComfortViewModeMethodId != NULL && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0)
 	{
@@ -1351,7 +1351,7 @@ bool ovr_GetComfortModeEnabled( ovrMobile * ovr )
 
 void ovr_SetComfortModeEnabled( ovrMobile * ovr, bool const enabled )
 {
-	jmethodID enableComfortViewModeMethodId = ovr_GetStaticMethodID( ovr->Jni, VrLibClass, "enableComfortViewMode", "(Landroid/app/Activity;Z)V" );
+	jmethodID enableComfortViewModeMethodId = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass, "enableComfortViewMode", "(Landroid/app/Activity;Z)V" );
     if ( enableComfortViewModeMethodId != NULL && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0)
 	{
 		ovr->Jni->CallStaticVoidMethod( VrLibClass, enableComfortViewModeMethodId, ovr->Parms.ActivityObject, enabled );
@@ -1362,7 +1362,7 @@ void ovr_SetComfortModeEnabled( ovrMobile * ovr, bool const enabled )
 
 void ovr_SetDoNotDisturbMode( ovrMobile * ovr, bool const enabled )
 {
-	jmethodID setDoNotDisturbModeMethodId = ovr_GetStaticMethodID( ovr->Jni, VrLibClass, "setDoNotDisturbMode", "(Landroid/app/Activity;Z)V" );
+	jmethodID setDoNotDisturbModeMethodId = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass, "setDoNotDisturbMode", "(Landroid/app/Activity;Z)V" );
     if ( setDoNotDisturbModeMethodId != NULL && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0)
 	{
 		ovr->Jni->CallStaticVoidMethod( VrLibClass, setDoNotDisturbModeMethodId, ovr->Parms.ActivityObject, enabled );
@@ -1373,7 +1373,7 @@ void ovr_SetDoNotDisturbMode( ovrMobile * ovr, bool const enabled )
 bool ovr_GetDoNotDisturbMode( ovrMobile * ovr )
 {
 	bool r = false;
-	jmethodID getDoNotDisturbModeMethodId = ovr_GetStaticMethodID( ovr->Jni, VrLibClass, "getDoNotDisturbMode", "(Landroid/app/Activity;)Z" );
+	jmethodID getDoNotDisturbModeMethodId = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass, "getDoNotDisturbMode", "(Landroid/app/Activity;)Z" );
     if ( getDoNotDisturbModeMethodId != NULL && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0)
 	{
 		r = ovr->Jni->CallStaticBooleanMethod( VrLibClass, getDoNotDisturbModeMethodId, ovr->Parms.ActivityObject );
@@ -1390,15 +1390,15 @@ void ovr_RegisterHmtReceivers( JNIEnv * Jni, jobject ActivityObject )
 	{
 		return;
 	}
-	const jmethodID startProximityReceiverId = ovr_GetStaticMethodID( Jni, ProximityReceiverClass,
+	const jmethodID startProximityReceiverId = JniUtils::GetStaticMethodID( Jni, ProximityReceiverClass,
 			"startReceiver", "(Landroid/app/Activity;)V" );
 	Jni->CallStaticVoidMethod( ProximityReceiverClass, startProximityReceiverId, ActivityObject );
 
-	const jmethodID startDockReceiverId = ovr_GetStaticMethodID( Jni, DockReceiverClass,
+	const jmethodID startDockReceiverId = JniUtils::GetStaticMethodID( Jni, DockReceiverClass,
 			"startDockReceiver", "(Landroid/app/Activity;)V" );
 	Jni->CallStaticVoidMethod( DockReceiverClass, startDockReceiverId, ActivityObject );
 
-	const jmethodID startConsoleReceiverId = ovr_GetStaticMethodID( Jni, ConsoleReceiverClass,
+	const jmethodID startConsoleReceiverId = JniUtils::GetStaticMethodID( Jni, ConsoleReceiverClass,
 			"startReceiver", "(Landroid/app/Activity;)V" );
 	Jni->CallStaticVoidMethod( ConsoleReceiverClass, startConsoleReceiverId, ActivityObject );
 
@@ -1430,13 +1430,13 @@ ovrMobile * ovr_EnterVrMode( ovrModeParms parms, ovrHmdInfo * returnedHmdInfo )
 	}
 
 	// log the application name, version, activity, build, model, etc.
-	jmethodID logApplicationNameMethodId = ovr_GetStaticMethodID( Jni, VrLibClass, "logApplicationName", "(Landroid/app/Activity;)V" );
+	jmethodID logApplicationNameMethodId = JniUtils::GetStaticMethodID( Jni, VrLibClass, "logApplicationName", "(Landroid/app/Activity;)V" );
 	Jni->CallStaticVoidMethod( VrLibClass, logApplicationNameMethodId, parms.ActivityObject );
 
-	jmethodID logApplicationVersionId = ovr_GetStaticMethodID( Jni, VrLibClass, "logApplicationVersion", "(Landroid/app/Activity;)V" );
+	jmethodID logApplicationVersionId = JniUtils::GetStaticMethodID( Jni, VrLibClass, "logApplicationVersion", "(Landroid/app/Activity;)V" );
 	Jni->CallStaticVoidMethod( VrLibClass, logApplicationVersionId, parms.ActivityObject );
 
-	jmethodID logApplicationVrType = ovr_GetStaticMethodID( Jni, VrLibClass, "logApplicationVrType", "(Landroid/app/Activity;)V" );
+	jmethodID logApplicationVrType = JniUtils::GetStaticMethodID( Jni, VrLibClass, "logApplicationVrType", "(Landroid/app/Activity;)V" );
 	Jni->CallStaticVoidMethod( VrLibClass, logApplicationVrType, parms.ActivityObject );
 
     VString currentClassName = JniUtils::GetCurrentActivityName(Jni, parms.ActivityObject);
@@ -1486,7 +1486,7 @@ ovrMobile * ovr_EnterVrMode( ovrModeParms parms, ovrHmdInfo * returnedHmdInfo )
 	UpdateHmdInfo( ovr );
 
 	// Start up our vsync callbacks.
-	const jmethodID startVsyncId = ovr_GetStaticMethodID( ovr->Jni, VrLibClass,
+	const jmethodID startVsyncId = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass,
     		"startVsync", "(Landroid/app/Activity;)V" );
 	ovr->Jni->CallStaticVoidMethod( VrLibClass, startVsyncId, ovr->Parms.ActivityObject );
 
@@ -1494,7 +1494,7 @@ ovrMobile * ovr_EnterVrMode( ovrModeParms parms, ovrHmdInfo * returnedHmdInfo )
 	ovr_RegisterHmtReceivers( ovr->Jni, ovr->Parms.ActivityObject );
 
 	// Register our receivers
-	const jmethodID startReceiversId = ovr_GetStaticMethodID( ovr->Jni, VrLibClass,
+	const jmethodID startReceiversId = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass,
     		"startReceivers", "(Landroid/app/Activity;)V" );
 	ovr->Jni->CallStaticVoidMethod( VrLibClass, startReceiversId, ovr->Parms.ActivityObject );
 
@@ -1507,12 +1507,12 @@ ovrMobile * ovr_EnterVrMode( ovrModeParms parms, ovrHmdInfo * returnedHmdInfo )
 	}
 #endif
 
-	getPowerLevelStateID = ovr_GetStaticMethodID( ovr->Jni, VrLibClass, "getPowerLevelState", "(Landroid/app/Activity;)I" );
-	setActivityWindowFullscreenID = ovr_GetStaticMethodID( ovr->Jni, VrLibClass, "setActivityWindowFullscreen", "(Landroid/app/Activity;)V" );
-	notifyMountHandledID = ovr_GetStaticMethodID( ovr->Jni, VrLibClass, "notifyMountHandled", "(Landroid/app/Activity;)V" );
+	getPowerLevelStateID = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass, "getPowerLevelState", "(Landroid/app/Activity;)I" );
+	setActivityWindowFullscreenID = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass, "setActivityWindowFullscreen", "(Landroid/app/Activity;)V" );
+	notifyMountHandledID = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass, "notifyMountHandled", "(Landroid/app/Activity;)V" );
 
 	// get external storage directory
-	const jmethodID getExternalStorageDirectoryMethodId = ovr_GetStaticMethodID( ovr->Jni, VrLibClass, "getExternalStorageDirectory", "()Ljava/lang/String;" );
+	const jmethodID getExternalStorageDirectoryMethodId = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass, "getExternalStorageDirectory", "()Ljava/lang/String;" );
 	jstring externalStorageDirectoryString = (jstring)ovr->Jni->CallStaticObjectMethod( VrLibClass, getExternalStorageDirectoryMethodId );
     VString externalStorageDirectory = JniUtils::Convert(ovr->Jni, externalStorageDirectoryString);
     ovr->Jni->DeleteLocalRef(externalStorageDirectoryString);
@@ -1657,10 +1657,10 @@ void ovr_LeaveVrMode( ovrMobile * ovr )
 	}
 
 	// log the application name, version, activity, build, model, etc.
-	jmethodID logApplicationNameMethodId = ovr_GetStaticMethodID( ovr->Jni, VrLibClass, "logApplicationName", "(Landroid/app/Activity;)V" );
+	jmethodID logApplicationNameMethodId = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass, "logApplicationName", "(Landroid/app/Activity;)V" );
 	ovr->Jni->CallStaticVoidMethod( VrLibClass, logApplicationNameMethodId, ovr->Parms.ActivityObject );
 
-	jmethodID logApplicationVersionId = ovr_GetStaticMethodID( ovr->Jni, VrLibClass, "logApplicationVersion", "(Landroid/app/Activity;)V" );
+	jmethodID logApplicationVersionId = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass, "logApplicationVersion", "(Landroid/app/Activity;)V" );
 	ovr->Jni->CallStaticVoidMethod( VrLibClass, logApplicationVersionId, ovr->Parms.ActivityObject );
 
     VString currentClassName = JniUtils::GetCurrentActivityName(ovr->Jni, ovr->Parms.ActivityObject);
@@ -1686,13 +1686,13 @@ void ovr_LeaveVrMode( ovrMobile * ovr )
 	ReleaseVrSystemPerformance( ovr->Jni, VrLibClass, ovr->Parms.ActivityObject );
 
 	// Stop our vsync callbacks.
-	const jmethodID stopVsyncId = ovr_GetStaticMethodID( ovr->Jni, VrLibClass,
+	const jmethodID stopVsyncId = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass,
 			"stopVsync", "(Landroid/app/Activity;)V" );
 	ovr->Jni->CallStaticVoidMethod( VrLibClass, stopVsyncId, ovr->Parms.ActivityObject );
 
 	// Unregister our receivers
 #if 1
-	const jmethodID stopReceiversId = ovr_GetStaticMethodID( ovr->Jni, VrLibClass,
+	const jmethodID stopReceiversId = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass,
 			"stopReceivers", "(Landroid/app/Activity;)V" );
 	ovr->Jni->CallStaticVoidMethod( VrLibClass, stopReceiversId, ovr->Parms.ActivityObject );
 #else
@@ -2090,7 +2090,7 @@ void ovr_RequestAudioFocus( ovrMobile * ovr )
 		return;
 	}
 
-	const jmethodID requestAudioFocusId = ovr_GetStaticMethodID( ovr->Jni, VrLibClass,
+	const jmethodID requestAudioFocusId = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass,
     		"requestAudioFocus", "(Landroid/app/Activity;)V" );
 	ovr->Jni->CallStaticVoidMethod( VrLibClass, requestAudioFocusId, ovr->Parms.ActivityObject );
 }
@@ -2102,7 +2102,7 @@ void ovr_ReleaseAudioFocus( ovrMobile * ovr )
 		return;
 	}
 
-	const jmethodID releaseAudioFocusId = ovr_GetStaticMethodID( ovr->Jni, VrLibClass,
+	const jmethodID releaseAudioFocusId = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass,
 			"releaseAudioFocus", "(Landroid/app/Activity;)V" );
 	ovr->Jni->CallStaticVoidMethod( VrLibClass, releaseAudioFocusId, ovr->Parms.ActivityObject );
 }
@@ -2151,7 +2151,7 @@ void ovr_InitLocalPreferences( JNIEnv * jni, jobject activityObject )
 		return;
 	}
 
-	const jmethodID method = ovr_GetStaticMethodID( jni, VrLibClass,
+	const jmethodID method = JniUtils::GetStaticMethodID( jni, VrLibClass,
 			"isDeveloperMode", "(Landroid/app/Activity;)Z" );
 	const bool isDeveloperMode = jni->CallStaticBooleanMethod( VrLibClass, method, activityObject );
 
@@ -2216,7 +2216,7 @@ void ovr_ReturnToHome( ovrMobile * ovr )
 
 VString ovr_GetCurrentLanguage(ovrMobile * ovr)
 {
-    jmethodID getCurrentLanguageMethodId = ovr_GetStaticMethodID(ovr->Jni, VrLibClass, "getCurrentLanguage", "()Ljava/lang/String;");
+    jmethodID getCurrentLanguageMethodId = JniUtils::GetStaticMethodID(ovr->Jni, VrLibClass, "getCurrentLanguage", "()Ljava/lang/String;");
     if (getCurrentLanguageMethodId != NULL) {
         VString language = JniUtils::Convert(ovr->Jni, (jstring) ovr->Jni->CallStaticObjectMethod(VrLibClass, getCurrentLanguageMethodId));
         if (!ovr->Jni->ExceptionOccurred()) {

@@ -888,7 +888,7 @@ void TimeWarpLocal::warpThreadInit()
 	{
 		FAIL( "AttachCurrentThread() returned %i", rtn );
 	}
-	m_setSchedFifoMethodId = ovr_GetStaticMethodID( m_jni, m_initParms.vrLibClass, "setSchedFifoStatic", "(Landroid/app/Activity;II)I" );
+	m_setSchedFifoMethodId = JniUtils::GetStaticMethodID( m_jni, m_initParms.vrLibClass, "setSchedFifoStatic", "(Landroid/app/Activity;II)I" );
 
 	static const char * className = "android/graphics/SurfaceTexture";
 	const jclass surfaceTextureClass = m_jni->FindClass(className);

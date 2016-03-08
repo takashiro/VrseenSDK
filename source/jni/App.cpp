@@ -476,7 +476,7 @@ AppLocal::AppLocal( JNIEnv & jni_, jobject activityObject_, VrAppInterface & int
 
     sensorForNextWarp.Predicted.Pose.Orientation = Quatf();
 
-	ovr_LoadDevConfig( false );
+    JniUtils::LoadDevConfig( false );
 
 	// Default time warp parms
     swapParms = InitTimeWarpParms();
@@ -1024,7 +1024,7 @@ void AppLocal::Resume()
 	DROIDLOG( "OVRTimer", "AppLocal::Resume" );
 
 	// always reload the dev config on a resume
-	ovr_LoadDevConfig( true );
+    JniUtils::LoadDevConfig( true );
 
 	// Make sure the window surface is current, which it won't be
 	// if we were previously in async mode
@@ -2792,7 +2792,7 @@ const char * AppLocal::GetPackageName( ) const
 
 bool AppLocal::IsWifiConnected() const
 {
-    jmethodID isWififConnectedMethodId = ovr_GetStaticMethodID( vrJni, vrLibClass, "isWifiConnected", "(Landroid/app/Activity;)Z" );
+    jmethodID isWififConnectedMethodId = JniUtils::GetStaticMethodID( vrJni, vrLibClass, "isWifiConnected", "(Landroid/app/Activity;)Z" );
     return vrJni->CallStaticBooleanMethod( vrLibClass, isWififConnectedMethodId, javaObject );
 }
 

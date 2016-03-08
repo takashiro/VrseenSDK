@@ -19,32 +19,18 @@ namespace JniUtils {
     VString GetPackageCodePath(JNIEnv *jni, jclass activityClass, jobject activityObject);
     VString GetCurrentPackageName(JNIEnv *jni, jobject activityObject);
     VString GetCurrentActivityName(JNIEnv * jni, jobject activityObject);
+
+    jclass GetGlobalClassReference(JNIEnv *jni, const char *className);
+    jmethodID GetMethodID(JNIEnv *jni, jclass jniclass, const char *name, const char *signature);
+    jmethodID GetStaticMethodID(JNIEnv *jni, jclass jniclass, const char *name, const char *signature);
+    void LoadDevConfig(bool const forceReload);
 }
 
 class JavaObject
 {
 public:
-    JavaObject(JNIEnv *jni, const jobject jObject)
-        : m_jni(jni)
-        , m_jobject(jObject)
-    {
-        OVR_ASSERT(m_jni != nullptr);
-    }
-
-    ~JavaObject()
-    {
-        if(m_jni->ExceptionOccurred()) {
-            LOG( "JNI exception before DeleteLocalRef!" );
-            m_jni->ExceptionClear();
-        }
-        OVR_ASSERT( m_jni != NULL && m_jobject != NULL );
-        m_jni->DeleteLocalRef( m_jobject );
-        if ( m_jni->ExceptionOccurred() )
-        {
-            LOG( "JNI exception occured calling DeleteLocalRef!" );
-            m_jni->ExceptionClear();
-        }
-    }
+    JavaObject(JNIEnv *jni, const jobject jObject);
+    ~JavaObject();
 
     jobject toJObject() const { return m_jobject; }
     JNIEnv *jni() const { return m_jni; }
@@ -71,40 +57,14 @@ public:
 class JavaString : public JavaObject
 {
 public:
-    JavaString( JNIEnv * jni, const VString &str) :
-        JavaObject( jni, NULL )
-    {
-        setJObject(JniUtils::Convert(jni, str));
-        if (jni->ExceptionOccurred()) {
-            LOG( "JNI exception occured calling NewStringUTF!" );
-        }
-    }
+    JavaString( JNIEnv * jni, const VString &str);
 
     JavaString(JNIEnv *jni, jstring string)
         : JavaObject(jni, string)
     {
-        OVR_ASSERT(string != nullptr);
     }
 
     jstring toJString() const { return static_cast<jstring>(toJObject()); }
 };
 
 NV_NAMESPACE_END
-
-//==============================================================
-// JavaObject
-//
-// Releases a java object reference on destruction
-
-// This must be called by a function called directly from a java thread,
-// preferably from JNI_OnLoad().  It will fail if called from a pthread created
-// in native code, or from a NativeActivity due to the class-lookup issue:
-// http://developer.android.com/training/articles/perf-jni.html#faq_FindClass
-jclass		ovr_GetGlobalClassReference( JNIEnv * jni, const char * className );
-
-jmethodID	ovr_GetMethodID( JNIEnv * jni, jclass jniclass, const char * name, const char * signature );
-jmethodID	ovr_GetStaticMethodID( JNIEnv * jni, jclass jniclass, const char * name, const char * signature );
-
-void ovr_LoadDevConfig( bool const forceReload );
-
-
