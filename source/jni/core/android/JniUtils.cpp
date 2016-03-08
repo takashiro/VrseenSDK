@@ -22,6 +22,15 @@ namespace JniUtils {
         }
         return str;
     }
+
+    jstring Convert(JNIEnv *jni, const VString &str)
+    {
+        jsize len = str.size();
+        jchar *chars = new jchar[len];
+        jstring jstr = jni->NewString(chars, len);
+        delete[] chars;
+        return jstr;
+    }
 }
 
 NV_NAMESPACE_END

@@ -13,6 +13,7 @@ NV_NAMESPACE_BEGIN
 
 namespace JniUtils {
     VString Convert(JNIEnv *jni, jstring jstr);
+    jstring Convert(JNIEnv *jni, const VString &str);
 }
 
 NV_NAMESPACE_END
