@@ -70,14 +70,14 @@ enum eVRMenuObjectFlags
 	VRMENUOBJECT_FLAG_BILLBOARD			// always face view plane normal
 };
 
-typedef BitFlagsT< eVRMenuObjectFlags > VRMenuObjectFlags_t;
+typedef VFlags<eVRMenuObjectFlags> VRMenuObjectFlags_t;
 
 enum eVRMenuObjectInitFlags
 {
 	VRMENUOBJECT_INIT_FORCE_POSITION	// use the position in the parms instead of an auto-calculated position
 };
 
-typedef BitFlagsT< eVRMenuObjectInitFlags > VRMenuObjectInitFlags_t;
+typedef VFlags<eVRMenuObjectInitFlags> VRMenuObjectInitFlags_t;
 
 enum eVRMenuId
 {
@@ -100,7 +100,7 @@ enum eVRMenuRenderFlags
 	VRMENU_RENDER_POLYGON_OFFSET,
 	VRMENU_RENDER_BILLBOARD
 };
-typedef BitFlagsT< eVRMenuRenderFlags > VRMenuRenderFlags_t;
+typedef VFlags<eVRMenuRenderFlags> VRMenuRenderFlags_t;
 
 class VRMenuComponent;
 class VRMenuComponent_OnFocusGained;

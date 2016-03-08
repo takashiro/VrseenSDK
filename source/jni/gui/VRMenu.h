@@ -63,7 +63,7 @@ enum eVRMenuFlags
 	VRMENU_FLAG_SHORT_PRESS_HANDLED_BY_APP
 };
 
-typedef BitFlagsT< eVRMenuFlags, int > VRMenuFlags_t;
+typedef VFlags<eVRMenuFlags> VRMenuFlags_t;
 
 //==============================================================
 // VRMenu

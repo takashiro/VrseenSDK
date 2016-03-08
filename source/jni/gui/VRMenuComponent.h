@@ -31,7 +31,7 @@ enum eVRMenuComponentFlags
     VRMENU_COMPONENT_FRAME_UPDATE,  // gets Frame updates
 };
 
-typedef BitFlagsT< eVRMenuComponentFlags > VRMenuComponentFlags_t;
+typedef VFlags<eVRMenuComponentFlags> VRMenuComponentFlags_t;
 
 class VRMenuEvent;
 class App;
