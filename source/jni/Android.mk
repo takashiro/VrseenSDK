@@ -59,7 +59,7 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     core/android/GlUtils.cpp \
                     core/android/JniUtils.cpp \
                     core/android/LogUtils.cpp \
-                    core/android/NativeBuildStrings.cpp \
+                    core/android/VOsBuild.cpp \
                     api/VrApi.cpp \
                     api/Vsync.cpp \
                     api/DirectRender.cpp \

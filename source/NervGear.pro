@@ -44,7 +44,7 @@ SOURCES += \
     jni/core/android/GlUtils.cpp \
     jni/core/android/JniUtils.cpp \
     jni/core/android/LogUtils.cpp \
-    jni/core/android/NativeBuildStrings.cpp \
+    jni/core/android/VOsBuild.cpp \
     jni/api/VrApi.cpp \
     jni/api/Vsync.cpp \
     jni/api/DirectRender.cpp \
@@ -131,8 +131,7 @@ HEADERS += \
     jni/core/android/GlUtils.h \
     jni/core/android/JniUtils.h \
     jni/core/android/LogUtils.h \
-    jni/core/android/NativeBuildStrings.h \
-    jni/core/android/OVRVersion.h \
+    jni/core/android/VOsBuild.h \
     jni/core/capture/Capture.h \
     jni/core/capture/Capture_Config.h \
     jni/core/capture/Capture_LegacyPackets.h \

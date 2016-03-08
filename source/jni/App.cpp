@@ -26,8 +26,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VMath.h"
 #include "TypesafeNumber.h"
 #include "VJson.h"
-#include "Android/JniUtils.h"
-#include "Android/NativeBuildStrings.h"
+#include "android/JniUtils.h"
+#include "android/VOsBuild.h"
 
 #include "3rdParty/stb/stb_image_write.h"
 
@@ -2472,7 +2472,7 @@ int AppLocal::GetSystemBrightness() const
 	int cur = 255;
 	// FIXME: this specifically checks for Note4 before calling the function because calling it on other
 	// models right now can break rendering. Eventually this needs to be supported on all models.
-	if ( getSysBrightnessMethodId != NULL && OVR_stricmp( ovr_GetBuildString( BUILDSTR_MODEL ), "SM-G906S" ) != 0 )
+    if ( getSysBrightnessMethodId != NULL && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0)
 	{
         cur = vrJni->CallStaticIntMethod( vrLibClass, getSysBrightnessMethodId, javaObject );
 	}
@@ -2484,7 +2484,7 @@ void AppLocal::SetSystemBrightness( int const v )
 	int v2 = Alg::Clamp( v, 0, 255 );
 	// FIXME: this specifically checks for Note4 before calling the function because calling it on other
 	// models right now can break rendering. Eventually this needs to be supported on all models.
-	if ( setSysBrightnessMethodId != NULL && OVR_stricmp( ovr_GetBuildString( BUILDSTR_MODEL ), "SM-G906S" ) != 0 )
+    if ( setSysBrightnessMethodId != NULL && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0)
 	{
         vrJni->CallStaticVoidMethod( vrLibClass, setSysBrightnessMethodId, javaObject, v2 );
 	}
@@ -2493,7 +2493,7 @@ void AppLocal::SetSystemBrightness( int const v )
 bool AppLocal::GetComfortModeEnabled() const
 {
 	bool r = true;
-	if ( getComfortViewModeMethodId != NULL && OVR_stricmp( ovr_GetBuildString( BUILDSTR_MODEL ), "SM-G906S" ) != 0 )
+    if ( getComfortViewModeMethodId != NULL && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0)
 	{
         r = vrJni->CallStaticBooleanMethod( vrLibClass, getComfortViewModeMethodId, javaObject );
 	}
@@ -2502,7 +2502,7 @@ bool AppLocal::GetComfortModeEnabled() const
 
 void AppLocal::SetComfortModeEnabled( bool const enabled )
 {
-	if ( enableComfortViewModeMethodId != NULL && OVR_stricmp( ovr_GetBuildString( BUILDSTR_MODEL ), "SM-G906S" ) != 0 )
+    if ( enableComfortViewModeMethodId != NULL && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0)
 	{
         vrJni->CallStaticVoidMethod( vrLibClass, enableComfortViewModeMethodId, javaObject, enabled );
 	}
@@ -2510,7 +2510,7 @@ void AppLocal::SetComfortModeEnabled( bool const enabled )
 
 void AppLocal::SetDoNotDisturbMode( bool const enable )
 {
-	if ( setDoNotDisturbModeMethodId != NULL && OVR_stricmp( ovr_GetBuildString( BUILDSTR_MODEL ), "SM-G906S" ) != 0 )
+    if ( setDoNotDisturbModeMethodId != NULL && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0)
 	{
         vrJni->CallStaticVoidMethod( vrLibClass, setDoNotDisturbModeMethodId, javaObject, enable );
 	}
@@ -2519,7 +2519,7 @@ void AppLocal::SetDoNotDisturbMode( bool const enable )
 bool AppLocal::GetDoNotDisturbMode() const
 {
 	bool r = false;
-	if ( getDoNotDisturbModeMethodId != NULL && OVR_stricmp( ovr_GetBuildString( BUILDSTR_MODEL ), "SM-G906S" ) != 0 )
+    if ( getDoNotDisturbModeMethodId != NULL && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0)
 	{
         r = vrJni->CallStaticBooleanMethod( vrLibClass, getDoNotDisturbModeMethodId, javaObject );
 	}

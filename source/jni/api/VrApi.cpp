@@ -17,9 +17,11 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <sstream>
 #include <math.h>
 
-#include "Android/GlUtils.h"
-#include "Android/JniUtils.h"
-#include "Android/NativeBuildStrings.h"
+#include <VLog.h>
+
+#include "android/GlUtils.h"
+#include "android/JniUtils.h"
+#include "android/VOsBuild.h"
 #include "OVRVersion.h"					// for vrlib build version
 #include "VString.h"			// for ReadFreq()
 #include "VJson.h"			// needed for ovr_StartSystemActivity
@@ -560,7 +562,7 @@ void ovr_Init()
 	}
 
 	// After ovr_Initialize(), because it uses String
-	ovr_InitBuildStrings( jni );
+    VOsBuild::Init(jni);
 
 	NervGear::SystemActivities_InitEventQueues();
 }
@@ -1291,8 +1293,9 @@ static void UpdateHmdInfo( ovrMobile * ovr )
 	LOG( "ProductId = %i", hmdProductId );
 	LOG( "Version = %i", hmdVersion );
 
-	ovr->HmdInfo = NervGear::GetDeviceHmdInfo( ovr_GetBuildString( BUILDSTR_MODEL ),
-		ovr->Jni, ovr->Parms.ActivityObject, VrLibClass );
+    const char *model = VOsBuild::getString(VOsBuild::Model).toCString();
+    ovr->HmdInfo = NervGear::GetDeviceHmdInfo(model, ovr->Jni, ovr->Parms.ActivityObject, VrLibClass);
+    delete[] model;
 
 	// Update the dimensions in pixels directly from the window
 	ovr->HmdInfo.widthPixels = windowSurfaceWidth;
@@ -1313,8 +1316,7 @@ int ovr_GetSystemBrightness( ovrMobile * ovr )
 {
 	int cur = 255;
 	jmethodID getSysBrightnessMethodId = ovr_GetStaticMethodID( ovr->Jni, VrLibClass, "getSystemBrightness", "(Landroid/app/Activity;)I" );
-	if ( getSysBrightnessMethodId != NULL && NervGear::OVR_stricmp( ovr_GetBuildString( BUILDSTR_MODEL ), "SM-G906S" ) != 0 )
-	{
+    if (getSysBrightnessMethodId != NULL && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0) {
 		cur = ovr->Jni->CallStaticIntMethod( VrLibClass, getSysBrightnessMethodId, ovr->Parms.ActivityObject );
 		LOG( "System brightness = %i", cur );
 	}
@@ -1326,8 +1328,7 @@ void ovr_SetSystemBrightness(  ovrMobile * ovr, int const v )
 	int v2 = v < 0 ? 0 : v;
 	v2 = v2 > 255 ? 255 : v2;
 	jmethodID setSysBrightnessMethodId = ovr_GetStaticMethodID( ovr->Jni, VrLibClass, "setSystemBrightness", "(Landroid/app/Activity;I)V" );
-	if ( setSysBrightnessMethodId != NULL && NervGear::OVR_stricmp( ovr_GetBuildString( BUILDSTR_MODEL ), "SM-G906S" ) != 0 )
-	{
+    if (setSysBrightnessMethodId != NULL && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0) {
 		ovr->Jni->CallStaticVoidMethod( VrLibClass, setSysBrightnessMethodId, ovr->Parms.ActivityObject, v2 );
 		LOG( "Set brightness to %i", v2 );
 		ovr_GetSystemBrightness( ovr );
@@ -1338,7 +1339,7 @@ bool ovr_GetComfortModeEnabled( ovrMobile * ovr )
 {
 	jmethodID getComfortViewModeMethodId = ovr_GetStaticMethodID( ovr->Jni, VrLibClass, "getComfortViewModeEnabled", "(Landroid/app/Activity;)Z" );
 	bool r = true;
-	if ( getComfortViewModeMethodId != NULL && NervGear::OVR_stricmp( ovr_GetBuildString( BUILDSTR_MODEL ), "SM-G906S" ) != 0 )
+    if ( getComfortViewModeMethodId != NULL && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0)
 	{
 		r = ovr->Jni->CallStaticBooleanMethod( VrLibClass, getComfortViewModeMethodId, ovr->Parms.ActivityObject );
 		LOG( "System comfort mode = %s", r ? "true" : "false" );
@@ -1349,7 +1350,7 @@ bool ovr_GetComfortModeEnabled( ovrMobile * ovr )
 void ovr_SetComfortModeEnabled( ovrMobile * ovr, bool const enabled )
 {
 	jmethodID enableComfortViewModeMethodId = ovr_GetStaticMethodID( ovr->Jni, VrLibClass, "enableComfortViewMode", "(Landroid/app/Activity;Z)V" );
-	if ( enableComfortViewModeMethodId != NULL && NervGear::OVR_stricmp( ovr_GetBuildString( BUILDSTR_MODEL ), "SM-G906S" ) != 0 )
+    if ( enableComfortViewModeMethodId != NULL && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0)
 	{
 		ovr->Jni->CallStaticVoidMethod( VrLibClass, enableComfortViewModeMethodId, ovr->Parms.ActivityObject, enabled );
 		LOG( "Set comfort mode to %s", enabled ? "true" : "false" );
@@ -1360,7 +1361,7 @@ void ovr_SetComfortModeEnabled( ovrMobile * ovr, bool const enabled )
 void ovr_SetDoNotDisturbMode( ovrMobile * ovr, bool const enabled )
 {
 	jmethodID setDoNotDisturbModeMethodId = ovr_GetStaticMethodID( ovr->Jni, VrLibClass, "setDoNotDisturbMode", "(Landroid/app/Activity;Z)V" );
-	if ( setDoNotDisturbModeMethodId != NULL && NervGear::OVR_stricmp( ovr_GetBuildString( BUILDSTR_MODEL ), "SM-G906S" ) != 0 )
+    if ( setDoNotDisturbModeMethodId != NULL && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0)
 	{
 		ovr->Jni->CallStaticVoidMethod( VrLibClass, setDoNotDisturbModeMethodId, ovr->Parms.ActivityObject, enabled );
 		LOG( "System DND mode = %s", enabled ? "true" : "false" );
@@ -1371,7 +1372,7 @@ bool ovr_GetDoNotDisturbMode( ovrMobile * ovr )
 {
 	bool r = false;
 	jmethodID getDoNotDisturbModeMethodId = ovr_GetStaticMethodID( ovr->Jni, VrLibClass, "getDoNotDisturbMode", "(Landroid/app/Activity;)Z" );
-	if ( getDoNotDisturbModeMethodId != NULL && NervGear::OVR_stricmp( ovr_GetBuildString( BUILDSTR_MODEL ), "SM-G906S" ) != 0 )
+    if ( getDoNotDisturbModeMethodId != NULL && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0)
 	{
 		r = ovr->Jni->CallStaticBooleanMethod( VrLibClass, getDoNotDisturbModeMethodId, ovr->Parms.ActivityObject );
 		LOG( "Set DND mode to %s", r ? "true" : "false" );
@@ -1439,8 +1440,8 @@ ovrMobile * ovr_EnterVrMode( ovrModeParms parms, ovrHmdInfo * returnedHmdInfo )
 	char currentClassName[128];
 	LOG( "ACTIVITY = %s", ovr_GetCurrentActivityName( Jni, parms.ActivityObject, currentClassName, sizeof( currentClassName ) ) );
 
-	LOG( "BUILD = %s %s", ovr_GetBuildString( BUILDSTR_DISPLAY ), buildConfig );
-	LOG( "MODEL = %s", ovr_GetBuildString( BUILDSTR_MODEL ) );
+    vInfo("BUILD =" << VOsBuild::getString(VOsBuild::Display) << buildConfig);
+    vInfo("MODEL =" << VOsBuild::getString(VOsBuild::Model));
 	LOG( "OVR_VERSION = %s", ovr_GetVersionString() );
 	LOG( "ovrModeParms.AsynchronousTimeWarp = %i", parms.AsynchronousTimeWarp );
 	LOG( "ovrModeParms.AllowPowerSave = %i", parms.AllowPowerSave );
