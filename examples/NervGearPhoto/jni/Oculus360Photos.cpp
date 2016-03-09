@@ -17,7 +17,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 
 #include "Oculus360Photos.h"
 #include <android/keycodes.h>
-#include "Threads.h"
+#include "VThread.h"
 #include "gui/GuiSys.h"
 #include "PanoBrowser.h"
 #include "PanoMenu.h"
@@ -378,7 +378,7 @@ void Oculus360Photos::OneTimeInit( const char * fromPackage, const char * launch
 	pthread_attr_t loadingThreadAttr;
 	pthread_attr_init( &loadingThreadAttr );
 	sched_param sparam;
-	sparam.sched_priority = Thread::GetOSPriority( Thread::NormalPriority );
+    sparam.sched_priority = VThread::GetOSPriority(VThread::NormalPriority);
 	pthread_attr_setschedparam( &loadingThreadAttr, &sparam );
 
 	pthread_t loadingThread;

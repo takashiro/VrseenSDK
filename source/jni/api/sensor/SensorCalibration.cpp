@@ -11,7 +11,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "SensorCalibration.h"
 #include "Log.h"
-#include "Threads.h"
+#include "VThread.h"
 #include <time.h>
 
 namespace NervGear {
@@ -131,7 +131,7 @@ void SensorCalibration::DebugClearHeadsetTemperatureReports()
 #endif
 
 			// Need to wait for the tracker board to finish writing to eeprom.
-			Thread::MSleep(50);
+            VThread::MSleep(50);
 		}
 	}
 }

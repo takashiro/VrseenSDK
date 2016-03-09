@@ -13,7 +13,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 
 ************************************************************************************/
 
-#include "Threads.h"
+#include "VThread.h"
 #include "PackageFiles.h"
 #include "FileLoader.h"
 #include "Oculus360Photos.h"
@@ -265,7 +265,7 @@ void InitFileQueue( App * app, Oculus360Photos * photos )
 		pthread_attr_t loadingThreadAttr;
 		pthread_attr_init( &loadingThreadAttr );
 		sched_param sparam;
-		sparam.sched_priority = Thread::GetOSPriority( Thread::NormalPriority );
+        sparam.sched_priority = VThread::GetOSPriority(VThread::NormalPriority);
 		pthread_attr_setschedparam( &loadingThreadAttr, &sparam );
 		pthread_t	loadingThread;
 		int createLoadingThreadErr = -1;
