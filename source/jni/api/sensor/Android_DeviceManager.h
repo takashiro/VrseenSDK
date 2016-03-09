@@ -95,7 +95,7 @@ private:
     Array<struct pollfd>    m_pollFds;
     Array<Notifier*>        m_fdNotifiers;
 
-    Event                   m_startupEvent;
+    VEvent                  m_startupEvent;
     volatile bool           m_suspend;
 
     // Ticks notifiers - used for time-dependent events such as keep-alive.
