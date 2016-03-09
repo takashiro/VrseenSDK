@@ -5,13 +5,13 @@
 // Application code should not interact with this, all timing information
 // should be taken from VrShell.
 
-// The Java_me_takashiro_nervgear_VrLib_nativeVsync() function is called by a java choreographer doFrame() callback
+// The Java_com_vrseen_nervgear_VrLib_nativeVsync() function is called by a java choreographer doFrame() callback
 // to synchronize timing with vsync, and allow us to estimate the scan period.
 // It doesn't matter if some frames are dropped or delayed, the timing
 // information should be good for a prolonged period after getting two good
 // samples. We may want to save some CPU by cutting the choreographer callbacks to
 // once a second after timing is established.
-//	void Java_me_takashiro_nervgear_VrLib_nativeVsync( JNIEnv *jni, jclass clazz, jlong nanoSeconds );
+//	void Java_com_vrseen_nervgear_VrLib_nativeVsync( JNIEnv *jni, jclass clazz, jlong nanoSeconds );
 
 #pragma once
 

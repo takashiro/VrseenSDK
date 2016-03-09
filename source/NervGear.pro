@@ -21,6 +21,7 @@ SOURCES += \
     jni/core/Atomic.cpp \
     jni/core/VByteArray.cpp \
     jni/core/VChar.cpp \
+    jni/core/VEvent.cpp \
     jni/core/File.cpp \
     jni/core/FileFILE.cpp \
     jni/core/VJson.cpp \
@@ -36,11 +37,13 @@ SOURCES += \
     jni/core/SysFile.cpp \
     jni/core/System.cpp \
     jni/core/ThreadCommandQueue.cpp \
-    jni/core/ThreadsPthread.cpp \
+    jni/core/VThread.cpp \
     jni/core/VTimer.cpp \
     jni/core/BinaryFile.cpp \
     jni/core/MappedFile.cpp \
     jni/core/MemBuffer.cpp \
+    jni/core/VMutex.cpp \
+    jni/core/VWaitCondition.cpp \
     jni/core/android/GlUtils.cpp \
     jni/core/android/JniUtils.cpp \
     jni/core/android/LogUtils.cpp \
@@ -151,6 +154,7 @@ HEADERS += \
     jni/core/VChar.h \
     jni/core/ContainerAllocator.h \
     jni/core/Deque.h \
+    jni/core/VEvent.h \
     jni/core/File.h \
     jni/core/FileFILE.h \
     jni/core/VBufferedFile.h \
@@ -170,13 +174,13 @@ HEADERS += \
     jni/core/SysFile.h \
     jni/core/System.h \
     jni/core/ThreadCommandQueue.h \
-    jni/core/Threads.h \
+    jni/core/VThread.h \
     jni/core/VTimer.h \
     jni/core/BinaryFile.h \
     jni/core/MappedFile.h \
     jni/core/MemBuffer.h \
+    jni/core/VMutex.h \
     jni/core/Types.h \
-    jni/core/KeyCodes.h \
     jni/core/List.h \
     jni/core/OVR.h \
     jni/core/OVRVersion.h \
@@ -184,6 +188,7 @@ HEADERS += \
     jni/core/String_Utils.h \
     jni/core/StringHash.h \
     jni/core/TypesafeNumber.h \
+    jni/core/VWaitCondition.h \
     jni/embedded/dependency_error_de.h \
     jni/embedded/dependency_error_en.h \
     jni/embedded/dependency_error_es.h \

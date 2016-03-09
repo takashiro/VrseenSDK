@@ -3,7 +3,6 @@
 #include "vglobal.h"
 #include "PhoneSensors.h"
 #include "VMath.h"
-#include "Threads.h"
 
 #include <android/sensor.h>
 

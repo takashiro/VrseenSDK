@@ -86,9 +86,9 @@ ThreadCommandQueue* DeviceManager::threadQueue()
     return pThread;
 }
 
-ThreadId DeviceManager::threadId() const
+uint DeviceManager::threadId() const
 {
-    return pThread->threadId();
+    return pThread->id();
 }
 
 int DeviceManager::threadTid() const
@@ -133,7 +133,7 @@ DeviceEnumerator<> DeviceManager::enumerateDevicesEx(const DeviceEnumerationArgs
 // ***** DeviceManager Thread
 
 DeviceManagerThread::DeviceManagerThread()
-    : Thread(ThreadStackSize),
+    : VThread(ThreadStackSize),
       m_suspend( false )
 {
     int result = pipe(m_commandFd);
@@ -194,7 +194,7 @@ int DeviceManagerThread::run()
 {
     ThreadCommand::PopBuffer command;
 
-    setThreadName("NVDeviceMgr");
+    setName("NVDeviceMgr");
 
     LogText( "DeviceManagerThread - running (Tid=%d).\n", threadTid() );
 

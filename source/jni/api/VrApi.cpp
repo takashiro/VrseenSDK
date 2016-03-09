@@ -317,7 +317,7 @@ extern "C"
 {
 // The JNIEXPORT macro prevents the functions from ever being stripped out of the library.
 
-void Java_me_takashiro_nervgear_VrLib_nativeVsync( JNIEnv *jni, jclass clazz, jlong frameTimeNanos );
+void Java_com_vrseen_nervgear_VrLib_nativeVsync( JNIEnv *jni, jclass clazz, jlong frameTimeNanos );
 
 JNIEXPORT jint JNI_OnLoad( JavaVM * vm, void * reserved )
 {
@@ -332,7 +332,7 @@ JNIEXPORT jint JNI_OnLoad( JavaVM * vm, void * reserved )
 	return JNI_VERSION_1_6;
 }
 
-JNIEXPORT void Java_me_takashiro_nervgear_VrLib_nativeVolumeEvent(JNIEnv *jni, jclass clazz, jint volume)
+JNIEXPORT void Java_com_vrseen_nervgear_VrLib_nativeVolumeEvent(JNIEnv *jni, jclass clazz, jint volume)
 {
     LOG( "nativeVolumeEvent(%i)", volume );
 
@@ -342,7 +342,7 @@ JNIEXPORT void Java_me_takashiro_nervgear_VrLib_nativeVolumeEvent(JNIEnv *jni, j
     TimeOfLastVolumeChange.setState( now );
 }
 
-JNIEXPORT void Java_me_takashiro_nervgear_VrLib_nativeBatteryEvent(JNIEnv *jni, jclass clazz, jint status, jint level, jint temperature)
+JNIEXPORT void Java_com_vrseen_nervgear_VrLib_nativeBatteryEvent(JNIEnv *jni, jclass clazz, jint status, jint level, jint temperature)
 {
     LOG( "nativeBatteryEvent(%i, %i, %i)", status, level, temperature );
 
@@ -353,34 +353,34 @@ JNIEXPORT void Java_me_takashiro_nervgear_VrLib_nativeBatteryEvent(JNIEnv *jni, 
     BatteryState.setState( state );
 }
 
-JNIEXPORT void Java_me_takashiro_nervgear_VrLib_nativeHeadsetEvent(JNIEnv *jni, jclass clazz, jint state)
+JNIEXPORT void Java_com_vrseen_nervgear_VrLib_nativeHeadsetEvent(JNIEnv *jni, jclass clazz, jint state)
 {
     LOG( "nativeHeadsetEvent(%i)", state );
     HeadsetPluggedState.setState( ( state == 1 ) );
 }
 
-JNIEXPORT void Java_me_takashiro_nervgear_VrLib_nativeWifiEvent( JNIEnv * jni, jclass clazz, jint state, jint level )
+JNIEXPORT void Java_com_vrseen_nervgear_VrLib_nativeWifiEvent( JNIEnv * jni, jclass clazz, jint state, jint level )
 {
 	LOG( "nativeWifiSignalEvent( %i, %i )", state, level );
 	WifiState.setState( wifiState_t( static_cast< eWifiState >( state ) ) );
 	WifiSignalLevel.setState( wifiSignalLevel_t( level ) );
 }
 
-JNIEXPORT void Java_me_takashiro_nervgear_VrLib_nativeCellularStateEvent( JNIEnv * jni, jclass clazz, jint state )
+JNIEXPORT void Java_com_vrseen_nervgear_VrLib_nativeCellularStateEvent( JNIEnv * jni, jclass clazz, jint state )
 {
 	LOG( "nativeCellularStateEvent( %i )", state );
 	CellularState.setState( cellularState_t( static_cast< eCellularState >( state ) ) );
 }
 
-JNIEXPORT void Java_me_takashiro_nervgear_VrLib_nativeCellularSignalEvent( JNIEnv * jni, jclass clazz, jint level )
+JNIEXPORT void Java_com_vrseen_nervgear_VrLib_nativeCellularSignalEvent( JNIEnv * jni, jclass clazz, jint level )
 {
 	LOG( "nativeCellularSignalEvent( %i )", level );
 	CellularSignalLevel.setState( cellularSignalLevel_t( level ) );
 }
 
-JNIEXPORT void Java_me_takashiro_nervgear_ProximityReceiver_nativeMountHandled(JNIEnv *jni, jclass clazz)
+JNIEXPORT void Java_com_vrseen_nervgear_ProximityReceiver_nativeMountHandled(JNIEnv *jni, jclass clazz)
 {
-	LOG( "Java_me_takashiro_nervgear_VrLib_nativeMountEventHandled" );
+	LOG( "Java_com_vrseen_nervgear_VrLib_nativeMountEventHandled" );
 
 	// If we're received this, the foreground app has already received
 	// and processed the mount event.
@@ -391,7 +391,7 @@ JNIEXPORT void Java_me_takashiro_nervgear_ProximityReceiver_nativeMountHandled(J
 	}
 }
 
-JNIEXPORT void Java_me_takashiro_nervgear_ProximityReceiver_nativeProximitySensor(JNIEnv *jni, jclass clazz, jint state)
+JNIEXPORT void Java_com_vrseen_nervgear_ProximityReceiver_nativeProximitySensor(JNIEnv *jni, jclass clazz, jint state)
 {
 	LOG( "nativeProximitySensor(%i)", state );
 	if ( state == 0 )
@@ -404,7 +404,7 @@ JNIEXPORT void Java_me_takashiro_nervgear_ProximityReceiver_nativeProximitySenso
 	}
 }
 
-JNIEXPORT void Java_me_takashiro_nervgear_DockReceiver_nativeDockEvent(JNIEnv *jni, jclass clazz, jint state)
+JNIEXPORT void Java_com_vrseen_nervgear_DockReceiver_nativeDockEvent(JNIEnv *jni, jclass clazz, jint state)
 {
 	LOG( "nativeDockEvent = %s", ( state == 0 ) ? "UNDOCKED" : "DOCKED" );
 
@@ -489,10 +489,10 @@ void ovr_OnLoad( JavaVM * JavaVm_ )
 		LOG( "Using caller's JNIEnv" );
 	}
 
-	VrLibClass = JniUtils::GetGlobalClassReference( jni, "me/takashiro/nervgear/VrLib" );
-	ProximityReceiverClass = JniUtils::GetGlobalClassReference( jni, "me/takashiro/nervgear/ProximityReceiver" );
-	DockReceiverClass = JniUtils::GetGlobalClassReference( jni, "me/takashiro/nervgear/DockReceiver" );
-	ConsoleReceiverClass = JniUtils::GetGlobalClassReference( jni, "me/takashiro/nervgear/ConsoleReceiver" );
+	VrLibClass = JniUtils::GetGlobalClassReference( jni, "com/vrseen/nervgear/VrLib" );
+	ProximityReceiverClass = JniUtils::GetGlobalClassReference( jni, "com/vrseen/nervgear/ProximityReceiver" );
+	DockReceiverClass = JniUtils::GetGlobalClassReference( jni, "com/vrseen/nervgear/DockReceiver" );
+	ConsoleReceiverClass = JniUtils::GetGlobalClassReference( jni, "com/vrseen/nervgear/ConsoleReceiver" );
 
 	// Get the BuildVersion SDK
 	jclass versionClass = jni->FindClass( "android/os/Build$VERSION" );
@@ -516,16 +516,16 @@ void ovr_OnLoad( JavaVM * JavaVm_ )
 		JNINativeMethod	Jnim;
 	} gMethods[] =
 	{
-		{ DockReceiverClass, 		{ "nativeDockEvent", "(I)V",(void*)Java_me_takashiro_nervgear_DockReceiver_nativeDockEvent } },
-		{ ProximityReceiverClass, 	{ "nativeProximitySensor", "(I)V",(void*)Java_me_takashiro_nervgear_ProximityReceiver_nativeProximitySensor } },
-		{ ProximityReceiverClass, 	{ "nativeMountHandled", "()V",(void*)Java_me_takashiro_nervgear_ProximityReceiver_nativeMountHandled } },
-		{ VrLibClass, 				{ "nativeVolumeEvent", "(I)V",(void*)Java_me_takashiro_nervgear_VrLib_nativeVolumeEvent } },
-		{ VrLibClass, 				{ "nativeBatteryEvent", "(III)V",(void*)Java_me_takashiro_nervgear_VrLib_nativeBatteryEvent } },
-		{ VrLibClass, 				{ "nativeHeadsetEvent", "(I)V",(void*)Java_me_takashiro_nervgear_VrLib_nativeHeadsetEvent } },
-		{ VrLibClass, 				{ "nativeWifiEvent", "(II)V",(void*)Java_me_takashiro_nervgear_VrLib_nativeWifiEvent } },
-		{ VrLibClass, 				{ "nativeCellularStateEvent", "(I)V",(void*)Java_me_takashiro_nervgear_VrLib_nativeCellularStateEvent } },
-		{ VrLibClass, 				{ "nativeCellularSignalEvent", "(I)V",(void*)Java_me_takashiro_nervgear_VrLib_nativeCellularSignalEvent } },
-		{ VrLibClass, 				{ "nativeVsync", "(J)V",(void*)Java_me_takashiro_nervgear_VrLib_nativeVsync } },
+		{ DockReceiverClass, 		{ "nativeDockEvent", "(I)V",(void*)Java_com_vrseen_nervgear_DockReceiver_nativeDockEvent } },
+		{ ProximityReceiverClass, 	{ "nativeProximitySensor", "(I)V",(void*)Java_com_vrseen_nervgear_ProximityReceiver_nativeProximitySensor } },
+		{ ProximityReceiverClass, 	{ "nativeMountHandled", "()V",(void*)Java_com_vrseen_nervgear_ProximityReceiver_nativeMountHandled } },
+		{ VrLibClass, 				{ "nativeVolumeEvent", "(I)V",(void*)Java_com_vrseen_nervgear_VrLib_nativeVolumeEvent } },
+		{ VrLibClass, 				{ "nativeBatteryEvent", "(III)V",(void*)Java_com_vrseen_nervgear_VrLib_nativeBatteryEvent } },
+		{ VrLibClass, 				{ "nativeHeadsetEvent", "(I)V",(void*)Java_com_vrseen_nervgear_VrLib_nativeHeadsetEvent } },
+		{ VrLibClass, 				{ "nativeWifiEvent", "(II)V",(void*)Java_com_vrseen_nervgear_VrLib_nativeWifiEvent } },
+		{ VrLibClass, 				{ "nativeCellularStateEvent", "(I)V",(void*)Java_com_vrseen_nervgear_VrLib_nativeCellularStateEvent } },
+		{ VrLibClass, 				{ "nativeCellularSignalEvent", "(I)V",(void*)Java_com_vrseen_nervgear_VrLib_nativeCellularSignalEvent } },
+		{ VrLibClass, 				{ "nativeVsync", "(J)V",(void*)Java_com_vrseen_nervgear_VrLib_nativeVsync } },
 	};
 	const int count = sizeof( gMethods ) / sizeof( gMethods[0] );
 

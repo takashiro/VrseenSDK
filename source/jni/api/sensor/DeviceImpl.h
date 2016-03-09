@@ -7,7 +7,6 @@
 #include "Log.h"
 #include "System.h"
 
-#include "Threads.h"
 #include "ThreadCommandQueue.h"
 #include "HIDDevice.h"
 
@@ -359,7 +358,7 @@ public:
     virtual ThreadCommandQueue* threadQueue() = 0;
 
     // Returns the thread id of the DeviceManager.
-    virtual ThreadId threadId() const = 0;
+    virtual uint threadId() const = 0;
 
     virtual int threadTid() const = 0;
     virtual void suspendThread() const = 0;

@@ -10,6 +10,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 *************************************************************************************/
 
 #include "SensorDeviceImpl.h"
+#include "VThread.h"
 
 // HMDDeviceDesc can be created/updated through Sensor carrying DisplayInfo.
 
@@ -1345,7 +1346,7 @@ bool SensorDeviceImpl::getUUIDReport(UUIDReport* data)
 bool SensorDeviceImpl::SetTemperatureReport(const TemperatureReport& data)
 {
     // direct call if we are already on the device manager thread
-    if (GetCurrentThreadId() == GetManagerImpl()->threadId())
+    if (VThread::currentThreadId() == GetManagerImpl()->threadId())
     {
         return setTemperatureReport(data);
     }
@@ -1382,7 +1383,7 @@ bool SensorDeviceImpl::getTemperatureReport(TemperatureReport* data)
 bool SensorDeviceImpl::GetAllTemperatureReports(Array<Array<TemperatureReport> >* data)
 {
     // direct call if we are already on the device manager thread
-    if (GetCurrentThreadId() == GetManagerImpl()->threadId())
+    if (VThread::currentThreadId() == GetManagerImpl()->threadId())
     {
         return getAllTemperatureReports(data);
     }
@@ -1426,7 +1427,7 @@ bool SensorDeviceImpl::getAllTemperatureReports(Array<Array<TemperatureReport> >
 bool SensorDeviceImpl::GetGyroOffsetReport(GyroOffsetReport* data)
 {
     // direct call if we are already on the device manager thread
-    if (GetCurrentThreadId() == GetManagerImpl()->threadId())
+    if (VThread::currentThreadId() == GetManagerImpl()->threadId())
     {
         return getGyroOffsetReport(data);
     }

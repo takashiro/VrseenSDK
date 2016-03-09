@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vglobal.h"
+#include "VMutex.h"
 
 #include "sensor/SensorFusion.h"
 #include "sensor/LatencyTest.h"
@@ -49,12 +50,12 @@ private:
     unsigned							m_sensorCaps;
 
     AtomicInt<int>					m_sensorChangedCount;
-    Mutex							m_sensorChangedMutex;
+    VMutex							m_sensorChangedMutex;
     Ptr<SensorDevice>			m_sensor;
     SensorFusion					m_sFusion;
 
     AtomicInt<int>					m_latencyTesterChangedCount;
-    Mutex							m_latencyTesterChangedMutex;
+    VMutex							m_latencyTesterChangedMutex;
     Ptr<LatencyTestDevice>	m_latencyTester;
     LatencyTest					m_latencyUtil;
 

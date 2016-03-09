@@ -48,7 +48,7 @@ extern "C"
 	// The nativeVsync function is called from java with timing
 	// information that GetFractionalVsync() and FramePointTimeInSeconds()
 	// can use to closely estimate raster position.
-	void Java_me_takashiro_nervgear_VrLib_nativeVsync( JNIEnv *jni, jclass clazz, jlong frameTimeNanos )
+	void Java_com_vrseen_nervgear_VrLib_nativeVsync( JNIEnv *jni, jclass clazz, jlong frameTimeNanos )
 	{
 	#if defined(OVR_ENABLE_CAPTURE)
 		NervGear::Capture::VSyncTimestamp(frameTimeNanos);

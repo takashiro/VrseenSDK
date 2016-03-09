@@ -1,15 +1,9 @@
 #pragma once
 
 #include "vglobal.h"
-
 #include "Types.h"
 
-// Include System thread functionality.
-#if defined(OVR_OS_WIN32)
-#include <windows.h>
-#else
 #include <pthread.h>
-#endif
 
 
 NV_NAMESPACE_BEGIN
@@ -777,29 +771,6 @@ class Lock
 
 
     // *** Lock implementation for various platforms.
-
-#if !defined(OVR_ENABLE_THREADS)
-
-public:
-    // With no thread support, lock does nothing.
-    inline Lock() { }
-    inline Lock(unsigned) { }
-    inline ~Lock() { }
-    inline void DoLock() { }
-    inline void Unlock() { }
-
-   // Windows.
-#elif defined(OVR_OS_WIN32)
-
-    CRITICAL_SECTION cs;
-public:
-    Lock(unsigned spinCount = 0);
-    ~Lock();
-    // Locking functions.
-    inline void DoLock()    { ::EnterCriticalSection(&cs); }
-    inline void Unlock()    { ::LeaveCriticalSection(&cs); }
-
-#else
     pthread_mutex_t mutex;
 
 public:
@@ -820,9 +791,6 @@ public:
     ~Lock ()                { pthread_mutex_destroy(&mutex); }
     inline void DoLock()    { pthread_mutex_lock(&mutex); }
     inline void Unlock()    { pthread_mutex_unlock(&mutex); }
-
-#endif // OVR_ENABLE_THREDS
-
 
 public:
     // Locker class, used for automatic locking

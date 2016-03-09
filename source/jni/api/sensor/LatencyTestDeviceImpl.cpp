@@ -10,6 +10,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 *************************************************************************************/
 
 #include "Std.h"
+#include "VThread.h"
 #include "LatencyTestDeviceImpl.h"
 
 namespace NervGear {
@@ -559,7 +560,7 @@ bool LatencyTestDeviceImpl::SetConfiguration(const NervGear::LatencyTestConfigur
     bool                result = false;
     ThreadCommandQueue* queue = GetManagerImpl()->threadQueue();
 
-    if (GetManagerImpl()->threadId() != NervGear::GetCurrentThreadId())
+    if (GetManagerImpl()->threadId() != NervGear::VThread::currentThreadId())
     {
         if (!waitFlag)
         {
