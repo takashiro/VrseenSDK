@@ -8,7 +8,7 @@ Authors     :
 Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 *************************************************************************************/
-package me.takashiro.nervgear;
+package com.vrseen.nervgear;
 
 import java.io.IOException;
 import java.util.ArrayList;

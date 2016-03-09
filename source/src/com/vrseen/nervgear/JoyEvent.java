@@ -8,7 +8,7 @@ Authors     :
 Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 *************************************************************************************/
-package me.takashiro.nervgear;
+package com.vrseen.nervgear;
 
 /**
  * Joypad button events generate keyCodes that overlap

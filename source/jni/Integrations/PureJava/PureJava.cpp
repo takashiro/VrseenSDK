@@ -56,7 +56,7 @@ public:
 extern "C"
 {
 
-long Java_me_takashiro_nervgear_VrActivity_nativeSetJavaAppInterface(
+long Java_com_vrseen_nervgear_VrActivity_nativeSetJavaAppInterface(
 		JNIEnv * jni, jclass clazz, jobject activity, jstring javaFromPackageNameString,
 		jstring javaCommandString, jstring javaUriString )
 {

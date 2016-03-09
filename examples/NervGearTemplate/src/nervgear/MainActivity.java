@@ -3,8 +3,8 @@ package nervgear;
 import android.os.Bundle;
 import android.util.Log;
 import android.content.Intent;
-import me.takashiro.nervgear.VrActivity;
-import me.takashiro.nervgear.VrLib;
+import com.vrseen.nervgear.VrActivity;
+import com.vrseen.nervgear.VrLib;
 
 public class MainActivity extends VrActivity {
 	public static final String TAG = "VrTemplate";

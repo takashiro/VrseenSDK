@@ -6,21 +6,21 @@ namespace OculusCinema
 
 extern "C" {
 
-long Java_me_takashiro_nervgear_cinema_MainActivity_nativeSetAppInterface( JNIEnv *jni, jclass clazz, jobject activity,
+long Java_com_vrseen_nervgear_cinema_MainActivity_nativeSetAppInterface( JNIEnv *jni, jclass clazz, jobject activity,
 		jstring fromPackageName, jstring commandString, jstring uriString )
 {
 	LOG( "nativeSetAppInterface" );
 	return (new CinemaApp())->SetActivity( jni, clazz, activity, fromPackageName, commandString, uriString );
 }
 
-void Java_me_takashiro_nervgear_cinema_MainActivity_nativeSetVideoSize( JNIEnv *jni, jclass clazz, jlong interfacePtr, int width, int height, int rotation, int duration ) {
+void Java_com_vrseen_nervgear_cinema_MainActivity_nativeSetVideoSize( JNIEnv *jni, jclass clazz, jlong interfacePtr, int width, int height, int rotation, int duration ) {
 	LOG( "nativeSetVideoSizes: width=%i height=%i rotation=%i duration=%i", width, height, rotation, duration );
 
 	CinemaApp *cinema = ( CinemaApp * )( ( (App *)interfacePtr )->GetAppInterface() );
 	cinema->app->GetMessageQueue().PostPrintf( "video %i %i %i %i", width, height, rotation, duration );
 }
 
-jobject Java_me_takashiro_nervgear_cinema_MainActivity_nativePrepareNewVideo( JNIEnv *jni, jclass clazz, jlong interfacePtr ) {
+jobject Java_com_vrseen_nervgear_cinema_MainActivity_nativePrepareNewVideo( JNIEnv *jni, jclass clazz, jlong interfacePtr ) {
 	CinemaApp *cinema = ( CinemaApp * )( ( (App *)interfacePtr )->GetAppInterface() );
 
 	// set up a message queue to get the return message

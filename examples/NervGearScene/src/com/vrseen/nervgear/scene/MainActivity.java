@@ -1,25 +1,25 @@
 /************************************************************************************
 
 Filename    :   MainActivity.java
-Content     :   
-Created     :   
-Authors     :   
+Content     :
+Created     :
+Authors     :
 
 Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 *************************************************************************************/
-package com.oculusvr.vrscene;
+package com.vrseen.nervgear.scene;
 
 import android.os.Bundle;
 import android.util.Log;
 import android.content.Intent;
-import me.takashiro.nervgear.VrActivity;
-import me.takashiro.nervgear.VrLib;
+import com.vrseen.nervgear.VrActivity;
+import com.vrseen.nervgear.VrLib;
 
 public class MainActivity extends VrActivity {
 
 	public static final String TAG = "VrScene";
-	
+
 	/** Load jni .so on initialization */
 	static {
 		Log.d( TAG, "LoadLibrary" );
@@ -40,5 +40,5 @@ public class MainActivity extends VrActivity {
 
 		appPtr = nativeSetAppInterface( this, fromPackageNameString, commandString, uriString );
 	}
-	
+
 }

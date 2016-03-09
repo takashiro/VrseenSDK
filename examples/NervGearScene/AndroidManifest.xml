@@ -32,7 +32,7 @@
  		<!-- but we might want to internally spawn other activities -->        
         <!-- Theme.DeviceDefault.NoActionBar.Fullscreen gives solid black instead of a (bad stereoscopic) gradient on app transition -->
         <activity
-            android:name="com.oculusvr.vrscene.MainActivity"
+            android:name="com.vrseen.nervgear.scene.MainActivity"
 			android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
             android:label="@string/app_name"
 			android:launchMode="singleTask"

@@ -1,4 +1,4 @@
-package me.takashiro.nervgear.cinema;
+package com.vrseen.nervgear.cinema;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,23 +23,23 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.content.Context;
 import android.media.AudioManager;
-import me.takashiro.nervgear.VrActivity;
-import me.takashiro.nervgear.VrLib;
+import com.vrseen.nervgear.VrActivity;
+import com.vrseen.nervgear.VrLib;
 import android.content.Intent;
 
 public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
-		MediaPlayer.OnVideoSizeChangedListener, 
-		AudioManager.OnAudioFocusChangeListener		
+		MediaPlayer.OnVideoSizeChangedListener,
+		AudioManager.OnAudioFocusChangeListener
 {
 	public static final String TAG = "Cinema";
 
 	/** Load jni .so on initialization */
-	static 
+	static
 	{
 		Log.d( TAG, "LoadLibrary" );
 		System.loadLibrary( "cinema" );
 	}
-	
+
 	public static native void 			nativeSetVideoSize( long appPtr, int width, int height, int rotation, int duration );
 	public static native SurfaceTexture nativePrepareNewVideo( long appPtr );
 	public static native long nativeSetAppInterface( VrActivity act, String fromPackageNameString, String commandString, String uriString );
@@ -48,15 +48,15 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 	public static final int MinimumSeekTimeForResume = 60000;	// 1 minute
 
 	String 				currentMovieFilename;
-	
+
 	boolean				playbackFinished = true;
 	boolean				playbackFailed = false;
-	
+
 	private boolean 	waitingForSeek = false;
 	private boolean 	haveSeekWaiting = false;
 	private int 		nextSeekPosition = 0;
 	private long       	startTime = 0;
-	
+
 	SurfaceTexture 		movieTexture = null;
 	Surface 			movieSurface = null;
 
@@ -64,7 +64,7 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 	AudioManager 		audioManager = null;
 
 	@Override
-	protected void onCreate( Bundle savedInstanceState ) 
+	protected void onCreate( Bundle savedInstanceState )
 	{
 		Log.d( TAG, "onCreate" );
 		super.onCreate( savedInstanceState );
@@ -80,7 +80,7 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 	}
 
 	@Override
-	protected void onDestroy() 
+	protected void onDestroy()
 	{
 		// Abandon audio focus if we still hold it
 		releaseAudioFocus();
@@ -88,24 +88,24 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
     }
 
 	@Override
-	protected void onPause() 
+	protected void onPause()
 	{
 		Log.d( TAG, "onPause()" );
-		
+
 		pauseMovie();
 
 		super.onPause();
 	}
 
-	protected void onResume() 
+	protected void onResume()
 	{
 		Log.d( TAG, "onResume()" );
 		super.onResume();
 	}
-	
-    public void onAudioFocusChange( int focusChange ) 
+
+    public void onAudioFocusChange( int focusChange )
     {
-		switch( focusChange ) 
+		switch( focusChange )
 		{
 		case AudioManager.AUDIOFOCUS_GAIN:
 			// resume() if coming back from transient loss, raise stream volume if duck applied
@@ -113,54 +113,54 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 			break;
 		case AudioManager.AUDIOFOCUS_LOSS:				// focus lost permanently
 			// stop() if isPlaying
-			Log.d( TAG, "onAudioFocusChangedListener: AUDIOFOCUS_LOSS" );		
+			Log.d( TAG, "onAudioFocusChangedListener: AUDIOFOCUS_LOSS" );
 			break;
 		case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:	// focus lost temporarily
 			// pause() if isPlaying
-			Log.d( TAG, "onAudioFocusChangedListener: AUDIOFOCUS_LOSS_TRANSIENT" );	
+			Log.d( TAG, "onAudioFocusChangedListener: AUDIOFOCUS_LOSS_TRANSIENT" );
 			break;
 		case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:	// focus lost temporarily
 			// lower stream volume
-			Log.d( TAG, "onAudioFocusChangedListener: AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK" );		
+			Log.d( TAG, "onAudioFocusChangedListener: AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK" );
 			break;
 		default:
 			break;
 		}
 	}
-    
-	private int getRotationFromMetadata( final String filePath ) 
+
+	private int getRotationFromMetadata( final String filePath )
 	{
 		MediaMetadataRetriever metaRetriever = new MediaMetadataRetriever();
 		metaRetriever.setDataSource( filePath );
 		String value = metaRetriever.extractMetadata( MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION );
 		metaRetriever.release();
 
-		if ( value == null ) 
+		if ( value == null )
 		{
 			return 0;
 		}
 
-		if ( value.equals( "0" ) ) 
+		if ( value.equals( "0" ) )
 		{
 			return 0;
-		} 
-		else if ( value.equals( "90" ) ) 
+		}
+		else if ( value.equals( "90" ) )
 		{
 			return 90;
-		} 
-		else if ( value.equals( "180" ) ) 
+		}
+		else if ( value.equals( "180" ) )
 		{
 			return 180;
-		} 
-		else if ( value.equals( "270" ) ) 
+		}
+		else if ( value.equals( "270" ) )
 		{
 			return 270;
-		} 
+		}
 
 		return 0;
 	}
-	
-	public void onVideoSizeChanged( MediaPlayer mp, int width, int height ) 
+
+	public void onVideoSizeChanged( MediaPlayer mp, int width, int height )
 	{
 		Log.v( TAG, String.format( "onVideoSizeChanged: %dx%d", width, height ) );
 		int rotation = getRotationFromMetadata( currentMovieFilename );
@@ -173,16 +173,16 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 		// Request audio focus
 		int result = audioManager.requestAudioFocus( this, AudioManager.STREAM_MUSIC,
 			AudioManager.AUDIOFOCUS_GAIN );
-		if ( result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED ) 
+		if ( result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED )
 		{
 			Log.d(TAG,"startMovie(): GRANTED audio focus");
-		} 
-		else if ( result == AudioManager.AUDIOFOCUS_REQUEST_FAILED ) 
+		}
+		else if ( result == AudioManager.AUDIOFOCUS_REQUEST_FAILED )
 		{
 			Log.d(TAG,"startMovie(): FAILED to gain audio focus");
-		}				
+		}
 	}
-	
+
 	private void releaseAudioFocus()
 	{
 		audioManager.abandonAudioFocus( this );
@@ -192,27 +192,27 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 	 * Whenever we pause or switch to another movie, save the current movie
 	 * position so we will return there when the same file is viewed again.
 	 */
-	private void saveCurrentMovieLocation() 
+	private void saveCurrentMovieLocation()
 	{
 		Log.d(TAG, "saveCurrentMovieLocation()" );
-		if ( mediaPlayer == null ) 
+		if ( mediaPlayer == null )
 		{
 			return;
 		}
-		if ( currentMovieFilename.length() < 1 ) 
+		if ( currentMovieFilename.length() < 1 )
 		{
 			return;
 		}
 
 		int duration = 0;
 		int currentPos = 0;
-		
+
 		try
 		{
 			duration = mediaPlayer.getDuration();
 			currentPos = mediaPlayer.getCurrentPosition();
 		}
-		
+
 		catch( IllegalStateException ise )
     	{
     		// Can be thrown by the media player if state changes while we're being
@@ -224,7 +224,7 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 		{
 			currentPos = 0;
 		}
-		
+
 		// Save the current movie now that it was successfully started
 		Editor edit = getPreferences( MODE_PRIVATE ).edit();
 		Log.d(TAG, "set resume point: " + currentMovieFilename );
@@ -235,12 +235,12 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 		edit.commit();
 	}
 
-	private String fileNameFromPathName( String pathname ) 
+	private String fileNameFromPathName( String pathname )
 	{
 		File f = new File( pathname );
 		return f.getName();
 	}
-	
+
 	private void Fail( final String message )
 	{
 		Log.e(TAG, message );
@@ -248,20 +248,20 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 		mediaPlayer = null;
 		playbackFinished = true;
 		playbackFailed = true;
-		releaseAudioFocus();		
+		releaseAudioFocus();
 	}
-	
+
 	// ==================================================================================
 	//
 	//  Callable from native code
 	//
 	// ==================================================================================
 
-	public String getExternalCacheDirectory() 
+	public String getExternalCacheDirectory()
 	{
 		return getExternalCacheDir().getAbsolutePath();
 	}
-	
+
 	public boolean createVideoThumbnail( final String videoFilePath, final String outputFilePath, final int width, final int height )
 	{
 		Log.e( TAG, "Create video thumbnail: " + videoFilePath + "\noutput path: " + outputFilePath );
@@ -273,11 +273,11 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 
 		float desiredAspectRatio = ( float )width / ( float )height;
 		float aspectRatio = ( float )bmp.getWidth() / ( float )bmp.getHeight();
-		
+
 		int cropWidth = bmp.getWidth();
 		int cropHeight = bmp.getHeight();
 		boolean shouldCrop = false;
-		
+
 		if ( aspectRatio < desiredAspectRatio )
 		{
 			cropWidth = bmp.getWidth();
@@ -290,33 +290,33 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 			cropWidth = ( int )( ( float )cropHeight * desiredAspectRatio );
 			shouldCrop = true;
 		}
-		
+
 		if ( shouldCrop )
 		{
 			int cropX = ( bmp.getWidth() - cropWidth ) / 2;
 			int cropY = ( bmp.getHeight() - cropHeight ) / 2;
-			
-			try 
+
+			try
 			{
 				Bitmap croppedBmp = Bitmap.createBitmap( bmp, cropX, cropY, cropWidth, cropHeight, new Matrix(), false );
 				if ( croppedBmp == null )
 				{
 					return false;
 				}
-				
+
 				bmp = croppedBmp;
 			}
-			
-			catch ( Exception e ) 
+
+			catch ( Exception e )
 			{
 				Log.e( TAG, "Cropping video thumbnail failed: " + e.getMessage() );
 				return false;
 			}
 		}
-		
+
 		boolean failed = false;
 		FileOutputStream out = null;
-		try 
+		try
 		{
 			int sep = outputFilePath.lastIndexOf( '/' );
 			File directory = new File( outputFilePath.substring( 0, sep ) );
@@ -327,39 +327,39 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 		    out = new FileOutputStream( outputFilePath );
 		    bmp.compress( Bitmap.CompressFormat.PNG, 100, out );
 		}
-		
-		catch ( Exception e ) 
+
+		catch ( Exception e )
 		{
 			failed = true;
 			Log.e( TAG, "Writing video thumbnail failed: " + e.getMessage() );
 		}
-		
-		finally 
+
+		finally
 		{
-		    try 
+		    try
 		    {
-		        if ( out != null ) 
+		        if ( out != null )
 		        {
 		            out.close();
 		        }
-		    } 
-		    
-		    catch( IOException e ) 
+		    }
+
+		    catch( IOException e )
 		    {
 				failed = true;
 				Log.e( TAG, "Closing video thumbnail failed: " + e.getMessage() );
 		    }
-		}	
-		
+		}
+
 		if ( !failed )
 		{
 			Log.e( TAG, "Wrote " + outputFilePath );
 		}
-		
+
 		return !failed;
 	}
 
-	public boolean checkForMovieResume( final String pathName ) 
+	public boolean checkForMovieResume( final String pathName )
 	{
 		Log.d( TAG, "checkForMovieResume: " + pathName );
 
@@ -367,33 +367,33 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 		{
 			final int seekPos = getPreferences( MODE_PRIVATE ).getInt( pathName + "_pos", 0 );
 			final int duration = getPreferences( MODE_PRIVATE ).getInt( pathName + "_len", -1 );
-		
+
 			Log.d(TAG, "Saved Location: " + seekPos );
 			Log.d(TAG, "Saved duration: " + duration );
-			
+
 			if ( seekPos < MinimumSeekTimeForResume )
 			{
 				Log.d(TAG, "below minimum.  Restart movie." );
 				return false;
 			}
-			
+
 			// early versions didn't save a duration, so if we don't have one, it's ok to resume
 			if ( duration == -1 )
 			{
 				Log.d(TAG, "No duration.  Resume movie." );
 				return true;
 			}
-			
+
 			if ( seekPos > ( duration - MinimumRemainingResumeTime ) )
 			{
 				Log.d(TAG, "Past maximum.  Restart movie." );
 				return false;
 			}
-			
-			Log.d(TAG, "Resume movie." );		
+
+			Log.d(TAG, "Resume movie." );
 			return true;
 		}
-		
+
 		catch ( IllegalStateException t )
 		{
 			Log.e( TAG, "checkForMovieResume caught exception: " + t.getMessage() );
@@ -403,13 +403,13 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 
 	public boolean isPlaying()
 	{
-		if ( mediaPlayer != null ) 
+		if ( mediaPlayer != null )
 		{
 			try
 			{
 				return mediaPlayer.isPlaying();
 			}
-			
+
 			catch ( IllegalStateException t )
 			{
 				Log.e(TAG, "isPlaying() caught illegalStateException" );
@@ -423,15 +423,15 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 	{
 		return playbackFinished;
 	}
-	
+
 	public boolean hadPlaybackError()
 	{
 		return playbackFailed;
 	}
-	
+
 	public int getPosition()
 	{
-		if ( mediaPlayer != null ) 
+		if ( mediaPlayer != null )
 		{
 			try
 			{
@@ -445,12 +445,12 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 				return 0;
         	}
 		}
-		return 0;	
+		return 0;
 	}
-	
+
 	public int getDuration()
 	{
-		if ( mediaPlayer != null ) 
+		if ( mediaPlayer != null )
 		{
 			try
 			{
@@ -464,34 +464,34 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 				return 0;
         	}
 		}
-		return 0;	
+		return 0;
 	}
 
 	public void setPosition( int positionMilliseconds )
 	{
 		try
 		{
-			if ( mediaPlayer != null ) 
+			if ( mediaPlayer != null )
 			{
 				boolean wasPlaying = isPlaying();
-				if ( wasPlaying ) 
+				if ( wasPlaying )
 				{
 					mediaPlayer.pause();
 				}
 				int duration = mediaPlayer.getDuration();
 				int newPosition = positionMilliseconds;
-				if ( newPosition >= duration ) 
+				if ( newPosition >= duration )
 				{
 					// pause if seeking past end
 					Log.d( TAG, "seek past end" );
 					mediaPlayer.seekTo( duration );
 					return;
 				}
-				if ( newPosition < 0 ) 
+				if ( newPosition < 0 )
 				{
 					newPosition = 0;
 				}
-				
+
 				if ( waitingForSeek )
 				{
 					haveSeekWaiting = true;
@@ -503,8 +503,8 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 					Log.d(TAG, "seek started");
 					mediaPlayer.seekTo( newPosition );
 				}
-	
-				if ( wasPlaying ) 
+
+				if ( wasPlaying )
 				{
 					mediaPlayer.start();
 				}
@@ -518,34 +518,34 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 			Log.d( TAG, "setPosition(): Caught illegalStateException" );
 		}
 	}
-	
-	public void seekDelta( int deltaMilliseconds ) 
+
+	public void seekDelta( int deltaMilliseconds )
 	{
 		try
 		{
-			if ( mediaPlayer != null ) 
+			if ( mediaPlayer != null )
 			{
 				boolean wasPlaying = isPlaying();
-				if ( wasPlaying ) 
+				if ( wasPlaying )
 				{
 					mediaPlayer.pause();
 				}
-				
+
 				int position = mediaPlayer.getCurrentPosition();
 				int duration = mediaPlayer.getDuration();
 				int newPosition = position + deltaMilliseconds;
-				if ( newPosition >= duration ) 
+				if ( newPosition >= duration )
 				{
 					// pause if seeking past end
 					Log.d( TAG, "seek past end" );
 					mediaPlayer.seekTo( duration );
 					return;
 				}
-				if ( newPosition < 0 ) 
+				if ( newPosition < 0 )
 				{
 					newPosition = 0;
 				}
-				
+
 				if ( waitingForSeek )
 				{
 					haveSeekWaiting = true;
@@ -557,14 +557,14 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 					Log.d( TAG, "seek started" );
 					mediaPlayer.seekTo( newPosition );
 				}
-	
-				if ( wasPlaying ) 
+
+				if ( wasPlaying )
 				{
 					mediaPlayer.start();
 				}
 			}
 		}
-		
+
 		catch( IllegalStateException ise )
     	{
     		// Can be thrown by the media player if state changes while we're being
@@ -573,12 +573,12 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
     	}
 	}
 
-	public void startMovie( final String pathName, final boolean resumePlayback, final boolean isEncrypted, final boolean loop ) 
+	public void startMovie( final String pathName, final boolean resumePlayback, final boolean isEncrypted, final boolean loop )
 	{
 		// set playbackFinished and playbackFailed to false immediately so it's set when we return to native
 		playbackFinished = false;
 		playbackFailed = false;
-		
+
     	runOnUiThread( new Thread()
     	{
 		 @Override
@@ -588,97 +588,97 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
     		}
     	} );
 	}
-	
-	private void startMovieLocal( final String pathName, final boolean resumePlayback, boolean isEncrypted, final boolean loop ) 
+
+	private void startMovieLocal( final String pathName, final boolean resumePlayback, boolean isEncrypted, final boolean loop )
 	{
 		Log.v(TAG, "startMovie " + pathName + " resume " + resumePlayback );
-		
-		synchronized( this ) 
+
+		synchronized( this )
 		{
 			requestAudioFocus();
-	
+
 			playbackFinished = false;
 			playbackFailed = false;
-			
+
 			waitingForSeek = false;
 			haveSeekWaiting = false;
-			nextSeekPosition = 0;		
-	
+			nextSeekPosition = 0;
+
 			currentMovieFilename = pathName;
-			
+
 			// Have native code pause any playing movie,
 			// allocate a new external texture,
 			// and create a surfaceTexture with it.
 			movieTexture = nativePrepareNewVideo( appPtr );
 			movieSurface = new Surface( movieTexture );
-	
-			if (mediaPlayer != null) 
+
+			if (mediaPlayer != null)
 			{
 				mediaPlayer.release();
 			}
-	
+
 			Log.v( TAG, "MediaPlayer.create" );
-	
+
 			mediaPlayer = new MediaPlayer();
 			mediaPlayer.setOnVideoSizeChangedListener( this );
 			mediaPlayer.setSurface( movieSurface );
-	
-			try 
+
+			try
 			{
 				Log.v(TAG, "mediaPlayer.setDataSource()");
 				mediaPlayer.setDataSource(currentMovieFilename);
-			} 
-			
-			catch ( IOException t ) 
+			}
+
+			catch ( IOException t )
 			{
 				Fail( "mediaPlayer.setDataSource threw IOException" );
 				return;
 			}
-			
+
 			catch ( IllegalStateException t )
 			{
 				Fail( "mediaPlayer.setDataSource threw illegalStateException" );
 				return;
 			}
-	
-			catch ( IllegalArgumentException t ) 
+
+			catch ( IllegalArgumentException t )
 			{
 				Fail( "mediaPlayer.setDataSource threw IllegalArgumentException" );
 				return;
 			}
-	
-			try 
+
+			try
 			{
 				Log.v(TAG, "mediaPlayer.prepare");
 				mediaPlayer.prepare();
-			} 
-			
-			catch( IOException t ) 
+			}
+
+			catch( IOException t )
 			{
 				Fail( "mediaPlayer.prepare threw IOException" );
 				return;
 			}
-			
+
 			catch ( IllegalStateException t )
 			{
 				Fail( "mediaPlayer.prepare threw illegalStateException" );
 				return;
 			}
-		
+
 			// ensure we're at max volume
 			mediaPlayer.setVolume( 1.0f, 1.0f );
-			
+
 			Log.v( TAG, "mediaPlayer.start" );
-	
+
 			// If this movie has a saved position, seek there before starting
 			Log.d( TAG, "checkForMovieResume: " + currentMovieFilename );
 			final int seekPos = getPreferences( MODE_PRIVATE ).getInt( currentMovieFilename + "_pos", 0 );
 			Log.v( TAG, "seekPos = " + seekPos );
 			Log.v( TAG, "resumePlayback = " + resumePlayback );
-			
+
 			try
 			{
-				if ( resumePlayback && ( seekPos > 0 ) ) 
+				if ( resumePlayback && ( seekPos > 0 ) )
 				{
 					Log.v( TAG, "resuming at saved location" );
 					mediaPlayer.seekTo( seekPos );
@@ -690,15 +690,15 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 					mediaPlayer.seekTo( 0 );
 				}
 			}
-			
+
 			catch ( IllegalStateException t )
 			{
 				Fail( "mediaPlayer.seekTo threw illegalStateException" );
 				return;
 			}
-	
+
 			mediaPlayer.setLooping( loop );
-			mediaPlayer.setOnCompletionListener( new OnCompletionListener() 
+			mediaPlayer.setOnCompletionListener( new OnCompletionListener()
 			{
 	        	public void onCompletion( MediaPlayer mp )
 	        	{
@@ -706,10 +706,10 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 	        		playbackFinished = true;
 	        		saveCurrentMovieLocation();
 	        		releaseAudioFocus();
-	        	}        			
+	        	}
 	        });
-			
-			mediaPlayer.setOnSeekCompleteListener( new OnSeekCompleteListener() 
+
+			mediaPlayer.setOnSeekCompleteListener( new OnSeekCompleteListener()
 			{
 	        	public void onSeekComplete( MediaPlayer mp )
 	        	{
@@ -722,54 +722,54 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 	        		{
 	        			waitingForSeek = false;
 	        		}
-	        	}        			
+	        	}
 	        });
-			
+
 			try
 			{
 				mediaPlayer.start();
 			}
-	
+
 			catch ( IllegalStateException t )
 			{
 				Fail( "mediaPlayer.start threw illegalStateException" );
 			}
-	
+
 			// Save the current movie now that it was successfully started
 			Editor edit = getPreferences( MODE_PRIVATE ).edit();
 			edit.putString( "currentMovie", currentMovieFilename );
 			edit.commit();
 		}
-		
+
 		Log.v( TAG, "exiting startMovie" );
 	}
 
-	public void pauseMovie() 
+	public void pauseMovie()
 	{
 		Log.d( TAG, "pauseMovie()" );
-		if ( mediaPlayer != null ) 
+		if ( mediaPlayer != null )
 		{
 			if ( isPlaying() )
 			{
 				saveCurrentMovieLocation();
 			}
-			
+
 			try
 			{
 				mediaPlayer.pause();
 			}
-			
+
 			catch ( IllegalStateException t )
 			{
 				Log.e(TAG, "pauseMovie() caught illegalStateException" );
-			}			
+			}
 		}
 	}
 
-	public void resumeMovie() 
+	public void resumeMovie()
 	{
 		Log.d(TAG, "resumeMovie()" );
-		if ( mediaPlayer != null ) 
+		if ( mediaPlayer != null )
 		{
 			try
 			{
@@ -786,32 +786,32 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 	public void stopMovie()
 	{
 		Log.v( TAG, "stopMovie" );
-		
-		synchronized (this) 
+
+		synchronized (this)
 		{
-			if ( mediaPlayer != null ) 
+			if ( mediaPlayer != null )
 			{
 				// don't save location if not playing
 				if ( isPlaying() )
 				{
 					saveCurrentMovieLocation();
 				}
-				
+
 				try
 				{
 					mediaPlayer.stop();
 				}
-				
+
 				catch ( IllegalStateException t )
 				{
 					Log.e( TAG, "mediaPlayer.stop threw illegalStateException" );
 				}
-	
+
 				mediaPlayer.release();
 				mediaPlayer = null;
 			}
 			releaseAudioFocus();
-			
+
 			playbackFailed = false;
 			playbackFinished = true;
 		}
@@ -820,16 +820,16 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 	public boolean togglePlaying()
 	{
 		boolean result = false;
-		
+
 		Log.d( TAG,  "MainActivity.togglePlaying()" );
-		if ( mediaPlayer != null ) 
+		if ( mediaPlayer != null )
 		{
-			if ( isPlaying() ) 
+			if ( isPlaying() )
 			{
 				pauseMovie();
 				result = false;
 			}
-			else 
+			else
 			{
 				resumeMovie();
 				result = true;
@@ -839,7 +839,7 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 		{
 			Log.d( TAG, "mediaPlayer == null" );
 		}
-		
+
 		return result;
 	}
 }

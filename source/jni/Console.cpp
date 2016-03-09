@@ -131,7 +131,7 @@ NV_USING_NAMESPACE
 
 extern "C" {
 
-JNIEXPORT void Java_me_takashiro_nervgear_ConsoleReceiver_nativeConsoleCommand( JNIEnv * jni, jclass clazz, jlong appPtr, jstring command )
+JNIEXPORT void Java_com_vrseen_nervgear_ConsoleReceiver_nativeConsoleCommand( JNIEnv * jni, jclass clazz, jlong appPtr, jstring command )
 {
     VString commandStr = JniUtils::Convert(jni, command);
     vInfo("nativeConsoleCommand:" << commandStr);

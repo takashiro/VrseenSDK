@@ -56,8 +56,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 NV_NAMESPACE_BEGIN
 
-static const char * activityClassName = "me/takashiro/nervgear/VrActivity";
-static const char * vrLibClassName = "me/takashiro/nervgear/VrLib";
+static const char * activityClassName = "com/vrseen/nervgear/VrActivity";
+static const char * vrLibClassName = "com/vrseen/nervgear/VrLib";
 
 // some parameters from the intent can be empty strings, which cannot be represented as empty strings for sscanf
 // so we encode them as EMPTY_INTENT_STR.
@@ -81,7 +81,7 @@ VString ComposeIntentMessage(const VString &packageName, const VString &uri, con
 extern "C"
 {
 
-void Java_me_takashiro_nervgear_VrActivity_nativeSurfaceChanged( JNIEnv *jni, jclass clazz,
+void Java_com_vrseen_nervgear_VrActivity_nativeSurfaceChanged( JNIEnv *jni, jclass clazz,
 		jlong appPtr, jobject surface )
 {
 	LOG( "%p nativeSurfaceChanged( %p )", (void *)appPtr, surface );
@@ -90,7 +90,7 @@ void Java_me_takashiro_nervgear_VrActivity_nativeSurfaceChanged( JNIEnv *jni, jc
 			surface ? ANativeWindow_fromSurface( jni, surface ) : NULL );
 }
 
-void Java_me_takashiro_nervgear_VrActivity_nativeSurfaceDestroyed( JNIEnv *jni, jclass clazz,
+void Java_com_vrseen_nervgear_VrActivity_nativeSurfaceDestroyed( JNIEnv *jni, jclass clazz,
 		jlong appPtr, jobject surface )
 {
 	LOG( "%p nativeSurfaceDestroyed()", (void *)appPtr );
@@ -105,14 +105,14 @@ void Java_me_takashiro_nervgear_VrActivity_nativeSurfaceDestroyed( JNIEnv *jni, 
 	((AppLocal *)appPtr)->GetMessageQueue().SendPrintf( "surfaceDestroyed " );
 }
 
-void Java_me_takashiro_nervgear_VrActivity_nativePopup( JNIEnv *jni, jclass clazz,
+void Java_com_vrseen_nervgear_VrActivity_nativePopup( JNIEnv *jni, jclass clazz,
 		jlong appPtr, jint width, jint height, jfloat seconds )
 {
 	LOG( "%p nativePopup", (void *)appPtr );
 	((AppLocal *)appPtr)->GetMessageQueue().PostPrintf( "popup %i %i %f", width, height, seconds );
 }
 
-jobject Java_me_takashiro_nervgear_VrActivity_nativeGetPopupSurfaceTexture( JNIEnv *jni, jclass clazz,
+jobject Java_com_vrseen_nervgear_VrActivity_nativeGetPopupSurfaceTexture( JNIEnv *jni, jclass clazz,
 		jlong appPtr )
 {
 	LOG( "%p getPopUpSurfaceTexture: %i", (void *)appPtr,
@@ -120,24 +120,24 @@ jobject Java_me_takashiro_nervgear_VrActivity_nativeGetPopupSurfaceTexture( JNIE
 	return ((AppLocal *)appPtr)->GetDialogTexture()->javaObject;
 }
 
-void Java_me_takashiro_nervgear_VrActivity_nativePause( JNIEnv *jni, jclass clazz,
+void Java_com_vrseen_nervgear_VrActivity_nativePause( JNIEnv *jni, jclass clazz,
 		jlong appPtr )
 {
-	LOG( "%p Java_me_takashiro_nervgear_VrActivity_nativePause", (void *)appPtr );
+	LOG( "%p Java_com_vrseen_nervgear_VrActivity_nativePause", (void *)appPtr );
 		((AppLocal *)appPtr)->GetMessageQueue().SendPrintf( "pause " );
 }
 
-void Java_me_takashiro_nervgear_VrActivity_nativeResume( JNIEnv *jni, jclass clazz,
+void Java_com_vrseen_nervgear_VrActivity_nativeResume( JNIEnv *jni, jclass clazz,
 		jlong appPtr )
 {
-	LOG( "%p Java_me_takashiro_nervgear_VrActivity_nativeResume", (void *)appPtr );
+	LOG( "%p Java_com_vrseen_nervgear_VrActivity_nativeResume", (void *)appPtr );
 		((AppLocal *)appPtr)->GetMessageQueue().SendPrintf( "resume " );
 }
 
-void Java_me_takashiro_nervgear_VrActivity_nativeDestroy( JNIEnv *jni, jclass clazz,
+void Java_com_vrseen_nervgear_VrActivity_nativeDestroy( JNIEnv *jni, jclass clazz,
 		jlong appPtr )
 {
-	LOG( "%p Java_me_takashiro_nervgear_VrActivity_nativeDestroy", (void *)appPtr );
+	LOG( "%p Java_com_vrseen_nervgear_VrActivity_nativeDestroy", (void *)appPtr );
 
 	AppLocal * localPtr = (AppLocal *)appPtr;
     const bool exitOnDestroy = localPtr->exitOnDestroy;
@@ -162,7 +162,7 @@ void Java_me_takashiro_nervgear_VrActivity_nativeDestroy( JNIEnv *jni, jclass cl
 	}
 }
 
-void Java_me_takashiro_nervgear_VrActivity_nativeJoypadAxis( JNIEnv *jni, jclass clazz,
+void Java_com_vrseen_nervgear_VrActivity_nativeJoypadAxis( JNIEnv *jni, jclass clazz,
 		jlong appPtr, jfloat lx, jfloat ly, jfloat rx, jfloat ry )
 {
 	AppLocal * local = ((AppLocal *)appPtr);
@@ -173,7 +173,7 @@ void Java_me_takashiro_nervgear_VrActivity_nativeJoypadAxis( JNIEnv *jni, jclass
 	}
 }
 
-void Java_me_takashiro_nervgear_VrActivity_nativeTouch( JNIEnv *jni, jclass clazz,
+void Java_com_vrseen_nervgear_VrActivity_nativeTouch( JNIEnv *jni, jclass clazz,
 		jlong appPtr, jint action, jfloat x, jfloat y )
 {
 	AppLocal * local = ((AppLocal *)appPtr);
@@ -184,7 +184,7 @@ void Java_me_takashiro_nervgear_VrActivity_nativeTouch( JNIEnv *jni, jclass claz
 	}
 }
 
-void Java_me_takashiro_nervgear_VrActivity_nativeKeyEvent( JNIEnv *jni, jclass clazz,
+void Java_com_vrseen_nervgear_VrActivity_nativeKeyEvent( JNIEnv *jni, jclass clazz,
 		jlong appPtr, jint key, jboolean down, jint repeatCount )
 {
 	AppLocal * local = ((AppLocal *)appPtr);
@@ -195,7 +195,7 @@ void Java_me_takashiro_nervgear_VrActivity_nativeKeyEvent( JNIEnv *jni, jclass c
 	}
 }
 
-void Java_me_takashiro_nervgear_VrActivity_nativeNewIntent( JNIEnv *jni, jclass clazz,
+void Java_com_vrseen_nervgear_VrActivity_nativeNewIntent( JNIEnv *jni, jclass clazz,
 		jlong appPtr, jstring fromPackageName, jstring command, jstring uriString )
 {
 	LOG( "%p nativeNewIntent", (void*)appPtr );

@@ -1,4 +1,4 @@
-package me.takashiro.nervgear.video;
+package com.vrseen.nervgear.video;
 
 import java.io.IOException;
 
@@ -13,8 +13,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 
-import me.takashiro.nervgear.VrActivity;
-import me.takashiro.nervgear.VrLib;
+import com.vrseen.nervgear.VrActivity;
+import com.vrseen.nervgear.VrLib;
 
 public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 		android.graphics.SurfaceTexture.OnFrameAvailableListener,
@@ -39,7 +39,7 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 
 	SurfaceTexture movieTexture = null;
 	Surface movieSurface = null;
-	MediaPlayer mediaPlayer = null;	
+	MediaPlayer mediaPlayer = null;
 	AudioManager audioManager = null;
 
 	// ==================================================================================
@@ -49,23 +49,23 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 		// Request audio focus
 		int result = audioManager.requestAudioFocus( this, AudioManager.STREAM_MUSIC,
 			AudioManager.AUDIOFOCUS_GAIN );
-		if ( result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED ) 
+		if ( result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED )
 		{
 			Log.d(TAG,"startMovie(): GRANTED audio focus");
 		}
-		else if ( result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED ) 
+		else if ( result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED )
 		{
 			Log.d(TAG,"startMovie(): FAILED to gain audio focus");
 		}
 	}
-	
+
 	void releaseAudioFocus()
 	{
 		audioManager.abandonAudioFocus( this );
 	}
-	
+
 	// ==================================================================================
-	
+
 	protected void onCreate(Bundle savedInstanceState) {
 		Log.d(TAG, "onCreate enter");
 		super.onCreate(savedInstanceState);
@@ -79,26 +79,26 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 
 		audioManager = (AudioManager) getSystemService( Context.AUDIO_SERVICE );
 	}
-	
+
 	@Override
-	protected void onDestroy() {	
+	protected void onDestroy() {
 		Log.d(TAG, "onDestroy");
-		
+
 		// Abandon audio focus if we still hold it
 		releaseAudioFocus();
 
-		super.onDestroy();	
+		super.onDestroy();
 	}
-	
+
 	// --
 	// --> MediaPlayer.OnErrorListener START
 	public boolean onError( MediaPlayer mp, int what, int extra ) {
 		Log.e( TAG, "MediaPlayer.OnErrorListener - what : " + what + ", extra : " + extra );
 		return false;
 	}
-	
+
 	// <-- MediaPlayer.OnErrorListener END
-	
+
 	// ==================================================================================
 
 	public void onVideoSizeChanged(MediaPlayer mp, int width, int height) {
@@ -130,15 +130,15 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 				break;
 			case AudioManager.AUDIOFOCUS_LOSS:				// focus lost permanently
 				// stop() if isPlaying
-				Log.d(TAG, "onAudioFocusChangedListener: AUDIOFOCUS_LOSS");		
+				Log.d(TAG, "onAudioFocusChangedListener: AUDIOFOCUS_LOSS");
 				break;
 			case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:	// focus lost temporarily
 				// pause() if isPlaying
-				Log.d(TAG, "onAudioFocusChangedListener: AUDIOFOCUS_LOSS_TRANSIENT");	
+				Log.d(TAG, "onAudioFocusChangedListener: AUDIOFOCUS_LOSS_TRANSIENT");
 				break;
 			case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:	// focus lost temporarily
 				// lower stream volume
-				Log.d(TAG, "onAudioFocusChangedListener: AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK");		
+				Log.d(TAG, "onAudioFocusChangedListener: AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK");
 				break;
 			default:
 				break;
@@ -231,12 +231,12 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 
 	public void startMovie(String pathName) {
 		Log.v(TAG, "startMovie " + pathName);
-		
-		synchronized (this) 
+
+		synchronized (this)
 		{
 			// Request audio focus
 			requestAudioFocus();
-		
+
 			// Have native code pause any playing movie,
 			// allocate a new external texture,
 			// and create a surfaceTexture with it.
@@ -292,7 +292,7 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 			catch( IllegalStateException ise ) {
 				Log.d( TAG, "mediaPlayer.start(): Caught illegalStateException: " + ise.toString() );
 			}
-			
+
 			mediaPlayer.setVolume(1.0f, 1.0f);
 
 			// Save the current movie now that it was successfully started
