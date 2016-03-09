@@ -4,7 +4,7 @@
 #include "VFile.h"
 
 NV_NAMESPACE_BEGIN
-// *** Delegated File
+// *** Delegated File which is a base class
 
 class VDelegatedFile : public VFile
 {
@@ -20,41 +20,41 @@ public:
     VDelegatedFile(VFile *pfile) : m_file(pfile)     { }
 
     // ** Location Information
-    virtual const char* filePath()                               { return m_file->filePath(); }
+    virtual const char* filePath() override                              { return m_file->filePath(); }
 
     // ** File Information
-    virtual bool        isValid()                                   { return m_file && m_file->isValid(); }
-    virtual bool        isWritable()                                { return m_file->isWritable(); }
+    virtual bool        isValid() override                                  { return m_file && m_file->isValid(); }
+    virtual bool        isWritable() override                                { return m_file->isWritable(); }
 //  virtual bool        IsRecoverable()                             { return pFile->IsRecoverable(); }
 
-    virtual int         tell()                                      { return m_file->tell(); }
-    virtual SInt64      tell64()                                     { return m_file->tell64(); }
+    virtual int         tell() override                                       { return m_file->tell(); }
+    virtual SInt64      tell64() override                                      { return m_file->tell64(); }
 
-    virtual int         length()                                 { return m_file->length(); }
-    virtual SInt64      length64()                                { return m_file->length64(); }
+    virtual int         length() override                                  { return m_file->length(); }
+    virtual SInt64      length64() override                                 { return m_file->length64(); }
 
     //virtual bool      Stat(FileStats *pfs)                        { return pFile->Stat(pfs); }
 
-    virtual int         errorCode()                              { return m_file->errorCode(); }
+    virtual int         errorCode() override                              { return m_file->errorCode(); }
 
     // ** Stream implementation & I/O
-    virtual int         write(const UByte *pbuffer, int numBytes)   { return m_file->write(pbuffer,numBytes); }
-    virtual int         read(UByte *pbuffer, int numBytes)          { return m_file->read(pbuffer,numBytes); }
+    virtual int         write(const UByte *pbuffer, int numBytes) override   { return m_file->write(pbuffer,numBytes); }
+    virtual int         read(UByte *pbuffer, int numBytes) override           { return m_file->read(pbuffer,numBytes); }
 
-    virtual int         skipBytes(int numBytes)                     { return m_file->skipBytes(numBytes); }
+    virtual int         skipBytes(int numBytes) override                      { return m_file->skipBytes(numBytes); }
 
-    virtual int         bytesAvailable()                            { return m_file->bytesAvailable(); }
+    virtual int         bytesAvailable() override                             { return m_file->bytesAvailable(); }
 
-    virtual bool        flush()                                     { return m_file->flush(); }
+    virtual bool        flush() override                                      { return m_file->flush(); }
 
     // Seeking
-    virtual int         seek(int offset, int origin=Seek_Set)       { return m_file->seek(offset,origin); }
-    virtual SInt64      seek64(SInt64 offset, int origin=Seek_Set)   { return m_file->seek64(offset,origin); }
+    virtual int         seek(int offset, int origin=Seek_Set) override        { return m_file->seek(offset,origin); }
+    virtual SInt64      seek64(SInt64 offset, int origin=Seek_Set) override    { return m_file->seek64(offset,origin); }
 
-    virtual int         copyFromStream(VFile *pstream, int byteSize) { return m_file->copyFromStream(pstream,byteSize); }
+    virtual int         copyFromStream(VFile *pstream, int byteSize) override  { return m_file->copyFromStream(pstream,byteSize); }
 
     // Closing the file
-    virtual bool        close()                                     { return m_file->close(); }
+    virtual bool        close() override                                      { return m_file->close(); }
 };
 NV_NAMESPACE_END
 

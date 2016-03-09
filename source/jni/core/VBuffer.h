@@ -56,29 +56,29 @@ public:
 
     // We override all the functions that can possibly
     // require buffer mode switch, flush, or extra calculations
-    virtual int         tell();
-    virtual SInt64      tell64();
+    virtual int         tell() override;
+    virtual SInt64      tell64() override;
 
-    virtual int         length();
-    virtual SInt64      length64();
+    virtual int         length() override;
+    virtual SInt64      length64() override;
 
 //  virtual bool        Stat(GFileStats *pfs);
 
-    virtual int         write(const UByte *pbufer, int numBytes);
-    virtual int         read(UByte *pbufer, int numBytes);
+    virtual int         write(const UByte *pbufer, int numBytes) override;
+    virtual int         read(UByte *pbufer, int numBytes) override;
 
-    virtual int         skipBytes(int numBytes);
+    virtual int         skipBytes(int numBytes) override;
 
-    virtual int         bytesAvailable();
+    virtual int         bytesAvailable() override;
 
-    virtual bool        flush();
+    virtual bool        flush() override;
 
-    virtual int         seek(int offset, int origin=Seek_Set);
-    virtual SInt64      seek64(SInt64 offset, int origin=Seek_Set);
+    virtual int         seek(int offset, int origin=Seek_Set) override;
+    virtual SInt64      seek64(SInt64 offset, int origin=Seek_Set) override;
 
-    virtual int         copyFromStream(VFile *pstream, int byteSize);
+    virtual int         copyFromStream(VFile *pstream, int byteSize) override;
 
-    virtual bool        close();
+    virtual bool        close() override;
 };
 
 NV_NAMESPACE_END

@@ -96,7 +96,7 @@ bool    VBuffer::setBufferMode(BufferModeType mode)
     flushBuffer();
 
     // Can't set write mode if we can't write
-    if ((mode==WriteBuffer) && (!m_file || !m_file->isWritable()) )
+    if ((mode == WriteBuffer) && (!m_file || !m_file->isWritable()) )
         return 0;
 
     // And SetMode
@@ -233,16 +233,15 @@ bool    VBuffer::Stat(FileStats *pfs)
 
 int     VBuffer::write(const UByte *psourceBuffer, int numBytes)
 {
-    if ( (m_bufferMode==WriteBuffer) || setBufferMode(WriteBuffer))
-    {
+    if ( (m_bufferMode == WriteBuffer) || setBufferMode(WriteBuffer)) {
         // If not data space in buffer, flush
-        if ((BUFFER_LENGTH-(int)m_pos)<numBytes)
+        if ((BUFFER_LENGTH - (int)m_pos) < numBytes)
         {
             flushBuffer();
             // If bigger then tolerance, just write directly
-            if (numBytes>BUFFER_TOLERANCE)
+            if (numBytes > BUFFER_TOLERANCE)
             {
-                int sz = m_file->write(psourceBuffer,numBytes);
+                int sz = m_file->write(psourceBuffer, numBytes);
                 if (sz > 0)
                     m_filePos += sz;
                 return sz;
@@ -250,11 +249,11 @@ int     VBuffer::write(const UByte *psourceBuffer, int numBytes)
         }
 
         // Enough space in buffer.. so copy to it
-        memcpy(m_buffer+m_pos, psourceBuffer, numBytes);
+        memcpy(m_buffer + m_pos, psourceBuffer, numBytes);
         m_pos += numBytes;
         return numBytes;
     }
-    int sz = m_file->write(psourceBuffer,numBytes);
+    int sz = m_file->write(psourceBuffer, numBytes);
     if (sz > 0)
         m_filePos += sz;
     return sz;
@@ -557,20 +556,22 @@ bool    VBuffer::close()
     return m_file->close();
 }
 
-/* defninetin of GetShortFilename()
+// defninetin of GetShortFilename()
 
 // ***** Global path helpers
 
 // Find trailing short filename in a path.
-const char* OVR_CDECL GetShortFilename(const char* purl)
+const char* OVR_CDECL GetFilename(const char* purl)
 {
     uint len = strlen(purl);
-    for (uint i=len; i>0; i--)
-        if (purl[i]=='\\' || purl[i]=='/')
-            return purl+i+1;
+    for (uint i=len; i>0; i--) {
+        if (purl[i]=='\\' || purl[i]=='/') {
+            return purl + i + 1;
+        }
+    }
     return purl;
 }
-*/
+
 NV_NAMESPACE_END
 
 

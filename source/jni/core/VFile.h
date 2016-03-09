@@ -2,7 +2,6 @@
 
 #include "vglobal.h"
 
-//#include "VFileFlags.h"
 #include "RefCount.h"
 #include "Alg.h"
 #include "Std.h"
@@ -142,7 +141,8 @@ public:
 
 
     // Need to provide a more optimized implementation that doe snot necessarily involve a lot of seeking
-    inline bool         atEnd() { return !bytesAvailable(); }
+    // 找不到调用该函数的文件
+     inline bool         atEnd() { return !bytesAvailable(); }
 
 
     // Seeking
@@ -150,9 +150,10 @@ public:
     virtual int         seek(int offset, int origin=Seek_Set) = 0;
     virtual SInt64      seek64(SInt64 offset, int origin=Seek_Set) = 0;
     // Seek simplification
-    int                 seekToBegin()           {return seek(0); }
-    int                 seekToEnd()             {return seek(0,Seek_End); }
-    int                 skip(int numBytes)     {return seek(numBytes,Seek_Cur); }
+    // 找不到调用这些函数的文件
+    // int                 seekToBegin()           {return seek(0); }
+    // int                 seekToEnd()             {return seek(0,Seek_End); }
+    // int                 skip(int numBytes)     {return seek(numBytes,Seek_Cur); }
 
 
     // Appends other file data from a stream
@@ -167,72 +168,71 @@ public:
     // ***** Inlines for convenient primitive type serialization
 
     // Read/Write helpers
-private:
-    UInt64  _read64()           { UInt64 v = 0; read((UByte*)&v, 8); return v; }
-    UInt32  _read32()           { UInt32 v = 0; read((UByte*)&v, 4); return v; }
-    UInt16  _read16()           { UInt16 v = 0; read((UByte*)&v, 2); return v; }
-    UByte   _read8()            { UByte  v = 0; read((UByte*)&v, 1); return v; }
-    void    _write64(UInt64 v)  { write((UByte*)&v, 8); }
-    void    _write32(UInt32 v)  { write((UByte*)&v, 4); }
-    void    _write16(UInt16 v)  { write((UByte*)&v, 2); }
-    void    _write8(UByte v)    { write((UByte*)&v, 1); }
+//private:
+//    UInt64  _read64()           { UInt64 v = 0; read((UByte*)&v, 8); return v; }
+//    UInt32  _read32()           { UInt32 v = 0; read((UByte*)&v, 4); return v; }
+//    UInt16  _read16()           { UInt16 v = 0; read((UByte*)&v, 2); return v; }
+//    UByte   _read8()            { UByte  v = 0; read((UByte*)&v, 1); return v; }
+//    void    _write64(UInt64 v)  { write((UByte*)&v, 8); }
+//    void    _write32(UInt32 v)  { write((UByte*)&v, 4); }
+//    void    _write16(UInt16 v)  { write((UByte*)&v, 2); }
+//    void    _write8(UByte v)    { write((UByte*)&v, 1); }
 
-public:
+//public:
 
-    // Writing primitive types - Little Endian
-    inline void    writeUByte(UByte v)         { _write8((UByte)Alg::ByteUtil::SystemToLE(v));     }
-    inline void    writeSByte(SByte v)         { _write8((UByte)Alg::ByteUtil::SystemToLE(v));     }
-    inline void    writeUInt8(UByte v)         { _write8((UByte)Alg::ByteUtil::SystemToLE(v));     }
-    inline void    writeSInt8(SByte v)         { _write8((UByte)Alg::ByteUtil::SystemToLE(v));     }
-    inline void    writeUInt16(UInt16 v)       { _write16((UInt16)Alg::ByteUtil::SystemToLE(v));   }
-    inline void    writeSInt16(SInt16 v)       { _write16((UInt16)Alg::ByteUtil::SystemToLE(v));   }
-    inline void    writeUInt32(UInt32 v)       { _write32((UInt32)Alg::ByteUtil::SystemToLE(v));   }
-    inline void    writeSInt32(SInt32 v)       { _write32((UInt32)Alg::ByteUtil::SystemToLE(v));   }
-    inline void    writeUInt64(UInt64 v)       { _write64((UInt64)Alg::ByteUtil::SystemToLE(v));   }
-    inline void    writeSInt64(SInt64 v)       { _write64((UInt64)Alg::ByteUtil::SystemToLE(v));   }
-    inline void    writeFloat(float v)         { v = Alg::ByteUtil::SystemToLE(v); write((UByte*)&v, 4); }
-    inline void    writeDouble(double v)       { v = Alg::ByteUtil::SystemToLE(v); write((UByte*)&v, 8); }
-    // Writing primitive types - Big Endian
-    inline void    writeUByteBE(UByte v)       { _write8((UByte)Alg::ByteUtil::SystemToBE(v));     }
-    inline void    writeSByteBE(SByte v)       { _write8((UByte)Alg::ByteUtil::SystemToBE(v));     }
-    inline void    writeUInt8BE(UInt16 v)      { _write8((UByte)Alg::ByteUtil::SystemToBE(v));     }
-    inline void    writeSInt8BE(SInt16 v)      { _write8((UByte)Alg::ByteUtil::SystemToBE(v));     }
-    inline void    writeUInt16BE(UInt16 v)     { _write16((UInt16)Alg::ByteUtil::SystemToBE(v));   }
-    inline void    writeSInt16BE(UInt16 v)     { _write16((UInt16)Alg::ByteUtil::SystemToBE(v));   }
-    inline void    writeUInt32BE(UInt32 v)     { _write32((UInt32)Alg::ByteUtil::SystemToBE(v));   }
-    inline void    writeSInt32BE(UInt32 v)     { _write32((UInt32)Alg::ByteUtil::SystemToBE(v));   }
-    inline void    writeUInt64BE(UInt64 v)     { _write64((UInt64)Alg::ByteUtil::SystemToBE(v));   }
-    inline void    writeSInt64BE(UInt64 v)     { _write64((UInt64)Alg::ByteUtil::SystemToBE(v));   }
-    inline void    writeFloatBE(float v)       { v = Alg::ByteUtil::SystemToBE(v); write((UByte*)&v, 4); }
-    inline void    writeDoubleBE(double v)     { v = Alg::ByteUtil::SystemToBE(v); write((UByte*)&v, 8); }
+//    // Writing primitive types - Little Endian
+//    inline void    writeUByte(UByte v)         { _write8((UByte)Alg::ByteUtil::SystemToLE(v));     }
+//    inline void    writeSByte(SByte v)         { _write8((UByte)Alg::ByteUtil::SystemToLE(v));     }
+//    inline void    writeUInt8(UByte v)         { _write8((UByte)Alg::ByteUtil::SystemToLE(v));     }
+//    inline void    writeSInt8(SByte v)         { _write8((UByte)Alg::ByteUtil::SystemToLE(v));     }
+//    inline void    writeUInt16(UInt16 v)       { _write16((UInt16)Alg::ByteUtil::SystemToLE(v));   }
+//    inline void    writeSInt16(SInt16 v)       { _write16((UInt16)Alg::ByteUtil::SystemToLE(v));   }
+//    inline void    writeUInt32(UInt32 v)       { _write32((UInt32)Alg::ByteUtil::SystemToLE(v));   }
+//    inline void    writeSInt32(SInt32 v)       { _write32((UInt32)Alg::ByteUtil::SystemToLE(v));   }
+//    inline void    writeUInt64(UInt64 v)       { _write64((UInt64)Alg::ByteUtil::SystemToLE(v));   }
+//    inline void    writeSInt64(SInt64 v)       { _write64((UInt64)Alg::ByteUtil::SystemToLE(v));   }
+//    inline void    writeFloat(float v)         { v = Alg::ByteUtil::SystemToLE(v); write((UByte*)&v, 4); }
+//    inline void    writeDouble(double v)       { v = Alg::ByteUtil::SystemToLE(v); write((UByte*)&v, 8); }
+//    // Writing primitive types - Big Endian
+//    inline void    writeUByteBE(UByte v)       { _write8((UByte)Alg::ByteUtil::SystemToBE(v));     }
+//    inline void    writeSByteBE(SByte v)       { _write8((UByte)Alg::ByteUtil::SystemToBE(v));     }
+//    inline void    writeUInt8BE(UInt16 v)      { _write8((UByte)Alg::ByteUtil::SystemToBE(v));     }
+//    inline void    writeSInt8BE(SInt16 v)      { _write8((UByte)Alg::ByteUtil::SystemToBE(v));     }
+//    inline void    writeUInt16BE(UInt16 v)     { _write16((UInt16)Alg::ByteUtil::SystemToBE(v));   }
+//    inline void    writeSInt16BE(UInt16 v)     { _write16((UInt16)Alg::ByteUtil::SystemToBE(v));   }
+//    inline void    writeUInt32BE(UInt32 v)     { _write32((UInt32)Alg::ByteUtil::SystemToBE(v));   }
+//    inline void    writeSInt32BE(UInt32 v)     { _write32((UInt32)Alg::ByteUtil::SystemToBE(v));   }
+//    inline void    writeUInt64BE(UInt64 v)     { _write64((UInt64)Alg::ByteUtil::SystemToBE(v));   }
+//    inline void    writeSInt64BE(UInt64 v)     { _write64((UInt64)Alg::ByteUtil::SystemToBE(v));   }
+//    inline void    writeFloatBE(float v)       { v = Alg::ByteUtil::SystemToBE(v); write((UByte*)&v, 4); }
+//    inline void    writeDoubleBE(double v)     { v = Alg::ByteUtil::SystemToBE(v); write((UByte*)&v, 8); }
 
-    // Reading primitive types - Little Endian
-    inline UByte   readUByte()                 { return (UByte)Alg::ByteUtil::LEToSystem(_read8());    }
-    inline SByte   readSByte()                 { return (SByte)Alg::ByteUtil::LEToSystem(_read8());    }
-    inline UByte   readUInt8()                 { return (UByte)Alg::ByteUtil::LEToSystem(_read8());    }
-    inline SByte   readSInt8()                 { return (SByte)Alg::ByteUtil::LEToSystem(_read8());    }
-    inline UInt16  readUInt16()                { return (UInt16)Alg::ByteUtil::LEToSystem(_read16());  }
-    inline SInt16  readSInt16()                { return (SInt16)Alg::ByteUtil::LEToSystem(_read16());  }
-    inline UInt32  readUInt32()                { return (UInt32)Alg::ByteUtil::LEToSystem(_read32());  }
-    inline SInt32  readSInt32()                { return (SInt32)Alg::ByteUtil::LEToSystem(_read32());  }
-    inline UInt64  readUInt64()                { return (UInt64)Alg::ByteUtil::LEToSystem(_read64());  }
-    inline SInt64  readSInt64()                { return (SInt64)Alg::ByteUtil::LEToSystem(_read64());  }
-    inline float   readFloat()                 { float v = 0.0f; read((UByte*)&v, 4); return Alg::ByteUtil::LEToSystem(v); }
-    inline double  readDouble()                { double v = 0.0; read((UByte*)&v, 8); return Alg::ByteUtil::LEToSystem(v); }
-    // Reading primitive types - Big Endian
-    inline UByte   readUByteBE()               { return (UByte)Alg::ByteUtil::BEToSystem(_read8());    }
-    inline SByte   readSByteBE()               { return (SByte)Alg::ByteUtil::BEToSystem(_read8());    }
-    inline UByte   readUInt8BE()               { return (UByte)Alg::ByteUtil::BEToSystem(_read8());    }
-    inline SByte   readSInt8BE()               { return (SByte)Alg::ByteUtil::BEToSystem(_read8());    }
-    inline UInt16  readUInt16BE()              { return (UInt16)Alg::ByteUtil::BEToSystem(_read16());  }
-    inline SInt16  readSInt16BE()              { return (SInt16)Alg::ByteUtil::BEToSystem(_read16());  }
-    inline UInt32  readUInt32BE()              { return (UInt32)Alg::ByteUtil::BEToSystem(_read32());  }
-    inline SInt32  readSInt32BE()              { return (SInt32)Alg::ByteUtil::BEToSystem(_read32());  }
-    inline UInt64  readUInt64BE()              { return (UInt64)Alg::ByteUtil::BEToSystem(_read64());  }
-    inline SInt64  readSInt64BE()              { return (SInt64)Alg::ByteUtil::BEToSystem(_read64());  }
-    inline float   readFloatBE()               { float v = 0.0f; read((UByte*)&v, 4); return Alg::ByteUtil::BEToSystem(v); }
-    inline double  readDoubleBE()              { double v = 0.0; read((UByte*)&v, 8); return Alg::ByteUtil::BEToSystem(v); }
+//    // Reading primitive types - Little Endian
+//    inline UByte   readUByte()                 { return (UByte)Alg::ByteUtil::LEToSystem(_read8());    }
+//    inline SByte   readSByte()                 { return (SByte)Alg::ByteUtil::LEToSystem(_read8());    }
+//    inline UByte   readUInt8()                 { return (UByte)Alg::ByteUtil::LEToSystem(_read8());    }
+//    inline SByte   readSInt8()                 { return (SByte)Alg::ByteUtil::LEToSystem(_read8());    }
+//    inline UInt16  readUInt16()                { return (UInt16)Alg::ByteUtil::LEToSystem(_read16());  }
+//    inline SInt16  readSInt16()                { return (SInt16)Alg::ByteUtil::LEToSystem(_read16());  }
+//    inline UInt32  readUInt32()                { return (UInt32)Alg::ByteUtil::LEToSystem(_read32());  }
+//    inline SInt32  readSInt32()                { return (SInt32)Alg::ByteUtil::LEToSystem(_read32());  }
+//    inline UInt64  readUInt64()                { return (UInt64)Alg::ByteUtil::LEToSystem(_read64());  }
+//    inline SInt64  readSInt64()                { return (SInt64)Alg::ByteUtil::LEToSystem(_read64());  }
+//    inline float   readFloat()                 { float v = 0.0f; read((UByte*)&v, 4); return Alg::ByteUtil::LEToSystem(v); }
+//    inline double  readDouble()                { double v = 0.0; read((UByte*)&v, 8); return Alg::ByteUtil::LEToSystem(v); }
+//    // Reading primitive types - Big Endian
+//    inline UByte   readUByteBE()               { return (UByte)Alg::ByteUtil::BEToSystem(_read8());    }
+//    inline SByte   readSByteBE()               { return (SByte)Alg::ByteUtil::BEToSystem(_read8());    }
+//    inline UByte   readUInt8BE()               { return (UByte)Alg::ByteUtil::BEToSystem(_read8());    }
+//    inline SByte   readSInt8BE()               { return (SByte)Alg::ByteUtil::BEToSystem(_read8());    }
+//    inline UInt16  readUInt16BE()              { return (UInt16)Alg::ByteUtil::BEToSystem(_read16());  }
+//    inline SInt16  readSInt16BE()              { return (SInt16)Alg::ByteUtil::BEToSystem(_read16());  }
+//    inline UInt32  readUInt32BE()              { return (UInt32)Alg::ByteUtil::BEToSystem(_read32());  }
+//    inline SInt32  readSInt32BE()              { return (SInt32)Alg::ByteUtil::BEToSystem(_read32());  }
+//    inline UInt64  readUInt64BE()              { return (UInt64)Alg::ByteUtil::BEToSystem(_read64());  }
+//    inline SInt64  readSInt64BE()              { return (SInt64)Alg::ByteUtil::BEToSystem(_read64());  }
+//    inline float   readFloatBE()               { float v = 0.0f; read((UByte*)&v, 4); return Alg::ByteUtil::BEToSystem(v); }
+//    inline double  readDoubleBE()              { double v = 0.0; read((UByte*)&v, 8); return Alg::ByteUtil::BEToSystem(v); }
 };
-
 
 NV_NAMESPACE_END

@@ -125,7 +125,7 @@ public:
     virtual const char* filePath();
 
     // ** File Information
-    virtual bool        isValid();
+    virtual bool        isValid() override;
     virtual bool        isWritable();
 
     // Return position / file size
@@ -534,7 +534,7 @@ bool    VFILEFile::CloseCancel()
 }
 */
 
-VFile *VFILEFileOpen(const VString& path, int flags, int mode)
+VFile *VFileFILEOpen(const VString& path, int flags, int mode)
 {
     return new VFILEFile(path, flags, mode);
 }
@@ -555,7 +555,7 @@ bool    VSysFile::getFileStat(VFileStat* pfileStat, const VString& path)
 #else
     struct stat fileStat;
     // Stat returns 0 for success.
-    if (stat(path, &fileStat) != 0)
+    if (stat(path.toCString(), &fileStat) != 0)
         return false;
 #endif
     pfileStat->accessTime = fileStat.st_atime;

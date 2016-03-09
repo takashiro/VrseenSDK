@@ -129,7 +129,7 @@ SOURCES += \
     jni/core/VFile.cpp \
     jni/core/VFileFILE.cpp \
     jni/core/VSysFile.cpp \
-    jni/core/VBufferedFile.cpp
+    jni/core/VBuffer.cpp
 
 HEADERS += \
     jni/core/android/GlUtils.h \
@@ -292,13 +292,14 @@ HEADERS += \
     jni/Input.h \
     jni/PointTracker.h \
     jni/UniversalMenu_Commands.h \
-    jni/core/VBufferedFile.h \
     jni/core/VFile.h \
     jni/core/VFileFlags.h \
     jni/core/VDelegatedFile.h \
     jni/core/VSysFile.h \
     jni/core/VUnopenedFile.h \
     jni/PointTracker.h
+    jni/core/VBuffer.h
+
 
 include(jni/3rdparty/minizip/minizip.pri)
 include(jni/3rdparty/stb/stb.pri)
