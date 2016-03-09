@@ -15,7 +15,6 @@ public:
         Locker(VMutex *mutex)
             : m_mutex(mutex)
         {
-            m_mutex = mutex;
             m_mutex->lock();
         }
 
