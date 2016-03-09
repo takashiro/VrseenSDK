@@ -102,7 +102,7 @@ public:
     bool operator == (const VString &str) const { return compare(str) == 0; }
     bool operator == (const char *str) const { return compare(str) == 0; }
 
-    bool operator != (const VString& str) const { return compare(str) != 0; }
+    bool operator != (const VString &str) const { return compare(str) != 0; }
     bool operator != (const char *str) const { return compare(str) != 0; }
 
     bool operator < (const VString &str) const { return compare(str) < 0; }
@@ -112,7 +112,7 @@ public:
     bool operator > (const char *str) const { return compare(str) > 0; }
 
     int icompare(const VString &str) const;
-    int icompare(const char* str) const;
+    int icompare(const char *str) const;
 
     static VString number(int num);
     static VString number(double num);

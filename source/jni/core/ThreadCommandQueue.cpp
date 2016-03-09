@@ -310,8 +310,7 @@ bool ThreadCommandQueueImpl::PopCommand(ThreadCommand::PopBuffer* popBuffer)
     popBuffer->InitFromBuffer(buffer);
     CommandBuffer.ReadEnd(popBuffer->GetSize());
 
-    if (!BlockedProducers.isEmpty())
-    {
+    if (!BlockedProducers.isEmpty()) {
         ThreadCommand::NotifyEvent* queueAvailableEvent = BlockedProducers.first();
         queueAvailableEvent->removeNode();
         queueAvailableEvent->PulseEvent();

@@ -15,13 +15,13 @@ namespace {
 class VThreadList
 {
 public:
-    void addThread(VThread *pthread)
+    void add(VThread *pthread)
     {
         VMutex::Locker lock(&m_threadMutex);
         m_threadSet.insert(pthread);
     }
 
-    void removeThread(VThread *pthread)
+    void remove(VThread *pthread)
     {
         VMutex::Locker lock(&m_threadMutex);
         m_threadSet.erase(pthread);
@@ -130,7 +130,7 @@ struct VThread::Private
         //thread->finishAndRelease();
         // At this point Thread object might be dead; however we can still pass
         // it to RemoveRunningThread since it is only used as a key there.
-        threadList.removeThread(d->self);
+        threadList.remove(d->self);
         return (void *) result;
     }
 };
@@ -195,7 +195,7 @@ bool VThread::start(VThread::State initialState)
 
     // AddRef to us until the thread is finished
     // AddRef();
-    d->threadList.addThread(this);
+    d->threadList.add(this);
 
     int result;
     if (d->stackSize != 128 * 1024 || d->priority != NormalPriority) {
@@ -216,7 +216,7 @@ bool VThread::start(VThread::State initialState)
     if (result) {
         d->threadFlags = 0;
         //Release();
-        d->threadList.removeThread(this);
+        d->threadList.remove(this);
         return false;
     }
     return true;
@@ -232,8 +232,10 @@ void VThread::exit(int exitCode)
     onExit();
 
     // Signal this thread object as done and release it's references.
-    //finishAndRelease();
-    d->threadList.removeThread(this);
+    d->threadFlags &= ~(uint) Private::Started;
+    d->threadFlags |= Private::Finished;
+    //Release()
+    d->threadList.remove(this);
 
     pthread_exit((void *) exitCode);
 }
