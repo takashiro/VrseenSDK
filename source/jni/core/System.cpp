@@ -1,5 +1,5 @@
 #include "System.h"
-#include "Threads.h"
+#include "VThread.h"
 #include "VTimer.h"
 
 #include "VLog.h"
@@ -14,9 +14,6 @@ void System::Init(Log* log, Allocator *palloc)
     if (!Allocator::GetInstance()) {
         Log::SetGlobalLog(log);
         Allocator::setInstance(palloc);
-#ifdef OVR_ENABLE_THREADS
-        Thread::InitThreadList();
-#endif
     } else {
         vFatal("System::Init failed - duplicate call.");
     }
@@ -28,7 +25,7 @@ void System::Destroy()
 #ifdef OVR_ENABLE_THREADS
         // Wait for all threads to finish; this must be done so that memory
         // allocator and all destructors finalize correctly.
-        Thread::FinishAllThreads();
+        VThread::FinishAllThreads();
 #endif
 
         // Shutdown heap and destroy SysAlloc singleton, if any.

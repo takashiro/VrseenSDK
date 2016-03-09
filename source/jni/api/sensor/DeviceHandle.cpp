@@ -10,6 +10,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 *************************************************************************************/
 
 #include "DeviceHandle.h"
+#include "VThread.h"
 
 #include "DeviceImpl.h"
 
@@ -108,7 +109,7 @@ DeviceBase* DeviceHandle::createDevice()
 
     if (manager)
     {
-        if (manager->threadId() != NervGear::GetCurrentThreadId())
+        if (manager->threadId() != NervGear::VThread::currentThreadId())
         {
             // Queue up a CreateDevice request. This fills in '&device' with AddRefed value,
             // or keep it at null.

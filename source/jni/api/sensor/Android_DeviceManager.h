@@ -2,6 +2,7 @@
 
 #include "vglobal.h"
 #include "DeviceImpl.h"
+#include "VThread.h"
 
 #include <unistd.h>
 #include <sys/poll.h>
@@ -26,7 +27,7 @@ public:
     void shutdown() override;
 
     ThreadCommandQueue* threadQueue() override;
-    ThreadId threadId() const override;
+    uint threadId() const override;
     int threadTid() const override;
     void suspendThread() const override;
     void resumeThread() const override;
@@ -41,15 +42,13 @@ public:
 //-------------------------------------------------------------------------------------
 // ***** Device Manager Background Thread
 
-class DeviceManagerThread : public Thread, public ThreadCommandQueue
+class DeviceManagerThread : public VThread, public ThreadCommandQueue, public RefCountBase<DeviceManagerThread>
 {
     friend class DeviceManager;
     enum { ThreadStackSize = 64 * 1024 };
 public:
     DeviceManagerThread();
     ~DeviceManagerThread();
-
-    int run() override;
 
     // ThreadCommandQueue notifications for CommandEvent handling.
     void onPushNonEmptyLocked() override { write(m_commandFd[1], this, 1); }
@@ -82,6 +81,9 @@ public:
     int threadTid() { return m_deviceManagerTid; }
     void suspendThread();
     void resumeThread();
+
+protected:
+    int run() override;
 
 private:
 
