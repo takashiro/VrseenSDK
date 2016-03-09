@@ -176,7 +176,6 @@ HEADERS += \
     jni/core/MemBuffer.h \
     jni/core/VMutex.h \
     jni/core/Types.h \
-    jni/core/KeyCodes.h \
     jni/core/List.h \
     jni/core/OVR.h \
     jni/core/OVRVersion.h \
