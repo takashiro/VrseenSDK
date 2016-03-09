@@ -12,7 +12,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "FolderBrowser.h"
 
-#include "Threads.h"
+#include "VThread.h"
 #include <stdio.h>
 #include <unistd.h>
 #include "../App.h"
@@ -932,7 +932,7 @@ OvrFolderBrowser::OvrFolderBrowser(
 	pthread_attr_t loadingThreadAttr;
 	pthread_attr_init( &loadingThreadAttr );
 	sched_param sparam;
-	sparam.sched_priority = Thread::GetOSPriority( Thread::BelowNormalPriority );
+    sparam.sched_priority = VThread::GetOSPriority(VThread::BelowNormalPriority);
 	pthread_attr_setschedparam( &loadingThreadAttr, &sparam );
 
 	const int createErr = pthread_create( &m_thumbnailThreadId, &loadingThreadAttr, &ThumbnailThread, this );
@@ -1686,7 +1686,7 @@ void * OvrFolderBrowser::ThumbnailThread( void * v )
 	}
 
 	sched_param sparam;
-	sparam.sched_priority = Thread::GetOSPriority( Thread::BelowNormalPriority );
+    sparam.sched_priority = VThread::GetOSPriority(VThread::BelowNormalPriority);
 
 	int setSchedparamResult = pthread_setschedparam( pthread_self(), SCHED_NORMAL, &sparam );
 	if ( setSchedparamResult != 0 )
