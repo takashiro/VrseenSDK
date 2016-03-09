@@ -92,7 +92,7 @@ VMessageQueue::~VMessageQueue()
         if ( !msg ) {
             break;
         }
-        vInfo( "~VMessageQueue: still on queue: %s"<<msg);
+        vInfo( "~VMessageQueue: still on queue: "<<msg);
         free( (void *)msg );
     }
 
@@ -119,12 +119,12 @@ bool VMessageQueue::Private::PostMessage( const char * msg, bool sync, bool abor
 {
     if ( shutdown )
     {
-        vInfo( "PostMessage( %s ) to shutdown queue"<<msg);
+        vInfo( "PostMessage( "<<msg<<" ) to shutdown queue");
         return false;
     }
     if ( debug )
     {
-        vInfo( "PostMessage( %s )"<<msg);
+        vInfo( "PostMessage( "<<msg<<" )");
     }
 
     pthread_mutex_lock( &mutex );
@@ -136,9 +136,9 @@ bool VMessageQueue::Private::PostMessage( const char * msg, bool sync, bool abor
             vInfo( "VMessageQueue overflow" );
             for ( int i = head; i < tail; i++ )
             {
-                vInfo( "%s"<<messages[i % maxMessages].string );
+                vInfo( messages[i % maxMessages].string );
             }
-            FAIL( "Message buffer overflowed" );
+            vFatal( "Message buffer overflowed" );
         }
         return false;
     }
@@ -228,7 +228,7 @@ VString VMessageQueue::nextMessage()
 
     if ( d->debug )
     {
-        vInfo( "nextMessage() : %s"<<msg);
+        vInfo( "nextMessage() : "<<msg);
     }
 
     return msg;
@@ -272,7 +272,7 @@ void VMessageQueue::ClearMessages()
     }
     for ( VString msg = nextMessage(); msg != NULL; msg = nextMessage() )
     {
-        vInfo( "ClearMessages: discarding %s"<<msg);
+        vInfo( "ClearMessages: discarding "<<msg);
 //        free( (void *)msg );
     }
 }
