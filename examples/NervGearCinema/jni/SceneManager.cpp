@@ -660,7 +660,7 @@ bool SceneManager::Command( const char * msg )
 		MovieTexture = new SurfaceTexture( Cinema.app->GetVrJni() );
 		LOG( "RC_NEW_VIDEO texId %i", MovieTexture->textureId );
 
-		MessageQueue * receiver;
+		VMessageQueue * receiver;
 		sscanf( msg, "newVideo %p", &receiver );
 
 		receiver->PostPrintf( "surfaceTexture %p", MovieTexture->javaObject );

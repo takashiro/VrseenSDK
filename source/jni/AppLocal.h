@@ -26,7 +26,7 @@ public:
 										VrAppInterface & interface_ );
 	virtual						~AppLocal();
 
-	virtual MessageQueue &		GetMessageQueue();
+	virtual VMessageQueue &		GetMessageQueue();
 
 	virtual VrAppInterface *	GetAppInterface();
 
@@ -247,7 +247,7 @@ public:
         volatile bool	readyToExit;		// start exit procedure
 
         // Most calls in from java should communicate through this.
-        MessageQueue	vrMessageQueue;
+        VMessageQueue	vrMessageQueue;
 
         // From EnterVrMode, used for WarpSwap and LeaveVrMode
         ovrMobile *		OvrMobile;

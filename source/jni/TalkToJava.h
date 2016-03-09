@@ -14,7 +14,7 @@
  * thread is probably also inadvisable.
  */
 
-#include "MessageQueue.h"
+#include "VMessageQueue.h"
 #include <jni.h>
 #include <pthread.h>
 
@@ -56,7 +56,7 @@ public:
 	// execute.
 	void	Init( JavaVM & javaVM_, TalkToJavaInterface & interface );
 
-	MessageQueue	& GetMessageQueue() { return TtjMessageQueue; };
+	VMessageQueue	& GetMessageQueue() { return TtjMessageQueue; };
 
 private:
 	static void * ThreadStarter( void * parm );
@@ -68,7 +68,7 @@ private:
 	JavaVM *		Jvm;
 	JNIEnv *		Jni;
 	pthread_t		TtjThread;
-	MessageQueue	TtjMessageQueue;
+	VMessageQueue	TtjMessageQueue;
 };
 
 }

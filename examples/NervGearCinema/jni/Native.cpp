@@ -25,11 +25,11 @@ jobject Java_me_takashiro_nervgear_cinema_MainActivity_nativePrepareNewVideo( JN
 
 	// set up a message queue to get the return message
 	// TODO: make a class that encapsulates this work
-	MessageQueue	result(1);
+	VMessageQueue	result(1);
 	cinema->app->GetMessageQueue().PostPrintf( "newVideo %p", &result);
 
 	result.SleepUntilMessage();
-    const char * msg = result.nextMessage();
+	const char* msg = result.nextMessage().toCString();
 	jobject	texobj;
 	sscanf( msg, "surfaceTexture %p", &texobj );
 	free( (void *)msg );

@@ -656,7 +656,7 @@ void AppLocal::ShutdownFonts()
     BitmapFontSurface::Free( menuFontSurface );
 }
 
-MessageQueue & AppLocal::GetMessageQueue()
+VMessageQueue & AppLocal::GetMessageQueue()
 {
 	return vrMessageQueue;
 }
@@ -1737,7 +1737,7 @@ void AppLocal::VrThreadFunction()
 		// Process incoming messages until queue is empty
 		for ( ; ; )
 		{
-			const char * msg = vrMessageQueue.nextMessage();
+			const char* msg = vrMessageQueue.nextMessage().toCString();
 			if ( !msg )
 			{
 				break;

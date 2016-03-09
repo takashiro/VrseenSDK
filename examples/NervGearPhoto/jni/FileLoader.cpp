@@ -22,8 +22,8 @@ of patent rights can be found in the PATENTS file in the same directory.
 
 namespace NervGear {
 
-MessageQueue		Queue1( 4000 );	// big enough for all the thumbnails that might be needed
-MessageQueue		Queue3( 1 );
+VMessageQueue		Queue1( 4000 );	// big enough for all the thumbnails that might be needed
+VMessageQueue		Queue3( 1 );
 
 pthread_mutex_t QueueMutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t	QueueWake = PTHREAD_COND_INITIALIZER;
@@ -51,13 +51,13 @@ void * Queue1Thread( void * v )
 		}
 		pthread_mutex_unlock( &QueueMutex );
 
-		const char * msg = Queue1.nextMessage();
+		const char* msg = Queue1.nextMessage().toCString();
 
 		char commandName[1024] = {};
 		sscanf( msg, "%s", commandName );
 		const char * filename = msg + strlen( commandName ) + 1;
 
-		MessageQueue * queue = &Queue3;
+		VMessageQueue * queue = &Queue3;
 		char const * suffix = strstr( filename, "_nz.jpg" );
 		if ( suffix != NULL )
 		{
@@ -153,7 +153,7 @@ void * Queue3Thread( void * v )
 	for ( ; ; )
 	{
 		Queue3.SleepUntilMessage();
-		const char * msg = Queue3.nextMessage();
+		const char* msg = Queue3.nextMessage().toCString();
 
 		LOG( "Queue3 msg = '%s'", msg );
 

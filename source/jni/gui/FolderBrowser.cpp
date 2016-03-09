@@ -990,7 +990,7 @@ void OvrFolderBrowser::frameImpl( App * app, VrFrame const & vrFrame, OvrVRMenuM
 	// Check for thumbnail loads
 	while ( 1 )
 	{
-		const char * cmd = m_textureCommands.nextMessage();
+		const char* cmd = m_textureCommands.nextMessage().toCString();
 		if ( !cmd )
 		{
 			break;
@@ -1697,7 +1697,7 @@ void * OvrFolderBrowser::ThumbnailThread( void * v )
 	for ( ;; )
 	{
 		folderBrowser->m_backgroundCommands.SleepUntilMessage();
-		const char * msg = folderBrowser->m_backgroundCommands.nextMessage();
+		const char* msg = folderBrowser->m_backgroundCommands.nextMessage().toCString();
 		//LOG( "BackgroundCommands: %s", msg );
 
 		if ( MatchesHead( "shutDown", msg ) )

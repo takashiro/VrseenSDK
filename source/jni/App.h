@@ -15,7 +15,7 @@
 #include "EyeBuffers.h"
 #include "EyePostRender.h"
 #include "VrCommon.h"
-#include "MessageQueue.h"
+#include "VMessageQueue.h"
 #include "Input.h"
 #include "TalkToJava.h"
 #include "KeyState.h"
@@ -165,7 +165,7 @@ public:
 
 	// App drains this message queue on the VR thread before calling
 	// the frame and render functions.
-	virtual MessageQueue &		GetMessageQueue() = 0;
+	virtual VMessageQueue &		GetMessageQueue() = 0;
 
 
 	// When VrAppInterface::SetActivity is called, the App member is
