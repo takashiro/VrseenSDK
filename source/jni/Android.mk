@@ -52,7 +52,6 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     core/SysFile.cpp \
                     core/System.cpp \
                     core/ThreadCommandQueue.cpp \
-                    core/ThreadsPthread.cpp \
                     core/VThread.cpp \
                     core/VTimer.cpp \
                     core/BinaryFile.cpp \

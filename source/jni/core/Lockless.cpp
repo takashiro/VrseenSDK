@@ -14,7 +14,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #ifdef OVR_LOCKLESS_TEST
 
-#include "Threads.h"
 #include "Timer.h"
 #include "Log.h"
 

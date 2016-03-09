@@ -7,7 +7,6 @@
 #include "Log.h"
 #include "System.h"
 
-#include "Threads.h"
 #include "ThreadCommandQueue.h"
 #include "HIDDevice.h"
 
