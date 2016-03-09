@@ -3,7 +3,7 @@
 #include "Device.h"
 #include "SensorFilter.h"
 #include "Lockless.h"
-#include "Threads.h"
+#include "VMutex.h"
 //#include <time.h>
 
 // VrApi forward declarations.
@@ -302,7 +302,7 @@ private:
     Vector3f				FocusDirection;
 	float					FocusFOV;
 
-	Mutex					RecenterMutex;
+    VMutex					RecenterMutex;
 	LocklessUpdater<Posef>	RecenterTransform;	// this is an additional transform that is applied to "recenter" the orientation in yaw.
 };
 
