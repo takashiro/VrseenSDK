@@ -30,9 +30,14 @@
 
 #include "VPath.h"
 #include "VJson.h"
+#include "VApkFile.h"
+#include "VLog.h"
+
+#include "android/JniUtils.h"
 #include "Android/GlUtils.h"
 #include "Android/LogUtils.h"
 
+#include "AppLocal.h"
 #include "GlProgram.h"
 #include "GlTexture.h"
 #include "GlGeometry.h"
@@ -112,7 +117,7 @@ public:
 					1.0f), CenterOffset(0.0f), MaxAscent(0.0f), MaxDescent(0.0f) {
 	}
 
-    bool Load(OvrApkFile const & languagePackageFile, const VString &fileName);
+    bool Load(const VApkFile &languagePackageFile, const VString &fileName);
 	FontGlyphType const & GlyphForCharCode(uint32_t const charCode) const;
 
 	std::string FontName; // name of the font (not necessarily the file name)
@@ -133,7 +138,7 @@ public:
 	NervGear::Array<int32_t> CharCodeMap; // index by character code to get the index of a glyph for the character
 
 private:
-    bool LoadFromPackage(void* packageFile, const VString &fileName);
+    bool LoadFromPackage(const VApkFile &packageFile, const VString &fileName);
 	bool LoadFromBuffer(void const * buffer, size_t const bufferSize);
 };
 
@@ -201,8 +206,8 @@ private:
 	GlProgram FontProgram;
 
 private:
-	bool LoadImage(OvrApkFile const & languagePackageFile,
-			char const * imageName);
+    bool LoadImage(const VApkFile &languagePackageFile,
+            char const * imageName);
 	bool LoadImageFromBuffer(char const * imageName,
 			unsigned char const * buffer, size_t const bufferSize,
 			bool const isASTC);
@@ -400,14 +405,13 @@ static size_t FileSize(FILE * f) {
 
 //==============================
 // FontInfoType::LoadFromPackage
-bool FontInfoType::LoadFromPackage(void* packageFile, const VString &fileName) {
-	int length = 0;
-	void * packageBuffer = NULL;
+bool FontInfoType::LoadFromPackage(const VApkFile &packageFile, const VString &fileName) {
+    uint length = 0;
+    void *packageBuffer = NULL;
 
-    LOG("fileName is %s", fileName.toCString());
-    ovr_ReadFileFromOtherApplicationPackage(packageFile, fileName.toCString(), length,
-			packageBuffer);
-	if (packageBuffer == NULL) {
+    vInfo("fileName is" << fileName);
+    packageFile.read(fileName, packageBuffer, length);
+    if (packageBuffer == nullptr) {
 		return false;
 	}
 
@@ -429,14 +433,14 @@ bool FontInfoType::LoadFromPackage(void* packageFile, const VString &fileName) {
 
 //==============================
 // FontInfoType::Load
-bool FontInfoType::Load(OvrApkFile const & languagePackageFile,
-        const VString &fileName) {
-	if (languagePackageFile && LoadFromPackage(languagePackageFile, fileName)) {
+bool FontInfoType::Load(const VApkFile &languagePackageFile, const VString &fileName) {
+    if (languagePackageFile.isOpen() && LoadFromPackage(languagePackageFile, fileName)) {
 		return true;
 	}
 
 	// if it wasn't loaded from the language package, try again from the app package
-	return LoadFromPackage(ovr_GetApplicationPackageFile(), fileName);
+    VApkFile file(vApp->packageCodePath());
+    return LoadFromPackage(file, fileName);
 }
 
 //==============================
@@ -743,8 +747,7 @@ static bool ExtensionMatches(char const * fileName, char const * ext) {
 //==============================
 // BitmapFontLocal::Load
 bool BitmapFontLocal::Load(const VString &languagePackageName, const VString &fontInfoFileName) {
-	OvrApkFile languagePackageFile(
-			ovr_OpenOtherApplicationPackage(languagePackageName));
+    VApkFile languagePackageFile(languagePackageName);
 	if (!FontInfo.Load(languagePackageFile, fontInfoFileName)) {
 		return false;
 	}
@@ -780,22 +783,21 @@ bool BitmapFontLocal::Load(const VString &languagePackageName, const VString &fo
 
 //==============================
 // BitmapFontLocal::LoadImage
-bool BitmapFontLocal::LoadImage(OvrApkFile const & languagePackageFile,
-		char const * imageName) {
+bool BitmapFontLocal::LoadImage(const VApkFile &languagePackageFile, char const * imageName) {
 	// try to open the language pack apk
-	int length = 0;
-	void * packageBuffer = NULL;
-	if (languagePackageFile) {
-		ovr_ReadFileFromOtherApplicationPackage(languagePackageFile, imageName,
-				length, packageBuffer);
+    uint length = 0;
+    void *packageBuffer = nullptr;
+    if (languagePackageFile.isOpen()) {
+        languagePackageFile.read(imageName, packageBuffer, length);
 	}
 
 	// one of the following conditions should be true here:
 	// - we opened the language apk and read the texture file without error
 	// - we opened the language apk and failed to open the texture file
 	// - we failed to open the language apk
-	if (packageBuffer == NULL) {
-		ovr_ReadFileFromApplicationPackage(imageName, length, packageBuffer);
+    if (packageBuffer == nullptr) {
+        VApkFile appPackage(vApp->packageCodePath());
+        appPackage.read(imageName, packageBuffer, length);
 	}
 
 	bool result = false;

@@ -27,12 +27,14 @@ VApkFile::VApkFile(const VString &packageName)
 VApkFile::~VApkFile()
 {
     close();
+    delete d;
 }
 
 bool VApkFile::open(const VString &packageName)
 {
-    VByteArray utf8 = packageName.toUtf8();
-    d->handle = unzOpen(utf8.data());
+    VByteArray latin1 = packageName.toLatin1();
+    vInfo("VApkFile is opening" << latin1);
+    d->handle = unzOpen(latin1.c_str());
     return d->handle != nullptr;
 }
 
@@ -51,7 +53,7 @@ void VApkFile::close()
 bool VApkFile::contains(const VString &filePath) const
 {
     VByteArray path = filePath.toUtf8();
-    const int locateRet = unzLocateFile(d->handle, path.data(), 2/* case insensitive */);
+    const int locateRet = unzLocateFile(d->handle, path.c_str(), 2/* case insensitive */);
     if (locateRet != UNZ_OK) {
         vInfo("File '" << path << "' not found in apk!");
         return false;
@@ -69,14 +71,16 @@ bool VApkFile::contains(const VString &filePath) const
 
 void VApkFile::read(const VString &filePath, void *&buffer, uint &length) const
 {
-    VByteArray path = filePath.toUtf8();
-    vInfo("nameInZip is" << path);
     if (d->handle == nullptr) {
+        vError("VApkFile is not open");
         return;
     }
 
+    VByteArray path = filePath.toUtf8();
+    vInfo("nameInZip is" << path);
+
     const int locateRet = unzLocateFile(d->handle, path.data(), 2 /* case insensitive */);
-    if ( locateRet != UNZ_OK) {
+    if (locateRet != UNZ_OK) {
         vInfo("File '" << path << "' not found in apk!");
         return;
     }
