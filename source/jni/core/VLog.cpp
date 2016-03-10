@@ -7,19 +7,25 @@ NV_NAMESPACE_BEGIN
 
 struct VLog::Private
 {
+    const char *file;
+    uint line;
     VLog::Priority priority;
     std::stringstream buffer;
 };
 
-VLog::VLog(VLog::Priority priority)
+VLog::VLog(const char *file, uint line, VLog::Priority priority)
     : d(new Private)
 {
+    d->file = file;
+    d->line = line;
     d->priority = priority;
 }
 
 VLog::~VLog()
 {
-    __android_log_write(d->priority, "VLog", d->buffer.str().data());
+    VString tag;
+    tag.sprintf("%s: %d", d->file, d->line);
+    __android_log_write(d->priority, tag.toLatin1().data(), d->buffer.str().data());
     delete d;
 }
 
