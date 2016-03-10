@@ -27,6 +27,7 @@ LOCAL_C_INCLUDES :=  \
 	$(LOCAL_PATH)/$(NV_ROOT)/api \
 	$(LOCAL_PATH)/$(NV_ROOT)/core \
 	$(LOCAL_PATH)/$(NV_ROOT)/gui \
+	$(LOCAL_PATH)/$(NV_ROOT)/io \
 	$(LOCAL_PATH)/$(NV_ROOT)/scene
 
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_C_INCLUDES)
@@ -116,6 +117,7 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     gui/SwipeHintComponent.cpp \
                     gui/MetaDataManager.cpp \
                     gui/OutOfSpaceMenu.cpp \
+                    io/VApkFile.cpp \
                     scene/BitmapFont.cpp \
                     scene/EyeBuffers.cpp \
                     scene/EyePostRender.cpp \

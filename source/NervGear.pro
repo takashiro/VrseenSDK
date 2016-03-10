@@ -13,6 +13,7 @@ INCLUDEPATH += \
     jni/api \
     jni/core \
     jni/gui \
+    jni/io \
     jni/scene
 
 SOURCES += \
@@ -101,6 +102,7 @@ SOURCES += \
     jni/gui/SwipeHintComponent.cpp \
     jni/gui/MetaDataManager.cpp \
     jni/gui/OutOfSpaceMenu.cpp \
+    jni/io/VApkFile.cpp \
     jni/scene/BitmapFont.cpp \
     jni/scene/EyeBuffers.cpp \
     jni/scene/EyePostRender.cpp \
@@ -258,6 +260,7 @@ HEADERS += \
     jni/gui/OutOfSpaceMenu.h \
     jni/gui/GuiSysLocal.h \
     jni/gui/ui_default.h \
+    jni/io/VApkFile.h \
     jni/scene/BitmapFont.h \
     jni/scene/EyeBuffers.h \
     jni/scene/EyePostRender.h \
