@@ -83,7 +83,7 @@ void TalkToJava::TtjThreadFunction()
 	// Process all queued messages
 	for ( ; ; )
 	{
-		const char* msg = TtjMessageQueue.nextMessage().toCString();
+		const char * msg = TtjMessageQueue.nextMessage();
 		if ( !msg )
 		{
 			// Go dormant until something else arrives.

@@ -42,7 +42,7 @@ public:
 
     // Returns NULL if there are no more messages, otherwise returns
     // a string that the caller is now responsible for freeing.
-    VString 	nextMessage();
+    const char* 	nextMessage();
 
     // Returns immediately if there is already a message in the queue.
     void			SleepUntilMessage();

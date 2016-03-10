@@ -1737,7 +1737,7 @@ void AppLocal::VrThreadFunction()
 		// Process incoming messages until queue is empty
 		for ( ; ; )
 		{
-			const char* msg = vrMessageQueue.nextMessage().toCString();
+			const char * msg = vrMessageQueue.nextMessage();
 			if ( !msg )
 			{
 				break;

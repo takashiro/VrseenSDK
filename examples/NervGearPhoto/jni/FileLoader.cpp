@@ -51,7 +51,7 @@ void * Queue1Thread( void * v )
 		}
 		pthread_mutex_unlock( &QueueMutex );
 
-		const char* msg = Queue1.nextMessage().toCString();
+		const char * msg = Queue1.nextMessage();
 
 		char commandName[1024] = {};
 		sscanf( msg, "%s", commandName );
@@ -153,7 +153,7 @@ void * Queue3Thread( void * v )
 	for ( ; ; )
 	{
 		Queue3.SleepUntilMessage();
-		const char* msg = Queue3.nextMessage().toCString();
+		const char * msg = Queue3.nextMessage();
 
 		LOG( "Queue3 msg = '%s'", msg );
 

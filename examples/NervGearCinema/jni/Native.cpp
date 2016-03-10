@@ -29,7 +29,7 @@ jobject Java_me_takashiro_nervgear_cinema_MainActivity_nativePrepareNewVideo( JN
 	cinema->app->GetMessageQueue().PostPrintf( "newVideo %p", &result);
 
 	result.SleepUntilMessage();
-	const char* msg = result.nextMessage().toCString();
+    const char * msg = result.nextMessage();
 	jobject	texobj;
 	sscanf( msg, "surfaceTexture %p", &texobj );
 	free( (void *)msg );

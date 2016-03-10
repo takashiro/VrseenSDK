@@ -49,7 +49,7 @@ struct VMessageQueue::Private
 
     struct message_t
     {
-        VString	 string;
+        const char*	 string;
         bool			synced;
     };
 
@@ -88,7 +88,7 @@ VMessageQueue::~VMessageQueue()
     // Free any messages remaining on the queue.
     for ( ; ; )
     {
-        const char* msg = nextMessage().toCString();
+        const char* msg = nextMessage();
         if ( !msg ) {
             break;
         }
@@ -203,7 +203,7 @@ void VMessageQueue::SendPrintf( const char * fmt, ... )
 
 // Returns false if there are no more messages, otherwise returns
 // a string that the caller must free.
-VString VMessageQueue::nextMessage()
+const char* VMessageQueue::nextMessage()
 {
     if ( d->synced )
     {
@@ -219,7 +219,7 @@ VString VMessageQueue::nextMessage()
     }
 
     const int index = d->head % d->maxMessages;
-    VString msg = d->messages[index].string;
+    const char* msg = d->messages[index].string;
     d->synced = d->messages[index].synced;
     d->messages[index].string = NULL;
     d->messages[index].synced = false;
@@ -270,10 +270,10 @@ void VMessageQueue::ClearMessages()
     {
         vInfo( "ClearMessages()");
     }
-    for ( VString msg = nextMessage(); msg != NULL; msg = nextMessage() )
+    for ( const char* msg = nextMessage(); msg != NULL; msg = nextMessage() )
     {
         vInfo( "ClearMessages: discarding "<<msg);
-//        free( (void *)msg );
+        free( (void *)msg );
     }
 }
 

@@ -88,7 +88,7 @@ jobject Java_me_takashiro_nervgear_video_MainActivity_nativePrepareNewVideo( JNI
 	panoVids->app->GetMessageQueue().PostPrintf( "newVideo %p", &result );
 
 	result.SleepUntilMessage();
-	const char* msg = result.nextMessage().toCString();
+	const char * msg = result.nextMessage();
 	jobject	texobj;
 	sscanf( msg, "surfaceTexture %p", &texobj );
 	free( ( void * )msg );

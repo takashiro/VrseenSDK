@@ -455,7 +455,7 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
 		}
 
 		photos->m_backgroundCommands.SleepUntilMessage();
-		const char* msg = photos->m_backgroundCommands.nextMessage().toCString();
+		const char * msg = photos->m_backgroundCommands.nextMessage();
 		LOG( "BackgroundGLLoadThread Commands: %s", msg );
 		if ( MatchesHead( "pano ", msg ) )
 		{
