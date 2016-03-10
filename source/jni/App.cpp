@@ -46,7 +46,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "gui/VRMenuMgr.h"
 #include "gui/GuiSysLocal.h"		// necessary to instantiate the gui system
 #include "gui/VolumePopup.h"
-#include "PackageFiles.h"
 #include "VrLocale.h"
 #include "VUserProfile.h"
 #include "Console.h"
@@ -778,7 +777,6 @@ void AppLocal::OpenApplicationPackage()
 {
     m_packageCodePath = JniUtils::GetPackageCodePath(uiJni, vrActivityClass, javaObject);
     m_packageName = JniUtils::GetCurrentPackageName(uiJni, javaObject);
-    ovr_OpenApplicationPackage(m_packageCodePath);
 }
 
 VString AppLocal::GetInstalledPackagePath( const char * packageName ) const

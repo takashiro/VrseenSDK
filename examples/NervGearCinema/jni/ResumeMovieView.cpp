@@ -4,7 +4,7 @@
 #include "CinemaApp.h"
 #include "ResumeMovieView.h"
 #include "ResumeMovieComponent.h"
-#include "PackageFiles.h"
+#include "VApkFile.h"
 #include "CinemaStrings.h"
 
 namespace OculusCinema {

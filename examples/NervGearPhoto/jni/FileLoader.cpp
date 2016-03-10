@@ -14,7 +14,6 @@ of patent rights can be found in the PATENTS file in the same directory.
 ************************************************************************************/
 
 #include "VThread.h"
-#include "PackageFiles.h"
 #include "FileLoader.h"
 #include "Oculus360Photos.h"
 #include "turbojpeg.h"

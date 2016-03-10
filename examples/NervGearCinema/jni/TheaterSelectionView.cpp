@@ -21,7 +21,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "TheaterSelectionView.h"
 #include "CinemaApp.h"
 #include "SwipeHintComponent.h"
-#include "PackageFiles.h"
+#include "VApkFile.h"
 #include "CinemaStrings.h"
 #include "Native.h"
 

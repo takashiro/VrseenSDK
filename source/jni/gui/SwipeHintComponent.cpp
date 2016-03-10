@@ -12,8 +12,8 @@ Copyright   :   Copyright 2014 Oculus VR, Inc. All Rights reserved.
 #include "SwipeHintComponent.h"
 #include "VRMenuMgr.h"
 #include "VRMenu.h"
-#include "PackageFiles.h"
-#include "../App.h"
+#include "VApkFile.h"
+#include "App.h"
 
 namespace NervGear
 {

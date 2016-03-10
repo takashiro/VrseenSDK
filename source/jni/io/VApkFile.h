@@ -2,10 +2,15 @@
 
 #include "vglobal.h"
 
+//@to-to: remove this
+#include "GlTexture.h"
+
 NV_NAMESPACE_BEGIN
 
 class VString;
 class VByteArray;
+
+//@to-do: remove this
 class MemBufferFile;
 
 class VApkFile
@@ -32,5 +37,8 @@ private:
     NV_DECLARE_PRIVATE
     NV_DISABLE_COPY(VApkFile)
 };
+
+//@to-do: remove this function
+uint LoadTextureFromApplicationPackage(const VString &nameInZip, const TextureFlags_t &flags, int & width, int & height);
 
 NV_NAMESPACE_END

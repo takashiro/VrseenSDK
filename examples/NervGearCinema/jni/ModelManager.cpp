@@ -17,7 +17,6 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "String_Utils.h"
 #include "ModelManager.h"
 #include "CinemaApp.h"
-#include "PackageFiles.h"
 
 #include <VPath.h>
 #include <VApkFile.h>
@@ -209,7 +208,7 @@ SceneDef * ModelManager::LoadScene( const char *sceneFilename, bool useDynamicPr
         buffer = nullptr;
         length = 0;
         apk.read(iconFilename, buffer, length);
-        def->IconTexture = LoadTextureFromBuffer(iconFileName.data(), MemBuffer(buffer, bufferLength), TextureFlags_t(TEXTUREFLAG_NO_DEFAULT), textureWidth, textureHeight);
+        def->IconTexture = LoadTextureFromBuffer(iconFileName.data(), MemBuffer(buffer, length), TextureFlags_t(TEXTUREFLAG_NO_DEFAULT), textureWidth, textureHeight);
     } else {
         def->SceneModel = LoadModelFile(fileName.data(), glPrograms, materialParms );
         def->IconTexture = LoadTextureFromBuffer(iconFileName.data(), MemBufferFile(iconFileName.data()), TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), textureWidth, textureHeight );

@@ -41,7 +41,6 @@
 #include "GlTexture.h"
 #include "GlGeometry.h"
 #include "VrCommon.h"
-#include "PackageFiles.h"
 
 NV_NAMESPACE_BEGIN
 

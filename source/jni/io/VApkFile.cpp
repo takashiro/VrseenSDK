@@ -136,4 +136,23 @@ const VApkFile &VApkFile::CurrentApkFile()
     return current;
 }
 
+uint LoadTextureFromApplicationPackage(const VString &nameInZip, const TextureFlags_t &flags, int &width, int &height)
+{
+    width = 0;
+    height = 0;
+
+    void *buffer;
+    uint bufferLength;
+
+    const VApkFile &apk = VApkFile::CurrentApkFile();
+    apk.read(nameInZip, buffer, bufferLength);
+    if (!buffer) {
+        return 0;
+    }
+    VByteArray name = nameInZip.toUtf8();
+    unsigned texId = LoadTextureFromBuffer(name.data(), MemBuffer(buffer, bufferLength), flags, width, height );
+    free(buffer);
+    return texId;
+}
+
 NV_NAMESPACE_END

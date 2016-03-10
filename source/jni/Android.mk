@@ -134,7 +134,6 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     scene/ModelView.cpp \
                     scene/SurfaceTexture.cpp \
                     scene/SwipeView.cpp \
-                    PackageFiles.cpp \
                     VrCommon.cpp \
                     VMessageQueue.cpp \
                     TalkToJava.cpp \

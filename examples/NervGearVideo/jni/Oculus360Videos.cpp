@@ -38,7 +38,6 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "Oculus360Videos.h"
 #include "gui/GuiSys.h"
 #include "ImageData.h"
-#include "PackageFiles.h"
 #include "gui/Fader.h"
 #include "3rdParty/stb/stb_image.h"
 #include "3rdParty/stb/stb_image_write.h"
