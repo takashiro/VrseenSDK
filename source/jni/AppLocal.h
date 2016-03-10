@@ -94,7 +94,7 @@ public:
 	virtual bool				GetRenderMonoMode() const;
 	virtual void				SetRenderMonoMode( bool const mono );
 
-	virtual char const *		GetPackageCodePath() const;
+    virtual const VString &packageCodePath() const;
 	virtual char const *		GetLanguagePackagePath() const;
 
 	virtual Matrix4f const &	GetLastViewMatrix() const;
@@ -129,7 +129,7 @@ public:
 	virtual void				SetShowVolumePopup( bool const show );
 	virtual bool				GetShowVolumePopup() const;
 
-	virtual const char *		GetPackageName() const;
+    virtual const VString &packageName() const;
 
 	virtual bool				IsWifiConnected() const;
 
@@ -291,8 +291,8 @@ public:
         VString			launchIntentJSON;			// extra JSON data app was launched with
         VString			launchIntentFromPackage;	// package that sent us the launch intent
 
-        VString			packageCodePath;	// path to apk to open as zip and load resources
-        VString			packageName;		// package name
+        VString			m_packageCodePath;	// path to apk to open as zip and load resources
+        VString			m_packageName;		// package name
 
         bool			paused;				// set/cleared by onPause / onResume
 
@@ -411,6 +411,8 @@ private:
     void                InitFonts();
     void                ShutdownFonts();
 };
+
+extern App *vApp;
 
 NV_NAMESPACE_END
 
