@@ -20,6 +20,8 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "turbojpeg.h"
 #include "OVR_TurboJpeg.h"
 
+#include <VApkFile.h>
+
 namespace NervGear {
 
 VMessageQueue		Queue1( 4000 );	// big enough for all the thumbnails that might be needed
@@ -79,8 +81,8 @@ void * Queue1Thread( void * v )
 				strcat( sideFilename, cubeSuffix[side] );
 				if ( !mbfs[side].loadFile( sideFilename ) )
 				{
-					if ( !ovr_ReadFileFromApplicationPackage( sideFilename, mbfs[ side ] ) )
-					{
+                    const VApkFile &apk = VApkFile::CurrentApkFile();
+                    if (!apk.read(sideFilename, mbfs[side])) {
 						break;
 					}
 				}
@@ -125,8 +127,8 @@ void * Queue1Thread( void * v )
 			MemBufferFile mbf( filename );
 			if ( mbf.length <= 0 || mbf.buffer == NULL )
 			{
-				if ( !ovr_ReadFileFromApplicationPackage( filename, mbf ) )
-				{
+                const VApkFile &apk = VApkFile::CurrentApkFile();
+                if (!apk.read(filename, mbf)) {
 					continue;
 				}
 			}

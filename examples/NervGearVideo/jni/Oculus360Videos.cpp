@@ -21,6 +21,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 
 #include <Alg.h>
 #include <VPath.h>
+#include <VApkFile.h>
 
 #include "VMath.h"
 #include "TypesafeNumber.h"
@@ -282,9 +283,12 @@ void Oculus360Videos::OneTimeInit( const char * fromPackage, const char * launch
 	MaterialParms materialParms;
 	materialParms.UseSrgbTextureFormats = ( app->GetVrParms().colorFormat == COLOR_8888_sRGB );
 
-	BackgroundScene = LoadModelFileFromApplicationPackage( "assets/stars.ovrscene",
-		Scene.GetDefaultGLPrograms(),
-		materialParms );
+
+    const VApkFile &apk = VApkFile::CurrentApkFile();
+    void *buffer = nullptr;
+    uint length = 0;
+    apk.read("assets/stars.ovrscene", buffer, length);
+    BackgroundScene = LoadModelFileFromMemory("assets/stars.ovrscene", buffer, length, Scene.GetDefaultGLPrograms(), materialParms);
 
 	Scene.SetWorldModel( *BackgroundScene );
 

@@ -27,6 +27,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include <unistd.h>
 
 #include <VPath.h>
+#include <VApkFile.h>
 
 namespace NervGear
 {
@@ -66,8 +67,9 @@ unsigned char * VideoBrowser::loadThumbnail( const char * filename, int & width,
 	if ( strstr( filename, "assets/" ) )
 	{
 		void * buffer = NULL;
-		int length = 0;
-		ovr_ReadFileFromApplicationPackage( filename, length, buffer );
+        uint length = 0;
+        const VApkFile &apk = VApkFile::CurrentApkFile();
+        apk.read(filename, buffer, length);
 
 		if ( buffer )
 		{
