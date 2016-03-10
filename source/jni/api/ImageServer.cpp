@@ -128,7 +128,7 @@ ImageServer::~ImageServer()
 	}
 	if ( m_resampleProg.program )
 	{
-		DestroyWarpProgram( &m_resampleProg );
+		m_resampleProg.destroy();
 	}
 	freeBuffers();
 	LOG( "-------------------- Shutdown completed --------------------" );
@@ -451,7 +451,7 @@ void ImageServer::enterWarpSwap( int eyeTexture )
 	// create GL objects if necessary
 	if ( !m_resampleProg.program )
 	{
-		CreateWarpProgram( &m_resampleProg,
+		m_resampleProg.initShader(
 			"uniform highp mat4 Mvpm;\n"
 			"attribute vec4 Position;\n"
 			"attribute vec2 TexCoord;\n"

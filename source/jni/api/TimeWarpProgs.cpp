@@ -14,10 +14,10 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 namespace NervGear
 {
 
-static WarpProgram BuildWarpProg( const char * vertex, const char * fragment )
+static VGlShader BuildWarpProg( const char * vertex, const char * fragment )
 {
-	WarpProgram wp;
-	CreateWarpProgram( &wp, vertex, fragment );
+	VGlShader wp;
+	wp.initShader(vertex, fragment );
 	return wp;
 }
 

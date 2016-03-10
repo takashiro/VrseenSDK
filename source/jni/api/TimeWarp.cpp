@@ -397,20 +397,20 @@ static WarpGeometry LoadMeshFromMemory( const MemBuffer & buf,
 	glBufferData( GL_ELEMENT_ARRAY_BUFFER, indexBytes, (void *)tessIndices, GL_STATIC_DRAW );
 	delete[] tessIndices;
 
-	glEnableVertexAttribArray( VERTEX_ATTRIBUTE_LOCATION_POSITION );
-	glVertexAttribPointer( VERTEX_ATTRIBUTE_LOCATION_POSITION, 2, GL_FLOAT, false, attribCount * sizeof( float ), (void *)( 0 * sizeof( float ) ) );
+	glEnableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_POSITION );
+	glVertexAttribPointer( SHADER_ATTRIBUTE_LOCATION_POSITION, 2, GL_FLOAT, false, attribCount * sizeof( float ), (void *)( 0 * sizeof( float ) ) );
 
-	glEnableVertexAttribArray( VERTEX_ATTRIBUTE_LOCATION_NORMAL );
-	glVertexAttribPointer( VERTEX_ATTRIBUTE_LOCATION_NORMAL, 2, GL_FLOAT, false, attribCount * sizeof( float ), (void *)( 2 * sizeof( float ) ) );
+	glEnableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_NORMAL );
+	glVertexAttribPointer( SHADER_ATTRIBUTE_LOCATION_NORMAL, 2, GL_FLOAT, false, attribCount * sizeof( float ), (void *)( 2 * sizeof( float ) ) );
 
-	glEnableVertexAttribArray( VERTEX_ATTRIBUTE_LOCATION_UV0 );
-	glVertexAttribPointer( VERTEX_ATTRIBUTE_LOCATION_UV0, 2, GL_FLOAT, false, attribCount * sizeof( float ), (void *)( 4 * sizeof( float ) ) );
+	glEnableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_UV0 );
+	glVertexAttribPointer( SHADER_ATTRIBUTE_LOCATION_UV0, 2, GL_FLOAT, false, attribCount * sizeof( float ), (void *)( 4 * sizeof( float ) ) );
 
-	glEnableVertexAttribArray( VERTEX_ATTRIBUTE_LOCATION_TANGENT );
-	glVertexAttribPointer( VERTEX_ATTRIBUTE_LOCATION_TANGENT, 2, GL_FLOAT, false, attribCount * sizeof( float ), (void *)( 6 * sizeof( float ) ) );
+	glEnableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_TANGENT );
+	glVertexAttribPointer( SHADER_ATTRIBUTE_LOCATION_TANGENT, 2, GL_FLOAT, false, attribCount * sizeof( float ), (void *)( 6 * sizeof( float ) ) );
 
-	glEnableVertexAttribArray( VERTEX_ATTRIBUTE_LOCATION_UV1 );
-	glVertexAttribPointer( VERTEX_ATTRIBUTE_LOCATION_UV1, 2, GL_FLOAT, false, attribCount * sizeof( float ), (void *)( 8 * sizeof( float ) ) );
+	glEnableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_UV1 );
+	glVertexAttribPointer( SHADER_ATTRIBUTE_LOCATION_UV1, 2, GL_FLOAT, false, attribCount * sizeof( float ), (void *)( 8 * sizeof( float ) ) );
 
 	glBindVertexArrayOES_( 0 );
 
@@ -967,7 +967,7 @@ void TimeWarpLocal::warpThreadShutdown()
 	LOG( "WarpThreadShutdown() - End" );
 }
 
-const WarpProgram & TimeWarpLocal::programForParms( const ovrTimeWarpParms & parms, const bool disableChromaticCorrection ) const
+const VGlShader & TimeWarpLocal::programForParms( const ovrTimeWarpParms & parms, const bool disableChromaticCorrection ) const
 {
 	int program = Alg::Clamp( (int)parms.WarpProgram, (int)WP_SIMPLE, (int)WP_PROGRAM_MAX - 1 );
 
@@ -1015,35 +1015,35 @@ void TimeWarpLocal::bindWarpProgram( const warpSource_t & currentWarpSource,
 	            0.0f, 0.0f, 0.0f, 1.0f );
 
 	// Select the warp program.
-	const WarpProgram & warpProg = programForParms( currentWarpSource.WarpParms, currentWarpSource.disableChromaticCorrection );
+	const VGlShader & warpProg = programForParms( currentWarpSource.WarpParms, currentWarpSource.disableChromaticCorrection );
 	glUseProgram( warpProg.program );
 
 	// Set the shader parameters.
-	glUniform1f( warpProg.uColor, currentWarpSource.WarpParms.ProgramParms[0] );
+	glUniform1f( warpProg.uniformColor, currentWarpSource.WarpParms.ProgramParms[0] );
 
-	glUniformMatrix4fv( warpProg.uMvp, 1, GL_FALSE, landscapeOrientationMatrix.Transposed().M[0] );
-	glUniformMatrix4fv( warpProg.uTexm, 1, GL_FALSE, timeWarps[0][0].Transposed().M[0] );
-	glUniformMatrix4fv( warpProg.uTexm2, 1, GL_FALSE, timeWarps[0][1].Transposed().M[0] );
-	if ( warpProg.uTexm3 > 0 )
+	glUniformMatrix4fv( warpProg.uniformModelViewProMatrix, 1, GL_FALSE, landscapeOrientationMatrix.Transposed().M[0] );
+	glUniformMatrix4fv( warpProg.uniformTexMatrix, 1, GL_FALSE, timeWarps[0][0].Transposed().M[0] );
+	glUniformMatrix4fv( warpProg.uniformTexMatrix2, 1, GL_FALSE, timeWarps[0][1].Transposed().M[0] );
+	if ( warpProg.uniformTexMatrix3 > 0 )
 	{
-		glUniformMatrix4fv( warpProg.uTexm3, 1, GL_FALSE, timeWarps[1][0].Transposed().M[0] );
-		glUniformMatrix4fv( warpProg.uTexm4, 1, GL_FALSE, timeWarps[1][1].Transposed().M[0] );
+		glUniformMatrix4fv( warpProg.uniformTexMatrix3, 1, GL_FALSE, timeWarps[1][0].Transposed().M[0] );
+		glUniformMatrix4fv( warpProg.uniformTexMatrix4, 1, GL_FALSE, timeWarps[1][1].Transposed().M[0] );
 	}
-	if ( warpProg.uTexm5 > 0 )
+	if ( warpProg.uniformTexMatrix5 > 0 )
 	{
-		glUniformMatrix4fv( warpProg.uTexm5, 1, GL_FALSE, rollingWarp.Transposed().M[0] );
+		glUniformMatrix4fv( warpProg.uniformTexMatrix5, 1, GL_FALSE, rollingWarp.Transposed().M[0] );
 	}
-	if ( warpProg.uTexClamp > 0 )
+	if ( warpProg.uniformTexClamp > 0 )
 	{
 		// split screen clamping for UE4
 		const Vector2f clamp( eye * 0.5f, (eye+1)* 0.5f );
-		glUniform2fv( warpProg.uTexClamp, 1, &clamp.x );
+		glUniform2fv( warpProg.uniformTexClamp, 1, &clamp.x );
 	}
-	if ( warpProg.uRotateScale > 0 )
+	if ( warpProg.uniformRotateScale > 0 )
 	{
 		const float angle = FramePointTimeInSeconds( vsyncBase ) * M_PI * currentWarpSource.WarpParms.ProgramParms[0];
 		const Vector4f RotateScale( sinf( angle ), cosf( angle ), currentWarpSource.WarpParms.ProgramParms[1], 1.0f );
-		glUniform4fv( warpProg.uRotateScale, 1, &RotateScale[0] );
+		glUniform4fv( warpProg.uniformRotateScale, 1, &RotateScale[0] );
 	}
 }
 
@@ -1057,15 +1057,15 @@ void TimeWarpLocal::bindCursorProgram() const
 	            0.0f, 0.0f, 0.0f, 1.0f );
 
 	// Select the warp program.
-	const WarpProgram & warpProg = m_warpPrograms[ WP_SIMPLE ];
+	const VGlShader & warpProg = m_warpPrograms[ WP_SIMPLE ];
 	glUseProgram( warpProg.program );
 
 	// Set the shader parameters.
-	glUniform1f( warpProg.uColor, 1.0f );
+	glUniform1f( warpProg.uniformColor, 1.0f );
 
-	glUniformMatrix4fv( warpProg.uMvp, 1, GL_FALSE, landscapeOrientationMatrix.Transposed().M[0] );
-	glUniformMatrix4fv( warpProg.uTexm, 1, GL_FALSE, Matrix4f::Identity().M[0] );
-	glUniformMatrix4fv( warpProg.uTexm2, 1, GL_FALSE, Matrix4f::Identity().M[0] );
+	glUniformMatrix4fv( warpProg.uniformModelViewProMatrix, 1, GL_FALSE, landscapeOrientationMatrix.Transposed().M[0] );
+	glUniformMatrix4fv( warpProg.uniformTexMatrix, 1, GL_FALSE, Matrix4f::Identity().M[0] );
+	glUniformMatrix4fv( warpProg.uniformTexMatrix2, 1, GL_FALSE, Matrix4f::Identity().M[0] );
 }
 
 int CameraTimeWarpLatency = 4;
@@ -2172,14 +2172,14 @@ WarpGeometry BuildCalibrationLines2( const int extraLines, const bool fullGrid )
 	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, geo.indexBuffer );
 	glBufferData( GL_ELEMENT_ARRAY_BUFFER, lineCount * 4 * sizeof( unsigned short ), indices, GL_STATIC_DRAW );
 
-	glEnableVertexAttribArray( VERTEX_ATTRIBUTE_LOCATION_POSITION );
-	glVertexAttribPointer( VERTEX_ATTRIBUTE_LOCATION_POSITION, 3, GL_FLOAT, false, sizeof( vertex_t ), (void *)&((vertex_t *)0)->x );
+	glEnableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_POSITION );
+	glVertexAttribPointer( SHADER_ATTRIBUTE_LOCATION_POSITION, 3, GL_FLOAT, false, sizeof( vertex_t ), (void *)&((vertex_t *)0)->x );
 
-	glEnableVertexAttribArray( VERTEX_ATTRIBUTE_LOCATION_UV0 );
-	glVertexAttribPointer( VERTEX_ATTRIBUTE_LOCATION_UV0, 2, GL_FLOAT, false, sizeof( vertex_t ), (void *)&((vertex_t *)0)->s );
+	glEnableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_UV0 );
+	glVertexAttribPointer( SHADER_ATTRIBUTE_LOCATION_UV0, 2, GL_FLOAT, false, sizeof( vertex_t ), (void *)&((vertex_t *)0)->s );
 
-	glEnableVertexAttribArray( VERTEX_ATTRIBUTE_LOCATION_COLOR );
-	glVertexAttribPointer( VERTEX_ATTRIBUTE_LOCATION_COLOR, 4, GL_FLOAT, false, sizeof( vertex_t ), (void *)&((vertex_t *)0)->color[0] );
+	glEnableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_COLOR );
+	glVertexAttribPointer( SHADER_ATTRIBUTE_LOCATION_COLOR, 4, GL_FLOAT, false, sizeof( vertex_t ), (void *)&((vertex_t *)0)->color[0] );
 
 	glBindVertexArrayOES_( 0 );
 
@@ -2211,11 +2211,11 @@ WarpGeometry BuildTimingGraphGeometry( const int lineVertCount )
 	glGenBuffers( 1, &geo.vertexBuffer );
 	glBindBuffer( GL_ARRAY_BUFFER, geo.vertexBuffer );
 	glBufferData( GL_ARRAY_BUFFER, byteCount, (void *) verts, GL_DYNAMIC_DRAW );
-	glEnableVertexAttribArray( VERTEX_ATTRIBUTE_LOCATION_POSITION );
-	glVertexAttribPointer( VERTEX_ATTRIBUTE_LOCATION_POSITION, 2, GL_SHORT, false, sizeof( lineVert_t ), (void *)0 );
+	glEnableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_POSITION );
+	glVertexAttribPointer( SHADER_ATTRIBUTE_LOCATION_POSITION, 2, GL_SHORT, false, sizeof( lineVert_t ), (void *)0 );
 
-	glEnableVertexAttribArray( VERTEX_ATTRIBUTE_LOCATION_COLOR );
-	glVertexAttribPointer( VERTEX_ATTRIBUTE_LOCATION_COLOR, 4, GL_UNSIGNED_BYTE, true, sizeof( lineVert_t ), (void *)4 );
+	glEnableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_COLOR );
+	glVertexAttribPointer( SHADER_ATTRIBUTE_LOCATION_COLOR, 4, GL_UNSIGNED_BYTE, true, sizeof( lineVert_t ), (void *)4 );
 	delete[] verts;
 
 	// these will be drawn with DrawArrays, so no index buffer is needed
@@ -2326,7 +2326,7 @@ void TimeWarpLocal::updateTimingGraphVerts( const ovrTimeWarpDebugPerfMode debug
 
 	// NOTE: vertex array objects do NOT include the GL_ARRAY_BUFFER_BINDING state, and
 	// binding a VAO does not change GL_ARRAY_BUFFER, so we do need to track the buffer
-	// in the geometry if we want to update it, or do a GetVertexAttrib( VERTEX_ATTRIB_ARRAY_BUFFER_BINDING
+	// in the geometry if we want to update it, or do a GetVertexAttrib( SHADER_ATTRIB_ARRAY_BUFFER_BINDING
 
 	// For reasons that I do not understand, if I don't bind the VAO, then all updates after the
 	// first one produce no additional changes.
@@ -2368,7 +2368,7 @@ void TimeWarpLocal::drawTimingGraph( const ScreenEye eye )
 				0.0f, 0.0f, 0.0f, 1.0f );
 
 
-	glUniformMatrix4fv( m_debugLineProgram.uMvp, 1, GL_FALSE, /* not transposed */
+	glUniformMatrix4fv( m_debugLineProgram.uniformModelViewProMatrix, 1, GL_FALSE, /* not transposed */
         landscapePixelMatrix.Transposed().M[0] );
 
 	glBindVertexArrayOES_( m_timingGraph.vertexArrayObject );
@@ -2450,7 +2450,7 @@ void TimeWarpLocal::createFrameworkGraphics()
 
 	if ( m_warpMesh.indexCount == 0 || m_sliceMesh.indexCount == 0 )
 	{
-		FAIL( "WarpMesh failed to load")
+		FAIL( "WarpMesh failed to load");
 	}
 
 	buf.freeData();
@@ -2463,7 +2463,7 @@ void TimeWarpLocal::createFrameworkGraphics()
 	m_calibrationLines2 = BuildCalibrationLines2( 0, false );
 
 	// FPS and graph text
-	CreateWarpProgram( &m_untexturedMvpProgram,
+	m_untexturedMvpProgram.initShader(
 			"uniform mat4 Mvpm;\n"
 			"attribute vec4 Position;\n"
 			"uniform mediump vec4 UniformColor;\n"
@@ -2481,7 +2481,7 @@ void TimeWarpLocal::createFrameworkGraphics()
 			"}\n"
 		);
 
-	CreateWarpProgram( &m_debugLineProgram,
+	m_debugLineProgram.initShader(
     		"uniform mediump mat4 Mvpm;\n"
     		"attribute vec4 Position;\n"
     		"attribute vec4 VertexColor;\n"
@@ -2514,12 +2514,12 @@ void TimeWarpLocal::destroyFrameworkGraphics()
 	DestroyWarpGeometry( &m_cursorMesh );
 	DestroyWarpGeometry( &m_timingGraph );
 
-	DestroyWarpProgram( &m_untexturedMvpProgram );
-	DestroyWarpProgram( &m_debugLineProgram );
+	m_untexturedMvpProgram.destroy();
+	m_debugLineProgram.destroy();
 
 	for ( int i = 0; i < WP_PROGRAM_MAX; i++ )
 	{
-		DestroyWarpProgram( &m_warpPrograms[i] );
+		m_warpPrograms[i].destroy();
 	}
 }
 
@@ -2561,8 +2561,8 @@ void TimeWarpLocal::drawFrameworkGraphicsToWindow( const ScreenEye eye,
 				0, 0, -1, 0 );
 		glUseProgram( m_untexturedMvpProgram.program );
 		glLineWidth( 2.0f );
-		glUniform4f( m_untexturedMvpProgram.uColor, 1, 0, 0, 1 );
-		glUniformMatrix4fv( m_untexturedMvpProgram.uMvp, 1, GL_FALSE,  // not transposed
+		glUniform4f( m_untexturedMvpProgram.uniformColor, 1, 0, 0, 1 );
+		glUniformMatrix4fv( m_untexturedMvpProgram.uniformModelViewProMatrix, 1, GL_FALSE,  // not transposed
 				projectionMatrix.Transposed().M[0] );
 		glBindVertexArrayOES_( m_calibrationLines2.vertexArrayObject );
 

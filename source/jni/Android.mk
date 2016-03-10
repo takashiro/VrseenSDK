@@ -75,7 +75,7 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     api/ImageServer.cpp \
                     api/LocalPreferences.cpp \
                     api/WarpGeometry.cpp \
-                    api/WarpProgram.cpp \
+                    api/VGlShader.cpp \
                     api/sensor/DeviceHandle.cpp \
                     api/sensor/DeviceImpl.cpp \
                     api/sensor/LatencyTest.cpp \

@@ -4,7 +4,7 @@
 #include "Android/GlUtils.h"
 
 #include "WarpGeometry.h"
-#include "WarpProgram.h"
+#include "VGlShader.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -64,7 +64,7 @@ private:
     int					m_currentResolution;
     int					m_sequenceCaptured;
     WarpGeometry		m_quad;
-    WarpProgram			m_resampleProg;
+	VGlShader			m_resampleProg;
     GLuint				m_resampleRenderBuffer;
     GLuint				m_frameBufferObject;
     GLuint				m_pixelBufferObject;

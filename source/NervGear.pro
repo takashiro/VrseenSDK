@@ -60,7 +60,7 @@ SOURCES += \
     jni/api/ImageServer.cpp \
     jni/api/LocalPreferences.cpp \
     jni/api/WarpGeometry.cpp \
-    jni/api/WarpProgram.cpp \
+    jni/api/VGlShader.cpp \
     jni/api/sensor/DeviceHandle.cpp \
     jni/api/sensor/DeviceImpl.cpp \
     jni/api/sensor/LatencyTest.cpp \
@@ -204,7 +204,7 @@ HEADERS += \
     jni/api/ImageServer.h \
     jni/api/LocalPreferences.h \
     jni/api/WarpGeometry.h \
-    jni/api/WarpProgram.h \ \
+    jni/api/VGlShader.h \ \
     jni/api/TimeWarpLocal.h \
     jni/api/VrApi_Android.h \
     jni/api/VrApi_Helpers.h \

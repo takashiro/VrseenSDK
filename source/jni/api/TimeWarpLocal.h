@@ -6,7 +6,7 @@
 #include "ImageServer.h"
 
 #include "WarpGeometry.h"
-#include "WarpProgram.h"
+#include "VGlShader.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -156,9 +156,9 @@ private:
     void			destroyFrameworkGraphics();
     void			drawFrameworkGraphicsToWindow( const ScreenEye eye, const int swapOptions,
 												   const bool drawTimingGraph );
-    WarpProgram		m_untexturedMvpProgram;
-    WarpProgram		m_debugLineProgram;
-    WarpProgram		m_warpPrograms[ WP_PROGRAM_MAX ];
+	VGlShader		m_untexturedMvpProgram;
+	VGlShader		m_debugLineProgram;
+    VGlShader		m_warpPrograms[ WP_PROGRAM_MAX ];
     GLuint			m_blackTexId;
     GLuint			m_defaultLoadingIconTexId;
     WarpGeometry	m_calibrationLines2;		// simple cross
@@ -179,7 +179,7 @@ private:
 	// Draw debug graphs
     void 			drawTimingGraph( const ScreenEye eye );
 
-    const WarpProgram & programForParms( const ovrTimeWarpParms & parms, const bool disableChromaticCorrection ) const;
+    const VGlShader & programForParms( const ovrTimeWarpParms & parms, const bool disableChromaticCorrection ) const;
     void			setWarpState( const warpSource_t & currentWarpSource ) const;
     void			bindWarpProgram( const warpSource_t & currentWarpSource, const Matrix4f timeWarps[2][2],
 									const Matrix4f rollingWarp, const int eye, const double vsyncBase ) const;
