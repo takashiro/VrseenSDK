@@ -38,12 +38,12 @@ DeviceManager::~DeviceManager()
 {
 }
 
-bool DeviceManager:: initialize(DeviceBase*)
+bool DeviceManager::initialize(DeviceBase*)
 {
     if (!DeviceManagerImpl:: initialize(0))
         return false;
 
-    pThread = *new DeviceManagerThread();
+    pThread = new DeviceManagerThread;
     if (!pThread || !pThread->start())
         return false;
 
@@ -76,7 +76,7 @@ void DeviceManager::shutdown()
     //  - Once ExitCommand executes, ThreadCommand::Run loop will exit and release the last
     //    reference to the thread object.
     pThread->PushExitCommand(false);
-    pThread.Clear();
+    // pThread.Clear();
 
     DeviceManagerImpl::shutdown();
 }
