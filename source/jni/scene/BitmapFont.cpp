@@ -37,7 +37,6 @@
 #include "Android/GlUtils.h"
 #include "Android/LogUtils.h"
 
-#include "AppLocal.h"
 #include "GlProgram.h"
 #include "GlTexture.h"
 #include "GlGeometry.h"
@@ -439,8 +438,8 @@ bool FontInfoType::Load(const VApkFile &languagePackageFile, const VString &file
 	}
 
 	// if it wasn't loaded from the language package, try again from the app package
-    VApkFile file(vApp->packageCodePath());
-    return LoadFromPackage(file, fileName);
+    const VApkFile &apk = VApkFile::CurrentApkFile();
+    return LoadFromPackage(apk, fileName);
 }
 
 //==============================
@@ -796,8 +795,8 @@ bool BitmapFontLocal::LoadImage(const VApkFile &languagePackageFile, char const 
 	// - we opened the language apk and failed to open the texture file
 	// - we failed to open the language apk
     if (packageBuffer == nullptr) {
-        VApkFile appPackage(vApp->packageCodePath());
-        appPackage.read(imageName, packageBuffer, length);
+        const VApkFile &apk = VApkFile::CurrentApkFile();
+        apk.read(imageName, packageBuffer, length);
 	}
 
 	bool result = false;

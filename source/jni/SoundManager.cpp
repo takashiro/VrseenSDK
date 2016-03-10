@@ -16,7 +16,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "VStandardPath.h"
 #include "PackageFiles.h"
-
+#include "VApkFile.h"
 
 #include <list>
 #include <fstream>
@@ -52,13 +52,12 @@ void OvrSoundManager::LoadSoundAssets()
 	}
 	else // if that fails, we are in release - load sounds from vrlib/res/raw and the assets folder
 	{
-		if ( ovr_PackageFileExists( VRLIB_SOUNDS ) )
-		{
-			LoadSoundAssetsFromPackage( "res/raw/", VRLIB_SOUNDS );
+        const VApkFile &apk = VApkFile::CurrentApkFile();
+        if (apk.contains(VRLIB_SOUNDS)) {
+            LoadSoundAssetsFromPackage("res/raw/", VRLIB_SOUNDS);
 		}
-		if ( ovr_PackageFileExists( APP_SOUNDS ) )
-		{
-			LoadSoundAssetsFromPackage( "", APP_SOUNDS );
+        if (apk.contains(APP_SOUNDS)) {
+            LoadSoundAssetsFromPackage("", APP_SOUNDS);
 		}
 	}
 
@@ -96,9 +95,11 @@ bool OvrSoundManager::GetSound( const char * soundName, VString & outSound )
 
 void OvrSoundManager::LoadSoundAssetsFromPackage( const VString & url, const char * jsonFile )
 {
-	int bufferLength = 0;
+    uint bufferLength = 0;
 	void * 	buffer = NULL;
-	ovr_ReadFileFromApplicationPackage( jsonFile, bufferLength, buffer );
+
+    const VApkFile &apk = VApkFile::CurrentApkFile();
+    apk.read(jsonFile, buffer, bufferLength);
 	if ( !buffer )
 	{
 		FAIL( "OvrSoundManager::LoadSoundAssetsFromPackage failed to read %s", jsonFile );

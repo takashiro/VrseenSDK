@@ -51,6 +51,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VUserProfile.h"
 #include "Console.h"
 #include "VLog.h"
+#include "VApkFile.h"
 
 //#define TEST_TIMEWARP_WATCHDOG
 
@@ -767,16 +768,17 @@ void AppLocal::StartSystemActivity( const char * command )
     errorMessageEndTime = ovr_GetTimeInSeconds() + 7.5f;
 }
 
-void AppLocal::ReadFileFromApplicationPackage( const char * nameInZip, int &length, void * & buffer )
+void AppLocal::ReadFileFromApplicationPackage( const char * nameInZip, uint &length, void * & buffer)
 {
-	ovr_ReadFileFromApplicationPackage( nameInZip, length, buffer );
+    const VApkFile &apk = VApkFile::CurrentApkFile();
+    apk.read(nameInZip, buffer, length);
 }
 
 void AppLocal::OpenApplicationPackage()
 {
     m_packageCodePath = JniUtils::GetPackageCodePath(uiJni, vrActivityClass, javaObject);
     m_packageName = JniUtils::GetCurrentPackageName(uiJni, javaObject);
-    ovr_OpenApplicationPackage( m_packageCodePath );
+    ovr_OpenApplicationPackage(m_packageCodePath);
 }
 
 VString AppLocal::GetInstalledPackagePath( const char * packageName ) const

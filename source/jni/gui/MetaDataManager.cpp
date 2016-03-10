@@ -18,7 +18,8 @@ Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
 #include "PackageFiles.h"
 #include "unistd.h"
 
-#include <VPath.h>
+#include "VPath.h"
+#include "VApkFile.h"
 
 #include <fstream>
 
@@ -200,11 +201,12 @@ void OvrMetaData::renameCategory(const VString &currentTag, const VString &newNa
 
 Json LoadPackageMetaFile( const char * metaFile )
 {
-	int bufferLength = 0;
+    uint bufferLength = 0;
 	void * 	buffer = NULL;
 	VString assetsMetaFile = "assets/";
 	assetsMetaFile += metaFile;
-	ovr_ReadFileFromApplicationPackage( assetsMetaFile.toCString(), bufferLength, buffer );
+    const VApkFile &apk = VApkFile::CurrentApkFile();
+    apk.read(assetsMetaFile, buffer, bufferLength);
 	if ( !buffer )
 	{
 		WARN( "LoadPackageMetaFile failed to read %s", assetsMetaFile.toCString() );
@@ -245,18 +247,19 @@ void OvrMetaData::writeMetaFile( const char * metaFile ) const
 
 	if ( FILE * newMetaFile = fopen( m_filePath.toCString(), "w" ) )
 	{
-		int bufferLength = 0;
+        uint bufferLength = 0;
 		void * 	buffer = NULL;
 		VString assetsMetaFile = "assets/";
 		assetsMetaFile += metaFile;
-		ovr_ReadFileFromApplicationPackage( assetsMetaFile.toCString(), bufferLength, buffer );
+        const VApkFile &apk = VApkFile::CurrentApkFile();
+        apk.read(assetsMetaFile, buffer, bufferLength);
 		if ( !buffer )
 		{
 			WARN( "OvrMetaData failed to read %s", assetsMetaFile.toCString() );
 		}
 		else
 		{
-			int writtenCount = fwrite( buffer, 1, bufferLength, newMetaFile );
+            uint writtenCount = fwrite( buffer, 1, bufferLength, newMetaFile );
 			if ( writtenCount != bufferLength )
 			{
 				FAIL( "OvrMetaData::WriteMetaFile failed to write %s", metaFile );

@@ -32,6 +32,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VRMenuObject.h"
 #include "ScrollBarComponent.h"
 #include "SwipeHintComponent.h"
+#include "VApkFile.h"
 
 namespace NervGear {
 
@@ -882,7 +883,7 @@ OvrFolderBrowser::OvrFolderBrowser(
 	if ( ThumbPanelBG == NULL )
 	{
 		void * 	buffer;
-		int		bufferLength;
+        uint		bufferLength;
 
 		const char * panel = NULL;
 
@@ -895,7 +896,8 @@ OvrFolderBrowser::OvrFolderBrowser(
 			panel = "res/raw/panel.tga";
 		}
 
-		ovr_ReadFileFromApplicationPackage( panel, bufferLength, buffer );
+        const VApkFile &apk = VApkFile::CurrentApkFile();
+        apk.read(panel, buffer, bufferLength);
 
 		int panelW = 0;
 		int panelH = 0;
