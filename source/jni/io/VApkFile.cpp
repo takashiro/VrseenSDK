@@ -3,6 +3,9 @@
 #include "VByteArray.h"
 #include "VLog.h"
 
+#include "AppLocal.h"
+#include "MemBuffer.h"
+
 #include <3rdparty/minizip/unzip.h>
 
 NV_NAMESPACE_BEGIN
@@ -108,6 +111,29 @@ void VApkFile::read(const VString &filePath, void *&buffer, uint &length) const
         buffer = NULL;
         length = 0;
     }
+}
+
+bool VApkFile::read(const VString &filePath, MemBufferFile &memBufferFile) const
+{
+    memBufferFile.freeData();
+
+    uint length = 0;
+    void *buffer = nullptr;
+    read(filePath, buffer, length);
+
+    if (buffer != nullptr) {
+        memBufferFile.buffer = buffer;
+        memBufferFile.length = length;
+        return true;
+    }
+
+    return false;
+}
+
+const VApkFile &VApkFile::CurrentApkFile()
+{
+    static VApkFile current(vApp->packageCodePath());
+    return current;
 }
 
 NV_NAMESPACE_END
