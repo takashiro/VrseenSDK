@@ -122,7 +122,7 @@ SOURCES += \
     jni/Console.cpp \
     jni/DebugLines.cpp \
     jni/KeyState.cpp \
-    jni/MessageQueue.cpp \
+    jni/VMessageQueue.cpp \
     jni/PackageFiles.cpp \
     jni/SoundManager.cpp \
     jni/VUserProfile.cpp \
@@ -277,7 +277,7 @@ HEADERS += \
     jni/scene/SwipeView.h \
     jni/PackageFiles.h \
     jni/VrCommon.h \
-    jni/MessageQueue.h \
+    jni/VMessageQueue.h \
     jni/TalkToJava.h \
     jni/KeyState.h \
     jni/App.h \

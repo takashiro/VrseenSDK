@@ -656,7 +656,7 @@ void AppLocal::ShutdownFonts()
     BitmapFontSurface::Free( menuFontSurface );
 }
 
-MessageQueue & AppLocal::GetMessageQueue()
+VMessageQueue & AppLocal::GetMessageQueue()
 {
 	return vrMessageQueue;
 }

@@ -83,7 +83,7 @@ jobject Java_com_vrseen_nervgear_video_MainActivity_nativePrepareNewVideo( JNIEn
 
 	// set up a message queue to get the return message
 	// TODO: make a class that encapsulates this work
-	MessageQueue	result( 1 );
+	VMessageQueue	result( 1 );
 	Oculus360Videos * panoVids = ( Oculus360Videos * )( ( ( App * )interfacePtr )->GetAppInterface() );
 	panoVids->app->GetMessageQueue().PostPrintf( "newVideo %p", &result );
 
@@ -445,7 +445,7 @@ void Oculus360Videos::Command( const char * msg )
 		MovieTexture = new SurfaceTexture( app->GetVrJni() );
 		LOG( "RC_NEW_VIDEO texId %i", MovieTexture->textureId );
 
-		MessageQueue	* receiver;
+		VMessageQueue	* receiver;
 		sscanf( msg, "newVideo %p", &receiver );
 
 		receiver->PostPrintf( "surfaceTexture %p", MovieTexture->javaObject );

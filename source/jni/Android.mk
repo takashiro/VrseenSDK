@@ -134,7 +134,7 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     scene/SwipeView.cpp \
                     PackageFiles.cpp \
                     VrCommon.cpp \
-                    MessageQueue.cpp \
+                    VMessageQueue.cpp \
                     TalkToJava.cpp \
                     KeyState.cpp \
                     App.cpp \
