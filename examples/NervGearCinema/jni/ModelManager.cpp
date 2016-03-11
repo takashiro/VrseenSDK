@@ -17,10 +17,9 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "String_Utils.h"
 #include "ModelManager.h"
 #include "CinemaApp.h"
-#include "PackageFiles.h"
 
 #include <VPath.h>
-
+#include <VApkFile.h>
 
 namespace OculusCinema {
 
@@ -140,10 +139,12 @@ SceneDef * ModelManager::LoadScene( const char *sceneFilename, bool useDynamicPr
 {
 	VString filename;
 
-	if ( loadFromApplicationPackage && !ovr_PackageFileExists( sceneFilename ) )
-	{
-		LOG( "Scene %s not found in application package.  Checking sdcard.", sceneFilename );
-		loadFromApplicationPackage = false;
+    if (loadFromApplicationPackage) {
+        const VApkFile &apk = VApkFile::CurrentApkFile();
+        if (!apk.contains(sceneFilename)) {
+            LOG( "Scene %s not found in application package.  Checking sdcard.", sceneFilename);
+            loadFromApplicationPackage = false;
+        }
 	}
 
 	if ( loadFromApplicationPackage )
@@ -193,16 +194,24 @@ SceneDef * ModelManager::LoadScene( const char *sceneFilename, bool useDynamicPr
 
 	int textureWidth = 0, textureHeight = 0;
 
+
+    VByteArray fileName = filename.toUtf8();
+    VByteArray iconFileName = iconFilename.toUtf8();
 	if ( loadFromApplicationPackage )
-	{
-        def->SceneModel = LoadModelFileFromApplicationPackage( filename.toCString(), glPrograms, materialParms );
-        def->IconTexture = LoadTextureFromApplicationPackage( iconFilename.toCString(), TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), textureWidth, textureHeight );
-	}
-	else
-	{
-        def->SceneModel = LoadModelFile( filename.toCString(), glPrograms, materialParms );
-        def->IconTexture = LoadTextureFromBuffer( iconFilename.toCString(), MemBufferFile( iconFilename.toCString() ),
-				TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), textureWidth, textureHeight );
+    {
+        const VApkFile &apk = VApkFile::CurrentApkFile();
+        void *buffer = nullptr;
+        uint length = 0;
+        apk.read(filename, buffer, length);
+        def->SceneModel = LoadModelFileFromMemory(fileName.data(), buffer, length, glPrograms, materialParms);
+        free(buffer);
+        buffer = nullptr;
+        length = 0;
+        apk.read(iconFilename, buffer, length);
+        def->IconTexture = LoadTextureFromBuffer(iconFileName.data(), MemBuffer(buffer, length), TextureFlags_t(TEXTUREFLAG_NO_DEFAULT), textureWidth, textureHeight);
+    } else {
+        def->SceneModel = LoadModelFile(fileName.data(), glPrograms, materialParms );
+        def->IconTexture = LoadTextureFromBuffer(iconFileName.data(), MemBufferFile(iconFileName.data()), TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), textureWidth, textureHeight );
 	}
 
 	if ( def->IconTexture != 0 )

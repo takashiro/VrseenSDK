@@ -14,16 +14,17 @@ of patent rights can be found in the PATENTS file in the same directory.
 ************************************************************************************/
 
 #include "VThread.h"
-#include "PackageFiles.h"
 #include "FileLoader.h"
 #include "Oculus360Photos.h"
 #include "turbojpeg.h"
 #include "OVR_TurboJpeg.h"
 
+#include <VApkFile.h>
+
 namespace NervGear {
 
-MessageQueue		Queue1( 4000 );	// big enough for all the thumbnails that might be needed
-MessageQueue		Queue3( 1 );
+VMessageQueue		Queue1( 4000 );	// big enough for all the thumbnails that might be needed
+VMessageQueue		Queue3( 1 );
 
 pthread_mutex_t QueueMutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t	QueueWake = PTHREAD_COND_INITIALIZER;
@@ -57,7 +58,7 @@ void * Queue1Thread( void * v )
 		sscanf( msg, "%s", commandName );
 		const char * filename = msg + strlen( commandName ) + 1;
 
-		MessageQueue * queue = &Queue3;
+		VMessageQueue * queue = &Queue3;
 		char const * suffix = strstr( filename, "_nz.jpg" );
 		if ( suffix != NULL )
 		{
@@ -79,8 +80,8 @@ void * Queue1Thread( void * v )
 				strcat( sideFilename, cubeSuffix[side] );
 				if ( !mbfs[side].loadFile( sideFilename ) )
 				{
-					if ( !ovr_ReadFileFromApplicationPackage( sideFilename, mbfs[ side ] ) )
-					{
+                    const VApkFile &apk = VApkFile::CurrentApkFile();
+                    if (!apk.read(sideFilename, mbfs[side])) {
 						break;
 					}
 				}
@@ -125,8 +126,8 @@ void * Queue1Thread( void * v )
 			MemBufferFile mbf( filename );
 			if ( mbf.length <= 0 || mbf.buffer == NULL )
 			{
-				if ( !ovr_ReadFileFromApplicationPackage( filename, mbf ) )
-				{
+                const VApkFile &apk = VApkFile::CurrentApkFile();
+                if (!apk.read(filename, mbf)) {
 					continue;
 				}
 			}

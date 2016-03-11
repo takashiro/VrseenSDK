@@ -20,8 +20,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "Android/LogUtils.h"
 #include "api/VrApi.h"
 #include "GlTexture.h"
-#include "PackageFiles.h"			// for loading images from the assets folder
 #include "VrCommon.h"
+#include "VApkFile.h"
 
 NV_NAMESPACE_BEGIN
 

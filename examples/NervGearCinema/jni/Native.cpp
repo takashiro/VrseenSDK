@@ -25,7 +25,7 @@ jobject Java_com_vrseen_nervgear_cinema_MainActivity_nativePrepareNewVideo( JNIE
 
 	// set up a message queue to get the return message
 	// TODO: make a class that encapsulates this work
-	MessageQueue	result(1);
+	VMessageQueue	result(1);
 	cinema->app->GetMessageQueue().PostPrintf( "newVideo %p", &result);
 
 	result.SleepUntilMessage();

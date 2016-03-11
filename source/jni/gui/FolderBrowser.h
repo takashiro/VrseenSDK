@@ -14,7 +14,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #define OVR_FolderBrowser_h
 
 #include "VRMenu.h"
-#include "MessageQueue.h"
+#include "VMessageQueue.h"
 #include "MetaDataManager.h"
 #include "ScrollManager.h"
 
@@ -76,7 +76,7 @@ public:
 
     FolderView *						getFolderView( const VString & categoryTag );
     FolderView *						getFolderView( int index );
-    MessageQueue &						textureCommands()							{ return m_textureCommands;  }
+    VMessageQueue &						textureCommands()							{ return m_textureCommands;  }
     void								setPanelTextSpacingScale( const float scale )	{ m_panelTextSpacingScale = scale; }
     void								setFolderTitleSpacingScale( const float scale ) { m_folderTitleSpacingScale = scale; }
     void								setScrollBarSpacingScale( const float scale )	{ m_scrollBarSpacingScale = scale; }
@@ -250,7 +250,7 @@ private:
     RootDirection		m_onEnterMenuRootAdjust;
 	
 	// Checked at Frame() time for commands from the thumbnail/create thread
-    MessageQueue		m_textureCommands;
+    VMessageQueue		m_textureCommands;
 
 	// Create / load thumbnails by background thread
 	struct OvrCreateThumbCmd
@@ -260,7 +260,7 @@ private:
         VString loadCmd;
 	};
     Array< OvrCreateThumbCmd > m_thumbCreateAndLoadCommands;
-    MessageQueue		m_backgroundCommands;
+    VMessageQueue		m_backgroundCommands;
     Array< VString >		m_thumbSearchPaths;
     VString				m_appCachePath;
 

@@ -103,7 +103,7 @@ public:
 
     bool				useOverlay() const;
     bool				allowPanoInput() const;
-    MessageQueue &		backgroundMessageQueue() { return m_backgroundCommands;  }
+    VMessageQueue &		backgroundMessageQueue() { return m_backgroundCommands;  }
 
 private:
 	// Background textures loaded into GL by background thread using shared context
@@ -153,7 +153,7 @@ private:
     bool				m_useSrgb;
 
 	// Background texture commands produced by FileLoader consumed by BackgroundGLLoadThread
-    MessageQueue		m_backgroundCommands;
+    VMessageQueue		m_backgroundCommands;
 
 	// The background loader loop will exit when this is set true.
     LocklessUpdater<bool>		m_shutdownRequest;

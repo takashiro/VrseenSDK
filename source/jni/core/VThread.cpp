@@ -25,6 +25,7 @@ public:
     {
         VMutex::Locker lock(&m_threadMutex);
         m_threadSet.erase(pthread);
+        delete pthread;
         if (m_threadSet.size() == 0)
             m_threadsEmpty.notify();
     }
@@ -111,8 +112,7 @@ struct VThread::Private
     int run()
     {
         // Suspend us on start, if requested
-        if (threadFlags & Suspended)
-        {
+        if (threadFlags & Suspended) {
             self->suspend();
             threadFlags &= (uint) ~Suspended;
         }
@@ -127,7 +127,9 @@ struct VThread::Private
         Private *d = (Private *) data;
         int result = d->run();
         // Signal the thread as done and release it atomically.
-        //thread->finishAndRelease();
+        d->threadFlags &= ~(uint) Private::Started;
+        d->threadFlags |= Private::Finished;
+        // d->self->Release();
         // At this point Thread object might be dead; however we can still pass
         // it to RemoveRunningThread since it is only used as a key there.
         threadList.remove(d->self);
@@ -234,7 +236,8 @@ void VThread::exit(int exitCode)
     // Signal this thread object as done and release it's references.
     d->threadFlags &= ~(uint) Private::Started;
     d->threadFlags |= Private::Finished;
-    //Release()
+    // Release();
+
     d->threadList.remove(this);
 
     pthread_exit((void *) exitCode);

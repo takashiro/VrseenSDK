@@ -19,8 +19,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VRMenuMgr.h"
 #include "VRMenuComponent.h"
 #include "ui_default.h"	// embedded default UI texture (loaded as a placeholder when something doesn't load)
-#include "PackageFiles.h"
-
+#include "VApkFile.h"
 
 namespace NervGear {
 
@@ -59,8 +58,9 @@ bool VRMenuSurfaceTexture::loadTexture( eSurfaceTextureType const type, char con
 	if ( imageName != NULL && imageName[0] != '\0' )
 	{
 		void * 	buffer;
-		int		bufferLength;
-		ovr_ReadFileFromApplicationPackage( imageName, bufferLength, buffer );
+        uint		bufferLength;
+        const VApkFile &apk = VApkFile::CurrentApkFile();
+        apk.read(imageName, buffer, bufferLength);
 		if ( !buffer )
 		{
 			m_handle = 0;

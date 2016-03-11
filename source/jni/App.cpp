@@ -46,11 +46,11 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "gui/VRMenuMgr.h"
 #include "gui/GuiSysLocal.h"		// necessary to instantiate the gui system
 #include "gui/VolumePopup.h"
-#include "PackageFiles.h"
 #include "VrLocale.h"
 #include "VUserProfile.h"
 #include "Console.h"
 #include "VLog.h"
+#include "VApkFile.h"
 
 //#define TEST_TIMEWARP_WATCHDOG
 
@@ -388,6 +388,9 @@ extern void ShowFPS( void * appPtr, const char * cmd );
  * ?still true?: exit() from here causes an immediate app re-launch,
  * move everything to first surface init?
  */
+
+App *vApp = nullptr;
+
 AppLocal::AppLocal( JNIEnv & jni_, jobject activityObject_, VrAppInterface & interface_ ) :
             exitOnDestroy( true ),
             oneTimeInitCalled( false ),
@@ -421,8 +424,8 @@ AppLocal::AppLocal( JNIEnv & jni_, jobject activityObject_, VrAppInterface & int
             launchIntentURI(),
             launchIntentJSON(),
             launchIntentFromPackage(),
-			packageCodePath( "" ),
-			packageName( "" ),
+            m_packageCodePath( "" ),
+            m_packageName( "" ),
             paused( true ),
 			popupDistance( 2.0f ),
 			popupScale( 1.0f ),
@@ -466,7 +469,9 @@ AppLocal::AppLocal( JNIEnv & jni_, jobject activityObject_, VrAppInterface & int
             errorTextureSize( 0 ),
             errorMessageEndTime( -1.0 )
 {
-	LOG( "----------------- AppLocal::AppLocal() -----------------");
+    vInfo( "----------------- AppLocal::AppLocal() -----------------");
+    vAssert(vApp == nullptr);
+    vApp = this;
 
     storagePaths = new VStandardPath( &jni_, activityObject_);
 
@@ -656,7 +661,7 @@ void AppLocal::ShutdownFonts()
     BitmapFontSurface::Free( menuFontSurface );
 }
 
-MessageQueue & AppLocal::GetMessageQueue()
+VMessageQueue & AppLocal::GetMessageQueue()
 {
 	return vrMessageQueue;
 }
@@ -762,16 +767,16 @@ void AppLocal::StartSystemActivity( const char * command )
     errorMessageEndTime = ovr_GetTimeInSeconds() + 7.5f;
 }
 
-void AppLocal::ReadFileFromApplicationPackage( const char * nameInZip, int &length, void * & buffer )
+void AppLocal::ReadFileFromApplicationPackage( const char * nameInZip, uint &length, void * & buffer)
 {
-	ovr_ReadFileFromApplicationPackage( nameInZip, length, buffer );
+    const VApkFile &apk = VApkFile::CurrentApkFile();
+    apk.read(nameInZip, buffer, length);
 }
 
 void AppLocal::OpenApplicationPackage()
 {
-    packageCodePath = JniUtils::GetPackageCodePath(uiJni, vrActivityClass, javaObject);
-    packageName = JniUtils::GetCurrentPackageName(uiJni, javaObject);
-	ovr_OpenApplicationPackage( packageCodePath );
+    m_packageCodePath = JniUtils::GetPackageCodePath(uiJni, vrActivityClass, javaObject);
+    m_packageName = JniUtils::GetCurrentPackageName(uiJni, javaObject);
 }
 
 VString AppLocal::GetInstalledPackagePath( const char * packageName ) const
@@ -2589,9 +2594,9 @@ void AppLocal::SetRenderMonoMode( bool const mono )
 	renderMonoMode = mono;
 }
 
-char const * AppLocal::GetPackageCodePath() const
+const VString &AppLocal::packageCodePath() const
 {
-    return packageCodePath.toCString();
+    return m_packageCodePath;
 }
 
 Matrix4f const & AppLocal::GetLastViewMatrix() const
@@ -2785,9 +2790,9 @@ bool AppLocal::GetShowVolumePopup() const
     return showVolumePopup;
 }
 
-const char * AppLocal::GetPackageName( ) const
+const VString &AppLocal::packageName() const
 {
-    return packageName.toCString();
+    return m_packageName;
 }
 
 bool AppLocal::IsWifiConnected() const
