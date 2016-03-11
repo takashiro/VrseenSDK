@@ -199,25 +199,4 @@ LOCAL_SRC_FILES  := $(NV_ROOT)/Integrations/Unity/UnityPlugin.cpp \
 
 include $(BUILD_SHARED_LIBRARY)
 
-
-#--------------------------------------------------------
-# JavaVr.so
-#
-# This .so can be loaded by a java project that wants to
-# do frame and eye rendering completely in java without
-# needing the NDK.
-#--------------------------------------------------------
-include $(CLEAR_VARS)
-
-LOCAL_MODULE := JavaVr
-
-LOCAL_STATIC_LIBRARIES := nervgear
-#LOCAL_STATIC_LIBRARIES += android-ndk-profiler
-
-LOCAL_CFLAGS += -DNV_NAMESPACE=NervGear
-
-LOCAL_SRC_FILES  := $(NV_ROOT)/Integrations/PureJava/PureJava.cpp
-
-include $(BUILD_SHARED_LIBRARY)
-
 #$(call import-module,android-ndk-profiler)
