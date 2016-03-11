@@ -290,7 +290,17 @@ HEADERS += \
     jni/vglobal.h \
     jni/AppLocal.h \
     jni/Input.h \
-    jni/PointTracker.h
+    jni/PointTracker.h \
+    jni/UniversalMenu_Commands.h \
+    jni/core/VFile.h \
+    jni/core/VDelegatedFile.h \
+    jni/core/VSysFile.h \
+    jni/core/VUnopenedFile.h \
+    jni/PointTracker.h \
+    jni/core/VBuffer.h \
+    jni/core/VFileState.h \
+    jni/core/VFileFILE.h
+
 
 include(jni/3rdparty/minizip/minizip.pri)
 include(jni/3rdparty/stb/stb.pri)
