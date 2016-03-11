@@ -74,6 +74,7 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     api/TimeWarpProgs.cpp \
                     api/ImageServer.cpp \
                     api/LocalPreferences.cpp \
+                    api/VMainActivity.cpp \
                     api/WarpGeometry.cpp \
                     api/WarpProgram.cpp \
                     api/sensor/DeviceHandle.cpp \

@@ -56,6 +56,7 @@ SOURCES += \
     jni/api/TimeWarpProgs.cpp \
     jni/api/ImageServer.cpp \
     jni/api/LocalPreferences.cpp \
+    jni/api/VMainActivity.cpp \
     jni/api/WarpGeometry.cpp \
     jni/api/WarpProgram.cpp \
     jni/api/sensor/DeviceHandle.cpp \
@@ -198,6 +199,7 @@ HEADERS += \
     jni/api/TimeWarpProgs.h \
     jni/api/ImageServer.h \
     jni/api/LocalPreferences.h \
+    jni/api/VMainActivity.h \
     jni/api/WarpGeometry.h \
     jni/api/WarpProgram.h \ \
     jni/api/TimeWarpLocal.h \
