@@ -532,18 +532,6 @@ AppLocal::AppLocal( JNIEnv & jni_, jobject activityObject_, VrAppInterface & int
     isAirplaneModeEnabledMethodId = GetStaticMethodID( vrLibClass, "isAirplaneModeEnabled", "(Landroid/app/Activity;)Z" );
     isTime24HourFormatId = GetStaticMethodID( vrLibClass, "isTime24HourFormat", "(Landroid/app/Activity;)Z" );
 
-	// Find the system activities apk so that we can load font data from it.
-    languagePackagePath = GetInstalledPackagePath( "com.oculus.systemactivities" );
-    if ( languagePackagePath.isEmpty() )
-	{
-		// If we can't find the system activities apk the user has updated this application and tried to run
-		// it before getting a new Oculus Home. They may even have the new Oculus Home but it hasn't been
-		// run yet and therefore Home hasn't installed the System Activities apk, so try to load fonts directly
-		// from Home instead. If for some reason the fonts can't be loaded from Home, apps will default to US
-		// English and use their embedded EFIGS font.
-        languagePackagePath = GetInstalledPackagePath( "com.oculus.home" );
-	}
-
 	// Get the path to the .apk and package name
 	OpenApplicationPackage();
 
@@ -623,7 +611,7 @@ void AppLocal::InitFonts()
 	VString fontName;
 	VrLocale::GetString( GetVrJni(), GetJavaObject(), "@string/font_name", "efigs.fnt", fontName );
     fontName.prepend("res/raw/");
-    if ( !defaultFont->Load(languagePackagePath, fontName ) )
+    if ( !defaultFont->Load(m_packageCodePath, fontName ) )
 	{
 		// reset the locale to english and try to load the font again
         jmethodID setDefaultLocaleId = vrJni->GetMethodID( vrActivityClass, "setDefaultLocale", "()V" );
@@ -640,7 +628,7 @@ void AppLocal::InitFonts()
 			VrLocale::GetString( GetVrJni(), GetJavaObject(), "@string/font_name", "efigs.fnt", fontName );
             fontName.prepend("res/raw/");
             // try to load the font
-            if ( !defaultFont->Load(languagePackagePath, fontName ) )
+            if ( !defaultFont->Load(m_packageCodePath, fontName ) )
 			{
 				FAIL( "Failed to load font for default locale!" );
 			}
@@ -791,11 +779,6 @@ VString AppLocal::GetInstalledPackagePath( const char * packageName ) const
 		}
 	}
 	return VString();
-}
-
-const char * AppLocal::GetLanguagePackagePath() const
-{
-    return languagePackagePath.toCString();
 }
 
 // Error checks and exits on failure

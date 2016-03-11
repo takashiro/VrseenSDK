@@ -263,7 +263,6 @@ public:
 	virtual void				SetRenderMonoMode( bool const mono ) = 0;
 
     virtual const VString &packageCodePath() const = 0;
-	virtual char const *		GetLanguagePackagePath() const = 0;
 	
 	virtual Matrix4f const &	GetLastViewMatrix() const = 0;
 	virtual void				SetLastViewMatrix( Matrix4f const & m ) = 0;

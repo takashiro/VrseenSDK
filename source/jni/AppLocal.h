@@ -95,7 +95,6 @@ public:
 	virtual void				SetRenderMonoMode( bool const mono );
 
     virtual const VString &packageCodePath() const;
-	virtual char const *		GetLanguagePackagePath() const;
 
 	virtual Matrix4f const &	GetLastViewMatrix() const;
 	virtual void				SetLastViewMatrix( Matrix4f const & m );
@@ -402,7 +401,6 @@ public:
     OvrDebugLines *     debugLines;
     KeyState            backKeyState;
         VStandardPath*	storagePaths;
-        VString				languagePackagePath;
         GlTexture			errorTexture;
         int					errorTextureSize;
         double				errorMessageEndTime;
