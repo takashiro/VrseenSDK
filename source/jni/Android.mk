@@ -138,7 +138,6 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     TalkToJava.cpp \
                     KeyState.cpp \
                     App.cpp \
-                    AppRender.cpp \
                     DebugLines.cpp \
                     SoundManager.cpp \
                     VUserProfile.cpp \

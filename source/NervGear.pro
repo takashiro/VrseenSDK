@@ -116,7 +116,6 @@ SOURCES += \
     jni/scene/SurfaceTexture.cpp \
     jni/scene/SwipeView.cpp \
     jni/App.cpp \
-    jni/AppRender.cpp \
     jni/Console.cpp \
     jni/DebugLines.cpp \
     jni/KeyState.cpp \
