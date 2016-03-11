@@ -375,10 +375,6 @@ public:
 
     void			InterpretTouchpad( VrInput & input );
 
-    jmethodID 		GetMethodID( const char * name, const char * signature ) const;
-    jmethodID		GetMethodID( jclass clazz, const char * name, const char * signature ) const;
-    jmethodID		GetStaticMethodID( jclass cls, const char * name, const char * signature ) const;
-
     // TalkToJavaInterface
     void TtjCommand(JNIEnv *jni, const char * commandString) override;
 

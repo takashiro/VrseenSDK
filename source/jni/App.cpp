@@ -681,6 +681,34 @@ struct App::Private
         BitmapFontSurface::Free(worldFontSurface);
         BitmapFontSurface::Free(menuFontSurface);
     }
+
+    // Error checks and exits on failure
+    jmethodID GetMethodID(const char * name, const char *signature) const
+    {
+        jmethodID mid = uiJni->GetMethodID(vrActivityClass, name, signature);
+        if (!mid) {
+            vFatal("couldn't get" << name);
+        }
+        return mid;
+    }
+
+    jmethodID GetMethodID(jclass jClass, const char *name, const char *signature) const
+    {
+        jmethodID mid = uiJni->GetMethodID(jClass, name, signature);
+        if (!mid) {
+            vFatal("couldn't get" << name);
+        }
+        return mid;
+    }
+
+    jmethodID GetStaticMethodID(jclass jClass, const char *name, const char *signature) const
+    {
+        jmethodID mid = uiJni->GetStaticMethodID(jClass, name, signature);
+        if (!mid) {
+            vFatal("couldn't get" << name);
+        }
+        return mid;
+    }
 };
 
 /*
@@ -744,26 +772,26 @@ App::App(JNIEnv &jni, jobject activityObject, VrAppInterface &interface)
 
     VrLocale::VrActivityClass = d->vrActivityClass;
 
-    d->finishActivityMethodId = GetMethodID("finishActivity", "()V");
-    d->createVrToastMethodId = GetMethodID("createVrToastOnUiThread", "(Ljava/lang/String;)V");
-    d->clearVrToastsMethodId = GetMethodID("clearVrToasts", "()V");
-    d->playSoundPoolSoundMethodId = GetMethodID("playSoundPoolSound", "(Ljava/lang/String;)V");
+    d->finishActivityMethodId = d->GetMethodID("finishActivity", "()V");
+    d->createVrToastMethodId = d->GetMethodID("createVrToastOnUiThread", "(Ljava/lang/String;)V");
+    d->clearVrToastsMethodId = d->GetMethodID("clearVrToasts", "()V");
+    d->playSoundPoolSoundMethodId = d->GetMethodID("playSoundPoolSound", "(Ljava/lang/String;)V");
 
-    jmethodID isHybridAppMethodId = GetStaticMethodID(d->vrLibClass, "isHybridApp", "(Landroid/app/Activity;)Z");
+    jmethodID isHybridAppMethodId = d->GetStaticMethodID(d->vrLibClass, "isHybridApp", "(Landroid/app/Activity;)Z");
     bool const isHybridApp = jni.CallStaticBooleanMethod(d->vrLibClass, isHybridAppMethodId, javaObject);
 
     exitOnDestroy = !isHybridApp;
 
-    d->gazeEventMethodId = GetStaticMethodID(d->vrActivityClass, "gazeEventFromNative", "(FFZZLandroid/app/Activity;)V");
-    d->setSysBrightnessMethodId = GetStaticMethodID(d->vrLibClass, "setSystemBrightness", "(Landroid/app/Activity;I)V");
-    d->getSysBrightnessMethodId = GetStaticMethodID(d->vrLibClass, "getSystemBrightness", "(Landroid/app/Activity;)I");
-    d->enableComfortViewModeMethodId = GetStaticMethodID(d->vrLibClass, "enableComfortViewMode", "(Landroid/app/Activity;Z)V");
-    d->getComfortViewModeMethodId = GetStaticMethodID(d->vrLibClass, "getComfortViewModeEnabled", "(Landroid/app/Activity;)Z");
-    d->setDoNotDisturbModeMethodId = GetStaticMethodID(d->vrLibClass, "setDoNotDisturbMode", "(Landroid/app/Activity;Z)V");
-    d->getDoNotDisturbModeMethodId = GetStaticMethodID(d->vrLibClass, "getDoNotDisturbMode", "(Landroid/app/Activity;)Z");
-    d->getBluetoothEnabledMethodId = GetStaticMethodID(d->vrLibClass, "getBluetoothEnabled", "(Landroid/app/Activity;)Z");
-    d->isAirplaneModeEnabledMethodId = GetStaticMethodID(d->vrLibClass, "isAirplaneModeEnabled", "(Landroid/app/Activity;)Z");
-    d->isTime24HourFormatId = GetStaticMethodID(d->vrLibClass, "isTime24HourFormat", "(Landroid/app/Activity;)Z");
+    d->gazeEventMethodId = d->GetStaticMethodID(d->vrActivityClass, "gazeEventFromNative", "(FFZZLandroid/app/Activity;)V");
+    d->setSysBrightnessMethodId = d->GetStaticMethodID(d->vrLibClass, "setSystemBrightness", "(Landroid/app/Activity;I)V");
+    d->getSysBrightnessMethodId = d->GetStaticMethodID(d->vrLibClass, "getSystemBrightness", "(Landroid/app/Activity;)I");
+    d->enableComfortViewModeMethodId = d->GetStaticMethodID(d->vrLibClass, "enableComfortViewMode", "(Landroid/app/Activity;Z)V");
+    d->getComfortViewModeMethodId = d->GetStaticMethodID(d->vrLibClass, "getComfortViewModeEnabled", "(Landroid/app/Activity;)Z");
+    d->setDoNotDisturbModeMethodId = d->GetStaticMethodID(d->vrLibClass, "setDoNotDisturbMode", "(Landroid/app/Activity;Z)V");
+    d->getDoNotDisturbModeMethodId = d->GetStaticMethodID(d->vrLibClass, "getDoNotDisturbMode", "(Landroid/app/Activity;)Z");
+    d->getBluetoothEnabledMethodId = d->GetStaticMethodID(d->vrLibClass, "getBluetoothEnabled", "(Landroid/app/Activity;)Z");
+    d->isAirplaneModeEnabledMethodId = d->GetStaticMethodID(d->vrLibClass, "isAirplaneModeEnabled", "(Landroid/app/Activity;)Z");
+    d->isTime24HourFormatId = d->GetStaticMethodID(d->vrLibClass, "isTime24HourFormat", "(Landroid/app/Activity;)Z");
 
 	// Get the path to the .apk and package name
 	OpenApplicationPackage();
@@ -959,7 +987,7 @@ void App::OpenApplicationPackage()
 
 VString App::GetInstalledPackagePath(const char * packageName) const
 {
-    jmethodID getInstalledPackagePathId = GetMethodID("getInstalledPackagePath", "(Ljava/lang/String;)Ljava/lang/String;");
+    jmethodID getInstalledPackagePathId = d->GetMethodID("getInstalledPackagePath", "(Ljava/lang/String;)Ljava/lang/String;");
     if (getInstalledPackagePathId != nullptr)
 	{
         JavaString packageNameObj(d->uiJni, packageName);
@@ -969,38 +997,6 @@ VString App::GetInstalledPackagePath(const char * packageName) const
 		}
 	}
 	return VString();
-}
-
-// Error checks and exits on failure
-jmethodID App::GetMethodID(const char * name, const char * signature) const
-{
-    jmethodID mid = d->uiJni->GetMethodID(d->vrActivityClass, name, signature);
-    if (!mid)
-	{
-        FAIL("couldn't get %s", name);
-	}
-	return mid;
-}
-
-jmethodID App::GetMethodID(jclass clazz, const char * name, const char * signature) const
-{
-    jmethodID mid = d->uiJni->GetMethodID(clazz, name, signature);
-    if (!mid)
-	{
-        FAIL("couldn't get %s", name);
-	}
-	return mid;
-}
-
-jmethodID App::GetStaticMethodID(jclass cls, const char * name, const char * signature) const
-{
-    jmethodID mid = d->uiJni->GetStaticMethodID(cls, name, signature);
-    if (!mid)
-	{
-        FAIL("couldn't get %s", name);
-	}
-
-	return mid;
 }
 
 jclass App::GetGlobalClassReference(const char * className) const
