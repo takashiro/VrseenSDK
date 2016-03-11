@@ -297,11 +297,6 @@ jlong VrAppInterface::SetActivity(JNIEnv * jni, jclass clazz, jobject activity, 
 	return (jlong)app;
 }
 
-void VrAppInterface::OneTimeInit(const char * fromPackage, const char * launchIntentJSON, const char * launchIntentURI)
-{
-    DROID_ASSERT(!"OneTimeInit() is not overloaded!", "VrApp");	// every native app must overload this. Why isn't it pure virtual?
-}
-
 void VrAppInterface::OneTimeShutdown()
 {
 }

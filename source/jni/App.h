@@ -77,7 +77,7 @@ public:
 	//
 	// If the app was launched without a specific intent, launchIntent
 	// will be an empty string.
-	virtual void OneTimeInit( const char * fromPackage, const char * launchIntentJSON, const char * launchIntentURI );
+    virtual void OneTimeInit( const char * fromPackage, const char * launchIntentJSON, const char * launchIntentURI ) = 0;
 
 	// This will be called one time only, when the app is about to shut down.
 	//
