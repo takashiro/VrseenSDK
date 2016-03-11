@@ -24,26 +24,7 @@ public:
 
     // Return position / file size
     virtual int         tell() override                       { return 0; }
-<<<<<<< HEAD
-    virtual SInt64      tell64() override                      { return 0; }
-    virtual int         length() override                  { return 0; }
-    virtual SInt64      length64() override                 { return 0; }
 
-//  virtual bool        Stat(FileStats *pfs)        { return 0; }
-    virtual int         errorCode() override               { return FileNotFoundError; }
-
-    // ** Stream implementation & I/O
-    virtual int         write(const UByte *pbuffer, int numBytes) override      { return -1; OVR_UNUSED2(pbuffer, numBytes); }
-    virtual int         read(UByte *pbuffer, int numBytes) override             { return -1; OVR_UNUSED2(pbuffer, numBytes); }
-    virtual int         skipBytes(int numBytes) override                        { return 0;  OVR_UNUSED(numBytes); }
-    virtual int         bytesAvailable() override                               { return 0; }
-    virtual bool        flush() override                                        { return 0; }
-    virtual int         seek(int offset, int origin) override                   { return -1; OVR_UNUSED2(offset, origin); }
-    virtual SInt64      seek64(SInt64 offset, int origin) override               { return -1; OVR_UNUSED2(offset, origin); }
-
-    virtual int         copyFromStream(VFile *pstream, int byteSize) override    { return -1; OVR_UNUSED2(pstream, byteSize); }
-    virtual bool        close() override                                        { return 0; }
-=======
     virtual long long   tell64() override                      { return 0; }
     virtual int         length() override                  { return 0; }
     virtual long long   length64() override                 { return 0; }
@@ -62,6 +43,5 @@ public:
 
     virtual int         copyFromStream(VFile *pstream, int byteSize) override    { return -1; OVR_UNUSED2(pstream, byteSize); }
     virtual bool        Close() override                                        { return 0; }
->>>>>>> dev
 };
 NV_NAMESPACE_END

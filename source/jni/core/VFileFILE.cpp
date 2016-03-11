@@ -1,6 +1,5 @@
 #define  GFILE_CXX
 
-
 #include "VFileFILE.h"
 
 NV_NAMESPACE_BEGIN
@@ -11,134 +10,15 @@ NV_NAMESPACE_BEGIN
 
 static int SFerror ()
 {
-    if (errno == ENOENT)
-        return VSysFile::FileNotFoundError;
-    else if (errno == EACCES || errno == EPERM)
-        return VSysFile::AccessError;
-    else if (errno == ENOSPC)
-        return VSysFile::iskFullError;
-    else
-        return VSysFile::IOError;
-};
-
-#ifdef OVR_OS_WIN32
-#include "windows.h"
-// A simple helper class to disable/enable system error mode, if necessary
-// Disabling happens conditionally only if a drive name is involved
-class SysErrorModeDisabler
-{
-    BOOL    Disabled;
-    UINT    OldMode;
-public:
-    SysErrorModeDisabler(const char* pfileName)
-    {
-        if (pfileName && (pfileName[0]!=0) && pfileName[1]==':')
-        {
-            Disabled = 1;
-            OldMode = ::SetErrorMode(SEM_FAILCRITICALERRORS);
-        }
-        else
-            Disabled = 0;
+    if (errno == ENOENT) {
+        return VFile::FileNotFound;
+    } else if (errno == EACCES || errno == EPERM) {
+        return VFile::AccessError;
+    } else if (errno == ENOSPC) {
+        return VFile::iskFullError;
+    } else {
+        return VFile::IOError;
     }
-
-    ~SysErrorModeDisabler()
-    {
-        if (Disabled) ::SetErrorMode(OldMode);
-    }
-};
-#else
-class SysErrorModeDisabler
-{
-public:
-    SysErrorModeDisabler(const char* pfileName) { }
-};
-#endif // OVR_OS_WIN32
-
-
-// This macro enables verification of I/O results after seeks against a pre-loaded
-// full file buffer copy. This is generally not necessary, but can been used to debug
-// memory corruptions; we've seen this fail due to EAX2/DirectSound corrupting memory
-// under FMOD with XP64 (32-bit) and Realtek HA Audio driver.
-//#define GFILE_VERIFY_SEEK_ERRORS
-
-
-// This is the simplest possible file implementation, it wraps around the descriptor
-// This file is delegated to by SysFile.
-
-class VFILEFile : public VFile
-{
-protected:
-
-    // Allocated filename
-    VString      FileName;
-
-    // File handle & open mode
-    bool        Opened;
-    FILE*       fs;
-    int         OpenFlag;
-    // Error code for last request
-    int         ErrorCode;
-
-    int         LastOp;
-
-#ifdef OVR_FILE_VERIFY_SEEK_ERRORS
-    UByte*      pFileTestBuffer;
-    unsigned    FileTestLength;
-    unsigned    TestPos; // File pointer position during tests.
-#endif
-
-public:
-
-    VFILEFile()
-    {
-        Opened = 0; FileName = "";
-
-#ifdef OVR_FILE_VERIFY_SEEK_ERRORS
-        pFileTestBuffer =0;
-        FileTestLength  =0;
-        TestPos         =0;
-#endif
-    }
-    // Initialize file by opening it
-    VFILEFile(const VString& fileName, int flags, int Mode);
-    // The 'pfileName' should be encoded as UTF-8 to support international file names.
-    VFILEFile(const char* pfileName, int flags, int Mode);
-
-    ~VFILEFile()
-    {
-        if (Opened)
-            close();
-    }
-
-    virtual const char* filePath();
-
-    // ** File Information
-    virtual bool        isValid() override;
-    virtual bool        isWritable();
-
-    // Return position / file size
-    virtual int         tell();
-    virtual SInt64      tell64();
-    virtual int         length();
-    virtual SInt64      length64();
-
-//  virtual bool        Stat(FileStats *pfs);
-    virtual int         errorCode();
-
-    // ** Stream implementation & I/O
-    virtual int         write(const UByte *pbuffer, int numBytes);
-    virtual int         read(UByte *pbuffer, int numBytes);
-    virtual int         skipBytes(int numBytes);
-    virtual int         bytesAvailable();
-    virtual bool        flush();
-    virtual int         seek(int offset, int origin);
-    virtual SInt64      seek64(SInt64 offset, int origin);
-
-    virtual int         copyFromStream(VFile *pStream, int byteSize);
-    virtual bool        close();
-private:
-    void                init();
-};
 };
 
 
@@ -166,43 +46,6 @@ VFILEFile::VFILEFile(const char* pfileName, int flags, int mode)
 void VFILEFile::init()
 {
     // Open mode for file's open
-    const char *omode = "rb";
-
-    if (OpenFlag & Open_Truncate)
-    {
-        if (OpenFlag & Open_Read)
-            omode = "w+b";
-        else
-            omode = "wb";
-    }
-    else if (OpenFlag & Open_Create)
-    {
-        if (OpenFlag & Open_Read)
-            omode = "a+b";
-        else
-            omode = "ab";
-    }
-    else if (OpenFlag & Open_Write)
-        omode = "r+b";
-
-#ifdef OVR_OS_WIN32
-    SysErrorModeDisabler disabler(FileName.toCString());
-#endif
-
-#if defined(OVR_CC_MSVC) && (OVR_CC_MSVC >= 1400)
-    wchar_t womode[16];
-    wchar_t *pwFileName = (wchar_t*)OVR_ALLOC((UTF8Util::GetLength(FileName.toCString())+1) * sizeof(wchar_t));
-    UTF8Util::DecodeString(pwFileName, FileName.toCString());
-    OVR_ASSERT(strlen(omode) < sizeof(womode)/sizeof(womode[0]));
-    UTF8Util::DecodeString(womode, omode);
-    _wfopen_s(&fs, pwFileName, womode);
-    OVR_FREE(pwFileName);
-#else
-    fs = fopen(FileName.toCString(), omode);
-#endif
-    if (fs)
-        rewind (fs);
-    Opened = (fs != NULL);
     //const char *omode = "rb";
      std::ios_base::openmode omode = std::ios_base::in | std::ios_base::binary;
 
@@ -262,19 +105,6 @@ void VFILEFile::init()
     {
         // If we are testing file seek correctness, pre-load the entire file so
         // that we can do comparison tests later.
-#ifdef OVR_FILE_VERIFY_SEEK_ERRORS
-        TestPos         = 0;
-        fseek(fs, 0, SEEK_END);
-        FileTestLength  = ftell(fs);
-        fseek(fs, 0, SEEK_SET);
-        pFileTestBuffer = (UByte*)OVR_ALLOC(FileTestLength);
-        if (pFileTestBuffer)
-        {
-            OVR_ASSERT(FileTestLength == (unsigned)Read(pFileTestBuffer, FileTestLength));
-            Seek(0, Seek_Set);
-        }
-#endif
-
 //#ifdef OVR_FILE_VERIFY_SEEK_ERRORS
 //        TestPos         = 0;
 //        fseek(fs, 0, SEEK_END);
@@ -368,7 +198,6 @@ int     VFILEFile::length()
     return -1;
 }
 
-
 long long VFILEFile::length64()
 {
     long long pos = tell64();
@@ -400,7 +229,7 @@ int     VFILEFile::write(const uchar *pbuffer, int numBytes)
 //    if (written < numBytes)
 //        ErrorCode = SFerror();
     if (!good()) {
-        ErrorCode = SFerroe();
+        ErrorCode = SFerror();
     }
 
 #ifdef OVR_FILE_VERIFY_SEEK_ERRORS
@@ -408,7 +237,7 @@ int     VFILEFile::write(const uchar *pbuffer, int numBytes)
         TestPos += written;
 #endif
 
-    return written;
+    return numBytes;
 }
 
 int     VFILEFile::read(uchar *pbuffer, int numBytes)
@@ -480,35 +309,8 @@ int     VFILEFile::bytesAvailable()
 }
 
 // Flush file contents
-bool    VFILEFile::flush()
-{
-    return !fflush(fs);
-}
-
-int     VFILEFile::seek(int offset, int origin)
-{
-    int newOrigin = 0;
-    switch(origin)
-    {
-    case Seek_Set: newOrigin = SEEK_SET; break;
-    case Seek_Cur: newOrigin = SEEK_CUR; break;
-    case Seek_End: newOrigin = SEEK_END; break;
-    }
-
-    if (newOrigin == SEEK_SET && offset == tell())
-        return tell();
-
-    if (fseek (fs, offset, newOrigin))
-    {
-#ifdef OVR_FILE_VERIFY_SEEK_ERRORS
-        OVR_ASSERT(0);
-#endif
-        return -1;
-    }
-
 bool    VFILEFile::Flush()
 {
-
 //    return !fflush(fs);
     if (OpenFlag & Open_Read) {
         sync();
@@ -551,7 +353,6 @@ int     VFILEFile::seek(int offset, std::ios_base::seekdir origin)
 
         return -1;
     }
->>>>>>> dev
 #ifdef OVR_FILE_VERIFY_SEEK_ERRORS
     // Track file position after seeks for read verification later.
     switch(origin)
@@ -566,22 +367,14 @@ int     VFILEFile::seek(int offset, std::ios_base::seekdir origin)
     return (int)tell();
 }
 
-<<<<<<< HEAD
-SInt64  VFILEFile::seek64(SInt64 offset, int origin)
-=======
 long long  VFILEFile::seek64(long long offset,std::ios_base::seekdir origin)
->>>>>>> dev
 {
     return seek((int)offset,origin);
 }
 
 int VFILEFile::copyFromStream(VFile *pstream, int byteSize)
 {
-<<<<<<< HEAD
-    UByte   buff[0x4000];
-=======
     uchar   buff[0x4000];
->>>>>>> dev
     int     count = 0;
     int     szRequest, szRead, szWritten;
 
@@ -603,11 +396,7 @@ int VFILEFile::copyFromStream(VFile *pstream, int byteSize)
 }
 
 
-<<<<<<< HEAD
-bool VFILEFile::close()
-=======
 bool VFILEFile::Close()
->>>>>>> dev
 {
 #ifdef OVR_FILE_VERIFY_SEEK_ERRORS
     if (pFileTestBuffer)
@@ -618,13 +407,9 @@ bool VFILEFile::Close()
     }
 #endif
 
-<<<<<<< HEAD
-    bool closeRet = !fclose(fs);
-=======
 //    bool closeRet = !fclose(fs);
     close();
     bool closeRet = good();
->>>>>>> dev
 
     if (!closeRet)
     {
@@ -634,79 +419,12 @@ bool VFILEFile::Close()
     else
     {
         Opened    = 0;
-<<<<<<< HEAD
-        fs        = 0;
-        ErrorCode = 0;
-    }
-
-    // Handle safe truncate
-    /*
-    if ((OpenFlag & OVR_FO_SAFETRUNC) == OVR_FO_SAFETRUNC)
-    {
-        // Delete original file (if it existed)
-        DWORD oldAttributes = FileUtilWin32::GetFileAttributes(FileName);
-        if (oldAttributes!=0xFFFFFFFF)
-            if (!FileUtilWin32::DeleteFile(FileName))
-            {
-                // Try to remove the readonly attribute
-                FileUtilWin32::SetFileAttributes(FileName, oldAttributes & (~FILE_ATTRIBUTE_READONLY) );
-                // And delete the file again
-                if (!FileUtilWin32::DeleteFile(FileName))
-                    return 0;
-            }
-
-        // Rename temp file to real filename
-        if (!FileUtilWin32::MoveFile(TempName, FileName))
-        {
-            //ErrorCode = errno;
-            return 0;
-        }
-    }
-    */
-    return 1;
-}
-
-/*
-bool    VFILEFile::CloseCancel()
-{
-    bool closeRet = (bool)::CloseHandle(fd);
-
-    if (!closeRet)
-    {
-        //ErrorCode = errno;
-        return 0;
-    }
-    else
-    {
-        Opened    = 0;
-        fd        = INVALID_HANDLE_VALUE;
-        ErrorCode = 0;
-    }
-
-    // Handle safe truncate (delete tmp file, leave original unchanged)
-    if ((OpenFlag&OVR_FO_SAFETRUNC) == OVR_FO_SAFETRUNC)
-        if (!FileUtilWin32::DeleteFile(TempName))
-        {
-            //ErrorCode = errno;
-            return 0;
-        }
-    return 1;
-}
-*/
-
-VFile *VFileFILEOpen(const VString& path, int flags, int mode)
-{
-    return new VFILEFile(path, flags, mode);
-}
-=======
 //        fs        = 0;
         ErrorCode = 0;
     }
 
     return 1;
 }
-
->>>>>>> dev
 
 // Helper function: obtain file information time.
 bool    VSysFile::getFileStat(VFileStat* pfileStat, const VString& path)

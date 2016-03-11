@@ -299,14 +299,6 @@ HEADERS += \
     jni/PointTracker.h \
     jni/UniversalMenu_Commands.h \
     jni/core/VFile.h \
-<<<<<<< HEAD
-    jni/core/VFileFlags.h \
-    jni/core/VDelegatedFile.h \
-    jni/core/VSysFile.h \
-    jni/core/VUnopenedFile.h \
-    jni/PointTracker.h
-    jni/core/VBuffer.h
-=======
     jni/core/VDelegatedFile.h \
     jni/core/VSysFile.h \
     jni/core/VUnopenedFile.h \
@@ -314,7 +306,6 @@ HEADERS += \
     jni/core/VBuffer.h \
     jni/core/VFileState.h \
     jni/core/VFileFILE.h
->>>>>>> dev
 
 
 include(jni/3rdparty/minizip/minizip.pri)
