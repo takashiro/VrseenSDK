@@ -46,15 +46,11 @@ VFILEFile::VFILEFile(const char* pfileName, int flags, int mode)
 void VFILEFile::init()
 {
     // Open mode for file's open
-    //const char *omode = "rb";
+    //openmode default is in and binary;
      std::ios_base::openmode omode = std::ios_base::in | std::ios_base::binary;
 
     if (OpenFlag & Open_Truncate)
     {
-//        if (OpenFlag & Open_Read)
-//            omode = "w+b";
-//        else
-//            omode = "wb";
         if(OpenFlag & Open_Read) {
             omode = std::ios_base::trunc | std::ios_base::in | std::ios_base::out | std::ios_base::binary;
         } else {
@@ -63,41 +59,33 @@ void VFILEFile::init()
     }
     else if (OpenFlag & Open_Create)
     {
-//        if (OpenFlag & Open_Read)
-//            omode = "a+b";
-//        else
-//            omode = "ab";
         if (OpenFlag & Open_Read) {
             omode = std::ios_base::app | std::ios_base::in | std::ios_base::binary;
         } else {
             omode = std::ios_base::app | std::ios_base::binary;
         }
     }
-    else if (OpenFlag & Open_Write) {
-//        omode = "r+b";
+    else if (OpenFlag & Open_Write) {;
         omode = std::ios_base::in | std::ios_base::out | std::ios_base::binary;
     }
 
-//#ifdef OVR_OS_WIN32
-//    SysErrorModeDisabler disabler(FileName.toCString());
-//#endif
+#ifdef OVR_OS_WIN32
+    SysErrorModeDisabler disabler(FileName.toCString());
+#endif
 
-//#if defined(OVR_CC_MSVC) && (OVR_CC_MSVC >= 1400)
-//    wchar_t womode[16];
-//    wchar_t *pwFileName = (wchar_t*)OVR_ALLOC((UTF8Util::GetLength(FileName.toCString())+1) * sizeof(wchar_t));
-//    UTF8Util::DecodeString(pwFileName, FileName.toCString());
-//    OVR_ASSERT(strlen(omode) < sizeof(womode)/sizeof(womode[0]));
-//    UTF8Util::DecodeString(womode, omode);
-//    _wfopen_s(&fs, pwFileName, womode);
-//    OVR_FREE(pwFileName);
-//#else
-    //fs = fopen(FileName.toCString(), omode);
+#if defined(OVR_CC_MSVC) && (OVR_CC_MSVC >= 1400)
+    wchar_t womode[16];
+    wchar_t *pwFileName = (wchar_t*)OVR_ALLOC((UTF8Util::GetLength(FileName.toCString())+1) * sizeof(wchar_t));
+    UTF8Util::DecodeString(pwFileName, FileName.toCString());
+    OVR_ASSERT(strlen(omode) < sizeof(womode)/sizeof(womode[0]));
+    UTF8Util::DecodeString(womode, omode);
+    _wfopen_s(&fs, pwFileName, womode);
+    OVR_FREE(pwFileName);
+#else
     open(FileName.toCString(), omode);
-//#endif
-//    if (fs)
-//        rewind (fs);
-//    Opened = (fs != NULL);
+#endif
     Opened = is_open();
+
     // Set error code
     if (!Opened)
         ErrorCode = SFerror();
@@ -105,18 +93,18 @@ void VFILEFile::init()
     {
         // If we are testing file seek correctness, pre-load the entire file so
         // that we can do comparison tests later.
-//#ifdef OVR_FILE_VERIFY_SEEK_ERRORS
-//        TestPos         = 0;
-//        fseek(fs, 0, SEEK_END);
-//        FileTestLength  = ftell(fs);
-//        fseek(fs, 0, SEEK_SET);
-//        pFileTestBuffer = (UByte*)OVR_ALLOC(FileTestLength);
-//        if (pFileTestBuffer)
-//        {
-//            OVR_ASSERT(FileTestLength == (unsigned)Read(pFileTestBuffer, FileTestLength));
-//            Seek(0, Seek_Set);
-//        }
-//#endif
+#ifdef OVR_FILE_VERIFY_SEEK_ERRORS
+        TestPos         = 0;
+        fseek(fs, 0, SEEK_END);
+        FileTestLength  = ftell(fs);
+        fseek(fs, 0, SEEK_SET);
+        pFileTestBuffer = (UByte*)OVR_ALLOC(FileTestLength);
+        if (pFileTestBuffer)
+        {
+            OVR_ASSERT(FileTestLength == (unsigned)Read(pFileTestBuffer, FileTestLength));
+            Seek(0, Seek_Set);
+        }
+#endif
         if(OpenFlag & Open_Read) {
             seekg(0);
         } else {
@@ -137,12 +125,10 @@ const char* VFILEFile::filePath()
 // ** File Information
 bool    VFILEFile::isValid()
 {
-    //return Opened;
     return Opened;
 }
 bool    VFILEFile::isWritable()
 {
-//    return isValid() && (OpenFlag&Open_Write);
     return isValid() && (OpenFlag & Open_Write);
 }
 /*
@@ -155,7 +141,6 @@ bool    VFILEFile::IsRecoverable()
 // Return position / file size
 int     VFILEFile::tell()
 {
-//    int pos = (int)ftell (fs);
     int pos;
 
     if (OpenFlag & Open_Read) {
@@ -171,8 +156,7 @@ int     VFILEFile::tell()
 
 long long  VFILEFile::tell64()
 {
-//    long long pos = ftell(fs);
-    int pos;
+    long long pos;
 
     if (OpenFlag & Open_Read) {
         pos = tellg();
@@ -220,14 +204,12 @@ int     VFILEFile::errorCode()
 int     VFILEFile::write(const uchar *pbuffer, int numBytes)
 {
     if (LastOp && LastOp != Open_Write) {
-       // fflush(fs);
         Flush();
     }
     LastOp = Open_Write;
 //    int written = (int) fwrite(pbuffer, 1, numBytes, fs);
     write(pbuffer, numBytes);
-//    if (written < numBytes)
-//        ErrorCode = SFerror();
+
     if (!good()) {
         ErrorCode = SFerror();
     }
@@ -236,22 +218,20 @@ int     VFILEFile::write(const uchar *pbuffer, int numBytes)
     if (written > 0)
         TestPos += written;
 #endif
-
+//  return Writtem;
     return numBytes;
 }
 
 int     VFILEFile::read(uchar *pbuffer, int numBytes)
 {
     if (LastOp && LastOp != Open_Read) {
-//        fflush(fs);
         Flush();
     }
     LastOp = Open_Read;
+
 //    int read = (int) fread(pbuffer, 1, numBytes, fs);
-//    if (read < numBytes)
-//        ErrorCode = SFerror();
-    int read = read(pbuffer, numBytes);
-    if (good()) {
+    read(pbuffer, numBytes);
+    if (!good()) {
         ErrorCode = SFerror();
     }
 
@@ -271,7 +251,8 @@ int     VFILEFile::read(uchar *pbuffer, int numBytes)
     }
 #endif
 
-    return read;
+//    return read;
+    return numBytes;
 }
 
 // Seeks ahead to skip bytes
@@ -285,8 +266,8 @@ int     VFILEFile::skipBytes(int numBytes)
     {
         return -1;
     }
-    //ErrorCode = ((NewPos-Pos)<numBytes) ? errno : 0;
-
+//    ErrorCode = ((NewPos-Pos)<numBytes) ? errno : 0;
+    ErrorCode =((newPos - pos) < numBytes) ? errno : 0;
     return int (newPos-(int)pos);
 }
 
@@ -311,38 +292,16 @@ int     VFILEFile::bytesAvailable()
 // Flush file contents
 bool    VFILEFile::Flush()
 {
-//    return !fflush(fs);
-    if (OpenFlag & Open_Read) {
-        sync();
-    } else {
-        flush();
-    }
-
+    flush();
     return good();
 }
 
 int     VFILEFile::seek(int offset, std::ios_base::seekdir origin)
 {
-//    int newOrigin = 0;
-//    switch(origin)
-//    {
-//    case std::ios_base::beg: newOrigin = SEEK_SET; break;
-//    case std::ios_base::cur: newOrigin = SEEK_CUR; break;
-//    case std::ios_base::end: newOrigin = SEEK_END; break;
-//    }
 
-//    if (newOrigin == SEEK_SET && offset == tell())
-//        return tell();
     if (origin == std::ios_base::beg && offset == tell()) {
         return tell();
     }
-//    if (fseek (fs, offset, newOrigin))
-//    {
-//#ifdef OVR_FILE_VERIFY_SEEK_ERRORS
-//        OVR_ASSERT(0);
-//#endif
-//        return -1;
-//    }
 
     if(OpenFlag & Open_Read) {
         seekg(offset, origin);

@@ -2,8 +2,8 @@
 
 #define  GFILE_CXX
 
-#include "Types.h"
-#include "Log.h"
+//#include "Types.h"
+//#include "Log.h"
 
 // Standard C library (Captain Obvious guarantees!)
 #include <stdio.h>
