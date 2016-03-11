@@ -11,6 +11,8 @@ Copyright   :   Copyright 2012 Oculus VR, LCC. All Rights reserved.
 
 #include "VrScene.h"
 
+#include <VStandardPath.h>
+
 static const char * versionString = "VrScene v0.1.0";
 
 extern "C"

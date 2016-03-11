@@ -19,9 +19,9 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <android/keycodes.h>
 #include "VRMenuMgr.h"
 #include "VRMenuEventHandler.h"
-#include "../App.h"
+#include "App.h"
 #include "GuiSys.h"
-
+#include "VrCommon.h"
 
 
 namespace NervGear {

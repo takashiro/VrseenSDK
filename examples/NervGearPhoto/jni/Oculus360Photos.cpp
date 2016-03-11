@@ -17,14 +17,17 @@ of patent rights can be found in the PATENTS file in the same directory.
 
 #include "Oculus360Photos.h"
 #include <android/keycodes.h>
-#include "VThread.h"
 #include "gui/GuiSys.h"
 #include "PanoBrowser.h"
 #include "PanoMenu.h"
 #include "FileLoader.h"
 #include "ImageData.h"
-#include "VApkFile.h"
+#include "VrCommon.h"
 #include "PhotosMetaData.h"
+
+#include <VApkFile.h>
+#include <VThread.h>
+#include <VStandardPath.h>
 
 NV_NAMESPACE_BEGIN
 

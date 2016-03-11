@@ -2,34 +2,17 @@
 
 #include "vglobal.h"
 
-#include <pthread.h>
-#include "OVR.h"
-#include "android/GlUtils.h"
-#include "android/LogUtils.h"
-#include "api/VrApi.h"
-#include "api/VrApi_Android.h"
-#include "SurfaceTexture.h"
-#include "EyeBuffers.h"
-#include "EyePostRender.h"
-#include "VrCommon.h"
-#include "VMessageQueue.h"
-#include "Input.h"
-#include "TalkToJava.h"
+#include "VrApi.h"
+#include "VrApi_Android.h"
 #include "KeyState.h"
+#include "EyeBuffers.h"
+#include "Input.h"
+#include "VMessageQueue.h"
+#include "TalkToJava.h"
 #include "SoundManager.h"
-#include "GlSetup.h"
-#include "PointTracker.h"
-
-// Avoid including this header file as much as possible in VrLib,
-// so individual components are not tied to our native application
-// framework, and can more easily be reused by Unity or other
-// hosting applications.
 
 NV_NAMESPACE_BEGIN
 
-//==============================================================
-// forward declarations
-class EyeBuffers;
 struct MaterialParms;
 class VRMenuObjectParms;
 class OvrGuiSys;
@@ -41,12 +24,8 @@ class OvrDebugLines;
 class App;
 class VrViewParms;
 class VStandardPath;
-class OvrSoundManager;
+class SurfaceTexture;
 
-//==============================================================
-// All of these virtual interfaces will be called by the VR application thread.
-// Applications that don't care about particular interfaces are not
-// required to implement them.
 class VrAppInterface
 {
 public:

@@ -1,77 +1,50 @@
-/************************************************************************************
-
-Filename    :   App.cpp
-Content     :   Native counterpart to VrActivity
-Created     :   September 30, 2013
-Authors     :   John Carmack
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
 #include "App.h"
-#include "Alg.h"
+
+#include <android/native_window_jni.h>
+#include <android/keycodes.h>
 #include <math.h>
 #include <jni.h>
-
-#include <android/native_window_jni.h>	// for native window JNI
-#include <android/keycodes.h>
-
+#include <sstream>
 #include <sys/time.h>
 #include <sys/resource.h>
-#include <unistd.h>						// usleep, etc
-#include <sstream>
+#include <unistd.h>
 
-#include <math.h>
-#include <jni.h>
+#include <3rdparty/stb/stb_image_write.h>
 
-#include <sys/time.h>
-
-#include "Android/GlUtils.h"
-#include "api/VrApi.h"
-#include "api/VrApi_Helpers.h"
-
-#include "GlSetup.h"
-#include "GlTexture.h"
-#include "VrCommon.h"
-#include "App.h"
-
-#include "BitmapFont.h"
-#include "TypesafeNumber.h"
-#include "GazeCursor.h"
-#include "gui/VRMenuMgr.h"
-#include "gui/GuiSys.h"
-#include "DebugLines.h"
-
-#include "System.h"
-#include "VMath.h"
-#include "TypesafeNumber.h"
-#include "VJson.h"
+#include "android/GlUtils.h"
 #include "android/JniUtils.h"
 #include "android/VOsBuild.h"
 
-#include "3rdParty/stb/stb_image_write.h"
-
-#include "api/VrApi.h"
-#include "api/VrApi_Android.h"
-#include "api/VrApi_Helpers.h"
-#include "api/LocalPreferences.h"		// FIXME:VRAPI move to VrApi_Android.h?
-
+#include "Alg.h"
+#include "BitmapFont.h"
+#include "Console.h"
+#include "DebugLines.h"
+#include "EyePostRender.h"
+#include "GazeCursor.h"
+#include "GazeCursorLocal.h"		// necessary to instantiate the gaze cursor
 #include "GlSetup.h"
 #include "GlTexture.h"
-#include "VrCommon.h"
-#include "App.h"
+#include "GuiSys.h"
+#include "GuiSysLocal.h"		// necessary to instantiate the gui system
+#include "LocalPreferences.h"		// FIXME:VRAPI move to VrApi_Android.h?
 #include "ModelView.h"
-#include "BitmapFont.h"
-#include "GazeCursorLocal.h"		// necessary to instantiate the gaze cursor
-#include "gui/VRMenuMgr.h"
-#include "gui/GuiSysLocal.h"		// necessary to instantiate the gui system
-#include "gui/VolumePopup.h"
+#include "PointTracker.h"
+#include "SurfaceTexture.h"
+#include "System.h"
+#include "TypesafeNumber.h"
+#include "VMath.h"
+#include "VolumePopup.h"
+#include "VrApi.h"
+#include "VrApi_Android.h"
+#include "VrApi_Helpers.h"
+#include "VrCommon.h"
 #include "VrLocale.h"
-#include "VUserProfile.h"
-#include "Console.h"
-#include "VLog.h"
+#include "VRMenuMgr.h"
+
 #include "VApkFile.h"
+#include "VLog.h"
+#include "VJson.h"
+#include "VUserProfile.h"
 
 //#define TEST_TIMEWARP_WATCHDOG
 

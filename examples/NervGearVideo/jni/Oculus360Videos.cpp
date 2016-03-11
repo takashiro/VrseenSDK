@@ -29,6 +29,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "VString.h"
 #include "String_Utils.h"
 #include "Android/GlUtils.h"
+#include "SurfaceTexture.h"
 
 #include "GlTexture.h"
 #include "BitmapFont.h"

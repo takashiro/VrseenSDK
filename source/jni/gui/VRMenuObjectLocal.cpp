@@ -12,6 +12,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "VRMenuObjectLocal.h"
 
+#include "GlProgram.h"
 #include "GlTexture.h"
 #include "App.h"			// for loading images from the assets folder
 #include "ModelTrace.h"
