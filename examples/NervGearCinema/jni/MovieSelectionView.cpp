@@ -106,7 +106,7 @@ void MovieSelectionView::OneTimeInit( const char * launchIntent )
 
 	const double start = ovr_GetTimeInSeconds();
 
-	CreateMenu( Cinema.app, Cinema.app->GetVRMenuMgr(), Cinema.app->GetDefaultFont() );
+    CreateMenu( Cinema.app, Cinema.app->vrMenuMgr(), Cinema.app->defaultFont() );
 
 	SetCategory( CATEGORY_TRAILERS );
 
@@ -171,7 +171,7 @@ void MovieSelectionView::OnOpen()
 
 	SwipeHintComponent::ShowSwipeHints = true;
 
-	Cinema.app->GetSwapParms().WarpProgram = WP_CHROMATIC;
+    Cinema.app->swapParms().WarpProgram = WP_CHROMATIC;
 }
 
 void MovieSelectionView::OnClose()
@@ -401,7 +401,7 @@ void MovieSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFo
 		Categories[ i ].Button->SetText( Categories[ i ].Text.toCString() );
 		Categories[ i ].Button->AddComponent( new MovieCategoryComponent( this, Categories[ i ].Category ) );
 
-		const Bounds3f & bounds = Categories[ i ].Button->GetTextLocalBounds( Cinema.app->GetDefaultFont() );
+        const Bounds3f & bounds = Categories[ i ].Button->GetTextLocalBounds( Cinema.app->defaultFont() );
 		Categories[ i ].Width = NervGear::Alg::Max( bounds.GetSize().x, itemWidth ) + 80.0f * VRMenuObject::DEFAULT_TEXEL_SCALE;
 		Categories[ i ].Height = bounds.GetSize().y + 108.0f * VRMenuObject::DEFAULT_TEXEL_SCALE;
 		categoryBarWidth += Categories[ i ].Width;
@@ -750,7 +750,7 @@ void MovieSelectionView::UpdateSelectionFrame( const VrFrame & vrFrame )
 	}
 	else
 	{
-		MovieBrowser->CheckGamepad( Cinema.app, vrFrame, Cinema.app->GetVRMenuMgr(), MovieRoot->GetMenuObject() );
+        MovieBrowser->CheckGamepad( Cinema.app, vrFrame, Cinema.app->vrMenuMgr(), MovieRoot->GetMenuObject() );
 	}
 
 	SelectionFrame->SetColor( Vector4f( SelectionFader.Value( now ) ) );
@@ -801,17 +801,17 @@ void MovieSelectionView::SetError( const char *text, bool showSDCard, bool showE
 	if ( showSDCard )
 	{
 		SDCardMessage->SetVisible( true );
-		SDCardMessage->SetTextWordWrapped( text, Cinema.app->GetDefaultFont(), 1.0f );
+        SDCardMessage->SetTextWordWrapped( text, Cinema.app->defaultFont(), 1.0f );
 	}
 	else if ( showErrorIcon )
 	{
 		ErrorMessage->SetVisible( true );
-		ErrorMessage->SetTextWordWrapped( text, Cinema.app->GetDefaultFont(), 1.0f );
+        ErrorMessage->SetTextWordWrapped( text, Cinema.app->defaultFont(), 1.0f );
 	}
 	else
 	{
 		PlainErrorMessage->SetVisible( true );
-		PlainErrorMessage->SetTextWordWrapped( text, Cinema.app->GetDefaultFont(), 1.0f );
+        PlainErrorMessage->SetTextWordWrapped( text, Cinema.app->defaultFont(), 1.0f );
 	}
 	TitleRoot->SetVisible( false );
 	MovieRoot->SetVisible( false );
@@ -845,9 +845,9 @@ Matrix4f MovieSelectionView::DrawEyeView( const int eye, const float fovDegrees 
 Matrix4f MovieSelectionView::Frame( const VrFrame & vrFrame )
 {
 	// We want 4x MSAA in the lobby
-	EyeParms eyeParms = Cinema.app->GetEyeParms();
+    EyeParms eyeParms = Cinema.app->eyeParms();
 	eyeParms.multisamples = 4;
-	Cinema.app->SetEyeParms( eyeParms );
+    Cinema.app->setEyeParms( eyeParms );
 
 #if 0
 	if ( !Cinema.InLobby && Cinema.SceneMgr.ChangeSeats( vrFrame ) )
@@ -864,7 +864,7 @@ Matrix4f MovieSelectionView::Frame( const VrFrame & vrFrame )
 		}
 		else
 		{
-            Cinema.app->GetGuiSys().closeMenu( Cinema.app, Menu->GetVRMenu(), false );
+            Cinema.app->guiSys().closeMenu( Cinema.app, Menu->GetVRMenu(), false );
 		}
 	}
 
@@ -895,11 +895,11 @@ Matrix4f MovieSelectionView::Frame( const VrFrame & vrFrame )
 		SwipeHintComponent::ShowSwipeHints = false;
 		if ( vrFrame.Input.buttonPressed & ( BUTTON_TOUCH | BUTTON_A ) )
 		{
-			Cinema.app->PlaySound( "touch_down" );
+            Cinema.app->playSound( "touch_down" );
 		}
 		else if ( vrFrame.Input.buttonReleased & ( BUTTON_TOUCH | BUTTON_A ) )
 		{
-			Cinema.app->PlaySound( "touch_up" );
+            Cinema.app->playSound( "touch_up" );
 			ErrorMessageClicked = true;
 		}
 		else if ( ErrorMessageClicked && ( ( vrFrame.Input.buttonState & ( BUTTON_TOUCH | BUTTON_A ) ) == 0 ) )

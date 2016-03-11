@@ -190,7 +190,7 @@ void SceneManager::SetSceneModel( const SceneDef &sceneDef )
 			break;
 		}
 		SceneSeatPositions[SceneSeatCount] = tag->matrix.GetTranslation();
-		SceneSeatPositions[SceneSeatCount].y -= Cinema.app->GetVrViewParms().EyeHeight;
+        SceneSeatPositions[SceneSeatCount].y -= Cinema.app->vrViewParms().EyeHeight;
 	}
 
 	if ( !sceneDef.UseSeats )
@@ -471,7 +471,7 @@ void SceneManager::SetFreeScreenAngles( const Vector3f &angles )
 void SceneManager::PutScreenInFront()
 {
 	FreeScreenOrientation = Scene.ViewMatrix.Inverted();
-	Cinema.app->RecenterYaw( false );
+    Cinema.app->recenterYaw( false );
 }
 
 void SceneManager::ClampScreenToView()
@@ -657,7 +657,7 @@ bool SceneManager::Command( const char * msg )
 	if ( MatchesHead( "newVideo ", msg ) )
 	{
 		delete MovieTexture;
-		MovieTexture = new SurfaceTexture( Cinema.app->GetVrJni() );
+        MovieTexture = new SurfaceTexture( Cinema.app->vrJni() );
 		LOG( "RC_NEW_VIDEO texId %i", MovieTexture->textureId );
 
 		VMessageQueue * receiver;
@@ -771,7 +771,7 @@ bool SceneManager::Command( const char * msg )
 			glGenTextures( 1, &MipMappedMovieTextures[i] );
 			glBindTexture( GL_TEXTURE_2D, MipMappedMovieTextures[i] );
 
-            glTexImage2D( GL_TEXTURE_2D, 0, Cinema.app->GetAppInterface()->wantSrgbFramebuffer() ? GL_SRGB8_ALPHA8 :GL_RGBA,
+            glTexImage2D( GL_TEXTURE_2D, 0, Cinema.app->appInterface()->wantSrgbFramebuffer() ? GL_SRGB8_ALPHA8 :GL_RGBA,
 					MovieTextureWidth, MovieTextureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL );
 
 			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
@@ -957,8 +957,8 @@ Matrix4f SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 	if ( !GetUseOverlay() || SceneInfo.LobbyScreen || ( SceneInfo.UseScreenGeometry && ( SceneScreenSurface != NULL ) ) )
 	{
 		// no overlay
-		Cinema.app->GetSwapParms().WarpProgram = WP_CHROMATIC;
-		Cinema.app->GetSwapParms().Images[eye][1].TexId = 0;
+        Cinema.app->swapParms().WarpProgram = WP_CHROMATIC;
+        Cinema.app->swapParms().Images[eye][1].TexId = 0;
 
 		glActiveTexture( GL_TEXTURE0 );
 		glBindTexture( GL_TEXTURE_EXTERNAL_OES, MovieTexture->textureId );
@@ -993,14 +993,14 @@ Matrix4f SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 		const Matrix4f screenModel = ScreenMatrix();
 		const ovrMatrix4f mv = Scene.ViewMatrixForEye( eye ) * screenModel;
 
-		Cinema.app->GetSwapParms().WarpProgram = WP_CHROMATIC_MASKED_PLANE;
-		Cinema.app->GetSwapParms().Images[eye][1].TexId = MipMappedMovieTextures[CurrentMipMappedMovieTexture];
-		Cinema.app->GetSwapParms().Images[eye][1].Pose = Cinema.app->GetSensorForNextWarp().Predicted;
-		Cinema.app->GetSwapParms().Images[eye][1].TexCoordsFromTanAngles = texMatrix * TanAngleMatrixFromUnitSquare( &mv );
+        Cinema.app->swapParms().WarpProgram = WP_CHROMATIC_MASKED_PLANE;
+        Cinema.app->swapParms().Images[eye][1].TexId = MipMappedMovieTextures[CurrentMipMappedMovieTexture];
+        Cinema.app->swapParms().Images[eye][1].Pose = Cinema.app->sensorForNextWarp().Predicted;
+        Cinema.app->swapParms().Images[eye][1].TexCoordsFromTanAngles = texMatrix * TanAngleMatrixFromUnitSquare( &mv );
 
 		// explicitly clear a hole in alpha
 		const ovrMatrix4f screenMvp = mvp * screenModel;
-		Cinema.app->DrawScreenMask( screenMvp, 0.0f, 0.0f );
+        Cinema.app->drawScreenMask( screenMvp, 0.0f, 0.0f );
 	}
 
 	// The framework will automatically draw the floating elements on top of us now.
@@ -1021,11 +1021,11 @@ Matrix4f SceneManager::Frame( const VrFrame & vrFrame )
 		vrFrameWithoutMove.Input.sticks[0][0] = 0.0f;
 		vrFrameWithoutMove.Input.sticks[0][1] = 0.0f;
 	}
-	Scene.Frame( Cinema.app->GetVrViewParms(), vrFrameWithoutMove, Cinema.app->GetSwapParms().ExternalVelocity );
+    Scene.Frame( Cinema.app->vrViewParms(), vrFrameWithoutMove, Cinema.app->swapParms().ExternalVelocity );
 
 	if ( ClearGhostsFrames > 0 )
 	{
-		Cinema.app->GetGazeCursor().ClearGhosts();
+        Cinema.app->gazeCursor().ClearGhosts();
 		ClearGhostsFrames--;
 	}
 
@@ -1063,7 +1063,7 @@ Matrix4f SceneManager::Frame( const VrFrame & vrFrame )
 		glDisable( GL_SCISSOR_TEST );
 		GL_InvalidateFramebuffer( INV_FBO, true, false );
 		glViewport( 0, 0, MovieTextureWidth, MovieTextureHeight );
-        if ( Cinema.app->GetAppInterface()->wantSrgbFramebuffer() )
+        if ( Cinema.app->appInterface()->wantSrgbFramebuffer() )
 		{	// we need this copied without sRGB conversion on the top level
 	    	glDisable( GL_FRAMEBUFFER_SRGB_EXT );
 		}
@@ -1073,7 +1073,7 @@ Matrix4f SceneManager::Frame( const VrFrame & vrFrame )
 			glUseProgram( Cinema.shaderMgr.CopyMovieProgram.program );
 			UnitSquare.Draw();
 			glBindTexture( GL_TEXTURE_EXTERNAL_OES, 0 );
-            if ( Cinema.app->GetAppInterface()->wantSrgbFramebuffer() )
+            if ( Cinema.app->appInterface()->wantSrgbFramebuffer() )
 			{	// we need this copied without sRGB conversion on the top level
 		    	glEnable( GL_FRAMEBUFFER_SRGB_EXT );
 			}
@@ -1097,7 +1097,7 @@ Matrix4f SceneManager::Frame( const VrFrame & vrFrame )
 	}
 
 	// Generate callbacks into DrawEyeView
-	Cinema.app->DrawEyeViewsPostDistorted( Scene.CenterViewMatrix() );
+    Cinema.app->drawEyeViewsPostDistorted( Scene.CenterViewMatrix() );
 
 	return Scene.CenterViewMatrix();
 }

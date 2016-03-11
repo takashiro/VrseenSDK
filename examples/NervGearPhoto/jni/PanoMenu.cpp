@@ -75,7 +75,7 @@ private:
 		// If opening PanoMenu without a Pano selected, bail
 		if ( CurrentPano == NULL )
 		{
-			app->GetGuiSys( ).closeMenu( app, &PanoMenu, false );
+			app->guiSys( ).closeMenu( app, &PanoMenu, false );
 		}
 		LoadAttribution( self );
 		return MSG_STATUS_CONSUMED;
@@ -131,7 +131,7 @@ private:
 			selfTextColor.w = fadeOutAlpha;
 			if ( fadeOutAlpha == 0.0f )
 			{
-				app->GetGuiSys().closeMenu( app, &PanoMenu, false );
+				app->guiSys().closeMenu( app, &PanoMenu, false );
 			}
 			break;
 		default:

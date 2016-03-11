@@ -166,7 +166,7 @@ OvrVolumePopup * OvrVolumePopup::Create( App * app, OvrVRMenuMgr & menuMgr, Bitm
 	}
 
 	menu->initWithItems( menuMgr, font, 1.8f, VRMenuFlags_t( VRMENU_FLAG_TRACK_GAZE ) | VRMENU_FLAG_SHORT_PRESS_HANDLED_BY_APP, parms );
-	app->GetGuiSys().addMenu( menu );
+	app->guiSys().addMenu( menu );
 
     DeletePointerArray( parms );
 
@@ -186,10 +186,10 @@ void OvrVolumePopup::frameImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr
     const double timeSinceLastVolumeChange = ovr_GetTimeSinceLastVolumeChange();
 	if ( ( timeSinceLastVolumeChange < 0 ) || ( timeSinceLastVolumeChange > VolumeMenuFadeDelay ) )
 	{
-		menuHandle_t volumeTextHandle = handleForId( app->GetVRMenuMgr(), OvrVolumePopup::ID_VOLUME_TEXT );
-		VRMenuObject *volumeText = app->GetVRMenuMgr().toObject( volumeTextHandle );
+		menuHandle_t volumeTextHandle = handleForId( app->vrMenuMgr(), OvrVolumePopup::ID_VOLUME_TEXT );
+		VRMenuObject *volumeText = app->vrMenuMgr().toObject( volumeTextHandle );
 		volumeText->addFlags( VRMENUOBJECT_DONT_RENDER );
-		app->GetGuiSys().closeMenu( app, this, false );
+		app->guiSys().closeMenu( app, this, false );
 	}
 }
 
@@ -209,18 +209,18 @@ void OvrVolumePopup::showVolume( App * app, const int current )
 		// highlight the volume ticks
 		for( int i = 0; i < NumVolumeTics; i++ )
 		{
-			menuHandle_t volumeTickHandle = handleForId( app->GetVRMenuMgr(), VRMenuId_t( OvrVolumePopup::ID_VOLUME_TICKS.Get() + i ) );
-			VRMenuObject *volumeTick = app->GetVRMenuMgr().toObject( volumeTickHandle );
+			menuHandle_t volumeTickHandle = handleForId( app->vrMenuMgr(), VRMenuId_t( OvrVolumePopup::ID_VOLUME_TICKS.Get() + i ) );
+			VRMenuObject *volumeTick = app->vrMenuMgr().toObject( volumeTickHandle );
 			volumeTick->setHilighted( i < current );
 		}
 
 		// update volume text
-		menuHandle_t volumeTextHandle = handleForId( app->GetVRMenuMgr(), OvrVolumePopup::ID_VOLUME_TEXT );
-		VRMenuObject *volumeText = app->GetVRMenuMgr().toObject( volumeTextHandle );
+		menuHandle_t volumeTextHandle = handleForId( app->vrMenuMgr(), OvrVolumePopup::ID_VOLUME_TEXT );
+		VRMenuObject *volumeText = app->vrMenuMgr().toObject( volumeTextHandle );
         volumeText->setText(VString::number(current));
 
 		// center the text
-		Bounds3f bnds = volumeText->setTextLocalBounds( app->GetDefaultFont() );
+		Bounds3f bnds = volumeText->setTextLocalBounds( app->defaultFont() );
 		volumeText->setLocalPosition( m_volumeTextOffset - Vector3f( bnds.GetSize().x * 0.5f, 0.0f, 0.0f ) );
 
 		m_currentVolume = current;
@@ -228,10 +228,10 @@ void OvrVolumePopup::showVolume( App * app, const int current )
 
 	if ( curMenuState() == VRMenu::MENUSTATE_CLOSED )
     {
-		menuHandle_t volumeTextHandle = handleForId( app->GetVRMenuMgr(), OvrVolumePopup::ID_VOLUME_TEXT );
-		VRMenuObject *volumeText = app->GetVRMenuMgr().toObject( volumeTextHandle );
+		menuHandle_t volumeTextHandle = handleForId( app->vrMenuMgr(), OvrVolumePopup::ID_VOLUME_TEXT );
+		VRMenuObject *volumeText = app->vrMenuMgr().toObject( volumeTextHandle );
 		volumeText->removeFlags( VRMENUOBJECT_DONT_RENDER );
-    	app->GetGuiSys().openMenu( app, app->GetGazeCursor(), "Volume" );
+    	app->guiSys().openMenu( app, app->gazeCursor(), "Volume" );
     }
 }
 
@@ -252,10 +252,10 @@ void OvrVolumePopup::checkForVolumeChange( App * app )
 // OvrVolumePopup::Close
 void OvrVolumePopup::close( App * app )
 {
-	menuHandle_t volumeTextHandle = handleForId( app->GetVRMenuMgr(), OvrVolumePopup::ID_VOLUME_TEXT );
-	VRMenuObject *volumeText = app->GetVRMenuMgr().toObject( volumeTextHandle );
+	menuHandle_t volumeTextHandle = handleForId( app->vrMenuMgr(), OvrVolumePopup::ID_VOLUME_TEXT );
+	VRMenuObject *volumeText = app->vrMenuMgr().toObject( volumeTextHandle );
 	volumeText->addFlags( VRMENUOBJECT_DONT_RENDER );
-	app->GetGuiSys().closeMenu( app, this, false );
+	app->guiSys().closeMenu( app, this, false );
 }
 
 } // namespace NervGear

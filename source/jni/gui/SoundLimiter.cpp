@@ -34,7 +34,7 @@ void SoundLimiter::playSound( App * app, char const * soundName, double const li
     //DROIDLOG( "VrMenu", "PlaySound( '%s', %.2f ) - t == %.2f : %s", soundName, limitSeconds, t, t >= limitSeconds ? "PLAYING" : "SKIPPING" );
 	if ( t >= limitSeconds )
 	{
-		app->PlaySound( soundName );
+		app->playSound( soundName );
 		m_lastPlayTime = curTime;
 	}
 }
@@ -44,7 +44,7 @@ void SoundLimiter::playMenuSound( class App * app, char const * appendKey, char 
 	char overrideSound[ 1024 ];
 	OVR_sprintf( overrideSound, 1024, "%s_%s", appendKey, soundName );
 
-	if ( app->GetSoundMgr().HasSound( overrideSound ) )
+	if ( app->soundMgr().HasSound( overrideSound ) )
 	{
 		playSound( app, overrideSound, limitSeconds );
 	}

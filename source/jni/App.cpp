@@ -107,7 +107,7 @@ void Java_com_vrseen_nervgear_VrActivity_nativeSurfaceChanged(JNIEnv *jni, jclas
 {
     LOG("%p nativeSurfaceChanged(%p)", (void *)appPtr, surface);
 
-    ((App *)appPtr)->GetMessageQueue().SendPrintf("surfaceChanged %p",
+    ((App *)appPtr)->messageQueue().SendPrintf("surfaceChanged %p",
             surface ? ANativeWindow_fromSurface(jni, surface) : nullptr);
 }
 
@@ -123,36 +123,36 @@ void Java_com_vrseen_nervgear_VrActivity_nativeSurfaceDestroyed(JNIEnv *jni, jcl
 		return;
 	}
 
-    ((App *)appPtr)->GetMessageQueue().SendPrintf("surfaceDestroyed ");
+    ((App *)appPtr)->messageQueue().SendPrintf("surfaceDestroyed ");
 }
 
 void Java_com_vrseen_nervgear_VrActivity_nativePopup(JNIEnv *jni, jclass clazz,
         jlong appPtr, jint width, jint height, jfloat seconds)
 {
     LOG("%p nativePopup", (void *)appPtr);
-    ((App *)appPtr)->GetMessageQueue().PostPrintf("popup %i %i %f", width, height, seconds);
+    ((App *)appPtr)->messageQueue().PostPrintf("popup %i %i %f", width, height, seconds);
 }
 
 jobject Java_com_vrseen_nervgear_VrActivity_nativeGetPopupSurfaceTexture(JNIEnv *jni, jclass clazz,
         jlong appPtr)
 {
     LOG("%p getPopUpSurfaceTexture: %i", (void *)appPtr,
-            ((App *)appPtr)->GetDialogTexture()->textureId);
-    return ((App *)appPtr)->GetDialogTexture()->javaObject;
+            ((App *)appPtr)->dialogTexture()->textureId);
+    return ((App *)appPtr)->dialogTexture()->javaObject;
 }
 
 void Java_com_vrseen_nervgear_VrActivity_nativePause(JNIEnv *jni, jclass clazz,
         jlong appPtr)
 {
     LOG("%p Java_com_vrseen_nervgear_VrActivity_nativePause", (void *)appPtr);
-        ((App *)appPtr)->GetMessageQueue().SendPrintf("pause ");
+        ((App *)appPtr)->messageQueue().SendPrintf("pause ");
 }
 
 void Java_com_vrseen_nervgear_VrActivity_nativeResume(JNIEnv *jni, jclass clazz,
         jlong appPtr)
 {
     LOG("%p Java_com_vrseen_nervgear_VrActivity_nativeResume", (void *)appPtr);
-        ((App *)appPtr)->GetMessageQueue().SendPrintf("resume ");
+        ((App *)appPtr)->messageQueue().SendPrintf("resume ");
 }
 
 void Java_com_vrseen_nervgear_VrActivity_nativeDestroy(JNIEnv *jni, jclass clazz,
@@ -164,9 +164,9 @@ void Java_com_vrseen_nervgear_VrActivity_nativeDestroy(JNIEnv *jni, jclass clazz
     const bool exitOnDestroy = localPtr->exitOnDestroy;
 
 	// First kill the VrThread.
-	localPtr->StopVrThread();
+    localPtr->stopVrThread();
 	// Then delete the VrAppInterface derived class.
-	delete localPtr->appInterface;
+    delete localPtr->appInterface();
 	// Last delete AppLocal.
 	delete localPtr;
 
@@ -190,7 +190,7 @@ void Java_com_vrseen_nervgear_VrActivity_nativeJoypadAxis(JNIEnv *jni, jclass cl
 	// Suspend input until OneTimeInit() has finished to avoid overflowing the message queue on long loads.
     if (local->oneTimeInitCalled)
 	{
-        local->GetMessageQueue().PostPrintf("joy %f %f %f %f", lx, ly, rx, ry);
+        local->messageQueue().PostPrintf("joy %f %f %f %f", lx, ly, rx, ry);
 	}
 }
 
@@ -201,7 +201,7 @@ void Java_com_vrseen_nervgear_VrActivity_nativeTouch(JNIEnv *jni, jclass clazz,
 	// Suspend input until OneTimeInit() has finished to avoid overflowing the message queue on long loads.
     if (local->oneTimeInitCalled)
 	{
-        local->GetMessageQueue().PostPrintf("touch %i %f %f", action, x, y);
+        local->messageQueue().PostPrintf("touch %i %f %f", action, x, y);
 	}
 }
 
@@ -212,7 +212,7 @@ void Java_com_vrseen_nervgear_VrActivity_nativeKeyEvent(JNIEnv *jni, jclass claz
 	// Suspend input until OneTimeInit() has finished to avoid overflowing the message queue on long loads.
     if (local->oneTimeInitCalled)
 	{
-        local->GetMessageQueue().PostPrintf("key %i %i %i", key, down, repeatCount);
+        local->messageQueue().PostPrintf("key %i %i %i", key, down, repeatCount);
 	}
 }
 
@@ -227,7 +227,7 @@ void Java_com_vrseen_nervgear_VrActivity_nativeNewIntent(JNIEnv *jni, jclass cla
     VString intentMessage = ComposeIntentMessage(utfPackageName, utfUri, utfJson);
     vInfo("nativeNewIntent:" << intentMessage);
     VByteArray utf8Message = intentMessage.toUtf8();
-    ((App *)appPtr)->GetMessageQueue().PostPrintf(utf8Message.data());
+    ((App *)appPtr)->messageQueue().PostPrintf(utf8Message.data());
 }
 
 }	// extern "C"
@@ -274,25 +274,25 @@ jlong VrAppInterface::SetActivity(JNIEnv * jni, jclass clazz, jobject activity, 
         new App(*jni, activity, *this);
 
 		// Start the VrThread and wait for it to have initialized.
-        static_cast< App * >(app)->StartVrThread();
-        static_cast< App * >(app)->SyncVrThread();
+        static_cast< App * >(app)->startVrThread();
+        static_cast< App * >(app)->syncVrThread();
 	}
 	else
 	{	// Just update the activity object.
         LOG("Update AppLocal(%p %p %p)", jni, activity, this);
-        if (static_cast< App * >(app)->javaObject != nullptr)
+        if (static_cast< App * >(app)->javaObject() != nullptr)
 		{
-            jni->DeleteGlobalRef(static_cast< App * >(app)->javaObject);
+            jni->DeleteGlobalRef(static_cast< App * >(app)->javaObject());
 		}
-        static_cast< App * >(app)->javaObject = jni->NewGlobalRef(activity);
-        static_cast< App * >(app)->VrModeParms.ActivityObject = static_cast< App * >(app)->javaObject;
+        static_cast< App * >(app)->javaObject() = jni->NewGlobalRef(activity);
+        static_cast< App * >(app)->VrModeParms.ActivityObject = static_cast< App * >(app)->javaObject();
 	}
 
 	// Send the intent and wait for it to complete.
     VString intentMessage = ComposeIntentMessage(utfFromPackageString, utfUriString, utfJsonString);
     VByteArray utf8Intent = intentMessage.toUtf8();
-    static_cast< App * >(app)->GetMessageQueue().PostPrintf(utf8Intent.data());
-    static_cast< App * >(app)->SyncVrThread();
+    static_cast< App * >(app)->messageQueue().PostPrintf(utf8Intent.data());
+    static_cast< App * >(app)->syncVrThread();
 
 	return (jlong)app;
 }
@@ -564,6 +564,8 @@ struct App::Private
     int errorTextureSize;
     double errorMessageEndTime;
 
+    jobject javaObject;
+    VrAppInterface *appInterface;
 
     Private(App *self)
         : self(self)
@@ -634,6 +636,8 @@ struct App::Private
         , storagePaths(nullptr)
         , errorTextureSize(0)
         , errorMessageEndTime(-1.0)
+        , javaObject(nullptr)
+        , appInterface(nullptr)
     {
     }
 
@@ -642,7 +646,7 @@ struct App::Private
         defaultFont = BitmapFont::Create();
 
         VString fontName;
-        VrLocale::GetString(self->GetVrJni(), self->GetJavaObject(), "@string/font_name", "efigs.fnt", fontName);
+        VrLocale::GetString(vrJni, javaObject, "@string/font_name", "efigs.fnt", fontName);
         fontName.prepend("res/raw/");
         if (!defaultFont->Load(packageCodePath, fontName))
         {
@@ -651,14 +655,14 @@ struct App::Private
             if (setDefaultLocaleId != nullptr)
             {
                 LOG("AppLocal::Init CallObjectMethod");
-                vrJni->CallVoidMethod(self->javaObject, setDefaultLocaleId);
+                vrJni->CallVoidMethod(javaObject, setDefaultLocaleId);
                 if (vrJni->ExceptionOccurred())
                 {
                     vrJni->ExceptionClear();
                     WARN("Exception occurred in setDefaultLocale");
                 }
                 // re-get the font name for the new locale
-                VrLocale::GetString(self->GetVrJni(), self->GetJavaObject(), "@string/font_name", "efigs.fnt", fontName);
+                VrLocale::GetString(vrJni, javaObject, "@string/font_name", "efigs.fnt", fontName);
                 fontName.prepend("res/raw/");
                 // try to load the font
                 if (!defaultFont->Load(packageCodePath, fontName))
@@ -725,8 +729,6 @@ App *vApp = nullptr;
 App::App(JNIEnv &jni, jobject activityObject, VrAppInterface &interface)
     : exitOnDestroy(true)
     , oneTimeInitCalled(false)
-    , javaObject(nullptr)
-    , appInterface(nullptr)
     , d(new Private(this))
 {
     d->uiJni = &jni;
@@ -763,12 +765,12 @@ App::App(JNIEnv &jni, jobject activityObject, VrAppInterface &interface)
 	VrModeParms.GpuLevel = 2;
 	VrModeParms.GameThreadTid = 0;
 
-    javaObject = d->uiJni->NewGlobalRef(activityObject);
+    d->javaObject = d->uiJni->NewGlobalRef(activityObject);
 
 	// A difficulty with JNI is that we can't resolve our (non-Android) package
 	// classes on other threads, so lookup everything we need right now.
-    d->vrActivityClass = GetGlobalClassReference(activityClassName);
-    d->vrLibClass = GetGlobalClassReference(vrLibClassName);
+    d->vrActivityClass = getGlobalClassReference(activityClassName);
+    d->vrLibClass = getGlobalClassReference(vrLibClassName);
 
     VrLocale::VrActivityClass = d->vrActivityClass;
 
@@ -778,7 +780,7 @@ App::App(JNIEnv &jni, jobject activityObject, VrAppInterface &interface)
     d->playSoundPoolSoundMethodId = d->GetMethodID("playSoundPoolSound", "(Ljava/lang/String;)V");
 
     jmethodID isHybridAppMethodId = d->GetStaticMethodID(d->vrLibClass, "isHybridApp", "(Landroid/app/Activity;)Z");
-    bool const isHybridApp = jni.CallStaticBooleanMethod(d->vrLibClass, isHybridAppMethodId, javaObject);
+    bool const isHybridApp = jni.CallStaticBooleanMethod(d->vrLibClass, isHybridAppMethodId, d->javaObject);
 
     exitOnDestroy = !isHybridApp;
 
@@ -794,11 +796,11 @@ App::App(JNIEnv &jni, jobject activityObject, VrAppInterface &interface)
     d->isTime24HourFormatId = d->GetStaticMethodID(d->vrLibClass, "isTime24HourFormat", "(Landroid/app/Activity;)Z");
 
 	// Get the path to the .apk and package name
-	OpenApplicationPackage();
+    openApplicationPackage();
 
 	// Hook the App and AppInterface together
-    appInterface = &interface;
-	appInterface->app = this;
+    d->appInterface = &interface;
+    d->appInterface->app = this;
 
 	// Load user profile data relevant to rendering
     VUserProfile profile;
@@ -824,9 +826,9 @@ App::~App()
 	UnRegisterConsoleFunctions();
 	ShutdownConsole();
 
-    if (javaObject != 0)
+    if (d->javaObject != 0)
 	{
-        d->uiJni->DeleteGlobalRef(javaObject);
+        d->uiJni->DeleteGlobalRef(d->javaObject);
 	}
 
     if (d->storagePaths != nullptr)
@@ -838,7 +840,7 @@ App::~App()
     delete d;
 }
 
-void App::StartVrThread()
+void App::startVrThread()
 {
     LOG("StartVrThread");
 
@@ -849,7 +851,7 @@ void App::StartVrThread()
 	}
 }
 
-void App::StopVrThread()
+void App::stopVrThread()
 {
     LOG("StopVrThread");
 
@@ -861,13 +863,13 @@ void App::StopVrThread()
 	}
 }
 
-void App::SyncVrThread()
+void App::syncVrThread()
 {
     d->vrMessageQueue.SendPrintf("sync ");
     d->vrThreadSynced = true;
 }
 
-VMessageQueue & App::GetMessageQueue()
+VMessageQueue & App::messageQueue()
 {
     return d->vrMessageQueue;
 }
@@ -879,7 +881,7 @@ void App::TtjCommand(JNIEnv *jni, const char * commandString)
     if (MatchesHead("sound ", commandString))
 	{
         jstring cmdString = JniUtils::Convert(jni, commandString + 6);
-        jni->CallVoidMethod(javaObject, d->playSoundPoolSoundMethodId, cmdString);
+        jni->CallVoidMethod(d->javaObject, d->playSoundPoolSoundMethodId, cmdString);
         jni->DeleteLocalRef(cmdString);
 		return;
 	}
@@ -887,17 +889,17 @@ void App::TtjCommand(JNIEnv *jni, const char * commandString)
     if (MatchesHead("toast ", commandString))
 	{
         jstring cmdString = JniUtils::Convert(jni, commandString + 6);
-        jni->CallVoidMethod(javaObject, d->createVrToastMethodId, cmdString);
+        jni->CallVoidMethod(d->javaObject, d->createVrToastMethodId, cmdString);
         jni->DeleteLocalRef(cmdString);
 	    return;
 	}
 
     if (MatchesHead("finish ", commandString)) {
-        jni->CallVoidMethod(javaObject, d->finishActivityMethodId);
+        jni->CallVoidMethod(d->javaObject, d->finishActivityMethodId);
 	}
 }
 
-void App::CreateToast(const char * fmt, ...)
+void App::createToast(const char * fmt, ...)
 {
 	char bigBuffer[4096];
 	va_list	args;
@@ -910,7 +912,7 @@ void App::CreateToast(const char * fmt, ...)
     d->ttj.GetMessageQueue().PostPrintf("toast %s", bigBuffer);
 }
 
-void App::PlaySound(const char * name)
+void App::playSound(const char * name)
 {
 	// Get sound from SoundManager
 	VString soundFile;
@@ -928,25 +930,25 @@ void App::PlaySound(const char * name)
 	}
 }
 
-void App::ReadFileFromApplicationPackage(const char * nameInZip, uint &length, void * & buffer)
+void App::readFileFromApplicationPackage(const char * nameInZip, uint &length, void * & buffer)
 {
     const VApkFile &apk = VApkFile::CurrentApkFile();
     apk.read(nameInZip, buffer, length);
 }
 
-void App::OpenApplicationPackage()
+void App::openApplicationPackage()
 {
-    d->packageCodePath = JniUtils::GetPackageCodePath(d->uiJni, d->vrActivityClass, javaObject);
-    d->packageName = JniUtils::GetCurrentPackageName(d->uiJni, javaObject);
+    d->packageCodePath = JniUtils::GetPackageCodePath(d->uiJni, d->vrActivityClass, d->javaObject);
+    d->packageName = JniUtils::GetCurrentPackageName(d->uiJni, d->javaObject);
 }
 
-VString App::GetInstalledPackagePath(const char * packageName) const
+VString App::getInstalledPackagePath(const char * packageName) const
 {
     jmethodID getInstalledPackagePathId = d->GetMethodID("getInstalledPackagePath", "(Ljava/lang/String;)Ljava/lang/String;");
     if (getInstalledPackagePathId != nullptr)
 	{
         JavaString packageNameObj(d->uiJni, packageName);
-        VString resultStr = JniUtils::Convert(d->uiJni, static_cast< jstring >(d->uiJni->CallObjectMethod(javaObject, getInstalledPackagePathId, packageNameObj.toJString())));
+        VString resultStr = JniUtils::Convert(d->uiJni, static_cast< jstring >(d->uiJni->CallObjectMethod(d->javaObject, getInstalledPackagePathId, packageNameObj.toJString())));
         if (!d->uiJni->ExceptionOccurred()) {
             return resultStr;
 		}
@@ -954,7 +956,7 @@ VString App::GetInstalledPackagePath(const char * packageName) const
 	return VString();
 }
 
-jclass App::GetGlobalClassReference(const char * className) const
+jclass App::getGlobalClassReference(const char * className) const
 {
     jclass lc = d->uiJni->FindClass(className);
     if (lc == 0)
@@ -1010,7 +1012,7 @@ static const char* vertexShaderSource =
  * The Java VM must be attached to this thread to allow SurfaceTexture
  * creation.
  */
-void App::InitGlObjects()
+void App::initGlObjects()
 {
     d->vrParms = DefaultVrParmsForRenderer(d->eglr);
 
@@ -1119,7 +1121,7 @@ Vector3f ViewRight(const Matrix4f & view)
     return Vector3f(view.M[0][0], view.M[1][0], view.M[2][0]);
 }
 
-void App::SetVrModeParms(ovrModeParms parms)
+void App::setVrModeParms(ovrModeParms parms)
 {
     if (d->OvrMobile)
 	{
@@ -1133,9 +1135,9 @@ void App::SetVrModeParms(ovrModeParms parms)
 	}
 }
 
-void App::Pause()
+void App::pause()
 {
-	appInterface->Paused();
+    d->appInterface->Paused();
 
     ovr_LeaveVrMode(d->OvrMobile);
 }
@@ -1148,7 +1150,7 @@ void App::Pause()
  * On pressing the power button, pause/resume happens without destroying
  * the window.
  */
-void App::Resume()
+void App::resume()
 {
     DROIDLOG("OVRTimer", "AppLocal::Resume");
 
@@ -1163,10 +1165,10 @@ void App::Resume()
         FAIL("eglMakeCurrent failed: %s", EglErrorString());
 	}
 
-	VrModeParms.ActivityObject = javaObject;
+    VrModeParms.ActivityObject = d->javaObject;
 
 	// Allow the app to override
-    appInterface->ConfigureVrMode(VrModeParms);
+    d->appInterface->ConfigureVrMode(VrModeParms);
 
 	// Reload local preferences, in case we are coming back from a
 	// switch to the dashboard that changed them.
@@ -1203,12 +1205,12 @@ void App::Resume()
 	}
 
 	// Clear cursor trails
-    GetGazeCursor().HideCursorForFrames(10);
+    gazeCursor().HideCursorForFrames(10);
 
 	// Start up TimeWarp and the various performance options
     d->OvrMobile = ovr_EnterVrMode(VrModeParms, &d->hmdInfo);
 
-	appInterface->Resumed();
+    d->appInterface->Resumed();
 }
 
 // Always make the panel upright, even if the head was tilted when created
@@ -1244,7 +1246,7 @@ Matrix4f PanelMatrix(const Matrix4f & lastViewMatrix, const float popupDistance,
  * Process commands sent over the message queue for the VR thread.
  *
  */
-void App::Command(const char *msg)
+void App::command(const char *msg)
 {
 	// Always include the space in MatchesHead to prevent problems
 	// with commands that have matching prefixes.
@@ -1281,7 +1283,7 @@ void App::Command(const char *msg)
 	{
 		int	key, down, repeatCount;
         sscanf(msg, "key %i %i %i", &key, &down, &repeatCount);
-        KeyEvent(key, down, repeatCount);
+        keyEvent(key, down, repeatCount);
 		// We simply return because KeyEvent will call VrAppInterface->OnKeyEvent to give the app a
 		// chance to handle and consume the key before VrLib gets it. VrAppInterface needs to get the
 		// key first and have a chance to consume it completely because keys are context sensitive
@@ -1315,13 +1317,13 @@ void App::Command(const char *msg)
 
 		// Set the colorspace on the window
         d->windowSurface = EGL_NO_SURFACE;
-        if (appInterface->wantSrgbFramebuffer())
+        if (d->appInterface->wantSrgbFramebuffer())
 		{
 			attribs[numAttribs++] = EGL_GL_COLORSPACE_KHR;
 			attribs[numAttribs++] = EGL_GL_COLORSPACE_SRGB_KHR;
 		}
 		// Ask for TrustZone rendering support
-        if (appInterface->GetWantProtectedFramebuffer())
+        if (d->appInterface->GetWantProtectedFramebuffer())
 		{
 			attribs[numAttribs++] = EGL_PROTECTED_CONTENT_EXT;
 			attribs[numAttribs++] = EGL_TRUE;
@@ -1350,8 +1352,8 @@ void App::Command(const char *msg)
 		}
 		else
 		{
-            d->framebufferIsSrgb = appInterface->wantSrgbFramebuffer();
-            d->framebufferIsProtected = appInterface->GetWantProtectedFramebuffer();
+            d->framebufferIsSrgb = d->appInterface->wantSrgbFramebuffer();
+            d->framebufferIsProtected = d->appInterface->GetWantProtectedFramebuffer();
 		}
         LOG("NativeWindow %p gives surface %p", d->nativeWindow, d->windowSurface);
         LOG("FramebufferIsSrgb: %s", d->framebufferIsSrgb ? "true" : "false");
@@ -1365,12 +1367,12 @@ void App::Command(const char *msg)
         d->createdSurface = true;
 
 		// Let the client app setup now
-		appInterface->WindowCreated();
+        d->appInterface->WindowCreated();
 
 		// Resume
         if (!d->paused)
 		{
-			Resume();
+            resume();
 		}
 		return;
 	}
@@ -1380,7 +1382,7 @@ void App::Command(const char *msg)
         LOG("surfaceDestroyed");
 
 		// Let the client app shutdown first.
-		appInterface->WindowDestroyed();
+        d->appInterface->WindowDestroyed();
 
 		// Handle it ourselves.
         if (eglMakeCurrent(d->eglr.display, d->eglr.pbufferSurface, d->eglr.pbufferSurface,
@@ -1408,7 +1410,7 @@ void App::Command(const char *msg)
         if (!d->paused)
 		{
             d->paused = true;
-			Pause();
+            pause();
 		}
 	}
 
@@ -1420,7 +1422,7 @@ void App::Command(const char *msg)
 		// a window yet.  They will be done when the window is created.
         if (d->windowSurface != EGL_NO_SURFACE)
 		{
-			Resume();
+            resume();
 		}
 		else
 		{
@@ -1464,7 +1466,7 @@ void App::Command(const char *msg)
 
 		// when the PlatformActivity is launched, this is how it gets its command to start
 		// a particular UI.
-        appInterface->NewIntent(fromPackageName, jsonStart, uri);
+        d->appInterface->NewIntent(fromPackageName, jsonStart, uri);
 
 		return;
 	}
@@ -1502,7 +1504,7 @@ void App::Command(const char *msg)
 	}
 
 	// Pass it on to the client app.
-    appInterface->Command(msg);
+    d->appInterface->Command(msg);
 }
 
 void ToggleScreenColor()
@@ -1521,7 +1523,7 @@ void ToggleScreenColor()
     glDisable(GL_WRITEONLY_RENDERING_QCOM);
 }
 
-void App::InterpretTouchpad(VrInput & input)
+void App::interpretTouchpad(VrInput & input)
 {
 	// 1) Down -> Up w/ Motion = Slide
 	// 2) Down -> Up w/out Motion -> Timeout = Single Tap
@@ -1661,7 +1663,7 @@ void App::InterpretTouchpad(VrInput & input)
 	}
 }
 
-void App::FrameworkButtonProcessing(const VrInput & input)
+void App::frameworkButtonProcessing(const VrInput & input)
 {
 	// Toggle calibration lines
 	bool const rightTrigger = input.buttonState & BUTTON_RIGHT_TRIGGER;
@@ -1735,12 +1737,12 @@ void App::FrameworkButtonProcessing(const VrInput & input)
             if (d->swapParms.WarpOptions & SWAP_OPTION_USE_SLICED_WARP)
 			{
                 d->swapParms.WarpOptions &= ~SWAP_OPTION_USE_SLICED_WARP;
-                CreateToast("eye warp");
+                createToast("eye warp");
 			}
 			else
 			{
                 d->swapParms.WarpOptions |= SWAP_OPTION_USE_SLICED_WARP;
-                CreateToast("slice warp");
+                createToast("slice warp");
 			}
 		}
 
@@ -1751,26 +1753,26 @@ void App::FrameworkButtonProcessing(const VrInput & input)
             if (input.buttonPressed & BUTTON_DPAD_LEFT)
 			{
                 d->swapParms.PreScheduleSeconds -= 0.001f;
-                CreateToast("Schedule: %f", d->swapParms.PreScheduleSeconds);
+                createToast("Schedule: %f", d->swapParms.PreScheduleSeconds);
 			}
             if (input.buttonPressed & BUTTON_DPAD_RIGHT)
 			{
                 d->swapParms.PreScheduleSeconds += 0.001f;
-                CreateToast("Schedule: %f", d->swapParms.PreScheduleSeconds);
+                createToast("Schedule: %f", d->swapParms.PreScheduleSeconds);
 			}
             if (input.buttonPressed & BUTTON_DPAD_UP)
 			{
 				calibrateFovScale -= 0.01f;
-                CreateToast("calibrateFovScale: %f", calibrateFovScale);
-				Pause();
-				Resume();
+                createToast("calibrateFovScale: %f", calibrateFovScale);
+                pause();
+                resume();
 			}
             if (input.buttonPressed & BUTTON_DPAD_DOWN)
 			{
 				calibrateFovScale += 0.01f;
-                CreateToast("calibrateFovScale: %f", calibrateFovScale);
-				Pause();
-				Resume();
+                createToast("calibrateFovScale: %f", calibrateFovScale);
+                pause();
+                resume();
 			}
 		}
 	}
@@ -1782,7 +1784,7 @@ void App::FrameworkButtonProcessing(const VrInput & input)
  * Continuously renders frames when active, checking for commands
  * from the main thread between frames.
  */
-void App::VrThreadFunction()
+void App::vrThreadFunction()
 {
 	// Set the name that will show up in systrace
     pthread_setname_np(pthread_self(), "NervGear::VrThread");
@@ -1818,7 +1820,7 @@ void App::VrThreadFunction()
                 contextPriority);
 
 		// Create our GL data objects
-		InitGlObjects();
+        initGlObjects();
 
         d->eyeTargets = new EyeBuffers;
         d->guiSys = new OvrGuiSysLocal;
@@ -1838,17 +1840,17 @@ void App::VrThreadFunction()
 
         d->soundManager.LoadSoundAssets();
 
-		GetDebugLines().Init();
+        debugLines().Init();
 
-		GetGazeCursor().Init();
+        gazeCursor().Init();
 
-		GetVRMenuMgr().init();
+        vrMenuMgr().init();
 
-        GetGuiSys().init(this, GetVRMenuMgr(), *d->defaultFont);
+        guiSys().init(this, vrMenuMgr(), *d->defaultFont);
 
-        d->volumePopup = OvrVolumePopup::Create(this, GetVRMenuMgr(), *d->defaultFont);
+        d->volumePopup = OvrVolumePopup::Create(this, vrMenuMgr(), *d->defaultFont);
 
-        ovr_InitLocalPreferences(d->vrJni, javaObject);
+        ovr_InitLocalPreferences(d->vrJni, d->javaObject);
 
         d->lastTouchpadTime = ovr_GetTimeInSeconds();
 	}
@@ -1861,7 +1863,7 @@ void App::VrThreadFunction()
 	{
         //SPAM("FRAME START");
 
-		GetGazeCursor().BeginFrame();
+        gazeCursor().BeginFrame();
 
 		// Process incoming messages until queue is empty
         for (; ;)
@@ -1871,7 +1873,7 @@ void App::VrThreadFunction()
 			{
 				break;
 			}
-            Command(msg);
+            command(msg);
             free((void *)msg);
 		}
 
@@ -1904,7 +1906,7 @@ void App::VrThreadFunction()
 					// for reorient, we recenter yaw natively, then pass the event along so that the client
 					// application can also handle the event (for instance, to reposition menus)
                     LOG("VtThreadFunction: Acting on System Activity reorient event.");
-                    RecenterYaw(false);
+                    recenterYaw(false);
 				}
 				else
 				{
@@ -1957,7 +1959,7 @@ void App::VrThreadFunction()
 		// Let the client app initialize only once by calling OneTimeInit() when the windowSurface is valid.
         if (!oneTimeInitCalled)
 		{
-            if (appInterface->ShouldShowLoadingIcon())
+            if (d->appInterface->ShouldShowLoadingIcon())
 			{
                 const ovrTimeWarpParms warpSwapLoadingIconParms = InitTimeWarpParms(WARP_INIT_LOADING_ICON, d->loadingIconTexId);
                 ovr_WarpSwap(d->OvrMobile, &warpSwapLoadingIconParms);
@@ -1965,7 +1967,7 @@ void App::VrThreadFunction()
             vInfo("launchIntentJSON:" << d->launchIntentJSON);
             vInfo("launchIntentURI:" << d->launchIntentURI);
 
-            appInterface->OneTimeInit(d->launchIntentFromPackage.toCString(), d->launchIntentJSON.toCString(), d->launchIntentURI.toCString());
+            d->appInterface->OneTimeInit(d->launchIntentFromPackage.toCString(), d->launchIntentJSON.toCString(), d->launchIntentURI.toCString());
             oneTimeInitCalled = true;
 		}
 
@@ -1995,13 +1997,13 @@ void App::VrThreadFunction()
 		}
 
 		// Synthesize swipe gestures
-        InterpretTouchpad(d->vrFrame.Input);
+        interpretTouchpad(d->vrFrame.Input);
 
         if (d->recenterYawFrameStart != 0)
 		{
 			// Perform a reorient before sensor data is read.  Allows apps to reorient without having invalid orientation information for that frame.
 			// Do a warp swap black on the frame the recenter started.
-            RecenterYaw(d->recenterYawFrameStart == (d->vrFrame.FrameNumber + 1));  // vrFrame.FrameNumber hasn't been incremented yet, so add 1.
+            recenterYaw(d->recenterYawFrameStart == (d->vrFrame.FrameNumber + 1));  // vrFrame.FrameNumber hasn't been incremented yet, so add 1.
 		}
 
 		// Get the latest head tracking state, predicted ahead to the midpoint of the time
@@ -2028,10 +2030,10 @@ void App::VrThreadFunction()
         d->lastVrFrame = d->vrFrame;
 
 		// resend any debug lines that have expired
-        GetDebugLines().BeginFrame(d->vrFrame.FrameNumber);
+        debugLines().BeginFrame(d->vrFrame.FrameNumber);
 
 		// reset any VR menu submissions from previous frame
-		GetVRMenuMgr().beginFrame();
+        vrMenuMgr().beginFrame();
 
 #if 0
 		// Joypad latency test
@@ -2090,22 +2092,22 @@ void App::VrThreadFunction()
 		}
 #endif
 
-        FrameworkButtonProcessing(d->vrFrame.Input);
+        frameworkButtonProcessing(d->vrFrame.Input);
 
         KeyState::eKeyEventType event = d->backKeyState.Update(ovr_GetTimeInSeconds());
         if (event != KeyState::KEY_EVENT_NONE)
 		{
             //LOG("BackKey: event %s", KeyState::EventNames[ event ]);
 			// always allow the gaze cursor to peek at the event so it can start the gaze timer if necessary
-            if (JniUtils::GetCurrentActivityName(d->vrJni, javaObject).icompare(PUI_CLASS_NAME) != 0) {
+            if (JniUtils::GetCurrentActivityName(d->vrJni, d->javaObject).icompare(PUI_CLASS_NAME) != 0) {
 				// update the gaze cursor timer
                 if (event == KeyState::KEY_EVENT_DOWN)
 				{
-                    GetGazeCursor().StartTimer(GetBackKeyState().GetLongPressTime(), GetBackKeyState().GetDoubleTapTime());
+                    gazeCursor().StartTimer(backKeyState().GetLongPressTime(), backKeyState().GetDoubleTapTime());
 				}
                 else if (event == KeyState::KEY_EVENT_DOUBLE_TAP || event == KeyState::KEY_EVENT_SHORT_PRESS)
 				{
-					GetGazeCursor().CancelTimer();
+                    gazeCursor().CancelTimer();
 				}
                 else if (event == KeyState::KEY_EVENT_LONG_PRESS)
 				{
@@ -2115,12 +2117,12 @@ void App::VrThreadFunction()
 			}
 
 			// let the menu handle it if it's open
-            bool consumedKey = GetGuiSys().onKeyEvent(this, AKEYCODE_BACK, event);
+            bool consumedKey = guiSys().onKeyEvent(this, AKEYCODE_BACK, event);
 
 			// pass to the app if nothing handled it before this
             if (!consumedKey)
 			{
-                consumedKey = appInterface->onKeyEvent(AKEYCODE_BACK, event);
+                consumedKey = d->appInterface->onKeyEvent(AKEYCODE_BACK, event);
 			}
 			// if nothing consumed the key and it's a short-press, exit the application to OculusHome
             if (!consumedKey)
@@ -2162,7 +2164,7 @@ void App::VrThreadFunction()
 			fp.AlignHoriz = HORIZONTAL_CENTER;
 			fp.Billboard = true;
 			fp.TrackRoll = false;
-            GetWorldFontSurface().DrawTextBillboarded3Df(GetDefaultFont(), fp, d->fpsPointTracker.GetCurPosition(),
+            worldFontSurface().DrawTextBillboarded3Df(defaultFont(), fp, d->fpsPointTracker.GetCurPosition(),
                     0.8f, Vector4f(1.0f, 0.0f, 0.0f, 1.0f), "%.1f fps", LastFrameRate);
 			LastFrameTime = currentFrameTime;
 		}
@@ -2183,14 +2185,14 @@ void App::VrThreadFunction()
 			fp.AlignVert = VERTICAL_CENTER;
 			fp.Billboard = true;
 			fp.TrackRoll = false;
-            GetWorldFontSurface().DrawTextBillboarded3Df(GetDefaultFont(), fp, d->infoTextPointTracker.GetCurPosition(),
+            worldFontSurface().DrawTextBillboarded3Df(defaultFont(), fp, d->infoTextPointTracker.GetCurPosition(),
                     1.0f, d->infoTextColor, d->infoText.toCString());
 		}
 
 		// Main loop logic / draw code
         if (!d->readyToExit)
 		{
-            this->d->lastViewMatrix = appInterface->Frame(d->vrFrame);
+            this->d->lastViewMatrix = d->appInterface->Frame(d->vrFrame);
 		}
 
         ovr_HandleDeviceStateChanges(d->OvrMobile);
@@ -2225,15 +2227,15 @@ void App::VrThreadFunction()
             FreeTexture(d->errorTexture);
 		}
 
-		appInterface->OneTimeShutdown();
+        d->appInterface->OneTimeShutdown();
 
-        GetGuiSys().shutdown(GetVRMenuMgr());
+        guiSys().shutdown(vrMenuMgr());
 
-		GetVRMenuMgr().shutdown();
+        vrMenuMgr().shutdown();
 
-		GetGazeCursor().Shutdown();
+        gazeCursor().Shutdown();
 
-		GetDebugLines().Shutdown();
+        debugLines().Shutdown();
 
         d->shutdownFonts();
 
@@ -2269,7 +2271,7 @@ void App::VrThreadFunction()
 // Shim to call a C++ object from a posix thread start.
 void *App::ThreadStarter(void * parm)
 {
-    ((App *)parm)->VrThreadFunction();
+    ((App *)parm)->vrThreadFunction();
 
     return nullptr;
 }
@@ -2277,7 +2279,7 @@ void *App::ThreadStarter(void * parm)
 /*
  * GetEyeParms()
  */
-EyeParms App::GetEyeParms()
+EyeParms App::eyeParms()
 {
     return d->vrParms;
 }
@@ -2285,7 +2287,7 @@ EyeParms App::GetEyeParms()
 /*
  * SetVrParms()
  */
-void App::SetEyeParms(const EyeParms parms)
+void App::setEyeParms(const EyeParms parms)
 {
     d->vrParms = parms;
 }
@@ -2325,7 +2327,7 @@ static int buttonMappings[] = {
 static float test = 0.0f;
 #endif
 
-void App::KeyEvent(const int keyCode, const bool down, const int repeatCount)
+void App::keyEvent(const int keyCode, const bool down, const int repeatCount)
 {
 	// the back key is special because it has to handle long-press and double-tap
     if (keyCode == AKEYCODE_BACK)
@@ -2341,13 +2343,13 @@ void App::KeyEvent(const int keyCode, const bool down, const int repeatCount)
 	bool consumedKey = false;
     if (repeatCount == 0)
 	{
-        consumedKey = GetGuiSys().onKeyEvent(this, keyCode, down ? KeyState::KEY_EVENT_DOWN : KeyState::KEY_EVENT_UP);
+        consumedKey = guiSys().onKeyEvent(this, keyCode, down ? KeyState::KEY_EVENT_DOWN : KeyState::KEY_EVENT_UP);
 	}
 
 	// for all other keys, allow VrAppInterface the chance to handle and consume the key first
     if (!consumedKey)
 	{
-        consumedKey = appInterface->onKeyEvent(keyCode, down ? KeyState::KEY_EVENT_DOWN : KeyState::KEY_EVENT_UP);
+        consumedKey = d->appInterface->onKeyEvent(keyCode, down ? KeyState::KEY_EVENT_DOWN : KeyState::KEY_EVENT_UP);
 	}
 
 	// ALL VRLIB KEY HANDLING OTHER THAN APP MENU SHOULD GO HERE
@@ -2376,33 +2378,33 @@ void App::KeyEvent(const int keyCode, const bool down, const int repeatCount)
             if (repeatCount == 0 && down) // first down only
 			{
                 d->eyeTargets->ScreenShot();
-                CreateToast("screenshot");
+                createToast("screenshot");
 				return;
 			}
 		}
         else if (keyCode == AKEYCODE_F && down && repeatCount == 0)
 		{
-            SetShowFPS(!GetShowFPS());
+            setShowFPS(!showFPS());
 			return;
 		}
         else if (keyCode == AKEYCODE_COMMA && down && repeatCount == 0)
 		{
 			float const IPD_MIN_CM = 0.0f;
             d->viewParms.InterpupillaryDistance = Alg::Max(IPD_MIN_CM * 0.01f, d->viewParms.InterpupillaryDistance - IPD_STEP);
-            ShowInfoText(1.0f, "%.3f", d->viewParms.InterpupillaryDistance);
+            showInfoText(1.0f, "%.3f", d->viewParms.InterpupillaryDistance);
 			return;
 		}
         else if (keyCode == AKEYCODE_PERIOD && down && repeatCount == 0)
 		{
 			float const IPD_MAX_CM = 8.0f;
             d->viewParms.InterpupillaryDistance = Alg::Min(IPD_MAX_CM * 0.01f, d->viewParms.InterpupillaryDistance + IPD_STEP);
-            ShowInfoText(1.0f, "%.3f", d->viewParms.InterpupillaryDistance);
+            showInfoText(1.0f, "%.3f", d->viewParms.InterpupillaryDistance);
 			return;
 		}
         else if (keyCode == AKEYCODE_C && down && repeatCount == 0)
 		{
-			bool enabled = !GetComfortModeEnabled();
-            SetComfortModeEnabled(enabled);
+            bool enabled = !isComfortModeEnabled();
+            setComfortModeEnabled(enabled);
 		}
 #if defined(TEST_TIMEWARP_WATCHDOG)	// test TimeWarp sched_fifo watchdog
         else if (keyCode == AKEYCODE_T && down && repeatCount == 0)
@@ -2438,7 +2440,7 @@ void App::KeyEvent(const int keyCode, const bool down, const int repeatCount)
 	}
 }
 
-Matrix4f App::MatrixInterpolation(const Matrix4f & startMatrix, const Matrix4f & endMatrix, double t)
+Matrix4f App::matrixInterpolation(const Matrix4f & startMatrix, const Matrix4f & endMatrix, double t)
 {
 	Matrix4f result;
 	Quat<float> startQuat = (Quat<float>) startMatrix ;
@@ -2532,185 +2534,185 @@ Matrix4f App::MatrixInterpolation(const Matrix4f & startMatrix, const Matrix4f &
 	return result;
 }
 
-OvrGuiSys & App::GetGuiSys()
+OvrGuiSys & App::guiSys()
 {
     return *d->guiSys;
 }
-OvrGazeCursor & App::GetGazeCursor()
+OvrGazeCursor & App::gazeCursor()
 {
     return *d->gazeCursor;
 }
-BitmapFont & App::GetDefaultFont()
+BitmapFont & App::defaultFont()
 {
     return *d->defaultFont;
 }
-BitmapFontSurface & App::GetWorldFontSurface()
+BitmapFontSurface & App::worldFontSurface()
 {
     return *d->worldFontSurface;
 }
-BitmapFontSurface & App::GetMenuFontSurface()
+BitmapFontSurface & App::menuFontSurface()
 {
     return *d->menuFontSurface;
 }   // TODO: this could be in the menu system now
 
-OvrVRMenuMgr & App::GetVRMenuMgr()
+OvrVRMenuMgr & App::vrMenuMgr()
 {
     return *d->vrMenuMgr;
 }
-OvrDebugLines & App::GetDebugLines()
+OvrDebugLines & App::debugLines()
 {
     return *d->debugLines;
 }
-const VStandardPath & App::GetStoragePaths()
+const VStandardPath & App::storagePaths()
 {
     return *d->storagePaths;
 }
-OvrSoundManager & App::GetSoundMgr()
+OvrSoundManager & App::soundMgr()
 {
     return d->soundManager;
 }
 
-bool App::IsGuiOpen() const
+bool App::isGuiOpen() const
 {
     return d->guiSys->isAnyMenuOpen();
 }
 
-bool App::IsTime24HourFormat() const
+bool App::isTime24HourFormat() const
 {
 	bool r = false;
     if (d->isTime24HourFormatId != nullptr)
 	{
-        r = d->vrJni->CallStaticBooleanMethod(d->vrLibClass, d->isTime24HourFormatId, javaObject);
+        r = d->vrJni->CallStaticBooleanMethod(d->vrLibClass, d->isTime24HourFormatId, d->javaObject);
 	}
 	return r;
 }
 
-int App::GetSystemBrightness() const
+int App::systemBrightness() const
 {
 	int cur = 255;
 	// FIXME: this specifically checks for Note4 before calling the function because calling it on other
 	// models right now can break rendering. Eventually this needs to be supported on all models.
     if (d->getSysBrightnessMethodId != nullptr && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0)
 	{
-        cur = d->vrJni->CallStaticIntMethod(d->vrLibClass, d->getSysBrightnessMethodId, javaObject);
+        cur = d->vrJni->CallStaticIntMethod(d->vrLibClass, d->getSysBrightnessMethodId, d->javaObject);
 	}
 	return cur;
 }
 
-void App::SetSystemBrightness(int const v)
+void App::setSystemBrightness(int const v)
 {
     int v2 = Alg::Clamp(v, 0, 255);
 	// FIXME: this specifically checks for Note4 before calling the function because calling it on other
 	// models right now can break rendering. Eventually this needs to be supported on all models.
     if (d->setSysBrightnessMethodId != nullptr && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0)
 	{
-        d->vrJni->CallStaticVoidMethod(d->vrLibClass, d->setSysBrightnessMethodId, javaObject, v2);
+        d->vrJni->CallStaticVoidMethod(d->vrLibClass, d->setSysBrightnessMethodId, d->javaObject, v2);
 	}
 }
 
-bool App::GetComfortModeEnabled() const
+bool App::isComfortModeEnabled() const
 {
 	bool r = true;
     if (d->getComfortViewModeMethodId != nullptr && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0)
 	{
-        r = d->vrJni->CallStaticBooleanMethod(d->vrLibClass, d->getComfortViewModeMethodId, javaObject);
+        r = d->vrJni->CallStaticBooleanMethod(d->vrLibClass, d->getComfortViewModeMethodId, d->javaObject);
 	}
 	return r;
 }
 
-void App::SetComfortModeEnabled(bool const enabled)
+void App::setComfortModeEnabled(bool const enabled)
 {
     if (d->enableComfortViewModeMethodId != nullptr && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0)
 	{
-        d->vrJni->CallStaticVoidMethod(d->vrLibClass, d->enableComfortViewModeMethodId, javaObject, enabled);
+        d->vrJni->CallStaticVoidMethod(d->vrLibClass, d->enableComfortViewModeMethodId, d->javaObject, enabled);
 	}
 }
 
-void App::SetDoNotDisturbMode(bool const enable)
+void App::setDoNotDisturbMode(bool const enable)
 {
     if (d->setDoNotDisturbModeMethodId != nullptr && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0)
 	{
-        d->vrJni->CallStaticVoidMethod(d->vrLibClass, d->setDoNotDisturbModeMethodId, javaObject, enable);
+        d->vrJni->CallStaticVoidMethod(d->vrLibClass, d->setDoNotDisturbModeMethodId, d->javaObject, enable);
 	}
 }
 
-bool App::GetDoNotDisturbMode() const
+bool App::isDoNotDisturbMode() const
 {
 	bool r = false;
     if (d->getDoNotDisturbModeMethodId != nullptr && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0)
 	{
-        r = d->vrJni->CallStaticBooleanMethod(d->vrLibClass, d->getDoNotDisturbModeMethodId, javaObject);
+        r = d->vrJni->CallStaticBooleanMethod(d->vrLibClass, d->getDoNotDisturbModeMethodId, d->javaObject);
 	}
 	return r;
 }
 
-int App::GetWifiSignalLevel() const
+int App::wifiSignalLevel() const
 {
 	int level = ovr_GetWifiSignalLevel();
 	return level;
 }
 
-eWifiState App::GetWifiState() const
+eWifiState App::wifiState() const
 {
 	return ovr_GetWifiState();
 }
 
-int App::GetCellularSignalLevel() const
+int App::cellularSignalLevel() const
 {
 	int level = ovr_GetCellularSignalLevel();
 	return level;
 }
 
-eCellularState App::GetCellularState() const
+eCellularState App::cellularState() const
 {
 	return ovr_GetCellularState();
 }
 
-bool App::IsAirplaneModeEnabled() const
+bool App::isAirplaneModeEnabled() const
 {
 	bool r = false;
     if (d->isAirplaneModeEnabledMethodId != nullptr )
 	{
-        r = d->vrJni->CallStaticBooleanMethod(d->vrLibClass, d->isAirplaneModeEnabledMethodId, javaObject);
+        r = d->vrJni->CallStaticBooleanMethod(d->vrLibClass, d->isAirplaneModeEnabledMethodId, d->javaObject);
 	}
 	return r;
 }
 
-bool App::GetBluetoothEnabled() const
+bool App::isBluetoothEnabled() const
 {
 	bool r = false;
     if (d->getBluetoothEnabledMethodId != nullptr)
 	{
-        r = d->vrJni->CallStaticBooleanMethod(d->vrLibClass, d->getBluetoothEnabledMethodId, javaObject);
+        r = d->vrJni->CallStaticBooleanMethod(d->vrLibClass, d->getBluetoothEnabledMethodId, d->javaObject);
 	}
 	return r;
 }
 
-bool App::IsAsynchronousTimeWarp() const
+bool App::isAsynchronousTimeWarp() const
 {
 	return VrModeParms.AsynchronousTimeWarp;
 }
 
-bool App::GetHasHeadphones() const {
+bool App::hasHeadphones() const {
 	return ovr_GetHeadsetPluggedState();
 }
 
-bool App::GetFramebufferIsSrgb() const
+bool App::framebufferIsSrgb() const
 {
     return d->framebufferIsSrgb;
 }
 
-bool App::GetFramebufferIsProtected() const
+bool App::framebufferIsProtected() const
 {
     return d->framebufferIsProtected;
 }
 
-bool App::GetRenderMonoMode() const
+bool App::renderMonoMode() const
 {
     return d->renderMonoMode;
 }
 
-void App::SetRenderMonoMode(bool const mono)
+void App::setRenderMonoMode(bool const mono)
 {
     d->renderMonoMode = mono;
 }
@@ -2720,117 +2722,117 @@ const VString &App::packageCodePath() const
     return d->packageCodePath;
 }
 
-Matrix4f const & App::GetLastViewMatrix() const
+Matrix4f const & App::lastViewMatrix() const
 {
     return d->lastViewMatrix;
 }
 
-void App::SetLastViewMatrix(Matrix4f const & m)
+void App::setLastViewMatrix(Matrix4f const & m)
 {
     d->lastViewMatrix = m;
 }
 
-EyeParms & App::GetVrParms()
+EyeParms & App::vrParms()
 {
     return d->vrParms;
 }
 
-ovrModeParms App::GetVrModeParms()
+ovrModeParms App::vrModeParms()
 {
 	return VrModeParms;
 }
 
-void App::SetPopupDistance(float const distance)
+void App::setPopupDistance(float const distance)
 {
     d->popupDistance = distance;
 }
 
-float App::GetPopupDistance() const
+float App::popupDistance() const
 {
     return d->popupDistance;
 }
 
-void App::SetPopupScale(float const s)
+void App::setPopupScale(float const s)
 {
     d->popupScale = s;
 }
 
-float App::GetPopupScale() const
+float App::popupScale() const
 {
     return d->popupScale;
 }
 
-bool App::GetPowerSaveActive() const
+bool App::isPowerSaveActive() const
 {
 	return ovr_GetPowerLevelStateThrottled();
 }
 
-int App::GetCpuLevel() const
+int App::cpuLevel() const
 {
 	return VrModeParms.CpuLevel;
 }
 
-int App::GetGpuLevel() const
+int App::gpuLevel() const
 {
 	return VrModeParms.GpuLevel;
 }
 
-int App::GetBatteryLevel() const
+int App::batteryLevel() const
 {
     return d->batteryLevel;
 }
 
-eBatteryStatus App::GetBatteryStatus() const
+eBatteryStatus App::batteryStatus() const
 {
     return d->batteryStatus;
 }
 
-JavaVM	* App::GetJavaVM()
+JavaVM	* App::javaVM()
 {
     return d->javaVM;
 }
 
-JNIEnv * App::GetUiJni()
+JNIEnv * App::uiJni()
 {
     return d->uiJni;
 }
 
-JNIEnv * App::GetVrJni()
+JNIEnv * App::vrJni()
 {
     return d->vrJni;
 }
 
-jobject	& App::GetJavaObject()
+jobject	& App::javaObject()
 {
-	return javaObject;
+    return d->javaObject;
 }
 
-jclass & App::GetVrActivityClass()
+jclass & App::vrActivityClass()
 {
     return d->vrActivityClass;
 }
 
-SurfaceTexture * App::GetDialogTexture()
+SurfaceTexture * App::dialogTexture()
 {
     return d->dialogTexture;
 }
 
-ovrTimeWarpParms const & App::GetSwapParms() const
+ovrTimeWarpParms const & App::swapParms() const
 {
     return d->swapParms;
 }
 
-ovrTimeWarpParms & App::GetSwapParms()
+ovrTimeWarpParms & App::swapParms()
 {
     return d->swapParms;
 }
 
-ovrSensorState const & App::GetSensorForNextWarp() const
+ovrSensorState const & App::sensorForNextWarp() const
 {
     return d->sensorForNextWarp;
 }
 
-void App::SetShowFPS(bool const show)
+void App::setShowFPS(bool const show)
 {
     bool wasShowing = d->showFPS;
     d->showFPS = show;
@@ -2840,27 +2842,27 @@ void App::SetShowFPS(bool const show)
 	}
 }
 
-bool App::GetShowFPS() const
+bool App::showFPS() const
 {
     return d->showFPS;
 }
 
-VrAppInterface * App::GetAppInterface()
+VrAppInterface * App::appInterface()
 {
-	return appInterface;
+    return d->appInterface;
 }
 
-VrViewParms const &	App::GetVrViewParms() const
+VrViewParms const &	App::vrViewParms() const
 {
     return d->viewParms;
 }
 
-void App::SetVrViewParms(VrViewParms const & parms)
+void App::setVrViewParms(VrViewParms const & parms)
 {
     d->viewParms = parms;
 }
 
-void App::ShowInfoText(float const duration, const char * fmt, ...)
+void App::showInfoText(float const duration, const char * fmt, ...)
 {
 	char buffer[1024];
 	va_list args;
@@ -2874,7 +2876,7 @@ void App::ShowInfoText(float const duration, const char * fmt, ...)
     d->infoTextEndFrame = d->vrFrame.FrameNumber + (long long)(duration * 60.0f) + 1;
 }
 
-void App::ShowInfoText(float const duration, Vector3f const & offset, Vector4f const & color, const char * fmt, ...)
+void App::showInfoText(float const duration, Vector3f const & offset, Vector4f const & color, const char * fmt, ...)
 {
 	char buffer[1024];
 	va_list args;
@@ -2891,22 +2893,22 @@ void App::ShowInfoText(float const duration, Vector3f const & offset, Vector4f c
     d->infoTextEndFrame = d->vrFrame.FrameNumber + (long long)(duration * 60.0f) + 1;
 }
 
-KeyState & App::GetBackKeyState()
+KeyState & App::backKeyState()
 {
     return d->backKeyState;
 }
 
-ovrMobile * App::GetOvrMobile()
+ovrMobile * App::getOvrMobile()
 {
     return d->OvrMobile;
 }
 
-void App::SetShowVolumePopup(bool const show)
+void App::setShowVolumePopup(bool const show)
 {
     d->showVolumePopup = show;
 }
 
-bool App::GetShowVolumePopup() const
+bool App::showVolumePopup() const
 {
     return d->showVolumePopup;
 }
@@ -2916,13 +2918,13 @@ const VString &App::packageName() const
     return d->packageName;
 }
 
-bool App::IsWifiConnected() const
+bool App::isWifiConnected() const
 {
     jmethodID isWififConnectedMethodId = JniUtils::GetStaticMethodID(d->vrJni, d->vrLibClass, "isWifiConnected", "(Landroid/app/Activity;)Z");
-    return d->vrJni->CallStaticBooleanMethod(d->vrLibClass, isWififConnectedMethodId, javaObject);
+    return d->vrJni->CallStaticBooleanMethod(d->vrLibClass, isWififConnectedMethodId, d->javaObject);
 }
 
-void App::RecenterYaw(const bool showBlack)
+void App::recenterYaw(const bool showBlack)
 {
     LOG("AppLocal::RecenterYaw");
     if (showBlack)
@@ -2945,15 +2947,15 @@ void App::RecenterYaw(const bool showBlack)
     Matrix4f unrotYawMatrix(Quatf(Axis_Y, -yaw));
     d->lastViewMatrix = d->lastViewMatrix * unrotYawMatrix;
 
-    GetGuiSys().resetMenuOrientations(this, d->lastViewMatrix);
+    guiSys().resetMenuOrientations(this, d->lastViewMatrix);
 }
 
-void App::SetRecenterYawFrameStart(const long long frameNumber)
+void App::setRecenterYawFrameStart(const long long frameNumber)
 {
     d->recenterYawFrameStart = frameNumber;
 }
 
-long long App::GetRecenterYawFrameStart() const
+long long App::recenterYawFrameStart() const
 {
     return d->recenterYawFrameStart;
 }
@@ -2962,11 +2964,11 @@ void ShowFPS(void * appPtr, const char * cmd) {
 	int show = 0;
     sscanf(cmd, "%i", &show);
     OVR_ASSERT(appPtr != nullptr);	// something changed / broke in the OvrConsole code if this is nullptr
-    ((App*)appPtr)->SetShowFPS(show != 0);
+    ((App*)appPtr)->setShowFPS(show != 0);
 }
 
 // Debug tool to draw outlines of a 3D bounds
-void App::DrawBounds( const Vector3f &mins, const Vector3f &maxs, const Matrix4f &mvp, const Vector3f &color )
+void App::drawBounds( const Vector3f &mins, const Vector3f &maxs, const Matrix4f &mvp, const Vector3f &color )
 {
     Matrix4f	scaled = mvp * Matrix4f::Translation( mins ) * Matrix4f::Scaling( maxs - mins );
     const GlProgram & prog = d->untexturedMvpProgram;
@@ -2980,7 +2982,7 @@ void App::DrawBounds( const Vector3f &mins, const Vector3f &maxs, const Matrix4f
     glBindVertexArrayOES_( 0 );
 }
 
-void App::DrawDialog( const Matrix4f & mvp )
+void App::drawDialog( const Matrix4f & mvp )
 {
     // draw the pop-up dialog
     const float now = ovr_GetTimeInSeconds();
@@ -2995,10 +2997,10 @@ void App::DrawDialog( const Matrix4f & mvp )
     const float clampF = f < 0.0f ? 0.0f : f;
     const float alpha = 1.0f - clampF;
 
-    DrawPanel( d->dialogTexture->textureId, dialogMvp, alpha );
+    drawPanel( d->dialogTexture->textureId, dialogMvp, alpha );
 }
 
-void App::DrawPanel( const GLuint externalTextureId, const Matrix4f & dialogMvp, const float alpha )
+void App::drawPanel( const GLuint externalTextureId, const Matrix4f & dialogMvp, const float alpha )
 {
     const GlProgram & prog = d->externalTextureProgram2;
     glUseProgram( prog.program );
@@ -3018,15 +3020,15 @@ void App::DrawPanel( const GLuint externalTextureId, const Matrix4f & dialogMvp,
     glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0 );	// don't leave it bound
 }
 
-void App::DrawEyeViewsPostDistorted( Matrix4f const & centerViewMatrix, const int numPresents )
+void App::drawEyeViewsPostDistorted( Matrix4f const & centerViewMatrix, const int numPresents )
 {
     // update vr lib systems after the app frame, but before rendering anything
-    GetGuiSys().frame( this, d->vrFrame, GetVRMenuMgr(), GetDefaultFont(), GetMenuFontSurface(), centerViewMatrix );
-    GetGazeCursor().Frame( centerViewMatrix, d->vrFrame.DeltaSeconds );
+    guiSys().frame( this, d->vrFrame, vrMenuMgr(), defaultFont(), menuFontSurface(), centerViewMatrix );
+    gazeCursor().Frame( centerViewMatrix, d->vrFrame.DeltaSeconds );
 
-    GetMenuFontSurface().Finish( centerViewMatrix );
-    GetWorldFontSurface().Finish( centerViewMatrix );
-    GetVRMenuMgr().finish( centerViewMatrix );
+    menuFontSurface().Finish( centerViewMatrix );
+    worldFontSurface().Finish( centerViewMatrix );
+    vrMenuMgr().finish( centerViewMatrix );
 
     // Increase the fov by about 10 degrees if we are not holding 60 fps so
     // there is less black pull-in at the edges.
@@ -3059,11 +3061,11 @@ void App::DrawEyeViewsPostDistorted( Matrix4f const & centerViewMatrix, const in
             d->eyeTargets->BeginRenderingEye( eye );
 
             // Call back to the app for drawing.
-            const Matrix4f mvp = appInterface->DrawEyeView( eye, fovDegrees );
+            const Matrix4f mvp = d->appInterface->DrawEyeView( eye, fovDegrees );
 
-            GetVRMenuMgr().renderSubmitted( mvp.Transposed(), centerViewMatrix );
-            GetMenuFontSurface().Render3D( GetDefaultFont(), mvp.Transposed() );
-            GetWorldFontSurface().Render3D( GetDefaultFont(), mvp.Transposed() );
+            vrMenuMgr().renderSubmitted( mvp.Transposed(), centerViewMatrix );
+            menuFontSurface().Render3D( defaultFont(), mvp.Transposed() );
+            worldFontSurface().Render3D( defaultFont(), mvp.Transposed() );
 
             glDisable( GL_DEPTH_TEST );
             glDisable( GL_CULL_FACE );
@@ -3081,11 +3083,11 @@ void App::DrawEyeViewsPostDistorted( Matrix4f const & centerViewMatrix, const in
                 d->calibrationLinesDrawn = false;
             }
 
-            DrawDialog( mvp );
+            drawDialog( mvp );
 
-            GetGazeCursor().Render( eye, mvp );
+            gazeCursor().Render( eye, mvp );
 
-            GetDebugLines().Render( mvp.Transposed() );
+            debugLines().Render( mvp.Transposed() );
 
             if ( d->showVignette )
             {
@@ -3118,7 +3120,7 @@ void App::DrawEyeViewsPostDistorted( Matrix4f const & centerViewMatrix, const in
 
 // Draw a screen to an eye buffer the same way it would be drawn as a
 // time warp overlay.
-void App::DrawScreenDirect( const GLuint texid, const ovrMatrix4f & mvp )
+void App::drawScreenDirect( const GLuint texid, const ovrMatrix4f & mvp )
 {
     const Matrix4f mvpMatrix( mvp );
     glActiveTexture( GL_TEXTURE0 );
@@ -3135,7 +3137,7 @@ void App::DrawScreenDirect( const GLuint texid, const ovrMatrix4f & mvp )
 }
 
 // draw a zero to destination alpha
-void App::DrawScreenMask( const ovrMatrix4f & mvp, const float fadeFracX, const float fadeFracY )
+void App::drawScreenMask( const ovrMatrix4f & mvp, const float fadeFracX, const float fadeFracY )
 {
     Matrix4f mvpMatrix( mvp );
 

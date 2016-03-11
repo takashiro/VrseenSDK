@@ -55,7 +55,7 @@ void OvrGuiSysLocal::init( App * app, OvrVRMenuMgr & menuMgr, BitmapFont const &
 	LOG( "OvrGuiSysLocal::Init" );
 
 	// get a use id for the gaze cursor
-	GazeUserId = app->GetGazeCursor().GenerateUserId();
+	GazeUserId = app->gazeCursor().GenerateUserId();
 
 	IsInitialized = true;
 }
@@ -260,7 +260,7 @@ void OvrGuiSysLocal::closeMenu( App * app, VRMenu * menu, bool const closeInstan
 	OVR_ASSERT( menu != NULL );
 	if ( !menu->isClosedOrClosing() )
 	{
-		menu->close( app, app->GetGazeCursor(), closeInstantly );
+		menu->close( app, app->gazeCursor(), closeInstantly );
 	}
 }
 

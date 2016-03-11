@@ -217,7 +217,7 @@ eMsgStatus CarouselBrowserComponent::SwipeForward( App * app, VrFrame const & vr
 		float nextPos = floor( Position ) + 1.0f;
         if ( nextPos < Items.sizeInt() )
 		{
-			app->PlaySound( "carousel_move" );
+			app->playSound( "carousel_move" );
 			PrevPosition = Position;
 			StartTime = vrFrame.PoseState.TimeInSeconds;
 			EndTime = StartTime + 0.25;
@@ -236,7 +236,7 @@ eMsgStatus CarouselBrowserComponent::SwipeBack( App * app, VrFrame const & vrFra
 		float nextPos = floor( Position ) - 1.0f;
 		if ( nextPos >= 0.0f )
 		{
-			app->PlaySound( "carousel_move" );
+			app->playSound( "carousel_move" );
 			PrevPosition = Position;
 			StartTime = vrFrame.PoseState.TimeInSeconds;
 			EndTime = StartTime + 0.25;

@@ -74,7 +74,7 @@ private:
 		// If opening VideoMenu without a Video selected, bail 
 		if ( CurrentVideo == NULL )
 		{
-			app->GetGuiSys().closeMenu( app, &VideoMenu, false );
+			app->guiSys().closeMenu( app, &VideoMenu, false );
 		}
 		LoadAttribution( self );
 		return MSG_STATUS_CONSUMED;

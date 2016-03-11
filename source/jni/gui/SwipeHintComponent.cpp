@@ -41,7 +41,7 @@ namespace NervGear
 	{
 		const int NumSwipeTrails = 3;
 		int imgWidth, imgHeight;
-		OvrVRMenuMgr & menuManager = appPtr->GetVRMenuMgr();
+		OvrVRMenuMgr & menuManager = appPtr->vrMenuMgr();
 		VRMenuFontParms fontParms( HORIZONTAL_CENTER, VERTICAL_CENTER, false, false, false, 1.0f );
 
 		// Create Menu item for scroll hint root
@@ -52,7 +52,7 @@ namespace NervGear
 								swipeHintId, VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_ALL ),
 								VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 		parms.append( &parm );
-		rootMenu->addItems( menuManager, appPtr->GetDefaultFont(), parms, rootHandle, false );
+		rootMenu->addItems( menuManager, appPtr->defaultFont(), parms, rootHandle, false );
 		parms.clear();
 
 		menuHandle_t scrollHintHandle = rootMenu->handleForId( menuManager, swipeHintId );
@@ -80,7 +80,7 @@ namespace NervGear
 			parms.append( swipeIconLeftParms );
 		}
 
-		rootMenu->addItems( menuManager, appPtr->GetDefaultFont(), parms, scrollHintHandle, false );
+		rootMenu->addItems( menuManager, appPtr->defaultFont(), parms, scrollHintHandle, false );
 		DeletePointerArray( parms );
 		parms.clear();
 

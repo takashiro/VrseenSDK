@@ -952,7 +952,7 @@ OvrFolderBrowser::OvrFolderBrowser(
 
 	Array< VRMenuComponent* > comps;
 	comps.append( new OvrFolderBrowserRootComponent( *this ) );
-	init( app->GetVRMenuMgr(), app->GetDefaultFont(), 0.0f, VRMenuFlags_t(), comps );
+	init( app->vrMenuMgr(), app->defaultFont(), 0.0f, VRMenuFlags_t(), comps );
 }
 
 OvrFolderBrowser::~OvrFolderBrowser()
@@ -1072,7 +1072,7 @@ void OvrFolderBrowser::openImpl( App * app, OvrGazeCursor & gazeCursor )
 
 void OvrFolderBrowser::oneTimeInit()
 {
-	const VStandardPath & storagePaths = m_app->GetStoragePaths();
+	const VStandardPath & storagePaths = m_app->storagePaths();
     storagePaths.GetPathIfValidPermission(VStandardPath::PrimaryExternalStorage, VStandardPath::CacheFolder, "", W_OK, m_appCachePath );
 	OVR_ASSERT( !m_appCachePath.isEmpty() );
 
@@ -1083,8 +1083,8 @@ void OvrFolderBrowser::oneTimeInit()
 	OVR_ASSERT( !m_thumbSearchPaths.isEmpty() );
 
 	// move the root up to eye height
-	OvrVRMenuMgr & menuManager = m_app->GetVRMenuMgr();
-	BitmapFont & font = m_app->GetDefaultFont();
+	OvrVRMenuMgr & menuManager = m_app->vrMenuMgr();
+	BitmapFont & font = m_app->defaultFont();
 	VRMenuObject * root = menuManager.toObject( rootHandle() );
 	OVR_ASSERT( root );
 	if ( root != NULL )
@@ -1165,8 +1165,8 @@ void OvrFolderBrowser::oneTimeInit()
 
 void OvrFolderBrowser::buildDirtyMenu( OvrMetaData & metaData )
 {
-	OvrVRMenuMgr & menuManager = m_app->GetVRMenuMgr();
-	BitmapFont & font = m_app->GetDefaultFont();
+	OvrVRMenuMgr & menuManager = m_app->vrMenuMgr();
+	BitmapFont & font = m_app->defaultFont();
 	VRMenuObject * root = menuManager.toObject( rootHandle() );
 	OVR_ASSERT( root );
 
@@ -1344,8 +1344,8 @@ void OvrFolderBrowser::buildFolder( OvrMetaData::Category & category, FolderView
 {
 	OVR_ASSERT( folder );
 
-	OvrVRMenuMgr & menuManager = m_app->GetVRMenuMgr();
-	BitmapFont & font = m_app->GetDefaultFont();
+	OvrVRMenuMgr & menuManager = m_app->vrMenuMgr();
+	BitmapFont & font = m_app->defaultFont();
 
 	Array< const VRMenuObjectParms * > parms;
 	const VRMenuFontParms fontParms( HORIZONTAL_CENTER, VERTICAL_CENTER, false, false, true, 0.525f, 0.45f, 1.0f );
@@ -1587,8 +1587,8 @@ void OvrFolderBrowser::rebuildFolder( OvrMetaData & metaData, const int folderIn
 {
 	if ( folderIndex >= 0 && m_folders.sizeInt() > folderIndex )
 	{
-		OvrVRMenuMgr & menuManager = m_app->GetVRMenuMgr();
-		BitmapFont & font = m_app->GetDefaultFont();
+		OvrVRMenuMgr & menuManager = m_app->vrMenuMgr();
+		BitmapFont & font = m_app->defaultFont();
 
 		FolderView * folder = getFolderView( folderIndex );
 		if ( folder == NULL )
@@ -1656,7 +1656,7 @@ void OvrFolderBrowser::updateFolderTitle( const FolderView * folder )
 		const int numPanels = folder->panels.sizeInt();
 
 		VString folderTitle = folder->localizedName;
-		VRMenuObject * folderTitleObject = m_app->GetVRMenuMgr().toObject( folder->titleHandle );
+		VRMenuObject * folderTitleObject = m_app->vrMenuMgr().toObject( folder->titleHandle );
 		OVR_ASSERT( folderTitleObject != NULL );
         folderTitleObject->setText(folderTitle);
 
@@ -1866,7 +1866,7 @@ void OvrFolderBrowser::loadThumbnailToTexture( const char * thumbnailCommand )
 
 	// Grab the Panel from VRMenu
 	VRMenuObject * panelObject = NULL;
-	panelObject = m_app->GetVRMenuMgr().toObject( panel->handle );
+	panelObject = m_app->vrMenuMgr().toObject( panel->handle );
 	OVR_ASSERT( panelObject );
 
 	panel->size[ 0 ] *= ( float )width / max;
@@ -2168,7 +2168,7 @@ void OvrFolderBrowser::setCategoryRotation( const int folderIndex, const int pan
 	const FolderView * folder = getFolderView( folderIndex );
 	if ( folder != NULL )
 	{
-		VRMenuObject * swipe = m_app->GetVRMenuMgr().toObject( folder->swipeHandle );
+		VRMenuObject * swipe = m_app->vrMenuMgr().toObject( folder->swipeHandle );
 		OVR_ASSERT( swipe );
 
 		OvrFolderSwipeComponent * swipeComp = swipe->GetComponentById< OvrFolderSwipeComponent >();
@@ -2215,7 +2215,7 @@ const OvrMetaDatum * OvrFolderBrowser::nextFileInDirectory( const int step )
 	}
 
 	PanelView & panel = folder->panels.at( nextPanelIndex );
-	VRMenuObject * panelObject = m_app->GetVRMenuMgr().toObject( panel.handle );
+	VRMenuObject * panelObject = m_app->vrMenuMgr().toObject( panel.handle );
 	OVR_ASSERT( panelObject );
 
 	OvrPanel_OnUp * panelUpComp = panelObject->GetComponentById<OvrPanel_OnUp>();
@@ -2244,7 +2244,7 @@ void OvrFolderBrowser::setWrapIndicatorVisible( FolderView& folder, const bool v
 {
 	if ( folder.wrapIndicatorHandle.IsValid() )
 	{
-		VRMenuObject * wrapIndicatorObject = m_app->GetVRMenuMgr().toObject( folder.wrapIndicatorHandle );
+		VRMenuObject * wrapIndicatorObject = m_app->vrMenuMgr().toObject( folder.wrapIndicatorHandle );
 		if ( wrapIndicatorObject )
 		{
 			wrapIndicatorObject->setVisible( visible );
@@ -2261,7 +2261,7 @@ OvrFolderSwipeComponent * OvrFolderBrowser::swipeComponentForActiveFolder()
 		return NULL;
 	}
 
-	VRMenuObject * swipeObject = m_app->GetVRMenuMgr().toObject( folder->swipeHandle );
+	VRMenuObject * swipeObject = m_app->vrMenuMgr().toObject( folder->swipeHandle );
 	OVR_ASSERT( swipeObject );
 
 	OvrFolderSwipeComponent * swipeComp = swipeObject->GetComponentById<OvrFolderSwipeComponent>();
@@ -2274,7 +2274,7 @@ bool OvrFolderBrowser::gazingAtMenu() const
 {
 	if ( focusedHandle().IsValid() )
 	{
-		const Matrix4f & view = m_app->GetLastViewMatrix();
+		const Matrix4f & view = m_app->lastViewMatrix();
 		Vector3f viewForwardFlat( view.M[ 2 ][ 0 ], 0.0f, view.M[ 2 ][ 2 ] );
 		viewForwardFlat.Normalize();
 
@@ -2291,18 +2291,18 @@ bool OvrFolderBrowser::gazingAtMenu() const
 
 int OvrFolderBrowser::activeFolderIndex() const
 {
-	VRMenuObject * rootObject = m_app->GetVRMenuMgr().toObject( rootHandle() );
+	VRMenuObject * rootObject = m_app->vrMenuMgr().toObject( rootHandle() );
 	OVR_ASSERT( rootObject );
 
 	OvrFolderBrowserRootComponent * rootComp = rootObject->GetComponentById<OvrFolderBrowserRootComponent>();
 	OVR_ASSERT( rootComp );
 
-	return rootComp->GetCurrentIndex( rootObject, m_app->GetVRMenuMgr() );
+	return rootComp->GetCurrentIndex( rootObject, m_app->vrMenuMgr() );
 }
 
 void OvrFolderBrowser::setActiveFolder( int folderIdx )
 {
-	VRMenuObject * rootObject = m_app->GetVRMenuMgr().toObject( rootHandle() );
+	VRMenuObject * rootObject = m_app->vrMenuMgr().toObject( rootHandle() );
 	OVR_ASSERT( rootObject );
 
 	OvrFolderBrowserRootComponent * rootComp = rootObject->GetComponentById<OvrFolderBrowserRootComponent>();

@@ -242,7 +242,7 @@ void VRMenu::repositionMenu( App * app, Matrix4f const & viewMatrix )
 // VRMenu::Frame
 void VRMenu::repositionMenu( App * app )
 {
-	repositionMenu( app, app->GetLastViewMatrix() );
+	repositionMenu( app, app->lastViewMatrix() );
 }
 
 //==============================
@@ -338,7 +338,7 @@ void VRMenu::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 	if ( root != NULL )
 	{
 		VRMenuRenderFlags_t renderFlags;
-		menuMgr.submitForRendering( app->GetDebugLines(), font, fontSurface, m_rootHandle, m_menuPose, renderFlags );
+		menuMgr.submitForRendering( app->debugLines(), font, fontSurface, m_rootHandle, m_menuPose, renderFlags );
 	}
 
 }
@@ -377,7 +377,7 @@ bool VRMenu::onKeyEvent( App * app, int const keyCode, KeyState::eKeyEventType c
 					}
 					else if ( !( m_flags & VRMENU_FLAG_BACK_KEY_DOESNT_EXIT ) )
 					{
-						close( app, app->GetGazeCursor() );
+						close( app, app->gazeCursor() );
 						return true;
 					}
 				}
