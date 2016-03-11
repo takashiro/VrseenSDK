@@ -19,6 +19,10 @@ enum ShaderAttributeLocation
 class VGlShader
 {
 public:
+    VGlShader();
+    ~VGlShader();
+    GLuint createShader(GLuint shaderType, const char* src);
+    GLuint createProgram(GLuint vertexShader, GLuint fragmentShader);
     GLuint initShader (const char * vertexSrc, const char * fragmentSrc);
     void destroy();
 

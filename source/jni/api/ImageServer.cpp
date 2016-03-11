@@ -452,14 +452,14 @@ void ImageServer::enterWarpSwap( int eyeTexture )
 	if ( !m_resampleProg.program )
 	{
 		m_resampleProg.initShader(
-			"uniform highp mat4 Mvpm;\n"
-			"attribute vec4 Position;\n"
-			"attribute vec2 TexCoord;\n"
+			"uniform highp mat4 uMVPMatrix;\n"
+			"attribute vec4 aPosition;\n"
+			"attribute vec2 aTextureCoord;\n"
 			"varying  highp vec2 oTexCoord;\n"
 			"void main()\n"
 			"{\n"
-			"   gl_Position = Position;\n"
-			"   oTexCoord = vec2( TexCoord.x, 1.0 - TexCoord.y );\n"	// need to flip Y
+			"   gl_Position = aPosition;\n"
+			"   oTexCoord = vec2( aTextureCoord.x, 1.0 - aTextureCoord.y );\n"	// need to flip Y
 			"}\n"
 		,
 			"uniform sampler2D Texture0;\n"

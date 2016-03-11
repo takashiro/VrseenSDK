@@ -14,32 +14,42 @@ struct VGlShader::Private
     static bool CompileShader( const GLuint shader, const char * src );
 };
 
-
-GLuint VGlShader::initShader(const char *vertexSrc, const char *fragmentSrc)
+VGlShader::VGlShader()
 {
-    vertexShader = glCreateShader( GL_VERTEX_SHADER );
-    if ( !d->CompileShader(vertexShader, vertexSrc ) )
-    {
-        vFatal( "Failed to compile vertex shader" );
-    }
-    fragmentShader = glCreateShader( GL_FRAGMENT_SHADER );
-    if ( !d->CompileShader(fragmentShader, fragmentSrc ) )
-    {
-        vFatal( "Failed to compile fragment shader" );
-    }
 
+}
+
+VGlShader::~VGlShader()
+{
+    destroy();
+}
+
+GLuint VGlShader::createShader(GLuint shaderType, const char *src)
+{
+    GLuint shader = glCreateShader( shaderType );
+    if ( !d->CompileShader(shaderType, src ) )
+    {
+        vFatal( "Failed to compile shader,type:"<<shaderType);
+    }
+    return  shader;
+}
+
+GLuint VGlShader::createProgram(GLuint vertexShader, GLuint fragmentShader)
+{
+    this->vertexShader = vertexShader;
+    this->fragmentShader = fragmentShader;
     program = glCreateProgram();
     glAttachShader( program, vertexShader );
     glAttachShader( program, fragmentShader );
 
     // set attributes before linking
-    glBindAttribLocation( program, SHADER_ATTRIBUTE_LOCATION_POSITION,		"Position" );
-    glBindAttribLocation( program, SHADER_ATTRIBUTE_LOCATION_NORMAL,			"Normal" );
-    glBindAttribLocation( program, SHADER_ATTRIBUTE_LOCATION_TANGENT,			"Tangent" );
-    glBindAttribLocation( program, SHADER_ATTRIBUTE_LOCATION_BINORMAL,		"Binormal" );
-    glBindAttribLocation( program, SHADER_ATTRIBUTE_LOCATION_COLOR,			"VertexColor" );
-    glBindAttribLocation( program, SHADER_ATTRIBUTE_LOCATION_UV0,				"TexCoord" );
-    glBindAttribLocation( program, SHADER_ATTRIBUTE_LOCATION_UV1,				"TexCoord1" );
+    glBindAttribLocation( program, SHADER_ATTRIBUTE_LOCATION_POSITION,		"aPosition" );
+    glBindAttribLocation( program, SHADER_ATTRIBUTE_LOCATION_NORMAL,			"aNormal" );
+    glBindAttribLocation( program, SHADER_ATTRIBUTE_LOCATION_TANGENT,			"aTangent" );
+    glBindAttribLocation( program, SHADER_ATTRIBUTE_LOCATION_BINORMAL,		"aBinormal" );
+    glBindAttribLocation( program, SHADER_ATTRIBUTE_LOCATION_COLOR,			"aVertexColor" );
+    glBindAttribLocation( program, SHADER_ATTRIBUTE_LOCATION_UV0,				"aTextureCoord" );
+    glBindAttribLocation( program, SHADER_ATTRIBUTE_LOCATION_UV1,				"aTextureCoord1" );
 
     // link and error check
     glLinkProgram( program );
@@ -51,16 +61,16 @@ GLuint VGlShader::initShader(const char *vertexSrc, const char *fragmentSrc)
         glGetProgramInfoLog( program, sizeof( msg ), 0, msg );
         vFatal( "Linking program failed: "<<msg );
     }
-    uniformModelViewProMatrix = glGetUniformLocation( program, "Mvpm" );
-    uniformModelMatrix = glGetUniformLocation( program, "Modelm" );
-    uniformViewMatrix = glGetUniformLocation( program, "Viewm" );
-    uniformProjectionMatrix = glGetUniformLocation( program, "Projectionm" );
-    uniformColor = glGetUniformLocation( program, "UniformColor" );
-    uniformTexMatrix = glGetUniformLocation( program, "Texm" );
-    uniformTexMatrix2 = glGetUniformLocation( program, "Texm2" );
-    uniformTexMatrix3 = glGetUniformLocation( program, "Texm3" );
-    uniformTexMatrix4 = glGetUniformLocation( program, "Texm4" );
-    uniformTexMatrix5 = glGetUniformLocation( program, "Texm5" );
+    uniformModelViewProMatrix = glGetUniformLocation( program, "uMVPMatrix" );
+    uniformModelMatrix = glGetUniformLocation( program, "uMatrix" );
+    uniformViewMatrix = glGetUniformLocation( program, "uVMatrix" );
+    uniformProjectionMatrix = glGetUniformLocation( program, "uPMatrix" );
+    uniformColor = glGetUniformLocation( program, "uColor" );
+    uniformTexMatrix = glGetUniformLocation( program, "uTMatrix" );
+    uniformTexMatrix2 = glGetUniformLocation( program, "uTMatrix2" );
+    uniformTexMatrix3 = glGetUniformLocation( program, "uTMatrix3" );
+    uniformTexMatrix4 = glGetUniformLocation( program, "uTMatrix4" );
+    uniformTexMatrix5 = glGetUniformLocation( program, "uTMatrix5" );
     uniformTexClamp = glGetUniformLocation( program, "TexClamp" );
     uniformRotateScale = glGetUniformLocation( program, "RotateScale" );
 
@@ -77,6 +87,15 @@ GLuint VGlShader::initShader(const char *vertexSrc, const char *fragmentSrc)
             glUniform1i( uTex, i );
         }
     }
+
+    return  program;
+}
+
+GLuint VGlShader::initShader(const char *vertexSrc, const char *fragmentSrc)
+{
+    vertexShader = createShader( GL_VERTEX_SHADER ,vertexSrc);
+    fragmentShader = createShader( GL_FRAGMENT_SHADER ,fragmentSrc);
+    createProgram(vertexShader,fragmentShader);
 
     glUseProgram( 0 );
 
