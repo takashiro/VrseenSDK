@@ -859,8 +859,8 @@ Matrix4f MovieSelectionView::Frame( const VrFrame & vrFrame )
 	if ( vrFrame.Input.buttonPressed & BUTTON_B )
 	{
 		if ( Cinema.inLobby )
-		{
-			Cinema.app->StartSystemActivity( PUI_CONFIRM_QUIT );
+        {
+            //Cinema.app->StartSystemActivity( PUI_CONFIRM_QUIT );
 		}
 		else
 		{

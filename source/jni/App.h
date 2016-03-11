@@ -186,8 +186,6 @@ public:
 
     void				PlaySound( const char * name );
 
-    void				StartSystemActivity( const char * command );
-
     void				RecenterYaw( const bool showBlack );
     void				SetRecenterYawFrameStart( const long long frameNumber );
     long long			GetRecenterYawFrameStart() const;

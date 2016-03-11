@@ -928,51 +928,6 @@ void App::PlaySound(const char * name)
 	}
 }
 
-void App::StartSystemActivity(const char * command)
-{
-    if (ovr_StartSystemActivity(d->OvrMobile, command, nullptr)) {
-		return;
-	}
-    if (d->errorTexture != 0)
-	{
-		// already in an error state
-		return;
-	}
-
-	// clear any pending exception because to ensure no pending exception causes the error message to fail
-    if (d->vrJni->ExceptionOccurred())
-	{
-        d->vrJni->ExceptionClear();
-	}
-
-    VString imageName = "dependency_error";
-    VString language = ovr_GetCurrentLanguage(d->OvrMobile);
-	imageName += "_";
-	imageName += language;
-	imageName += ".png";
-
-    void * imageBuffer = nullptr;
-	int imageSize = 0;
-    if (!ovr_FindEmbeddedImage(d->OvrMobile, imageName.toCString(), imageBuffer, imageSize))
-	{
-		// try to default to English
-		imageName = "dependency_error_en.png";
-        if (!ovr_FindEmbeddedImage(d->OvrMobile, imageName.toCString(), imageBuffer, imageSize))
-		{
-            FAIL("Failed to load error message texture!");
-		}
-	}
-
-    NervGear::MemBuffer memBuffer(imageBuffer, static_cast< int >(imageSize));
-	int h = 0;
-	// Note that the extension used on the filename passed here is important! It must match the type
-	// of file that was embedded.
-    d->errorTexture.texture = LoadTextureFromBuffer("error_msg.png", memBuffer, NervGear::TextureFlags_t(), d->errorTextureSize, h);
-    OVR_ASSERT(d->errorTextureSize == h);
-
-    d->errorMessageEndTime = ovr_GetTimeInSeconds() + 7.5f;
-}
-
 void App::ReadFileFromApplicationPackage(const char * nameInZip, uint &length, void * & buffer)
 {
     const VApkFile &apk = VApkFile::CurrentApkFile();
