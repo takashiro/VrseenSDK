@@ -36,13 +36,13 @@ public:
 
     bool getDeviceInfo(DeviceInfo* info) const override;
 
-    Ptr<DeviceManagerThread> pThread;
+    DeviceManagerThread *pThread;
 };
 
 //-------------------------------------------------------------------------------------
 // ***** Device Manager Background Thread
 
-class DeviceManagerThread : public VThread, public ThreadCommandQueue, public RefCountBase<DeviceManagerThread>
+class DeviceManagerThread : public VThread, public ThreadCommandQueue
 {
     friend class DeviceManager;
     enum { ThreadStackSize = 64 * 1024 };

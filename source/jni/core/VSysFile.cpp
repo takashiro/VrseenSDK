@@ -6,7 +6,10 @@
 
 
 #include "VSysFile.h"
+<<<<<<< HEAD
 #include "VUnopenedFile.h"
+=======
+>>>>>>> dev
 
 NV_NAMESPACE_BEGIN
 
@@ -15,13 +18,21 @@ NV_NAMESPACE_BEGIN
 // System file is created to access objects on file system directly
 // This file can refer directly to path
 
+<<<<<<< HEAD
+=======
+VFile* VFileFILEOpen(const VString& path, int flags, int mode);
+
+>>>>>>> dev
 // ** Constructor
 VSysFile::VSysFile() : VDelegatedFile(0)
 {
     m_file = *new VUnopenedFile;
 }
 
+<<<<<<< HEAD
 VFile* VFileFILEOpen(const VString& path, int flags, int mode);
+=======
+>>>>>>> dev
 
 // Opens a file
 VSysFile::VSysFile(const VString& path, int flags, int mode) : VDelegatedFile(0)
@@ -51,7 +62,11 @@ bool VSysFile::open(const VString& path, int flags, int mode)
 
 int VSysFile::errorCode()
 {
+<<<<<<< HEAD
     return m_file ? m_file->errorCode() : FileNotFoundError;
+=======
+    return m_file ? m_file->errorCode() : FileNotFound;
+>>>>>>> dev
 }
 
 
@@ -60,11 +75,19 @@ bool VSysFile::isValid()
 {
     return m_file && m_file->isValid();
 }
+<<<<<<< HEAD
 bool VSysFile::close()
 {
     if (isValid())
     {
         VDelegatedFile::close();
+=======
+bool VSysFile::Close()
+{
+    if (isValid())
+    {
+        VDelegatedFile::Close();
+>>>>>>> dev
         m_file = *new VUnopenedFile;
         return 1;
     }

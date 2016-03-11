@@ -22,7 +22,12 @@ NV_NAMESPACE_BEGIN
 // Not supposed to be used
 VBuffer::VBuffer()
     : VDelegatedFile(0)
+<<<<<<< HEAD
     , m_buffer((UByte*)OVR_ALLOC(BUFFER_LENGTH))
+=======
+   // , m_buffer((uchar*)OVR_ALLOC(BUFFER_LENGTH))
+    , m_buffer((uchar*)new char[BUFFER_LENGTH])
+>>>>>>> dev
     , m_bufferMode(NoBuffer)
     , m_filePos(0)
     , m_pos(0)
@@ -38,7 +43,12 @@ VBuffer::VBuffer()
 // Takes another file as source
 VBuffer::VBuffer(VFile *pfile)
     : VDelegatedFile(pfile)
+<<<<<<< HEAD
     , m_buffer((UByte*)OVR_ALLOC(BUFFER_LENGTH))
+=======
+   // , m_buffer((uchar*)OVR_ALLOC(BUFFER_LENGTH))
+    , m_buffer((uchar*)new char[BUFFER_LENGTH])
+>>>>>>> dev
     , m_bufferMode(NoBuffer)
     , m_filePos(pfile->tell64())
     , m_pos(0)
@@ -61,7 +71,12 @@ VBuffer::~VBuffer()
     }
     // Get rid of buffer
     if (m_buffer) {
+<<<<<<< HEAD
         OVR_FREE(m_buffer);
+=======
+        // OVR_FREE(m_buffer);
+        delete[]  m_buffer;
+>>>>>>> dev
     }
 }
 
@@ -97,13 +112,21 @@ bool    VBuffer::setBufferMode(BufferModeType mode)
 
     // Can't set write mode if we can't write
     if ((mode == WriteBuffer) && (!m_file || !m_file->isWritable()) )
+<<<<<<< HEAD
         return 0;
+=======
+        return false;
+>>>>>>> dev
 
     // And SetMode
     m_bufferMode = mode;
     m_pos        = 0;
     m_dataSize   = 0;
+<<<<<<< HEAD
     return 1;
+=======
+    return true;
+>>>>>>> dev
 }
 
 // Flushes buffer
@@ -120,7 +143,11 @@ void    VBuffer::flushBuffer()
         case ReadBuffer:
             // Seek back & reset buffer data
             if ((m_dataSize - m_pos)>0)
+<<<<<<< HEAD
                 m_filePos = m_file->seek64(-(int)(m_dataSize-m_pos), Seek_Cur);
+=======
+                m_filePos = m_file->seek64(-(int)(m_dataSize-m_pos), std::ios_base::cur);
+>>>>>>> dev
             m_dataSize = 0;
             m_pos      = 0;
             break;
@@ -130,13 +157,22 @@ void    VBuffer::flushBuffer()
     }
 }
 
+<<<<<<< HEAD
 // Reloads data for ReadBuffer
+=======
+// Reloads data for ReadBuffer,warning:it is just adapt to reading
+>>>>>>> dev
 void    VBuffer::loadBuffer()
 {
     if (m_bufferMode == ReadBuffer)
     {
         // We should only reload once all of pre-loaded buffer is consumed.
+<<<<<<< HEAD
         OVR_ASSERT(m_pos == m_dataSize);
+=======
+        //OVR_ASSERT(m_pos == m_dataSize);
+        vAssert(m_pos == m_dataSize);
+>>>>>>> dev
 
         // WARNING: Right now LoadBuffer() assumes the buffer's empty
         int sz   = m_file->read(m_buffer,BUFFER_LENGTH);
@@ -162,22 +198,39 @@ int     VBuffer::tell()
     // Adjust position based on buffer mode & data
     if (pos!=-1)
     {
+<<<<<<< HEAD
         OVR_ASSERT(m_bufferMode != ReadBuffer);
+=======
+        //OVR_ASSERT(m_bufferMode != ReadBuffer);
+        vAssert(m_bufferMode != ReadBuffer);
+>>>>>>> dev
         if (m_bufferMode == WriteBuffer)
             pos += m_pos;
     }
     return pos;
 }
 
+<<<<<<< HEAD
 SInt64  VBuffer::tell64()
+=======
+long long  VBuffer::tell64()
+>>>>>>> dev
 {
     if (m_bufferMode == ReadBuffer)
         return m_filePos - m_dataSize + m_pos;
 
+<<<<<<< HEAD
     SInt64 pos = m_file->tell64();
     if (pos!=-1)
     {
         OVR_ASSERT(m_bufferMode != ReadBuffer);
+=======
+    long long pos = m_file->tell64();
+    if (pos!=-1)
+    {
+        //OVR_ASSERT(m_bufferMode != ReadBuffer);
+        vAssert(m_bufferMode != ReadBuffer);
+>>>>>>> dev
         if (m_bufferMode == WriteBuffer)
             pos += m_pos;
     }
@@ -196,6 +249,7 @@ int     VBuffer::length()
     }
     return len;
 }
+<<<<<<< HEAD
 SInt64  VBuffer::length64()
 {
     SInt64 len = m_file->length64();
@@ -203,6 +257,15 @@ SInt64  VBuffer::length64()
     if ((len!=-1) && (m_bufferMode==WriteBuffer))
     {
         SInt64 currPos = m_file->tell64() + m_pos;
+=======
+long long  VBuffer::length64()
+{
+    long long len = m_file->length64();
+    // If writing through buffer, file length may actually be bigger
+    if ((len!=-1) && (m_bufferMode==WriteBuffer))
+    {
+        long long currPos = m_file->tell64() + m_pos;
+>>>>>>> dev
         if (currPos>len)
             len = currPos;
     }
@@ -231,7 +294,11 @@ bool    VBuffer::Stat(FileStats *pfs)
 }
 */
 
+<<<<<<< HEAD
 int     VBuffer::write(const UByte *psourceBuffer, int numBytes)
+=======
+int     VBuffer::write(const uchar *psourceBuffer, int numBytes)
+>>>>>>> dev
 {
     if ( (m_bufferMode == WriteBuffer) || setBufferMode(WriteBuffer)) {
         // If not data space in buffer, flush
@@ -259,7 +326,11 @@ int     VBuffer::write(const UByte *psourceBuffer, int numBytes)
     return sz;
 }
 
+<<<<<<< HEAD
 int     VBuffer::read(UByte *pdestBuffer, int numBytes)
+=======
+int     VBuffer::read(uchar *pdestBuffer, int numBytes)
+>>>>>>> dev
 {
     if ( (m_bufferMode==ReadBuffer) || setBufferMode(ReadBuffer))
     {
@@ -340,8 +411,13 @@ int     VBuffer::skipBytes(int numBytes)
     if (m_bufferMode==ReadBuffer)
     {
         skippedBytes = (((int)m_dataSize-(int)m_pos) >= numBytes) ? numBytes : (m_dataSize-m_pos);
+<<<<<<< HEAD
         m_pos          += skippedBytes;
         numBytes     -= skippedBytes;
+=======
+        m_pos += skippedBytes;
+        numBytes -= skippedBytes;
+>>>>>>> dev
     }
 
     if (numBytes)
@@ -380,6 +456,7 @@ int     VBuffer::bytesAvailable()
     return available;
 }
 
+<<<<<<< HEAD
 bool    VBuffer::flush()
 {
     flushBuffer();
@@ -392,6 +469,20 @@ int     VBuffer::seek(int offset, int origin)
     if (m_bufferMode == ReadBuffer)
     {
         if (origin == Seek_Cur)
+=======
+bool    VBuffer::Flush()
+{
+    flushBuffer();
+    return m_file->Flush();
+}
+
+// Seeking could be optimized better..
+int     VBuffer::seek(int offset,std::ios_base::seekdir origin)
+{
+    if (m_bufferMode == ReadBuffer)
+    {
+        if (origin == std::ios_base::cur)
+>>>>>>> dev
         {
             // Seek can fall either before or after Pos in the buffer,
             // but it must be within bounds.
@@ -403,6 +494,7 @@ int     VBuffer::seek(int offset, int origin)
 
             // Lightweight buffer "Flush". We do this to avoid an extra seek
             // back operation which would take place if we called FlushBuffer directly.
+<<<<<<< HEAD
             origin = Seek_Set;
             OVR_ASSERT(((m_filePos - m_dataSize + m_pos) + (UInt64)offset) < ~(UInt64)0);
             offset = (int)(m_filePos - m_dataSize + m_pos) + offset;
@@ -413,6 +505,20 @@ int     VBuffer::seek(int offset, int origin)
             if (((unsigned)offset - (m_filePos-m_dataSize)) <= m_dataSize)
             {
                 OVR_ASSERT((m_filePos-m_dataSize) < ~(UInt64)0);
+=======
+            origin = std::ios_base::beg;
+            //OVR_ASSERT(((m_filePos - m_dataSize + m_pos) + (UInt64)offset) < ~(UInt64)0);
+            vAssert(((m_filePos - m_dataSize + m_pos) + (ulonglong)offset) < ~(ulonglong)0);
+            offset = (int)(m_filePos - m_dataSize + m_pos) + offset;
+            m_pos = m_dataSize = 0;
+        }
+        else if (origin == std::ios_base::beg)
+        {
+            if (((unsigned)offset - (m_filePos-m_dataSize)) <= m_dataSize)
+            {
+                //OVR_ASSERT((m_filePos-m_dataSize) < ~(UInt64)0);
+                vAssert((m_filePos-m_dataSize) < ~(ulonglong)0);
+>>>>>>> dev
                 m_pos = (unsigned)offset - (unsigned)(m_filePos-m_dataSize);
                 return offset;
             }
@@ -452,22 +558,35 @@ int     VBuffer::seek(int offset, int origin)
     return int (m_filePos);
 }
 
+<<<<<<< HEAD
 SInt64  VBuffer::seek64(SInt64 offset, int origin)
 {
     if (m_bufferMode == ReadBuffer)
     {
         if (origin == Seek_Cur)
+=======
+long long  VBuffer::seek64(long long offset,std::ios_base::seekdir origin)
+{
+    if (m_bufferMode == ReadBuffer)
+    {
+        if (origin == std::ios_base::cur)
+>>>>>>> dev
         {
             // Seek can fall either before or after Pos in the buffer,
             // but it must be within bounds.
             if (((unsigned(offset) + m_pos)) <= m_dataSize)
             {
                 m_pos += (unsigned)offset;
+<<<<<<< HEAD
                 return SInt64(m_filePos - m_dataSize + m_pos);
+=======
+                return (long long)(m_filePos - m_dataSize + m_pos);
+>>>>>>> dev
             }
 
             // Lightweight buffer "Flush". We do this to avoid an extra seek
             // back operation which would take place if we called FlushBuffer directly.
+<<<<<<< HEAD
             origin = Seek_Set;
             offset = (SInt64)(m_filePos - m_dataSize + m_pos) + offset;
             m_pos = m_dataSize = 0;
@@ -477,6 +596,17 @@ SInt64  VBuffer::seek64(SInt64 offset, int origin)
             if (((UInt64)offset - (m_filePos-m_dataSize)) <= m_dataSize)
             {
                 m_pos = (unsigned)((UInt64)offset - (m_filePos-m_dataSize));
+=======
+            origin = std::ios_base::beg;
+            offset = (long long)(m_filePos - m_dataSize + m_pos) + offset;
+            m_pos = m_dataSize = 0;
+        }
+        else if (origin == std::ios_base::beg)
+        {
+            if (((ulonglong)offset - (m_filePos-m_dataSize)) <= m_dataSize)
+            {
+                m_pos = (unsigned)((ulonglong)offset - (m_filePos-m_dataSize));
+>>>>>>> dev
                 return offset;
             }
             m_pos = m_dataSize = 0;
@@ -517,7 +647,11 @@ int    VBuffer::copyFromStream(VFile *pstream, int byteSize)
     // We can't rely on overridden Write()
     // because delegation doesn't override virtual pointers
     // So, just re-implement
+<<<<<<< HEAD
     UByte   buff[0x4000];
+=======
+    uchar   buff[0x4000];
+>>>>>>> dev
     int     count = 0;
     int     szRequest, szRead, szWritten;
 
@@ -539,7 +673,11 @@ int    VBuffer::copyFromStream(VFile *pstream, int byteSize)
 }
 
 // Closing files
+<<<<<<< HEAD
 bool    VBuffer::close()
+=======
+bool    VBuffer::Close()
+>>>>>>> dev
 {
     switch(m_bufferMode)
     {
@@ -553,7 +691,11 @@ bool    VBuffer::close()
         default:
             break;
     }
+<<<<<<< HEAD
     return m_file->close();
+=======
+    return m_file->Close();
+>>>>>>> dev
 }
 
 // defninetin of GetShortFilename()
@@ -561,6 +703,7 @@ bool    VBuffer::close()
 // ***** Global path helpers
 
 // Find trailing short filename in a path.
+<<<<<<< HEAD
 const char* OVR_CDECL GetFilename(const char* purl)
 {
     uint len = strlen(purl);
@@ -571,6 +714,18 @@ const char* OVR_CDECL GetFilename(const char* purl)
     }
     return purl;
 }
+=======
+//const char*   GetFilename(const char* purl)
+//{
+//    uint len = strlen(purl);
+//    for (uint i=len; i>0; i--) {
+//        if (purl[i]=='\\' || purl[i]=='/') {
+//            return purl + i + 1;
+//        }
+//    }
+//    return purl;
+//}
+>>>>>>> dev
 
 NV_NAMESPACE_END
 

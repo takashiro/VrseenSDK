@@ -15,7 +15,7 @@
 #include "EyeBuffers.h"
 #include "EyePostRender.h"
 #include "VrCommon.h"
-#include "MessageQueue.h"
+#include "VMessageQueue.h"
 #include "Input.h"
 #include "TalkToJava.h"
 #include "KeyState.h"
@@ -165,7 +165,7 @@ public:
 
 	// App drains this message queue on the VR thread before calling
 	// the frame and render functions.
-	virtual MessageQueue &		GetMessageQueue() = 0;
+	virtual VMessageQueue &		GetMessageQueue() = 0;
 
 
 	// When VrAppInterface::SetActivity is called, the App member is
@@ -262,7 +262,7 @@ public:
 	virtual bool				GetRenderMonoMode() const = 0;
 	virtual void				SetRenderMonoMode( bool const mono ) = 0;
 
-	virtual char const *		GetPackageCodePath() const = 0;
+    virtual const VString &packageCodePath() const = 0;
 	virtual char const *		GetLanguagePackagePath() const = 0;
 	
 	virtual Matrix4f const &	GetLastViewMatrix() const = 0;
@@ -297,7 +297,7 @@ public:
 	virtual void				SetShowVolumePopup( bool const show ) = 0;
 	virtual bool				GetShowVolumePopup() const = 0;
 
-	virtual const char *		GetPackageName() const = 0;
+    virtual const VString &packageName() const = 0;
 
 	virtual bool				IsWifiConnected() const = 0;
 

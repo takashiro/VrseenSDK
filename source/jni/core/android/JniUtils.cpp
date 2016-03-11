@@ -26,6 +26,9 @@ namespace JniUtils {
     {
         jsize len = str.size();
         jchar *chars = new jchar[len];
+        for (jsize i = 0; i < len; i++) {
+            chars[i] = str[i];
+        }
         jstring jstr = jni->NewString(chars, len);
         delete[] chars;
         return jstr;

@@ -26,7 +26,7 @@ public:
 										VrAppInterface & interface_ );
 	virtual						~AppLocal();
 
-	virtual MessageQueue &		GetMessageQueue();
+	virtual VMessageQueue &		GetMessageQueue();
 
 	virtual VrAppInterface *	GetAppInterface();
 
@@ -94,7 +94,7 @@ public:
 	virtual bool				GetRenderMonoMode() const;
 	virtual void				SetRenderMonoMode( bool const mono );
 
-	virtual char const *		GetPackageCodePath() const;
+    virtual const VString &packageCodePath() const;
 	virtual char const *		GetLanguagePackagePath() const;
 
 	virtual Matrix4f const &	GetLastViewMatrix() const;
@@ -129,7 +129,7 @@ public:
 	virtual void				SetShowVolumePopup( bool const show );
 	virtual bool				GetShowVolumePopup() const;
 
-	virtual const char *		GetPackageName() const;
+    virtual const VString &packageName() const;
 
 	virtual bool				IsWifiConnected() const;
 
@@ -177,7 +177,7 @@ public:
 	// Files put in the eclipse res/raw directory will be found as "res/raw/<NAME>"
 	// Files put in the eclipse assets directory will be found as "assets/<name>"
 	// The filename comparison is case insensitive.
-	void 			ReadFileFromApplicationPackage( const char * nameInZip, int &length, void * & buffer );
+    void 			ReadFileFromApplicationPackage(const char * nameInZip, uint &length, void * & buffer );
 
 	//-----------------------------------------------------------------
 
@@ -247,7 +247,7 @@ public:
         volatile bool	readyToExit;		// start exit procedure
 
         // Most calls in from java should communicate through this.
-        MessageQueue	vrMessageQueue;
+        VMessageQueue	vrMessageQueue;
 
         // From EnterVrMode, used for WarpSwap and LeaveVrMode
         ovrMobile *		OvrMobile;
@@ -291,8 +291,8 @@ public:
         VString			launchIntentJSON;			// extra JSON data app was launched with
         VString			launchIntentFromPackage;	// package that sent us the launch intent
 
-        VString			packageCodePath;	// path to apk to open as zip and load resources
-        VString			packageName;		// package name
+        VString			m_packageCodePath;	// path to apk to open as zip and load resources
+        VString			m_packageName;		// package name
 
         bool			paused;				// set/cleared by onPause / onResume
 
@@ -411,6 +411,8 @@ private:
     void                InitFonts();
     void                ShutdownFonts();
 };
+
+extern App *vApp;
 
 NV_NAMESPACE_END
 

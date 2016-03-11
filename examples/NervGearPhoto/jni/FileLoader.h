@@ -13,7 +13,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 
 ************************************************************************************/
 
-#include "MessageQueue.h"
+#include "VMessageQueue.h"
 
 namespace NervGear {
 
@@ -22,7 +22,7 @@ class Oculus360Photos;
 
 void InitFileQueue( App * app, Oculus360Photos * photos);
 
-extern MessageQueue		Queue1;
+extern VMessageQueue		Queue1;
 
 }
 

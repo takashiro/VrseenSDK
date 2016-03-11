@@ -18,6 +18,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "android/GlUtils.h"
 #include "android/LogUtils.h"
 #include "android/JniUtils.h"
+#include "MemBuffer.h"
+#include "VApkFile.h"
 
 #include "api/VrApi.h"
 #include "api/VrApi_Android.h"
@@ -31,7 +33,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 // App.h should NOT be included, only stand-alone code!
 #include "EyePostRender.h"
 #include "VUserProfile.h"
-#include "PackageFiles.h"
 #include "VrLocale.h"
 #include "Console.h"
 

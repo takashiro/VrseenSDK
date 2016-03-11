@@ -22,7 +22,7 @@ public:
         Silent,
     };
 
-    VLog(Priority priority);
+    VLog(const char *file, uint line, Priority priority);
     ~VLog();
 
     VLog &operator << (char ch);
@@ -47,12 +47,12 @@ private:
 };
 
 #if 1
-#  define vVerbose(args) { VLog(VLog::Verbose) << args ; }
-#  define vDebug(args) { VLog(VLog::Debug) << args ; }
-#  define vInfo(args) { VLog(VLog::Info) << args ; }
-#  define vWarn(args) { VLog(VLog::Warn) << args ; }
-#  define vError(args) { VLog(VLog::Error) << args ; }
-#  define vFatal(args) { VLog(VLog::Verbose) << args; __builtin_trap() ; }
+#  define vVerbose(args) { VLog(__FILE__, __LINE__, VLog::Verbose) << args ; }
+#  define vDebug(args) { VLog(__FILE__, __LINE__, VLog::Debug) << args ; }
+#  define vInfo(args) { VLog(__FILE__, __LINE__, VLog::Info) << args ; }
+#  define vWarn(args) { VLog(__FILE__, __LINE__, VLog::Warn) << args ; }
+#  define vError(args) { VLog(__FILE__, __LINE__, VLog::Error) << args ; }
+#  define vFatal(args) { VLog(__FILE__, __LINE__, VLog::Verbose) << args; __builtin_trap() ; }
 #  define vAssert(expr) { if (!(expr)) { vFatal(#expr); } }
 #else
 #  define vVerbose(args)

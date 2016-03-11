@@ -23,7 +23,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "PanoMenu.h"
 #include "FileLoader.h"
 #include "ImageData.h"
-#include "PackageFiles.h"
+#include "VApkFile.h"
 #include "PhotosMetaData.h"
 
 NV_NAMESPACE_BEGIN
