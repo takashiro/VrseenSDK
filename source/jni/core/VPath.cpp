@@ -106,6 +106,10 @@ void VPath::setExtension(const VString &ext)
 
 VString VPath::extension() const
 {
+    if (isEmpty()) {
+        return *this;
+    }
+
     uint i = size() - 1;
     forever {
         if (at(i) == '/' || at(i) == '\\') {
@@ -127,6 +131,10 @@ VString VPath::extension() const
 
 VString VPath::fileName() const
 {
+    if (isEmpty()) {
+        return *this;
+    }
+
     uint i = size() - 1;
     forever {
         if (at(i) == '/' || at(i) == '\\' || at(i) == ':') {
@@ -166,6 +174,10 @@ VString VPath::baseName() const
 
 VString VPath::dirName() const
 {
+    if (isEmpty()) {
+        return *this;
+    }
+
     uint end = size() - 1;
     forever {
         if (at(end) == '/' || at(end) == '\\' || at(end) == ':') {
