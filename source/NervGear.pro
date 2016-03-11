@@ -284,7 +284,6 @@ HEADERS += \
     jni/VrLocale.h \
     jni/Console.h \
     jni/vglobal.h \
-    jni/AppLocal.h \
     jni/Input.h \
     jni/PointTracker.h \
     jni/UniversalMenu_Commands.h \

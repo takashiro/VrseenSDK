@@ -22,7 +22,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VrCommon.h"
 #include "App.h"
 
-#include "AppLocal.h"
 #include "BitmapFont.h"
 #include "TypesafeNumber.h"
 #include "GazeCursor.h"
@@ -36,7 +35,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 NV_NAMESPACE_BEGIN
 
 // Debug tool to draw outlines of a 3D bounds
-void AppLocal::DrawBounds( const Vector3f &mins, const Vector3f &maxs, const Matrix4f &mvp, const Vector3f &color )
+void App::DrawBounds( const Vector3f &mins, const Vector3f &maxs, const Matrix4f &mvp, const Vector3f &color )
 {
 	Matrix4f	scaled = mvp * Matrix4f::Translation( mins ) * Matrix4f::Scaling( maxs - mins );
 	const GlProgram & prog = untexturedMvpProgram;
@@ -50,7 +49,7 @@ void AppLocal::DrawBounds( const Vector3f &mins, const Vector3f &maxs, const Mat
 	glBindVertexArrayOES_( 0 );
 }
 
-void AppLocal::DrawDialog( const Matrix4f & mvp )
+void App::DrawDialog( const Matrix4f & mvp )
 {
 	// draw the pop-up dialog
 	const float now = ovr_GetTimeInSeconds();
@@ -68,7 +67,7 @@ void AppLocal::DrawDialog( const Matrix4f & mvp )
 	DrawPanel( dialogTexture->textureId, dialogMvp, alpha );
 }
 
-void AppLocal::DrawPanel( const GLuint externalTextureId, const Matrix4f & dialogMvp, const float alpha )
+void App::DrawPanel( const GLuint externalTextureId, const Matrix4f & dialogMvp, const float alpha )
 {
 	const GlProgram & prog = externalTextureProgram2;
 	glUseProgram( prog.program );
@@ -88,7 +87,7 @@ void AppLocal::DrawPanel( const GLuint externalTextureId, const Matrix4f & dialo
 	glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0 );	// don't leave it bound
 }
 
-void AppLocal::DrawEyeViewsPostDistorted( Matrix4f const & centerViewMatrix, const int numPresents )
+void App::DrawEyeViewsPostDistorted( Matrix4f const & centerViewMatrix, const int numPresents )
 {
 	// update vr lib systems after the app frame, but before rendering anything
 	GetGuiSys().frame( this, vrFrame, GetVRMenuMgr(), GetDefaultFont(), GetMenuFontSurface(), centerViewMatrix );
@@ -188,7 +187,7 @@ void AppLocal::DrawEyeViewsPostDistorted( Matrix4f const & centerViewMatrix, con
 
 // Draw a screen to an eye buffer the same way it would be drawn as a
 // time warp overlay.
-void AppLocal::DrawScreenDirect( const GLuint texid, const ovrMatrix4f & mvp )
+void App::DrawScreenDirect( const GLuint texid, const ovrMatrix4f & mvp )
 {
 	const Matrix4f mvpMatrix( mvp );
 	glActiveTexture( GL_TEXTURE0 );
@@ -205,7 +204,7 @@ void AppLocal::DrawScreenDirect( const GLuint texid, const ovrMatrix4f & mvp )
 }
 
 // draw a zero to destination alpha
-void AppLocal::DrawScreenMask( const ovrMatrix4f & mvp, const float fadeFracX, const float fadeFracY )
+void App::DrawScreenMask( const ovrMatrix4f & mvp, const float fadeFracX, const float fadeFracY )
 {
 	Matrix4f mvpMatrix( mvp );
 

@@ -39,7 +39,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "GlSetup.h"
 #include "GlTexture.h"
 #include "VrCommon.h"
-#include "AppLocal.h"
+#include "App.h"
 #include "ModelView.h"
 #include "BitmapFont.h"
 #include "GazeCursorLocal.h"		// necessary to instantiate the gaze cursor
@@ -86,7 +86,7 @@ void Java_com_vrseen_nervgear_VrActivity_nativeSurfaceChanged( JNIEnv *jni, jcla
 {
 	LOG( "%p nativeSurfaceChanged( %p )", (void *)appPtr, surface );
 
-	((AppLocal *)appPtr)->GetMessageQueue().SendPrintf( "surfaceChanged %p",
+    ((App *)appPtr)->GetMessageQueue().SendPrintf( "surfaceChanged %p",
 			surface ? ANativeWindow_fromSurface( jni, surface ) : NULL );
 }
 
@@ -102,36 +102,36 @@ void Java_com_vrseen_nervgear_VrActivity_nativeSurfaceDestroyed( JNIEnv *jni, jc
 		return;
 	}
 
-	((AppLocal *)appPtr)->GetMessageQueue().SendPrintf( "surfaceDestroyed " );
+    ((App *)appPtr)->GetMessageQueue().SendPrintf( "surfaceDestroyed " );
 }
 
 void Java_com_vrseen_nervgear_VrActivity_nativePopup( JNIEnv *jni, jclass clazz,
 		jlong appPtr, jint width, jint height, jfloat seconds )
 {
 	LOG( "%p nativePopup", (void *)appPtr );
-	((AppLocal *)appPtr)->GetMessageQueue().PostPrintf( "popup %i %i %f", width, height, seconds );
+    ((App *)appPtr)->GetMessageQueue().PostPrintf( "popup %i %i %f", width, height, seconds );
 }
 
 jobject Java_com_vrseen_nervgear_VrActivity_nativeGetPopupSurfaceTexture( JNIEnv *jni, jclass clazz,
 		jlong appPtr )
 {
 	LOG( "%p getPopUpSurfaceTexture: %i", (void *)appPtr,
-			((AppLocal *)appPtr)->GetDialogTexture()->textureId );
-	return ((AppLocal *)appPtr)->GetDialogTexture()->javaObject;
+            ((App *)appPtr)->GetDialogTexture()->textureId );
+    return ((App *)appPtr)->GetDialogTexture()->javaObject;
 }
 
 void Java_com_vrseen_nervgear_VrActivity_nativePause( JNIEnv *jni, jclass clazz,
 		jlong appPtr )
 {
 	LOG( "%p Java_com_vrseen_nervgear_VrActivity_nativePause", (void *)appPtr );
-		((AppLocal *)appPtr)->GetMessageQueue().SendPrintf( "pause " );
+        ((App *)appPtr)->GetMessageQueue().SendPrintf( "pause " );
 }
 
 void Java_com_vrseen_nervgear_VrActivity_nativeResume( JNIEnv *jni, jclass clazz,
 		jlong appPtr )
 {
 	LOG( "%p Java_com_vrseen_nervgear_VrActivity_nativeResume", (void *)appPtr );
-		((AppLocal *)appPtr)->GetMessageQueue().SendPrintf( "resume " );
+        ((App *)appPtr)->GetMessageQueue().SendPrintf( "resume " );
 }
 
 void Java_com_vrseen_nervgear_VrActivity_nativeDestroy( JNIEnv *jni, jclass clazz,
@@ -139,7 +139,7 @@ void Java_com_vrseen_nervgear_VrActivity_nativeDestroy( JNIEnv *jni, jclass claz
 {
 	LOG( "%p Java_com_vrseen_nervgear_VrActivity_nativeDestroy", (void *)appPtr );
 
-	AppLocal * localPtr = (AppLocal *)appPtr;
+    App * localPtr = (App *)appPtr;
     const bool exitOnDestroy = localPtr->exitOnDestroy;
 
 	// First kill the VrThread.
@@ -165,7 +165,7 @@ void Java_com_vrseen_nervgear_VrActivity_nativeDestroy( JNIEnv *jni, jclass claz
 void Java_com_vrseen_nervgear_VrActivity_nativeJoypadAxis( JNIEnv *jni, jclass clazz,
 		jlong appPtr, jfloat lx, jfloat ly, jfloat rx, jfloat ry )
 {
-	AppLocal * local = ((AppLocal *)appPtr);
+    App * local = ((App *)appPtr);
 	// Suspend input until OneTimeInit() has finished to avoid overflowing the message queue on long loads.
     if ( local->oneTimeInitCalled )
 	{
@@ -176,7 +176,7 @@ void Java_com_vrseen_nervgear_VrActivity_nativeJoypadAxis( JNIEnv *jni, jclass c
 void Java_com_vrseen_nervgear_VrActivity_nativeTouch( JNIEnv *jni, jclass clazz,
 		jlong appPtr, jint action, jfloat x, jfloat y )
 {
-	AppLocal * local = ((AppLocal *)appPtr);
+    App * local = ((App *)appPtr);
 	// Suspend input until OneTimeInit() has finished to avoid overflowing the message queue on long loads.
     if ( local->oneTimeInitCalled )
 	{
@@ -187,7 +187,7 @@ void Java_com_vrseen_nervgear_VrActivity_nativeTouch( JNIEnv *jni, jclass clazz,
 void Java_com_vrseen_nervgear_VrActivity_nativeKeyEvent( JNIEnv *jni, jclass clazz,
 		jlong appPtr, jint key, jboolean down, jint repeatCount )
 {
-	AppLocal * local = ((AppLocal *)appPtr);
+    App * local = ((App *)appPtr);
 	// Suspend input until OneTimeInit() has finished to avoid overflowing the message queue on long loads.
     if ( local->oneTimeInitCalled )
 	{
@@ -206,7 +206,7 @@ void Java_com_vrseen_nervgear_VrActivity_nativeNewIntent( JNIEnv *jni, jclass cl
     VString intentMessage = ComposeIntentMessage(utfPackageName, utfUri, utfJson);
     vInfo("nativeNewIntent:" << intentMessage);
     VByteArray utf8Message = intentMessage.toUtf8();
-    ((AppLocal *)appPtr)->GetMessageQueue().PostPrintf(utf8Message.data());
+    ((App *)appPtr)->GetMessageQueue().PostPrintf(utf8Message.data());
 }
 
 }	// extern "C"
@@ -250,28 +250,28 @@ jlong VrAppInterface::SetActivity( JNIEnv * jni, jclass clazz, jobject activity,
 		// This will set the VrAppInterface app pointer directly,
 		// so it is set when OneTimeInit is called.
 		LOG( "new AppLocal( %p %p %p )", jni, activity, this );
-		new AppLocal( *jni, activity, *this );
+        new App( *jni, activity, *this );
 
 		// Start the VrThread and wait for it to have initialized.
-		static_cast< AppLocal * >( app )->StartVrThread();
-		static_cast< AppLocal * >( app )->SyncVrThread();
+        static_cast< App * >( app )->StartVrThread();
+        static_cast< App * >( app )->SyncVrThread();
 	}
 	else
 	{	// Just update the activity object.
 		LOG( "Update AppLocal( %p %p %p )", jni, activity, this );
-		if ( static_cast< AppLocal * >( app )->javaObject != NULL )
+        if ( static_cast< App * >( app )->javaObject != NULL )
 		{
-			jni->DeleteGlobalRef( static_cast< AppLocal * >( app )->javaObject );
+            jni->DeleteGlobalRef( static_cast< App * >( app )->javaObject );
 		}
-		static_cast< AppLocal * >( app )->javaObject = jni->NewGlobalRef( activity );
-		static_cast< AppLocal * >( app )->VrModeParms.ActivityObject = static_cast< AppLocal * >( app )->javaObject;
+        static_cast< App * >( app )->javaObject = jni->NewGlobalRef( activity );
+        static_cast< App * >( app )->VrModeParms.ActivityObject = static_cast< App * >( app )->javaObject;
 	}
 
 	// Send the intent and wait for it to complete.
     VString intentMessage = ComposeIntentMessage(utfFromPackageString, utfUriString, utfJsonString);
     VByteArray utf8Intent = intentMessage.toUtf8();
-    static_cast< AppLocal * >( app )->GetMessageQueue().PostPrintf(utf8Intent.data());
-	static_cast< AppLocal * >( app )->SyncVrThread();
+    static_cast< App * >( app )->GetMessageQueue().PostPrintf(utf8Intent.data());
+    static_cast< App * >( app )->SyncVrThread();
 
 	return (jlong)app;
 }
@@ -391,7 +391,7 @@ extern void ShowFPS( void * appPtr, const char * cmd );
 
 App *vApp = nullptr;
 
-AppLocal::AppLocal( JNIEnv & jni_, jobject activityObject_, VrAppInterface & interface_ ) :
+App::App( JNIEnv & jni_, jobject activityObject_, VrAppInterface & interface_ ) :
             exitOnDestroy( true ),
             oneTimeInitCalled( false ),
             vrThreadSynced( false ),
@@ -556,7 +556,7 @@ AppLocal::AppLocal( JNIEnv & jni_, jobject activityObject_, VrAppInterface & int
 	RegisterConsoleFunction( "showFPS", NervGear::ShowFPS );
 }
 
-AppLocal::~AppLocal()
+App::~App()
 {
 	LOG( "---------- ~AppLocal() ----------" );
 
@@ -575,7 +575,7 @@ AppLocal::~AppLocal()
 	}
 }
 
-void AppLocal::StartVrThread()
+void App::StartVrThread()
 {
 	LOG( "StartVrThread" );
 
@@ -586,7 +586,7 @@ void AppLocal::StartVrThread()
 	}
 }
 
-void AppLocal::StopVrThread()
+void App::StopVrThread()
 {
 	LOG( "StopVrThread" );
 
@@ -598,13 +598,13 @@ void AppLocal::StopVrThread()
 	}
 }
 
-void AppLocal::SyncVrThread()
+void App::SyncVrThread()
 {
 	vrMessageQueue.SendPrintf( "sync " );
     vrThreadSynced = true;
 }
 
-void AppLocal::InitFonts()
+void App::InitFonts()
 {
     defaultFont = BitmapFont::Create();
 
@@ -642,21 +642,21 @@ void AppLocal::InitFonts()
     menuFontSurface->Init( 8192 );
 }
 
-void AppLocal::ShutdownFonts()
+void App::ShutdownFonts()
 {
     BitmapFont::Free( defaultFont );
     BitmapFontSurface::Free( worldFontSurface );
     BitmapFontSurface::Free( menuFontSurface );
 }
 
-VMessageQueue & AppLocal::GetMessageQueue()
+VMessageQueue & App::GetMessageQueue()
 {
 	return vrMessageQueue;
 }
 
 // This callback happens from the java thread, after a string has been
 // pulled off the message queue
-void AppLocal::TtjCommand(JNIEnv *jni, const char * commandString)
+void App::TtjCommand(JNIEnv *jni, const char * commandString)
 {
 	if ( MatchesHead( "sound ", commandString ) )
 	{
@@ -679,7 +679,7 @@ void AppLocal::TtjCommand(JNIEnv *jni, const char * commandString)
 	}
 }
 
-void AppLocal::CreateToast( const char * fmt, ... )
+void App::CreateToast( const char * fmt, ... )
 {
 	char bigBuffer[4096];
 	va_list	args;
@@ -692,7 +692,7 @@ void AppLocal::CreateToast( const char * fmt, ... )
     ttj.GetMessageQueue().PostPrintf( "toast %s", bigBuffer );
 }
 
-void AppLocal::PlaySound( const char * name )
+void App::PlaySound( const char * name )
 {
 	// Get sound from SoundManager
 	VString soundFile;
@@ -710,7 +710,7 @@ void AppLocal::PlaySound( const char * name )
 	}
 }
 
-void AppLocal::StartSystemActivity( const char * command )
+void App::StartSystemActivity( const char * command )
 {
 	if ( ovr_StartSystemActivity( OvrMobile, command, NULL ) ) {
 		return;
@@ -755,19 +755,19 @@ void AppLocal::StartSystemActivity( const char * command )
     errorMessageEndTime = ovr_GetTimeInSeconds() + 7.5f;
 }
 
-void AppLocal::ReadFileFromApplicationPackage( const char * nameInZip, uint &length, void * & buffer)
+void App::ReadFileFromApplicationPackage( const char * nameInZip, uint &length, void * & buffer)
 {
     const VApkFile &apk = VApkFile::CurrentApkFile();
     apk.read(nameInZip, buffer, length);
 }
 
-void AppLocal::OpenApplicationPackage()
+void App::OpenApplicationPackage()
 {
     m_packageCodePath = JniUtils::GetPackageCodePath(uiJni, vrActivityClass, javaObject);
     m_packageName = JniUtils::GetCurrentPackageName(uiJni, javaObject);
 }
 
-VString AppLocal::GetInstalledPackagePath( const char * packageName ) const
+VString App::GetInstalledPackagePath( const char * packageName ) const
 {
 	jmethodID getInstalledPackagePathId = GetMethodID( "getInstalledPackagePath", "(Ljava/lang/String;)Ljava/lang/String;" );
 	if ( getInstalledPackagePathId != NULL )
@@ -782,7 +782,7 @@ VString AppLocal::GetInstalledPackagePath( const char * packageName ) const
 }
 
 // Error checks and exits on failure
-jmethodID AppLocal::GetMethodID( const char * name, const char * signature ) const
+jmethodID App::GetMethodID( const char * name, const char * signature ) const
 {
     jmethodID mid = uiJni->GetMethodID( vrActivityClass, name, signature );
 	if ( !mid )
@@ -792,7 +792,7 @@ jmethodID AppLocal::GetMethodID( const char * name, const char * signature ) con
 	return mid;
 }
 
-jmethodID AppLocal::GetMethodID( jclass clazz, const char * name, const char * signature ) const
+jmethodID App::GetMethodID( jclass clazz, const char * name, const char * signature ) const
 {
     jmethodID mid = uiJni->GetMethodID( clazz, name, signature );
 	if ( !mid )
@@ -802,7 +802,7 @@ jmethodID AppLocal::GetMethodID( jclass clazz, const char * name, const char * s
 	return mid;
 }
 
-jmethodID AppLocal::GetStaticMethodID( jclass cls, const char * name, const char * signature ) const
+jmethodID App::GetStaticMethodID( jclass cls, const char * name, const char * signature ) const
 {
     jmethodID mid = uiJni->GetStaticMethodID( cls, name, signature );
 	if ( !mid )
@@ -813,7 +813,7 @@ jmethodID AppLocal::GetStaticMethodID( jclass cls, const char * name, const char
 	return mid;
 }
 
-jclass AppLocal::GetGlobalClassReference( const char * className ) const
+jclass App::GetGlobalClassReference( const char * className ) const
 {
     jclass lc = uiJni->FindClass(className);
 	if ( lc == 0 )
@@ -869,7 +869,7 @@ static const char* vertexShaderSource =
  * The Java VM must be attached to this thread to allow SurfaceTexture
  * creation.
  */
-void AppLocal::InitGlObjects()
+void App::InitGlObjects()
 {
 	vrParms = DefaultVrParmsForRenderer( eglr );
 
@@ -942,7 +942,7 @@ void AppLocal::InitGlObjects()
     eyeDecorations.Init();
 }
 
-void AppLocal::ShutdownGlObjects()
+void App::ShutdownGlObjects()
 {
 	DeleteProgram( externalTextureProgram2 );
 	DeleteProgram( untexturedMvpProgram );
@@ -978,7 +978,7 @@ Vector3f ViewRight( const Matrix4f & view )
 	return Vector3f( view.M[0][0], view.M[1][0], view.M[2][0] );
 }
 
-void AppLocal::SetVrModeParms( ovrModeParms parms )
+void App::SetVrModeParms( ovrModeParms parms )
 {
 	if ( OvrMobile )
 	{
@@ -992,7 +992,7 @@ void AppLocal::SetVrModeParms( ovrModeParms parms )
 	}
 }
 
-void AppLocal::Pause()
+void App::Pause()
 {
 	appInterface->Paused();
 
@@ -1007,7 +1007,7 @@ void AppLocal::Pause()
  * On pressing the power button, pause/resume happens without destroying
  * the window.
  */
-void AppLocal::Resume()
+void App::Resume()
 {
 	DROIDLOG( "OVRTimer", "AppLocal::Resume" );
 
@@ -1103,7 +1103,7 @@ Matrix4f PanelMatrix( const Matrix4f & lastViewMatrix, const float popupDistance
  * Process commands sent over the message queue for the VR thread.
  *
  */
-void AppLocal::Command( const char *msg )
+void App::Command( const char *msg )
 {
 	// Always include the space in MatchesHead to prevent problems
 	// with commands that have matching prefixes.
@@ -1380,7 +1380,7 @@ void ToggleScreenColor()
 	glDisable( GL_WRITEONLY_RENDERING_QCOM );
 }
 
-void AppLocal::InterpretTouchpad( VrInput & input )
+void App::InterpretTouchpad( VrInput & input )
 {
 	// 1) Down -> Up w/ Motion = Slide
 	// 2) Down -> Up w/out Motion -> Timeout = Single Tap
@@ -1520,7 +1520,7 @@ void AppLocal::InterpretTouchpad( VrInput & input )
 	}
 }
 
-void AppLocal::FrameworkButtonProcessing( const VrInput & input )
+void App::FrameworkButtonProcessing( const VrInput & input )
 {
 	// Toggle calibration lines
 	bool const rightTrigger = input.buttonState & BUTTON_RIGHT_TRIGGER;
@@ -1641,7 +1641,7 @@ void AppLocal::FrameworkButtonProcessing( const VrInput & input )
  * Continuously renders frames when active, checking for commands
  * from the main thread between frames.
  */
-void AppLocal::VrThreadFunction()
+void App::VrThreadFunction()
 {
 	// Set the name that will show up in systrace
 	pthread_setname_np( pthread_self(), "NervGear::VrThread" );
@@ -2126,9 +2126,9 @@ void AppLocal::VrThreadFunction()
 }
 
 // Shim to call a C++ object from a posix thread start.
-void *AppLocal::ThreadStarter( void * parm )
+void *App::ThreadStarter( void * parm )
 {
-	((AppLocal *)parm)->VrThreadFunction();
+    ((App *)parm)->VrThreadFunction();
 
 	return NULL;
 }
@@ -2136,7 +2136,7 @@ void *AppLocal::ThreadStarter( void * parm )
 /*
  * GetEyeParms()
  */
-EyeParms AppLocal::GetEyeParms()
+EyeParms App::GetEyeParms()
 {
 	return vrParms;
 }
@@ -2144,7 +2144,7 @@ EyeParms AppLocal::GetEyeParms()
 /*
  * SetVrParms()
  */
-void AppLocal::SetEyeParms( const EyeParms parms )
+void App::SetEyeParms( const EyeParms parms )
 {
 	vrParms = parms;
 }
@@ -2184,7 +2184,7 @@ static int buttonMappings[] = {
 static float test = 0.0f;
 #endif
 
-void AppLocal::KeyEvent( const int keyCode, const bool down, const int repeatCount )
+void App::KeyEvent( const int keyCode, const bool down, const int repeatCount )
 {
 	// the back key is special because it has to handle long-press and double-tap
 	if ( keyCode == AKEYCODE_BACK )
@@ -2297,7 +2297,7 @@ void AppLocal::KeyEvent( const int keyCode, const bool down, const int repeatCou
 	}
 }
 
-Matrix4f AppLocal::MatrixInterpolation( const Matrix4f & startMatrix, const Matrix4f & endMatrix, double t )
+Matrix4f App::MatrixInterpolation( const Matrix4f & startMatrix, const Matrix4f & endMatrix, double t )
 {
 	Matrix4f result;
 	Quat<float> startQuat = (Quat<float>) startMatrix ;
@@ -2391,53 +2391,50 @@ Matrix4f AppLocal::MatrixInterpolation( const Matrix4f & startMatrix, const Matr
 	return result;
 }
 
-
-App::~App() { }	// avoids "undefined reference to 'vtable for NervGear::App'" error
-
-OvrGuiSys & AppLocal::GetGuiSys()
+OvrGuiSys & App::GetGuiSys()
 {
     return *guiSys;
 }
-OvrGazeCursor & AppLocal::GetGazeCursor()
+OvrGazeCursor & App::GetGazeCursor()
 {
     return *gazeCursor;
 }
-BitmapFont & AppLocal::GetDefaultFont()
+BitmapFont & App::GetDefaultFont()
 {
     return *defaultFont;
 }
-BitmapFontSurface & AppLocal::GetWorldFontSurface()
+BitmapFontSurface & App::GetWorldFontSurface()
 {
     return *worldFontSurface;
 }
-BitmapFontSurface & AppLocal::GetMenuFontSurface()
+BitmapFontSurface & App::GetMenuFontSurface()
 {
     return *menuFontSurface;
 }   // TODO: this could be in the menu system now
 
-OvrVRMenuMgr & AppLocal::GetVRMenuMgr()
+OvrVRMenuMgr & App::GetVRMenuMgr()
 {
     return *vrMenuMgr;
 }
-OvrDebugLines & AppLocal::GetDebugLines()
+OvrDebugLines & App::GetDebugLines()
 {
     return *debugLines;
 }
-const VStandardPath & AppLocal::GetStoragePaths()
+const VStandardPath & App::GetStoragePaths()
 {
     return *storagePaths;
 }
-OvrSoundManager & AppLocal::GetSoundMgr()
+OvrSoundManager & App::GetSoundMgr()
 {
     return soundManager;
 }
 
-bool AppLocal::IsGuiOpen() const
+bool App::IsGuiOpen() const
 {
     return guiSys->isAnyMenuOpen();
 }
 
-bool AppLocal::IsTime24HourFormat() const
+bool App::IsTime24HourFormat() const
 {
 	bool r = false;
 	if ( isTime24HourFormatId != NULL )
@@ -2447,7 +2444,7 @@ bool AppLocal::IsTime24HourFormat() const
 	return r;
 }
 
-int AppLocal::GetSystemBrightness() const
+int App::GetSystemBrightness() const
 {
 	int cur = 255;
 	// FIXME: this specifically checks for Note4 before calling the function because calling it on other
@@ -2459,7 +2456,7 @@ int AppLocal::GetSystemBrightness() const
 	return cur;
 }
 
-void AppLocal::SetSystemBrightness( int const v )
+void App::SetSystemBrightness( int const v )
 {
 	int v2 = Alg::Clamp( v, 0, 255 );
 	// FIXME: this specifically checks for Note4 before calling the function because calling it on other
@@ -2470,7 +2467,7 @@ void AppLocal::SetSystemBrightness( int const v )
 	}
 }
 
-bool AppLocal::GetComfortModeEnabled() const
+bool App::GetComfortModeEnabled() const
 {
 	bool r = true;
     if ( getComfortViewModeMethodId != NULL && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0)
@@ -2480,7 +2477,7 @@ bool AppLocal::GetComfortModeEnabled() const
 	return r;
 }
 
-void AppLocal::SetComfortModeEnabled( bool const enabled )
+void App::SetComfortModeEnabled( bool const enabled )
 {
     if ( enableComfortViewModeMethodId != NULL && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0)
 	{
@@ -2488,7 +2485,7 @@ void AppLocal::SetComfortModeEnabled( bool const enabled )
 	}
 }
 
-void AppLocal::SetDoNotDisturbMode( bool const enable )
+void App::SetDoNotDisturbMode( bool const enable )
 {
     if ( setDoNotDisturbModeMethodId != NULL && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0)
 	{
@@ -2496,7 +2493,7 @@ void AppLocal::SetDoNotDisturbMode( bool const enable )
 	}
 }
 
-bool AppLocal::GetDoNotDisturbMode() const
+bool App::GetDoNotDisturbMode() const
 {
 	bool r = false;
     if ( getDoNotDisturbModeMethodId != NULL && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0)
@@ -2506,29 +2503,29 @@ bool AppLocal::GetDoNotDisturbMode() const
 	return r;
 }
 
-int AppLocal::GetWifiSignalLevel() const
+int App::GetWifiSignalLevel() const
 {
 	int level = ovr_GetWifiSignalLevel();
 	return level;
 }
 
-eWifiState AppLocal::GetWifiState() const
+eWifiState App::GetWifiState() const
 {
 	return ovr_GetWifiState();
 }
 
-int AppLocal::GetCellularSignalLevel() const
+int App::GetCellularSignalLevel() const
 {
 	int level = ovr_GetCellularSignalLevel();
 	return level;
 }
 
-eCellularState AppLocal::GetCellularState() const
+eCellularState App::GetCellularState() const
 {
 	return ovr_GetCellularState();
 }
 
-bool AppLocal::IsAirplaneModeEnabled() const
+bool App::IsAirplaneModeEnabled() const
 {
 	bool r = false;
 	if ( isAirplaneModeEnabledMethodId != NULL  )
@@ -2538,7 +2535,7 @@ bool AppLocal::IsAirplaneModeEnabled() const
 	return r;
 }
 
-bool AppLocal::GetBluetoothEnabled() const
+bool App::GetBluetoothEnabled() const
 {
 	bool r = false;
 	if ( getBluetoothEnabledMethodId != NULL )
@@ -2548,151 +2545,151 @@ bool AppLocal::GetBluetoothEnabled() const
 	return r;
 }
 
-bool AppLocal::IsAsynchronousTimeWarp() const
+bool App::IsAsynchronousTimeWarp() const
 {
 	return VrModeParms.AsynchronousTimeWarp;
 }
 
-bool AppLocal::GetHasHeadphones() const {
+bool App::GetHasHeadphones() const {
 	return ovr_GetHeadsetPluggedState();
 }
 
-bool AppLocal::GetFramebufferIsSrgb() const
+bool App::GetFramebufferIsSrgb() const
 {
     return framebufferIsSrgb;
 }
 
-bool AppLocal::GetFramebufferIsProtected() const
+bool App::GetFramebufferIsProtected() const
 {
     return framebufferIsProtected;
 }
 
-bool AppLocal::GetRenderMonoMode() const
+bool App::GetRenderMonoMode() const
 {
 	return renderMonoMode;
 }
 
-void AppLocal::SetRenderMonoMode( bool const mono )
+void App::SetRenderMonoMode( bool const mono )
 {
 	renderMonoMode = mono;
 }
 
-const VString &AppLocal::packageCodePath() const
+const VString &App::packageCodePath() const
 {
     return m_packageCodePath;
 }
 
-Matrix4f const & AppLocal::GetLastViewMatrix() const
+Matrix4f const & App::GetLastViewMatrix() const
 {
 	return lastViewMatrix;
 }
 
-void AppLocal::SetLastViewMatrix( Matrix4f const & m )
+void App::SetLastViewMatrix( Matrix4f const & m )
 {
 	lastViewMatrix = m;
 }
 
-EyeParms & AppLocal::GetVrParms()
+EyeParms & App::GetVrParms()
 {
 	return vrParms;
 }
 
-ovrModeParms AppLocal::GetVrModeParms()
+ovrModeParms App::GetVrModeParms()
 {
 	return VrModeParms;
 }
 
-void AppLocal::SetPopupDistance( float const d )
+void App::SetPopupDistance( float const d )
 {
 	popupDistance = d;
 }
 
-float AppLocal::GetPopupDistance() const
+float App::GetPopupDistance() const
 {
 	return popupDistance;
 }
 
-void AppLocal::SetPopupScale( float const s )
+void App::SetPopupScale( float const s )
 {
 	popupScale = s;
 }
 
-float AppLocal::GetPopupScale() const
+float App::GetPopupScale() const
 {
 	return popupScale;
 }
 
-bool AppLocal::GetPowerSaveActive() const
+bool App::GetPowerSaveActive() const
 {
 	return ovr_GetPowerLevelStateThrottled();
 }
 
-int AppLocal::GetCpuLevel() const
+int App::GetCpuLevel() const
 {
 	return VrModeParms.CpuLevel;
 }
 
-int AppLocal::GetGpuLevel() const
+int App::GetGpuLevel() const
 {
 	return VrModeParms.GpuLevel;
 }
 
-int AppLocal::GetBatteryLevel() const
+int App::GetBatteryLevel() const
 {
     return batteryLevel;
 }
 
-eBatteryStatus AppLocal::GetBatteryStatus() const
+eBatteryStatus App::GetBatteryStatus() const
 {
     return batteryStatus;
 }
 
-JavaVM	* AppLocal::GetJavaVM()
+JavaVM	* App::GetJavaVM()
 {
 	return javaVM;
 }
 
-JNIEnv * AppLocal::GetUiJni()
+JNIEnv * App::GetUiJni()
 {
     return uiJni;
 }
 
-JNIEnv * AppLocal::GetVrJni()
+JNIEnv * App::GetVrJni()
 {
     return vrJni;
 }
 
-jobject	& AppLocal::GetJavaObject()
+jobject	& App::GetJavaObject()
 {
 	return javaObject;
 }
 
-jclass & AppLocal::GetVrActivityClass()
+jclass & App::GetVrActivityClass()
 {
 	return vrActivityClass;
 }
 
-SurfaceTexture * AppLocal::GetDialogTexture()
+SurfaceTexture * App::GetDialogTexture()
 {
 	return dialogTexture;
 }
 
-ovrTimeWarpParms const & AppLocal::GetSwapParms() const
+ovrTimeWarpParms const & App::GetSwapParms() const
 {
     return swapParms;
 }
 
-ovrTimeWarpParms & AppLocal::GetSwapParms()
+ovrTimeWarpParms & App::GetSwapParms()
 {
     return swapParms;
 }
 
-ovrSensorState const & AppLocal::GetSensorForNextWarp() const
+ovrSensorState const & App::GetSensorForNextWarp() const
 {
     return sensorForNextWarp;
 }
 
-void AppLocal::SetShowFPS( bool const show )
+void App::SetShowFPS( bool const show )
 {
     bool wasShowing = showFPS;
     showFPS = show;
@@ -2702,27 +2699,27 @@ void AppLocal::SetShowFPS( bool const show )
 	}
 }
 
-bool AppLocal::GetShowFPS() const
+bool App::GetShowFPS() const
 {
     return showFPS;
 }
 
-VrAppInterface * AppLocal::GetAppInterface()
+VrAppInterface * App::GetAppInterface()
 {
 	return appInterface;
 }
 
-VrViewParms const &	AppLocal::GetVrViewParms() const
+VrViewParms const &	App::GetVrViewParms() const
 {
     return viewParms;
 }
 
-void AppLocal::SetVrViewParms( VrViewParms const & parms )
+void App::SetVrViewParms( VrViewParms const & parms )
 {
     viewParms = parms;
 }
 
-void AppLocal::ShowInfoText( float const duration, const char * fmt, ... )
+void App::ShowInfoText( float const duration, const char * fmt, ... )
 {
 	char buffer[1024];
 	va_list args;
@@ -2736,7 +2733,7 @@ void AppLocal::ShowInfoText( float const duration, const char * fmt, ... )
     infoTextEndFrame = vrFrame.FrameNumber + (long long)( duration * 60.0f ) + 1;
 }
 
-void AppLocal::ShowInfoText( float const duration, Vector3f const & offset, Vector4f const & color, const char * fmt, ... )
+void App::ShowInfoText( float const duration, Vector3f const & offset, Vector4f const & color, const char * fmt, ... )
 {
 	char buffer[1024];
 	va_list args;
@@ -2753,38 +2750,38 @@ void AppLocal::ShowInfoText( float const duration, Vector3f const & offset, Vect
     infoTextEndFrame = vrFrame.FrameNumber + (long long)( duration * 60.0f ) + 1;
 }
 
-KeyState & AppLocal::GetBackKeyState()
+KeyState & App::GetBackKeyState()
 {
     return backKeyState;
 }
 
-ovrMobile * AppLocal::GetOvrMobile()
+ovrMobile * App::GetOvrMobile()
 {
 	return OvrMobile;
 }
 
-void AppLocal::SetShowVolumePopup( bool const show )
+void App::SetShowVolumePopup( bool const show )
 {
     showVolumePopup = show;
 }
 
-bool AppLocal::GetShowVolumePopup() const
+bool App::GetShowVolumePopup() const
 {
     return showVolumePopup;
 }
 
-const VString &AppLocal::packageName() const
+const VString &App::packageName() const
 {
     return m_packageName;
 }
 
-bool AppLocal::IsWifiConnected() const
+bool App::IsWifiConnected() const
 {
     jmethodID isWififConnectedMethodId = JniUtils::GetStaticMethodID( vrJni, vrLibClass, "isWifiConnected", "(Landroid/app/Activity;)Z" );
     return vrJni->CallStaticBooleanMethod( vrLibClass, isWififConnectedMethodId, javaObject );
 }
 
-void AppLocal::RecenterYaw( const bool showBlack )
+void App::RecenterYaw( const bool showBlack )
 {
 	LOG( "AppLocal::RecenterYaw" );
 	if ( showBlack )
@@ -2810,12 +2807,12 @@ void AppLocal::RecenterYaw( const bool showBlack )
 	GetGuiSys().resetMenuOrientations( this, lastViewMatrix );
 }
 
-void AppLocal::SetRecenterYawFrameStart( const long long frameNumber )
+void App::SetRecenterYawFrameStart( const long long frameNumber )
 {
 	recenterYawFrameStart = frameNumber;
 }
 
-long long AppLocal::GetRecenterYawFrameStart() const
+long long App::GetRecenterYawFrameStart() const
 {
 	return recenterYawFrameStart;
 }
