@@ -8,8 +8,6 @@
 #include "android/LogUtils.h"
 #include "api/VrApi.h"
 #include "api/VrApi_Android.h"
-#include "GlTexture.h"
-#include "GlGeometry.h"
 #include "SurfaceTexture.h"
 #include "EyeBuffers.h"
 #include "EyePostRender.h"
@@ -33,7 +31,6 @@ NV_NAMESPACE_BEGIN
 // forward declarations
 class EyeBuffers;
 struct MaterialParms;
-class GlGeometry;
 class VRMenuObjectParms;
 class OvrGuiSys;
 class OvrGazeCursor;
