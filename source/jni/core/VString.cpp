@@ -142,6 +142,7 @@ void VString::assign(const char16_t *str, uint size)
         return;
     }
 
+    resize(size);
     for (uint i = 0; i < size; i++) {
         at(i) = str[i];
     }
