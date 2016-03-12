@@ -37,11 +37,11 @@ public:
     virtual int         read(uchar *pbuffer, int numBytes) override             { return -1; OVR_UNUSED2(pbuffer, numBytes); }
     virtual int         skipBytes(int numBytes) override                        { return 0;  OVR_UNUSED(numBytes); }
     virtual int         bytesAvailable() override                               { return 0; }
-    virtual bool        Flush() override                                        { return 0; }
+    virtual bool        bufferFlush() override                                        { return 0; }
     virtual int         seek(int offset, std::ios_base::seekdir origin) override                   { return -1; OVR_UNUSED2(offset, origin); }
     virtual long long   seek64(long long offset, std::ios_base::seekdir origin) override               { return -1; OVR_UNUSED2(offset, origin); }
 
     virtual int         copyFromStream(VFile *pstream, int byteSize) override    { return -1; OVR_UNUSED2(pstream, byteSize); }
-    virtual bool        Close() override                                        { return 0; }
+    virtual bool        fileClose() override                                        { return 0; }
 };
 NV_NAMESPACE_END

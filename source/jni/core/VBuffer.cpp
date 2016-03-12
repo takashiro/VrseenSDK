@@ -59,7 +59,7 @@ VBuffer::~VBuffer()
 {
     // Flush in case there's data
     if (m_file) {
-        flushBuffer();
+        flush();
     }
     // Get rid of buffer
     if (m_buffer) {
@@ -96,7 +96,7 @@ bool    VBuffer::setBufferMode(BufferModeType mode)
         return true;
     }
 
-    flushBuffer();
+    flush();
 
     // Can't set write mode if we can't write
     if ((mode == WriteBuffer) && (!m_file || !m_file->isWritable()) )
@@ -110,7 +110,7 @@ bool    VBuffer::setBufferMode(BufferModeType mode)
 }
 
 // Flushes buffer
-void    VBuffer::flushBuffer()
+void    VBuffer::flush()
 {
     switch(m_bufferMode)
     {
@@ -243,7 +243,7 @@ int     VBuffer::write(const uchar *psourceBuffer, int numBytes)
         // If not data space in buffer, flush
         if ((BUFFER_LENGTH - (int)m_pos) < numBytes)
         {
-            flushBuffer();
+            flush();
             // If bigger then tolerance, just write directly
             if (numBytes > BUFFER_TOLERANCE)
             {
@@ -386,10 +386,10 @@ int     VBuffer::bytesAvailable()
     return available;
 }
 
-bool    VBuffer::Flush()
+bool    VBuffer::bufferFlush()
 {
-    flushBuffer();
-    return m_file->Flush();
+    flush();
+    return m_file->bufferFlush();
 }
 
 // Seeking could be optimized better..
@@ -428,12 +428,12 @@ int     VBuffer::seek(int offset,std::ios_base::seekdir origin)
         }
         else
         {
-            flushBuffer();
+            flush();
         }
     }
     else
     {
-        flushBuffer();
+        flush();
     }
 
     /*
@@ -491,12 +491,12 @@ long long  VBuffer::seek64(long long offset,std::ios_base::seekdir origin)
         }
         else
         {
-            flushBuffer();
+            flush();
         }
     }
     else
     {
-        flushBuffer();
+        flush();
     }
 
 /*
@@ -548,12 +548,12 @@ int    VBuffer::copyFromStream(VFile *pstream, int byteSize)
 
 // Closing files
 
-bool    VBuffer::Close()
+bool    VBuffer::fileClose()
 {
     switch(m_bufferMode)
     {
         case WriteBuffer:
-            flushBuffer();
+            flush();
             break;
         case ReadBuffer:
             // No need to seek back on close
@@ -563,7 +563,7 @@ bool    VBuffer::Close()
             break;
     }
 
-    return m_file->Close();
+    return m_file->fileClose();
 }
 
 // defninetin of GetShortFilename()

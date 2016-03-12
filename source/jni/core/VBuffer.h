@@ -36,7 +36,7 @@ protected:
     bool    setBufferMode(BufferModeType mode);
     // Flushes buffer
     // WriteBuffer - write data to disk, ReadBuffer - reset buffer & fix file position
-    void    flushBuffer();
+    void    flush();
     // Loads data into ReadBuffer
     // WARNING: Right now LoadBuffer() assumes the buffer's empty
     void    loadBuffer();
@@ -70,14 +70,14 @@ public:
     virtual int         skipBytes(int numBytes) override;
     virtual int         bytesAvailable() override;
 
-    virtual bool        Flush() override;
+    virtual bool        bufferFlush() override;
 
     virtual int         seek(int offset, std::ios_base::seekdir origin=std::ios_base::beg) override;
     virtual long long      seek64(long long offset, std::ios_base::seekdir origin=std::ios_base::beg) override;
 
     virtual int         copyFromStream(VFile *pstream, int byteSize) override;
 
-    virtual bool        Close() override;
+    virtual bool        fileClose() override;
 };
 
 NV_NAMESPACE_END

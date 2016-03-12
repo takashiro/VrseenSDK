@@ -204,7 +204,7 @@ int     VFILEFile::errorCode()
 int     VFILEFile::write(const uchar *pbuffer, int numBytes)
 {
     if (LastOp && LastOp != Open_Write) {
-        Flush();
+        bufferFlush();
     }
     LastOp = Open_Write;
 //    int written = (int) fwrite(pbuffer, 1, numBytes, fs);
@@ -225,7 +225,7 @@ int     VFILEFile::write(const uchar *pbuffer, int numBytes)
 int     VFILEFile::read(uchar *pbuffer, int numBytes)
 {
     if (LastOp && LastOp != Open_Read) {
-        Flush();
+        bufferFlush();
     }
     LastOp = Open_Read;
 
@@ -290,7 +290,7 @@ int     VFILEFile::bytesAvailable()
 }
 
 // Flush file contents
-bool    VFILEFile::Flush()
+bool    VFILEFile::bufferFlush()
 {
     flush();
     return good();
@@ -355,7 +355,7 @@ int VFILEFile::copyFromStream(VFile *pstream, int byteSize)
 }
 
 
-bool VFILEFile::Close()
+bool VFILEFile::fileClose()
 {
 #ifdef OVR_FILE_VERIFY_SEEK_ERRORS
     if (pFileTestBuffer)

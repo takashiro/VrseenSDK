@@ -67,7 +67,7 @@ public:
     ~VFILEFile()
     {
         if (Opened)
-            Close();
+            fileClose();
     }
 
     virtual const char* filePath();
@@ -90,12 +90,12 @@ public:
     virtual int         read(uchar *pbuffer, int numBytes) override;
     virtual int         skipBytes(int numBytes) override;
     virtual int         bytesAvailable() override;
-    virtual bool        Flush() override;
+    virtual bool        bufferFlush() override;
     virtual int         seek(int offset, std::ios_base::seekdir origin) override;
     virtual long long      seek64(long long offset, std::ios_base::seekdir origin) override;
 
     virtual int         copyFromStream(VFile *pStream, int byteSize) override;
-    virtual bool        Close() override;
+    virtual bool        fileClose() override;
 private:
     void                init();
 };

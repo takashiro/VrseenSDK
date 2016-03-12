@@ -52,7 +52,7 @@ public:
         Open_CreateOnly = 24,
 
         // Open file with buffering
-        Open_Buffered    = 32
+//        Open_Buffered    = 32
     };
 
     // *** File Mode flags
@@ -138,7 +138,7 @@ public:
 
     // Causes any implementation's buffered data to be delivered to destination
     // Return 0 for error
-    virtual bool        Flush() = 0;
+    virtual bool        bufferFlush() = 0;
 
 
     // Need to provide a more optimized implementation that doe snot necessarily involve a lot of seeking
@@ -161,7 +161,7 @@ public:
 
     // Closes the file
     // After close, file cannot be accessed
-    virtual bool        Close() = 0;
+    virtual bool        fileClose() = 0;
 };
 
 NV_NAMESPACE_END

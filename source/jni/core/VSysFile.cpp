@@ -10,7 +10,7 @@
 
 NV_NAMESPACE_BEGIN
 
-// ***** System File
+// ***** System Filebool  open(const VString& path, int flags = Open_Read | Open_Buffered, int mode = ReadWrite);
 
 // System file is created to access objects on file system directly
 // This file can refer directly to path
@@ -39,12 +39,12 @@ bool VSysFile::open(const VString& path, int flags, int mode)
     if ((!m_file) || (!m_file->isValid()))
     {
         m_file = *new VUnopenedFile;
-        return 0;
+        return false;
     }
     //pFile = *OVR_NEW DelegatedFile(pFile); // MA Testing
-    if (flags & Open_Buffered)
-        m_file = *new VBuffer(m_file);
-    return 1;
+//    if (flags & Open_Buffered)
+//        m_file = *new VBuffer(m_file);
+    return true;
 }
 
 
@@ -63,11 +63,11 @@ bool VSysFile::isValid()
     return m_file && m_file->isValid();
 }
 
-bool VSysFile::Close()
+bool VSysFile::fileClose()
 {
     if (isValid())
     {
-        VDelegatedFile::Close();
+        VDelegatedFile::fileClose();
         m_file = *new VUnopenedFile;
         return 1;
     }

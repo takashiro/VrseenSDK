@@ -48,7 +48,7 @@ public:
     virtual int         bytesAvailable() override                             { return m_file->bytesAvailable(); }
 
 
-    virtual bool        Flush() override                                      { return m_file->Flush(); }
+    virtual bool        bufferFlush() override                                      { return m_file->bufferFlush(); }
 
     // Seeking
     virtual int         seek(int offset, std::ios_base::seekdir origin=std::ios_base::beg) override        { return m_file->seek(offset,origin); }
@@ -58,7 +58,7 @@ public:
 
     // Closing the file
 
-    virtual bool        Close() override                                      { return m_file->Close(); }
+    virtual bool        fileClose() override                                      { return m_file->fileClose(); }
 };
 NV_NAMESPACE_END
 
