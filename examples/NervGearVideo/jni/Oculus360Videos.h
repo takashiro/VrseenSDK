@@ -94,9 +94,9 @@ private:
 
 	// panorama vars
 	GLuint				BackgroundTexId;
-	GlProgram			PanoramaProgram;
-	GlProgram			FadedPanoramaProgram;
-	GlProgram			SingleColorTextureProgram;
+	VGlShader			PanoramaProgram;
+	VGlShader			FadedPanoramaProgram;
+	VGlShader			SingleColorTextureProgram;
 
 	Array< VString > 	SearchPaths;
 	OvrVideosMetaData *	MetaData;

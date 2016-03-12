@@ -114,14 +114,14 @@ public:
 	ModelInScene			WorldModel;
 	long long				SceneId;		// for network identification
 
-	GlProgram				ProgVertexColor;
-	GlProgram				ProgSingleTexture;
-	GlProgram				ProgLightMapped;
-	GlProgram				ProgReflectionMapped;
-	GlProgram				ProgSkinnedVertexColor;
-	GlProgram				ProgSkinnedSingleTexture;
-	GlProgram				ProgSkinnedLightMapped;
-	GlProgram				ProgSkinnedReflectionMapped;
+	VGlShader				ProgVertexColor;
+	VGlShader				ProgSingleTexture;
+	VGlShader				ProgLightMapped;
+	VGlShader				ProgReflectionMapped;
+	VGlShader				ProgSkinnedVertexColor;
+	VGlShader				ProgSkinnedSingleTexture;
+	VGlShader				ProgSkinnedLightMapped;
+	VGlShader				ProgSkinnedReflectionMapped;
 	bool					LoadedPrograms;
 
 	ModelGlPrograms			GlPrograms;

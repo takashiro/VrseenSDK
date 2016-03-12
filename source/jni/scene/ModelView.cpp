@@ -139,14 +139,14 @@ ModelGlPrograms OvrSceneView::GetDefaultGLPrograms()
 
 	if ( !LoadedPrograms )
 	{
-		ProgVertexColor				= BuildProgram( VertexColorVertexShaderSrc, VertexColorFragmentShaderSrc );
-		ProgSingleTexture			= BuildProgram( SingleTextureVertexShaderSrc, SingleTextureFragmentShaderSrc );
-		ProgLightMapped				= BuildProgram( LightMappedVertexShaderSrc, LightMappedFragmentShaderSrc );
-		ProgReflectionMapped		= BuildProgram( ReflectionMappedVertexShaderSrc, ReflectionMappedFragmentShaderSrc );
-		ProgSkinnedVertexColor		= BuildProgram( VertexColorSkinned1VertexShaderSrc, VertexColorFragmentShaderSrc );
-		ProgSkinnedSingleTexture	= BuildProgram( SingleTextureSkinned1VertexShaderSrc, SingleTextureFragmentShaderSrc );
-		ProgSkinnedLightMapped		= BuildProgram( LightMappedSkinned1VertexShaderSrc, LightMappedFragmentShaderSrc );
-		ProgSkinnedReflectionMapped	= BuildProgram( ReflectionMappedSkinned1VertexShaderSrc, ReflectionMappedFragmentShaderSrc );
+		ProgVertexColor				.initShader( VertexColorVertexShaderSrc, VertexColorFragmentShaderSrc );
+		ProgSingleTexture			.initShader( SingleTextureVertexShaderSrc, SingleTextureFragmentShaderSrc );
+		ProgLightMapped				.initShader( LightMappedVertexShaderSrc, LightMappedFragmentShaderSrc );
+		ProgReflectionMapped		.initShader( ReflectionMappedVertexShaderSrc, ReflectionMappedFragmentShaderSrc );
+		ProgSkinnedVertexColor		.initShader( VertexColorSkinned1VertexShaderSrc, VertexColorFragmentShaderSrc );
+		ProgSkinnedSingleTexture	.initShader( SingleTextureSkinned1VertexShaderSrc, SingleTextureFragmentShaderSrc );
+		ProgSkinnedLightMapped		.initShader( LightMappedSkinned1VertexShaderSrc, LightMappedFragmentShaderSrc );
+		ProgSkinnedReflectionMapped	.initShader( ReflectionMappedSkinned1VertexShaderSrc, ReflectionMappedFragmentShaderSrc );
 		LoadedPrograms = true;
 	}
 

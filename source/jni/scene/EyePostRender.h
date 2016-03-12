@@ -3,7 +3,7 @@
 #include "vglobal.h"
 
 #include "GlGeometry.h"
-#include "GlProgram.h"
+#include "../api/VGlShader.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -25,8 +25,8 @@ public:
 	// FillEdgeColor ( 0 0 0 1 )
 	void		FillEdge( int fbWidth, int fbHeight );
 
-	GlProgram	UntexturedMvpProgram;
-	GlProgram	UntexturedScreenSpaceProgram;
+	VGlShader	UntexturedMvpProgram;
+	VGlShader	UntexturedScreenSpaceProgram;
 
 	GlGeometry	CalibrationLines;
 	GlGeometry	VignetteSquare;

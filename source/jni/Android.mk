@@ -122,7 +122,6 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     scene/GazeCursor.cpp \
                     scene/GlSetup.cpp \
                     scene/GlTexture.cpp \
-                    scene/GlProgram.cpp \
                     scene/GlGeometry.cpp \
                     scene/ImageData.cpp \
                     scene/ModelRender.cpp \

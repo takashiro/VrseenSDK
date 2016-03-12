@@ -342,11 +342,11 @@ public:
 
         ovrTimeWarpParms	swapParms;			// passed to TimeWarp->WarpSwap()
 
-        GlProgram		externalTextureProgram2;
-        GlProgram		untexturedMvpProgram;
-        GlProgram		untexturedScreenSpaceProgram;
-        GlProgram		overlayScreenFadeMaskProgram;
-        GlProgram		overlayScreenDirectProgram;
+        VGlShader		externalTextureProgram2;
+        VGlShader		untexturedMvpProgram;
+        VGlShader		untexturedScreenSpaceProgram;
+        VGlShader		overlayScreenFadeMaskProgram;
+        VGlShader		overlayScreenDirectProgram;
 
         GlGeometry		unitCubeLines;		// 12 lines that outline a 0 to 1 unit cube, intended to be scaled to cover bounds.
         GlGeometry		panelGeometry;		// used for dialogs

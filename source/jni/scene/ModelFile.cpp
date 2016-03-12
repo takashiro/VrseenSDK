@@ -507,10 +507,10 @@ void LoadModelFileJson( ModelFile & model,
 											FAIL( "No ProgSkinnedReflectionMapped set");
 										}
 										model.Def.surfaces[index].materialDef.programObject = programs.ProgSkinnedReflectionMapped->program;
-										model.Def.surfaces[index].materialDef.uniformMvp = programs.ProgSkinnedReflectionMapped->uMvp;
-										model.Def.surfaces[index].materialDef.uniformModel = programs.ProgSkinnedReflectionMapped->uModel;
-										model.Def.surfaces[index].materialDef.uniformView = programs.ProgSkinnedReflectionMapped->uView;
-										model.Def.surfaces[index].materialDef.uniformJoints = programs.ProgSkinnedReflectionMapped->uJoints;
+										model.Def.surfaces[index].materialDef.uniformMvp = programs.ProgSkinnedReflectionMapped->uniformModelViewProMatrix;
+										model.Def.surfaces[index].materialDef.uniformModel = programs.ProgSkinnedReflectionMapped->uniformModelMatrix;
+										model.Def.surfaces[index].materialDef.uniformView = programs.ProgSkinnedReflectionMapped->uniformViewMatrix;
+										model.Def.surfaces[index].materialDef.uniformJoints = programs.ProgSkinnedReflectionMapped->uniformJoints;
 										LOGV( "%s skinned reflection mapped material", materialTypeString );
 									}
 									else
@@ -520,9 +520,9 @@ void LoadModelFileJson( ModelFile & model,
 											FAIL( "No ProgReflectionMapped set");
 										}
 										model.Def.surfaces[index].materialDef.programObject = programs.ProgReflectionMapped->program;
-										model.Def.surfaces[index].materialDef.uniformMvp = programs.ProgReflectionMapped->uMvp;
-										model.Def.surfaces[index].materialDef.uniformModel = programs.ProgReflectionMapped->uModel;
-										model.Def.surfaces[index].materialDef.uniformView = programs.ProgReflectionMapped->uView;
+										model.Def.surfaces[index].materialDef.uniformMvp = programs.ProgReflectionMapped->uniformModelViewProMatrix;
+										model.Def.surfaces[index].materialDef.uniformModel = programs.ProgReflectionMapped->uniformModelMatrix;
+										model.Def.surfaces[index].materialDef.uniformView = programs.ProgReflectionMapped->uniformViewMatrix;
 										LOGV( "%s reflection mapped material", materialTypeString );
 									}
 								}
@@ -537,8 +537,8 @@ void LoadModelFileJson( ModelFile & model,
 											FAIL( "No ProgSkinnedLightMapped set");
 										}
 										model.Def.surfaces[index].materialDef.programObject = programs.ProgSkinnedLightMapped->program;
-										model.Def.surfaces[index].materialDef.uniformMvp = programs.ProgSkinnedLightMapped->uMvp;
-										model.Def.surfaces[index].materialDef.uniformJoints = programs.ProgSkinnedLightMapped->uJoints;
+										model.Def.surfaces[index].materialDef.uniformMvp = programs.ProgSkinnedLightMapped->uniformModelViewProMatrix;
+										model.Def.surfaces[index].materialDef.uniformJoints = programs.ProgSkinnedLightMapped->uniformJoints;
 										LOGV( "%s skinned light mapped material", materialTypeString );
 									}
 									else
@@ -548,7 +548,7 @@ void LoadModelFileJson( ModelFile & model,
 											FAIL( "No ProgLightMapped set");
 										}
 										model.Def.surfaces[index].materialDef.programObject = programs.ProgLightMapped->program;
-										model.Def.surfaces[index].materialDef.uniformMvp = programs.ProgLightMapped->uMvp;
+										model.Def.surfaces[index].materialDef.uniformMvp = programs.ProgLightMapped->uniformModelViewProMatrix;
 										LOGV( "%s light mapped material", materialTypeString );
 									}
 								}
@@ -564,8 +564,8 @@ void LoadModelFileJson( ModelFile & model,
 										FAIL( "No ProgSkinnedSingleTexture set");
 									}
 									model.Def.surfaces[index].materialDef.programObject = programs.ProgSkinnedSingleTexture->program;
-									model.Def.surfaces[index].materialDef.uniformMvp = programs.ProgSkinnedSingleTexture->uMvp;
-									model.Def.surfaces[index].materialDef.uniformJoints = programs.ProgSkinnedSingleTexture->uJoints;
+									model.Def.surfaces[index].materialDef.uniformMvp = programs.ProgSkinnedSingleTexture->uniformModelViewProMatrix;
+									model.Def.surfaces[index].materialDef.uniformJoints = programs.ProgSkinnedSingleTexture->uniformJoints;
 									LOGV( "%s skinned diffuse only material", materialTypeString );
 								}
 								else
@@ -575,7 +575,7 @@ void LoadModelFileJson( ModelFile & model,
 										FAIL( "No ProgSingleTexture set");
 									}
 									model.Def.surfaces[index].materialDef.programObject = programs.ProgSingleTexture->program;
-									model.Def.surfaces[index].materialDef.uniformMvp = programs.ProgSingleTexture->uMvp;
+									model.Def.surfaces[index].materialDef.uniformMvp = programs.ProgSingleTexture->uniformModelViewProMatrix;
 									LOGV( "%s diffuse only material", materialTypeString );
 								}
 							}
@@ -591,7 +591,7 @@ void LoadModelFileJson( ModelFile & model,
 									FAIL( "No ProgSkinnedVertexColor set");
 								}
 								model.Def.surfaces[index].materialDef.programObject = programs.ProgSkinnedVertexColor->program;
-								model.Def.surfaces[index].materialDef.uniformMvp = programs.ProgSkinnedVertexColor->uMvp;
+								model.Def.surfaces[index].materialDef.uniformMvp = programs.ProgSkinnedVertexColor->uniformModelViewProMatrix;
 								LOGV( "%s skinned vertex color material", materialTypeString );
 							}
 							else
@@ -601,7 +601,7 @@ void LoadModelFileJson( ModelFile & model,
 									FAIL( "No ProgVertexColor set");
 								}
 								model.Def.surfaces[index].materialDef.programObject = programs.ProgVertexColor->program;
-								model.Def.surfaces[index].materialDef.uniformMvp = programs.ProgVertexColor->uMvp;
+								model.Def.surfaces[index].materialDef.uniformMvp = programs.ProgVertexColor->uniformModelViewProMatrix;
 								LOGV( "%s vertex color material", materialTypeString );
 							}
 						}
@@ -617,7 +617,7 @@ void LoadModelFileJson( ModelFile & model,
 									FAIL( "No ProgSkinnedSingleTexture set");
 								}
 								model.Def.surfaces[index].materialDef.programObject = programs.ProgSkinnedSingleTexture->program;
-								model.Def.surfaces[index].materialDef.uniformMvp = programs.ProgSingleTexture->uMvp;
+								model.Def.surfaces[index].materialDef.uniformMvp = programs.ProgSingleTexture->uniformModelViewProMatrix;
 								LOGV( "%s skinned default texture material", materialTypeString );
 							}
 							else
@@ -627,7 +627,7 @@ void LoadModelFileJson( ModelFile & model,
 									FAIL( "No ProgSingleTexture set");
 								}
 								model.Def.surfaces[index].materialDef.programObject = programs.ProgSingleTexture->program;
-								model.Def.surfaces[index].materialDef.uniformMvp = programs.ProgSingleTexture->uMvp;
+								model.Def.surfaces[index].materialDef.uniformMvp = programs.ProgSingleTexture->uniformModelViewProMatrix;
 								LOGV( "%s default texture material", materialTypeString );
 							}
 						}

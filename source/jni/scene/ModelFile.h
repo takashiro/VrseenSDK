@@ -4,7 +4,7 @@
 
 #include "System.h"	// Array
 #include "VString.h"	// String
-#include "GlProgram.h"			// GlProgram
+#include "../api/VGlShader.h"			// VGlShader
 #include "ModelRender.h"		// ModelState
 #include "ModelCollision.h"
 #include "ModelTrace.h"
@@ -115,7 +115,7 @@ struct ModelGlPrograms
 		ProgSkinnedSingleTexture( NULL ),
 		ProgSkinnedLightMapped( NULL ),
 		ProgSkinnedReflectionMapped( NULL ) {}
-	ModelGlPrograms( const GlProgram * singleTexture ) :
+	ModelGlPrograms( const VGlShader * singleTexture ) :
 		ProgVertexColor( singleTexture ),
 		ProgSingleTexture( singleTexture ),
 		ProgLightMapped( singleTexture ),
@@ -124,7 +124,7 @@ struct ModelGlPrograms
 		ProgSkinnedSingleTexture( singleTexture ),
 		ProgSkinnedLightMapped( singleTexture ),
 		ProgSkinnedReflectionMapped( singleTexture ) {}
-	ModelGlPrograms( const GlProgram * singleTexture, const GlProgram * dualTexture ) :
+	ModelGlPrograms( const VGlShader * singleTexture, const VGlShader * dualTexture ) :
 		ProgVertexColor( singleTexture ),
 		ProgSingleTexture( singleTexture ),
 		ProgLightMapped( dualTexture ),
@@ -134,14 +134,14 @@ struct ModelGlPrograms
 		ProgSkinnedLightMapped( dualTexture ),
 		ProgSkinnedReflectionMapped( dualTexture ) {}
 
-	const GlProgram * ProgVertexColor;
-	const GlProgram * ProgSingleTexture;
-	const GlProgram * ProgLightMapped;
-	const GlProgram * ProgReflectionMapped;
-	const GlProgram * ProgSkinnedVertexColor;
-	const GlProgram * ProgSkinnedSingleTexture;
-	const GlProgram * ProgSkinnedLightMapped;
-	const GlProgram * ProgSkinnedReflectionMapped;
+	const VGlShader * ProgVertexColor;
+	const VGlShader * ProgSingleTexture;
+	const VGlShader * ProgLightMapped;
+	const VGlShader * ProgReflectionMapped;
+	const VGlShader * ProgSkinnedVertexColor;
+	const VGlShader * ProgSkinnedSingleTexture;
+	const VGlShader * ProgSkinnedLightMapped;
+	const VGlShader * ProgSkinnedReflectionMapped;
 };
 
 // Pass in the programs that will be used for the model materials.

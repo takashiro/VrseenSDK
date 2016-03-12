@@ -2464,14 +2464,14 @@ void TimeWarpLocal::createFrameworkGraphics()
 
 	// FPS and graph text
 	m_untexturedMvpProgram.initShader(
-			"uniform mat4 uMVPMatrix;\n"
-			"attribute vec4 aPosition;\n"
-			"uniform mediump vec4 uColor;\n"
+			"uniform mat4 Mvpm;\n"
+			"attribute vec4 Position;\n"
+			"uniform mediump vec4 UniformColor;\n"
 			"varying  lowp vec4 oColor;\n"
 			"void main()\n"
 			"{\n"
-				"   gl_Position = uMVPMatrix * aPosition;\n"
-				"   oColor = uColor;\n"
+				"   gl_Position = Mvpm * Position;\n"
+				"   oColor = UniformColor;\n"
 			"}\n"
 		,
 			"varying lowp vec4	oColor;\n"
@@ -2482,14 +2482,14 @@ void TimeWarpLocal::createFrameworkGraphics()
 		);
 
 	m_debugLineProgram.initShader(
-    		"uniform mediump mat4 uMVPMatrix;\n"
-    		"attribute vec4 aPosition;\n"
-    		"attribute vec4 aVertexColor;\n"
+    		"uniform mediump mat4 Mvpm;\n"
+    		"attribute vec4 Position;\n"
+    		"attribute vec4 VertexColor;\n"
     		"varying  vec4 oColor;\n"
     		"void main()\n"
     		"{\n"
-    		"   gl_Position = uMVPMatrix * aPosition;\n"
-    		"   oColor = aVertexColor;\n"
+    		"   gl_Position = Mvpm * Position;\n"
+    		"   oColor = VertexColor;\n"
     		"}\n"
 		,
     		"varying lowp vec4 oColor;\n"

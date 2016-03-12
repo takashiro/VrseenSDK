@@ -3,7 +3,7 @@
 Filename    :   ShaderManager.cpp
 Content     :	Allocates and builds shader programs.
 Created     :	7/3/2014
-Authors     :   Jim Dosé and John Carmack
+Authors     :   Jim Dos?and John Carmack
 
 Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
@@ -181,27 +181,27 @@ void ShaderManager::OneTimeInit( const char * launchIntent )
 
 	const double start = ovr_GetTimeInSeconds();
 
-	MovieExternalUiProgram 		= BuildProgram( movieUiVertexShaderSrc, movieExternalUiFragmentShaderSource );
-	CopyMovieProgram 			= BuildProgram( copyMovieVertexShaderSrc, copyMovieFragmentShaderSource );
-	UniformColorProgram			= BuildProgram( UniformColorVertexProgSrc, UniformColorFragmentProgSrc );
+	MovieExternalUiProgram 		.initShader( movieUiVertexShaderSrc, movieExternalUiFragmentShaderSource );
+	CopyMovieProgram 			.initShader( copyMovieVertexShaderSrc, copyMovieFragmentShaderSource );
+	UniformColorProgram			.initShader( UniformColorVertexProgSrc, UniformColorFragmentProgSrc );
 
-	ScenePrograms[SCENE_PROGRAM_BLACK]			= BuildProgram( SceneStaticVertexShaderSrc, SceneBlackFragmentShaderSrc );
-	ScenePrograms[SCENE_PROGRAM_STATIC_ONLY]	= BuildProgram( SceneStaticVertexShaderSrc, SceneStaticFragmentShaderSrc );
-	ScenePrograms[SCENE_PROGRAM_STATIC_DYNAMIC]	= BuildProgram( SceneDynamicVertexShaderSrc, SceneStaticAndDynamicFragmentShaderSrc );
-	ScenePrograms[SCENE_PROGRAM_DYNAMIC_ONLY]	= BuildProgram( SceneDynamicVertexShaderSrc, SceneDynamicFragmentShaderSrc );
-	ScenePrograms[SCENE_PROGRAM_ADDITIVE]		= BuildProgram( SceneStaticVertexShaderSrc, SceneAdditiveFragmentShaderSrc );
+	ScenePrograms[SCENE_PROGRAM_BLACK]			.initShader( SceneStaticVertexShaderSrc, SceneBlackFragmentShaderSrc );
+	ScenePrograms[SCENE_PROGRAM_STATIC_ONLY]	.initShader( SceneStaticVertexShaderSrc, SceneStaticFragmentShaderSrc );
+	ScenePrograms[SCENE_PROGRAM_STATIC_DYNAMIC]	.initShader( SceneDynamicVertexShaderSrc, SceneStaticAndDynamicFragmentShaderSrc );
+	ScenePrograms[SCENE_PROGRAM_DYNAMIC_ONLY]	.initShader( SceneDynamicVertexShaderSrc, SceneDynamicFragmentShaderSrc );
+	ScenePrograms[SCENE_PROGRAM_ADDITIVE]		.initShader( SceneStaticVertexShaderSrc, SceneAdditiveFragmentShaderSrc );
 
 	// NOTE: make sure to load with SCENE_PROGRAM_STATIC_DYNAMIC because the textures are initially not swapped
 	DynamicPrograms = ModelGlPrograms( &ScenePrograms[ SCENE_PROGRAM_STATIC_DYNAMIC ] );
 
-	ProgVertexColor				= BuildProgram( VertexColorVertexShaderSrc, VertexColorFragmentShaderSrc );
-	ProgSingleTexture			= BuildProgram( SingleTextureVertexShaderSrc, SingleTextureFragmentShaderSrc );
-	ProgLightMapped				= BuildProgram( LightMappedVertexShaderSrc, LightMappedFragmentShaderSrc );
-	ProgReflectionMapped		= BuildProgram( ReflectionMappedVertexShaderSrc, ReflectionMappedFragmentShaderSrc );
-	ProgSkinnedVertexColor		= BuildProgram( VertexColorSkinned1VertexShaderSrc, VertexColorFragmentShaderSrc );
-	ProgSkinnedSingleTexture	= BuildProgram( SingleTextureSkinned1VertexShaderSrc, SingleTextureFragmentShaderSrc );
-	ProgSkinnedLightMapped		= BuildProgram( LightMappedSkinned1VertexShaderSrc, LightMappedFragmentShaderSrc );
-	ProgSkinnedReflectionMapped	= BuildProgram( ReflectionMappedSkinned1VertexShaderSrc, ReflectionMappedFragmentShaderSrc );
+	ProgVertexColor				.initShader( VertexColorVertexShaderSrc, VertexColorFragmentShaderSrc );
+	ProgSingleTexture			.initShader( SingleTextureVertexShaderSrc, SingleTextureFragmentShaderSrc );
+	ProgLightMapped				.initShader( LightMappedVertexShaderSrc, LightMappedFragmentShaderSrc );
+	ProgReflectionMapped		.initShader( ReflectionMappedVertexShaderSrc, ReflectionMappedFragmentShaderSrc );
+	ProgSkinnedVertexColor		.initShader( VertexColorSkinned1VertexShaderSrc, VertexColorFragmentShaderSrc );
+	ProgSkinnedSingleTexture	.initShader( SingleTextureSkinned1VertexShaderSrc, SingleTextureFragmentShaderSrc );
+	ProgSkinnedLightMapped		.initShader( LightMappedSkinned1VertexShaderSrc, LightMappedFragmentShaderSrc );
+	ProgSkinnedReflectionMapped	.initShader( ReflectionMappedSkinned1VertexShaderSrc, ReflectionMappedFragmentShaderSrc );
 
 	DefaultPrograms.ProgVertexColor				= & ProgVertexColor;
 	DefaultPrograms.ProgSingleTexture			= & ProgSingleTexture;
@@ -219,26 +219,26 @@ void ShaderManager::OneTimeShutdown()
 {
 	LOG( "ShaderManager::OneTimeShutdown" );
 
-	DeleteProgram( MovieExternalUiProgram );
-	DeleteProgram( CopyMovieProgram );
-	DeleteProgram( UniformColorProgram );
+	 MovieExternalUiProgram .destroy();
+	 CopyMovieProgram .destroy();
+	 UniformColorProgram .destroy();
 
-	DeleteProgram( ScenePrograms[SCENE_PROGRAM_BLACK] );
-	DeleteProgram( ScenePrograms[SCENE_PROGRAM_STATIC_ONLY] );
-	DeleteProgram( ScenePrograms[SCENE_PROGRAM_STATIC_DYNAMIC] );
-	DeleteProgram( ScenePrograms[SCENE_PROGRAM_DYNAMIC_ONLY] );
-	DeleteProgram( ScenePrograms[SCENE_PROGRAM_ADDITIVE] );
+	 ScenePrograms[SCENE_PROGRAM_BLACK] .destroy();
+	 ScenePrograms[SCENE_PROGRAM_STATIC_ONLY] .destroy();
+	 ScenePrograms[SCENE_PROGRAM_STATIC_DYNAMIC] .destroy();
+	 ScenePrograms[SCENE_PROGRAM_DYNAMIC_ONLY] .destroy();
+	 ScenePrograms[SCENE_PROGRAM_ADDITIVE] .destroy();
 
 	//TODO: Review DynamicPrograms
 
-	DeleteProgram( ProgVertexColor );
-	DeleteProgram( ProgSingleTexture );
-	DeleteProgram( ProgLightMapped );
-	DeleteProgram( ProgReflectionMapped );
-	DeleteProgram( ProgSkinnedVertexColor );
-	DeleteProgram( ProgSkinnedSingleTexture	);
-	DeleteProgram( ProgSkinnedLightMapped );
-	DeleteProgram( ProgSkinnedReflectionMapped );
+	 ProgVertexColor .destroy();
+	 ProgSingleTexture .destroy();
+	 ProgLightMapped .destroy();
+	 ProgReflectionMapped .destroy();
+	 ProgSkinnedVertexColor .destroy();
+	 ProgSkinnedSingleTexture	.destroy();
+	 ProgSkinnedLightMapped .destroy();
+	 ProgSkinnedReflectionMapped .destroy();
 }
 
 } // namespace OculusCinema

@@ -134,9 +134,9 @@ private:
     DoubleBufferedTextureData	m_backgroundCubeTexData;
     bool				m_currentPanoIsCubeMap;
 
-    GlProgram			m_texturedMvpProgram;
-    GlProgram			m_cubeMapPanoProgram;
-    GlProgram			m_panoramaProgram;
+    VGlShader			m_texturedMvpProgram;
+	VGlShader			m_cubeMapPanoProgram;
+	VGlShader			m_panoramaProgram;
 
     VrFrame				m_frameInput;
     OvrMenuState		m_menuState;

@@ -39,11 +39,11 @@ NV_NAMESPACE_BEGIN
 void AppLocal::DrawBounds( const Vector3f &mins, const Vector3f &maxs, const Matrix4f &mvp, const Vector3f &color )
 {
 	Matrix4f	scaled = mvp * Matrix4f::Translation( mins ) * Matrix4f::Scaling( maxs - mins );
-	const GlProgram & prog = untexturedMvpProgram;
+	const VGlShader & prog = untexturedMvpProgram;
 	glUseProgram(prog.program);
 	glLineWidth( 1.0f );
-	glUniform4f(prog.uColor, color.x, color.y, color.z, 1);
-	glUniformMatrix4fv(prog.uMvp, 1, GL_FALSE /* not transposed */,
+	glUniform4f(prog.uniformColor, color.x, color.y, color.z, 1);
+	glUniformMatrix4fv(prog.uniformModelViewProMatrix, 1, GL_FALSE /* not transposed */,
 			scaled.Transposed().M[0] );
 	glBindVertexArrayOES_( unitCubeLines.vertexArrayObject );
 	glDrawElements(GL_LINES, unitCubeLines.indexCount, GL_UNSIGNED_SHORT, NULL);
@@ -70,12 +70,12 @@ void AppLocal::DrawDialog( const Matrix4f & mvp )
 
 void AppLocal::DrawPanel( const GLuint externalTextureId, const Matrix4f & dialogMvp, const float alpha )
 {
-	const GlProgram & prog = externalTextureProgram2;
+	const VGlShader & prog = externalTextureProgram2;
 	glUseProgram( prog.program );
-	glUniform4f(prog.uColor, 1, 1, 1, alpha );
+	glUniform4f(prog.uniformColor, 1, 1, 1, alpha );
 
-	glUniformMatrix4fv(prog.uTexm, 1, GL_FALSE, Matrix4f::Identity().Transposed().M[0]);
-	glUniformMatrix4fv(prog.uMvp, 1, GL_FALSE, dialogMvp.Transposed().M[0] );
+	glUniformMatrix4fv(prog.uniformTexMatrix, 1, GL_FALSE, Matrix4f::Identity().Transposed().M[0]);
+	glUniformMatrix4fv(prog.uniformModelViewProMatrix, 1, GL_FALSE, dialogMvp.Transposed().M[0] );
 
 	// It is important that panels write to destination alpha, or they
 	// might get covered by an overlay plane/cube in TimeWarp.
@@ -196,7 +196,7 @@ void AppLocal::DrawScreenDirect( const GLuint texid, const ovrMatrix4f & mvp )
 
 	glUseProgram( overlayScreenDirectProgram.program );
 
-	glUniformMatrix4fv( overlayScreenDirectProgram.uMvp, 1, GL_FALSE, mvpMatrix.Transposed().M[0] );
+	glUniformMatrix4fv( overlayScreenDirectProgram.uniformModelViewProMatrix, 1, GL_FALSE, mvpMatrix.Transposed().M[0] );
 
 	glBindVertexArrayOES_( unitSquare.vertexArrayObject );
 	glDrawElements( GL_TRIANGLES, unitSquare.indexCount, GL_UNSIGNED_SHORT, NULL );
@@ -211,7 +211,7 @@ void AppLocal::DrawScreenMask( const ovrMatrix4f & mvp, const float fadeFracX, c
 
 	glUseProgram( overlayScreenFadeMaskProgram.program );
 
-	glUniformMatrix4fv( overlayScreenFadeMaskProgram.uMvp, 1, GL_FALSE, mvpMatrix.Transposed().M[0] );
+	glUniformMatrix4fv( overlayScreenFadeMaskProgram.uniformModelViewProMatrix, 1, GL_FALSE, mvpMatrix.Transposed().M[0] );
 
 	if ( fadedScreenMaskSquare.vertexArrayObject == 0 )
 	{

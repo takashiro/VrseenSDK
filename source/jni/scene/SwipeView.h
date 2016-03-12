@@ -5,7 +5,7 @@
 #include "VMath.h"
 #include "Array.h"
 #include "GlGeometry.h"
-#include "GlProgram.h"
+#include "../api/VGlShader.h"
 #include "GlTexture.h"
 #include "GazeCursor.h"
 #include "Input.h"
@@ -130,8 +130,8 @@ public:
 
 	Vector3f	StartViewOrigin;
 
-	GlProgram	ProgPanel;
-	GlProgram	ProgHighlight;
+	VGlShader	ProgPanel;
+	VGlShader	ProgHighlight;
 	GlGeometry	GeoPanel;
 	GlTexture	BorderTexture2_1;
 	GlTexture	BorderTexture1_1;

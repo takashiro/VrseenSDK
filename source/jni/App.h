@@ -8,7 +8,7 @@
 #include "android/LogUtils.h"
 #include "api/VrApi.h"
 #include "api/VrApi_Android.h"
-#include "GlProgram.h"
+#include "api/VGlShader.h"
 #include "GlTexture.h"
 #include "GlGeometry.h"
 #include "SurfaceTexture.h"
@@ -32,7 +32,7 @@ NV_NAMESPACE_BEGIN
 class EyeBuffers;
 struct MaterialParms;
 class GlGeometry;
-struct GlProgram;
+class VGlShader;
 class VRMenuObjectParms;
 class OvrGuiSys;
 class OvrGazeCursor;

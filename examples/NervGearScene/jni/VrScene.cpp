@@ -112,7 +112,8 @@ void VrScene::LoadScene( const char * path )
 	if ( testModelPath != NULL && testModelPath[0] != '\0' )
 	{
 		// Create the render programs we are going to use
-		GlProgram ProgSingleTexture = BuildProgram( SingleTextureVertexShaderSrc,
+		VGlShader ProgSingleTexture;
+		ProgSingleTexture.initShader(SingleTextureVertexShaderSrc,
 				SingleTextureFragmentShaderSrc );
 
 		ModelGlPrograms programs( &ProgSingleTexture );

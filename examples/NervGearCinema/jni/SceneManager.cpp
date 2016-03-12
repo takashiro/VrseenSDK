@@ -242,7 +242,7 @@ void SceneManager::SetSceneModel( const SceneDef &sceneDef )
 
 			// force to a solid black material that cuts a hole in alpha
 			SceneScreenSurface->materialDef.programObject = Cinema.shaderMgr.ScenePrograms[0].program;
-			SceneScreenSurface->materialDef.uniformMvp = Cinema.shaderMgr.ScenePrograms[0].uMvp;
+			SceneScreenSurface->materialDef.uniformMvp = Cinema.shaderMgr.ScenePrograms[0].uniformModelViewProMatrix;
 		}
 	}
 
@@ -264,10 +264,10 @@ void SceneManager::SetSceneProgram( const sceneProgram_t opaqueProgram, const sc
 		return;
 	}
 
-	const GlProgram & dynamicOnlyProg = Cinema.shaderMgr.ScenePrograms[SCENE_PROGRAM_DYNAMIC_ONLY];
-	const GlProgram & opaqueProg = Cinema.shaderMgr.ScenePrograms[opaqueProgram];
-	const GlProgram & additiveProg = Cinema.shaderMgr.ScenePrograms[additiveProgram];
-	const GlProgram & diffuseProg = Cinema.shaderMgr.ProgSingleTexture;
+	const VGlShader & dynamicOnlyProg = Cinema.shaderMgr.ScenePrograms[SCENE_PROGRAM_DYNAMIC_ONLY];
+	const VGlShader & opaqueProg = Cinema.shaderMgr.ScenePrograms[opaqueProgram];
+	const VGlShader & additiveProg = Cinema.shaderMgr.ScenePrograms[additiveProgram];
+	const VGlShader & diffuseProg = Cinema.shaderMgr.ProgSingleTexture;
 
 	LOG( "SetSceneProgram: %d(%d), %d(%d)", opaqueProgram, opaqueProg.program, additiveProgram, additiveProg.program );
 
@@ -291,7 +291,7 @@ void SceneManager::SetSceneProgram( const sceneProgram_t opaqueProgram, const sc
 			}
 
 			materialDef.programObject = additiveProg.program;
-			materialDef.uniformMvp = additiveProg.uMvp;
+			materialDef.uniformMvp = additiveProg.uniformModelViewProMatrix;
 		}
 		else if ( materialDef.textures[1] != 0 )
 		{
@@ -304,13 +304,13 @@ void SceneManager::SetSceneProgram( const sceneProgram_t opaqueProgram, const sc
 			}
 
 			materialDef.programObject = opaqueProg.program;
-			materialDef.uniformMvp = opaqueProg.uMvp;
+			materialDef.uniformMvp = opaqueProg.uniformModelViewProMatrix;
 		}
 		else
 		{
 			// Non-modulated diffuse material.
 			materialDef.programObject = diffuseProg.program;
-			materialDef.uniformMvp = diffuseProg.uMvp;
+			materialDef.uniformMvp = diffuseProg.uniformModelViewProMatrix;
 		}
 	}
 
@@ -833,9 +833,9 @@ Matrix4f SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 		}
 
 		glUseProgram( Cinema.shaderMgr.ScenePrograms[SceneProgramIndex].program );
-		glUniform4f( Cinema.shaderMgr.ScenePrograms[SceneProgramIndex].uColor, 1.0f, 1.0f, 1.0f, cinemaLights );
+		glUniform4f( Cinema.shaderMgr.ScenePrograms[SceneProgramIndex].uniformColor, 1.0f, 1.0f, 1.0f, cinemaLights );
 		glUseProgram( Cinema.shaderMgr.ScenePrograms[SCENE_PROGRAM_ADDITIVE].program );
-		glUniform4f( Cinema.shaderMgr.ScenePrograms[SCENE_PROGRAM_ADDITIVE].uColor, 1.0f, 1.0f, 1.0f, cinemaLights );
+		glUniform4f( Cinema.shaderMgr.ScenePrograms[SCENE_PROGRAM_ADDITIVE].uniformColor, 1.0f, 1.0f, 1.0f, cinemaLights );
 
 		// Bind the mip mapped movie texture to Texture2 so it can be sampled from the vertex program for scene lighting.
 		glActiveTexture( GL_TEXTURE2 );
@@ -869,15 +869,15 @@ Matrix4f SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 	// If we are using the free screen, we still need to draw the surface with black
 	if ( FreeScreenActive && !SceneInfo.UseFreeScreen && SceneScreenSurface )
 	{
-		const GlProgram * prog = &Cinema.shaderMgr.ScenePrograms[0];
+		const VGlShader * prog = &Cinema.shaderMgr.ScenePrograms[0];
 		glUseProgram( prog->program );
-		glUniformMatrix4fv( prog->uMvp, 1, GL_FALSE, mvp.Transposed().M[0] );
+		glUniformMatrix4fv( prog->uniformModelViewProMatrix, 1, GL_FALSE, mvp.Transposed().M[0] );
 		SceneScreenSurface->geo.Draw();
 	}
 
-	const GlProgram * prog = &Cinema.shaderMgr.MovieExternalUiProgram;
+	const VGlShader * prog = &Cinema.shaderMgr.MovieExternalUiProgram;
 	glUseProgram( prog->program );
-	glUniform4f( prog->uColor, 1, 1, 1, 0.0f );
+	glUniform4f( prog->uniformColor, 1, 1, 1, 0.0f );
 
 	glVertexAttrib4f( 2, 1.0f, 1.0f, 1.0f, 1.0f );	// no color attributes on the surface verts, so force to 1.0
 
@@ -966,22 +966,22 @@ Matrix4f SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 		glActiveTexture( GL_TEXTURE1 );
 		glBindTexture( GL_TEXTURE_2D, ScreenVignetteTexture );
 
-		glUniformMatrix4fv( prog->uTexm, 1, GL_FALSE, /* not transposed */
+		glUniformMatrix4fv( prog->uniformTexMatrix, 1, GL_FALSE, /* not transposed */
 				texMatrix.Transposed().M[0] );
 		// The UI is always identity for now, but we may scale it later
-		glUniformMatrix4fv( prog->uTexm2, 1, GL_FALSE, /* not transposed */
+		glUniformMatrix4fv( prog->uniformTexMatrix2, 1, GL_FALSE, /* not transposed */
 				Matrix4f::Identity().Transposed().M[0] );
 
 		if ( !SceneInfo.LobbyScreen && SceneInfo.UseScreenGeometry && ( SceneScreenSurface != NULL ) )
 		{
-			glUniformMatrix4fv( prog->uMvp, 1, GL_FALSE, mvp.Transposed().M[0] );
+			glUniformMatrix4fv( prog->uniformModelViewProMatrix, 1, GL_FALSE, mvp.Transposed().M[0] );
 			SceneScreenSurface->geo.Draw();
 		}
 		else
 		{
 			const Matrix4f screenModel = ScreenMatrix();
 			const Matrix4f screenMvp = mvp * screenModel;
-			glUniformMatrix4fv( prog->uMvp, 1, GL_FALSE, screenMvp.Transposed().M[0] );
+			glUniformMatrix4fv( prog->uniformModelViewProMatrix, 1, GL_FALSE, screenMvp.Transposed().M[0] );
 			UnitSquare.Draw();
 		}
 

@@ -890,8 +890,8 @@ void AppLocal::InitGlObjects()
 	// Let glUtils look up extensions
 	GL_FindExtensions();
 
-	externalTextureProgram2 = BuildProgram( vertexShaderSource, externalFragmentShaderSource );
-	untexturedMvpProgram = BuildProgram(
+	externalTextureProgram2.initShader( vertexShaderSource, externalFragmentShaderSource );
+	untexturedMvpProgram.initShader(
 		"uniform mat4 Mvpm;\n"
 		"attribute vec4 Position;\n"
 		"uniform mediump vec4 UniformColor;\n"
@@ -908,8 +908,8 @@ void AppLocal::InitGlObjects()
 		"	gl_FragColor = oColor;\n"
 		"}\n"
 	 );
-	untexturedScreenSpaceProgram = BuildProgram( identityVertexShaderSource, untexturedFragmentShaderSource );
-    overlayScreenFadeMaskProgram = BuildProgram(
+	untexturedScreenSpaceProgram.initShader( identityVertexShaderSource, untexturedFragmentShaderSource );
+    overlayScreenFadeMaskProgram.initShader(
 			"uniform mat4 Mvpm;\n"
 			"attribute vec4 VertexColor;\n"
 			"attribute vec4 Position;\n"
@@ -926,7 +926,7 @@ void AppLocal::InitGlObjects()
 			"	gl_FragColor = oColor;\n"
 			"}\n"
 		);
-    overlayScreenDirectProgram = BuildProgram(
+    overlayScreenDirectProgram.initShader(
 			"uniform mat4 Mvpm;\n"
 			"attribute vec4 Position;\n"
 			"attribute vec2 TexCoord;\n"
@@ -956,11 +956,11 @@ void AppLocal::InitGlObjects()
 
 void AppLocal::ShutdownGlObjects()
 {
-	DeleteProgram( externalTextureProgram2 );
-	DeleteProgram( untexturedMvpProgram );
-	DeleteProgram( untexturedScreenSpaceProgram );
-    DeleteProgram( overlayScreenFadeMaskProgram );
-    DeleteProgram( overlayScreenDirectProgram );
+	externalTextureProgram2.destroy();
+	untexturedMvpProgram.destroy();
+	untexturedScreenSpaceProgram.destroy();
+    overlayScreenFadeMaskProgram.destroy();
+    overlayScreenDirectProgram.destroy();
 
 	panelGeometry.Free();
 	unitSquare.Free();

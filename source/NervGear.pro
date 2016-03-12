@@ -106,7 +106,6 @@ SOURCES += \
     jni/scene/EyePostRender.cpp \
     jni/scene/GazeCursor.cpp \
     jni/scene/GlGeometry.cpp \
-    jni/scene/GlProgram.cpp \
     jni/scene/GlSetup.cpp \
     jni/scene/GlTexture.cpp \
     jni/scene/ImageData.cpp \
@@ -264,7 +263,6 @@ HEADERS += \
     jni/scene/GazeCursor.h \
     jni/scene/GazeCursorLocal.h \
     jni/scene/GlGeometry.h \
-    jni/scene/GlProgram.h \
     jni/scene/GlSetup.h \
     jni/scene/GlTexture.h \
     jni/scene/ImageData.h \

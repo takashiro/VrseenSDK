@@ -132,7 +132,7 @@ void Oculus360Photos::OneTimeInit( const char * fromPackage, const char * launch
 	LOG( "--------------- Oculus360Photos OneTimeInit ---------------" );
 
 	//-------------------------------------------------------------------------
-	m_texturedMvpProgram = BuildProgram(
+	m_texturedMvpProgram.initShader(
 		"uniform mat4 Mvpm;\n"
 		"attribute vec4 Position;\n"
 		"attribute vec4 VertexColor;\n"
@@ -156,7 +156,7 @@ void Oculus360Photos::OneTimeInit( const char * fromPackage, const char * launch
 		"}\n"
 		);
 
-	m_cubeMapPanoProgram = BuildProgram(
+	m_cubeMapPanoProgram.initShader(
 		"uniform mat4 Mvpm;\n"
 		"attribute vec4 Position;\n"
 		"uniform mediump vec4 UniformColor;\n"
@@ -178,7 +178,7 @@ void Oculus360Photos::OneTimeInit( const char * fromPackage, const char * launch
 		"}\n"
 		);
 
-	m_panoramaProgram = BuildProgram(
+	m_panoramaProgram.initShader(
 		"uniform highp mat4 Mvpm;\n"
 		"uniform highp mat4 Texm;\n"
 		"attribute vec4 Position;\n"
@@ -408,9 +408,9 @@ void Oculus360Photos::OneTimeShutdown()
 		delete m_metaData;
 	}
 
-	DeleteProgram( m_texturedMvpProgram );
-	DeleteProgram( m_cubeMapPanoProgram );
-	DeleteProgram( m_panoramaProgram );
+	m_texturedMvpProgram.destroy();
+	m_cubeMapPanoProgram.destroy();
+	m_panoramaProgram.destroy();
 
 	if ( eglDestroySurface( m_eglDisplay, m_eglPbufferSurface ) == EGL_FALSE )
 	{
@@ -789,12 +789,12 @@ Matrix4f Oculus360Photos::DrawEyeView( const int eye, const float fovDegrees )
 			}
 		}
 
-		GlProgram & prog = m_currentPanoIsCubeMap ? m_cubeMapPanoProgram : m_texturedMvpProgram;
+		VGlShader & prog = m_currentPanoIsCubeMap ? m_cubeMapPanoProgram : m_texturedMvpProgram;
 
 		glUseProgram( prog.program );
 
-		glUniform4f( prog.uColor, fadeColor, fadeColor, fadeColor, fadeColor );
-		glUniformMatrix4fv( prog.uMvp, 1, GL_FALSE /* not transposed */,
+		glUniform4f( prog.uniformColor, fadeColor, fadeColor, fadeColor, fadeColor );
+		glUniformMatrix4fv( prog.uniformModelViewProMatrix, 1, GL_FALSE /* not transposed */,
 			view.Transposed().M[ 0 ] );
 
 		m_globe.Draw();
