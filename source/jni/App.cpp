@@ -115,25 +115,25 @@ jlong VrAppInterface::SetActivity(JNIEnv * jni, jclass clazz, jobject activity, 
         new App(*jni, activity, *this);
 
 		// Start the VrThread and wait for it to have initialized.
-        static_cast< App * >(app)->startVrThread();
-        static_cast< App * >(app)->syncVrThread();
+        app->startVrThread();
+        app->syncVrThread();
 	}
 	else
 	{	// Just update the activity object.
         LOG("Update AppLocal(%p %p %p)", jni, activity, this);
-        if (static_cast< App * >(app)->javaObject() != nullptr)
+        if (app->javaObject() != nullptr)
 		{
-            jni->DeleteGlobalRef(static_cast< App * >(app)->javaObject());
+            jni->DeleteGlobalRef(app->javaObject());
 		}
-        static_cast< App * >(app)->javaObject() = jni->NewGlobalRef(activity);
-        static_cast< App * >(app)->VrModeParms.ActivityObject = static_cast< App * >(app)->javaObject();
+        app->javaObject() = jni->NewGlobalRef(activity);
+        app->VrModeParms.ActivityObject = app->javaObject();
 	}
 
 	// Send the intent and wait for it to complete.
     VString intentMessage = ComposeIntentMessage(utfFromPackageString, utfUriString, utfJsonString);
     VByteArray utf8Intent = intentMessage.toUtf8();
-    static_cast< App * >(app)->messageQueue().PostPrintf(utf8Intent.data());
-    static_cast< App * >(app)->syncVrThread();
+    app->messageQueue().PostPrintf(utf8Intent.data());
+    app->syncVrThread();
 
 	return (jlong)app;
 }
