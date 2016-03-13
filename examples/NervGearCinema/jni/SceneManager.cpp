@@ -74,7 +74,7 @@ void SceneManager::OneTimeInit( const char * launchIntent )
 
 	const double start = ovr_GetTimeInSeconds();
 
-	UnitSquare = BuildTesselatedQuad( 1, 1 );
+	UnitSquare = VGlGeometryFactory::CreateTesselatedQuad( 1, 1 );
 
 	UseOverlay = true;
 

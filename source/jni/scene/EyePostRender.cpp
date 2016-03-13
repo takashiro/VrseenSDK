@@ -24,10 +24,10 @@ void EyePostRender::Init()
 	LOG( "EyePostRender::Init()" );
 
 	// grid of lines for drawing to eye buffer
-	CalibrationLines = BuildCalibrationLines( 24, false );
+	CalibrationLines = VGlGeometryFactory::CreateCalibrationLines( 24, false );
 
 	// thin border around the outside
-	VignetteSquare = BuildVignette( 128.0f / 1024.0f, 128.0f / 1024.0f );
+	VignetteSquare = VGlGeometryFactory::CreateVignette( 128.0f / 1024.0f, 128.0f / 1024.0f );
 
 	UntexturedMvpProgram.initShader(
 		"uniform mat4 Mvpm;\n"

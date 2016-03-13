@@ -200,225 +200,6 @@ Matrix4f CalculateTimeWarpMatrix2( const Quatf &inFrom, const Quatf &inTo )
 	return ( lastSensorMatrix.Inverted() * lastViewMatrix ).Inverted();
 }
 
-// Assume the cursor is a small region around the center of projection,
-// extended horizontally to allow it to be at different 3D depths.
-// While this will be around the center of each screen half on Note 4,
-// smaller phone screens will be offset, and an automated distortion
-// calibration might also not be completely symmetric.
-//
-// There is a hazard here, because the area up to the next vertex
-// past this will be drawn, so the density of tesselation effects
-// the area that the cursor will show in.
-static bool VectorHitsCursor( const Vector2f & v )
-{
-	if ( fabs( v.y ) > 0.017f ) // +/- 1 degree vertically
-	{
-		return false;
-	}
-	if ( fabs( v.x ) > 0.070f ) // +/- 4 degree horizontally
-	{
-		return false;
-	}
-	return true;
-}
-
-// The cursorOnly flag will cull all triangles that aren't in the central
-// gaze cursor region.
-static WarpGeometry LoadMeshFromMemory( const MemBuffer & buf,
-		const int numSlicesPerEye, const float fovScale, const bool cursorOnly )
-{
-	WarpGeometry geometry;
-
-	if ( buf.length < 12 )
-	{
-		LOG( "bad buf.length %i", buf.length );
-		return geometry;
-	}
-
-	const int magic = ((int *)buf.buffer)[0];
-	const int tesselationsX = ((int *)buf.buffer)[1];
-	const int tesselationsY = ((int *)buf.buffer)[2];
-	const int totalX = (tesselationsX+1)*2;
-
-	const int vertexBytes = 12 + 2 * (tesselationsX+1) * (tesselationsY+1) * 6 * sizeof( float );
-	if ( buf.length != vertexBytes )
-	{
-		LOG( "buf.length %i != %i", buf.length, vertexBytes );
-		return geometry;
-	}
-	if ( magic != DISTORTION_BUFFER_MAGIC || tesselationsX < 1 || tesselationsY < 1 )
-	{
-		LOG( "Bad distortion header" );
-		return geometry;
-	}
-	const float * bufferVerts = &((float *)buf.buffer)[3];
-
-	// Identify which verts would be inside the cursor plane
-	bool * vertInCursor = NULL;
-	if ( cursorOnly )
-	{
-		vertInCursor = new bool[totalX*(tesselationsY+1)];
-		for ( int y = 0; y <= tesselationsY; y++ )
-		{
-			for ( int x = 0; x < totalX; x++ )
-			{
-				const int vertIndex = (y*totalX+x );
-				Vector2f	v;
-				for ( int i = 0 ; i < 2; i++ )
-				{
-					v[i] = fovScale * bufferVerts[vertIndex*6+i];
-				}
-				vertInCursor[ vertIndex ] = VectorHitsCursor( v );
-			}
-		}
-	}
-
-	// build a VertexArrayObject
-	glGenVertexArraysOES_( 1, &geometry.vertexArrayObject );
-	glBindVertexArrayOES_( geometry.vertexArrayObject );
-
-	const int attribCount = 10;
-	const int sliceTess = tesselationsX / numSlicesPerEye;
-
-	const int vertexCount = 2*numSlicesPerEye*(sliceTess+1)*(tesselationsY+1);
-	const int floatCount = vertexCount * attribCount;
-	float * tessVertices = new float[floatCount];
-
-	const int indexCount = 2*tesselationsX*tesselationsY*6;
-	unsigned short * tessIndices = new unsigned short[indexCount];
-	const int indexBytes = indexCount * sizeof( *tessIndices );
-
-	int	index = 0;
-	int	verts = 0;
-
-	for ( int eye = 0; eye < 2; eye++ )
-	{
-		for ( int slice = 0; slice < numSlicesPerEye; slice++ )
-		{
-			const int vertBase = verts;
-
-			for ( int y = 0; y <= tesselationsY; y++ )
-			{
-				const float	yf = (float)y / (float)tesselationsY;
-				for ( int x = 0; x <= sliceTess; x++ )
-				{
-					const int sx = slice * sliceTess + x;
-					const float	xf = (float)sx / (float)tesselationsX;
-					float * v = &tessVertices[attribCount * ( vertBase + y * (sliceTess+1) + x ) ];
-					v[0] = -1.0 + eye + xf;
-					v[1] = yf*2.0f - 1.0f;
-
-					// Copy the offsets from the file
-					for ( int i = 0 ; i < 6; i++ )
-					{
-						v[2+i] = fovScale * bufferVerts
-								[(y*(tesselationsX+1)*2+sx + eye * (tesselationsX+1))*6+i];
-					}
-
-					v[8] = (float)x / sliceTess;
-					// Enable this to allow fading at the edges.
-					// Samsung recommends not doing this, because it could cause
-					// visible differences in pixel wear on the screen over long
-					// periods of time.
-					if ( 0 && ( y == 0 || y == tesselationsY || sx == 0 || sx == tesselationsX ) )
-					{
-						v[9] = 0.0f;	// fade to black at edge
-					}
-					else
-					{
-						v[9] = 1.0f;
-					}
-				}
-			}
-			verts += (tesselationsY+1)*(sliceTess+1);
-
-			// The order of triangles doesn't matter for tiled rendering,
-			// but when we can do direct rendering to the screen, we want the
-			// order to follow the raster order to minimize the chance
-			// of tear lines.
-			//
-			// This can be checked by quartering the number of indexes, and
-			// making sure that the drawn pixels are the first pixels that
-			// the raster will scan.
-			for ( int x = 0; x < sliceTess; x++ )
-			{
-				for ( int y = 0; y < tesselationsY; y++ )
-				{
-					if ( vertInCursor )
-					{	// skip this quad if none of the verts are in the cursor region
-						const int xx = x + eye * (tesselationsX+1) + slice * sliceTess;
-						if ( 0 ==
-							  vertInCursor[ y * totalX + xx ]
-							+ vertInCursor[ y * totalX + xx + 1 ]
-							+ vertInCursor[ (y + 1) * totalX + xx ]
-							+ vertInCursor[ (y + 1) * totalX + xx + 1 ] )
-						{
-							continue;
-						}
-					}
-
-					// flip the triangulation in opposite corners
-					if ( (slice*sliceTess+x <  tesselationsX/2) ^ (y < (tesselationsY/2)) )
-					{
-						tessIndices[index+0] = vertBase + y * (sliceTess+1) + x;
-						tessIndices[index+1] = vertBase + y * (sliceTess+1) + x + 1;
-						tessIndices[index+2] = vertBase + (y+1) * (sliceTess+1) + x + 1;
-
-						tessIndices[index+3] = vertBase + y * (sliceTess+1) + x;
-						tessIndices[index+4] = vertBase + (y+1) * (sliceTess+1) + x + 1;
-						tessIndices[index+5] = vertBase + (y+1) * (sliceTess+1) + x;
-					}
-					else
-					{
-						tessIndices[index+0] = vertBase + y * (sliceTess+1) + x;
-						tessIndices[index+1] = vertBase + y * (sliceTess+1) + x + 1;
-						tessIndices[index+2] = vertBase + (y+1) * (sliceTess+1) + x;
-
-						tessIndices[index+3] = vertBase + (y+1) * (sliceTess+1) + x;
-						tessIndices[index+4] = vertBase + y * (sliceTess+1) + x + 1;
-						tessIndices[index+5] = vertBase + (y+1) * (sliceTess+1) + x + 1;
-					}
-					index += 6;
-				}
-			}
-		}
-	}
-
-	geometry.vertexCount = vertexCount;
-	geometry.indexCount = index;
-
-	glGenBuffers( 1, &geometry.vertexBuffer );
-	glBindBuffer( GL_ARRAY_BUFFER, geometry.vertexBuffer );
-	glBufferData( GL_ARRAY_BUFFER, floatCount * sizeof(*tessVertices), (void *)tessVertices, GL_STATIC_DRAW );
-	delete[] tessVertices;
-
-	glGenBuffers( 1, &geometry.indexBuffer );
-	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, geometry.indexBuffer );
-	glBufferData( GL_ELEMENT_ARRAY_BUFFER, indexBytes, (void *)tessIndices, GL_STATIC_DRAW );
-	delete[] tessIndices;
-
-	glEnableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_POSITION );
-	glVertexAttribPointer( SHADER_ATTRIBUTE_LOCATION_POSITION, 2, GL_FLOAT, false, attribCount * sizeof( float ), (void *)( 0 * sizeof( float ) ) );
-
-	glEnableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_NORMAL );
-	glVertexAttribPointer( SHADER_ATTRIBUTE_LOCATION_NORMAL, 2, GL_FLOAT, false, attribCount * sizeof( float ), (void *)( 2 * sizeof( float ) ) );
-
-	glEnableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_UV0 );
-	glVertexAttribPointer( SHADER_ATTRIBUTE_LOCATION_UV0, 2, GL_FLOAT, false, attribCount * sizeof( float ), (void *)( 4 * sizeof( float ) ) );
-
-	glEnableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_TANGENT );
-	glVertexAttribPointer( SHADER_ATTRIBUTE_LOCATION_TANGENT, 2, GL_FLOAT, false, attribCount * sizeof( float ), (void *)( 6 * sizeof( float ) ) );
-
-	glEnableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_UV1 );
-	glVertexAttribPointer( SHADER_ATTRIBUTE_LOCATION_UV1, 2, GL_FLOAT, false, attribCount * sizeof( float ), (void *)( 8 * sizeof( float ) ) );
-
-	glBindVertexArrayOES_( 0 );
-
-	delete[] vertInCursor;
-
-	return geometry;
-}
-
 //=========================================================================================
 
 
@@ -1829,7 +1610,7 @@ void TimeWarpLocal::warpToScreenSliced( const double vsyncBase, const swapProgra
 		m_screen.beginDirectRendering( sliceSize*screenSlice, 0, sliceSize, screenTall );
 
 		// Draw the warp triangles.
-		const WarpGeometry & mesh = m_sliceMesh;
+		const VGlGeometry & mesh = m_sliceMesh;
 		glBindVertexArrayOES_( mesh.vertexArrayObject );
 		const int indexCount = mesh.indexCount / NUM_SLICES_PER_SCREEN;
 		const int indexOffset = screenSlice * indexCount;
@@ -2091,101 +1872,6 @@ void TimeWarpLocal::warpSwap( const ovrTimeWarpParms & parms )
 	}
 }
 
-WarpGeometry BuildCalibrationLines2( const int extraLines, const bool fullGrid )
-{
-	// lines per axis
-	const int lineCount = 1 + extraLines * 2;
-	const int vertexCount = lineCount * 2 * 2;
-
-	struct vertex_t
-	{
-		float x, y, z;
-		float s, t;
-		float color[4];
-	};
-
-	vertex_t * vertices = new vertex_t[vertexCount];
-
-	for ( int y = 0; y < lineCount; y++ )
-	{
-		const float yf = ( lineCount == 1 ) ? 0.5f : (float) y / (float) ( lineCount - 1 );
-		for ( int x = 0; x <= 1; x++ )
-		{
-			// along x
-			const int v1 = 2 * ( y * 2 + x ) + 0;
-			vertices[v1].x = -1 + x * 2;
-			vertices[v1].z = -1.001f;	// keep the -1 and 1 just off the projection edges
-			vertices[v1].y = -1 + yf * 2;
-			vertices[v1].s = x;
-			vertices[v1].t = 1.0f - yf;
-			for ( int i = 0; i < 4; i++ )
-			{
-				vertices[v1].color[i] = 1.0f;
-			}
-
-			// swap y and x to go along y
-			const int v2 = 2 * ( y * 2 + x ) + 1;
-			vertices[v2].y = -1 + x * 2;
-			vertices[v2].z = -1.001f;	// keep the -1 and 1 just off the projection edges
-			vertices[v2].x = -1 + yf * 2;
-			vertices[v2].s = x;
-			vertices[v2].t = 1.0f - yf;
-			for ( int i = 0; i < 4; i++ )
-			{
-				vertices[v2].color[i] = 1.0f;
-			}
-
-			if ( !fullGrid && y != extraLines )
-			{	// make a short hash instead of a full line
-				vertices[v1].x *= 0.02f;
-				vertices[v2].y *= 0.02f;
-			}
-		}
-	}
-
-	unsigned short * indices = new unsigned short [lineCount * 4];
-
-	int index = 0;
-	for ( int x = 0; x < lineCount; x++ )
-	{
-		const int start = x * 4;
-
-		indices[index + 0] = start;
-		indices[index + 1] = start + 2;
-
-		indices[index + 2] = start + 1;
-		indices[index + 3] = start + 3;
-
-		index += 4;
-	}
-
-	WarpGeometry geo;
-
-	glGenVertexArraysOES_( 1, &geo.vertexArrayObject );
-	glBindVertexArrayOES_( geo.vertexArrayObject );
-
-	glGenBuffers( 1, &geo.vertexBuffer );
-	glBindBuffer( GL_ARRAY_BUFFER, geo.vertexBuffer );
-	glBufferData( GL_ARRAY_BUFFER, vertexCount * sizeof( vertex_t ), vertices, GL_STATIC_DRAW );
-
-	glGenBuffers( 1, &geo.indexBuffer );
-	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, geo.indexBuffer );
-	glBufferData( GL_ELEMENT_ARRAY_BUFFER, lineCount * 4 * sizeof( unsigned short ), indices, GL_STATIC_DRAW );
-
-	glEnableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_POSITION );
-	glVertexAttribPointer( SHADER_ATTRIBUTE_LOCATION_POSITION, 3, GL_FLOAT, false, sizeof( vertex_t ), (void *)&((vertex_t *)0)->x );
-
-	glEnableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_UV0 );
-	glVertexAttribPointer( SHADER_ATTRIBUTE_LOCATION_UV0, 2, GL_FLOAT, false, sizeof( vertex_t ), (void *)&((vertex_t *)0)->s );
-
-	glEnableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_COLOR );
-	glVertexAttribPointer( SHADER_ATTRIBUTE_LOCATION_COLOR, 4, GL_FLOAT, false, sizeof( vertex_t ), (void *)&((vertex_t *)0)->color[0] );
-
-	glBindVertexArrayOES_( 0 );
-
-	return geo;
-}
-
 /*
  * VisualizeTiming
  *
@@ -2197,9 +1883,14 @@ struct lineVert_t
 	unsigned int	color;
 };
 
-WarpGeometry BuildTimingGraphGeometry( const int lineVertCount )
+int ColorAsInt( const int r, const int g, const int b, const int a )
 {
-	WarpGeometry geo;
+	return r | (g<<8) | (b<<16) | (a<<24);
+}
+
+VGlGeometry CreateTimingGraphGeometry( const int lineVertCount )
+{
+	VGlGeometry geo;
 
 	glGenVertexArraysOES_( 1, &geo.vertexArrayObject );
 	glBindVertexArrayOES_( geo.vertexArrayObject );
@@ -2225,11 +1916,6 @@ WarpGeometry BuildTimingGraphGeometry( const int lineVertCount )
 	glBindVertexArrayOES_( 0 );
 
 	return geo;
-}
-
-int ColorAsInt( const int r, const int g, const int b, const int a )
-{
-	return r | (g<<8) | (b<<16) | (a<<24);
 }
 
 void TimeWarpLocal::updateTimingGraphVerts( const ovrTimeWarpDebugPerfMode debugPerfMode, const ovrTimeWarpDebugPerfValue debugValue )
@@ -2440,13 +2126,13 @@ void TimeWarpLocal::createFrameworkGraphics()
 	}
 
 	// single slice mesh for the normal rendering
-	m_warpMesh = LoadMeshFromMemory( buf, 1, calibrateFovScale, false );
+	m_warpMesh = VGlGeometryFactory::LoadMeshFromMemory( buf, 1, calibrateFovScale, false );
 
 	// multi-slice mesh for sliced rendering
-	m_sliceMesh = LoadMeshFromMemory( buf, NUM_SLICES_PER_EYE, calibrateFovScale, false );
+	m_sliceMesh = VGlGeometryFactory::LoadMeshFromMemory( buf, NUM_SLICES_PER_EYE, calibrateFovScale, false );
 
 	// small subset cursor mesh
-	m_cursorMesh = LoadMeshFromMemory( buf, 1, calibrateFovScale, true );
+	m_cursorMesh = VGlGeometryFactory::LoadMeshFromMemory( buf, 1, calibrateFovScale, true );
 
 	if ( m_warpMesh.indexCount == 0 || m_sliceMesh.indexCount == 0 )
 	{
@@ -2457,10 +2143,10 @@ void TimeWarpLocal::createFrameworkGraphics()
 
 	// Vertexes and indexes for debug graph, the verts will be updated
 	// dynamically each frame.
-	m_timingGraph = BuildTimingGraphGeometry( (256+10)*2 );
+	m_timingGraph = CreateTimingGraphGeometry( (256+10)*2 );
 
 	// simple cross to draw to screen
-	m_calibrationLines2 = BuildCalibrationLines2( 0, false );
+	m_calibrationLines2 = VGlGeometryFactory::CreateCalibrationLines2( 0, false );
 
 	// FPS and graph text
 	m_untexturedMvpProgram.initShader(
@@ -2508,11 +2194,11 @@ void TimeWarpLocal::destroyFrameworkGraphics()
 	glDeleteTextures( 1, &m_blackTexId );
 	glDeleteTextures( 1, &m_defaultLoadingIconTexId );
 
-	DestroyWarpGeometry( &m_calibrationLines2 );
-	DestroyWarpGeometry( &m_warpMesh );
-	DestroyWarpGeometry( &m_sliceMesh );
-	DestroyWarpGeometry( &m_cursorMesh );
-	DestroyWarpGeometry( &m_timingGraph );
+	m_calibrationLines2.Free();
+	m_warpMesh.Free();
+	m_sliceMesh.Free();
+	m_cursorMesh.Free();
+	m_timingGraph.Free();
 
 	m_untexturedMvpProgram.destroy();
 	m_debugLineProgram.destroy();

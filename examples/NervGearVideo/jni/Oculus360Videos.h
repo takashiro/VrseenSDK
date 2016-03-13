@@ -87,7 +87,7 @@ private:
 
 	// shared vars
 	jclass				MainActivityClass;	// need to look up from main thread
-	GlGeometry			Globe;
+	VGlGeometry			Globe;
 	OvrSceneView		Scene;
 	ModelFile *			BackgroundScene;
 	bool				VideoWasPlayingWhenPaused;	// state of video when main activity was paused

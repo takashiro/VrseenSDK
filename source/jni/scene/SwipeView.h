@@ -4,7 +4,7 @@
 
 #include "VMath.h"
 #include "Array.h"
-#include "GlGeometry.h"
+#include "../api/VGlGeometry.h"
 #include "../api/VGlShader.h"
 #include "GlTexture.h"
 #include "GazeCursor.h"
@@ -132,7 +132,7 @@ public:
 
 	VGlShader	ProgPanel;
 	VGlShader	ProgHighlight;
-	GlGeometry	GeoPanel;
+	VGlGeometry	GeoPanel;
 	GlTexture	BorderTexture2_1;
 	GlTexture	BorderTexture1_1;
 

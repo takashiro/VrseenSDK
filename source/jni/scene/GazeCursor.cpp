@@ -108,7 +108,7 @@ void OvrGazeCursorLocal::Init()
 		LOG( "OvrGazeCursorLocal::Init - already initialized!" );
 		return;
 	}
-	CursorGeometry = BuildTesselatedQuad( 1, 1 );
+	CursorGeometry = VGlGeometryFactory::CreateTesselatedQuad( 1, 1 );
 	int w = 0;
 	int h = 0;
 	char const * const cursorStateNames[ CURSOR_STATE_MAX ] =

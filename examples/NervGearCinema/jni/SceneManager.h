@@ -3,7 +3,7 @@
 Filename    :   SceneManager.h
 Content     :	Handles rendering of current scene and movie.
 Created     :   September 3, 2013
-Authors     :	Jim Dosé, based on a fork of VrVideo.cpp from VrVideo by John Carmack.
+Authors     :	Jim Dosï¿½, based on a fork of VrVideo.cpp from VrVideo by John Carmack.
 
 Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
@@ -105,7 +105,7 @@ public:
 	bool				FrameUpdateNeeded;
 	int					ClearGhostsFrames;
 
-	GlGeometry			UnitSquare;		// -1 to 1
+	VGlGeometry			UnitSquare;		// -1 to 1
 
 	// We can't directly create a mip map on the OES_external_texture, so
 	// it needs to be copied to a conventional texture.

@@ -58,7 +58,7 @@ ModelFile::~ModelFile()
 
 	for ( int j = 0; j < Def.surfaces.sizeInt(); j++ )
 	{
-		const_cast<GlGeometry *>(&Def.surfaces[j].geo)->Free();
+		const_cast<VGlGeometry *>(&Def.surfaces[j].geo)->Free();
 	}
 }
 

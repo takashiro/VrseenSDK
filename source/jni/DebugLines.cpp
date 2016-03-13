@@ -17,7 +17,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "Android/GlUtils.h"
 #include "Android/LogUtils.h"
 
-#include "GlGeometry.h"
+#include "api/VGlGeometry.h"
 #include "api/VGlShader.h"
 
 NV_NAMESPACE_BEGIN
@@ -116,8 +116,8 @@ public:
 	virtual void		AddBounds( Posef const & pose, Bounds3f const & bounds, Vector4f const & color );
 
 private:
-	mutable GlGeometry				DepthGeo;
-	mutable GlGeometry				NonDepthGeo;
+	mutable VGlGeometry				DepthGeo;
+	mutable VGlGeometry				NonDepthGeo;
 	NervGear::ArrayPOD< DebugLine_t >	DepthTestedLines;
 	NervGear::ArrayPOD< DebugLine_t >	NonDepthTestedLines;
 	LineVertex_t *					Vertices;
@@ -125,9 +125,9 @@ private:
 	bool							Initialized;
 	VGlShader						LineProgram;
 
-	void		InitVBO( GlGeometry & geo, LineVertex_t * vertices, const int maxVerts, 
+	void		InitVBO( VGlGeometry & geo, LineVertex_t * vertices, const int maxVerts,
 						 LineIndex_t * indices, const int maxIndices );
-	void		Render( Matrix4f const & mvp, GlGeometry & geo, 
+	void		Render( Matrix4f const & mvp, VGlGeometry & geo,
 						NervGear::ArrayPOD< DebugLine_t > const & lines, 
 						const bool depthTest ) const;
 	void		RemoveExpired( const long long frameNum, NervGear::ArrayPOD< DebugLine_t > & lines );
@@ -189,7 +189,7 @@ void OvrDebugLinesLocal::Init()
 
 //==============================
 // OvrDebugLinesLocal::InitVBO
-void OvrDebugLinesLocal::InitVBO( GlGeometry & geo, LineVertex_t * vertices, const int maxVerts, 
+void OvrDebugLinesLocal::InitVBO( VGlGeometry & geo, LineVertex_t * vertices, const int maxVerts,
 		LineIndex_t * indices, const int maxIndices )
 {
 	const int numVertexBytes = maxVerts * sizeof( LineVertex_t );
@@ -245,7 +245,7 @@ void OvrDebugLinesLocal::Render( Matrix4f const & mvp ) const
 
 //==============================
 // OvrDebugLinesLocal::Render
-void OvrDebugLinesLocal::Render( Matrix4f const & mvp, GlGeometry & geo,
+void OvrDebugLinesLocal::Render( Matrix4f const & mvp, VGlGeometry & geo,
 		NervGear::ArrayPOD< DebugLine_t > const & lines,  const bool depthTest ) const
 {
 	if ( lines.sizeInt() == 0 )

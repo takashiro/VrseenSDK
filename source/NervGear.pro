@@ -59,7 +59,7 @@ SOURCES += \
     jni/api/TimeWarpProgs.cpp \
     jni/api/ImageServer.cpp \
     jni/api/LocalPreferences.cpp \
-    jni/api/WarpGeometry.cpp \
+
     jni/api/VGlShader.cpp \
     jni/api/sensor/DeviceHandle.cpp \
     jni/api/sensor/DeviceImpl.cpp \
@@ -105,7 +105,6 @@ SOURCES += \
     jni/scene/EyeBuffers.cpp \
     jni/scene/EyePostRender.cpp \
     jni/scene/GazeCursor.cpp \
-    jni/scene/GlGeometry.cpp \
     jni/scene/GlSetup.cpp \
     jni/scene/GlTexture.cpp \
     jni/scene/ImageData.cpp \
@@ -202,7 +201,7 @@ HEADERS += \
     jni/api/TimeWarpProgs.h \
     jni/api/ImageServer.h \
     jni/api/LocalPreferences.h \
-    jni/api/WarpGeometry.h \
+    jni/api/VGlGeometry.h \
     jni/api/VGlShader.h \ \
     jni/api/TimeWarpLocal.h \
     jni/api/VrApi_Android.h \
@@ -262,7 +261,6 @@ HEADERS += \
     jni/scene/EyePostRender.h \
     jni/scene/GazeCursor.h \
     jni/scene/GazeCursorLocal.h \
-    jni/scene/GlGeometry.h \
     jni/scene/GlSetup.h \
     jni/scene/GlTexture.h \
     jni/scene/ImageData.h \

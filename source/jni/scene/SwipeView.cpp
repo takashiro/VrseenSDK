@@ -202,7 +202,7 @@ static GlTexture BuildBorderTexture( int width, int height )
 
 void SwipeView::Init( OvrGazeCursor & gazeCursor )
 {
-	GeoPanel = BuildTesselatedQuad( 1, 1 );
+	GeoPanel = VGlGeometryFactory::CreateTesselatedQuad( 1, 1 );
 
 	BorderTexture2_1 = BuildBorderTexture( 80, 40 );
 	BorderTexture1_1 = BuildBorderTexture( 40, 40 );

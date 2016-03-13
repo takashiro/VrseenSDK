@@ -15,7 +15,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "Types.h"
 #include "VFlags.h"
-#include "GlGeometry.h" // For TriangleIndex
+#include "../api/VGlGeometry.h" // For TriangleIndex
 
 NV_NAMESPACE_BEGIN
 

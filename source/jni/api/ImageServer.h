@@ -3,7 +3,7 @@
 #include "Lockless.h"
 #include "Android/GlUtils.h"
 
-#include "WarpGeometry.h"
+#include "VGlGeometry.h"
 #include "VGlShader.h"
 
 NV_NAMESPACE_BEGIN
@@ -63,7 +63,7 @@ private:
 	// the FrameBufferObject, then copied to the PixelBufferObject
     int					m_currentResolution;
     int					m_sequenceCaptured;
-    WarpGeometry		m_quad;
+    VGlGeometry			m_quad;
 	VGlShader			m_resampleProg;
     GLuint				m_resampleRenderBuffer;
     GLuint				m_frameBufferObject;

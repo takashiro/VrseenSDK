@@ -946,10 +946,10 @@ void AppLocal::InitGlObjects()
 		);
 
 	// Build some geometries we need
-	panelGeometry = BuildTesselatedQuad( 32, 16 );	// must be large to get faded edge
-	unitSquare = BuildTesselatedQuad( 1, 1 );
-	unitCubeLines = BuildUnitCubeLines();
-	//FadedScreenMaskSquare = BuildFadedScreenMask( 0.0f, 0.0f );	// TODO: clean up: app-specific values are being passed in on DrawScreenMask
+	panelGeometry = VGlGeometryFactory::CreateTesselatedQuad( 32, 16 );	// must be large to get faded edge
+	unitSquare = VGlGeometryFactory::CreateTesselatedQuad( 1, 1 );
+	unitCubeLines = VGlGeometryFactory::CreateUnitCubeLines();
+	//FadedScreenMaskSquare = VGlGeometry::CreateFadedScreenMask( 0.0f, 0.0f );	// TODO: clean up: app-specific values are being passed in on DrawScreenMask
 
     eyeDecorations.Init();
 }

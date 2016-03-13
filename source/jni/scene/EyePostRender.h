@@ -2,7 +2,7 @@
 
 #include "vglobal.h"
 
-#include "GlGeometry.h"
+#include "../api/VGlGeometry.h"
 #include "../api/VGlShader.h"
 
 NV_NAMESPACE_BEGIN
@@ -28,8 +28,8 @@ public:
 	VGlShader	UntexturedMvpProgram;
 	VGlShader	UntexturedScreenSpaceProgram;
 
-	GlGeometry	CalibrationLines;
-	GlGeometry	VignetteSquare;
+	VGlGeometry	CalibrationLines;
+	VGlGeometry	VignetteSquare;
 };
 
 NV_NAMESPACE_END

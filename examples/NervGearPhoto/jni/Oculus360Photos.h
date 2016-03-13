@@ -116,7 +116,7 @@ private:
 
 	// shared vars
     jclass				m_mainActivityClass;	// need to look up from main thread
-    GlGeometry			m_globe;
+    VGlGeometry			m_globe;
 
     OvrSceneView		m_scene;
     SineFader			m_fader;

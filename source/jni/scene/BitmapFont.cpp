@@ -35,7 +35,7 @@
 
 #include "../api/VGlShader.h"
 #include "GlTexture.h"
-#include "GlGeometry.h"
+#include "../api/VGlGeometry.h"
 #include "VrCommon.h"
 #include "PackageFiles.h"
 
@@ -259,7 +259,7 @@ public:
 			Matrix4f const & worldMVP) const;
 
 private:
-	GlGeometry Geo; // font glyphs
+	VGlGeometry Geo; // font glyphs
 	fontVertex_t * Vertices; // vertices that are written to the VBO
 	int MaxVertices;
 	int MaxIndices;

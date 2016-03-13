@@ -124,7 +124,7 @@ ImageServer::~ImageServer()
 	// free GL tools
 	if ( m_quad.vertexArrayObject )
 	{
-		DestroyWarpGeometry( &m_quad );
+		m_quad.Free();
 	}
 	if ( m_resampleProg.program )
 	{
@@ -473,7 +473,7 @@ void ImageServer::enterWarpSwap( int eyeTexture )
 
 	if ( !m_quad.vertexArrayObject )
 	{
-		CreateQuadWarpGeometry( &m_quad );
+		m_quad = VGlGeometryFactory::CreateQuad();
 	}
 
 	// If resolution has changed, delete and reallocate the buffers

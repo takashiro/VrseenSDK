@@ -154,7 +154,7 @@ public:
 
 private:
     VRMenuSurfaceTexture			m_textures[VRMENUSURFACE_IMAGE_MAX];
-    GlGeometry						m_geo;				// VBO for this surface
+    VGlGeometry						m_geo;				// VBO for this surface
     OvrTriCollisionPrimitive		m_tris;				// per-poly collision object
     Vector4f						m_color;				// Color, modulated with object color
     Vector2f						m_textureDims;		// texture width and height

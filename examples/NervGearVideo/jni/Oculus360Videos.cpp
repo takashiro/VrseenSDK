@@ -268,7 +268,7 @@ void Oculus360Videos::OneTimeInit( const char * fromPackage, const char * launch
 	}
 
 	LOG( "Creating Globe" );
-	Globe = BuildGlobe();
+	Globe = VGlGeometryFactory::CreateGlobe();
 
 	// Stay exactly at the origin, so the panorama globe is equidistant
 	// Don't clear the head model neck length, or swipe view panels feel wrong.

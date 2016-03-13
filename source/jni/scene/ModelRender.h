@@ -8,7 +8,7 @@
 #include "Android/GlUtils.h"
 
 #include "GlTexture.h"
-#include "GlGeometry.h"
+#include "../api/VGlGeometry.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -116,7 +116,7 @@ struct SurfaceDef
 	// if primitive restart is supported, but it is a net speed
 	// loss on most architectures.  Adreno docs still recommend,
 	// so it might be worth trying.
-	GlGeometry		geo;
+	VGlGeometry		geo;
 
 	// This could be a constant reference, but inline has some
 	// advantages for now while the definition is small.

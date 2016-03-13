@@ -140,7 +140,7 @@ void MediaSurface::Update()
 	{
 		LOG( "Allocating GL objects" );
 
-		UnitSquare = BuildTesselatedQuad( 1, 1 );
+		UnitSquare = VGlGeometryFactory::CreateTesselatedQuad( 1, 1 );
 
 		CopyMovieProgram.initShader(
 			"uniform highp mat4 Mvpm;\n"

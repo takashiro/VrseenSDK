@@ -74,7 +74,7 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     api/TimeWarpProgs.cpp \
                     api/ImageServer.cpp \
                     api/LocalPreferences.cpp \
-                    api/WarpGeometry.cpp \
+                    api/VGlGeometry.cpp \
                     api/VGlShader.cpp \
                     api/sensor/DeviceHandle.cpp \
                     api/sensor/DeviceImpl.cpp \
@@ -122,7 +122,6 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     scene/GazeCursor.cpp \
                     scene/GlSetup.cpp \
                     scene/GlTexture.cpp \
-                    scene/GlGeometry.cpp \
                     scene/ImageData.cpp \
                     scene/ModelRender.cpp \
                     scene/ModelFile.cpp \

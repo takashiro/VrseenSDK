@@ -4,7 +4,7 @@
 
 #include <jni.h>
 #include "android/GlUtils.h"
-#include "GlGeometry.h"
+#include "../../api/VGlGeometry.h"
 #include "../../api/VGlShader.h"
 #include "SurfaceTexture.h"
 
@@ -29,7 +29,7 @@ public:
 	JNIEnv * 		jni;
 	SurfaceTexture	* AndroidSurfaceTexture;
 	VGlShader		CopyMovieProgram;
-	GlGeometry		UnitSquare;
+	VGlGeometry		UnitSquare;
 	jobject			SurfaceObject;
 	long long		LastSurfaceTexNanoTimeStamp;
 	int				TexId;

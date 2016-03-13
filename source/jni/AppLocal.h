@@ -348,10 +348,10 @@ public:
         VGlShader		overlayScreenFadeMaskProgram;
         VGlShader		overlayScreenDirectProgram;
 
-        GlGeometry		unitCubeLines;		// 12 lines that outline a 0 to 1 unit cube, intended to be scaled to cover bounds.
-        GlGeometry		panelGeometry;		// used for dialogs
-        GlGeometry		unitSquare;			// -1 to 1 in x and Y, 0 to 1 in texcoords
-        GlGeometry		fadedScreenMaskSquare;// faded screen mask for overlay rendering
+        VGlGeometry		unitCubeLines;		// 12 lines that outline a 0 to 1 unit cube, intended to be scaled to cover bounds.
+        VGlGeometry		panelGeometry;		// used for dialogs
+        VGlGeometry		unitSquare;			// -1 to 1 in x and Y, 0 to 1 in texcoords
+        VGlGeometry		fadedScreenMaskSquare;// faded screen mask for overlay rendering
 
         EyePostRender	eyeDecorations;
 

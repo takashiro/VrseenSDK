@@ -10,7 +10,7 @@
 #include "api/VrApi_Android.h"
 #include "api/VGlShader.h"
 #include "GlTexture.h"
-#include "GlGeometry.h"
+#include "api/VGlGeometry.h"
 #include "SurfaceTexture.h"
 #include "EyeBuffers.h"
 #include "EyePostRender.h"
@@ -31,7 +31,7 @@ NV_NAMESPACE_BEGIN
 // forward declarations
 class EyeBuffers;
 struct MaterialParms;
-class GlGeometry;
+class VGlGeometry;
 class VGlShader;
 class VRMenuObjectParms;
 class OvrGuiSys;

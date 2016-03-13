@@ -215,7 +215,7 @@ void AppLocal::DrawScreenMask( const ovrMatrix4f & mvp, const float fadeFracX, c
 
 	if ( fadedScreenMaskSquare.vertexArrayObject == 0 )
 	{
-		fadedScreenMaskSquare = BuildFadedScreenMask( fadeFracX, fadeFracY );
+		fadedScreenMaskSquare = VGlGeometryFactory::CreateFadedScreenMask( fadeFracX, fadeFracY );
 	}
 
 	glColorMask( 0.0f, 0.0f, 0.0f, 1.0f );

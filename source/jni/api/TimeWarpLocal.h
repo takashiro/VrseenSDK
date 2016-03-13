@@ -5,7 +5,7 @@
 #include "VrApi.h"
 #include "ImageServer.h"
 
-#include "WarpGeometry.h"
+#include "VGlGeometry.h"
 #include "VGlShader.h"
 
 NV_NAMESPACE_BEGIN
@@ -161,11 +161,11 @@ private:
     VGlShader		m_warpPrograms[ WP_PROGRAM_MAX ];
     GLuint			m_blackTexId;
     GLuint			m_defaultLoadingIconTexId;
-    WarpGeometry	m_calibrationLines2;		// simple cross
-    WarpGeometry	m_warpMesh;
-    WarpGeometry	m_sliceMesh;
-    WarpGeometry	m_cursorMesh;
-    WarpGeometry	m_timingGraph;
+    VGlGeometry	m_calibrationLines2;		// simple cross
+    VGlGeometry	m_warpMesh;
+    VGlGeometry	m_sliceMesh;
+    VGlGeometry	m_cursorMesh;
+    VGlGeometry	m_timingGraph;
 	static const int NUM_SLICES_PER_EYE = 4;
 	static const int NUM_SLICES_PER_SCREEN = NUM_SLICES_PER_EYE*2;
 
