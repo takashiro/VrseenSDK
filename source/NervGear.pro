@@ -130,10 +130,9 @@ SOURCES += \
     jni/TalkToJava.cpp \
     jni/VrCommon.cpp \
     jni/VrLocale.cpp \
-    jni/core/VFile.cpp \
-    jni/core/VFileFILE.cpp \
     jni/core/VSysFile.cpp \
-    jni/core/VBuffer.cpp
+    jni/core/VBuffer.cpp \
+    jni/core/VFileOperation.cpp
 
 HEADERS += \
     jni/core/android/GlUtils.h \
@@ -301,11 +300,11 @@ HEADERS += \
     jni/core/VFile.h \
     jni/core/VDelegatedFile.h \
     jni/core/VSysFile.h \
-    jni/core/VUnopenedFile.h \
     jni/PointTracker.h \
     jni/core/VBuffer.h \
     jni/core/VFileState.h \
-    jni/core/VFileFILE.h
+    jni/core/VFileOperation.h \
+    jni/core/VDefaultFile.h
 
 
 include(jni/3rdparty/minizip/minizip.pri)

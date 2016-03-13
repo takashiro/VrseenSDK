@@ -22,35 +22,23 @@ NV_NAMESPACE_BEGIN
 // Not supposed to be used
 VBuffer::VBuffer()
     : VDelegatedFile(0)
-   // , m_buffer((uchar*)OVR_ALLOC(BUFFER_LENGTH))
     , m_buffer((uchar*)new char[BUFFER_LENGTH])
     , m_bufferMode(NoBuffer)
     , m_filePos(0)
     , m_pos(0)
     , m_dataSize(0)
 {
-//    m_buffer      = (UByte*)OVR_ALLOC(BUFFER_LENGTH);
-//    m_bufferMode  = NoBuffer;
-//    m_filePos     = 0;
-//    m_pos         = 0;
-//    m_dataSize    = 0;
 }
 
 // Takes another file as source
 VBuffer::VBuffer(VFile *pfile)
     : VDelegatedFile(pfile)
-   // , m_buffer((uchar*)OVR_ALLOC(BUFFER_LENGTH))
     , m_buffer((uchar*)new char[BUFFER_LENGTH])
     , m_bufferMode(NoBuffer)
     , m_filePos(pfile->tell64())
     , m_pos(0)
     , m_dataSize(0)
 {
-//    m_buffer      = (UByte*)OVR_ALLOC(BUFFER_LENGTH);
-//    m_bufferMode  = NoBuffer;
-//    m_filePos     = pfile->tell64();
-//    m_pos         = 0;
-//    m_dataSize    = 0;
 }
 
 
@@ -520,7 +508,7 @@ long long  VBuffer::seek64(long long offset,std::ios_base::seekdir origin)
     return m_filePos;
 }
 
-int    VBuffer::copyFromStream(VFile *pstream, int byteSize)
+int    VBuffer::copyStream(VFile *pstream, int byteSize)
 {
     // We can't rely on overridden Write()
     // because delegation doesn't override virtual pointers

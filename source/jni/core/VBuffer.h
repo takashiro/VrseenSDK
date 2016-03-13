@@ -75,7 +75,7 @@ public:
     virtual int         seek(int offset, std::ios_base::seekdir origin=std::ios_base::beg) override;
     virtual long long      seek64(long long offset, std::ios_base::seekdir origin=std::ios_base::beg) override;
 
-    virtual int         copyFromStream(VFile *pstream, int byteSize) override;
+    virtual int         copyStream(VFile *pstream, int byteSize) override;
 
     virtual bool        fileClose() override;
 };

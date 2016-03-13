@@ -6,7 +6,6 @@
 
 
 #include "VSysFile.h"
-#include "VUnopenedFile.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -16,34 +15,37 @@ NV_NAMESPACE_BEGIN
 // This file can refer directly to path
 
 
-VFile* VFileFILEOpen(const VString& path, int flags, int mode);
+VFile* VOpenFile(const VString& path, int flags);
 
 // ** Constructor
-VSysFile::VSysFile() : VDelegatedFile(0)
+VSysFile::VSysFile()
+    : VDelegatedFile(0)
 {
-    m_file = *new VUnopenedFile;
+    m_file = *new VDefaultFile;
 }
 
 // Opens a file
-VSysFile::VSysFile(const VString& path, int flags, int mode) : VDelegatedFile(0)
+VSysFile::VSysFile(const VString& path, int flags)
+    : VDelegatedFile()
 {
-    open(path, flags, mode);
+    open(path, flags);
+}
+VSysFile::VSysFile(VFile *pfile)
+    : VDelegatedFile(pfile)
+{
+
 }
 
 
 // ** Open & management
 // Will fail if file's already open
-bool VSysFile::open(const VString& path, int flags, int mode)
+bool VSysFile::open(const VString& path, int flags)
 {
-    m_file = *VFileFILEOpen(path, flags, mode);
-    if ((!m_file) || (!m_file->isValid()))
-    {
-        m_file = *new VUnopenedFile;
+    m_file = *VOpenFile(path, flags);
+    if ((!m_file) || (!m_file->isOpened())) {
+        m_file = *new VDefaultFile;
         return false;
     }
-    //pFile = *OVR_NEW DelegatedFile(pFile); // MA Testing
-//    if (flags & Open_Buffered)
-//        m_file = *new VBuffer(m_file);
     return true;
 }
 
@@ -58,20 +60,19 @@ int VSysFile::errorCode()
 
 
 // Overrides to provide re-open support
-bool VSysFile::isValid()
+bool VSysFile::isOpened()
 {
-    return m_file && m_file->isValid();
+    return m_file && m_file->isOpened();
 }
 
 bool VSysFile::fileClose()
 {
-    if (isValid())
-    {
+    if (isOpened()) {
         VDelegatedFile::fileClose();
-        m_file = *new VUnopenedFile;
-        return 1;
+        m_file = *new VDefaultFile;
+        return true;
     }
-    return 0;
+    return false;
 }
 
 NV_NAMESPACE_END

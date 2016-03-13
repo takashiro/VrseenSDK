@@ -3,9 +3,8 @@
 #include "vglobal.h"
 
 #include "VDelegatedFile.h"
-//#include "VBuffer.h"
 #include "VFileState.h"
-#include "VUnopenedFile.h"
+#include "VDefaultFile.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -30,21 +29,20 @@ class   VSysFile;
 class VSysFile : public VDelegatedFile
 {
 protected:
-    VSysFile(const VSysFile &source) : VDelegatedFile () { OVR_UNUSED(source); }
+    VSysFile(const VSysFile &source) : VDelegatedFile () {  }
 public:
 
     // ** Constructor
     VSysFile();
+    VSysFile(VFile *pfile);
     // Opens a file
-//    VSysFile(const VString& path, int flags = Open_Read | Open_Buffered, int mode = ReadWrite);
-     VSysFile(const VString& path, int flags = Open_Read, int mode = ReadWrite);
+     VSysFile(const VString& path, int flags = Open_Read);
 
     // ** Open & management
-//    bool  open(const VString& path, int flags = Open_Read | Open_Buffered, int mode = ReadWrite);
-     bool  open(const VString& path, int flags = Open_Read, int mode = ReadWrite);
+     bool  open(const VString& path, int flags = Open_Read);
 
-//    inline bool  Create(const VString& path, int mode = ReadWrite)
-//    { return open(path, Open_ReadWrite | Open_Create, mode); }
+    inline bool  Create(const VString& path)
+    { return open(path, Open_ReadWrite | Open_Create); }
 
     // Helper function: obtain file statistics information. In OVR, this is used to detect file changes.
     // Return 0 if function failed, most likely because the file doesn't exist.
@@ -54,7 +52,7 @@ public:
     // Overridden to provide re-open support
     virtual int   errorCode() override;
 
-    virtual bool  isValid() override;
+    virtual bool  isOpened() override;
 
     virtual bool  fileClose() override;
 
