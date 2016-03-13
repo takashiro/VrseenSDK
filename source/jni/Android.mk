@@ -71,7 +71,6 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     api/Distortion.cpp \
                     api/SystemActivities.cpp \
                     api/TimeWarp.cpp \
-                    api/TimeWarpProgs.cpp \
                     api/ImageServer.cpp \
                     api/LocalPreferences.cpp \
                     api/VGlGeometry.cpp \

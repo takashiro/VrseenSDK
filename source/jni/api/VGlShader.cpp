@@ -299,6 +299,12 @@ struct VGlShader::Private
     static bool CompileShader( const GLuint shader, const char * src );
 };
 
+VGlShader::VGlShader(const char * vertexSrc, const char * fragmentSrc)
+{
+    VGlShader();
+    initShader(vertexSrc,fragmentSrc);
+}
+
 VGlShader::~VGlShader()
 {
 

@@ -56,7 +56,6 @@ SOURCES += \
     jni/api/Distortion.cpp \
     jni/api/SystemActivities.cpp \
     jni/api/TimeWarp.cpp \
-    jni/api/TimeWarpProgs.cpp \
     jni/api/ImageServer.cpp \
     jni/api/LocalPreferences.cpp \
 
@@ -198,7 +197,6 @@ HEADERS += \
     jni/api/Distortion.h \
     jni/api/SystemActivities.h \
     jni/api/TimeWarp.h \
-    jni/api/TimeWarpProgs.h \
     jni/api/ImageServer.h \
     jni/api/LocalPreferences.h \
     jni/api/VGlGeometry.h \

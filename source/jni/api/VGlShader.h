@@ -71,6 +71,7 @@ public:
         uniformColorTableOffset( -1 ),
         uniformFadeDirection( -1 ),
         uniformJoints( -1 ) {};
+    VGlShader(const char * vertexSrc, const char * fragmentSrc);
     ~VGlShader();
     GLuint createShader(GLuint shaderType, const char* src);
     GLuint createProgram(GLuint vertexShader, GLuint fragmentShader);
