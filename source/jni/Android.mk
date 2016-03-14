@@ -38,8 +38,7 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     core/VByteArray.cpp \
                     core/VChar.cpp \
                     core/VEvent.cpp \
-                    core/File.cpp \
-                    core/FileFILE.cpp \
+                    core/VFileOperation.cpp \
                     core/VJson.cpp \
                     core/Log.cpp \
                     core/VLog.cpp \
@@ -50,12 +49,12 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     core/VStandardPath.cpp \
                     core/Std.cpp \
                     core/VString.cpp \
-                    core/SysFile.cpp \
+                    core/VSysFile.cpp \
                     core/System.cpp \
                     core/ThreadCommandQueue.cpp \
                     core/VThread.cpp \
                     core/VTimer.cpp \
-                    core/BinaryFile.cpp \
+                    core/VBinaryFile.cpp \
                     core/MappedFile.cpp \
                     core/MemBuffer.cpp \
                     core/VMutex.cpp \

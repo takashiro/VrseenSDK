@@ -45,8 +45,8 @@ protected:
 public:
 
     VFileOperation()
-        : m_opened(false)
-        , m_fileName("")
+        : m_fileName("")
+        , m_opened(false)
     {
 
 #ifdef OVR_FILE_VERIFY_SEEK_ERRORS

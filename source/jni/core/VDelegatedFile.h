@@ -13,7 +13,7 @@ protected:
 
     // Hidden default constructor
     VDelegatedFile() : m_file(0) { }
-    VDelegatedFile(const VDelegatedFile &source) : VFile() { }
+//    VDelegatedFile(const VDelegatedFile &source) : VFile() { }
 public:
     // Constructors
     VDelegatedFile(VFile *pfile) : m_file(pfile) { }

@@ -32,7 +32,7 @@ public:
     uint readUint() const
     {
         const int byteNum = sizeof(uint);
-        if (m_data == nullptr || byteNum > m_size - m_offset) {
+        if (m_data == NULL || byteNum > m_size - m_offset) {
             return 0;
         }
         m_offset += byteNum;
@@ -43,7 +43,7 @@ public:
     bool readArray( Array< _type_ > & oArray, const int num ) const
     {
         const int byteNum = num * sizeof(oArray[0]);
-        if (m_data == nullptr || byteNum > m_size - m_offset) {
+        if (m_data == NULL || byteNum > m_size - m_offset) {
             oArray.resize(0);
             return false;
         }

@@ -19,7 +19,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VString.h"
 #include "String_Utils.h"
 #include "VJson.h"
-#include "BinaryFile.h"
+//#include "BinaryFile.h"
+#include "VBinaryFile.h"
 #include "MappedFile.h"
 #include "Android/GlUtils.h"
 #include "Android/LogUtils.h"
@@ -167,7 +168,7 @@ void LoadModelFileTexture( ModelFile & model, const char * textureName,
 }
 
 template< typename _type_ >
-void ReadModelArray( Array< _type_ > & out, const char * string, const BinaryReader & bin, const int numElements )
+void ReadModelArray( Array< _type_ > & out, const char * string, const VBinaryFile & bin, const int numElements )
 {
 	if ( string != NULL && string[0] != '\0' && numElements > 0 )
 	{
@@ -185,9 +186,9 @@ void LoadModelFileJson( ModelFile & model,
 {
 	LOG( "parsing %s", model.FileName.toCString() );
 
-	const BinaryReader bin( (const UByte *)modelsBin, modelsBinLength );
+	const VBinaryFile bin( (const UByte *)modelsBin, modelsBinLength );
 
-	if ( modelsBin != NULL && bin.readUInt32() != 0x6272766F )
+	if ( modelsBin != NULL && bin.readUint() != 0x6272766F )
 	{
 		LOG( "LoadModelFileJson: bad binary file for %s", model.FileName.toCString() );
 		return;
@@ -749,7 +750,7 @@ void LoadModelFileJson( ModelFile & model,
 		}
 	}
 
-	if ( !bin.atEnd() )
+	if ( !bin.isEnd() )
 	{
 		WARN( "failed to properly read binary file" );
 	}

@@ -132,7 +132,8 @@ SOURCES += \
     jni/VrLocale.cpp \
     jni/core/VSysFile.cpp \
     jni/core/VBuffer.cpp \
-    jni/core/VFileOperation.cpp
+    jni/core/VFileOperation.cpp \
+    jni/core/VBinaryFile.cpp
 
 HEADERS += \
     jni/core/android/GlUtils.h \
@@ -304,7 +305,8 @@ HEADERS += \
     jni/core/VBuffer.h \
     jni/core/VFileState.h \
     jni/core/VFileOperation.h \
-    jni/core/VDefaultFile.h
+    jni/core/VDefaultFile.h \
+    jni/core/VBinaryFile.h
 
 
 include(jni/3rdparty/minizip/minizip.pri)

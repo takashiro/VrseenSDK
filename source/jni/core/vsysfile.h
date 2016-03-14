@@ -29,7 +29,7 @@ class   VSysFile;
 class VSysFile : public VDelegatedFile
 {
 protected:
-    VSysFile(const VSysFile &source) : VDelegatedFile () {  }
+//    VSysFile(const VSysFile &source) : VDelegatedFile () {  }
 public:
 
     // ** Constructor

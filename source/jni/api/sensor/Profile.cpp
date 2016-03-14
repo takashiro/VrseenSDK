@@ -21,9 +21,9 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VJson.h"
 #include "Types.h"
 #include "SysFile.h"
+//#include "VSysFile.h"
 #include "Allocator.h"
 #include "Array.h"
-
 #include <fstream>
 
 #ifdef OVR_OS_WIN32
