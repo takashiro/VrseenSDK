@@ -23,8 +23,6 @@ SOURCES += \
     jni/core/VByteArray.cpp \
     jni/core/VChar.cpp \
     jni/core/VEvent.cpp \
-    jni/core/File.cpp \
-    jni/core/FileFILE.cpp \
     jni/core/VJson.cpp \
     jni/core/Log.cpp \
     jni/core/VLog.cpp \
@@ -35,12 +33,10 @@ SOURCES += \
     jni/core/VStandardPath.cpp \
     jni/core/Std.cpp \
     jni/core/VString.cpp \
-    jni/core/SysFile.cpp \
     jni/core/System.cpp \
     jni/core/ThreadCommandQueue.cpp \
     jni/core/VThread.cpp \
     jni/core/VTimer.cpp \
-    jni/core/BinaryFile.cpp \
     jni/core/MappedFile.cpp \
     jni/core/MemBuffer.cpp \
     jni/core/VMutex.cpp \
@@ -131,7 +127,6 @@ SOURCES += \
     jni/VrCommon.cpp \
     jni/VrLocale.cpp \
     jni/core/VSysFile.cpp \
-    jni/core/VBuffer.cpp \
     jni/core/VFileOperation.cpp \
     jni/core/VBinaryFile.cpp
 
@@ -156,7 +151,6 @@ HEADERS += \
     jni/core/ContainerAllocator.h \
     jni/core/Deque.h \
     jni/core/VEvent.h \
-    jni/core/File.h \
     jni/core/FileFILE.h \
     jni/core/VBufferedFile.h \
     jni/core/VFlags.h \
@@ -172,12 +166,10 @@ HEADERS += \
     jni/core/VString.h \
     jni/core/String_FormatUtil.h \
     jni/core/String_PathUtil.h \
-    jni/core/SysFile.h \
     jni/core/System.h \
     jni/core/ThreadCommandQueue.h \
     jni/core/VThread.h \
     jni/core/VTimer.h \
-    jni/core/BinaryFile.h \
     jni/core/MappedFile.h \
     jni/core/MemBuffer.h \
     jni/core/VMutex.h \
@@ -302,7 +294,6 @@ HEADERS += \
     jni/core/VDelegatedFile.h \
     jni/core/VSysFile.h \
     jni/PointTracker.h \
-    jni/core/VBuffer.h \
     jni/core/VFileState.h \
     jni/core/VFileOperation.h \
     jni/core/VDefaultFile.h \
