@@ -4,10 +4,6 @@
 
 NV_NAMESPACE_BEGIN
 
-// ***** File interface
-
-// ***** FileOperation - C++ streams file
-
 static int FError ()
 {
     if (errno == ENOENT) {
@@ -21,27 +17,22 @@ static int FError ()
     }
 };
 
-
 VFile *VOpenFile(const VString& path, int flags)
 {
     return new VFileOperation(path, flags);
 }
 
-// Initialize file by opening it
 VFileOperation::VFileOperation(const VString& fileName, int flags)
   : m_fileName(fileName)
   , m_openFlag(flags)
 {
-//    OVR_UNUSED(mode);
     fileInit();
 }
 
-// The 'pfileName' should be encoded as UTF-8 to support international file names.
 VFileOperation::VFileOperation(const char* fileName, int flags)
   : m_fileName(fileName)
   , m_openFlag(flags)
 {
-//    OVR_UNUSED(mode);
     fileInit();
 }
 
@@ -121,24 +112,21 @@ void VFileOperation::fileInit()
     m_lastOp = 0;
 }
 
-
 const std::string VFileOperation::filePath()
 {
     return m_fileName.toStdString();
 }
 
-
-// ** File Information
 bool    VFileOperation::isOpened()
 {
     return m_opened;
 }
+
 bool    VFileOperation::isWritable()
 {
     return isOpened() && (m_openFlag & Open_Write);
 }
 
-// Return position / file size
 int     VFileOperation::tell()
 {
     int position;
@@ -149,8 +137,9 @@ int     VFileOperation::tell()
         position = tellp();
     }
 
-    if (position < 0)
+    if (position < 0) {
         m_errorCode = FError();
+    }
     return position;
 }
 
@@ -199,7 +188,6 @@ int     VFileOperation::errorCode()
     return m_errorCode;
 }
 
-// ** Stream implementation & I/O
 int     VFileOperation::write(const uchar *buffer, int byteNum)
 {
     if (m_lastOp && m_lastOp != Open_Write) {
@@ -304,6 +292,7 @@ int     VFileOperation::seek(int offset, std::ios_base::seekdir startPos)
     } else {
         seekp(offset, startPos);
     }
+
     if (!good()) {
         return -1;
     }
@@ -334,17 +323,16 @@ int VFileOperation::copyStream(VFile *fstream, int num)
     int readNum;
     int tempWrite;
 
-    while (num)
-    {
+    while (num) {
         tempRead = (num > int(sizeof(temp))) ? int(sizeof(temp)) : num;
 
-        readNum    = fstream->read(temp, tempRead);
+        readNum = fstream->read(temp, tempRead);
         tempWrite = 0;
         if (readNum > 0) {
             tempWrite = write(temp, readNum);
         }
 
-        size    += tempWrite;
+        size += tempWrite;
         num -= tempWrite;
         if (tempWrite < tempRead){
             break;
@@ -367,13 +355,10 @@ bool VFileOperation::fileClose()
     close();
     bool isCloseRet = good();
 
-    if (!isCloseRet)
-    {
+    if (!isCloseRet) {
         m_errorCode = FError();
         return false;
-    }
-    else
-    {
+    } else {
         m_opened = 0;
         m_errorCode = 0;
     }
@@ -381,7 +366,7 @@ bool VFileOperation::fileClose()
 }
 
 // Helper function: obtain file information time.
-bool    VSysFile::getFileStat(VFileStat* pfileStat, const VString& path)
+bool    VSysFile::GetFileStat(VFileStat* pfileStat, const VString& path)
 {
 #if defined(OVR_OS_WIN32)
     // 64-bit implementation on Windows.

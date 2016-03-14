@@ -16,23 +16,22 @@ NV_NAMESPACE_BEGIN
 
 static int FError ();
 
-// This is the simplest possible file implementation, it wraps around the descriptor
-// This file is delegated to by VSysFile.
+//实现文件具体操作的类，VSysFile通过指针授权给父类调用该类的函数
 class VFileOperation : public VFile
 {
 protected:
 
-    // Allocated filename
+    // 文件名
     VString m_fileName;
 
-    // File handle & open mode
+    // 文件打开标识
     bool m_opened;
 
-    // File Open flag
+    // 文件打开模式
     int m_openFlag;
-    // Error code for last request
+    // 文件操作错误码
     int m_errorCode;
-    // the previous io operation
+    // 前一个文件操作
     int m_lastOp;
 
 #ifdef OVR_FILE_VERIFY_SEEK_ERRORS
@@ -43,7 +42,6 @@ protected:
 #endif
 
 public:
-
     VFileOperation()
         : m_fileName("")
         , m_opened(false)
@@ -55,9 +53,9 @@ public:
         TestPos =0;
 #endif
     }
-    // Initialize file by opening it
+    // 两种形式的构造函数VString和const char * 形式给出文件名
     VFileOperation(const VString& m_fileName, int flags);
-    // The 'pfileName' should be encoded as UTF-8 to support international file names.
+
     VFileOperation(const char* pfileName, int flags);
 
     ~VFileOperation()
@@ -69,18 +67,17 @@ public:
 
     virtual const std::string filePath() override;
 
-    // ** File Information
     virtual bool isOpened() override;
     virtual bool isWritable() override;
 
-    // Return position / file size
+    // 文件位置、长度
     virtual int tell() override;
     virtual long long tell64() override;
     virtual int length() override;
     virtual long long length64() override;
     virtual int errorCode() override;
 
-    // ** Stream implementation & I/O
+    //  文件读写
     virtual int write(const uchar *pbuffer, int numBytes) override;
     virtual int read(uchar *pbuffer, int numBytes) override;
     virtual int skipBytes(int numBytes) override;

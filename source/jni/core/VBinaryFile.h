@@ -2,14 +2,9 @@
 
 #include "vglobal.h"
 #include "VString.h"
-//#include "VArray.h"
 #include "Array.h"
 
 #include <sstream>
-
-/*
-        This is a simple helper class to read binary data next to a JSON file.
-*/
 
 NV_NAMESPACE_BEGIN
 
@@ -26,7 +21,6 @@ public:
     }
     ~VBinaryFile();
 
-    //        VBinaryReader( const char * path, const char ** perror );
     VBinaryFile(const VString path, const char **error);
 
     uint readUint() const

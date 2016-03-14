@@ -1,30 +1,22 @@
 
 #define  GFILE_CXX
 
-// Standard C library (Captain Obvious guarantees!)
-#include <stdio.h>
+//#include <stdio.h>
 
 
 #include "VSysFile.h"
 
 NV_NAMESPACE_BEGIN
 
-// ***** System Filebool  open(const VString& path, int flags = Open_Read | Open_Buffered, int mode = ReadWrite);
-
-// System file is created to access objects on file system directly
-// This file can refer directly to path
-
-
+//通过路径打开文件系统中的文件，该函数在VFileOperation.cpp中实现
 VFile* VOpenFile(const VString& path, int flags);
 
-// ** Constructor
 VSysFile::VSysFile()
     : VDelegatedFile(0)
 {
     m_file = *new VDefaultFile;
 }
 
-// Opens a file
 VSysFile::VSysFile(const VString& path, int flags)
     : VDelegatedFile()
 {
@@ -36,9 +28,7 @@ VSysFile::VSysFile(VFile *pfile)
 
 }
 
-
-// ** Open & management
-// Will fail if file's already open
+//根据路径打开一个文件
 bool VSysFile::open(const VString& path, int flags)
 {
     m_file = *VOpenFile(path, flags);
@@ -49,17 +39,12 @@ bool VSysFile::open(const VString& path, int flags)
     return true;
 }
 
-
-// ** Overrides
-
 int VSysFile::errorCode()
 {
     return m_file ? m_file->errorCode() : FileNotFound;
 
 }
 
-
-// Overrides to provide re-open support
 bool VSysFile::isOpened()
 {
     return m_file && m_file->isOpened();
