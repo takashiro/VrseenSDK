@@ -13,7 +13,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "VPath.h"
 #include "OVR.h"
-#include "SysFile.h"
+#include "Alg.h"
+//#include "SysFile.h"
 #include "Android/GlUtils.h"
 #include "Android/LogUtils.h"
 
