@@ -6,6 +6,7 @@
  */
 
 #include "VBuffer.h"
+#include "VLog.h"
 
 
 NV_NAMESPACE_BEGIN
@@ -128,7 +129,7 @@ void    VBuffer::loadBuffer()
     {
         // We should only reload once all of pre-loaded buffer is consumed.
         //OVR_ASSERT(m_pos == m_dataSize);
-        vAssert(m_pos == m_dataSize);
+//        vAssert(m_pos == m_dataSize);
 
         // WARNING: Right now LoadBuffer() assumes the buffer's empty
         int sz   = m_file->read(m_buffer,BUFFER_LENGTH);
@@ -155,7 +156,7 @@ int     VBuffer::tell()
     if (pos!=-1)
     {
         //OVR_ASSERT(m_bufferMode != ReadBuffer);
-        vAssert(m_bufferMode != ReadBuffer);
+//        vAssert(m_bufferMode != ReadBuffer);
         if (m_bufferMode == WriteBuffer)
             pos += m_pos;
     }
@@ -171,7 +172,7 @@ long long  VBuffer::tell64()
     if (pos!=-1)
     {
         //OVR_ASSERT(m_bufferMode != ReadBuffer);
-        vAssert(m_bufferMode != ReadBuffer);
+//        vAssert(m_bufferMode != ReadBuffer);
         if (m_bufferMode == WriteBuffer)
             pos += m_pos;
     }
@@ -399,7 +400,7 @@ int     VBuffer::seek(int offset,std::ios_base::seekdir origin)
             // back operation which would take place if we called FlushBuffer directly.
             origin = std::ios_base::beg;
             //OVR_ASSERT(((m_filePos - m_dataSize + m_pos) + (UInt64)offset) < ~(UInt64)0);
-            vAssert(((m_filePos - m_dataSize + m_pos) + (ulonglong)offset) < ~(ulonglong)0);
+//            vAssert(((m_filePos - m_dataSize + m_pos) + (ulonglong)offset) < ~(ulonglong)0);
             offset = (int)(m_filePos - m_dataSize + m_pos) + offset;
             m_pos = m_dataSize = 0;
         }
@@ -408,7 +409,7 @@ int     VBuffer::seek(int offset,std::ios_base::seekdir origin)
             if (((unsigned)offset - (m_filePos-m_dataSize)) <= m_dataSize)
             {
                 //OVR_ASSERT((m_filePos-m_dataSize) < ~(UInt64)0);
-                vAssert((m_filePos-m_dataSize) < ~(ulonglong)0);
+//                vAssert((m_filePos-m_dataSize) < ~(ulonglong)0);
                 m_pos = (unsigned)offset - (unsigned)(m_filePos-m_dataSize);
                 return offset;
             }
