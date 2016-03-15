@@ -126,9 +126,9 @@ SOURCES += \
     jni/TalkToJava.cpp \
     jni/VrCommon.cpp \
     jni/VrLocale.cpp \
-    jni/core/VSysFile.cpp \
-    jni/core/VFileOperation.cpp \
-    jni/core/VBinaryFile.cpp
+    jni/io/VBinaryFile.cpp \
+    jni/io/VFileOperation.cpp \
+    jni/io/VSysFile.cpp
 
 HEADERS += \
     jni/core/android/GlUtils.h \
@@ -151,8 +151,6 @@ HEADERS += \
     jni/core/ContainerAllocator.h \
     jni/core/Deque.h \
     jni/core/VEvent.h \
-    jni/core/FileFILE.h \
-    jni/core/VBufferedFile.h \
     jni/core/VFlags.h \
     jni/core/VJson.h \
     jni/core/Log.h \
@@ -290,14 +288,14 @@ HEADERS += \
     jni/Input.h \
     jni/PointTracker.h \
     jni/UniversalMenu_Commands.h \
-    jni/core/VFile.h \
-    jni/core/VDelegatedFile.h \
-    jni/core/VSysFile.h \
     jni/PointTracker.h \
-    jni/core/VFileState.h \
-    jni/core/VFileOperation.h \
-    jni/core/VDefaultFile.h \
-    jni/core/VBinaryFile.h
+    jni/io/VBinaryFile.h \
+    jni/io/VDefaultFile.h \
+    jni/io/VDelegatedFile.h \
+    jni/io/VFile.h \
+    jni/io/VFileOperation.h \
+    jni/io/VFileState.h \
+    jni/io/VSysFile.h
 
 
 include(jni/3rdparty/minizip/minizip.pri)
