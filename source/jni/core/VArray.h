@@ -225,4 +225,84 @@ public:
 	  		return this->allocBack();
 	  	}
 	};
+
+	void append(const List<E> &elements)
+	{
+		for(E e:elements)
+		{
+			this->push_back(e);
+		}
+	}
+	void prepend(const E &e)
+	{
+	    insert(0, e);//
+	}
+	void prepend(const List<E> &elements)
+	{
+	    for (uint i = 0, max = elements.size(); i < max; i++) {
+	                 insert(i, elements.at(i));//
+	            }
+	}
+	/*void insert(uint i, const E &e)
+	{
+//	    std::vector<E>::insert(this->begin() + i, e);
+
+
+	}*/
+	void removeAt(int i)
+	{
+	    this->erase(this->begin() + i);
+	}
+	void removeOne(const E &e)
+	{
+	    for (uint i = 0, max = this->size(); i < max; i++) {
+	               if (this->at(i) == e) {
+	                     removeAt(i);
+	                     break;
+	                 }
+	            }
+	}
+	void removeAll(const E &e)
+	{
+	    for (uint i = 0, max = this->size(); i < max; i++) {
+	                 if (this->at(i) == e) {
+	                     removeAt(i);
+	                     i--;
+	                     max--;
+	                 }
+	             }
+
+	};
+	bool contains(const E &e) const
+	{
+	    for (uint i = 0, max = this->size(); i < max; i++) {
+	                 if (this->at(i) == e) {
+	                     return true;
+	                 }
+	             }
+	             return false;
+
+	};
+	void clearAndRelease()
+	{
+		this->clear();
+	}
+//
+	void removeAtUnordered()
+	{
+		this->removeAtUnordered();
+	}
+//
+	void removeAtUnordered(int i)
+		{
+			this->removeAtUnordered(i);
+		}
+	const E* dataPtr() const { return this->data(); }
+	      E* dataPtr()       { return this->data(); }
+//
+	uint allocBack()
+	  	{
+	  		return this->allocBack();
+	  	}
+	};
 NV_NAMESPACE_END

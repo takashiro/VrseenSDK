@@ -30,7 +30,7 @@ void OvrApp::OneTimeInit( const char * fromPackage, const char * launchIntentJSO
         
 	const char * scenePath = "Oculus/tuscany.ovrscene";
 	VString	        SceneFile;
-	Array<VString>   SearchPaths;
+	VArray<VString>   SearchPaths;
 
     const VStandardPath &paths = app->GetStoragePaths();
     paths.PushBackSearchPathIfValid(VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", SearchPaths);

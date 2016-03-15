@@ -48,8 +48,9 @@ static Vector3f	MatrixForward( const Matrix4f & m )
 }
 #endif
 
-void SortStringArray(Array<VString> &strings)
+void SortStringArray(VArray<VString> &strings)
 {
+
     if (strings.size() <= 1) {
         return;
 	}
@@ -65,12 +66,12 @@ void SortStringArray(Array<VString> &strings)
 // Returns all files in all search paths, as unique relative paths.
 // Subdirectories will have a trailing slash.
 // All files and directories that start with . are skipped.
-StringHash< VString > RelativeDirectoryFileList( const Array< VString > & searchPaths, const char * RelativeDirPath )
+StringHash< VString > RelativeDirectoryFileList( const VArray< VString > & searchPaths, const char * RelativeDirPath )
 {
 	//Check each of the mirrors in searchPaths and build up a list of unique strings
 	StringHash< VString >	uniqueStrings;
 
-	const int numSearchPaths = searchPaths.sizeInt();
+	const int numSearchPaths = searchPaths.length();
 	for ( int index = 0; index < numSearchPaths; ++index )
 	{
 		const VString fullPath = searchPaths[index] + VString( RelativeDirPath );
@@ -110,9 +111,9 @@ StringHash< VString > RelativeDirectoryFileList( const Array< VString > & search
 // Returns all files in the directory, already prepended by root.
 // Subdirectories will have a trailing slash.
 // All files and directories that start with . are skipped.
-Array<VString> DirectoryFileList( const char * DirPath )
+VArray<VString> DirectoryFileList( const char * DirPath )
 {
-	Array<VString>	strings;
+	VArray<VString>	strings;
 
 	DIR * dir = opendir( DirPath );
 	if ( dir != NULL )

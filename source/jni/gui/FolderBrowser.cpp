@@ -1171,11 +1171,11 @@ void OvrFolderBrowser::buildDirtyMenu( OvrMetaData & metaData )
 	VRMenuObject * root = menuManager.toObject( rootHandle() );
 	OVR_ASSERT( root );
 
-	Array< VRMenuComponent* > comps;
+	VArray< VRMenuComponent* > comps;
 	VArray< const VRMenuObjectParms * > parms;
 
-	Array< OvrMetaData::Category > categories = metaData.categories();
-	const int numCategories = categories.sizeInt();
+	VArray< OvrMetaData::Category > categories = metaData.categories();
+	const int numCategories = categories.length();
 
 	// load folders and position
 	for ( int catIndex = 0; catIndex < numCategories; ++catIndex )

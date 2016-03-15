@@ -267,7 +267,7 @@ void Oculus360Photos::OneTimeInit( const char * fromPackage, const char * launch
     storagePaths.PushBackSearchPathIfValid( VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", m_searchPaths );
     storagePaths.PushBackSearchPathIfValid( VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "", m_searchPaths );
 
-	LOG( "360 PHOTOS using %d searchPaths", m_searchPaths.sizeInt() );
+	LOG( "360 PHOTOS using %d searchPaths", m_searchPaths.length() );
 
 	const double startTime = ovr_GetTimeInSeconds();
 	m_metaData->initFromDirectoryMergeMeta( relativePath, m_searchPaths, fileExtensions, metaFile, packageName );
@@ -848,6 +848,7 @@ void Oculus360Photos::SetMenuState( const OvrMenuState state )
 		app->GetGuiSys().closeMenu( app, m_panoMenu, false );
 		app->GetGuiSys().openMenu( app, app->GetGazeCursor(), OvrFolderBrowser::MENU_NAME );
 		m_browserOpenTime = 0.0f;
+
 #endif
 		break;
 	case MENU_PANO_LOADING:

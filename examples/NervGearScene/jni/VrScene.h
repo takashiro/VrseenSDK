@@ -46,7 +46,7 @@ public:
 
 	ModelInScene		TestObject;		// bouncing object
 
-	Array<VString> 		SearchPaths;
+	VArray<VString> 		SearchPaths;
 };
 
 #endif

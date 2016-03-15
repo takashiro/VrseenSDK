@@ -33,7 +33,7 @@ class OvrFolderBrowser : public VRMenu
 public:
 	struct PanelView
 	{
-		PanelView() 
+		PanelView()
             : id( -1 )
 		{}
 
@@ -44,7 +44,7 @@ public:
 
 	struct FolderView
 	{
-		FolderView( const VString & name, const VString & tag ) 
+		FolderView( const VString & name, const VString & tag )
             : categoryTag( tag )
             , localizedName( name )
             , maxRotation( 0.0f )
@@ -138,7 +138,7 @@ protected:
 				float panelHeight,
 				float radius,
 				unsigned numSwipePanels,
-				unsigned thumbWidth, 
+				unsigned thumbWidth,
 				unsigned thumbHeight );
 
     virtual ~OvrFolderBrowser();
@@ -188,10 +188,10 @@ protected:
 
 	// Called on opening menu
     virtual void				onBrowserOpen() {}
-	
+
 	//================================================================================
-	
-	// OnEnterMenuRootAdjust is set to be performed the 
+
+	// OnEnterMenuRootAdjust is set to be performed the
 	// next time the menu is opened to adjust for a potentially deleted or added category
     void						setRootAdjust( const RootDirection dir )	{ m_onEnterMenuRootAdjust = dir;  }
     RootDirection				rootAdjust() const						{ return m_onEnterMenuRootAdjust; }
@@ -248,7 +248,7 @@ private:
     menuHandle_t 		m_scrollSuggestionRootHandle;
 
     RootDirection		m_onEnterMenuRootAdjust;
-	
+
 	// Checked at Frame() time for commands from the thumbnail/create thread
     VMessageQueue		m_textureCommands;
 
@@ -261,13 +261,13 @@ private:
 	};
     Array< OvrCreateThumbCmd > m_thumbCreateAndLoadCommands;
     VMessageQueue		m_backgroundCommands;
-    Array< VString >		m_thumbSearchPaths;
+    VArray< VString >		m_thumbSearchPaths;
     VString				m_appCachePath;
 
 	// Keep a reference to Panel texture used for AA alpha when creating thumbnails
 	static unsigned char *		ThumbPanelBG;
-	
-	// Default panel textures (base and highlight) - loaded once 
+
+	// Default panel textures (base and highlight) - loaded once
     GLuint				m_defaultPanelTextureIds[ 2 ];
 
 	// Restricted Scrolling

@@ -35,15 +35,15 @@ bool HasPermission(VString fileOrDirName, mode_t mode );
 // Returns true if the file exists
 bool FileExists(const VString &filename );
 
-void SortStringArray( Array<VString> & strings );
+void SortStringArray( VArray<VString> & strings );
 
-StringHash< VString > RelativeDirectoryFileList( const Array< VString > & searchPaths, const char * RelativeDirPath );
+StringHash< VString > RelativeDirectoryFileList( const VArray< VString > & searchPaths, const char * RelativeDirPath );
 
 // DirPath should by a directory with a trailing slash.
 // Returns all files in the directory, already prepended by root.
 // Subdirectories will have a trailing slash.
 // All files and directories that start with . are skipped.
-Array<VString> DirectoryFileList( const char * DirPath );
+VArray<VString> DirectoryFileList( const char * DirPath );
 
 // Creates all the intermediate directories if they don't exist
 void MakePath(const VString &dirPath, mode_t mode );
