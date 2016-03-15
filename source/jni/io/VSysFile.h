@@ -40,9 +40,9 @@ public:
 
     static bool  GetFileStat(VFileStat* pfileStats, const VString& path);
 
-   int   errorCode() override;
-   bool  isOpened() override;
-   bool  close() override;
+    int   errorCode() override;
+    bool  isOpened() override;
+    bool  close() override;
 
 };
 

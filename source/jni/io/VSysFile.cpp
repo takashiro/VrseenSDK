@@ -16,6 +16,7 @@ VSysFile::VSysFile(const VString& path, int flags)
 {
     open(path, flags);
 }
+
 VSysFile::VSysFile(VFile *pfile)
     : VDelegatedFile(pfile)
 {
