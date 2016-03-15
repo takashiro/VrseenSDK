@@ -123,7 +123,7 @@ public:
     // removed from a device.
     Lock*                     pLock;
     // List of device we are applied to.
-    List<MessageHandlerRef>   UseList;
+    VList<MessageHandlerRef*>   UseList;
 };
 
 
@@ -139,7 +139,7 @@ MessageHandlerRef::~MessageHandlerRef()
         if (pHandler)
         {
             pHandler = 0;
-            removeNode();
+            this->pointToVList->remove(this);
         }
     }
     MessageHandlerSharedLock.ReleaseLock(pLock);
@@ -159,12 +159,13 @@ void MessageHandlerRef::SetHandler_NTS(MessageHandler* handler)
     if (pHandler != handler)
     {
         if (pHandler)
-            removeNode();
+            this->pointToVList->remove(this);
         pHandler = handler;
 
         if (handler)
         {
             MessageHandlerImpl* handlerImpl = MessageHandlerImpl::FromHandler(handler);
+            this->pointToVList = &(handlerImpl->UseList);
             handlerImpl->UseList.append(this);
         }
         // TBD: Call notifier on device?
@@ -311,7 +312,7 @@ DeviceManagerImpl::~DeviceManagerImpl()
     {
         DeviceFactory* factory = Factories.first();
         factory->RemovedFromManager();
-        factory->removeNode();
+        factory->pointToVList->remove(factory);
     }
 }
 
@@ -345,8 +346,7 @@ void DeviceManagerImpl::shutdown()
         DeviceCreateDesc* devDesc = Devices.first();
         OVR_ASSERT(!devDesc->pDevice); // Manager shouldn't be dying while Device exists.
         devDesc->Enumerated = false;
-        devDesc->removeNode();
-        devDesc->pNext = devDesc->pPrev = 0;
+        devDesc->pointToVList->remove(devDesc);
 
         if (devDesc->HandleCount == 0)
         {
@@ -453,31 +453,21 @@ Void DeviceManagerImpl::EnumerateAllFactoryDevices()
 
     Lock::Locker deviceLock(GetLock());
 
-    DeviceCreateDesc* devDesc, *nextdevDesc;
 
     // 1.
-    for(devDesc = Devices.first();
-        !Devices.isNull(devDesc);  devDesc = devDesc->pNext)
-    {
+    for (DeviceCreateDesc* devDesc:Devices) {
         devDesc->Enumerated = false;
     }
 
     // 2.
-    DeviceFactory* factory = Factories.first();
-    while(!Factories.isNull(factory))
-    {
+    for (DeviceFactory* factory:Factories) {
         EnumerateFactoryDevices(factory);
-        factory = factory->pNext;
     }
 
 
     // 3.
-    for(devDesc = Devices.first();
-        !Devices.isNull(devDesc);  devDesc = nextdevDesc)
-    {
+    for (DeviceCreateDesc* devDesc:Devices) {
         // In case 'devDesc' gets removed.
-        nextdevDesc = devDesc->pNext;
-
         // Note, device might be not enumerated since it is opened and
         // in use! Do NOT notify 'device removed' in this case (!AB)
         if (!devDesc->Enumerated)
@@ -506,9 +496,7 @@ Ptr<DeviceCreateDesc> DeviceManagerImpl::AddDevice_NeedsLock(
     // If found, mark as enumerated and we are done.
     DeviceCreateDesc* descCandidate = 0;
 
-    for(DeviceCreateDesc* devDesc = Devices.first();
-        !Devices.isNull(devDesc);  devDesc = devDesc->pNext)
-    {
+    for (DeviceCreateDesc* devDesc:Devices) {
         DeviceCreateDesc::MatchResult mr = devDesc->MatchDevice(createDesc, &descCandidate);
         if (mr == DeviceCreateDesc::Match_Found)
         {
@@ -537,6 +525,7 @@ Ptr<DeviceCreateDesc> DeviceManagerImpl::AddDevice_NeedsLock(
     //    {pDevice = 0, HandleCount = 1, Enumerated = true}
     DeviceCreateDesc* desc = createDesc.Clone();
     desc->pLock = pCreateDesc->pLock;
+    desc->pointToVList = &Devices;
     Devices.append(desc);
     desc->Enumerated = true;
 
@@ -550,11 +539,8 @@ Ptr<DeviceCreateDesc> DeviceManagerImpl::FindDevice(
     DeviceType deviceType)
 {
     Lock::Locker deviceLock(GetLock());
-    DeviceCreateDesc* devDesc;
 
-    for (devDesc = Devices.first();
-        !Devices.isNull(devDesc);  devDesc = devDesc->pNext)
-    {
+    for (DeviceCreateDesc* devDesc:Devices) {
         if ((deviceType == Device_None || deviceType == devDesc->Type) &&
             devDesc->MatchDeviceByPath(path))
             return devDesc;
@@ -565,11 +551,8 @@ Ptr<DeviceCreateDesc> DeviceManagerImpl::FindDevice(
 Ptr<DeviceCreateDesc> DeviceManagerImpl::FindHIDDevice(const HIDDeviceDesc& hidDevDesc)
 {
     Lock::Locker deviceLock(GetLock());
-    DeviceCreateDesc* devDesc;
 
-    for (devDesc = Devices.first();
-        !Devices.isNull(devDesc);  devDesc = devDesc->pNext)
-    {
+    for (DeviceCreateDesc* devDesc:Devices) {
         if (devDesc->MatchHIDDevice(hidDevDesc))
             return devDesc;
     }
@@ -579,12 +562,9 @@ Ptr<DeviceCreateDesc> DeviceManagerImpl::FindHIDDevice(const HIDDeviceDesc& hidD
 void DeviceManagerImpl::DetectHIDDevice(const HIDDeviceDesc& hidDevDesc)
 {
     Lock::Locker deviceLock(GetLock());
-    DeviceFactory* factory = Factories.first();
-    while(!Factories.isNull(factory))
-    {
+    for (DeviceFactory* factory:Factories) {
         if (factory->DetectHIDDevice(this, hidDevDesc))
             break;
-        factory = factory->pNext;
     }
 
 }
@@ -713,12 +693,9 @@ void DeviceCreateDesc::Release()
                 lockKeepAlive = pLock;
 
                 // Remove from manager list (only matters for !Enumerated).
-                if (pNext)
-                {
-                    removeNode();
-                    pNext = pPrev = 0;
+                if (!this->pointToVList->isEmpty()) {
+                    this->pointToVList->remove(this);
                 }
-
                 delete this;
             }
 

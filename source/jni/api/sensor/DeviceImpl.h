@@ -10,6 +10,8 @@
 #include "ThreadCommandQueue.h"
 #include "HIDDevice.h"
 
+#include "VList.h"
+
 NV_NAMESPACE_BEGIN
 
 class DeviceManagerImpl;
@@ -53,7 +55,7 @@ private:
 // Wrapper for MessageHandler that includes synchronization logic.
 // References to MessageHandlers are organized in a list to allow for them to
 // easily removed with MessageHandler::RemoveAllHandlers.
-class MessageHandlerRef : public ListNode<MessageHandlerRef>
+class MessageHandlerRef : public NodeOfVList<VList<MessageHandlerRef*>>
 {
 public:
     MessageHandlerRef(DeviceBase* device);
@@ -111,21 +113,22 @@ public:
 //   - DeviceCreateDesc may or may not be a part of DeviceManager::Devices list (check pNext != 0).
 //   - Referenced and kept alive by DeviceHandle.
 
-class DeviceCreateDesc : public ListNode<DeviceCreateDesc>, public NewOverrideBase
+class DeviceCreateDesc : public NodeOfVList<VList<DeviceCreateDesc*>>, public NewOverrideBase
 {
     void operator = (const DeviceCreateDesc&) { } // Assign not supported; suppress MSVC warning.
 public:
     DeviceCreateDesc(DeviceFactory* factory, DeviceType type)
         : pFactory(factory), Type(type), pLock(0), HandleCount(0), pDevice(0), Enumerated(true)
     {
-        pNext = pPrev = 0;
+
     }
 
     virtual ~DeviceCreateDesc()
     {
         OVR_ASSERT(!pDevice);
-        if (pNext)
-            removeNode();
+        if (!this->pointToVList->isEmpty()) {
+            this->pointToVList->remove(this);
+        }
     }
 
     DeviceManagerImpl* GetManagerImpl() const { return pLock->pManager; }
@@ -267,13 +270,13 @@ public:
 // DeviceFactory is maintained in DeviceManager for each separately-enumerable
 // device type; factories allow separation of unrelated enumeration code.
 
-class DeviceFactory : public ListNode<DeviceFactory>, public NewOverrideBase
+class DeviceFactory : public NodeOfVList<VList<DeviceFactory*>>, public NewOverrideBase
 {
 public:
 
     DeviceFactory() : pManager(0)
     {
-        pNext = pPrev = 0;
+
     }
     virtual ~DeviceFactory() { }
 
@@ -372,6 +375,7 @@ public:
     {
         // This lock is only needed if we call AddFactory after manager thread creation.
         Lock::Locker scopeLock(GetLock());
+        factory->pointToVList = &Factories;
         Factories.append(factory);
         factory->AddedToManager(this);
     }
@@ -419,10 +423,10 @@ public:
     void DetectHIDDevice(const HIDDeviceDesc&);
 
     // Manager Lock-protected list of devices.
-    List<DeviceCreateDesc>  Devices;
+    VList<DeviceCreateDesc*>  Devices;
 
     // Factories used to detect and manage devices.
-    List<DeviceFactory>     Factories;
+    VList<DeviceFactory*>     Factories;
 
 protected:
     Ptr<HIDDeviceManager>   HidDeviceManager;

@@ -32,7 +32,7 @@ public:
 void testVList()
 {
     VList<StrNode*> tester;
-    StrNode* pStr = nullptr;
+    StrNode* pStr = nullptr, *tmp = nullptr;
     int count = 0;
     LOGD("%d.isEmpty():1 == %d\n", count++, tester.isEmpty());
     pStr = new StrNode(new string("tester2"));
@@ -46,10 +46,14 @@ void testVList()
     pStr = new StrNode(new string("tester1"));
     pStr->pointToVList = &tester;
     tester.prepend(pStr);
+    tmp = pStr;
 
     pStr = new StrNode(new string("tester0"));
     pStr->pointToVList = &tester;
     tester.prepend(pStr);
+
+    tmp = tester.getNextByContent(tmp);
+    LOGD("%d.getNextByContent():tester2 == %s", count++, tmp->pstr->c_str());
     LOGD("%d.isEmpty():0 == %d\n", count++, tester.isEmpty());
 
     LOGD("%d.size():4 == %d", count++, tester.size());

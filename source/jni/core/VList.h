@@ -167,5 +167,19 @@ public:
         this->swap(s);
         this->clear();
     }
+
+    const E getNextByContent(E& e)
+    {
+        bool flag = false;
+        for(E i:*this) {
+            if (flag) {
+                return i;
+            }
+            if (i == e) {
+                flag = true;
+            }
+        }
+        return nullptr;
+    }
 };
 NV_NAMESPACE_END

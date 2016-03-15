@@ -141,17 +141,18 @@ bool DeviceHandle::enumerateNext(const DeviceEnumerationArgs& args)
     Lock::Locker           lockScope(m_pImpl->GetLock());
 
     DeviceCreateDesc* next = m_pImpl;
+    VList<DeviceCreateDesc*>* pointToVList = m_pImpl->pointToVList;
     // If manager was destroyed, we get removed from the list.
-    if (!m_pImpl->pNext)
+    if (m_pImpl->pointToVList->isEmpty())
         return false;
 
     managerKeepAlive = next->GetManagerImpl();
     OVR_ASSERT(managerKeepAlive);
 
     do {
-        next = next->pNext;
+        next = pointToVList->getNextByContent(next);
 
-        if (managerKeepAlive->Devices.isNull(next))
+        if (managerKeepAlive->Devices.isEmpty())
         {
             m_pImpl->Release();
             m_pImpl = 0;
