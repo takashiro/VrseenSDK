@@ -46,8 +46,8 @@ namespace NervGear
 
 		// Create Menu item for scroll hint root
 		VRMenuId_t swipeHintId( menuId );
-		Array< VRMenuObjectParms const * > parms;
-		VRMenuObjectParms parm( VRMENU_CONTAINER, Array< VRMenuComponent* >(), VRMenuSurfaceParms(),
+		VArray< VRMenuObjectParms const * > parms;
+		VRMenuObjectParms parm( VRMENU_CONTAINER, VArray< VRMenuComponent* >(), VRMenuSurfaceParms(),
 								"swipe hint root", pose, Vector3f( 1.0f ), VRMenuFontParms(),
 								swipeHintId, VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_ALL ),
 								VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
@@ -68,7 +68,7 @@ namespace NervGear
 			swipePose.Position.y = ( imgHeight * ( i + 2 ) ) * 0.5f * direction.y * VRMenuObject::DEFAULT_TEXEL_SCALE;
 			swipePose.Position.z = 0.01f * ( float )i;
 
-			Array< VRMenuComponent* > hintArrowComps;
+			VArray< VRMenuComponent* > hintArrowComps;
 			OvrSwipeHintComponent* hintArrowComp = new OvrSwipeHintComponent(false, 1.3333f, 0.4f + (float)i * 0.13333f, 5.0f);
 			hintArrowComps.append( hintArrowComp );
 			hintArrowComp->show( ovr_GetTimeInSeconds() );

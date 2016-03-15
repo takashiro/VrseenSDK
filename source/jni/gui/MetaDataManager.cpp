@@ -754,10 +754,10 @@ void OvrMetaData::regenerateCategoryIndices()
 	for ( int metaDataIndex = 0; metaDataIndex < m_etaData.sizeInt(); ++metaDataIndex )
 	{
 		OvrMetaDatum & metaDatum = *m_etaData.at( metaDataIndex );
-		Array< VString > & tags = metaDatum.tags;
+		VArray< VString > & tags = metaDatum.tags;
 
-		OVR_ASSERT( metaDatum.tags.sizeInt() > 0 );
-		if ( tags.sizeInt() == 1 )
+		OVR_ASSERT( metaDatum.tags.length() > 0 );
+		if ( tags.length() == 1 )
 		{
 			if ( tags.at( 0 ) == FAVORITES_TAG )
 			{
@@ -771,20 +771,22 @@ void OvrMetaData::regenerateCategoryIndices()
 	for ( int metaDataIndex = 0; metaDataIndex < m_etaData.sizeInt(); ++metaDataIndex )
 	{
 		OvrMetaDatum & datum = *m_etaData.at( metaDataIndex );
-		Array< VString > & tags = datum.tags;
+		VArray< VString > & tags = datum.tags;
 
-		OVR_ASSERT( tags.sizeInt() > 0 );
+		OVR_ASSERT( tags.length() > 0 );
 
-		if ( tags.sizeInt() == 1 )
+		if ( tags.length() == 1 )
 		{
 			OVR_ASSERT( tags.at( 0 ) != FAVORITES_TAG );
 		}
 
-        if ( tags.at( 0 ) == FAVORITES_TAG && tags.sizeInt() > 1 ) {
-            std::swap(tags.at(0), tags.at(1));
+
+		if ( tags.at( 0 ) == FAVORITES_TAG && tags.length() > 1 )
+		{
+			Alg::Swap( tags.at( 0 ), tags.at( 1 ) );
 		}
 
-		for ( int tagIndex = 0; tagIndex < tags.sizeInt(); ++tagIndex )
+		for ( int tagIndex = 0; tagIndex < tags.length(); ++tagIndex )
 		{
 			const VString & tag = tags[ tagIndex ];
 			if ( !tag.isEmpty() )
@@ -844,7 +846,7 @@ Json OvrMetaData::metaDataToJson() const
 		LOG( "OvrMetaData::MetaDataToJson adding datum url %s", metaDatum.url.toCString() );
 
 		Json newTagsObject(Json::Array);
-		for ( int t = 0; t < metaDatum.tags.sizeInt(); ++t )
+		for ( int t = 0; t < metaDatum.tags.length(); ++t )
 		{
 			Json tagObject(Json::Object);
 			tagObject.insert( CATEGORY, std::string(metaDatum.tags.at( t ).toCString()) );
@@ -873,12 +875,12 @@ TagAction OvrMetaData::toggleTag( OvrMetaDatum * metaDatum, const VString & newT
 
 	// First update the local data
 	TagAction action = TAG_ERROR;
-	for ( int t = 0; t < metaDatum->tags.sizeInt(); ++t )
+	for ( int t = 0; t < metaDatum->tags.length(); ++t )
 	{
 		if ( metaDatum->tags.at( t ) == newTag )
 		{
 			// Handle case which leaves us with no tags - ie. broken state
-			if ( metaDatum->tags.sizeInt() < 2 )
+			if ( metaDatum->tags.length() < 2 )
 			{
 				WARN( "ToggleTag attempt to remove only tag: %s on %s", newTag.toCString(), metaDatum->url.toCString() );
 				return TAG_ERROR;
@@ -900,7 +902,7 @@ TagAction OvrMetaData::toggleTag( OvrMetaDatum * metaDatum, const VString & newT
 	// Then serialize
 	Json newTagsObject(Json::Array);
 
-	for ( int t = 0; t < metaDatum->tags.sizeInt(); ++t )
+	for ( int t = 0; t < metaDatum->tags.length(); ++t )
 	{
 		Json tagObject(Json::Object);
 		tagObject.insert(CATEGORY, std::string(metaDatum->tags.at( t ).toCString()));
@@ -951,7 +953,7 @@ const OvrMetaDatum & OvrMetaData::getMetaDatum( const int index ) const
 
 bool OvrMetaData::getMetaData( const Category & category, Array< const OvrMetaDatum * > & outMetaData ) const
 {
-	const int numPanos = category.datumIndicies.sizeInt();
+	const int numPanos = category.datumIndicies.length();
 	for ( int i = 0; i < numPanos; ++i )
 	{
 		const int metaDataIndex = category.datumIndicies.at( i );
@@ -989,7 +991,7 @@ bool OvrMetaData::shouldAddFile( const char * filename, const OvrMetaDataFileExt
 	return false;
 }
 
-void OvrMetaData::setCategoryDatumIndicies( const int index, const Array< int >& datumIndicies )
+void OvrMetaData::setCategoryDatumIndicies( const int index, const VArray< int >& datumIndicies )
 {
 	OVR_ASSERT( index < m_categories.sizeInt() );
 

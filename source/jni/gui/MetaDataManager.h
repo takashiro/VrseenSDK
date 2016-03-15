@@ -5,13 +5,13 @@
 #include "StringHash.h"
 
 #include "VJson.h"
-
+#include "VArray.h"
 NV_NAMESPACE_BEGIN
 
 struct OvrMetaDatum
 {
     int id;
-    Array<VString> tags;
+    VArray<VString> tags;
     VString	url;
 
 protected:
@@ -41,7 +41,7 @@ public:
 		{}
         VString 			categoryTag;
         VString 			label;
-        Array< int > 	datumIndicies;
+        VArray< int > 	datumIndicies;
         bool 			dirty;
 	};
 
@@ -82,7 +82,7 @@ public:
     Category & 				getCategory( const int index )   				{ return m_categories.at( index ); }
     const OvrMetaDatum &	getMetaDatum( const int index ) const;
     bool 					getMetaData( const Category & category, Array< const OvrMetaDatum * > & outMetaData ) const;
-    void					setCategoryDatumIndicies( const int index, const Array< int >& datumIndicies );
+    void					setCategoryDatumIndicies( const int index, const VArray< int >& datumIndicies );
 
 protected:
 	// Overload to fill extended data during initialization

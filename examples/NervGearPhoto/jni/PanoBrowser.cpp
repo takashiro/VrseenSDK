@@ -358,7 +358,7 @@ int PanoBrowser::numPanosInActive() const
 	}
     const OvrFolderBrowser::FolderView * folder = getFolderView( activeFolderIndex );
 	OVR_ASSERT( folder );
-    return folder->panels.sizeInt();
+    return folder->panels.length();
 }
 
 

@@ -694,7 +694,7 @@ VRMenuObjectLocal::~VRMenuObjectLocal()
 // VRMenuObjectLocal::Init
 void VRMenuObjectLocal::init( VRMenuObjectParms const & parms )
 {
-	for ( int i = 0; i < parms.SurfaceParms.sizeInt(); ++i )
+	for ( int i = 0; i < parms.SurfaceParms.length(); ++i )
 	{
 		int idx = m_surfaces.allocBack();
         m_surfaces[idx].createFromSurfaceParms( parms.SurfaceParms[i] );
@@ -703,7 +703,7 @@ void VRMenuObjectLocal::init( VRMenuObjectParms const & parms )
 	// bounds are nothing submitted for rendering
 	m_cullBounds = Bounds3f( 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f );
 	m_fontParms = parms.FontParms;
-    for ( int i = 0; i < parms.Components.sizeInt(); ++i )
+    for ( int i = 0; i < parms.Components.length(); ++i )
     {
 	    addComponent( parms.Components[i] );
     }

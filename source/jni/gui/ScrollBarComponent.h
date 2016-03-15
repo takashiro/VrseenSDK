@@ -15,7 +15,7 @@ Copyright   :   Copyright 2014 Oculus VR, Inc. All Rights reserved.
 
 #include "VRMenuComponent.h"
 #include "Fader.h"
-
+#include "VArray.h"
 NV_NAMESPACE_BEGIN
 
 class VRMenu;
@@ -43,7 +43,7 @@ public:
 	// Get the scrollbar parms and the pointer to the scrollbar component constructed
     static	void		getScrollBarParms( VRMenu & menu, float scrollBarWidth, const VRMenuId_t parentId, const VRMenuId_t rootId, const VRMenuId_t xformId,
 									const VRMenuId_t baseId, const VRMenuId_t thumbId, const Posef & rootLocalPose, const Posef & xformPose, const int startElementIndex, 
-									const int numElements, const bool verticalBar, const Vector4f & thumbBorder, Array< const VRMenuObjectParms* > & parms );
+									const int numElements, const bool verticalBar, const Vector4f & thumbBorder, VArray< const VRMenuObjectParms* > & parms );
     void				updateScrollBar( OvrVRMenuMgr & menuMgr, VRMenuObject * self, const int numElements );
     void				setScrollFrac( OvrVRMenuMgr & menuMgr, VRMenuObject * self, const float frac );
     void				setScrollState( VRMenuObject * self, const eScrollBarState state );

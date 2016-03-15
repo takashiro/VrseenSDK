@@ -102,7 +102,7 @@ OvrVolumePopup * OvrVolumePopup::Create( App * app, OvrVRMenuMgr & menuMgr, Bitm
 												 0, 0, 0, SURFACE_TEXTURE_MAX,
 												 0, 0, 0, SURFACE_TEXTURE_MAX );
 
-			VRMenuObjectParms backgroundParms( VRMENU_BUTTON, Array< VRMenuComponent* >(), backgroundSurfaceParms, NULL,
+			VRMenuObjectParms backgroundParms( VRMENU_BUTTON, VArray< VRMenuComponent* >(), backgroundSurfaceParms, NULL,
 										 backgroundPose, Vector3f( 1.0f ), fontParms,
 										 OvrVolumePopup::ID_BACKGROUND, VRMenuObjectFlags_t( VRMENUOBJECT_BOUND_ALL ) | VRMENUOBJECT_DONT_HIT_TEXT,
 										 VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
@@ -117,7 +117,7 @@ OvrVolumePopup * OvrVolumePopup::Create( App * app, OvrVRMenuMgr & menuMgr, Bitm
 			float speakerIconX = ( backgroundWidth * -0.5f + volumeIconWidth * 0.5f ) * VRMenuObject::DEFAULT_TEXEL_SCALE;
 			Vector3f speakerIconOffset = menuOffset + right * speakerIconX;
 			Posef speakerIconPose( Quatf(), speakerIconOffset );
-			VRMenuObjectParms speakerIconParms( VRMENU_BUTTON, Array< VRMenuComponent* >(), speakerIconSurfaceParms, NULL,
+			VRMenuObjectParms speakerIconParms( VRMENU_BUTTON, VArray< VRMenuComponent* >(), speakerIconSurfaceParms, NULL,
 										 speakerIconPose, Vector3f( 1.0f ), fontParms,
 										 OvrVolumePopup::ID_VOLUME_ICON, VRMenuObjectFlags_t( VRMENUOBJECT_BOUND_ALL ) | VRMENUOBJECT_DONT_HIT_TEXT,
 										 VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
@@ -135,7 +135,7 @@ OvrVolumePopup * OvrVolumePopup::Create( App * app, OvrVRMenuMgr & menuMgr, Bitm
 
 				Posef volumeTickPose( Quatf(), volumeTickOffset );
 
-				VRMenuObjectParms volumeTickParms( VRMENU_BUTTON, Array< VRMenuComponent* >(), volumeTickSurfaceParms, NULL,
+				VRMenuObjectParms volumeTickParms( VRMENU_BUTTON, VArray< VRMenuComponent* >(), volumeTickSurfaceParms, NULL,
 											 volumeTickPose, Vector3f( 1.0f ), fontParms,
 											 VRMenuId_t( OvrVolumePopup::ID_VOLUME_TICKS.Get() + i ), VRMenuObjectFlags_t( VRMENUOBJECT_BOUND_ALL ) | VRMENUOBJECT_DONT_HIT_TEXT,
 											 VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
@@ -147,7 +147,7 @@ OvrVolumePopup * OvrVolumePopup::Create( App * app, OvrVRMenuMgr & menuMgr, Bitm
 			float volumeTextWidth = volumeIconWidth;
 			menu->m_volumeTextOffset = menuOffset + right * ( backgroundWidth * 0.5f - volumeTextWidth * 0.5f ) * VRMenuObject::DEFAULT_TEXEL_SCALE + Vector3f( 0.0f, 0.5f * VRMenuObject::DEFAULT_TEXEL_SCALE, 0.02f );
 			Posef volumeTextPose( Quatf(), menu->m_volumeTextOffset );
-			VRMenuObjectParms volumeTextParms( VRMENU_BUTTON, Array< VRMenuComponent* >(), VRMenuSurfaceParms(), "0",
+			VRMenuObjectParms volumeTextParms( VRMENU_BUTTON, VArray< VRMenuComponent* >(), VRMenuSurfaceParms(), "0",
 										 volumeTextPose, Vector3f( 1.0f ), fontParms,
 										 OvrVolumePopup::ID_VOLUME_TEXT, VRMenuObjectFlags_t( VRMENUOBJECT_BOUND_ALL ) | VRMENUOBJECT_DONT_HIT_TEXT,
 										 VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
@@ -156,7 +156,7 @@ OvrVolumePopup * OvrVolumePopup::Create( App * app, OvrVRMenuMgr & menuMgr, Bitm
 		}
 	}
 
-	Array< VRMenuObjectParms const * > parms;
+	VArray< VRMenuObjectParms const * > parms;
 
 	// add all of the default items
 	for ( int i = 0; i < defaultAppMenuItems.sizeInt(); ++i )

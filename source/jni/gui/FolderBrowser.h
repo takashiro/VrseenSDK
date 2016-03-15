@@ -17,7 +17,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VMessageQueue.h"
 #include "MetaDataManager.h"
 #include "ScrollManager.h"
-
+#include "VArray.h"
 NV_NAMESPACE_BEGIN
 
 class OvrFolderBrowserRootComponent;
@@ -58,7 +58,7 @@ public:
         menuHandle_t			scrollBarHandle;	// Handle to the scrollbar object
         menuHandle_t			wrapIndicatorHandle;
         float					maxRotation;		// Used by SwipeComponent
-        Array<PanelView>		panels;
+        VArray<PanelView>		panels;
 	};
 
 	static char const *			MENU_NAME;
@@ -217,8 +217,8 @@ private:
 
     void				buildFolder( OvrMetaData::Category & category, FolderView * const folder, const OvrMetaData & metaData, VRMenuId_t foldersRootId, const int folderIndex );
     void				loadFolderPanels( const OvrMetaData & metaData, const OvrMetaData::Category & category, const int folderIndex, FolderView & folder,
-							 Array< VRMenuObjectParms const * > & outParms );
-    void				addPanelToFolder( const OvrMetaDatum * panoData, const int folderIndex, FolderView & folder, Array< VRMenuObjectParms const * >& outParms );
+							 VArray< VRMenuObjectParms const * > & outParms );
+    void				addPanelToFolder( const OvrMetaDatum * panoData, const int folderIndex, FolderView & folder, VArray< VRMenuObjectParms const * >& outParms );
     void				displaceFolder( int index, const Vector3f & direction, float distance, bool startOffSelf = false );
     void				updateFolderTitle( const FolderView * folder  );
     float				calcFolderMaxRotation( const FolderView * folder ) const;

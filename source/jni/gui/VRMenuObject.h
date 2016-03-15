@@ -16,6 +16,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "Types.h"
 #include "VMath.h"
 #include "Array.h"
+#include "VArray.h"
 #include "VString.h"
 #include "TypesafeNumber.h"
 #include "Android/GlUtils.h"	// GLuint
@@ -387,7 +388,7 @@ class VRMenuObjectParms
 {
 public:
 	VRMenuObjectParms(	eVRMenuObjectType const type,
-			Array< VRMenuComponent* > const & components,
+			VArray< VRMenuComponent* > const & components,
 			VRMenuSurfaceParms const & surfaceParms,
 			char const * text,
 			Posef const & localPose,
@@ -417,7 +418,7 @@ public:
 
     // same as above with additional text local parms
 	VRMenuObjectParms(	eVRMenuObjectType const type,
-			Array< VRMenuComponent* > const & components,
+			VArray< VRMenuComponent* > const & components,
 			VRMenuSurfaceParms const & surfaceParms,
 			char const * text,
 			Posef const & localPose,
@@ -449,8 +450,8 @@ public:
 
     // takes an array of surface parms
 	VRMenuObjectParms(	eVRMenuObjectType const type,
-			Array< VRMenuComponent* > const & components,
-			Array< VRMenuSurfaceParms > const & surfaceParms,
+			VArray< VRMenuComponent* > const & components,
+			VArray< VRMenuSurfaceParms > const & surfaceParms,
 			char const * text,
 			Posef const & localPose,
 			Vector3f const & localScale,
@@ -481,8 +482,8 @@ public:
 	eVRMenuObjectType		    Type;							// type of menu object
 	VRMenuObjectFlags_t		    Flags;							// bit flags
 	VRMenuObjectInitFlags_t	    InitFlags;						// intialization-only flags (not referenced beyond object initialization)
-    Array< VRMenuComponent* >   Components;						// list of pointers to components
-	Array< VRMenuSurfaceParms >	SurfaceParms;					// list of surface parameters for the object. Each parm will result in one surface, and surfaces will render in the same order as this list.
+    VArray< VRMenuComponent* >   Components;						// list of pointers to components
+	VArray< VRMenuSurfaceParms >	SurfaceParms;					// list of surface parameters for the object. Each parm will result in one surface, and surfaces will render in the same order as this list.
 	VString      			    Text;							// text to display on this object (if any)
 	Posef					    LocalPose;						// local-space position and orientation
 	Vector3f				    LocalScale;						// local-space scale

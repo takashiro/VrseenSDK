@@ -21,8 +21,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VRMenuEventHandler.h"
 #include "../App.h"
 #include "GuiSys.h"
-
-
+#include "VArray.h"
 
 namespace NervGear {
 
@@ -72,7 +71,7 @@ VRMenu * VRMenu::Create( char const * menuName )
 
 //==============================
 // VRMenu::Init
-void VRMenu::init( OvrVRMenuMgr & menuMgr, BitmapFont const & font, float const menuDistance, VRMenuFlags_t const & flags, Array< VRMenuComponent* > comps /*= Array< VRMenuComponent* >( )*/ )
+void VRMenu::init( OvrVRMenuMgr & menuMgr, BitmapFont const & font, float const menuDistance, VRMenuFlags_t const & flags, VArray< VRMenuComponent* > comps /*= Array< VRMenuComponent* >( )*/ )
 {
 	OVR_ASSERT( !m_rootHandle.IsValid() );
     OVR_ASSERT( !m_name.isEmpty() );
@@ -97,7 +96,7 @@ void VRMenu::init( OvrVRMenuMgr & menuMgr, BitmapFont const & font, float const 
 	m_componentsInitialized = false;
 }
 
-void VRMenu::initWithItems( OvrVRMenuMgr & menuMgr, BitmapFont const & font, float const menuDistance, VRMenuFlags_t const & flags, Array< VRMenuObjectParms const * > & itemParms )
+void VRMenu::initWithItems( OvrVRMenuMgr & menuMgr, BitmapFont const & font, float const menuDistance, VRMenuFlags_t const & flags, VArray< VRMenuObjectParms const * > & itemParms )
 {
 	init( menuMgr, font, menuDistance, flags );
 	addItems( menuMgr, font, itemParms, rootHandle(), true );
@@ -125,7 +124,7 @@ public:
 //==============================
 // VRMenu::AddItems
 void VRMenu::addItems( OvrVRMenuMgr & menuMgr, BitmapFont const & font, 
-        NervGear::Array< VRMenuObjectParms const * > & itemParms,
+        NervGear::VArray< VRMenuObjectParms const * > & itemParms,
         menuHandle_t parentHandle, bool const recenter ) 
 {
 	const Vector3f fwd( 0.0f, 0.0f, 1.0f );
@@ -137,15 +136,15 @@ void VRMenu::addItems( OvrVRMenuMgr & menuMgr, BitmapFont const & font,
     VRMenuObject * root = menuMgr.toObject( parentHandle );
     OVR_ASSERT( root != NULL );
 
-	Array< ChildParmsPair > pairs;
+	VArray< ChildParmsPair > pairs;
 
 	Vector3f nextItemPos( 0.0f );
 	int childIndex = 0;
-	for ( int i = 0; i < itemParms.sizeInt(); ++i )
+	for ( int i = 0; i < itemParms.length(); ++i )
 	{
         VRMenuObjectParms const * parms = itemParms[i];
 		// assure all ids are different
-		for ( int j = 0; j < itemParms.sizeInt(); ++j )
+		for ( int j = 0; j < itemParms.length(); ++j )
 		{
 			if ( j != i && parms->Id != VRMenuId_t() && parms->Id == itemParms[j]->Id )
 			{
@@ -180,8 +179,8 @@ void VRMenu::addItems( OvrVRMenuMgr & menuMgr, BitmapFont const & font,
 	}
 
 	// reparent
-	Array< menuHandle_t > reparented;
-	for ( int i = 0; i < pairs.sizeInt(); ++i )
+	VArray< menuHandle_t > reparented;
+	for ( int i = 0; i < pairs.length(); ++i )
 	{
 		ChildParmsPair const & pair = pairs[i];
 		if ( pair.Parms->ParentId.IsValid() )
