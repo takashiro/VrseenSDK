@@ -1,5 +1,4 @@
 #include "VBinaryFile.h"
-#include "VSysFile.h"
 
 namespace NervGear
 {
@@ -30,7 +29,7 @@ VBinaryFile::VBinaryFile(const VString path, const char **error )
     if (byteNum != m_size && error != nullptr) {
         *error = "Failed to read file";
     }
-    f.fileClose();
+    f.close();
 }
 
 } // namespace NervGear

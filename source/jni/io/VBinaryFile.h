@@ -2,9 +2,8 @@
 
 #include "vglobal.h"
 #include "VString.h"
+#include "VSysFile.h"
 #include "Array.h"
-
-#include <sstream>
 
 NV_NAMESPACE_BEGIN
 

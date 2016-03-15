@@ -2,8 +2,6 @@
 
 #include "vglobal.h"
 #include "RefCount.h"
-#include "VLog.h"
-#include "VString.h"
 
 #include <iostream>
 #include <fstream>
@@ -13,7 +11,7 @@ NV_NAMESPACE_BEGIN
 
 class VFile;
 
-class VFile : public RefCountBase<VFile>,public std::fstream
+class VFile : public RefCountBase<VFile>
 {
 public:
 
@@ -25,15 +23,6 @@ public:
         Open_Truncate = 4,
         Open_Create = 8,
         Open_CreateOnly = 24,
-    };
-
-    enum OpenMode
-    {
-        ReadOnly = 0444,
-        WriteOnly = 0222,
-        ExecuteMode = 0111,
-
-        ReadWrite = 0666
     };
 
     enum ErrorType
@@ -68,7 +57,7 @@ public:
     virtual int seek(int offset, std::ios_base::seekdir origin=std::ios_base::beg) = 0;
     virtual long long seek64(long long offset, std::ios_base::seekdir origin=std::ios_base::beg) = 0;
     virtual int copyStream(VFile *pstream, int byteSize) = 0;
-    virtual bool fileClose() = 0;
+    virtual bool close() = 0;
 };
 
 NV_NAMESPACE_END

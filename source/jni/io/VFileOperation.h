@@ -2,22 +2,16 @@
 
 #include "VSysFile.h"
 
-#define  GFILE_CXX
 
-#ifndef OVR_OS_WINCE
 #include <sys/stat.h>
-#endif
-
-#ifndef OVR_OS_WINCE
 #include <errno.h>
-#endif
 
 NV_NAMESPACE_BEGIN
 
 static int FError ();
 
 //实现文件具体操作的类，VSysFile通过指针授权给父类调用该类的函数
-class VFileOperation : public VFile
+class VFileOperation : public VFile, std::fstream
 {
 protected:
 
@@ -61,33 +55,33 @@ public:
     ~VFileOperation()
     {
         if (m_opened) {
-            fileClose();
+            close();
         }
     }
 
     virtual const std::string filePath() override;
 
-    virtual bool isOpened() override;
-    virtual bool isWritable() override;
+    bool isOpened() override;
+    bool isWritable() override;
 
     // 文件位置、长度
-    virtual int tell() override;
-    virtual long long tell64() override;
-    virtual int length() override;
-    virtual long long length64() override;
-    virtual int errorCode() override;
+    int tell() override;
+    long long tell64() override;
+    int length() override;
+    long long length64() override;
+    int errorCode() override;
 
     //  文件读写
-    virtual int write(const uchar *pbuffer, int numBytes) override;
-    virtual int read(uchar *pbuffer, int numBytes) override;
-    virtual int skipBytes(int numBytes) override;
-    virtual int bytesAvailable() override;
-    virtual bool bufferFlush() override;
-    virtual int seek(int offset, std::ios_base::seekdir origin) override;
-    virtual long long seek64(long long offset, std::ios_base::seekdir origin) override;
+    int write(const uchar *pbuffer, int numBytes) override;
+    int read(uchar *pbuffer, int numBytes) override;
+    int skipBytes(int numBytes) override;
+    int bytesAvailable() override;
+    bool bufferFlush() override;
+    int seek(int offset, std::ios_base::seekdir origin) override;
+    long long seek64(long long offset, std::ios_base::seekdir origin) override;
 
-    virtual int copyStream(VFile *pStream, int byteSize) override;
-    virtual bool fileClose() override;
+    int copyStream(VFile *pStream, int byteSize) override;
+    bool close() override;
 private:
     void fileInit();
 };

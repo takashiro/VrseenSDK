@@ -3,19 +3,30 @@
 #include "vglobal.h"
 
 #include "VDelegatedFile.h"
-#include "VFileState.h"
-#include "VDefaultFile.h"
+#include "VString.h"
 
 NV_NAMESPACE_BEGIN
 
-class   VSysFile;
+
+struct VFileStat
+{
+    // No change or create time because they are not available on most systems
+    ulong  modifyTime;
+    ulong  accessTime;
+    ulong  fileSize;
+
+    bool operator== (const VFileStat& stat) const
+    {
+        return ( (modifyTime == stat.modifyTime) &&
+                 (accessTime == stat.accessTime) &&
+                 (fileSize == stat.fileSize) );
+    }
+};
 
 //VSysFile类实现直接访问文件系统中的文件的功能，封装了Open、close函数
 //io的入口和出口
 class VSysFile : public VDelegatedFile
 {
-protected:
-    //    VSysFile(const VSysFile &source) : VDelegatedFile () {  }
 public:
 
     VSysFile();
@@ -29,9 +40,9 @@ public:
 
     static bool  GetFileStat(VFileStat* pfileStats, const VString& path);
 
-    virtual int   errorCode() override;
-    virtual bool  isOpened() override;
-    virtual bool  fileClose() override;
+   int   errorCode() override;
+   bool  isOpened() override;
+   bool  close() override;
 
 };
 

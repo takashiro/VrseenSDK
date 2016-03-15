@@ -67,41 +67,14 @@ void VFileOperation::fileInit()
                 | std::ios_base::binary;
     }
 
-#ifdef OVR_OS_WIN32
-    SysErrorModeDisabler disabler(FileName.toCString());
-#endif
-
-#if defined(OVR_CC_MSVC) && (OVR_CC_MSVC >= 1400)
-    wchar_t womode[16];
-    wchar_t *pwFileName = (wchar_t*)OVR_ALLOC((UTF8Util::GetLength(FileName.toCString())+1) * sizeof(wchar_t));
-    UTF8Util::DecodeString(pwFileName, FileName.toCString());
-    OVR_ASSERT(strlen(openMode) < sizeof(womode)/sizeof(womode[0]));
-    UTF8Util::DecodeString(womode, omode);
-    _wfopen_s(&fs, pwFileName, womode);
-    OVR_FREE(pwFileName);
-#else
     open(m_fileName.toCString(), openMode);
-#endif
+
     m_opened = is_open();
 
     // Set error code
     if (!m_opened) {
         m_errorCode = FError();
     } else {
-        // If we are testing file seek correctness, pre-load the entire file so
-        // that we can do comparison tests later.
-#ifdef OVR_FILE_VERIFY_SEEK_ERRORS
-        TestPos         = 0;
-        fseek(fs, 0, SEEK_END);
-        FileTestLength  = ftell(fs);
-        fseek(fs, 0, SEEK_SET);
-        pFileTestBuffer = (UByte*)OVR_ALLOC(FileTestLength);
-        if (pFileTestBuffer)
-        {
-            OVR_ASSERT(FileTestLength == (unsigned)Read(pFileTestBuffer, FileTestLength));
-            Seek(0, Seek_Set);
-        }
-#endif
         if(m_openFlag & Open_Read) {
             seekg(0);
         } else {
@@ -201,11 +174,6 @@ int     VFileOperation::write(const uchar *buffer, int byteNum)
         return 0;
     }
 
-#ifdef OVR_FILE_VERIFY_SEEK_ERRORS
-    if (written > 0) {
-        TestPos += written;
-    }
-#endif
     return byteNum;
 }
 
@@ -222,21 +190,6 @@ int     VFileOperation::read(uchar *buffer, int byteNum)
         return 0;
     }
 
-#ifdef OVR_FILE_VERIFY_SEEK_ERRORS
-    if (read > 0) {
-        // Read-in data must match our pre-loaded buffer data!
-        UByte* pcompareBuffer = pFileTestBuffer + TestPos;
-        for (int i=0; i< read; i++)
-        {
-            OVR_ASSERT(pcompareBuffer[i] == buffer[i]);
-        }
-
-        //OVR_ASSERT(!memcmp(pFileTestBuffer + TestPos, pbuffer, read));
-        TestPos += read;
-        OVR_ASSERT(ftell(fs) == (int)TestPos);
-    }
-#endif
-
     return byteNum;
 }
 
@@ -250,7 +203,7 @@ int     VFileOperation::skipBytes(int byteNum)
     if ((oldPosition==-1) || (newPosition==-1)) {
         return -1;
     }
-//    ErrorCode = ((NewPos-Pos)<byteNum) ? errno : 0;
+
     m_errorCode =((newPosition - oldPosition) < byteNum) ? errno : 0;
     return static_cast<int>(newPosition - oldPosition);
 }
@@ -296,16 +249,6 @@ int     VFileOperation::seek(int offset, std::ios_base::seekdir startPos)
     if (!good()) {
         return -1;
     }
-#ifdef OVR_FILE_VERIFY_SEEK_ERRORS
-    // Track file position after seeks for read verification later.
-    switch(startPos)
-    {
-    case Seek_Set:  TestPos = offset;       break;
-    case Seek_Cur:  TestPos += offset;      break;
-    case Seek_End:  TestPos = FileTestLength + offset; break;
-    }
-    OVR_ASSERT(reinterpret_cast<int>TestPos == Tell());
-#endif
 
     return reinterpret_cast<int>(tell());
 }
@@ -342,16 +285,8 @@ int VFileOperation::copyStream(VFile *fstream, int num)
 }
 
 
-bool VFileOperation::fileClose()
+bool VFileOperation::close()
 {
-#ifdef OVR_FILE_VERIFY_SEEK_ERRORS
-    if (pFileTestBuffer) {
-        OVR_FREE(pFileTestBuffer);
-        pFileTestBuffer = 0;
-        FileTestLength  = 0;
-    }
-#endif
-
     close();
     bool isCloseRet = good();
 
@@ -368,23 +303,12 @@ bool VFileOperation::fileClose()
 // Helper function: obtain file information time.
 bool    VSysFile::GetFileStat(VFileStat* pfileStat, const VString& path)
 {
-#if defined(OVR_OS_WIN32)
-    // 64-bit implementation on Windows.
-    struct __stat64 fileStat;
-    // Stat returns 0 for success.
-    wchar_t *pwpath = (wchar_t*)OVR_ALLOC((UTF8Util::GetLength(path.toCString())+1)*sizeof(wchar_t));
-    UTF8Util::DecodeString(pwpath, path.toCString());
-
-    int ret = _wstat64(pwpath, &fileStat);
-    OVR_FREE(pwpath);
-    if (ret) return false;
-#else
     struct stat fileStat;
-    // Stat returns 0 for success.
+
     if (stat(path.toCString(), &fileStat) != 0) {
         return false;
     }
-#endif
+
     pfileStat->accessTime = fileStat.st_atime;
     pfileStat->modifyTime = fileStat.st_mtime;
     pfileStat->fileSize = fileStat.st_size;

@@ -1,9 +1,3 @@
-
-#define  GFILE_CXX
-
-//#include <stdio.h>
-
-
 #include "VSysFile.h"
 
 NV_NAMESPACE_BEGIN
@@ -14,7 +8,7 @@ VFile* VOpenFile(const VString& path, int flags);
 VSysFile::VSysFile()
     : VDelegatedFile(0)
 {
-    m_file = *new VDefaultFile;
+    m_file = nullptr;
 }
 
 VSysFile::VSysFile(const VString& path, int flags)
@@ -33,7 +27,6 @@ bool VSysFile::open(const VString& path, int flags)
 {
     m_file = *VOpenFile(path, flags);
     if ((!m_file) || (!m_file->isOpened())) {
-        m_file = *new VDefaultFile;
         return false;
     }
     return true;
@@ -50,11 +43,11 @@ bool VSysFile::isOpened()
     return m_file && m_file->isOpened();
 }
 
-bool VSysFile::fileClose()
+bool VSysFile::close()
 {
     if (isOpened()) {
-        VDelegatedFile::fileClose();
-        m_file = *new VDefaultFile;
+        VDelegatedFile::close();
+        m_file = nullptr;
         return true;
     }
     return false;

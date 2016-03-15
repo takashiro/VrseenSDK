@@ -290,11 +290,9 @@ HEADERS += \
     jni/UniversalMenu_Commands.h \
     jni/PointTracker.h \
     jni/io/VBinaryFile.h \
-    jni/io/VDefaultFile.h \
     jni/io/VDelegatedFile.h \
     jni/io/VFile.h \
     jni/io/VFileOperation.h \
-    jni/io/VFileState.h \
     jni/io/VSysFile.h
 
 
