@@ -13,7 +13,7 @@ using namespace std;
 
 NV_NAMESPACE_BEGIN
 
-//使用VList的类型应该继承该模板；比如 class X:public NodeOfVList<VList<X>>
+//When uses VList, the type should inherit NodeOfList. For example,class X:public NodeOfVList<VList<X>>
 template <typename Container> class NodeOfVList
 {
 public:
