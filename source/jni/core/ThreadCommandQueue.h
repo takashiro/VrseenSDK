@@ -25,7 +25,7 @@ public:
 
     // NotifyEvent is used by ThreadCommandQueue::PushCallAndWait to notify the
     // calling (producer)  thread when command is completed or queue slot is available.
-    class NotifyEvent : public NewOverrideBase
+    class NotifyEvent : public NewOverrideBase, public NodeOfVList<VList<NotifyEvent*>>
     {
         VSignal E;
     public:
@@ -35,15 +35,6 @@ public:
         void PulseEvent()  { E.pulse(); }
     };
 
-    class NotifyEventNode : public NodeOfVList<VList<NotifyEventNode>>
-    {
-    public:
-        NotifyEvent* pointToNotifyEvent;
-        NotifyEventNode(NotifyEvent* p):pointToNotifyEvent(p)
-        {
-
-        }
-    };
 
     // ThreadCommand::PopBuffer is temporary storage for a command popped off
     // by ThreadCommandQueue::PopCommand.

@@ -32,7 +32,7 @@ public:
 void testVList()
 {
     VList<StrNode*> tester;
-    StrNode* pStr = NULL;
+    StrNode* pStr = nullptr;
     int count = 0;
     LOGD("%d.isEmpty():1 == %d\n", count++, tester.isEmpty());
     pStr = new StrNode(new string("tester2"));
