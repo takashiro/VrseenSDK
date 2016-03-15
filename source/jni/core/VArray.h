@@ -44,7 +44,10 @@ public:
 	{
 		return this->front();
 	}
-	E &first();
+	E &first()
+	{
+	    return this->front();
+	}
 
 	const E &last() const
 	{
@@ -57,25 +60,16 @@ public:
 
 	E &operator[](int i)
 	{
-		return this->operator [](i);
+		return this->at(i);
 	}
 	const E &operator[](int i) const
 	{
-		return this->operator [](i);
-	}
-	E &at(int i)
-	{
-	   return this->at(i);
-	}
-	const E &at(int i) const
-	{
 		return this->at(i);
 	}
-
 	void append(const E &e)
 	{
        this->push_back(e);
-	}
+	};
 	void append(const List<E> &elements)
 	{
 		for(E e:elements)
@@ -83,56 +77,74 @@ public:
 			this->push_back(e);
 		}
 	}
-
 	void prepend(const E &e)
 	{
-		this->prepend(e);
+	    insert(0, e);
 	}
 	void prepend(const List<E> &elements)
 	{
-		this->prepend(elements);
-
+	    for (uint i = 0, max = elements.size(); i < max; i++) {
+	                 insert(i, elements.at(i));
+	            }
 	}
-
-	void insert(int i, const E &e)
+	void insert(uint i, const E &e)
 	{
-		this->insert(i,e);
+	    std::vector<E>::insert(this->cbegin() + i, e);
 	}
 	void removeAt(int i)
 	{
-		this->removeAt(i);
+	    this->erase(this->begin() + i);
 	}
 	void removeOne(const E &e)
 	{
-		this->removeOne(e);
+	    for (uint i = 0, max = this->size(); i < max; i++) {
+	               if (this->at(i) == e) {
+	                     removeAt(i);
+	                     break;
+	                 }
+	            }
 	}
 	void removeAll(const E &e)
 	{
-		this->removeAll(e);
+	    for (uint i = 0, max = this->size(); i < max; i++) {
+	                 if (this->at(i) == e) {
+	                     removeAt(i);
+	                     i--;
+	                     max--;
+	                 }
+	             }
+
 	};
 	bool contains(const E &e) const
 	{
-		return this->contains(e);
+	    for (uint i = 0, max = this->size(); i < max; i++) {
+	                 if (this->at(i) == e) {
+	                     return true;
+	                 }
+	             }
+	             return false;
+
 	};
 	void clearAndRelease()
 	{
 		this->clear();
-
 	}
+//
 	void removeAtUnordered()
 	{
 		this->removeAtUnordered();
 	}
+//
 	void removeAtUnordered(int i)
 		{
 			this->removeAtUnordered(i);
 		}
 	const E* dataPtr() const { return this->data(); }
 	      E* dataPtr()       { return this->data(); }
+//
 	uint allocBack()
 	  	{
 	  		return this->allocBack();
 	  	}
 	};
 NV_NAMESPACE_END
-
