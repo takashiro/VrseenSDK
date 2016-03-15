@@ -112,8 +112,8 @@ private:
 	Lerp								SelectionFader;
 
 	CarouselBrowserComponent *			MovieBrowser;
-	Array<CarouselItem *> 				MovieBrowserItems;
-	Array<PanelPose>					MoviePanelPositions;
+	VArray<CarouselItem *> 				MovieBrowserItems;
+	VArray<PanelPose>					MoviePanelPositions;
 
     Array<CarouselItemComponent *>	 	MoviePosterComponents;
 

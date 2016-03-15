@@ -49,7 +49,7 @@ private:
 	VRMenuObject * 				SelectionObject;
 
 	CarouselBrowserComponent *	TheaterBrowser;
-    Array<CarouselItem *> 		Theaters;
+    VArray<CarouselItem *> 		Theaters;
 
 	int							SelectedTheater;
 

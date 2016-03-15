@@ -47,11 +47,11 @@ public:
 class CarouselBrowserComponent : public VRMenuComponent
 {
 public:
-									CarouselBrowserComponent( const Array<CarouselItem *> &items, const Array<PanelPose> &panelPoses );
+									CarouselBrowserComponent( const VArray<CarouselItem *> &items, const VArray<PanelPose> &panelPoses );
 
-	void							SetPanelPoses( OvrVRMenuMgr & menuMgr, VRMenuObject * self, const Array<PanelPose> &panelPoses );
+	void							SetPanelPoses( OvrVRMenuMgr & menuMgr, VRMenuObject * self, const VArray<PanelPose> &panelPoses );
 	void 							SetMenuObjects( const Array<VRMenuObject *> &menuObjs, const Array<CarouselItemComponent *> &menuComps );
-	void							SetItems( const Array<CarouselItem *> &items );
+	void							SetItems( const VArray<CarouselItem *> &items );
 	void							SetSelectionIndex( const int selectedIndex );
     int 							GetSelection() const;
 	bool							HasSelection() const;
@@ -85,10 +85,10 @@ private:
 	int 							ItemWidth;
     int 							ItemHeight;
 
-    Array<CarouselItem *> 			Items;
+    VArray<CarouselItem *> 			Items;
     Array<VRMenuObject *> 			MenuObjs;
     Array<CarouselItemComponent *> 	MenuComps;
-	Array<PanelPose>				PanelPoses;
+	VArray<PanelPose>				PanelPoses;
 
 	double 							StartTime;
 	double 							EndTime;
