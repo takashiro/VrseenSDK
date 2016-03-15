@@ -112,7 +112,7 @@ jlong VrAppInterface::SetActivity(JNIEnv * jni, jclass clazz, jobject activity, 
 		// This will set the VrAppInterface app pointer directly,
 		// so it is set when OneTimeInit is called.
         LOG("new AppLocal(%p %p %p)", jni, activity, this);
-        new App(*jni, activity, *this);
+        new App(jni, activity, *this);
 
 		// Start the VrThread and wait for it to have initialized.
         app->startVrThread();
@@ -408,6 +408,8 @@ struct App::Private
     jobject javaObject;
     VrAppInterface *appInterface;
 
+    VMainActivity *activity;
+
     Private(App *self)
         : self(self)
         , vrThreadSynced(false)
@@ -479,6 +481,7 @@ struct App::Private
         , errorMessageEndTime(-1.0)
         , javaObject(nullptr)
         , appInterface(nullptr)
+        , activity(nullptr)
     {
     }
 
@@ -567,20 +570,19 @@ struct App::Private
 
 App *vApp = nullptr;
 
-App::App(JNIEnv &jni, jobject activityObject, VrAppInterface &interface)
+App::App(JNIEnv *jni, jobject activityObject, VrAppInterface &interface)
     : exitOnDestroy(true)
     , oneTimeInitCalled(false)
     , d(new Private(this))
 {
-    VMainActivity activity;
-    (void) activity;
+    d->activity = new VMainActivity(jni, activityObject);
 
-    d->uiJni = &jni;
+    d->uiJni = jni;
     vInfo("----------------- AppLocal::AppLocal() -----------------");
     vAssert(vApp == nullptr);
     vApp = this;
 
-    d->storagePaths = new VStandardPath(&jni, activityObject);
+    d->storagePaths = new VStandardPath(jni, activityObject);
 
 	//WaitForDebuggerToAttach();
 
@@ -624,7 +626,7 @@ App::App(JNIEnv &jni, jobject activityObject, VrAppInterface &interface)
     d->playSoundPoolSoundMethodId = d->GetMethodID("playSoundPoolSound", "(Ljava/lang/String;)V");
 
     jmethodID isHybridAppMethodId = d->GetStaticMethodID(d->vrLibClass, "isHybridApp", "(Landroid/app/Activity;)Z");
-    bool const isHybridApp = jni.CallStaticBooleanMethod(d->vrLibClass, isHybridAppMethodId, d->javaObject);
+    bool const isHybridApp = jni->CallStaticBooleanMethod(d->vrLibClass, isHybridAppMethodId, d->javaObject);
 
     exitOnDestroy = !isHybridApp;
 
@@ -681,6 +683,7 @@ App::~App()
         d->storagePaths = nullptr;
 	}
 
+    delete d->activity;
     delete d;
 }
 

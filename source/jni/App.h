@@ -146,7 +146,7 @@ class OvrVolumePopup;
 class App : public TalkToJavaInterface
 {
 public:
-                                App(JNIEnv & jni_, jobject activityObject,
+                                App(JNIEnv *jni, jobject activityObject,
                                         VrAppInterface & interface );
     virtual						~App();
 

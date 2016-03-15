@@ -10,6 +10,29 @@
 #include "VLog.h"
 #include "VString.h"
 
+NV_NAMESPACE_BEGIN
+
+struct VMainActivity::Private
+{
+    JNIEnv *jni;
+    jobject activityObject;
+};
+
+VMainActivity::VMainActivity(JNIEnv *jni, jobject activityObject)
+    : d(new Private)
+{
+    d->jni = jni;
+    d->activityObject = jni->NewGlobalRef(activityObject);
+}
+
+VMainActivity::~VMainActivity()
+{
+    d->jni->DeleteGlobalRef(d->activityObject);
+    delete d;
+}
+
+NV_NAMESPACE_END
+
 NV_USING_NAMESPACE
 
 //@to-do: remove this
@@ -138,12 +161,3 @@ void Java_com_vrseen_nervgear_VrActivity_nativeNewIntent(JNIEnv *jni, jclass cla
 }
 
 }	// extern "C"
-
-NV_NAMESPACE_BEGIN
-
-VMainActivity::VMainActivity()
-{
-
-}
-
-NV_NAMESPACE_END
