@@ -16,7 +16,7 @@
 using namespace std;
 using namespace NervGear;
 
-class StrNode:public NodeOfVList<VList<StrNode>>
+class StrNode:public NodeOfVList<VList<StrNode*>>
 {
 public:
     string* pstr;//需要自己释放
@@ -31,21 +31,33 @@ public:
 };
 void testVList()
 {
-    VList<StrNode> tester;
+    VList<StrNode*> tester;
+    StrNode* pStr = NULL;
     int count = 0;
     LOGD("%d.isEmpty():1 == %d\n", count++, tester.isEmpty());
-    tester.append(StrNode(new string("tester2")));
-    tester.append(StrNode(new string("tester3")));
-    tester.prepend(StrNode(new string("tester1")));
-    tester.prepend(StrNode(new string("tester0")));
+    pStr = new StrNode(new string("tester2"));
+    pStr->pointToVList = &tester;
+    tester.append(pStr);
+
+    pStr = new StrNode(new string("tester3"));
+    pStr->pointToVList = &tester;
+    tester.append(pStr);
+
+    pStr = new StrNode(new string("tester1"));
+    pStr->pointToVList = &tester;
+    tester.prepend(pStr);
+
+    pStr = new StrNode(new string("tester0"));
+    pStr->pointToVList = &tester;
+    tester.prepend(pStr);
     LOGD("%d.isEmpty():0 == %d\n", count++, tester.isEmpty());
 
     LOGD("%d.size():4 == %d", count++, tester.size());
 
-    LOGD("%d.first():tester0 == %s\n", count++, tester.first().pstr->c_str());
-    LOGD("%d.last():tester3 == %s\n", count++, tester.last().pstr->c_str());
+    LOGD("%d.first():tester0 == %s\n", count++, tester.first()->pstr->c_str());
+    LOGD("%d.last():tester3 == %s\n", count++, tester.last()->pstr->c_str());
 
-    VList<StrNode>::iterator iter0 = tester.end();
+    VList<StrNode*>::iterator iter0 = tester.end();
     iter0--;
 
     LOGD("%d.isFirst():1 == %d\n", count++, tester.isFirst(tester.begin()));
@@ -54,23 +66,21 @@ void testVList()
     LOGD("%d.isLast():1 == %d\n", count++, tester.isLast(iter0));
 
     tester.bringToFront(iter0);
-    LOGD("%d.bringToFront():tester3 == %s\n", count++, tester.first().pstr->c_str());
+    LOGD("%d.bringToFront():tester3 == %s\n", count++, tester.first()->pstr->c_str());
 
     tester.sendToBack(tester.begin());
-    LOGD("%d.sendToBack():tester3 == %s\n", count++, tester.last().pstr->c_str());
+    LOGD("%d.sendToBack():tester3 == %s\n", count++, tester.last()->pstr->c_str());
 
-    LOGD("%d.contains():1 == %d\n", count++, tester.contains(StrNode(new string("tester2"))));
-    LOGD("%d.contains():0 == %d\n", count++, tester.contains(StrNode(new string("tester4"))));
+    LOGD("%d.contains():0 == %d\n", count++, tester.contains(new StrNode(new string("tester2"))));
+    LOGD("%d.contains():1 == %d\n", count++, tester.contains(tester.front()));
 
-    StrNode &p = tester.front();
-    p.pointToVList->removeElementByPointer(&p);
-    LOGD("%d.removeElementByPointer():tester1 == %s\n", count++, tester.front().pstr->c_str());
+    StrNode* p = tester.front();
+    StrNode* &x=p;
+    p->pointToVList->remove(p);
+    LOGD("%d.remove():tester1 == %s\n", count++, tester.front()->pstr->c_str());
 
-    VList<StrNode>::iterator iter = tester.begin();
-    iter++;
-    StrNode* ptr = &(*iter);
-    ptr->pointToVList->removeElementByPointer(ptr);
-    LOGD("%d.removeElementByPointer():tester3 == %s\n", count++, tester.back().pstr->c_str());
+    tester.back()->pointToVList->remove(tester.back());
+    LOGD("%d.remove():tester2 == %s\n", count++, tester.back()->pstr->c_str());
 
     LOGD("%d.size():2 == %d\n", count++, tester.size());
 }
