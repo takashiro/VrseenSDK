@@ -1,7 +1,6 @@
 #pragma once
 
 #include "VString.h"
-#include "List.h"
 #include "VList.h"
 
 #include "Device.h"
