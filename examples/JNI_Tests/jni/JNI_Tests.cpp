@@ -64,11 +64,6 @@ void testVList()
     VList<StrNode*>::iterator iter0 = tester.end();
     iter0--;
 
-    LOGD("%d.isFirst():1 == %d\n", count++, tester.isFirst(tester.begin()));
-    LOGD("%d.isFirst():0 == %d\n", count++, tester.isFirst(iter0));
-    LOGD("%d.isLast():0 == %d\n", count++, tester.isLast(tester.begin()));
-    LOGD("%d.isLast():1 == %d\n", count++, tester.isLast(iter0));
-
     tester.bringToFront(iter0);
     LOGD("%d.bringToFront():tester3 == %s\n", count++, tester.first()->pstr->c_str());
 
