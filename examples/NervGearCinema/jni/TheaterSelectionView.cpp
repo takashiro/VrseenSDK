@@ -210,8 +210,8 @@ void TheaterSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, Bitmap
 	GLuint selectionTexture = LoadTextureFromApplicationPackage( "assets/VoidTheater.png",
 			TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), selectionWidth, selectionHeight );
 
-    int centerIndex = panelPoses.sizeInt() / 2;
-    for ( int i = 0; i < panelPoses.sizeInt(); ++i )
+    int centerIndex = panelPoses.length() / 2;
+    for ( int i = 0; i < panelPoses.length(); ++i )
 	{
 		VRMenuSurfaceParms panelSurfParms( "",
 				selectionTexture, selectionWidth, selectionHeight, SURFACE_TEXTURE_DIFFUSE,
@@ -242,7 +242,7 @@ void TheaterSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, Bitmap
 
 	Array<VRMenuObject *> menuObjs;
 	Array<CarouselItemComponent *> menuComps;
-    for ( int i = 0; i < panelPoses.sizeInt(); ++i )
+    for ( int i = 0; i < panelPoses.length(); ++i )
 	{
         menuHandle_t posterImageHandle = CenterRoot->childHandleForId( menuMgr, VRMenuId_t( ID_ICONS.Get() + i ) );
         VRMenuObject *posterImage = menuMgr.toObject( posterImageHandle );
@@ -373,9 +373,9 @@ Matrix4f TheaterSelectionView::Frame( const VrFrame & vrFrame )
 	int selectedItem = TheaterBrowser->GetSelection();
 	if ( SelectedTheater != selectedItem )
 	{
-        if ( ( selectedItem >= 0 ) && ( selectedItem < Theaters.sizeInt() ) )
+        if ( ( selectedItem >= 0 ) && ( selectedItem < Theaters.length() ) )
 		{
-            LOG( "Select: %d, %d, %d, %d", selectedItem, SelectedTheater, Theaters.sizeInt(), Cinema.modelMgr.GetTheaterCount() );
+            LOG( "Select: %d, %d, %d, %d", selectedItem, SelectedTheater, Theaters.length(), Cinema.modelMgr.GetTheaterCount() );
 			SelectedTheater = selectedItem;
 			SelectTheater( SelectedTheater );
 		}

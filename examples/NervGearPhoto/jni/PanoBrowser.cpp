@@ -174,7 +174,7 @@ const OvrMetaDatum * PanoBrowser::nextFileInDirectory( const int step )
 	// if currently browsing favorites, handle this here
     if ( activeFolderIndex() == FAVORITES_FOLDER_INDEX )
 	{
-        const int numFavorites = m_favoritesBuffer.sizeInt();
+        const int numFavorites = m_favoritesBuffer.length();
 		// find the current
 		int nextPanelIndex = -1;
         Oculus360Photos * photos = ( Oculus360Photos * )m_app->appInterface();
@@ -225,7 +225,7 @@ void PanoBrowser::onBrowserOpen()
 {
 	// When browser opens - load in whatever is in local favoritebuffer to favorites folder
 	Array< const OvrMetaDatum * > favoriteData;
-	for ( int i = 0; i < m_favoritesBuffer.sizeInt(); ++i )
+	for ( int i = 0; i < m_favoritesBuffer.length(); ++i )
 	{
 		const Favorite & favorite = m_favoritesBuffer.at( i );
 		if ( favorite.isFavorite )
@@ -252,7 +252,7 @@ void PanoBrowser::onBrowserOpen()
 	{
 		// Do we have any favorites at all?
 		bool haveAnyFavorite = false;
-        for ( int i = 0; i < m_favoritesBuffer.sizeInt(); ++i )
+        for ( int i = 0; i < m_favoritesBuffer.length(); ++i )
 		{
             const Favorite & favorite = m_favoritesBuffer.at( i );
 			if ( favorite.isFavorite )
@@ -287,7 +287,7 @@ void PanoBrowser::ReloadFavoritesBuffer()
 				return;
 			}
             m_favoritesBuffer.clear();
-            for ( int i = 0; i < favoriteData.sizeInt(); ++i )
+            for ( int i = 0; i < favoriteData.length(); ++i )
 			{
 				Favorite favorite;
                 favorite.data = favoriteData.at( i );
@@ -302,7 +302,7 @@ void PanoBrowser::ReloadFavoritesBuffer()
 void PanoBrowser::addToFavorites( const OvrMetaDatum * panoData )
 {
 	// Check if already in favorites
-    for ( int i = 0; i < m_favoritesBuffer.sizeInt(); ++i )
+    for ( int i = 0; i < m_favoritesBuffer.length(); ++i )
 	{
         Favorite & favorite = m_favoritesBuffer.at( i );
 		if ( panoData == favorite.data )
@@ -330,7 +330,7 @@ void PanoBrowser::addToFavorites( const OvrMetaDatum * panoData )
 void PanoBrowser::removeFromFavorites( const OvrMetaDatum * panoData )
 {
 	// First check if in fav buffer, and if so mark it as not a favorite
-    for ( int i = 0; i < m_favoritesBuffer.sizeInt(); ++i )
+    for ( int i = 0; i < m_favoritesBuffer.length(); ++i )
 	{
         Favorite & favorite = m_favoritesBuffer.at( i );
 		if ( panoData == favorite.data )
@@ -348,7 +348,7 @@ int PanoBrowser::numPanosInActive() const
 	if ( activeFolderIndex == FAVORITES_FOLDER_INDEX )
 	{
 		int numFavs = 0;
-        for ( int i = 0; i < m_favoritesBuffer.sizeInt(); ++i )
+        for ( int i = 0; i < m_favoritesBuffer.length(); ++i )
 		{
             if ( m_favoritesBuffer.at( i ).isFavorite )
 			{
@@ -359,7 +359,7 @@ int PanoBrowser::numPanosInActive() const
 	}
     const OvrFolderBrowser::FolderView * folder = getFolderView( activeFolderIndex );
 	OVR_ASSERT( folder );
-    return folder->panels.sizeInt();
+    return folder->panels.length();
 }
 
 

@@ -161,7 +161,7 @@ const char* FolderName[VStandardPath::FolderTypeCount] =
 			return relativePath;
 		}
 
-		const int numSearchPaths = searchPaths.sizeInt();
+        const int numSearchPaths = searchPaths.length();
 		for ( int index = 0; index < numSearchPaths; ++index )
 		{
 			const VString fullPath = searchPaths.at( index ) + VString( relativePath );
@@ -184,7 +184,7 @@ const char* FolderName[VStandardPath::FolderTypeCount] =
 			return true;
 		}
 
-		for ( int i = 0; i < searchPaths.sizeInt(); ++i )
+        for ( int i = 0; i < searchPaths.length(); ++i )
 		{
             OVR_sprintf( outPath, outMaxLen, "%s%s", searchPaths[i].toCString(), relativePath.toCString() );
 			if ( FileExists( outPath ) )
@@ -211,7 +211,7 @@ const char* FolderName[VStandardPath::FolderTypeCount] =
 	bool ToRelativePath( const Array<VString>& searchPaths, char const * fullPath, char * outPath, const int outMaxLen )
 	{
 		// check if the path starts with any of the search paths
-		const int n = searchPaths.sizeInt();
+        const int n = searchPaths.length();
 		for ( int i = 0; i < n; ++i )
 		{
             char const * path = searchPaths[i].toCString();

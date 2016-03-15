@@ -91,7 +91,7 @@ void OvrTriCollisionPrimitive::init( Array< Vector3f > const & vertices, Array< 
 	// calculate the bounds
 	Bounds3f b;
 	b.Clear();
-	for ( int i = 0; i < vertices.sizeInt(); ++i )
+	for ( int i = 0; i < vertices.length(); ++i )
 	{
 		b.AddPoint( vertices[i] );
 	}
@@ -138,7 +138,7 @@ bool OvrTriCollisionPrimitive::intersectRay( Vector3f const & localStart, Vector
 	}
 
     result.triIndex = -1;
-    for ( int i = 0; i < m_indices.sizeInt(); i += 3 )
+    for ( int i = 0; i < m_indices.length(); i += 3 )
     {
         float t_;
         float u_;
@@ -168,7 +168,7 @@ void OvrTriCollisionPrimitive::debugRender( OvrDebugLines & debugLines, Posef & 
 	debugLines.AddBounds( pose, bounds(), Vector4f( 1.0f, 0.5f, 0.0f, 1.0f ) );
 
 	Vector4f color( 1.0f, 0.0f, 1.0f, 1.0f );
-	for ( int i = 0; i < m_indices.sizeInt(); i += 3 )
+	for ( int i = 0; i < m_indices.length(); i += 3 )
 	{
 		int i1 = m_indices[i + 0];
 		int i2 = m_indices[i + 1];

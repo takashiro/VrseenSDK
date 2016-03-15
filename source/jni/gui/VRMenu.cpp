@@ -141,11 +141,11 @@ void VRMenu::addItems( OvrVRMenuMgr & menuMgr, BitmapFont const & font,
 
 	Vector3f nextItemPos( 0.0f );
 	int childIndex = 0;
-	for ( int i = 0; i < itemParms.sizeInt(); ++i )
+	for ( int i = 0; i < itemParms.length(); ++i )
 	{
         VRMenuObjectParms const * parms = itemParms[i];
 		// assure all ids are different
-		for ( int j = 0; j < itemParms.sizeInt(); ++j )
+		for ( int j = 0; j < itemParms.length(); ++j )
 		{
 			if ( j != i && parms->Id != VRMenuId_t() && parms->Id == itemParms[j]->Id )
 			{
@@ -181,7 +181,7 @@ void VRMenu::addItems( OvrVRMenuMgr & menuMgr, BitmapFont const & font,
 
 	// reparent
 	Array< menuHandle_t > reparented;
-	for ( int i = 0; i < pairs.sizeInt(); ++i )
+	for ( int i = 0; i < pairs.length(); ++i )
 	{
 		ChildParmsPair const & pair = pairs[i];
 		if ( pair.Parms->ParentId.IsValid() )

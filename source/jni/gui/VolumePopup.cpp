@@ -159,7 +159,7 @@ OvrVolumePopup * OvrVolumePopup::Create( App * app, OvrVRMenuMgr & menuMgr, Bitm
 	Array< VRMenuObjectParms const * > parms;
 
 	// add all of the default items
-	for ( int i = 0; i < defaultAppMenuItems.sizeInt(); ++i )
+	for ( int i = 0; i < defaultAppMenuItems.length(); ++i )
 	{
 		VRMenuObjectParms * defaultParms = new VRMenuObjectParms( defaultAppMenuItems[i] );
 		parms.append( defaultParms );

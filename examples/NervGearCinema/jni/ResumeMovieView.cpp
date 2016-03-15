@@ -158,7 +158,7 @@ void ResumeMovieView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFont 
     int borderWidth = 0, borderHeight = 0;
     GLuint borderTexture = LoadTextureFromApplicationPackage( "assets/resume_restart_border.png", TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), borderWidth, borderHeight );
 
-    for ( int i = 0; i < optionPositions.sizeInt(); ++i )
+    for ( int i = 0; i < optionPositions.length(); ++i )
 	{
 		ResumeMovieComponent * resumeMovieComponent = new ResumeMovieComponent( this, i );
 		Array< VRMenuComponent* > optionComps;

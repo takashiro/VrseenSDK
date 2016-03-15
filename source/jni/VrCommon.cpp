@@ -70,7 +70,7 @@ StringHash< VString > RelativeDirectoryFileList( const Array< VString > & search
 	//Check each of the mirrors in searchPaths and build up a list of unique strings
 	StringHash< VString >	uniqueStrings;
 
-	const int numSearchPaths = searchPaths.sizeInt();
+	const int numSearchPaths = searchPaths.length();
 	for ( int index = 0; index < numSearchPaths; ++index )
 	{
 		const VString fullPath = searchPaths[index] + VString( RelativeDirPath );

@@ -592,11 +592,11 @@ bool FontInfoType::LoadFromBuffer(void const * buffer,
 	CharCodeMap.resize(maxCharCode + 1);
 
 	// init to empty value
-	for (int i = 0; i < CharCodeMap.sizeInt(); ++i) {
+	for (int i = 0; i < CharCodeMap.length(); ++i) {
 		CharCodeMap[i] = -1;
 	}
 
-	for (int i = 0; i < Glyphs.sizeInt(); ++i) {
+	for (int i = 0; i < Glyphs.length(); ++i) {
 		FontGlyphType const & g = Glyphs[i];
 		CharCodeMap[g.CharCode] = i;
 	}
@@ -614,18 +614,18 @@ FontGlyphType const & FontInfoType::GlyphForCharCode(
 	}
 	const int glyphIndex = CharCodeMap[charCode];
 
-	if (glyphIndex < 0 || glyphIndex >= Glyphs.sizeInt()) {
+	if (glyphIndex < 0 || glyphIndex >= Glyphs.length()) {
 		WARN(
 				"FontInfoType::GlyphForCharCode FAILED TO FIND GLYPH FOR CHARACTER!");
 		WARN(
 				"FontInfoType::GlyphForCharCode: charCode %u yielding %i", charCode, glyphIndex);
 		WARN(
-				"FontInfoType::GlyphForCharCode: CharCodeMap size %i Glyphs size %i", CharCodeMap.size(), Glyphs.sizeInt());
+				"FontInfoType::GlyphForCharCode: CharCodeMap size %i Glyphs size %i", CharCodeMap.size(), Glyphs.length());
 
 		return Glyphs['*'];
 	}
 
-	OVR_ASSERT( glyphIndex >= 0 && glyphIndex < Glyphs.sizeInt());
+	OVR_ASSERT( glyphIndex >= 0 && glyphIndex < Glyphs.length());
 	return Glyphs[glyphIndex];
 }
 
@@ -884,7 +884,7 @@ void BitmapFontLocal::WordWrapText(VString & inOutText, const float widthMeters,
 		FontGlyphType const & g = GlyphForCharCode(charCode);
 		lineWidth += g.AdvanceX * xScale;
 
-		for (int i = 0; i < wholeStrsList.sizeInt(); ++i) {
+		for (int i = 0; i < wholeStrsList.length(); ++i) {
             int curWholeStrLen = (int) wholeStrsList[i].length();
 			int endPos = pos + curWholeStrLen;
 
@@ -1378,7 +1378,7 @@ void BitmapFontSurfaceLocal::Finish(Matrix4f const & viewMatrix) {
 	// sort vertex blocks indices based on distance to pivot
 	int const MAX_VERTEX_BLOCKS = 256;
 	vbSort_t vbSort[MAX_VERTEX_BLOCKS];
-	int const n = VertexBlocks.sizeInt();
+	int const n = VertexBlocks.length();
 	for (int i = 0; i < n; ++i) {
 		vbSort[i].VertexBlockIndex = i;
 		VertexBlockType & vb = VertexBlocks[i];
@@ -1395,7 +1395,7 @@ void BitmapFontSurfaceLocal::Finish(Matrix4f const & viewMatrix) {
 	// To add multiple-font-per-surface support, we need to add a 3rd component to s and t,
 	// then get the font for each vertex block, and set the texture index on each vertex in
 	// the third texture coordinate.
-	for (int i = 0; i < VertexBlocks.sizeInt(); ++i) {
+	for (int i = 0; i < VertexBlocks.length(); ++i) {
 		VertexBlockType & vb = VertexBlocks[vbSort[i].VertexBlockIndex];
 		Matrix4f transform;
 		if (vb.Billboard) {

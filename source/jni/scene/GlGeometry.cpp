@@ -56,8 +56,8 @@ void PackVertexAttribute( Array< uint8_t > & packed, const Array< _attrib_type_ 
 
 void GlGeometry::Create( const VertexAttribs & attribs, const Array< TriangleIndex > & indices )
 {
-	vertexCount = attribs.position.sizeInt();
-	indexCount = indices.sizeInt();
+	vertexCount = attribs.position.length();
+	indexCount = indices.length();
 
 	glGenBuffers( 1, &vertexBuffer );
 	glGenBuffers( 1, &indexBuffer );
@@ -79,7 +79,7 @@ void GlGeometry::Create( const VertexAttribs & attribs, const Array< TriangleInd
 	glBufferData( GL_ARRAY_BUFFER, packed.size() * sizeof( packed[0] ), packed.dataPtr(), GL_STATIC_DRAW );
 
 	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, indexBuffer );
-	glBufferData( GL_ELEMENT_ARRAY_BUFFER, indices.sizeInt() * sizeof( indices[0] ), indices.dataPtr(), GL_STATIC_DRAW );
+	glBufferData( GL_ELEMENT_ARRAY_BUFFER, indices.length() * sizeof( indices[0] ), indices.dataPtr(), GL_STATIC_DRAW );
 
 	glBindVertexArrayOES_( 0 );
 
@@ -96,7 +96,7 @@ void GlGeometry::Create( const VertexAttribs & attribs, const Array< TriangleInd
 
 void GlGeometry::Update( const VertexAttribs & attribs )
 {
-	vertexCount = attribs.position.sizeInt();
+	vertexCount = attribs.position.length();
 
 	glBindVertexArrayOES_( vertexArrayObject );
 

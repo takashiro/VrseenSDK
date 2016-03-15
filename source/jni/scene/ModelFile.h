@@ -75,7 +75,7 @@ public:
 	const ModelJoint *			FindNamedJoint( const char * name ) const;
 	const ModelTag *			FindNamedTag(const VString &name ) const;
 
-	int							GetJointCount() const { return Joints.sizeInt(); }
+	int							GetJointCount() const { return Joints.length(); }
 	const ModelJoint *			GetJoint( const int index ) const { return &Joints[index]; }
 	Bounds3f					GetBounds() const;
 

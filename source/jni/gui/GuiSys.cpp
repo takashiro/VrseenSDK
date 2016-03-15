@@ -65,7 +65,7 @@ void OvrGuiSysLocal::init( App * app, OvrVRMenuMgr & menuMgr, BitmapFont const &
 // Reposition any open menus 
 void OvrGuiSysLocal::resetMenuOrientations( App * app, Matrix4f const & viewMatrix )
 {
-	for ( int i = 0; i < Menus.sizeInt(); ++i )
+	for ( int i = 0; i < Menus.length(); ++i )
 	{
 		if ( VRMenu* menu = Menus.at( i ) )
 		{
@@ -128,7 +128,7 @@ void OvrGuiSysLocal::shutdown( OvrVRMenuMgr & menuMgr )
 	// FIXME: we need to make sure we delete any child menus here -- it's not enough to just delete them
 	// in the destructor of the parent, because they'll be left in the menu list since the destructor has
 	// no way to call GuiSys->DestroyMenu() for them.
-	for ( int i = 0; i < Menus.sizeInt(); ++i )
+	for ( int i = 0; i < Menus.length(); ++i )
 	{
 		VRMenu * menu = Menus[i];
 		menu->shutdown( menuMgr );
@@ -144,7 +144,7 @@ void OvrGuiSysLocal::shutdown( OvrVRMenuMgr & menuMgr )
 // OvrGuiSysLocal::FindMenuIndex
 int OvrGuiSysLocal::FindMenuIndex( char const * menuName ) const
 {
-	for ( int i = 0; i < Menus.sizeInt(); ++i )
+	for ( int i = 0; i < Menus.length(); ++i )
 	{
         if ( OVR_stricmp( Menus[i]->name(), menuName ) == 0 )
 		{
@@ -158,7 +158,7 @@ int OvrGuiSysLocal::FindMenuIndex( char const * menuName ) const
 // OvrGuiSysLocal::FindMenuIndex
 int OvrGuiSysLocal::FindMenuIndex( VRMenu const * menu ) const
 {
-	for ( int i = 0; i < Menus.sizeInt(); ++i )
+	for ( int i = 0; i < Menus.length(); ++i )
 	{
 		if ( Menus[i] == menu ) 
 		{
@@ -172,7 +172,7 @@ int OvrGuiSysLocal::FindMenuIndex( VRMenu const * menu ) const
 // OvrGuiSysLocal::FindActiveMenuIndex
 int OvrGuiSysLocal::FindActiveMenuIndex( VRMenu const * menu ) const
 {
-	for ( int i = 0; i < ActiveMenus.sizeInt(); ++i )
+	for ( int i = 0; i < ActiveMenus.length(); ++i )
 	{
 		if ( ActiveMenus[i] == menu ) 
 		{
@@ -186,7 +186,7 @@ int OvrGuiSysLocal::FindActiveMenuIndex( VRMenu const * menu ) const
 // OvrGuiSysLocal::FindActiveMenuIndex
 int OvrGuiSysLocal::FindActiveMenuIndex( char const * menuName ) const
 {
-	for ( int i = 0; i < ActiveMenus.sizeInt(); ++i )
+	for ( int i = 0; i < ActiveMenus.length(); ++i )
 	{
         if ( OVR_stricmp( ActiveMenus[i]->name(), menuName ) == 0 )
 		{
@@ -226,7 +226,7 @@ void OvrGuiSysLocal::openMenu( App * app, OvrGazeCursor & gazeCursor, char const
 	if ( menuIndex < 0 )
 	{
 		WARN( "No menu named '%s'", menuName );
-		OVR_ASSERT( menuIndex >= 0 && menuIndex < Menus.sizeInt() );
+		OVR_ASSERT( menuIndex >= 0 && menuIndex < Menus.length() );
 		return;
 	}
 	VRMenu * menu = Menus[menuIndex];
@@ -246,7 +246,7 @@ void OvrGuiSysLocal::closeMenu( App * app, char const * menuName, bool const clo
 	if ( menuIndex < 0 )
 	{
 		WARN( "No menu named '%s'", menuName );
-		OVR_ASSERT( menuIndex >= 0 && menuIndex < Menus.sizeInt() );
+		OVR_ASSERT( menuIndex >= 0 && menuIndex < Menus.length() );
 		return;
 	}
 	VRMenu * menu = Menus[menuIndex];
@@ -276,14 +276,14 @@ bool OvrGuiSysLocal::isMenuActive( char const * menuName ) const
 // OvrGuiSysLocal::IsAnyMenuOpen
 bool OvrGuiSysLocal::isAnyMenuActive() const 
 {
-	return ActiveMenus.sizeInt() > 0;
+	return ActiveMenus.length() > 0;
 }
 
 //==============================
 // OvrGuiSysLocal::IsAnyMenuOpen
 bool OvrGuiSysLocal::isAnyMenuOpen() const
 {
-	for ( int i = 0; i < ActiveMenus.sizeInt(); ++i )
+	for ( int i = 0; i < ActiveMenus.length(); ++i )
 	{
         if ( ActiveMenus[i]->isOpenOrOpening() )
 		{
@@ -301,7 +301,7 @@ void OvrGuiSysLocal::frame( App * app, const VrFrame & vrFrame, OvrVRMenuMgr & m
 	//LOG( "OvrGuiSysLocal::Frame" );
 
 	// go backwards through the list so we can use unordered remove when a menu finishes closing
-	for ( int i = ActiveMenus.sizeInt() - 1; i >= 0; --i )
+	for ( int i = ActiveMenus.length() - 1; i >= 0; --i )
 	{
 		VRMenu * curMenu = ActiveMenus[i];
 		OVR_ASSERT( curMenu != NULL );
@@ -335,7 +335,7 @@ void OvrGuiSysLocal::frame( App * app, const VrFrame & vrFrame, OvrVRMenuMgr & m
 // OvrGuiSysLocal::OnKeyEvent
 bool OvrGuiSysLocal::onKeyEvent( App * app, int const keyCode, KeyState::eKeyEventType const eventType ) 
 {
-	for ( int i = 0; i < ActiveMenus.sizeInt(); ++i )
+	for ( int i = 0; i < ActiveMenus.length(); ++i )
 	{
 		VRMenu * curMenu = ActiveMenus[i];
 		OVR_ASSERT( curMenu != NULL );

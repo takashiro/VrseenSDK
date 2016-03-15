@@ -426,7 +426,7 @@ void OvrPanoMenu::updateButtonsState( const OvrMetaDatum * const ActivePano, boo
 	// Update favo
 	bool isFavorite = false;
 
-	for ( int i = 0; i < ActivePano->tags.sizeInt( ); ++i )
+	for ( int i = 0; i < ActivePano->tags.length( ); ++i )
 	{
 		if ( ActivePano->tags[ i ] == "Favorites" )
 		{

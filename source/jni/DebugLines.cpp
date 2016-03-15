@@ -248,7 +248,7 @@ void OvrDebugLinesLocal::Render( Matrix4f const & mvp ) const
 void OvrDebugLinesLocal::Render( Matrix4f const & mvp, GlGeometry & geo,
 		NervGear::ArrayPOD< DebugLine_t > const & lines,  const bool depthTest ) const
 {
-	if ( lines.sizeInt() == 0 )
+	if ( lines.length() == 0 )
 	{
 		return;
 	}
@@ -256,7 +256,7 @@ void OvrDebugLinesLocal::Render( Matrix4f const & mvp, GlGeometry & geo,
 	//LOG( "Rendering %i debug lines", lines.GetSizeI() );
 
 	// go through the debug lines and put them in the vertex list
-    int numLines = lines.sizeInt() < MAX_DEBUG_LINES ? lines.sizeInt() : MAX_DEBUG_LINES;
+    int numLines = lines.length() < MAX_DEBUG_LINES ? lines.length() : MAX_DEBUG_LINES;
 	for ( int i = 0; i < numLines; ++i )
 	{
 		DebugLine_t const & line = lines[i];
@@ -419,7 +419,7 @@ void OvrDebugLinesLocal::BeginFrame( const long long frameNum )
 // OvrDebugLinesLocal::RemoveExpired
 void OvrDebugLinesLocal::RemoveExpired( const long long frameNum, NervGear::ArrayPOD< DebugLine_t > & lines )
 {
-	for ( int i = lines.sizeInt() - 1; i >= 0; --i )
+	for ( int i = lines.length() - 1; i >= 0; --i )
 	{
 		const DebugLine_t & dl = lines[i];
 		if ( frameNum >= dl.EndFrame )

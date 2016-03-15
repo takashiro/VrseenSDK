@@ -252,7 +252,7 @@ public:
     virtual void				setHilighted( bool const b ) { m_hilighted = b; }
     virtual bool				isSelected() const { return m_selected; }
     virtual void				setSelected( bool const b ) { m_selected = b; }
-    virtual	int					numChildren() const { return m_children.sizeInt(); }
+    virtual	int					numChildren() const { return m_children.length(); }
     virtual menuHandle_t		getChildHandleForIndex( int const index ) const { return m_children[index]; }
 
     virtual Posef const &		localPose() const { return m_localPose; }

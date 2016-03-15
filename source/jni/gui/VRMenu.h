@@ -36,7 +36,7 @@ class VRMenuEventHandler;
 template< typename T > 
 void DeletePointerArray( Array< T* > & a )
 {
-    for ( int i = 0; i < a.sizeInt(); ++i )
+    for ( int i = 0; i < a.length(); ++i )
     {
         delete a[i];
         a[i] = NULL;

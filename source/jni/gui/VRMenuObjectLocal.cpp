@@ -680,7 +680,7 @@ VRMenuObjectLocal::~VRMenuObjectLocal()
 	}
 
     // all components must be dynamically allocated
-    for ( int i = 0; i < m_components.sizeInt(); ++i )
+    for ( int i = 0; i < m_components.length(); ++i )
     {
         delete m_components[i];
         m_components[i] = NULL;
@@ -695,7 +695,7 @@ VRMenuObjectLocal::~VRMenuObjectLocal()
 // VRMenuObjectLocal::Init
 void VRMenuObjectLocal::init( VRMenuObjectParms const & parms )
 {
-	for ( int i = 0; i < parms.SurfaceParms.sizeInt(); ++i )
+	for ( int i = 0; i < parms.SurfaceParms.length(); ++i )
 	{
 		int idx = m_surfaces.allocBack();
         m_surfaces[idx].createFromSurfaceParms( parms.SurfaceParms[i] );
@@ -704,7 +704,7 @@ void VRMenuObjectLocal::init( VRMenuObjectParms const & parms )
 	// bounds are nothing submitted for rendering
 	m_cullBounds = Bounds3f( 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f );
 	m_fontParms = parms.FontParms;
-    for ( int i = 0; i < parms.Components.sizeInt(); ++i )
+    for ( int i = 0; i < parms.Components.length(); ++i )
     {
 	    addComponent( parms.Components[i] );
     }
@@ -714,7 +714,7 @@ void VRMenuObjectLocal::init( VRMenuObjectParms const & parms )
 // VRMenuObjectLocal::FreeChildren
 void VRMenuObjectLocal::freeChildren( OvrVRMenuMgr & menuMgr )
 {
-	for ( int i = 0; i < m_children.sizeInt(); ++i ) 
+	for ( int i = 0; i < m_children.length(); ++i ) 
 	{
 		menuMgr.freeObject( m_children[i] );
 	}
@@ -726,7 +726,7 @@ void VRMenuObjectLocal::freeChildren( OvrVRMenuMgr & menuMgr )
 // VRMenuObjectLocal::IsDescendant
 bool VRMenuObjectLocal::isDescendant( OvrVRMenuMgr & menuMgr, menuHandle_t const handle ) const
 {
-	for ( int i = 0; i < m_children.sizeInt(); ++i )
+	for ( int i = 0; i < m_children.length(); ++i )
 	{
 		if ( m_children[i] == handle )
 		{
@@ -734,7 +734,7 @@ bool VRMenuObjectLocal::isDescendant( OvrVRMenuMgr & menuMgr, menuHandle_t const
 		}
 	}
 
-	for ( int i = 0; i < m_children.sizeInt(); ++i )
+	for ( int i = 0; i < m_children.length(); ++i )
 	{
 		VRMenuObject * child = menuMgr.toObject( m_children[i] );
 		if ( child != NULL )
@@ -768,7 +768,7 @@ void VRMenuObjectLocal::addChild( OvrVRMenuMgr & menuMgr, menuHandle_t const han
 // VRMenuObjectLocal::RemoveChild
 void VRMenuObjectLocal::removeChild( OvrVRMenuMgr & menuMgr, menuHandle_t const handle )
 {
-	for ( int i = 0; i < m_children.sizeInt(); ++i )
+	for ( int i = 0; i < m_children.length(); ++i )
 	{
 		if ( m_children[i] == handle )
 		{
@@ -782,7 +782,7 @@ void VRMenuObjectLocal::removeChild( OvrVRMenuMgr & menuMgr, menuHandle_t const 
 // VRMenuObjectLocal::FreeChild
 void VRMenuObjectLocal::freeChild( OvrVRMenuMgr & menuMgr, menuHandle_t const handle )
 {
-	for ( int i = 0; i < m_children.sizeInt(); ++i) 
+	for ( int i = 0; i < m_children.length(); ++i) 
 	{
 		menuHandle_t childHandle = m_children[i];
 		if ( childHandle == handle )
@@ -798,7 +798,7 @@ void VRMenuObjectLocal::freeChild( OvrVRMenuMgr & menuMgr, menuHandle_t const ha
 // VRMenuObjectLocal::Frame
 void VRMenuObjectLocal::frame( OvrVRMenuMgr & menuMgr, Matrix4f const & viewMatrix )
 {
-	for ( int i = 0; i < m_children.sizeInt(); ++i )
+	for ( int i = 0; i < m_children.length(); ++i )
 	{
 		VRMenuObject * child = menuMgr.toObject( m_children[i] );
 		if ( child != NULL )
@@ -863,7 +863,7 @@ bool VRMenuObjectLocal::intersectRay( Vector3f const & localStart, Vector3f cons
 	if (  type() != VRMENU_CONTAINER )
 	{
 		int numSurfaces = 0;
-		for ( int i = 0; i < m_surfaces.sizeInt(); ++i )
+		for ( int i = 0; i < m_surfaces.length(); ++i )
 		{
             if ( m_surfaces[i].isRenderable() )
 			{
@@ -915,7 +915,7 @@ bool VRMenuObjectLocal:: hitTest_r( App * app, OvrVRMenuMgr & menuMgr, BitmapFon
             CullBounds.b[1].x, CullBounds.b[1].y, CullBounds.b[1].z );
 */
     // test against cull bounds if we have children  ... otherwise cullBounds == localBounds
-    if ( m_children.sizeInt() > 0 )  
+    if ( m_children.length() > 0 )  
     {
         if ( m_cullBounds.IsInverted() )
         {
@@ -989,7 +989,7 @@ bool VRMenuObjectLocal:: hitTest_r( App * app, OvrVRMenuMgr & menuMgr, BitmapFon
     }
 
 	// test against children
-	for ( int i = 0; i < m_children.sizeInt(); ++i )
+	for ( int i = 0; i < m_children.length(); ++i )
 	{
 		VRMenuObjectLocal * child = static_cast< VRMenuObjectLocal* >( menuMgr.toObject( m_children[i] ) );
 		if ( child != NULL )
@@ -1029,7 +1029,7 @@ Bounds3f VRMenuObjectLocal::getTextLocalBounds( BitmapFont const & font ) const
 	Bounds3f bounds;
 	bounds.Clear();
     Vector3f const localScale = this->localScale();
-	for ( int i = 0; i < m_surfaces.sizeInt(); i++ )
+	for ( int i = 0; i < m_surfaces.length(); i++ )
 	{
         Bounds3f const & surfaceBounds = m_surfaces[i].localBounds() * localScale;
 		bounds = Bounds3f::Union( bounds, surfaceBounds );
@@ -1193,7 +1193,7 @@ void VRMenuObjectLocal::removeComponent( VRMenuComponent * component )
 // VRMenuObjectLocal::GetComponentIndex
 int VRMenuObjectLocal::getComponentIndex( VRMenuComponent * component ) const
 {	
-	for ( int i = 0; i < m_components.sizeInt(); ++i )
+	for ( int i = 0; i < m_components.length(); ++i )
 	{
 		if ( m_components[i] == component )
 		{
@@ -1208,7 +1208,7 @@ int VRMenuObjectLocal::getComponentIndex( VRMenuComponent * component ) const
 VRMenuComponent * VRMenuObjectLocal::getComponentById_Impl( int id ) const
 {
 	Array< VRMenuComponent* > comps = componentList( );
-	for ( int c = 0; c < comps.sizeInt(); ++c )
+	for ( int c = 0; c < comps.length(); ++c )
 	{
 		if ( VRMenuComponent * comp = comps[ c ] )
 		{
@@ -1231,7 +1231,7 @@ VRMenuComponent * VRMenuObjectLocal::getComponentById_Impl( int id ) const
 VRMenuComponent * VRMenuObjectLocal::getComponentByName_Impl( const char * typeName ) const
 {
 	Array< VRMenuComponent* > comps = componentList();
-	for ( int c = 0; c < comps.sizeInt(); ++c )
+	for ( int c = 0; c < comps.length(); ++c )
 	{
 		if ( VRMenuComponent * comp = comps[ c ] )
 		{
@@ -1335,9 +1335,9 @@ Vector3f VRMenuObjectLocal::textLocalScale() const
 void  VRMenuObjectLocal::setSurfaceTexture( int const surfaceIndex, int const textureIndex, 
         eSurfaceTextureType const type, GLuint const texId, int const width, int const height )
 {
-    if ( surfaceIndex < 0 || surfaceIndex >= m_surfaces.sizeInt() )
+    if ( surfaceIndex < 0 || surfaceIndex >= m_surfaces.length() )
     {
-        DROID_ASSERT( surfaceIndex >= 0 && surfaceIndex < m_surfaces.sizeInt(), "VrMenu" );
+        DROID_ASSERT( surfaceIndex >= 0 && surfaceIndex < m_surfaces.length(), "VrMenu" );
         return;
     }
     m_surfaces[surfaceIndex].loadTexture( textureIndex, type, texId, width, height );
@@ -1349,9 +1349,9 @@ void  VRMenuObjectLocal::setSurfaceTextureTakeOwnership( int const surfaceIndex,
 	eSurfaceTextureType const type, GLuint const texId,
 	int const width, int const height )
 {
-	if ( surfaceIndex < 0 || surfaceIndex >= m_surfaces.sizeInt() )
+	if ( surfaceIndex < 0 || surfaceIndex >= m_surfaces.length() )
 	{
-		DROID_ASSERT( surfaceIndex >= 0 && surfaceIndex < m_surfaces.sizeInt(), "VrMenu" );
+		DROID_ASSERT( surfaceIndex >= 0 && surfaceIndex < m_surfaces.length(), "VrMenu" );
 		return;
 	}
     m_surfaces[ surfaceIndex ].loadTexture( textureIndex, type, texId, width, height );
@@ -1362,9 +1362,9 @@ void  VRMenuObjectLocal::setSurfaceTextureTakeOwnership( int const surfaceIndex,
 // VRMenuObjectLocal::RegenerateSurfaceGeometry
 void VRMenuObjectLocal::regenerateSurfaceGeometry( int const surfaceIndex, const bool freeSurfaceGeometry )
 {
-	if ( surfaceIndex < 0 || surfaceIndex >= m_surfaces.sizeInt() )
+	if ( surfaceIndex < 0 || surfaceIndex >= m_surfaces.length() )
 	{
-		DROID_ASSERT( surfaceIndex >= 0 && surfaceIndex < m_surfaces.sizeInt(), "VrMenu" );
+		DROID_ASSERT( surfaceIndex >= 0 && surfaceIndex < m_surfaces.length(), "VrMenu" );
 		return;
 	}
 
@@ -1380,9 +1380,9 @@ void VRMenuObjectLocal::regenerateSurfaceGeometry( int const surfaceIndex, const
 // VRMenuObjectLocal::GetSurfaceDims
 Vector2f const & VRMenuObjectLocal::getSurfaceDims( int const surfaceIndex ) const
 {
-	if ( surfaceIndex < 0 || surfaceIndex >= m_surfaces.sizeInt() )
+	if ( surfaceIndex < 0 || surfaceIndex >= m_surfaces.length() )
 	{
-		DROID_ASSERT( surfaceIndex >= 0 && surfaceIndex < m_surfaces.sizeInt(), "VrMenu" );
+		DROID_ASSERT( surfaceIndex >= 0 && surfaceIndex < m_surfaces.length(), "VrMenu" );
 		return Vector2f::ZERO;
 	}
 
@@ -1393,9 +1393,9 @@ Vector2f const & VRMenuObjectLocal::getSurfaceDims( int const surfaceIndex ) con
 // VRMenuObjectLocal::SetSurfaceDims
 void VRMenuObjectLocal::setSurfaceDims( int const surfaceIndex, Vector2f const &dims )
 {
-	if ( surfaceIndex < 0 || surfaceIndex >= m_surfaces.sizeInt() )
+	if ( surfaceIndex < 0 || surfaceIndex >= m_surfaces.length() )
 	{
-		DROID_ASSERT( surfaceIndex >= 0 && surfaceIndex < m_surfaces.sizeInt(), "VrMenu" );
+		DROID_ASSERT( surfaceIndex >= 0 && surfaceIndex < m_surfaces.length(), "VrMenu" );
 		return;
 	}
 
@@ -1406,9 +1406,9 @@ void VRMenuObjectLocal::setSurfaceDims( int const surfaceIndex, Vector2f const &
 // VRMenuObjectLocal::GetSurfaceBorder
 Vector4f const & VRMenuObjectLocal::getSurfaceBorder( int const surfaceIndex )
 {
-	if ( surfaceIndex < 0 || surfaceIndex >= m_surfaces.sizeInt() )
+	if ( surfaceIndex < 0 || surfaceIndex >= m_surfaces.length() )
 	{
-		DROID_ASSERT( surfaceIndex >= 0 && surfaceIndex < m_surfaces.sizeInt(), "VrMenu" );
+		DROID_ASSERT( surfaceIndex >= 0 && surfaceIndex < m_surfaces.length(), "VrMenu" );
 		return Vector4f::ZERO;
 	}
 
@@ -1419,9 +1419,9 @@ Vector4f const & VRMenuObjectLocal::getSurfaceBorder( int const surfaceIndex )
 // VRMenuObjectLocal::SetSurfaceBorder
 void VRMenuObjectLocal::setSurfaceBorder( int const surfaceIndex, Vector4f const & border )
 {
-	if ( surfaceIndex < 0 || surfaceIndex >= m_surfaces.sizeInt() )
+	if ( surfaceIndex < 0 || surfaceIndex >= m_surfaces.length() )
 	{
-		DROID_ASSERT( surfaceIndex >= 0 && surfaceIndex < m_surfaces.sizeInt(), "VrMenu" );
+		DROID_ASSERT( surfaceIndex >= 0 && surfaceIndex < m_surfaces.length(), "VrMenu" );
 		return;
 	}
 
@@ -1452,7 +1452,7 @@ void VRMenuObjectLocal::setCollisionPrimitive( OvrCollisionPrimitive * c )
 //  VRMenuObjectLocal::FindSurfaceWithTextureType
 int VRMenuObjectLocal::findSurfaceWithTextureType( eSurfaceTextureType const type, bool const singular ) const
 {
-	for ( int i = 0; i < m_surfaces.sizeInt(); ++i )
+	for ( int i = 0; i < m_surfaces.length(); ++i )
 	{
 		VRMenuSurface const & surf = m_surfaces[i];
 		int numTextures = 0;
@@ -1517,7 +1517,7 @@ bool VRMenuObjectLocal::getSurfaceVisible( int const surfaceIndex ) const
 // VRMenuObjectLocal::NumSurfaces
 int VRMenuObjectLocal::numSurfaces() const
 {
-	return m_surfaces.sizeInt(); 
+	return m_surfaces.length(); 
 }
 
 //==============================

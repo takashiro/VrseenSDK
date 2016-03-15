@@ -270,7 +270,7 @@ void Oculus360Photos::OneTimeInit( const char * fromPackage, const char * launch
     storagePaths.PushBackSearchPathIfValid( VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", m_searchPaths );
     storagePaths.PushBackSearchPathIfValid( VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "", m_searchPaths );
 
-	LOG( "360 PHOTOS using %d searchPaths", m_searchPaths.sizeInt() );
+	LOG( "360 PHOTOS using %d searchPaths", m_searchPaths.length() );
 
 	const double startTime = ovr_GetTimeInSeconds();
 	m_metaData->initFromDirectoryMergeMeta( relativePath, m_searchPaths, fileExtensions, metaFile, packageName );

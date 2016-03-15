@@ -257,7 +257,7 @@ static void FindTargetPath( OvrVRMenuMgr const & menuMgr, menuHandle_t const roo
         menuHandle_t const curHandle, Array< menuHandle_t > & targetPath ) 
 {
     FindTargetPath( menuMgr, curHandle, targetPath );
-    if ( targetPath.sizeInt() == 0 )
+    if ( targetPath.length() == 0 )
     {
         targetPath.append( rootHandle );   // ensure at least root is in the path
     }
@@ -280,7 +280,7 @@ void VRMenuEventHandler::handleEvents( App * app, VrFrame const & vrFrame, OvrVR
     
     Array< menuHandle_t > targetPath;
 
-	for ( int i = 0; i < events.sizeInt(); ++i )
+	for ( int i = 0; i < events.length(); ++i )
 	{
 		VRMenuEvent const & event = events[i];
         switch ( event.dispatchType )
@@ -296,7 +296,7 @@ void VRMenuEventHandler::handleEvents( App * app, VrFrame const & vrFrame, OvrVR
                 dispatchToPath( app, vrFrame, menuMgr, event, focusPath, false );
                 break;
             case EVENT_DISPATCH_TARGET:
-                if ( targetPath.sizeInt() == 0 || event.targetHandle != targetPath.back() )
+                if ( targetPath.length() == 0 || event.targetHandle != targetPath.back() )
                 {
                     targetPath.clear();
                     FindTargetPath( menuMgr, rootHandle, event.targetHandle, targetPath );
@@ -318,7 +318,7 @@ bool VRMenuEventHandler::dispatchToComponents( App * app, VrFrame const & vrFram
 	DROID_ASSERT( receiver != NULL, "VrMenu" );
 
 	Array< VRMenuComponent* > const & list = receiver->componentList();
-	int numComps = list.sizeInt();
+	int numComps = list.length();
 	for ( int i = 0; i < numComps; ++i )
 	{
 		VRMenuComponent * item = list[i];
@@ -342,7 +342,7 @@ bool VRMenuEventHandler::dispatchToPath( App * app, VrFrame const & vrFrame, Ovr
         VRMenuEvent const & event, Array< menuHandle_t > const & path, bool const log ) const
 {
     // send to the focus path only -- this list should be parent -> child order
-    for ( int i = 0; i < path.sizeInt(); ++i )
+    for ( int i = 0; i < path.length(); ++i )
     {
         VRMenuObject * obj = menuMgr.toObject( path[i] );
 		char const * const indent = "                                                                ";

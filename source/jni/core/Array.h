@@ -356,7 +356,7 @@ public:
     uint   size()       const       { return m_data.size;  }
     // For those that prefer to avoid the hazards of working with unsigned values.
     // Note that on most platforms this will limit the capacity to 2 gig elements.
-    int  	sizeInt()      const       { return (int)m_data.size;  }
+    int  	length()      const       { return (int)m_data.size;  }
     bool    isEmpty()       const       { return m_data.size == 0; }
     uint   capacity()   const       { return m_data.capacity(); }
     int		capacityInt()	const		{ return (int)m_data.capacity(); }

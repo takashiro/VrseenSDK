@@ -880,7 +880,7 @@ void HIDDeviceManager::scanForDevices(bool firstScan)
 //-----------------------------------------------------------------------------
 void HIDDeviceManager::removeDevicePath(HIDDevice* device)
 {
-	for ( int i = 0; i < ScannedDevicePaths.sizeInt(); i++ )
+	for ( int i = 0; i < ScannedDevicePaths.length(); i++ )
 	{
 		if ( ScannedDevicePaths[i] == device->DevNodePath )
 		{

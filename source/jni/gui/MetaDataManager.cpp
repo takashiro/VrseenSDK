@@ -67,7 +67,7 @@ void OvrMetaData::initFromDirectory( const char * relativePath, const Array< VSt
 	LOG( "OvrMetaData start category: %s", currentCategory.categoryTag.toCString() );
 	Array< VString > subDirs;
 	// Grab the categories and loose files
-	for ( int i = 0; i < fileList.sizeInt(); i++ )
+	for ( int i = 0; i < fileList.length(); i++ )
 	{
 		const VString & s = fileList[ i ];
         const VString fileBase = VPath(s).baseName();
@@ -84,7 +84,7 @@ void OvrMetaData::initFromDirectory( const char * relativePath, const Array< VSt
 		}
 
 		// Add loose file
-		const int dataIndex = m_etaData.sizeInt();
+		const int dataIndex = m_etaData.length();
         OvrMetaDatum * datum = createMetaDatum( fileBase.toCString() );
 		if ( datum )
 		{
@@ -116,7 +116,7 @@ void OvrMetaData::initFromDirectory( const char * relativePath, const Array< VSt
 	}
 
 	// Recurse into subdirs
-	for ( int i = 0; i < subDirs.sizeInt(); ++i )
+	for ( int i = 0; i < subDirs.length(); ++i )
 	{
 		const VString & subDir = subDirs.at( i );
         initFromDirectory( subDir.toCString(), searchPaths, fileExtensions );
@@ -127,7 +127,7 @@ void OvrMetaData::initFromFileList( const Array< VString > & fileList, const Ovr
 {
 	// Create unique categories
 	StringHash< int > uniqueCategoryList;
-	for ( int i = 0; i < fileList.sizeInt(); ++i )
+	for ( int i = 0; i < fileList.length(); ++i )
 	{
 		const VString & filePath = fileList.at( i );
         const VString categoryTag = VPath(fileList.at(i)).dirName();
@@ -141,7 +141,7 @@ void OvrMetaData::initFromFileList( const Array< VString > & fileList, const Ovr
 			// The label is the same as the tag by default.
 			// Will be replaced if definition found in loaded metadata
 			cat.label = cat.categoryTag;
-			catIndex = m_categories.sizeInt();
+			catIndex = m_categories.length();
 			m_categories.append( cat );
             uniqueCategoryList.insert( categoryTag, catIndex );
 		}
@@ -160,7 +160,7 @@ void OvrMetaData::initFromFileList( const Array< VString > & fileList, const Ovr
 		}
 
 		// Add loose file
-		const int dataIndex = m_etaData.sizeInt();
+		const int dataIndex = m_etaData.length();
         OvrMetaDatum * datum = createMetaDatum( filePath.toCString() );
 		if ( datum )
 		{
@@ -188,7 +188,7 @@ void OvrMetaData::initFromFileList( const Array< VString > & fileList, const Ovr
 
 void OvrMetaData::renameCategory(const VString &currentTag, const VString &newName )
 {
-	for ( int i = 0; i < m_categories.sizeInt(); ++i )
+	for ( int i = 0; i < m_categories.length(); ++i )
 	{
 		Category & cat = m_categories.at( i );
 		if ( cat.categoryTag == currentTag )
@@ -324,13 +324,13 @@ void OvrMetaData::processRemoteMetaFile( const char * metaFileString, const int 
 		// Merge in the remote categories
 		// Ignore any duplicate categories
 		StringHash< bool > CurrentCategoriesSet; // using as set
-		for ( int i = 0; i < m_categories.sizeInt(); ++i )
+		for ( int i = 0; i < m_categories.length(); ++i )
 		{
 			const Category & storedCategory = m_categories.at( i );
             CurrentCategoriesSet.insert( storedCategory.categoryTag, true );
 		}
 
-		for ( int remoteIndex = 0; remoteIndex < remoteCategories.sizeInt(); ++remoteIndex )
+		for ( int remoteIndex = 0; remoteIndex < remoteCategories.length(); ++remoteIndex )
 		{
 			const Category & remoteCat = remoteCategories.at( remoteIndex );
 
@@ -339,7 +339,7 @@ void OvrMetaData::processRemoteMetaFile( const char * metaFileString, const int 
 			{
 				const int targetIndex = startIndex + remoteIndex;
 				LOG( "OvrMetaData::ProcessRemoteMetaFile merging %s into category index %d", remoteCat.categoryTag.toCString(), targetIndex );
-				if ( startIndex >= 0 && startIndex < m_categories.sizeInt() )
+				if ( startIndex >= 0 && startIndex < m_categories.length() )
 				{
 					m_categories.insert( targetIndex, remoteCat );
 				}
@@ -421,7 +421,7 @@ void OvrMetaData::processMetaData( const NervGear::Json &dataFile, const Array< 
 		{
 			Array< Category > finalCategories;
 			finalCategories.append( m_categories.at( 0 ) );
-			for ( int catIndex = 1; catIndex < m_categories.sizeInt(); ++catIndex )
+			for ( int catIndex = 1; catIndex < m_categories.length(); ++catIndex )
 			{
 				Category & cat = m_categories.at( catIndex );
 				if ( !cat.datumIndicies.isEmpty() )
@@ -487,7 +487,7 @@ void OvrMetaData::reconcileMetaData( StringHash< OvrMetaDatum * > & storedMetaDa
 void OvrMetaData::dedupMetaData( const Array< OvrMetaDatum * > & existingData, StringHash< OvrMetaDatum * > & newData )
 {
     // Fix the read in meta data using the stored
-    for ( int i = 0; i < existingData.sizeInt(); ++i )
+    for ( int i = 0; i < existingData.length(); ++i )
     {
         OvrMetaDatum * metaDatum = existingData.at( i );
 
@@ -526,7 +526,7 @@ void OvrMetaData::reconcileCategories( Array< Category > & storedCategories )
 	finalCategories.append( favorites );
 
 	StringHash< bool > StoredCategoryMap; // using as set
-	for ( int i = 0; i < storedCategories.sizeInt(); ++i )
+	for ( int i = 0; i < storedCategories.length(); ++i )
 	{
 		const Category & storedCategory = storedCategories.at( i );
 		LOG( "OvrMetaData::ReconcileCategories storedCategory: %s", storedCategory.categoryTag.toCString() );
@@ -534,7 +534,7 @@ void OvrMetaData::reconcileCategories( Array< Category > & storedCategories )
 	}
 
 	// Now add the read in categories if they differ
-	for ( int i = 0; i < m_categories.sizeInt(); ++i )
+	for ( int i = 0; i < m_categories.length(); ++i )
 	{
 		const Category & readInCategory = m_categories.at( i );
         StringHash< bool >::ConstIterator iter = StoredCategoryMap.find( readInCategory.categoryTag );
@@ -547,7 +547,7 @@ void OvrMetaData::reconcileCategories( Array< Category > & storedCategories )
 	}
 
 	// Finally fill in the stored in categories after user made ones
-	for ( int i = 1; i < storedCategories.sizeInt(); ++i )
+	for ( int i = 1; i < storedCategories.length(); ++i )
 	{
 		const  Category & storedCat = storedCategories.at( i );
 		LOG( "OvrMetaData::ReconcileCategories adding stored category %s", storedCat.categoryTag.toCString() );
@@ -591,7 +591,7 @@ void OvrMetaData::extractCategories(const Json &dataFile, Array< Category > & ou
 
 				// Check if we already have this category
 				bool exists = false;
-				for ( int i = 0; i < outCategories.sizeInt(); ++i )
+				for ( int i = 0; i < outCategories.length(); ++i )
 				{
 					const Category & existingCat = outCategories.at( i );
 					if ( extractedCategory.categoryTag == existingCat.categoryTag )
@@ -621,7 +621,7 @@ void OvrMetaData::extractMetaData(const Json &dataFile, const Array< VString > &
 	const Json &data( dataFile.value( DATA ) );
 	if ( data.isArray() )
 	{
-		int jsonIndex = m_etaData.sizeInt();
+		int jsonIndex = m_etaData.length();
 
         const JsonArray &datums = data.toArray();
 		for (const Json &datum : datums) {
@@ -697,7 +697,7 @@ void OvrMetaData::extractRemoteMetaData( const Json &dataFile, StringHash< OvrMe
 	const Json &data( dataFile.value( DATA ) );
 	if ( data.isArray() )
 	{
-		int jsonIndex = m_etaData.sizeInt();
+		int jsonIndex = m_etaData.length();
 
         const JsonArray elements = data.toArray();
 		for (const Json &jsonDatum : elements) {
@@ -743,7 +743,7 @@ void OvrMetaData::extractRemoteMetaData( const Json &dataFile, StringHash< OvrMe
 
 void OvrMetaData::regenerateCategoryIndices()
 {
-	for ( int catIndex = 0; catIndex < m_categories.sizeInt(); ++catIndex )
+	for ( int catIndex = 0; catIndex < m_categories.length(); ++catIndex )
 	{
 		Category & cat = m_categories.at( catIndex );
 		cat.datumIndicies.clear();
@@ -751,13 +751,13 @@ void OvrMetaData::regenerateCategoryIndices()
 
 	// Delete any data only tagged as "Favorite" - this is a fix for user created "Favorite" folder which is a special case
 	// Not doing this will show photos already favorited that the user cannot unfavorite
-	for ( int metaDataIndex = 0; metaDataIndex < m_etaData.sizeInt(); ++metaDataIndex )
+	for ( int metaDataIndex = 0; metaDataIndex < m_etaData.length(); ++metaDataIndex )
 	{
 		OvrMetaDatum & metaDatum = *m_etaData.at( metaDataIndex );
 		Array< VString > & tags = metaDatum.tags;
 
-		OVR_ASSERT( metaDatum.tags.sizeInt() > 0 );
-		if ( tags.sizeInt() == 1 )
+		OVR_ASSERT( metaDatum.tags.length() > 0 );
+		if ( tags.length() == 1 )
 		{
 			if ( tags.at( 0 ) == FAVORITES_TAG )
 			{
@@ -768,23 +768,23 @@ void OvrMetaData::regenerateCategoryIndices()
 	}
 
 	// Fix the indices
-	for ( int metaDataIndex = 0; metaDataIndex < m_etaData.sizeInt(); ++metaDataIndex )
+	for ( int metaDataIndex = 0; metaDataIndex < m_etaData.length(); ++metaDataIndex )
 	{
 		OvrMetaDatum & datum = *m_etaData.at( metaDataIndex );
 		Array< VString > & tags = datum.tags;
 
-		OVR_ASSERT( tags.sizeInt() > 0 );
+		OVR_ASSERT( tags.length() > 0 );
 
-		if ( tags.sizeInt() == 1 )
+		if ( tags.length() == 1 )
 		{
 			OVR_ASSERT( tags.at( 0 ) != FAVORITES_TAG );
 		}
 
-        if ( tags.at( 0 ) == FAVORITES_TAG && tags.sizeInt() > 1 ) {
+        if ( tags.at( 0 ) == FAVORITES_TAG && tags.length() > 1 ) {
             std::swap(tags.at(0), tags.at(1));
 		}
 
-		for ( int tagIndex = 0; tagIndex < tags.sizeInt(); ++tagIndex )
+		for ( int tagIndex = 0; tagIndex < tags.length(); ++tagIndex )
 		{
 			const VString & tag = tags[ tagIndex ];
 			if ( !tag.isEmpty() )
@@ -819,7 +819,7 @@ Json OvrMetaData::metaDataToJson() const
 	// Add categories
 	Json newCategoriesObject(Json::Array);
 
-	for ( int c = 0; c < m_categories.sizeInt(); ++c )
+	for ( int c = 0; c < m_categories.length(); ++c )
 	{
 		Json catObject(Json::Object);
 
@@ -834,7 +834,7 @@ Json OvrMetaData::metaDataToJson() const
 	// Add meta data
 	Json newDataObject(Json::Array);
 
-	for ( int i = 0; i < m_etaData.sizeInt(); ++i )
+	for ( int i = 0; i < m_etaData.length(); ++i )
 	{
 		const OvrMetaDatum & metaDatum = *m_etaData.at( i );
 
@@ -844,7 +844,7 @@ Json OvrMetaData::metaDataToJson() const
 		LOG( "OvrMetaData::MetaDataToJson adding datum url %s", metaDatum.url.toCString() );
 
 		Json newTagsObject(Json::Array);
-		for ( int t = 0; t < metaDatum.tags.sizeInt(); ++t )
+		for ( int t = 0; t < metaDatum.tags.length(); ++t )
 		{
 			Json tagObject(Json::Object);
 			tagObject.insert( CATEGORY, std::string(metaDatum.tags.at( t ).toCString()) );
@@ -873,12 +873,12 @@ TagAction OvrMetaData::toggleTag( OvrMetaDatum * metaDatum, const VString & newT
 
 	// First update the local data
 	TagAction action = TAG_ERROR;
-	for ( int t = 0; t < metaDatum->tags.sizeInt(); ++t )
+	for ( int t = 0; t < metaDatum->tags.length(); ++t )
 	{
 		if ( metaDatum->tags.at( t ) == newTag )
 		{
 			// Handle case which leaves us with no tags - ie. broken state
-			if ( metaDatum->tags.sizeInt() < 2 )
+			if ( metaDatum->tags.length() < 2 )
 			{
 				WARN( "ToggleTag attempt to remove only tag: %s on %s", newTag.toCString(), metaDatum->url.toCString() );
 				return TAG_ERROR;
@@ -900,7 +900,7 @@ TagAction OvrMetaData::toggleTag( OvrMetaDatum * metaDatum, const VString & newT
 	// Then serialize
 	Json newTagsObject(Json::Array);
 
-	for ( int t = 0; t < metaDatum->tags.sizeInt(); ++t )
+	for ( int t = 0; t < metaDatum->tags.length(); ++t )
 	{
 		Json tagObject(Json::Object);
 		tagObject.insert(CATEGORY, std::string(metaDatum->tags.at( t ).toCString()));
@@ -930,7 +930,7 @@ void OvrMetaData::addCategory( const VString & name )
 
 OvrMetaData::Category * OvrMetaData::getCategory( const VString & categoryName )
 {
-	const int numCategories = m_categories.sizeInt();
+	const int numCategories = m_categories.length();
 	for ( int i = 0; i < numCategories; ++i )
 	{
 		Category & category = m_categories.at( i );
@@ -944,18 +944,18 @@ OvrMetaData::Category * OvrMetaData::getCategory( const VString & categoryName )
 
 const OvrMetaDatum & OvrMetaData::getMetaDatum( const int index ) const
 {
-	OVR_ASSERT( index >= 0 && index < m_etaData.sizeInt() );
+	OVR_ASSERT( index >= 0 && index < m_etaData.length() );
 	return *m_etaData.at( index );
 }
 
 
 bool OvrMetaData::getMetaData( const Category & category, Array< const OvrMetaDatum * > & outMetaData ) const
 {
-	const int numPanos = category.datumIndicies.sizeInt();
+	const int numPanos = category.datumIndicies.length();
 	for ( int i = 0; i < numPanos; ++i )
 	{
 		const int metaDataIndex = category.datumIndicies.at( i );
-		OVR_ASSERT( metaDataIndex >= 0 && metaDataIndex < m_etaData.sizeInt() );
+		OVR_ASSERT( metaDataIndex >= 0 && metaDataIndex < m_etaData.length() );
 		//const OvrMetaDatum * panoData = &MetaData.At( metaDataIndex );
         //LOG( "Getting MetaData %d title %s from category %s", metaDataIndex, panoData->Title.toCString(), category.CategoryName.toCString() );
 		outMetaData.append( m_etaData.at( metaDataIndex ) );
@@ -966,7 +966,7 @@ bool OvrMetaData::getMetaData( const Category & category, Array< const OvrMetaDa
 bool OvrMetaData::shouldAddFile( const char * filename, const OvrMetaDataFileExtensions & fileExtensions ) const
 {
 	const int pathLen = strlen( filename );
-	for ( int index = 0; index < fileExtensions.badExtensions.sizeInt(); ++index )
+	for ( int index = 0; index < fileExtensions.badExtensions.length(); ++index )
 	{
 		const VString & ext = fileExtensions.badExtensions.at( index );
         const int extLen = (int) ext.length();
@@ -976,7 +976,7 @@ bool OvrMetaData::shouldAddFile( const char * filename, const OvrMetaDataFileExt
 		}
 	}
 
-	for ( int index = 0; index < fileExtensions.goodExtensions.sizeInt(); ++index )
+	for ( int index = 0; index < fileExtensions.goodExtensions.length(); ++index )
 	{
 		const VString & ext = fileExtensions.goodExtensions.at( index );
         const int extLen = (int) ext.length();
@@ -991,9 +991,9 @@ bool OvrMetaData::shouldAddFile( const char * filename, const OvrMetaDataFileExt
 
 void OvrMetaData::setCategoryDatumIndicies( const int index, const Array< int >& datumIndicies )
 {
-	OVR_ASSERT( index < m_categories.sizeInt() );
+	OVR_ASSERT( index < m_categories.length() );
 
-	if ( index < m_categories.sizeInt() )
+	if ( index < m_categories.length() )
 	{
         m_categories[index].datumIndicies = datumIndicies;
 	}

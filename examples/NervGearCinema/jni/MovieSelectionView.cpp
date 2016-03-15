@@ -606,7 +606,7 @@ void MovieSelectionView::StartTimer()
 const MovieDef *MovieSelectionView::GetSelectedMovie() const
 {
 	int selectedItem = MovieBrowser->GetSelection();
-    if ( ( selectedItem >= 0 ) && ( selectedItem < MovieList.sizeInt() ) )
+    if ( ( selectedItem >= 0 ) && ( selectedItem < MovieList.length() ) )
 	{
 		return MovieList[ selectedItem ];
 	}

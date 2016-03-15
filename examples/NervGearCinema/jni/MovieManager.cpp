@@ -77,7 +77,7 @@ void MovieManager::OneTimeInit( const char * launchIntent )
 
 	LoadMovies();
 
-    LOG( "MovieManager::OneTimeInit: %i movies loaded, %3.1f seconds", Movies.sizeInt(), ovr_GetTimeInSeconds() - start );
+    LOG( "MovieManager::OneTimeInit: %i movies loaded, %3.1f seconds", Movies.length(), ovr_GetTimeInSeconds() - start );
 }
 
 void MovieManager::OneTimeShutdown()
@@ -92,7 +92,7 @@ void MovieManager::LoadMovies()
 	const double start = ovr_GetTimeInSeconds();
 
 	Array<VString> movieFiles = ScanMovieDirectories();
-    LOG( "%i movies scanned, %3.1f seconds", movieFiles.sizeInt(), ovr_GetTimeInSeconds() - start );
+    LOG( "%i movies scanned, %3.1f seconds", movieFiles.length(), ovr_GetTimeInSeconds() - start );
 
     for( uint i = 0; i < movieFiles.size(); i++ )
 	{
@@ -128,7 +128,7 @@ void MovieManager::LoadMovies()
 		LoadPoster( movie );
 	}
 
-    LOG( "%i movies panels loaded, %3.1f seconds", Movies.sizeInt(), ovr_GetTimeInSeconds() - start );
+    LOG( "%i movies panels loaded, %3.1f seconds", Movies.length(), ovr_GetTimeInSeconds() - start );
 }
 
 MovieFormat MovieManager::FormatFromString( const VString &formatString ) const

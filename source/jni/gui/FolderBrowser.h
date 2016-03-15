@@ -107,7 +107,7 @@ public:
 
 	// Accessors
     const FolderView *					getFolderView( int index ) const;
-    int									numFolders() const					{ return m_folders.sizeInt(); }
+    int									numFolders() const					{ return m_folders.length(); }
     int									circumferencePanelSlots() const		{ return m_circumferencePanelSlots; }
     float								radius() const						{ return m_radius; }
     float 								panelHeight() const					{ return m_panelHeight; }
