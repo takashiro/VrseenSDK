@@ -249,6 +249,46 @@ public:
 
 
 	}*/
+		 VArray &operator << (const E &e)
+	 {
+	     this->append(e);
+	     return *this;
+	 }
+	 VArray &operator << (const VArray<E> &elements)
+	 {
+	     append(elements);
+	     return *this;
+	 }
+	const E &first() const
+	{
+		return this->front();
+	}
+	E &first()
+	{
+	    return this->front();
+	}
+
+	const E &last() const
+	{
+		return this->back();
+	}
+	E &last()
+	{
+		return this->back();
+	}
+
+	E &operator[](int i)
+	{
+		return this->at(i);
+	}
+	const E &operator[](int i) const
+	{
+		return this->at(i);
+	}
+	void append(const E &e)
+	{
+       this->push_back(e);
+
 	void removeAt(int i)
 	{
 	    this->erase(this->begin() + i);
@@ -287,22 +327,8 @@ public:
 	{
 		this->clear();
 	}
-//
-	void removeAtUnordered()
-	{
-		this->removeAtUnordered();
-	}
-//
-	void removeAtUnordered(int i)
-		{
-			this->removeAtUnordered(i);
-		}
-	const E* dataPtr() const { return this->data(); }
-	      E* dataPtr()       { return this->data(); }
-//
-	uint allocBack()
-	  	{
-	  		return this->allocBack();
-	  	}
+
+
+
 	};
 NV_NAMESPACE_END

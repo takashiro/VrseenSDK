@@ -132,8 +132,8 @@ public:
 	float CenterOffset; // +/- value applied to "center" distance in the signed distance field. Range [-1,1]. A negative offset will make the font appear bolder.
 	float MaxAscent; // maximum ascent of any character
 	float MaxDescent; // maximum descent of any character
-	NervGear::Array<FontGlyphType> Glyphs; // info about each glyph in the font
-	NervGear::Array<int32_t> CharCodeMap; // index by character code to get the index of a glyph for the character
+	NervGear::VArray<FontGlyphType> Glyphs; // info about each glyph in the font
+	NervGear::VArray<int32_t> CharCodeMap; // index by character code to get the index of a glyph for the character
 
 private:
     bool LoadFromPackage(const VApkFile &packageFile, const VString &fileName);
@@ -341,7 +341,7 @@ private:
 		bool TrackRoll; // if true, when billboarded, roll with the camera
 	};
 
-	Array<VertexBlockType> VertexBlocks; // each pointer in the array points to an allocated block ov
+	VArray<VertexBlockType> VertexBlocks; // each pointer in the array points to an allocated block ov
 
 	// We cast BitmapFont to BitmapFontLocal internally so that we do not have to expose
 	// a lot of BitmapFontLocal methods in the BitmapFont interface just so BitmapFontSurfaceLocal
@@ -592,11 +592,11 @@ bool FontInfoType::LoadFromBuffer(void const * buffer,
 	CharCodeMap.resize(maxCharCode + 1);
 
 	// init to empty value
-	for (int i = 0; i < CharCodeMap.sizeInt(); ++i) {
+	for (int i = 0; i < CharCodeMap.length(); ++i) {
 		CharCodeMap[i] = -1;
 	}
 
-	for (int i = 0; i < Glyphs.sizeInt(); ++i) {
+	for (int i = 0; i < Glyphs.length(); ++i) {
 		FontGlyphType const & g = Glyphs[i];
 		CharCodeMap[g.CharCode] = i;
 	}
@@ -614,18 +614,18 @@ FontGlyphType const & FontInfoType::GlyphForCharCode(
 	}
 	const int glyphIndex = CharCodeMap[charCode];
 
-	if (glyphIndex < 0 || glyphIndex >= Glyphs.sizeInt()) {
+	if (glyphIndex < 0 || glyphIndex >= Glyphs.length()) {
 		WARN(
 				"FontInfoType::GlyphForCharCode FAILED TO FIND GLYPH FOR CHARACTER!");
 		WARN(
 				"FontInfoType::GlyphForCharCode: charCode %u yielding %i", charCode, glyphIndex);
 		WARN(
-				"FontInfoType::GlyphForCharCode: CharCodeMap size %i Glyphs size %i", CharCodeMap.size(), Glyphs.sizeInt());
+				"FontInfoType::GlyphForCharCode: CharCodeMap size %i Glyphs size %i", CharCodeMap.size(), Glyphs.length());
 
 		return Glyphs['*'];
 	}
 
-	OVR_ASSERT( glyphIndex >= 0 && glyphIndex < Glyphs.sizeInt());
+	OVR_ASSERT( glyphIndex >= 0 && glyphIndex < Glyphs.length());
 	return Glyphs[glyphIndex];
 }
 
@@ -1378,7 +1378,7 @@ void BitmapFontSurfaceLocal::Finish(Matrix4f const & viewMatrix) {
 	// sort vertex blocks indices based on distance to pivot
 	int const MAX_VERTEX_BLOCKS = 256;
 	vbSort_t vbSort[MAX_VERTEX_BLOCKS];
-	int const n = VertexBlocks.sizeInt();
+	int const n = VertexBlocks.length();
 	for (int i = 0; i < n; ++i) {
 		vbSort[i].VertexBlockIndex = i;
 		VertexBlockType & vb = VertexBlocks[i];
@@ -1395,7 +1395,7 @@ void BitmapFontSurfaceLocal::Finish(Matrix4f const & viewMatrix) {
 	// To add multiple-font-per-surface support, we need to add a 3rd component to s and t,
 	// then get the font for each vertex block, and set the texture index on each vertex in
 	// the third texture coordinate.
-	for (int i = 0; i < VertexBlocks.sizeInt(); ++i) {
+	for (int i = 0; i < VertexBlocks.length(); ++i) {
 		VertexBlockType & vb = VertexBlocks[vbSort[i].VertexBlockIndex];
 		Matrix4f transform;
 		if (vb.Billboard) {
