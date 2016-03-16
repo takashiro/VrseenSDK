@@ -277,7 +277,6 @@ struct App::Private
     jmethodID		clearVrToastsMethodId;
     jmethodID		playSoundPoolSoundMethodId;
     jmethodID		gazeEventMethodId;
-    jmethodID		getSysBrightnessMethodId;
     jmethodID		enableComfortViewModeMethodId;
     jmethodID		getComfortViewModeMethodId;
     jmethodID		setDoNotDisturbModeMethodId;
@@ -428,7 +427,6 @@ struct App::Private
         , clearVrToastsMethodId(nullptr)
         , playSoundPoolSoundMethodId(nullptr)
         , gazeEventMethodId(nullptr)
-        , getSysBrightnessMethodId(nullptr)
         , enableComfortViewModeMethodId(nullptr)
         , getComfortViewModeMethodId(nullptr)
         , setDoNotDisturbModeMethodId(nullptr)
@@ -629,7 +627,6 @@ App::App(JNIEnv *jni, jobject activityObject, VrAppInterface &interface)
     exitOnDestroy = !isHybridApp;
 
     d->gazeEventMethodId = d->GetStaticMethodID(d->vrActivityClass, "gazeEventFromNative", "(FFZZLandroid/app/Activity;)V");
-    d->getSysBrightnessMethodId = d->GetStaticMethodID(d->vrLibClass, "getSystemBrightness", "(Landroid/app/Activity;)I");
     d->enableComfortViewModeMethodId = d->GetStaticMethodID(d->vrLibClass, "enableComfortViewMode", "(Landroid/app/Activity;Z)V");
     d->getComfortViewModeMethodId = d->GetStaticMethodID(d->vrLibClass, "getComfortViewModeEnabled", "(Landroid/app/Activity;)Z");
     d->setDoNotDisturbModeMethodId = d->GetStaticMethodID(d->vrLibClass, "setDoNotDisturbMode", "(Landroid/app/Activity;Z)V");
@@ -2429,18 +2426,6 @@ bool App::isTime24HourFormat() const
         r = d->vrJni->CallStaticBooleanMethod(d->vrLibClass, d->isTime24HourFormatId, d->javaObject);
 	}
 	return r;
-}
-
-int App::systemBrightness() const
-{
-	int cur = 255;
-	// FIXME: this specifically checks for Note4 before calling the function because calling it on other
-	// models right now can break rendering. Eventually this needs to be supported on all models.
-    if (d->getSysBrightnessMethodId != nullptr && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0)
-	{
-        cur = d->vrJni->CallStaticIntMethod(d->vrLibClass, d->getSysBrightnessMethodId, d->javaObject);
-	}
-	return cur;
 }
 
 bool App::isComfortModeEnabled() const

@@ -186,7 +186,6 @@ public:
     //-----------------------------------------------------------------
     // system settings
     //-----------------------------------------------------------------
-    int					systemBrightness() const;
 
     bool				isComfortModeEnabled() const;
     void				setComfortModeEnabled( bool const enabled );
