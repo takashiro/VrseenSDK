@@ -1,8 +1,8 @@
 *.apk
 *.pdf
+*.pro.user
 /Tools/
 /sdcard/
-*.pro.user
 /assets/
 /unity/
 *.a
@@ -11,7 +11,11 @@
 appcompat_v7/
 bin/
 gen/
+obj/
+libs/
 *.jar
 .metadata/
+.settings/
 *.bat
 *.sh
+*.log
