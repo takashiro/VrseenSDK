@@ -305,7 +305,7 @@ void ProfileManager::SaveCache()
 
     Json profiles(Json::Array);
     // Generate a JSON subtree for each profile
-    for (unsigned int i = 0; i < ProfileCache.sizes(); i++) {
+    for (unsigned int i = 0; i < ProfileCache.size(); i++) {
         Profile* profile = ProfileCache[i];
 
         // Write the base profile information
