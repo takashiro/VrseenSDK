@@ -316,7 +316,7 @@ void OvrMetaData::processRemoteMetaFile( const char * metaFileString, const int 
 
 		m_version = remoteVersion;
 
-		Array< Category > remoteCategories;
+		VArray< Category > remoteCategories;
 		StringHash< OvrMetaDatum * > remoteMetaData;
 		extractCategories( remoteMetaFile , remoteCategories );
 		extractRemoteMetaData( remoteMetaFile , remoteMetaData );
@@ -330,7 +330,7 @@ void OvrMetaData::processRemoteMetaFile( const char * metaFileString, const int 
             CurrentCategoriesSet.insert( storedCategory.categoryTag, true );
 		}
 
-		for ( int remoteIndex = 0; remoteIndex < remoteCategories.sizeInt(); ++remoteIndex )
+		for ( int remoteIndex = 0; remoteIndex < remoteCategories.length(); ++remoteIndex )
 		{
 			const Category & remoteCat = remoteCategories.at( remoteIndex );
 
@@ -381,7 +381,7 @@ void OvrMetaData::processMetaData( const NervGear::Json &dataFile, const VArray<
 		// Grab the version from the loaded data
 		extractVersion( dataFile, m_version );
 
-		Array< Category > storedCategories;
+		VArray< Category > storedCategories;
 		StringHash< OvrMetaDatum * > storedMetaData;
 		extractCategories( dataFile, storedCategories );
 
@@ -504,7 +504,7 @@ void OvrMetaData::dedupMetaData( const Array< OvrMetaDatum * > & existingData, S
     }
 }
 
-void OvrMetaData::reconcileCategories( Array< Category > & storedCategories )
+void OvrMetaData::reconcileCategories( VArray< Category > & storedCategories )
 {
 	if ( storedCategories.isEmpty() )
 	{
@@ -526,7 +526,7 @@ void OvrMetaData::reconcileCategories( Array< Category > & storedCategories )
 	finalCategories.append( favorites );
 
 	StringHash< bool > StoredCategoryMap; // using as set
-	for ( int i = 0; i < storedCategories.sizeInt(); ++i )
+	for ( int i = 0; i < storedCategories.length(); ++i )
 	{
 		const Category & storedCategory = storedCategories.at( i );
 		LOG( "OvrMetaData::ReconcileCategories storedCategory: %s", storedCategory.categoryTag.toCString() );
@@ -547,7 +547,7 @@ void OvrMetaData::reconcileCategories( Array< Category > & storedCategories )
 	}
 
 	// Finally fill in the stored in categories after user made ones
-	for ( int i = 1; i < storedCategories.sizeInt(); ++i )
+	for ( int i = 1; i < storedCategories.length(); ++i )
 	{
 		const  Category & storedCat = storedCategories.at( i );
 		LOG( "OvrMetaData::ReconcileCategories adding stored category %s", storedCat.categoryTag.toCString() );
@@ -571,7 +571,7 @@ void OvrMetaData::extractVersion(const Json &dataFile, double & outVersion ) con
 	}
 }
 
-void OvrMetaData::extractCategories(const Json &dataFile, Array< Category > & outCategories ) const
+void OvrMetaData::extractCategories(const Json &dataFile, VArray< Category > & outCategories ) const
 {
 	if ( dataFile.isInvalid() )
 	{
@@ -591,7 +591,7 @@ void OvrMetaData::extractCategories(const Json &dataFile, Array< Category > & ou
 
 				// Check if we already have this category
 				bool exists = false;
-				for ( int i = 0; i < outCategories.sizeInt(); ++i )
+				for ( int i = 0; i < outCategories.length(); ++i )
 				{
 					const Category & existingCat = outCategories.at( i );
 					if ( extractedCategory.categoryTag == existingCat.categoryTag )

@@ -102,13 +102,13 @@ private:
     void					processMetaData( const Json &dataFile, const VArray< VString > & searchPaths, const char * metaFile );
     void					regenerateCategoryIndices();
     void					reconcileMetaData( StringHash< OvrMetaDatum * > & storedMetaData );
-    void					reconcileCategories( Array< Category > & storedCategories );
+    void					reconcileCategories( VArray< Category > & storedCategories );
 
     Json			metaDataToJson() const;
     void					writeMetaFile( const char * metaFile ) const;
     bool 					shouldAddFile( const char * filename, const OvrMetaDataFileExtensions & fileExtensions ) const;
     void					extractVersion( const Json &dataFile, double & outVersion ) const;
-    void					extractCategories( const Json &dataFile, Array< Category > & outCategories ) const;
+    void					extractCategories( const Json &dataFile, VArray< Category > & outCategories ) const;
     void					extractMetaData( const Json &dataFile, const VArray< VString > & searchPaths, StringHash< OvrMetaDatum * > & outMetaData ) const;
     void					extractRemoteMetaData( const Json &dataFile, StringHash< OvrMetaDatum * > & outMetaData ) const;
 

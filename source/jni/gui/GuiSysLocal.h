@@ -47,7 +47,7 @@ public:
 	gazeCursorUserId_t		GetGazeUserId() const { return GazeUserId; }
 
 private:
-	Array< VRMenu* >	    Menus;
+	VArray< VRMenu* >	    Menus;
 	Array< VRMenu* >		ActiveMenus;
 
     bool					IsInitialized;

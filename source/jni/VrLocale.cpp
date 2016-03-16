@@ -13,6 +13,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "Array.h"
 #include "Std.h"
+#include "VArray.h"
+#include "VStringBuffer.h"
 #include "android/JniUtils.h"
 #include "android/LogUtils.h"
 #include "VLog.h"
@@ -155,7 +157,7 @@ VString private_GetXliffFormattedString( const VString & inXliffStr, ... )
         } else if (charCode == '%') {
 			// We found the start of the format specifier
 			// Now check that there are at least three more characters which contain the format specification
-			Array< uint32_t > formatSpec;
+			VArray< uint32_t > formatSpec;
 			for ( int count = 0; count < MIN_NUM_EXPECTED_FORMAT_CHARS; ++count )
 			{
                 uint32_t formatCharCode = *p;

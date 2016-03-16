@@ -1771,11 +1771,11 @@ void * OvrFolderBrowser::ThumbnailThread( void * v )
 		}
 		else if ( MatchesHead( "processCreates ", msg ) )
 		{
-			Array< OvrCreateThumbCmd > * ThumbCreateAndLoadCommands;
+			VArray< OvrCreateThumbCmd > * ThumbCreateAndLoadCommands;
 
 			sscanf( msg, "processCreates %p", &ThumbCreateAndLoadCommands );
 
-			for ( int i = 0; i < ThumbCreateAndLoadCommands->sizeInt(); ++i )
+			for ( int i = 0; i < ThumbCreateAndLoadCommands->length(); ++i )
 			{
 				const OvrCreateThumbCmd & cmd = ThumbCreateAndLoadCommands->at( i );
 				int	width = 0;

@@ -65,7 +65,7 @@ void OvrGuiSysLocal::init( App * app, OvrVRMenuMgr & menuMgr, BitmapFont const &
 // Reposition any open menus 
 void OvrGuiSysLocal::resetMenuOrientations( App * app, Matrix4f const & viewMatrix )
 {
-	for ( int i = 0; i < Menus.sizeInt(); ++i )
+	for ( int i = 0; i < Menus.length(); ++i )
 	{
 		if ( VRMenu* menu = Menus.at( i ) )
 		{
@@ -128,7 +128,7 @@ void OvrGuiSysLocal::shutdown( OvrVRMenuMgr & menuMgr )
 	// FIXME: we need to make sure we delete any child menus here -- it's not enough to just delete them
 	// in the destructor of the parent, because they'll be left in the menu list since the destructor has
 	// no way to call GuiSys->DestroyMenu() for them.
-	for ( int i = 0; i < Menus.sizeInt(); ++i )
+	for ( int i = 0; i < Menus.length(); ++i )
 	{
 		VRMenu * menu = Menus[i];
 		menu->shutdown( menuMgr );
@@ -144,7 +144,7 @@ void OvrGuiSysLocal::shutdown( OvrVRMenuMgr & menuMgr )
 // OvrGuiSysLocal::FindMenuIndex
 int OvrGuiSysLocal::FindMenuIndex( char const * menuName ) const
 {
-	for ( int i = 0; i < Menus.sizeInt(); ++i )
+	for ( int i = 0; i < Menus.length(); ++i )
 	{
         if ( OVR_stricmp( Menus[i]->name(), menuName ) == 0 )
 		{
@@ -158,7 +158,7 @@ int OvrGuiSysLocal::FindMenuIndex( char const * menuName ) const
 // OvrGuiSysLocal::FindMenuIndex
 int OvrGuiSysLocal::FindMenuIndex( VRMenu const * menu ) const
 {
-	for ( int i = 0; i < Menus.sizeInt(); ++i )
+	for ( int i = 0; i < Menus.length(); ++i )
 	{
 		if ( Menus[i] == menu ) 
 		{
@@ -226,7 +226,7 @@ void OvrGuiSysLocal::openMenu( App * app, OvrGazeCursor & gazeCursor, char const
 	if ( menuIndex < 0 )
 	{
 		WARN( "No menu named '%s'", menuName );
-		OVR_ASSERT( menuIndex >= 0 && menuIndex < Menus.sizeInt() );
+		OVR_ASSERT( menuIndex >= 0 && menuIndex < Menus.length() );
 		return;
 	}
 	VRMenu * menu = Menus[menuIndex];
@@ -246,7 +246,7 @@ void OvrGuiSysLocal::closeMenu( App * app, char const * menuName, bool const clo
 	if ( menuIndex < 0 )
 	{
 		WARN( "No menu named '%s'", menuName );
-		OVR_ASSERT( menuIndex >= 0 && menuIndex < Menus.sizeInt() );
+		OVR_ASSERT( menuIndex >= 0 && menuIndex < Menus.length() );
 		return;
 	}
 	VRMenu * menu = Menus[menuIndex];
