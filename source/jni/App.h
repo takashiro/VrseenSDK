@@ -196,7 +196,6 @@ public:
     eCellularState		cellularState() const;
 
     bool				isAirplaneModeEnabled() const;
-    bool				isTime24HourFormat() const;
 
     //-----------------------------------------------------------------
     // accessors

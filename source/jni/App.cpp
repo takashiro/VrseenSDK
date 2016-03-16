@@ -280,7 +280,6 @@ struct App::Private
     jmethodID		enableComfortViewModeMethodId;
     jmethodID		getComfortViewModeMethodId;
     jmethodID		isAirplaneModeEnabledMethodId;
-    jmethodID		isTime24HourFormatId;
 
     VString			launchIntentURI;			// URI app was launched with
     VString			launchIntentJSON;			// extra JSON data app was launched with
@@ -427,7 +426,6 @@ struct App::Private
         , enableComfortViewModeMethodId(nullptr)
         , getComfortViewModeMethodId(nullptr)
         , isAirplaneModeEnabledMethodId(nullptr)
-        , isTime24HourFormatId(nullptr)
         , paused(true)
         , popupDistance(2.0f)
         , popupScale(1.0f)
@@ -624,7 +622,6 @@ App::App(JNIEnv *jni, jobject activityObject, VrAppInterface &interface)
     d->enableComfortViewModeMethodId = d->GetStaticMethodID(d->vrLibClass, "enableComfortViewMode", "(Landroid/app/Activity;Z)V");
     d->getComfortViewModeMethodId = d->GetStaticMethodID(d->vrLibClass, "getComfortViewModeEnabled", "(Landroid/app/Activity;)Z");
     d->isAirplaneModeEnabledMethodId = d->GetStaticMethodID(d->vrLibClass, "isAirplaneModeEnabled", "(Landroid/app/Activity;)Z");
-    d->isTime24HourFormatId = d->GetStaticMethodID(d->vrLibClass, "isTime24HourFormat", "(Landroid/app/Activity;)Z");
 
 	// Get the path to the .apk and package name
     openApplicationPackage();
@@ -2407,16 +2404,6 @@ OvrSoundManager & App::soundMgr()
 bool App::isGuiOpen() const
 {
     return d->guiSys->isAnyMenuOpen();
-}
-
-bool App::isTime24HourFormat() const
-{
-	bool r = false;
-    if (d->isTime24HourFormatId != nullptr)
-	{
-        r = d->vrJni->CallStaticBooleanMethod(d->vrLibClass, d->isTime24HourFormatId, d->javaObject);
-	}
-	return r;
 }
 
 bool App::isComfortModeEnabled() const
