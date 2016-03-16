@@ -650,7 +650,7 @@ public:
 	virtual bool		GetUUIDReport(UUIDReport*) { return false; }
 
     virtual bool		SetTemperatureReport(const TemperatureReport&) { return false; }
-    virtual bool        GetAllTemperatureReports(Array<Array<TemperatureReport> >*) { return false; }
+    virtual bool        GetAllTemperatureReports(VArray<VArray<TemperatureReport> >*) { return false; }
 
     virtual bool        GetGyroOffsetReport(GyroOffsetReport*) { return false; }
 };

@@ -329,6 +329,5 @@ public:
 	}
 
 
-
 	};
 NV_NAMESPACE_END

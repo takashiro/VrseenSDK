@@ -210,7 +210,7 @@ public:
     virtual bool		GetUUIDReport(UUIDReport* data);
 
     virtual bool		SetTemperatureReport(const TemperatureReport& data);
-    virtual bool        GetAllTemperatureReports(Array<Array<TemperatureReport> >*);
+    virtual bool        GetAllTemperatureReports(VArray<VArray<TemperatureReport> >*);
 
     virtual bool        GetGyroOffsetReport(GyroOffsetReport* data);
 
@@ -237,7 +237,7 @@ protected:
 
     bool	setTemperatureReport(const TemperatureReport& data);
     bool	getTemperatureReport(TemperatureReport* data);
-    bool    getAllTemperatureReports(Array<Array<TemperatureReport> >*);
+    bool    getAllTemperatureReports(VArray<VArray<TemperatureReport> >*);
 
     bool    getGyroOffsetReport(GyroOffsetReport* data);
 

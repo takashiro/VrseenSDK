@@ -7,6 +7,8 @@
 #include "VMath.h"
 #include "Array.h"
 #include "VColor.h"
+#include "VArray.h"
+#include "Color.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -121,7 +123,7 @@ public:
     {
     }
 
-    Array<VColor>     Samples;
+    VArray<Color>     Samples;
 };
 
 // Sent when a Latency Tester 'color detected' event occurs.
