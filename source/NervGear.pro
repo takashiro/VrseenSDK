@@ -47,6 +47,7 @@ SOURCES += \
     jni/core/android/VOsBuild.cpp \
     jni/api/VrApi.cpp \
     jni/api/Vsync.cpp \
+    jni/api/VDevice.cpp \
     jni/api/DirectRender.cpp \
     jni/api/HmdInfo.cpp \
     jni/api/HmdSensors.cpp \
@@ -100,6 +101,9 @@ SOURCES += \
     jni/gui/MetaDataManager.cpp \
     jni/gui/OutOfSpaceMenu.cpp \
     jni/io/VApkFile.cpp \
+    jni/io/VBinaryFile.cpp \
+    jni/io/VFileOperation.cpp \
+    jni/io/VSysFile.cpp \
     jni/scene/BitmapFont.cpp \
     jni/scene/EyeBuffers.cpp \
     jni/scene/EyePostRender.cpp \
@@ -125,10 +129,7 @@ SOURCES += \
     jni/VUserProfile.cpp \
     jni/TalkToJava.cpp \
     jni/VrCommon.cpp \
-    jni/VrLocale.cpp \
-    jni/io/VBinaryFile.cpp \
-    jni/io/VFileOperation.cpp \
-    jni/io/VSysFile.cpp
+    jni/VrLocale.cpp
 
 HEADERS += \
     jni/core/android/GlUtils.h \
@@ -206,6 +207,7 @@ HEADERS += \
     jni/api/VrApi_Android.h \
     jni/api/VrApi_Helpers.h \
     jni/api/VrApi_local.h \
+    jni/api/VDevice.h \
     jni/api/sensor/DeviceConstants.h \
     jni/api/sensor/DeviceHandle.h \
     jni/api/sensor/DeviceImpl.h \
@@ -256,6 +258,11 @@ HEADERS += \
     jni/gui/GuiSysLocal.h \
     jni/gui/ui_default.h \
     jni/io/VApkFile.h \
+    jni/io/VBinaryFile.h \
+    jni/io/VDelegatedFile.h \
+    jni/io/VFile.h \
+    jni/io/VFileOperation.h \
+    jni/io/VSysFile.h \
     jni/scene/BitmapFont.h \
     jni/scene/EyeBuffers.h \
     jni/scene/EyePostRender.h \
@@ -288,12 +295,7 @@ HEADERS += \
     jni/Input.h \
     jni/PointTracker.h \
     jni/UniversalMenu_Commands.h \
-    jni/PointTracker.h \
-    jni/io/VBinaryFile.h \
-    jni/io/VDelegatedFile.h \
-    jni/io/VFile.h \
-    jni/io/VFileOperation.h \
-    jni/io/VSysFile.h
+    jni/PointTracker.h
 
 
 include(jni/3rdparty/minizip/minizip.pri)

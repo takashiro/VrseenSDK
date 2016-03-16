@@ -65,6 +65,7 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     core/android/VOsBuild.cpp \
                     api/VrApi.cpp \
                     api/Vsync.cpp \
+                    api/VDevice.cpp \
                     api/DirectRender.cpp \
                     api/HmdInfo.cpp \
                     api/HmdSensors.cpp \
