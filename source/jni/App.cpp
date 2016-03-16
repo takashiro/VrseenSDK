@@ -277,8 +277,6 @@ struct App::Private
     jmethodID		clearVrToastsMethodId;
     jmethodID		playSoundPoolSoundMethodId;
     jmethodID		gazeEventMethodId;
-    jmethodID		enableComfortViewModeMethodId;
-    jmethodID		getComfortViewModeMethodId;
 
     VString			launchIntentURI;			// URI app was launched with
     VString			launchIntentJSON;			// extra JSON data app was launched with
@@ -422,8 +420,6 @@ struct App::Private
         , clearVrToastsMethodId(nullptr)
         , playSoundPoolSoundMethodId(nullptr)
         , gazeEventMethodId(nullptr)
-        , enableComfortViewModeMethodId(nullptr)
-        , getComfortViewModeMethodId(nullptr)
         , paused(true)
         , popupDistance(2.0f)
         , popupScale(1.0f)
@@ -617,8 +613,6 @@ App::App(JNIEnv *jni, jobject activityObject, VrAppInterface &interface)
     exitOnDestroy = !isHybridApp;
 
     d->gazeEventMethodId = d->GetStaticMethodID(d->vrActivityClass, "gazeEventFromNative", "(FFZZLandroid/app/Activity;)V");
-    d->enableComfortViewModeMethodId = d->GetStaticMethodID(d->vrLibClass, "enableComfortViewMode", "(Landroid/app/Activity;Z)V");
-    d->getComfortViewModeMethodId = d->GetStaticMethodID(d->vrLibClass, "getComfortViewModeEnabled", "(Landroid/app/Activity;)Z");
 
 	// Get the path to the .apk and package name
     openApplicationPackage();
@@ -2226,12 +2220,7 @@ void App::keyEvent(const int keyCode, const bool down, const int repeatCount)
             d->viewParms.InterpupillaryDistance = Alg::Min(IPD_MAX_CM * 0.01f, d->viewParms.InterpupillaryDistance + IPD_STEP);
             showInfoText(1.0f, "%.3f", d->viewParms.InterpupillaryDistance);
 			return;
-		}
-        else if (keyCode == AKEYCODE_C && down && repeatCount == 0)
-		{
-            bool enabled = !isComfortModeEnabled();
-            setComfortModeEnabled(enabled);
-		}
+        }
 #if defined(TEST_TIMEWARP_WATCHDOG)	// test TimeWarp sched_fifo watchdog
         else if (keyCode == AKEYCODE_T && down && repeatCount == 0)
 		{
@@ -2401,24 +2390,6 @@ OvrSoundManager & App::soundMgr()
 bool App::isGuiOpen() const
 {
     return d->guiSys->isAnyMenuOpen();
-}
-
-bool App::isComfortModeEnabled() const
-{
-	bool r = true;
-    if (d->getComfortViewModeMethodId != nullptr && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0)
-	{
-        r = d->vrJni->CallStaticBooleanMethod(d->vrLibClass, d->getComfortViewModeMethodId, d->javaObject);
-	}
-	return r;
-}
-
-void App::setComfortModeEnabled(bool const enabled)
-{
-    if (d->enableComfortViewModeMethodId != nullptr && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0)
-	{
-        d->vrJni->CallStaticVoidMethod(d->vrLibClass, d->enableComfortViewModeMethodId, d->javaObject, enabled);
-	}
 }
 
 int App::wifiSignalLevel() const

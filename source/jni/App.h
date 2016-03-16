@@ -187,9 +187,6 @@ public:
     // system settings
     //-----------------------------------------------------------------
 
-    bool				isComfortModeEnabled() const;
-    void				setComfortModeEnabled( bool const enabled );
-
     int					wifiSignalLevel() const;
     eWifiState			wifiState() const;
     int					cellularSignalLevel() const;
