@@ -2,10 +2,16 @@
 *.pdf
 /Tools/
 /sdcard/
-/bin/
 *.pro.user
 /assets/
 /unity/
 *.a
 *.so
 *.dll
+appcompat_v7/
+bin/
+gen/
+*.jar
+.metadata/
+*.bat
+*.sh
