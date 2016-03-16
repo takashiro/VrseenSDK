@@ -138,12 +138,15 @@ public:
 
     void removeAtUnordered(uint index)
     {
-        OVR_ASSERT(index < this->size());
+        if (index >= this->size()) {
+            return;
+        }
+
         if (this->size() == 1) {
             this->clear();
             return;
         }
-        swap((*this)[index], this->back());
+        std::swap((*this)[index], this->back());
         this->pop_back();
     }
 

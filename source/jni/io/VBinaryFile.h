@@ -3,7 +3,7 @@
 #include "vglobal.h"
 #include "VString.h"
 #include "VSysFile.h"
-#include "Array.h"
+#include "VArray.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -33,7 +33,7 @@ public:
     }
 
     template< typename _type_ >
-    bool readArray( Array< _type_ > & oArray, const int num ) const
+    bool readArray( VArray< _type_ > & oArray, const int num ) const
     {
         const int byteNum = num * sizeof(oArray[0]);
         if (m_data == NULL || byteNum > m_size - m_offset) {
