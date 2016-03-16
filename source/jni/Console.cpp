@@ -41,7 +41,7 @@ public:
 
 	void UnRegisterConsoleFunctions()
 	{
-		ConsoleFunctions.clearAndRelease();
+		ConsoleFunctions.clear();
 	}
 
 	void ExecuteConsoleFunction( long appPtr, char const * commandStr ) const

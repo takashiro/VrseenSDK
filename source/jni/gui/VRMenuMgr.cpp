@@ -433,7 +433,7 @@ menuHandle_t VRMenuMgrLocal::createObject( VRMenuObjectParms const & parms )
 	if ( FreeList.length() > 0 )
 	{
 		index = FreeList.back();
-		FreeList.popBack();
+        FreeList.shift();
 	}
 	else
 	{
@@ -522,7 +522,7 @@ void VRMenuMgrLocal::CondenseList()
 	// would invalidate any existing references to it).  
 	// This is the difference between the current size and the array capacity.
 	int const MIN_FREE = 64;	// very arbitray number
-	if ( ObjectList.capacityInt() - ObjectList.length() < MIN_FREE )
+    if ( ObjectList.capacity() - ObjectList.length() < MIN_FREE )
 	{
 		return;
 	}

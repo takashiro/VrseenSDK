@@ -145,5 +145,5 @@ void ovr_SetAllowLocalPreferencesFile( const bool allow )
 void ovr_ShutdownLocalPreferences()
 {
 	LOG( "ovr_ShutdownLocalPreferences" );
-	LocalPreferences.clearAndRelease();
+	LocalPreferences.clear();
 }

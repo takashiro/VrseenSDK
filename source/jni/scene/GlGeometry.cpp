@@ -44,7 +44,7 @@ void PackVertexAttribute( VArray< uint8_t > & packed, const VArray< _attrib_type
 		const size_t size = attrib.size() * sizeof( attrib[0] );
 
 		packed.resize( offset + size );
-		memcpy( &packed[offset], attrib.dataPtr(), size );
+		memcpy( &packed[offset], attrib.data(), size );
 
 		glEnableVertexAttribArray( glLocation );
 		glVertexAttribPointer( glLocation, glComponents, glType, false, sizeof( attrib[0] ), (void *)( offset ) );
@@ -77,10 +77,10 @@ void GlGeometry::Create( const VertexAttribs & attribs, const VArray< TriangleIn
 	PackVertexAttribute( packed, attribs.jointIndices,	VERTEX_ATTRIBUTE_LOCATION_JOINT_INDICES,	GL_INT,		4 );
 	PackVertexAttribute( packed, attribs.jointWeights,	VERTEX_ATTRIBUTE_LOCATION_JOINT_WEIGHTS,	GL_FLOAT,	4 );
 
-	glBufferData( GL_ARRAY_BUFFER, packed.size() * sizeof( packed[0] ), packed.dataPtr(), GL_STATIC_DRAW );
+	glBufferData( GL_ARRAY_BUFFER, packed.size() * sizeof( packed[0] ), packed.data(), GL_STATIC_DRAW );
 
 	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, indexBuffer );
-	glBufferData( GL_ELEMENT_ARRAY_BUFFER, indices.length() * sizeof( indices[0] ), indices.dataPtr(), GL_STATIC_DRAW );
+	glBufferData( GL_ELEMENT_ARRAY_BUFFER, indices.length() * sizeof( indices[0] ), indices.data(), GL_STATIC_DRAW );
 
 	glBindVertexArrayOES_( 0 );
 
@@ -114,7 +114,7 @@ void GlGeometry::Update( const VertexAttribs & attribs )
 	PackVertexAttribute( packed, attribs.jointIndices,	VERTEX_ATTRIBUTE_LOCATION_JOINT_INDICES,	GL_INT,		4 );
 	PackVertexAttribute( packed, attribs.jointWeights,	VERTEX_ATTRIBUTE_LOCATION_JOINT_WEIGHTS,	GL_FLOAT,	4 );
 
-	glBufferData( GL_ARRAY_BUFFER, packed.size() * sizeof( packed[0] ), packed.dataPtr(), GL_STATIC_DRAW );
+	glBufferData( GL_ARRAY_BUFFER, packed.size() * sizeof( packed[0] ), packed.data(), GL_STATIC_DRAW );
 }
 
 void GlGeometry::Draw() const
