@@ -276,7 +276,6 @@ struct App::Private
     jmethodID		createVrToastMethodId;
     jmethodID		clearVrToastsMethodId;
     jmethodID		playSoundPoolSoundMethodId;
-    jmethodID		gazeEventMethodId;
 
     VString			launchIntentURI;			// URI app was launched with
     VString			launchIntentJSON;			// extra JSON data app was launched with
@@ -419,7 +418,6 @@ struct App::Private
         , createVrToastMethodId(nullptr)
         , clearVrToastsMethodId(nullptr)
         , playSoundPoolSoundMethodId(nullptr)
-        , gazeEventMethodId(nullptr)
         , paused(true)
         , popupDistance(2.0f)
         , popupScale(1.0f)
@@ -611,8 +609,6 @@ App::App(JNIEnv *jni, jobject activityObject, VrAppInterface &interface)
     bool const isHybridApp = jni->CallStaticBooleanMethod(d->vrLibClass, isHybridAppMethodId, d->javaObject);
 
     exitOnDestroy = !isHybridApp;
-
-    d->gazeEventMethodId = d->GetStaticMethodID(d->vrActivityClass, "gazeEventFromNative", "(FFZZLandroid/app/Activity;)V");
 
 	// Get the path to the .apk and package name
     openApplicationPackage();
