@@ -2640,12 +2640,6 @@ const VString &App::packageName() const
     return d->packageName;
 }
 
-bool App::isWifiConnected() const
-{
-    jmethodID isWififConnectedMethodId = JniUtils::GetStaticMethodID(d->vrJni, d->vrLibClass, "isWifiConnected", "(Landroid/app/Activity;)Z");
-    return d->vrJni->CallStaticBooleanMethod(d->vrLibClass, isWififConnectedMethodId, d->javaObject);
-}
-
 void App::recenterYaw(const bool showBlack)
 {
     LOG("AppLocal::RecenterYaw");

@@ -239,8 +239,6 @@ public:
 
     const VString &packageName() const;
 
-    bool				isWifiConnected() const;
-
     //-----------------------------------------------------------------
     // Java accessors
     //-----------------------------------------------------------------
