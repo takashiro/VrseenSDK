@@ -10,32 +10,31 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 *************************************************************************************/
 
 #include "Console.h"
-#include "Std.h"
 #include "Android/JniUtils.h"
 #include "Android/LogUtils.h"
 #include "VArray.h"
 #include "VArray.h"
 #include "VString.h"			// for ReadFreq()
 #include "VLog.h"
+//#include "Std.h"
 
 NV_NAMESPACE_BEGIN
 
 class OvrConsole
 {
 public:
-	void RegisterConsoleFunction( const char * name, consoleFn_t function )
+    void RegisterConsoleFunction( const VString name, consoleFn_t function )
 	{
-		//LOG( "Registering console function '%s'", name );
+        LOG( "Registering console function '%s'", name.toCString() );
 		for ( int i = 0 ; i < ConsoleFunctions.length(); ++i )
 		{
-			if ( OVR_stricmp( ConsoleFunctions[i].GetName(), name ) == 0 )
+            if ( ConsoleFunctions[i].GetName().compare(name) == 0 )
 			{
-				LOG( "OvrConsole", "Console function '%s' is already registered!!", name );
-				OVR_ASSERT( false );	// why are you registering the same function twice??
+                LOG( "OvrConsole", "Console function '%s' is already registered!!", name.toCString() );
 				return;
 			}
 		}
-		LOG( "Registered console function '%s'", name );
+        LOG( "Registered console function '%s'", name.toCString() );
 		ConsoleFunctions.append( OvrConsoleFunction( name, function ) );
 	}
 
@@ -44,54 +43,54 @@ public:
 		ConsoleFunctions.clear();
 	}
 
-	void ExecuteConsoleFunction( long appPtr, char const * commandStr ) const
+    void ExecuteConsoleFunction( long appPtr, const VString commandStr ) const
 	{
-		DROIDLOG( "OvrConsole", "Received console command \"%s\"", commandStr );
+        DROIDLOG( "OvrConsole", "Received console command \"%s\"", commandStr.toCString() );
 
-		char cmdName[128];
-		char const * parms = "";
-		int cmdLen = (int)strlen( commandStr );
-		char const * spacePtr = strstr( commandStr, " " );
-		if ( spacePtr != NULL && spacePtr - commandStr < cmdLen )
+        VString cmdName;
+        int parms;
+        int cmdLen = reinterpret_cast<int>(commandStr.length());
+        int spacePos = static_cast<int>(commandStr.find(' '));
+        if ( (size_t)spacePos != std::string::npos && spacePos < cmdLen )
 		{
-			parms = spacePtr + 1;
-			OVR_strncpy( cmdName, sizeof( cmdName ), commandStr, spacePtr - commandStr );
+            parms = spacePos + 1;
+            cmdName = commandStr.substr(0, spacePos);
 		}
 		else
 		{
-			OVR_strcpy( cmdName, sizeof( cmdName ), commandStr );
+            cmdName = commandStr;
 		}
 
-		LOG( "ExecuteConsoleFunction( %s, %s )", cmdName, parms );
+        LOG( "ExecuteConsoleFunction( %s, %s )", cmdName.toCString(), commandStr.substr(parms).c_str() );
 		for ( int i = 0 ; i < ConsoleFunctions.length(); ++i )
 		{
-			LOG( "Checking console function '%s'", ConsoleFunctions[i].GetName() );
-			if ( OVR_stricmp( ConsoleFunctions[i].GetName(), cmdName ) == 0 )
+            LOG( "Checking console function '%s'", ConsoleFunctions[i].GetName().toCString() );
+            if (ConsoleFunctions[i].GetName().compare(cmdName) == 0)
 			{
-				LOG( "Executing console function '%s'", cmdName );
-				ConsoleFunctions[i].Execute( reinterpret_cast< void* >( appPtr ), parms );
+                LOG( "Executing console function '%s'", cmdName.toCString() );
+                ConsoleFunctions[i].Execute( reinterpret_cast< void* >( appPtr ),(char*)(commandStr.substr(parms).c_str()) );
 				return;
 			}
 		}
 
-		DROIDLOG( "OvrConsole", "ERROR: unknown console command '%s'", cmdName );
+        DROIDLOG( "OvrConsole", "ERROR: unknown console command '%s'", cmdName.toCString() );
 	}
 
 private:
 	class OvrConsoleFunction
 	{
 	public:
-		OvrConsoleFunction( const char * name, consoleFn_t function ) :
+        OvrConsoleFunction( const VString name, consoleFn_t function ) :
 			Function( function )
 		{
-			NervGear::OVR_strcpy( Name, sizeof( Name ), name );
+            Name = name;
 		}
 
-		const char *	GetName() const { return Name; }
+        const VString&	GetName() const { return Name; }
 		void			Execute( void * appPtr, const char * cmd ) const { Function( appPtr, cmd ); }
 
 	private:
-		char			Name[64];		// not an NervGear::String because this can be freed after the OVR heap has been destroyed.
+        VString Name;
 		consoleFn_t		Function;
 	};
 
