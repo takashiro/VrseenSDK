@@ -279,7 +279,6 @@ struct App::Private
     jmethodID		gazeEventMethodId;
     jmethodID		enableComfortViewModeMethodId;
     jmethodID		getComfortViewModeMethodId;
-    jmethodID		isAirplaneModeEnabledMethodId;
 
     VString			launchIntentURI;			// URI app was launched with
     VString			launchIntentJSON;			// extra JSON data app was launched with
@@ -425,7 +424,6 @@ struct App::Private
         , gazeEventMethodId(nullptr)
         , enableComfortViewModeMethodId(nullptr)
         , getComfortViewModeMethodId(nullptr)
-        , isAirplaneModeEnabledMethodId(nullptr)
         , paused(true)
         , popupDistance(2.0f)
         , popupScale(1.0f)
@@ -621,7 +619,6 @@ App::App(JNIEnv *jni, jobject activityObject, VrAppInterface &interface)
     d->gazeEventMethodId = d->GetStaticMethodID(d->vrActivityClass, "gazeEventFromNative", "(FFZZLandroid/app/Activity;)V");
     d->enableComfortViewModeMethodId = d->GetStaticMethodID(d->vrLibClass, "enableComfortViewMode", "(Landroid/app/Activity;Z)V");
     d->getComfortViewModeMethodId = d->GetStaticMethodID(d->vrLibClass, "getComfortViewModeEnabled", "(Landroid/app/Activity;)Z");
-    d->isAirplaneModeEnabledMethodId = d->GetStaticMethodID(d->vrLibClass, "isAirplaneModeEnabled", "(Landroid/app/Activity;)Z");
 
 	// Get the path to the .apk and package name
     openApplicationPackage();
@@ -2444,16 +2441,6 @@ int App::cellularSignalLevel() const
 eCellularState App::cellularState() const
 {
 	return ovr_GetCellularState();
-}
-
-bool App::isAirplaneModeEnabled() const
-{
-	bool r = false;
-    if (d->isAirplaneModeEnabledMethodId != nullptr )
-	{
-        r = d->vrJni->CallStaticBooleanMethod(d->vrLibClass, d->isAirplaneModeEnabledMethodId, d->javaObject);
-	}
-	return r;
 }
 
 bool App::isAsynchronousTimeWarp() const

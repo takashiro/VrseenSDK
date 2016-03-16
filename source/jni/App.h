@@ -195,8 +195,6 @@ public:
     int					cellularSignalLevel() const;
     eCellularState		cellularState() const;
 
-    bool				isAirplaneModeEnabled() const;
-
     //-----------------------------------------------------------------
     // accessors
     //-----------------------------------------------------------------
