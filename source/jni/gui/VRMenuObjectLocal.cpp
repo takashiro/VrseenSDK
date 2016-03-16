@@ -235,7 +235,7 @@ void VRMenuSurface::createImageGeometry( int const textureWidth, int const textu
 		}
 	}
 
-	Array< TriangleIndex > indices;
+	VArray< TriangleIndex > indices;
 	indices.resize( horizontal * vertical * 6 );
 
 	// If this is to be used to draw a linear format texture, like

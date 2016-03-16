@@ -1,81 +1,141 @@
+
+/*
+ * VArray.h
+ *
+ *  Created on: 2016/3/6
+ *      Author: gaojialing
+ */
+
 #pragma once
-
-#include "vglobal.h"
-
 #include <vector>
-
+#include "vglobal.h"
+#include "List.h"
+using namespace std;
 NV_NAMESPACE_BEGIN
-
-template<class E>
-class VArray : public std::vector<E>
+template <class E> class VArray : public vector<E>
 {
 public:
-    typedef typename std::vector<E>::iterator Iterator;
-    typedef typename std::vector<E>::const_iterator ConstIterator;
+	//Array ( const vector<T,Allocator>& x );
+	VArray<E>(int size):vector<E>(size)
+	{
 
-    int length() const { return (int) this->size(); }
-    bool isEmpty() const { return this->empty(); }
+	}
+	VArray<E>(){}
+	int length() const
+	{
+		return this->size();
+	}//鐜版湁Array璇ュ嚱鏁板悕瀛楁槸sizeInt()锛岄』淇敼
+	//uint size() const; //uint瀹氫箟鍦╲global.h涓紝鍗硊nsigned int
+	bool isEmpty() const
+	{
+		return this->empty();
+	};
 
-    const E &first() const { return this->front(); }
-    E &first() { return this->front(); }
+	/*const E &begin() const
+	{
+		return this->begin();
+	};
 
-    const E &last() const { return this->back(); }
-    E &last() { return this->last(); }
+	const E &end() const
+	{
+		return this->end();
+	};*/
 
-    void append(const E &e) { this->push_back(e); }
-    VArray &operator << (const E &e) { this->append(e); return *this; }
+//	VArray<E>::iterator begin(){
+//		return this->begin();
+//	}
 
-    void append(const VArray<E> &elements)
-    {
-        for (const E &e : elements) {
-            append(e);
-        }
-    }
-    VArray &operator << (const VArray<E> &elements) { append(elements); return *this; }
+	const E &first() const
+	{
+		return this->front();
+	};
+	E &first();
 
-    void prepend(const E &e) { insert(0, e); }
+	const E &last() const
+	{
+		return this->back();
+	};
+	E &last()
+	{
+		return this->back();
+	};
 
-    void prepend(const VArray<E> &elements)
-    {
-        for (uint i = 0, max = elements.size(); i < max; i++) {
-            insert(i, elements.at(i));
-        }
-    }
+	E &operator[](int i)
+	{
+		return this->operator [](i);
+	};
+	const E &operator[](int i) const
+	{
+		return this->operator [](i);
+	};
+	const E &at(int i) const
+	{
+		return this->at(i);
+	};
 
-    void insert(uint i, const E &e) { std::vector<E>::insert(this->cbegin() + i, e); }
+	void append(const E &e)
+	{
+       this->push_back(e);
+	};
+	void append(const List<E> &elements)
+	{
+		for(E e:elements)
+		{
+			this->push_back(e);
+		}
 
-    void removeAt(uint i) { this->erase(this->begin() + i); }
 
-    void removeOne(const E &e)
-    {
-        for (uint i = 0, max = this->size(); i < max; i++) {
-            if (this->at(i) == e) {
-                removeAt(i);
-                break;
-            }
-        }
-    }
+	}; //鎻掑叆澶氫釜鍏冪礌鑷虫湯灏�
 
-    void removeAll(const E &e)
-    {
-        for (uint i = 0, max = this->size(); i < max; i++) {
-            if (this->at(i) == e) {
-                removeAt(i);
-                i--;
-                max--;
-            }
-        }
-    }
+	void prepend(const E &e)
+	{
+		this->prepend(e);
+	}; //鎻掑叆鍏冪礌鑷冲紑澶�
+	void prepend(const List<E> &elements)
+	{
+		this->prepend(elements);
 
-    bool contains(const E &e)
-    {
-        for (uint i = 0, max = this->size(); i < max; i++) {
-            if (this->at(i) == e) {
-                return true;
-            }
-        }
-        return false;
-    }
-};
+	}; //鎻掑叆澶氫釜鍏冪礌鑷冲紑澶达紙鎻掑叆瀹屾垚鍚庝粛鎸夊師elements鐨勯『搴忥級
 
+	void insert(int i, const E &e) //鎻掑叆鍏冪礌鑷崇i浣嶏紝insert(0, e)涓巔repend(e)鐩稿悓
+	{
+		this->insert(i,e);
+	};
+	void removeAt(int i)
+	{
+		this->removeAt(i);
+	}
+	void removeOne(const E &e)
+	{
+		this->removeOne(e);
+	}
+	void removeAll(const E &e)
+	{
+		this->removeAll(e);
+	};
+	bool contains(const E &e) const
+	{
+		return this->contains(e);
+	};
+	void clearAndRelease()
+	{
+		this->clear();
+
+	}
+	void removeAtUnordered()
+	{
+		this->removeAtUnordered();
+	}
+	void removeAtUnordered(int i)
+		{
+			this->removeAtUnordered(i);
+		}
+	const E* dataPtr() const { return this->data(); }
+	      E* dataPtr()       { return this->data(); }
+	uint allocBack()
+	  	{
+	  		return this->allocBack();
+	  	}
+	};
 NV_NAMESPACE_END
+

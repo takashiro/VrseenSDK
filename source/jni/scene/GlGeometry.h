@@ -2,22 +2,22 @@
 
 #include "vglobal.h"
 
-#include "Array.h"
+#include "VArray.h"
 #include "VMath.h"
 
 NV_NAMESPACE_BEGIN
 
 struct VertexAttribs
 {
-	Array< Vector3f > position;
-	Array< Vector3f > normal;
-	Array< Vector3f > tangent;
-	Array< Vector3f > binormal;
-	Array< Vector4f > color;
-	Array< Vector2f > uv0;
-	Array< Vector2f > uv1;
-	Array< Vector4i > jointIndices;
-	Array< Vector4f > jointWeights;
+	VArray< Vector3f > position;
+	VArray< Vector3f > normal;
+	VArray< Vector3f > tangent;
+	VArray< Vector3f > binormal;
+	VArray< Vector4f > color;
+	VArray< Vector2f > uv0;
+	VArray< Vector2f > uv1;
+	VArray< Vector4i > jointIndices;
+	VArray< Vector4f > jointWeights;
 };
 
 typedef unsigned short TriangleIndex;
@@ -36,7 +36,7 @@ public:
 				vertexCount( 0 ),
 				indexCount( 0 ) {}
 
-			GlGeometry( const VertexAttribs & attribs, const Array< TriangleIndex > & indices ) :
+			GlGeometry( const VertexAttribs & attribs, const VArray< TriangleIndex > & indices ) :
 				vertexBuffer( 0 ),
 				indexBuffer( 0 ),
 				vertexArrayObject( 0 ),
@@ -44,7 +44,7 @@ public:
 				indexCount( 0 ) { Create( attribs, indices ); }
 
 	// Create the VAO and vertex and index buffers from arrays of data.
-	void	Create( const VertexAttribs & attribs, const Array< TriangleIndex > & indices );
+	void	Create( const VertexAttribs & attribs, const VArray< TriangleIndex > & indices );
 	void	Update( const VertexAttribs & attribs );
 
 	// Assumes the correct program, uniforms, textures, etc, are all bound.

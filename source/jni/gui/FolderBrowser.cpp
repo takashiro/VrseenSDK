@@ -32,6 +32,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "ScrollBarComponent.h"
 #include "SwipeHintComponent.h"
 #include "VApkFile.h"
+#include "VArray.h"
 
 namespace NervGear {
 
@@ -1443,8 +1444,8 @@ void OvrFolderBrowser::buildFolder( OvrMetaData::Category & category, FolderView
 
 	// build a collision primitive that encompasses all of the panels for a raw (including the empty space between them)
 	// so that we can always send our swipe messages to the correct row based on gaze.
-	Array< Vector3f > vertices( m_circumferencePanelSlots * 2 );
-	Array< TriangleIndex > indices( m_circumferencePanelSlots * 6 );
+	VArray< Vector3f > vertices( m_circumferencePanelSlots * 2 );
+	VArray< TriangleIndex > indices( m_circumferencePanelSlots * 6 );
 	int curIndex = 0;
 	int curVertex = 0;
 	for ( int i = 0; i < m_circumferencePanelSlots; ++i )

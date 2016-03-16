@@ -168,7 +168,7 @@ void LoadModelFileTexture( ModelFile & model, const char * textureName,
 }
 
 template< typename _type_ >
-void ReadModelArray( Array< _type_ > & out, const char * string, const VBinaryFile & bin, const int numElements )
+void ReadModelArray( VArray< _type_ > & out, const char * string, const VBinaryFile & bin, const int numElements )
 {
 	if ( string != NULL && string[0] != '\0' && numElements > 0 )
 	{
@@ -433,7 +433,7 @@ void LoadModelFileJson( ModelFile & model,
 						// Triangles
 						//
 
-						Array< TriangleIndex > indices;
+						VArray< TriangleIndex > indices;
 
 						const Json &triangles( surface.value( "triangles" ) );
 						if ( triangles.isObject() )
@@ -581,7 +581,7 @@ void LoadModelFileJson( ModelFile & model,
 								}
 							}
 						}
-						else if ( attribs.color.sizeInt() > 0 )
+						else if ( attribs.color.length() > 0 )
 						{
 							// vertex color material
 							model.Def.surfaces[index].materialDef.numTextures = 0;
