@@ -4,14 +4,13 @@
 
 #include "VMath.h"
 #include "VString.h"
-#include "Array.h"
 #include "VArray.h"
 
 NV_NAMESPACE_BEGIN
 
 namespace StringUtils
 {
-	//
+
 	// Convert a string to a common type.
 	//
 
@@ -29,7 +28,7 @@ namespace StringUtils
 		return length;
 	}
 
-	template< typename _type_ > inline size_t StringTo( Array< _type_ > & valueArray, const char * string )
+	template< typename _type_ > inline size_t StringTo( VArray< _type_ > & valueArray, const char * string )
 	{
 		size_t length = 0;
 		length += strspn( string + length, "{ \t\n\r" );

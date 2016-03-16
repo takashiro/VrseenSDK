@@ -19,7 +19,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "Alg.h"
 #include "VMath.h"
-#include "Array.h"
+#include "VArray.h"
 #include "VArray.h"
 #include "Android/GlUtils.h"
 #include "Android/LogUtils.h"

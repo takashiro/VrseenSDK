@@ -50,7 +50,7 @@ public:
 									CarouselBrowserComponent( const VArray<CarouselItem *> &items, const VArray<PanelPose> &panelPoses );
 
 	void							SetPanelPoses( OvrVRMenuMgr & menuMgr, VRMenuObject * self, const VArray<PanelPose> &panelPoses );
-	void 							SetMenuObjects( const Array<VRMenuObject *> &menuObjs, const Array<CarouselItemComponent *> &menuComps );
+	void 							SetMenuObjects( const VArray<VRMenuObject *> &menuObjs, const VArray<CarouselItemComponent *> &menuComps );
 	void							SetItems( const VArray<CarouselItem *> &items );
 	void							SetSelectionIndex( const int selectedIndex );
     int 							GetSelection() const;
@@ -86,8 +86,8 @@ private:
     int 							ItemHeight;
 
     VArray<CarouselItem *> 			Items;
-    Array<VRMenuObject *> 			MenuObjs;
-    Array<CarouselItemComponent *> 	MenuComps;
+    VArray<VRMenuObject *> 			MenuObjs;
+    VArray<CarouselItemComponent *> 	MenuComps;
 	VArray<PanelPose>				PanelPoses;
 
 	double 							StartTime;

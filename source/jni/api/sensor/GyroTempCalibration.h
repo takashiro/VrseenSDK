@@ -3,7 +3,7 @@
 #include "vglobal.h"
 
 #include "Device.h"
-#include "Array.h"
+#include "VArray.h"
 #include "VArray.h"
 
 NV_NAMESPACE_BEGIN

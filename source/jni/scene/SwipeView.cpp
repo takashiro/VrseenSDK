@@ -355,17 +355,17 @@ void	SwipeView::Close()
 
 void SwipeView::ClearPanelSelectState()
 {
-	for ( int index = 0 ; index < Panels.sizeInt() ; index++ )
+	for ( int index = 0 ; index < Panels.length() ; index++ )
 	{
 		Panels[index].SelectState = 0.0f;
 	}
 }
 
 int	SwipeView::LayoutColumns() const {
-	if ( Panels.sizeInt() <= 1 ) {
+	if ( Panels.length() <= 1 ) {
 		return 0;
 	}
-	return 1 + ( Panels.sizeInt() - 1 ) / LayoutRows;
+	return 1 + ( Panels.length() - 1 ) / LayoutRows;
 }
 
 float	SwipeView::PanelAngleY( const int panelY ) {
@@ -662,7 +662,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 	// Only change selection state when fully open
 	if ( State == SVS_OPEN )
 	{
-		for ( int index = 0 ; index < Panels.sizeInt() ; index++ )
+		for ( int index = 0 ; index < Panels.length() ; index++ )
 		{
 			SwipePanel & panel = Panels[index];
 			if ( index == SelectedPanel )
@@ -719,7 +719,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 		//LOG( "offset %f forward %f", Offset, ForwardYaw );
 		const float animationPanelOffset = AnimationCenterPanel[0] * SlotSize.x - Offset;
 		const float animationPanelOffsetY = PanelAngleY( AnimationCenterPanel[1] );
-		for ( int index = 0 ; index < Panels.sizeInt() ; index++ )
+		for ( int index = 0 ; index < Panels.length() ; index++ )
 		{
 			const int panelX = index / LayoutRows;
 			const int panelXCentered = ( LayoutColumns( ) / 2 ) - panelX;
@@ -854,7 +854,7 @@ void SwipeView::Draw( const Matrix4f & mvp )
 	{	// full closed
 		return;
 	}
-	if ( Panels.sizeInt() < 1 )
+	if ( Panels.length() < 1 )
 	{
 		return;
 	}
@@ -874,7 +874,7 @@ void SwipeView::Draw( const Matrix4f & mvp )
 	glActiveTexture( GL_TEXTURE1 );
 	glBindTexture( GL_TEXTURE_2D, BorderTexture2_1.texture );
 
-	for ( int index = 0 ; index < PanelRenderList.sizeInt() ; index++ )
+	for ( int index = 0 ; index < PanelRenderList.length() ; index++ )
 	{
 		PanelRenderInfo const & info = PanelRenderList[index];
 		SwipePanel const & panel = Panels[info.PanelIndex];

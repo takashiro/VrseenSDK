@@ -1,4 +1,4 @@
-#include "Array.h"
+#include "VArray.h"
 #include "VMath.h"
 #include "Input.h"
 #include "View.h"
@@ -31,7 +31,7 @@ private:
     Matrix4f		m_lastViewMatrix;
     Matrix4f		m_lastEyeMatrix[ 2 ];
 
-    Array<View *> 	m_views;
+    VArray<View *> 	m_views;
 
     View *			m_currentView;
     View *			m_nextView;

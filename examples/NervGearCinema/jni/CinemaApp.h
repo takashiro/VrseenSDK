@@ -31,7 +31,7 @@ public:
 	// Called by App loop
     Matrix4f Frame( const VrFrame m_vrFrame ) override;
 
-    void			    	setPlaylist( const Array<const MovieDef *> &playList, const int nextMovie );
+    void			    	setPlaylist( const VArray<const MovieDef *> &playList, const int nextMovie );
     void			    	setMovie( const MovieDef * nextMovie );
     void 					movieLoaded( const int width, const int height, const int duration );
 
@@ -85,7 +85,7 @@ private:
     int						m_frameCount;
 
     const MovieDef *		m_currentMovie;
-    Array<const MovieDef *> m_playList;
+    VArray<const MovieDef *> m_playList;
 
     bool					m_shouldResumeMovie;
     bool					m_movieFinishedPlaying;

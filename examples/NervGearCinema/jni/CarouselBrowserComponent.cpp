@@ -51,12 +51,12 @@ void CarouselBrowserComponent::SetPanelPoses( OvrVRMenuMgr & menuMgr, VRMenuObje
 	UpdatePanels( menuMgr, self );
 }
 
-void CarouselBrowserComponent::SetMenuObjects( const Array<VRMenuObject *> &menuObjs, const Array<CarouselItemComponent *> &menuComps )
+void CarouselBrowserComponent::SetMenuObjects( const VArray<VRMenuObject *> &menuObjs, const VArray<CarouselItemComponent *> &menuComps )
 {
 	MenuObjs = menuObjs;
 	MenuComps = menuComps;
 
-    assert( MenuObjs.sizeInt() == MenuObjs.sizeInt() );
+    assert( MenuObjs.length() == MenuObjs.length() );
 }
 
 PanelPose CarouselBrowserComponent::GetPosition( const float t )
@@ -148,7 +148,7 @@ void CarouselBrowserComponent::UpdatePanels( OvrVRMenuMgr & menuMgr, VRMenuObjec
     int leftIndex = centerIndex - PanelPoses.length() / 2;
 
 	int itemIndex = leftIndex;
-    for( int i = 0; i < MenuObjs.sizeInt(); i++, itemIndex++ )
+    for( int i = 0; i < MenuObjs.length(); i++, itemIndex++ )
 	{
 		PanelPose pose = GetPosition( ( float )i + offset );
         if ( ( itemIndex < 0 ) || ( itemIndex >= Items.length() ) || ( ( offset < 0.0f ) && ( i == 0 ) ) )

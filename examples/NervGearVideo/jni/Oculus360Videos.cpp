@@ -605,7 +605,7 @@ Matrix4f Oculus360Videos::DrawEyeView( const int eye, const float fovDegrees )
 		// Draw the ovr scene
 		const float fadeColor = CurrentFadeLevel;
 		ModelDef & def = *const_cast< ModelDef * >( &Scene.WorldModel.Definition->Def );
-		for ( int i = 0; i < def.surfaces.sizeInt(); i++ )
+		for ( int i = 0; i < def.surfaces.length(); i++ )
 		{
 			SurfaceDef & sd = def.surfaces[ i ];
 			glUseProgram( SingleColorTextureProgram.program );

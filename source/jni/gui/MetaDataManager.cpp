@@ -84,7 +84,7 @@ void OvrMetaData::initFromDirectory( const char * relativePath, const VArray< VS
 		}
 
 		// Add loose file
-		const int dataIndex = m_etaData.sizeInt();
+		const int dataIndex = m_etaData.length();
         OvrMetaDatum * datum = createMetaDatum( fileBase.toCString() );
 		if ( datum )
 		{
@@ -160,8 +160,10 @@ void OvrMetaData::initFromFileList( const VArray< VString > & fileList, const Ov
 		}
 
 		// Add loose file
-		const int dataIndex = m_etaData.sizeInt();
+
+		const int dataIndex = m_etaData.length();
         OvrMetaDatum * datum = createMetaDatum( filePath.toCString() );
+
 		if ( datum )
 		{
 			datum->id = dataIndex;
@@ -464,7 +466,7 @@ void OvrMetaData::reconcileMetaData( StringHash< OvrMetaDatum * > & storedMetaDa
 
 	// Now for any remaining stored data - check if it's remote and just add it, sorted by the
 	// assigned Id
-	Array< OvrMetaDatum * > sortedEntries;
+	VArray< OvrMetaDatum * > sortedEntries;
     StringHash< OvrMetaDatum * >::Iterator storedIter = storedMetaData.begin();
     for ( ; storedIter != storedMetaData.end(); ++storedIter )
 	{
@@ -476,7 +478,7 @@ void OvrMetaData::reconcileMetaData( StringHash< OvrMetaDatum * > & storedMetaDa
 		}
 	}
 	Alg::QuickSortSlicedSafe( sortedEntries, 0, sortedEntries.size(), OvrMetaDatumIdComparator);
-	Array< OvrMetaDatum * >::Iterator sortedIter = sortedEntries.begin();
+	VArray< OvrMetaDatum * >::iterator sortedIter = sortedEntries.begin();
 	for ( ; sortedIter != sortedEntries.end(); ++sortedIter )
 	{
 		m_etaData.append( *sortedIter );
@@ -484,10 +486,10 @@ void OvrMetaData::reconcileMetaData( StringHash< OvrMetaDatum * > & storedMetaDa
     storedMetaData.clear();
 }
 
-void OvrMetaData::dedupMetaData( const Array< OvrMetaDatum * > & existingData, StringHash< OvrMetaDatum * > & newData )
+void OvrMetaData::dedupMetaData( const VArray< OvrMetaDatum * > & existingData, StringHash< OvrMetaDatum * > & newData )
 {
     // Fix the read in meta data using the stored
-    for ( int i = 0; i < existingData.sizeInt(); ++i )
+    for ( int i = 0; i < existingData.length(); ++i )
     {
         OvrMetaDatum * metaDatum = existingData.at( i );
 
@@ -621,7 +623,7 @@ void OvrMetaData::extractMetaData(const Json &dataFile, const VArray< VString > 
 	const Json &data( dataFile.value( DATA ) );
 	if ( data.isArray() )
 	{
-		int jsonIndex = m_etaData.sizeInt();
+		int jsonIndex = m_etaData.length();
 
         const JsonArray &datums = data.toArray();
 		for (const Json &datum : datums) {
@@ -697,7 +699,7 @@ void OvrMetaData::extractRemoteMetaData( const Json &dataFile, StringHash< OvrMe
 	const Json &data( dataFile.value( DATA ) );
 	if ( data.isArray() )
 	{
-		int jsonIndex = m_etaData.sizeInt();
+		int jsonIndex = m_etaData.length();
 
         const JsonArray elements = data.toArray();
 		for (const Json &jsonDatum : elements) {
@@ -751,7 +753,7 @@ void OvrMetaData::regenerateCategoryIndices()
 
 	// Delete any data only tagged as "Favorite" - this is a fix for user created "Favorite" folder which is a special case
 	// Not doing this will show photos already favorited that the user cannot unfavorite
-	for ( int metaDataIndex = 0; metaDataIndex < m_etaData.sizeInt(); ++metaDataIndex )
+	for ( int metaDataIndex = 0; metaDataIndex < m_etaData.length(); ++metaDataIndex )
 	{
 		OvrMetaDatum & metaDatum = *m_etaData.at( metaDataIndex );
 		VArray< VString > & tags = metaDatum.tags;
@@ -768,7 +770,7 @@ void OvrMetaData::regenerateCategoryIndices()
 	}
 
 	// Fix the indices
-	for ( int metaDataIndex = 0; metaDataIndex < m_etaData.sizeInt(); ++metaDataIndex )
+	for ( int metaDataIndex = 0; metaDataIndex < m_etaData.length(); ++metaDataIndex )
 	{
 		OvrMetaDatum & datum = *m_etaData.at( metaDataIndex );
 		VArray< VString > & tags = datum.tags;
@@ -836,7 +838,7 @@ Json OvrMetaData::metaDataToJson() const
 	// Add meta data
 	Json newDataObject(Json::Array);
 
-	for ( int i = 0; i < m_etaData.sizeInt(); ++i )
+	for ( int i = 0; i < m_etaData.length(); ++i )
 	{
 		const OvrMetaDatum & metaDatum = *m_etaData.at( i );
 
@@ -946,7 +948,7 @@ OvrMetaData::Category * OvrMetaData::getCategory( const VString & categoryName )
 
 const OvrMetaDatum & OvrMetaData::getMetaDatum( const int index ) const
 {
-	OVR_ASSERT( index >= 0 && index < m_etaData.sizeInt() );
+	OVR_ASSERT( index >= 0 && index < m_etaData.length() );
 	return *m_etaData.at( index );
 }
 
@@ -957,7 +959,7 @@ bool OvrMetaData::getMetaData( const Category & category, VArray< const OvrMetaD
 	for ( int i = 0; i < numPanos; ++i )
 	{
 		const int metaDataIndex = category.datumIndicies.at( i );
-		OVR_ASSERT( metaDataIndex >= 0 && metaDataIndex < m_etaData.sizeInt() );
+		OVR_ASSERT( metaDataIndex >= 0 && metaDataIndex < m_etaData.length() );
 		//const OvrMetaDatum * panoData = &MetaData.At( metaDataIndex );
         //LOG( "Getting MetaData %d title %s from category %s", metaDataIndex, panoData->Title.toCString(), category.CategoryName.toCString() );
 		outMetaData.append( m_etaData.at( metaDataIndex ) );

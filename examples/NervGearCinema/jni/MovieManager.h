@@ -1,7 +1,7 @@
 #pragma once
 
 #include "VString.h"
-#include "Array.h"
+#include "VArray.h"
 #include "GlTexture.h"
 
 namespace OculusCinema {
@@ -59,12 +59,12 @@ public:
 	void					OneTimeInit( const char * launchIntent );
 	void					OneTimeShutdown();
 
-	Array<const MovieDef *>	GetMovieList( MovieCategory category ) const;
+	VArray<const MovieDef *>	GetMovieList( MovieCategory category ) const;
 
 	static const VString 	GetMovieTitleFromFilename( const char *filepath );
 
 public:
-    Array<MovieDef *> 		Movies;
+    VArray<MovieDef *> 		Movies;
 
     static const int 		PosterWidth;
     static const int 		PosterHeight;
@@ -79,8 +79,8 @@ private:
 	MovieCategory 			CategoryFromString( const VString &categoryString ) const;
 	void 					ReadMetaData( MovieDef *movie );
 	void 					LoadPoster( MovieDef *movie );
-	void 					MoviesInDirectory(Array<VString> &movies, const VString &dirName ) const;
-	Array<VString> 			ScanMovieDirectories() const;
+	void 					MoviesInDirectory(VArray<VString> &movies, const VString &dirName ) const;
+	VArray<VString> 			ScanMovieDirectories() const;
 	bool					IsSupportedMovieFormat( const VString &extension ) const;
 };
 

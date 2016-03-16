@@ -254,7 +254,7 @@ void VRMenu::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 	const Vector3f viewPos( GetViewMatrixPosition( viewMatrix ) );
 	const Vector3f viewFwd( GetViewMatrixForward( viewMatrix ) );
 
-	Array< VRMenuEvent > events;
+	VArray< VRMenuEvent > events;
 
 	if ( !m_componentsInitialized )
 	{
@@ -469,7 +469,7 @@ void VRMenu::onItemEvent( App * app, VRMenuId_t const itemId, VRMenuEvent const 
 //==============================
 // VRMenu::Init_Impl
 bool VRMenu::init_Impl( OvrVRMenuMgr & menuMgr, BitmapFont const & font, float const menuDistance, 
-                VRMenuFlags_t const & flags, Array< VRMenuObjectParms const * > & itemParms )
+                VRMenuFlags_t const & flags, VArray< VRMenuObjectParms const * > & itemParms )
 {
     return true;
 }

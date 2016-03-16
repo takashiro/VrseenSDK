@@ -207,24 +207,9 @@ public:
 	{
 		this->clear();
 	}
-//
-	void removeAtUnordered()
-	{
-		this->removeAtUnordered();
-	}
-//
-	void removeAtUnordered(int i)
-		{
-			this->removeAtUnordered(i);
-		}
+
 	const E* dataPtr() const { return this->data(); }
 	      E* dataPtr()       { return this->data(); }
-//
-	uint allocBack()
-	  	{
-	  		return this->allocBack();
-	  	}
-	};
 
 	void append(const List<E> &elements)
 	{
@@ -243,12 +228,7 @@ public:
 	                 insert(i, elements.at(i));//
 	            }
 	}
-	/*void insert(uint i, const E &e)
-	{
-//	    std::vector<E>::insert(this->begin() + i, e);
 
-
-	}*/
 		 VArray &operator << (const E &e)
 	 {
 	     this->append(e);
@@ -331,3 +311,4 @@ public:
 
 	};
 NV_NAMESPACE_END
+

@@ -172,7 +172,7 @@ int OvrGuiSysLocal::FindMenuIndex( VRMenu const * menu ) const
 // OvrGuiSysLocal::FindActiveMenuIndex
 int OvrGuiSysLocal::FindActiveMenuIndex( VRMenu const * menu ) const
 {
-	for ( int i = 0; i < ActiveMenus.sizeInt(); ++i )
+	for ( int i = 0; i < ActiveMenus.length(); ++i )
 	{
 		if ( ActiveMenus[i] == menu ) 
 		{
@@ -186,7 +186,7 @@ int OvrGuiSysLocal::FindActiveMenuIndex( VRMenu const * menu ) const
 // OvrGuiSysLocal::FindActiveMenuIndex
 int OvrGuiSysLocal::FindActiveMenuIndex( char const * menuName ) const
 {
-	for ( int i = 0; i < ActiveMenus.sizeInt(); ++i )
+	for ( int i = 0; i < ActiveMenus.length(); ++i )
 	{
         if ( OVR_stricmp( ActiveMenus[i]->name(), menuName ) == 0 )
 		{
@@ -276,14 +276,14 @@ bool OvrGuiSysLocal::isMenuActive( char const * menuName ) const
 // OvrGuiSysLocal::IsAnyMenuOpen
 bool OvrGuiSysLocal::isAnyMenuActive() const 
 {
-	return ActiveMenus.sizeInt() > 0;
+	return ActiveMenus.length() > 0;
 }
 
 //==============================
 // OvrGuiSysLocal::IsAnyMenuOpen
 bool OvrGuiSysLocal::isAnyMenuOpen() const
 {
-	for ( int i = 0; i < ActiveMenus.sizeInt(); ++i )
+	for ( int i = 0; i < ActiveMenus.length(); ++i )
 	{
         if ( ActiveMenus[i]->isOpenOrOpening() )
 		{
@@ -301,7 +301,7 @@ void OvrGuiSysLocal::frame( App * app, const VrFrame & vrFrame, OvrVRMenuMgr & m
 	//LOG( "OvrGuiSysLocal::Frame" );
 
 	// go backwards through the list so we can use unordered remove when a menu finishes closing
-	for ( int i = ActiveMenus.sizeInt() - 1; i >= 0; --i )
+	for ( int i = ActiveMenus.length() - 1; i >= 0; --i )
 	{
 		VRMenu * curMenu = ActiveMenus[i];
 		OVR_ASSERT( curMenu != NULL );
@@ -335,7 +335,7 @@ void OvrGuiSysLocal::frame( App * app, const VrFrame & vrFrame, OvrVRMenuMgr & m
 // OvrGuiSysLocal::OnKeyEvent
 bool OvrGuiSysLocal::onKeyEvent( App * app, int const keyCode, KeyState::eKeyEventType const eventType ) 
 {
-	for ( int i = 0; i < ActiveMenus.sizeInt(); ++i )
+	for ( int i = 0; i < ActiveMenus.length(); ++i )
 	{
 		VRMenu * curMenu = ActiveMenus[i];
 		OVR_ASSERT( curMenu != NULL );

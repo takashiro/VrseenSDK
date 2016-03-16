@@ -272,7 +272,7 @@ void SceneManager::SetSceneProgram( const sceneProgram_t opaqueProgram, const sc
 	LOG( "SetSceneProgram: %d(%d), %d(%d)", opaqueProgram, opaqueProg.program, additiveProgram, additiveProg.program );
 
 	ModelDef & def = *const_cast< ModelDef * >( &Scene.WorldModel.Definition->Def );
-    for ( int i = 0; i < def.surfaces.sizeInt(); i++ )
+    for ( int i = 0; i < def.surfaces.length(); i++ )
 	{
 		if ( &def.surfaces[i] == SceneScreenSurface )
 		{

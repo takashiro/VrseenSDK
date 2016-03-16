@@ -15,7 +15,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "Types.h"
 #include "VMath.h"
-#include "Array.h"
+//#include "Array.h"
 #include "VArray.h"
 #include "VString.h"
 #include "TypesafeNumber.h"
@@ -561,7 +561,7 @@ public:
 	virtual void				addComponent( VRMenuComponent * component ) = 0;
 	virtual	void				removeComponent( VRMenuComponent * component ) = 0;
 
-	virtual Array< VRMenuComponent* > const & componentList() const = 0;
+	virtual VArray< VRMenuComponent* > const & componentList() const = 0;
 
 	// TODO We might want to refactor these into a single GetComponent which internally manages unique ids (using hashed class names for ex. )
 	// Helper for getting component - returns NULL if it fails. Required Component class to overload GetTypeId and define unique TYPE_ID

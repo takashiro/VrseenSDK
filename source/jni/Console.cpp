@@ -13,7 +13,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "Std.h"
 #include "Android/JniUtils.h"
 #include "Android/LogUtils.h"
-#include "Array.h"
+#include "VArray.h"
 #include "VArray.h"
 #include "VString.h"			// for ReadFreq()
 #include "VLog.h"

@@ -273,7 +273,7 @@ void SensorCalibration::StoreAutoOffset()
 
 const TemperatureReport& median(const VArray<TemperatureReport>& temperatureReportsBin, int coord)
 {
-    Array<double> values;
+    VArray<double> values;
     values.reserve(temperatureReportsBin.size());
     for (unsigned i = 0; i < temperatureReportsBin.size(); i++)
         if (temperatureReportsBin[i].ActualTemperature != 0)

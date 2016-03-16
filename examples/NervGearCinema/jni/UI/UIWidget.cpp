@@ -381,7 +381,7 @@ void UIWidget::RemoveComponent( VRMenuComponent * component )
     object->removeComponent( component );
 }
 
-Array< VRMenuComponent* > const & UIWidget::GetComponentList() const
+VArray< VRMenuComponent* > const & UIWidget::GetComponentList() const
 {
 	VRMenuObject * object = GetMenuObject();
 	assert( object );

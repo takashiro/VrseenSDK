@@ -240,8 +240,8 @@ void TheaterSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, Bitmap
     SelectionObject->setLocalBoundsExpand( selectionBoundsExpandMin, selectionBoundsExpandMax );
     SelectionObject->addFlags( VRMENUOBJECT_HIT_ONLY_BOUNDS );
 
-	Array<VRMenuObject *> menuObjs;
-	Array<CarouselItemComponent *> menuComps;
+	VArray<VRMenuObject *> menuObjs;
+	VArray<CarouselItemComponent *> menuComps;
     for ( int i = 0; i < panelPoses.length(); ++i )
 	{
         menuHandle_t posterImageHandle = CenterRoot->childHandleForId( menuMgr, VRMenuId_t( ID_ICONS.Get() + i ) );

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Array.h"
+//#include "Array.h"
 #include "VString.h"
 #include "StringHash.h"
 
@@ -95,7 +95,7 @@ protected:
     virtual bool			isRemote( const OvrMetaDatum * datum ) const	{	return true; }
 
 	// Removes duplicate entries from newData
-    virtual void            dedupMetaData( const Array< OvrMetaDatum * > & existingData, StringHash< OvrMetaDatum * > & newData );
+    virtual void            dedupMetaData( const VArray< OvrMetaDatum * > & existingData, StringHash< OvrMetaDatum * > & newData );
 
 private:
     Category * 				getCategory( const VString & categoryName );
@@ -114,7 +114,7 @@ private:
 
     VString 					m_filePath;
     VArray< Category >		m_categories;
-    Array< OvrMetaDatum * >	m_etaData;
+    VArray< OvrMetaDatum * >	m_etaData;
     StringHash< int >		m_urlToIndex;
     double					m_version;
 };

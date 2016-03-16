@@ -98,7 +98,7 @@ void OvrProgressBarComponent::getProgressBarParms( VRMenu & menu, const int widt
 		const VRMenuId_t thumbId, const VRMenuId_t animId,
 		const Posef & rootLocalPose, const Posef & xformPose,
 		const char * baseImage, const char * barImage, const char * animImage,
-		Array< const VRMenuObjectParms* > & outParms )
+		VArray< const VRMenuObjectParms* > & outParms )
 {
 	// Build up the Progressbar parms
 	OvrProgressBarComponent * ProgressComponent = new OvrProgressBarComponent( rootId, baseId, thumbId, animId );

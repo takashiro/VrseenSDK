@@ -59,7 +59,7 @@ OvrVolumePopup * OvrVolumePopup::Create( App * app, OvrVRMenuMgr & menuMgr, Bitm
 {
     OvrVolumePopup * menu = new OvrVolumePopup;
 
-	Array< VRMenuObjectParms > defaultAppMenuItems;
+	VArray< VRMenuObjectParms > defaultAppMenuItems;
 
 	{
 		Vector3f fwd( 0.0f, 0.0f, 1.0f );
@@ -159,7 +159,7 @@ OvrVolumePopup * OvrVolumePopup::Create( App * app, OvrVRMenuMgr & menuMgr, Bitm
 	VArray< VRMenuObjectParms const * > parms;
 
 	// add all of the default items
-	for ( int i = 0; i < defaultAppMenuItems.sizeInt(); ++i )
+	for ( int i = 0; i < defaultAppMenuItems.length(); ++i )
 	{
 		VRMenuObjectParms * defaultParms = new VRMenuObjectParms( defaultAppMenuItems[i] );
 		parms.append( defaultParms );

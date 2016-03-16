@@ -4,7 +4,7 @@
 
 #include "VMath.h"
 #include "VString.h"
-#include "Array.h"
+//#include "Array.h"
 #include "VArray.h"
 NV_NAMESPACE_BEGIN
 

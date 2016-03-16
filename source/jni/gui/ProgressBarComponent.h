@@ -46,7 +46,7 @@ public:
 									const VRMenuId_t thumbId, const VRMenuId_t animId,
 									const Posef & rootLocalPose, const Posef & xformPose,
 									const char * baseImage, const char * barImage, const char * animImage,
-									Array< const VRMenuObjectParms* > & outParms );
+									VArray< const VRMenuObjectParms* > & outParms );
 
     void				setProgressFrac( OvrVRMenuMgr & menuMgr, VRMenuObject * self, const float frac );
     void				setProgressbarState( VRMenuObject * self, const eProgressBarState state );

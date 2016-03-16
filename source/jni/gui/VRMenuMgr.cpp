@@ -285,12 +285,12 @@ private:
 	// private members
 	//--------------------------------------------------------------
 	UInt32						CurrentId;		// ever-incrementing object ID (well... up to 4 billion or so :)
-	Array< VRMenuObject* >		ObjectList;		// list of all menu objects
-	Array< int >				FreeList;		// list of free slots in the array
+	VArray< VRMenuObject* >		ObjectList;		// list of all menu objects
+	VArray< int >				FreeList;		// list of free slots in the array
 	bool						Initialized;	// true if Init has been called
 
 	SubmittedMenuObject			Submitted[MAX_SUBMITTED];	// all objects that have been submitted for rendering on the current frame
-	Array< SurfSort >			SortKeys;					// sort key consisting of distance from view and submission index
+	VArray< SurfSort >			SortKeys;					// sort key consisting of distance from view and submission index
 	int							NumSubmitted;				// number of currently submitted menu objects
 
 	GlProgram		            GUIProgramDiffuseOnly;					// has a diffuse only
@@ -430,14 +430,14 @@ menuHandle_t VRMenuMgrLocal::createObject( VRMenuObjectParms const & parms )
 
 	// create the handle first so we can enforce setting it be requiring it to be passed to the constructor
 	int index = -1;
-	if ( FreeList.sizeInt() > 0 )
+	if ( FreeList.length() > 0 )
 	{
 		index = FreeList.back();
 		FreeList.popBack();
 	}
 	else
 	{
-		index = ObjectList.sizeInt();
+		index = ObjectList.length();
 	}
 
 	UInt32 id = ++CurrentId;
@@ -454,7 +454,7 @@ menuHandle_t VRMenuMgrLocal::createObject( VRMenuObjectParms const & parms )
 	
 	obj->init( parms );
 
-	if ( index == ObjectList.sizeInt() )
+	if ( index == ObjectList.length() )
 	{
 		// we have to grow the array
 		ObjectList.append( obj );
@@ -522,19 +522,19 @@ void VRMenuMgrLocal::CondenseList()
 	// would invalidate any existing references to it).  
 	// This is the difference between the current size and the array capacity.
 	int const MIN_FREE = 64;	// very arbitray number
-	if ( ObjectList.capacityInt() - ObjectList.sizeInt() < MIN_FREE )
+	if ( ObjectList.capacityInt() - ObjectList.length() < MIN_FREE )
 	{
 		return;
 	}
 
 	// shrink to current size
-	ObjectList.resize( ObjectList.sizeInt() );	
+	ObjectList.resize( ObjectList.length() );
 
 	// create a new free list of just indices < the new size
-	Array< int > newFreeList;
-	for ( int i = 0; i < FreeList.sizeInt(); ++i ) 
+	VArray< int > newFreeList;
+	for ( int i = 0; i < FreeList.length(); ++i )
 	{
-		if ( FreeList[i] <= ObjectList.sizeInt() )
+		if ( FreeList[i] <= ObjectList.length() )
 		{
 			newFreeList.append( FreeList[i] );
 		}
@@ -569,7 +569,7 @@ VRMenuObject * VRMenuMgrLocal::toObject( menuHandle_t const handle ) const
 		WARN( "VRMenuMgrLocal::ToObject - invalid handle." );
 		return NULL;
 	}
-	if ( index >= ObjectList.sizeInt() )
+	if ( index >= ObjectList.length() )
 	{
 		WARN( "VRMenuMgrLocal::ToObject - index out of range." );
 		return NULL;
@@ -679,8 +679,8 @@ void VRMenuMgrLocal::SubmitForRenderingRecursive( OvrDebugLines & debugLines, Bi
 
 		// the menu object may have zero or more renderable surfaces (if 0, it may draw only text)
 		submissionIndex = curIndex;
-		Array< VRMenuSurface > const & surfaces = obj->surfaces();
-		for ( int i = 0; i < surfaces.sizeInt(); ++i )
+		VArray< VRMenuSurface > const & surfaces = obj->surfaces();
+		for ( int i = 0; i < surfaces.length(); ++i )
 		{
 			VRMenuSurface const & surf = surfaces[i];
 			if ( surf.isRenderable() )
@@ -754,7 +754,7 @@ void VRMenuMgrLocal::SubmitForRenderingRecursive( OvrDebugLines & debugLines, Bi
     cullBounds = obj->getTextLocalBounds( font ) * parentScale;
 
 	// submit all children
-    if ( obj->m_children.sizeInt() > 0 )
+    if ( obj->m_children.length() > 0 )
     {
 		// If this object has the render hierarchy order flag, then it and all its children should
 		// be depth sorted based on this object's distance + the inverse of the submission index.
@@ -764,7 +764,7 @@ void VRMenuMgrLocal::SubmitForRenderingRecursive( OvrDebugLines & debugLines, Bi
 		{
 			di = submissionIndex;
 		}
-	    for ( int i = 0; i < obj->m_children.sizeInt(); ++i )
+	    for ( int i = 0; i < obj->m_children.length(); ++i )
 	    {
 		    menuHandle_t childHandle = obj->m_children[i];
 		    VRMenuObjectLocal const * child = static_cast< VRMenuObjectLocal const * >( toObject( childHandle ) );
@@ -828,7 +828,7 @@ void VRMenuMgrLocal::SubmitForRenderingRecursive( OvrDebugLines & debugLines, Bi
 		}
 #endif
 		debugLines.AddLine( parentModelPose.Position, curModelPose.Position, Vector4f( 1.0f, 0.0f, 0.0f, 1.0f ), Vector4f( 0.0f, 0.0f, 1.0f, 1.0f ), 5, false );
-		if ( obj->surfaces().sizeInt() > 0 ) 
+		if ( obj->surfaces().length() > 0 )
 		{
 			fontSurface.DrawTextBillboarded3D( font, fp, curModelPose.Position, 0.5f, 
                     Vector4f( 0.8f, 0.8f, 0.8f, 1.0f ), obj->surfaces()[0].name().toCString() );

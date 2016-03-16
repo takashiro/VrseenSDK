@@ -174,7 +174,7 @@ private:
 
     // return true to continue with normal initialization (adding items) or false to skip.
     virtual bool    init_Impl( OvrVRMenuMgr & menuMgr, BitmapFont const & font, float const menuDistance,
-                            VRMenuFlags_t const & flags, Array< VRMenuObjectParms const * > & itemParms );
+                            VRMenuFlags_t const & flags, VArray< VRMenuObjectParms const * > & itemParms );
     virtual void    shutdown_Impl( OvrVRMenuMgr & menuMgr );
     virtual void    frameImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font,
                                     BitmapFontSurface & fontSurface, gazeCursorUserId_t const gazeUserId );

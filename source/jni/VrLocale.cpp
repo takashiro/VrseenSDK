@@ -10,9 +10,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 *************************************************************************************/
 
 #include "VrLocale.h"
-
-#include "Array.h"
 #include "Std.h"
+#include "VArray.h"
 #include "VArray.h"
 #include "VStringBuffer.h"
 #include "android/JniUtils.h"

@@ -5,7 +5,6 @@
 #include "DeviceHandle.h"
 
 #include "VMath.h"
-#include "Array.h"
 #include "VColor.h"
 #include "VArray.h"
 #include "Color.h"

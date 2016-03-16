@@ -326,7 +326,7 @@ void MovieSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFo
     //
     // add shadow and 3D icon to movie poster panels
     //
-	Array<VRMenuObject *> menuObjs;
+	VArray<VRMenuObject *> menuObjs;
     for ( uint i = 0; i < MoviePanelPositions.size(); ++i )
 	{
 		UIContainer *posterContainer = new UIContainer( Cinema );
@@ -605,7 +605,7 @@ void MovieSelectionView::StartTimer()
 const MovieDef *MovieSelectionView::GetSelectedMovie() const
 {
 	int selectedItem = MovieBrowser->GetSelection();
-    if ( ( selectedItem >= 0 ) && ( selectedItem < MovieList.sizeInt() ) )
+    if ( ( selectedItem >= 0 ) && ( selectedItem < MovieList.length() ) )
 	{
 		return MovieList[ selectedItem ];
 	}
@@ -613,7 +613,7 @@ const MovieDef *MovieSelectionView::GetSelectedMovie() const
 	return NULL;
 }
 
-void MovieSelectionView::SetMovieList( const Array<const MovieDef *> &movies, const MovieDef *nextMovie )
+void MovieSelectionView::SetMovieList( const VArray<const MovieDef *> &movies, const MovieDef *nextMovie )
 {
     LOG( "SetMovieList: %d movies", movies.size() );
 
