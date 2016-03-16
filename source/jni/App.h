@@ -198,7 +198,6 @@ public:
     bool				isAirplaneModeEnabled() const;
     bool				isTime24HourFormat() const;
 
-    void				setDoNotDisturbMode( bool const enable );
     bool				isDoNotDisturbMode() const;
 
     bool				isBluetoothEnabled() const;

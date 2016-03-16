@@ -279,7 +279,6 @@ struct App::Private
     jmethodID		gazeEventMethodId;
     jmethodID		enableComfortViewModeMethodId;
     jmethodID		getComfortViewModeMethodId;
-    jmethodID		setDoNotDisturbModeMethodId;
     jmethodID		getDoNotDisturbModeMethodId;
     jmethodID		getBluetoothEnabledMethodId;
     jmethodID		isAirplaneModeEnabledMethodId;
@@ -429,7 +428,6 @@ struct App::Private
         , gazeEventMethodId(nullptr)
         , enableComfortViewModeMethodId(nullptr)
         , getComfortViewModeMethodId(nullptr)
-        , setDoNotDisturbModeMethodId(nullptr)
         , getDoNotDisturbModeMethodId(nullptr)
         , getBluetoothEnabledMethodId(nullptr)
         , isAirplaneModeEnabledMethodId(nullptr)
@@ -629,7 +627,6 @@ App::App(JNIEnv *jni, jobject activityObject, VrAppInterface &interface)
     d->gazeEventMethodId = d->GetStaticMethodID(d->vrActivityClass, "gazeEventFromNative", "(FFZZLandroid/app/Activity;)V");
     d->enableComfortViewModeMethodId = d->GetStaticMethodID(d->vrLibClass, "enableComfortViewMode", "(Landroid/app/Activity;Z)V");
     d->getComfortViewModeMethodId = d->GetStaticMethodID(d->vrLibClass, "getComfortViewModeEnabled", "(Landroid/app/Activity;)Z");
-    d->setDoNotDisturbModeMethodId = d->GetStaticMethodID(d->vrLibClass, "setDoNotDisturbMode", "(Landroid/app/Activity;Z)V");
     d->getDoNotDisturbModeMethodId = d->GetStaticMethodID(d->vrLibClass, "getDoNotDisturbMode", "(Landroid/app/Activity;)Z");
     d->getBluetoothEnabledMethodId = d->GetStaticMethodID(d->vrLibClass, "getBluetoothEnabled", "(Landroid/app/Activity;)Z");
     d->isAirplaneModeEnabledMethodId = d->GetStaticMethodID(d->vrLibClass, "isAirplaneModeEnabled", "(Landroid/app/Activity;)Z");
@@ -2443,14 +2440,6 @@ void App::setComfortModeEnabled(bool const enabled)
     if (d->enableComfortViewModeMethodId != nullptr && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0)
 	{
         d->vrJni->CallStaticVoidMethod(d->vrLibClass, d->enableComfortViewModeMethodId, d->javaObject, enabled);
-	}
-}
-
-void App::setDoNotDisturbMode(bool const enable)
-{
-    if (d->setDoNotDisturbModeMethodId != nullptr && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0)
-	{
-        d->vrJni->CallStaticVoidMethod(d->vrLibClass, d->setDoNotDisturbModeMethodId, d->javaObject, enable);
 	}
 }
 
