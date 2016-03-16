@@ -173,7 +173,7 @@ public:
 	void WordWrapText(VString & inOutText, const float widthMeters,
 			const float fontScale = 1.0f) const;
 	void WordWrapText(VString & inOutText, const float widthMeters,
-			NervGear::Array<NervGear::VString> wholeStrsList,
+			NervGear::VArray<NervGear::VString> wholeStrsList,
 			const float fontScale = 1.0f) const;
 
 	FontGlyphType const & GlyphForCharCode(uint32_t const charCode) const {
@@ -859,13 +859,13 @@ bool BitmapFontLocal::LoadImageFromBuffer(char const * imageName,
 // BitmapFontLocal::WordWrapText
 void BitmapFontLocal::WordWrapText(VString & inOutText, const float widthMeters,
 		const float fontScale) const {
-	WordWrapText(inOutText, widthMeters, NervGear::Array<NervGear::VString>(), fontScale);
+	WordWrapText(inOutText, widthMeters, NervGear::VArray<NervGear::VString>(), fontScale);
 }
 
 //==============================
 // BitmapFontLocal::WordWrapText
 void BitmapFontLocal::WordWrapText(VString & inOutText, const float widthMeters,
-		NervGear::Array<NervGear::VString> wholeStrsList, const float fontScale) const {
+		NervGear::VArray<NervGear::VString> wholeStrsList, const float fontScale) const {
 	float const xScale = FontInfo.ScaleFactorX * fontScale;
     const int32_t totalLength = (int) inOutText.length();
 	int32_t lastWhitespaceIndex = -1;
@@ -884,7 +884,7 @@ void BitmapFontLocal::WordWrapText(VString & inOutText, const float widthMeters,
 		FontGlyphType const & g = GlyphForCharCode(charCode);
 		lineWidth += g.AdvanceX * xScale;
 
-		for (int i = 0; i < wholeStrsList.sizeInt(); ++i) {
+		for (int i = 0; i < wholeStrsList.length(); ++i) {
             int curWholeStrLen = (int) wholeStrsList[i].length();
 			int endPos = pos + curWholeStrLen;
 

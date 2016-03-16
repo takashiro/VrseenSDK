@@ -106,7 +106,7 @@ namespace NervGear
             const OvrMetaDatum *	data;
             bool					isFavorite;
 		};
-        Array< Favorite >	m_favoritesBuffer;
+        VArray< Favorite >	m_favoritesBuffer;
         bool				m_bufferDirty;
 	};
 

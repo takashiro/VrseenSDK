@@ -951,7 +951,7 @@ const OvrMetaDatum & OvrMetaData::getMetaDatum( const int index ) const
 }
 
 
-bool OvrMetaData::getMetaData( const Category & category, Array< const OvrMetaDatum * > & outMetaData ) const
+bool OvrMetaData::getMetaData( const Category & category, VArray< const OvrMetaDatum * > & outMetaData ) const
 {
 	const int numPanos = category.datumIndicies.length();
 	for ( int i = 0; i < numPanos; ++i )

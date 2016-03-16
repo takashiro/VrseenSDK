@@ -107,7 +107,7 @@ public:
 
 	// Accessors
     const FolderView *					getFolderView( int index ) const;
-    int									numFolders() const					{ return m_folders.sizeInt(); }
+    int									numFolders() const					{ return m_folders.length(); }
     int									circumferencePanelSlots() const		{ return m_circumferencePanelSlots; }
     float								radius() const						{ return m_radius; }
     float 								panelHeight() const					{ return m_panelHeight; }
@@ -197,7 +197,7 @@ protected:
     RootDirection				rootAdjust() const						{ return m_onEnterMenuRootAdjust; }
 
 	// Rebuilds a folder using passed in data
-    void						rebuildFolder( OvrMetaData & metaData, const int folderIndex, const Array< const OvrMetaDatum * > & data );
+    void						rebuildFolder( OvrMetaData & metaData, const int folderIndex, const VArray< const OvrMetaDatum * > & data );
 
 protected:
     App *						m_app;
@@ -243,7 +243,7 @@ private:
     bool				m_noMedia;
     bool				m_allowPanelTouchUp;
 
-    Array< FolderView * >	m_folders;
+    VArray< FolderView * >	m_folders;
 
     menuHandle_t 		m_scrollSuggestionRootHandle;
 
@@ -259,7 +259,7 @@ private:
         VString thumbDestination;
         VString loadCmd;
 	};
-    Array< OvrCreateThumbCmd > m_thumbCreateAndLoadCommands;
+    VArray< OvrCreateThumbCmd > m_thumbCreateAndLoadCommands;
     VMessageQueue		m_backgroundCommands;
     VArray< VString >		m_thumbSearchPaths;
     VString				m_appCachePath;

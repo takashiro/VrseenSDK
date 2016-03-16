@@ -14,6 +14,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "Android/JniUtils.h"
 #include "Android/LogUtils.h"
 #include "Array.h"
+#include "VArray.h"
 #include "VString.h"			// for ReadFreq()
 #include "VLog.h"
 
@@ -25,7 +26,7 @@ public:
 	void RegisterConsoleFunction( const char * name, consoleFn_t function )
 	{
 		//LOG( "Registering console function '%s'", name );
-		for ( int i = 0 ; i < ConsoleFunctions.sizeInt(); ++i )
+		for ( int i = 0 ; i < ConsoleFunctions.length(); ++i )
 		{
 			if ( OVR_stricmp( ConsoleFunctions[i].GetName(), name ) == 0 )
 			{
@@ -62,7 +63,7 @@ public:
 		}
 
 		LOG( "ExecuteConsoleFunction( %s, %s )", cmdName, parms );
-		for ( int i = 0 ; i < ConsoleFunctions.sizeInt(); ++i )
+		for ( int i = 0 ; i < ConsoleFunctions.length(); ++i )
 		{
 			LOG( "Checking console function '%s'", ConsoleFunctions[i].GetName() );
 			if ( OVR_stricmp( ConsoleFunctions[i].GetName(), cmdName ) == 0 )
@@ -94,7 +95,7 @@ private:
 		consoleFn_t		Function;
 	};
 
-	Array< OvrConsoleFunction >	ConsoleFunctions;
+	VArray< OvrConsoleFunction >	ConsoleFunctions;
 };
 
 OvrConsole * Console = NULL;
