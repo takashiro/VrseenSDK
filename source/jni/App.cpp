@@ -279,7 +279,6 @@ struct App::Private
     jmethodID		gazeEventMethodId;
     jmethodID		enableComfortViewModeMethodId;
     jmethodID		getComfortViewModeMethodId;
-    jmethodID		getBluetoothEnabledMethodId;
     jmethodID		isAirplaneModeEnabledMethodId;
     jmethodID		isTime24HourFormatId;
 
@@ -427,7 +426,6 @@ struct App::Private
         , gazeEventMethodId(nullptr)
         , enableComfortViewModeMethodId(nullptr)
         , getComfortViewModeMethodId(nullptr)
-        , getBluetoothEnabledMethodId(nullptr)
         , isAirplaneModeEnabledMethodId(nullptr)
         , isTime24HourFormatId(nullptr)
         , paused(true)
@@ -625,7 +623,6 @@ App::App(JNIEnv *jni, jobject activityObject, VrAppInterface &interface)
     d->gazeEventMethodId = d->GetStaticMethodID(d->vrActivityClass, "gazeEventFromNative", "(FFZZLandroid/app/Activity;)V");
     d->enableComfortViewModeMethodId = d->GetStaticMethodID(d->vrLibClass, "enableComfortViewMode", "(Landroid/app/Activity;Z)V");
     d->getComfortViewModeMethodId = d->GetStaticMethodID(d->vrLibClass, "getComfortViewModeEnabled", "(Landroid/app/Activity;)Z");
-    d->getBluetoothEnabledMethodId = d->GetStaticMethodID(d->vrLibClass, "getBluetoothEnabled", "(Landroid/app/Activity;)Z");
     d->isAirplaneModeEnabledMethodId = d->GetStaticMethodID(d->vrLibClass, "isAirplaneModeEnabled", "(Landroid/app/Activity;)Z");
     d->isTime24HourFormatId = d->GetStaticMethodID(d->vrLibClass, "isTime24HourFormat", "(Landroid/app/Activity;)Z");
 
@@ -2468,16 +2465,6 @@ bool App::isAirplaneModeEnabled() const
     if (d->isAirplaneModeEnabledMethodId != nullptr )
 	{
         r = d->vrJni->CallStaticBooleanMethod(d->vrLibClass, d->isAirplaneModeEnabledMethodId, d->javaObject);
-	}
-	return r;
-}
-
-bool App::isBluetoothEnabled() const
-{
-	bool r = false;
-    if (d->getBluetoothEnabledMethodId != nullptr)
-	{
-        r = d->vrJni->CallStaticBooleanMethod(d->vrLibClass, d->getBluetoothEnabledMethodId, d->javaObject);
 	}
 	return r;
 }
