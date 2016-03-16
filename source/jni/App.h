@@ -198,8 +198,6 @@ public:
     bool				isAirplaneModeEnabled() const;
     bool				isTime24HourFormat() const;
 
-    bool				isDoNotDisturbMode() const;
-
     bool				isBluetoothEnabled() const;
 
     //-----------------------------------------------------------------

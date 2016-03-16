@@ -279,7 +279,6 @@ struct App::Private
     jmethodID		gazeEventMethodId;
     jmethodID		enableComfortViewModeMethodId;
     jmethodID		getComfortViewModeMethodId;
-    jmethodID		getDoNotDisturbModeMethodId;
     jmethodID		getBluetoothEnabledMethodId;
     jmethodID		isAirplaneModeEnabledMethodId;
     jmethodID		isTime24HourFormatId;
@@ -428,7 +427,6 @@ struct App::Private
         , gazeEventMethodId(nullptr)
         , enableComfortViewModeMethodId(nullptr)
         , getComfortViewModeMethodId(nullptr)
-        , getDoNotDisturbModeMethodId(nullptr)
         , getBluetoothEnabledMethodId(nullptr)
         , isAirplaneModeEnabledMethodId(nullptr)
         , isTime24HourFormatId(nullptr)
@@ -627,7 +625,6 @@ App::App(JNIEnv *jni, jobject activityObject, VrAppInterface &interface)
     d->gazeEventMethodId = d->GetStaticMethodID(d->vrActivityClass, "gazeEventFromNative", "(FFZZLandroid/app/Activity;)V");
     d->enableComfortViewModeMethodId = d->GetStaticMethodID(d->vrLibClass, "enableComfortViewMode", "(Landroid/app/Activity;Z)V");
     d->getComfortViewModeMethodId = d->GetStaticMethodID(d->vrLibClass, "getComfortViewModeEnabled", "(Landroid/app/Activity;)Z");
-    d->getDoNotDisturbModeMethodId = d->GetStaticMethodID(d->vrLibClass, "getDoNotDisturbMode", "(Landroid/app/Activity;)Z");
     d->getBluetoothEnabledMethodId = d->GetStaticMethodID(d->vrLibClass, "getBluetoothEnabled", "(Landroid/app/Activity;)Z");
     d->isAirplaneModeEnabledMethodId = d->GetStaticMethodID(d->vrLibClass, "isAirplaneModeEnabled", "(Landroid/app/Activity;)Z");
     d->isTime24HourFormatId = d->GetStaticMethodID(d->vrLibClass, "isTime24HourFormat", "(Landroid/app/Activity;)Z");
@@ -2441,16 +2438,6 @@ void App::setComfortModeEnabled(bool const enabled)
 	{
         d->vrJni->CallStaticVoidMethod(d->vrLibClass, d->enableComfortViewModeMethodId, d->javaObject, enabled);
 	}
-}
-
-bool App::isDoNotDisturbMode() const
-{
-	bool r = false;
-    if (d->getDoNotDisturbModeMethodId != nullptr && VOsBuild::getString(VOsBuild::Model).icompare("SM-G906S") != 0)
-	{
-        r = d->vrJni->CallStaticBooleanMethod(d->vrLibClass, d->getDoNotDisturbModeMethodId, d->javaObject);
-	}
-	return r;
 }
 
 int App::wifiSignalLevel() const
