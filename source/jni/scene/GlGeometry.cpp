@@ -19,10 +19,11 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "Alg.h"
 #include "VMath.h"
-#include "Array.h"
+#include "VArray.h"
+#include "VArray.h"
 #include "Android/GlUtils.h"
 #include "Android/LogUtils.h"
-
+#include "VArray.h"
 #include "GlProgram.h"
 
 /*
@@ -34,7 +35,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 NV_NAMESPACE_BEGIN
 
 template< typename _attrib_type_ >
-void PackVertexAttribute( Array< uint8_t > & packed, const Array< _attrib_type_ > & attrib,
+void PackVertexAttribute( VArray< uint8_t > & packed, const VArray< _attrib_type_ > & attrib,
 				const int glLocation, const int glType, const int glComponents )
 {
 	if ( attrib.size() > 0 )
@@ -43,7 +44,7 @@ void PackVertexAttribute( Array< uint8_t > & packed, const Array< _attrib_type_ 
 		const size_t size = attrib.size() * sizeof( attrib[0] );
 
 		packed.resize( offset + size );
-		memcpy( &packed[offset], attrib.dataPtr(), size );
+		memcpy( &packed[offset], attrib.data(), size );
 
 		glEnableVertexAttribArray( glLocation );
 		glVertexAttribPointer( glLocation, glComponents, glType, false, sizeof( attrib[0] ), (void *)( offset ) );
@@ -54,7 +55,7 @@ void PackVertexAttribute( Array< uint8_t > & packed, const Array< _attrib_type_ 
 	}
 }
 
-void GlGeometry::Create( const VertexAttribs & attribs, const Array< TriangleIndex > & indices )
+void GlGeometry::Create( const VertexAttribs & attribs, const VArray< TriangleIndex > & indices )
 {
 	vertexCount = attribs.position.length();
 	indexCount = indices.length();
@@ -65,7 +66,7 @@ void GlGeometry::Create( const VertexAttribs & attribs, const Array< TriangleInd
 	glBindVertexArrayOES_( vertexArrayObject );
 	glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer );
 
-	Array< uint8_t > packed;
+	VArray< uint8_t > packed;
 	PackVertexAttribute( packed, attribs.position,		VERTEX_ATTRIBUTE_LOCATION_POSITION,			GL_FLOAT,	3 );
 	PackVertexAttribute( packed, attribs.normal,		VERTEX_ATTRIBUTE_LOCATION_NORMAL,			GL_FLOAT,	3 );
 	PackVertexAttribute( packed, attribs.tangent,		VERTEX_ATTRIBUTE_LOCATION_TANGENT,			GL_FLOAT,	3 );
@@ -76,10 +77,10 @@ void GlGeometry::Create( const VertexAttribs & attribs, const Array< TriangleInd
 	PackVertexAttribute( packed, attribs.jointIndices,	VERTEX_ATTRIBUTE_LOCATION_JOINT_INDICES,	GL_INT,		4 );
 	PackVertexAttribute( packed, attribs.jointWeights,	VERTEX_ATTRIBUTE_LOCATION_JOINT_WEIGHTS,	GL_FLOAT,	4 );
 
-	glBufferData( GL_ARRAY_BUFFER, packed.size() * sizeof( packed[0] ), packed.dataPtr(), GL_STATIC_DRAW );
+	glBufferData( GL_ARRAY_BUFFER, packed.size() * sizeof( packed[0] ), packed.data(), GL_STATIC_DRAW );
 
 	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, indexBuffer );
-	glBufferData( GL_ELEMENT_ARRAY_BUFFER, indices.length() * sizeof( indices[0] ), indices.dataPtr(), GL_STATIC_DRAW );
+	glBufferData( GL_ELEMENT_ARRAY_BUFFER, indices.length() * sizeof( indices[0] ), indices.data(), GL_STATIC_DRAW );
 
 	glBindVertexArrayOES_( 0 );
 
@@ -102,7 +103,7 @@ void GlGeometry::Update( const VertexAttribs & attribs )
 
 	glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer );
 
-	Array< uint8_t > packed;
+	VArray< uint8_t > packed;
 	PackVertexAttribute( packed, attribs.position,		VERTEX_ATTRIBUTE_LOCATION_POSITION,			GL_FLOAT,	3 );
 	PackVertexAttribute( packed, attribs.normal,		VERTEX_ATTRIBUTE_LOCATION_NORMAL,			GL_FLOAT,	3 );
 	PackVertexAttribute( packed, attribs.tangent,		VERTEX_ATTRIBUTE_LOCATION_TANGENT,			GL_FLOAT,	3 );
@@ -113,7 +114,7 @@ void GlGeometry::Update( const VertexAttribs & attribs )
 	PackVertexAttribute( packed, attribs.jointIndices,	VERTEX_ATTRIBUTE_LOCATION_JOINT_INDICES,	GL_INT,		4 );
 	PackVertexAttribute( packed, attribs.jointWeights,	VERTEX_ATTRIBUTE_LOCATION_JOINT_WEIGHTS,	GL_FLOAT,	4 );
 
-	glBufferData( GL_ARRAY_BUFFER, packed.size() * sizeof( packed[0] ), packed.dataPtr(), GL_STATIC_DRAW );
+	glBufferData( GL_ARRAY_BUFFER, packed.size() * sizeof( packed[0] ), packed.data(), GL_STATIC_DRAW );
 }
 
 void GlGeometry::Draw() const
@@ -167,7 +168,7 @@ GlGeometry BuildFadedScreenMask( const float xFraction, const float yFraction )
 		}
 	}
 
-	Array< NervGear::TriangleIndex > indices;
+	VArray< NervGear::TriangleIndex > indices;
 	indices.resize( 25 * 6 );
 
 	// Should we flip the triangulation on the corners?
@@ -223,7 +224,7 @@ GlGeometry BuildTesselatedQuad( const int horizontal, const int vertical,
 		}
 	}
 
-	Array< TriangleIndex > indices;
+	VArray< TriangleIndex > indices;
 	indices.resize( horizontal * vertical * 6 * ( twoSided ? 2 : 1 ) );
 
 	// If this is to be used to draw a linear format texture, like
@@ -295,7 +296,7 @@ GlGeometry BuildTesselatedCylinder( const float radius, const float height, cons
 		}
 	}
 
-	Array< TriangleIndex > indices;
+	VArray< TriangleIndex > indices;
 	indices.resize( horizontal * vertical * 6 );
 
 	// If this is to be used to draw a linear format texture, like
@@ -357,7 +358,7 @@ GlGeometry BuildVignette( const float xFraction, const float yFraction )
 		}
 	}
 
-	Array< TriangleIndex > indices;
+	VArray< TriangleIndex > indices;
 	indices.resize( 24 * 6 );
 
 	int index = 0;
@@ -441,7 +442,7 @@ GlGeometry BuildDome( const float latRads, const float uScale, const float vScal
 		}
 	}
 
-	Array< TriangleIndex > indices;
+	VArray< TriangleIndex > indices;
 	indices.resize( horizontal * vertical * 6 );
 
 	int index = 0;
@@ -534,7 +535,7 @@ GlGeometry BuildGlobe( const float uScale, const float vScale )
 		}
 	}
 
-	Array< TriangleIndex > indices;
+	VArray< TriangleIndex > indices;
 	indices.resize( horizontal * vertical * 6 );
 
 	int index = 0;
@@ -594,7 +595,7 @@ GlGeometry BuildSpherePatch( const float fov )
 		}
 	}
 
-	Array< TriangleIndex > indices;
+	VArray< TriangleIndex > indices;
 	indices.resize( horizontal * vertical * 6 );
 
 	int index = 0;
@@ -663,7 +664,7 @@ GlGeometry BuildCalibrationLines( const int extraLines, const bool fullGrid )
 		}
 	}
 
-	Array< TriangleIndex > indices;
+	VArray< TriangleIndex > indices;
 	indices.resize( lineCount * 4 );
 
 	int index = 0;
@@ -695,7 +696,7 @@ GlGeometry BuildUnitCubeLines()
 
 	const TriangleIndex staticIndices[24] = { 0,1, 1,3, 3,2, 2,0, 4,5, 5,7, 7,6, 6,4, 0,4, 1,5, 3,7, 2,6 };
 
-	Array< TriangleIndex > indices;
+	VArray< TriangleIndex > indices;
 	indices.resize( 24 );
 	memcpy( &indices[0], staticIndices, 24 * sizeof( indices[0] ) );
 

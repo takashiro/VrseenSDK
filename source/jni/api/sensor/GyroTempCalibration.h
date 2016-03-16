@@ -3,7 +3,8 @@
 #include "vglobal.h"
 
 #include "Device.h"
-#include "Array.h"
+#include "VArray.h"
+#include "VArray.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -14,7 +15,7 @@ public:
 
 	void Initialize(const VString& deviceSerialNumber);
 
-	void GetAllTemperatureReports(Array<Array<TemperatureReport> >* tempReports);
+	void GetAllTemperatureReports(VArray<VArray<TemperatureReport> >* tempReports);
 	void SetTemperatureReport(const TemperatureReport& tempReport);
 
 private:
@@ -30,7 +31,7 @@ private:
 	};
 	VString GetBaseOVRPath(bool create_dir);
 	VString GetCalibrationPath(bool create_dir);
-	void TokenizeString(Array<VString>* tokens, const VString& str, char separator);
+	void TokenizeString(VArray<VString>* tokens, const VString& str, char separator);
 	void GyroCalibrationFromString(const VString& str);
 	VString GyroCalibrationToString();
 	void GetTemperatureReport(int binIndex, int sampleIndex, TemperatureReport* tempReport);

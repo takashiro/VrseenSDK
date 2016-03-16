@@ -3,7 +3,7 @@
 #include "vglobal.h"
 
 #include "VMath.h"
-#include "Array.h"
+#include "VArray.h"
 #include "VString.h"
 #include "Android/GlUtils.h"
 
@@ -129,7 +129,7 @@ struct ModelDef
 {
 	ModelDef() {};
 
-    Array<SurfaceDef>	surfaces;
+    VArray<SurfaceDef>	surfaces;
 };
 
 struct SurfaceTextureOverload
@@ -163,7 +163,7 @@ struct ModelState
 	// because of axializing the rotated bounds.  Not doing it
 	// for now.
 
-	Array< Matrix4f >	Joints;			// OpenGL column major
+	VArray< Matrix4f >	Joints;			// OpenGL column major
 
 	ModelStateFlags		Flags;
 
@@ -171,7 +171,7 @@ struct ModelState
 	void	ClearSurfaceTextureOverload( const int surfaceIndex );
 
 	// Other surface customization data will be added here.
-    ArrayPOD< SurfaceTextureOverload > SurfaceTextureOverloads;
+    VArray< SurfaceTextureOverload > SurfaceTextureOverloads;
 };
 
 struct DrawCounters
@@ -200,7 +200,7 @@ struct DrawSurface
 {
 	void Clear() { matrices = NULL; joints = NULL; surface = NULL; textureOverload = 0; }
 	const DrawMatrices *		matrices;			// OpenGL column major
-	const Array< Matrix4f > *	joints;				// OpenGL column major
+	const VArray< Matrix4f > *	joints;				// OpenGL column major
 	const SurfaceDef *			surface;
 	GLuint						textureOverload;	// if != 0, overload with this texture handle
 };
@@ -219,7 +219,7 @@ struct DrawSurfaceList
 // Not thread safe, uses a static buffer for the surfaces.
 // Additional, application specific culling or surface insertion can be done on the
 // results of this call before calling DrawSurfaceList.
-const DrawSurfaceList & BuildDrawSurfaceList( const Array<ModelState> & modelRenderList,
+const DrawSurfaceList & BuildDrawSurfaceList( const VArray<ModelState> & modelRenderList,
 							const Matrix4f & viewMatrix, const Matrix4f & projectionMatrix );
 
 // Draws a list of surfaces in order.

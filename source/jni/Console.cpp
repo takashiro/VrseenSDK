@@ -13,7 +13,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "Std.h"
 #include "Android/JniUtils.h"
 #include "Android/LogUtils.h"
-#include "Array.h"
+#include "VArray.h"
+#include "VArray.h"
 #include "VString.h"			// for ReadFreq()
 #include "VLog.h"
 
@@ -40,7 +41,7 @@ public:
 
 	void UnRegisterConsoleFunctions()
 	{
-		ConsoleFunctions.clearAndRelease();
+		ConsoleFunctions.clear();
 	}
 
 	void ExecuteConsoleFunction( long appPtr, char const * commandStr ) const
@@ -94,7 +95,7 @@ private:
 		consoleFn_t		Function;
 	};
 
-	Array< OvrConsoleFunction >	ConsoleFunctions;
+	VArray< OvrConsoleFunction >	ConsoleFunctions;
 };
 
 OvrConsole * Console = NULL;

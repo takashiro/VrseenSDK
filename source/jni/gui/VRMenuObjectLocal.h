@@ -226,7 +226,7 @@ public:
     virtual void				addComponent( VRMenuComponent * component );
     virtual	void				removeComponent( VRMenuComponent * component );
 
-    virtual Array< VRMenuComponent* > const & componentList() const { return m_components; }
+    virtual VArray< VRMenuComponent* > const & componentList() const { return m_components; }
 
     virtual VRMenuComponent *	getComponentById_Impl( int id ) const;
     virtual VRMenuComponent *	getComponentByName_Impl( const char * typeName ) const;
@@ -348,7 +348,7 @@ public:
 	//--------------------------------------------------------------
     VRMenuSurface const &			getSurface( int const s ) const { return m_surfaces[s]; }
     VRMenuSurface &					getSurface( int const s ) { return m_surfaces[s]; }
-    Array< VRMenuSurface > const &	surfaces() const { return m_surfaces; }
+    VArray< VRMenuSurface > const &	surfaces() const { return m_surfaces; }
 
     float						wrapWidth() const { return m_wrapWidth; }
 
@@ -366,13 +366,13 @@ private:
     Posef                       m_textLocalPose;  // local-space position and orientation of text, local to this node (i.e. after LocalPose / LocalScale are applied)
     Vector3f                    m_textLocalScale; // local-space scale of the text at this node
     VString					m_text;			// text to display on this object
-    Array< menuHandle_t >		m_children;		// array of direct children of this object
-    Array< VRMenuComponent* >	m_components;		// array of components on this object
+    VArray< menuHandle_t >		m_children;		// array of direct children of this object
+    VArray< VRMenuComponent* >	m_components;		// array of components on this object
     OvrCollisionPrimitive *		m_collisionPrimitive;		// collision surface, if any
     ContentFlags_t				m_contents;		// content flags for this object
 
 	// may be cleaner to put texture and geometry in a separate surface structure
-    Array< VRMenuSurface >		m_surfaces;
+    VArray< VRMenuSurface >		m_surfaces;
     Vector4f					m_color;				// color modulation
     Vector4f                    m_textColor;          // color modulation for text
     Vector2f					m_colorTableOffset;	// offset for color-ramp shader fx

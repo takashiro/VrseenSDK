@@ -187,7 +187,7 @@ VString GetImage( eScrollBarImage const type, const bool vertical )
 
 void OvrScrollBarComponent::getScrollBarParms( VRMenu & menu, float scrollBarLength, const VRMenuId_t parentId, const VRMenuId_t rootId, const VRMenuId_t xformId,
 	const VRMenuId_t baseId, const VRMenuId_t thumbId, const Posef & rootLocalPose, const Posef & xformPose, const int startElementIndex, 
-	const int numElements, const bool verticalBar, const Vector4f & thumbBorder, Array< const VRMenuObjectParms* > & parms )
+	const int numElements, const bool verticalBar, const Vector4f & thumbBorder, VArray< const VRMenuObjectParms* > & parms )
 {
 	// Build up the scrollbar parms
 	OvrScrollBarComponent * scrollComponent = new OvrScrollBarComponent( rootId, baseId, thumbId, startElementIndex, numElements );
@@ -195,9 +195,9 @@ void OvrScrollBarComponent::getScrollBarParms( VRMenu & menu, float scrollBarLen
 
 	// parms for the root object that holds all the scrollbar components
 	{
-		Array< VRMenuComponent* > comps;
+		VArray< VRMenuComponent* > comps;
 		comps.append( scrollComponent );
-		Array< VRMenuSurfaceParms > surfParms;
+		VArray< VRMenuSurfaceParms > surfParms;
 		char const * text = "scrollBarRoot";
 		Vector3f scale( 1.0f );
 		Posef pose( rootLocalPose );
@@ -216,8 +216,8 @@ void OvrScrollBarComponent::getScrollBarParms( VRMenu & menu, float scrollBarLen
 
 	// add parms for the object that serves as a transform 
 	{
-		Array< VRMenuComponent* > comps;
-		Array< VRMenuSurfaceParms > surfParms;
+		VArray< VRMenuComponent* > comps;
+		VArray< VRMenuSurfaceParms > surfParms;
 		char const * text = "scrollBarTransform";
 		Vector3f scale( 1.0f );
 		Posef pose( xformPose );
@@ -249,8 +249,8 @@ void OvrScrollBarComponent::getScrollBarParms( VRMenu & menu, float scrollBarLen
 			scrollComponent->setScrollBarBaseHeight( (float)( sbHeight ) );
 		}
 
-		Array< VRMenuComponent* > comps;
-		Array< VRMenuSurfaceParms > surfParms;
+		VArray< VRMenuComponent* > comps;
+		VArray< VRMenuSurfaceParms > surfParms;
 		char const * text = "scrollBase";
 		VRMenuSurfaceParms baseParms( text,
 				sbTexture, sbWidth, sbHeight, SURFACE_TEXTURE_DIFFUSE,
@@ -279,8 +279,8 @@ void OvrScrollBarComponent::getScrollBarParms( VRMenu & menu, float scrollBarLen
 		scrollComponent->setScrollBarThumbWidth(  (float)( stWidth ) );
 		scrollComponent->setScrollBarThumbHeight( (float)( stHeight ) );
 
-		Array< VRMenuComponent* > comps;
-		Array< VRMenuSurfaceParms > surfParms;
+		VArray< VRMenuComponent* > comps;
+		VArray< VRMenuSurfaceParms > surfParms;
 		char const * text = "scrollThumb";
 		VRMenuSurfaceParms thumbParms( text,
 				stTexture, stWidth, stHeight, SURFACE_TEXTURE_DIFFUSE,

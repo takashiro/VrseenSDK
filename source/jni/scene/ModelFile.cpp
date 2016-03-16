@@ -15,7 +15,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "Alg.h"
 #include "VMath.h"
-#include "Array.h"
+#include "VArray.h"
 #include "VString.h"
 #include "String_Utils.h"
 #include "VJson.h"
@@ -168,7 +168,7 @@ void LoadModelFileTexture( ModelFile & model, const char * textureName,
 }
 
 template< typename _type_ >
-void ReadModelArray( Array< _type_ > & out, const char * string, const VBinaryFile & bin, const int numElements )
+void ReadModelArray( VArray< _type_ > & out, const char * string, const VBinaryFile & bin, const int numElements )
 {
 	if ( string != NULL && string[0] != '\0' && numElements > 0 )
 	{
@@ -224,7 +224,7 @@ void LoadModelFileJson( ModelFile & model,
 				TEXTURE_OCCLUSION_TRANSPARENT
 			};
 
-			Array< GlTexture > glTextures;
+			VArray< GlTexture > glTextures;
 
 			const Json &texture_array( render_model.value( "textures" ) );
 			if ( texture_array.isArray() )
@@ -433,7 +433,7 @@ void LoadModelFileJson( ModelFile & model,
 						// Triangles
 						//
 
-						Array< TriangleIndex > indices;
+						VArray< TriangleIndex > indices;
 
 						const Json &triangles( surface.value( "triangles" ) );
 						if ( triangles.isObject() )

@@ -33,16 +33,16 @@ public:
 
     void			frame( App * app, const VrFrame & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font,
                             menuHandle_t const & rootHandle, Posef const & menuPose, 
-                            gazeCursorUserId_t const & gazeUserId, Array< VRMenuEvent > & events );
+                            gazeCursorUserId_t const & gazeUserId, VArray< VRMenuEvent > & events );
 
     void			handleEvents( App * app, const VrFrame & vrFrame, OvrVRMenuMgr & menuMgr,
-                            menuHandle_t const rootHandle, Array< VRMenuEvent > const & events ) const;
+                            menuHandle_t const rootHandle, VArray< VRMenuEvent > const & events ) const;
 
-    void			initComponents( Array< VRMenuEvent > & events );
-    void			opening( Array< VRMenuEvent > & events );
-    void			opened( Array< VRMenuEvent > & events );
-    void			closing( Array< VRMenuEvent > & events );
-    void			closed( Array< VRMenuEvent > & events );
+    void			initComponents( VArray< VRMenuEvent > & events );
+    void			opening( VArray< VRMenuEvent > & events );
+    void			opened( VArray< VRMenuEvent > & events );
+    void			closing( VArray< VRMenuEvent > & events );
+    void			closed( VArray< VRMenuEvent > & events );
 
     menuHandle_t	focusedHandle() const { return m_focusedHandle; }
 
@@ -57,7 +57,7 @@ private:
     bool            dispatchToComponents( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
                             VRMenuEvent const & event, VRMenuObject * receiver ) const;
     bool            dispatchToPath( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
-                            VRMenuEvent const & event, Array< menuHandle_t > const & path, bool const log ) const;
+                            VRMenuEvent const & event, VArray< menuHandle_t > const & path, bool const log ) const;
     bool            broadcastEvent( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
                             VRMenuEvent const & event, VRMenuObject * receiver ) const;
 };

@@ -17,7 +17,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VMessageQueue.h"
 #include "MetaDataManager.h"
 #include "ScrollManager.h"
-
+#include "VArray.h"
 NV_NAMESPACE_BEGIN
 
 class OvrFolderBrowserRootComponent;
@@ -33,7 +33,7 @@ class OvrFolderBrowser : public VRMenu
 public:
 	struct PanelView
 	{
-		PanelView() 
+		PanelView()
             : id( -1 )
 		{}
 
@@ -44,7 +44,7 @@ public:
 
 	struct FolderView
 	{
-		FolderView( const VString & name, const VString & tag ) 
+		FolderView( const VString & name, const VString & tag )
             : categoryTag( tag )
             , localizedName( name )
             , maxRotation( 0.0f )
@@ -58,7 +58,7 @@ public:
         menuHandle_t			scrollBarHandle;	// Handle to the scrollbar object
         menuHandle_t			wrapIndicatorHandle;
         float					maxRotation;		// Used by SwipeComponent
-        Array<PanelView>		panels;
+        VArray<PanelView>		panels;
 	};
 
 	static char const *			MENU_NAME;
@@ -138,7 +138,7 @@ protected:
 				float panelHeight,
 				float radius,
 				unsigned numSwipePanels,
-				unsigned thumbWidth, 
+				unsigned thumbWidth,
 				unsigned thumbHeight );
 
     virtual ~OvrFolderBrowser();
@@ -188,16 +188,16 @@ protected:
 
 	// Called on opening menu
     virtual void				onBrowserOpen() {}
-	
+
 	//================================================================================
-	
-	// OnEnterMenuRootAdjust is set to be performed the 
+
+	// OnEnterMenuRootAdjust is set to be performed the
 	// next time the menu is opened to adjust for a potentially deleted or added category
     void						setRootAdjust( const RootDirection dir )	{ m_onEnterMenuRootAdjust = dir;  }
     RootDirection				rootAdjust() const						{ return m_onEnterMenuRootAdjust; }
 
 	// Rebuilds a folder using passed in data
-    void						rebuildFolder( OvrMetaData & metaData, const int folderIndex, const Array< const OvrMetaDatum * > & data );
+    void						rebuildFolder( OvrMetaData & metaData, const int folderIndex, const VArray< const OvrMetaDatum * > & data );
 
 protected:
     App *						m_app;
@@ -217,8 +217,8 @@ private:
 
     void				buildFolder( OvrMetaData::Category & category, FolderView * const folder, const OvrMetaData & metaData, VRMenuId_t foldersRootId, const int folderIndex );
     void				loadFolderPanels( const OvrMetaData & metaData, const OvrMetaData::Category & category, const int folderIndex, FolderView & folder,
-							 Array< VRMenuObjectParms const * > & outParms );
-    void				addPanelToFolder( const OvrMetaDatum * panoData, const int folderIndex, FolderView & folder, Array< VRMenuObjectParms const * >& outParms );
+							 VArray< VRMenuObjectParms const * > & outParms );
+    void				addPanelToFolder( const OvrMetaDatum * panoData, const int folderIndex, FolderView & folder, VArray< VRMenuObjectParms const * >& outParms );
     void				displaceFolder( int index, const Vector3f & direction, float distance, bool startOffSelf = false );
     void				updateFolderTitle( const FolderView * folder  );
     float				calcFolderMaxRotation( const FolderView * folder ) const;
@@ -243,12 +243,12 @@ private:
     bool				m_noMedia;
     bool				m_allowPanelTouchUp;
 
-    Array< FolderView * >	m_folders;
+    VArray< FolderView * >	m_folders;
 
     menuHandle_t 		m_scrollSuggestionRootHandle;
 
     RootDirection		m_onEnterMenuRootAdjust;
-	
+
 	// Checked at Frame() time for commands from the thumbnail/create thread
     VMessageQueue		m_textureCommands;
 
@@ -259,15 +259,15 @@ private:
         VString thumbDestination;
         VString loadCmd;
 	};
-    Array< OvrCreateThumbCmd > m_thumbCreateAndLoadCommands;
+    VArray< OvrCreateThumbCmd > m_thumbCreateAndLoadCommands;
     VMessageQueue		m_backgroundCommands;
-    Array< VString >		m_thumbSearchPaths;
+    VArray< VString >		m_thumbSearchPaths;
     VString				m_appCachePath;
 
 	// Keep a reference to Panel texture used for AA alpha when creating thumbnails
 	static unsigned char *		ThumbPanelBG;
-	
-	// Default panel textures (base and highlight) - loaded once 
+
+	// Default panel textures (base and highlight) - loaded once
     GLuint				m_defaultPanelTextureIds[ 2 ];
 
 	// Restricted Scrolling

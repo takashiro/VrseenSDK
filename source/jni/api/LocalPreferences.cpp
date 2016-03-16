@@ -14,7 +14,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include <stdio.h>
 
-#include "Array.h"
+#include "VArray.h"
 #include "VString.h"
 #include "MemBuffer.h"
 #include "Android/LogUtils.h"
@@ -29,7 +29,7 @@ public:
 	NervGear::VString	Value;
 };
 
-NervGear::Array<KeyPair>	LocalPreferences;
+NervGear::VArray<KeyPair>	LocalPreferences;
 
 static NervGear::VString ParseToken( const char * txt, const int start, const int stop, int & stopPoint  )
 {
@@ -145,5 +145,5 @@ void ovr_SetAllowLocalPreferencesFile( const bool allow )
 void ovr_ShutdownLocalPreferences()
 {
 	LOG( "ovr_ShutdownLocalPreferences" );
-	LocalPreferences.clearAndRelease();
+	LocalPreferences.clear();
 }

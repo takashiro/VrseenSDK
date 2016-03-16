@@ -103,7 +103,7 @@ private:
     udev_monitor*            HIDMonitor;
     int                      HIDMonHandle;     // the udev_monitor file handle
 
-    Array<HIDDevice*>        NotificationDevices;
+    VArray<HIDDevice*>        NotificationDevices;
 };
 
 }} // namespace NervGear::Linux

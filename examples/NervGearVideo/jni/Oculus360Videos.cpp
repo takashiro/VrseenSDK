@@ -25,7 +25,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 
 #include "VMath.h"
 #include "TypesafeNumber.h"
-#include "Array.h"
+#include "VArray.h"
 #include "VString.h"
 #include "String_Utils.h"
 #include "Android/GlUtils.h"

@@ -15,7 +15,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "GazeCursorLocal.h"
 
 #include "Types.h"
-#include "Array.h"
+#include "VArray.h"
 #include "String_Utils.h"
 #include "Android/LogUtils.h"
 #include "api/VrApi.h"

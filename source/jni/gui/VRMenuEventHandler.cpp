@@ -40,7 +40,7 @@ VRMenuEventHandler::~VRMenuEventHandler()
 // VRMenuEventHandler::Frame
 void VRMenuEventHandler::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font, 
         menuHandle_t const & rootHandle,Posef const & menuPose, gazeCursorUserId_t const & gazeUserId, 
-		Array< VRMenuEvent > & events )
+		VArray< VRMenuEvent > & events )
 {
 	VRMenuObject * root = menuMgr.toObject( rootHandle );
 	if ( root == NULL )
@@ -161,7 +161,7 @@ void VRMenuEventHandler::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr
 
 //==============================
 // VRMenuEventHandler::InitComponents
-void VRMenuEventHandler::initComponents( Array< VRMenuEvent > & events )
+void VRMenuEventHandler::initComponents( VArray< VRMenuEvent > & events )
 {
 	VRMenuEvent event( VRMENU_EVENT_INIT, EVENT_DISPATCH_BROADCAST, menuHandle_t(), Vector3f( 0.0f ), HitTestResult() );
 	events.append( event );
@@ -169,7 +169,7 @@ void VRMenuEventHandler::initComponents( Array< VRMenuEvent > & events )
 
 //==============================
 // VRMenuEventHandler::Opening
-void VRMenuEventHandler::opening( Array< VRMenuEvent > & events )
+void VRMenuEventHandler::opening( VArray< VRMenuEvent > & events )
 {
 	LOG( "Opening" );
 	// broadcast the opening event
@@ -179,7 +179,7 @@ void VRMenuEventHandler::opening( Array< VRMenuEvent > & events )
 
 //==============================
 // VRMenuEventHandler::Opened
-void VRMenuEventHandler::opened( Array< VRMenuEvent > & events )
+void VRMenuEventHandler::opened( VArray< VRMenuEvent > & events )
 {
 	LOG( "Opened" );
 	// broadcast the opened event
@@ -189,7 +189,7 @@ void VRMenuEventHandler::opened( Array< VRMenuEvent > & events )
 
 //==============================
 // VRMenuEventHandler::Closing
-void VRMenuEventHandler::closing( Array< VRMenuEvent > & events )
+void VRMenuEventHandler::closing( VArray< VRMenuEvent > & events )
 {
 	LOG( "Closing" );
 	// broadcast the closing event
@@ -199,7 +199,7 @@ void VRMenuEventHandler::closing( Array< VRMenuEvent > & events )
 
 //==============================
 // VRMenuEventHandler::Closed
-void VRMenuEventHandler::closed( Array< VRMenuEvent > & events )
+void VRMenuEventHandler::closed( VArray< VRMenuEvent > & events )
 {
 	LOG( "Closed" );
 	// broadcast the closed event
@@ -241,7 +241,7 @@ static inline void LogEventType( VRMenuEvent const & event, char const * fmt, ..
 //==============================
 // FindTargetPath
 static void FindTargetPath( OvrVRMenuMgr const & menuMgr, 
-        menuHandle_t const curHandle, Array< menuHandle_t > & targetPath ) 
+        menuHandle_t const curHandle, VArray< menuHandle_t > & targetPath )
 {
     VRMenuObject * obj = menuMgr.toObject( curHandle );
     if ( obj != NULL )
@@ -254,7 +254,7 @@ static void FindTargetPath( OvrVRMenuMgr const & menuMgr,
 //==============================
 // FindTargetPath
 static void FindTargetPath( OvrVRMenuMgr const & menuMgr, menuHandle_t const rootHandle, 
-        menuHandle_t const curHandle, Array< menuHandle_t > & targetPath ) 
+        menuHandle_t const curHandle, VArray< menuHandle_t > & targetPath )
 {
     FindTargetPath( menuMgr, curHandle, targetPath );
     if ( targetPath.length() == 0 )
@@ -266,7 +266,7 @@ static void FindTargetPath( OvrVRMenuMgr const & menuMgr, menuHandle_t const roo
 //==============================
 // VRMenuEventHandler::HandleEvents
 void VRMenuEventHandler::handleEvents( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, 
-		menuHandle_t const rootHandle, Array< VRMenuEvent > const & events ) const
+		menuHandle_t const rootHandle, VArray< VRMenuEvent > const & events ) const
 {
     VRMenuObject * root = menuMgr.toObject( rootHandle );
     if ( root == NULL )
@@ -275,10 +275,10 @@ void VRMenuEventHandler::handleEvents( App * app, VrFrame const & vrFrame, OvrVR
     }
 
     // find the list of all objects that are in the focused path
-    Array< menuHandle_t > focusPath;
+    VArray< menuHandle_t > focusPath;
     FindTargetPath( menuMgr, rootHandle, m_focusedHandle, focusPath );
     
-    Array< menuHandle_t > targetPath;
+    VArray< menuHandle_t > targetPath;
 
 	for ( int i = 0; i < events.length(); ++i )
 	{
@@ -317,7 +317,7 @@ bool VRMenuEventHandler::dispatchToComponents( App * app, VrFrame const & vrFram
 {
 	DROID_ASSERT( receiver != NULL, "VrMenu" );
 
-	Array< VRMenuComponent* > const & list = receiver->componentList();
+    VArray< VRMenuComponent* > const & list = receiver->componentList();
 	int numComps = list.length();
 	for ( int i = 0; i < numComps; ++i )
 	{
@@ -339,7 +339,7 @@ bool VRMenuEventHandler::dispatchToComponents( App * app, VrFrame const & vrFram
 //==============================
 // VRMenuEventHandler::DispatchToPath
 bool VRMenuEventHandler::dispatchToPath( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
-        VRMenuEvent const & event, Array< menuHandle_t > const & path, bool const log ) const
+        VRMenuEvent const & event, VArray< menuHandle_t > const & path, bool const log ) const
 {
     // send to the focus path only -- this list should be parent -> child order
     for ( int i = 0; i < path.length(); ++i )

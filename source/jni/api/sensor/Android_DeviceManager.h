@@ -94,14 +94,14 @@ private:
     // pipe used to signal commands
     int m_commandFd[2];
 
-    Array<struct pollfd>    m_pollFds;
-    Array<Notifier*>        m_fdNotifiers;
+    VArray<struct pollfd>    m_pollFds;
+    VArray<Notifier*>        m_fdNotifiers;
 
     VEvent                  m_startupEvent;
     volatile bool           m_suspend;
 
     // Ticks notifiers - used for time-dependent events such as keep-alive.
-    Array<Notifier*>        m_ticksNotifiers;
+    VArray<Notifier*>        m_ticksNotifiers;
 };
 
 }

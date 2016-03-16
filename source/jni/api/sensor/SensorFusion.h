@@ -283,7 +283,7 @@ private:
     bool                    EnableGravity;
     bool                    EnableYawCorrection;
 
-    Array<MagReferencePoint> MagRefs;
+    VArray<MagReferencePoint> MagRefs;
     int                     MagRefIdx;
     float                   MagCorrectionIntegralTerm;
 

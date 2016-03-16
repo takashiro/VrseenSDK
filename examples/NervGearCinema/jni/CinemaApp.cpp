@@ -139,7 +139,7 @@ bool CinemaApp::fileExists(const VString &filename) const
 	}
 }
 
-void CinemaApp::setPlaylist( const Array<const MovieDef *> &playList, const int nextMovie )
+void CinemaApp::setPlaylist( const VArray<const MovieDef *> &playList, const int nextMovie )
 {
 	m_playList = playList;
 

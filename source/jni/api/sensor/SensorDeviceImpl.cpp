@@ -1380,7 +1380,7 @@ bool SensorDeviceImpl::getTemperatureReport(TemperatureReport* data)
     return false;
 }
 
-bool SensorDeviceImpl::GetAllTemperatureReports(Array<Array<TemperatureReport> >* data)
+bool SensorDeviceImpl::GetAllTemperatureReports(VArray<VArray<TemperatureReport> >* data)
 {
     // direct call if we are already on the device manager thread
     if (VThread::currentThreadId() == GetManagerImpl()->threadId())
@@ -1398,7 +1398,7 @@ bool SensorDeviceImpl::GetAllTemperatureReports(Array<Array<TemperatureReport> >
     return result;
 }
 
-bool SensorDeviceImpl::getAllTemperatureReports(Array<Array<TemperatureReport> >* data)
+bool SensorDeviceImpl::getAllTemperatureReports(VArray<VArray<TemperatureReport> >* data)
 {
     TemperatureReport t;
     bool result = getTemperatureReport(&t);

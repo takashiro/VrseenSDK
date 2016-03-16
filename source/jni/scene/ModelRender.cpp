@@ -191,7 +191,7 @@ struct bsort_t
 {
 	float						key;
 	const DrawMatrices * 		matrices;
-	const Array< Matrix4f > *	joints;
+	const VArray< Matrix4f > *	joints;
 	const SurfaceDef *			surface;
 	GLuint						textureOverload;	// if 0, there's no overload
 	bool						transparent;
@@ -242,7 +242,7 @@ int bsortComp( const void * p1, const void * p2 )
 	return -1;
 }
 
-const DrawSurfaceList & BuildDrawSurfaceList( const NervGear::Array<ModelState> & modelRenderList,
+const DrawSurfaceList & BuildDrawSurfaceList( const NervGear::VArray<ModelState> & modelRenderList,
 			const Matrix4f & viewMatrix, const Matrix4f & projectionMatrix )
 {
 	// A mobile GPU will be in trouble if it draws more than this.

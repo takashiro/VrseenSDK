@@ -47,13 +47,13 @@ static bool OvrMetaDatumIdComparator( const OvrMetaDatum * a, const OvrMetaDatum
 	return a->id < b->id;
 }
 
-void OvrMetaData::initFromDirectory( const char * relativePath, const Array< VString > & searchPaths, const OvrMetaDataFileExtensions & fileExtensions )
+void OvrMetaData::initFromDirectory( const char * relativePath, const VArray< VString > & searchPaths, const OvrMetaDataFileExtensions & fileExtensions )
 {
 	LOG( "OvrMetaData::InitFromDirectory( %s )", relativePath );
 
 	// Find all the files - checks all search paths
 	StringHash< VString > uniqueFileList = RelativeDirectoryFileList( searchPaths, relativePath );
-	Array<VString> fileList;
+	VArray<VString> fileList;
     for (const std::pair<VString, VString> &iter : uniqueFileList) {
         fileList.append(iter.first);
 	}
@@ -65,7 +65,7 @@ void OvrMetaData::initFromDirectory( const char * relativePath, const Array< VSt
 	currentCategory.label = currentCategory.categoryTag;
 
 	LOG( "OvrMetaData start category: %s", currentCategory.categoryTag.toCString() );
-	Array< VString > subDirs;
+	VArray< VString > subDirs;
 	// Grab the categories and loose files
 	for ( int i = 0; i < fileList.length(); i++ )
 	{
@@ -123,7 +123,7 @@ void OvrMetaData::initFromDirectory( const char * relativePath, const Array< VSt
 	}
 }
 
-void OvrMetaData::initFromFileList( const Array< VString > & fileList, const OvrMetaDataFileExtensions & fileExtensions )
+void OvrMetaData::initFromFileList( const VArray< VString > & fileList, const OvrMetaDataFileExtensions & fileExtensions )
 {
 	// Create unique categories
 	StringHash< int > uniqueCategoryList;
@@ -160,8 +160,10 @@ void OvrMetaData::initFromFileList( const Array< VString > & fileList, const Ovr
 		}
 
 		// Add loose file
+
 		const int dataIndex = m_etaData.length();
         OvrMetaDatum * datum = createMetaDatum( filePath.toCString() );
+
 		if ( datum )
 		{
 			datum->id = dataIndex;
@@ -274,7 +276,7 @@ void OvrMetaData::writeMetaFile( const char * metaFile ) const
 	}
 }
 
-void OvrMetaData::initFromDirectoryMergeMeta( const char * relativePath, const Array< VString > & searchPaths,
+void OvrMetaData::initFromDirectoryMergeMeta( const char * relativePath, const VArray< VString > & searchPaths,
 	const OvrMetaDataFileExtensions & fileExtensions, const char * metaFile, const char * packageName )
 {
 	LOG( "OvrMetaData::InitFromDirectoryMergeMeta" );
@@ -293,7 +295,7 @@ void OvrMetaData::initFromDirectoryMergeMeta( const char * relativePath, const A
 	processMetaData( dataFile, searchPaths, metaFile );
 }
 
-void OvrMetaData::initFromFileListMergeMeta( const Array< VString > & fileList, const Array< VString > & searchPaths,
+void OvrMetaData::initFromFileListMergeMeta( const VArray< VString > & fileList, const VArray< VString > & searchPaths,
 	const OvrMetaDataFileExtensions & fileExtensions, const char * appFileStoragePath, const char * metaFile, const NervGear::Json &storedMetaData )
 {
 	LOG( "OvrMetaData::InitFromFileListMergeMeta" );
@@ -316,7 +318,7 @@ void OvrMetaData::processRemoteMetaFile( const char * metaFileString, const int 
 
 		m_version = remoteVersion;
 
-		Array< Category > remoteCategories;
+		VArray< Category > remoteCategories;
 		StringHash< OvrMetaDatum * > remoteMetaData;
 		extractCategories( remoteMetaFile , remoteCategories );
 		extractRemoteMetaData( remoteMetaFile , remoteMetaData );
@@ -341,7 +343,7 @@ void OvrMetaData::processRemoteMetaFile( const char * metaFileString, const int 
 				LOG( "OvrMetaData::ProcessRemoteMetaFile merging %s into category index %d", remoteCat.categoryTag.toCString(), targetIndex );
 				if ( startIndex >= 0 && startIndex < m_categories.length() )
 				{
-					m_categories.insert( targetIndex, remoteCat );
+					m_categories.insert( m_categories.begin()+targetIndex, remoteCat );
 				}
 				else
 				{
@@ -374,14 +376,14 @@ void OvrMetaData::processRemoteMetaFile( const char * metaFileString, const int 
 	}
 }
 
-void OvrMetaData::processMetaData( const NervGear::Json &dataFile, const Array< VString > & searchPaths, const char * metaFile )
+void OvrMetaData::processMetaData( const NervGear::Json &dataFile, const VArray< VString > & searchPaths, const char * metaFile )
 {
 	if ( dataFile.isValid() )
 	{
 		// Grab the version from the loaded data
 		extractVersion( dataFile, m_version );
 
-		Array< Category > storedCategories;
+		VArray< Category > storedCategories;
 		StringHash< OvrMetaDatum * > storedMetaData;
 		extractCategories( dataFile, storedCategories );
 
@@ -419,7 +421,7 @@ void OvrMetaData::processMetaData( const NervGear::Json &dataFile, const Array< 
 		// Delete any newly empty categories except Favorites
 		if ( !m_categories.isEmpty() )
 		{
-			Array< Category > finalCategories;
+			VArray< Category > finalCategories;
 			finalCategories.append( m_categories.at( 0 ) );
 			for ( int catIndex = 1; catIndex < m_categories.length(); ++catIndex )
 			{
@@ -464,7 +466,7 @@ void OvrMetaData::reconcileMetaData( StringHash< OvrMetaDatum * > & storedMetaDa
 
 	// Now for any remaining stored data - check if it's remote and just add it, sorted by the
 	// assigned Id
-	Array< OvrMetaDatum * > sortedEntries;
+	VArray< OvrMetaDatum * > sortedEntries;
     StringHash< OvrMetaDatum * >::Iterator storedIter = storedMetaData.begin();
     for ( ; storedIter != storedMetaData.end(); ++storedIter )
 	{
@@ -476,7 +478,7 @@ void OvrMetaData::reconcileMetaData( StringHash< OvrMetaDatum * > & storedMetaDa
 		}
 	}
 	Alg::QuickSortSlicedSafe( sortedEntries, 0, sortedEntries.size(), OvrMetaDatumIdComparator);
-	Array< OvrMetaDatum * >::Iterator sortedIter = sortedEntries.begin();
+	VArray< OvrMetaDatum * >::iterator sortedIter = sortedEntries.begin();
 	for ( ; sortedIter != sortedEntries.end(); ++sortedIter )
 	{
 		m_etaData.append( *sortedIter );
@@ -484,7 +486,7 @@ void OvrMetaData::reconcileMetaData( StringHash< OvrMetaDatum * > & storedMetaDa
     storedMetaData.clear();
 }
 
-void OvrMetaData::dedupMetaData( const Array< OvrMetaDatum * > & existingData, StringHash< OvrMetaDatum * > & newData )
+void OvrMetaData::dedupMetaData( const VArray< OvrMetaDatum * > & existingData, StringHash< OvrMetaDatum * > & newData )
 {
     // Fix the read in meta data using the stored
     for ( int i = 0; i < existingData.length(); ++i )
@@ -504,7 +506,7 @@ void OvrMetaData::dedupMetaData( const Array< OvrMetaDatum * > & existingData, S
     }
 }
 
-void OvrMetaData::reconcileCategories( Array< Category > & storedCategories )
+void OvrMetaData::reconcileCategories( VArray< Category > & storedCategories )
 {
 	if ( storedCategories.isEmpty() )
 	{
@@ -515,7 +517,7 @@ void OvrMetaData::reconcileCategories( Array< Category > & storedCategories )
 	// We want Favorites always at the top
 	// Followed by user created categories
 	// Finally we want to maintain the order of the retail categories (defined in assets/meta.json)
-	Array< Category > finalCategories;
+	VArray< Category > finalCategories;
 
 	Category favorites = storedCategories.at( 0 );
 	if ( favorites.categoryTag != FAVORITES_TAG )
@@ -571,7 +573,7 @@ void OvrMetaData::extractVersion(const Json &dataFile, double & outVersion ) con
 	}
 }
 
-void OvrMetaData::extractCategories(const Json &dataFile, Array< Category > & outCategories ) const
+void OvrMetaData::extractCategories(const Json &dataFile, VArray< Category > & outCategories ) const
 {
 	if ( dataFile.isInvalid() )
 	{
@@ -611,7 +613,7 @@ void OvrMetaData::extractCategories(const Json &dataFile, Array< Category > & ou
 	}
 }
 
-void OvrMetaData::extractMetaData(const Json &dataFile, const Array< VString > & searchPaths, StringHash< OvrMetaDatum * > & outMetaData ) const
+void OvrMetaData::extractMetaData(const Json &dataFile, const VArray< VString > & searchPaths, StringHash< OvrMetaDatum * > & outMetaData ) const
 {
 	if ( dataFile.isInvalid() )
 	{
@@ -754,7 +756,7 @@ void OvrMetaData::regenerateCategoryIndices()
 	for ( int metaDataIndex = 0; metaDataIndex < m_etaData.length(); ++metaDataIndex )
 	{
 		OvrMetaDatum & metaDatum = *m_etaData.at( metaDataIndex );
-		Array< VString > & tags = metaDatum.tags;
+		VArray< VString > & tags = metaDatum.tags;
 
 		OVR_ASSERT( metaDatum.tags.length() > 0 );
 		if ( tags.length() == 1 )
@@ -771,7 +773,7 @@ void OvrMetaData::regenerateCategoryIndices()
 	for ( int metaDataIndex = 0; metaDataIndex < m_etaData.length(); ++metaDataIndex )
 	{
 		OvrMetaDatum & datum = *m_etaData.at( metaDataIndex );
-		Array< VString > & tags = datum.tags;
+		VArray< VString > & tags = datum.tags;
 
 		OVR_ASSERT( tags.length() > 0 );
 
@@ -780,8 +782,10 @@ void OvrMetaData::regenerateCategoryIndices()
 			OVR_ASSERT( tags.at( 0 ) != FAVORITES_TAG );
 		}
 
-        if ( tags.at( 0 ) == FAVORITES_TAG && tags.length() > 1 ) {
-            std::swap(tags.at(0), tags.at(1));
+
+		if ( tags.at( 0 ) == FAVORITES_TAG && tags.length() > 1 )
+		{
+			Alg::Swap( tags.at( 0 ), tags.at( 1 ) );
 		}
 
 		for ( int tagIndex = 0; tagIndex < tags.length(); ++tagIndex )
@@ -949,7 +953,7 @@ const OvrMetaDatum & OvrMetaData::getMetaDatum( const int index ) const
 }
 
 
-bool OvrMetaData::getMetaData( const Category & category, Array< const OvrMetaDatum * > & outMetaData ) const
+bool OvrMetaData::getMetaData( const Category & category, VArray< const OvrMetaDatum * > & outMetaData ) const
 {
 	const int numPanos = category.datumIndicies.length();
 	for ( int i = 0; i < numPanos; ++i )
@@ -989,7 +993,7 @@ bool OvrMetaData::shouldAddFile( const char * filename, const OvrMetaDataFileExt
 	return false;
 }
 
-void OvrMetaData::setCategoryDatumIndicies( const int index, const Array< int >& datumIndicies )
+void OvrMetaData::setCategoryDatumIndicies( const int index, const VArray< int >& datumIndicies )
 {
 	OVR_ASSERT( index < m_categories.length() );
 

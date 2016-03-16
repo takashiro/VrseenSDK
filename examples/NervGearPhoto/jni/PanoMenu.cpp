@@ -185,8 +185,8 @@ OvrPanoMenu::OvrPanoMenu( App * app, Oculus360Photos * photos, OvrVRMenuMgr & me
 	init( menuMgr, font, 0.0f, VRMenuFlags_t() );
 
 	// Create Attribution info view
-	Array< VRMenuObjectParms const * > parms;
-	Array< VRMenuComponent* > comps;
+	VArray< VRMenuObjectParms const * > parms;
+	VArray< VRMenuComponent* > comps;
 	VRMenuId_t attributionPanelId( ID_CENTER_ROOT.Get() + 10 );
 
 	comps.append( new OvrPanoMenuRootComponent( *this ) );
@@ -216,7 +216,7 @@ OvrPanoMenu::OvrPanoMenu( App * app, Oculus360Photos * photos, OvrVRMenuMgr & me
 
 	//Browser button
 	float const ICON_HEIGHT = 80.0f * VRMenuObject::DEFAULT_TEXEL_SCALE;
-	Array< VRMenuSurfaceParms > surfParms;
+	VArray< VRMenuSurfaceParms > surfParms;
 
 	Posef browserButtonPose( Quatf( ), UP * ICON_HEIGHT * 2.0f );
 
@@ -342,7 +342,7 @@ OvrPanoMenu::OvrPanoMenu( App * app, Oculus360Photos * photos, OvrVRMenuMgr & me
 	{
  		//right frame
 		const Vector3f rightPos = ( RIGHT * surfaceWidth * i ) - ( FWD * i * 0.1f );
-		VRMenuObjectParms swipeRightFrame( VRMENU_STATIC, Array< VRMenuComponent* >(), rightIndicatorSurfaceParms, "",
+		VRMenuObjectParms swipeRightFrame( VRMENU_STATIC, VArray< VRMenuComponent* >(), rightIndicatorSurfaceParms, "",
 			Posef( Quatf( ), rightPos ), Vector3f( 1.0f ), Posef( ), Vector3f( 1.0f ), fontParms, VRMenuId_t( ),
 			VRMenuObjectFlags_t(), VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 		parms.append( &swipeRightFrame );
@@ -351,7 +351,7 @@ OvrPanoMenu::OvrPanoMenu( App * app, Oculus360Photos * photos, OvrVRMenuMgr & me
 
 		// left frame
 		const Vector3f leftPos = ( (-RIGHT) * surfaceWidth * i ) - ( FWD * i * 0.1f );
-		VRMenuObjectParms swipeLeftFrame( VRMENU_STATIC, Array< VRMenuComponent* >(), leftIndicatorSurfaceParms, "",
+		VRMenuObjectParms swipeLeftFrame( VRMENU_STATIC, VArray< VRMenuComponent* >(), leftIndicatorSurfaceParms, "",
 			Posef( Quatf( ), leftPos ), Vector3f( 1.0f ), Posef( ), Vector3f( 1.0f ), fontParms, VRMenuId_t( ),
 			VRMenuObjectFlags_t(), VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 		parms.append( &swipeLeftFrame );
@@ -426,7 +426,7 @@ void OvrPanoMenu::updateButtonsState( const OvrMetaDatum * const ActivePano, boo
 	// Update favo
 	bool isFavorite = false;
 
-	for ( int i = 0; i < ActivePano->tags.length( ); ++i )
+	for ( int i = 0; i < ActivePano->tags.length(); ++i )
 	{
 		if ( ActivePano->tags[ i ] == "Favorites" )
 		{

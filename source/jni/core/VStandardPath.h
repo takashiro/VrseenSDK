@@ -1,10 +1,10 @@
 #pragma once
 
 #include "vglobal.h"
+#include "VArray.h"
+#include "VString.h"
 
 #include <jni.h>
-#include "VString.h"
-#include "Array.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -50,25 +50,25 @@ public:
     VStandardPath( JNIEnv * jni, jobject activityObj );
     ~VStandardPath();
 
-    void PushBackSearchPathIfValid( StorageType toStorage, FolderType toFolder, const char * subfolder, Array<VString> & searchPaths ) const;
-    void PushBackSearchPathIfValidPermission( StorageType toStorage, FolderType toFolder, const char * subfolder, mode_t permission, Array<VString> & searchPaths ) const;
-    bool GetPathIfValidPermission( StorageType toStorage, FolderType toFolder, const char * subfolder, mode_t permission, VString & outPath ) const;
-    bool HasStoragePath( const StorageType toStorage, const FolderType toFolder ) const;
-    long long GetAvailableInternalMemoryInBytes( JNIEnv * jni, jobject activityObj ) const;
+    void PushBackSearchPathIfValid(StorageType toStorage, FolderType toFolder, const char * subfolder, VArray<VString> & searchPaths ) const;
+    void PushBackSearchPathIfValidPermission(StorageType toStorage, FolderType toFolder, const char * subfolder, mode_t permission, VArray<VString> &searchPaths) const;
+    bool GetPathIfValidPermission(StorageType toStorage, FolderType toFolder, const char * subfolder, mode_t permission, VString & outPath) const;
+    bool HasStoragePath(const StorageType toStorage, const FolderType toFolder) const;
+    long long GetAvailableInternalMemoryInBytes(JNIEnv * jni, jobject activityObj) const;
 
 private:
     NV_DECLARE_PRIVATE
     NV_DISABLE_COPY(VStandardPath)
 };
 
-VString	GetFullPath		( const Array< VString > & searchPaths, const VString & relativePath );
+VString	GetFullPath(const VArray< VString > & searchPaths, const VString &relativePath);
 
 // Return false if it fails to find the relativePath in any of the search locations
-bool	GetFullPath		(const Array< VString > & searchPaths, const VString &relativePath, 	char * outPath, 	const int outMaxLen );
-bool	GetFullPath		(const Array< VString > & searchPaths, const VString &relativePath, 	VString & outPath 						);
+bool GetFullPath(const VArray<VString> &searchPaths, const VString &relativePath, char *outPath, const int outMaxLen);
+bool GetFullPath(const VArray<VString> &searchPaths, const VString &relativePath, VString & outPath);
 
-bool	ToRelativePath	( const Array< VString > & searchPaths, char const * fullPath, 		char * outPath, 	const int outMaxLen );
-bool	ToRelativePath	( const Array< VString > & searchPaths, char const * fullPath, 		VString & outPath 						);
+bool ToRelativePath(const VArray<VString> &searchPaths, char const *fullPath, char * outPath, const int outMaxLen);
+bool ToRelativePath(const VArray<VString> &searchPaths, char const *fullPath, VString & outPath);
 
 NV_NAMESPACE_END
 

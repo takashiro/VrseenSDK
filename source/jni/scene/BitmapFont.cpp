@@ -132,8 +132,8 @@ public:
 	float CenterOffset; // +/- value applied to "center" distance in the signed distance field. Range [-1,1]. A negative offset will make the font appear bolder.
 	float MaxAscent; // maximum ascent of any character
 	float MaxDescent; // maximum descent of any character
-	NervGear::Array<FontGlyphType> Glyphs; // info about each glyph in the font
-	NervGear::Array<int32_t> CharCodeMap; // index by character code to get the index of a glyph for the character
+	NervGear::VArray<FontGlyphType> Glyphs; // info about each glyph in the font
+	NervGear::VArray<int32_t> CharCodeMap; // index by character code to get the index of a glyph for the character
 
 private:
     bool LoadFromPackage(const VApkFile &packageFile, const VString &fileName);
@@ -173,7 +173,7 @@ public:
 	void WordWrapText(VString & inOutText, const float widthMeters,
 			const float fontScale = 1.0f) const;
 	void WordWrapText(VString & inOutText, const float widthMeters,
-			NervGear::Array<NervGear::VString> wholeStrsList,
+			NervGear::VArray<NervGear::VString> wholeStrsList,
 			const float fontScale = 1.0f) const;
 
 	FontGlyphType const & GlyphForCharCode(uint32_t const charCode) const {
@@ -341,7 +341,7 @@ private:
 		bool TrackRoll; // if true, when billboarded, roll with the camera
 	};
 
-	Array<VertexBlockType> VertexBlocks; // each pointer in the array points to an allocated block ov
+	VArray<VertexBlockType> VertexBlocks; // each pointer in the array points to an allocated block ov
 
 	// We cast BitmapFont to BitmapFontLocal internally so that we do not have to expose
 	// a lot of BitmapFontLocal methods in the BitmapFont interface just so BitmapFontSurfaceLocal
@@ -859,13 +859,13 @@ bool BitmapFontLocal::LoadImageFromBuffer(char const * imageName,
 // BitmapFontLocal::WordWrapText
 void BitmapFontLocal::WordWrapText(VString & inOutText, const float widthMeters,
 		const float fontScale) const {
-	WordWrapText(inOutText, widthMeters, NervGear::Array<NervGear::VString>(), fontScale);
+	WordWrapText(inOutText, widthMeters, NervGear::VArray<NervGear::VString>(), fontScale);
 }
 
 //==============================
 // BitmapFontLocal::WordWrapText
 void BitmapFontLocal::WordWrapText(VString & inOutText, const float widthMeters,
-		NervGear::Array<NervGear::VString> wholeStrsList, const float fontScale) const {
+		NervGear::VArray<NervGear::VString> wholeStrsList, const float fontScale) const {
 	float const xScale = FontInfo.ScaleFactorX * fontScale;
     const int32_t totalLength = (int) inOutText.length();
 	int32_t lastWhitespaceIndex = -1;

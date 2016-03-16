@@ -87,11 +87,11 @@ public:
 	// and applications may include additional textures not
 	// referenced directly by the scene geometry, such as
 	// extra lighting passes.
-	Array< ModelTexture >		Textures;
+	VArray< ModelTexture >		Textures;
 
-	Array< ModelJoint >			Joints;
+	VArray< ModelJoint >			Joints;
 
-	Array< ModelTag >			Tags;
+	VArray< ModelTag >			Tags;
 
 	// This is used by the rendering code
 	ModelDef					Def;

@@ -3,9 +3,8 @@
 #include "DeviceConstants.h"
 #include "VString.h"
 #include "RefCount.h"
-#include "Array.h"
 #include "Atomic.h"
-
+#include "VArray.h"
 #include <string>
 
 NV_NAMESPACE_BEGIN
@@ -47,7 +46,7 @@ protected:
     // Synchronize ProfileManager access since it may be accessed from multiple threads,
     // as it's shared through DeviceManager.
     Lock                    ProfileLock;
-    Array<Ptr<Profile> >    ProfileCache;
+    VArray<Ptr<Profile> >    ProfileCache;
     ProfileType             CacheDevice;
     std::string             DefaultProfile;
     bool                    Changed;

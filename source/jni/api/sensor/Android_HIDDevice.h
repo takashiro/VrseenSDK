@@ -123,13 +123,13 @@ private:
 
 
     void scanForDevices(bool firstScan = false);
-    void getCurrentDevices(Array<VString>* deviceList);
+    void getCurrentDevices(VArray<VString>* deviceList);
     void removeDevicePath(HIDDevice* device);
 
     DeviceManager*        	DevManager;
 
-    Array<HIDDevice*>     	NotificationDevices;
-    Array<VString>			ScannedDevicePaths;
+    VArray<HIDDevice*>     	NotificationDevices;
+    VArray<VString>			ScannedDevicePaths;
     double 					TimeToPollForDevicesSeconds;
 };
 

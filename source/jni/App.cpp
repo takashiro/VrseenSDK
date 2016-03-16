@@ -740,7 +740,7 @@ void App::playSound(const char * name)
 	}
 	else
 	{
-        WARN("AppLocal::PlaySound called with non SoundManager defined sound: %s", name);
+        WARN("AppLocal::playSound called with non SoundManager defined sound: %s", name);
 		// Run on the talk to java thread
         d->ttj.GetMessageQueue().PostPrintf("sound %s", name);
 	}
@@ -2093,7 +2093,7 @@ void *App::ThreadStarter(void * parm)
 }
 
 /*
- * GetEyeParms()
+ * eyeParms()
  */
 EyeParms App::eyeParms()
 {

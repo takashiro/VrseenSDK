@@ -66,8 +66,8 @@ OvrTriCollisionPrimitive::OvrTriCollisionPrimitive()
 
 //==============================
 // OvrTriCollisionPrimitive::OvrTriCollisionPrimitive
-OvrTriCollisionPrimitive::OvrTriCollisionPrimitive( Array< Vector3f > const & vertices, 
-		Array< TriangleIndex > const & indices, ContentFlags_t const contents ) :
+OvrTriCollisionPrimitive::OvrTriCollisionPrimitive( VArray< Vector3f > const & vertices,
+		VArray< TriangleIndex > const & indices, ContentFlags_t const contents ) :
 	OvrCollisionPrimitive( contents )
 {
 	init( vertices, indices, contents );
@@ -81,7 +81,7 @@ OvrTriCollisionPrimitive::~OvrTriCollisionPrimitive()
 
 //==============================
 // OvrTriCollisionPrimitive::Init
-void OvrTriCollisionPrimitive::init( Array< Vector3f > const & vertices, Array< TriangleIndex > const & indices, 
+void OvrTriCollisionPrimitive::init( VArray< Vector3f > const & vertices, VArray< TriangleIndex > const & indices,
 		ContentFlags_t const contents )
 {
 	m_vertices = vertices;

@@ -236,7 +236,7 @@ void VRMenuSurface::createImageGeometry( int const textureWidth, int const textu
 		}
 	}
 
-	Array< TriangleIndex > indices;
+	VArray< TriangleIndex > indices;
 	indices.resize( horizontal * vertical * 6 );
 
 	// If this is to be used to draw a linear format texture, like
@@ -714,7 +714,7 @@ void VRMenuObjectLocal::init( VRMenuObjectParms const & parms )
 // VRMenuObjectLocal::FreeChildren
 void VRMenuObjectLocal::freeChildren( OvrVRMenuMgr & menuMgr )
 {
-	for ( int i = 0; i < m_children.length(); ++i ) 
+	for ( int i = 0; i < m_children.length(); ++i )
 	{
 		menuMgr.freeObject( m_children[i] );
 	}
@@ -782,7 +782,7 @@ void VRMenuObjectLocal::removeChild( OvrVRMenuMgr & menuMgr, menuHandle_t const 
 // VRMenuObjectLocal::FreeChild
 void VRMenuObjectLocal::freeChild( OvrVRMenuMgr & menuMgr, menuHandle_t const handle )
 {
-	for ( int i = 0; i < m_children.length(); ++i) 
+	for ( int i = 0; i < m_children.length(); ++i)
 	{
 		menuHandle_t childHandle = m_children[i];
 		if ( childHandle == handle )
@@ -915,7 +915,7 @@ bool VRMenuObjectLocal:: hitTest_r( App * app, OvrVRMenuMgr & menuMgr, BitmapFon
             CullBounds.b[1].x, CullBounds.b[1].y, CullBounds.b[1].z );
 */
     // test against cull bounds if we have children  ... otherwise cullBounds == localBounds
-    if ( m_children.length() > 0 )  
+    if ( m_children.length() > 0 )
     {
         if ( m_cullBounds.IsInverted() )
         {
@@ -1207,7 +1207,7 @@ int VRMenuObjectLocal::getComponentIndex( VRMenuComponent * component ) const
 // VRMenuObjectLocal::GetComponentById
 VRMenuComponent * VRMenuObjectLocal::getComponentById_Impl( int id ) const
 {
-	Array< VRMenuComponent* > comps = componentList( );
+	VArray< VRMenuComponent* > comps = componentList( );
 	for ( int c = 0; c < comps.length(); ++c )
 	{
 		if ( VRMenuComponent * comp = comps[ c ] )
@@ -1230,7 +1230,7 @@ VRMenuComponent * VRMenuObjectLocal::getComponentById_Impl( int id ) const
 // VRMenuObjectLocal::GetComponentByName
 VRMenuComponent * VRMenuObjectLocal::getComponentByName_Impl( const char * typeName ) const
 {
-	Array< VRMenuComponent* > comps = componentList();
+	VArray< VRMenuComponent* > comps = componentList();
 	for ( int c = 0; c < comps.length(); ++c )
 	{
 		if ( VRMenuComponent * comp = comps[ c ] )
@@ -1517,7 +1517,7 @@ bool VRMenuObjectLocal::getSurfaceVisible( int const surfaceIndex ) const
 // VRMenuObjectLocal::NumSurfaces
 int VRMenuObjectLocal::numSurfaces() const
 {
-	return m_surfaces.length(); 
+	return m_surfaces.length();
 }
 
 //==============================

@@ -4,7 +4,7 @@
 
 #include "VMath.h"
 #include "VString.h"
-#include "Array.h"
+#include "VArray.h"
 
 #pragma once
 
@@ -28,7 +28,7 @@ public:
 
 public:
 	VString			Name;
-	Array< Planef > Planes;
+	VArray< Planef > Planes;
 };
 
 class CollisionModel
@@ -46,7 +46,7 @@ public:
 	bool	PopOut( Vector3f & p ) const;
 
 public:
-	Array< CollisionPolytope > Polytopes;
+	VArray< CollisionPolytope > Polytopes;
 };
 
 Vector3f SlideMove(

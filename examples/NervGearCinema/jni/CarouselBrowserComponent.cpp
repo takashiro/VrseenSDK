@@ -7,7 +7,7 @@ namespace OculusCinema {
 
 //==============================================================
 // CarouselBrowserComponent
-CarouselBrowserComponent::CarouselBrowserComponent( const Array<CarouselItem *> &items, const Array<PanelPose> &panelPoses ) :
+CarouselBrowserComponent::CarouselBrowserComponent( const VArray<CarouselItem *> &items, const VArray<PanelPose> &panelPoses ) :
 	VRMenuComponent( VRMenuEventFlags_t( VRMENU_EVENT_FRAME_UPDATE ) | 	VRMENU_EVENT_TOUCH_DOWN |
 		VRMENU_EVENT_SWIPE_FORWARD | VRMENU_EVENT_SWIPE_BACK | VRMENU_EVENT_TOUCH_UP | VRMENU_EVENT_OPENED | VRMENU_EVENT_CLOSED ),
 		SelectPressed( false ), PositionScale( 1.0f ), Position( 0.0f ), TouchDownTime( -1.0 ),
@@ -45,13 +45,13 @@ eMsgStatus CarouselBrowserComponent::onEventImpl( App * app, VrFrame const & vrF
 	}
 }
 
-void CarouselBrowserComponent::SetPanelPoses( OvrVRMenuMgr & menuMgr, VRMenuObject * self, const Array<PanelPose> &panelPoses )
+void CarouselBrowserComponent::SetPanelPoses( OvrVRMenuMgr & menuMgr, VRMenuObject * self, const VArray<PanelPose> &panelPoses )
 {
 	PanelPoses = panelPoses;
 	UpdatePanels( menuMgr, self );
 }
 
-void CarouselBrowserComponent::SetMenuObjects( const Array<VRMenuObject *> &menuObjs, const Array<CarouselItemComponent *> &menuComps )
+void CarouselBrowserComponent::SetMenuObjects( const VArray<VRMenuObject *> &menuObjs, const VArray<CarouselItemComponent *> &menuComps )
 {
 	MenuObjs = menuObjs;
 	MenuComps = menuComps;
@@ -297,7 +297,7 @@ eMsgStatus CarouselBrowserComponent::Closed( App * app, VrFrame const & vrFrame,
 	return MSG_STATUS_ALIVE;
 }
 
-void CarouselBrowserComponent::SetItems( const Array<CarouselItem *> &items )
+void CarouselBrowserComponent::SetItems( const VArray<CarouselItem *> &items )
 {
 	Items = items;
 	SelectPressed = false;

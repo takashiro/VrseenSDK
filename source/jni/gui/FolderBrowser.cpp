@@ -32,6 +32,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "ScrollBarComponent.h"
 #include "SwipeHintComponent.h"
 #include "VApkFile.h"
+#include "VArray.h"
 
 namespace NervGear {
 
@@ -950,7 +951,7 @@ OvrFolderBrowser::OvrFolderBrowser(
 	m_circumferencePanelSlots = ( int )( floor( circumference / m_panelWidth ) );
 	m_visiblePanelsArcAngle = (( float )( m_numSwipePanels + 1 ) / m_circumferencePanelSlots ) * Mathf::TwoPi;
 
-	Array< VRMenuComponent* > comps;
+	VArray< VRMenuComponent* > comps;
 	comps.append( new OvrFolderBrowserRootComponent( *this ) );
 	init( app->vrMenuMgr(), app->defaultFont(), 0.0f, VRMenuFlags_t(), comps );
 }
@@ -1094,8 +1095,8 @@ void OvrFolderBrowser::oneTimeInit()
 		root->setLocalPosition( pos );
 	}
 
-	Array< VRMenuComponent* > comps;
-	Array< VRMenuObjectParms const * > parms;
+	VArray< VRMenuComponent* > comps;
+	VArray< VRMenuObjectParms const * > parms;
 
 	// Folders root folder
 	m_foldersRootId = VRMenuId_t( uniqueId.Get( 1 ) );
@@ -1170,10 +1171,10 @@ void OvrFolderBrowser::buildDirtyMenu( OvrMetaData & metaData )
 	VRMenuObject * root = menuManager.toObject( rootHandle() );
 	OVR_ASSERT( root );
 
-	Array< VRMenuComponent* > comps;
-	Array< const VRMenuObjectParms * > parms;
+	VArray< VRMenuComponent* > comps;
+	VArray< const VRMenuObjectParms * > parms;
 
-	Array< OvrMetaData::Category > categories = metaData.categories();
+    VArray<OvrMetaData::Category> categories = metaData.categories();
 	const int numCategories = categories.length();
 
 	// load folders and position
@@ -1209,7 +1210,7 @@ void OvrFolderBrowser::buildDirtyMenu( OvrMetaData & metaData )
 			}
 			else // already have this folder - rebuild it with the new metadata
 			{
-				Array< const OvrMetaDatum * > folderMetaData;
+				VArray< const OvrMetaDatum * > folderMetaData;
                 if ( metaData.getMetaData(currentCategory, folderMetaData ) )
 				{
 					rebuildFolder( metaData, catIndex, folderMetaData );
@@ -1277,7 +1278,7 @@ void OvrFolderBrowser::buildDirtyMenu( OvrMetaData & metaData )
 			NULL, SURFACE_TEXTURE_MAX,
 			NULL, SURFACE_TEXTURE_MAX );
 
-		VRMenuObjectParms * p = new VRMenuObjectParms( VRMENU_STATIC, Array< VRMenuComponent* >(),
+		VRMenuObjectParms * p = new VRMenuObjectParms( VRMENU_STATIC, VArray< VRMenuComponent* >(),
             panelSurfParms, message.toCString(), panelPose, panelScale, textPose, Vector3f( 1.3f ), fontParms, VRMenuId_t(),
 			VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_ALL ), VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 
@@ -1311,7 +1312,7 @@ void OvrFolderBrowser::buildDirtyMenu( OvrMetaData & metaData )
 			Posef indicatorPos( Quatf(), FWD * ( m_radius + 0.1f ) + UP * m_panelHeight * 0.0f );
 			VRMenuObjectParms indicatorParms(
 					VRMENU_STATIC,
-					Array< VRMenuComponent* >(),
+					VArray< VRMenuComponent* >(),
 					indicatorSurfaceParms,
 					"",
 					indicatorPos,
@@ -1347,7 +1348,7 @@ void OvrFolderBrowser::buildFolder( OvrMetaData::Category & category, FolderView
 	OvrVRMenuMgr & menuManager = m_app->vrMenuMgr();
 	BitmapFont & font = m_app->defaultFont();
 
-	Array< const VRMenuObjectParms * > parms;
+	VArray< const VRMenuObjectParms * > parms;
 	const VRMenuFontParms fontParms( HORIZONTAL_CENTER, VERTICAL_CENTER, false, false, true, 0.525f, 0.45f, 1.0f );
 
 	const int numPanels = category.datumIndicies.length();
@@ -1358,7 +1359,7 @@ void OvrFolderBrowser::buildFolder( OvrMetaData::Category & category, FolderView
 	// Create OvrFolderRootComponent for folder root
 	const VRMenuId_t folderId( uniqueId.Get( 1 ) );
 	LOG( "Building Folder %s id: %d with %d panels", category.categoryTag.toCString(), folderId.Get(), numPanels );
-	Array< VRMenuComponent* > comps;
+	VArray< VRMenuComponent* > comps;
 	comps.append( new OvrFolderRootComponent( *this, folder ) );
 	VRMenuObjectParms folderParms(
 		VRMENU_CONTAINER,
@@ -1418,7 +1419,7 @@ void OvrFolderBrowser::buildFolder( OvrMetaData::Category & category, FolderView
 
 	// Add OvrFolderSwipeComponent to folder - manages panel swiping
 	VRMenuId_t swipeFolderId( uniqueId.Get( 1 ) );
-	Array< VRMenuComponent* > swipeComps;
+	VArray< VRMenuComponent* > swipeComps;
 	swipeComps.append( new OvrFolderSwipeComponent( *this, folder ) );
 	VRMenuObjectParms swipeParms(
 		VRMENU_CONTAINER,
@@ -1443,8 +1444,8 @@ void OvrFolderBrowser::buildFolder( OvrMetaData::Category & category, FolderView
 
 	// build a collision primitive that encompasses all of the panels for a raw (including the empty space between them)
 	// so that we can always send our swipe messages to the correct row based on gaze.
-	Array< Vector3f > vertices( m_circumferencePanelSlots * 2 );
-	Array< TriangleIndex > indices( m_circumferencePanelSlots * 6 );
+	VArray< Vector3f > vertices( m_circumferencePanelSlots * 2 );
+	VArray< TriangleIndex > indices( m_circumferencePanelSlots * 6 );
 	int curIndex = 0;
 	int curVertex = 0;
 	for ( int i = 0; i < m_circumferencePanelSlots; ++i )
@@ -1506,7 +1507,7 @@ void OvrFolderBrowser::buildFolder( OvrMetaData::Category & category, FolderView
 	VRMenuId_t folderTitleRootId( uniqueId.Get( 1 ) );
 	VRMenuObjectParms titleRootParms(
 		VRMENU_CONTAINER,
-		Array< VRMenuComponent* >(),
+		VArray< VRMenuComponent* >(),
 		VRMenuSurfaceParms(),
 		( folder->localizedName + " title root" ).toCString(),
 		Posef(),
@@ -1530,7 +1531,7 @@ void OvrFolderBrowser::buildFolder( OvrMetaData::Category & category, FolderView
 	Posef titlePose( Quatf(), FWD * m_radius + UP * m_panelHeight * m_folderTitleSpacingScale );
 	VRMenuObjectParms titleParms(
 		VRMENU_STATIC,
-		Array< VRMenuComponent* >(),
+		VArray< VRMenuComponent* >(),
 		VRMenuSurfaceParms(),
 		"no title",
 		titlePose,
@@ -1560,7 +1561,7 @@ void OvrFolderBrowser::buildFolder( OvrMetaData::Category & category, FolderView
 
 	VRMenuObjectParms indicatorParms(
 			VRMENU_STATIC,
-			Array< VRMenuComponent* >(),
+			VArray< VRMenuComponent* >(),
 			indicatorSurfaceParms,
 			"wrap indicator",
 			indicatorPos,
@@ -1583,7 +1584,7 @@ void OvrFolderBrowser::buildFolder( OvrMetaData::Category & category, FolderView
 	setWrapIndicatorVisible( *folder, false );
 }
 
-void OvrFolderBrowser::rebuildFolder( OvrMetaData & metaData, const int folderIndex, const Array< const OvrMetaDatum * > & data )
+void OvrFolderBrowser::rebuildFolder( OvrMetaData & metaData, const int folderIndex, const VArray< const OvrMetaDatum * > & data )
 {
 	if ( folderIndex >= 0 && m_folders.length() > folderIndex )
 	{
@@ -1604,8 +1605,8 @@ void OvrFolderBrowser::rebuildFolder( OvrMetaData & metaData, const int folderIn
 		folder->panels.clear();
 
 		const int numPanels = data.length();
-		Array< const VRMenuObjectParms * > outParms;
-		Array< int > newDatumIndicies;
+		VArray< const VRMenuObjectParms * > outParms;
+		VArray< int > newDatumIndicies;
 		for ( int panelIndex = 0; panelIndex < numPanels; ++panelIndex )
 		{
 			const OvrMetaDatum * panelData = data.at( panelIndex );
@@ -1770,7 +1771,7 @@ void * OvrFolderBrowser::ThumbnailThread( void * v )
 		}
 		else if ( MatchesHead( "processCreates ", msg ) )
 		{
-			Array< OvrCreateThumbCmd > * ThumbCreateAndLoadCommands;
+			VArray< OvrCreateThumbCmd > * ThumbCreateAndLoadCommands;
 
 			sscanf( msg, "processCreates %p", &ThumbCreateAndLoadCommands );
 
@@ -1839,7 +1840,7 @@ void OvrFolderBrowser::loadThumbnailToTexture( const char * thumbnailCommand )
 	FolderView * folder = getFolderView( folderId );
 	OVR_ASSERT( folder );
 
-	Array<PanelView> * panels = &folder->panels;
+	VArray<PanelView> * panels = &folder->panels;
 	OVR_ASSERT( panels );
 
 	PanelView * panel = NULL;
@@ -1888,10 +1889,10 @@ void OvrFolderBrowser::loadThumbnailToTexture( const char * thumbnailCommand )
 }
 
 void OvrFolderBrowser::loadFolderPanels( const OvrMetaData & metaData, const OvrMetaData::Category & category, const int folderIndex, FolderView & folder,
-		Array< VRMenuObjectParms const * >& outParms )
+		VArray< VRMenuObjectParms const * >& outParms )
 {
 	// Build panels
-	Array< const OvrMetaDatum * > categoryPanos;
+	VArray< const OvrMetaDatum * > categoryPanos;
     metaData.getMetaData( category, categoryPanos );
 	const int numPanos = categoryPanos.length();
 	LOG( "Building %d panels for %s", numPanos, category.categoryTag.toCString() );
@@ -1941,7 +1942,7 @@ private:
 	const OvrMetaDatum *	Data;	// Payload for this button
 };
 
-void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const int folderIndex, FolderView & folder, Array< VRMenuObjectParms const * >& outParms )
+void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const int folderIndex, FolderView & folder, VArray< VRMenuObjectParms const * >& outParms )
 {
 	OVR_ASSERT( panoData );
 
@@ -1956,7 +1957,7 @@ void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const in
 	//VrLocale::GetString(  AppPtr->GetVrJni(), AppPtr->GetJavaObject(), panoTitle, panoTitle, panelTitle );
 
 	// Load a panel
-	Array< VRMenuComponent* > panelComps;
+	VArray< VRMenuComponent* > panelComps;
 	VRMenuId_t id( uniqueId.Get( 1 ) );
 
 	//int  folderIndexShifted = folderIndex << 24;

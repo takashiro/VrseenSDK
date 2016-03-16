@@ -224,7 +224,7 @@ const OvrMetaDatum * PanoBrowser::nextFileInDirectory( const int step )
 void PanoBrowser::onBrowserOpen()
 {
 	// When browser opens - load in whatever is in local favoritebuffer to favorites folder
-	Array< const OvrMetaDatum * > favoriteData;
+	VArray< const OvrMetaDatum * > favoriteData;
 	for ( int i = 0; i < m_favoritesBuffer.length(); ++i )
 	{
 		const Favorite & favorite = m_favoritesBuffer.at( i );
@@ -280,7 +280,7 @@ void PanoBrowser::ReloadFavoritesBuffer()
         OvrPhotosMetaData * metaData = photos->metaData();
 		if ( metaData != NULL )
 		{
-			Array< const OvrMetaDatum * > favoriteData;
+			VArray< const OvrMetaDatum * > favoriteData;
             const OvrMetaData::Category & favCat = metaData->getCategory( 0 );
             if ( !metaData->getMetaData( favCat, favoriteData ) )
 			{
@@ -444,7 +444,7 @@ void PanoBrowser::onMediaNotFound( App * app, VString & title, VString & imageFi
 	imageFile = "assets/sdcard.png";
 	VrLocale::GetString( app->vrJni(), app->javaObject(), "@string/media_not_found", "@string/media_not_found", message );
 	BitmapFont & font = app->defaultFont();
-    Array<VString> wholeStrs;
+    VArray<VString> wholeStrs;
     wholeStrs.append( "Gear VR" );
 	font.WordWrapText( message, 1.4f, wholeStrs );
 }

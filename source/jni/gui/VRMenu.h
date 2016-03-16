@@ -34,7 +34,7 @@ class VRMenuEventHandler;
 // DeletePointerArray
 // helper function for cleaning up an array of pointers
 template< typename T > 
-void DeletePointerArray( Array< T* > & a )
+void DeletePointerArray( VArray< T* > & a )
 {
     for ( int i = 0; i < a.length(); ++i )
     {
@@ -87,11 +87,11 @@ public:
 	static VRMenu *			Create( char const * menuName );
 
     void					init( OvrVRMenuMgr & menuMgr, BitmapFont const & font, float const menuDistance,
-									VRMenuFlags_t const & flags, Array< VRMenuComponent* > comps = Array< VRMenuComponent* >( ) );
+									VRMenuFlags_t const & flags, VArray< VRMenuComponent* > comps = VArray< VRMenuComponent* >( ) );
     void					initWithItems( OvrVRMenuMgr & menuMgr, BitmapFont const & font, float const menuDistance,
-									VRMenuFlags_t const & flags, Array< VRMenuObjectParms const * > & itemParms );
+									VRMenuFlags_t const & flags, VArray< VRMenuObjectParms const * > & itemParms );
     void                    addItems( OvrVRMenuMgr & menuMgr, BitmapFont const & font,
-                                    Array< VRMenuObjectParms const * > & itemParms,
+                                    VArray< VRMenuObjectParms const * > & itemParms,
                                     menuHandle_t parentHandle, bool const recenter );
     void					shutdown( OvrVRMenuMgr & menuMgr );
     void					frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font,
@@ -174,7 +174,7 @@ private:
 
     // return true to continue with normal initialization (adding items) or false to skip.
     virtual bool    init_Impl( OvrVRMenuMgr & menuMgr, BitmapFont const & font, float const menuDistance,
-                            VRMenuFlags_t const & flags, Array< VRMenuObjectParms const * > & itemParms );
+                            VRMenuFlags_t const & flags, VArray< VRMenuObjectParms const * > & itemParms );
     virtual void    shutdown_Impl( OvrVRMenuMgr & menuMgr );
     virtual void    frameImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font,
                                     BitmapFontSurface & fontSurface, gazeCursorUserId_t const gazeUserId );

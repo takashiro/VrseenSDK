@@ -86,13 +86,13 @@ private:
     // pipe used to signal commands
     int CommandFd[2];
 
-    Array<struct pollfd>    PollFds;
-    Array<Notifier*>        FdNotifiers;
+    VArray<struct pollfd>    PollFds;
+    VArray<Notifier*>        FdNotifiers;
 
     Event                   StartupEvent;
 
     // Ticks notifiers - used for time-dependent events such as keep-alive.
-    Array<Notifier*>        TicksNotifiers;
+    VArray<Notifier*>        TicksNotifiers;
 };
 
 }} // namespace Linux::OVR

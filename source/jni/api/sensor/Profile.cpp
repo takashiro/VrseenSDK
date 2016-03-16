@@ -23,7 +23,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 //#include "SysFile.h"
 #include "VSysFile.h"
 #include "Allocator.h"
-#include "Array.h"
+#include "VArray.h"
 
 #include <stdlib.h>
 #include <fstream>

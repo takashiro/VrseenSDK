@@ -851,6 +851,7 @@ void Oculus360Photos::SetMenuState( const OvrMenuState state )
 		app->guiSys().closeMenu( app, m_panoMenu, false );
 		app->guiSys().openMenu( app, app->gazeCursor(), OvrFolderBrowser::MENU_NAME );
 		m_browserOpenTime = 0.0f;
+
 #endif
 		break;
 	case MENU_PANO_LOADING:

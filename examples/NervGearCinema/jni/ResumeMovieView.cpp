@@ -102,14 +102,14 @@ void ResumeMovieView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFont 
 	Vector3f up( 0.0f, 1.0f, 0.0f );
 	Vector3f defaultScale( 1.0f );
 
-    Array< VRMenuObjectParms const * > parms;
+    VArray< VRMenuObjectParms const * > parms;
 
 	VRMenuFontParms fontParms( true, true, false, false, false, 1.3f );
 
 	Quatf orientation( Vector3f( 0.0f, 1.0f, 0.0f ), 0.0f );
 	Vector3f centerPos( 0.0f, 0.0f, 0.0f );
 
-	VRMenuObjectParms centerRootParms( VRMENU_CONTAINER, Array< VRMenuComponent* >(), VRMenuSurfaceParms(), "CenterRoot",
+	VRMenuObjectParms centerRootParms( VRMENU_CONTAINER, VArray< VRMenuComponent* >(), VRMenuSurfaceParms(), "CenterRoot",
 			Posef( orientation, centerPos ), Vector3f( 1.0f, 1.0f, 1.0f ), fontParms,
 			ID_CENTER_ROOT, VRMenuObjectFlags_t(), VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
     parms.append( &centerRootParms );
@@ -129,7 +129,7 @@ void ResumeMovieView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFont 
     {
         Posef panelPose( Quatf( up, 0.0f ), Vector3f( 0.0f, 2.2f, -3.0f ) );
 
-		VRMenuObjectParms p( VRMENU_STATIC, Array< VRMenuComponent* >(),
+		VRMenuObjectParms p( VRMENU_STATIC, VArray< VRMenuComponent* >(),
                 VRMenuSurfaceParms(), CinemaStrings::ResumeMenu_Title.toCString(), panelPose, defaultScale, fontParms, VRMenuId_t( ID_TITLE.Get() ),
 				VRMenuObjectFlags_t(), VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 
@@ -143,15 +143,15 @@ void ResumeMovieView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFont 
     //
     // options
     //
-    Array<const char *> options;
+    VArray<const char *> options;
     options.append( CinemaStrings::ResumeMenu_Resume.toCString() );
     options.append( CinemaStrings::ResumeMenu_Restart.toCString() );
 
-    Array<const char *> icons;
+    VArray<const char *> icons;
     icons.append( "assets/resume.png" );
     icons.append( "assets/restart.png" );
 
-    Array<PanelPose> optionPositions;
+    VArray<PanelPose> optionPositions;
     optionPositions.append( PanelPose( Quatf( up, 0.0f / 180.0f * Mathf::Pi ), Vector3f( -0.5f, 1.7f, -3.0f ), Vector4f( 1.0f, 1.0f, 1.0f, 1.0f ) ) );
     optionPositions.append( PanelPose( Quatf( up, 0.0f / 180.0f * Mathf::Pi ), Vector3f(  0.5f, 1.7f, -3.0f ), Vector4f( 1.0f, 1.0f, 1.0f, 1.0f ) ) );
 
@@ -161,7 +161,7 @@ void ResumeMovieView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFont 
     for ( int i = 0; i < optionPositions.length(); ++i )
 	{
 		ResumeMovieComponent * resumeMovieComponent = new ResumeMovieComponent( this, i );
-		Array< VRMenuComponent* > optionComps;
+		VArray< VRMenuComponent* > optionComps;
         optionComps.append( resumeMovieComponent );
 
 		VRMenuSurfaceParms panelSurfParms( "",
@@ -198,7 +198,7 @@ void ResumeMovieView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFont 
         optionObject->setTextLocalPosition( Vector3f( iconWidth * VRMenuObject::DEFAULT_TEXEL_SCALE * 0.5f, 0.0f, 0.0f ) );
 
 		Posef iconPose( optionPositions[ i ].Orientation, optionPositions[ i ].Position + Vector3f( textBounds.GetMins().x, 0.0f, 0.01f ) );
-		p = new VRMenuObjectParms( VRMENU_STATIC, Array< VRMenuComponent* >(),
+		p = new VRMenuObjectParms( VRMENU_STATIC, VArray< VRMenuComponent* >(),
 				iconSurfParms, NULL, iconPose, defaultScale, fontParms, VRMenuId_t( ID_OPTION_ICONS.Get() + i ),
 				VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_ALL ), VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 

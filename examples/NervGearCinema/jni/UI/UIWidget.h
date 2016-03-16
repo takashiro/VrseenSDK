@@ -72,7 +72,7 @@ public:
 
 	void								AddComponent( VRMenuComponent * component );
 	void								RemoveComponent( VRMenuComponent * component ) ;
-	Array< VRMenuComponent* > const & 	GetComponentList() const;
+	VArray< VRMenuComponent* > const & 	GetComponentList() const;
 
 protected:
 	void 								AddToMenuWithParms( UIMenu *menu, UIWidget *parent, VRMenuObjectParms &parms );
