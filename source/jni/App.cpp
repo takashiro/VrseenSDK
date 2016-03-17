@@ -546,8 +546,7 @@ struct App::Private
 App *vApp = nullptr;
 
 App::App(JNIEnv *jni, jobject activityObject, VrAppInterface &interface)
-    : exitOnDestroy(true)
-    , oneTimeInitCalled(false)
+    : oneTimeInitCalled(false)
     , d(new Private(this))
 {
     d->activity = new VMainActivity(jni, activityObject);
@@ -596,8 +595,6 @@ App::App(JNIEnv *jni, jobject activityObject, VrAppInterface &interface)
     d->createVrToastMethodId = d->GetMethodID("createVrToastOnUiThread", "(Ljava/lang/String;)V");
     d->clearVrToastsMethodId = d->GetMethodID("clearVrToasts", "()V");
     d->playSoundPoolSoundMethodId = d->GetMethodID("playSoundPoolSound", "(Ljava/lang/String;)V");
-
-    exitOnDestroy = true;
 
 	// Get the path to the .apk and package name
     d->packageCodePath = d->activity->getPackageCodePath();

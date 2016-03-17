@@ -326,7 +326,6 @@ public:
 
     jclass			getGlobalClassReference( const char * className ) const;
 
-    bool			exitOnDestroy;
     volatile bool	oneTimeInitCalled;
     ovrModeParms	VrModeParms;
 

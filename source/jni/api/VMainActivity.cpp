@@ -157,7 +157,6 @@ void Java_com_vrseen_nervgear_VrActivity_nativeDestroy(JNIEnv *jni, jclass clazz
         jlong appPtr)
 {
     App * localPtr = (App *)appPtr;
-    const bool exitOnDestroy = localPtr->exitOnDestroy;
 
     // First kill the VrThread.
     localPtr->stopVrThread();
@@ -166,14 +165,8 @@ void Java_com_vrseen_nervgear_VrActivity_nativeDestroy(JNIEnv *jni, jclass clazz
     // Last delete AppLocal.
     delete localPtr;
 
-    // Execute ovr_Shutdown() here on the Java thread because ovr_Initialize()
-    // was also called from the Java thread through JNI_OnLoad().
-    if (exitOnDestroy) {
-        vInfo("ExitOnDestroy is true, exiting");
-        ovr_ExitActivity(nullptr, EXIT_TYPE_EXIT);
-    } else {
-        vInfo("ExitOnDestroy was false, returning normally.");
-    }
+    vInfo("ExitOnDestroy is true, exiting");
+    ovr_ExitActivity(nullptr, EXIT_TYPE_EXIT);
 }
 
 void Java_com_vrseen_nervgear_VrActivity_nativeJoypadAxis(JNIEnv *jni, jclass clazz,
