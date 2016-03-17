@@ -1830,22 +1830,20 @@ void App::vrThreadFunction()
 		{
             //LOG("BackKey: event %s", KeyState::EventNames[ event ]);
 			// always allow the gaze cursor to peek at the event so it can start the gaze timer if necessary
-            if (JniUtils::GetCurrentActivityName(d->vrJni, d->javaObject).icompare(PUI_CLASS_NAME) != 0) {
-				// update the gaze cursor timer
-                if (event == KeyState::KEY_EVENT_DOWN)
-				{
-                    gazeCursor().StartTimer(backKeyState().GetLongPressTime(), backKeyState().GetDoubleTapTime());
-				}
-                else if (event == KeyState::KEY_EVENT_DOUBLE_TAP || event == KeyState::KEY_EVENT_SHORT_PRESS)
-				{
-                    gazeCursor().CancelTimer();
-				}
-                else if (event == KeyState::KEY_EVENT_LONG_PRESS)
-				{
-                    //StartSystemActivity(PUI_GLOBAL_MENU);
-                    ovr_ExitActivity(d->OvrMobile, EXIT_TYPE_FINISH);
-				}
-			}
+            // update the gaze cursor timer
+            if (event == KeyState::KEY_EVENT_DOWN)
+            {
+                gazeCursor().StartTimer(backKeyState().GetLongPressTime(), backKeyState().GetDoubleTapTime());
+            }
+            else if (event == KeyState::KEY_EVENT_DOUBLE_TAP || event == KeyState::KEY_EVENT_SHORT_PRESS)
+            {
+                gazeCursor().CancelTimer();
+            }
+            else if (event == KeyState::KEY_EVENT_LONG_PRESS)
+            {
+                //StartSystemActivity(PUI_GLOBAL_MENU);
+                ovr_ExitActivity(d->OvrMobile, EXIT_TYPE_FINISH);
+            }
 
 			// let the menu handle it if it's open
             bool consumedKey = guiSys().onKeyEvent(this, AKEYCODE_BACK, event);
