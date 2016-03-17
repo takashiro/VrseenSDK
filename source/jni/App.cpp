@@ -148,7 +148,7 @@ jlong VrAppInterface::SetActivity(JNIEnv * jni, jclass clazz, jobject activity, 
 	{	// First time initialization
 		// This will set the VrAppInterface app pointer directly,
 		// so it is set when OneTimeInit is called.
-        LOG("new AppLocal(%p %p %p)", jni, activity, this);
+        vInfo("new AppLocal()");
         new App(jni, activity, *this);
 
 		// Start the VrThread and wait for it to have initialized.
@@ -157,7 +157,7 @@ jlong VrAppInterface::SetActivity(JNIEnv * jni, jclass clazz, jobject activity, 
 	}
 	else
 	{	// Just update the activity object.
-        LOG("Update AppLocal(%p %p %p)", jni, activity, this);
+        vInfo("Update AppLocal");
         if (app->javaObject() != nullptr)
 		{
             jni->DeleteGlobalRef(app->javaObject());
@@ -181,60 +181,60 @@ void VrAppInterface::OneTimeShutdown()
 
 void VrAppInterface::WindowCreated()
 {
-    LOG("VrAppInterface::WindowCreated - default handler called");
+    vInfo("VrAppInterface::WindowCreated - default handler called");
 }
 
 void VrAppInterface::WindowDestroyed()
 {
-    LOG("VrAppInterface::WindowDestroyed - default handler called");
+    vInfo("VrAppInterface::WindowDestroyed - default handler called");
 }
 
 void VrAppInterface::Paused()
 {
-    LOG("VrAppInterface::Paused - default handler called");
+    vInfo("VrAppInterface::Paused - default handler called");
 }
 
 void VrAppInterface::Resumed()
 {
-    LOG("VrAppInterface::Resumed - default handler called");
+    vInfo("VrAppInterface::Resumed - default handler called");
 }
 
 void VrAppInterface::Command(const char * msg)
 {
-    LOG("VrAppInterface::Command - default handler called, msg = '%s'", msg);
+    vInfo("VrAppInterface::Command - default handler called, msg =" << msg);
 }
 
 void VrAppInterface::NewIntent(const char * fromPackageName, const char * command, const char * uri)
 {
-    LOG("VrAppInterface::NewIntent - default handler called - %s %s %s", fromPackageName, command, uri);
+    vInfo("VrAppInterface::NewIntent - default handler called -" << fromPackageName << command << uri);
 }
 
 Matrix4f VrAppInterface::Frame(VrFrame vrFrame)
 {
-    LOG("VrAppInterface::Frame - default handler called");
+    vInfo("VrAppInterface::Frame - default handler called");
 	return Matrix4f();
 }
 
 void VrAppInterface::ConfigureVrMode(ovrModeParms & modeParms)
 {
-    LOG("VrAppInterface::ConfigureVrMode - default handler called");
+    vInfo("VrAppInterface::ConfigureVrMode - default handler called");
 }
 
 Matrix4f VrAppInterface::DrawEyeView(const int eye, const float fovDegrees)
 {
-    LOG("VrAppInterface::DrawEyeView - default handler called");
+    vInfo("VrAppInterface::DrawEyeView - default handler called");
 	return Matrix4f();
 }
 
 bool VrAppInterface::onKeyEvent(const int keyCode, const KeyState::eKeyEventType eventType)
 {
-    LOG("VrAppInterface::OnKeyEvent - default handler called");
+    vInfo("VrAppInterface::OnKeyEvent - default handler called");
 	return false;
 }
 
 bool VrAppInterface::OnVrWarningDismissed(const bool accepted)
 {
-    LOG("VrAppInterface::OnVrWarningDismissed - default handler called");
+    vInfo("VrAppInterface::OnVrWarningDismissed - default handler called");
 	return false;
 }
 
@@ -545,12 +545,12 @@ struct App::Private
             jmethodID setDefaultLocaleId = vrJni->GetMethodID(vrActivityClass, "setDefaultLocale", "()V");
             if (setDefaultLocaleId != nullptr)
             {
-                LOG("AppLocal::Init CallObjectMethod");
+                vInfo("AppLocal::Init CallObjectMethod");
                 vrJni->CallVoidMethod(javaObject, setDefaultLocaleId);
                 if (vrJni->ExceptionOccurred())
                 {
                     vrJni->ExceptionClear();
-                    WARN("Exception occurred in setDefaultLocale");
+                    vWarn("Exception occurred in setDefaultLocale");
                 }
                 // re-get the font name for the new locale
                 VrLocale::GetString(vrJni, javaObject, "@string/font_name", "efigs.fnt", fontName);
@@ -558,7 +558,7 @@ struct App::Private
                 // try to load the font
                 if (!defaultFont->Load(packageCodePath, fontName))
                 {
-                    FAIL("Failed to load font for default locale!");
+                    vFatal("Failed to load font for default locale!");
                 }
             }
         }
@@ -596,7 +596,7 @@ struct App::Private
 
     void resume()
     {
-        DROIDLOG("OVRTimer", "AppLocal::Resume");
+        vInfo("OVRTimer AppLocal::Resume");
 
         // always reload the dev config on a resume
         JniUtils::LoadDevConfig(true);
@@ -606,7 +606,7 @@ struct App::Private
         // (Not needed now?)
         if (eglMakeCurrent(eglr.display, windowSurface, windowSurface, eglr.context) == EGL_FALSE)
         {
-            FAIL("eglMakeCurrent failed: %s", EglErrorString());
+            vFatal("eglMakeCurrent failed:" << EglErrorString());
         }
 
         ovrModeParms &VrModeParms = self->VrModeParms;
@@ -629,14 +629,14 @@ struct App::Private
             if (cpuLevel >= 0)
             {
                 VrModeParms.CpuLevel = cpuLevel;
-                LOG("Local Preferences: Setting cpuLevel %d", VrModeParms.CpuLevel);
+                vInfo("Local Preferences: Setting cpuLevel" << VrModeParms.CpuLevel);
             }
             const char * gpuLevelStr = ovr_GetLocalPreferenceValueForKey(LOCAL_PREF_DEV_GPU_LEVEL, "-1");
             const int gpuLevel = atoi(gpuLevelStr);
             if (gpuLevel >= 0)
             {
                 VrModeParms.GpuLevel = gpuLevel;
-                LOG("Local Preferences: Setting gpuLevel %d", VrModeParms.GpuLevel);
+                vInfo("Local Preferences: Setting gpuLevel" << VrModeParms.GpuLevel);
             }
 
             const char * showVignetteStr = ovr_GetLocalPreferenceValueForKey(LOCAL_PREF_DEV_SHOW_VIGNETTE, "1");
@@ -899,7 +899,7 @@ struct App::Private
             struct tm * timeInfo = localtime(&rawTime);
             char timeStr[128];
             strftime(timeStr, sizeof(timeStr), "%H:%M:%S", timeInfo);
-            DROIDLOG("QAEvent", "%s (%.3f) - QA event occurred", timeStr, ovr_GetTimeInSeconds());
+            vInfo("QAEvent " << timeStr << " (" << ovr_GetTimeInSeconds() << ") - QA event occurred");
         }
 
         // Display tweak testing, only when holding right trigger
@@ -1017,7 +1017,7 @@ struct App::Private
 
         if (MatchesHead("surfaceChanged ", msg))
         {
-            LOG("%s", msg);
+            vInfo(msg);
             if (windowSurface != EGL_NO_SURFACE)
             {	// Samsung says this is an Android problem, where surfaces are reported as
                 // created multiple times.
@@ -1074,13 +1074,10 @@ struct App::Private
                 framebufferIsSrgb = appInterface->wantSrgbFramebuffer();
                 framebufferIsProtected = appInterface->GetWantProtectedFramebuffer();
             }
-            LOG("NativeWindow %p gives surface %p", nativeWindow, windowSurface);
-            LOG("FramebufferIsSrgb: %s", framebufferIsSrgb ? "true" : "false");
-            LOG("FramebufferIsProtected: %s", framebufferIsProtected ? "true" : "false");
 
             if (eglMakeCurrent(eglr.display, windowSurface, windowSurface, eglr.context) == EGL_FALSE)
             {
-                FAIL("eglMakeCurrent failed: %s", EglErrorString());
+                vFatal("eglMakeCurrent failed:" << EglErrorString());
             }
 
             createdSurface = true;
@@ -1098,7 +1095,7 @@ struct App::Private
 
         if (MatchesHead("surfaceDestroyed ", msg))
         {
-            LOG("surfaceDestroyed");
+            vInfo("surfaceDestroyed");
 
             // Let the client app shutdown first.
             appInterface->WindowDestroyed();
@@ -1107,7 +1104,7 @@ struct App::Private
             if (eglMakeCurrent(eglr.display, eglr.pbufferSurface, eglr.pbufferSurface,
                     eglr.context) == EGL_FALSE)
             {
-                FAIL("RC_SURFACE_DESTROYED: eglMakeCurrent pbuffer failed");
+                vFatal("RC_SURFACE_DESTROYED: eglMakeCurrent pbuffer failed");
             }
 
             if (windowSurface != EGL_NO_SURFACE)
@@ -1125,7 +1122,7 @@ struct App::Private
 
         if (MatchesHead("pause ", msg))
         {
-            LOG("pause");
+            vInfo("pause");
             if (!paused)
             {
                 paused = true;
@@ -1145,7 +1142,7 @@ struct App::Private
             }
             else
             {
-                LOG("Skipping resume because windowSurface not set yet");
+                vInfo("Skipping resume because windowSurface not set yet");
             }
         }
 
@@ -1203,7 +1200,7 @@ struct App::Private
             dialogMatrix = PanelMatrix(lastViewMatrix, popupDistance, popupScale, width, height);
 
             glActiveTexture(GL_TEXTURE0);
-            LOG("RC_UPDATE_POPUP dialogTexture %i", dialogTexture->textureId);
+            vInfo("RC_UPDATE_POPUP dialogTexture" << dialogTexture->textureId);
             dialogTexture->Update();
             glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0);
 
@@ -1219,7 +1216,7 @@ struct App::Private
         {
             ovr_LeaveVrMode(OvrMobile);
             readyToExit = true;
-            LOG("VrThreadSynced=%d CreatedSurface=%d ReadyToExit=%d", vrThreadSynced, createdSurface, readyToExit);
+            vInfo("VrThreadSynced=" << vrThreadSynced << " CreatedSurface=" << createdSurface << " ReadyToExit=" << readyToExit);
         }
 
         // Pass it on to the client app.
@@ -1233,7 +1230,7 @@ struct App::Private
 
         // Initialize the VR thread
         {
-            LOG("AppLocal::VrThreadFunction - init");
+            vInfo("AppLocal::VrThreadFunction - init");
 
             // Get the tid for setting the scheduler
             vrThreadTid = gettid();
@@ -1242,7 +1239,7 @@ struct App::Private
             // it.  We need it to call UpdateTexture on surfaceTextures, which
             // must be done on the thread with the openGL context that created
             // the associated texture object current.
-            LOG("javaVM->AttachCurrentThread");
+            vInfo("javaVM->AttachCurrentThread");
             const jint rtn = javaVM->AttachCurrentThread(&vrJni, 0);
             if (rtn != JNI_OK)
             {
@@ -1347,14 +1344,14 @@ struct App::Private
                     {
                         // for reorient, we recenter yaw natively, then pass the event along so that the client
                         // application can also handle the event (for instance, to reposition menus)
-                        LOG("VtThreadFunction: Acting on System Activity reorient event.");
+                        vInfo("VtThreadFunction: Acting on System Activity reorient event.");
                         self->recenterYaw(false);
                     }
                     else
                     {
                         // In the case of the returnToLauncher event, we always handler it internally and pass
                         // along an empty buffer so that any remaining events still get processed by the client.
-                        LOG("Unhandled System Activity event: '%s'", command.c_str());
+                        vInfo("Unhandled System Activity event:" << command);
                     }
                 }
                 else
@@ -1757,7 +1754,7 @@ App::App(JNIEnv *jni, jobject activityObject, VrAppInterface &interface)
 
 App::~App()
 {
-    LOG("---------- ~AppLocal() ----------");
+    vInfo("---------- ~AppLocal() ----------");
 
 	UnRegisterConsoleFunctions();
 	ShutdownConsole();
@@ -1835,7 +1832,7 @@ void App::createToast(const char * fmt, ...)
     vsnprintf(bigBuffer, sizeof(bigBuffer), fmt, args);
     va_end(args);
 
-	LOG("CreateToast %s", bigBuffer);
+    vInfo("CreateToast" << bigBuffer);
 
     d->ttj.GetMessageQueue().PostPrintf("toast %s", bigBuffer);
 }
@@ -1975,13 +1972,13 @@ void App::keyEvent(const int keyCode, const bool down, const int repeatCount)
 
         if (down && keyCode == AKEYCODE_RIGHT_BRACKET)
 		{
-            LOG("BUTTON_SWIPE_FORWARD");
+            vInfo("BUTTON_SWIPE_FORWARD");
             d->joypad.buttonState |= BUTTON_SWIPE_FORWARD;
 			return;
 		}
         else if (down && keyCode == AKEYCODE_LEFT_BRACKET)
 		{
-            LOG("BUTTON_SWIPE_BACK");
+            vInfo("BUTTON_SWIPE_BACK");
             d->joypad.buttonState |= BUTTON_SWIPE_BACK;
 			return;
 		}
@@ -2013,18 +2010,6 @@ void App::keyEvent(const int keyCode, const bool down, const int repeatCount)
             showInfoText(1.0f, "%.3f", d->viewParms.InterpupillaryDistance);
 			return;
         }
-#if defined(TEST_TIMEWARP_WATCHDOG)	// test TimeWarp sched_fifo watchdog
-        else if (keyCode == AKEYCODE_T && down && repeatCount == 0)
-		{
-			const double SPIN_TIME = 60.0;
-            DROIDLOG("TimeWarp", "Spinning on VrThread for %f seconds...", SPIN_TIME);
-			double start = ovr_GetTimeInSeconds();
-            while (ovr_GetTimeInSeconds() < start + SPIN_TIME)
-			{
-                test = cos(test);
-			}
-		}
-#endif
 	}
 
 	// Keys always map to joystick buttons right now even if consumed otherwise.
@@ -2438,7 +2423,7 @@ const VString &App::packageName() const
 
 void App::recenterYaw(const bool showBlack)
 {
-    LOG("AppLocal::RecenterYaw");
+    vInfo("AppLocal::RecenterYaw");
     if (showBlack)
 	{
         const ovrTimeWarpParms warpSwapBlackParms = InitTimeWarpParms(WARP_INIT_BLACK);
@@ -2561,7 +2546,7 @@ void App::drawEyeViewsPostDistorted( Matrix4f const & centerViewMatrix, const in
     if ( d->drawCalibrationLines && d->calibrationLinesDrawn )
     {
         // doing a time warp test, don't generate new images
-        LOG( "drawCalibrationLines && calibrationLinesDrawn" );
+        vInfo( "drawCalibrationLines && calibrationLinesDrawn" );
     }
     else
     {
