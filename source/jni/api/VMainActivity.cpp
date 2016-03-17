@@ -1,6 +1,5 @@
 #include "VMainActivity.h"
 
-#include <jni.h>
 #include <android/native_window_jni.h>
 
 #include "App.h"
@@ -16,6 +15,16 @@ struct VMainActivity::Private
 {
     JNIEnv *jni;
     jobject activityObject;
+    jclass activityClass;
+
+    jmethodID getMethodID(const char *name, const char *signature) const
+    {
+        jmethodID mid = jni->GetMethodID(activityClass, name, signature);
+        if (!mid) {
+            vFatal("couldn't get" << name);
+        }
+        return mid;
+    }
 };
 
 VMainActivity::VMainActivity(JNIEnv *jni, jobject activityObject)
@@ -23,12 +32,27 @@ VMainActivity::VMainActivity(JNIEnv *jni, jobject activityObject)
 {
     d->jni = jni;
     d->activityObject = jni->NewGlobalRef(activityObject);
+
+    const char *className = "com/vrseen/nervgear/VrActivity";
+    jclass lc = jni->FindClass(className);
+    if (lc == 0) {
+        vFatal("Failed to find Java class" << className);
+    }
+    d->activityClass = (jclass) jni->NewGlobalRef(lc);
+    jni->DeleteLocalRef(lc);
 }
 
 VMainActivity::~VMainActivity()
 {
+    d->jni->DeleteGlobalRef(d->activityClass);
     d->jni->DeleteGlobalRef(d->activityObject);
     delete d;
+}
+
+void VMainActivity::finishActivity()
+{
+    jmethodID method = d->getMethodID("finishActivity", "()V");
+    d->jni->CallVoidMethod(d->activityObject, method);
 }
 
 NV_NAMESPACE_END

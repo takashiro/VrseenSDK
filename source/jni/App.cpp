@@ -272,7 +272,6 @@ struct App::Private
     jclass			vrActivityClass;		// must be looked up from main thread or FindClass() will fail
     jclass			vrLibClass;				// must be looked up from main thread or FindClass() will fail
 
-    jmethodID		finishActivityMethodId;
     jmethodID		createVrToastMethodId;
     jmethodID		clearVrToastsMethodId;
     jmethodID		playSoundPoolSoundMethodId;
@@ -414,7 +413,6 @@ struct App::Private
         , vrJni(nullptr)
         , vrActivityClass(nullptr)
         , vrLibClass(nullptr)
-        , finishActivityMethodId(nullptr)
         , createVrToastMethodId(nullptr)
         , clearVrToastsMethodId(nullptr)
         , playSoundPoolSoundMethodId(nullptr)
@@ -600,7 +598,6 @@ App::App(JNIEnv *jni, jobject activityObject, VrAppInterface &interface)
 
     VrLocale::VrActivityClass = d->vrActivityClass;
 
-    d->finishActivityMethodId = d->GetMethodID("finishActivity", "()V");
     d->createVrToastMethodId = d->GetMethodID("createVrToastOnUiThread", "(Ljava/lang/String;)V");
     d->clearVrToastsMethodId = d->GetMethodID("clearVrToasts", "()V");
     d->playSoundPoolSoundMethodId = d->GetMethodID("playSoundPoolSound", "(Ljava/lang/String;)V");
@@ -711,7 +708,7 @@ void App::TtjCommand(JNIEnv *jni, const char * commandString)
 	}
 
     if (MatchesHead("finish ", commandString)) {
-        jni->CallVoidMethod(d->javaObject, d->finishActivityMethodId);
+        d->activity->finishActivity();
 	}
 }
 

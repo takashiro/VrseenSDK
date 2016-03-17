@@ -12,6 +12,8 @@ public:
     VMainActivity(JNIEnv *jni, jobject activityObject);
     ~VMainActivity();
 
+    void finishActivity();
+
 private:
     NV_DECLARE_PRIVATE
     NV_DISABLE_COPY(VMainActivity)
