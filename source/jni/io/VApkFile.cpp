@@ -3,7 +3,7 @@
 #include "VByteArray.h"
 #include "VLog.h"
 
-#include "AppLocal.h"
+#include "App.h"
 #include "MemBuffer.h"
 
 #include <3rdparty/minizip/unzip.h>

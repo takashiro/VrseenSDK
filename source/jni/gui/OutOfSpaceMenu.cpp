@@ -28,7 +28,7 @@ namespace NervGear {
 		, m_app( app )
 	{
 		// Init with empty root
-		init( m_app->GetVRMenuMgr(), m_app->GetDefaultFont(), 0.0f, VRMenuFlags_t(), VArray< VRMenuComponent* >() );
+        init( m_app->vrMenuMgr(), m_app->defaultFont(), 0.0f, VRMenuFlags_t(), VArray< VRMenuComponent* >() );
 	}
 
 	OvrOutOfSpaceMenu * OvrOutOfSpaceMenu::Create( App * app )
@@ -56,7 +56,7 @@ namespace NervGear {
 					VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_ALL ),
 					VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 			parms.append( &iconParms );
-			addItems( m_app->GetVRMenuMgr(), m_app->GetDefaultFont(), parms, rootHandle(), true );
+			addItems( m_app->vrMenuMgr(), m_app->defaultFont(), parms, rootHandle(), true );
 			parms.clear();
 		}
 
@@ -64,7 +64,7 @@ namespace NervGear {
 		// Message
 		{
 			VString outOfSpaceMsg;
-			VrLocale::GetString( m_app->GetVrJni(), m_app->GetJavaObject(),
+			VrLocale::GetString( m_app->vrJni(), m_app->javaObject(),
 					"@string/out_of_memory",
 					"To use this app, please free up at least %dKB of storage space on your phone.",
 					outOfSpaceMsg );
@@ -73,7 +73,7 @@ namespace NervGear {
 			sprintf( charBuff, "%d", memoryInKB );
 			outOfSpaceMsg = VrLocale::GetXliffFormattedString( outOfSpaceMsg, charBuff );
 
-			BitmapFont & font = m_app->GetDefaultFont();
+			BitmapFont & font = m_app->defaultFont();
 			font.WordWrapText( outOfSpaceMsg, 1.4f );
 
 			VRMenuObjectParms titleParms(
@@ -88,7 +88,7 @@ namespace NervGear {
 				VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_TEXT ),
 				VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 			parms.append( &titleParms );
-			addItems( m_app->GetVRMenuMgr(), m_app->GetDefaultFont(), parms, rootHandle(), true );
+			addItems( m_app->vrMenuMgr(), m_app->defaultFont(), parms, rootHandle(), true );
 			parms.clear();
 		}
 

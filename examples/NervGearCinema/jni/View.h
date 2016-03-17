@@ -1,24 +1,10 @@
-/************************************************************************************
-
-Filename    :   View.h
-Content     :
-Created     :	6/17/2014
-Authors     :   Jim Dos�
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-This source code is licensed under the BSD-style license found in the
-LICENSE file in the Cinema/ directory. An additional grant
-of patent rights can be found in the PATENTS file in the same directory.
-
-*************************************************************************************/
-
-#if !defined( View_h )
-#define View_h
+#pragma once
 
 #include "KeyState.h"
 #include "VMath.h"
 #include "Input.h"
+
+#include <VString.h>
 
 using namespace NervGear;
 
@@ -40,7 +26,7 @@ public:
 
 	virtual 			~View();
 
-	virtual void 		OneTimeInit( const char * launchIntent ) = 0;
+    virtual void 		OneTimeInit( const VString &launchIntent ) = 0;
 	virtual void		OneTimeShutdown() = 0;
 
 	virtual void 		OnOpen() = 0;
@@ -61,5 +47,3 @@ protected:
 };
 
 } // namespace OculusCinema
-
-#endif // Menu_h

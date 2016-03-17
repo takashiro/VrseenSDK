@@ -19,10 +19,10 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 namespace NervGear
 {
 
-void TalkToJava::Init( JavaVM & javaVM_, TalkToJavaInterface & interface )
+void TalkToJava::Init(JavaVM *javaVM, TalkToJavaInterface *interface)
 {
-	Jvm = &javaVM_;
-	Interface = &interface;
+    Jvm = javaVM;
+    Interface = interface;
 
 	// spawn the VR thread
 	const int createErr = pthread_create( &TtjThread, NULL /* default attributes */, &ThreadStarter, this );

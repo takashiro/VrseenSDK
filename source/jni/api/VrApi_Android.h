@@ -107,7 +107,6 @@ void		ovr_ReleaseAudioFocus( ovrMobile * ovr );
 // Start up the platform UI for pass-through camera, reorient, exit, etc.
 // The current app will be covered up by the platform UI, but will be
 // returned to when it finishes.
-#define PUI_CLASS_NAME		"com.oculus.systemactivities.PlatformActivity"
 #define PUI_PACKAGE_NAME	"com.oculus.systemactivities"
 
 // Platform UI command strings.

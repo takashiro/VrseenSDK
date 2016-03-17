@@ -12,7 +12,6 @@ namespace JniUtils {
     jstring Convert(JNIEnv *jni, const VString &str);
     inline jstring Convert(JNIEnv *jni, char const * str) { return jni->NewStringUTF(str); }
 
-    VString GetPackageCodePath(JNIEnv *jni, jclass activityClass, jobject activityObject);
     VString GetCurrentPackageName(JNIEnv *jni, jobject activityObject);
     VString GetCurrentActivityName(JNIEnv * jni, jobject activityObject);
 

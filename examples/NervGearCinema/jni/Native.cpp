@@ -16,17 +16,17 @@ long Java_com_vrseen_nervgear_cinema_MainActivity_nativeSetAppInterface( JNIEnv 
 void Java_com_vrseen_nervgear_cinema_MainActivity_nativeSetVideoSize( JNIEnv *jni, jclass clazz, jlong interfacePtr, int width, int height, int rotation, int duration ) {
 	LOG( "nativeSetVideoSizes: width=%i height=%i rotation=%i duration=%i", width, height, rotation, duration );
 
-	CinemaApp *cinema = ( CinemaApp * )( ( (App *)interfacePtr )->GetAppInterface() );
-	cinema->app->GetMessageQueue().PostPrintf( "video %i %i %i %i", width, height, rotation, duration );
+	CinemaApp *cinema = ( CinemaApp * )( ( (App *)interfacePtr )->appInterface() );
+	cinema->app->messageQueue().PostPrintf( "video %i %i %i %i", width, height, rotation, duration );
 }
 
 jobject Java_com_vrseen_nervgear_cinema_MainActivity_nativePrepareNewVideo( JNIEnv *jni, jclass clazz, jlong interfacePtr ) {
-	CinemaApp *cinema = ( CinemaApp * )( ( (App *)interfacePtr )->GetAppInterface() );
+	CinemaApp *cinema = ( CinemaApp * )( ( (App *)interfacePtr )->appInterface() );
 
 	// set up a message queue to get the return message
 	// TODO: make a class that encapsulates this work
 	VMessageQueue	result(1);
-	cinema->app->GetMessageQueue().PostPrintf( "newVideo %p", &result);
+	cinema->app->messageQueue().PostPrintf( "newVideo %p", &result);
 
 	result.SleepUntilMessage();
     const char * msg = result.nextMessage();
@@ -61,7 +61,7 @@ static jmethodID 	togglePlayingMethodId = NULL;
 // Error checks and exits on failure
 static jmethodID GetMethodID( App *app, jclass cls, const char * name, const char * signature )
 {
-	jmethodID mid = app->GetVrJni()->GetMethodID( cls, name, signature );
+	jmethodID mid = app->vrJni()->GetMethodID( cls, name, signature );
 	if ( !mid )
 	{
     	FAIL( "Couldn't find %s methodID", name );
@@ -102,13 +102,13 @@ void Native::OneTimeShutdown()
 
 VString Native::GetExternalCacheDirectory( App *app )
 {
-	jstring externalCacheDirectoryString = (jstring)app->GetVrJni()->CallObjectMethod( app->GetJavaObject(), getExternalCacheDirectoryMethodId );
+	jstring externalCacheDirectoryString = (jstring)app->vrJni()->CallObjectMethod( app->javaObject(), getExternalCacheDirectoryMethodId );
 
-	const char *externalCacheDirectoryStringUTFChars = app->GetVrJni()->GetStringUTFChars( externalCacheDirectoryString, NULL );
+	const char *externalCacheDirectoryStringUTFChars = app->vrJni()->GetStringUTFChars( externalCacheDirectoryString, NULL );
 	VString externalCacheDirectory = externalCacheDirectoryStringUTFChars;
 
-	app->GetVrJni()->ReleaseStringUTFChars( externalCacheDirectoryString, externalCacheDirectoryStringUTFChars );
-	app->GetVrJni()->DeleteLocalRef( externalCacheDirectoryString );
+	app->vrJni()->ReleaseStringUTFChars( externalCacheDirectoryString, externalCacheDirectoryStringUTFChars );
+	app->vrJni()->DeleteLocalRef( externalCacheDirectoryString );
 
 	return externalCacheDirectory;
 }
@@ -117,13 +117,13 @@ bool Native::CreateVideoThumbnail( App *app, const char *videoFilePath, const ch
 {
 	LOG( "CreateVideoThumbnail( %s, %s )", videoFilePath, outputFilePath );
 
-	jstring jstrVideoFilePath = app->GetVrJni()->NewStringUTF( videoFilePath );
-	jstring jstrOutputFilePath = app->GetVrJni()->NewStringUTF( outputFilePath );
+	jstring jstrVideoFilePath = app->vrJni()->NewStringUTF( videoFilePath );
+	jstring jstrOutputFilePath = app->vrJni()->NewStringUTF( outputFilePath );
 
-	jboolean result = app->GetVrJni()->CallBooleanMethod( app->GetJavaObject(), createVideoThumbnailMethodId, jstrVideoFilePath, jstrOutputFilePath, width, height );
+	jboolean result = app->vrJni()->CallBooleanMethod( app->javaObject(), createVideoThumbnailMethodId, jstrVideoFilePath, jstrOutputFilePath, width, height );
 
-	app->GetVrJni()->DeleteLocalRef( jstrVideoFilePath );
-	app->GetVrJni()->DeleteLocalRef( jstrOutputFilePath );
+	app->vrJni()->DeleteLocalRef( jstrVideoFilePath );
+	app->vrJni()->DeleteLocalRef( jstrOutputFilePath );
 
 	LOG( "CreateVideoThumbnail( %s, %s )", videoFilePath, outputFilePath );
 
@@ -134,11 +134,11 @@ bool Native::CheckForMovieResume( App *app, const char * movieName )
 {
 	LOG( "CheckForMovieResume( %s )", movieName );
 
-	jstring jstrMovieName = app->GetVrJni()->NewStringUTF( movieName );
+	jstring jstrMovieName = app->vrJni()->NewStringUTF( movieName );
 
-	jboolean result = app->GetVrJni()->CallBooleanMethod( app->GetJavaObject(), checkForMovieResumeId, jstrMovieName );
+	jboolean result = app->vrJni()->CallBooleanMethod( app->javaObject(), checkForMovieResumeId, jstrMovieName );
 
-	app->GetVrJni()->DeleteLocalRef( jstrMovieName );
+	app->vrJni()->DeleteLocalRef( jstrMovieName );
 
 	return result;
 }
@@ -146,78 +146,78 @@ bool Native::CheckForMovieResume( App *app, const char * movieName )
 bool Native::IsPlaying( App *app )
 {
 	LOG( "IsPlaying()" );
-	return app->GetVrJni()->CallBooleanMethod( app->GetJavaObject(), isPlayingMethodId );
+	return app->vrJni()->CallBooleanMethod( app->javaObject(), isPlayingMethodId );
 }
 
 bool Native::IsPlaybackFinished( App *app )
 {
-	jboolean result = app->GetVrJni()->CallBooleanMethod( app->GetJavaObject(), isPlaybackFinishedMethodId );
+	jboolean result = app->vrJni()->CallBooleanMethod( app->javaObject(), isPlaybackFinishedMethodId );
 	return ( result != 0 );
 }
 
 bool Native::HadPlaybackError( App *app )
 {
-	jboolean result = app->GetVrJni()->CallBooleanMethod( app->GetJavaObject(), hadPlaybackErrorMethodId );
+	jboolean result = app->vrJni()->CallBooleanMethod( app->javaObject(), hadPlaybackErrorMethodId );
 	return ( result != 0 );
 }
 
 int Native::GetPosition( App *app )
 {
 	LOG( "GetPosition()" );
-	return app->GetVrJni()->CallIntMethod( app->GetJavaObject(), getPositionMethodId );
+	return app->vrJni()->CallIntMethod( app->javaObject(), getPositionMethodId );
 }
 
 int Native::GetDuration( App *app )
 {
 	LOG( "GetDuration()" );
-	return app->GetVrJni()->CallIntMethod( app->GetJavaObject(), getDurationMethodId );
+	return app->vrJni()->CallIntMethod( app->javaObject(), getDurationMethodId );
 }
 
 void Native::SetPosition( App *app, int positionMS )
 {
 	LOG( "SetPosition()" );
-	app->GetVrJni()->CallVoidMethod( app->GetJavaObject(), setPositionMethodId, positionMS );
+	app->vrJni()->CallVoidMethod( app->javaObject(), setPositionMethodId, positionMS );
 }
 
 void Native::SeekDelta( App *app, int deltaMS )
 {
 	LOG( "SeekDelta()" );
-	app->GetVrJni()->CallVoidMethod( app->GetJavaObject(), seekDeltaMethodId, deltaMS );
+	app->vrJni()->CallVoidMethod( app->javaObject(), seekDeltaMethodId, deltaMS );
 }
 
 void Native::StartMovie( App *app, const char * movieName, bool resumePlayback, bool isEncrypted, bool loop )
 {
 	LOG( "StartMovie( %s )", movieName );
 
-	jstring jstrMovieName = app->GetVrJni()->NewStringUTF( movieName );
+	jstring jstrMovieName = app->vrJni()->NewStringUTF( movieName );
 
-	app->GetVrJni()->CallVoidMethod( app->GetJavaObject(), startMovieMethodId, jstrMovieName, resumePlayback, isEncrypted, loop );
+	app->vrJni()->CallVoidMethod( app->javaObject(), startMovieMethodId, jstrMovieName, resumePlayback, isEncrypted, loop );
 
-	app->GetVrJni()->DeleteLocalRef( jstrMovieName );
+	app->vrJni()->DeleteLocalRef( jstrMovieName );
 }
 
 void Native::PauseMovie( App *app )
 {
 	LOG( "PauseMovie()" );
-	app->GetVrJni()->CallVoidMethod( app->GetJavaObject(), pauseMovieMethodId );
+	app->vrJni()->CallVoidMethod( app->javaObject(), pauseMovieMethodId );
 }
 
 void Native::ResumeMovie( App *app )
 {
 	LOG( "ResumeMovie()" );
-	app->GetVrJni()->CallVoidMethod( app->GetJavaObject(), resumeMovieMethodId );
+	app->vrJni()->CallVoidMethod( app->javaObject(), resumeMovieMethodId );
 }
 
 void Native::StopMovie( App *app )
 {
 	LOG( "StopMovie()" );
-	app->GetVrJni()->CallVoidMethod( app->GetJavaObject(), stopMovieMethodId );
+	app->vrJni()->CallVoidMethod( app->javaObject(), stopMovieMethodId );
 }
 
 bool Native::TogglePlaying( App *app )
 {
 	LOG( "TogglePlaying()" );
-	return app->GetVrJni()->CallBooleanMethod( app->GetJavaObject(), togglePlayingMethodId );
+	return app->vrJni()->CallBooleanMethod( app->javaObject(), togglePlayingMethodId );
 }
 
 } // namespace OculusCinema

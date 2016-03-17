@@ -23,6 +23,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "PhotosMetaData.h"
 #include "OVR_TurboJpeg.h"
 #include "linux/stat.h"
+#include "VrCommon.h"
 
 #include <unistd.h>
 #include <VPath.h>
@@ -143,7 +144,7 @@ PanoBrowser * PanoBrowser::Create(
 VString PanoBrowser::getCategoryTitle( char const * key, char const * defaultStr ) const
 {
 	VString outStr;
-    VrLocale::GetString(  m_app->GetVrJni(), m_app->GetJavaObject(), key, defaultStr, outStr );
+    VrLocale::GetString(  m_app->vrJni(), m_app->javaObject(), key, defaultStr, outStr );
 	return outStr;
 }
 
@@ -154,7 +155,7 @@ VString PanoBrowser::getPanelTitle( const OvrMetaDatum & panelData ) const
 	{
 		// look first in our own locale table for titles that were downloaded at run-time.
 		VString outStr;
-        VrLocale::GetString(  m_app->GetVrJni(), m_app->GetJavaObject(), photosDatum->title.toCString(), photosDatum->title.toCString(), outStr );
+        VrLocale::GetString(  m_app->vrJni(), m_app->javaObject(), photosDatum->title.toCString(), photosDatum->title.toCString(), outStr );
 		return outStr;
 	}
 	return VString();
@@ -163,7 +164,7 @@ VString PanoBrowser::getPanelTitle( const OvrMetaDatum & panelData ) const
 
 void PanoBrowser::onPanelActivated( const OvrMetaDatum * panelData )
 {
-    Oculus360Photos * photos = ( Oculus360Photos * ) m_app->GetAppInterface();
+    Oculus360Photos * photos = ( Oculus360Photos * ) m_app->appInterface();
 	OVR_ASSERT( photos );
 	photos->onPanoActivated( panelData );
 }
@@ -176,7 +177,7 @@ const OvrMetaDatum * PanoBrowser::nextFileInDirectory( const int step )
         const int numFavorites = m_favoritesBuffer.length();
 		// find the current
 		int nextPanelIndex = -1;
-        Oculus360Photos * photos = ( Oculus360Photos * )m_app->GetAppInterface();
+        Oculus360Photos * photos = ( Oculus360Photos * )m_app->appInterface();
 		OVR_ASSERT( photos );
 		for ( nextPanelIndex = 0; nextPanelIndex < numFavorites; ++nextPanelIndex )
 		{
@@ -235,7 +236,7 @@ void PanoBrowser::onBrowserOpen()
 
 	if ( m_bufferDirty )
 	{
-        Oculus360Photos * photos = ( Oculus360Photos * )m_app->GetAppInterface();
+        Oculus360Photos * photos = ( Oculus360Photos * )m_app->appInterface();
 		if ( photos )
 		{
             OvrPhotosMetaData * metaData = photos->metaData();
@@ -273,7 +274,7 @@ void PanoBrowser::onBrowserOpen()
 // Reload with what's currently in favorites folder in FolderBrowser
 void PanoBrowser::ReloadFavoritesBuffer()
 {
-    Oculus360Photos * photos = ( Oculus360Photos * )m_app->GetAppInterface();
+    Oculus360Photos * photos = ( Oculus360Photos * )m_app->appInterface();
 	if ( photos != NULL )
 	{
         OvrPhotosMetaData * metaData = photos->metaData();
@@ -439,10 +440,10 @@ VString PanoBrowser::thumbName( const VString & s )
 
 void PanoBrowser::onMediaNotFound( App * app, VString & title, VString & imageFile, VString & message )
 {
-	VrLocale::GetString( app->GetVrJni(), app->GetJavaObject(), "@string/app_name", "@string/app_name", title );
+	VrLocale::GetString( app->vrJni(), app->javaObject(), "@string/app_name", "@string/app_name", title );
 	imageFile = "assets/sdcard.png";
-	VrLocale::GetString( app->GetVrJni(), app->GetJavaObject(), "@string/media_not_found", "@string/media_not_found", message );
-	BitmapFont & font = app->GetDefaultFont();
+	VrLocale::GetString( app->vrJni(), app->javaObject(), "@string/media_not_found", "@string/media_not_found", message );
+	BitmapFont & font = app->defaultFont();
     VArray<VString> wholeStrs;
     wholeStrs.append( "Gear VR" );
 	font.WordWrapText( message, 1.4f, wholeStrs );
@@ -450,11 +451,11 @@ void PanoBrowser::onMediaNotFound( App * app, VString & title, VString & imageFi
 
 bool PanoBrowser::onTouchUpNoFocused()
 {
-    Oculus360Photos * photos = ( Oculus360Photos * )m_app->GetAppInterface();
+    Oculus360Photos * photos = ( Oculus360Photos * )m_app->appInterface();
 	OVR_ASSERT( photos );
     if ( photos->activePano() != NULL && isOpen() && !gazingAtMenu() )
 	{
-        m_app->GetGuiSys().closeMenu( m_app, this, false );
+        m_app->guiSys().closeMenu( m_app, this, false );
 		return true;
 	}
 	return false;

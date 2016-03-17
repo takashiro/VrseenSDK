@@ -24,7 +24,7 @@ class ShaderManager
 public:
 							ShaderManager( CinemaApp &cinema );
 
-	void					OneTimeInit( const char * launchIntent );
+	void					OneTimeInit(const VString &launchIntent );
 	void					OneTimeShutdown();
 
 	CinemaApp &				Cinema;

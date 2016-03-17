@@ -2,37 +2,17 @@
 
 #include "vglobal.h"
 
-#include <pthread.h>
-#include "OVR.h"
-#include "android/GlUtils.h"
-#include "android/LogUtils.h"
-#include "api/VrApi.h"
-#include "api/VrApi_Android.h"
-#include "GlProgram.h"
-#include "GlTexture.h"
-#include "GlGeometry.h"
-#include "SurfaceTexture.h"
-#include "EyeBuffers.h"
-#include "EyePostRender.h"
-#include "VrCommon.h"
-#include "VMessageQueue.h"
-#include "Input.h"
-#include "TalkToJava.h"
+#include "VrApi.h"
+#include "VrApi_Android.h"
 #include "KeyState.h"
-
-// Avoid including this header file as much as possible in VrLib,
-// so individual components are not tied to our native application
-// framework, and can more easily be reused by Unity or other
-// hosting applications.
+#include "EyeBuffers.h"
+#include "Input.h"
+#include "VMessageQueue.h"
+#include "SoundManager.h"
 
 NV_NAMESPACE_BEGIN
 
-//==============================================================
-// forward declarations
-class EyeBuffers;
 struct MaterialParms;
-class GlGeometry;
-struct GlProgram;
 class VRMenuObjectParms;
 class OvrGuiSys;
 class OvrGazeCursor;
@@ -43,12 +23,8 @@ class OvrDebugLines;
 class App;
 class VrViewParms;
 class VStandardPath;
-class OvrSoundManager;
+class SurfaceTexture;
 
-//==============================================================
-// All of these virtual interfaces will be called by the VR application thread.
-// Applications that don't care about particular interfaces are not
-// required to implement them.
 class VrAppInterface
 {
 public:
@@ -74,7 +50,7 @@ public:
 	//
 	// If the app was launched without a specific intent, launchIntent
 	// will be an empty string.
-	virtual void OneTimeInit( const char * fromPackage, const char * launchIntentJSON, const char * launchIntentURI );
+    virtual void OneTimeInit(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI) = 0;
 
 	// This will be called one time only, when the app is about to shut down.
 	//
@@ -156,190 +132,170 @@ public:
 	virtual bool GetWantProtectedFramebuffer() const;
 };
 
+class OvrGuiSys;
+class GazeCursor;
+class OvrVolumePopup;
+
 //==============================================================
-// App
-class App : public TalkToJavaInterface
+// AppLocal
+//
+// NOTE: do not define any of the functions in here inline (inside of the class
+// definition).  When AppLocal.h is included in multiple files (App.cpp and AppRender.cpp)
+// this causes bugs with accessor functions.
+class App
 {
 public:
-	virtual						~App();
+                                App(JNIEnv *jni, jobject activityObject,
+                                        VrAppInterface & interface );
+    virtual						~App();
 
-	// App drains this message queue on the VR thread before calling
-	// the frame and render functions.
-	virtual VMessageQueue &		GetMessageQueue() = 0;
+    VMessageQueue &		messageQueue();
+
+    VrAppInterface *	appInterface();
+
+    void 				drawEyeViewsPostDistorted( Matrix4f const & viewMatrix, const int numPresents = 1);
+
+    void				createToast( const char * fmt, ... );
+
+    void				playSound( const char * name );
+
+    void				recenterYaw( const bool showBlack );
+    void				setRecenterYawFrameStart( const long long frameNumber );
+    long long			recenterYawFrameStart() const;
 
 
-	// When VrAppInterface::SetActivity is called, the App member is
-	// allocated and hooked up to the VrAppInterface.
-	virtual VrAppInterface *	GetAppInterface() = 0;
+    //-----------------------------------------------------------------
 
-	// Calls VrAppInterface::DrawEyeView() for drawing to a framebuffer object,
-	// then warps it to the screen.
-	//
-	// The framework can support monoscopic rendering and alternate eye
-	// time warp extrapolation automatically.
-	//
-	// NumPresents 2 = time warp between each eye rendering, 0 = only draw to back buffers,
-	// 1 = standard behavior.
-	virtual void 				DrawEyeViewsPostDistorted( Matrix4f const & viewMatrix, 
-										const int numPresents = 1 ) = 0;
-
-	// Request the java framework to draw a toast popup and
-	// present it to the VR framework.  It may be several frames
-	// before it is displayed.
-	virtual void				CreateToast( const char * fmt, ... ) = 0;
-
-	// Plays a sound located in the application package's assets/ directory
-	// through a Java SoundPool.  This is mostly for UI, there is no 3D spatialization.
-	// "select.wav" would load <project>/assets/select.wav.
-	virtual void				PlaySound( const char * name ) = 0;
-
-	// Switch to SystemActivities application.
-	virtual void				StartSystemActivity( const char * command ) = 0;
-
-	// The parms will be initialized to sensible values on startup, and
-	// can be freely changed at any time with minimal overhead.
-	//
-	// This could be implemented by passing and returning them every
-	// GetEyeBuffers() call, but separating it allows the framework to manipulate
-	// the values based on joypad button sequences without requiring
-	// the application to be involved.
-	virtual	EyeParms			GetEyeParms() = 0;
-	virtual void				SetEyeParms( const EyeParms parms ) = 0;
-
-	// Reorient was triggered - inform all menus etc.
-	virtual void				RecenterYaw( const bool showBlack ) = 0;
-
-	// Enables reorient before sensor data is read.  Allows apps to reorient without having invalid orientation information for that frame.
-	virtual void				SetRecenterYawFrameStart( const long long frameNumber ) = 0;
-	virtual long long			GetRecenterYawFrameStart() const = 0;
+    EyeParms			eyeParms();
+    void				setEyeParms( const EyeParms parms );
 
     //-----------------------------------------------------------------
     // interfaces
     //-----------------------------------------------------------------
-    virtual OvrGuiSys &         	GetGuiSys() = 0;
-    virtual OvrGazeCursor &     	GetGazeCursor() = 0;
-    virtual BitmapFont &        	GetDefaultFont() = 0;
-    virtual BitmapFontSurface & 	GetWorldFontSurface() = 0;
-    virtual BitmapFontSurface & 	GetMenuFontSurface() = 0;
-    virtual OvrVRMenuMgr &      	GetVRMenuMgr() = 0;
-    virtual OvrDebugLines &     	GetDebugLines() = 0;
-	virtual const VStandardPath &	GetStoragePaths() = 0;
-	virtual OvrSoundManager &		GetSoundMgr() = 0;
+    OvrGuiSys &         	guiSys();
+    OvrGazeCursor  &    	gazeCursor();
+    BitmapFont &        	defaultFont();
+    BitmapFontSurface & 	worldFontSurface();
+    BitmapFontSurface & 	menuFontSurface();
+    OvrVRMenuMgr &      	vrMenuMgr();
+    OvrDebugLines &     	debugLines();
+    const VStandardPath & storagePaths();
+    OvrSoundManager &		soundMgr();
 
-	//-----------------------------------------------------------------
-	// system settings
-	//-----------------------------------------------------------------
-	virtual	int					GetSystemBrightness() const = 0;
-	virtual void				SetSystemBrightness( int const v ) = 0;
+    //-----------------------------------------------------------------
+    // system settings
+    //-----------------------------------------------------------------
 
-	virtual	bool				GetComfortModeEnabled() const = 0;
-	virtual	void				SetComfortModeEnabled( bool const enabled ) = 0;
+    int					wifiSignalLevel() const;
+    eWifiState			wifiState() const;
+    int					cellularSignalLevel() const;
+    eCellularState		cellularState() const;
 
-	virtual	int					GetBatteryLevel() const = 0;
-	virtual	eBatteryStatus		GetBatteryStatus() const = 0;
+    //-----------------------------------------------------------------
+    // accessors
+    //-----------------------------------------------------------------
 
-	virtual int					GetWifiSignalLevel() const = 0;
-	virtual eWifiState			GetWifiState() const = 0;
-	virtual int					GetCellularSignalLevel() const = 0;
-	virtual eCellularState		GetCellularState() const = 0;
+    bool				isAsynchronousTimeWarp() const;
+    bool				hasHeadphones() const;
+    bool				framebufferIsSrgb() const;
+    bool				framebufferIsProtected() const;
+    bool				renderMonoMode() const;
+    void				setRenderMonoMode( bool const mono );
 
-	virtual bool				IsAirplaneModeEnabled() const = 0;
-	virtual bool				IsTime24HourFormat() const = 0;
+    const VString &packageCodePath() const;
 
-	virtual void				SetDoNotDisturbMode( bool const enable ) = 0;
-	virtual bool				GetDoNotDisturbMode() const = 0;
+    Matrix4f const &	lastViewMatrix() const;
+    void				setLastViewMatrix( Matrix4f const & m );
 
-	virtual bool				GetBluetoothEnabled() const = 0;
+    EyeParms &			vrParms();
+    ovrModeParms 		vrModeParms();
+    void				setVrModeParms( ovrModeParms parms );
 
-	//-----------------------------------------------------------------
-	// accessors
-	//-----------------------------------------------------------------
+    VrViewParms const &	vrViewParms() const;
+    void				setVrViewParms( VrViewParms const & parms );
 
-	virtual bool				IsAsynchronousTimeWarp() const = 0;
-	virtual	bool				GetHasHeadphones() const = 0;
-	virtual bool				GetFramebufferIsSrgb() const = 0;
-	virtual bool				GetFramebufferIsProtected() const = 0;
-	virtual bool				GetRenderMonoMode() const = 0;
-	virtual void				SetRenderMonoMode( bool const mono ) = 0;
+    void				setPopupDistance( float const d );
+    float				popupDistance() const;
+    void				setPopupScale( float const s );
+    float				popupScale() const;
 
-    virtual const VString &packageCodePath() const = 0;
-	virtual char const *		GetLanguagePackagePath() const = 0;
-	
-	virtual Matrix4f const &	GetLastViewMatrix() const = 0;
-	virtual void				SetLastViewMatrix( Matrix4f const & m ) = 0;
+    int					cpuLevel() const;
+    int					gpuLevel() const;
 
-	virtual EyeParms &			GetVrParms() = 0;
+    bool				isPowerSaveActive() const;
 
-	// Changing the VrModeParms may cause a visible flicker as VrMode is
-	// left and re-entered; it should generally not be used in-game.
-	virtual ovrModeParms 		GetVrModeParms() = 0;
-	virtual void				SetVrModeParms( ovrModeParms parms ) = 0;
+    int					batteryLevel() const;
+    eBatteryStatus		batteryStatus() const;
 
-	virtual	void				SetPopupDistance( float const d ) = 0;
-	virtual float				GetPopupDistance() const = 0;
-	virtual	void				SetPopupScale( float const s ) = 0;
-	virtual float				GetPopupScale() const = 0;
+    bool				isGuiOpen() const;
 
-	virtual int					GetCpuLevel() const = 0;
-	virtual int					GetGpuLevel() const = 0;
+    KeyState &          backKeyState();
 
-	virtual bool				GetPowerSaveActive() const = 0;
+    ovrMobile *			getOvrMobile();
 
-	virtual bool				IsGuiOpen() const = 0;
+    void				setShowVolumePopup( bool const show );
+    bool				showVolumePopup() const;
 
-	virtual VrViewParms const &	GetVrViewParms() const = 0;
-	virtual void				SetVrViewParms( VrViewParms const & parms ) = 0;
+    //-----------------------------------------------------------------
+    // Java accessors
+    //-----------------------------------------------------------------
 
-    virtual KeyState &          GetBackKeyState() = 0;
+    JavaVM	*			javaVM();
+    JNIEnv	*			uiJni();
+    JNIEnv	*			vrJni();
+    jobject	&			javaObject();
+    jclass	&			vrActivityClass();
 
-	virtual ovrMobile *			GetOvrMobile() = 0;
+    //-----------------------------------------------------------------
 
-	virtual void				SetShowVolumePopup( bool const show ) = 0;
-	virtual bool				GetShowVolumePopup() const = 0;
+    // Every application gets a basic dialog surface.
+    SurfaceTexture *	dialogTexture();
 
-    virtual const VString &packageName() const = 0;
+    //-----------------------------------------------------------------
+    // TimeWarp
+    //-----------------------------------------------------------------
+    ovrTimeWarpParms const & swapParms() const;
+    ovrTimeWarpParms &		swapParms();
 
-	virtual bool				IsWifiConnected() const = 0;
+    ovrSensorState const & sensorForNextWarp() const;
 
-	//-----------------------------------------------------------------
-	// Java accessors
-	//-----------------------------------------------------------------
+    // Draw a zero to destination alpha
+    void				drawScreenMask( const ovrMatrix4f & mvp, const float fadeFracX, const float fadeFracY );
+    // Draw a screen to an eye buffer the same way it would be drawn as a
+    // time warp overlay.
+    void				drawScreenDirect( const GLuint texid, const ovrMatrix4f & mvp );
 
-	virtual JavaVM	*			GetJavaVM() = 0;
-	virtual JNIEnv	*			GetUiJni() = 0;			// for use by the Java UI thread
-	virtual JNIEnv	*			GetVrJni() = 0;			// for use by the VR thread
-	virtual jobject	&			GetJavaObject() = 0;
-	virtual jclass	&			GetVrActivityClass() = 0;	// need to look up from main thread
+    //-----------------------------------------------------------------
+    // debugging
+    //-----------------------------------------------------------------
+    void				setShowFPS( bool const show );
+    bool				showFPS() const;
 
-	//-----------------------------------------------------------------
+    void				showInfoText( float const duration, const char * fmt, ... );
+    void				showInfoText( float const duration, Vector3f const & offset, Vector4f const & color, const char * fmt, ... );
 
-	// Every application gets a basic dialog surface.
-	virtual SurfaceTexture *	GetDialogTexture() = 0;
+    //-----------------------------------------------------------------
 
-	//-----------------------------------------------------------------
-	// TimeWarp
-	//-----------------------------------------------------------------
-	virtual ovrTimeWarpParms const & GetSwapParms() const = 0;			// passed to TimeWarp->WarpSwap()
-	virtual ovrTimeWarpParms &		GetSwapParms() = 0;
+    Matrix4f		 matrixInterpolation( const Matrix4f & startMatrix, const Matrix4f & endMatrix, double t );
 
-	virtual ovrSensorState const & GetSensorForNextWarp() const = 0;
+    void			drawDialog( const Matrix4f & mvp );
+    void			drawPanel( const GLuint externalTextureId, const Matrix4f & dialogMvp, const float alpha );
 
-	// Overlay plane helper functions
+    void			drawBounds( const Vector3f &mins, const Vector3f &maxs, const Matrix4f &mvp, const Vector3f &color );
 
-	// Draw a zero to destination alpha
-	virtual void				DrawScreenMask( const ovrMatrix4f & mvp, const float fadeFracX, const float fadeFracY ) = 0;
-	// Draw a screen to an eye buffer the same way it would be drawn as a
-	// time warp overlay.
-	virtual void				DrawScreenDirect( const GLuint texid, const ovrMatrix4f & mvp ) = 0;
+    // Start, stop and sync the VrThread.
+    void			startVrThread();
+    void			stopVrThread();
+    void			syncVrThread();
 
-	//-----------------------------------------------------------------
-	// debugging
-	//-----------------------------------------------------------------
-	virtual void				SetShowFPS( bool const show ) = 0;
-	virtual bool				GetShowFPS() const = 0;
+    volatile bool	oneTimeInitCalled;
+    ovrModeParms	VrModeParms;
 
-	virtual	void				ShowInfoText( float const duration, const char * fmt, ... ) = 0;
-	virtual	void				ShowInfoText( float const duration, Vector3f const & offset, Vector4f const & color, const char * fmt, ... ) = 0;
+private:
+    NV_DECLARE_PRIVATE
+    NV_DISABLE_COPY(App)
 };
+
+extern App *vApp;
 
 NV_NAMESPACE_END

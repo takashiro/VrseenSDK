@@ -18,7 +18,7 @@ class CinemaApp : public NervGear::VrAppInterface
 public:
 							CinemaApp();
 
-    void OneTimeInit( const char * fromPackage, const char * launchIntentJSON, const char * launchIntentURI ) override;
+    void OneTimeInit(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI ) override;
     void OneTimeShutdown() override;
 
     Matrix4f DrawEyeView( const int eye, const float fovDegrees ) override;

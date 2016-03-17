@@ -50,18 +50,19 @@ CinemaApp::CinemaApp() :
  * OneTimeInit
  *
  */
-void CinemaApp::OneTimeInit( const char * fromPackage, const char * launchIntentJSON, const char * launchIntentURI ) {
+void CinemaApp::OneTimeInit(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI)
+{
 	LOG( "--------------- CinemaApp OneTimeInit ---------------");
 
 	startTime = ovr_GetTimeInSeconds();
 
-	app->GetVrParms().colorFormat = COLOR_8888;
+	app->vrParms().colorFormat = COLOR_8888;
 	//app->GetVrParms().depthFormat = DEPTH_16;
-	app->GetVrParms().multisamples = 2;
+	app->vrParms().multisamples = 2;
 
 	Native::OneTimeInit( app, ActivityClass );
 	CinemaStrings::OneTimeInit( *this );
-	shaderMgr.OneTimeInit( launchIntentURI );
+    shaderMgr.OneTimeInit( launchIntentURI );
 	modelMgr.OneTimeInit( launchIntentURI );
 	sceneMgr.OneTimeInit( launchIntentURI );
 	movieMgr.OneTimeInit( launchIntentURI );
@@ -313,7 +314,7 @@ void CinemaApp::ConfigureVrMode(ovrModeParms &modeParms)
 	modeParms.AllowPowerSave = true;
 
 	// Always use 2x MSAA for now
-	app->GetVrParms().multisamples = 2;
+	app->vrParms().multisamples = 2;
 }
 
 /*

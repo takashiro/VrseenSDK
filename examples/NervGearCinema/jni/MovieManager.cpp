@@ -70,7 +70,7 @@ MovieManager::~MovieManager()
 {
 }
 
-void MovieManager::OneTimeInit( const char * launchIntent )
+void MovieManager::OneTimeInit( const VString &launchIntent )
 {
 	LOG( "MovieManager::OneTimeInit" );
 	const double start = ovr_GetTimeInSeconds();

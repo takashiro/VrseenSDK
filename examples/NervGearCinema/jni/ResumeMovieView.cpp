@@ -27,13 +27,13 @@ ResumeMovieView::~ResumeMovieView()
 {
 }
 
-void ResumeMovieView::OneTimeInit( const char * launchIntent )
+void ResumeMovieView::OneTimeInit( const VString &launchIntent )
 {
 	LOG( "ResumeMovieView::OneTimeInit" );
 
 	const double start = ovr_GetTimeInSeconds();
 
-	CreateMenu( Cinema.app, Cinema.app->GetVRMenuMgr(), Cinema.app->GetDefaultFont() );
+	CreateMenu( Cinema.app, Cinema.app->vrMenuMgr(), Cinema.app->defaultFont() );
 
 	LOG( "ResumeMovieView::OneTimeInit: %3.1f seconds", ovr_GetTimeInSeconds() - start );
 }
@@ -49,12 +49,12 @@ void ResumeMovieView::OnOpen()
 
 	Cinema.sceneMgr.LightsOn( 0.5f );
 
-	Cinema.app->GetSwapParms().WarpProgram = WP_CHROMATIC;
+	Cinema.app->swapParms().WarpProgram = WP_CHROMATIC;
 
-	SetPosition(Cinema.app->GetVRMenuMgr(), Cinema.sceneMgr.Scene.FootPos);
+	SetPosition(Cinema.app->vrMenuMgr(), Cinema.sceneMgr.Scene.FootPos);
 
 	Cinema.sceneMgr.ClearGazeCursorGhosts();
-    Cinema.app->GetGuiSys().openMenu( Cinema.app, Cinema.app->GetGazeCursor(), "ResumeMoviePrompt" );
+    Cinema.app->guiSys().openMenu( Cinema.app, Cinema.app->gazeCursor(), "ResumeMoviePrompt" );
 
 	CurViewState = VIEWSTATE_OPEN;
 }
@@ -63,7 +63,7 @@ void ResumeMovieView::OnClose()
 {
 	LOG( "OnClose" );
 
-    Cinema.app->GetGuiSys().closeMenu( Cinema.app, Menu, false );
+    Cinema.app->guiSys().closeMenu( Cinema.app, Menu, false );
 
 	CurViewState = VIEWSTATE_CLOSED;
 }
@@ -212,7 +212,7 @@ void ResumeMovieView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFont 
         resumeMovieComponent->Icon = menuMgr.toObject( iconHandle );
 	}
 
-    Cinema.app->GetGuiSys().addMenu( Menu );
+    Cinema.app->guiSys().addMenu( Menu );
 }
 
 void ResumeMovieView::ResumeChoice( int itemNum )
@@ -230,9 +230,9 @@ void ResumeMovieView::ResumeChoice( int itemNum )
 Matrix4f ResumeMovieView::Frame( const VrFrame & vrFrame )
 {
 	// We want 4x MSAA in the selection screen
-	EyeParms eyeParms = Cinema.app->GetEyeParms();
+	EyeParms eyeParms = Cinema.app->eyeParms();
 	eyeParms.multisamples = 4;
-	Cinema.app->SetEyeParms( eyeParms );
+	Cinema.app->setEyeParms( eyeParms );
 
     if ( Menu->isClosedOrClosing() && !Menu->isOpenOrOpening() )
 	{

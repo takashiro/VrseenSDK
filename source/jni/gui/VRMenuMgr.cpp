@@ -315,7 +315,7 @@ void DebugMenuBounds( void * appPtr, const char * cmd )
 	int show = 0;
 	sscanf( cmd, "%i", &show );
 	OVR_ASSERT( appPtr != NULL );	// something changed / broke in the OvrConsole code if this is NULL
-	VRMenuMgrLocal::ToLocal( ( ( App* )appPtr )->GetVRMenuMgr() ).SetShowDebugBounds( show != 0 );
+    VRMenuMgrLocal::ToLocal( ( ( App* )appPtr )->vrMenuMgr() ).SetShowDebugBounds( show != 0 );
 }
 
 void DebugMenuHierarchy( void * appPtr, const char * cmd )
@@ -323,7 +323,7 @@ void DebugMenuHierarchy( void * appPtr, const char * cmd )
 	int show = 0;
 	sscanf( cmd, "%i", &show );
 	OVR_ASSERT( appPtr != NULL );	// something changed / broke in the OvrConsole code if this is NULL
-	VRMenuMgrLocal::ToLocal( ( ( App* )appPtr )->GetVRMenuMgr() ).SetShowDebugHierarchy( show != 0 );
+    VRMenuMgrLocal::ToLocal( ( ( App* )appPtr )->vrMenuMgr() ).SetShowDebugHierarchy( show != 0 );
 }
 
 void DebugMenuPoses( void * appPtr, const char * cmd )
@@ -331,7 +331,7 @@ void DebugMenuPoses( void * appPtr, const char * cmd )
 	int show = 0;
 	sscanf( cmd, "%i", &show );
 	OVR_ASSERT( appPtr != NULL );	// something changed / broke in the OvrConsole code if this is NULL
-	VRMenuMgrLocal::ToLocal( ( ( App* )appPtr )->GetVRMenuMgr() ).SetShowPoses( show != 0 );
+    VRMenuMgrLocal::ToLocal( ( ( App* )appPtr )->vrMenuMgr() ).SetShowPoses( show != 0 );
 }
 
 //==================================
