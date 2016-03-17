@@ -1831,63 +1831,6 @@ void App::vrThreadFunction()
 		// reset any VR menu submissions from previous frame
         vrMenuMgr().beginFrame();
 
-#if 0
-		// Joypad latency test
-		// When this is enabled, each tap of a button will toggle the screen
-		// color, allowing the tap-to-photons latency to be measured.
-        if (0)
-		{
-            if (vrFrame.Input.buttonPressed)
-			{
-                LOG("Input.buttonPressed");
-				static bool shut;
-                if (!shut)
-				{
-					// shut down timewarp, then go back into frontbuffer mode
-					shut = true;
-                    ovr_LeaveVrMode(OvrMobile);
-					static DirectRender	dr;
-                    dr.InitForCurrentSurface(VrJni, true, 19);
-				}
-				ToggleScreenColor();
-			}
-			vrMessageQueue.SleepUntilMessage();
-			continue;
-		}
-		// IMU latency test
-        if (0)
-		{
-			static bool buttonDown;
-            const ovrSensorState sensor = ovr_GetPredictedSensorState(OvrMobile, now + clampedPrediction);
-            const float acc = Vector3f(sensor.Predicted.AngularVelocity).Length();
-//			const float acc = fabs(Vector3f(sensor.Predicted.LinearAcceleration).Length() - 9.8f);
-
-			static int count;
-            if (++count % 10 == 0)
-			{
-                LOG("acc: %f", acc);
-			}
-            const bool buttonNow = (acc > 0.1f);
-            if (buttonNow != buttonDown)
-			{
-                LOG("accel button");
-				buttonDown = buttonNow;
-				static bool shut;
-                if (!shut)
-				{
-					// shut down timewarp, then go back into frontbuffer mode
-					shut = true;
-                    ovr_LeaveVrMode(OvrMobile);
-					static DirectRender	dr;
-                    dr.InitForCurrentSurface(VrJni, true, 19);
-				}
-				ToggleScreenColor();
-			}
-            usleep(1000);
-			continue;
-		}
-#endif
-
         frameworkButtonProcessing(d->vrFrame.Input);
 
         KeyState::eKeyEventType event = d->backKeyState.Update(ovr_GetTimeInSeconds());
