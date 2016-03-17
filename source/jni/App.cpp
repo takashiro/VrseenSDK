@@ -523,15 +523,6 @@ struct App::Private
         }
         return mid;
     }
-
-    jmethodID GetStaticMethodID(jclass jClass, const char *name, const char *signature) const
-    {
-        jmethodID mid = uiJni->GetStaticMethodID(jClass, name, signature);
-        if (!mid) {
-            vFatal("couldn't get" << name);
-        }
-        return mid;
-    }
 };
 
 /*
