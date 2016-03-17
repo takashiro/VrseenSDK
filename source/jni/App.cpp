@@ -1929,9 +1929,9 @@ void App::startVrThread()
 void App::stopVrThread()
 {
     d->vrMessageQueue.PostPrintf("quit ");
-    const int ret = d->renderThread->wait();
-    if (ret != 0) {
-        vWarn("failed to join VrThread (" << ret << ")");
+    bool finished = d->renderThread->wait();
+    if (!finished) {
+        vWarn("failed to wait for VrThread");
 	}
 }
 

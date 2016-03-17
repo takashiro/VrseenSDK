@@ -86,6 +86,8 @@ struct VThread::Private
     static pthread_attr_t DefaultAttr;
     static VThreadList threadList;
 
+    VMutex exitMutex;
+
     Private(VThread *self)
         : self(self)
         , function(nullptr)
@@ -198,6 +200,7 @@ bool VThread::start(VThread::State initialState)
     // AddRef to us until the thread is finished
     // AddRef();
     d->threadList.add(this);
+    d->exitMutex.lock();
 
     int result;
     if (d->stackSize != 128 * 1024 || d->priority != NormalPriority) {
@@ -241,11 +244,16 @@ void VThread::exit(int exitCode)
     d->threadList.remove(this);
 
     pthread_exit((void *) exitCode);
+    d->exitMutex.unlock();
 }
 
-int VThread::wait()
+bool VThread::wait()
 {
-    return pthread_join(d->handle, nullptr);
+    bool result = d->exitMutex.tryLock();
+    if (result) {
+        d->exitMutex.unlock();
+    }
+    return result;
 }
 
 void VThread::onExit()
