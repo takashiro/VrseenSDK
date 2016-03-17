@@ -752,20 +752,6 @@ void App::openApplicationPackage()
     d->packageName = JniUtils::GetCurrentPackageName(d->uiJni, d->javaObject);
 }
 
-VString App::getInstalledPackagePath(const char * packageName) const
-{
-    jmethodID getInstalledPackagePathId = d->GetMethodID("getInstalledPackagePath", "(Ljava/lang/String;)Ljava/lang/String;");
-    if (getInstalledPackagePathId != nullptr)
-	{
-        JavaString packageNameObj(d->uiJni, packageName);
-        VString resultStr = JniUtils::Convert(d->uiJni, static_cast< jstring >(d->uiJni->CallObjectMethod(d->javaObject, getInstalledPackagePathId, packageNameObj.toJString())));
-        if (!d->uiJni->ExceptionOccurred()) {
-            return resultStr;
-		}
-	}
-	return VString();
-}
-
 jclass App::getGlobalClassReference(const char * className) const
 {
     jclass lc = d->uiJni->FindClass(className);

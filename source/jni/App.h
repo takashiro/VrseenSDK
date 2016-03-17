@@ -329,8 +329,6 @@ public:
 
     jclass			getGlobalClassReference( const char * className ) const;
 
-    VString			getInstalledPackagePath( const char * packageName ) const;
-
     bool			exitOnDestroy;
     volatile bool	oneTimeInitCalled;
     ovrModeParms	VrModeParms;
