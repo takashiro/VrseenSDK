@@ -16,7 +16,7 @@ static const char * versionString = "VrScene v0.1.0";
 extern "C"
 {
 
-long Java_com_oculusvr_vrscene_MainActivity_nativeSetAppInterface( JNIEnv *jni, jclass clazz, jobject activity,
+long Java_com_vrseen_nervgear_scene_MainActivity_nativeSetAppInterface( JNIEnv *jni, jclass clazz, jobject activity,
 	jstring fromPackageName, jstring commandString, jstring uriString )
 {
 	// This is called by the java UI thread.
