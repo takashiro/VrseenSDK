@@ -281,9 +281,6 @@ public:
 
     Matrix4f		 matrixInterpolation( const Matrix4f & startMatrix, const Matrix4f & endMatrix, double t );
 
-    // Called by jni functions
-    void			keyEvent( const int keyCode, const bool down, const int keyCount );
-
     void			drawDialog( const Matrix4f & mvp );
     void			drawPanel( const GLuint externalTextureId, const Matrix4f & dialogMvp, const float alpha );
 

@@ -61,6 +61,34 @@ static const char * activityClassName = "com/vrseen/nervgear/VrActivity";
 // assume the JSON text is everything immediately following the space after the URI string.
 static const char * EMPTY_INTENT_STR = "<EMPTY>";
 
+static int buttonMappings[] = {
+    96, 	// BUTTON_A
+    97,		// BUTTON_B
+    99, 	// BUTTON_X
+    100,	// BUTTON_Y
+    108, 	// BUTTON_START
+    4,		// BUTTON_BACK
+    109, 	// BUTTON_SELECT
+    82, 	// BUTTON_MENU
+    103, 	// BUTTON_RIGHT_TRIGGER
+    102, 	// BUTTON_LEFT_TRIGGER
+    19,		// BUTTON_DPAD_UP
+    20,		// BUTTON_DPAD_DOWN
+    21,		// BUTTON_DPAD_LEFT
+    22,		// BUTTON_DPAD_RIGHT
+    200,	// BUTTON_LSTICK_UP
+    201,	// BUTTON_LSTICK_DOWN
+    202,	// BUTTON_LSTICK_LEFT
+    203,	// BUTTON_LSTICK_RIGHT
+    204,	// BUTTON_RSTICK_UP
+    205,	// BUTTON_RSTICK_DOWN
+    206,	// BUTTON_RSTICK_LEFT
+    207,	// BUTTON_RSTICK_RIGHT
+    9999,	// touch is handled separately
+
+    -1
+};
+
 //@to-do: remove this
 static VString ComposeIntentMessage(const VString &packageName, const VString &uri, const VString &jsonText)
 {
@@ -1002,7 +1030,7 @@ struct App::Private
         {
             int	key, down, repeatCount;
             sscanf(msg, "key %i %i %i", &key, &down, &repeatCount);
-            self->keyEvent(key, down, repeatCount);
+            onKeyEvent(key, down, repeatCount);
             // We simply return because KeyEvent will call VrAppInterface->OnKeyEvent to give the app a
             // chance to handle and consume the key before VrLib gets it. VrAppInterface needs to get the
             // key first and have a chance to consume it completely because keys are context sensitive
@@ -1657,6 +1685,103 @@ struct App::Private
         uiJni->DeleteLocalRef(lc);
         return gc;
     }
+
+
+    void onKeyEvent(const int keyCode, const bool down, const int repeatCount)
+    {
+        // the back key is special because it has to handle long-press and double-tap
+        if (keyCode == AKEYCODE_BACK)
+        {
+            //DROIDLOG("BackKey", "BACK KEY PRESSED");
+            // back key events, because of special handling for double-tap, short-press and long-press,
+            // are handled in AppLocal::VrThreadFunction.
+            backKeyState.HandleEvent(ovr_GetTimeInSeconds(), down, repeatCount);
+            return;
+        }
+
+        // the app menu is always the first consumer so it cannot be usurped
+        bool consumedKey = false;
+        if (repeatCount == 0)
+        {
+            consumedKey = guiSys->onKeyEvent(self, keyCode, down ? KeyState::KEY_EVENT_DOWN : KeyState::KEY_EVENT_UP);
+        }
+
+        // for all other keys, allow VrAppInterface the chance to handle and consume the key first
+        if (!consumedKey)
+        {
+            consumedKey = appInterface->onKeyEvent(keyCode, down ? KeyState::KEY_EVENT_DOWN : KeyState::KEY_EVENT_UP);
+        }
+
+        // ALL VRLIB KEY HANDLING OTHER THAN APP MENU SHOULD GO HERE
+        if (!consumedKey && enableDebugOptions)
+        {
+            float const IPD_STEP = 0.001f;
+
+            // FIXME: this should set consumedKey = true now that we pass key events via appInterface first,
+            // but this would likely break some apps right now that rely on the old behavior
+            // consumedKey = true;
+
+            if (down && keyCode == AKEYCODE_RIGHT_BRACKET)
+            {
+                vInfo("BUTTON_SWIPE_FORWARD");
+                joypad.buttonState |= BUTTON_SWIPE_FORWARD;
+                return;
+            }
+            else if (down && keyCode == AKEYCODE_LEFT_BRACKET)
+            {
+                vInfo("BUTTON_SWIPE_BACK");
+                joypad.buttonState |= BUTTON_SWIPE_BACK;
+                return;
+            }
+            else if (keyCode == AKEYCODE_S)
+            {
+                if (repeatCount == 0 && down) // first down only
+                {
+                    eyeTargets->ScreenShot();
+                    self->createToast("screenshot");
+                    return;
+                }
+            }
+            else if (keyCode == AKEYCODE_F && down && repeatCount == 0)
+            {
+                self->setShowFPS(showFPS);
+                return;
+            }
+            else if (keyCode == AKEYCODE_COMMA && down && repeatCount == 0)
+            {
+                float const IPD_MIN_CM = 0.0f;
+                viewParms.InterpupillaryDistance = Alg::Max(IPD_MIN_CM * 0.01f, viewParms.InterpupillaryDistance - IPD_STEP);
+                self->showInfoText(1.0f, "%.3f", viewParms.InterpupillaryDistance);
+                return;
+            }
+            else if (keyCode == AKEYCODE_PERIOD && down && repeatCount == 0)
+            {
+                float const IPD_MAX_CM = 8.0f;
+                viewParms.InterpupillaryDistance = Alg::Min(IPD_MAX_CM * 0.01f, viewParms.InterpupillaryDistance + IPD_STEP);
+                self->showInfoText(1.0f, "%.3f", viewParms.InterpupillaryDistance);
+                return;
+            }
+        }
+
+        // Keys always map to joystick buttons right now even if consumed otherwise.
+        // This probably should change but it's unclear what this might break right now.
+        for (int i = 0 ; buttonMappings[i] != -1 ; i++)
+        {
+            // joypad buttons come in with 0x10000 as a flag
+            if ((keyCode & ~0x10000) == buttonMappings[i])
+            {
+                if (down)
+                {
+                    joypad.buttonState |= 1<<i;
+                }
+                else
+                {
+                    joypad.buttonState &= ~(1<<i);
+                }
+                return;
+            }
+        }
+    }
 };
 
 /*
@@ -1899,137 +2024,6 @@ EyeParms App::eyeParms()
 void App::setEyeParms(const EyeParms parms)
 {
     d->vrParms = parms;
-}
-
-/*
- * KeyEvent
- */
-static int buttonMappings[] = {
-	96, 	// BUTTON_A
-	97,		// BUTTON_B
-	99, 	// BUTTON_X
-	100,	// BUTTON_Y
-	108, 	// BUTTON_START
-	4,		// BUTTON_BACK
-	109, 	// BUTTON_SELECT
-	82, 	// BUTTON_MENU
-	103, 	// BUTTON_RIGHT_TRIGGER
-	102, 	// BUTTON_LEFT_TRIGGER
-	19,		// BUTTON_DPAD_UP
-	20,		// BUTTON_DPAD_DOWN
-	21,		// BUTTON_DPAD_LEFT
-	22,		// BUTTON_DPAD_RIGHT
-	200,	// BUTTON_LSTICK_UP
-	201,	// BUTTON_LSTICK_DOWN
-	202,	// BUTTON_LSTICK_LEFT
-	203,	// BUTTON_LSTICK_RIGHT
-	204,	// BUTTON_RSTICK_UP
-	205,	// BUTTON_RSTICK_DOWN
-	206,	// BUTTON_RSTICK_LEFT
-	207,	// BUTTON_RSTICK_RIGHT
-	9999,	// touch is handled separately
-
-	-1
-};
-
-#if defined(TEST_TIMEWARP_WATCHDOG)
-static float test = 0.0f;
-#endif
-
-void App::keyEvent(const int keyCode, const bool down, const int repeatCount)
-{
-	// the back key is special because it has to handle long-press and double-tap
-    if (keyCode == AKEYCODE_BACK)
-	{
-        //DROIDLOG("BackKey", "BACK KEY PRESSED");
-		// back key events, because of special handling for double-tap, short-press and long-press,
-		// are handled in AppLocal::VrThreadFunction.
-        d->backKeyState.HandleEvent(ovr_GetTimeInSeconds(), down, repeatCount);
-		return;
-	}
-
-	// the app menu is always the first consumer so it cannot be usurped
-	bool consumedKey = false;
-    if (repeatCount == 0)
-	{
-        consumedKey = guiSys().onKeyEvent(this, keyCode, down ? KeyState::KEY_EVENT_DOWN : KeyState::KEY_EVENT_UP);
-	}
-
-	// for all other keys, allow VrAppInterface the chance to handle and consume the key first
-    if (!consumedKey)
-	{
-        consumedKey = d->appInterface->onKeyEvent(keyCode, down ? KeyState::KEY_EVENT_DOWN : KeyState::KEY_EVENT_UP);
-	}
-
-	// ALL VRLIB KEY HANDLING OTHER THAN APP MENU SHOULD GO HERE
-    if (!consumedKey && d->enableDebugOptions)
-	{
-		float const IPD_STEP = 0.001f;
-
-		// FIXME: this should set consumedKey = true now that we pass key events via appInterface first,
-		// but this would likely break some apps right now that rely on the old behavior
-		// consumedKey = true;
-
-        if (down && keyCode == AKEYCODE_RIGHT_BRACKET)
-		{
-            vInfo("BUTTON_SWIPE_FORWARD");
-            d->joypad.buttonState |= BUTTON_SWIPE_FORWARD;
-			return;
-		}
-        else if (down && keyCode == AKEYCODE_LEFT_BRACKET)
-		{
-            vInfo("BUTTON_SWIPE_BACK");
-            d->joypad.buttonState |= BUTTON_SWIPE_BACK;
-			return;
-		}
-        else if (keyCode == AKEYCODE_S)
-		{
-            if (repeatCount == 0 && down) // first down only
-			{
-                d->eyeTargets->ScreenShot();
-                createToast("screenshot");
-				return;
-			}
-		}
-        else if (keyCode == AKEYCODE_F && down && repeatCount == 0)
-		{
-            setShowFPS(!showFPS());
-			return;
-		}
-        else if (keyCode == AKEYCODE_COMMA && down && repeatCount == 0)
-		{
-			float const IPD_MIN_CM = 0.0f;
-            d->viewParms.InterpupillaryDistance = Alg::Max(IPD_MIN_CM * 0.01f, d->viewParms.InterpupillaryDistance - IPD_STEP);
-            showInfoText(1.0f, "%.3f", d->viewParms.InterpupillaryDistance);
-			return;
-		}
-        else if (keyCode == AKEYCODE_PERIOD && down && repeatCount == 0)
-		{
-			float const IPD_MAX_CM = 8.0f;
-            d->viewParms.InterpupillaryDistance = Alg::Min(IPD_MAX_CM * 0.01f, d->viewParms.InterpupillaryDistance + IPD_STEP);
-            showInfoText(1.0f, "%.3f", d->viewParms.InterpupillaryDistance);
-			return;
-        }
-	}
-
-	// Keys always map to joystick buttons right now even if consumed otherwise.
-	// This probably should change but it's unclear what this might break right now.
-    for (int i = 0 ; buttonMappings[i] != -1 ; i++)
-	{
-		// joypad buttons come in with 0x10000 as a flag
-        if ((keyCode & ~0x10000) == buttonMappings[i])
-		{
-            if (down)
-			{
-                d->joypad.buttonState |= 1<<i;
-			}
-			else
-			{
-                d->joypad.buttonState &= ~(1<<i);
-			}
-			return;
-		}
-	}
 }
 
 Matrix4f App::matrixInterpolation(const Matrix4f & startMatrix, const Matrix4f & endMatrix, double t)
