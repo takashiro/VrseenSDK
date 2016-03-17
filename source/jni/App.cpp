@@ -746,12 +746,6 @@ void App::playSound(const char * name)
 	}
 }
 
-void App::readFileFromApplicationPackage(const char * nameInZip, uint &length, void * & buffer)
-{
-    const VApkFile &apk = VApkFile::CurrentApkFile();
-    apk.read(nameInZip, buffer, length);
-}
-
 void App::openApplicationPackage()
 {
     d->packageCodePath = JniUtils::GetPackageCodePath(d->uiJni, d->vrActivityClass, d->javaObject);

@@ -279,14 +279,6 @@ public:
 
     //-----------------------------------------------------------------
 
-    // Read a file from the apk zip file.  Free buffer with free() when done.
-    // Files put in the eclipse res/raw directory will be found as "res/raw/<NAME>"
-    // Files put in the eclipse assets directory will be found as "assets/<name>"
-    // The filename comparison is case insensitive.
-    void 			readFileFromApplicationPackage(const char * nameInZip, uint &length, void * & buffer );
-
-    //-----------------------------------------------------------------
-
     Matrix4f		 matrixInterpolation( const Matrix4f & startMatrix, const Matrix4f & endMatrix, double t );
 
     // Handle development input options
