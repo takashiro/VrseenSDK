@@ -287,17 +287,10 @@ public:
     // Called by jni functions
     void			keyEvent( const int keyCode, const bool down, const int keyCount );
 
-    // One time init of GL objects.
-    void			initGlObjects();
-    void			ShutdownGlObjects();
-
     void			drawDialog( const Matrix4f & mvp );
     void			drawPanel( const GLuint externalTextureId, const Matrix4f & dialogMvp, const float alpha );
 
     void			drawBounds( const Vector3f &mins, const Vector3f &maxs, const Matrix4f &mvp, const Vector3f &color );
-
-    static void *	ThreadStarter( void * parm );
-    void 			vrThreadFunction();
 
     // Process commands forwarded from other threads.
     // Commands can be processed even when the window surfaces
@@ -318,8 +311,6 @@ public:
     void			startVrThread();
     void			stopVrThread();
     void			syncVrThread();
-
-    void			interpretTouchpad( VrInput & input );
 
     // TalkToJavaInterface
     void TtjCommand(JNIEnv *jni, const char * commandString) override;

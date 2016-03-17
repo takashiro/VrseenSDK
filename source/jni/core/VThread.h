@@ -7,7 +7,7 @@ NV_NAMESPACE_BEGIN
 class VThread
 {
 public:
-    typedef int (*Function)(VThread *thread, void *data);
+    typedef int (*Function)(void *data);
 
     enum State
     {
@@ -28,7 +28,7 @@ public:
     };
 
     VThread(uint stackSize = 128 * 1024, int processor = -1);
-    VThread(Function function, void *data = 0, uint stackSize = 128 * 1024, int processor = -1, State state = NotRunning);
+    VThread(Function function, void *data = nullptr, uint stackSize = 128 * 1024, int processor = -1, State state = NotRunning);
 
     virtual ~VThread();
 
@@ -36,7 +36,8 @@ public:
 
     virtual bool start(State initialState = Running);
     virtual void exit(int exitCode = 0);
-    virtual void onExit();
+
+    int wait();
 
     bool suspend();
     bool resume();
@@ -63,6 +64,7 @@ public:
 
 protected:
     virtual int run();
+    virtual void onExit();
 
 private:
     NV_DECLARE_PRIVATE

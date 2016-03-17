@@ -39,12 +39,13 @@
 #include "VrCommon.h"
 #include "VrLocale.h"
 #include "VRMenuMgr.h"
+#include "VUserProfile.h"
 
 #include "VApkFile.h"
+#include "VJson.h"
 #include "VLog.h"
 #include "VMainActivity.h"
-#include "VJson.h"
-#include "VUserProfile.h"
+#include "VThread.h"
 
 //#define TEST_TIMEWARP_WATCHDOG
 
@@ -237,6 +238,40 @@ extern void DebugMenuPoses(void * appPtr, const char * cmd);
 extern void ShowFPS(void * appPtr, const char * cmd);
 
 
+static EyeParms DefaultVrParmsForRenderer(const eglSetup_t & eglr)
+{
+    EyeParms vrParms;
+
+    vrParms.resolution = 1024;
+    vrParms.multisamples = (eglr.gpuType == GPU_TYPE_ADRENO_330) ? 2 : 4;
+    vrParms.colorFormat = COLOR_8888;
+    vrParms.depthFormat = DEPTH_24;
+
+    return vrParms;
+}
+
+static bool ChromaticAberrationCorrection(const eglSetup_t & eglr)
+{
+    return (eglr.gpuType & GPU_TYPE_ADRENO) != 0 && (eglr.gpuType >= GPU_TYPE_ADRENO_420);
+}
+
+static const char* vertexShaderSource =
+        "uniform mat4 Mvpm;\n"
+        "uniform mat4 Texm;\n"
+        "attribute vec4 Position;\n"
+        "attribute vec4 VertexColor;\n"
+        "attribute vec2 TexCoord;\n"
+        "uniform mediump vec4 UniformColor;\n"
+        "varying  highp vec2 oTexCoord;\n"
+        "varying  lowp vec4 oColor;\n"
+        "void main()\n"
+        "{\n"
+        "   gl_Position = Mvpm * Position;\n"
+        "   oTexCoord = vec2(Texm * vec4(TexCoord,1,1));\n"
+        "   oColor = VertexColor * UniformColor;\n"
+        "}\n";
+
+
 struct App::Private
 {
     App *self;
@@ -342,7 +377,7 @@ struct App::Private
 
     ovrSensorState	sensorForNextWarp;
 
-    pthread_t		vrThread;			// posix pthread
+    VThread *renderThread;
     int				vrThreadTid;		// linux tid
 
     // For running java commands on another thread to
@@ -514,6 +549,660 @@ struct App::Private
         }
         return mid;
     }
+
+    void initGlObjects()
+    {
+        vrParms = DefaultVrParmsForRenderer(eglr);
+
+        swapParms.WarpProgram = ChromaticAberrationCorrection(eglr) ? WP_CHROMATIC : WP_SIMPLE;
+
+        // Let glUtils look up extensions
+        GL_FindExtensions();
+
+        externalTextureProgram2 = BuildProgram(vertexShaderSource, externalFragmentShaderSource);
+        untexturedMvpProgram = BuildProgram(
+            "uniform mat4 Mvpm;\n"
+            "attribute vec4 Position;\n"
+            "uniform mediump vec4 UniformColor;\n"
+            "varying  lowp vec4 oColor;\n"
+            "void main()\n"
+            "{\n"
+                "   gl_Position = Mvpm * Position;\n"
+                "   oColor = UniformColor;\n"
+            "}\n"
+        ,
+            "varying lowp vec4	oColor;\n"
+            "void main()\n"
+            "{\n"
+            "	gl_FragColor = oColor;\n"
+            "}\n"
+        );
+        untexturedScreenSpaceProgram = BuildProgram(identityVertexShaderSource, untexturedFragmentShaderSource);
+        overlayScreenFadeMaskProgram = BuildProgram(
+                "uniform mat4 Mvpm;\n"
+                "attribute vec4 VertexColor;\n"
+                "attribute vec4 Position;\n"
+                "varying  lowp vec4 oColor;\n"
+                "void main()\n"
+                "{\n"
+                "   gl_Position = Mvpm * Position;\n"
+                "   oColor = vec4(1.0, 1.0, 1.0, 1.0 - VertexColor.x);\n"
+                "}\n"
+            ,
+                "varying lowp vec4	oColor;\n"
+                "void main()\n"
+                "{\n"
+                "	gl_FragColor = oColor;\n"
+                "}\n"
+            );
+        overlayScreenDirectProgram = BuildProgram(
+                "uniform mat4 Mvpm;\n"
+                "attribute vec4 Position;\n"
+                "attribute vec2 TexCoord;\n"
+                "varying  highp vec2 oTexCoord;\n"
+                "void main()\n"
+                "{\n"
+                "   gl_Position = Mvpm * Position;\n"
+                "   oTexCoord = TexCoord;\n"
+                "}\n"
+            ,
+                "uniform sampler2D Texture0;\n"
+                "varying highp vec2 oTexCoord;\n"
+                "void main()\n"
+                "{\n"
+                "	gl_FragColor = texture2D(Texture0, oTexCoord);\n"
+                "}\n"
+            );
+
+        // Build some geometries we need
+        panelGeometry = BuildTesselatedQuad(32, 16);	// must be large to get faded edge
+        unitSquare = BuildTesselatedQuad(1, 1);
+        unitCubeLines = BuildUnitCubeLines();
+        //FadedScreenMaskSquare = BuildFadedScreenMask(0.0f, 0.0f);	// TODO: clean up: app-specific values are being passed in on DrawScreenMask
+
+        eyeDecorations.Init();
+    }
+
+    void shutdownGlObjects()
+    {
+        DeleteProgram(externalTextureProgram2);
+        DeleteProgram(untexturedMvpProgram);
+        DeleteProgram(untexturedScreenSpaceProgram);
+        DeleteProgram(overlayScreenFadeMaskProgram);
+        DeleteProgram(overlayScreenDirectProgram);
+
+        panelGeometry.Free();
+        unitSquare.Free();
+        unitCubeLines.Free();
+        fadedScreenMaskSquare.Free();
+
+        eyeDecorations.Shutdown();
+    }
+
+    void interpretTouchpad(VrInput &input)
+    {
+        // 1) Down -> Up w/ Motion = Slide
+        // 2) Down -> Up w/out Motion -> Timeout = Single Tap
+        // 3) Down -> Up w/out Motion -> Down -> Timeout = Nothing
+        // 4) Down -> Up w/out Motion -> Down -> Up = Double Tap
+        static const float timer_finger_down = 0.3f;
+        static const float timer_finger_up = 0.3f;
+        static const float min_swipe_distance = 100.0f;
+
+        float currentTime = ovr_GetTimeInSeconds();
+        float deltaTime = currentTime - lastTouchpadTime;
+        lastTouchpadTime = currentTime;
+        touchpadTimer = touchpadTimer + deltaTime;
+
+        bool down = false, up = false;
+        bool currentTouchDown = input.buttonState & BUTTON_TOUCH;
+
+        if (currentTouchDown && !lastTouchDown)
+        {
+            //CreateToast("DOWN");
+            down = true;
+            touchOrigin = input.touch;
+        }
+
+        if (!currentTouchDown && lastTouchDown)
+        {
+            //CreateToast("UP");
+            up = true;
+        }
+
+        lastTouchDown = currentTouchDown;
+
+        input.touchRelative = input.touch - touchOrigin;
+        float touchMagnitude = input.touchRelative.Length();
+        input.swipeFraction = touchMagnitude / min_swipe_distance;
+
+        switch (touchState)
+        {
+        case 0:
+            //CreateToast("0 - %f", touchpadTimer);
+            if (down)
+            {
+                touchState = 1;
+                touchpadTimer = 0.0f;
+            }
+            break;
+        case 1:
+            //CreateToast("1 - %f", touchpadTimer);
+            //CreateToast("1 - %f", touchMagnitude);
+            if (touchMagnitude >= min_swipe_distance)
+            {
+                int dir = 0;
+                if (fabs(input.touchRelative[0]) > fabs(input.touchRelative[1]))
+                {
+                    if (input.touchRelative[0] < 0)
+                    {
+                        //CreateToast("SWIPE FORWARD");
+                        dir = BUTTON_SWIPE_FORWARD | BUTTON_TOUCH_WAS_SWIPE;
+                    }
+                    else
+                    {
+                        //CreateToast("SWIPE BACK");
+                        dir = BUTTON_SWIPE_BACK | BUTTON_TOUCH_WAS_SWIPE;
+                    }
+                }
+                else
+                {
+                    if (input.touchRelative[1] > 0)
+                    {
+                        //CreateToast("SWIPE DOWN");
+                        dir = BUTTON_SWIPE_DOWN | BUTTON_TOUCH_WAS_SWIPE;
+                    }
+                    else
+                    {
+                        //CreateToast("SWIPE UP");
+                        dir = BUTTON_SWIPE_UP | BUTTON_TOUCH_WAS_SWIPE;
+                    }
+                }
+                input.buttonPressed |= dir;
+                input.buttonReleased |= dir & ~BUTTON_TOUCH_WAS_SWIPE;
+                input.buttonState |= dir;
+                touchState = 0;
+                touchpadTimer = 0.0f;
+            }
+            else if (up)
+            {
+                if (touchpadTimer < timer_finger_down)
+                {
+                    touchState = 2;
+                    touchpadTimer = 0.0f;
+                }
+                else
+                {
+                    //CreateToast("SINGLE TOUCH");
+                    input.buttonPressed |= BUTTON_TOUCH_SINGLE;
+                    input.buttonReleased |= BUTTON_TOUCH_SINGLE;
+                    input.buttonState |= BUTTON_TOUCH_SINGLE;
+                    touchState = 0;
+                    touchpadTimer = 0.0f;
+                }
+            }
+            break;
+        case 2:
+            //CreateToast("2 - %f", touchpadTimer);
+            if (touchpadTimer >= timer_finger_up)
+            {
+                //CreateToast("SINGLE TOUCH");
+                input.buttonPressed |= BUTTON_TOUCH_SINGLE;
+                input.buttonReleased |= BUTTON_TOUCH_SINGLE;
+                input.buttonState |= BUTTON_TOUCH_SINGLE;
+                touchState = 0;
+                touchpadTimer = 0.0f;
+            }
+            else if (down)
+            {
+                touchState = 3;
+                touchpadTimer = 0.0f;
+            }
+            break;
+        case 3:
+            //CreateToast("3 - %f", touchpadTimer);
+            if (touchpadTimer >= timer_finger_down)
+            {
+                touchState = 0;
+                touchpadTimer = 0.0f;
+            }
+            else if (up)
+            {
+                //CreateToast("DOUBLE TOUCH");
+                input.buttonPressed |= BUTTON_TOUCH_DOUBLE;
+                input.buttonReleased |= BUTTON_TOUCH_DOUBLE;
+                input.buttonState |= BUTTON_TOUCH_DOUBLE;
+                touchState = 0;
+                touchpadTimer = 0.0f;
+            }
+            break;
+        }
+    }
+
+    void startRendering()
+    {
+        // Set the name that will show up in systrace
+        pthread_setname_np(pthread_self(), "NervGear::VrThread");
+
+        // Initialize the VR thread
+        {
+            LOG("AppLocal::VrThreadFunction - init");
+
+            // Get the tid for setting the scheduler
+            vrThreadTid = gettid();
+
+            // The Java VM needs to be attached on each thread that will use
+            // it.  We need it to call UpdateTexture on surfaceTextures, which
+            // must be done on the thread with the openGL context that created
+            // the associated texture object current.
+            LOG("javaVM->AttachCurrentThread");
+            const jint rtn = javaVM->AttachCurrentThread(&vrJni, 0);
+            if (rtn != JNI_OK)
+            {
+                FAIL("javaVM->AttachCurrentThread returned %i", rtn);
+            }
+
+            // Set up another thread for making longer-running java calls
+            // to avoid hitches.
+            ttj.Init(*javaVM, *self);
+
+            // Create a new context and pbuffer surface
+            const int windowDepth = 0;
+            const int windowSamples = 0;
+            const GLuint contextPriority = EGL_CONTEXT_PRIORITY_MEDIUM_IMG;
+            eglr = EglSetup(EGL_NO_CONTEXT, GL_ES_VERSION,	// no share context,
+                    8,8,8, windowDepth, windowSamples, // r g b
+                    contextPriority);
+
+            // Create our GL data objects
+            initGlObjects();
+
+            eyeTargets = new EyeBuffers;
+            guiSys = new OvrGuiSysLocal;
+            gazeCursor = new OvrGazeCursorLocal;
+            vrMenuMgr = OvrVRMenuMgr::Create();
+            debugLines = OvrDebugLines::Create();
+
+            int w = 0;
+            int h = 0;
+            loadingIconTexId = LoadTextureFromApplicationPackage("res/raw/loading_indicator.png",
+                                            TextureFlags_t(TEXTUREFLAG_NO_MIPMAPS), w, h);
+
+            // Create the SurfaceTexture for dialog rendering.
+            dialogTexture = new SurfaceTexture(vrJni);
+
+            initFonts();
+
+            soundManager.LoadSoundAssets();
+
+            debugLines->Init();
+
+            gazeCursor->Init();
+
+            vrMenuMgr->init();
+
+            guiSys->init(self, *vrMenuMgr, *defaultFont);
+
+            volumePopup = OvrVolumePopup::Create(self, *vrMenuMgr, *defaultFont);
+
+            ovr_InitLocalPreferences(vrJni, javaObject);
+
+            lastTouchpadTime = ovr_GetTimeInSeconds();
+        }
+
+        // FPS counter information
+        int countApplicationFrames = 0;
+        double lastReportTime = ceil(ovr_GetTimeInSeconds());
+
+        while(!(vrThreadSynced && createdSurface && readyToExit))
+        {
+            //SPAM("FRAME START");
+
+            gazeCursor->BeginFrame();
+
+            // Process incoming messages until queue is empty
+            for (; ;)
+            {
+                const char * msg = vrMessageQueue.nextMessage();
+                if (!msg)
+                {
+                    break;
+                }
+                self->command(msg);
+                free((void *)msg);
+            }
+
+            // handle any pending system activity events
+            size_t const MAX_EVENT_SIZE = 4096;
+            char eventBuffer[MAX_EVENT_SIZE];
+
+            for (eVrApiEventStatus status = ovr_nextPendingEvent(eventBuffer, MAX_EVENT_SIZE);
+                status >= VRAPI_EVENT_PENDING;
+                status = ovr_nextPendingEvent(eventBuffer, MAX_EVENT_SIZE))
+            {
+                if (status != VRAPI_EVENT_PENDING)
+                {
+                    if (status != VRAPI_EVENT_CONSUMED)
+                    {
+                        WARN("Error %i handing System Activities Event", status);
+                    }
+                    continue;
+                }
+
+                std::stringstream s;
+                s << eventBuffer;
+                Json jsonObj;
+                s >> jsonObj;
+                if (jsonObj.type() == Json::Object)
+                {
+                    std::string command = jsonObj["Command"].toString();
+                    if (command == SYSTEM_ACTIVITY_EVENT_REORIENT)
+                    {
+                        // for reorient, we recenter yaw natively, then pass the event along so that the client
+                        // application can also handle the event (for instance, to reposition menus)
+                        LOG("VtThreadFunction: Acting on System Activity reorient event.");
+                        self->recenterYaw(false);
+                    }
+                    else
+                    {
+                        // In the case of the returnToLauncher event, we always handler it internally and pass
+                        // along an empty buffer so that any remaining events still get processed by the client.
+                        LOG("Unhandled System Activity event: '%s'", command.c_str());
+                    }
+                }
+                else
+                {
+                    // a malformed event string was pushed! This implies an error in the native code somewhere.
+                    WARN("Error parsing System Activities Event: %s");
+                }
+            }
+
+            // update volume popup
+            if (showVolumePopup)
+            {
+                volumePopup->checkForVolumeChange(self);
+            }
+
+            // If we don't have a surface yet, or we are paused, sleep until
+            // something shows up on the message queue.
+            if (windowSurface == EGL_NO_SURFACE || paused)
+            {
+                if (!(vrThreadSynced && createdSurface && readyToExit))
+                {
+                    vrMessageQueue.SleepUntilMessage();
+                }
+                continue;
+            }
+
+            // if there is an error condition, warp swap and nothing else
+            if (errorTexture != 0)
+            {
+                if (ovr_GetTimeInSeconds() >= errorMessageEndTime)
+                {
+                    ovr_ReturnToHome(OvrMobile);
+                }
+                else
+                {
+                    ovrTimeWarpParms warpSwapMessageParms = InitTimeWarpParms(WARP_INIT_MESSAGE, errorTexture.texture);
+                    warpSwapMessageParms.ProgramParms[0] = 0.0f;						// rotation in radians
+                    warpSwapMessageParms.ProgramParms[1] = 1024.0f / errorTextureSize;	// message size factor
+                    ovr_WarpSwap(OvrMobile, &warpSwapMessageParms);
+                }
+                continue;
+            }
+
+            // Let the client app initialize only once by calling OneTimeInit() when the windowSurface is valid.
+            if (!self->oneTimeInitCalled)
+            {
+                if (appInterface->ShouldShowLoadingIcon())
+                {
+                    const ovrTimeWarpParms warpSwapLoadingIconParms = InitTimeWarpParms(WARP_INIT_LOADING_ICON, loadingIconTexId);
+                    ovr_WarpSwap(OvrMobile, &warpSwapLoadingIconParms);
+                }
+                vInfo("launchIntentJSON:" << launchIntentJSON);
+                vInfo("launchIntentURI:" << launchIntentURI);
+
+                appInterface->OneTimeInit(launchIntentFromPackage, launchIntentJSON, launchIntentURI);
+                self->oneTimeInitCalled = true;
+            }
+
+            // check updated battery status
+            {
+                batteryState_t state = ovr_GetBatteryState();
+                batteryStatus = static_cast< eBatteryStatus >(state.status);
+                batteryLevel = state.level;
+            }
+
+            // latch the current joypad state and note transitions
+            vrFrame.Input = joypad;
+            vrFrame.Input.buttonPressed = joypad.buttonState & (~lastVrFrame.Input.buttonState);
+            vrFrame.Input.buttonReleased = ~joypad.buttonState & (lastVrFrame.Input.buttonState & ~BUTTON_TOUCH_WAS_SWIPE);
+
+            if (lastVrFrame.Input.buttonState & BUTTON_TOUCH_WAS_SWIPE)
+            {
+                if (lastVrFrame.Input.buttonReleased & BUTTON_TOUCH)
+                {
+                    vrFrame.Input.buttonReleased |= BUTTON_TOUCH_WAS_SWIPE;
+                }
+                else
+                {
+                    // keep it around this frame
+                    vrFrame.Input.buttonState |= BUTTON_TOUCH_WAS_SWIPE;
+                }
+            }
+
+            // Synthesize swipe gestures
+            interpretTouchpad(vrFrame.Input);
+
+            if (recenterYawFrameStart != 0)
+            {
+                // Perform a reorient before sensor data is read.  Allows apps to reorient without having invalid orientation information for that frame.
+                // Do a warp swap black on the frame the recenter started.
+                self->recenterYaw(recenterYawFrameStart == (vrFrame.FrameNumber + 1));  // vrFrame.FrameNumber hasn't been incremented yet, so add 1.
+            }
+
+            // Get the latest head tracking state, predicted ahead to the midpoint of the time
+            // it will be displayed.  It will always be corrected to the real values by
+            // time warp, but the closer we get, the less black will be pulled in at the edges.
+            const double now = ovr_GetTimeInSeconds();
+            static double prev;
+            const double rawDelta = now - prev;
+            prev = now;
+            const double clampedPrediction = Alg::Min(0.1, rawDelta * 2);
+            sensorForNextWarp = ovr_GetPredictedSensorState(OvrMobile, now + clampedPrediction);
+
+            vrFrame.PoseState = sensorForNextWarp.Predicted;
+            vrFrame.OvrStatus = sensorForNextWarp.Status;
+            vrFrame.DeltaSeconds   = Alg::Min(0.1, rawDelta);
+            vrFrame.FrameNumber++;
+
+            // Don't allow this to be excessively large, which can cause application problems.
+            if (vrFrame.DeltaSeconds > 0.1f)
+            {
+                vrFrame.DeltaSeconds = 0.1f;
+            }
+
+            lastVrFrame = vrFrame;
+
+            // resend any debug lines that have expired
+            debugLines->BeginFrame(vrFrame.FrameNumber);
+
+            // reset any VR menu submissions from previous frame
+            vrMenuMgr->beginFrame();
+
+            self->frameworkButtonProcessing(vrFrame.Input);
+
+            KeyState::eKeyEventType event = backKeyState.Update(ovr_GetTimeInSeconds());
+            if (event != KeyState::KEY_EVENT_NONE)
+            {
+                //LOG("BackKey: event %s", KeyState::EventNames[ event ]);
+                // always allow the gaze cursor to peek at the event so it can start the gaze timer if necessary
+                // update the gaze cursor timer
+                if (event == KeyState::KEY_EVENT_DOWN)
+                {
+                    gazeCursor->StartTimer(backKeyState.GetLongPressTime(), backKeyState.GetDoubleTapTime());
+                }
+                else if (event == KeyState::KEY_EVENT_DOUBLE_TAP || event == KeyState::KEY_EVENT_SHORT_PRESS)
+                {
+                    gazeCursor->CancelTimer();
+                }
+                else if (event == KeyState::KEY_EVENT_LONG_PRESS)
+                {
+                    //StartSystemActivity(PUI_GLOBAL_MENU);
+                    ovr_ExitActivity(OvrMobile, EXIT_TYPE_FINISH);
+                }
+
+                // let the menu handle it if it's open
+                bool consumedKey = guiSys->onKeyEvent(self, AKEYCODE_BACK, event);
+
+                // pass to the app if nothing handled it before this
+                if (!consumedKey)
+                {
+                    consumedKey = appInterface->onKeyEvent(AKEYCODE_BACK, event);
+                }
+                // if nothing consumed the key and it's a short-press, exit the application to OculusHome
+                if (!consumedKey)
+                {
+                    if (event == KeyState::KEY_EVENT_SHORT_PRESS)
+                    {
+                        consumedKey = true;
+                        LOG("BUTTON_BACK: confirming quit in platformUI");
+                        ovr_ExitActivity(OvrMobile, EXIT_TYPE_FINISH);
+                    }
+                }
+            }
+
+            if (showFPS)
+            {
+                const int FPS_NUM_FRAMES_TO_AVERAGE = 30;
+                static double  LastFrameTime = ovr_GetTimeInSeconds();
+                static double  AccumulatedFrameInterval = 0.0;
+                static int   NumAccumulatedFrames = 0;
+                static float LastFrameRate = 60.0f;
+
+                double currentFrameTime = ovr_GetTimeInSeconds();
+                double frameInterval = currentFrameTime - LastFrameTime;
+                AccumulatedFrameInterval += frameInterval;
+                NumAccumulatedFrames++;
+                if (NumAccumulatedFrames > FPS_NUM_FRAMES_TO_AVERAGE) {
+                    double interval = (AccumulatedFrameInterval / NumAccumulatedFrames);  // averaged
+                    AccumulatedFrameInterval = 0.0;
+                    NumAccumulatedFrames = 0;
+                    LastFrameRate = 1.0f / float(interval > 0.000001 ? interval : 0.00001);
+                }
+
+                Vector3f viewPos = GetViewMatrixPosition(lastViewMatrix);
+                Vector3f viewFwd = GetViewMatrixForward(lastViewMatrix);
+                Vector3f newPos = viewPos + viewFwd * 1.5f;
+                fpsPointTracker.Update(ovr_GetTimeInSeconds(), newPos);
+
+                fontParms_t fp;
+                fp.AlignHoriz = HORIZONTAL_CENTER;
+                fp.Billboard = true;
+                fp.TrackRoll = false;
+                worldFontSurface->DrawTextBillboarded3Df(*defaultFont, fp, fpsPointTracker.GetCurPosition(),
+                        0.8f, Vector4f(1.0f, 0.0f, 0.0f, 1.0f), "%.1f fps", LastFrameRate);
+                LastFrameTime = currentFrameTime;
+            }
+
+
+            // draw info text
+            if (infoTextEndFrame >= vrFrame.FrameNumber)
+            {
+                Vector3f viewPos = GetViewMatrixPosition(lastViewMatrix);
+                Vector3f viewFwd = GetViewMatrixForward(lastViewMatrix);
+                Vector3f viewUp(0.0f, 1.0f, 0.0f);
+                Vector3f viewLeft = viewUp.Cross(viewFwd);
+                Vector3f newPos = viewPos + viewFwd * infoTextOffset.z + viewUp * infoTextOffset.y + viewLeft * infoTextOffset.x;
+                infoTextPointTracker.Update(ovr_GetTimeInSeconds(), newPos);
+
+                fontParms_t fp;
+                fp.AlignHoriz = HORIZONTAL_CENTER;
+                fp.AlignVert = VERTICAL_CENTER;
+                fp.Billboard = true;
+                fp.TrackRoll = false;
+                worldFontSurface->DrawTextBillboarded3Df(*defaultFont, fp, infoTextPointTracker.GetCurPosition(),
+                        1.0f, infoTextColor, infoText.toCString());
+            }
+
+            // Main loop logic / draw code
+            if (!readyToExit)
+            {
+                lastViewMatrix = appInterface->Frame(vrFrame);
+            }
+
+            ovr_HandleDeviceStateChanges(OvrMobile);
+
+            // MWC demo hack to allow keyboard swipes
+            joypad.buttonState &= ~(BUTTON_SWIPE_FORWARD|BUTTON_SWIPE_BACK);
+
+            // Report frame counts once a second
+            countApplicationFrames++;
+            const double timeNow = floor(ovr_GetTimeInSeconds());
+            if (timeNow > lastReportTime)
+            {
+    #if 1	// it is sometimes handy to remove this spam from the log
+                LOG("FPS: %i GPU time: %3.1f ms ", countApplicationFrames, eyeTargets->LogEyeSceneGpuTime.GetTotalTime());
+    #endif
+                countApplicationFrames = 0;
+                lastReportTime = timeNow;
+            }
+
+            //SPAM("FRAME END");
+        }
+
+        // Shutdown the VR thread
+        {
+            LOG("AppLocal::VrThreadFunction - shutdown");
+
+            // Shut down the message queue so it cannot overflow.
+            vrMessageQueue.Shutdown();
+
+            if (errorTexture != 0)
+            {
+                FreeTexture(errorTexture);
+            }
+
+            appInterface->OneTimeShutdown();
+
+            guiSys->shutdown(*vrMenuMgr);
+
+            vrMenuMgr->shutdown();
+
+            gazeCursor->Shutdown();
+
+            debugLines->Shutdown();
+
+            shutdownFonts();
+
+            delete dialogTexture;
+            dialogTexture = nullptr;
+
+            delete eyeTargets;
+            eyeTargets = nullptr;
+
+            delete guiSys;
+            guiSys = nullptr;
+
+            delete gazeCursor;
+            gazeCursor = nullptr;
+
+            OvrVRMenuMgr::Free(vrMenuMgr);
+            OvrDebugLines::Free(debugLines);
+
+            shutdownGlObjects();
+
+            EglShutdown(eglr);
+
+            // Detach from the Java VM before exiting.
+            LOG("javaVM->DetachCurrentThread");
+            const jint rtn = javaVM->DetachCurrentThread();
+            if (rtn != JNI_OK)
+            {
+                LOG("javaVM->DetachCurrentThread returned %i", rtn);
+            }
+        }
+    }
 };
 
 /*
@@ -601,6 +1290,12 @@ App::App(JNIEnv *jni, jobject activityObject, VrAppInterface &interface)
     RegisterConsoleFunction("debugMenuHierarchy", NervGear::DebugMenuHierarchy);
     RegisterConsoleFunction("debugMenuPoses", NervGear::DebugMenuPoses);
     RegisterConsoleFunction("showFPS", NervGear::ShowFPS);
+
+    d->renderThread = new VThread([](void *data)->int{
+        App::Private *d = static_cast<App::Private *>(data);
+        d->startRendering();
+        return 0;
+    }, d);
 }
 
 App::~App()
@@ -627,24 +1322,15 @@ App::~App()
 
 void App::startVrThread()
 {
-    LOG("StartVrThread");
-
-    const int createErr = pthread_create(&d->vrThread, nullptr /* default attributes */, &ThreadStarter, this);
-    if (createErr != 0)
-	{
-        FAIL("pthread_create returned %i", createErr);
-	}
+    d->renderThread->start();
 }
 
 void App::stopVrThread()
 {
-    LOG("StopVrThread");
-
     d->vrMessageQueue.PostPrintf("quit ");
-    const int ret = pthread_join(d->vrThread, nullptr);
-    if (ret != 0)
-	{
-        WARN("failed to join VrThread (%i)", ret);
+    const int ret = d->renderThread->wait();
+    if (ret != 0) {
+        vWarn("failed to join VrThread (" << ret << ")");
 	}
 }
 
@@ -728,136 +1414,6 @@ jclass App::getGlobalClassReference(const char * className) const
     d->uiJni->DeleteLocalRef(lc);
 
 	return gc;
-}
-
-static EyeParms DefaultVrParmsForRenderer(const eglSetup_t & eglr)
-{
-	EyeParms vrParms;
-
-	vrParms.resolution = 1024;
-    vrParms.multisamples = (eglr.gpuType == GPU_TYPE_ADRENO_330) ? 2 : 4;
-	vrParms.colorFormat = COLOR_8888;
-	vrParms.depthFormat = DEPTH_24;
-
-	return vrParms;
-}
-
-static bool ChromaticAberrationCorrection(const eglSetup_t & eglr)
-{
-    return (eglr.gpuType & GPU_TYPE_ADRENO) != 0 && (eglr.gpuType >= GPU_TYPE_ADRENO_420);
-}
-
-static const char* vertexShaderSource =
-		"uniform mat4 Mvpm;\n"
-		"uniform mat4 Texm;\n"
-		"attribute vec4 Position;\n"
-		"attribute vec4 VertexColor;\n"
-		"attribute vec2 TexCoord;\n"
-		"uniform mediump vec4 UniformColor;\n"
-		"varying  highp vec2 oTexCoord;\n"
-		"varying  lowp vec4 oColor;\n"
-		"void main()\n"
-		"{\n"
-		"   gl_Position = Mvpm * Position;\n"
-        "   oTexCoord = vec2(Texm * vec4(TexCoord,1,1));\n"
-		"   oColor = VertexColor * UniformColor;\n"
-		"}\n";
-
-
-/*
- * InitGlObjects
- *
- * Call once a GL context is created, either by us or a host engine.
- * The Java VM must be attached to this thread to allow SurfaceTexture
- * creation.
- */
-void App::initGlObjects()
-{
-    d->vrParms = DefaultVrParmsForRenderer(d->eglr);
-
-    d->swapParms.WarpProgram = ChromaticAberrationCorrection(d->eglr) ? WP_CHROMATIC : WP_SIMPLE;
-
-	// Let glUtils look up extensions
-	GL_FindExtensions();
-
-    d->externalTextureProgram2 = BuildProgram(vertexShaderSource, externalFragmentShaderSource);
-    d->untexturedMvpProgram = BuildProgram(
-		"uniform mat4 Mvpm;\n"
-		"attribute vec4 Position;\n"
-		"uniform mediump vec4 UniformColor;\n"
-		"varying  lowp vec4 oColor;\n"
-		"void main()\n"
-		"{\n"
-			"   gl_Position = Mvpm * Position;\n"
-			"   oColor = UniformColor;\n"
-		"}\n"
-	,
-		"varying lowp vec4	oColor;\n"
-		"void main()\n"
-		"{\n"
-		"	gl_FragColor = oColor;\n"
-		"}\n"
-    );
-    d->untexturedScreenSpaceProgram = BuildProgram(identityVertexShaderSource, untexturedFragmentShaderSource);
-    d->overlayScreenFadeMaskProgram = BuildProgram(
-			"uniform mat4 Mvpm;\n"
-			"attribute vec4 VertexColor;\n"
-			"attribute vec4 Position;\n"
-			"varying  lowp vec4 oColor;\n"
-			"void main()\n"
-			"{\n"
-			"   gl_Position = Mvpm * Position;\n"
-            "   oColor = vec4(1.0, 1.0, 1.0, 1.0 - VertexColor.x);\n"
-			"}\n"
-		,
-			"varying lowp vec4	oColor;\n"
-			"void main()\n"
-			"{\n"
-			"	gl_FragColor = oColor;\n"
-			"}\n"
-		);
-    d->overlayScreenDirectProgram = BuildProgram(
-			"uniform mat4 Mvpm;\n"
-			"attribute vec4 Position;\n"
-			"attribute vec2 TexCoord;\n"
-			"varying  highp vec2 oTexCoord;\n"
-			"void main()\n"
-			"{\n"
-			"   gl_Position = Mvpm * Position;\n"
-			"   oTexCoord = TexCoord;\n"
-			"}\n"
-		,
-			"uniform sampler2D Texture0;\n"
-			"varying highp vec2 oTexCoord;\n"
-			"void main()\n"
-			"{\n"
-            "	gl_FragColor = texture2D(Texture0, oTexCoord);\n"
-			"}\n"
-		);
-
-	// Build some geometries we need
-    d->panelGeometry = BuildTesselatedQuad(32, 16);	// must be large to get faded edge
-    d->unitSquare = BuildTesselatedQuad(1, 1);
-    d->unitCubeLines = BuildUnitCubeLines();
-    //FadedScreenMaskSquare = BuildFadedScreenMask(0.0f, 0.0f);	// TODO: clean up: app-specific values are being passed in on DrawScreenMask
-
-    d->eyeDecorations.Init();
-}
-
-void App::ShutdownGlObjects()
-{
-    DeleteProgram(d->externalTextureProgram2);
-    DeleteProgram(d->untexturedMvpProgram);
-    DeleteProgram(d->untexturedScreenSpaceProgram);
-    DeleteProgram(d->overlayScreenFadeMaskProgram);
-    DeleteProgram(d->overlayScreenDirectProgram);
-
-    d->panelGeometry.Free();
-    d->unitSquare.Free();
-    d->unitCubeLines.Free();
-    d->fadedScreenMaskSquare.Free();
-
-    d->eyeDecorations.Shutdown();
 }
 
 Vector3f ViewOrigin(const Matrix4f & view)
@@ -1282,146 +1838,6 @@ void ToggleScreenColor()
     glDisable(GL_WRITEONLY_RENDERING_QCOM);
 }
 
-void App::interpretTouchpad(VrInput & input)
-{
-	// 1) Down -> Up w/ Motion = Slide
-	// 2) Down -> Up w/out Motion -> Timeout = Single Tap
-	// 3) Down -> Up w/out Motion -> Down -> Timeout = Nothing
-	// 4) Down -> Up w/out Motion -> Down -> Up = Double Tap
-	static const float timer_finger_down = 0.3f;
-	static const float timer_finger_up = 0.3f;
-	static const float min_swipe_distance = 100.0f;
-
-	float currentTime = ovr_GetTimeInSeconds();
-    float deltaTime = currentTime - d->lastTouchpadTime;
-    d->lastTouchpadTime = currentTime;
-    d->touchpadTimer = d->touchpadTimer + deltaTime;
-
-	bool down = false, up = false;
-	bool currentTouchDown = input.buttonState & BUTTON_TOUCH;
-
-    if (currentTouchDown && !d->lastTouchDown)
-	{
-		//CreateToast("DOWN");
-		down = true;
-        d->touchOrigin = input.touch;
-	}
-
-    if (!currentTouchDown && d->lastTouchDown)
-	{
-		//CreateToast("UP");
-		up = true;
-	}
-
-    d->lastTouchDown = currentTouchDown;
-
-    input.touchRelative = input.touch - d->touchOrigin;
-	float touchMagnitude = input.touchRelative.Length();
-	input.swipeFraction = touchMagnitude / min_swipe_distance;
-
-    switch (d->touchState)
-	{
-	case 0:
-		//CreateToast("0 - %f", touchpadTimer);
-        if (down)
-		{
-            d->touchState = 1;
-            d->touchpadTimer = 0.0f;
-		}
-		break;
-	case 1:
-		//CreateToast("1 - %f", touchpadTimer);
-		//CreateToast("1 - %f", touchMagnitude);
-        if (touchMagnitude >= min_swipe_distance)
-		{
-			int dir = 0;
-            if (fabs(input.touchRelative[0]) > fabs(input.touchRelative[1]))
-			{
-                if (input.touchRelative[0] < 0)
-				{
-					//CreateToast("SWIPE FORWARD");
-					dir = BUTTON_SWIPE_FORWARD | BUTTON_TOUCH_WAS_SWIPE;
-				}
-				else
-				{
-					//CreateToast("SWIPE BACK");
-					dir = BUTTON_SWIPE_BACK | BUTTON_TOUCH_WAS_SWIPE;
-				}
-			}
-			else
-			{
-                if (input.touchRelative[1] > 0)
-				{
-					//CreateToast("SWIPE DOWN");
-					dir = BUTTON_SWIPE_DOWN | BUTTON_TOUCH_WAS_SWIPE;
-				}
-				else
-				{
-					//CreateToast("SWIPE UP");
-					dir = BUTTON_SWIPE_UP | BUTTON_TOUCH_WAS_SWIPE;
-				}
-			}
-			input.buttonPressed |= dir;
-			input.buttonReleased |= dir & ~BUTTON_TOUCH_WAS_SWIPE;
-			input.buttonState |= dir;
-            d->touchState = 0;
-            d->touchpadTimer = 0.0f;
-		}
-        else if (up)
-		{
-            if (d->touchpadTimer < timer_finger_down)
-			{
-                d->touchState = 2;
-                d->touchpadTimer = 0.0f;
-			}
-			else
-			{
-				//CreateToast("SINGLE TOUCH");
-				input.buttonPressed |= BUTTON_TOUCH_SINGLE;
-				input.buttonReleased |= BUTTON_TOUCH_SINGLE;
-				input.buttonState |= BUTTON_TOUCH_SINGLE;
-                d->touchState = 0;
-                d->touchpadTimer = 0.0f;
-			}
-		}
-		break;
-	case 2:
-		//CreateToast("2 - %f", touchpadTimer);
-        if (d->touchpadTimer >= timer_finger_up)
-		{
-			//CreateToast("SINGLE TOUCH");
-			input.buttonPressed |= BUTTON_TOUCH_SINGLE;
-			input.buttonReleased |= BUTTON_TOUCH_SINGLE;
-			input.buttonState |= BUTTON_TOUCH_SINGLE;
-            d->touchState = 0;
-            d->touchpadTimer = 0.0f;
-		}
-        else if (down)
-		{
-            d->touchState = 3;
-            d->touchpadTimer = 0.0f;
-		}
-		break;
-	case 3:
-		//CreateToast("3 - %f", touchpadTimer);
-        if (d->touchpadTimer >= timer_finger_down)
-		{
-            d->touchState = 0;
-            d->touchpadTimer = 0.0f;
-		}
-        else if (up)
-		{
-			//CreateToast("DOUBLE TOUCH");
-			input.buttonPressed |= BUTTON_TOUCH_DOUBLE;
-			input.buttonReleased |= BUTTON_TOUCH_DOUBLE;
-			input.buttonState |= BUTTON_TOUCH_DOUBLE;
-            d->touchState = 0;
-            d->touchpadTimer = 0.0f;
-		}
-		break;
-	}
-}
-
 void App::frameworkButtonProcessing(const VrInput & input)
 {
 	// Toggle calibration lines
@@ -1535,445 +1951,6 @@ void App::frameworkButtonProcessing(const VrInput & input)
 			}
 		}
 	}
-}
-
-/*
- * VrThreadFunction
- *
- * Continuously renders frames when active, checking for commands
- * from the main thread between frames.
- */
-void App::vrThreadFunction()
-{
-	// Set the name that will show up in systrace
-    pthread_setname_np(pthread_self(), "NervGear::VrThread");
-
-	// Initialize the VR thread
-	{
-        LOG("AppLocal::VrThreadFunction - init");
-
-		// Get the tid for setting the scheduler
-        d->vrThreadTid = gettid();
-
-		// The Java VM needs to be attached on each thread that will use
-		// it.  We need it to call UpdateTexture on surfaceTextures, which
-		// must be done on the thread with the openGL context that created
-		// the associated texture object current.
-        LOG("javaVM->AttachCurrentThread");
-        const jint rtn = d->javaVM->AttachCurrentThread(&d->vrJni, 0);
-        if (rtn != JNI_OK)
-		{
-            FAIL("javaVM->AttachCurrentThread returned %i", rtn);
-		}
-
-		// Set up another thread for making longer-running java calls
-		// to avoid hitches.
-        d->ttj.Init(*d->javaVM, *this);
-
-		// Create a new context and pbuffer surface
-		const int windowDepth = 0;
-		const int windowSamples = 0;
-		const GLuint contextPriority = EGL_CONTEXT_PRIORITY_MEDIUM_IMG;
-        d->eglr = EglSetup(EGL_NO_CONTEXT, GL_ES_VERSION,	// no share context,
-				8,8,8, windowDepth, windowSamples, // r g b
-                contextPriority);
-
-		// Create our GL data objects
-        initGlObjects();
-
-        d->eyeTargets = new EyeBuffers;
-        d->guiSys = new OvrGuiSysLocal;
-        d->gazeCursor = new OvrGazeCursorLocal;
-        d->vrMenuMgr = OvrVRMenuMgr::Create();
-        d->debugLines = OvrDebugLines::Create();
-
-		int w = 0;
-		int h = 0;
-        d->loadingIconTexId = LoadTextureFromApplicationPackage("res/raw/loading_indicator.png",
-                                        TextureFlags_t(TEXTUREFLAG_NO_MIPMAPS), w, h);
-
-		// Create the SurfaceTexture for dialog rendering.
-        d->dialogTexture = new SurfaceTexture(d->vrJni);
-
-        d->initFonts();
-
-        d->soundManager.LoadSoundAssets();
-
-        debugLines().Init();
-
-        gazeCursor().Init();
-
-        vrMenuMgr().init();
-
-        guiSys().init(this, vrMenuMgr(), *d->defaultFont);
-
-        d->volumePopup = OvrVolumePopup::Create(this, vrMenuMgr(), *d->defaultFont);
-
-        ovr_InitLocalPreferences(d->vrJni, d->javaObject);
-
-        d->lastTouchpadTime = ovr_GetTimeInSeconds();
-	}
-
-	// FPS counter information
-	int countApplicationFrames = 0;
-    double lastReportTime = ceil(ovr_GetTimeInSeconds());
-
-    while(!(d->vrThreadSynced && d->createdSurface && d->readyToExit))
-	{
-        //SPAM("FRAME START");
-
-        gazeCursor().BeginFrame();
-
-		// Process incoming messages until queue is empty
-        for (; ;)
-		{
-            const char * msg = d->vrMessageQueue.nextMessage();
-            if (!msg)
-			{
-				break;
-			}
-            command(msg);
-            free((void *)msg);
-		}
-
-		// handle any pending system activity events
-		size_t const MAX_EVENT_SIZE = 4096;
-		char eventBuffer[MAX_EVENT_SIZE];
-
-        for (eVrApiEventStatus status = ovr_nextPendingEvent(eventBuffer, MAX_EVENT_SIZE);
-			status >= VRAPI_EVENT_PENDING;
-            status = ovr_nextPendingEvent(eventBuffer, MAX_EVENT_SIZE))
-		{
-            if (status != VRAPI_EVENT_PENDING)
-			{
-                if (status != VRAPI_EVENT_CONSUMED)
-				{
-                    WARN("Error %i handing System Activities Event", status);
-				}
-				continue;
-			}
-
-			std::stringstream s;
-			s << eventBuffer;
-			Json jsonObj;
-			s >> jsonObj;
-			if (jsonObj.type() == Json::Object)
-			{
-				std::string command = jsonObj["Command"].toString();
-				if (command == SYSTEM_ACTIVITY_EVENT_REORIENT)
-				{
-					// for reorient, we recenter yaw natively, then pass the event along so that the client
-					// application can also handle the event (for instance, to reposition menus)
-                    LOG("VtThreadFunction: Acting on System Activity reorient event.");
-                    recenterYaw(false);
-				}
-				else
-				{
-					// In the case of the returnToLauncher event, we always handler it internally and pass
-					// along an empty buffer so that any remaining events still get processed by the client.
-					LOG("Unhandled System Activity event: '%s'", command.c_str());
-				}
-			}
-			else
-			{
-				// a malformed event string was pushed! This implies an error in the native code somewhere.
-				WARN("Error parsing System Activities Event: %s");
-			}
-		}
-
-		// update volume popup
-        if (d->showVolumePopup)
-		{
-            d->volumePopup->checkForVolumeChange(this);
-		}
-
-		// If we don't have a surface yet, or we are paused, sleep until
-		// something shows up on the message queue.
-        if (d->windowSurface == EGL_NO_SURFACE || d->paused)
-		{
-            if (!(d->vrThreadSynced && d->createdSurface && d->readyToExit))
-			{
-                d->vrMessageQueue.SleepUntilMessage();
-			}
-			continue;
-		}
-
-		// if there is an error condition, warp swap and nothing else
-        if (d->errorTexture != 0)
-		{
-            if (ovr_GetTimeInSeconds() >= d->errorMessageEndTime)
-			{
-                ovr_ReturnToHome(d->OvrMobile);
-			}
-			else
-			{
-                ovrTimeWarpParms warpSwapMessageParms = InitTimeWarpParms(WARP_INIT_MESSAGE, d->errorTexture.texture);
-				warpSwapMessageParms.ProgramParms[0] = 0.0f;						// rotation in radians
-                warpSwapMessageParms.ProgramParms[1] = 1024.0f / d->errorTextureSize;	// message size factor
-                ovr_WarpSwap(d->OvrMobile, &warpSwapMessageParms);
-			}
-			continue;
-		}
-
-		// Let the client app initialize only once by calling OneTimeInit() when the windowSurface is valid.
-        if (!oneTimeInitCalled)
-		{
-            if (d->appInterface->ShouldShowLoadingIcon())
-			{
-                const ovrTimeWarpParms warpSwapLoadingIconParms = InitTimeWarpParms(WARP_INIT_LOADING_ICON, d->loadingIconTexId);
-                ovr_WarpSwap(d->OvrMobile, &warpSwapLoadingIconParms);
-			}
-            vInfo("launchIntentJSON:" << d->launchIntentJSON);
-            vInfo("launchIntentURI:" << d->launchIntentURI);
-
-            d->appInterface->OneTimeInit(d->launchIntentFromPackage, d->launchIntentJSON, d->launchIntentURI);
-            oneTimeInitCalled = true;
-		}
-
-		// check updated battery status
-		{
-			batteryState_t state = ovr_GetBatteryState();
-            d->batteryStatus = static_cast< eBatteryStatus >(state.status);
-            d->batteryLevel = state.level;
-		}
-
-		// latch the current joypad state and note transitions
-        d->vrFrame.Input = d->joypad;
-        d->vrFrame.Input.buttonPressed = d->joypad.buttonState & (~d->lastVrFrame.Input.buttonState);
-        d->vrFrame.Input.buttonReleased = ~d->joypad.buttonState & (d->lastVrFrame.Input.buttonState & ~BUTTON_TOUCH_WAS_SWIPE);
-
-        if (d->lastVrFrame.Input.buttonState & BUTTON_TOUCH_WAS_SWIPE)
-		{
-            if (d->lastVrFrame.Input.buttonReleased & BUTTON_TOUCH)
-			{
-                d->vrFrame.Input.buttonReleased |= BUTTON_TOUCH_WAS_SWIPE;
-			}
-			else
-			{
-				// keep it around this frame
-                d->vrFrame.Input.buttonState |= BUTTON_TOUCH_WAS_SWIPE;
-			}
-		}
-
-		// Synthesize swipe gestures
-        interpretTouchpad(d->vrFrame.Input);
-
-        if (d->recenterYawFrameStart != 0)
-		{
-			// Perform a reorient before sensor data is read.  Allows apps to reorient without having invalid orientation information for that frame.
-			// Do a warp swap black on the frame the recenter started.
-            recenterYaw(d->recenterYawFrameStart == (d->vrFrame.FrameNumber + 1));  // vrFrame.FrameNumber hasn't been incremented yet, so add 1.
-		}
-
-		// Get the latest head tracking state, predicted ahead to the midpoint of the time
-		// it will be displayed.  It will always be corrected to the real values by
-		// time warp, but the closer we get, the less black will be pulled in at the edges.
-		const double now = ovr_GetTimeInSeconds();
-		static double prev;
-		const double rawDelta = now - prev;
-		prev = now;
-        const double clampedPrediction = Alg::Min(0.1, rawDelta * 2);
-        d->sensorForNextWarp = ovr_GetPredictedSensorState(d->OvrMobile, now + clampedPrediction);
-
-        d->vrFrame.PoseState = d->sensorForNextWarp.Predicted;
-        d->vrFrame.OvrStatus = d->sensorForNextWarp.Status;
-        d->vrFrame.DeltaSeconds   = Alg::Min(0.1, rawDelta);
-        d->vrFrame.FrameNumber++;
-
-		// Don't allow this to be excessively large, which can cause application problems.
-        if (d->vrFrame.DeltaSeconds > 0.1f)
-		{
-            d->vrFrame.DeltaSeconds = 0.1f;
-		}
-
-        d->lastVrFrame = d->vrFrame;
-
-		// resend any debug lines that have expired
-        debugLines().BeginFrame(d->vrFrame.FrameNumber);
-
-		// reset any VR menu submissions from previous frame
-        vrMenuMgr().beginFrame();
-
-        frameworkButtonProcessing(d->vrFrame.Input);
-
-        KeyState::eKeyEventType event = d->backKeyState.Update(ovr_GetTimeInSeconds());
-        if (event != KeyState::KEY_EVENT_NONE)
-		{
-            //LOG("BackKey: event %s", KeyState::EventNames[ event ]);
-			// always allow the gaze cursor to peek at the event so it can start the gaze timer if necessary
-            // update the gaze cursor timer
-            if (event == KeyState::KEY_EVENT_DOWN)
-            {
-                gazeCursor().StartTimer(backKeyState().GetLongPressTime(), backKeyState().GetDoubleTapTime());
-            }
-            else if (event == KeyState::KEY_EVENT_DOUBLE_TAP || event == KeyState::KEY_EVENT_SHORT_PRESS)
-            {
-                gazeCursor().CancelTimer();
-            }
-            else if (event == KeyState::KEY_EVENT_LONG_PRESS)
-            {
-                //StartSystemActivity(PUI_GLOBAL_MENU);
-                ovr_ExitActivity(d->OvrMobile, EXIT_TYPE_FINISH);
-            }
-
-			// let the menu handle it if it's open
-            bool consumedKey = guiSys().onKeyEvent(this, AKEYCODE_BACK, event);
-
-			// pass to the app if nothing handled it before this
-            if (!consumedKey)
-			{
-                consumedKey = d->appInterface->onKeyEvent(AKEYCODE_BACK, event);
-			}
-			// if nothing consumed the key and it's a short-press, exit the application to OculusHome
-            if (!consumedKey)
-			{
-                if (event == KeyState::KEY_EVENT_SHORT_PRESS)
-				{
-					consumedKey = true;
-                    LOG("BUTTON_BACK: confirming quit in platformUI");
-                    ovr_ExitActivity(d->OvrMobile, EXIT_TYPE_FINISH);
-				}
-			}
-		}
-
-        if (d->showFPS)
-		{
-			const int FPS_NUM_FRAMES_TO_AVERAGE = 30;
-			static double  LastFrameTime = ovr_GetTimeInSeconds();
-			static double  AccumulatedFrameInterval = 0.0;
-			static int   NumAccumulatedFrames = 0;
-			static float LastFrameRate = 60.0f;
-
-			double currentFrameTime = ovr_GetTimeInSeconds();
-			double frameInterval = currentFrameTime - LastFrameTime;
-			AccumulatedFrameInterval += frameInterval;
-			NumAccumulatedFrames++;
-            if (NumAccumulatedFrames > FPS_NUM_FRAMES_TO_AVERAGE) {
-                double interval = (AccumulatedFrameInterval / NumAccumulatedFrames);  // averaged
-				AccumulatedFrameInterval = 0.0;
-				NumAccumulatedFrames = 0;
-                LastFrameRate = 1.0f / float(interval > 0.000001 ? interval : 0.00001);
-			}
-
-            Vector3f viewPos = GetViewMatrixPosition(d->lastViewMatrix);
-            Vector3f viewFwd = GetViewMatrixForward(d->lastViewMatrix);
-			Vector3f newPos = viewPos + viewFwd * 1.5f;
-            d->fpsPointTracker.Update(ovr_GetTimeInSeconds(), newPos);
-
-			fontParms_t fp;
-			fp.AlignHoriz = HORIZONTAL_CENTER;
-			fp.Billboard = true;
-			fp.TrackRoll = false;
-            worldFontSurface().DrawTextBillboarded3Df(defaultFont(), fp, d->fpsPointTracker.GetCurPosition(),
-                    0.8f, Vector4f(1.0f, 0.0f, 0.0f, 1.0f), "%.1f fps", LastFrameRate);
-			LastFrameTime = currentFrameTime;
-		}
-
-
-		// draw info text
-        if (d->infoTextEndFrame >= d->vrFrame.FrameNumber)
-		{
-            Vector3f viewPos = GetViewMatrixPosition(d->lastViewMatrix);
-            Vector3f viewFwd = GetViewMatrixForward(d->lastViewMatrix);
-            Vector3f viewUp(0.0f, 1.0f, 0.0f);
-            Vector3f viewLeft = viewUp.Cross(viewFwd);
-            Vector3f newPos = viewPos + viewFwd * d->infoTextOffset.z + viewUp * d->infoTextOffset.y + viewLeft * d->infoTextOffset.x;
-            d->infoTextPointTracker.Update(ovr_GetTimeInSeconds(), newPos);
-
-			fontParms_t fp;
-			fp.AlignHoriz = HORIZONTAL_CENTER;
-			fp.AlignVert = VERTICAL_CENTER;
-			fp.Billboard = true;
-			fp.TrackRoll = false;
-            worldFontSurface().DrawTextBillboarded3Df(defaultFont(), fp, d->infoTextPointTracker.GetCurPosition(),
-                    1.0f, d->infoTextColor, d->infoText.toCString());
-		}
-
-		// Main loop logic / draw code
-        if (!d->readyToExit)
-		{
-            this->d->lastViewMatrix = d->appInterface->Frame(d->vrFrame);
-		}
-
-        ovr_HandleDeviceStateChanges(d->OvrMobile);
-
-		// MWC demo hack to allow keyboard swipes
-        d->joypad.buttonState &= ~(BUTTON_SWIPE_FORWARD|BUTTON_SWIPE_BACK);
-
-		// Report frame counts once a second
-		countApplicationFrames++;
-        const double timeNow = floor(ovr_GetTimeInSeconds());
-        if (timeNow > lastReportTime)
-		{
-#if 1	// it is sometimes handy to remove this spam from the log
-            LOG("FPS: %i GPU time: %3.1f ms ", countApplicationFrames, d->eyeTargets->LogEyeSceneGpuTime.GetTotalTime());
-#endif
-			countApplicationFrames = 0;
-			lastReportTime = timeNow;
-		}
-
-        //SPAM("FRAME END");
-	}
-
-	// Shutdown the VR thread
-	{
-        LOG("AppLocal::VrThreadFunction - shutdown");
-
-		// Shut down the message queue so it cannot overflow.
-        d->vrMessageQueue.Shutdown();
-
-        if (d->errorTexture != 0)
-		{
-            FreeTexture(d->errorTexture);
-		}
-
-        d->appInterface->OneTimeShutdown();
-
-        guiSys().shutdown(vrMenuMgr());
-
-        vrMenuMgr().shutdown();
-
-        gazeCursor().Shutdown();
-
-        debugLines().Shutdown();
-
-        d->shutdownFonts();
-
-        delete d->dialogTexture;
-        d->dialogTexture = nullptr;
-
-        delete d->eyeTargets;
-        d->eyeTargets = nullptr;
-
-        delete d->guiSys;
-        d->guiSys = nullptr;
-
-        delete d->gazeCursor;
-        d->gazeCursor = nullptr;
-
-        OvrVRMenuMgr::Free(d->vrMenuMgr);
-        OvrDebugLines::Free(d->debugLines);
-
-		ShutdownGlObjects();
-
-        EglShutdown(d->eglr);
-
-		// Detach from the Java VM before exiting.
-        LOG("javaVM->DetachCurrentThread");
-        const jint rtn = d->javaVM->DetachCurrentThread();
-        if (rtn != JNI_OK)
-		{
-            LOG("javaVM->DetachCurrentThread returned %i", rtn);
-		}
-	}
-}
-
-// Shim to call a C++ object from a posix thread start.
-void *App::ThreadStarter(void * parm)
-{
-    ((App *)parm)->vrThreadFunction();
-
-    return nullptr;
 }
 
 /*

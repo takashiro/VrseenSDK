@@ -226,7 +226,7 @@ bool VThread::start(VThread::State initialState)
 
 int VThread::run()
 {
-    return (d->function) ? d->function(this, d->data) : 0;
+    return (d->function) ? d->function(d->data) : 0;
 }
 
 void VThread::exit(int exitCode)
@@ -241,6 +241,11 @@ void VThread::exit(int exitCode)
     d->threadList.remove(this);
 
     pthread_exit((void *) exitCode);
+}
+
+int VThread::wait()
+{
+    return pthread_join(d->handle, nullptr);
 }
 
 void VThread::onExit()
