@@ -132,7 +132,7 @@ void OvrSoundManager::LoadSoundAssetsFromJsonObject( const VString & url, const 
 		OVR_ASSERT( sound.isValid() );
 
         std::string fullPath(url.toStdString());
-		fullPath += sound.toString();
+        fullPath += sound.toStdString();
 
 		// Do we already have this sound?
         std::map<std::string, std::string>::const_iterator soundMapping = SoundMap.find(pair.first);

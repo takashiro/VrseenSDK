@@ -278,7 +278,7 @@ void GyroTempCalibration::LoadFile()
 
     // Parse calibration data.
     Json dataItem = root.value("Data");
-    VString calibData(dataItem.toString().c_str());
+    VString calibData = dataItem.toString();
 	GyroCalibrationFromString(calibData);
 }
 

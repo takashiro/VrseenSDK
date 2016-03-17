@@ -1837,8 +1837,8 @@ void ovr_HandleDeviceStateChanges( ovrMobile * ovr )
         Json reader = Json::Parse(eventBuffer);
         if ( reader.isObject() )
 		{
-            std::string command = reader.value( "Command" ).toString();
-            int32_t platformUIVersion = reader.value( "PlatformUIVersion" ).toInt();
+            VString command = reader.value("Command").toString();
+            int32_t platformUIVersion = reader.value("PlatformUIVersion").toInt();
             if (command == SYSTEM_ACTIVITY_EVENT_REORIENT)
 			{
 				// for reorient, we recenter yaw natively, then pass the event along so that the client
@@ -2170,7 +2170,7 @@ eVrApiEventStatus ovr_nextPendingEvent( char * buffer, unsigned int const buffer
     Json reader = Json::Parse(buffer);
     if (reader.isObject())
 	{
-        std::string command = reader.value( "Command" ).toString();
+        VString command = reader.value( "Command" ).toString();
         if (command == SYSTEM_ACTIVITY_EVENT_REORIENT) {
 			// for reorient, we recenter yaw natively, then pass the event along so that the client
 			// application can also handle the event (for instance, to reposition menus)

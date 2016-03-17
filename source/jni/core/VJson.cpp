@@ -1,4 +1,5 @@
 #include "VJson.h"
+#include "VByteArray.h"
 
 #include <iostream>
 #include <sstream>
@@ -32,13 +33,19 @@ Json::Json(double value)
 Json::Json(const std::string &value)
 {
     p_ptr->type = String;
-    p_ptr->str = new std::string(value);
+    p_ptr->str = new VString(value);
+}
+
+Json::Json(const VString &value)
+{
+    p_ptr->type = String;
+    p_ptr->str = new VString(value);
 }
 
 Json::Json(const char *value)
 {
     p_ptr->type = String;
-    p_ptr->str = new std::string(value);
+    p_ptr->str = new VString(value);
 }
 
 Json::Json(Type type)
@@ -53,7 +60,7 @@ Json::Json(Type type)
         p_ptr->number = 0.0;
         break;
     case String:
-        p_ptr->str = new std::string();
+        p_ptr->str = new VString();
         break;
     case Array:
         p_ptr->array = new std::vector<Json>();
@@ -80,7 +87,7 @@ bool Json::toBool() const
 	case Number:
 		return (int) p_ptr->number != 0;
 	case String:
-		return !p_ptr->str->empty();
+        return !p_ptr->str->isEmpty();
 	case Array:
 		return p_ptr->array->size() > 0;
 	case Object:
@@ -97,7 +104,7 @@ double Json::toDouble() const
 
 	if (p_ptr->type == String) {
 		std::stringstream s;
-		s << *(p_ptr->str);
+        s << p_ptr->str->toLatin1();
 		double number;
 		s >> number;
 		return number;
@@ -113,19 +120,35 @@ int Json::toInt() const
 
 	if (p_ptr->type == String) {
 		std::stringstream s;
-		s << *(p_ptr->str);
+        s << p_ptr->str->toLatin1();
 		int number;
 		s >> number;
 		return number;
 	}
 
-	return 0;
+    return 0;
 }
 
-std::string Json::toString() const
+VString Json::toString() const
+{
+    if (p_ptr->type == String)
+        return *(p_ptr->str);
+
+    if (p_ptr->type == Number) {
+        std::stringstream s;
+        s << p_ptr->number;
+        std::string str;
+        s >> str;
+        return str;
+    }
+
+    return VString();
+}
+
+std::string Json::toStdString() const
 {
 	if (p_ptr->type == String)
-		return *(p_ptr->str);
+        return p_ptr->str->toLatin1();
 
 	if (p_ptr->type == Number) {
 		std::stringstream s;
@@ -315,7 +338,7 @@ void Json::clear()
     }
 }
 
-std::string &Json::string()
+VString &Json::string()
 {
 	return *(p_ptr->str);
 }
@@ -392,8 +415,7 @@ std::istream &operator>>(std::istream &in, Json &value)
         value.p_ptr->boolean = true;
     } else if (json_try_read(in, '"')) {
         value.p_ptr->type = Json::String;
-        value.p_ptr->str = new std::string();
-        std::string &str = (*value.p_ptr->str);
+        std::string str;
         char ch;
         while (!in.eof()) {
             in.get(ch);
@@ -408,6 +430,7 @@ std::istream &operator>>(std::istream &in, Json &value)
             }
             str += ch;
         }
+        value.p_ptr->str = new VString(VString::fromUtf8(str));
     } else {
         char ch;
         in.get(ch);
@@ -459,7 +482,7 @@ std::istream &operator>>(std::istream &in, Json &value)
                     break;
                 }
 
-                object[key.string()] = value;
+                object[key.string().toUtf8()] = value;
 
                 if (!json_try_read(in, ',')) {
                     if (!(json_try_read(in, '}')))
@@ -553,7 +576,7 @@ void JsonData::cloneData(const JsonData &source)
         number = source.number;
         break;
     case Json::String:
-        str = new std::string(*source.str);
+        str = new VString(*source.str);
         break;
     case Json::Array:
         array = new std::vector<Json>(*source.array);

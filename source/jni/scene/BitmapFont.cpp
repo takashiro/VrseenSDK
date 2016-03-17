@@ -470,9 +470,9 @@ bool FontInfoType::LoadFromBuffer(void const * buffer,
 		return false;
 	}
 
-	FontName = jsonRoot.value("FontName").toString();
-	CommandLine = jsonRoot.value("CommandLine").toString();
-	ImageFileName = jsonRoot.value("ImageFileName").toString();
+    FontName = jsonRoot.value("FontName").toStdString();
+    CommandLine = jsonRoot.value("CommandLine").toStdString();
+    ImageFileName = jsonRoot.value("ImageFileName").toStdString();
 	const int numGlyphs = jsonRoot.value("NumGlyphs").toInt();
 	if (numGlyphs < 0 || numGlyphs > MAX_GLYPHS) {
 		OVR_ASSERT( numGlyphs > 0 && numGlyphs <= MAX_GLYPHS);

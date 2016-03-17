@@ -39,8 +39,8 @@ void OvrPhotosMetaData::extractExtendedData( const NervGear::Json & jsonDatum, O
 	OvrPhotosMetaDatum * photoData = static_cast< OvrPhotosMetaDatum * >( &datum );
 	if ( photoData )
 	{
-		photoData->title = jsonDatum.value( TITLE_INNER ).toString().c_str();
-		photoData->author = jsonDatum.value( AUTHOR_INNER ).toString().c_str();
+        photoData->title = jsonDatum.value( TITLE_INNER ).toString();
+        photoData->author = jsonDatum.value( AUTHOR_INNER ).toString();
 
 		if ( photoData->title.isEmpty() )
 		{

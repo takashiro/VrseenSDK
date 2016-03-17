@@ -32,12 +32,12 @@ void OvrVideosMetaData::extractExtendedData( const Json &jsonDatum, OvrMetaDatum
 	OvrVideosMetaDatum * videoData = static_cast< OvrVideosMetaDatum * >( &datum );
 	if ( videoData )
 	{
-		videoData->Title 					= jsonDatum.value( TITLE_INNER ).toString().c_str();
-		videoData->Author 					= jsonDatum.value( AUTHOR_INNER ).toString().c_str();
-		videoData->ThumbnailUrl 			= jsonDatum.value( THUMBNAIL_URL_INNER ).toString().c_str();
-		videoData->StreamingType 			= jsonDatum.value( STREAMING_TYPE_INNER ).toString().c_str();
-		videoData->StreamingProxy 			= jsonDatum.value( STREAMING_PROXY_INNER ).toString().c_str();
-		videoData->StreamingSecurityLevel 	= jsonDatum.value( STREAMING_SECURITY_LEVEL_INNER ).toString().c_str();
+        videoData->Title 					= jsonDatum.value( TITLE_INNER ).toString();
+        videoData->Author 					= jsonDatum.value( AUTHOR_INNER ).toString();
+        videoData->ThumbnailUrl 			= jsonDatum.value( THUMBNAIL_URL_INNER ).toString();
+        videoData->StreamingType 			= jsonDatum.value( STREAMING_TYPE_INNER ).toString();
+        videoData->StreamingProxy 			= jsonDatum.value( STREAMING_PROXY_INNER ).toString();
+        videoData->StreamingSecurityLevel 	= jsonDatum.value( STREAMING_SECURITY_LEVEL_INNER ).toString();
 
 		if ( videoData->Title.isEmpty() )
 		{

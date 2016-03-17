@@ -232,7 +232,7 @@ void ProfileManager::LoadCache(ProfileType device)
     if (major > MAX_PROFILE_MAJOR_VERSION)
         return;   // don't parse the file on unsupported major version number
 
-    DefaultProfile = root.value("CurrentProfile").toString();
+    DefaultProfile = root.value("CurrentProfile").toStdString();
 
     // Read a number of profiles
     const Json &profileArray = root.value("Profiles");
@@ -242,7 +242,7 @@ void ProfileManager::LoadCache(ProfileType device)
         if (!profileItem.contains("Name"))
             return;// invalid field
 
-        const std::string profileName = profileItem.value("Name").toString();
+        const std::string profileName = profileItem.value("Name").toStdString();
 
         const char*   deviceName  = 0;
         bool          deviceFound = false;
@@ -255,14 +255,14 @@ void ProfileManager::LoadCache(ProfileType device)
             for (const std::pair<std::string, Json> &i : map) {
                 const Json &item = i.second;
                 if (!item.isObject()) {
-                    profile->ParseProperty(i.first.c_str(), i.second.toString().c_str());
+                    profile->ParseProperty(i.first.c_str(), i.second.toStdString().c_str());
                 } else {   // Search for the matching device to get device specific fields
                     if (!deviceFound && deviceName && i.first == deviceName) {
                         deviceFound = true;
 
                         const JsonObject &deviceObject = item.toObject();
                         for (const std::pair<std::string, Json> &i : deviceObject) {
-                            profile->ParseProperty(i.first.c_str(), i.second.toString().c_str());
+                            profile->ParseProperty(i.first.c_str(), i.second.toStdString().c_str());
                         }
                     }
                 }
@@ -432,7 +432,7 @@ int ProfileManager::GetProfileCount(ProfileType device)
 // Returns the profile name of a specific profile in the list.  The returned
 // memory is locally allocated and should not be stored or deleted.  Returns NULL
 // if the index is invalid
-const char* ProfileManager::GetProfileName(ProfileType device, unsigned int index)
+VString ProfileManager::GetProfileName(ProfileType device, unsigned int index)
 {
     Lock::Locker lockScope(&ProfileLock);
 
@@ -443,12 +443,11 @@ const char* ProfileManager::GetProfileName(ProfileType device, unsigned int inde
     {
         Profile* profile = ProfileCache[index];
 //        OVR_strcpy(NameBuff, Profile::MaxNameLen, profile->Name);
-        strncpy(NameBuff, profile->Name,Profile::MaxNameLen);
-        return NameBuff;
+        return profile->Name;
     }
     else
     {
-        return NULL;
+        return VString();
     }
 }
 
@@ -461,7 +460,7 @@ bool ProfileManager::HasProfile(ProfileType device, const char* name)
 
     for (unsigned i = 0; i< ProfileCache.size(); i++)
     {
-        if (ProfileCache[i] && strcmp(ProfileCache[i]->Name, name) == 0)
+        if (ProfileCache[i] && ProfileCache[i]->Name == name)
             return true;
     }
     return false;
@@ -504,7 +503,7 @@ Profile* ProfileManager::LoadProfile(ProfileType device, const char* user)
 
     for (unsigned int i=0; i<ProfileCache.size(); i++)
     {
-        if (strcmp(user, ProfileCache[i]->Name) == 0)
+        if (user == ProfileCache[i]->Name)
         {   // Found the requested user profile
             Profile* profile = ProfileCache[i];
             return profile->Clone();
@@ -568,7 +567,7 @@ bool ProfileManager::Save(const Profile* profile)
 {
     Lock::Locker lockScope(&ProfileLock);
 
-    if (strcmp(profile->Name, "default") == 0)
+    if (profile->Name == "default")
         return false;  // don't save a default profile
 
     // TODO: I should also verify that this profile type matches the current cache
@@ -579,9 +578,7 @@ bool ProfileManager::Save(const Profile* profile)
     bool added = false;
     for (unsigned int i=0; i<ProfileCache.size(); i++)
     {
-        int compare = strcmp(profile->Name, ProfileCache[i]->Name);
-
-        if (compare == 0)
+        if (profile->Name == ProfileCache[i]->Name)
         {
             // TODO: I should do a proper field comparison to avoid unnecessary
             // overwrites and file saves
@@ -612,7 +609,7 @@ bool ProfileManager::Delete(const Profile* profile)
 {
     Lock::Locker lockScope(&ProfileLock);
 
-    if (strcmp(profile->Name, "default") == 0)
+    if (profile->Name == "default")
         return false;  // don't delete a default profile
 
     if (CacheDevice == Profile_Unknown)
@@ -621,7 +618,7 @@ bool ProfileManager::Delete(const Profile* profile)
     // Look for the existence of this profile
     for (unsigned int i=0; i<ProfileCache.size(); i++)
     {
-        if (strcmp(profile->Name, ProfileCache[i]->Name) == 0)
+        if (profile->Name == ProfileCache[i]->Name)
         {
             if (profile->Name == DefaultProfile)
                 DefaultProfile.clear();
@@ -650,9 +647,9 @@ Profile::Profile(ProfileType device, const char* name)
     NeckEyeVert  = 0.12f;
 
 //    OVR_strcpy(Name, MaxNameLen, name);
-    strncpy(Name, name, MaxNameLen);
+    Name = name;
 //    OVR_strcpy(CloudUser, MaxNameLen, name);
-    strncpy(CloudUser, name, MaxNameLen);
+    CloudUser = name;
 }
 
 
@@ -660,14 +657,12 @@ bool Profile::ParseProperty(const char* prop, const char* sval)
 {
     if (strcmp(prop, "Name") == 0)
     {
-//        OVR_strcpy(Name, MaxNameLen, sval);
-        strncpy(Name, sval, MaxNameLen);
+        Name = sval;
         return true;
     }
     else if (strcmp(prop, "CloudUser") == 0)
         {
-//            OVR_strcpy(CloudUser, MaxNameLen, sval);
-        strncpy(CloudUser, sval, MaxNameLen);
+            CloudUser = sval;
             return true;
         }
     else if (strcmp(prop, "Gender") == 0)
