@@ -236,8 +236,6 @@ public:
     void				setShowVolumePopup( bool const show );
     bool				showVolumePopup() const;
 
-    const VString &packageName() const;
-
     //-----------------------------------------------------------------
     // Java accessors
     //-----------------------------------------------------------------

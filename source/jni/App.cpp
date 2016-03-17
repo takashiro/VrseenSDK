@@ -380,7 +380,6 @@ struct App::Private : public TalkToJavaInterface
     VString			launchIntentFromPackage;	// package that sent us the launch intent
 
     VString			packageCodePath;	// path to apk to open as zip and load resources
-    VString			packageName;		// package name
 
     bool			paused;				// set/cleared by onPause / onResume
 
@@ -1872,7 +1871,6 @@ App::App(JNIEnv *jni, jobject activityObject, VrAppInterface &interface)
 
 	// Get the path to the .apk and package name
     d->packageCodePath = d->activity->getPackageCodePath();
-    d->packageName = d->activity->getPackageName();
 
 	// Hook the App and AppInterface together
     d->appInterface = &interface;
@@ -2407,11 +2405,6 @@ void App::setShowVolumePopup(bool const show)
 bool App::showVolumePopup() const
 {
     return d->showVolumePopup;
-}
-
-const VString &App::packageName() const
-{
-    return d->packageName;
 }
 
 void App::recenterYaw(const bool showBlack)
