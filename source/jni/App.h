@@ -8,7 +8,6 @@
 #include "EyeBuffers.h"
 #include "Input.h"
 #include "VMessageQueue.h"
-#include "TalkToJava.h"
 #include "SoundManager.h"
 
 NV_NAMESPACE_BEGIN
@@ -143,7 +142,7 @@ class OvrVolumePopup;
 // NOTE: do not define any of the functions in here inline (inside of the class
 // definition).  When AppLocal.h is included in multiple files (App.cpp and AppRender.cpp)
 // this causes bugs with accessor functions.
-class App : public TalkToJavaInterface
+class App
 {
 public:
                                 App(JNIEnv *jni, jobject activityObject,
@@ -290,9 +289,6 @@ public:
     void			startVrThread();
     void			stopVrThread();
     void			syncVrThread();
-
-    // TalkToJavaInterface
-    void TtjCommand(JNIEnv *jni, const char * commandString) override;
 
     volatile bool	oneTimeInitCalled;
     ovrModeParms	VrModeParms;

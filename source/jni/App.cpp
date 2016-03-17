@@ -40,6 +40,7 @@
 #include "VrLocale.h"
 #include "VRMenuMgr.h"
 #include "VUserProfile.h"
+#include "TalkToJava.h"
 
 #include "VApkFile.h"
 #include "VJson.h"
@@ -337,7 +338,7 @@ static const char* vertexShaderSource =
         "}\n";
 
 
-struct App::Private
+struct App::Private : public TalkToJavaInterface
 {
     App *self;
     // Primary apps will exit(0) when they get an onDestroy() so we
@@ -1276,7 +1277,7 @@ struct App::Private
 
             // Set up another thread for making longer-running java calls
             // to avoid hitches.
-            ttj.Init(*javaVM, *self);
+            ttj.Init(javaVM, this);
 
             // Create a new context and pbuffer surface
             const int windowDepth = 0;
@@ -1782,6 +1783,29 @@ struct App::Private
             }
         }
     }
+
+    void TtjCommand(JNIEnv *jni, const char * commandString) override
+    {
+        if (MatchesHead("sound ", commandString))
+        {
+            jstring cmdString = JniUtils::Convert(jni, commandString + 6);
+            jni->CallVoidMethod(javaObject, playSoundPoolSoundMethodId, cmdString);
+            jni->DeleteLocalRef(cmdString);
+            return;
+        }
+
+        if (MatchesHead("toast ", commandString))
+        {
+            jstring cmdString = JniUtils::Convert(jni, commandString + 6);
+            jni->CallVoidMethod(javaObject, createVrToastMethodId, cmdString);
+            jni->DeleteLocalRef(cmdString);
+            return;
+        }
+
+        if (MatchesHead("finish ", commandString)) {
+            activity->finishActivity();
+        }
+    }
 };
 
 /*
@@ -1922,31 +1946,6 @@ void App::syncVrThread()
 VMessageQueue & App::messageQueue()
 {
     return d->vrMessageQueue;
-}
-
-// This callback happens from the java thread, after a string has been
-// pulled off the message queue
-void App::TtjCommand(JNIEnv *jni, const char * commandString)
-{
-    if (MatchesHead("sound ", commandString))
-	{
-        jstring cmdString = JniUtils::Convert(jni, commandString + 6);
-        jni->CallVoidMethod(d->javaObject, d->playSoundPoolSoundMethodId, cmdString);
-        jni->DeleteLocalRef(cmdString);
-		return;
-	}
-
-    if (MatchesHead("toast ", commandString))
-	{
-        jstring cmdString = JniUtils::Convert(jni, commandString + 6);
-        jni->CallVoidMethod(d->javaObject, d->createVrToastMethodId, cmdString);
-        jni->DeleteLocalRef(cmdString);
-	    return;
-	}
-
-    if (MatchesHead("finish ", commandString)) {
-        d->activity->finishActivity();
-	}
 }
 
 void App::createToast(const char * fmt, ...)
