@@ -16,6 +16,7 @@ public:
     void finishActivity();
 
     VString getPackageCodePath() const;
+    VString getPackageName() const;
 
 private:
     NV_DECLARE_PRIVATE

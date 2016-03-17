@@ -74,6 +74,22 @@ VString VMainActivity::getPackageCodePath() const
     return VString();
 }
 
+VString VMainActivity::getPackageName() const
+{
+    jmethodID getPackageNameId = d->jni->GetMethodID(d->activityClass, "getPackageName", "()Ljava/lang/String;");
+    if (getPackageNameId != 0) {
+        VString packageName = JniUtils::Convert(d->jni, (jstring) d->jni->CallObjectMethod(d->activityObject, getPackageNameId));
+        if (!d->jni->ExceptionOccurred()) {
+            vInfo("GetCurrentPackageName() =" << packageName);
+            return packageName;
+        } else {
+            d->jni->ExceptionClear();
+            vInfo("Cleared JNI exception");
+        }
+    }
+    return VString();
+}
+
 NV_NAMESPACE_END
 
 NV_USING_NAMESPACE

@@ -609,7 +609,7 @@ App::App(JNIEnv *jni, jobject activityObject, VrAppInterface &interface)
 
 	// Get the path to the .apk and package name
     d->packageCodePath = d->activity->getPackageCodePath();
-    d->packageName = JniUtils::GetCurrentPackageName(d->uiJni, d->javaObject);
+    d->packageName = d->activity->getPackageName();
 
 	// Hook the App and AppInterface together
     d->appInterface = &interface;
