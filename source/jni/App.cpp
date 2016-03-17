@@ -51,7 +51,6 @@
 NV_NAMESPACE_BEGIN
 
 static const char * activityClassName = "com/vrseen/nervgear/VrActivity";
-static const char * vrLibClassName = "com/vrseen/nervgear/VrLib";
 
 // some parameters from the intent can be empty strings, which cannot be represented as empty strings for sscanf
 // so we encode them as EMPTY_INTENT_STR.
@@ -270,7 +269,6 @@ struct App::Private
     JNIEnv *		vrJni;			// for use by the VR thread
 
     jclass			vrActivityClass;		// must be looked up from main thread or FindClass() will fail
-    jclass			vrLibClass;				// must be looked up from main thread or FindClass() will fail
 
     jmethodID		createVrToastMethodId;
     jmethodID		clearVrToastsMethodId;
@@ -412,7 +410,6 @@ struct App::Private
         , uiJni(nullptr)
         , vrJni(nullptr)
         , vrActivityClass(nullptr)
-        , vrLibClass(nullptr)
         , createVrToastMethodId(nullptr)
         , clearVrToastsMethodId(nullptr)
         , playSoundPoolSoundMethodId(nullptr)
@@ -594,18 +591,13 @@ App::App(JNIEnv *jni, jobject activityObject, VrAppInterface &interface)
 	// A difficulty with JNI is that we can't resolve our (non-Android) package
 	// classes on other threads, so lookup everything we need right now.
     d->vrActivityClass = getGlobalClassReference(activityClassName);
-    d->vrLibClass = getGlobalClassReference(vrLibClassName);
-
     VrLocale::VrActivityClass = d->vrActivityClass;
 
     d->createVrToastMethodId = d->GetMethodID("createVrToastOnUiThread", "(Ljava/lang/String;)V");
     d->clearVrToastsMethodId = d->GetMethodID("clearVrToasts", "()V");
     d->playSoundPoolSoundMethodId = d->GetMethodID("playSoundPoolSound", "(Ljava/lang/String;)V");
 
-    jmethodID isHybridAppMethodId = d->GetStaticMethodID(d->vrLibClass, "isHybridApp", "(Landroid/app/Activity;)Z");
-    bool const isHybridApp = jni->CallStaticBooleanMethod(d->vrLibClass, isHybridAppMethodId, d->javaObject);
-
-    exitOnDestroy = !isHybridApp;
+    exitOnDestroy = true;
 
 	// Get the path to the .apk and package name
     d->packageCodePath = d->activity->getPackageCodePath();
