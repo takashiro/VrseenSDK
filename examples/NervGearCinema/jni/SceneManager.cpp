@@ -69,7 +69,7 @@ SceneManager::SceneManager( CinemaApp &cinema ) :
 	MipMappedMovieTextures[0] = MipMappedMovieTextures[1] = MipMappedMovieTextures[2] = 0;
 }
 
-void SceneManager::OneTimeInit( const char * launchIntent )
+void SceneManager::OneTimeInit( const VString &launchIntent )
 {
 	LOG( "SceneManager::OneTimeInit" );
 

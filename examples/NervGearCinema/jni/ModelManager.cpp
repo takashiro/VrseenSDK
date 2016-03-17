@@ -42,7 +42,7 @@ ModelManager::~ModelManager()
 {
 }
 
-void ModelManager::OneTimeInit( const char * launchIntent )
+void ModelManager::OneTimeInit(const VString &launchIntent)
 {
 	LOG( "ModelManager::OneTimeInit" );
 	const double start = ovr_GetTimeInSeconds();

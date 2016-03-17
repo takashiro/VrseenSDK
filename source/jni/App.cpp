@@ -1763,7 +1763,7 @@ void App::vrThreadFunction()
             vInfo("launchIntentJSON:" << d->launchIntentJSON);
             vInfo("launchIntentURI:" << d->launchIntentURI);
 
-            d->appInterface->OneTimeInit(d->launchIntentFromPackage.toCString(), d->launchIntentJSON.toCString(), d->launchIntentURI.toCString());
+            d->appInterface->OneTimeInit(d->launchIntentFromPackage, d->launchIntentJSON, d->launchIntentURI);
             oneTimeInitCalled = true;
 		}
 

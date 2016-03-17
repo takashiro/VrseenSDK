@@ -101,7 +101,7 @@ MovieSelectionView::~MovieSelectionView()
 	DeletePointerArray( MovieBrowserItems );
 }
 
-void MovieSelectionView::OneTimeInit( const char * launchIntent )
+void MovieSelectionView::OneTimeInit( const VString & launchIntent )
 {
 	LOG( "MovieSelectionView::OneTimeInit" );
 

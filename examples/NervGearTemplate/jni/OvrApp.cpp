@@ -22,7 +22,7 @@ OvrApp::~OvrApp()
 {
 }
 
-void OvrApp::OneTimeInit( const char * fromPackage, const char * launchIntentJSON, const char * launchIntentURI )
+void OvrApp::OneTimeInit(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI)
 {
 	// This is called by the VR thread, not the java UI thread.
 	MaterialParms materialParms;

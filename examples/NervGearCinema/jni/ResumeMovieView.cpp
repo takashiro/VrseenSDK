@@ -27,7 +27,7 @@ ResumeMovieView::~ResumeMovieView()
 {
 }
 
-void ResumeMovieView::OneTimeInit( const char * launchIntent )
+void ResumeMovieView::OneTimeInit( const VString &launchIntent )
 {
 	LOG( "ResumeMovieView::OneTimeInit" );
 

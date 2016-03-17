@@ -12,6 +12,7 @@ Copyright   :   Copyright 2012 Oculus VR, LCC. All Rights reserved.
 #include "VrScene.h"
 
 #include <VStandardPath.h>
+#include <VLog.h>
 
 static const char * versionString = "VrScene v0.1.0";
 
@@ -51,7 +52,7 @@ void VrScene::ConfigureVrMode( ovrModeParms & modeParms )
 	app->vrParms().multisamples = 2;
 }
 
-void VrScene::OneTimeInit( const char * fromPackageName, const char * launchIntentJSON, const char * launchIntentURI )
+void VrScene::OneTimeInit(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI)
 {
 	LOG( "VrScene::OneTimeInit" );
 
@@ -86,18 +87,18 @@ void VrScene::NewIntent( const char * fromPackageName, const char * command, con
 // we may just want to make the intent consist of <command> <parameters>.
 //#define INTENT_TEST_MODEL
 
-void VrScene::LoadScene( const char * path )
+void VrScene::LoadScene( const VString &path )
 {
-	LOG( "VrScene::LoadScene %s", path );
+    vInfo("VrScene::LoadScene" << path);
 
 #if defined( INTENT_TEST_MODEL )
-	const char * scenePath = "Oculus/tuscany.ovrscene";
+    const VString scenePath = u"Oculus/tuscany.ovrscene";
 #else
-	const char * scenePath = ( path[0] != '\0' ) ? path : "Oculus/tuscany.ovrscene";
+    const VString scenePath = !path.isEmpty() ? path : VString(u"Oculus/tuscany.ovrscene");
 #endif
 	if ( !GetFullPath( SearchPaths, scenePath, SceneFile ) )
 	{
-		LOG( "VrScene::NewIntent SearchPaths failed to find %s", scenePath );
+        vInfo("VrScene::NewIntent SearchPaths failed to find" << scenePath);
 	}
 
 	MaterialParms materialParms;

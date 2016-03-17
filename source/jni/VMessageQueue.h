@@ -1,7 +1,6 @@
 #pragma once
 
 #include "vglobal.h"
-#include "core/VString.h"
 
 NV_NAMESPACE_BEGIN
 

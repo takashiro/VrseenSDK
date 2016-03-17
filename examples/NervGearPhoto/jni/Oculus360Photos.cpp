@@ -129,7 +129,7 @@ Oculus360Photos::~Oculus360Photos()
 
 //============================================================================================
 
-void Oculus360Photos::OneTimeInit( const char * fromPackage, const char * launchIntentJSON, const char * launchIntentURI )
+void Oculus360Photos::OneTimeInit(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI)
 {
 	// This is called by the VR thread, not the java UI thread.
 	LOG( "--------------- Oculus360Photos OneTimeInit ---------------" );

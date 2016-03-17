@@ -57,7 +57,7 @@ public:
 						ModelManager( CinemaApp &cinema );
 						~ModelManager();
 
-	void				OneTimeInit( const char * launchIntent );
+	void				OneTimeInit(const VString &launchIntent );
 	void				OneTimeShutdown();
 
 	bool 				Command( const char * msg );

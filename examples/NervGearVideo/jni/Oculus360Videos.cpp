@@ -153,7 +153,7 @@ Oculus360Videos::~Oculus360Videos()
 }
 
 //============================================================================================
-void Oculus360Videos::OneTimeInit( const char * fromPackage, const char * launchIntentJSON, const char * launchIntentURI )
+void Oculus360Videos::OneTimeInit(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI)
 {
 	// This is called by the VR thread, not the java UI thread.
 	LOG( "--------------- Oculus360Videos OneTimeInit ---------------" );

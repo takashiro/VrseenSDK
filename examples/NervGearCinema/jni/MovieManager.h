@@ -56,7 +56,7 @@ public:
 							MovieManager( CinemaApp &cinema );
 							~MovieManager();
 
-	void					OneTimeInit( const char * launchIntent );
+	void					OneTimeInit(const VString &launchIntent );
 	void					OneTimeShutdown();
 
 	VArray<const MovieDef *>	GetMovieList( MovieCategory category ) const;

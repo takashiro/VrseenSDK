@@ -55,7 +55,7 @@ TheaterSelectionView::~TheaterSelectionView()
 {
 }
 
-void TheaterSelectionView::OneTimeInit( const char * launchIntent )
+void TheaterSelectionView::OneTimeInit( const VString &launchIntent )
 {
 	LOG( "TheaterSelectionView::OneTimeInit" );
 

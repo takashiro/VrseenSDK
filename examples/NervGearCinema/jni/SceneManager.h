@@ -1,20 +1,4 @@
-/************************************************************************************
-
-Filename    :   SceneManager.h
-Content     :	Handles rendering of current scene and movie.
-Created     :   September 3, 2013
-Authors     :	Jim Dosé, based on a fork of VrVideo.cpp from VrVideo by John Carmack.
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-This source code is licensed under the BSD-style license found in the
-LICENSE file in the Cinema/ directory. An additional grant
-of patent rights can be found in the PATENTS file in the same directory.
-
-*************************************************************************************/
-
-#if !defined( SceneManager_h )
-#define SceneManager_h
+#pragma once
 
 #include "MovieManager.h"
 #include "ModelView.h"
@@ -31,7 +15,7 @@ class SceneManager
 public:
 						SceneManager( CinemaApp &app_ );
 
-	void 				OneTimeInit( const char * launchIntent );
+    void 				OneTimeInit( const VString &launchIntent );
 	void				OneTimeShutdown();
 
 	Matrix4f 			DrawEyeView( const int eye, const float fovDegrees );
@@ -144,4 +128,3 @@ private:
 
 } // namespace OculusCinema
 
-#endif // SceneManager_h

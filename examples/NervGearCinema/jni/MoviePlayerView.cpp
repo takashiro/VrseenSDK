@@ -83,7 +83,7 @@ MoviePlayerView::~MoviePlayerView()
 
 //=========================================================================================
 
-void MoviePlayerView::OneTimeInit( const char * launchIntent )
+void MoviePlayerView::OneTimeInit( const VString & launchIntent )
 {
 	LOG( "MoviePlayerView::OneTimeInit" );
 

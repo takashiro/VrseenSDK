@@ -50,7 +50,8 @@ CinemaApp::CinemaApp() :
  * OneTimeInit
  *
  */
-void CinemaApp::OneTimeInit( const char * fromPackage, const char * launchIntentJSON, const char * launchIntentURI ) {
+void CinemaApp::OneTimeInit(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI)
+{
 	LOG( "--------------- CinemaApp OneTimeInit ---------------");
 
 	startTime = ovr_GetTimeInSeconds();
@@ -61,7 +62,7 @@ void CinemaApp::OneTimeInit( const char * fromPackage, const char * launchIntent
 
 	Native::OneTimeInit( app, ActivityClass );
 	CinemaStrings::OneTimeInit( *this );
-	shaderMgr.OneTimeInit( launchIntentURI );
+    shaderMgr.OneTimeInit( launchIntentURI );
 	modelMgr.OneTimeInit( launchIntentURI );
 	sceneMgr.OneTimeInit( launchIntentURI );
 	movieMgr.OneTimeInit( launchIntentURI );
