@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vglobal.h"
+#include "VString.h"
 
 #include <jni.h>
 
@@ -13,6 +14,8 @@ public:
     ~VMainActivity();
 
     void finishActivity();
+
+    VString getPackageCodePath() const;
 
 private:
     NV_DECLARE_PRIVATE

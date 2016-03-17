@@ -608,7 +608,7 @@ App::App(JNIEnv *jni, jobject activityObject, VrAppInterface &interface)
     exitOnDestroy = !isHybridApp;
 
 	// Get the path to the .apk and package name
-    d->packageCodePath = JniUtils::GetPackageCodePath(d->uiJni, d->vrActivityClass, d->javaObject);
+    d->packageCodePath = d->activity->getPackageCodePath();
     d->packageName = JniUtils::GetCurrentPackageName(d->uiJni, d->javaObject);
 
 	// Hook the App and AppInterface together

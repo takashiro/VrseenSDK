@@ -7,7 +7,6 @@
 
 #include "android/JniUtils.h"
 #include "VLog.h"
-#include "VString.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -53,6 +52,26 @@ void VMainActivity::finishActivity()
 {
     jmethodID method = d->getMethodID("finishActivity", "()V");
     d->jni->CallVoidMethod(d->activityObject, method);
+}
+
+VString VMainActivity::getPackageCodePath() const
+{
+    jmethodID getPackageCodePathId = d->jni->GetMethodID(d->activityClass, "getPackageCodePath", "()Ljava/lang/String;");
+    if (getPackageCodePathId == 0) {
+        vInfo("Failed to find getPackageCodePath on class" << (ulonglong) d->activityClass);
+        return VString();
+    }
+
+    VString packageCodePath = JniUtils::Convert(d->jni, (jstring) d->jni->CallObjectMethod(d->activityObject, getPackageCodePathId));
+    if (!d->jni->ExceptionOccurred()) {
+        vInfo("getPackageCodePath() = " << packageCodePath);
+        return packageCodePath;
+    } else {
+        d->jni->ExceptionClear();
+        vInfo("Cleared JNI exception");
+    }
+
+    return VString();
 }
 
 NV_NAMESPACE_END
