@@ -106,15 +106,15 @@ struct AtomicOpsRaw_4ByteImpl : public AtomicOpsRawBase
     // Use special defined for VC6, where volatile is not used and
     // InterlockedCompareExchange is declared incorrectly.
     typedef LONG T;
-#if defined(OVR_CC_MSVC) && (OVR_CC_MSVC < 1300)
-    typedef T* InterlockTPtr;
-    typedef LPVOID ET;
-    typedef ET* InterlockETPtr;
-#else
-    typedef volatile T* InterlockTPtr;
-    typedef T ET;
-    typedef InterlockTPtr InterlockETPtr;
-#endif
+    #if defined(OVR_CC_MSVC) && (OVR_CC_MSVC < 1300)
+        typedef T* InterlockTPtr;
+        typedef LPVOID ET;
+        typedef ET* InterlockETPtr;
+    #else
+        typedef volatile T* InterlockTPtr;
+        typedef T ET;
+        typedef InterlockTPtr InterlockETPtr;
+    #endif
     inline static T     Exchange_NoSync(volatile T* p, T val)            { return InterlockedExchange((InterlockTPtr)p, val); }
     inline static T     ExchangeAdd_NoSync(volatile T* p, T val)         { return InterlockedExchangeAdd((InterlockTPtr)p, val); }
     inline static bool  CompareAndSet_NoSync(volatile T* p, T c, T val)  { return InterlockedCompareExchange((InterlockETPtr)p, (ET)val, (ET)c) == (ET)c; }
@@ -257,12 +257,15 @@ struct AtomicOpsRaw_4ByteImpl : public AtomicOpsRawBase
     {
         UInt32 ret, dummy;
 
+        //把*i的值赋给ret并返回；把j的值赋给*i
         asm volatile("1:\n\t"
             "ldrex  %[r],[%[i]]\n\t"
             "strex  %[t],%[j],[%[i]]\n\t"
             "cmp    %[t],#0\n\t"
             "bne    1b\n\t"
-            : "+m" (*i), [r] "=&r" (ret), [t] "=&r" (dummy) : [i] "r" (i), [j] "r" (j) : "cc", "memory");
+            : "+m" (*i), [r] "=&r" (ret), [t] "=&r" (dummy)
+            : [i] "r" (i), [j] "r" (j)
+            : "cc", "memory");
 
         return ret;
     }
@@ -271,13 +274,16 @@ struct AtomicOpsRaw_4ByteImpl : public AtomicOpsRawBase
     {
         UInt32 ret, dummy, test;
 
+        //*i += j；成功返回0，否则，返回1
         asm volatile("1:\n\t"
             "ldrex  %[r],[%[i]]\n\t"
             "add    %[o],%[r],%[j]\n\t"
             "strex  %[t],%[o],[%[i]]\n\t"
             "cmp    %[t],#0\n\t"
             "bne    1b\n\t"
-            : "+m" (*i), [r] "=&r" (ret), [o] "=&r" (dummy), [t] "=&r" (test)  : [i] "r" (i), [j] "r" (j) : "cc", "memory");
+            : "+m" (*i), [r] "=&r" (ret), [o] "=&r" (dummy), [t] "=&r" (test)
+            : [i] "r" (i), [j] "r" (j)
+            : "cc", "memory");
 
         return ret;
     }
@@ -286,6 +292,8 @@ struct AtomicOpsRaw_4ByteImpl : public AtomicOpsRawBase
     {
         UInt32 ret = 1, dummy, test;
 
+        //if (*i == c){ *i = value; return 1;}
+        //else return 0;
         asm volatile("1:\n\t"
             "ldrex  %[o],[%[i]]\n\t"
             "cmp    %[o],%[c]\n\t"
@@ -294,7 +302,8 @@ struct AtomicOpsRaw_4ByteImpl : public AtomicOpsRawBase
             "cmp    %[r],#0\n\t"
             "bne    1b\n\t"
             "2:\n"
-            : "+m" (*i),[r] "=&r" (ret), [o] "=&r" (dummy), [t] "=&r" (test) : [i] "r" (i), [c] "r" (c), [v] "r" (value)
+            : "+m" (*i),[r] "=&r" (ret), [o] "=&r" (dummy), [t] "=&r" (test)
+            : [i] "r" (i), [c] "r" (c), [v] "r" (value)
             : "cc", "memory");
 
         return !ret;
@@ -482,12 +491,19 @@ struct AtomicOpsRaw_DefImpl : public O
     // If NoSync wrapped implementation may not be possible, it this block should be
     //  replaced with per-function implementation in O.
     // "AtomicOpsRaw_DefImpl<O>::" prefix in calls below.
+
+    //将val赋给*p，并返回*p的旧值
     inline static O_T   Exchange_Sync(volatile O_T* p, O_T val)                { O_FullSync    sync; OVR_UNUSED(sync); return AtomicOpsRaw_DefImpl<O>::Exchange_NoSync(p, val); }
     inline static O_T   Exchange_Release(volatile O_T* p, O_T val)             { O_ReleaseSync sync; OVR_UNUSED(sync); return AtomicOpsRaw_DefImpl<O>::Exchange_NoSync(p, val); }
     inline static O_T   Exchange_Acquire(volatile O_T* p, O_T val)             { O_AcquireSync sync; OVR_UNUSED(sync); return AtomicOpsRaw_DefImpl<O>::Exchange_NoSync(p, val); }
+
+    //*i += j；成功返回0，否则，返回1
     inline static O_T   ExchangeAdd_Sync(volatile O_T* p, O_T val)             { O_FullSync    sync; OVR_UNUSED(sync); return AtomicOpsRaw_DefImpl<O>::ExchangeAdd_NoSync(p, val); }
     inline static O_T   ExchangeAdd_Release(volatile O_T* p, O_T val)          { O_ReleaseSync sync; OVR_UNUSED(sync); return AtomicOpsRaw_DefImpl<O>::ExchangeAdd_NoSync(p, val); }
     inline static O_T   ExchangeAdd_Acquire(volatile O_T* p, O_T val)          { O_AcquireSync sync; OVR_UNUSED(sync); return AtomicOpsRaw_DefImpl<O>::ExchangeAdd_NoSync(p, val); }
+
+    //if (*i == c){ *i = value; return 1;}
+    //else return 0;
     inline static bool  CompareAndSet_Sync(volatile O_T* p, O_T c, O_T val)    { O_FullSync    sync; OVR_UNUSED(sync); return AtomicOpsRaw_DefImpl<O>::CompareAndSet_NoSync(p,c,val); }
     inline static bool  CompareAndSet_Release(volatile O_T* p, O_T c, O_T val) { O_ReleaseSync sync; OVR_UNUSED(sync); return AtomicOpsRaw_DefImpl<O>::CompareAndSet_NoSync(p,c,val); }
     inline static bool  CompareAndSet_Acquire(volatile O_T* p, O_T c, O_T val) { O_AcquireSync sync; OVR_UNUSED(sync); return AtomicOpsRaw_DefImpl<O>::CompareAndSet_NoSync(p,c,val); }
@@ -540,14 +556,20 @@ class AtomicOps
 
 public:
     // General purpose implementation for standard syncs.
+    //将val赋给*p，并返回*p的旧值
     inline static C     Exchange_Sync(volatile C* p, C val)             { C2T_union u; u.c = val; u.t = Ops::Exchange_Sync((PT)p, u.t); return u.c; }
     inline static C     Exchange_Release(volatile C* p, C val)          { C2T_union u; u.c = val; u.t = Ops::Exchange_Release((PT)p, u.t); return u.c; }
     inline static C     Exchange_Acquire(volatile C* p, C val)          { C2T_union u; u.c = val; u.t = Ops::Exchange_Acquire((PT)p, u.t); return u.c; }
     inline static C     Exchange_NoSync(volatile C* p, C val)           { C2T_union u; u.c = val; u.t = Ops::Exchange_NoSync((PT)p, u.t); return u.c; }
+
+    //*i += j；成功返回0，否则，返回1
     inline static C     ExchangeAdd_Sync(volatile C* p, C val)          { C2T_union u; u.c = val; u.t = Ops::ExchangeAdd_Sync((PT)p, u.t); return u.c; }
     inline static C     ExchangeAdd_Release(volatile C* p, C val)       { C2T_union u; u.c = val; u.t = Ops::ExchangeAdd_Release((PT)p, u.t); return u.c; }
     inline static C     ExchangeAdd_Acquire(volatile C* p, C val)       { C2T_union u; u.c = val; u.t = Ops::ExchangeAdd_Acquire((PT)p, u.t); return u.c; }
     inline static C     ExchangeAdd_NoSync(volatile C* p, C val)        { C2T_union u; u.c = val; u.t = Ops::ExchangeAdd_NoSync((PT)p, u.t); return u.c; }
+
+    //if (*i == c){ *i = value; return 1;}
+    //else return 0;
     inline static bool  CompareAndSet_Sync(volatile C* p, C c, C val)   { C2T_union u,cu; u.c = val; cu.c = c; return Ops::CompareAndSet_Sync((PT)p, cu.t, u.t); }
     inline static bool  CompareAndSet_Release(volatile C* p, C c, C val){ C2T_union u,cu; u.c = val; cu.c = c; return Ops::CompareAndSet_Release((PT)p, cu.t, u.t); }
     inline static bool  CompareAndSet_Relse(volatile C* p, C c, C val){ C2T_union u,cu; u.c = val; cu.c = c; return Ops::CompareAndSet_Acquire((PT)p, cu.t, u.t); }
