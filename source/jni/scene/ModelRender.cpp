@@ -191,7 +191,7 @@ struct bsort_t
 {
 	float						key;
 	const DrawMatrices * 		matrices;
-	const Array< Matrix4f > *	joints;
+	const VArray< Matrix4f > *	joints;
 	const SurfaceDef *			surface;
 	GLuint						textureOverload;	// if 0, there's no overload
 	bool						transparent;
@@ -242,7 +242,7 @@ int bsortComp( const void * p1, const void * p2 )
 	return -1;
 }
 
-const DrawSurfaceList & BuildDrawSurfaceList( const NervGear::Array<ModelState> & modelRenderList,
+const DrawSurfaceList & BuildDrawSurfaceList( const NervGear::VArray<ModelState> & modelRenderList,
 			const Matrix4f & viewMatrix, const Matrix4f & projectionMatrix )
 {
 	// A mobile GPU will be in trouble if it draws more than this.
@@ -258,7 +258,7 @@ const DrawSurfaceList & BuildDrawSurfaceList( const NervGear::Array<ModelState> 
 	int	cullCount = 0;
 
 	// Loop through all the models
-	for ( int modelNum = 0; modelNum < modelRenderList.sizeInt(); modelNum++ )
+	for ( int modelNum = 0; modelNum < modelRenderList.length(); modelNum++ )
 	{
 		const ModelState & modelState = modelRenderList[ modelNum ];
 		if ( modelState.Flags.Hide )
@@ -271,7 +271,7 @@ const DrawSurfaceList & BuildDrawSurfaceList( const NervGear::Array<ModelState> 
 		// most models will never have these
 		const int MAX_TEXTURE_OVERLOADS_PER_MODEL = 16;
 		int surfaceOverloads[MAX_TEXTURE_OVERLOADS_PER_MODEL] = { };
-		for ( int overloadIdx = 0; overloadIdx < modelState.SurfaceTextureOverloads.sizeInt(); ++overloadIdx )
+		for ( int overloadIdx = 0; overloadIdx < modelState.SurfaceTextureOverloads.length(); ++overloadIdx )
 		{
 			const SurfaceTextureOverload & overload = modelState.SurfaceTextureOverloads[overloadIdx];
 			if ( overload.SurfaceIndex >= MAX_TEXTURE_OVERLOADS_PER_MODEL )
@@ -292,7 +292,7 @@ const DrawSurfaceList & BuildDrawSurfaceList( const NervGear::Array<ModelState> 
 		matrices.Model = modelState.modelMatrix.Transposed();
 		matrices.Mvp = matrices.Model * vpMatrix;
 
-		for ( int surfaceNum = 0; surfaceNum < modelDef.surfaces.sizeInt(); surfaceNum++ ) {
+		for ( int surfaceNum = 0; surfaceNum < modelDef.surfaces.length(); surfaceNum++ ) {
 			const SurfaceDef & surfaceDef = modelDef.surfaces[ surfaceNum ];
 			const float sort = BoundsSortCullKey( surfaceDef.cullingBounds, matrices.Mvp );
 			if ( sort == 0 ) 
@@ -437,7 +437,7 @@ DrawCounters RenderSurfaceList( const DrawSurfaceList & drawSurfaceList ) {
 			{
 				if ( drawSurface.joints != NULL && drawSurface.joints->size() > 0 )
 				{
-					glUniformMatrix4fv( materialDef.uniformJoints, Alg::Min( drawSurface.joints->sizeInt(), MAX_JOINTS ), 0, &drawSurface.joints->at( 0 ).M[0][0] );
+					glUniformMatrix4fv( materialDef.uniformJoints, Alg::Min( drawSurface.joints->length(), MAX_JOINTS ), 0, &drawSurface.joints->at( 0 ).M[0][0] );
 				}
 				else
 				{
@@ -475,7 +475,7 @@ DrawCounters RenderSurfaceList( const DrawSurfaceList & drawSurfaceList ) {
 
 void ModelState::SetSurfaceTextureOverload( const int surfaceIndex, const GLuint textureId )
 {
-	for ( int i = 0; i < SurfaceTextureOverloads.sizeInt(); ++i )
+	for ( int i = 0; i < SurfaceTextureOverloads.length(); ++i )
 	{
 		if ( surfaceIndex == SurfaceTextureOverloads[i].SurfaceIndex )
 		{
@@ -491,7 +491,7 @@ void ModelState::SetSurfaceTextureOverload( const int surfaceIndex, const GLuint
 
 void ModelState::ClearSurfaceTextureOverload( const int surfaceIndex )
 {
-	for ( int i = 0; i < SurfaceTextureOverloads.sizeInt(); ++i )
+	for ( int i = 0; i < SurfaceTextureOverloads.length(); ++i )
 	{
 		if ( surfaceIndex == SurfaceTextureOverloads[i].SurfaceIndex )
 		{

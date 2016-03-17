@@ -108,12 +108,12 @@ const char* FolderName[VStandardPath::FolderTypeCount] =
         delete d;
     }
 
-    void VStandardPath::PushBackSearchPathIfValid( StorageType toStorage, FolderType toFolder, const char * subfolder, Array<VString> & searchPaths ) const
+    void VStandardPath::PushBackSearchPathIfValid(StorageType toStorage, FolderType toFolder, const char * subfolder, VArray<VString> &searchPaths ) const
 	{
 		PushBackSearchPathIfValidPermission( toStorage, toFolder, subfolder, R_OK, searchPaths );
 	}
 
-	void VStandardPath::PushBackSearchPathIfValidPermission( StorageType toStorage, FolderType toFolder, const char * subfolder, mode_t permission, Array<VString> & searchPaths ) const
+    void VStandardPath::PushBackSearchPathIfValidPermission(StorageType toStorage, FolderType toFolder, const char * subfolder, mode_t permission, VArray<VString> &searchPaths) const
 	{
 		VString checkPath;
 		if ( GetPathIfValidPermission( toStorage, toFolder, subfolder, permission, checkPath ) )
@@ -122,7 +122,7 @@ const char* FolderName[VStandardPath::FolderTypeCount] =
 		}
 	}
 
-	bool VStandardPath::GetPathIfValidPermission( StorageType toStorage, FolderType toFolder, const char * subfolder, mode_t permission, VString & outPath ) const
+    bool VStandardPath::GetPathIfValidPermission(StorageType toStorage, FolderType toFolder, const char * subfolder, mode_t permission, VString &outPath) const
 	{
         if ( d->storageFolderPaths[ toStorage ][ toFolder ].size() > 0 )
 		{
@@ -144,27 +144,26 @@ const char* FolderName[VStandardPath::FolderTypeCount] =
 		return false;
 	}
 
-	bool VStandardPath::HasStoragePath( const StorageType toStorage, const FolderType toFolder ) const
+    bool VStandardPath::HasStoragePath(const StorageType toStorage, const FolderType toFolder) const
 	{
         return ( d->storageFolderPaths[ toStorage ][ toFolder ].size() > 0 );
 	}
 
-	long long VStandardPath::GetAvailableInternalMemoryInBytes( JNIEnv * jni, jobject activityObj ) const
+    long long VStandardPath::GetAvailableInternalMemoryInBytes(JNIEnv * jni, jobject activityObj) const
 	{
         return (long long )( jni->CallStaticLongMethod( d->vrLibClass, d->internalCacheMemoryId, activityObj ) );
 	}
 
-	VString GetFullPath( const Array<VString>& searchPaths, const VString & relativePath )
+    VString GetFullPath(const VArray<VString> &searchPaths, const VString &relativePath)
 	{
 		if ( FileExists( relativePath ) )
 		{
 			return relativePath;
 		}
 
-		const int numSearchPaths = searchPaths.sizeInt();
-		for ( int index = 0; index < numSearchPaths; ++index )
-		{
-			const VString fullPath = searchPaths.at( index ) + VString( relativePath );
+        const int numSearchPaths = searchPaths.length();
+        for ( int index = 0; index < numSearchPaths; ++index) {
+            const VString fullPath = searchPaths.at(index) + relativePath;
 			if ( FileExists( fullPath ) )
 			{
 				return fullPath;
@@ -174,7 +173,7 @@ const char* FolderName[VStandardPath::FolderTypeCount] =
 		return VString();
 	}
 
-    bool GetFullPath( const Array<VString>& searchPaths, const VString &relativePath, char * outPath, const int outMaxLen )
+    bool GetFullPath( const VArray<VString> &searchPaths, const VString &relativePath, char *outPath, const int outMaxLen)
 	{
 		OVR_ASSERT( outPath != NULL && outMaxLen >= 1 );
 
@@ -184,7 +183,7 @@ const char* FolderName[VStandardPath::FolderTypeCount] =
 			return true;
 		}
 
-		for ( int i = 0; i < searchPaths.sizeInt(); ++i )
+        for ( int i = 0; i < searchPaths.length(); ++i )
 		{
             OVR_sprintf( outPath, outMaxLen, "%s%s", searchPaths[i].toCString(), relativePath.toCString() );
 			if ( FileExists( outPath ) )
@@ -197,7 +196,7 @@ const char* FolderName[VStandardPath::FolderTypeCount] =
 		return false;
 	}
 
-    bool GetFullPath( const Array<VString>& searchPaths, const VString &relativePath, VString & outPath )
+    bool GetFullPath(const VArray<VString> &searchPaths, const VString &relativePath, VString &outPath)
 	{
 		char largePath[1024];
 		bool result = GetFullPath( searchPaths, relativePath, largePath, sizeof( largePath ) );
@@ -208,10 +207,10 @@ const char* FolderName[VStandardPath::FolderTypeCount] =
 		return result;
 	}
 
-	bool ToRelativePath( const Array<VString>& searchPaths, char const * fullPath, char * outPath, const int outMaxLen )
+    bool ToRelativePath( const VArray<VString>& searchPaths, char const *fullPath, char *outPath, const int outMaxLen)
 	{
 		// check if the path starts with any of the search paths
-		const int n = searchPaths.sizeInt();
+        const int n = searchPaths.length();
 		for ( int i = 0; i < n; ++i )
 		{
             char const * path = searchPaths[i].toCString();
@@ -226,7 +225,7 @@ const char* FolderName[VStandardPath::FolderTypeCount] =
 		return false;
 	}
 
-	bool ToRelativePath( const Array<VString>& searchPaths, char const * fullPath, VString & outPath )
+    bool ToRelativePath(const VArray<VString>& searchPaths, char const *fullPath, VString &outPath )
 	{
 		char largePath[1024];
 		bool result = ToRelativePath( searchPaths, fullPath, largePath, sizeof( largePath ) );

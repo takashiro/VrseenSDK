@@ -1,7 +1,7 @@
 #if !defined( MovieSelectionView_h )
 #define MovieSelectionView_h
 
-#include <Array.h>
+#include <VArray.h>
 
 #include "Lerp.h"
 #include "View.h"
@@ -38,7 +38,7 @@ public:
 	virtual bool						Command( const char * msg );
 	virtual bool 						OnKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType );
 
-    void 								SetMovieList( const Array<const MovieDef *> &movies, const MovieDef *nextMovie );
+    void 								SetMovieList( const VArray<const MovieDef *> &movies, const MovieDef *nextMovie );
 
 	void 								SelectMovie( void );
 	void 								SelectionHighlighted( bool isHighlighted );
@@ -112,15 +112,15 @@ private:
 	Lerp								SelectionFader;
 
 	CarouselBrowserComponent *			MovieBrowser;
-	Array<CarouselItem *> 				MovieBrowserItems;
-	Array<PanelPose>					MoviePanelPositions;
+	VArray<CarouselItem *> 				MovieBrowserItems;
+	VArray<PanelPose>					MoviePanelPositions;
 
-    Array<CarouselItemComponent *>	 	MoviePosterComponents;
+    VArray<CarouselItemComponent *>	 	MoviePosterComponents;
 
-	Array<MovieCategoryButton>			Categories;
+	VArray<MovieCategoryButton>			Categories;
     MovieCategory			 			CurrentCategory;
 
-	Array<const MovieDef *> 			MovieList;
+	VArray<const MovieDef *> 			MovieList;
 	int									MoviesIndex;
 
 	const MovieDef *					LastMovieDisplayed;

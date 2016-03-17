@@ -4,8 +4,7 @@
 
 // Use explicit path for FbxConvert
 #include "VMath.h"
-#include "Array.h"
-
+#include "VArray.h"
 NV_NAMESPACE_BEGIN
 
 /*
@@ -86,12 +85,12 @@ public:
 
 public:
 	kdtree_header_t			header;
-	Array< Vector3f >		vertices;
-	Array< Vector2f >		uvs;
-	Array< int >			indices;
-	Array< kdtree_node_t >	nodes;
-	Array< kdtree_leaf_t >	leafs;
-	Array< int >			overflow;
+	VArray< Vector3f >		vertices;
+	VArray< Vector2f >		uvs;
+	VArray< int >			indices;
+	VArray< kdtree_node_t >	nodes;
+	VArray< kdtree_leaf_t >	leafs;
+	VArray< int >			overflow;
 };
 
 NV_NAMESPACE_END

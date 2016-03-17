@@ -28,7 +28,7 @@ namespace NervGear {
 		, m_app( app )
 	{
 		// Init with empty root
-		init( m_app->GetVRMenuMgr(), m_app->GetDefaultFont(), 0.0f, VRMenuFlags_t(), Array< VRMenuComponent* >() );
+		init( m_app->GetVRMenuMgr(), m_app->GetDefaultFont(), 0.0f, VRMenuFlags_t(), VArray< VRMenuComponent* >() );
 	}
 
 	OvrOutOfSpaceMenu * OvrOutOfSpaceMenu::Create( App * app )
@@ -39,7 +39,7 @@ namespace NervGear {
 	void OvrOutOfSpaceMenu::buildMenu( int memoryInKB )
 	{
 		const VRMenuFontParms fontParms( true, true, false, false, true, 0.505f, 0.43f, 1.0f );
-		Array< VRMenuObjectParms const * > parms;
+		VArray< VRMenuObjectParms const * > parms;
 		int menuId = 9000;
 
 		// ---
@@ -50,7 +50,7 @@ namespace NervGear {
 					"", SURFACE_TEXTURE_MAX,
 					"", SURFACE_TEXTURE_MAX );
 			VRMenuObjectParms iconParms(
-					VRMENU_STATIC, Array< VRMenuComponent* >(), iconSurfParms, "",
+					VRMENU_STATIC, VArray< VRMenuComponent* >(), iconSurfParms, "",
 					Posef( Quatf(), Vector3f( 0.0f, CENTER_TO_ICON_Y_OFFSET, 0.0f ) ),
 					Vector3f( 1.0f ), fontParms, VRMenuId_t( ++menuId ),
 					VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_ALL ),
@@ -78,7 +78,7 @@ namespace NervGear {
 
 			VRMenuObjectParms titleParms(
 				VRMENU_STATIC,
-				Array< VRMenuComponent* >(),
+				VArray< VRMenuComponent* >(),
 				VRMenuSurfaceParms(),
                 outOfSpaceMsg.toCString(),
 				Posef( Quatf(), Vector3f( 0.0f, CENTER_TO_TEXT_Y_OFFSET, 0.0f ) ),

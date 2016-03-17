@@ -152,14 +152,14 @@ void TheaterSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, Bitmap
 	Vector3f up( 0.0f, 1.0f, 0.0f );
 	Vector3f defaultScale( 1.0f );
 
-    Array< VRMenuObjectParms const * > parms;
+    VArray< VRMenuObjectParms const * > parms;
 
 	VRMenuFontParms fontParms( true, true, false, false, false, 1.0f );
 
 	Quatf orientation( Vector3f( 0.0f, 1.0f, 0.0f ), 0.0f );
 	Vector3f centerPos( 0.0f, 0.0f, 0.0f );
 
-	VRMenuObjectParms centerRootParms( VRMENU_CONTAINER, Array< VRMenuComponent* >(), VRMenuSurfaceParms(), "CenterRoot",
+	VRMenuObjectParms centerRootParms( VRMENU_CONTAINER, VArray< VRMenuComponent* >(), VRMenuSurfaceParms(), "CenterRoot",
 			Posef( orientation, centerPos ), Vector3f( 1.0f, 1.0f, 1.0f ), fontParms,
 			ID_CENTER_ROOT, VRMenuObjectFlags_t(), VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
     parms.append( &centerRootParms );
@@ -167,7 +167,7 @@ void TheaterSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, Bitmap
 	// title
 	const Posef titlePose( Quatf( Vector3f( 0.0f, 1.0f, 0.0f ), 0.0f ), Vector3f( 0.0f, 0.0f, 0.0f ) );
 
-	VRMenuObjectParms titleRootParms( VRMENU_CONTAINER, Array< VRMenuComponent* >(), VRMenuSurfaceParms(),
+	VRMenuObjectParms titleRootParms( VRMENU_CONTAINER, VArray< VRMenuComponent* >(), VRMenuSurfaceParms(),
 			"TitleRoot", titlePose, defaultScale, fontParms, ID_TITLE_ROOT,
 			VRMenuObjectFlags_t(), VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 
@@ -187,7 +187,7 @@ void TheaterSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, Bitmap
         Theaters.append( item );
 	}
 
-	Array<PanelPose> panelPoses;
+	VArray<PanelPose> panelPoses;
 
     panelPoses.append( PanelPose( Quatf( up, 0.0f ), Vector3f( -2.85f, 1.8f, -5.8f ), Vector4f( 0.0f, 0.0f, 0.0f, 0.0f ) ) );
     panelPoses.append( PanelPose( Quatf( up, 0.0f ), Vector3f( -1.90f, 1.8f, -5.0f ), Vector4f( 0.25f, 0.25f, 0.25f, 1.0f ) ) );
@@ -210,8 +210,8 @@ void TheaterSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, Bitmap
 	GLuint selectionTexture = LoadTextureFromApplicationPackage( "assets/VoidTheater.png",
 			TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), selectionWidth, selectionHeight );
 
-    int centerIndex = panelPoses.sizeInt() / 2;
-    for ( int i = 0; i < panelPoses.sizeInt(); ++i )
+    int centerIndex = panelPoses.length() / 2;
+    for ( int i = 0; i < panelPoses.length(); ++i )
 	{
 		VRMenuSurfaceParms panelSurfParms( "",
 				selectionTexture, selectionWidth, selectionHeight, SURFACE_TEXTURE_DIFFUSE,
@@ -221,7 +221,7 @@ void TheaterSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, Bitmap
 	    VRMenuId_t panelId = VRMenuId_t( ID_ICONS.Get() + i );
 		Quatf rot( up, 0.0f );
 		Posef panelPose( rot, fwd );
-		VRMenuObjectParms * p = new VRMenuObjectParms( VRMENU_BUTTON, Array< VRMenuComponent* >(),
+		VRMenuObjectParms * p = new VRMenuObjectParms( VRMENU_BUTTON, VArray< VRMenuComponent* >(),
 				panelSurfParms, NULL, panelPose, defaultScale, fontParms, panelId,
 				( i == centerIndex ) ? VRMenuObjectFlags_t( VRMENUOBJECT_FLAG_NO_DEPTH ) : VRMenuObjectFlags_t( VRMENUOBJECT_FLAG_NO_FOCUS_GAINED ) | VRMENUOBJECT_FLAG_NO_DEPTH,
 				VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
@@ -240,9 +240,9 @@ void TheaterSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, Bitmap
     SelectionObject->setLocalBoundsExpand( selectionBoundsExpandMin, selectionBoundsExpandMax );
     SelectionObject->addFlags( VRMENUOBJECT_HIT_ONLY_BOUNDS );
 
-	Array<VRMenuObject *> menuObjs;
-	Array<CarouselItemComponent *> menuComps;
-    for ( int i = 0; i < panelPoses.sizeInt(); ++i )
+	VArray<VRMenuObject *> menuObjs;
+	VArray<CarouselItemComponent *> menuComps;
+    for ( int i = 0; i < panelPoses.length(); ++i )
 	{
         menuHandle_t posterImageHandle = CenterRoot->childHandleForId( menuMgr, VRMenuId_t( ID_ICONS.Get() + i ) );
         VRMenuObject *posterImage = menuMgr.toObject( posterImageHandle );
@@ -263,7 +263,7 @@ void TheaterSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, Bitmap
 
 		VRMenuFontParms titleFontParms( true, true, false, false, false, 1.3f );
 
-		VRMenuObjectParms p( VRMENU_STATIC, Array< VRMenuComponent* >(),
+		VRMenuObjectParms p( VRMENU_STATIC, VArray< VRMenuComponent* >(),
 				VRMenuSurfaceParms(), CinemaStrings::TheaterSelection_Title.toCString(), panelPose, defaultScale, titleFontParms, VRMenuId_t( ID_TITLE_ROOT.Get() + 1 ),
 				VRMenuObjectFlags_t(), VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 
@@ -307,7 +307,7 @@ void TheaterSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, Bitmap
 			swipePose.Position.x = ( ( selectionWidth + swipeIconLeftWidth * ( i + 2 ) ) * -0.5f ) * VRMenuObject::DEFAULT_TEXEL_SCALE;
 			swipePose.Position.z += 0.01f * ( float )i;
 
-			Array< VRMenuComponent* > leftComps;
+			VArray< VRMenuComponent* > leftComps;
             leftComps.append( new SwipeHintComponent( TheaterBrowser, false, 1.3333f, 0.4f + ( float )i * 0.13333f, 5.0f ) );
 
 			VRMenuObjectParms * swipeIconLeftParms = new VRMenuObjectParms( VRMENU_BUTTON, leftComps,
@@ -319,7 +319,7 @@ void TheaterSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, Bitmap
 
 			swipePose.Position.x = ( ( selectionWidth + swipeIconRightWidth * ( i + 2 ) ) * 0.5f ) * VRMenuObject::DEFAULT_TEXEL_SCALE;
 
-			Array< VRMenuComponent* > rightComps;
+			VArray< VRMenuComponent* > rightComps;
             rightComps.append( new SwipeHintComponent( TheaterBrowser, true, 1.3333f, 0.4f + ( float )i * 0.13333f, 5.0f ) );
 
 			VRMenuObjectParms * swipeIconRightParms = new VRMenuObjectParms( VRMENU_STATIC, rightComps,
@@ -373,9 +373,9 @@ Matrix4f TheaterSelectionView::Frame( const VrFrame & vrFrame )
 	int selectedItem = TheaterBrowser->GetSelection();
 	if ( SelectedTheater != selectedItem )
 	{
-        if ( ( selectedItem >= 0 ) && ( selectedItem < Theaters.sizeInt() ) )
+        if ( ( selectedItem >= 0 ) && ( selectedItem < Theaters.length() ) )
 		{
-            LOG( "Select: %d, %d, %d, %d", selectedItem, SelectedTheater, Theaters.sizeInt(), Cinema.modelMgr.GetTheaterCount() );
+            LOG( "Select: %d, %d, %d, %d", selectedItem, SelectedTheater, Theaters.length(), Cinema.modelMgr.GetTheaterCount() );
 			SelectedTheater = selectedItem;
 			SelectTheater( SelectedTheater );
 		}

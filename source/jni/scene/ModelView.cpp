@@ -111,7 +111,7 @@ OvrSceneView::OvrSceneView() :
 
 int OvrSceneView::AddModel( ModelInScene * model )
 {
-	const int modelsSize = Models.sizeInt();
+	const int modelsSize = Models.length();
 
 	// scan for a NULL entry
 	for ( int i = 0; i < modelsSize; ++i )
@@ -125,7 +125,7 @@ int OvrSceneView::AddModel( ModelInScene * model )
 
 	Models.append( model );
 
-	return Models.sizeInt() - 1;
+	return Models.length() - 1;
 }
 
 void OvrSceneView::RemoveModelIndex( int index )
@@ -183,7 +183,7 @@ void OvrSceneView::SetWorldModel( ModelFile & world )
 {
     vInfo("OvrSceneView::SetWorldModel(" << world.FileName << ")");
 
-	if ( FreeWorldModelOnChange && Models.sizeInt() > 0 )
+	if ( FreeWorldModelOnChange && Models.length() > 0 )
 	{
 		delete WorldModel.Definition;
 		FreeWorldModelOnChange = false;
@@ -262,17 +262,17 @@ Matrix4f OvrSceneView::DrawEyeView( const int eye, const float fovDegrees ) cons
 	(void)RenderSurfaceList( surfs );
 
 	// TODO: sort the emit surfaces with the model based surfaces
-	if ( EmitList.sizeInt() > 0 )
+	if ( EmitList.length() > 0 )
 	{
 		DrawSurfaceList	emits;
 		emits.drawSurfaces = &EmitList[0];
-		emits.numDrawSurfaces = EmitList.sizeInt();
+		emits.numDrawSurfaces = EmitList.length();
 		emits.projectionMatrix = projectionMatrix;
 		emits.viewMatrix = viewMatrix;
 
 		const Matrix4f vpMatrix = ( projectionMatrix * viewMatrix ).Transposed();
 
-		for ( int i = 0 ; i < EmitList.sizeInt() ; i++ )
+		for ( int i = 0 ; i < EmitList.length() ; i++ )
 		{
 			DrawMatrices & matrices = *(DrawMatrices *)EmitList[i].matrices;
 			matrices.Mvp = matrices.Model * vpMatrix;
@@ -440,7 +440,7 @@ void OvrSceneView::UpdateSceneModels( const VrFrame vrFrame, const long long sup
 	// Build the packed array of ModelState to pass to the renderer for both eyes
 	RenderModels.resize( 0 );
 
-	for ( int i = 0; i < Models.sizeInt(); ++i )
+	for ( int i = 0; i < Models.length(); ++i )
 	{
 		if ( Models[i] != NULL && Models[i]->DontRenderForClientUid != supressModelsWithClientId )
 		{

@@ -38,8 +38,7 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     core/VByteArray.cpp \
                     core/VChar.cpp \
                     core/VEvent.cpp \
-                    core/File.cpp \
-                    core/FileFILE.cpp \
+                    io/VFileOperation.cpp \
                     core/VJson.cpp \
                     core/Log.cpp \
                     core/VLog.cpp \
@@ -50,12 +49,12 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     core/VStandardPath.cpp \
                     core/Std.cpp \
                     core/VString.cpp \
-                    core/SysFile.cpp \
+                    io/VSysFile.cpp \
                     core/System.cpp \
                     core/ThreadCommandQueue.cpp \
                     core/VThread.cpp \
                     core/VTimer.cpp \
-                    core/BinaryFile.cpp \
+                    io/VBinaryFile.cpp \
                     core/MappedFile.cpp \
                     core/MemBuffer.cpp \
                     core/VMutex.cpp \
@@ -163,7 +162,7 @@ LOCAL_SRC_FILES +=	3rdParty/minizip/ioapi.c \
 LOCAL_C_INCLUDES  += $(LOCAL_PATH)/core/capture
 LOCAL_SRC_FILES   += $(wildcard $(realpath $(LOCAL_PATH))/core/capture/*.cpp)
 LOCAL_CFLAGS      += -DOVR_ENABLE_CAPTURE=1
-
+LOCAL_CPPFLAGS += -std=c++0x
 
 # OpenGL ES 3.0
 LOCAL_EXPORT_LDLIBS := -lGLESv3

@@ -771,7 +771,7 @@ HIDDeviceManager* HIDDeviceManager::CreateInternal(Android::DeviceManager* devMa
 }
 
 //-----------------------------------------------------------------------------
-void HIDDeviceManager::getCurrentDevices(Array<VString>* deviceList)
+void HIDDeviceManager::getCurrentDevices(VArray<VString>* deviceList)
 {
 	deviceList->clear();
 
@@ -801,7 +801,7 @@ void HIDDeviceManager::scanForDevices(bool firstScan)
 {
 
 	// Create current device list.
-	Array<VString> currentDeviceList;
+	VArray<VString> currentDeviceList;
 	getCurrentDevices(&currentDeviceList);
 
 	if (firstScan)
@@ -811,14 +811,14 @@ void HIDDeviceManager::scanForDevices(bool firstScan)
 	}
 
 	// Check for new devices.
-    for (Array<VString>::Iterator itCurrent = currentDeviceList.begin();
+    for (VArray<VString>::iterator itCurrent = currentDeviceList.begin();
     			itCurrent != currentDeviceList.end(); ++itCurrent)
 	{
     	VString devNodePath = *itCurrent;
     	bool found = false;
 
     	// Was it in the previous scan?
-    	for (Array<VString>::Iterator itScanned = ScannedDevicePaths.begin();
+    	for (VArray<VString>::iterator itScanned = ScannedDevicePaths.begin();
         		itScanned != ScannedDevicePaths.end(); ++itScanned)
     	{
         	if (devNodePath.icompare(*itScanned) == 0)
@@ -880,7 +880,7 @@ void HIDDeviceManager::scanForDevices(bool firstScan)
 //-----------------------------------------------------------------------------
 void HIDDeviceManager::removeDevicePath(HIDDevice* device)
 {
-	for ( int i = 0; i < ScannedDevicePaths.sizeInt(); i++ )
+	for ( int i = 0; i < ScannedDevicePaths.length(); i++ )
 	{
 		if ( ScannedDevicePaths[i] == device->DevNodePath )
 		{

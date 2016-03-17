@@ -3,7 +3,7 @@
 #include "vglobal.h"
 
 #include "VMath.h"
-#include "Array.h"
+#include "VArray.h"
 #include "GlGeometry.h"
 #include "GlProgram.h"
 #include "GlTexture.h"
@@ -157,7 +157,7 @@ public:
 	Vector2f	SlotSize;			// on a unit circle (radians)
 	int			LayoutRows;
 	float		RowOffset;
-	Array<SwipePanel>	Panels;
+	VArray<SwipePanel>	Panels;
 
 	bool		EverOpened;			// if it has been opened before, subsequent opens can return to same position
 	int			AnimationCenterPanel[2];
@@ -201,7 +201,7 @@ public:
 		bool			Selected;
 	};
 
-	Array< PanelRenderInfo >	PanelRenderList;	// transforms for all panels, calculated in Frame() so it's not done for each eye in Draw()
+	VArray< PanelRenderInfo >	PanelRenderList;	// transforms for all panels, calculated in Frame() so it's not done for each eye in Draw()
 	Matrix4f					SelectionTransform;	// transform of the selection highlight
 };
 

@@ -7,7 +7,7 @@ namespace OculusCinema {
 
 //==============================================================
 // CarouselBrowserComponent
-CarouselBrowserComponent::CarouselBrowserComponent( const Array<CarouselItem *> &items, const Array<PanelPose> &panelPoses ) :
+CarouselBrowserComponent::CarouselBrowserComponent( const VArray<CarouselItem *> &items, const VArray<PanelPose> &panelPoses ) :
 	VRMenuComponent( VRMenuEventFlags_t( VRMENU_EVENT_FRAME_UPDATE ) | 	VRMENU_EVENT_TOUCH_DOWN |
 		VRMENU_EVENT_SWIPE_FORWARD | VRMENU_EVENT_SWIPE_BACK | VRMENU_EVENT_TOUCH_UP | VRMENU_EVENT_OPENED | VRMENU_EVENT_CLOSED ),
 		SelectPressed( false ), PositionScale( 1.0f ), Position( 0.0f ), TouchDownTime( -1.0 ),
@@ -45,18 +45,18 @@ eMsgStatus CarouselBrowserComponent::onEventImpl( App * app, VrFrame const & vrF
 	}
 }
 
-void CarouselBrowserComponent::SetPanelPoses( OvrVRMenuMgr & menuMgr, VRMenuObject * self, const Array<PanelPose> &panelPoses )
+void CarouselBrowserComponent::SetPanelPoses( OvrVRMenuMgr & menuMgr, VRMenuObject * self, const VArray<PanelPose> &panelPoses )
 {
 	PanelPoses = panelPoses;
 	UpdatePanels( menuMgr, self );
 }
 
-void CarouselBrowserComponent::SetMenuObjects( const Array<VRMenuObject *> &menuObjs, const Array<CarouselItemComponent *> &menuComps )
+void CarouselBrowserComponent::SetMenuObjects( const VArray<VRMenuObject *> &menuObjs, const VArray<CarouselItemComponent *> &menuComps )
 {
 	MenuObjs = menuObjs;
 	MenuComps = menuComps;
 
-    assert( MenuObjs.sizeInt() == MenuObjs.sizeInt() );
+    assert( MenuObjs.length() == MenuObjs.length() );
 }
 
 PanelPose CarouselBrowserComponent::GetPosition( const float t )
@@ -70,11 +70,11 @@ PanelPose CarouselBrowserComponent::GetPosition( const float t )
 	{
 		pose = PanelPoses[ 0 ];
 	}
-    else if ( ( index == PanelPoses.sizeInt() - 1 ) && ( fabs( frac ) <= 0.00001f ) )
+    else if ( ( index == PanelPoses.length() - 1 ) && ( fabs( frac ) <= 0.00001f ) )
 	{
-        pose = PanelPoses[ PanelPoses.sizeInt() - 1 ];
+        pose = PanelPoses[ PanelPoses.length() - 1 ];
 	}
-    else if ( index >= PanelPoses.sizeInt() - 1 )
+    else if ( index >= PanelPoses.length() - 1 )
 	{
 		pose.Orientation = Quatf();
 		pose.Position = Vector3f( 0.0f, 0.0f, 0.0f );
@@ -94,7 +94,7 @@ PanelPose CarouselBrowserComponent::GetPosition( const float t )
 
 void CarouselBrowserComponent::SetSelectionIndex( const int selectedIndex )
 {
-    if ( ( selectedIndex >= 0 ) && ( selectedIndex < Items.sizeInt() ) )
+    if ( ( selectedIndex >= 0 ) && ( selectedIndex < Items.length() ) )
 	{
 		Position = selectedIndex;
 	}
@@ -111,7 +111,7 @@ void CarouselBrowserComponent::SetSelectionIndex( const int selectedIndex )
 int CarouselBrowserComponent::GetSelection() const
 {
 	int itemIndex = floor( Position + 0.5f );
-    if ( ( itemIndex >= 0 ) && ( itemIndex < Items.sizeInt() ) )
+    if ( ( itemIndex >= 0 ) && ( itemIndex < Items.length() ) )
 	{
 		return itemIndex;
 	}
@@ -138,20 +138,20 @@ bool CarouselBrowserComponent::CanSwipeBack() const
 bool CarouselBrowserComponent::CanSwipeForward() const
 {
 	float nextPos = floor( Position ) + 1.0f;
-    return ( nextPos < Items.sizeInt() );
+    return ( nextPos < Items.length() );
 }
 
 void CarouselBrowserComponent::UpdatePanels( OvrVRMenuMgr & menuMgr, VRMenuObject * self )
 {
 	int centerIndex = floor( Position );
 	float offset = centerIndex - Position;
-    int leftIndex = centerIndex - PanelPoses.sizeInt() / 2;
+    int leftIndex = centerIndex - PanelPoses.length() / 2;
 
 	int itemIndex = leftIndex;
-    for( int i = 0; i < MenuObjs.sizeInt(); i++, itemIndex++ )
+    for( int i = 0; i < MenuObjs.length(); i++, itemIndex++ )
 	{
 		PanelPose pose = GetPosition( ( float )i + offset );
-        if ( ( itemIndex < 0 ) || ( itemIndex >= Items.sizeInt() ) || ( ( offset < 0.0f ) && ( i == 0 ) ) )
+        if ( ( itemIndex < 0 ) || ( itemIndex >= Items.length() ) || ( ( offset < 0.0f ) && ( i == 0 ) ) )
 		{
 			MenuComps[ i ]->SetItem( MenuObjs[ i ], NULL, pose );
 		}
@@ -215,7 +215,7 @@ eMsgStatus CarouselBrowserComponent::SwipeForward( App * app, VrFrame const & vr
 	if ( !Swiping )
 	{
 		float nextPos = floor( Position ) + 1.0f;
-        if ( nextPos < Items.sizeInt() )
+        if ( nextPos < Items.length() )
 		{
 			app->PlaySound( "carousel_move" );
 			PrevPosition = Position;
@@ -297,7 +297,7 @@ eMsgStatus CarouselBrowserComponent::Closed( App * app, VrFrame const & vrFrame,
 	return MSG_STATUS_ALIVE;
 }
 
-void CarouselBrowserComponent::SetItems( const Array<CarouselItem *> &items )
+void CarouselBrowserComponent::SetItems( const VArray<CarouselItem *> &items )
 {
 	Items = items;
 	SelectPressed = false;

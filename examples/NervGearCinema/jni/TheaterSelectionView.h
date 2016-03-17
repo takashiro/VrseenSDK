@@ -1,7 +1,7 @@
 #if !defined( TheaterSelectionView_h )
 #define TheaterSelectionView_h
 
-#include <Array.h>
+#include <VArray.h>
 #include <gui/GuiSys.h>
 
 #include "View.h"
@@ -49,7 +49,7 @@ private:
 	VRMenuObject * 				SelectionObject;
 
 	CarouselBrowserComponent *	TheaterBrowser;
-    Array<CarouselItem *> 		Theaters;
+    VArray<CarouselItem *> 		Theaters;
 
 	int							SelectedTheater;
 

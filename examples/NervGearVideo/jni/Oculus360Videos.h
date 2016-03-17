@@ -98,7 +98,7 @@ private:
 	GlProgram			FadedPanoramaProgram;
 	GlProgram			SingleColorTextureProgram;
 
-	Array< VString > 	SearchPaths;
+	VArray< VString > 	SearchPaths;
 	OvrVideosMetaData *	MetaData;
 	VideoBrowser *		Browser;
 	OvrVideoMenu *		VideoMenu;

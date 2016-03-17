@@ -16,7 +16,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "Types.h"
 #include "VFlags.h"
 #include "GlGeometry.h" // For TriangleIndex
-
+//#include "VArray.h"
 NV_NAMESPACE_BEGIN
 
 class OvrDebugLines;
@@ -95,12 +95,12 @@ class OvrTriCollisionPrimitive : public OvrCollisionPrimitive
 {
 public:
 	OvrTriCollisionPrimitive();
-	OvrTriCollisionPrimitive( Array< Vector3f > const & vertices, Array< TriangleIndex > const & indices,
+	OvrTriCollisionPrimitive( VArray< Vector3f > const & vertices, VArray< TriangleIndex > const & indices,
 			ContentFlags_t const contents );
 
 	virtual	~OvrTriCollisionPrimitive();
 
-    void				init( Array< Vector3f > const & vertices, Array< TriangleIndex > const & indices,
+    void				init( VArray< Vector3f > const & vertices, VArray< TriangleIndex > const & indices,
 								ContentFlags_t const contents );
 
     virtual  bool		intersectRay( Vector3f const & start, Vector3f const & dir, Posef const & pose,
@@ -116,8 +116,8 @@ public:
     virtual void		debugRender( OvrDebugLines & debugLines, Posef & pose ) const;
 
 private:
-    Array< Vector3f >		m_vertices;	// vertices for all triangles
-    Array< TriangleIndex >	m_indices;	// indices indicating which vertices make up each triangle
+    VArray< Vector3f >		m_vertices;	// vertices for all triangles
+    VArray< TriangleIndex >	m_indices;	// indices indicating which vertices make up each triangle
 };
 
 NV_NAMESPACE_END

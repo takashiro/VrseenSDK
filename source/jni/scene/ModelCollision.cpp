@@ -15,7 +15,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 
 #include "Alg.h"
-#include "Array.h"
+#include "VArray.h"
+#include "VArray.h"
 #include "VString.h"
 
 namespace NervGear {
@@ -30,7 +31,7 @@ const float COLLISION_EPSILON = 0.01f;
 
 bool CollisionPolytope::TestPoint( const Vector3f & p ) const
 {
-    for ( int i = 0; i < Planes.sizeInt(); i++ )
+    for ( int i = 0; i < Planes.length(); i++ )
 	{
         if ( Planes[i].TestSide( p ) > 0.0f )
         {
@@ -48,7 +49,7 @@ bool CollisionPolytope::TestRay( const Vector3f & start, const Vector3f & dir, f
     float cdot1 = 0.0f;
 	float cdot2 = 0.0f;
 
-    for ( int i = 0; i < Planes.sizeInt(); i++ )
+    for ( int i = 0; i < Planes.length(); i++ )
     {
         const float dot1 = Planes[i].TestSide( start );
         if ( dot1 > 0.0f )
@@ -101,7 +102,7 @@ bool CollisionPolytope::PopOut( Vector3f & p ) const
 {
 	float minDist = FLT_MAX;
 	int crossing = -1;
-	for ( int i = 0; i < Planes.sizeInt(); i++ )
+	for ( int i = 0; i < Planes.length(); i++ )
 	{
 	    float dist = Planes[i].TestSide( p );
 		if ( dist > 0.0f )
@@ -125,7 +126,7 @@ bool CollisionPolytope::PopOut( Vector3f & p ) const
 
 bool CollisionModel::TestPoint( const Vector3f & p ) const
 {
-	for ( int i = 0; i < Polytopes.sizeInt(); i++ )
+	for ( int i = 0; i < Polytopes.length(); i++ )
 	{
 		if ( Polytopes[i].TestPoint( p ) )
 		{
@@ -138,7 +139,7 @@ bool CollisionModel::TestPoint( const Vector3f & p ) const
 bool CollisionModel::TestRay( const Vector3f & start, const Vector3f & dir, float & length, Planef * plane ) const
 {
 	bool clipped = false;
-	for ( int i = 0; i < Polytopes.sizeInt(); i++ )
+	for ( int i = 0; i < Polytopes.length(); i++ )
 	{
 		Planef clipPlane;
 		float clipLength = length;
@@ -160,7 +161,7 @@ bool CollisionModel::TestRay( const Vector3f & start, const Vector3f & dir, floa
 
 bool CollisionModel::PopOut( Vector3f & p ) const
 {
-	for ( int i = 0; i < Polytopes.sizeInt(); i++ )
+	for ( int i = 0; i < Polytopes.length(); i++ )
 	{
 		if ( Polytopes[i].PopOut( p ) )
 		{
@@ -218,7 +219,7 @@ Vector3f SlideMove(
 		}
 	}
 
-	if ( groundCollisionModel.Polytopes.sizeInt() != 0 )
+	if ( groundCollisionModel.Polytopes.length() != 0 )
 	{
 		// Check for collisions at foot level, which allows following terrain.
 		float downDistance = 10.0f;

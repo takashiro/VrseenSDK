@@ -77,7 +77,7 @@ void MovieManager::OneTimeInit( const char * launchIntent )
 
 	LoadMovies();
 
-    LOG( "MovieManager::OneTimeInit: %i movies loaded, %3.1f seconds", Movies.sizeInt(), ovr_GetTimeInSeconds() - start );
+    LOG( "MovieManager::OneTimeInit: %i movies loaded, %3.1f seconds", Movies.length(), ovr_GetTimeInSeconds() - start );
 }
 
 void MovieManager::OneTimeShutdown()
@@ -91,8 +91,8 @@ void MovieManager::LoadMovies()
 
 	const double start = ovr_GetTimeInSeconds();
 
-	Array<VString> movieFiles = ScanMovieDirectories();
-    LOG( "%i movies scanned, %3.1f seconds", movieFiles.sizeInt(), ovr_GetTimeInSeconds() - start );
+	VArray<VString> movieFiles = ScanMovieDirectories();
+    LOG( "%i movies scanned, %3.1f seconds", movieFiles.length(), ovr_GetTimeInSeconds() - start );
 
     for( uint i = 0; i < movieFiles.size(); i++ )
 	{
@@ -128,7 +128,7 @@ void MovieManager::LoadMovies()
 		LoadPoster( movie );
 	}
 
-    LOG( "%i movies panels loaded, %3.1f seconds", Movies.sizeInt(), ovr_GetTimeInSeconds() - start );
+    LOG( "%i movies panels loaded, %3.1f seconds", Movies.length(), ovr_GetTimeInSeconds() - start );
 }
 
 MovieFormat MovieManager::FormatFromString( const VString &formatString ) const
@@ -285,7 +285,8 @@ bool MovieManager::IsSupportedMovieFormat( const VString &extension ) const
 	return false;
 }
 
-void MovieManager::MoviesInDirectory(Array<VString> &movies, const VString &dirName) const
+
+void MovieManager::MoviesInDirectory(VArray<VString> &movies, const VString &dirName) const
 {
     const char *dirNameCStr = dirName.toCString();
     LOG("scanning directory: %s", dirNameCStr);
@@ -336,8 +337,8 @@ void MovieManager::MoviesInDirectory(Array<VString> &movies, const VString &dirN
 	}
 }
 
-Array<VString> MovieManager::ScanMovieDirectories() const {
-	Array<VString> movies;
+VArray<VString> MovieManager::ScanMovieDirectories() const {
+	VArray<VString> movies;
 
     for (const VString &searchDir : searchDirs) {
         MoviesInDirectory(movies, Cinema.externalRetailDir(searchDir));
@@ -356,9 +357,9 @@ const VString MovieManager::GetMovieTitleFromFilename( const char *filepath )
     return fileName;
 }
 
-Array<const MovieDef *> MovieManager::GetMovieList( MovieCategory category ) const
+VArray<const MovieDef *> MovieManager::GetMovieList( MovieCategory category ) const
 {
-	Array<const MovieDef *> result;
+	VArray<const MovieDef *> result;
 
     for( uint i = 0; i < Movies.size(); i++ )
 	{

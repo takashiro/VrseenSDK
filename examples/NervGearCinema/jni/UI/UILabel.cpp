@@ -23,7 +23,7 @@ void UILabel::AddToMenu( UIMenu *menu, UIWidget *parent )
 	Vector3f defaultScale( 1.0f );
 	VRMenuFontParms fontParms( true, true, false, false, false, 1.0f );
 	
-	VRMenuObjectParms parms( VRMENU_STATIC, Array< VRMenuComponent* >(), VRMenuSurfaceParms(),
+	VRMenuObjectParms parms( VRMENU_STATIC, VArray< VRMenuComponent* >(), VRMenuSurfaceParms(),
 			"", pose, defaultScale, fontParms, menu->AllocId(),
 			VRMenuObjectFlags_t(), VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 

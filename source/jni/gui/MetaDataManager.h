@@ -1,17 +1,17 @@
 #pragma once
 
-#include "Array.h"
+//#include "Array.h"
 #include "VString.h"
 #include "StringHash.h"
 
 #include "VJson.h"
-
+#include "VArray.h"
 NV_NAMESPACE_BEGIN
 
 struct OvrMetaDatum
 {
     int id;
-    Array<VString> tags;
+    VArray<VString> tags;
     VString	url;
 
 protected:
@@ -27,8 +27,8 @@ enum TagAction
 
 struct OvrMetaDataFileExtensions
 {
-    Array< VString > goodExtensions;
-    Array< VString > badExtensions;
+    VArray< VString > goodExtensions;
+    VArray< VString > badExtensions;
 };
 
 class OvrMetaData
@@ -41,7 +41,7 @@ public:
 		{}
         VString 			categoryTag;
         VString 			label;
-        Array< int > 	datumIndicies;
+        VArray< int > 	datumIndicies;
         bool 			dirty;
 	};
 
@@ -52,17 +52,17 @@ public:
 	virtual ~OvrMetaData() {}
 
 	// Init meta data from contents on disk
-    void					initFromDirectory( const char * relativePath, const Array< VString > & searchPaths, const OvrMetaDataFileExtensions & fileExtensions );
+    void					initFromDirectory( const char * relativePath, const VArray< VString > & searchPaths, const OvrMetaDataFileExtensions & fileExtensions );
 
 	// Init meta data from a passed in list of files
-    void					initFromFileList( const Array< VString > & fileList, const OvrMetaDataFileExtensions & fileExtensions );
+    void					initFromFileList( const VArray< VString > & fileList, const OvrMetaDataFileExtensions & fileExtensions );
 
 	// Check specific paths for media and reconcile against stored/new metadata (Maintained for SDK)
-    void					initFromDirectoryMergeMeta( const char * relativePath, const Array< VString > & searchPaths,
+    void					initFromDirectoryMergeMeta( const char * relativePath, const VArray< VString > & searchPaths,
 		const OvrMetaDataFileExtensions & fileExtensions, const char * metaFile, const char * packageName );
 
 	// File list passed in and we reconcile against stored/new metadata
-    void					initFromFileListMergeMeta( const Array< VString > & fileList, const Array< VString > & searchPaths,
+    void					initFromFileListMergeMeta( const VArray< VString > & fileList, const VArray< VString > & searchPaths,
         const OvrMetaDataFileExtensions & fileExtensions, const char * appFileStoragePath, const char * metaFile, const Json &storedMetaData );
 
     void					processRemoteMetaFile( const char * metaFileString, const int startInsertionIndex /* index to insert remote categories*/ );
@@ -77,12 +77,12 @@ public:
     Json createOrGetStoredMetaFile(const VString &appFileStoragePath, const char * metaFile );
     void					addCategory( const VString & name );
 
-    const Array< Category > categories() const 							{ return m_categories; }
+    const VArray< Category > categories() const 							{ return m_categories; }
     const Category & 		getCategory( const int index ) const 			{ return m_categories.at( index ); }
     Category & 				getCategory( const int index )   				{ return m_categories.at( index ); }
     const OvrMetaDatum &	getMetaDatum( const int index ) const;
-    bool 					getMetaData( const Category & category, Array< const OvrMetaDatum * > & outMetaData ) const;
-    void					setCategoryDatumIndicies( const int index, const Array< int >& datumIndicies );
+    bool 					getMetaData( const Category & category, VArray< const OvrMetaDatum * > & outMetaData ) const;
+    void					setCategoryDatumIndicies( const int index, const VArray< int >& datumIndicies );
 
 protected:
 	// Overload to fill extended data during initialization
@@ -95,26 +95,26 @@ protected:
     virtual bool			isRemote( const OvrMetaDatum * datum ) const	{	return true; }
 
 	// Removes duplicate entries from newData
-    virtual void            dedupMetaData( const Array< OvrMetaDatum * > & existingData, StringHash< OvrMetaDatum * > & newData );
+    virtual void            dedupMetaData( const VArray< OvrMetaDatum * > & existingData, StringHash< OvrMetaDatum * > & newData );
 
 private:
     Category * 				getCategory( const VString & categoryName );
-    void					processMetaData( const Json &dataFile, const Array< VString > & searchPaths, const char * metaFile );
+    void					processMetaData( const Json &dataFile, const VArray< VString > & searchPaths, const char * metaFile );
     void					regenerateCategoryIndices();
     void					reconcileMetaData( StringHash< OvrMetaDatum * > & storedMetaData );
-    void					reconcileCategories( Array< Category > & storedCategories );
+    void					reconcileCategories( VArray< Category > & storedCategories );
 
     Json			metaDataToJson() const;
     void					writeMetaFile( const char * metaFile ) const;
     bool 					shouldAddFile( const char * filename, const OvrMetaDataFileExtensions & fileExtensions ) const;
     void					extractVersion( const Json &dataFile, double & outVersion ) const;
-    void					extractCategories( const Json &dataFile, Array< Category > & outCategories ) const;
-    void					extractMetaData( const Json &dataFile, const Array< VString > & searchPaths, StringHash< OvrMetaDatum * > & outMetaData ) const;
+    void					extractCategories( const Json &dataFile, VArray< Category > & outCategories ) const;
+    void					extractMetaData( const Json &dataFile, const VArray< VString > & searchPaths, StringHash< OvrMetaDatum * > & outMetaData ) const;
     void					extractRemoteMetaData( const Json &dataFile, StringHash< OvrMetaDatum * > & outMetaData ) const;
 
     VString 					m_filePath;
-    Array< Category >		m_categories;
-    Array< OvrMetaDatum * >	m_etaData;
+    VArray< Category >		m_categories;
+    VArray< OvrMetaDatum * >	m_etaData;
     StringHash< int >		m_urlToIndex;
     double					m_version;
 };

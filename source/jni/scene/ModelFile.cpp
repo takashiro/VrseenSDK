@@ -15,11 +15,12 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "Alg.h"
 #include "VMath.h"
-#include "Array.h"
+#include "VArray.h"
 #include "VString.h"
 #include "String_Utils.h"
 #include "VJson.h"
-#include "BinaryFile.h"
+//#include "BinaryFile.h"
+#include "VBinaryFile.h"
 #include "MappedFile.h"
 #include "Android/GlUtils.h"
 #include "Android/LogUtils.h"
@@ -51,12 +52,12 @@ ModelFile::~ModelFile()
 {
 	LOG( "Destroying ModelFileModel %s", FileName.toCString() );
 
-	for ( int i = 0; i < Textures.sizeInt(); i++ )
+	for ( int i = 0; i < Textures.length(); i++ )
 	{
 		FreeTexture( Textures[i].texid );
 	}
 
-	for ( int j = 0; j < Def.surfaces.sizeInt(); j++ )
+	for ( int j = 0; j < Def.surfaces.length(); j++ )
 	{
 		const_cast<GlGeometry *>(&Def.surfaces[j].geo)->Free();
 	}
@@ -64,7 +65,7 @@ ModelFile::~ModelFile()
 
 SurfaceDef * ModelFile::FindNamedSurface( const char * name ) const
 {
-	for ( int j = 0; j < Def.surfaces.sizeInt(); j++ )
+	for ( int j = 0; j < Def.surfaces.length(); j++ )
 	{
 		const SurfaceDef & sd = Def.surfaces[j];
 		if ( sd.surfaceName.icompare( name ) == 0 )
@@ -79,7 +80,7 @@ SurfaceDef * ModelFile::FindNamedSurface( const char * name ) const
 
 const ModelTexture * ModelFile::FindNamedTexture( const char * name ) const
 {
-	for ( int i = 0; i < Textures.sizeInt(); i++ )
+	for ( int i = 0; i < Textures.length(); i++ )
 	{
 		const ModelTexture & st = Textures[i];
 		if ( st.name.icompare( name ) == 0 )
@@ -94,7 +95,7 @@ const ModelTexture * ModelFile::FindNamedTexture( const char * name ) const
 
 const ModelJoint * ModelFile::FindNamedJoint( const char *name ) const
 {
-	for ( int i = 0; i < Joints.sizeInt(); i++ )
+	for ( int i = 0; i < Joints.length(); i++ )
 	{
 		const ModelJoint & joint = Joints[i];
 		if ( joint.name.icompare( name ) == 0 )
@@ -109,7 +110,7 @@ const ModelJoint * ModelFile::FindNamedJoint( const char *name ) const
 
 const ModelTag * ModelFile::FindNamedTag(const VString &name) const
 {
-	for ( int i = 0; i < Tags.sizeInt(); i++ )
+	for ( int i = 0; i < Tags.length(); i++ )
 	{
 		const ModelTag & tag = Tags[i];
 		if ( tag.name.icompare( name ) == 0 )
@@ -130,7 +131,7 @@ Bounds3f ModelFile::GetBounds() const
 {
 	Bounds3f modelBounds;
 	modelBounds.Clear();
-	for ( int j = 0; j < Def.surfaces.sizeInt(); j++ )
+	for ( int j = 0; j < Def.surfaces.length(); j++ )
 	{
 		const SurfaceDef & sd = Def.surfaces[j];
 		modelBounds.AddPoint( sd.cullingBounds.b[0] );
@@ -167,7 +168,7 @@ void LoadModelFileTexture( ModelFile & model, const char * textureName,
 }
 
 template< typename _type_ >
-void ReadModelArray( Array< _type_ > & out, const char * string, const BinaryReader & bin, const int numElements )
+void ReadModelArray( VArray< _type_ > & out, const char * string, const VBinaryFile & bin, const int numElements )
 {
 	if ( string != NULL && string[0] != '\0' && numElements > 0 )
 	{
@@ -185,9 +186,9 @@ void LoadModelFileJson( ModelFile & model,
 {
 	LOG( "parsing %s", model.FileName.toCString() );
 
-	const BinaryReader bin( (const UByte *)modelsBin, modelsBinLength );
+	const VBinaryFile bin( (const UByte *)modelsBin, modelsBinLength );
 
-	if ( modelsBin != NULL && bin.readUInt32() != 0x6272766F )
+	if ( modelsBin != NULL && bin.readUint() != 0x6272766F )
 	{
 		LOG( "LoadModelFileJson: bad binary file for %s", model.FileName.toCString() );
 		return;
@@ -223,7 +224,7 @@ void LoadModelFileJson( ModelFile & model,
 				TEXTURE_OCCLUSION_TRANSPARENT
 			};
 
-			Array< GlTexture > glTextures;
+			VArray< GlTexture > glTextures;
 
 			const Json &texture_array( render_model.value( "textures" ) );
 			if ( texture_array.isArray() )
@@ -237,14 +238,14 @@ void LoadModelFileJson( ModelFile & model,
 						// Try to match the texture names with the already loaded texture
 						// and create a default texture if the texture file is missing.
 						int i = 0;
-						for ( ; i < model.Textures.sizeInt(); i++ )
+						for ( ; i < model.Textures.length(); i++ )
 						{
                             if ( model.Textures[i].name.icompare(name.c_str()) == 0 )
 							{
 								break;
 							}
 						}
-						if ( i == model.Textures.sizeInt() )
+						if ( i == model.Textures.length() )
 						{
 							LOG( "texture %s defaulted", name.c_str() );
 							// Create a default texture.
@@ -432,7 +433,7 @@ void LoadModelFileJson( ModelFile & model,
 						// Triangles
 						//
 
-						Array< TriangleIndex > indices;
+						VArray< TriangleIndex > indices;
 
 						const Json &triangles( surface.value( "triangles" ) );
 						if ( triangles.isObject() )
@@ -482,17 +483,17 @@ void LoadModelFileJson( ModelFile & model,
 						const bool skinned = (	attribs.jointIndices.size() == attribs.position.size() &&
 												attribs.jointWeights.size() == attribs.position.size() );
 
-						if ( diffuseTextureIndex >= 0 && diffuseTextureIndex < glTextures.sizeInt() )
+						if ( diffuseTextureIndex >= 0 && diffuseTextureIndex < glTextures.length() )
 						{
 							model.Def.surfaces[index].materialDef.textures[0] = glTextures[diffuseTextureIndex];
 
-							if ( emissiveTextureIndex >= 0 && emissiveTextureIndex < glTextures.sizeInt() )
+							if ( emissiveTextureIndex >= 0 && emissiveTextureIndex < glTextures.length() )
 							{
 								model.Def.surfaces[index].materialDef.textures[1] = glTextures[emissiveTextureIndex];
 
-								if (	normalTextureIndex >= 0 && normalTextureIndex < glTextures.sizeInt() &&
-										specularTextureIndex >= 0 && specularTextureIndex < glTextures.sizeInt() &&
-										reflectionTextureIndex >= 0 && reflectionTextureIndex < glTextures.sizeInt() )
+								if (	normalTextureIndex >= 0 && normalTextureIndex < glTextures.length() &&
+										specularTextureIndex >= 0 && specularTextureIndex < glTextures.length() &&
+										reflectionTextureIndex >= 0 && reflectionTextureIndex < glTextures.length() )
 								{
 									// reflection mapped material;
 									model.Def.surfaces[index].materialDef.textures[2] = glTextures[normalTextureIndex];
@@ -580,7 +581,7 @@ void LoadModelFileJson( ModelFile & model,
 								}
 							}
 						}
-						else if ( attribs.color.sizeInt() > 0 )
+						else if ( attribs.color.length() > 0 )
 						{
 							// vertex color material
 							model.Def.surfaces[index].materialDef.numTextures = 0;
@@ -749,7 +750,7 @@ void LoadModelFileJson( ModelFile & model,
 		}
 	}
 
-	if ( !bin.atEnd() )
+	if ( !bin.isEnd() )
 	{
 		WARN( "failed to properly read binary file" );
 	}

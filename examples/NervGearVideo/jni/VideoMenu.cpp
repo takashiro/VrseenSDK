@@ -125,8 +125,8 @@ OvrVideoMenu::OvrVideoMenu( App * app, Oculus360Videos * videos, OvrVRMenuMgr & 
 	init( menuMgr, font, 0.0f, VRMenuFlags_t() );
 
 	// Create Attribution info view
-	Array< VRMenuObjectParms const * > parms;
-	Array< VRMenuComponent* > comps;
+	VArray< VRMenuObjectParms const * > parms;
+	VArray< VRMenuComponent* > comps;
 	VRMenuId_t attributionPanelId( ID_CENTER_ROOT.Get() + 10 );
 
 	comps.append( new OvrVideoMenuRootComponent( *this ) );
@@ -154,7 +154,7 @@ OvrVideoMenu::OvrVideoMenu( App * app, Oculus360Videos * videos, OvrVRMenuMgr & 
 
 	//Browser button
 	float const ICON_HEIGHT = 80.0f * VRMenuObject::DEFAULT_TEXEL_SCALE;
-	Array< VRMenuSurfaceParms > surfParms;
+	VArray< VRMenuSurfaceParms > surfParms;
 
 	Posef browserButtonPose( Quatf(), UP * ICON_HEIGHT * 2.0f );
 

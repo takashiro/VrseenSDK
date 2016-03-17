@@ -18,7 +18,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 
 #include "ModelFile.h"
 #include "VString.h"
-#include "Array.h"
+#include "VArray.h"
 
 NV_USING_NAMESPACE
 
@@ -68,7 +68,7 @@ public:
 public:
 	CinemaApp &			Cinema;
 
-	Array<SceneDef *>	Theaters;
+	VArray<SceneDef *>	Theaters;
 	SceneDef *			BoxOffice;
 	SceneDef *			VoidScene;
 
@@ -78,7 +78,7 @@ public:
 
 private:
 	void 				LoadModels();
-    void 				ScanDirectoryForScenes(const VString &directory, bool useDynamicProgram, bool useScreenGeometry, Array<SceneDef *> &scenes ) const;
+    void 				ScanDirectoryForScenes(const VString &directory, bool useDynamicProgram, bool useScreenGeometry, VArray<SceneDef *> &scenes ) const;
 	SceneDef *			LoadScene( const char *filename, bool useDynamicProgram, bool useScreenGeometry, bool loadFromApplicationPackage ) const;
 };
 

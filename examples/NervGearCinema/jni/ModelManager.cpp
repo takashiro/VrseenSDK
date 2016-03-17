@@ -52,7 +52,7 @@ void ModelManager::OneTimeInit( const char * launchIntent )
 
 	LoadModels();
 
-    LOG( "ModelManager::OneTimeInit: %i theaters loaded, %3.1f seconds", Theaters.sizeInt(), ovr_GetTimeInSeconds() - start );
+    LOG( "ModelManager::OneTimeInit: %i theaters loaded, %3.1f seconds", Theaters.length(), ovr_GetTimeInSeconds() - start );
 }
 
 void ModelManager::OneTimeShutdown()
@@ -109,10 +109,10 @@ void ModelManager::LoadModels()
 		ScanDirectoryForScenes( Cinema.sdcardDir( TheatersDirectory ), true, false, Theaters );
 	}
 
-    LOG( "ModelManager::LoadModels: %i theaters loaded, %3.1f seconds", Theaters.sizeInt(), ovr_GetTimeInSeconds() - start );
+    LOG( "ModelManager::LoadModels: %i theaters loaded, %3.1f seconds", Theaters.length(), ovr_GetTimeInSeconds() - start );
 }
 
-void ModelManager::ScanDirectoryForScenes(const VString &directory, bool useDynamicProgram, bool useScreenGeometry, Array<SceneDef *> &scenes ) const
+void ModelManager::ScanDirectoryForScenes(const VString &directory, bool useDynamicProgram, bool useScreenGeometry, VArray<SceneDef *> &scenes ) const
 {
     DIR * dir = opendir( directory.toCString() );
 	if ( dir != NULL )

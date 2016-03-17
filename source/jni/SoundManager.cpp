@@ -31,7 +31,8 @@ static const char * APP_SOUNDS = "assets/sound_assets.json";
 
 void OvrSoundManager::LoadSoundAssets()
 {
-    Array<VString> searchPaths;
+
+	VArray<VString> searchPaths;
 	searchPaths.append( "/storage/extSdCard/" );
 	searchPaths.append( "/sdcard/" );
 

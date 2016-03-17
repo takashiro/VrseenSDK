@@ -14,7 +14,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include <stdio.h>
 
-#include "Array.h"
+#include "VArray.h"
 #include "VString.h"
 #include "MemBuffer.h"
 #include "Android/LogUtils.h"
@@ -29,7 +29,7 @@ public:
 	NervGear::VString	Value;
 };
 
-NervGear::Array<KeyPair>	LocalPreferences;
+NervGear::VArray<KeyPair>	LocalPreferences;
 
 static NervGear::VString ParseToken( const char * txt, const int start, const int stop, int & stopPoint  )
 {
@@ -82,7 +82,7 @@ void ovr_UpdateLocalPreferences()
 // If the returned string is not defaultKeyValue, it will remain valid until the next ovr_UpdateLocalPreferences().
 const char * ovr_GetLocalPreferenceValueForKey( const char * keyName, const char * defaultKeyValue )
 {
-	for ( int i = 0 ; i < LocalPreferences.sizeInt() ; i++ )
+	for ( int i = 0 ; i < LocalPreferences.length() ; i++ )
 	{
         if ( 0 == LocalPreferences[i].Key.icompare( keyName ) )
 		{
@@ -101,14 +101,14 @@ void ovr_SetLocalPreferenceValueForKey( const char * keyName, const char * keyVa
 	LOG( "Set( %s, %s )", keyName, keyValue );
 
 	int i = 0;
-	for ( ; i < LocalPreferences.sizeInt() ; i++ )
+	for ( ; i < LocalPreferences.length() ; i++ )
 	{
         if ( !strcmp( keyName, LocalPreferences[i].Key.toCString() ) )
 		{
 			LocalPreferences[i].Value = keyValue;
 		}
 	}
-	if ( i == LocalPreferences.sizeInt() )
+	if ( i == LocalPreferences.length() )
 	{
 		KeyPair	kp;
 		kp.Key = keyName;
@@ -129,7 +129,7 @@ void ovr_SetLocalPreferenceValueForKey( const char * keyName, const char * keyVa
 		LOG( "Couldn't open %s for writing", localPrefsFile );
 		return;
 	}
-	for ( int i = 0 ; i < LocalPreferences.sizeInt() ; i++ )
+	for ( int i = 0 ; i < LocalPreferences.length() ; i++ )
 	{
         fprintf( f, "%s %s", LocalPreferences[i].Key.toCString(), LocalPreferences[i].Value.toCString() );
 	}
@@ -145,5 +145,5 @@ void ovr_SetAllowLocalPreferencesFile( const bool allow )
 void ovr_ShutdownLocalPreferences()
 {
 	LOG( "ovr_ShutdownLocalPreferences" );
-	LocalPreferences.clearAndRelease();
+	LocalPreferences.clear();
 }

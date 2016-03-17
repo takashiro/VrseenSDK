@@ -11,11 +11,11 @@ NV_NAMESPACE_BEGIN
 class OffsetInterpolator
 {
 public:
-    void Initialize(Array<Array<TemperatureReport> > const& temperatureReports, int coord);
+    void Initialize(VArray<VArray<TemperatureReport> > const& temperatureReports, int coord);
     double GetOffset(double targetTemperature, double autoTemperature, double autoValue);
 
-    Array<double> Temperatures;
-    Array<double> Values;
+    VArray<double> Temperatures;
+    VArray<double> Values;
 };
 
 class SensorCalibration : public NewOverrideBase
@@ -42,7 +42,7 @@ protected:
     Vector3f AccelOffset;
 
     // Temperature based data
-    Array<Array<TemperatureReport> > TemperatureReports;
+    VArray<VArray<TemperatureReport> > TemperatureReports;
     OffsetInterpolator Interpolators[3];
 
     // Autocalibration data

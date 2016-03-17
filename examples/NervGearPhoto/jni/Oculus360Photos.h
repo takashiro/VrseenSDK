@@ -19,7 +19,6 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "ModelView.h"
 #include "gui/Fader.h"
 #include "Lockless.h"
-
 namespace NervGear {
 
 class PanoBrowser;
@@ -122,7 +121,7 @@ private:
     SineFader			m_fader;
 
 	// Pano data and menus
-    Array< VString > 			m_searchPaths;
+    VArray< VString > 			m_searchPaths;
     OvrPhotosMetaData *			m_metaData;
     OvrPanoMenu *				m_panoMenu;
     PanoBrowser *				m_browser;

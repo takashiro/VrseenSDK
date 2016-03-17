@@ -165,7 +165,7 @@ VString GyroTempCalibration::GetCalibrationPath(bool create_dir)
     return path;
 }
 
-void GyroTempCalibration::TokenizeString(Array<VString>* tokens, const VString& str, char separator)
+void GyroTempCalibration::TokenizeString(VArray<VString>* tokens, const VString& str, char separator)
 {
 //	OVR_ASSERT(tokens != NULL);	// LDC - Asserts are currently not handled well on mobile.
 
@@ -197,7 +197,7 @@ void GyroTempCalibration::TokenizeString(Array<VString>* tokens, const VString& 
 void GyroTempCalibration::GyroCalibrationFromString(const VString& str)
 {
 
-	Array<VString> tokens;
+	VArray<VString> tokens;
 	TokenizeString(&tokens, str, ' ');
 
 	if (tokens.size() != GyroCalibrationNumBins * GyroCalibrationNumSamples * 6)
@@ -295,7 +295,7 @@ void GyroTempCalibration::SaveFile()
     fp << root;
 }
 
-void GyroTempCalibration::GetAllTemperatureReports(Array<Array<TemperatureReport> >* tempReports)
+void GyroTempCalibration::GetAllTemperatureReports(VArray<VArray<TemperatureReport> >* tempReports)
 {
     TemperatureReport t;
 
@@ -328,6 +328,8 @@ void GyroTempCalibration::GetTemperatureReport(int binIndex, int sampleIndex, Te
 	tempReport->Bin = binIndex;
 	tempReport->Sample = sampleIndex;
 	tempReport->NumSamples = GyroCalibrationNumSamples;
+
+
 	tempReport->TargetTemperature = binIndex * 5.0 + 15.0;
 
 	const GyroCalibrationEntry& entry = GyroCalibration[binIndex][sampleIndex];

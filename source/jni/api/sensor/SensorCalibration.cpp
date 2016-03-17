@@ -96,7 +96,7 @@ void SensorCalibration::DebugClearHeadsetTemperatureReports()
 {
     OVR_ASSERT(pSensor != NULL);
 
-	Array<Array<TemperatureReport> > temperatureReports;
+	VArray<VArray<TemperatureReport> > temperatureReports;
 
 #ifdef USE_LOCAL_TEMPERATURE_CALIBRATION_STORAGE
 	GyroCalibration.GetAllTemperatureReports(&temperatureReports);
@@ -271,9 +271,9 @@ void SensorCalibration::StoreAutoOffset()
 		Interpolators[i].Initialize(TemperatureReports, i);
 }
 
-const TemperatureReport& median(const Array<TemperatureReport>& temperatureReportsBin, int coord)
+const TemperatureReport& median(const VArray<TemperatureReport>& temperatureReportsBin, int coord)
 {
-    Array<double> values;
+    VArray<double> values;
     values.reserve(temperatureReportsBin.size());
     for (unsigned i = 0; i < temperatureReportsBin.size(); i++)
         if (temperatureReportsBin[i].ActualTemperature != 0)
@@ -291,7 +291,7 @@ const TemperatureReport& median(const Array<TemperatureReport>& temperatureRepor
     return temperatureReportsBin[0];
 }
 
-void OffsetInterpolator::Initialize(Array<Array<TemperatureReport> > const& temperatureReports, int coord)
+void OffsetInterpolator::Initialize(VArray<VArray<TemperatureReport> > const& temperatureReports, int coord)
 {
     int bins = (int) temperatureReports.size();
     Temperatures.clear();

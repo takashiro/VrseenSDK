@@ -139,11 +139,11 @@ bool CinemaApp::fileExists(const VString &filename) const
 	}
 }
 
-void CinemaApp::setPlaylist( const Array<const MovieDef *> &playList, const int nextMovie )
+void CinemaApp::setPlaylist( const VArray<const MovieDef *> &playList, const int nextMovie )
 {
 	m_playList = playList;
 
-    assert( nextMovie < m_playList.sizeInt() );
+    assert( nextMovie < m_playList.length() );
 	setMovie( m_playList[ nextMovie ] );
 }
 
@@ -162,9 +162,9 @@ void CinemaApp::movieLoaded( const int width, const int height, const int durati
 const MovieDef *CinemaApp::nextMovie() const
 {
 	const MovieDef *next = NULL;
-    if ( m_playList.sizeInt() != 0 )
+    if ( m_playList.length() != 0 )
 	{
-        for( int i = 0; i < m_playList.sizeInt() - 1; i++ )
+        for( int i = 0; i < m_playList.length() - 1; i++ )
 		{
 			if ( m_playList[ i ] == m_currentMovie )
 			{
@@ -185,9 +185,9 @@ const MovieDef *CinemaApp::nextMovie() const
 const MovieDef *CinemaApp::previousMovie() const
 {
 	const MovieDef *previous = NULL;
-    if ( m_playList.sizeInt() != 0 )
+    if ( m_playList.length() != 0 )
 	{
-        for( int i = 0; i < m_playList.sizeInt(); i++ )
+        for( int i = 0; i < m_playList.length(); i++ )
 		{
 			if ( m_playList[ i ] == m_currentMovie )
 			{
@@ -198,7 +198,7 @@ const MovieDef *CinemaApp::previousMovie() const
 
 		if ( previous == NULL )
 		{
-            previous = m_playList[ m_playList.sizeInt() - 1 ];
+            previous = m_playList[ m_playList.length() - 1 ];
 		}
 	}
 

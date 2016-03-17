@@ -33,7 +33,7 @@ void UIWidget::AddToMenuWithParms( UIMenu *menu, UIWidget *parent, VRMenuObjectP
 
 	Id = parms.Id;
 
-    Array< VRMenuObjectParms const * > parmArray;
+    VArray< VRMenuObjectParms const * > parmArray;
     parmArray.append( &parms );
 
     menuHandle_t parentHandle = ( parent == NULL ) ? menu->GetVRMenu()->rootHandle() : parent->GetHandle();
@@ -381,7 +381,7 @@ void UIWidget::RemoveComponent( VRMenuComponent * component )
     object->removeComponent( component );
 }
 
-Array< VRMenuComponent* > const & UIWidget::GetComponentList() const
+VArray< VRMenuComponent* > const & UIWidget::GetComponentList() const
 {
 	VRMenuObject * object = GetMenuObject();
 	assert( object );

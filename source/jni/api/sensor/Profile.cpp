@@ -20,10 +20,12 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "VJson.h"
 #include "Types.h"
-#include "SysFile.h"
+//#include "SysFile.h"
+#include "VSysFile.h"
 #include "Allocator.h"
-#include "Array.h"
+#include "VArray.h"
 
+#include <stdlib.h>
 #include <fstream>
 
 #ifdef OVR_OS_WIN32
@@ -45,6 +47,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 using namespace NervGear;
 
 namespace NervGear {
+
 
 //-----------------------------------------------------------------------------
 // Returns the pathname of the JSON file containing the stored profiles
@@ -439,7 +442,8 @@ const char* ProfileManager::GetProfileName(ProfileType device, unsigned int inde
     if (index < ProfileCache.size())
     {
         Profile* profile = ProfileCache[index];
-        OVR_strcpy(NameBuff, Profile::MaxNameLen, profile->Name);
+//        OVR_strcpy(NameBuff, Profile::MaxNameLen, profile->Name);
+        strncpy(NameBuff, profile->Name,Profile::MaxNameLen);
         return NameBuff;
     }
     else
@@ -527,7 +531,8 @@ const char* ProfileManager::GetDefaultProfileName(ProfileType device)
 
     if (ProfileCache.size() > 0)
     {
-        OVR_strcpy(NameBuff, Profile::MaxNameLen, DefaultProfile.c_str());
+//        OVR_strcpy(NameBuff, Profile::MaxNameLen, DefaultProfile.c_str());
+        strncpy(NameBuff, DefaultProfile.c_str(),Profile::MaxNameLen);
         return NameBuff;
     }
     else
@@ -644,8 +649,10 @@ Profile::Profile(ProfileType device, const char* name)
     NeckEyeHori  = 0.12f;
     NeckEyeVert  = 0.12f;
 
-    OVR_strcpy(Name, MaxNameLen, name);
-    OVR_strcpy(CloudUser, MaxNameLen, name);
+//    OVR_strcpy(Name, MaxNameLen, name);
+    strncpy(Name, name, MaxNameLen);
+//    OVR_strcpy(CloudUser, MaxNameLen, name);
+    strncpy(CloudUser, name, MaxNameLen);
 }
 
 
@@ -653,12 +660,14 @@ bool Profile::ParseProperty(const char* prop, const char* sval)
 {
     if (strcmp(prop, "Name") == 0)
     {
-        OVR_strcpy(Name, MaxNameLen, sval);
+//        OVR_strcpy(Name, MaxNameLen, sval);
+        strncpy(Name, sval, MaxNameLen);
         return true;
     }
     else if (strcmp(prop, "CloudUser") == 0)
         {
-            OVR_strcpy(CloudUser, MaxNameLen, sval);
+//            OVR_strcpy(CloudUser, MaxNameLen, sval);
+        strncpy(CloudUser, sval, MaxNameLen);
             return true;
         }
     else if (strcmp(prop, "Gender") == 0)

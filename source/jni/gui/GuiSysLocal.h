@@ -47,8 +47,8 @@ public:
 	gazeCursorUserId_t		GetGazeUserId() const { return GazeUserId; }
 
 private:
-	Array< VRMenu* >	    Menus;
-	Array< VRMenu* >		ActiveMenus;
+	VArray< VRMenu* >	    Menus;
+	VArray< VRMenu* >		ActiveMenus;
 
     bool					IsInitialized;
 
@@ -62,7 +62,7 @@ private:
 	void					MakeActive( VRMenu * menu );
 	void					MakeInactive( VRMenu * menu );
 
-    Array< VRMenuComponent* > GetDefaultComponents();
+    VArray< VRMenuComponent* > GetDefaultComponents();
 };
 
 NV_NAMESPACE_END

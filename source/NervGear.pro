@@ -23,8 +23,6 @@ SOURCES += \
     jni/core/VByteArray.cpp \
     jni/core/VChar.cpp \
     jni/core/VEvent.cpp \
-    jni/core/File.cpp \
-    jni/core/FileFILE.cpp \
     jni/core/VJson.cpp \
     jni/core/Log.cpp \
     jni/core/VLog.cpp \
@@ -35,12 +33,10 @@ SOURCES += \
     jni/core/VStandardPath.cpp \
     jni/core/Std.cpp \
     jni/core/VString.cpp \
-    jni/core/SysFile.cpp \
     jni/core/System.cpp \
     jni/core/ThreadCommandQueue.cpp \
     jni/core/VThread.cpp \
     jni/core/VTimer.cpp \
-    jni/core/BinaryFile.cpp \
     jni/core/MappedFile.cpp \
     jni/core/MemBuffer.cpp \
     jni/core/VMutex.cpp \
@@ -129,7 +125,10 @@ SOURCES += \
     jni/VUserProfile.cpp \
     jni/TalkToJava.cpp \
     jni/VrCommon.cpp \
-    jni/VrLocale.cpp
+    jni/VrLocale.cpp \
+    jni/io/VBinaryFile.cpp \
+    jni/io/VFileOperation.cpp \
+    jni/io/VSysFile.cpp
 
 HEADERS += \
     jni/core/android/GlUtils.h \
@@ -152,8 +151,6 @@ HEADERS += \
     jni/core/ContainerAllocator.h \
     jni/core/Deque.h \
     jni/core/VEvent.h \
-    jni/core/File.h \
-    jni/core/FileFILE.h \
     jni/core/VFlags.h \
     jni/core/VJson.h \
     jni/core/Log.h \
@@ -167,12 +164,10 @@ HEADERS += \
     jni/core/VString.h \
     jni/core/String_FormatUtil.h \
     jni/core/String_PathUtil.h \
-    jni/core/SysFile.h \
     jni/core/System.h \
     jni/core/ThreadCommandQueue.h \
     jni/core/VThread.h \
     jni/core/VTimer.h \
-    jni/core/BinaryFile.h \
     jni/core/MappedFile.h \
     jni/core/MemBuffer.h \
     jni/core/VMutex.h \
@@ -291,7 +286,15 @@ HEADERS += \
     jni/vglobal.h \
     jni/AppLocal.h \
     jni/Input.h \
-    jni/PointTracker.h
+    jni/PointTracker.h \
+    jni/UniversalMenu_Commands.h \
+    jni/PointTracker.h \
+    jni/io/VBinaryFile.h \
+    jni/io/VDelegatedFile.h \
+    jni/io/VFile.h \
+    jni/io/VFileOperation.h \
+    jni/io/VSysFile.h
+
 
 include(jni/3rdparty/minizip/minizip.pri)
 include(jni/3rdparty/stb/stb.pri)
