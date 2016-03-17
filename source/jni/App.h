@@ -289,14 +289,6 @@ public:
 
     void			drawBounds( const Vector3f &mins, const Vector3f &maxs, const Matrix4f &mvp, const Vector3f &color );
 
-    // Process commands forwarded from other threads.
-    // Commands can be processed even when the window surfaces
-    // are not setup.
-    //
-    // The msg string will be freed by the framework after
-    // command processing.
-    void    		command( const char * msg );
-
     // Shut down various subsystems
     void			pause();
 

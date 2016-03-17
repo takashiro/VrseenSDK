@@ -73,6 +73,43 @@ static VString ComposeIntentMessage(const VString &packageName, const VString &u
     return out;
 }
 
+static Vector3f ViewOrigin(const Matrix4f & view)
+{
+    return Vector3f(view.M[0][3], view.M[1][3], view.M[2][3]);
+}
+
+static Vector3f ViewForward(const Matrix4f & view)
+{
+    return Vector3f(-view.M[0][2], -view.M[1][2], -view.M[2][2]);
+}
+
+// Always make the panel upright, even if the head was tilted when created
+static Matrix4f PanelMatrix(const Matrix4f & lastViewMatrix, const float popupDistance,
+        const float popupScale, const int width, const int height)
+{
+    // TODO: this won't be valid until a frame has been rendered
+    const Matrix4f invView = lastViewMatrix.Inverted();
+    const Vector3f forward = ViewForward(invView);
+    const Vector3f levelforward = Vector3f(forward.x, 0.0f, forward.z).Normalized();
+    // TODO: check degenerate case
+    const Vector3f up(0.0f, 1.0f, 0.0f);
+    const Vector3f right = levelforward.Cross(up);
+
+    const Vector3f center = ViewOrigin(invView) + levelforward * popupDistance;
+    const float xScale = (float)width / 768.0f * popupScale;
+    const float yScale = (float)height / 768.0f * popupScale;
+    const Matrix4f panelMatrix = Matrix4f(
+            xScale * right.x, yScale * up.x, forward.x, center.x,
+            xScale * right.y, yScale * up.y, forward.y, center.y,
+            xScale * right.z, yScale * up.z, forward.z, center.z,
+            0, 0, 0, 1);
+
+//	LOG("PanelMatrix center: %f %f %f", center.x, center.y, center.z);
+//	LogMatrix("PanelMatrix", panelMatrix);
+
+    return panelMatrix;
+}
+
 //=======================================================================================
 // Default handlers for VrAppInterface
 
@@ -816,12 +853,12 @@ struct App::Private
                 if (swapParms.WarpOptions & SWAP_OPTION_USE_SLICED_WARP)
                 {
                     swapParms.WarpOptions &= ~SWAP_OPTION_USE_SLICED_WARP;
-                    createToast("eye warp");
+                    self->createToast("eye warp");
                 }
                 else
                 {
                     swapParms.WarpOptions |= SWAP_OPTION_USE_SLICED_WARP;
-                    createToast("slice warp");
+                    self->createToast("slice warp");
                 }
             }
 
@@ -832,29 +869,290 @@ struct App::Private
                 if (input.buttonPressed & BUTTON_DPAD_LEFT)
                 {
                     swapParms.PreScheduleSeconds -= 0.001f;
-                    createToast("Schedule: %f", swapParms.PreScheduleSeconds);
+                    self->createToast("Schedule: %f", swapParms.PreScheduleSeconds);
                 }
                 if (input.buttonPressed & BUTTON_DPAD_RIGHT)
                 {
                     swapParms.PreScheduleSeconds += 0.001f;
-                    createToast("Schedule: %f", swapParms.PreScheduleSeconds);
+                    self->createToast("Schedule: %f", swapParms.PreScheduleSeconds);
                 }
                 if (input.buttonPressed & BUTTON_DPAD_UP)
                 {
                     calibrateFovScale -= 0.01f;
-                    createToast("calibrateFovScale: %f", calibrateFovScale);
-                    pause();
-                    resume();
+                    self->createToast("calibrateFovScale: %f", calibrateFovScale);
+                    self->pause();
+                    self->resume();
                 }
                 if (input.buttonPressed & BUTTON_DPAD_DOWN)
                 {
                     calibrateFovScale += 0.01f;
-                    createToast("calibrateFovScale: %f", calibrateFovScale);
-                    pause();
-                    resume();
+                    self->createToast("calibrateFovScale: %f", calibrateFovScale);
+                    self->pause();
+                    self->resume();
                 }
             }
         }
+    }
+
+    void command(const char *msg)
+    {
+        // Always include the space in MatchesHead to prevent problems
+        // with commands that have matching prefixes.
+
+        if (MatchesHead("joy ", msg))
+        {
+            sscanf(msg, "joy %f %f %f %f",
+                    &joypad.sticks[0][0],
+                    &joypad.sticks[0][1],
+                    &joypad.sticks[1][0],
+                    &joypad.sticks[1][1]);
+            return;
+        }
+
+        if (MatchesHead("touch ", msg))
+        {
+            int	action;
+            sscanf(msg, "touch %i %f %f",
+                    &action,
+                    &joypad.touch[0],
+                    &joypad.touch[1]);
+            if (action == 0)
+            {
+                joypad.buttonState |= BUTTON_TOUCH;
+            }
+            if (action == 1)
+            {
+                joypad.buttonState &= ~BUTTON_TOUCH;
+            }
+            return;
+        }
+
+        if (MatchesHead("key ", msg))
+        {
+            int	key, down, repeatCount;
+            sscanf(msg, "key %i %i %i", &key, &down, &repeatCount);
+            self->keyEvent(key, down, repeatCount);
+            // We simply return because KeyEvent will call VrAppInterface->OnKeyEvent to give the app a
+            // chance to handle and consume the key before VrLib gets it. VrAppInterface needs to get the
+            // key first and have a chance to consume it completely because keys are context sensitive
+            // and only the app interface can know the current context the key should apply to. For
+            // instance, the back key backs out of some current state in the app -- but only the app knows
+            // whether or not there is a state to back out of at all. If we were to fall through here, the
+            // "key " message will be sent to VrAppInterface->Command() but only after VrLib has handled
+            // and or consumed the key first, which would break the back key behavior, and probably anything
+            // else, like input into an edit control.
+            return;
+        }
+
+        if (MatchesHead("surfaceChanged ", msg))
+        {
+            LOG("%s", msg);
+            if (windowSurface != EGL_NO_SURFACE)
+            {	// Samsung says this is an Android problem, where surfaces are reported as
+                // created multiple times.
+                WARN("Skipping create work because window hasn't been destroyed.");
+                return;
+            }
+            sscanf(msg, "surfaceChanged %p", &nativeWindow);
+
+            // Optionally force the window to a different resolution, which
+            // will be automatically scaled up by the HWComposer.
+            //
+            //ANativeWindow_setBuffersGeometry(nativeWindow, 1920, 1080, 0);
+
+            EGLint attribs[100];
+            int		numAttribs = 0;
+
+            // Set the colorspace on the window
+            windowSurface = EGL_NO_SURFACE;
+            if (appInterface->wantSrgbFramebuffer())
+            {
+                attribs[numAttribs++] = EGL_GL_COLORSPACE_KHR;
+                attribs[numAttribs++] = EGL_GL_COLORSPACE_SRGB_KHR;
+            }
+            // Ask for TrustZone rendering support
+            if (appInterface->GetWantProtectedFramebuffer())
+            {
+                attribs[numAttribs++] = EGL_PROTECTED_CONTENT_EXT;
+                attribs[numAttribs++] = EGL_TRUE;
+            }
+            attribs[numAttribs++] = EGL_NONE;
+
+            // Android doesn't let the non-standard extensions show up in the
+            // extension string, so we need to try it blind.
+            windowSurface = eglCreateWindowSurface(eglr.display, eglr.config,
+                    nativeWindow, attribs);
+
+            if (windowSurface == EGL_NO_SURFACE)
+            {
+                const EGLint attribs2[] =
+                {
+                    EGL_NONE
+                };
+                windowSurface = eglCreateWindowSurface(eglr.display, eglr.config,
+                        nativeWindow, attribs2);
+                if (windowSurface == EGL_NO_SURFACE)
+                {
+                    FAIL("eglCreateWindowSurface failed: %s", EglErrorString());
+                }
+                framebufferIsSrgb = false;
+                framebufferIsProtected = false;
+            }
+            else
+            {
+                framebufferIsSrgb = appInterface->wantSrgbFramebuffer();
+                framebufferIsProtected = appInterface->GetWantProtectedFramebuffer();
+            }
+            LOG("NativeWindow %p gives surface %p", nativeWindow, windowSurface);
+            LOG("FramebufferIsSrgb: %s", framebufferIsSrgb ? "true" : "false");
+            LOG("FramebufferIsProtected: %s", framebufferIsProtected ? "true" : "false");
+
+            if (eglMakeCurrent(eglr.display, windowSurface, windowSurface, eglr.context) == EGL_FALSE)
+            {
+                FAIL("eglMakeCurrent failed: %s", EglErrorString());
+            }
+
+            createdSurface = true;
+
+            // Let the client app setup now
+            appInterface->WindowCreated();
+
+            // Resume
+            if (!paused)
+            {
+                self->resume();
+            }
+            return;
+        }
+
+        if (MatchesHead("surfaceDestroyed ", msg))
+        {
+            LOG("surfaceDestroyed");
+
+            // Let the client app shutdown first.
+            appInterface->WindowDestroyed();
+
+            // Handle it ourselves.
+            if (eglMakeCurrent(eglr.display, eglr.pbufferSurface, eglr.pbufferSurface,
+                    eglr.context) == EGL_FALSE)
+            {
+                FAIL("RC_SURFACE_DESTROYED: eglMakeCurrent pbuffer failed");
+            }
+
+            if (windowSurface != EGL_NO_SURFACE)
+            {
+                eglDestroySurface(eglr.display, windowSurface);
+                windowSurface = EGL_NO_SURFACE;
+            }
+            if (nativeWindow != nullptr)
+            {
+                ANativeWindow_release(nativeWindow);
+                nativeWindow = nullptr;
+            }
+            return;
+        }
+
+        if (MatchesHead("pause ", msg))
+        {
+            LOG("pause");
+            if (!paused)
+            {
+                paused = true;
+                self->pause();
+            }
+        }
+
+        if (MatchesHead("resume ", msg))
+        {
+            LOG("resume");
+            paused = false;
+            // Don't actually do the resume operations if we don't have
+            // a window yet.  They will be done when the window is created.
+            if (windowSurface != EGL_NO_SURFACE)
+            {
+                self->resume();
+            }
+            else
+            {
+                LOG("Skipping resume because windowSurface not set yet");
+            }
+        }
+
+        if (MatchesHead("intent ", msg))
+        {
+            char fromPackageName[512];
+            char uri[1024];
+            // since the package name and URI cannot contain spaces, but JSON can,
+            // the JSON string is at the end and will come after the third space.
+            sscanf(msg, "intent %s %s", fromPackageName, uri);
+            char const * jsonStart = nullptr;
+            size_t msgLen = strlen(msg);
+            int spaceCount = 0;
+            for (size_t i = 0; i < msgLen; ++i) {
+                if (msg[i] == ' ') {
+                    spaceCount++;
+                    if (spaceCount == 3) {
+                        jsonStart = &msg[i+1];
+                        break;
+                    }
+                }
+            }
+
+            if (strcmp(fromPackageName, EMPTY_INTENT_STR) == 0)
+            {
+                fromPackageName[0] = '\0';
+            }
+            if (strcmp(uri, EMPTY_INTENT_STR) == 0)
+            {
+                uri[0] = '\0';
+            }
+
+            // assign launchIntent to the intent command
+            launchIntentFromPackage = fromPackageName;
+            launchIntentJSON = jsonStart;
+            launchIntentURI = uri;
+
+            // when the PlatformActivity is launched, this is how it gets its command to start
+            // a particular UI.
+            appInterface->NewIntent(fromPackageName, jsonStart, uri);
+
+            return;
+        }
+
+        if (MatchesHead("popup ", msg))
+        {
+            int width, height;
+            float seconds;
+            sscanf(msg, "popup %i %i %f", &width, &height, &seconds);
+
+            dialogWidth = width;
+            dialogHeight = height;
+            dialogStopSeconds = ovr_GetTimeInSeconds() + seconds;
+
+            dialogMatrix = PanelMatrix(lastViewMatrix, popupDistance, popupScale, width, height);
+
+            glActiveTexture(GL_TEXTURE0);
+            LOG("RC_UPDATE_POPUP dialogTexture %i", dialogTexture->textureId);
+            dialogTexture->Update();
+            glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0);
+
+            return;
+        }
+
+        if (MatchesHead("sync ", msg))
+        {
+            return;
+        }
+
+        if (MatchesHead("quit ", msg))
+        {
+            ovr_LeaveVrMode(OvrMobile);
+            readyToExit = true;
+            LOG("VrThreadSynced=%d CreatedSurface=%d ReadyToExit=%d", vrThreadSynced, createdSurface, readyToExit);
+        }
+
+        // Pass it on to the client app.
+        appInterface->Command(msg);
     }
 
     void startRendering()
@@ -946,7 +1244,7 @@ struct App::Private
                 {
                     break;
                 }
-                self->command(msg);
+                command(msg);
                 free((void *)msg);
             }
 
@@ -1494,26 +1792,6 @@ jclass App::getGlobalClassReference(const char * className) const
 	return gc;
 }
 
-Vector3f ViewOrigin(const Matrix4f & view)
-{
-    return Vector3f(view.M[0][3], view.M[1][3], view.M[2][3]);
-}
-
-Vector3f ViewForward(const Matrix4f & view)
-{
-    return Vector3f(-view.M[0][2], -view.M[1][2], -view.M[2][2]);
-}
-
-Vector3f ViewUp(const Matrix4f & view)
-{
-    return Vector3f(view.M[0][1], view.M[1][1], view.M[2][1]);
-}
-
-Vector3f ViewRight(const Matrix4f & view)
-{
-    return Vector3f(view.M[0][0], view.M[1][0], view.M[2][0]);
-}
-
 void App::setVrModeParms(ovrModeParms parms)
 {
     if (d->OvrMobile)
@@ -1604,300 +1882,6 @@ void App::resume()
     d->OvrMobile = ovr_EnterVrMode(VrModeParms, &d->hmdInfo);
 
     d->appInterface->Resumed();
-}
-
-// Always make the panel upright, even if the head was tilted when created
-Matrix4f PanelMatrix(const Matrix4f & lastViewMatrix, const float popupDistance,
-        const float popupScale, const int width, const int height)
-{
-	// TODO: this won't be valid until a frame has been rendered
-	const Matrix4f invView = lastViewMatrix.Inverted();
-    const Vector3f forward = ViewForward(invView);
-    const Vector3f levelforward = Vector3f(forward.x, 0.0f, forward.z).Normalized();
-	// TODO: check degenerate case
-    const Vector3f up(0.0f, 1.0f, 0.0f);
-    const Vector3f right = levelforward.Cross(up);
-
-    const Vector3f center = ViewOrigin(invView) + levelforward * popupDistance;
-	const float xScale = (float)width / 768.0f * popupScale;
-	const float yScale = (float)height / 768.0f * popupScale;
-	const Matrix4f panelMatrix = Matrix4f(
-			xScale * right.x, yScale * up.x, forward.x, center.x,
-			xScale * right.y, yScale * up.y, forward.y, center.y,
-			xScale * right.z, yScale * up.z, forward.z, center.z,
-            0, 0, 0, 1);
-
-//	LOG("PanelMatrix center: %f %f %f", center.x, center.y, center.z);
-//	LogMatrix("PanelMatrix", panelMatrix);
-
-	return panelMatrix;
-}
-
-/*
- * Command
- *
- * Process commands sent over the message queue for the VR thread.
- *
- */
-void App::command(const char *msg)
-{
-	// Always include the space in MatchesHead to prevent problems
-	// with commands that have matching prefixes.
-
-    if (MatchesHead("joy ", msg))
-	{
-        sscanf(msg, "joy %f %f %f %f",
-                &d->joypad.sticks[0][0],
-                &d->joypad.sticks[0][1],
-                &d->joypad.sticks[1][0],
-                &d->joypad.sticks[1][1]);
-		return;
-	}
-
-    if (MatchesHead("touch ", msg))
-	{
-		int	action;
-        sscanf(msg, "touch %i %f %f",
-				&action,
-                &d->joypad.touch[0],
-                &d->joypad.touch[1]);
-        if (action == 0)
-		{
-            d->joypad.buttonState |= BUTTON_TOUCH;
-		}
-        if (action == 1)
-		{
-            d->joypad.buttonState &= ~BUTTON_TOUCH;
-		}
-		return;
-	}
-
-    if (MatchesHead("key ", msg))
-	{
-		int	key, down, repeatCount;
-        sscanf(msg, "key %i %i %i", &key, &down, &repeatCount);
-        keyEvent(key, down, repeatCount);
-		// We simply return because KeyEvent will call VrAppInterface->OnKeyEvent to give the app a
-		// chance to handle and consume the key before VrLib gets it. VrAppInterface needs to get the
-		// key first and have a chance to consume it completely because keys are context sensitive
-		// and only the app interface can know the current context the key should apply to. For
-		// instance, the back key backs out of some current state in the app -- but only the app knows
-		// whether or not there is a state to back out of at all. If we were to fall through here, the
-		// "key " message will be sent to VrAppInterface->Command() but only after VrLib has handled
-		// and or consumed the key first, which would break the back key behavior, and probably anything
-		// else, like input into an edit control.
-		return;
-	}
-
-    if (MatchesHead("surfaceChanged ", msg))
-	{
-        LOG("%s", msg);
-        if (d->windowSurface != EGL_NO_SURFACE)
-		{	// Samsung says this is an Android problem, where surfaces are reported as
-			// created multiple times.
-            WARN("Skipping create work because window hasn't been destroyed.");
-			return;
-		}
-        sscanf(msg, "surfaceChanged %p", &d->nativeWindow);
-
-		// Optionally force the window to a different resolution, which
-		// will be automatically scaled up by the HWComposer.
-		//
-        //ANativeWindow_setBuffersGeometry(nativeWindow, 1920, 1080, 0);
-
-		EGLint attribs[100];
-		int		numAttribs = 0;
-
-		// Set the colorspace on the window
-        d->windowSurface = EGL_NO_SURFACE;
-        if (d->appInterface->wantSrgbFramebuffer())
-		{
-			attribs[numAttribs++] = EGL_GL_COLORSPACE_KHR;
-			attribs[numAttribs++] = EGL_GL_COLORSPACE_SRGB_KHR;
-		}
-		// Ask for TrustZone rendering support
-        if (d->appInterface->GetWantProtectedFramebuffer())
-		{
-			attribs[numAttribs++] = EGL_PROTECTED_CONTENT_EXT;
-			attribs[numAttribs++] = EGL_TRUE;
-		}
-		attribs[numAttribs++] = EGL_NONE;
-
-		// Android doesn't let the non-standard extensions show up in the
-		// extension string, so we need to try it blind.
-        d->windowSurface = eglCreateWindowSurface(d->eglr.display, d->eglr.config,
-                d->nativeWindow, attribs);
-
-        if (d->windowSurface == EGL_NO_SURFACE)
-		{
-			const EGLint attribs2[] =
-			{
-				EGL_NONE
-			};
-            d->windowSurface = eglCreateWindowSurface(d->eglr.display, d->eglr.config,
-                    d->nativeWindow, attribs2);
-            if (d->windowSurface == EGL_NO_SURFACE)
-			{
-                FAIL("eglCreateWindowSurface failed: %s", EglErrorString());
-			}
-            d->framebufferIsSrgb = false;
-            d->framebufferIsProtected = false;
-		}
-		else
-		{
-            d->framebufferIsSrgb = d->appInterface->wantSrgbFramebuffer();
-            d->framebufferIsProtected = d->appInterface->GetWantProtectedFramebuffer();
-		}
-        LOG("NativeWindow %p gives surface %p", d->nativeWindow, d->windowSurface);
-        LOG("FramebufferIsSrgb: %s", d->framebufferIsSrgb ? "true" : "false");
-        LOG("FramebufferIsProtected: %s", d->framebufferIsProtected ? "true" : "false");
-
-        if (eglMakeCurrent(d->eglr.display, d->windowSurface, d->windowSurface, d->eglr.context) == EGL_FALSE)
-		{
-            FAIL("eglMakeCurrent failed: %s", EglErrorString());
-		}
-
-        d->createdSurface = true;
-
-		// Let the client app setup now
-        d->appInterface->WindowCreated();
-
-		// Resume
-        if (!d->paused)
-		{
-            resume();
-		}
-		return;
-	}
-
-    if (MatchesHead("surfaceDestroyed ", msg))
-	{
-        LOG("surfaceDestroyed");
-
-		// Let the client app shutdown first.
-        d->appInterface->WindowDestroyed();
-
-		// Handle it ourselves.
-        if (eglMakeCurrent(d->eglr.display, d->eglr.pbufferSurface, d->eglr.pbufferSurface,
-                d->eglr.context) == EGL_FALSE)
-		{
-            FAIL("RC_SURFACE_DESTROYED: eglMakeCurrent pbuffer failed");
-		}
-
-        if (d->windowSurface != EGL_NO_SURFACE)
-		{
-            eglDestroySurface(d->eglr.display, d->windowSurface);
-            d->windowSurface = EGL_NO_SURFACE;
-		}
-        if (d->nativeWindow != nullptr)
-		{
-            ANativeWindow_release(d->nativeWindow);
-            d->nativeWindow = nullptr;
-		}
-		return;
-	}
-
-    if (MatchesHead("pause ", msg))
-	{
-        LOG("pause");
-        if (!d->paused)
-		{
-            d->paused = true;
-            pause();
-		}
-	}
-
-    if (MatchesHead("resume ", msg))
-	{
-        LOG("resume");
-        d->paused = false;
-		// Don't actually do the resume operations if we don't have
-		// a window yet.  They will be done when the window is created.
-        if (d->windowSurface != EGL_NO_SURFACE)
-		{
-            resume();
-		}
-		else
-		{
-            LOG("Skipping resume because windowSurface not set yet");
-		}
-	}
-
-    if (MatchesHead("intent ", msg))
-	{
-		char fromPackageName[512];
-		char uri[1024];
-		// since the package name and URI cannot contain spaces, but JSON can,
-		// the JSON string is at the end and will come after the third space.
-        sscanf(msg, "intent %s %s", fromPackageName, uri);
-        char const * jsonStart = nullptr;
-        size_t msgLen = strlen(msg);
-		int spaceCount = 0;
-        for (size_t i = 0; i < msgLen; ++i) {
-            if (msg[i] == ' ') {
-				spaceCount++;
-                if (spaceCount == 3) {
-					jsonStart = &msg[i+1];
-					break;
-				}
-			}
-		}
-
-        if (strcmp(fromPackageName, EMPTY_INTENT_STR) == 0)
-		{
-			fromPackageName[0] = '\0';
-		}
-        if (strcmp(uri, EMPTY_INTENT_STR) == 0)
-		{
-			uri[0] = '\0';
-		}
-
-		// assign launchIntent to the intent command
-        d->launchIntentFromPackage = fromPackageName;
-        d->launchIntentJSON = jsonStart;
-        d->launchIntentURI = uri;
-
-		// when the PlatformActivity is launched, this is how it gets its command to start
-		// a particular UI.
-        d->appInterface->NewIntent(fromPackageName, jsonStart, uri);
-
-		return;
-	}
-
-    if (MatchesHead("popup ", msg))
-	{
-		int width, height;
-		float seconds;
-        sscanf(msg, "popup %i %i %f", &width, &height, &seconds);
-
-        d->dialogWidth = width;
-        d->dialogHeight = height;
-        d->dialogStopSeconds = ovr_GetTimeInSeconds() + seconds;
-
-        d->dialogMatrix = PanelMatrix(d->lastViewMatrix, d->popupDistance, d->popupScale, width, height);
-
-        glActiveTexture(GL_TEXTURE0);
-        LOG("RC_UPDATE_POPUP dialogTexture %i", d->dialogTexture->textureId);
-        d->dialogTexture->Update();
-        glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0);
-
-		return;
-	}
-
-    if (MatchesHead("sync ", msg))
-	{
-		return;
-	}
-
-    if (MatchesHead("quit ", msg))
-	{
-        ovr_LeaveVrMode(d->OvrMobile);
-        d->readyToExit = true;
-        LOG("VrThreadSynced=%d CreatedSurface=%d ReadyToExit=%d", d->vrThreadSynced, d->createdSurface, d->readyToExit);
-	}
-
-	// Pass it on to the client app.
-    d->appInterface->Command(msg);
 }
 
 void ToggleScreenColor()
