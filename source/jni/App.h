@@ -289,9 +289,6 @@ public:
 
     void			drawBounds( const Vector3f &mins, const Vector3f &maxs, const Matrix4f &mvp, const Vector3f &color );
 
-    // Shut down various subsystems
-    void			pause();
-
     // Restart various subsusyems, possibly with new parameters
     // Called on surface creation and on resume from pause
     void			resume();

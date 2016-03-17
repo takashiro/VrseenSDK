@@ -587,6 +587,13 @@ struct App::Private
         return mid;
     }
 
+    void pause()
+    {
+        appInterface->Paused();
+
+        ovr_LeaveVrMode(OvrMobile);
+    }
+
     void initGlObjects()
     {
         vrParms = DefaultVrParmsForRenderer(eglr);
@@ -880,14 +887,14 @@ struct App::Private
                 {
                     calibrateFovScale -= 0.01f;
                     self->createToast("calibrateFovScale: %f", calibrateFovScale);
-                    self->pause();
+                    pause();
                     self->resume();
                 }
                 if (input.buttonPressed & BUTTON_DPAD_DOWN)
                 {
                     calibrateFovScale += 0.01f;
                     self->createToast("calibrateFovScale: %f", calibrateFovScale);
-                    self->pause();
+                    pause();
                     self->resume();
                 }
             }
@@ -1058,7 +1065,7 @@ struct App::Private
             if (!paused)
             {
                 paused = true;
-                self->pause();
+                pause();
             }
         }
 
@@ -1804,13 +1811,6 @@ void App::setVrModeParms(ovrModeParms parms)
 	{
 		VrModeParms = parms;
 	}
-}
-
-void App::pause()
-{
-    d->appInterface->Paused();
-
-    ovr_LeaveVrMode(d->OvrMobile);
 }
 
 /*
