@@ -594,6 +594,70 @@ struct App::Private
         ovr_LeaveVrMode(OvrMobile);
     }
 
+    void resume()
+    {
+        DROIDLOG("OVRTimer", "AppLocal::Resume");
+
+        // always reload the dev config on a resume
+        JniUtils::LoadDevConfig(true);
+
+        // Make sure the window surface is current, which it won't be
+        // if we were previously in async mode
+        // (Not needed now?)
+        if (eglMakeCurrent(eglr.display, windowSurface, windowSurface, eglr.context) == EGL_FALSE)
+        {
+            FAIL("eglMakeCurrent failed: %s", EglErrorString());
+        }
+
+        ovrModeParms &VrModeParms = self->VrModeParms;
+        VrModeParms.ActivityObject = javaObject;
+
+        // Allow the app to override
+        appInterface->ConfigureVrMode(VrModeParms);
+
+        // Reload local preferences, in case we are coming back from a
+        // switch to the dashboard that changed them.
+        ovr_UpdateLocalPreferences();
+
+        // Check for values that effect our mode settings
+        {
+            const char * imageServerStr = ovr_GetLocalPreferenceValueForKey(LOCAL_PREF_IMAGE_SERVER, "0");
+            VrModeParms.EnableImageServer = (atoi(imageServerStr) > 0);
+
+            const char * cpuLevelStr = ovr_GetLocalPreferenceValueForKey(LOCAL_PREF_DEV_CPU_LEVEL, "-1");
+            const int cpuLevel = atoi(cpuLevelStr);
+            if (cpuLevel >= 0)
+            {
+                VrModeParms.CpuLevel = cpuLevel;
+                LOG("Local Preferences: Setting cpuLevel %d", VrModeParms.CpuLevel);
+            }
+            const char * gpuLevelStr = ovr_GetLocalPreferenceValueForKey(LOCAL_PREF_DEV_GPU_LEVEL, "-1");
+            const int gpuLevel = atoi(gpuLevelStr);
+            if (gpuLevel >= 0)
+            {
+                VrModeParms.GpuLevel = gpuLevel;
+                LOG("Local Preferences: Setting gpuLevel %d", VrModeParms.GpuLevel);
+            }
+
+            const char * showVignetteStr = ovr_GetLocalPreferenceValueForKey(LOCAL_PREF_DEV_SHOW_VIGNETTE, "1");
+            showVignette = (atoi(showVignetteStr) > 0);
+
+            const char * enableDebugOptionsStr = ovr_GetLocalPreferenceValueForKey(LOCAL_PREF_DEV_DEBUG_OPTIONS, "0");
+            enableDebugOptions =  (atoi(enableDebugOptionsStr) > 0);
+
+            const char * enableGpuTimingsStr = ovr_GetLocalPreferenceValueForKey(LOCAL_PREF_DEV_GPU_TIMINGS, "0");
+            SetAllowGpuTimerQueries(atoi(enableGpuTimingsStr) > 0);
+        }
+
+        // Clear cursor trails
+        gazeCursor->HideCursorForFrames(10);
+
+        // Start up TimeWarp and the various performance options
+        OvrMobile = ovr_EnterVrMode(VrModeParms, &hmdInfo);
+
+        appInterface->Resumed();
+    }
+
     void initGlObjects()
     {
         vrParms = DefaultVrParmsForRenderer(eglr);
@@ -888,14 +952,14 @@ struct App::Private
                     calibrateFovScale -= 0.01f;
                     self->createToast("calibrateFovScale: %f", calibrateFovScale);
                     pause();
-                    self->resume();
+                    resume();
                 }
                 if (input.buttonPressed & BUTTON_DPAD_DOWN)
                 {
                     calibrateFovScale += 0.01f;
                     self->createToast("calibrateFovScale: %f", calibrateFovScale);
                     pause();
-                    self->resume();
+                    resume();
                 }
             }
         }
@@ -1027,7 +1091,7 @@ struct App::Private
             // Resume
             if (!paused)
             {
-                self->resume();
+                resume();
             }
             return;
         }
@@ -1077,7 +1141,7 @@ struct App::Private
             // a window yet.  They will be done when the window is created.
             if (windowSurface != EGL_NO_SURFACE)
             {
-                self->resume();
+                resume();
             }
             else
             {
@@ -1811,77 +1875,6 @@ void App::setVrModeParms(ovrModeParms parms)
 	{
 		VrModeParms = parms;
 	}
-}
-
-/*
- * On startup, the resume message happens before our window is created, so
- * it needs to be deferred until after the create so we know the window
- * dimensions for HmdInfo.
- *
- * On pressing the power button, pause/resume happens without destroying
- * the window.
- */
-void App::resume()
-{
-    DROIDLOG("OVRTimer", "AppLocal::Resume");
-
-	// always reload the dev config on a resume
-    JniUtils::LoadDevConfig(true);
-
-	// Make sure the window surface is current, which it won't be
-	// if we were previously in async mode
-	// (Not needed now?)
-    if (eglMakeCurrent(d->eglr.display, d->windowSurface, d->windowSurface, d->eglr.context) == EGL_FALSE)
-	{
-        FAIL("eglMakeCurrent failed: %s", EglErrorString());
-	}
-
-    VrModeParms.ActivityObject = d->javaObject;
-
-	// Allow the app to override
-    d->appInterface->ConfigureVrMode(VrModeParms);
-
-	// Reload local preferences, in case we are coming back from a
-	// switch to the dashboard that changed them.
-	ovr_UpdateLocalPreferences();
-
-	// Check for values that effect our mode settings
-	{
-        const char * imageServerStr = ovr_GetLocalPreferenceValueForKey(LOCAL_PREF_IMAGE_SERVER, "0");
-        VrModeParms.EnableImageServer = (atoi(imageServerStr) > 0);
-
-        const char * cpuLevelStr = ovr_GetLocalPreferenceValueForKey(LOCAL_PREF_DEV_CPU_LEVEL, "-1");
-        const int cpuLevel = atoi(cpuLevelStr);
-        if (cpuLevel >= 0)
-		{
-			VrModeParms.CpuLevel = cpuLevel;
-            LOG("Local Preferences: Setting cpuLevel %d", VrModeParms.CpuLevel);
-		}
-        const char * gpuLevelStr = ovr_GetLocalPreferenceValueForKey(LOCAL_PREF_DEV_GPU_LEVEL, "-1");
-        const int gpuLevel = atoi(gpuLevelStr);
-        if (gpuLevel >= 0)
-		{
-			VrModeParms.GpuLevel = gpuLevel;
-            LOG("Local Preferences: Setting gpuLevel %d", VrModeParms.GpuLevel);
-		}
-
-        const char * showVignetteStr = ovr_GetLocalPreferenceValueForKey(LOCAL_PREF_DEV_SHOW_VIGNETTE, "1");
-        d->showVignette = (atoi(showVignetteStr) > 0);
-
-        const char * enableDebugOptionsStr = ovr_GetLocalPreferenceValueForKey(LOCAL_PREF_DEV_DEBUG_OPTIONS, "0");
-        d->enableDebugOptions =  (atoi(enableDebugOptionsStr) > 0);
-
-        const char * enableGpuTimingsStr = ovr_GetLocalPreferenceValueForKey(LOCAL_PREF_DEV_GPU_TIMINGS, "0");
-        SetAllowGpuTimerQueries(atoi(enableGpuTimingsStr) > 0);
-	}
-
-	// Clear cursor trails
-    gazeCursor().HideCursorForFrames(10);
-
-	// Start up TimeWarp and the various performance options
-    d->OvrMobile = ovr_EnterVrMode(VrModeParms, &d->hmdInfo);
-
-    d->appInterface->Resumed();
 }
 
 void ToggleScreenColor()

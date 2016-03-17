@@ -289,10 +289,6 @@ public:
 
     void			drawBounds( const Vector3f &mins, const Vector3f &maxs, const Matrix4f &mvp, const Vector3f &color );
 
-    // Restart various subsusyems, possibly with new parameters
-    // Called on surface creation and on resume from pause
-    void			resume();
-
     // Start, stop and sync the VrThread.
     void			startVrThread();
     void			stopVrThread();
