@@ -1588,9 +1588,7 @@ struct App::Private
             const double timeNow = floor(ovr_GetTimeInSeconds());
             if (timeNow > lastReportTime)
             {
-    #if 1	// it is sometimes handy to remove this spam from the log
-                LOG("FPS: %i GPU time: %3.1f ms ", countApplicationFrames, eyeTargets->LogEyeSceneGpuTime.GetTotalTime());
-    #endif
+                vInfo("FPS:" << countApplicationFrames << "GPU time:" << eyeTargets->LogEyeSceneGpuTime.GetTotalTime() << "ms");
                 countApplicationFrames = 0;
                 lastReportTime = timeNow;
             }
@@ -1600,7 +1598,7 @@ struct App::Private
 
         // Shutdown the VR thread
         {
-            LOG("AppLocal::VrThreadFunction - shutdown");
+            vInfo("AppLocal::VrThreadFunction - shutdown");
 
             // Shut down the message queue so it cannot overflow.
             vrMessageQueue.Shutdown();
@@ -1642,13 +1640,25 @@ struct App::Private
             EglShutdown(eglr);
 
             // Detach from the Java VM before exiting.
-            LOG("javaVM->DetachCurrentThread");
+            vInfo("javaVM->DetachCurrentThread");
             const jint rtn = javaVM->DetachCurrentThread();
             if (rtn != JNI_OK)
             {
-                LOG("javaVM->DetachCurrentThread returned %i", rtn);
+                vInfo("javaVM->DetachCurrentThread returned" << rtn);
             }
         }
+    }
+
+    jclass getGlobalClassReference(const char * className) const
+    {
+        jclass lc = uiJni->FindClass(className);
+        if (lc == 0) {
+            vFatal("Failed to find class" << className);
+        }
+        // Turn it into a global ref, so we can safely use it in the VR thread
+        jclass gc = (jclass) uiJni->NewGlobalRef(lc);
+        uiJni->DeleteLocalRef(lc);
+        return gc;
     }
 };
 
@@ -1707,7 +1717,7 @@ App::App(JNIEnv *jni, jobject activityObject, VrAppInterface &interface)
 
 	// A difficulty with JNI is that we can't resolve our (non-Android) package
 	// classes on other threads, so lookup everything we need right now.
-    d->vrActivityClass = getGlobalClassReference(activityClassName);
+    d->vrActivityClass = d->getGlobalClassReference(activityClassName);
     VrLocale::VrActivityClass = d->vrActivityClass;
 
     d->createVrToastMethodId = d->GetMethodID("createVrToastOnUiThread", "(Ljava/lang/String;)V");
@@ -1846,21 +1856,6 @@ void App::playSound(const char * name)
 		// Run on the talk to java thread
         d->ttj.GetMessageQueue().PostPrintf("sound %s", name);
 	}
-}
-
-jclass App::getGlobalClassReference(const char * className) const
-{
-    jclass lc = d->uiJni->FindClass(className);
-    if (lc == 0)
-	{
-        FAIL("FindClass(%s) failed", className);
-	}
-	// Turn it into a global ref, so we can safely use it in the VR thread
-    jclass gc = (jclass)d->uiJni->NewGlobalRef(lc);
-
-    d->uiJni->DeleteLocalRef(lc);
-
-	return gc;
 }
 
 void App::setVrModeParms(ovrModeParms parms)

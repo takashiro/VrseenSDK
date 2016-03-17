@@ -297,8 +297,6 @@ public:
     // TalkToJavaInterface
     void TtjCommand(JNIEnv *jni, const char * commandString) override;
 
-    jclass			getGlobalClassReference( const char * className ) const;
-
     volatile bool	oneTimeInitCalled;
     ovrModeParms	VrModeParms;
 
