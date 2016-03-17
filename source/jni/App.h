@@ -319,9 +319,6 @@ public:
     void			stopVrThread();
     void			syncVrThread();
 
-    // Open the apk on startup for resource loading
-    void			openApplicationPackage();
-
     void			interpretTouchpad( VrInput & input );
 
     // TalkToJavaInterface

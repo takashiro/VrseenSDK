@@ -608,7 +608,8 @@ App::App(JNIEnv *jni, jobject activityObject, VrAppInterface &interface)
     exitOnDestroy = !isHybridApp;
 
 	// Get the path to the .apk and package name
-    openApplicationPackage();
+    d->packageCodePath = JniUtils::GetPackageCodePath(d->uiJni, d->vrActivityClass, d->javaObject);
+    d->packageName = JniUtils::GetCurrentPackageName(d->uiJni, d->javaObject);
 
 	// Hook the App and AppInterface together
     d->appInterface = &interface;
@@ -741,12 +742,6 @@ void App::playSound(const char * name)
 		// Run on the talk to java thread
         d->ttj.GetMessageQueue().PostPrintf("sound %s", name);
 	}
-}
-
-void App::openApplicationPackage()
-{
-    d->packageCodePath = JniUtils::GetPackageCodePath(d->uiJni, d->vrActivityClass, d->javaObject);
-    d->packageName = JniUtils::GetCurrentPackageName(d->uiJni, d->javaObject);
 }
 
 jclass App::getGlobalClassReference(const char * className) const
