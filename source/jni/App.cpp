@@ -779,6 +779,84 @@ struct App::Private
         }
     }
 
+    void frameworkButtonProcessing(const VrInput &input)
+    {
+        // Toggle calibration lines
+        bool const rightTrigger = input.buttonState & BUTTON_RIGHT_TRIGGER;
+        bool const leftTrigger = input.buttonState & BUTTON_LEFT_TRIGGER;
+        if (leftTrigger && rightTrigger && (input.buttonPressed & BUTTON_START) != 0)
+        {
+            time_t rawTime;
+            time(&rawTime);
+            struct tm * timeInfo = localtime(&rawTime);
+            char timeStr[128];
+            strftime(timeStr, sizeof(timeStr), "%H:%M:%S", timeInfo);
+            DROIDLOG("QAEvent", "%s (%.3f) - QA event occurred", timeStr, ovr_GetTimeInSeconds());
+        }
+
+        // Display tweak testing, only when holding right trigger
+        if (enableDebugOptions && rightTrigger)
+        {
+            if (input.buttonPressed & BUTTON_DPAD_RIGHT)
+            {
+                jclass vmDebugClass = vrJni->FindClass("dalvik/system/VMDebug");
+                jmethodID dumpId = vrJni->GetStaticMethodID(vmDebugClass, "dumpReferenceTables", "()V");
+                vrJni->CallStaticVoidMethod(vmDebugClass, dumpId);
+                vrJni->DeleteLocalRef(vmDebugClass);
+            }
+
+            if (input.buttonPressed & BUTTON_Y)
+            {	// display current scheduler state and clock rates
+                //const char * str = ovr_CreateSchedulingReport(OvrMobile);
+                //CreateToast("%s", str);
+            }
+
+            if (input.buttonPressed & BUTTON_B)
+            {
+                if (swapParms.WarpOptions & SWAP_OPTION_USE_SLICED_WARP)
+                {
+                    swapParms.WarpOptions &= ~SWAP_OPTION_USE_SLICED_WARP;
+                    createToast("eye warp");
+                }
+                else
+                {
+                    swapParms.WarpOptions |= SWAP_OPTION_USE_SLICED_WARP;
+                    createToast("slice warp");
+                }
+            }
+
+            if (swapParms.WarpOptions & SWAP_OPTION_USE_SLICED_WARP)
+            {
+                extern float calibrateFovScale;
+
+                if (input.buttonPressed & BUTTON_DPAD_LEFT)
+                {
+                    swapParms.PreScheduleSeconds -= 0.001f;
+                    createToast("Schedule: %f", swapParms.PreScheduleSeconds);
+                }
+                if (input.buttonPressed & BUTTON_DPAD_RIGHT)
+                {
+                    swapParms.PreScheduleSeconds += 0.001f;
+                    createToast("Schedule: %f", swapParms.PreScheduleSeconds);
+                }
+                if (input.buttonPressed & BUTTON_DPAD_UP)
+                {
+                    calibrateFovScale -= 0.01f;
+                    createToast("calibrateFovScale: %f", calibrateFovScale);
+                    pause();
+                    resume();
+                }
+                if (input.buttonPressed & BUTTON_DPAD_DOWN)
+                {
+                    calibrateFovScale += 0.01f;
+                    createToast("calibrateFovScale: %f", calibrateFovScale);
+                    pause();
+                    resume();
+                }
+            }
+        }
+    }
+
     void startRendering()
     {
         // Set the name that will show up in systrace
@@ -1030,7 +1108,7 @@ struct App::Private
             // reset any VR menu submissions from previous frame
             vrMenuMgr->beginFrame();
 
-            self->frameworkButtonProcessing(vrFrame.Input);
+            frameworkButtonProcessing(vrFrame.Input);
 
             KeyState::eKeyEventType event = backKeyState.Update(ovr_GetTimeInSeconds());
             if (event != KeyState::KEY_EVENT_NONE)
@@ -1836,121 +1914,6 @@ void ToggleScreenColor()
 	// actually flush if all that was done was a clear.
 	GL_Finish();
     glDisable(GL_WRITEONLY_RENDERING_QCOM);
-}
-
-void App::frameworkButtonProcessing(const VrInput & input)
-{
-	// Toggle calibration lines
-	bool const rightTrigger = input.buttonState & BUTTON_RIGHT_TRIGGER;
-	bool const leftTrigger = input.buttonState & BUTTON_LEFT_TRIGGER;
-    if (leftTrigger && rightTrigger && (input.buttonPressed & BUTTON_START) != 0)
-	{
-		time_t rawTime;
-        time(&rawTime);
-        struct tm * timeInfo = localtime(&rawTime);
-		char timeStr[128];
-        strftime(timeStr, sizeof(timeStr), "%H:%M:%S", timeInfo);
-        DROIDLOG("QAEvent", "%s (%.3f) - QA event occurred", timeStr, ovr_GetTimeInSeconds());
-	}
-
-	// Display tweak testing, only when holding right trigger
-    if (d->enableDebugOptions && rightTrigger)
-	{
-#if 0
-		// Cycle debug options
-		static int debugMode = 0;
-		static int debugValue = 0;
-		static const char * modeNames[] = {
-			"OFF",
-			"RUNNING",
-			"FROZEN"
-		};
-		static const char * valueNames[] = {
-			"VALUE_DRAW",
-			"VALUE_LATENCY"
-		};
-        if (input.buttonPressed & BUTTON_DPAD_UP)
-		{
-            debugMode = (debugMode + 1) % DEBUG_PERF_MAX;
-			SwapParms.DebugGraphMode = (ovrTimeWarpDebugPerfMode)debugMode;
-            CreateToast("debug graph %s: %s", modeNames[ debugMode ], valueNames[ debugValue ]);
-		}
-#endif
-
-#if 0
-        if (input.buttonPressed & BUTTON_DPAD_RIGHT)
-		{
-			SwapParms.MinimumVsyncs = SwapParms.MinimumVsyncs > 3 ? 1 : SwapParms.MinimumVsyncs + 1;
-            CreateToast("MinimumVsyncs: %i", SwapParms.MinimumVsyncs);
-		}
-#endif
-
-#if 0
-        if (input.buttonPressed & BUTTON_DPAD_RIGHT)
-		{
-            debugValue = (debugValue + 1) % DEBUG_VALUE_MAX;
-			SwapParms.DebugGraphValue = (ovrTimeWarpDebugPerfValue)debugValue;
-            CreateToast("debug graph %s: %s", modeNames[ debugMode ], valueNames[ debugValue ]);
-		}
-#endif
-        if (input.buttonPressed & BUTTON_DPAD_RIGHT)
-		{
-            jclass vmDebugClass = d->vrJni->FindClass("dalvik/system/VMDebug");
-            jmethodID dumpId = d->vrJni->GetStaticMethodID(vmDebugClass, "dumpReferenceTables", "()V");
-            d->vrJni->CallStaticVoidMethod(vmDebugClass, dumpId);
-            d->vrJni->DeleteLocalRef(vmDebugClass);
-		}
-
-        if (input.buttonPressed & BUTTON_Y)
-		{	// display current scheduler state and clock rates
-            //const char * str = ovr_CreateSchedulingReport(OvrMobile);
-            //CreateToast("%s", str);
-		}
-
-        if (input.buttonPressed & BUTTON_B)
-		{
-            if (d->swapParms.WarpOptions & SWAP_OPTION_USE_SLICED_WARP)
-			{
-                d->swapParms.WarpOptions &= ~SWAP_OPTION_USE_SLICED_WARP;
-                createToast("eye warp");
-			}
-			else
-			{
-                d->swapParms.WarpOptions |= SWAP_OPTION_USE_SLICED_WARP;
-                createToast("slice warp");
-			}
-		}
-
-        if (d->swapParms.WarpOptions & SWAP_OPTION_USE_SLICED_WARP)
-		{
-			extern float calibrateFovScale;
-
-            if (input.buttonPressed & BUTTON_DPAD_LEFT)
-			{
-                d->swapParms.PreScheduleSeconds -= 0.001f;
-                createToast("Schedule: %f", d->swapParms.PreScheduleSeconds);
-			}
-            if (input.buttonPressed & BUTTON_DPAD_RIGHT)
-			{
-                d->swapParms.PreScheduleSeconds += 0.001f;
-                createToast("Schedule: %f", d->swapParms.PreScheduleSeconds);
-			}
-            if (input.buttonPressed & BUTTON_DPAD_UP)
-			{
-				calibrateFovScale -= 0.01f;
-                createToast("calibrateFovScale: %f", calibrateFovScale);
-                pause();
-                resume();
-			}
-            if (input.buttonPressed & BUTTON_DPAD_DOWN)
-			{
-				calibrateFovScale += 0.01f;
-                createToast("calibrateFovScale: %f", calibrateFovScale);
-                pause();
-                resume();
-			}
-		}
-	}
 }
 
 /*

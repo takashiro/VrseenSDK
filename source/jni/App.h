@@ -281,9 +281,6 @@ public:
 
     Matrix4f		 matrixInterpolation( const Matrix4f & startMatrix, const Matrix4f & endMatrix, double t );
 
-    // Handle development input options
-    void 			frameworkButtonProcessing( const VrInput & input );
-
     // Called by jni functions
     void			keyEvent( const int keyCode, const bool down, const int keyCount );
 
