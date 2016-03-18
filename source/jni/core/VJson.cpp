@@ -548,7 +548,7 @@ std::ostream &operator<<(std::ostream &out, const Json &value)
     return out;
 }
 
-Json Json::Parse(const char *str)
+Json Json::Parse(const char* str)
 {
 	std::stringstream s;
 	s << str;

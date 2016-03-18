@@ -1346,7 +1346,7 @@ struct App::Private : public TalkToJavaInterface
 
             // handle any pending system activity events
             size_t const MAX_EVENT_SIZE = 4096;
-            char eventBuffer[MAX_EVENT_SIZE];
+            VString eventBuffer;
 
             for (eVrApiEventStatus status = ovr_nextPendingEvent(eventBuffer, MAX_EVENT_SIZE);
                 status >= VRAPI_EVENT_PENDING;

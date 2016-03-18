@@ -223,30 +223,30 @@ void SystemActivities_ShutdownEventQueues()
 	MainEventQueue = NULL;
 }
 
-void SystemActivities_AddInternalEvent( char const * data )
+void SystemActivities_AddInternalEvent( const VString& data )
 {
-	EventData * eventData = new EventData( data, strlen( data ) + 1 );
+    EventData * eventData = new EventData( data.toCString(), data.length() + 1 );
 	InternalEventQueue->Enqueue( eventData );
-	LOG( "SystemActivities: queued internal event '%s'", data );
+    LOG( "SystemActivities: queued internal event '%s'", data.toCString() );
 }
 
-void SystemActivities_AddEvent( char const * data )
+void SystemActivities_AddEvent( const VString& data )
 {
-	EventData * eventData = new EventData( data, strlen( data ) + 1 );
+    EventData * eventData = new EventData( data.toCString(), data.length() + 1 );
 	MainEventQueue->Enqueue( eventData );
-	LOG( "SystemActivities: queued event '%s'", data );
+    LOG( "SystemActivities: queued event '%s'", data.toCString() );
 }
 
-eVrApiEventStatus SystemActivities_nextPendingEvent( EventQueue * queue, char * buffer, unsigned int const bufferSize )
+eVrApiEventStatus SystemActivities_nextPendingEvent( EventQueue * queue, VString& buffer, unsigned int const bufferSize )
 {
-	if ( buffer == NULL || bufferSize == 0 )
+    if ( buffer.length() == 0 || bufferSize == 0 )
 	{
 		return VRAPI_EVENT_ERROR_INVALID_BUFFER;
 	}
 
 	if ( bufferSize < 2 )
 	{
-		buffer[0] = '\0';
+        buffer = "";
 		return VRAPI_EVENT_ERROR_INVALID_BUFFER;
 	}
 
@@ -262,19 +262,20 @@ eVrApiEventStatus SystemActivities_nextPendingEvent( EventQueue * queue, char * 
 		return VRAPI_EVENT_NOT_PENDING;
 	}
 
-	OVR_strncpy( buffer, bufferSize, static_cast< char const * >( eventData->GetData() ), eventData->GetSize() );
+//	OVR_strncpy( buffer, bufferSize, static_cast< char const * >( eventData->GetData() ), eventData->GetSize() );
+    buffer = static_cast< char const * >( eventData->GetData() );
 	bool overflowed = eventData->GetSize() >= bufferSize;
 
 	delete eventData;
 	return overflowed ? VRAPI_EVENT_BUFFER_OVERFLOW : VRAPI_EVENT_PENDING;
 }
 
-eVrApiEventStatus SystemActivities_nextPendingInternalEvent( char * buffer, unsigned int const bufferSize )
+eVrApiEventStatus SystemActivities_nextPendingInternalEvent( VString& buffer, unsigned int const bufferSize )
 {
 	return SystemActivities_nextPendingEvent( InternalEventQueue, buffer, bufferSize );
 }
 
-eVrApiEventStatus SystemActivities_nextPendingMainEvent( char * buffer, unsigned int const bufferSize )
+eVrApiEventStatus SystemActivities_nextPendingMainEvent( VString& buffer, unsigned int const bufferSize )
 {
 	return SystemActivities_nextPendingEvent( MainEventQueue, buffer, bufferSize );
 }

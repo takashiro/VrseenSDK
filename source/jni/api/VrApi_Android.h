@@ -170,7 +170,7 @@ enum eVrApiEventStatus
 	VRAPI_EVENT_INVALID_JSON				// there was an error parsing the JSON data
 };
 
-eVrApiEventStatus ovr_nextPendingEvent( char * buffer, unsigned int const bufferSize );
+eVrApiEventStatus ovr_nextPendingEvent( NervGear::VString& buffer, unsigned int const bufferSize );
 
 //-----------------------------------------------------------------
 // Localization

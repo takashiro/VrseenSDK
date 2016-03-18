@@ -1771,7 +1771,7 @@ void ovr_HandleHmdEvents( ovrMobile * ovr )
 
 				NervGear::VString reorientMessage;
 				CreateSystemActivitiesCommand( "", SYSTEM_ACTIVITY_EVENT_REORIENT, "", "", reorientMessage );
-				NervGear::SystemActivities_AddEvent( reorientMessage.toCString() );
+                NervGear::SystemActivities_AddEvent( reorientMessage );
 			}
 		}
 		else if ( mountState.MountState == HMT_MOUNT_UNMOUNTED )
@@ -1806,7 +1806,8 @@ void ovr_HandleDeviceStateChanges( ovrMobile * ovr )
 
 	// check for pending events that must be handled natively
 	size_t const MAX_EVENT_SIZE = 4096;
-	char eventBuffer[MAX_EVENT_SIZE];
+//	char eventBuffer[MAX_EVENT_SIZE];
+    VString eventBuffer;
 
 	for ( eVrApiEventStatus status = NervGear::SystemActivities_nextPendingInternalEvent( eventBuffer, MAX_EVENT_SIZE );
 		status >= VRAPI_EVENT_PENDING;
@@ -1818,7 +1819,7 @@ void ovr_HandleDeviceStateChanges( ovrMobile * ovr )
 			continue;
 		}
 
-        Json reader = Json::Parse(eventBuffer);
+        Json reader = Json::Parse(eventBuffer.toCString());
         if ( reader.isObject() )
 		{
             VString command = reader.value("Command").toString();
@@ -2142,7 +2143,7 @@ void ovr_InitLocalPreferences( JNIEnv * jni, jobject activityObject )
 	ovr_SetAllowLocalPreferencesFile( isDeveloperMode );
 }
 
-eVrApiEventStatus ovr_nextPendingEvent( char * buffer, unsigned int const bufferSize )
+eVrApiEventStatus ovr_nextPendingEvent( VString& buffer, unsigned int const bufferSize )
 {
 	eVrApiEventStatus status = NervGear::SystemActivities_nextPendingMainEvent( buffer, bufferSize );
 	if ( status < VRAPI_EVENT_PENDING )
@@ -2151,7 +2152,7 @@ eVrApiEventStatus ovr_nextPendingEvent( char * buffer, unsigned int const buffer
 	}
 
 	// Parse to JSON here to determine if we should handle the event natively, or pass it along to the client app.
-    Json reader = Json::Parse(buffer);
+    Json reader = Json::Parse(buffer.toCString());
     if (reader.isObject())
 	{
         VString command = reader.value( "Command" ).toString();
@@ -2169,7 +2170,7 @@ eVrApiEventStatus ovr_nextPendingEvent( char * buffer, unsigned int const buffer
 			// queue as an internal event
 			NervGear::SystemActivities_AddInternalEvent( buffer );
 			// treat as an empty event externally
-			buffer[0] = '\0';
+            buffer = "";
 			status = VRAPI_EVENT_CONSUMED;
         }
 	}
