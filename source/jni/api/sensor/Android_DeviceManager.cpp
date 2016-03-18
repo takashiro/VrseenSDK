@@ -115,7 +115,8 @@ bool DeviceManager::getDeviceInfo(DeviceInfo* info) const
     info->Type    = Device_Manager;
     info->Version = 0;
     info->ProductName = "DeviceManager";
-    OVR_strcpy(info->Manufacturer,DeviceInfo::MaxNameLength, "Oculus VR, LLC");
+//    OVR_strcpy(info->Manufacturer,DeviceInfo::MaxNameLength, "Oculus VR, LLC");
+    info->Manufacturer = "Oculus VR, LLC";
     return true;
 }
 
