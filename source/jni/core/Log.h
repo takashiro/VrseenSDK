@@ -83,7 +83,6 @@ public:
     virtual ~Log();
 
     // Log formating buffer size used by default LogMessageVarg. Longer strings are truncated.
-    enum { MaxLogBufferMessageSize = 4096 };
 
     unsigned        GetLoggingMask() const            { return LoggingMask; }
     void            SetLoggingMask(unsigned logMask)  { LoggingMask = logMask; }
@@ -100,7 +99,7 @@ public:
     // Helper used by LogMessageVarg to format the log message, writing the resulting
     // string into buffer. It formats text based on fmt and appends prefix/new line
     // based on LogMessageType.
-    static void     FormatLog(VString& buffer, unsigned bufferSize, LogMessageType messageType,
+    static void     FormatLog(VString& buffer, LogMessageType messageType,
                               const char* fmt, va_list argList);
 
     // Default log output implementation used by by LogMessageVarg.

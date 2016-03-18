@@ -48,7 +48,7 @@ void Log::LogMessageVarg(LogMessageType messageType, const char* fmt, va_list ar
 #endif
 
     VString buffer;
-    FormatLog(buffer, MaxLogBufferMessageSize, messageType, fmt, argList);
+    FormatLog(buffer, messageType, fmt, argList);
     DefaultLogOutput(messageType, buffer.toCString());
 }
 
@@ -61,7 +61,7 @@ void NervGear::Log::LogMessage(LogMessageType messageType, const char* pfmt, ...
 }
 
 
-void Log::FormatLog(VString& buffer, unsigned bufferSize, LogMessageType messageType,
+void Log::FormatLog(VString& buffer, LogMessageType messageType,
                     const char* fmt, va_list argList)
 {
     bool addNewline = true;
@@ -79,7 +79,7 @@ void Log::FormatLog(VString& buffer, unsigned bufferSize, LogMessageType message
         break;
     }
 
-
+    buffer.sprintf(fmt, argList);
     if (addNewline) {
         buffer += "\n";
     }
