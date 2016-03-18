@@ -57,7 +57,7 @@ public:
 
     // Static interface functions
     int                 GetProfileCount(ProfileType device);
-    const char*         GetProfileName(ProfileType device, unsigned int index);
+    VString GetProfileName(ProfileType device, unsigned int index);
     bool                HasProfile(ProfileType device, const char* name);
     Profile*            LoadProfile(ProfileType device, unsigned int index);
     Profile*            LoadProfile(ProfileType device, const char* name);
@@ -98,8 +98,8 @@ public:
     };
 
     ProfileType          Type;              // The type of device profile
-    char                 Name[MaxNameLen];  // The name given to this profile
-    char				 CloudUser[MaxNameLen]; // the Cloud Profile username
+    VString Name;  // The name given to this profile
+    VString CloudUser; // the Cloud Profile username
 
 protected:
     GenderType           Gender;            // The gender of the user

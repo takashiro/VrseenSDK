@@ -117,9 +117,7 @@ class DeviceInfo
 public:
     DeviceInfo() : InfoClassType(Device_None), Type(Device_None), Version(0)
     {
-        ProductName = "";
         Manufacturer[0] = 0;
-
     }
 
     enum { MaxNameLength = 32 };
@@ -132,7 +130,6 @@ public:
     // InfoClassType != Device_None.
     DeviceType       Type;
     // Name string describing the product: "Oculus Rift DK1", etc.
-//    char             ProductName[MaxNameLength];
     VString ProductName;
     char             Manufacturer[MaxNameLength];
     unsigned         Version;
@@ -140,9 +137,7 @@ public:
 protected:
     DeviceInfo(DeviceType type) : InfoClassType(type), Type(type), Version(0)
     {
-        ProductName = "";
         Manufacturer[0] = 0;
-
     }
     void operator = (const DeviceInfo&) { OVR_ASSERT(0); } // Assignment not allowed.
 };

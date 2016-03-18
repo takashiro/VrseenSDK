@@ -118,11 +118,7 @@ NervGear::SensorInfo	HMDState::sensorInfo()
 	if ( m_sensor != NULL )
 	{
 		m_sensor->getDeviceInfo( &si );
-	}
-	else
-	{
-		memset( &si, 0, sizeof( si ) );
-	}
+    }
 	return si;
 }
 

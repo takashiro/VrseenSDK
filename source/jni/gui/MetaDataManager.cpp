@@ -588,8 +588,8 @@ void OvrMetaData::extractCategories(const Json &dataFile, VArray< Category > & o
 			if ( category.isObject() )
 			{
 				Category extractedCategory;
-				extractedCategory.categoryTag = category.value( TAG ).toString().c_str();
-				extractedCategory.label = category.value( LABEL ).toString().c_str();
+                extractedCategory.categoryTag = category.value( TAG ).toString();
+                extractedCategory.label = category.value( LABEL ).toString();
 
 				// Check if we already have this category
 				bool exists = false;
@@ -643,14 +643,14 @@ void OvrMetaData::extractMetaData(const Json &dataFile, const VArray< VString > 
 					for (const Json &tag : elements) {
 						if ( tag.isObject() )
 						{
-							metaDatum->tags.append(VString(tag.value( CATEGORY ).toString().c_str()));
+                            metaDatum->tags.append(tag.value( CATEGORY ).toString());
 						}
 					}
 				}
 
 				OVR_ASSERT( !metaDatum->tags.isEmpty() );
 
-				const VString relativeUrl( datum.value( URL_INNER ).toString().c_str() );
+                const VString relativeUrl = datum.value( URL_INNER ).toString();
 				metaDatum->url = relativeUrl;
 				bool foundPath = false;
                 const bool isRemote = this->isRemote( metaDatum );
@@ -718,14 +718,14 @@ void OvrMetaData::extractRemoteMetaData( const Json &dataFile, StringHash< OvrMe
 					for (const Json &tag : elements) {
 						if ( tag.isObject() )
 						{
-							metaDatum->tags.append( VString(tag.value( CATEGORY ).toString().c_str()) );
+                            metaDatum->tags.append(tag.value( CATEGORY ).toString());
 						}
 					}
 				}
 
 				OVR_ASSERT( !metaDatum->tags.isEmpty() );
 
-				metaDatum->url = jsonDatum.value( URL_INNER ).toString().c_str();
+                metaDatum->url = jsonDatum.value( URL_INNER ).toString();
 				extractExtendedData( jsonDatum, *metaDatum );
 
                 StringHash< OvrMetaDatum * >::Iterator iter = outMetaData.find( metaDatum->url );

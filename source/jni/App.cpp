@@ -1367,7 +1367,7 @@ struct App::Private : public TalkToJavaInterface
                 s >> jsonObj;
                 if (jsonObj.type() == Json::Object)
                 {
-                    std::string command = jsonObj["Command"].toString();
+                    VString command = jsonObj["Command"].toString();
                     if (command == SYSTEM_ACTIVITY_EVENT_REORIENT)
                     {
                         // for reorient, we recenter yaw natively, then pass the event along so that the client
