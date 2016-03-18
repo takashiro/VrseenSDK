@@ -19,10 +19,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "GlUtils.h"
 
-#if defined(OVR_ENABLE_CAPTURE)
-	#include "capture/Capture.h"
-#endif
-
 // GPU Timer queries cause instability on current
 // Adreno drivers. Disable by default, but allow
 // enabling via the local prefs file.
@@ -52,34 +48,6 @@ void LogWithTag( int prio, const char * tag, const char * fmt, ... )
 {
 	va_list ap;
 	va_start( ap, fmt );
-#if defined(OVR_ENABLE_CAPTURE)
-	if(NervGear::Capture::CheckConnectionFlag(NervGear::Capture::Enable_Logging))
-	{
-		NervGear::Capture::LogPriority cprio = NervGear::Capture::Log_Info;
-		switch(prio)
-		{
-			case ANDROID_LOG_UNKNOWN:
-			case ANDROID_LOG_DEFAULT:
-			case ANDROID_LOG_VERBOSE:
-			case ANDROID_LOG_DEBUG:
-			case ANDROID_LOG_INFO:
-			case ANDROID_LOG_SILENT:
-				cprio = NervGear::Capture::Log_Info;
-				break;
-			case ANDROID_LOG_WARN:
-				cprio = NervGear::Capture::Log_Warning;
-				break;
-			case ANDROID_LOG_ERROR:
-			case ANDROID_LOG_FATAL:
-				cprio = NervGear::Capture::Log_Error;
-				break;
-		}
-		va_list ap2;
-		va_copy(ap2, ap);
-		NervGear::Capture::Logv(cprio, fmt, ap2);
-		va_end(ap2);
-	}
-#endif
 	__android_log_vprint( prio, tag, fmt, ap );
 	va_end( ap );
 }
@@ -116,34 +84,6 @@ void LogWithFileTag( int prio, const char * fileTag, const char * fmt, ... )
 	strippedTag[i] = 0;
 
 	va_start( ap, fmt );
-#if defined(OVR_ENABLE_CAPTURE)
-	if(NervGear::Capture::CheckConnectionFlag(NervGear::Capture::Enable_Logging))
-	{
-		NervGear::Capture::LogPriority cprio = NervGear::Capture::Log_Info;
-		switch(prio)
-		{
-			case ANDROID_LOG_UNKNOWN:
-			case ANDROID_LOG_DEFAULT:
-			case ANDROID_LOG_VERBOSE:
-			case ANDROID_LOG_DEBUG:
-			case ANDROID_LOG_INFO:
-			case ANDROID_LOG_SILENT:
-				cprio = NervGear::Capture::Log_Info;
-				break;
-			case ANDROID_LOG_WARN:
-				cprio = NervGear::Capture::Log_Warning;
-				break;
-			case ANDROID_LOG_ERROR:
-			case ANDROID_LOG_FATAL:
-				cprio = NervGear::Capture::Log_Error;
-				break;
-		}
-		va_list ap2;
-		va_copy(ap2, ap);
-		NervGear::Capture::Logv(cprio, fmt, ap2);
-		va_end(ap2);
-	}
-#endif
 	__android_log_vprint( prio, strippedTag, fmt, ap );
 	va_end( ap );
 }

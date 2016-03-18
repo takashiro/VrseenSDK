@@ -159,10 +159,6 @@ LOCAL_SRC_FILES +=	3rdParty/minizip/ioapi.c \
 					3rdParty/minizip/unzip.c \
 					3rdParty/minizip/zip.c
 
-# OVR::Capture support...
-LOCAL_C_INCLUDES  += $(LOCAL_PATH)/core/capture
-LOCAL_SRC_FILES   += $(wildcard $(realpath $(LOCAL_PATH))/core/capture/*.cpp)
-LOCAL_CFLAGS      += -DOVR_ENABLE_CAPTURE=1
 LOCAL_CPPFLAGS += -std=c++0x
 
 # OpenGL ES 3.0

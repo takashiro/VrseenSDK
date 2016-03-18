@@ -19,11 +19,6 @@
 
 #include "../embedded/oculus_loading_indicator.h"
 
-#if defined( OVR_ENABLE_CAPTURE )
-#include "capture/Capture.h"
-#include "capture/Capture_GLES3.h"
-#endif
-
 ovrSensorState ovr_GetSensorStateInternal( double absTime );
 bool ovr_ProcessLatencyTest( unsigned char rgbColorOut[3] );
 const char * ovr_GetLatencyTestResult();
@@ -1259,9 +1254,6 @@ static void UnbindEyeTextures()
  */
 void TimeWarpLocal::warpToScreen( const double vsyncBase_, const swapProgram_t & swap )
 {
-#if defined( OVR_ENABLE_CAPTURE )
-	OVR_CAPTURE_CPU_ZONE( warpToScreen );
-#endif
 	static double lastReportTime = 0;
 	const double timeNow = floor( ovr_GetTimeInSeconds() );
 	if ( timeNow > lastReportTime )
@@ -1296,9 +1288,6 @@ void TimeWarpLocal::warpToScreen( const double vsyncBase_, const swapProgram_t &
 	// Warp each eye to the display surface
 	for ( ScreenEye eye = SCREENEYE_LEFT; eye <= SCREENEYE_RIGHT; eye = (ScreenEye)((int)eye+1) )
 	{
-#if defined( OVR_ENABLE_CAPTURE )
-		OVR_CAPTURE_CPU_ZONE( eye );
-#endif
 		//LOG( "Eye %i: now=%f  sleepTo=%f", eye, GetFractionalVsync(), vsyncBase + swap.deltaVsync[eye] );
 
 		// Sleep until we are in the correct half of the screen for
@@ -1910,10 +1899,6 @@ static uint64_t GetNanoSecondsUint64()
 
 void TimeWarpLocal::warpSwapInternal( const ovrTimeWarpParms & parms )
 {
-#if defined( OVR_ENABLE_CAPTURE )
-	OVR_CAPTURE_CPU_ZONE( WarpSwapInternal );
-#endif
-
 	if ( gettid() != m_sStartupTid )
 	{
 		FAIL( "WarpSwap: Called with tid %i instead of %i", gettid(), m_sStartupTid );
@@ -1933,12 +1918,6 @@ void TimeWarpLocal::warpSwapInternal( const ovrTimeWarpParms & parms )
 
 	// If we are running the image server, let it add commands for resampling
 	// the eye buffer to a transfer buffer.
-#if defined( OVR_ENABLE_CAPTURE )
-	if( Capture::IsConnected() )
-	{
-		Capture::FrameBufferGLES3( parms.Images[0][0].TexId );
-	}
-#endif
  	if ( m_netImageServer )
 	{
 		m_netImageServer->enterWarpSwap( parms.Images[0][0].TexId );

@@ -23,7 +23,7 @@ VLog::VLog(const char *file, uint line, VLog::Priority priority)
 
 VLog::~VLog()
 {
-    __android_log_print(d->priority, d->file, "Line %u: %s", d->line, d->buffer.str().data());
+    __android_log_print(d->priority, d->file, "[Line %u] %s", d->line, d->buffer.str().data());
     delete d;
 }
 

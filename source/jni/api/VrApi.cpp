@@ -39,10 +39,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "LocalPreferences.h"			// for testing via local prefs
 #include "SystemActivities.h"
 
-#if defined( OVR_ENABLE_CAPTURE )
-#include "capture/Capture.h"
-#endif
-
 NV_USING_NAMESPACE
 
 // FIXME:VRAPI move to ovrMobile
@@ -826,9 +822,6 @@ void ovr_ExitActivity( ovrMobile * ovr, eExitType exitType )
 		NervGear::SystemActivities_ShutdownEventQueues();
 		ovr_ShutdownLocalPreferences();
 		ovr_Shutdown();
-#if defined( OVR_ENABLE_CAPTURE )
-		NervGear::Capture::Shutdown();
-#endif
 		exit( 0 );
 	}
 }
@@ -1497,15 +1490,6 @@ ovrMobile * ovr_EnterVrMode( ovrModeParms parms, ovrHmdInfo * returnedHmdInfo )
 	const jmethodID startReceiversId = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass,
     		"startReceivers", "(Landroid/app/Activity;)V" );
 	ovr->Jni->CallStaticVoidMethod( VrLibClass, startReceiversId, ovr->Parms.ActivityObject );
-
-#if defined( OVR_ENABLE_CAPTURE )
-	const char *enableCapture = ovr_GetLocalPreferenceValueForKey(LOCAL_PREF_ENABLE_CAPTURE, "0");
-    if ( enableCapture && enableCapture[0] == '1')  {
-        VString packageName = JniUtils::GetCurrentPackageName(ovr->Jni, ovr->Parms.ActivityObject);
-        VByteArray utf8 = packageName.toUtf8();
-        NervGear::Capture::Init(utf8.data());
-	}
-#endif
 
 	getPowerLevelStateID = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass, "getPowerLevelState", "(Landroid/app/Activity;)I" );
 	setActivityWindowFullscreenID = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass, "setActivityWindowFullscreen", "(Landroid/app/Activity;)V" );
