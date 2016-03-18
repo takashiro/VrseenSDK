@@ -25,16 +25,7 @@ NV_NAMESPACE_BEGIN
 class TalkToJavaInterface
 {
 public:
-	// A subclass of this interface will be called on a dedicated
-	// thread with normal scheduling priority that has a JNI set up.
-	//
-	// The command string will be freed by TalkToJava.
-	//
-	// A local reference frame is established around this call,
-	// so it isn't necessary to free local references that are
-	// generated, such as java strings.
-	//
-	// Java exceptions will be checked and cleared after each invocation.
+    virtual ~TalkToJavaInterface() {}
     virtual void TtjCommand(JNIEnv *jni, const char * commandString) = 0;
 };
 
@@ -54,7 +45,7 @@ public:
 	// Spawns a separate thread that will issue java calls
 	// that could take more than a couple milliseconds to
 	// execute.
-	void	Init( JavaVM & javaVM_, TalkToJavaInterface & interface );
+    void	Init(JavaVM *javaVM, TalkToJavaInterface *interface );
 
 	VMessageQueue	& GetMessageQueue() { return TtjMessageQueue; };
 

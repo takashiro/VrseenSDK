@@ -3,7 +3,7 @@
 #include "VByteArray.h"
 #include "VLog.h"
 
-#include "AppLocal.h"
+#include "App.h"
 #include "MemBuffer.h"
 
 #include <3rdparty/minizip/unzip.h>
@@ -141,12 +141,12 @@ uint LoadTextureFromApplicationPackage(const VString &nameInZip, const TextureFl
     width = 0;
     height = 0;
 
-    void *buffer;
+    void *buffer = nullptr;
     uint bufferLength;
 
     const VApkFile &apk = VApkFile::CurrentApkFile();
     apk.read(nameInZip, buffer, bufferLength);
-    if (!buffer) {
+    if (buffer == nullptr) {
         return 0;
     }
     VByteArray name = nameInZip.toUtf8();

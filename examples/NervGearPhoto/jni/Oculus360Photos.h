@@ -78,7 +78,7 @@ public:
 	Oculus360Photos();
 	~Oculus360Photos();
 
-    void OneTimeInit( const char * fromPackage, const char * launchIntentJSON, const char * launchIntentURI ) override;
+    void OneTimeInit(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI ) override;
     void OneTimeShutdown() override;
     void ConfigureVrMode( ovrModeParms & modeParms ) override;
     Matrix4f 	DrawEyeView( const int eye, const float fovDegrees ) override;

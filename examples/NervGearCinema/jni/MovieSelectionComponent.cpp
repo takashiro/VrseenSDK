@@ -59,11 +59,11 @@ eMsgStatus MovieSelectionComponent::Frame( App * app, VrFrame const & vrFrame, O
 	{
 		if ( vrFrame.Input.buttonPressed & BUTTON_A )
 		{
-			Sound.PlaySound( app, "touch_down", 0.1 );
+			Sound.playSound( app, "touch_down", 0.1 );
 		}
 		if ( vrFrame.Input.buttonReleased & BUTTON_A )
 		{
-			Sound.PlaySound( app, "touch_up", 0.1 );
+			Sound.playSound( app, "touch_up", 0.1 );
 			CallbackView->SelectMovie();
 		}
 	}

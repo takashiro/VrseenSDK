@@ -3,7 +3,6 @@
 #include "vglobal.h"
 
 #include "VMath.h"
-//#include "Array.h"
 #include "VArray.h"
 #include "VString.h"
 #include "Android/GlUtils.h"

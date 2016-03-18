@@ -307,9 +307,9 @@ OCULUS_EXPORT void OVR_SetInitVariables( jobject activity, jclass vrActivityClas
 	up.scriptThreadTid = gettid();
 }
 
-OCULUS_EXPORT void OVR_SetEyeParms( int width, int height )
+OCULUS_EXPORT void OVR_setEyeParms( int width, int height )
 {
-	LOG( "OVR_SetEyeParms() w=%d h=%d", width, height );
+	LOG( "OVR_setEyeParms() w=%d h=%d", width, height );
 	up.fbWidth = width;
 	up.fbHeight = height;
 }

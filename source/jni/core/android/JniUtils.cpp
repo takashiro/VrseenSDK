@@ -34,26 +34,6 @@ namespace JniUtils {
         return jstr;
     }
 
-    VString GetPackageCodePath(JNIEnv *jni, jclass activityClass, jobject activityObject)
-    {
-        jmethodID getPackageCodePathId = jni->GetMethodID( activityClass, "getPackageCodePath", "()Ljava/lang/String;" );
-        if (getPackageCodePathId == 0) {
-            vInfo("Failed to find getPackageCodePath on class" << (ulonglong) activityClass << ", object" << (ulonglong) activityObject);
-            return VString();
-        }
-
-        VString packageCodePath = Convert(jni, (jstring) jni->CallObjectMethod(activityObject, getPackageCodePathId));
-        if (!jni->ExceptionOccurred()) {
-            vInfo("GetPackageCodePath() =" << packageCodePath);
-            return packageCodePath;
-        } else {
-            jni->ExceptionClear();
-            vInfo("Cleared JNI exception");
-        }
-
-        return VString();
-    }
-
     VString GetCurrentPackageName(JNIEnv * jni, jobject activityObject)
     {
         JavaClass curActivityClass( jni, jni->GetObjectClass( activityObject ) );

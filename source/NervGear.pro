@@ -47,6 +47,7 @@ SOURCES += \
     jni/core/android/VOsBuild.cpp \
     jni/api/VrApi.cpp \
     jni/api/Vsync.cpp \
+    jni/api/VDevice.cpp \
     jni/api/DirectRender.cpp \
     jni/api/HmdInfo.cpp \
     jni/api/HmdSensors.cpp \
@@ -56,6 +57,7 @@ SOURCES += \
     jni/api/TimeWarpProgs.cpp \
     jni/api/ImageServer.cpp \
     jni/api/LocalPreferences.cpp \
+    jni/api/VMainActivity.cpp \
     jni/api/WarpGeometry.cpp \
     jni/api/WarpProgram.cpp \
     jni/api/sensor/DeviceHandle.cpp \
@@ -99,6 +101,9 @@ SOURCES += \
     jni/gui/MetaDataManager.cpp \
     jni/gui/OutOfSpaceMenu.cpp \
     jni/io/VApkFile.cpp \
+    jni/io/VBinaryFile.cpp \
+    jni/io/VFileOperation.cpp \
+    jni/io/VSysFile.cpp \
     jni/scene/BitmapFont.cpp \
     jni/scene/EyeBuffers.cpp \
     jni/scene/EyePostRender.cpp \
@@ -116,7 +121,6 @@ SOURCES += \
     jni/scene/SurfaceTexture.cpp \
     jni/scene/SwipeView.cpp \
     jni/App.cpp \
-    jni/AppRender.cpp \
     jni/Console.cpp \
     jni/DebugLines.cpp \
     jni/KeyState.cpp \
@@ -125,10 +129,7 @@ SOURCES += \
     jni/VUserProfile.cpp \
     jni/TalkToJava.cpp \
     jni/VrCommon.cpp \
-    jni/VrLocale.cpp \
-    jni/io/VBinaryFile.cpp \
-    jni/io/VFileOperation.cpp \
-    jni/io/VSysFile.cpp
+    jni/VrLocale.cpp
 
 HEADERS += \
     jni/core/android/GlUtils.h \
@@ -199,12 +200,14 @@ HEADERS += \
     jni/api/TimeWarpProgs.h \
     jni/api/ImageServer.h \
     jni/api/LocalPreferences.h \
+    jni/api/VMainActivity.h \
     jni/api/WarpGeometry.h \
     jni/api/WarpProgram.h \ \
     jni/api/TimeWarpLocal.h \
     jni/api/VrApi_Android.h \
     jni/api/VrApi_Helpers.h \
     jni/api/VrApi_local.h \
+    jni/api/VDevice.h \
     jni/api/sensor/DeviceConstants.h \
     jni/api/sensor/DeviceHandle.h \
     jni/api/sensor/DeviceImpl.h \
@@ -255,6 +258,11 @@ HEADERS += \
     jni/gui/GuiSysLocal.h \
     jni/gui/ui_default.h \
     jni/io/VApkFile.h \
+    jni/io/VBinaryFile.h \
+    jni/io/VDelegatedFile.h \
+    jni/io/VFile.h \
+    jni/io/VFileOperation.h \
+    jni/io/VSysFile.h \
     jni/scene/BitmapFont.h \
     jni/scene/EyeBuffers.h \
     jni/scene/EyePostRender.h \
@@ -284,16 +292,10 @@ HEADERS += \
     jni/VrLocale.h \
     jni/Console.h \
     jni/vglobal.h \
-    jni/AppLocal.h \
     jni/Input.h \
     jni/PointTracker.h \
     jni/UniversalMenu_Commands.h \
-    jni/PointTracker.h \
-    jni/io/VBinaryFile.h \
-    jni/io/VDelegatedFile.h \
-    jni/io/VFile.h \
-    jni/io/VFileOperation.h \
-    jni/io/VSysFile.h
+    jni/PointTracker.h
 
 
 include(jni/3rdparty/minizip/minizip.pri)

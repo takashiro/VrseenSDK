@@ -11,12 +11,15 @@ Copyright   :   Copyright 2012 Oculus VR, LCC. All Rights reserved.
 
 #include "VrScene.h"
 
+#include <VStandardPath.h>
+#include <VLog.h>
+
 static const char * versionString = "VrScene v0.1.0";
 
 extern "C"
 {
 
-long Java_com_oculusvr_vrscene_MainActivity_nativeSetAppInterface( JNIEnv *jni, jclass clazz, jobject activity,
+long Java_com_vrseen_nervgear_scene_MainActivity_nativeSetAppInterface( JNIEnv *jni, jclass clazz, jobject activity,
 	jstring fromPackageName, jstring commandString, jstring uriString )
 {
 	// This is called by the java UI thread.
@@ -46,17 +49,17 @@ void VrScene::ConfigureVrMode( ovrModeParms & modeParms )
 	modeParms.GpuLevel = 2;
 
 	// Always use 2x MSAA for now
-	app->GetVrParms().multisamples = 2;
+	app->vrParms().multisamples = 2;
 }
 
-void VrScene::OneTimeInit( const char * fromPackageName, const char * launchIntentJSON, const char * launchIntentURI )
+void VrScene::OneTimeInit(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI)
 {
 	LOG( "VrScene::OneTimeInit" );
 
-    app->GetStoragePaths().PushBackSearchPathIfValid(VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", SearchPaths);
-    app->GetStoragePaths().PushBackSearchPathIfValid(VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "", SearchPaths);
-    app->GetStoragePaths().PushBackSearchPathIfValid(VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", SearchPaths);
-    app->GetStoragePaths().PushBackSearchPathIfValid(VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "", SearchPaths);
+    app->storagePaths().PushBackSearchPathIfValid(VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", SearchPaths);
+    app->storagePaths().PushBackSearchPathIfValid(VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "", SearchPaths);
+    app->storagePaths().PushBackSearchPathIfValid(VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", SearchPaths);
+    app->storagePaths().PushBackSearchPathIfValid(VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "", SearchPaths);
 
 	// Check if we already loaded the model through an intent
 	if ( !ModelLoaded )
@@ -84,22 +87,22 @@ void VrScene::NewIntent( const char * fromPackageName, const char * command, con
 // we may just want to make the intent consist of <command> <parameters>.
 //#define INTENT_TEST_MODEL
 
-void VrScene::LoadScene( const char * path )
+void VrScene::LoadScene( const VString &path )
 {
-	LOG( "VrScene::LoadScene %s", path );
+    vInfo("VrScene::LoadScene" << path);
 
 #if defined( INTENT_TEST_MODEL )
-	const char * scenePath = "Oculus/tuscany.ovrscene";
+    const VString scenePath = u"Oculus/tuscany.ovrscene";
 #else
-	const char * scenePath = ( path[0] != '\0' ) ? path : "Oculus/tuscany.ovrscene";
+    const VString scenePath = !path.isEmpty() ? path : VString(u"Oculus/tuscany.ovrscene");
 #endif
 	if ( !GetFullPath( SearchPaths, scenePath, SceneFile ) )
 	{
-		LOG( "VrScene::NewIntent SearchPaths failed to find %s", scenePath );
+        vInfo("VrScene::NewIntent SearchPaths failed to find" << scenePath);
 	}
 
 	MaterialParms materialParms;
-	materialParms.UseSrgbTextureFormats = ( app->GetVrParms().colorFormat == COLOR_8888_sRGB );
+	materialParms.UseSrgbTextureFormats = ( app->vrParms().colorFormat == COLOR_8888_sRGB );
 	LOG( "VrScene::LoadScene loading %s", SceneFile.toCString() );
     Scene.LoadWorldModel( SceneFile, materialParms );
 	ModelLoaded = true; 
@@ -135,7 +138,7 @@ void VrScene::ReloadScene()
 	const float	yaw = Scene.YawOffset;
 
 	MaterialParms materialParms;
-	materialParms.UseSrgbTextureFormats = ( app->GetVrParms().colorFormat == COLOR_8888_sRGB );
+	materialParms.UseSrgbTextureFormats = ( app->vrParms().colorFormat == COLOR_8888_sRGB );
     Scene.LoadWorldModel( SceneFile, materialParms );
 
 	Scene.YawOffset = yaw;
@@ -162,10 +165,10 @@ Matrix4f VrScene::DrawEyeView( const int eye, const float fovDegrees )
 Matrix4f VrScene::Frame( const VrFrame vrFrame )
 {
 	// Get the current vrParms for the buffer resolution.
-	const EyeParms vrParms = app->GetEyeParms();
+	const EyeParms vrParms = app->eyeParms();
 
 	// Player movement
-	Scene.Frame( app->GetVrViewParms(), vrFrame, app->GetSwapParms().ExternalVelocity );
+	Scene.Frame( app->vrViewParms(), vrFrame, app->swapParms().ExternalVelocity );
 
 	// Make the test object hop up and down
 	{
@@ -176,7 +179,7 @@ Matrix4f VrScene::Frame( const VrFrame vrFrame )
 
 	// these should probably use OnKeyEvent() now so that the menu can just consume the events
 	// if it's open, rather than having an explicit check here.
-	if ( !app->IsGuiOpen() )
+	if ( !app->isGuiOpen() )
 	{
 		//-------------------------------------------
 		// Check for button actions
@@ -185,7 +188,7 @@ Matrix4f VrScene::Frame( const VrFrame vrFrame )
 		{
 			if ( vrFrame.Input.buttonPressed & BUTTON_SELECT )
 			{
-				app->CreateToast( "%s", versionString );
+				app->createToast( "%s", versionString );
 			}
 
 			// Switch buffer parameters for testing
@@ -198,8 +201,8 @@ Matrix4f VrScene::Frame( const VrFrame vrFrame )
 					case 4: newParms.multisamples = 1; break;
 					default: newParms.multisamples = 2; break;
 				}
-				app->SetEyeParms( newParms );
-				app->CreateToast( "multisamples: %i", newParms.multisamples );
+				app->setEyeParms( newParms );
+				app->createToast( "multisamples: %i", newParms.multisamples );
 			}
 		}
 	}
@@ -208,7 +211,7 @@ Matrix4f VrScene::Frame( const VrFrame vrFrame )
 	// Render the two eye views, each to a separate texture, and TimeWarp
 	// to the screen.
 	//-------------------------------------------
-	app->DrawEyeViewsPostDistorted( Scene.CenterViewMatrix() );
+	app->drawEyeViewsPostDistorted( Scene.CenterViewMatrix() );
 
 	return Scene.CenterViewMatrix();
 }

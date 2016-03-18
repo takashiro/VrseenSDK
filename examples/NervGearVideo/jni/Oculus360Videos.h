@@ -52,7 +52,7 @@ public:
 	Oculus360Videos();
 	~Oculus360Videos();
 
-	virtual void		OneTimeInit( const char * fromPackage, const char * launchIntentJSON, const char * launchIntentURI );
+	virtual void		OneTimeInit(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI );
 	virtual void		OneTimeShutdown();
 	virtual void		ConfigureVrMode( ovrModeParms & modeParms );
 	virtual Matrix4f 	DrawEyeView( const int eye, const float fovDegrees );

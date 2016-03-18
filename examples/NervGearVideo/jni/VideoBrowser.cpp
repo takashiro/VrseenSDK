@@ -47,7 +47,7 @@ VideoBrowser * VideoBrowser::Create(
 
 void VideoBrowser::onPanelActivated( const OvrMetaDatum * panelData )
 {
-	Oculus360Videos * videos = ( Oculus360Videos * )m_app->GetAppInterface();
+	Oculus360Videos * videos = ( Oculus360Videos * )m_app->appInterface();
 	OVR_ASSERT( videos );
 	videos->OnVideoActivated( panelData );
 }
@@ -131,11 +131,11 @@ VString VideoBrowser::alternateThumbName( const VString & s )
 
 void VideoBrowser::onMediaNotFound( App * app, VString & title, VString & imageFile, VString & message )
 {
-	VrLocale::GetString( app->GetVrJni(), app->GetJavaObject(), "@string/app_name", "@string/app_name", title );
+	VrLocale::GetString( app->vrJni(), app->javaObject(), "@string/app_name", "@string/app_name", title );
 	imageFile = "assets/sdcard.png";
-	VrLocale::GetString( app->GetVrJni(), app->GetJavaObject(), "@string/media_not_found", "@string/media_not_found", message );
-	BitmapFont & font = app->GetDefaultFont();
-	NervGear::VArray< NervGear::VString > wholeStrs;
+	VrLocale::GetString( app->vrJni(), app->javaObject(), "@string/media_not_found", "@string/media_not_found", message );
+	BitmapFont & font = app->defaultFont();
+    NervGear::VArray< NervGear::VString > wholeStrs;
 	wholeStrs.append( "Gear VR" );
 	font.WordWrapText( message, 1.4f, wholeStrs );
 }
@@ -143,7 +143,7 @@ void VideoBrowser::onMediaNotFound( App * app, VString & title, VString & imageF
 VString VideoBrowser::getCategoryTitle( char const * key, char const * defaultStr ) const
 {
 	VString outStr;
-	VrLocale::GetString( m_app->GetVrJni(), m_app->GetJavaObject(), key, defaultStr, outStr );
+	VrLocale::GetString( m_app->vrJni(), m_app->javaObject(), key, defaultStr, outStr );
 	return outStr;
 }
 
