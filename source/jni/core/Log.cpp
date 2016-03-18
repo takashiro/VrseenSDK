@@ -47,9 +47,10 @@ void Log::LogMessageVarg(LogMessageType messageType, const char* fmt, va_list ar
         return;
 #endif
 
-    char buffer[MaxLogBufferMessageSize];
+//    char buffer[MaxLogBufferMessageSize];
+    VString buffer;
     FormatLog(buffer, MaxLogBufferMessageSize, messageType, fmt, argList);
-    DefaultLogOutput(messageType, buffer);
+    DefaultLogOutput(messageType, buffer.toCString());
 }
 
 void NervGear::Log::LogMessage(LogMessageType messageType, const char* pfmt, ...)
@@ -61,30 +62,33 @@ void NervGear::Log::LogMessage(LogMessageType messageType, const char* pfmt, ...
 }
 
 
-void Log::FormatLog(char* buffer, unsigned bufferSize, LogMessageType messageType,
+void Log::FormatLog(VString& buffer, unsigned bufferSize, LogMessageType messageType,
                     const char* fmt, va_list argList)
 {
     bool addNewline = true;
 
     switch(messageType)
     {
-    case Log_Error:         OVR_strcpy(buffer, bufferSize, "Error: ");     break;
-    case Log_Debug:         OVR_strcpy(buffer, bufferSize, "Debug: ");     break;
-    case Log_Assert:        OVR_strcpy(buffer, bufferSize, "Assert: ");    break;
-    case Log_Text:       buffer[0] = 0; addNewline = false; break;
-    case Log_DebugText:  buffer[0] = 0; addNewline = false; break;
+    case Log_Error:         buffer = "Error: ";     break;
+    case Log_Debug:         buffer = "Debug: ";     break;
+    case Log_Assert:        buffer = "Assert: ";    break;
+    case Log_Text:       buffer = ""; addNewline = false; break;
+    case Log_DebugText:  buffer = ""; addNewline = false; break;
     default:
-        buffer[0] = 0;
+        buffer = "";
         addNewline = false;
         break;
     }
 
-    uint prefixLength = strlen(buffer);
-    char *buffer2      = buffer + prefixLength;
-    OVR_vsprintf(buffer2, bufferSize - prefixLength, fmt, argList);
+//    uint prefixLength = strlen(buffer);
+//    uint prefixLength = buffer.length();
+//    char *buffer2      = buffer + prefixLength;
+//    OVR_vsprintf(buffer2, bufferSize - prefixLength, fmt, argList);
 
-    if (addNewline)
-        OVR_strcat(buffer, bufferSize, "\n");
+    if (addNewline) {
+//        OVR_strcat(buffer, bufferSize, "\n");
+        buffer += "\n";
+    }
 }
 
 

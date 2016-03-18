@@ -3,6 +3,7 @@
 #include "vglobal.h"
 
 #include "Types.h"
+#include <VString.h>
 #include <stdarg.h>
 
 NV_NAMESPACE_BEGIN
@@ -99,7 +100,7 @@ public:
     // Helper used by LogMessageVarg to format the log message, writing the resulting
     // string into buffer. It formats text based on fmt and appends prefix/new line
     // based on LogMessageType.
-    static void     FormatLog(char* buffer, unsigned bufferSize, LogMessageType messageType,
+    static void     FormatLog(VString& buffer, unsigned bufferSize, LogMessageType messageType,
                               const char* fmt, va_list argList);
 
     // Default log output implementation used by by LogMessageVarg.
