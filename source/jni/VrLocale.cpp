@@ -10,7 +10,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 *************************************************************************************/
 
 #include "VrLocale.h"
-#include "Std.h"
 #include "VArray.h"
 #include "android/JniUtils.h"
 #include "android/LogUtils.h"
@@ -61,7 +60,7 @@ bool VrLocale::GetString( JNIEnv* jni, jobject activityObject, char const * key,
 	}
 
 	out = "JAVAERROR";
-    OVR_ASSERT(false);
+    vAssert(false);
 	return false;
 }
 
@@ -162,8 +161,7 @@ VString private_GetXliffFormattedString( const VString & inXliffStr, ... )
 				formatSpec.append( formatCharCode );
 			}
 
-			OVR_ASSERT( formatSpec.size() >= MIN_NUM_EXPECTED_FORMAT_CHARS );
-
+            vAssert(formatSpec.size() >= MIN_NUM_EXPECTED_FORMAT_CHARS);
 			uint32_t desiredArgIdxChar = formatSpec.at( 0 );
 			uint32_t dollarThing = formatSpec.at( 1 );
 			uint32_t specifier = formatSpec.at( 2 );

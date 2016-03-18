@@ -10,7 +10,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 ************************************************************************************/
 
 #include "Log.h"
-#include "Std.h"
 #include <stdarg.h>
 #include <stdio.h>
 

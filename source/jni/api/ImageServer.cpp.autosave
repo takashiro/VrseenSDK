@@ -24,8 +24,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <sched.h>
 #include <unistd.h>
 #include <poll.h>
-
-#include "Std.h"
 #include "VString.h"
 #include "Android/LogUtils.h"
 

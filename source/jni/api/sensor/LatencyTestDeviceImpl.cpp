@@ -9,7 +9,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 *************************************************************************************/
 
-#include "Std.h"
 #include "VThread.h"
 #include "LatencyTestDeviceImpl.h"
 
