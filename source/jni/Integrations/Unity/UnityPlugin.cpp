@@ -12,7 +12,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <unistd.h>						// usleep, etc
 #include <sys/syscall.h>
 
-#include "Std.h"
 #include "Alg.h"
 #include "OVR.h"
 #include "android/GlUtils.h"

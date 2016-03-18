@@ -47,7 +47,6 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     core/VPath.cpp \
                     core/RefCount.cpp \
                     core/VStandardPath.cpp \
-                    core/Std.cpp \
                     core/VString.cpp \
                     io/VSysFile.cpp \
                     core/System.cpp \
