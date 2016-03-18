@@ -61,8 +61,8 @@ void OvrPhotosMetaData::extendedDataToJson( const OvrMetaDatum & datum, NervGear
 		const OvrPhotosMetaDatum * const photoData = static_cast< const OvrPhotosMetaDatum * const >( &datum );
 		if ( photoData )
 		{
-			outDatumObject.insert( TITLE_INNER, std::string(photoData->title.toCString()) );
-			outDatumObject.insert( AUTHOR_INNER, std::string(photoData->author.toCString()) );
+            outDatumObject.insert(TITLE_INNER, photoData->title);
+            outDatumObject.insert(AUTHOR_INNER, photoData->author);
 		}
 	}
 }
