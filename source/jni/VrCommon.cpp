@@ -198,7 +198,7 @@ void MakePath( const VString &dirPath, mode_t mode )
 bool MatchesHead( const char * head, const char * check )
 {
 	const int l = strlen( head );
-	return 0 == OVR_strncmp( head, check, l );
+    return 0 == strncmp(head, check, l);
 }
 
 float LinearRangeMapFloat( float inValue, float inStart, float inEnd, float outStart, float outEnd )
