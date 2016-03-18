@@ -68,7 +68,8 @@ bool HMDDeviceCreateDesc::GetDeviceInfo(DeviceInfo* info) const
 #if defined(OVR_OS_ANDROID)
 	// LDC - Use zero data for now.
 	info->Version = 0;
-	info->ProductName[0] = 0;
+//	info->ProductName[0] = 0;
+    info->ProductName = "";
 	info->Manufacturer[0] = 0;
 
 	if (info->InfoClassType == Device_HMD)

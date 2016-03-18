@@ -462,7 +462,8 @@ bool LatencyTestDeviceCreateDesc::GetDeviceInfo(DeviceInfo* info) const
         (info->InfoClassType != Device_None))
         return false;
 
-    OVR_strcpy(info->ProductName,  DeviceInfo::MaxNameLength, HIDDesc.Product.toCString());
+//    OVR_strcpy(info->ProductName,  DeviceInfo::MaxNameLength, HIDDesc.Product.toCString());
+    info->ProductName = HIDDesc.Product;
     OVR_strcpy(info->Manufacturer, DeviceInfo::MaxNameLength, HIDDesc.Manufacturer.toCString());
     info->Type    = Device_LatencyTester;
 
