@@ -974,7 +974,7 @@ bool OvrMetaData::shouldAddFile( const char * filename, const OvrMetaDataFileExt
 	{
 		const VString & ext = fileExtensions.badExtensions.at( index );
         const int extLen = (int) ext.length();
-		if ( pathLen > extLen && OVR_stricmp( filename + pathLen - extLen, ext.toCString() ) == 0 )
+        if ( pathLen > extLen && strcasecmp( filename + pathLen - extLen, ext.toCString() ) == 0 )
 		{
 			return false;
 		}
@@ -984,7 +984,7 @@ bool OvrMetaData::shouldAddFile( const char * filename, const OvrMetaDataFileExt
 	{
 		const VString & ext = fileExtensions.goodExtensions.at( index );
         const int extLen = (int) ext.length();
-		if ( pathLen > extLen && OVR_stricmp( filename + pathLen - extLen, ext.toCString() ) == 0 )
+        if ( pathLen > extLen && strcasecmp( filename + pathLen - extLen, ext.toCString() ) == 0 )
 		{
 			return true;
 		}

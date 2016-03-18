@@ -2042,7 +2042,7 @@ void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const in
                 if ( altThumbPath.isEmpty() || !GetFullPath( m_thumbSearchPaths, altThumbPath.toCString(), finalThumb ) )
 				{
                     int pathLen = (int) panoUrl.length();
-					if ( pathLen > 2 && OVR_stricmp( panoUrl.toCString() + pathLen - 2, ".x" ) == 0 )
+                    if ( pathLen > 2 && strcasecmp( panoUrl.toCString() + pathLen - 2, ".x" ) == 0 )
 					{
 						WARN( "Thumbnails cannot be generated from encrypted images." );
 						return; // No thumb & can't create

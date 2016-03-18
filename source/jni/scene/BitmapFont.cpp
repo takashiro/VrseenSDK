@@ -740,7 +740,7 @@ static bool ExtensionMatches(char const * fileName, char const * ext) {
 	if (extLen > fileNameLen) {
 		return false;
 	}
-	return OVR_stricmp(fileName + fileNameLen - extLen, ext) == 0;
+    return strcasecmp(fileName + fileNameLen - extLen, ext) == 0;
 }
 
 //==============================

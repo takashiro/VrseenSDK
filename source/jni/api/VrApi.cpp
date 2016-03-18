@@ -2246,8 +2246,8 @@ embeddedImage_t const * FindErrorImage( embeddedImage_t const * list, char const
 {
 	for ( int i = 0; list[i].ImageName != NULL; ++i )
 	{
-		if ( NervGear::OVR_stricmp( list[i].ImageName, name ) == 0 )
-		{
+        if ( strcasecmp( list[i].ImageName, name ) == 0 )
+        {
 			LOG( "Found embedded image for '%s'", name );
 			return &list[i];
 		}
