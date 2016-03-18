@@ -474,7 +474,6 @@ public:
     // MaxRanges report maximum sensor range values supported by HW.
     SensorRange MaxRanges;
     // Sensor (and display) serial number.
-//    char        SerialNumber[20];
     VString SerialNumber;
 
 private:

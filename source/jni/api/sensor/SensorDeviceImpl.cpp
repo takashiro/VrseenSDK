@@ -793,7 +793,6 @@ bool SensorDeviceCreateDesc::GetDeviceInfo(DeviceInfo* info) const
         return false;
 
     info->ProductName = HIDDesc.Product;
-//    OVR_strcpy(info->Manufacturer, DeviceInfo::MaxNameLength, HIDDesc.Manufacturer.toCString());
     info->Manufacturer = HIDDesc.Manufacturer;
     info->Type    = Device_Sensor;
 
@@ -804,7 +803,6 @@ bool SensorDeviceCreateDesc::GetDeviceInfo(DeviceInfo* info) const
         sinfo->ProductId = HIDDesc.ProductId;
         sinfo->Version   = HIDDesc.VersionNumber;
         sinfo->MaxRanges = SensorRangeImpl::GetMaxSensorRange();
-//        OVR_strcpy(sinfo->SerialNumber, sizeof(sinfo->SerialNumber),HIDDesc.SerialNumber.toCString());
         sinfo->SerialNumber = HIDDesc.SerialNumber;
     }
     return true;

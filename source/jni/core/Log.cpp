@@ -47,7 +47,6 @@ void Log::LogMessageVarg(LogMessageType messageType, const char* fmt, va_list ar
         return;
 #endif
 
-//    char buffer[MaxLogBufferMessageSize];
     VString buffer;
     FormatLog(buffer, MaxLogBufferMessageSize, messageType, fmt, argList);
     DefaultLogOutput(messageType, buffer.toCString());
@@ -80,13 +79,7 @@ void Log::FormatLog(VString& buffer, unsigned bufferSize, LogMessageType message
         break;
     }
 
-//    uint prefixLength = strlen(buffer);
-//    uint prefixLength = buffer.length();
-//    char *buffer2      = buffer + prefixLength;
-//    OVR_vsprintf(buffer2, bufferSize - prefixLength, fmt, argList);
-
     if (addNewline) {
-//        OVR_strcat(buffer, bufferSize, "\n");
         buffer += "\n";
     }
 }

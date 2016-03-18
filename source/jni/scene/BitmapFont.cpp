@@ -41,6 +41,7 @@
 #include "GlTexture.h"
 #include "GlGeometry.h"
 #include "VrCommon.h"
+#include "VString.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -645,8 +646,9 @@ FontGlyphType const & FontInfoType::GlyphForCharCode(
 
 // TODO: we really need a decent set of functions for path manipulation. OVR_String_PathUtil has
 // some bugs and doesn't have functionality for cross-platform path conversion.
-static void MakePathCanonical(char * path) {
-	int n = strlen(path);
+static void MakePathCanonical(VString path) {
+
+    int n = path.length();
 	for (int i = 0; i < n; ++i) {
 		if (path[i] == PATH_SEPARATOR_NON_CANONICAL) {
 			path[i] = PATH_SEPARATOR;
@@ -681,52 +683,51 @@ static size_t MakePathCanonical( char const * inPath, char * outPath, size_t out
 }
 #endif
 
-static void AppendPath(char * path, size_t pathsize, char const * append) {
-	char appendCanonical[512];
-	OVR_strcpy(appendCanonical, sizeof(appendCanonical), append);
+static void AppendPath(VString& path, const VString& append) {
+    VString appendCanonical;
+    appendCanonical = append;
 	MakePathCanonical(path);
-	int n = strlen(path);
-	if (n
-			> 0&& path[n - 1] != PATH_SEPARATOR && appendCanonical[0] != PATH_SEPARATOR) {OVR_strcat( path, pathsize, PATH_SEPARATOR_STR );
-}
-	OVR_strcat(path, pathsize, appendCanonical);
+    int n = path.length();
+    if (n > 0&& path[n - 1] != PATH_SEPARATOR && appendCanonical[0] != PATH_SEPARATOR) {
+        path += PATH_SEPARATOR_STR;
+    }
+    path += appendCanonical;
 }
 
-static void StripPath(char const * path, char * outName, size_t const outSize) {
+static void StripPath(const VString& path, VString& outName) {
 	if (path[0] == '\0') {
 		outName[0] = '\0';
 		return;
 	}
-	size_t n = strlen(path);
-	char const * fnameStart = NULL;
+    size_t n = path.length();
+    VString fnameStart;
 	for (int i = n - 1; i >= 0; --i) {
 		if (path[i] == PATH_SEPARATOR) {
-			fnameStart = &path[i];
+            fnameStart = path.substr(i + 1);
 			break;
 		}
 	}
-	if (fnameStart != NULL) {
+    if (fnameStart.length() != 0) {
 		// this will copy 0 characters if the path separator was the last character
-		OVR_strncpy(outName, outSize, fnameStart + 1, n - (fnameStart - path));
-	} else {
-		OVR_strcpy(outName, outSize, path);
+        outName = fnameStart;
+    } else {
+        outName = path;
 	}
 }
 
-static void StripFileName(char const * path, char * outPath,
-		size_t const outSize) {
-    size_t n = strlen(path);
-	char const * fnameStart = NULL;
+static void StripFileName(const VString& path, VString& outPath) {
+    size_t n = path.length();
+    VString fnameStart;
 	for (int i = n - 1; i >= 0; --i) {
 		if (path[i] == PATH_SEPARATOR) {
-			fnameStart = &path[i];
+            fnameStart = path.substr(0, i + 1);
 			break;
 		}
 	}
-	if (fnameStart != NULL) {
-		OVR_strncpy(outPath, outSize, path, (fnameStart - path) + 1);
+    if (fnameStart.length() != 0) {
+        outPath = fnameStart;
 	} else {
-		OVR_strcpy(outPath, outSize, path);
+        outPath = path;
 	}
 }
 
@@ -756,17 +757,17 @@ bool BitmapFontLocal::Load(const VString &languagePackageName, const VString &fo
     LOG( "fontInfoFileName = %s", fontInfoFileName.toCString());
 	LOG( "image baseName = %s", baseName.toCString());
 
-	char imagePath[512];
-    StripFileName(fontInfoFileName.toCString(), imagePath, sizeof(imagePath));
-	LOG( "imagePath = %s", imagePath);
+    VString imagePath;
+    StripFileName(fontInfoFileName, imagePath);
+    LOG( "imagePath = %s", imagePath.toCString());
 
-	char imageFileName[512];
-    StripPath(fontInfoFileName.toCString(), imageFileName, sizeof(imageFileName));
-	LOG( "imageFileName = %s", imageFileName);
+    VString imageFileName;
+    StripPath(fontInfoFileName.toCString(), imageFileName);
+    LOG( "imageFileName = %s", imageFileName.toCString());
 
-	AppendPath(imagePath, sizeof(imagePath), baseName.toCString());
-    LOG( "imagePath = %s", imagePath);
-	if (!LoadImage(languagePackageFile, imagePath)) {
+    AppendPath(imagePath, baseName);
+    LOG( "imagePath = %s", imagePath.toCString());
+    if (!LoadImage(languagePackageFile, imagePath.toCString())) {
 		return false;
 	}
 
