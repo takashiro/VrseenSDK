@@ -172,7 +172,7 @@ void MakePath( const VString &dirPath, mode_t mode )
 	char path[ 256 ];
 	char * currentChar = NULL;
 
-    OVR_sprintf( path, sizeof( path ), "%s", dirPath.toCString() );
+    sprintf(path, "%s", dirPath.toCString());
 
 	for ( currentChar = path + 1; *currentChar; ++currentChar )
 	{

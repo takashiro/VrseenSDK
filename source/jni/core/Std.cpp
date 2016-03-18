@@ -24,6 +24,5 @@ namespace NervGear {
 
 // This function is not inline because of dependency on <locale.h>
 
-#endif //OVR_NO_WCTYPE
 
 } // OVR

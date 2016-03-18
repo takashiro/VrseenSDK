@@ -1235,7 +1235,7 @@ void OvrFolderBrowser::buildDirtyMenu( OvrMetaData & metaData )
 
 	// Process any thumb creation commands
 	char cmd[ 1024 ];
-	OVR_sprintf( cmd, 1024, "processCreates %p", &m_thumbCreateAndLoadCommands );
+    sprintf(cmd, "processCreates %p", &m_thumbCreateAndLoadCommands);
 	m_backgroundCommands.PostString( cmd );
 
 	// Show no media menu if no media found
@@ -2009,7 +2009,7 @@ void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const in
     ToRelativePath( m_thumbSearchPaths, panoUrl.toCString(), relativeThumbPath, 1024 );
 
 	char appCacheThumbPath[ 1024 ];
-    OVR_sprintf( appCacheThumbPath, 1024, "%s%s", m_appCachePath.toCString(), this->thumbName( relativeThumbPath ).toCString() );
+    sprintf(appCacheThumbPath, "%s%s", m_appCachePath.toCString(), this->thumbName(relativeThumbPath).toCString());
 
 	// if this url doesn't exist locally
     if ( !FileExists( panoUrl ) )
@@ -2062,7 +2062,7 @@ void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const in
 							createCmd.sourceImagePath = panoUrl;
 							createCmd.thumbDestination = finalThumb;
 							char loadCmd[ 1024 ];
-							OVR_sprintf( loadCmd, 1024, "load %i %i:%s", folderIndex, panel.id, finalThumb.toCString() );
+                            sprintf(loadCmd, "load %i %i:%s", folderIndex, panel.id, finalThumb.toCString());
 							createCmd.loadCmd = loadCmd;
 							m_thumbCreateAndLoadCommands.append( createCmd );
 						}
@@ -2074,7 +2074,7 @@ void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const in
 	}
 
 	char cmd[ 1024 ];
-	OVR_sprintf( cmd, 1024, "load %i %i:%s", folderIndex, panel.id, finalThumb.toCString() );
+    sprintf(cmd, "load %i %i:%s", folderIndex, panel.id, finalThumb.toCString());
 	//LOG( "Thumb cmd: %s", cmd );
 	m_backgroundCommands.PostString( cmd );
 }

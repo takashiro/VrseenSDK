@@ -79,6 +79,7 @@ void Log::FormatLog(VString& buffer, unsigned bufferSize, LogMessageType message
         break;
     }
 
+
     if (addNewline) {
         buffer += "\n";
     }

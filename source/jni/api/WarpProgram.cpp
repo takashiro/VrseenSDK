@@ -15,6 +15,7 @@ Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <VString.h>
 #include "Android/GlUtils.h"
 #include "Android/LogUtils.h"
 
@@ -94,9 +95,10 @@ void CreateWarpProgram( WarpProgram * prog, const char * vertexSrc, const char *
 	// texture and image_external bindings
 	for ( int i = 0; i < 8; i++ )
 	{
-		char name[32];
-		sprintf( name, "Texture%i", i );
-		const GLint uTex = glGetUniformLocation( prog->program, name );
+        VString name;
+        name.sprintf("Texture%i", i);
+
+        const GLint uTex = glGetUniformLocation( prog->program, name.toCString() );
 		if ( uTex != -1 )
 		{
 			glUniform1i( uTex, i );

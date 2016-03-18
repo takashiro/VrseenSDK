@@ -232,7 +232,7 @@ static inline void LogEventType( VRMenuEvent const & event, char const * fmt, ..
     va_end( args );
 
     char buffer[512];
-    OVR_sprintf( buffer, sizeof( buffer ), "%s: %s", VRMenuEvent::EventTypeNames[event.eventType], fmtBuff );
+    sprintf(buffer, "%s: %s", VRMenuEvent::EventTypeNames[event.eventType], fmtBuff);
 
     __android_log_write( ANDROID_LOG_WARN, "VrMenu", buffer );
 #endif

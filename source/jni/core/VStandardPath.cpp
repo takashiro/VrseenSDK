@@ -179,20 +179,20 @@ const char* FolderName[VStandardPath::FolderTypeCount] =
 
 		if ( FileExists( relativePath ) )
 		{
-            OVR_sprintf( outPath, relativePath.size() + 1, "%s", relativePath.toCString() );
+            sprintf(outPath, "%s", relativePath.toCString());
 			return true;
 		}
 
         for ( int i = 0; i < searchPaths.length(); ++i )
 		{
-            OVR_sprintf( outPath, outMaxLen, "%s%s", searchPaths[i].toCString(), relativePath.toCString() );
+            sprintf(outPath, "%s%s", searchPaths[i].toCString(), relativePath.toCString());
 			if ( FileExists( outPath ) )
 			{
 				return true;	// outpath is now set to the full path
 			}
 		}
 		// just return the relative path if we never found the file
-        OVR_sprintf( outPath, outMaxLen, "%s", relativePath.toCString() );
+        sprintf(outPath, "%s", relativePath.toCString());
 		return false;
 	}
 
@@ -217,11 +217,11 @@ const char* FolderName[VStandardPath::FolderTypeCount] =
 			if ( strstr( fullPath, path ) == fullPath )
 			{
 				size_t len = strlen( path );
-				OVR_sprintf( outPath, outMaxLen, "%s", fullPath + len );
+                sprintf(outPath, "%s", fullPath + len);
 				return true;
 			}
 		}
-		OVR_sprintf( outPath, outMaxLen, "%s", fullPath );
+        sprintf(outPath, "%s", fullPath);
 		return false;
 	}
 

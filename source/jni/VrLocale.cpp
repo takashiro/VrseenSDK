@@ -225,14 +225,14 @@ VString VrLocale::GetXliffFormattedString( const VString & inXliffStr, const cha
 VString VrLocale::ToString( char const * fmt, float const f )
 {
 	char buffer[128];
-	OVR_sprintf( buffer, 128, fmt, f );
+    sprintf(buffer, fmt, f);
     return buffer;
 }
 
 VString VrLocale::ToString( char const * fmt, int const i )
 {
 	char buffer[128];
-	OVR_sprintf( buffer, 128, fmt, i );
+    sprintf(buffer, fmt, i);
     return buffer;
 }
 
