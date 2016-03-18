@@ -42,7 +42,7 @@ ModelManager::~ModelManager()
 {
 }
 
-void ModelManager::OneTimeInit( const char * launchIntent )
+void ModelManager::OneTimeInit(const VString &launchIntent)
 {
 	LOG( "ModelManager::OneTimeInit" );
 	const double start = ovr_GetTimeInSeconds();
@@ -179,7 +179,7 @@ SceneDef * ModelManager::LoadScene( const char *sceneFilename, bool useDynamicPr
 
 	// This may be called during init, before the FramebufferIsSrgb is set,
 	// so use WantsSrgbFramebuffer instead.
-    materialParms.UseSrgbTextureFormats = Cinema.app->GetAppInterface()->wantSrgbFramebuffer();
+    materialParms.UseSrgbTextureFormats = Cinema.app->appInterface()->wantSrgbFramebuffer();
 
 	// Improve the texture quality with anisotropic filtering.
 	materialParms.EnableDiffuseAniso = true;

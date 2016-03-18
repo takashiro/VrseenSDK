@@ -49,7 +49,7 @@ void VRMenuEventHandler::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr
 	}
 
 	// find the object the gaze is touching and update gaze focus
-	const Matrix4f viewMatrix = app->GetLastViewMatrix();
+	const Matrix4f viewMatrix = app->lastViewMatrix();
 	const Vector3f viewPos( GetViewMatrixPosition( viewMatrix ) );
 	const Vector3f viewFwd( GetViewMatrixForward( viewMatrix ) );
 
@@ -59,7 +59,7 @@ void VRMenuEventHandler::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr
 	result.RayDir = viewFwd;
 
 	VRMenuObject * hit = hitHandle.IsValid() ? menuMgr.toObject( hitHandle ) : NULL;
-	app->GetGazeCursor().UpdateForUser( gazeUserId, result.t, ( hit != NULL && !( hit->flags() & VRMenuObjectFlags_t( VRMENUOBJECT_NO_GAZE_HILIGHT ) ) ) ? CURSOR_STATE_HILIGHT : CURSOR_STATE_NORMAL );
+	app->gazeCursor().UpdateForUser( gazeUserId, result.t, ( hit != NULL && !( hit->flags() & VRMenuObjectFlags_t( VRMENUOBJECT_NO_GAZE_HILIGHT ) ) ) ? CURSOR_STATE_HILIGHT : CURSOR_STATE_NORMAL );
 /*
     if ( hit != NULL )
     {
@@ -317,7 +317,7 @@ bool VRMenuEventHandler::dispatchToComponents( App * app, VrFrame const & vrFram
 {
 	DROID_ASSERT( receiver != NULL, "VrMenu" );
 
-	VArray< VRMenuComponent* > const & list = receiver->componentList();
+    VArray< VRMenuComponent* > const & list = receiver->componentList();
 	int numComps = list.length();
 	for ( int i = 0; i < numComps; ++i )
 	{

@@ -12,7 +12,7 @@ public:
 						OvrApp();
     virtual				~OvrApp();
 
-	virtual void		OneTimeInit( const char * fromPackage, const char * launchIntentJSON, const char * launchIntentURI );
+	virtual void		OneTimeInit(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI );
 	virtual void		OneTimeShutdown();
 	virtual Matrix4f 	DrawEyeView( const int eye, const float fovDegrees );
 	virtual Matrix4f 	Frame( VrFrame vrFrame );

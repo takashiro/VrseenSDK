@@ -65,6 +65,7 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     core/android/VOsBuild.cpp \
                     api/VrApi.cpp \
                     api/Vsync.cpp \
+                    api/VDevice.cpp \
                     api/DirectRender.cpp \
                     api/HmdInfo.cpp \
                     api/HmdSensors.cpp \
@@ -74,6 +75,7 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     api/TimeWarpProgs.cpp \
                     api/ImageServer.cpp \
                     api/LocalPreferences.cpp \
+                    api/VMainActivity.cpp \
                     api/WarpGeometry.cpp \
                     api/WarpProgram.cpp \
                     api/sensor/DeviceHandle.cpp \
@@ -138,7 +140,6 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     TalkToJava.cpp \
                     KeyState.cpp \
                     App.cpp \
-                    AppRender.cpp \
                     DebugLines.cpp \
                     SoundManager.cpp \
                     VUserProfile.cpp \
@@ -197,27 +198,6 @@ LOCAL_SRC_FILES  := $(NV_ROOT)/Integrations/Unity/UnityPlugin.cpp \
                     $(NV_ROOT)/Integrations/Unity/MediaSurface.cpp \
                     $(NV_ROOT)/Integrations/Unity/SensorPlugin.cpp \
                     $(NV_ROOT)/Integrations/Unity/RenderingPlugin.cpp
-
-include $(BUILD_SHARED_LIBRARY)
-
-
-#--------------------------------------------------------
-# JavaVr.so
-#
-# This .so can be loaded by a java project that wants to
-# do frame and eye rendering completely in java without
-# needing the NDK.
-#--------------------------------------------------------
-include $(CLEAR_VARS)
-
-LOCAL_MODULE := JavaVr
-
-LOCAL_STATIC_LIBRARIES := nervgear
-#LOCAL_STATIC_LIBRARIES += android-ndk-profiler
-
-LOCAL_CFLAGS += -DNV_NAMESPACE=NervGear
-
-LOCAL_SRC_FILES  := $(NV_ROOT)/Integrations/PureJava/PureJava.cpp
 
 include $(BUILD_SHARED_LIBRARY)
 

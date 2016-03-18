@@ -24,14 +24,14 @@ public:
 						~VrScene();
 
 	virtual void 		ConfigureVrMode( ovrModeParms & modeParms );
-	virtual void		OneTimeInit( const char * fromPackage, const char * launchIntentJSON, const char * launchIntentURI );
+	virtual void		OneTimeInit(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI );
 	virtual void		OneTimeShutdown();
 	virtual Matrix4f	DrawEyeView( const int eye, const float fovDegrees );
 	virtual Matrix4f	Frame( VrFrame vrFrame );
 	virtual	void		NewIntent( const char * fromPackageName, const char * command, const char * uri );
 	virtual void		Command( const char * msg );
 
-	void				LoadScene( const char * path );
+    void				LoadScene(const VString &path );
     void				ReloadScene();
 
 	// When launched by an intent, we may be viewing a partial

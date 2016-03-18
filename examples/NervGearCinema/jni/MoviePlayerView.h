@@ -103,7 +103,7 @@ public:
 							MoviePlayerView( CinemaApp &app_ );
 	virtual 				~MoviePlayerView();
 
-	virtual void 			OneTimeInit( const char * launchIntent );
+	virtual void 			OneTimeInit(const VString &launchIntent );
 	virtual void			OneTimeShutdown();
 
 	virtual void 			OnOpen();

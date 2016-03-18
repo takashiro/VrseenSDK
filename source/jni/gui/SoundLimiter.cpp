@@ -26,15 +26,15 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 namespace NervGear {
 
 //==============================
-// SoundLimiter::PlaySound
+// SoundLimiter::playSound
 void SoundLimiter::playSound( App * app, char const * soundName, double const limitSeconds )
 {
 	double curTime = ovr_GetTimeInSeconds();
 	double t = curTime - m_lastPlayTime;
-    //DROIDLOG( "VrMenu", "PlaySound( '%s', %.2f ) - t == %.2f : %s", soundName, limitSeconds, t, t >= limitSeconds ? "PLAYING" : "SKIPPING" );
+    //DROIDLOG( "VrMenu", "playSound( '%s', %.2f ) - t == %.2f : %s", soundName, limitSeconds, t, t >= limitSeconds ? "PLAYING" : "SKIPPING" );
 	if ( t >= limitSeconds )
 	{
-		app->PlaySound( soundName );
+		app->playSound( soundName );
 		m_lastPlayTime = curTime;
 	}
 }
@@ -44,7 +44,7 @@ void SoundLimiter::playMenuSound( class App * app, char const * appendKey, char 
 	char overrideSound[ 1024 ];
 	OVR_sprintf( overrideSound, 1024, "%s_%s", appendKey, soundName );
 
-	if ( app->GetSoundMgr().HasSound( overrideSound ) )
+	if ( app->soundMgr().HasSound( overrideSound ) )
 	{
 		playSound( app, overrideSound, limitSeconds );
 	}
