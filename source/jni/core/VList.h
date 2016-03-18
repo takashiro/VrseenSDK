@@ -28,6 +28,12 @@ public:
         return this->empty();
     }
 
+    ~VList<E>()
+    {
+        for (auto e:(*this)) {
+            delete e;
+        }
+    }
     const E &first() const
     {
         return this->front();

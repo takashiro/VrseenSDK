@@ -159,7 +159,9 @@ void MessageHandlerRef::SetHandler_NTS(MessageHandler* handler)
     if (pHandler != handler)
     {
         if (pHandler)
+        {
             this->pointToVList->remove(this);
+        }
         pHandler = handler;
 
         if (handler)
@@ -347,7 +349,6 @@ void DeviceManagerImpl::shutdown()
         OVR_ASSERT(!devDesc->pDevice); // Manager shouldn't be dying while Device exists.
         devDesc->Enumerated = false;
         devDesc->pointToVList->remove(devDesc);
-
         if (devDesc->HandleCount == 0)
         {
             delete devDesc;
@@ -691,11 +692,6 @@ void DeviceCreateDesc::Release()
             if (!GetManagerImpl() || !Enumerated)
             {
                 lockKeepAlive = pLock;
-
-                // Remove from manager list (only matters for !Enumerated).
-                if (!this->pointToVList->isEmpty()) {
-                    this->pointToVList->remove(this);
-                }
                 delete this;
             }
 
