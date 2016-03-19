@@ -3,7 +3,6 @@
 #include "Lockless.h"
 #include "TimeWarp.h"
 #include "VrApi.h"
-#include "ImageServer.h"
 
 #include "VGlGeometry.h"
 #include "VGlShader.h"
@@ -191,9 +190,6 @@ private:
     DirectRender	m_screen;
 
     bool			m_hasEXT_sRGB_write_control;	// extension
-
-	// NULL if not requested at startup
-    ImageServer	*	m_netImageServer;
 
 	// It is an error to call WarpSwap() from a different thread
     pid_t			m_sStartupTid;

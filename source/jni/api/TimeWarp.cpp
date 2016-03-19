@@ -322,7 +322,6 @@ TimeWarpLocal::TimeWarpLocal( const TimeWarpInitParms initParms ) :
 	m_blackTexId( 0 ),
 	m_defaultLoadingIconTexId( 0 ),
 	m_hasEXT_sRGB_write_control( false ),
-	m_netImageServer( NULL ),
 	m_sStartupTid( 0 ),
 	m_jni( NULL ),
 	m_setSchedFifoMethodId( 0 ),
@@ -431,16 +430,6 @@ TimeWarpLocal::TimeWarpLocal( const TimeWarpInitParms initParms ) :
 	m_hasEXT_sRGB_write_control = GL_ExtensionStringPresent( "GL_EXT_sRGB_write_control",
 			(const char *)glGetString( GL_EXTENSIONS ) );
 
-	// Start up the network image server if requested
-	if ( m_initParms.enableImageServer )
-	{
-		m_netImageServer = new ImageServer();
-	}
-	else
-	{
-		m_netImageServer = NULL;
-		LOG( "Skipping ImageServer setup because !useImageServer" );
-	}
 
 	// Skip thread initialization if we are running synchronously
 	if ( !m_initParms.asynchronousTimeWarp )
@@ -591,10 +580,6 @@ TimeWarpLocal::~TimeWarpLocal()
 		// CreateFrameworkGraphics() was called from the TimeWarpLocal constructor.
 		destroyFrameworkGraphics();
 	}
-
-	// Delete the image server after TimeWarp has shut down
-	delete m_netImageServer;
-	m_netImageServer = NULL;
 
 	LOG( "---------------- ~TimeWarpLocal() End ----------------" );
 }
@@ -1720,10 +1705,6 @@ void TimeWarpLocal::warpSwapInternal( const ovrTimeWarpParms & parms )
 		Capture::FrameBufferGLES3( parms.Images[0][0].TexId );
 	}
 #endif
- 	if ( m_netImageServer )
-	{
-		m_netImageServer->enterWarpSwap( parms.Images[0][0].TexId );
-	}
 
 	const int minimumVsyncs = ( ovr_GetPowerLevelStateThrottled() ) ? 2 : parms.MinimumVsyncs;
 
@@ -1803,12 +1784,6 @@ void TimeWarpLocal::warpSwapInternal( const ovrTimeWarpParms & parms )
 		const SwapState state = m_swapVsync.state();
 		m_lastSwapVsyncCount = state.VsyncCount;
 
-		// If we are running the image server, let it start a transfer
-		// of the last completed image buffer.
-		if ( m_netImageServer )
-		{
-			m_netImageServer->leaveWarpSwap();
-		}
 		return;
 	}
 
@@ -1834,13 +1809,6 @@ void TimeWarpLocal::warpSwapInternal( const ovrTimeWarpParms & parms )
 			// If MinimumVsyncs was increased dynamically, it is necessary
 			// to skip one or more vsyncs just as the change happens.
 			m_lastSwapVsyncCount = Alg::Max( state.VsyncCount, m_lastSwapVsyncCount + minimumVsyncs );
-
-			// If we are running the image server, let it start a transfer
-			// of the last completed image buffer.
-			if ( m_netImageServer )
-			{
-				m_netImageServer->leaveWarpSwap();
-			}
 
 			// Sleep for at least one millisecond to make sure the main VR thread
 			// cannot completely deny the Android watchdog from getting a time slice.

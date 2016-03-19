@@ -491,7 +491,6 @@ AppLocal::AppLocal( JNIEnv & jni_, jobject activityObject_, VrAppInterface & int
 	VrModeParms.AsynchronousTimeWarp = true;
 	VrModeParms.AllowPowerSave = true;
 	VrModeParms.DistortionFileName = NULL;
-	VrModeParms.EnableImageServer = false;
 	VrModeParms.SkipWindowFullscreenReset = false;
 	VrModeParms.CpuLevel = 2;
 	VrModeParms.GpuLevel = 2;
@@ -1045,9 +1044,6 @@ void AppLocal::Resume()
 
 	// Check for values that effect our mode settings
 	{
-		const char * imageServerStr = ovr_GetLocalPreferenceValueForKey( LOCAL_PREF_IMAGE_SERVER, "0" );
-		VrModeParms.EnableImageServer = ( atoi( imageServerStr ) > 0 );
-
 		const char * cpuLevelStr = ovr_GetLocalPreferenceValueForKey( LOCAL_PREF_DEV_CPU_LEVEL, "-1" );
 		const int cpuLevel = atoi( cpuLevelStr );
 		if ( cpuLevel >= 0 )

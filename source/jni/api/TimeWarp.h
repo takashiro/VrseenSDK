@@ -36,7 +36,6 @@ public:
 	TimeWarpInitParms() :
         frontBuffer( true ),
         asynchronousTimeWarp( true ),
-        enableImageServer( false ),
         distortionFileName( NULL ),
         javaVm( NULL ),
         vrLibClass( NULL ),
@@ -52,10 +51,6 @@ public:
 	// debug tasks, you can run synchronously so the init
 	// thread is still current on the window.
     bool				asynchronousTimeWarp;
-
-	// Set true to enable the image server, which allows a
-	// remote device to view frames from the current VR session.
-    bool				enableImageServer;
 
 	// If not NULL, the distortion mesh will be loaded from this file
     const char *		distortionFileName;

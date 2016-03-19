@@ -294,10 +294,6 @@ typedef struct
 	// the user to undock.
 	bool	AllowPowerSave;
 
-	// Set true to enable the image server, which allows a
-	// remote device to view frames from the current VR session.
-	bool	EnableImageServer;			// FIXME:VRAPI move to local preferences
-
 	// To avoid an incorrect fullscreen transparent window that
 	// wastes lots of bandwidth on return from platform UI, we
 	// explicitly reset the fullscreen flag.  Unfortunately, that

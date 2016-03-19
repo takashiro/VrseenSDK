@@ -1448,7 +1448,6 @@ ovrMobile * ovr_EnterVrMode( ovrModeParms parms, ovrHmdInfo * returnedHmdInfo )
 	LOG( "ovrModeParms.AsynchronousTimeWarp = %i", parms.AsynchronousTimeWarp );
 	LOG( "ovrModeParms.AllowPowerSave = %i", parms.AllowPowerSave );
 	LOG( "ovrModeParms.DistortionFileName = %s", parms.DistortionFileName ? parms.DistortionFileName : "" );
-	LOG( "ovrModeParms.EnableImageServer = %i", parms.EnableImageServer );
 	LOG( "ovrModeParms.GameThreadTid = %i", parms.GameThreadTid );
 	LOG( "ovrModeParms.CpuLevel = %i", parms.CpuLevel );
 	LOG( "ovrModeParms.GpuLevel = %i", parms.GpuLevel );
@@ -1534,7 +1533,6 @@ ovrMobile * ovr_EnterVrMode( ovrModeParms parms, ovrHmdInfo * returnedHmdInfo )
 	// frontbuffer can be forced off.
 	ovr->Twp.frontBuffer = atoi( ovr_GetLocalPreferenceValueForKey( "frontbuffer", "1" ) );
 	ovr->Twp.distortionFileName = ovr->Parms.DistortionFileName;
-	ovr->Twp.enableImageServer = ovr->Parms.EnableImageServer;
 	ovr->Twp.hmdInfo = ovr->HmdInfo;
 	ovr->Twp.javaVm = VrLibJavaVM;
 	ovr->Twp.vrLibClass = VrLibClass;
