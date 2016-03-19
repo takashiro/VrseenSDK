@@ -70,7 +70,7 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     api/HmdSensors.cpp \
                     api/Distortion.cpp \
                     api/SystemActivities.cpp \
-                    api/TimeWarp.cpp \
+                    api/VFrameSmooth.cpp \
                     api/LocalPreferences.cpp \
                     api/VGlGeometry.cpp \
                     api/VGlShader.cpp \

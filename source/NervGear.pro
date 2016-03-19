@@ -55,7 +55,7 @@ SOURCES += \
     jni/api/HmdSensors.cpp \
     jni/api/Distortion.cpp \
     jni/api/SystemActivities.cpp \
-    jni/api/TimeWarp.cpp \
+    jni/api/VFrameSmooth.cpp \
     jni/api/LocalPreferences.cpp \
 
     jni/api/VGlShader.cpp \
@@ -195,11 +195,10 @@ HEADERS += \
     jni/api/HmdSensors.h \
     jni/api/Distortion.h \
     jni/api/SystemActivities.h \
-    jni/api/TimeWarp.h \
+    jni/api/VFrameSmooth.h \
     jni/api/LocalPreferences.h \
     jni/api/VGlGeometry.h \
-    jni/api/VGlShader.h \ \
-    jni/api/TimeWarpLocal.h \
+    jni/api/VGlShader.h \
     jni/api/VrApi_Android.h \
     jni/api/VrApi_Helpers.h \
     jni/api/VrApi_local.h \

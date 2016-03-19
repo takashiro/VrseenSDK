@@ -32,7 +32,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "DirectRender.h"
 #include "HmdInfo.h"
 #include "HmdSensors.h"
-#include "TimeWarp.h"
+#include "VFrameSmooth.h"
 #include "VrApi_local.h"
 #include "VrApi_Helpers.h"
 #include "Vsync.h"
@@ -1543,7 +1543,7 @@ ovrMobile * ovr_EnterVrMode( ovrModeParms parms, ovrHmdInfo * returnedHmdInfo )
 	// front buffer rendering.
 	ovr->Twp.buildVersionSDK = BuildVersionSDK;
 	ovr->Twp.externalStorageDirectory = externalStorageDirectory;
-	ovr->Warp = NervGear::TimeWarp::Factory( ovr->Twp );
+	ovr->Warp = VFrameSmooth::Factory( ovr->Twp );
 
 	// Enable our real time scheduling.
 
@@ -1723,7 +1723,7 @@ static void ResetTimeWarp( ovrMobile * ovr )
 	// restart TimeWarp to generate new distortion meshes
 	ovr->Twp.hmdInfo = ovr->HmdInfo;
 	delete ovr->Warp;
-	ovr->Warp = NervGear::TimeWarp::Factory( ovr->Twp );
+	ovr->Warp = VFrameSmooth::Factory( ovr->Twp );
 	if ( ovr->Parms.AsynchronousTimeWarp )
 	{
 		SetSchedFifo( ovr, ovr->Warp->warpThreadTid(), SCHED_FIFO_PRIORITY_TIMEWARP );
