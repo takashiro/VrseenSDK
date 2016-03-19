@@ -6,6 +6,49 @@
  */
 #include "VAtomicInt.h"
 NV_NAMESPACE_BEGIN
+inline VAtomicInt::VAtomicInt() : atomic<Type>()
+{
+
+}
+inline VAtomicInt::VAtomicInt(Type value) : atomic<Type>(value)
+{
+
+}
+inline VAtomicInt::Type VAtomicInt::exchangeAddSync(Type value)
+{
+    return fetch_add(value);
+}
+inline VAtomicInt::Type VAtomicInt::exchangeAddRelease(Type value)
+{
+    return fetch_add(value);
+}
+inline VAtomicInt::Type VAtomicInt::exchangeAddAcquire(Type value)
+{
+    return fetch_add(value);
+}
+inline VAtomicInt::Type VAtomicInt::exchangeAddNoSync(Type value)
+{
+    return fetch_add(value);
+}
+inline void VAtomicInt::incrementSync()
+{
+    (*this)++;
+}
+
+inline void VAtomicInt::incrementRelease()
+{
+    (*this)++;
+}
+
+inline void VAtomicInt::incrementAcquire()
+{
+    (*this)++;
+}
+
+inline void VAtomicInt::incrementNoSync()
+{
+    (*this)++;
+}
 
 VAtomicInt::Type VAtomicInt::operator *= (VAtomicInt::Type argument)
 {

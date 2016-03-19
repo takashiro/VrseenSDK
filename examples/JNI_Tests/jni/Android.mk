@@ -18,7 +18,8 @@ include $(CLEAR_VARS)
 #path=D:/Oculus/android-ndk-r10e/
 LOCAL_MODULE    := JNI_Tests
 LOCAL_SRC_FILES := JNI_Tests.cpp \
-				$(LOCAL_PATH)/../../../source/jni/core/VAtomicInt.cpp
+				../../../source/jni/core/VAtomicInt.cpp
+				
 #LOCAL_C_INCLUDES := D:/Oculus/android-ndk-r10e/platforms/android-19/arch-arm/usr/include
 #LOCAL_C_INCLUDES += D:/Oculus/android-ndk-r10e/sources/cxx-stl/gnu-libstdc++/4.8/include
 #LOCAL_C_INCLUDES += D:/Oculus/android-ndk-r10e/sources/cxx-stl/gnu-libstdc++/4.8/include/backward

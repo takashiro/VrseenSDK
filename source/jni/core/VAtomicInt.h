@@ -7,30 +7,56 @@
 #pragma once
 #include <atomic>
 #include "vglobal.h"
+using namespace std;
 NV_NAMESPACE_BEGIN
 class VAtomicInt : public atomic<int>
 {
     typedef int Type;
 public:
-    VAtomicInt();
 
-    explicit VAtomicInt(Type value);
+    inline VAtomicInt() : atomic<Type>()
+    {
 
-    Type exchangeAddSync(Type value);
+    }
+    explicit inline VAtomicInt(Type value) : atomic<Type>(value)
+    {
 
-    Type exchangeAddRelease(Type value);
+    }
+    inline Type exchangeAddSync(Type value)
+    {
+        return fetch_add(value);
+    }
+    inline Type exchangeAddRelease(Type value)
+    {
+        return fetch_add(value);
+    }
+    inline Type exchangeAddAcquire(Type value)
+    {
+        return fetch_add(value);
+    }
+    inline Type exchangeAddNoSync(Type value)
+    {
+        return fetch_add(value);
+    }
+    inline void incrementSync()
+    {
+        (*this)++;
+    }
 
-    Type exchangeAddAcquire(Type value);
+    inline void incrementRelease()
+    {
+        (*this)++;
+    }
 
-    Type exchangeAddNoSync(Type value);
+    inline void incrementAcquire()
+    {
+        (*this)++;
+    }
 
-    void incrementSync();
-
-    void incrementRelease();
-
-    void incrementAcquire();
-
-    void incrementNoSync();
+    inline void incrementNoSync()
+    {
+        (*this)++;
+    }
 
     Type operator *= (Type argument);
 

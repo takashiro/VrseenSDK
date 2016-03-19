@@ -97,14 +97,14 @@
 			<location>D:/Oculus/android-ndk-r10e/toolchains/arm-linux-androideabi-4.8/prebuilt/windows-x86_64/lib/gcc/arm-linux-androideabi/4.8/include</location>
 		</link>
 		<link>
+			<name>Includes/gun_stlinclude</name>
+			<type>2</type>
+			<location>D:/Oculus/android-ndk-r10e/sources/cxx-stl/gnu-libstdc++/4.9/include</location>
+		</link>
+		<link>
 			<name>Includes/include-fixed</name>
 			<type>2</type>
 			<location>D:/Oculus/android-ndk-r10e/toolchains/arm-linux-androideabi-4.8/prebuilt/windows-x86_64/lib/gcc/arm-linux-androideabi/4.8/include-fixed</location>
-		</link>
-		<link>
-			<name>Includes/stlport</name>
-			<type>2</type>
-			<location>D:/Oculus/android-ndk-r10e/sources/cxx-stl/stlport/stlport</location>
 		</link>
 		<link>
 			<name>Includes/usr_include</name>

@@ -108,4 +108,11 @@
 		<nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>Includes/gnustl_include</name>
+			<type>2</type>
+			<location>D:/Oculus/android-ndk-r10e/sources/cxx-stl/gnu-libstdc++/4.9/include</location>
+		</link>
+	</linkedResources>
 </projectDescription>
