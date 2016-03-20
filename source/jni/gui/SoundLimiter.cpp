@@ -27,7 +27,7 @@ namespace NervGear {
 
 //==============================
 // SoundLimiter::playSound
-void SoundLimiter::playSound( App * app, char const * soundName, double const limitSeconds )
+void SoundLimiter::playSound(App * app, char const * soundName, double const limitSeconds )
 {
 	double curTime = ovr_GetTimeInSeconds();
 	double t = curTime - m_lastPlayTime;
@@ -39,18 +39,16 @@ void SoundLimiter::playSound( App * app, char const * soundName, double const li
 	}
 }
 
-void SoundLimiter::playMenuSound( class App * app, char const * appendKey, char const * soundName, double const limitSeconds )
+void SoundLimiter::playMenuSound(App * app, const VString &appendKey, char const * soundName, double const limitSeconds )
 {
-    VString overrideSound;
-    overrideSound.sprintf("%s_%s", appendKey, soundName);
+    VString overrideSound = appendKey;
+    overrideSound.append('_');
+    overrideSound.append(soundName);
 
-	if ( app->soundMgr().hasSound( overrideSound ) )
-	{
-        playSound( app, overrideSound.toUtf8().data(), limitSeconds );
-	}
-	else
-	{
-		playSound( app, soundName, limitSeconds );
+    if (app->soundMgr().hasSound(overrideSound)) {
+        playSound(app, overrideSound.toUtf8().data(), limitSeconds);
+    } else {
+        playSound(app, soundName, limitSeconds);
 	}
 }
 
