@@ -41,12 +41,12 @@ void SoundLimiter::playSound( App * app, char const * soundName, double const li
 
 void SoundLimiter::playMenuSound( class App * app, char const * appendKey, char const * soundName, double const limitSeconds )
 {
-	char overrideSound[ 1024 ];
-    sprintf(overrideSound, "%s_%s", appendKey, soundName);
+    VString overrideSound;
+    overrideSound.sprintf("%s_%s", appendKey, soundName);
 
-	if ( app->soundMgr().HasSound( overrideSound ) )
+	if ( app->soundMgr().hasSound( overrideSound ) )
 	{
-		playSound( app, overrideSound, limitSeconds );
+        playSound( app, overrideSound.toUtf8().data(), limitSeconds );
 	}
 	else
 	{

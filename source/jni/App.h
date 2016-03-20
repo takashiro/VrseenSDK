@@ -180,7 +180,7 @@ public:
     OvrVRMenuMgr &      	vrMenuMgr();
     OvrDebugLines &     	debugLines();
     const VStandardPath & storagePaths();
-    OvrSoundManager &		soundMgr();
+     VSoundManager &		soundMgr();
 
     //-----------------------------------------------------------------
     // system settings

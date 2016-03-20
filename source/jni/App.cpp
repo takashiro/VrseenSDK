@@ -475,7 +475,7 @@ struct App::Private : public TalkToJavaInterface
     long long 		recenterYawFrameStart;	// Enables reorient before sensor data is read.  Allows apps to reorient without having invalid orientation information for that frame.
 
     // Manages sound assets
-    OvrSoundManager	soundManager;
+     VSoundManager	soundManager;
 
     OvrGuiSys *         guiSys;
     OvrGazeCursor *     gazeCursor;
@@ -1302,7 +1302,7 @@ struct App::Private : public TalkToJavaInterface
 
             initFonts();
 
-            soundManager.LoadSoundAssets();
+            soundManager.loadSoundAssets();
 
             debugLines->Init();
 
@@ -1960,7 +1960,7 @@ void App::playSound(const char * name)
 	// Get sound from SoundManager
 	VString soundFile;
 
-    if (d->soundManager.GetSound(name, soundFile))
+    if (d->soundManager.getSound(name, soundFile))
 	{
 		// Run on the talk to java thread
         d->ttj.GetMessageQueue().PostPrintf("sound %s", soundFile.toCString());
@@ -2146,7 +2146,7 @@ const VStandardPath & App::storagePaths()
 {
     return *d->storagePaths;
 }
-OvrSoundManager & App::soundMgr()
+ VSoundManager & App::soundMgr()
 {
     return d->soundManager;
 }
