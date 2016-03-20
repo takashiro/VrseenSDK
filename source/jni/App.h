@@ -136,160 +136,120 @@ class OvrGuiSys;
 class GazeCursor;
 class OvrVolumePopup;
 
-//==============================================================
-// AppLocal
-//
-// NOTE: do not define any of the functions in here inline (inside of the class
-// definition).  When AppLocal.h is included in multiple files (App.cpp and AppRender.cpp)
-// this causes bugs with accessor functions.
 class App
 {
 public:
-                                App(JNIEnv *jni, jobject activityObject,
-                                        VrAppInterface & interface );
-    virtual						~App();
+    App(JNIEnv *jni, jobject activityObject, VrAppInterface &interface);
+    virtual ~App();
 
-    VMessageQueue &		messageQueue();
+    VMessageQueue &messageQueue();
 
-    VrAppInterface *	appInterface();
+    VrAppInterface *appInterface();
 
-    void 				drawEyeViewsPostDistorted( Matrix4f const & viewMatrix, const int numPresents = 1);
+    void drawEyeViewsPostDistorted( Matrix4f const & viewMatrix, const int numPresents = 1);
 
-    void				createToast( const char * fmt, ... );
+    void createToast( const char * fmt, ... );
 
-    void				playSound( const char * name );
+    void playSound( const char * name );
 
-    void				recenterYaw( const bool showBlack );
-    void				setRecenterYawFrameStart( const long long frameNumber );
-    long long			recenterYawFrameStart() const;
+    void recenterYaw( const bool showBlack );
+    void setRecenterYawFrameStart( const long long frameNumber );
+    long long recenterYawFrameStart() const;
 
+    EyeParms eyeParms();
+    void setEyeParms(const EyeParms parms);
 
-    //-----------------------------------------------------------------
+    OvrGuiSys &guiSys();
+    OvrGazeCursor  &gazeCursor();
+    BitmapFont &defaultFont();
+    BitmapFontSurface &worldFontSurface();
+    BitmapFontSurface &menuFontSurface();
+    OvrVRMenuMgr &vrMenuMgr();
+    OvrDebugLines &debugLines();
+    const VStandardPath &storagePaths();
+    VSoundManager &soundMgr();
 
-    EyeParms			eyeParms();
-    void				setEyeParms( const EyeParms parms );
+    int wifiSignalLevel() const;
+    eWifiState wifiState() const;
+    int cellularSignalLevel() const;
+    eCellularState cellularState() const;
 
-    //-----------------------------------------------------------------
-    // interfaces
-    //-----------------------------------------------------------------
-    OvrGuiSys &         	guiSys();
-    OvrGazeCursor  &    	gazeCursor();
-    BitmapFont &        	defaultFont();
-    BitmapFontSurface & 	worldFontSurface();
-    BitmapFontSurface & 	menuFontSurface();
-    OvrVRMenuMgr &      	vrMenuMgr();
-    OvrDebugLines &     	debugLines();
-    const VStandardPath & storagePaths();
-     VSoundManager &		soundMgr();
-
-    //-----------------------------------------------------------------
-    // system settings
-    //-----------------------------------------------------------------
-
-    int					wifiSignalLevel() const;
-    eWifiState			wifiState() const;
-    int					cellularSignalLevel() const;
-    eCellularState		cellularState() const;
-
-    //-----------------------------------------------------------------
-    // accessors
-    //-----------------------------------------------------------------
-
-    bool				isAsynchronousTimeWarp() const;
-    bool				hasHeadphones() const;
-    bool				framebufferIsSrgb() const;
-    bool				framebufferIsProtected() const;
-    bool				renderMonoMode() const;
-    void				setRenderMonoMode( bool const mono );
+    bool isAsynchronousTimeWarp() const;
+    bool hasHeadphones() const;
+    bool framebufferIsSrgb() const;
+    bool framebufferIsProtected() const;
+    bool renderMonoMode() const;
+    void setRenderMonoMode(bool const mono);
 
     const VString &packageCodePath() const;
 
-    Matrix4f const &	lastViewMatrix() const;
-    void				setLastViewMatrix( Matrix4f const & m );
+    Matrix4f const &lastViewMatrix() const;
+    void setLastViewMatrix( Matrix4f const & m );
 
-    EyeParms &			vrParms();
-    ovrModeParms 		vrModeParms();
-    void				setVrModeParms( ovrModeParms parms );
+    EyeParms &vrParms();
+    ovrModeParms vrModeParms();
+    void setVrModeParms( ovrModeParms parms );
 
-    VrViewParms const &	vrViewParms() const;
-    void				setVrViewParms( VrViewParms const & parms );
+    const VrViewParms &vrViewParms() const;
+    void setVrViewParms( VrViewParms const & parms );
 
-    void				setPopupDistance( float const d );
-    float				popupDistance() const;
-    void				setPopupScale( float const s );
-    float				popupScale() const;
+    void setPopupDistance( float const d );
+    float popupDistance() const;
+    void setPopupScale( float const s );
+    float popupScale() const;
 
-    int					cpuLevel() const;
-    int					gpuLevel() const;
+    int cpuLevel() const;
+    int gpuLevel() const;
 
-    bool				isPowerSaveActive() const;
+    bool isPowerSaveActive() const;
 
-    int					batteryLevel() const;
-    eBatteryStatus		batteryStatus() const;
+    int batteryLevel() const;
+    eBatteryStatus batteryStatus() const;
 
-    bool				isGuiOpen() const;
+    bool isGuiOpen() const;
 
-    KeyState &          backKeyState();
+    KeyState &backKeyState();
 
-    ovrMobile *			getOvrMobile();
+    ovrMobile *getOvrMobile();
 
-    void				setShowVolumePopup( bool const show );
-    bool				showVolumePopup() const;
+    void setShowVolumePopup( bool const show );
+    bool showVolumePopup() const;
 
-    //-----------------------------------------------------------------
-    // Java accessors
-    //-----------------------------------------------------------------
+    JavaVM *javaVM();
+    JNIEnv *uiJni();
+    JNIEnv *vrJni();
+    jobject &javaObject();
+    jclass &vrActivityClass();
 
-    JavaVM	*			javaVM();
-    JNIEnv	*			uiJni();
-    JNIEnv	*			vrJni();
-    jobject	&			javaObject();
-    jclass	&			vrActivityClass();
+    SurfaceTexture *dialogTexture();
 
-    //-----------------------------------------------------------------
+    const ovrTimeWarpParms &swapParms() const;
+    ovrTimeWarpParms &swapParms();
 
-    // Every application gets a basic dialog surface.
-    SurfaceTexture *	dialogTexture();
+    const ovrSensorState &sensorForNextWarp() const;
 
-    //-----------------------------------------------------------------
-    // TimeWarp
-    //-----------------------------------------------------------------
-    ovrTimeWarpParms const & swapParms() const;
-    ovrTimeWarpParms &		swapParms();
+    void drawScreenMask( const ovrMatrix4f & mvp, const float fadeFracX, const float fadeFracY );
+    void drawScreenDirect( const GLuint texid, const ovrMatrix4f & mvp );
 
-    ovrSensorState const & sensorForNextWarp() const;
+    void setShowFPS( bool const show );
+    bool showFPS() const;
 
-    // Draw a zero to destination alpha
-    void				drawScreenMask( const ovrMatrix4f & mvp, const float fadeFracX, const float fadeFracY );
-    // Draw a screen to an eye buffer the same way it would be drawn as a
-    // time warp overlay.
-    void				drawScreenDirect( const GLuint texid, const ovrMatrix4f & mvp );
+    void showInfoText( float const duration, const char * fmt, ... );
+    void showInfoText( float const duration, Vector3f const & offset, Vector4f const & color, const char * fmt, ... );
 
-    //-----------------------------------------------------------------
-    // debugging
-    //-----------------------------------------------------------------
-    void				setShowFPS( bool const show );
-    bool				showFPS() const;
+    Matrix4f matrixInterpolation( const Matrix4f & startMatrix, const Matrix4f & endMatrix, double t );
 
-    void				showInfoText( float const duration, const char * fmt, ... );
-    void				showInfoText( float const duration, Vector3f const & offset, Vector4f const & color, const char * fmt, ... );
+    void drawDialog( const Matrix4f & mvp );
+    void drawPanel( const GLuint externalTextureId, const Matrix4f & dialogMvp, const float alpha );
 
-    //-----------------------------------------------------------------
+    void drawBounds( const Vector3f &mins, const Vector3f &maxs, const Matrix4f &mvp, const Vector3f &color );
 
-    Matrix4f		 matrixInterpolation( const Matrix4f & startMatrix, const Matrix4f & endMatrix, double t );
+    void startVrThread();
+    void stopVrThread();
+    void syncVrThread();
 
-    void			drawDialog( const Matrix4f & mvp );
-    void			drawPanel( const GLuint externalTextureId, const Matrix4f & dialogMvp, const float alpha );
-
-    void			drawBounds( const Vector3f &mins, const Vector3f &maxs, const Matrix4f &mvp, const Vector3f &color );
-
-    // Start, stop and sync the VrThread.
-    void			startVrThread();
-    void			stopVrThread();
-    void			syncVrThread();
-
-    volatile bool	oneTimeInitCalled;
-    ovrModeParms	VrModeParms;
+    volatile bool oneTimeInitCalled;
+    ovrModeParms VrModeParms;
 
 private:
     NV_DECLARE_PRIVATE
