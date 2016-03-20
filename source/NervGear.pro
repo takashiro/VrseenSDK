@@ -53,13 +53,10 @@ SOURCES += \
     jni/api/HmdSensors.cpp \
     jni/api/Distortion.cpp \
     jni/api/SystemActivities.cpp \
-    jni/api/TimeWarp.cpp \
-    jni/api/TimeWarpProgs.cpp \
-    jni/api/ImageServer.cpp \
+    jni/api/VFrameSmooth.cpp \
     jni/api/LocalPreferences.cpp \
     jni/api/VMainActivity.cpp \
-    jni/api/WarpGeometry.cpp \
-    jni/api/WarpProgram.cpp \
+    jni/api/VGlShader.cpp \
     jni/api/sensor/DeviceHandle.cpp \
     jni/api/sensor/DeviceImpl.cpp \
     jni/api/sensor/LatencyTest.cpp \
@@ -108,8 +105,6 @@ SOURCES += \
     jni/scene/EyeBuffers.cpp \
     jni/scene/EyePostRender.cpp \
     jni/scene/GazeCursor.cpp \
-    jni/scene/GlGeometry.cpp \
-    jni/scene/GlProgram.cpp \
     jni/scene/GlSetup.cpp \
     jni/scene/GlTexture.cpp \
     jni/scene/ImageData.cpp \
@@ -196,14 +191,11 @@ HEADERS += \
     jni/api/HmdSensors.h \
     jni/api/Distortion.h \
     jni/api/SystemActivities.h \
-    jni/api/TimeWarp.h \
-    jni/api/TimeWarpProgs.h \
-    jni/api/ImageServer.h \
+    jni/api/VFrameSmooth.h \
     jni/api/LocalPreferences.h \
+    jni/api/VGlGeometry.h \
+    jni/api/VGlShader.h \
     jni/api/VMainActivity.h \
-    jni/api/WarpGeometry.h \
-    jni/api/WarpProgram.h \ \
-    jni/api/TimeWarpLocal.h \
     jni/api/VrApi_Android.h \
     jni/api/VrApi_Helpers.h \
     jni/api/VrApi_local.h \
@@ -268,8 +260,6 @@ HEADERS += \
     jni/scene/EyePostRender.h \
     jni/scene/GazeCursor.h \
     jni/scene/GazeCursorLocal.h \
-    jni/scene/GlGeometry.h \
-    jni/scene/GlProgram.h \
     jni/scene/GlSetup.h \
     jni/scene/GlTexture.h \
     jni/scene/ImageData.h \

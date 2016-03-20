@@ -76,7 +76,7 @@ void MediaSurface::Shutdown()
 {
 	LOG( "MediaSurface::Shutdown()" );
 
-	DeleteProgram( CopyMovieProgram );
+	CopyMovieProgram.destroy();
 	UnitSquare.Free();
 
 	delete AndroidSurfaceTexture;
@@ -140,9 +140,9 @@ void MediaSurface::Update()
 	{
 		LOG( "Allocating GL objects" );
 
-		UnitSquare = BuildTesselatedQuad( 1, 1 );
+		UnitSquare = VGlGeometryFactory::CreateTesselatedQuad( 1, 1 );
 
-		CopyMovieProgram = BuildProgram(
+		CopyMovieProgram.initShader(
 			"uniform highp mat4 Mvpm;\n"
 			"attribute vec4 Position;\n"
 			"attribute vec2 TexCoord;\n"

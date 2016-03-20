@@ -18,7 +18,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "Alg.h"
 
 #include "GlTexture.h"
-#include "GlProgram.h"
+#include "../api/VGlShader.h"
 
 namespace NervGear
 {

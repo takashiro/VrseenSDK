@@ -4,8 +4,8 @@
 
 #include <jni.h>
 #include "android/GlUtils.h"
-#include "GlGeometry.h"
-#include "GlProgram.h"
+#include "../../api/VGlGeometry.h"
+#include "../../api/VGlShader.h"
 #include "SurfaceTexture.h"
 
 NV_NAMESPACE_BEGIN
@@ -28,8 +28,8 @@ public:
 
 	JNIEnv * 		jni;
 	SurfaceTexture	* AndroidSurfaceTexture;
-	GlProgram		CopyMovieProgram;
-	GlGeometry		UnitSquare;
+	VGlShader		CopyMovieProgram;
+	VGlGeometry		UnitSquare;
 	jobject			SurfaceObject;
 	long long		LastSurfaceTexNanoTimeStamp;
 	int				TexId;

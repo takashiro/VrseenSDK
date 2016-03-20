@@ -164,7 +164,7 @@ void Oculus360Videos::OneTimeInit(const VString &fromPackage, const VString &lau
 	app->vrParms().depthFormat = DEPTH_16;
 	app->vrParms().multisamples = 2;
 
-	PanoramaProgram = BuildProgram(
+	PanoramaProgram.initShader(
 		"uniform highp mat4 Mvpm;\n"
 		"uniform highp mat4 Texm;\n"
 		"attribute vec4 Position;\n"
@@ -187,7 +187,7 @@ void Oculus360Videos::OneTimeInit(const VString &fromPackage, const VString &lau
 		"}\n"
 		);
 
-	FadedPanoramaProgram = BuildProgram(
+	FadedPanoramaProgram.initShader(
 		"uniform highp mat4 Mvpm;\n"
 		"uniform highp mat4 Texm;\n"
 		"attribute vec4 Position;\n"
@@ -212,7 +212,7 @@ void Oculus360Videos::OneTimeInit(const VString &fromPackage, const VString &lau
 		"}\n"
 		);
 
-	SingleColorTextureProgram = BuildProgram(
+	SingleColorTextureProgram.initShader(
 		"uniform highp mat4 Mvpm;\n"
 		"attribute highp vec4 Position;\n"
 		"attribute highp vec2 TexCoord;\n"
@@ -269,7 +269,7 @@ void Oculus360Videos::OneTimeInit(const VString &fromPackage, const VString &lau
 	}
 
 	LOG( "Creating Globe" );
-	Globe = BuildGlobe();
+	Globe = VGlGeometryFactory::CreateGlobe();
 
 	// Stay exactly at the origin, so the panorama globe is equidistant
 	// Don't clear the head model neck length, or swipe view panels feel wrong.
@@ -392,9 +392,9 @@ void Oculus360Videos::OneTimeShutdown()
 		MovieTexture = NULL;
 	}
 
-	DeleteProgram( PanoramaProgram );
-	DeleteProgram( FadedPanoramaProgram );
-	DeleteProgram( SingleColorTextureProgram );
+	PanoramaProgram.destroy();
+	 FadedPanoramaProgram.destroy();
+	 SingleColorTextureProgram.destroy();
 }
 
 void Oculus360Videos::ConfigureVrMode( ovrModeParms & modeParms )
@@ -611,12 +611,12 @@ Matrix4f Oculus360Videos::DrawEyeView( const int eye, const float fovDegrees )
 			SurfaceDef & sd = def.surfaces[ i ];
 			glUseProgram( SingleColorTextureProgram.program );
 
-			glUniformMatrix4fv( SingleColorTextureProgram.uMvp, 1, GL_FALSE, mvp.Transposed().M[ 0 ] );
+			glUniformMatrix4fv( SingleColorTextureProgram.uniformModelViewProMatrix, 1, GL_FALSE, mvp.Transposed().M[ 0 ] );
 
 			glActiveTexture( GL_TEXTURE0 );
 			glBindTexture( GL_TEXTURE_2D, sd.materialDef.textures[ 0 ] );
 
-			glUniform4f( SingleColorTextureProgram.uColor, fadeColor, fadeColor, fadeColor, 1.0f );
+			glUniform4f( SingleColorTextureProgram.uniformColor, fadeColor, fadeColor, fadeColor, 1.0f );
 
 			sd.geo.Draw();
 
@@ -635,10 +635,10 @@ Matrix4f Oculus360Videos::DrawEyeView( const int eye, const float fovDegrees )
 		glDisable( GL_DEPTH_TEST );
 		glDisable( GL_CULL_FACE );
 
-		GlProgram & prog = ( BackgroundWidth == BackgroundHeight ) ? FadedPanoramaProgram : PanoramaProgram;
+		VGlShader & prog = ( BackgroundWidth == BackgroundHeight ) ? FadedPanoramaProgram : PanoramaProgram;
 
 		glUseProgram( prog.program );
-		glUniform4f( prog.uColor, 1.0f, 1.0f, 1.0f, 1.0f );
+		glUniform4f( prog.uniformColor, 1.0f, 1.0f, 1.0f, 1.0f );
 
 		// Videos have center as initial focal point - need to rotate 90 degrees to start there
 		const Matrix4f view = Scene.ViewMatrixForEye( 0 ) * Matrix4f::RotationY( M_PI / 2 );
@@ -646,8 +646,8 @@ Matrix4f Oculus360Videos::DrawEyeView( const int eye, const float fovDegrees )
 
 		const int toggleStereo = VideoMenu->isOpenOrOpening() ? 0 : eye;
 
-		glUniformMatrix4fv( prog.uTexm, 1, GL_FALSE, TexmForVideo( toggleStereo ).Transposed().M[ 0 ] );
-		glUniformMatrix4fv( prog.uMvp, 1, GL_FALSE, ( proj * view ).Transposed().M[ 0 ] );
+		glUniformMatrix4fv( prog.uniformTexMatrix, 1, GL_FALSE, TexmForVideo( toggleStereo ).Transposed().M[ 0 ] );
+		glUniformMatrix4fv( prog.uniformModelViewProMatrix, 1, GL_FALSE, ( proj * view ).Transposed().M[ 0 ] );
 		Globe.Draw();
 
 		glBindTexture( GL_TEXTURE_EXTERNAL_OES, 0 );	// don't leave it bound

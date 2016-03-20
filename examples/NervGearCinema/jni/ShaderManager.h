@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GlProgram.h"
+#include "VGlShader.h"
 #include "ModelFile.h"
 
 NV_USING_NAMESPACE
@@ -31,20 +31,20 @@ public:
 
 	// Render the external image texture to a conventional texture to allow
 	// mipmap generation.
-	GlProgram				CopyMovieProgram;
-	GlProgram				MovieExternalUiProgram;
-	GlProgram				UniformColorProgram;
+	VGlShader				CopyMovieProgram;
+	VGlShader				MovieExternalUiProgram;
+	VGlShader				UniformColorProgram;
 
-	GlProgram				ProgVertexColor;
-	GlProgram				ProgSingleTexture;
-	GlProgram				ProgLightMapped;
-	GlProgram				ProgReflectionMapped;
-	GlProgram				ProgSkinnedVertexColor;
-	GlProgram				ProgSkinnedSingleTexture;
-	GlProgram				ProgSkinnedLightMapped;
-	GlProgram				ProgSkinnedReflectionMapped;
+	VGlShader				ProgVertexColor;
+	VGlShader				ProgSingleTexture;
+	VGlShader				ProgLightMapped;
+	VGlShader				ProgReflectionMapped;
+	VGlShader				ProgSkinnedVertexColor;
+	VGlShader				ProgSkinnedSingleTexture;
+	VGlShader				ProgSkinnedLightMapped;
+	VGlShader				ProgSkinnedReflectionMapped;
 
-	GlProgram				ScenePrograms[ SCENE_PROGRAM_MAX ];
+	VGlShader				ScenePrograms[ SCENE_PROGRAM_MAX ];
 
 	ModelGlPrograms 		DynamicPrograms;
 	ModelGlPrograms 		DefaultPrograms;

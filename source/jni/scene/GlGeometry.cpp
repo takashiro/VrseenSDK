@@ -24,7 +24,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "Android/GlUtils.h"
 #include "Android/LogUtils.h"
 #include "VArray.h"
-#include "GlProgram.h"
+#include "../api/VGlShader.h"
 
 /*
  * These are all built inside VertexArrayObjects, so no GL state other
@@ -67,15 +67,15 @@ void GlGeometry::Create( const VertexAttribs & attribs, const VArray< TriangleIn
 	glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer );
 
 	VArray< uint8_t > packed;
-	PackVertexAttribute( packed, attribs.position,		VERTEX_ATTRIBUTE_LOCATION_POSITION,			GL_FLOAT,	3 );
-	PackVertexAttribute( packed, attribs.normal,		VERTEX_ATTRIBUTE_LOCATION_NORMAL,			GL_FLOAT,	3 );
-	PackVertexAttribute( packed, attribs.tangent,		VERTEX_ATTRIBUTE_LOCATION_TANGENT,			GL_FLOAT,	3 );
-	PackVertexAttribute( packed, attribs.binormal,		VERTEX_ATTRIBUTE_LOCATION_BINORMAL,			GL_FLOAT,	3 );
-	PackVertexAttribute( packed, attribs.color,			VERTEX_ATTRIBUTE_LOCATION_COLOR,			GL_FLOAT,	4 );
-	PackVertexAttribute( packed, attribs.uv0,			VERTEX_ATTRIBUTE_LOCATION_UV0,				GL_FLOAT,	2 );
-	PackVertexAttribute( packed, attribs.uv1,			VERTEX_ATTRIBUTE_LOCATION_UV1,				GL_FLOAT,	2 );
-	PackVertexAttribute( packed, attribs.jointIndices,	VERTEX_ATTRIBUTE_LOCATION_JOINT_INDICES,	GL_INT,		4 );
-	PackVertexAttribute( packed, attribs.jointWeights,	VERTEX_ATTRIBUTE_LOCATION_JOINT_WEIGHTS,	GL_FLOAT,	4 );
+	PackVertexAttribute( packed, attribs.position,		SHADER_ATTRIBUTE_LOCATION_POSITION,			GL_FLOAT,	3 );
+	PackVertexAttribute( packed, attribs.normal,		SHADER_ATTRIBUTE_LOCATION_NORMAL,			GL_FLOAT,	3 );
+	PackVertexAttribute( packed, attribs.tangent,		SHADER_ATTRIBUTE_LOCATION_TANGENT,			GL_FLOAT,	3 );
+	PackVertexAttribute( packed, attribs.binormal,		SHADER_ATTRIBUTE_LOCATION_BINORMAL,			GL_FLOAT,	3 );
+	PackVertexAttribute( packed, attribs.color,			SHADER_ATTRIBUTE_LOCATION_COLOR,			GL_FLOAT,	4 );
+	PackVertexAttribute( packed, attribs.uv0,			SHADER_ATTRIBUTE_LOCATION_UV0,				GL_FLOAT,	2 );
+	PackVertexAttribute( packed, attribs.uv1,			SHADER_ATTRIBUTE_LOCATION_UV1,				GL_FLOAT,	2 );
+	PackVertexAttribute( packed, attribs.jointIndices,	SHADER_ATTRIBUTE_LOCATION_JOINT_INDICES,	GL_INT,		4 );
+	PackVertexAttribute( packed, attribs.jointWeights,	SHADER_ATTRIBUTE_LOCATION_JOINT_WEIGHTS,	GL_FLOAT,	4 );
 
 	glBufferData( GL_ARRAY_BUFFER, packed.size() * sizeof( packed[0] ), packed.data(), GL_STATIC_DRAW );
 
@@ -84,15 +84,15 @@ void GlGeometry::Create( const VertexAttribs & attribs, const VArray< TriangleIn
 
 	glBindVertexArrayOES_( 0 );
 
-	glDisableVertexAttribArray( VERTEX_ATTRIBUTE_LOCATION_POSITION );
-	glDisableVertexAttribArray( VERTEX_ATTRIBUTE_LOCATION_NORMAL );
-	glDisableVertexAttribArray( VERTEX_ATTRIBUTE_LOCATION_TANGENT );
-	glDisableVertexAttribArray( VERTEX_ATTRIBUTE_LOCATION_BINORMAL );
-	glDisableVertexAttribArray( VERTEX_ATTRIBUTE_LOCATION_COLOR );
-	glDisableVertexAttribArray( VERTEX_ATTRIBUTE_LOCATION_UV0 );
-	glDisableVertexAttribArray( VERTEX_ATTRIBUTE_LOCATION_UV1 );
-	glDisableVertexAttribArray( VERTEX_ATTRIBUTE_LOCATION_JOINT_INDICES );
-	glDisableVertexAttribArray( VERTEX_ATTRIBUTE_LOCATION_JOINT_WEIGHTS );
+	glDisableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_POSITION );
+	glDisableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_NORMAL );
+	glDisableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_TANGENT );
+	glDisableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_BINORMAL );
+	glDisableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_COLOR );
+	glDisableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_UV0 );
+	glDisableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_UV1 );
+	glDisableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_JOINT_INDICES );
+	glDisableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_JOINT_WEIGHTS );
 }
 
 void GlGeometry::Update( const VertexAttribs & attribs )
@@ -104,15 +104,15 @@ void GlGeometry::Update( const VertexAttribs & attribs )
 	glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer );
 
 	VArray< uint8_t > packed;
-	PackVertexAttribute( packed, attribs.position,		VERTEX_ATTRIBUTE_LOCATION_POSITION,			GL_FLOAT,	3 );
-	PackVertexAttribute( packed, attribs.normal,		VERTEX_ATTRIBUTE_LOCATION_NORMAL,			GL_FLOAT,	3 );
-	PackVertexAttribute( packed, attribs.tangent,		VERTEX_ATTRIBUTE_LOCATION_TANGENT,			GL_FLOAT,	3 );
-	PackVertexAttribute( packed, attribs.binormal,		VERTEX_ATTRIBUTE_LOCATION_BINORMAL,			GL_FLOAT,	3 );
-	PackVertexAttribute( packed, attribs.color,			VERTEX_ATTRIBUTE_LOCATION_COLOR,			GL_FLOAT,	4 );
-	PackVertexAttribute( packed, attribs.uv0,			VERTEX_ATTRIBUTE_LOCATION_UV0,				GL_FLOAT,	2 );
-	PackVertexAttribute( packed, attribs.uv1,			VERTEX_ATTRIBUTE_LOCATION_UV1,				GL_FLOAT,	2 );
-	PackVertexAttribute( packed, attribs.jointIndices,	VERTEX_ATTRIBUTE_LOCATION_JOINT_INDICES,	GL_INT,		4 );
-	PackVertexAttribute( packed, attribs.jointWeights,	VERTEX_ATTRIBUTE_LOCATION_JOINT_WEIGHTS,	GL_FLOAT,	4 );
+	PackVertexAttribute( packed, attribs.position,		SHADER_ATTRIBUTE_LOCATION_POSITION,			GL_FLOAT,	3 );
+	PackVertexAttribute( packed, attribs.normal,		SHADER_ATTRIBUTE_LOCATION_NORMAL,			GL_FLOAT,	3 );
+	PackVertexAttribute( packed, attribs.tangent,		SHADER_ATTRIBUTE_LOCATION_TANGENT,			GL_FLOAT,	3 );
+	PackVertexAttribute( packed, attribs.binormal,		SHADER_ATTRIBUTE_LOCATION_BINORMAL,			GL_FLOAT,	3 );
+	PackVertexAttribute( packed, attribs.color,			SHADER_ATTRIBUTE_LOCATION_COLOR,			GL_FLOAT,	4 );
+	PackVertexAttribute( packed, attribs.uv0,			SHADER_ATTRIBUTE_LOCATION_UV0,				GL_FLOAT,	2 );
+	PackVertexAttribute( packed, attribs.uv1,			SHADER_ATTRIBUTE_LOCATION_UV1,				GL_FLOAT,	2 );
+	PackVertexAttribute( packed, attribs.jointIndices,	SHADER_ATTRIBUTE_LOCATION_JOINT_INDICES,	GL_INT,		4 );
+	PackVertexAttribute( packed, attribs.jointWeights,	SHADER_ATTRIBUTE_LOCATION_JOINT_WEIGHTS,	GL_FLOAT,	4 );
 
 	glBufferData( GL_ARRAY_BUFFER, packed.size() * sizeof( packed[0] ), packed.data(), GL_STATIC_DRAW );
 }

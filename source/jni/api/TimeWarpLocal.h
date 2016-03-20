@@ -3,10 +3,9 @@
 #include "Lockless.h"
 #include "TimeWarp.h"
 #include "VrApi.h"
-#include "ImageServer.h"
 
-#include "WarpGeometry.h"
-#include "WarpProgram.h"
+#include "VGlGeometry.h"
+#include "VGlShader.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -156,16 +155,16 @@ private:
     void			destroyFrameworkGraphics();
     void			drawFrameworkGraphicsToWindow( const ScreenEye eye, const int swapOptions,
 												   const bool drawTimingGraph );
-    WarpProgram		m_untexturedMvpProgram;
-    WarpProgram		m_debugLineProgram;
-    WarpProgram		m_warpPrograms[ WP_PROGRAM_MAX ];
+	VGlShader		m_untexturedMvpProgram;
+	VGlShader		m_debugLineProgram;
+    VGlShader		m_warpPrograms[ WP_PROGRAM_MAX ];
     GLuint			m_blackTexId;
     GLuint			m_defaultLoadingIconTexId;
-    WarpGeometry	m_calibrationLines2;		// simple cross
-    WarpGeometry	m_warpMesh;
-    WarpGeometry	m_sliceMesh;
-    WarpGeometry	m_cursorMesh;
-    WarpGeometry	m_timingGraph;
+    VGlGeometry	m_calibrationLines2;		// simple cross
+    VGlGeometry	m_warpMesh;
+    VGlGeometry	m_sliceMesh;
+    VGlGeometry	m_cursorMesh;
+    VGlGeometry	m_timingGraph;
 	static const int NUM_SLICES_PER_EYE = 4;
 	static const int NUM_SLICES_PER_SCREEN = NUM_SLICES_PER_EYE*2;
 
@@ -179,7 +178,7 @@ private:
 	// Draw debug graphs
     void 			drawTimingGraph( const ScreenEye eye );
 
-    const WarpProgram & programForParms( const ovrTimeWarpParms & parms, const bool disableChromaticCorrection ) const;
+    const VGlShader & programForParms( const ovrTimeWarpParms & parms, const bool disableChromaticCorrection ) const;
     void			setWarpState( const warpSource_t & currentWarpSource ) const;
     void			bindWarpProgram( const warpSource_t & currentWarpSource, const Matrix4f timeWarps[2][2],
 									const Matrix4f rollingWarp, const int eye, const double vsyncBase ) const;
@@ -191,9 +190,6 @@ private:
     DirectRender	m_screen;
 
     bool			m_hasEXT_sRGB_write_control;	// extension
-
-	// NULL if not requested at startup
-    ImageServer	*	m_netImageServer;
 
 	// It is an error to call WarpSwap() from a different thread
     pid_t			m_sStartupTid;

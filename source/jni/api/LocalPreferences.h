@@ -16,11 +16,6 @@ extern "C" {
 //
 // adb shell "echo imageserver 1 dev_powerLevelState 1 > /sdcard/.oculusprefs"
 
-// If the image server is enabled, an external app can request continuous screenshots
-// for usability testing.  This is a privacy / security concern if left always
-// enabled.
-#define LOCAL_PREF_IMAGE_SERVER         "imageServer"               // "0" or "1"
-
 // Enable support for Oculus Remote Monitor to connect to the application.
 #define LOCAL_PREF_ENABLE_CAPTURE       "dev_enableCapture"         // "0" or "1"
 

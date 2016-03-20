@@ -124,11 +124,11 @@ ImageServer::~ImageServer()
 	// free GL tools
 	if ( m_quad.vertexArrayObject )
 	{
-		DestroyWarpGeometry( &m_quad );
+		m_quad.Free();
 	}
 	if ( m_resampleProg.program )
 	{
-		DestroyWarpProgram( &m_resampleProg );
+		m_resampleProg.destroy();
 	}
 	freeBuffers();
 	LOG( "-------------------- Shutdown completed --------------------" );
@@ -451,7 +451,7 @@ void ImageServer::enterWarpSwap( int eyeTexture )
 	// create GL objects if necessary
 	if ( !m_resampleProg.program )
 	{
-		CreateWarpProgram( &m_resampleProg,
+		m_resampleProg.initShader(
 			"uniform highp mat4 Mvpm;\n"
 			"attribute vec4 Position;\n"
 			"attribute vec2 TexCoord;\n"
@@ -473,7 +473,7 @@ void ImageServer::enterWarpSwap( int eyeTexture )
 
 	if ( !m_quad.vertexArrayObject )
 	{
-		CreateQuadWarpGeometry( &m_quad );
+		m_quad = VGlGeometryFactory::CreateQuad();
 	}
 
 	// If resolution has changed, delete and reallocate the buffers

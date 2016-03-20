@@ -71,13 +71,11 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     api/HmdSensors.cpp \
                     api/Distortion.cpp \
                     api/SystemActivities.cpp \
-                    api/TimeWarp.cpp \
-                    api/TimeWarpProgs.cpp \
-                    api/ImageServer.cpp \
+                    api/VFrameSmooth.cpp \
                     api/LocalPreferences.cpp \
+                    api/VGlGeometry.cpp \
                     api/VMainActivity.cpp \
-                    api/WarpGeometry.cpp \
-                    api/WarpProgram.cpp \
+                    api/VGlShader.cpp \
                     api/sensor/DeviceHandle.cpp \
                     api/sensor/DeviceImpl.cpp \
                     api/sensor/LatencyTest.cpp \
@@ -125,8 +123,6 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     scene/GazeCursor.cpp \
                     scene/GlSetup.cpp \
                     scene/GlTexture.cpp \
-                    scene/GlProgram.cpp \
-                    scene/GlGeometry.cpp \
                     scene/ImageData.cpp \
                     scene/ModelRender.cpp \
                     scene/ModelFile.cpp \

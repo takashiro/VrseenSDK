@@ -19,7 +19,7 @@ NV_NAMESPACE_BEGIN
 
 class BitmapFont;
 class BitmapFontSurface;
-struct GlProgram;
+class VGlShader;
 class OvrDebugLines;
 
 enum eGUIProgramType
@@ -73,7 +73,7 @@ public:
 	// Render's all objects that have been submitted on the current frame.
     virtual void				renderSubmitted( Matrix4f const & worldMVP, Matrix4f const & viewMatrix ) const = 0;
 
-    virtual GlProgram const *   getGUIGlProgram( eGUIProgramType const programType ) const = 0;
+    virtual VGlShader const *   getGUIGlProgram( eGUIProgramType const programType ) const = 0;
 };
 
 NV_NAMESPACE_END

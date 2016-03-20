@@ -32,7 +32,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "DirectRender.h"
 #include "HmdInfo.h"
 #include "HmdSensors.h"
-#include "TimeWarp.h"
+#include "VFrameSmooth.h"
 #include "VrApi_local.h"
 #include "VrApi_Helpers.h"
 #include "Vsync.h"
@@ -1448,7 +1448,6 @@ ovrMobile * ovr_EnterVrMode( ovrModeParms parms, ovrHmdInfo * returnedHmdInfo )
 	LOG( "ovrModeParms.AsynchronousTimeWarp = %i", parms.AsynchronousTimeWarp );
 	LOG( "ovrModeParms.AllowPowerSave = %i", parms.AllowPowerSave );
 	LOG( "ovrModeParms.DistortionFileName = %s", parms.DistortionFileName ? parms.DistortionFileName : "" );
-	LOG( "ovrModeParms.EnableImageServer = %i", parms.EnableImageServer );
 	LOG( "ovrModeParms.GameThreadTid = %i", parms.GameThreadTid );
 	LOG( "ovrModeParms.CpuLevel = %i", parms.CpuLevel );
 	LOG( "ovrModeParms.GpuLevel = %i", parms.GpuLevel );
@@ -1534,7 +1533,6 @@ ovrMobile * ovr_EnterVrMode( ovrModeParms parms, ovrHmdInfo * returnedHmdInfo )
 	// frontbuffer can be forced off.
 	ovr->Twp.frontBuffer = atoi( ovr_GetLocalPreferenceValueForKey( "frontbuffer", "1" ) );
 	ovr->Twp.distortionFileName = ovr->Parms.DistortionFileName;
-	ovr->Twp.enableImageServer = ovr->Parms.EnableImageServer;
 	ovr->Twp.hmdInfo = ovr->HmdInfo;
 	ovr->Twp.javaVm = VrLibJavaVM;
 	ovr->Twp.vrLibClass = VrLibClass;
@@ -1545,7 +1543,7 @@ ovrMobile * ovr_EnterVrMode( ovrModeParms parms, ovrHmdInfo * returnedHmdInfo )
 	// front buffer rendering.
 	ovr->Twp.buildVersionSDK = BuildVersionSDK;
 	ovr->Twp.externalStorageDirectory = externalStorageDirectory;
-	ovr->Warp = NervGear::TimeWarp::Factory( ovr->Twp );
+	ovr->Warp = VFrameSmooth::Factory( ovr->Twp );
 
 	// Enable our real time scheduling.
 
@@ -1725,7 +1723,7 @@ static void ResetTimeWarp( ovrMobile * ovr )
 	// restart TimeWarp to generate new distortion meshes
 	ovr->Twp.hmdInfo = ovr->HmdInfo;
 	delete ovr->Warp;
-	ovr->Warp = NervGear::TimeWarp::Factory( ovr->Twp );
+	ovr->Warp = VFrameSmooth::Factory( ovr->Twp );
 	if ( ovr->Parms.AsynchronousTimeWarp )
 	{
 		SetSchedFifo( ovr, ovr->Warp->warpThreadTid(), SCHED_FIFO_PRIORITY_TIMEWARP );

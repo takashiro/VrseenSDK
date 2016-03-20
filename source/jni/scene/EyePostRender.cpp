@@ -24,12 +24,12 @@ void EyePostRender::Init()
 	LOG( "EyePostRender::Init()" );
 
 	// grid of lines for drawing to eye buffer
-	CalibrationLines = BuildCalibrationLines( 24, false );
+	CalibrationLines = VGlGeometryFactory::CreateCalibrationLines( 24, false );
 
 	// thin border around the outside
-	VignetteSquare = BuildVignette( 128.0f / 1024.0f, 128.0f / 1024.0f );
+	VignetteSquare = VGlGeometryFactory::CreateVignette( 128.0f / 1024.0f, 128.0f / 1024.0f );
 
-	UntexturedMvpProgram = BuildProgram(
+	UntexturedMvpProgram.initShader(
 		"uniform mat4 Mvpm;\n"
 		"attribute vec4 Position;\n"
 		"uniform mediump vec4 UniformColor;\n"
@@ -47,7 +47,7 @@ void EyePostRender::Init()
 		"}\n"
 	);
 
-	UntexturedScreenSpaceProgram = BuildProgram( identityVertexShaderSource, untexturedFragmentShaderSource );
+	UntexturedScreenSpaceProgram.initShader( identityVertexShaderSource, untexturedFragmentShaderSource );
 }
 
 void EyePostRender::Shutdown()
@@ -55,8 +55,8 @@ void EyePostRender::Shutdown()
 	LOG( "EyePostRender::Shutdown()" );
 	CalibrationLines.Free();
 	VignetteSquare.Free();
-	DeleteProgram( UntexturedMvpProgram );
-	DeleteProgram( UntexturedScreenSpaceProgram );
+	UntexturedMvpProgram.destroy();
+	UntexturedScreenSpaceProgram.destroy();
 }
 
 void EyePostRender::DrawEyeCalibrationLines( const float bufferFovDegrees, const int eye )
@@ -68,11 +68,11 @@ void EyePostRender::DrawEyeCalibrationLines( const float bufferFovDegrees, const
 	//Matrix4f::Identity();
 	 Matrix4f::PerspectiveRH( DegreeToRad( bufferFovDegrees ), 1.0f, 0.01f, 2000.0f );
 
-	const GlProgram & prog = UntexturedMvpProgram;
+	const VGlShader & prog = UntexturedMvpProgram;
 	glUseProgram( prog.program );
 	glLineWidth( 3.0f );
-	glUniform4f( prog.uColor, 0, 1-eye, eye, 1 );
-	glUniformMatrix4fv( prog.uMvp, 1, GL_FALSE /* not transposed */,
+	glUniform4f( prog.uniformColor, 0, 1-eye, eye, 1 );
+	glUniformMatrix4fv( prog.uniformModelViewProMatrix, 1, GL_FALSE /* not transposed */,
 			projectionMatrix.Transposed().M[0] );
 
 	glBindVertexArrayOES_( CalibrationLines.vertexArrayObject );
@@ -86,7 +86,7 @@ void EyePostRender::DrawEyeVignette()
 {
 	// Draw a thin vignette at the edges of the view so clamping will give black
 	glUseProgram( UntexturedScreenSpaceProgram.program);
-	glUniform4f( UntexturedScreenSpaceProgram.uColor, 1, 1, 1, 1 );
+	glUniform4f( UntexturedScreenSpaceProgram.uniformColor, 1, 1, 1, 1 );
 	glEnable( GL_BLEND );
 	glBlendFunc( GL_ZERO, GL_SRC_COLOR );
 	VignetteSquare.Draw();

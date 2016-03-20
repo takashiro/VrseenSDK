@@ -10,7 +10,7 @@ Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
 *************************************************************************************/
 
 #include "WarpGeometry.h"
-#include "WarpProgram.h"
+#include "VGlShader.h"
 
 namespace NervGear {
 
@@ -44,16 +44,16 @@ void CreateQuadWarpGeometry( WarpGeometry * geometry )
 	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, geometry->indexBuffer );
 	glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( indices ), indices, GL_STATIC_DRAW );
 
-	glEnableVertexAttribArray( VERTEX_ATTRIBUTE_LOCATION_POSITION );
-	glVertexAttribPointer( VERTEX_ATTRIBUTE_LOCATION_POSITION, 3, GL_FLOAT, false,
+	glEnableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_POSITION );
+	glVertexAttribPointer( SHADER_ATTRIBUTE_LOCATION_POSITION, 3, GL_FLOAT, false,
 			sizeof( vertices.positions[0] ), (const GLvoid *)offsetof( vertices_t, positions ) );
 
-	glEnableVertexAttribArray( VERTEX_ATTRIBUTE_LOCATION_UV0 );
-	glVertexAttribPointer( VERTEX_ATTRIBUTE_LOCATION_UV0, 2, GL_FLOAT, false,
+	glEnableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_UV0 );
+	glVertexAttribPointer( SHADER_ATTRIBUTE_LOCATION_UV0, 2, GL_FLOAT, false,
 			sizeof( vertices.uvs[0] ), (const GLvoid *)offsetof( vertices_t, uvs ) );
 
-	glEnableVertexAttribArray( VERTEX_ATTRIBUTE_LOCATION_COLOR );
-	glVertexAttribPointer( VERTEX_ATTRIBUTE_LOCATION_COLOR, 4, GL_FLOAT, false,
+	glEnableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_COLOR );
+	glVertexAttribPointer( SHADER_ATTRIBUTE_LOCATION_COLOR, 4, GL_FLOAT, false,
 			sizeof( vertices.colors[0] ), (const GLvoid *)offsetof( vertices_t, colors ) );
 
 	glBindVertexArrayOES_( 0 );

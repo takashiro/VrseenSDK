@@ -37,9 +37,9 @@
 #include "Android/GlUtils.h"
 #include "Android/LogUtils.h"
 
-#include "GlProgram.h"
+#include "../api/VGlShader.h"
 #include "GlTexture.h"
-#include "GlGeometry.h"
+#include "../api/VGlGeometry.h"
 #include "VrCommon.h"
 
 NV_NAMESPACE_BEGIN
@@ -182,7 +182,7 @@ public:
 	FontInfoType const & GetFontInfo() const {
 		return FontInfo;
 	}
-	const GlProgram & GetFontProgram() const {
+	const VGlShader & GetFontProgram() const {
 		return FontProgram;
 	}
 	int GetImageWidth() const {
@@ -201,7 +201,7 @@ private:
 	int ImageWidth;
 	int ImageHeight;
 
-	GlProgram FontProgram;
+	VGlShader FontProgram;
 
 private:
     bool LoadImage(const VApkFile &languagePackageFile,
@@ -262,7 +262,7 @@ public:
 			Matrix4f const & worldMVP) const;
 
 private:
-	GlGeometry Geo; // font glyphs
+	VGlGeometry Geo; // font glyphs
 	fontVertex_t * Vertices; // vertices that are written to the VBO
 	int MaxVertices;
 	int MaxIndices;
@@ -772,7 +772,7 @@ bool BitmapFontLocal::Load(const VString &languagePackageName, const VString &fo
 
 	// create the shaders for font rendering if not already created
 	if (FontProgram.vertexShader == 0 || FontProgram.fragmentShader == 0) {
-		FontProgram = BuildProgram(FontSingleTextureVertexShaderSrc,
+		FontProgram.initShader(FontSingleTextureVertexShaderSrc,
 				SDFFontFragmentShaderSrc); //SingleTextureFragmentShaderSrc );
 	}
 
@@ -1067,23 +1067,23 @@ void BitmapFontSurfaceLocal::Init(const int maxVertices) {
 	glBufferData(GL_ARRAY_BUFFER, vertexByteCount, (void*) Vertices,
 			GL_DYNAMIC_DRAW);
 
-	glEnableVertexAttribArray(VERTEX_ATTRIBUTE_LOCATION_POSITION); // x, y and z
-	glVertexAttribPointer(VERTEX_ATTRIBUTE_LOCATION_POSITION, 3, GL_FLOAT,
+	glEnableVertexAttribArray(SHADER_ATTRIBUTE_LOCATION_POSITION); // x, y and z
+	glVertexAttribPointer(SHADER_ATTRIBUTE_LOCATION_POSITION, 3, GL_FLOAT,
 			GL_FALSE, sizeof(fontVertex_t), (void*) 0);
 
-	glEnableVertexAttribArray(VERTEX_ATTRIBUTE_LOCATION_UV0); // s and t
-	glVertexAttribPointer(VERTEX_ATTRIBUTE_LOCATION_UV0, 2, GL_FLOAT, GL_FALSE,
+	glEnableVertexAttribArray(SHADER_ATTRIBUTE_LOCATION_UV0); // s and t
+	glVertexAttribPointer(SHADER_ATTRIBUTE_LOCATION_UV0, 2, GL_FLOAT, GL_FALSE,
 			sizeof(fontVertex_t), (void*) offsetof( fontVertex_t, s ));
 
-	glEnableVertexAttribArray(VERTEX_ATTRIBUTE_LOCATION_COLOR); // color
-	glVertexAttribPointer(VERTEX_ATTRIBUTE_LOCATION_COLOR, 4, GL_UNSIGNED_BYTE,
+	glEnableVertexAttribArray(SHADER_ATTRIBUTE_LOCATION_COLOR); // color
+	glVertexAttribPointer(SHADER_ATTRIBUTE_LOCATION_COLOR, 4, GL_UNSIGNED_BYTE,
 			GL_TRUE, sizeof(fontVertex_t),
 			(void*) offsetof( fontVertex_t, rgba ));
 
-	glDisableVertexAttribArray(VERTEX_ATTRIBUTE_LOCATION_UV1);
+	glDisableVertexAttribArray(SHADER_ATTRIBUTE_LOCATION_UV1);
 
-	glEnableVertexAttribArray(VERTEX_ATTRIBUTE_LOCATION_FONT_PARMS); // outline parms
-	glVertexAttribPointer(VERTEX_ATTRIBUTE_LOCATION_FONT_PARMS, 4,
+	glEnableVertexAttribArray(SHADER_ATTRIBUTE_LOCATION_FONT_PARMS); // outline parms
+	glVertexAttribPointer(SHADER_ATTRIBUTE_LOCATION_FONT_PARMS, 4,
 			GL_UNSIGNED_BYTE, GL_TRUE, sizeof(fontVertex_t),
 			(void*) offsetof( fontVertex_t, fontParms ));
 
@@ -1471,11 +1471,11 @@ void BitmapFontSurfaceLocal::Render3D(BitmapFont const & font,
 
 	glUseProgram(AsLocal(font).GetFontProgram().program);
 
-	glUniformMatrix4fv(AsLocal(font).GetFontProgram().uMvp, 1, GL_FALSE,
+	glUniformMatrix4fv(AsLocal(font).GetFontProgram().uniformModelViewProMatrix, 1, GL_FALSE,
 			worldMVP.M[0]);
 
 	float textColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-	glUniform4fv(AsLocal(font).GetFontProgram().uColor, 1, textColor);
+	glUniform4fv(AsLocal(font).GetFontProgram().uniformColor, 1, textColor);
 
 	// draw all font vertices
 	glBindVertexArrayOES_(Geo.vertexArrayObject);

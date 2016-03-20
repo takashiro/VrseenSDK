@@ -89,7 +89,7 @@ public:
 	bool				FrameUpdateNeeded;
 	int					ClearGhostsFrames;
 
-	GlGeometry			UnitSquare;		// -1 to 1
+	VGlGeometry			UnitSquare;		// -1 to 1
 
 	// We can't directly create a mip map on the OES_external_texture, so
 	// it needs to be copied to a conventional texture.

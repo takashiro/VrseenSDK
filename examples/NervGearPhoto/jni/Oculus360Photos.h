@@ -115,7 +115,7 @@ private:
 
 	// shared vars
     jclass				m_mainActivityClass;	// need to look up from main thread
-    GlGeometry			m_globe;
+    VGlGeometry			m_globe;
 
     OvrSceneView		m_scene;
     SineFader			m_fader;
@@ -133,9 +133,9 @@ private:
     DoubleBufferedTextureData	m_backgroundCubeTexData;
     bool				m_currentPanoIsCubeMap;
 
-    GlProgram			m_texturedMvpProgram;
-    GlProgram			m_cubeMapPanoProgram;
-    GlProgram			m_panoramaProgram;
+    VGlShader			m_texturedMvpProgram;
+	VGlShader			m_cubeMapPanoProgram;
+	VGlShader			m_panoramaProgram;
 
     VrFrame				m_frameInput;
     OvrMenuState		m_menuState;
