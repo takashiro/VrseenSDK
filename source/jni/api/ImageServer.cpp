@@ -24,8 +24,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <sched.h>
 #include <unistd.h>
 #include <poll.h>
-
-#include "Std.h"
+#include "VString.h"
 #include "Android/LogUtils.h"
 
 namespace NervGear {
@@ -334,10 +333,10 @@ void ImageServer::serverThread()
 			}
 
 			// reply with the port number of our TCP accept socket
-			char			response[128];
-			sprintf( response, "%i", acceptSocketPort );
-			LOG( "replying to request \"%s\" with \"%s\"", request, response );
-			const int sndRet = sendto( UdpSocket, (void *)response, strlen( response ),
+            VString response;
+            response.sprintf("%i", acceptSocketPort);
+            LOG( "replying to request \"%s\" with \"%s\"", request, response.toCString() );
+            const int sndRet = sendto( UdpSocket, (void *)response.toCString(), response.length(),
 					0, (sockaddr *)&from, sizeof(from) );
 			if ( sndRet == -1 )
 			{

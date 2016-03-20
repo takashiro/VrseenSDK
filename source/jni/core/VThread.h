@@ -37,7 +37,7 @@ public:
     virtual bool start(State initialState = Running);
     virtual void exit(int exitCode = 0);
 
-    int wait();
+    bool wait();
 
     bool suspend();
     bool resume();

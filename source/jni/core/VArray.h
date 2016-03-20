@@ -102,7 +102,7 @@ public:
     {
         for (uint i = 0, max = this->size(); i < max; i++) {
             if (this->at(i) == e) {
-                this->erase(i);
+                this->removeAt(i);
                 i--;
                 max--;
             }
@@ -111,8 +111,8 @@ public:
 
     bool contains(const E &e) const
     {
-        for(auto i:*this) {
-            if (*i == e) {
+        for(const E &i : *this) {
+            if (i == e) {
                 return true;
             }
         }

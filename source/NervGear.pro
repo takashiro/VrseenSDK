@@ -3,7 +3,6 @@ CONFIG += console
 CONFIG -= app_bundle
 CONFIG -= qt
 
-CONFIG += nervgear_capture
 CONFIG(debug, debug|release): DEFINES += OVR_DEBUG=1 NDK_DEBUG=1 OVR_BUILD_DEBUG
 
 DEFINES += NV_NAMESPACE=NervGear
@@ -31,7 +30,6 @@ SOURCES += \
     jni/core/VPath.cpp \
     jni/core/RefCount.cpp \
     jni/core/VStandardPath.cpp \
-    jni/core/Std.cpp \
     jni/core/VString.cpp \
     jni/core/System.cpp \
     jni/core/ThreadCommandQueue.cpp \
@@ -131,11 +129,6 @@ HEADERS += \
     jni/core/android/JniUtils.h \
     jni/core/android/LogUtils.h \
     jni/core/android/VOsBuild.h \
-    jni/core/capture/Capture.h \
-    jni/core/capture/Capture_Config.h \
-    jni/core/capture/Capture_LegacyPackets.h \
-    jni/core/capture/Capture_Packets.h \
-    jni/core/capture/Capture_Types.h \
     jni/core/Alg.h \
     jni/core/Allocator.h \
     jni/core/Atomic.h \
@@ -156,7 +149,6 @@ HEADERS += \
     jni/core/VPath.h \
     jni/core/RefCount.h \
     jni/core/VStandardPath.h \
-    jni/core/Std.h \
     jni/core/VString.h \
     jni/core/String_FormatUtil.h \
     jni/core/String_PathUtil.h \
@@ -290,28 +282,6 @@ HEADERS += \
 
 include(jni/3rdparty/minizip/minizip.pri)
 include(jni/3rdparty/stb/stb.pri)
-
-# NervGear::Capture support...
-nervgear_capture{
-    SOURCES += \
-        jni/core/capture/Capture.cpp \
-        jni/core/capture/Capture_AsyncStream.cpp \
-        jni/core/capture/Capture_FileIO.cpp \
-        jni/core/capture/Capture_GLES3.cpp \
-        jni/core/capture/Capture_Socket.cpp \
-        jni/core/capture/Capture_StandardSensors.cpp \
-        jni/core/capture/Capture_Thread.cpp
-
-    HEADERS += \
-        jni/core/capture/Capture_AsyncStream.h \
-        jni/core/capture/Capture_FileIO.h \
-        jni/core/capture/Capture_Socket.h \
-        jni/core/capture/Capture_StandardSensors.h \
-        jni/core/capture/Capture_GLES3.h \
-        jni/core/capture/Capture_Thread.h
-
-    DEFINES += OVR_ENABLE_CAPTURE=1
-}
 
 # OpenGL ES 3.0
 LIBS += -lGLESv3

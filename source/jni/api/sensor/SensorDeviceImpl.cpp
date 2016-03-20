@@ -16,7 +16,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "VTimer.h"
 #include "Alg.h"
-#include "Std.h"
 
 namespace NervGear {
 
@@ -792,8 +791,8 @@ bool SensorDeviceCreateDesc::GetDeviceInfo(DeviceInfo* info) const
         (info->InfoClassType != Device_None))
         return false;
 
-    OVR_strcpy(info->ProductName,  DeviceInfo::MaxNameLength, HIDDesc.Product.toCString());
-    OVR_strcpy(info->Manufacturer, DeviceInfo::MaxNameLength, HIDDesc.Manufacturer.toCString());
+    info->ProductName = HIDDesc.Product;
+    info->Manufacturer = HIDDesc.Manufacturer;
     info->Type    = Device_Sensor;
 
     if (info->InfoClassType == Device_Sensor)
@@ -803,7 +802,7 @@ bool SensorDeviceCreateDesc::GetDeviceInfo(DeviceInfo* info) const
         sinfo->ProductId = HIDDesc.ProductId;
         sinfo->Version   = HIDDesc.VersionNumber;
         sinfo->MaxRanges = SensorRangeImpl::GetMaxSensorRange();
-        OVR_strcpy(sinfo->SerialNumber, sizeof(sinfo->SerialNumber),HIDDesc.SerialNumber.toCString());
+        sinfo->SerialNumber = HIDDesc.SerialNumber;
     }
     return true;
 }

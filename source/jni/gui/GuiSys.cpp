@@ -146,7 +146,7 @@ int OvrGuiSysLocal::FindMenuIndex( char const * menuName ) const
 {
 	for ( int i = 0; i < Menus.length(); ++i )
 	{
-        if ( OVR_stricmp( Menus[i]->name(), menuName ) == 0 )
+        if ( strcasecmp(Menus[i]->name(), menuName ) == 0 )
 		{
 			return i;
 		}
@@ -188,7 +188,7 @@ int OvrGuiSysLocal::FindActiveMenuIndex( char const * menuName ) const
 {
 	for ( int i = 0; i < ActiveMenus.length(); ++i )
 	{
-        if ( OVR_stricmp( ActiveMenus[i]->name(), menuName ) == 0 )
+        if ( strcasecmp( ActiveMenus[i]->name(), menuName ) == 0 )
 		{
 			return i;
 		}

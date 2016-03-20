@@ -7,6 +7,7 @@
 #include <ostream>
 
 #include "VSharedPointer.h"
+#include "VString.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -34,6 +35,7 @@ public:
     Json(int value);
     Json(double value);
 	Json(const std::string &value);
+    Json(const VString &value);
     Json(const char *value);
     Json(Type type);
 
@@ -49,9 +51,10 @@ public:
 	bool toBool() const;
 	double toDouble() const;
 	int toInt() const;
-	std::string toString() const;
-        const JsonArray &toArray() const;
-        const JsonObject &toObject() const;
+    VString toString() const;
+    std::string toStdString() const;
+    const JsonArray &toArray() const;
+    const JsonObject &toObject() const;
 
 	bool operator==(bool value) const;
 	bool operator!=(bool value) const { return !(*this == value); }
@@ -76,8 +79,8 @@ public:
 
 	//Object Functions
 	void insert(const std::string &key, const Json &value);
-        void remove(const std::string &key);
-	Json &operator[](const std::string &key);
+    void remove(const std::string &key);
+    Json &operator[](const std::string &key);
 	const Json &operator[](const std::string &key) const;
 	const Json &value(const std::string &key) const;
 	const Json &value(const std::string &key, const Json &defaultValue) const;
@@ -90,15 +93,15 @@ public:
     friend std::istream &operator>>(std::istream &in, Json &value);
     friend std::ostream &operator<<(std::ostream &out, const Json &value);
 
-    static Json Parse(const char *str);
+    static Json Parse(const char* str);
     static Json Load(const char *path);
 
 protected:
-	std::string &string();
+    VString &string();
 	std::vector<Json> &array();
 	std::map<std::string, Json> &object();
 
-	VSharedPointer<JsonData> p_ptr;
+    VSharedPointer<JsonData> p_ptr;
 };
 
 class JsonData
@@ -110,7 +113,7 @@ public:
     {
         bool boolean;
         double number;
-        std::string *str;
+        VString *str;
         std::vector<Json> *array;
         std::map<std::string, Json> *object;
     };

@@ -10,6 +10,7 @@ class VByteArray : public std::basic_string<char>
 {
 public:
     VByteArray() {}
+    VByteArray(const std::string &source) : basic_string(source) {}
     VByteArray(uint length, char ch = '\0');
     VByteArray(const char *bytes, uint length) : basic_string(bytes, length) {}
     VByteArray(const VByteArray &source) : basic_string(source) {}

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vglobal.h"
+#include "VString.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -9,10 +10,10 @@ NV_NAMESPACE_BEGIN
 //==============================================================================================
 void SystemActivities_InitEventQueues();
 void SystemActivities_ShutdownEventQueues();
-void SystemActivities_AddEvent( char const * data );
-void SystemActivities_AddInternalEvent( char const * data );
-eVrApiEventStatus SystemActivities_nextPendingInternalEvent( char * buffer, unsigned int const bufferSize );
-eVrApiEventStatus SystemActivities_nextPendingMainEvent( char * buffer, unsigned int const bufferSize );
+void SystemActivities_AddEvent( const VString&  data );
+void SystemActivities_AddInternalEvent( const VString& data );
+eVrApiEventStatus SystemActivities_nextPendingInternalEvent( VString& buffer, unsigned int const bufferSize );
+eVrApiEventStatus SystemActivities_nextPendingMainEvent( VString& buffer, unsigned int const bufferSize );
 
 NV_NAMESPACE_END
 

@@ -201,19 +201,19 @@ void OvrMetaData::renameCategory(const VString &currentTag, const VString &newNa
 	}
 }
 
-Json LoadPackageMetaFile( const char * metaFile )
+Json LoadPackageMetaFile( const char* metaFile )
 {
     uint bufferLength = 0;
-	void * 	buffer = NULL;
+    void * 	buffer = NULL;
 	VString assetsMetaFile = "assets/";
 	assetsMetaFile += metaFile;
     const VApkFile &apk = VApkFile::CurrentApkFile();
     apk.read(assetsMetaFile, buffer, bufferLength);
-	if ( !buffer )
+    if ( buffer != nullptr )
 	{
 		WARN( "LoadPackageMetaFile failed to read %s", assetsMetaFile.toCString() );
 	}
-	return Json::Parse( static_cast< const char * >( buffer ) );
+    return Json::Parse( static_cast<char*>(buffer) );
 }
 
 Json OvrMetaData::createOrGetStoredMetaFile( const VString &appFileStoragePath, const char * metaFile )
@@ -588,8 +588,8 @@ void OvrMetaData::extractCategories(const Json &dataFile, VArray< Category > & o
 			if ( category.isObject() )
 			{
 				Category extractedCategory;
-				extractedCategory.categoryTag = category.value( TAG ).toString().c_str();
-				extractedCategory.label = category.value( LABEL ).toString().c_str();
+                extractedCategory.categoryTag = category.value( TAG ).toString();
+                extractedCategory.label = category.value( LABEL ).toString();
 
 				// Check if we already have this category
 				bool exists = false;
@@ -643,14 +643,14 @@ void OvrMetaData::extractMetaData(const Json &dataFile, const VArray< VString > 
 					for (const Json &tag : elements) {
 						if ( tag.isObject() )
 						{
-							metaDatum->tags.append(VString(tag.value( CATEGORY ).toString().c_str()));
+                            metaDatum->tags.append(tag.value( CATEGORY ).toString());
 						}
 					}
 				}
 
 				OVR_ASSERT( !metaDatum->tags.isEmpty() );
 
-				const VString relativeUrl( datum.value( URL_INNER ).toString().c_str() );
+                const VString relativeUrl = datum.value( URL_INNER ).toString();
 				metaDatum->url = relativeUrl;
 				bool foundPath = false;
                 const bool isRemote = this->isRemote( metaDatum );
@@ -718,14 +718,14 @@ void OvrMetaData::extractRemoteMetaData( const Json &dataFile, StringHash< OvrMe
 					for (const Json &tag : elements) {
 						if ( tag.isObject() )
 						{
-							metaDatum->tags.append( VString(tag.value( CATEGORY ).toString().c_str()) );
+                            metaDatum->tags.append(tag.value( CATEGORY ).toString());
 						}
 					}
 				}
 
 				OVR_ASSERT( !metaDatum->tags.isEmpty() );
 
-				metaDatum->url = jsonDatum.value( URL_INNER ).toString().c_str();
+                metaDatum->url = jsonDatum.value( URL_INNER ).toString();
 				extractExtendedData( jsonDatum, *metaDatum );
 
                 StringHash< OvrMetaDatum * >::Iterator iter = outMetaData.find( metaDatum->url );
@@ -974,7 +974,7 @@ bool OvrMetaData::shouldAddFile( const char * filename, const OvrMetaDataFileExt
 	{
 		const VString & ext = fileExtensions.badExtensions.at( index );
         const int extLen = (int) ext.length();
-		if ( pathLen > extLen && OVR_stricmp( filename + pathLen - extLen, ext.toCString() ) == 0 )
+        if ( pathLen > extLen && strcasecmp( filename + pathLen - extLen, ext.toCString() ) == 0 )
 		{
 			return false;
 		}
@@ -984,7 +984,7 @@ bool OvrMetaData::shouldAddFile( const char * filename, const OvrMetaDataFileExt
 	{
 		const VString & ext = fileExtensions.goodExtensions.at( index );
         const int extLen = (int) ext.length();
-		if ( pathLen > extLen && OVR_stricmp( filename + pathLen - extLen, ext.toCString() ) == 0 )
+        if ( pathLen > extLen && strcasecmp( filename + pathLen - extLen, ext.toCString() ) == 0 )
 		{
 			return true;
 		}

@@ -427,16 +427,16 @@ struct App::Private : public TalkToJavaInterface
 
     ovrTimeWarpParms	swapParms;			// passed to TimeWarp->WarpSwap()
 
-    GlProgram		externalTextureProgram2;
-    GlProgram		untexturedMvpProgram;
-    GlProgram		untexturedScreenSpaceProgram;
-    GlProgram		overlayScreenFadeMaskProgram;
-    GlProgram		overlayScreenDirectProgram;
+    VGlShader		externalTextureProgram2;
+    VGlShader		untexturedMvpProgram;
+    VGlShader		untexturedScreenSpaceProgram;
+    VGlShader		overlayScreenFadeMaskProgram;
+    VGlShader		overlayScreenDirectProgram;
 
-    GlGeometry		unitCubeLines;		// 12 lines that outline a 0 to 1 unit cube, intended to be scaled to cover bounds.
-    GlGeometry		panelGeometry;		// used for dialogs
-    GlGeometry		unitSquare;			// -1 to 1 in x and Y, 0 to 1 in texcoords
-    GlGeometry		fadedScreenMaskSquare;// faded screen mask for overlay rendering
+    VGlGeometry		unitCubeLines;		// 12 lines that outline a 0 to 1 unit cube, intended to be scaled to cover bounds.
+    VGlGeometry		panelGeometry;		// used for dialogs
+    VGlGeometry		unitSquare;			// -1 to 1 in x and Y, 0 to 1 in texcoords
+    VGlGeometry		fadedScreenMaskSquare;// faded screen mask for overlay rendering
 
     EyePostRender	eyeDecorations;
 
@@ -649,9 +649,6 @@ struct App::Private : public TalkToJavaInterface
 
         // Check for values that effect our mode settings
         {
-            const char * imageServerStr = ovr_GetLocalPreferenceValueForKey(LOCAL_PREF_IMAGE_SERVER, "0");
-            VrModeParms.EnableImageServer = (atoi(imageServerStr) > 0);
-
             const char * cpuLevelStr = ovr_GetLocalPreferenceValueForKey(LOCAL_PREF_DEV_CPU_LEVEL, "-1");
             const int cpuLevel = atoi(cpuLevelStr);
             if (cpuLevel >= 0)
@@ -695,8 +692,8 @@ struct App::Private : public TalkToJavaInterface
         // Let glUtils look up extensions
         GL_FindExtensions();
 
-        externalTextureProgram2 = BuildProgram(vertexShaderSource, externalFragmentShaderSource);
-        untexturedMvpProgram = BuildProgram(
+        externalTextureProgram2.initShader( vertexShaderSource, externalFragmentShaderSource );
+        untexturedMvpProgram.initShader(
             "uniform mat4 Mvpm;\n"
             "attribute vec4 Position;\n"
             "uniform mediump vec4 UniformColor;\n"
@@ -713,8 +710,8 @@ struct App::Private : public TalkToJavaInterface
             "	gl_FragColor = oColor;\n"
             "}\n"
         );
-        untexturedScreenSpaceProgram = BuildProgram(identityVertexShaderSource, untexturedFragmentShaderSource);
-        overlayScreenFadeMaskProgram = BuildProgram(
+        untexturedScreenSpaceProgram.initShader( identityVertexShaderSource, untexturedFragmentShaderSource );
+        overlayScreenFadeMaskProgram.initShader(
                 "uniform mat4 Mvpm;\n"
                 "attribute vec4 VertexColor;\n"
                 "attribute vec4 Position;\n"
@@ -731,7 +728,7 @@ struct App::Private : public TalkToJavaInterface
                 "	gl_FragColor = oColor;\n"
                 "}\n"
             );
-        overlayScreenDirectProgram = BuildProgram(
+        overlayScreenDirectProgram.initShader(
                 "uniform mat4 Mvpm;\n"
                 "attribute vec4 Position;\n"
                 "attribute vec2 TexCoord;\n"
@@ -751,9 +748,9 @@ struct App::Private : public TalkToJavaInterface
             );
 
         // Build some geometries we need
-        panelGeometry = BuildTesselatedQuad(32, 16);	// must be large to get faded edge
-        unitSquare = BuildTesselatedQuad(1, 1);
-        unitCubeLines = BuildUnitCubeLines();
+        panelGeometry = VGlGeometryFactory::CreateTesselatedQuad( 32, 16 );;	// must be large to get faded edge
+        unitSquare = VGlGeometryFactory::CreateTesselatedQuad( 1, 1 );
+        unitCubeLines = VGlGeometryFactory::CreateUnitCubeLines();
         //FadedScreenMaskSquare = BuildFadedScreenMask(0.0f, 0.0f);	// TODO: clean up: app-specific values are being passed in on DrawScreenMask
 
         eyeDecorations.Init();
@@ -761,11 +758,11 @@ struct App::Private : public TalkToJavaInterface
 
     void shutdownGlObjects()
     {
-        DeleteProgram(externalTextureProgram2);
-        DeleteProgram(untexturedMvpProgram);
-        DeleteProgram(untexturedScreenSpaceProgram);
-        DeleteProgram(overlayScreenFadeMaskProgram);
-        DeleteProgram(overlayScreenDirectProgram);
+        externalTextureProgram2.destroy();
+        untexturedMvpProgram.destroy();
+        untexturedScreenSpaceProgram.destroy();
+        overlayScreenFadeMaskProgram.destroy();
+        overlayScreenDirectProgram.destroy();
 
         panelGeometry.Free();
         unitSquare.Free();
@@ -1346,7 +1343,7 @@ struct App::Private : public TalkToJavaInterface
 
             // handle any pending system activity events
             size_t const MAX_EVENT_SIZE = 4096;
-            char eventBuffer[MAX_EVENT_SIZE];
+            VString eventBuffer;
 
             for (eVrApiEventStatus status = ovr_nextPendingEvent(eventBuffer, MAX_EVENT_SIZE);
                 status >= VRAPI_EVENT_PENDING;
@@ -1367,7 +1364,7 @@ struct App::Private : public TalkToJavaInterface
                 s >> jsonObj;
                 if (jsonObj.type() == Json::Object)
                 {
-                    std::string command = jsonObj["Command"].toString();
+                    VString command = jsonObj["Command"].toString();
                     if (command == SYSTEM_ACTIVITY_EVENT_REORIENT)
                     {
                         // for reorient, we recenter yaw natively, then pass the event along so that the client
@@ -1852,7 +1849,6 @@ App::App(JNIEnv *jni, jobject activityObject, VrAppInterface &interface)
 	VrModeParms.AsynchronousTimeWarp = true;
 	VrModeParms.AllowPowerSave = true;
     VrModeParms.DistortionFileName = nullptr;
-	VrModeParms.EnableImageServer = false;
 	VrModeParms.SkipWindowFullscreenReset = false;
 	VrModeParms.CpuLevel = 2;
 	VrModeParms.GpuLevel = 2;
@@ -1929,9 +1925,9 @@ void App::startVrThread()
 void App::stopVrThread()
 {
     d->vrMessageQueue.PostPrintf("quit ");
-    const int ret = d->renderThread->wait();
-    if (ret != 0) {
-        vWarn("failed to join VrThread (" << ret << ")");
+    bool finished = d->renderThread->wait();
+    if (!finished) {
+        vWarn("failed to wait for VrThread");
 	}
 }
 
@@ -2454,11 +2450,11 @@ void ShowFPS(void * appPtr, const char * cmd) {
 void App::drawBounds( const Vector3f &mins, const Vector3f &maxs, const Matrix4f &mvp, const Vector3f &color )
 {
     Matrix4f	scaled = mvp * Matrix4f::Translation( mins ) * Matrix4f::Scaling( maxs - mins );
-    const GlProgram & prog = d->untexturedMvpProgram;
+    const VGlShader & prog = d->untexturedMvpProgram;
     glUseProgram(prog.program);
     glLineWidth( 1.0f );
-    glUniform4f(prog.uColor, color.x, color.y, color.z, 1);
-    glUniformMatrix4fv(prog.uMvp, 1, GL_FALSE /* not transposed */,
+    glUniform4f(prog.uniformColor, color.x, color.y, color.z, 1);
+    glUniformMatrix4fv(prog.uniformModelViewProMatrix, 1, GL_FALSE /* not transposed */,
             scaled.Transposed().M[0] );
     glBindVertexArrayOES_( d->unitCubeLines.vertexArrayObject );
     glDrawElements(GL_LINES, d->unitCubeLines.indexCount, GL_UNSIGNED_SHORT, NULL);
@@ -2485,12 +2481,12 @@ void App::drawDialog( const Matrix4f & mvp )
 
 void App::drawPanel( const GLuint externalTextureId, const Matrix4f & dialogMvp, const float alpha )
 {
-    const GlProgram & prog = d->externalTextureProgram2;
+    const VGlShader & prog = d->externalTextureProgram2;
     glUseProgram( prog.program );
-    glUniform4f(prog.uColor, 1, 1, 1, alpha );
+    glUniform4f(prog.uniformColor, 1, 1, 1, alpha );
 
-    glUniformMatrix4fv(prog.uTexm, 1, GL_FALSE, Matrix4f::Identity().Transposed().M[0]);
-    glUniformMatrix4fv(prog.uMvp, 1, GL_FALSE, dialogMvp.Transposed().M[0] );
+    glUniformMatrix4fv(prog.uniformTexMatrix, 1, GL_FALSE, Matrix4f::Identity().Transposed().M[0]);
+    glUniformMatrix4fv(prog.uniformModelViewProMatrix, 1, GL_FALSE, dialogMvp.Transposed().M[0] );
 
     // It is important that panels write to destination alpha, or they
     // might get covered by an overlay plane/cube in TimeWarp.
@@ -2611,7 +2607,7 @@ void App::drawScreenDirect( const GLuint texid, const ovrMatrix4f & mvp )
 
     glUseProgram( d->overlayScreenDirectProgram.program );
 
-    glUniformMatrix4fv( d->overlayScreenDirectProgram.uMvp, 1, GL_FALSE, mvpMatrix.Transposed().M[0] );
+    glUniformMatrix4fv( d->overlayScreenDirectProgram.uniformModelViewProMatrix, 1, GL_FALSE, mvpMatrix.Transposed().M[0] );
 
     glBindVertexArrayOES_( d->unitSquare.vertexArrayObject );
     glDrawElements( GL_TRIANGLES, d->unitSquare.indexCount, GL_UNSIGNED_SHORT, NULL );
@@ -2626,11 +2622,11 @@ void App::drawScreenMask( const ovrMatrix4f & mvp, const float fadeFracX, const 
 
     glUseProgram( d->overlayScreenFadeMaskProgram.program );
 
-    glUniformMatrix4fv( d->overlayScreenFadeMaskProgram.uMvp, 1, GL_FALSE, mvpMatrix.Transposed().M[0] );
+    glUniformMatrix4fv( d->overlayScreenFadeMaskProgram.uniformModelViewProMatrix, 1, GL_FALSE, mvpMatrix.Transposed().M[0] );
 
     if ( d->fadedScreenMaskSquare.vertexArrayObject == 0 )
     {
-        d->fadedScreenMaskSquare = BuildFadedScreenMask( fadeFracX, fadeFracY );
+        d->fadedScreenMaskSquare = VGlGeometryFactory::CreateFadedScreenMask( fadeFracX, fadeFracY );
     }
 
     glColorMask( 0.0f, 0.0f, 0.0f, 1.0f );

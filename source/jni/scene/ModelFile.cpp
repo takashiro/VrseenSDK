@@ -233,27 +233,27 @@ void LoadModelFileJson( ModelFile & model,
 				for (const Json &texture : textures) {
 					if ( texture.isObject() )
 					{
-						const std::string name = texture.value( "name" ).toString();
+                        const VString name = texture.value( "name" ).toString();
 
 						// Try to match the texture names with the already loaded texture
 						// and create a default texture if the texture file is missing.
 						int i = 0;
 						for ( ; i < model.Textures.length(); i++ )
 						{
-                            if ( model.Textures[i].name.icompare(name.c_str()) == 0 )
+                            if ( model.Textures[i].name.icompare(name) == 0 )
 							{
 								break;
 							}
 						}
 						if ( i == model.Textures.length() )
 						{
-							LOG( "texture %s defaulted", name.c_str() );
+                            LOG( "texture %s defaulted", name.toUtf8().data() );
 							// Create a default texture.
-							LoadModelFileTexture( model, name.c_str(), NULL, 0, materialParms );
+                            LoadModelFileTexture( model, name.toUtf8().data(), NULL, 0, materialParms );
 						}
 						glTextures.append( model.Textures[i].texid );
 
-						const std::string usage = texture.value( "usage" ).toString();
+                        const VString usage = texture.value( "usage" ).toString();
 						if ( usage == "diffuse" )
 						{
 							if ( materialParms.EnableDiffuseAniso == true )
@@ -296,10 +296,10 @@ void LoadModelFileJson( ModelFile & model,
 					{
 						const uint index = model.Joints.allocBack();
 						model.Joints[index].index = index;
-						model.Joints[index].name = joint.value( "name" ).toString().c_str();
-						StringUtils::StringTo( model.Joints[index].transform, joint.value( "transform" ).toString().c_str() );
+                        model.Joints[index].name = joint.value( "name" ).toString();
+                        StringUtils::StringTo( model.Joints[index].transform, joint.value( "transform" ).toStdString().c_str() );
 						model.Joints[index].animation = MODEL_JOINT_ANIMATION_NONE;
-						const std::string animation = joint.value( "animation" ).toString();
+                        const std::string animation = joint.value( "animation" ).toStdString();
 						if ( animation == "none" )			{ model.Joints[index].animation = MODEL_JOINT_ANIMATION_NONE; }
 						else if ( animation == "rotate" )	{ model.Joints[index].animation = MODEL_JOINT_ANIMATION_ROTATE; }
 						else if ( animation == "sway" )		{ model.Joints[index].animation = MODEL_JOINT_ANIMATION_SWAY; }
@@ -327,10 +327,10 @@ void LoadModelFileJson( ModelFile & model,
 					if ( tag.isObject() )
 					{
 						const uint index = model.Tags.allocBack();
-						model.Tags[index].name = tag.value( "name" ).toString().c_str();
-						StringUtils::StringTo( model.Tags[index].matrix, 		tag.value( "matrix" ).toString().c_str() );
-						StringUtils::StringTo( model.Tags[index].jointIndices, 	tag.value( "jointIndices" ).toString().c_str() );
-						StringUtils::StringTo( model.Tags[index].jointWeights, 	tag.value( "jointWeights" ).toString().c_str() );
+                        model.Tags[index].name = tag.value( "name" ).toString();
+                        StringUtils::StringTo( model.Tags[index].matrix, 		tag.value( "matrix" ).toStdString().c_str() );
+                        StringUtils::StringTo( model.Tags[index].jointIndices, 	tag.value( "jointIndices" ).toStdString().c_str() );
+                        StringUtils::StringTo( model.Tags[index].jointWeights, 	tag.value( "jointWeights" ).toStdString().c_str() );
 					}
 				}
 			}
@@ -359,7 +359,7 @@ void LoadModelFileJson( ModelFile & model,
                                 if ( model.Def.surfaces[index].surfaceName.length() ) {
 									model.Def.surfaces[index].surfaceName += ";";
 								}
-								model.Def.surfaces[index].surfaceName += e.toString().c_str();
+                                model.Def.surfaces[index].surfaceName += e.toString();
 							}
 						}
 
@@ -386,7 +386,7 @@ void LoadModelFileJson( ModelFile & model,
 						const Json &material( surface.value( "material" ) );
 						if ( material.isObject() )
 						{
-							const VString type = material.value( "type" ).toString().c_str();
+                            const VString type = material.value( "type" ).toString();
 
 							if ( type == "opaque" )				{ materialType = MATERIAL_TYPE_OPAQUE; }
 							else if ( type == "perforated" )	{ materialType = MATERIAL_TYPE_PERFORATED; }
@@ -404,7 +404,7 @@ void LoadModelFileJson( ModelFile & model,
 						// Surface Bounds
 						//
 
-						StringUtils::StringTo( model.Def.surfaces[index].cullingBounds, surface.value("bounds").toString().c_str() );
+                        StringUtils::StringTo( model.Def.surfaces[index].cullingBounds, surface.value("bounds").toStdString().c_str() );
 
 						//
 						// Vertices
@@ -418,15 +418,15 @@ void LoadModelFileJson( ModelFile & model,
 							const int vertexCount = Alg::Min( vertices.value( "vertexCount" ).toInt(), MAX_GEOMETRY_VERTICES );
 							// LOG( "%5d vertices", vertexCount );
 
-							ReadModelArray( attribs.position,     vertices.value( "position" ).toString().c_str(),		bin, vertexCount );
-							ReadModelArray( attribs.normal,       vertices.value( "normal" ).toString().c_str(),		bin, vertexCount );
-							ReadModelArray( attribs.tangent,      vertices.value( "tangent" ).toString().c_str(),		bin, vertexCount );
-							ReadModelArray( attribs.binormal,     vertices.value( "binormal" ).toString().c_str(),		bin, vertexCount );
-							ReadModelArray( attribs.color,        vertices.value( "color" ).toString().c_str(),			bin, vertexCount );
-							ReadModelArray( attribs.uv0,          vertices.value( "uv0" ).toString().c_str(),			bin, vertexCount );
-							ReadModelArray( attribs.uv1,          vertices.value( "uv1" ).toString().c_str(),			bin, vertexCount );
-							ReadModelArray( attribs.jointIndices, vertices.value( "jointIndices" ).toString().c_str(),	bin, vertexCount );
-							ReadModelArray( attribs.jointWeights, vertices.value( "jointWeights" ).toString().c_str(),	bin, vertexCount );
+                            ReadModelArray( attribs.position,     vertices.value( "position" ).toStdString().c_str(),		bin, vertexCount );
+                            ReadModelArray( attribs.normal,       vertices.value( "normal" ).toStdString().c_str(),		bin, vertexCount );
+                            ReadModelArray( attribs.tangent,      vertices.value( "tangent" ).toStdString().c_str(),		bin, vertexCount );
+                            ReadModelArray( attribs.binormal,     vertices.value( "binormal" ).toStdString().c_str(),		bin, vertexCount );
+                            ReadModelArray( attribs.color,        vertices.value( "color" ).toStdString().c_str(),			bin, vertexCount );
+                            ReadModelArray( attribs.uv0,          vertices.value( "uv0" ).toStdString().c_str(),			bin, vertexCount );
+                            ReadModelArray( attribs.uv1,          vertices.value( "uv1" ).toStdString().c_str(),			bin, vertexCount );
+                            ReadModelArray( attribs.jointIndices, vertices.value( "jointIndices" ).toStdString().c_str(),	bin, vertexCount );
+                            ReadModelArray( attribs.jointWeights, vertices.value( "jointWeights" ).toStdString().c_str(),	bin, vertexCount );
 						}
 
 						//
@@ -441,7 +441,7 @@ void LoadModelFileJson( ModelFile & model,
 							const int indexCount = Alg::Min( triangles.value( "indexCount" ).toInt(), MAX_GEOMETRY_INDICES );
 							// LOG( "%5d indices", indexCount );
 
-							ReadModelArray( indices, triangles.value( "indices" ).toString().c_str(), bin, indexCount );
+                            ReadModelArray( indices, triangles.value( "indices" ).toStdString().c_str(), bin, indexCount );
 						}
 
 						//
@@ -658,8 +658,8 @@ void LoadModelFileJson( ModelFile & model,
 
 				if ( polytope.isObject() )
 				{
-					model.Collisions.Polytopes[index].Name = polytope.value( "name" ).toString().c_str();
-					StringUtils::StringTo( model.Collisions.Polytopes[index].Planes, polytope.value( "planes" ).toString().c_str() );
+                    model.Collisions.Polytopes[index].Name = polytope.value( "name" ).toString();
+                    StringUtils::StringTo( model.Collisions.Polytopes[index].Planes, polytope.value( "planes" ).toStdString().c_str() );
 				}
 			}
 		}
@@ -679,8 +679,8 @@ void LoadModelFileJson( ModelFile & model,
 
 				if ( polytope.isObject() )
 				{
-					model.GroundCollisions.Polytopes[index].Name = polytope.value( "name" ).toString().c_str();
-					StringUtils::StringTo( model.GroundCollisions.Polytopes[index].Planes, polytope.value( "planes" ).toString().c_str() );
+                    model.GroundCollisions.Polytopes[index].Name = polytope.value( "name" ).toString();
+                    StringUtils::StringTo( model.GroundCollisions.Polytopes[index].Planes, polytope.value( "planes" ).toStdString().c_str() );
 				}
 			}
 		}
@@ -703,11 +703,11 @@ void LoadModelFileJson( ModelFile & model,
 			traceModel.header.numLeafs		= raytrace_model.value( "numLeafs" ).toInt();
 			traceModel.header.numOverflow	= raytrace_model.value( "numOverflow" ).toInt();
 
-			StringUtils::StringTo( traceModel.header.bounds, raytrace_model.value( "bounds" ).toString().c_str() );
+            StringUtils::StringTo( traceModel.header.bounds, raytrace_model.value( "bounds" ).toStdString().c_str() );
 
-			ReadModelArray( traceModel.vertices, raytrace_model.value( "vertices" ).toString().c_str(), bin, traceModel.header.numVertices );
-			ReadModelArray( traceModel.uvs, raytrace_model.value( "uvs" ).toString().c_str(), bin, traceModel.header.numUvs );
-			ReadModelArray( traceModel.indices, raytrace_model.value( "indices" ).toString().c_str(), bin, traceModel.header.numIndices );
+            ReadModelArray( traceModel.vertices, raytrace_model.value( "vertices" ).toStdString().c_str(), bin, traceModel.header.numVertices );
+            ReadModelArray( traceModel.uvs, raytrace_model.value( "uvs" ).toStdString().c_str(), bin, traceModel.header.numUvs );
+            ReadModelArray( traceModel.indices, raytrace_model.value( "indices" ).toStdString().c_str(), bin, traceModel.header.numIndices );
 
 			if ( !bin.readArray( traceModel.nodes, traceModel.header.numNodes ) )
 			{
@@ -738,15 +738,15 @@ void LoadModelFileJson( ModelFile & model,
 
 						if ( leaf.isObject() )
 						{
-							StringUtils::StringTo( traceModel.leafs[index].triangles, RT_KDTREE_MAX_LEAF_TRIANGLES, leaf.value( "triangles" ).toString().c_str() );
-							StringUtils::StringTo( traceModel.leafs[index].ropes, 6, leaf.value( "ropes" ).toString().c_str() );
-							StringUtils::StringTo( traceModel.leafs[index].bounds, leaf.value( "bounds" ).toString().c_str() );
+                            StringUtils::StringTo( traceModel.leafs[index].triangles, RT_KDTREE_MAX_LEAF_TRIANGLES, leaf.value( "triangles" ).toStdString().c_str() );
+                            StringUtils::StringTo( traceModel.leafs[index].ropes, 6, leaf.value( "ropes" ).toStdString().c_str() );
+                            StringUtils::StringTo( traceModel.leafs[index].bounds, leaf.value( "bounds" ).toStdString().c_str() );
 						}
 					}
 				}
 			}
 
-			ReadModelArray( traceModel.overflow, raytrace_model.value( "overflow" ).toString().c_str(), bin, traceModel.header.numOverflow );
+            ReadModelArray( traceModel.overflow, raytrace_model.value( "overflow" ).toStdString().c_str(), bin, traceModel.header.numOverflow );
 		}
 	}
 

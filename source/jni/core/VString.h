@@ -99,8 +99,9 @@ public:
     int compare(const VString &str) const { return basic_string::compare(str.data()); }
     int compare(const char *str) const;
 
-    bool operator == (const VString &str) const { return compare(str) == 0; }
-    bool operator == (const char *str) const { return compare(str) == 0; }
+    friend bool operator == (const VString &str1, const VString &str2) { return str1.compare(str2) == 0; }
+    friend bool operator == (const VString &str1, const char *str2) { return str1.compare(str2) == 0; }
+    friend bool operator == (const char *str1, const VString &str2) { return str2.compare(str1) == 0; }
 
     bool operator != (const VString &str) const { return compare(str) != 0; }
     bool operator != (const char *str) const { return compare(str) != 0; }

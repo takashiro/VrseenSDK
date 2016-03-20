@@ -146,11 +146,11 @@ bool HIDDeviceManager::getStringProperty(const VString &devNodePath, const char*
 	// properties of any usb hubs that are in the usb graph.
 
 	// Create the command string using the last character of the device path.
-	char cmdStr[1024];
-    sprintf(cmdStr, "cd -P /sys/class/ovr/ovr%c; pwd", devNodePath.at(devNodePath.length() - 1));
+    VString cmdStr;
+    cmdStr.sprintf("cd -P /sys/class/ovr/ovr%c; pwd", devNodePath.at(devNodePath.length() - 1));
 
 	// Execute the command and get stdout.
-	FILE* cmdFile = popen(cmdStr, "r");
+    FILE* cmdFile = popen(cmdStr.toCString(), "r");
 
 	if (cmdFile)
 	{
@@ -177,10 +177,10 @@ bool HIDDeviceManager::getStringProperty(const VString &devNodePath, const char*
 			    		// We've found the file.
 				    	closedir(dir);
 
-				    	char propertyPath[1024];
-				    	sprintf(propertyPath, "%s/%s", pSysPath, propertyName);
+                        VString propertyPath;
+                        propertyPath.sprintf("%s/%s", pSysPath, propertyName);
 
-				    	FILE* propertyFile = fopen(propertyPath, "r");
+                        FILE* propertyFile = fopen(propertyPath.toCString(), "r");
 
 						char propertyContents[2048];
 				    	char* result = fgets(propertyContents, sizeof(propertyContents), propertyFile);
@@ -238,15 +238,15 @@ bool HIDDeviceManager::Enumerate(HIDEnumerateVisitor* enumVisitor)
             if (strstr(entry->d_name, OVR_DEVICE_NAMES))
             {   // Open the device to check if this is an Oculus device.
 
-            	char devicePath[32];
-                sprintf(devicePath, "/dev/%s", entry->d_name);
+                VString devicePath;
+                devicePath.sprintf("/dev/%s", entry->d_name);
 
 
                 // Try to open for both read and write initially if we can.
-                int device = open(devicePath, O_RDWR);
+                int device = open(devicePath.toCString(), O_RDWR);
                 if (device < 0)
                 {
-                	device = open(devicePath, O_RDONLY);
+                    device = open(devicePath.toCString(), O_RDONLY);
                 }
 
                 if (device >= 0)
@@ -256,7 +256,7 @@ bool HIDDeviceManager::Enumerate(HIDEnumerateVisitor* enumVisitor)
                     if (initVendorProduct(device, &devDesc) &&
                         enumVisitor->MatchVendorProduct(devDesc.VendorId, devDesc.ProductId))
                     {
-                    	getFullDesc(device, VString(devicePath), &devDesc);
+                        getFullDesc(device, devicePath, &devDesc);
 
                         // Look for the device to check if it is already opened.
                         Ptr<DeviceCreateDesc> existingDevice = DevManager->FindHIDDevice(devDesc);
@@ -278,7 +278,7 @@ bool HIDDeviceManager::Enumerate(HIDEnumerateVisitor* enumVisitor)
                 }
                 else
                 {
-                    LogText("Failed to open device %s with error %d\n", devicePath, errno);
+                    LogText("Failed to open device %s with error %d\n", devicePath.toCString(), errno);
                 }
             }
             entry = readdir(dir);
@@ -508,22 +508,22 @@ bool HIDDevice::openDevice()
 			if (strstr(entry->d_name, OVR_DEVICE_NAMES))
 			{
 				// Open the device to check if this is an Oculus device.
-				char devicePath[32];
-				sprintf(devicePath, "/dev/%s", entry->d_name);
+                VString devicePath;
+                devicePath.sprintf("/dev/%s", entry->d_name);
 
 				// Try to open for both read and write if we can.
-				int device = open(devicePath, O_RDWR);
+                int device = open(devicePath.toCString(), O_RDWR);
 				DeviceMode = DEVICE_MODE_READ_WRITE;
 				if (device < 0)
 				{
-					device = open(devicePath, O_RDONLY);
+                    device = open(devicePath.toCString(), O_RDONLY);
 					DeviceMode = DEVICE_MODE_READ;
 				}
 
 				if (device >= 0)
 				{
 					VString path;
-					if (!HIDManager->getPath(device, devicePath, &path) ||
+                    if (!HIDManager->getPath(device, devicePath.toCString(), &path) ||
 						path != DevDesc.Path)
 					{
 						close(device);
@@ -531,7 +531,7 @@ bool HIDDevice::openDevice()
 					}
 
 					Device = device;
-					DevNodePath = VString(devicePath);
+                    DevNodePath = devicePath;
 					LogText("NervGear::Android::HIDDevice - device mode %s", deviceModeNames[DeviceMode] );
 					break;
 				}
@@ -783,10 +783,10 @@ void HIDDeviceManager::getCurrentDevices(VArray<VString>* deviceList)
 		{
 			if (strstr(entry->d_name, OVR_DEVICE_NAMES))
 			{
-				char dev_path[32];
-				sprintf(dev_path, "/dev/%s", entry->d_name);
+                VString dev_path;
+                dev_path.sprintf("/dev/%s", entry->d_name);
 
-				deviceList->append(VString(dev_path));
+                deviceList->append(dev_path);
 			}
 
 			entry = readdir(dir);

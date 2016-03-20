@@ -12,7 +12,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <unistd.h>						// usleep, etc
 #include <sys/syscall.h>
 
-#include "Std.h"
 #include "Alg.h"
 #include "OVR.h"
 #include "android/GlUtils.h"
@@ -1133,7 +1132,7 @@ OCULUS_EXPORT bool OVR_SavePlayerHeadModel(float neckToEyeDepth, float neckToEye
 // Allows Unity to query for VrAPI Events.
 // NOTE: the return type is an eSystemActivitiesEventStatus and NOT just a boolean! This function may return < 0 if
 // an error occured or if invalid parameters were passed.
-OCULUS_EXPORT int OVR_nextPendingEvent( char * buffer, unsigned int const bufferSize ) {
+OCULUS_EXPORT int OVR_nextPendingEvent( VString& buffer, unsigned int const bufferSize ) {
 	return ovr_nextPendingEvent( buffer, bufferSize );
 }
 

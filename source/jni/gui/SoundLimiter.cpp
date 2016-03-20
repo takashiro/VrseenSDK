@@ -42,7 +42,7 @@ void SoundLimiter::playSound( App * app, char const * soundName, double const li
 void SoundLimiter::playMenuSound( class App * app, char const * appendKey, char const * soundName, double const limitSeconds )
 {
 	char overrideSound[ 1024 ];
-	OVR_sprintf( overrideSound, 1024, "%s_%s", appendKey, soundName );
+    sprintf(overrideSound, "%s_%s", appendKey, soundName);
 
 	if ( app->soundMgr().HasSound( overrideSound ) )
 	{

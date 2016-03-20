@@ -27,7 +27,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VJson.h"			// needed for ovr_StartSystemActivity
 #include "MemBuffer.h"		// needed for MemBufferT
 #include "sensor/DeviceImpl.h"
-#include "Std.h"
 
 #include "DirectRender.h"
 #include "HmdInfo.h"
@@ -38,10 +37,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "Vsync.h"
 #include "LocalPreferences.h"			// for testing via local prefs
 #include "SystemActivities.h"
-
-#if defined( OVR_ENABLE_CAPTURE )
-#include "capture/Capture.h"
-#endif
 
 NV_USING_NAMESPACE
 
@@ -826,9 +821,6 @@ void ovr_ExitActivity( ovrMobile * ovr, eExitType exitType )
 		NervGear::SystemActivities_ShutdownEventQueues();
 		ovr_ShutdownLocalPreferences();
 		ovr_Shutdown();
-#if defined( OVR_ENABLE_CAPTURE )
-		NervGear::Capture::Shutdown();
-#endif
 		exit( 0 );
 	}
 }
@@ -1497,15 +1489,6 @@ ovrMobile * ovr_EnterVrMode( ovrModeParms parms, ovrHmdInfo * returnedHmdInfo )
     		"startReceivers", "(Landroid/app/Activity;)V" );
 	ovr->Jni->CallStaticVoidMethod( VrLibClass, startReceiversId, ovr->Parms.ActivityObject );
 
-#if defined( OVR_ENABLE_CAPTURE )
-	const char *enableCapture = ovr_GetLocalPreferenceValueForKey(LOCAL_PREF_ENABLE_CAPTURE, "0");
-    if ( enableCapture && enableCapture[0] == '1')  {
-        VString packageName = JniUtils::GetCurrentPackageName(ovr->Jni, ovr->Parms.ActivityObject);
-        VByteArray utf8 = packageName.toUtf8();
-        NervGear::Capture::Init(utf8.data());
-	}
-#endif
-
 	getPowerLevelStateID = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass, "getPowerLevelState", "(Landroid/app/Activity;)I" );
 	setActivityWindowFullscreenID = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass, "setActivityWindowFullscreen", "(Landroid/app/Activity;)V" );
 	notifyMountHandledID = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass, "notifyMountHandled", "(Landroid/app/Activity;)V" );
@@ -1785,7 +1768,7 @@ void ovr_HandleHmdEvents( ovrMobile * ovr )
 
 				NervGear::VString reorientMessage;
 				CreateSystemActivitiesCommand( "", SYSTEM_ACTIVITY_EVENT_REORIENT, "", "", reorientMessage );
-				NervGear::SystemActivities_AddEvent( reorientMessage.toCString() );
+                NervGear::SystemActivities_AddEvent( reorientMessage );
 			}
 		}
 		else if ( mountState.MountState == HMT_MOUNT_UNMOUNTED )
@@ -1820,7 +1803,8 @@ void ovr_HandleDeviceStateChanges( ovrMobile * ovr )
 
 	// check for pending events that must be handled natively
 	size_t const MAX_EVENT_SIZE = 4096;
-	char eventBuffer[MAX_EVENT_SIZE];
+//	char eventBuffer[MAX_EVENT_SIZE];
+    VString eventBuffer;
 
 	for ( eVrApiEventStatus status = NervGear::SystemActivities_nextPendingInternalEvent( eventBuffer, MAX_EVENT_SIZE );
 		status >= VRAPI_EVENT_PENDING;
@@ -1832,11 +1816,11 @@ void ovr_HandleDeviceStateChanges( ovrMobile * ovr )
 			continue;
 		}
 
-        Json reader = Json::Parse(eventBuffer);
+        Json reader = Json::Parse(eventBuffer.toCString());
         if ( reader.isObject() )
 		{
-            std::string command = reader.value( "Command" ).toString();
-            int32_t platformUIVersion = reader.value( "PlatformUIVersion" ).toInt();
+            VString command = reader.value("Command").toString();
+            int32_t platformUIVersion = reader.value("PlatformUIVersion").toInt();
             if (command == SYSTEM_ACTIVITY_EVENT_REORIENT)
 			{
 				// for reorient, we recenter yaw natively, then pass the event along so that the client
@@ -2156,7 +2140,7 @@ void ovr_InitLocalPreferences( JNIEnv * jni, jobject activityObject )
 	ovr_SetAllowLocalPreferencesFile( isDeveloperMode );
 }
 
-eVrApiEventStatus ovr_nextPendingEvent( char * buffer, unsigned int const bufferSize )
+eVrApiEventStatus ovr_nextPendingEvent( VString& buffer, unsigned int const bufferSize )
 {
 	eVrApiEventStatus status = NervGear::SystemActivities_nextPendingMainEvent( buffer, bufferSize );
 	if ( status < VRAPI_EVENT_PENDING )
@@ -2165,10 +2149,10 @@ eVrApiEventStatus ovr_nextPendingEvent( char * buffer, unsigned int const buffer
 	}
 
 	// Parse to JSON here to determine if we should handle the event natively, or pass it along to the client app.
-    Json reader = Json::Parse(buffer);
+    Json reader = Json::Parse(buffer.toCString());
     if (reader.isObject())
 	{
-        std::string command = reader.value( "Command" ).toString();
+        VString command = reader.value( "Command" ).toString();
         if (command == SYSTEM_ACTIVITY_EVENT_REORIENT) {
 			// for reorient, we recenter yaw natively, then pass the event along so that the client
 			// application can also handle the event (for instance, to reposition menus)
@@ -2183,7 +2167,7 @@ eVrApiEventStatus ovr_nextPendingEvent( char * buffer, unsigned int const buffer
 			// queue as an internal event
 			NervGear::SystemActivities_AddInternalEvent( buffer );
 			// treat as an empty event externally
-			buffer[0] = '\0';
+            buffer = "";
 			status = VRAPI_EVENT_CONSUMED;
         }
 	}
@@ -2259,8 +2243,8 @@ embeddedImage_t const * FindErrorImage( embeddedImage_t const * list, char const
 {
 	for ( int i = 0; list[i].ImageName != NULL; ++i )
 	{
-		if ( NervGear::OVR_stricmp( list[i].ImageName, name ) == 0 )
-		{
+        if ( strcasecmp( list[i].ImageName, name ) == 0 )
+        {
 			LOG( "Found embedded image for '%s'", name );
 			return &list[i];
 		}

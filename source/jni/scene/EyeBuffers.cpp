@@ -19,6 +19,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "VString.h"
 #include "Android/LogUtils.h"
 
 #include "3rdParty/stb/stb_image_write.h"
@@ -275,9 +276,9 @@ static int FindUnusedFilename( const char * fmt, int max )
 {
 	for ( int i = 0 ; i <= max ; i++ )
 	{
-		char	buf[1024];
-		sprintf( buf, fmt, i );
-		FILE * f = fopen( buf, "r" );
+        VString buf;
+        buf.sprintf(fmt, i);
+        FILE * f = fopen( buf.toCString(), "r" );
 		if ( !f )
 		{
 			return i;
@@ -313,18 +314,18 @@ static void ScreenShotTexture( const int eyeResolution, const GLuint texId )
 
 	const char * fmt = "/sdcard/Oculus/screenshot%03i.bmp";
 	const int v = FindUnusedFilename( fmt, 999 );
-	char	filename[1024];
-	sprintf( filename, fmt, v );
+    VString filename;
+    filename.sprintf(fmt, v);
 
 	const unsigned char * flipped = (buf + eyeResolution*eyeResolution*4);
-	stbi_write_bmp( filename, eyeResolution, eyeResolution, 4, (void *)flipped );
+    stbi_write_bmp( filename.toCString(), eyeResolution, eyeResolution, 4, (void *)flipped );
 
 	// make a quarter size version for launcher thumbnails
 	unsigned char * shrunk1 = QuarterImageSize( flipped, eyeResolution, eyeResolution, true );
 	unsigned char * shrunk2 = QuarterImageSize( shrunk1, eyeResolution>>1, eyeResolution>>1, true );
-	char	filename2[1024];
-	sprintf( filename2, "/sdcard/Oculus/thumbnail%03i.pvr", v );
-	Write32BitPvrTexture( filename2, shrunk2, eyeResolution>>2, eyeResolution>>2 );
+    VString filename2;
+    filename2.sprintf("/sdcard/Oculus/thumbnail%03i.pvr", v);
+    Write32BitPvrTexture( filename2.toCString(), shrunk2, eyeResolution>>2, eyeResolution>>2 );
 
 	free( buf );
 	free( shrunk1 );
