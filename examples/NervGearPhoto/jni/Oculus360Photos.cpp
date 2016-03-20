@@ -43,7 +43,7 @@ void Java_com_vrseen_nervgear_photo_MainActivity_nativeSetAppInterface( JNIEnv *
 {
 	// This is called by the java UI thread.
 	LOG( "nativeSetAppInterface" );
-    (new Oculus360Photos())->SetActivity( jni, clazz, activity, fromPackageName, commandString, uriString );
+    (new Oculus360Photos(jni, activity))->SetActivity( jni, clazz, activity, fromPackageName, commandString, uriString );
 }
 
 } // extern "C"
@@ -96,8 +96,9 @@ bool Oculus360Photos::DoubleBufferedTextureData::SameSize( const int width, cons
 	return ( Width[ CurrentIndex ] == width && Height[ CurrentIndex ] == height );
 }
 
-Oculus360Photos::Oculus360Photos()
-	: m_fader( 0.0f )
+Oculus360Photos::Oculus360Photos(JNIEnv *jni, jobject activityObject)
+    : VMainActivity(jni, activityObject)
+    , m_fader( 0.0f )
 	, m_metaData( NULL )
 	, m_panoMenu( NULL )
 	, m_browser( NULL )

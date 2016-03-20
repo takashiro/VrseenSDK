@@ -12,6 +12,8 @@
 
 NV_NAMESPACE_BEGIN
 
+class VMainActivity;
+
 struct MaterialParms;
 class VRMenuObjectParms;
 class OvrGuiSys;
@@ -24,114 +26,6 @@ class App;
 class VrViewParms;
 class VStandardPath;
 class SurfaceTexture;
-
-class VrAppInterface
-{
-public:
-							 VrAppInterface();
-	virtual					~VrAppInterface();
-
-	// Each onCreate in java will allocate a new java object, but
-	// we may reuse a single C++ object for them to make repeated
-	// opening of the platformUI faster, and to not require full
-	// cleanup on destruction.
-    void SetActivity( JNIEnv * jni, jclass clazz, jobject activity,
-			jstring javaFromPackageNameString, jstring javaCommandString, 
-			jstring javaUriString );
-
-	// All subclasses communicate with App through this member.
-	App *	app;				// Allocated in the first call to SetActivity()
-	jclass	ActivityClass;		// global reference to clazz passed to SetActivity
-
-	// This will be called one time only, before SetActivity()
-	// returns from the first creation.
-	//
-	// It is called from the VR thread with an OpenGL context current.
-	//
-	// If the app was launched without a specific intent, launchIntent
-	// will be an empty string.
-    virtual void OneTimeInit(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI) = 0;
-
-	// This will be called one time only, when the app is about to shut down.
-	//
-	// It is called from the VR thread before the OpenGL context is destroyed.
-	//
-	// If the app needs to free OpenGL resources this is the place to do so.
-	virtual void OneTimeShutdown();
-
-	// Frame will only be called if the window surfaces have been created.
-	//
-	// The application should call DrawEyeViewsPostDistorted() to get
-	// the DrawEyeView() callbacks.
-	//
-	// Any GPU operations that are relevant for both eye views, like
-	// buffer updates or dynamic texture rendering, should be done first.
-	//
-	// Return the view matrix the framework should use for positioning
-	// new pop up dialogs.
-	virtual Matrix4f Frame( VrFrame vrFrame );
-
-	// Called by DrawEyeViewsPostDisorted().
-	//
-	// The color buffer will have already been cleared or discarded, as
-	// appropriate for the GPU.
-	//
-	// The viewport and scissor will already be set.
-	//
-	// Return the MVP matrix for the framework to use for drawing the
-	// pop up dialog and debug graphics.
-	//
-	// fovDegrees may be different on different devices.
-	virtual Matrix4f DrawEyeView( const int eye, const float fovDegrees );
-
-	// If the app receives a new intent after launch, it will be sent to
-	// this function.
-	virtual void NewIntent( const char * fromPackageName, const char * command, const char * uri );
-
-	// This is called on each resume, before VR Mode has been entered, to allow
-	// the application to make changes.
-	virtual void ConfigureVrMode( ovrModeParms & modeParms );
-
-	// The window has been created and OpenGL is available.
-	// This happens every time the user switches back to the app.
-	virtual void WindowCreated();
-
-	// The window is about to be destroyed, due to the user switching away.
-	// The app will go to sleep until another message arrives.
-	// Applications can use this to save game state, etc.
-	virtual void WindowDestroyed();
-
-	// The app is about to be paused.
-	virtual void Paused();
-
-	// The app is about to be resumed.
-	virtual void Resumed();
-
-	// Handle generic commands forwarded from other threads.
-	// Commands can be processed even when the window surfaces
-	// are not setup and the app would otherwise be sleeping.
-	// The msg string will be freed by the framework after
-	// command processing.
-	virtual void Command( const char * msg );
-
-	// The VrApp should return true if it consumes the key.
-	virtual bool onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType );
-
-	// Called by the application framework when the VR warning message is closed by the user.
-	virtual bool OnVrWarningDismissed( const bool accepted );
-
-	// Overload this and return false to skip showing the spinning loading icon.
-	virtual bool ShouldShowLoadingIcon() const;
-
-	// Overload and return true to have these attributes added to the window surface:
-	// EGL_GL_COLORSPACE_KHR,  EGL_GL_COLORSPACE_SRGB_KHR
-	virtual bool wantSrgbFramebuffer() const;
-
-	// Overload and return true to have these attributes added to the window surface:
-	// EGL_PROTECTED_CONTENT_EXT, EGL_TRUE
-	virtual bool GetWantProtectedFramebuffer() const;
-};
-
 class OvrGuiSys;
 class GazeCursor;
 class OvrVolumePopup;
@@ -139,12 +33,12 @@ class OvrVolumePopup;
 class App
 {
 public:
-    App(JNIEnv *jni, jobject activityObject, VrAppInterface &interface);
+    App(JNIEnv *jni, jobject activityObject, VMainActivity *activity);
     virtual ~App();
 
     VMessageQueue &messageQueue();
 
-    VrAppInterface *appInterface();
+    VMainActivity *appInterface();
 
     void drawEyeViewsPostDistorted( Matrix4f const & viewMatrix, const int numPresents = 1);
 

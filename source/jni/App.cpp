@@ -90,18 +90,6 @@ static int buttonMappings[] = {
     -1
 };
 
-//@to-do: remove this
-static VString ComposeIntentMessage(const VString &packageName, const VString &uri, const VString &jsonText)
-{
-    VString out = "intent ";
-    out.append(packageName);
-    out.append(' ');
-    out.append(uri);
-    out.append(' ');
-    out.append(jsonText);
-    return out;
-}
-
 static Vector3f ViewOrigin(const Matrix4f & view)
 {
     return Vector3f(view.M[0][3], view.M[1][3], view.M[2][3]);
@@ -139,168 +127,10 @@ static Matrix4f PanelMatrix(const Matrix4f & lastViewMatrix, const float popupDi
     return panelMatrix;
 }
 
-//=======================================================================================
-// Default handlers for VrAppInterface
-
-VrAppInterface::VrAppInterface() :
-    app(nullptr),
-    ActivityClass(nullptr)
-{
-}
-
-VrAppInterface::~VrAppInterface()
-{
-    if (ActivityClass != nullptr)
-	{
-		// FIXME:
-        //jni->DeleteGlobalRef(ActivityClass);
-        //ActivityClass = nullptr;
-	}
-}
-
-void VrAppInterface::SetActivity(JNIEnv * jni, jclass clazz, jobject activity, jstring javaFromPackageNameString,
-        jstring javaCommandString, jstring javaUriString)
-{
-	// Make a permanent global reference for the class
-    if (ActivityClass != nullptr)
-	{
-        jni->DeleteGlobalRef(ActivityClass);
-	}
-    ActivityClass = (jclass)jni->NewGlobalRef(clazz);
-
-    VString utfFromPackageString = JniUtils::Convert(jni, javaFromPackageNameString);
-    VString utfJsonString = JniUtils::Convert(jni, javaCommandString);
-    VString utfUriString = JniUtils::Convert(jni, javaUriString);
-    vInfo("VrAppInterface::SetActivity:" << utfFromPackageString << utfJsonString << utfUriString);
-
-    if (app == nullptr)
-	{	// First time initialization
-		// This will set the VrAppInterface app pointer directly,
-		// so it is set when OneTimeInit is called.
-        vInfo("new AppLocal()");
-        new App(jni, activity, *this);
-
-		// Start the VrThread and wait for it to have initialized.
-        app->startVrThread();
-        app->syncVrThread();
-	}
-	else
-	{	// Just update the activity object.
-        vInfo("Update AppLocal");
-        if (app->javaObject() != nullptr)
-		{
-            jni->DeleteGlobalRef(app->javaObject());
-		}
-        app->javaObject() = jni->NewGlobalRef(activity);
-        app->VrModeParms.ActivityObject = app->javaObject();
-	}
-
-	// Send the intent and wait for it to complete.
-    VString intentMessage = ComposeIntentMessage(utfFromPackageString, utfUriString, utfJsonString);
-    VByteArray utf8Intent = intentMessage.toUtf8();
-    app->messageQueue().PostPrintf(utf8Intent.data());
-    app->syncVrThread();
-}
-
-void VrAppInterface::OneTimeShutdown()
-{
-}
-
-void VrAppInterface::WindowCreated()
-{
-    vInfo("VrAppInterface::WindowCreated - default handler called");
-}
-
-void VrAppInterface::WindowDestroyed()
-{
-    vInfo("VrAppInterface::WindowDestroyed - default handler called");
-}
-
-void VrAppInterface::Paused()
-{
-    vInfo("VrAppInterface::Paused - default handler called");
-}
-
-void VrAppInterface::Resumed()
-{
-    vInfo("VrAppInterface::Resumed - default handler called");
-}
-
-void VrAppInterface::Command(const char * msg)
-{
-    vInfo("VrAppInterface::Command - default handler called, msg =" << msg);
-}
-
-void VrAppInterface::NewIntent(const char * fromPackageName, const char * command, const char * uri)
-{
-    vInfo("VrAppInterface::NewIntent - default handler called -" << fromPackageName << command << uri);
-}
-
-Matrix4f VrAppInterface::Frame(VrFrame vrFrame)
-{
-    vInfo("VrAppInterface::Frame - default handler called");
-	return Matrix4f();
-}
-
-void VrAppInterface::ConfigureVrMode(ovrModeParms & modeParms)
-{
-    vInfo("VrAppInterface::ConfigureVrMode - default handler called");
-}
-
-Matrix4f VrAppInterface::DrawEyeView(const int eye, const float fovDegrees)
-{
-    vInfo("VrAppInterface::DrawEyeView - default handler called");
-	return Matrix4f();
-}
-
-bool VrAppInterface::onKeyEvent(const int keyCode, const KeyState::eKeyEventType eventType)
-{
-    vInfo("VrAppInterface::OnKeyEvent - default handler called");
-	return false;
-}
-
-bool VrAppInterface::OnVrWarningDismissed(const bool accepted)
-{
-    vInfo("VrAppInterface::OnVrWarningDismissed - default handler called");
-	return false;
-}
-
-bool VrAppInterface::ShouldShowLoadingIcon() const
-{
-	return true;
-}
-
-bool VrAppInterface::wantSrgbFramebuffer() const
-{
-	return false;
-}
-
-bool VrAppInterface::GetWantProtectedFramebuffer() const
-{
-	return false;
-}
-
-//==============================
-// WaitForDebuggerToAttach
-//
-// wait on the debugger... once it is attached, change waitForDebugger to false
-void WaitForDebuggerToAttach()
-{
-	static volatile bool waitForDebugger = true;
-    while (waitForDebugger)
-	{
-		// put your breakpoint on the usleep to wait
-        usleep(100000);
-	}
-}
-
-//=======================================================================================
-
 extern void DebugMenuBounds(void * appPtr, const char * cmd);
 extern void DebugMenuHierarchy(void * appPtr, const char * cmd);
 extern void DebugMenuPoses(void * appPtr, const char * cmd);
 extern void ShowFPS(void * appPtr, const char * cmd);
-
 
 static EyeParms DefaultVrParmsForRenderer(const eglSetup_t & eglr)
 {
@@ -491,7 +321,7 @@ struct App::Private : public TalkToJavaInterface
     double errorMessageEndTime;
 
     jobject javaObject;
-    VrAppInterface *appInterface;
+    VMainActivity *appInterface;
 
     VMainActivity *activity;
 
@@ -1813,11 +1643,11 @@ struct App::Private : public TalkToJavaInterface
 
 App *NervGearAppInstance = nullptr;
 
-App::App(JNIEnv *jni, jobject activityObject, VrAppInterface &interface)
+App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
     : oneTimeInitCalled(false)
     , d(new Private(this))
 {
-    d->activity = new VMainActivity(jni, activityObject);
+    d->activity = activity;
 
     d->uiJni = jni;
     vInfo("----------------- AppLocal::AppLocal() -----------------");
@@ -1867,7 +1697,7 @@ App::App(JNIEnv *jni, jobject activityObject, VrAppInterface &interface)
     d->packageCodePath = d->activity->getPackageCodePath();
 
 	// Hook the App and AppInterface together
-    d->appInterface = &interface;
+    d->appInterface = activity;
     d->appInterface->app = this;
 
 	// Load user profile data relevant to rendering
@@ -1902,7 +1732,7 @@ App::~App()
 
     if (d->javaObject != 0)
 	{
-        d->uiJni->DeleteGlobalRef(d->javaObject);
+        //d->uiJni->DeleteGlobalRef(d->javaObject);
 	}
 
     if (d->storagePaths != nullptr)
@@ -2335,7 +2165,7 @@ bool App::showFPS() const
     return d->showFPS;
 }
 
-VrAppInterface * App::appInterface()
+VMainActivity *App::appInterface()
 {
     return d->appInterface;
 }

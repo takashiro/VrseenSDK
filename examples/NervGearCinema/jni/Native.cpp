@@ -10,7 +10,7 @@ void Java_com_vrseen_nervgear_cinema_MainActivity_nativeSetAppInterface( JNIEnv 
 		jstring fromPackageName, jstring commandString, jstring uriString )
 {
 	LOG( "nativeSetAppInterface" );
-    (new CinemaApp())->SetActivity( jni, clazz, activity, fromPackageName, commandString, uriString );
+    (new CinemaApp(jni, activity))->SetActivity( jni, clazz, activity, fromPackageName, commandString, uriString );
 }
 
 void Java_com_vrseen_nervgear_cinema_MainActivity_nativeSetVideoSize( JNIEnv *, jclass, int width, int height, int rotation, int duration ) {

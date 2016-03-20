@@ -10,6 +10,17 @@
 
 NV_NAMESPACE_BEGIN
 
+static VString ComposeIntentMessage(const VString &packageName, const VString &uri, const VString &jsonText)
+{
+    VString out = "intent ";
+    out.append(packageName);
+    out.append(' ');
+    out.append(uri);
+    out.append(' ');
+    out.append(jsonText);
+    return out;
+}
+
 struct VMainActivity::Private
 {
     JNIEnv *jni;
@@ -27,7 +38,9 @@ struct VMainActivity::Private
 };
 
 VMainActivity::VMainActivity(JNIEnv *jni, jobject activityObject)
-    : d(new Private)
+    : app(nullptr)
+    , ActivityClass(nullptr)
+    , d(new Private)
 {
     d->jni = jni;
     d->activityObject = jni->NewGlobalRef(activityObject);
@@ -90,21 +103,132 @@ VString VMainActivity::getPackageName() const
     return VString();
 }
 
+
+void VMainActivity::SetActivity(JNIEnv * jni, jclass clazz, jobject activity, jstring javaFromPackageNameString,
+        jstring javaCommandString, jstring javaUriString)
+{
+    // Make a permanent global reference for the class
+    if (ActivityClass != nullptr)
+    {
+        jni->DeleteGlobalRef(ActivityClass);
+    }
+    ActivityClass = (jclass)jni->NewGlobalRef(clazz);
+
+    VString utfFromPackageString = JniUtils::Convert(jni, javaFromPackageNameString);
+    VString utfJsonString = JniUtils::Convert(jni, javaCommandString);
+    VString utfUriString = JniUtils::Convert(jni, javaUriString);
+    vInfo("VMainActivity::SetActivity:" << utfFromPackageString << utfJsonString << utfUriString);
+
+    if (app == nullptr)
+    {	// First time initialization
+        // This will set the VrAppInterface app pointer directly,
+        // so it is set when OneTimeInit is called.
+        vInfo("new AppLocal()");
+        new App(jni, activity, this);
+
+        // Start the VrThread and wait for it to have initialized.
+        app->startVrThread();
+        app->syncVrThread();
+    }
+    else
+    {	// Just update the activity object.
+        vInfo("Update AppLocal");
+        if (app->javaObject() != nullptr)
+        {
+            jni->DeleteGlobalRef(app->javaObject());
+        }
+        app->javaObject() = jni->NewGlobalRef(activity);
+        app->VrModeParms.ActivityObject = app->javaObject();
+    }
+
+    // Send the intent and wait for it to complete.
+    VString intentMessage = ComposeIntentMessage(utfFromPackageString, utfUriString, utfJsonString);
+    VByteArray utf8Intent = intentMessage.toUtf8();
+    app->messageQueue().PostPrintf(utf8Intent.data());
+    app->syncVrThread();
+}
+
+void VMainActivity::OneTimeShutdown()
+{
+}
+
+void VMainActivity::WindowCreated()
+{
+    vInfo("VMainActivity::WindowCreated - default handler called");
+}
+
+void VMainActivity::WindowDestroyed()
+{
+    vInfo("VMainActivity::WindowDestroyed - default handler called");
+}
+
+void VMainActivity::Paused()
+{
+    vInfo("VMainActivity::Paused - default handler called");
+}
+
+void VMainActivity::Resumed()
+{
+    vInfo("VMainActivity::Resumed - default handler called");
+}
+
+void VMainActivity::Command(const char * msg)
+{
+    vInfo("VMainActivity::Command - default handler called, msg =" << msg);
+}
+
+void VMainActivity::NewIntent(const char * fromPackageName, const char * command, const char * uri)
+{
+    vInfo("VMainActivity::NewIntent - default handler called -" << fromPackageName << command << uri);
+}
+
+Matrix4f VMainActivity::Frame(VrFrame vrFrame)
+{
+    vInfo("VMainActivity::Frame - default handler called");
+    return Matrix4f();
+}
+
+void VMainActivity::ConfigureVrMode(ovrModeParms & modeParms)
+{
+    vInfo("VMainActivity::ConfigureVrMode - default handler called");
+}
+
+Matrix4f VMainActivity::DrawEyeView(const int eye, const float fovDegrees)
+{
+    vInfo("VMainActivity::DrawEyeView - default handler called");
+    return Matrix4f();
+}
+
+bool VMainActivity::onKeyEvent(const int keyCode, const KeyState::eKeyEventType eventType)
+{
+    vInfo("VMainActivity::OnKeyEvent - default handler called");
+    return false;
+}
+
+bool VMainActivity::OnVrWarningDismissed(const bool accepted)
+{
+    vInfo("VMainActivity::OnVrWarningDismissed - default handler called");
+    return false;
+}
+
+bool VMainActivity::ShouldShowLoadingIcon() const
+{
+    return true;
+}
+
+bool VMainActivity::wantSrgbFramebuffer() const
+{
+    return false;
+}
+
+bool VMainActivity::GetWantProtectedFramebuffer() const
+{
+    return false;
+}
+
 NV_NAMESPACE_END
 
 NV_USING_NAMESPACE
-
-//@to-do: remove this
-static VString ComposeIntentMessage(const VString &packageName, const VString &uri, const VString &jsonText)
-{
-    VString out = "intent ";
-    out.append(packageName);
-    out.append(' ');
-    out.append(uri);
-    out.append(' ');
-    out.append(jsonText);
-    return out;
-}
 
 extern "C"
 {
@@ -154,7 +278,6 @@ void Java_com_vrseen_nervgear_VrActivity_nativeDestroy(JNIEnv *, jclass)
     // First kill the VrThread.
     vApp->stopVrThread();
     // Then delete the VrAppInterface derived class.
-    delete vApp->appInterface();
     // Last delete AppLocal.
     delete vApp;
 

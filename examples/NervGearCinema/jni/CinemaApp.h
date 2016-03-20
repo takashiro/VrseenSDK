@@ -9,14 +9,16 @@
 #include "TheaterSelectionView.h"
 #include "ResumeMovieView.h"
 
+#include "VMainActivity.h"
+
 using namespace NervGear;
 
 namespace OculusCinema {
 
-class CinemaApp : public NervGear::VrAppInterface
+class CinemaApp : public NervGear::VMainActivity
 {
 public:
-							CinemaApp();
+    CinemaApp(JNIEnv *jni, jobject activityObject);
 
     void OneTimeInit(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI ) override;
     void OneTimeShutdown() override;

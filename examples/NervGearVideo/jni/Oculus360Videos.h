@@ -1,22 +1,8 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   Oculus360Videos.h
-Content     :   Panorama viewer based on SwipeView
-Created     :   February 14, 2014
-Authors     :   John Carmack
+#include "VMainActivity.h"
 
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-This source code is licensed under the BSD-style license found in the
-LICENSE file in the Oculus360Videos/ directory. An additional grant
-of patent rights can be found in the PATENTS file in the same directory.
-
-************************************************************************************/
-
-#ifndef VrPanoVideos_H
-#define VrPanoVideos_H
-
-#include "gui/Fader.h"
+#include "Fader.h"
 #include "ModelView.h"
 
 namespace NervGear {
@@ -35,7 +21,7 @@ enum Action
 	ACT_VIDEOS,
 };
 
-class Oculus360Videos : public NervGear::VrAppInterface
+class Oculus360Videos : public NervGear::VMainActivity
 {
 public:
 
@@ -49,7 +35,7 @@ public:
 		NUM_MENU_STATES
 	};
 
-	Oculus360Videos();
+	Oculus360Videos(JNIEnv *jni, jobject activity);
 	~Oculus360Videos();
 
 	virtual void		OneTimeInit(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI );
@@ -133,5 +119,3 @@ private:
 };
 
 }
-
-#endif	// SWIPELAUNCH_H

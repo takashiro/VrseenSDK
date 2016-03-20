@@ -1,26 +1,16 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   VrScene.h
-Content     :   Trivial game style scene viewer VR sample
-Created     :   September 8, 2013
-Authors     :   John Carmack
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-
-#ifndef VRSCENE_H
-#define VRSCENE_H
+#include "VMainActivity.h"
 
 #include "App.h"
 #include "ModelView.h"
 
 NV_USING_NAMESPACE
 
-class VrScene : public NervGear::VrAppInterface
+class VrScene : public NervGear::VMainActivity
 {
 public:
-						VrScene();
+                        VrScene(JNIEnv *jni, jobject activityObject);
 						~VrScene();
 
 	virtual void 		ConfigureVrMode( ovrModeParms & modeParms );
@@ -48,5 +38,3 @@ public:
 
 	VArray<VString> 		SearchPaths;
 };
-
-#endif

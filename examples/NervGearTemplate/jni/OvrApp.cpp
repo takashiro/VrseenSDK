@@ -5,16 +5,17 @@
 
 extern "C" {
 
-jlong Java_oculus_MainActivity_nativeSetAppInterface( JNIEnv * jni, jclass clazz, jobject activity,
+void Java_oculus_MainActivity_nativeSetAppInterface( JNIEnv * jni, jclass clazz, jobject activity,
 		jstring fromPackageName, jstring commandString, jstring uriString )
 {
 	LOG( "nativeSetAppInterface" );
-	return (new OvrApp())->SetActivity( jni, clazz, activity, fromPackageName, commandString, uriString );
+    (new OvrApp(jni, activity))->SetActivity( jni, clazz, activity, fromPackageName, commandString, uriString );
 }
 
 } // extern "C"
 
-OvrApp::OvrApp()
+OvrApp::OvrApp(JNIEnv *jni, jobject activityObject)
+    : VMainActivity(jni, activityObject)
 {
 }
 
