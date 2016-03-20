@@ -39,7 +39,7 @@
 #include "VrCommon.h"
 #include "VrLocale.h"
 #include "VRMenuMgr.h"
-#include "VUserProfile.h"
+#include "VUserSettings.h"
 #include "TalkToJava.h"
 
 #include "VApkFile.h"
@@ -1873,12 +1873,12 @@ App::App(JNIEnv *jni, jobject activityObject, VrAppInterface &interface)
     d->appInterface->app = this;
 
 	// Load user profile data relevant to rendering
-    VUserProfile profile;
-    profile.load();
-    d->viewParms.InterpupillaryDistance = profile.ipd;
-    d->viewParms.EyeHeight = profile.eyeHeight;
-    d->viewParms.HeadModelDepth = profile.headModelDepth;
-    d->viewParms.HeadModelHeight = profile.headModelHeight;
+    VUserSettings config;
+    config.load();
+    d->viewParms.InterpupillaryDistance = config.ipd;
+    d->viewParms.EyeHeight = config.eyeHeight;
+    d->viewParms.HeadModelDepth = config.headModelDepth;
+    d->viewParms.HeadModelHeight = config.headModelHeight;
 
 	// Register console functions
 	InitConsole();

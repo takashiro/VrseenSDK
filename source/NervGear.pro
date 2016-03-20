@@ -39,6 +39,7 @@ SOURCES += \
     jni/core/MappedFile.cpp \
     jni/core/MemBuffer.cpp \
     jni/core/VMutex.cpp \
+    jni/core/VUserSettings.cpp \
     jni/core/VWaitCondition.cpp \
     jni/core/android/GlUtils.cpp \
     jni/core/android/JniUtils.cpp \
@@ -121,7 +122,6 @@ SOURCES += \
     jni/DebugLines.cpp \
     jni/KeyState.cpp \
     jni/VMessageQueue.cpp \
-    jni/VUserProfile.cpp \
     jni/TalkToJava.cpp \
     jni/VrCommon.cpp \
     jni/VrLocale.cpp
@@ -169,6 +169,7 @@ HEADERS += \
     jni/core/String_Utils.h \
     jni/core/StringHash.h \
     jni/core/TypesafeNumber.h \
+    jni/core/VUserSettings.h \
     jni/core/VWaitCondition.h \
     jni/embedded/dependency_error_de.h \
     jni/embedded/dependency_error_en.h \
@@ -272,7 +273,6 @@ HEADERS += \
     jni/App.h \
     jni/AppRender.h \
     jni/DebugLines.h \
-    jni/VUserProfile.h \
     jni/VrLocale.h \
     jni/Console.h \
     jni/vglobal.h \

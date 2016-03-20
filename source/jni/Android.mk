@@ -55,6 +55,7 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     core/MappedFile.cpp \
                     core/MemBuffer.cpp \
                     core/VMutex.cpp \
+                    core/VUserSettings.cpp \
                     core/VWaitCondition.cpp \
                     core/android/GlUtils.cpp \
                     core/android/JniUtils.cpp \
@@ -138,7 +139,6 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     KeyState.cpp \
                     App.cpp \
                     DebugLines.cpp \
-                    VUserProfile.cpp \
                     VrLocale.cpp \
                     Console.cpp
 

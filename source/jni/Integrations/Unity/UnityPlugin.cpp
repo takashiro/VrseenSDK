@@ -31,7 +31,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 // App.h should NOT be included, only stand-alone code!
 #include "EyePostRender.h"
-#include "VUserProfile.h"
+#include "VUserSettings.h"
 #include "VrLocale.h"
 #include "Console.h"
 
@@ -1051,7 +1051,7 @@ OCULUS_EXPORT bool OVR_SetProfileEditable(bool allowProfileEdit)
 // TODO: Rename this from "Get" to "Load"
 OCULUS_EXPORT bool OVR_GetPlayerEyeHeight(float &eyeHeight)
 {
-    VUserProfile profile;
+    VUserSettings profile;
     profile.load();
     eyeHeight = profile.eyeHeight;
 	return true;
@@ -1066,7 +1066,7 @@ OCULUS_EXPORT bool OVR_SavePlayerEyeHeight(float eyeHeight)
         return false;
     }
 
-    VUserProfile profile;
+    VUserSettings profile;
     profile.load();
     profile.eyeHeight = eyeHeight;
     profile.save();
@@ -1077,7 +1077,7 @@ OCULUS_EXPORT bool OVR_SavePlayerEyeHeight(float eyeHeight)
 // TODO: Rename this from "Get" to "Load"
 OCULUS_EXPORT bool OVR_GetInterpupillaryDistance(float &interpupillaryDistance)
 {
-    VUserProfile profile;
+    VUserSettings profile;
     profile.load();
     interpupillaryDistance = profile.ipd;
 	return true;
@@ -1092,7 +1092,7 @@ OCULUS_EXPORT bool OVR_SaveInterpupillaryDistance(float interpupillaryDistance)
         return false;
     }
 
-    VUserProfile profile;
+    VUserSettings profile;
     profile.load();
     profile.ipd = interpupillaryDistance;
     profile.save();
@@ -1103,7 +1103,7 @@ OCULUS_EXPORT bool OVR_SaveInterpupillaryDistance(float interpupillaryDistance)
 // TODO: Rename this from "Get" to "Load"
 OCULUS_EXPORT bool OVR_GetPlayerHeadModel(float &neckToEyeDepth, float &neckToEyeHeight)
 {
-    VUserProfile profile;
+    VUserSettings profile;
     profile.load();
     neckToEyeDepth = profile.headModelDepth;
     neckToEyeHeight = profile.headModelHeight;
@@ -1119,7 +1119,7 @@ OCULUS_EXPORT bool OVR_SavePlayerHeadModel(float neckToEyeDepth, float neckToEye
         return false;
     }
 
-    VUserProfile profile;
+    VUserSettings profile;
     profile.load();
     profile.headModelDepth = neckToEyeDepth;
     profile.headModelHeight = neckToEyeHeight;

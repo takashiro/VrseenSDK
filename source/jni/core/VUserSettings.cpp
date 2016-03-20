@@ -1,4 +1,4 @@
-#include "VUserProfile.h"
+#include "VUserSettings.h"
 
 #include "VJson.h"
 #include "VLog.h"
@@ -9,7 +9,7 @@ NV_NAMESPACE_BEGIN
 
 static const char* PROFILE_PATH = "/sdcard/Oculus/userprofile.json";
 
-void VUserProfile::load()
+void VUserSettings::load()
 {
     // TODO: Switch this over to using a content provider when available.
     Json root;
@@ -26,7 +26,7 @@ void VUserProfile::load()
     }
 }
 
-void VUserProfile::save()
+void VUserSettings::save()
 {
     Json root(Json::Object);
 
