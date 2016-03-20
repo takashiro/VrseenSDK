@@ -31,10 +31,10 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 		System.loadLibrary("nervgearvideo");
 	}
 
-	public static native void nativeSetVideoSize( long appPtr, int width, int height );
-	public static native SurfaceTexture nativePrepareNewVideo(long appPtr );
-	public static native void nativeFrameAvailable( long appPtr );
-	public static native void nativeVideoCompletion( long appPtr );
+	public static native void nativeSetVideoSize(int width, int height );
+	public static native SurfaceTexture nativePrepareNewVideo();
+	public static native void nativeFrameAvailable();
+	public static native void nativeVideoCompletion();
 	public static native long nativeSetAppInterface( VrActivity act, String fromPackageNameString, String commandString, String uriString );
 
 	SurfaceTexture movieTexture = null;
@@ -109,17 +109,17 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 		}
 		else
 		{
-			nativeSetVideoSize(appPtr, width, height);
+			nativeSetVideoSize(width, height);
 		}
 	}
 
 	public void onCompletion(MediaPlayer mp) {
 		Log.v(TAG, String.format("onCompletion"));
-		nativeVideoCompletion(appPtr);
+		nativeVideoCompletion();
 	}
 
 	public void onFrameAvailable(SurfaceTexture surfaceTexture) {
-		nativeFrameAvailable(appPtr);
+		nativeFrameAvailable();
 	}
 
     public void onAudioFocusChange(int focusChange) {
@@ -240,7 +240,7 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 			// Have native code pause any playing movie,
 			// allocate a new external texture,
 			// and create a surfaceTexture with it.
-			movieTexture = nativePrepareNewVideo(appPtr);
+			movieTexture = nativePrepareNewVideo();
 			movieTexture.setOnFrameAvailableListener(this);
 			movieSurface = new Surface(movieTexture);
 

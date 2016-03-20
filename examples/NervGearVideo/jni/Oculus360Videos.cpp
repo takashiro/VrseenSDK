@@ -75,18 +75,19 @@ long Java_com_vrseen_nervgear_video_MainActivity_nativeSetAppInterface( JNIEnv *
 	return (new Oculus360Videos())->SetActivity( jni, clazz, activity, fromPackageName, commandString, uriString );
 }
 
-void Java_com_vrseen_nervgear_video_MainActivity_nativeFrameAvailable( JNIEnv *jni, jclass clazz, jlong interfacePtr ) {
-	Oculus360Videos * panoVids = ( Oculus360Videos * )( ( ( App * )interfacePtr )->appInterface() );
+void Java_com_vrseen_nervgear_video_MainActivity_nativeFrameAvailable(JNIEnv *, jclass)
+{
+    Oculus360Videos * panoVids = ( Oculus360Videos * ) vApp->appInterface();
 	panoVids->SetFrameAvailable( true );
 }
 
-jobject Java_com_vrseen_nervgear_video_MainActivity_nativePrepareNewVideo( JNIEnv *jni, jclass clazz, jlong interfacePtr ) {
+jobject Java_com_vrseen_nervgear_video_MainActivity_nativePrepareNewVideo(JNIEnv *, jclass)
+{
 
 	// set up a message queue to get the return message
 	// TODO: make a class that encapsulates this work
 	VMessageQueue	result( 1 );
-	Oculus360Videos * panoVids = ( Oculus360Videos * )( ( ( App * )interfacePtr )->appInterface() );
-	panoVids->app->messageQueue().PostPrintf( "newVideo %p", &result );
+    vApp->messageQueue().PostPrintf( "newVideo %p", &result );
 
 	result.SleepUntilMessage();
 	const char * msg = result.nextMessage();
@@ -97,25 +98,22 @@ jobject Java_com_vrseen_nervgear_video_MainActivity_nativePrepareNewVideo( JNIEn
 	return texobj;
 }
 
-void Java_com_vrseen_nervgear_video_MainActivity_nativeSetVideoSize( JNIEnv *jni, jclass clazz, jlong interfacePtr, int width, int height ) {
+void Java_com_vrseen_nervgear_video_MainActivity_nativeSetVideoSize(JNIEnv *, jclass, int width, int height)
+{
 	LOG( "nativeSetVideoSizes: width=%i height=%i", width, height );
-
-	Oculus360Videos * panoVids = ( Oculus360Videos * )( ( ( App * )interfacePtr )->appInterface() );
-	panoVids->app->messageQueue().PostPrintf( "video %i %i", width, height );
+    vApp->messageQueue().PostPrintf( "video %i %i", width, height );
 }
 
-void Java_com_vrseen_nervgear_video_MainActivity_nativeVideoCompletion( JNIEnv *jni, jclass clazz, jlong interfacePtr ) {
+void Java_com_vrseen_nervgear_video_MainActivity_nativeVideoCompletion(JNIEnv *, jclass)
+{
 	LOG( "nativeVideoCompletion" );
-
-	Oculus360Videos * panoVids = ( Oculus360Videos * )( ( ( App * )interfacePtr )->appInterface() );
-	panoVids->app->messageQueue().PostPrintf( "completion" );
+    vApp->messageQueue().PostPrintf( "completion" );
 }
 
-void Java_com_vrseen_nervgear_video_MainActivity_nativeVideoStartError( JNIEnv *jni, jclass clazz, jlong interfacePtr ) {
+void Java_com_vrseen_nervgear_video_MainActivity_nativeVideoStartError(JNIEnv *, jclass)
+{
 	LOG( "nativeVideoStartError" );
-
-	Oculus360Videos * panoVids = ( Oculus360Videos * )( ( ( App * )interfacePtr )->appInterface() );
-	panoVids->app->messageQueue().PostPrintf( "startError" );
+    vApp->messageQueue().PostPrintf( "startError" );
 }
 
 } // extern "C"

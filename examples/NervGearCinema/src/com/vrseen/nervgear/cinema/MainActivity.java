@@ -40,8 +40,8 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 		System.loadLibrary( "cinema" );
 	}
 
-	public static native void 			nativeSetVideoSize( long appPtr, int width, int height, int rotation, int duration );
-	public static native SurfaceTexture nativePrepareNewVideo( long appPtr );
+	public static native void nativeSetVideoSize(int width, int height, int rotation, int duration );
+	public static native SurfaceTexture nativePrepareNewVideo();
 	public static native long nativeSetAppInterface( VrActivity act, String fromPackageNameString, String commandString, String uriString );
 
 	public static final int MinimumRemainingResumeTime = 60000;	// 1 minute
@@ -165,7 +165,7 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 		Log.v( TAG, String.format( "onVideoSizeChanged: %dx%d", width, height ) );
 		int rotation = getRotationFromMetadata( currentMovieFilename );
 		int duration = getDuration();
-		nativeSetVideoSize( appPtr, width, height, rotation, duration );
+		nativeSetVideoSize(width, height, rotation, duration );
 	}
 
 	private void requestAudioFocus()
@@ -609,7 +609,7 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 			// Have native code pause any playing movie,
 			// allocate a new external texture,
 			// and create a surfaceTexture with it.
-			movieTexture = nativePrepareNewVideo( appPtr );
+			movieTexture = nativePrepareNewVideo();
 			movieSurface = new Surface( movieTexture );
 
 			if (mediaPlayer != null)

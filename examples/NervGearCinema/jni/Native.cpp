@@ -13,20 +13,17 @@ long Java_com_vrseen_nervgear_cinema_MainActivity_nativeSetAppInterface( JNIEnv 
 	return (new CinemaApp())->SetActivity( jni, clazz, activity, fromPackageName, commandString, uriString );
 }
 
-void Java_com_vrseen_nervgear_cinema_MainActivity_nativeSetVideoSize( JNIEnv *jni, jclass clazz, jlong interfacePtr, int width, int height, int rotation, int duration ) {
+void Java_com_vrseen_nervgear_cinema_MainActivity_nativeSetVideoSize( JNIEnv *, jclass, int width, int height, int rotation, int duration ) {
 	LOG( "nativeSetVideoSizes: width=%i height=%i rotation=%i duration=%i", width, height, rotation, duration );
-
-	CinemaApp *cinema = ( CinemaApp * )( ( (App *)interfacePtr )->appInterface() );
-	cinema->app->messageQueue().PostPrintf( "video %i %i %i %i", width, height, rotation, duration );
+    vApp->messageQueue().PostPrintf( "video %i %i %i %i", width, height, rotation, duration );
 }
 
-jobject Java_com_vrseen_nervgear_cinema_MainActivity_nativePrepareNewVideo( JNIEnv *jni, jclass clazz, jlong interfacePtr ) {
-	CinemaApp *cinema = ( CinemaApp * )( ( (App *)interfacePtr )->appInterface() );
-
+jobject Java_com_vrseen_nervgear_cinema_MainActivity_nativePrepareNewVideo(JNIEnv *, jclass)
+{
 	// set up a message queue to get the return message
 	// TODO: make a class that encapsulates this work
-	VMessageQueue	result(1);
-	cinema->app->messageQueue().PostPrintf( "newVideo %p", &result);
+    VMessageQueue result(1);
+    vApp->messageQueue().PostPrintf( "newVideo %p", &result);
 
 	result.SleepUntilMessage();
     const char * msg = result.nextMessage();
