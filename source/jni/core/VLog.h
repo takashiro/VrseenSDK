@@ -40,6 +40,7 @@ public:
     VLog &operator << (const char *str);
     VLog &operator << (const VString &str);
     VLog &operator << (const VByteArray &str);
+    VLog &operator << (const std::string &str);
 
 private:
     NV_DECLARE_PRIVATE

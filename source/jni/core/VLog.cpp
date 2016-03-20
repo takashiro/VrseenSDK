@@ -111,4 +111,10 @@ VLog &VLog::operator << (const VByteArray &str)
     return *this;
 }
 
+VLog &VLog::operator <<(const std::string &str)
+{
+    d->buffer << str << ' ';
+    return *this;
+}
+
 NV_NAMESPACE_END
