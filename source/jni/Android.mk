@@ -28,6 +28,7 @@ LOCAL_C_INCLUDES :=  \
 	$(LOCAL_PATH)/$(NV_ROOT)/core \
 	$(LOCAL_PATH)/$(NV_ROOT)/gui \
 	$(LOCAL_PATH)/$(NV_ROOT)/io \
+	$(LOCAL_PATH)/$(NV_ROOT)/media \
 	$(LOCAL_PATH)/$(NV_ROOT)/scene
 
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_C_INCLUDES)
@@ -38,7 +39,6 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     core/VByteArray.cpp \
                     core/VChar.cpp \
                     core/VEvent.cpp \
-                    io/VFileOperation.cpp \
                     core/VJson.cpp \
                     core/Log.cpp \
                     core/VLog.cpp \
@@ -48,12 +48,10 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     core/RefCount.cpp \
                     core/VStandardPath.cpp \
                     core/VString.cpp \
-                    io/VSysFile.cpp \
                     core/System.cpp \
                     core/ThreadCommandQueue.cpp \
                     core/VThread.cpp \
                     core/VTimer.cpp \
-                    io/VBinaryFile.cpp \
                     core/MappedFile.cpp \
                     core/MemBuffer.cpp \
                     core/VMutex.cpp \
@@ -116,6 +114,10 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     gui/MetaDataManager.cpp \
                     gui/OutOfSpaceMenu.cpp \
                     io/VApkFile.cpp \
+                    io/VBinaryFile.cpp \
+                    io/VFileOperation.cpp \
+                    io/VSysFile.cpp \
+                    media/VSoundManager.cpp \
                     scene/BitmapFont.cpp \
                     scene/EyeBuffers.cpp \
                     scene/EyePostRender.cpp \
@@ -136,7 +138,6 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     KeyState.cpp \
                     App.cpp \
                     DebugLines.cpp \
-                    SoundManager.cpp \
                     VUserProfile.cpp \
                     VrLocale.cpp \
                     Console.cpp

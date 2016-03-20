@@ -8,7 +8,7 @@
 #include "EyeBuffers.h"
 #include "Input.h"
 #include "VMessageQueue.h"
-#include "SoundManager.h"
+#include "VSoundManager.h"
 
 NV_NAMESPACE_BEGIN
 

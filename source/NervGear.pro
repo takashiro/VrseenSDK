@@ -13,6 +13,7 @@ INCLUDEPATH += \
     jni/core \
     jni/gui \
     jni/io \
+    jni/media \
     jni/scene
 
 SOURCES += \
@@ -55,6 +56,7 @@ SOURCES += \
     jni/api/LocalPreferences.cpp \
     jni/api/VMainActivity.cpp \
     jni/api/VGlShader.cpp \
+    jni/api/VGlGeometry.cpp \
     jni/api/sensor/DeviceHandle.cpp \
     jni/api/sensor/DeviceImpl.cpp \
     jni/api/sensor/LatencyTest.cpp \
@@ -99,6 +101,7 @@ SOURCES += \
     jni/io/VBinaryFile.cpp \
     jni/io/VFileOperation.cpp \
     jni/io/VSysFile.cpp \
+    jni/media/VSoundManager.cpp \
     jni/scene/BitmapFont.cpp \
     jni/scene/EyeBuffers.cpp \
     jni/scene/EyePostRender.cpp \
@@ -118,12 +121,10 @@ SOURCES += \
     jni/DebugLines.cpp \
     jni/KeyState.cpp \
     jni/VMessageQueue.cpp \
-    jni/SoundManager.cpp \
     jni/VUserProfile.cpp \
     jni/TalkToJava.cpp \
     jni/VrCommon.cpp \
-    jni/VrLocale.cpp \
-    jni/api/VGlGeometry.cpp
+    jni/VrLocale.cpp
 
 HEADERS += \
     jni/core/android/GlUtils.h \
@@ -248,6 +249,7 @@ HEADERS += \
     jni/io/VFile.h \
     jni/io/VFileOperation.h \
     jni/io/VSysFile.h \
+    jni/media/VSoundManager.h \
     jni/scene/BitmapFont.h \
     jni/scene/EyeBuffers.h \
     jni/scene/EyePostRender.h \
@@ -270,7 +272,6 @@ HEADERS += \
     jni/App.h \
     jni/AppRender.h \
     jni/DebugLines.h \
-    jni/SoundManager.h \
     jni/VUserProfile.h \
     jni/VrLocale.h \
     jni/Console.h \

@@ -21,7 +21,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "../Input.h"
 #include "../VrCommon.h"
 #include "../App.h"
-#include "../SoundManager.h"
+#include "VSoundManager.h"
 
 namespace NervGear {
 
