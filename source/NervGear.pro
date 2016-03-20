@@ -122,7 +122,8 @@ SOURCES += \
     jni/VUserProfile.cpp \
     jni/TalkToJava.cpp \
     jni/VrCommon.cpp \
-    jni/VrLocale.cpp
+    jni/VrLocale.cpp \
+    jni/api/VGlGeometry.cpp
 
 HEADERS += \
     jni/core/android/GlUtils.h \
