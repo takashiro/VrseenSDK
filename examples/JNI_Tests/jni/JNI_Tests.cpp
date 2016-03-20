@@ -14,27 +14,46 @@ using namespace std;
 using namespace NervGear;
 
 VAtomicInt ShareData(0);
+static int count = 0;
 
 void thread0(int id)
 {
     ShareData.exchangeAddAcquire(1);
+    while (10 != ShareData.load()) {
+        LOGD("Thread:%d", id);
+    }
+    LOGD("%d.thread(%d)$operator *= : 10 == %d", count++, id, ShareData.load());
+    ShareData /= 2;
+    while (20 != ShareData.load()) {
+        LOGD("Thread:%d", id);
+    }
+    LOGD("%d.thread(%d)$operator >>= : 20 == %d", count++, id, ShareData.load());
 }
 void thread1(int id)
 {
-    while(1 != ShareData.load())
-    {
-
+    while (1 != ShareData.load()) {
+        LOGD("Thread:%d", id);
     }
-    LOGD("thread(%d)$exchangeAddAcquire():1 == %d", id, ShareData.load());
+    LOGD("%d.thread(%d)$exchangeAddAcquire():1 == %d", count++, id, ShareData.load());
     ShareData.incrementSync();
+    while (5 != ShareData.load()) {
+        LOGD("Thread:%d", id);
+    }
+    LOGD("%d.thread(%d)$operator /= : 5 == %d", count++, id, ShareData.load());
+    ShareData <<= 3;
 }
 void thread2(int id)
 {
-    while(2 != ShareData.load())
-    {
-
+    while(2 != ShareData.load()) {
+        LOGD("Thread:%d", id);
     }
-    LOGD("thread(%d)$incrementSync():2 == %d", id, ShareData.load());
+    LOGD("%d.thread(%d)$incrementSync():2 == %d", count++, id, ShareData.load());
+    ShareData *= 5;
+    while (40 != ShareData.load()) {
+        LOGD("Thread:%d", id);
+    }
+    LOGD("%d.thread(%d)$operator <<= : 40 == %d", count++, id, ShareData.load());
+    ShareData >>= 1;
 }
 void testVAtomicInt()
 {
@@ -45,6 +64,7 @@ void testVAtomicInt()
     for (auto &e : pool) {
         e.join();
     }
+    LOGD("count:6 == %d", count);
 }
 JNIEXPORT jstring JNICALL Java_com_example_jni_1tests_MainActivity_runTests
   (JNIEnv *env, jobject obj)
