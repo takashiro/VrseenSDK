@@ -24,15 +24,11 @@ import android.content.SharedPreferences;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ApplicationInfo;
 import android.graphics.Canvas;
-import android.graphics.PorterDuff.Mode;
 import android.graphics.SurfaceTexture;
 import android.media.AudioManager;
 import android.media.SoundPool;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -46,95 +42,102 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Toast;
 //DVFS import android.os.DVFSHelper;
-
 
 @SuppressWarnings("deprecation")
 public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback {
 
 	public static final String TAG = "VrActivity";
 
-	public static native void nativeNewIntent(long appPtr, String fromPackageName, String command, String uriString);
-	public static native void nativeSurfaceChanged(long appPtr, Surface s);
-	public static native void nativeSurfaceDestroyed(long appPtr);
-	public static native void nativePause(long appPtr);
-	public static native void nativeResume(long appPtr);
-	public static native void nativeDestroy(long appPtr);
-	public static native void nativeKeyEvent(long appPtr, int keyNum, boolean down, int repeatCount );
-	public static native void nativeJoypadAxis(long appPtr, float lx, float ly, float rx, float ry);
-	public static native void nativeTouch(long appPtr, int action, float x, float y );
-	public static native SurfaceTexture nativeGetPopupSurfaceTexture(long appPtr);
-	public static native void nativePopup(long appPtr, int width, int height, float seconds);
+	private static native void nativeNewIntent(String fromPackageName, String command, String uriString);
+
+	private static native void nativeSurfaceChanged(Surface s);
+
+	private static native void nativeSurfaceDestroyed();
+
+	private static native void nativePause();
+
+	private static native void nativeResume();
+
+	private static native void nativeDestroy();
+
+	private static native void nativeKeyEvent(int keyNum, boolean down, int repeatCount);
+
+	private static native void nativeJoypadAxis(float lx, float ly, float rx, float ry);
+
+	private static native void nativeTouch(int action, float x, float y);
+
+	private static native SurfaceTexture nativeGetPopupSurfaceTexture();
+
+	private static native void nativePopup(int width, int height, float seconds);
 
 	// Pass down to native code so we talk to the right App object,
 	// since there can be at least two with the PlatformUI open.
 	//
 	// This is set by the subclass in onCreate
-	// 		appPtr = nativeSetAppInterface( this, ... );
-	public long	appPtr;
-
+	// appPtr = nativeSetAppInterface( this, ... );
+	public long appPtr;
 
 	// For trivial feedback sound effects
 	SoundPool soundPool;
-	List<Integer>	soundPoolSoundIds;
-	List<String>	soundPoolSoundNames;
+	List<Integer> soundPoolSoundIds;
+	List<String> soundPoolSoundNames;
 
 	public void playSoundPoolSound(String name) {
-		for ( int i = 0 ; i < soundPoolSoundNames.size() ; i++ ) {
-			if ( soundPoolSoundNames.get(i).equals( name ) ) {
-				soundPool.play( soundPoolSoundIds.get( i ), 1.0f, 1.0f, 1, 0, 1 );
+		for (int i = 0; i < soundPoolSoundNames.size(); i++) {
+			if (soundPoolSoundNames.get(i).equals(name)) {
+				soundPool.play(soundPoolSoundIds.get(i), 1.0f, 1.0f, 1, 0, 1);
 				return;
 			}
 		}
 
-		Log.d(TAG, "playSoundPoolSound: loading "+name);
+		Log.d(TAG, "playSoundPoolSound: loading " + name);
 
 		// check first if this is a raw resource
 		int soundId = 0;
-		if ( name.indexOf( "res/raw/" ) == 0 ) {
-			String resourceName = name.substring( 4, name.length() - 4 );
-			int id = getResources().getIdentifier( resourceName, "raw", getPackageName() );
-			if ( id == 0 ) {
-				Log.e( TAG, "No resource named " + resourceName );
+		if (name.indexOf("res/raw/") == 0) {
+			String resourceName = name.substring(4, name.length() - 4);
+			int id = getResources().getIdentifier(resourceName, "raw", getPackageName());
+			if (id == 0) {
+				Log.e(TAG, "No resource named " + resourceName);
 			} else {
-				AssetFileDescriptor afd = getResources().openRawResourceFd( id );
-				soundId = soundPool.load( afd, 1 );
+				AssetFileDescriptor afd = getResources().openRawResourceFd(id);
+				soundId = soundPool.load(afd, 1);
 			}
 		} else {
 			try {
-				AssetFileDescriptor afd = getAssets().openFd( name );
-				soundId = soundPool.load( afd, 1 );
-			} catch ( IOException t ) {
-				Log.e( TAG, "Couldn't open " + name + " because " + t.getMessage() );
+				AssetFileDescriptor afd = getAssets().openFd(name);
+				soundId = soundPool.load(afd, 1);
+			} catch (IOException t) {
+				Log.e(TAG, "Couldn't open " + name + " because " + t.getMessage());
 			}
 		}
 
-		if ( soundId == 0 )
-		{
-			// Try to load the sound directly - works for absolute path - for wav files for sdcard for ex.
-			soundId = soundPool.load( name, 1 );
+		if (soundId == 0) {
+			// Try to load the sound directly - works for absolute path - for
+			// wav files for sdcard for ex.
+			soundId = soundPool.load(name, 1);
 		}
 
-		soundPoolSoundNames.add( name );
-		soundPoolSoundIds.add( soundId );
+		soundPoolSoundNames.add(name);
+		soundPoolSoundIds.add(soundId);
 
-		soundPool.play( soundPoolSoundIds.get( soundPoolSoundNames.size() - 1 ), 1.0f, 1.0f, 1, 0, 1 );
+		soundPool.play(soundPoolSoundIds.get(soundPoolSoundNames.size() - 1), 1.0f, 1.0f, 1, 0, 1);
 	}
 
 	@Override
 	public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
 		Log.d(TAG, this + " surfaceChanged() format: " + format + " width: " + width + " height: " + height);
-		if ( width < height )
-		{	// Samsung said that a spurious surface changed event with the wrong
-			// orientation happens due to an Android issue.
-			Log.d( TAG, "Ignoring a surface that is not in landscape mode" );
+		if (width < height) { // Samsung said that a spurious surface changed
+								// event with the wrong
+								// orientation happens due to an Android issue.
+			Log.d(TAG, "Ignoring a surface that is not in landscape mode");
 			return;
 		}
-		nativeSurfaceChanged(appPtr, holder.getSurface());
+		nativeSurfaceChanged(holder.getSurface());
 	}
 
 	@Override
@@ -146,7 +149,7 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 	@Override
 	public void surfaceDestroyed(SurfaceHolder holder) {
 		Log.d(TAG, this + " surfaceDestroyed()");
-		nativeSurfaceDestroyed(appPtr);
+		nativeSurfaceDestroyed();
 	}
 
 	public void finishActivity() {
@@ -167,8 +170,7 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 		return f;
 	}
 
-	int axisButtons(int deviceId, float axisValue, int negativeButton, int positiveButton,
-			int previousState) {
+	int axisButtons(int deviceId, float axisValue, int negativeButton, int positiveButton, int previousState) {
 		int currentState;
 		if (axisValue < -0.5f) {
 			currentState = -1;
@@ -198,9 +200,12 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 	}
 
 	int[] axisState = new int[6];
-	int[] axisAxis = { MotionEvent.AXIS_HAT_X, MotionEvent.AXIS_HAT_Y, MotionEvent.AXIS_X, MotionEvent.AXIS_Y, MotionEvent.AXIS_RX, MotionEvent.AXIS_RY };
-	int[] axisNegativeButton = { JoyEvent.KEYCODE_DPAD_LEFT, JoyEvent.KEYCODE_DPAD_UP, JoyEvent.KEYCODE_LSTICK_LEFT, JoyEvent.KEYCODE_LSTICK_UP, JoyEvent.KEYCODE_RSTICK_LEFT, JoyEvent.KEYCODE_RSTICK_UP };
-	int[] axisPositiveButton = { JoyEvent.KEYCODE_DPAD_RIGHT, JoyEvent.KEYCODE_DPAD_DOWN, JoyEvent.KEYCODE_LSTICK_RIGHT, JoyEvent.KEYCODE_LSTICK_DOWN, JoyEvent.KEYCODE_RSTICK_RIGHT, JoyEvent.KEYCODE_RSTICK_DOWN };
+	int[] axisAxis = { MotionEvent.AXIS_HAT_X, MotionEvent.AXIS_HAT_Y, MotionEvent.AXIS_X, MotionEvent.AXIS_Y,
+			MotionEvent.AXIS_RX, MotionEvent.AXIS_RY };
+	int[] axisNegativeButton = { JoyEvent.KEYCODE_DPAD_LEFT, JoyEvent.KEYCODE_DPAD_UP, JoyEvent.KEYCODE_LSTICK_LEFT,
+			JoyEvent.KEYCODE_LSTICK_UP, JoyEvent.KEYCODE_RSTICK_LEFT, JoyEvent.KEYCODE_RSTICK_UP };
+	int[] axisPositiveButton = { JoyEvent.KEYCODE_DPAD_RIGHT, JoyEvent.KEYCODE_DPAD_DOWN, JoyEvent.KEYCODE_LSTICK_RIGHT,
+			JoyEvent.KEYCODE_LSTICK_DOWN, JoyEvent.KEYCODE_RSTICK_RIGHT, JoyEvent.KEYCODE_RSTICK_DOWN };
 
 	@Override
 	public boolean dispatchGenericMotionEvent(MotionEvent event) {
@@ -217,19 +222,27 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 			// event.getAxisValue(MotionEvent.AXIS_Y),
 			// event.getAxisValue(MotionEvent.AXIS_RX),
 			// event.getAxisValue(MotionEvent.AXIS_RY)));
-			nativeJoypadAxis(appPtr, deadBand(event.getAxisValue(MotionEvent.AXIS_X)),
+			nativeJoypadAxis(deadBand(event.getAxisValue(MotionEvent.AXIS_X)),
 					deadBand(event.getAxisValue(MotionEvent.AXIS_Y)),
 					deadBand(event.getAxisValue(MotionEvent.AXIS_RX))
-						+ deadBand(event.getAxisValue(MotionEvent.AXIS_Z)),		// Moga uses  Z for R-stick X
+							+ deadBand(event.getAxisValue(MotionEvent.AXIS_Z)), // Moga
+																				// uses
+																				// Z
+																				// for
+																				// R-stick
+																				// X
 					deadBand(event.getAxisValue(MotionEvent.AXIS_RY))
-						+ deadBand(event.getAxisValue(MotionEvent.AXIS_RZ)));	// Moga uses RZ for R-stick Y
+							+ deadBand(event.getAxisValue(MotionEvent.AXIS_RZ))); // Moga
+																					// uses
+																					// RZ
+																					// for
+																					// R-stick
+																					// Y
 
 			// Turn the hat and thumbstick axis into buttons
-			for ( int i = 0 ; i < 6 ; i++ ) {
-				axisState[i] = axisButtons( event.getDeviceId(),
-						event.getAxisValue(axisAxis[i]),
-						axisNegativeButton[i], axisPositiveButton[i],
-						axisState[i]);
+			for (int i = 0; i < 6; i++) {
+				axisState[i] = axisButtons(event.getDeviceId(), event.getAxisValue(axisAxis[i]), axisNegativeButton[i],
+						axisPositiveButton[i], axisState[i]);
 			}
 
 			return true;
@@ -238,7 +251,7 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 	}
 
 	public boolean dispatchKeyEvent(KeyEvent event) {
-		//Log.d(TAG, "dispatchKeyEvent  " + event );
+		// Log.d(TAG, "dispatchKeyEvent " + event );
 		boolean down;
 		int keyCode = event.getKeyCode();
 		int deviceId = event.getDeviceId();
@@ -248,29 +261,27 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 		} else if (event.getAction() == KeyEvent.ACTION_UP) {
 			down = false;
 		} else {
-			Log.d(TAG,
-					"source " + event.getSource() + " action "
-							+ event.getAction() + " keyCode " + keyCode);
+			Log.d(TAG, "source " + event.getSource() + " action " + event.getAction() + " keyCode " + keyCode);
 
 			return super.dispatchKeyEvent(event);
 		}
 
-		Log.d(TAG, "source " + event.getSource() + " keyCode " + keyCode + " down " + down + " repeatCount " + event.getRepeatCount() );
+		Log.d(TAG, "source " + event.getSource() + " keyCode " + keyCode + " down " + down + " repeatCount "
+				+ event.getRepeatCount());
 
 		if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
-			if ( down ) {
+			if (down) {
 				adjustVolume(1);
 			}
 			return true;
 		}
 
 		if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
-			if ( down ) {
+			if (down) {
 				adjustVolume(-1);
 			}
 			return true;
 		}
-
 
 		// Joypads will register as keyboards, but keyboards won't
 		// register as position classes
@@ -279,15 +290,15 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 		if (event.getSource() == 1281) {
 			keyCode |= JoyEvent.BUTTON_JOYPAD_FLAG;
 		}
-		return buttonEvent(deviceId, keyCode, down, event.getRepeatCount() );
+		return buttonEvent(deviceId, keyCode, down, event.getRepeatCount());
 	}
 
 	/*
-	 * Called for real key events from dispatchKeyEvent(), and also
-	 * the synthetic dpad
+	 * Called for real key events from dispatchKeyEvent(), and also the
+	 * synthetic dpad
 	 *
-	 * This is where the framework can intercept a button press before
-	 * it is passed on to the application.
+	 * This is where the framework can intercept a button press before it is
+	 * passed on to the application.
 	 *
 	 * Keyboard buttons will be standard Android key codes, but joystick buttons
 	 * will have BUTTON_JOYSTICK or'd into it, because you may want arrow keys
@@ -299,27 +310,30 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 	 *
 	 * @return Return true if this event was consumed.
 	 */
-	public boolean buttonEvent(int deviceId, int keyCode, boolean down, int repeatCount ) {
-//			Log.d(TAG, "buttonEvent " + deviceId + " " + keyCode + " " + down);
+	public boolean buttonEvent(int deviceId, int keyCode, boolean down, int repeatCount) {
+		// Log.d(TAG, "buttonEvent " + deviceId + " " + keyCode + " " + down);
 
 		// DispatchKeyEvent will cause the K joypads to spawn other
 		// apps on select and "game", which we don't want, so manually call
 		// onKeyDown or onKeyUp
 
-		KeyEvent ev = new KeyEvent( 0, 0, down ? KeyEvent.ACTION_DOWN : KeyEvent.ACTION_UP, keyCode, repeatCount );
+		KeyEvent ev = new KeyEvent(0, 0, down ? KeyEvent.ACTION_DOWN : KeyEvent.ACTION_UP, keyCode, repeatCount);
 
-// This was confusing because it called VrActivity::onKeyDown.  Activity::onKeyDown is only supposed to be
-// called if the app views didn't consume any keys. Since we intercept dispatchKeyEvent and always returning true
-// for ACTION_UP and ACTION_DOWN, we effectively consume ALL key events that would otherwise go to Activity::onKeyDown
-// Activity::onKeyUp, so calling them here means they're getting called when we consume events, even though the
-// VrActivity versions were effectively the consumers by calling nativeKeyEvent.  Instead, call nativeKeyEvent
-// here directly.
-		if ( down ) {
-			nativeKeyEvent( appPtr, keyCode, true, ev.getRepeatCount() );
-		}
-		else
-		{
-			nativeKeyEvent( appPtr, keyCode, false, 0 );
+		// This was confusing because it called VrActivity::onKeyDown.
+		// Activity::onKeyDown is only supposed to be
+		// called if the app views didn't consume any keys. Since we intercept
+		// dispatchKeyEvent and always returning true
+		// for ACTION_UP and ACTION_DOWN, we effectively consume ALL key events
+		// that would otherwise go to Activity::onKeyDown
+		// Activity::onKeyUp, so calling them here means they're getting called
+		// when we consume events, even though the
+		// VrActivity versions were effectively the consumers by calling
+		// nativeKeyEvent. Instead, call nativeKeyEvent
+		// here directly.
+		if (down) {
+			nativeKeyEvent(keyCode, true, ev.getRepeatCount());
+		} else {
+			nativeKeyEvent(keyCode, false, 0);
 		}
 		return true;
 	}
@@ -329,51 +343,51 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 	 */
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		//Log.d(TAG, "onKeyDown " + keyCode + ", event = " + event );
+		// Log.d(TAG, "onKeyDown " + keyCode + ", event = " + event );
 		return super.onKeyDown(keyCode, event);
 	}
 
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
-		//Log.d(TAG, "onKeyUp " + keyCode + ", event = " + event );
+		// Log.d(TAG, "onKeyUp " + keyCode + ", event = " + event );
 		return super.onKeyDown(keyCode, event);
 	}
 
-//	public boolean onTouchEvent( MotionEvent e ) {
+	// public boolean onTouchEvent( MotionEvent e ) {
 
 	@Override
-	public boolean dispatchTouchEvent( MotionEvent e ) {
+	public boolean dispatchTouchEvent(MotionEvent e) {
 		// Log.d(TAG, "real:" + e );
 		int action = e.getAction();
 		float x = e.getRawX();
 		float y = e.getRawY();
-		Log.d(TAG, "onTouch dev:" + e.getDeviceId() + " act:" + action + " ind:" + e.getActionIndex() + " @ "+ x + "," + y );
-		nativeTouch( appPtr, action, x, y );
+		Log.d(TAG, "onTouch dev:" + e.getDeviceId() + " act:" + action + " ind:" + e.getActionIndex() + " @ " + x + ","
+				+ y);
+		nativeTouch(action, x, y);
 		return true;
 	}
 
-	private void setLocale( String localeName )
-	{
+	private void setLocale(String localeName) {
 		Configuration conf = getResources().getConfiguration();
-		conf.locale = new Locale( localeName );
+		conf.locale = new Locale(localeName);
 
-		VrLib.setCurrentLanguage( conf.locale.getLanguage() );
+		VrLib.setCurrentLanguage(conf.locale.getLanguage());
 
 		DisplayMetrics metrics = new DisplayMetrics();
-		getWindowManager().getDefaultDisplay().getMetrics( metrics );
+		getWindowManager().getDefaultDisplay().getMetrics(metrics);
 
 		// the next line just changes the application's locale. It changes this
 		// globally and not just in the newly created resource
-		Resources res = new Resources( getAssets(), metrics, conf );
-		// since we don't need the resource, just allow it to be garbage collected.
+		Resources res = new Resources(getAssets(), metrics, conf);
+		// since we don't need the resource, just allow it to be garbage
+		// collected.
 		res = null;
 
-		Log.d( TAG, "setLocale: locale set to " + localeName );
+		Log.d(TAG, "setLocale: locale set to " + localeName);
 	}
 
-	private void setDefaultLocale()
-	{
-		setLocale( "en" );
+	private void setDefaultLocale() {
+		setLocale("en");
 	}
 
 	@Override
@@ -393,15 +407,14 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 		Log.d(TAG, this + " onDestroy()");
 		super.onDestroy();
 
-		// prevent nativeSurfaceDestroyed from trying to use appPtr after the AppLocal it's pointing to has been freed.
-		long tempAppPtr = appPtr;
-		appPtr = 0;
-		nativeDestroy( tempAppPtr );
+		// prevent nativeSurfaceDestroyed from trying to use appPtr after the
+		// AppLocal it's pointing to has been freed.
+		nativeDestroy();
 
 		soundPool.release();
 		soundPoolSoundIds.clear();
 		soundPoolSoundNames.clear();
-	 }
+	}
 
 	@Override
 	protected void onRestart() {
@@ -417,10 +430,10 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		Log.d(TAG, this + " onCreate()" );
+		Log.d(TAG, this + " onCreate()");
 		super.onCreate(savedInstanceState);
 
-		VrLib.setCurrentLanguage( Locale.getDefault().getLanguage() );
+		VrLib.setCurrentLanguage(Locale.getDefault().getLanguage());
 
 		// Create the SoundPool
 		soundPool = new SoundPool(3 /* voices */, AudioManager.STREAM_MUSIC, 100);
@@ -428,138 +441,122 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 		soundPoolSoundNames = new ArrayList<String>();
 
 		AudioManager audioMgr;
-		audioMgr = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+		audioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 		String rate = audioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE);
 		String size = audioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
-		Log.d( TAG, "rate = " + rate );
-		Log.d( TAG, "size = " + size );
+		Log.d(TAG, "rate = " + rate);
+		Log.d(TAG, "size = " + size);
 
 		// Check preferences
-		SharedPreferences prefs = getApplicationContext().getSharedPreferences( "nervgear", MODE_PRIVATE );
-		String username = prefs.getString( "username", "guest" );
-		Log.d( TAG, "username = " + username );
+		SharedPreferences prefs = getApplicationContext().getSharedPreferences("nervgear", MODE_PRIVATE);
+		String username = prefs.getString("username", "guest");
+		Log.d(TAG, "username = " + username);
 
 		// Check for being launched with a particular intent
 		Intent intent = getIntent();
 
-		String commandString = VrLib.getCommandStringFromIntent( intent );
-		String fromPackageNameString = VrLib.getPackageStringFromIntent( intent );
-		String uriString = VrLib.getUriStringFromIntent( intent );
+		String commandString = VrLib.getCommandStringFromIntent(intent);
+		String fromPackageNameString = VrLib.getPackageStringFromIntent(intent);
+		String uriString = VrLib.getUriStringFromIntent(intent);
 
-		Log.d( TAG, "action:" + intent.getAction() );
-		Log.d( TAG, "type:" + intent.getType() );
-		Log.d( TAG, "fromPackageName:" + fromPackageNameString );
-		Log.d( TAG, "command:" + commandString );
-		Log.d( TAG, "uri:" + uriString );
+		Log.d(TAG, "action:" + intent.getAction());
+		Log.d(TAG, "type:" + intent.getType());
+		Log.d(TAG, "fromPackageName:" + fromPackageNameString);
+		Log.d(TAG, "command:" + commandString);
+		Log.d(TAG, "uri:" + uriString);
 
-		SurfaceView sv = new SurfaceView( this );
-		setContentView( sv );
+		SurfaceView sv = new SurfaceView(this);
+		setContentView(sv);
 
-		sv.getHolder().addCallback( this );
+		sv.getHolder().addCallback(this);
 
 		// Force the screen to stay on, rather than letting it dim and shut off
 		// while the user is watching a movie.
-		getWindow().addFlags( WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON );
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
 		// Force screen brightness to stay at maximum
 		WindowManager.LayoutParams params = getWindow().getAttributes();
 		params.screenBrightness = 1.0f;
-		getWindow().setAttributes( params );
+		getWindow().setAttributes(params);
 	}
 
 	@Override
-	protected void onNewIntent( Intent intent ) {
+	protected void onNewIntent(Intent intent) {
 		Log.d(TAG, "onNewIntent()");
 
-		String commandString = VrLib.getCommandStringFromIntent( intent );
-		String fromPackageNameString = VrLib.getPackageStringFromIntent( intent );
-		String uriString = VrLib.getUriStringFromIntent( intent );
+		String commandString = VrLib.getCommandStringFromIntent(intent);
+		String fromPackageNameString = VrLib.getPackageStringFromIntent(intent);
+		String uriString = VrLib.getUriStringFromIntent(intent);
 
-		Log.d(TAG, "action:" + intent.getAction() );
-		Log.d(TAG, "type:" + intent.getType() );
-		Log.d(TAG, "fromPackageName:" + fromPackageNameString );
-		Log.d(TAG, "command:" + commandString );
-		Log.d(TAG, "uri:" + uriString );
+		Log.d(TAG, "action:" + intent.getAction());
+		Log.d(TAG, "type:" + intent.getType());
+		Log.d(TAG, "fromPackageName:" + fromPackageNameString);
+		Log.d(TAG, "command:" + commandString);
+		Log.d(TAG, "uri:" + uriString);
 
-		nativeNewIntent( appPtr, fromPackageNameString, commandString, uriString );
+		nativeNewIntent(fromPackageNameString, commandString, uriString);
 	}
-
 
 	@Override
 	protected void onPause() {
 		Log.d(TAG, this + " onPause()");
 
-		if( getApplication() instanceof VrApplication )
-		{
-			VrApplication vrApp = (VrApplication)getApplication();
-			vrApp.setHostActivity( null );
+		if (getApplication() instanceof VrApplication) {
+			VrApplication vrApp = (VrApplication) getApplication();
+			vrApp.setHostActivity(null);
 		}
 
 		super.onPause();
-		nativePause(appPtr);
+		nativePause();
 	}
 
 	@Override
 	protected void onResume() {
 		Log.d(TAG, this + " onResume()");
 
-		if( getApplication() instanceof VrApplication )
-		{
-			VrApplication vrApp = (VrApplication)getApplication();
-			vrApp.setHostActivity( this );
+		if (getApplication() instanceof VrApplication) {
+			VrApplication vrApp = (VrApplication) getApplication();
+			vrApp.setHostActivity(this);
 		}
 
 		super.onResume();
-		nativeResume(appPtr);
+		nativeResume();
 	}
 
 	// ==================================================================================
-/*
-	public void sendIntent( String packageName, String data ) {
-		Log.d(TAG, "sendIntent " + packageName + " : " + data );
-
-		Intent launchIntent = getPackageManager().getLaunchIntentForPackage(packageName);
-		if ( launchIntent == null )
-		{
-			Log.d( TAG, "sendIntent null activity" );
-			return;
-		}
-		if ( data.length() > 0 ) {
-			launchIntent.setData( Uri.parse( data ) );
-		}
-		try {
-			Log.d(TAG, "startActivity " + launchIntent );
-			launchIntent.addFlags( Intent.FLAG_ACTIVITY_NO_ANIMATION );
-			startActivity(launchIntent);
-		} catch( ActivityNotFoundException e ) {
-			Log.d( TAG, "startActivity " + launchIntent + " not found!" );
-			return;
-		}
-
-		// Make sure we don't leave any background threads running
-		// This is not reliable, so it is done with native code.
-		// Log.d(TAG, "System.exit" );
-		// System.exit( 0 );
-	}
-*/
+	/*
+	 * public void sendIntent( String packageName, String data ) { Log.d(TAG,
+	 * "sendIntent " + packageName + " : " + data );
+	 * 
+	 * Intent launchIntent =
+	 * getPackageManager().getLaunchIntentForPackage(packageName); if (
+	 * launchIntent == null ) { Log.d( TAG, "sendIntent null activity" );
+	 * return; } if ( data.length() > 0 ) { launchIntent.setData( Uri.parse(
+	 * data ) ); } try { Log.d(TAG, "startActivity " + launchIntent );
+	 * launchIntent.addFlags( Intent.FLAG_ACTIVITY_NO_ANIMATION );
+	 * startActivity(launchIntent); } catch( ActivityNotFoundException e ) {
+	 * Log.d( TAG, "startActivity " + launchIntent + " not found!" ); return; }
+	 * 
+	 * // Make sure we don't leave any background threads running // This is not
+	 * reliable, so it is done with native code. // Log.d(TAG, "System.exit" );
+	 * // System.exit( 0 ); }
+	 */
 
 	public void clearVrToasts() {
-		Log.v(TAG, "clearVrToasts, calling nativePopup" );
-		nativePopup(appPtr, 0, 0, -1.0f);
+		Log.v(TAG, "clearVrToasts, calling nativePopup");
+		nativePopup(0, 0, -1.0f);
 	}
 
 	SurfaceTexture toastTexture;
 	Surface toastSurface;
 
 	public void createVrToastOnUiThread(final String text) {
-    	runOnUiThread( new Thread()
-    	{
-		 @Override
-    		public void run()
-    		{
-    			VrActivity.this.createVrToast(text);
-            }
-    	});
+		runOnUiThread(new Thread() {
+			@Override
+			public void run() {
+				VrActivity.this.createVrToast(text);
+			}
+		});
 	}
 
 	// TODO: pass in the time delay
@@ -568,7 +565,7 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 	// drawing it to a texture
 	@SuppressLint("ShowToast")
 	public void createVrToast(String text) {
-		if ( text == null ) {
+		if (text == null) {
 			text = "null toast text!";
 		}
 		Log.v(TAG, "createVrToast " + text);
@@ -576,7 +573,7 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 		// If we haven't set up the surface / surfaceTexture yet,
 		// do it now.
 		if (toastTexture == null) {
-			toastTexture = nativeGetPopupSurfaceTexture(appPtr);
+			toastTexture = nativeGetPopupSurfaceTexture();
 			if (toastTexture == null) {
 				Log.e(TAG, "nativePreparePopup returned NULL");
 				return; // not set up yet
@@ -584,24 +581,18 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 			toastSurface = new Surface(toastTexture);
 		}
 
-		Toast toast = Toast.makeText(this.getApplicationContext(), text,
-				Toast.LENGTH_SHORT);
+		Toast toast = Toast.makeText(this.getApplicationContext(), text, Toast.LENGTH_SHORT);
 
-		this.createVrToast( toast.getView() );
+		this.createVrToast(toast.getView());
 	}
 
-	public void createVrToast( View toastView )
-	{
+	public void createVrToast(View toastView) {
 		// Find how big the toast wants to be.
 		toastView.measure(0, 0);
-		toastView.layout(0, 0, toastView.getMeasuredWidth(),
-				toastView.getMeasuredHeight());
+		toastView.layout(0, 0, toastView.getMeasuredWidth(), toastView.getMeasuredHeight());
 
-		Log.v(TAG,
-				"toast size:" + toastView.getWidth() + "x"
-						+ toastView.getHeight());
-		toastTexture.setDefaultBufferSize(toastView.getWidth(),
-				toastView.getHeight());
+		Log.v(TAG, "toast size:" + toastView.getWidth() + "x" + toastView.getHeight());
+		toastTexture.setDefaultBufferSize(toastView.getWidth(), toastView.getHeight());
 		try {
 			Canvas canvas = toastSurface.lockCanvas(null);
 			toastView.draw(canvas);
@@ -610,20 +601,20 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 			Log.e(TAG, "lockCanvas threw exception");
 		}
 
-		nativePopup(appPtr, toastView.getWidth(), toastView.getHeight(), 7.0f);
+		nativePopup(toastView.getWidth(), toastView.getHeight(), 7.0f);
 	}
 
 	static long downTime;
 
-	public static void gazeEventFromNative( final float x, final float y, final boolean press, final boolean release, final Activity target ) {
-		Log.d(TAG, "gazeEventFromNative( " + x + " " + y + " " + press + " " + release + " " + target );
-
+	public static void gazeEventFromNative(final float x, final float y, final boolean press, final boolean release,
+			final Activity target) {
+		Log.d(TAG, "gazeEventFromNative( " + x + " " + y + " " + press + " " + release + " " + target);
 
 		(new Handler(Looper.getMainLooper())).post(new Runnable() {
 			@Override
 			public void run() {
 				long now = SystemClock.uptimeMillis();
-				if ( press ) {
+				if (press) {
 					downTime = now;
 				}
 
@@ -640,74 +631,61 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 				pca[0] = pc;
 
 				int eventType = MotionEvent.ACTION_MOVE;
-				if ( press )
-				{
+				if (press) {
 					eventType = MotionEvent.ACTION_DOWN;
-				}
-				else if ( release )
-				{
+				} else if (release) {
 					eventType = MotionEvent.ACTION_UP;
 				}
 
-				MotionEvent ev = MotionEvent.obtain(
-						downTime, now,
-						eventType,
-						1, ppa, pca,
+				MotionEvent ev = MotionEvent.obtain(downTime, now, eventType, 1, ppa, pca,
 						0, /* meta state */
 						0, /* button state */
 						1.0f, 1.0f, /* precision */
-						10,	/* device ID */
-						0,	/* edgeFlags */
-						InputDevice.SOURCE_TOUCHSCREEN,
-						0 /* flags */ );
+						10, /* device ID */
+						0, /* edgeFlags */
+						InputDevice.SOURCE_TOUCHSCREEN, 0 /* flags */ );
 
-				Log.d(TAG, "Synthetic:" + ev );
+				Log.d(TAG, "Synthetic:" + ev);
 				Window w = target.getWindow();
 				View v = w.getDecorView();
-				v.dispatchTouchEvent( ev );
+				v.dispatchTouchEvent(ev);
 			}
-			});
+		});
 	}
 
-	public String getLocalizedString( String name ) {
-		//Log.v("VrLocale", "getLocalizedString for " + name );
+	public String getLocalizedString(String name) {
+		// Log.v("VrLocale", "getLocalizedString for " + name );
 		String outString = "";
-		int id = getResources().getIdentifier( name, "string", getPackageName() );
-		if ( id == 0 )
-		{
+		int id = getResources().getIdentifier(name, "string", getPackageName());
+		if (id == 0) {
 			// 0 is not a valid resource id
-			Log.v("VrLocale", name + " is not a valid resource id!!" );
+			Log.v("VrLocale", name + " is not a valid resource id!!");
 			return outString;
 		}
-		if ( id != 0 )
-		{
-			outString = getResources().getText( id ).toString();
-			//Log.v("VrLocale", "getLocalizedString resolved " + name + " to " + outString);
+		if (id != 0) {
+			outString = getResources().getText(id).toString();
+			// Log.v("VrLocale", "getLocalizedString resolved " + name + " to "
+			// + outString);
 		}
 		return outString;
 	}
 
-	public String getInstalledPackagePath( String packageName )
-	{
-		Log.d( TAG, "Searching installed packages for '" + packageName + "'" );
-		List<ApplicationInfo> appList = getPackageManager().getInstalledApplications( 0 );
+	public String getInstalledPackagePath(String packageName) {
+		Log.d(TAG, "Searching installed packages for '" + packageName + "'");
+		List<ApplicationInfo> appList = getPackageManager().getInstalledApplications(0);
 		String outString = "";
-		for ( ApplicationInfo info : appList )
-		{
-/*
-			if ( info.className != null && info.className.toLowerCase().contains( "oculus" ) )
-			{
-				Log.d( TAG, "info.className = '" + info.className + "'" );
-			}
-			else if ( info.sourceDir != null && info.sourceDir.toLowerCase().contains( "oculus" ) )
-			{
-				Log.d( TAG, "info.sourceDir = '" + info.sourceDir + "'" );
-			}
-*/
-			if ( ( info.className != null && info.className.toLowerCase().contains( packageName ) ) ||
-			     ( info.sourceDir != null && info.sourceDir.toLowerCase().contains( packageName ) ) )
-			{
-				Log.d( TAG, "Found installed application package " + packageName );
+		for (ApplicationInfo info : appList) {
+			/*
+			 * if ( info.className != null &&
+			 * info.className.toLowerCase().contains( "oculus" ) ) { Log.d( TAG,
+			 * "info.className = '" + info.className + "'" ); } else if (
+			 * info.sourceDir != null && info.sourceDir.toLowerCase().contains(
+			 * "oculus" ) ) { Log.d( TAG, "info.sourceDir = '" + info.sourceDir
+			 * + "'" ); }
+			 */
+			if ((info.className != null && info.className.toLowerCase().contains(packageName))
+					|| (info.sourceDir != null && info.sourceDir.toLowerCase().contains(packageName))) {
+				Log.d(TAG, "Found installed application package " + packageName);
 				outString = info.sourceDir;
 				return outString;
 			}
