@@ -19,12 +19,12 @@ static const char * versionString = "VrScene v0.1.0";
 extern "C"
 {
 
-long Java_com_vrseen_nervgear_scene_MainActivity_nativeSetAppInterface( JNIEnv *jni, jclass clazz, jobject activity,
+void Java_com_vrseen_nervgear_scene_MainActivity_nativeSetAppInterface( JNIEnv *jni, jclass clazz, jobject activity,
 	jstring fromPackageName, jstring commandString, jstring uriString )
 {
 	// This is called by the java UI thread.
 	LOG( "nativeSetAppInterface" );
-	return (new VrScene())->SetActivity( jni, clazz, activity, fromPackageName, commandString, uriString );
+    (new VrScene())->SetActivity( jni, clazz, activity, fromPackageName, commandString, uriString );
 }
 
 } // extern "C"

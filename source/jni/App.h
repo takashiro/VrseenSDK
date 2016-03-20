@@ -35,7 +35,7 @@ public:
 	// we may reuse a single C++ object for them to make repeated
 	// opening of the platformUI faster, and to not require full
 	// cleanup on destruction.
-	jlong SetActivity( JNIEnv * jni, jclass clazz, jobject activity, 
+    void SetActivity( JNIEnv * jni, jclass clazz, jobject activity,
 			jstring javaFromPackageNameString, jstring javaCommandString, 
 			jstring javaUriString );
 

@@ -64,7 +64,7 @@ namespace NervGear
 extern "C" {
 
 static jclass	GlobalActivityClass;
-long Java_com_vrseen_nervgear_video_MainActivity_nativeSetAppInterface( JNIEnv *jni, jclass clazz, jobject activity,
+void Java_com_vrseen_nervgear_video_MainActivity_nativeSetAppInterface( JNIEnv *jni, jclass clazz, jobject activity,
 		jstring fromPackageName, jstring commandString, jstring uriString )
 {
 	// This is called by the java UI thread.
@@ -72,7 +72,7 @@ long Java_com_vrseen_nervgear_video_MainActivity_nativeSetAppInterface( JNIEnv *
 	GlobalActivityClass = (jclass)jni->NewGlobalRef( clazz );
 
 	LOG( "nativeSetAppInterface");
-	return (new Oculus360Videos())->SetActivity( jni, clazz, activity, fromPackageName, commandString, uriString );
+    (new Oculus360Videos())->SetActivity( jni, clazz, activity, fromPackageName, commandString, uriString );
 }
 
 void Java_com_vrseen_nervgear_video_MainActivity_nativeFrameAvailable(JNIEnv *, jclass)

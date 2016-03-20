@@ -158,7 +158,7 @@ VrAppInterface::~VrAppInterface()
 	}
 }
 
-jlong VrAppInterface::SetActivity(JNIEnv * jni, jclass clazz, jobject activity, jstring javaFromPackageNameString,
+void VrAppInterface::SetActivity(JNIEnv * jni, jclass clazz, jobject activity, jstring javaFromPackageNameString,
         jstring javaCommandString, jstring javaUriString)
 {
 	// Make a permanent global reference for the class
@@ -200,8 +200,6 @@ jlong VrAppInterface::SetActivity(JNIEnv * jni, jclass clazz, jobject activity, 
     VByteArray utf8Intent = intentMessage.toUtf8();
     app->messageQueue().PostPrintf(utf8Intent.data());
     app->syncVrThread();
-
-	return (jlong)app;
 }
 
 void VrAppInterface::OneTimeShutdown()

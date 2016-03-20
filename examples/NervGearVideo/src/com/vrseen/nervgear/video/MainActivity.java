@@ -35,7 +35,7 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 	public static native SurfaceTexture nativePrepareNewVideo();
 	public static native void nativeFrameAvailable();
 	public static native void nativeVideoCompletion();
-	public static native long nativeSetAppInterface( VrActivity act, String fromPackageNameString, String commandString, String uriString );
+	public static native void nativeSetAppInterface( VrActivity act, String fromPackageNameString, String commandString, String uriString );
 
 	SurfaceTexture movieTexture = null;
 	Surface movieSurface = null;
@@ -75,7 +75,7 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 		String fromPackageNameString = VrLib.getPackageStringFromIntent( intent );
 		String uriString = VrLib.getUriStringFromIntent( intent );
 
-		appPtr = nativeSetAppInterface( this, fromPackageNameString, commandString, uriString );
+		nativeSetAppInterface( this, fromPackageNameString, commandString, uriString );
 
 		audioManager = (AudioManager) getSystemService( Context.AUDIO_SERVICE );
 	}

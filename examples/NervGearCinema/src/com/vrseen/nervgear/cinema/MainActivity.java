@@ -42,7 +42,7 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 
 	public static native void nativeSetVideoSize(int width, int height, int rotation, int duration );
 	public static native SurfaceTexture nativePrepareNewVideo();
-	public static native long nativeSetAppInterface( VrActivity act, String fromPackageNameString, String commandString, String uriString );
+	public static native void nativeSetAppInterface( VrActivity act, String fromPackageNameString, String commandString, String uriString );
 
 	public static final int MinimumRemainingResumeTime = 60000;	// 1 minute
 	public static final int MinimumSeekTimeForResume = 60000;	// 1 minute
@@ -74,7 +74,7 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 		String fromPackageNameString = VrLib.getPackageStringFromIntent( intent );
 		String uriString = VrLib.getUriStringFromIntent( intent );
 
-		appPtr = nativeSetAppInterface( this, fromPackageNameString, commandString, uriString );
+		nativeSetAppInterface( this, fromPackageNameString, commandString, uriString );
 
 		audioManager = ( AudioManager )getSystemService( Context.AUDIO_SERVICE );
 	}

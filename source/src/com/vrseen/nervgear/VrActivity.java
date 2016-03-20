@@ -79,7 +79,6 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 	//
 	// This is set by the subclass in onCreate
 	// appPtr = nativeSetAppInterface( this, ... );
-	public long appPtr;
 
 	// For trivial feedback sound effects
 	SoundPool soundPool;
