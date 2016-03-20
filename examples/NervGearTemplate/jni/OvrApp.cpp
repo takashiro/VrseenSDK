@@ -33,7 +33,7 @@ void OvrApp::OneTimeInit(const VString &fromPackage, const VString &launchIntent
 	VString	        SceneFile;
 	VArray<VString>   SearchPaths;
 
-    const VStandardPath &paths = app->storagePaths();
+    const VStandardPath &paths = vApp->storagePaths();
     paths.PushBackSearchPathIfValid(VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", SearchPaths);
     paths.PushBackSearchPathIfValid(VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "", SearchPaths);
     paths.PushBackSearchPathIfValid(VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", SearchPaths);
@@ -69,9 +69,9 @@ Matrix4f OvrApp::DrawEyeView( const int eye, const float fovDegrees )
 Matrix4f OvrApp::Frame(const VrFrame vrFrame)
 {
 	// Player movement
-    Scene.Frame( app->vrViewParms(), vrFrame, app->swapParms().ExternalVelocity );
+    Scene.Frame( vApp->vrViewParms(), vrFrame, vApp->swapParms().ExternalVelocity );
 
-	app->drawEyeViewsPostDistorted( Scene.CenterViewMatrix() );
+	vApp->drawEyeViewsPostDistorted( Scene.CenterViewMatrix() );
 
 	return Scene.CenterViewMatrix();
 }

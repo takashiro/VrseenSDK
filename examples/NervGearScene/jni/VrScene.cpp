@@ -50,17 +50,17 @@ void VrScene::ConfigureVrMode( ovrModeParms & modeParms )
 	modeParms.GpuLevel = 2;
 
 	// Always use 2x MSAA for now
-	app->vrParms().multisamples = 2;
+	vApp->vrParms().multisamples = 2;
 }
 
 void VrScene::OneTimeInit(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI)
 {
 	LOG( "VrScene::OneTimeInit" );
 
-    app->storagePaths().PushBackSearchPathIfValid(VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", SearchPaths);
-    app->storagePaths().PushBackSearchPathIfValid(VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "", SearchPaths);
-    app->storagePaths().PushBackSearchPathIfValid(VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", SearchPaths);
-    app->storagePaths().PushBackSearchPathIfValid(VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "", SearchPaths);
+    vApp->storagePaths().PushBackSearchPathIfValid(VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", SearchPaths);
+    vApp->storagePaths().PushBackSearchPathIfValid(VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "", SearchPaths);
+    vApp->storagePaths().PushBackSearchPathIfValid(VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", SearchPaths);
+    vApp->storagePaths().PushBackSearchPathIfValid(VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "", SearchPaths);
 
 	// Check if we already loaded the model through an intent
 	if ( !ModelLoaded )
@@ -103,7 +103,7 @@ void VrScene::LoadScene( const VString &path )
 	}
 
 	MaterialParms materialParms;
-	materialParms.UseSrgbTextureFormats = ( app->vrParms().colorFormat == COLOR_8888_sRGB );
+	materialParms.UseSrgbTextureFormats = ( vApp->vrParms().colorFormat == COLOR_8888_sRGB );
 	LOG( "VrScene::LoadScene loading %s", SceneFile.toCString() );
     Scene.LoadWorldModel( SceneFile, materialParms );
 	ModelLoaded = true; 
@@ -140,7 +140,7 @@ void VrScene::ReloadScene()
 	const float	yaw = Scene.YawOffset;
 
 	MaterialParms materialParms;
-	materialParms.UseSrgbTextureFormats = ( app->vrParms().colorFormat == COLOR_8888_sRGB );
+	materialParms.UseSrgbTextureFormats = ( vApp->vrParms().colorFormat == COLOR_8888_sRGB );
     Scene.LoadWorldModel( SceneFile, materialParms );
 
 	Scene.YawOffset = yaw;
@@ -167,10 +167,10 @@ Matrix4f VrScene::DrawEyeView( const int eye, const float fovDegrees )
 Matrix4f VrScene::Frame( const VrFrame vrFrame )
 {
 	// Get the current vrParms for the buffer resolution.
-	const EyeParms vrParms = app->eyeParms();
+	const EyeParms vrParms = vApp->eyeParms();
 
 	// Player movement
-	Scene.Frame( app->vrViewParms(), vrFrame, app->swapParms().ExternalVelocity );
+	Scene.Frame( vApp->vrViewParms(), vrFrame, vApp->swapParms().ExternalVelocity );
 
 	// Make the test object hop up and down
 	{
@@ -181,7 +181,7 @@ Matrix4f VrScene::Frame( const VrFrame vrFrame )
 
 	// these should probably use OnKeyEvent() now so that the menu can just consume the events
 	// if it's open, rather than having an explicit check here.
-	if ( !app->isGuiOpen() )
+	if ( !vApp->isGuiOpen() )
 	{
 		//-------------------------------------------
 		// Check for button actions
@@ -190,7 +190,7 @@ Matrix4f VrScene::Frame( const VrFrame vrFrame )
 		{
 			if ( vrFrame.Input.buttonPressed & BUTTON_SELECT )
 			{
-				app->createToast( "%s", versionString );
+				vApp->createToast( "%s", versionString );
 			}
 
 			// Switch buffer parameters for testing
@@ -203,8 +203,8 @@ Matrix4f VrScene::Frame( const VrFrame vrFrame )
 					case 4: newParms.multisamples = 1; break;
 					default: newParms.multisamples = 2; break;
 				}
-				app->setEyeParms( newParms );
-				app->createToast( "multisamples: %i", newParms.multisamples );
+				vApp->setEyeParms( newParms );
+				vApp->createToast( "multisamples: %i", newParms.multisamples );
 			}
 		}
 	}
@@ -213,7 +213,7 @@ Matrix4f VrScene::Frame( const VrFrame vrFrame )
 	// Render the two eye views, each to a separate texture, and TimeWarp
 	// to the screen.
 	//-------------------------------------------
-	app->drawEyeViewsPostDistorted( Scene.CenterViewMatrix() );
+	vApp->drawEyeViewsPostDistorted( Scene.CenterViewMatrix() );
 
 	return Scene.CenterViewMatrix();
 }

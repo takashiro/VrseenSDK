@@ -33,7 +33,7 @@ void ResumeMovieView::OneTimeInit( const VString &launchIntent )
 
 	const double start = ovr_GetTimeInSeconds();
 
-	CreateMenu( Cinema.app, Cinema.app->vrMenuMgr(), Cinema.app->defaultFont() );
+	CreateMenu( vApp, vApp->vrMenuMgr(), vApp->defaultFont() );
 
 	LOG( "ResumeMovieView::OneTimeInit: %3.1f seconds", ovr_GetTimeInSeconds() - start );
 }
@@ -49,12 +49,12 @@ void ResumeMovieView::OnOpen()
 
 	Cinema.sceneMgr.LightsOn( 0.5f );
 
-	Cinema.app->swapParms().WarpProgram = WP_CHROMATIC;
+	vApp->swapParms().WarpProgram = WP_CHROMATIC;
 
-	SetPosition(Cinema.app->vrMenuMgr(), Cinema.sceneMgr.Scene.FootPos);
+	SetPosition(vApp->vrMenuMgr(), Cinema.sceneMgr.Scene.FootPos);
 
 	Cinema.sceneMgr.ClearGazeCursorGhosts();
-    Cinema.app->guiSys().openMenu( Cinema.app, Cinema.app->gazeCursor(), "ResumeMoviePrompt" );
+    vApp->guiSys().openMenu( vApp, vApp->gazeCursor(), "ResumeMoviePrompt" );
 
 	CurViewState = VIEWSTATE_OPEN;
 }
@@ -63,7 +63,7 @@ void ResumeMovieView::OnClose()
 {
 	LOG( "OnClose" );
 
-    Cinema.app->guiSys().closeMenu( Cinema.app, Menu, false );
+    vApp->guiSys().closeMenu( vApp, Menu, false );
 
 	CurViewState = VIEWSTATE_CLOSED;
 }
@@ -212,7 +212,7 @@ void ResumeMovieView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFont 
         resumeMovieComponent->Icon = menuMgr.toObject( iconHandle );
 	}
 
-    Cinema.app->guiSys().addMenu( Menu );
+    vApp->guiSys().addMenu( Menu );
 }
 
 void ResumeMovieView::ResumeChoice( int itemNum )
@@ -230,9 +230,9 @@ void ResumeMovieView::ResumeChoice( int itemNum )
 Matrix4f ResumeMovieView::Frame( const VrFrame & vrFrame )
 {
 	// We want 4x MSAA in the selection screen
-	EyeParms eyeParms = Cinema.app->eyeParms();
+	EyeParms eyeParms = vApp->eyeParms();
 	eyeParms.multisamples = 4;
-	Cinema.app->setEyeParms( eyeParms );
+	vApp->setEyeParms( eyeParms );
 
     if ( Menu->isClosedOrClosing() && !Menu->isOpenOrOpening() )
 	{

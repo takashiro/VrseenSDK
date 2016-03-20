@@ -57,11 +57,11 @@ void CinemaApp::OneTimeInit(const VString &fromPackage, const VString &launchInt
 
 	startTime = ovr_GetTimeInSeconds();
 
-	app->vrParms().colorFormat = COLOR_8888;
+    vApp->vrParms().colorFormat = COLOR_8888;
 	//app->GetVrParms().depthFormat = DEPTH_16;
-	app->vrParms().multisamples = 2;
+    vApp->vrParms().multisamples = 2;
 
-	Native::OneTimeInit( app, ActivityClass );
+    Native::OneTimeInit( vApp, ActivityClass );
 	CinemaStrings::OneTimeInit( *this );
     shaderMgr.OneTimeInit( launchIntentURI );
 	modelMgr.OneTimeInit( launchIntentURI );
@@ -118,7 +118,7 @@ VString CinemaApp::externalSDCardDir(const VString &dir) const
 
 VString CinemaApp::externalCacheDir(const VString &dir) const
 {
-    return Native::GetExternalCacheDirectory(app) + '/' + dir;
+    return Native::GetExternalCacheDirectory(vApp) + '/' + dir;
 }
 
 bool CinemaApp::isExternalSDCardDir(const VString &dir) const
@@ -212,7 +212,7 @@ void CinemaApp::startMoviePlayback()
 	if ( m_currentMovie != NULL )
 	{
 		m_movieFinishedPlaying = false;
-        Native::StartMovie( app, m_currentMovie->Filename.toCString(), m_shouldResumeMovie, m_currentMovie->IsEncrypted, false );
+        Native::StartMovie( vApp, m_currentMovie->Filename.toCString(), m_shouldResumeMovie, m_currentMovie->IsEncrypted, false );
 		m_shouldResumeMovie = false;
 	}
 }
@@ -236,7 +236,7 @@ void CinemaApp::playMovieFromBeginning()
 void CinemaApp::resumeOrRestartMovie()
 {
 	LOG( "StartMovie");
-    if ( Native::CheckForMovieResume( app, m_currentMovie->Filename.toCString() ) )
+    if ( Native::CheckForMovieResume( vApp, m_currentMovie->Filename.toCString() ) )
 	{
 		LOG( "Open ResumeMovieMenu");
 		m_viewMgr.openView( m_resumeMovieMenu );
@@ -315,7 +315,7 @@ void CinemaApp::ConfigureVrMode(ovrModeParms &modeParms)
 	modeParms.AllowPowerSave = true;
 
 	// Always use 2x MSAA for now
-	app->vrParms().multisamples = 2;
+    vApp->vrParms().multisamples = 2;
 }
 
 /*

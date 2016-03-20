@@ -1698,7 +1698,6 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
 
 	// Hook the App and AppInterface together
     d->appInterface = activity;
-    d->appInterface->app = this;
 
 	// Load user profile data relevant to rendering
     VUserSettings config;

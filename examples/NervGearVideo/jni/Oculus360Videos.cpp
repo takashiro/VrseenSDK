@@ -159,9 +159,9 @@ void Oculus360Videos::OneTimeInit(const VString &fromPackage, const VString &lau
 
 	RetailMode = FileExists( "/sdcard/RetailMedia" );
 
-	app->vrParms().colorFormat = COLOR_8888;
-	app->vrParms().depthFormat = DEPTH_16;
-	app->vrParms().multisamples = 2;
+	vApp->vrParms().colorFormat = COLOR_8888;
+	vApp->vrParms().depthFormat = DEPTH_16;
+	vApp->vrParms().multisamples = 2;
 
 	PanoramaProgram.initShader(
 		"uniform highp mat4 Mvpm;\n"
@@ -272,15 +272,15 @@ void Oculus360Videos::OneTimeInit(const VString &fromPackage, const VString &lau
 
 	// Stay exactly at the origin, so the panorama globe is equidistant
 	// Don't clear the head model neck length, or swipe view panels feel wrong.
-	VrViewParms viewParms = app->vrViewParms();
+	VrViewParms viewParms = vApp->vrViewParms();
 	viewParms.EyeHeight = 0.0f;
-	app->setVrViewParms( viewParms );
+	vApp->setVrViewParms( viewParms );
 
 	// Optimize for 16 bit depth in a modest theater size
 	Scene.Znear = 0.1f;
 	Scene.Zfar = 200.0f;
 	MaterialParms materialParms;
-	materialParms.UseSrgbTextureFormats = ( app->vrParms().colorFormat == COLOR_8888_sRGB );
+	materialParms.UseSrgbTextureFormats = ( vApp->vrParms().colorFormat == COLOR_8888_sRGB );
 
 
     const VApkFile &apk = VApkFile::CurrentApkFile();
@@ -298,7 +298,7 @@ void Oculus360Videos::OneTimeInit(const VString &fromPackage, const VString &lau
 		FAIL( "Oculus360Photos::OneTimeInit failed to create MetaData" );
 	}
 
-    const VStandardPath &storagePaths = app->storagePaths();
+    const VStandardPath &storagePaths = vApp->storagePaths();
     storagePaths.PushBackSearchPathIfValid( VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", SearchPaths );
     storagePaths.PushBackSearchPathIfValid( VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "", SearchPaths );
     storagePaths.PushBackSearchPathIfValid( VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", SearchPaths );
@@ -320,28 +320,28 @@ void Oculus360Videos::OneTimeInit(const VString &fromPackage, const VString &lau
 	MetaData->initFromDirectory( videosDirectory, SearchPaths, fileExtensions );
 
 	VString localizedAppName;
-	VrLocale::GetString( app->vrJni(), app->javaObject(), videosLabel, videosLabel, localizedAppName );
+	VrLocale::GetString( vApp->vrJni(), vApp->javaObject(), videosLabel, videosLabel, localizedAppName );
     MetaData->renameCategory(VPath(videosDirectory).baseName(), localizedAppName);
 
 	// Start building the VideoMenu
-	VideoMenu = ( OvrVideoMenu * )app->guiSys().getMenu( OvrVideoMenu::MENU_NAME );
+	VideoMenu = ( OvrVideoMenu * )vApp->guiSys().getMenu( OvrVideoMenu::MENU_NAME );
 	if ( VideoMenu == NULL )
 	{
 		VideoMenu = OvrVideoMenu::Create(
-			app, this, app->vrMenuMgr(), app->defaultFont(), *MetaData, 1.0f, 2.0f );
+			vApp, this, vApp->vrMenuMgr(), vApp->defaultFont(), *MetaData, 1.0f, 2.0f );
 		OVR_ASSERT( VideoMenu );
 
-		app->guiSys().addMenu( VideoMenu );
+		vApp->guiSys().addMenu( VideoMenu );
 	}
 
 	VideoMenu->setFlags( VRMenuFlags_t( VRMENU_FLAG_PLACE_ON_HORIZON ) | VRMENU_FLAG_SHORT_PRESS_HANDLED_BY_APP );
 
 	// Start building the FolderView
-	Browser = ( VideoBrowser * )app->guiSys().getMenu( OvrFolderBrowser::MENU_NAME );
+	Browser = ( VideoBrowser * )vApp->guiSys().getMenu( OvrFolderBrowser::MENU_NAME );
 	if ( Browser == NULL )
 	{
 		Browser = VideoBrowser::Create(
-			app,
+			vApp,
 			*MetaData,
 			256, 20.0f,
 			256, 200.0f,
@@ -349,7 +349,7 @@ void Oculus360Videos::OneTimeInit(const VString &fromPackage, const VString &lau
 			5.4f );
 		OVR_ASSERT( Browser );
 
-		app->guiSys().addMenu( Browser );
+		vApp->guiSys().addMenu( Browser );
 	}
 
 	Browser->setFlags( VRMenuFlags_t( VRMENU_FLAG_PLACE_ON_HORIZON ) | VRMENU_FLAG_BACK_KEY_EXITS_APP );
@@ -409,7 +409,7 @@ void Oculus360Videos::ConfigureVrMode( ovrModeParms & modeParms )
 	modeParms.AllowPowerSave = true;
 
 	// All geometry is blended, so save power with no MSAA
-	app->vrParms().multisamples = 1;
+	vApp->vrParms().multisamples = 1;
 }
 
 bool Oculus360Videos::onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType )
@@ -445,7 +445,7 @@ void Oculus360Videos::Command( const char * msg )
 	if ( MatchesHead( "newVideo ", msg ) )
 	{
 		delete MovieTexture;
-		MovieTexture = new SurfaceTexture( app->vrJni() );
+		MovieTexture = new SurfaceTexture( vApp->vrJni() );
 		LOG( "RC_NEW_VIDEO texId %i", MovieTexture->textureId );
 
 		VMessageQueue	* receiver;
@@ -488,12 +488,12 @@ void Oculus360Videos::Command( const char * msg )
 	{
 		// FIXME: this needs to do some parameter magic to fix xliff tags
 		VString message;
-		VrLocale::GetString( app->vrJni(), app->javaObject(), "@string/playback_failed", "@string/playback_failed", message );
+		VrLocale::GetString( vApp->vrJni(), vApp->javaObject(), "@string/playback_failed", "@string/playback_failed", message );
         VString fileName = VPath(ActiveVideo->url).fileName();
         message = VrLocale::GetXliffFormattedString( message, fileName.toCString() );
-		BitmapFont & font = app->defaultFont();
+		BitmapFont & font = vApp->defaultFont();
 		font.WordWrapText( message, 1.0f );
-        app->showInfoText( 4.5f, message.toCString() );
+        vApp->showInfoText( 4.5f, message.toCString() );
 		SetMenuState( MENU_BROWSER );
 		return;
 	}
@@ -662,14 +662,14 @@ float Fade( double now, double start, double length )
 
 bool Oculus360Videos::IsVideoPlaying() const
 {
-	jmethodID methodId = app->vrJni()->GetMethodID( MainActivityClass, "isPlaying", "()Z" );
+	jmethodID methodId = vApp->vrJni()->GetMethodID( MainActivityClass, "isPlaying", "()Z" );
 	if ( !methodId )
 	{
 		LOG( "Couldn't find isPlaying methodID" );
 		return false;
 	}
 
-	bool isPlaying = app->vrJni()->CallBooleanMethod( app->javaObject(), methodId );
+	bool isPlaying = vApp->vrJni()->CallBooleanMethod( vApp->javaObject(), methodId );
 	return isPlaying;
 }
 
@@ -677,7 +677,7 @@ void Oculus360Videos::PauseVideo( bool const force )
 {
 	LOG( "PauseVideo()" );
 
-	jmethodID methodId = app->vrJni()->GetMethodID( MainActivityClass,
+	jmethodID methodId = vApp->vrJni()->GetMethodID( MainActivityClass,
 		"pauseMovie", "()V" );
 	if ( !methodId )
 	{
@@ -685,14 +685,14 @@ void Oculus360Videos::PauseVideo( bool const force )
 		return;
 	}
 
-	app->vrJni()->CallVoidMethod( app->javaObject(), methodId );
+	vApp->vrJni()->CallVoidMethod( vApp->javaObject(), methodId );
 }
 
 void Oculus360Videos::StopVideo()
 {
 	LOG( "StopVideo()" );
 
-	jmethodID methodId = app->vrJni()->GetMethodID( MainActivityClass,
+	jmethodID methodId = vApp->vrJni()->GetMethodID( MainActivityClass,
 		"stopMovie", "()V" );
 	if ( !methodId )
 	{
@@ -700,7 +700,7 @@ void Oculus360Videos::StopVideo()
 		return;
 	}
 
-	app->vrJni()->CallVoidMethod( app->javaObject(), methodId );
+	vApp->vrJni()->CallVoidMethod( vApp->javaObject(), methodId );
 
 	delete MovieTexture;
 	MovieTexture = NULL;
@@ -710,9 +710,9 @@ void Oculus360Videos::ResumeVideo()
 {
 	LOG( "ResumeVideo()" );
 
-	app->guiSys().closeMenu( app, Browser, false );
+	vApp->guiSys().closeMenu( vApp, Browser, false );
 
-	jmethodID methodId = app->vrJni()->GetMethodID( MainActivityClass,
+	jmethodID methodId = vApp->vrJni()->GetMethodID( MainActivityClass,
 		"resumeMovie", "()V" );
 	if ( !methodId )
 	{
@@ -720,7 +720,7 @@ void Oculus360Videos::ResumeVideo()
 		return;
 	}
 
-	app->vrJni()->CallVoidMethod( app->javaObject(), methodId );
+	vApp->vrJni()->CallVoidMethod( vApp->javaObject(), methodId );
 }
 
 void Oculus360Videos::StartVideo( const double nowTime )
@@ -730,9 +730,9 @@ void Oculus360Videos::StartVideo( const double nowTime )
 		SetMenuState( MENU_VIDEO_LOADING );
 		VideoName = ActiveVideo->url;
 		LOG( "StartVideo( %s )", ActiveVideo->url.toCString() );
-		app->playSound( "sv_select" );
+		vApp->playSound( "sv_select" );
 
-		jmethodID startMovieMethodId = app->vrJni()->GetMethodID( MainActivityClass,
+		jmethodID startMovieMethodId = vApp->vrJni()->GetMethodID( MainActivityClass,
 			"startMovieFromNative", "(Ljava/lang/String;)V" );
 
 		if ( !startMovieMethodId )
@@ -742,9 +742,9 @@ void Oculus360Videos::StartVideo( const double nowTime )
 		}
 
 		LOG( "moviePath = '%s'", ActiveVideo->url.toCString() );
-        jstring jstr = app->vrJni()->NewStringUTF( ActiveVideo->url.toCString() );
-		app->vrJni()->CallVoidMethod( app->javaObject(), startMovieMethodId, jstr );
-		app->vrJni()->DeleteLocalRef( jstr );
+        jstring jstr = vApp->vrJni()->NewStringUTF( ActiveVideo->url.toCString() );
+		vApp->vrJni()->CallVoidMethod( vApp->javaObject(), startMovieMethodId, jstr );
+		vApp->vrJni()->DeleteLocalRef( jstr );
 
 		LOG( "StartVideo done" );
 	}
@@ -754,7 +754,7 @@ void Oculus360Videos::SeekTo( const int seekPos )
 {
 	if ( ActiveVideo )
 	{
-		jmethodID seekToMethodId = app->vrJni()->GetMethodID( MainActivityClass,
+		jmethodID seekToMethodId = vApp->vrJni()->GetMethodID( MainActivityClass,
 			"seekToFromNative", "(I)V" );
 
 		if ( !seekToMethodId )
@@ -763,7 +763,7 @@ void Oculus360Videos::SeekTo( const int seekPos )
 			return;
 		}
 
-		app->vrJni()->CallVoidMethod( app->javaObject(), seekToMethodId, seekPos );
+		vApp->vrJni()->CallVoidMethod( vApp->javaObject(), seekToMethodId, seekPos );
 
 		LOG( "SeekTo %i done", seekPos );
 	}
@@ -781,8 +781,8 @@ void Oculus360Videos::SetMenuState( const OvrMenuState state )
 	case MENU_BROWSER:
 		Fader.forceFinish();
 		Fader.reset();
-		app->guiSys().closeMenu( app, VideoMenu, false );
-		app->guiSys().openMenu( app, app->gazeCursor(), OvrFolderBrowser::MENU_NAME );
+		vApp->guiSys().closeMenu( vApp, VideoMenu, false );
+		vApp->guiSys().openMenu( vApp, vApp->gazeCursor(), OvrFolderBrowser::MENU_NAME );
 		if ( ActiveVideo )
 		{
 			StopVideo();
@@ -795,8 +795,8 @@ void Oculus360Videos::SetMenuState( const OvrMenuState state )
 			delete MovieTexture;
 			MovieTexture = NULL;
 		}
-		app->guiSys().closeMenu( app, Browser, false );
-		app->guiSys().closeMenu( app, VideoMenu, false );
+		vApp->guiSys().closeMenu( vApp, Browser, false );
+		vApp->guiSys().closeMenu( vApp, VideoMenu, false );
 		Fader.startFadeOut();
 		break;
 	case MENU_VIDEO_READY:
@@ -841,7 +841,7 @@ Matrix4f Oculus360Videos::Frame( const VrFrame vrFrame )
 	VrFrame vrFrameWithoutMove = vrFrame;
 	vrFrameWithoutMove.Input.sticks[ 0 ][ 0 ] = 0.0f;
 	vrFrameWithoutMove.Input.sticks[ 0 ][ 1 ] = 0.0f;
-	Scene.Frame( app->vrViewParms(), vrFrameWithoutMove, app->swapParms().ExternalVelocity );
+	Scene.Frame( vApp->vrViewParms(), vrFrameWithoutMove, vApp->swapParms().ExternalVelocity );
 
 	// Check for new video frames
 	// latch the latest movie frame to the texture.
@@ -856,16 +856,16 @@ Matrix4f Oculus360Videos::Frame( const VrFrame vrFrame )
 	{
 		if ( vrFrame.Input.buttonReleased & ( BUTTON_TOUCH | BUTTON_A ) )
 		{
-			app->playSound( "sv_release_active" );
+			vApp->playSound( "sv_release_active" );
 			if ( IsVideoPlaying() )
 			{
-				app->guiSys().openMenu( app, app->gazeCursor(), OvrVideoMenu::MENU_NAME );
-				VideoMenu->repositionMenu( app );
+				vApp->guiSys().openMenu( vApp, vApp->gazeCursor(), OvrVideoMenu::MENU_NAME );
+				VideoMenu->repositionMenu( vApp );
 				PauseVideo( false );
 			}
 			else
 			{
-				app->guiSys().closeMenu( app, VideoMenu, false );
+				vApp->guiSys().closeMenu( vApp, VideoMenu, false );
 				ResumeVideo();
 			}
 		}
@@ -881,15 +881,15 @@ Matrix4f Oculus360Videos::Frame( const VrFrame vrFrame )
 		( MovieTexture != NULL ) )
 	{
 		SetMenuState( MENU_VIDEO_PLAYING );
-		app->recenterYaw( true );
+		vApp->recenterYaw( true );
 	}
 	CurrentFadeLevel = Fader.finalAlpha();
 
 	// We could disable the srgb convert on the FBO. but this is easier
-	app->vrParms().colorFormat = UseSrgb ? COLOR_8888_sRGB : COLOR_8888;
+	vApp->vrParms().colorFormat = UseSrgb ? COLOR_8888_sRGB : COLOR_8888;
 
 	// Draw both eyes
-	app->drawEyeViewsPostDistorted( Scene.CenterViewMatrix() );
+	vApp->drawEyeViewsPostDistorted( Scene.CenterViewMatrix() );
 
 	return Scene.CenterViewMatrix();
 }
@@ -899,8 +899,8 @@ void Oculus360Videos::OnResume()
 	LOG( "Oculus360Videos::OnResume" );
 	if ( VideoWasPlayingWhenPaused )
 	{
-		app->guiSys().openMenu( app, app->gazeCursor(), OvrVideoMenu::MENU_NAME );
-		VideoMenu->repositionMenu( app );
+		vApp->guiSys().openMenu( vApp, vApp->gazeCursor(), OvrVideoMenu::MENU_NAME );
+		VideoMenu->repositionMenu( vApp );
 		PauseVideo( false );
 	}
 }

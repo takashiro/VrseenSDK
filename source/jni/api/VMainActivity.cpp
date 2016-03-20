@@ -38,8 +38,7 @@ struct VMainActivity::Private
 };
 
 VMainActivity::VMainActivity(JNIEnv *jni, jobject activityObject)
-    : app(nullptr)
-    , ActivityClass(nullptr)
+    : ActivityClass(nullptr)
     , d(new Private)
 {
     d->jni = jni;
@@ -119,7 +118,7 @@ void VMainActivity::SetActivity(JNIEnv * jni, jclass clazz, jobject activity, js
     VString utfUriString = JniUtils::Convert(jni, javaUriString);
     vInfo("VMainActivity::SetActivity:" << utfFromPackageString << utfJsonString << utfUriString);
 
-    if (app == nullptr)
+    if (vApp == nullptr)
     {	// First time initialization
         // This will set the VrAppInterface app pointer directly,
         // so it is set when OneTimeInit is called.
@@ -127,25 +126,25 @@ void VMainActivity::SetActivity(JNIEnv * jni, jclass clazz, jobject activity, js
         new App(jni, activity, this);
 
         // Start the VrThread and wait for it to have initialized.
-        app->startVrThread();
-        app->syncVrThread();
+        vApp->startVrThread();
+        vApp->syncVrThread();
     }
     else
     {	// Just update the activity object.
         vInfo("Update AppLocal");
-        if (app->javaObject() != nullptr)
+        if (vApp->javaObject() != nullptr)
         {
-            jni->DeleteGlobalRef(app->javaObject());
+            jni->DeleteGlobalRef(vApp->javaObject());
         }
-        app->javaObject() = jni->NewGlobalRef(activity);
-        app->VrModeParms.ActivityObject = app->javaObject();
+        vApp->javaObject() = jni->NewGlobalRef(activity);
+        vApp->VrModeParms.ActivityObject = vApp->javaObject();
     }
 
     // Send the intent and wait for it to complete.
     VString intentMessage = ComposeIntentMessage(utfFromPackageString, utfUriString, utfJsonString);
     VByteArray utf8Intent = intentMessage.toUtf8();
-    app->messageQueue().PostPrintf(utf8Intent.data());
-    app->syncVrThread();
+    vApp->messageQueue().PostPrintf(utf8Intent.data());
+    vApp->syncVrThread();
 }
 
 void VMainActivity::OneTimeShutdown()

@@ -44,7 +44,6 @@ public:
     virtual bool wantSrgbFramebuffer() const;
     virtual bool GetWantProtectedFramebuffer() const;
 
-    App *	app;
     jclass	ActivityClass;
 
 private:

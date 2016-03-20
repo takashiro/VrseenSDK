@@ -179,7 +179,7 @@ SceneDef * ModelManager::LoadScene( const char *sceneFilename, bool useDynamicPr
 
 	// This may be called during init, before the FramebufferIsSrgb is set,
 	// so use WantsSrgbFramebuffer instead.
-    materialParms.UseSrgbTextureFormats = Cinema.app->appInterface()->wantSrgbFramebuffer();
+    materialParms.UseSrgbTextureFormats = vApp->appInterface()->wantSrgbFramebuffer();
 
 	// Improve the texture quality with anisotropic filtering.
 	materialParms.EnableDiffuseAniso = true;

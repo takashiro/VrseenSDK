@@ -254,7 +254,7 @@ void MovieManager::LoadPoster( MovieDef *movie )
 		else
 		{
 			// no thumbnail found, so create it.  if it's on an external sdcard, posterFilename will contain the new filename at this point and will load it from the cache
-            if ( ( movie->Poster == 0 ) && Native::CreateVideoThumbnail( Cinema.app, movie->Filename.toCString(), posterFilename.toCString(), PosterWidth, PosterHeight ) )
+            if ( ( movie->Poster == 0 ) && Native::CreateVideoThumbnail( vApp, movie->Filename.toCString(), posterFilename.toCString(), PosterWidth, PosterHeight ) )
 			{
                 movie->Poster = LoadTextureFromBuffer( posterFilename.toCString(), MemBufferFile( posterFilename.toCString() ),
 					TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), movie->PosterWidth, movie->PosterHeight );

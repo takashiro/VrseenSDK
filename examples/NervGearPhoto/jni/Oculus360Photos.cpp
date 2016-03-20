@@ -213,15 +213,15 @@ void Oculus360Photos::OneTimeInit(const VString &fromPackage, const VString &lau
 
 	// Stay exactly at the origin, so the panorama globe is equidistant
 	// Don't clear the head model neck length, or swipe view panels feel wrong.
-	VrViewParms viewParms = app->vrViewParms();
+	VrViewParms viewParms = vApp->vrViewParms();
 	viewParms.EyeHeight = 0.0f;
-	app->setVrViewParms( viewParms );
+	vApp->setVrViewParms( viewParms );
 
 	// Optimize for 16 bit depth in a modest globe size
 	m_scene.Znear = 0.1f;
 	m_scene.Zfar = 200.0f;
 
-	InitFileQueue( app, this );
+	InitFileQueue( vApp, this );
 
 #ifdef ENABLE_MENU
 	// meta file used by OvrMetaData
@@ -230,16 +230,16 @@ void Oculus360Photos::OneTimeInit(const VString &fromPackage, const VString &lau
 
 	// Get package name
 	const char * packageName = NULL;
-	JNIEnv * jni = app->vrJni();
+	JNIEnv * jni = vApp->vrJni();
 	jstring result;
-	jmethodID getPackageNameId = jni->GetMethodID( app->vrActivityClass(), "getPackageName", "()Ljava/lang/String;" );
+	jmethodID getPackageNameId = jni->GetMethodID( vApp->vrActivityClass(), "getPackageName", "()Ljava/lang/String;" );
 	if ( getPackageNameId != NULL )
 	{
-		result = ( jstring )jni->CallObjectMethod( app->javaObject(), getPackageNameId );
+		result = ( jstring )jni->CallObjectMethod( vApp->javaObject(), getPackageNameId );
 		if ( !jni->ExceptionOccurred() )
 		{
 			jboolean isCopy;
-			packageName = app->vrJni()->GetStringUTFChars( result, &isCopy );
+			packageName = vApp->vrJni()->GetStringUTFChars( result, &isCopy );
 		}
 	}
 	else
@@ -265,7 +265,7 @@ void Oculus360Photos::OneTimeInit(const VString &fromPackage, const VString &lau
 	fileExtensions.badExtensions.append( "_nx.jpg" );
 	fileExtensions.badExtensions.append( "_ny.jpg" );
 
-    const VStandardPath &storagePaths = app->storagePaths();
+    const VStandardPath &storagePaths = vApp->storagePaths();
     storagePaths.PushBackSearchPathIfValid( VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", m_searchPaths );
     storagePaths.PushBackSearchPathIfValid( VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "", m_searchPaths );
     storagePaths.PushBackSearchPathIfValid( VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", m_searchPaths );
@@ -280,24 +280,24 @@ void Oculus360Photos::OneTimeInit(const VString &fromPackage, const VString &lau
 	jni->ReleaseStringUTFChars( result, packageName );
 
 	// Start building the PanoMenu
-	m_panoMenu = ( OvrPanoMenu * )app->guiSys().getMenu( OvrPanoMenu::MENU_NAME );
+	m_panoMenu = ( OvrPanoMenu * )vApp->guiSys().getMenu( OvrPanoMenu::MENU_NAME );
 	if ( m_panoMenu == NULL )
 	{
 		m_panoMenu = OvrPanoMenu::Create(
-			app, this, app->vrMenuMgr(), app->defaultFont(), *m_metaData, 2.0f, 2.0f );
+			vApp, this, vApp->vrMenuMgr(), vApp->defaultFont(), *m_metaData, 2.0f, 2.0f );
 		OVR_ASSERT( m_panoMenu );
 
-		app->guiSys().addMenu( m_panoMenu );
+		vApp->guiSys().addMenu( m_panoMenu );
 	}
 
 	m_panoMenu->setFlags( VRMenuFlags_t( VRMENU_FLAG_PLACE_ON_HORIZON ) | VRMENU_FLAG_SHORT_PRESS_HANDLED_BY_APP );
 
 	// Start building the FolderView
-	m_browser = ( PanoBrowser * )app->guiSys().getMenu( OvrFolderBrowser::MENU_NAME );
+	m_browser = ( PanoBrowser * )vApp->guiSys().getMenu( OvrFolderBrowser::MENU_NAME );
 	if ( m_browser == NULL )
 	{
 		m_browser = PanoBrowser::Create(
-			app,
+			vApp,
 			*m_metaData,
 			256, 20.0f,
 			160, 180.0f,
@@ -305,7 +305,7 @@ void Oculus360Photos::OneTimeInit(const VString &fromPackage, const VString &lau
 			5.3f );
 		OVR_ASSERT( m_browser );
 
-		app->guiSys().addMenu( m_browser );
+		vApp->guiSys().addMenu( m_browser );
 	}
 
 	m_browser->setFlags( VRMenuFlags_t( VRMENU_FLAG_PLACE_ON_HORIZON ) | VRMENU_FLAG_BACK_KEY_EXITS_APP );
@@ -500,7 +500,7 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
 				LOG( "BackgroundGLLoadThread eglClientWaitSyncKHR returned EGL_FALSE" );
 			}
 
-			photos->app->messageQueue( ).PostPrintf( "%s", "loaded pano" );
+            vApp->messageQueue( ).PostPrintf( "%s", "loaded pano" );
 
 			const double end = ovr_GetTimeInSeconds();
 			LOG( "%4.2fs to load %ix%i res pano map", end - start, width, height );
@@ -532,7 +532,7 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
 				LOG( "BackgroundGLLoadThread eglClientWaitSyncKHR returned EGL_FALSE" );
 			}
 
-			photos->app->messageQueue( ).PostPrintf( "%s", "loaded cube" );
+            vApp->messageQueue( ).PostPrintf( "%s", "loaded cube" );
 
 			const double end = ovr_GetTimeInSeconds();
 			LOG( "%4.2fs to load %i res cube map", end - start, size );
@@ -559,7 +559,7 @@ void Oculus360Photos::Command( const char * msg )
 		m_backgroundPanoTexData.Swap();
 		m_currentPanoIsCubeMap = false;
 		SetMenuState( MENU_PANO_FADEIN );
-		app->gazeCursor().ClearGhosts();
+		vApp->gazeCursor().ClearGhosts();
 		return;
 	}
 
@@ -568,7 +568,7 @@ void Oculus360Photos::Command( const char * msg )
 		m_backgroundCubeTexData.Swap();
 		m_currentPanoIsCubeMap = true;
 		SetMenuState( MENU_PANO_FADEIN );
-		app->gazeCursor( ).ClearGhosts( );
+		vApp->gazeCursor( ).ClearGhosts( );
 		return;
 	}
 }
@@ -590,10 +590,10 @@ void Oculus360Photos::ConfigureVrMode( ovrModeParms & modeParms ) {
 	modeParms.AllowPowerSave = true;
 
 	// No hard edged geometry, so no need for MSAA
-	app->vrParms().multisamples = 1;
+	vApp->vrParms().multisamples = 1;
 
-	app->vrParms().colorFormat = COLOR_8888;
-	app->vrParms().depthFormat = DEPTH_16;
+	vApp->vrParms().colorFormat = COLOR_8888;
+	vApp->vrParms().depthFormat = DEPTH_16;
 }
 
 bool Oculus360Photos::onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType )
@@ -610,13 +610,13 @@ bool Oculus360Photos::onKeyEvent( const int keyCode, const KeyState::eKeyEventTy
 		// hide attribution menu
 		if ( m_panoMenu->isOpen() )
 		{
-			app->guiSys().closeMenu( app, m_panoMenu, false );
+			vApp->guiSys().closeMenu( vApp, m_panoMenu, false );
 		}
 
 		// if the menu is closed, open it
 		if ( m_browser->isClosedOrClosing() )
 		{
-			app->guiSys().openMenu( app, app->gazeCursor(), OvrFolderBrowser::MENU_NAME );
+			vApp->guiSys().openMenu( vApp, vApp->gazeCursor(), OvrFolderBrowser::MENU_NAME );
 			return true;
 		}
 
@@ -753,24 +753,24 @@ Matrix4f Oculus360Photos::DrawEyeView( const int eye, const float fovDegrees )
 		}
 		glBindTexture( GL_TEXTURE_CUBE_MAP, 0 );
 
-		app->swapParms().WarpOptions = ( m_useSrgb ? 0 : SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER );
-		app->swapParms( ).Images[ eye ][ 1 ].TexId = texId;
-		app->swapParms().Images[ eye ][ 1 ].TexCoordsFromTanAngles = m;
-		app->swapParms().Images[ eye ][ 1 ].Pose = m_frameInput.PoseState;
-		app->swapParms().WarpProgram = WP_CHROMATIC_MASKED_CUBE;
+		vApp->swapParms().WarpOptions = ( m_useSrgb ? 0 : SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER );
+		vApp->swapParms( ).Images[ eye ][ 1 ].TexId = texId;
+		vApp->swapParms().Images[ eye ][ 1 ].TexCoordsFromTanAngles = m;
+		vApp->swapParms().Images[ eye ][ 1 ].Pose = m_frameInput.PoseState;
+		vApp->swapParms().WarpProgram = WP_CHROMATIC_MASKED_CUBE;
 		for ( int i = 0; i < 4; i++ )
 		{
-			app->swapParms().ProgramParms[ i ] = fadeColor;
+			vApp->swapParms().ProgramParms[ i ] = fadeColor;
 		}
 	}
 	else
 	{
-		app->swapParms().WarpOptions = m_useSrgb ? 0 : SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER;
-		app->swapParms().Images[ eye ][ 1 ].TexId = 0;
-		app->swapParms().WarpProgram = WP_CHROMATIC;
+		vApp->swapParms().WarpOptions = m_useSrgb ? 0 : SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER;
+		vApp->swapParms().Images[ eye ][ 1 ].TexId = 0;
+		vApp->swapParms().WarpProgram = WP_CHROMATIC;
 		for ( int i = 0; i < 4; i++ )
 		{
-			app->swapParms().ProgramParms[ i ] = 1.0f;
+			vApp->swapParms().ProgramParms[ i ] = 1.0f;
 		}
 
 		glActiveTexture( GL_TEXTURE0 );
@@ -849,16 +849,16 @@ void Oculus360Photos::SetMenuState( const OvrMenuState state )
 		break;
 	case MENU_BROWSER:
 #ifdef ENABLE_MENU
-		app->guiSys().closeMenu( app, m_panoMenu, false );
-		app->guiSys().openMenu( app, app->gazeCursor(), OvrFolderBrowser::MENU_NAME );
+		vApp->guiSys().closeMenu( vApp, m_panoMenu, false );
+		vApp->guiSys().openMenu( vApp, vApp->gazeCursor(), OvrFolderBrowser::MENU_NAME );
 		m_browserOpenTime = 0.0f;
 
 #endif
 		break;
 	case MENU_PANO_LOADING:
 #ifdef ENABLE_MENU
-		app->guiSys().closeMenu( app, m_browser, false );
-		app->guiSys().openMenu( app, app->gazeCursor(), OvrPanoMenu::MENU_NAME );
+		vApp->guiSys().closeMenu( vApp, m_browser, false );
+		vApp->guiSys().openMenu( vApp, vApp->gazeCursor(), OvrPanoMenu::MENU_NAME );
 #endif
 		m_currentFadeRate = m_fadeOutRate;
 		m_fader.startFadeOut();
@@ -874,11 +874,11 @@ void Oculus360Photos::SetMenuState( const OvrMenuState state )
 #ifdef ENABLE_MENU
 		if ( lastState != MENU_BACKGROUND_INIT )
 		{
-			app->guiSys().openMenu( app, app->gazeCursor(), OvrPanoMenu::MENU_NAME );
+			vApp->guiSys().openMenu( vApp, vApp->gazeCursor(), OvrPanoMenu::MENU_NAME );
 		}
 		else
 		{
-			app->guiSys( ).openMenu( app, app->gazeCursor( ), OvrFolderBrowser::MENU_NAME );
+			vApp->guiSys( ).openMenu( vApp, vApp->gazeCursor( ), OvrFolderBrowser::MENU_NAME );
 		}
 #endif
 		m_fader.reset();
@@ -921,7 +921,7 @@ Matrix4f Oculus360Photos::Frame( const VrFrame vrFrame )
 	VrFrame vrFrameWithoutMove = vrFrame;
 	vrFrameWithoutMove.Input.sticks[ 0 ][ 0 ] = 0.0f;
 	vrFrameWithoutMove.Input.sticks[ 0 ][ 1 ] = 0.0f;
-	m_scene.Frame( app->vrViewParms(), vrFrameWithoutMove, app->swapParms().ExternalVelocity );
+	m_scene.Frame( vApp->vrViewParms(), vrFrameWithoutMove, vApp->swapParms().ExternalVelocity );
 
 #ifdef ENABLE_MENU
 	// reopen PanoMenu when in pano
@@ -947,8 +947,8 @@ Matrix4f Oculus360Photos::Frame( const VrFrame vrFrame )
 
 		if ( nextPano && ( m_activePano != nextPano ) )
 		{
-			m_panoMenu->repositionMenu( app );
-			app->playSound( "sv_release_active" );
+			m_panoMenu->repositionMenu( vApp );
+			vApp->playSound( "sv_release_active" );
 			setActivePano( nextPano );
 			SetMenuState( MENU_PANO_LOADING );
 		}
@@ -959,7 +959,7 @@ Matrix4f Oculus360Photos::Frame( const VrFrame vrFrame )
 		// Close the browser if a Pano is active and not gazing at menu - ie. between panels
 		if ( m_activePano && !m_browser->gazingAtMenu() && vrFrame.Input.buttonReleased & ( BUTTON_TOUCH_SINGLE | BUTTON_A ) )
 		{
-			app->guiSys().closeMenu( app, m_browser, false );
+			vApp->guiSys().closeMenu( vApp, m_browser, false );
 		}
 	}
 #endif
@@ -1000,10 +1000,10 @@ Matrix4f Oculus360Photos::Frame( const VrFrame vrFrame )
 	}
 
 	// We could disable the srgb convert on the FBO. but this is easier
-	app->vrParms().colorFormat = m_useSrgb ? COLOR_8888_sRGB : COLOR_8888;
+	vApp->vrParms().colorFormat = m_useSrgb ? COLOR_8888_sRGB : COLOR_8888;
 
 	// Draw both eyes
-	app->drawEyeViewsPostDistorted( m_scene.CenterViewMatrix() );
+	vApp->drawEyeViewsPostDistorted( m_scene.CenterViewMatrix() );
 
 	return m_scene.CenterViewMatrix();
 }
