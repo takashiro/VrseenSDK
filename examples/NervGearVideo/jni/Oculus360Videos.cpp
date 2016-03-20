@@ -72,7 +72,7 @@ void Java_com_vrseen_nervgear_video_MainActivity_nativeSetAppInterface( JNIEnv *
 	GlobalActivityClass = (jclass)jni->NewGlobalRef( clazz );
 
 	LOG( "nativeSetAppInterface");
-    (new Oculus360Videos(jni, activity))->SetActivity( jni, clazz, activity, fromPackageName, commandString, uriString );
+    (new Oculus360Videos(jni, activity))->onCreate( jni, clazz, activity, fromPackageName, commandString, uriString );
 }
 
 void Java_com_vrseen_nervgear_video_MainActivity_nativeFrameAvailable(JNIEnv *, jclass)
@@ -152,7 +152,7 @@ Oculus360Videos::~Oculus360Videos()
 }
 
 //============================================================================================
-void Oculus360Videos::OneTimeInit(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI)
+void Oculus360Videos::init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI)
 {
 	// This is called by the VR thread, not the java UI thread.
 	LOG( "--------------- Oculus360Videos OneTimeInit ---------------" );
@@ -364,7 +364,7 @@ void Oculus360Videos::OneTimeInit(const VString &fromPackage, const VString &lau
 	SetMenuState( MENU_BROWSER );
 }
 
-void Oculus360Videos::OneTimeShutdown()
+void Oculus360Videos::shutdown()
 {
 	// This is called by the VR thread, not the java UI thread.
 	LOG( "--------------- Oculus360Videos OneTimeShutdown ---------------" );
@@ -596,7 +596,7 @@ Matrix4f	Oculus360Videos::TexmForBackground( const int eye )
 	return Matrix4f::Identity();
 }
 
-Matrix4f Oculus360Videos::DrawEyeView( const int eye, const float fovDegrees )
+Matrix4f Oculus360Videos::drawEyeView( const int eye, const float fovDegrees )
 {
 	Matrix4f mvp = Scene.MvpForEye( eye, fovDegrees );
 
@@ -834,7 +834,7 @@ void Oculus360Videos::OnVideoActivated( const OvrMetaDatum * videoData )
 	StartVideo( ovr_GetTimeInSeconds() );
 }
 
-Matrix4f Oculus360Videos::Frame( const VrFrame vrFrame )
+Matrix4f Oculus360Videos::onNewFrame( const VrFrame vrFrame )
 {
 	// Disallow player foot movement, but we still want the head model
 	// movement for the swipe view.

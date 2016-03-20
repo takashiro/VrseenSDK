@@ -65,11 +65,11 @@ public:
     Oculus360Photos(JNIEnv *jni, jobject activityObject);
 	~Oculus360Photos();
 
-    void OneTimeInit(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI ) override;
-    void OneTimeShutdown() override;
+    void init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI ) override;
+    void shutdown() override;
     void ConfigureVrMode( ovrModeParms & modeParms ) override;
-    Matrix4f 	DrawEyeView( const int eye, const float fovDegrees ) override;
-    Matrix4f 	Frame( VrFrame vrFrame ) override;
+    Matrix4f 	drawEyeView( const int eye, const float fovDegrees ) override;
+    Matrix4f 	onNewFrame( VrFrame vrFrame ) override;
     void		Command( const char * msg ) override;
     bool 		onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType ) override;
     bool		wantSrgbFramebuffer() const override;

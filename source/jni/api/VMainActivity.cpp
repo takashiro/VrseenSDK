@@ -102,7 +102,7 @@ VString VMainActivity::getPackageName() const
 }
 
 
-void VMainActivity::SetActivity(JNIEnv * jni, jclass clazz, jobject activity, jstring javaFromPackageNameString,
+void VMainActivity::onCreate(JNIEnv * jni, jclass clazz, jobject activity, jstring javaFromPackageNameString,
         jstring javaCommandString, jstring javaUriString)
 {
     VString utfFromPackageString = JniUtils::Convert(jni, javaFromPackageNameString);
@@ -139,26 +139,26 @@ void VMainActivity::SetActivity(JNIEnv * jni, jclass clazz, jobject activity, js
     vApp->syncVrThread();
 }
 
-void VMainActivity::OneTimeShutdown()
+void VMainActivity::shutdown()
 {
 }
 
-void VMainActivity::WindowCreated()
+void VMainActivity::onWindowCreated()
 {
     vInfo("VMainActivity::WindowCreated - default handler called");
 }
 
-void VMainActivity::WindowDestroyed()
+void VMainActivity::onWindowDestroyed()
 {
     vInfo("VMainActivity::WindowDestroyed - default handler called");
 }
 
-void VMainActivity::Paused()
+void VMainActivity::onPause()
 {
     vInfo("VMainActivity::Paused - default handler called");
 }
 
-void VMainActivity::Resumed()
+void VMainActivity::onResume()
 {
     vInfo("VMainActivity::Resumed - default handler called");
 }
@@ -168,12 +168,12 @@ void VMainActivity::Command(const char * msg)
     vInfo("VMainActivity::Command - default handler called, msg =" << msg);
 }
 
-void VMainActivity::NewIntent(const char * fromPackageName, const char * command, const char * uri)
+void VMainActivity::onNewIntent(const char * fromPackageName, const char * command, const char * uri)
 {
     vInfo("VMainActivity::NewIntent - default handler called -" << fromPackageName << command << uri);
 }
 
-Matrix4f VMainActivity::Frame(VrFrame vrFrame)
+Matrix4f VMainActivity::onNewFrame(VrFrame vrFrame)
 {
     vInfo("VMainActivity::Frame - default handler called");
     return Matrix4f();
@@ -184,7 +184,7 @@ void VMainActivity::ConfigureVrMode(ovrModeParms & modeParms)
     vInfo("VMainActivity::ConfigureVrMode - default handler called");
 }
 
-Matrix4f VMainActivity::DrawEyeView(const int eye, const float fovDegrees)
+Matrix4f VMainActivity::drawEyeView(const int eye, const float fovDegrees)
 {
     vInfo("VMainActivity::DrawEyeView - default handler called");
     return Matrix4f();
@@ -196,13 +196,13 @@ bool VMainActivity::onKeyEvent(const int keyCode, const KeyState::eKeyEventType 
     return false;
 }
 
-bool VMainActivity::OnVrWarningDismissed(const bool accepted)
+bool VMainActivity::onVrWarningDismissed(const bool accepted)
 {
     vInfo("VMainActivity::OnVrWarningDismissed - default handler called");
     return false;
 }
 
-bool VMainActivity::ShouldShowLoadingIcon() const
+bool VMainActivity::showLoadingIcon() const
 {
     return true;
 }
@@ -212,7 +212,7 @@ bool VMainActivity::wantSrgbFramebuffer() const
     return false;
 }
 
-bool VMainActivity::GetWantProtectedFramebuffer() const
+bool VMainActivity::wantProtectedFramebuffer() const
 {
     return false;
 }

@@ -43,7 +43,7 @@ void Java_com_vrseen_nervgear_photo_MainActivity_nativeSetAppInterface( JNIEnv *
 {
 	// This is called by the java UI thread.
 	LOG( "nativeSetAppInterface" );
-    (new Oculus360Photos(jni, activity))->SetActivity( jni, clazz, activity, fromPackageName, commandString, uriString );
+    (new Oculus360Photos(jni, activity))->onCreate( jni, clazz, activity, fromPackageName, commandString, uriString );
 }
 
 } // extern "C"
@@ -130,7 +130,7 @@ Oculus360Photos::~Oculus360Photos()
 
 //============================================================================================
 
-void Oculus360Photos::OneTimeInit(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI)
+void Oculus360Photos::init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI)
 {
 	// This is called by the VR thread, not the java UI thread.
 	LOG( "--------------- Oculus360Photos OneTimeInit ---------------" );
@@ -397,7 +397,7 @@ void Oculus360Photos::OneTimeInit(const VString &fromPackage, const VString &lau
 
 //============================================================================================
 
-void Oculus360Photos::OneTimeShutdown()
+void Oculus360Photos::shutdown()
 {
 	// This is called by the VR thread, not the java UI thread.
 	LOG( "--------------- Oculus360Photos OneTimeShutdown ---------------" );
@@ -718,7 +718,7 @@ Matrix4f CubeMatrixForViewMatrix( const Matrix4f & viewMatrix )
 	return m.Inverted();
 }
 
-Matrix4f Oculus360Photos::DrawEyeView( const int eye, const float fovDegrees )
+Matrix4f Oculus360Photos::drawEyeView( const int eye, const float fovDegrees )
 {
 	// Don't draw the scene at all if it is faded out
 	const bool drawScene = true;
@@ -906,7 +906,7 @@ void Oculus360Photos::onPanoActivated( const OvrMetaDatum * panoData )
 	SetMenuState( MENU_PANO_LOADING );
 }
 
-Matrix4f Oculus360Photos::Frame( const VrFrame vrFrame )
+Matrix4f Oculus360Photos::onNewFrame( const VrFrame vrFrame )
 {
 	m_frameInput = vrFrame;
 

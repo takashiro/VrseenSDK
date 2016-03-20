@@ -51,7 +51,7 @@ CinemaApp::CinemaApp(JNIEnv *jni, jobject activityObject)
  * OneTimeInit
  *
  */
-void CinemaApp::OneTimeInit(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI)
+void CinemaApp::init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI)
 {
 	LOG( "--------------- CinemaApp OneTimeInit ---------------");
 
@@ -81,7 +81,7 @@ void CinemaApp::OneTimeInit(const VString &fromPackage, const VString &launchInt
 	LOG( "CinemaApp::OneTimeInit: %3.1f seconds", ovr_GetTimeInSeconds() - startTime );
 }
 
-void CinemaApp::OneTimeShutdown()
+void CinemaApp::shutdown()
 {
 	LOG( "--------------- CinemaApp OneTimeShutdown ---------------");
 
@@ -297,7 +297,7 @@ const SceneDef & CinemaApp::currentTheater() const
 /*
  * DrawEyeView
  */
-Matrix4f CinemaApp::DrawEyeView( const int eye, const float fovDegrees ) {
+Matrix4f CinemaApp::drawEyeView( const int eye, const float fovDegrees ) {
 	return m_viewMgr.drawEyeView( eye, fovDegrees );
 }
 
@@ -346,7 +346,7 @@ void CinemaApp::Command( const char * msg )
  *
  * App override
  */
-Matrix4f CinemaApp::Frame( const VrFrame vrFrame )
+Matrix4f CinemaApp::onNewFrame( const VrFrame vrFrame )
 {
 	m_frameCount++;
 	this->m_vrFrame = vrFrame;

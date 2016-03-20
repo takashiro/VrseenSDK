@@ -24,7 +24,7 @@ void Java_com_vrseen_nervgear_scene_MainActivity_nativeSetAppInterface( JNIEnv *
 {
 	// This is called by the java UI thread.
 	LOG( "nativeSetAppInterface" );
-    (new VrScene(jni, activity))->SetActivity( jni, clazz, activity, fromPackageName, commandString, uriString );
+    (new VrScene(jni, activity))->onCreate( jni, clazz, activity, fromPackageName, commandString, uriString );
 }
 
 } // extern "C"
@@ -53,7 +53,7 @@ void VrScene::ConfigureVrMode( ovrModeParms & modeParms )
 	vApp->vrParms().multisamples = 2;
 }
 
-void VrScene::OneTimeInit(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI)
+void VrScene::init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI)
 {
 	LOG( "VrScene::OneTimeInit" );
 
@@ -69,14 +69,14 @@ void VrScene::OneTimeInit(const VString &fromPackage, const VString &launchInten
 	}
 }
 
-void VrScene::OneTimeShutdown()
+void VrScene::shutdown()
 {
 	LOG( "VrScene::OneTimeShutdown" );
 
 	// Free GL resources
 }
 
-void VrScene::NewIntent( const char * fromPackageName, const char * command, const char * uri )
+void VrScene::onNewIntent( const char * fromPackageName, const char * command, const char * uri )
 {
 	LOG( "NewIntent - fromPackageName : %s, command : %s, uri : %s", fromPackageName, command, uri );
 
@@ -151,7 +151,7 @@ void VrScene::Command( const char * msg )
 {
 }
 
-Matrix4f VrScene::DrawEyeView( const int eye, const float fovDegrees )
+Matrix4f VrScene::drawEyeView( const int eye, const float fovDegrees )
 {
 	if ( forceScreenClear )
 	{
@@ -164,7 +164,7 @@ Matrix4f VrScene::DrawEyeView( const int eye, const float fovDegrees )
 	return view;
 }
 
-Matrix4f VrScene::Frame( const VrFrame vrFrame )
+Matrix4f VrScene::onNewFrame( const VrFrame vrFrame )
 {
 	// Get the current vrParms for the buffer resolution.
 	const EyeParms vrParms = vApp->eyeParms();

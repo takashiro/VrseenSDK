@@ -38,11 +38,11 @@ public:
 	Oculus360Videos(JNIEnv *jni, jobject activity);
 	~Oculus360Videos();
 
-	virtual void		OneTimeInit(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI );
-	virtual void		OneTimeShutdown();
+	virtual void		init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI );
+	virtual void		shutdown();
 	virtual void		ConfigureVrMode( ovrModeParms & modeParms );
-	virtual Matrix4f 	DrawEyeView( const int eye, const float fovDegrees );
-	virtual Matrix4f 	Frame( VrFrame vrFrame );
+	virtual Matrix4f 	drawEyeView( const int eye, const float fovDegrees );
+	virtual Matrix4f 	onNewFrame( VrFrame vrFrame );
 	virtual void		Command( const char * msg );
 	virtual bool 		onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType );
 

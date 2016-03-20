@@ -445,7 +445,7 @@ struct App::Private : public TalkToJavaInterface
 
     void pause()
     {
-        appInterface->Paused();
+        appInterface->onPause();
 
         ovr_LeaveVrMode(OvrMobile);
     }
@@ -508,7 +508,7 @@ struct App::Private : public TalkToJavaInterface
         // Start up TimeWarp and the various performance options
         OvrMobile = ovr_EnterVrMode(VrModeParms, &hmdInfo);
 
-        appInterface->Resumed();
+        appInterface->onResume();
     }
 
     void initGlObjects()
@@ -895,7 +895,7 @@ struct App::Private : public TalkToJavaInterface
                 attribs[numAttribs++] = EGL_GL_COLORSPACE_SRGB_KHR;
             }
             // Ask for TrustZone rendering support
-            if (appInterface->GetWantProtectedFramebuffer())
+            if (appInterface->wantProtectedFramebuffer())
             {
                 attribs[numAttribs++] = EGL_PROTECTED_CONTENT_EXT;
                 attribs[numAttribs++] = EGL_TRUE;
@@ -925,7 +925,7 @@ struct App::Private : public TalkToJavaInterface
             else
             {
                 framebufferIsSrgb = appInterface->wantSrgbFramebuffer();
-                framebufferIsProtected = appInterface->GetWantProtectedFramebuffer();
+                framebufferIsProtected = appInterface->wantProtectedFramebuffer();
             }
 
             if (eglMakeCurrent(eglr.display, windowSurface, windowSurface, eglr.context) == EGL_FALSE)
@@ -936,7 +936,7 @@ struct App::Private : public TalkToJavaInterface
             createdSurface = true;
 
             // Let the client app setup now
-            appInterface->WindowCreated();
+            appInterface->onWindowCreated();
 
             // Resume
             if (!paused)
@@ -951,7 +951,7 @@ struct App::Private : public TalkToJavaInterface
             vInfo("surfaceDestroyed");
 
             // Let the client app shutdown first.
-            appInterface->WindowDestroyed();
+            appInterface->onWindowDestroyed();
 
             // Handle it ourselves.
             if (eglMakeCurrent(eglr.display, eglr.pbufferSurface, eglr.pbufferSurface,
@@ -1035,7 +1035,7 @@ struct App::Private : public TalkToJavaInterface
 
             // when the PlatformActivity is launched, this is how it gets its command to start
             // a particular UI.
-            appInterface->NewIntent(fromPackageName, jsonStart, uri);
+            appInterface->onNewIntent(fromPackageName, jsonStart, uri);
 
             return;
         }
@@ -1251,7 +1251,7 @@ struct App::Private : public TalkToJavaInterface
             // Let the client app initialize only once by calling OneTimeInit() when the windowSurface is valid.
             if (!self->oneTimeInitCalled)
             {
-                if (appInterface->ShouldShowLoadingIcon())
+                if (appInterface->showLoadingIcon())
                 {
                     const ovrTimeWarpParms warpSwapLoadingIconParms = InitTimeWarpParms(WARP_INIT_LOADING_ICON, loadingIconTexId);
                     ovr_WarpSwap(OvrMobile, &warpSwapLoadingIconParms);
@@ -1259,7 +1259,7 @@ struct App::Private : public TalkToJavaInterface
                 vInfo("launchIntentJSON:" << launchIntentJSON);
                 vInfo("launchIntentURI:" << launchIntentURI);
 
-                appInterface->OneTimeInit(launchIntentFromPackage, launchIntentJSON, launchIntentURI);
+                appInterface->init(launchIntentFromPackage, launchIntentJSON, launchIntentURI);
                 self->oneTimeInitCalled = true;
             }
 
@@ -1425,7 +1425,7 @@ struct App::Private : public TalkToJavaInterface
             // Main loop logic / draw code
             if (!readyToExit)
             {
-                lastViewMatrix = appInterface->Frame(vrFrame);
+                lastViewMatrix = appInterface->onNewFrame(vrFrame);
             }
 
             ovr_HandleDeviceStateChanges(OvrMobile);
@@ -1458,7 +1458,7 @@ struct App::Private : public TalkToJavaInterface
                 FreeTexture(errorTexture);
             }
 
-            appInterface->OneTimeShutdown();
+            appInterface->shutdown();
 
             guiSys->shutdown(*vrMenuMgr);
 
@@ -2367,7 +2367,7 @@ void App::drawEyeViewsPostDistorted( Matrix4f const & centerViewMatrix, const in
             d->eyeTargets->BeginRenderingEye( eye );
 
             // Call back to the app for drawing.
-            const Matrix4f mvp = d->appInterface->DrawEyeView( eye, fovDegrees );
+            const Matrix4f mvp = d->appInterface->drawEyeView( eye, fovDegrees );
 
             vrMenuMgr().renderSubmitted( mvp.Transposed(), centerViewMatrix );
             menuFontSurface().Render3D( defaultFont(), mvp.Transposed() );
