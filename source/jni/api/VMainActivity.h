@@ -44,7 +44,7 @@ public:
     virtual bool wantSrgbFramebuffer() const;
     virtual bool GetWantProtectedFramebuffer() const;
 
-    jclass	ActivityClass;
+    jclass javaClass() const;
 
 private:
     NV_DECLARE_PRIVATE

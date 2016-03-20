@@ -38,8 +38,7 @@ struct VMainActivity::Private
 };
 
 VMainActivity::VMainActivity(JNIEnv *jni, jobject activityObject)
-    : ActivityClass(nullptr)
-    , d(new Private)
+    : d(new Private)
 {
     d->jni = jni;
     d->activityObject = jni->NewGlobalRef(activityObject);
@@ -106,13 +105,6 @@ VString VMainActivity::getPackageName() const
 void VMainActivity::SetActivity(JNIEnv * jni, jclass clazz, jobject activity, jstring javaFromPackageNameString,
         jstring javaCommandString, jstring javaUriString)
 {
-    // Make a permanent global reference for the class
-    if (ActivityClass != nullptr)
-    {
-        jni->DeleteGlobalRef(ActivityClass);
-    }
-    ActivityClass = (jclass)jni->NewGlobalRef(clazz);
-
     VString utfFromPackageString = JniUtils::Convert(jni, javaFromPackageNameString);
     VString utfJsonString = JniUtils::Convert(jni, javaCommandString);
     VString utfUriString = JniUtils::Convert(jni, javaUriString);
@@ -223,6 +215,11 @@ bool VMainActivity::wantSrgbFramebuffer() const
 bool VMainActivity::GetWantProtectedFramebuffer() const
 {
     return false;
+}
+
+jclass VMainActivity::javaClass() const
+{
+    return d->activityClass;
 }
 
 NV_NAMESPACE_END

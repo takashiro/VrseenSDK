@@ -61,7 +61,7 @@ void CinemaApp::OneTimeInit(const VString &fromPackage, const VString &launchInt
 	//app->GetVrParms().depthFormat = DEPTH_16;
     vApp->vrParms().multisamples = 2;
 
-    Native::OneTimeInit( vApp, ActivityClass );
+    Native::OneTimeInit( vApp, javaClass() );
 	CinemaStrings::OneTimeInit( *this );
     shaderMgr.OneTimeInit( launchIntentURI );
 	modelMgr.OneTimeInit( launchIntentURI );
