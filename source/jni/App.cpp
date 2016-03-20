@@ -1813,7 +1813,7 @@ struct App::Private : public TalkToJavaInterface
  * move everything to first surface init?
  */
 
-App *vApp = nullptr;
+App *NervGearAppInstance = nullptr;
 
 App::App(JNIEnv *jni, jobject activityObject, VrAppInterface &interface)
     : oneTimeInitCalled(false)
@@ -1823,8 +1823,8 @@ App::App(JNIEnv *jni, jobject activityObject, VrAppInterface &interface)
 
     d->uiJni = jni;
     vInfo("----------------- AppLocal::AppLocal() -----------------");
-    vAssert(vApp == nullptr);
-    vApp = this;
+    vAssert(NervGearAppInstance == nullptr);
+    NervGearAppInstance = this;
 
     d->storagePaths = new VStandardPath(jni, activityObject);
 

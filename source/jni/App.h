@@ -256,6 +256,7 @@ private:
     NV_DISABLE_COPY(App)
 };
 
-extern App *vApp;
+extern App *NervGearAppInstance;
+#define vApp NervGearAppInstance
 
 NV_NAMESPACE_END
