@@ -300,16 +300,6 @@ LIBS += -lz
 # audio
 LIBS += -lOpenSLES
 
-SOURCES += \
-    jni/Integrations/Unity/UnityPlugin.cpp \
-    jni/Integrations/Unity/MediaSurface.cpp \
-    jni/Integrations/Unity/SensorPlugin.cpp \
-    jni/Integrations/Unity/RenderingPlugin.cpp
-
-HEADERS += \
-    jni/Integrations/Unity/GlStateSave.h \
-    jni/Integrations/Unity/MediaSurface.h
-
 linux {
     CONFIG(staticlib) {
         QMAKE_POST_LINK = $$QMAKE_COPY $$system_path($$OUT_PWD/lib$${TARGET}.a) $$system_path($$PWD/libs)

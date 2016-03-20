@@ -173,24 +173,3 @@ LOCAL_EXPORT_LDLIBS += -lz
 LOCAL_EXPORT_LDLIBS += -lOpenSLES
 
 include $(BUILD_STATIC_LIBRARY)		# start building based on everything since CLEAR_VARS
-
-#--------------------------------------------------------
-# Unity plugin
-#--------------------------------------------------------
-include $(CLEAR_VARS)
-
-LOCAL_MODULE := UnityPlugin
-
-LOCAL_STATIC_LIBRARIES := nervgear
-#LOCAL_STATIC_LIBRARIES += android-ndk-profiler
-
-LOCAL_CFLAGS += -DNV_NAMESPACE=NervGear
-
-LOCAL_SRC_FILES  := $(NV_ROOT)/Integrations/Unity/UnityPlugin.cpp \
-                    $(NV_ROOT)/Integrations/Unity/MediaSurface.cpp \
-                    $(NV_ROOT)/Integrations/Unity/SensorPlugin.cpp \
-                    $(NV_ROOT)/Integrations/Unity/RenderingPlugin.cpp
-
-include $(BUILD_SHARED_LIBRARY)
-
-#$(call import-module,android-ndk-profiler)
