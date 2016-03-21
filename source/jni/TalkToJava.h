@@ -26,7 +26,7 @@ class TalkToJavaInterface
 {
 public:
     virtual ~TalkToJavaInterface() {}
-    virtual void TtjCommand(JNIEnv *jni, const char * commandString) = 0;
+    virtual void TtjCommand(JNIEnv *jni, const VEvent &commandString) = 0;
 };
 
 class TalkToJava

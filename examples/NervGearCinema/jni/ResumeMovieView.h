@@ -21,7 +21,7 @@ public:
 	virtual void 		OnOpen();
 	virtual void 		OnClose();
 
-	virtual bool 		Command( const char * msg );
+    bool Command(const VEvent &);
 	virtual bool 		OnKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType );
 
 	virtual Matrix4f 	DrawEyeView( const int eye, const float fovDegrees );

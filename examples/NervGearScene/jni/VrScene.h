@@ -18,8 +18,7 @@ public:
 	virtual void		shutdown();
 	virtual Matrix4f	drawEyeView( const int eye, const float fovDegrees );
 	virtual Matrix4f	onNewFrame( VrFrame vrFrame );
-	virtual	void		onNewIntent( const char * fromPackageName, const char * command, const char * uri );
-	virtual void		Command( const char * msg );
+    virtual	void		onNewIntent(const VString &fromPackageName, const VString &command, const VString &uri);
 
     void				LoadScene(const VString &path );
     void				ReloadScene();

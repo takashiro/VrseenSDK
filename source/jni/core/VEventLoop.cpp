@@ -16,19 +16,18 @@ NV_NAMESPACE_BEGIN
 
 struct VEventLoop::Private
 {
-    Private(int maxMessages_):
+    Private(int capacity):
             shutdown( false ),
-            maxMessages( maxMessages_ ),
-            messages( new message_t[ maxMessages_ ] ),
+            capacity( capacity ),
+            messages( new Node[ capacity ] ),
             head( 0 ),
             tail( 0 ),
             synced( false )
     {
-        assert( maxMessages > 0 );
+        assert( capacity > 0 );
 
-        for ( int i = 0; i < maxMessages; i++ )
+        for ( int i = 0; i < capacity; i++ )
         {
-            messages[i].string = NULL;
             messages[i].sychronized = false;
         }
 
@@ -42,16 +41,15 @@ struct VEventLoop::Private
     }
 
     bool			shutdown;
-    const int 		maxMessages;
+    const int 		capacity;
 
-    struct message_t
+    struct Node
     {
-        const char *string;
         VEvent event;
         bool sychronized;
     };
 
-    message_t *messages;
+    Node *messages;
 
     volatile int head;
     volatile int tail;
@@ -60,32 +58,6 @@ struct VEventLoop::Private
     pthread_cond_t posted;
     pthread_cond_t received;
 
-    //@to-do: remove this
-    bool post(const char *msg, bool synchronized)
-    {
-        if (shutdown) {
-            vInfo("PostMessage(" << msg << ") to shutdown queue");
-            return false;
-        }
-
-        pthread_mutex_lock(&mutex);
-        if (tail - head >= maxMessages) {
-            pthread_mutex_unlock(&mutex);
-            return false;
-        }
-        const int index = tail % maxMessages;
-        messages[index].string = strdup( msg );
-        messages[index].sychronized = synchronized;
-        tail++;
-        pthread_cond_signal(&posted);
-        if (synchronized) {
-            pthread_cond_wait(&received, &mutex);
-        }
-        pthread_mutex_unlock(&mutex);
-
-        return true;
-    }
-
     bool post(const VEvent &event, bool synchronized)
     {
         if (shutdown) {
@@ -93,13 +65,12 @@ struct VEventLoop::Private
         }
 
         pthread_mutex_lock(&mutex);
-        if (tail - head >= maxMessages) {
+        if (tail - head >= capacity) {
             pthread_mutex_unlock(&mutex);
             return false;
         }
-        const int index = tail % maxMessages;
+        const int index = tail % capacity;
         messages[index].event = event;
-        messages[index].string = nullptr;
         messages[index].sychronized = synchronized;
         tail++;
         pthread_cond_signal(&posted);
@@ -119,15 +90,6 @@ VEventLoop::VEventLoop(int capacity)
 
 VEventLoop::~VEventLoop()
 {
-    forever {
-        const char *msg = nextMessage();
-        if ( !msg ) {
-            break;
-        }
-        vInfo( "~VMessageQueue: still on queue: "<<msg);
-        free( (void *)msg );
-    }
-
     // Free the queue itself.
     delete[] d->messages;
 
@@ -140,7 +102,7 @@ VEventLoop::~VEventLoop()
 
 void VEventLoop::quit()
 {
-    vInfo( "VMessageQueue shutdown");
+    vInfo("VMessageQueue shutdown");
     d->shutdown = true;
 }
 
@@ -149,19 +111,17 @@ void VEventLoop::post(const VEvent &event)
     d->post(event, false);
 }
 
-void VEventLoop::post(const char * command )
+void VEventLoop::post(const VString &command, const VJson &data)
 {
-    d->post(command, false);
+    VEvent event(command);
+    event.data = data;
+    d->post(event, false);
 }
 
-void VEventLoop::postf(const char * format, ... )
+void VEventLoop::post(const char *command)
 {
-    char bigBuffer[4096];
-    va_list	args;
-    va_start( args, format );
-    vsnprintf( bigBuffer, sizeof( bigBuffer ), format, args );
-    va_end( args );
-    d->post(bigBuffer, false);
+    VEvent event(command);
+    d->post(event, false);
 }
 
 void VEventLoop::send(const VEvent &event)
@@ -169,45 +129,17 @@ void VEventLoop::send(const VEvent &event)
     d->post(event, true);
 }
 
+void VEventLoop::send(const VString &command, const VJson &data)
+{
+    VEvent event(command);
+    event.data = data;
+    d->post(event, true);
+}
+
 void VEventLoop::send(const char *command)
 {
-    d->post(command, true);
-}
-
-void VEventLoop::sendf(const char * format, ... )
-{
-    char bigBuffer[4096];
-    va_list	args;
-    va_start(args, format);
-    vsnprintf(bigBuffer, sizeof( bigBuffer ), format, args );
-    va_end(args);
-    d->post(bigBuffer, true);
-}
-
-// Returns false if there are no more messages, otherwise returns
-// a string that the caller must free.
-const char *VEventLoop::nextMessage()
-{
-    if (d->synced) {
-        pthread_cond_signal(&d->received);
-        d->synced = false;
-    }
-
-    pthread_mutex_lock(&d->mutex);
-    if (d->tail <= d->head) {
-        pthread_mutex_unlock(&d->mutex);
-        return NULL;
-    }
-
-    const int index = d->head % d->maxMessages;
-    const char *msg = d->messages[index].string;
-    d->synced = d->messages[index].sychronized;
-    d->messages[index].string = NULL;
-    d->messages[index].sychronized = false;
-    d->head++;
-    pthread_mutex_unlock(&d->mutex);
-
-    return msg;
+    VEvent event(command);
+    d->post(event, true);
 }
 
 VEvent VEventLoop::next()
@@ -223,10 +155,9 @@ VEvent VEventLoop::next()
         return VEvent();
     }
 
-    const int index = d->head % d->maxMessages;
+    const int index = d->head % d->capacity;
     VEvent event = d->messages[index].event;
     d->synced = d->messages[index].sychronized;
-    d->messages[index].string = NULL;
     d->messages[index].sychronized = false;
     d->head++;
     pthread_mutex_unlock(&d->mutex);
@@ -256,11 +187,7 @@ void VEventLoop::wait()
 
 void VEventLoop::clear()
 {
-    for ( const char* msg = nextMessage(); msg != NULL; msg = nextMessage() )
-    {
-        vInfo( "ClearMessages: discarding "<<msg);
-        free( (void *)msg );
-    }
+    d->head = d->tail;
 }
 
 NV_NAMESPACE_END

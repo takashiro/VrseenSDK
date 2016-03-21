@@ -1,18 +1,3 @@
-/************************************************************************************
-
-Filename    :   SceneManager.cpp
-Content     :	Handles rendering of current scene and movie.
-Created     :   September 3, 2013
-Authors     :	Jim Dos�, based on a fork of VrVideo.cpp from VrVideo by John Carmack.
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-This source code is licensed under the BSD-style license found in the
-LICENSE file in the Cinema/ directory. An additional grant
-of patent rights can be found in the PATENTS file in the same directory.
-
-*************************************************************************************/
-
 #include "String_Utils.h"
 #include "api/VrApi.h"
 #include "api/VrApi_Helpers.h"
@@ -22,6 +7,8 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "SceneManager.h"
 #include "SurfaceTexture.h"
 #include "VrCommon.h"
+
+#include "VLog.h"
 
 namespace OculusCinema
 {
@@ -649,35 +636,33 @@ bool SceneManager::ChangeSeats( const VrFrame & vrFrame )
  *
  * Actions that need to be performed on the render thread.
  */
-bool SceneManager::Command( const char * msg )
+bool SceneManager::Command(const VEvent &event)
 {
 	// Always include the space in MatchesHead to prevent problems
 	// with commands with matching prefixes.
-	LOG( "SceneManager::Command: %s", msg );
+    vInfo("SceneManager::Command:" << event.name);
 
-	if ( MatchesHead( "newVideo ", msg ) )
-	{
+    if (event.name == "newVideo") {
 		delete MovieTexture;
         MovieTexture = new SurfaceTexture( vApp->vrJni() );
-		LOG( "RC_NEW_VIDEO texId %i", MovieTexture->textureId );
+        vInfo( "RC_NEW_VIDEO texId" << MovieTexture->textureId);
 
-		VEventLoop * receiver;
-		sscanf( msg, "newVideo %p", &receiver );
-
-        receiver->postf( "surfaceTexture %p", MovieTexture->javaObject );
+        VEventLoop *receiver = reinterpret_cast<VEventLoop *>(event.data.toInt());
+        receiver->post("surfaceTexture", reinterpret_cast<int>(MovieTexture->javaObject));
 
 		// don't draw the screen until we have the new size
 		CurrentMovieWidth = 0;
 		return true;
 	}
 
-	if ( MatchesHead( "video ", msg ) )
-	{
-		int width, height;
-		sscanf( msg, "video %i %i %i %i", &width, &height, &MovieRotation, &MovieDuration );
+    if (event.name =="video") {
+        int width = event.data.at(0).toInt();
+        int height = event.data.at(1).toInt();
+        MovieRotation = event.data.at(2).toInt();
+        MovieDuration = event.data.at(3).toInt();
 
 		const MovieDef *movie = Cinema.currentMovie();
-		assert( movie );
+        vAssert(movie);
 
 		// always use 2d form lobby movies
 		if ( ( movie == NULL ) || SceneInfo.LobbyScreen )

@@ -28,6 +28,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include <VApkFile.h>
 #include <VThread.h>
 #include <VStandardPath.h>
+#include "VLog.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -258,12 +259,12 @@ void Oculus360Photos::init(const VString &fromPackage, const VString &launchInte
 
 	fileExtensions.goodExtensions.append( ".jpg" );
 
-	fileExtensions.badExtensions.append( ".jpg.x" );
+    /*fileExtensions.badExtensions.append( ".jpg.x" );
 	fileExtensions.badExtensions.append( "_px.jpg" );
 	fileExtensions.badExtensions.append( "_py.jpg" );
 	fileExtensions.badExtensions.append( "_pz.jpg" );
 	fileExtensions.badExtensions.append( "_nx.jpg" );
-	fileExtensions.badExtensions.append( "_ny.jpg" );
+    fileExtensions.badExtensions.append( "_ny.jpg" );*/
 
     const VStandardPath &storagePaths = vApp->storagePaths();
     storagePaths.PushBackSearchPathIfValid( VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", m_searchPaths );
@@ -459,13 +460,12 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
 		}
 
 		photos->m_backgroundCommands.wait();
-		const char * msg = photos->m_backgroundCommands.nextMessage();
-		LOG( "BackgroundGLLoadThread Commands: %s", msg );
-		if ( MatchesHead( "pano ", msg ) )
-		{
-			unsigned char * data;
-			int		width, height;
-			sscanf( msg, "pano %p %i %i", &data, &width, &height );
+        VEvent event = photos->m_backgroundCommands.next();
+        vInfo("BackgroundGLLoadThread Commands:" << event.name);
+        if (event.name == "pano") {
+            uchar *data = reinterpret_cast<uchar *>(event.data.at(0).toInt());
+            int width = event.data.at(1).toInt();
+            int height = event.data.at(2).toInt();
 
 			const double start = ovr_GetTimeInSeconds( );
 
@@ -500,16 +500,16 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
 				LOG( "BackgroundGLLoadThread eglClientWaitSyncKHR returned EGL_FALSE" );
 			}
 
-            vApp->eventLoop( ).post("loaded pano");
+            vApp->eventLoop().post("loaded pano");
 
 			const double end = ovr_GetTimeInSeconds();
 			LOG( "%4.2fs to load %ix%i res pano map", end - start, width, height );
-		}
-		else if ( MatchesHead( "cube ", msg ) )
-		{
-			unsigned char * data[ 6 ];
-			int		size;
-			sscanf( msg, "cube %i %p %p %p %p %p %p", &size, &data[ 0 ], &data[ 1 ], &data[ 2 ], &data[ 3 ], &data[ 4 ], &data[ 5 ] );
+        } else if (event.name == "cube") {
+            int size = event.data.at(0).toInt();
+            uchar *data[6];
+            for (int i = 0; i < 6; i++) {
+                data[0] = reinterpret_cast<uchar *>(event.data.at(i + 1).toInt());
+            }
 
 			const double start = ovr_GetTimeInSeconds( );
 
@@ -532,7 +532,7 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
 				LOG( "BackgroundGLLoadThread eglClientWaitSyncKHR returned EGL_FALSE" );
 			}
 
-            vApp->eventLoop( ).post("loaded cube");
+            vApp->eventLoop().post("loaded cube");
 
 			const double end = ovr_GetTimeInSeconds();
 			LOG( "%4.2fs to load %i res cube map", end - start, size );
@@ -552,10 +552,9 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
 	return NULL;
 }
 
-void Oculus360Photos::Command( const char * msg )
+void Oculus360Photos::Command(const VEvent &event )
 {
-	if ( MatchesHead( "loaded pano", msg ) )
-	{
+    if (event.name == "loaded pano") {
 		m_backgroundPanoTexData.Swap();
 		m_currentPanoIsCubeMap = false;
 		SetMenuState( MENU_PANO_FADEIN );
@@ -563,12 +562,11 @@ void Oculus360Photos::Command( const char * msg )
 		return;
 	}
 
-	if ( MatchesHead( "loaded cube", msg ) )
-	{
+    if (event.name == "loaded cube") {
 		m_backgroundCubeTexData.Swap();
 		m_currentPanoIsCubeMap = true;
 		SetMenuState( MENU_PANO_FADEIN );
-		vApp->gazeCursor( ).ClearGhosts( );
+        vApp->gazeCursor().ClearGhosts();
 		return;
 	}
 }
@@ -818,21 +816,19 @@ float Fade( double now, double start, double length )
 	return NervGear::Alg::Clamp( ( ( now - start ) / length ), 0.0, 1.0 );
 }
 
-void Oculus360Photos::startBackgroundPanoLoad( const char * filename )
+void Oculus360Photos::startBackgroundPanoLoad(const VString &filename)
 {
-	LOG( "StartBackgroundPanoLoad( %s )", filename );
+    vInfo("StartBackgroundPanoLoad" << filename);
 
 	// Queue1 will determine if this is a cube map and then post a message for each
 	// cube face to the other queues.
-
-	bool isCubeMap = strstr( filename, "_nz.jpg" );
-	char const * command = isCubeMap ? "cube" : "pano";
+    char const * command = filename.endsWith("_nz.jpg") ? "cube" : "pano";
 
 	// Dump any load that hasn't started
 	Queue1.clear();
 
 	// Start a background load of the current pano image
-    Queue1.postf("%s %s", command, filename);
+    Queue1.post(command, filename);
 }
 
 void Oculus360Photos::SetMenuState( const OvrMenuState state )
@@ -845,7 +841,7 @@ void Oculus360Photos::SetMenuState( const OvrMenuState state )
 	case MENU_NONE:
 		break;
 	case MENU_BACKGROUND_INIT:
-        startBackgroundPanoLoad( m_startupPano.toCString() );
+        startBackgroundPanoLoad(m_startupPano);
 		break;
 	case MENU_BROWSER:
 #ifdef ENABLE_MENU
@@ -862,7 +858,7 @@ void Oculus360Photos::SetMenuState( const OvrMenuState state )
 #endif
 		m_currentFadeRate = m_fadeOutRate;
 		m_fader.startFadeOut();
-        startBackgroundPanoLoad( m_activePano->url.toCString() );
+        startBackgroundPanoLoad(m_activePano->url);
 
 #ifdef ENABLE_MENU
 		m_panoMenu->updateButtonsState( m_activePano );

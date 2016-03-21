@@ -68,7 +68,7 @@ void ResumeMovieView::OnClose()
 	CurViewState = VIEWSTATE_CLOSED;
 }
 
-bool ResumeMovieView::Command( const char * msg )
+bool ResumeMovieView::Command(const VEvent &)
 {
 	return false;
 }

@@ -323,20 +323,18 @@ void CinemaApp::ConfigureVrMode(ovrModeParms &modeParms)
  *
  * Actions that need to be performed on the render thread.
  */
-void CinemaApp::Command( const char * msg )
+void CinemaApp::Command(const VEvent &event )
 {
-	if ( modelMgr.Command( msg ) )
+    if (modelMgr.Command(event))
 	{
 		return;
 	}
 
-	if ( m_viewMgr.command( msg ) )
-	{
+    if (m_viewMgr.command(event)) {
 		return;
 	}
 
-	if ( sceneMgr.Command( msg ) )
-	{
+    if (sceneMgr.Command(event)) {
 		return;
 	}
 }

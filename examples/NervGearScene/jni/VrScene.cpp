@@ -76,9 +76,9 @@ void VrScene::shutdown()
 	// Free GL resources
 }
 
-void VrScene::onNewIntent( const char * fromPackageName, const char * command, const char * uri )
+void VrScene::onNewIntent(const VString &fromPackageName, const VString &command, const VString &uri)
 {
-	LOG( "NewIntent - fromPackageName : %s, command : %s, uri : %s", fromPackageName, command, uri );
+    vInfo("NewIntent - fromPackageName :" << fromPackageName << ", command :" << command << ", uri :" << uri);
 
 	// Scene will be loaded in "OneTimeInit" function.
 	// LoadScene( intent );
@@ -145,10 +145,6 @@ void VrScene::ReloadScene()
 
 	Scene.YawOffset = yaw;
 	Scene.FootPos = pos;
-}
-
-void VrScene::Command( const char * msg )
-{
 }
 
 Matrix4f VrScene::drawEyeView( const int eye, const float fovDegrees )

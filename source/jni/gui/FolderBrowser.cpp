@@ -31,9 +31,11 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VRMenuObject.h"
 #include "ScrollBarComponent.h"
 #include "SwipeHintComponent.h"
-#include "VApkFile.h"
-#include "VArray.h"
-#include "VDir.h"
+
+#include <VApkFile.h>
+#include <VArray.h>
+#include <VDir.h>
+#include <VLog.h>
 
 namespace NervGear {
 
@@ -984,7 +986,12 @@ OvrFolderBrowser::~OvrFolderBrowser()
 		}
 	}
 
-	LOG( "OvrFolderBrowser::~OvrFolderBrowser COMPLETE" );
+    LOG( "OvrFolderBrowser::~OvrFolderBrowser COMPLETE" );
+}
+
+uchar *OvrFolderBrowser::retrieveRemoteThumbnail(const VString &url, const VString &cacheDestinationFile, int folderId, int panelId, int &outWidth, int &outHeight)
+{
+    return nullptr;
 }
 
 void OvrFolderBrowser::frameImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font,
@@ -993,15 +1000,12 @@ void OvrFolderBrowser::frameImpl( App * app, VrFrame const & vrFrame, OvrVRMenuM
 	// Check for thumbnail loads
 	while ( 1 )
 	{
-		const char * cmd = m_textureCommands.nextMessage();
-		if ( !cmd )
-		{
+        VEvent event = m_textureCommands.next();
+        if (!event.isValid()) {
 			break;
 		}
 
-		//LOG( "TextureCommands: %s", cmd );
-		loadThumbnailToTexture( cmd );
-		free( ( void * )cmd );
+        loadThumbnailToTexture(event);
 	}
 
 	// --
@@ -1235,9 +1239,7 @@ void OvrFolderBrowser::buildDirtyMenu( OvrMetaData & metaData )
 	const VRMenuFontParms fontParms( HORIZONTAL_CENTER, VERTICAL_CENTER, false, false, true, 0.525f, 0.45f, 0.5f );
 
 	// Process any thumb creation commands
-	char cmd[ 1024 ];
-    sprintf(cmd, "processCreates %p", &m_thumbCreateAndLoadCommands);
-	m_backgroundCommands.post( cmd );
+    m_backgroundCommands.post("processCreates", reinterpret_cast<int>(&m_thumbCreateAndLoadCommands));
 
 	// Show no media menu if no media found
 	if ( m_mediaCount == 0 )
@@ -1700,52 +1702,46 @@ void * OvrFolderBrowser::ThumbnailThread( void * v )
 	for ( ;; )
 	{
 		folderBrowser->m_backgroundCommands.wait();
-		const char * msg = folderBrowser->m_backgroundCommands.nextMessage();
+        VEvent event = folderBrowser->m_backgroundCommands.next();
 		//LOG( "BackgroundCommands: %s", msg );
 
-		if ( MatchesHead( "shutDown", msg ) )
-		{
+        if (event.name == "shutDown") {
 			LOG( "OvrFolderBrowser::ThumbnailThread shutting down" );
 			folderBrowser->m_backgroundCommands.clear();
 			break;
-		}
-		else if ( MatchesHead( "load ", msg ) )
-		{
-			int folderId = -1;
-			int panelId = -1;
+        } else if (event.name == "load") {
+            int folderId = event.data.at(0).toInt();
+            int panelId = event.data.at(1).toInt();
 
-			sscanf( msg, "load %i %i", &folderId, &panelId );
 			OVR_ASSERT( folderId >= 0 && panelId >= 0 );
 
-			const char * fileName = strstr( msg, ":" ) + 1;
-
-			const VString fullPath( fileName );
+            const VString fullPath = event.data.at(2).toString();
 
 			int		width;
 			int		height;
-			unsigned char * data = folderBrowser->loadThumbnail( fileName, width, height );
+            unsigned char * data = folderBrowser->loadThumbnail(fullPath.toUtf8().data(), width, height );
 			if ( data != NULL )
 			{
 				if ( folderBrowser->applyThumbAntialiasing( data, width, height ) )
 				{
-                    folderBrowser->m_textureCommands.postf( "thumb %i %i %p %i %i",
-						folderId, panelId, data, width, height );
+                    VJson args(VJson::Array);
+                    args << folderId << panelId;
+                    args << reinterpret_cast<int>(data);
+                    args << width << height;
+                    folderBrowser->m_textureCommands.post("thumb", args);
 				}
 			}
 			else
 			{
-				WARN( "Thumbnail load fail for: %s", fileName );
+                WARN( "Thumbnail load fail for: %s", fullPath.toUtf8().data());
 			}
-		}
-		else if ( MatchesHead( "httpThumb", msg ) )
-		{
-			int folderId = -1;
-			int panelId = -1;
-			char panoUrl[ 1024 ] = {};
-			char cacheDestination[ 1024 ] = {};
+        } else if (event.name == "httpThumb") {
+            VString panoUrl = event.data.at(0).toString();
+            VString cacheDestination = event.data.at(1).toString();
+            int folderId = event.data.at(2).toInt();
+            int panelId = event.data.at(3).toInt();
 
-			sscanf( msg, "httpThumb %s %s %d %d", panoUrl, cacheDestination, &folderId, &panelId );
-			OVR_ASSERT( folderId >= 0 && panelId >= 0 );
+            vAssert(folderId >= 0 && panelId >= 0);
 
 			int		width;
 			int		height;
@@ -1761,20 +1757,19 @@ void * OvrFolderBrowser::ThumbnailThread( void * v )
 			{
 				if ( folderBrowser->applyThumbAntialiasing( data, width, height ) )
 				{
-                    folderBrowser->m_textureCommands.postf( "thumb %i %i %p %i %i",
-						folderId, panelId, data, width, height );
+                    VJson args(VJson::Array);
+                    args << folderId << panelId;
+                    args << reinterpret_cast<int>(data);
+                    args << width << height;
+                    folderBrowser->m_textureCommands.post("thumb", args);
 				}
 			}
 			else
 			{
-				WARN( "Thumbnail download fail for: %s", panoUrl );
+                vWarn("Thumbnail download fail for:" << panoUrl);
 			}
-		}
-		else if ( MatchesHead( "processCreates ", msg ) )
-		{
-			VArray< OvrCreateThumbCmd > * ThumbCreateAndLoadCommands;
-
-			sscanf( msg, "processCreates %p", &ThumbCreateAndLoadCommands );
+        } else if (event.name == "processCreates") {
+            VArray<OvrCreateThumbCmd> *ThumbCreateAndLoadCommands = reinterpret_cast<VArray<OvrCreateThumbCmd> *>(event.data.toInt());
 
 			for ( int i = 0; i < ThumbCreateAndLoadCommands->length(); ++i )
 			{
@@ -1809,34 +1804,30 @@ void * OvrFolderBrowser::ThumbnailThread( void * v )
 
                         sscanf( cmd.loadCmd.toCString(), "load %i %i", &folderId, &panelId );
 
-                        folderBrowser->m_textureCommands.postf( "thumb %i %i %p %i %i",
-							folderId, panelId, data, width, height );
+                        VJson args(VJson::Array);
+                        args << folderId << panelId;
+                        args << reinterpret_cast<int>(data);
+                        args << width << height;
+                        folderBrowser->m_textureCommands.post("thumb", args);
 					}
 				}
 			}
 			ThumbCreateAndLoadCommands->clear();
+        } else {
+            vFatal( "OvrFolderBrowser::ThumbnailThread received unhandled message:" << event.name);
 		}
-		else
-		{
-			LOG( "OvrFolderBrowser::ThumbnailThread received unhandled message: %s", msg );
-			OVR_ASSERT( false );
-		}
-
-		free( ( void * )msg );
 	}
-	LOG( "OvrFolderBrowser::ThumbnailThread returned" );
+    vInfo( "OvrFolderBrowser::ThumbnailThread returned" );
 	return NULL;
 }
 
-void OvrFolderBrowser::loadThumbnailToTexture( const char * thumbnailCommand )
+void OvrFolderBrowser::loadThumbnailToTexture( const VEvent &event )
 {
-	int folderId;
-	int panelId;
-	unsigned char * data;
-	int width;
-	int height;
-
-	sscanf( thumbnailCommand, "thumb %i %i %p %i %i", &folderId, &panelId, &data, &width, &height );
+    int folderId = event.data.at(0).toInt();
+    int panelId = event.data.at(1).toInt();
+    uchar *data = reinterpret_cast<uchar *>(event.data.at(2).toInt());
+    int width = event.data.at(3).toInt();
+    int height = event.data.at(4).toInt();
 
 	FolderView * folder = getFolderView( folderId );
 	OVR_ASSERT( folder );
@@ -2023,7 +2014,9 @@ void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const in
 		}
 		else // download and cache it
 		{
-            m_backgroundCommands.postf( "httpThumb %s %s %d %d", panoUrl.toCString(), appCacheThumbPath, folderIndex, panel.id );
+            VJson args(VJson::Array);
+            args << panoUrl << appCacheThumbPath << folderIndex << panel.id;
+            m_backgroundCommands.post("httpThumb", args);
 			return;
 		}
 	}
@@ -2073,10 +2066,9 @@ void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const in
 		}
 	}
 
-	char cmd[ 1024 ];
-    sprintf(cmd, "load %i %i:%s", folderIndex, panel.id, finalThumb.toCString());
-	//LOG( "Thumb cmd: %s", cmd );
-	m_backgroundCommands.post( cmd );
+    VJson args(VJson::Array);
+    args << folderIndex << panel.id << finalThumb;
+    m_backgroundCommands.post("load", args);
 }
 
 bool OvrFolderBrowser::applyThumbAntialiasing( unsigned char * inOutBuffer, int width, int height ) const

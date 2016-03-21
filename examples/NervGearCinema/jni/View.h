@@ -5,9 +5,9 @@
 #include "Input.h"
 
 #include <VString.h>
+#include <VEvent.h>
 
 using namespace NervGear;
-
 
 namespace OculusCinema {
 
@@ -32,7 +32,7 @@ public:
 	virtual void 		OnOpen() = 0;
 	virtual void 		OnClose() = 0;
 
-	virtual bool 		Command( const char * msg ) = 0;
+    virtual bool 		Command(const VEvent &message) = 0;
 	virtual bool 		OnKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType ) = 0;
 
 	virtual Matrix4f 	DrawEyeView( const int eye, const float fovDegrees ) = 0;

@@ -87,13 +87,14 @@ jobject Java_com_vrseen_nervgear_video_MainActivity_nativePrepareNewVideo(JNIEnv
 	// set up a message queue to get the return message
 	// TODO: make a class that encapsulates this work
 	VEventLoop	result( 1 );
-    vApp->eventLoop().postf( "newVideo %p", &result );
+    vApp->eventLoop().post("newVideo", reinterpret_cast<int>(&result));
 
 	result.wait();
-	const char * msg = result.nextMessage();
+    VEvent event = result.next();
 	jobject	texobj;
-	sscanf( msg, "surfaceTexture %p", &texobj );
-	free( ( void * )msg );
+    if (event.name == "surfaceTexture") {
+        texobj = reinterpret_cast<jobject>(event.data.toInt());
+    }
 
 	return texobj;
 }
@@ -101,7 +102,9 @@ jobject Java_com_vrseen_nervgear_video_MainActivity_nativePrepareNewVideo(JNIEnv
 void Java_com_vrseen_nervgear_video_MainActivity_nativeSetVideoSize(JNIEnv *, jclass, int width, int height)
 {
 	LOG( "nativeSetVideoSizes: width=%i height=%i", width, height );
-    vApp->eventLoop().postf( "video %i %i", width, height );
+    VJson args(VJson::Array);
+    args << width << height;
+    vApp->eventLoop().post("video", args);
 }
 
 void Java_com_vrseen_nervgear_video_MainActivity_nativeVideoCompletion(JNIEnv *, jclass)
@@ -439,35 +442,33 @@ bool Oculus360Videos::onKeyEvent( const int keyCode, const KeyState::eKeyEventTy
 	return false;
 }
 
-void Oculus360Videos::Command( const char * msg )
+void Oculus360Videos::Command(const VEvent &event )
 {
 	// Always include the space in MatchesHead to prevent problems
 	// with commands with matching prefixes.
 
-	if ( MatchesHead( "newVideo ", msg ) )
-	{
+    if (event.name == "newVideo") {
 		delete MovieTexture;
 		MovieTexture = new SurfaceTexture( vApp->vrJni() );
 		LOG( "RC_NEW_VIDEO texId %i", MovieTexture->textureId );
 
-		VEventLoop	* receiver;
-		sscanf( msg, "newVideo %p", &receiver );
+        VEventLoop *receiver = reinterpret_cast<VEventLoop *>(event.data.toInt());
 
-        receiver->postf( "surfaceTexture %p", MovieTexture->javaObject );
+        VEvent event("surfaceTexture");
+        event.data = reinterpret_cast<int>(MovieTexture->javaObject);
+        receiver->post(event);
 
 		// don't draw the screen until we have the new size
 		CurrentVideoWidth = 0;
-
 		return;
-	}
-	else if ( MatchesHead( "completion", msg ) ) // video complete, return to menu
-	{
+
+    } else if (event.name == "completion") {// video complete, return to menu
 		SetMenuState( MENU_BROWSER );
 		return;
-	}
-	else if ( MatchesHead( "video ", msg ) )
-	{
-		sscanf( msg, "video %i %i", &CurrentVideoWidth, &CurrentVideoHeight );
+
+    } else if (event.name == "video") {
+        CurrentVideoWidth = event.data.at(0).toInt();
+        CurrentVideoHeight = event.data.at(1).toInt();
 
 		if ( MenuState != MENU_VIDEO_PLAYING ) // If video is already being played dont change the state to video ready
 		{
@@ -475,19 +476,13 @@ void Oculus360Videos::Command( const char * msg )
 		}
 
 		return;
-	}
-	else if ( MatchesHead( "resume ", msg ) )
-	{
+    } else if (event.name == "resume") {
 		OnResume();
 		return;	// allow VrLib to handle it, too
-	}
-	else if ( MatchesHead( "pause ", msg ) )
-	{
+    } else if (event.name == "pause") {
 		OnPause();
 		return;	// allow VrLib to handle it, too
-	}
-	else if ( MatchesHead( "startError", msg ) )
-	{
+    } else if (event.name == "startError") {
 		// FIXME: this needs to do some parameter magic to fix xliff tags
 		VString message;
 		VrLocale::GetString( vApp->vrJni(), vApp->javaObject(), "@string/playback_failed", "@string/playback_failed", message );

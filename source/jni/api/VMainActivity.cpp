@@ -10,17 +10,6 @@
 
 NV_NAMESPACE_BEGIN
 
-static VString ComposeIntentMessage(const VString &packageName, const VString &uri, const VString &jsonText)
-{
-    VString out = "intent ";
-    out.append(packageName);
-    out.append(' ');
-    out.append(uri);
-    out.append(' ');
-    out.append(jsonText);
-    return out;
-}
-
 struct VMainActivity::Private
 {
     JNIEnv *jni;
@@ -98,10 +87,10 @@ VString VMainActivity::getPackageName() const
 void VMainActivity::onCreate(JNIEnv * jni, jclass clazz, jobject activity, jstring javaFromPackageNameString,
         jstring javaCommandString, jstring javaUriString)
 {
-    VString utfFromPackageString = JniUtils::Convert(jni, javaFromPackageNameString);
-    VString utfJsonString = JniUtils::Convert(jni, javaCommandString);
-    VString utfUriString = JniUtils::Convert(jni, javaUriString);
-    vInfo("VMainActivity::SetActivity:" << utfFromPackageString << utfJsonString << utfUriString);
+    VString fromPackage = JniUtils::Convert(jni, javaFromPackageNameString);
+    VString json = JniUtils::Convert(jni, javaCommandString);
+    VString uri = JniUtils::Convert(jni, javaUriString);
+    vInfo("VMainActivity::SetActivity:" << fromPackage << json << uri);
 
     if (vApp == nullptr)
     {	// First time initialization
@@ -126,9 +115,9 @@ void VMainActivity::onCreate(JNIEnv * jni, jclass clazz, jobject activity, jstri
     }
 
     // Send the intent and wait for it to complete.
-    VString intentMessage = ComposeIntentMessage(utfFromPackageString, utfUriString, utfJsonString);
-    VByteArray utf8Intent = intentMessage.toUtf8();
-    vApp->eventLoop().post(utf8Intent.data());
+    VJson args(VJson::Array);
+    args << fromPackage << uri << json;
+    vApp->eventLoop().post("intent", args);
     vApp->syncVrThread();
 }
 
@@ -156,12 +145,12 @@ void VMainActivity::onResume()
     vInfo("VMainActivity::Resumed - default handler called");
 }
 
-void VMainActivity::Command(const char * msg)
+void VMainActivity::Command(const VEvent &msg)
 {
-    vInfo("VMainActivity::Command - default handler called, msg =" << msg);
+    vInfo("VMainActivity::Command - default handler called, msg =" << msg.name);
 }
 
-void VMainActivity::onNewIntent(const char * fromPackageName, const char * command, const char * uri)
+void VMainActivity::onNewIntent(const VString &fromPackageName, const VString &command, const VString &uri)
 {
     vInfo("VMainActivity::NewIntent - default handler called -" << fromPackageName << command << uri);
 }
@@ -224,8 +213,7 @@ extern "C"
 
 void Java_com_vrseen_nervgear_VrActivity_nativeSurfaceChanged(JNIEnv *jni, jclass, jobject surface)
 {
-    vApp->eventLoop().sendf("surfaceChanged %p",
-            surface ? ANativeWindow_fromSurface(jni, surface) : nullptr);
+    vApp->eventLoop().send("surfaceChanged", reinterpret_cast<int>(surface ? ANativeWindow_fromSurface(jni, surface) : nullptr));
 }
 
 void Java_com_vrseen_nervgear_VrActivity_nativeSurfaceDestroyed(JNIEnv *jni, jclass clazz)
@@ -237,13 +225,15 @@ void Java_com_vrseen_nervgear_VrActivity_nativeSurfaceDestroyed(JNIEnv *jni, jcl
         return;
     }
 
-    vApp->eventLoop().send("surfaceDestroyed ");
+    vApp->eventLoop().send("surfaceDestroyed");
 }
 
 void Java_com_vrseen_nervgear_VrActivity_nativePopup(JNIEnv *, jclass,
         jint width, jint height, jfloat seconds)
 {
-    vApp->eventLoop().postf("popup %i %i %f", width, height, seconds);
+    VJson args(VJson::Array);
+    args << width << height << seconds;
+    vApp->eventLoop().post("popup", args);
 }
 
 jobject Java_com_vrseen_nervgear_VrActivity_nativeGetPopupSurfaceTexture(JNIEnv *, jclass)
@@ -254,12 +244,12 @@ jobject Java_com_vrseen_nervgear_VrActivity_nativeGetPopupSurfaceTexture(JNIEnv 
 void Java_com_vrseen_nervgear_VrActivity_nativePause(JNIEnv *jni, jclass clazz,
         jlong appPtr)
 {
-    vApp->eventLoop().send("pause ");
+    vApp->eventLoop().send("pause");
 }
 
 void Java_com_vrseen_nervgear_VrActivity_nativeResume(JNIEnv *jni, jclass clazz)
 {
-    vApp->eventLoop().send("resume ");
+    vApp->eventLoop().send("resume");
 }
 
 void Java_com_vrseen_nervgear_VrActivity_nativeDestroy(JNIEnv *, jclass)
@@ -279,7 +269,9 @@ void Java_com_vrseen_nervgear_VrActivity_nativeJoypadAxis(JNIEnv *jni, jclass cl
 {
     // Suspend input until OneTimeInit() has finished to avoid overflowing the message queue on long loads.
     if (vApp->oneTimeInitCalled) {
-        vApp->eventLoop().postf("joy %f %f %f %f", lx, ly, rx, ry);
+        VJson args(VJson::Array);
+        args << lx << ly << rx << ry;
+        vApp->eventLoop().post("joy", args);
     }
 }
 
@@ -288,7 +280,9 @@ void Java_com_vrseen_nervgear_VrActivity_nativeTouch(JNIEnv *, jclass,
 {
     // Suspend input until OneTimeInit() has finished to avoid overflowing the message queue on long loads.
     if (vApp->oneTimeInitCalled) {
-        vApp->eventLoop().postf("touch %i %f %f", action, x, y);
+        VJson args(VJson::Array);
+        args << action << x << y;
+        vApp->eventLoop().post("touch", args);
     }
 }
 
@@ -297,21 +291,22 @@ void Java_com_vrseen_nervgear_VrActivity_nativeKeyEvent(JNIEnv *jni, jclass claz
 {
     // Suspend input until OneTimeInit() has finished to avoid overflowing the message queue on long loads.
     if (vApp->oneTimeInitCalled) {
-        vApp->eventLoop().postf("key %i %i %i", key, down, repeatCount);
+        VJson args(VJson::Array);
+        args << key << down << repeatCount;
+        vApp->eventLoop().post("key", args);
     }
 }
 
 void Java_com_vrseen_nervgear_VrActivity_nativeNewIntent(JNIEnv *jni, jclass clazz,
         jstring fromPackageName, jstring command, jstring uriString)
 {
-    VString utfPackageName = JniUtils::Convert(jni, fromPackageName);
-    VString utfUri = JniUtils::Convert(jni, uriString);
-    VString utfJson = JniUtils::Convert(jni, command);
+    VString packageName = JniUtils::Convert(jni, fromPackageName);
+    VString uri = JniUtils::Convert(jni, uriString);
+    VString json = JniUtils::Convert(jni, command);
 
-    VString intentMessage = ComposeIntentMessage(utfPackageName, utfUri, utfJson);
-    vInfo("nativeNewIntent:" << intentMessage);
-    VByteArray utf8Message = intentMessage.toUtf8();
-    vApp->eventLoop().post(utf8Message.data());
+    VJson args(VJson::Array);
+    args << packageName << uri << json;
+    vApp->eventLoop().post("intent", args);
 }
 
 }	// extern "C"

@@ -20,7 +20,7 @@ public:
 
 	Matrix4f 			DrawEyeView( const int eye, const float fovDegrees );
 
-	bool 				Command( const char * msg );
+    bool Command(const VEvent &event);
 
 	Matrix4f 			Frame( const VrFrame & vrFrame );
 

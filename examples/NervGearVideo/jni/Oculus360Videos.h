@@ -43,7 +43,7 @@ public:
 	virtual void		ConfigureVrMode( ovrModeParms & modeParms );
 	virtual Matrix4f 	drawEyeView( const int eye, const float fovDegrees );
 	virtual Matrix4f 	onNewFrame( VrFrame vrFrame );
-	virtual void		Command( const char * msg );
+    void Command(const VEvent &event) override;
 	virtual bool 		onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType );
 
 	void 				StopVideo();

@@ -35,7 +35,7 @@ public:
 
 	virtual Matrix4f 					DrawEyeView( const int eye, const float fovDegrees );
 	virtual Matrix4f 					Frame( const VrFrame & vrFrame );
-	virtual bool						Command( const char * msg );
+    bool Command(const VEvent &) override;
 	virtual bool 						OnKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType );
 
     void 								SetMovieList( const VArray<const MovieDef *> &movies, const MovieDef *nextMovie );

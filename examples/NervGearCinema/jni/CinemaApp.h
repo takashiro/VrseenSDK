@@ -27,7 +27,7 @@ public:
 
     void ConfigureVrMode(ovrModeParms & modeParms) override;
 
-    void Command( const char * msg ) override;
+    void Command(const VEvent &event) override;
     bool onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType ) override;
 
 	// Called by App loop

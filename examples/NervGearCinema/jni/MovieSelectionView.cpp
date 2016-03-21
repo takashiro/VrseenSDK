@@ -185,7 +185,7 @@ void MovieSelectionView::OnClose()
 	Cinema.sceneMgr.ClearMovie();
 }
 
-bool MovieSelectionView::Command( const char * msg )
+bool MovieSelectionView::Command(const VEvent &)
 {
 	return false;
 }

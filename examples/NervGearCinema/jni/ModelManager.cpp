@@ -261,7 +261,7 @@ const SceneDef & ModelManager::GetTheater( uint index ) const
  *
  * Actions that need to be performed on the render thread.
  */
-bool ModelManager::Command( const char * msg )
+bool ModelManager::Command(const VEvent &)
 {
 	return false;
 }

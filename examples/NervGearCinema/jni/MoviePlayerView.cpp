@@ -388,20 +388,18 @@ void MoviePlayerView::OnClose()
  *
  * Actions that need to be performed on the render thread.
  */
-bool MoviePlayerView::Command( const char * msg )
+bool MoviePlayerView::Command(const VEvent &event )
 {
 	if ( CurViewState != VIEWSTATE_OPEN )
 	{
 		return false;
 	}
 
-	if ( MatchesHead( "resume ", msg ) )
+    if (event.name == "resume")
 	{
         Cinema.setMovieSelection( false );
 		return false;	// allow VrLib to handle it, too
-	}
-	else if ( MatchesHead( "pause ", msg ) )
-	{
+    } else if (event.name == "pause") {
 		Native::StopMovie( vApp );
 		return false;	// allow VrLib to handle it, too
 	}

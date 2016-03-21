@@ -70,7 +70,7 @@ public:
     void ConfigureVrMode( ovrModeParms & modeParms ) override;
     Matrix4f 	drawEyeView( const int eye, const float fovDegrees ) override;
     Matrix4f 	onNewFrame( VrFrame vrFrame ) override;
-    void		Command( const char * msg ) override;
+    void Command(const VEvent &event) override;
     bool 		onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType ) override;
     bool		wantSrgbFramebuffer() const override;
 
@@ -94,7 +94,7 @@ public:
 private:
 	// Background textures loaded into GL by background thread using shared context
 	static void *		BackgroundGLLoadThread( void * v );
-    void				startBackgroundPanoLoad( const char * filename );
+    void				startBackgroundPanoLoad(const VString &filename );
     const char *		menuStateString( const OvrMenuState state );
     bool 				loadMetaData( const char * metaFile );
     void				loadRgbaCubeMap( const int resolution, const unsigned char * const rgba[ 6 ], const bool useSrgbFormat );

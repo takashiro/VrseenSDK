@@ -110,7 +110,7 @@ public:
 	virtual void 			OnOpen();
 	virtual void 			OnClose();
 
-    bool Command( const char * msg ) override;
+    bool Command(const VEvent &event) override;
 	virtual bool 			OnKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType );
 
 	void 					MovieLoaded( const int width, const int height, const int duration );

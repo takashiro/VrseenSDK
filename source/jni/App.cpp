@@ -818,71 +818,55 @@ struct App::Private : public TalkToJavaInterface
         }
     }
 
-    void command(const char *msg)
+    void command(const VEvent &event)
     {
         // Always include the space in MatchesHead to prevent problems
         // with commands that have matching prefixes.
 
-        if (MatchesHead("joy ", msg))
-        {
-            sscanf(msg, "joy %f %f %f %f",
-                    &joypad.sticks[0][0],
-                    &joypad.sticks[0][1],
-                    &joypad.sticks[1][0],
-                    &joypad.sticks[1][1]);
+        if (event.name == "joy") {
+            vAssert(event.data.isArray());
+            const JsonArray &array = event.data.toArray();
+            joypad.sticks[0][0] = array.at(0).toDouble();
+            joypad.sticks[0][1] = array.at(1).toDouble();
+            joypad.sticks[1][0] = array.at(2).toDouble();
+            joypad.sticks[1][1] = array.at(3).toDouble();
             return;
         }
 
-        if (MatchesHead("touch ", msg))
-        {
-            int	action;
-            sscanf(msg, "touch %i %f %f",
-                    &action,
-                    &joypad.touch[0],
-                    &joypad.touch[1]);
-            if (action == 0)
-            {
+        if (event.name == "touch") {
+            vAssert(event.data.isArray());
+            const JsonArray &array = event.data.toArray();
+            int	action = array.at(0).toInt();
+            joypad.touch[0] = array.at(1).toDouble();
+            joypad.touch[1] = array.at(2).toDouble();
+            if (action == 0) {
                 joypad.buttonState |= BUTTON_TOUCH;
             }
-            if (action == 1)
-            {
+            if (action == 1) {
                 joypad.buttonState &= ~BUTTON_TOUCH;
             }
             return;
         }
 
-        if (MatchesHead("key ", msg))
-        {
-            int	key, down, repeatCount;
-            sscanf(msg, "key %i %i %i", &key, &down, &repeatCount);
+        if (event.name == "key") {
+            vAssert(event.data.isArray());
+            const JsonArray &array = event.data.toArray();
+            int	key = array.at(0).toInt();
+            int down = array.at(1).toInt();
+            int repeatCount = array.at(2).toInt();
             onKeyEvent(key, down, repeatCount);
-            // We simply return because KeyEvent will call VrAppInterface->OnKeyEvent to give the app a
-            // chance to handle and consume the key before VrLib gets it. VrAppInterface needs to get the
-            // key first and have a chance to consume it completely because keys are context sensitive
-            // and only the app interface can know the current context the key should apply to. For
-            // instance, the back key backs out of some current state in the app -- but only the app knows
-            // whether or not there is a state to back out of at all. If we were to fall through here, the
-            // "key " message will be sent to VrAppInterface->Command() but only after VrLib has handled
-            // and or consumed the key first, which would break the back key behavior, and probably anything
-            // else, like input into an edit control.
             return;
         }
 
-        if (MatchesHead("surfaceChanged ", msg))
-        {
-            vInfo(msg);
+        if (event.name == "surfaceChanged") {
+            vInfo(event.name);
             if (windowSurface != EGL_NO_SURFACE)
             {	// Samsung says this is an Android problem, where surfaces are reported as
                 // created multiple times.
-                WARN("Skipping create work because window hasn't been destroyed.");
+                vWarn("Skipping create work because window hasn't been destroyed.");
                 return;
             }
-            sscanf(msg, "surfaceChanged %p", &nativeWindow);
-
-            // Optionally force the window to a different resolution, which
-            // will be automatically scaled up by the HWComposer.
-            //
-            //ANativeWindow_setBuffersGeometry(nativeWindow, 1920, 1080, 0);
+            nativeWindow = reinterpret_cast<ANativeWindow *>(event.data.toInt());
 
             EGLint attribs[100];
             int		numAttribs = 0;
@@ -946,8 +930,7 @@ struct App::Private : public TalkToJavaInterface
             return;
         }
 
-        if (MatchesHead("surfaceDestroyed ", msg))
-        {
+        if (event.name == "surfaceDestroyed") {
             vInfo("surfaceDestroyed");
 
             // Let the client app shutdown first.
@@ -973,8 +956,7 @@ struct App::Private : public TalkToJavaInterface
             return;
         }
 
-        if (MatchesHead("pause ", msg))
-        {
+        if (event.name == "pause") {
             vInfo("pause");
             if (!paused)
             {
@@ -983,8 +965,7 @@ struct App::Private : public TalkToJavaInterface
             }
         }
 
-        if (MatchesHead("resume ", msg))
-        {
+        if (event.name == "resume") {
             LOG("resume");
             paused = false;
             // Don't actually do the resume operations if we don't have
@@ -999,52 +980,35 @@ struct App::Private : public TalkToJavaInterface
             }
         }
 
-        if (MatchesHead("intent ", msg))
-        {
-            char fromPackageName[512];
-            char uri[1024];
-            // since the package name and URI cannot contain spaces, but JSON can,
-            // the JSON string is at the end and will come after the third space.
-            sscanf(msg, "intent %s %s", fromPackageName, uri);
-            char const * jsonStart = nullptr;
-            size_t msgLen = strlen(msg);
-            int spaceCount = 0;
-            for (size_t i = 0; i < msgLen; ++i) {
-                if (msg[i] == ' ') {
-                    spaceCount++;
-                    if (spaceCount == 3) {
-                        jsonStart = &msg[i+1];
-                        break;
-                    }
-                }
-            }
+        if (event.name == "intent") {
+            vAssert(event.data.isArray());
+            VString fromPackageName = event.data.at(0).toString();
+            VString uri = event.data.at(1).toString();
+            VString json = event.data.at(2).toString();
 
-            if (strcmp(fromPackageName, EMPTY_INTENT_STR) == 0)
-            {
-                fromPackageName[0] = '\0';
+            if (fromPackageName == EMPTY_INTENT_STR) {
+                fromPackageName.clear();
             }
-            if (strcmp(uri, EMPTY_INTENT_STR) == 0)
-            {
-                uri[0] = '\0';
+            if (uri == EMPTY_INTENT_STR) {
+                uri.clear();
             }
 
             // assign launchIntent to the intent command
             launchIntentFromPackage = fromPackageName;
-            launchIntentJSON = jsonStart;
+            launchIntentJSON = json;
             launchIntentURI = uri;
 
             // when the PlatformActivity is launched, this is how it gets its command to start
             // a particular UI.
-            appInterface->onNewIntent(fromPackageName, jsonStart, uri);
-
+            appInterface->onNewIntent(fromPackageName, json, uri);
             return;
         }
 
-        if (MatchesHead("popup ", msg))
-        {
-            int width, height;
-            float seconds;
-            sscanf(msg, "popup %i %i %f", &width, &height, &seconds);
+        if (event.name == "popup") {
+            vAssert(event.data.isArray());
+            int width = event.data.at(0).toInt();
+            int height = event.data.at(1).toInt();
+            float seconds = event.data.at(2).toDouble();
 
             dialogWidth = width;
             dialogHeight = height;
@@ -1060,20 +1024,18 @@ struct App::Private : public TalkToJavaInterface
             return;
         }
 
-        if (MatchesHead("sync ", msg))
-        {
+        if (event.name == "sync") {
             return;
         }
 
-        if (MatchesHead("quit ", msg))
-        {
+        if (event.name == "quit") {
             ovr_LeaveVrMode(OvrMobile);
             readyToExit = true;
             vInfo("VrThreadSynced=" << vrThreadSynced << " CreatedSurface=" << createdSurface << " ReadyToExit=" << readyToExit);
         }
 
         // Pass it on to the client app.
-        appInterface->Command(msg);
+        appInterface->Command(event);
     }
 
     void startRendering()
@@ -1158,15 +1120,12 @@ struct App::Private : public TalkToJavaInterface
             gazeCursor->BeginFrame();
 
             // Process incoming messages until queue is empty
-            for (; ;)
-            {
-                const char * msg = eventLoop.nextMessage();
-                if (!msg)
-                {
+            forever {
+                VEvent event = eventLoop.next();
+                if (!event.isValid()) {
                     break;
                 }
-                command(msg);
-                free((void *)msg);
+                command(event);
             }
 
             // handle any pending system activity events
@@ -1608,25 +1567,23 @@ struct App::Private : public TalkToJavaInterface
         }
     }
 
-    void TtjCommand(JNIEnv *jni, const char * commandString) override
+    void TtjCommand(JNIEnv *jni, const VEvent &event) override
     {
-        if (MatchesHead("sound ", commandString))
-        {
-            jstring cmdString = JniUtils::Convert(jni, commandString + 6);
+        if (event.name == "sound") {
+            jstring cmdString = JniUtils::Convert(jni, event.data.toString());
             jni->CallVoidMethod(javaObject, playSoundPoolSoundMethodId, cmdString);
             jni->DeleteLocalRef(cmdString);
             return;
         }
 
-        if (MatchesHead("toast ", commandString))
-        {
-            jstring cmdString = JniUtils::Convert(jni, commandString + 6);
+        if (event.name == "toast") {
+            jstring cmdString = JniUtils::Convert(jni, event.data.toString());
             jni->CallVoidMethod(javaObject, createVrToastMethodId, cmdString);
             jni->DeleteLocalRef(cmdString);
             return;
         }
 
-        if (MatchesHead("finish ", commandString)) {
+        if (event.name == "finish") {
             activity->finishActivity();
         }
     }
@@ -1751,7 +1708,7 @@ void App::startVrThread()
 
 void App::stopVrThread()
 {
-    d->eventLoop.post("quit ");
+    d->eventLoop.post("quit");
     bool finished = d->renderThread->wait();
     if (!finished) {
         vWarn("failed to wait for VrThread");
@@ -1760,7 +1717,7 @@ void App::stopVrThread()
 
 void App::syncVrThread()
 {
-    d->eventLoop.send("sync ");
+    d->eventLoop.send("sync");
     d->vrThreadSynced = true;
 }
 
@@ -1779,7 +1736,7 @@ void App::createToast(const char * fmt, ...)
 
     vInfo("CreateToast" << bigBuffer);
 
-    d->ttj.GetMessageQueue().postf("toast %s", bigBuffer);
+    d->ttj.GetMessageQueue().post("toast", bigBuffer);
 }
 
 void App::playSound(const char * name)
@@ -1790,13 +1747,13 @@ void App::playSound(const char * name)
     if (d->soundManager.getSound(name, soundFile))
 	{
 		// Run on the talk to java thread
-        d->ttj.GetMessageQueue().postf("sound %s", soundFile.toCString());
+        d->ttj.GetMessageQueue().post("sound", soundFile);
 	}
 	else
 	{
         WARN("AppLocal::playSound called with non SoundManager defined sound: %s", name);
 		// Run on the talk to java thread
-        d->ttj.GetMessageQueue().postf("sound %s", name);
+        d->ttj.GetMessageQueue().post("sound", name);
 	}
 }
 

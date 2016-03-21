@@ -55,10 +55,6 @@ void OvrApp::shutdown()
         
 }
 
-void OvrApp::Command( const char * msg )
-{
-}
-
 Matrix4f OvrApp::drawEyeView( const int eye, const float fovDegrees )
 {
 	const Matrix4f view = Scene.DrawEyeView( eye, fovDegrees );

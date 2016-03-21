@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vglobal.h"
+#include "VEvent.h"
 #include "VString.h"
 
 #include "Input.h"
@@ -34,7 +34,7 @@ public:
     virtual Matrix4f drawEyeView( const int eye, const float fovDegrees );
     virtual void ConfigureVrMode( ovrModeParms & modeParms );
 
-    virtual void onNewIntent( const char * fromPackageName, const char * command, const char * uri );
+    virtual void onNewIntent(const VString &fromPackageName, const VString &command, const VString &uri);
     virtual void onWindowCreated();
     virtual void onWindowDestroyed();
     virtual void onPause();
@@ -46,7 +46,7 @@ public:
     virtual bool wantSrgbFramebuffer() const;
     virtual bool wantProtectedFramebuffer() const;
 
-    virtual void Command( const char * msg );
+    virtual void Command(const VEvent &msg);
 
     jclass javaClass() const;
 

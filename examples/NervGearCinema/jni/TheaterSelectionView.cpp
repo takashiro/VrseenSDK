@@ -114,7 +114,7 @@ void TheaterSelectionView::OnClose()
 	CurViewState = VIEWSTATE_CLOSED;
 }
 
-bool TheaterSelectionView::Command( const char * msg )
+bool TheaterSelectionView::Command(const VEvent &)
 {
 	return false;
 }

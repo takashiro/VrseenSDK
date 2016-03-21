@@ -175,13 +175,13 @@ protected:
 	// Optional interface
 	//
 	// Request external thumbnail - called on main thread
-    virtual unsigned char *		retrieveRemoteThumbnail(
-			const char * url,
-			const char * cacheDestinationFile,
+    virtual uchar *retrieveRemoteThumbnail(
+            const VString &url,
+            const VString &cacheDestinationFile,
 			int folderId,
 			int panelId,
 			int & outWidth,
-			int & outHeight ) { return NULL; }
+            int & outHeight );
 
 	// If we fail to load one type of thumbnail, try an alternative
     virtual VString				alternateThumbName( const VString & s ) { return VString(); }
@@ -206,7 +206,7 @@ protected:
 private:
 	static void *		ThumbnailThread( void * v );
     pthread_t			m_thumbnailThreadId;
-    void				loadThumbnailToTexture( const char * thumbnailCommand );
+    void				loadThumbnailToTexture(const VEvent &thumbnailCommand );
 
 	friend class OvrPanel_OnUp;
     void				onPanelUp( const OvrMetaDatum * data );

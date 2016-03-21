@@ -53,12 +53,12 @@ void ViewManager::closeView()
 	}
 }
 
-bool ViewManager::command( const char * msg )
+bool ViewManager::command(const VEvent &event)
 {
 	bool result = false;
     for( uint i = 0; i < m_views.size(); i++ )
 	{
-		result = m_views[ i ]->Command( msg );
+        result = m_views[ i ]->Command(event);
 		if ( result )
 		{
 			break;

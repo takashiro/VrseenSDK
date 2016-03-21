@@ -15,6 +15,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <string.h>
 
 #include "Android/LogUtils.h"
+#include "VLog.h"
 
 namespace NervGear
 {
@@ -83,17 +84,15 @@ void TalkToJava::TtjThreadFunction()
 	// Process all queued messages
 	for ( ; ; )
 	{
-		const char * msg = TtjMessageQueue.nextMessage();
-		if ( !msg )
-		{
+        VEvent event = TtjMessageQueue.next();
+        if (!event.isValid()) {
 			// Go dormant until something else arrives.
 			TtjMessageQueue.wait();
 			continue;
 		}
 
-		if ( strcmp( msg, "quit" ) == 0 )
-		{
-			break;
+        if (event.name == "quit") {
+            break;
 		}
 
 		// Set up a local frame with room for at least 100
@@ -101,20 +100,18 @@ void TalkToJava::TtjThreadFunction()
 		Jni->PushLocalFrame( 100 );
 
 		// Let whoever initialized us do what they want.
-        Interface->TtjCommand(Jni, msg);
+        Interface->TtjCommand(Jni, event);
 
 		// If we don't clean up exceptions now, later
 		// calls may fail.
 		if ( Jni->ExceptionOccurred() )
 		{
 			Jni->ExceptionClear();
-			LOG( "JNI exception after: %s", msg );
+            vInfo("JNI exception after:" << event.name);
 		}
 
 		// Free any local references
 		Jni->PopLocalFrame( NULL );
-
-		free( (void *)msg );
 	}
 
 	LOG( "TalkToJava: Jvm->DetachCurrentThread" );
@@ -122,7 +119,7 @@ void TalkToJava::TtjThreadFunction()
 	if ( returnDetach != JNI_OK )
 	{
 		LOG( "javaVM->DetachCurrentThread returned %i", returnDetach );
-	}
+    }
 }
 
 }

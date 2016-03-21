@@ -16,8 +16,7 @@ public:
 	virtual void		init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI );
 	virtual void		shutdown();
 	virtual Matrix4f 	drawEyeView( const int eye, const float fovDegrees );
-	virtual Matrix4f 	onNewFrame( VrFrame vrFrame );
-	virtual void		Command( const char * msg );
+    virtual Matrix4f 	onNewFrame( VrFrame vrFrame );
 
 	OvrSceneView		Scene;
 };
