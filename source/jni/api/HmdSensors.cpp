@@ -254,11 +254,11 @@ void HMDState::onMessage( const NervGear::Message & msg )
 		m_sensorChangedCount++;
 		if ( msg.Type == NervGear::Message_DeviceAdded )
 		{
-			LOG( "HMDState::OnMessage: added Device_Sensor (tid=%d, cnt=%d)", gettid(), m_sensorChangedCount );
+			LOG( "HMDState::OnMessage: added Device_Sensor (tid=%d, cnt=%d)", gettid(), m_sensorChangedCount.load());
 		}
 		else if ( msg.Type == NervGear::Message_DeviceRemoved )
 		{
-			LOG( "HMDState::OnMessage: removed Device_Sensor (tid=%d, cnt=%d)", gettid(), m_sensorChangedCount );
+			LOG( "HMDState::OnMessage: removed Device_Sensor (tid=%d, cnt=%d)", gettid(), m_sensorChangedCount.load() );
 		}
 	}
 	else if ( statusMsg.Handle.type() == NervGear::Device_LatencyTester )
@@ -266,11 +266,11 @@ void HMDState::onMessage( const NervGear::Message & msg )
 		m_latencyTesterChangedCount++;
 		if ( msg.Type == NervGear::Message_DeviceAdded )
 		{
-			LOG( "HMDState::OnMessage: added Device_LatencyTester (tid=%d, cnt=%d)", gettid(), m_latencyTesterChangedCount );
+			LOG( "HMDState::OnMessage: added Device_LatencyTester (tid=%d, cnt=%d)", gettid(), m_latencyTesterChangedCount.load() );
 		}
 		else if ( msg.Type == NervGear::Message_DeviceRemoved )
 		{
-			LOG( "HMDState::OnMessage: removed Device_LatencyTester (tid=%d, cnt=%d)", gettid(), m_latencyTesterChangedCount );
+			LOG( "HMDState::OnMessage: removed Device_LatencyTester (tid=%d, cnt=%d)", gettid(), m_latencyTesterChangedCount.load() );
 		}
 	}
 }
