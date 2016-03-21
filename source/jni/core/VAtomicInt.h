@@ -22,6 +22,10 @@ public:
     {
 
     }
+    inline VAtomicInt(const VAtomicInt &src) : atomic<Type>()
+    {
+        store(src.load());
+    }
     inline Type exchangeAddSync(Type value)
     {
         return fetch_add(value);

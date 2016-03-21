@@ -4,6 +4,7 @@
 
 #include "Types.h"
 #include "Allocator.h"
+#include "VAtomicInt.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -36,11 +37,11 @@ class   RefCountNTSImpl;
 class RefCountImplCore
 {
 protected:
-    volatile int RefCount;
+    VAtomicInt m_refCount;
 
 public:
     // RefCountImpl constructor always initializes RefCount to 1 by default.
-    OVR_FORCE_INLINE RefCountImplCore() : RefCount(1) { }
+    OVR_FORCE_INLINE RefCountImplCore() : m_refCount(1) { }
 
     // Need virtual destructor
     // This:    1. Makes sure the right destructor's called.
@@ -48,7 +49,7 @@ public:
     virtual ~RefCountImplCore();
 
     // Debug method only.
-    int GetRefCount() const { return RefCount;  }
+    int GetRefCount() const { return m_refCount.load();  }
 
     // This logic is used to detect invalid 'delete' calls of reference counted
     // objects. Direct delete calls are not allowed on them unless they come in
@@ -57,7 +58,7 @@ public:
     static void   OVR_CDECL  reportInvalidDelete(void *pmem);
     inline static void checkInvalidDelete(RefCountImplCore *pmem)
     {
-        if (pmem->RefCount != 0)
+        if (pmem->m_refCount.load() != 0)
             reportInvalidDelete(pmem);
     }
 #else
@@ -71,11 +72,11 @@ public:
 class RefCountNTSImplCore
 {
 protected:
-    mutable int RefCount;
+    mutable VAtomicInt m_refCount;
 
 public:
     // RefCountImpl constructor always initializes RefCount to 1 by default.
-    OVR_FORCE_INLINE RefCountNTSImplCore() : RefCount(1) { }
+    OVR_FORCE_INLINE RefCountNTSImplCore() : m_refCount(1) { }
 
     // Need virtual destructor
     // This:    1. Makes sure the right destructor's called.
@@ -83,7 +84,7 @@ public:
     virtual ~RefCountNTSImplCore();
 
     // Debug method only.
-    int             GetRefCount() const { return RefCount;  }
+    int             GetRefCount() const { return m_refCount.load();  }
 
     // This logic is used to detect invalid 'delete' calls of reference counted
     // objects. Direct delete calls are not allowed on them unless they come in
@@ -92,7 +93,7 @@ public:
     static void   OVR_CDECL  reportInvalidDelete(void *pmem);
     OVR_FORCE_INLINE static void checkInvalidDelete(RefCountNTSImplCore *pmem)
     {
-        if (pmem->RefCount != 0)
+        if (pmem->m_refCount.load() != 0)
             reportInvalidDelete(pmem);
     }
 #else
@@ -134,7 +135,7 @@ public:
 class RefCountNTSImpl : public RefCountNTSImplCore
 {
 public:
-    OVR_FORCE_INLINE void    AddRef() const { RefCount++; }
+    OVR_FORCE_INLINE void    AddRef() const { m_refCount++; }
     void    Release() const;
 };
 

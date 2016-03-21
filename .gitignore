@@ -16,6 +16,4 @@ libs/
 *.jar
 .metadata/
 .settings/
-*.bat
-*.sh
-*.log
+MYTEMP/
