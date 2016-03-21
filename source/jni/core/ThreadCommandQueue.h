@@ -6,7 +6,7 @@
 #include "List.h"
 #include "Atomic.h"
 #include "Allocator.h"
-#include "VEvent.h"
+#include "VSignal.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -26,7 +26,7 @@ public:
     // calling (producer)  thread when command is completed or queue slot is available.
     class NotifyEvent : public ListNode<NotifyEvent>, public NewOverrideBase
     {
-        VEvent E;
+        VSignal E;
     public:
         NotifyEvent() { }
 

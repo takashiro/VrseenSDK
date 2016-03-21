@@ -1,10 +1,10 @@
-#include "VEvent.h"
+#include "VSignal.h"
 #include "VMutex.h"
 #include "VWaitCondition.h"
 
 NV_NAMESPACE_BEGIN
 
-struct VEvent::Private
+struct VSignal::Private
 {
     // Event state, its mutex and the wait condition
     volatile bool state;
@@ -22,19 +22,19 @@ struct VEvent::Private
     }
 };
 
-VEvent::VEvent(bool state)
+VSignal::VSignal(bool state)
     : d(new Private)
 {
     d->state = state;
     d->temporary = false;
 }
 
-VEvent::~VEvent()
+VSignal::~VSignal()
 {
     delete d;
 }
 
-bool VEvent::wait(uint delay)
+bool VSignal::wait(uint delay)
 {
     VMutex::Locker lock(&d->stateMutex);
 
@@ -58,17 +58,17 @@ bool VEvent::wait(uint delay)
     return state;
 }
 
-void VEvent::set()
+void VSignal::set()
 {
     d->updateState(true, false, true);
 }
 
-void VEvent::reset()
+void VSignal::reset()
 {
     d->updateState(false, false, false);
 }
 
-void VEvent::pulse()
+void VSignal::pulse()
 {
     d->updateState(true, true, true);
 }

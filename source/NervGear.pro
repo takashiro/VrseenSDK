@@ -23,7 +23,6 @@ SOURCES += \
     jni/core/VByteArray.cpp \
     jni/core/VChar.cpp \
     jni/core/VDir.cpp \
-    jni/core/VEvent.cpp \
     jni/core/VJson.cpp \
     jni/core/Log.cpp \
     jni/core/VLog.cpp \
@@ -31,6 +30,7 @@ SOURCES += \
     jni/core/VMath.cpp \
     jni/core/VPath.cpp \
     jni/core/RefCount.cpp \
+    jni/core/VSignal.cpp \
     jni/core/VStandardPath.cpp \
     jni/core/VString.cpp \
     jni/core/System.cpp \
@@ -143,7 +143,6 @@ HEADERS += \
     jni/core/ContainerAllocator.h \
     jni/core/Deque.h \
     jni/core/VDir.h \
-    jni/core/VEvent.h \
     jni/core/VFlags.h \
     jni/core/VJson.h \
     jni/core/Log.h \
@@ -152,6 +151,7 @@ HEADERS += \
     jni/core/VMath.h \
     jni/core/VPath.h \
     jni/core/RefCount.h \
+    jni/core/VSignal.h \
     jni/core/VStandardPath.h \
     jni/core/VString.h \
     jni/core/String_FormatUtil.h \

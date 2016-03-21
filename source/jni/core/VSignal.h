@@ -4,7 +4,7 @@
 
 NV_NAMESPACE_BEGIN
 
-class VEvent
+class VSignal
 {
     enum
     {
@@ -12,8 +12,8 @@ class VEvent
     };
 
 public:
-    VEvent(bool state = false);
-    ~VEvent();
+    VSignal(bool state = false);
+    ~VSignal();
 
     // Wait on an event condition until it is set
     // Delay is specified in milliseconds (1/1000 of a second).
@@ -32,7 +32,7 @@ public:
 
 private:
     NV_DECLARE_PRIVATE
-    NV_DISABLE_COPY(VEvent)
+    NV_DISABLE_COPY(VSignal)
 };
 
 NV_NAMESPACE_END
