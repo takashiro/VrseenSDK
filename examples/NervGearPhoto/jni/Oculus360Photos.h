@@ -62,7 +62,7 @@ public:
 		volatile int	CurrentIndex;
 	};
 
-    Oculus360Photos(JNIEnv *jni, jobject activityObject);
+    Oculus360Photos(JNIEnv *jni, jclass activityClass, jobject activityObject);
 	~Oculus360Photos();
 
     void init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI ) override;

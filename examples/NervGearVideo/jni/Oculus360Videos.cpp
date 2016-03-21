@@ -72,7 +72,7 @@ void Java_com_vrseen_nervgear_video_MainActivity_nativeSetAppInterface( JNIEnv *
 	GlobalActivityClass = (jclass)jni->NewGlobalRef( clazz );
 
 	LOG( "nativeSetAppInterface");
-    (new Oculus360Videos(jni, activity))->onCreate( jni, clazz, activity, fromPackageName, commandString, uriString );
+    (new Oculus360Videos(jni, clazz, activity))->onCreate( jni, clazz, activity, fromPackageName, commandString, uriString );
 }
 
 void Java_com_vrseen_nervgear_video_MainActivity_nativeFrameAvailable(JNIEnv *, jclass)
@@ -120,8 +120,8 @@ void Java_com_vrseen_nervgear_video_MainActivity_nativeVideoStartError(JNIEnv *,
 
 
 
-Oculus360Videos::Oculus360Videos(JNIEnv *jni, jobject activity)
-    : VMainActivity(jni, activity)
+Oculus360Videos::Oculus360Videos(JNIEnv *jni, jclass activityClass, jobject activityObject)
+    : VMainActivity(jni, activityClass, activityObject)
     , MainActivityClass( GlobalActivityClass )
 	, BackgroundScene( NULL )
 	, VideoWasPlayingWhenPaused( false )
