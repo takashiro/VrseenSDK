@@ -143,6 +143,7 @@ HEADERS += \
     jni/core/ContainerAllocator.h \
     jni/core/Deque.h \
     jni/core/VDir.h \
+    jni/core/VEvent.h \
     jni/core/VEventLoop.h \
     jni/core/VFlags.h \
     jni/core/VJson.h \
