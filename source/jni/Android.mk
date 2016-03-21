@@ -58,6 +58,7 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     core/VMutex.cpp \
                     core/VUserSettings.cpp \
                     core/VWaitCondition.cpp \
+                    core/VMessageQueue.cpp \
                     core/android/GlUtils.cpp \
                     core/android/JniUtils.cpp \
                     core/android/LogUtils.cpp \
@@ -135,7 +136,6 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     scene/SurfaceTexture.cpp \
                     scene/SwipeView.cpp \
                     VrCommon.cpp \
-                    VMessageQueue.cpp \
                     TalkToJava.cpp \
                     KeyState.cpp \
                     App.cpp \

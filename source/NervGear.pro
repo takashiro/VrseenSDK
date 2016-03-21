@@ -42,6 +42,7 @@ SOURCES += \
     jni/core/VMutex.cpp \
     jni/core/VUserSettings.cpp \
     jni/core/VWaitCondition.cpp \
+    jni/core/VMessageQueue.cpp \
     jni/core/android/GlUtils.cpp \
     jni/core/android/JniUtils.cpp \
     jni/core/android/LogUtils.cpp \
@@ -122,7 +123,6 @@ SOURCES += \
     jni/Console.cpp \
     jni/DebugLines.cpp \
     jni/KeyState.cpp \
-    jni/VMessageQueue.cpp \
     jni/TalkToJava.cpp \
     jni/VrCommon.cpp \
     jni/VrLocale.cpp
@@ -173,6 +173,7 @@ HEADERS += \
     jni/core/TypesafeNumber.h \
     jni/core/VUserSettings.h \
     jni/core/VWaitCondition.h \
+    jni/core/VMessageQueue.h \
     jni/embedded/dependency_error_de.h \
     jni/embedded/dependency_error_en.h \
     jni/embedded/dependency_error_es.h \
@@ -269,7 +270,6 @@ HEADERS += \
     jni/scene/SurfaceTexture.h \
     jni/scene/SwipeView.h \
     jni/VrCommon.h \
-    jni/VMessageQueue.h \
     jni/TalkToJava.h \
     jni/KeyState.h \
     jni/App.h \
