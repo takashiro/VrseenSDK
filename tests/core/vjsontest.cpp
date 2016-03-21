@@ -1,6 +1,7 @@
 #include "test.h"
 
 #include <sstream>
+
 #include <VJson.h>
 
 using namespace std;
@@ -18,7 +19,7 @@ void test()
     {
         stringstream s;
         s << "null";
-        Json json;
+        VJson json;
         s >> json;
         assert(json.isNull());
     }
@@ -26,7 +27,7 @@ void test()
     {
         stringstream s;
         s << " null ";
-        Json json;
+        VJson json;
         s >> json;
         assert(json.isNull());
     }
@@ -34,7 +35,7 @@ void test()
     {
         stringstream s;
         s << "true";
-        Json json;
+        VJson json;
         s >> json;
         assert(json.toBool());
     }
@@ -42,17 +43,17 @@ void test()
     {
         stringstream s;
         s << "false";
-        Json json;
+        VJson json;
         s >> json;
         assert(!json.toBool());
     }
 
     {
-        Json num1(526);
+        VJson num1(526);
         assert(num1.toInt() == 526);
 
         double pi = 3.14;
-        Json num2(pi);
+        VJson num2(pi);
         assert(abs(num2.toDouble() - pi) <= 1e-4);
     }
 
@@ -60,7 +61,7 @@ void test()
         stringstream s;
         int value = rand();
         s << value;
-        Json json;
+        VJson json;
         s >> json;
         assert(json.toInt() == value);
     }
@@ -69,7 +70,7 @@ void test()
         stringstream s;
         double value = rand() / (double) rand();
         s << value;
-        Json json;
+        VJson json;
         s >> json;
         assert(abs(json.toDouble() - value) <= 1e-4);
     }
@@ -77,12 +78,12 @@ void test()
     {
         stringstream s;
         s << "{\"test\" : [1,2,3]}";
-        Json json;
+        VJson json;
         s >> json;
         assert(json.contains("test"));
         assert(!json.contains("what"));
 
-        Json test = json.value("test");
+        VJson test = json.value("test");
         assert(test.isArray());
         assert(test[0].toInt() == 1);
         assert(test[1].toInt() == 2);
