@@ -661,7 +661,7 @@ bool SceneManager::Command( const char * msg )
         MovieTexture = new SurfaceTexture( vApp->vrJni() );
 		LOG( "RC_NEW_VIDEO texId %i", MovieTexture->textureId );
 
-		VMessageQueue * receiver;
+		VEventLoop * receiver;
 		sscanf( msg, "newVideo %p", &receiver );
 
 		receiver->PostPrintf( "surfaceTexture %p", MovieTexture->javaObject );

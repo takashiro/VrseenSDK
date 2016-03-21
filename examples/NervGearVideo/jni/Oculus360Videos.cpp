@@ -86,8 +86,8 @@ jobject Java_com_vrseen_nervgear_video_MainActivity_nativePrepareNewVideo(JNIEnv
 
 	// set up a message queue to get the return message
 	// TODO: make a class that encapsulates this work
-	VMessageQueue	result( 1 );
-    vApp->messageQueue().PostPrintf( "newVideo %p", &result );
+	VEventLoop	result( 1 );
+    vApp->eventLoop().PostPrintf( "newVideo %p", &result );
 
 	result.SleepUntilMessage();
 	const char * msg = result.nextMessage();
@@ -101,19 +101,19 @@ jobject Java_com_vrseen_nervgear_video_MainActivity_nativePrepareNewVideo(JNIEnv
 void Java_com_vrseen_nervgear_video_MainActivity_nativeSetVideoSize(JNIEnv *, jclass, int width, int height)
 {
 	LOG( "nativeSetVideoSizes: width=%i height=%i", width, height );
-    vApp->messageQueue().PostPrintf( "video %i %i", width, height );
+    vApp->eventLoop().PostPrintf( "video %i %i", width, height );
 }
 
 void Java_com_vrseen_nervgear_video_MainActivity_nativeVideoCompletion(JNIEnv *, jclass)
 {
 	LOG( "nativeVideoCompletion" );
-    vApp->messageQueue().PostPrintf( "completion" );
+    vApp->eventLoop().PostPrintf( "completion" );
 }
 
 void Java_com_vrseen_nervgear_video_MainActivity_nativeVideoStartError(JNIEnv *, jclass)
 {
 	LOG( "nativeVideoStartError" );
-    vApp->messageQueue().PostPrintf( "startError" );
+    vApp->eventLoop().PostPrintf( "startError" );
 }
 
 } // extern "C"
@@ -450,7 +450,7 @@ void Oculus360Videos::Command( const char * msg )
 		MovieTexture = new SurfaceTexture( vApp->vrJni() );
 		LOG( "RC_NEW_VIDEO texId %i", MovieTexture->textureId );
 
-		VMessageQueue	* receiver;
+		VEventLoop	* receiver;
 		sscanf( msg, "newVideo %p", &receiver );
 
 		receiver->PostPrintf( "surfaceTexture %p", MovieTexture->javaObject );

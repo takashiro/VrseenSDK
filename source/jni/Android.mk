@@ -38,7 +38,7 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     core/Atomic.cpp \
                     core/VByteArray.cpp \
                     core/VChar.cpp \
-                    core/VEvent.cpp \
+                    core/VEventLoop.cpp \
                     core/VJson.cpp \
                     core/Log.cpp \
                     core/VLog.cpp \
@@ -49,6 +49,7 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     core/VStandardPath.cpp \
                     core/VString.cpp \
                     core/VDir.cpp \
+                    core/VSignal.cpp \
                     core/System.cpp \
                     core/ThreadCommandQueue.cpp \
                     core/VThread.cpp \
@@ -58,7 +59,6 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     core/VMutex.cpp \
                     core/VUserSettings.cpp \
                     core/VWaitCondition.cpp \
-                    core/VMessageQueue.cpp \
                     core/android/GlUtils.cpp \
                     core/android/JniUtils.cpp \
                     core/android/LogUtils.cpp \

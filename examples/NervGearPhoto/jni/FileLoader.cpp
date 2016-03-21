@@ -23,8 +23,8 @@ of patent rights can be found in the PATENTS file in the same directory.
 
 namespace NervGear {
 
-VMessageQueue		Queue1( 4000 );	// big enough for all the thumbnails that might be needed
-VMessageQueue		Queue3( 1 );
+VEventLoop		Queue1( 4000 );	// big enough for all the thumbnails that might be needed
+VEventLoop		Queue3( 1 );
 
 pthread_mutex_t QueueMutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t	QueueWake = PTHREAD_COND_INITIALIZER;
@@ -58,7 +58,7 @@ void * Queue1Thread( void * v )
 		sscanf( msg, "%s", commandName );
 		const char * filename = msg + strlen( commandName ) + 1;
 
-		VMessageQueue * queue = &Queue3;
+		VEventLoop * queue = &Queue3;
 		char const * suffix = strstr( filename, "_nz.jpg" );
 		if ( suffix != NULL )
 		{

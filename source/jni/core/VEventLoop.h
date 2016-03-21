@@ -6,11 +6,11 @@ NV_NAMESPACE_BEGIN
 
 // This is a multiple-producer, single-consumer message queue.
 
-class VMessageQueue
+class VEventLoop
 {
 public:
-    VMessageQueue( int maxMessages );
-    ~VMessageQueue();
+    VEventLoop( int maxMessages );
+    ~VEventLoop();
 
     // Shut down the message queue once messages are no longer polled
     // to avoid overflowing the queue on message spam.
@@ -51,7 +51,7 @@ public:
 
 private:
     NV_DECLARE_PRIVATE
-    NV_DISABLE_COPY(VMessageQueue)
+    NV_DISABLE_COPY(VEventLoop)
 };
 
 NV_NAMESPACE_END

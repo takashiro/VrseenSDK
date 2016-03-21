@@ -23,6 +23,7 @@ SOURCES += \
     jni/core/VByteArray.cpp \
     jni/core/VChar.cpp \
     jni/core/VDir.cpp \
+    jni/core/VEventLoop.cpp \
     jni/core/VJson.cpp \
     jni/core/Log.cpp \
     jni/core/VLog.cpp \
@@ -42,7 +43,6 @@ SOURCES += \
     jni/core/VMutex.cpp \
     jni/core/VUserSettings.cpp \
     jni/core/VWaitCondition.cpp \
-    jni/core/VMessageQueue.cpp \
     jni/core/android/GlUtils.cpp \
     jni/core/android/JniUtils.cpp \
     jni/core/android/LogUtils.cpp \
@@ -143,6 +143,7 @@ HEADERS += \
     jni/core/ContainerAllocator.h \
     jni/core/Deque.h \
     jni/core/VDir.h \
+    jni/core/VEventLoop.h \
     jni/core/VFlags.h \
     jni/core/VJson.h \
     jni/core/Log.h \
@@ -173,7 +174,6 @@ HEADERS += \
     jni/core/TypesafeNumber.h \
     jni/core/VUserSettings.h \
     jni/core/VWaitCondition.h \
-    jni/core/VMessageQueue.h \
     jni/embedded/dependency_error_de.h \
     jni/embedded/dependency_error_en.h \
     jni/embedded/dependency_error_es.h \

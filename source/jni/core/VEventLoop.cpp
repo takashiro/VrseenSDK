@@ -1,4 +1,4 @@
-#include "VMessageQueue.h"
+#include "VEventLoop.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -14,7 +14,7 @@
 
 NV_NAMESPACE_BEGIN
 
-struct VMessageQueue::Private
+struct VEventLoop::Private
 {
     Private(int maxMessages_):
             shutdown( false ),
@@ -70,20 +70,20 @@ struct VMessageQueue::Private
     bool PostMessage( const char * msg, bool sync, bool abortIfFull );
 };
 
-bool VMessageQueue::Private::debug = false;
+bool VEventLoop::Private::debug = false;
 
-int VMessageQueue::SpaceAvailable() const
+int VEventLoop::SpaceAvailable() const
 {
     return d->maxMessages - ( d->tail - d->head );
 }
 
-VMessageQueue::VMessageQueue( int maxMessages_ ) :
+VEventLoop::VEventLoop( int maxMessages_ ) :
         d(new Private(maxMessages_))
 {
 
 }
 
-VMessageQueue::~VMessageQueue()
+VEventLoop::~VEventLoop()
 {
     // Free any messages remaining on the queue.
     for ( ; ; )
@@ -104,7 +104,7 @@ VMessageQueue::~VMessageQueue()
     pthread_cond_destroy( &d->received );
 }
 
-void VMessageQueue::Shutdown()
+void VEventLoop::Shutdown()
 {
     vInfo( "VMessageQueue shutdown");
     d->shutdown = true;
@@ -115,7 +115,7 @@ void VMessageQueue::Shutdown()
 // the buffer.
 // The app will abort() with a dump of all messages if the message
 // buffer overflows.
-bool VMessageQueue::Private::PostMessage( const char * msg, bool sync, bool abortIfFull )
+bool VEventLoop::Private::PostMessage( const char * msg, bool sync, bool abortIfFull )
 {
     if ( shutdown )
     {
@@ -156,12 +156,12 @@ bool VMessageQueue::Private::PostMessage( const char * msg, bool sync, bool abor
     return true;
 }
 
-void VMessageQueue::PostString( const char * msg )
+void VEventLoop::PostString( const char * msg )
 {
     d->PostMessage( msg, false, true );
 }
 
-void VMessageQueue::PostPrintf( const char * fmt, ... )
+void VEventLoop::PostPrintf( const char * fmt, ... )
 {
     char bigBuffer[4096];
     va_list	args;
@@ -171,12 +171,12 @@ void VMessageQueue::PostPrintf( const char * fmt, ... )
     d->PostMessage( bigBuffer, false, true );
 }
 
-bool VMessageQueue::TryPostString( const char * msg )
+bool VEventLoop::TryPostString( const char * msg )
 {
     return d->PostMessage( msg, false, false );
 }
 
-bool VMessageQueue::TryPostPrintf( const char * fmt, ... )
+bool VEventLoop::TryPostPrintf( const char * fmt, ... )
 {
     char bigBuffer[4096];
     va_list	args;
@@ -186,12 +186,12 @@ bool VMessageQueue::TryPostPrintf( const char * fmt, ... )
     return d->PostMessage( bigBuffer, false, false );
 }
 
-void VMessageQueue::SendString( const char * msg )
+void VEventLoop::SendString( const char * msg )
 {
     d->PostMessage( msg, true, true );
 }
 
-void VMessageQueue::SendPrintf( const char * fmt, ... )
+void VEventLoop::SendPrintf( const char * fmt, ... )
 {
     char bigBuffer[4096];
     va_list	args;
@@ -203,7 +203,7 @@ void VMessageQueue::SendPrintf( const char * fmt, ... )
 
 // Returns false if there are no more messages, otherwise returns
 // a string that the caller must free.
-const char* VMessageQueue::nextMessage()
+const char* VEventLoop::nextMessage()
 {
     if ( d->synced )
     {
@@ -235,7 +235,7 @@ const char* VMessageQueue::nextMessage()
 }
 
 // Returns immediately if there is already a message in the queue.
-void VMessageQueue::SleepUntilMessage()
+void VEventLoop::SleepUntilMessage()
 {
     if ( d->synced )
     {
@@ -264,7 +264,7 @@ void VMessageQueue::SleepUntilMessage()
     }
 }
 
-void VMessageQueue::ClearMessages()
+void VEventLoop::ClearMessages()
 {
     if ( d->debug )
     {

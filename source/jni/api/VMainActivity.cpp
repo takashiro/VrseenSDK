@@ -128,7 +128,7 @@ void VMainActivity::onCreate(JNIEnv * jni, jclass clazz, jobject activity, jstri
     // Send the intent and wait for it to complete.
     VString intentMessage = ComposeIntentMessage(utfFromPackageString, utfUriString, utfJsonString);
     VByteArray utf8Intent = intentMessage.toUtf8();
-    vApp->messageQueue().PostPrintf(utf8Intent.data());
+    vApp->eventLoop().PostPrintf(utf8Intent.data());
     vApp->syncVrThread();
 }
 
@@ -224,7 +224,7 @@ extern "C"
 
 void Java_com_vrseen_nervgear_VrActivity_nativeSurfaceChanged(JNIEnv *jni, jclass, jobject surface)
 {
-    vApp->messageQueue().SendPrintf("surfaceChanged %p",
+    vApp->eventLoop().SendPrintf("surfaceChanged %p",
             surface ? ANativeWindow_fromSurface(jni, surface) : nullptr);
 }
 
@@ -237,13 +237,13 @@ void Java_com_vrseen_nervgear_VrActivity_nativeSurfaceDestroyed(JNIEnv *jni, jcl
         return;
     }
 
-    vApp->messageQueue().SendPrintf("surfaceDestroyed ");
+    vApp->eventLoop().SendPrintf("surfaceDestroyed ");
 }
 
 void Java_com_vrseen_nervgear_VrActivity_nativePopup(JNIEnv *, jclass,
         jint width, jint height, jfloat seconds)
 {
-    vApp->messageQueue().PostPrintf("popup %i %i %f", width, height, seconds);
+    vApp->eventLoop().PostPrintf("popup %i %i %f", width, height, seconds);
 }
 
 jobject Java_com_vrseen_nervgear_VrActivity_nativeGetPopupSurfaceTexture(JNIEnv *, jclass)
@@ -254,12 +254,12 @@ jobject Java_com_vrseen_nervgear_VrActivity_nativeGetPopupSurfaceTexture(JNIEnv 
 void Java_com_vrseen_nervgear_VrActivity_nativePause(JNIEnv *jni, jclass clazz,
         jlong appPtr)
 {
-    vApp->messageQueue().SendPrintf("pause ");
+    vApp->eventLoop().SendPrintf("pause ");
 }
 
 void Java_com_vrseen_nervgear_VrActivity_nativeResume(JNIEnv *jni, jclass clazz)
 {
-    vApp->messageQueue().SendPrintf("resume ");
+    vApp->eventLoop().SendPrintf("resume ");
 }
 
 void Java_com_vrseen_nervgear_VrActivity_nativeDestroy(JNIEnv *, jclass)
@@ -279,7 +279,7 @@ void Java_com_vrseen_nervgear_VrActivity_nativeJoypadAxis(JNIEnv *jni, jclass cl
 {
     // Suspend input until OneTimeInit() has finished to avoid overflowing the message queue on long loads.
     if (vApp->oneTimeInitCalled) {
-        vApp->messageQueue().PostPrintf("joy %f %f %f %f", lx, ly, rx, ry);
+        vApp->eventLoop().PostPrintf("joy %f %f %f %f", lx, ly, rx, ry);
     }
 }
 
@@ -288,7 +288,7 @@ void Java_com_vrseen_nervgear_VrActivity_nativeTouch(JNIEnv *, jclass,
 {
     // Suspend input until OneTimeInit() has finished to avoid overflowing the message queue on long loads.
     if (vApp->oneTimeInitCalled) {
-        vApp->messageQueue().PostPrintf("touch %i %f %f", action, x, y);
+        vApp->eventLoop().PostPrintf("touch %i %f %f", action, x, y);
     }
 }
 
@@ -297,7 +297,7 @@ void Java_com_vrseen_nervgear_VrActivity_nativeKeyEvent(JNIEnv *jni, jclass claz
 {
     // Suspend input until OneTimeInit() has finished to avoid overflowing the message queue on long loads.
     if (vApp->oneTimeInitCalled) {
-        vApp->messageQueue().PostPrintf("key %i %i %i", key, down, repeatCount);
+        vApp->eventLoop().PostPrintf("key %i %i %i", key, down, repeatCount);
     }
 }
 
@@ -311,7 +311,7 @@ void Java_com_vrseen_nervgear_VrActivity_nativeNewIntent(JNIEnv *jni, jclass cla
     VString intentMessage = ComposeIntentMessage(utfPackageName, utfUri, utfJson);
     vInfo("nativeNewIntent:" << intentMessage);
     VByteArray utf8Message = intentMessage.toUtf8();
-    vApp->messageQueue().PostPrintf(utf8Message.data());
+    vApp->eventLoop().PostPrintf(utf8Message.data());
 }
 
 }	// extern "C"

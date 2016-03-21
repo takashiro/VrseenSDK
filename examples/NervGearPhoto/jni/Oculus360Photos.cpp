@@ -500,7 +500,7 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
 				LOG( "BackgroundGLLoadThread eglClientWaitSyncKHR returned EGL_FALSE" );
 			}
 
-            vApp->messageQueue( ).PostPrintf( "%s", "loaded pano" );
+            vApp->eventLoop( ).PostPrintf( "%s", "loaded pano" );
 
 			const double end = ovr_GetTimeInSeconds();
 			LOG( "%4.2fs to load %ix%i res pano map", end - start, width, height );
@@ -532,7 +532,7 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
 				LOG( "BackgroundGLLoadThread eglClientWaitSyncKHR returned EGL_FALSE" );
 			}
 
-            vApp->messageQueue( ).PostPrintf( "%s", "loaded cube" );
+            vApp->eventLoop( ).PostPrintf( "%s", "loaded cube" );
 
 			const double end = ovr_GetTimeInSeconds();
 			LOG( "%4.2fs to load %i res cube map", end - start, size );

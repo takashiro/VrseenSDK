@@ -7,7 +7,7 @@
 #include "KeyState.h"
 #include "EyeBuffers.h"
 #include "Input.h"
-#include "VMessageQueue.h"
+#include "VEventLoop.h"
 #include "VSoundManager.h"
 
 NV_NAMESPACE_BEGIN
@@ -36,7 +36,7 @@ public:
     App(JNIEnv *jni, jobject activityObject, VMainActivity *activity);
     virtual ~App();
 
-    VMessageQueue &messageQueue();
+    VEventLoop &eventLoop();
 
     VMainActivity *appInterface();
 

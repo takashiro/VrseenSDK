@@ -177,7 +177,7 @@ struct App::Private : public TalkToJavaInterface
     volatile bool	readyToExit;		// start exit procedure
 
     // Most calls in from java should communicate through this.
-    VMessageQueue	vrMessageQueue;
+    VEventLoop	eventLoop;
 
     // From EnterVrMode, used for WarpSwap and LeaveVrMode
     ovrMobile *		OvrMobile;
@@ -330,7 +330,7 @@ struct App::Private : public TalkToJavaInterface
         , vrThreadSynced(false)
         , createdSurface(false)
         , readyToExit(false)
-        , vrMessageQueue(100)
+        , eventLoop(100)
         , OvrMobile(nullptr)
         , eyeTargets(nullptr)
         , loadingIconTexId(0)
@@ -1160,7 +1160,7 @@ struct App::Private : public TalkToJavaInterface
             // Process incoming messages until queue is empty
             for (; ;)
             {
-                const char * msg = vrMessageQueue.nextMessage();
+                const char * msg = eventLoop.nextMessage();
                 if (!msg)
                 {
                     break;
@@ -1226,7 +1226,7 @@ struct App::Private : public TalkToJavaInterface
             {
                 if (!(vrThreadSynced && createdSurface && readyToExit))
                 {
-                    vrMessageQueue.SleepUntilMessage();
+                    eventLoop.SleepUntilMessage();
                 }
                 continue;
             }
@@ -1451,7 +1451,7 @@ struct App::Private : public TalkToJavaInterface
             vInfo("AppLocal::VrThreadFunction - shutdown");
 
             // Shut down the message queue so it cannot overflow.
-            vrMessageQueue.Shutdown();
+            eventLoop.Shutdown();
 
             if (errorTexture != 0)
             {
@@ -1751,7 +1751,7 @@ void App::startVrThread()
 
 void App::stopVrThread()
 {
-    d->vrMessageQueue.PostPrintf("quit ");
+    d->eventLoop.PostPrintf("quit ");
     bool finished = d->renderThread->wait();
     if (!finished) {
         vWarn("failed to wait for VrThread");
@@ -1760,13 +1760,13 @@ void App::stopVrThread()
 
 void App::syncVrThread()
 {
-    d->vrMessageQueue.SendPrintf("sync ");
+    d->eventLoop.SendPrintf("sync ");
     d->vrThreadSynced = true;
 }
 
-VMessageQueue & App::messageQueue()
+VEventLoop &App::eventLoop()
 {
-    return d->vrMessageQueue;
+    return d->eventLoop;
 }
 
 void App::createToast(const char * fmt, ...)
