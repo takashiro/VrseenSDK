@@ -20,10 +20,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "LogUtils.h"
 #include "VLog.h"
 
-#if defined(OVR_ENABLE_CAPTURE)
-	#include "capture/Capture.h"
-#endif
-
 bool	EXT_discard_framebuffer;
 PFNGLDISCARDFRAMEBUFFEREXTPROC glDiscardFramebufferEXT_;
 
@@ -243,9 +239,6 @@ bool GL_ExtensionStringPresent( const char * extension, const char * allExtensio
 
 EGLint GL_FlushSync( int timeout )
 {
-#if defined(OVR_ENABLE_CAPTURE)
-	OVR_CAPTURE_CPU_ZONE(GL_FlushSync);
-#endif
 	// if extension not present, return NO_SYNC
 	if ( eglCreateSyncKHR_ == NULL )
 	{
@@ -270,9 +263,6 @@ EGLint GL_FlushSync( int timeout )
 
 void GL_Finish()
 {
-#if defined(OVR_ENABLE_CAPTURE)
-	OVR_CAPTURE_CPU_ZONE(GL_Finish);
-#endif
 	// Given the common driver "optimization" of ignoring glFinish, we
 	// can't run reliably while drawing to the front buffer without
 	// the Sync extension.
@@ -293,9 +283,6 @@ void GL_Finish()
 
 void GL_Flush()
 {
-#if defined(OVR_ENABLE_CAPTURE)
-	OVR_CAPTURE_CPU_ZONE(GL_Flush);
-#endif
 	if ( eglCreateSyncKHR_ != NULL )
 	{
 		const EGLint wait = GL_FlushSync( 0 );

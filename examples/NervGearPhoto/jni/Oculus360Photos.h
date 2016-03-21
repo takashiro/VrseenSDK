@@ -1,24 +1,11 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   Oculus360Photos.h
-Content     :   360 Panorama Viewer
-Created     :   August 13, 2014
-Authors     :   John Carmack, Warsam Osman
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-This source code is licensed under the BSD-style license found in the
-LICENSE file in the Oculus360Photos/ directory. An additional grant
-of patent rights can be found in the PATENTS file in the same directory.
-
-************************************************************************************/
-
-#ifndef OCULUS360PHOTOS_H
-#define OCULUS360PHOTOS_H
+#include "VMainActivity.h"
 
 #include "ModelView.h"
-#include "gui/Fader.h"
+#include "Fader.h"
 #include "Lockless.h"
+
 namespace NervGear {
 
 class PanoBrowser;
@@ -28,7 +15,7 @@ struct OvrMetaDatum;
 class OvrPhotosMetaData;
 struct OvrPhotosMetaDatum;
 
-class Oculus360Photos : public VrAppInterface
+class Oculus360Photos : public VMainActivity
 {
 public:
 	enum OvrMenuState
@@ -75,14 +62,14 @@ public:
 		volatile int	CurrentIndex;
 	};
 
-	Oculus360Photos();
+    Oculus360Photos(JNIEnv *jni, jobject activityObject);
 	~Oculus360Photos();
 
-    void OneTimeInit(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI ) override;
-    void OneTimeShutdown() override;
+    void init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI ) override;
+    void shutdown() override;
     void ConfigureVrMode( ovrModeParms & modeParms ) override;
-    Matrix4f 	DrawEyeView( const int eye, const float fovDegrees ) override;
-    Matrix4f 	Frame( VrFrame vrFrame ) override;
+    Matrix4f 	drawEyeView( const int eye, const float fovDegrees ) override;
+    Matrix4f 	onNewFrame( VrFrame vrFrame ) override;
     void		Command( const char * msg ) override;
     bool 		onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType ) override;
     bool		wantSrgbFramebuffer() const override;
@@ -115,7 +102,7 @@ private:
 
 	// shared vars
     jclass				m_mainActivityClass;	// need to look up from main thread
-    GlGeometry			m_globe;
+    VGlGeometry			m_globe;
 
     OvrSceneView		m_scene;
     SineFader			m_fader;
@@ -133,9 +120,9 @@ private:
     DoubleBufferedTextureData	m_backgroundCubeTexData;
     bool				m_currentPanoIsCubeMap;
 
-    GlProgram			m_texturedMvpProgram;
-    GlProgram			m_cubeMapPanoProgram;
-    GlProgram			m_panoramaProgram;
+    VGlShader			m_texturedMvpProgram;
+	VGlShader			m_cubeMapPanoProgram;
+	VGlShader			m_panoramaProgram;
 
     VrFrame				m_frameInput;
     OvrMenuState		m_menuState;
@@ -166,5 +153,3 @@ private:
 };
 
 }
-
-#endif // OCULUS360PHOTOS_H

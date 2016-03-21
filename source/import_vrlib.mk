@@ -26,6 +26,7 @@ LOCAL_EXPORT_C_INCLUDES := \
   $(LOCAL_PATH)/jni/core \
   $(LOCAL_PATH)/jni/gui \
   $(LOCAL_PATH)/jni/io \
+  $(LOCAL_PATH)/jni/media \
   $(LOCAL_PATH)/jni/scene \
   $(LOCAL_PATH)/jni/3rdParty/TinyXml \
   $(LOCAL_PATH)/jni/3rdParty/minizip

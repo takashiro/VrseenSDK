@@ -201,19 +201,19 @@ void OvrMetaData::renameCategory(const VString &currentTag, const VString &newNa
 	}
 }
 
-Json LoadPackageMetaFile( const char * metaFile )
+Json LoadPackageMetaFile( const char* metaFile )
 {
     uint bufferLength = 0;
-	void * 	buffer = NULL;
+    void * 	buffer = NULL;
 	VString assetsMetaFile = "assets/";
 	assetsMetaFile += metaFile;
     const VApkFile &apk = VApkFile::CurrentApkFile();
     apk.read(assetsMetaFile, buffer, bufferLength);
-	if ( !buffer )
+    if ( buffer != nullptr )
 	{
 		WARN( "LoadPackageMetaFile failed to read %s", assetsMetaFile.toCString() );
 	}
-	return Json::Parse( static_cast< const char * >( buffer ) );
+    return Json::Parse( static_cast<char*>(buffer) );
 }
 
 Json OvrMetaData::createOrGetStoredMetaFile( const VString &appFileStoragePath, const char * metaFile )
@@ -973,8 +973,8 @@ bool OvrMetaData::shouldAddFile( const char * filename, const OvrMetaDataFileExt
 	for ( int index = 0; index < fileExtensions.badExtensions.length(); ++index )
 	{
 		const VString & ext = fileExtensions.badExtensions.at( index );
-        const int extLen = (int) ext.length();
-		if ( pathLen > extLen && OVR_stricmp( filename + pathLen - extLen, ext.toCString() ) == 0 )
+        const int extLen = ext.length();
+        if ( pathLen > extLen && ext.icompare(filename + pathLen - extLen) == 0 )
 		{
 			return false;
 		}
@@ -983,8 +983,8 @@ bool OvrMetaData::shouldAddFile( const char * filename, const OvrMetaDataFileExt
 	for ( int index = 0; index < fileExtensions.goodExtensions.length(); ++index )
 	{
 		const VString & ext = fileExtensions.goodExtensions.at( index );
-        const int extLen = (int) ext.length();
-		if ( pathLen > extLen && OVR_stricmp( filename + pathLen - extLen, ext.toCString() ) == 0 )
+        const int extLen = ext.length();
+        if ( pathLen > extLen && ext.icompare(filename + pathLen - extLen) == 0 )
 		{
 			return true;
 		}

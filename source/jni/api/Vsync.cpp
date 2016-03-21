@@ -25,10 +25,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "Android/LogUtils.h"
 #include "VrApi.h"			// for ovr_GetTimeInSeconds()
 
-#if defined(OVR_ENABLE_CAPTURE)
-	#include "capture/Capture.h"
-#endif
-
 /*
  * As of 6/30/2014, I am seeing vsync frame timings of 16.71 ms for the 1080 S5,
  * and 16.91 ms for the 1440 s5, both of which are farther from the expected
@@ -50,9 +46,6 @@ extern "C"
 	// can use to closely estimate raster position.
 	void Java_com_vrseen_nervgear_VrLib_nativeVsync( JNIEnv *jni, jclass clazz, jlong frameTimeNanos )
 	{
-	#if defined(OVR_ENABLE_CAPTURE)
-		NervGear::Capture::VSyncTimestamp(frameTimeNanos);
-	#endif
 		if ( LogVsync )
 		{
 			static long long prevFrameTimeNanos;

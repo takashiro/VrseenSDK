@@ -31,7 +31,7 @@ public class ConsoleReceiver extends BroadcastReceiver {
 	public static String CONSOLE_INTENT = "oculus.console";
 	public static String CONSOLE_STRING_EXTRA = "cmd";
 	
-	public static native void nativeConsoleCommand( long act, String command );
+	public static native void nativeConsoleCommand(String command);
 
 	static ConsoleReceiver receiver = new ConsoleReceiver();
 	static boolean registeredReceiver = false;
@@ -69,16 +69,7 @@ public class ConsoleReceiver extends BroadcastReceiver {
 		Log.d( TAG, "!@#!@ConsoleReceiver action:" + intent );
 		if (intent.getAction().equals( CONSOLE_INTENT ))
 		{
-			// Unity apps will not have a VrActivity, so they can only use console functions that are ok
-			// with a NULL appPtr.
-			if ( activity instanceof VrActivity )
-			{
-				nativeConsoleCommand( ((VrActivity)activity).appPtr, intent.getStringExtra( CONSOLE_STRING_EXTRA ) );
-			}
-			else
-			{
-				nativeConsoleCommand( ((long)0), intent.getStringExtra( CONSOLE_STRING_EXTRA ) );
-			}
+			nativeConsoleCommand(intent.getStringExtra( CONSOLE_STRING_EXTRA ) );
 		}
 	}
 

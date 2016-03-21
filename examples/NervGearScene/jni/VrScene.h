@@ -1,34 +1,24 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   VrScene.h
-Content     :   Trivial game style scene viewer VR sample
-Created     :   September 8, 2013
-Authors     :   John Carmack
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-************************************************************************************/
-
-#ifndef VRSCENE_H
-#define VRSCENE_H
+#include "VMainActivity.h"
 
 #include "App.h"
 #include "ModelView.h"
 
 NV_USING_NAMESPACE
 
-class VrScene : public NervGear::VrAppInterface
+class VrScene : public NervGear::VMainActivity
 {
 public:
-						VrScene();
+                        VrScene(JNIEnv *jni, jobject activityObject);
 						~VrScene();
 
 	virtual void 		ConfigureVrMode( ovrModeParms & modeParms );
-	virtual void		OneTimeInit(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI );
-	virtual void		OneTimeShutdown();
-	virtual Matrix4f	DrawEyeView( const int eye, const float fovDegrees );
-	virtual Matrix4f	Frame( VrFrame vrFrame );
-	virtual	void		NewIntent( const char * fromPackageName, const char * command, const char * uri );
+	virtual void		init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI );
+	virtual void		shutdown();
+	virtual Matrix4f	drawEyeView( const int eye, const float fovDegrees );
+	virtual Matrix4f	onNewFrame( VrFrame vrFrame );
+	virtual	void		onNewIntent( const char * fromPackageName, const char * command, const char * uri );
 	virtual void		Command( const char * msg );
 
     void				LoadScene(const VString &path );
@@ -48,5 +38,3 @@ public:
 
 	VArray<VString> 		SearchPaths;
 };
-
-#endif

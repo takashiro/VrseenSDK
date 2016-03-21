@@ -5,16 +5,17 @@
 
 extern "C" {
 
-jlong Java_oculus_MainActivity_nativeSetAppInterface( JNIEnv * jni, jclass clazz, jobject activity,
+void Java_oculus_MainActivity_nativeSetAppInterface( JNIEnv * jni, jclass clazz, jobject activity,
 		jstring fromPackageName, jstring commandString, jstring uriString )
 {
 	LOG( "nativeSetAppInterface" );
-	return (new OvrApp())->SetActivity( jni, clazz, activity, fromPackageName, commandString, uriString );
+    (new OvrApp(jni, activity))->onCreate( jni, clazz, activity, fromPackageName, commandString, uriString );
 }
 
 } // extern "C"
 
-OvrApp::OvrApp()
+OvrApp::OvrApp(JNIEnv *jni, jobject activityObject)
+    : VMainActivity(jni, activityObject)
 {
 }
 
@@ -22,7 +23,7 @@ OvrApp::~OvrApp()
 {
 }
 
-void OvrApp::OneTimeInit(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI)
+void OvrApp::init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI)
 {
 	// This is called by the VR thread, not the java UI thread.
 	MaterialParms materialParms;
@@ -32,7 +33,7 @@ void OvrApp::OneTimeInit(const VString &fromPackage, const VString &launchIntent
 	VString	        SceneFile;
 	VArray<VString>   SearchPaths;
 
-    const VStandardPath &paths = app->storagePaths();
+    const VStandardPath &paths = vApp->storagePaths();
     paths.PushBackSearchPathIfValid(VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", SearchPaths);
     paths.PushBackSearchPathIfValid(VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "", SearchPaths);
     paths.PushBackSearchPathIfValid(VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", SearchPaths);
@@ -48,7 +49,7 @@ void OvrApp::OneTimeInit(const VString &fromPackage, const VString &launchIntent
 	}
 }
 
-void OvrApp::OneTimeShutdown()
+void OvrApp::shutdown()
 {
 	// Free GL resources
         
@@ -58,19 +59,19 @@ void OvrApp::Command( const char * msg )
 {
 }
 
-Matrix4f OvrApp::DrawEyeView( const int eye, const float fovDegrees )
+Matrix4f OvrApp::drawEyeView( const int eye, const float fovDegrees )
 {
 	const Matrix4f view = Scene.DrawEyeView( eye, fovDegrees );
 
 	return view;
 }
 
-Matrix4f OvrApp::Frame(const VrFrame vrFrame)
+Matrix4f OvrApp::onNewFrame(const VrFrame vrFrame)
 {
 	// Player movement
-    Scene.Frame( app->vrViewParms(), vrFrame, app->swapParms().ExternalVelocity );
+    Scene.Frame( vApp->vrViewParms(), vrFrame, vApp->swapParms().ExternalVelocity );
 
-	app->drawEyeViewsPostDistorted( Scene.CenterViewMatrix() );
+	vApp->drawEyeViewsPostDistorted( Scene.CenterViewMatrix() );
 
 	return Scene.CenterViewMatrix();
 }

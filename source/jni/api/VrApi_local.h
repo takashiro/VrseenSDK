@@ -2,7 +2,7 @@
 
 #include "DirectRender.h"
 #include "HmdInfo.h"
-#include "TimeWarp.h"
+#include "VFrameSmooth.h"
 
 NV_USING_NAMESPACE
 
@@ -19,7 +19,7 @@ struct ovrMobile
 	// Thread from which VR mode was entered.
 	pid_t					EnterTid;
 
-    TimeWarp *			Warp;
+    VFrameSmooth *			Warp;
     hmdInfoInternal_t	HmdInfo;
 	ovrModeParms			Parms;
     TimeWarpInitParms	Twp;

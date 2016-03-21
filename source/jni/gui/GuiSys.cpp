@@ -14,9 +14,9 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include <android/keycodes.h>
 #include "Android/GlUtils.h"
-#include "GlProgram.h"
+#include "../api/VGlShader.h"
 #include "GlTexture.h"
-#include "GlGeometry.h"
+#include "../api/VGlGeometry.h"
 #include "VrCommon.h"
 #include "App.h"
 #include "GazeCursor.h"
@@ -146,7 +146,7 @@ int OvrGuiSysLocal::FindMenuIndex( char const * menuName ) const
 {
 	for ( int i = 0; i < Menus.length(); ++i )
 	{
-        if ( OVR_stricmp( Menus[i]->name(), menuName ) == 0 )
+        if ( strcasecmp(Menus[i]->name(), menuName ) == 0 )
 		{
 			return i;
 		}
@@ -188,7 +188,7 @@ int OvrGuiSysLocal::FindActiveMenuIndex( char const * menuName ) const
 {
 	for ( int i = 0; i < ActiveMenus.length(); ++i )
 	{
-        if ( OVR_stricmp( ActiveMenus[i]->name(), menuName ) == 0 )
+        if ( strcasecmp( ActiveMenus[i]->name(), menuName ) == 0 )
 		{
 			return i;
 		}

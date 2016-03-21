@@ -108,7 +108,7 @@ void OvrGazeCursorLocal::Init()
 		LOG( "OvrGazeCursorLocal::Init - already initialized!" );
 		return;
 	}
-	CursorGeometry = BuildTesselatedQuad( 1, 1 );
+	CursorGeometry = VGlGeometryFactory::CreateTesselatedQuad( 1, 1 );
 	int w = 0;
 	int h = 0;
 	char const * const cursorStateNames[ CURSOR_STATE_MAX ] =
@@ -137,8 +137,8 @@ void OvrGazeCursorLocal::Init()
 
 	ColorTableHandle = LoadTextureFromApplicationPackage( "res/raw/color_ramp_timer.tga", TextureFlags_t(), w, h );
 
-	CursorProgram = BuildProgram( GazeCursorVertexSrc, GazeCursorFragmentSrc );
-	TimerProgram = BuildProgram( GazeCursorVertexSrc, GazeCursorColorTableFragmentSrc );//GazeCursorFragmentSrc );
+	CursorProgram .initShader( GazeCursorVertexSrc, GazeCursorFragmentSrc );
+	TimerProgram .initShader( GazeCursorVertexSrc, GazeCursorColorTableFragmentSrc );//GazeCursorFragmentSrc );
 
 	Initialized = true;
 }
@@ -171,8 +171,8 @@ void OvrGazeCursorLocal::Shutdown()
 		ColorTableHandle = 0;
 	}
 
-	DeleteProgram( CursorProgram );
-	DeleteProgram( TimerProgram );
+	CursorProgram.destroy();
+	TimerProgram.destroy();
 
 	Initialized = false;
 }
@@ -415,9 +415,9 @@ void OvrGazeCursorLocal::Render( int const eye, Matrix4f const & mvp ) const
 			continue;
 		}
 		Vector4f cursorColor( 1.0f, 1.0f, 1.0f, 0.5 * ( 1.0 - (float)i / TRAIL_GHOSTS ) );
-		glUniform4fv( CursorProgram.uColor, 1, &cursorColor.x );
+		glUniform4fv( CursorProgram.uniformColor, 1, &cursorColor.x );
 		Matrix4f cursorMVP = mvp * CursorTransform[index];
-		glUniformMatrix4fv( CursorProgram.uMvp, 1, GL_FALSE, cursorMVP.Transposed().M[0] );
+		glUniformMatrix4fv( CursorProgram.uniformModelViewProMatrix, 1, GL_FALSE, cursorMVP.Transposed().M[0] );
 		CursorGeometry.Draw();
 	}
 
@@ -432,9 +432,9 @@ void OvrGazeCursorLocal::Render( int const eye, Matrix4f const & mvp ) const
 			continue;
 		}
 		Vector4f cursorColor( 1.0f, 0.0f, 0.0f, 0.15 * ( 1.0 - (float)i / TRAIL_GHOSTS ) );
-		glUniform4fv( CursorProgram.uColor, 1, &cursorColor.x );
+		glUniform4fv( CursorProgram.uniformColor, 1, &cursorColor.x );
 		Matrix4f cursorMVP = mvp * CursorScatterTransform[index];
-		glUniformMatrix4fv( CursorProgram.uMvp, 1, GL_FALSE, cursorMVP.Transposed().M[0] );
+		glUniformMatrix4fv( CursorProgram.uniformModelViewProMatrix, 1, GL_FALSE, cursorMVP.Transposed().M[0] );
 		CursorGeometry.Draw();
 	}
 
@@ -460,11 +460,11 @@ void OvrGazeCursorLocal::Render( int const eye, Matrix4f const & mvp ) const
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 
 		Matrix4f timerMVP = mvp * TimerTransform;
-		glUniformMatrix4fv( TimerProgram.uMvp, 1, GL_FALSE, timerMVP.Transposed().M[0] );
+		glUniformMatrix4fv( TimerProgram.uniformModelViewProMatrix, 1, GL_FALSE, timerMVP.Transposed().M[0] );
 
 		Vector4f cursorColor( 0.0f, 0.643f, 1.0f, 1.0f );
-		glUniform4fv( TimerProgram.uColor, 1, &cursorColor.x );
-		glUniform2fv( TimerProgram.uColorTableOffset, 1, &ColorTableOffset.x );
+		glUniform4fv( TimerProgram.uniformColor, 1, &cursorColor.x );
+		glUniform2fv( TimerProgram.uniformColorTableOffset, 1, &ColorTableOffset.x );
 
 		CursorGeometry.Draw();
 	}

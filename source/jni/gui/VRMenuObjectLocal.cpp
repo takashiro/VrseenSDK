@@ -12,7 +12,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "VRMenuObjectLocal.h"
 
-#include "GlProgram.h"
+#include "../api/VGlShader.h"
 #include "GlTexture.h"
 #include "App.h"			// for loading images from the assets folder
 #include "ModelTrace.h"
@@ -282,7 +282,7 @@ void VRMenuSurface::render( OvrVRMenuMgr const & menuMgr, Matrix4f const & mvp, 
 
 	GL_CheckErrors( "VRMenuSurface::Render - pre" );
 
-	GlProgram const * program = NULL;
+	VGlShader const * program = NULL;
 
 	glEnable( GL_BLEND );
 
@@ -424,11 +424,11 @@ void VRMenuSurface::render( OvrVRMenuMgr const & menuMgr, Matrix4f const & mvp, 
 
 	glUseProgram( program->program );
 
-	glUniformMatrix4fv( program->uMvp, 1, GL_FALSE, mvp.M[0] );
+	glUniformMatrix4fv( program->uniformModelViewProMatrix, 1, GL_FALSE, mvp.M[0] );
 
-	glUniform4fv( program->uColor, 1, &sub.color.x );
-	glUniform3fv( program->uFadeDirection, 1, &sub.fadeDirection.x );
-	glUniform2fv( program->uColorTableOffset, 1, &sub.colorTableOffset.x );
+	glUniform4fv( program->uniformColor, 1, &sub.color.x );
+	glUniform3fv( program->uniformFadeDirection, 1, &sub.fadeDirection.x );
+	glUniform2fv( program->uniformColorTableOffset, 1, &sub.colorTableOffset.x );
 
 	// render
 	glBindVertexArrayOES_( m_geo.vertexArrayObject );

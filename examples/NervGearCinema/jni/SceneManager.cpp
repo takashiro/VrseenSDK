@@ -75,7 +75,7 @@ void SceneManager::OneTimeInit( const VString &launchIntent )
 
 	const double start = ovr_GetTimeInSeconds();
 
-	UnitSquare = BuildTesselatedQuad( 1, 1 );
+	UnitSquare = VGlGeometryFactory::CreateTesselatedQuad( 1, 1 );
 
 	UseOverlay = true;
 
@@ -191,7 +191,7 @@ void SceneManager::SetSceneModel( const SceneDef &sceneDef )
 			break;
 		}
 		SceneSeatPositions[SceneSeatCount] = tag->matrix.GetTranslation();
-        SceneSeatPositions[SceneSeatCount].y -= Cinema.app->vrViewParms().EyeHeight;
+        SceneSeatPositions[SceneSeatCount].y -= vApp->vrViewParms().EyeHeight;
 	}
 
 	if ( !sceneDef.UseSeats )
@@ -243,7 +243,7 @@ void SceneManager::SetSceneModel( const SceneDef &sceneDef )
 
 			// force to a solid black material that cuts a hole in alpha
 			SceneScreenSurface->materialDef.programObject = Cinema.shaderMgr.ScenePrograms[0].program;
-			SceneScreenSurface->materialDef.uniformMvp = Cinema.shaderMgr.ScenePrograms[0].uMvp;
+			SceneScreenSurface->materialDef.uniformMvp = Cinema.shaderMgr.ScenePrograms[0].uniformModelViewProMatrix;
 		}
 	}
 
@@ -265,10 +265,10 @@ void SceneManager::SetSceneProgram( const sceneProgram_t opaqueProgram, const sc
 		return;
 	}
 
-	const GlProgram & dynamicOnlyProg = Cinema.shaderMgr.ScenePrograms[SCENE_PROGRAM_DYNAMIC_ONLY];
-	const GlProgram & opaqueProg = Cinema.shaderMgr.ScenePrograms[opaqueProgram];
-	const GlProgram & additiveProg = Cinema.shaderMgr.ScenePrograms[additiveProgram];
-	const GlProgram & diffuseProg = Cinema.shaderMgr.ProgSingleTexture;
+	const VGlShader & dynamicOnlyProg = Cinema.shaderMgr.ScenePrograms[SCENE_PROGRAM_DYNAMIC_ONLY];
+	const VGlShader & opaqueProg = Cinema.shaderMgr.ScenePrograms[opaqueProgram];
+	const VGlShader & additiveProg = Cinema.shaderMgr.ScenePrograms[additiveProgram];
+	const VGlShader & diffuseProg = Cinema.shaderMgr.ProgSingleTexture;
 
 	LOG( "SetSceneProgram: %d(%d), %d(%d)", opaqueProgram, opaqueProg.program, additiveProgram, additiveProg.program );
 
@@ -292,7 +292,7 @@ void SceneManager::SetSceneProgram( const sceneProgram_t opaqueProgram, const sc
 			}
 
 			materialDef.programObject = additiveProg.program;
-			materialDef.uniformMvp = additiveProg.uMvp;
+			materialDef.uniformMvp = additiveProg.uniformModelViewProMatrix;
 		}
 		else if ( materialDef.textures[1] != 0 )
 		{
@@ -305,13 +305,13 @@ void SceneManager::SetSceneProgram( const sceneProgram_t opaqueProgram, const sc
 			}
 
 			materialDef.programObject = opaqueProg.program;
-			materialDef.uniformMvp = opaqueProg.uMvp;
+			materialDef.uniformMvp = opaqueProg.uniformModelViewProMatrix;
 		}
 		else
 		{
 			// Non-modulated diffuse material.
 			materialDef.programObject = diffuseProg.program;
-			materialDef.uniformMvp = diffuseProg.uMvp;
+			materialDef.uniformMvp = diffuseProg.uniformModelViewProMatrix;
 		}
 	}
 
@@ -436,7 +436,7 @@ bool SceneManager::GetUseOverlay() const
 
 void SceneManager::ClearMovie()
 {
-	Native::StopMovie( Cinema.app );
+    Native::StopMovie( vApp );
 
 	SetSceneProgram( SCENE_PROGRAM_DYNAMIC_ONLY, SCENE_PROGRAM_ADDITIVE );
 
@@ -472,7 +472,7 @@ void SceneManager::SetFreeScreenAngles( const Vector3f &angles )
 void SceneManager::PutScreenInFront()
 {
 	FreeScreenOrientation = Scene.ViewMatrix.Inverted();
-    Cinema.app->recenterYaw( false );
+    vApp->recenterYaw( false );
 }
 
 void SceneManager::ClampScreenToView()
@@ -658,7 +658,7 @@ bool SceneManager::Command( const char * msg )
 	if ( MatchesHead( "newVideo ", msg ) )
 	{
 		delete MovieTexture;
-        MovieTexture = new SurfaceTexture( Cinema.app->vrJni() );
+        MovieTexture = new SurfaceTexture( vApp->vrJni() );
 		LOG( "RC_NEW_VIDEO texId %i", MovieTexture->textureId );
 
 		VMessageQueue * receiver;
@@ -772,7 +772,7 @@ bool SceneManager::Command( const char * msg )
 			glGenTextures( 1, &MipMappedMovieTextures[i] );
 			glBindTexture( GL_TEXTURE_2D, MipMappedMovieTextures[i] );
 
-            glTexImage2D( GL_TEXTURE_2D, 0, Cinema.app->appInterface()->wantSrgbFramebuffer() ? GL_SRGB8_ALPHA8 :GL_RGBA,
+            glTexImage2D( GL_TEXTURE_2D, 0, vApp->appInterface()->wantSrgbFramebuffer() ? GL_SRGB8_ALPHA8 :GL_RGBA,
 					MovieTextureWidth, MovieTextureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL );
 
 			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
@@ -834,9 +834,9 @@ Matrix4f SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 		}
 
 		glUseProgram( Cinema.shaderMgr.ScenePrograms[SceneProgramIndex].program );
-		glUniform4f( Cinema.shaderMgr.ScenePrograms[SceneProgramIndex].uColor, 1.0f, 1.0f, 1.0f, cinemaLights );
+		glUniform4f( Cinema.shaderMgr.ScenePrograms[SceneProgramIndex].uniformColor, 1.0f, 1.0f, 1.0f, cinemaLights );
 		glUseProgram( Cinema.shaderMgr.ScenePrograms[SCENE_PROGRAM_ADDITIVE].program );
-		glUniform4f( Cinema.shaderMgr.ScenePrograms[SCENE_PROGRAM_ADDITIVE].uColor, 1.0f, 1.0f, 1.0f, cinemaLights );
+		glUniform4f( Cinema.shaderMgr.ScenePrograms[SCENE_PROGRAM_ADDITIVE].uniformColor, 1.0f, 1.0f, 1.0f, cinemaLights );
 
 		// Bind the mip mapped movie texture to Texture2 so it can be sampled from the vertex program for scene lighting.
 		glActiveTexture( GL_TEXTURE2 );
@@ -870,15 +870,15 @@ Matrix4f SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 	// If we are using the free screen, we still need to draw the surface with black
 	if ( FreeScreenActive && !SceneInfo.UseFreeScreen && SceneScreenSurface )
 	{
-		const GlProgram * prog = &Cinema.shaderMgr.ScenePrograms[0];
+		const VGlShader * prog = &Cinema.shaderMgr.ScenePrograms[0];
 		glUseProgram( prog->program );
-		glUniformMatrix4fv( prog->uMvp, 1, GL_FALSE, mvp.Transposed().M[0] );
+		glUniformMatrix4fv( prog->uniformModelViewProMatrix, 1, GL_FALSE, mvp.Transposed().M[0] );
 		SceneScreenSurface->geo.Draw();
 	}
 
-	const GlProgram * prog = &Cinema.shaderMgr.MovieExternalUiProgram;
+	const VGlShader * prog = &Cinema.shaderMgr.MovieExternalUiProgram;
 	glUseProgram( prog->program );
-	glUniform4f( prog->uColor, 1, 1, 1, 0.0f );
+	glUniform4f( prog->uniformColor, 1, 1, 1, 0.0f );
 
 	glVertexAttrib4f( 2, 1.0f, 1.0f, 1.0f, 1.0f );	// no color attributes on the surface verts, so force to 1.0
 
@@ -958,8 +958,8 @@ Matrix4f SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 	if ( !GetUseOverlay() || SceneInfo.LobbyScreen || ( SceneInfo.UseScreenGeometry && ( SceneScreenSurface != NULL ) ) )
 	{
 		// no overlay
-        Cinema.app->swapParms().WarpProgram = WP_CHROMATIC;
-        Cinema.app->swapParms().Images[eye][1].TexId = 0;
+        vApp->swapParms().WarpProgram = WP_CHROMATIC;
+        vApp->swapParms().Images[eye][1].TexId = 0;
 
 		glActiveTexture( GL_TEXTURE0 );
 		glBindTexture( GL_TEXTURE_EXTERNAL_OES, MovieTexture->textureId );
@@ -967,22 +967,22 @@ Matrix4f SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 		glActiveTexture( GL_TEXTURE1 );
 		glBindTexture( GL_TEXTURE_2D, ScreenVignetteTexture );
 
-		glUniformMatrix4fv( prog->uTexm, 1, GL_FALSE, /* not transposed */
+		glUniformMatrix4fv( prog->uniformTexMatrix, 1, GL_FALSE, /* not transposed */
 				texMatrix.Transposed().M[0] );
 		// The UI is always identity for now, but we may scale it later
-		glUniformMatrix4fv( prog->uTexm2, 1, GL_FALSE, /* not transposed */
+		glUniformMatrix4fv( prog->uniformTexMatrix2, 1, GL_FALSE, /* not transposed */
 				Matrix4f::Identity().Transposed().M[0] );
 
 		if ( !SceneInfo.LobbyScreen && SceneInfo.UseScreenGeometry && ( SceneScreenSurface != NULL ) )
 		{
-			glUniformMatrix4fv( prog->uMvp, 1, GL_FALSE, mvp.Transposed().M[0] );
+			glUniformMatrix4fv( prog->uniformModelViewProMatrix, 1, GL_FALSE, mvp.Transposed().M[0] );
 			SceneScreenSurface->geo.Draw();
 		}
 		else
 		{
 			const Matrix4f screenModel = ScreenMatrix();
 			const Matrix4f screenMvp = mvp * screenModel;
-			glUniformMatrix4fv( prog->uMvp, 1, GL_FALSE, screenMvp.Transposed().M[0] );
+			glUniformMatrix4fv( prog->uniformModelViewProMatrix, 1, GL_FALSE, screenMvp.Transposed().M[0] );
 			UnitSquare.Draw();
 		}
 
@@ -994,14 +994,14 @@ Matrix4f SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 		const Matrix4f screenModel = ScreenMatrix();
 		const ovrMatrix4f mv = Scene.ViewMatrixForEye( eye ) * screenModel;
 
-        Cinema.app->swapParms().WarpProgram = WP_CHROMATIC_MASKED_PLANE;
-        Cinema.app->swapParms().Images[eye][1].TexId = MipMappedMovieTextures[CurrentMipMappedMovieTexture];
-        Cinema.app->swapParms().Images[eye][1].Pose = Cinema.app->sensorForNextWarp().Predicted;
-        Cinema.app->swapParms().Images[eye][1].TexCoordsFromTanAngles = texMatrix * TanAngleMatrixFromUnitSquare( &mv );
+        vApp->swapParms().WarpProgram = WP_CHROMATIC_MASKED_PLANE;
+        vApp->swapParms().Images[eye][1].TexId = MipMappedMovieTextures[CurrentMipMappedMovieTexture];
+        vApp->swapParms().Images[eye][1].Pose = vApp->sensorForNextWarp().Predicted;
+        vApp->swapParms().Images[eye][1].TexCoordsFromTanAngles = texMatrix * TanAngleMatrixFromUnitSquare( &mv );
 
 		// explicitly clear a hole in alpha
 		const ovrMatrix4f screenMvp = mvp * screenModel;
-        Cinema.app->drawScreenMask( screenMvp, 0.0f, 0.0f );
+        vApp->drawScreenMask( screenMvp, 0.0f, 0.0f );
 	}
 
 	// The framework will automatically draw the floating elements on top of us now.
@@ -1022,11 +1022,11 @@ Matrix4f SceneManager::Frame( const VrFrame & vrFrame )
 		vrFrameWithoutMove.Input.sticks[0][0] = 0.0f;
 		vrFrameWithoutMove.Input.sticks[0][1] = 0.0f;
 	}
-    Scene.Frame( Cinema.app->vrViewParms(), vrFrameWithoutMove, Cinema.app->swapParms().ExternalVelocity );
+    Scene.Frame( vApp->vrViewParms(), vrFrameWithoutMove, vApp->swapParms().ExternalVelocity );
 
 	if ( ClearGhostsFrames > 0 )
 	{
-        Cinema.app->gazeCursor().ClearGhosts();
+        vApp->gazeCursor().ClearGhosts();
 		ClearGhostsFrames--;
 	}
 
@@ -1064,7 +1064,7 @@ Matrix4f SceneManager::Frame( const VrFrame & vrFrame )
 		glDisable( GL_SCISSOR_TEST );
 		GL_InvalidateFramebuffer( INV_FBO, true, false );
 		glViewport( 0, 0, MovieTextureWidth, MovieTextureHeight );
-        if ( Cinema.app->appInterface()->wantSrgbFramebuffer() )
+        if ( vApp->appInterface()->wantSrgbFramebuffer() )
 		{	// we need this copied without sRGB conversion on the top level
 	    	glDisable( GL_FRAMEBUFFER_SRGB_EXT );
 		}
@@ -1074,7 +1074,7 @@ Matrix4f SceneManager::Frame( const VrFrame & vrFrame )
 			glUseProgram( Cinema.shaderMgr.CopyMovieProgram.program );
 			UnitSquare.Draw();
 			glBindTexture( GL_TEXTURE_EXTERNAL_OES, 0 );
-            if ( Cinema.app->appInterface()->wantSrgbFramebuffer() )
+            if ( vApp->appInterface()->wantSrgbFramebuffer() )
 			{	// we need this copied without sRGB conversion on the top level
 		    	glEnable( GL_FRAMEBUFFER_SRGB_EXT );
 			}
@@ -1098,7 +1098,7 @@ Matrix4f SceneManager::Frame( const VrFrame & vrFrame )
 	}
 
 	// Generate callbacks into DrawEyeView
-    Cinema.app->drawEyeViewsPostDistorted( Scene.CenterViewMatrix() );
+    vApp->drawEyeViewsPostDistorted( Scene.CenterViewMatrix() );
 
 	return Scene.CenterViewMatrix();
 }

@@ -1,7 +1,7 @@
-#include "VUserProfile.h"
+#include "VUserSettings.h"
 
 #include "VJson.h"
-#include "android/LogUtils.h"
+#include "VLog.h"
 
 #include <fstream>
 
@@ -9,7 +9,7 @@ NV_NAMESPACE_BEGIN
 
 static const char* PROFILE_PATH = "/sdcard/Oculus/userprofile.json";
 
-void VUserProfile::load()
+void VUserSettings::load()
 {
     // TODO: Switch this over to using a content provider when available.
     Json root;
@@ -17,7 +17,7 @@ void VUserProfile::load()
     fp >> root;
 
     if (root.isInvalid()) {
-        WARN("Failed to load user profile \"%s\". Using defaults.", PROFILE_PATH);
+        vWarn("Failed to load user profile \"" << PROFILE_PATH << "\". Using defaults.");
     } else {
         ipd = root.value("ipd").toDouble();
         eyeHeight = root.value("eyeHeight").toDouble();
@@ -26,7 +26,7 @@ void VUserProfile::load()
     }
 }
 
-void VUserProfile::save()
+void VUserSettings::save()
 {
     Json root(Json::Object);
 
@@ -36,10 +36,11 @@ void VUserProfile::save()
     root["headModelDepth"] = headModelDepth;
 
     std::ofstream fp(PROFILE_PATH, std::ios::binary);
-    if (!fp.is_open())
-        WARN("Failed to save user profile %s", PROFILE_PATH);
-    else
+    if (!fp.is_open()) {
+        vWarn("Failed to save user profile" << PROFILE_PATH);
+    } else {
         fp << root;
+    }
 }
 
 NV_NAMESPACE_END

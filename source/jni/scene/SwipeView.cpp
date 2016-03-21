@@ -175,8 +175,8 @@ SwipeView::~SwipeView()
 	FreeTexture( BorderTexture2_1 );
 	FreeTexture( BorderTexture1_1 );
 	GeoPanel.Free();
-	DeleteProgram( ProgPanel );
-	DeleteProgram( ProgHighlight );
+	ProgPanel.destroy();
+	ProgHighlight.destroy();
 }
 
 // Texture has a single 0 pixel border around edge.
@@ -202,12 +202,12 @@ static GlTexture BuildBorderTexture( int width, int height )
 
 void SwipeView::Init( OvrGazeCursor & gazeCursor )
 {
-	GeoPanel = BuildTesselatedQuad( 1, 1 );
+	GeoPanel = VGlGeometryFactory::CreateTesselatedQuad( 1, 1 );
 
 	BorderTexture2_1 = BuildBorderTexture( 80, 40 );
 	BorderTexture1_1 = BuildBorderTexture( 40, 40 );
 
-	ProgPanel = BuildProgram(
+	ProgPanel.initShader(
 		"uniform mat4 Mvpm;\n"
 		"attribute vec4 Position;\n"
 		"attribute vec2 TexCoord;\n"
@@ -229,7 +229,7 @@ void SwipeView::Init( OvrGazeCursor & gazeCursor )
 	);
 
 
-	ProgHighlight = BuildProgram(
+	ProgHighlight.initShader(
 		"uniform mat4 Mvpm;\n"
 		"uniform vec4 UniformColor;\n"
 		"attribute vec4 Position;\n"
@@ -859,7 +859,7 @@ void SwipeView::Draw( const Matrix4f & mvp )
 		return;
 	}
 
-	const GlProgram & prog = ProgPanel;
+	const VGlShader & prog = ProgPanel;
 
 	glUseProgram( prog.program );
 	glActiveTexture( GL_TEXTURE0 );
@@ -887,14 +887,14 @@ void SwipeView::Draw( const Matrix4f & mvp )
 			glUseProgram( ProgHighlight.program );
 
 			Matrix4f pMat = mvp * SelectionTransform;
-			glUniformMatrix4fv(ProgHighlight.uMvp, 1, GL_FALSE, pMat.Transposed().M[0] );
+			glUniformMatrix4fv(ProgHighlight.uniformModelViewProMatrix, 1, GL_FALSE, pMat.Transposed().M[0] );
 
             float const colorScale = 0.5f;  // for tuning
 			const Vector4f color( 0.11764f *colorScale, 0.34902f * colorScale, 0.61569f * colorScale, 1.0f );
             float const actionScale = 0.5f; // for tuning
 			const Vector4f colorAction( 0.09804f * actionScale, 0.6039f * actionScale, 0.9608f * actionScale, 1.0f );
 			const Vector4f colorTouching( 0.09804f, 0.6039f, 0.9608f, 1.0f );
-			glUniform4fv(ProgHighlight.uColor, 1,
+			glUniform4fv(ProgHighlight.uniformColor, 1,
 					State == SVS_CLOSING ? &colorAction.x :
 							( (PreviousButtonState && !HasMoved) ? &colorTouching.x : &color.x ) );
 			GeoPanel.Draw();
@@ -902,7 +902,7 @@ void SwipeView::Draw( const Matrix4f & mvp )
 			glUseProgram( prog.program );
 		}
 
-		glUniformMatrix4fv(prog.uMvp, 1, GL_FALSE, pMat.Transposed().M[0] );
+		glUniformMatrix4fv(prog.uniformModelViewProMatrix, 1, GL_FALSE, pMat.Transposed().M[0] );
 
 		glActiveTexture( GL_TEXTURE0 );
 		glBindTexture( GL_TEXTURE_2D, panel.Texture );

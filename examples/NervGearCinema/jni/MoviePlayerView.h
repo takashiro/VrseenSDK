@@ -4,6 +4,7 @@
 #include <GazeCursor.h>
 #include <gui/GuiSys.h>
 
+#include "View.h"
 #include "Lerp.h"
 #include "UI/UITexture.h"
 #include "UI/UIMenu.h"
@@ -109,7 +110,7 @@ public:
 	virtual void 			OnOpen();
 	virtual void 			OnClose();
 
-	virtual bool 			Command( const char * msg );
+    bool Command( const char * msg ) override;
 	virtual bool 			OnKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType );
 
 	void 					MovieLoaded( const int width, const int height, const int duration );

@@ -3,7 +3,6 @@ CONFIG += console
 CONFIG -= app_bundle
 CONFIG -= qt
 
-CONFIG += nervgear_capture
 CONFIG(debug, debug|release): DEFINES += OVR_DEBUG=1 NDK_DEBUG=1 OVR_BUILD_DEBUG
 
 DEFINES += NV_NAMESPACE=NervGear
@@ -14,6 +13,7 @@ INCLUDEPATH += \
     jni/core \
     jni/gui \
     jni/io \
+    jni/media \
     jni/scene
 
 SOURCES += \
@@ -31,7 +31,6 @@ SOURCES += \
     jni/core/VPath.cpp \
     jni/core/RefCount.cpp \
     jni/core/VStandardPath.cpp \
-    jni/core/Std.cpp \
     jni/core/VString.cpp \
     jni/core/System.cpp \
     jni/core/ThreadCommandQueue.cpp \
@@ -40,6 +39,7 @@ SOURCES += \
     jni/core/MappedFile.cpp \
     jni/core/MemBuffer.cpp \
     jni/core/VMutex.cpp \
+    jni/core/VUserSettings.cpp \
     jni/core/VWaitCondition.cpp \
     jni/core/android/GlUtils.cpp \
     jni/core/android/JniUtils.cpp \
@@ -53,13 +53,11 @@ SOURCES += \
     jni/api/HmdSensors.cpp \
     jni/api/Distortion.cpp \
     jni/api/SystemActivities.cpp \
-    jni/api/TimeWarp.cpp \
-    jni/api/TimeWarpProgs.cpp \
-    jni/api/ImageServer.cpp \
+    jni/api/VFrameSmooth.cpp \
     jni/api/LocalPreferences.cpp \
     jni/api/VMainActivity.cpp \
-    jni/api/WarpGeometry.cpp \
-    jni/api/WarpProgram.cpp \
+    jni/api/VGlShader.cpp \
+    jni/api/VGlGeometry.cpp \
     jni/api/sensor/DeviceHandle.cpp \
     jni/api/sensor/DeviceImpl.cpp \
     jni/api/sensor/LatencyTest.cpp \
@@ -104,12 +102,11 @@ SOURCES += \
     jni/io/VBinaryFile.cpp \
     jni/io/VFileOperation.cpp \
     jni/io/VSysFile.cpp \
+    jni/media/VSoundManager.cpp \
     jni/scene/BitmapFont.cpp \
     jni/scene/EyeBuffers.cpp \
     jni/scene/EyePostRender.cpp \
     jni/scene/GazeCursor.cpp \
-    jni/scene/GlGeometry.cpp \
-    jni/scene/GlProgram.cpp \
     jni/scene/GlSetup.cpp \
     jni/scene/GlTexture.cpp \
     jni/scene/ImageData.cpp \
@@ -125,8 +122,6 @@ SOURCES += \
     jni/DebugLines.cpp \
     jni/KeyState.cpp \
     jni/VMessageQueue.cpp \
-    jni/SoundManager.cpp \
-    jni/VUserProfile.cpp \
     jni/TalkToJava.cpp \
     jni/VrCommon.cpp \
     jni/VrLocale.cpp
@@ -136,11 +131,6 @@ HEADERS += \
     jni/core/android/JniUtils.h \
     jni/core/android/LogUtils.h \
     jni/core/android/VOsBuild.h \
-    jni/core/capture/Capture.h \
-    jni/core/capture/Capture_Config.h \
-    jni/core/capture/Capture_LegacyPackets.h \
-    jni/core/capture/Capture_Packets.h \
-    jni/core/capture/Capture_Types.h \
     jni/core/Alg.h \
     jni/core/Allocator.h \
     jni/core/Atomic.h \
@@ -161,7 +151,6 @@ HEADERS += \
     jni/core/VPath.h \
     jni/core/RefCount.h \
     jni/core/VStandardPath.h \
-    jni/core/Std.h \
     jni/core/VString.h \
     jni/core/String_FormatUtil.h \
     jni/core/String_PathUtil.h \
@@ -180,6 +169,7 @@ HEADERS += \
     jni/core/String_Utils.h \
     jni/core/StringHash.h \
     jni/core/TypesafeNumber.h \
+    jni/core/VUserSettings.h \
     jni/core/VWaitCondition.h \
     jni/embedded/dependency_error_de.h \
     jni/embedded/dependency_error_en.h \
@@ -196,14 +186,11 @@ HEADERS += \
     jni/api/HmdSensors.h \
     jni/api/Distortion.h \
     jni/api/SystemActivities.h \
-    jni/api/TimeWarp.h \
-    jni/api/TimeWarpProgs.h \
-    jni/api/ImageServer.h \
+    jni/api/VFrameSmooth.h \
     jni/api/LocalPreferences.h \
+    jni/api/VGlGeometry.h \
+    jni/api/VGlShader.h \
     jni/api/VMainActivity.h \
-    jni/api/WarpGeometry.h \
-    jni/api/WarpProgram.h \ \
-    jni/api/TimeWarpLocal.h \
     jni/api/VrApi_Android.h \
     jni/api/VrApi_Helpers.h \
     jni/api/VrApi_local.h \
@@ -263,13 +250,12 @@ HEADERS += \
     jni/io/VFile.h \
     jni/io/VFileOperation.h \
     jni/io/VSysFile.h \
+    jni/media/VSoundManager.h \
     jni/scene/BitmapFont.h \
     jni/scene/EyeBuffers.h \
     jni/scene/EyePostRender.h \
     jni/scene/GazeCursor.h \
     jni/scene/GazeCursorLocal.h \
-    jni/scene/GlGeometry.h \
-    jni/scene/GlProgram.h \
     jni/scene/GlSetup.h \
     jni/scene/GlTexture.h \
     jni/scene/ImageData.h \
@@ -287,8 +273,6 @@ HEADERS += \
     jni/App.h \
     jni/AppRender.h \
     jni/DebugLines.h \
-    jni/SoundManager.h \
-    jni/VUserProfile.h \
     jni/VrLocale.h \
     jni/Console.h \
     jni/vglobal.h \
@@ -300,28 +284,6 @@ HEADERS += \
 
 include(jni/3rdparty/minizip/minizip.pri)
 include(jni/3rdparty/stb/stb.pri)
-
-# NervGear::Capture support...
-nervgear_capture{
-    SOURCES += \
-        jni/core/capture/Capture.cpp \
-        jni/core/capture/Capture_AsyncStream.cpp \
-        jni/core/capture/Capture_FileIO.cpp \
-        jni/core/capture/Capture_GLES3.cpp \
-        jni/core/capture/Capture_Socket.cpp \
-        jni/core/capture/Capture_StandardSensors.cpp \
-        jni/core/capture/Capture_Thread.cpp
-
-    HEADERS += \
-        jni/core/capture/Capture_AsyncStream.h \
-        jni/core/capture/Capture_FileIO.h \
-        jni/core/capture/Capture_Socket.h \
-        jni/core/capture/Capture_StandardSensors.h \
-        jni/core/capture/Capture_GLES3.h \
-        jni/core/capture/Capture_Thread.h
-
-    DEFINES += OVR_ENABLE_CAPTURE=1
-}
 
 # OpenGL ES 3.0
 LIBS += -lGLESv3
@@ -337,16 +299,6 @@ LIBS += -landroid
 LIBS += -lz
 # audio
 LIBS += -lOpenSLES
-
-SOURCES += \
-    jni/Integrations/Unity/UnityPlugin.cpp \
-    jni/Integrations/Unity/MediaSurface.cpp \
-    jni/Integrations/Unity/SensorPlugin.cpp \
-    jni/Integrations/Unity/RenderingPlugin.cpp
-
-HEADERS += \
-    jni/Integrations/Unity/GlStateSave.h \
-    jni/Integrations/Unity/MediaSurface.h
 
 linux {
     CONFIG(staticlib) {

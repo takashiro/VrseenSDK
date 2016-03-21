@@ -10,6 +10,17 @@
 
 NV_NAMESPACE_BEGIN
 
+static VString ComposeIntentMessage(const VString &packageName, const VString &uri, const VString &jsonText)
+{
+    VString out = "intent ";
+    out.append(packageName);
+    out.append(' ');
+    out.append(uri);
+    out.append(' ');
+    out.append(jsonText);
+    return out;
+}
+
 struct VMainActivity::Private
 {
     JNIEnv *jni;
@@ -90,117 +101,215 @@ VString VMainActivity::getPackageName() const
     return VString();
 }
 
+
+void VMainActivity::onCreate(JNIEnv * jni, jclass clazz, jobject activity, jstring javaFromPackageNameString,
+        jstring javaCommandString, jstring javaUriString)
+{
+    VString utfFromPackageString = JniUtils::Convert(jni, javaFromPackageNameString);
+    VString utfJsonString = JniUtils::Convert(jni, javaCommandString);
+    VString utfUriString = JniUtils::Convert(jni, javaUriString);
+    vInfo("VMainActivity::SetActivity:" << utfFromPackageString << utfJsonString << utfUriString);
+
+    if (vApp == nullptr)
+    {	// First time initialization
+        // This will set the VrAppInterface app pointer directly,
+        // so it is set when OneTimeInit is called.
+        vInfo("new AppLocal()");
+        new App(jni, activity, this);
+
+        // Start the VrThread and wait for it to have initialized.
+        vApp->startVrThread();
+        vApp->syncVrThread();
+    }
+    else
+    {	// Just update the activity object.
+        vInfo("Update AppLocal");
+        if (vApp->javaObject() != nullptr)
+        {
+            jni->DeleteGlobalRef(vApp->javaObject());
+        }
+        vApp->javaObject() = jni->NewGlobalRef(activity);
+        vApp->VrModeParms.ActivityObject = vApp->javaObject();
+    }
+
+    // Send the intent and wait for it to complete.
+    VString intentMessage = ComposeIntentMessage(utfFromPackageString, utfUriString, utfJsonString);
+    VByteArray utf8Intent = intentMessage.toUtf8();
+    vApp->messageQueue().PostPrintf(utf8Intent.data());
+    vApp->syncVrThread();
+}
+
+void VMainActivity::shutdown()
+{
+}
+
+void VMainActivity::onWindowCreated()
+{
+    vInfo("VMainActivity::WindowCreated - default handler called");
+}
+
+void VMainActivity::onWindowDestroyed()
+{
+    vInfo("VMainActivity::WindowDestroyed - default handler called");
+}
+
+void VMainActivity::onPause()
+{
+    vInfo("VMainActivity::Paused - default handler called");
+}
+
+void VMainActivity::onResume()
+{
+    vInfo("VMainActivity::Resumed - default handler called");
+}
+
+void VMainActivity::Command(const char * msg)
+{
+    vInfo("VMainActivity::Command - default handler called, msg =" << msg);
+}
+
+void VMainActivity::onNewIntent(const char * fromPackageName, const char * command, const char * uri)
+{
+    vInfo("VMainActivity::NewIntent - default handler called -" << fromPackageName << command << uri);
+}
+
+Matrix4f VMainActivity::onNewFrame(VrFrame vrFrame)
+{
+    vInfo("VMainActivity::Frame - default handler called");
+    return Matrix4f();
+}
+
+void VMainActivity::ConfigureVrMode(ovrModeParms & modeParms)
+{
+    vInfo("VMainActivity::ConfigureVrMode - default handler called");
+}
+
+Matrix4f VMainActivity::drawEyeView(const int eye, const float fovDegrees)
+{
+    vInfo("VMainActivity::DrawEyeView - default handler called");
+    return Matrix4f();
+}
+
+bool VMainActivity::onKeyEvent(const int keyCode, const KeyState::eKeyEventType eventType)
+{
+    vInfo("VMainActivity::OnKeyEvent - default handler called");
+    return false;
+}
+
+bool VMainActivity::onVrWarningDismissed(const bool accepted)
+{
+    vInfo("VMainActivity::OnVrWarningDismissed - default handler called");
+    return false;
+}
+
+bool VMainActivity::showLoadingIcon() const
+{
+    return true;
+}
+
+bool VMainActivity::wantSrgbFramebuffer() const
+{
+    return false;
+}
+
+bool VMainActivity::wantProtectedFramebuffer() const
+{
+    return false;
+}
+
+jclass VMainActivity::javaClass() const
+{
+    return d->activityClass;
+}
+
 NV_NAMESPACE_END
 
 NV_USING_NAMESPACE
 
-//@to-do: remove this
-static VString ComposeIntentMessage(const VString &packageName, const VString &uri, const VString &jsonText)
-{
-    VString out = "intent ";
-    out.append(packageName);
-    out.append(' ');
-    out.append(uri);
-    out.append(' ');
-    out.append(jsonText);
-    return out;
-}
-
 extern "C"
 {
 
-void Java_com_vrseen_nervgear_VrActivity_nativeSurfaceChanged(JNIEnv *jni, jclass clazz,
-        jlong appPtr, jobject surface)
+void Java_com_vrseen_nervgear_VrActivity_nativeSurfaceChanged(JNIEnv *jni, jclass, jobject surface)
 {
-    ((App *)appPtr)->messageQueue().SendPrintf("surfaceChanged %p",
+    vApp->messageQueue().SendPrintf("surfaceChanged %p",
             surface ? ANativeWindow_fromSurface(jni, surface) : nullptr);
 }
 
-void Java_com_vrseen_nervgear_VrActivity_nativeSurfaceDestroyed(JNIEnv *jni, jclass clazz,
-        jlong appPtr, jobject)
+void Java_com_vrseen_nervgear_VrActivity_nativeSurfaceDestroyed(JNIEnv *jni, jclass clazz)
 {
-    if (appPtr == 0)
+    if (vApp == 0)
     {
         // Android may call surfaceDestroyed() after onDestroy().
         vInfo("nativeSurfaceChanged was called after onDestroy. We cannot destroy the surface now because we don't have a valid app pointer.");
         return;
     }
 
-    ((App *)appPtr)->messageQueue().SendPrintf("surfaceDestroyed ");
+    vApp->messageQueue().SendPrintf("surfaceDestroyed ");
 }
 
-void Java_com_vrseen_nervgear_VrActivity_nativePopup(JNIEnv *jni, jclass clazz,
-        jlong appPtr, jint width, jint height, jfloat seconds)
+void Java_com_vrseen_nervgear_VrActivity_nativePopup(JNIEnv *, jclass,
+        jint width, jint height, jfloat seconds)
 {
-    ((App *)appPtr)->messageQueue().PostPrintf("popup %i %i %f", width, height, seconds);
+    vApp->messageQueue().PostPrintf("popup %i %i %f", width, height, seconds);
 }
 
-jobject Java_com_vrseen_nervgear_VrActivity_nativeGetPopupSurfaceTexture(JNIEnv *jni, jclass clazz,
-        jlong appPtr)
+jobject Java_com_vrseen_nervgear_VrActivity_nativeGetPopupSurfaceTexture(JNIEnv *, jclass)
 {
-    return ((App *)appPtr)->dialogTexture()->javaObject;
+    return vApp->dialogTexture()->javaObject;
 }
 
 void Java_com_vrseen_nervgear_VrActivity_nativePause(JNIEnv *jni, jclass clazz,
         jlong appPtr)
 {
-    ((App *)appPtr)->messageQueue().SendPrintf("pause ");
+    vApp->messageQueue().SendPrintf("pause ");
 }
 
-void Java_com_vrseen_nervgear_VrActivity_nativeResume(JNIEnv *jni, jclass clazz,
-        jlong appPtr)
+void Java_com_vrseen_nervgear_VrActivity_nativeResume(JNIEnv *jni, jclass clazz)
 {
-    ((App *)appPtr)->messageQueue().SendPrintf("resume ");
+    vApp->messageQueue().SendPrintf("resume ");
 }
 
-void Java_com_vrseen_nervgear_VrActivity_nativeDestroy(JNIEnv *jni, jclass clazz,
-        jlong appPtr)
+void Java_com_vrseen_nervgear_VrActivity_nativeDestroy(JNIEnv *, jclass)
 {
-    App * localPtr = (App *)appPtr;
-
     // First kill the VrThread.
-    localPtr->stopVrThread();
+    vApp->stopVrThread();
     // Then delete the VrAppInterface derived class.
-    delete localPtr->appInterface();
     // Last delete AppLocal.
-    delete localPtr;
+    delete vApp;
 
     vInfo("ExitOnDestroy is true, exiting");
     ovr_ExitActivity(nullptr, EXIT_TYPE_EXIT);
 }
 
 void Java_com_vrseen_nervgear_VrActivity_nativeJoypadAxis(JNIEnv *jni, jclass clazz,
-        jlong appPtr, jfloat lx, jfloat ly, jfloat rx, jfloat ry)
+        jfloat lx, jfloat ly, jfloat rx, jfloat ry)
 {
-    App * local = ((App *)appPtr);
     // Suspend input until OneTimeInit() has finished to avoid overflowing the message queue on long loads.
-    if (local->oneTimeInitCalled) {
-        local->messageQueue().PostPrintf("joy %f %f %f %f", lx, ly, rx, ry);
+    if (vApp->oneTimeInitCalled) {
+        vApp->messageQueue().PostPrintf("joy %f %f %f %f", lx, ly, rx, ry);
     }
 }
 
-void Java_com_vrseen_nervgear_VrActivity_nativeTouch(JNIEnv *jni, jclass clazz,
-        jlong appPtr, jint action, jfloat x, jfloat y)
+void Java_com_vrseen_nervgear_VrActivity_nativeTouch(JNIEnv *, jclass,
+        jint action, jfloat x, jfloat y)
 {
-    App * local = ((App *)appPtr);
     // Suspend input until OneTimeInit() has finished to avoid overflowing the message queue on long loads.
-    if (local->oneTimeInitCalled) {
-        local->messageQueue().PostPrintf("touch %i %f %f", action, x, y);
+    if (vApp->oneTimeInitCalled) {
+        vApp->messageQueue().PostPrintf("touch %i %f %f", action, x, y);
     }
 }
 
 void Java_com_vrseen_nervgear_VrActivity_nativeKeyEvent(JNIEnv *jni, jclass clazz,
-        jlong appPtr, jint key, jboolean down, jint repeatCount)
+        jint key, jboolean down, jint repeatCount)
 {
-    App * local = ((App *)appPtr);
     // Suspend input until OneTimeInit() has finished to avoid overflowing the message queue on long loads.
-    if (local->oneTimeInitCalled) {
-        local->messageQueue().PostPrintf("key %i %i %i", key, down, repeatCount);
+    if (vApp->oneTimeInitCalled) {
+        vApp->messageQueue().PostPrintf("key %i %i %i", key, down, repeatCount);
     }
 }
 
 void Java_com_vrseen_nervgear_VrActivity_nativeNewIntent(JNIEnv *jni, jclass clazz,
-        jlong appPtr, jstring fromPackageName, jstring command, jstring uriString)
+        jstring fromPackageName, jstring command, jstring uriString)
 {
     VString utfPackageName = JniUtils::Convert(jni, fromPackageName);
     VString utfUri = JniUtils::Convert(jni, uriString);
@@ -209,7 +318,7 @@ void Java_com_vrseen_nervgear_VrActivity_nativeNewIntent(JNIEnv *jni, jclass cla
     VString intentMessage = ComposeIntentMessage(utfPackageName, utfUri, utfJson);
     vInfo("nativeNewIntent:" << intentMessage);
     VByteArray utf8Message = intentMessage.toUtf8();
-    ((App *) appPtr)->messageQueue().PostPrintf(utf8Message.data());
+    vApp->messageQueue().PostPrintf(utf8Message.data());
 }
 
 }	// extern "C"

@@ -181,7 +181,7 @@ VString GetImage( eScrollBarImage const type, const bool vertical )
 	};
 
 	char buff[ 256 ];
-	OVR_sprintf( buff, sizeof( buff ), images[ type ], vertical ? "vert" : "horz" );
+    sprintf(buff,images[type], vertical ? "vert" : "horz" );
 	return VString( buff );
 }
 

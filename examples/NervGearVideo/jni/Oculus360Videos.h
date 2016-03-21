@@ -1,22 +1,8 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   Oculus360Videos.h
-Content     :   Panorama viewer based on SwipeView
-Created     :   February 14, 2014
-Authors     :   John Carmack
+#include "VMainActivity.h"
 
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-This source code is licensed under the BSD-style license found in the
-LICENSE file in the Oculus360Videos/ directory. An additional grant
-of patent rights can be found in the PATENTS file in the same directory.
-
-************************************************************************************/
-
-#ifndef VrPanoVideos_H
-#define VrPanoVideos_H
-
-#include "gui/Fader.h"
+#include "Fader.h"
 #include "ModelView.h"
 
 namespace NervGear {
@@ -35,7 +21,7 @@ enum Action
 	ACT_VIDEOS,
 };
 
-class Oculus360Videos : public NervGear::VrAppInterface
+class Oculus360Videos : public NervGear::VMainActivity
 {
 public:
 
@@ -49,14 +35,14 @@ public:
 		NUM_MENU_STATES
 	};
 
-	Oculus360Videos();
+	Oculus360Videos(JNIEnv *jni, jobject activity);
 	~Oculus360Videos();
 
-	virtual void		OneTimeInit(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI );
-	virtual void		OneTimeShutdown();
+	virtual void		init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI );
+	virtual void		shutdown();
 	virtual void		ConfigureVrMode( ovrModeParms & modeParms );
-	virtual Matrix4f 	DrawEyeView( const int eye, const float fovDegrees );
-	virtual Matrix4f 	Frame( VrFrame vrFrame );
+	virtual Matrix4f 	drawEyeView( const int eye, const float fovDegrees );
+	virtual Matrix4f 	onNewFrame( VrFrame vrFrame );
 	virtual void		Command( const char * msg );
 	virtual bool 		onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType );
 
@@ -87,16 +73,16 @@ private:
 
 	// shared vars
 	jclass				MainActivityClass;	// need to look up from main thread
-	GlGeometry			Globe;
+	VGlGeometry			Globe;
 	OvrSceneView		Scene;
 	ModelFile *			BackgroundScene;
 	bool				VideoWasPlayingWhenPaused;	// state of video when main activity was paused
 
 	// panorama vars
 	GLuint				BackgroundTexId;
-	GlProgram			PanoramaProgram;
-	GlProgram			FadedPanoramaProgram;
-	GlProgram			SingleColorTextureProgram;
+	VGlShader			PanoramaProgram;
+	VGlShader			FadedPanoramaProgram;
+	VGlShader			SingleColorTextureProgram;
 
 	VArray< VString > 	SearchPaths;
 	OvrVideosMetaData *	MetaData;
@@ -133,5 +119,3 @@ private:
 };
 
 }
-
-#endif	// SWIPELAUNCH_H

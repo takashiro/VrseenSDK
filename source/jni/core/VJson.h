@@ -93,7 +93,7 @@ public:
     friend std::istream &operator>>(std::istream &in, Json &value);
     friend std::ostream &operator<<(std::ostream &out, const Json &value);
 
-    static Json Parse(const char *str);
+    static Json Parse(const char* str);
     static Json Load(const char *path);
 
 protected:

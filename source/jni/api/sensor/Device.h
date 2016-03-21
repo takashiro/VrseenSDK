@@ -115,12 +115,15 @@ protected:
 class DeviceInfo
 {
 public:
-    DeviceInfo() : InfoClassType(Device_None), Type(Device_None), Version(0)
+    DeviceInfo()
+        : InfoClassType(Device_None)
+        , Type(Device_None)
+        , ProductName("")
+        , Manufacturer("")
+        , Version(0)
     {
-        Manufacturer[0] = 0;
-    }
 
-    enum { MaxNameLength = 32 };
+    }
 
     // Type of device for which DeviceInfo is intended.
     // This will be set to Device_HMD for HMDInfo structure, note that this may be
@@ -131,13 +134,19 @@ public:
     DeviceType       Type;
     // Name string describing the product: "Oculus Rift DK1", etc.
     VString ProductName;
-    char             Manufacturer[MaxNameLength];
+//    char             Manufacturer[MaxNameLength];
+    VString Manufacturer;
     unsigned         Version;
 
 protected:
-    DeviceInfo(DeviceType type) : InfoClassType(type), Type(type), Version(0)
+    DeviceInfo(DeviceType type)
+        : InfoClassType(type)
+        , Type(type)
+        , ProductName("")
+        , Manufacturer("")
+        , Version(0)
     {
-        Manufacturer[0] = 0;
+
     }
     void operator = (const DeviceInfo&) { OVR_ASSERT(0); } // Assignment not allowed.
 };
@@ -450,9 +459,13 @@ struct SensorRange
 class SensorInfo : public DeviceInfo
 {
 public:
-    SensorInfo() : DeviceInfo(Device_Sensor), VendorId(0), ProductId(0)
+    SensorInfo()
+        : DeviceInfo(Device_Sensor)
+        , VendorId(0)
+        , ProductId(0)
+        , SerialNumber("")
     {
-        SerialNumber[0] = 0;
+
     }
 
     // HID Vendor and ProductId of the device.
@@ -461,7 +474,7 @@ public:
     // MaxRanges report maximum sensor range values supported by HW.
     SensorRange MaxRanges;
     // Sensor (and display) serial number.
-    char        SerialNumber[20];
+    VString SerialNumber;
 
 private:
     void operator = (const SensorInfo&) { OVR_ASSERT(0); } // Assignment not allowed.

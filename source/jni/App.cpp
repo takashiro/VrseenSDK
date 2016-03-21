@@ -39,7 +39,7 @@
 #include "VrCommon.h"
 #include "VrLocale.h"
 #include "VRMenuMgr.h"
-#include "VUserProfile.h"
+#include "VUserSettings.h"
 #include "TalkToJava.h"
 
 #include "VApkFile.h"
@@ -90,18 +90,6 @@ static int buttonMappings[] = {
     -1
 };
 
-//@to-do: remove this
-static VString ComposeIntentMessage(const VString &packageName, const VString &uri, const VString &jsonText)
-{
-    VString out = "intent ";
-    out.append(packageName);
-    out.append(' ');
-    out.append(uri);
-    out.append(' ');
-    out.append(jsonText);
-    return out;
-}
-
 static Vector3f ViewOrigin(const Matrix4f & view)
 {
     return Vector3f(view.M[0][3], view.M[1][3], view.M[2][3]);
@@ -139,170 +127,10 @@ static Matrix4f PanelMatrix(const Matrix4f & lastViewMatrix, const float popupDi
     return panelMatrix;
 }
 
-//=======================================================================================
-// Default handlers for VrAppInterface
-
-VrAppInterface::VrAppInterface() :
-    app(nullptr),
-    ActivityClass(nullptr)
-{
-}
-
-VrAppInterface::~VrAppInterface()
-{
-    if (ActivityClass != nullptr)
-	{
-		// FIXME:
-        //jni->DeleteGlobalRef(ActivityClass);
-        //ActivityClass = nullptr;
-	}
-}
-
-jlong VrAppInterface::SetActivity(JNIEnv * jni, jclass clazz, jobject activity, jstring javaFromPackageNameString,
-        jstring javaCommandString, jstring javaUriString)
-{
-	// Make a permanent global reference for the class
-    if (ActivityClass != nullptr)
-	{
-        jni->DeleteGlobalRef(ActivityClass);
-	}
-    ActivityClass = (jclass)jni->NewGlobalRef(clazz);
-
-    VString utfFromPackageString = JniUtils::Convert(jni, javaFromPackageNameString);
-    VString utfJsonString = JniUtils::Convert(jni, javaCommandString);
-    VString utfUriString = JniUtils::Convert(jni, javaUriString);
-    vInfo("VrAppInterface::SetActivity:" << utfFromPackageString << utfJsonString << utfUriString);
-
-    if (app == nullptr)
-	{	// First time initialization
-		// This will set the VrAppInterface app pointer directly,
-		// so it is set when OneTimeInit is called.
-        vInfo("new AppLocal()");
-        new App(jni, activity, *this);
-
-		// Start the VrThread and wait for it to have initialized.
-        app->startVrThread();
-        app->syncVrThread();
-	}
-	else
-	{	// Just update the activity object.
-        vInfo("Update AppLocal");
-        if (app->javaObject() != nullptr)
-		{
-            jni->DeleteGlobalRef(app->javaObject());
-		}
-        app->javaObject() = jni->NewGlobalRef(activity);
-        app->VrModeParms.ActivityObject = app->javaObject();
-	}
-
-	// Send the intent and wait for it to complete.
-    VString intentMessage = ComposeIntentMessage(utfFromPackageString, utfUriString, utfJsonString);
-    VByteArray utf8Intent = intentMessage.toUtf8();
-    app->messageQueue().PostPrintf(utf8Intent.data());
-    app->syncVrThread();
-
-	return (jlong)app;
-}
-
-void VrAppInterface::OneTimeShutdown()
-{
-}
-
-void VrAppInterface::WindowCreated()
-{
-    vInfo("VrAppInterface::WindowCreated - default handler called");
-}
-
-void VrAppInterface::WindowDestroyed()
-{
-    vInfo("VrAppInterface::WindowDestroyed - default handler called");
-}
-
-void VrAppInterface::Paused()
-{
-    vInfo("VrAppInterface::Paused - default handler called");
-}
-
-void VrAppInterface::Resumed()
-{
-    vInfo("VrAppInterface::Resumed - default handler called");
-}
-
-void VrAppInterface::Command(const char * msg)
-{
-    vInfo("VrAppInterface::Command - default handler called, msg =" << msg);
-}
-
-void VrAppInterface::NewIntent(const char * fromPackageName, const char * command, const char * uri)
-{
-    vInfo("VrAppInterface::NewIntent - default handler called -" << fromPackageName << command << uri);
-}
-
-Matrix4f VrAppInterface::Frame(VrFrame vrFrame)
-{
-    vInfo("VrAppInterface::Frame - default handler called");
-	return Matrix4f();
-}
-
-void VrAppInterface::ConfigureVrMode(ovrModeParms & modeParms)
-{
-    vInfo("VrAppInterface::ConfigureVrMode - default handler called");
-}
-
-Matrix4f VrAppInterface::DrawEyeView(const int eye, const float fovDegrees)
-{
-    vInfo("VrAppInterface::DrawEyeView - default handler called");
-	return Matrix4f();
-}
-
-bool VrAppInterface::onKeyEvent(const int keyCode, const KeyState::eKeyEventType eventType)
-{
-    vInfo("VrAppInterface::OnKeyEvent - default handler called");
-	return false;
-}
-
-bool VrAppInterface::OnVrWarningDismissed(const bool accepted)
-{
-    vInfo("VrAppInterface::OnVrWarningDismissed - default handler called");
-	return false;
-}
-
-bool VrAppInterface::ShouldShowLoadingIcon() const
-{
-	return true;
-}
-
-bool VrAppInterface::wantSrgbFramebuffer() const
-{
-	return false;
-}
-
-bool VrAppInterface::GetWantProtectedFramebuffer() const
-{
-	return false;
-}
-
-//==============================
-// WaitForDebuggerToAttach
-//
-// wait on the debugger... once it is attached, change waitForDebugger to false
-void WaitForDebuggerToAttach()
-{
-	static volatile bool waitForDebugger = true;
-    while (waitForDebugger)
-	{
-		// put your breakpoint on the usleep to wait
-        usleep(100000);
-	}
-}
-
-//=======================================================================================
-
 extern void DebugMenuBounds(void * appPtr, const char * cmd);
 extern void DebugMenuHierarchy(void * appPtr, const char * cmd);
 extern void DebugMenuPoses(void * appPtr, const char * cmd);
 extern void ShowFPS(void * appPtr, const char * cmd);
-
 
 static EyeParms DefaultVrParmsForRenderer(const eglSetup_t & eglr)
 {
@@ -427,16 +255,16 @@ struct App::Private : public TalkToJavaInterface
 
     ovrTimeWarpParms	swapParms;			// passed to TimeWarp->WarpSwap()
 
-    GlProgram		externalTextureProgram2;
-    GlProgram		untexturedMvpProgram;
-    GlProgram		untexturedScreenSpaceProgram;
-    GlProgram		overlayScreenFadeMaskProgram;
-    GlProgram		overlayScreenDirectProgram;
+    VGlShader		externalTextureProgram2;
+    VGlShader		untexturedMvpProgram;
+    VGlShader		untexturedScreenSpaceProgram;
+    VGlShader		overlayScreenFadeMaskProgram;
+    VGlShader		overlayScreenDirectProgram;
 
-    GlGeometry		unitCubeLines;		// 12 lines that outline a 0 to 1 unit cube, intended to be scaled to cover bounds.
-    GlGeometry		panelGeometry;		// used for dialogs
-    GlGeometry		unitSquare;			// -1 to 1 in x and Y, 0 to 1 in texcoords
-    GlGeometry		fadedScreenMaskSquare;// faded screen mask for overlay rendering
+    VGlGeometry		unitCubeLines;		// 12 lines that outline a 0 to 1 unit cube, intended to be scaled to cover bounds.
+    VGlGeometry		panelGeometry;		// used for dialogs
+    VGlGeometry		unitSquare;			// -1 to 1 in x and Y, 0 to 1 in texcoords
+    VGlGeometry		fadedScreenMaskSquare;// faded screen mask for overlay rendering
 
     EyePostRender	eyeDecorations;
 
@@ -475,7 +303,7 @@ struct App::Private : public TalkToJavaInterface
     long long 		recenterYawFrameStart;	// Enables reorient before sensor data is read.  Allows apps to reorient without having invalid orientation information for that frame.
 
     // Manages sound assets
-    OvrSoundManager	soundManager;
+     VSoundManager	soundManager;
 
     OvrGuiSys *         guiSys;
     OvrGazeCursor *     gazeCursor;
@@ -493,7 +321,7 @@ struct App::Private : public TalkToJavaInterface
     double errorMessageEndTime;
 
     jobject javaObject;
-    VrAppInterface *appInterface;
+    VMainActivity *appInterface;
 
     VMainActivity *activity;
 
@@ -617,7 +445,7 @@ struct App::Private : public TalkToJavaInterface
 
     void pause()
     {
-        appInterface->Paused();
+        appInterface->onPause();
 
         ovr_LeaveVrMode(OvrMobile);
     }
@@ -649,9 +477,6 @@ struct App::Private : public TalkToJavaInterface
 
         // Check for values that effect our mode settings
         {
-            const char * imageServerStr = ovr_GetLocalPreferenceValueForKey(LOCAL_PREF_IMAGE_SERVER, "0");
-            VrModeParms.EnableImageServer = (atoi(imageServerStr) > 0);
-
             const char * cpuLevelStr = ovr_GetLocalPreferenceValueForKey(LOCAL_PREF_DEV_CPU_LEVEL, "-1");
             const int cpuLevel = atoi(cpuLevelStr);
             if (cpuLevel >= 0)
@@ -683,7 +508,7 @@ struct App::Private : public TalkToJavaInterface
         // Start up TimeWarp and the various performance options
         OvrMobile = ovr_EnterVrMode(VrModeParms, &hmdInfo);
 
-        appInterface->Resumed();
+        appInterface->onResume();
     }
 
     void initGlObjects()
@@ -695,8 +520,8 @@ struct App::Private : public TalkToJavaInterface
         // Let glUtils look up extensions
         GL_FindExtensions();
 
-        externalTextureProgram2 = BuildProgram(vertexShaderSource, externalFragmentShaderSource);
-        untexturedMvpProgram = BuildProgram(
+        externalTextureProgram2.initShader( vertexShaderSource, externalFragmentShaderSource );
+        untexturedMvpProgram.initShader(
             "uniform mat4 Mvpm;\n"
             "attribute vec4 Position;\n"
             "uniform mediump vec4 UniformColor;\n"
@@ -713,8 +538,8 @@ struct App::Private : public TalkToJavaInterface
             "	gl_FragColor = oColor;\n"
             "}\n"
         );
-        untexturedScreenSpaceProgram = BuildProgram(identityVertexShaderSource, untexturedFragmentShaderSource);
-        overlayScreenFadeMaskProgram = BuildProgram(
+        untexturedScreenSpaceProgram.initShader( identityVertexShaderSource, untexturedFragmentShaderSource );
+        overlayScreenFadeMaskProgram.initShader(
                 "uniform mat4 Mvpm;\n"
                 "attribute vec4 VertexColor;\n"
                 "attribute vec4 Position;\n"
@@ -731,7 +556,7 @@ struct App::Private : public TalkToJavaInterface
                 "	gl_FragColor = oColor;\n"
                 "}\n"
             );
-        overlayScreenDirectProgram = BuildProgram(
+        overlayScreenDirectProgram.initShader(
                 "uniform mat4 Mvpm;\n"
                 "attribute vec4 Position;\n"
                 "attribute vec2 TexCoord;\n"
@@ -751,9 +576,9 @@ struct App::Private : public TalkToJavaInterface
             );
 
         // Build some geometries we need
-        panelGeometry = BuildTesselatedQuad(32, 16);	// must be large to get faded edge
-        unitSquare = BuildTesselatedQuad(1, 1);
-        unitCubeLines = BuildUnitCubeLines();
+        panelGeometry = VGlGeometryFactory::CreateTesselatedQuad( 32, 16 );;	// must be large to get faded edge
+        unitSquare = VGlGeometryFactory::CreateTesselatedQuad( 1, 1 );
+        unitCubeLines = VGlGeometryFactory::CreateUnitCubeLines();
         //FadedScreenMaskSquare = BuildFadedScreenMask(0.0f, 0.0f);	// TODO: clean up: app-specific values are being passed in on DrawScreenMask
 
         eyeDecorations.Init();
@@ -761,11 +586,11 @@ struct App::Private : public TalkToJavaInterface
 
     void shutdownGlObjects()
     {
-        DeleteProgram(externalTextureProgram2);
-        DeleteProgram(untexturedMvpProgram);
-        DeleteProgram(untexturedScreenSpaceProgram);
-        DeleteProgram(overlayScreenFadeMaskProgram);
-        DeleteProgram(overlayScreenDirectProgram);
+        externalTextureProgram2.destroy();
+        untexturedMvpProgram.destroy();
+        untexturedScreenSpaceProgram.destroy();
+        overlayScreenFadeMaskProgram.destroy();
+        overlayScreenDirectProgram.destroy();
 
         panelGeometry.Free();
         unitSquare.Free();
@@ -1070,7 +895,7 @@ struct App::Private : public TalkToJavaInterface
                 attribs[numAttribs++] = EGL_GL_COLORSPACE_SRGB_KHR;
             }
             // Ask for TrustZone rendering support
-            if (appInterface->GetWantProtectedFramebuffer())
+            if (appInterface->wantProtectedFramebuffer())
             {
                 attribs[numAttribs++] = EGL_PROTECTED_CONTENT_EXT;
                 attribs[numAttribs++] = EGL_TRUE;
@@ -1100,7 +925,7 @@ struct App::Private : public TalkToJavaInterface
             else
             {
                 framebufferIsSrgb = appInterface->wantSrgbFramebuffer();
-                framebufferIsProtected = appInterface->GetWantProtectedFramebuffer();
+                framebufferIsProtected = appInterface->wantProtectedFramebuffer();
             }
 
             if (eglMakeCurrent(eglr.display, windowSurface, windowSurface, eglr.context) == EGL_FALSE)
@@ -1111,7 +936,7 @@ struct App::Private : public TalkToJavaInterface
             createdSurface = true;
 
             // Let the client app setup now
-            appInterface->WindowCreated();
+            appInterface->onWindowCreated();
 
             // Resume
             if (!paused)
@@ -1126,7 +951,7 @@ struct App::Private : public TalkToJavaInterface
             vInfo("surfaceDestroyed");
 
             // Let the client app shutdown first.
-            appInterface->WindowDestroyed();
+            appInterface->onWindowDestroyed();
 
             // Handle it ourselves.
             if (eglMakeCurrent(eglr.display, eglr.pbufferSurface, eglr.pbufferSurface,
@@ -1210,7 +1035,7 @@ struct App::Private : public TalkToJavaInterface
 
             // when the PlatformActivity is launched, this is how it gets its command to start
             // a particular UI.
-            appInterface->NewIntent(fromPackageName, jsonStart, uri);
+            appInterface->onNewIntent(fromPackageName, jsonStart, uri);
 
             return;
         }
@@ -1305,7 +1130,7 @@ struct App::Private : public TalkToJavaInterface
 
             initFonts();
 
-            soundManager.LoadSoundAssets();
+            soundManager.loadSoundAssets();
 
             debugLines->Init();
 
@@ -1346,7 +1171,7 @@ struct App::Private : public TalkToJavaInterface
 
             // handle any pending system activity events
             size_t const MAX_EVENT_SIZE = 4096;
-            char eventBuffer[MAX_EVENT_SIZE];
+            VString eventBuffer;
 
             for (eVrApiEventStatus status = ovr_nextPendingEvent(eventBuffer, MAX_EVENT_SIZE);
                 status >= VRAPI_EVENT_PENDING;
@@ -1426,7 +1251,7 @@ struct App::Private : public TalkToJavaInterface
             // Let the client app initialize only once by calling OneTimeInit() when the windowSurface is valid.
             if (!self->oneTimeInitCalled)
             {
-                if (appInterface->ShouldShowLoadingIcon())
+                if (appInterface->showLoadingIcon())
                 {
                     const ovrTimeWarpParms warpSwapLoadingIconParms = InitTimeWarpParms(WARP_INIT_LOADING_ICON, loadingIconTexId);
                     ovr_WarpSwap(OvrMobile, &warpSwapLoadingIconParms);
@@ -1434,7 +1259,7 @@ struct App::Private : public TalkToJavaInterface
                 vInfo("launchIntentJSON:" << launchIntentJSON);
                 vInfo("launchIntentURI:" << launchIntentURI);
 
-                appInterface->OneTimeInit(launchIntentFromPackage, launchIntentJSON, launchIntentURI);
+                appInterface->init(launchIntentFromPackage, launchIntentJSON, launchIntentURI);
                 self->oneTimeInitCalled = true;
             }
 
@@ -1600,7 +1425,7 @@ struct App::Private : public TalkToJavaInterface
             // Main loop logic / draw code
             if (!readyToExit)
             {
-                lastViewMatrix = appInterface->Frame(vrFrame);
+                lastViewMatrix = appInterface->onNewFrame(vrFrame);
             }
 
             ovr_HandleDeviceStateChanges(OvrMobile);
@@ -1633,7 +1458,7 @@ struct App::Private : public TalkToJavaInterface
                 FreeTexture(errorTexture);
             }
 
-            appInterface->OneTimeShutdown();
+            appInterface->shutdown();
 
             guiSys->shutdown(*vrMenuMgr);
 
@@ -1816,18 +1641,18 @@ struct App::Private : public TalkToJavaInterface
  * move everything to first surface init?
  */
 
-App *vApp = nullptr;
+App *NervGearAppInstance = nullptr;
 
-App::App(JNIEnv *jni, jobject activityObject, VrAppInterface &interface)
+App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
     : oneTimeInitCalled(false)
     , d(new Private(this))
 {
-    d->activity = new VMainActivity(jni, activityObject);
+    d->activity = activity;
 
     d->uiJni = jni;
     vInfo("----------------- AppLocal::AppLocal() -----------------");
-    vAssert(vApp == nullptr);
-    vApp = this;
+    vAssert(NervGearAppInstance == nullptr);
+    NervGearAppInstance = this;
 
     d->storagePaths = new VStandardPath(jni, activityObject);
 
@@ -1852,7 +1677,6 @@ App::App(JNIEnv *jni, jobject activityObject, VrAppInterface &interface)
 	VrModeParms.AsynchronousTimeWarp = true;
 	VrModeParms.AllowPowerSave = true;
     VrModeParms.DistortionFileName = nullptr;
-	VrModeParms.EnableImageServer = false;
 	VrModeParms.SkipWindowFullscreenReset = false;
 	VrModeParms.CpuLevel = 2;
 	VrModeParms.GpuLevel = 2;
@@ -1873,16 +1697,15 @@ App::App(JNIEnv *jni, jobject activityObject, VrAppInterface &interface)
     d->packageCodePath = d->activity->getPackageCodePath();
 
 	// Hook the App and AppInterface together
-    d->appInterface = &interface;
-    d->appInterface->app = this;
+    d->appInterface = activity;
 
 	// Load user profile data relevant to rendering
-    VUserProfile profile;
-    profile.load();
-    d->viewParms.InterpupillaryDistance = profile.ipd;
-    d->viewParms.EyeHeight = profile.eyeHeight;
-    d->viewParms.HeadModelDepth = profile.headModelDepth;
-    d->viewParms.HeadModelHeight = profile.headModelHeight;
+    VUserSettings config;
+    config.load();
+    d->viewParms.InterpupillaryDistance = config.ipd;
+    d->viewParms.EyeHeight = config.eyeHeight;
+    d->viewParms.HeadModelDepth = config.headModelDepth;
+    d->viewParms.HeadModelHeight = config.headModelHeight;
 
 	// Register console functions
 	InitConsole();
@@ -1908,7 +1731,7 @@ App::~App()
 
     if (d->javaObject != 0)
 	{
-        d->uiJni->DeleteGlobalRef(d->javaObject);
+        //d->uiJni->DeleteGlobalRef(d->javaObject);
 	}
 
     if (d->storagePaths != nullptr)
@@ -1964,7 +1787,7 @@ void App::playSound(const char * name)
 	// Get sound from SoundManager
 	VString soundFile;
 
-    if (d->soundManager.GetSound(name, soundFile))
+    if (d->soundManager.getSound(name, soundFile))
 	{
 		// Run on the talk to java thread
         d->ttj.GetMessageQueue().PostPrintf("sound %s", soundFile.toCString());
@@ -2150,7 +1973,7 @@ const VStandardPath & App::storagePaths()
 {
     return *d->storagePaths;
 }
-OvrSoundManager & App::soundMgr()
+ VSoundManager & App::soundMgr()
 {
     return d->soundManager;
 }
@@ -2341,7 +2164,7 @@ bool App::showFPS() const
     return d->showFPS;
 }
 
-VrAppInterface * App::appInterface()
+VMainActivity *App::appInterface()
 {
     return d->appInterface;
 }
@@ -2454,11 +2277,11 @@ void ShowFPS(void * appPtr, const char * cmd) {
 void App::drawBounds( const Vector3f &mins, const Vector3f &maxs, const Matrix4f &mvp, const Vector3f &color )
 {
     Matrix4f	scaled = mvp * Matrix4f::Translation( mins ) * Matrix4f::Scaling( maxs - mins );
-    const GlProgram & prog = d->untexturedMvpProgram;
+    const VGlShader & prog = d->untexturedMvpProgram;
     glUseProgram(prog.program);
     glLineWidth( 1.0f );
-    glUniform4f(prog.uColor, color.x, color.y, color.z, 1);
-    glUniformMatrix4fv(prog.uMvp, 1, GL_FALSE /* not transposed */,
+    glUniform4f(prog.uniformColor, color.x, color.y, color.z, 1);
+    glUniformMatrix4fv(prog.uniformModelViewProMatrix, 1, GL_FALSE /* not transposed */,
             scaled.Transposed().M[0] );
     glBindVertexArrayOES_( d->unitCubeLines.vertexArrayObject );
     glDrawElements(GL_LINES, d->unitCubeLines.indexCount, GL_UNSIGNED_SHORT, NULL);
@@ -2485,12 +2308,12 @@ void App::drawDialog( const Matrix4f & mvp )
 
 void App::drawPanel( const GLuint externalTextureId, const Matrix4f & dialogMvp, const float alpha )
 {
-    const GlProgram & prog = d->externalTextureProgram2;
+    const VGlShader & prog = d->externalTextureProgram2;
     glUseProgram( prog.program );
-    glUniform4f(prog.uColor, 1, 1, 1, alpha );
+    glUniform4f(prog.uniformColor, 1, 1, 1, alpha );
 
-    glUniformMatrix4fv(prog.uTexm, 1, GL_FALSE, Matrix4f::Identity().Transposed().M[0]);
-    glUniformMatrix4fv(prog.uMvp, 1, GL_FALSE, dialogMvp.Transposed().M[0] );
+    glUniformMatrix4fv(prog.uniformTexMatrix, 1, GL_FALSE, Matrix4f::Identity().Transposed().M[0]);
+    glUniformMatrix4fv(prog.uniformModelViewProMatrix, 1, GL_FALSE, dialogMvp.Transposed().M[0] );
 
     // It is important that panels write to destination alpha, or they
     // might get covered by an overlay plane/cube in TimeWarp.
@@ -2544,7 +2367,7 @@ void App::drawEyeViewsPostDistorted( Matrix4f const & centerViewMatrix, const in
             d->eyeTargets->BeginRenderingEye( eye );
 
             // Call back to the app for drawing.
-            const Matrix4f mvp = d->appInterface->DrawEyeView( eye, fovDegrees );
+            const Matrix4f mvp = d->appInterface->drawEyeView( eye, fovDegrees );
 
             vrMenuMgr().renderSubmitted( mvp.Transposed(), centerViewMatrix );
             menuFontSurface().Render3D( defaultFont(), mvp.Transposed() );
@@ -2611,7 +2434,7 @@ void App::drawScreenDirect( const GLuint texid, const ovrMatrix4f & mvp )
 
     glUseProgram( d->overlayScreenDirectProgram.program );
 
-    glUniformMatrix4fv( d->overlayScreenDirectProgram.uMvp, 1, GL_FALSE, mvpMatrix.Transposed().M[0] );
+    glUniformMatrix4fv( d->overlayScreenDirectProgram.uniformModelViewProMatrix, 1, GL_FALSE, mvpMatrix.Transposed().M[0] );
 
     glBindVertexArrayOES_( d->unitSquare.vertexArrayObject );
     glDrawElements( GL_TRIANGLES, d->unitSquare.indexCount, GL_UNSIGNED_SHORT, NULL );
@@ -2626,11 +2449,11 @@ void App::drawScreenMask( const ovrMatrix4f & mvp, const float fadeFracX, const 
 
     glUseProgram( d->overlayScreenFadeMaskProgram.program );
 
-    glUniformMatrix4fv( d->overlayScreenFadeMaskProgram.uMvp, 1, GL_FALSE, mvpMatrix.Transposed().M[0] );
+    glUniformMatrix4fv( d->overlayScreenFadeMaskProgram.uniformModelViewProMatrix, 1, GL_FALSE, mvpMatrix.Transposed().M[0] );
 
     if ( d->fadedScreenMaskSquare.vertexArrayObject == 0 )
     {
-        d->fadedScreenMaskSquare = BuildFadedScreenMask( fadeFracX, fadeFracY );
+        d->fadedScreenMaskSquare = VGlGeometryFactory::CreateFadedScreenMask( fadeFracX, fadeFracY );
     }
 
     glColorMask( 0.0f, 0.0f, 0.0f, 1.0f );

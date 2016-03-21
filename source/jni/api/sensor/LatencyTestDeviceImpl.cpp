@@ -9,7 +9,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 *************************************************************************************/
 
-#include "Std.h"
 #include "VThread.h"
 #include "LatencyTestDeviceImpl.h"
 
@@ -463,7 +462,7 @@ bool LatencyTestDeviceCreateDesc::GetDeviceInfo(DeviceInfo* info) const
         return false;
 
     info->ProductName = HIDDesc.Product;
-    OVR_strcpy(info->Manufacturer, DeviceInfo::MaxNameLength, HIDDesc.Manufacturer.toCString());
+    info->Manufacturer = HIDDesc.Manufacturer;
     info->Type    = Device_LatencyTester;
 
     if (info->InfoClassType == Device_LatencyTester)
@@ -472,7 +471,7 @@ bool LatencyTestDeviceCreateDesc::GetDeviceInfo(DeviceInfo* info) const
         sinfo->VendorId  = HIDDesc.VendorId;
         sinfo->ProductId = HIDDesc.ProductId;
         sinfo->Version   = HIDDesc.VersionNumber;
-        OVR_strcpy(sinfo->SerialNumber, sizeof(sinfo->SerialNumber),HIDDesc.SerialNumber.toCString());
+        sinfo->SerialNumber = HIDDesc.SerialNumber;
     }
     return true;
 }

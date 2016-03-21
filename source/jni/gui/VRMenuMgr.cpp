@@ -14,9 +14,9 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "Alg.h"
 #include "Android/GlUtils.h"
-#include "GlProgram.h"
+#include "../api/VGlShader.h"
 #include "GlTexture.h"
-#include "GlGeometry.h"
+#include "../api/VGlGeometry.h"
 #include "ModelView.h"
 #include "DebugLines.h"
 #include "BitmapFont.h"
@@ -261,7 +261,7 @@ public:
 	// Render's all objects that have been submitted on the current frame.
 	virtual void				renderSubmitted( Matrix4f const & mvp, Matrix4f const & viewMatrix ) const;
 
-    virtual GlProgram const *   getGUIGlProgram( eGUIProgramType const programType ) const;
+    virtual VGlShader const *   getGUIGlProgram( eGUIProgramType const programType ) const;
 
 	virtual void				SetShowDebugBounds( bool const b ) { ShowDebugBounds = b; }
 	virtual void				SetShowDebugHierarchy( bool const b ) { ShowDebugHierarchy = b; }
@@ -293,13 +293,13 @@ private:
 	VArray< SurfSort >			SortKeys;					// sort key consisting of distance from view and submission index
 	int							NumSubmitted;				// number of currently submitted menu objects
 
-	GlProgram		            GUIProgramDiffuseOnly;					// has a diffuse only
-	GlProgram		            GUIProgramDiffusePlusAdditive;			// has a diffuse and an additive
-	GlProgram					GUIProgramDiffuseComposite;				// has a two diffuse maps
-	GlProgram		            GUIProgramDiffuseColorRamp;				// has a diffuse and color ramp, and color ramp target is the diffuse
-	GlProgram		            GUIProgramDiffuseColorRampTarget;		// has diffuse, color ramp, and a separate color ramp target
-	//GlProgram		            GUIProgramDiffusePlusAdditiveColorRamp;	
-	//GlProgram		            GUIProgramAdditiveColorRamp;
+	VGlShader		            GUIProgramDiffuseOnly;					// has a diffuse only
+	VGlShader		            GUIProgramDiffusePlusAdditive;			// has a diffuse and an additive
+	VGlShader					GUIProgramDiffuseComposite;				// has a two diffuse maps
+	VGlShader		            GUIProgramDiffuseColorRamp;				// has a diffuse and color ramp, and color ramp target is the diffuse
+	VGlShader		            GUIProgramDiffuseColorRampTarget;		// has diffuse, color ramp, and a separate color ramp target
+	//VGlShader		            GUIProgramDiffusePlusAdditiveColorRamp;	
+	//VGlShader		            GUIProgramAdditiveColorRamp;
 
 	static bool			ShowDebugBounds;	// true to show the menu items' debug bounds. This is static so that the console command will turn on bounds for all activities.
 	static bool			ShowDebugHierarchy;	// true to show the menu items' hierarchy. This is static so that the console command will turn on bounds for all activities.
@@ -364,27 +364,27 @@ void VRMenuMgrLocal::init()
 	// diffuse only
 	if ( GUIProgramDiffuseOnly.vertexShader == 0 || GUIProgramDiffuseOnly.fragmentShader == 0 )
 	{
-		GUIProgramDiffuseOnly = BuildProgram( GUIDiffuseOnlyVertexShaderSrc, GUIDiffuseOnlyFragmentShaderSrc );
+		GUIProgramDiffuseOnly .initShader( GUIDiffuseOnlyVertexShaderSrc, GUIDiffuseOnlyFragmentShaderSrc );
 	}
 	// diffuse + additive
 	if ( GUIProgramDiffusePlusAdditive.vertexShader == 0 || GUIProgramDiffusePlusAdditive.fragmentShader == 0 )
 	{
-		GUIProgramDiffusePlusAdditive = BuildProgram( GUITwoTextureColorModulatedShaderSrc, GUIDiffusePlusAdditiveFragmentShaderSrc );
+		GUIProgramDiffusePlusAdditive .initShader( GUITwoTextureColorModulatedShaderSrc, GUIDiffusePlusAdditiveFragmentShaderSrc );
 	}
 	// diffuse + diffuse
 	if ( GUIProgramDiffuseComposite.vertexShader == 0 || GUIProgramDiffuseComposite.fragmentShader == 0 )
 	{
-		GUIProgramDiffuseComposite = BuildProgram( GUITwoTextureColorModulatedShaderSrc, GUIDiffuseCompositeFragmentShaderSrc );
+		GUIProgramDiffuseComposite .initShader( GUITwoTextureColorModulatedShaderSrc, GUIDiffuseCompositeFragmentShaderSrc );
 	}
 	// diffuse color ramped
 	if ( GUIProgramDiffuseColorRamp.vertexShader == 0 || GUIProgramDiffuseColorRamp.fragmentShader == 0 )
 	{
-		GUIProgramDiffuseColorRamp = BuildProgram( GUIDiffuseOnlyVertexShaderSrc, GUIColorRampFragmentSrc );
+		GUIProgramDiffuseColorRamp .initShader( GUIDiffuseOnlyVertexShaderSrc, GUIColorRampFragmentSrc );
 	}
 	// diffuse, color ramp, and a specific target for the color ramp
 	if ( GUIProgramDiffuseColorRampTarget.vertexShader == 0 || GUIProgramDiffuseColorRampTarget.fragmentShader == 0 )
 	{
-		GUIProgramDiffuseColorRampTarget = BuildProgram( GUIDiffuseColorRampTargetVertexShaderSrc, GUIColorRampTargetFragmentSrc );
+		GUIProgramDiffuseColorRampTarget .initShader( GUIDiffuseColorRampTargetVertexShaderSrc, GUIColorRampTargetFragmentSrc );
 	}
 
 	Initialized = true;
@@ -401,11 +401,11 @@ void VRMenuMgrLocal::shutdown()
         return;
 	}
 
-	DeleteProgram( GUIProgramDiffuseOnly );
-	DeleteProgram( GUIProgramDiffusePlusAdditive );
-	DeleteProgram( GUIProgramDiffuseComposite );
-	DeleteProgram( GUIProgramDiffuseColorRamp );
-	DeleteProgram( GUIProgramDiffuseColorRampTarget );
+	 GUIProgramDiffuseOnly.destroy();
+	 GUIProgramDiffusePlusAdditive.destroy();
+	 GUIProgramDiffuseComposite.destroy();
+	 GUIProgramDiffuseColorRamp.destroy();
+	 GUIProgramDiffuseColorRampTarget.destroy();
 
     Initialized = false;
 }
@@ -995,7 +995,7 @@ void VRMenuMgrLocal::renderSubmitted( Matrix4f const & worldMVP, Matrix4f const 
 
 //==============================
 // VRMenuMgrLocal::GetGUIGlProgram
-GlProgram const * VRMenuMgrLocal::getGUIGlProgram( eGUIProgramType const programType ) const
+VGlShader const * VRMenuMgrLocal::getGUIGlProgram( eGUIProgramType const programType ) const
 {
     switch( programType )
     {

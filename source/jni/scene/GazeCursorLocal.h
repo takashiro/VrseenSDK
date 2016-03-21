@@ -15,8 +15,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "Android/GlUtils.h"
 
 #include "GazeCursor.h"
-#include "GlProgram.h"
-#include "GlGeometry.h"
+#include "../api/VGlShader.h"
+#include "../api/VGlGeometry.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -114,12 +114,12 @@ private:
 	double						TimerShowTime;			// time when the timer cursor should show
 	double						TimerEndTime;			// time when the timer will expire
 
-	GlGeometry					CursorGeometry;			// VBO for the cursor
+	VGlGeometry					CursorGeometry;			// VBO for the cursor
 	GLuint						CursorTextureHandle[CURSOR_STATE_MAX];	// handle to the cursor's texture
 	GLuint						TimerTextureHandle;		// handle to the texture for the timer
 	GLuint						ColorTableHandle;		// handle to the cursor's color table texture
-	GlProgram					CursorProgram;			// vertex and pixel shaders for the cursor
-	GlProgram					TimerProgram;			// vertex and pixel shaders for the timer
+	VGlShader					CursorProgram;			// vertex and pixel shaders for the cursor
+	VGlShader					TimerProgram;			// vertex and pixel shaders for the timer
 
 	bool						Initialized;			// true once initialized
 	bool						Hidden;					// true if the cursor should not render

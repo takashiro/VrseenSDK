@@ -172,7 +172,7 @@ void MakePath( const VString &dirPath, mode_t mode )
 	char path[ 256 ];
 	char * currentChar = NULL;
 
-    OVR_sprintf( path, sizeof( path ), "%s", dirPath.toCString() );
+    sprintf(path, "%s", dirPath.toCString());
 
 	for ( currentChar = path + 1; *currentChar; ++currentChar )
 	{
@@ -198,7 +198,7 @@ void MakePath( const VString &dirPath, mode_t mode )
 bool MatchesHead( const char * head, const char * check )
 {
 	const int l = strlen( head );
-	return 0 == OVR_strncmp( head, check, l );
+    return 0 == strncmp(head, check, l);
 }
 
 float LinearRangeMapFloat( float inValue, float inStart, float inEnd, float outStart, float outEnd )

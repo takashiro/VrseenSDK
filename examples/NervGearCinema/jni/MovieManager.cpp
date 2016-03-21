@@ -22,6 +22,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 
 #include "String_Utils.h"
 #include "VJson.h"
+#include "VLog.h"
 
 #include "MovieManager.h"
 #include "CinemaApp.h"
@@ -253,7 +254,7 @@ void MovieManager::LoadPoster( MovieDef *movie )
 		else
 		{
 			// no thumbnail found, so create it.  if it's on an external sdcard, posterFilename will contain the new filename at this point and will load it from the cache
-            if ( ( movie->Poster == 0 ) && Native::CreateVideoThumbnail( Cinema.app, movie->Filename.toCString(), posterFilename.toCString(), PosterWidth, PosterHeight ) )
+            if ( ( movie->Poster == 0 ) && Native::CreateVideoThumbnail( vApp, movie->Filename.toCString(), posterFilename.toCString(), PosterWidth, PosterHeight ) )
 			{
                 movie->Poster = LoadTextureFromBuffer( posterFilename.toCString(), MemBufferFile( posterFilename.toCString() ),
 					TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), movie->PosterWidth, movie->PosterHeight );
@@ -290,13 +291,15 @@ void MovieManager::MoviesInDirectory(VArray<VString> &movies, const VString &dir
 {
     const char *dirNameCStr = dirName.toCString();
     LOG("scanning directory: %s", dirNameCStr);
+    LOG("scanning started");
     DIR * dir = opendir(dirNameCStr);
+    delete[] dirNameCStr;
 	if ( dir != NULL )
-	{
+    {
 		struct dirent * entry;
         struct stat st;
 		while( ( entry = readdir( dir ) ) != NULL ) {
-	        if ( ( strcmp( entry->d_name, "." ) == 0 ) || ( strcmp( entry->d_name, ".." ) == 0 ) )
+            if ( ( strcmp( entry->d_name, "." ) == 0 ) || ( strcmp( entry->d_name, ".." ) == 0 ) )
 	        {
 	            continue;
 	        }
@@ -311,8 +314,8 @@ void MovieManager::MoviesInDirectory(VArray<VString> &movies, const VString &dir
 	        {
                 VString subDir = dirName + '/' + entry->d_name;
                 MoviesInDirectory(movies, subDir);
-	        	continue;
-	        }
+                continue;
+            }
 
 	        // skip files that begin with "._" since they get created
 	        // when you copy movies onto the phones using Macs.

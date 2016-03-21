@@ -23,9 +23,7 @@ VLog::VLog(const char *file, uint line, VLog::Priority priority)
 
 VLog::~VLog()
 {
-    VString tag;
-    tag.sprintf("%s: %d", d->file, d->line);
-    __android_log_write(d->priority, tag.toLatin1().data(), d->buffer.str().data());
+    __android_log_print(d->priority, d->file, "[Line %u] %s", d->line, d->buffer.str().data());
     delete d;
 }
 
@@ -108,6 +106,12 @@ VLog &VLog::operator << (const VString &str)
 }
 
 VLog &VLog::operator << (const VByteArray &str)
+{
+    d->buffer << str << ' ';
+    return *this;
+}
+
+VLog &VLog::operator <<(const std::string &str)
 {
     d->buffer << str << ' ';
     return *this;

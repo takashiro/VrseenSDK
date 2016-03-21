@@ -12,11 +12,11 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "Console.h"
 #include "Android/JniUtils.h"
 #include "Android/LogUtils.h"
+#include "App.h"
 #include "VArray.h"
 #include "VArray.h"
 #include "VString.h"			// for ReadFreq()
 #include "VLog.h"
-//#include "Std.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -48,7 +48,7 @@ public:
         DROIDLOG( "OvrConsole", "Received console command \"%s\"", commandStr.toCString() );
 
         VString cmdName;
-        int parms;
+        int parms = 0;
         int cmdLen = reinterpret_cast<int>(commandStr.length());
         int spacePos = static_cast<int>(commandStr.find(' '));
         if ( (size_t)spacePos != std::string::npos && spacePos < cmdLen )
@@ -131,13 +131,13 @@ NV_USING_NAMESPACE
 
 extern "C" {
 
-JNIEXPORT void Java_com_vrseen_nervgear_ConsoleReceiver_nativeConsoleCommand( JNIEnv * jni, jclass clazz, jlong appPtr, jstring command )
+JNIEXPORT void Java_com_vrseen_nervgear_ConsoleReceiver_nativeConsoleCommand( JNIEnv * jni, jclass clazz, jstring command )
 {
     VString commandStr = JniUtils::Convert(jni, command);
     vInfo("nativeConsoleCommand:" << commandStr);
     if (NervGear::Console != NULL ) {
         VByteArray utf8 = commandStr.toUtf8();
-        NervGear::Console->ExecuteConsoleFunction(appPtr, utf8.data());
+        NervGear::Console->ExecuteConsoleFunction(reinterpret_cast<long>(vApp), utf8.data());
     } else {
         vInfo("Tried to execute console function without a console!");
     }

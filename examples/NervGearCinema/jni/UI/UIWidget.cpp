@@ -23,7 +23,7 @@ UIWidget::~UIWidget()
 
 VRMenuObject * UIWidget::GetMenuObject() const
 {
-    return Cinema.app->vrMenuMgr().toObject( GetHandle() );
+    return vApp->vrMenuMgr().toObject( GetHandle() );
 }
 
 void UIWidget::AddToMenuWithParms( UIMenu *menu, UIWidget *parent, VRMenuObjectParms &parms )
@@ -37,16 +37,16 @@ void UIWidget::AddToMenuWithParms( UIMenu *menu, UIWidget *parent, VRMenuObjectP
     parmArray.append( &parms );
 
     menuHandle_t parentHandle = ( parent == NULL ) ? menu->GetVRMenu()->rootHandle() : parent->GetHandle();
-    Menu->GetVRMenu()->addItems( Cinema.app->vrMenuMgr(), Cinema.app->defaultFont(), parmArray, parentHandle, false );
+    Menu->GetVRMenu()->addItems( vApp->vrMenuMgr(), vApp->defaultFont(), parmArray, parentHandle, false );
     parmArray.clear();
 
     if ( parent == NULL )
     {
-        Handle = Menu->GetVRMenu()->handleForId( Cinema.app->vrMenuMgr(), Id );
+        Handle = Menu->GetVRMenu()->handleForId( vApp->vrMenuMgr(), Id );
     }
     else
     {
-        Handle = parent->GetMenuObject()->childHandleForId( Cinema.app->vrMenuMgr(), Id );
+        Handle = parent->GetMenuObject()->childHandleForId( vApp->vrMenuMgr(), Id );
     }
 }
 
