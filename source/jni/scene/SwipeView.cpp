@@ -18,7 +18,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "VMath.h"
 #include "Alg.h"
-#include "VMath.h"
+#include "VBasicmath.h"
 #include "TypesafeNumber.h"
 #include "Android/GlUtils.h"
 

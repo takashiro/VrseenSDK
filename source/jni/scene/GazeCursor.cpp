@@ -70,7 +70,7 @@ static const char * GazeCursorColorTableFragmentSrc =
 OvrGazeCursorLocal::OvrGazeCursorLocal() :
 	NextUserId( 1 ),
 	CursorRotation( 0.0f ),
-	RotationRateRadians( Mathf::Pi * 0.5f ),
+    RotationRateRadians( VConstantsf::Pi * 0.5f ),
 	CursorScale( 0.025f ),
 	DistanceOffset( 0.05f ),
 	HiddenFrames( 0 ),
@@ -232,13 +232,13 @@ void OvrGazeCursorLocal::Frame( Matrix4f const & viewMatrix, float const deltaTi
 	if ( 0 ) //IsActive )
 	{
 		CursorRotation += deltaTime * RotationRateRadians;
-		if ( CursorRotation > Mathf::TwoPi )
+        if ( CursorRotation > VConstantsf::Pi * 2 )
 		{
-			CursorRotation -= Mathf::TwoPi;
+            CursorRotation -= VConstantsf::Pi * 2;
 		}
 		else if ( CursorRotation < 0.0f )
 		{
-			CursorRotation += Mathf::TwoPi;
+            CursorRotation += VConstantsf::Pi * 2;
 		}
 	}
 	else
@@ -501,7 +501,7 @@ void OvrGazeCursorLocal::ForceDistance( gazeCursorUserId_t const userId, float c
 // OvrGazeCursorLocal::ForceDistance
 void OvrGazeCursorLocal::SetRotationRate( float const degreesPerSec )
 {
-	RotationRateRadians = degreesPerSec * Mathf::DegreeToRadFactor;
+    RotationRateRadians = degreesPerSec * VConstantsf::VDTR;
 }
 
 //==============================

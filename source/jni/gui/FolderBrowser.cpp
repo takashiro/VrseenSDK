@@ -22,6 +22,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "DefaultComponent.h"
 #include "../VrCommon.h"
 #include "VMath.h"
+#include "VBasicmath.h"
 #include "String_Utils.h"
 #include "3rdParty/stb/stb_image.h"
 #include "AnimComponents.h"
@@ -95,7 +96,7 @@ void UpdateWrapAroundIndicator(const OvrScrollManager & ScrollMgr, const OvrVRMe
 	}
 
 	fadeValue = Alg::Clamp( fadeValue, 0.0f, ScrollMgr.wrapAroundScrollOffset() ) / ScrollMgr.wrapAroundScrollOffset();
-	rotation += fadeValue * rotationDirection * Mathf::Pi;
+    rotation += fadeValue * rotationDirection * VConstantsf::Pi;
 	float scaleValue = 0.0f;
 	if( ScrollMgr.isWrapAroundTimeInitiated() )
 	{
@@ -358,12 +359,12 @@ private:
 					bool scrollingAtStart = ( ScrollMgr.position() < 0.0f );
 					if ( scrollingAtStart )
 					{
-						UpdateWrapAroundIndicator( ScrollMgr, menuMgr, wrapIndicatorObject, FoldersWrapHandleTopPosition, -Mathf::PiOver2 );
+                        UpdateWrapAroundIndicator( ScrollMgr, menuMgr, wrapIndicatorObject, FoldersWrapHandleTopPosition, -VConstantsf::Pi/2.0 );
 					}
 					else
 					{
 						FoldersWrapHandleBottomPosition.y = -FolderBrowser.panelHeight() * ValidFoldersCount;
-						UpdateWrapAroundIndicator( ScrollMgr, menuMgr, wrapIndicatorObject, FoldersWrapHandleBottomPosition, Mathf::PiOver2 );
+                        UpdateWrapAroundIndicator( ScrollMgr, menuMgr, wrapIndicatorObject, FoldersWrapHandleBottomPosition, VConstantsf::Pi/2.0 );
 					}
 
 					Vector3f position = wrapIndicatorObject->localPosition();
@@ -712,7 +713,7 @@ private:
 				else
 				{
 					position.x = WRAP_INDICATOR_X_OFFSET;
-					UpdateWrapAroundIndicator( ScrollMgr, menuMgr, wrapIndicatorObject, position, Mathf::Pi );
+                    UpdateWrapAroundIndicator( ScrollMgr, menuMgr, wrapIndicatorObject, position, VConstantsf::Pi );
 				}
 			}
 			else
@@ -731,7 +732,7 @@ private:
 			bool isHidden = false;
 			if ( HIDE_SCROLLBAR_UNTIL_ITEM_COUNT > 0 )
 			{
-				isHidden = ScrollMgr.maxPosition() - (float)( HIDE_SCROLLBAR_UNTIL_ITEM_COUNT - 1 )  < Mathf::SmallestNonDenormal;
+                isHidden = ScrollMgr.maxPosition() - (float)( HIDE_SCROLLBAR_UNTIL_ITEM_COUNT - 1 )  < VConstantsf::SmallestNonDenormal;
 			}
 			scrollBarObject->setVisible( !isHidden );
 		}
@@ -752,7 +753,7 @@ private:
 			scrollBar->setScrollState( scrollBarObject, OvrScrollBarComponent::SCROLL_STATE_FADE_OUT );
 		}
 
-    	const float curRot = position * ( Mathf::TwoPi / FolderBrowser.circumferencePanelSlots() );
+        const float curRot = position * ( VConstantsf::Pi * 2 / FolderBrowser.circumferencePanelSlots() );
 		Quatf rot( UP, curRot );
 		rot.Normalize();
 		self->setLocalRotation( rot );
@@ -946,10 +947,10 @@ OvrFolderBrowser::OvrFolderBrowser(
 	m_panelWidth = panelWidth * VRMenuObject::DEFAULT_TEXEL_SCALE;
 	m_panelHeight = panelHeight * VRMenuObject::DEFAULT_TEXEL_SCALE;
 	m_radius = radius_;
-	const float circumference = Mathf::TwoPi * m_radius;
+    const float circumference = VConstantsf::Pi * 2 * m_radius;
 
 	m_circumferencePanelSlots = ( int )( floor( circumference / m_panelWidth ) );
-	m_visiblePanelsArcAngle = (( float )( m_numSwipePanels + 1 ) / m_circumferencePanelSlots ) * Mathf::TwoPi;
+    m_visiblePanelsArcAngle = (( float )( m_numSwipePanels + 1 ) / m_circumferencePanelSlots ) * VConstantsf::Pi * 2;
 
 	VArray< VRMenuComponent* > comps;
 	comps.append( new OvrFolderBrowserRootComponent( *this ) );
@@ -1450,7 +1451,7 @@ void OvrFolderBrowser::buildFolder( OvrMetaData::Category & category, FolderView
 	int curVertex = 0;
 	for ( int i = 0; i < m_circumferencePanelSlots; ++i )
 	{
-		float theta = ( i * Mathf::TwoPi ) / m_circumferencePanelSlots;
+        float theta = ( i * VConstantsf::Pi * 2 ) / m_circumferencePanelSlots;
 		float x = cos( theta ) * m_radius * 1.05f;
 		float z = sin( theta ) * m_radius * 1.05f;
 		Vector3f topVert( x, m_panelHeight * 0.5f, z );
@@ -1983,7 +1984,7 @@ void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const in
 
 	// Panel placement - based on index which determines position within the circumference
 	const float factor = ( float )panelIndex / ( float )m_circumferencePanelSlots;
-	Quatf rot( DOWN, ( Mathf::TwoPi * factor ) );
+    Quatf rot( DOWN, ( VConstantsf::Pi * 2 * factor ) );
 	Vector3f dir( FWD * rot );
 	Posef panelPose( rot, dir * m_radius );
 	Vector3f panelScale( 1.0f );

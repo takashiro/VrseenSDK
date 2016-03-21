@@ -292,7 +292,7 @@ OvrPanoMenu::OvrPanoMenu( App * app, Oculus360Photos * photos, OvrVRMenuMgr & me
 
 	// Right container
 	VRMenuId_t swipeRightId( ID_CENTER_ROOT.Get() + 401 );
-	Quatf rotRight( DOWN, ( Mathf::TwoPi * factor ) );
+    Quatf rotRight( DOWN, ( VConstantsf::Pi * 2 * factor ) );
 	Vector3f rightDir( -FWD * rotRight );
 	comps.append( new OvrTrailsAnimComponent( swipeFPS, true, numFrames, numTrails, numTrails ) );
 	VRMenuObjectParms swipeRightRoot( VRMENU_CONTAINER, comps, VRMenuSurfaceParms( ), "",
@@ -309,7 +309,7 @@ OvrPanoMenu::OvrPanoMenu( App * app, Oculus360Photos * photos, OvrVRMenuMgr & me
 
 	// Left container
 	VRMenuId_t swipeLeftId( ID_CENTER_ROOT.Get( ) + 402 );
-	Quatf rotLeft( DOWN, ( Mathf::TwoPi * -factor ) );
+    Quatf rotLeft( DOWN, ( VConstantsf::Pi * 2 * -factor ) );
 	Vector3f leftDir( -FWD * rotLeft );
 	comps.append( new OvrTrailsAnimComponent( swipeFPS, true, numFrames, numTrails, numTrails ) );
 	VRMenuObjectParms swipeLeftRoot( VRMENU_CONTAINER, comps, VRMenuSurfaceParms( ), "",

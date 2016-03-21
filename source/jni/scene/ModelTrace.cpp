@@ -23,9 +23,9 @@ bool Intersect_RayBounds( const Vector3f & rayStart, const Vector3f & rayDir,
 							const Vector3f & mins, const Vector3f & maxs,
 							float & t0, float & t1 )
 {
-	const float rcpDirX = ( fabsf( rayDir.x ) > Math<float>::SmallestNonDenormal ) ? ( 1.0f / rayDir.x ) : Math<float>::HugeNumber;
-	const float rcpDirY = ( fabsf( rayDir.y ) > Math<float>::SmallestNonDenormal ) ? ( 1.0f / rayDir.y ) : Math<float>::HugeNumber;
-	const float rcpDirZ = ( fabsf( rayDir.z ) > Math<float>::SmallestNonDenormal ) ? ( 1.0f / rayDir.z ) : Math<float>::HugeNumber;
+    const float rcpDirX = ( fabsf( rayDir.x ) > VConstants<float>::SmallestNonDenormal ) ? ( 1.0f / rayDir.x ) : VConstants<float>::HugeNumber;
+    const float rcpDirY = ( fabsf( rayDir.y ) > VConstants<float>::SmallestNonDenormal ) ? ( 1.0f / rayDir.y ) : VConstants<float>::HugeNumber;
+    const float rcpDirZ = ( fabsf( rayDir.z ) > VConstants<float>::SmallestNonDenormal ) ? ( 1.0f / rayDir.z ) : VConstants<float>::HugeNumber;
 
 	const float sX = ( mins.x - rayStart.x ) * rcpDirX;
 	const float sY = ( mins.y - rayStart.y ) * rcpDirY;
@@ -85,7 +85,7 @@ bool Intersect_RayTriangle( const Vector3f & rayStart, const Vector3f & rayDir,
 			// If the determinant is almost zero then the ray lies in the triangle plane.
 			// This comparison is done last because it is usually rare for
 			// the ray to lay in the triangle plane.
-			if ( fabsf( det ) > Math<float>::SmallestNonDenormal )
+            if ( fabsf( det ) > VConstants<float>::SmallestNonDenormal )
 			{
 				const float rcpDet = 1.0f / det;
 				t0 = edge2.Dot( qv ) * rcpDet;
@@ -123,9 +123,9 @@ traceResult_t ModelTrace::Trace( const Vector3f & start, const Vector3f & end ) 
 	const float rayLength = rayLengthSqr * rayLengthRcp;
 	const Vector3f rayDir = rayDelta * rayLengthRcp;
 
-	const float rcpRayDirX = ( fabsf( rayDir.x ) > Math<float>::SmallestNonDenormal ) ? ( 1.0f / rayDir.x ) : Math<float>::HugeNumber;
-	const float rcpRayDirY = ( fabsf( rayDir.y ) > Math<float>::SmallestNonDenormal ) ? ( 1.0f / rayDir.y ) : Math<float>::HugeNumber;
-	const float rcpRayDirZ = ( fabsf( rayDir.z ) > Math<float>::SmallestNonDenormal ) ? ( 1.0f / rayDir.z ) : Math<float>::HugeNumber;
+    const float rcpRayDirX = ( fabsf( rayDir.x ) > VConstants<float>::SmallestNonDenormal ) ? ( 1.0f / rayDir.x ) : VConstants<float>::HugeNumber;
+    const float rcpRayDirY = ( fabsf( rayDir.y ) > VConstants<float>::SmallestNonDenormal ) ? ( 1.0f / rayDir.y ) : VConstants<float>::HugeNumber;
+    const float rcpRayDirZ = ( fabsf( rayDir.z ) > VConstants<float>::SmallestNonDenormal ) ? ( 1.0f / rayDir.z ) : VConstants<float>::HugeNumber;
 
 	const float sX = ( header.bounds.GetMins()[0] - start.x ) * rcpRayDirX;
 	const float sY = ( header.bounds.GetMins()[1] - start.y ) * rcpRayDirY;

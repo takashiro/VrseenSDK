@@ -3,6 +3,7 @@
 #include "vglobal.h"
 
 #include "VMath.h"
+#include "VBasicmath.h"
 #include "VArray.h"
 #include "../api/VGlGeometry.h"
 #include "../api/VGlShader.h"

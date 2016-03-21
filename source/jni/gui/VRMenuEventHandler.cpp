@@ -143,7 +143,7 @@ void VRMenuEventHandler::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr
 	}
     if ( touchDown )
     {
-        if ( vrFrame.Input.touchRelative.LengthSq() > Mathf::SmallestNonDenormal )
+        if ( vrFrame.Input.touchRelative.LengthSq() > VConstantsf::SmallestNonDenormal )
         {
             VRMenuEvent event( VRMENU_EVENT_TOUCH_RELATIVE, EVENT_DISPATCH_FOCUS, m_focusedHandle, Vector3f( vrFrame.Input.touchRelative, 0.0f ), result );
             events.append( event );

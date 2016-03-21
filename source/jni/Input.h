@@ -3,6 +3,7 @@
 #include "vglobal.h"
 
 #include "VMath.h"
+#include "VBasicmath.h"
 #include "api/VrApi.h"
 
 #pragma once

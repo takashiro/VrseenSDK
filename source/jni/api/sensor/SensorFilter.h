@@ -1,6 +1,7 @@
 #pragma once
 
 #include "VMath.h"
+#include "VBasicmath.h"
 #include "Deque.h"
 #include "Alg.h"
 

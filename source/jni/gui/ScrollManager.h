@@ -14,6 +14,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #define OVR_ScrollManager_h
 
 #include "VMath.h"
+#include "VBasicmath.h"
 
 NV_NAMESPACE_BEGIN
 

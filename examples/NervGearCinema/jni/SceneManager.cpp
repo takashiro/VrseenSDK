@@ -623,7 +623,7 @@ bool SceneManager::ChangeSeats( const VrFrame & vrFrame )
 			// Find the closest seat in the desired direction away from the current seat.
 			direction.Normalize();
 			const float distance = direction.Dot( Scene.FootPos );
-			float bestSeatDistance = Math<float>::MaxValue;
+            float bestSeatDistance = VConstants<float>::MaxValue;
 			int bestSeat = -1;
 			for ( int i = 0; i < SceneSeatCount; i++ )
 			{

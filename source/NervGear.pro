@@ -17,6 +17,7 @@ INCLUDEPATH += \
     jni/scene
 
 SOURCES += \
+    jni/core/VConstants.cpp \
     jni/core/Alg.cpp \
     jni/core/Allocator.cpp \
     jni/core/Atomic.cpp \
@@ -124,9 +125,16 @@ SOURCES += \
     jni/VMessageQueue.cpp \
     jni/TalkToJava.cpp \
     jni/VrCommon.cpp \
-    jni/VrLocale.cpp
+    jni/VrLocale.cpp \
+    jni/core/VConstants.cpp
 
 HEADERS += \
+    jni/core/VBasicmath.h \
+    jni/core/VConstants.h \
+    jni/core/VVector.h \
+    jni/core/VMatrix.h \
+    jni/core/VGeometry.h \
+    jni/core/VTransform.h \
     jni/core/android/GlUtils.h \
     jni/core/android/JniUtils.h \
     jni/core/android/LogUtils.h \
@@ -279,7 +287,13 @@ HEADERS += \
     jni/Input.h \
     jni/PointTracker.h \
     jni/UniversalMenu_Commands.h \
-    jni/PointTracker.h
+    jni/PointTracker.h \
+    jni/core/VConstants.h \
+    jni/core/VGeometry.h \
+    jni/core/VMatrix.h \
+    jni/core/VVector.h \
+    jni/core/VTransform.h \
+    jni/core/VBasicmath.h
 
 
 include(jni/3rdparty/minizip/minizip.pri)

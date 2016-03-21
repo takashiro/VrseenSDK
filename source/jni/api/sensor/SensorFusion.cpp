@@ -193,7 +193,7 @@ void SensorFusion::handleMessage(const MessageBodyFrame& msg)
 		applyMagYawCorrection(mag, magBias, gyro, DeltaT);
 /*
 	// Focus Correction
-	if ((FocusDirection.x != 0.0f || FocusDirection.z != 0.0f) && FocusFOV < Mathf::Pi)
+    if ((FocusDirection.x != 0.0f || FocusDirection.z != 0.0f) && FocusFOV < VConstantsf::Pi)
 		applyFocusCorrection(DeltaT);
 */
     // The quaternion magnitude may slowly drift due to numerical error,
@@ -290,11 +290,11 @@ bool SensorFusion::getBufferedOrientation(Quatf* orientation, const Vector3f& gy
 
 void SensorFusion::applyMagYawCorrection(const Vector3f& magUncalibrated, const Vector3f& magBias, const Vector3f& gyro, float deltaT)
 {
-    const float minMagLengthSq   = Mathd::Tolerance; // need to use a real value to discard very weak fields
-    const float maxAngleRefDist  = 5.0f * Mathf::DegreeToRadFactor;
+    const float minMagLengthSq   = VConstantsd::Tolerance; // need to use a real value to discard very weak fields
+    const float maxAngleRefDist  = 5.0f * VConstantsf::VDTR;
     const float maxTiltError     = 0.05f;
 	const float correctionDegreesPerSecMax = 0.07f;
-	const float correctionRadPerSecMax = correctionDegreesPerSecMax * Mathf::DegreeToRadFactor;
+    const float correctionRadPerSecMax = correctionDegreesPerSecMax * VConstantsf::VDTR;
 	const float proportionalGain = correctionDegreesPerSecMax / 5.0f;	// When we had the integral term we used a proportional gain value of 0.01.
 																		// When the integral term was removed and the max correction clipped, the
 																		// gain was altered to provided the clipped amount at 5 degrees of error.
@@ -304,7 +304,7 @@ void SensorFusion::applyMagYawCorrection(const Vector3f& magUncalibrated, const 
 	// If angular velocity is above this then we don't perform mag yaw correction. This is because error grows
 	// due to our approximate latency compensation and because of latency due to the mag sample rate being 100Hz
 	// rather than 1kHz for other sensors. 100Hz => 10mS latency @ 200 deg/s = 2 degrees error.
-	const float gyroThreshold = 200.0f * Mathf::DegreeToRadFactor;
+    const float gyroThreshold = 200.0f * VConstantsf::VDTR;
 
 
 	if (magBias == Vector3f::ZERO)
@@ -456,15 +456,15 @@ void SensorFusion::applyMagYawCorrection(const Vector3f& magUncalibrated, const 
 
 			float yaw, pitch, roll;
 			orientation.GetEulerAngles<Axis_Y, Axis_X, Axis_Z>(&yaw, &pitch, &roll);
-			yaw *= Mathf::RadToDegreeFactor;
-			pitch *= Mathf::RadToDegreeFactor;
-			roll *= Mathf::RadToDegreeFactor;
+            yaw *= VConstantsf::VRTD;
+            pitch *= VConstantsf::VRTD;
+            roll *= VConstantsf::VRTD;
 
 			float pyaw, ppitch, proll;
 			MagRefs[MagRefIdx].WorldFromImu.GetEulerAngles<Axis_Y, Axis_X, Axis_Z>(&pyaw, &ppitch, &proll);
-			pyaw *= Mathf::RadToDegreeFactor;
-			ppitch *= Mathf::RadToDegreeFactor;
-			proll *= Mathf::RadToDegreeFactor;
+            pyaw *= VConstantsf::VRTD;
+            ppitch *= VConstantsf::VRTD;
+            proll *= VConstantsf::VRTD;
 
 			LogText("YAW %5.2f::: [%d:%d] ypr=%.1f,%.1f,%.1f ref_ypr=%.1f,%.1f,%.1f magUncalib=%.3f %.3f %.3f magBias=%.3f %.3f %.3f error=%.3f prop=%.6f correction=%.6f\n",
 					(float) logCount/1000.0f,
@@ -474,9 +474,9 @@ void SensorFusion::applyMagYawCorrection(const Vector3f& magUncalibrated, const 
 					pyaw, ppitch, proll,
 					magUncalibrated.x, magUncalibrated.y, magUncalibrated.z,
 					magBias.x, magBias.y, magBias.z,
-					yawError * Mathf::RadToDegreeFactor,
-					propCorrectionRadPerSec * Mathf::RadToDegreeFactor,
-					totalCorrectionRadPerSec * Mathf::RadToDegreeFactor);
+                    yawError * VConstantsf::VRTD,
+                    propCorrectionRadPerSec * VConstantsf::VRTD,
+                    totalCorrectionRadPerSec * VConstantsf::VRTD);
 		}
 #endif
     }

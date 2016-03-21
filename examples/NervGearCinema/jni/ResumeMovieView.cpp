@@ -152,8 +152,8 @@ void ResumeMovieView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFont 
     icons.append( "assets/restart.png" );
 
     VArray<PanelPose> optionPositions;
-    optionPositions.append( PanelPose( Quatf( up, 0.0f / 180.0f * Mathf::Pi ), Vector3f( -0.5f, 1.7f, -3.0f ), Vector4f( 1.0f, 1.0f, 1.0f, 1.0f ) ) );
-    optionPositions.append( PanelPose( Quatf( up, 0.0f / 180.0f * Mathf::Pi ), Vector3f(  0.5f, 1.7f, -3.0f ), Vector4f( 1.0f, 1.0f, 1.0f, 1.0f ) ) );
+    optionPositions.append( PanelPose( Quatf( up, 0.0f / 180.0f * VConstantsf::Pi ), Vector3f( -0.5f, 1.7f, -3.0f ), Vector4f( 1.0f, 1.0f, 1.0f, 1.0f ) ) );
+    optionPositions.append( PanelPose( Quatf( up, 0.0f / 180.0f * VConstantsf::Pi ), Vector3f(  0.5f, 1.7f, -3.0f ), Vector4f( 1.0f, 1.0f, 1.0f, 1.0f ) ) );
 
     int borderWidth = 0, borderHeight = 0;
     GLuint borderTexture = LoadTextureFromApplicationPackage( "assets/resume_restart_border.png", TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), borderWidth, borderHeight );

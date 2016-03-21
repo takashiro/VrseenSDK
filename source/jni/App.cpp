@@ -32,6 +32,7 @@
 #include "System.h"
 #include "TypesafeNumber.h"
 #include "VMath.h"
+#include "VBasicmath.h"
 #include "VolumePopup.h"
 #include "VrApi.h"
 #include "VrApi_Android.h"

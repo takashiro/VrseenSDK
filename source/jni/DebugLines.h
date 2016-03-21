@@ -2,6 +2,7 @@
 
 #include "vglobal.h"
 #include "VMath.h"
+#include "VConstants.h"
 
 NV_NAMESPACE_BEGIN
 

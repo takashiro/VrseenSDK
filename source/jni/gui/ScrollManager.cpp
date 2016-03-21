@@ -310,7 +310,7 @@ void OvrScrollManager::touchUp()
 			float totalTime = head.t - tail.t;
 
 			// calculating velocity based on touches
-			float touchVelocity = totalTime > Mathf::SmallestNonDenormal ? totalDistance / totalTime : 0.0f;
+            float touchVelocity = totalTime > VConstantsf::SmallestNonDenormal ? totalDistance / totalTime : 0.0f;
 			m_velocity = getModifiedVelocity( touchVelocity );
 		}
 	}

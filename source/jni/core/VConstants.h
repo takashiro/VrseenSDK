@@ -56,10 +56,10 @@ struct VCompatibleTypes
 	typedef struct {} Type;
 };
 //------------------------------------------------------------------------------------//
-// ***** Math
+// ***** VConstants
 //
-// Math class contains constants and functions. This class is a template specialized
-// per type, with Math<float> and Math<double> being distinct.
+// VConstants class contains constants and functions. This class is a template specialized
+// per type, with VConstants<float> and VConstants<double> being distinct.
 template<class Type>
 class VConstants
 {
@@ -69,7 +69,7 @@ public:
     typedef float VdifFloat; // replace OtherFloatType with VdifFloat
 };
 
-// Single-precision Math constants class.
+// Single-precision VConstants class.
 template<>
 class VConstants<float>
 {
@@ -94,7 +94,7 @@ public:
     typedef double VdifFloat;
 };
 
-// Double-precision Math constants class.
+// Double-precision VConstants class.
 template<>
 class VConstants<double>
 {

@@ -50,12 +50,12 @@ void ModelInScene::AnimateJoints( const float timeInSeconds )
 		{
 			case MODEL_JOINT_ANIMATION_SWAY:
 			{
-				time = sinf( time * Math<float>::Pi );
+                time = sinf( time * VConstants<float>::Pi );
 				// NOTE: fall through
 			}
 			case MODEL_JOINT_ANIMATION_ROTATE:
 			{
-				const Vector3f angles = joint->parameters * ( Math<float>::DegreeToRadFactor * time );
+                const Vector3f angles = joint->parameters * ( VConstants<float>::VDTR * time );
 				const Matrix4f matrix = joint->transform *
 										Matrix4f::RotationY( angles.y ) *
 										Matrix4f::RotationX( angles.x ) *
@@ -66,7 +66,7 @@ void ModelInScene::AnimateJoints( const float timeInSeconds )
 			}
 			case MODEL_JOINT_ANIMATION_BOB:
 			{
-				const float frac = sinf( time * Math<float>::Pi );
+                const float frac = sinf( time * VConstants<float>::Pi );
 				const Vector3f offset = joint->parameters * frac;
 				const Matrix4f matrix = joint->transform *
 										Matrix4f::Translation( offset ) *

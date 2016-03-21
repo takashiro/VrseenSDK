@@ -30,7 +30,7 @@ public:
 
     PoseState() : TimeInSeconds(0.0) { }
     // float <-> double conversion constructor.
-    explicit PoseState(const PoseState<typename Math<T>::OtherFloatType> &src)
+    explicit PoseState(const PoseState<typename VConstants<T>::VdifFloat> &src)
         : Transform(src.Transform),
           AngularVelocity(src.AngularVelocity), LinearVelocity(src.LinearVelocity),
           AngularAcceleration(src.AngularAcceleration), LinearAcceleration(src.LinearAcceleration),

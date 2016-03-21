@@ -1405,7 +1405,7 @@ void BitmapFontSurfaceLocal::Finish(Matrix4f const & viewMatrix) {
 			} else {
 				Vector3f textNormal = viewPos - vb.Pivot;
 				float const len = textNormal.Length();
-				if (len < Mathf::SmallestNonDenormal) {
+                if (len < VConstantsf::SmallestNonDenormal) {
 					vb.Free();
 					continue;
 				}

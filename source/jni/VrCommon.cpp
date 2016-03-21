@@ -204,7 +204,7 @@ bool MatchesHead( const char * head, const char * check )
 float LinearRangeMapFloat( float inValue, float inStart, float inEnd, float outStart, float outEnd )
 {
 	float outValue = inValue;
-	if( fabsf(inEnd - inStart) < Mathf::SmallestNonDenormal )
+    if( fabsf(inEnd - inStart) < VConstantsf::SmallestNonDenormal )
 	{
 		return 0.5f*(outStart + outEnd);
 	}
@@ -212,7 +212,7 @@ float LinearRangeMapFloat( float inValue, float inStart, float inEnd, float outS
 	outValue /= (inEnd - inStart);
 	outValue *= (outEnd - outStart);
 	outValue += outStart;
-	if( fabsf( outValue ) < Mathf::SmallestNonDenormal )
+    if( fabsf( outValue ) < VConstantsf::SmallestNonDenormal )
 	{
 		return 0.0f;
 	}

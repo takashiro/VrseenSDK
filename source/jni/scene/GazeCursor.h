@@ -4,6 +4,7 @@
 
 #include "TypesafeNumber.h"
 #include "VMath.h"
+#include "VBasicmath.h"
 
 NV_NAMESPACE_BEGIN
 

@@ -965,10 +965,10 @@ void VRMenuMgrLocal::renderSubmitted( Matrix4f const & worldMVP, Matrix4f const 
 				Vector3f normal = viewPos - cur.pose.Position;
 				Vector3f up( 0.0f, 1.0f, 0.0f );
 				float length = normal.Length();
-				if ( length > Mathf::SmallestNonDenormal )
+                if ( length > VConstantsf::SmallestNonDenormal )
 				{
 					normal.Normalize();
-					if ( normal.Dot( up ) > Mathf::SmallestNonDenormal )
+                    if ( normal.Dot( up ) > VConstantsf::SmallestNonDenormal )
 					{
 						transform = Matrix4f::CreateFromBasisVectors( normal, Vector3f( 0.0f, 1.0f, 0.0f ) );
 					}

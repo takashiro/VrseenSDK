@@ -224,7 +224,7 @@ struct SensorRangeImpl
         AccelScale = SelectSensorRampValue(AccelRangeRamp, sizeof(AccelRangeRamp)/sizeof(AccelRangeRamp[0]),
                                            r.MaxAcceleration, (1.0f / 9.81f), "MaxAcceleration");
         GyroScale  = SelectSensorRampValue(GyroRangeRamp, sizeof(GyroRangeRamp)/sizeof(GyroRangeRamp[0]),
-                                           r.MaxRotationRate, Math<float>::RadToDegreeFactor, "MaxRotationRate");
+                                           r.MaxRotationRate, VConstants<float>::VRTD, "MaxRotationRate");
         MagScale   = SelectSensorRampValue(MagRangeRamp, sizeof(MagRangeRamp)/sizeof(MagRangeRamp[0]),
                                            r.MaxMagneticField, 1000.0f, "MaxMagneticField");
         Pack();
@@ -241,7 +241,7 @@ struct SensorRangeImpl
     {
         return SensorRange(AccelRangeRamp[sizeof(AccelRangeRamp)/sizeof(AccelRangeRamp[0]) - 1] * 9.81f,
                            GyroRangeRamp[sizeof(GyroRangeRamp)/sizeof(GyroRangeRamp[0]) - 1] *
-                                Math<float>::DegreeToRadFactor,
+                                VConstants<float>::VDTR,
                            MagRangeRamp[sizeof(MagRangeRamp)/sizeof(MagRangeRamp[0]) - 1] * 0.001f);
     }
 

@@ -2,6 +2,7 @@
 
 #include "KeyState.h"
 #include "VMath.h"
+#include "VBasicmath.h"
 #include "Input.h"
 
 #include <VString.h>
