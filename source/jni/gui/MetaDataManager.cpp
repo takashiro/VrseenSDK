@@ -16,10 +16,12 @@ Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
 
 #include "VrCommon.h"
 #include "unistd.h"
-
+#include "VDir.h"
 #include "VPath.h"
 #include "VApkFile.h"
 #include "VJson.h"
+#include "VArray.h"
+#include <algorithm>
 
 #include <fstream>
 
@@ -50,14 +52,16 @@ static bool OvrMetaDatumIdComparator( const OvrMetaDatum * a, const OvrMetaDatum
 void OvrMetaData::initFromDirectory( const char * relativePath, const VArray< VString > & searchPaths, const OvrMetaDataFileExtensions & fileExtensions )
 {
 	LOG( "OvrMetaData::InitFromDirectory( %s )", relativePath );
-
+	VDir vdir;
 	// Find all the files - checks all search paths
-	StringHash< VString > uniqueFileList = RelativeDirectoryFileList( searchPaths, relativePath );
+//	StringHash< VString > uniqueFileList = RelativeDirectoryFileList( searchPaths, relativePath );
+	VArray< VString > uniqueFileList = vdir.Search ( searchPaths, relativePath );
 	VArray<VString> fileList;
-    for (const std::pair<VString, VString> &iter : uniqueFileList) {
-        fileList.append(iter.first);
+//    for (const std::pair<VString, VString> &iter : uniqueFileList) {
+    for (auto &iter : uniqueFileList) {
+        fileList.append(iter);
 	}
-	SortStringArray( fileList );
+    std::sort(fileList.begin(),fileList.end());
 	Category currentCategory;
     currentCategory.categoryTag = VPath(relativePath).baseName();
 	// The label is the same as the tag by default.
@@ -279,6 +283,7 @@ void OvrMetaData::writeMetaFile( const char * metaFile ) const
 void OvrMetaData::initFromDirectoryMergeMeta( const char * relativePath, const VArray< VString > & searchPaths,
 	const OvrMetaDataFileExtensions & fileExtensions, const char * metaFile, const char * packageName )
 {
+    VDir vdir;
 	LOG( "OvrMetaData::InitFromDirectoryMergeMeta" );
 
 	VString appFileStoragePath = "/data/data/";
@@ -287,7 +292,7 @@ void OvrMetaData::initFromDirectoryMergeMeta( const char * relativePath, const V
 
 	m_filePath = appFileStoragePath + metaFile;
 
-	OVR_ASSERT( HasPermission( m_filePath, R_OK ) );
+	OVR_ASSERT( vdir.contains( m_filePath, R_OK ) );
 
     Json dataFile = createOrGetStoredMetaFile( appFileStoragePath, metaFile );
 

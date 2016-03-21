@@ -43,7 +43,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "3rdParty/stb/stb_image.h"
 #include "3rdParty/stb/stb_image_write.h"
 #include "VrCommon.h"
-
+#include "VDir.h"
 #include "VideoBrowser.h"
 #include "VideoMenu.h"
 #include "VrLocale.h"
@@ -158,7 +158,9 @@ void Oculus360Videos::OneTimeInit(const VString &fromPackage, const VString &lau
 	// This is called by the VR thread, not the java UI thread.
 	LOG( "--------------- Oculus360Videos OneTimeInit ---------------" );
 
-	RetailMode = FileExists( "/sdcard/RetailMedia" );
+//	RetailMode = FileExists( "/sdcard/RetailMedia" );
+	VDir vdir;
+	RetailMode = vdir.exists( "/sdcard/RetailMedia" );
 
 	app->vrParms().colorFormat = COLOR_8888;
 	app->vrParms().depthFormat = DEPTH_16;

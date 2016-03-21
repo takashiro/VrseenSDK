@@ -5,6 +5,7 @@
 
 #include "VJson.h"
 #include "VArray.h"
+#include "VPath.h"
 NV_NAMESPACE_BEGIN
 
 struct OvrMetaDatum
@@ -111,7 +112,7 @@ private:
     void					extractMetaData( const Json &dataFile, const VArray< VString > & searchPaths, StringHash< OvrMetaDatum * > & outMetaData ) const;
     void					extractRemoteMetaData( const Json &dataFile, StringHash< OvrMetaDatum * > & outMetaData ) const;
 
-    VString 					m_filePath;
+    VPath 					m_filePath;
     VArray< Category >		m_categories;
     VArray< OvrMetaDatum * >	m_etaData;
     StringHash< int >		m_urlToIndex;
