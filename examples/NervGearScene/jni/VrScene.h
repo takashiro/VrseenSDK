@@ -13,7 +13,7 @@ public:
                         VrScene(JNIEnv *jni, jclass activityClass, jobject activityObject);
 						~VrScene();
 
-	virtual void 		ConfigureVrMode( ovrModeParms & modeParms );
+	virtual void 		configureVrMode( ovrModeParms & modeParms );
 	virtual void		init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI );
 	virtual void		shutdown();
 	virtual Matrix4f	drawEyeView( const int eye, const float fovDegrees );

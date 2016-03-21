@@ -145,7 +145,7 @@ void VMainActivity::onResume()
     vInfo("VMainActivity::Resumed - default handler called");
 }
 
-void VMainActivity::Command(const VEvent &msg)
+void VMainActivity::command(const VEvent &msg)
 {
     vInfo("VMainActivity::Command - default handler called, msg =" << msg.name);
 }
@@ -161,7 +161,7 @@ Matrix4f VMainActivity::onNewFrame(VrFrame vrFrame)
     return Matrix4f();
 }
 
-void VMainActivity::ConfigureVrMode(ovrModeParms & modeParms)
+void VMainActivity::configureVrMode(ovrModeParms & modeParms)
 {
     vInfo("VMainActivity::ConfigureVrMode - default handler called");
 }

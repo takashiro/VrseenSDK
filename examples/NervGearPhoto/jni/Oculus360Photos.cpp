@@ -552,7 +552,7 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
 	return NULL;
 }
 
-void Oculus360Photos::Command(const VEvent &event )
+void Oculus360Photos::command(const VEvent &event )
 {
     if (event.name == "loaded pano") {
 		m_backgroundPanoTexData.Swap();
@@ -576,7 +576,7 @@ bool Oculus360Photos::useOverlay() const {
 	return ( m_useOverlay && !ovr_GetPowerLevelStateThrottled() );
 }
 
-void Oculus360Photos::ConfigureVrMode( ovrModeParms & modeParms ) {
+void Oculus360Photos::configureVrMode( ovrModeParms & modeParms ) {
 	// We need very little CPU for pano browsing, but a fair amount of GPU.
 	// The CPU clock should ramp up above the minimum when necessary.
 	LOG( "ConfigureClocks: Oculus360Photos only needs minimal clocks" );

@@ -301,7 +301,7 @@ Matrix4f CinemaApp::drawEyeView( const int eye, const float fovDegrees ) {
 	return m_viewMgr.drawEyeView( eye, fovDegrees );
 }
 
-void CinemaApp::ConfigureVrMode(ovrModeParms &modeParms)
+void CinemaApp::configureVrMode(ovrModeParms &modeParms)
 {
 	// We need very little CPU for movie playing, but a fair amount of GPU.
 	// The CPU clock should ramp up above the minimum when necessary.
@@ -323,7 +323,7 @@ void CinemaApp::ConfigureVrMode(ovrModeParms &modeParms)
  *
  * Actions that need to be performed on the render thread.
  */
-void CinemaApp::Command(const VEvent &event )
+void CinemaApp::command(const VEvent &event )
 {
     if (modelMgr.Command(event))
 	{

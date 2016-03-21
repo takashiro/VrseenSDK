@@ -32,7 +32,7 @@ public:
 
     virtual Matrix4f onNewFrame( VrFrame vrFrame );
     virtual Matrix4f drawEyeView( const int eye, const float fovDegrees );
-    virtual void ConfigureVrMode( ovrModeParms & modeParms );
+    virtual void configureVrMode( ovrModeParms & modeParms );
 
     virtual void onNewIntent(const VString &fromPackageName, const VString &command, const VString &uri);
     virtual void onWindowCreated();
@@ -46,7 +46,7 @@ public:
     virtual bool wantSrgbFramebuffer() const;
     virtual bool wantProtectedFramebuffer() const;
 
-    virtual void Command(const VEvent &msg);
+    virtual void command(const VEvent &msg);
 
     jclass javaClass() const;
 

@@ -468,7 +468,7 @@ struct App::Private : public TalkToJavaInterface
         VrModeParms.ActivityObject = javaObject;
 
         // Allow the app to override
-        appInterface->ConfigureVrMode(VrModeParms);
+        appInterface->configureVrMode(VrModeParms);
 
         // Clear cursor trails
         gazeCursor->HideCursorForFrames(10);
@@ -1003,7 +1003,7 @@ struct App::Private : public TalkToJavaInterface
         }
 
         // Pass it on to the client app.
-        appInterface->Command(event);
+        appInterface->command(event);
     }
 
     void startRendering()

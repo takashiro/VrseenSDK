@@ -401,7 +401,7 @@ void Oculus360Videos::shutdown()
 	 SingleColorTextureProgram.destroy();
 }
 
-void Oculus360Videos::ConfigureVrMode( ovrModeParms & modeParms )
+void Oculus360Videos::configureVrMode( ovrModeParms & modeParms )
 {
 	// We need very little CPU for pano browsing, but a fair amount of GPU.
 	// The CPU clock should ramp up above the minimum when necessary.
@@ -442,7 +442,7 @@ bool Oculus360Videos::onKeyEvent( const int keyCode, const KeyState::eKeyEventTy
 	return false;
 }
 
-void Oculus360Videos::Command(const VEvent &event )
+void Oculus360Videos::command(const VEvent &event )
 {
 	// Always include the space in MatchesHead to prevent problems
 	// with commands with matching prefixes.

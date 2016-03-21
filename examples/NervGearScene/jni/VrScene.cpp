@@ -44,7 +44,7 @@ VrScene::~VrScene() {
 	LOG( "~VrScene()");
 }
 
-void VrScene::ConfigureVrMode( ovrModeParms & modeParms )
+void VrScene::configureVrMode( ovrModeParms & modeParms )
 {
 	modeParms.CpuLevel = 2;
 	modeParms.GpuLevel = 2;
