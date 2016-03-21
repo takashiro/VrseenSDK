@@ -1,9 +1,14 @@
+/*
+ * JNI_Tests.cpp
+ *
+ *  Created on: 2016年3月9日
+ *      Author: yangkai
+ */
 #include <iostream>
 #include <string>
 #include <list>
 #include "com_example_jni_tests_MainActivity.h"
-#include "VArray.h"
-#include "MArray.h"
+#include "VList.h"
 #include "logcat_cpp.h"
 
 #define LOG_TAG "JNI_Tests"
@@ -11,24 +16,36 @@
 using namespace std;
 using namespace NervGear;
 
+class StrNode:public NodeOfVList<VList<StrNode>>
+{
+public:
+    string* pstr;
+    StrNode(string *p):pstr(p)
+    {
+
+    }
+};
 void testVList()
 {
-    VArray<int> tester;
-    Array<int> tester1;
-    int count = 0;
-    tester.append(2);
-    tester.append(3);
-    tester.prepend(1);
-    tester.prepend(0);
-    tester1.append(2);
-    tester1.append(3);
-//    tester.removeAt(2);
-//    tester.removeAtUnordered(2);
-    LOGD("%d.first():0 == %d",count++, tester[0]);
-    LOGD("%d.first():0 == %d",count++, tester[1]);
-    LOGD("%d.first():0 == %d",count++, tester[2]);
+    list<int> yy;
+    for (int e:yy) {
+        cout << e;
+    }
+    VList<StrNode> tester;
+    string* p = new string("Hi");
+    tester.append(StrNode(p));
+    LOGD("%s\n",tester.first().pstr->c_str());//Hi
+    tester.first().removeNodeFromVList();
+    LOGD("size:%d\n",tester.size());//0
+    p = new string("world!");
+    tester.prepend(StrNode(p));
+    LOGD("%s\n",tester.last().pstr->c_str());//world
+    p = new string("my ");
+    tester.prepend(StrNode(p));
+    LOGD("%s\n",tester.last().pstr->c_str());//my
+    tester.clear();//有问题
+    LOGD("size:%d\n",tester.size());//0
 }
-
 JNIEXPORT jstring JNICALL Java_com_example_jni_1tests_MainActivity_runTests
   (JNIEnv *env, jobject obj)
 {
