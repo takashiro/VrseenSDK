@@ -147,6 +147,7 @@ HEADERS += \
     jni/core/VEventLoop.h \
     jni/core/VFlags.h \
     jni/core/VJson.h \
+    jni/core/VList.h \
     jni/core/Log.h \
     jni/core/VLog.h \
     jni/core/Lockless.h \
