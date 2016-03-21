@@ -409,44 +409,44 @@ bool GL_CheckErrors( const char * logTitle )
 
 GpuType EglGetGpuTypeLocal()
 {
-	GpuType gpuType;
-	const char * glRendererString = (const char *)glGetString( GL_RENDERER );
-	if ( strstr( glRendererString, "Adreno (TM) 420" ) )
-	{
-		gpuType = GPU_TYPE_ADRENO_420;
-	}
-	else if ( strstr( glRendererString, "Adreno (TM) 330" ) )
-	{
-		gpuType = GPU_TYPE_ADRENO_330;
-	}
-	else if ( strstr( glRendererString, "Adreno" ) )
-	{
-		gpuType = GPU_TYPE_ADRENO;
-	}
-	else if ( strstr( glRendererString, "Mali-T760") )
-	{
+    GpuType gpuType;
+    const char * glRendererString = (const char *)glGetString( GL_RENDERER );
+    if ( strstr( glRendererString, "Adreno (TM) 420" ) )
+    {
+        gpuType = GPU_TYPE_ADRENO_420;
+    }
+    else if ( strstr( glRendererString, "Adreno (TM) 330" ) )
+    {
+        gpuType = GPU_TYPE_ADRENO_330;
+    }
+    else if ( strstr( glRendererString, "Adreno" ) )
+    {
+        gpuType = GPU_TYPE_ADRENO;
+    }
+    else if ( strstr( glRendererString, "Mali-T760") )
+    {
         const VString &hardware = VOsBuild::getString(VOsBuild::Hardware);
         if (hardware == "universal5433") {
-			gpuType = GPU_TYPE_MALI_T760_EXYNOS_5433;
+            gpuType = GPU_TYPE_MALI_T760_EXYNOS_5433;
         } else if (hardware == "samsungexynos7420") {
-			gpuType = GPU_TYPE_MALI_T760_EXYNOS_7420;
+            gpuType = GPU_TYPE_MALI_T760_EXYNOS_7420;
         } else {
-			gpuType = GPU_TYPE_MALI_T760;
-		}
-	}
-	else if ( strstr( glRendererString, "Mali" ) )
-	{
-		gpuType = GPU_TYPE_MALI;
-	}
-	else
-	{
-		gpuType = GPU_TYPE_UNKNOWN;
-	}
+            gpuType = GPU_TYPE_MALI_T760;
+        }
+    }
+    else if ( strstr( glRendererString, "Mali" ) )
+    {
+        gpuType = GPU_TYPE_MALI;
+    }
+    else
+    {
+        gpuType = GPU_TYPE_UNKNOWN;
+    }
 
     vInfo("SoC:" << VOsBuild::getString(VOsBuild::Hardware));
     vInfo("EglGetGpuType:" << gpuType);
 
-	return gpuType;
+    return gpuType;
 }
 
 GpuType EglGetGpuType()

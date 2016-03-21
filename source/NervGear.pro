@@ -123,7 +123,8 @@ SOURCES += \
     jni/TalkToJava.cpp \
     jni/VrCommon.cpp \
     jni/VrLocale.cpp \
-    jni/api/VGlGeometry.cpp
+    jni/api/VGlGeometry.cpp \
+    jni/api/VGlOperation.cpp
 
 HEADERS += \
     jni/core/android/GlUtils.h \
@@ -278,7 +279,9 @@ HEADERS += \
     jni/Input.h \
     jni/PointTracker.h \
     jni/UniversalMenu_Commands.h \
-    jni/PointTracker.h
+    jni/PointTracker.h \
+    jni/api/VGlOperation.h \
+    jni/api/VGlTypeDefine.h
 
 
 include(jni/3rdparty/minizip/minizip.pri)
