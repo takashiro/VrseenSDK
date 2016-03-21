@@ -108,4 +108,26 @@
 		<nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>Includes/eabi_include</name>
+			<type>2</type>
+			<location>D:/Oculus/android-ndk-r10e/toolchains/arm-linux-androideabi-4.8/prebuilt/windows-x86_64/lib/gcc/arm-linux-androideabi/4.8/include</location>
+		</link>
+		<link>
+			<name>Includes/include-fixed</name>
+			<type>2</type>
+			<location>D:/Oculus/android-ndk-r10e/toolchains/arm-linux-androideabi-4.8/prebuilt/windows-x86_64/lib/gcc/arm-linux-androideabi/4.8/include-fixed</location>
+		</link>
+		<link>
+			<name>Includes/stlport</name>
+			<type>2</type>
+			<location>D:/Oculus/android-ndk-r10e/sources/cxx-stl/stlport/stlport</location>
+		</link>
+		<link>
+			<name>Includes/usr_include</name>
+			<type>2</type>
+			<location>D:/Oculus/android-ndk-r10e/platforms/android-19/arch-arm/usr/include</location>
+		</link>
+	</linkedResources>
 </projectDescription>
