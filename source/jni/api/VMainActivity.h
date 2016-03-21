@@ -23,9 +23,7 @@ public:
     VString getPackageCodePath() const;
     VString getPackageName() const;
 
-    void onCreate( JNIEnv * jni, jclass clazz, jobject activity,
-            jstring javaFromPackageNameString, jstring javaCommandString,
-            jstring javaUriString );
+    void onCreate(jstring javaFromPackageNameString, jstring javaCommandString, jstring javaUriString);
 
     virtual void init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI) = 0;
     virtual void shutdown();
@@ -48,7 +46,9 @@ public:
 
     virtual void command(const VEvent &msg);
 
+    JNIEnv *javaEnv() const;
     jclass javaClass() const;
+    jobject javaObject() const;
 
 private:
     NV_DECLARE_PRIVATE

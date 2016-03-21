@@ -44,7 +44,7 @@ void Java_com_vrseen_nervgear_photo_MainActivity_nativeSetAppInterface( JNIEnv *
 {
 	// This is called by the java UI thread.
 	LOG( "nativeSetAppInterface" );
-    (new Oculus360Photos(jni, clazz, activity))->onCreate( jni, clazz, activity, fromPackageName, commandString, uriString );
+    (new Oculus360Photos(jni, clazz, activity))->onCreate(fromPackageName, commandString, uriString );
 }
 
 } // extern "C"

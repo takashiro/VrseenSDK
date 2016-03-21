@@ -84,9 +84,10 @@ VString VMainActivity::getPackageName() const
 }
 
 
-void VMainActivity::onCreate(JNIEnv * jni, jclass clazz, jobject activity, jstring javaFromPackageNameString,
-        jstring javaCommandString, jstring javaUriString)
+void VMainActivity::onCreate(jstring javaFromPackageNameString, jstring javaCommandString, jstring javaUriString)
 {
+    JNIEnv *jni = javaEnv();
+    jobject activity = javaObject();
     VString fromPackage = JniUtils::Convert(jni, javaFromPackageNameString);
     VString json = JniUtils::Convert(jni, javaCommandString);
     VString uri = JniUtils::Convert(jni, javaUriString);
@@ -150,6 +151,11 @@ void VMainActivity::command(const VEvent &msg)
     vInfo("VMainActivity::Command - default handler called, msg =" << msg.name);
 }
 
+JNIEnv *VMainActivity::javaEnv() const
+{
+    return d->jni;
+}
+
 void VMainActivity::onNewIntent(const VString &fromPackageName, const VString &command, const VString &uri)
 {
     vInfo("VMainActivity::NewIntent - default handler called -" << fromPackageName << command << uri);
@@ -202,6 +208,11 @@ bool VMainActivity::wantProtectedFramebuffer() const
 jclass VMainActivity::javaClass() const
 {
     return d->activityClass;
+}
+
+jobject VMainActivity::javaObject() const
+{
+    return d->activityObject;
 }
 
 NV_NAMESPACE_END

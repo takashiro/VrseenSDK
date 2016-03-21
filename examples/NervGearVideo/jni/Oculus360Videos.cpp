@@ -72,7 +72,7 @@ void Java_com_vrseen_nervgear_video_MainActivity_nativeSetAppInterface( JNIEnv *
 	GlobalActivityClass = (jclass)jni->NewGlobalRef( clazz );
 
 	LOG( "nativeSetAppInterface");
-    (new Oculus360Videos(jni, clazz, activity))->onCreate( jni, clazz, activity, fromPackageName, commandString, uriString );
+    (new Oculus360Videos(jni, clazz, activity))->onCreate(fromPackageName, commandString, uriString );
 }
 
 void Java_com_vrseen_nervgear_video_MainActivity_nativeFrameAvailable(JNIEnv *, jclass)

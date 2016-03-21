@@ -24,7 +24,7 @@ void Java_com_vrseen_nervgear_scene_MainActivity_nativeSetAppInterface( JNIEnv *
 {
 	// This is called by the java UI thread.
 	LOG( "nativeSetAppInterface" );
-    (new VrScene(jni, clazz, activity))->onCreate( jni, clazz, activity, fromPackageName, commandString, uriString );
+    (new VrScene(jni, clazz, activity))->onCreate(fromPackageName, commandString, uriString );
 }
 
 } // extern "C"
