@@ -3,7 +3,7 @@
 #include <list>
 #include "com_example_jni_tests_MainActivity.h"
 #include "VArray.h"
-#include "MArray.h"
+
 #include "logcat_cpp.h"
 
 #define LOG_TAG "JNI_Tests"
