@@ -1,21 +1,10 @@
-/************************************************************************************
-
-Filename    :   VrLocale.cpp
-Content     :   Localization and internationalization (i18n) functionality.
-Created     :   11/24/2914
-Authors     :   Jonathan Wright
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
 #include "VrLocale.h"
 #include "VArray.h"
 #include "android/JniUtils.h"
 #include "android/LogUtils.h"
 #include "VLog.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 char const *	VrLocale::LOCALIZED_KEY_PREFIX = "@string/";
 size_t			VrLocale::LOCALIZED_KEY_PREFIX_LEN = strlen( LOCALIZED_KEY_PREFIX );
@@ -220,18 +209,4 @@ VString VrLocale::GetXliffFormattedString( const VString & inXliffStr, const cha
 	return private_GetXliffFormattedString( inXliffStr, arg1, arg2, arg3 );
 }
 
-VString VrLocale::ToString( char const * fmt, float const f )
-{
-	char buffer[128];
-    sprintf(buffer, fmt, f);
-    return buffer;
-}
-
-VString VrLocale::ToString( char const * fmt, int const i )
-{
-	char buffer[128];
-    sprintf(buffer, fmt, i);
-    return buffer;
-}
-
-} // namespace NervGear
+NV_NAMESPACE_END
