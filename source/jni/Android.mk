@@ -48,6 +48,7 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     core/RefCount.cpp \
                     core/VStandardPath.cpp \
                     core/VString.cpp \
+                    core/VDir.cpp \
                     core/System.cpp \
                     core/ThreadCommandQueue.cpp \
                     core/VThread.cpp \

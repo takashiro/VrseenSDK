@@ -27,7 +27,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 
 #include <unistd.h>
 #include <VPath.h>
-
+#include "VDir.h"
 namespace NervGear
 {
 
@@ -365,6 +365,7 @@ int PanoBrowser::numPanosInActive() const
 
 unsigned char * PanoBrowser::createAndCacheThumbnail( const char * soureFile, const char * cacheDestinationFile, int & outW, int & outH )
 {
+    VDir vdir;
 	int		width = 0;
 	int		height = 0;
 	unsigned char * data = NULL;
@@ -415,8 +416,9 @@ unsigned char * PanoBrowser::createAndCacheThumbnail( const char * soureFile, co
 
 	// write it out to cache
 	LOG( "thumb create - writjpeg %s %p %dx%d", cacheDestinationFile, data, outW, outH );
-	MakePath( cacheDestinationFile, S_IRUSR | S_IWUSR );
-	if ( HasPermission( cacheDestinationFile, W_OK ) )
+//	MakePath( cacheDestinationFile, S_IRUSR | S_IWUSR );
+	vdir.makePath( cacheDestinationFile, S_IRUSR | S_IWUSR );
+	if ( vdir.contains( cacheDestinationFile, W_OK ) )
 	{
 		WriteJpeg( cacheDestinationFile, outBuffer, outW, outH );
 	}

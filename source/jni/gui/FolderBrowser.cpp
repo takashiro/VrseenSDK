@@ -33,6 +33,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "SwipeHintComponent.h"
 #include "VApkFile.h"
 #include "VArray.h"
+#include "VDir.h"
 
 namespace NervGear {
 
@@ -1958,6 +1959,7 @@ void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const in
 
 	// Load a panel
 	VArray< VRMenuComponent* > panelComps;
+	VDir vdir;
 	VRMenuId_t id( uniqueId.Get( 1 ) );
 
 	//int  folderIndexShifted = folderIndex << 24;
@@ -2004,7 +2006,7 @@ void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const in
 	// Create or load thumbnail - request built up here to be processed ThumbnailThread
     const VString & panoUrl = this->thumbUrl( panoData );
     const VString thumbName = this->thumbName( panoUrl );
-	VString finalThumb;
+	VPath finalThumb;
 	char relativeThumbPath[ 1024 ];
     ToRelativePath( m_thumbSearchPaths, panoUrl.toCString(), relativeThumbPath, 1024 );
 
@@ -2012,10 +2014,10 @@ void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const in
     sprintf(appCacheThumbPath, "%s%s", m_appCachePath.toCString(), this->thumbName(relativeThumbPath).toCString());
 
 	// if this url doesn't exist locally
-    if ( !FileExists( panoUrl ) )
+    if ( !vdir.exists ( panoUrl ) )
 	{
 		// Check app cache to see if we already downloaded it
-		if ( FileExists( appCacheThumbPath ) )
+        if ( vdir.exists( appCacheThumbPath ) )
 		{
 			finalThumb = appCacheThumbPath;
 		}
@@ -2032,7 +2034,7 @@ void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const in
         if ( !GetFullPath( m_thumbSearchPaths, thumbName.toCString(), finalThumb ) )
 		{
 			// Try app cache for cached user pano thumbs
-			if ( FileExists( appCacheThumbPath ) )
+            if ( vdir.exists( appCacheThumbPath ) )
 			{
 				finalThumb = appCacheThumbPath;
 			}
@@ -2048,15 +2050,13 @@ void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const in
 						return; // No thumb & can't create
 					}
 
-					// Create and write out thumbnail to app cache
 					finalThumb = appCacheThumbPath;
 
-					// Create the path if necessary
-					MakePath( finalThumb, S_IRUSR | S_IWUSR );
+					vdir.makePath( finalThumb, S_IRUSR | S_IWUSR );
 
-					if ( HasPermission( finalThumb, W_OK ) )
+					if ( vdir.contains( finalThumb, W_OK ) )
 					{
-						if ( FileExists( panoData->url ) )
+                        if ( vdir.exists( panoData->url ) )
 						{
 							OvrCreateThumbCmd createCmd;
 							createCmd.sourceImagePath = panoUrl;
