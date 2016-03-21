@@ -52,10 +52,9 @@ static bool OvrMetaDatumIdComparator( const OvrMetaDatum * a, const OvrMetaDatum
 void OvrMetaData::initFromDirectory( const char * relativePath, const VArray< VString > & searchPaths, const OvrMetaDataFileExtensions & fileExtensions )
 {
 	LOG( "OvrMetaData::InitFromDirectory( %s )", relativePath );
-	VDir vdir;
 	// Find all the files - checks all search paths
 //	StringHash< VString > uniqueFileList = RelativeDirectoryFileList( searchPaths, relativePath );
-	VArray< VString > uniqueFileList = vdir.Search ( searchPaths, relativePath );
+    VArray< VString > uniqueFileList = VDir::Search(searchPaths, relativePath);
 	VArray<VString> fileList;
 //    for (const std::pair<VString, VString> &iter : uniqueFileList) {
     for (auto &iter : uniqueFileList) {

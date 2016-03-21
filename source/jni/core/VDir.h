@@ -6,29 +6,30 @@
  */
 
 #pragma once
+
 #include "VPath.h"
 #include "VArray.h"
 #include "VString.h"
 #include "StringHash.h"
 
 NV_NAMESPACE_BEGIN
-class VDir{
-private:
-    VPath m_path;
+
+class VDir
+{
 public:
     VDir(const VPath &path);
     VDir();
+
     bool exists(const VString &filename) ;
     bool contains( VPath path, mode_t mode );
     void makePath( const VPath &path, mode_t mode );
     VArray<VString> entryList() const;
-//
-//    //在searchPaths中寻找relativePath，返回所有relativePath中的所有文件
-    VArray< VString > Search(const VArray<VString> &searchPaths, const VString &relativePath);
-    VPath getPath() const;
+
+    static VArray<VString> Search(const VArray<VString> &searchPaths, const VString &relativePath);
+    const VPath &getPath() const;
+
+private:
+    VPath m_path;
 };
+
 NV_NAMESPACE_END
-
-
-
-

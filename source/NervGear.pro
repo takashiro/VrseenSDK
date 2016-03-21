@@ -22,6 +22,7 @@ SOURCES += \
     jni/core/Atomic.cpp \
     jni/core/VByteArray.cpp \
     jni/core/VChar.cpp \
+    jni/core/VDir.cpp \
     jni/core/VEvent.cpp \
     jni/core/VJson.cpp \
     jni/core/Log.cpp \
@@ -141,6 +142,7 @@ HEADERS += \
     jni/core/VChar.h \
     jni/core/ContainerAllocator.h \
     jni/core/Deque.h \
+    jni/core/VDir.h \
     jni/core/VEvent.h \
     jni/core/VFlags.h \
     jni/core/VJson.h \
