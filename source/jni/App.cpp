@@ -1226,7 +1226,7 @@ struct App::Private : public TalkToJavaInterface
             {
                 if (!(vrThreadSynced && createdSurface && readyToExit))
                 {
-                    eventLoop.SleepUntilMessage();
+                    eventLoop.wait();
                 }
                 continue;
             }
@@ -1451,7 +1451,7 @@ struct App::Private : public TalkToJavaInterface
             vInfo("AppLocal::VrThreadFunction - shutdown");
 
             // Shut down the message queue so it cannot overflow.
-            eventLoop.Shutdown();
+            eventLoop.quit();
 
             if (errorTexture != 0)
             {
@@ -1751,7 +1751,7 @@ void App::startVrThread()
 
 void App::stopVrThread()
 {
-    d->eventLoop.PostPrintf("quit ");
+    d->eventLoop.post("quit ");
     bool finished = d->renderThread->wait();
     if (!finished) {
         vWarn("failed to wait for VrThread");
@@ -1760,7 +1760,7 @@ void App::stopVrThread()
 
 void App::syncVrThread()
 {
-    d->eventLoop.SendPrintf("sync ");
+    d->eventLoop.send("sync ");
     d->vrThreadSynced = true;
 }
 
@@ -1779,7 +1779,7 @@ void App::createToast(const char * fmt, ...)
 
     vInfo("CreateToast" << bigBuffer);
 
-    d->ttj.GetMessageQueue().PostPrintf("toast %s", bigBuffer);
+    d->ttj.GetMessageQueue().postf("toast %s", bigBuffer);
 }
 
 void App::playSound(const char * name)
@@ -1790,13 +1790,13 @@ void App::playSound(const char * name)
     if (d->soundManager.getSound(name, soundFile))
 	{
 		// Run on the talk to java thread
-        d->ttj.GetMessageQueue().PostPrintf("sound %s", soundFile.toCString());
+        d->ttj.GetMessageQueue().postf("sound %s", soundFile.toCString());
 	}
 	else
 	{
         WARN("AppLocal::playSound called with non SoundManager defined sound: %s", name);
 		// Run on the talk to java thread
-        d->ttj.GetMessageQueue().PostPrintf("sound %s", name);
+        d->ttj.GetMessageQueue().postf("sound %s", name);
 	}
 }
 

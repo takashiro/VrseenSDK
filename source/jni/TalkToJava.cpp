@@ -42,7 +42,7 @@ TalkToJava::~TalkToJava()
 	{
 		// Get the background thread to kill itself.
 		LOG( "TtjMessageQueue.PostPrintf( quit )" );
-		TtjMessageQueue.PostPrintf( "quit" );
+		TtjMessageQueue.post( "quit" );
 		const int ret = pthread_join( TtjThread, NULL );
 		if ( ret != 0 )
 		{
@@ -87,7 +87,7 @@ void TalkToJava::TtjThreadFunction()
 		if ( !msg )
 		{
 			// Go dormant until something else arrives.
-			TtjMessageQueue.SleepUntilMessage();
+			TtjMessageQueue.wait();
 			continue;
 		}
 

@@ -41,7 +41,7 @@ void * Queue1Thread( void * v )
 	// Process incoming messages until queue is empty
 	for ( ; ; )
 	{
-		Queue1.SleepUntilMessage();
+		Queue1.wait();
 
 		// If Queue3 hasn't finished our last output, sleep until it has.
 		pthread_mutex_lock( &QueueMutex );
@@ -97,7 +97,7 @@ void * Queue1Thread( void * v )
 						mbfs[3].buffer, mbfs[3].length,
 						mbfs[4].buffer, mbfs[4].length,
 						mbfs[5].buffer, mbfs[5].length );
-				queue->PostPrintf( "%s %p %i %p %i %p %i %p %i %p %i %p %i", commandName,
+                queue->postf( "%s %p %i %p %i %p %i %p %i %p %i %p %i", commandName,
 						mbfs[0].buffer, mbfs[0].length,
 						mbfs[1].buffer, mbfs[1].length,
 						mbfs[2].buffer, mbfs[2].length,
@@ -132,7 +132,7 @@ void * Queue1Thread( void * v )
 				}
 			}
 			LOG( "%s.PostPrintf( \"%s %p %i\" )", "Queue3", commandName, mbf.buffer, mbf.length );
-			queue->PostPrintf( "%s %p %i", commandName, mbf.buffer, mbf.length );
+            queue->postf( "%s %p %i", commandName, mbf.buffer, mbf.length );
 			mbf.buffer = NULL;
 			mbf.length = 0;
 		}
@@ -153,7 +153,7 @@ void * Queue3Thread( void * v )
 	// Process incoming messages until queue is empty
 	for ( ; ; )
 	{
-		Queue3.SleepUntilMessage();
+		Queue3.wait();
 		const char * msg = Queue3.nextMessage();
 
 		LOG( "Queue3 msg = '%s'", msg );
@@ -237,14 +237,14 @@ void * Queue3Thread( void * v )
 			{
 				OVR_ASSERT( data[0] != NULL );
 				LOG( "Queue3.PostPrintf( \"%s %p %i %i\" )", commandName, data[0], resolutionX, resolutionY );
-				( ( Oculus360Photos * )v )->backgroundMessageQueue( ).PostPrintf( "%s %p %i %i", commandName, data[ 0 ], resolutionX, resolutionY );
+                ( ( Oculus360Photos * )v )->backgroundMessageQueue( ).postf( "%s %p %i %i", commandName, data[ 0 ], resolutionX, resolutionY );
 			}
 			else
 			{
 				OVR_ASSERT( numBuffers == 6 );
 				LOG( "Queue3.PostPrintf( \"%s %i %p %p %p %p %p %p\" )", commandName, resolutionX,
 						data[0], data[1], data[2], data[3], data[4], data[5] );
-				( ( Oculus360Photos * )v )->backgroundMessageQueue( ).PostPrintf( "%s %i %p %p %p %p %p %p", commandName, resolutionX,
+                ( ( Oculus360Photos * )v )->backgroundMessageQueue( ).postf( "%s %i %p %p %p %p %p %p", commandName, resolutionX,
 						data[0], data[1], data[2], data[3], data[4], data[5] );
 			}
 		}

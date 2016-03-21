@@ -458,7 +458,7 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
 			break;
 		}
 
-		photos->m_backgroundCommands.SleepUntilMessage();
+		photos->m_backgroundCommands.wait();
 		const char * msg = photos->m_backgroundCommands.nextMessage();
 		LOG( "BackgroundGLLoadThread Commands: %s", msg );
 		if ( MatchesHead( "pano ", msg ) )
@@ -500,7 +500,7 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
 				LOG( "BackgroundGLLoadThread eglClientWaitSyncKHR returned EGL_FALSE" );
 			}
 
-            vApp->eventLoop( ).PostPrintf( "%s", "loaded pano" );
+            vApp->eventLoop( ).post("loaded pano");
 
 			const double end = ovr_GetTimeInSeconds();
 			LOG( "%4.2fs to load %ix%i res pano map", end - start, width, height );
@@ -532,7 +532,7 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
 				LOG( "BackgroundGLLoadThread eglClientWaitSyncKHR returned EGL_FALSE" );
 			}
 
-            vApp->eventLoop( ).PostPrintf( "%s", "loaded cube" );
+            vApp->eventLoop( ).post("loaded cube");
 
 			const double end = ovr_GetTimeInSeconds();
 			LOG( "%4.2fs to load %i res cube map", end - start, size );
@@ -829,10 +829,10 @@ void Oculus360Photos::startBackgroundPanoLoad( const char * filename )
 	char const * command = isCubeMap ? "cube" : "pano";
 
 	// Dump any load that hasn't started
-	Queue1.ClearMessages();
+	Queue1.clear();
 
 	// Start a background load of the current pano image
-	Queue1.PostPrintf( "%s %s", command, filename );
+    Queue1.postf("%s %s", command, filename);
 }
 
 void Oculus360Photos::SetMenuState( const OvrMenuState state )

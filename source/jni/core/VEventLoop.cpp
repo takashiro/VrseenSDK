@@ -72,13 +72,8 @@ struct VEventLoop::Private
 
 bool VEventLoop::Private::debug = false;
 
-int VEventLoop::SpaceAvailable() const
-{
-    return d->maxMessages - ( d->tail - d->head );
-}
-
-VEventLoop::VEventLoop( int maxMessages_ ) :
-        d(new Private(maxMessages_))
+VEventLoop::VEventLoop(int capacity ) :
+        d(new Private(capacity))
 {
 
 }
@@ -104,7 +99,7 @@ VEventLoop::~VEventLoop()
     pthread_cond_destroy( &d->received );
 }
 
-void VEventLoop::Shutdown()
+void VEventLoop::quit()
 {
     vInfo( "VMessageQueue shutdown");
     d->shutdown = true;
@@ -156,12 +151,12 @@ bool VEventLoop::Private::PostMessage( const char * msg, bool sync, bool abortIf
     return true;
 }
 
-void VEventLoop::PostString( const char * msg )
+void VEventLoop::post( const char * msg )
 {
     d->PostMessage( msg, false, true );
 }
 
-void VEventLoop::PostPrintf( const char * fmt, ... )
+void VEventLoop::postf( const char * fmt, ... )
 {
     char bigBuffer[4096];
     va_list	args;
@@ -171,27 +166,12 @@ void VEventLoop::PostPrintf( const char * fmt, ... )
     d->PostMessage( bigBuffer, false, true );
 }
 
-bool VEventLoop::TryPostString( const char * msg )
-{
-    return d->PostMessage( msg, false, false );
-}
-
-bool VEventLoop::TryPostPrintf( const char * fmt, ... )
-{
-    char bigBuffer[4096];
-    va_list	args;
-    va_start( args, fmt );
-    vsnprintf( bigBuffer, sizeof( bigBuffer ), fmt, args );
-    va_end( args );
-    return d->PostMessage( bigBuffer, false, false );
-}
-
-void VEventLoop::SendString( const char * msg )
+void VEventLoop::send( const char * msg )
 {
     d->PostMessage( msg, true, true );
 }
 
-void VEventLoop::SendPrintf( const char * fmt, ... )
+void VEventLoop::sendf( const char * fmt, ... )
 {
     char bigBuffer[4096];
     va_list	args;
@@ -235,7 +215,7 @@ const char* VEventLoop::nextMessage()
 }
 
 // Returns immediately if there is already a message in the queue.
-void VEventLoop::SleepUntilMessage()
+void VEventLoop::wait()
 {
     if ( d->synced )
     {
@@ -264,7 +244,7 @@ void VEventLoop::SleepUntilMessage()
     }
 }
 
-void VEventLoop::ClearMessages()
+void VEventLoop::clear()
 {
     if ( d->debug )
     {

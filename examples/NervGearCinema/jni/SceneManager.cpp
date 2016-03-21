@@ -664,7 +664,7 @@ bool SceneManager::Command( const char * msg )
 		VEventLoop * receiver;
 		sscanf( msg, "newVideo %p", &receiver );
 
-		receiver->PostPrintf( "surfaceTexture %p", MovieTexture->javaObject );
+        receiver->postf( "surfaceTexture %p", MovieTexture->javaObject );
 
 		// don't draw the screen until we have the new size
 		CurrentMovieWidth = 0;

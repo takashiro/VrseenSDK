@@ -960,7 +960,7 @@ OvrFolderBrowser::OvrFolderBrowser(
 OvrFolderBrowser::~OvrFolderBrowser()
 {
 	LOG( "OvrFolderBrowser::~OvrFolderBrowser" );
-	m_backgroundCommands.PostString( "shutDown" );
+	m_backgroundCommands.post( "shutDown" );
 
 	if ( ThumbPanelBG != NULL )
 	{
@@ -1237,7 +1237,7 @@ void OvrFolderBrowser::buildDirtyMenu( OvrMetaData & metaData )
 	// Process any thumb creation commands
 	char cmd[ 1024 ];
     sprintf(cmd, "processCreates %p", &m_thumbCreateAndLoadCommands);
-	m_backgroundCommands.PostString( cmd );
+	m_backgroundCommands.post( cmd );
 
 	// Show no media menu if no media found
 	if ( m_mediaCount == 0 )
@@ -1699,14 +1699,14 @@ void * OvrFolderBrowser::ThumbnailThread( void * v )
 
 	for ( ;; )
 	{
-		folderBrowser->m_backgroundCommands.SleepUntilMessage();
+		folderBrowser->m_backgroundCommands.wait();
 		const char * msg = folderBrowser->m_backgroundCommands.nextMessage();
 		//LOG( "BackgroundCommands: %s", msg );
 
 		if ( MatchesHead( "shutDown", msg ) )
 		{
 			LOG( "OvrFolderBrowser::ThumbnailThread shutting down" );
-			folderBrowser->m_backgroundCommands.ClearMessages();
+			folderBrowser->m_backgroundCommands.clear();
 			break;
 		}
 		else if ( MatchesHead( "load ", msg ) )
@@ -1728,7 +1728,7 @@ void * OvrFolderBrowser::ThumbnailThread( void * v )
 			{
 				if ( folderBrowser->applyThumbAntialiasing( data, width, height ) )
 				{
-					folderBrowser->m_textureCommands.PostPrintf( "thumb %i %i %p %i %i",
+                    folderBrowser->m_textureCommands.postf( "thumb %i %i %p %i %i",
 						folderId, panelId, data, width, height );
 				}
 			}
@@ -1761,7 +1761,7 @@ void * OvrFolderBrowser::ThumbnailThread( void * v )
 			{
 				if ( folderBrowser->applyThumbAntialiasing( data, width, height ) )
 				{
-					folderBrowser->m_textureCommands.PostPrintf( "thumb %i %i %p %i %i",
+                    folderBrowser->m_textureCommands.postf( "thumb %i %i %p %i %i",
 						folderId, panelId, data, width, height );
 				}
 			}
@@ -1809,7 +1809,7 @@ void * OvrFolderBrowser::ThumbnailThread( void * v )
 
                         sscanf( cmd.loadCmd.toCString(), "load %i %i", &folderId, &panelId );
 
-						folderBrowser->m_textureCommands.PostPrintf( "thumb %i %i %p %i %i",
+                        folderBrowser->m_textureCommands.postf( "thumb %i %i %p %i %i",
 							folderId, panelId, data, width, height );
 					}
 				}
@@ -2023,7 +2023,7 @@ void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const in
 		}
 		else // download and cache it
 		{
-			m_backgroundCommands.PostPrintf( "httpThumb %s %s %d %d", panoUrl.toCString(), appCacheThumbPath, folderIndex, panel.id );
+            m_backgroundCommands.postf( "httpThumb %s %s %d %d", panoUrl.toCString(), appCacheThumbPath, folderIndex, panel.id );
 			return;
 		}
 	}
@@ -2076,7 +2076,7 @@ void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const in
 	char cmd[ 1024 ];
     sprintf(cmd, "load %i %i:%s", folderIndex, panel.id, finalThumb.toCString());
 	//LOG( "Thumb cmd: %s", cmd );
-	m_backgroundCommands.PostString( cmd );
+	m_backgroundCommands.post( cmd );
 }
 
 bool OvrFolderBrowser::applyThumbAntialiasing( unsigned char * inOutBuffer, int width, int height ) const

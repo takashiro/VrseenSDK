@@ -15,7 +15,7 @@ void Java_com_vrseen_nervgear_cinema_MainActivity_nativeSetAppInterface( JNIEnv 
 
 void Java_com_vrseen_nervgear_cinema_MainActivity_nativeSetVideoSize( JNIEnv *, jclass, int width, int height, int rotation, int duration ) {
 	LOG( "nativeSetVideoSizes: width=%i height=%i rotation=%i duration=%i", width, height, rotation, duration );
-    vApp->eventLoop().PostPrintf( "video %i %i %i %i", width, height, rotation, duration );
+    vApp->eventLoop().postf( "video %i %i %i %i", width, height, rotation, duration );
 }
 
 jobject Java_com_vrseen_nervgear_cinema_MainActivity_nativePrepareNewVideo(JNIEnv *, jclass)
@@ -23,9 +23,9 @@ jobject Java_com_vrseen_nervgear_cinema_MainActivity_nativePrepareNewVideo(JNIEn
 	// set up a message queue to get the return message
 	// TODO: make a class that encapsulates this work
     VEventLoop result(1);
-    vApp->eventLoop().PostPrintf( "newVideo %p", &result);
+    vApp->eventLoop().postf( "newVideo %p", &result);
 
-	result.SleepUntilMessage();
+	result.wait();
     const char * msg = result.nextMessage();
 	jobject	texobj;
 	sscanf( msg, "surfaceTexture %p", &texobj );
