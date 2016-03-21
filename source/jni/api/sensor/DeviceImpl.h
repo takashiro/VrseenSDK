@@ -3,7 +3,7 @@
 #include "vglobal.h"
 
 #include "Device.h"
-#include "Atomic.h"
+#include "VAtomicInt.h"
 #include "Log.h"
 #include "System.h"
 
@@ -36,7 +36,7 @@ enum
 class SharedLock
 {
 public:
-    SharedLock() : UseCount(0) {}
+    SharedLock() : m_useCount(0) {}
 
     Lock* GetLockAddRef();
     void  ReleaseLock(Lock* plock);
@@ -45,7 +45,7 @@ private:
     Lock* toLock() { return (Lock*)Buffer; }
 
     // UseCount and max alignment.
-    volatile int    UseCount;
+    VAtomicInt      m_useCount;
     UInt64          Buffer[(sizeof(Lock)+sizeof(UInt64)-1)/sizeof(UInt64)];
 };
 

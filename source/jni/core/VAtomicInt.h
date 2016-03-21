@@ -11,9 +11,8 @@ using namespace std;
 NV_NAMESPACE_BEGIN
 class VAtomicInt : public atomic<int>
 {
-    typedef int Type;
 public:
-
+    typedef int Type;
     inline VAtomicInt() : atomic<Type>()
     {
 

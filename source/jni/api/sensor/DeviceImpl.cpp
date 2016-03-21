@@ -34,27 +34,29 @@ enum { LockInitMarker = 0xFFFFFFFF };
 
 Lock* SharedLock::GetLockAddRef()
 {
-    int oldUseCount;
+    VAtomicInt::Type oldUseCount;
+    VAtomicInt::Type expectCount;
 
     do {
-        oldUseCount = UseCount;
+        oldUseCount = m_useCount.load();
         if (oldUseCount == (int)LockInitMarker)
             continue;
 
         if (oldUseCount == 0)
         {
             // Initialize marker
-            if (AtomicOps<int>::CompareAndSet_Sync(&UseCount, 0, LockInitMarker))
-            {
+            expectCount = 0;
+            if (m_useCount.compare_exchange_weak(expectCount, LockInitMarker)) {
                 Construct<Lock>(Buffer);
-                do { }
-                while (!AtomicOps<int>::CompareAndSet_Sync(&UseCount, LockInitMarker, 1));
+                do {
+                    expectCount = (VAtomicInt::Type)LockInitMarker;
+                } while (!m_useCount.compare_exchange_weak(expectCount, 1));
                 return toLock();
             }
             continue;
         }
-
-    } while (!AtomicOps<int>::CompareAndSet_NoSync(&UseCount, oldUseCount, oldUseCount + 1));
+        expectCount = oldUseCount;
+    } while (!m_useCount.compare_exchange_weak(expectCount, oldUseCount + 1));
 
     return toLock();
 }
@@ -64,28 +66,28 @@ void SharedLock::ReleaseLock(Lock* plock)
     OVR_UNUSED(plock);
     OVR_ASSERT(plock == toLock());
 
-    int oldUseCount;
+    VAtomicInt::Type oldUseCount;
+    VAtomicInt::Type expectCount;
 
     do {
-        oldUseCount = UseCount;
-        OVR_ASSERT(oldUseCount != (int)LockInitMarker);
+        oldUseCount = m_useCount.load();
+        OVR_ASSERT(oldUseCount != (VAtomicInt::Type)LockInitMarker);
 
         if (oldUseCount == 1)
         {
             // Initialize marker
-            if (AtomicOps<int>::CompareAndSet_Sync(&UseCount, 1, LockInitMarker))
-            {
+            expectCount = 1;
+            if (m_useCount.compare_exchange_weak(expectCount, LockInitMarker)) {
                 Destruct<Lock>(toLock());
-
-                do { }
-                while (!AtomicOps<int>::CompareAndSet_Sync(&UseCount, LockInitMarker, 0));
-
+               do {
+                   expectCount = (VAtomicInt::Type)LockInitMarker;
+               } while (!m_useCount.compare_exchange_weak(expectCount, 0));
                 return;
             }
             continue;
         }
-
-    } while (!AtomicOps<int>::CompareAndSet_NoSync(&UseCount, oldUseCount, oldUseCount - 1));
+        expectCount = oldUseCount;
+    } while (!m_useCount.compare_exchange_weak(expectCount, oldUseCount - 1));
 }
 
 
