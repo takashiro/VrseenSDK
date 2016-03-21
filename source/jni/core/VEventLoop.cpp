@@ -41,9 +41,6 @@ struct VEventLoop::Private
         pthread_cond_init( &received, NULL );
     }
 
-    // If set true, print all message sends and gets to the log
-    static bool		debug;
-
     bool			shutdown;
     const int 		maxMessages;
 
@@ -70,12 +67,9 @@ struct VEventLoop::Private
     bool PostMessage( const char * msg, bool sync, bool abortIfFull );
 };
 
-bool VEventLoop::Private::debug = false;
-
-VEventLoop::VEventLoop(int capacity ) :
-        d(new Private(capacity))
+VEventLoop::VEventLoop(int capacity )
+    : d(new Private(capacity))
 {
-
 }
 
 VEventLoop::~VEventLoop()
@@ -97,6 +91,8 @@ VEventLoop::~VEventLoop()
     pthread_mutex_destroy( &d->mutex );
     pthread_cond_destroy( &d->posted );
     pthread_cond_destroy( &d->received );
+
+    delete d;
 }
 
 void VEventLoop::quit()
@@ -116,10 +112,6 @@ bool VEventLoop::Private::PostMessage( const char * msg, bool sync, bool abortIf
     {
         vInfo( "PostMessage( "<<msg<<" ) to shutdown queue");
         return false;
-    }
-    if ( debug )
-    {
-        vInfo( "PostMessage( "<<msg<<" )");
     }
 
     pthread_mutex_lock( &mutex );
@@ -206,11 +198,6 @@ const char* VEventLoop::nextMessage()
     d->head++;
     pthread_mutex_unlock( &d->mutex );
 
-    if ( d->debug )
-    {
-        vInfo( "nextMessage() : "<<msg);
-    }
-
     return msg;
 }
 
@@ -230,26 +217,12 @@ void VEventLoop::wait()
         return;
     }
 
-    if ( d->debug )
-    {
-        vInfo( "SleepUntilMessage() : sleep");
-    }
-
     pthread_cond_wait( &d->posted, &d->mutex );
     pthread_mutex_unlock( &d->mutex );
-
-    if ( d->debug )
-    {
-        vInfo( "SleepUntilMessage() : awoke");
-    }
 }
 
 void VEventLoop::clear()
 {
-    if ( d->debug )
-    {
-        vInfo( "ClearMessages()");
-    }
     for ( const char* msg = nextMessage(); msg != NULL; msg = nextMessage() )
     {
         vInfo( "ClearMessages: discarding "<<msg);
