@@ -9,13 +9,13 @@ void Java_oculus_MainActivity_nativeSetAppInterface( JNIEnv * jni, jclass clazz,
 		jstring fromPackageName, jstring commandString, jstring uriString )
 {
 	LOG( "nativeSetAppInterface" );
-    (new OvrApp(jni, activity))->onCreate( jni, clazz, activity, fromPackageName, commandString, uriString );
+    (new OvrApp(jni, clazz, activity))->onCreate( jni, clazz, activity, fromPackageName, commandString, uriString );
 }
 
 } // extern "C"
 
-OvrApp::OvrApp(JNIEnv *jni, jobject activityObject)
-    : VMainActivity(jni, activityObject)
+OvrApp::OvrApp(JNIEnv *jni, jclass activityClass, jobject activityObject)
+    : VMainActivity(jni, activityClass, activityObject)
 {
 }
 

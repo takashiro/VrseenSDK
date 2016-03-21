@@ -10,7 +10,7 @@ NV_USING_NAMESPACE
 class VrScene : public NervGear::VMainActivity
 {
 public:
-                        VrScene(JNIEnv *jni, jobject activityObject);
+                        VrScene(JNIEnv *jni, jclass activityClass, jobject activityObject);
 						~VrScene();
 
 	virtual void 		ConfigureVrMode( ovrModeParms & modeParms );

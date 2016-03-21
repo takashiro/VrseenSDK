@@ -35,7 +35,7 @@ public:
 		NUM_MENU_STATES
 	};
 
-	Oculus360Videos(JNIEnv *jni, jobject activity);
+	Oculus360Videos(JNIEnv *jni, jclass activityClass, jobject activityObject);
 	~Oculus360Videos();
 
 	virtual void		init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI );

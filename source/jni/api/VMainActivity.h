@@ -15,7 +15,7 @@ class App;
 class VMainActivity
 {
 public:
-    VMainActivity(JNIEnv *jni, jobject activityObject);
+    VMainActivity(JNIEnv *jni, jclass activityClass, jobject activityObject);
     virtual ~VMainActivity();
 
     void finishActivity();

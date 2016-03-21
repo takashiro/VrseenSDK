@@ -10,7 +10,7 @@ NV_USING_NAMESPACE
 class OvrApp : public NervGear::VMainActivity
 {
 public:
-                        OvrApp(JNIEnv *jni, jobject activityObject);
+                        OvrApp(JNIEnv *jni, jclass activityClass, jobject activityObject);
     virtual				~OvrApp();
 
 	virtual void		init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI );

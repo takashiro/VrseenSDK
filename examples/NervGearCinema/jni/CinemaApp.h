@@ -18,7 +18,7 @@ namespace OculusCinema {
 class CinemaApp : public NervGear::VMainActivity
 {
 public:
-    CinemaApp(JNIEnv *jni, jobject activityObject);
+    CinemaApp(JNIEnv *jni, jclass activityClass, jobject activityObject);
 
     void init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI ) override;
     void shutdown() override;

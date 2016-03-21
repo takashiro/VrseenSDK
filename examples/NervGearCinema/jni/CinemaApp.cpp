@@ -23,8 +23,8 @@ of patent rights can be found in the PATENTS file in the same directory.
 
 namespace OculusCinema {
 
-CinemaApp::CinemaApp(JNIEnv *jni, jobject activityObject)
-    : VMainActivity(jni, activityObject)
+CinemaApp::CinemaApp(JNIEnv *jni, jclass activityClass, jobject activityObject)
+    : VMainActivity(jni, activityClass, activityObject)
     ,
     startTime( 0 ),
 	sceneMgr( *this ),

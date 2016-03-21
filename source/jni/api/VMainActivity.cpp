@@ -37,19 +37,12 @@ struct VMainActivity::Private
     }
 };
 
-VMainActivity::VMainActivity(JNIEnv *jni, jobject activityObject)
+VMainActivity::VMainActivity(JNIEnv *jni, jclass activityClass, jobject activityObject)
     : d(new Private)
 {
     d->jni = jni;
     d->activityObject = jni->NewGlobalRef(activityObject);
-
-    const char *className = "com/vrseen/nervgear/VrActivity";
-    jclass lc = jni->FindClass(className);
-    if (lc == 0) {
-        vFatal("Failed to find Java class" << className);
-    }
-    d->activityClass = (jclass) jni->NewGlobalRef(lc);
-    jni->DeleteLocalRef(lc);
+    d->activityClass = (jclass) jni->NewGlobalRef(activityClass);
 }
 
 VMainActivity::~VMainActivity()
