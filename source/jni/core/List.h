@@ -16,7 +16,6 @@ NV_NAMESPACE_BEGIN
 // {
 //     . . .
 // };
-
 template<class T>
 struct ListNode
 {

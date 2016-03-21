@@ -8,6 +8,9 @@
 #pragma once
 #include <list>
 #include "vglobal.h"
+#include "logcat_cpp.h"
+#define LOG_TAG "JNI_Tests"
+#define LOGD(...) _LOGD(LOG_TAG, __VA_ARGS__)
 using namespace std;
 
 NV_NAMESPACE_BEGIN
@@ -16,11 +19,11 @@ template <typename Container> class NodeOfVList
 {
 public:
     Container* pointToVList;
-    typename Container::const_iterator pointToIterator;
+    /*typename Container::const_iterator pointToIterator;
     void removeNodeFromVList()
     {
-        this->pointToIterator->erase(pointToIterator);
-    }
+        this->pointToVList->erase(pointToIterator);
+    }*/
 };
 template <class E> class VList : public list<E>
 {
@@ -60,7 +63,9 @@ public:
 
     bool isLast(typename VList<E>::const_iterator ci) const
     {
-        if (ci == this->end()) {
+        typename VList<E>::const_iterator iter = this->end();
+        iter--;
+        if (ci == iter) {
             return true;
         }
         return false;
@@ -70,7 +75,8 @@ public:
     {
         this->push_back(e);
         this->back().pointToVList=this;
-        this->back().pointToIterator=this->cend();
+
+        //this->back().pointToIterator=this->cend();
     }
 
     void append(const VList<E> &elements)
@@ -78,7 +84,7 @@ public:
         for (E e : elements) {
             this->push_back(e);
             this->back().pointToVList=this;
-            this->back().pointToIterator=this->cend();
+            //this->back().pointToIterator=this->cend();
         }
     }
 
@@ -86,7 +92,7 @@ public:
     {
         this->push_front(e);
         this->front().pointToVList=this;
-        this->front().pointToIterator=&this->cbegin();
+        //this->front().pointToIterator=&this->cbegin();
     }
 
     void prepend(const VList<E> &elements)
@@ -95,24 +101,24 @@ public:
                 ri != elements.rend();ri++) {
             this->push_front(*ri);
             this->front().pointToVList=this;
-            this->front().pointToIterator=this->cbegin();
+            //this->front().pointToIterator=this->cbegin();
         }
     }
 
-    void bringToFront(typename VList<E>::const_iterator ci)
+    void bringToFront(typename VList<E>::iterator ci)
     {
         E temp = *ci;
         this->erase(ci);
         this->push_front(temp);
-        this->front().pointToIterator=this->cbegin();
+        //this->front().pointToIterator=this->cbegin();
     }
 
-    void sendToBack(typename VList<E>::const_iterator ci)
+    void sendToBack(typename VList<E>::iterator ci)
     {
         E temp = *ci;
         this->erase(ci);
         this->push_back(temp);
-        this->back().pointToIterator=this->cend();
+        //this->back().pointToIterator=this->cend();
     }
 
     void removeOne(const E &e)
@@ -132,8 +138,8 @@ public:
 
     bool contains(const E &e) const
     {
-        for (typename VList<E>::iterator i = this->begin();i != this->end();i++) {
-            if (e == *i) {
+        for (E i:*this) {
+            if (i == e) {
                 return true;
             }
         }
@@ -148,7 +154,7 @@ public:
                 ci--) {
             this->push_front(*ci);
             this->front().pointToVList=this;
-            this->front().pointToIterator=this->cbegin();
+            //this->front().pointToIterator=this->cbegin();
         }
         s.erase(iFirst,s.end());
     }
@@ -160,7 +166,7 @@ public:
                 ci >= s.begin();ci--) {
             this->push_front(*ci);
             this->front().pointToVList=this;
-            this->front().pointToIterator=this->cbegin();
+            //this->front().pointToIterator=this->cbegin();
         }
         s.erase(s.begin(),iLast);
     }
@@ -173,7 +179,7 @@ public:
                 ci--) {
             this->push_front(*ci);
             this->front().pointToVList=this;
-            this->front().pointToIterator=this->cbegin();
+            //this->front().pointToIterator=this->cbegin();
         }
         s.erase(iFirst,iLast);
     }
@@ -184,7 +190,18 @@ public:
         this->clear();
         for (auto i = s.begin();i != s.end();i++) {
             i->pointToVList = &s;
-            i->pointToIterator = i;
+            //i->pointToIterator = i;
+        }
+    }
+    void removeElementByPointer(const E* p)
+    {
+        for (typename VList<E>::iterator i = this->begin();
+                i != this->end();
+                i++) {
+            if (p == &(*i)) {
+                this->erase(i);
+                break;
+            }
         }
     }
 };
