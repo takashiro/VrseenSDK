@@ -34,7 +34,7 @@ OvrMetaDatum * OvrPhotosMetaData::createMetaDatum( const char* url ) const
 	return new OvrPhotosMetaDatum( url );
 }
 
-void OvrPhotosMetaData::extractExtendedData( const NervGear::Json & jsonDatum, OvrMetaDatum & datum ) const
+void OvrPhotosMetaData::extractExtendedData( const NervGear::VJson & jsonDatum, OvrMetaDatum & datum ) const
 {
 	OvrPhotosMetaDatum * photoData = static_cast< OvrPhotosMetaDatum * >( &datum );
 	if ( photoData )
@@ -54,7 +54,7 @@ void OvrPhotosMetaData::extractExtendedData( const NervGear::Json & jsonDatum, O
 	}
 }
 
-void OvrPhotosMetaData::extendedDataToJson( const OvrMetaDatum & datum, NervGear::Json &outDatumObject ) const
+void OvrPhotosMetaData::extendedDataToJson( const OvrMetaDatum & datum, NervGear::VJson &outDatumObject ) const
 {
 	if ( outDatumObject.isObject() )
 	{

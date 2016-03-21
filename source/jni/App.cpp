@@ -1188,9 +1188,9 @@ struct App::Private : public TalkToJavaInterface
 
                 std::stringstream s;
                 s << eventBuffer;
-                Json jsonObj;
+                VJson jsonObj;
                 s >> jsonObj;
-                if (jsonObj.type() == Json::Object)
+                if (jsonObj.type() == VJson::Object)
                 {
                     VString command = jsonObj["Command"].toString();
                     if (command == SYSTEM_ACTIVITY_EVENT_REORIENT)

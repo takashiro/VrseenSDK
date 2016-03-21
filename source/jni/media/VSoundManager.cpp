@@ -20,17 +20,17 @@ struct VSoundManager::Private
 {
     std::map<VString, VString> soundMap;
 
-    void loadSoundAssetsFromJsonObject(const VString &url, const Json &dataFile)
+    void loadSoundAssetsFromJsonObject(const VString &url, const VJson &dataFile)
     {
         vAssert(dataFile.isValid());
 
         // Read in sounds - add to map
-        Json sounds = dataFile.value("Sounds");
+        VJson sounds = dataFile.value("Sounds");
         vAssert(sounds.isObject());
 
         const JsonObject &pairs = sounds.toObject();
-        for (const std::pair<std::string, Json> &pair : pairs) {
-            const Json &sound = pair.second;
+        for (const std::pair<std::string, VJson> &pair : pairs) {
+            const VJson &sound = pair.second;
             vAssert(sound.isValid());
 
             VString fullPath = url + sound.toString();
@@ -61,7 +61,7 @@ struct VSoundManager::Private
 
         std::stringstream s;
         s << reinterpret_cast<char *>(buffer);
-        Json dataFile;
+        VJson dataFile;
         s >> dataFile;
         if (dataFile.isInvalid()) {
             vFatal("OvrSoundManager::LoadSoundAssetsFromPackage failed json parse on" << jsonFile);
@@ -92,7 +92,7 @@ void VSoundManager::loadSoundAssets()
 	VString foundPath;
     if (GetFullPath(searchPaths, DEV_SOUNDS_RELATIVE, foundPath)) {
         std::ifstream fp(foundPath.toStdString(), std::ios::binary);
-		Json dataFile;
+		VJson dataFile;
 		fp >> dataFile;
         if (dataFile.isInvalid()) {
             vFatal("OvrSoundManager::LoadSoundAssets failed to load JSON meta file:" << foundPath);

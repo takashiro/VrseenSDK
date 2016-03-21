@@ -63,7 +63,7 @@ public:
 
 	// File list passed in and we reconcile against stored/new metadata
     void					initFromFileListMergeMeta( const VArray< VString > & fileList, const VArray< VString > & searchPaths,
-        const OvrMetaDataFileExtensions & fileExtensions, const char * appFileStoragePath, const char * metaFile, const Json &storedMetaData );
+        const OvrMetaDataFileExtensions & fileExtensions, const char * appFileStoragePath, const char * metaFile, const VJson &storedMetaData );
 
     void					processRemoteMetaFile( const char * metaFileString, const int startInsertionIndex /* index to insert remote categories*/ );
 
@@ -74,7 +74,7 @@ public:
     TagAction				toggleTag( OvrMetaDatum * data, const VString & tag );
 
 	// Returns metaData file if one is found, otherwise creates one using the default meta.json in the assets folder
-    Json createOrGetStoredMetaFile(const VString &appFileStoragePath, const char * metaFile );
+    VJson createOrGetStoredMetaFile(const VString &appFileStoragePath, const char * metaFile );
     void					addCategory( const VString & name );
 
     const VArray< Category > categories() const 							{ return m_categories; }
@@ -87,8 +87,8 @@ public:
 protected:
 	// Overload to fill extended data during initialization
     virtual OvrMetaDatum *	createMetaDatum( const char* fileName ) const = 0;
-    virtual	void			extractExtendedData( const Json &jsonDatum, OvrMetaDatum & outDatum ) const = 0;
-    virtual	void			extendedDataToJson( const OvrMetaDatum & datum, Json &outDatumObject ) const = 0;
+    virtual	void			extractExtendedData( const VJson &jsonDatum, OvrMetaDatum & outDatum ) const = 0;
+    virtual	void			extendedDataToJson( const OvrMetaDatum & datum, VJson &outDatumObject ) const = 0;
     virtual void			swapExtendedData( OvrMetaDatum * left, OvrMetaDatum * right ) const = 0;
 
 	// Optional protected interface
@@ -99,18 +99,18 @@ protected:
 
 private:
     Category * 				getCategory( const VString & categoryName );
-    void					processMetaData( const Json &dataFile, const VArray< VString > & searchPaths, const char * metaFile );
+    void					processMetaData( const VJson &dataFile, const VArray< VString > & searchPaths, const char * metaFile );
     void					regenerateCategoryIndices();
     void					reconcileMetaData( StringHash< OvrMetaDatum * > & storedMetaData );
     void					reconcileCategories( VArray< Category > & storedCategories );
 
-    Json			metaDataToJson() const;
+    VJson			metaDataToJson() const;
     void					writeMetaFile( const char * metaFile ) const;
     bool 					shouldAddFile( const char * filename, const OvrMetaDataFileExtensions & fileExtensions ) const;
-    void					extractVersion( const Json &dataFile, double & outVersion ) const;
-    void					extractCategories( const Json &dataFile, VArray< Category > & outCategories ) const;
-    void					extractMetaData( const Json &dataFile, const VArray< VString > & searchPaths, StringHash< OvrMetaDatum * > & outMetaData ) const;
-    void					extractRemoteMetaData( const Json &dataFile, StringHash< OvrMetaDatum * > & outMetaData ) const;
+    void					extractVersion( const VJson &dataFile, double & outVersion ) const;
+    void					extractCategories( const VJson &dataFile, VArray< Category > & outCategories ) const;
+    void					extractMetaData( const VJson &dataFile, const VArray< VString > & searchPaths, StringHash< OvrMetaDatum * > & outMetaData ) const;
+    void					extractRemoteMetaData( const VJson &dataFile, StringHash< OvrMetaDatum * > & outMetaData ) const;
 
     VPath 					m_filePath;
     VArray< Category >		m_categories;

@@ -204,7 +204,7 @@ void OvrMetaData::renameCategory(const VString &currentTag, const VString &newNa
 	}
 }
 
-Json LoadPackageMetaFile( const char* metaFile )
+VJson LoadPackageMetaFile( const char* metaFile )
 {
     uint bufferLength = 0;
     void * 	buffer = NULL;
@@ -216,24 +216,24 @@ Json LoadPackageMetaFile( const char* metaFile )
 	{
 		WARN( "LoadPackageMetaFile failed to read %s", assetsMetaFile.toCString() );
 	}
-    return Json::Parse( static_cast<char*>(buffer) );
+    return VJson::Parse( static_cast<char*>(buffer) );
 }
 
-Json OvrMetaData::createOrGetStoredMetaFile( const VString &appFileStoragePath, const char * metaFile )
+VJson OvrMetaData::createOrGetStoredMetaFile( const VString &appFileStoragePath, const char * metaFile )
 {
 	m_filePath = appFileStoragePath;
 	m_filePath += metaFile;
 
 	LOG( "CreateOrGetStoredMetaFile FilePath: %s", m_filePath.toCString() );
 
-    Json dataFile = Json::Load( m_filePath.toCString() );
+    VJson dataFile = VJson::Load( m_filePath.toCString() );
 	if ( dataFile.isInvalid() )
 	{
 		// If this is the first run, or we had an error loading the file, we copy the meta file from assets to app's cache
 		writeMetaFile( metaFile );
 
 		// try loading it again
-        dataFile = Json::Load( m_filePath.toCString() );
+        dataFile = VJson::Load( m_filePath.toCString() );
 		if ( dataFile.isInvalid() )
 		{
 			WARN( "OvrMetaData failed to load JSON meta file: %s", metaFile );
@@ -293,14 +293,14 @@ void OvrMetaData::initFromDirectoryMergeMeta( const char * relativePath, const V
 
 	OVR_ASSERT( vdir.contains( m_filePath, R_OK ) );
 
-    Json dataFile = createOrGetStoredMetaFile( appFileStoragePath, metaFile );
+    VJson dataFile = createOrGetStoredMetaFile( appFileStoragePath, metaFile );
 
     initFromDirectory( relativePath, searchPaths, fileExtensions );
 	processMetaData( dataFile, searchPaths, metaFile );
 }
 
 void OvrMetaData::initFromFileListMergeMeta( const VArray< VString > & fileList, const VArray< VString > & searchPaths,
-	const OvrMetaDataFileExtensions & fileExtensions, const char * appFileStoragePath, const char * metaFile, const NervGear::Json &storedMetaData )
+	const OvrMetaDataFileExtensions & fileExtensions, const char * appFileStoragePath, const char * metaFile, const NervGear::VJson &storedMetaData )
 {
 	LOG( "OvrMetaData::InitFromFileListMergeMeta" );
 
@@ -310,7 +310,7 @@ void OvrMetaData::initFromFileListMergeMeta( const VArray< VString > & fileList,
 
 void OvrMetaData::processRemoteMetaFile( const char * metaFileString, const int startIndex )
 {
-	Json remoteMetaFile = Json::Parse( metaFileString );
+	VJson remoteMetaFile = VJson::Parse( metaFileString );
 	if ( remoteMetaFile.isValid() )
 	{
 		// First grab the version
@@ -367,7 +367,7 @@ void OvrMetaData::processRemoteMetaFile( const char * metaFileString, const int 
 		regenerateCategoryIndices();
 
 		// Serialize the new metadata
-		Json dataFile = metaDataToJson();
+		VJson dataFile = metaDataToJson();
 		if ( dataFile.isValid() )
 		{
 			FAIL( "OvrMetaData::ProcessMetaData failed to generate JSON meta file" );
@@ -380,7 +380,7 @@ void OvrMetaData::processRemoteMetaFile( const char * metaFileString, const int 
 	}
 }
 
-void OvrMetaData::processMetaData( const NervGear::Json &dataFile, const VArray< VString > & searchPaths, const char * metaFile )
+void OvrMetaData::processMetaData( const NervGear::VJson &dataFile, const VArray< VString > & searchPaths, const char * metaFile )
 {
 	if ( dataFile.isValid() )
 	{
@@ -392,7 +392,7 @@ void OvrMetaData::processMetaData( const NervGear::Json &dataFile, const VArray<
 		extractCategories( dataFile, storedCategories );
 
 		// Read in package data first
-		Json packageMeta = LoadPackageMetaFile( metaFile );
+		VJson packageMeta = LoadPackageMetaFile( metaFile );
 		if ( packageMeta.isValid() )
 		{
 			// If we failed to find a version in the serialized data, need to set it from the assets version
@@ -448,7 +448,7 @@ void OvrMetaData::processMetaData( const NervGear::Json &dataFile, const VArray<
 	}
 
 	// Rewrite new data
-	Json newDataFile = metaDataToJson();
+	VJson newDataFile = metaDataToJson();
 	if ( newDataFile.isInvalid() )
 	{
 		FAIL( "OvrMetaData::ProcessMetaData failed to generate JSON meta file" );
@@ -564,7 +564,7 @@ void OvrMetaData::reconcileCategories( VArray< Category > & storedCategories )
     std::swap(m_categories, finalCategories);
 }
 
-void OvrMetaData::extractVersion(const Json &dataFile, double & outVersion ) const
+void OvrMetaData::extractVersion(const VJson &dataFile, double & outVersion ) const
 {
 	if ( dataFile.isInvalid() )
 	{
@@ -577,18 +577,18 @@ void OvrMetaData::extractVersion(const Json &dataFile, double & outVersion ) con
 	}
 }
 
-void OvrMetaData::extractCategories(const Json &dataFile, VArray< Category > & outCategories ) const
+void OvrMetaData::extractCategories(const VJson &dataFile, VArray< Category > & outCategories ) const
 {
 	if ( dataFile.isInvalid() )
 	{
 		return;
 	}
 
-	const Json &categories( dataFile.value( CATEGORIES ) );
+	const VJson &categories( dataFile.value( CATEGORIES ) );
 	if ( categories.isArray() )
 	{
         const JsonArray &elements = categories.toArray();
-		for (const Json &category : elements) {
+		for (const VJson &category : elements) {
 			if ( category.isObject() )
 			{
 				Category extractedCategory;
@@ -617,20 +617,20 @@ void OvrMetaData::extractCategories(const Json &dataFile, VArray< Category > & o
 	}
 }
 
-void OvrMetaData::extractMetaData(const Json &dataFile, const VArray< VString > & searchPaths, StringHash< OvrMetaDatum * > & outMetaData ) const
+void OvrMetaData::extractMetaData(const VJson &dataFile, const VArray< VString > & searchPaths, StringHash< OvrMetaDatum * > & outMetaData ) const
 {
 	if ( dataFile.isInvalid() )
 	{
 		return;
 	}
 
-	const Json &data( dataFile.value( DATA ) );
+	const VJson &data( dataFile.value( DATA ) );
 	if ( data.isArray() )
 	{
 		int jsonIndex = m_etaData.length();
 
         const JsonArray &datums = data.toArray();
-		for (const Json &datum : datums) {
+		for (const VJson &datum : datums) {
 			if ( datum.isObject() )
 			{
 				OvrMetaDatum * metaDatum = createMetaDatum( "" );
@@ -640,11 +640,11 @@ void OvrMetaData::extractMetaData(const Json &dataFile, const VArray< VString > 
 				}
 
 				metaDatum->id = jsonIndex++;
-				const Json &tags( datum.value( TAGS ) );
+				const VJson &tags( datum.value( TAGS ) );
 				if ( tags.isArray() )
 				{
                     const JsonArray &elements = tags.toArray();
-					for (const Json &tag : elements) {
+					for (const VJson &tag : elements) {
 						if ( tag.isObject() )
 						{
                             metaDatum->tags.append(tag.value( CATEGORY ).toString());
@@ -693,20 +693,20 @@ void OvrMetaData::extractMetaData(const Json &dataFile, const VArray< VString > 
 	}
 }
 
-void OvrMetaData::extractRemoteMetaData( const Json &dataFile, StringHash< OvrMetaDatum * > & outMetaData ) const
+void OvrMetaData::extractRemoteMetaData( const VJson &dataFile, StringHash< OvrMetaDatum * > & outMetaData ) const
 {
 	if ( dataFile.isInvalid() )
 	{
 		return;
 	}
 
-	const Json &data( dataFile.value( DATA ) );
+	const VJson &data( dataFile.value( DATA ) );
 	if ( data.isArray() )
 	{
 		int jsonIndex = m_etaData.length();
 
         const JsonArray elements = data.toArray();
-		for (const Json &jsonDatum : elements) {
+		for (const VJson &jsonDatum : elements) {
 			if ( jsonDatum.isObject() )
 			{
 				OvrMetaDatum * metaDatum = createMetaDatum( "" );
@@ -715,11 +715,11 @@ void OvrMetaData::extractRemoteMetaData( const Json &dataFile, StringHash< OvrMe
 					continue;
 				}
 				metaDatum->id = jsonIndex++;
-				const Json &tags( jsonDatum.value( TAGS ) );
+				const VJson &tags( jsonDatum.value( TAGS ) );
 				if ( tags.isArray() )
 				{
                     const JsonArray &elements = tags.toArray();
-					for (const Json &tag : elements) {
+					for (const VJson &tag : elements) {
 						if ( tag.isObject() )
 						{
                             metaDatum->tags.append(tag.value( CATEGORY ).toString());
@@ -817,19 +817,19 @@ void OvrMetaData::regenerateCategoryIndices()
 	}
 }
 
-Json OvrMetaData::metaDataToJson() const
+VJson OvrMetaData::metaDataToJson() const
 {
-	Json DataFile(Json::Object);
+	VJson DataFile(VJson::Object);
 
 	// Add version
 	DataFile[VERSION] = m_version;
 
 	// Add categories
-	Json newCategoriesObject(Json::Array);
+	VJson newCategoriesObject(VJson::Array);
 
 	for ( int c = 0; c < m_categories.length(); ++c )
 	{
-		Json catObject(Json::Object);
+		VJson catObject(VJson::Object);
 
 		const Category & cat = m_categories.at( c );
 		catObject[TAG] = std::string(cat.categoryTag.toCString());
@@ -840,21 +840,21 @@ Json OvrMetaData::metaDataToJson() const
 	DataFile[CATEGORIES] = newCategoriesObject;
 
 	// Add meta data
-	Json newDataObject(Json::Array);
+	VJson newDataObject(VJson::Array);
 
 	for ( int i = 0; i < m_etaData.length(); ++i )
 	{
 		const OvrMetaDatum & metaDatum = *m_etaData.at( i );
 
-		Json datumObject(Json::Object);
+		VJson datumObject(VJson::Object);
 		extendedDataToJson( metaDatum, datumObject );
 		datumObject.insert( URL_INNER, std::string(metaDatum.url.toCString()) );
 		LOG( "OvrMetaData::MetaDataToJson adding datum url %s", metaDatum.url.toCString() );
 
-		Json newTagsObject(Json::Array);
+		VJson newTagsObject(VJson::Array);
 		for ( int t = 0; t < metaDatum.tags.length(); ++t )
 		{
-			Json tagObject(Json::Object);
+			VJson tagObject(VJson::Object);
 			tagObject.insert( CATEGORY, std::string(metaDatum.tags.at( t ).toCString()) );
 			newTagsObject.append( tagObject );
 		}
@@ -870,7 +870,7 @@ Json OvrMetaData::metaDataToJson() const
 
 TagAction OvrMetaData::toggleTag( OvrMetaDatum * metaDatum, const VString & newTag )
 {
-    Json DataFile = Json::Load( m_filePath.toCString() );
+    VJson DataFile = VJson::Load( m_filePath.toCString() );
 	if ( DataFile.isInvalid() )
 	{
 		FAIL( "OvrMetaData failed to load JSON meta file: %s", m_filePath.toCString() );
@@ -906,18 +906,18 @@ TagAction OvrMetaData::toggleTag( OvrMetaDatum * metaDatum, const VString & newT
 	}
 
 	// Then serialize
-	Json newTagsObject(Json::Array);
+	VJson newTagsObject(VJson::Array);
 
 	for ( int t = 0; t < metaDatum->tags.length(); ++t )
 	{
-		Json tagObject(Json::Object);
+		VJson tagObject(VJson::Object);
 		tagObject.insert(CATEGORY, std::string(metaDatum->tags.at( t ).toCString()));
 		newTagsObject.append(tagObject);
 	}
 
-	const Json &data = DataFile.value( DATA );
+	const VJson &data = DataFile.value( DATA );
 	if (data.isArray() && (int) data.size() > metaDatum->id) {
-		Json datum = data.at(metaDatum->id);
+		VJson datum = data.at(metaDatum->id);
 		if (datum.contains(TAGS)) {
 			datum[TAGS] = newTagsObject;
 

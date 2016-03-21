@@ -607,7 +607,7 @@ void CreateSystemActivitiesCommand( const char * toPackageName, const char * com
 		const char * uri, NervGear::VString & out )
 {
 	// serialize the command to a JSON object with version inf
-    Json obj(Json::Object);
+    VJson obj(VJson::Object);
     obj.insert("Command", command);
     obj.insert("OVRVersion", ovr_GetVersionString());
     obj.insert("PlatformUIVersion", PLATFORM_UI_VERSION);
@@ -710,7 +710,7 @@ bool ovr_CreateSystemActivityIntent( ovrMobile * ovr, const char * command, cons
 	}
 	outBuffer[0] = '\0';
 
-    Json jsonObj(Json::Object);
+    VJson jsonObj(VJson::Object);
 
     jsonObj.insert("Command", command );
     jsonObj.insert("OVRVersion", ovr_GetVersionString() );
@@ -1816,7 +1816,7 @@ void ovr_HandleDeviceStateChanges( ovrMobile * ovr )
 			continue;
 		}
 
-        Json reader = Json::Parse(eventBuffer.toCString());
+        VJson reader = VJson::Parse(eventBuffer.toCString());
         if ( reader.isObject() )
 		{
             VString command = reader.value("Command").toString();
@@ -2149,7 +2149,7 @@ eVrApiEventStatus ovr_nextPendingEvent( VString& buffer, unsigned int const buff
 	}
 
 	// Parse to JSON here to determine if we should handle the event natively, or pass it along to the client app.
-    Json reader = Json::Parse(buffer.toCString());
+    VJson reader = VJson::Parse(buffer.toCString());
     if (reader.isObject())
 	{
         VString command = reader.value( "Command" ).toString();

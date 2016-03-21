@@ -186,7 +186,7 @@ void MovieManager::ReadMetaData( MovieDef *movie )
 		return;
 	}
 
-    Json metaData;
+    VJson metaData;
     std::ifstream fs(filename.toCString(), std::ios::binary);
     fs >> metaData;
     if (metaData.isValid()) {

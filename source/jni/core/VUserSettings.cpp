@@ -12,7 +12,7 @@ static const char* PROFILE_PATH = "/sdcard/Oculus/userprofile.json";
 void VUserSettings::load()
 {
     // TODO: Switch this over to using a content provider when available.
-    Json root;
+    VJson root;
     std::ifstream fp(PROFILE_PATH, std::ios::binary);
     fp >> root;
 
@@ -28,7 +28,7 @@ void VUserSettings::load()
 
 void VUserSettings::save()
 {
-    Json root(Json::Object);
+    VJson root(VJson::Object);
 
     root["ipd"] = ipd;
     root["eyeHeight"] = eyeHeight;
