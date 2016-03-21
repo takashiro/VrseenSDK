@@ -15,14 +15,15 @@ Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
 #include "Android/LogUtils.h"
 
 #include "VrCommon.h"
-#include "unistd.h"
 #include "VDir.h"
 #include "VPath.h"
 #include "VApkFile.h"
 #include "VJson.h"
 #include "VArray.h"
-#include <algorithm>
+#include "VLog.h"
 
+#include <algorithm>
+#include <unistd.h>
 #include <fstream>
 
 using namespace NervGear;
@@ -238,45 +239,37 @@ VJson OvrMetaData::createOrGetStoredMetaFile( const VString &appFileStoragePath,
 		{
 			WARN( "OvrMetaData failed to load JSON meta file: %s", metaFile );
 		}
-	}
-	else
-	{
-		LOG( "OvrMetaData::CreateOrGetStoredMetaFile found %s", m_filePath.toCString() );
+    } else {
+        vInfo("OvrMetaData::CreateOrGetStoredMetaFile found" << m_filePath);
 	}
 	return dataFile;
 }
 
-void OvrMetaData::writeMetaFile( const char * metaFile ) const
+void OvrMetaData::writeMetaFile(const char * metaFile) const
 {
-	LOG( "Writing metafile from apk" );
+    vInfo("Writing metafile from apk");
 
-	if ( FILE * newMetaFile = fopen( m_filePath.toCString(), "w" ) )
-	{
-        uint bufferLength = 0;
-		void * 	buffer = NULL;
-		VString assetsMetaFile = "assets/";
-		assetsMetaFile += metaFile;
-        const VApkFile &apk = VApkFile::CurrentApkFile();
-        apk.read(assetsMetaFile, buffer, bufferLength);
-		if ( !buffer )
-		{
-			WARN( "OvrMetaData failed to read %s", assetsMetaFile.toCString() );
-		}
-		else
-		{
+    uint bufferLength = 0;
+    void *buffer = NULL;
+    VString assetsMetaFile = "assets/";
+    assetsMetaFile += metaFile;
+    const VApkFile &apk = VApkFile::CurrentApkFile();
+    apk.read(assetsMetaFile, buffer, bufferLength);
+    if (!buffer) {
+        vWarn("OvrMetaData failed to read" << assetsMetaFile);
+    } else {
+        if (FILE *newMetaFile = fopen(m_filePath.toCString(), "w")) {
             uint writtenCount = fwrite( buffer, 1, bufferLength, newMetaFile );
-			if ( writtenCount != bufferLength )
-			{
-				FAIL( "OvrMetaData::WriteMetaFile failed to write %s", metaFile );
-			}
-			free( buffer );
-		}
-		fclose( newMetaFile );
-	}
-	else
-	{
-		FAIL( "OvrMetaData failed to create %s - check app permissions", m_filePath.toCString() );
-	}
+            if ( writtenCount != bufferLength )
+            {
+                vFatal( "OvrMetaData::WriteMetaFile failed to write" << metaFile);
+            }
+            free( buffer );
+            fclose( newMetaFile );
+        } else {
+            vFatal( "OvrMetaData failed to create" << m_filePath << "- check app permissions");
+        }
+    }
 }
 
 void OvrMetaData::initFromDirectoryMergeMeta( const char * relativePath, const VArray< VString > & searchPaths,
@@ -293,10 +286,11 @@ void OvrMetaData::initFromDirectoryMergeMeta( const char * relativePath, const V
 
 	OVR_ASSERT( vdir.contains( m_filePath, R_OK ) );
 
-    VJson dataFile = createOrGetStoredMetaFile( appFileStoragePath, metaFile );
-
     initFromDirectory( relativePath, searchPaths, fileExtensions );
-	processMetaData( dataFile, searchPaths, metaFile );
+
+    //@to-do: Remove MetaData
+    /*VJson dataFile = createOrGetStoredMetaFile( appFileStoragePath, metaFile );
+    processMetaData( dataFile, searchPaths, metaFile );*/
 }
 
 void OvrMetaData::initFromFileListMergeMeta( const VArray< VString > & fileList, const VArray< VString > & searchPaths,
@@ -454,10 +448,10 @@ void OvrMetaData::processMetaData( const NervGear::VJson &dataFile, const VArray
 		FAIL( "OvrMetaData::ProcessMetaData failed to generate JSON meta file" );
 	}
 
-    std::ofstream fp(m_filePath.toCString(), std::ios::binary);
+    std::ofstream fp(m_filePath.toUtf8(), std::ios::binary);
 	fp << newDataFile;
 
-	LOG( "OvrMetaData::ProcessMetaData created %s", m_filePath.toCString() );
+    vInfo("OvrMetaData::ProcessMetaData created" << m_filePath);
 }
 
 void OvrMetaData::reconcileMetaData( StringHash< OvrMetaDatum * > & storedMetaData )
