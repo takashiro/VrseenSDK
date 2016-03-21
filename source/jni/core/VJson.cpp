@@ -230,7 +230,13 @@ bool VJson::operator==(const VJson &value) const
 void VJson::append(const VJson &child)
 {
     p_ptr.detach();
-	p_ptr->array->push_back(child);
+    p_ptr->array->push_back(child);
+}
+
+VJson &VJson::operator <<(const VJson &value)
+{
+    append(value);
+    return *this;
 }
 
 void VJson::removeAt(int index)

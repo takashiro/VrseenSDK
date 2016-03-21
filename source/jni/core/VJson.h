@@ -70,12 +70,13 @@ public:
 
 	//Array Functions
 	void append(const VJson &value);
+    VJson &operator << (const VJson &value);
 	void removeAt(int index);
 	void removeOne(const VJson &value);
         void removeAll(const VJson &value);
 	VJson &operator[](int i);
 	const VJson &operator[](int i) const;
-	const VJson &at(int i) const;
+    const VJson &at(int i) const;
 
 	//Object Functions
 	void insert(const std::string &key, const VJson &value);
