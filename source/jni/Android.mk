@@ -72,7 +72,6 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     api/Distortion.cpp \
                     api/SystemActivities.cpp \
                     api/VFrameSmooth.cpp \
-                    api/LocalPreferences.cpp \
                     api/VGlGeometry.cpp \
                     api/VMainActivity.cpp \
                     api/VGlShader.cpp \

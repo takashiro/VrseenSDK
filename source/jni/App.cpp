@@ -25,7 +25,6 @@
 #include "GlTexture.h"
 #include "GuiSys.h"
 #include "GuiSysLocal.h"		// necessary to instantiate the gui system
-#include "LocalPreferences.h"		// FIXME:VRAPI move to VrApi_Android.h?
 #include "ModelView.h"
 #include "PointTracker.h"
 #include "SurfaceTexture.h"
@@ -470,37 +469,6 @@ struct App::Private : public TalkToJavaInterface
 
         // Allow the app to override
         appInterface->ConfigureVrMode(VrModeParms);
-
-        // Reload local preferences, in case we are coming back from a
-        // switch to the dashboard that changed them.
-        ovr_UpdateLocalPreferences();
-
-        // Check for values that effect our mode settings
-        {
-            const char * cpuLevelStr = ovr_GetLocalPreferenceValueForKey(LOCAL_PREF_DEV_CPU_LEVEL, "-1");
-            const int cpuLevel = atoi(cpuLevelStr);
-            if (cpuLevel >= 0)
-            {
-                VrModeParms.CpuLevel = cpuLevel;
-                vInfo("Local Preferences: Setting cpuLevel" << VrModeParms.CpuLevel);
-            }
-            const char * gpuLevelStr = ovr_GetLocalPreferenceValueForKey(LOCAL_PREF_DEV_GPU_LEVEL, "-1");
-            const int gpuLevel = atoi(gpuLevelStr);
-            if (gpuLevel >= 0)
-            {
-                VrModeParms.GpuLevel = gpuLevel;
-                vInfo("Local Preferences: Setting gpuLevel" << VrModeParms.GpuLevel);
-            }
-
-            const char * showVignetteStr = ovr_GetLocalPreferenceValueForKey(LOCAL_PREF_DEV_SHOW_VIGNETTE, "1");
-            showVignette = (atoi(showVignetteStr) > 0);
-
-            const char * enableDebugOptionsStr = ovr_GetLocalPreferenceValueForKey(LOCAL_PREF_DEV_DEBUG_OPTIONS, "0");
-            enableDebugOptions =  (atoi(enableDebugOptionsStr) > 0);
-
-            const char * enableGpuTimingsStr = ovr_GetLocalPreferenceValueForKey(LOCAL_PREF_DEV_GPU_TIMINGS, "0");
-            SetAllowGpuTimerQueries(atoi(enableGpuTimingsStr) > 0);
-        }
 
         // Clear cursor trails
         gazeCursor->HideCursorForFrames(10);
@@ -1103,8 +1071,6 @@ struct App::Private : public TalkToJavaInterface
             guiSys->init(self, *vrMenuMgr, *defaultFont);
 
             volumePopup = OvrVolumePopup::Create(self, *vrMenuMgr, *defaultFont);
-
-            ovr_InitLocalPreferences(vrJni, javaObject);
 
             lastTouchpadTime = ovr_GetTimeInSeconds();
         }

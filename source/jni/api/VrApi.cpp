@@ -35,7 +35,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VrApi_local.h"
 #include "VrApi_Helpers.h"
 #include "Vsync.h"
-#include "LocalPreferences.h"			// for testing via local prefs
 #include "SystemActivities.h"
 
 NV_USING_NAMESPACE
@@ -819,7 +818,6 @@ void ovr_ExitActivity( ovrMobile * ovr, eExitType exitType )
 		}
 
 		NervGear::SystemActivities_ShutdownEventQueues();
-		ovr_ShutdownLocalPreferences();
 		ovr_Shutdown();
 		exit( 0 );
 	}
@@ -1514,7 +1512,7 @@ ovrMobile * ovr_EnterVrMode( ovrModeParms parms, ovrHmdInfo * returnedHmdInfo )
 
 	// For video capture or testing on reference platforms without frontbuffer rendering,
 	// frontbuffer can be forced off.
-	ovr->Twp.frontBuffer = atoi( ovr_GetLocalPreferenceValueForKey( "frontbuffer", "1" ) );
+    ovr->Twp.frontBuffer = 1;
 	ovr->Twp.distortionFileName = ovr->Parms.DistortionFileName;
 	ovr->Twp.hmdInfo = ovr->HmdInfo;
 	ovr->Twp.javaVm = VrLibJavaVM;
@@ -2122,22 +2120,6 @@ bool ovr_GetHeadsetPluggedState()
 bool ovr_IsDeviceDocked()
 {
 	return DockState.state();
-}
-
-void ovr_InitLocalPreferences( JNIEnv * jni, jobject activityObject )
-{
-	LOG( "ovr_InitLocalPreferences" );
-
-	if ( jni == NULL || activityObject == NULL )
-	{
-		return;
-	}
-
-	const jmethodID method = JniUtils::GetStaticMethodID( jni, VrLibClass,
-			"isDeveloperMode", "(Landroid/app/Activity;)Z" );
-	const bool isDeveloperMode = jni->CallStaticBooleanMethod( VrLibClass, method, activityObject );
-
-	ovr_SetAllowLocalPreferencesFile( isDeveloperMode );
 }
 
 eVrApiEventStatus ovr_nextPendingEvent( VString& buffer, unsigned int const bufferSize )

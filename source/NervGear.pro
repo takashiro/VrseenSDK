@@ -56,7 +56,6 @@ SOURCES += \
     jni/api/Distortion.cpp \
     jni/api/SystemActivities.cpp \
     jni/api/VFrameSmooth.cpp \
-    jni/api/LocalPreferences.cpp \
     jni/api/VMainActivity.cpp \
     jni/api/VGlShader.cpp \
     jni/api/VGlGeometry.cpp \
@@ -192,7 +191,6 @@ HEADERS += \
     jni/api/Distortion.h \
     jni/api/SystemActivities.h \
     jni/api/VFrameSmooth.h \
-    jni/api/LocalPreferences.h \
     jni/api/VGlGeometry.h \
     jni/api/VGlShader.h \
     jni/api/VMainActivity.h \
