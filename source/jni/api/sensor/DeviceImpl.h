@@ -1,3 +1,4 @@
+
 #pragma once
 
 #include "vglobal.h"
@@ -126,9 +127,9 @@ public:
     virtual ~DeviceCreateDesc()
     {
         OVR_ASSERT(!pDevice);
-        if (!this->pointToVList->isEmpty()) {
+        /*if (!this->pointToVList->isEmpty()) {
             this->pointToVList->remove(this);
-        }
+        }*/
     }
 
     DeviceManagerImpl* GetManagerImpl() const { return pLock->pManager; }

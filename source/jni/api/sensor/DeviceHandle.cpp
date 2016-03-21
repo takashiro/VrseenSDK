@@ -152,8 +152,7 @@ bool DeviceHandle::enumerateNext(const DeviceEnumerationArgs& args)
     do {
         next = pointToVList->getNextByContent(next);
 
-        if (managerKeepAlive->Devices.isEmpty())
-        {
+        if (next == nullptr) {
             m_pImpl->Release();
             m_pImpl = 0;
             return false;
