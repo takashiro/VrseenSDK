@@ -29,7 +29,7 @@ struct VEventLoop::Private
         for ( int i = 0; i < maxMessages; i++ )
         {
             messages[i].string = NULL;
-            messages[i].synced = false;
+            messages[i].sychronized = false;
         }
 
         pthread_mutexattr_t	attr;
@@ -46,25 +46,43 @@ struct VEventLoop::Private
 
     struct message_t
     {
-        const char*	 string;
-        bool			synced;
+        const char *string;
+        bool sychronized;
     };
 
-    // All messages will be allocated with strdup, and returned to
-    // the caller on nextMessage().
-    message_t * 	messages;
+    message_t *messages;
 
-    // PostMessage() fills in messages[tail%maxMessages], then increments tail
-    // If tail > head, nextMessage() will fetch messages[head%maxMessages],
-    // then increment head.
-    volatile int	head;
-    volatile int	tail;
-    bool			synced;
-    pthread_mutex_t	mutex;
-    pthread_cond_t	posted;
-    pthread_cond_t	received;
+    volatile int head;
+    volatile int tail;
+    bool synced;
+    pthread_mutex_t mutex;
+    pthread_cond_t posted;
+    pthread_cond_t received;
 
-    bool PostMessage( const char * msg, bool sync, bool abortIfFull );
+    bool post(const char *msg, bool sync)
+    {
+        if (shutdown) {
+            vInfo("PostMessage(" << msg << ") to shutdown queue");
+            return false;
+        }
+
+        pthread_mutex_lock(&mutex);
+        if (tail - head >= maxMessages) {
+            pthread_mutex_unlock(&mutex);
+            return false;
+        }
+        const int index = tail % maxMessages;
+        messages[index].string = strdup( msg );
+        messages[index].sychronized = sync;
+        tail++;
+        pthread_cond_signal(&posted);
+        if (sync) {
+            pthread_cond_wait(&received, &mutex);
+        }
+        pthread_mutex_unlock(&mutex);
+
+        return true;
+    }
 };
 
 VEventLoop::VEventLoop(int capacity )
@@ -101,51 +119,9 @@ void VEventLoop::quit()
     d->shutdown = true;
 }
 
-// Thread safe, callable by any thread.
-// The msg text is copied off before return, the caller can free
-// the buffer.
-// The app will abort() with a dump of all messages if the message
-// buffer overflows.
-bool VEventLoop::Private::PostMessage( const char * msg, bool sync, bool abortIfFull )
-{
-    if ( shutdown )
-    {
-        vInfo( "PostMessage( "<<msg<<" ) to shutdown queue");
-        return false;
-    }
-
-    pthread_mutex_lock( &mutex );
-    if ( tail - head >= maxMessages )
-    {
-        pthread_mutex_unlock( &mutex );
-        if ( abortIfFull )
-        {
-            vInfo( "VMessageQueue overflow" );
-            for ( int i = head; i < tail; i++ )
-            {
-                vInfo( messages[i % maxMessages].string );
-            }
-            vFatal( "Message buffer overflowed" );
-        }
-        return false;
-    }
-    const int index = tail % maxMessages;
-    messages[index].string = strdup( msg );
-    messages[index].synced = sync;
-    tail++;
-    pthread_cond_signal( &posted );
-    if ( sync )
-    {
-        pthread_cond_wait( &received, &mutex );
-    }
-    pthread_mutex_unlock( &mutex );
-
-    return true;
-}
-
 void VEventLoop::post( const char * msg )
 {
-    d->PostMessage( msg, false, true );
+    d->post(msg, false);
 }
 
 void VEventLoop::postf( const char * fmt, ... )
@@ -155,48 +131,46 @@ void VEventLoop::postf( const char * fmt, ... )
     va_start( args, fmt );
     vsnprintf( bigBuffer, sizeof( bigBuffer ), fmt, args );
     va_end( args );
-    d->PostMessage( bigBuffer, false, true );
+    d->post(bigBuffer, false);
 }
 
 void VEventLoop::send( const char * msg )
 {
-    d->PostMessage( msg, true, true );
+    d->post(msg, true);
 }
 
 void VEventLoop::sendf( const char * fmt, ... )
 {
     char bigBuffer[4096];
     va_list	args;
-    va_start( args, fmt );
-    vsnprintf( bigBuffer, sizeof( bigBuffer ), fmt, args );
-    va_end( args );
-    d->PostMessage( bigBuffer, true, true );
+    va_start(args, fmt);
+    vsnprintf(bigBuffer, sizeof( bigBuffer ), fmt, args );
+    va_end(args);
+    d->post(bigBuffer, true);
 }
 
 // Returns false if there are no more messages, otherwise returns
 // a string that the caller must free.
 const char* VEventLoop::nextMessage()
 {
-    if ( d->synced )
-    {
-        pthread_cond_signal( &d->received );
+    if (d->synced) {
+        pthread_cond_signal(&d->received);
         d->synced = false;
     }
 
-    pthread_mutex_lock( &d->mutex );
-    if ( d->tail <= d->head )
-    {
-        pthread_mutex_unlock( &d->mutex );
+    pthread_mutex_lock(&d->mutex);
+    if (d->tail <= d->head) {
+        pthread_mutex_unlock(&d->mutex);
         return NULL;
     }
 
     const int index = d->head % d->maxMessages;
     const char* msg = d->messages[index].string;
-    d->synced = d->messages[index].synced;
+    d->synced = d->messages[index].sychronized;
     d->messages[index].string = NULL;
-    d->messages[index].synced = false;
+    d->messages[index].sychronized = false;
     d->head++;
-    pthread_mutex_unlock( &d->mutex );
+    pthread_mutex_unlock(&d->mutex);
 
     return msg;
 }
