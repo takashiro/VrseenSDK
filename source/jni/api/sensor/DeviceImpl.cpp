@@ -10,7 +10,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 *************************************************************************************/
 
 #include "DeviceImpl.h"
-#include "Atomic.h"
 #include "Log.h"
 #include "System.h"
 

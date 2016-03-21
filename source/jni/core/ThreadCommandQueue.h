@@ -4,7 +4,6 @@
 
 #include "Types.h"
 #include "List.h"
-#include "Atomic.h"
 #include "Allocator.h"
 #include "VEvent.h"
 

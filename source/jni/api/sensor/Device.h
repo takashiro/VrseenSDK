@@ -7,7 +7,6 @@
 #include "DeviceMessages.h"
 #include "HIDDeviceBase.h"
 
-#include "Atomic.h"
 #include "RefCount.h"
 #include "VString.h"
 #include "VLock.h"

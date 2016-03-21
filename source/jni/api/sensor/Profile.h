@@ -3,7 +3,6 @@
 #include "DeviceConstants.h"
 #include "VString.h"
 #include "RefCount.h"
-#include "Atomic.h"
 #include "VArray.h"
 #include "VLock.h"
 #include <string>
