@@ -10,7 +10,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 ************************************************************************************/
 
 #include "ThreadCommandQueue.h"
-
+#include "VList.h"
 namespace NervGear {
 
 
@@ -197,12 +197,11 @@ public:
 
     NotifyEvent* AllocNotifyEvent_NTS()
     {
-        NotifyEvent* p = AvailableEvents.first();
-
-        if (!AvailableEvents.isNull(p))
-            p->removeNode();
-        else
-            p = new NotifyEvent;
+        NotifyEvent* p = new NotifyEvent;
+        if (!AvailableEvents.isEmpty()) {
+            p = AvailableEvents.front();
+            AvailableEvents.pop_front();
+        }
         return p;
     }
 
@@ -213,20 +212,18 @@ public:
 
     void        FreeNotifyEvents_NTS()
     {
-        while(!AvailableEvents.isEmpty())
-        {
-            NotifyEvent* p = AvailableEvents.first();
-            p->removeNode();
+        for (NotifyEvent* p:AvailableEvents) {
             delete p;
         }
+        AvailableEvents.clear();
     }
 
     ThreadCommandQueue* pQueue;
     Lock                QueueLock;
     volatile bool       ExitEnqueued;
     volatile bool       ExitProcessed;
-    List<NotifyEvent>   AvailableEvents;
-    List<NotifyEvent>   BlockedProducers;
+    VList<NotifyEvent*>   AvailableEvents;
+    VList<NotifyEvent*>   BlockedProducers;
     CircularBuffer      CommandBuffer;
 };
 
@@ -310,9 +307,10 @@ bool ThreadCommandQueueImpl::PopCommand(ThreadCommand::PopBuffer* popBuffer)
     popBuffer->InitFromBuffer(buffer);
     CommandBuffer.ReadEnd(popBuffer->GetSize());
 
-    if (!BlockedProducers.isEmpty()) {
+    if (!BlockedProducers.isEmpty())
+    {
         ThreadCommand::NotifyEvent* queueAvailableEvent = BlockedProducers.first();
-        queueAvailableEvent->removeNode();
+        BlockedProducers.pop_front();
         queueAvailableEvent->PulseEvent();
         // Event is freed later by waiter.
     }
