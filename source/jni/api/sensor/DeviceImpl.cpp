@@ -350,7 +350,7 @@ void DeviceManagerImpl::shutdown()
         devDesc->removeNode();
         devDesc->pNext = devDesc->pPrev = 0;
 
-        if (devDesc->HandleCount == 0)
+        if (devDesc->handleCount.load() == 0)
         {
             delete devDesc;
         }
@@ -414,18 +414,19 @@ Void DeviceManagerImpl::ReleaseDevice_MgrThread(DeviceBase* device)
 
     while(1)
     {
-        UInt32 refCount = devCommon->RefCount;
+        VAtomicInt::Type refCount = devCommon->refCount.load();
+        VAtomicInt::Type temp = 1;
 
         if (refCount > 1)
         {
-            if (devCommon->RefCount.CompareAndSet_NoSync(refCount, refCount-1))
+            if (devCommon->refCount.compare_exchange_weak(refCount, refCount-1))
             {
                 // We decreented from initial count higher then 1;
                 // nothing else to do.
                 return 0;
             }
         }
-        else if (devCommon->RefCount.CompareAndSet_NoSync(1, 0))
+        else if (devCommon->refCount.compare_exchange_weak(temp, 0))
         {
             // { 1 -> 0 } decrement succeded. Destroy this device.
             break;
@@ -639,14 +640,14 @@ DeviceEnumerator<> DeviceManagerImpl::enumerateDevicesEx(const DeviceEnumeration
 
 void DeviceCommon::DeviceAddRef()
 {
-    RefCount++;
+    refCount++;
 }
 
 void DeviceCommon::DeviceRelease()
 {
     while(1)
     {
-        UInt32 refCount = RefCount;
+        VAtomicInt::Type refCount = this->refCount.load();
         OVR_ASSERT(refCount > 0);
 
         if (refCount == 1)
@@ -669,7 +670,7 @@ void DeviceCommon::DeviceRelease()
             // Warning! At his point everything, including manager, may be dead.
             break;
         }
-        else if (RefCount.CompareAndSet_NoSync(refCount, refCount-1))
+        else if (this->refCount.compare_exchange_weak(refCount, refCount-1))
         {
             break;
         }
@@ -686,14 +687,14 @@ void DeviceCreateDesc::AddRef()
 {
     // Technically, HandleCount { 0 -> 1 } transition can only happen during Lock,
     // but we leave this to caller to worry about (happens during enumeration).
-    HandleCount++;
+    handleCount++;
 }
 
 void DeviceCreateDesc::Release()
 {
     while(1)
     {
-        UInt32 handleCount = HandleCount;
+        VAtomicInt::Type handleCount = this->handleCount;
         // HandleCount must obviously be >= 1, since we are releasing it.
         OVR_ASSERT(handleCount > 0);
 
@@ -703,7 +704,7 @@ void DeviceCreateDesc::Release()
             Ptr<DeviceManagerLock>  lockKeepAlive;
             Lock::Locker            deviceLockScope(GetLock());
 
-            if (!HandleCount.CompareAndSet_NoSync(handleCount, 0))
+            if (!this->handleCount.compare_exchange_weak(handleCount, 0))
                 continue;
 
             OVR_ASSERT(pDevice == 0);
@@ -728,7 +729,7 @@ void DeviceCreateDesc::Release()
             // in case it might be enumerated again later.
             break;
         }
-        else if (HandleCount.CompareAndSet_NoSync(handleCount, handleCount-1))
+        else if (this->handleCount.compare_exchange_weak(handleCount, handleCount-1))
         {
             break;
         }

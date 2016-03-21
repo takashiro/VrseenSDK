@@ -116,7 +116,7 @@ class DeviceCreateDesc : public ListNode<DeviceCreateDesc>, public NewOverrideBa
     void operator = (const DeviceCreateDesc&) { } // Assign not supported; suppress MSVC warning.
 public:
     DeviceCreateDesc(DeviceFactory* factory, DeviceType type)
-        : pFactory(factory), Type(type), pLock(0), HandleCount(0), pDevice(0), Enumerated(true)
+        : pFactory(factory), Type(type), pLock(0), handleCount(0), pDevice(0), Enumerated(true)
     {
         pNext = pPrev = 0;
     }
@@ -188,7 +188,7 @@ public:
     // Following transitions require pList->CreateLock:
     //  {1 -> 0}: May delete & remove handle if no longer available.
     //  {0 -> 1}: Device creation is only possible if manager is still alive.
-    AtomicInt<UInt32>           HandleCount;
+    VAtomicInt           handleCount;
     // If not null, points to our created device instance. Modified during lock only.
     DeviceBase*                 pDevice;
     // True if device is marked as available during enumeration.
@@ -202,14 +202,14 @@ public:
 class DeviceCommon
 {
 public:
-    AtomicInt<UInt32>      RefCount;
+    VAtomicInt      refCount;
     Ptr<DeviceCreateDesc>  pCreateDesc;
     Ptr<DeviceBase>        pParent;
     volatile bool          ConnectedFlag;	// FIXME: this does not work on Android because the device code never sends a HIDDeviceMessage_DeviceAdded
     MessageHandlerRef      HandlerRef;
 
     DeviceCommon(DeviceCreateDesc* createDesc, DeviceBase* device, DeviceBase* parent)
-        : RefCount(1), pCreateDesc(createDesc), pParent(parent),
+        : refCount(1), pCreateDesc(createDesc), pParent(parent),
           ConnectedFlag(true), HandlerRef(device)
     {
     }
