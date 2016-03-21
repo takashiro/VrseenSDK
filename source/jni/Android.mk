@@ -51,6 +51,7 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     core/VString.cpp \
                     io/VSysFile.cpp \
                     core/System.cpp \
+                    core/VLock.cpp \
                     core/ThreadCommandQueue.cpp \
                     core/VThread.cpp \
                     core/VTimer.cpp \

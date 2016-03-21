@@ -10,6 +10,7 @@
 #include "Atomic.h"
 #include "RefCount.h"
 #include "VString.h"
+#include "VLock.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -42,7 +43,7 @@ public:
     // Returns a pointer to the internal lock object that is locked by a
     // background thread while OnMessage() is called.
     // This lock guaranteed to survive until ~MessageHandler.
-    Lock*       GetHandlerLock() const;
+    VLock*       GetHandlerLock() const;
 
 
     virtual void onMessage(const Message&) { }
@@ -97,7 +98,7 @@ public:
     virtual bool            IsConnected();
 
     // returns the MessageHandler's lock
-    Lock*                   GetHandlerLock() const;
+    VLock*                   GetHandlerLock() const;
 protected:
     // Internal
     virtual DeviceCommon*   getDeviceCommon() const = 0;

@@ -87,7 +87,7 @@ bool SensorFusion::AttachToSensor(SensorDevice* sensor)
 
 void SensorFusion::Reset()
 {
-    Lock::Locker lockScope(pHandler->GetHandlerLock());
+    VLock::VLocker lockScope(pHandler->GetHandlerLock());
 
     UpdatedState.setState(StateForPrediction());
     State = PoseStatef();

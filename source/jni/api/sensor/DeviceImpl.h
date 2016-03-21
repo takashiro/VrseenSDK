@@ -9,6 +9,7 @@
 
 #include "ThreadCommandQueue.h"
 #include "HIDDevice.h"
+#include "VLock.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -38,15 +39,15 @@ class SharedLock
 public:
     SharedLock() : m_useCount(0) {}
 
-    Lock* GetLockAddRef();
-    void  ReleaseLock(Lock* plock);
+    VLock* GetLockAddRef();
+    void  ReleaseLock(VLock* plock);
 
 private:
-    Lock* toLock() { return (Lock*)Buffer; }
+    VLock* toLock() { return (VLock*)Buffer; }
 
     // UseCount and max alignment.
     VAtomicInt      m_useCount;
-    UInt64          Buffer[(sizeof(Lock)+sizeof(UInt64)-1)/sizeof(UInt64)];
+    UInt64          Buffer[(sizeof(VLock)+sizeof(UInt64)-1)/sizeof(UInt64)];
 };
 
 
@@ -66,12 +67,12 @@ public:
 
     void Call(const Message& msg)
     {
-        Lock::Locker lockScope(pLock);
+        VLock::VLocker lockScope(pLock);
         if (pHandler)
             pHandler->onMessage(msg);
     }
 
-    Lock*           GetLock() const { return pLock; }
+    VLock*           GetLock() const { return pLock; }
 
     // GetHandler() is not thread safe if used out of order across threads; nothing can be done
     // about that.
@@ -79,7 +80,7 @@ public:
     DeviceBase*     GetDevice() const  { return pDevice; }
 
 private:
-    Lock*           pLock;   // Cached global handler lock.
+    VLock*           pLock;   // Cached global handler lock.
     DeviceBase*     pDevice;
     MessageHandler* pHandler;
 };
@@ -99,7 +100,7 @@ private:
 class DeviceManagerLock : public RefCountBase<DeviceManagerLock>
 {
 public:
-    Lock                CreateLock;
+    VLock                CreateLock;
     DeviceManagerImpl*  pManager;
 
     DeviceManagerLock() : pManager(0) { }
@@ -129,7 +130,7 @@ public:
     }
 
     DeviceManagerImpl* GetManagerImpl() const { return pLock->pManager; }
-    Lock*              GetLock() const        { return &pLock->CreateLock; }
+    VLock*              GetLock() const        { return &pLock->CreateLock; }
 
     // DeviceCreateDesc reference counting is tied to Devices list management,
     // see comments for HandleCount.
@@ -219,7 +220,7 @@ public:
     void DeviceAddRef();
     void DeviceRelease();
 
-    Lock* GetLock() const { return pCreateDesc->GetLock(); }
+    VLock* GetLock() const { return pCreateDesc->GetLock(); }
 
     virtual bool  initialize(DeviceBase* parent) = 0;
     virtual void shutdown() = 0;
@@ -371,7 +372,7 @@ public:
     void AddFactory(DeviceFactory* factory)
     {
         // This lock is only needed if we call AddFactory after manager thread creation.
-        Lock::Locker scopeLock(GetLock());
+        VLock::VLocker scopeLock(GetLock());
         Factories.append(factory);
         factory->AddedToManager(this);
     }
