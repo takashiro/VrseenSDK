@@ -53,10 +53,17 @@ VVariant::VVariant(double value)
     m_value.dreal = value;
 }
 
+
 VVariant::VVariant(void *pointer)
     : m_type(Pointer)
 {
     m_value.pointer = pointer;
+}
+
+VVariant::VVariant(const void *pointer)
+    : m_type(Pointer)
+{
+    m_value.pointer = const_cast<void *>(pointer);
 }
 
 VVariant::VVariant(const char *str)
@@ -170,6 +177,7 @@ bool VVariant::toBool() const
     case Map:
         return !m_value.map->isEmpty();
     default:
+        vAssert(false)
         return false;
     }
 }
@@ -200,6 +208,7 @@ int VVariant::toInt() const
     case Map:
         return static_cast<int>(m_value.map->size());
     default:
+        vWarn("VVariant cast an unexpected type to int");
         return 0;
     }
 }
@@ -230,6 +239,7 @@ uint VVariant::toUInt() const
     case Map:
         return m_value.map->size();
     default:
+        vWarn("VVariant cast an unexpected type to uint");
         return 0;
     }
 }
@@ -254,6 +264,7 @@ float VVariant::toFloat() const
     case Double:
         return m_value.dreal;
     default:
+        vWarn("VVariant cast an unexpected type to float");
         return 0;
     }
 }
@@ -278,29 +289,34 @@ double VVariant::toDouble() const
     case Float:
         return m_value.real;
     default:
+        vWarn("VVariant cast an unexpected type to double");
         return 0;
     }
 }
 
 void *VVariant::toPointer() const
 {
-    return m_type == Pointer ? m_value.pointer : nullptr;
+    vAssert(m_type == Pointer);
+    return m_value.pointer;
 }
 
 const VString &VVariant::toString() const
 {
+    vAssert(m_type == String);
     static VString EmptyString;
     return m_type == String ? *(m_value.str) : EmptyString;
 }
 
 const VVariantArray &VVariant::toArray() const
 {
+    vAssert(m_type == Array);
     static VVariantArray EmptyArray;
     return m_type == Array ? *(m_value.array) : EmptyArray;
 }
 
 const VVariantMap &VVariant::toMap() const
 {
+    vAssert(m_type == Map);
     static VVariantMap EmptyMap;
     return m_type == Map ? *(m_value.map) : EmptyMap;
 }
@@ -338,7 +354,7 @@ int VVariant::length() const
     } else if (m_type == String) {
         return m_value.str->length();
     }
-    vAssert(false)
+    vAssert(false);
     return 0;
 }
 
@@ -351,8 +367,8 @@ uint VVariant::size() const
     } else if (m_type == String) {
         return m_value.str->size();
     }
-    vAssert(false)
-            return 0;
+    vAssert(false);
+    return 0;
 }
 
 void VVariant::release()

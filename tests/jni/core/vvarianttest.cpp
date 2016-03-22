@@ -46,6 +46,13 @@ void test()
     }
 
     {
+        uchar bytes[10];
+        VVariant var(bytes);
+        assert(var.isPointer());
+        assert(var.toPointer() == bytes);
+    }
+
+    {
         VString str = "this is another test";
         VVariant var(str);
         assert(var.isString());
@@ -66,8 +73,10 @@ void test()
     }
 
     {
+        uint test[3] = {1994, 10, 10};
+        const void *pointer = test;
         VVariantArray array;
-        array << 1 << 2 << 3 << "this is a test";
+        array << 1 << 2 << 3 << "this is a test" << pointer;
 
         VVariant var(array);
         assert(var.length() == array.length());
@@ -75,6 +84,7 @@ void test()
         assert(var.at(1).toInt() == 2);
         assert(var.at(2).toInt() == 3);
         assert(var.at(3).toString() == "this is a test");
+        assert(var.at(4).toPointer() == pointer);
 
         VVariant moved(std::move(array));
         assert(moved.length() == array.length());
@@ -82,6 +92,12 @@ void test()
         assert(moved.at(1).toInt() == 2);
         assert(moved.at(2).toInt() == 3);
         assert(moved.at(3).toString() == "this is a test");
+        assert(moved.at(4).toPointer() == pointer);
+
+        uint *test2 = static_cast<uint *>(moved.at(4).toPointer());
+        assert(test2[0] == 1994);
+        assert(test2[1] == 10);
+        assert(test2[2] == 10);
 
         VVariant copy(var);
         assert(copy.length() == var.length());
@@ -89,6 +105,7 @@ void test()
         assert(copy.at(1).toInt() == 2);
         assert(copy.at(2).toInt() == 3);
         assert(copy.at(3).toString() == "this is a test");
+        assert(copy.at(4).toPointer() == pointer);
     }
 
     {

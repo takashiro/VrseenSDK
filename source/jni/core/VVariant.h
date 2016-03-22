@@ -42,6 +42,7 @@ public:
     VVariant(float value);
     VVariant(double value);
     VVariant(void *pointer);
+    VVariant(const void *pointer);
 
     VVariant(const char *str);
     VVariant(const VString &str);

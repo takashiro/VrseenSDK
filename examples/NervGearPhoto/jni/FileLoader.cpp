@@ -140,8 +140,7 @@ void * Queue3Thread( void * v )
 	}
 
 	// Process incoming messages until queue is empty
-	for ( ; ; )
-	{
+    forever {
 		Queue3.wait();
         VEvent event = Queue3.next();
 
