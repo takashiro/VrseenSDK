@@ -145,7 +145,7 @@ HEADERS += \
     jni/core/VByteArray.h \
     jni/core/VColor.h \
     jni/core/VChar.h \
-    jni/core/Deque.h \
+    jni/core/VDeque.h \
     jni/core/VDir.h \
     jni/core/VEvent.h \
     jni/core/VEventLoop.h \

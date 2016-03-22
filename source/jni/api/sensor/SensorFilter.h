@@ -2,7 +2,7 @@
 
 #include "VMath.h"
 #include "VBasicmath.h"
-#include "Deque.h"
+#include "VDeque.h"
 #include "Alg.h"
 
 NV_NAMESPACE_BEGIN
@@ -11,14 +11,14 @@ NV_NAMESPACE_BEGIN
 // various simple filters, most of which are linear functions of the data history.
 // Maintains the running sum of its elements for better performance on large capacity values
 template <typename T>
-class SensorFilterBase : public CircularBuffer<T>
+class SensorFilterBase : public VCircularBuffer<T>
 {
 protected:
     T RunningTotal;               // Cached sum of the elements
 
 public:
-    SensorFilterBase(int capacity = CircularBuffer<T>::DefaultCapacity)
-        : CircularBuffer<T>(capacity), RunningTotal()
+    SensorFilterBase(int capacity = 500 )
+        : VCircularBuffer<T>(capacity), RunningTotal()
     {
         this->clear();
     };
@@ -26,47 +26,47 @@ public:
     // The following methods are augmented to update the cached running sum value
     void append(const T &e)
     {
-        CircularBuffer<T>::append(e);
+        VCircularBuffer<T>::VCpush_front(e);
         RunningTotal += e;
-        if (this->m_end == 0)
+        if (this->v_end == 0)
         {
             // update the cached total to avoid error accumulation
             RunningTotal = T();
-            for (int i = 0; i < this->m_elemCount; i++)
-                RunningTotal += this->m_data[i];
+            for (int i = 0; i < this->v_count; i++)
+                RunningTotal += this->v_data[i];
         }
     }
 
     void prepend(const T &e)
     {
-        CircularBuffer<T>::prepend(e);
+        VCircularBuffer<T>::VCpush_back(e);
         RunningTotal += e;
-        if (this->m_beginning == 0)
+        if (this->v_start == 0)
         {
             // update the cached total to avoid error accumulation
             RunningTotal = T();
-            for (int i = 0; i < this->m_elemCount; i++)
-                RunningTotal += this->m_data[i];
+            for (int i = 0; i < this->v_count; i++)
+                RunningTotal += this->v_data[i];
         }
     }
 
     T takeLast()
     {
-        T e = CircularBuffer<T>::takeLast();
+        T e = VCircularBuffer<T>::VDpop_back();
         RunningTotal -= e;
         return e;
     }
 
     T takeFirst()
     {
-        T e = CircularBuffer<T>::takeFirst();
+        T e = VCircularBuffer<T>::VDpop_front();
         RunningTotal -= e;
         return e;
     }
 
     void clear()
     {
-        CircularBuffer<T>::clear();
+        VCircularBuffer<T>::VDclear();
         RunningTotal = T();
     }
 
@@ -78,17 +78,17 @@ public:
 
     T Mean() const
     {
-        return this->isEmpty() ? T() : (Total() / (float) this->m_elemCount);
+        return this->VDisEmpty() ? T() : (Total() / (float) this->v_count);
     }
 
 	T MeanN(int n) const
 	{
         OVR_ASSERT(n > 0);
-        OVR_ASSERT(this->m_capacity >= n);
+        OVR_ASSERT(this->v_capacity >= n);
 		T total = T();
         for (int i = 0; i < n; i++)
         {
-			total += this->peekBack(i);
+			total += this->VDpeek_back(i);
 		}
 		return total / n;
 	}
@@ -97,70 +97,70 @@ public:
 
     T SavitzkyGolaySmooth4()
     {
-        OVR_ASSERT(this->m_capacity >= 4);
-        return this->peekBack(0)*0.7f +
-               this->peekBack(1)*0.4f +
-               this->peekBack(2)*0.1f -
-               this->peekBack(3)*0.2f;
+        OVR_ASSERT(this->v_capacity >= 4);
+        return this->VDpeek_back(0)*0.7f +
+               this->VDpeek_back(1)*0.4f +
+               this->VDpeek_back(2)*0.1f -
+               this->VDpeek_back(3)*0.2f;
     }
 
     T SavitzkyGolaySmooth8() const
     {
-        OVR_ASSERT(this->m_capacity >= 8);
-        return this->peekBack(0)*0.41667f +
-               this->peekBack(1)*0.33333f +
-               this->peekBack(2)*0.25f +
-               this->peekBack(3)*0.16667f +
-               this->peekBack(4)*0.08333f -
-               this->peekBack(6)*0.08333f -
-               this->peekBack(7)*0.16667f;
+        OVR_ASSERT(this->v_capacity >= 8);
+        return this->VDpeek_back(0)*0.41667f +
+               this->VDpeek_back(1)*0.33333f +
+               this->VDpeek_back(2)*0.25f +
+               this->VDpeek_back(3)*0.16667f +
+               this->VDpeek_back(4)*0.08333f -
+               this->VDpeek_back(6)*0.08333f -
+               this->VDpeek_back(7)*0.16667f;
     }
 
     T SavitzkyGolayDerivative4() const
     {
-        OVR_ASSERT(this->m_capacity >= 4);
-        return this->peekBack(0)*0.3f +
-               this->peekBack(1)*0.1f -
-               this->peekBack(2)*0.1f -
-               this->peekBack(3)*0.3f;
+        OVR_ASSERT(this->v_capacity >= 4);
+        return this->VDpeek_back(0)*0.3f +
+               this->VDpeek_back(1)*0.1f -
+               this->VDpeek_back(2)*0.1f -
+               this->VDpeek_back(3)*0.3f;
     }
 
     T SavitzkyGolayDerivative5() const
     {
-            OVR_ASSERT(this->m_capacity >= 5);
-            return this->peekBack(0)*0.2f +
-                   this->peekBack(1)*0.1f -
-                   this->peekBack(3)*0.1f -
-                   this->peekBack(4)*0.2f;
+            OVR_ASSERT(this->v_capacity >= 5);
+            return this->VDpeek_back(0)*0.2f +
+                   this->VDpeek_back(1)*0.1f -
+                   this->VDpeek_back(3)*0.1f -
+                   this->VDpeek_back(4)*0.2f;
    }
 
     T SavitzkyGolayDerivative12() const
     {
-        OVR_ASSERT(this->m_capacity >= 12);
-        return this->peekBack(0)*0.03846f +
-               this->peekBack(1)*0.03147f +
-               this->peekBack(2)*0.02448f +
-               this->peekBack(3)*0.01748f +
-               this->peekBack(4)*0.01049f +
-               this->peekBack(5)*0.0035f -
-               this->peekBack(6)*0.0035f -
-               this->peekBack(7)*0.01049f -
-               this->peekBack(8)*0.01748f -
-               this->peekBack(9)*0.02448f -
-               this->peekBack(10)*0.03147f -
-               this->peekBack(11)*0.03846f;
+        OVR_ASSERT(this->v_capacity >= 12);
+        return this->VDpeek_back(0)*0.03846f +
+               this->VDpeek_back(1)*0.03147f +
+               this->VDpeek_back(2)*0.02448f +
+               this->VDpeek_back(3)*0.01748f +
+               this->VDpeek_back(4)*0.01049f +
+               this->VDpeek_back(5)*0.0035f -
+               this->VDpeek_back(6)*0.0035f -
+               this->VDpeek_back(7)*0.01049f -
+               this->VDpeek_back(8)*0.01748f -
+               this->VDpeek_back(9)*0.02448f -
+               this->VDpeek_back(10)*0.03147f -
+               this->VDpeek_back(11)*0.03846f;
     }
 
     T SavitzkyGolayDerivativeN(int n) const
     {
-        OVR_ASSERT(this->capacity >= n);
+        OVR_ASSERT(this->v_capacity >= n);
         int m = (n-1)/2;
         T result = T();
         for (int k = 1; k <= m; k++)
         {
             int ind1 = m - k;
             int ind2 = n - m + k - 1;
-            result += (this->peekBack(ind1) - this->peekBack(ind2)) * (float) k;
+            result += (this->VDpeek_back(ind1) - this->VDpeek_back(ind2)) * (float) k;
         }
         float coef = 3.0f/(m*(m+1.0f)*(2.0f*m+1.0f));
         result = result*coef;
@@ -169,7 +169,7 @@ public:
 
     T Median() const
     {
-        T* copy = (T*) OVR_ALLOC(this->m_elemCount * sizeof(T));
+        T* copy = (T*) OVR_ALLOC(this->v_count * sizeof(T));
         T result = Alg::Median(ArrayAdaptor(copy));
         OVR_FREE(copy);
         return result;
@@ -212,26 +212,26 @@ private:
     // for the purpose of variance computations
     void append(const V3Vectf &e)
     {
-        runningTotalLengthSq += this->isFull() ? (e.LengthSq() - this->peekFront().LengthSq()) : e.LengthSq();
-        SensorFilterBase<V3Vectf>::append(e);
-        if (this->m_end == 0)
+        runningTotalLengthSq += this->VDisFull() ? (e.LengthSq() - this->VDpeek_front().LengthSq()) : e.LengthSq();
+        SensorFilterBase<V3Vectf>::VDpush_front(e);
+        if (this->v_end == 0)
         {
             // update the cached total to avoid error accumulation
             runningTotalLengthSq = 0;
-            for (int i = 0; i < this->m_elemCount; i++)
-                runningTotalLengthSq += this->m_data[i].LengthSq();
+            for (int i = 0; i < this->v_count; i++)
+                runningTotalLengthSq += this->v_data[i].LengthSq();
         }
     }
 
 public:
-    SensorFilterBodyFrame(int capacity = SensorFilterBase<V3Vectf>::DefaultCapacity)
+    SensorFilterBodyFrame(int capacity = 500)
         : SensorFilterBase<V3Vectf>(capacity), gain(2.5),
           runningTotalLengthSq(0), Q(), output()  { };
 
     // return the scalar variance of the filter values (rotated to be in the same frame)
     float Variance() const
     {
-        return this->isEmpty() ? 0 : (runningTotalLengthSq / this->m_elemCount - this->Mean().LengthSq());
+        return this->VDisEmpty() ? 0 : (runningTotalLengthSq / this->v_count - this->Mean().LengthSq());
     }
 
     // return the scalar standard deviation of the filter values (rotated to be in the same frame)
@@ -243,7 +243,7 @@ public:
     // confidence value based on the stddev of the data (between 0.0 and 1.0, more is better)
     float Confidence() const
     {
-        return Alg::Clamp(0.48f - 0.1f * logf(StdDev()), 0.0f, 1.0f) * this->m_elemCount / this->m_capacity;
+        return Alg::Clamp(0.48f - 0.1f * logf(StdDev()), 0.0f, 1.0f) * this->v_capacity / this->v_capacity;
     }
 
     // add a new element to the filter
@@ -251,7 +251,7 @@ public:
     // in order to rotate the previous value to the current body frame
     void Update(V3Vectf value, float deltaT, VQuatf deltaQ = VQuatf())
     {
-        if (this->isEmpty())
+        if (this->VDisEmpty())
         {
             output = value;
         }
