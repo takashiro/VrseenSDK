@@ -39,7 +39,6 @@ SOURCES += \
     jni/core/MemBuffer.cpp \
     jni/core/VMutex.cpp \
     jni/core/VWaitCondition.cpp \
-    jni/core/android/GlUtils.cpp \
     jni/core/android/JniUtils.cpp \
     jni/core/android/LogUtils.cpp \
     jni/core/android/VOsBuild.cpp \
@@ -103,7 +102,6 @@ SOURCES += \
     jni/scene/EyeBuffers.cpp \
     jni/scene/EyePostRender.cpp \
     jni/scene/GazeCursor.cpp \
-    jni/scene/GlSetup.cpp \
     jni/scene/GlTexture.cpp \
     jni/scene/ImageData.cpp \
     jni/scene/ModelCollision.cpp \
@@ -127,7 +125,6 @@ SOURCES += \
     jni/api/VGlOperation.cpp
 
 HEADERS += \
-    jni/core/android/GlUtils.h \
     jni/core/android/JniUtils.h \
     jni/core/android/LogUtils.h \
     jni/core/android/VOsBuild.h \
@@ -254,7 +251,6 @@ HEADERS += \
     jni/scene/EyePostRender.h \
     jni/scene/GazeCursor.h \
     jni/scene/GazeCursorLocal.h \
-    jni/scene/GlSetup.h \
     jni/scene/GlTexture.h \
     jni/scene/ImageData.h \
     jni/scene/ModelCollision.h \
