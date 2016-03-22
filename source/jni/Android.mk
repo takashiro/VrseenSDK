@@ -74,6 +74,7 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     api/LocalPreferences.cpp \
                     api/VGlGeometry.cpp \
                     api/VMainActivity.cpp \
+                    api/VGlOperation.cpp \
                     api/VGlShader.cpp \
                     api/sensor/DeviceHandle.cpp \
                     api/sensor/DeviceImpl.cpp \

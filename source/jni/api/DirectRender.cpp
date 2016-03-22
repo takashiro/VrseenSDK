@@ -15,7 +15,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <stdlib.h>
 #include <assert.h>
 
-#include "Android/GlUtils.h"
+#include "api/VGlOperation.h"
 #include "Android/LogUtils.h"
 
 PFNEGLLOCKSURFACEKHRPROC	eglLockSurfaceKHR_;
@@ -279,10 +279,11 @@ void DirectRender::initForCurrentSurface( JNIEnv * jni, bool wantFrontBuffer_, i
 	// to work.
 	// NOTE: On Adreno KitKat, we cannot apply the initial swapbuffers
 	// as it will result in poor performance.
+    VGlOperation glOperation;
 	static const int KITKAT_WATCH = 20;
-	const GpuType gpuType = EglGetGpuType();
+    const GpuType gpuType = glOperation.EglGetGpuType();
 	if ( ( buildVersionSDK_ > KITKAT_WATCH ) ||	// if the SDK is Lollipop or higher
-		 ( gpuType & GPU_TYPE_MALI ) != 0 )		// or the GPU is Mali
+         ( gpuType & GpuType::GPU_TYPE_MALI ) != 0 )		// or the GPU is Mali
 	{
 		LOG( "Performing an initial swapbuffers for Mali and/or Android-L" );
 		// When we use the protected Trust Zone framebuffer there is trash in the
@@ -298,6 +299,7 @@ void DirectRender::initForCurrentSurface( JNIEnv * jni, bool wantFrontBuffer_, i
 	eglQuerySurface( m_display, windowSurface, EGL_HEIGHT, &m_height );
 	LOG( "surface size: %i x %i", m_width, m_height );
 
+
 	if ( !wantFrontBuffer_ )
 	{
 		LOG( "Running without front buffer");
@@ -309,12 +311,12 @@ void DirectRender::initForCurrentSurface( JNIEnv * jni, bool wantFrontBuffer_, i
 		m_gvrFrontbufferExtension = m_surfaceManager.setFrontBuffer( windowSurface, true );
 		LOG ( "gvrFrontbufferExtension = %s", ( m_gvrFrontbufferExtension ) ? "TRUE" : "FALSE" );
 
-		if ( ( gpuType & GPU_TYPE_MALI ) != 0 )
+        if ( ( gpuType & GpuType::GPU_TYPE_MALI ) != 0 )
 		{
 			LOG( "Mali GPU" );
 			tilerControl = FB_MALI;
 		}
-		else if ( ( gpuType & GPU_TYPE_ADRENO ) != 0 )
+        else if ( ( gpuType & GpuType::GPU_TYPE_ADRENO ) != 0 )
 		{
 			// Query the number of samples on the display
 			EGLint configID;
@@ -322,7 +324,7 @@ void DirectRender::initForCurrentSurface( JNIEnv * jni, bool wantFrontBuffer_, i
 			{
 				FAIL( "eglQueryContext EGL_CONFIG_ID failed" );
 			}
-			EGLConfig eglConfig = EglConfigForConfigID( m_display, configID );
+            EGLConfig eglConfig = glOperation.EglConfigForConfigID( m_display, configID );
 			if ( eglConfig == NULL )
 			{
 				FAIL( "EglConfigForConfigID failed" );
@@ -330,7 +332,7 @@ void DirectRender::initForCurrentSurface( JNIEnv * jni, bool wantFrontBuffer_, i
 			EGLint samples = 0;
 			eglGetConfigAttrib( m_display, eglConfig, EGL_SAMPLES, &samples );
 
-			if ( gpuType == GPU_TYPE_ADRENO_330 )
+            if ( gpuType == GpuType::GPU_TYPE_ADRENO_330 )
 			{
 				LOG( "Adreno 330 GPU" );
 				tilerControl = FB_TILED_RENDERING;
@@ -410,20 +412,21 @@ bool DirectRender::isFrontBuffer() const
 
 void DirectRender::beginDirectRendering( int x, int y, int width, int height )
 {
+    VGlOperation glOperation;
 	switch( tilerControl )
 	{
 		case FB_TILED_RENDERING:
 		{
-			if ( QCOM_tiled_rendering )
+            if ( VGlOperation::QCOM_tiled_rendering )
 			{
-				glStartTilingQCOM_( x, y, width, height, 0 );
+                glOperation.glStartTilingQCOM_( x, y, width, height, 0 );
 			}
 			glScissor( x, y, width, height );
 			break;
 		}
 		case FB_BINNING_CONTROL:
 		{
-			glHint( GL_BINNING_CONTROL_HINT_QCOM, GL_RENDER_DIRECT_TO_FRAMEBUFFER_QCOM );
+            glHint( GL_BINNING_CONTROL_HINT_QCOM, GL_RENDER_DIRECT_TO_FRAMEBUFFER_QCOM );
 			glScissor( x, y, width, height );
 			break;
 		}
@@ -436,7 +439,7 @@ void DirectRender::beginDirectRendering( int x, int y, int width, int height )
 		case FB_MALI:
 		{
 			const GLenum attachments[3] = { GL_COLOR, GL_DEPTH, GL_STENCIL };
-			glInvalidateFramebuffer_( GL_FRAMEBUFFER, 3, attachments );
+            glOperation.glInvalidateFramebuffer_( GL_FRAMEBUFFER, 3, attachments );
 			glScissor( x, y, width, height );
 			// This clear is not absolutely necessarily but ARM prefers an explicit glClear call to avoid ambiguity.
 			//glClearColor( 0, 0, 0, 1 );
@@ -453,14 +456,15 @@ void DirectRender::beginDirectRendering( int x, int y, int width, int height )
 
 void DirectRender::endDirectRendering() const
 {
+    VGlOperation glOperation;
 	switch( tilerControl )
 	{
 		case FB_TILED_RENDERING:
 		{
 			// This has an implicit flush
-			if ( QCOM_tiled_rendering )
+            if ( VGlOperation::QCOM_tiled_rendering )
 			{
-				glEndTilingQCOM_( GL_COLOR_BUFFER_BIT0_QCOM );
+                glOperation.glEndTilingQCOM_( GL_COLOR_BUFFER_BIT0_QCOM );
 			}
 			break;
 		}
@@ -481,7 +485,7 @@ void DirectRender::endDirectRendering() const
 		case FB_MALI:
 		{
 			const GLenum attachments[2] = { GL_DEPTH, GL_STENCIL };
-			glInvalidateFramebuffer_( GL_FRAMEBUFFER, 2, attachments );
+            glOperation.glInvalidateFramebuffer_( GL_FRAMEBUFFER, 2, attachments );
 			// Flush explicitly
 			glFlush();		// GL_Flush() with KHR_sync seems to be synchronous
 			break;

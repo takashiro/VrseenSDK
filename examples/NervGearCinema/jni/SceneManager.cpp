@@ -16,6 +16,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "String_Utils.h"
 #include "api/VrApi.h"
 #include "api/VrApi_Helpers.h"
+#include "api/VGlOperation.h"
 
 #include "CinemaApp.h"
 #include "Native.h"
@@ -536,6 +537,7 @@ void SceneManager::LightsOff( const float duration )
 
 GLuint SceneManager::BuildScreenVignetteTexture( const int horizontalTile ) const
 {
+    VGlOperation glOperation;
 	// make it an even border at 16:9 aspect ratio, let it get a little squished at other aspects
 	static const int scale = 6;
 	static const int width = 16 * scale * horizontalTile;
@@ -567,7 +569,7 @@ GLuint SceneManager::BuildScreenVignetteTexture( const int horizontalTile ) cons
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
     glBindTexture( GL_TEXTURE_2D, 0 );
 
-    GL_CheckErrors( "screenVignette" );
+    glOperation.GL_CheckErrors( "screenVignette" );
     return texId;
 }
 
@@ -1044,6 +1046,7 @@ Matrix4f SceneManager::Frame( const VrFrame & vrFrame )
 		}
 	}
 
+    VGlOperation glOperation;
 	// build the mip maps
 	if ( FrameUpdateNeeded )
 	{
@@ -1062,11 +1065,11 @@ Matrix4f SceneManager::Frame( const VrFrame & vrFrame )
 		glBindFramebuffer( GL_FRAMEBUFFER, MipMappedMovieFBOs[CurrentMipMappedMovieTexture] );
 		glDisable( GL_DEPTH_TEST );
 		glDisable( GL_SCISSOR_TEST );
-		GL_InvalidateFramebuffer( INV_FBO, true, false );
+        glOperation.GL_InvalidateFramebuffer( VGlOperation::INV_FBO, true, false );
 		glViewport( 0, 0, MovieTextureWidth, MovieTextureHeight );
         if ( Cinema.app->appInterface()->wantSrgbFramebuffer() )
 		{	// we need this copied without sRGB conversion on the top level
-	    	glDisable( GL_FRAMEBUFFER_SRGB_EXT );
+            glDisable( VGlOperation::GL_FRAMEBUFFER_SRGB_EXT );
 		}
 		if ( CurrentMovieWidth > 0 )
 		{
@@ -1076,7 +1079,7 @@ Matrix4f SceneManager::Frame( const VrFrame & vrFrame )
 			glBindTexture( GL_TEXTURE_EXTERNAL_OES, 0 );
             if ( Cinema.app->appInterface()->wantSrgbFramebuffer() )
 			{	// we need this copied without sRGB conversion on the top level
-		    	glEnable( GL_FRAMEBUFFER_SRGB_EXT );
+                glEnable( VGlOperation::GL_FRAMEBUFFER_SRGB_EXT );
 			}
 		}
 		else
@@ -1094,7 +1097,9 @@ Matrix4f SceneManager::Frame( const VrFrame & vrFrame )
 		glGenerateMipmap( GL_TEXTURE_2D );
 		glBindTexture( GL_TEXTURE_2D, 0 );
 
-		GL_Flush();
+        VGlOperation glOperation;
+
+        glOperation.GL_Flush();
 	}
 
 	// Generate callbacks into DrawEyeView

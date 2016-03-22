@@ -2,7 +2,7 @@
 
 #include "vglobal.h"
 
-#include "Android/GlUtils.h"
+#include "api/VGlOperation.h"
 
 #pragma once
 
@@ -56,9 +56,10 @@ public:
 
 		glBindBuffer( GL_ARRAY_BUFFER, ArrayBuffer );
 
+        VGlOperation glOperation;
 		if ( exclusivelyVAO )
 		{
-			glBindVertexArrayOES_( 0 );
+            glOperation.glBindVertexArrayOES_( 0 );
 		}
 		else
 		{

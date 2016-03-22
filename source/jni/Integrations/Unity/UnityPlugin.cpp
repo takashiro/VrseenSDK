@@ -14,7 +14,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "Alg.h"
 #include "OVR.h"
-#include "android/GlUtils.h"
+#include "api/VGlOperation.h"
 #include "android/LogUtils.h"
 #include "android/JniUtils.h"
 #include "MemBuffer.h"
@@ -407,13 +407,14 @@ OCULUS_EXPORT void OVR_Platform_StartUI( const char * commandString )
 
 void OVR_InitRenderThread()
 {
+    VGlOperation glOperation;
 	if ( up.initialized )
 	{
 		return;
 	}
 
 	LOG( "OVR_InitRenderThread()" );
-	GL_CheckErrors( "OVR_InitRenderThread() entry" );
+    glOperation.GL_CheckErrors( "OVR_InitRenderThread() entry" );
 
 	// We have a javaVM from the .so load
 	if ( VrLibJavaVM != NULL )
@@ -426,7 +427,7 @@ void OVR_InitRenderThread()
 	}
 
 	// Look up extensions
-	GL_FindExtensions();
+    glOperation.GL_FindExtensions();
 
 	up.VrModeParms.ActivityObject = up.activity;
 	up.VrModeParms.AsynchronousTimeWarp = true;
@@ -453,7 +454,7 @@ void OVR_InitRenderThread()
 	InitConsole();
 	RegisterConsoleFunction( "print", NervGear::DebugPrint );
 
-	GL_CheckErrors( "OVR_InitRenderThread exit" );
+    glOperation.GL_CheckErrors( "OVR_InitRenderThread exit" );
 
 	OVR_Resume();
 
@@ -646,8 +647,9 @@ void OVR_CameraEndFrame( ovrEyeType eye, int textureId )
 
 	//	up.EyeDecorations.DrawEyeCalibrationLines( up.hmdInfo.SuggestedEyeFov[0], eye );
 
+    VGlOperation glOperation;
 	// Discard the depth buffer, so the tiler won't need to write it back out to memory
-	GL_InvalidateFramebuffer( INV_FBO, false, true );
+    glOperation.GL_InvalidateFramebuffer( VGlOperation::INV_FBO, false, true );
 
 	// Get this eye rendering right away, so it can
 	// overlap with the commands for the next eye,

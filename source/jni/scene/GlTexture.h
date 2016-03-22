@@ -4,7 +4,7 @@
 #include "Types.h"
 #include "VFlags.h"
 #include "MemBuffer.h"
-#include "Android/GlUtils.h"
+#include "api/VGlOperation.h"
 
 // Explicitly using unsigned instead of GLUint / GLenum to avoid including GL headers
 
@@ -42,7 +42,7 @@ struct GlTexture
 GlTexture	LoadRGBATextureFromMemory( const unsigned char * texture, const int width, const int height, const bool useSrgbFormat );
 GlTexture	LoadRGBTextureFromMemory( const unsigned char * texture, const int width, const int height, const bool useSrgbFormat );
 GlTexture	LoadRTextureFromMemory( const unsigned char * texture, const int width, const int height );
-GlTexture	LoadASTCTextureFromMemory( const uint8_t * buffer, const size_t bufferSize, const int numPlanes );
+GlTexture	LoadASTCTextureFromMemory( const uchar * buffer, const size_t bufferSize, const int numPlanes );
 
 void		MakeTextureClamped( GlTexture texid );
 void		MakeTextureLodClamped( GlTexture texId, int maxLod );

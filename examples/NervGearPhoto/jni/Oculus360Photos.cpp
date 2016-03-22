@@ -365,16 +365,16 @@ void Oculus360Photos::OneTimeInit(const VString &fromPackage, const VString &lau
 		EGL_NONE
 	};
 
+    VGlOperation glOperation;
 	m_eglPbufferSurface = eglCreatePbufferSurface( m_eglDisplay, m_eglConfig, SurfaceAttribs );
 	if ( m_eglPbufferSurface == EGL_NO_SURFACE ) {
-		FAIL( "eglCreatePbufferSurface failed: %s", EglErrorString() );
+        FAIL( "eglCreatePbufferSurface failed: %s", glOperation.EglErrorString() );
 	}
-
 	EGLint bufferWidth, bufferHeight;
 	if ( !eglQuerySurface( m_eglDisplay, m_eglPbufferSurface, EGL_WIDTH, &bufferWidth ) ||
 		!eglQuerySurface( m_eglDisplay, m_eglPbufferSurface, EGL_HEIGHT, &bufferHeight ) )
 	{
-		FAIL( "eglQuerySurface failed:  %s", EglErrorString() );
+        FAIL( "eglQuerySurface failed:  %s", glOperation.EglErrorString() );
 	}
 
 	// spawn the background loading thread with the command list
@@ -436,16 +436,17 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
 		EGL_NONE
 	};
 
+    VGlOperation glOperation;
 	EGLContext EglBGLoaderContext = eglCreateContext( photos->m_eglDisplay, photos->m_eglConfig, photos->m_eglShareContext, loaderContextAttribs );
 	if ( EglBGLoaderContext == EGL_NO_CONTEXT )
 	{
-		FAIL( "eglCreateContext failed: %s", EglErrorString() );
+        FAIL( "eglCreateContext failed: %s", glOperation.EglErrorString() );
 	}
 
 	// Make the context current on the window, so no more makeCurrent calls will be needed
 	if ( eglMakeCurrent( photos->m_eglDisplay, photos->m_eglPbufferSurface, photos->m_eglPbufferSurface, EglBGLoaderContext ) == EGL_FALSE )
 	{
-		FAIL( "BackgroundGLLoadThread eglMakeCurrent failed: %s", EglErrorString() );
+        FAIL( "BackgroundGLLoadThread eglMakeCurrent failed: %s", glOperation.EglErrorString() );
 	}
 
 	// run until Shutdown requested
@@ -487,13 +488,13 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
 			free( data );
 
 			// Add a sync object for uploading textures
-			EGLSyncKHR GpuSync = eglCreateSyncKHR_( photos->m_eglDisplay, EGL_SYNC_FENCE_KHR, NULL );
+            EGLSyncKHR GpuSync = glOperation.eglCreateSyncKHR_( photos->m_eglDisplay, EGL_SYNC_FENCE_KHR, NULL );
 			if ( GpuSync == EGL_NO_SYNC_KHR ) {
 				FAIL( "BackgroundGLLoadThread eglCreateSyncKHR_():EGL_NO_SYNC_KHR" );
 			}
 
 			// Force it to flush the commands and wait until the textures are fully uploaded
-			if ( EGL_FALSE == eglClientWaitSyncKHR_( photos->m_eglDisplay, GpuSync, EGL_SYNC_FLUSH_COMMANDS_BIT_KHR,
+            if ( EGL_FALSE == glOperation.eglClientWaitSyncKHR_( photos->m_eglDisplay, GpuSync, EGL_SYNC_FLUSH_COMMANDS_BIT_KHR,
 				EGL_FOREVER_KHR ) )
 			{
 				LOG( "BackgroundGLLoadThread eglClientWaitSyncKHR returned EGL_FALSE" );
@@ -519,13 +520,13 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
 			}
 
 			// Add a sync object for uploading textures
-			EGLSyncKHR GpuSync = eglCreateSyncKHR_( photos->m_eglDisplay, EGL_SYNC_FENCE_KHR, NULL );
+            EGLSyncKHR GpuSync = glOperation.eglCreateSyncKHR_( photos->m_eglDisplay, EGL_SYNC_FENCE_KHR, NULL );
 			if ( GpuSync == EGL_NO_SYNC_KHR ) {
 				FAIL( "BackgroundGLLoadThread eglCreateSyncKHR_():EGL_NO_SYNC_KHR" );
 			}
 
 			// Force it to flush the commands and wait until the textures are fully uploaded
-			if ( EGL_FALSE == eglClientWaitSyncKHR_( photos->m_eglDisplay, GpuSync, EGL_SYNC_FLUSH_COMMANDS_BIT_KHR,
+            if ( EGL_FALSE == glOperation.eglClientWaitSyncKHR_( photos->m_eglDisplay, GpuSync, EGL_SYNC_FLUSH_COMMANDS_BIT_KHR,
 				EGL_FOREVER_KHR ) )
 			{
 				LOG( "BackgroundGLLoadThread eglClientWaitSyncKHR returned EGL_FALSE" );
@@ -628,7 +629,8 @@ bool Oculus360Photos::onKeyEvent( const int keyCode, const KeyState::eKeyEventTy
 
 void Oculus360Photos::loadRgbaCubeMap( const int resolution, const unsigned char * const rgba[ 6 ], const bool useSrgbFormat )
 {
-	GL_CheckErrors( "enter LoadRgbaCubeMap" );
+    VGlOperation glOperation;
+    glOperation.GL_CheckErrors( "enter LoadRgbaCubeMap" );
 
 	const GLenum glFormat = GL_RGBA;
 	const GLenum glInternalFormat = useSrgbFormat ? GL_SRGB8_ALPHA8 : GL_RGBA;
@@ -664,12 +666,13 @@ void Oculus360Photos::loadRgbaCubeMap( const int resolution, const unsigned char
 
 	glBindTexture( GL_TEXTURE_CUBE_MAP, 0 );
 
-	GL_CheckErrors( "leave LoadRgbaCubeMap" );
+    glOperation.GL_CheckErrors( "leave LoadRgbaCubeMap" );
 }
 
 void Oculus360Photos::loadRgbaTexture( const unsigned char * data, int width, int height, const bool useSrgbFormat )
 {
-	GL_CheckErrors( "enter LoadRgbaTexture" );
+    VGlOperation glOperation;
+    glOperation.GL_CheckErrors( "enter LoadRgbaTexture" );
 
 	const GLenum glFormat = GL_RGBA;
 	const GLenum glInternalFormat = useSrgbFormat ? GL_SRGB8_ALPHA8 : GL_RGBA;
@@ -703,7 +706,7 @@ void Oculus360Photos::loadRgbaTexture( const unsigned char * data, int width, in
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 2 );
 	glBindTexture( GL_TEXTURE_2D, 0 );
 
-	GL_CheckErrors( "leave LoadRgbaTexture" );
+    glOperation.GL_CheckErrors( "leave LoadRgbaTexture" );
 }
 
 Matrix4f CubeMatrixForViewMatrix( const Matrix4f & viewMatrix )
@@ -745,10 +748,10 @@ Matrix4f Oculus360Photos::DrawEyeView( const int eye, const float fovDegrees )
 		const Matrix4f	m( CubeMatrixForViewMatrix( m_scene.CenterViewMatrix() ) );
 		GLuint texId = m_backgroundCubeTexData.GetRenderTexId();
 		glBindTexture( GL_TEXTURE_CUBE_MAP, texId );
-		if ( HasEXT_sRGB_texture_decode )
+        if ( VGlOperation::HasEXT_sRGB_texture_decode )
 		{
-			glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_SRGB_DECODE_EXT,
-				m_useSrgb ? GL_DECODE_EXT : GL_SKIP_DECODE_EXT );
+            glTexParameteri( GL_TEXTURE_CUBE_MAP, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT,
+                m_useSrgb ? VGlOperation::GL_DECODE_EXT : VGlOperation::GL_SKIP_DECODE_EXT );
 		}
 		glBindTexture( GL_TEXTURE_CUBE_MAP, 0 );
 
@@ -776,19 +779,19 @@ Matrix4f Oculus360Photos::DrawEyeView( const int eye, const float fovDegrees )
 		if ( m_currentPanoIsCubeMap )
 		{
 			glBindTexture( GL_TEXTURE_CUBE_MAP, m_backgroundCubeTexData.GetRenderTexId( ) );
-			if ( HasEXT_sRGB_texture_decode )
+            if ( VGlOperation::HasEXT_sRGB_texture_decode )
 			{
-				glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_SRGB_DECODE_EXT,
-					m_useSrgb ? GL_DECODE_EXT : GL_SKIP_DECODE_EXT );
+                glTexParameteri( GL_TEXTURE_CUBE_MAP, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT,
+                    m_useSrgb ? VGlOperation::GL_DECODE_EXT : VGlOperation::GL_SKIP_DECODE_EXT );
 			}
 		}
 		else
 		{
 			glBindTexture( GL_TEXTURE_2D, m_backgroundPanoTexData.GetRenderTexId( ) );
-			if ( HasEXT_sRGB_texture_decode )
+            if ( VGlOperation::HasEXT_sRGB_texture_decode )
 			{
-				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_SRGB_DECODE_EXT,
-					m_useSrgb ? GL_DECODE_EXT : GL_SKIP_DECODE_EXT );
+                glTexParameteri( GL_TEXTURE_2D, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT,
+                    m_useSrgb ? VGlOperation::GL_DECODE_EXT : VGlOperation::GL_SKIP_DECODE_EXT );
 			}
 		}
 
@@ -806,7 +809,8 @@ Matrix4f Oculus360Photos::DrawEyeView( const int eye, const float fovDegrees )
 		glBindTexture( GL_TEXTURE_2D, 0 );
 	}
 
-	GL_CheckErrors( "draw" );
+    VGlOperation glOperation;
+    glOperation.GL_CheckErrors( "draw" );
 
 	return view;
 }

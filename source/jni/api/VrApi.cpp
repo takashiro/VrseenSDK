@@ -19,7 +19,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include <VLog.h>
 
-#include "android/GlUtils.h"
+#include "api/VGlOperation.h"
 #include "android/JniUtils.h"
 #include "android/VOsBuild.h"
 #include "OVRVersion.h"					// for vrlib build version
@@ -942,18 +942,19 @@ void ovr_CheckPowerLevelState( ovrMobile * ovr )
 
 	// NOTE: Only testing one core for thermal throttling.
 	// we won't be able to read the cpu clock unless it has been chmod'd to 0666, but try anyway.
-	int cpuCore = 0;
-	if ( ( NervGear::EglGetGpuType() & NervGear::GPU_TYPE_MALI ) != 0 )
+    VGlOperation glOperation;
+    int cpuCore = 0;
+    if ( ( glOperation.EglGetGpuType() & NervGear::GpuType::GPU_TYPE_MALI ) != 0 )
 	{
 		// Use the first BIG core if it is online, otherwise use the first LITTLE core.
 		const char * online = ReadSmallFile( "/sys/devices/system/cpu/cpu4/online" );
 		cpuCore = ( online[0] != '\0' && atoi( online ) != 0 ) ? 4 : 0;
 	}
 
-	const int64_t cpuUnit = ( ( NervGear::EglGetGpuType() & NervGear::GPU_TYPE_MALI ) != 0 ) ? 1000LL : 1000LL;
+    const int64_t cpuUnit = ( ( glOperation.EglGetGpuType() & NervGear::GpuType::GPU_TYPE_MALI ) != 0 ) ? 1000LL : 1000LL;
 	const int64_t cpuFreq = ReadFreq( "/sys/devices/system/cpu/cpu%i/cpufreq/scaling_cur_freq", cpuCore );
-	const int64_t gpuUnit = ( ( NervGear::EglGetGpuType() & NervGear::GPU_TYPE_MALI ) != 0 ) ? 1000000LL : 1000LL;
-	const int64_t gpuFreq = ReadFreq( ( ( NervGear::EglGetGpuType() & NervGear::GPU_TYPE_MALI ) != 0 ) ?
+    const int64_t gpuUnit = ( ( glOperation.EglGetGpuType() & NervGear::GpuType::GPU_TYPE_MALI ) != 0 ) ? 1000000LL : 1000LL;
+    const int64_t gpuFreq = ReadFreq( ( ( glOperation.EglGetGpuType() & NervGear::GpuType::GPU_TYPE_MALI ) != 0 ) ?
 									"/sys/devices/14ac0000.mali/clock" :
 									"/sys/class/kgsl/kgsl-3d0/gpuclk" );
 	// unused macros are so the spam can be #if 0'd out for debugging without getting unused variable compiler warnings
@@ -1461,7 +1462,8 @@ ovrMobile * ovr_EnterVrMode( ovrModeParms parms, ovrHmdInfo * returnedHmdInfo )
 	}
 
 	// Let GlUtils look up extensions
-	NervGear::GL_FindExtensions();
+    VGlOperation glOperation;
+    glOperation.GL_FindExtensions();
 
 	// Look up the window surface size (NOTE: This must happen before Direct Render
 	// Mode is initiated and the pbuffer surface is bound).
@@ -2037,8 +2039,9 @@ const char * ovr_CreateSchedulingReport( ovrMobile * ovr )
 	NervGear::VString governor = ReadSmallFile( "/sys/class/kgsl/kgsl-3d0/pwrscale/trustzone/governor" );
 	governor = StripLinefeed( governor );
 
-	const uint64_t gpuUnit = ( ( NervGear::EglGetGpuType() & NervGear::GPU_TYPE_MALI ) != 0 ) ? 1000000LL : 1000LL;
-	const uint64_t gpuFreq = ReadFreq( ( ( NervGear::EglGetGpuType() & NervGear::GPU_TYPE_MALI ) != 0 ) ?
+    VGlOperation glOperation;
+    const uint64_t gpuUnit = ( ( glOperation.EglGetGpuType() & NervGear::GpuType::GPU_TYPE_MALI ) != 0 ) ? 1000000LL : 1000LL;
+    const uint64_t gpuFreq = ReadFreq( ( ( glOperation.EglGetGpuType() & NervGear::GpuType::GPU_TYPE_MALI ) != 0 ) ?
 									"/sys/devices/14ac0000.mali/clock" :
 									"/sys/class/kgsl/kgsl-3d0/gpuclk" );
 

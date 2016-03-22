@@ -3,7 +3,7 @@
 #include "vglobal.h"
 
 #include <jni.h>
-#include "android/GlUtils.h"
+#include "api/VGlOperation.h"
 #include "../../api/VGlGeometry.h"
 #include "../../api/VGlShader.h"
 #include "SurfaceTexture.h"

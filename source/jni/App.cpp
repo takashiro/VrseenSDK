@@ -10,7 +10,7 @@
 
 #include <3rdparty/stb/stb_image_write.h>
 
-#include "android/GlUtils.h"
+#include "api/VGlOperation.h"
 #include "android/JniUtils.h"
 #include "android/VOsBuild.h"
 
@@ -21,7 +21,6 @@
 #include "EyePostRender.h"
 #include "GazeCursor.h"
 #include "GazeCursorLocal.h"		// necessary to instantiate the gaze cursor
-#include "GlSetup.h"
 #include "GlTexture.h"
 #include "GuiSys.h"
 #include "GuiSysLocal.h"		// necessary to instantiate the gui system
@@ -309,7 +308,7 @@ static EyeParms DefaultVrParmsForRenderer(const eglSetup_t & eglr)
     EyeParms vrParms;
 
     vrParms.resolution = 1024;
-    vrParms.multisamples = (eglr.gpuType == GPU_TYPE_ADRENO_330) ? 2 : 4;
+    vrParms.multisamples = (eglr.gpuType == GpuType::GPU_TYPE_ADRENO_330) ? 2 : 4;
     vrParms.colorFormat = COLOR_8888;
     vrParms.depthFormat = DEPTH_24;
 
@@ -318,7 +317,7 @@ static EyeParms DefaultVrParmsForRenderer(const eglSetup_t & eglr)
 
 static bool ChromaticAberrationCorrection(const eglSetup_t & eglr)
 {
-    return (eglr.gpuType & GPU_TYPE_ADRENO) != 0 && (eglr.gpuType >= GPU_TYPE_ADRENO_420);
+    return (eglr.gpuType & GpuType::GPU_TYPE_ADRENO) != 0 && (eglr.gpuType >= GpuType::GPU_TYPE_ADRENO_420);
 }
 
 static const char* vertexShaderSource =
@@ -629,12 +628,13 @@ struct App::Private : public TalkToJavaInterface
         // always reload the dev config on a resume
         JniUtils::LoadDevConfig(true);
 
+        VGlOperation glOperation;
         // Make sure the window surface is current, which it won't be
         // if we were previously in async mode
         // (Not needed now?)
         if (eglMakeCurrent(eglr.display, windowSurface, windowSurface, eglr.context) == EGL_FALSE)
         {
-            vFatal("eglMakeCurrent failed:" << EglErrorString());
+            vFatal("eglMakeCurrent failed:" << glOperation.EglErrorString());
         }
 
         ovrModeParms &VrModeParms = self->VrModeParms;
@@ -690,7 +690,8 @@ struct App::Private : public TalkToJavaInterface
         swapParms.WarpProgram = ChromaticAberrationCorrection(eglr) ? WP_CHROMATIC : WP_SIMPLE;
 
         // Let glUtils look up extensions
-        GL_FindExtensions();
+        VGlOperation glOperation;
+        glOperation.GL_FindExtensions();
 
         externalTextureProgram2.initShader( vertexShaderSource, externalFragmentShaderSource );
         untexturedMvpProgram.initShader(
@@ -1063,13 +1064,13 @@ struct App::Private : public TalkToJavaInterface
             windowSurface = EGL_NO_SURFACE;
             if (appInterface->wantSrgbFramebuffer())
             {
-                attribs[numAttribs++] = EGL_GL_COLORSPACE_KHR;
-                attribs[numAttribs++] = EGL_GL_COLORSPACE_SRGB_KHR;
+                attribs[numAttribs++] = VGlOperation::EGL_GL_COLORSPACE_KHR;
+                attribs[numAttribs++] = VGlOperation::EGL_GL_COLORSPACE_SRGB_KHR;
             }
             // Ask for TrustZone rendering support
             if (appInterface->GetWantProtectedFramebuffer())
             {
-                attribs[numAttribs++] = EGL_PROTECTED_CONTENT_EXT;
+                attribs[numAttribs++] = VGlOperation::EGL_PROTECTED_CONTENT_EXT;
                 attribs[numAttribs++] = EGL_TRUE;
             }
             attribs[numAttribs++] = EGL_NONE;
@@ -1079,6 +1080,7 @@ struct App::Private : public TalkToJavaInterface
             windowSurface = eglCreateWindowSurface(eglr.display, eglr.config,
                     nativeWindow, attribs);
 
+            VGlOperation glOperation;
             if (windowSurface == EGL_NO_SURFACE)
             {
                 const EGLint attribs2[] =
@@ -1089,7 +1091,7 @@ struct App::Private : public TalkToJavaInterface
                         nativeWindow, attribs2);
                 if (windowSurface == EGL_NO_SURFACE)
                 {
-                    FAIL("eglCreateWindowSurface failed: %s", EglErrorString());
+                    FAIL("eglCreateWindowSurface failed: %s", glOperation.EglErrorString());
                 }
                 framebufferIsSrgb = false;
                 framebufferIsProtected = false;
@@ -1102,7 +1104,7 @@ struct App::Private : public TalkToJavaInterface
 
             if (eglMakeCurrent(eglr.display, windowSurface, windowSurface, eglr.context) == EGL_FALSE)
             {
-                vFatal("eglMakeCurrent failed:" << EglErrorString());
+                vFatal("eglMakeCurrent failed:" << glOperation.EglErrorString());
             }
 
             createdSurface = true;
@@ -1250,6 +1252,7 @@ struct App::Private : public TalkToJavaInterface
 
     void startRendering()
     {
+        VGlOperation glOperation;
         // Set the name that will show up in systrace
         pthread_setname_np(pthread_self(), "NervGear::VrThread");
 
@@ -1279,7 +1282,7 @@ struct App::Private : public TalkToJavaInterface
             const int windowDepth = 0;
             const int windowSamples = 0;
             const GLuint contextPriority = EGL_CONTEXT_PRIORITY_MEDIUM_IMG;
-            eglr = EglSetup(EGL_NO_CONTEXT, GL_ES_VERSION,	// no share context,
+            eglr = glOperation.EglSetup(EGL_NO_CONTEXT, GL_ES_VERSION,	// no share context,
                     8,8,8, windowDepth, windowSamples, // r g b
                     contextPriority);
 
@@ -1659,7 +1662,7 @@ struct App::Private : public TalkToJavaInterface
 
             shutdownGlObjects();
 
-            EglShutdown(eglr);
+            glOperation.EglShutdown(eglr);
 
             // Detach from the Java VM before exiting.
             vInfo("javaVM->DetachCurrentThread");
@@ -1989,6 +1992,7 @@ void App::setVrModeParms(ovrModeParms parms)
 
 void ToggleScreenColor()
 {
+    VGlOperation glOperation;
 	static int	color;
 
 	color ^= 1;
@@ -1999,7 +2003,7 @@ void ToggleScreenColor()
 
 	// The Adreno driver has an unfortunate optimization so it doesn't
 	// actually flush if all that was done was a clear.
-	GL_Finish();
+    glOperation.GL_Finish();
     glDisable(GL_WRITEONLY_RENDERING_QCOM);
 }
 
@@ -2449,6 +2453,7 @@ void ShowFPS(void * appPtr, const char * cmd) {
 // Debug tool to draw outlines of a 3D bounds
 void App::drawBounds( const Vector3f &mins, const Vector3f &maxs, const Matrix4f &mvp, const Vector3f &color )
 {
+    VGlOperation glOperation;
     Matrix4f	scaled = mvp * Matrix4f::Translation( mins ) * Matrix4f::Scaling( maxs - mins );
     const VGlShader & prog = d->untexturedMvpProgram;
     glUseProgram(prog.program);
@@ -2456,9 +2461,9 @@ void App::drawBounds( const Vector3f &mins, const Vector3f &maxs, const Matrix4f
     glUniform4f(prog.uniformColor, color.x, color.y, color.z, 1);
     glUniformMatrix4fv(prog.uniformModelViewProMatrix, 1, GL_FALSE /* not transposed */,
             scaled.Transposed().M[0] );
-    glBindVertexArrayOES_( d->unitCubeLines.vertexArrayObject );
+    glOperation.glBindVertexArrayOES_( d->unitCubeLines.vertexArrayObject );
     glDrawElements(GL_LINES, d->unitCubeLines.indexCount, GL_UNSIGNED_SHORT, NULL);
-    glBindVertexArrayOES_( 0 );
+    glOperation.glBindVertexArrayOES_( 0 );
 }
 
 void App::drawDialog( const Matrix4f & mvp )
@@ -2522,8 +2527,9 @@ void App::drawEyeViewsPostDistorted( Matrix4f const & centerViewMatrix, const in
     // and / or high refresh rate double-scan hardware modes.
     const int numEyes = d->renderMonoMode ? 1 : 2;
 
+    VGlOperation glOperation;
     // Flush out and report any errors
-    GL_CheckErrors("FrameStart");
+    glOperation.GL_CheckErrors("FrameStart");
 
     if ( d->drawCalibrationLines && d->calibrationLinesDrawn )
     {
@@ -2601,6 +2607,7 @@ void App::drawEyeViewsPostDistorted( Matrix4f const & centerViewMatrix, const in
 // time warp overlay.
 void App::drawScreenDirect( const GLuint texid, const ovrMatrix4f & mvp )
 {
+    VGlOperation glOperation;
     const Matrix4f mvpMatrix( mvp );
     glActiveTexture( GL_TEXTURE0 );
     glBindTexture( GL_TEXTURE_2D, texid );
@@ -2609,7 +2616,7 @@ void App::drawScreenDirect( const GLuint texid, const ovrMatrix4f & mvp )
 
     glUniformMatrix4fv( d->overlayScreenDirectProgram.uniformModelViewProMatrix, 1, GL_FALSE, mvpMatrix.Transposed().M[0] );
 
-    glBindVertexArrayOES_( d->unitSquare.vertexArrayObject );
+    glOperation.glBindVertexArrayOES_( d->unitSquare.vertexArrayObject );
     glDrawElements( GL_TRIANGLES, d->unitSquare.indexCount, GL_UNSIGNED_SHORT, NULL );
 
     glBindTexture( GL_TEXTURE_2D, 0 );	// don't leave it bound

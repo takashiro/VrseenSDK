@@ -1,32 +1,14 @@
 #pragma once
-#include "vgltypedefine.h"
-#include <string.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <unistd.h>
 
-#include "vglobal.h"
-#include "android/VOsBuild.h"
-#include "android/LogUtils.h"
-#include "VLog.h"
+#include "vgltypedefine.h"
 
 NV_NAMESPACE_BEGIN
+
 class VGlOperation
 {
  public:
-    enum GpuType
+    enum invalidateTarget_t
     {
-        GPU_TYPE_ADRENO					= 0x1000,
-        GPU_TYPE_ADRENO_330				= 0x1001,
-        GPU_TYPE_ADRENO_420				= 0x1002,
-        GPU_TYPE_MALI					= 0x2000,
-        GPU_TYPE_MALI_T760				= 0x2100,
-        GPU_TYPE_MALI_T760_EXYNOS_5433	= 0x2101,
-        GPU_TYPE_MALI_T760_EXYNOS_7420	= 0x2102,
-        GPU_TYPE_UNKNOWN				= 0xFFFF
-    };
-
-    enum invalidateTarget_t {
         INV_DEFAULT,
         INV_FBO
     };
@@ -58,11 +40,7 @@ class VGlOperation
         GL_GPU_DISJOINT_EXT = 0x8FBB
     };
 
-    VGlOperation()
-        : EGLProtectedConftentExt(0x32c0)
-    {
 
-    }
 
     GpuType EglGetGpuType();
     GpuType EglGetGpuTypeLocal();
@@ -78,55 +56,63 @@ class VGlOperation
     void GL_InvalidateFramebuffer(const invalidateTarget_t isFBO, const bool colorBuffer, const bool depthBuffer);
     void LogStringWords(const char *allExtensions);
     void *GetExtensionProc( const char * name );
-    void LogStringWords(const char *allExtensions);
+    void DumpEglConfigs(const EGLDisplay display);
+    EGLConfig ChooseColorConfig( const EGLDisplay display, const int redBits,
+            const int greeBits, const int blueBits, const int depthBits, const int samples, const bool pbuffer );
+    eglSetup_t	EglSetup( const EGLContext shareContext,
+            const int requestedGlEsVersion,
+            const int redBits, const int greenBits, const int blueBits,
+            const int depthBits, const int multisamples,
+            const GLuint contextPriority );
 
-public:
-    bool HasEXT_sRGB_texture_decode;
-    bool EXT_disjoint_timer_query;
-    bool EXT_discard_framebuffer;
-    bool EXT_texture_filter_anisotropic;
-    bool IMG_multisampled_render_to_texture;
-    bool OES_vertex_array_object;
-    bool QCOM_tiled_rendering;
-    int EGLProtectedConftentExt;
+    void	EglShutdown( eglSetup_t & eglr );
 
-    PFNGLDISCARDFRAMEBUFFEREXTPROC glDiscardFramebufferEXT_;
+    static bool HasEXT_sRGB_texture_decode;
+    static bool EXT_disjoint_timer_query;
+    static bool EXT_discard_framebuffer;
+    static bool EXT_texture_filter_anisotropic;
+    static bool IMG_multisampled_render_to_texture;
+    static bool OES_vertex_array_object;
+    static bool QCOM_tiled_rendering;
+    static const int EGL_PROTECTED_CONTENT_EXT;
 
-    PFNGLRENDERBUFFERSTORAGEMULTISAMPLEIMG glRenderbufferStorageMultisampleIMG_;
-    PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEIMG glFramebufferTexture2DMultisampleIMG_;
+   static PFNGLDISCARDFRAMEBUFFEREXTPROC glDiscardFramebufferEXT_;
 
-    PFNEGLCREATESYNCKHRPROC eglCreateSyncKHR_;
-    PFNEGLDESTROYSYNCKHRPROC eglDestroySyncKHR_;
-    PFNEGLCLIENTWAITSYNCKHRPROC eglClientWaitSyncKHR_;
-    PFNEGLSIGNALSYNCKHRPROC eglSignalSyncKHR_;
-    PFNEGLGETSYNCATTRIBKHRPROC eglGetSyncAttribKHR_;
+   static PFNGLRENDERBUFFERSTORAGEMULTISAMPLEIMG glRenderbufferStorageMultisampleIMG_;
+   static PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEIMG glFramebufferTexture2DMultisampleIMG_;
 
-    PFNGLBINDVERTEXARRAYOESPROC	glBindVertexArrayOES_;
-    PFNGLDELETEVERTEXARRAYSOESPROC	glDeleteVertexArraysOES_;
-    PFNGLGENVERTEXARRAYSOESPROC	glGenVertexArraysOES_;
-    PFNGLISVERTEXARRAYOESPROC	glIsVertexArrayOES_;
+   static PFNEGLCREATESYNCKHRPROC eglCreateSyncKHR_;
+   static PFNEGLDESTROYSYNCKHRPROC eglDestroySyncKHR_;
+   static PFNEGLCLIENTWAITSYNCKHRPROC eglClientWaitSyncKHR_;
+   static PFNEGLSIGNALSYNCKHRPROC eglSignalSyncKHR_;
+   static PFNEGLGETSYNCATTRIBKHRPROC eglGetSyncAttribKHR_;
 
-    PFNGLSTARTTILINGQCOMPROC	glStartTilingQCOM_;
-    PFNGLENDTILINGQCOMPROC		glEndTilingQCOM_;
+   static PFNGLBINDVERTEXARRAYOESPROC	glBindVertexArrayOES_;
+   static PFNGLDELETEVERTEXARRAYSOESPROC	glDeleteVertexArraysOES_;
+   static PFNGLGENVERTEXARRAYSOESPROC	glGenVertexArraysOES_;
+   static PFNGLISVERTEXARRAYOESPROC	glIsVertexArrayOES_;
 
-    PFNGLGENQUERIESEXTPROC glGenQueriesEXT_;
-    PFNGLDELETEQUERIESEXTPROC glDeleteQueriesEXT_;
-    PFNGLISQUERYEXTPROC glIsQueryEXT_;
-    PFNGLBEGINQUERYEXTPROC glBeginQueryEXT_;
-    PFNGLENDQUERYEXTPROC glEndQueryEXT_;
-    PFNGLQUERYCOUNTEREXTPROC glQueryCounterEXT_;
-    PFNGLGETQUERYIVEXTPROC glGetQueryivEXT_;
-    PFNGLGETQUERYOBJECTIVEXTPROC glGetQueryObjectivEXT_;
-    PFNGLGETQUERYOBJECTUIVEXTPROC glGetQueryObjectuivEXT_;
-    PFNGLGETQUERYOBJECTI64VEXTPROC glGetQueryObjecti64vEXT_;
-    PFNGLGETQUERYOBJECTUI64VEXTPROC glGetQueryObjectui64vEXT_;
-    PFNGLGETINTEGER64VPROC glGetInteger64v_;
+   static PFNGLSTARTTILINGQCOMPROC	glStartTilingQCOM_;
+   static PFNGLENDTILINGQCOMPROC		glEndTilingQCOM_;
 
-    PFNGLBLITFRAMEBUFFER_				glBlitFramebuffer_;
-    PFNGLRENDERBUFFERSTORAGEMULTISAMPLE_	glRenderbufferStorageMultisample_;
-    PFNGLINVALIDATEFRAMEBUFFER_			glInvalidateFramebuffer_;
-    PFNGLMAPBUFFERRANGE_					glMapBufferRange_;
-    PFNGLUNMAPBUFFEROESPROC_				glUnmapBuffer_;
+   static PFNGLGENQUERIESEXTPROC glGenQueriesEXT_;
+   static PFNGLDELETEQUERIESEXTPROC glDeleteQueriesEXT_;
+   static PFNGLISQUERYEXTPROC glIsQueryEXT_;
+   static PFNGLBEGINQUERYEXTPROC glBeginQueryEXT_;
+   static PFNGLENDQUERYEXTPROC glEndQueryEXT_;
+   static PFNGLQUERYCOUNTEREXTPROC glQueryCounterEXT_;
+   static PFNGLGETQUERYIVEXTPROC glGetQueryivEXT_;
+   static PFNGLGETQUERYOBJECTIVEXTPROC glGetQueryObjectivEXT_;
+   static PFNGLGETQUERYOBJECTUIVEXTPROC glGetQueryObjectuivEXT_;
+   static PFNGLGETQUERYOBJECTI64VEXTPROC glGetQueryObjecti64vEXT_;
+   static PFNGLGETQUERYOBJECTUI64VEXTPROC glGetQueryObjectui64vEXT_;
+   static PFNGLGETINTEGER64VPROC glGetInteger64v_;
+
+   static PFNGLBLITFRAMEBUFFER_				glBlitFramebuffer_;
+   static PFNGLRENDERBUFFERSTORAGEMULTISAMPLE_	glRenderbufferStorageMultisample_;
+   static PFNGLINVALIDATEFRAMEBUFFER_			glInvalidateFramebuffer_;
+   static PFNGLMAPBUFFERRANGE_					glMapBufferRange_;
+   static PFNGLUNMAPBUFFEROESPROC_				glUnmapBuffer_;
 
 };
 NV_NAMESPACE_END

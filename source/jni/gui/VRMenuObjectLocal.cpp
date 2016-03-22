@@ -280,7 +280,8 @@ void VRMenuSurface::render( OvrVRMenuMgr const & menuMgr, Matrix4f const & mvp, 
 
     //LOG( "Render Surface '%s', skip = '%s'", SurfaceName.toCString(), skipAdditivePass ? "true" : "false" );
 
-	GL_CheckErrors( "VRMenuSurface::Render - pre" );
+    VGlOperation glOperation;
+    glOperation.GL_CheckErrors( "VRMenuSurface::Render - pre" );
 
 	VGlShader const * program = NULL;
 
@@ -370,7 +371,7 @@ void VRMenuSurface::render( OvrVRMenuMgr const & menuMgr, Matrix4f const & mvp, 
 			glActiveTexture( GL_TEXTURE1 );
 			glBindTexture( GL_TEXTURE_2D, m_textures[rampIndex].handle() );
 			// do not do any filtering on the "palette" texture
-			if ( EXT_texture_filter_anisotropic )
+            if ( VGlOperation::EXT_texture_filter_anisotropic )
 			{
 				glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1.0f );
 			}
@@ -398,7 +399,7 @@ void VRMenuSurface::render( OvrVRMenuMgr const & menuMgr, Matrix4f const & mvp, 
 			glActiveTexture( GL_TEXTURE2 );
 			glBindTexture( GL_TEXTURE_2D, m_textures[rampIndex].handle() );
 			// do not do any filtering on the "palette" texture
-			if ( EXT_texture_filter_anisotropic )
+            if ( VGlOperation::EXT_texture_filter_anisotropic )
 			{
 				glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1.0f );
 			}
@@ -431,11 +432,11 @@ void VRMenuSurface::render( OvrVRMenuMgr const & menuMgr, Matrix4f const & mvp, 
 	glUniform2fv( program->uniformColorTableOffset, 1, &sub.colorTableOffset.x );
 
 	// render
-	glBindVertexArrayOES_( m_geo.vertexArrayObject );
+    glOperation.glBindVertexArrayOES_( m_geo.vertexArrayObject );
 	glDrawElements( GL_TRIANGLES, m_geo.indexCount, GL_UNSIGNED_SHORT, NULL );
-	glBindVertexArrayOES_( 0 );
+    glOperation.glBindVertexArrayOES_( 0 );
 
-	GL_CheckErrors( "VRMenuSurface::Render - post" );
+    glOperation.GL_CheckErrors( "VRMenuSurface::Render - post" );
 }
 
 //==============================
