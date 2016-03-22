@@ -1,3 +1,4 @@
 
 SOURCES += \
-    $$PWD/vatomicinttest.cpp
+    $$PWD/vatomicinttest.cpp \
+    $$NV_ROOT/core/VAtomicInt.cpp
