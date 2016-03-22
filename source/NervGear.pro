@@ -123,7 +123,6 @@ SOURCES += \
     jni/KeyState.cpp \
     jni/VrCommon.cpp \
     jni/VrLocale.cpp \
-    jni/api/VGlGeometry.cpp \
     jni/api/VGlOperation.cpp
 
 
