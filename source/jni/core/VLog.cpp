@@ -1,7 +1,12 @@
 #include "VLog.h"
 
 #include <sstream>
+
+#ifdef ANDROID
 #include <android/log.h>
+#else
+#include <iostream>
+#endif
 
 NV_NAMESPACE_BEGIN
 
@@ -23,7 +28,11 @@ VLog::VLog(const char *file, uint line, VLog::Priority priority)
 
 VLog::~VLog()
 {
+#ifdef ANDROID
     __android_log_print(d->priority, d->file, "[Line %u] %s", d->line, d->buffer.str().data());
+#else
+    std::cout << d->file << " [Line " << d->line << "] " << d->buffer.str() << std::endl;
+#endif
     delete d;
 }
 
