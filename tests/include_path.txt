@@ -1,0 +1,4 @@
+D:\Oculus\android-ndk-r10e\sources\cxx-stl\stlport\stlport
+D:\Oculus\android-ndk-r10e\platforms\android-19\arch-arm\usr\include
+D:\Oculus\android-ndk-r10e\toolchains\arm-linux-androideabi-4.8\prebuilt\windows-x86_64\lib\gcc\arm-linux-androideabi\4.8\include
+D:\Oculus\android-ndk-r10e\toolchains\arm-linux-androideabi-4.8\prebuilt\windows-x86_64\lib\gcc\arm-linux-androideabi\4.8\include-fixed
