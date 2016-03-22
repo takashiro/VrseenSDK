@@ -1,0 +1,6 @@
+
+#include "VAtomicInt.h"
+
+NV_NAMESPACE_BEGIN
+
+NV_NAMESPACE_END

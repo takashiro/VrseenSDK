@@ -1,6 +1,16 @@
 #pragma once
 
+#include <VLog.h>
+#ifdef ANDROID
+#define assert(expression) vAssert(expression)
+#else
 #include <assert.h>
+#undef vInfo
+#define vInfo(args) cout << args << endl
+#endif
+
+#include <stdlib.h>
+
 #include <list>
 #include <iostream>
 

@@ -1,0 +1,3 @@
+
+SOURCES += \
+    $$PWD/vatomicinttest.cpp

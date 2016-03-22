@@ -10,10 +10,11 @@ DEFINES += NV_NAMESPACE=NervGear
 NV_ROOT = $PWD/../../source/jni
 
 INCLUDEPATH += \
-    $$NV_ROOT/ \
+    jni \
+    $$NV_ROOT \
     $$NV_ROOT/core
 
-HEADERS += test.h
-SOURCES += main.cpp
+HEADERS += jni/test.h
+SOURCES += jni/main.cpp
 
-include(core/core.pri)
+include(jni/core/core.pri)
