@@ -43,6 +43,7 @@ SOURCES += \
     jni/core/MemBuffer.cpp \
     jni/core/VMutex.cpp \
     jni/core/VUserSettings.cpp \
+    jni/core/VVariant.cpp \
     jni/core/VWaitCondition.cpp \
     jni/core/android/GlUtils.cpp \
     jni/core/android/JniUtils.cpp \
@@ -151,6 +152,7 @@ HEADERS += \
     jni/core/VLock.h \
     jni/core/Lockless.h \
     jni/core/VMath.h \
+    jni/core/VMap.h \
     jni/core/VPath.h \
     jni/core/RefCount.h \
     jni/core/VSignal.h \
@@ -168,6 +170,7 @@ HEADERS += \
     jni/core/VMutex.h \
     jni/core/Types.h \
     jni/core/List.h \
+    jni/core/VVariant.h \
     jni/core/OVR.h \
     jni/core/OVRVersion.h \
     jni/core/VSharedPointer.h \

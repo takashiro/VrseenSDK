@@ -1,0 +1,114 @@
+#pragma once
+
+#include "VString.h"
+#include "VArray.h"
+#include "VMap.h"
+
+NV_NAMESPACE_BEGIN
+
+class VVariant;
+typedef VArray<VVariant> VVariantArray;
+typedef VMap<VString, VVariant> VVariantMap;
+
+class VVariant
+{
+public:
+    enum Type
+    {
+        Null,
+
+        Boolean,
+        Int,
+        UInt,
+        LongLong,
+        ULongLong,
+        Float,
+        Double,
+        Pointer,
+
+        RawString,
+        String,
+
+        Array,
+        Map,
+
+        TypeCount
+    };
+
+    VVariant();
+    VVariant(bool value);
+    VVariant(int value);
+    VVariant(uint value);
+    VVariant(long long value);
+    VVariant(ulonglong value);
+    VVariant(float value);
+    VVariant(double value);
+    VVariant(void *pointer);
+
+    VVariant(const char *value);
+    VVariant(const std::string &value);
+    VVariant(std::string &&value);
+    VVariant(const VString &value);
+    VVariant(VString &&value);
+
+    VVariant(const VVariantArray &array);
+    VVariant(VVariantArray &&array);
+    VVariant(const VVariantMap &map);
+    VVariant(VVariantMap &&map);
+
+    VVariant(const VVariant &var);
+    VVariant(VVariant &&var);
+
+    ~VVariant();
+
+    Type type() const { return m_type; }
+
+    bool isNull() const { return m_type == Null; }
+    bool toBool() const;
+    int toInt() const;
+    uint toUInt() const;
+    float toFloat() const;
+    double toDouble() const;
+    void *toPointer() const;
+
+    const std::string &toStdString() const;
+    const VString &toString() const;
+
+    const VVariantArray &toArray() const;
+    const VVariantMap &toMap() const;
+
+    VVariant &at(uint index);
+    VVariant &operator[](uint index) { return at(index); }
+    const VVariant &at(uint index) const;
+    const VVariant &operator[](uint index) const { return at(index); }
+
+    VVariant &value(const VString &key);
+    VVariant &operator[](const VString &key) { return value(key); }
+    const VVariant &value(const VString &key) const;
+    const VVariant &operator[](const VString &key) const { return value(key); }
+
+    int length() const;
+    uint size() const;
+
+private:
+    VVariant::Type m_type;
+
+    union Value
+    {
+        bool boolean;
+        int decimal;
+        uint udecimal;
+        long long bdecimal;
+        ulonglong ubdecimal;
+        float real;
+        double dreal;
+        void *pointer;
+        std::string *str;
+        VString *ustr;
+        VVariantArray *array;
+        VVariantMap *map;
+    };
+    Value m_value;
+};
+
+NV_NAMESPACE_END
