@@ -244,7 +244,7 @@ void GyroTempCalibration::LoadFile()
 {
     VString path = GetCalibrationPath(false);
 
-    Json root = Json::Load(path.toCString());
+    VJson root = VJson::Load(path.toCString());
     if (!root.isObject() || root.size() < 2)
         return;
 
@@ -254,7 +254,7 @@ void GyroTempCalibration::LoadFile()
 		return;
 	}
 
-    Json versionItem = root.value("Calibration Version");
+    VJson versionItem = root.value("Calibration Version");
     int version = versionItem.toInt();
 	if (version == TEMP_CALIBRATION_FILE_VERSION_1)
 	{
@@ -277,14 +277,14 @@ void GyroTempCalibration::LoadFile()
 
 
     // Parse calibration data.
-    Json dataItem = root.value("Data");
+    VJson dataItem = root.value("Data");
     VString calibData = dataItem.toString();
 	GyroCalibrationFromString(calibData);
 }
 
 void GyroTempCalibration::SaveFile()
 {
-    Json root(Json::Object);
+    VJson root(VJson::Object);
     root.insert("Calibration Version", TEMP_CALIBRATION_FILE_VERSION_2);
 
 	VString str = GyroCalibrationToString();

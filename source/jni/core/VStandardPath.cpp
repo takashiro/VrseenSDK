@@ -5,6 +5,7 @@
 #include "Android/JniUtils.h"
 #include "VrCommon.h"
 #include "App.h"
+#include "VDir.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -124,10 +125,11 @@ const char* FolderName[VStandardPath::FolderTypeCount] =
 
     bool VStandardPath::GetPathIfValidPermission(StorageType toStorage, FolderType toFolder, const char * subfolder, mode_t permission, VString &outPath) const
 	{
+        VDir vdir;
         if ( d->storageFolderPaths[ toStorage ][ toFolder ].size() > 0 )
 		{
-            VString checkPath = d->storageFolderPaths[ toStorage ][ toFolder ] + subfolder;
-			if ( HasPermission( checkPath, permission ) )
+            VPath checkPath = d->storageFolderPaths[ toStorage ][ toFolder ] + subfolder;
+			if ( vdir.contains( checkPath, permission ) )
 			{
 				outPath = checkPath;
 				return true;
@@ -156,15 +158,16 @@ const char* FolderName[VStandardPath::FolderTypeCount] =
 
     VString GetFullPath(const VArray<VString> &searchPaths, const VString &relativePath)
 	{
-		if ( FileExists( relativePath ) )
-		{
+        VDir temp;
+        if ( temp.exists ( relativePath ) )
+        {
 			return relativePath;
 		}
 
         const int numSearchPaths = searchPaths.length();
         for ( int index = 0; index < numSearchPaths; ++index) {
             const VString fullPath = searchPaths.at(index) + relativePath;
-			if ( FileExists( fullPath ) )
+            if ( temp.exists( fullPath ) )
 			{
 				return fullPath;
 			}
@@ -176,8 +179,8 @@ const char* FolderName[VStandardPath::FolderTypeCount] =
     bool GetFullPath( const VArray<VString> &searchPaths, const VString &relativePath, char *outPath, const int outMaxLen)
 	{
 		OVR_ASSERT( outPath != NULL && outMaxLen >= 1 );
-
-		if ( FileExists( relativePath ) )
+		VDir temp;
+		if ( temp.exists (relativePath ) )
 		{
             sprintf(outPath, "%s", relativePath.toCString());
 			return true;
@@ -186,7 +189,7 @@ const char* FolderName[VStandardPath::FolderTypeCount] =
         for ( int i = 0; i < searchPaths.length(); ++i )
 		{
             sprintf(outPath, "%s%s", searchPaths[i].toCString(), relativePath.toCString());
-			if ( FileExists( outPath ) )
+            if ( temp.exists (outPath ) )
 			{
 				return true;	// outpath is now set to the full path
 			}

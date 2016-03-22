@@ -11,12 +11,12 @@
 
 NV_NAMESPACE_BEGIN
 
-class Json;
+class VJson;
 class JsonData;
-typedef std::vector<Json> JsonArray;
-typedef std::map<std::string, Json> JsonObject;
+typedef std::vector<VJson> JsonArray;
+typedef std::map<std::string, VJson> JsonObject;
 
-class Json
+class VJson
 {
 public:
 	enum Type
@@ -30,23 +30,23 @@ public:
 		Object
 	};
 
-	Json();
-    Json(bool value);
-    Json(int value);
-    Json(double value);
-	Json(const std::string &value);
-    Json(const VString &value);
-    Json(const char *value);
-    Json(Type type);
+	VJson();
+    VJson(bool value);
+    VJson(int value);
+    VJson(double value);
+	VJson(const std::string &value);
+    VJson(const VString &value);
+    VJson(const char *value);
+    VJson(Type type);
 
 	Type type() const;
-	bool isValid() const { return type() != Json::None; }
-	bool isInvalid() const { return type() == Json::None; }
-	bool isNull() const { return type() == Json::Null; }
-	bool isNumber() const { return type() == Json::Number; }
-	bool isString() const { return type() == Json::String; }
-	bool isArray() const { return type() == Json::Array; }
-	bool isObject() const { return type() == Json::Object; }
+	bool isValid() const { return type() != VJson::None; }
+	bool isInvalid() const { return type() == VJson::None; }
+	bool isNull() const { return type() == VJson::Null; }
+	bool isNumber() const { return type() == VJson::Number; }
+	bool isString() const { return type() == VJson::String; }
+	bool isArray() const { return type() == VJson::Array; }
+	bool isObject() const { return type() == VJson::Object; }
 
 	bool toBool() const;
 	double toDouble() const;
@@ -65,41 +65,42 @@ public:
 	bool operator==(const std::string &value) const;
 	bool operator!=(const std::string &value) const { return !(*this == value); }
 
-	bool operator==(const Json &value) const;
-	bool operator!=(const Json &value) const { return !(*this == value); }
+	bool operator==(const VJson &value) const;
+	bool operator!=(const VJson &value) const { return !(*this == value); }
 
 	//Array Functions
-	void append(const Json &value);
+	void append(const VJson &value);
+    VJson &operator << (const VJson &value);
 	void removeAt(int index);
-	void removeOne(const Json &value);
-        void removeAll(const Json &value);
-	Json &operator[](int i);
-	const Json &operator[](int i) const;
-	const Json &at(int i) const;
+	void removeOne(const VJson &value);
+        void removeAll(const VJson &value);
+	VJson &operator[](int i);
+	const VJson &operator[](int i) const;
+    const VJson &at(int i) const;
 
 	//Object Functions
-	void insert(const std::string &key, const Json &value);
+	void insert(const std::string &key, const VJson &value);
     void remove(const std::string &key);
-    Json &operator[](const std::string &key);
-	const Json &operator[](const std::string &key) const;
-	const Json &value(const std::string &key) const;
-	const Json &value(const std::string &key, const Json &defaultValue) const;
+    VJson &operator[](const std::string &key);
+	const VJson &operator[](const std::string &key) const;
+	const VJson &value(const std::string &key) const;
+	const VJson &value(const std::string &key, const VJson &defaultValue) const;
 	bool contains(const std::string &key) const;
 
 	//Array/Object functions
 	size_t size() const;
 	void clear();
 
-    friend std::istream &operator>>(std::istream &in, Json &value);
-    friend std::ostream &operator<<(std::ostream &out, const Json &value);
+    friend std::istream &operator>>(std::istream &in, VJson &value);
+    friend std::ostream &operator<<(std::ostream &out, const VJson &value);
 
-    static Json Parse(const char* str);
-    static Json Load(const char *path);
+    static VJson Parse(const char *str);
+    static VJson Load(const char *path);
 
 protected:
     VString &string();
-	std::vector<Json> &array();
-	std::map<std::string, Json> &object();
+	std::vector<VJson> &array();
+	std::map<std::string, VJson> &object();
 
     VSharedPointer<JsonData> p_ptr;
 };
@@ -107,15 +108,15 @@ protected:
 class JsonData
 {
 public:
-    Json::Type type;
+    VJson::Type type;
 
     union
     {
         bool boolean;
         double number;
         VString *str;
-        std::vector<Json> *array;
-        std::map<std::string, Json> *object;
+        std::vector<VJson> *array;
+        std::map<std::string, VJson> *object;
     };
 
     JsonData() = default;

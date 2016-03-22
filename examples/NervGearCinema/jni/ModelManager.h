@@ -1,24 +1,10 @@
-/************************************************************************************
-
-Filename    :   ModelManager.h
-Content     :
-Created     :	7/3/2014
-Authors     :   Jim Dos�
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-This source code is licensed under the BSD-style license found in the
-LICENSE file in the Cinema/ directory. An additional grant
-of patent rights can be found in the PATENTS file in the same directory.
-
-*************************************************************************************/
-
-#if !defined( ModelManager_h )
-#define ModelManager_h
+#pragma once
 
 #include "ModelFile.h"
-#include "VString.h"
+
 #include "VArray.h"
+#include "VEvent.h"
+#include "VString.h"
 
 NV_USING_NAMESPACE
 
@@ -60,7 +46,7 @@ public:
 	void				OneTimeInit(const VString &launchIntent );
 	void				OneTimeShutdown();
 
-	bool 				Command( const char * msg );
+	bool 				Command(const NervGear::VEvent & );
 
     uint				GetTheaterCount() const { return Theaters.size(); }
 	const SceneDef & 	GetTheater( uint index ) const;
@@ -83,5 +69,3 @@ private:
 };
 
 } // namespace OculusCinema
-
-#endif // ModelManager_h

@@ -1,7 +1,10 @@
 #include "VPath.h"
 
 NV_NAMESPACE_BEGIN
+VPath::VPath()
+{
 
+}
 bool VPath::isAbsolute() const
 {
     // Treat empty strings as absolute.

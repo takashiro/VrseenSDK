@@ -9,27 +9,29 @@
 #include "TheaterSelectionView.h"
 #include "ResumeMovieView.h"
 
+#include "VMainActivity.h"
+
 using namespace NervGear;
 
 namespace OculusCinema {
 
-class CinemaApp : public NervGear::VrAppInterface
+class CinemaApp : public NervGear::VMainActivity
 {
 public:
-							CinemaApp();
+    CinemaApp(JNIEnv *jni, jclass activityClass, jobject activityObject);
 
-    void OneTimeInit(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI ) override;
-    void OneTimeShutdown() override;
+    void init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI ) override;
+    void shutdown() override;
 
-    Matrix4f DrawEyeView( const int eye, const float fovDegrees ) override;
+    Matrix4f drawEyeView( const int eye, const float fovDegrees ) override;
 
-    void ConfigureVrMode(ovrModeParms & modeParms) override;
+    void configureVrMode(ovrModeParms & modeParms) override;
 
-    void Command( const char * msg ) override;
+    void command(const VEvent &event) override;
     bool onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType ) override;
 
 	// Called by App loop
-    Matrix4f Frame( const VrFrame m_vrFrame ) override;
+    Matrix4f onNewFrame( const VrFrame m_vrFrame ) override;
 
     void			    	setPlaylist( const VArray<const MovieDef *> &playList, const int nextMovie );
     void			    	setMovie( const MovieDef * nextMovie );

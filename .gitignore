@@ -8,7 +8,7 @@
 *.a
 *.so
 *.dll
-appcompat_v7/
+*.class
 bin/
 gen/
 obj/
@@ -16,6 +16,5 @@ libs/
 *.jar
 .metadata/
 .settings/
-*.bat
-*.sh
-*.log
+MYTEMP/
+appcompat_v7/

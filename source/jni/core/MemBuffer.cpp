@@ -14,14 +14,14 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "Log.h"
+#include "VLog.h"
 
 namespace NervGear
 {
 
 bool MemBuffer::writeToFile( const char * filename )
 {
-	LogText( "Writing %i bytes to %s", length, filename );
+    vInfo("Writing" << length << "bytes to" << filename);
 	FILE * f = fopen( filename, "wb" );
 	if ( f != NULL )
 	{
@@ -31,7 +31,7 @@ bool MemBuffer::writeToFile( const char * filename )
 	}
 	else
 	{
-		LogText( "MemBuffer::WriteToFile failed to write to %s", filename );
+        vInfo("MemBuffer::WriteToFile failed to write to" << filename);
 	}
 	return false;
 }
@@ -66,7 +66,7 @@ bool MemBufferFile::loadFile( const char * filename )
 	FILE * f = fopen( filename, "rb" );
 	if ( !f )
 	{
-		LogText( "Couldn't open %s", filename );
+        vInfo("MemBufferFile Couldn't open" << filename);
 		buffer = NULL;
 		length = 0;
 		return false;
@@ -79,7 +79,7 @@ bool MemBufferFile::loadFile( const char * filename )
 	fclose( f );
 	if ( readRet != length )
 	{
-		LogText( "Only read %i of %i bytes in %s", readRet, length, filename );
+        vInfo("Only read" << readRet << "of" << length << "bytes i" << filename);
 		buffer = NULL;
 		length = 0;
 		return false;

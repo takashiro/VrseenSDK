@@ -6,33 +6,34 @@ namespace OculusCinema
 
 extern "C" {
 
-long Java_com_vrseen_nervgear_cinema_MainActivity_nativeSetAppInterface( JNIEnv *jni, jclass clazz, jobject activity,
+void Java_com_vrseen_nervgear_cinema_MainActivity_nativeSetAppInterface( JNIEnv *jni, jclass clazz, jobject activity,
 		jstring fromPackageName, jstring commandString, jstring uriString )
 {
 	LOG( "nativeSetAppInterface" );
-	return (new CinemaApp())->SetActivity( jni, clazz, activity, fromPackageName, commandString, uriString );
+    (new CinemaApp(jni, clazz, activity))->onCreate(fromPackageName, commandString, uriString );
 }
 
-void Java_com_vrseen_nervgear_cinema_MainActivity_nativeSetVideoSize( JNIEnv *jni, jclass clazz, jlong interfacePtr, int width, int height, int rotation, int duration ) {
+void Java_com_vrseen_nervgear_cinema_MainActivity_nativeSetVideoSize( JNIEnv *, jclass, int width, int height, int rotation, int duration ) {
 	LOG( "nativeSetVideoSizes: width=%i height=%i rotation=%i duration=%i", width, height, rotation, duration );
-
-	CinemaApp *cinema = ( CinemaApp * )( ( (App *)interfacePtr )->appInterface() );
-	cinema->app->messageQueue().PostPrintf( "video %i %i %i %i", width, height, rotation, duration );
+    VJson data(VJson::Array);
+    data << width << height << rotation << duration;
+    vApp->eventLoop().post("video", data);
 }
 
-jobject Java_com_vrseen_nervgear_cinema_MainActivity_nativePrepareNewVideo( JNIEnv *jni, jclass clazz, jlong interfacePtr ) {
-	CinemaApp *cinema = ( CinemaApp * )( ( (App *)interfacePtr )->appInterface() );
-
+jobject Java_com_vrseen_nervgear_cinema_MainActivity_nativePrepareNewVideo(JNIEnv *, jclass)
+{
 	// set up a message queue to get the return message
 	// TODO: make a class that encapsulates this work
-	VMessageQueue	result(1);
-	cinema->app->messageQueue().PostPrintf( "newVideo %p", &result);
 
-	result.SleepUntilMessage();
-    const char * msg = result.nextMessage();
-	jobject	texobj;
-	sscanf( msg, "surfaceTexture %p", &texobj );
-	free( (void *)msg );
+    VEventLoop result(1);
+    vApp->eventLoop().post("newVideo", reinterpret_cast<int>(&result));
+
+	result.wait();
+    VEvent event = result.next();
+    jobject	texobj;
+    if (event.name == "surfaceTexture") {
+        texobj = reinterpret_cast<jobject>(event.data.toInt());
+    }
 
 	return texobj;
 }

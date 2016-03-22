@@ -3,6 +3,8 @@
 #include "Input.h"
 #include "View.h"
 
+#include "VEvent.h"
+
 #if !defined( ViewManager_h )
 #define ViewManager_h
 
@@ -21,7 +23,7 @@ public:
     void 			openView( View & view );
     void 			closeView();
 
-    bool 			command( const char * msg );
+    bool 			command(const VEvent &event);
     bool 			onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType );
 
     Matrix4f 		drawEyeView( const int eye, const float fovDegrees );

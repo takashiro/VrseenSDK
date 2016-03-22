@@ -1,24 +1,22 @@
-#ifndef OVRAPP_H
-#define OVRAPP_H
+#pragma once
+
+#include "VMainActivity.h"
 
 #include "App.h"
 #include "ModelView.h"
 
 NV_USING_NAMESPACE
 
-class OvrApp : public NervGear::VrAppInterface
+class OvrApp : public NervGear::VMainActivity
 {
 public:
-						OvrApp();
+                        OvrApp(JNIEnv *jni, jclass activityClass, jobject activityObject);
     virtual				~OvrApp();
 
-	virtual void		OneTimeInit(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI );
-	virtual void		OneTimeShutdown();
-	virtual Matrix4f 	DrawEyeView( const int eye, const float fovDegrees );
-	virtual Matrix4f 	Frame( VrFrame vrFrame );
-	virtual void		Command( const char * msg );
+	virtual void		init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI );
+	virtual void		shutdown();
+	virtual Matrix4f 	drawEyeView( const int eye, const float fovDegrees );
+    virtual Matrix4f 	onNewFrame( VrFrame vrFrame );
 
 	OvrSceneView		Scene;
 };
-
-#endif

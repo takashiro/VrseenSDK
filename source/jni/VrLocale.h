@@ -1,29 +1,14 @@
-/************************************************************************************
+#pragma once
 
-Filename    :   VrLocale.h
-Content     :   Localization and internationalization (i18n) functionality.
-Created     :   11/24/2914
-Authors     :   Jonathan Wright
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
-#if !defined( OVR_VRLOCALE_H )
-#define OVR_VRLOCALE_H
+#include <stdarg.h>
+#include <jni.h>
 
 #include "VString.h"
-#include <stdarg.h>
-#include "jni.h"
 
 struct ovrMobile;
 
 NV_NAMESPACE_BEGIN
 
-//==============================================================
-// VrLocale
-//
-// Holds all localization functions.
 class VrLocale
 {
 public:
@@ -42,12 +27,8 @@ public:
 	static VString GetXliffFormattedString( const VString & inXliffStr, const char * arg1, const char * arg2 );
 	static VString GetXliffFormattedString( const VString & inXliffStr, const char * arg1, const char * arg2, const char * arg3 );
 
-	static VString ToString( char const * fmt, float const f );
-	static VString ToString( char const * fmt, int const i );
-
 	static jclass VrActivityClass;
 };
 
 NV_NAMESPACE_END
 
-#endif	// OVR_VRLOCALE_H

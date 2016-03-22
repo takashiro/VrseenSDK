@@ -97,7 +97,7 @@ private:
     VArray<struct pollfd>    m_pollFds;
     VArray<Notifier*>        m_fdNotifiers;
 
-    VEvent                  m_startupEvent;
+    VSignal                  m_startupEvent;
     volatile bool           m_suspend;
 
     // Ticks notifiers - used for time-dependent events such as keep-alive.

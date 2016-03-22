@@ -174,7 +174,7 @@ Profile* ProfileManager::CreateProfileObject(const char* user,
                                              ProfileType device,
                                              const char** device_name)
 {
-    Lock::Locker lockScope(&ProfileLock);
+    VLock::VLocker lockScope(&ProfileLock);
 
     Profile* profile = NULL;
     switch (device)
@@ -202,7 +202,7 @@ Profile* ProfileManager::CreateProfileObject(const char* user,
 // Clear the local profile cache
 void ProfileManager::ClearCache()
 {
-    Lock::Locker lockScope(&ProfileLock);
+    VLock::VLocker lockScope(&ProfileLock);
 
     ProfileCache.clear();
     CacheDevice = Profile_Unknown;
@@ -214,20 +214,20 @@ void ProfileManager::ClearCache()
 // to disk.
 void ProfileManager::LoadCache(ProfileType device)
 {
-    Lock::Locker lockScope(&ProfileLock);
+    VLock::VLocker lockScope(&ProfileLock);
 
     ClearCache();
 
     VString path = GetProfilePath(false);
 
-    Json root = Json::Load(path.toCString());
+    VJson root = VJson::Load(path.toCString());
     if (!root.isObject() || root.size() < 3)
         return;
 
     if (!root.contains("Oculus Profile Version"))
         return;
 
-    const Json &item0 = root.value("Oculus Profile Version");
+    const VJson &item0 = root.value("Oculus Profile Version");
     int major = item0.toInt();
     if (major > MAX_PROFILE_MAJOR_VERSION)
         return;   // don't parse the file on unsupported major version number
@@ -235,9 +235,9 @@ void ProfileManager::LoadCache(ProfileType device)
     DefaultProfile = root.value("CurrentProfile").toStdString();
 
     // Read a number of profiles
-    const Json &profileArray = root.value("Profiles");
+    const VJson &profileArray = root.value("Profiles");
     const JsonArray &profiles = profileArray.toArray();
-    for (const Json &profileItem : profiles) {
+    for (const VJson &profileItem : profiles) {
         // Read the required Name field
         if (!profileItem.contains("Name"))
             return;// invalid field
@@ -252,8 +252,8 @@ void ProfileManager::LoadCache(ProfileType device)
         if (profile && profileItem.isObject())
         {
             const JsonObject &map = profileItem.toObject();
-            for (const std::pair<std::string, Json> &i : map) {
-                const Json &item = i.second;
+            for (const std::pair<std::string, VJson> &i : map) {
+                const VJson &item = i.second;
                 if (!item.isObject()) {
                     profile->ParseProperty(i.first.c_str(), i.second.toStdString().c_str());
                 } else {   // Search for the matching device to get device specific fields
@@ -261,7 +261,7 @@ void ProfileManager::LoadCache(ProfileType device)
                         deviceFound = true;
 
                         const JsonObject &deviceObject = item.toObject();
-                        for (const std::pair<std::string, Json> &i : deviceObject) {
+                        for (const std::pair<std::string, VJson> &i : deviceObject) {
                             profile->ParseProperty(i.first.c_str(), i.second.toStdString().c_str());
                         }
                     }
@@ -281,12 +281,12 @@ void ProfileManager::SaveCache()
 {
 	VString path = GetProfilePath(true);
 
-    Lock::Locker lockScope(&ProfileLock);
+    VLock::VLocker lockScope(&ProfileLock);
 
-    Json oldroot = Json::Load(path.toCString());
+    VJson oldroot = VJson::Load(path.toCString());
     if (oldroot.isObject()) {
         if (oldroot.size() >= 3) {
-            const Json &item0 = oldroot.value("Oculus Profile Version");
+            const VJson &item0 = oldroot.value("Oculus Profile Version");
             //JSON* item1 = oldroot->nextItem(item0);
             //oldroot->nextItem(item1);
 
@@ -299,17 +299,17 @@ void ProfileManager::SaveCache()
     }
 
     // Create a new json root
-    Json root(Json::Object);
+    VJson root(VJson::Object);
     root.insert("Oculus Profile Version", PROFILE_VERSION);
     root.insert("CurrentProfile", DefaultProfile);
 
-    Json profiles(Json::Array);
+    VJson profiles(VJson::Array);
     // Generate a JSON subtree for each profile
     for (unsigned int i = 0; i < ProfileCache.size(); i++) {
         Profile* profile = ProfileCache[i];
 
         // Write the base profile information
-        Json json_profile(Json::Object);
+        VJson json_profile(VJson::Object);
         //json_profile->Name = "Profile";
         json_profile.insert("Name", profile->Name);
         if (profile->CloudUser != NULL) {
@@ -335,7 +335,7 @@ void ProfileManager::SaveCache()
             device_name = "RiftDK1";
 
             RiftDK1Profile* rift = (RiftDK1Profile*)profile;
-            Json json_rift(Json::Object);
+            VJson json_rift(VJson::Object);
 
             const char* eyecup = "A";
             switch (rift->EyeCups)
@@ -361,7 +361,7 @@ void ProfileManager::SaveCache()
             device_name = "RiftDKHD";
 
             RiftDKHDProfile* rift = (RiftDKHDProfile*)profile;
-            Json json_rift(Json::Object);
+            VJson json_rift(VJson::Object);
             json_profile.insert(device_name, json_rift);
 
             const char* eyecup = "A";
@@ -386,17 +386,17 @@ void ProfileManager::SaveCache()
         // device is represented by this root.  We don't want to overwrite
         // the other devices so we need to examine the older root
         // and merge previous devices into new json root
-        Json old_profile_item = oldroot.value("Profiles");
+        VJson old_profile_item = oldroot.value("Profiles");
         const JsonArray &old_profiles = old_profile_item.toArray();
-        for (const Json &old_profile : old_profiles) {
-            const Json &profile_name = old_profile.value("Name");
+        for (const VJson &old_profile : old_profiles) {
+            const VJson &profile_name = old_profile.value("Name");
             if (profile_name.isString() && profile->Name == profile_name.toString()) {
                 // Now that we found the user in the older root, add all the
                 // object children to the new root - except for the one for the
                 // current device
                 const JsonObject &old_item_object = old_profile.toObject();
-                for (const std::pair<std::string, Json> &pair : old_item_object) {
-                    const Json &old_item = pair.second;
+                for (const std::pair<std::string, VJson> &pair : old_item_object) {
+                    const VJson &old_item = pair.second;
                     if (old_item.isObject() && (device_name == NULL || pair.first != device_name)) {
                         // add the node pointer to the new root
                         json_profile.insert(pair.first, old_item);
@@ -421,7 +421,7 @@ void ProfileManager::SaveCache()
 // Returns the number of stored profiles for this device type
 int ProfileManager::GetProfileCount(ProfileType device)
 {
-    Lock::Locker lockScope(&ProfileLock);
+    VLock::VLocker lockScope(&ProfileLock);
 
     if (CacheDevice == Profile_Unknown)
         LoadCache(device);
@@ -434,7 +434,7 @@ int ProfileManager::GetProfileCount(ProfileType device)
 // if the index is invalid
 VString ProfileManager::GetProfileName(ProfileType device, unsigned int index)
 {
-    Lock::Locker lockScope(&ProfileLock);
+    VLock::VLocker lockScope(&ProfileLock);
 
     if (CacheDevice == Profile_Unknown)
         LoadCache(device);
@@ -453,7 +453,7 @@ VString ProfileManager::GetProfileName(ProfileType device, unsigned int index)
 
 bool ProfileManager::HasProfile(ProfileType device, const char* name)
 {
-    Lock::Locker lockScope(&ProfileLock);
+    VLock::VLocker lockScope(&ProfileLock);
 
     if (CacheDevice == Profile_Unknown)
         LoadCache(device);
@@ -472,7 +472,7 @@ bool ProfileManager::HasProfile(ProfileType device, const char* name)
 // is invalid
 Profile* ProfileManager::LoadProfile(ProfileType device, unsigned int index)
 {
-    Lock::Locker lockScope(&ProfileLock);
+    VLock::VLocker lockScope(&ProfileLock);
 
     if (CacheDevice == Profile_Unknown)
         LoadCache(device);
@@ -496,7 +496,7 @@ Profile* ProfileManager::LoadProfile(ProfileType device, const char* user)
     if (user == NULL)
         return NULL;
 
-    Lock::Locker lockScope(&ProfileLock);
+    VLock::VLocker lockScope(&ProfileLock);
 
     if (CacheDevice == Profile_Unknown)
         LoadCache(device);
@@ -523,7 +523,7 @@ Profile* ProfileManager::GetDeviceDefaultProfile(ProfileType device)
 // Returns the name of the profile that is marked as the current default user.
 const char* ProfileManager::GetDefaultProfileName(ProfileType device)
 {
-    Lock::Locker lockScope(&ProfileLock);
+    VLock::VLocker lockScope(&ProfileLock);
 
     if (CacheDevice == Profile_Unknown)
         LoadCache(device);
@@ -543,7 +543,7 @@ const char* ProfileManager::GetDefaultProfileName(ProfileType device)
 // Marks a particular user as the current default user.
 bool ProfileManager::SetDefaultProfileName(ProfileType device, const char* name)
 {
-    Lock::Locker lockScope(&ProfileLock);
+    VLock::VLocker lockScope(&ProfileLock);
 
     if (CacheDevice == Profile_Unknown)
         LoadCache(device);
@@ -565,7 +565,7 @@ bool ProfileManager::SetDefaultProfileName(ProfileType device, const char* name)
 // invalid or failed save.
 bool ProfileManager::Save(const Profile* profile)
 {
-    Lock::Locker lockScope(&ProfileLock);
+    VLock::VLocker lockScope(&ProfileLock);
 
     if (profile->Name == "default")
         return false;  // don't save a default profile
@@ -607,7 +607,7 @@ bool ProfileManager::Save(const Profile* profile)
 // and returns false otherwise.
 bool ProfileManager::Delete(const Profile* profile)
 {
-    Lock::Locker lockScope(&ProfileLock);
+    VLock::VLocker lockScope(&ProfileLock);
 
     if (profile->Name == "default")
         return false;  // don't delete a default profile

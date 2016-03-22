@@ -26,7 +26,7 @@ public class MainActivity extends VrActivity {
 		System.loadLibrary( "vrscene" );
 	}
 
-	public static native long nativeSetAppInterface( VrActivity act, String fromPackageNameString, String commandString, String uriString );
+	public static native void nativeSetAppInterface( VrActivity act, String fromPackageNameString, String commandString, String uriString );
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -38,7 +38,7 @@ public class MainActivity extends VrActivity {
 		String fromPackageNameString = VrLib.getPackageStringFromIntent( intent );
 		String uriString = VrLib.getUriStringFromIntent( intent );
 
-		appPtr = nativeSetAppInterface( this, fromPackageNameString, commandString, uriString );
+		nativeSetAppInterface( this, fromPackageNameString, commandString, uriString );
 	}
 
 }

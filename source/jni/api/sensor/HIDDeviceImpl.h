@@ -55,7 +55,7 @@ public:
 
         // Do device notification.
         {
-            Lock::Locker scopeLock(this->HandlerRef.GetLock());
+            VLock::VLocker scopeLock(this->HandlerRef.GetLock());
 
             if (this->HandlerRef.GetHandler())
             {

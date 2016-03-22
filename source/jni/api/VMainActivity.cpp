@@ -16,6 +16,31 @@ struct VMainActivity::Private
     jobject activityObject;
     jclass activityClass;
 
+    TalkToJavaInterface	*interface;
+    JavaVM *javaVM;
+    pthread_t threadHandle;
+    VEventLoop eventLoop;
+
+    Private()
+        : interface(NULL)
+        , javaVM(NULL)
+        , threadHandle(0)
+        , eventLoop(1000)
+    {
+    }
+
+    ~Private()
+    {
+        if (threadHandle) {
+            // Get the background thread to kill itself.
+            eventLoop.post("quit");
+            const int ret = pthread_join(threadHandle, NULL);
+            if (ret != 0) {
+                vWarn("failed to join TtjThread (" << ret << ")");
+            }
+        }
+    }
+
     jmethodID getMethodID(const char *name, const char *signature) const
     {
         jmethodID mid = jni->GetMethodID(activityClass, name, signature);
@@ -24,21 +49,62 @@ struct VMainActivity::Private
         }
         return mid;
     }
+
+    void exec()
+    {
+        JNIEnv *Jni = nullptr;
+        // The Java VM needs to be attached on each thread that will use it.
+        vInfo("TalkToJava: Jvm->AttachCurrentThread");
+        const jint returnAttach = javaVM->AttachCurrentThread(&Jni, 0);
+        if (returnAttach != JNI_OK) {
+            vInfo("javaVM->AttachCurrentThread returned" << returnAttach);
+        }
+
+        // Process all queued messages
+        forever {
+            VEvent event = eventLoop.next();
+            if (!event.isValid()) {
+                // Go dormant until something else arrives.
+                eventLoop.wait();
+                continue;
+            }
+
+            if (event.name == "quit") {
+                break;
+            }
+
+            // Set up a local frame with room for at least 100
+            // local references that will be auto-freed.
+            Jni->PushLocalFrame(100);
+
+            // Let whoever initialized us do what they want.
+            interface->TtjCommand(Jni, event);
+
+            // If we don't clean up exceptions now, later
+            // calls may fail.
+            if (Jni->ExceptionOccurred()) {
+                Jni->ExceptionClear();
+                vInfo("JNI exception after:" << event.name);
+            }
+
+            // Free any local references
+            Jni->PopLocalFrame(NULL);
+        }
+
+        vInfo("TalkToJava: Jvm->DetachCurrentThread");
+        const jint returnDetach = javaVM->DetachCurrentThread();
+        if (returnDetach != JNI_OK) {
+            vInfo("javaVM->DetachCurrentThread returned" << returnDetach);
+        }
+    }
 };
 
-VMainActivity::VMainActivity(JNIEnv *jni, jobject activityObject)
+VMainActivity::VMainActivity(JNIEnv *jni, jclass activityClass, jobject activityObject)
     : d(new Private)
 {
     d->jni = jni;
     d->activityObject = jni->NewGlobalRef(activityObject);
-
-    const char *className = "com/vrseen/nervgear/VrActivity";
-    jclass lc = jni->FindClass(className);
-    if (lc == 0) {
-        vFatal("Failed to find Java class" << className);
-    }
-    d->activityClass = (jclass) jni->NewGlobalRef(lc);
-    jni->DeleteLocalRef(lc);
+    d->activityClass = (jclass) jni->NewGlobalRef(activityClass);
 }
 
 VMainActivity::~VMainActivity()
@@ -90,126 +156,270 @@ VString VMainActivity::getPackageName() const
     return VString();
 }
 
+
+void VMainActivity::onCreate(jstring javaFromPackageNameString, jstring javaCommandString, jstring javaUriString)
+{
+    JNIEnv *jni = javaEnv();
+    jobject activity = javaObject();
+    VString fromPackage = JniUtils::Convert(jni, javaFromPackageNameString);
+    VString json = JniUtils::Convert(jni, javaCommandString);
+    VString uri = JniUtils::Convert(jni, javaUriString);
+    vInfo("VMainActivity::SetActivity:" << fromPackage << json << uri);
+
+    if (vApp == nullptr)
+    {	// First time initialization
+        // This will set the VrAppInterface app pointer directly,
+        // so it is set when OneTimeInit is called.
+        vInfo("new AppLocal()");
+        new App(jni, activity, this);
+
+        // Start the VrThread and wait for it to have initialized.
+        vApp->startVrThread();
+        vApp->syncVrThread();
+    }
+    else
+    {	// Just update the activity object.
+        vInfo("Update AppLocal");
+        if (vApp->javaObject() != nullptr)
+        {
+            jni->DeleteGlobalRef(vApp->javaObject());
+        }
+        vApp->javaObject() = jni->NewGlobalRef(activity);
+        vApp->VrModeParms.ActivityObject = vApp->javaObject();
+    }
+
+    // Send the intent and wait for it to complete.
+    VJson args(VJson::Array);
+    args << fromPackage << uri << json;
+    vApp->eventLoop().post("intent", args);
+    vApp->syncVrThread();
+}
+
+void VMainActivity::shutdown()
+{
+}
+
+void VMainActivity::onWindowCreated()
+{
+    vInfo("VMainActivity::WindowCreated - default handler called");
+}
+
+void VMainActivity::onWindowDestroyed()
+{
+    vInfo("VMainActivity::WindowDestroyed - default handler called");
+}
+
+void VMainActivity::onPause()
+{
+    vInfo("VMainActivity::Paused - default handler called");
+}
+
+void VMainActivity::onResume()
+{
+    vInfo("VMainActivity::Resumed - default handler called");
+}
+
+void VMainActivity::command(const VEvent &msg)
+{
+    vInfo("VMainActivity::Command - default handler called, msg =" << msg.name);
+}
+
+JNIEnv *VMainActivity::javaEnv() const
+{
+    return d->jni;
+}
+
+void VMainActivity::onNewIntent(const VString &fromPackageName, const VString &command, const VString &uri)
+{
+    vInfo("VMainActivity::NewIntent - default handler called -" << fromPackageName << command << uri);
+}
+
+Matrix4f VMainActivity::onNewFrame(VrFrame vrFrame)
+{
+    vInfo("VMainActivity::Frame - default handler called");
+    return Matrix4f();
+}
+
+void VMainActivity::configureVrMode(ovrModeParms & modeParms)
+{
+    vInfo("VMainActivity::ConfigureVrMode - default handler called");
+}
+
+Matrix4f VMainActivity::drawEyeView(const int eye, const float fovDegrees)
+{
+    vInfo("VMainActivity::DrawEyeView - default handler called");
+    return Matrix4f();
+}
+
+bool VMainActivity::onKeyEvent(const int keyCode, const KeyState::eKeyEventType eventType)
+{
+    vInfo("VMainActivity::OnKeyEvent - default handler called");
+    return false;
+}
+
+bool VMainActivity::onVrWarningDismissed(const bool accepted)
+{
+    vInfo("VMainActivity::OnVrWarningDismissed - default handler called");
+    return false;
+}
+
+bool VMainActivity::showLoadingIcon() const
+{
+    return true;
+}
+
+bool VMainActivity::wantSrgbFramebuffer() const
+{
+    return false;
+}
+
+bool VMainActivity::wantProtectedFramebuffer() const
+{
+    return false;
+}
+
+jclass VMainActivity::javaClass() const
+{
+    return d->activityClass;
+}
+
+jobject VMainActivity::javaObject() const
+{
+    return d->activityObject;
+}
+
+void VMainActivity::Init(JavaVM *javaVM, TalkToJavaInterface *interface)
+{
+    d->javaVM = javaVM;
+    d->interface = interface;
+
+    auto ThreadStarter = [](void *d)->void *
+    {
+        int result = pthread_setname_np(pthread_self(), "TalkToJava");
+        if (result != 0) {
+            vWarn("TalkToJava: pthread_setname_np failed" << strerror(result));
+        }
+        ((VMainActivity::Private *) d)->exec();
+        return NULL;
+    };
+
+    // spawn the VR thread
+    const int createError = pthread_create(&d->threadHandle, NULL /* default attributes */, ThreadStarter, d);
+    if (createError != 0) {
+        vFatal("pthread_create returned" << createError);
+    } else {
+        pthread_setname_np(d->threadHandle, "TalkToJava");
+    }
+}
+
+VEventLoop &VMainActivity::eventLoop()
+{
+    return d->eventLoop;
+}
+
 NV_NAMESPACE_END
 
 NV_USING_NAMESPACE
 
-//@to-do: remove this
-static VString ComposeIntentMessage(const VString &packageName, const VString &uri, const VString &jsonText)
-{
-    VString out = "intent ";
-    out.append(packageName);
-    out.append(' ');
-    out.append(uri);
-    out.append(' ');
-    out.append(jsonText);
-    return out;
-}
-
 extern "C"
 {
 
-void Java_com_vrseen_nervgear_VrActivity_nativeSurfaceChanged(JNIEnv *jni, jclass clazz,
-        jlong appPtr, jobject surface)
+void Java_com_vrseen_nervgear_VrActivity_nativeSurfaceChanged(JNIEnv *jni, jclass, jobject surface)
 {
-    ((App *)appPtr)->messageQueue().SendPrintf("surfaceChanged %p",
-            surface ? ANativeWindow_fromSurface(jni, surface) : nullptr);
+    vApp->eventLoop().send("surfaceChanged", reinterpret_cast<int>(surface ? ANativeWindow_fromSurface(jni, surface) : nullptr));
 }
 
-void Java_com_vrseen_nervgear_VrActivity_nativeSurfaceDestroyed(JNIEnv *jni, jclass clazz,
-        jlong appPtr, jobject)
+void Java_com_vrseen_nervgear_VrActivity_nativeSurfaceDestroyed(JNIEnv *jni, jclass clazz)
 {
-    if (appPtr == 0)
+    if (vApp == 0)
     {
         // Android may call surfaceDestroyed() after onDestroy().
         vInfo("nativeSurfaceChanged was called after onDestroy. We cannot destroy the surface now because we don't have a valid app pointer.");
         return;
     }
 
-    ((App *)appPtr)->messageQueue().SendPrintf("surfaceDestroyed ");
+    vApp->eventLoop().send("surfaceDestroyed");
 }
 
-void Java_com_vrseen_nervgear_VrActivity_nativePopup(JNIEnv *jni, jclass clazz,
-        jlong appPtr, jint width, jint height, jfloat seconds)
+void Java_com_vrseen_nervgear_VrActivity_nativePopup(JNIEnv *, jclass,
+        jint width, jint height, jfloat seconds)
 {
-    ((App *)appPtr)->messageQueue().PostPrintf("popup %i %i %f", width, height, seconds);
+    VJson args(VJson::Array);
+    args << width << height << seconds;
+    vApp->eventLoop().post("popup", args);
 }
 
-jobject Java_com_vrseen_nervgear_VrActivity_nativeGetPopupSurfaceTexture(JNIEnv *jni, jclass clazz,
-        jlong appPtr)
+jobject Java_com_vrseen_nervgear_VrActivity_nativeGetPopupSurfaceTexture(JNIEnv *, jclass)
 {
-    return ((App *)appPtr)->dialogTexture()->javaObject;
+    return vApp->dialogTexture()->javaObject;
 }
 
 void Java_com_vrseen_nervgear_VrActivity_nativePause(JNIEnv *jni, jclass clazz,
         jlong appPtr)
 {
-    ((App *)appPtr)->messageQueue().SendPrintf("pause ");
+    vApp->eventLoop().send("pause");
 }
 
-void Java_com_vrseen_nervgear_VrActivity_nativeResume(JNIEnv *jni, jclass clazz,
-        jlong appPtr)
+void Java_com_vrseen_nervgear_VrActivity_nativeResume(JNIEnv *jni, jclass clazz)
 {
-    ((App *)appPtr)->messageQueue().SendPrintf("resume ");
+    vApp->eventLoop().send("resume");
 }
 
-void Java_com_vrseen_nervgear_VrActivity_nativeDestroy(JNIEnv *jni, jclass clazz,
-        jlong appPtr)
+void Java_com_vrseen_nervgear_VrActivity_nativeDestroy(JNIEnv *, jclass)
 {
-    App * localPtr = (App *)appPtr;
-
     // First kill the VrThread.
-    localPtr->stopVrThread();
+    vApp->stopVrThread();
     // Then delete the VrAppInterface derived class.
-    delete localPtr->appInterface();
     // Last delete AppLocal.
-    delete localPtr;
+    delete vApp;
 
     vInfo("ExitOnDestroy is true, exiting");
     ovr_ExitActivity(nullptr, EXIT_TYPE_EXIT);
 }
 
 void Java_com_vrseen_nervgear_VrActivity_nativeJoypadAxis(JNIEnv *jni, jclass clazz,
-        jlong appPtr, jfloat lx, jfloat ly, jfloat rx, jfloat ry)
+        jfloat lx, jfloat ly, jfloat rx, jfloat ry)
 {
-    App * local = ((App *)appPtr);
     // Suspend input until OneTimeInit() has finished to avoid overflowing the message queue on long loads.
-    if (local->oneTimeInitCalled) {
-        local->messageQueue().PostPrintf("joy %f %f %f %f", lx, ly, rx, ry);
+    if (vApp->oneTimeInitCalled) {
+        VJson args(VJson::Array);
+        args << lx << ly << rx << ry;
+        vApp->eventLoop().post("joy", args);
     }
 }
 
-void Java_com_vrseen_nervgear_VrActivity_nativeTouch(JNIEnv *jni, jclass clazz,
-        jlong appPtr, jint action, jfloat x, jfloat y)
+void Java_com_vrseen_nervgear_VrActivity_nativeTouch(JNIEnv *, jclass,
+        jint action, jfloat x, jfloat y)
 {
-    App * local = ((App *)appPtr);
     // Suspend input until OneTimeInit() has finished to avoid overflowing the message queue on long loads.
-    if (local->oneTimeInitCalled) {
-        local->messageQueue().PostPrintf("touch %i %f %f", action, x, y);
+    if (vApp->oneTimeInitCalled) {
+        VJson args(VJson::Array);
+        args << action << x << y;
+        vApp->eventLoop().post("touch", args);
     }
 }
 
 void Java_com_vrseen_nervgear_VrActivity_nativeKeyEvent(JNIEnv *jni, jclass clazz,
-        jlong appPtr, jint key, jboolean down, jint repeatCount)
+        jint key, jboolean down, jint repeatCount)
 {
-    App * local = ((App *)appPtr);
     // Suspend input until OneTimeInit() has finished to avoid overflowing the message queue on long loads.
-    if (local->oneTimeInitCalled) {
-        local->messageQueue().PostPrintf("key %i %i %i", key, down, repeatCount);
+    if (vApp->oneTimeInitCalled) {
+        VJson args(VJson::Array);
+        args << key << down << repeatCount;
+        vApp->eventLoop().post("key", args);
     }
 }
 
 void Java_com_vrseen_nervgear_VrActivity_nativeNewIntent(JNIEnv *jni, jclass clazz,
-        jlong appPtr, jstring fromPackageName, jstring command, jstring uriString)
+        jstring fromPackageName, jstring command, jstring uriString)
 {
-    VString utfPackageName = JniUtils::Convert(jni, fromPackageName);
-    VString utfUri = JniUtils::Convert(jni, uriString);
-    VString utfJson = JniUtils::Convert(jni, command);
+    VString packageName = JniUtils::Convert(jni, fromPackageName);
+    VString uri = JniUtils::Convert(jni, uriString);
+    VString json = JniUtils::Convert(jni, command);
 
-    VString intentMessage = ComposeIntentMessage(utfPackageName, utfUri, utfJson);
-    vInfo("nativeNewIntent:" << intentMessage);
-    VByteArray utf8Message = intentMessage.toUtf8();
-    ((App *) appPtr)->messageQueue().PostPrintf(utf8Message.data());
+    VJson args(VJson::Array);
+    args << packageName << uri << json;
+    vApp->eventLoop().post("intent", args);
 }
 
 }	// extern "C"

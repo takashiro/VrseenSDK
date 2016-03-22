@@ -47,6 +47,3 @@ VAtomicInt::Type VAtomicInt::operator <<= (unsigned bits)
     return newValue;
 }
 NV_NAMESPACE_END
-
-
-

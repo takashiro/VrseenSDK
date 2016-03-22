@@ -183,8 +183,6 @@ bool ovr_FindEmbeddedImage( ovrMobile * ovr, const char * imageName, void * & bu
 // Device-Local Preferences
 //-----------------------------------------------------------------
 
-void ovr_InitLocalPreferences( JNIEnv * jni, jobject activityObject );
-
 }	// extern "C"
 
 

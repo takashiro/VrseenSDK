@@ -10,6 +10,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 ************************************************************************************/
 
 #include "ThreadCommandQueue.h"
+#include "VList.h"
+#include "VLock.h"
 
 namespace NervGear {
 
@@ -187,7 +189,7 @@ public:
 
         virtual void Execute() const
         {
-            Lock::Locker lock(&pImpl->QueueLock);
+            VLock::VLocker lock(&pImpl->QueueLock);
             pImpl->ExitProcessed = true;
         }
         virtual ThreadCommand* CopyConstruct(void* p) const
@@ -197,36 +199,37 @@ public:
 
     NotifyEvent* AllocNotifyEvent_NTS()
     {
-        NotifyEvent* p = AvailableEvents.first();
-
-        if (!AvailableEvents.isNull(p))
-            p->removeNode();
-        else
+        NotifyEvent* p = nullptr;
+        if (!AvailableEvents.isEmpty()) {
+            p = AvailableEvents.front();
+            AvailableEvents.pop_front();
+        } else {
             p = new NotifyEvent;
+            p->pointToVList = &AvailableEvents;
+        }
         return p;
     }
 
     void         FreeNotifyEvent_NTS(NotifyEvent* p)
     {
+        p->pointToVList = &AvailableEvents;
         AvailableEvents.append(p);
     }
 
     void        FreeNotifyEvents_NTS()
     {
-        while(!AvailableEvents.isEmpty())
-        {
-            NotifyEvent* p = AvailableEvents.first();
-            p->removeNode();
-            delete p;
+        for (NotifyEvent* n:AvailableEvents) {
+            delete n;
         }
+        AvailableEvents.clear();
     }
 
     ThreadCommandQueue* pQueue;
-    Lock                QueueLock;
+    VLock                QueueLock;
     volatile bool       ExitEnqueued;
     volatile bool       ExitProcessed;
-    List<NotifyEvent>   AvailableEvents;
-    List<NotifyEvent>   BlockedProducers;
+    VList<NotifyEvent*>   AvailableEvents;
+    VList<NotifyEvent*>   BlockedProducers;
     CircularBuffer      CommandBuffer;
 };
 
@@ -234,7 +237,7 @@ public:
 
 ThreadCommandQueueImpl::~ThreadCommandQueueImpl()
 {
-    Lock::Locker lock(&QueueLock);
+    VLock::VLocker lock(&QueueLock);
     OVR_ASSERT(BlockedProducers.isEmpty());
     FreeNotifyEvents_NTS();
 }
@@ -248,7 +251,7 @@ bool ThreadCommandQueueImpl::PushCommand(const ThreadCommand& command)
     do {
 
         { // Lock Scope
-            Lock::Locker lock(&QueueLock);
+            VLock::VLocker lock(&QueueLock);
 
             if (queueAvailableEvent)
             {
@@ -286,7 +289,7 @@ bool ThreadCommandQueueImpl::PushCommand(const ThreadCommand& command)
     if (completeEvent)
     {
         completeEvent->Wait();
-        Lock::Locker lock(&QueueLock);
+        VLock::VLocker lock(&QueueLock);
         FreeNotifyEvent_NTS(completeEvent);
     }
 
@@ -297,7 +300,7 @@ bool ThreadCommandQueueImpl::PushCommand(const ThreadCommand& command)
 // Pops the next command from the thread queue, if any is available.
 bool ThreadCommandQueueImpl::PopCommand(ThreadCommand::PopBuffer* popBuffer)
 {
-    Lock::Locker lock(&QueueLock);
+    VLock::VLocker lock(&QueueLock);
 
     UByte* buffer = CommandBuffer.ReadBegin();
     if (!buffer)
@@ -310,9 +313,10 @@ bool ThreadCommandQueueImpl::PopCommand(ThreadCommand::PopBuffer* popBuffer)
     popBuffer->InitFromBuffer(buffer);
     CommandBuffer.ReadEnd(popBuffer->GetSize());
 
-    if (!BlockedProducers.isEmpty()) {
+    if (!BlockedProducers.isEmpty())
+    {
         ThreadCommand::NotifyEvent* queueAvailableEvent = BlockedProducers.first();
-        queueAvailableEvent->removeNode();
+        BlockedProducers.pop_front();
         queueAvailableEvent->PulseEvent();
         // Event is freed later by waiter.
     }
@@ -349,7 +353,7 @@ void ThreadCommandQueue::PushExitCommand(bool wait)
     //    any prior commands.
     //    IsExiting() only returns true after exit has flushed.
     {
-        Lock::Locker lock(&pImpl->QueueLock);
+        VLock::VLocker lock(&pImpl->QueueLock);
         if (pImpl->ExitEnqueued)
             return;
         pImpl->ExitEnqueued = true;

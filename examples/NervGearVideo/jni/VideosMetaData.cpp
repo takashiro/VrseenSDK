@@ -27,7 +27,7 @@ OvrMetaDatum * OvrVideosMetaData::createMetaDatum( const char* url ) const
 	return new OvrVideosMetaDatum( url );
 }
 
-void OvrVideosMetaData::extractExtendedData( const Json &jsonDatum, OvrMetaDatum & datum ) const
+void OvrVideosMetaData::extractExtendedData( const VJson &jsonDatum, OvrMetaDatum & datum ) const
 {
 	OvrVideosMetaDatum * videoData = static_cast< OvrVideosMetaDatum * >( &datum );
 	if ( videoData )
@@ -51,7 +51,7 @@ void OvrVideosMetaData::extractExtendedData( const Json &jsonDatum, OvrMetaDatum
 	}
 }
 
-void OvrVideosMetaData::extendedDataToJson( const OvrMetaDatum & datum, Json &outDatumObject ) const
+void OvrVideosMetaData::extendedDataToJson( const OvrMetaDatum & datum, VJson &outDatumObject ) const
 {
     if ( outDatumObject.isObject() ) {
 		const OvrVideosMetaDatum * const videoData = static_cast< const OvrVideosMetaDatum * const >( &datum );

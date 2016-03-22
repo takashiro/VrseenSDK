@@ -24,7 +24,6 @@
 #include "GlTexture.h"
 #include "GuiSys.h"
 #include "GuiSysLocal.h"		// necessary to instantiate the gui system
-#include "LocalPreferences.h"		// FIXME:VRAPI move to VrApi_Android.h?
 #include "ModelView.h"
 #include "PointTracker.h"
 #include "SurfaceTexture.h"
@@ -38,8 +37,7 @@
 #include "VrCommon.h"
 #include "VrLocale.h"
 #include "VRMenuMgr.h"
-#include "VUserProfile.h"
-#include "TalkToJava.h"
+#include "VUserSettings.h"
 
 #include "VApkFile.h"
 #include "VJson.h"
@@ -89,18 +87,6 @@ static int buttonMappings[] = {
     -1
 };
 
-//@to-do: remove this
-static VString ComposeIntentMessage(const VString &packageName, const VString &uri, const VString &jsonText)
-{
-    VString out = "intent ";
-    out.append(packageName);
-    out.append(' ');
-    out.append(uri);
-    out.append(' ');
-    out.append(jsonText);
-    return out;
-}
-
 static Vector3f ViewOrigin(const Matrix4f & view)
 {
     return Vector3f(view.M[0][3], view.M[1][3], view.M[2][3]);
@@ -138,170 +124,10 @@ static Matrix4f PanelMatrix(const Matrix4f & lastViewMatrix, const float popupDi
     return panelMatrix;
 }
 
-//=======================================================================================
-// Default handlers for VrAppInterface
-
-VrAppInterface::VrAppInterface() :
-    app(nullptr),
-    ActivityClass(nullptr)
-{
-}
-
-VrAppInterface::~VrAppInterface()
-{
-    if (ActivityClass != nullptr)
-	{
-		// FIXME:
-        //jni->DeleteGlobalRef(ActivityClass);
-        //ActivityClass = nullptr;
-	}
-}
-
-jlong VrAppInterface::SetActivity(JNIEnv * jni, jclass clazz, jobject activity, jstring javaFromPackageNameString,
-        jstring javaCommandString, jstring javaUriString)
-{
-	// Make a permanent global reference for the class
-    if (ActivityClass != nullptr)
-	{
-        jni->DeleteGlobalRef(ActivityClass);
-	}
-    ActivityClass = (jclass)jni->NewGlobalRef(clazz);
-
-    VString utfFromPackageString = JniUtils::Convert(jni, javaFromPackageNameString);
-    VString utfJsonString = JniUtils::Convert(jni, javaCommandString);
-    VString utfUriString = JniUtils::Convert(jni, javaUriString);
-    vInfo("VrAppInterface::SetActivity:" << utfFromPackageString << utfJsonString << utfUriString);
-
-    if (app == nullptr)
-	{	// First time initialization
-		// This will set the VrAppInterface app pointer directly,
-		// so it is set when OneTimeInit is called.
-        vInfo("new AppLocal()");
-        new App(jni, activity, *this);
-
-		// Start the VrThread and wait for it to have initialized.
-        app->startVrThread();
-        app->syncVrThread();
-	}
-	else
-	{	// Just update the activity object.
-        vInfo("Update AppLocal");
-        if (app->javaObject() != nullptr)
-		{
-            jni->DeleteGlobalRef(app->javaObject());
-		}
-        app->javaObject() = jni->NewGlobalRef(activity);
-        app->VrModeParms.ActivityObject = app->javaObject();
-	}
-
-	// Send the intent and wait for it to complete.
-    VString intentMessage = ComposeIntentMessage(utfFromPackageString, utfUriString, utfJsonString);
-    VByteArray utf8Intent = intentMessage.toUtf8();
-    app->messageQueue().PostPrintf(utf8Intent.data());
-    app->syncVrThread();
-
-	return (jlong)app;
-}
-
-void VrAppInterface::OneTimeShutdown()
-{
-}
-
-void VrAppInterface::WindowCreated()
-{
-    vInfo("VrAppInterface::WindowCreated - default handler called");
-}
-
-void VrAppInterface::WindowDestroyed()
-{
-    vInfo("VrAppInterface::WindowDestroyed - default handler called");
-}
-
-void VrAppInterface::Paused()
-{
-    vInfo("VrAppInterface::Paused - default handler called");
-}
-
-void VrAppInterface::Resumed()
-{
-    vInfo("VrAppInterface::Resumed - default handler called");
-}
-
-void VrAppInterface::Command(const char * msg)
-{
-    vInfo("VrAppInterface::Command - default handler called, msg =" << msg);
-}
-
-void VrAppInterface::NewIntent(const char * fromPackageName, const char * command, const char * uri)
-{
-    vInfo("VrAppInterface::NewIntent - default handler called -" << fromPackageName << command << uri);
-}
-
-Matrix4f VrAppInterface::Frame(VrFrame vrFrame)
-{
-    vInfo("VrAppInterface::Frame - default handler called");
-	return Matrix4f();
-}
-
-void VrAppInterface::ConfigureVrMode(ovrModeParms & modeParms)
-{
-    vInfo("VrAppInterface::ConfigureVrMode - default handler called");
-}
-
-Matrix4f VrAppInterface::DrawEyeView(const int eye, const float fovDegrees)
-{
-    vInfo("VrAppInterface::DrawEyeView - default handler called");
-	return Matrix4f();
-}
-
-bool VrAppInterface::onKeyEvent(const int keyCode, const KeyState::eKeyEventType eventType)
-{
-    vInfo("VrAppInterface::OnKeyEvent - default handler called");
-	return false;
-}
-
-bool VrAppInterface::OnVrWarningDismissed(const bool accepted)
-{
-    vInfo("VrAppInterface::OnVrWarningDismissed - default handler called");
-	return false;
-}
-
-bool VrAppInterface::ShouldShowLoadingIcon() const
-{
-	return true;
-}
-
-bool VrAppInterface::wantSrgbFramebuffer() const
-{
-	return false;
-}
-
-bool VrAppInterface::GetWantProtectedFramebuffer() const
-{
-	return false;
-}
-
-//==============================
-// WaitForDebuggerToAttach
-//
-// wait on the debugger... once it is attached, change waitForDebugger to false
-void WaitForDebuggerToAttach()
-{
-	static volatile bool waitForDebugger = true;
-    while (waitForDebugger)
-	{
-		// put your breakpoint on the usleep to wait
-        usleep(100000);
-	}
-}
-
-//=======================================================================================
-
 extern void DebugMenuBounds(void * appPtr, const char * cmd);
 extern void DebugMenuHierarchy(void * appPtr, const char * cmd);
 extern void DebugMenuPoses(void * appPtr, const char * cmd);
 extern void ShowFPS(void * appPtr, const char * cmd);
-
 
 static EyeParms DefaultVrParmsForRenderer(const eglSetup_t & eglr)
 {
@@ -348,7 +174,7 @@ struct App::Private : public TalkToJavaInterface
     volatile bool	readyToExit;		// start exit procedure
 
     // Most calls in from java should communicate through this.
-    VMessageQueue	vrMessageQueue;
+    VEventLoop	eventLoop;
 
     // From EnterVrMode, used for WarpSwap and LeaveVrMode
     ovrMobile *		OvrMobile;
@@ -444,10 +270,6 @@ struct App::Private : public TalkToJavaInterface
     VThread *renderThread;
     int				vrThreadTid;		// linux tid
 
-    // For running java commands on another thread to
-    // avoid hitches.
-    TalkToJava		ttj;
-
     int				batteryLevel;		// charge level of the batter as reported from Java
     eBatteryStatus	batteryStatus;		// battery status as reported from Java
 
@@ -474,7 +296,7 @@ struct App::Private : public TalkToJavaInterface
     long long 		recenterYawFrameStart;	// Enables reorient before sensor data is read.  Allows apps to reorient without having invalid orientation information for that frame.
 
     // Manages sound assets
-    OvrSoundManager	soundManager;
+     VSoundManager	soundManager;
 
     OvrGuiSys *         guiSys;
     OvrGazeCursor *     gazeCursor;
@@ -492,7 +314,7 @@ struct App::Private : public TalkToJavaInterface
     double errorMessageEndTime;
 
     jobject javaObject;
-    VrAppInterface *appInterface;
+    VMainActivity *appInterface;
 
     VMainActivity *activity;
 
@@ -501,7 +323,7 @@ struct App::Private : public TalkToJavaInterface
         , vrThreadSynced(false)
         , createdSurface(false)
         , readyToExit(false)
-        , vrMessageQueue(100)
+        , eventLoop(100)
         , OvrMobile(nullptr)
         , eyeTargets(nullptr)
         , loadingIconTexId(0)
@@ -616,7 +438,7 @@ struct App::Private : public TalkToJavaInterface
 
     void pause()
     {
-        appInterface->Paused();
+        appInterface->onPause();
 
         ovr_LeaveVrMode(OvrMobile);
     }
@@ -641,38 +463,7 @@ struct App::Private : public TalkToJavaInterface
         VrModeParms.ActivityObject = javaObject;
 
         // Allow the app to override
-        appInterface->ConfigureVrMode(VrModeParms);
-
-        // Reload local preferences, in case we are coming back from a
-        // switch to the dashboard that changed them.
-        ovr_UpdateLocalPreferences();
-
-        // Check for values that effect our mode settings
-        {
-            const char * cpuLevelStr = ovr_GetLocalPreferenceValueForKey(LOCAL_PREF_DEV_CPU_LEVEL, "-1");
-            const int cpuLevel = atoi(cpuLevelStr);
-            if (cpuLevel >= 0)
-            {
-                VrModeParms.CpuLevel = cpuLevel;
-                vInfo("Local Preferences: Setting cpuLevel" << VrModeParms.CpuLevel);
-            }
-            const char * gpuLevelStr = ovr_GetLocalPreferenceValueForKey(LOCAL_PREF_DEV_GPU_LEVEL, "-1");
-            const int gpuLevel = atoi(gpuLevelStr);
-            if (gpuLevel >= 0)
-            {
-                VrModeParms.GpuLevel = gpuLevel;
-                vInfo("Local Preferences: Setting gpuLevel" << VrModeParms.GpuLevel);
-            }
-
-            const char * showVignetteStr = ovr_GetLocalPreferenceValueForKey(LOCAL_PREF_DEV_SHOW_VIGNETTE, "1");
-            showVignette = (atoi(showVignetteStr) > 0);
-
-            const char * enableDebugOptionsStr = ovr_GetLocalPreferenceValueForKey(LOCAL_PREF_DEV_DEBUG_OPTIONS, "0");
-            enableDebugOptions =  (atoi(enableDebugOptionsStr) > 0);
-
-            const char * enableGpuTimingsStr = ovr_GetLocalPreferenceValueForKey(LOCAL_PREF_DEV_GPU_TIMINGS, "0");
-            SetAllowGpuTimerQueries(atoi(enableGpuTimingsStr) > 0);
-        }
+        appInterface->configureVrMode(VrModeParms);
 
         // Clear cursor trails
         gazeCursor->HideCursorForFrames(10);
@@ -680,7 +471,7 @@ struct App::Private : public TalkToJavaInterface
         // Start up TimeWarp and the various performance options
         OvrMobile = ovr_EnterVrMode(VrModeParms, &hmdInfo);
 
-        appInterface->Resumed();
+        appInterface->onResume();
     }
 
     void initGlObjects()
@@ -991,71 +782,55 @@ struct App::Private : public TalkToJavaInterface
         }
     }
 
-    void command(const char *msg)
+    void command(const VEvent &event)
     {
         // Always include the space in MatchesHead to prevent problems
         // with commands that have matching prefixes.
 
-        if (MatchesHead("joy ", msg))
-        {
-            sscanf(msg, "joy %f %f %f %f",
-                    &joypad.sticks[0][0],
-                    &joypad.sticks[0][1],
-                    &joypad.sticks[1][0],
-                    &joypad.sticks[1][1]);
+        if (event.name == "joy") {
+            vAssert(event.data.isArray());
+            const JsonArray &array = event.data.toArray();
+            joypad.sticks[0][0] = array.at(0).toDouble();
+            joypad.sticks[0][1] = array.at(1).toDouble();
+            joypad.sticks[1][0] = array.at(2).toDouble();
+            joypad.sticks[1][1] = array.at(3).toDouble();
             return;
         }
 
-        if (MatchesHead("touch ", msg))
-        {
-            int	action;
-            sscanf(msg, "touch %i %f %f",
-                    &action,
-                    &joypad.touch[0],
-                    &joypad.touch[1]);
-            if (action == 0)
-            {
+        if (event.name == "touch") {
+            vAssert(event.data.isArray());
+            const JsonArray &array = event.data.toArray();
+            int	action = array.at(0).toInt();
+            joypad.touch[0] = array.at(1).toDouble();
+            joypad.touch[1] = array.at(2).toDouble();
+            if (action == 0) {
                 joypad.buttonState |= BUTTON_TOUCH;
             }
-            if (action == 1)
-            {
+            if (action == 1) {
                 joypad.buttonState &= ~BUTTON_TOUCH;
             }
             return;
         }
 
-        if (MatchesHead("key ", msg))
-        {
-            int	key, down, repeatCount;
-            sscanf(msg, "key %i %i %i", &key, &down, &repeatCount);
+        if (event.name == "key") {
+            vAssert(event.data.isArray());
+            const JsonArray &array = event.data.toArray();
+            int	key = array.at(0).toInt();
+            int down = array.at(1).toInt();
+            int repeatCount = array.at(2).toInt();
             onKeyEvent(key, down, repeatCount);
-            // We simply return because KeyEvent will call VrAppInterface->OnKeyEvent to give the app a
-            // chance to handle and consume the key before VrLib gets it. VrAppInterface needs to get the
-            // key first and have a chance to consume it completely because keys are context sensitive
-            // and only the app interface can know the current context the key should apply to. For
-            // instance, the back key backs out of some current state in the app -- but only the app knows
-            // whether or not there is a state to back out of at all. If we were to fall through here, the
-            // "key " message will be sent to VrAppInterface->Command() but only after VrLib has handled
-            // and or consumed the key first, which would break the back key behavior, and probably anything
-            // else, like input into an edit control.
             return;
         }
 
-        if (MatchesHead("surfaceChanged ", msg))
-        {
-            vInfo(msg);
+        if (event.name == "surfaceChanged") {
+            vInfo(event.name);
             if (windowSurface != EGL_NO_SURFACE)
             {	// Samsung says this is an Android problem, where surfaces are reported as
                 // created multiple times.
-                WARN("Skipping create work because window hasn't been destroyed.");
+                vWarn("Skipping create work because window hasn't been destroyed.");
                 return;
             }
-            sscanf(msg, "surfaceChanged %p", &nativeWindow);
-
-            // Optionally force the window to a different resolution, which
-            // will be automatically scaled up by the HWComposer.
-            //
-            //ANativeWindow_setBuffersGeometry(nativeWindow, 1920, 1080, 0);
+            nativeWindow = reinterpret_cast<ANativeWindow *>(event.data.toInt());
 
             EGLint attribs[100];
             int		numAttribs = 0;
@@ -1068,7 +843,7 @@ struct App::Private : public TalkToJavaInterface
                 attribs[numAttribs++] = VGlOperation::EGL_GL_COLORSPACE_SRGB_KHR;
             }
             // Ask for TrustZone rendering support
-            if (appInterface->GetWantProtectedFramebuffer())
+            if (appInterface->wantProtectedFramebuffer())
             {
                 attribs[numAttribs++] = VGlOperation::EGL_PROTECTED_CONTENT_EXT;
                 attribs[numAttribs++] = EGL_TRUE;
@@ -1099,7 +874,7 @@ struct App::Private : public TalkToJavaInterface
             else
             {
                 framebufferIsSrgb = appInterface->wantSrgbFramebuffer();
-                framebufferIsProtected = appInterface->GetWantProtectedFramebuffer();
+                framebufferIsProtected = appInterface->wantProtectedFramebuffer();
             }
 
             if (eglMakeCurrent(eglr.display, windowSurface, windowSurface, eglr.context) == EGL_FALSE)
@@ -1110,7 +885,7 @@ struct App::Private : public TalkToJavaInterface
             createdSurface = true;
 
             // Let the client app setup now
-            appInterface->WindowCreated();
+            appInterface->onWindowCreated();
 
             // Resume
             if (!paused)
@@ -1120,12 +895,11 @@ struct App::Private : public TalkToJavaInterface
             return;
         }
 
-        if (MatchesHead("surfaceDestroyed ", msg))
-        {
+        if (event.name == "surfaceDestroyed") {
             vInfo("surfaceDestroyed");
 
             // Let the client app shutdown first.
-            appInterface->WindowDestroyed();
+            appInterface->onWindowDestroyed();
 
             // Handle it ourselves.
             if (eglMakeCurrent(eglr.display, eglr.pbufferSurface, eglr.pbufferSurface,
@@ -1147,8 +921,7 @@ struct App::Private : public TalkToJavaInterface
             return;
         }
 
-        if (MatchesHead("pause ", msg))
-        {
+        if (event.name == "pause") {
             vInfo("pause");
             if (!paused)
             {
@@ -1157,8 +930,7 @@ struct App::Private : public TalkToJavaInterface
             }
         }
 
-        if (MatchesHead("resume ", msg))
-        {
+        if (event.name == "resume") {
             LOG("resume");
             paused = false;
             // Don't actually do the resume operations if we don't have
@@ -1173,52 +945,35 @@ struct App::Private : public TalkToJavaInterface
             }
         }
 
-        if (MatchesHead("intent ", msg))
-        {
-            char fromPackageName[512];
-            char uri[1024];
-            // since the package name and URI cannot contain spaces, but JSON can,
-            // the JSON string is at the end and will come after the third space.
-            sscanf(msg, "intent %s %s", fromPackageName, uri);
-            char const * jsonStart = nullptr;
-            size_t msgLen = strlen(msg);
-            int spaceCount = 0;
-            for (size_t i = 0; i < msgLen; ++i) {
-                if (msg[i] == ' ') {
-                    spaceCount++;
-                    if (spaceCount == 3) {
-                        jsonStart = &msg[i+1];
-                        break;
-                    }
-                }
-            }
+        if (event.name == "intent") {
+            vAssert(event.data.isArray());
+            VString fromPackageName = event.data.at(0).toString();
+            VString uri = event.data.at(1).toString();
+            VString json = event.data.at(2).toString();
 
-            if (strcmp(fromPackageName, EMPTY_INTENT_STR) == 0)
-            {
-                fromPackageName[0] = '\0';
+            if (fromPackageName == EMPTY_INTENT_STR) {
+                fromPackageName.clear();
             }
-            if (strcmp(uri, EMPTY_INTENT_STR) == 0)
-            {
-                uri[0] = '\0';
+            if (uri == EMPTY_INTENT_STR) {
+                uri.clear();
             }
 
             // assign launchIntent to the intent command
             launchIntentFromPackage = fromPackageName;
-            launchIntentJSON = jsonStart;
+            launchIntentJSON = json;
             launchIntentURI = uri;
 
             // when the PlatformActivity is launched, this is how it gets its command to start
             // a particular UI.
-            appInterface->NewIntent(fromPackageName, jsonStart, uri);
-
+            appInterface->onNewIntent(fromPackageName, json, uri);
             return;
         }
 
-        if (MatchesHead("popup ", msg))
-        {
-            int width, height;
-            float seconds;
-            sscanf(msg, "popup %i %i %f", &width, &height, &seconds);
+        if (event.name == "popup") {
+            vAssert(event.data.isArray());
+            int width = event.data.at(0).toInt();
+            int height = event.data.at(1).toInt();
+            float seconds = event.data.at(2).toDouble();
 
             dialogWidth = width;
             dialogHeight = height;
@@ -1234,20 +989,18 @@ struct App::Private : public TalkToJavaInterface
             return;
         }
 
-        if (MatchesHead("sync ", msg))
-        {
+        if (event.name == "sync") {
             return;
         }
 
-        if (MatchesHead("quit ", msg))
-        {
+        if (event.name == "quit") {
             ovr_LeaveVrMode(OvrMobile);
             readyToExit = true;
             vInfo("VrThreadSynced=" << vrThreadSynced << " CreatedSurface=" << createdSurface << " ReadyToExit=" << readyToExit);
         }
 
         // Pass it on to the client app.
-        appInterface->Command(msg);
+        appInterface->command(event);
     }
 
     void startRendering()
@@ -1276,7 +1029,7 @@ struct App::Private : public TalkToJavaInterface
 
             // Set up another thread for making longer-running java calls
             // to avoid hitches.
-            ttj.Init(javaVM, this);
+            activity->Init(javaVM, this);
 
             // Create a new context and pbuffer surface
             const int windowDepth = 0;
@@ -1305,7 +1058,7 @@ struct App::Private : public TalkToJavaInterface
 
             initFonts();
 
-            soundManager.LoadSoundAssets();
+            soundManager.loadSoundAssets();
 
             debugLines->Init();
 
@@ -1316,8 +1069,6 @@ struct App::Private : public TalkToJavaInterface
             guiSys->init(self, *vrMenuMgr, *defaultFont);
 
             volumePopup = OvrVolumePopup::Create(self, *vrMenuMgr, *defaultFont);
-
-            ovr_InitLocalPreferences(vrJni, javaObject);
 
             lastTouchpadTime = ovr_GetTimeInSeconds();
         }
@@ -1333,15 +1084,12 @@ struct App::Private : public TalkToJavaInterface
             gazeCursor->BeginFrame();
 
             // Process incoming messages until queue is empty
-            for (; ;)
-            {
-                const char * msg = vrMessageQueue.nextMessage();
-                if (!msg)
-                {
+            forever {
+                VEvent event = eventLoop.next();
+                if (!event.isValid()) {
                     break;
                 }
-                command(msg);
-                free((void *)msg);
+                command(event);
             }
 
             // handle any pending system activity events
@@ -1363,9 +1111,9 @@ struct App::Private : public TalkToJavaInterface
 
                 std::stringstream s;
                 s << eventBuffer;
-                Json jsonObj;
+                VJson jsonObj;
                 s >> jsonObj;
-                if (jsonObj.type() == Json::Object)
+                if (jsonObj.type() == VJson::Object)
                 {
                     VString command = jsonObj["Command"].toString();
                     if (command == SYSTEM_ACTIVITY_EVENT_REORIENT)
@@ -1401,7 +1149,7 @@ struct App::Private : public TalkToJavaInterface
             {
                 if (!(vrThreadSynced && createdSurface && readyToExit))
                 {
-                    vrMessageQueue.SleepUntilMessage();
+                    eventLoop.wait();
                 }
                 continue;
             }
@@ -1426,7 +1174,7 @@ struct App::Private : public TalkToJavaInterface
             // Let the client app initialize only once by calling OneTimeInit() when the windowSurface is valid.
             if (!self->oneTimeInitCalled)
             {
-                if (appInterface->ShouldShowLoadingIcon())
+                if (appInterface->showLoadingIcon())
                 {
                     const ovrTimeWarpParms warpSwapLoadingIconParms = InitTimeWarpParms(WARP_INIT_LOADING_ICON, loadingIconTexId);
                     ovr_WarpSwap(OvrMobile, &warpSwapLoadingIconParms);
@@ -1434,7 +1182,7 @@ struct App::Private : public TalkToJavaInterface
                 vInfo("launchIntentJSON:" << launchIntentJSON);
                 vInfo("launchIntentURI:" << launchIntentURI);
 
-                appInterface->OneTimeInit(launchIntentFromPackage, launchIntentJSON, launchIntentURI);
+                appInterface->init(launchIntentFromPackage, launchIntentJSON, launchIntentURI);
                 self->oneTimeInitCalled = true;
             }
 
@@ -1600,7 +1348,7 @@ struct App::Private : public TalkToJavaInterface
             // Main loop logic / draw code
             if (!readyToExit)
             {
-                lastViewMatrix = appInterface->Frame(vrFrame);
+                lastViewMatrix = appInterface->onNewFrame(vrFrame);
             }
 
             ovr_HandleDeviceStateChanges(OvrMobile);
@@ -1626,14 +1374,14 @@ struct App::Private : public TalkToJavaInterface
             vInfo("AppLocal::VrThreadFunction - shutdown");
 
             // Shut down the message queue so it cannot overflow.
-            vrMessageQueue.Shutdown();
+            eventLoop.quit();
 
             if (errorTexture != 0)
             {
                 FreeTexture(errorTexture);
             }
 
-            appInterface->OneTimeShutdown();
+            appInterface->shutdown();
 
             guiSys->shutdown(*vrMenuMgr);
 
@@ -1783,25 +1531,23 @@ struct App::Private : public TalkToJavaInterface
         }
     }
 
-    void TtjCommand(JNIEnv *jni, const char * commandString) override
+    void TtjCommand(JNIEnv *jni, const VEvent &event) override
     {
-        if (MatchesHead("sound ", commandString))
-        {
-            jstring cmdString = JniUtils::Convert(jni, commandString + 6);
+        if (event.name == "sound") {
+            jstring cmdString = JniUtils::Convert(jni, event.data.toString());
             jni->CallVoidMethod(javaObject, playSoundPoolSoundMethodId, cmdString);
             jni->DeleteLocalRef(cmdString);
             return;
         }
 
-        if (MatchesHead("toast ", commandString))
-        {
-            jstring cmdString = JniUtils::Convert(jni, commandString + 6);
+        if (event.name == "toast") {
+            jstring cmdString = JniUtils::Convert(jni, event.data.toString());
             jni->CallVoidMethod(javaObject, createVrToastMethodId, cmdString);
             jni->DeleteLocalRef(cmdString);
             return;
         }
 
-        if (MatchesHead("finish ", commandString)) {
+        if (event.name == "finish") {
             activity->finishActivity();
         }
     }
@@ -1816,18 +1562,18 @@ struct App::Private : public TalkToJavaInterface
  * move everything to first surface init?
  */
 
-App *vApp = nullptr;
+App *NervGearAppInstance = nullptr;
 
-App::App(JNIEnv *jni, jobject activityObject, VrAppInterface &interface)
+App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
     : oneTimeInitCalled(false)
     , d(new Private(this))
 {
-    d->activity = new VMainActivity(jni, activityObject);
+    d->activity = activity;
 
     d->uiJni = jni;
     vInfo("----------------- AppLocal::AppLocal() -----------------");
-    vAssert(vApp == nullptr);
-    vApp = this;
+    vAssert(NervGearAppInstance == nullptr);
+    NervGearAppInstance = this;
 
     d->storagePaths = new VStandardPath(jni, activityObject);
 
@@ -1872,16 +1618,15 @@ App::App(JNIEnv *jni, jobject activityObject, VrAppInterface &interface)
     d->packageCodePath = d->activity->getPackageCodePath();
 
 	// Hook the App and AppInterface together
-    d->appInterface = &interface;
-    d->appInterface->app = this;
+    d->appInterface = activity;
 
 	// Load user profile data relevant to rendering
-    VUserProfile profile;
-    profile.load();
-    d->viewParms.InterpupillaryDistance = profile.ipd;
-    d->viewParms.EyeHeight = profile.eyeHeight;
-    d->viewParms.HeadModelDepth = profile.headModelDepth;
-    d->viewParms.HeadModelHeight = profile.headModelHeight;
+    VUserSettings config;
+    config.load();
+    d->viewParms.InterpupillaryDistance = config.ipd;
+    d->viewParms.EyeHeight = config.eyeHeight;
+    d->viewParms.HeadModelDepth = config.headModelDepth;
+    d->viewParms.HeadModelHeight = config.headModelHeight;
 
 	// Register console functions
 	InitConsole();
@@ -1907,7 +1652,7 @@ App::~App()
 
     if (d->javaObject != 0)
 	{
-        d->uiJni->DeleteGlobalRef(d->javaObject);
+        //d->uiJni->DeleteGlobalRef(d->javaObject);
 	}
 
     if (d->storagePaths != nullptr)
@@ -1927,7 +1672,7 @@ void App::startVrThread()
 
 void App::stopVrThread()
 {
-    d->vrMessageQueue.PostPrintf("quit ");
+    d->eventLoop.post("quit");
     bool finished = d->renderThread->wait();
     if (!finished) {
         vWarn("failed to wait for VrThread");
@@ -1936,13 +1681,13 @@ void App::stopVrThread()
 
 void App::syncVrThread()
 {
-    d->vrMessageQueue.SendPrintf("sync ");
+    d->eventLoop.send("sync");
     d->vrThreadSynced = true;
 }
 
-VMessageQueue & App::messageQueue()
+VEventLoop &App::eventLoop()
 {
-    return d->vrMessageQueue;
+    return d->eventLoop;
 }
 
 void App::createToast(const char * fmt, ...)
@@ -1955,7 +1700,7 @@ void App::createToast(const char * fmt, ...)
 
     vInfo("CreateToast" << bigBuffer);
 
-    d->ttj.GetMessageQueue().PostPrintf("toast %s", bigBuffer);
+    d->activity->eventLoop().post("toast", bigBuffer);
 }
 
 void App::playSound(const char * name)
@@ -1963,16 +1708,16 @@ void App::playSound(const char * name)
 	// Get sound from SoundManager
 	VString soundFile;
 
-    if (d->soundManager.GetSound(name, soundFile))
+    if (d->soundManager.getSound(name, soundFile))
 	{
 		// Run on the talk to java thread
-        d->ttj.GetMessageQueue().PostPrintf("sound %s", soundFile.toCString());
+        d->activity->eventLoop().post("sound", soundFile);
 	}
 	else
 	{
         WARN("AppLocal::playSound called with non SoundManager defined sound: %s", name);
 		// Run on the talk to java thread
-        d->ttj.GetMessageQueue().PostPrintf("sound %s", name);
+        d->activity->eventLoop().post("sound", name);
 	}
 }
 
@@ -2150,7 +1895,7 @@ const VStandardPath & App::storagePaths()
 {
     return *d->storagePaths;
 }
-OvrSoundManager & App::soundMgr()
+ VSoundManager & App::soundMgr()
 {
     return d->soundManager;
 }
@@ -2341,7 +2086,7 @@ bool App::showFPS() const
     return d->showFPS;
 }
 
-VrAppInterface * App::appInterface()
+VMainActivity *App::appInterface()
 {
     return d->appInterface;
 }
@@ -2546,7 +2291,7 @@ void App::drawEyeViewsPostDistorted( Matrix4f const & centerViewMatrix, const in
             d->eyeTargets->BeginRenderingEye( eye );
 
             // Call back to the app for drawing.
-            const Matrix4f mvp = d->appInterface->DrawEyeView( eye, fovDegrees );
+            const Matrix4f mvp = d->appInterface->drawEyeView( eye, fovDegrees );
 
             vrMenuMgr().renderSubmitted( mvp.Transposed(), centerViewMatrix );
             menuFontSurface().Render3D( defaultFont(), mvp.Transposed() );

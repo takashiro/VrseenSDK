@@ -1,18 +1,3 @@
-/************************************************************************************
-
-Filename    :   SceneManager.cpp
-Content     :	Handles rendering of current scene and movie.
-Created     :   September 3, 2013
-Authors     :	Jim Dos�, based on a fork of VrVideo.cpp from VrVideo by John Carmack.
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-This source code is licensed under the BSD-style license found in the
-LICENSE file in the Cinema/ directory. An additional grant
-of patent rights can be found in the PATENTS file in the same directory.
-
-*************************************************************************************/
-
 #include "String_Utils.h"
 #include "api/VrApi.h"
 #include "api/VrApi_Helpers.h"
@@ -23,6 +8,8 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "SceneManager.h"
 #include "SurfaceTexture.h"
 #include "VrCommon.h"
+
+#include "VLog.h"
 
 namespace OculusCinema
 {
@@ -192,7 +179,7 @@ void SceneManager::SetSceneModel( const SceneDef &sceneDef )
 			break;
 		}
 		SceneSeatPositions[SceneSeatCount] = tag->matrix.GetTranslation();
-        SceneSeatPositions[SceneSeatCount].y -= Cinema.app->vrViewParms().EyeHeight;
+        SceneSeatPositions[SceneSeatCount].y -= vApp->vrViewParms().EyeHeight;
 	}
 
 	if ( !sceneDef.UseSeats )
@@ -437,7 +424,7 @@ bool SceneManager::GetUseOverlay() const
 
 void SceneManager::ClearMovie()
 {
-	Native::StopMovie( Cinema.app );
+    Native::StopMovie( vApp );
 
 	SetSceneProgram( SCENE_PROGRAM_DYNAMIC_ONLY, SCENE_PROGRAM_ADDITIVE );
 
@@ -473,7 +460,7 @@ void SceneManager::SetFreeScreenAngles( const Vector3f &angles )
 void SceneManager::PutScreenInFront()
 {
 	FreeScreenOrientation = Scene.ViewMatrix.Inverted();
-    Cinema.app->recenterYaw( false );
+    vApp->recenterYaw( false );
 }
 
 void SceneManager::ClampScreenToView()
@@ -651,35 +638,33 @@ bool SceneManager::ChangeSeats( const VrFrame & vrFrame )
  *
  * Actions that need to be performed on the render thread.
  */
-bool SceneManager::Command( const char * msg )
+bool SceneManager::Command(const VEvent &event)
 {
 	// Always include the space in MatchesHead to prevent problems
 	// with commands with matching prefixes.
-	LOG( "SceneManager::Command: %s", msg );
+    vInfo("SceneManager::Command:" << event.name);
 
-	if ( MatchesHead( "newVideo ", msg ) )
-	{
+    if (event.name == "newVideo") {
 		delete MovieTexture;
-        MovieTexture = new SurfaceTexture( Cinema.app->vrJni() );
-		LOG( "RC_NEW_VIDEO texId %i", MovieTexture->textureId );
+        MovieTexture = new SurfaceTexture( vApp->vrJni() );
+        vInfo( "RC_NEW_VIDEO texId" << MovieTexture->textureId);
 
-		VMessageQueue * receiver;
-		sscanf( msg, "newVideo %p", &receiver );
-
-		receiver->PostPrintf( "surfaceTexture %p", MovieTexture->javaObject );
+        VEventLoop *receiver = reinterpret_cast<VEventLoop *>(event.data.toInt());
+        receiver->post("surfaceTexture", reinterpret_cast<int>(MovieTexture->javaObject));
 
 		// don't draw the screen until we have the new size
 		CurrentMovieWidth = 0;
 		return true;
 	}
 
-	if ( MatchesHead( "video ", msg ) )
-	{
-		int width, height;
-		sscanf( msg, "video %i %i %i %i", &width, &height, &MovieRotation, &MovieDuration );
+    if (event.name =="video") {
+        int width = event.data.at(0).toInt();
+        int height = event.data.at(1).toInt();
+        MovieRotation = event.data.at(2).toInt();
+        MovieDuration = event.data.at(3).toInt();
 
 		const MovieDef *movie = Cinema.currentMovie();
-		assert( movie );
+        vAssert(movie);
 
 		// always use 2d form lobby movies
 		if ( ( movie == NULL ) || SceneInfo.LobbyScreen )
@@ -774,7 +759,7 @@ bool SceneManager::Command( const char * msg )
 			glGenTextures( 1, &MipMappedMovieTextures[i] );
 			glBindTexture( GL_TEXTURE_2D, MipMappedMovieTextures[i] );
 
-            glTexImage2D( GL_TEXTURE_2D, 0, Cinema.app->appInterface()->wantSrgbFramebuffer() ? GL_SRGB8_ALPHA8 :GL_RGBA,
+            glTexImage2D( GL_TEXTURE_2D, 0, vApp->appInterface()->wantSrgbFramebuffer() ? GL_SRGB8_ALPHA8 :GL_RGBA,
 					MovieTextureWidth, MovieTextureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL );
 
 			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
@@ -960,8 +945,8 @@ Matrix4f SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 	if ( !GetUseOverlay() || SceneInfo.LobbyScreen || ( SceneInfo.UseScreenGeometry && ( SceneScreenSurface != NULL ) ) )
 	{
 		// no overlay
-        Cinema.app->swapParms().WarpProgram = WP_CHROMATIC;
-        Cinema.app->swapParms().Images[eye][1].TexId = 0;
+        vApp->swapParms().WarpProgram = WP_CHROMATIC;
+        vApp->swapParms().Images[eye][1].TexId = 0;
 
 		glActiveTexture( GL_TEXTURE0 );
 		glBindTexture( GL_TEXTURE_EXTERNAL_OES, MovieTexture->textureId );
@@ -996,14 +981,14 @@ Matrix4f SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 		const Matrix4f screenModel = ScreenMatrix();
 		const ovrMatrix4f mv = Scene.ViewMatrixForEye( eye ) * screenModel;
 
-        Cinema.app->swapParms().WarpProgram = WP_CHROMATIC_MASKED_PLANE;
-        Cinema.app->swapParms().Images[eye][1].TexId = MipMappedMovieTextures[CurrentMipMappedMovieTexture];
-        Cinema.app->swapParms().Images[eye][1].Pose = Cinema.app->sensorForNextWarp().Predicted;
-        Cinema.app->swapParms().Images[eye][1].TexCoordsFromTanAngles = texMatrix * TanAngleMatrixFromUnitSquare( &mv );
+        vApp->swapParms().WarpProgram = WP_CHROMATIC_MASKED_PLANE;
+        vApp->swapParms().Images[eye][1].TexId = MipMappedMovieTextures[CurrentMipMappedMovieTexture];
+        vApp->swapParms().Images[eye][1].Pose = vApp->sensorForNextWarp().Predicted;
+        vApp->swapParms().Images[eye][1].TexCoordsFromTanAngles = texMatrix * TanAngleMatrixFromUnitSquare( &mv );
 
 		// explicitly clear a hole in alpha
 		const ovrMatrix4f screenMvp = mvp * screenModel;
-        Cinema.app->drawScreenMask( screenMvp, 0.0f, 0.0f );
+        vApp->drawScreenMask( screenMvp, 0.0f, 0.0f );
 	}
 
 	// The framework will automatically draw the floating elements on top of us now.
@@ -1024,11 +1009,11 @@ Matrix4f SceneManager::Frame( const VrFrame & vrFrame )
 		vrFrameWithoutMove.Input.sticks[0][0] = 0.0f;
 		vrFrameWithoutMove.Input.sticks[0][1] = 0.0f;
 	}
-    Scene.Frame( Cinema.app->vrViewParms(), vrFrameWithoutMove, Cinema.app->swapParms().ExternalVelocity );
+    Scene.Frame( vApp->vrViewParms(), vrFrameWithoutMove, vApp->swapParms().ExternalVelocity );
 
 	if ( ClearGhostsFrames > 0 )
 	{
-        Cinema.app->gazeCursor().ClearGhosts();
+        vApp->gazeCursor().ClearGhosts();
 		ClearGhostsFrames--;
 	}
 
@@ -1067,7 +1052,7 @@ Matrix4f SceneManager::Frame( const VrFrame & vrFrame )
 		glDisable( GL_SCISSOR_TEST );
         glOperation.GL_InvalidateFramebuffer( VGlOperation::INV_FBO, true, false );
 		glViewport( 0, 0, MovieTextureWidth, MovieTextureHeight );
-        if ( Cinema.app->appInterface()->wantSrgbFramebuffer() )
+        if ( vApp->appInterface()->wantSrgbFramebuffer() )
 		{	// we need this copied without sRGB conversion on the top level
             glDisable( VGlOperation::GL_FRAMEBUFFER_SRGB_EXT );
 		}
@@ -1077,7 +1062,7 @@ Matrix4f SceneManager::Frame( const VrFrame & vrFrame )
 			glUseProgram( Cinema.shaderMgr.CopyMovieProgram.program );
 			UnitSquare.Draw();
 			glBindTexture( GL_TEXTURE_EXTERNAL_OES, 0 );
-            if ( Cinema.app->appInterface()->wantSrgbFramebuffer() )
+            if ( vApp->appInterface()->wantSrgbFramebuffer() )
 			{	// we need this copied without sRGB conversion on the top level
                 glEnable( VGlOperation::GL_FRAMEBUFFER_SRGB_EXT );
 			}
@@ -1103,7 +1088,7 @@ Matrix4f SceneManager::Frame( const VrFrame & vrFrame )
 	}
 
 	// Generate callbacks into DrawEyeView
-    Cinema.app->drawEyeViewsPostDistorted( Scene.CenterViewMatrix() );
+    vApp->drawEyeViewsPostDistorted( Scene.CenterViewMatrix() );
 
 	return Scene.CenterViewMatrix();
 }

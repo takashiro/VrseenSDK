@@ -11,7 +11,8 @@ public:
     VPath(const char *str) : VString(str) {}
     VPath(const VString &source) : VString(source) {}
     VPath(const VPath &path) : VString(path.data(), path.size()) {}
-
+    VPath(const char *data, uint length);
+    VPath(const char16_t *data, uint length):VString(){VString::assign(data, length);}
     bool isAbsolute() const;
 
     bool hasProtocol() const;

@@ -7,48 +7,48 @@
 
 NV_NAMESPACE_BEGIN
 
-Json::Json()
+VJson::VJson()
 {
     p_ptr->type = None;
 }
 
-Json::Json(bool value)
+VJson::VJson(bool value)
 {
     p_ptr->type = Boolean;
     p_ptr->boolean = value;
 }
 
-Json::Json(int value)
+VJson::VJson(int value)
 {
     p_ptr->type = Number;
     p_ptr->number = value;
 }
 
-Json::Json(double value)
+VJson::VJson(double value)
 {
     p_ptr->type = Number;
     p_ptr->number = value;
 }
 
-Json::Json(const std::string &value)
+VJson::VJson(const std::string &value)
 {
     p_ptr->type = String;
     p_ptr->str = new VString(value);
 }
 
-Json::Json(const VString &value)
+VJson::VJson(const VString &value)
 {
     p_ptr->type = String;
     p_ptr->str = new VString(value);
 }
 
-Json::Json(const char *value)
+VJson::VJson(const char *value)
 {
     p_ptr->type = String;
     p_ptr->str = new VString(value);
 }
 
-Json::Json(Type type)
+VJson::VJson(Type type)
 {
     p_ptr->type = type;
     switch(type)
@@ -63,7 +63,7 @@ Json::Json(Type type)
         p_ptr->str = new VString();
         break;
     case Array:
-        p_ptr->array = new std::vector<Json>();
+        p_ptr->array = new std::vector<VJson>();
         break;
     case Object:
         p_ptr->object = new JsonObject();
@@ -74,12 +74,12 @@ Json::Json(Type type)
     }
 }
 
-Json::Type Json::type() const
+VJson::Type VJson::type() const
 {
 	return p_ptr->type;
 }
 
-bool Json::toBool() const
+bool VJson::toBool() const
 {
 	switch (p_ptr->type) {
 	case Boolean:
@@ -97,7 +97,7 @@ bool Json::toBool() const
 	}
 }
 
-double Json::toDouble() const
+double VJson::toDouble() const
 {
 	if (p_ptr->type == Number)
 		return p_ptr->number;
@@ -113,7 +113,7 @@ double Json::toDouble() const
 	return 0.0;
 }
 
-int Json::toInt() const
+int VJson::toInt() const
 {
 	if (p_ptr->type == Number)
 		return static_cast<int>(p_ptr->number);
@@ -129,7 +129,7 @@ int Json::toInt() const
     return 0;
 }
 
-VString Json::toString() const
+VString VJson::toString() const
 {
     if (p_ptr->type == String)
         return *(p_ptr->str);
@@ -145,7 +145,7 @@ VString Json::toString() const
     return VString();
 }
 
-std::string Json::toStdString() const
+std::string VJson::toStdString() const
 {
 	if (p_ptr->type == String)
         return p_ptr->str->toLatin1();
@@ -161,32 +161,32 @@ std::string Json::toStdString() const
 	return std::string();
 }
 
-const JsonArray &Json::toArray() const
+const JsonArray &VJson::toArray() const
 {
     return *(p_ptr->array);
 }
 
-const JsonObject &Json::toObject() const
+const JsonObject &VJson::toObject() const
 {
     return *(p_ptr->object);
 }
 
-bool Json::operator==(bool value) const
+bool VJson::operator==(bool value) const
 {
 	return p_ptr->type == Boolean && p_ptr->boolean == value;
 }
 
-bool Json::operator==(double value) const
+bool VJson::operator==(double value) const
 {
 	return p_ptr->type == Number && p_ptr->number == value;
 }
 
-bool Json::operator==(const std::string &value) const
+bool VJson::operator==(const std::string &value) const
 {
 	return p_ptr->type == String && *(p_ptr->str) == value;
 }
 
-bool Json::operator==(const Json &value) const
+bool VJson::operator==(const VJson &value) const
 {
 	if (type() != value.type())
 		return false;
@@ -227,35 +227,41 @@ bool Json::operator==(const Json &value) const
 	return true;
 }
 
-void Json::append(const Json &child)
+void VJson::append(const VJson &child)
 {
     p_ptr.detach();
-	p_ptr->array->push_back(child);
+    p_ptr->array->push_back(child);
 }
 
-void Json::removeAt(int index)
+VJson &VJson::operator <<(const VJson &value)
+{
+    append(value);
+    return *this;
+}
+
+void VJson::removeAt(int index)
 {
     p_ptr.detach();
 	p_ptr->array->erase(p_ptr->array->begin() + index);
 }
 
-Json &Json::operator[](int index)
+VJson &VJson::operator[](int index)
 {
     p_ptr.detach();
 	return p_ptr->array->operator[](index);
 }
 
-const Json &Json::operator[](int index) const
+const VJson &VJson::operator[](int index) const
 {
 	return p_ptr->array->operator[](index);
 }
 
-const Json &Json::at(int index) const
+const VJson &VJson::at(int index) const
 {
 	return p_ptr->array->operator[](index);
 }
 
-void Json::removeOne(const Json &value)
+void VJson::removeOne(const VJson &value)
 {
     p_ptr.detach();
 	for (auto i = p_ptr->array->begin(); i != p_ptr->array->end(); i++) {
@@ -266,7 +272,7 @@ void Json::removeOne(const Json &value)
 	}
 }
 
-void Json::removeAll(const Json &value)
+void VJson::removeAll(const VJson &value)
 {
     p_ptr.detach();
 	for (auto i = p_ptr->array->begin(); i != p_ptr->array->end(); i++) {
@@ -276,47 +282,47 @@ void Json::removeAll(const Json &value)
     }
 }
 
-void Json::insert(const std::string &key, const Json &value)
+void VJson::insert(const std::string &key, const VJson &value)
 {
     p_ptr.detach();
 	p_ptr->object->operator[](key) = value;
 }
 
-void Json::remove(const std::string &key)
+void VJson::remove(const std::string &key)
 {
     p_ptr.detach();
     p_ptr->object->erase(key);
 }
 
-Json &Json::operator[](const std::string &key)
+VJson &VJson::operator[](const std::string &key)
 {
     p_ptr.detach();
 	return p_ptr->object->operator[](key);
 }
 
-const Json &Json::operator[](const std::string &key) const
+const VJson &VJson::operator[](const std::string &key) const
 {
 	return p_ptr->object->operator[](key);
 }
 
-bool Json::contains(const std::string &key) const
+bool VJson::contains(const std::string &key) const
 {
 	return p_ptr->object->find(key) != p_ptr->object->end();
 }
 
-const Json &Json::value(const std::string &key) const
+const VJson &VJson::value(const std::string &key) const
 {
 	return p_ptr->object->operator[](key);
 }
 
-const Json &Json::value(const std::string &key, const Json &defaultValue) const
+const VJson &VJson::value(const std::string &key, const VJson &defaultValue) const
 {
 	if (contains(key))
 		return value(key);
 	return defaultValue;
 }
 
-size_t Json::size() const
+size_t VJson::size() const
 {
 	if (isArray())
 		return p_ptr->array->size();
@@ -325,12 +331,12 @@ size_t Json::size() const
 	return 0;
 }
 
-void Json::clear()
+void VJson::clear()
 {
     if (p_ptr->type == Array) {
         p_ptr.reset();
         p_ptr->type = Array;
-        p_ptr->array = new std::vector<Json>();
+        p_ptr->array = new std::vector<VJson>();
     } else if (p_ptr->type == Object) {
         p_ptr.reset();
         p_ptr->type = Object;
@@ -338,17 +344,17 @@ void Json::clear()
     }
 }
 
-VString &Json::string()
+VString &VJson::string()
 {
 	return *(p_ptr->str);
 }
 
-std::vector<Json> &Json::array()
+std::vector<VJson> &VJson::array()
 {
 	return *(p_ptr->array);
 }
 
-JsonObject &Json::object()
+JsonObject &VJson::object()
 {
 	return *(p_ptr->object);
 }
@@ -400,21 +406,21 @@ bool json_try_read(std::istream &in, const char *str)
 
 }
 
-std::istream &operator>>(std::istream &in, Json &value)
+std::istream &operator>>(std::istream &in, VJson &value)
 {
-    if (value.type() != Json::None)
+    if (value.type() != VJson::None)
         return in;
 
     if (json_try_read(in, "null")) {
-        value.p_ptr->type = Json::Null;
+        value.p_ptr->type = VJson::Null;
     } else if (json_try_read(in, "false")) {
-        value.p_ptr->type = Json::Boolean;
+        value.p_ptr->type = VJson::Boolean;
         value.p_ptr->boolean = false;
     } else if (json_try_read(in, "true")) {
-        value.p_ptr->type = Json::Boolean;
+        value.p_ptr->type = VJson::Boolean;
         value.p_ptr->boolean = true;
     } else if (json_try_read(in, '"')) {
-        value.p_ptr->type = Json::String;
+        value.p_ptr->type = VJson::String;
         std::string str;
         char ch;
         while (!in.eof()) {
@@ -436,16 +442,16 @@ std::istream &operator>>(std::istream &in, Json &value)
         in.get(ch);
         if (ch == '-' || (ch >= '0' && ch <= '9') || ch == '.') {
             in.unget();
-            value.p_ptr->type = Json::Number;
+            value.p_ptr->type = VJson::Number;
             in >> value.p_ptr->number;
         } else if (ch == '[') {
-            value.p_ptr->type = Json::Array;
-            value.p_ptr->array = new std::vector<Json>();
-            std::vector<Json> &array = (*value.p_ptr->array);
+            value.p_ptr->type = VJson::Array;
+            value.p_ptr->array = new std::vector<VJson>();
+            std::vector<VJson> &array = (*value.p_ptr->array);
             while (true) {
-                Json element;
+                VJson element;
                 in >> element;
-                if (element.type() == Json::None) {
+                if (element.type() == VJson::None) {
                     std::cerr << "Invalid element of array" << std::endl;
                     break;
                 }
@@ -459,14 +465,14 @@ std::istream &operator>>(std::istream &in, Json &value)
                 }
             }
         } else if (ch == '{') {
-            value.p_ptr->type = Json::Object;
+            value.p_ptr->type = VJson::Object;
             value.p_ptr->object = new JsonObject();
 
             JsonObject &object = *(value.p_ptr->object);
             while (true) {
-                Json key;
+                VJson key;
                 in >> key;
-                if (key.type() != Json::String) {
+                if (key.type() != VJson::String) {
                     std::cerr << "Expect JSON key string." << std::endl;
                     break;
                 }
@@ -475,9 +481,9 @@ std::istream &operator>>(std::istream &in, Json &value)
                     break;
                 }
 
-                Json value;
+                VJson value;
                 in >> value;
-                if (value.type() == Json::None) {
+                if (value.type() == VJson::None) {
                     std::cerr << "Invalid value of JSON object" << std::endl;
                     break;
                 }
@@ -498,25 +504,25 @@ std::istream &operator>>(std::istream &in, Json &value)
     return in;
 }
 
-std::ostream &operator<<(std::ostream &out, const Json &value)
+std::ostream &operator<<(std::ostream &out, const VJson &value)
 {
     switch (value.type()) {
-    case Json::Null:
+    case VJson::Null:
         out << "null";
         break;
-    case Json::Boolean:
+    case VJson::Boolean:
         if (value.toBool())
             out << "true";
         else
             out << "false";
         break;
-    case Json::Number:
+    case VJson::Number:
         out << value.toDouble();
         break;
-    case Json::String:
+    case VJson::String:
         out << '"' << value.toString() << '"';
         break;
-    case Json::Array:{
+    case VJson::Array:{
         out << '[';
         const JsonArray &elements = value.toArray();
         int size = elements.size();
@@ -528,7 +534,7 @@ std::ostream &operator<<(std::ostream &out, const Json &value)
         out << ']';
         break;
     }
-    case Json::Object:{
+    case VJson::Object:{
         out << '{';
         const JsonObject &jsonObject = value.toObject();
         if (!jsonObject.empty()) {
@@ -548,19 +554,19 @@ std::ostream &operator<<(std::ostream &out, const Json &value)
     return out;
 }
 
-Json Json::Parse(const char* str)
+VJson VJson::Parse(const char* str)
 {
 	std::stringstream s;
 	s << str;
-	Json json;
+    VJson json;
 	s >> json;
 	return json;
 }
 
-Json Json::Load(const char *path)
+VJson VJson::Load(const char *path)
 {
 	std::ifstream s(path, std::ios::binary);
-	Json json;
+    VJson json;
 	s >> json;
 	return json;
 }
@@ -569,19 +575,19 @@ void JsonData::cloneData(const JsonData &source)
 {
     type = source.type;
     switch (type) {
-    case Json::Boolean:
+    case VJson::Boolean:
         boolean = source.boolean;
         break;
-    case Json::Number:
+    case VJson::Number:
         number = source.number;
         break;
-    case Json::String:
+    case VJson::String:
         str = new VString(*source.str);
         break;
-    case Json::Array:
-        array = new std::vector<Json>(*source.array);
+    case VJson::Array:
+        array = new std::vector<VJson>(*source.array);
         break;
-    case Json::Object:
+    case VJson::Object:
         object = new JsonObject(*source.object);
         break;
     default:

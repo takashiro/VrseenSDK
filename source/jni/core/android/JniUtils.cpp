@@ -100,7 +100,7 @@ namespace JniUtils {
         return method;
     }
 
-    static Json *DevConfig = nullptr;
+    static VJson *DevConfig = nullptr;
     void LoadDevConfig(const bool forceReload)
     {
     #ifndef RETAIL
@@ -115,7 +115,7 @@ namespace JniUtils {
         // load the dev config if possible
         std::ifstream fp("/storage/extSdCard/Oculus/dev.cfg", std::ios::binary);
         if (fp.is_open()) {
-            DevConfig = new Json;
+            DevConfig = new VJson;
             fp >> (*DevConfig);
         }
     #endif

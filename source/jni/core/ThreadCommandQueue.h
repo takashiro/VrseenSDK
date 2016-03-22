@@ -3,10 +3,9 @@
 #include "vglobal.h"
 
 #include "Types.h"
-#include "List.h"
-#include "Atomic.h"
+#include "VList.h"
 #include "Allocator.h"
-#include "VEvent.h"
+#include "VSignal.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -24,15 +23,16 @@ public:
 
     // NotifyEvent is used by ThreadCommandQueue::PushCallAndWait to notify the
     // calling (producer)  thread when command is completed or queue slot is available.
-    class NotifyEvent : public ListNode<NotifyEvent>, public NewOverrideBase
+    class NotifyEvent : public NewOverrideBase, public NodeOfVList<VList<NotifyEvent*>>
     {
-        VEvent E;
+        VSignal E;
     public:
         NotifyEvent() { }
 
         void Wait()        { E.wait(); }
         void PulseEvent()  { E.pulse(); }
     };
+
 
     // ThreadCommand::PopBuffer is temporary storage for a command popped off
     // by ThreadCommandQueue::PopCommand.

@@ -20,11 +20,12 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "OVR_TurboJpeg.h"
 
 #include <VApkFile.h>
+#include <VLog.h>
 
 namespace NervGear {
 
-VMessageQueue		Queue1( 4000 );	// big enough for all the thumbnails that might be needed
-VMessageQueue		Queue3( 1 );
+VEventLoop		Queue1( 4000 );	// big enough for all the thumbnails that might be needed
+VEventLoop		Queue3( 1 );
 
 pthread_mutex_t QueueMutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t	QueueWake = PTHREAD_COND_INITIALIZER;
@@ -41,7 +42,7 @@ void * Queue1Thread( void * v )
 	// Process incoming messages until queue is empty
 	for ( ; ; )
 	{
-		Queue1.SleepUntilMessage();
+		Queue1.wait();
 
 		// If Queue3 hasn't finished our last output, sleep until it has.
 		pthread_mutex_lock( &QueueMutex );
@@ -52,58 +53,46 @@ void * Queue1Thread( void * v )
 		}
 		pthread_mutex_unlock( &QueueMutex );
 
-		const char * msg = Queue1.nextMessage();
+        VEvent event = Queue1.next();
+        VString filename = event.data.toString();
 
-		char commandName[1024] = {};
-		sscanf( msg, "%s", commandName );
-		const char * filename = msg + strlen( commandName ) + 1;
-
-		VMessageQueue * queue = &Queue3;
-		char const * suffix = strstr( filename, "_nz.jpg" );
-		if ( suffix != NULL )
-		{
+        VEventLoop *queue = &Queue3;
+        if (filename.endsWith("_nz.jpg")) {
 			// cube map
 			const char * const cubeSuffix[6] = { "_px.jpg", "_nx.jpg", "_py.jpg", "_ny.jpg", "_pz.jpg", "_nz.jpg" };
 
 			MemBufferFile mbfs[6];
 
-			char filenameWithoutSuffix[1024];
-			int suffixStart = suffix - filename;
-			strcpy( filenameWithoutSuffix, filename );
-			filenameWithoutSuffix[suffixStart] = '\0';
-
+            VString filenameWithoutSuffix = filename.left(filename.size() - 7);
 			int side = 0;
 			for ( ; side < 6; side++ )
 			{
-				char sideFilename[1024];
-				strcpy( sideFilename, filenameWithoutSuffix );
-				strcat( sideFilename, cubeSuffix[side] );
-				if ( !mbfs[side].loadFile( sideFilename ) )
+                VString sideFilename = filenameWithoutSuffix + cubeSuffix[side];
+                if ( !mbfs[side].loadFile( sideFilename.toLatin1().data() ) )
 				{
                     const VApkFile &apk = VApkFile::CurrentApkFile();
                     if (!apk.read(sideFilename, mbfs[side])) {
 						break;
 					}
 				}
-				LOG( "Queue1 loaded '%s'", sideFilename );
+                vInfo( "Queue1 loaded" << sideFilename);
 			}
 			if ( side >= 6 )
 			{
 				// if no error occured, post to next thread
-				LOG( "%s.PostPrintf( \"%s %p %i %p %i %p %i %p %i %p %i %p %i\" )", "Queue3", commandName,
+                LOG( "%s.PostPrintf( \"%s %p %i %p %i %p %i %p %i %p %i %p %i\" )", "Queue3", event.name.toUtf8().data(),
 						mbfs[0].buffer, mbfs[0].length,
 						mbfs[1].buffer, mbfs[1].length,
 						mbfs[2].buffer, mbfs[2].length,
 						mbfs[3].buffer, mbfs[3].length,
 						mbfs[4].buffer, mbfs[4].length,
 						mbfs[5].buffer, mbfs[5].length );
-				queue->PostPrintf( "%s %p %i %p %i %p %i %p %i %p %i %p %i", commandName,
-						mbfs[0].buffer, mbfs[0].length,
-						mbfs[1].buffer, mbfs[1].length,
-						mbfs[2].buffer, mbfs[2].length,
-						mbfs[3].buffer, mbfs[3].length,
-						mbfs[4].buffer, mbfs[4].length,
-						mbfs[5].buffer, mbfs[5].length );
+
+                VJson args(VJson::Array);
+                for (int i = 0; i < 6; i++) {
+                    args << reinterpret_cast<int>(mbfs[i].buffer) << mbfs[i].length;
+                }
+                queue->post(event.name, args);
 				for ( int i = 0; i < 6; ++i )
 				{
 					// make sure we do not free the actual buffers because they're used in the next thread
@@ -123,7 +112,7 @@ void * Queue1Thread( void * v )
 		else
 		{
 			// non-cube map
-			MemBufferFile mbf( filename );
+            MemBufferFile mbf( filename.toUtf8().data() );
 			if ( mbf.length <= 0 || mbf.buffer == NULL )
 			{
                 const VApkFile &apk = VApkFile::CurrentApkFile();
@@ -131,13 +120,13 @@ void * Queue1Thread( void * v )
 					continue;
 				}
 			}
-			LOG( "%s.PostPrintf( \"%s %p %i\" )", "Queue3", commandName, mbf.buffer, mbf.length );
-			queue->PostPrintf( "%s %p %i", commandName, mbf.buffer, mbf.length );
+
+            VJson args(VJson::Array);
+            args << reinterpret_cast<int>(mbf.buffer) << mbf.length;
+            queue->post(event.name, args);
 			mbf.buffer = NULL;
 			mbf.length = 0;
 		}
-
-		free( (void *)msg );
 	}
 	return NULL;
 }
@@ -153,10 +142,10 @@ void * Queue3Thread( void * v )
 	// Process incoming messages until queue is empty
 	for ( ; ; )
 	{
-		Queue3.SleepUntilMessage();
-		const char * msg = Queue3.nextMessage();
+		Queue3.wait();
+        VEvent event = Queue3.next();
 
-		LOG( "Queue3 msg = '%s'", msg );
+        vInfo("Queue3 msg =" << event.name);
 
 		// Note that Queue3 has cleared the message
 		pthread_mutex_lock( &QueueMutex );
@@ -164,25 +153,21 @@ void * Queue3Thread( void * v )
 		pthread_cond_signal( &QueueWake );
 		pthread_mutex_unlock( &QueueMutex );
 
-		char commandName[1024] = {};
-		sscanf( msg, "%s", commandName );
-		int numBuffers = strcmp( commandName, "cube" ) == 0 ? 6 : 1;
-		unsigned * b[6] = {};
+        uint *b[6] = {};
 		int blen[6];
-		if ( numBuffers == 1 )
-		{
-			sscanf( msg, "%s %p %i", commandName, &b[0], &blen[0] );
-		}
-		else
-		{
-			OVR_ASSERT( numBuffers == 6 );
-			sscanf( msg, "%s %p %i %p %i %p %i %p %i %p %i %p %i ", commandName,
-					&b[0], &blen[0],
-					&b[1], &blen[1],
-					&b[2], &blen[2],
-					&b[3], &blen[3],
-					&b[4], &blen[4],
-					&b[5], &blen[5] );
+        int numBuffers = 1;
+        if (event.name != "cube") {
+            b[0] = reinterpret_cast<uint *>(event.data.at(0).toInt());
+            blen[0] = event.data.at(1).toInt();
+        } else {
+            numBuffers = 6;
+            int k = 0;
+            for (int i = 0; i < 6; i++) {
+                b[i] = reinterpret_cast<uint *>(event.data.at(k).toInt());
+                k++;
+                blen[i] = event.data.at(k).toInt();
+                k++;
+            }
 		}
 
 #define USE_TURBO_JPEG
@@ -235,21 +220,19 @@ void * Queue3Thread( void * v )
 		{
 			if ( numBuffers == 1 )
 			{
-				OVR_ASSERT( data[0] != NULL );
-				LOG( "Queue3.PostPrintf( \"%s %p %i %i\" )", commandName, data[0], resolutionX, resolutionY );
-				( ( Oculus360Photos * )v )->backgroundMessageQueue( ).PostPrintf( "%s %p %i %i", commandName, data[ 0 ], resolutionX, resolutionY );
+                OVR_ASSERT( data[0] != NULL );
+                VJson args(VJson::Array);
+                args << reinterpret_cast<int>(data[0]) << resolutionX << resolutionY;
+                ( ( Oculus360Photos * )v )->backgroundMessageQueue().post(event.name, args);
 			}
 			else
 			{
-				OVR_ASSERT( numBuffers == 6 );
-				LOG( "Queue3.PostPrintf( \"%s %i %p %p %p %p %p %p\" )", commandName, resolutionX,
-						data[0], data[1], data[2], data[3], data[4], data[5] );
-				( ( Oculus360Photos * )v )->backgroundMessageQueue( ).PostPrintf( "%s %i %p %p %p %p %p %p", commandName, resolutionX,
-						data[0], data[1], data[2], data[3], data[4], data[5] );
+                vAssert(numBuffers == 6);
+                VJson args(VJson::Array);
+                args << resolutionX << data[0] << data[1] << data[2] << data[3] << data[4] << data[5];
+                ( ( Oculus360Photos * )v )->backgroundMessageQueue().post(event.name, args);
 			}
 		}
-
-		free( (void *)msg );
 	}
 	return NULL;
 }

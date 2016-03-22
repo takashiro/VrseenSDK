@@ -9,6 +9,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 *************************************************************************************/
 
 #include "Android_HIDDevice.h"
+#include "VLock.h"
 
 #include <sys/ioctl.h>
 #include <fcntl.h>
@@ -862,15 +863,12 @@ void HIDDeviceManager::scanForDevices(bool firstScan)
 
 		// A new device was connected. Go through all device factories and
 		// try to detect the device using HIDDeviceDesc.
-		Lock::Locker deviceLock(DevManager->GetLock());
-		DeviceFactory* factory = DevManager->Factories.first();
-        while(!DevManager->Factories.isNull(factory))
-		{
+		VLock::VLocker deviceLock(DevManager->GetLock());
+        for (DeviceFactory* factory : DevManager->Factories) {
 			if (factory->DetectHIDDevice(DevManager, devDesc))
 			{
 				break;
 			}
-			factory = factory->pNext;
 		}
 	}
 

@@ -448,9 +448,9 @@ bool FontInfoType::LoadFromBuffer(void const * buffer,
 		size_t const bufferSize) {
 	std::stringstream s;
 	s << reinterpret_cast<char const *>(buffer);
-	Json jsonRoot;
+	VJson jsonRoot;
 	s >> jsonRoot;
-	if (jsonRoot.type() == Json::None) {
+	if (jsonRoot.type() == VJson::None) {
 		WARN("JSON Error");
 		return false;
 	}
@@ -463,7 +463,7 @@ bool FontInfoType::LoadFromBuffer(void const * buffer,
 	static const int MAX_GLYPHS = 0xffff;
 
 	// load the glyphs
-	if (jsonRoot.type() != Json::Object)
+	if (jsonRoot.type() != VJson::Object)
 		return false;
 
 	int Version = jsonRoot.value("Version").toInt();
@@ -514,17 +514,17 @@ bool FontInfoType::LoadFromBuffer(void const * buffer,
 
 	Glyphs.resize(numGlyphs);
 
-	const Json jsonGlyphArray = jsonRoot.value("Glyphs");
+	const VJson jsonGlyphArray = jsonRoot.value("Glyphs");
 
 	double oWidth = 0.0;
 	double oHeight = 0.0;
 
-	if (jsonGlyphArray.type() == Json::Array) {
+	if (jsonGlyphArray.type() == VJson::Array) {
 		const JsonArray &elements = jsonGlyphArray.toArray();
 
 		int i = 0;
-		for (const Json &jsonGlyph : elements) {
-			if (jsonGlyph.type() == Json::Object) {
+		for (const VJson &jsonGlyph : elements) {
+			if (jsonGlyph.type() == VJson::Object) {
 				FontGlyphType & g = Glyphs[i];
 				g.CharCode = jsonGlyph.value("CharCode").toInt();
 				g.X = jsonGlyph.value("X").toDouble();

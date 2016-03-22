@@ -28,17 +28,17 @@ LOCAL_C_INCLUDES :=  \
 	$(LOCAL_PATH)/$(NV_ROOT)/core \
 	$(LOCAL_PATH)/$(NV_ROOT)/gui \
 	$(LOCAL_PATH)/$(NV_ROOT)/io \
+	$(LOCAL_PATH)/$(NV_ROOT)/media \
 	$(LOCAL_PATH)/$(NV_ROOT)/scene
 
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_C_INCLUDES)
 
 LOCAL_SRC_FILES  := core/Alg.cpp \
                     core/Allocator.cpp \
-                    core/Atomic.cpp \
+                    core/VAtomicInt.cpp \
                     core/VByteArray.cpp \
                     core/VChar.cpp \
-                    core/VEvent.cpp \
-                    io/VFileOperation.cpp \
+                    core/VEventLoop.cpp \
                     core/VJson.cpp \
                     core/Log.cpp \
                     core/VLog.cpp \
@@ -48,15 +48,17 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     core/RefCount.cpp \
                     core/VStandardPath.cpp \
                     core/VString.cpp \
-                    io/VSysFile.cpp \
+                    core/VDir.cpp \
+                    core/VSignal.cpp \
                     core/System.cpp \
+                    core/VLock.cpp \
                     core/ThreadCommandQueue.cpp \
                     core/VThread.cpp \
                     core/VTimer.cpp \
-                    io/VBinaryFile.cpp \
                     core/MappedFile.cpp \
                     core/MemBuffer.cpp \
                     core/VMutex.cpp \
+                    core/VUserSettings.cpp \
                     core/VWaitCondition.cpp \
                     core/android/JniUtils.cpp \
                     core/android/LogUtils.cpp \
@@ -70,7 +72,6 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     api/Distortion.cpp \
                     api/SystemActivities.cpp \
                     api/VFrameSmooth.cpp \
-                    api/LocalPreferences.cpp \
                     api/VGlGeometry.cpp \
                     api/VMainActivity.cpp \
                     api/VGlOperation.cpp \
@@ -116,6 +117,10 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     gui/MetaDataManager.cpp \
                     gui/OutOfSpaceMenu.cpp \
                     io/VApkFile.cpp \
+                    io/VBinaryFile.cpp \
+                    io/VFileOperation.cpp \
+                    io/VSysFile.cpp \
+                    media/VSoundManager.cpp \
                     scene/BitmapFont.cpp \
                     scene/EyeBuffers.cpp \
                     scene/EyePostRender.cpp \
@@ -130,13 +135,9 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     scene/SurfaceTexture.cpp \
                     scene/SwipeView.cpp \
                     VrCommon.cpp \
-                    VMessageQueue.cpp \
-                    TalkToJava.cpp \
                     KeyState.cpp \
                     App.cpp \
                     DebugLines.cpp \
-                    SoundManager.cpp \
-                    VUserProfile.cpp \
                     VrLocale.cpp \
                     Console.cpp
 
@@ -171,24 +172,3 @@ LOCAL_EXPORT_LDLIBS += -lz
 LOCAL_EXPORT_LDLIBS += -lOpenSLES
 
 include $(BUILD_STATIC_LIBRARY)		# start building based on everything since CLEAR_VARS
-
-#--------------------------------------------------------
-# Unity plugin
-#--------------------------------------------------------
-include $(CLEAR_VARS)
-
-LOCAL_MODULE := UnityPlugin
-
-LOCAL_STATIC_LIBRARIES := nervgear
-#LOCAL_STATIC_LIBRARIES += android-ndk-profiler
-
-LOCAL_CFLAGS += -DNV_NAMESPACE=NervGear
-
-LOCAL_SRC_FILES  := $(NV_ROOT)/Integrations/Unity/UnityPlugin.cpp \
-                    $(NV_ROOT)/Integrations/Unity/MediaSurface.cpp \
-                    $(NV_ROOT)/Integrations/Unity/SensorPlugin.cpp \
-                    $(NV_ROOT)/Integrations/Unity/RenderingPlugin.cpp
-
-include $(BUILD_SHARED_LIBRARY)
-
-#$(call import-module,android-ndk-profiler)

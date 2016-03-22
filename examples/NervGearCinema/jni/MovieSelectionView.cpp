@@ -107,7 +107,7 @@ void MovieSelectionView::OneTimeInit( const VString & launchIntent )
 
 	const double start = ovr_GetTimeInSeconds();
 
-    CreateMenu( Cinema.app, Cinema.app->vrMenuMgr(), Cinema.app->defaultFont() );
+    CreateMenu( vApp, vApp->vrMenuMgr(), vApp->defaultFont() );
 
 	SetCategory( CATEGORY_TRAILERS );
 
@@ -172,7 +172,7 @@ void MovieSelectionView::OnOpen()
 
 	SwipeHintComponent::ShowSwipeHints = true;
 
-    Cinema.app->swapParms().WarpProgram = WP_CHROMATIC;
+    vApp->swapParms().WarpProgram = WP_CHROMATIC;
 }
 
 void MovieSelectionView::OnClose()
@@ -185,7 +185,7 @@ void MovieSelectionView::OnClose()
 	Cinema.sceneMgr.ClearMovie();
 }
 
-bool MovieSelectionView::Command( const char * msg )
+bool MovieSelectionView::Command(const VEvent &)
 {
 	return false;
 }
@@ -402,7 +402,7 @@ void MovieSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFo
 		Categories[ i ].Button->SetText( Categories[ i ].Text.toCString() );
 		Categories[ i ].Button->AddComponent( new MovieCategoryComponent( this, Categories[ i ].Category ) );
 
-        const Bounds3f & bounds = Categories[ i ].Button->GetTextLocalBounds( Cinema.app->defaultFont() );
+        const Bounds3f & bounds = Categories[ i ].Button->GetTextLocalBounds( vApp->defaultFont() );
 		Categories[ i ].Width = NervGear::Alg::Max( bounds.GetSize().x, itemWidth ) + 80.0f * VRMenuObject::DEFAULT_TEXEL_SCALE;
 		Categories[ i ].Height = bounds.GetSize().y + 108.0f * VRMenuObject::DEFAULT_TEXEL_SCALE;
 		categoryBarWidth += Categories[ i ].Width;
@@ -751,7 +751,7 @@ void MovieSelectionView::UpdateSelectionFrame( const VrFrame & vrFrame )
 	}
 	else
 	{
-        MovieBrowser->CheckGamepad( Cinema.app, vrFrame, Cinema.app->vrMenuMgr(), MovieRoot->GetMenuObject() );
+        MovieBrowser->CheckGamepad( vApp, vrFrame, vApp->vrMenuMgr(), MovieRoot->GetMenuObject() );
 	}
 
 	SelectionFrame->SetColor( Vector4f( SelectionFader.Value( now ) ) );
@@ -802,17 +802,17 @@ void MovieSelectionView::SetError( const char *text, bool showSDCard, bool showE
 	if ( showSDCard )
 	{
 		SDCardMessage->SetVisible( true );
-        SDCardMessage->SetTextWordWrapped( text, Cinema.app->defaultFont(), 1.0f );
+        SDCardMessage->SetTextWordWrapped( text, vApp->defaultFont(), 1.0f );
 	}
 	else if ( showErrorIcon )
 	{
 		ErrorMessage->SetVisible( true );
-        ErrorMessage->SetTextWordWrapped( text, Cinema.app->defaultFont(), 1.0f );
+        ErrorMessage->SetTextWordWrapped( text, vApp->defaultFont(), 1.0f );
 	}
 	else
 	{
 		PlainErrorMessage->SetVisible( true );
-        PlainErrorMessage->SetTextWordWrapped( text, Cinema.app->defaultFont(), 1.0f );
+        PlainErrorMessage->SetTextWordWrapped( text, vApp->defaultFont(), 1.0f );
 	}
 	TitleRoot->SetVisible( false );
 	MovieRoot->SetVisible( false );
@@ -846,9 +846,9 @@ Matrix4f MovieSelectionView::DrawEyeView( const int eye, const float fovDegrees 
 Matrix4f MovieSelectionView::Frame( const VrFrame & vrFrame )
 {
 	// We want 4x MSAA in the lobby
-    EyeParms eyeParms = Cinema.app->eyeParms();
+    EyeParms eyeParms = vApp->eyeParms();
 	eyeParms.multisamples = 4;
-    Cinema.app->setEyeParms( eyeParms );
+    vApp->setEyeParms( eyeParms );
 
 #if 0
 	if ( !Cinema.InLobby && Cinema.SceneMgr.ChangeSeats( vrFrame ) )
@@ -865,7 +865,7 @@ Matrix4f MovieSelectionView::Frame( const VrFrame & vrFrame )
 		}
 		else
 		{
-            Cinema.app->guiSys().closeMenu( Cinema.app, Menu->GetVRMenu(), false );
+            vApp->guiSys().closeMenu( vApp, Menu->GetVRMenu(), false );
 		}
 	}
 
@@ -896,11 +896,11 @@ Matrix4f MovieSelectionView::Frame( const VrFrame & vrFrame )
 		SwipeHintComponent::ShowSwipeHints = false;
 		if ( vrFrame.Input.buttonPressed & ( BUTTON_TOUCH | BUTTON_A ) )
 		{
-            Cinema.app->playSound( "touch_down" );
+            vApp->playSound( "touch_down" );
 		}
 		else if ( vrFrame.Input.buttonReleased & ( BUTTON_TOUCH | BUTTON_A ) )
 		{
-            Cinema.app->playSound( "touch_up" );
+            vApp->playSound( "touch_up" );
 			ErrorMessageClicked = true;
 		}
 		else if ( ErrorMessageClicked && ( ( vrFrame.Input.buttonState & ( BUTTON_TOUCH | BUTTON_A ) ) == 0 ) )

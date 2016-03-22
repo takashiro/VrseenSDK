@@ -35,7 +35,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VrApi_local.h"
 #include "VrApi_Helpers.h"
 #include "Vsync.h"
-#include "LocalPreferences.h"			// for testing via local prefs
 #include "SystemActivities.h"
 
 NV_USING_NAMESPACE
@@ -607,7 +606,7 @@ void CreateSystemActivitiesCommand( const char * toPackageName, const char * com
 		const char * uri, NervGear::VString & out )
 {
 	// serialize the command to a JSON object with version inf
-    Json obj(Json::Object);
+    VJson obj(VJson::Object);
     obj.insert("Command", command);
     obj.insert("OVRVersion", ovr_GetVersionString());
     obj.insert("PlatformUIVersion", PLATFORM_UI_VERSION);
@@ -710,7 +709,7 @@ bool ovr_CreateSystemActivityIntent( ovrMobile * ovr, const char * command, cons
 	}
 	outBuffer[0] = '\0';
 
-    Json jsonObj(Json::Object);
+    VJson jsonObj(VJson::Object);
 
     jsonObj.insert("Command", command );
     jsonObj.insert("OVRVersion", ovr_GetVersionString() );
@@ -819,7 +818,6 @@ void ovr_ExitActivity( ovrMobile * ovr, eExitType exitType )
 		}
 
 		NervGear::SystemActivities_ShutdownEventQueues();
-		ovr_ShutdownLocalPreferences();
 		ovr_Shutdown();
 		exit( 0 );
 	}
@@ -1516,7 +1514,7 @@ ovrMobile * ovr_EnterVrMode( ovrModeParms parms, ovrHmdInfo * returnedHmdInfo )
 
 	// For video capture or testing on reference platforms without frontbuffer rendering,
 	// frontbuffer can be forced off.
-	ovr->Twp.frontBuffer = atoi( ovr_GetLocalPreferenceValueForKey( "frontbuffer", "1" ) );
+    ovr->Twp.frontBuffer = 1;
 	ovr->Twp.distortionFileName = ovr->Parms.DistortionFileName;
 	ovr->Twp.hmdInfo = ovr->HmdInfo;
 	ovr->Twp.javaVm = VrLibJavaVM;
@@ -1818,7 +1816,7 @@ void ovr_HandleDeviceStateChanges( ovrMobile * ovr )
 			continue;
 		}
 
-        Json reader = Json::Parse(eventBuffer.toCString());
+        VJson reader = VJson::Parse(eventBuffer.toCString());
         if ( reader.isObject() )
 		{
             VString command = reader.value("Command").toString();
@@ -2127,22 +2125,6 @@ bool ovr_IsDeviceDocked()
 	return DockState.state();
 }
 
-void ovr_InitLocalPreferences( JNIEnv * jni, jobject activityObject )
-{
-	LOG( "ovr_InitLocalPreferences" );
-
-	if ( jni == NULL || activityObject == NULL )
-	{
-		return;
-	}
-
-	const jmethodID method = JniUtils::GetStaticMethodID( jni, VrLibClass,
-			"isDeveloperMode", "(Landroid/app/Activity;)Z" );
-	const bool isDeveloperMode = jni->CallStaticBooleanMethod( VrLibClass, method, activityObject );
-
-	ovr_SetAllowLocalPreferencesFile( isDeveloperMode );
-}
-
 eVrApiEventStatus ovr_nextPendingEvent( VString& buffer, unsigned int const bufferSize )
 {
 	eVrApiEventStatus status = NervGear::SystemActivities_nextPendingMainEvent( buffer, bufferSize );
@@ -2152,7 +2134,7 @@ eVrApiEventStatus ovr_nextPendingEvent( VString& buffer, unsigned int const buff
 	}
 
 	// Parse to JSON here to determine if we should handle the event natively, or pass it along to the client app.
-    Json reader = Json::Parse(buffer.toCString());
+    VJson reader = VJson::Parse(buffer.toCString());
     if (reader.isObject())
 	{
         VString command = reader.value( "Command" ).toString();

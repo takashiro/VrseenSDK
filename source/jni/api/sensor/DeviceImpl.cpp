@@ -10,7 +10,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 *************************************************************************************/
 
 #include "DeviceImpl.h"
-#include "Atomic.h"
 #include "Log.h"
 #include "System.h"
 
@@ -32,60 +31,62 @@ namespace NervGear {
 
 enum { LockInitMarker = 0xFFFFFFFF };
 
-Lock* SharedLock::GetLockAddRef()
+VLock* SharedLock::GetLockAddRef()
 {
-    int oldUseCount;
+    VAtomicInt::Type oldUseCount;
+    VAtomicInt::Type expectCount;
 
     do {
-        oldUseCount = UseCount;
+        oldUseCount = m_useCount.load();
         if (oldUseCount == (int)LockInitMarker)
             continue;
 
         if (oldUseCount == 0)
         {
             // Initialize marker
-            if (AtomicOps<int>::CompareAndSet_Sync(&UseCount, 0, LockInitMarker))
-            {
-                Construct<Lock>(Buffer);
-                do { }
-                while (!AtomicOps<int>::CompareAndSet_Sync(&UseCount, LockInitMarker, 1));
+            expectCount = 0;
+            if (m_useCount.compare_exchange_weak(expectCount, LockInitMarker)) {
+                Construct<VLock>(Buffer);
+                do {
+                    expectCount = (VAtomicInt::Type)LockInitMarker;
+                } while (!m_useCount.compare_exchange_weak(expectCount, 1));
                 return toLock();
             }
             continue;
         }
-
-    } while (!AtomicOps<int>::CompareAndSet_NoSync(&UseCount, oldUseCount, oldUseCount + 1));
+        expectCount = oldUseCount;
+    } while (!m_useCount.compare_exchange_weak(expectCount, oldUseCount + 1));
 
     return toLock();
 }
 
-void SharedLock::ReleaseLock(Lock* plock)
+void SharedLock::ReleaseLock(VLock* plock)
 {
     OVR_UNUSED(plock);
     OVR_ASSERT(plock == toLock());
 
-    int oldUseCount;
+    VAtomicInt::Type oldUseCount;
+    VAtomicInt::Type expectCount;
 
     do {
-        oldUseCount = UseCount;
-        OVR_ASSERT(oldUseCount != (int)LockInitMarker);
+        oldUseCount = m_useCount.load();
+        OVR_ASSERT(oldUseCount != (VAtomicInt::Type)LockInitMarker);
 
         if (oldUseCount == 1)
         {
             // Initialize marker
-            if (AtomicOps<int>::CompareAndSet_Sync(&UseCount, 1, LockInitMarker))
-            {
-                Destruct<Lock>(toLock());
-
-                do { }
-                while (!AtomicOps<int>::CompareAndSet_Sync(&UseCount, LockInitMarker, 0));
-
+            expectCount = 1;
+            if (m_useCount.compare_exchange_weak(expectCount, LockInitMarker)) {
+                Destruct<VLock>(toLock());
+               do {
+                   expectCount = (VAtomicInt::Type)LockInitMarker;
+               } while (!m_useCount.compare_exchange_weak(expectCount, 0));
                 return;
             }
             continue;
         }
-
-    } while (!AtomicOps<int>::CompareAndSet_NoSync(&UseCount, oldUseCount, oldUseCount - 1));
+        expectCount = oldUseCount;
+    } while (!m_useCount.compare_exchange_weak(expectCount, oldUseCount - 1));
 }
 
 
@@ -121,9 +122,9 @@ public:
 
     // This lock is held while calling a handler and when we are applied/
     // removed from a device.
-    Lock*                     pLock;
+    VLock*                     pLock;
     // List of device we are applied to.
-    List<MessageHandlerRef>   UseList;
+    VList<MessageHandlerRef*>   UseList;
 };
 
 
@@ -135,11 +136,11 @@ MessageHandlerRef::MessageHandlerRef(DeviceBase* device)
 MessageHandlerRef::~MessageHandlerRef()
 {
     {
-        Lock::Locker lockScope(pLock);
+        VLock::VLocker lockScope(pLock);
         if (pHandler)
         {
             pHandler = 0;
-            removeNode();
+            this->pointToVList->remove(this);
         }
     }
     MessageHandlerSharedLock.ReleaseLock(pLock);
@@ -150,7 +151,7 @@ void MessageHandlerRef::SetHandler(MessageHandler* handler)
 {
     OVR_ASSERT(!handler ||
                MessageHandlerImpl::FromHandler(handler)->pLock == pLock);
-    Lock::Locker lockScope(pLock);
+    VLock::VLocker lockScope(pLock);
     SetHandler_NTS(handler);
 }
 
@@ -158,13 +159,15 @@ void MessageHandlerRef::SetHandler_NTS(MessageHandler* handler)
 {
     if (pHandler != handler)
     {
-        if (pHandler)
-            removeNode();
+        if (pHandler) {
+            this->pointToVList->remove(this);
+        }
         pHandler = handler;
 
         if (handler)
         {
             MessageHandlerImpl* handlerImpl = MessageHandlerImpl::FromHandler(handler);
+            this->pointToVList = &(handlerImpl->UseList);
             handlerImpl->UseList.append(this);
         }
         // TBD: Call notifier on device?
@@ -182,7 +185,7 @@ MessageHandler::~MessageHandler()
 {
     MessageHandlerImpl* handlerImpl = MessageHandlerImpl::FromHandler(this);
     {
-        Lock::Locker lockedScope(handlerImpl->pLock);
+        VLock::VLocker lockedScope(handlerImpl->pLock);
         OVR_ASSERT_LOG(handlerImpl->UseList.isEmpty(),
             ("~MessageHandler %p - Handler still active; call RemoveHandlerFromDevices", this));
     }
@@ -193,7 +196,7 @@ MessageHandler::~MessageHandler()
 bool MessageHandler::IsHandlerInstalled() const
 {
     const MessageHandlerImpl* handlerImpl = MessageHandlerImpl::FromHandler(this);
-    Lock::Locker lockedScope(handlerImpl->pLock);
+    VLock::VLocker lockedScope(handlerImpl->pLock);
     return handlerImpl->UseList.isEmpty() != true;
 }
 
@@ -201,7 +204,7 @@ bool MessageHandler::IsHandlerInstalled() const
 void MessageHandler::RemoveHandlerFromDevices()
 {
     MessageHandlerImpl* handlerImpl = MessageHandlerImpl::FromHandler(this);
-    Lock::Locker lockedScope(handlerImpl->pLock);
+    VLock::VLocker lockedScope(handlerImpl->pLock);
 
     while(!handlerImpl->UseList.isEmpty())
     {
@@ -210,7 +213,7 @@ void MessageHandler::RemoveHandlerFromDevices()
     }
 }
 
-Lock* MessageHandler::GetHandlerLock() const
+VLock* MessageHandler::GetHandlerLock() const
 {
     const MessageHandlerImpl* handlerImpl = MessageHandlerImpl::FromHandler(this);
     return handlerImpl->pLock;
@@ -268,7 +271,7 @@ bool DeviceBase::IsConnected()
 }
 
 // returns the MessageHandler's lock
-Lock* DeviceBase::GetHandlerLock() const
+VLock* DeviceBase::GetHandlerLock() const
 {
     return getDeviceCommon()->HandlerRef.GetLock();
 }
@@ -311,7 +314,7 @@ DeviceManagerImpl::~DeviceManagerImpl()
     {
         DeviceFactory* factory = Factories.first();
         factory->RemovedFromManager();
-        factory->removeNode();
+        factory->pointToVList->remove(factory);
     }
 }
 
@@ -345,10 +348,8 @@ void DeviceManagerImpl::shutdown()
         DeviceCreateDesc* devDesc = Devices.first();
         OVR_ASSERT(!devDesc->pDevice); // Manager shouldn't be dying while Device exists.
         devDesc->Enumerated = false;
-        devDesc->removeNode();
-        devDesc->pNext = devDesc->pPrev = 0;
-
-        if (devDesc->HandleCount == 0)
+        devDesc->pointToVList->remove(devDesc);
+        if (devDesc->handleCount.load() == 0)
         {
             delete devDesc;
         }
@@ -370,7 +371,7 @@ DeviceBase* DeviceManagerImpl::CreateDevice_MgrThread(DeviceCreateDesc* createDe
     // so 'this' must remain valid.
     OVR_ASSERT(createDesc->pLock->pManager);
 
-    Lock::Locker devicesLock(GetLock());
+    VLock::VLocker devicesLock(GetLock());
 
     // If device already exists, just AddRef to it.
     if (createDesc->pDevice)
@@ -407,23 +408,24 @@ Void DeviceManagerImpl::ReleaseDevice_MgrThread(DeviceBase* device)
     // descKeepAlive will keep ManagerLock object alive as well,
     // allowing us to exit gracefully.
     Ptr<DeviceCreateDesc>  descKeepAlive;
-    Lock::Locker           devicesLock(GetLock());
+    VLock::VLocker           devicesLock(GetLock());
     DeviceCommon*          devCommon = device->getDeviceCommon();
 
     while(1)
     {
-        UInt32 refCount = devCommon->RefCount;
+        VAtomicInt::Type refCount = devCommon->refCount.load();
+        VAtomicInt::Type temp = 1;
 
         if (refCount > 1)
         {
-            if (devCommon->RefCount.CompareAndSet_NoSync(refCount, refCount-1))
+            if (devCommon->refCount.compare_exchange_weak(refCount, refCount-1))
             {
                 // We decreented from initial count higher then 1;
                 // nothing else to do.
                 return 0;
             }
         }
-        else if (devCommon->RefCount.CompareAndSet_NoSync(1, 0))
+        else if (devCommon->refCount.compare_exchange_weak(temp, 0))
         {
             // { 1 -> 0 } decrement succeded. Destroy this device.
             break;
@@ -451,33 +453,21 @@ Void DeviceManagerImpl::EnumerateAllFactoryDevices()
     //    was not matched.
     // 3. Remove non-matching devices.
 
-    Lock::Locker deviceLock(GetLock());
-
-    DeviceCreateDesc* devDesc, *nextdevDesc;
+    VLock::VLocker deviceLock(GetLock());
 
     // 1.
-    for(devDesc = Devices.first();
-        !Devices.isNull(devDesc);  devDesc = devDesc->pNext)
-    {
+    for (DeviceCreateDesc* devDesc:Devices) {
         devDesc->Enumerated = false;
     }
 
     // 2.
-    DeviceFactory* factory = Factories.first();
-    while(!Factories.isNull(factory))
-    {
+    for (DeviceFactory* factory:Factories) {
         EnumerateFactoryDevices(factory);
-        factory = factory->pNext;
     }
 
-
     // 3.
-    for(devDesc = Devices.first();
-        !Devices.isNull(devDesc);  devDesc = nextdevDesc)
-    {
+    for (DeviceCreateDesc* devDesc:Devices) {
         // In case 'devDesc' gets removed.
-        nextdevDesc = devDesc->pNext;
-
         // Note, device might be not enumerated since it is opened and
         // in use! Do NOT notify 'device removed' in this case (!AB)
         if (!devDesc->Enumerated)
@@ -506,9 +496,7 @@ Ptr<DeviceCreateDesc> DeviceManagerImpl::AddDevice_NeedsLock(
     // If found, mark as enumerated and we are done.
     DeviceCreateDesc* descCandidate = 0;
 
-    for(DeviceCreateDesc* devDesc = Devices.first();
-        !Devices.isNull(devDesc);  devDesc = devDesc->pNext)
-    {
+    for (DeviceCreateDesc* devDesc:Devices) {
         DeviceCreateDesc::MatchResult mr = devDesc->MatchDevice(createDesc, &descCandidate);
         if (mr == DeviceCreateDesc::Match_Found)
         {
@@ -537,6 +525,7 @@ Ptr<DeviceCreateDesc> DeviceManagerImpl::AddDevice_NeedsLock(
     //    {pDevice = 0, HandleCount = 1, Enumerated = true}
     DeviceCreateDesc* desc = createDesc.Clone();
     desc->pLock = pCreateDesc->pLock;
+    desc->pointToVList = &Devices;
     Devices.append(desc);
     desc->Enumerated = true;
 
@@ -549,12 +538,8 @@ Ptr<DeviceCreateDesc> DeviceManagerImpl::FindDevice(
     const VString& path,
     DeviceType deviceType)
 {
-    Lock::Locker deviceLock(GetLock());
-    DeviceCreateDesc* devDesc;
-
-    for (devDesc = Devices.first();
-        !Devices.isNull(devDesc);  devDesc = devDesc->pNext)
-    {
+    VLock::VLocker deviceLock(GetLock());
+    for (DeviceCreateDesc* devDesc:Devices) {
         if ((deviceType == Device_None || deviceType == devDesc->Type) &&
             devDesc->MatchDeviceByPath(path))
             return devDesc;
@@ -564,12 +549,8 @@ Ptr<DeviceCreateDesc> DeviceManagerImpl::FindDevice(
 
 Ptr<DeviceCreateDesc> DeviceManagerImpl::FindHIDDevice(const HIDDeviceDesc& hidDevDesc)
 {
-    Lock::Locker deviceLock(GetLock());
-    DeviceCreateDesc* devDesc;
-
-    for (devDesc = Devices.first();
-        !Devices.isNull(devDesc);  devDesc = devDesc->pNext)
-    {
+    VLock::VLocker deviceLock(GetLock());
+    for (DeviceCreateDesc* devDesc:Devices) {
         if (devDesc->MatchHIDDevice(hidDevDesc))
             return devDesc;
     }
@@ -578,13 +559,10 @@ Ptr<DeviceCreateDesc> DeviceManagerImpl::FindHIDDevice(const HIDDeviceDesc& hidD
 
 void DeviceManagerImpl::DetectHIDDevice(const HIDDeviceDesc& hidDevDesc)
 {
-    Lock::Locker deviceLock(GetLock());
-    DeviceFactory* factory = Factories.first();
-    while(!Factories.isNull(factory))
-    {
+    VLock::VLocker deviceLock(GetLock());
+    for (DeviceFactory* factory:Factories) {
         if (factory->DetectHIDDevice(this, hidDevDesc))
             break;
-        factory = factory->pNext;
     }
 
 }
@@ -616,7 +594,7 @@ Void DeviceManagerImpl::EnumerateFactoryDevices(DeviceFactory* factory)
 
 DeviceEnumerator<> DeviceManagerImpl::enumerateDevicesEx(const DeviceEnumerationArgs& args)
 {
-    Lock::Locker deviceLock(GetLock());
+    VLock::VLocker deviceLock(GetLock());
 
     if (Devices.isEmpty())
         return DeviceEnumerator<>();
@@ -637,14 +615,14 @@ DeviceEnumerator<> DeviceManagerImpl::enumerateDevicesEx(const DeviceEnumeration
 
 void DeviceCommon::DeviceAddRef()
 {
-    RefCount++;
+    refCount++;
 }
 
 void DeviceCommon::DeviceRelease()
 {
     while(1)
     {
-        UInt32 refCount = RefCount;
+        VAtomicInt::Type refCount = this->refCount.load();
         OVR_ASSERT(refCount > 0);
 
         if (refCount == 1)
@@ -667,7 +645,7 @@ void DeviceCommon::DeviceRelease()
             // Warning! At his point everything, including manager, may be dead.
             break;
         }
-        else if (RefCount.CompareAndSet_NoSync(refCount, refCount-1))
+        else if (this->refCount.compare_exchange_weak(refCount, refCount-1))
         {
             break;
         }
@@ -684,14 +662,14 @@ void DeviceCreateDesc::AddRef()
 {
     // Technically, HandleCount { 0 -> 1 } transition can only happen during Lock,
     // but we leave this to caller to worry about (happens during enumeration).
-    HandleCount++;
+    handleCount++;
 }
 
 void DeviceCreateDesc::Release()
 {
     while(1)
     {
-        UInt32 handleCount = HandleCount;
+        VAtomicInt::Type handleCount = this->handleCount;
         // HandleCount must obviously be >= 1, since we are releasing it.
         OVR_ASSERT(handleCount > 0);
 
@@ -699,9 +677,9 @@ void DeviceCreateDesc::Release()
         if (handleCount == 1)
         {
             Ptr<DeviceManagerLock>  lockKeepAlive;
-            Lock::Locker            deviceLockScope(GetLock());
+            VLock::VLocker            deviceLockScope(GetLock());
 
-            if (!HandleCount.CompareAndSet_NoSync(handleCount, 0))
+            if (!this->handleCount.compare_exchange_weak(handleCount, 0))
                 continue;
 
             OVR_ASSERT(pDevice == 0);
@@ -713,12 +691,6 @@ void DeviceCreateDesc::Release()
                 lockKeepAlive = pLock;
 
                 // Remove from manager list (only matters for !Enumerated).
-                if (pNext)
-                {
-                    removeNode();
-                    pNext = pPrev = 0;
-                }
-
                 delete this;
             }
 
@@ -726,7 +698,7 @@ void DeviceCreateDesc::Release()
             // in case it might be enumerated again later.
             break;
         }
-        else if (HandleCount.CompareAndSet_NoSync(handleCount, handleCount-1))
+        else if (this->handleCount.compare_exchange_weak(handleCount, handleCount-1))
         {
             break;
         }
@@ -752,7 +724,7 @@ HMDDevice* HMDDevice::Disconnect(SensorDevice* psensor)
                 Visitor(DeviceCreateDesc* desc) : Desc(desc) {}
                 virtual void Visit(const DeviceCreateDesc& createDesc)
                 {
-                    Lock::Locker lock(Desc->GetLock());
+                    VLock::VLocker lock(Desc->GetLock());
                     Desc->UpdateMatchedCandidate(createDesc);
                 }
             } visitor(desc);
@@ -787,4 +759,3 @@ bool  HMDDevice::IsDisconnected() const
 
 
 } // namespace NervGear
-

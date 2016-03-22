@@ -1,14 +1,17 @@
+
 #pragma once
 
 #include "vglobal.h"
 
 #include "Device.h"
-#include "Atomic.h"
+#include "VAtomicInt.h"
 #include "Log.h"
 #include "System.h"
 
 #include "ThreadCommandQueue.h"
 #include "HIDDevice.h"
+#include "VList.h"
+#include "VLock.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -36,24 +39,24 @@ enum
 class SharedLock
 {
 public:
-    SharedLock() : UseCount(0) {}
+    SharedLock() : m_useCount(0) {}
 
-    Lock* GetLockAddRef();
-    void  ReleaseLock(Lock* plock);
+    VLock* GetLockAddRef();
+    void  ReleaseLock(VLock* plock);
 
 private:
-    Lock* toLock() { return (Lock*)Buffer; }
+    VLock* toLock() { return (VLock*)Buffer; }
 
     // UseCount and max alignment.
-    volatile int    UseCount;
-    UInt64          Buffer[(sizeof(Lock)+sizeof(UInt64)-1)/sizeof(UInt64)];
+    VAtomicInt      m_useCount;
+    UInt64          Buffer[(sizeof(VLock)+sizeof(UInt64)-1)/sizeof(UInt64)];
 };
 
 
 // Wrapper for MessageHandler that includes synchronization logic.
 // References to MessageHandlers are organized in a list to allow for them to
 // easily removed with MessageHandler::RemoveAllHandlers.
-class MessageHandlerRef : public ListNode<MessageHandlerRef>
+class MessageHandlerRef : public NodeOfVList<VList<MessageHandlerRef*>>
 {
 public:
     MessageHandlerRef(DeviceBase* device);
@@ -66,12 +69,12 @@ public:
 
     void Call(const Message& msg)
     {
-        Lock::Locker lockScope(pLock);
+        VLock::VLocker lockScope(pLock);
         if (pHandler)
             pHandler->onMessage(msg);
     }
 
-    Lock*           GetLock() const { return pLock; }
+    VLock*           GetLock() const { return pLock; }
 
     // GetHandler() is not thread safe if used out of order across threads; nothing can be done
     // about that.
@@ -79,7 +82,7 @@ public:
     DeviceBase*     GetDevice() const  { return pDevice; }
 
 private:
-    Lock*           pLock;   // Cached global handler lock.
+    VLock*           pLock;   // Cached global handler lock.
     DeviceBase*     pDevice;
     MessageHandler* pHandler;
 };
@@ -99,7 +102,7 @@ private:
 class DeviceManagerLock : public RefCountBase<DeviceManagerLock>
 {
 public:
-    Lock                CreateLock;
+    VLock                CreateLock;
     DeviceManagerImpl*  pManager;
 
     DeviceManagerLock() : pManager(0) { }
@@ -111,25 +114,26 @@ public:
 //   - DeviceCreateDesc may or may not be a part of DeviceManager::Devices list (check pNext != 0).
 //   - Referenced and kept alive by DeviceHandle.
 
-class DeviceCreateDesc : public ListNode<DeviceCreateDesc>, public NewOverrideBase
+class DeviceCreateDesc : public NodeOfVList<VList<DeviceCreateDesc*>>, public NewOverrideBase
 {
     void operator = (const DeviceCreateDesc&) { } // Assign not supported; suppress MSVC warning.
 public:
     DeviceCreateDesc(DeviceFactory* factory, DeviceType type)
-        : pFactory(factory), Type(type), pLock(0), HandleCount(0), pDevice(0), Enumerated(true)
+        : pFactory(factory), Type(type), pLock(0), handleCount(0), pDevice(0), Enumerated(true)
     {
-        pNext = pPrev = 0;
+
     }
 
     virtual ~DeviceCreateDesc()
     {
         OVR_ASSERT(!pDevice);
-        if (pNext)
-            removeNode();
+        /*if (!this->pointToVList->isEmpty()) {
+            this->pointToVList->remove(this);
+        }*/
     }
 
     DeviceManagerImpl* GetManagerImpl() const { return pLock->pManager; }
-    Lock*              GetLock() const        { return &pLock->CreateLock; }
+    VLock*              GetLock() const        { return &pLock->CreateLock; }
 
     // DeviceCreateDesc reference counting is tied to Devices list management,
     // see comments for HandleCount.
@@ -188,7 +192,7 @@ public:
     // Following transitions require pList->CreateLock:
     //  {1 -> 0}: May delete & remove handle if no longer available.
     //  {0 -> 1}: Device creation is only possible if manager is still alive.
-    AtomicInt<UInt32>           HandleCount;
+    VAtomicInt           handleCount;
     // If not null, points to our created device instance. Modified during lock only.
     DeviceBase*                 pDevice;
     // True if device is marked as available during enumeration.
@@ -202,14 +206,14 @@ public:
 class DeviceCommon
 {
 public:
-    AtomicInt<UInt32>      RefCount;
+    VAtomicInt      refCount;
     Ptr<DeviceCreateDesc>  pCreateDesc;
     Ptr<DeviceBase>        pParent;
     volatile bool          ConnectedFlag;	// FIXME: this does not work on Android because the device code never sends a HIDDeviceMessage_DeviceAdded
     MessageHandlerRef      HandlerRef;
 
     DeviceCommon(DeviceCreateDesc* createDesc, DeviceBase* device, DeviceBase* parent)
-        : RefCount(1), pCreateDesc(createDesc), pParent(parent),
+        : refCount(1), pCreateDesc(createDesc), pParent(parent),
           ConnectedFlag(true), HandlerRef(device)
     {
     }
@@ -219,7 +223,7 @@ public:
     void DeviceAddRef();
     void DeviceRelease();
 
-    Lock* GetLock() const { return pCreateDesc->GetLock(); }
+    VLock* GetLock() const { return pCreateDesc->GetLock(); }
 
     virtual bool  initialize(DeviceBase* parent) = 0;
     virtual void shutdown() = 0;
@@ -267,13 +271,13 @@ public:
 // DeviceFactory is maintained in DeviceManager for each separately-enumerable
 // device type; factories allow separation of unrelated enumeration code.
 
-class DeviceFactory : public ListNode<DeviceFactory>, public NewOverrideBase
+class DeviceFactory : public NodeOfVList<VList<DeviceFactory*>>, public NewOverrideBase
 {
 public:
 
     DeviceFactory() : pManager(0)
     {
-        pNext = pPrev = 0;
+
     }
     virtual ~DeviceFactory() { }
 
@@ -371,7 +375,9 @@ public:
     void AddFactory(DeviceFactory* factory)
     {
         // This lock is only needed if we call AddFactory after manager thread creation.
-        Lock::Locker scopeLock(GetLock());
+
+        factory->pointToVList = &Factories;
+        VLock::VLocker scopeLock(GetLock());
         Factories.append(factory);
         factory->AddedToManager(this);
     }
@@ -419,10 +425,10 @@ public:
     void DetectHIDDevice(const HIDDeviceDesc&);
 
     // Manager Lock-protected list of devices.
-    List<DeviceCreateDesc>  Devices;
+    VList<DeviceCreateDesc*>  Devices;
 
     // Factories used to detect and manage devices.
-    List<DeviceFactory>     Factories;
+    VList<DeviceFactory*>     Factories;
 
 protected:
     Ptr<HIDDeviceManager>   HidDeviceManager;

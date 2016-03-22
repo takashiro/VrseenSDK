@@ -77,7 +77,7 @@ void TheaterSelectionView::SelectTheater(int theater)
 	SelectedTheater = theater;
 
 	Cinema.sceneMgr.SetSceneModel(Cinema.modelMgr.GetTheater(SelectedTheater));
-    SetPosition(Cinema.app->vrMenuMgr(), Cinema.sceneMgr.Scene.FootPos);
+    SetPosition(vApp->vrMenuMgr(), Cinema.sceneMgr.Scene.FootPos);
 }
 
 void TheaterSelectionView::OnOpen()
@@ -86,7 +86,7 @@ void TheaterSelectionView::OnOpen()
 
 	if ( Menu == NULL )
 	{
-        CreateMenu( Cinema.app, Cinema.app->vrMenuMgr(), Cinema.app->defaultFont() );
+        CreateMenu( vApp, vApp->vrMenuMgr(), vApp->defaultFont() );
 	}
 
 	SelectTheater( SelectedTheater );
@@ -94,10 +94,10 @@ void TheaterSelectionView::OnOpen()
 
 	Cinema.sceneMgr.LightsOn( 0.5f );
 
-    Cinema.app->swapParms().WarpProgram = WP_CHROMATIC;
+    vApp->swapParms().WarpProgram = WP_CHROMATIC;
 
 	Cinema.sceneMgr.ClearGazeCursorGhosts();
-    Cinema.app->guiSys().openMenu( Cinema.app, Cinema.app->gazeCursor(), "TheaterSelectionBrowser" );
+    vApp->guiSys().openMenu( vApp, vApp->gazeCursor(), "TheaterSelectionBrowser" );
 
 	// ignore clicks for 0.5 seconds to avoid accidentally clicking through
 	IgnoreSelectTime = ovr_GetTimeInSeconds() + 0.5;
@@ -109,12 +109,12 @@ void TheaterSelectionView::OnClose()
 {
 	LOG( "OnClose" );
 
-    Cinema.app->guiSys().closeMenu( Cinema.app, Menu, false );
+    vApp->guiSys().closeMenu( vApp, Menu, false );
 
 	CurViewState = VIEWSTATE_CLOSED;
 }
 
-bool TheaterSelectionView::Command( const char * msg )
+bool TheaterSelectionView::Command(const VEvent &)
 {
 	return false;
 }
@@ -335,7 +335,7 @@ void TheaterSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, Bitmap
         parms.clear();
     }
 
-    Cinema.app->guiSys().addMenu( Menu );
+    vApp->guiSys().addMenu( Menu );
 }
 
 void TheaterSelectionView::SelectPressed( void )
@@ -361,13 +361,13 @@ void TheaterSelectionView::SelectPressed( void )
 Matrix4f TheaterSelectionView::Frame( const VrFrame & vrFrame )
 {
 	// We want 4x MSAA in the selection screen
-    EyeParms eyeParms = Cinema.app->eyeParms();
+    EyeParms eyeParms = vApp->eyeParms();
 	eyeParms.multisamples = 4;
-    Cinema.app->setEyeParms( eyeParms );
+    vApp->setEyeParms( eyeParms );
 
     if ( SelectionObject->isHilighted() )
 	{
-        TheaterBrowser->CheckGamepad( Cinema.app, vrFrame, Cinema.app->vrMenuMgr(), CenterRoot );
+        TheaterBrowser->CheckGamepad( vApp, vrFrame, vApp->vrMenuMgr(), CenterRoot );
 	}
 
 	int selectedItem = TheaterBrowser->GetSelection();
@@ -388,7 +388,7 @@ Matrix4f TheaterSelectionView::Frame( const VrFrame & vrFrame )
 
 	if ( vrFrame.Input.buttonPressed & BUTTON_B )
 	{
-        Cinema.app->playSound( "touch_up" );
+        vApp->playSound( "touch_up" );
 		Cinema.setMovieSelection( true );
 	}
 

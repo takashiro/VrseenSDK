@@ -1,7 +1,7 @@
 #pragma once
 
 #include "VString.h"
-#include "List.h"
+#include "VList.h"
 
 #include "Device.h"
 
@@ -108,7 +108,7 @@ private:
 
     VColor                       RenderColor;
 
-    struct MeasurementResult : public ListNode<MeasurementResult>, public NewOverrideBase
+    struct MeasurementResult : public NodeOfVList<VList<MeasurementResult*>>, public NewOverrideBase
     {
         MeasurementResult()
          :  DeviceMeasuredElapsedMilliS(0),
@@ -129,7 +129,7 @@ private:
         double                  TestStartedSeconds;
     };
 
-    List<MeasurementResult>     Results;
+    VList<MeasurementResult*>     Results;
     void clearMeasurementResults();
 
     MeasurementResult*          getActiveResult();

@@ -23,8 +23,10 @@ of patent rights can be found in the PATENTS file in the same directory.
 
 namespace OculusCinema {
 
-CinemaApp::CinemaApp() :
-	startTime( 0 ),
+CinemaApp::CinemaApp(JNIEnv *jni, jclass activityClass, jobject activityObject)
+    : VMainActivity(jni, activityClass, activityObject)
+    ,
+    startTime( 0 ),
 	sceneMgr( *this ),
 	shaderMgr( *this ),
 	modelMgr( *this ),
@@ -42,7 +44,6 @@ CinemaApp::CinemaApp() :
 	m_playList(),
 	m_shouldResumeMovie( false ),
 	m_movieFinishedPlaying( false )
-
 {
 }
 
@@ -50,17 +51,17 @@ CinemaApp::CinemaApp() :
  * OneTimeInit
  *
  */
-void CinemaApp::OneTimeInit(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI)
+void CinemaApp::init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI)
 {
 	LOG( "--------------- CinemaApp OneTimeInit ---------------");
 
 	startTime = ovr_GetTimeInSeconds();
 
-	app->vrParms().colorFormat = COLOR_8888;
+    vApp->vrParms().colorFormat = COLOR_8888;
 	//app->GetVrParms().depthFormat = DEPTH_16;
-	app->vrParms().multisamples = 2;
+    vApp->vrParms().multisamples = 2;
 
-	Native::OneTimeInit( app, ActivityClass );
+    Native::OneTimeInit( vApp, javaClass() );
 	CinemaStrings::OneTimeInit( *this );
     shaderMgr.OneTimeInit( launchIntentURI );
 	modelMgr.OneTimeInit( launchIntentURI );
@@ -80,7 +81,7 @@ void CinemaApp::OneTimeInit(const VString &fromPackage, const VString &launchInt
 	LOG( "CinemaApp::OneTimeInit: %3.1f seconds", ovr_GetTimeInSeconds() - startTime );
 }
 
-void CinemaApp::OneTimeShutdown()
+void CinemaApp::shutdown()
 {
 	LOG( "--------------- CinemaApp OneTimeShutdown ---------------");
 
@@ -117,7 +118,7 @@ VString CinemaApp::externalSDCardDir(const VString &dir) const
 
 VString CinemaApp::externalCacheDir(const VString &dir) const
 {
-    return Native::GetExternalCacheDirectory(app) + '/' + dir;
+    return Native::GetExternalCacheDirectory(vApp) + '/' + dir;
 }
 
 bool CinemaApp::isExternalSDCardDir(const VString &dir) const
@@ -211,7 +212,7 @@ void CinemaApp::startMoviePlayback()
 	if ( m_currentMovie != NULL )
 	{
 		m_movieFinishedPlaying = false;
-        Native::StartMovie( app, m_currentMovie->Filename.toCString(), m_shouldResumeMovie, m_currentMovie->IsEncrypted, false );
+        Native::StartMovie( vApp, m_currentMovie->Filename.toCString(), m_shouldResumeMovie, m_currentMovie->IsEncrypted, false );
 		m_shouldResumeMovie = false;
 	}
 }
@@ -235,7 +236,7 @@ void CinemaApp::playMovieFromBeginning()
 void CinemaApp::resumeOrRestartMovie()
 {
 	LOG( "StartMovie");
-    if ( Native::CheckForMovieResume( app, m_currentMovie->Filename.toCString() ) )
+    if ( Native::CheckForMovieResume( vApp, m_currentMovie->Filename.toCString() ) )
 	{
 		LOG( "Open ResumeMovieMenu");
 		m_viewMgr.openView( m_resumeMovieMenu );
@@ -296,11 +297,11 @@ const SceneDef & CinemaApp::currentTheater() const
 /*
  * DrawEyeView
  */
-Matrix4f CinemaApp::DrawEyeView( const int eye, const float fovDegrees ) {
+Matrix4f CinemaApp::drawEyeView( const int eye, const float fovDegrees ) {
 	return m_viewMgr.drawEyeView( eye, fovDegrees );
 }
 
-void CinemaApp::ConfigureVrMode(ovrModeParms &modeParms)
+void CinemaApp::configureVrMode(ovrModeParms &modeParms)
 {
 	// We need very little CPU for movie playing, but a fair amount of GPU.
 	// The CPU clock should ramp up above the minimum when necessary.
@@ -314,7 +315,7 @@ void CinemaApp::ConfigureVrMode(ovrModeParms &modeParms)
 	modeParms.AllowPowerSave = true;
 
 	// Always use 2x MSAA for now
-	app->vrParms().multisamples = 2;
+    vApp->vrParms().multisamples = 2;
 }
 
 /*
@@ -322,20 +323,18 @@ void CinemaApp::ConfigureVrMode(ovrModeParms &modeParms)
  *
  * Actions that need to be performed on the render thread.
  */
-void CinemaApp::Command( const char * msg )
+void CinemaApp::command(const VEvent &event )
 {
-	if ( modelMgr.Command( msg ) )
+    if (modelMgr.Command(event))
 	{
 		return;
 	}
 
-	if ( m_viewMgr.command( msg ) )
-	{
+    if (m_viewMgr.command(event)) {
 		return;
 	}
 
-	if ( sceneMgr.Command( msg ) )
-	{
+    if (sceneMgr.Command(event)) {
 		return;
 	}
 }
@@ -345,7 +344,7 @@ void CinemaApp::Command( const char * msg )
  *
  * App override
  */
-Matrix4f CinemaApp::Frame( const VrFrame vrFrame )
+Matrix4f CinemaApp::onNewFrame( const VrFrame vrFrame )
 {
 	m_frameCount++;
 	this->m_vrFrame = vrFrame;

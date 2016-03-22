@@ -13,22 +13,26 @@ INCLUDEPATH += \
     jni/core \
     jni/gui \
     jni/io \
+    jni/media \
     jni/scene
 
 SOURCES += \
     jni/core/Alg.cpp \
     jni/core/Allocator.cpp \
-    jni/core/Atomic.cpp \
+    jni/core/VAtomicInt.cpp \
     jni/core/VByteArray.cpp \
     jni/core/VChar.cpp \
-    jni/core/VEvent.cpp \
+    jni/core/VDir.cpp \
+    jni/core/VEventLoop.cpp \
     jni/core/VJson.cpp \
     jni/core/Log.cpp \
     jni/core/VLog.cpp \
+    jni/core/VLock.cpp \
     jni/core/Lockless.cpp \
     jni/core/VMath.cpp \
     jni/core/VPath.cpp \
     jni/core/RefCount.cpp \
+    jni/core/VSignal.cpp \
     jni/core/VStandardPath.cpp \
     jni/core/VString.cpp \
     jni/core/System.cpp \
@@ -38,6 +42,7 @@ SOURCES += \
     jni/core/MappedFile.cpp \
     jni/core/MemBuffer.cpp \
     jni/core/VMutex.cpp \
+    jni/core/VUserSettings.cpp \
     jni/core/VWaitCondition.cpp \
     jni/core/android/JniUtils.cpp \
     jni/core/android/LogUtils.cpp \
@@ -51,9 +56,9 @@ SOURCES += \
     jni/api/Distortion.cpp \
     jni/api/SystemActivities.cpp \
     jni/api/VFrameSmooth.cpp \
-    jni/api/LocalPreferences.cpp \
     jni/api/VMainActivity.cpp \
     jni/api/VGlShader.cpp \
+    jni/api/VGlGeometry.cpp \
     jni/api/sensor/DeviceHandle.cpp \
     jni/api/sensor/DeviceImpl.cpp \
     jni/api/sensor/LatencyTest.cpp \
@@ -98,6 +103,7 @@ SOURCES += \
     jni/io/VBinaryFile.cpp \
     jni/io/VFileOperation.cpp \
     jni/io/VSysFile.cpp \
+    jni/media/VSoundManager.cpp \
     jni/scene/BitmapFont.cpp \
     jni/scene/EyeBuffers.cpp \
     jni/scene/EyePostRender.cpp \
@@ -115,14 +121,11 @@ SOURCES += \
     jni/Console.cpp \
     jni/DebugLines.cpp \
     jni/KeyState.cpp \
-    jni/VMessageQueue.cpp \
-    jni/SoundManager.cpp \
-    jni/VUserProfile.cpp \
-    jni/TalkToJava.cpp \
     jni/VrCommon.cpp \
     jni/VrLocale.cpp \
     jni/api/VGlGeometry.cpp \
     jni/api/VGlOperation.cpp
+
 
 HEADERS += \
     jni/core/android/JniUtils.h \
@@ -136,19 +139,24 @@ HEADERS += \
     jni/core/VByteArray.h \
     jni/core/VColor.h \
     jni/core/VChar.h \
-    jni/core/ContainerAllocator.h \
     jni/core/Deque.h \
+    jni/core/VDir.h \
     jni/core/VEvent.h \
+    jni/core/VEventLoop.h \
     jni/core/VFlags.h \
     jni/core/VJson.h \
+    jni/core/VList.h \
     jni/core/Log.h \
     jni/core/VLog.h \
+    jni/core/VLock.h \
     jni/core/Lockless.h \
     jni/core/VMath.h \
     jni/core/VPath.h \
     jni/core/RefCount.h \
+    jni/core/VSignal.h \
     jni/core/VStandardPath.h \
     jni/core/VString.h \
+    jni/core/VStringHash.h \
     jni/core/String_FormatUtil.h \
     jni/core/String_PathUtil.h \
     jni/core/System.h \
@@ -164,8 +172,8 @@ HEADERS += \
     jni/core/OVRVersion.h \
     jni/core/VSharedPointer.h \
     jni/core/String_Utils.h \
-    jni/core/StringHash.h \
     jni/core/TypesafeNumber.h \
+    jni/core/VUserSettings.h \
     jni/core/VWaitCondition.h \
     jni/embedded/dependency_error_de.h \
     jni/embedded/dependency_error_en.h \
@@ -183,7 +191,6 @@ HEADERS += \
     jni/api/Distortion.h \
     jni/api/SystemActivities.h \
     jni/api/VFrameSmooth.h \
-    jni/api/LocalPreferences.h \
     jni/api/VGlGeometry.h \
     jni/api/VGlShader.h \
     jni/api/VMainActivity.h \
@@ -246,6 +253,7 @@ HEADERS += \
     jni/io/VFile.h \
     jni/io/VFileOperation.h \
     jni/io/VSysFile.h \
+    jni/media/VSoundManager.h \
     jni/scene/BitmapFont.h \
     jni/scene/EyeBuffers.h \
     jni/scene/EyePostRender.h \
@@ -261,14 +269,10 @@ HEADERS += \
     jni/scene/SurfaceTexture.h \
     jni/scene/SwipeView.h \
     jni/VrCommon.h \
-    jni/VMessageQueue.h \
-    jni/TalkToJava.h \
     jni/KeyState.h \
     jni/App.h \
     jni/AppRender.h \
     jni/DebugLines.h \
-    jni/SoundManager.h \
-    jni/VUserProfile.h \
     jni/VrLocale.h \
     jni/Console.h \
     jni/vglobal.h \
@@ -297,16 +301,6 @@ LIBS += -landroid
 LIBS += -lz
 # audio
 LIBS += -lOpenSLES
-
-SOURCES += \
-    jni/Integrations/Unity/UnityPlugin.cpp \
-    jni/Integrations/Unity/MediaSurface.cpp \
-    jni/Integrations/Unity/SensorPlugin.cpp \
-    jni/Integrations/Unity/RenderingPlugin.cpp
-
-HEADERS += \
-    jni/Integrations/Unity/GlStateSave.h \
-    jni/Integrations/Unity/MediaSurface.h
 
 linux {
     CONFIG(staticlib) {

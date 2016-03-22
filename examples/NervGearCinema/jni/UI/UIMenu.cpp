@@ -33,14 +33,14 @@ VRMenuId_t UIMenu::AllocId()
 void UIMenu::Open()
 {
 	LOG( "Open" );
-    Cinema.app->guiSys().openMenu( Cinema.app, Cinema.app->gazeCursor(), MenuName.toCString() );
+    vApp->guiSys().openMenu( vApp, vApp->gazeCursor(), MenuName.toCString() );
 	MenuOpen = true;
 }
 
 void UIMenu::Close()
 {
 	LOG( "Close" );
-    Cinema.app->guiSys().closeMenu( Cinema.app, Menu, false );
+    vApp->guiSys().closeMenu( vApp, Menu, false );
 	MenuOpen = false;
 }
 
@@ -50,8 +50,8 @@ void UIMenu::Create( const char *menuName )
 {
 	MenuName = menuName;
 	Menu = VRMenu::Create( menuName );
-    Menu->init( Cinema.app->vrMenuMgr(), Cinema.app->defaultFont(), 0.0f, VRMenuFlags_t() );
-    Cinema.app->guiSys().addMenu( Menu );
+    Menu->init( vApp->vrMenuMgr(), vApp->defaultFont(), 0.0f, VRMenuFlags_t() );
+    vApp->guiSys().addMenu( Menu );
 }
 
 VRMenuFlags_t const & UIMenu::GetFlags() const

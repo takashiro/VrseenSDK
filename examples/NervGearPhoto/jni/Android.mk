@@ -14,12 +14,14 @@ include ../../source/import_vrlib.mk		# import VRLib for this module.  Do NOT ca
 
 include ../../source/cflags.mk
 
+
 LOCAL_ARM_MODE  := arm					# full speed arm instead of thumb
 LOCAL_ARM_NEON  := true					# compile with neon support enabled
 
 LOCAL_MODULE    := nervgearphoto		# generate oculus360photos.so
 
 LOCAL_SRC_FILES := Oculus360Photos.cpp FileLoader.cpp PanoBrowser.cpp PanoMenu.cpp PhotosMetaData.cpp OVR_TurboJpeg.cpp
+#	../../../source/jni/core/VDir.cpp
 
 LOCAL_STATIC_LIBRARIES += jpeg
 

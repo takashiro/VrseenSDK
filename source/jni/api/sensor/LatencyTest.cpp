@@ -336,12 +336,10 @@ void LatencyTest::reset()
 
 void LatencyTest::clearMeasurementResults()
 {
-    while(!Results.isEmpty())
-    {
-        MeasurementResult* pElem = Results.first();
-        pElem->removeNode();
+    for (MeasurementResult* pElem:Results) {
         delete pElem;
     }
+    Results.clear();
 }
 
 LatencyTest::LatencyTestHandler::~LatencyTestHandler()
@@ -391,9 +389,7 @@ bool LatencyTest::areResultsComplete()
     UInt32 measurements1to2 = 0;
     UInt32 measurements2to1 = 0;
 
-    MeasurementResult* pCurr = Results.first();
-    while(true)
-    {
+    for (MeasurementResult* pCurr:Results) {
         // Process.
         if (!pCurr->TimedOutWaitingForTestStarted &&
             !pCurr->TimedOutWaitingForColorDetected)
@@ -412,12 +408,6 @@ bool LatencyTest::areResultsComplete()
                 }
             }
         }
-
-        if (Results.isLast(pCurr))
-        {
-            break;
-        }
-        pCurr = Results.getNext(pCurr);
     }
 
     if (measurements1to2 >= DEFAULT_NUMBER_OF_SAMPLES &&
@@ -448,10 +438,8 @@ void LatencyTest::processResults()
     UInt32 measurements1to2 = 0;
     UInt32 measurements2to1 = 0;
 
-    MeasurementResult* pCurr = Results.first();
     UInt32 count = 0;
-    while(true)
-    {
+    for (MeasurementResult* pCurr:Results) {
         count++;
 
         if (!pCurr->TimedOutWaitingForTestStarted &&
@@ -503,12 +491,6 @@ void LatencyTest::processResults()
         {
             break;
         }
-
-        if (Results.isLast(pCurr))
-        {
-            break;
-        }
-        pCurr = Results.getNext(pCurr);
     }
 
     averageTime1To2 /= (float) DEFAULT_NUMBER_OF_SAMPLES;

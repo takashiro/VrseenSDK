@@ -89,9 +89,9 @@ void MoviePlayerView::OneTimeInit( const VString & launchIntent )
 
 	const double start = ovr_GetTimeInSeconds();
 
-	GazeUserId = Cinema.app->gazeCursor().GenerateUserId();
+	GazeUserId = vApp->gazeCursor().GenerateUserId();
 
-	CreateMenu( Cinema.app, Cinema.app->vrMenuMgr(), Cinema.app->defaultFont() );
+	CreateMenu( vApp, vApp->vrMenuMgr(), vApp->defaultFont() );
 
 	LOG( "MoviePlayerView::OneTimeInit: %3.1f seconds", ovr_GetTimeInSeconds() - start );
 }
@@ -356,7 +356,7 @@ void MoviePlayerView::OnOpen()
     Cinema.startMoviePlayback();
 
     MovieTitleLabel.SetText( Cinema.currentMovie()->Title );
-	Bounds3f titleBounds = MovieTitleLabel.GetTextLocalBounds( Cinema.app->defaultFont() ) * VRMenuObject::TEXELS_PER_METER;
+	Bounds3f titleBounds = MovieTitleLabel.GetTextLocalBounds( vApp->defaultFont() ) * VRMenuObject::TEXELS_PER_METER;
 	MovieTitleLabel.SetImage( 0, SURFACE_TEXTURE_DIFFUSE, BackgroundTintTexture, titleBounds.GetSize().x + 88, titleBounds.GetSize().y + 32 );
 
 	PlayButton.SetButtonImages( PauseTexture, PauseHoverTexture, PausePressedTexture );
@@ -367,7 +367,7 @@ void MoviePlayerView::OnClose()
 	LOG( "OnClose" );
 	CurViewState = VIEWSTATE_CLOSED;
 	HideUI();
-	Cinema.app->gazeCursor().ShowCursor();
+	vApp->gazeCursor().ShowCursor();
 
 	if ( MoveScreenMenu->IsOpen() )
 	{
@@ -388,21 +388,19 @@ void MoviePlayerView::OnClose()
  *
  * Actions that need to be performed on the render thread.
  */
-bool MoviePlayerView::Command( const char * msg )
+bool MoviePlayerView::Command(const VEvent &event )
 {
 	if ( CurViewState != VIEWSTATE_OPEN )
 	{
 		return false;
 	}
 
-	if ( MatchesHead( "resume ", msg ) )
+    if (event.name == "resume")
 	{
         Cinema.setMovieSelection( false );
 		return false;	// allow VrLib to handle it, too
-	}
-	else if ( MatchesHead( "pause ", msg ) )
-	{
-		Native::StopMovie( Cinema.app );
+    } else if (event.name == "pause") {
+		Native::StopMovie( vApp );
 		return false;	// allow VrLib to handle it, too
 	}
 
@@ -479,7 +477,7 @@ void MoviePlayerView::ShowUI()
 {
 	LOG( "ShowUI" );
     Cinema.sceneMgr.ForceMono = true;
-	Cinema.app->gazeCursor().ShowCursor();
+	vApp->gazeCursor().ShowCursor();
 
 	PlaybackControlsMenu->Open();
 	GazeTimer.SetGazeTime();
@@ -495,7 +493,7 @@ void MoviePlayerView::HideUI()
 	LOG( "HideUI" );
 	PlaybackControlsMenu->Close();
 
-	Cinema.app->gazeCursor().HideCursor();
+	vApp->gazeCursor().HideCursor();
     Cinema.sceneMgr.ForceMono = false;
 	uiActive = false;
 
@@ -530,7 +528,7 @@ void MoviePlayerView::CheckDebugControls( const VrFrame & vrFrame )
 	if ( vrFrame.Input.buttonPressed & BUTTON_SELECT )
 	{
         Cinema.sceneMgr.UseOverlay = !Cinema.sceneMgr.UseOverlay;
-        Cinema.app->createToast( "Overlay: %i", Cinema.sceneMgr.UseOverlay );
+        vApp->createToast( "Overlay: %i", Cinema.sceneMgr.UseOverlay );
 	}
 
 	// Press Y to toggle FreeScreen mode, while holding the scale and distance can be adjusted
@@ -549,7 +547,7 @@ void MoviePlayerView::CheckDebugControls( const VrFrame & vrFrame )
 
 		if ( vrFrame.Input.buttonReleased & (BUTTON_LSTICK_UP|BUTTON_LSTICK_DOWN|BUTTON_LSTICK_LEFT|BUTTON_LSTICK_RIGHT) )
 		{
-            Cinema.app->createToast( "FreeScreenDistance:%3.1f  FreeScreenScale:%3.1f", Cinema.sceneMgr.FreeScreenDistance, Cinema.sceneMgr.FreeScreenScale );
+            vApp->createToast( "FreeScreenDistance:%3.1f  FreeScreenScale:%3.1f", Cinema.sceneMgr.FreeScreenDistance, Cinema.sceneMgr.FreeScreenScale );
 		}
 	}
 }
@@ -611,7 +609,7 @@ void MoviePlayerView::CheckInput( const VrFrame & vrFrame )
 		if ( ( vrFrame.Input.buttonPressed & BUTTON_A ) || ( ( vrFrame.Input.buttonReleased & BUTTON_TOUCH ) && !( vrFrame.Input.buttonState & BUTTON_TOUCH_WAS_SWIPE ) ) )
 		{
 			// open ui if it's not visible
-			Cinema.app->playSound( "touch_up" );
+			vApp->playSound( "touch_up" );
 			ShowUI();
 
 			// ignore button A or touchpad until release so we don't close the UI immediately after opening it
@@ -637,7 +635,7 @@ void MoviePlayerView::CheckInput( const VrFrame & vrFrame )
 			}
 			SetSeekIcon( SeekSpeed );
 
-			Cinema.app->playSound( "touch_up" );
+			vApp->playSound( "touch_up" );
 		}
 	}
 
@@ -659,7 +657,7 @@ void MoviePlayerView::CheckInput( const VrFrame & vrFrame )
 			}
 			SetSeekIcon( SeekSpeed );
 
-			Cinema.app->playSound( "touch_up" );
+			vApp->playSound( "touch_up" );
 		}
 	}
 
@@ -722,7 +720,7 @@ void MoviePlayerView::CheckInput( const VrFrame & vrFrame )
 	if ( vrFrame.Input.buttonPressed & BUTTON_SELECT )
 	{
 		// movie select
-		Cinema.app->playSound( "touch_up" );
+		vApp->playSound( "touch_up" );
         Cinema.setMovieSelection( false );
 	}
 
@@ -735,7 +733,7 @@ void MoviePlayerView::CheckInput( const VrFrame & vrFrame )
 		else
 		{
 			LOG( "User pressed button 2" );
-			Cinema.app->playSound( "touch_up" );
+			vApp->playSound( "touch_up" );
 			HideUI();
 			PlayMovie();
 		}
@@ -744,7 +742,7 @@ void MoviePlayerView::CheckInput( const VrFrame & vrFrame )
 
 void MoviePlayerView::TogglePlayback()
 {
-	const bool isPlaying = Native::IsPlaying( Cinema.app );
+	const bool isPlaying = Native::IsPlaying( vApp );
 	if ( isPlaying )
 	{
 		PauseMovie();
@@ -757,8 +755,8 @@ void MoviePlayerView::TogglePlayback()
 
 void MoviePlayerView::PauseMovie()
 {
-	Native::PauseMovie( Cinema.app );
-	PlaybackPos = Native::GetPosition( Cinema.app );
+	Native::PauseMovie( vApp );
+	PlaybackPos = Native::GetPosition( vApp );
 	PlayButton.SetButtonImages( PlayTexture, PlayHoverTexture, PlayPressedTexture );
 }
 
@@ -766,7 +764,7 @@ void MoviePlayerView::PlayMovie()
 {
 	SeekSpeed = 0;
 	SetSeekIcon( SeekSpeed );
-	Native::ResumeMovie( Cinema.app );
+	Native::ResumeMovie( vApp );
 	PlayButton.SetButtonImages( PauseTexture, PauseHoverTexture, PausePressedTexture );
 }
 
@@ -828,7 +826,7 @@ void MoviePlayerView::ScrubBarClicked( const float progress )
 	}
 
     int position = Cinema.sceneMgr.MovieDuration * progress;
-	Native::SetPosition( Cinema.app, position );
+	Native::SetPosition( vApp, position );
 
 	ScrubBar.SetProgress( progress );
 
@@ -860,7 +858,7 @@ void MoviePlayerView::UpdateUI( const VrFrame & vrFrame )
 			if ( !GazeTimer.IsFocused() && BackgroundClicked )
 			{
 				LOG( "Clicked outside playback controls" );
-				Cinema.app->playSound( "touch_up" );
+				vApp->playSound( "touch_up" );
 				HideUI();
 				PlayMovie();
 			}
@@ -869,7 +867,7 @@ void MoviePlayerView::UpdateUI( const VrFrame & vrFrame )
 
         if ( Cinema.sceneMgr.MovieDuration > 0 )
 		{
-			const int currentPosition = Native::GetPosition( Cinema.app );
+			const int currentPosition = Native::GetPosition( vApp );
             float progress = ( float )currentPosition / ( float )Cinema.sceneMgr.MovieDuration;
 			ScrubBar.SetProgress( progress );
 		}
@@ -903,16 +901,16 @@ Matrix4f MoviePlayerView::Frame( const VrFrame & vrFrame )
 {
 	// Drop to 2x MSAA during playback, people should be focused
 	// on the high quality screen.
-	EyeParms eyeParms = Cinema.app->eyeParms();
+	EyeParms eyeParms = vApp->eyeParms();
 	eyeParms.multisamples = 2;
-	Cinema.app->setEyeParms( eyeParms );
+	vApp->setEyeParms( eyeParms );
 
-	if ( Native::HadPlaybackError( Cinema.app ) )
+	if ( Native::HadPlaybackError( vApp ) )
 	{
 		LOG( "Playback failed" );
         Cinema.unableToPlayMovie();
 	}
-	else if ( Native::IsPlaybackFinished( Cinema.app ) )
+	else if ( Native::IsPlaybackFinished( vApp ) )
 	{
 		LOG( "Playback finished" );
         Cinema.movieFinished();
@@ -938,7 +936,7 @@ Matrix4f MoviePlayerView::Frame( const VrFrame & vrFrame )
 		{
 			int PlaybackSpeed = ( SeekSpeed < 0 ) ? -( 1 << -SeekSpeed ) : ( 1 << SeekSpeed );
 			PlaybackPos += 250 * PlaybackSpeed;
-			Native::SetPosition( Cinema.app, PlaybackPos );
+			Native::SetPosition( vApp, PlaybackPos );
 			NextSeekTime = now + 0.25;
 		}
 	}
