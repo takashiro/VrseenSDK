@@ -42,6 +42,12 @@ public:
         return *this;
     }
 
+    VArray &operator << (E &&e)
+    {
+        append(e);
+        return *this;
+    }
+
     VArray &operator << (const VArray<E> &elements)
     {
         append(elements);
