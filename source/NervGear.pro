@@ -27,6 +27,7 @@ SOURCES += \
     jni/core/VJson.cpp \
     jni/core/Log.cpp \
     jni/core/VLog.cpp \
+    jni/core/VLock.cpp \
     jni/core/Lockless.cpp \
     jni/core/VMath.cpp \
     jni/core/VPath.cpp \
@@ -147,6 +148,7 @@ HEADERS += \
     jni/core/VList.h \
     jni/core/Log.h \
     jni/core/VLog.h \
+    jni/core/VLock.h \
     jni/core/Lockless.h \
     jni/core/VMath.h \
     jni/core/VPath.h \
