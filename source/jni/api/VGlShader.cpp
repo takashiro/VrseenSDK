@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "Android/GlUtils.h"
+#include "api/VGlOperation.h"
 #include "../core/VLog.h"
 
 NV_NAMESPACE_BEGIN

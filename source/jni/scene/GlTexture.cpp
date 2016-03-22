@@ -14,7 +14,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VPath.h"
 #include "OVR.h"
 #include "Alg.h"
-#include "Android/GlUtils.h"
 #include "api/VGlOperation.h"
 
 #include "3rdParty/stb/stb_image.h"

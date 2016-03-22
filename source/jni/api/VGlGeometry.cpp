@@ -5,7 +5,7 @@
 #include <assert.h>
 
 #include "../core/Alg.h"
-#include "../core/Android/GlUtils.h"
+#include "api/VGlOperation.h"
 #include "../core/Android/LogUtils.h"
 #include "Distortion.h"
 

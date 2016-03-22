@@ -23,7 +23,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <fcntl.h>
 
 #include "MemBuffer.h"
-#include "Android/GlUtils.h"		// for egl declarations
+#include "api/VGlOperation.h"		// for egl declarations
 #include "Android/LogUtils.h"
 
 namespace NervGear {

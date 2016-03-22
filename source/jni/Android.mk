@@ -58,7 +58,6 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     core/MemBuffer.cpp \
                     core/VMutex.cpp \
                     core/VWaitCondition.cpp \
-                    core/android/GlUtils.cpp \
                     core/android/JniUtils.cpp \
                     core/android/LogUtils.cpp \
                     core/android/VOsBuild.cpp \
@@ -121,7 +120,6 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     scene/EyeBuffers.cpp \
                     scene/EyePostRender.cpp \
                     scene/GazeCursor.cpp \
-                    scene/GlSetup.cpp \
                     scene/GlTexture.cpp \
                     scene/ImageData.cpp \
                     scene/ModelRender.cpp \

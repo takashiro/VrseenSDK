@@ -34,7 +34,7 @@
 #include "VLog.h"
 
 #include "android/JniUtils.h"
-#include "Android/GlUtils.h"
+#include "api/VGlOperation.h"
 #include "Android/LogUtils.h"
 
 #include "../api/VGlShader.h"
