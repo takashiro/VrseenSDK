@@ -122,7 +122,6 @@ SOURCES += \
     jni/Console.cpp \
     jni/DebugLines.cpp \
     jni/KeyState.cpp \
-    jni/TalkToJava.cpp \
     jni/VrCommon.cpp \
     jni/VrLocale.cpp
 
@@ -270,7 +269,6 @@ HEADERS += \
     jni/scene/SurfaceTexture.h \
     jni/scene/SwipeView.h \
     jni/VrCommon.h \
-    jni/TalkToJava.h \
     jni/KeyState.h \
     jni/App.h \
     jni/AppRender.h \

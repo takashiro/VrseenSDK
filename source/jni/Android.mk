@@ -135,7 +135,6 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     scene/SurfaceTexture.cpp \
                     scene/SwipeView.cpp \
                     VrCommon.cpp \
-                    TalkToJava.cpp \
                     KeyState.cpp \
                     App.cpp \
                     DebugLines.cpp \

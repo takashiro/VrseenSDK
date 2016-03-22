@@ -39,7 +39,6 @@
 #include "VrLocale.h"
 #include "VRMenuMgr.h"
 #include "VUserSettings.h"
-#include "TalkToJava.h"
 
 #include "VApkFile.h"
 #include "VJson.h"
@@ -271,10 +270,6 @@ struct App::Private : public TalkToJavaInterface
 
     VThread *renderThread;
     int				vrThreadTid;		// linux tid
-
-    // For running java commands on another thread to
-    // avoid hitches.
-    TalkToJava		ttj;
 
     int				batteryLevel;		// charge level of the batter as reported from Java
     eBatteryStatus	batteryStatus;		// battery status as reported from Java
@@ -1031,7 +1026,7 @@ struct App::Private : public TalkToJavaInterface
 
             // Set up another thread for making longer-running java calls
             // to avoid hitches.
-            ttj.Init(javaVM, this);
+            activity->Init(javaVM, this);
 
             // Create a new context and pbuffer surface
             const int windowDepth = 0;
@@ -1702,7 +1697,7 @@ void App::createToast(const char * fmt, ...)
 
     vInfo("CreateToast" << bigBuffer);
 
-    d->ttj.GetMessageQueue().post("toast", bigBuffer);
+    d->activity->eventLoop().post("toast", bigBuffer);
 }
 
 void App::playSound(const char * name)
@@ -1713,13 +1708,13 @@ void App::playSound(const char * name)
     if (d->soundManager.getSound(name, soundFile))
 	{
 		// Run on the talk to java thread
-        d->ttj.GetMessageQueue().post("sound", soundFile);
+        d->activity->eventLoop().post("sound", soundFile);
 	}
 	else
 	{
         WARN("AppLocal::playSound called with non SoundManager defined sound: %s", name);
 		// Run on the talk to java thread
-        d->ttj.GetMessageQueue().post("sound", name);
+        d->activity->eventLoop().post("sound", name);
 	}
 }
 

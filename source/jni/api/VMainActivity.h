@@ -1,6 +1,6 @@
 #pragma once
 
-#include "VEvent.h"
+#include "VEventLoop.h"
 #include "VString.h"
 
 #include "Input.h"
@@ -11,6 +11,13 @@
 NV_NAMESPACE_BEGIN
 
 class App;
+
+class TalkToJavaInterface
+{
+public:
+    virtual ~TalkToJavaInterface() {}
+    virtual void TtjCommand(JNIEnv *jni, const VEvent &commandString) = 0;
+};
 
 class VMainActivity
 {
@@ -49,6 +56,9 @@ public:
     JNIEnv *javaEnv() const;
     jclass javaClass() const;
     jobject javaObject() const;
+
+    void Init(JavaVM *javaVM, TalkToJavaInterface *interface);
+    VEventLoop &eventLoop();
 
 private:
     NV_DECLARE_PRIVATE

@@ -16,6 +16,31 @@ struct VMainActivity::Private
     jobject activityObject;
     jclass activityClass;
 
+    TalkToJavaInterface	*interface;
+    JavaVM *javaVM;
+    pthread_t threadHandle;
+    VEventLoop eventLoop;
+
+    Private()
+        : interface(NULL)
+        , javaVM(NULL)
+        , threadHandle(0)
+        , eventLoop(1000)
+    {
+    }
+
+    ~Private()
+    {
+        if (threadHandle) {
+            // Get the background thread to kill itself.
+            eventLoop.post("quit");
+            const int ret = pthread_join(threadHandle, NULL);
+            if (ret != 0) {
+                vWarn("failed to join TtjThread (" << ret << ")");
+            }
+        }
+    }
+
     jmethodID getMethodID(const char *name, const char *signature) const
     {
         jmethodID mid = jni->GetMethodID(activityClass, name, signature);
@@ -23,6 +48,54 @@ struct VMainActivity::Private
             vFatal("couldn't get" << name);
         }
         return mid;
+    }
+
+    void exec()
+    {
+        JNIEnv *Jni = nullptr;
+        // The Java VM needs to be attached on each thread that will use it.
+        vInfo("TalkToJava: Jvm->AttachCurrentThread");
+        const jint returnAttach = javaVM->AttachCurrentThread(&Jni, 0);
+        if (returnAttach != JNI_OK) {
+            vInfo("javaVM->AttachCurrentThread returned" << returnAttach);
+        }
+
+        // Process all queued messages
+        forever {
+            VEvent event = eventLoop.next();
+            if (!event.isValid()) {
+                // Go dormant until something else arrives.
+                eventLoop.wait();
+                continue;
+            }
+
+            if (event.name == "quit") {
+                break;
+            }
+
+            // Set up a local frame with room for at least 100
+            // local references that will be auto-freed.
+            Jni->PushLocalFrame(100);
+
+            // Let whoever initialized us do what they want.
+            interface->TtjCommand(Jni, event);
+
+            // If we don't clean up exceptions now, later
+            // calls may fail.
+            if (Jni->ExceptionOccurred()) {
+                Jni->ExceptionClear();
+                vInfo("JNI exception after:" << event.name);
+            }
+
+            // Free any local references
+            Jni->PopLocalFrame(NULL);
+        }
+
+        vInfo("TalkToJava: Jvm->DetachCurrentThread");
+        const jint returnDetach = javaVM->DetachCurrentThread();
+        if (returnDetach != JNI_OK) {
+            vInfo("javaVM->DetachCurrentThread returned" << returnDetach);
+        }
     }
 };
 
@@ -213,6 +286,35 @@ jclass VMainActivity::javaClass() const
 jobject VMainActivity::javaObject() const
 {
     return d->activityObject;
+}
+
+void VMainActivity::Init(JavaVM *javaVM, TalkToJavaInterface *interface)
+{
+    d->javaVM = javaVM;
+    d->interface = interface;
+
+    auto ThreadStarter = [](void *d)->void *
+    {
+        int result = pthread_setname_np(pthread_self(), "TalkToJava");
+        if (result != 0) {
+            vWarn("TalkToJava: pthread_setname_np failed" << strerror(result));
+        }
+        ((VMainActivity::Private *) d)->exec();
+        return NULL;
+    };
+
+    // spawn the VR thread
+    const int createError = pthread_create(&d->threadHandle, NULL /* default attributes */, ThreadStarter, d);
+    if (createError != 0) {
+        vFatal("pthread_create returned" << createError);
+    } else {
+        pthread_setname_np(d->threadHandle, "TalkToJava");
+    }
+}
+
+VEventLoop &VMainActivity::eventLoop()
+{
+    return d->eventLoop;
 }
 
 NV_NAMESPACE_END
