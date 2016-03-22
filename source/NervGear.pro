@@ -19,7 +19,7 @@ INCLUDEPATH += \
 SOURCES += \
     jni/core/Alg.cpp \
     jni/core/Allocator.cpp \
-    jni/core/Atomic.cpp \
+    jni/core/VAtomicInt.cpp \
     jni/core/VByteArray.cpp \
     jni/core/VChar.cpp \
     jni/core/VDir.cpp \
