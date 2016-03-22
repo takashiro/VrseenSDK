@@ -59,16 +59,22 @@ VVariant::VVariant(void *pointer)
     m_value.pointer = pointer;
 }
 
-VVariant::VVariant(const VString &value)
+VVariant::VVariant(const char *str)
     : m_type(String)
 {
-    m_value.str = new VString(value);
+    m_value.str = new VString(str);
 }
 
-VVariant::VVariant(VString &&value)
+VVariant::VVariant(const VString &str)
     : m_type(String)
 {
-    m_value.str = new VString(value);
+    m_value.str = new VString(str);
+}
+
+VVariant::VVariant(VString &&str)
+    : m_type(String)
+{
+    m_value.str = new VString(str);
 }
 
 VVariant::VVariant(const VVariantArray &array)

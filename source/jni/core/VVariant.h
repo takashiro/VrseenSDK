@@ -43,8 +43,9 @@ public:
     VVariant(double value);
     VVariant(void *pointer);
 
-    VVariant(const VString &value);
-    VVariant(VString &&value);
+    VVariant(const char *str);
+    VVariant(const VString &str);
+    VVariant(VString &&str);
 
     VVariant(const VVariantArray &array);
     VVariant(VVariantArray &&array);
