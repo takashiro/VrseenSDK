@@ -5,6 +5,7 @@
 
 #include "sensor/SensorFusion.h"
 #include "sensor/LatencyTest.h"
+#include "VAtomicInt.h"
 
 // HMD capability bits reported by device.
 typedef enum
@@ -49,12 +50,12 @@ private:
     bool								m_sensorStarted;
     unsigned							m_sensorCaps;
 
-    AtomicInt<int>					m_sensorChangedCount;
+    VAtomicInt					m_sensorChangedCount;
     VMutex							m_sensorChangedMutex;
     Ptr<SensorDevice>			m_sensor;
     SensorFusion					m_sFusion;
 
-    AtomicInt<int>					m_latencyTesterChangedCount;
+    VAtomicInt					m_latencyTesterChangedCount;
     VMutex							m_latencyTesterChangedMutex;
     Ptr<LatencyTestDevice>	m_latencyTester;
     LatencyTest					m_latencyUtil;

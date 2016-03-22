@@ -11,6 +11,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "ThreadCommandQueue.h"
 #include "VList.h"
+#include "VLock.h"
+
 namespace NervGear {
 
 
@@ -187,7 +189,7 @@ public:
 
         virtual void Execute() const
         {
-            Lock::Locker lock(&pImpl->QueueLock);
+            VLock::VLocker lock(&pImpl->QueueLock);
             pImpl->ExitProcessed = true;
         }
         virtual ThreadCommand* CopyConstruct(void* p) const
@@ -223,7 +225,7 @@ public:
     }
 
     ThreadCommandQueue* pQueue;
-    Lock                QueueLock;
+    VLock                QueueLock;
     volatile bool       ExitEnqueued;
     volatile bool       ExitProcessed;
     VList<NotifyEvent*>   AvailableEvents;
@@ -235,7 +237,7 @@ public:
 
 ThreadCommandQueueImpl::~ThreadCommandQueueImpl()
 {
-    Lock::Locker lock(&QueueLock);
+    VLock::VLocker lock(&QueueLock);
     OVR_ASSERT(BlockedProducers.isEmpty());
     FreeNotifyEvents_NTS();
 }
@@ -249,7 +251,7 @@ bool ThreadCommandQueueImpl::PushCommand(const ThreadCommand& command)
     do {
 
         { // Lock Scope
-            Lock::Locker lock(&QueueLock);
+            VLock::VLocker lock(&QueueLock);
 
             if (queueAvailableEvent)
             {
@@ -287,7 +289,7 @@ bool ThreadCommandQueueImpl::PushCommand(const ThreadCommand& command)
     if (completeEvent)
     {
         completeEvent->Wait();
-        Lock::Locker lock(&QueueLock);
+        VLock::VLocker lock(&QueueLock);
         FreeNotifyEvent_NTS(completeEvent);
     }
 
@@ -298,7 +300,7 @@ bool ThreadCommandQueueImpl::PushCommand(const ThreadCommand& command)
 // Pops the next command from the thread queue, if any is available.
 bool ThreadCommandQueueImpl::PopCommand(ThreadCommand::PopBuffer* popBuffer)
 {
-    Lock::Locker lock(&QueueLock);
+    VLock::VLocker lock(&QueueLock);
 
     UByte* buffer = CommandBuffer.ReadBegin();
     if (!buffer)
@@ -351,7 +353,7 @@ void ThreadCommandQueue::PushExitCommand(bool wait)
     //    any prior commands.
     //    IsExiting() only returns true after exit has flushed.
     {
-        Lock::Locker lock(&pImpl->QueueLock);
+        VLock::VLocker lock(&pImpl->QueueLock);
         if (pImpl->ExitEnqueued)
             return;
         pImpl->ExitEnqueued = true;
