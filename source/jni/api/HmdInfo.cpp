@@ -23,21 +23,13 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 namespace NervGear
 {
 
-enum hmdType_t
-{
-	HMD_GALAXY_S4,		// Galaxy S4 in Samsung's holder
-	HMD_GALAXY_S5,		// Galaxy S5 1080 with lens version 2
-	HMD_GALAXY_S5_WQHD,	// Galaxy S5 1440 with lens version 2
-	HMD_NOTE_4,			// Note4
-};
-
 #define CASE_FOR_TYPE(NAME) case NAME: str = #NAME; break;
 
-static void LogHmdType( hmdType_t hmdType )
+static void LogHmdType(PhoneTypeEnum type )
 {
 	VString str;
 
-	switch ( hmdType )
+	switch ( type )
 	{
 		CASE_FOR_TYPE( HMD_GALAXY_S4 );
 		CASE_FOR_TYPE( HMD_GALAXY_S5 );
@@ -50,7 +42,7 @@ static void LogHmdType( hmdType_t hmdType )
 	LogText( "Detected HMD/Phone version: %s", str.toCString() );
 }
 
-static hmdType_t IdentifyHmdType( const char * buildModel )
+static PhoneTypeEnum IdentifyHmdType( const char * buildModel )
 {
 	if ( strcmp( buildModel, "GT-I9506" )  == 0 )
 	{
@@ -76,22 +68,11 @@ static hmdType_t IdentifyHmdType( const char * buildModel )
 	return HMD_NOTE_4;
 }
 
-static hmdInfoInternal_t GetHmdInfo( const hmdType_t hmdType )
+static hmdInfoInternal_t GetHmdInfo( const PhoneTypeEnum type )
 {
 	hmdInfoInternal_t hmdInfo = {};
 
-	// Defaults.
-	hmdInfo.lens.Eqn = Distortion_RecipPoly4;
-	hmdInfo.lens.MaxR = 1.0f;
-	hmdInfo.lens.MaxInvR = 1.0f;
-	hmdInfo.lens.MetersPerTanAngleAtCenter = 0.043875f;
-
-	hmdInfo.lens.ChromaticAberration[0] = -0.006f;
-	hmdInfo.lens.ChromaticAberration[1] =  0.0f;
-	hmdInfo.lens.ChromaticAberration[2] =  0.014f;
-	hmdInfo.lens.ChromaticAberration[3] =  0.0f;
-	hmdInfo.horizontalOffsetMeters = 0;
-
+	hmdInfo.lens.initLensByPhoneType(type);
 	hmdInfo.displayRefreshRate = 60.0f;
 	hmdInfo.eyeTextureResolution[0] = 1024;
 	hmdInfo.eyeTextureResolution[1] = 1024;
@@ -99,62 +80,24 @@ static hmdInfoInternal_t GetHmdInfo( const hmdType_t hmdType )
 	hmdInfo.eyeTextureFov[1] = 90.0f;
 
 	// Screen params.
-	switch( hmdType )
+	switch( type )
 	{
 	case HMD_GALAXY_S4:			// Galaxy S4 in Samsung's holder
 		hmdInfo.lensSeparation = 0.062f;
 		hmdInfo.eyeTextureFov[0] = 95.0f;
 		hmdInfo.eyeTextureFov[1] = 95.0f;
-
-		// original polynomial hand tuning - the scale seems a bit too small
-		hmdInfo.lens.Eqn = Distortion_RecipPoly4;
-		hmdInfo.lens.MetersPerTanAngleAtCenter = 0.043875f;
-		hmdInfo.lens.K[0] = 0.756f;
-		hmdInfo.lens.K[1] = -0.266f;
-		hmdInfo.lens.K[2] = -0.389f;
-		hmdInfo.lens.K[3] = 0.158f;
 		break;
 
 	case HMD_GALAXY_S5:      // Galaxy S5 1080 paired with version 2 lenses
 		hmdInfo.lensSeparation = 0.062f;
 		hmdInfo.eyeTextureFov[0] = 90.0f;
 		hmdInfo.eyeTextureFov[1] = 90.0f;
-
-		// Tuned for S5 DK2 with lens version 2 for E3 2014 (06-06-14)
-		hmdInfo.lens.Eqn = Distortion_CatmullRom10;
-		hmdInfo.lens.MetersPerTanAngleAtCenter     = 0.037f;
-		hmdInfo.lens.K[0]                          = 1.0f;
-		hmdInfo.lens.K[1]                          = 1.021f;
-		hmdInfo.lens.K[2]                          = 1.051f;
-		hmdInfo.lens.K[3]                          = 1.086f;
-		hmdInfo.lens.K[4]                          = 1.128f;
-		hmdInfo.lens.K[5]                          = 1.177f;
-		hmdInfo.lens.K[6]                          = 1.232f;
-		hmdInfo.lens.K[7]                          = 1.295f;
-		hmdInfo.lens.K[8]                          = 1.368f;
-		hmdInfo.lens.K[9]                          = 1.452f;
-		hmdInfo.lens.K[10]                         = 1.560f;
 		break;
 
 	case HMD_GALAXY_S5_WQHD:            // Galaxy S5 1440 paired with version 2 lenses
 		hmdInfo.lensSeparation = 0.062f;
 		hmdInfo.eyeTextureFov[0] = 90.0f;  // 95.0f
 		hmdInfo.eyeTextureFov[1] = 90.0f;  // 95.0f
-
-		// Tuned for S5 DK2 with lens version 2 for E3 2014 (06-06-14)
-		hmdInfo.lens.Eqn = Distortion_CatmullRom10;
-		hmdInfo.lens.MetersPerTanAngleAtCenter     = 0.037f;
-		hmdInfo.lens.K[0]                          = 1.0f;
-		hmdInfo.lens.K[1]                          = 1.021f;
-		hmdInfo.lens.K[2]                          = 1.051f;
-		hmdInfo.lens.K[3]                          = 1.086f;
-		hmdInfo.lens.K[4]                          = 1.128f;
-		hmdInfo.lens.K[5]                          = 1.177f;
-		hmdInfo.lens.K[6]                          = 1.232f;
-		hmdInfo.lens.K[7]                          = 1.295f;
-		hmdInfo.lens.K[8]                          = 1.368f;
-		hmdInfo.lens.K[9]                          = 1.452f;
-		hmdInfo.lens.K[10]                         = 1.560f;
 		break;
 
 	default:
@@ -165,23 +108,6 @@ static hmdInfoInternal_t GetHmdInfo( const hmdType_t hmdType )
 
 		hmdInfo.widthMeters = 0.125f;		// not reported correctly by display metrics!
 		hmdInfo.heightMeters = 0.0707f;
-
-		// GearVR (Note 4)
-		hmdInfo.lens.Eqn = Distortion_CatmullRom10;
-		hmdInfo.lens.MetersPerTanAngleAtCenter     = 0.0365f;
-		hmdInfo.lens.K[0]                          = 1.0f;
-		hmdInfo.lens.K[1]                          = 1.029f;
-		hmdInfo.lens.K[2]                          = 1.0565f;
-		hmdInfo.lens.K[3]                          = 1.088f;
-		hmdInfo.lens.K[4]                          = 1.127f;
-		hmdInfo.lens.K[5]                          = 1.175f;
-		hmdInfo.lens.K[6]                          = 1.232f;
-		hmdInfo.lens.K[7]                          = 1.298f;
-		hmdInfo.lens.K[8]                          = 1.375f;
-		hmdInfo.lens.K[9]                          = 1.464f;
-		hmdInfo.lens.K[10]                         = 1.570f;
-
-
 		break;
 	}
 	return hmdInfo;
@@ -224,11 +150,11 @@ static void QueryAndroidInfo( JNIEnv *env, jobject activity, jclass vrActivityCl
 
 hmdInfoInternal_t GetDeviceHmdInfo( const char * buildModel, JNIEnv *env, jobject activity, jclass vrActivityClass )
 {
-	hmdType_t hmdType = IdentifyHmdType( buildModel );
-	LogHmdType( hmdType );
+	PhoneTypeEnum type = IdentifyHmdType( buildModel );
+	LogHmdType( type );
 
 	hmdInfoInternal_t hmdInfo = {};
-	hmdInfo = GetHmdInfo( hmdType );
+	hmdInfo = GetHmdInfo( type );
 
 	if ( env != NULL && activity != 0 && vrActivityClass != 0 )
 	{

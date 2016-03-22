@@ -70,7 +70,7 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     api/DirectRender.cpp \
                     api/HmdInfo.cpp \
                     api/HmdSensors.cpp \
-                    api/Distortion.cpp \
+                    api/VLensDistortion.cpp \
                     api/SystemActivities.cpp \
                     api/VFrameSmooth.cpp \
                     api/VGlGeometry.cpp \
@@ -93,7 +93,6 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     api/sensor/Android_SensorDevice.cpp \
                     api/sensor/Android_PhoneSensors.cpp \
                     api/sensor/Common_HMDDevice.cpp \
-                    api/sensor/Stereo.cpp \
                     gui/VRMenuComponent.cpp \
                     gui/VRMenuMgr.cpp \
                     gui/VRMenuObjectLocal.cpp \

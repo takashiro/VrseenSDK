@@ -118,7 +118,7 @@ public:
 
     static VGlGeometry CreateQuad();
 
-    static VGlGeometry LoadMeshFromMemory( const MemBuffer & buf,
+    static VGlGeometry LoadMeshFromMemory(void* & buf,
                                            const int numSlicesPerEye, const float fovScale, const bool cursorOnly );
 
     static VGlGeometry LoadMeshFromFile( const char* src,

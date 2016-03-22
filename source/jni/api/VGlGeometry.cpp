@@ -7,7 +7,7 @@
 #include "../core/Alg.h"
 #include "../core/Android/GlUtils.h"
 #include "../core/Android/LogUtils.h"
-#include "Distortion.h"
+#include "VLensDistortion.h"
 
 #include "VGlShader.h"
 
@@ -760,34 +760,21 @@ static bool VectorHitsCursor( const Vector2f & v )
 
 // The cursorOnly flag will cull all triangles that aren't in the central
 // gaze cursor region.
-VGlGeometry VGlGeometryFactory::LoadMeshFromMemory( const MemBuffer & buf,
+VGlGeometry VGlGeometryFactory::LoadMeshFromMemory(void* & buf,
                                        const int numSlicesPerEye, const float fovScale, const bool cursorOnly )
 {
     VGlGeometry geometry;
 
-    if ( buf.length < 12 )
-    {
-        LOG( "bad buf.length %i", buf.length );
-        return geometry;
-    }
-
-    const int magic = ((int *)buf.buffer)[0];
-    const int tesselationsX = ((int *)buf.buffer)[1];
-    const int tesselationsY = ((int *)buf.buffer)[2];
+    const int tesselationsX = ((int *)buf)[0];
+    const int tesselationsY = ((int *)buf)[1];
     const int totalX = (tesselationsX+1)*2;
 
-    const int vertexBytes = 12 + 2 * (tesselationsX+1) * (tesselationsY+1) * 6 * sizeof( float );
-    if ( buf.length != vertexBytes )
-    {
-        LOG( "buf.length %i != %i", buf.length, vertexBytes );
-        return geometry;
-    }
-    if ( magic != DISTORTION_BUFFER_MAGIC || tesselationsX < 1 || tesselationsY < 1 )
+    if (tesselationsX < 1 || tesselationsY < 1 )
     {
         LOG( "Bad distortion header" );
         return geometry;
     }
-    const float * bufferVerts = &((float *)buf.buffer)[3];
+    const float * bufferVerts = &((float *)buf)[2];
 
     // Identify which verts would be inside the cursor plane
     bool * vertInCursor = NULL;
@@ -1051,5 +1038,3 @@ VGlGeometry VGlGeometryFactory::CreateCalibrationLines2( const int extraLines, c
 }
 
 NV_NAMESPACE_END
-
-

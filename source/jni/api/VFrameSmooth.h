@@ -15,6 +15,7 @@
 #include "DirectRender.h"
 #include "VrApi.h"
 #include "HmdInfo.h"
+#include "../core/VString.h"
 
 #include "Lockless.h"
 #include "VGlGeometry.h"
