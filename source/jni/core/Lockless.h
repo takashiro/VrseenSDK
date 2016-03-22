@@ -1,8 +1,8 @@
 #pragma once
 
 #include "vglobal.h"
-
-#include "Atomic.h"
+#include <pthread.h>
+#include "VAtomicInt.h"
 
 // Define this to compile-in Lockless test logic
 //#define OVR_LOCKLESS_TEST
@@ -36,9 +36,9 @@ public:
 		{
 			// We are adding 0, only using these as atomic memory barriers, so it
 			// is ok to cast off the const, allowing GetState() to remain const.
-            end   = updateEnd.ExchangeAdd_Sync(0);
+            end   = updateEnd.exchangeAddSync(0);
             state = slots[ end & 1 ];
-            begin = updateBegin.ExchangeAdd_Sync(0);
+            begin = updateBegin.exchangeAddSync(0);
 			if ( begin == end ) {
 				return state;
 			}
@@ -46,7 +46,7 @@ public:
 			// The producer is potentially blocked while only having partially
 			// written the update, so copy out the other slot.
             state = slots[ (begin & 1) ^ 1 ];
-            final = updateBegin.ExchangeAdd_NoSync(0);
+            final = updateBegin.exchangeAddNoSync(0);
 			if ( final == begin ) {
 				return state;
 			}
@@ -59,14 +59,14 @@ public:
 
     void	setState( T state )
 	{
-        const int slot = updateBegin.ExchangeAdd_Sync(1) & 1;
+        const int slot = updateBegin.exchangeAddSync(1) & 1;
         // Write to (slot ^ 1) because ExchangeAdd returns 'previous' value before add.
         slots[slot ^ 1] = state;
-        updateEnd.ExchangeAdd_Sync(1);
+        updateEnd.exchangeAddSync(1);
 	}
 
-    mutable AtomicInt<int> updateBegin;
-    mutable AtomicInt<int> updateEnd;
+    mutable VAtomicInt updateBegin;
+    mutable VAtomicInt updateEnd;
     T		               slots[2];
 };
 

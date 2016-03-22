@@ -4,7 +4,6 @@
 
 #include "Types.h"
 #include "VList.h"
-#include "Atomic.h"
 #include "Allocator.h"
 #include "VSignal.h"
 

@@ -1049,7 +1049,7 @@ bool SensorDeviceImpl::SetRange(const SensorRange& range, bool waitFlag)
 
 void SensorDeviceImpl::GetRange(SensorRange* range) const
 {
-    Lock::Locker lockScope(GetLock());
+    VLock::VLocker lockScope(GetLock());
     *range = CurrentRange;
 }
 
@@ -1059,7 +1059,7 @@ bool SensorDeviceImpl::setRange(const SensorRange& range)
 
     if (GetInternalDevice()->SetFeatureReport(sr.Buffer, SensorRangeImpl::PacketSize))
     {
-        Lock::Locker lockScope(GetLock());
+        VLock::VLocker lockScope(GetLock());
         sr.GetSensorRange(&CurrentRange);
         return true;
     }
@@ -1472,7 +1472,7 @@ void SensorDeviceImpl::onTrackerMessage(TrackerMessage* message)
     int             timestampAdjust = (s.SampleCount > 0) ? s.SampleCount-1 : 0;
 
     // Call OnMessage() within a lock to avoid conflicts with handlers.
-    Lock::Locker scopeLock(HandlerRef.GetLock());
+    VLock::VLocker scopeLock(HandlerRef.GetLock());
 
     const double now                 = NervGear::VTimer::Seconds();
     double absoluteTimeSeconds       = 0.0;
