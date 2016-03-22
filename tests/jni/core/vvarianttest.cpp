@@ -82,6 +82,13 @@ void test()
         assert(moved.at(1).toInt() == 2);
         assert(moved.at(2).toInt() == 3);
         assert(moved.at(3).toString() == "this is a test");
+
+        VVariant copy(var);
+        assert(copy.length() == var.length());
+        assert(copy.at(0).toInt() == 1);
+        assert(copy.at(1).toInt() == 2);
+        assert(copy.at(2).toInt() == 3);
+        assert(copy.at(3).toString() == "this is a test");
     }
 
     {
