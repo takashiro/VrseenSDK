@@ -29,7 +29,7 @@ namespace NervGear {
 
 const float COLLISION_EPSILON = 0.01f;
 
-bool CollisionPolytope::TestPoint( const Vector3f & p ) const
+bool CollisionPolytope::TestPoint( const V3Vectf & p ) const
 {
     for ( int i = 0; i < Planes.length(); i++ )
 	{
@@ -41,9 +41,9 @@ bool CollisionPolytope::TestPoint( const Vector3f & p ) const
     return true;
 }
 
-bool CollisionPolytope::TestRay( const Vector3f & start, const Vector3f & dir, float & length, Planef * plane ) const
+bool CollisionPolytope::TestRay( const V3Vectf & start, const V3Vectf & dir, float & length, VPlanef * plane ) const
 {
-    const Vector3f end = start + dir * length;
+    const V3Vectf end = start + dir * length;
 
     int crossing = -1;
     float cdot1 = 0.0f;
@@ -98,7 +98,7 @@ bool CollisionPolytope::TestRay( const Vector3f & start, const Vector3f & dir, f
     return true;
 }
 
-bool CollisionPolytope::PopOut( Vector3f & p ) const
+bool CollisionPolytope::PopOut( V3Vectf & p ) const
 {
 	float minDist = FLT_MAX;
 	int crossing = -1;
@@ -124,7 +124,7 @@ bool CollisionPolytope::PopOut( Vector3f & p ) const
 //	CollisionModel
 //-----------------------------------------------------------------------------
 
-bool CollisionModel::TestPoint( const Vector3f & p ) const
+bool CollisionModel::TestPoint( const V3Vectf & p ) const
 {
 	for ( int i = 0; i < Polytopes.length(); i++ )
 	{
@@ -136,12 +136,12 @@ bool CollisionModel::TestPoint( const Vector3f & p ) const
 	return false;
 }
 
-bool CollisionModel::TestRay( const Vector3f & start, const Vector3f & dir, float & length, Planef * plane ) const
+bool CollisionModel::TestRay( const V3Vectf & start, const V3Vectf & dir, float & length, VPlanef * plane ) const
 {
 	bool clipped = false;
 	for ( int i = 0; i < Polytopes.length(); i++ )
 	{
-		Planef clipPlane;
+        VPlanef clipPlane;
 		float clipLength = length;
 		if ( Polytopes[i].TestRay( start, dir, clipLength, &clipPlane ) )
 		{
@@ -159,7 +159,7 @@ bool CollisionModel::TestRay( const Vector3f & start, const Vector3f & dir, floa
 	return clipped;
 }
 
-bool CollisionModel::PopOut( Vector3f & p ) const
+bool CollisionModel::PopOut( V3Vectf & p ) const
 {
 	for ( int i = 0; i < Polytopes.length(); i++ )
 	{
@@ -175,26 +175,26 @@ bool CollisionModel::PopOut( Vector3f & p ) const
 //	SlideMove
 //-----------------------------------------------------------------------------
 
-const Vector3f	UpVector( 0.0f, 1.0f, 0.0f );
+const V3Vectf	UpVector( 0.0f, 1.0f, 0.0f );
 const float		RailHeight = 0.8f;
 
-Vector3f SlideMove(
-		const Vector3f & footPos,
+V3Vectf SlideMove(
+        const V3Vectf & footPos,
 		const float eyeHeight,
-		const Vector3f & moveDirection,
+        const V3Vectf & moveDirection,
 		const float moveDistance,
 		const CollisionModel & collisionModel,
 		const CollisionModel & groundCollisionModel
 	    )
 {
 	// Check for collisions at eye level to prevent slipping under walls.
-	Vector3f eyePos = footPos + UpVector * eyeHeight;
+    V3Vectf eyePos = footPos + UpVector * eyeHeight;
 
 	// Pop out of any collision models.
 	collisionModel.PopOut( eyePos );
 
 	{
-		Planef fowardCollisionPlane;
+        VPlanef fowardCollisionPlane;
 		float forwardDistance = moveDistance;
 		if ( !collisionModel.TestRay( eyePos, moveDirection, forwardDistance, &fowardCollisionPlane ) )
 		{
@@ -209,7 +209,7 @@ Vector3f SlideMove(
 			// Project the remaining movement onto the collision plane.
 			const float COLLISION_BOUNCE = 0.001f;	// don't creep into the plane due to floating-point rounding
 			const float intoPlane = moveDirection.Dot( fowardCollisionPlane.N ) - COLLISION_BOUNCE;
-			const Vector3f slideDirection = ( moveDirection - fowardCollisionPlane.N * intoPlane );
+            const V3Vectf slideDirection = ( moveDirection - fowardCollisionPlane.N * intoPlane );
 
 			// Try to finish the move by sliding along the collision plane.
 			float slideDistance = moveDistance;

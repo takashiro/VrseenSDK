@@ -263,7 +263,7 @@ public:
 	    }
 
 		// VAngle between two VQuaternions in radians
-	    T       VAngle(const VQuat& q) const
+        T       Angle(const VQuat& q) const
 		{
 			return 2 * VArccos(fabs(Dot(q)));
 		}

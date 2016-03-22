@@ -41,7 +41,7 @@ void TheaterSelectionComponent::SetItem( VRMenuObject * self, const CarouselItem
 	}
 	else
 	{
-		Vector4f color( 0.0f );
+        V4Vectf color( 0.0f );
         self->setColor( color );
         self->setTextColor( color );
 	}

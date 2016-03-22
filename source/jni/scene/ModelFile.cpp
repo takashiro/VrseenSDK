@@ -128,9 +128,9 @@ const ModelTag * ModelFile::FindNamedTag(const VString &name) const
 	return NULL;
 }
 
-Bounds3f ModelFile::GetBounds() const
+VBoxf ModelFile::GetBounds() const
 {
-	Bounds3f modelBounds;
+    VBoxf modelBounds;
 	modelBounds.Clear();
 	for ( int j = 0; j < Def.surfaces.length(); j++ )
 	{

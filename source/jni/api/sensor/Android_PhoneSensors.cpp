@@ -34,7 +34,7 @@ PhoneSensors::PhoneSensors()
 PhoneSensors::~PhoneSensors()
 {}
 
-void PhoneSensors::GetLatestUncalibratedMagAndBiasValue(Vector3f* mag, Vector3f* bias)
+void PhoneSensors::GetLatestUncalibratedMagAndBiasValue(V3Vectf* mag, V3Vectf* bias)
 {
 	if (pQueue == NULL)
 	{
@@ -68,11 +68,11 @@ void PhoneSensors::GetLatestUncalibratedMagAndBiasValue(Vector3f* mag, Vector3f*
 			{
 				if (event.type == UNCALIBRATED_MAG_SENSOR_ID)
 				{
-					LatestMagUncalibrated = Vector3f(	event.uncalibrated_magnetic.x_uncalib,
+                    LatestMagUncalibrated = V3Vectf(	event.uncalibrated_magnetic.x_uncalib,
 														event.uncalibrated_magnetic.y_uncalib,
 														event.uncalibrated_magnetic.z_uncalib);
 
-					Vector3f newMagUncalibratedBias =  Vector3f(	event.uncalibrated_magnetic.x_bias,
+                    V3Vectf newMagUncalibratedBias =  V3Vectf(	event.uncalibrated_magnetic.x_bias,
 																	event.uncalibrated_magnetic.y_bias,
 																	event.uncalibrated_magnetic.z_bias);
 

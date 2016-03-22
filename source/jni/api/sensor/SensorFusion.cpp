@@ -30,7 +30,7 @@ SensorFusion::SensorFusion(SensorDevice* sensor) :
 	MotionTrackingEnabled(true),
 	EnableGravity(true),
 	EnableYawCorrection(true),
-	FocusDirection(Vector3f(0, 0, 0)),
+    FocusDirection(V3Vectf(0, 0, 0)),
 	FocusFOV(0.0),
 	RecenterTransform()
 {
@@ -111,7 +111,7 @@ float SensorFusion::GetYaw()
 
 	// get the yaw in the current state
 	float yaw, pitch, roll;
-	state.State.Transform.Orientation.GetEulerAngles< Axis_Y, Axis_X, Axis_Z >( &yaw, &pitch, &roll );
+    state.State.Transform.Orientation.GetEulerAngles< VAxis_Y, VAxis_X, VAxis_Z >( &yaw, &pitch, &roll );
 
 	return yaw;
 }
@@ -123,10 +123,10 @@ void SensorFusion::SetYaw( float newYaw )
 
 	// get the yaw in the current state
 	float yaw, pitch, roll;
-	state.State.Transform.Orientation.GetEulerAngles< Axis_Y, Axis_X, Axis_Z >( &yaw, &pitch, &roll );
+    state.State.Transform.Orientation.GetEulerAngles< VAxis_Y, VAxis_X, VAxis_Z >( &yaw, &pitch, &roll );
 
 	// get the pose that adjusts the yaw
-	Posef yawAdjustment( Quatf( Axis_Y, newYaw - yaw ), Vector3f( 0.0f ) );
+    VPosf yawAdjustment( VQuatf( VAxis_Y, newYaw - yaw ), V3Vectf( 0.0f ) );
 
 	// To allow SetYaw() to be called from multiple threads we need a mutex
 	// because LocklessUpdater is only safe for single producer cases.
@@ -142,10 +142,10 @@ void SensorFusion::RecenterYaw()
 
 	// get the yaw in the current state
 	float yaw, pitch, roll;
-	state.State.Transform.Orientation.GetEulerAngles< Axis_Y, Axis_X, Axis_Z >( &yaw, &pitch, &roll );
+    state.State.Transform.Orientation.GetEulerAngles< VAxis_Y, VAxis_X, VAxis_Z >( &yaw, &pitch, &roll );
 
 	// get the pose that adjusts the yaw
-	Posef yawAdjustment( Quatf( Axis_Y, -yaw ), Vector3f( 0.0f ) );
+    VPosf yawAdjustment( VQuatf( VAxis_Y, -yaw ), V3Vectf( 0.0f ) );
 
 	// To allow RecenterYaw() to be called from multiple threads we need a mutex
 	// because LocklessUpdater is only safe for single producer cases.
@@ -159,14 +159,14 @@ void SensorFusion::handleMessage(const MessageBodyFrame& msg)
     if (msg.Type != Message_BodyFrame || !IsMotionTrackingEnabled())
         return;
 
-    if (msg.Acceleration == Vector3f::ZERO)
+    if (msg.Acceleration == V3Vectf::ZERO)
     	return;
 
     // Put the sensor readings into convenient local variables
-    Vector3f gyro(msg.RotationRate);
-    Vector3f accel(msg.Acceleration);
-    Vector3f mag(msg.MagneticField);
-    Vector3f magBias(msg.MagneticBias);
+    V3Vectf gyro(msg.RotationRate);
+    V3Vectf accel(msg.Acceleration);
+    V3Vectf mag(msg.MagneticField);
+    V3Vectf magBias(msg.MagneticBias);
     float DeltaT = msg.TimeDelta;
 
     // Keep track of time
@@ -175,16 +175,16 @@ void SensorFusion::handleMessage(const MessageBodyFrame& msg)
 
     // Insert current sensor data into filter history
     FAngV.append(gyro);
-    FAccelHeadset.Update(accel, DeltaT, Quatf(gyro, gyro.Length() * DeltaT));
+    FAccelHeadset.Update(accel, DeltaT, VQuatf(gyro, gyro.Length() * DeltaT));
 
     // Process raw inputs
     State.AngularVelocity = gyro;
-    State.LinearAcceleration = State.Transform.Orientation.Rotate(accel) - Vector3f(0, 9.8f, 0);
+    State.LinearAcceleration = State.Transform.Orientation.Rotate(accel) - V3Vectf(0, 9.8f, 0);
 
     // Update headset orientation
     float angle = gyro.Length() * DeltaT;
     if (angle > 0)
-        State.Transform.Orientation = State.Transform.Orientation * Quatf(gyro, angle);
+        State.Transform.Orientation = State.Transform.Orientation * VQuatf(gyro, angle);
     // Tilt correction based on accelerometer
     if (EnableGravity)
         applyTiltCorrection(DeltaT);
@@ -213,7 +213,7 @@ void SensorFusion::handleMessage(const MessageBodyFrame& msg)
 
     // Compute the angular acceleration
     State.AngularAcceleration = (FAngV.size() >= 12 && DeltaT > 0) ?
-        (FAngV.SavitzkyGolayDerivative12() / DeltaT) : Vector3f();
+        (FAngV.SavitzkyGolayDerivative12() / DeltaT) : V3Vectf();
 
     // Store the lockless state.
     StateForPrediction state;
@@ -224,17 +224,17 @@ void SensorFusion::handleMessage(const MessageBodyFrame& msg)
 
 // These two functions need to be moved into Quat class
 // Compute a rotation required to Pose "from" into "to".
-Quatf vectorAlignmentRotation(const Vector3f &from, const Vector3f &to)
+VQuatf vectorAlignmentRotation(const V3Vectf &from, const V3Vectf &to)
 {
-    Vector3f axis = from.Cross(to);
+    V3Vectf axis = from.Cross(to);
     if (axis.LengthSq() == 0)
         // this handles both collinear and zero-length input cases
-        return Quatf();
+        return VQuatf();
     float angle = from.Angle(to);
-    return Quatf(axis, angle);
+    return VQuatf(axis, angle);
 }
 
-bool SensorFusion::getBufferedOrientation(Quatf* orientation, const Vector3f& gyro, float gyroThreshold, float deltaT)
+bool SensorFusion::getBufferedOrientation(VQuatf* orientation, const V3Vectf& gyro, float gyroThreshold, float deltaT)
 {
 
 	MagLatencyCompBuffer[MagLatencyCompBufferIndex].Orientation = State.Transform.Orientation;
@@ -288,7 +288,7 @@ bool SensorFusion::getBufferedOrientation(Quatf* orientation, const Vector3f& gy
 	return true;
 }
 
-void SensorFusion::applyMagYawCorrection(const Vector3f& magUncalibrated, const Vector3f& magBias, const Vector3f& gyro, float deltaT)
+void SensorFusion::applyMagYawCorrection(const V3Vectf& magUncalibrated, const V3Vectf& magBias, const V3Vectf& gyro, float deltaT)
 {
     const float minMagLengthSq   = VConstantsd::Tolerance; // need to use a real value to discard very weak fields
     const float maxAngleRefDist  = 5.0f * VConstantsf::VDTR;
@@ -307,7 +307,7 @@ void SensorFusion::applyMagYawCorrection(const Vector3f& magUncalibrated, const 
     const float gyroThreshold = 200.0f * VConstantsf::VDTR;
 
 
-	if (magBias == Vector3f::ZERO)
+    if (magBias == V3Vectf::ZERO)
 	{
 		// Assume Android calibration has not yet occurred.
 #ifdef YAW_LOGGING
@@ -317,7 +317,7 @@ void SensorFusion::applyMagYawCorrection(const Vector3f& magUncalibrated, const 
 	}
 
 	// Buffer orientation since mag latency is higher than HMT sensor latency.
-	Quatf orientation;
+    VQuatf orientation;
 	if (!getBufferedOrientation(&orientation, gyro, gyroThreshold, deltaT))
 	{
 		return;
@@ -334,8 +334,8 @@ void SensorFusion::applyMagYawCorrection(const Vector3f& magUncalibrated, const 
 	}
 
 
-	Vector3f magCalibrated = magUncalibrated - magBias;
-    Vector3f magInWorldFrame = orientation.Rotate(magCalibrated);
+    V3Vectf magCalibrated = magUncalibrated - magBias;
+    V3Vectf magInWorldFrame = orientation.Rotate(magCalibrated);
 
     // Verify that the horizontal component is sufficient.
     if (magInWorldFrame.x * magInWorldFrame.x + magInWorldFrame.z * magInWorldFrame.z < minMagLengthSq)
@@ -395,7 +395,7 @@ void SensorFusion::applyMagYawCorrection(const Vector3f& magUncalibrated, const 
 
     if (MagRefIdx >= 0)
     {
-        Vector3f magRefInWorldFrame = MagRefs[MagRefIdx].WorldFromImu.Rotate(MagRefs[MagRefIdx].MagUncalibratedInImuFrame-magBias);
+        V3Vectf magRefInWorldFrame = MagRefs[MagRefIdx].WorldFromImu.Rotate(MagRefs[MagRefIdx].MagUncalibratedInImuFrame-magBias);
 
         // Verify that the horizontal component is sufficient when using current bias.
         if (magRefInWorldFrame.x * magRefInWorldFrame.x + magRefInWorldFrame.z * magRefInWorldFrame.z < minMagLengthSq)
@@ -442,7 +442,7 @@ void SensorFusion::applyMagYawCorrection(const Vector3f& magUncalibrated, const 
 		totalCorrectionRadPerSec = Alg::Min(totalCorrectionRadPerSec, correctionRadPerSecMax);
 		totalCorrectionRadPerSec = Alg::Max(totalCorrectionRadPerSec, -correctionRadPerSecMax);
 
-        Quatf correction(Vector3f(0.0f, 1.0f, 0.0f), totalCorrectionRadPerSec * deltaT);
+        VQuatf correction(V3Vectf(0.0f, 1.0f, 0.0f), totalCorrectionRadPerSec * deltaT);
         State.Transform.Orientation = correction * State.Transform.Orientation;
 
 #ifdef YAW_LOGGING
@@ -455,13 +455,13 @@ void SensorFusion::applyMagYawCorrection(const Vector3f& magUncalibrated, const 
 			lastLogCount = logCount;
 
 			float yaw, pitch, roll;
-			orientation.GetEulerAngles<Axis_Y, Axis_X, Axis_Z>(&yaw, &pitch, &roll);
+            orientation.GetEulerAngles<VAxis_Y, VAxis_X, VAxis_Z>(&yaw, &pitch, &roll);
             yaw *= VConstantsf::VRTD;
             pitch *= VConstantsf::VRTD;
             roll *= VConstantsf::VRTD;
 
 			float pyaw, ppitch, proll;
-			MagRefs[MagRefIdx].WorldFromImu.GetEulerAngles<Axis_Y, Axis_X, Axis_Z>(&pyaw, &ppitch, &proll);
+            MagRefs[MagRefIdx].WorldFromImu.GetEulerAngles<VAxis_Y, VAxis_X, VAxis_Z>(&pyaw, &ppitch, &proll);
             pyaw *= VConstantsf::VRTD;
             ppitch *= VConstantsf::VRTD;
             proll *= VConstantsf::VRTD;
@@ -486,13 +486,13 @@ void SensorFusion::applyTiltCorrection(float deltaT)
 {
     const float gain = 0.25;
     const float snapThreshold = 0.1;
-    const Vector3f up(0, 1, 0);
+    const V3Vectf up(0, 1, 0);
 
-	Vector3f accelLocalFiltered(FAccelHeadset.GetFilteredValue());
-    Vector3f accelW = State.Transform.Orientation.Rotate(accelLocalFiltered);
-    Quatf error = vectorAlignmentRotation(accelW, up);
+    V3Vectf accelLocalFiltered(FAccelHeadset.GetFilteredValue());
+    V3Vectf accelW = State.Transform.Orientation.Rotate(accelLocalFiltered);
+    VQuatf error = vectorAlignmentRotation(accelW, up);
 
-    Quatf correction;
+    VQuatf correction;
     if (FAccelHeadset.size() == 1 ||
         ((Alg::Abs(error.w) < cos(snapThreshold / 2) && FAccelHeadset.Confidence() > 0.75)))
 	{
@@ -502,7 +502,7 @@ void SensorFusion::applyTiltCorrection(float deltaT)
 	}
     else if (FAccelHeadset.Confidence() > 0.5)
 	{
-        correction = error.Nlerp(Quatf(), gain * deltaT);
+        correction = error.Nlerp(VQuatf(), gain * deltaT);
 	}
     else
 	{
@@ -515,22 +515,22 @@ void SensorFusion::applyTiltCorrection(float deltaT)
 
 void SensorFusion::applyFocusCorrection(float deltaT)
 {
-	Vector3f up = Vector3f(0, 1, 0);
+    V3Vectf up = V3Vectf(0, 1, 0);
 	float gain = 0.01;
-	Vector3f currentDir = State.Transform.Orientation.Rotate(Vector3f(0, 0, 1));
+    V3Vectf currentDir = State.Transform.Orientation.Rotate(V3Vectf(0, 0, 1));
 
-	Vector3f focusYawComponent = FocusDirection.ProjectToPlane(up);
-	Vector3f currentYawComponent = currentDir.ProjectToPlane(up);
+    V3Vectf focusYawComponent = FocusDirection.ProjectToPlane(up);
+    V3Vectf currentYawComponent = currentDir.ProjectToPlane(up);
 
 	float angle = focusYawComponent.Angle(currentYawComponent);
 
 	if( angle > FocusFOV )
 	{
-		Quatf yawError;
+        VQuatf yawError;
 		if ( FocusFOV != 0.0f)
 		{
-			Vector3f lFocus = Quatf(up, -FocusFOV).Rotate(focusYawComponent);
-			Vector3f rFocus = Quatf(up, FocusFOV).Rotate(focusYawComponent);
+            V3Vectf lFocus = VQuatf(up, -FocusFOV).Rotate(focusYawComponent);
+            V3Vectf rFocus = VQuatf(up, FocusFOV).Rotate(focusYawComponent);
 			float lAngle = lFocus.Angle(currentYawComponent);
 			float rAngle = rFocus.Angle(currentYawComponent);
 			if(lAngle < rAngle)
@@ -543,12 +543,12 @@ void SensorFusion::applyFocusCorrection(float deltaT)
 		} else
 		{
 			yawError = vectorAlignmentRotation(currentYawComponent, focusYawComponent);
-			Vector3f axis;
+            V3Vectf axis;
 			float angle;
 			yawError.GetAxisAngle(&axis, &angle);
 		}
 
-		Quatf correction = yawError.Nlerp(Quatf(), gain * deltaT);
+        VQuatf correction = yawError.Nlerp(VQuatf(), gain * deltaT);
         State.Transform.Orientation = correction * State.Transform.Orientation;
 
 	}
@@ -556,10 +556,10 @@ void SensorFusion::applyFocusCorrection(float deltaT)
 
 void SensorFusion::SetFocusDirection()
 {
-	SetFocusDirection(Vector3f(State.Transform.Orientation.Rotate(Vector3f(0.0, 0.0, 1.0))));
+    SetFocusDirection(V3Vectf(State.Transform.Orientation.Rotate(V3Vectf(0.0, 0.0, 1.0))));
 }
 
-void SensorFusion::SetFocusDirection(Vector3f direction)
+void SensorFusion::SetFocusDirection(V3Vectf direction)
 {
 	FocusDirection = direction;
 }
@@ -572,7 +572,7 @@ void SensorFusion::SetFocusFOV(float fov)
 
 void SensorFusion::ClearFocus()
 {
-	FocusDirection = Vector3f(0.0, 0.0, 0.0);
+    FocusDirection = V3Vectf(0.0, 0.0, 0.0);
 	FocusFOV = 0.0f;
 }
 
@@ -582,11 +582,11 @@ void SensorFusion::ClearFocus()
 // after a high-speed motion.  Therefore, the prediction interval is dynamically
 // adjusted based on speed.  Significant more research is needed to further improve
 // this family of filters.
-Posef calcPredictedPose(const PoseStatef& poseState, float predictionDt )
+VPosf calcPredictedPose(const PoseStatef& poseState, float predictionDt )
 {
-    Posef pose              = poseState.Transform;
+    VPosf pose              = poseState.Transform;
 	const float linearCoef  = 1.0;
-	Vector3f angularVelocity = poseState.AngularVelocity;
+    V3Vectf angularVelocity = poseState.AngularVelocity;
 	float angularSpeed      = angularVelocity.Length();
 
 	// This could be tuned so that linear and angular are combined with different coefficients
@@ -605,7 +605,7 @@ Posef calcPredictedPose(const PoseStatef& poseState, float predictionDt )
 	dynamicDt = Alg::Clamp( dynamicDt, 0.0f, MAX_DELTA_TIME );
 
     if (angularSpeed > 0.001)
-        pose.Orientation = pose.Orientation * Quatf(angularVelocity, angularSpeed * dynamicDt);
+        pose.Orientation = pose.Orientation * VQuatf(angularVelocity, angularSpeed * dynamicDt);
 
     pose.Position += poseState.LinearVelocity * dynamicDt;
 
@@ -627,7 +627,7 @@ SensorState SensorFusion::GetPredictionForTime( const double absoluteTimeSeconds
     sstate.Recorded                = state.State;
     sstate.Temperature             = state.Temperature;
 
-    const Posef recenter = RecenterTransform.state();
+    const VPosf recenter = RecenterTransform.state();
 
     // Do prediction logic
     sstate.Predicted               = sstate.Recorded;

@@ -94,7 +94,7 @@ public:
                                     menuHandle_t parentHandle, bool const recenter );
     void					shutdown( OvrVRMenuMgr & menuMgr );
     void					frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font,
-                                    BitmapFontSurface & fontSurface, Matrix4f const & viewMatrix, gazeCursorUserId_t const gazeUserId );
+                                    BitmapFontSurface & fontSurface, VR4Matrixf const & viewMatrix, gazeCursorUserId_t const gazeUserId );
     bool					onKeyEvent( App * app, int const keyCode, KeyState::eKeyEventType const eventType );
     void					open( App * app, OvrGazeCursor & gazeCursor, bool const instant = false );
     void					close( App * app, OvrGazeCursor & gazeCursor, bool const instant = false );
@@ -119,8 +119,8 @@ public:
 
     menuHandle_t			rootHandle() const { return m_rootHandle; }
     menuHandle_t			focusedHandle() const;
-    Posef const &			menuPose() const { return m_menuPose; }
-    void					setMenuPose( Posef const & pose ) { m_menuPose = pose; }
+    VPosf const &			menuPose() const { return m_menuPose; }
+    void					setMenuPose( VPosf const & pose ) { m_menuPose = pose; }
 
     menuHandle_t			handleForId( OvrVRMenuMgr & menuMgr, VRMenuId_t const id ) const;
 
@@ -128,13 +128,13 @@ public:
     bool                    isMenu( char const * menuName ) const { return strcasecmp( m_name.toCString(), menuName ) == 0; }
 
 	// Use an arbitrary view matrix. This is used when updating the menus and passing the current matrix
-    void					repositionMenu( App * app, Matrix4f const & viewMatrix );
+    void					repositionMenu( App * app, VR4Matrixf const & viewMatrix );
 	// Use app's lastViewMatrix. This is used when positioning a menu more or less in front of the user
 	// when we do not have the most current view matrix available.
     void					repositionMenu( App * app );
 
 	//	Reset the MenuPose orientation - for now we assume identity orientation as the basis for all menus
-    void					resetMenuOrientation( App * app, Matrix4f const & viewMatrix );
+    void					resetMenuOrientation( App * app, VR4Matrixf const & viewMatrix );
 	
     VRMenuFlags_t const &	flags() const { return m_flags; }
     void					setFlags( VRMenuFlags_t	const & flags ) { m_flags = flags; }
@@ -151,7 +151,7 @@ private:
     eMenuState				m_curMenuState;		// the current menu state
     eMenuState				m_nextMenuState;		// the state the menu should move to next
 
-    Posef					m_menuPose;			// world-space position and orientation of this menu's root item
+    VPosf					m_menuPose;			// world-space position and orientation of this menu's root item
 
     SoundLimiter			m_openSoundLimiter;	// prevents the menu open sound from playing too often
     SoundLimiter			m_closeSoundLimiter;	// prevents the menu close sound from playing too often
@@ -166,10 +166,10 @@ private:
     bool					m_componentsInitialized;	// true if init message has been sent to components
 
 private:
-	static Posef			CalcMenuPosition( Matrix4f const & viewMatrix, Matrix4f const & invViewMatrix,
-									Vector3f const & viewPos, Vector3f const & viewFwd, float const menuDistance );
-	static Posef			CalcMenuPositionOnHorizon( Matrix4f const & viewMatrix, Matrix4f const & invViewMatrix,
-									Vector3f const & viewPos, Vector3f const & viewFwd, float const menuDistance );
+    static VPosf			CalcMenuPosition( VR4Matrixf const & viewMatrix, VR4Matrixf const & invViewMatrix,
+                                    V3Vectf const & viewPos, V3Vectf const & viewFwd, float const menuDistance );
+    static VPosf			CalcMenuPositionOnHorizon( VR4Matrixf const & viewMatrix, VR4Matrixf const & invViewMatrix,
+                                    V3Vectf const & viewPos, V3Vectf const & viewFwd, float const menuDistance );
 
     // return true to continue with normal initialization (adding items) or false to skip.
     virtual bool    init_Impl( OvrVRMenuMgr & menuMgr, BitmapFont const & font, float const menuDistance,
@@ -182,7 +182,7 @@ private:
     virtual void    openImpl( App * app, OvrGazeCursor & gazeCursor );
     virtual void    close_Impl( App * app, OvrGazeCursor & gazeCursor );
     virtual void	onItemEvent_Impl( App * app, VRMenuId_t const itemId, class VRMenuEvent const & event );
-    virtual void	resetMenuOrientation_Impl( App * app, Matrix4f const & viewMatrix );
+    virtual void	resetMenuOrientation_Impl( App * app, VR4Matrixf const & viewMatrix );
 
 	// return true when finished opening/closing - allowing derived menus to animate etc. during open/close
     virtual bool	isFinishedOpening() const { return true;  }

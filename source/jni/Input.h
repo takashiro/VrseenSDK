@@ -125,9 +125,9 @@ struct VrInput
 	float			sticks[2][2];
 
 	// Most recent touchpad position, check BUTTON_TOUCH
-	Vector2f		touch;
+    V2Vectf		touch;
 	// The relative touchpad position to when BUTTON_TOUCH started
-	Vector2f		touchRelative;
+    V2Vectf		touchRelative;
 
 	unsigned		buttonState;
 

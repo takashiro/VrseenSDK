@@ -42,12 +42,12 @@ public:
 
 	// Get the scrollbar parms and the pointer to the scrollbar component constructed
     static	void		getScrollBarParms( VRMenu & menu, float scrollBarWidth, const VRMenuId_t parentId, const VRMenuId_t rootId, const VRMenuId_t xformId,
-									const VRMenuId_t baseId, const VRMenuId_t thumbId, const Posef & rootLocalPose, const Posef & xformPose, const int startElementIndex, 
-									const int numElements, const bool verticalBar, const Vector4f & thumbBorder, VArray< const VRMenuObjectParms* > & parms );
+                                    const VRMenuId_t baseId, const VRMenuId_t thumbId, const VPosf & rootLocalPose, const VPosf & xformPose, const int startElementIndex,
+                                    const int numElements, const bool verticalBar, const V4Vectf & thumbBorder, VArray< const VRMenuObjectParms* > & parms );
     void				updateScrollBar( OvrVRMenuMgr & menuMgr, VRMenuObject * self, const int numElements );
     void				setScrollFrac( OvrVRMenuMgr & menuMgr, VRMenuObject * self, const float frac );
     void				setScrollState( VRMenuObject * self, const eScrollBarState state );
-    void				setBaseColor( OvrVRMenuMgr & menuMgr, VRMenuObject * self, const Vector4f & color );
+    void				setBaseColor( OvrVRMenuMgr & menuMgr, VRMenuObject * self, const V4Vectf & color );
     void				setScrollBarBaseWidth( float width ) { m_scrollBarBaseWidth = width; }
     void				setScrollBarBaseHeight( float height ) { m_scrollBarBaseHeight = height; }
     void				setScrollBarThumbWidth( float width ) { m_scrollBarThumbWidth = width; }

@@ -35,7 +35,7 @@ NV_NAMESPACE_BEGIN
 	public:
 		OvrSwipeHintComponent( const bool isRightSwipe, const float totalTime, const float timeOffset, const float delay );
 		static menuHandle_t CreateSwipeSuggestionIndicator( App * appPtr, VRMenu * rootMenu, const menuHandle_t rootHandle, const int menuId,
-															const char * img, const Posef pose, const Vector3f direction );
+                                                            const char * img, const VPosf pose, const V3Vectf direction );
 
 		static const char *			TYPE_NAME;
 		static bool					ShowSwipeHints;

@@ -3,30 +3,30 @@
 
 #include "vglobal.h"
 
-#include "OVR.h"	// Matrix4f, etc
+#include "OVR.h"	// VR4Matrixf, etc
 #include "StringHash.h"
 #include "VStandardPath.h"
 
 NV_NAMESPACE_BEGIN
 
 // Debug tool
-void LogMatrix( const char * title, const Matrix4f & m );
+void LogMatrix( const char * title, const VR4Matrixf & m );
 
-inline Vector3f GetViewMatrixPosition( Matrix4f const & m )
+inline V3Vectf GetViewMatrixPosition( VR4Matrixf const & m )
 {
 #if 1
 	return m.Inverted().GetTranslation();
 #else
 	// This is much cheaper if the view matrix is a pure rotation plus translation.
-	return Vector3f(	m.M[0][0] * m.M[0][3] + m.M[1][0] * m.M[1][3] + m.M[2][0] * m.M[2][3],
+    return V3Vectf(	m.M[0][0] * m.M[0][3] + m.M[1][0] * m.M[1][3] + m.M[2][0] * m.M[2][3],
 						m.M[0][1] * m.M[0][3] + m.M[1][1] * m.M[1][3] + m.M[2][1] * m.M[2][3],
 						m.M[0][2] * m.M[0][3] + m.M[1][2] * m.M[1][3] + m.M[2][2] * m.M[2][3] );
 #endif
 }
 
-inline Vector3f GetViewMatrixForward( Matrix4f const & m )
+inline V3Vectf GetViewMatrixForward( VR4Matrixf const & m )
 {
-	return Vector3f( -m.M[2][0], -m.M[2][1], -m.M[2][2] ).Normalized();
+    return V3Vectf( -m.M[2][0], -m.M[2][1], -m.M[2][2] ).Normalized();
 }
 
 // Returns true if the folder has specified permission

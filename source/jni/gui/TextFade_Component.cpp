@@ -25,7 +25,7 @@ float const  OvrTextFade_Component::FADE_DURATION = 0.25f;
 
 //==============================
 // OvrTextFade_Component::CalcIconFadeOffset
-Vector3f OvrTextFade_Component::CalcIconFadeOffset(const VString &text, BitmapFont const & font, Vector3f const & axis, float const iconWidth )
+V3Vectf OvrTextFade_Component::CalcIconFadeOffset(const VString &text, BitmapFont const & font, V3Vectf const & axis, float const iconWidth )
 {
     float textWidth = font.CalcTextWidth(text);
     float const fullWidth = textWidth + iconWidth;
@@ -34,7 +34,7 @@ Vector3f OvrTextFade_Component::CalcIconFadeOffset(const VString &text, BitmapFo
 
 //==============================
 // OvrTextFade_Component::OvrTextFade_Component
-OvrTextFade_Component::OvrTextFade_Component( Vector3f const & iconBaseOffset, Vector3f const & iconFadeOffset ) :
+OvrTextFade_Component::OvrTextFade_Component( V3Vectf const & iconBaseOffset, V3Vectf const & iconFadeOffset ) :
 	VRMenuComponent( VRMenuEventFlags_t( VRMENU_EVENT_FRAME_UPDATE ) | VRMENU_EVENT_FOCUS_GAINED | VRMENU_EVENT_FOCUS_LOST ),
 	m_textAlphaFader( 0.0f ),
 	m_startFadeInTime( -1.0 ),
@@ -97,11 +97,11 @@ eMsgStatus OvrTextFade_Component::frame( App * app, VrFrame const & vrFrame, Ovr
 	m_textAlphaFader.update( FADE_RATE, vrFrame.DeltaSeconds );
 	m_iconOffsetFader.update( FADE_RATE, vrFrame.DeltaSeconds );
 
-	Vector4f textColor = self->textColor();
+    V4Vectf textColor = self->textColor();
 	textColor.w = m_textAlphaFader.finalAlpha();
 	self->setTextColor( textColor );
 
-	Vector3f curOffset = m_iconBaseOffset + ( m_iconOffsetFader.finalAlpha() * m_iconFadeOffset );
+    V3Vectf curOffset = m_iconBaseOffset + ( m_iconOffsetFader.finalAlpha() * m_iconFadeOffset );
 	self->setLocalPosition( curOffset );
 
 	return MSG_STATUS_ALIVE;

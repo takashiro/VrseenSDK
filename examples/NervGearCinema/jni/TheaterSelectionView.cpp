@@ -124,14 +124,14 @@ bool TheaterSelectionView::OnKeyEvent( const int keyCode, const KeyState::eKeyEv
 	return false;
 }
 
-Matrix4f TheaterSelectionView::DrawEyeView( const int eye, const float fovDegrees )
+VR4Matrixf TheaterSelectionView::DrawEyeView( const int eye, const float fovDegrees )
 {
 	return Cinema.sceneMgr.DrawEyeView( eye, fovDegrees );
 }
 
-void TheaterSelectionView::SetPosition( OvrVRMenuMgr & menuMgr, const Vector3f &pos )
+void TheaterSelectionView::SetPosition( OvrVRMenuMgr & menuMgr, const V3Vectf &pos )
 {
-    Posef pose = CenterRoot->localPose();
+    VPosf pose = CenterRoot->localPose();
     pose.Position = pos;
     CenterRoot->setLocalPose( pose );
 
@@ -148,24 +148,24 @@ void TheaterSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, Bitmap
 {
 	Menu = VRMenu::Create( "TheaterSelectionBrowser" );
 
-    Vector3f fwd( 0.0f, 0.0f, 1.0f );
-	Vector3f up( 0.0f, 1.0f, 0.0f );
-	Vector3f defaultScale( 1.0f );
+    V3Vectf fwd( 0.0f, 0.0f, 1.0f );
+    V3Vectf up( 0.0f, 1.0f, 0.0f );
+    V3Vectf defaultScale( 1.0f );
 
     VArray< VRMenuObjectParms const * > parms;
 
 	VRMenuFontParms fontParms( true, true, false, false, false, 1.0f );
 
-	Quatf orientation( Vector3f( 0.0f, 1.0f, 0.0f ), 0.0f );
-	Vector3f centerPos( 0.0f, 0.0f, 0.0f );
+    VQuatf orientation( V3Vectf( 0.0f, 1.0f, 0.0f ), 0.0f );
+    V3Vectf centerPos( 0.0f, 0.0f, 0.0f );
 
 	VRMenuObjectParms centerRootParms( VRMENU_CONTAINER, VArray< VRMenuComponent* >(), VRMenuSurfaceParms(), "CenterRoot",
-			Posef( orientation, centerPos ), Vector3f( 1.0f, 1.0f, 1.0f ), fontParms,
+            VPosf( orientation, centerPos ), V3Vectf( 1.0f, 1.0f, 1.0f ), fontParms,
 			ID_CENTER_ROOT, VRMenuObjectFlags_t(), VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
     parms.append( &centerRootParms );
 
 	// title
-	const Posef titlePose( Quatf( Vector3f( 0.0f, 1.0f, 0.0f ), 0.0f ), Vector3f( 0.0f, 0.0f, 0.0f ) );
+    const VPosf titlePose( VQuatf( V3Vectf( 0.0f, 1.0f, 0.0f ), 0.0f ), V3Vectf( 0.0f, 0.0f, 0.0f ) );
 
 	VRMenuObjectParms titleRootParms( VRMENU_CONTAINER, VArray< VRMenuComponent* >(), VRMenuSurfaceParms(),
 			"TitleRoot", titlePose, defaultScale, fontParms, ID_TITLE_ROOT,
@@ -189,13 +189,13 @@ void TheaterSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, Bitmap
 
 	VArray<PanelPose> panelPoses;
 
-    panelPoses.append( PanelPose( Quatf( up, 0.0f ), Vector3f( -2.85f, 1.8f, -5.8f ), Vector4f( 0.0f, 0.0f, 0.0f, 0.0f ) ) );
-    panelPoses.append( PanelPose( Quatf( up, 0.0f ), Vector3f( -1.90f, 1.8f, -5.0f ), Vector4f( 0.25f, 0.25f, 0.25f, 1.0f ) ) );
-    panelPoses.append( PanelPose( Quatf( up, 0.0f ), Vector3f( -0.95f, 1.8f, -4.2f ), Vector4f( 0.45f, 0.45f, 0.45f, 1.0f ) ) );
-    panelPoses.append( PanelPose( Quatf( up, 0.0f ), Vector3f(  0.00f, 1.8f, -3.4f ), Vector4f( 1.0f, 1.0f, 1.0f, 1.0f ) ) );
-    panelPoses.append( PanelPose( Quatf( up, 0.0f ), Vector3f(  0.95f, 1.8f, -4.2f ), Vector4f( 0.45f, 0.45f, 0.45f, 1.0f ) ) );
-    panelPoses.append( PanelPose( Quatf( up, 0.0f ), Vector3f(  1.90f, 1.8f, -5.0f ), Vector4f( 0.25f, 0.25f, 0.25f, 1.0f ) ) );
-    panelPoses.append( PanelPose( Quatf( up, 0.0f ), Vector3f(  2.85f, 1.8f, -5.8f ), Vector4f( 0.0f, 0.0f, 0.0f, 0.0f ) ) );
+    panelPoses.append( PanelPose( VQuatf( up, 0.0f ), V3Vectf( -2.85f, 1.8f, -5.8f ), V4Vectf( 0.0f, 0.0f, 0.0f, 0.0f ) ) );
+    panelPoses.append( PanelPose( VQuatf( up, 0.0f ), V3Vectf( -1.90f, 1.8f, -5.0f ), V4Vectf( 0.25f, 0.25f, 0.25f, 1.0f ) ) );
+    panelPoses.append( PanelPose( VQuatf( up, 0.0f ), V3Vectf( -0.95f, 1.8f, -4.2f ), V4Vectf( 0.45f, 0.45f, 0.45f, 1.0f ) ) );
+    panelPoses.append( PanelPose( VQuatf( up, 0.0f ), V3Vectf(  0.00f, 1.8f, -3.4f ), V4Vectf( 1.0f, 1.0f, 1.0f, 1.0f ) ) );
+    panelPoses.append( PanelPose( VQuatf( up, 0.0f ), V3Vectf(  0.95f, 1.8f, -4.2f ), V4Vectf( 0.45f, 0.45f, 0.45f, 1.0f ) ) );
+    panelPoses.append( PanelPose( VQuatf( up, 0.0f ), V3Vectf(  1.90f, 1.8f, -5.0f ), V4Vectf( 0.25f, 0.25f, 0.25f, 1.0f ) ) );
+    panelPoses.append( PanelPose( VQuatf( up, 0.0f ), V3Vectf(  2.85f, 1.8f, -5.8f ), V4Vectf( 0.0f, 0.0f, 0.0f, 0.0f ) ) );
 
     // the centerroot item will get touch relative and touch absolute events and use them to rotate the centerRoot
     menuHandle_t centerRootHandle = Menu->handleForId( menuMgr, ID_CENTER_ROOT );
@@ -219,8 +219,8 @@ void TheaterSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, Bitmap
 				0, 0, 0, SURFACE_TEXTURE_MAX );
 
 	    VRMenuId_t panelId = VRMenuId_t( ID_ICONS.Get() + i );
-		Quatf rot( up, 0.0f );
-		Posef panelPose( rot, fwd );
+        VQuatf rot( up, 0.0f );
+        VPosf panelPose( rot, fwd );
 		VRMenuObjectParms * p = new VRMenuObjectParms( VRMENU_BUTTON, VArray< VRMenuComponent* >(),
 				panelSurfParms, NULL, panelPose, defaultScale, fontParms, panelId,
 				( i == centerIndex ) ? VRMenuObjectFlags_t( VRMENUOBJECT_FLAG_NO_DEPTH ) : VRMenuObjectFlags_t( VRMENUOBJECT_FLAG_NO_FOCUS_GAINED ) | VRMENUOBJECT_FLAG_NO_DEPTH,
@@ -235,8 +235,8 @@ void TheaterSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, Bitmap
     menuHandle_t selectionHandle = CenterRoot->childHandleForId( menuMgr, VRMenuId_t( ID_ICONS.Get() + centerIndex ) );
     SelectionObject = menuMgr.toObject( selectionHandle );
 
-    Vector3f selectionBoundsExpandMin = Vector3f( 0.0f, -0.25f, 0.0f );
-    Vector3f selectionBoundsExpandMax = Vector3f( 0.0f, 0.25f, 0.0f );
+    V3Vectf selectionBoundsExpandMin = V3Vectf( 0.0f, -0.25f, 0.0f );
+    V3Vectf selectionBoundsExpandMax = V3Vectf( 0.0f, 0.25f, 0.0f );
     SelectionObject->setLocalBoundsExpand( selectionBoundsExpandMin, selectionBoundsExpandMax );
     SelectionObject->addFlags( VRMENUOBJECT_HIT_ONLY_BOUNDS );
 
@@ -259,7 +259,7 @@ void TheaterSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, Bitmap
     // title
     //
     {
-        Posef panelPose( Quatf( up, 0.0f ), Vector3f( 0.0f, 2.5f, -3.4f ) );
+        VPosf panelPose( VQuatf( up, 0.0f ), V3Vectf( 0.0f, 2.5f, -3.4f ) );
 
 		VRMenuFontParms titleFontParms( true, true, false, false, false, 1.3f );
 
@@ -303,7 +303,7 @@ void TheaterSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, Bitmap
 		float yPos = 1.8f - ( selectionHeight - swipeIconLeftHeight ) * 0.5f * VRMenuObject::DEFAULT_TEXEL_SCALE;
 		for( int i = 0; i < NumSwipeTrails; i++ )
 		{
-			Posef swipePose = Posef( Quatf( up, 0.0f ), Vector3f( 0.0f, yPos, -3.4f ) );
+            VPosf swipePose = VPosf( VQuatf( up, 0.0f ), V3Vectf( 0.0f, yPos, -3.4f ) );
 			swipePose.Position.x = ( ( selectionWidth + swipeIconLeftWidth * ( i + 2 ) ) * -0.5f ) * VRMenuObject::DEFAULT_TEXEL_SCALE;
 			swipePose.Position.z += 0.01f * ( float )i;
 
@@ -358,7 +358,7 @@ void TheaterSelectionView::SelectPressed( void )
 	}
 }
 
-Matrix4f TheaterSelectionView::Frame( const VrFrame & vrFrame )
+VR4Matrixf TheaterSelectionView::Frame( const VrFrame & vrFrame )
 {
 	// We want 4x MSAA in the selection screen
     EyeParms eyeParms = vApp->eyeParms();

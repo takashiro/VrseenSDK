@@ -89,9 +89,9 @@ void ChangeGpuState( const GpuState oldState, const GpuState newState ) {
 }
 
 // transform transposed, as OpenGL will
-Vector4f GLTransform( const Matrix4f & m, const Vector4f & v )
+V4Vectf GLTransform( const VR4Matrixf & m, const V4Vectf & v )
 {
-    return Vector4f(
+    return V4Vectf(
 		m.M[0][0] * v.x + m.M[1][0] * v.y + m.M[2][0] * v.z + m.M[3][0],
 		m.M[0][1] * v.x + m.M[1][1] * v.y + m.M[2][1] * v.z + m.M[3][1],
 		m.M[0][2] * v.x + m.M[1][2] * v.y + m.M[2][2] * v.z + m.M[3][2],
@@ -103,8 +103,8 @@ Vector4f GLTransform( const Matrix4f & m, const Vector4f & v )
 // order for more efficient Z cull.  Sorting bounds in increasing order of
 // their farthest W value usually makes characters and objects draw before
 // the environments they are in, and draws sky boxes last, which is what we want.
-float BoundsSortCullKey( const Bounds3f & bounds, const Matrix4f & mvp ) {
-	Vector4f c[8];
+float BoundsSortCullKey( const VBoxf & bounds, const VR4Matrixf & mvp ) {
+    V4Vectf c[8];
 
 	// Always cull empty bounds, which can be used to disable a surface.
 	// Don't just check a single axis, or billboards would be culled.
@@ -114,7 +114,7 @@ float BoundsSortCullKey( const Bounds3f & bounds, const Matrix4f & mvp ) {
 
 	// Not very efficient code...
 	for ( int i = 0; i < 8; i++ ) {
-		Vector4f world;
+        V4Vectf world;
 		world.x = bounds.b[(i&1)].x;
 		world.y = bounds.b[(i&2)>>1].y;
 		world.z = bounds.b[(i&4)>>2].z;
@@ -191,7 +191,7 @@ struct bsort_t
 {
 	float						key;
 	const DrawMatrices * 		matrices;
-	const VArray< Matrix4f > *	joints;
+    const VArray< VR4Matrixf > *	joints;
 	const SurfaceDef *			surface;
 	GLuint						textureOverload;	// if 0, there's no overload
 	bool						transparent;
@@ -243,7 +243,7 @@ int bsortComp( const void * p1, const void * p2 )
 }
 
 const DrawSurfaceList & BuildDrawSurfaceList( const NervGear::VArray<ModelState> & modelRenderList,
-			const Matrix4f & viewMatrix, const Matrix4f & projectionMatrix )
+            const VR4Matrixf & viewMatrix, const VR4Matrixf & projectionMatrix )
 {
 	// A mobile GPU will be in trouble if it draws more than this.
 	static const int MAX_DRAW_SURFACES = 1024;
@@ -251,7 +251,7 @@ const DrawSurfaceList & BuildDrawSurfaceList( const NervGear::VArray<ModelState>
 	static const int MAX_DRAW_MODELS = 128;
 	static DrawMatrices drawMatrices[MAX_DRAW_MODELS];
 
-	const Matrix4f vpMatrix = ( projectionMatrix * viewMatrix ).Transposed();
+    const VR4Matrixf vpMatrix = ( projectionMatrix * viewMatrix ).Transposed();
 
 	int	numSurfaces = 0;
 	int	numDrawMatrices = 0;
@@ -355,7 +355,7 @@ DrawCounters RenderSurfaceList( const DrawSurfaceList & drawSurfaceList ) {
 	GLuint				currentProgramObject = 0;
 
 	// default joints if no joints are specified
-	static const Matrix4f defaultJoints[MAX_JOINTS];
+    static const VR4Matrixf defaultJoints[MAX_JOINTS];
 
 	// counters
 	DrawCounters counters;
@@ -412,24 +412,24 @@ DrawCounters RenderSurfaceList( const DrawSurfaceList & drawSurfaceList ) {
 			currentMatrices = drawSurface.matrices;
 
 			// set the mvp matrix
-			glUniformMatrix4fv( materialDef.uniformMvp, 1, 0, &currentMatrices->Mvp.M[0][0] );
+            glUniformMatrix4fv( materialDef.uniformMvp, 1, 0, &currentMatrices->Mvp.M[0][0] );
 
 			// set the model matrix
 			if ( materialDef.uniformModel != -1 )
 			{
-				glUniformMatrix4fv( materialDef.uniformModel, 1, 0, &currentMatrices->Model.M[0][0] );
+                glUniformMatrix4fv( materialDef.uniformModel, 1, 0, &currentMatrices->Model.M[0][0] );
 			}
 
 			// set the view matrix
 			if ( materialDef.uniformView != -1 )
 			{
-				glUniformMatrix4fv( materialDef.uniformView, 1, 0, &drawSurfaceList.viewMatrix.M[0][0] );
+                glUniformMatrix4fv( materialDef.uniformView, 1, 0, &drawSurfaceList.viewMatrix.M[0][0] );
 			}
 
 			// set the projection matrix
 			if ( materialDef.uniformProjection != -1 )
 			{
-				glUniformMatrix4fv( materialDef.uniformProjection, 1, 0, &drawSurfaceList.projectionMatrix.M[0][0] );
+                glUniformMatrix4fv( materialDef.uniformProjection, 1, 0, &drawSurfaceList.projectionMatrix.M[0][0] );
 			}
 
 			// set the joint matrices
@@ -437,11 +437,11 @@ DrawCounters RenderSurfaceList( const DrawSurfaceList & drawSurfaceList ) {
 			{
 				if ( drawSurface.joints != NULL && drawSurface.joints->size() > 0 )
 				{
-					glUniformMatrix4fv( materialDef.uniformJoints, Alg::Min( drawSurface.joints->length(), MAX_JOINTS ), 0, &drawSurface.joints->at( 0 ).M[0][0] );
+                    glUniformMatrix4fv( materialDef.uniformJoints, Alg::Min( drawSurface.joints->length(), MAX_JOINTS ), 0, &drawSurface.joints->at( 0 ).M[0][0] );
 				}
 				else
 				{
-					glUniformMatrix4fv( materialDef.uniformJoints, MAX_JOINTS, 0, &defaultJoints[0].M[0][0] );
+                    glUniformMatrix4fv( materialDef.uniformJoints, MAX_JOINTS, 0, &defaultJoints[0].M[0][0] );
 				}
 			}
 		}

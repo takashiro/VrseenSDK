@@ -39,7 +39,7 @@ public:
 
         menuHandle_t			handle;				// Handle to the panel
         int						id;					// Unique id for thumbnail loading
-        Vector2f				size;				// Thumbnail texture size
+        V2Vectf				size;				// Thumbnail texture size
 	};
 
 	struct FolderView
@@ -103,7 +103,7 @@ public:
 
     void 								touchDown();
     void 								touchUp();
-    void 								touchRelative( Vector3f touchPos );
+    void 								touchRelative( V3Vectf touchPos );
 
 	// Accessors
     const FolderView *					getFolderView( int index ) const;
@@ -219,7 +219,7 @@ private:
     void				loadFolderPanels( const OvrMetaData & metaData, const OvrMetaData::Category & category, const int folderIndex, FolderView & folder,
 							 VArray< VRMenuObjectParms const * > & outParms );
     void				addPanelToFolder( const OvrMetaDatum * panoData, const int folderIndex, FolderView & folder, VArray< VRMenuObjectParms const * >& outParms );
-    void				displaceFolder( int index, const Vector3f & direction, float distance, bool startOffSelf = false );
+    void				displaceFolder( int index, const V3Vectf & direction, float distance, bool startOffSelf = false );
     void				updateFolderTitle( const FolderView * folder  );
     float				calcFolderMaxRotation( const FolderView * folder ) const;
 
@@ -277,7 +277,7 @@ private:
 
 	static const float 						SCROLL_DIRECTION_DECIDING_DISTANCE;
     bool									m_isTouchDownPosistionTracked;
-    Vector3f 								m_touchDownPosistion; // First event in touch relative is considered as touch down position
+    V3Vectf 								m_touchDownPosistion; // First event in touch relative is considered as touch down position
     eScrollDirectionLockType				m_touchDirectionLocked;
 
 };

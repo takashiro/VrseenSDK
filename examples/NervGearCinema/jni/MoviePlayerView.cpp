@@ -106,9 +106,9 @@ float PixelScale( const float x )
 	return x * VRMenuObject::DEFAULT_TEXEL_SCALE;
 }
 
-Vector3f PixelPos( const float x, const float y, const float z )
+V3Vectf PixelPos( const float x, const float y, const float z )
 {
-	return Vector3f( PixelScale( x ), PixelScale( y ), PixelScale( z ) );
+    return V3Vectf( PixelScale( x ), PixelScale( y ), PixelScale( z ) );
 }
 
 void PlayPressedCallback( UIButton *button, void *object )
@@ -186,11 +186,11 @@ void MoviePlayerView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFont 
 	MoveScreenMenu->SetFlags( VRMenuFlags_t( VRMENU_FLAG_TRACK_GAZE ) | VRMenuFlags_t( VRMENU_FLAG_BACK_KEY_DOESNT_EXIT ) );
 
     MoveScreenLabel.AddToMenu( MoveScreenMenu, NULL );
-    MoveScreenLabel.SetLocalPose( Quatf( Vector3f( 0.0f, 1.0f, 0.0f ), 0.0f ), Vector3f( 0.0f, 0.0f, -1.8f ) );
+    MoveScreenLabel.SetLocalPose( VQuatf( V3Vectf( 0.0f, 1.0f, 0.0f ), 0.0f ), V3Vectf( 0.0f, 0.0f, -1.8f ) );
     MoveScreenLabel.GetMenuObject()->addFlags( VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_ALL ) );
     MoveScreenLabel.SetFontScale( 0.5f );
     MoveScreenLabel.SetText( CinemaStrings::MoviePlayer_Reorient );
-    MoveScreenLabel.SetTextOffset( Vector3f( 0.0f, -24 * VRMenuObject::DEFAULT_TEXEL_SCALE, 0.0f ) );  // offset to be below gaze cursor
+    MoveScreenLabel.SetTextOffset( V3Vectf( 0.0f, -24 * VRMenuObject::DEFAULT_TEXEL_SCALE, 0.0f ) );  // offset to be below gaze cursor
     MoveScreenLabel.SetVisible( false );
 
     // ==============================================================================
@@ -203,7 +203,7 @@ void MoviePlayerView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFont 
 
     PlaybackControlsPosition.AddToMenu( PlaybackControlsMenu );
     PlaybackControlsScale.AddToMenu( PlaybackControlsMenu, &PlaybackControlsPosition );
-    PlaybackControlsScale.SetLocalPosition( Vector3f( 0.0f, 0.0f, 0.05f ) );
+    PlaybackControlsScale.SetLocalPosition( V3Vectf( 0.0f, 0.0f, 0.05f ) );
     PlaybackControlsScale.SetImage( 0, SURFACE_TEXTURE_DIFFUSE, BackgroundTintTexture, 1080, 1080 );
 
 	// ==============================================================================
@@ -214,7 +214,7 @@ void MoviePlayerView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFont 
     MovieTitleLabel.SetLocalPosition( PixelPos( 0, 266, 0 ) );
     MovieTitleLabel.SetFontScale( 1.4f );
     MovieTitleLabel.SetText( "" );
-    MovieTitleLabel.SetTextOffset( Vector3f( 0.0f, 0.0f, 0.01f ) );
+    MovieTitleLabel.SetTextOffset( V3Vectf( 0.0f, 0.0f, 0.01f ) );
     MovieTitleLabel.SetImage( 0, SURFACE_TEXTURE_DIFFUSE, BackgroundTintTexture, 320, 120 );
 
 	// ==============================================================================
@@ -223,7 +223,7 @@ void MoviePlayerView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFont 
     //
     SeekIcon.AddToMenu( PlaybackControlsMenu, &PlaybackControlsScale );
     SeekIcon.SetLocalPosition( PixelPos( 0, 0, 0 ) );
-    SeekIcon.SetLocalScale( Vector3f( 2.0f ) );
+    SeekIcon.SetLocalScale( V3Vectf( 2.0f ) );
     SetSeekIcon( 0 );
 
     // ==============================================================================
@@ -237,34 +237,34 @@ void MoviePlayerView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFont 
 
     RewindButton.AddToMenu( PlaybackControlsMenu, &ControlsBackground );
     RewindButton.SetLocalPosition( PixelPos( -448, 0, 1 ) );
-    RewindButton.SetLocalScale( Vector3f( 2.0f ) );
+    RewindButton.SetLocalScale( V3Vectf( 2.0f ) );
     RewindButton.SetButtonImages( RWTexture, RWHoverTexture, RWPressedTexture );
     RewindButton.SetOnClick( RewindPressedCallback, this );
 
 	FastForwardButton.AddToMenu( PlaybackControlsMenu, &ControlsBackground );
 	FastForwardButton.SetLocalPosition( PixelPos( -234, 0, 1 ) );
-	FastForwardButton.SetLocalScale( Vector3f( 2.0f ) );
+    FastForwardButton.SetLocalScale( V3Vectf( 2.0f ) );
 	FastForwardButton.SetButtonImages( FFTexture, FFHoverTexture, FFPressedTexture );
 	FastForwardButton.SetOnClick( FastForwardPressedCallback, this );
-    FastForwardButton.GetMenuObject()->setLocalBoundsExpand( Vector3f::ZERO, PixelPos( -20, 0, 0 ) );
+    FastForwardButton.GetMenuObject()->setLocalBoundsExpand( V3Vectf::ZERO, PixelPos( -20, 0, 0 ) );
 
 	// playbutton created after fast forward button to fix z issues
     PlayButton.AddToMenu( PlaybackControlsMenu, &ControlsBackground );
     PlayButton.SetLocalPosition( PixelPos( -341, 0, 2 ) );
-    PlayButton.SetLocalScale( Vector3f( 2.0f ) );
+    PlayButton.SetLocalScale( V3Vectf( 2.0f ) );
     PlayButton.SetButtonImages( PauseTexture, PauseHoverTexture, PausePressedTexture );
     PlayButton.SetOnClick( PlayPressedCallback, this );
 
 	CarouselButton.AddToMenu( PlaybackControlsMenu, &ControlsBackground );
 	CarouselButton.SetLocalPosition( PixelPos( 418, 0, 1 ) );
-	CarouselButton.SetLocalScale( Vector3f( 2.0f ) );
+    CarouselButton.SetLocalScale( V3Vectf( 2.0f ) );
 	CarouselButton.SetButtonImages( CarouselTexture, CarouselHoverTexture, CarouselPressedTexture );
 	CarouselButton.SetOnClick( CarouselPressedCallback, this );
-    CarouselButton.GetMenuObject()->setLocalBoundsExpand( PixelPos( 20, 0, 0 ), Vector3f::ZERO );
+    CarouselButton.GetMenuObject()->setLocalBoundsExpand( PixelPos( 20, 0, 0 ), V3Vectf::ZERO );
 
 	SeekbarBackground.AddToMenu( PlaybackControlsMenu, &ControlsBackground );
 	SeekbarBackground.SetLocalPosition( PixelPos( 78, 0, 2 ) );
-	SeekbarBackground.SetColor( Vector4f( 0.5333f, 0.5333f, 0.5333f, 1.0f ) );
+    SeekbarBackground.SetColor( V4Vectf( 0.5333f, 0.5333f, 0.5333f, 1.0f ) );
 	SeekbarBackground.SetImage( 0, SURFACE_TEXTURE_DIFFUSE, SeekbarBackgroundTexture, ScrubBarWidth + 6, 46 );
 	SeekbarBackground.AddComponent( &ScrubBar );
 
@@ -275,24 +275,24 @@ void MoviePlayerView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFont 
 
 	CurrentTime.AddToMenu( PlaybackControlsMenu, &SeekbarBackground );
 	CurrentTime.SetLocalPosition( PixelPos( -234, 52, 2 ) );
-	CurrentTime.SetLocalScale( Vector3f( 1.0f ) );
+    CurrentTime.SetLocalScale( V3Vectf( 1.0f ) );
 	CurrentTime.SetImage( 0, SURFACE_TEXTURE_DIFFUSE, SeekPosition );
 	CurrentTime.SetText( "2:33:33" );
 	CurrentTime.SetTextOffset( PixelPos( 0, 6, 1 ) );
 	CurrentTime.SetFontScale( 0.71f );
-	CurrentTime.SetColor( Vector4f( 0 / 255.0f, 93 / 255.0f, 219 / 255.0f, 1.0f ) );
-	CurrentTime.SetTextColor( Vector4f( 1.0f, 1.0f, 1.0f, 1.0f ) );
+    CurrentTime.SetColor( V4Vectf( 0 / 255.0f, 93 / 255.0f, 219 / 255.0f, 1.0f ) );
+    CurrentTime.SetTextColor( V4Vectf( 1.0f, 1.0f, 1.0f, 1.0f ) );
     CurrentTime.GetMenuObject()->addFlags( VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_ALL ) );
 
 	SeekTime.AddToMenu( PlaybackControlsMenu, &SeekbarBackground );
 	SeekTime.SetLocalPosition( PixelPos( -34, 52, 4 ) );
-	SeekTime.SetLocalScale( Vector3f( 1.0f ) );
+    SeekTime.SetLocalScale( V3Vectf( 1.0f ) );
 	SeekTime.SetImage( 0, SURFACE_TEXTURE_DIFFUSE, SeekPosition );
 	SeekTime.SetText( "2:33:33" );
 	SeekTime.SetTextOffset( PixelPos( 0, 6, 1 ) );
 	SeekTime.SetFontScale( 0.71f );
-	SeekTime.SetColor( Vector4f( 47.0f / 255.0f, 70 / 255.0f, 89 / 255.0f, 1.0f ) );
-	SeekTime.SetTextColor( Vector4f( 1.0f, 1.0f, 1.0f, 1.0f ) );
+    SeekTime.SetColor( V4Vectf( 47.0f / 255.0f, 70 / 255.0f, 89 / 255.0f, 1.0f ) );
+    SeekTime.SetTextColor( V4Vectf( 1.0f, 1.0f, 1.0f, 1.0f ) );
     SeekTime.GetMenuObject()->addFlags( VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_ALL ) );
 
 	ScrubBar.SetWidgets( &SeekbarBackground, &SeekbarProgress, &CurrentTime, &SeekTime, ScrubBarWidth );
@@ -356,7 +356,7 @@ void MoviePlayerView::OnOpen()
     Cinema.startMoviePlayback();
 
     MovieTitleLabel.SetText( Cinema.currentMovie()->Title );
-	Bounds3f titleBounds = MovieTitleLabel.GetTextLocalBounds( vApp->defaultFont() ) * VRMenuObject::TEXELS_PER_METER;
+    VBoxf titleBounds = MovieTitleLabel.GetTextLocalBounds( vApp->defaultFont() ) * VRMenuObject::TEXELS_PER_METER;
 	MovieTitleLabel.SetImage( 0, SURFACE_TEXTURE_DIFFUSE, BackgroundTintTexture, titleBounds.GetSize().x + 88, titleBounds.GetSize().y + 32 );
 
 	PlayButton.SetButtonImages( PauseTexture, PauseHoverTexture, PausePressedTexture );
@@ -470,7 +470,7 @@ bool MoviePlayerView::OnKeyEvent( const int keyCode, const KeyState::eKeyEventTy
 
 //=========================================================================================
 
-static bool InsideUnit( const Vector2f v )
+static bool InsideUnit( const V2Vectf v )
 {
 	return v.x > -1.0f && v.x < 1.0f && v.y > -1.0f && v.y < 1.0f;
 }
@@ -484,7 +484,7 @@ void MoviePlayerView::ShowUI()
 	PlaybackControlsMenu->Open();
 	GazeTimer.SetGazeTime();
 
-    PlaybackControlsScale.SetLocalScale( Vector3f( Cinema.sceneMgr.GetScreenSize().y * ( 500.0f / 1080.0f ) ) );
+    PlaybackControlsScale.SetLocalScale( V3Vectf( Cinema.sceneMgr.GetScreenSize().y * ( 500.0f / 1080.0f ) ) );
     PlaybackControlsPosition.SetLocalPose( Cinema.sceneMgr.GetScreenPose() );
 
 	uiActive = true;
@@ -554,27 +554,27 @@ void MoviePlayerView::CheckDebugControls( const VrFrame & vrFrame )
 	}
 }
 
-static Vector3f	MatrixOrigin( const Matrix4f & m )
+static V3Vectf	MatrixOrigin( const VR4Matrixf & m )
 {
-	return Vector3f( -m.M[0][3], -m.M[1][3], -m.M[2][3] );
+    return V3Vectf( -m.M[0][3], -m.M[1][3], -m.M[2][3] );
 }
 
-static Vector3f	MatrixForward( const Matrix4f & m )
+static V3Vectf	MatrixForward( const VR4Matrixf & m )
 {
-	return Vector3f( -m.M[2][0], -m.M[2][1], -m.M[2][2] );
+    return V3Vectf( -m.M[2][0], -m.M[2][1], -m.M[2][2] );
 }
 
 // -1 to 1 range on screenMatrix, returns -2,-2 if looking away from the screen
-Vector2f MoviePlayerView::GazeCoordinatesOnScreen( const Matrix4f & viewMatrix, const Matrix4f screenMatrix ) const
+V2Vectf MoviePlayerView::GazeCoordinatesOnScreen( const VR4Matrixf & viewMatrix, const VR4Matrixf screenMatrix ) const
 {
 	// project along -Z in the viewMatrix onto the Z = 0 plane of screenMatrix
-	const Vector3f viewForward = MatrixForward( viewMatrix ).Normalized();
+    const V3Vectf viewForward = MatrixForward( viewMatrix ).Normalized();
 
-	Vector3f screenForward;
+    V3Vectf screenForward;
     if ( Cinema.sceneMgr.FreeScreenActive )
 	{
 		// FIXME: free screen matrix is inverted compared to bounds screen matrix.
-		screenForward = -Vector3f( screenMatrix.M[0][2], screenMatrix.M[1][2], screenMatrix.M[2][2] ).Normalized();
+        screenForward = -V3Vectf( screenMatrix.M[0][2], screenMatrix.M[1][2], screenMatrix.M[2][2] ).Normalized();
 	}
 	else
 	{
@@ -585,23 +585,23 @@ Vector2f MoviePlayerView::GazeCoordinatesOnScreen( const Matrix4f & viewMatrix, 
 	if ( approach <= 0.1f )
 	{
 		// looking away
-		return Vector2f( -2.0f, -2.0f );
+        return V2Vectf( -2.0f, -2.0f );
 	}
 
-	const Matrix4f panelInvert = screenMatrix.Inverted();
-	const Matrix4f viewInvert = viewMatrix.Inverted();
+    const VR4Matrixf panelInvert = screenMatrix.Inverted();
+    const VR4Matrixf viewInvert = viewMatrix.Inverted();
 
-	const Vector3f viewOrigin = viewInvert.Transform( Vector3f( 0.0f ) );
-	const Vector3f panelOrigin = MatrixOrigin( screenMatrix );
+    const V3Vectf viewOrigin = viewInvert.Transform( V3Vectf( 0.0f ) );
+    const V3Vectf panelOrigin = MatrixOrigin( screenMatrix );
 
 	// Should we disallow using panels from behind?
 	const float d = panelOrigin.Dot( screenForward );
 	const float t = -( viewOrigin.Dot( screenForward ) + d ) / approach;
 
-	const Vector3f impact = viewOrigin + viewForward * t;
-	const Vector3f localCoordinate = panelInvert.Transform( impact );
+    const V3Vectf impact = viewOrigin + viewForward * t;
+    const V3Vectf localCoordinate = panelInvert.Transform( impact );
 
-	return Vector2f( localCoordinate.x, localCoordinate.y );
+    return V2Vectf( localCoordinate.x, localCoordinate.y );
 }
 
 void MoviePlayerView::CheckInput( const VrFrame & vrFrame )
@@ -665,7 +665,7 @@ void MoviePlayerView::CheckInput( const VrFrame & vrFrame )
 
     if ( Cinema.sceneMgr.FreeScreenActive )
 	{
-        const Vector2f screenCursor = GazeCoordinatesOnScreen( Cinema.sceneMgr.Scene.CenterViewMatrix(), Cinema.sceneMgr.ScreenMatrix() );
+        const V2Vectf screenCursor = GazeCoordinatesOnScreen( Cinema.sceneMgr.Scene.CenterViewMatrix(), Cinema.sceneMgr.ScreenMatrix() );
 		bool onscreen = false;
 		if ( InsideUnit( screenCursor ) )
 		{
@@ -684,7 +684,7 @@ void MoviePlayerView::CheckInput( const VrFrame & vrFrame )
 			if ( alpha > 0.0f )
 			{
 				MoveScreenLabel.SetVisible( true );
-				MoveScreenLabel.SetTextColor( Vector4f( alpha ) );
+                MoveScreenLabel.SetTextColor( V4Vectf( alpha ) );
 			}
 
 			if ( vrFrame.Input.buttonPressed & ( BUTTON_A | BUTTON_TOUCH ) )
@@ -877,7 +877,7 @@ void MoviePlayerView::UpdateUI( const VrFrame & vrFrame )
         if ( Cinema.sceneMgr.FreeScreenActive )
 		{
 			// update the screen position & size;
-            PlaybackControlsScale.SetLocalScale( Vector3f( Cinema.sceneMgr.GetScreenSize().y * ( 500.0f / 1080.0f ) ) );
+            PlaybackControlsScale.SetLocalScale( V3Vectf( Cinema.sceneMgr.GetScreenSize().y * ( 500.0f / 1080.0f ) ) );
             PlaybackControlsPosition.SetLocalPose( Cinema.sceneMgr.GetScreenPose() );
 		}
 	}
@@ -889,7 +889,7 @@ void MoviePlayerView::UpdateUI( const VrFrame & vrFrame )
 /*
  * DrawEyeView
  */
-Matrix4f MoviePlayerView::DrawEyeView( const int eye, const float fovDegrees )
+VR4Matrixf MoviePlayerView::DrawEyeView( const int eye, const float fovDegrees )
 {
     return Cinema.sceneMgr.DrawEyeView( eye, fovDegrees );
 }
@@ -899,7 +899,7 @@ Matrix4f MoviePlayerView::DrawEyeView( const int eye, const float fovDegrees )
  *
  * App override
  */
-Matrix4f MoviePlayerView::Frame( const VrFrame & vrFrame )
+VR4Matrixf MoviePlayerView::Frame( const VrFrame & vrFrame )
 {
 	// Drop to 2x MSAA during playback, people should be focused
 	// on the high quality screen.
@@ -1038,10 +1038,10 @@ void ScrubBarComponent::SetProgress( const float progress )
 	Progress = progress;
 	const float seekwidth = ScrubBarWidth * progress;
 
-	Vector3f pos = ScrubBar->GetLocalPosition();
+    V3Vectf pos = ScrubBar->GetLocalPosition();
 	pos.x = PixelScale( ( ScrubBarWidth - seekwidth ) * -0.5f );
 	ScrubBar->SetLocalPosition( pos );
-	ScrubBar->SetSurfaceDims( 0, Vector2f( seekwidth, 40.0f ) );
+    ScrubBar->SetSurfaceDims( 0, V2Vectf( seekwidth, 40.0f ) );
 	ScrubBar->RegenerateSurfaceGeometry( 0, false );
 
 	pos = CurrentTime->GetLocalPosition();
@@ -1114,19 +1114,19 @@ eMsgStatus ScrubBarComponent::OnFrame( App * app, VrFrame const & vrFrame, OvrVR
 	SeekTime->SetVisible( HasFocus );
 	if ( HasFocus )
 	{
-        Vector3f hitPos = event.hitResult.RayStart + event.hitResult.RayDir * event.hitResult.t;
+        V3Vectf hitPos = event.hitResult.RayStart + event.hitResult.RayDir * event.hitResult.t;
 
 		// move hit position into local space
-		const Posef modelPose = Background->GetWorldPose();
-		Vector3f localHit = modelPose.Orientation.Inverted().Rotate( hitPos - modelPose.Position );
+        const VPosf modelPose = Background->GetWorldPose();
+        V3Vectf localHit = modelPose.Orientation.Inverted().Rotate( hitPos - modelPose.Position );
 
-        Bounds3f bounds = Background->GetMenuObject()->getTextLocalBounds( app->defaultFont() ) * Background->GetParent()->GetWorldScale();
+        VBoxf bounds = Background->GetMenuObject()->getTextLocalBounds( app->defaultFont() ) * Background->GetParent()->GetWorldScale();
 		const float progress = ( localHit.x - bounds.GetMins().x ) / bounds.GetSize().x;
 
 		if ( ( progress >= 0.0f ) && ( progress <= 1.0f ) )
 		{
 			const float seekwidth = ScrubBarWidth * progress;
-			Vector3f pos = SeekTime->GetLocalPosition();
+            V3Vectf pos = SeekTime->GetLocalPosition();
 			pos.x = PixelScale( ScrubBarWidth * -0.5f + seekwidth );
 			SeekTime->SetLocalPosition( pos );
 
@@ -1144,13 +1144,13 @@ void ScrubBarComponent::OnClick( App * app, VrFrame const & vrFrame, VRMenuEvent
 		return;
 	}
 
-    Vector3f hitPos = event.hitResult.RayStart + event.hitResult.RayDir * event.hitResult.t;
+    V3Vectf hitPos = event.hitResult.RayStart + event.hitResult.RayDir * event.hitResult.t;
 
 	// move hit position into local space
-	const Posef modelPose = Background->GetWorldPose();
-	Vector3f localHit = modelPose.Orientation.Inverted().Rotate( hitPos - modelPose.Position );
+    const VPosf modelPose = Background->GetWorldPose();
+    V3Vectf localHit = modelPose.Orientation.Inverted().Rotate( hitPos - modelPose.Position );
 
-    Bounds3f bounds = Background->GetMenuObject()->getTextLocalBounds( app->defaultFont() ) * Background->GetParent()->GetWorldScale();
+    VBoxf bounds = Background->GetMenuObject()->getTextLocalBounds( app->defaultFont() ) * Background->GetParent()->GetWorldScale();
 	const float progress = ( localHit.x - bounds.GetMins().x ) / bounds.GetSize().x;
 	if ( ( progress >= 0.0f ) && ( progress <= 1.0f ) )
 	{

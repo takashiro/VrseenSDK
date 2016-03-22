@@ -29,8 +29,8 @@ class OvrGuiSys
 {
 public:
     static char const *		APP_MENU_NAME;
-	static Vector4f const	BUTTON_DEFAULT_TEXT_COLOR;
-	static Vector4f const	BUTTON_HILIGHT_TEXT_COLOR;
+    static V4Vectf const	BUTTON_DEFAULT_TEXT_COLOR;
+    static V4Vectf const	BUTTON_HILIGHT_TEXT_COLOR;
 
 	virtual				~OvrGuiSys() { }
 
@@ -38,13 +38,13 @@ public:
     virtual void		shutdown( OvrVRMenuMgr & menuMgr ) = 0;
     virtual void		frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
                                 BitmapFont const & font , BitmapFontSurface & fontSurface,
-								Matrix4f const & viewMatrix ) = 0;
+                                VR4Matrixf const & viewMatrix ) = 0;
 
 	// called when the app menu is up and a key event is received. Return true if the menu consumed
 	// the event.
     virtual bool		onKeyEvent( App * app, int const keyCode, KeyState::eKeyEventType const eventType ) = 0;
 	// called when re-orient is done from Universal Menu or mount on 
-    virtual void		resetMenuOrientations( App * app, Matrix4f const & viewMatrix ) = 0;
+    virtual void		resetMenuOrientations( App * app, VR4Matrixf const & viewMatrix ) = 0;
 
     // Add a new menu that can be opened to receive events
     virtual void        addMenu( VRMenu * menu ) = 0;

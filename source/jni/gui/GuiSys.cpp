@@ -30,8 +30,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 namespace NervGear {
 
-Vector4f const OvrGuiSys::BUTTON_DEFAULT_TEXT_COLOR( 0.098f, 0.6f, 0.96f, 1.0f );
-Vector4f const OvrGuiSys::BUTTON_HILIGHT_TEXT_COLOR( 1.0f );
+V4Vectf const OvrGuiSys::BUTTON_DEFAULT_TEXT_COLOR( 0.098f, 0.6f, 0.96f, 1.0f );
+V4Vectf const OvrGuiSys::BUTTON_HILIGHT_TEXT_COLOR( 1.0f );
 
 //==============================
 // OvrGuiSysLocal::
@@ -63,7 +63,7 @@ void OvrGuiSysLocal::init( App * app, OvrVRMenuMgr & menuMgr, BitmapFont const &
 //==============================
 // OvrGuiSysLocal::RepositionMenus
 // Reposition any open menus 
-void OvrGuiSysLocal::resetMenuOrientations( App * app, Matrix4f const & viewMatrix )
+void OvrGuiSysLocal::resetMenuOrientations( App * app, VR4Matrixf const & viewMatrix )
 {
 	for ( int i = 0; i < Menus.length(); ++i )
 	{
@@ -296,7 +296,7 @@ bool OvrGuiSysLocal::isAnyMenuOpen() const
 //==============================
 // OvrGuiSysLocal::Frame
 void OvrGuiSysLocal::frame( App * app, const VrFrame & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font,
-        BitmapFontSurface & fontSurface, Matrix4f const & viewMatrix )
+        BitmapFontSurface & fontSurface, VR4Matrixf const & viewMatrix )
 {
 	//LOG( "OvrGuiSysLocal::Frame" );
 

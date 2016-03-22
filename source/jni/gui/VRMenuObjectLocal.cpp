@@ -125,7 +125,7 @@ void VRMenuSurfaceTexture::free()
 // VRMenuSurface
 
 #if 0
-static void PrintBounds( const char * name, char const * prefix, Bounds3f const & bounds )
+static void PrintBounds( const char * name, char const * prefix, VBoxf const & bounds )
 {
 	LOG( "'%s' %s: min( %.2f, %.2f, %.2f ) - max( %.2f, %.2f, %.2f )", 
 		name, prefix,
@@ -156,7 +156,7 @@ VRMenuSurface::~VRMenuSurface()
 // VRMenuSurface::CreateImageGeometry
 //
 // This creates a quad for mapping the texture.
-void VRMenuSurface::createImageGeometry( int const textureWidth, int const textureHeight, const Vector2f &dims, const Vector4f &border, ContentFlags_t const contents )
+void VRMenuSurface::createImageGeometry( int const textureWidth, int const textureHeight, const V2Vectf &dims, const V4Vectf &border, ContentFlags_t const contents )
 {
 	//OVR_ASSERT( Geo.vertexBuffer == 0 && Geo.indexBuffer == 0 && Geo.vertexArrayObject == 0 );
 
@@ -216,7 +216,7 @@ void VRMenuSurface::createImageGeometry( int const textureWidth, int const textu
 	attribs.uv1.resize( vertexCount );
 	attribs.color.resize( vertexCount );
 
-	Vector4f color( 1.0f, 1.0f, 1.0f, 1.0f );
+    V4Vectf color( 1.0f, 1.0f, 1.0f, 1.0f );
 
 	for ( int y = 0; y <= vertical; y++ )
 	{
@@ -271,7 +271,7 @@ void VRMenuSurface::createImageGeometry( int const textureWidth, int const textu
 
 //==============================
 // VRMenuSurface::Render
-void VRMenuSurface::render( OvrVRMenuMgr const & menuMgr, Matrix4f const & mvp, SubmittedMenuObject const & sub ) const
+void VRMenuSurface::render( OvrVRMenuMgr const & menuMgr, VR4Matrixf const & mvp, SubmittedMenuObject const & sub ) const
 {
 	if ( m_geo.vertexCount == 0 )
 	{
@@ -424,7 +424,7 @@ void VRMenuSurface::render( OvrVRMenuMgr const & menuMgr, Matrix4f const & mvp, 
 
 	glUseProgram( program->program );
 
-	glUniformMatrix4fv( program->uniformModelViewProMatrix, 1, GL_FALSE, mvp.M[0] );
+    glUniformMatrix4fv( program->uniformModelViewProMatrix, 1, GL_FALSE, mvp.M[0] );
 
 	glUniform4fv( program->uniformColor, 1, &sub.color.x );
 	glUniform3fv( program->uniformFadeDirection, 1, &sub.fadeDirection.x );
@@ -593,8 +593,8 @@ void VRMenuSurface::free()
 
 //==============================
 // VRMenuSurface::IntersectRay
-bool VRMenuSurface::intersectRay( Vector3f const & start, Vector3f const & dir, Posef const & pose,
-                                  Vector3f const & scale, ContentFlags_t const testContents,
+bool VRMenuSurface::intersectRay( V3Vectf const & start, V3Vectf const & dir, VPosf const & pose,
+                                  V3Vectf const & scale, ContentFlags_t const testContents,
 								  OvrCollisionResult & result ) const
 {
     return m_tris.intersectRay( start, dir, pose, scale, testContents, result );
@@ -602,8 +602,8 @@ bool VRMenuSurface::intersectRay( Vector3f const & start, Vector3f const & dir, 
 
 //==============================
 // VRMenuSurface::IntersectRay
-bool VRMenuSurface::intersectRay( Vector3f const & localStart, Vector3f const & localDir, 
-                                  Vector3f const & scale, ContentFlags_t const testContents,
+bool VRMenuSurface::intersectRay( V3Vectf const & localStart, V3Vectf const & localDir,
+                                  V3Vectf const & scale, ContentFlags_t const testContents,
 								  OvrCollisionResult & result ) const
 {
     return m_tris.intersectRay( localStart, localDir, scale, testContents, result );
@@ -624,8 +624,8 @@ void VRMenuSurface::loadTexture( int const textureIndex, eSurfaceTextureType con
 
 //==============================
 // VRMenuSurface::GetAnchorOffsets
-Vector2f VRMenuSurface::anchorOffsets() const { 
-	return Vector2f( ( ( 1.0f - m_anchors.x ) - 0.5f ) * m_dims.x * VRMenuObject::DEFAULT_TEXEL_SCALE, // inverted so that 0.0 is left-aligned
+V2Vectf VRMenuSurface::anchorOffsets() const {
+    return V2Vectf( ( ( 1.0f - m_anchors.x ) - 0.5f ) * m_dims.x * VRMenuObject::DEFAULT_TEXEL_SCALE, // inverted so that 0.0 is left-aligned
 					 ( m_anchors.y - 0.5f ) * m_dims.y * VRMenuObject::DEFAULT_TEXEL_SCALE ); 
 }
 
@@ -647,7 +647,7 @@ VRMenuObjectLocal::VRMenuObjectLocal( VRMenuObjectParms const & parms,
 	m_flags( parms.Flags ),
 	m_localPose( parms.LocalPose ),
 	m_localScale( parms.LocalScale ),
-    m_hilightPose( Quatf(), Vector3f( 0.0f, 0.0f, 0.0f ) ),
+    m_hilightPose( VQuatf(), V3Vectf( 0.0f, 0.0f, 0.0f ) ),
     m_hilightScale( 1.0f ),
     m_textLocalPose( parms.TextLocalPose ),
     m_textLocalScale( parms.TextLocalScale ),
@@ -702,7 +702,7 @@ void VRMenuObjectLocal::init( VRMenuObjectParms const & parms )
 	}
 
 	// bounds are nothing submitted for rendering
-	m_cullBounds = Bounds3f( 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f );
+    m_cullBounds = VBoxf( 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f );
 	m_fontParms = parms.FontParms;
     for ( int i = 0; i < parms.Components.length(); ++i )
     {
@@ -796,7 +796,7 @@ void VRMenuObjectLocal::freeChild( OvrVRMenuMgr & menuMgr, menuHandle_t const ha
 
 //==============================
 // VRMenuObjectLocal::Frame
-void VRMenuObjectLocal::frame( OvrVRMenuMgr & menuMgr, Matrix4f const & viewMatrix )
+void VRMenuObjectLocal::frame( OvrVRMenuMgr & menuMgr, VR4Matrixf const & viewMatrix )
 {
 	for ( int i = 0; i < m_children.length(); ++i )
 	{
@@ -812,15 +812,15 @@ void VRMenuObjectLocal::frame( OvrVRMenuMgr & menuMgr, Matrix4f const & viewMatr
 // IntersectRayBounds
 // Reports true if the hit was at or beyond start in the ray direction, 
 // or if the start point was inside of the bounds.
-bool VRMenuObjectLocal::intersectRayBounds( Vector3f const & start, Vector3f const & dir, 
-        Vector3f const & mins, Vector3f const & maxs, ContentFlags_t const testContents, float & t0, float & t1 ) const
+bool VRMenuObjectLocal::intersectRayBounds( V3Vectf const & start, V3Vectf const & dir,
+        V3Vectf const & mins, V3Vectf const & maxs, ContentFlags_t const testContents, float & t0, float & t1 ) const
 {
 	if ( !( testContents & contents() ) )
 	{
 		return false;
 	}
 
-    if ( Bounds3f( mins, maxs ).Contains( start, 0.1f ) )
+    if ( VBoxf( mins, maxs ).Contains( start, 0.1f ) )
     {
         return true;
     }
@@ -830,7 +830,7 @@ bool VRMenuObjectLocal::intersectRayBounds( Vector3f const & start, Vector3f con
 
 //==============================
 // VRMenuObjectLocal::IntersectRay
-bool VRMenuObjectLocal::intersectRay( Vector3f const & localStart, Vector3f const & localDir, Vector3f const & parentScale, Bounds3f const & bounds,
+bool VRMenuObjectLocal::intersectRay( V3Vectf const & localStart, V3Vectf const & localDir, V3Vectf const & parentScale, VBoxf const & bounds,
         float & bounds_t0, float & bounds_t1, ContentFlags_t const testContents, OvrCollisionResult & result ) const
 {
 	result = OvrCollisionResult();
@@ -851,7 +851,7 @@ bool VRMenuObjectLocal::intersectRay( Vector3f const & localStart, Vector3f cons
 	}
 
     // vertices have not had the scale applied yet
-    Vector3f const scale = localScale() * parentScale;
+    V3Vectf const scale = localScale() * parentScale;
 
 	// test vs. collision primitive
 	if ( m_collisionPrimitive != NULL )
@@ -887,7 +887,7 @@ bool VRMenuObjectLocal::intersectRay( Vector3f const & localStart, Vector3f cons
 //==============================
 // VRMenuObjectLocal::HitTest_r
 bool VRMenuObjectLocal:: hitTest_r( App * app, OvrVRMenuMgr & menuMgr, BitmapFont const & font, 
-		Posef const & parentPose, Vector3f const & parentScale, Vector3f const & rayStart, Vector3f const & rayDir,
+        VPosf const & parentPose, V3Vectf const & parentScale, V3Vectf const & rayStart, V3Vectf const & rayDir,
 		ContentFlags_t const testContents, HitTestResult & result ) const
 {
 	if ( m_flags & VRMENUOBJECT_DONT_RENDER )
@@ -901,13 +901,13 @@ bool VRMenuObjectLocal:: hitTest_r( App * app, OvrVRMenuMgr & menuMgr, BitmapFon
 	}
 
 	// transform ray into local space
-    Vector3f const & localScale = this->localScale();
-	Vector3f scale = parentScale.EntrywiseMultiply( localScale );
-	Posef modelPose;
+    V3Vectf const & localScale = this->localScale();
+    V3Vectf scale = parentScale.EntrywiseMultiply( localScale );
+    VPosf modelPose;
 	modelPose.Position = parentPose.Position + ( parentPose.Orientation * parentScale.EntrywiseMultiply( m_localPose.Position ) );
 	modelPose.Orientation = m_localPose.Orientation * parentPose.Orientation;
-	Vector3f localStart = modelPose.Orientation.Inverted().Rotate( rayStart - modelPose.Position );
-	Vector3f localDir = modelPose.Orientation.Inverted().Rotate( rayDir );
+    V3Vectf localStart = modelPose.Orientation.Inverted().Rotate( rayStart - modelPose.Position );
+    V3Vectf localDir = modelPose.Orientation.Inverted().Rotate( rayDir );
 /*
     DROIDLOG( "Spam", "Hit test vs '%s', start: (%.2f, %.2f, %.2f ) cull bounds( %.2f, %.2f, %.2f ) -> ( %.2f, %.2f, %.2f )", GetText().toCString(),
             localStart.x, localStart.y, localStart.z,
@@ -944,7 +944,7 @@ bool VRMenuObjectLocal:: hitTest_r( App * app, OvrVRMenuMgr & menuMgr, BitmapFon
         if ( m_flags & VRMENUOBJECT_BOUND_ALL )
         {
             // local bounds are the union of surface bounds and text bounds
-            Bounds3f localBounds = getTextLocalBounds( font ) * parentScale;
+            VBoxf localBounds = getTextLocalBounds( font ) * parentScale;
             float t0;
 	        float t1;
 	        bool hit = intersectRayBounds( localStart, localDir, localBounds.GetMins(), localBounds.GetMaxs(), testContents, t0, t1 );
@@ -952,7 +952,7 @@ bool VRMenuObjectLocal:: hitTest_r( App * app, OvrVRMenuMgr & menuMgr, BitmapFon
             {
                 result.HitHandle = m_handle;
                 result.t = t1;
-				result.uv = Vector2f( 0.0f );	// unknown
+                result.uv = V2Vectf( 0.0f );	// unknown
             }
         }
         else
@@ -960,7 +960,7 @@ bool VRMenuObjectLocal:: hitTest_r( App * app, OvrVRMenuMgr & menuMgr, BitmapFon
 	        float selfT0;
 	        float selfT1;
 			OvrCollisionResult cresult;
-	        Bounds3f const & localBounds = getTextLocalBounds( font ) * parentScale;
+            VBoxf const & localBounds = getTextLocalBounds( font ) * parentScale;
             OVR_ASSERT( !localBounds.IsInverted() );
 
 	        bool hit = intersectRay( localStart, localDir, parentScale, localBounds, selfT0, selfT1, testContents, cresult );
@@ -976,13 +976,13 @@ bool VRMenuObjectLocal:: hitTest_r( App * app, OvrVRMenuMgr & menuMgr, BitmapFon
             {
                 float textT0;
                 float textT1;
-                Bounds3f bounds = setTextLocalBounds( font ) * parentScale;
+                VBoxf bounds = setTextLocalBounds( font ) * parentScale;
                 bool textHit = intersectRayBounds( localStart, localDir, bounds.GetMins(), bounds.GetMaxs(), testContents, textT0, textT1 );
                 if ( textHit && textT1 < result.t )
                 {
                     result.HitHandle = m_handle;
                     result.t = textT1;
-					result.uv = Vector2f( 0.0f );	// unknown
+                    result.uv = V2Vectf( 0.0f );	// unknown
                 }
             }
         }
@@ -1007,67 +1007,67 @@ bool VRMenuObjectLocal:: hitTest_r( App * app, OvrVRMenuMgr & menuMgr, BitmapFon
 
 //==============================
 // VRMenuObjectLocal::HitTest
-menuHandle_t VRMenuObjectLocal::hitTest( App * app, OvrVRMenuMgr & menuMgr, BitmapFont const & font, Posef const & worldPose, 
-        Vector3f const & rayStart, Vector3f const & rayDir, ContentFlags_t const testContents, HitTestResult & result ) const
+menuHandle_t VRMenuObjectLocal::hitTest( App * app, OvrVRMenuMgr & menuMgr, BitmapFont const & font, VPosf const & worldPose,
+        V3Vectf const & rayStart, V3Vectf const & rayDir, ContentFlags_t const testContents, HitTestResult & result ) const
 {
-	 hitTest_r( app, menuMgr, font, worldPose, Vector3f( 1.0f ), rayStart, rayDir, testContents, result );
+     hitTest_r( app, menuMgr, font, worldPose, V3Vectf( 1.0f ), rayStart, rayDir, testContents, result );
 
 	return result.HitHandle;
 }
 
 //==============================
 // VRMenuObjectLocal::RenderSurface
-void VRMenuObjectLocal::renderSurface( OvrVRMenuMgr const & menuMgr, Matrix4f const & mvp, SubmittedMenuObject const & sub ) const
+void VRMenuObjectLocal::renderSurface( OvrVRMenuMgr const & menuMgr, VR4Matrixf const & mvp, SubmittedMenuObject const & sub ) const
 {
     m_surfaces[sub.surfaceIndex].render( menuMgr, mvp, sub );
 }
 
 //==============================
 // VRMenuObjectLocal::GetLocalBounds
-Bounds3f VRMenuObjectLocal::getTextLocalBounds( BitmapFont const & font ) const
+VBoxf VRMenuObjectLocal::getTextLocalBounds( BitmapFont const & font ) const
 {
-	Bounds3f bounds;
+    VBoxf bounds;
 	bounds.Clear();
-    Vector3f const localScale = this->localScale();
+    V3Vectf const localScale = this->localScale();
 	for ( int i = 0; i < m_surfaces.length(); i++ )
 	{
-        Bounds3f const & surfaceBounds = m_surfaces[i].localBounds() * localScale;
-		bounds = Bounds3f::Union( bounds, surfaceBounds );
+        VBoxf const & surfaceBounds = m_surfaces[i].localBounds() * localScale;
+        bounds = VBoxf::Union( bounds, surfaceBounds );
 	}
 
 	if ( m_collisionPrimitive != NULL )
 	{
-		bounds = Bounds3f::Union( bounds, m_collisionPrimitive->bounds() );
+        bounds = VBoxf::Union( bounds, m_collisionPrimitive->bounds() );
 	}
 
     // transform surface bounds by whatever the hilight pose is
     if ( !bounds.IsInverted() )
     {
-        bounds = Bounds3f::Transform( m_hilightPose, bounds );
+        bounds = VBoxf::Transform( m_hilightPose, bounds );
     }
 
 	// also union the text bounds, as long as we're not a container (containers don't render anything)
 	if ( !m_text.isEmpty() > 0 && type() != VRMENU_CONTAINER )
 	{
-		bounds = Bounds3f::Union( bounds, setTextLocalBounds( font ) );
+        bounds = VBoxf::Union( bounds, setTextLocalBounds( font ) );
 	}
 
     // if no valid surface bounds, then the local bounds is the local translation
     if ( bounds.IsInverted() )
     {
         bounds.AddPoint( m_localPose.Position );
-        bounds = Bounds3f::Transform( m_hilightPose, bounds );
+        bounds = VBoxf::Transform( m_hilightPose, bounds );
     }
 
 	// after everything is calculated, expand (or contract) the bounds some custom amount
-	bounds = Bounds3f::Expand( bounds, m_minsBoundsExpand, m_maxsBoundsExpand );
+    bounds = VBoxf::Expand( bounds, m_minsBoundsExpand, m_maxsBoundsExpand );
     
     return bounds;
 }
 
 //==============================
 // VRMenuObjectLocal::GetTextLocalBounds
-Bounds3f VRMenuObjectLocal::setTextLocalBounds( BitmapFont const & font ) const
+VBoxf VRMenuObjectLocal::setTextLocalBounds( BitmapFont const & font ) const
 {
     if ( m_textDirty )
     {
@@ -1092,18 +1092,18 @@ Bounds3f VRMenuObjectLocal::setTextLocalBounds( BitmapFont const & font ) const
 
 	// NOTE: despite being 3 scalars, text scaling only uses the x component since
 	// DrawText3D doesn't take separate x and y scales right now.
-    Vector3f const localScale = this->localScale();
-    Vector3f const textLocalScale = this->textLocalScale();
+    V3Vectf const localScale = this->localScale();
+    V3Vectf const textLocalScale = this->textLocalScale();
 	float const scale = localScale.x * textLocalScale.x * m_fontParms.Scale;
 	// this seems overly complex because font characters are rendered so that their origin
 	// is on their baseline and not on one of the corners of the glyph. Because of this
 	// we must treat the initial ascent (amount the font goes above the first baseline) and
 	// final descent (amount the font goes below the final baseline) independently from the
 	// lines in between when centering.
-	Bounds3f textBounds( Vector3f( 0.0f, ( m_textMetrics.h - m_textMetrics.ascent ) * -1.0f, 0.0f ) * scale,
-						 Vector3f( m_textMetrics.w, m_textMetrics.ascent, 0.0f ) * scale );
+    VBoxf textBounds( V3Vectf( 0.0f, ( m_textMetrics.h - m_textMetrics.ascent ) * -1.0f, 0.0f ) * scale,
+                         V3Vectf( m_textMetrics.w, m_textMetrics.ascent, 0.0f ) * scale );
 
-	Vector3f trans = Vector3f::ZERO;
+    V3Vectf trans = V3Vectf::ZERO;
 	switch( m_fontParms.AlignVert )
 	{
 		case VERTICAL_BASELINE :
@@ -1149,9 +1149,9 @@ Bounds3f VRMenuObjectLocal::setTextLocalBounds( BitmapFont const & font ) const
 
 	textBounds.Translate( trans * scale );
 
-	Bounds3f textLocalBounds = Bounds3f::Transform( textLocalPose(), textBounds );
+    VBoxf textLocalBounds = VBoxf::Transform( textLocalPose(), textBounds );
 	// transform by hilightpose here since surfaces are transformed by it before unioning the bounds
-	textLocalBounds = Bounds3f::Transform( m_hilightPose, textLocalBounds );
+    textLocalBounds = VBoxf::Transform( m_hilightPose, textLocalBounds );
 
 	return textLocalBounds;
 }
@@ -1251,28 +1251,28 @@ VRMenuComponent * VRMenuObjectLocal::getComponentByName_Impl( const char * typeN
 
 //==============================
 // VRMenuObjectLocal::GetColorTableOffset
-Vector2f const &	VRMenuObjectLocal::colorTableOffset() const
+V2Vectf const &	VRMenuObjectLocal::colorTableOffset() const
 {
 	return m_colorTableOffset;
 }
 
 //==============================
 // VRMenuObjectLocal::SetColorTableOffset
-void VRMenuObjectLocal::setColorTableOffset( Vector2f const & ofs )
+void VRMenuObjectLocal::setColorTableOffset( V2Vectf const & ofs )
 {
 	m_colorTableOffset = ofs;
 }
 
 //==============================
 // VRMenuObjectLocal::GetColor
-Vector4f const & VRMenuObjectLocal::color() const
+V4Vectf const & VRMenuObjectLocal::color() const
 {
 	return m_color;
 }
 
 //==============================
 // VRMenuObjectLocal::SetColor
-void VRMenuObjectLocal::setColor( Vector4f const & c )
+void VRMenuObjectLocal::setColor( V4Vectf const & c )
 {
 	m_color = c;
 }
@@ -1318,16 +1318,16 @@ menuHandle_t VRMenuObjectLocal::childHandleForId( OvrVRMenuMgr & menuMgr, VRMenu
 
 //==============================
 // VRMenuObjectLocal::GetLocalScale
-Vector3f VRMenuObjectLocal::localScale() const 
+V3Vectf VRMenuObjectLocal::localScale() const
 { 
-    return Vector3f( m_localScale.x * m_hilightScale, m_localScale.y * m_hilightScale, m_localScale.z * m_hilightScale ); 
+    return V3Vectf( m_localScale.x * m_hilightScale, m_localScale.y * m_hilightScale, m_localScale.z * m_hilightScale );
 }
 
 //==============================
 // VRMenuObjectLocal::GetTextLocalScale
-Vector3f VRMenuObjectLocal::textLocalScale() const 
+V3Vectf VRMenuObjectLocal::textLocalScale() const
 {
-    return Vector3f( m_textLocalScale.x * m_hilightScale, m_textLocalScale.y * m_hilightScale, m_textLocalScale.z * m_hilightScale ); 
+    return V3Vectf( m_textLocalScale.x * m_hilightScale, m_textLocalScale.y * m_hilightScale, m_textLocalScale.z * m_hilightScale );
 }
 
 //==============================
@@ -1378,12 +1378,12 @@ void VRMenuObjectLocal::regenerateSurfaceGeometry( int const surfaceIndex, const
 
 //==============================
 // VRMenuObjectLocal::GetSurfaceDims
-Vector2f const & VRMenuObjectLocal::getSurfaceDims( int const surfaceIndex ) const
+V2Vectf const & VRMenuObjectLocal::getSurfaceDims( int const surfaceIndex ) const
 {
 	if ( surfaceIndex < 0 || surfaceIndex >= m_surfaces.length() )
 	{
 		DROID_ASSERT( surfaceIndex >= 0 && surfaceIndex < m_surfaces.length(), "VrMenu" );
-		return Vector2f::ZERO;
+        return V2Vectf::ZERO;
 	}
 
     return m_surfaces[ surfaceIndex ].dims();
@@ -1391,7 +1391,7 @@ Vector2f const & VRMenuObjectLocal::getSurfaceDims( int const surfaceIndex ) con
 
 //==============================
 // VRMenuObjectLocal::SetSurfaceDims
-void VRMenuObjectLocal::setSurfaceDims( int const surfaceIndex, Vector2f const &dims )
+void VRMenuObjectLocal::setSurfaceDims( int const surfaceIndex, V2Vectf const &dims )
 {
 	if ( surfaceIndex < 0 || surfaceIndex >= m_surfaces.length() )
 	{
@@ -1404,12 +1404,12 @@ void VRMenuObjectLocal::setSurfaceDims( int const surfaceIndex, Vector2f const &
 
 //==============================
 // VRMenuObjectLocal::GetSurfaceBorder
-Vector4f const & VRMenuObjectLocal::getSurfaceBorder( int const surfaceIndex )
+V4Vectf const & VRMenuObjectLocal::getSurfaceBorder( int const surfaceIndex )
 {
 	if ( surfaceIndex < 0 || surfaceIndex >= m_surfaces.length() )
 	{
 		DROID_ASSERT( surfaceIndex >= 0 && surfaceIndex < m_surfaces.length(), "VrMenu" );
-		return Vector4f::ZERO;
+        return V4Vectf::ZERO;
 	}
 
     return m_surfaces[ surfaceIndex ].border();
@@ -1417,7 +1417,7 @@ Vector4f const & VRMenuObjectLocal::getSurfaceBorder( int const surfaceIndex )
 
 //==============================
 // VRMenuObjectLocal::SetSurfaceBorder
-void VRMenuObjectLocal::setSurfaceBorder( int const surfaceIndex, Vector4f const & border )
+void VRMenuObjectLocal::setSurfaceBorder( int const surfaceIndex, V4Vectf const & border )
 {
 	if ( surfaceIndex < 0 || surfaceIndex >= m_surfaces.length() )
 	{
@@ -1431,7 +1431,7 @@ void VRMenuObjectLocal::setSurfaceBorder( int const surfaceIndex, Vector4f const
 
 //==============================
 // VRMenuObjectLocal::SetLocalBoundsExpand
-void VRMenuObjectLocal::setLocalBoundsExpand( Vector3f const mins, Vector3f const & maxs )
+void VRMenuObjectLocal::setLocalBoundsExpand( V3Vectf const mins, V3Vectf const & maxs )
 {
 	m_minsBoundsExpand = mins;
 	m_maxsBoundsExpand = maxs;
@@ -1483,7 +1483,7 @@ int VRMenuObjectLocal::findSurfaceWithTextureType( eSurfaceTextureType const typ
 
 //==============================
 // VRMenuObjectLocal::SetSurfaceColor
-void VRMenuObjectLocal::setSurfaceColor( int const surfaceIndex, Vector4f const & color )
+void VRMenuObjectLocal::setSurfaceColor( int const surfaceIndex, V4Vectf const & color )
 {
 	VRMenuSurface & surf = m_surfaces[surfaceIndex];
 	surf.setColor( color );
@@ -1491,7 +1491,7 @@ void VRMenuObjectLocal::setSurfaceColor( int const surfaceIndex, Vector4f const 
 
 //==============================
 // VRMenuObjectLocal::GetSurfaceColor
-Vector4f const & VRMenuObjectLocal::getSurfaceColor( int const surfaceIndex ) const
+V4Vectf const & VRMenuObjectLocal::getSurfaceColor( int const surfaceIndex ) const
 {
 	VRMenuSurface const & surf = m_surfaces[surfaceIndex];
 	return surf.color();

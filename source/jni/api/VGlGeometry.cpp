@@ -745,7 +745,7 @@ VGlGeometry VGlGeometryFactory::CreateQuad()
 // There is a hazard here, because the area up to the next vertex
 // past this will be drawn, so the density of tesselation effects
 // the area that the cursor will show in.
-static bool VectorHitsCursor( const Vector2f & v )
+static bool VectorHitsCursor( const V2Vectf & v )
 {
     if ( fabs( v.y ) > 0.017f ) // +/- 1 degree vertically
     {
@@ -799,7 +799,7 @@ VGlGeometry VGlGeometryFactory::LoadMeshFromMemory( const MemBuffer & buf,
             for ( int x = 0; x < totalX; x++ )
             {
                 const int vertIndex = (y*totalX+x );
-                Vector2f	v;
+                V2Vectf	v;
                 for ( int i = 0 ; i < 2; i++ )
                 {
                     v[i] = fovScale * bufferVerts[vertIndex*6+i];

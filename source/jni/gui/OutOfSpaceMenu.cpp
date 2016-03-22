@@ -51,8 +51,8 @@ namespace NervGear {
 					"", SURFACE_TEXTURE_MAX );
 			VRMenuObjectParms iconParms(
 					VRMENU_STATIC, VArray< VRMenuComponent* >(), iconSurfParms, "",
-					Posef( Quatf(), Vector3f( 0.0f, CENTER_TO_ICON_Y_OFFSET, 0.0f ) ),
-					Vector3f( 1.0f ), fontParms, VRMenuId_t( ++menuId ),
+                    VPosf( VQuatf(), V3Vectf( 0.0f, CENTER_TO_ICON_Y_OFFSET, 0.0f ) ),
+                    V3Vectf( 1.0f ), fontParms, VRMenuId_t( ++menuId ),
 					VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_ALL ),
 					VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 			parms.append( &iconParms );
@@ -81,8 +81,8 @@ namespace NervGear {
 				VArray< VRMenuComponent* >(),
 				VRMenuSurfaceParms(),
                 outOfSpaceMsg.toCString(),
-				Posef( Quatf(), Vector3f( 0.0f, CENTER_TO_TEXT_Y_OFFSET, 0.0f ) ),
-				Vector3f( 1.0f ),
+                VPosf( VQuatf(), V3Vectf( 0.0f, CENTER_TO_TEXT_Y_OFFSET, 0.0f ) ),
+                V3Vectf( 1.0f ),
 				fontParms,
 				VRMenuId_t( ++menuId ),
 				VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_TEXT ),
@@ -92,6 +92,6 @@ namespace NervGear {
 			parms.clear();
 		}
 
-		this->setMenuPose( Posef( Quatf(), Vector3f( 0.0f, 0.0f, -3.0f ) ) );
+        this->setMenuPose( VPosf( VQuatf(), V3Vectf( 0.0f, 0.0f, -3.0f ) ) );
 	}
 }

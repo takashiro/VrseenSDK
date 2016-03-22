@@ -18,9 +18,9 @@ namespace NervGear {
 
 char const * OvrProgressBarComponent::TYPE_NAME = "OvrProgressBarComponent";
 
-static const Vector3f FWD( 0.0f, 0.0f, -1.0f );
-static const Vector3f RIGHT( 1.0f, 0.0f, 0.0f );
-static const Vector3f DOWN( 0.0f, -1.0f, 0.0f );
+static const V3Vectf FWD( 0.0f, 0.0f, -1.0f );
+static const V3Vectf RIGHT( 1.0f, 0.0f, 0.0f );
+static const V3Vectf DOWN( 0.0f, -1.0f, 0.0f );
 
 static const float BASE_THUMB_WIDTH 		= 4.0f;
 static const float THUMB_FROM_BASE_OFFSET 	= 0.001f;
@@ -70,13 +70,13 @@ void OvrProgressBarComponent::setProgressFrac( OvrVRMenuMgr & menuMgr, VRMenuObj
 	VRMenuObject * thumb = menuMgr.toObject( self->childHandleForId( menuMgr, m_progressBarThumbId ) );
 	if ( thumb != NULL )
 	{
-		thumb->setSurfaceDims( 0, Vector2f( m_progressBarCurrentThumbLength, m_progressBarThumbHeight ) );
+        thumb->setSurfaceDims( 0, V2Vectf( m_progressBarCurrentThumbLength, m_progressBarThumbHeight ) );
 		thumb->regenerateSurfaceGeometry( 0, false );
 		thumb->setLocalPosition( ( -RIGHT * thumbPos ) - ( FWD * THUMB_FROM_BASE_OFFSET ) );
 	}
 }
 
-void OvrProgressBarComponent::oneTimeInit( OvrVRMenuMgr & menuMgr, VRMenuObject * self, const Vector4f & color )
+void OvrProgressBarComponent::oneTimeInit( OvrVRMenuMgr & menuMgr, VRMenuObject * self, const V4Vectf & color )
 {
 	// Set alpha on the base - move this to somewhere more explicit if needed
 	VRMenuObject * base = menuMgr.toObject( self->childHandleForId( menuMgr, m_progressBarBaseId ) );
@@ -85,7 +85,7 @@ void OvrProgressBarComponent::oneTimeInit( OvrVRMenuMgr & menuMgr, VRMenuObject 
 		base->setSurfaceColor( 0, color );
 
 		// Resize the base
-		base->setSurfaceDims( 0, Vector2f( m_progressBarBaseWidth, m_progressBarBaseHeight ) );
+        base->setSurfaceDims( 0, V2Vectf( m_progressBarBaseWidth, m_progressBarBaseHeight ) );
 		base->regenerateSurfaceGeometry( 0, false );
 	}
 
@@ -96,7 +96,7 @@ void OvrProgressBarComponent::oneTimeInit( OvrVRMenuMgr & menuMgr, VRMenuObject 
 void OvrProgressBarComponent::getProgressBarParms( VRMenu & menu, const int width, const int height,
 		const VRMenuId_t parentId, const VRMenuId_t rootId, const VRMenuId_t xformId, const VRMenuId_t baseId,
 		const VRMenuId_t thumbId, const VRMenuId_t animId,
-		const Posef & rootLocalPose, const Posef & xformPose,
+        const VPosf & rootLocalPose, const VPosf & xformPose,
 		const char * baseImage, const char * barImage, const char * animImage,
 		VArray< const VRMenuObjectParms* > & outParms )
 {
@@ -114,10 +114,10 @@ void OvrProgressBarComponent::getProgressBarParms( VRMenu & menu, const int widt
 		comps.append( ProgressComponent );
 		VArray< VRMenuSurfaceParms > surfParms;
 		char const * text = "ProgressBarRoot";
-		Vector3f scale( 1.0f );
-		Posef pose( rootLocalPose );
-		Posef textPose( Quatf(), Vector3f( 0.0f ) );
-		Vector3f textScale( 1.0f );
+        V3Vectf scale( 1.0f );
+        VPosf pose( rootLocalPose );
+        VPosf textPose( VQuatf(), V3Vectf( 0.0f ) );
+        V3Vectf textScale( 1.0f );
 		VRMenuFontParms fontParms;
 		VRMenuObjectFlags_t objectFlags( VRMENUOBJECT_DONT_HIT_ALL );
 		objectFlags |= VRMENUOBJECT_DONT_RENDER_TEXT;
@@ -134,10 +134,10 @@ void OvrProgressBarComponent::getProgressBarParms( VRMenu & menu, const int widt
 		VArray< VRMenuComponent* > comps;
 		VArray< VRMenuSurfaceParms > surfParms;
 		char const * text = "ProgressBarTransform";
-		Vector3f scale( 1.0f );
-		Posef pose( xformPose );
-		Posef textPose( Quatf(), Vector3f( 0.0f ) );
-		Vector3f textScale( 1.0f );
+        V3Vectf scale( 1.0f );
+        VPosf pose( xformPose );
+        VPosf textPose( VQuatf(), V3Vectf( 0.0f ) );
+        V3Vectf textScale( 1.0f );
 		VRMenuFontParms fontParms;
 		VRMenuObjectFlags_t objectFlags( VRMENUOBJECT_DONT_HIT_ALL );
 		objectFlags |= VRMENUOBJECT_DONT_RENDER_TEXT;
@@ -158,10 +158,10 @@ void OvrProgressBarComponent::getProgressBarParms( VRMenu & menu, const int widt
 				baseImage, SURFACE_TEXTURE_DIFFUSE,
 				NULL, SURFACE_TEXTURE_MAX, NULL, SURFACE_TEXTURE_MAX );
 		surfParms.append( baseParms );
-		Vector3f scale( 1.0f );
-		Posef pose( Quatf(), Vector3f( 0.0f ) );
-		Posef textPose( Quatf(), Vector3f( 0.0f ) );
-		Vector3f textScale( 1.0f );
+        V3Vectf scale( 1.0f );
+        VPosf pose( VQuatf(), V3Vectf( 0.0f ) );
+        VPosf textPose( VQuatf(), V3Vectf( 0.0f ) );
+        V3Vectf textScale( 1.0f );
 		VRMenuFontParms fontParms;
 		VRMenuObjectFlags_t objectFlags( VRMENUOBJECT_DONT_HIT_ALL );
 		objectFlags |= VRMENUOBJECT_DONT_RENDER_TEXT;
@@ -183,11 +183,11 @@ void OvrProgressBarComponent::getProgressBarParms( VRMenu & menu, const int widt
 				NULL, SURFACE_TEXTURE_MAX, NULL, SURFACE_TEXTURE_MAX  );
 		//thumbParms.Border = thumbBorder;
 		surfParms.append( thumbParms );
-		Vector3f scale( 1.0f );
-		Posef pose( Quatf(), -FWD * THUMB_FROM_BASE_OFFSET );
+        V3Vectf scale( 1.0f );
+        VPosf pose( VQuatf(), -FWD * THUMB_FROM_BASE_OFFSET );
 		// Since we use left aligned anchors on the base and thumb, we offset the root once to center the Progressbar
-		Posef textPose( Quatf(), Vector3f( 0.0f ) );
-		Vector3f textScale( 1.0f );
+        VPosf textPose( VQuatf(), V3Vectf( 0.0f ) );
+        V3Vectf textScale( 1.0f );
 		VRMenuFontParms fontParms;
 		VRMenuObjectFlags_t objectFlags( VRMENUOBJECT_DONT_HIT_ALL );
 		objectFlags |= VRMENUOBJECT_DONT_RENDER_TEXT;
@@ -290,7 +290,7 @@ eMsgStatus OvrProgressBarComponent::onFrameUpdate( App * app, VrFrame const & vr
         const float fadeRate = ( m_fader.fadeState() == Fader::FADE_IN ) ? m_fadeInRate : m_fadeOutRate;
 		m_fader.update( fadeRate, vrFrame.DeltaSeconds );
 		const float CurrentFadeLevel = m_fader.finalAlpha();
-		self->setColor( Vector4f( 1.0f, 1.0f, 1.0f, CurrentFadeLevel ) );
+        self->setColor( V4Vectf( 1.0f, 1.0f, 1.0f, CurrentFadeLevel ) );
 	}
 	else if ( m_fader.fadeAlpha() == 1.0f )
 	{

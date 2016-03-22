@@ -224,7 +224,7 @@ void OvrGazeCursorLocal::BeginFrame()
 
 //==============================
 // OvrGazeCursorLocal::Frame
-void OvrGazeCursorLocal::Frame( Matrix4f const & viewMatrix, float const deltaTime )
+void OvrGazeCursorLocal::Frame( VR4Matrixf const & viewMatrix, float const deltaTime )
 {
 	//LOG( "OvrGazeCursorLocal::Frame" );
 	HiddenFrames -= 1;
@@ -254,7 +254,7 @@ void OvrGazeCursorLocal::Frame( Matrix4f const & viewMatrix, float const deltaTi
 		{
 			TimerEndTime = -1.0;
 			TimerShowTime = -1.0;
-			ColorTableOffset = Vector2f( 0.0f );
+            ColorTableOffset = V2Vectf( 0.0f );
 		}
 		else
 		{
@@ -267,7 +267,7 @@ void OvrGazeCursorLocal::Frame( Matrix4f const & viewMatrix, float const deltaTi
 	}
 	else
 	{
-		ColorTableOffset = Vector2f( 0.0f );
+        ColorTableOffset = V2Vectf( 0.0f );
 	}
 #else
 	// cycling
@@ -284,33 +284,33 @@ void OvrGazeCursorLocal::Frame( Matrix4f const & viewMatrix, float const deltaTi
 	}
 #endif
 
-	const Vector3f viewPos( GetViewMatrixPosition( viewMatrix ) );
-	const Vector3f viewFwd( GetViewMatrixForward( viewMatrix ) );
+    const V3Vectf viewPos( GetViewMatrixPosition( viewMatrix ) );
+    const V3Vectf viewFwd( GetViewMatrixForward( viewMatrix ) );
 
-//	Vector3f position = viewPos + viewFwd * ( Info.Distance - DistanceOffset );
-	Vector3f position = viewPos + viewFwd * 1.4f; // !@# JDC fixed distance
+//	V3Vectf position = viewPos + viewFwd * ( Info.Distance - DistanceOffset );
+    V3Vectf position = viewPos + viewFwd * 1.4f; // !@# JDC fixed distance
 	CursorScale = 0.0125f;
 
-	Matrix4f viewRot = viewMatrix;
-	viewRot.SetTranslation( Vector3f( 0.0f ) );
+    VR4Matrixf viewRot = viewMatrix;
+    viewRot.SetTranslation( V3Vectf( 0.0f ) );
 
 	// Add one ghost for every four milliseconds.
 	// Assume we are going to be at even multiples of vsync, so we don't need to bother
 	// keeping an accurate roundoff count.
 	const int lerps = deltaTime / 0.004;
 
-	const Matrix4f & prev = CursorTransform[ CurrentTransform % TRAIL_GHOSTS ];
-	Matrix4f & now = CursorTransform[ ( CurrentTransform + lerps ) % TRAIL_GHOSTS ];
+    const VR4Matrixf & prev = CursorTransform[ CurrentTransform % TRAIL_GHOSTS ];
+    VR4Matrixf & now = CursorTransform[ ( CurrentTransform + lerps ) % TRAIL_GHOSTS ];
 
-	now = Matrix4f::Translation( position ) * viewRot.Inverted() * Matrix4f::RotationZ( CursorRotation )
-		* Matrix4f::Scaling( CursorScale, CursorScale, 1.0f );
+    now = VR4Matrixf::Translation( position ) * viewRot.Inverted() * VR4Matrixf::RotationZ( CursorRotation )
+        * VR4Matrixf::Scaling( CursorScale, CursorScale, 1.0f );
 
 	if ( CurrentTransform > 0 )
 	{
 		for ( int i = 1 ; i <= lerps ; i++ )
 		{
 			const float f = (float)i / lerps;
-			Matrix4f & tween = CursorTransform[ ( CurrentTransform + i) % TRAIL_GHOSTS ];
+            VR4Matrixf & tween = CursorTransform[ ( CurrentTransform + i) % TRAIL_GHOSTS ];
 
 			// We only need to build a scatter on the final point that is already set by now
 			if ( i != lerps )
@@ -319,7 +319,7 @@ void OvrGazeCursorLocal::Frame( Matrix4f const & viewMatrix, float const deltaTi
 			}
 
 			// When the cursor depth fails, draw a scattered set of ghosts
-			Matrix4f & scatter = CursorScatterTransform[ ( CurrentTransform + i) % TRAIL_GHOSTS ];
+            VR4Matrixf & scatter = CursorScatterTransform[ ( CurrentTransform + i) % TRAIL_GHOSTS ];
 
 			// random point in circle
 			float	rx, ry;
@@ -332,7 +332,7 @@ void OvrGazeCursorLocal::Frame( Matrix4f const & viewMatrix, float const deltaTi
 					break;
 				}
 			}
-			scatter = tween * Matrix4f::Translation( rx, ry, 0.0f );
+            scatter = tween * VR4Matrixf::Translation( rx, ry, 0.0f );
 		}
 	}
 	else
@@ -342,19 +342,19 @@ void OvrGazeCursorLocal::Frame( Matrix4f const & viewMatrix, float const deltaTi
 		// causing a brief "duplicate" to be on screen.
 		for ( int i = 1 ; i < lerps ; i++ )
 		{
-			Matrix4f & tween = CursorTransform[ ( CurrentTransform + i) % TRAIL_GHOSTS ];
+            VR4Matrixf & tween = CursorTransform[ ( CurrentTransform + i) % TRAIL_GHOSTS ];
 			tween = now;
 		}
 	}
 	CurrentTransform += lerps;
 
 	position -= viewFwd * 0.025f; // to avoid z-fight with the translucent portion of the crosshair image
-	TimerTransform = Matrix4f::Translation( position ) * viewRot.Inverted() * Matrix4f::RotationZ( CursorRotation ) * Matrix4f::Scaling( CursorScale * 4.0f, CursorScale * 4.0f, 1.0f );
+    TimerTransform = VR4Matrixf::Translation( position ) * viewRot.Inverted() * VR4Matrixf::RotationZ( CursorRotation ) * VR4Matrixf::Scaling( CursorScale * 4.0f, CursorScale * 4.0f, 1.0f );
 }
 
 //==============================
 // OvrGazeCursorLocal::Render
-void OvrGazeCursorLocal::Render( int const eye, Matrix4f const & mvp ) const
+void OvrGazeCursorLocal::Render( int const eye, VR4Matrixf const & mvp ) const
 {
 	GL_CheckErrors( "OvrGazeCursorLocal::Render - pre" );
 
@@ -414,10 +414,10 @@ void OvrGazeCursorLocal::Render( int const eye, Matrix4f const & mvp ) const
 		{
 			continue;
 		}
-		Vector4f cursorColor( 1.0f, 1.0f, 1.0f, 0.5 * ( 1.0 - (float)i / TRAIL_GHOSTS ) );
+        V4Vectf cursorColor( 1.0f, 1.0f, 1.0f, 0.5 * ( 1.0 - (float)i / TRAIL_GHOSTS ) );
 		glUniform4fv( CursorProgram.uniformColor, 1, &cursorColor.x );
-		Matrix4f cursorMVP = mvp * CursorTransform[index];
-		glUniformMatrix4fv( CursorProgram.uniformModelViewProMatrix, 1, GL_FALSE, cursorMVP.Transposed().M[0] );
+        VR4Matrixf cursorMVP = mvp * CursorTransform[index];
+        glUniformMatrix4fv( CursorProgram.uniformModelViewProMatrix, 1, GL_FALSE, cursorMVP.Transposed().M[0] );
 		CursorGeometry.Draw();
 	}
 
@@ -431,10 +431,10 @@ void OvrGazeCursorLocal::Render( int const eye, Matrix4f const & mvp ) const
 		{
 			continue;
 		}
-		Vector4f cursorColor( 1.0f, 0.0f, 0.0f, 0.15 * ( 1.0 - (float)i / TRAIL_GHOSTS ) );
+        V4Vectf cursorColor( 1.0f, 0.0f, 0.0f, 0.15 * ( 1.0 - (float)i / TRAIL_GHOSTS ) );
 		glUniform4fv( CursorProgram.uniformColor, 1, &cursorColor.x );
-		Matrix4f cursorMVP = mvp * CursorScatterTransform[index];
-		glUniformMatrix4fv( CursorProgram.uniformModelViewProMatrix, 1, GL_FALSE, cursorMVP.Transposed().M[0] );
+        VR4Matrixf cursorMVP = mvp * CursorScatterTransform[index];
+        glUniformMatrix4fv( CursorProgram.uniformModelViewProMatrix, 1, GL_FALSE, cursorMVP.Transposed().M[0] );
 		CursorGeometry.Draw();
 	}
 
@@ -459,10 +459,10 @@ void OvrGazeCursorLocal::Render( int const eye, Matrix4f const & mvp ) const
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 
-		Matrix4f timerMVP = mvp * TimerTransform;
-		glUniformMatrix4fv( TimerProgram.uniformModelViewProMatrix, 1, GL_FALSE, timerMVP.Transposed().M[0] );
+        VR4Matrixf timerMVP = mvp * TimerTransform;
+        glUniformMatrix4fv( TimerProgram.uniformModelViewProMatrix, 1, GL_FALSE, timerMVP.Transposed().M[0] );
 
-		Vector4f cursorColor( 0.0f, 0.643f, 1.0f, 1.0f );
+        V4Vectf cursorColor( 0.0f, 0.643f, 1.0f, 1.0f );
 		glUniform4fv( TimerProgram.uniformColor, 1, &cursorColor.x );
 		glUniform2fv( TimerProgram.uniformColorTableOffset, 1, &ColorTableOffset.x );
 

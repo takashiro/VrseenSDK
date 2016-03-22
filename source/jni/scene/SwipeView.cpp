@@ -165,7 +165,7 @@ SwipeView::SwipeView() :
 {
 	for ( int i = 0; i < MAX_TOUCH_HISTORY; i++ )
 	{
-		TouchPos[i] = Vector2f( 0.0f );
+        TouchPos[i] = V2Vectf( 0.0f );
 		TimeHistory[i] = 0.0;
 	}
 }
@@ -261,19 +261,19 @@ static float sqr( float s )
 	return s * s;
 }
 
-static Vector3f MatrixOrigin( const Matrix4f & m )
+static V3Vectf MatrixOrigin( const VR4Matrixf & m )
 {
-	return Vector3f( m.M[0][3], m.M[1][3], m.M[2][3] );
+    return V3Vectf( m.M[0][3], m.M[1][3], m.M[2][3] );
 }
 
-static Vector3f MatrixForward( const Matrix4f & m )
+static V3Vectf MatrixForward( const VR4Matrixf & m )
 {
-	return Vector3f( -m.M[2][0], -m.M[2][1], -m.M[2][2] );
+    return V3Vectf( -m.M[2][0], -m.M[2][1], -m.M[2][2] );
 }
 #if 0 // unused?
-static bool GazeOnPanel( const Vector2f & gazePos, const Vector2f & panelPos, const Vector2f & panelSize )
+static bool GazeOnPanel( const V2Vectf & gazePos, const V2Vectf & panelPos, const V2Vectf & panelSize )
 {
-	const Vector2f gazeDelta = gazePos - panelPos;
+    const V2Vectf gazeDelta = gazePos - panelPos;
 	if ( gazeDelta.x < -panelSize.x * 0.5 )
 		return false;
 	if ( gazeDelta.x > panelSize.x * 0.5 )
@@ -285,9 +285,9 @@ static bool GazeOnPanel( const Vector2f & gazePos, const Vector2f & panelPos, co
 	return true;
 }
 #endif
-static Vector3f	FlatForward( const Matrix4f & view )
+static V3Vectf	FlatForward( const VR4Matrixf & view )
 {
-	Vector3f v = MatrixForward( view );
+    V3Vectf v = MatrixForward( view );
 	v.y = 0.0f;
 	return v.Normalized();
 }
@@ -372,35 +372,35 @@ float	SwipeView::PanelAngleY( const int panelY ) {
 	return -( panelY  - ( LayoutRows - 1 ) * 0.5f - RowOffset ) * SlotSize.y;
 }
 
-static Matrix4f MatrixForPanel( const Vector3f StartViewOrigin, const float yawOffset, const float pitchOffset,
+static VR4Matrixf MatrixForPanel( const V3Vectf StartViewOrigin, const float yawOffset, const float pitchOffset,
 		const float animatedDistance, const float scaleX, const float scaleY )
 {
 #ifdef FLAT_ROWS
-		Matrix4f rotMat = Matrix4f::Translation( StartViewOrigin
-				+ Vector3f( 0, pitchOffset, 0 )  ) *
-				Matrix4f::RotationY( yawOffset );
-		Matrix4f pMat = rotMat *
-				Matrix4f::Translation( 0, 0, animatedDistance ) *
-				Matrix4f::Scaling( scaleX, scaleY, 1 );
+        VR4Matrixf rotMat = VR4Matrixf::Translation( StartViewOrigin
+                + V3Vectf( 0, pitchOffset, 0 )  ) *
+                VR4Matrixf::RotationY( yawOffset );
+        VR4Matrixf pMat = rotMat *
+                VR4Matrixf::Translation( 0, 0, animatedDistance ) *
+                VR4Matrixf::Scaling( scaleX, scaleY, 1 );
 #else
-		Matrix4f rotMat = Matrix4f::Translation( StartViewOrigin ) *
-				Matrix4f::RotationY( yawOffset ) *
-				Matrix4f::RotationX( pitchOffset );
-		Matrix4f pMat = rotMat *
-				Matrix4f::Translation( 0, 0, animatedDistance ) *
-				Matrix4f::Scaling( scaleX, scaleY, 1 );
+        VR4Matrixf rotMat = VR4Matrixf::Translation( StartViewOrigin ) *
+                VR4Matrixf::RotationY( yawOffset ) *
+                VR4Matrixf::RotationX( pitchOffset );
+        VR4Matrixf pMat = rotMat *
+                VR4Matrixf::Translation( 0, 0, animatedDistance ) *
+                VR4Matrixf::Scaling( scaleX, scaleY, 1 );
 #endif
 		return pMat;
 }
 
 // Returns the intersection in local XY coordinates of the given ray on the Z=0 plane
 // of the matrix, or -1 if the two points don't cross the Z=0 plane.
-static float LineOnMatrix( const Vector3f & p1 , const Vector3f & p2, const Matrix4f & mat,
-		Vector2f & localHit )
+static float LineOnMatrix( const V3Vectf & p1 , const V3Vectf & p2, const VR4Matrixf & mat,
+        V2Vectf & localHit )
 {
-	const Matrix4f	inverted( mat.Inverted() );
-	const Vector3f localp1( inverted.Transform( p1 ) );
-	const Vector3f localp2( inverted.Transform( p2 ) );
+    const VR4Matrixf	inverted( mat.Inverted() );
+    const V3Vectf localp1( inverted.Transform( p1 ) );
+    const V3Vectf localp2( inverted.Transform( p2 ) );
 	if ( ( localp1.z >= 0 ) == ( localp2.z >= 0 ) )
 	{	// both on same side
 		return -1.0f;
@@ -416,7 +416,7 @@ static float LineOnMatrix( const Vector3f & p1 , const Vector3f & p2, const Matr
 
 
 SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & font, BitmapFontSurface & fontSurface,
-        const VrFrame & vrFrame, const Matrix4f & view, const bool allowSwipe )
+        const VrFrame & vrFrame, const VR4Matrixf & view, const bool allowSwipe )
 {
 	SwipeAction	ret = {};
 	ret.ActivatePanelIndex = -1;
@@ -432,7 +432,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 		StartViewOrigin = MatrixOrigin( view.Inverted() );
 		ForwardAtOffset = FlatForward( view );
 
-		const Vector3f viewForward = FlatForward( view );
+        const V3Vectf viewForward = FlatForward( view );
 		ForwardYaw = atan2( -viewForward.x, -viewForward.z );
 	}
 
@@ -444,7 +444,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 
 
 
-	const Vector2f touch( vrFrame.Input.touch[0], vrFrame.Input.touch[1] );
+    const V2Vectf touch( vrFrame.Input.touch[0], vrFrame.Input.touch[1] );
 
 	// If we are in swipe mode and the touch moves away from the down point,
 	// or the gaze moves away from the down point
@@ -467,7 +467,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 	// Adjust forwardYaw after the animation completes
 	if ( State == SVS_OPEN )
 	{
-		const Vector3f viewForward = FlatForward( view );
+        const V3Vectf viewForward = FlatForward( view );
 
 		const float newForwardYaw = atan2( -viewForward.x, -viewForward.z );
 		float moveRadians = newForwardYaw - ForwardYaw;
@@ -656,7 +656,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 
 	// Position on the original layout sphere, before offsets
 	GazePos.x = Offset;
-	const Vector3f viewForward = MatrixForward( view );
+    const V3Vectf viewForward = MatrixForward( view );
 	GazePos.y = -atan2( viewForward.y, sqrt( sqr(viewForward.x) + sqr(viewForward.z) ) );
 
 	// Only change selection state when fully open
@@ -704,8 +704,8 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 	if ( State != SVS_CLOSED )
 	{
 		// Setup for tracing against panels
-		const Vector3f rayTraceP1 = MatrixOrigin( view.Inverted() );
-		const Vector3f rayTraceP2 = rayTraceP1 + 10.0f * MatrixForward( view );
+        const V3Vectf rayTraceP1 = MatrixOrigin( view.Inverted() );
+        const V3Vectf rayTraceP2 = rayTraceP1 + 10.0f * MatrixForward( view );
 		float	closestPanelDist = 1.0f;
 		int		updatedSelectedPanel = -1;
 
@@ -761,7 +761,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 			const float scaleX = animatedScale*Radius.x*panel.Size.x*0.5;
 			const float scaleY = animatedScale*Radius.x*panel.Size.y*0.5;
 
-			Matrix4f pMat = MatrixForPanel( StartViewOrigin,
+            VR4Matrixf pMat = MatrixForPanel( StartViewOrigin,
 					animatedAngleOffset + ForwardYaw,
 					animatedAngleOffsetVertical,
 					animatedDistance, scaleX, scaleY );
@@ -771,7 +771,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 			info.PanelIndex = index;
 
 			// check for changing selection
-			Vector2f localHit;
+            V2Vectf localHit;
 			const float dist = LineOnMatrix( rayTraceP1, rayTraceP2, pMat, localHit );
 			if ( dist >= 0.0f && localHit.x > -1.0f && localHit.x < 1.0f
 					&& localHit.y > -1.0f && localHit.y < 1.0f && dist < closestPanelDist )
@@ -784,7 +784,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 			if ( index == SelectedPanel && ( State == SVS_OPEN || State == SVS_CLOSING ) )
 			{
 				const float highlightDistance = animatedDistance - 0.01f;
-				Matrix4f pMat = MatrixForPanel( StartViewOrigin,
+                VR4Matrixf pMat = MatrixForPanel( StartViewOrigin,
 						animatedAngleOffset + ForwardYaw,
 						animatedAngleOffsetVertical,
 						highlightDistance,
@@ -796,11 +796,11 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 
 			// Go ahead and tell the text to draw here before the font surface is Finish()ed. This doesn't actually
 			// render text, but puts it in a buffer to be finished and rendered to both eyes.
-//			Vector3f textPos = pMat.GetZBasis() * ( animatedDistance + 0.08f ) + StartViewOrigin - ( pMat.GetYBasis() * 1.1f );
-			Vector3f textPos = pMat.Transform( Vector3f( 0.0f, -1.2f, 0.0f ) );
-			Vector3f textNormal = pMat.GetZBasis();
+//			V3Vectf textPos = pMat.GetZBasis() * ( animatedDistance + 0.08f ) + StartViewOrigin - ( pMat.GetYBasis() * 1.1f );
+            V3Vectf textPos = pMat.Transform( V3Vectf( 0.0f, -1.2f, 0.0f ) );
+            V3Vectf textNormal = pMat.GetZBasis();
 			textNormal.Normalize();
-			Vector3f textUp = pMat.GetYBasis();
+            V3Vectf textUp = pMat.GetYBasis();
 			textUp.Normalize();
 
 			fontParms_t parms;
@@ -811,7 +811,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 			if ( index == SelectedPanel )
 			{
 				fontSurface.DrawText3D( font, parms, textPos, textNormal, textUp,
-						1.0f, Vector4f( 1.0f, 1.0f, 1.0f, panel.SelectState ), panel.Text );
+                        1.0f, V4Vectf( 1.0f, 1.0f, 1.0f, panel.SelectState ), panel.Text );
 				selectedPanelInfo = info;
 			}
 			else
@@ -848,7 +848,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 	return ret;
 }
 
-void SwipeView::Draw( const Matrix4f & mvp )
+void SwipeView::Draw( const VR4Matrixf & mvp )
 {
 	if ( State == SVS_CLOSED )
 	{	// full closed
@@ -879,21 +879,21 @@ void SwipeView::Draw( const Matrix4f & mvp )
 		PanelRenderInfo const & info = PanelRenderList[index];
 		SwipePanel const & panel = Panels[info.PanelIndex];
 
-		Matrix4f pMat = mvp * info.Mat;
+        VR4Matrixf pMat = mvp * info.Mat;
 
 		// Draw the selection highlight behind the panel
 		if ( info.Selected && ( State == SVS_OPEN || State == SVS_CLOSING ) )
 		{
 			glUseProgram( ProgHighlight.program );
 
-			Matrix4f pMat = mvp * SelectionTransform;
-			glUniformMatrix4fv(ProgHighlight.uniformModelViewProMatrix, 1, GL_FALSE, pMat.Transposed().M[0] );
+            VR4Matrixf pMat = mvp * SelectionTransform;
+            glUniformMatrix4fv(ProgHighlight.uniformModelViewProMatrix, 1, GL_FALSE, pMat.Transposed().M[0] );
 
             float const colorScale = 0.5f;  // for tuning
-			const Vector4f color( 0.11764f *colorScale, 0.34902f * colorScale, 0.61569f * colorScale, 1.0f );
+            const V4Vectf color( 0.11764f *colorScale, 0.34902f * colorScale, 0.61569f * colorScale, 1.0f );
             float const actionScale = 0.5f; // for tuning
-			const Vector4f colorAction( 0.09804f * actionScale, 0.6039f * actionScale, 0.9608f * actionScale, 1.0f );
-			const Vector4f colorTouching( 0.09804f, 0.6039f, 0.9608f, 1.0f );
+            const V4Vectf colorAction( 0.09804f * actionScale, 0.6039f * actionScale, 0.9608f * actionScale, 1.0f );
+            const V4Vectf colorTouching( 0.09804f, 0.6039f, 0.9608f, 1.0f );
 			glUniform4fv(ProgHighlight.uniformColor, 1,
 					State == SVS_CLOSING ? &colorAction.x :
 							( (PreviousButtonState && !HasMoved) ? &colorTouching.x : &color.x ) );
@@ -902,7 +902,7 @@ void SwipeView::Draw( const Matrix4f & mvp )
 			glUseProgram( prog.program );
 		}
 
-		glUniformMatrix4fv(prog.uniformModelViewProMatrix, 1, GL_FALSE, pMat.Transposed().M[0] );
+        glUniformMatrix4fv(prog.uniformModelViewProMatrix, 1, GL_FALSE, pMat.Transposed().M[0] );
 
 		glActiveTexture( GL_TEXTURE0 );
 		glBindTexture( GL_TEXTURE_2D, panel.Texture );

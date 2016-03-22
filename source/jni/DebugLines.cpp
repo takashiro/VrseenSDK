@@ -49,8 +49,8 @@ public:
 	// a single debug line
 	struct DebugLine_t
 	{
-		DebugLine_t( const Vector3f & start, const Vector3f & end, 
-				const Vector4f & startColor, const Vector4f & endColor,
+        DebugLine_t( const V3Vectf & start, const V3Vectf & end,
+                const V4Vectf & startColor, const V4Vectf & endColor,
 				const long long endFrame ) :
 			Start( start ),
 			End( end ),
@@ -60,10 +60,10 @@ public:
 		{
 		}
 
-		Vector3f	Start;
-		Vector3f	End;
-		Vector4f	StartColor;
-		Vector4f	EndColor;
+        V3Vectf	Start;
+        V3Vectf	End;
+        V4Vectf	StartColor;
+        V4Vectf	EndColor;
 		long long	EndFrame;
 	};
 
@@ -100,20 +100,20 @@ public:
 	virtual void		Shutdown();
 
 	virtual void		BeginFrame( const long long frameNum );
-	virtual void		Render( Matrix4f const & mvp ) const;
+    virtual void		Render( VR4Matrixf const & mvp ) const;
 
-	virtual void		AddLine(	const Vector3f & start, const Vector3f & end, 
-								const Vector4f & startColor, const Vector4f & endColor,
+    virtual void		AddLine(	const V3Vectf & start, const V3Vectf & end,
+                                const V4Vectf & startColor, const V4Vectf & endColor,
 								const long long endFrame, const bool depthTest );
-	virtual void		AddPoint(	const Vector3f & pos, const float size, 
-								const Vector4f & color, const long long endFrame, 
+    virtual void		AddPoint(	const V3Vectf & pos, const float size,
+                                const V4Vectf & color, const long long endFrame,
 								const bool depthTest );
 	// Add a debug point without a specified color. The axis lines will use default
 	// colors: X = red, Y = green, Z = blue (same as Maya).
-	virtual void		AddPoint(	const Vector3f & pos, const float size, 
+    virtual void		AddPoint(	const V3Vectf & pos, const float size,
 								const long long endFrame, const bool depthTest );
 
-	virtual void		AddBounds( Posef const & pose, Bounds3f const & bounds, Vector4f const & color );
+    virtual void		AddBounds( VPosf const & pose, VBoxf const & bounds, V4Vectf const & color );
 
 private:
 	mutable VGlGeometry				DepthGeo;
@@ -129,7 +129,7 @@ private:
 
 	void		InitVBO( VGlGeometry & geo, LineVertex_t * vertices, const int maxVerts,
 						 LineIndex_t * indices, const int maxIndices );
-	void		Render( Matrix4f const & mvp, VGlGeometry & geo,
+    void		Render( VR4Matrixf const & mvp, VGlGeometry & geo,
 						NervGear::VArray< DebugLine_t > const & lines,
 						const bool depthTest ) const;
 	void		RemoveExpired( const long long frameNum, NervGear::VArray< DebugLine_t > & lines );
@@ -237,7 +237,7 @@ void OvrDebugLinesLocal::Shutdown()
 
 //==============================
 // OvrDebugLinesLocal::Render
-void OvrDebugLinesLocal::Render( Matrix4f const & mvp ) const
+void OvrDebugLinesLocal::Render( VR4Matrixf const & mvp ) const
 {
 	// LOG( "OvrDebugLinesLocal::Render" );
 
@@ -247,7 +247,7 @@ void OvrDebugLinesLocal::Render( Matrix4f const & mvp ) const
 
 //==============================
 // OvrDebugLinesLocal::Render
-void OvrDebugLinesLocal::Render( Matrix4f const & mvp, VGlGeometry & geo,
+void OvrDebugLinesLocal::Render( VR4Matrixf const & mvp, VGlGeometry & geo,
 		NervGear::VArray< DebugLine_t > const & lines,  const bool depthTest ) const
 {
 	if ( lines.length() == 0 )
@@ -308,7 +308,7 @@ void OvrDebugLinesLocal::Render( Matrix4f const & mvp, VGlGeometry & geo,
 
 	glUseProgram( LineProgram.program );
 
-	glUniformMatrix4fv( LineProgram.uniformModelViewProMatrix, 1, GL_FALSE, mvp.M[0] );
+    glUniformMatrix4fv( LineProgram.uniformModelViewProMatrix, 1, GL_FALSE, mvp.M[0] );
 
 	glDrawElements( GL_LINES, geo.indexCount, GL_UNSIGNED_SHORT, NULL );
 
@@ -321,8 +321,8 @@ void OvrDebugLinesLocal::Render( Matrix4f const & mvp, VGlGeometry & geo,
 
 //==============================
 // OvrDebugLinesLocal::AddLine
-void OvrDebugLinesLocal::AddLine( const Vector3f & start, const Vector3f & end, 
-		const Vector4f & startColor, const Vector4f & endColor,
+void OvrDebugLinesLocal::AddLine( const V3Vectf & start, const V3Vectf & end,
+        const V4Vectf & startColor, const V4Vectf & endColor,
 		const long long endFrame, const bool depthTest )
 {
 	//LOG( "OvrDebugLinesLocal::AddDebugLine" );
@@ -341,13 +341,13 @@ void OvrDebugLinesLocal::AddLine( const Vector3f & start, const Vector3f & end,
 
 //==============================
 // OvrDebugLinesLocal::AddPoint
-void OvrDebugLinesLocal::AddPoint(	const Vector3f & pos, const float size, const Vector4f & color,
+void OvrDebugLinesLocal::AddPoint(	const V3Vectf & pos, const float size, const V4Vectf & color,
 		const long long endFrame, const bool depthTest )
 {
 	float const hs = size * 0.5f;
-	Vector3f const fwd( 0.0f, 0.0f, hs );
-	Vector3f const right( hs, 0.0f, 0.0f );
-	Vector3f const up( 0.0f, hs, 0.0f );
+    V3Vectf const fwd( 0.0f, 0.0f, hs );
+    V3Vectf const right( hs, 0.0f, 0.0f );
+    V3Vectf const up( 0.0f, hs, 0.0f );
 	
 	AddLine( pos - fwd, pos + fwd, color, color, endFrame, depthTest );
 	AddLine( pos - right , pos + right, color, color, endFrame, depthTest );
@@ -356,34 +356,34 @@ void OvrDebugLinesLocal::AddPoint(	const Vector3f & pos, const float size, const
 
 //==============================
 // OvrDebugLinesLocal::AddPoint
-void OvrDebugLinesLocal::AddPoint(	const Vector3f & pos, const float size, 
+void OvrDebugLinesLocal::AddPoint(	const V3Vectf & pos, const float size,
 		const long long endFrame, const bool depthTest )
 {
 	float const hs = size * 0.5f;
-	Vector3f const fwd( 0.0f, 0.0f, hs );
-	Vector3f const right( hs, 0.0f, 0.0f );
-	Vector3f const up( 0.0f, hs, 0.0f );
+    V3Vectf const fwd( 0.0f, 0.0f, hs );
+    V3Vectf const right( hs, 0.0f, 0.0f );
+    V3Vectf const up( 0.0f, hs, 0.0f );
 	
-	AddLine( pos - fwd, pos + fwd, Vector4f( 0.0f, 0.0f, 1.0f, 1.0f ), Vector4f( 0.0f, 0.0f, 1.0f, 1.0f ), endFrame, depthTest );
-	AddLine( pos - right, pos + right, Vector4f( 1.0f, 0.0f, 0.0f, 1.0f ), Vector4f( 1.0f, 0.0f, 0.0f, 1.0f ), endFrame, depthTest );
-	AddLine( pos - up, pos + up, Vector4f( 0.0f, 1.0f, 0.0f, 1.0f ), Vector4f( 0.0f, 1.0f, 0.0f, 1.0f ), endFrame, depthTest );
+    AddLine( pos - fwd, pos + fwd, V4Vectf( 0.0f, 0.0f, 1.0f, 1.0f ), V4Vectf( 0.0f, 0.0f, 1.0f, 1.0f ), endFrame, depthTest );
+    AddLine( pos - right, pos + right, V4Vectf( 1.0f, 0.0f, 0.0f, 1.0f ), V4Vectf( 1.0f, 0.0f, 0.0f, 1.0f ), endFrame, depthTest );
+    AddLine( pos - up, pos + up, V4Vectf( 0.0f, 1.0f, 0.0f, 1.0f ), V4Vectf( 0.0f, 1.0f, 0.0f, 1.0f ), endFrame, depthTest );
 }
 
 //==============================
 // OvrDebugLinesLocal::AddBounds
-void OvrDebugLinesLocal::AddBounds( Posef const & pose, Bounds3f const & bounds, Vector4f const & color )
+void OvrDebugLinesLocal::AddBounds( VPosf const & pose, VBoxf const & bounds, V4Vectf const & color )
 {
-	Vector3f const & mins = bounds.GetMins();
-	Vector3f const & maxs = bounds.GetMaxs();
-	Vector3f corners[8];
+    V3Vectf const & mins = bounds.GetMins();
+    V3Vectf const & maxs = bounds.GetMaxs();
+    V3Vectf corners[8];
 	corners[0] = mins;
 	corners[7] = maxs;
-	corners[1] = Vector3f( mins.x, maxs.y, mins.z );
-	corners[2] = Vector3f( mins.x, maxs.y, maxs.z );
-	corners[3] = Vector3f( mins.x, mins.y, maxs.z );
-	corners[4] = Vector3f( maxs.x, mins.y, mins.z );
-	corners[5] = Vector3f( maxs.x, maxs.y, mins.z );
-	corners[6] = Vector3f( maxs.x, mins.y, maxs.z );
+    corners[1] = V3Vectf( mins.x, maxs.y, mins.z );
+    corners[2] = V3Vectf( mins.x, maxs.y, maxs.z );
+    corners[3] = V3Vectf( mins.x, mins.y, maxs.z );
+    corners[4] = V3Vectf( maxs.x, mins.y, mins.z );
+    corners[5] = V3Vectf( maxs.x, maxs.y, mins.z );
+    corners[6] = V3Vectf( maxs.x, mins.y, maxs.z );
 
 	// transform points
 	for ( int i = 0; i < 8; ++i )

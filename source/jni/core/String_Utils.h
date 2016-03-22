@@ -3,6 +3,7 @@
 #include "vglobal.h"
 
 #include "VMath.h"
+#include "VBasicmath.h"
 #include "VString.h"
 #include "VArray.h"
 
@@ -53,29 +54,29 @@ namespace StringUtils
 	template<> inline size_t StringTo( float &          value, const char * str ) { char * endptr; value = strtof( str, &endptr ); return endptr - str; }
 	template<> inline size_t StringTo( double &         value, const char * str ) { char * endptr; value = strtod( str, &endptr ); return endptr - str; }
 
-	template<> inline size_t StringTo( Vector2f & value, const char * string ) { return StringTo( &value.x, 2, string ); }
-	template<> inline size_t StringTo( Vector2d & value, const char * string ) { return StringTo( &value.x, 2, string ); }
-	template<> inline size_t StringTo( Vector2i & value, const char * string ) { return StringTo( &value.x, 2, string ); }
+    template<> inline size_t StringTo( V2Vectf & value, const char * string ) { return StringTo( &value.x, 2, string ); }
+    template<> inline size_t StringTo( V2Vectd & value, const char * string ) { return StringTo( &value.x, 2, string ); }
+    template<> inline size_t StringTo( V2Vecti & value, const char * string ) { return StringTo( &value.x, 2, string ); }
 
-	template<> inline size_t StringTo( Vector3f & value, const char * string ) { return StringTo( &value.x, 3, string ); }
-	template<> inline size_t StringTo( Vector3d & value, const char * string ) { return StringTo( &value.x, 3, string ); }
-	template<> inline size_t StringTo( Vector3i & value, const char * string ) { return StringTo( &value.x, 3, string ); }
+    template<> inline size_t StringTo( V3Vectf & value, const char * string ) { return StringTo( &value.x, 3, string ); }
+    template<> inline size_t StringTo( V3Vectd & value, const char * string ) { return StringTo( &value.x, 3, string ); }
+    template<> inline size_t StringTo( V3Vecti & value, const char * string ) { return StringTo( &value.x, 3, string ); }
 
-	template<> inline size_t StringTo( Vector4f & value, const char * string ) { return StringTo( &value.x, 4, string ); }
-	template<> inline size_t StringTo( Vector4d & value, const char * string ) { return StringTo( &value.x, 4, string ); }
-	template<> inline size_t StringTo( Vector4i & value, const char * string ) { return StringTo( &value.x, 4, string ); }
+    template<> inline size_t StringTo( V4Vectf & value, const char * string ) { return StringTo( &value.x, 4, string ); }
+    template<> inline size_t StringTo( V4Vectd & value, const char * string ) { return StringTo( &value.x, 4, string ); }
+    template<> inline size_t StringTo( V4Vecti & value, const char * string ) { return StringTo( &value.x, 4, string ); }
 
-	template<> inline size_t StringTo( Matrix4f & value, const char * string ) { return StringTo( &value.M[0][0], 16, string ); }
-	template<> inline size_t StringTo( Matrix4d & value, const char * string ) { return StringTo( &value.M[0][0], 16, string ); }
+    template<> inline size_t StringTo( VR4Matrixf & value, const char * string ) { return StringTo( &value.M[0][0], 16, string ); }
+    template<> inline size_t StringTo( VR4Matrixd & value, const char * string ) { return StringTo( &value.M[0][0], 16, string ); }
 
-	template<> inline size_t StringTo( Quatf &    value, const char * string ) { return StringTo( &value.x, 4, string ); }
-	template<> inline size_t StringTo( Quatd &    value, const char * string ) { return StringTo( &value.x, 4, string ); }
+    template<> inline size_t StringTo( VQuatf &    value, const char * string ) { return StringTo( &value.x, 4, string ); }
+    template<> inline size_t StringTo( VQuatd &    value, const char * string ) { return StringTo( &value.x, 4, string ); }
 
-	template<> inline size_t StringTo( Planef &   value, const char * string ) { return StringTo( &value.N.x, 4, string ); }
-	template<> inline size_t StringTo( Planed &   value, const char * string ) { return StringTo( &value.N.x, 4, string ); }
+    template<> inline size_t StringTo( VPlanef &   value, const char * string ) { return StringTo( &value.N.x, 4, string ); }
+    template<> inline size_t StringTo( VPlaned &   value, const char * string ) { return StringTo( &value.N.x, 4, string ); }
 
-	template<> inline size_t StringTo( Bounds3f & value, const char * string ) { return StringTo( value.b, 2, string ); }
-	template<> inline size_t StringTo( Bounds3d & value, const char * string ) { return StringTo( value.b, 2, string ); }
+    template<> inline size_t StringTo( VBoxf & value, const char * string ) { return StringTo( value.b, 2, string ); }
+    template<> inline size_t StringTo( VBoxd & value, const char * string ) { return StringTo( value.b, 2, string ); }
 
 } // StringUtils
 

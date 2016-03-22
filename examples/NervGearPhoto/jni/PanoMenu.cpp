@@ -33,10 +33,10 @@ const VRMenuId_t OvrPanoMenu::ID_FAVORITES_BUTTON( 1000 + 1012 );
 
 char const * OvrPanoMenu::MENU_NAME = "PanoMenu";
 
-static const Vector3f FWD( 0.0f, 0.0f, 1.0f );
-static const Vector3f RIGHT( 1.0f, 0.0f, 0.0f );
-static const Vector3f UP( 0.0f, 1.0f, 0.0f );
-static const Vector3f DOWN( 0.0f, -1.0f, 0.0f );
+static const V3Vectf FWD( 0.0f, 0.0f, 1.0f );
+static const V3Vectf RIGHT( 1.0f, 0.0f, 0.0f );
+static const V3Vectf UP( 0.0f, 1.0f, 0.0f );
+static const V3Vectf DOWN( 0.0f, -1.0f, 0.0f );
 
 static const int BUTTON_COOL_DOWN_SECONDS = 0.25f;
 
@@ -94,8 +94,8 @@ private:
 
 	eMsgStatus OnFrame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
 	{
-		Vector4f selfColor = self->color( );
-		Vector4f selfTextColor = self->textColor();
+        V4Vectf selfColor = self->color( );
+        V4Vectf selfTextColor = self->textColor();
 
 		VRMenuObjectFlags_t attributionFlags = self->flags();
 
@@ -191,17 +191,17 @@ OvrPanoMenu::OvrPanoMenu( App * app, Oculus360Photos * photos, OvrVRMenuMgr & me
 
 	comps.append( new OvrPanoMenuRootComponent( *this ) );
 
-	Quatf rot( DOWN, 0.0f );
-	Vector3f dir( -FWD );
-	Posef panelPose( rot, dir * m_radius );
-	Vector3f panelScale( 1.0f );
+    VQuatf rot( DOWN, 0.0f );
+    V3Vectf dir( -FWD );
+    VPosf panelPose( rot, dir * m_radius );
+    V3Vectf panelScale( 1.0f );
 
-	//const Posef textPose( Quatf(), Vector3f( 0.0f, 0.0f, 0.0f ) );
+    //const VPosf textPose( VQuatf(), V3Vectf( 0.0f, 0.0f, 0.0f ) );
 
 	const VRMenuFontParms fontParms( true, true, false, false, true, 0.525f, 0.45f, 1.0f );
 
 	VRMenuObjectParms attrParms( VRMENU_STATIC, comps,
-		VRMenuSurfaceParms(), "Attribution Panel", panelPose, panelScale, Posef(), Vector3f( 1.0f ), fontParms, attributionPanelId,
+        VRMenuSurfaceParms(), "Attribution Panel", panelPose, panelScale, VPosf(), V3Vectf( 1.0f ), fontParms, attributionPanelId,
 		VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_TEXT ), VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 
 	parms.append( &attrParms );
@@ -218,9 +218,9 @@ OvrPanoMenu::OvrPanoMenu( App * app, Oculus360Photos * photos, OvrVRMenuMgr & me
 	float const ICON_HEIGHT = 80.0f * VRMenuObject::DEFAULT_TEXEL_SCALE;
 	VArray< VRMenuSurfaceParms > surfParms;
 
-	Posef browserButtonPose( Quatf( ), UP * ICON_HEIGHT * 2.0f );
+    VPosf browserButtonPose( VQuatf( ), UP * ICON_HEIGHT * 2.0f );
 
-	comps.append( new OvrDefaultComponent( Vector3f( 0.0f, 0.0f, 0.05f ), 1.05f, 0.25f, 0.0f, Vector4f( 1.0f ), Vector4f( 1.0f ) ) );
+    comps.append( new OvrDefaultComponent( V3Vectf( 0.0f, 0.0f, 0.05f ), 1.05f, 0.25f, 0.0f, V4Vectf( 1.0f ), V4Vectf( 1.0f ) ) );
 	comps.append( new OvrButton_OnUp( this, ID_BROWSER_BUTTON ) );
 	comps.append( new OvrSurfaceToggleComponent( ) );
 	surfParms.append( VRMenuSurfaceParms ( "browser",
@@ -230,7 +230,7 @@ OvrPanoMenu::OvrPanoMenu( App * app, Oculus360Photos * photos, OvrVRMenuMgr & me
 		"assets/nav_home_on.png", SURFACE_TEXTURE_DIFFUSE,
 		NULL, SURFACE_TEXTURE_MAX, NULL, SURFACE_TEXTURE_MAX ) );
 	VRMenuObjectParms browserButtonParms( VRMENU_BUTTON, comps, surfParms, "",
-		browserButtonPose, Vector3f( 1.0f ), Posef( ), Vector3f( 1.0f ), fontParms,
+        browserButtonPose, V3Vectf( 1.0f ), VPosf( ), V3Vectf( 1.0f ), fontParms,
 		ID_BROWSER_BUTTON, VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_TEXT ),
 		VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 	parms.append( &browserButtonParms );
@@ -246,9 +246,9 @@ OvrPanoMenu::OvrPanoMenu( App * app, Oculus360Photos * photos, OvrVRMenuMgr & me
 	OVR_UNUSED( browserButtonObject );
 
 	//Favorites button
-	Posef favoritesButtonPose( Quatf( ), DOWN * ICON_HEIGHT * 2.0f );
+    VPosf favoritesButtonPose( VQuatf( ), DOWN * ICON_HEIGHT * 2.0f );
 
-	comps.append( new OvrDefaultComponent( Vector3f( 0.0f, 0.0f, 0.05f ), 1.05f, 0.25f, 0.0f, Vector4f( 1.0f ), Vector4f( 1.0f ) ) );
+    comps.append( new OvrDefaultComponent( V3Vectf( 0.0f, 0.0f, 0.05f ), 1.05f, 0.25f, 0.0f, V4Vectf( 1.0f ), V4Vectf( 1.0f ) ) );
 	comps.append( new OvrButton_OnUp( this, ID_FAVORITES_BUTTON ) );
 	comps.append( new OvrSurfaceToggleComponent() );
 
@@ -269,7 +269,7 @@ OvrPanoMenu::OvrPanoMenu( App * app, Oculus360Photos * photos, OvrVRMenuMgr & me
 		NULL, SURFACE_TEXTURE_MAX, NULL, SURFACE_TEXTURE_MAX ) );
 
 	VRMenuObjectParms favoritesButtonParms( VRMENU_BUTTON, comps, surfParms, "",
-		favoritesButtonPose, Vector3f( 1.0f ), Posef( ), Vector3f( 1.0f ), fontParms,
+        favoritesButtonPose, V3Vectf( 1.0f ), VPosf( ), V3Vectf( 1.0f ), fontParms,
 		ID_FAVORITES_BUTTON, VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_TEXT ),
 		VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 	parms.append( &favoritesButtonParms );
@@ -292,11 +292,11 @@ OvrPanoMenu::OvrPanoMenu( App * app, Oculus360Photos * photos, OvrVRMenuMgr & me
 
 	// Right container
 	VRMenuId_t swipeRightId( ID_CENTER_ROOT.Get() + 401 );
-    Quatf rotRight( DOWN, ( VConstantsf::Pi * 2 * factor ) );
-	Vector3f rightDir( -FWD * rotRight );
+    VQuatf rotRight( DOWN, ( VConstantsf::Pi * 2 * factor ) );
+    V3Vectf rightDir( -FWD * rotRight );
 	comps.append( new OvrTrailsAnimComponent( swipeFPS, true, numFrames, numTrails, numTrails ) );
 	VRMenuObjectParms swipeRightRoot( VRMENU_CONTAINER, comps, VRMenuSurfaceParms( ), "",
-		Posef( rotRight, rightDir * m_radius ), Vector3f( 1.0f ), Posef( ), Vector3f( 1.0f ), fontParms, swipeRightId,
+        VPosf( rotRight, rightDir * m_radius ), V3Vectf( 1.0f ), VPosf( ), V3Vectf( 1.0f ), fontParms, swipeRightId,
 		VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_ALL ), VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 	parms.append( &swipeRightRoot );
 	addItems( m_menuMgr, m_font, parms, m_attributionHandle, false );
@@ -309,11 +309,11 @@ OvrPanoMenu::OvrPanoMenu( App * app, Oculus360Photos * photos, OvrVRMenuMgr & me
 
 	// Left container
 	VRMenuId_t swipeLeftId( ID_CENTER_ROOT.Get( ) + 402 );
-    Quatf rotLeft( DOWN, ( VConstantsf::Pi * 2 * -factor ) );
-	Vector3f leftDir( -FWD * rotLeft );
+    VQuatf rotLeft( DOWN, ( VConstantsf::Pi * 2 * -factor ) );
+    V3Vectf leftDir( -FWD * rotLeft );
 	comps.append( new OvrTrailsAnimComponent( swipeFPS, true, numFrames, numTrails, numTrails ) );
 	VRMenuObjectParms swipeLeftRoot( VRMENU_CONTAINER, comps, VRMenuSurfaceParms( ), "",
-		Posef( rotLeft, leftDir * m_radius ), Vector3f( 1.0f ), Posef( ), Vector3f( 1.0f ), fontParms, swipeLeftId,
+        VPosf( rotLeft, leftDir * m_radius ), V3Vectf( 1.0f ), VPosf( ), V3Vectf( 1.0f ), fontParms, swipeLeftId,
 		VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_ALL ), VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 	parms.append( &swipeLeftRoot );
 	addItems( m_menuMgr, m_font, parms, m_attributionHandle, false );
@@ -341,18 +341,18 @@ OvrPanoMenu::OvrPanoMenu( App * app, Oculus360Photos * photos, OvrVRMenuMgr & me
 	for ( int i = 0; i < numChildren; ++i )
 	{
  		//right frame
-		const Vector3f rightPos = ( RIGHT * surfaceWidth * i ) - ( FWD * i * 0.1f );
+        const V3Vectf rightPos = ( RIGHT * surfaceWidth * i ) - ( FWD * i * 0.1f );
 		VRMenuObjectParms swipeRightFrame( VRMENU_STATIC, VArray< VRMenuComponent* >(), rightIndicatorSurfaceParms, "",
-			Posef( Quatf( ), rightPos ), Vector3f( 1.0f ), Posef( ), Vector3f( 1.0f ), fontParms, VRMenuId_t( ),
+            VPosf( VQuatf( ), rightPos ), V3Vectf( 1.0f ), VPosf( ), V3Vectf( 1.0f ), fontParms, VRMenuId_t( ),
 			VRMenuObjectFlags_t(), VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 		parms.append( &swipeRightFrame );
 		addItems( m_menuMgr, m_font, parms, m_swipeRightIndicatorHandle, false );
 		parms.clear();
 
 		// left frame
-		const Vector3f leftPos = ( (-RIGHT) * surfaceWidth * i ) - ( FWD * i * 0.1f );
+        const V3Vectf leftPos = ( (-RIGHT) * surfaceWidth * i ) - ( FWD * i * 0.1f );
 		VRMenuObjectParms swipeLeftFrame( VRMENU_STATIC, VArray< VRMenuComponent* >(), leftIndicatorSurfaceParms, "",
-			Posef( Quatf( ), leftPos ), Vector3f( 1.0f ), Posef( ), Vector3f( 1.0f ), fontParms, VRMenuId_t( ),
+            VPosf( VQuatf( ), leftPos ), V3Vectf( 1.0f ), VPosf( ), V3Vectf( 1.0f ), fontParms, VRMenuId_t( ),
 			VRMenuObjectFlags_t(), VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 		parms.append( &swipeLeftFrame );
 		addItems( m_menuMgr, m_font, parms, m_swipeLeftIndicatorHandle, false );

@@ -59,7 +59,7 @@ public:
     
     // non-target
 	VRMenuEvent( eVRMenuEventType const eventType, eEventDispatchType const dispatchType, 
-            menuHandle_t const & targetHandle, Vector3f const & floatValue, HitTestResult const & hitResult ) :
+            menuHandle_t const & targetHandle, V3Vectf const & floatValue, HitTestResult const & hitResult ) :
         eventType( eventType ),
         dispatchType( dispatchType ),
         targetHandle( targetHandle ),
@@ -71,7 +71,7 @@ public:
     eVRMenuEventType	eventType;
     eEventDispatchType  dispatchType;
     menuHandle_t		targetHandle;  // valid only if targeted to a specific object
-    Vector3f            floatValue;
+    V3Vectf            floatValue;
     HitTestResult		hitResult;
 };
 

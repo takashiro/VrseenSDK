@@ -59,14 +59,14 @@ void OvrApp::Command( const char * msg )
 {
 }
 
-Matrix4f OvrApp::drawEyeView( const int eye, const float fovDegrees )
+VR4Matrixf OvrApp::drawEyeView( const int eye, const float fovDegrees )
 {
-	const Matrix4f view = Scene.DrawEyeView( eye, fovDegrees );
+    const VR4Matrixf view = Scene.DrawEyeView( eye, fovDegrees );
 
 	return view;
 }
 
-Matrix4f OvrApp::onNewFrame(const VrFrame vrFrame)
+VR4Matrixf OvrApp::onNewFrame(const VrFrame vrFrame)
 {
 	// Player movement
     Scene.Frame( vApp->vrViewParms(), vrFrame, vApp->swapParms().ExternalVelocity );

@@ -32,7 +32,7 @@ public:
 	~VRMenuEventHandler();
 
     void			frame( App * app, const VrFrame & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font,
-                            menuHandle_t const & rootHandle, Posef const & menuPose, 
+                            menuHandle_t const & rootHandle, VPosf const & menuPose,
                             gazeCursorUserId_t const & gazeUserId, VArray< VRMenuEvent > & events );
 
     void			handleEvents( App * app, const VrFrame & vrFrame, OvrVRMenuMgr & menuMgr,

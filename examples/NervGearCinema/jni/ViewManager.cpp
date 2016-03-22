@@ -80,7 +80,7 @@ bool ViewManager::onKeyEvent( const int keyCode, const KeyState::eKeyEventType e
 	}
 }
 
-Matrix4f ViewManager::drawEyeView( const int eye, const float fovDegrees )
+VR4Matrixf ViewManager::drawEyeView( const int eye, const float fovDegrees )
 {
 	if ( m_currentView != NULL )
 	{
@@ -90,7 +90,7 @@ Matrix4f ViewManager::drawEyeView( const int eye, const float fovDegrees )
 	return m_lastEyeMatrix[ eye ];
 }
 
-Matrix4f ViewManager::frame( const VrFrame & vrFrame )
+VR4Matrixf ViewManager::frame( const VrFrame & vrFrame )
 {
 	if ( ( m_nextView != NULL ) && ( m_currentView != NULL ) && !m_closedCurrent )
 	{

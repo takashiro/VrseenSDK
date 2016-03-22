@@ -707,9 +707,9 @@ void Oculus360Photos::loadRgbaTexture( const unsigned char * data, int width, in
 	GL_CheckErrors( "leave LoadRgbaTexture" );
 }
 
-Matrix4f CubeMatrixForViewMatrix( const Matrix4f & viewMatrix )
+VR4Matrixf CubeMatrixForViewMatrix( const VR4Matrixf & viewMatrix )
 {
-	Matrix4f m = viewMatrix;
+    VR4Matrixf m = viewMatrix;
 	// clear translation
 	for ( int i = 0; i < 3; i++ )
 	{
@@ -718,12 +718,12 @@ Matrix4f CubeMatrixForViewMatrix( const Matrix4f & viewMatrix )
 	return m.Inverted();
 }
 
-Matrix4f Oculus360Photos::drawEyeView( const int eye, const float fovDegrees )
+VR4Matrixf Oculus360Photos::drawEyeView( const int eye, const float fovDegrees )
 {
 	// Don't draw the scene at all if it is faded out
 	const bool drawScene = true;
 
-	const Matrix4f view = drawScene ?
+    const VR4Matrixf view = drawScene ?
 		m_scene.DrawEyeView( eye, fovDegrees )
 		: m_scene.MvpForEye( eye, fovDegrees );
 
@@ -743,7 +743,7 @@ Matrix4f Oculus360Photos::drawEyeView( const int eye, const float fovDegrees )
 		glClearColor( 0, 0, 0, 0 );
 		glClear( GL_COLOR_BUFFER_BIT );
 
-		const Matrix4f	m( CubeMatrixForViewMatrix( m_scene.CenterViewMatrix() ) );
+        const VR4Matrixf	m( CubeMatrixForViewMatrix( m_scene.CenterViewMatrix() ) );
 		GLuint texId = m_backgroundCubeTexData.GetRenderTexId();
 		glBindTexture( GL_TEXTURE_CUBE_MAP, texId );
 		if ( HasEXT_sRGB_texture_decode )
@@ -798,7 +798,7 @@ Matrix4f Oculus360Photos::drawEyeView( const int eye, const float fovDegrees )
 		glUseProgram( prog.program );
 
 		glUniform4f( prog.uniformColor, fadeColor, fadeColor, fadeColor, fadeColor );
-		glUniformMatrix4fv( prog.uniformModelViewProMatrix, 1, GL_FALSE /* not transposed */,
+        glUniformMatrix4fv( prog.uniformModelViewProMatrix, 1, GL_FALSE /* not transposed */,
 			view.Transposed().M[ 0 ] );
 
 		m_globe.Draw();
@@ -906,7 +906,7 @@ void Oculus360Photos::onPanoActivated( const OvrMetaDatum * panoData )
 	SetMenuState( MENU_PANO_LOADING );
 }
 
-Matrix4f Oculus360Photos::onNewFrame( const VrFrame vrFrame )
+VR4Matrixf Oculus360Photos::onNewFrame( const VrFrame vrFrame )
 {
 	m_frameInput = vrFrame;
 

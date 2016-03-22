@@ -136,7 +136,7 @@ void VrScene::LoadScene( const VString &path )
 void VrScene::ReloadScene()
 {
 	// Reload the scene, presumably to switch texture formats
-	const Vector3f pos = Scene.FootPos;
+    const V3Vectf pos = Scene.FootPos;
 	const float	yaw = Scene.YawOffset;
 
 	MaterialParms materialParms;
@@ -151,7 +151,7 @@ void VrScene::Command( const char * msg )
 {
 }
 
-Matrix4f VrScene::drawEyeView( const int eye, const float fovDegrees )
+VR4Matrixf VrScene::drawEyeView( const int eye, const float fovDegrees )
 {
 	if ( forceScreenClear )
 	{
@@ -159,12 +159,12 @@ Matrix4f VrScene::drawEyeView( const int eye, const float fovDegrees )
 		glClear( GL_COLOR_BUFFER_BIT );
 	}
 
-	const Matrix4f view = Scene.DrawEyeView( eye, fovDegrees );
+    const VR4Matrixf view = Scene.DrawEyeView( eye, fovDegrees );
 
 	return view;
 }
 
-Matrix4f VrScene::onNewFrame( const VrFrame vrFrame )
+VR4Matrixf VrScene::onNewFrame( const VrFrame vrFrame )
 {
 	// Get the current vrParms for the buffer resolution.
 	const EyeParms vrParms = vApp->eyeParms();

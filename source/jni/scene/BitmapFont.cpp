@@ -225,7 +225,7 @@ public:
 				xyz(0.0f), s(0.0f), t(0.0f), rgba(), fontParms() {
 		}
 
-		Vector3f xyz;
+        V3Vectf xyz;
 		float s;
 		float t;
 		UByte rgba[4];
@@ -242,25 +242,25 @@ public:
 
 	// add text to the VBO that will render in a 2D pass.
     void DrawText3D(BitmapFont const & font, const fontParms_t & flags,
-			const Vector3f & pos, Vector3f const & normal, Vector3f const & up,
-            float const scale, Vector4f const & color, const VString &text) override;
+            const V3Vectf & pos, V3Vectf const & normal, V3Vectf const & up,
+            float const scale, V4Vectf const & color, const VString &text) override;
     void DrawText3Df(BitmapFont const & font, const fontParms_t & flags,
-            const Vector3f & pos, Vector3f const & normal, Vector3f const & up,
-            float const scale, Vector4f const & color, const char *text, ...) override;
+            const V3Vectf & pos, V3Vectf const & normal, V3Vectf const & up,
+            float const scale, V4Vectf const & color, const char *text, ...) override;
 
 	virtual void DrawTextBillboarded3D(BitmapFont const & font,
-			fontParms_t const & flags, Vector3f const & pos, float const scale,
-			Vector4f const & color, char const * text);
+            fontParms_t const & flags, V3Vectf const & pos, float const scale,
+            V4Vectf const & color, char const * text);
 	virtual void DrawTextBillboarded3Df(BitmapFont const & font,
-			fontParms_t const & flags, Vector3f const & pos, float const scale,
-			Vector4f const & color, char const * fmt, ...);
+            fontParms_t const & flags, V3Vectf const & pos, float const scale,
+            V4Vectf const & color, char const * fmt, ...);
 
 	// transform the billboarded font strings
-	virtual void Finish(Matrix4f const & viewMatrix);
+    virtual void Finish(VR4Matrixf const & viewMatrix);
 
 	// render the VBO
 	virtual void Render3D(BitmapFont const & font,
-			Matrix4f const & worldMVP) const;
+            VR4Matrixf const & worldMVP) const;
 
 private:
 	VGlGeometry Geo; // font glyphs
@@ -315,7 +315,7 @@ private:
 		}
 
 		VertexBlockType(BitmapFont const & font, int const numVerts,
-				Vector3f const & pivot, Quatf const & rot, bool const billboard,
+                V3Vectf const & pivot, VQuatf const & rot, bool const billboard,
 				bool const trackRoll) :
 				Font(&font), NumVerts(numVerts), Pivot(pivot), Rotation(rot), Billboard(
 						billboard), TrackRoll(trackRoll) {
@@ -336,8 +336,8 @@ private:
 		mutable BitmapFont const * Font; // the font used to render text into this vertex block
 		mutable fontVertex_t * Verts; // the vertices
 		mutable int NumVerts; // the number of vertices in the block
-		Vector3f Pivot; // postion this vertex block can be rotated around
-		Quatf Rotation; // additional rotation to apply
+        V3Vectf Pivot; // postion this vertex block can be rotated around
+        VQuatf Rotation; // additional rotation to apply
 		bool Billboard; // true to always face the camera
 		bool TrackRoll; // if true, when billboarded, roll with the camera
 	};
@@ -1123,7 +1123,7 @@ void BitmapFontSurfaceLocal::Init(const int maxVertices) {
 
 //==============================
 // ColorToABGR
-int32_t ColorToABGR(Vector4f const & color) {
+int32_t ColorToABGR(V4Vectf const & color) {
 	// format is ABGR
 	return (ftoi(color.w * 255.0f) << 24) | (ftoi(color.z * 255.0f) << 16)
 			| (ftoi(color.y * 255.0f) << 8) | ftoi(color.x * 255.0f);
@@ -1132,9 +1132,9 @@ int32_t ColorToABGR(Vector4f const & color) {
 //==============================
 // BitmapFontSurfaceLocal::DrawText3D
 void BitmapFontSurfaceLocal::DrawText3D(BitmapFont const & font,
-        fontParms_t const & parms, Vector3f const & pos,
-        Vector3f const & normal, Vector3f const & up, float scale,
-        Vector4f const & color, const VString &text) {
+        fontParms_t const & parms, V3Vectf const & pos,
+        V3Vectf const & normal, V3Vectf const & up, float scale,
+        V4Vectf const & color, const VString &text) {
     if (text.isEmpty()) {
 		return; // nothing to do here, move along
 	}
@@ -1171,14 +1171,14 @@ void BitmapFontSurfaceLocal::DrawText3D(BitmapFont const & font,
 
 	// allocate a vertex block
 	size_t numVerts = 4 * len;
-	VertexBlockType vb(font, numVerts, pos, Quatf(), parms.Billboard,
+    VertexBlockType vb(font, numVerts, pos, VQuatf(), parms.Billboard,
 			parms.TrackRoll);
 
-	Vector3f const right = up.Cross(normal);
-	Vector3f const r = (parms.Billboard) ? Vector3f(1.0f, 0.0f, 0.0f) : right;
-	Vector3f const u = (parms.Billboard) ? Vector3f(0.0f, 1.0f, 0.0f) : up;
+    V3Vectf const right = up.Cross(normal);
+    V3Vectf const r = (parms.Billboard) ? V3Vectf(1.0f, 0.0f, 0.0f) : right;
+    V3Vectf const u = (parms.Billboard) ? V3Vectf(0.0f, 1.0f, 0.0f) : up;
 
-	Vector3f curPos(0.0f);
+    V3Vectf curPos(0.0f);
 	switch (parms.AlignVert) {
 	case VERTICAL_BASELINE:
 		break;
@@ -1207,7 +1207,7 @@ void BitmapFontSurfaceLocal::DrawText3D(BitmapFont const & font,
 	}
 	}
 
-	Vector3f basePos = curPos;
+    V3Vectf basePos = curPos;
 	switch (parms.AlignHoriz) {
 	case HORIZONTAL_LEFT:
 		break;
@@ -1222,7 +1222,7 @@ void BitmapFontSurfaceLocal::DrawText3D(BitmapFont const & font,
 	}
 	}
 
-	Vector3f lineInc = u * (fontInfo.FontHeight * yScale);
+    V3Vectf lineInc = u * (fontInfo.FontHeight * yScale);
 	float const distanceScale = imageWidth / FontInfoType::DEFAULT_SCALE_FACTOR;
 	const uint8_t fontParms[4] =
 			{
@@ -1310,9 +1310,9 @@ void BitmapFontSurfaceLocal::DrawText3D(BitmapFont const & font,
 //==============================
 // BitmapFontSurfaceLocal::DrawText3Df
 void BitmapFontSurfaceLocal::DrawText3Df(BitmapFont const & font,
-        fontParms_t const & parms, Vector3f const & pos,
-        Vector3f const & normal, Vector3f const & up, float const scale,
-        Vector4f const & color, const char *fmt, ...) {
+        fontParms_t const & parms, V3Vectf const & pos,
+        V3Vectf const & normal, V3Vectf const & up, float const scale,
+        V4Vectf const & color, const char *fmt, ...) {
 	char buffer[256];
 	va_list args;
 	va_start( args, fmt);
@@ -1324,19 +1324,19 @@ void BitmapFontSurfaceLocal::DrawText3Df(BitmapFont const & font,
 //==============================
 // BitmapFontSurfaceLocal::DrawTextBillboarded3D
 void BitmapFontSurfaceLocal::DrawTextBillboarded3D(BitmapFont const & font,
-		fontParms_t const & parms, Vector3f const & pos, float const scale,
-		Vector4f const & color, char const * text) {
+        fontParms_t const & parms, V3Vectf const & pos, float const scale,
+        V4Vectf const & color, char const * text) {
 	fontParms_t billboardParms = parms;
 	billboardParms.Billboard = true;
-	DrawText3D(font, billboardParms, pos, Vector3f(1.0f, 0.0f, 0.0f),
-			Vector3f(0.0f, -1.0f, 0.0f), scale, color, text);
+    DrawText3D(font, billboardParms, pos, V3Vectf(1.0f, 0.0f, 0.0f),
+            V3Vectf(0.0f, -1.0f, 0.0f), scale, color, text);
 }
 
 //==============================
 // BitmapFontSurfaceLocal::DrawTextBillboarded3Df
 void BitmapFontSurfaceLocal::DrawTextBillboarded3Df(BitmapFont const & font,
-		fontParms_t const & parms, Vector3f const & pos, float const scale,
-		Vector4f const & color, char const * fmt, ...) {
+        fontParms_t const & parms, V3Vectf const & pos, float const scale,
+        V4Vectf const & color, char const * fmt, ...) {
 	char buffer[256];
 	va_list args;
 	va_start( args, fmt);
@@ -1368,13 +1368,13 @@ int VertexBlockSortFn(void const * a, void const * b) {
 // transform all vertex blocks into the vertices array so they're ready to be uploaded to the VBO
 // We don't have to do this for each eye because the billboarded surfaces are sorted / aligned
 // based on their distance from / direction to the camera view position and not the camera direction.
-void BitmapFontSurfaceLocal::Finish(Matrix4f const & viewMatrix) {
+void BitmapFontSurfaceLocal::Finish(VR4Matrixf const & viewMatrix) {
 	DROID_ASSERT( this != NULL, "BitmapFont");
 
 	//SPAM( "BitmapFontSurfaceLocal::Finish" );
 
-	Matrix4f invViewMatrix = viewMatrix.Inverted(); // if the view is never scaled or sheared we could use Transposed() here instead
-	Vector3f viewPos = invViewMatrix.GetTranslation();
+    VR4Matrixf invViewMatrix = viewMatrix.Inverted(); // if the view is never scaled or sheared we could use Transposed() here instead
+    V3Vectf viewPos = invViewMatrix.GetTranslation();
 
 	// sort vertex blocks indices based on distance to pivot
 	int const MAX_VERTEX_BLOCKS = 256;
@@ -1398,20 +1398,20 @@ void BitmapFontSurfaceLocal::Finish(Matrix4f const & viewMatrix) {
 	// the third texture coordinate.
 	for (int i = 0; i < VertexBlocks.length(); ++i) {
 		VertexBlockType & vb = VertexBlocks[vbSort[i].VertexBlockIndex];
-		Matrix4f transform;
+        VR4Matrixf transform;
 		if (vb.Billboard) {
 			if (vb.TrackRoll) {
 				transform = invViewMatrix;
 			} else {
-				Vector3f textNormal = viewPos - vb.Pivot;
+                V3Vectf textNormal = viewPos - vb.Pivot;
 				float const len = textNormal.Length();
                 if (len < VConstantsf::SmallestNonDenormal) {
 					vb.Free();
 					continue;
 				}
 				textNormal *= 1.0f / len;
-				transform = Matrix4f::CreateFromBasisVectors(textNormal,
-						Vector3f(0.0f, 1.0f, 0.0f));
+                transform = VR4Matrixf::CreateFromBasisVectors(textNormal,
+                        V3Vectf(0.0f, 1.0f, 0.0f));
 			}
 			transform.SetTranslation(vb.Pivot);
 		} else {
@@ -1451,7 +1451,7 @@ void BitmapFontSurfaceLocal::Finish(Matrix4f const & viewMatrix) {
 // render the font surface by transforming each vertex block and copying it into the VBO
 // TODO: once we add support for multiple fonts per surface, this should not take a BitmapFont for input.
 void BitmapFontSurfaceLocal::Render3D(BitmapFont const & font,
-		Matrix4f const & worldMVP) const {
+        VR4Matrixf const & worldMVP) const {
 	GL_CheckErrors("BitmapFontSurfaceLocal::Render3D - pre");
 
 	//SPAM( "BitmapFontSurfaceLocal::Render3D" );
@@ -1472,7 +1472,7 @@ void BitmapFontSurfaceLocal::Render3D(BitmapFont const & font,
 
 	glUseProgram(AsLocal(font).GetFontProgram().program);
 
-	glUniformMatrix4fv(AsLocal(font).GetFontProgram().uniformModelViewProMatrix, 1, GL_FALSE,
+    glUniformMatrix4fv(AsLocal(font).GetFontProgram().uniformModelViewProMatrix, 1, GL_FALSE,
 			worldMVP.M[0]);
 
 	float textColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };

@@ -17,7 +17,7 @@ public:
 	{
 	}
 
-	void		Update( double const curFrameTime, Vector3f const & newPos )
+    void		Update( double const curFrameTime, V3Vectf const & newPos )
 	{
 		double frameDelta = curFrameTime - LastFrameTime;
 		LastFrameTime = curFrameTime;
@@ -29,11 +29,11 @@ public:
 		}
 		else
 		{
-			Vector3f delta = ( newPos - CurPosition ) * rate;
+            V3Vectf delta = ( newPos - CurPosition ) * rate;
 			if ( delta.Length() < 0.001f )
 			{
 				// don't allow a denormal to propagate from multiplications of very small numbers
-				delta = Vector3f( 0.0f );
+                delta = V3Vectf( 0.0f );
 			}
 			CurPosition += delta;
 		}
@@ -43,12 +43,12 @@ public:
 	void				Reset() { FirstFrame = true; }
 	void				SetRate( float const r ) { Rate = r; }
 
-	Vector3f const &	GetCurPosition() const { return CurPosition; }
+    V3Vectf const &	GetCurPosition() const { return CurPosition; }
 
 private:
 	double		LastFrameTime;
 	float		Rate;
-	Vector3f	CurPosition;
+    V3Vectf	CurPosition;
 	bool		FirstFrame;
 };
 

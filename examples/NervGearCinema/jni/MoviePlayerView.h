@@ -115,8 +115,8 @@ public:
 
 	void 					MovieLoaded( const int width, const int height, const int duration );
 
-	virtual Matrix4f 		DrawEyeView( const int eye, const float fovDegrees );
-	virtual Matrix4f 		Frame( const VrFrame & vrFrame );
+    virtual VR4Matrixf 		DrawEyeView( const int eye, const float fovDegrees );
+    virtual VR4Matrixf 		Frame( const VrFrame & vrFrame );
 
 private:
 	CinemaApp &				Cinema;
@@ -225,7 +225,7 @@ private:
 	void					ScrubBarClicked( const float progress );
 	friend void				ScrubBarCallback( ScrubBarComponent *, void *, float );
 
-	Vector2f 				GazeCoordinatesOnScreen( const Matrix4f & viewMatrix, const Matrix4f panelMatrix ) const;
+    V2Vectf 				GazeCoordinatesOnScreen( const VR4Matrixf & viewMatrix, const VR4Matrixf panelMatrix ) const;
 
 	void 					UpdateUI( const VrFrame & vrFrame );
 	void 					CheckInput( const VrFrame & vrFrame );

@@ -33,8 +33,8 @@ public:
 	virtual void 						OnOpen();
 	virtual void 						OnClose();
 
-	virtual Matrix4f 					DrawEyeView( const int eye, const float fovDegrees );
-	virtual Matrix4f 					Frame( const VrFrame & vrFrame );
+    virtual VR4Matrixf 					DrawEyeView( const int eye, const float fovDegrees );
+    virtual VR4Matrixf 					Frame( const VrFrame & vrFrame );
 	virtual bool						Command( const char * msg );
 	virtual bool 						OnKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType );
 
@@ -93,7 +93,7 @@ private:
 
 	UIImage *							CenterPoster;
 	uint								CenterIndex;
-	Vector3f							CenterPosition;
+    V3Vectf							CenterPosition;
 
 	UIImage *							LeftSwipes[ 3 ];
 	UIImage * 							RightSwipes[ 3 ];
@@ -132,7 +132,7 @@ private:
 	const MovieDef *					GetSelectedMovie() const;
 
 	void 								CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFont const & font );
-	Vector3f 							ScalePosition( const Vector3f &startPos, const float scale, const float menuOffset ) const;
+    V3Vectf 							ScalePosition( const V3Vectf &startPos, const float scale, const float menuOffset ) const;
 	void 								UpdateMenuPosition();
 
 	void								StartTimer();

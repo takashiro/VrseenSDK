@@ -41,11 +41,11 @@ char const * OvrFolderBrowser::MENU_NAME = "FolderBrowser";
 const float OvrFolderBrowser::CONTROLER_COOL_DOWN = 0.2f;
 const float OvrFolderBrowser::SCROLL_DIRECTION_DECIDING_DISTANCE = 10.0f;
 
-const Vector3f FWD( 0.0f, 0.0f, -1.0f );
-const Vector3f LEFT( -1.0f, 0.0f, 0.0f );
-const Vector3f RIGHT( 1.0f, 0.0f, 0.0f );
-const Vector3f UP( 0.0f, 1.0f, 0.0f );
-const Vector3f DOWN( 0.0f, -1.0f, 0.0f );
+const V3Vectf FWD( 0.0f, 0.0f, -1.0f );
+const V3Vectf LEFT( -1.0f, 0.0f, 0.0f );
+const V3Vectf RIGHT( 1.0f, 0.0f, 0.0f );
+const V3Vectf UP( 0.0f, 1.0f, 0.0f );
+const V3Vectf DOWN( 0.0f, -1.0f, 0.0f );
 const float SCROLL_REPEAT_TIME 					= 0.5f;
 const float EYE_HEIGHT_OFFSET 					= 0.0f;
 const float MAX_TOUCH_DISTANCE_FOR_TOUCH_SQ 	= 1800.0f;
@@ -76,14 +76,14 @@ OvrUniqueId uniqueId( 1000 );
 VRMenuId_t OvrFolderBrowser::ID_CENTER_ROOT( uniqueId.Get( 1 ) );
 
 // helps avoiding copy pasting code for updating wrap around indicator effect
-void UpdateWrapAroundIndicator(const OvrScrollManager & ScrollMgr, const OvrVRMenuMgr & menuMgr, VRMenuObject * wrapIndicatorObject, const Vector3f initialPosition, const float initialAngle)
+void UpdateWrapAroundIndicator(const OvrScrollManager & ScrollMgr, const OvrVRMenuMgr & menuMgr, VRMenuObject * wrapIndicatorObject, const V3Vectf initialPosition, const float initialAngle)
 {
 	static const float WRAP_INDICATOR_INITIAL_SCALE = 0.8f;
 
 	float fadeValue;
 	float rotation = 0.0f;
 	float rotationDirection;
-	Vector3f position = initialPosition;
+    V3Vectf position = initialPosition;
 	if( ScrollMgr.position() < 0.0f )
 	{
 		fadeValue = -ScrollMgr.position();
@@ -134,15 +134,15 @@ void UpdateWrapAroundIndicator(const OvrScrollManager & ScrollMgr, const OvrVRMe
 
 	float finalScale = WRAP_INDICATOR_INITIAL_SCALE + ( 1.0f - WRAP_INDICATOR_INITIAL_SCALE ) * scaleValue;
 	rotation += initialAngle;
-	Vector4f col = wrapIndicatorObject->textColor();
+    V4Vectf col = wrapIndicatorObject->textColor();
 	col.w = fadeValue;
-	Quatf rot( -FWD, rotation );
+    VQuatf rot( -FWD, rotation );
 	rot.Normalize();
 
 	wrapIndicatorObject->setLocalRotation( rot );
 	wrapIndicatorObject->setLocalPosition( position );
 	wrapIndicatorObject->setColor( col );
-	wrapIndicatorObject->setLocalScale( Vector3f( finalScale, finalScale, finalScale ) );
+    wrapIndicatorObject->setLocalScale( V3Vectf( finalScale, finalScale, finalScale ) );
 }
 
 //==============================
@@ -213,8 +213,8 @@ public:
 	void SetScrollDownHintHandle( menuHandle_t handle ) { ScrollDownHintHandle = handle; }
 	void SetScrollUpHintHandle( menuHandle_t handle )  { ScrollUpHintHandle = handle; }
 	void SetFoldersWrapHandle( menuHandle_t handle ) { FoldersWrapHandle = handle; }
-	void SetFoldersWrapHandleTopPosition( Vector3f position ) { FoldersWrapHandleTopPosition = position; }
-	void SetFoldersWrapHandleBottomPosition( Vector3f position ) { FoldersWrapHandleBottomPosition = position; }
+    void SetFoldersWrapHandleTopPosition( V3Vectf position ) { FoldersWrapHandleTopPosition = position; }
+    void SetFoldersWrapHandleBottomPosition( V3Vectf position ) { FoldersWrapHandleBottomPosition = position; }
 
 private:
 	static const float ACTIVE_DEPTH_OFFSET;
@@ -304,8 +304,8 @@ private:
 		ScrollMgr.frame( vrFrame.DeltaSeconds, controllerInput );
 
 		VRMenuObject * foldersRootObject = menuMgr.toObject( FoldersRootHandle );
-		const Vector3f & rootPosition = foldersRootObject->localPosition();
-		foldersRootObject->setLocalPosition( Vector3f( rootPosition.x, FolderBrowser.panelHeight() * ScrollMgr.position(), rootPosition.z ) );
+        const V3Vectf & rootPosition = foldersRootObject->localPosition();
+        foldersRootObject->setLocalPosition( V3Vectf( rootPosition.x, FolderBrowser.panelHeight() * ScrollMgr.position(), rootPosition.z ) );
 
 		const float alphaSpace = FolderBrowser.panelHeight() * 2.0f;
 		const float rootOffset = rootPosition.y - EYE_HEIGHT_OFFSET;
@@ -317,8 +317,8 @@ private:
 			VRMenuObject * child = menuMgr.toObject( foldersRootObject->getChildHandleForIndex( index ) );
 			OVR_ASSERT( child != NULL );
 
-			const Vector3f & position = child->localPosition();
-			Vector4f color = child->color();
+            const V3Vectf & position = child->localPosition();
+            V4Vectf color = child->color();
 			color.w = 0.0f;
 
 			VRMenuObjectFlags_t flags = child->flags();
@@ -333,7 +333,7 @@ private:
 				flags &= ~( VRMenuObjectFlags_t( VRMENUOBJECT_DONT_RENDER ) | VRMENUOBJECT_DONT_HIT_ALL );
 
 				// Lerp the folder towards or away from viewer
-				Vector3f activePosition = position;
+                V3Vectf activePosition = position;
 				const float targetZ = ACTIVE_DEPTH_OFFSET * finalAlpha;
 				activePosition.z = targetZ;
 				child->setLocalPosition( activePosition );
@@ -367,7 +367,7 @@ private:
                         UpdateWrapAroundIndicator( ScrollMgr, menuMgr, wrapIndicatorObject, FoldersWrapHandleBottomPosition, VConstantsf::Pi/2.0 );
 					}
 
-					Vector3f position = wrapIndicatorObject->localPosition();
+                    V3Vectf position = wrapIndicatorObject->localPosition();
 					float ratio;
 					if ( scrollingAtStart )
 					{
@@ -392,7 +392,7 @@ private:
 		// Updating Scroll Suggestions
 		bool 		showScrollUpIndicator 	= false;
 		bool 		showBottomIndicator 	= false;
-		Vector4f 	finalCol( 1.0f, 1.0f, 1.0f, 1.0f );
+        V4Vectf 	finalCol( 1.0f, 1.0f, 1.0f, 1.0f );
 		if( LastInteractionTimeStamp > 0.0f ) // is user interaction currently going on? ( during interacion LastInteractionTimeStamp value will be negative )
 		{
 			float timeDiff = ovr_GetTimeInSeconds() - LastInteractionTimeStamp;
@@ -478,7 +478,7 @@ private:
 		}
 
 		FolderBrowser.touchRelative(event.floatValue);
-		Vector2f currentTouchPosition( event.floatValue.x, event.floatValue.y );
+        V2Vectf currentTouchPosition( event.floatValue.x, event.floatValue.y );
 		TotalTouchDistance += ( currentTouchPosition - StartTouchPosition ).LengthSq();
 		if ( ValidFoldersCount > 1 )
 		{
@@ -511,7 +511,7 @@ private:
 
 	OvrFolderBrowser &	FolderBrowser;
 	OvrScrollManager	ScrollMgr;
-	Vector2f			StartTouchPosition;
+    V2Vectf			StartTouchPosition;
 	float				TotalTouchDistance;
 	int					ValidFoldersCount;
 
@@ -519,8 +519,8 @@ private:
 	menuHandle_t		ScrollDownHintHandle;
 	menuHandle_t		ScrollUpHintHandle;
 	menuHandle_t		FoldersWrapHandle;
-	Vector3f			FoldersWrapHandleTopPosition;
-	Vector3f			FoldersWrapHandleBottomPosition;
+    V3Vectf			FoldersWrapHandleTopPosition;
+    V3Vectf			FoldersWrapHandleBottomPosition;
 	double				LastInteractionTimeStamp;
 };
 
@@ -704,7 +704,7 @@ private:
 				static const float WRAP_INDICATOR_X_OFFSET = 0.2f;
 				wrapIndicatorObject->setVisible( true );
 				bool scrollingAtStart = ( ScrollMgr.position() < 0.0f );
-				Vector3f position = wrapIndicatorObject->localPosition();
+                V3Vectf position = wrapIndicatorObject->localPosition();
 				if ( scrollingAtStart )
 				{
 					position.x = -WRAP_INDICATOR_X_OFFSET;
@@ -754,7 +754,7 @@ private:
 		}
 
         const float curRot = position * ( VConstantsf::Pi * 2 / FolderBrowser.circumferencePanelSlots() );
-		Quatf rot( UP, curRot );
+        VQuatf rot( UP, curRot );
 		rot.Normalize();
 		self->setLocalRotation( rot );
 
@@ -776,7 +776,7 @@ private:
 			if ( i >= curPanelIndex - extraPanels && i <= curPanelIndex + extraPanels )
 			{
 				flags &= ~( VRMenuObjectFlags_t( VRMENUOBJECT_DONT_RENDER ) | VRMENUOBJECT_DONT_HIT_ALL );
-				panelObject->setFadeDirection( Vector3f( 0.0f ) );
+                panelObject->setFadeDirection( V3Vectf( 0.0f ) );
 				if ( i == curPanelIndex - extraPanels )
 				{
 					panelObject->setFadeDirection( -RIGHT );
@@ -792,7 +792,7 @@ private:
 			}
 			panelObject->setFlags( flags );
 
-			Vector4f color = panelObject->color();
+            V4Vectf color = panelObject->color();
 			color.w = alphaVal;
 			panelObject->setColor( color );
 		}
@@ -1091,7 +1091,7 @@ void OvrFolderBrowser::oneTimeInit()
 	OVR_ASSERT( root );
 	if ( root != NULL )
 	{
-		Vector3f pos = root->localPosition();
+        V3Vectf pos = root->localPosition();
 		pos.y += EYE_HEIGHT_OFFSET;
 		root->setLocalPosition( pos );
 	}
@@ -1106,8 +1106,8 @@ void OvrFolderBrowser::oneTimeInit()
 		comps,
 		VRMenuSurfaceParms(),
 		"Folder Browser Folders",
-		Posef(),
-		Vector3f( 1.0f ),
+        VPosf(),
+        V3Vectf( 1.0f ),
 		VRMenuFontParms(),
 		m_foldersRootId,
 		VRMenuObjectFlags_t(),
@@ -1126,8 +1126,8 @@ void OvrFolderBrowser::oneTimeInit()
 		comps,
 		VRMenuSurfaceParms(),
 		"scroll hints",
-		Posef(),
-		Vector3f( 1.0f ),
+        VPosf(),
+        V3Vectf( 1.0f ),
 		VRMenuFontParms(),
 		scrollSuggestionRootId,
 		VRMenuObjectFlags_t(),
@@ -1143,11 +1143,11 @@ void OvrFolderBrowser::oneTimeInit()
 	VRMenuId_t suggestionDownId( uniqueId.Get( 1 ) );
 	VRMenuId_t suggestionUpId( uniqueId.Get( 1 ) );
 
-	const Posef swipeDownPose( Quatf(), FWD * ( 0.33f * m_radius ) + DOWN * m_panelHeight * 0.5f );
+    const VPosf swipeDownPose( VQuatf(), FWD * ( 0.33f * m_radius ) + DOWN * m_panelHeight * 0.5f );
 	menuHandle_t scrollDownHintHandle = OvrSwipeHintComponent::CreateSwipeSuggestionIndicator( m_app, this, m_scrollSuggestionRootHandle, suggestionDownId.Get(),
 		"res/raw/swipe_suggestion_arrow_down.png", swipeDownPose, DOWN );
 
-	const Posef swipeUpPose( Quatf(), FWD * ( 0.33f * m_radius ) + UP * m_panelHeight * 0.5f );
+    const VPosf swipeUpPose( VQuatf(), FWD * ( 0.33f * m_radius ) + UP * m_panelHeight * 0.5f );
 	menuHandle_t scrollUpHintHandle = OvrSwipeHintComponent::CreateSwipeSuggestionIndicator( m_app, this, m_scrollSuggestionRootHandle, suggestionUpId.Get(),
 		"res/raw/swipe_suggestion_arrow_up.png", swipeUpPose, UP );
 
@@ -1269,10 +1269,10 @@ void OvrFolderBrowser::buildDirtyMenu( OvrMetaData & metaData )
 		folderTitleObject->setFlags( flags );
 
 		// Add no media panel
-		const Vector3f dir( FWD );
-		const Posef panelPose( Quatf(), dir * m_radius );
-		const Vector3f panelScale( 1.0f );
-		const Posef textPose( Quatf(), Vector3f( 0.0f, -0.3f, 0.0f ) );
+        const V3Vectf dir( FWD );
+        const VPosf panelPose( VQuatf(), dir * m_radius );
+        const V3Vectf panelScale( 1.0f );
+        const VPosf textPose( VQuatf(), V3Vectf( 0.0f, -0.3f, 0.0f ) );
 
 		VRMenuSurfaceParms panelSurfParms( "panelSurface",
             imageFile.toCString(), SURFACE_TEXTURE_DIFFUSE,
@@ -1280,7 +1280,7 @@ void OvrFolderBrowser::buildDirtyMenu( OvrMetaData & metaData )
 			NULL, SURFACE_TEXTURE_MAX );
 
 		VRMenuObjectParms * p = new VRMenuObjectParms( VRMENU_STATIC, VArray< VRMenuComponent* >(),
-            panelSurfParms, message.toCString(), panelPose, panelScale, textPose, Vector3f( 1.3f ), fontParms, VRMenuId_t(),
+            panelSurfParms, message.toCString(), panelPose, panelScale, textPose, V3Vectf( 1.3f ), fontParms, VRMenuId_t(),
 			VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_ALL ), VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 
 		parms.append( p );
@@ -1310,14 +1310,14 @@ void OvrFolderBrowser::buildDirtyMenu( OvrMetaData & metaData )
 					NULL, SURFACE_TEXTURE_MAX, NULL, SURFACE_TEXTURE_MAX );
 			// Wrap around indicator - used for indicating all folders/category wrap around.
 			VRMenuId_t indicatorId( uniqueId.Get( 1 ) );
-			Posef indicatorPos( Quatf(), FWD * ( m_radius + 0.1f ) + UP * m_panelHeight * 0.0f );
+            VPosf indicatorPos( VQuatf(), FWD * ( m_radius + 0.1f ) + UP * m_panelHeight * 0.0f );
 			VRMenuObjectParms indicatorParms(
 					VRMENU_STATIC,
 					VArray< VRMenuComponent* >(),
 					indicatorSurfaceParms,
 					"",
 					indicatorPos,
-					Vector3f( 3.0f ),
+                    V3Vectf( 3.0f ),
 					fontParms,
 					indicatorId,
 					VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_ALL ),
@@ -1367,8 +1367,8 @@ void OvrFolderBrowser::buildFolder( OvrMetaData::Category & category, FolderView
 		comps,
 		VRMenuSurfaceParms(),
 		( folder->localizedName + " root" ).toCString(),
-		Posef(),
-		Vector3f( 1.0f ),
+        VPosf(),
+        V3Vectf( 1.0f ),
 		fontParms,
 		folderId,
 		VRMenuObjectFlags_t(),
@@ -1384,7 +1384,7 @@ void OvrFolderBrowser::buildFolder( OvrMetaData::Category & category, FolderView
 	OVR_UNUSED( folderObject );
 
 	// Add horizontal scrollbar to folder
-	Posef scrollBarPose( Quatf(), FWD * m_radius * m_scrollBarRadiusScale );
+    VPosf scrollBarPose( VQuatf(), FWD * m_radius * m_scrollBarRadiusScale );
 
 	// Create unique ids for the scrollbar objects
 	const VRMenuId_t scrollRootId( uniqueId.Get( 1 ) );
@@ -1393,12 +1393,12 @@ void OvrFolderBrowser::buildFolder( OvrMetaData::Category & category, FolderView
 	const VRMenuId_t scrollThumbId( uniqueId.Get( 1 ) );
 
 	// Set the border of the thumb image for 9-slicing
-	const Vector4f scrollThumbBorder( 0.0f, 0.0f, 0.0f, 0.0f );
-	const Vector3f xFormPos = DOWN * m_thumbHeight * VRMenuObject::DEFAULT_TEXEL_SCALE * m_scrollBarSpacingScale;
+    const V4Vectf scrollThumbBorder( 0.0f, 0.0f, 0.0f, 0.0f );
+    const V3Vectf xFormPos = DOWN * m_thumbHeight * VRMenuObject::DEFAULT_TEXEL_SCALE * m_scrollBarSpacingScale;
 
 	// Build the scrollbar
 	OvrScrollBarComponent::getScrollBarParms( *this, SCROLL_BAR_LENGTH, folderId, scrollRootId, scrollXFormId, scrollBaseId, scrollThumbId,
-		scrollBarPose, Posef( Quatf(), xFormPos ), 0, numPanels, false, scrollThumbBorder, parms );
+        scrollBarPose, VPosf( VQuatf(), xFormPos ), 0, numPanels, false, scrollThumbBorder, parms );
 	addItems( menuManager, font, parms, folder->handle, false ); // PARENT: folder->Handle
 	parms.clear();
 
@@ -1411,7 +1411,7 @@ void OvrFolderBrowser::buildFolder( OvrMetaData::Category & category, FolderView
 	{
 		scrollBar->updateScrollBar( menuManager, scrollBarObject, numPanels );
 		scrollBar->setScrollFrac( menuManager, scrollBarObject, 0.0f );
-		scrollBar->setBaseColor( menuManager, scrollBarObject, Vector4f( 1.0f, 1.0f, 1.0f, 1.0f ) );
+        scrollBar->setBaseColor( menuManager, scrollBarObject, V4Vectf( 1.0f, 1.0f, 1.0f, 1.0f ) );
 
 		// Hide the scrollbar
 		VRMenuObjectFlags_t flags = scrollBarObject->flags();
@@ -1427,8 +1427,8 @@ void OvrFolderBrowser::buildFolder( OvrMetaData::Category & category, FolderView
 		swipeComps,
 		VRMenuSurfaceParms(),
 		( folder->localizedName + " swipe" ).toCString(),
-		Posef(),
-		Vector3f( 1.0f ),
+        VPosf(),
+        V3Vectf( 1.0f ),
 		fontParms,
 		swipeFolderId,
 		VRMenuObjectFlags_t( VRMENUOBJECT_NO_GAZE_HILIGHT ),
@@ -1445,7 +1445,7 @@ void OvrFolderBrowser::buildFolder( OvrMetaData::Category & category, FolderView
 
 	// build a collision primitive that encompasses all of the panels for a raw (including the empty space between them)
 	// so that we can always send our swipe messages to the correct row based on gaze.
-	VArray< Vector3f > vertices( m_circumferencePanelSlots * 2 );
+    VArray< V3Vectf > vertices( m_circumferencePanelSlots * 2 );
 	VArray< TriangleIndex > indices( m_circumferencePanelSlots * 6 );
 	int curIndex = 0;
 	int curVertex = 0;
@@ -1454,8 +1454,8 @@ void OvrFolderBrowser::buildFolder( OvrMetaData::Category & category, FolderView
         float theta = ( i * VConstantsf::Pi * 2 ) / m_circumferencePanelSlots;
 		float x = cos( theta ) * m_radius * 1.05f;
 		float z = sin( theta ) * m_radius * 1.05f;
-		Vector3f topVert( x, m_panelHeight * 0.5f, z );
-		Vector3f bottomVert( x, m_panelHeight * -0.5f, z );
+        V3Vectf topVert( x, m_panelHeight * 0.5f, z );
+        V3Vectf bottomVert( x, m_panelHeight * -0.5f, z );
 
 		vertices[curVertex + 0] = topVert;
 		vertices[curVertex + 1] = bottomVert;
@@ -1511,8 +1511,8 @@ void OvrFolderBrowser::buildFolder( OvrMetaData::Category & category, FolderView
 		VArray< VRMenuComponent* >(),
 		VRMenuSurfaceParms(),
 		( folder->localizedName + " title root" ).toCString(),
-		Posef(),
-		Vector3f( 1.0f ),
+        VPosf(),
+        V3Vectf( 1.0f ),
 		fontParms,
 		folderTitleRootId,
 		VRMenuObjectFlags_t(),
@@ -1529,14 +1529,14 @@ void OvrFolderBrowser::buildFolder( OvrMetaData::Category & category, FolderView
 	OVR_ASSERT( folderTitleRootObject != NULL );
 
 	VRMenuId_t folderTitleId( uniqueId.Get( 1 ) );
-	Posef titlePose( Quatf(), FWD * m_radius + UP * m_panelHeight * m_folderTitleSpacingScale );
+    VPosf titlePose( VQuatf(), FWD * m_radius + UP * m_panelHeight * m_folderTitleSpacingScale );
 	VRMenuObjectParms titleParms(
 		VRMENU_STATIC,
 		VArray< VRMenuComponent* >(),
 		VRMenuSurfaceParms(),
 		"no title",
 		titlePose,
-		Vector3f( 1.25f ),
+        V3Vectf( 1.25f ),
 		fontParms,
 		folderTitleId,
 		VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_TEXT ),
@@ -1553,7 +1553,7 @@ void OvrFolderBrowser::buildFolder( OvrMetaData::Category & category, FolderView
 
 	// Wrap around indicator
 	VRMenuId_t indicatorId( uniqueId.Get( 1 ) );
-	Posef indicatorPos( Quatf(), FWD * ( m_radius + 0.1f ) + UP * m_panelHeight * 0.0f );
+    VPosf indicatorPos( VQuatf(), FWD * ( m_radius + 0.1f ) + UP * m_panelHeight * 0.0f );
 
 	const char * leftIcon = "res/raw/wrap_left.png";
 	VRMenuSurfaceParms indicatorSurfaceParms( "leftSurface",
@@ -1566,7 +1566,7 @@ void OvrFolderBrowser::buildFolder( OvrMetaData::Category & category, FolderView
 			indicatorSurfaceParms,
 			"wrap indicator",
 			indicatorPos,
-			Vector3f( 3.0f ),
+            V3Vectf( 3.0f ),
 			fontParms,
 			indicatorId,
 			VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_ALL ) | VRMENUOBJECT_DONT_RENDER_TEXT,
@@ -1965,7 +1965,7 @@ void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const in
 	VRMenuId_t buttonId( uniqueId.Get( 1 ) );
 
 	panelComps.append( new OvrPanel_OnUp( this, panoData ) );
-	panelComps.append( new OvrDefaultComponent( Vector3f( 0.0f, 0.0f, 0.05f ), 1.05f, 0.25f, 0.25f, Vector4f( 0.f ) ) );
+    panelComps.append( new OvrDefaultComponent( V3Vectf( 0.0f, 0.0f, 0.05f ), 1.05f, 0.25f, 0.25f, V4Vectf( 0.f ) ) );
 
 	// single-pass multitexture
 	VRMenuSurfaceParms panelSurfParms( "panelSurface",
@@ -1984,17 +1984,17 @@ void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const in
 
 	// Panel placement - based on index which determines position within the circumference
 	const float factor = ( float )panelIndex / ( float )m_circumferencePanelSlots;
-    Quatf rot( DOWN, ( VConstantsf::Pi * 2 * factor ) );
-	Vector3f dir( FWD * rot );
-	Posef panelPose( rot, dir * m_radius );
-	Vector3f panelScale( 1.0f );
+    VQuatf rot( DOWN, ( VConstantsf::Pi * 2 * factor ) );
+    V3Vectf dir( FWD * rot );
+    VPosf panelPose( rot, dir * m_radius );
+    V3Vectf panelScale( 1.0f );
 
 	// Title text placed below thumbnail
-	const Posef textPose( Quatf(), Vector3f( 0.0f, -m_panelHeight * m_panelTextSpacingScale, 0.0f ) );
+    const VPosf textPose( VQuatf(), V3Vectf( 0.0f, -m_panelHeight * m_panelTextSpacingScale, 0.0f ) );
 
 	const VRMenuFontParms fontParms( HORIZONTAL_CENTER, VERTICAL_CENTER, false, false, true, 0.525f, 0.45f, 0.5f );
 	VRMenuObjectParms * p = new VRMenuObjectParms( VRMENU_BUTTON, panelComps,
-        panelSurfParms, panelTitle.toCString(), panelPose, panelScale, textPose, Vector3f( 1.0f ), fontParms, id,
+        panelSurfParms, panelTitle.toCString(), panelPose, panelScale, textPose, V3Vectf( 1.0f ), fontParms, id,
 		VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_TEXT ), VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 
 	outParms.append( p );
@@ -2276,8 +2276,8 @@ bool OvrFolderBrowser::gazingAtMenu() const
 {
 	if ( focusedHandle().IsValid() )
 	{
-		const Matrix4f & view = m_app->lastViewMatrix();
-		Vector3f viewForwardFlat( view.M[ 2 ][ 0 ], 0.0f, view.M[ 2 ][ 2 ] );
+        const VR4Matrixf & view = m_app->lastViewMatrix();
+        V3Vectf viewForwardFlat( view.M[ 2 ][ 0 ], 0.0f, view.M[ 2 ][ 2 ] );
 		viewForwardFlat.Normalize();
 
 		static const float cosHalf = cos( m_visiblePanelsArcAngle );
@@ -2325,7 +2325,7 @@ void OvrFolderBrowser::touchUp()
 	m_touchDirectionLocked = NO_LOCK;
 }
 
-void OvrFolderBrowser::touchRelative( Vector3f touchPos )
+void OvrFolderBrowser::touchRelative( V3Vectf touchPos )
 {
 	if ( !m_isTouchDownPosistionTracked )
 	{

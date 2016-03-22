@@ -24,8 +24,8 @@ public:
 	virtual bool 		Command( const char * msg );
 	virtual bool 		OnKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType );
 
-	virtual Matrix4f 	DrawEyeView( const int eye, const float fovDegrees );
-	virtual Matrix4f 	Frame( const VrFrame & vrFrame );
+    virtual VR4Matrixf 	DrawEyeView( const int eye, const float fovDegrees );
+    virtual VR4Matrixf 	Frame( const VrFrame & vrFrame );
 
 	void 				ResumeChoice( int itemNum );
 
@@ -40,7 +40,7 @@ private:
 	VRMenu *			Menu;
 
 private:
-    void				SetPosition( OvrVRMenuMgr & menuMgr, const Vector3f &pos );
+    void				SetPosition( OvrVRMenuMgr & menuMgr, const V3Vectf &pos );
     void 				CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFont const & font );
 };
 

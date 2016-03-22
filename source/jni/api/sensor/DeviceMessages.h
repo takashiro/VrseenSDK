@@ -77,10 +77,10 @@ public:
     {
     }
 
-    Vector3f Acceleration;  // Acceleration in m/s^2.
-    Vector3f RotationRate;  // Angular velocity in rad/s.
-    Vector3f MagneticField; // Magnetic field strength in Gauss.
-    Vector3f MagneticBias;  // Magnetic field calibration bias in Gauss.
+    V3Vectf Acceleration;  // Acceleration in m/s^2.
+    V3Vectf RotationRate;  // Angular velocity in rad/s.
+    V3Vectf MagneticField; // Magnetic field strength in Gauss.
+    V3Vectf MagneticBias;  // Magnetic field calibration bias in Gauss.
     float    Temperature;   // Temperature reading on sensor surface, in degrees Celsius.
     float    TimeDelta;     // Time passed since last Body Frame, in seconds.
 

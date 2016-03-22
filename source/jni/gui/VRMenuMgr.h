@@ -65,13 +65,13 @@ public:
 	// Submits the specified menu object and its children
     virtual void				submitForRendering( OvrDebugLines & debugLines, BitmapFont const & font,
                                         BitmapFontSurface & fontSurface, menuHandle_t const handle, 
-                                        Posef const & worldPose, VRMenuRenderFlags_t const & flags ) = 0;
+                                        VPosf const & worldPose, VRMenuRenderFlags_t const & flags ) = 0;
 
 	// Call once per frame before rendering to sort surfaces.
-    virtual void				finish( Matrix4f const & viewMatrix ) = 0;
+    virtual void				finish( VR4Matrixf const & viewMatrix ) = 0;
 
 	// Render's all objects that have been submitted on the current frame.
-    virtual void				renderSubmitted( Matrix4f const & worldMVP, Matrix4f const & viewMatrix ) const = 0;
+    virtual void				renderSubmitted( VR4Matrixf const & worldMVP, VR4Matrixf const & viewMatrix ) const = 0;
 
     virtual VGlShader const *   getGUIGlProgram( eGUIProgramType const programType ) const = 0;
 };

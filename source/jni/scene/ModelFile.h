@@ -45,9 +45,9 @@ struct ModelJoint
 {
 	int					index;
 	VString				name;
-	Matrix4f			transform;
+    VR4Matrixf			transform;
 	ModelJointAnimation	animation;
-	Vector3f			parameters;
+    V3Vectf			parameters;
 	float				timeOffset;
 	float				timeScale;
 };
@@ -55,9 +55,9 @@ struct ModelJoint
 struct ModelTag
 {
 	VString		name;
-	Matrix4f	matrix;
-	Vector4i	jointIndices;
-	Vector4f	jointWeights;
+    VR4Matrixf	matrix;
+    V4Vecti	jointIndices;
+    V4Vectf	jointWeights;
 };
 
 // A ModelFile is the in-memory representation of a digested model file.
@@ -77,7 +77,7 @@ public:
 
 	int							GetJointCount() const { return Joints.length(); }
 	const ModelJoint *			GetJoint( const int index ) const { return &Joints[index]; }
-	Bounds3f					GetBounds() const;
+    VBoxf					GetBounds() const;
 
 public:
 	VString						FileName;

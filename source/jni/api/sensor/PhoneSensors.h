@@ -11,7 +11,7 @@ NV_NAMESPACE_BEGIN
 class PhoneSensors : public RefCountBase<PhoneSensors>
 {
 public:
-	virtual void GetLatestUncalibratedMagAndBiasValue(Vector3f* mag, Vector3f* bias) = 0;
+    virtual void GetLatestUncalibratedMagAndBiasValue(V3Vectf* mag, V3Vectf* bias) = 0;
 
 	static PhoneSensors* Create();
 	static PhoneSensors* GetInstance();

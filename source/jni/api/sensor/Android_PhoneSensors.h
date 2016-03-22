@@ -18,11 +18,11 @@ public:
 	PhoneSensors();
 	virtual ~PhoneSensors();
 
-	virtual void GetLatestUncalibratedMagAndBiasValue(Vector3f* mag, Vector3f* bias);
+    virtual void GetLatestUncalibratedMagAndBiasValue(V3Vectf* mag, V3Vectf* bias);
 
 private:
-	Vector3f			LatestMagUncalibrated;
-	Vector3f			LatestMagUncalibratedBias;
+    V3Vectf			LatestMagUncalibrated;
+    V3Vectf			LatestMagUncalibratedBias;
 	bool				IsFirstExecution;
 
 	ASensorEventQueue* 	pQueue;

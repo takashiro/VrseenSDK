@@ -32,10 +32,10 @@ const VRMenuId_t OvrVideoMenu::ID_VIDEO_BUTTON( 1000 + 1012 );
 
 char const * OvrVideoMenu::MENU_NAME = "VideoMenu";
 
-static const Vector3f FWD( 0.0f, 0.0f, 1.0f );
-static const Vector3f RIGHT( 1.0f, 0.0f, 0.0f );
-static const Vector3f UP( 0.0f, 1.0f, 0.0f );
-static const Vector3f DOWN( 0.0f, -1.0f, 0.0f );
+static const V3Vectf FWD( 0.0f, 0.0f, 1.0f );
+static const V3Vectf RIGHT( 1.0f, 0.0f, 0.0f );
+static const V3Vectf UP( 0.0f, 1.0f, 0.0f );
+static const V3Vectf DOWN( 0.0f, -1.0f, 0.0f );
 
 static const int BUTTON_COOL_DOWN_SECONDS = 0.25f;
 
@@ -131,15 +131,15 @@ OvrVideoMenu::OvrVideoMenu( App * app, Oculus360Videos * videos, OvrVRMenuMgr & 
 
 	comps.append( new OvrVideoMenuRootComponent( *this ) );
 
-	Quatf rot( DOWN, 0.0f );
-	Vector3f dir( -FWD );
-	Posef panelPose( rot, dir * Radius );
-	Vector3f panelScale( 1.0f );
+    VQuatf rot( DOWN, 0.0f );
+    V3Vectf dir( -FWD );
+    VPosf panelPose( rot, dir * Radius );
+    V3Vectf panelScale( 1.0f );
 
 	const VRMenuFontParms fontParms( true, true, false, false, true, 0.525f, 0.45f, 1.0f );
 
 	VRMenuObjectParms attrParms( VRMENU_STATIC, comps,
-		VRMenuSurfaceParms(), "Attribution Panel", panelPose, panelScale, Posef(), Vector3f( 1.0f ), fontParms, attributionPanelId,
+        VRMenuSurfaceParms(), "Attribution Panel", panelPose, panelScale, VPosf(), V3Vectf( 1.0f ), fontParms, attributionPanelId,
 		VRMenuObjectFlags_t(), VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 
 	parms.append( &attrParms );
@@ -156,9 +156,9 @@ OvrVideoMenu::OvrVideoMenu( App * app, Oculus360Videos * videos, OvrVRMenuMgr & 
 	float const ICON_HEIGHT = 80.0f * VRMenuObject::DEFAULT_TEXEL_SCALE;
 	VArray< VRMenuSurfaceParms > surfParms;
 
-	Posef browserButtonPose( Quatf(), UP * ICON_HEIGHT * 2.0f );
+    VPosf browserButtonPose( VQuatf(), UP * ICON_HEIGHT * 2.0f );
 
-	comps.append( new OvrDefaultComponent( Vector3f( 0.0f, 0.0f, 0.05f ), 1.05f, 0.25f, 0.0f, Vector4f( 1.0f ), Vector4f( 1.0f ) ) );
+    comps.append( new OvrDefaultComponent( V3Vectf( 0.0f, 0.0f, 0.05f ), 1.05f, 0.25f, 0.0f, V4Vectf( 1.0f ), V4Vectf( 1.0f ) ) );
 	comps.append( new OvrButton_OnUp( this, ID_BROWSER_BUTTON ) );
 	comps.append( new OvrSurfaceToggleComponent( ) );
 	surfParms.append( VRMenuSurfaceParms( "browser",
@@ -168,7 +168,7 @@ OvrVideoMenu::OvrVideoMenu( App * app, Oculus360Videos * videos, OvrVRMenuMgr & 
 		"assets/nav_home_on.png", SURFACE_TEXTURE_DIFFUSE,
 		NULL, SURFACE_TEXTURE_MAX, NULL, SURFACE_TEXTURE_MAX ) );
 	VRMenuObjectParms browserButtonParms( VRMENU_BUTTON, comps, surfParms, "",
-		browserButtonPose, Vector3f( 1.0f ), Posef(), Vector3f( 1.0f ), fontParms,
+        browserButtonPose, V3Vectf( 1.0f ), VPosf(), V3Vectf( 1.0f ), fontParms,
 		ID_BROWSER_BUTTON, VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_TEXT ),
 		VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 	parms.append( &browserButtonParms );
@@ -184,9 +184,9 @@ OvrVideoMenu::OvrVideoMenu( App * app, Oculus360Videos * videos, OvrVRMenuMgr & 
 	OVR_UNUSED( browserButtonObject );
 
 	//Video control button 
-	Posef videoButtonPose( Quatf(), DOWN * ICON_HEIGHT * 2.0f );
+    VPosf videoButtonPose( VQuatf(), DOWN * ICON_HEIGHT * 2.0f );
 
-	comps.append( new OvrDefaultComponent( Vector3f( 0.0f, 0.0f, 0.05f ), 1.05f, 0.25f, 0.0f, Vector4f( 1.0f ), Vector4f( 1.0f ) ) );
+    comps.append( new OvrDefaultComponent( V3Vectf( 0.0f, 0.0f, 0.05f ), 1.05f, 0.25f, 0.0f, V4Vectf( 1.0f ), V4Vectf( 1.0f ) ) );
 	comps.append( new OvrButton_OnUp( this, ID_VIDEO_BUTTON ) );
 	comps.append( new OvrSurfaceToggleComponent( ) );
 	surfParms.append( VRMenuSurfaceParms( "browser",
@@ -196,7 +196,7 @@ OvrVideoMenu::OvrVideoMenu( App * app, Oculus360Videos * videos, OvrVRMenuMgr & 
 		"assets/nav_restart_on.png", SURFACE_TEXTURE_DIFFUSE,
 		NULL, SURFACE_TEXTURE_MAX, NULL, SURFACE_TEXTURE_MAX ) );
 	VRMenuObjectParms controlButtonParms( VRMENU_BUTTON, comps, surfParms, "",
-		videoButtonPose, Vector3f( 1.0f ), Posef(), Vector3f( 1.0f ), fontParms,
+        videoButtonPose, V3Vectf( 1.0f ), VPosf(), V3Vectf( 1.0f ), fontParms,
 		ID_VIDEO_BUTTON, VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_TEXT ),
 		VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 	parms.append( &controlButtonParms );

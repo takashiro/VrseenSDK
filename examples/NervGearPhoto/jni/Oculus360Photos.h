@@ -68,8 +68,8 @@ public:
     void init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI ) override;
     void shutdown() override;
     void ConfigureVrMode( ovrModeParms & modeParms ) override;
-    Matrix4f 	drawEyeView( const int eye, const float fovDegrees ) override;
-    Matrix4f 	onNewFrame( VrFrame vrFrame ) override;
+    VR4Matrixf 	drawEyeView( const int eye, const float fovDegrees ) override;
+    VR4Matrixf 	onNewFrame( VrFrame vrFrame ) override;
     void		Command( const char * msg ) override;
     bool 		onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType ) override;
     bool		wantSrgbFramebuffer() const override;

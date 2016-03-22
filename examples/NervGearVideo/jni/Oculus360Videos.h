@@ -41,8 +41,8 @@ public:
 	virtual void		init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI );
 	virtual void		shutdown();
 	virtual void		ConfigureVrMode( ovrModeParms & modeParms );
-	virtual Matrix4f 	drawEyeView( const int eye, const float fovDegrees );
-	virtual Matrix4f 	onNewFrame( VrFrame vrFrame );
+    virtual VR4Matrixf 	drawEyeView( const int eye, const float fovDegrees );
+    virtual VR4Matrixf 	onNewFrame( VrFrame vrFrame );
 	virtual void		Command( const char * msg );
 	virtual bool 		onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType );
 
@@ -56,8 +56,8 @@ public:
 
 	void 				CloseSwipeView( const VrFrame &vrFrame );
 	void 				OpenSwipeView( const VrFrame &vrFrame, bool centerList );
-	Matrix4f			TexmForVideo( const int eye );
-	Matrix4f			TexmForBackground( const int eye );
+    VR4Matrixf			TexmForVideo( const int eye );
+    VR4Matrixf			TexmForBackground( const int eye );
 
 	void				SetMenuState( const OvrMenuState state );
 	OvrMenuState		GetCurrentState() const				{ return  MenuState; }

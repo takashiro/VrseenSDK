@@ -27,7 +27,7 @@ private:
 		UInt32		Version;
 		double	    ActualTemperature;
 		UInt32      Time;
-		Vector3d    Offset;
+        V3Vectd    Offset;
 	};
 	VString GetBaseOVRPath(bool create_dir);
 	VString GetCalibrationPath(bool create_dir);

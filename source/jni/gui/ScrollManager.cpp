@@ -320,7 +320,7 @@ void OvrScrollManager::touchUp()
 	return;
 }
 
-void OvrScrollManager::touchRelative( Vector3f touchPos )
+void OvrScrollManager::touchRelative( V3Vectf touchPos )
 {
 	if ( !m_touchIsDown )
 	{

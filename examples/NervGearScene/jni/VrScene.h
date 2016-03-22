@@ -16,8 +16,8 @@ public:
 	virtual void 		ConfigureVrMode( ovrModeParms & modeParms );
 	virtual void		init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI );
 	virtual void		shutdown();
-	virtual Matrix4f	drawEyeView( const int eye, const float fovDegrees );
-	virtual Matrix4f	onNewFrame( VrFrame vrFrame );
+    virtual VR4Matrixf	drawEyeView( const int eye, const float fovDegrees );
+    virtual VR4Matrixf	onNewFrame( VrFrame vrFrame );
 	virtual	void		onNewIntent( const char * fromPackageName, const char * command, const char * uri );
 	virtual void		Command( const char * msg );
 

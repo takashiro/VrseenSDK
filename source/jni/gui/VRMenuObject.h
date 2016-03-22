@@ -180,7 +180,7 @@ public:
 			eSurfaceTextureType textureType1,
 			char const * imageName2,
 			eSurfaceTextureType textureType2,
-			Vector2f const & anchors ) :
+            V2Vectf const & anchors ) :
 		SurfaceName( surfaceName ),
 		ImageNames(),
 		Contents( CONTENT_SOLID ),
@@ -263,9 +263,9 @@ public:
 	short				ImageHeight[VRMENUSURFACE_IMAGE_MAX];
 	eSurfaceTextureType	TextureTypes[VRMENUSURFACE_IMAGE_MAX];
 	ContentFlags_t		Contents;
-	Vector2f			Anchors;
-	Vector4f			Border;						// if set to non-zero, sets the border on a sliced sprite
-	Vector2f			Dims;						// if set to zero, use texture size, non-zero sets dims to absolute size
+    V2Vectf			Anchors;
+    V4Vectf			Border;						// if set to non-zero, sets the border on a sliced sprite
+    V2Vectf			Dims;						// if set to zero, use texture size, non-zero sets dims to absolute size
 
 private:
 	void InitSurfaceTextureTypes()
@@ -391,8 +391,8 @@ public:
 			VArray< VRMenuComponent* > const & components,
 			VRMenuSurfaceParms const & surfaceParms,
 			char const * text,
-			Posef const & localPose,
-			Vector3f const & localScale,
+            VPosf const & localPose,
+            V3Vectf const & localScale,
 			VRMenuFontParms const & fontParms,
 			VRMenuId_t const id,
 			VRMenuObjectFlags_t const flags,
@@ -405,7 +405,7 @@ public:
 		Text( text ),
 		LocalPose( localPose ),
 		LocalScale( localScale ),
-        TextLocalPose( Quatf(), Vector3f( 0.0f ) ),
+        TextLocalPose( VQuatf(), V3Vectf( 0.0f ) ),
         TextLocalScale( 1.0f ),
 		FontParms( fontParms ),
         Color( 1.0f ),
@@ -421,10 +421,10 @@ public:
 			VArray< VRMenuComponent* > const & components,
 			VRMenuSurfaceParms const & surfaceParms,
 			char const * text,
-			Posef const & localPose,
-			Vector3f const & localScale,
-            Posef const & textLocalPose,
-            Vector3f const & textLocalScale,
+            VPosf const & localPose,
+            V3Vectf const & localScale,
+            VPosf const & textLocalPose,
+            V3Vectf const & textLocalScale,
 			VRMenuFontParms const & fontParms,
 			VRMenuId_t const id,
 			VRMenuObjectFlags_t const flags,
@@ -453,10 +453,10 @@ public:
 			VArray< VRMenuComponent* > const & components,
 			VArray< VRMenuSurfaceParms > const & surfaceParms,
 			char const * text,
-			Posef const & localPose,
-			Vector3f const & localScale,
-            Posef const & textLocalPose,
-            Vector3f const & textLocalScale,
+            VPosf const & localPose,
+            V3Vectf const & localScale,
+            VPosf const & textLocalPose,
+            V3Vectf const & textLocalScale,
 			VRMenuFontParms const & fontParms,
 			VRMenuId_t const id,
 			VRMenuObjectFlags_t const flags,
@@ -485,13 +485,13 @@ public:
     VArray< VRMenuComponent* >   Components;						// list of pointers to components
 	VArray< VRMenuSurfaceParms >	SurfaceParms;					// list of surface parameters for the object. Each parm will result in one surface, and surfaces will render in the same order as this list.
 	VString      			    Text;							// text to display on this object (if any)
-	Posef					    LocalPose;						// local-space position and orientation
-	Vector3f				    LocalScale;						// local-space scale
-    Posef                       TextLocalPose;                  // offset of text, local to surface
-    Vector3f                    TextLocalScale;                 // scale of text, local to surface
+    VPosf					    LocalPose;						// local-space position and orientation
+    V3Vectf				    LocalScale;						// local-space scale
+    VPosf                       TextLocalPose;                  // offset of text, local to surface
+    V3Vectf                    TextLocalScale;                 // scale of text, local to surface
 	VRMenuFontParms			    FontParms;						// parameters for rendering the object's text
-    Vector4f                    Color;                          // color modulation for surfaces
-    Vector4f                    TextColor;                      // color of text
+    V4Vectf                    Color;                          // color modulation for surfaces
+    V4Vectf                    TextColor;                      // color of text
 	VRMenuId_t				    Id;								// user identifier, so the client using a menu can find a particular object
 	VRMenuId_t					ParentId;						// id of object that should be made this object's parent.
 	ContentFlags_t				Contents;						// collision contents for the menu object
@@ -506,16 +506,16 @@ public:
 	HitTestResult &	operator=( OvrCollisionResult & rhs )
 	{
 		this->HitHandle.Release();
-		this->RayStart = Vector3f::ZERO;
-		this->RayDir = Vector3f::ZERO;
+        this->RayStart = V3Vectf::ZERO;
+        this->RayDir = V3Vectf::ZERO;
 		this->t = rhs.t;
 		this->uv = rhs.uv;
 		return *this;
 	}
 
 	menuHandle_t	HitHandle;
-	Vector3f		RayStart;
-	Vector3f		RayDir;
+    V3Vectf		RayStart;
+    V3Vectf		RayDir;
 };
 
 //==============================================================
@@ -546,13 +546,13 @@ public:
 
 	// Update this menu for a frame, including testing the gaze direction against the bounds
 	// of this menu and all its children
-	virtual void				frame( OvrVRMenuMgr & menuMgr, Matrix4f const & viewMatrix ) = 0;
+    virtual void				frame( OvrVRMenuMgr & menuMgr, VR4Matrixf const & viewMatrix ) = 0;
 
 	// Test the ray against this object and all child objects, returning the first object that
 	// was hit by the ray. The ray should be in parent-local space - for the current root menu
 	// this is always world space.
-	virtual menuHandle_t		hitTest( App * app, OvrVRMenuMgr & menuMgr, BitmapFont const & font, Posef const & worldPose,
-                                        Vector3f const & rayStart, Vector3f const & rayDir, ContentFlags_t const testContents,
+    virtual menuHandle_t		hitTest( App * app, OvrVRMenuMgr & menuMgr, BitmapFont const & font, VPosf const & worldPose,
+                                        V3Vectf const & rayStart, V3Vectf const & rayDir, ContentFlags_t const testContents,
 										HitTestResult & result ) const = 0;
 
 	//--------------------------------------------------------------
@@ -603,45 +603,45 @@ public:
 	virtual	int					numChildren() const = 0;
 	virtual menuHandle_t		getChildHandleForIndex( int const index ) const = 0;
 
-	virtual Posef const &		localPose() const = 0;
-	virtual void				setLocalPose( Posef const & pose ) = 0;
-	virtual Vector3f const &	localPosition() const = 0;
-	virtual void				setLocalPosition( Vector3f const & pos ) = 0;
-	virtual Quatf const &		localRotation() const = 0;
-	virtual void				setLocalRotation( Quatf const & rot ) = 0;
-	virtual Vector3f            localScale() const = 0;
-	virtual void				setLocalScale( Vector3f const & scale ) = 0;
+    virtual VPosf const &		localPose() const = 0;
+    virtual void				setLocalPose( VPosf const & pose ) = 0;
+    virtual V3Vectf const &	localPosition() const = 0;
+    virtual void				setLocalPosition( V3Vectf const & pos ) = 0;
+    virtual VQuatf const &		localRotation() const = 0;
+    virtual void				setLocalRotation( VQuatf const & rot ) = 0;
+    virtual V3Vectf            localScale() const = 0;
+    virtual void				setLocalScale( V3Vectf const & scale ) = 0;
 
-    virtual Posef const &       hilightPose() const = 0;
-    virtual void                setHilightPose( Posef const & pose ) = 0;
+    virtual VPosf const &       hilightPose() const = 0;
+    virtual void                setHilightPose( VPosf const & pose ) = 0;
     virtual float               hilightScale() const = 0;
     virtual void                setHilightScale( float const setColor ) = 0;
 
-    virtual void                setTextLocalPose( Posef const & pose ) = 0;
-    virtual Posef const &       textLocalPose() const = 0;
-    virtual void                setTextLocalPosition( Vector3f const & pos ) = 0;
-    virtual Vector3f const &    textLocalPosition() const = 0;
-    virtual void                setTextLocalRotation( Quatf const & rot ) = 0;
-    virtual Quatf const &       textLocalRotation() const = 0;
-    virtual Vector3f            textLocalScale() const = 0;
-    virtual void                setTextLocalScale( Vector3f const & scale ) = 0;
+    virtual void                setTextLocalPose( VPosf const & pose ) = 0;
+    virtual VPosf const &       textLocalPose() const = 0;
+    virtual void                setTextLocalPosition( V3Vectf const & pos ) = 0;
+    virtual V3Vectf const &    textLocalPosition() const = 0;
+    virtual void                setTextLocalRotation( VQuatf const & rot ) = 0;
+    virtual VQuatf const &       textLocalRotation() const = 0;
+    virtual V3Vectf            textLocalScale() const = 0;
+    virtual void                setTextLocalScale( V3Vectf const & scale ) = 0;
 
-	virtual	void				setLocalBoundsExpand( Vector3f const mins, Vector3f const & maxs ) = 0;
+    virtual	void				setLocalBoundsExpand( V3Vectf const mins, V3Vectf const & maxs ) = 0;
 
-    virtual Bounds3f			getTextLocalBounds( BitmapFont const & font ) const = 0;
-	virtual Bounds3f            setTextLocalBounds( BitmapFont const & font ) const = 0;
+    virtual VBoxf			getTextLocalBounds( BitmapFont const & font ) const = 0;
+    virtual VBoxf            setTextLocalBounds( BitmapFont const & font ) const = 0;
 
-	virtual Bounds3f const &	cullBounds() const = 0;
-	virtual void				setCullBounds( Bounds3f const & bounds ) const = 0;
+    virtual VBoxf const &	cullBounds() const = 0;
+    virtual void				setCullBounds( VBoxf const & bounds ) const = 0;
 
-	virtual	Vector2f const &	colorTableOffset() const = 0;
-	virtual void				setColorTableOffset( Vector2f const & ofs ) = 0;
+    virtual	V2Vectf const &	colorTableOffset() const = 0;
+    virtual void				setColorTableOffset( V2Vectf const & ofs ) = 0;
 
-	virtual	Vector4f const &	color() const = 0;
-	virtual	void				setColor( Vector4f const & c ) = 0;
+    virtual	V4Vectf const &	color() const = 0;
+    virtual	void				setColor( V4Vectf const & c ) = 0;
 
-	virtual	Vector4f const &	textColor() const = 0;
-	virtual	void				setTextColor( Vector4f const & c ) = 0;
+    virtual	V4Vectf const &	textColor() const = 0;
+    virtual	void				setTextColor( V4Vectf const & c ) = 0;
 
 	virtual VRMenuId_t			id() const = 0;
 	// pass -1 to use full depth of the tree.
@@ -650,16 +650,16 @@ public:
 	virtual void				setFontParms( VRMenuFontParms const & fontParms ) = 0;
 	virtual VRMenuFontParms const & fontParms() const = 0;
 
-	virtual	Vector3f const &	fadeDirection() const = 0;
-	virtual void				setFadeDirection( Vector3f const & dir ) = 0;
+    virtual	V3Vectf const &	fadeDirection() const = 0;
+    virtual void				setFadeDirection( V3Vectf const & dir ) = 0;
 
 	virtual void				setVisible( bool visible ) = 0;
 
 	// returns the index of the first surface with SURFACE_TEXTURE_ADDITIVE.
 	// If singular is true, then the matching surface must have only one texture map and it must be of that type.
 	virtual int					findSurfaceWithTextureType( eSurfaceTextureType const type, bool const singular ) const = 0;
-	virtual	void				setSurfaceColor( int const surfaceIndex, Vector4f const & color ) = 0;
-	virtual Vector4f const &	getSurfaceColor( int const surfaceIndex ) const = 0;
+    virtual	void				setSurfaceColor( int const surfaceIndex, V4Vectf const & color ) = 0;
+    virtual V4Vectf const &	getSurfaceColor( int const surfaceIndex ) const = 0;
 	virtual	void				setSurfaceVisible( int const surfaceIndex, bool const v ) = 0;
 	virtual bool				getSurfaceVisible( int const surfaceIndex ) const = 0;
 	virtual int					numSurfaces() const = 0;
@@ -676,11 +676,11 @@ public:
 
 	virtual void 				regenerateSurfaceGeometry( int const surfaceIndex, const bool freeSurfaceGeometry ) = 0;
 
-	virtual Vector2f const &	getSurfaceDims( int const surfaceIndex ) const = 0;
-	virtual void				setSurfaceDims( int const surfaceIndex, Vector2f const &dims ) = 0;	// requires call to RegenerateSurfaceGeometry() to take effect
+    virtual V2Vectf const &	getSurfaceDims( int const surfaceIndex ) const = 0;
+    virtual void				setSurfaceDims( int const surfaceIndex, V2Vectf const &dims ) = 0;	// requires call to RegenerateSurfaceGeometry() to take effect
 
-	virtual Vector4f const &	getSurfaceBorder( int const surfaceIndex ) = 0;
-	virtual void				setSurfaceBorder( int const surfaceIndex, Vector4f const & border ) = 0;	// requires call to RegenerateSurfaceGeometry() to take effect
+    virtual V4Vectf const &	getSurfaceBorder( int const surfaceIndex ) = 0;
+    virtual void				setSurfaceBorder( int const surfaceIndex, V4Vectf const & border ) = 0;	// requires call to RegenerateSurfaceGeometry() to take effect
 
 	//--------------------------------------------------------------
 	// collision

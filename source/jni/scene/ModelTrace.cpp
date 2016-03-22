@@ -19,8 +19,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 namespace NervGear
 {
 
-bool Intersect_RayBounds( const Vector3f & rayStart, const Vector3f & rayDir,
-							const Vector3f & mins, const Vector3f & maxs,
+bool Intersect_RayBounds( const V3Vectf & rayStart, const V3Vectf & rayDir,
+                            const V3Vectf & mins, const V3Vectf & maxs,
 							float & t0, float & t1 )
 {
     const float rcpDirX = ( fabsf( rayDir.x ) > VConstants<float>::SmallestNonDenormal ) ? ( 1.0f / rayDir.x ) : VConstants<float>::HugeNumber;
@@ -49,18 +49,18 @@ bool Intersect_RayBounds( const Vector3f & rayStart, const Vector3f & rayDir,
 	return ( t0 <= t1 );
 }
 
-bool Intersect_RayTriangle( const Vector3f & rayStart, const Vector3f & rayDir,
-							const Vector3f & v0, const Vector3f & v1, const Vector3f & v2,
+bool Intersect_RayTriangle( const V3Vectf & rayStart, const V3Vectf & rayDir,
+                            const V3Vectf & v0, const V3Vectf & v1, const V3Vectf & v2,
 							float & t0, float & u, float & v )
 {
 	assert( rayDir.IsNormalized() );
 
-	const Vector3f edge1 = v1 - v0;
-	const Vector3f edge2 = v2 - v0;
+    const V3Vectf edge1 = v1 - v0;
+    const V3Vectf edge2 = v2 - v0;
 
-	const Vector3f tv = rayStart - v0;
-	const Vector3f pv = rayDir.Cross( edge2 );
-	const Vector3f qv = tv.Cross( edge1 );
+    const V3Vectf tv = rayStart - v0;
+    const V3Vectf pv = rayDir.Cross( edge2 );
+    const V3Vectf qv = tv.Cross( edge1 );
 	const float det = edge1.Dot( pv );
 
 	// If the determinant is negative then the triangle is backfacing.
@@ -109,19 +109,19 @@ bool Intersect_RayTriangle( const Vector3f & rayStart, const Vector3f & rayDir,
 
 const int RT_KDTREE_MAX_ITERATIONS	= 128;
 
-traceResult_t ModelTrace::Trace( const Vector3f & start, const Vector3f & end ) const
+traceResult_t ModelTrace::Trace( const V3Vectf & start, const V3Vectf & end ) const
 {
 	traceResult_t result;
 	result.triangleIndex = -1;
 	result.fraction = 1.0f;
-	result.uv = Vector2f( 0.0f );
-	result.normal = Vector3f( 0.0f );
+    result.uv = V2Vectf( 0.0f );
+    result.normal = V3Vectf( 0.0f );
 
-	const Vector3f rayDelta = end - start;
+    const V3Vectf rayDelta = end - start;
 	const float rayLengthSqr = rayDelta.LengthSq();
 	const float rayLengthRcp = RcpSqrt( rayLengthSqr );
 	const float rayLength = rayLengthSqr * rayLengthRcp;
-	const Vector3f rayDir = rayDelta * rayLengthRcp;
+    const V3Vectf rayDir = rayDelta * rayLengthRcp;
 
     const float rcpRayDirX = ( fabsf( rayDir.x ) > VConstants<float>::SmallestNonDenormal ) ? ( 1.0f / rayDir.x ) : VConstants<float>::HugeNumber;
     const float rcpRayDirY = ( fabsf( rayDir.y ) > VConstants<float>::SmallestNonDenormal ) ? ( 1.0f / rayDir.y ) : VConstants<float>::HugeNumber;
@@ -153,13 +153,13 @@ traceResult_t ModelTrace::Trace( const Vector3f & start, const Vector3f & end ) 
 
 	float entryDistance = Alg::Max( t0, 0.0f );
 	float bestDistance = Alg::Min( t1 + 0.00001f, rayLength );
-	Vector2f uv;
+    V2Vectf uv;
 
 	const kdtree_node_t * currentNode = &nodes[0];
 
 	for ( int i = 0; i < RT_KDTREE_MAX_ITERATIONS; i++ )
 	{
-		const Vector3f rayEntryPoint = start + rayDir * entryDistance;
+        const V3Vectf rayEntryPoint = start + rayDir * entryDistance;
 
 		// Step down the tree until a leaf node is found.
 		while ( ( currentNode->data & 1 ) == 0 )
@@ -256,31 +256,31 @@ traceResult_t ModelTrace::Trace( const Vector3f & start, const Vector3f & end ) 
 		result.uv = uvs[indices[result.triangleIndex + 0]] * ( 1.0f - uv.x - uv.y ) +
 					uvs[indices[result.triangleIndex + 1]] * uv.x +
 					uvs[indices[result.triangleIndex + 2]] * uv.y;
-		const Vector3f d1 = vertices[indices[result.triangleIndex + 1]] - vertices[indices[result.triangleIndex + 0]];
-		const Vector3f d2 = vertices[indices[result.triangleIndex + 2]] - vertices[indices[result.triangleIndex + 0]];
+        const V3Vectf d1 = vertices[indices[result.triangleIndex + 1]] - vertices[indices[result.triangleIndex + 0]];
+        const V3Vectf d2 = vertices[indices[result.triangleIndex + 2]] - vertices[indices[result.triangleIndex + 0]];
 		result.normal = d1.Cross( d2 ).Normalized();
 	}
 
 	return result;
 }
 
-traceResult_t ModelTrace::Trace_Exhaustive( const Vector3f & start, const Vector3f & end ) const
+traceResult_t ModelTrace::Trace_Exhaustive( const V3Vectf & start, const V3Vectf & end ) const
 {
 	traceResult_t result;
 	result.triangleIndex = -1;
 	result.fraction = 1.0f;
-	result.uv = Vector2f( 0.0f );
-	result.normal = Vector3f( 0.0f );
+    result.uv = V2Vectf( 0.0f );
+    result.normal = V3Vectf( 0.0f );
 
-	const Vector3f rayDelta = end - start;
+    const V3Vectf rayDelta = end - start;
 	const float rayLengthSqr = rayDelta.LengthSq();
 	const float rayLengthRcp = RcpSqrt( rayLengthSqr );
 	const float rayLength = rayLengthSqr * rayLengthRcp;
-	const Vector3f rayStart = start;
-	const Vector3f rayDir = rayDelta * rayLengthRcp;
+    const V3Vectf rayStart = start;
+    const V3Vectf rayDir = rayDelta * rayLengthRcp;
 
 	float bestDistance = rayLength;
-	Vector2f uv;
+    V2Vectf uv;
 
 	for ( int i = 0; i < header.numIndices; i += 3 )
 	{
@@ -310,8 +310,8 @@ traceResult_t ModelTrace::Trace_Exhaustive( const Vector3f & start, const Vector
 		result.uv = uvs[indices[result.triangleIndex + 0]] * ( 1.0f - uv.x - uv.y ) +
 					uvs[indices[result.triangleIndex + 1]] * uv.x +
 					uvs[indices[result.triangleIndex + 2]] * uv.y;
-		const Vector3f d1 = vertices[indices[result.triangleIndex + 1]] - vertices[indices[result.triangleIndex + 0]];
-		const Vector3f d2 = vertices[indices[result.triangleIndex + 2]] - vertices[indices[result.triangleIndex + 0]];
+        const V3Vectf d1 = vertices[indices[result.triangleIndex + 1]] - vertices[indices[result.triangleIndex + 0]];
+        const V3Vectf d2 = vertices[indices[result.triangleIndex + 2]] - vertices[indices[result.triangleIndex + 0]];
 		result.normal = d1.Cross( d2 ).Normalized();
 	}
 

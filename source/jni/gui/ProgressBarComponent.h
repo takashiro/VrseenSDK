@@ -44,13 +44,13 @@ public:
     static	void		getProgressBarParms( VRMenu & menu, const int width, const int height, const VRMenuId_t parentId,
 									const VRMenuId_t rootId, const VRMenuId_t xformId, const VRMenuId_t baseId,
 									const VRMenuId_t thumbId, const VRMenuId_t animId,
-									const Posef & rootLocalPose, const Posef & xformPose,
+                                    const VPosf & rootLocalPose, const VPosf & xformPose,
 									const char * baseImage, const char * barImage, const char * animImage,
 									VArray< const VRMenuObjectParms* > & outParms );
 
     void				setProgressFrac( OvrVRMenuMgr & menuMgr, VRMenuObject * self, const float frac );
     void				setProgressbarState( VRMenuObject * self, const eProgressBarState state );
-    void				oneTimeInit( OvrVRMenuMgr & menuMgr, VRMenuObject * self, const Vector4f & color );
+    void				oneTimeInit( OvrVRMenuMgr & menuMgr, VRMenuObject * self, const V4Vectf & color );
     void				setProgressBarBaseWidth( int width ) { m_progressBarBaseWidth = static_cast< float >( width ); }
     void				setProgressBarBaseHeight( int height ) { m_progressBarBaseHeight = static_cast< float >( height ); }
     void				setProgressBarThumbWidth( int width ) { m_progressBarThumbWidth = static_cast< float >( width ); }

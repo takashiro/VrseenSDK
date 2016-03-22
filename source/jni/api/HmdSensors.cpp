@@ -160,7 +160,7 @@ NervGear::SensorState HMDState::predictedSensorState( double absTime )
 
 				// restore the yaw from the last sensor state when we re-connect to a sensor
 				float yaw, pitch, roll;
-				m_lastSensorState.Predicted.Transform.Orientation.GetEulerAngles< NervGear::Axis_Y, NervGear::Axis_X, NervGear::Axis_Z >( &yaw, &pitch, &roll );
+                m_lastSensorState.Predicted.Transform.Orientation.GetEulerAngles< NervGear::VAxis_Y, NervGear::VAxis_X, NervGear::VAxis_Z >( &yaw, &pitch, &roll );
 				m_sFusion.SetYaw( yaw );
 
 				LOG( "HMDState::PredictedSensorState: created sensor (tid=%d)", gettid() );

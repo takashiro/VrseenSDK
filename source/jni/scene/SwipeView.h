@@ -26,7 +26,7 @@ public:
 
 	void *		Identifier;
 	const char * Text;
-	Vector2f	Size;			// on a unit circle (radians)
+    V2Vectf	Size;			// on a unit circle (radians)
 	GLuint		Texture;
 	int			Id;				// unique id
 
@@ -81,8 +81,8 @@ public:
 
 	void		Init( OvrGazeCursor & gazeCursor );
 	SwipeAction	Frame( OvrGazeCursor & gazeCursor, BitmapFont const & font, BitmapFontSurface & fontSurface,
-                        const VrFrame & vrFrame, const Matrix4f & view, const bool allowSwipe );
-	void		Draw( const Matrix4f & mvp );
+                        const VrFrame & vrFrame, const VR4Matrixf & view, const bool allowSwipe );
+    void		Draw( const VR4Matrixf & mvp );
 
 	// The offset will be left where it was, unless
 	// the view has never been opened or was closed far enough away from view
@@ -117,7 +117,7 @@ public:
 	//
 	// Subsequent panels are drawn to the right of previous panels,
 	// which is more negative yaw.
-	Vector3f	ForwardAtOffset;		// world space vector
+    V3Vectf	ForwardAtOffset;		// world space vector
 	float		ForwardYaw;				// increases with rotation to the left, can wrapped around
 	float		Offset;					// Offset in the panel list at ForwardYaw
 	float		Velocity;				// on a unit circle (radians)
@@ -125,11 +125,11 @@ public:
 	// The touchpad events don't come in very synchronized with the frames, so
 	// average over several frames for velocity.
 	static const int MAX_TOUCH_HISTORY = 4;
-	Vector2f	TouchPos[MAX_TOUCH_HISTORY];
+    V2Vectf	TouchPos[MAX_TOUCH_HISTORY];
 	double		TimeHistory[MAX_TOUCH_HISTORY];
 	int			HistoryIndex;
 
-	Vector3f	StartViewOrigin;
+    V3Vectf	StartViewOrigin;
 
 	VGlShader	ProgPanel;
 	VGlShader	ProgHighlight;
@@ -142,20 +142,20 @@ public:
 
 	double		PressTime;			// time when touch went down, not needed now, perhaps for long-press
 
-	Vector2f	TouchPoint;			// Where touch went down
-	Vector2f	TouchGazePos;		// Where touch went down
-	Vector2f	PrevTouch;			// Touch position at last frame
+    V2Vectf	TouchPoint;			// Where touch went down
+    V2Vectf	TouchGazePos;		// Where touch went down
+    V2Vectf	PrevTouch;			// Touch position at last frame
 	bool		PreviousButtonState;// union of touch and joystick button
 
 
 	bool		HasMoved;			// a release will be a tap if not moved
 	bool		ActivationPress;	// no drag until release
 
-	Vector2f	GazePos;			// on a unit circle (radians)
+    V2Vectf	GazePos;			// on a unit circle (radians)
 
-	Vector2f	Radius;				// if == distance, view is in center of curve. If > distance, view is near edge
+    V2Vectf	Radius;				// if == distance, view is in center of curve. If > distance, view is near edge
 
-	Vector2f	SlotSize;			// on a unit circle (radians)
+    V2Vectf	SlotSize;			// on a unit circle (radians)
 	int			LayoutRows;
 	float		RowOffset;
 	VArray<SwipePanel>	Panels;
@@ -197,13 +197,13 @@ public:
 		{
 		}
 
-		Matrix4f		Mat;
+        VR4Matrixf		Mat;
 		int				PanelIndex;
 		bool			Selected;
 	};
 
 	VArray< PanelRenderInfo >	PanelRenderList;	// transforms for all panels, calculated in Frame() so it's not done for each eye in Draw()
-	Matrix4f					SelectionTransform;	// transform of the selection highlight
+    VR4Matrixf					SelectionTransform;	// transform of the selection highlight
 };
 
 void	LoadTestSwipeTextures();

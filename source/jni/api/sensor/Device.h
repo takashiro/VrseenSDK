@@ -311,8 +311,8 @@ class HMDInfo : public DeviceInfo
 public:
     // Characteristics of the HMD screen and enclosure
     HmdTypeEnum HmdType;
-    Size<int>   ResolutionInPixels;
-    Size<float> ScreenSizeInMeters;
+    VSize<int>   ResolutionInPixels;
+    VSize<float> ScreenSizeInMeters;
     float       ScreenGapSizeInMeters;
     float       CenterFromTopInMeters;
     float       LensSeparationInMeters;
@@ -551,7 +551,7 @@ struct TemperatureReport
                         double targetTemperature,
                         double actualTemperature,
                         UInt32 time,
-                        Vector3d offset)
+                        V3Vectd offset)
         :	    CommandId(commandId), Version(version),
                 NumBins(numBins), Bin(bin), NumSamples(numSamples), Sample(sample),
                 TargetTemperature(targetTemperature), ActualTemperature(actualTemperature),
@@ -567,7 +567,7 @@ struct TemperatureReport
     double	    TargetTemperature;
     double	    ActualTemperature;
     UInt32      Time;             // Better hope nobody tries to use this in 2038
-    Vector3d    Offset;
+    V3Vectd    Offset;
 };
 
 // Gyro autocalibration result.
@@ -588,7 +588,7 @@ struct GyroOffsetReport
 
     GyroOffsetReport(	UInt16		commandId,
 						VersionEnum version,
-						Vector3d	offset,
+                        V3Vectd	offset,
 						double		temperature)
 		:		CommandId(commandId), Version(version),
 				Offset(offset), Temperature(temperature)
@@ -596,7 +596,7 @@ struct GyroOffsetReport
 
     UInt16      CommandId;
     VersionEnum Version;
-    Vector3d    Offset;
+    V3Vectd    Offset;
     double      Temperature;
 };
 
@@ -658,8 +658,8 @@ public:
     virtual void       GetRange(SensorRange* range) const = 0;
 
 	// Return the factory calibration parameters for the IMU
-    virtual void        GetFactoryCalibration(Vector3f* AccelOffset, Vector3f* GyroOffset,
-                                              Matrix4f* AccelMatrix, Matrix4f* GyroMatrix,
+    virtual void        GetFactoryCalibration(V3Vectf* AccelOffset, V3Vectf* GyroOffset,
+                                              VR4Matrixf* AccelMatrix, VR4Matrixf* GyroMatrix,
                                               float* Temperature) = 0;
 
 	// Ported from DK2 feature reports.

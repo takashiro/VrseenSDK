@@ -24,12 +24,12 @@ public:
     bool 			command( const char * msg );
     bool 			onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType );
 
-    Matrix4f 		drawEyeView( const int eye, const float fovDegrees );
-    Matrix4f 		frame( const VrFrame & vrFrame );
+    VR4Matrixf 		drawEyeView( const int eye, const float fovDegrees );
+    VR4Matrixf 		frame( const VrFrame & vrFrame );
 
 private:
-    Matrix4f		m_lastViewMatrix;
-    Matrix4f		m_lastEyeMatrix[ 2 ];
+    VR4Matrixf		m_lastViewMatrix;
+    VR4Matrixf		m_lastEyeMatrix[ 2 ];
 
     VArray<View *> 	m_views;
 

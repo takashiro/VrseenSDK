@@ -30,8 +30,8 @@ public:
     virtual void init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI) = 0;
     virtual void shutdown();
 
-    virtual Matrix4f onNewFrame( VrFrame vrFrame );
-    virtual Matrix4f drawEyeView( const int eye, const float fovDegrees );
+    virtual VR4Matrixf onNewFrame( VrFrame vrFrame );
+    virtual VR4Matrixf drawEyeView( const int eye, const float fovDegrees );
     virtual void ConfigureVrMode( ovrModeParms & modeParms );
 
     virtual void onNewIntent( const char * fromPackageName, const char * command, const char * uri );

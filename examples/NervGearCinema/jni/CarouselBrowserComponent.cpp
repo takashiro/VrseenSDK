@@ -76,9 +76,9 @@ PanelPose CarouselBrowserComponent::GetPosition( const float t )
 	}
     else if ( index >= PanelPoses.length() - 1 )
 	{
-		pose.Orientation = Quatf();
-		pose.Position = Vector3f( 0.0f, 0.0f, 0.0f );
-		pose.Color = Vector4f( 0.0f, 0.0f, 0.0f, 0.0f );
+        pose.Orientation = VQuatf();
+        pose.Position = V3Vectf( 0.0f, 0.0f, 0.0f );
+        pose.Color = V4Vectf( 0.0f, 0.0f, 0.0f, 0.0f );
 	}
 	else
 	{

@@ -4,9 +4,9 @@
 
 namespace OculusCinema {
 
-const Vector4f MovieCategoryComponent::FocusColor( 1.0f, 1.0f, 1.0f, 1.0f );
-const Vector4f MovieCategoryComponent::HighlightColor( 1.0f, 1.0f, 1.0f, 1.0f );
-const Vector4f MovieCategoryComponent::NormalColor( 82.0f / 255.0f, 101.0f / 255.0f, 120.0f / 255.06, 255.0f / 255.0f );
+const V4Vectf MovieCategoryComponent::FocusColor( 1.0f, 1.0f, 1.0f, 1.0f );
+const V4Vectf MovieCategoryComponent::HighlightColor( 1.0f, 1.0f, 1.0f, 1.0f );
+const V4Vectf MovieCategoryComponent::NormalColor( 82.0f / 255.0f, 101.0f / 255.0f, 120.0f / 255.06, 255.0f / 255.0f );
 
 //==============================
 //  MovieCategoryComponent::
@@ -28,7 +28,7 @@ MovieCategoryComponent::MovieCategoryComponent( MovieSelectionView * view, Movie
 void MovieCategoryComponent::UpdateColor( VRMenuObject * self )
 {
     self->setTextColor( HasFocus ? FocusColor : ( self->isHilighted() ? HighlightColor : NormalColor ) );
-    self->setColor( self->isHilighted() ? Vector4f( 1.0f ) : Vector4f( 0.0f ) );
+    self->setColor( self->isHilighted() ? V4Vectf( 1.0f ) : V4Vectf( 0.0f ) );
 }
 
 //==============================
