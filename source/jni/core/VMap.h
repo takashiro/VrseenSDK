@@ -21,9 +21,9 @@ public:
     bool contains(const Key &key) const { return std::map<Key, Value>::find(key) != std::map<Key, Value>::end(); }
 
     Value &value(const Key &key) { return std::map<Key, Value>::at(key); }
-    Value &operator[](const Key &key) { return std::map<Key, Value>::at(key); }
+    Value &operator[](const Key &key) { return std::map<Key, Value>::operator[](key); }
     const Value &value(const Key &key) const { return std::map<Key, Value>::at(key); }
-    const Value &operator[](const Key &key) const { return std::map<Key, Value>::at(key); }
+    const Value &operator[](const Key &key) const { return std::map<Key, Value>::operator[](key); }
 
     void insert(const Key &key, const Value &value) { (*this)[key] = value; }
     void insert(const Key &key, Value &&value) { std::map<Key, Value>::insert(std::pair<Key, Value>(key, value)); }
