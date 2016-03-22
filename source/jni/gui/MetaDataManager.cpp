@@ -96,7 +96,7 @@ void OvrMetaData::initFromDirectory( const char * relativePath, const VArray< VS
 			datum->tags.append( currentCategory.categoryTag );
 			if ( GetFullPath( searchPaths, s, datum->url ) )
 			{
-                StringHash<int>::const_iterator iter = m_urlToIndex.find(datum->url);
+                VStringHash<int>::const_iterator iter = m_urlToIndex.find(datum->url);
                 if ( iter == m_urlToIndex.end() ) {
                     m_urlToIndex.insert(datum->url, dataIndex);
                     m_etaData.append(datum);
@@ -130,12 +130,12 @@ void OvrMetaData::initFromDirectory( const char * relativePath, const VArray< VS
 void OvrMetaData::initFromFileList( const VArray< VString > & fileList, const OvrMetaDataFileExtensions & fileExtensions )
 {
 	// Create unique categories
-	StringHash< int > uniqueCategoryList;
+	VStringHash< int > uniqueCategoryList;
 	for ( int i = 0; i < fileList.length(); ++i )
 	{
 		const VString & filePath = fileList.at( i );
         const VString categoryTag = VPath(fileList.at(i)).dirName();
-        StringHash< int >::ConstIterator iter = uniqueCategoryList.find( categoryTag );
+        VStringHash< int >::ConstIterator iter = uniqueCategoryList.find( categoryTag );
 		int catIndex = -1;
         if ( iter == uniqueCategoryList.end() )
 		{
@@ -174,7 +174,7 @@ void OvrMetaData::initFromFileList( const VArray< VString > & fileList, const Ov
 			datum->url = filePath;
 			datum->tags.append( currentCategory.categoryTag );
 
-            StringHash< int >::ConstIterator iter = m_urlToIndex.find( datum->url );
+            VStringHash< int >::ConstIterator iter = m_urlToIndex.find( datum->url );
             if ( iter == m_urlToIndex.end() )
 			{
                 m_urlToIndex.insert( datum->url, dataIndex );
@@ -317,13 +317,13 @@ void OvrMetaData::processRemoteMetaFile( const char * metaFileString, const int 
 		m_version = remoteVersion;
 
 		VArray< Category > remoteCategories;
-		StringHash< OvrMetaDatum * > remoteMetaData;
+		VStringHash< OvrMetaDatum * > remoteMetaData;
 		extractCategories( remoteMetaFile , remoteCategories );
 		extractRemoteMetaData( remoteMetaFile , remoteMetaData );
 
 		// Merge in the remote categories
 		// Ignore any duplicate categories
-		StringHash< bool > CurrentCategoriesSet; // using as set
+		VStringHash< bool > CurrentCategoriesSet; // using as set
 		for ( int i = 0; i < m_categories.length(); ++i )
 		{
 			const Category & storedCategory = m_categories.at( i );
@@ -334,7 +334,7 @@ void OvrMetaData::processRemoteMetaFile( const char * metaFileString, const int 
 		{
 			const Category & remoteCat = remoteCategories.at( remoteIndex );
 
-            StringHash< bool >::ConstIterator iter = CurrentCategoriesSet.find( remoteCat.categoryTag );
+            VStringHash< bool >::ConstIterator iter = CurrentCategoriesSet.find( remoteCat.categoryTag );
             if ( iter == CurrentCategoriesSet.end() )
 			{
 				const int targetIndex = startIndex + remoteIndex;
@@ -382,7 +382,7 @@ void OvrMetaData::processMetaData( const NervGear::VJson &dataFile, const VArray
 		extractVersion( dataFile, m_version );
 
 		VArray< Category > storedCategories;
-		StringHash< OvrMetaDatum * > storedMetaData;
+		VStringHash< OvrMetaDatum * > storedMetaData;
 		extractCategories( dataFile, storedCategories );
 
 		// Read in package data first
@@ -454,7 +454,7 @@ void OvrMetaData::processMetaData( const NervGear::VJson &dataFile, const VArray
     vInfo("OvrMetaData::ProcessMetaData created" << m_filePath);
 }
 
-void OvrMetaData::reconcileMetaData( StringHash< OvrMetaDatum * > & storedMetaData )
+void OvrMetaData::reconcileMetaData( VStringHash< OvrMetaDatum * > & storedMetaData )
 {
     if ( storedMetaData.isEmpty() )
 	{
@@ -465,7 +465,7 @@ void OvrMetaData::reconcileMetaData( StringHash< OvrMetaDatum * > & storedMetaDa
 	// Now for any remaining stored data - check if it's remote and just add it, sorted by the
 	// assigned Id
 	VArray< OvrMetaDatum * > sortedEntries;
-    StringHash< OvrMetaDatum * >::Iterator storedIter = storedMetaData.begin();
+    VStringHash< OvrMetaDatum * >::Iterator storedIter = storedMetaData.begin();
     for ( ; storedIter != storedMetaData.end(); ++storedIter )
 	{
         OvrMetaDatum * storedDatum = storedIter->second;
@@ -484,14 +484,14 @@ void OvrMetaData::reconcileMetaData( StringHash< OvrMetaDatum * > & storedMetaDa
     storedMetaData.clear();
 }
 
-void OvrMetaData::dedupMetaData( const VArray< OvrMetaDatum * > & existingData, StringHash< OvrMetaDatum * > & newData )
+void OvrMetaData::dedupMetaData( const VArray< OvrMetaDatum * > & existingData, VStringHash< OvrMetaDatum * > & newData )
 {
     // Fix the read in meta data using the stored
     for ( int i = 0; i < existingData.length(); ++i )
     {
         OvrMetaDatum * metaDatum = existingData.at( i );
 
-        StringHash< OvrMetaDatum * >::Iterator iter = newData.find( metaDatum->url );
+        VStringHash< OvrMetaDatum * >::Iterator iter = newData.find( metaDatum->url );
 
         if ( iter != newData.end() )
         {
@@ -525,7 +525,7 @@ void OvrMetaData::reconcileCategories( VArray< Category > & storedCategories )
 
 	finalCategories.append( favorites );
 
-	StringHash< bool > StoredCategoryMap; // using as set
+	VStringHash< bool > StoredCategoryMap; // using as set
 	for ( int i = 0; i < storedCategories.length(); ++i )
 	{
 		const Category & storedCategory = storedCategories.at( i );
@@ -537,7 +537,7 @@ void OvrMetaData::reconcileCategories( VArray< Category > & storedCategories )
 	for ( int i = 0; i < m_categories.length(); ++i )
 	{
 		const Category & readInCategory = m_categories.at( i );
-        StringHash< bool >::ConstIterator iter = StoredCategoryMap.find( readInCategory.categoryTag );
+        VStringHash< bool >::ConstIterator iter = StoredCategoryMap.find( readInCategory.categoryTag );
 
         if ( iter == StoredCategoryMap.end() )
 		{
@@ -611,7 +611,7 @@ void OvrMetaData::extractCategories(const VJson &dataFile, VArray< Category > & 
 	}
 }
 
-void OvrMetaData::extractMetaData(const VJson &dataFile, const VArray< VString > & searchPaths, StringHash< OvrMetaDatum * > & outMetaData ) const
+void OvrMetaData::extractMetaData(const VJson &dataFile, const VArray< VString > & searchPaths, VStringHash< OvrMetaDatum * > & outMetaData ) const
 {
 	if ( dataFile.isInvalid() )
 	{
@@ -673,7 +673,7 @@ void OvrMetaData::extractMetaData(const VJson &dataFile, const VArray< VString >
 				extractExtendedData( datum, *metaDatum );
 				LOG( "OvrMetaData::ExtractMetaData adding datum %s", metaDatum->url.toCString() );
 
-                StringHash< OvrMetaDatum * >::Iterator iter = outMetaData.find( metaDatum->url );
+                VStringHash< OvrMetaDatum * >::Iterator iter = outMetaData.find( metaDatum->url );
                 if ( iter == outMetaData.end() )
 				{
                     outMetaData.insert( metaDatum->url, metaDatum );
@@ -687,7 +687,7 @@ void OvrMetaData::extractMetaData(const VJson &dataFile, const VArray< VString >
 	}
 }
 
-void OvrMetaData::extractRemoteMetaData( const VJson &dataFile, StringHash< OvrMetaDatum * > & outMetaData ) const
+void OvrMetaData::extractRemoteMetaData( const VJson &dataFile, VStringHash< OvrMetaDatum * > & outMetaData ) const
 {
 	if ( dataFile.isInvalid() )
 	{
@@ -726,7 +726,7 @@ void OvrMetaData::extractRemoteMetaData( const VJson &dataFile, StringHash< OvrM
                 metaDatum->url = jsonDatum.value( URL_INNER ).toString();
 				extractExtendedData( jsonDatum, *metaDatum );
 
-                StringHash< OvrMetaDatum * >::Iterator iter = outMetaData.find( metaDatum->url );
+                VStringHash< OvrMetaDatum * >::Iterator iter = outMetaData.find( metaDatum->url );
                 if ( iter == outMetaData.end() )
 				{
                     outMetaData.insert( metaDatum->url, metaDatum );

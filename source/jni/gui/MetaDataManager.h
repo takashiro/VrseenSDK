@@ -95,13 +95,13 @@ protected:
     virtual bool			isRemote( const OvrMetaDatum * datum ) const	{	return true; }
 
 	// Removes duplicate entries from newData
-    virtual void            dedupMetaData( const VArray< OvrMetaDatum * > & existingData, StringHash< OvrMetaDatum * > & newData );
+    virtual void            dedupMetaData( const VArray< OvrMetaDatum * > & existingData, VStringHash< OvrMetaDatum * > & newData );
 
 private:
     Category * 				getCategory( const VString & categoryName );
     void					processMetaData( const VJson &dataFile, const VArray< VString > & searchPaths, const char * metaFile );
     void					regenerateCategoryIndices();
-    void					reconcileMetaData( StringHash< OvrMetaDatum * > & storedMetaData );
+    void					reconcileMetaData( VStringHash< OvrMetaDatum * > & storedMetaData );
     void					reconcileCategories( VArray< Category > & storedCategories );
 
     VJson			metaDataToJson() const;
@@ -109,13 +109,13 @@ private:
     bool 					shouldAddFile( const char * filename, const OvrMetaDataFileExtensions & fileExtensions ) const;
     void					extractVersion( const VJson &dataFile, double & outVersion ) const;
     void					extractCategories( const VJson &dataFile, VArray< Category > & outCategories ) const;
-    void					extractMetaData( const VJson &dataFile, const VArray< VString > & searchPaths, StringHash< OvrMetaDatum * > & outMetaData ) const;
-    void					extractRemoteMetaData( const VJson &dataFile, StringHash< OvrMetaDatum * > & outMetaData ) const;
+    void					extractMetaData( const VJson &dataFile, const VArray< VString > & searchPaths, VStringHash< OvrMetaDatum * > & outMetaData ) const;
+    void					extractRemoteMetaData( const VJson &dataFile, VStringHash< OvrMetaDatum * > & outMetaData ) const;
 
     VPath 					m_filePath;
     VArray< Category >		m_categories;
     VArray< OvrMetaDatum * >	m_etaData;
-    StringHash< int >		m_urlToIndex;
+    VStringHash< int >		m_urlToIndex;
     double					m_version;
 };
 

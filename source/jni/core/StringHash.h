@@ -8,7 +8,7 @@
 NV_NAMESPACE_BEGIN
 
 template<class T>
-class StringHash : public std::map<VString, T>
+class VStringHash : public std::map<VString, T>
 {
 public:
     typedef T ValueType;
