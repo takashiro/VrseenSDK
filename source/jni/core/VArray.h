@@ -8,11 +8,10 @@
 
 #pragma once
 
-#include <vector>
-#include <utility>
-
 #include "vglobal.h"
 
+#include <vector>
+#include <utility>
 
 NV_NAMESPACE_BEGIN
 
@@ -20,14 +19,13 @@ template <class E>
 class VArray : public std::vector<E>
 {
 public:
-    typename VArray<E>::iterator iter;
+    typedef typename VArray<E>::iterator Iterator;
+    typedef typename VArray<E>::const_iterator ConstIterator;
     typedef E ValueType;
 
     VArray() {}
 
-    int length() const { return (int)this->size(); }
-
-    void shift() { this->pop_back(); }
+    int length() const { return (int) this->size(); }
 
     uint allocBack()
     {
@@ -63,6 +61,7 @@ public:
     const E &operator[](int i) const { return this->at(i); }
 
     void append(const E &e) { this->push_back(e); }
+    void append(E &&e) { this->push_back(e); }
 
     void append(const VArray<E> &elements)
     {
@@ -73,6 +72,7 @@ public:
     }
 
     void prepend(const E &e) { this->insert(this->begin(), e); }
+    void prepend(E &&e) { this->insert(this->begin(), e); }
 
     void prepend(const VArray<E> &elements)
     {
@@ -81,8 +81,9 @@ public:
         }
     }
 
+    void removeFirst() { this->erase(this->begin()); }
+    void removeLast() { this->pop_back(); }
     void removeAt(int i) { this->erase(this->begin() + i); }
-
     void removeOne(const E &e)
     {
         for (auto i = this->begin(); i != this->end(); i++) {

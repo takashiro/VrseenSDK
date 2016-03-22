@@ -433,7 +433,7 @@ menuHandle_t VRMenuMgrLocal::createObject( VRMenuObjectParms const & parms )
 	if ( FreeList.length() > 0 )
 	{
 		index = FreeList.back();
-        FreeList.shift();
+        FreeList.removeLast();
 	}
 	else
 	{
