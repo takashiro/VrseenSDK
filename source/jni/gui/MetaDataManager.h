@@ -1,7 +1,7 @@
 #pragma once
 
 #include "VString.h"
-#include "StringHash.h"
+#include "VStringHash.h"
 
 #include "VJson.h"
 #include "VArray.h"

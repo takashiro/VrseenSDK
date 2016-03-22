@@ -9,7 +9,7 @@
 #include "VPath.h"
 #include "VString.h"
 
-#include "StringHash.h"
+#include "VStringHash.h"
 
 #include <sys/stat.h>
 #include <dirent.h>

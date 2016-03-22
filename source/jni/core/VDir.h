@@ -10,7 +10,7 @@
 #include "VPath.h"
 #include "VArray.h"
 #include "VString.h"
-#include "StringHash.h"
+#include "VStringHash.h"
 
 NV_NAMESPACE_BEGIN
 

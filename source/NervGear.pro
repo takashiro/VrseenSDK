@@ -156,6 +156,7 @@ HEADERS += \
     jni/core/VSignal.h \
     jni/core/VStandardPath.h \
     jni/core/VString.h \
+    jni/core/VStringHash.h \
     jni/core/String_FormatUtil.h \
     jni/core/String_PathUtil.h \
     jni/core/System.h \
@@ -171,7 +172,6 @@ HEADERS += \
     jni/core/OVRVersion.h \
     jni/core/VSharedPointer.h \
     jni/core/String_Utils.h \
-    jni/core/StringHash.h \
     jni/core/TypesafeNumber.h \
     jni/core/VUserSettings.h \
     jni/core/VWaitCondition.h \

@@ -4,7 +4,7 @@
 #include "vglobal.h"
 
 #include "OVR.h"	// Matrix4f, etc
-#include "StringHash.h"
+#include "VStringHash.h"
 #include "VStandardPath.h"
 
 NV_NAMESPACE_BEGIN
