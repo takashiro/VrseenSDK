@@ -13,7 +13,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VRMenuMgr.h"
 
 #include "Alg.h"
-#include "Android/GlUtils.h"
+#include "api/VGlOperation.h"
 #include "../api/VGlShader.h"
 #include "GlTexture.h"
 #include "../api/VGlGeometry.h"
@@ -898,7 +898,8 @@ void VRMenuMgrLocal::renderSubmitted( Matrix4f const & worldMVP, Matrix4f const 
 		return;
 	}
 
-	GL_CheckErrors( "VRMenuMgrLocal::RenderSubmitted - pre" );
+    VGlOperation glOperation;
+    glOperation.GL_CheckErrors( "VRMenuMgrLocal::RenderSubmitted - pre" );
 
 	//LOG( "VRMenuMgrLocal::RenderSubmitted" );
 	Matrix4f invViewMatrix = viewMatrix.Inverted();
@@ -990,7 +991,7 @@ void VRMenuMgrLocal::renderSubmitted( Matrix4f const & worldMVP, Matrix4f const 
 
 	glDisable( GL_POLYGON_OFFSET_FILL );
 
-	GL_CheckErrors( "VRMenuMgrLocal::RenderSubmitted - post" );
+    glOperation.GL_CheckErrors( "VRMenuMgrLocal::RenderSubmitted - post" );
 }
 
 //==============================

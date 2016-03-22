@@ -342,6 +342,7 @@ VFrameSmooth::VFrameSmooth( const TimeWarpInitParms initParms ) :
     OVR_COMPILER_ASSERT( ( WP_CHROMATIC - WP_SIMPLE ) ==
                          ( WP_PROGRAM_MAX - WP_CHROMATIC ) );
 
+    VGlOperation glOperation;
     m_shutdownRequest.setState( false );
     m_eyeBufferCount.setState( 0 );
     memset( m_warpSources, 0, sizeof( m_warpSources ) );
@@ -393,7 +394,7 @@ VFrameSmooth::VFrameSmooth( const TimeWarpInitParms initParms ) :
     {
         FAIL( "eglQueryContext EGL_CONFIG_ID failed" );
     }
-    m_eglConfig = EglConfigForConfigID( m_eglDisplay, configID );
+    m_eglConfig = glOperation.EglConfigForConfigID( m_eglDisplay, configID );
     if ( m_eglConfig == NULL )
     {
         FAIL( "EglConfigForConfigID failed" );
@@ -418,9 +419,8 @@ VFrameSmooth::VFrameSmooth( const TimeWarpInitParms initParms ) :
     {
         LOG( "Share context eglConfig has %i samples -- should be 0", samples );
     }
-
     // See if we have sRGB_write_control extension
-    m_hasEXT_sRGB_write_control = GL_ExtensionStringPresent( "GL_EXT_sRGB_write_control",
+    m_hasEXT_sRGB_write_control = glOperation.GL_ExtensionStringPresent( "GL_EXT_sRGB_write_control",
                                                              (const char *)glGetString( GL_EXTENSIONS ) );
 
     // Skip thread initialization if we are running synchronously
@@ -486,7 +486,7 @@ VFrameSmooth::VFrameSmooth( const TimeWarpInitParms initParms ) :
         m_eglPbufferSurface = eglCreatePbufferSurface( m_eglDisplay, m_eglConfig, attrib_list );
         if ( m_eglPbufferSurface == EGL_NO_SURFACE )
         {
-            FAIL( "eglCreatePbufferSurface failed: %s", EglErrorString() );
+            FAIL( "eglCreatePbufferSurface failed: %s", glOperation.EglErrorString() );
         }
 
         if ( eglMakeCurrent( m_eglDisplay, m_eglPbufferSurface, m_eglPbufferSurface,
@@ -540,6 +540,7 @@ VFrameSmooth::~VFrameSmooth()
 
         m_warpThread = 0;
 
+        VGlOperation glOperation;
         if ( eglGetCurrentSurface( EGL_DRAW ) != m_eglPbufferSurface )
         {
             LOG( "eglGetCurrentSurface( EGL_DRAW ) != eglPbufferSurface" );
@@ -549,7 +550,7 @@ VFrameSmooth::~VFrameSmooth()
         if ( eglMakeCurrent( m_eglDisplay, m_eglMainThreadSurface,
                              m_eglMainThreadSurface, m_eglShareContext ) == EGL_FALSE)
         {
-            FAIL( "eglMakeCurrent to window failed: %s", EglErrorString() );
+            FAIL( "eglMakeCurrent to window failed: %s", glOperation.EglErrorString() );
         }
 
         // Destroy the pbuffer surface that was attached to the calling context.
@@ -612,10 +613,11 @@ void VFrameSmooth::warpThreadInit()
         contextAttribs[3] = m_contextPriority;
     }
 
+    VGlOperation glOperation;
     m_eglWarpContext = eglCreateContext( m_eglDisplay, m_eglConfig, m_eglShareContext, contextAttribs );
     if ( m_eglWarpContext == EGL_NO_CONTEXT )
     {
-        FAIL( "eglCreateContext failed: %s", EglErrorString() );
+        FAIL( "eglCreateContext failed: %s", glOperation.EglErrorString() );
     }
     LOG( "eglWarpContext: %p", m_eglWarpContext );
     if ( m_contextPriority != EGL_CONTEXT_PRIORITY_MEDIUM_IMG )
@@ -637,7 +639,7 @@ void VFrameSmooth::warpThreadInit()
     if ( eglMakeCurrent( m_eglDisplay, m_eglMainThreadSurface,
                          m_eglMainThreadSurface, m_eglWarpContext ) == EGL_FALSE )
     {
-        FAIL( "eglMakeCurrent failed: %s", EglErrorString() );
+        FAIL( "eglMakeCurrent failed: %s", glOperation.EglErrorString() );
     }
 
     // Get a jni environment for front buffer setting, SurfaceTexture updating and changing SCHED_FIFO
@@ -686,13 +688,14 @@ void VFrameSmooth::warpThreadShutdown()
     // Vertex array objects can only be destroyed on the context they were created on
     destroyFrameworkGraphics();
 
+    VGlOperation glOperation;
     // Destroy the sync objects
     for ( int i = 0; i < MAX_WARP_SOURCES; i++ )
     {
         warpSource_t & ws = m_warpSources[i];
         if ( ws.GpuSync )
         {
-            if ( EGL_FALSE == eglDestroySyncKHR_( m_eglDisplay, ws.GpuSync ) )
+            if ( EGL_FALSE == glOperation.eglDestroySyncKHR_( m_eglDisplay, ws.GpuSync ) )
             {
                 LOG( "eglDestroySyncKHR returned EGL_FALSE" );
             }
@@ -751,14 +754,15 @@ void VFrameSmooth::setWarpState( const warpSource_t & currentWarpSource ) const
     {
         if ( currentWarpSource.WarpParms.WarpOptions & SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER )
         {
-            glDisable( GL_FRAMEBUFFER_SRGB_EXT );
+            glDisable( VGlOperation::GL_FRAMEBUFFER_SRGB_EXT );
         }
         else
         {
-            glEnable( GL_FRAMEBUFFER_SRGB_EXT );
+            glEnable( VGlOperation::GL_FRAMEBUFFER_SRGB_EXT );
         }
     }
-    GL_CheckErrors( "SetWarpState" );
+    VGlOperation glOperation;
+    glOperation.GL_CheckErrors( "SetWarpState" );
 }
 
 void VFrameSmooth::bindWarpProgram( const warpSource_t & currentWarpSource,
@@ -871,15 +875,15 @@ static void BindEyeTextures( const warpSource_t & currentWarpSource, const Scree
 {
     glActiveTexture( GL_TEXTURE0 );
     glBindTexture( GL_TEXTURE_2D, currentWarpSource.WarpParms.Images[eye][0].TexId );
-    if ( HasEXT_sRGB_texture_decode )
+    if ( VGlOperation::HasEXT_sRGB_texture_decode )
     {
         if ( currentWarpSource.WarpParms.WarpOptions & SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER )
         {
-            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_SRGB_DECODE_EXT, GL_SKIP_DECODE_EXT );
+            glTexParameteri( GL_TEXTURE_2D, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_SKIP_DECODE_EXT );
         }
         else
         {
-            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_SRGB_DECODE_EXT, GL_DECODE_EXT );
+            glTexParameteri( GL_TEXTURE_2D, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_DECODE_EXT );
         }
     }
 
@@ -893,15 +897,15 @@ static void BindEyeTextures( const warpSource_t & currentWarpSource, const Scree
     {
         glActiveTexture( GL_TEXTURE1 );
         glBindTexture( GL_TEXTURE_2D, currentWarpSource.WarpParms.Images[eye][1].TexId );
-        if ( HasEXT_sRGB_texture_decode )
+        if ( VGlOperation::HasEXT_sRGB_texture_decode )
         {
             if ( currentWarpSource.WarpParms.WarpOptions & SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER )
             {
-                glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_SRGB_DECODE_EXT, GL_SKIP_DECODE_EXT );
+                glTexParameteri( GL_TEXTURE_2D, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_SKIP_DECODE_EXT );
             }
             else
             {
-                glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_SRGB_DECODE_EXT, GL_DECODE_EXT );
+                glTexParameteri( GL_TEXTURE_2D, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_DECODE_EXT );
             }
         }
     }
@@ -912,15 +916,15 @@ static void BindEyeTextures( const warpSource_t & currentWarpSource, const Scree
     {
         glActiveTexture( GL_TEXTURE1 );
         glBindTexture( GL_TEXTURE_EXTERNAL_OES, currentWarpSource.WarpParms.Images[eye][1].TexId );
-        if ( HasEXT_sRGB_texture_decode )
+        if ( VGlOperation::HasEXT_sRGB_texture_decode )
         {
             if ( currentWarpSource.WarpParms.WarpOptions & SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER )
             {
-                glTexParameteri( GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_SRGB_DECODE_EXT, GL_SKIP_DECODE_EXT );
+                glTexParameteri( GL_TEXTURE_EXTERNAL_OES, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_SKIP_DECODE_EXT );
             }
             else
             {
-                glTexParameteri( GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_SRGB_DECODE_EXT, GL_DECODE_EXT );
+                glTexParameteri( GL_TEXTURE_EXTERNAL_OES, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_DECODE_EXT );
             }
         }
     }
@@ -928,15 +932,15 @@ static void BindEyeTextures( const warpSource_t & currentWarpSource, const Scree
     {
         glActiveTexture( GL_TEXTURE1 );
         glBindTexture( GL_TEXTURE_CUBE_MAP, currentWarpSource.WarpParms.Images[eye][1].TexId );
-        if ( HasEXT_sRGB_texture_decode )
+        if ( VGlOperation::HasEXT_sRGB_texture_decode )
         {
             if ( currentWarpSource.WarpParms.WarpOptions & SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER )
             {
-                glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_SRGB_DECODE_EXT, GL_SKIP_DECODE_EXT );
+                glTexParameteri( GL_TEXTURE_CUBE_MAP, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_SKIP_DECODE_EXT );
             }
             else
             {
-                glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_SRGB_DECODE_EXT, GL_DECODE_EXT );
+                glTexParameteri( GL_TEXTURE_CUBE_MAP, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_DECODE_EXT );
             }
         }
     }
@@ -947,15 +951,15 @@ static void BindEyeTextures( const warpSource_t & currentWarpSource, const Scree
         {
             glActiveTexture( GL_TEXTURE1 + i );
             glBindTexture( GL_TEXTURE_CUBE_MAP, currentWarpSource.WarpParms.Images[eye][1].PlanarTexId[i] );
-            if ( HasEXT_sRGB_texture_decode )
+            if ( VGlOperation::HasEXT_sRGB_texture_decode )
             {
                 if ( currentWarpSource.WarpParms.WarpOptions & SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER )
                 {
-                    glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_SRGB_DECODE_EXT, GL_SKIP_DECODE_EXT );
+                    glTexParameteri( GL_TEXTURE_CUBE_MAP, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_SKIP_DECODE_EXT );
                 }
                 else
                 {
-                    glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_SRGB_DECODE_EXT, GL_DECODE_EXT );
+                    glTexParameteri( GL_TEXTURE_CUBE_MAP, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_DECODE_EXT );
                 }
             }
         }
@@ -965,15 +969,15 @@ static void BindEyeTextures( const warpSource_t & currentWarpSource, const Scree
     {
         glActiveTexture( GL_TEXTURE1 );
         glBindTexture( GL_TEXTURE_2D, currentWarpSource.WarpParms.Images[eye][1].TexId );
-        if ( HasEXT_sRGB_texture_decode )
+        if ( VGlOperation::HasEXT_sRGB_texture_decode )
         {
             if ( currentWarpSource.WarpParms.WarpOptions & SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER )
             {
-                glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_SRGB_DECODE_EXT, GL_SKIP_DECODE_EXT );
+                glTexParameteri( GL_TEXTURE_2D, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_SKIP_DECODE_EXT );
             }
             else
             {
-                glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_SRGB_DECODE_EXT, GL_DECODE_EXT );
+                glTexParameteri( GL_TEXTURE_2D, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_DECODE_EXT );
             }
         }
     }
@@ -1051,6 +1055,7 @@ void VFrameSmooth::warpToScreen( const double vsyncBase_, const swapProgram_t & 
     glViewport( 0, 0, screenWidth, screenHeight );
     glScissor( 0, 0, screenWidth, screenHeight );
 
+     VGlOperation glOperation;
     // Warp each eye to the display surface
     for ( ScreenEye eye = SCREENEYE_LEFT; eye <= SCREENEYE_RIGHT; eye = (ScreenEye)((int)eye+1) )
     {
@@ -1105,7 +1110,7 @@ void VFrameSmooth::warpToScreen( const double vsyncBase_, const swapProgram_t & 
                     break;
                 }
 
-                const EGLint wait = eglClientWaitSyncKHR_( m_eglDisplay, testWarpSource.GpuSync,
+                const EGLint wait = glOperation.eglClientWaitSyncKHR_( m_eglDisplay, testWarpSource.GpuSync,
                                                            EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, 0 );
                 if ( wait == EGL_TIMEOUT_EXPIRED_KHR )
                 {
@@ -1256,7 +1261,7 @@ void VFrameSmooth::warpToScreen( const double vsyncBase_, const swapProgram_t & 
         m_screen.beginDirectRendering( eye * screenWidth/2, 0, screenWidth/2, screenHeight );
 
         // Draw the warp triangles.
-        glBindVertexArrayOES_( m_warpMesh.vertexArrayObject );
+        glOperation.glBindVertexArrayOES_( m_warpMesh.vertexArrayObject );
         const int indexCount = m_warpMesh.indexCount / 2;
         const int indexOffset = eye * indexCount;
         glDrawElements( GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, (void *)(indexOffset * 2 ) );
@@ -1266,7 +1271,7 @@ void VFrameSmooth::warpToScreen( const double vsyncBase_, const swapProgram_t & 
         {
             bindCursorProgram();
             glEnable( GL_BLEND );
-            glBindVertexArrayOES_( m_cursorMesh.vertexArrayObject );
+            glOperation.glBindVertexArrayOES_( m_cursorMesh.vertexArrayObject );
             const int indexCount = m_cursorMesh.indexCount / 2;
             const int indexOffset = eye * indexCount;
             glDrawElements( GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, (void *)(indexOffset * 2 ) );
@@ -1288,7 +1293,7 @@ void VFrameSmooth::warpToScreen( const double vsyncBase_, const swapProgram_t & 
         const double justBeforeFinish = ovr_GetTimeInSeconds();
         if ( m_screen.isFrontBuffer() )
         {
-            GL_Finish();
+            glOperation.GL_Finish();
         }
         const double postFinish = ovr_GetTimeInSeconds();
 
@@ -1326,7 +1331,7 @@ void VFrameSmooth::warpToScreen( const double vsyncBase_, const swapProgram_t & 
 
     glUseProgram( 0 );
 
-    glBindVertexArrayOES_( 0 );
+    glOperation.glBindVertexArrayOES_( 0 );
 
     if ( !m_screen.isFrontBuffer() )
     {
@@ -1344,6 +1349,7 @@ void VFrameSmooth::warpToScreenSliced( const double vsyncBase, const swapProgram
         return;
     }
 
+    VGlOperation glOperation;
     // all necessary time points can now be calculated
 
     // Because there are blanking lines at the bottom, there will always be a longer
@@ -1421,7 +1427,7 @@ void VFrameSmooth::warpToScreenSliced( const double vsyncBase, const swapProgram
                     continue;
                 }
 
-                const EGLint wait = eglClientWaitSyncKHR_( m_eglDisplay, testWarpSource.GpuSync,
+                const EGLint wait = glOperation.eglClientWaitSyncKHR_( m_eglDisplay, testWarpSource.GpuSync,
                                                            EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, 0 );
                 if ( wait == EGL_TIMEOUT_EXPIRED_KHR )
                 {
@@ -1588,7 +1594,7 @@ void VFrameSmooth::warpToScreenSliced( const double vsyncBase, const swapProgram
 
         // Draw the warp triangles.
         const VGlGeometry & mesh = m_sliceMesh;
-        glBindVertexArrayOES_( mesh.vertexArrayObject );
+        glOperation.glBindVertexArrayOES_( mesh.vertexArrayObject );
         const int indexCount = mesh.indexCount / NUM_SLICES_PER_SCREEN;
         const int indexOffset = screenSlice * indexCount;
         glDrawElements( GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, (void *)(indexOffset * 2 ) );
@@ -1612,11 +1618,13 @@ void VFrameSmooth::warpToScreenSliced( const double vsyncBase, const swapProgram
 
         m_logEyeWarpGpuTime.End( screenSlice );
 
+        VGlOperation glOperation;
+
         const double justBeforeFinish = ovr_GetTimeInSeconds();
         if ( m_screen.isFrontBuffer() &&
              ( screenSlice == 1 * NUM_SLICES_PER_EYE - 1 || screenSlice == 2 * NUM_SLICES_PER_EYE - 1 ) )
         {
-            GL_Finish();
+            glOperation.GL_Finish();
         }
         const double postFinish = ovr_GetTimeInSeconds();
 
@@ -1651,7 +1659,7 @@ void VFrameSmooth::warpToScreenSliced( const double vsyncBase, const swapProgram
 
     glUseProgram( 0 );
 
-    glBindVertexArrayOES_( 0 );
+    glOperation.glBindVertexArrayOES_( 0 );
 
     if ( !m_screen.isFrontBuffer() )
     {
@@ -1699,13 +1707,14 @@ void VFrameSmooth::warpSwapInternal( const ovrTimeWarpParms & parms )
 #endif
     const int minimumVsyncs = ( ovr_GetPowerLevelStateThrottled() ) ? 2 : parms.MinimumVsyncs;
 
+    VGlOperation glOperation;
     // Prepare to pass the new eye buffers to the background thread if we are running multi-threaded.
     const long long lastBufferCount = m_eyeBufferCount.state();
     warpSource_t & ws = m_warpSources[ ( lastBufferCount + 1 ) % MAX_WARP_SOURCES ];
     ws.MinimumVsync = m_lastSwapVsyncCount + 2 * minimumVsyncs;	// don't use it if from same frame to avoid problems with very fast frames
     ws.FirstDisplayedVsync[0] = 0;			// will be set when it becomes the currentSource
     ws.FirstDisplayedVsync[1] = 0;			// will be set when it becomes the currentSource
-    ws.disableChromaticCorrection = ( ovr_GetPowerLevelStateThrottled() || ( EglGetGpuType() & NervGear::GPU_TYPE_MALI_T760_EXYNOS_5433 ) != 0 );
+    ws.disableChromaticCorrection = ( ovr_GetPowerLevelStateThrottled() || ( glOperation.EglGetGpuType() & NervGear::GpuType::GPU_TYPE_MALI_T760_EXYNOS_5433 ) != 0 );
     ws.WarpParms = parms;
 
     // Default images.
@@ -1727,21 +1736,21 @@ void VFrameSmooth::warpSwapInternal( const ovrTimeWarpParms & parms )
     // Destroy the sync object that was created for this buffer set.
     if ( ws.GpuSync != EGL_NO_SYNC_KHR )
     {
-        if ( EGL_FALSE == eglDestroySyncKHR_( m_eglDisplay, ws.GpuSync ) )
+        if ( EGL_FALSE == glOperation.eglDestroySyncKHR_( m_eglDisplay, ws.GpuSync ) )
         {
             LOG( "eglDestroySyncKHR returned EGL_FALSE" );
         }
     }
 
     // Add a sync object for this buffer set.
-    ws.GpuSync = eglCreateSyncKHR_( m_eglDisplay, EGL_SYNC_FENCE_KHR, NULL );
+    ws.GpuSync = glOperation.eglCreateSyncKHR_( m_eglDisplay, EGL_SYNC_FENCE_KHR, NULL );
     if ( ws.GpuSync == EGL_NO_SYNC_KHR )
     {
         FAIL( "eglCreateSyncKHR_():EGL_NO_SYNC_KHR" );
     }
 
     // Force it to flush the commands
-    if ( EGL_FALSE == eglClientWaitSyncKHR_( m_eglDisplay, ws.GpuSync,
+    if ( EGL_FALSE == glOperation.eglClientWaitSyncKHR_( m_eglDisplay, ws.GpuSync,
                                              EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, 0 ) )
     {
         LOG( "eglClientWaitSyncKHR returned EGL_FALSE" );
@@ -1758,7 +1767,9 @@ void VFrameSmooth::warpSwapInternal( const ovrTimeWarpParms & parms )
     {
         // Make sure all eye drawing is completed before we warp the drawing
         // to the display buffer.
-        GL_Finish();
+
+        VGlOperation glOperation;
+        glOperation.GL_Finish();
 
         swapProgram_t * swapProg;
         if ( m_screen.isFrontBuffer() )
@@ -1850,9 +1861,10 @@ int ColorAsInt( const int r, const int g, const int b, const int a )
 VGlGeometry CreateTimingGraphGeometry( const int lineVertCount )
 {
     VGlGeometry geo;
+    VGlOperation glOperation;
 
-    glGenVertexArraysOES_( 1, &geo.vertexArrayObject );
-    glBindVertexArrayOES_( geo.vertexArrayObject );
+    glOperation.glGenVertexArraysOES_( 1, &geo.vertexArrayObject );
+    glOperation.glBindVertexArrayOES_( geo.vertexArrayObject );
 
     lineVert_t	* verts = new lineVert_t[lineVertCount];
     const int byteCount = lineVertCount * sizeof( verts[0] );
@@ -1872,13 +1884,14 @@ VGlGeometry CreateTimingGraphGeometry( const int lineVertCount )
 
     geo.indexCount = lineVertCount;
 
-    glBindVertexArrayOES_( 0 );
+    glOperation.glBindVertexArrayOES_( 0 );
 
     return geo;
 }
 
 void VFrameSmooth::updateTimingGraphVerts( const ovrTimeWarpDebugPerfMode debugPerfMode, const ovrTimeWarpDebugPerfValue debugValue )
 {
+    VGlOperation glOperation;
     if ( debugPerfMode == DEBUG_PERF_OFF )
     {
         return;
@@ -1975,19 +1988,19 @@ void VFrameSmooth::updateTimingGraphVerts( const ovrTimeWarpDebugPerfMode debugP
 
     // For reasons that I do not understand, if I don't bind the VAO, then all updates after the
     // first one produce no additional changes.
-    glBindVertexArrayOES_( m_timingGraph.vertexArrayObject );
+    glOperation.glBindVertexArrayOES_( m_timingGraph.vertexArrayObject );
     glBindBuffer( GL_ARRAY_BUFFER, m_timingGraph.vertexBuffer );
     glBufferSubData( GL_ARRAY_BUFFER, 0, numVerts * sizeof( verts[0] ), (void *) verts );
     glBindBuffer( GL_ARRAY_BUFFER, 0 );
-    glBindVertexArrayOES_( 0 );
+    glOperation.glBindVertexArrayOES_( 0 );
 
     m_timingGraph.indexCount = numVerts;
-
-    GL_CheckErrors( "After UpdateTimingGraph" );
+    glOperation.GL_CheckErrors( "After UpdateTimingGraph" );
 }
 
 void VFrameSmooth::drawTimingGraph( const ScreenEye eye )
 {
+    VGlOperation glOperation;
     // Use the same rect for viewport and scissor
     // FIXME: this is probably bad for convergence
     int	rectX, rectY, rectWidth, rectHeight;
@@ -2016,14 +2029,14 @@ void VFrameSmooth::drawTimingGraph( const ScreenEye eye )
     glUniformMatrix4fv( m_debugLineProgram.uniformModelViewProMatrix, 1, GL_FALSE, /* not transposed */
                         landscapePixelMatrix.Transposed().M[0] );
 
-    glBindVertexArrayOES_( m_timingGraph.vertexArrayObject );
+    glOperation.glBindVertexArrayOES_( m_timingGraph.vertexArrayObject );
     glDrawArrays( GL_LINES, 0, m_timingGraph.indexCount );
-    glBindVertexArrayOES_( 0 );
+    glOperation.glBindVertexArrayOES_( 0 );
 
     glViewport( 0, 0, rectWidth * 2, rectHeight );
     glScissor( 0, 0, rectWidth * 2, rectHeight );
 
-    GL_CheckErrors( "DrawTimingGraph" );
+    glOperation.GL_CheckErrors( "DrawTimingGraph" );
 }
 
 float calibrateFovScale = 1.0f;	// for interactive tweaking
@@ -2173,6 +2186,7 @@ void VFrameSmooth::destroyFrameworkGraphics()
 void VFrameSmooth::drawFrameworkGraphicsToWindow( const ScreenEye eye,
                                                    const int swapOptions, const bool drawTimingGraph )
 {
+    VGlOperation glOperation;
     // Latency tester support.
     unsigned char latencyTesterColorToDisplay[3];
 
@@ -2209,7 +2223,7 @@ void VFrameSmooth::drawFrameworkGraphicsToWindow( const ScreenEye eye,
         glUniform4f( m_untexturedMvpProgram.uniformColor, 1, 0, 0, 1 );
         glUniformMatrix4fv( m_untexturedMvpProgram.uniformModelViewProMatrix, 1, GL_FALSE,  // not transposed
                             projectionMatrix.Transposed().M[0] );
-        glBindVertexArrayOES_( m_calibrationLines2.vertexArrayObject );
+        glOperation.glBindVertexArrayOES_( m_calibrationLines2.vertexArrayObject );
 
         int width, height;
         m_screen.getScreenResolution( width, height );

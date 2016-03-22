@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../vglobal.h"
-#include "Android/GlUtils.h"
+#include "api/VGlOperation.h"
 
 NV_NAMESPACE_BEGIN
 

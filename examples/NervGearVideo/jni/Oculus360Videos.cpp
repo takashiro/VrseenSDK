@@ -28,7 +28,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "VArray.h"
 #include "VString.h"
 #include "String_Utils.h"
-#include "Android/GlUtils.h"
+#include "api/VGlOperation.h"
 #include "SurfaceTexture.h"
 
 #include "GlTexture.h"

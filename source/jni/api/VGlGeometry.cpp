@@ -5,7 +5,7 @@
 #include <assert.h>
 
 #include "../core/Alg.h"
-#include "../core/Android/GlUtils.h"
+#include "api/VGlOperation.h"
 #include "../core/Android/LogUtils.h"
 #include "Distortion.h"
 
@@ -42,13 +42,14 @@ void PackVertexAttribute( VArray< uint8_t > & packed, const VArray< _attrib_type
 
 void VGlGeometry::Create( const VertexAttribs & attribs, const VArray< TriangleIndex > & indices )
 {
+    VGlOperation glOperation;
     vertexCount = attribs.position.length();
     indexCount = indices.length();
 
     glGenBuffers( 1, &vertexBuffer );
     glGenBuffers( 1, &indexBuffer );
-    glGenVertexArraysOES_( 1, &vertexArrayObject );
-    glBindVertexArrayOES_( vertexArrayObject );
+    glOperation.glGenVertexArraysOES_( 1, &vertexArrayObject );
+    glOperation.glBindVertexArrayOES_( vertexArrayObject );
     glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer );
 
     VArray< uint8_t > packed;
@@ -67,7 +68,7 @@ void VGlGeometry::Create( const VertexAttribs & attribs, const VArray< TriangleI
     glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, indexBuffer );
     glBufferData( GL_ELEMENT_ARRAY_BUFFER, indices.length() * sizeof( indices[0] ), indices.data(), GL_STATIC_DRAW );
 
-    glBindVertexArrayOES_( 0 );
+    glOperation.glBindVertexArrayOES_( 0 );
 
     glDisableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_POSITION );
     glDisableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_NORMAL );
@@ -82,9 +83,10 @@ void VGlGeometry::Create( const VertexAttribs & attribs, const VArray< TriangleI
 
 void VGlGeometry::Update( const VertexAttribs & attribs )
 {
+    VGlOperation glOperation;
     vertexCount = attribs.position.length();
 
-    glBindVertexArrayOES_( vertexArrayObject );
+    glOperation.glBindVertexArrayOES_( vertexArrayObject );
 
     glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer );
 
@@ -104,13 +106,15 @@ void VGlGeometry::Update( const VertexAttribs & attribs )
 
 void VGlGeometry::Draw() const
 {
-    glBindVertexArrayOES_( vertexArrayObject );
+    VGlOperation glOperation;
+    glOperation.glBindVertexArrayOES_( vertexArrayObject );
     glDrawElements( GL_TRIANGLES, indexCount, ( sizeof( TriangleIndex ) == 2 ) ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, NULL );
 }
 
 void VGlGeometry::Free()
 {
-    glDeleteVertexArraysOES_( 1, &vertexArrayObject );
+    VGlOperation glOperation;
+    glOperation.glDeleteVertexArraysOES_( 1, &vertexArrayObject );
     glDeleteBuffers( 1, &indexBuffer );
     glDeleteBuffers( 1, &vertexBuffer );
 
@@ -690,6 +694,7 @@ VGlGeometry VGlGeometryFactory::CreateUnitCubeLines()
 
 VGlGeometry VGlGeometryFactory::CreateQuad()
 {
+    VGlOperation glOperation;
     VGlGeometry geometry;
     struct vertices_t
     {
@@ -708,8 +713,8 @@ VGlGeometry VGlGeometryFactory::CreateQuad()
     geometry.vertexCount = 4;
     geometry.indexCount = 6;
 
-    glGenVertexArraysOES_( 1, &geometry.vertexArrayObject );
-    glBindVertexArrayOES_( geometry.vertexArrayObject );
+    glOperation.glGenVertexArraysOES_( 1, &geometry.vertexArrayObject );
+    glOperation.glBindVertexArrayOES_( geometry.vertexArrayObject );
 
     glGenBuffers( 1, &geometry.vertexBuffer );
     glBindBuffer( GL_ARRAY_BUFFER, geometry.vertexBuffer );
@@ -731,7 +736,7 @@ VGlGeometry VGlGeometryFactory::CreateQuad()
     glVertexAttribPointer( SHADER_ATTRIBUTE_LOCATION_COLOR, 4, GL_FLOAT, false,
                            sizeof( vertices.colors[0] ), (const GLvoid *)offsetof( vertices_t, colors ) );
 
-    glBindVertexArrayOES_( 0 );
+    glOperation.glBindVertexArrayOES_( 0 );
 
     return  geometry;
 }
@@ -763,6 +768,7 @@ static bool VectorHitsCursor( const Vector2f & v )
 VGlGeometry VGlGeometryFactory::LoadMeshFromMemory( const MemBuffer & buf,
                                        const int numSlicesPerEye, const float fovScale, const bool cursorOnly )
 {
+    VGlOperation glOperation;
     VGlGeometry geometry;
 
     if ( buf.length < 12 )
@@ -810,8 +816,8 @@ VGlGeometry VGlGeometryFactory::LoadMeshFromMemory( const MemBuffer & buf,
     }
 
     // build a VertexArrayObject
-    glGenVertexArraysOES_( 1, &geometry.vertexArrayObject );
-    glBindVertexArrayOES_( geometry.vertexArrayObject );
+    glOperation.glGenVertexArraysOES_( 1, &geometry.vertexArrayObject );
+    glOperation.glBindVertexArrayOES_( geometry.vertexArrayObject );
 
     const int attribCount = 10;
     const int sliceTess = tesselationsX / numSlicesPerEye;
@@ -948,7 +954,7 @@ VGlGeometry VGlGeometryFactory::LoadMeshFromMemory( const MemBuffer & buf,
     glEnableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_UV1 );
     glVertexAttribPointer( SHADER_ATTRIBUTE_LOCATION_UV1, 2, GL_FLOAT, false, attribCount * sizeof( float ), (void *)( 8 * sizeof( float ) ) );
 
-    glBindVertexArrayOES_( 0 );
+    glOperation.glBindVertexArrayOES_( 0 );
 
     delete[] vertInCursor;
 
@@ -957,6 +963,7 @@ VGlGeometry VGlGeometryFactory::LoadMeshFromMemory( const MemBuffer & buf,
 
 VGlGeometry VGlGeometryFactory::CreateCalibrationLines2( const int extraLines, const bool fullGrid )
 {
+    VGlOperation glOperation;
     // lines per axis
     const int lineCount = 1 + extraLines * 2;
     const int vertexCount = lineCount * 2 * 2;
@@ -1025,8 +1032,8 @@ VGlGeometry VGlGeometryFactory::CreateCalibrationLines2( const int extraLines, c
 
     VGlGeometry geo;
 
-    glGenVertexArraysOES_( 1, &geo.vertexArrayObject );
-    glBindVertexArrayOES_( geo.vertexArrayObject );
+    glOperation.glGenVertexArraysOES_( 1, &geo.vertexArrayObject );
+    glOperation.glBindVertexArrayOES_( geo.vertexArrayObject );
 
     glGenBuffers( 1, &geo.vertexBuffer );
     glBindBuffer( GL_ARRAY_BUFFER, geo.vertexBuffer );
@@ -1045,7 +1052,7 @@ VGlGeometry VGlGeometryFactory::CreateCalibrationLines2( const int extraLines, c
     glEnableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_COLOR );
     glVertexAttribPointer( SHADER_ATTRIBUTE_LOCATION_COLOR, 4, GL_FLOAT, false, sizeof( vertex_t ), (void *)&((vertex_t *)0)->color[0] );
 
-    glBindVertexArrayOES_( 0 );
+    glOperation.glBindVertexArrayOES_( 0 );
 
     return geo;
 }

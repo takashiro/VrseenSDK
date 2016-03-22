@@ -17,7 +17,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <string.h>
 #include <assert.h>
 
-#include "GlUtils.h"
+#include "api/VGlOperation.h"
 
 // GPU Timer queries cause instability on current
 // Adreno drivers. Disable by default, but allow
@@ -104,11 +104,12 @@ LogGpuTime<NumTimers,NumFrames>::LogGpuTime() :
 template< int NumTimers, int NumFrames >
 LogGpuTime<NumTimers,NumFrames>::~LogGpuTime()
 {
+    NervGear::VGlOperation glOperation;
 	for ( int i = 0; i < NumTimers; i++ )
 	{
 		if ( TimerQuery[i] != 0 )
 		{
-			glDeleteQueriesEXT_( 1, &TimerQuery[i] );
+            glOperation.glDeleteQueriesEXT_( 1, &TimerQuery[i] );
 		}
 	}
 }
@@ -116,13 +117,14 @@ LogGpuTime<NumTimers,NumFrames>::~LogGpuTime()
 template< int NumTimers, int NumFrames >
 void LogGpuTime<NumTimers,NumFrames>::Begin( int index )
 {
-	NervGear::GpuType gpuType = NervGear::EglGetGpuType();
+    NervGear::VGlOperation glOperation;
+    NervGear::GpuType gpuType = glOperation.EglGetGpuType();
 	// don't enable by default on Mali because this issues a glFinish() to work around a driver bug
-	UseTimerQuery = AllowGpuTimerQueries && ( ( gpuType & NervGear::GPU_TYPE_MALI ) == 0 );
+    UseTimerQuery = AllowGpuTimerQueries && ( ( gpuType & NervGear::GPU_TYPE_MALI ) == 0 );
 	// use glQueryCounterEXT on Mali to time GPU rendering to a non-default FBO
-	UseQueryCounter = AllowGpuTimerQueries && ( ( gpuType & NervGear::GPU_TYPE_MALI ) != 0 );
+    UseQueryCounter = AllowGpuTimerQueries && ( ( gpuType & NervGear::GPU_TYPE_MALI ) != 0 );
 
-	if ( UseTimerQuery && EXT_disjoint_timer_query )
+    if ( UseTimerQuery && glOperation.EXT_disjoint_timer_query )
 	{
 		assert( index >= 0 && index < NumTimers );
 		assert( LastIndex == -1 );
@@ -132,29 +134,29 @@ void LogGpuTime<NumTimers,NumFrames>::Begin( int index )
 		{
 			for ( GLint available = 0; available == 0; )
 			{
-				glGetQueryObjectivEXT_( TimerQuery[index], GL_QUERY_RESULT_AVAILABLE, &available );
+                glOperation.glGetQueryObjectivEXT_( TimerQuery[index], GL_QUERY_RESULT_AVAILABLE, &available );
 			}
 
-			glGetIntegerv( GL_GPU_DISJOINT_EXT, &DisjointOccurred[index] );
+            glGetIntegerv( glOperation.GL_GPU_DISJOINT_EXT, &DisjointOccurred[index] );
 
 			GLuint64 elapsedGpuTime = 0;
-			glGetQueryObjectui64vEXT_( TimerQuery[index], GL_QUERY_RESULT_EXT, &elapsedGpuTime );
+            glOperation.glGetQueryObjectui64vEXT_( TimerQuery[index], NervGear::VGlOperation::GL_QUERY_RESULT_EXT, &elapsedGpuTime );
 
 			TimeResultMilliseconds[index][TimeResultIndex[index]] = ( elapsedGpuTime - (GLuint64)BeginTimestamp[index] ) * 0.000001;
 			TimeResultIndex[index] = ( TimeResultIndex[index] + 1 ) % NumFrames;
 		}
 		else
 		{
-			glGenQueriesEXT_( 1, &TimerQuery[index] );
+            glOperation.glGenQueriesEXT_( 1, &TimerQuery[index] );
 		}
 		if ( !UseQueryCounter )
 		{
 			BeginTimestamp[index] = 0;
-			glBeginQueryEXT_( GL_TIME_ELAPSED_EXT, TimerQuery[index] );
+            glOperation.glBeginQueryEXT_( NervGear::VGlOperation::GL_TIME_ELAPSED_EXT, TimerQuery[index] );
 		}
 		else
 		{
-			glGetInteger64v_( GL_TIMESTAMP_EXT, &BeginTimestamp[index] );
+            glOperation.glGetInteger64v_(  NervGear::VGlOperation::GL_TIMESTAMP_EXT, &BeginTimestamp[index] );
 		}
 	}
 }
@@ -162,21 +164,22 @@ void LogGpuTime<NumTimers,NumFrames>::Begin( int index )
 template< int NumTimers, int NumFrames >
 void LogGpuTime<NumTimers,NumFrames>::End( int index )
 {
-	if ( UseTimerQuery && EXT_disjoint_timer_query )
+    NervGear::VGlOperation glOperation;
+    if ( UseTimerQuery && NervGear::VGlOperation::EXT_disjoint_timer_query )
 	{
 		assert( index == LastIndex );
 		LastIndex = -1;
 
 		if ( !UseQueryCounter )
 		{
-			glEndQueryEXT_( GL_TIME_ELAPSED_EXT );
+            glOperation.glEndQueryEXT_(  NervGear::VGlOperation::GL_TIME_ELAPSED_EXT );
 		}
 		else
 		{
-			glQueryCounterEXT_( TimerQuery[index], GL_TIMESTAMP_EXT );
+            glOperation.glQueryCounterEXT_( TimerQuery[index],  NervGear::VGlOperation::GL_TIMESTAMP_EXT );
 			// Mali workaround: check for availability once to make sure all the pending flushes are resolved
 			GLint available = 0;
-			glGetQueryObjectivEXT_( TimerQuery[index], GL_QUERY_RESULT_AVAILABLE, &available );
+            glOperation.glGetQueryObjectivEXT_( TimerQuery[index], GL_QUERY_RESULT_AVAILABLE, &available );
 			// Mali workaround: need glFinish() when timing rendering to non-default FBO
 			//glFinish();
 		}
@@ -186,7 +189,7 @@ void LogGpuTime<NumTimers,NumFrames>::End( int index )
 template< int NumTimers, int NumFrames >
 void LogGpuTime<NumTimers,NumFrames>::PrintTime( int index, const char * label ) const
 {
-	if ( UseTimerQuery && EXT_disjoint_timer_query )
+    if ( UseTimerQuery && NervGear::VGlOperation::EXT_disjoint_timer_query )
 	{
 //		double averageTime = 0.0;
 //		for ( int i = 0; i < NumFrames; i++ )

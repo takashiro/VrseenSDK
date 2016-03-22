@@ -8,7 +8,7 @@
 // of latency to the output.
 
 #include <jni.h>
-#include "Android/GlUtils.h"
+#include "api/VGlOperation.h"
 
 NV_NAMESPACE_BEGIN
 

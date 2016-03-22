@@ -13,5 +13,3 @@ pthread_mutexattr_t VLock::RecursiveAttr = 0;
 bool VLock::RecursiveAttrInit;
 
 NV_NAMESPACE_END
-
-

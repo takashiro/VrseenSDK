@@ -5,7 +5,7 @@
 #include "VMath.h"
 #include "VArray.h"
 #include "VString.h"
-#include "Android/GlUtils.h"
+#include "api/VGlOperation.h"
 
 #include "GlTexture.h"
 #include "../api/VGlGeometry.h"

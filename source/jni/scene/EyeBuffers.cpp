@@ -149,6 +149,7 @@ void EyeBuffer::Allocate( const EyeParms & bufferParms, multisample_t multisampl
 			break;
 	}
 
+    VGlOperation glOperation;
 	if ( multisampleMode == MSAA_RENDER_TO_TEXTURE )
 	{
 		// Imagination Technologies can automatically resolve a multisample rendering on a tile-by-tile
@@ -160,7 +161,7 @@ void EyeBuffer::Allocate( const EyeParms & bufferParms, multisample_t multisampl
 		{
 			glGenRenderbuffers( 1, &DepthBuffer );
 			glBindRenderbuffer( GL_RENDERBUFFER, DepthBuffer );
-			glRenderbufferStorageMultisampleIMG_( GL_RENDERBUFFER,bufferParms. multisamples,
+            glOperation.glRenderbufferStorageMultisampleIMG_( GL_RENDERBUFFER,bufferParms. multisamples,
 					depthFormat, bufferParms.WidthScale*bufferParms.resolution, bufferParms.resolution );
 
 			glBindRenderbuffer( GL_RENDERBUFFER, 0 );
@@ -170,7 +171,7 @@ void EyeBuffer::Allocate( const EyeParms & bufferParms, multisample_t multisampl
 		glGenFramebuffers( 1, &RenderFrameBuffer );
 		glBindFramebuffer( GL_FRAMEBUFFER, RenderFrameBuffer );
 
-		glFramebufferTexture2DMultisampleIMG_( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+        glOperation.glFramebufferTexture2DMultisampleIMG_( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
 				GL_TEXTURE_2D, Texture, 0, bufferParms.multisamples );
 
 		if ( bufferParms.depthFormat != DEPTH_0 )
@@ -178,7 +179,7 @@ void EyeBuffer::Allocate( const EyeParms & bufferParms, multisample_t multisampl
 			glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER,
 					DepthBuffer );
 		}
-		GL_CheckErrors( "glRenderbufferStorageMultisampleIMG MSAA");
+        glOperation.GL_CheckErrors( "glRenderbufferStorageMultisampleIMG MSAA");
 	}
 	else if ( multisampleMode == MSAA_BLIT )
 	{
@@ -188,13 +189,13 @@ void EyeBuffer::Allocate( const EyeParms & bufferParms, multisample_t multisampl
 			LOG( "Making a %i sample %i res depth buffer with GL ES 3", bufferParms.multisamples, bufferParms.resolution );
 			glGenRenderbuffers( 1, &DepthBuffer );
 			glBindRenderbuffer( GL_RENDERBUFFER, DepthBuffer );
-			glRenderbufferStorageMultisample_( GL_RENDERBUFFER, bufferParms.multisamples, depthFormat, bufferParms.resolution, bufferParms.resolution );
+            glOperation.glRenderbufferStorageMultisample_( GL_RENDERBUFFER, bufferParms.multisamples, depthFormat, bufferParms.resolution, bufferParms.resolution );
 		}
 
 		// We also need to make a multisample color buffer here
 		glGenRenderbuffers( 1, &MultisampleColorBuffer );
 		glBindRenderbuffer( GL_RENDERBUFFER, MultisampleColorBuffer );
-		glRenderbufferStorageMultisample_( GL_RENDERBUFFER, bufferParms.multisamples, colorFormat, bufferParms.resolution, bufferParms.resolution );
+        glOperation.glRenderbufferStorageMultisample_( GL_RENDERBUFFER, bufferParms.multisamples, colorFormat, bufferParms.resolution, bufferParms.resolution );
 
 		glBindRenderbuffer( GL_RENDERBUFFER, 0 );
 
@@ -209,7 +210,7 @@ void EyeBuffer::Allocate( const EyeParms & bufferParms, multisample_t multisampl
 			glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER,
 					DepthBuffer );
 		}
-		GL_CheckErrors( "ES 3 MSAA");
+        glOperation.GL_CheckErrors( "ES 3 MSAA");
 	}
 	else
 	{
@@ -237,7 +238,7 @@ void EyeBuffer::Allocate( const EyeParms & bufferParms, multisample_t multisampl
 				DepthBuffer );
 		}
 
-		GL_CheckErrors( "NO MSAA");
+        glOperation.GL_CheckErrors( "NO MSAA");
 	}
 
 	GLenum status = glCheckFramebufferStatus( GL_FRAMEBUFFER );
@@ -334,6 +335,7 @@ static void ScreenShotTexture( const int eyeResolution, const GLuint texId )
 
 void EyeBuffers::BeginFrame( const EyeParms & bufferParms_ )
 {
+    VGlOperation glOperation;
 	SwapCount++;
 
 	EyePairs & buffers = BufferData[ SwapCount % MAX_EYE_SETS ];
@@ -372,19 +374,19 @@ void EyeBuffers::BeginFrame( const EyeParms & bufferParms_ )
 
 		LOG( "Allocate FBO: res=%i color=%i depth=%i", bufferParms_.resolution,
 				bufferParms_.colorFormat, bufferParms_.depthFormat );
-		if ( glFramebufferTexture2DMultisampleIMG_ && bufferParms_.multisamples > 1 ) {
+        if ( glOperation.glFramebufferTexture2DMultisampleIMG_ && bufferParms_.multisamples > 1 ) {
 			buffers.MultisampleMode = MSAA_RENDER_TO_TEXTURE;
 		} else if ( bufferParms_.multisamples > 1 ) {
 			buffers.MultisampleMode = MSAA_BLIT;
 		} else {
 			buffers.MultisampleMode = MSAA_OFF;
 		}
-		GL_CheckErrors( "Before framebuffer creation");
+        glOperation.GL_CheckErrors( "Before framebuffer creation");
 		for ( int eye = 0; eye < 2; eye++ ) {
 			buffers.Eyes[eye].Allocate( bufferParms_, buffers.MultisampleMode );
 		}
 
-		GL_CheckErrors( "after framebuffer creation" );
+        glOperation.GL_CheckErrors( "after framebuffer creation" );
 	}
 }
 
@@ -404,9 +406,10 @@ void EyeBuffers::BeginRenderingEye( const int eyeNum )
 	glEnable( GL_DEPTH_TEST );
 	glDepthFunc( GL_LEQUAL );
 
+    VGlOperation glOperation;
 	if ( DiscardInsteadOfClear )
 	{
-		GL_InvalidateFramebuffer( INV_FBO, true, true );
+        glOperation.GL_InvalidateFramebuffer( VGlOperation::INV_FBO, true, true );
 		glClear( GL_DEPTH_BUFFER_BIT );
 	}
 	else
@@ -421,21 +424,22 @@ void EyeBuffers::EndRenderingEye( const int eyeNum )
 	const int resolution = BufferParms.resolution;
 	EyePairs & pair = BufferData[ SwapCount % MAX_EYE_SETS ];
 	EyeBuffer & eye = pair.Eyes[eyeNum];
+    VGlOperation glOperation;;
 
 	// Discard the depth buffer, so the tiler won't need to write it back out to memory
-	GL_InvalidateFramebuffer( INV_FBO, false, true );
+    glOperation.GL_InvalidateFramebuffer( VGlOperation::INV_FBO, false, true );
 
 	// Do a blit-MSAA-resolve if necessary.
 	if ( eye.ResolveFrameBuffer )
 	{
 		glBindFramebuffer( GL_READ_FRAMEBUFFER, eye.RenderFrameBuffer );
 		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, eye.ResolveFrameBuffer );
-		glBlitFramebuffer_( 0, 0, resolution, resolution,
+        glOperation.glBlitFramebuffer_( 0, 0, resolution, resolution,
 				0, 0, resolution, resolution,
 				GL_COLOR_BUFFER_BIT, GL_NEAREST );
 		// Discard the multisample color buffer after we have resolved it,
 		// so the tiler won't need to write it back out to memory
-		GL_InvalidateFramebuffer( INV_FBO, true, false );
+        glOperation.GL_InvalidateFramebuffer( VGlOperation::INV_FBO, true, false );
 	}
 
 	LogEyeSceneGpuTime.End( eyeNum );

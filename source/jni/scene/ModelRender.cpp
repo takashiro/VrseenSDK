@@ -13,7 +13,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include <stdlib.h>
 
-#include "Android/GlUtils.h"
+#include "api/VGlOperation.h"
 #include "Android/LogUtils.h"
 #include "Alg.h"
 
@@ -349,7 +349,8 @@ const DrawSurfaceList & BuildDrawSurfaceList( const NervGear::VArray<ModelState>
 DrawCounters RenderSurfaceList( const DrawSurfaceList & drawSurfaceList ) {
 	// This state could be made to persist across multiple calls to RenderModelList,
 	// but the benefit would be small.
-	GpuState			currentGpuState;
+    VGlOperation glOperation;
+    GpuState			currentGpuState;
 	GLuint				currentTextures[ MAX_PROGRAM_TEXTURES ] = {};	// TODO: This should be a range checked container.
 	const DrawMatrices * currentMatrices = NULL;
 	GLuint				currentProgramObject = 0;
@@ -468,7 +469,7 @@ DrawCounters RenderSurfaceList( const DrawSurfaceList & drawSurfaceList ) {
 	glActiveTexture( GL_TEXTURE0 );
 	glBindTexture( GL_TEXTURE_2D, 0 );
 	glUseProgram( 0 );
-	glBindVertexArrayOES_( 0 );
+    glOperation.glBindVertexArrayOES_( 0 );
 
 	return counters;
 }

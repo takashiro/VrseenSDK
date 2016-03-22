@@ -3,7 +3,7 @@
 #include <jni.h>
 
 #include "vglobal.h"
-#include "Android/GlUtils.h"		// GLuint
+#include "api/VGlOperation.h"
 #include "Android/LogUtils.h"
 
 NV_NAMESPACE_BEGIN

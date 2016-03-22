@@ -14,7 +14,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <stdlib.h>
 
 #include "OVR.h"
-#include "Android/GlUtils.h"
+#include "api/VGlOperation.h"
 #include "Android/LogUtils.h"
 
 #include "api/VGlGeometry.h"
@@ -154,6 +154,7 @@ OvrDebugLinesLocal::~OvrDebugLinesLocal()
 // OvrDebugLinesLocal::Init
 void OvrDebugLinesLocal::Init()
 {
+    VGlOperation glOperation;
 	if ( Initialized )
 	{
 // JDC: multi-activity test		DROID_ASSERT( !Initialized, "DebugLines" );
@@ -182,7 +183,7 @@ void OvrDebugLinesLocal::Init()
 	InitVBO( DepthGeo, Vertices, MAX_VERTS, indices, MAX_INDICES );
 	InitVBO( NonDepthGeo, Vertices, MAX_VERTS, indices, MAX_INDICES );
 
-	glBindVertexArrayOES_( 0 );
+    glOperation.glBindVertexArrayOES_( 0 );
 
 	delete [] indices;	// never needs to change so we don't keep it around
 
@@ -194,11 +195,12 @@ void OvrDebugLinesLocal::Init()
 void OvrDebugLinesLocal::InitVBO( VGlGeometry & geo, LineVertex_t * vertices, const int maxVerts,
 		LineIndex_t * indices, const int maxIndices )
 {
+    VGlOperation glOperation;
 	const int numVertexBytes = maxVerts * sizeof( LineVertex_t );
 
 	// create vertex array object
-    glGenVertexArraysOES_( 1, &geo.vertexArrayObject );
-    glBindVertexArrayOES_( geo.vertexArrayObject );
+    glOperation.glGenVertexArraysOES_( 1, &geo.vertexArrayObject );
+    glOperation.glBindVertexArrayOES_( geo.vertexArrayObject );
 
 	// create the vertex buffer
 	glGenBuffers( 1, &geo.vertexBuffer );
@@ -250,6 +252,7 @@ void OvrDebugLinesLocal::Render( Matrix4f const & mvp ) const
 void OvrDebugLinesLocal::Render( Matrix4f const & mvp, VGlGeometry & geo,
 		NervGear::VArray< DebugLine_t > const & lines,  const bool depthTest ) const
 {
+    VGlOperation glOperation;
 	if ( lines.length() == 0 )
 	{
 		return;
@@ -281,14 +284,14 @@ void OvrDebugLinesLocal::Render( Matrix4f const & mvp, VGlGeometry & geo,
 		v2.a = line.EndColor.w;
 	}
 
-	glBindVertexArrayOES_( geo.vertexArrayObject );
+    glOperation.glBindVertexArrayOES_( geo.vertexArrayObject );
 
 	int numVertices = numLines * 2;
 	int numVertexBytes = numVertices * sizeof( LineVertex_t );
 	glBindBuffer( GL_ARRAY_BUFFER, geo.vertexBuffer );
 	glBufferSubData( GL_ARRAY_BUFFER, 0, numVertexBytes, (void*)Vertices );
 
-	glBindVertexArrayOES_( geo.vertexArrayObject );
+    glOperation.glBindVertexArrayOES_( geo.vertexArrayObject );
 	geo.indexCount = numLines * 2;
 
 	if ( depthTest )
@@ -312,7 +315,7 @@ void OvrDebugLinesLocal::Render( Matrix4f const & mvp, VGlGeometry & geo,
 
 	glDrawElements( GL_LINES, geo.indexCount, GL_UNSIGNED_SHORT, NULL );
 
-	glBindVertexArrayOES_( 0 );
+    glOperation.glBindVertexArrayOES_( 0 );
 
 	glEnable( GL_DEPTH_TEST );
 	glDepthMask( GL_TRUE );

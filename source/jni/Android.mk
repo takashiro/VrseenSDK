@@ -61,7 +61,6 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     core/VUserSettings.cpp \
                     core/VVariant.cpp \
                     core/VWaitCondition.cpp \
-                    core/android/GlUtils.cpp \
                     core/android/JniUtils.cpp \
                     core/android/LogUtils.cpp \
                     core/android/VOsBuild.cpp \
@@ -76,6 +75,7 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     api/VFrameSmooth.cpp \
                     api/VGlGeometry.cpp \
                     api/VMainActivity.cpp \
+                    api/VGlOperation.cpp \
                     api/VGlShader.cpp \
                     api/sensor/DeviceHandle.cpp \
                     api/sensor/DeviceImpl.cpp \
@@ -126,7 +126,6 @@ LOCAL_SRC_FILES  := core/Alg.cpp \
                     scene/EyeBuffers.cpp \
                     scene/EyePostRender.cpp \
                     scene/GazeCursor.cpp \
-                    scene/GlSetup.cpp \
                     scene/GlTexture.cpp \
                     scene/ImageData.cpp \
                     scene/ModelRender.cpp \

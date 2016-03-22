@@ -12,7 +12,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #if !defined( OVR_GazeCursorLocal_h )
 #define OVR_GazeCursorLocal_h
 
-#include "Android/GlUtils.h"
+#include "api/VGlOperation.h"
 
 #include "GazeCursor.h"
 #include "../api/VGlShader.h"

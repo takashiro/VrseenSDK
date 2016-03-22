@@ -356,7 +356,8 @@ void OvrGazeCursorLocal::Frame( Matrix4f const & viewMatrix, float const deltaTi
 // OvrGazeCursorLocal::Render
 void OvrGazeCursorLocal::Render( int const eye, Matrix4f const & mvp ) const
 {
-	GL_CheckErrors( "OvrGazeCursorLocal::Render - pre" );
+    VGlOperation glOperation;
+    glOperation.GL_CheckErrors( "OvrGazeCursorLocal::Render - pre" );
 
 	//LOG( "OvrGazeCursorLocal::Render" );
 
@@ -450,7 +451,7 @@ void OvrGazeCursorLocal::Render( int const eye, Matrix4f const & mvp ) const
 		glActiveTexture( GL_TEXTURE1 );
 		glBindTexture( GL_TEXTURE_2D, ColorTableHandle );
 		// do not do any filtering on the "palette" texture
-		if ( EXT_texture_filter_anisotropic )
+        if ( VGlOperation::EXT_texture_filter_anisotropic )
 		{
 			glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1.0f );
 		}
@@ -472,7 +473,7 @@ void OvrGazeCursorLocal::Render( int const eye, Matrix4f const & mvp ) const
 	glDepthMask( GL_TRUE );
 	glDisable( GL_BLEND );
 
-	GL_CheckErrors( "OvrGazeCursorLocal::Render - post" );
+    glOperation.GL_CheckErrors( "OvrGazeCursorLocal::Render - post" );
 }
 
 //==============================

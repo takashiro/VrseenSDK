@@ -10,7 +10,7 @@
  */
 
 #include <pthread.h>
-#include "Android/GlUtils.h"		// GLuint, etc
+#include "api/VGlOperation.h"
 #include "Android/LogUtils.h"
 #include "DirectRender.h"
 #include "VrApi.h"

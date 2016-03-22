@@ -22,7 +22,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 //#include "BinaryFile.h"
 #include "VBinaryFile.h"
 #include "MappedFile.h"
-#include "Android/GlUtils.h"
+#include "api/VGlOperation.h"
 #include "Android/LogUtils.h"
 #include "VPath.h"
 

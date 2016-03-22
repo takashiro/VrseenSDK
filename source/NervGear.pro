@@ -45,7 +45,6 @@ SOURCES += \
     jni/core/VUserSettings.cpp \
     jni/core/VVariant.cpp \
     jni/core/VWaitCondition.cpp \
-    jni/core/android/GlUtils.cpp \
     jni/core/android/JniUtils.cpp \
     jni/core/android/LogUtils.cpp \
     jni/core/android/VOsBuild.cpp \
@@ -110,7 +109,6 @@ SOURCES += \
     jni/scene/EyeBuffers.cpp \
     jni/scene/EyePostRender.cpp \
     jni/scene/GazeCursor.cpp \
-    jni/scene/GlSetup.cpp \
     jni/scene/GlTexture.cpp \
     jni/scene/ImageData.cpp \
     jni/scene/ModelCollision.cpp \
@@ -125,10 +123,11 @@ SOURCES += \
     jni/DebugLines.cpp \
     jni/KeyState.cpp \
     jni/VrCommon.cpp \
-    jni/VrLocale.cpp
+    jni/VrLocale.cpp \
+    jni/api/VGlOperation.cpp
+
 
 HEADERS += \
-    jni/core/android/GlUtils.h \
     jni/core/android/JniUtils.h \
     jni/core/android/LogUtils.h \
     jni/core/android/VOsBuild.h \
@@ -262,7 +261,6 @@ HEADERS += \
     jni/scene/EyePostRender.h \
     jni/scene/GazeCursor.h \
     jni/scene/GazeCursorLocal.h \
-    jni/scene/GlSetup.h \
     jni/scene/GlTexture.h \
     jni/scene/ImageData.h \
     jni/scene/ModelCollision.h \
@@ -283,7 +281,9 @@ HEADERS += \
     jni/Input.h \
     jni/PointTracker.h \
     jni/UniversalMenu_Commands.h \
-    jni/PointTracker.h
+    jni/PointTracker.h \
+    jni/api/VGlOperation.h \
+    jni/api/VGlTypeDefine.h
 
 
 include(jni/3rdparty/minizip/minizip.pri)
