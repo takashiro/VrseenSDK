@@ -1,7 +1,7 @@
 #pragma once
 
 #include "VString.h"
-#include "VJson.h"
+#include "VVariant.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -19,7 +19,7 @@ struct VEvent
     bool isValid() const { return !name.isEmpty(); }
 
     VString name;
-    VJson data;
+    VVariant data;
 };
 
 NV_NAMESPACE_END

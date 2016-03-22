@@ -189,7 +189,7 @@ void VMainActivity::onCreate(jstring javaFromPackageNameString, jstring javaComm
     }
 
     // Send the intent and wait for it to complete.
-    VJson args(VJson::Array);
+    VVariantArray args;
     args << fromPackage << uri << json;
     vApp->eventLoop().post("intent", args);
     vApp->syncVrThread();
@@ -326,7 +326,7 @@ extern "C"
 
 void Java_com_vrseen_nervgear_VrActivity_nativeSurfaceChanged(JNIEnv *jni, jclass, jobject surface)
 {
-    vApp->eventLoop().send("surfaceChanged", reinterpret_cast<int>(surface ? ANativeWindow_fromSurface(jni, surface) : nullptr));
+    vApp->eventLoop().send("surfaceChanged", surface ? ANativeWindow_fromSurface(jni, surface) : nullptr);
 }
 
 void Java_com_vrseen_nervgear_VrActivity_nativeSurfaceDestroyed(JNIEnv *jni, jclass clazz)
@@ -344,7 +344,7 @@ void Java_com_vrseen_nervgear_VrActivity_nativeSurfaceDestroyed(JNIEnv *jni, jcl
 void Java_com_vrseen_nervgear_VrActivity_nativePopup(JNIEnv *, jclass,
         jint width, jint height, jfloat seconds)
 {
-    VJson args(VJson::Array);
+    VVariantArray args;
     args << width << height << seconds;
     vApp->eventLoop().post("popup", args);
 }
@@ -382,7 +382,7 @@ void Java_com_vrseen_nervgear_VrActivity_nativeJoypadAxis(JNIEnv *jni, jclass cl
 {
     // Suspend input until OneTimeInit() has finished to avoid overflowing the message queue on long loads.
     if (vApp->oneTimeInitCalled) {
-        VJson args(VJson::Array);
+        VVariantArray args;
         args << lx << ly << rx << ry;
         vApp->eventLoop().post("joy", args);
     }
@@ -393,7 +393,7 @@ void Java_com_vrseen_nervgear_VrActivity_nativeTouch(JNIEnv *, jclass,
 {
     // Suspend input until OneTimeInit() has finished to avoid overflowing the message queue on long loads.
     if (vApp->oneTimeInitCalled) {
-        VJson args(VJson::Array);
+        VVariantArray args;
         args << action << x << y;
         vApp->eventLoop().post("touch", args);
     }
@@ -404,7 +404,7 @@ void Java_com_vrseen_nervgear_VrActivity_nativeKeyEvent(JNIEnv *jni, jclass claz
 {
     // Suspend input until OneTimeInit() has finished to avoid overflowing the message queue on long loads.
     if (vApp->oneTimeInitCalled) {
-        VJson args(VJson::Array);
+        VVariantArray args;
         args << key << down << repeatCount;
         vApp->eventLoop().post("key", args);
     }
@@ -417,7 +417,7 @@ void Java_com_vrseen_nervgear_VrActivity_nativeNewIntent(JNIEnv *jni, jclass cla
     VString uri = JniUtils::Convert(jni, uriString);
     VString json = JniUtils::Convert(jni, command);
 
-    VJson args(VJson::Array);
+    VVariantArray args;
     args << packageName << uri << json;
     vApp->eventLoop().post("intent", args);
 }

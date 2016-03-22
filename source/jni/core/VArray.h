@@ -23,11 +23,6 @@ public:
     typename VArray<E>::iterator iter;
     typedef E ValueType;
 
-    VArray(int size)
-        : std::vector<E>(size)
-    {
-    }
-
     VArray() {}
 
     int length() const { return (int)this->size(); }
@@ -45,7 +40,7 @@ public:
 
     VArray &operator << (const E &e)
     {
-        this->append(e);
+        append(e);
         return *this;
     }
 

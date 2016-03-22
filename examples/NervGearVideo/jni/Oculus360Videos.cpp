@@ -87,13 +87,13 @@ jobject Java_com_vrseen_nervgear_video_MainActivity_nativePrepareNewVideo(JNIEnv
 	// set up a message queue to get the return message
 	// TODO: make a class that encapsulates this work
 	VEventLoop	result( 1 );
-    vApp->eventLoop().post("newVideo", reinterpret_cast<int>(&result));
+    vApp->eventLoop().post("newVideo", &result);
 
 	result.wait();
     VEvent event = result.next();
 	jobject	texobj;
     if (event.name == "surfaceTexture") {
-        texobj = reinterpret_cast<jobject>(event.data.toInt());
+        texobj = static_cast<jobject>(event.data.toPointer());
     }
 
 	return texobj;
@@ -102,9 +102,9 @@ jobject Java_com_vrseen_nervgear_video_MainActivity_nativePrepareNewVideo(JNIEnv
 void Java_com_vrseen_nervgear_video_MainActivity_nativeSetVideoSize(JNIEnv *, jclass, int width, int height)
 {
 	LOG( "nativeSetVideoSizes: width=%i height=%i", width, height );
-    VJson args(VJson::Array);
+    VVariantArray args;
     args << width << height;
-    vApp->eventLoop().post("video", args);
+    vApp->eventLoop().post("video", std::move(args));
 }
 
 void Java_com_vrseen_nervgear_video_MainActivity_nativeVideoCompletion(JNIEnv *, jclass)
@@ -452,11 +452,8 @@ void Oculus360Videos::command(const VEvent &event )
 		MovieTexture = new SurfaceTexture( vApp->vrJni() );
 		LOG( "RC_NEW_VIDEO texId %i", MovieTexture->textureId );
 
-        VEventLoop *receiver = reinterpret_cast<VEventLoop *>(event.data.toInt());
-
-        VEvent event("surfaceTexture");
-        event.data = reinterpret_cast<int>(MovieTexture->javaObject);
-        receiver->post(event);
+        VEventLoop *receiver = static_cast<VEventLoop *>(event.data.toPointer());
+        receiver->post("surfaceTexture", MovieTexture->javaObject);
 
 		// don't draw the screen until we have the new size
 		CurrentVideoWidth = 0;

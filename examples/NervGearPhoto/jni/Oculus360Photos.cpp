@@ -463,7 +463,7 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
         VEvent event = photos->m_backgroundCommands.next();
         vInfo("BackgroundGLLoadThread Commands:" << event.name);
         if (event.name == "pano") {
-            uchar *data = reinterpret_cast<uchar *>(event.data.at(0).toInt());
+            uchar *data = static_cast<uchar *>(event.data.at(0).toPointer());
             int width = event.data.at(1).toInt();
             int height = event.data.at(2).toInt();
 
@@ -508,7 +508,7 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
             int size = event.data.at(0).toInt();
             uchar *data[6];
             for (int i = 0; i < 6; i++) {
-                data[0] = reinterpret_cast<uchar *>(event.data.at(i + 1).toInt());
+                data[0] = static_cast<uchar *>(event.data.at(i + 1).toPointer());
             }
 
 			const double start = ovr_GetTimeInSeconds( );

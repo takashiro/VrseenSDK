@@ -14,12 +14,12 @@ public:
 
     //Send out an event
     void post(const VEvent &event);
-    void post(const VString &command, const VJson &data);
+    void post(const VString &command, const VVariant &data);
     void post(const char *command);
 
     //Send out an event and wait until it is proceeded
     void send(const VEvent &event);
-    void send(const VString &command, const VJson &data);
+    void send(const VString &command, const VVariant &data);
     void send(const char *command);
 
     void wait();

@@ -59,34 +59,16 @@ VVariant::VVariant(void *pointer)
     m_value.pointer = pointer;
 }
 
-VVariant::VVariant(const char *value)
-    : m_type(RawString)
-{
-    m_value.str = new std::string(value);
-}
-
-VVariant::VVariant(const std::string &value)
-    : m_type(RawString)
-{
-    m_value.str = new std::string(value);
-}
-
-VVariant::VVariant(std::string &&value)
-    : m_type(RawString)
-{
-    m_value.str = new std::string(value);
-}
-
 VVariant::VVariant(const VString &value)
     : m_type(String)
 {
-    m_value.ustr = new VString(value);
+    m_value.str = new VString(value);
 }
 
 VVariant::VVariant(VString &&value)
     : m_type(String)
 {
-    m_value.ustr = new VString(value);
+    m_value.str = new VString(value);
 }
 
 VVariant::VVariant(const VVariantArray &array)
@@ -128,11 +110,8 @@ VVariant::VVariant(const VVariant &var)
     case Pointer:
         m_value = var.m_value;
         break;
-    case RawString:
-        m_value.str = new std::string(*(var.m_value.str));
-        break;
     case String:
-        m_value.ustr = new VString(*(var.m_value.ustr));
+        m_value.str = new VString(*(var.m_value.str));
         break;
     case Array:
         m_value.array = new VVariantArray(*(var.m_value.array));
@@ -150,26 +129,11 @@ VVariant::VVariant(VVariant &&var)
     , m_value(var.m_value)
 {
     var.m_type = Null;
-    var.m_value.pointer = nullptr;
 }
 
 VVariant::~VVariant()
 {
-    switch (m_type) {
-    case RawString:
-        delete m_value.str;
-        break;
-    case String:
-        delete m_value.ustr;
-        break;
-    case Array:
-        delete m_value.array;
-        break;
-    case Map:
-        delete m_value.map;
-        break;
-    default:;
-    }
+    release();
 }
 
 bool VVariant::toBool() const
@@ -193,10 +157,8 @@ bool VVariant::toBool() const
         return m_value.dreal != 0;
     case Pointer:
         return m_value.pointer;
-    case RawString:
-        return !m_value.str->empty();
     case String:
-        return !m_value.ustr->isEmpty();
+        return !m_value.str->isEmpty();
     case Array:
         return !m_value.array->isEmpty();
     case Map:
@@ -225,15 +187,8 @@ int VVariant::toInt() const
         return static_cast<int>(m_value.real);
     case Double:
         return static_cast<int>(m_value.dreal);
-    case RawString: {
-        std::stringstream ss;
-        ss << (*m_value.str);
-        int value;
-        ss >> value;
-        return value;
-    }
     case String:
-        return m_value.ustr->toInt();
+        return m_value.str->toInt();
     case Array:
         return m_value.array->length();
     case Map:
@@ -262,15 +217,8 @@ uint VVariant::toUInt() const
         return static_cast<uint>(m_value.real);
     case Double:
         return static_cast<uint>(m_value.dreal);
-    case RawString: {
-        std::stringstream ss;
-        ss << (*m_value.str);
-        uint value;
-        ss >> value;
-        return value;
-    }
     case String:
-        return m_value.ustr->toInt();
+        return m_value.str->toInt();
     case Array:
         return m_value.array->size();
     case Map:
@@ -299,16 +247,6 @@ float VVariant::toFloat() const
         return m_value.ubdecimal;
     case Double:
         return m_value.dreal;
-    case RawString: {
-        std::stringstream ss;
-        ss << (*m_value.str);
-        float value;
-        ss >> value;
-        return value;
-    }
-    case String:
-    case Array:
-    case Map:
     default:
         return 0;
     }
@@ -333,16 +271,6 @@ double VVariant::toDouble() const
         return m_value.ubdecimal;
     case Float:
         return m_value.real;
-    case RawString: {
-        std::stringstream ss;
-        ss << (*m_value.str);
-        float value;
-        ss >> value;
-        return value;
-    }
-    case String:
-    case Array:
-    case Map:
     default:
         return 0;
     }
@@ -353,16 +281,10 @@ void *VVariant::toPointer() const
     return m_type == Pointer ? m_value.pointer : nullptr;
 }
 
-const std::string &VVariant::toStdString() const
-{
-    static std::string NullRawString;
-    return m_type == RawString ? *(m_value.str) : NullRawString;
-}
-
 const VString &VVariant::toString() const
 {
-    static VString NullString;
-    return m_type == String ? *(m_value.ustr) : NullString;
+    static VString EmptyString;
+    return m_type == String ? *(m_value.str) : EmptyString;
 }
 
 const VVariantArray &VVariant::toArray() const
@@ -408,9 +330,7 @@ int VVariant::length() const
     } else if (m_type == Map) {
         return (int) m_value.map->size();
     } else if (m_type == String) {
-        return m_value.ustr->length();
-    } else if (m_type == RawString) {
-        return (int) m_value.str->length();
+        return m_value.str->length();
     }
     vAssert(false)
     return 0;
@@ -423,12 +343,66 @@ uint VVariant::size() const
     } else if (m_type == Map) {
         return m_value.map->size();
     } else if (m_type == String) {
-        return m_value.ustr->size();
-    } else if (m_type == RawString) {
         return m_value.str->size();
     }
     vAssert(false)
-    return 0;
+            return 0;
+}
+
+void VVariant::release()
+{
+    switch (m_type) {
+    case String:
+        delete m_value.str;
+        break;
+    case Array:
+        delete m_value.array;
+        break;
+    case Map:
+        delete m_value.map;
+        break;
+    default:;
+    }
+}
+
+VVariant &VVariant::operator=(const VVariant &var)
+{
+    release();
+    m_type = var.m_type;
+    switch (m_type) {
+    case Null:
+    case Boolean:
+    case Int:
+    case UInt:
+    case LongLong:
+    case ULongLong:
+    case Float:
+    case Double:
+    case Pointer:
+        m_value = var.m_value;
+        break;
+    case String:
+        m_value.str = new VString(*(var.m_value.str));
+        break;
+    case Array:
+        m_value.array = new VVariantArray(*(var.m_value.array));
+        break;
+    case Map:
+        m_value.map = new VVariantMap(*(var.m_value.map));
+        break;
+    default:
+        vAssert("VVariant Does not support such a type.");
+    }
+    return *this;
+}
+
+VVariant &VVariant::operator=(VVariant &&source)
+{
+    release();
+    m_type = source.m_type;
+    m_value = source.m_value;
+    source.m_type = Null;
+    return *this;
 }
 
 NV_NAMESPACE_END

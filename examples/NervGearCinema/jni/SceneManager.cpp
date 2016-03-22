@@ -647,8 +647,8 @@ bool SceneManager::Command(const VEvent &event)
         MovieTexture = new SurfaceTexture( vApp->vrJni() );
         vInfo( "RC_NEW_VIDEO texId" << MovieTexture->textureId);
 
-        VEventLoop *receiver = reinterpret_cast<VEventLoop *>(event.data.toInt());
-        receiver->post("surfaceTexture", reinterpret_cast<int>(MovieTexture->javaObject));
+        VEventLoop *receiver = static_cast<VEventLoop *>(event.data.toPointer());
+        receiver->post("surfaceTexture", MovieTexture->javaObject);
 
 		// don't draw the screen until we have the new size
 		CurrentMovieWidth = 0;

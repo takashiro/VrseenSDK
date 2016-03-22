@@ -88,9 +88,9 @@ void * Queue1Thread( void * v )
 						mbfs[4].buffer, mbfs[4].length,
 						mbfs[5].buffer, mbfs[5].length );
 
-                VJson args(VJson::Array);
+                VVariantArray args;
                 for (int i = 0; i < 6; i++) {
-                    args << reinterpret_cast<int>(mbfs[i].buffer) << mbfs[i].length;
+                    args << mbfs[i].buffer << mbfs[i].length;
                 }
                 queue->post(event.name, args);
 				for ( int i = 0; i < 6; ++i )
@@ -121,8 +121,8 @@ void * Queue1Thread( void * v )
 				}
 			}
 
-            VJson args(VJson::Array);
-            args << reinterpret_cast<int>(mbf.buffer) << mbf.length;
+            VVariantArray args;
+            args << mbf.buffer << mbf.length;
             queue->post(event.name, args);
 			mbf.buffer = NULL;
 			mbf.length = 0;
@@ -157,13 +157,13 @@ void * Queue3Thread( void * v )
 		int blen[6];
         int numBuffers = 1;
         if (event.name != "cube") {
-            b[0] = reinterpret_cast<uint *>(event.data.at(0).toInt());
+            b[0] = static_cast<uint *>(event.data.at(0).toPointer());
             blen[0] = event.data.at(1).toInt();
         } else {
             numBuffers = 6;
             int k = 0;
             for (int i = 0; i < 6; i++) {
-                b[i] = reinterpret_cast<uint *>(event.data.at(k).toInt());
+                b[i] = static_cast<uint *>(event.data.at(k).toPointer());
                 k++;
                 blen[i] = event.data.at(k).toInt();
                 k++;
@@ -221,16 +221,16 @@ void * Queue3Thread( void * v )
 			if ( numBuffers == 1 )
 			{
                 OVR_ASSERT( data[0] != NULL );
-                VJson args(VJson::Array);
-                args << reinterpret_cast<int>(data[0]) << resolutionX << resolutionY;
-                ( ( Oculus360Photos * )v )->backgroundMessageQueue().post(event.name, args);
+                VVariantArray args;
+                args << data[0] << resolutionX << resolutionY;
+                ( ( Oculus360Photos * )v )->backgroundMessageQueue().post(event.name, std::move(args));
 			}
 			else
 			{
                 vAssert(numBuffers == 6);
-                VJson args(VJson::Array);
+                VVariantArray args;
                 args << resolutionX << data[0] << data[1] << data[2] << data[3] << data[4] << data[5];
-                ( ( Oculus360Photos * )v )->backgroundMessageQueue().post(event.name, args);
+                ( ( Oculus360Photos * )v )->backgroundMessageQueue().post(event.name, std::move(args));
 			}
 		}
 	}

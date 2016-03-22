@@ -26,9 +26,7 @@ public:
         Double,
         Pointer,
 
-        RawString,
         String,
-
         Array,
         Map,
 
@@ -45,9 +43,6 @@ public:
     VVariant(double value);
     VVariant(void *pointer);
 
-    VVariant(const char *value);
-    VVariant(const std::string &value);
-    VVariant(std::string &&value);
     VVariant(const VString &value);
     VVariant(VString &&value);
 
@@ -64,6 +59,18 @@ public:
     Type type() const { return m_type; }
 
     bool isNull() const { return m_type == Null; }
+    bool isBool() const { return m_type == Boolean; }
+    bool isInt() const { return m_type == Int; }
+    bool isUInt() const { return m_type == UInt; }
+    bool isLongLong() const { return m_type == LongLong; }
+    bool isULongLong() const { return m_type == ULongLong; }
+    bool isFloat() const { return m_type == Float; }
+    bool isDouble() const { return m_type == Double; }
+    bool isPointer() const { return m_type == Pointer; }
+    bool isString() const { return m_type == String; }
+    bool isArray() const { return m_type == Array; }
+    bool isMap() const { return m_type == Map; }
+
     bool toBool() const;
     int toInt() const;
     uint toUInt() const;
@@ -71,7 +78,6 @@ public:
     double toDouble() const;
     void *toPointer() const;
 
-    const std::string &toStdString() const;
     const VString &toString() const;
 
     const VVariantArray &toArray() const;
@@ -90,7 +96,12 @@ public:
     int length() const;
     uint size() const;
 
+    VVariant &operator=(const VVariant &source);
+    VVariant &operator=(VVariant &&source);
+
 private:
+    void release();
+
     VVariant::Type m_type;
 
     union Value
@@ -103,8 +114,7 @@ private:
         float real;
         double dreal;
         void *pointer;
-        std::string *str;
-        VString *ustr;
+        VString *str;
         VVariantArray *array;
         VVariantMap *map;
     };

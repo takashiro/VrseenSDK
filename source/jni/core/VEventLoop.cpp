@@ -111,7 +111,7 @@ void VEventLoop::post(const VEvent &event)
     d->post(event, false);
 }
 
-void VEventLoop::post(const VString &command, const VJson &data)
+void VEventLoop::post(const VString &command, const VVariant &data)
 {
     VEvent event(command);
     event.data = data;
@@ -129,7 +129,7 @@ void VEventLoop::send(const VEvent &event)
     d->post(event, true);
 }
 
-void VEventLoop::send(const VString &command, const VJson &data)
+void VEventLoop::send(const VString &command, const VVariant &data)
 {
     VEvent event(command);
     event.data = data;

@@ -788,20 +788,18 @@ struct App::Private : public TalkToJavaInterface
 
         if (event.name == "joy") {
             vAssert(event.data.isArray());
-            const JsonArray &array = event.data.toArray();
-            joypad.sticks[0][0] = array.at(0).toDouble();
-            joypad.sticks[0][1] = array.at(1).toDouble();
-            joypad.sticks[1][0] = array.at(2).toDouble();
-            joypad.sticks[1][1] = array.at(3).toDouble();
+            joypad.sticks[0][0] = event.data.at(0).toFloat();
+            joypad.sticks[0][1] = event.data.at(1).toFloat();
+            joypad.sticks[1][0] = event.data.at(2).toFloat();
+            joypad.sticks[1][1] = event.data.at(3).toFloat();
             return;
         }
 
         if (event.name == "touch") {
             vAssert(event.data.isArray());
-            const JsonArray &array = event.data.toArray();
-            int	action = array.at(0).toInt();
-            joypad.touch[0] = array.at(1).toDouble();
-            joypad.touch[1] = array.at(2).toDouble();
+            int	action = event.data.at(0).toInt();
+            joypad.touch[0] = event.data.at(1).toFloat();
+            joypad.touch[1] = event.data.at(2).toFloat();
             if (action == 0) {
                 joypad.buttonState |= BUTTON_TOUCH;
             }
@@ -813,10 +811,9 @@ struct App::Private : public TalkToJavaInterface
 
         if (event.name == "key") {
             vAssert(event.data.isArray());
-            const JsonArray &array = event.data.toArray();
-            int	key = array.at(0).toInt();
-            int down = array.at(1).toInt();
-            int repeatCount = array.at(2).toInt();
+            int	key = event.data.at(0).toInt();
+            int down = event.data.at(1).toInt();
+            int repeatCount = event.data.at(2).toInt();
             onKeyEvent(key, down, repeatCount);
             return;
         }
@@ -829,7 +826,7 @@ struct App::Private : public TalkToJavaInterface
                 vWarn("Skipping create work because window hasn't been destroyed.");
                 return;
             }
-            nativeWindow = reinterpret_cast<ANativeWindow *>(event.data.toInt());
+            nativeWindow = static_cast<ANativeWindow *>(event.data.toPointer());
 
             EGLint attribs[100];
             int		numAttribs = 0;
@@ -971,7 +968,7 @@ struct App::Private : public TalkToJavaInterface
             vAssert(event.data.isArray());
             int width = event.data.at(0).toInt();
             int height = event.data.at(1).toInt();
-            float seconds = event.data.at(2).toDouble();
+            float seconds = event.data.at(2).toFloat();
 
             dialogWidth = width;
             dialogHeight = height;

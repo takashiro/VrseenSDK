@@ -1239,7 +1239,7 @@ void OvrFolderBrowser::buildDirtyMenu( OvrMetaData & metaData )
 	const VRMenuFontParms fontParms( HORIZONTAL_CENTER, VERTICAL_CENTER, false, false, true, 0.525f, 0.45f, 0.5f );
 
 	// Process any thumb creation commands
-    m_backgroundCommands.post("processCreates", reinterpret_cast<int>(&m_thumbCreateAndLoadCommands));
+    m_backgroundCommands.post("processCreates", &m_thumbCreateAndLoadCommands);
 
 	// Show no media menu if no media found
 	if ( m_mediaCount == 0 )
@@ -1447,8 +1447,10 @@ void OvrFolderBrowser::buildFolder( OvrMetaData::Category & category, FolderView
 
 	// build a collision primitive that encompasses all of the panels for a raw (including the empty space between them)
 	// so that we can always send our swipe messages to the correct row based on gaze.
-	VArray< Vector3f > vertices( m_circumferencePanelSlots * 2 );
-	VArray< TriangleIndex > indices( m_circumferencePanelSlots * 6 );
+    VArray< Vector3f > vertices;
+    vertices.resize(m_circumferencePanelSlots * 2);
+    VArray< TriangleIndex > indices;
+    indices.resize(m_circumferencePanelSlots * 6);
 	int curIndex = 0;
 	int curVertex = 0;
 	for ( int i = 0; i < m_circumferencePanelSlots; ++i )
@@ -1724,9 +1726,9 @@ void * OvrFolderBrowser::ThumbnailThread( void * v )
 			{
 				if ( folderBrowser->applyThumbAntialiasing( data, width, height ) )
 				{
-                    VJson args(VJson::Array);
+                    VVariantArray args;
                     args << folderId << panelId;
-                    args << reinterpret_cast<int>(data);
+                    args << data;
                     args << width << height;
                     folderBrowser->m_textureCommands.post("thumb", args);
 				}
@@ -1757,9 +1759,9 @@ void * OvrFolderBrowser::ThumbnailThread( void * v )
 			{
 				if ( folderBrowser->applyThumbAntialiasing( data, width, height ) )
 				{
-                    VJson args(VJson::Array);
+                    VVariantArray args;
                     args << folderId << panelId;
-                    args << reinterpret_cast<int>(data);
+                    args << data;
                     args << width << height;
                     folderBrowser->m_textureCommands.post("thumb", args);
 				}
@@ -1769,7 +1771,7 @@ void * OvrFolderBrowser::ThumbnailThread( void * v )
                 vWarn("Thumbnail download fail for:" << panoUrl);
 			}
         } else if (event.name == "processCreates") {
-            VArray<OvrCreateThumbCmd> *ThumbCreateAndLoadCommands = reinterpret_cast<VArray<OvrCreateThumbCmd> *>(event.data.toInt());
+            VArray<OvrCreateThumbCmd> *ThumbCreateAndLoadCommands = static_cast<VArray<OvrCreateThumbCmd> *>(event.data.toPointer());
 
 			for ( int i = 0; i < ThumbCreateAndLoadCommands->length(); ++i )
 			{
@@ -1804,9 +1806,9 @@ void * OvrFolderBrowser::ThumbnailThread( void * v )
 
                         sscanf( cmd.loadCmd.toCString(), "load %i %i", &folderId, &panelId );
 
-                        VJson args(VJson::Array);
+                        VVariantArray args;
                         args << folderId << panelId;
-                        args << reinterpret_cast<int>(data);
+                        args << data;
                         args << width << height;
                         folderBrowser->m_textureCommands.post("thumb", args);
 					}
@@ -1825,7 +1827,7 @@ void OvrFolderBrowser::loadThumbnailToTexture( const VEvent &event )
 {
     int folderId = event.data.at(0).toInt();
     int panelId = event.data.at(1).toInt();
-    uchar *data = reinterpret_cast<uchar *>(event.data.at(2).toInt());
+    uchar *data = static_cast<uchar *>(event.data.at(2).toPointer());
     int width = event.data.at(3).toInt();
     int height = event.data.at(4).toInt();
 
@@ -2014,7 +2016,7 @@ void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const in
 		}
 		else // download and cache it
 		{
-            VJson args(VJson::Array);
+            VVariantArray args;
             args << panoUrl << appCacheThumbPath << folderIndex << panel.id;
             m_backgroundCommands.post("httpThumb", args);
 			return;
@@ -2066,7 +2068,7 @@ void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const in
 		}
 	}
 
-    VJson args(VJson::Array);
+    VVariantArray args;
     args << folderIndex << panel.id << finalThumb;
     m_backgroundCommands.post("load", args);
 }
