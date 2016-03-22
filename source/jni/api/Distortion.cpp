@@ -104,7 +104,7 @@ static void WarpTexCoordChroma( const hmdInfoInternal_t & hmdInfo, const float i
 
 	const float rsq = theta[0] * theta[0] + theta[1] * theta[1];
 
-	const Vector3f chromaScale = hmdInfo.lens.DistortionFnScaleRadiusSquaredChroma (rsq);
+    const V3Vectf chromaScale = hmdInfo.lens.DistortionFnScaleRadiusSquaredChroma (rsq);
 
 	for ( int i = 0; i < 2; i++ ) {
 		red[i] = chromaScale[0] * theta[i];

@@ -18,9 +18,9 @@ UILabel::~UILabel()
 
 void UILabel::AddToMenu( UIMenu *menu, UIWidget *parent )
 {
-	const Posef pose( Quatf( Vector3f( 0.0f, 1.0f, 0.0f ), 0.0f ), Vector3f( 0.0f, 0.0f, 0.0f ) );
+    const VPosf pose( VQuatf( V3Vectf( 0.0f, 1.0f, 0.0f ), 0.0f ), V3Vectf( 0.0f, 0.0f, 0.0f ) );
 
-	Vector3f defaultScale( 1.0f );
+    V3Vectf defaultScale( 1.0f );
 	VRMenuFontParms fontParms( true, true, false, false, false, 1.0f );
 	
 	VRMenuObjectParms parms( VRMENU_STATIC, VArray< VRMenuComponent* >(), VRMenuSurfaceParms(),
@@ -77,35 +77,35 @@ float UILabel::GetFontScale() const
 	return parms.Scale;
 }
 
-void UILabel::SetTextOffset( Vector3f const & pos )
+void UILabel::SetTextOffset( V3Vectf const & pos )
 {
 	VRMenuObject * object = GetMenuObject();
 	assert( object );
     object->setTextLocalPosition( pos );
 }
 
-Vector3f const & UILabel::GetTextOffset() const
+V3Vectf const & UILabel::GetTextOffset() const
 {
 	VRMenuObject * object = GetMenuObject();
 	assert( object );
     return object->textLocalPosition();
 }
 
-void UILabel::SetTextColor( Vector4f const & c )
+void UILabel::SetTextColor( V4Vectf const & c )
 {
 	VRMenuObject * object = GetMenuObject();
 	assert( object );
     object->setTextColor( c );
 }
 
-Vector4f const & UILabel::GetTextColor() const
+V4Vectf const & UILabel::GetTextColor() const
 {
 	VRMenuObject * object = GetMenuObject();
 	assert( object );
     return object->textColor();
 }
 
-Bounds3f UILabel::GetTextLocalBounds( BitmapFont const & font ) const
+VBoxf UILabel::GetTextLocalBounds( BitmapFont const & font ) const
 {
 	VRMenuObject * object = GetMenuObject();
 	assert( object );

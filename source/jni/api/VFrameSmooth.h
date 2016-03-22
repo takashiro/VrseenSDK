@@ -288,8 +288,8 @@ private:
 
     const VGlShader & programForParms( const ovrTimeWarpParms & parms, const bool disableChromaticCorrection ) const;
     void			setWarpState( const warpSource_t & currentWarpSource ) const;
-    void			bindWarpProgram( const warpSource_t & currentWarpSource, const Matrix4f timeWarps[2][2],
-                                     const Matrix4f rollingWarp, const int eye, const double vsyncBase ) const;
+    void			bindWarpProgram( const warpSource_t & currentWarpSource, const VR4Matrixf timeWarps[2][2],
+                                     const VR4Matrixf rollingWarp, const int eye, const double vsyncBase ) const;
     void			bindCursorProgram() const;
 
     // Parameters from Startup()
@@ -362,7 +362,7 @@ private:
     long long			m_lastSwapVsyncCount;			// SwapVsync at return from last WarpSwap()
 };
 
-Matrix4f CalculateTimeWarpMatrix( const Quatf &from, const Quatf &to,
+VR4Matrixf CalculateTimeWarpMatrix( const VQuatf &from, const VQuatf &to,
                                   const float fovDegrees );
 
 void	WarpTexCoord2( const hmdInfoInternal_t & hmdInfo, const float in[2], float out[2] );

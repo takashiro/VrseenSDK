@@ -27,13 +27,13 @@ public:
 	void								SetFontScale( float const scale );
 	float 								GetFontScale() const;
 
-	void     				           	SetTextOffset( Vector3f const & pos );
-    Vector3f const &    				GetTextOffset() const;
+    void     				           	SetTextOffset( V3Vectf const & pos );
+    V3Vectf const &                     GetTextOffset() const;
 
-	Vector4f const &					GetTextColor() const;
-	void								SetTextColor( Vector4f const & c );
+    V4Vectf const &					GetTextColor() const;
+    void								SetTextColor( V4Vectf const & c );
 
-	Bounds3f            				GetTextLocalBounds( BitmapFont const & font ) const;
+    VBoxf            				GetTextLocalBounds( BitmapFont const & font ) const;
 };
 
 } // namespace OculusCinema

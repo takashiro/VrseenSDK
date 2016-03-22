@@ -494,17 +494,17 @@ void Oculus360Videos::command(const VEvent &event )
 
 }
 
-Matrix4f	Oculus360Videos::TexmForVideo( const int eye )
+VR4Matrixf	Oculus360Videos::TexmForVideo( const int eye )
 {
 	if ( strstr( VideoName.toCString(), "_TB.mp4" ) )
 	{	// top / bottom stereo panorama
 		return eye ?
-			Matrix4f( 1, 0, 0, 0,
+            VR4Matrixf( 1, 0, 0, 0,
 			0, 0.5, 0, 0.5,
 			0, 0, 1, 0,
 			0, 0, 0, 1 )
 			:
-			Matrix4f( 1, 0, 0, 0,
+            VR4Matrixf( 1, 0, 0, 0,
 			0, 0.5, 0, 0,
 			0, 0, 1, 0,
 			0, 0, 0, 1 );
@@ -512,12 +512,12 @@ Matrix4f	Oculus360Videos::TexmForVideo( const int eye )
 	if ( strstr( VideoName.toCString(), "_BT.mp4" ) )
 	{	// top / bottom stereo panorama
 		return ( !eye ) ?
-			Matrix4f( 1, 0, 0, 0,
+            VR4Matrixf( 1, 0, 0, 0,
 			0, 0.5, 0, 0.5,
 			0, 0, 1, 0,
 			0, 0, 0, 1 )
 			:
-			Matrix4f( 1, 0, 0, 0,
+            VR4Matrixf( 1, 0, 0, 0,
 			0, 0.5, 0, 0,
 			0, 0, 1, 0,
 			0, 0, 0, 1 );
@@ -525,12 +525,12 @@ Matrix4f	Oculus360Videos::TexmForVideo( const int eye )
 	if ( strstr( VideoName.toCString(), "_LR.mp4" ) )
 	{	// left / right stereo panorama
 		return eye ?
-			Matrix4f( 0.5, 0, 0, 0,
+            VR4Matrixf( 0.5, 0, 0, 0,
 			0, 1, 0, 0,
 			0, 0, 1, 0,
 			0, 0, 0, 1 )
 			:
-			Matrix4f( 0.5, 0, 0, 0.5,
+            VR4Matrixf( 0.5, 0, 0, 0.5,
 			0, 1, 0, 0,
 			0, 0, 1, 0,
 			0, 0, 0, 1 );
@@ -538,12 +538,12 @@ Matrix4f	Oculus360Videos::TexmForVideo( const int eye )
 	if ( strstr( VideoName.toCString(), "_RL.mp4" ) )
 	{	// left / right stereo panorama
 		return ( !eye ) ?
-			Matrix4f( 0.5, 0, 0, 0,
+            VR4Matrixf( 0.5, 0, 0, 0,
 			0, 1, 0, 0,
 			0, 0, 1, 0,
 			0, 0, 0, 1 )
 			:
-			Matrix4f( 0.5, 0, 0, 0.5,
+            VR4Matrixf( 0.5, 0, 0, 0.5,
 			0, 1, 0, 0,
 			0, 0, 1, 0,
 			0, 0, 0, 1 );
@@ -553,33 +553,33 @@ Matrix4f	Oculus360Videos::TexmForVideo( const int eye )
 	if ( CurrentVideoWidth == CurrentVideoHeight )
 	{	// top / bottom stereo panorama
 		return eye ?
-			Matrix4f( 1, 0, 0, 0,
+            VR4Matrixf( 1, 0, 0, 0,
 			0, 0.5, 0, 0.5,
 			0, 0, 1, 0,
 			0, 0, 0, 1 )
 			:
-			Matrix4f( 1, 0, 0, 0,
+            VR4Matrixf( 1, 0, 0, 0,
 			0, 0.5, 0, 0,
 			0, 0, 1, 0,
 			0, 0, 0, 1 );
 
 		// We may want to support swapping top/bottom
 	}
-	return Matrix4f::Identity();
+    return VR4Matrixf::Identity();
 }
 
-Matrix4f	Oculus360Videos::TexmForBackground( const int eye )
+VR4Matrixf	Oculus360Videos::TexmForBackground( const int eye )
 {
 	if ( BackgroundWidth == BackgroundHeight )
 	{	// top / bottom stereo panorama
 		return eye ?
-			Matrix4f(
+            VR4Matrixf(
 			1, 0, 0, 0,
 			0, 0.5, 0, 0.5,
 			0, 0, 1, 0,
 			0, 0, 0, 1 )
 			:
-			Matrix4f(
+            VR4Matrixf(
 			1, 0, 0, 0,
 			0, 0.5, 0, 0,
 			0, 0, 1, 0,
@@ -587,12 +587,12 @@ Matrix4f	Oculus360Videos::TexmForBackground( const int eye )
 
 		// We may want to support swapping top/bottom
 	}
-	return Matrix4f::Identity();
+    return VR4Matrixf::Identity();
 }
 
-Matrix4f Oculus360Videos::drawEyeView( const int eye, const float fovDegrees )
+VR4Matrixf Oculus360Videos::drawEyeView( const int eye, const float fovDegrees )
 {
-	Matrix4f mvp = Scene.MvpForEye( eye, fovDegrees );
+    VR4Matrixf mvp = Scene.MvpForEye( eye, fovDegrees );
 
 	if ( MenuState != MENU_VIDEO_PLAYING )
 	{
@@ -604,7 +604,7 @@ Matrix4f Oculus360Videos::drawEyeView( const int eye, const float fovDegrees )
 			SurfaceDef & sd = def.surfaces[ i ];
 			glUseProgram( SingleColorTextureProgram.program );
 
-			glUniformMatrix4fv( SingleColorTextureProgram.uniformModelViewProMatrix, 1, GL_FALSE, mvp.Transposed().M[ 0 ] );
+            glUniformMatrix4fv( SingleColorTextureProgram.uniformModelViewProMatrix, 1, GL_FALSE, mvp.Transposed().M[ 0 ] );
 
 			glActiveTexture( GL_TEXTURE0 );
 			glBindTexture( GL_TEXTURE_2D, sd.materialDef.textures[ 0 ] );
@@ -634,13 +634,13 @@ Matrix4f Oculus360Videos::drawEyeView( const int eye, const float fovDegrees )
 		glUniform4f( prog.uniformColor, 1.0f, 1.0f, 1.0f, 1.0f );
 
 		// Videos have center as initial focal point - need to rotate 90 degrees to start there
-		const Matrix4f view = Scene.ViewMatrixForEye( 0 ) * Matrix4f::RotationY( M_PI / 2 );
-		const Matrix4f proj = Scene.ProjectionMatrixForEye( 0, fovDegrees );
+        const VR4Matrixf view = Scene.ViewMatrixForEye( 0 ) * VR4Matrixf::RotationY( M_PI / 2 );
+        const VR4Matrixf proj = Scene.ProjectionMatrixForEye( 0, fovDegrees );
 
 		const int toggleStereo = VideoMenu->isOpenOrOpening() ? 0 : eye;
 
-		glUniformMatrix4fv( prog.uniformTexMatrix, 1, GL_FALSE, TexmForVideo( toggleStereo ).Transposed().M[ 0 ] );
-		glUniformMatrix4fv( prog.uniformModelViewProMatrix, 1, GL_FALSE, ( proj * view ).Transposed().M[ 0 ] );
+        glUniformMatrix4fv( prog.uniformTexMatrix, 1, GL_FALSE, TexmForVideo( toggleStereo ).Transposed().M[ 0 ] );
+        glUniformMatrix4fv( prog.uniformModelViewProMatrix, 1, GL_FALSE, ( proj * view ).Transposed().M[ 0 ] );
 		Globe.Draw();
 
 		glBindTexture( GL_TEXTURE_EXTERNAL_OES, 0 );	// don't leave it bound
@@ -828,7 +828,7 @@ void Oculus360Videos::OnVideoActivated( const OvrMetaDatum * videoData )
 	StartVideo( ovr_GetTimeInSeconds() );
 }
 
-Matrix4f Oculus360Videos::onNewFrame( const VrFrame vrFrame )
+VR4Matrixf Oculus360Videos::onNewFrame( const VrFrame vrFrame )
 {
 	// Disallow player foot movement, but we still want the head model
 	// movement for the swipe view.

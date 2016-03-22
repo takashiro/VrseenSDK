@@ -43,7 +43,7 @@ public:
 	}
 
 	float			t;			// fraction along line where the intersection occurred
-	Vector2f		uv;			// texture coordinate of intersection
+    V2Vectf		uv;			// texture coordinate of intersection
     int64_t			triIndex;	// index of triangle hit (local to collider)
 };
 
@@ -57,34 +57,34 @@ public:
                         OvrCollisionPrimitive( ContentFlags_t const contents ) : m_contents( contents ) { }
 	virtual				~OvrCollisionPrimitive();
 
-    virtual  bool		intersectRay( Vector3f const & start, Vector3f const & dir, Posef const & pose,
-								Vector3f const & scale, ContentFlags_t const testContents,
+    virtual  bool		intersectRay( V3Vectf const & start, V3Vectf const & dir, VPosf const & pose,
+                                V3Vectf const & scale, ContentFlags_t const testContents,
 								OvrCollisionResult & result ) const = 0;
 	// the ray should already be in local space
-    virtual bool		intersectRay( Vector3f const & localStart, Vector3f const & localDir,
-								Vector3f const & scale, ContentFlags_t const testContents,
+    virtual bool		intersectRay( V3Vectf const & localStart, V3Vectf const & localDir,
+                                V3Vectf const & scale, ContentFlags_t const testContents,
 								OvrCollisionResult & result ) const = 0;
 
 	// test for ray intersection against only the AAB
-    bool				intersectRayBounds( Vector3f const & start, Vector3f const & dir,
-								Vector3f const & scale, ContentFlags_t const testContents,
+    bool				intersectRayBounds( V3Vectf const & start, V3Vectf const & dir,
+                                V3Vectf const & scale, ContentFlags_t const testContents,
 								float & t0, float & t1 ) const;
 
-    virtual void		debugRender( OvrDebugLines & debugLines, Posef & pose ) const = 0;
+    virtual void		debugRender( OvrDebugLines & debugLines, VPosf & pose ) const = 0;
 
     ContentFlags_t		contents() const { return m_contents; }
     void				setContents( ContentFlags_t const contents ) { m_contents = contents; }
 
-    Bounds3f const &	bounds() const { return m_bounds; }
-    void				setBounds( Bounds3f const & bounds ) { m_bounds = bounds; }
+    VBoxf const &	bounds() const { return m_bounds; }
+    void				setBounds( VBoxf const & bounds ) { m_bounds = bounds; }
 
 protected:
-    bool				intersectRayBounds( Vector3f const & start, Vector3f const & dir,
-							    Vector3f const & scale, float & t0, float & t1 ) const;
+    bool				intersectRayBounds( V3Vectf const & start, V3Vectf const & dir,
+                                V3Vectf const & scale, float & t0, float & t1 ) const;
 
 private:
     ContentFlags_t		m_contents;	// flags dictating what can hit this collider
-    Bounds3f			m_bounds;		// Axial-aligned bounds of the primitive
+    VBoxf			m_bounds;		// Axial-aligned bounds of the primitive
 
 };
 
@@ -95,28 +95,28 @@ class OvrTriCollisionPrimitive : public OvrCollisionPrimitive
 {
 public:
 	OvrTriCollisionPrimitive();
-	OvrTriCollisionPrimitive( VArray< Vector3f > const & vertices, VArray< TriangleIndex > const & indices,
+    OvrTriCollisionPrimitive( VArray< V3Vectf > const & vertices, VArray< TriangleIndex > const & indices,
 			ContentFlags_t const contents );
 
 	virtual	~OvrTriCollisionPrimitive();
 
-    void				init( VArray< Vector3f > const & vertices, VArray< TriangleIndex > const & indices,
+    void				init( VArray< V3Vectf > const & vertices, VArray< TriangleIndex > const & indices,
 								ContentFlags_t const contents );
 
-    virtual  bool		intersectRay( Vector3f const & start, Vector3f const & dir, Posef const & pose,
-								Vector3f const & scale, ContentFlags_t const testContents,
+    virtual  bool		intersectRay( V3Vectf const & start, V3Vectf const & dir, VPosf const & pose,
+                                V3Vectf const & scale, ContentFlags_t const testContents,
 								OvrCollisionResult & result ) const;
 
 
 	// the ray should already be in local space
-    virtual bool		intersectRay( Vector3f const & localStart, Vector3f const & localDir,
-								Vector3f const & scale, ContentFlags_t const testContents,
+    virtual bool		intersectRay( V3Vectf const & localStart, V3Vectf const & localDir,
+                                V3Vectf const & scale, ContentFlags_t const testContents,
 								OvrCollisionResult & result ) const;
 
-    virtual void		debugRender( OvrDebugLines & debugLines, Posef & pose ) const;
+    virtual void		debugRender( OvrDebugLines & debugLines, VPosf & pose ) const;
 
 private:
-    VArray< Vector3f >		m_vertices;	// vertices for all triangles
+    VArray< V3Vectf >		m_vertices;	// vertices for all triangles
     VArray< TriangleIndex >	m_indices;	// indices indicating which vertices make up each triangle
 };
 

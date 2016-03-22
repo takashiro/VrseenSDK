@@ -51,7 +51,7 @@ void SensorCalibration::Initialize(const VString& deviceSerialNumber)
     bool result = pSensor->GetGyroOffsetReport(&gyroReport);
     if (result && gyroReport.Version != GyroOffsetReport::Version_NoOffset)
     {
-        GyroAutoOffset = (Vector3f) gyroReport.Offset;
+        GyroAutoOffset = (V3Vectf) gyroReport.Offset;
         GyroAutoTemperature = (float) gyroReport.Temperature;
     }
 
@@ -142,7 +142,7 @@ void SensorCalibration::Apply(MessageBodyFrame& msg)
 	AutocalibrateGyro(msg);
 
     // compute the interpolated offset
-    Vector3f gyroOffset;
+    V3Vectf gyroOffset;
     for (int i = 0; i < 3; i++)
         gyroOffset[i] = (float) Interpolators[i].GetOffset(msg.Temperature, GyroAutoTemperature, GyroAutoOffset[i]);
 
@@ -160,9 +160,9 @@ void SensorCalibration::AutocalibrateGyro(MessageBodyFrame const& msg)
 	const float noiseLimit = 0.0175f;			// This is the updated threshold based on analyzing ten GearVR devices and determining a value that best
 												// discriminates between stationary on a desk and almost stationary when on the user's head.
 
-    Vector3f gyro = msg.RotationRate;
+    V3Vectf gyro = msg.RotationRate;
     // do a moving average to reject short term noise
-    Vector3f avg = (GyroFilter.isEmpty()) ? gyro : gyro * alpha + GyroFilter.peekBack() * (1 - alpha);
+    V3Vectf avg = (GyroFilter.isEmpty()) ? gyro : gyro * alpha + GyroFilter.peekBack() * (1 - alpha);
 
     // Make sure the absolute value is below what is likely motion
     // Make sure it is close enough to the current average that it is probably noise and not motion
@@ -226,7 +226,7 @@ void SensorCalibration::StoreAutoOffset()
         {
             oldestReport.Time = now;
             oldestReport.ActualTemperature = GyroAutoTemperature;
-            oldestReport.Offset = (Vector3d) GyroAutoOffset;
+            oldestReport.Offset = (V3Vectd) GyroAutoOffset;
             oldestReport.Version = VERSION;
 
 #ifdef USE_LOCAL_TEMPERATURE_CALIBRATION_STORAGE
@@ -245,7 +245,7 @@ void SensorCalibration::StoreAutoOffset()
         {
             // (do not update the time!)
             newestReport.ActualTemperature = GyroAutoTemperature;
-            newestReport.Offset = (Vector3d) GyroAutoOffset;
+            newestReport.Offset = (V3Vectd) GyroAutoOffset;
             newestReport.Version = VERSION;
 
 #ifdef USE_LOCAL_TEMPERATURE_CALIBRATION_STORAGE

@@ -22,12 +22,12 @@ public:
 class PanelPose
 {
 public:
-	Quatf    	Orientation;
-	Vector3f 	Position;
-	Vector4f	Color;
+    VQuatf    	Orientation;
+    V3Vectf 	Position;
+    V4Vectf	Color;
 
 				PanelPose() {};
-				PanelPose( Quatf orientation, Vector3f position, Vector4f color ) :
+                PanelPose( VQuatf orientation, V3Vectf position, V4Vectf color ) :
 					Orientation( orientation ), Position( position ), Color( color ) {}
 };
 
@@ -78,7 +78,7 @@ public:
     bool							SelectPressed;
 
 private:
-	Vector3f						PositionScale;
+    V3Vectf						PositionScale;
     float							Position;
 	double							TouchDownTime;			// the time in second when a down even was received, < 0 if touch is not down
 

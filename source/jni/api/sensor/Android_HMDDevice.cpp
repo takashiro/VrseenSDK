@@ -29,8 +29,8 @@ HMDDeviceCreateDesc::HMDDeviceCreateDesc(DeviceFactory* factory, const VString& 
 
     Desktop.X = 0;
     Desktop.Y = 0;
-    ResolutionInPixels = Sizei(0);
-    ScreenSizeInMeters = Sizef(0.0f);
+    ResolutionInPixels = VSizei(0);
+    ScreenSizeInMeters = VSizef(0.0f);
 }
 
 HMDDeviceCreateDesc::HMDDeviceCreateDesc(const HMDDeviceCreateDesc& other)

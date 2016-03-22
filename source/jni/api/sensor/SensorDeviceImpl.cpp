@@ -224,7 +224,7 @@ struct SensorRangeImpl
         AccelScale = SelectSensorRampValue(AccelRangeRamp, sizeof(AccelRangeRamp)/sizeof(AccelRangeRamp[0]),
                                            r.MaxAcceleration, (1.0f / 9.81f), "MaxAcceleration");
         GyroScale  = SelectSensorRampValue(GyroRangeRamp, sizeof(GyroRangeRamp)/sizeof(GyroRangeRamp[0]),
-                                           r.MaxRotationRate, Math<float>::RadToDegreeFactor, "MaxRotationRate");
+                                           r.MaxRotationRate, VConstants<float>::VRTD, "MaxRotationRate");
         MagScale   = SelectSensorRampValue(MagRangeRamp, sizeof(MagRangeRamp)/sizeof(MagRangeRamp[0]),
                                            r.MaxMagneticField, 1000.0f, "MaxMagneticField");
         Pack();
@@ -241,7 +241,7 @@ struct SensorRangeImpl
     {
         return SensorRange(AccelRangeRamp[sizeof(AccelRangeRamp)/sizeof(AccelRangeRamp[0]) - 1] * 9.81f,
                            GyroRangeRamp[sizeof(GyroRangeRamp)/sizeof(GyroRangeRamp[0]) - 1] *
-                                Math<float>::DegreeToRadFactor,
+                                VConstants<float>::VDTR,
                            MagRangeRamp[sizeof(MagRangeRamp)/sizeof(MagRangeRamp[0]) - 1] * 0.001f);
     }
 
@@ -328,10 +328,10 @@ struct SensorFactoryCalibrationImpl
     enum  { PacketSize = 69 };
     UByte   Buffer[PacketSize];
 
-    Vector3f AccelOffset;
-    Vector3f GyroOffset;
-    Matrix4f AccelMatrix;
-    Matrix4f GyroMatrix;
+    V3Vectf AccelOffset;
+    V3Vectf GyroOffset;
+    VR4Matrixf AccelMatrix;
+    VR4Matrixf GyroMatrix;
     float    Temperature;
 
     SensorFactoryCalibrationImpl()
@@ -567,7 +567,7 @@ struct TemperatureImpl
 
         Alg::EncodeUInt32(Buffer + 12, Settings.Time);
 
-        Vector3d offset = Settings.Offset * 1e4;
+        V3Vectd offset = Settings.Offset * 1e4;
         PackSensor(Buffer + 16, (SInt32) offset.x, (SInt32) offset.y, (SInt32) offset.z);
     }
 
@@ -588,7 +588,7 @@ struct TemperatureImpl
 
         SInt32 x, y, z;
         UnpackSensor(Buffer + 16, &x, &y, &z);
-        Settings.Offset = Vector3d(x, y, z) * 1e-4;
+        Settings.Offset = V3Vectd(x, y, z) * 1e-4;
     }
 };
 
@@ -620,7 +620,7 @@ struct GyroOffsetImpl
         Buffer[2] = UByte(Settings.CommandId >> 8);
         Buffer[3] = UByte(Settings.Version);
 
-		Vector3d offset = Settings.Offset * 1e4;
+        V3Vectd offset = Settings.Offset * 1e4;
 		PackSensor(Buffer + 4, (SInt32) offset.x, (SInt32) offset.y, (SInt32) offset.z);
 
         Alg::EncodeSInt16(Buffer + 16, SInt16(Settings.Temperature * 1e2));
@@ -633,7 +633,7 @@ struct GyroOffsetImpl
 
         SInt32 x, y, z;
         UnpackSensor(Buffer + 4, &x, &y, &z);
-        Settings.Offset      = Vector3d(x, y, z) * 1e-4f;
+        Settings.Offset      = V3Vectd(x, y, z) * 1e-4f;
 
         Settings.Temperature = DecodeSInt16(Buffer + 16) * 1e-2;
     }
@@ -1150,8 +1150,8 @@ Void SensorDeviceImpl::setReportRate(unsigned rateHz)
     return 0;
 }
 
-void SensorDeviceImpl::GetFactoryCalibration(Vector3f* AccelOffset, Vector3f* GyroOffset,
-                                             Matrix4f* AccelMatrix, Matrix4f* GyroMatrix,
+void SensorDeviceImpl::GetFactoryCalibration(V3Vectf* AccelOffset, V3Vectf* GyroOffset,
+                                             VR4Matrixf* AccelMatrix, VR4Matrixf* GyroMatrix,
                                              float* Temperature)
 {
     *AccelOffset = AccelCalibrationOffset;
@@ -1213,7 +1213,7 @@ void SensorDeviceImpl::SetMessageHandler(MessageHandler* handler)
 // We need to convert it to the following RHS coordinate system:
 // X right, Y Up, Z Back (out of screen)
 //
-Vector3f AccelFromBodyFrameUpdate(const TrackerSensors& update, UByte sampleNumber,
+V3Vectf AccelFromBodyFrameUpdate(const TrackerSensors& update, UByte sampleNumber,
                                   bool convertHMDToSensor = false)
 {
     const TrackerSample& sample = update.Samples[sampleNumber];
@@ -1221,29 +1221,29 @@ Vector3f AccelFromBodyFrameUpdate(const TrackerSensors& update, UByte sampleNumb
     float                ay = (float)sample.AccelY;
     float                az = (float)sample.AccelZ;
 
-    Vector3f val = convertHMDToSensor ? Vector3f(ax, az, -ay) :  Vector3f(ax, ay, az);
+    V3Vectf val = convertHMDToSensor ? V3Vectf(ax, az, -ay) :  V3Vectf(ax, ay, az);
     return val * 0.0001f;
 }
 
 
-Vector3f MagFromBodyFrameUpdate(const TrackerSensors& update,
+V3Vectf MagFromBodyFrameUpdate(const TrackerSensors& update,
                                 bool convertHMDToSensor = false)
 {
     // Note: Y and Z are swapped in comparison to the Accel.
     // This accounts for DK1 sensor firmware axis swap, which should be undone in future releases.
     if (!convertHMDToSensor)
     {
-        return Vector3f( (float)update.MagX,
+        return V3Vectf( (float)update.MagX,
                          (float)update.MagZ,
                          (float)update.MagY) * 0.0001f;
     }
 
-    return Vector3f( (float)update.MagX,
+    return V3Vectf( (float)update.MagX,
                      (float)update.MagY,
                     -(float)update.MagZ) * 0.0001f;
 }
 
-Vector3f EulerFromBodyFrameUpdate(const TrackerSensors& update, UByte sampleNumber,
+V3Vectf EulerFromBodyFrameUpdate(const TrackerSensors& update, UByte sampleNumber,
                                   bool convertHMDToSensor = false)
 {
     const TrackerSample& sample = update.Samples[sampleNumber];
@@ -1251,7 +1251,7 @@ Vector3f EulerFromBodyFrameUpdate(const TrackerSensors& update, UByte sampleNumb
     float                gy = (float)sample.GyroY;
     float                gz = (float)sample.GyroZ;
 
-    Vector3f val = convertHMDToSensor ? Vector3f(gx, gz, -gy) :  Vector3f(gx, gy, gz);
+    V3Vectf val = convertHMDToSensor ? V3Vectf(gx, gz, -gy) :  V3Vectf(gx, gy, gz);
     return val * 0.0001f;
 }
 
@@ -1551,10 +1551,10 @@ void SensorDeviceImpl::onTrackerMessage(TrackerMessage* message)
     }
     else
     {
-        LastAcceleration = Vector3f(0);
-        LastRotationRate = Vector3f(0);
-        LastMagneticField = Vector3f(0);
-        LastMagneticBias = Vector3f(0);
+        LastAcceleration = V3Vectf(0);
+        LastRotationRate = V3Vectf(0);
+        LastMagneticField = V3Vectf(0);
+        LastMagneticBias = V3Vectf(0);
         LastTemperature  = 0;
         SequenceValid    = true;
 
@@ -1634,18 +1634,18 @@ void SensorDeviceImpl::onTrackerMessage(TrackerMessage* message)
     }
 }
 
-void SensorDeviceImpl::replaceWithPhoneMag(Vector3f* mag, Vector3f* bias)
+void SensorDeviceImpl::replaceWithPhoneMag(V3Vectf* mag, V3Vectf* bias)
 {
 
-	Vector3f magPhone;
-	Vector3f biasPhone;
+    V3Vectf magPhone;
+    V3Vectf biasPhone;
 	pPhoneSensors->GetLatestUncalibratedMagAndBiasValue(&magPhone, &biasPhone);
 
 
 	// Phone values are in micro-Tesla. Convert it to Gauss and flip axes.
 	magPhone *= 10000.0f/1000000.0f;
 
-	Vector3f resMag;
+    V3Vectf resMag;
 	resMag.x = -magPhone.y;
 	resMag.y = magPhone.x;
 	resMag.z = magPhone.z;
@@ -1655,7 +1655,7 @@ void SensorDeviceImpl::replaceWithPhoneMag(Vector3f* mag, Vector3f* bias)
 
 	biasPhone *= 10000.0f/1000000.0f;
 
-	Vector3f resBias;
+    V3Vectf resBias;
 	resBias.x = -biasPhone.y;
 	resBias.y = biasPhone.x;
 	resBias.z = biasPhone.z;

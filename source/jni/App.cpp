@@ -30,6 +30,7 @@
 #include "System.h"
 #include "TypesafeNumber.h"
 #include "VMath.h"
+#include "VBasicmath.h"
 #include "VolumePopup.h"
 #include "VrApi.h"
 #include "VrApi_Android.h"
@@ -87,32 +88,32 @@ static int buttonMappings[] = {
     -1
 };
 
-static Vector3f ViewOrigin(const Matrix4f & view)
+static V3Vectf ViewOrigin(const VR4Matrixf & view)
 {
-    return Vector3f(view.M[0][3], view.M[1][3], view.M[2][3]);
+    return V3Vectf(view.M[0][3], view.M[1][3], view.M[2][3]);
 }
 
-static Vector3f ViewForward(const Matrix4f & view)
+static V3Vectf ViewForward(const VR4Matrixf & view)
 {
-    return Vector3f(-view.M[0][2], -view.M[1][2], -view.M[2][2]);
+    return V3Vectf(-view.M[0][2], -view.M[1][2], -view.M[2][2]);
 }
 
 // Always make the panel upright, even if the head was tilted when created
-static Matrix4f PanelMatrix(const Matrix4f & lastViewMatrix, const float popupDistance,
+static VR4Matrixf PanelMatrix(const VR4Matrixf & lastViewMatrix, const float popupDistance,
         const float popupScale, const int width, const int height)
 {
     // TODO: this won't be valid until a frame has been rendered
-    const Matrix4f invView = lastViewMatrix.Inverted();
-    const Vector3f forward = ViewForward(invView);
-    const Vector3f levelforward = Vector3f(forward.x, 0.0f, forward.z).Normalized();
+    const VR4Matrixf invView = lastViewMatrix.Inverted();
+    const V3Vectf forward = ViewForward(invView);
+    const V3Vectf levelforward = V3Vectf(forward.x, 0.0f, forward.z).Normalized();
     // TODO: check degenerate case
-    const Vector3f up(0.0f, 1.0f, 0.0f);
-    const Vector3f right = levelforward.Cross(up);
+    const V3Vectf up(0.0f, 1.0f, 0.0f);
+    const V3Vectf right = levelforward.Cross(up);
 
-    const Vector3f center = ViewOrigin(invView) + levelforward * popupDistance;
+    const V3Vectf center = ViewOrigin(invView) + levelforward * popupDistance;
     const float xScale = (float)width / 768.0f * popupScale;
     const float yScale = (float)height / 768.0f * popupScale;
-    const Matrix4f panelMatrix = Matrix4f(
+    const VR4Matrixf panelMatrix = VR4Matrixf(
             xScale * right.x, yScale * up.x, forward.x, center.x,
             xScale * right.y, yScale * up.y, forward.y, center.y,
             xScale * right.z, yScale * up.z, forward.z, center.z,
@@ -225,9 +226,9 @@ struct App::Private : public TalkToJavaInterface
 
     // Dialogs will be oriented base down in the view when they
     // were generated.
-    Matrix4f		dialogMatrix;
+    VR4Matrixf		dialogMatrix;
 
-    Matrix4f		lastViewMatrix;
+    VR4Matrixf		lastViewMatrix;
 
     ANativeWindow * nativeWindow;
     EGLSurface 		windowSurface;
@@ -279,14 +280,14 @@ struct App::Private : public TalkToJavaInterface
     VrViewParms		viewParms;
 
     VString			infoText;			// informative text to show in front of the view
-    Vector4f		infoTextColor;		// color of info text
-    Vector3f		infoTextOffset;		// offset from center of screen in view space
+    V4Vectf		infoTextColor;		// color of info text
+    V3Vectf		infoTextOffset;		// offset from center of screen in view space
     long long		infoTextEndFrame;	// time to stop showing text
     OvrPointTracker	infoTextPointTracker;	// smoothly tracks to text ideal location
     OvrPointTracker	fpsPointTracker;		// smoothly tracks to ideal FPS text location
 
     float 			touchpadTimer;
-    Vector2f		touchOrigin;
+    V2Vectf		touchOrigin;
     float 			lastTouchpadTime;
     bool 			lastTouchDown;
     int 			touchState;
@@ -1308,9 +1309,9 @@ struct App::Private : public TalkToJavaInterface
                     LastFrameRate = 1.0f / float(interval > 0.000001 ? interval : 0.00001);
                 }
 
-                Vector3f viewPos = GetViewMatrixPosition(lastViewMatrix);
-                Vector3f viewFwd = GetViewMatrixForward(lastViewMatrix);
-                Vector3f newPos = viewPos + viewFwd * 1.5f;
+                V3Vectf viewPos = GetViewMatrixPosition(lastViewMatrix);
+                V3Vectf viewFwd = GetViewMatrixForward(lastViewMatrix);
+                V3Vectf newPos = viewPos + viewFwd * 1.5f;
                 fpsPointTracker.Update(ovr_GetTimeInSeconds(), newPos);
 
                 fontParms_t fp;
@@ -1318,7 +1319,7 @@ struct App::Private : public TalkToJavaInterface
                 fp.Billboard = true;
                 fp.TrackRoll = false;
                 worldFontSurface->DrawTextBillboarded3Df(*defaultFont, fp, fpsPointTracker.GetCurPosition(),
-                        0.8f, Vector4f(1.0f, 0.0f, 0.0f, 1.0f), "%.1f fps", LastFrameRate);
+                        0.8f, V4Vectf(1.0f, 0.0f, 0.0f, 1.0f), "%.1f fps", LastFrameRate);
                 LastFrameTime = currentFrameTime;
             }
 
@@ -1326,11 +1327,11 @@ struct App::Private : public TalkToJavaInterface
             // draw info text
             if (infoTextEndFrame >= vrFrame.FrameNumber)
             {
-                Vector3f viewPos = GetViewMatrixPosition(lastViewMatrix);
-                Vector3f viewFwd = GetViewMatrixForward(lastViewMatrix);
-                Vector3f viewUp(0.0f, 1.0f, 0.0f);
-                Vector3f viewLeft = viewUp.Cross(viewFwd);
-                Vector3f newPos = viewPos + viewFwd * infoTextOffset.z + viewUp * infoTextOffset.y + viewLeft * infoTextOffset.x;
+                V3Vectf viewPos = GetViewMatrixPosition(lastViewMatrix);
+                V3Vectf viewFwd = GetViewMatrixForward(lastViewMatrix);
+                V3Vectf viewUp(0.0f, 1.0f, 0.0f);
+                V3Vectf viewLeft = viewUp.Cross(viewFwd);
+                V3Vectf newPos = viewPos + viewFwd * infoTextOffset.z + viewUp * infoTextOffset.y + viewLeft * infoTextOffset.x;
                 infoTextPointTracker.Update(ovr_GetTimeInSeconds(), newPos);
 
                 fontParms_t fp;
@@ -1578,7 +1579,7 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
 
     memset(& d->sensorForNextWarp, 0, sizeof(d->sensorForNextWarp));
 
-    d->sensorForNextWarp.Predicted.Pose.Orientation = Quatf();
+    d->sensorForNextWarp.Predicted.Pose.Orientation = VQuatf();
 
     JniUtils::LoadDevConfig(false);
 
@@ -1765,12 +1766,12 @@ void App::setEyeParms(const EyeParms parms)
     d->vrParms = parms;
 }
 
-Matrix4f App::matrixInterpolation(const Matrix4f & startMatrix, const Matrix4f & endMatrix, double t)
+VR4Matrixf App::matrixInterpolation(const VR4Matrixf & startMatrix, const VR4Matrixf & endMatrix, double t)
 {
-	Matrix4f result;
-	Quat<float> startQuat = (Quat<float>) startMatrix ;
-	Quat<float> endQuat = (Quat<float>) endMatrix ;
-	Quat<float> quatResult;
+    VR4Matrixf result;
+    VQuat<float> startQuat = (VQuat<float>) startMatrix ;
+    VQuat<float> endQuat = (VQuat<float>) endMatrix ;
+    VQuat<float> quatResult;
 
 	double cosHalfTheta = startQuat.w * endQuat.w +
 						  startQuat.x * endQuat.x +
@@ -1781,10 +1782,10 @@ Matrix4f App::matrixInterpolation(const Matrix4f & startMatrix, const Matrix4f &
 	{
 		result = startMatrix;
 
-        Vector3<float> startTrans(startMatrix.M[0][3], startMatrix.M[1][3], startMatrix.M[2][3]);
-        Vector3<float> endTrans(endMatrix.M[0][3], endMatrix.M[1][3], endMatrix.M[2][3]);
+        V3Vect<float> startTrans(startMatrix.M[0][3], startMatrix.M[1][3], startMatrix.M[2][3]);
+        V3Vect<float> endTrans(endMatrix.M[0][3], endMatrix.M[1][3], endMatrix.M[2][3]);
 
-        Vector3<float> interpolationVector = startTrans.Lerp(endTrans, t);
+        V3Vect<float> interpolationVector = startTrans.Lerp(endTrans, t);
 
 		result.M[0][3] = interpolationVector.x;
 		result.M[1][3] = interpolationVector.y;
@@ -1822,7 +1823,7 @@ Matrix4f App::matrixInterpolation(const Matrix4f & startMatrix, const Matrix4f &
             quatResult.y = (1 - t) * startQuat.y - t * endQuat.y;
             quatResult.z = (1 - t) * startQuat.z - t * endQuat.z;
 		}
-		result = (Matrix4f) quatResult;
+        result = (VR4Matrixf) quatResult;
 	}
 	else
 	{
@@ -1844,13 +1845,13 @@ Matrix4f App::matrixInterpolation(const Matrix4f & startMatrix, const Matrix4f &
 			quatResult.z =  A * startQuat.z - B * endQuat.z;
 		}
 
-		result = (Matrix4f) quatResult;
+        result = (VR4Matrixf) quatResult;
 	}
 
-    Vector3<float> startTrans(startMatrix.M[0][3], startMatrix.M[1][3], startMatrix.M[2][3]);
-    Vector3<float> endTrans(endMatrix.M[0][3], endMatrix.M[1][3], endMatrix.M[2][3]);
+    V3Vect<float> startTrans(startMatrix.M[0][3], startMatrix.M[1][3], startMatrix.M[2][3]);
+    V3Vect<float> endTrans(endMatrix.M[0][3], endMatrix.M[1][3], endMatrix.M[2][3]);
 
-    Vector3<float> interpolationVector = startTrans.Lerp(endTrans, t);
+    V3Vect<float> interpolationVector = startTrans.Lerp(endTrans, t);
 
 	result.M[0][3] = interpolationVector.x;
 	result.M[1][3] = interpolationVector.y;
@@ -1958,12 +1959,12 @@ const VString &App::packageCodePath() const
     return d->packageCodePath;
 }
 
-Matrix4f const & App::lastViewMatrix() const
+VR4Matrixf const & App::lastViewMatrix() const
 {
     return d->lastViewMatrix;
 }
 
-void App::setLastViewMatrix(Matrix4f const & m)
+void App::setLastViewMatrix(VR4Matrixf const & m)
 {
     d->lastViewMatrix = m;
 }
@@ -2106,13 +2107,13 @@ void App::showInfoText(float const duration, const char * fmt, ...)
     vsnprintf(buffer, sizeof(buffer), fmt, args);
     va_end(args);
     d->infoText = buffer;
-    d->infoTextColor = Vector4f(1.0f);
-    d->infoTextOffset = Vector3f(0.0f, 0.0f, 1.5f);
+    d->infoTextColor = V4Vectf(1.0f);
+    d->infoTextOffset = V3Vectf(0.0f, 0.0f, 1.5f);
     d->infoTextPointTracker.Reset();
     d->infoTextEndFrame = d->vrFrame.FrameNumber + (long long)(duration * 60.0f) + 1;
 }
 
-void App::showInfoText(float const duration, Vector3f const & offset, Vector4f const & color, const char * fmt, ...)
+void App::showInfoText(float const duration, V3Vectf const & offset, V4Vectf const & color, const char * fmt, ...)
 {
 	char buffer[1024];
 	va_list args;
@@ -2166,10 +2167,10 @@ void App::recenterYaw(const bool showBlack)
 	float yaw;
 	float pitch;
 	float roll;
-    d->lastViewMatrix.ToEulerAngles< Axis_Y, Axis_X, Axis_Z, Rotate_CCW, Handed_R >(&yaw, &pitch, &roll);
+    d->lastViewMatrix.ToEulerAngles< VAxis_Y, VAxis_X, VAxis_Z, VRotate_CCW, VHanded_R >(&yaw, &pitch, &roll);
 
 	// undo the yaw
-    Matrix4f unrotYawMatrix(Quatf(Axis_Y, -yaw));
+    VR4Matrixf unrotYawMatrix(VQuatf(VAxis_Y, -yaw));
     d->lastViewMatrix = d->lastViewMatrix * unrotYawMatrix;
 
     guiSys().resetMenuOrientations(this, d->lastViewMatrix);
@@ -2193,10 +2194,10 @@ void ShowFPS(void * appPtr, const char * cmd) {
 }
 
 // Debug tool to draw outlines of a 3D bounds
-void App::drawBounds( const Vector3f &mins, const Vector3f &maxs, const Matrix4f &mvp, const Vector3f &color )
+void App::drawBounds( const V3Vectf &mins, const V3Vectf &maxs, const VR4Matrixf &mvp, const V3Vectf &color )
 {
     VGlOperation glOperation;
-    Matrix4f	scaled = mvp * Matrix4f::Translation( mins ) * Matrix4f::Scaling( maxs - mins );
+    VR4Matrixf	scaled = mvp * VR4Matrixf::Translation( mins ) * VR4Matrixf::Scaling( maxs - mins );
     const VGlShader & prog = d->untexturedMvpProgram;
     glUseProgram(prog.program);
     glLineWidth( 1.0f );
@@ -2208,7 +2209,7 @@ void App::drawBounds( const Vector3f &mins, const Vector3f &maxs, const Matrix4f
     glOperation.glBindVertexArrayOES_( 0 );
 }
 
-void App::drawDialog( const Matrix4f & mvp )
+void App::drawDialog( const VR4Matrixf & mvp )
 {
     // draw the pop-up dialog
     const float now = ovr_GetTimeInSeconds();
@@ -2216,7 +2217,7 @@ void App::drawDialog( const Matrix4f & mvp )
     {
         return;
     }
-    const Matrix4f dialogMvp = mvp * d->dialogMatrix;
+    const VR4Matrixf dialogMvp = mvp * d->dialogMatrix;
 
     const float fadeSeconds = 0.5f;
     const float f = now - ( d->dialogStopSeconds - fadeSeconds );
@@ -2226,13 +2227,13 @@ void App::drawDialog( const Matrix4f & mvp )
     drawPanel( d->dialogTexture->textureId, dialogMvp, alpha );
 }
 
-void App::drawPanel( const GLuint externalTextureId, const Matrix4f & dialogMvp, const float alpha )
+void App::drawPanel( const GLuint externalTextureId, const VR4Matrixf & dialogMvp, const float alpha )
 {
     const VGlShader & prog = d->externalTextureProgram2;
     glUseProgram( prog.program );
     glUniform4f(prog.uniformColor, 1, 1, 1, alpha );
 
-    glUniformMatrix4fv(prog.uniformTexMatrix, 1, GL_FALSE, Matrix4f::Identity().Transposed().M[0]);
+    glUniformMatrix4fv(prog.uniformTexMatrix, 1, GL_FALSE, VR4Matrixf::Identity().Transposed().M[0]);
     glUniformMatrix4fv(prog.uniformModelViewProMatrix, 1, GL_FALSE, dialogMvp.Transposed().M[0] );
 
     // It is important that panels write to destination alpha, or they
@@ -2246,7 +2247,7 @@ void App::drawPanel( const GLuint externalTextureId, const Matrix4f & dialogMvp,
     glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0 );	// don't leave it bound
 }
 
-void App::drawEyeViewsPostDistorted( Matrix4f const & centerViewMatrix, const int numPresents )
+void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const int numPresents )
 {
     // update vr lib systems after the app frame, but before rendering anything
     guiSys().frame( this, d->vrFrame, vrMenuMgr(), defaultFont(), menuFontSurface(), centerViewMatrix );
@@ -2288,7 +2289,7 @@ void App::drawEyeViewsPostDistorted( Matrix4f const & centerViewMatrix, const in
             d->eyeTargets->BeginRenderingEye( eye );
 
             // Call back to the app for drawing.
-            const Matrix4f mvp = d->appInterface->drawEyeView( eye, fovDegrees );
+            const VR4Matrixf mvp = d->appInterface->drawEyeView( eye, fovDegrees );
 
             vrMenuMgr().renderSubmitted( mvp.Transposed(), centerViewMatrix );
             menuFontSurface().Render3D( defaultFont(), mvp.Transposed() );
@@ -2350,7 +2351,7 @@ void App::drawEyeViewsPostDistorted( Matrix4f const & centerViewMatrix, const in
 void App::drawScreenDirect( const GLuint texid, const ovrMatrix4f & mvp )
 {
     VGlOperation glOperation;
-    const Matrix4f mvpMatrix( mvp );
+    const VR4Matrixf mvpMatrix( mvp );
     glActiveTexture( GL_TEXTURE0 );
     glBindTexture( GL_TEXTURE_2D, texid );
 
@@ -2367,7 +2368,7 @@ void App::drawScreenDirect( const GLuint texid, const ovrMatrix4f & mvp )
 // draw a zero to destination alpha
 void App::drawScreenMask( const ovrMatrix4f & mvp, const float fadeFracX, const float fadeFracY )
 {
-    Matrix4f mvpMatrix( mvp );
+    VR4Matrixf mvpMatrix( mvp );
 
     glUseProgram( d->overlayScreenFadeMaskProgram.program );
 

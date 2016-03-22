@@ -83,7 +83,7 @@ void VRMenu::init( OvrVRMenuMgr & menuMgr, BitmapFont const & font, float const 
 	// create an empty root item
 	VRMenuObjectParms rootParms( VRMENU_CONTAINER, comps,
             VRMenuSurfaceParms( "root" ), "Root", 
-			Posef(), Vector3f( 1.0f, 1.0f, 1.0f ), VRMenuFontParms(), 
+            VPosf(), V3Vectf( 1.0f, 1.0f, 1.0f ), VRMenuFontParms(),
 			GetRootId(), VRMenuObjectFlags_t(), VRMenuObjectInitFlags_t() );
 	m_rootHandle = menuMgr.createObject( rootParms );
 	VRMenuObject * root = menuMgr.toObject( m_rootHandle );
@@ -128,9 +128,9 @@ void VRMenu::addItems( OvrVRMenuMgr & menuMgr, BitmapFont const & font,
         NervGear::VArray< VRMenuObjectParms const * > & itemParms,
         menuHandle_t parentHandle, bool const recenter ) 
 {
-	const Vector3f fwd( 0.0f, 0.0f, 1.0f );
-	const Vector3f up( 0.0f, 1.0f, 0.0f );
-	const Vector3f left( 1.0f, 0.0f, 0.0f );
+    const V3Vectf fwd( 0.0f, 0.0f, 1.0f );
+    const V3Vectf up( 0.0f, 1.0f, 0.0f );
+    const V3Vectf left( 1.0f, 0.0f, 0.0f );
 
 	// create all items in the itemParms array, add each one to the parent, and position all items
 	// without the INIT_FORCE_POSITION flag vertically, one on top of the other
@@ -139,7 +139,7 @@ void VRMenu::addItems( OvrVRMenuMgr & menuMgr, BitmapFont const & font,
 
 	VArray< ChildParmsPair > pairs;
 
-	Vector3f nextItemPos( 0.0f );
+    V3Vectf nextItemPos( 0.0f );
 	int childIndex = 0;
 	for ( int i = 0; i < itemParms.length(); ++i )
 	{
@@ -161,19 +161,19 @@ void VRMenu::addItems( OvrVRMenuMgr & menuMgr, BitmapFont const & font,
 			VRMenuObject * obj = menuMgr.toObject( root->getChildHandleForIndex( childIndex++ ) );
 			if ( obj != NULL && ( parms->InitFlags & VRMENUOBJECT_INIT_FORCE_POSITION ) == 0 )
 			{
-				Bounds3f const & lb = obj->getTextLocalBounds( font );
-				Vector3f size = lb.GetSize() * obj->localScale();
-				Vector3f centerOfs( left * ( size.x * -0.5f ) );
+                VBoxf const & lb = obj->getTextLocalBounds( font );
+                V3Vectf size = lb.GetSize() * obj->localScale();
+                V3Vectf centerOfs( left * ( size.x * -0.5f ) );
 				if ( !parms->ParentId.IsValid() )	// only contribute to height if not being reparented
 				{
 					// stack the items
-					obj->setLocalPose( Posef( Quatf(), nextItemPos + centerOfs ) );
+                    obj->setLocalPose( VPosf( VQuatf(), nextItemPos + centerOfs ) );
 					// calculate the total height
 					nextItemPos += up * size.y;
 				}
 				else // otherwise center local to parent
 				{
-					obj->setLocalPose( Posef( Quatf(), centerOfs ) );
+                    obj->setLocalPose( VPosf( VQuatf(), centerOfs ) );
 				}
 			}
 		}
@@ -200,7 +200,7 @@ void VRMenu::addItems( OvrVRMenuMgr & menuMgr, BitmapFont const & font,
     {
 	    // center the menu based on the height of the auto-placed children
 	    float offset = nextItemPos.y * 0.5f;
-	    Vector3f rootPos = root->localPosition();
+        V3Vectf rootPos = root->localPosition();
 	    rootPos -= offset * up;
 	    root->setLocalPosition( rootPos );
     }
@@ -222,11 +222,11 @@ void VRMenu::shutdown( OvrVRMenuMgr & menuMgr )
 
 //==============================
 // VRMenu::Frame
-void VRMenu::repositionMenu( App * app, Matrix4f const & viewMatrix )
+void VRMenu::repositionMenu( App * app, VR4Matrixf const & viewMatrix )
 {
-	const Matrix4f invViewMatrix = viewMatrix.Inverted();
-	const Vector3f viewPos( GetViewMatrixPosition( viewMatrix ) );
-	const Vector3f viewFwd( GetViewMatrixForward( viewMatrix ) );
+    const VR4Matrixf invViewMatrix = viewMatrix.Inverted();
+    const V3Vectf viewPos( GetViewMatrixPosition( viewMatrix ) );
+    const V3Vectf viewFwd( GetViewMatrixForward( viewMatrix ) );
 
 	if ( m_flags & VRMENU_FLAG_TRACK_GAZE )
 	{
@@ -248,12 +248,12 @@ void VRMenu::repositionMenu( App * app )
 //==============================
 // VRMenu::Frame
 void VRMenu::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, 
-        BitmapFont const & font, BitmapFontSurface & fontSurface, Matrix4f const & viewMatrix,
+        BitmapFont const & font, BitmapFontSurface & fontSurface, VR4Matrixf const & viewMatrix,
         gazeCursorUserId_t const gazeUserId )
 {
-	const Matrix4f invViewMatrix = viewMatrix.Inverted();
-	const Vector3f viewPos( GetViewMatrixPosition( viewMatrix ) );
-	const Vector3f viewFwd( GetViewMatrixForward( viewMatrix ) );
+    const VR4Matrixf invViewMatrix = viewMatrix.Inverted();
+    const V3Vectf viewPos( GetViewMatrixPosition( viewMatrix ) );
+    const V3Vectf viewFwd( GetViewMatrixForward( viewMatrix ) );
 
 	VArray< VRMenuEvent > events;
 
@@ -422,42 +422,42 @@ menuHandle_t VRMenu::handleForId( OvrVRMenuMgr & menuMgr, VRMenuId_t const id ) 
 
 //==============================
 // VRMenu::CalcMenuPosition
-Posef VRMenu::CalcMenuPosition( Matrix4f const & viewMatrix, Matrix4f const & invViewMatrix,
-		Vector3f const & viewPos, Vector3f const & viewFwd, float const menuDistance )
+VPosf VRMenu::CalcMenuPosition( VR4Matrixf const & viewMatrix, VR4Matrixf const & invViewMatrix,
+        V3Vectf const & viewPos, V3Vectf const & viewFwd, float const menuDistance )
 {
 	// spawn directly in front 
-	Quatf rotation( -viewFwd, 0.0f );
-	Quatf viewRot( invViewMatrix );
-	Quatf fullRotation = rotation * viewRot;
+    VQuatf rotation( -viewFwd, 0.0f );
+    VQuatf viewRot( invViewMatrix );
+    VQuatf fullRotation = rotation * viewRot;
 
-	Vector3f position( viewPos + viewFwd * menuDistance );
+    V3Vectf position( viewPos + viewFwd * menuDistance );
 
-	return Posef( fullRotation, position );
+    return VPosf( fullRotation, position );
 }
 
 //==============================
 // VRMenu::CalcMenuPositionOnHorizon
-Posef VRMenu::CalcMenuPositionOnHorizon( Matrix4f const & viewMatrix, Matrix4f const & invViewMatrix,
-		Vector3f const & viewPos, Vector3f const & viewFwd, float const menuDistance )
+VPosf VRMenu::CalcMenuPositionOnHorizon( VR4Matrixf const & viewMatrix, VR4Matrixf const & invViewMatrix,
+        V3Vectf const & viewPos, V3Vectf const & viewFwd, float const menuDistance )
 {
 	// project the forward view onto the horizontal plane
-	Vector3f const up( 0.0f, 1.0f, 0.0f );
+    V3Vectf const up( 0.0f, 1.0f, 0.0f );
 	float dot = viewFwd.Dot( up );
-	Vector3f horizontalFwd = ( dot < -0.99999f || dot > 0.99999f ) ? Vector3f( 1.0f, 0.0f, 0.0f ) : viewFwd - ( up * dot );
+    V3Vectf horizontalFwd = ( dot < -0.99999f || dot > 0.99999f ) ? V3Vectf( 1.0f, 0.0f, 0.0f ) : viewFwd - ( up * dot );
 	horizontalFwd.Normalize();
 
-	Matrix4f horizontalViewMatrix = Matrix4f::LookAtRH( Vector3f( 0 ), horizontalFwd, up );
+    VR4Matrixf horizontalViewMatrix = VR4Matrixf::LookAtRH( V3Vectf( 0 ), horizontalFwd, up );
 	horizontalViewMatrix.Transpose();	// transpose because we want the rotation opposite of where we're looking
 
 	// this was only here to test rotation about the local axis
-	//Quatf rotation( -horizontalFwd, 0.0f );
+    //VQuatf rotation( -horizontalFwd, 0.0f );
 
-	Quatf viewRot( horizontalViewMatrix );
-	Quatf fullRotation = /*rotation * */viewRot;
+    VQuatf viewRot( horizontalViewMatrix );
+    VQuatf fullRotation = /*rotation * */viewRot;
 
-	Vector3f position( viewPos + horizontalFwd * menuDistance );
+    V3Vectf position( viewPos + horizontalFwd * menuDistance );
 
-	return Posef( fullRotation, position );
+    return VPosf( fullRotation, position );
 }
 
 //==============================
@@ -526,7 +526,7 @@ menuHandle_t VRMenu::focusedHandle() const
 
 //==============================
 // VRMenu::ResetMenuOrientation
-void VRMenu::resetMenuOrientation( App * app, Matrix4f const & viewMatrix )
+void VRMenu::resetMenuOrientation( App * app, VR4Matrixf const & viewMatrix )
 {
 	LOG( "ResetMenuOrientation for '%s'", name() );
 	resetMenuOrientation_Impl( app, viewMatrix );
@@ -534,7 +534,7 @@ void VRMenu::resetMenuOrientation( App * app, Matrix4f const & viewMatrix )
 
 //==============================
 // VRMenuResetMenuOrientation_Impl
-void VRMenu::resetMenuOrientation_Impl( App * app, Matrix4f const & viewMatrix )
+void VRMenu::resetMenuOrientation_Impl( App * app, VR4Matrixf const & viewMatrix )
 {
 	repositionMenu( app, viewMatrix );
 }

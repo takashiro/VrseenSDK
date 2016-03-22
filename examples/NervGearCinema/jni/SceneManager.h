@@ -18,11 +18,11 @@ public:
     void 				OneTimeInit( const VString &launchIntent );
 	void				OneTimeShutdown();
 
-	Matrix4f 			DrawEyeView( const int eye, const float fovDegrees );
+    VR4Matrixf 			DrawEyeView( const int eye, const float fovDegrees );
 
     bool Command(const VEvent &event);
 
-	Matrix4f 			Frame( const VrFrame & vrFrame );
+    VR4Matrixf 			Frame( const VrFrame & vrFrame );
 
 	void 				SetSeat( int newSeat );
 	bool 				ChangeSeats( const VrFrame & vrFrame );
@@ -39,15 +39,15 @@ public:
 	void				SetSceneModel( const SceneDef &sceneDef );
 	void				SetSceneProgram( const sceneProgram_t opaqueProgram, const sceneProgram_t additiveProgram );
 
-	Posef				GetScreenPose() const;
-	Vector2f			GetScreenSize() const;
+    VPosf				GetScreenPose() const;
+    V2Vectf			GetScreenSize() const;
 
-	void 				SetFreeScreenAngles( const Vector3f &angles );
-	Vector3f			GetFreeScreenScale() const;
+    void 				SetFreeScreenAngles( const V3Vectf &angles );
+    V3Vectf			GetFreeScreenScale() const;
 
-	Matrix4f			FreeScreenMatrix() const;
-	Matrix4f 			BoundsScreenMatrix( const Bounds3f & bounds, const float movieAspect ) const;
-	Matrix4f 			ScreenMatrix() const;
+    VR4Matrixf			FreeScreenMatrix() const;
+    VR4Matrixf 			BoundsScreenMatrix( const VBoxf & bounds, const float movieAspect ) const;
+    VR4Matrixf 			ScreenMatrix() const;
 
 	void				AllowMovement( bool allow ) { AllowMove = allow; }
 	bool				MovementAllowed() const { return AllowMove; }
@@ -70,8 +70,8 @@ public:
 	bool				FreeScreenActive;
 	float				FreeScreenScale;
 	float				FreeScreenDistance;
-	Matrix4f			FreeScreenOrientation;
-	Vector3f			FreeScreenAngles;
+    VR4Matrixf			FreeScreenOrientation;
+    V3Vectf			FreeScreenAngles;
 
 	// don't make these bool, or sscanf %i will trash adjacent memory!
 	int					ForceMono;			// only show the left eye of 3D movies
@@ -109,12 +109,12 @@ public:
 	const ModelTag *	SceneScreenTag;			//
 
 	static const int	MAX_SEATS = 8;
-	Vector3f			SceneSeatPositions[MAX_SEATS];
+    V3Vectf			SceneSeatPositions[MAX_SEATS];
 	int					SceneSeatCount;
 	int					SeatPosition;
 
-	Matrix4f			SceneScreenMatrix;
-	Bounds3f			SceneScreenBounds;
+    VR4Matrixf			SceneScreenMatrix;
+    VBoxf			SceneScreenBounds;
 
 	bool 				AllowMove;
 

@@ -30,9 +30,9 @@ public:
 	virtual void			shutdown( OvrVRMenuMgr & menuMgr );
 	virtual void			frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
                                     BitmapFont const & font, BitmapFontSurface & fontSurface,
-									Matrix4f const & viewMatrix );
+                                    VR4Matrixf const & viewMatrix );
 	virtual bool			onKeyEvent( App * app, int const keyCode, KeyState::eKeyEventType const eventType );
-	virtual void			resetMenuOrientations( App * app, Matrix4f const & viewMatrix );
+    virtual void			resetMenuOrientations( App * app, VR4Matrixf const & viewMatrix );
 
     virtual void            addMenu( VRMenu * menu );
 	virtual VRMenu *		getMenu( char const * menuName ) const;

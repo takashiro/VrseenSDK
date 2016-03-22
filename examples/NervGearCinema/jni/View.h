@@ -2,6 +2,7 @@
 
 #include "KeyState.h"
 #include "VMath.h"
+#include "VBasicmath.h"
 #include "Input.h"
 
 #include <VString.h>
@@ -35,8 +36,8 @@ public:
     virtual bool 		Command(const VEvent &message) = 0;
 	virtual bool 		OnKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType ) = 0;
 
-	virtual Matrix4f 	DrawEyeView( const int eye, const float fovDegrees ) = 0;
-	virtual Matrix4f 	Frame( const VrFrame & vrFrame ) = 0;
+    virtual VR4Matrixf 	DrawEyeView( const int eye, const float fovDegrees ) = 0;
+    virtual VR4Matrixf 	Frame( const VrFrame & vrFrame ) = 0;
 
 	bool				IsOpen() const { return CurViewState == VIEWSTATE_OPEN; }
 	bool				IsClosed() const { return CurViewState == VIEWSTATE_CLOSED; }

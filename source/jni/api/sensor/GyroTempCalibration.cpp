@@ -51,7 +51,7 @@ GyroTempCalibration::GyroTempCalibration()
 			gce.Version = 0;					// This is the calibration entry version not the file version.
 			gce.ActualTemperature = 0.0;
 			gce.Time = 0;
-			gce.Offset = Vector3d(0.0, 0.0, 0.0);
+            gce.Offset = V3Vectd(0.0, 0.0, 0.0);
 
 			GyroCalibration[binIndex][sampleIndex] = gce;
 		}

@@ -40,7 +40,7 @@ public:
 
     VMainActivity *appInterface();
 
-    void drawEyeViewsPostDistorted( Matrix4f const & viewMatrix, const int numPresents = 1);
+    void drawEyeViewsPostDistorted( VR4Matrixf const & viewMatrix, const int numPresents = 1);
 
     void createToast( const char * fmt, ... );
 
@@ -77,8 +77,8 @@ public:
 
     const VString &packageCodePath() const;
 
-    Matrix4f const &lastViewMatrix() const;
-    void setLastViewMatrix( Matrix4f const & m );
+    VR4Matrixf const &lastViewMatrix() const;
+    void setLastViewMatrix( VR4Matrixf const & m );
 
     EyeParms &vrParms();
     ovrModeParms vrModeParms();
@@ -129,14 +129,14 @@ public:
     bool showFPS() const;
 
     void showInfoText( float const duration, const char * fmt, ... );
-    void showInfoText( float const duration, Vector3f const & offset, Vector4f const & color, const char * fmt, ... );
+    void showInfoText( float const duration, V3Vectf const & offset, V4Vectf const & color, const char * fmt, ... );
 
-    Matrix4f matrixInterpolation( const Matrix4f & startMatrix, const Matrix4f & endMatrix, double t );
+    VR4Matrixf matrixInterpolation( const VR4Matrixf & startMatrix, const VR4Matrixf & endMatrix, double t );
 
-    void drawDialog( const Matrix4f & mvp );
-    void drawPanel( const GLuint externalTextureId, const Matrix4f & dialogMvp, const float alpha );
+    void drawDialog( const VR4Matrixf & mvp );
+    void drawPanel( const GLuint externalTextureId, const VR4Matrixf & dialogMvp, const float alpha );
 
-    void drawBounds( const Vector3f &mins, const Vector3f &maxs, const Matrix4f &mvp, const Vector3f &color );
+    void drawBounds( const V3Vectf &mins, const V3Vectf &maxs, const VR4Matrixf &mvp, const V3Vectf &color );
 
     void startVrThread();
     void stopVrThread();

@@ -19,9 +19,9 @@ namespace NervGear {
 
 //==============================
 //  OvrDefaultComponent::
-OvrDefaultComponent::OvrDefaultComponent( Vector3f const & hilightOffset, float const hilightScale, 
-        float const fadeDuration, float const fadeDelay, Vector4f const & textNormalColor, 
-		Vector4f const & textHilightColor ) :
+OvrDefaultComponent::OvrDefaultComponent( V3Vectf const & hilightOffset, float const hilightScale,
+        float const fadeDuration, float const fadeDelay, V4Vectf const & textNormalColor,
+        V4Vectf const & textHilightColor ) :
     VRMenuComponent( VRMenuEventFlags_t( VRMENU_EVENT_TOUCH_DOWN ) | 
             VRMENU_EVENT_TOUCH_UP | 
             VRMENU_EVENT_FOCUS_GAINED | 
@@ -86,13 +86,13 @@ eMsgStatus OvrDefaultComponent::frame( App * app, VrFrame const & vrFrame, OvrVR
     m_hilightFader.update( fadeRate, vrFrame.DeltaSeconds );
 
     float const hilightAlpha = m_hilightFader.finalAlpha();
-    Vector3f offset = m_hilightOffset * hilightAlpha;
-    self->setHilightPose( Posef( Quatf(), offset ) );
+    V3Vectf offset = m_hilightOffset * hilightAlpha;
+    self->setHilightPose( VPosf( VQuatf(), offset ) );
 
 	int additiveSurfIndex = self->findSurfaceWithTextureType( SURFACE_TEXTURE_ADDITIVE, true );
 	if ( additiveSurfIndex >= 0 ) 
 	{
-		Vector4f surfColor = self->getSurfaceColor( additiveSurfIndex );
+        V4Vectf surfColor = self->getSurfaceColor( additiveSurfIndex );
 		surfColor.w = hilightAlpha;
 		self->setSurfaceColor( additiveSurfIndex, surfColor );
 	}
@@ -102,12 +102,12 @@ eMsgStatus OvrDefaultComponent::frame( App * app, VrFrame const & vrFrame, OvrVR
 
 	if ( m_suppressText )
 	{
-		self->setTextColor( Vector4f( 0.0f ) );
+        self->setTextColor( V4Vectf( 0.0f ) );
 	}
 	else
 	{
-		Vector4f colorDelta = m_textHilightColor - m_textNormalColor;
-		Vector4f curColor = m_textNormalColor + ( colorDelta * hilightAlpha );
+        V4Vectf colorDelta = m_textHilightColor - m_textNormalColor;
+        V4Vectf curColor = m_textNormalColor + ( colorDelta * hilightAlpha );
 		self->setTextColor( curColor );
 	}
 

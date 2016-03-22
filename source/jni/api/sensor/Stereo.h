@@ -91,8 +91,8 @@ struct FovPort
 
 struct ScaleAndOffset2D
 {
-    Vector2f Scale;
-    Vector2f Offset;
+    V2Vectf Scale;
+    V2Vectf Offset;
 
     ScaleAndOffset2D(float sx = 0.0f, float sy = 0.0f, float ox = 0.0f, float oy = 0.0f)
       : Scale(sx, sy), Offset(ox, oy)
@@ -127,7 +127,7 @@ struct LensConfig
     // The result is a scaling applied to the distance from the center of the lens.
     float    DistortionFnScaleRadiusSquared (float rsq) const;
     // x,y,z components map to r,g,b scales.
-    Vector3f DistortionFnScaleRadiusSquaredChroma (float rsq) const;
+    V3Vectf DistortionFnScaleRadiusSquaredChroma (float rsq) const;
 
     // DistortionFn applies distortion to the argument.
     // Input: the distance in TanAngle/NIC space from the optical center to the input pixel.
@@ -180,11 +180,11 @@ struct DistortionRenderDesc
     LensConfig          Lens;
 
     // These map from [-1,1] across the eye being rendered into TanEyeAngle space (but still distorted)
-    Vector2f            LensCenter;
-    Vector2f            TanEyeAngleScale;
+    V2Vectf            LensCenter;
+    V2Vectf            TanEyeAngleScale;
     // Computed from device characteristics, IPD and eye-relief.
     // (not directly used for rendering, but very useful)
-    Vector2f            PixelsPerTanAngleAtCenter;
+    V2Vectf            PixelsPerTanAngleAtCenter;
 };
 
 
@@ -202,8 +202,8 @@ struct HmdRenderInfo
     HmdTypeEnum HmdType;
 
     // Size of the entire screen
-    Size<int>   ResolutionInPixels;
-    Size<float> ScreenSizeInMeters;
+    VSize<int>   ResolutionInPixels;
+    VSize<float> ScreenSizeInMeters;
     float       ScreenGapSizeInMeters;
 
     // Characteristics of the lenses.
@@ -311,24 +311,24 @@ FovPort             GetPhysicalScreenFov ( StereoEye eyeType, DistortionRenderDe
 FovPort             ClampToPhysicalScreenFov ( StereoEye eyeType, DistortionRenderDesc const &distortion,
                                                FovPort inputFovPort );
 
-Sizei               CalculateIdealPixelSize ( DistortionRenderDesc const &distortion,
+VSizei               CalculateIdealPixelSize ( DistortionRenderDesc const &distortion,
                                               FovPort fov, float pixelsPerDisplayPixel );
 
 Viewport            GetFramebufferViewport ( StereoEye eyeType, HmdRenderInfo const &hmd );
 
-Matrix4f            CreateProjection ( bool rightHanded, FovPort fov,
+VR4Matrixf            CreateProjection ( bool rightHanded, FovPort fov,
                                        float zNear = 0.01f, float zFar = 10000.0f );
 
-Matrix4f            CreateOrthoSubProjection ( bool rightHanded, StereoEye eyeType,
+VR4Matrixf            CreateOrthoSubProjection ( bool rightHanded, StereoEye eyeType,
                                                float tanHalfFovX, float tanHalfFovY,
                                                float unitsX, float unitsY, float distanceFromCamera,
-                                               float interpupillaryDistance, Matrix4f const &projection,
+                                               float interpupillaryDistance, VR4Matrixf const &projection,
                                                float zNear = 0.0f, float zFar = 0.0f );
 
-ScaleAndOffset2D    CreateNDCScaleAndOffsetFromProjection ( bool rightHanded, Matrix4f projection );
+ScaleAndOffset2D    CreateNDCScaleAndOffsetFromProjection ( bool rightHanded, VR4Matrixf projection );
 ScaleAndOffset2D    CreateUVScaleAndOffsetfromNDCScaleandOffset ( ScaleAndOffset2D scaleAndOffsetNDC,
                                                                   Viewport renderedViewport,
-                                                                  Sizei renderTargetSize );
+                                                                  VSizei renderTargetSize );
 
 
 //-----------------------------------------------------------------------------------
@@ -339,7 +339,7 @@ ScaleAndOffset2D    CreateUVScaleAndOffsetfromNDCScaleandOffset ( ScaleAndOffset
 struct StereoEyeParams
 {
     StereoEye               Eye;
-    Matrix4f                ViewAdjust;             // Translation to be applied to view matrix.
+    VR4Matrixf                ViewAdjust;             // Translation to be applied to view matrix.
 
     // Distortion and the VP on the physical display - the thing to run the distortion shader on.
     DistortionRenderDesc    Distortion;
@@ -348,7 +348,7 @@ struct StereoEyeParams
     // Projection and VP of a particular view (you could have multiple of these).
     Viewport                RenderedViewport;       // Viewport that we render the standard scene to.
     FovPort                 Fov;                    // The FOVs of this scene.
-    Matrix4f                RenderedProjection;     // Projection matrix used with this eye.
+    VR4Matrixf                RenderedProjection;     // Projection matrix used with this eye.
     ScaleAndOffset2D        EyeToSourceNDC;         // Mapping from TanEyeAngle space to [-1,+1] on the rendered image.
     ScaleAndOffset2D        EyeToSourceUV;          // Mapping from TanEyeAngle space to actual texture UV coords.
 };
@@ -356,34 +356,34 @@ struct StereoEyeParams
 
 //-----------------------------------------------------------------------------------
 // A set of "forward-mapping" functions, mapping from framebuffer space to real-world and/or texture space.
-Vector2f TransformScreenNDCToTanFovSpace ( DistortionRenderDesc const &distortion,
-                                           const Vector2f &framebufferNDC );
-void TransformScreenNDCToTanFovSpaceChroma ( Vector2f *resultR, Vector2f *resultG, Vector2f *resultB,
+V2Vectf TransformScreenNDCToTanFovSpace ( DistortionRenderDesc const &distortion,
+                                           const V2Vectf &framebufferNDC );
+void TransformScreenNDCToTanFovSpaceChroma ( V2Vectf *resultR, V2Vectf *resultG, V2Vectf *resultB,
                                              DistortionRenderDesc const &distortion,
-                                             const Vector2f &framebufferNDC );
-Vector2f TransformTanFovSpaceToRendertargetTexUV ( StereoEyeParams const &eyeParams,
-                                                   Vector2f const &tanEyeAngle );
-Vector2f TransformTanFovSpaceToRendertargetNDC ( StereoEyeParams const &eyeParams,
-                                                 Vector2f const &tanEyeAngle );
-Vector2f TransformScreenPixelToScreenNDC( Viewport const &distortionViewport,
-                                          Vector2f const &pixel );
-Vector2f TransformScreenPixelToTanFovSpace ( Viewport const &distortionViewport,
+                                             const V2Vectf &framebufferNDC );
+V2Vectf TransformTanFovSpaceToRendertargetTexUV ( StereoEyeParams const &eyeParams,
+                                                   V2Vectf const &tanEyeAngle );
+V2Vectf TransformTanFovSpaceToRendertargetNDC ( StereoEyeParams const &eyeParams,
+                                                 V2Vectf const &tanEyeAngle );
+V2Vectf TransformScreenPixelToScreenNDC( Viewport const &distortionViewport,
+                                          V2Vectf const &pixel );
+V2Vectf TransformScreenPixelToTanFovSpace ( Viewport const &distortionViewport,
                                              DistortionRenderDesc const &distortion,
-                                             Vector2f const &pixel );
-Vector2f TransformScreenNDCToRendertargetTexUV( DistortionRenderDesc const &distortion,
+                                             V2Vectf const &pixel );
+V2Vectf TransformScreenNDCToRendertargetTexUV( DistortionRenderDesc const &distortion,
                                                 StereoEyeParams const &eyeParams,
-                                                Vector2f const &pixel );
-Vector2f TransformScreenPixelToRendertargetTexUV( Viewport const &distortionViewport,
+                                                V2Vectf const &pixel );
+V2Vectf TransformScreenPixelToRendertargetTexUV( Viewport const &distortionViewport,
                                                   DistortionRenderDesc const &distortion,
                                                   StereoEyeParams const &eyeParams,
-                                                  Vector2f const &pixel );
+                                                  V2Vectf const &pixel );
 
 // A set of "reverse-mapping" functions, mapping from real-world and/or texture space back to the framebuffer.
 // Be aware that many of these are significantly slower than their forward-mapping counterparts.
-Vector2f TransformTanFovSpaceToScreenNDC( DistortionRenderDesc const &distortion,
-                                          const Vector2f &tanEyeAngle, bool usePolyApprox = false );
-Vector2f TransformRendertargetNDCToTanFovSpace( StereoEyeParams const &eyeParams,
-                                                Vector2f const &textureUV );
+V2Vectf TransformTanFovSpaceToScreenNDC( DistortionRenderDesc const &distortion,
+                                          const V2Vectf &tanEyeAngle, bool usePolyApprox = false );
+V2Vectf TransformRendertargetNDCToTanFovSpace( StereoEyeParams const &eyeParams,
+                                                V2Vectf const &textureUV );
 
 
 NV_NAMESPACE_END

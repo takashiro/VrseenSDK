@@ -26,11 +26,11 @@ template<class T>
 class PoseState
 {
 public:
-    typedef typename CompatibleTypes<Pose<T> >::Type CompatibleType;
+    typedef typename CompatibleTypes<VPos<T> >::Type CompatibleType;
 
     PoseState() : TimeInSeconds(0.0) { }
     // float <-> double conversion constructor.
-    explicit PoseState(const PoseState<typename Math<T>::OtherFloatType> &src)
+    explicit PoseState(const PoseState<typename VConstants<T>::VdifFloat> &src)
         : Transform(src.Transform),
           AngularVelocity(src.AngularVelocity), LinearVelocity(src.LinearVelocity),
           AngularAcceleration(src.AngularAcceleration), LinearAcceleration(src.LinearAcceleration),
@@ -58,11 +58,11 @@ public:
     }
 
 
-    Pose<T>     Transform;
-    Vector3<T>  AngularVelocity;
-    Vector3<T>  LinearVelocity;
-    Vector3<T>  AngularAcceleration;
-    Vector3<T>  LinearAcceleration;
+    VPos<T>     Transform;
+    V3Vect<T>  AngularVelocity;
+    V3Vect<T>  LinearVelocity;
+    V3Vect<T>  AngularAcceleration;
+    V3Vect<T>  LinearAcceleration;
     // Absolute time of this state sample; always a double measured in seconds.
     double      TimeInSeconds;
 };
@@ -199,7 +199,7 @@ public:
     void		SetFocusDirection();
     // Sets the focus filter to a direction in the body frame. Once set, a complementary filter
     // will very slowly drag the world to keep the direction of the HMD within the FOV of the focus
-    void		SetFocusDirection(Vector3f direction);
+    void		SetFocusDirection(V3Vectf direction);
     // Sets the FOV (in radians) of the focus. When the yaw difference between the HMD's current pose
     // and the focus is smaller than the FOV, the complementary filter does not act.
     void		SetFocusFOV(float rads);
@@ -224,7 +224,7 @@ private:
 
     // Apply headset yaw correction from magnetometer
 	// for models without camera or when camera isn't available
-	void        applyMagYawCorrection(const Vector3f& magUncalibrated, const Vector3f& magBias, const Vector3f& gyro, float deltaT);
+    void        applyMagYawCorrection(const V3Vectf& magUncalibrated, const V3Vectf& magBias, const V3Vectf& gyro, float deltaT);
     // Apply headset tilt correction from the accelerometer
     void        applyTiltCorrection(float deltaT);
 	// Apply camera focus correction
@@ -254,17 +254,17 @@ private:
 
     struct MagReferencePoint
     {
-        Vector3f          MagUncalibratedInImuFrame;
-        Quatf             WorldFromImu;
+        V3Vectf          MagUncalibratedInImuFrame;
+        VQuatf             WorldFromImu;
 		int				  Score;
 
 		MagReferencePoint() { }
-        MagReferencePoint(const Vector3f& magUncalibInImuFrame, const Quatf& worldFromImu, int score)
+        MagReferencePoint(const V3Vectf& magUncalibInImuFrame, const VQuatf& worldFromImu, int score)
             : MagUncalibratedInImuFrame(magUncalibInImuFrame), WorldFromImu(worldFromImu), Score(score) { }
     };
 
 
-	bool getBufferedOrientation(Quatf* orientation, const Vector3f& gyro, float gyroThreshold, float deltaT);
+    bool getBufferedOrientation(VQuatf* orientation, const V3Vectf& gyro, float gyroThreshold, float deltaT);
 
     BodyFrameHandler*		pHandler;
 
@@ -291,7 +291,7 @@ private:
 	// angular velocity is too high.
 	struct MagCompEntry
 	{
-		Quatf	Orientation;
+        VQuatf	Orientation;
 		float	GyroMagnitude;
 	};
 	MagCompEntry			MagLatencyCompBuffer[MagLatencyBufferSizeMax];
@@ -299,11 +299,11 @@ private:
 	int						MagLatencyCompFillCount;
 	float					YawCorrectionTimer;
 
-    Vector3f				FocusDirection;
+    V3Vectf				FocusDirection;
 	float					FocusFOV;
 
     VMutex					RecenterMutex;
-	LocklessUpdater<Posef>	RecenterTransform;	// this is an additional transform that is applied to "recenter" the orientation in yaw.
+    LocklessUpdater<VPosf>	RecenterTransform;	// this is an additional transform that is applied to "recenter" the orientation in yaw.
 };
 
 

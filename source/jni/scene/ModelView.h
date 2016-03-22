@@ -57,10 +57,10 @@ public:
 	// Models that have DontRenderForClientUid == supressModelsWithClientId will be skipped
 	// to prevent the client's own head model from drawing in their view.
 	void		Frame(const VrViewParms viewParms_, const VrFrame vrFrame,
-			ovrMatrix4f & timeWarpParmsExternalVelocity, const long long supressModelsWithClientId = -1 );
+            ovrMatrix4f & timeWarpParmsExternalVelocity, const long long supressModelsWithClientId = -1 );
 
 	// Issues GL calls and returns the MVP for the eye, as needed by AppInterface DrawEyeVIew
-	Matrix4f	DrawEyeView( const int eye, const float fovDegrees ) const;
+    VR4Matrixf	DrawEyeView( const int eye, const float fovDegrees ) const;
 
 	// Returns the new modelIndex
 	int			AddModel( ModelInScene * model );
@@ -75,25 +75,25 @@ public:
 	SurfaceDef *			FindNamedSurface( const char *name ) const;
 	const ModelTexture *	FindNamedTexture( const char *name ) const;
 	const ModelTag *		FindNamedTag(const VString &name ) const;
-	Bounds3f				GetBounds() const;
+    VBoxf				GetBounds() const;
 
 
 	// Derived from state after last Frame()
-	Vector3f	GetFootPos() const { return FootPos; }
+    V3Vectf	GetFootPos() const { return FootPos; }
 
 	// WARNING: this does not take into account the head model, it is just footpos + eyeheight
-	Vector3f	CenterEyePos() const;
+    V3Vectf	CenterEyePos() const;
 
 	// This includes the head/neck model or position tracking.
-	Vector3f	ShiftedCenterEyePos() const;
+    V3Vectf	ShiftedCenterEyePos() const;
 
-	Vector3f	Forward() const;
-	Matrix4f 	CenterViewMatrix() const;
-	Matrix4f 	ViewMatrixForEye( const int eye ) const;	// includes InterpupillaryDistance
-	Matrix4f 	MvpForEye( const int eye, const float fovDegrees ) const;
-	Matrix4f 	ProjectionMatrixForEye( const int eye, const float fovDegrees ) const;
+    V3Vectf	Forward() const;
+    VR4Matrixf 	CenterViewMatrix() const;
+    VR4Matrixf 	ViewMatrixForEye( const int eye ) const;	// includes InterpupillaryDistance
+    VR4Matrixf 	MvpForEye( const int eye, const float fovDegrees ) const;
+    VR4Matrixf 	ProjectionMatrixForEye( const int eye, const float fovDegrees ) const;
 
-    static Vector3f HeadModelOffset(float EyeRoll, float EyePitch, float EyeYaw, float HeadModelDepth, float HeadModelHeight);
+    static V3Vectf HeadModelOffset(float EyeRoll, float EyePitch, float EyeYaw, float HeadModelDepth, float HeadModelHeight);
 
 	void		UpdateViewMatrix(const VrFrame vrFrame );
 	void		UpdateSceneModels( const VrFrame vrFrame, const long long supressModelsWithClientId );
@@ -138,7 +138,7 @@ public:
 	float					Zfar;
 
 	// Position tracking test
-	Vector3f				ImuToEyeCenter;
+    V3Vectf				ImuToEyeCenter;
 
 	// Angle offsets in radians
 	float					YawOffset;		// added on top of the sensor reading
@@ -151,20 +151,20 @@ public:
 	bool					AllowPositionTracking;
 
 	// Allow smooth transition from head model to position tracking experiments
-    Vector3f				LastHeadModelOffset;
-    Vector3f				LatchedHeadModelOffset;
+    V3Vectf				LastHeadModelOffset;
+    V3Vectf				LatchedHeadModelOffset;
 
     // Calculated in Frame()
-    Matrix4f 				ViewMatrix;
+    VR4Matrixf 				ViewMatrix;
     float					EyeYaw;         // Rotation around Y, CCW positive when looking at RHS (X,Z) plane.
     float					EyePitch;       // Pitch. If sensor is plugged in, only read from sensor.
     float					EyeRoll;        // Roll, only accessible from Sensor.
 
     // Includes the head/neck model or position tracking
-	Vector3f				ShiftedEyePos;
+    V3Vectf				ShiftedEyePos;
 
     // Modified by joypad movement and collision detection
-    Vector3f				FootPos;
+    V3Vectf				FootPos;
 };
 
 NV_NAMESPACE_END

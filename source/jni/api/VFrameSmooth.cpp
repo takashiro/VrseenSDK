@@ -160,13 +160,13 @@ void EyeRect( const hmdInfoInternal_t & hmd, const ScreenEye eye, const WhichEye
     height = lHeight;
 }
 
-Matrix4f CalculateTimeWarpMatrix2( const Quatf &inFrom, const Quatf &inTo )
+VR4Matrixf CalculateTimeWarpMatrix2( const VQuatf &inFrom, const VQuatf &inTo )
 {
     // FIXME: this is a horrible hack to fix a zero quaternion that's passed in
     // the night before a demo. This is coming from the sensor pose and needs to
     // be tracked down further.
-    Quatf from = inFrom;
-    Quatf to = inTo;
+    VQuatf from = inFrom;
+    VQuatf to = inTo;
 
     bool fromValid = from.LengthSq() > 0.95f;
     bool toValid = to.LengthSq() > 0.95f;
@@ -178,7 +178,7 @@ Matrix4f CalculateTimeWarpMatrix2( const Quatf &inFrom, const Quatf &inTo )
         }
         else
         {
-            from = Quatf( 0.0f, 0.0f, 0.0f, 1.0f ); // just force identity
+            from = VQuatf( 0.0f, 0.0f, 0.0f, 1.0f ); // just force identity
         }
     }
     if ( !toValid )
@@ -189,12 +189,12 @@ Matrix4f CalculateTimeWarpMatrix2( const Quatf &inFrom, const Quatf &inTo )
         }
         else
         {
-            to = Quatf( 0.0f, 0.0f, 0.0f, 1.0f ); // just force identity
+            to = VQuatf( 0.0f, 0.0f, 0.0f, 1.0f ); // just force identity
         }
     }
 
-    Matrix4f		lastSensorMatrix = Matrix4f( to );
-    Matrix4f		lastViewMatrix = Matrix4f( from );
+    VR4Matrixf		lastSensorMatrix = VR4Matrixf( to );
+    VR4Matrixf		lastViewMatrix = VR4Matrixf( from );
 
     return ( lastSensorMatrix.Inverted() * lastViewMatrix ).Inverted();
 }
@@ -766,11 +766,11 @@ void VFrameSmooth::setWarpState( const warpSource_t & currentWarpSource ) const
 }
 
 void VFrameSmooth::bindWarpProgram( const warpSource_t & currentWarpSource,
-                                     const Matrix4f timeWarps[2][2], const Matrix4f rollingWarp,
+                                     const VR4Matrixf timeWarps[2][2], const VR4Matrixf rollingWarp,
                                      const int eye, const double vsyncBase /* for spinner */ ) const
 {
     // TODO: bake this into the buffer objects
-    const Matrix4f landscapeOrientationMatrix(
+    const VR4Matrixf landscapeOrientationMatrix(
             1.0f, 0.0f, 0.0f, 0.0f,
             0.0f, 1.0f, 0.0f, 0.0f,
             0.0f, 0.0f, 0.0f, 0.0f,
@@ -798,13 +798,13 @@ void VFrameSmooth::bindWarpProgram( const warpSource_t & currentWarpSource,
     if ( warpProg.uniformTexClamp > 0 )
     {
         // split screen clamping for UE4
-        const Vector2f clamp( eye * 0.5f, (eye+1)* 0.5f );
+        const V2Vectf clamp( eye * 0.5f, (eye+1)* 0.5f );
         glUniform2fv( warpProg.uniformTexClamp, 1, &clamp.x );
     }
     if ( warpProg.uniformRotateScale > 0 )
     {
         const float angle = FramePointTimeInSeconds( vsyncBase ) * M_PI * currentWarpSource.WarpParms.ProgramParms[0];
-        const Vector4f RotateScale( sinf( angle ), cosf( angle ), currentWarpSource.WarpParms.ProgramParms[1], 1.0f );
+        const V4Vectf RotateScale( sinf( angle ), cosf( angle ), currentWarpSource.WarpParms.ProgramParms[1], 1.0f );
         glUniform4fv( warpProg.uniformRotateScale, 1, &RotateScale[0] );
     }
 }
@@ -812,7 +812,7 @@ void VFrameSmooth::bindWarpProgram( const warpSource_t & currentWarpSource,
 void VFrameSmooth::bindCursorProgram() const
 {
     // TODO: bake this into the buffer objects
-    const Matrix4f landscapeOrientationMatrix(
+    const VR4Matrixf landscapeOrientationMatrix(
             1.0f, 0.0f, 0.0f, 0.0f,
             0.0f, 1.0f, 0.0f, 0.0f,
             0.0f, 0.0f, 0.0f, 0.0f,
@@ -826,8 +826,8 @@ void VFrameSmooth::bindCursorProgram() const
     glUniform1f( warpProg.uniformColor, 1.0f );
 
     glUniformMatrix4fv( warpProg.uniformModelViewProMatrix, 1, GL_FALSE, landscapeOrientationMatrix.Transposed().M[0] );
-    glUniformMatrix4fv( warpProg.uniformTexMatrix, 1, GL_FALSE, Matrix4f::Identity().M[0] );
-    glUniformMatrix4fv( warpProg.uniformTexMatrix2, 1, GL_FALSE, Matrix4f::Identity().M[0] );
+    glUniformMatrix4fv( warpProg.uniformTexMatrix, 1, GL_FALSE, VR4Matrixf::Identity().M[0] );
+    glUniformMatrix4fv( warpProg.uniformTexMatrix2, 1, GL_FALSE, VR4Matrixf::Identity().M[0] );
 }
 
 int CameraTimeWarpLatency = 4;
@@ -1104,7 +1104,7 @@ void VFrameSmooth::warpToScreen( const double vsyncBase_, const swapProgram_t & 
                     break;
                 }
 
-                if ( Quatf( testWarpSource.WarpParms.Images[eye][0].Pose.Pose.Orientation ).LengthSq() < 1e-18f )
+                if ( VQuatf( testWarpSource.WarpParms.Images[eye][0].Pose.Pose.Orientation ).LengthSq() < 1e-18f )
                 {
                     LOG( "Bad Pose.Orientation in bufferNum %lli!", thisEyeBufferNum );
                     break;
@@ -1173,7 +1173,7 @@ void VFrameSmooth::warpToScreen( const double vsyncBase_, const swapProgram_t & 
         }
 
         // Build up the external velocity transform
-        Matrix4f velocity;
+        VR4Matrixf velocity;
         const int velocitySteps = NervGear::Alg::Min( 3, (int)((long long)vsyncBase - currentWarpSource.MinimumVsync) );
         for ( int i = 0; i < velocitySteps; i++ )
         {
@@ -1192,29 +1192,29 @@ void VFrameSmooth::warpToScreen( const double vsyncBase_, const swapProgram_t & 
         //
         // In a portrait scanned display, it is beneficial to have the time warp calculated
         // independently for each eye, giving them the same latency profile.
-        Matrix4f timeWarps[2][2];
+        VR4Matrixf timeWarps[2][2];
         ovrSensorState sensor[2];
         for ( int scan = 0; scan < 2; scan++ )
         {
             const double vsyncPoint = vsyncBase + swap.predictionPoints[eye][scan];
             const double timePoint = FramePointTimeInSeconds( vsyncPoint );
             sensor[scan] = ovr_GetSensorStateInternal( timePoint );
-            const Matrix4f warp = CalculateTimeWarpMatrix2(
+            const VR4Matrixf warp = CalculateTimeWarpMatrix2(
                     currentWarpSource.WarpParms.Images[eye][0].Pose.Pose.Orientation,
                     sensor[scan].Predicted.Pose.Orientation ) * velocity;
-            timeWarps[0][scan] = Matrix4f( currentWarpSource.WarpParms.Images[eye][0].TexCoordsFromTanAngles ) * warp;
+            timeWarps[0][scan] = VR4Matrixf( currentWarpSource.WarpParms.Images[eye][0].TexCoordsFromTanAngles ) * warp;
             if ( dualLayer )
             {
                 if ( currentWarpSource.WarpParms.WarpOptions & SWAP_OPTION_FIXED_OVERLAY )
                 {	// locked-to-face HUD
-                    timeWarps[1][scan] = Matrix4f( currentWarpSource.WarpParms.Images[eye][1].TexCoordsFromTanAngles );
+                    timeWarps[1][scan] = VR4Matrixf( currentWarpSource.WarpParms.Images[eye][1].TexCoordsFromTanAngles );
                 }
                 else
                 {	// locked-to-world surface
-                    const Matrix4f warp2 = CalculateTimeWarpMatrix2(
+                    const VR4Matrixf warp2 = CalculateTimeWarpMatrix2(
                             currentWarpSource.WarpParms.Images[eye][1].Pose.Pose.Orientation,
                             sensor[scan].Predicted.Pose.Orientation ) * velocity;
-                    timeWarps[1][scan] = Matrix4f( currentWarpSource.WarpParms.Images[eye][1].TexCoordsFromTanAngles ) * warp2;
+                    timeWarps[1][scan] = VR4Matrixf( currentWarpSource.WarpParms.Images[eye][1].TexCoordsFromTanAngles ) * warp2;
                 }
             }
         }
@@ -1231,17 +1231,17 @@ void VFrameSmooth::warpToScreen( const double vsyncBase_, const swapProgram_t & 
             // for movement in the current eye display roll.
             for ( int scan = 0 ; scan < 2 ; scan++ )
             {
-                const Matrix4f warp2 = CalculateTimeWarpMatrix2(
+                const VR4Matrixf warp2 = CalculateTimeWarpMatrix2(
                         pose[scan].Pose.Orientation,
                         sensor[0].Predicted.Pose.Orientation
                 );
-                timeWarps[1][scan] = Matrix4f( currentWarpSource.WarpParms.Images[eye][1].TexCoordsFromTanAngles ) * warp2;
+                timeWarps[1][scan] = VR4Matrixf( currentWarpSource.WarpParms.Images[eye][1].TexCoordsFromTanAngles ) * warp2;
             }
         }
 
         // The pass through camera support needs to know the warping from the head motion
         // across the display scan independent of any layers, which may drop frames.
-        const Matrix4f rollingWarp = CalculateTimeWarpMatrix2(
+        const VR4Matrixf rollingWarp = CalculateTimeWarpMatrix2(
                 sensor[0].Predicted.Pose.Orientation,
                 sensor[1].Predicted.Pose.Orientation );
 
@@ -1421,7 +1421,7 @@ void VFrameSmooth::warpToScreenSliced( const double vsyncBase, const swapProgram
                     break;
                 }
 
-                if ( Quatf( testWarpSource.WarpParms.Images[eye][0].Pose.Pose.Orientation ).LengthSq() < 1e-18f )
+                if ( VQuatf( testWarpSource.WarpParms.Images[eye][0].Pose.Pose.Orientation ).LengthSq() < 1e-18f )
                 {
                     LOG( "Bad Predicted.Pose.Orientation!" );
                     continue;
@@ -1491,7 +1491,7 @@ void VFrameSmooth::warpToScreenSliced( const double vsyncBase, const swapProgram
         }
 
         // Build up the external velocity transform
-        Matrix4f velocity;
+        VR4Matrixf velocity;
         const int velocitySteps = NervGear::Alg::Min( 3, (int)((long long)vsyncBase - currentWarpSource.MinimumVsync) );
         for ( int i = 0; i < velocitySteps; i++ )
         {
@@ -1510,7 +1510,7 @@ void VFrameSmooth::warpToScreenSliced( const double vsyncBase, const swapProgram
         //
         // In a portrait scanned display, it is beneficial to have the time warp calculated
         // independently for each eye, giving them the same latency profile.
-        Matrix4f timeWarps[2][2];
+        VR4Matrixf timeWarps[2][2];
         static ovrSensorState sensor[2];
         for ( int scan = 0; scan < 2; scan++ )
         {
@@ -1518,7 +1518,7 @@ void VFrameSmooth::warpToScreenSliced( const double vsyncBase, const swapProgram
             // but we only make a new one for the start of the slice when a
             // new eye has just started, otherwise we could get a visible
             // seam at the slice boundary when the prediction changed.
-            static Matrix4f	warp;
+            static VR4Matrixf	warp;
             if ( scan == 1 || screenSlice == 0 || screenSlice == NUM_SLICES_PER_EYE )
             {
                 // SliceTimes should be the actual time the pixels hit the screen,
@@ -1529,19 +1529,19 @@ void VFrameSmooth::warpToScreenSliced( const double vsyncBase, const swapProgram
                         currentWarpSource.WarpParms.Images[eye][0].Pose.Pose.Orientation,
                         sensor[scan].Predicted.Pose.Orientation ) * velocity;
             }
-            timeWarps[0][scan] = Matrix4f( currentWarpSource.WarpParms.Images[eye][0].TexCoordsFromTanAngles ) * warp;
+            timeWarps[0][scan] = VR4Matrixf( currentWarpSource.WarpParms.Images[eye][0].TexCoordsFromTanAngles ) * warp;
             if ( dualLayer )
             {
                 if ( currentWarpSource.WarpParms.WarpOptions & SWAP_OPTION_FIXED_OVERLAY )
                 {	// locked-to-face HUD
-                    timeWarps[1][scan] = Matrix4f( currentWarpSource.WarpParms.Images[eye][1].TexCoordsFromTanAngles );
+                    timeWarps[1][scan] = VR4Matrixf( currentWarpSource.WarpParms.Images[eye][1].TexCoordsFromTanAngles );
                 }
                 else
                 {	// locked-to-world surface
-                    const Matrix4f warp2 = CalculateTimeWarpMatrix2(
+                    const VR4Matrixf warp2 = CalculateTimeWarpMatrix2(
                             currentWarpSource.WarpParms.Images[eye][1].Pose.Pose.Orientation,
                             sensor[scan].Predicted.Pose.Orientation ) * velocity;
-                    timeWarps[1][scan] = Matrix4f( currentWarpSource.WarpParms.Images[eye][1].TexCoordsFromTanAngles ) * warp2;
+                    timeWarps[1][scan] = VR4Matrixf( currentWarpSource.WarpParms.Images[eye][1].TexCoordsFromTanAngles ) * warp2;
                 }
             }
         }
@@ -1558,17 +1558,17 @@ void VFrameSmooth::warpToScreenSliced( const double vsyncBase, const swapProgram
             // for movement in the current eye display roll.
             for ( int scan = 0; scan < 2; scan++ )
             {
-                const Matrix4f warp2 = CalculateTimeWarpMatrix2(
+                const VR4Matrixf warp2 = CalculateTimeWarpMatrix2(
                         pose[scan].Pose.Orientation,
                         sensor[0].Predicted.Pose.Orientation
                 );
-                timeWarps[1][scan] = Matrix4f( currentWarpSource.WarpParms.Images[eye][1].TexCoordsFromTanAngles ) * warp2;
+                timeWarps[1][scan] = VR4Matrixf( currentWarpSource.WarpParms.Images[eye][1].TexCoordsFromTanAngles ) * warp2;
             }
         }
 
         // The pass through camera support needs to know the warping from the head motion
         // across the display scan independent of any layers, which may drop frames.
-        const Matrix4f rollingWarp = CalculateTimeWarpMatrix2(
+        const VR4Matrixf rollingWarp = CalculateTimeWarpMatrix2(
                 sensor[0].Predicted.Pose.Orientation,
                 sensor[1].Predicted.Pose.Orientation );
 
@@ -2019,7 +2019,7 @@ void VFrameSmooth::drawTimingGraph( const ScreenEye eye )
     // Map the rectWidth / rectHeight dimensions to -1 - 1 range
     float scale_x = 2.0f / (float)rectWidth;
     float scale_y = 2.0f / (float)rectHeight;
-    const Matrix4f landscapePixelMatrix(
+    const VR4Matrixf landscapePixelMatrix(
             0, scale_x, 0.0f, -1.0f,
             scale_y, 0, 0.0f, -1.0f,
             0.0f, 0.0f, 0.0f, 0.0f,
@@ -2213,7 +2213,7 @@ void VFrameSmooth::drawFrameworkGraphicsToWindow( const ScreenEye eye,
         const float znear = 0.5f;
         const float zfar = 150.0f;
         // flipped for portrait mode
-        const Matrix4f projectionMatrix(
+        const VR4Matrixf projectionMatrix(
                 0, 1, 0, 0,
                 -1, 0, 0, 0,
                 0, 0, zfar / (znear - zfar), (zfar * znear) / (znear - zfar),

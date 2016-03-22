@@ -3,6 +3,7 @@
 #include "vglobal.h"
 
 #include "VMath.h"
+#include "VBasicmath.h"
 #include "VString.h"
 #include "VArray.h"
 NV_NAMESPACE_BEGIN
@@ -81,24 +82,24 @@ public:
 
 	virtual void Init(const int maxVertices) = 0;
 	virtual void DrawText3D(BitmapFont const & font, const fontParms_t & flags,
-			const Vector3f & pos, Vector3f const & normal, Vector3f const & up,
-            float const scale, Vector4f const & color, const VString &text) = 0;
+            const V3Vectf & pos, V3Vectf const & normal, V3Vectf const & up,
+            float const scale, V4Vectf const & color, const VString &text) = 0;
 	virtual void DrawText3Df(BitmapFont const & font, const fontParms_t & flags,
-			const Vector3f & pos, Vector3f const & normal, Vector3f const & up,
-            float const scale, Vector4f const & color, const char *format,
+            const V3Vectf & pos, V3Vectf const & normal, V3Vectf const & up,
+            float const scale, V4Vectf const & color, const char *format,
 			...) = 0;
 
 	virtual void DrawTextBillboarded3D(BitmapFont const & font,
-			fontParms_t const & flags, Vector3f const & pos, float const scale,
-			Vector4f const & color, char const * text) = 0;
+            fontParms_t const & flags, V3Vectf const & pos, float const scale,
+            V4Vectf const & color, char const * text) = 0;
 	virtual void DrawTextBillboarded3Df(BitmapFont const & font,
-			fontParms_t const & flags, Vector3f const & pos, float const scale,
-			Vector4f const & color, char const * fmt, ...) = 0;
+            fontParms_t const & flags, V3Vectf const & pos, float const scale,
+            V4Vectf const & color, char const * fmt, ...) = 0;
 
-	virtual void Finish(Matrix4f const & viewMatrix) = 0;
+    virtual void Finish(VR4Matrixf const & viewMatrix) = 0;
 
 	virtual void Render3D(BitmapFont const & font,
-			Matrix4f const & worldMVP) const = 0;
+            VR4Matrixf const & worldMVP) const = 0;
 
 protected:
 	virtual ~BitmapFontSurface() {

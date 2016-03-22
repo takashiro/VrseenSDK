@@ -18,9 +18,9 @@ UIContainer::~UIContainer()
 
 void UIContainer::AddToMenu( UIMenu *menu, UIWidget *parent )
 {
-	const Posef pose( Quatf( Vector3f( 0.0f, 1.0f, 0.0f ), 0.0f ), Vector3f( 0.0f, 0.0f, 0.0f ) );
+    const VPosf pose( VQuatf( V3Vectf( 0.0f, 1.0f, 0.0f ), 0.0f ), V3Vectf( 0.0f, 0.0f, 0.0f ) );
 
-	Vector3f defaultScale( 1.0f );
+    V3Vectf defaultScale( 1.0f );
 	VRMenuFontParms fontParms( true, true, false, false, false, 1.0f );
 	
 	VRMenuObjectParms parms( VRMENU_CONTAINER, VArray< VRMenuComponent* >(), VRMenuSurfaceParms(),

@@ -4,21 +4,22 @@
 
 #include "../core/VArray.h"
 #include "../core/VMath.h"
+#include "../core/VBasicmath.h"
 #include "../core/MemBuffer.h"
 
 NV_NAMESPACE_BEGIN
 
 struct VertexAttribs
 {
-    VArray< Vector3f > position;
-    VArray< Vector3f > normal;
-    VArray< Vector3f > tangent;
-    VArray< Vector3f > binormal;
-    VArray< Vector4f > color;
-    VArray< Vector2f > uv0;
-    VArray< Vector2f > uv1;
-    VArray< Vector4i > jointIndices;
-    VArray< Vector4f > jointWeights;
+    VArray< V3Vectf > position;
+    VArray< V3Vectf > normal;
+    VArray< V3Vectf > tangent;
+    VArray< V3Vectf > binormal;
+    VArray< V4Vectf > color;
+    VArray< V2Vectf > uv0;
+    VArray< V2Vectf > uv1;
+    VArray< V4Vecti > jointIndices;
+    VArray< V4Vectf > jointWeights;
 };
 
 typedef unsigned short TriangleIndex;

@@ -297,7 +297,7 @@ const SceneDef & CinemaApp::currentTheater() const
 /*
  * DrawEyeView
  */
-Matrix4f CinemaApp::drawEyeView( const int eye, const float fovDegrees ) {
+VR4Matrixf CinemaApp::drawEyeView( const int eye, const float fovDegrees ) {
 	return m_viewMgr.drawEyeView( eye, fovDegrees );
 }
 
@@ -344,7 +344,7 @@ void CinemaApp::command(const VEvent &event )
  *
  * App override
  */
-Matrix4f CinemaApp::onNewFrame( const VrFrame vrFrame )
+VR4Matrixf CinemaApp::onNewFrame( const VrFrame vrFrame )
 {
 	m_frameCount++;
 	this->m_vrFrame = vrFrame;

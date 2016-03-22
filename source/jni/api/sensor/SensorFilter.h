@@ -1,6 +1,7 @@
 #pragma once
 
 #include "VMath.h"
+#include "VBasicmath.h"
 #include "Deque.h"
 #include "Alg.h"
 
@@ -178,23 +179,23 @@ public:
 // This class maintains a buffer of sensor data taken over time and implements
 // various simple filters, most of which are linear functions of the data history.
 template <typename T>
-class SensorFilter : public SensorFilterBase<Vector3<T> >
+class SensorFilter : public SensorFilterBase<V3Vect<T> >
 {
 public:
-	SensorFilter(int capacity = SensorFilterBase<Vector3<T> >::DefaultCapacity) : SensorFilterBase<Vector3<T> >(capacity) { };
+    SensorFilter(int capacity = SensorFilterBase<V3Vect<T> >::DefaultCapacity) : SensorFilterBase<V3Vect<T> >(capacity) { };
 
     // Simple statistics
-    Vector3<T> Median() const;
-    Vector3<T> Variance() const; // The diagonal of covariance matrix
-    Matrix3<T> Covariance() const;
-    Vector3<T> PearsonCoefficient() const;
+    V3Vect<T> Median() const;
+    V3Vect<T> Variance() const; // The diagonal of covariance matrix
+    VR3Matrix<T> Covariance() const;
+    V3Vect<T> PearsonCoefficient() const;
 };
 
 typedef SensorFilter<float> SensorFilterf;
 typedef SensorFilter<double> SensorFilterd;
 
 // This filter operates on the values that are measured in the body frame and rotate with the device
-class SensorFilterBodyFrame : public SensorFilterBase<Vector3f>
+class SensorFilterBodyFrame : public SensorFilterBase<V3Vectf>
 {
 private:
     // low pass filter gain
@@ -202,17 +203,17 @@ private:
     // sum of squared norms of the values
     float runningTotalLengthSq;
     // cumulative rotation quaternion
-    Quatf Q;
+    VQuatf Q;
     // current low pass filter output
-    Vector3f output;
+    V3Vectf output;
 
     // make private so it isn't used by accident
     // in addition to the normal SensorFilterBase::PushBack, keeps track of running sum of LengthSq
     // for the purpose of variance computations
-    void append(const Vector3f &e)
+    void append(const V3Vectf &e)
     {
         runningTotalLengthSq += this->isFull() ? (e.LengthSq() - this->peekFront().LengthSq()) : e.LengthSq();
-        SensorFilterBase<Vector3f>::append(e);
+        SensorFilterBase<V3Vectf>::append(e);
         if (this->m_end == 0)
         {
             // update the cached total to avoid error accumulation
@@ -223,8 +224,8 @@ private:
     }
 
 public:
-	SensorFilterBodyFrame(int capacity = SensorFilterBase<Vector3f>::DefaultCapacity)
-        : SensorFilterBase<Vector3f>(capacity), gain(2.5),
+    SensorFilterBodyFrame(int capacity = SensorFilterBase<V3Vectf>::DefaultCapacity)
+        : SensorFilterBase<V3Vectf>(capacity), gain(2.5),
           runningTotalLengthSq(0), Q(), output()  { };
 
     // return the scalar variance of the filter values (rotated to be in the same frame)
@@ -248,7 +249,7 @@ public:
     // add a new element to the filter
     // takes rotation increment since the last update
     // in order to rotate the previous value to the current body frame
-    void Update(Vector3f value, float deltaT, Quatf deltaQ = Quatf())
+    void Update(V3Vectf value, float deltaT, VQuatf deltaQ = VQuatf())
     {
         if (this->isEmpty())
         {
@@ -268,7 +269,7 @@ public:
     }
 
     // returns the filter average in the current body frame
-    Vector3f GetFilteredValue() const
+    V3Vectf GetFilteredValue() const
     {
         return Q.Inverted().Rotate(this->Mean());
     }

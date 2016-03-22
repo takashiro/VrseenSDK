@@ -3,6 +3,7 @@
 #include "vglobal.h"
 
 #include "VMath.h"
+#include "VBasicmath.h"
 #include "VArray.h"
 #include "VString.h"
 #include "api/VGlOperation.h"
@@ -110,7 +111,7 @@ struct SurfaceDef
 
 	// We may want a do-not-cull flag for trivial quads and
 	// skybox sorts of geometry.
-	Bounds3f		cullingBounds;
+    VBoxf		cullingBounds;
 
 	// There is a space savings to be had with triangle strips
 	// if primitive restart is supported, but it is a net speed
@@ -154,7 +155,7 @@ struct ModelState
 
 	const ModelDef *	modelDef;
 
-	Matrix4f			modelMatrix;	// row major
+    VR4Matrixf			modelMatrix;	// row major
 
 	// Objects that retain the same modelMatrix for many
 	// frames can sometimes benefit from having a world space
@@ -163,7 +164,7 @@ struct ModelState
 	// because of axializing the rotated bounds.  Not doing it
 	// for now.
 
-	VArray< Matrix4f >	Joints;			// OpenGL column major
+    VArray< VR4Matrixf >	Joints;			// OpenGL column major
 
 	ModelStateFlags		Flags;
 
@@ -189,26 +190,26 @@ struct DrawMatrices
 {
 	// Avoid the overhead from initializing the matrices.
 	DrawMatrices() :
-		Model( Matrix4f::NoInit ),
-		Mvp( Matrix4f::NoInit ) {}
+        Model( VR4Matrixf::NoInit ),
+        Mvp( VR4Matrixf::NoInit ) {}
 
-	Matrix4f	Model;		// OpenGL column major
-	Matrix4f	Mvp;		// OpenGL column major
+    VR4Matrixf	Model;		// OpenGL column major
+    VR4Matrixf	Mvp;		// OpenGL column major
 };
 
 struct DrawSurface
 {
 	void Clear() { matrices = NULL; joints = NULL; surface = NULL; textureOverload = 0; }
 	const DrawMatrices *		matrices;			// OpenGL column major
-	const VArray< Matrix4f > *	joints;				// OpenGL column major
+    const VArray< VR4Matrixf > *	joints;				// OpenGL column major
 	const SurfaceDef *			surface;
 	GLuint						textureOverload;	// if != 0, overload with this texture handle
 };
 
 struct DrawSurfaceList
 {
-	Matrix4f				viewMatrix;				// OpenGL column major
-	Matrix4f				projectionMatrix;		// OpenGL column major
+    VR4Matrixf				viewMatrix;				// OpenGL column major
+    VR4Matrixf				projectionMatrix;		// OpenGL column major
 	int						numCulledSurfaces;		// just for developer feedback
 	int						numDrawSurfaces;
 	const DrawSurface *		drawSurfaces;
@@ -220,7 +221,7 @@ struct DrawSurfaceList
 // Additional, application specific culling or surface insertion can be done on the
 // results of this call before calling DrawSurfaceList.
 const DrawSurfaceList & BuildDrawSurfaceList( const VArray<ModelState> & modelRenderList,
-							const Matrix4f & viewMatrix, const Matrix4f & projectionMatrix );
+                            const VR4Matrixf & viewMatrix, const VR4Matrixf & projectionMatrix );
 
 // Draws a list of surfaces in order.
 // Any sorting or culling should be performed before calling.

@@ -27,26 +27,26 @@ public:
 	bool								IsSelected() const;
 	void								SetSelected( bool const b );
 
-	void								SetLocalPose( const Posef &pose );
-	void								SetLocalPose( const Quatf &orientation, const Vector3f &position );
-	Posef const & 						GetLocalPose() const;
-	Vector3f const &					GetLocalPosition() const;
-	void								SetLocalPosition( Vector3f const & pos );
-	Quatf const &						GetLocalRotation() const;
-	void								SetLocalRotation( Quatf const & rot );
-	Vector3f            				GetLocalScale() const;
-	void								SetLocalScale( Vector3f const & scale );
+    void								SetLocalPose( const VPosf &pose );
+    void								SetLocalPose( const VQuatf &orientation, const V3Vectf &position );
+    VPosf const & 						GetLocalPose() const;
+    V3Vectf const &					GetLocalPosition() const;
+    void								SetLocalPosition( V3Vectf const & pos );
+    VQuatf const &						GetLocalRotation() const;
+    void								SetLocalRotation( VQuatf const & rot );
+    V3Vectf            				GetLocalScale() const;
+    void								SetLocalScale( V3Vectf const & scale );
 	void								SetLocalScale( float const & scale );
 
-	Posef 								GetWorldPose() const;
-	Vector3f 							GetWorldPosition() const;
-	Quatf 								GetWorldRotation() const;
-	Vector3f            				GetWorldScale() const;
+    VPosf 								GetWorldPose() const;
+    V3Vectf 							GetWorldPosition() const;
+    VQuatf 								GetWorldRotation() const;
+    V3Vectf            				GetWorldScale() const;
 
-	Vector2f const &					GetColorTableOffset() const;
-	void								SetColorTableOffset( Vector2f const & ofs );
-	Vector4f const &					GetColor() const;
-	void								SetColor( Vector4f const & c );
+    V2Vectf const &					GetColorTableOffset() const;
+    void								SetColorTableOffset( V2Vectf const & ofs );
+    V4Vectf const &					GetColor() const;
+    void								SetColor( V4Vectf const & c );
 	bool								GetVisible() const;
 	void								SetVisible( const bool visible );
 
@@ -54,21 +54,21 @@ public:
 	void								SetImage( const int surfaceIndex, const eSurfaceTextureType textureType, const GLuint image, const int width, const int height );
 	void								SetImage( const int surfaceIndex, const eSurfaceTextureType textureType, const UITexture &image );
 	void								SetImage( const int surfaceIndex, const eSurfaceTextureType textureType, const UITexture &image, const float dimsX, const float dimsY );
-	void								SetImage( const int surfaceIndex, const eSurfaceTextureType textureType, const UITexture &image, const float dimsX, const float dimsY, const Vector4f &border );
+    void								SetImage( const int surfaceIndex, const eSurfaceTextureType textureType, const UITexture &image, const float dimsX, const float dimsY, const V4Vectf &border );
 	void 								SetImage( const int surfaceIndex, VRMenuSurfaceParms const & parms );
 
 	void 								RegenerateSurfaceGeometry( int const surfaceIndex, const bool freeSurfaceGeometry );
 
-	Vector2f const &					GetSurfaceDims( int const surfaceIndex ) const;
-	void								SetSurfaceDims( int const surfaceIndex, Vector2f const &dims );	// requires call to RegenerateSurfaceGeometry() to take effect
+    V2Vectf const &					GetSurfaceDims( int const surfaceIndex ) const;
+    void								SetSurfaceDims( int const surfaceIndex, V2Vectf const &dims );	// requires call to RegenerateSurfaceGeometry() to take effect
 
-	Vector4f const &					GetSurfaceBorder( int const surfaceIndex );
-	void								SetSurfaceBorder( int const surfaceIndex, Vector4f const & border );	// requires call to RegenerateSurfaceGeometry() to take effect
+    V4Vectf const &					GetSurfaceBorder( int const surfaceIndex );
+    void								SetSurfaceBorder( int const surfaceIndex, V4Vectf const & border );	// requires call to RegenerateSurfaceGeometry() to take effect
 
 	bool								GetSurfaceVisible( int const surfaceIndex ) const;
 	void								SetSurfaceVisible( int const surfaceIndex, const bool visible );
 
-	void								SetLocalBoundsExpand( Vector3f const mins, Vector3f const & maxs );
+    void								SetLocalBoundsExpand( V3Vectf const mins, V3Vectf const & maxs );
 
 	void								AddComponent( VRMenuComponent * component );
 	void								RemoveComponent( VRMenuComponent * component ) ;

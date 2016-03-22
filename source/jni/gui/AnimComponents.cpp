@@ -187,7 +187,7 @@ void OvrTrailsAnimComponent::setFrameVisibilities( App * app, VrFrame const & vr
 		menuHandle_t childHandle = self->getChildHandleForIndex( i );
 		if ( VRMenuObject * childObject = menuMgr.toObject( childHandle ) )
 		{
-			Vector4f color = childObject->color();
+            V4Vectf color = childObject->color();
 			color.w = getAlphaForFrame( i );
 			childObject->setColor( color );
 		}

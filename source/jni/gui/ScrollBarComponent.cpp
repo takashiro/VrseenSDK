@@ -21,9 +21,9 @@ namespace NervGear {
 
 char const * OvrScrollBarComponent::TYPE_NAME = "OvrScrollBarComponent";
 
-static const Vector3f FWD( 0.0f, 0.0f, -1.0f );
-static const Vector3f RIGHT( 1.0f, 0.0f, 0.0f );
-static const Vector3f DOWN( 0.0f, -1.0f, 0.0f );
+static const V3Vectf FWD( 0.0f, 0.0f, -1.0f );
+static const V3Vectf RIGHT( 1.0f, 0.0f, 0.0f );
+static const V3Vectf DOWN( 0.0f, -1.0f, 0.0f );
 
 static const float BASE_THUMB_WIDTH 		= 4.0f;
 static const float THUMB_FROM_BASE_OFFSET 	= 0.001f;
@@ -93,7 +93,7 @@ void OvrScrollBarComponent::setScrollFrac( OvrVRMenuMgr & menuMgr, VRMenuObject 
 	VRMenuObject * thumb = menuMgr.toObject( self->childHandleForId( menuMgr, m_scrollBarThumbId ) );
 	if ( thumb != NULL && m_numOfItems > 0 )
 	{
-		thumb->setSurfaceDims( 0, Vector2f( thumbWidth, thumbHeight ) );
+        thumb->setSurfaceDims( 0, V2Vectf( thumbWidth, thumbHeight ) );
 		thumb->regenerateSurfaceGeometry( 0, false );
 	}
 
@@ -106,7 +106,7 @@ void OvrScrollBarComponent::setScrollFrac( OvrVRMenuMgr & menuMgr, VRMenuObject 
 
 	if ( thumb != NULL  )
 	{
-		Vector3f direction = RIGHT;
+        V3Vectf direction = RIGHT;
 		if ( m_isVertical )
 		{
 			direction = DOWN;
@@ -143,19 +143,19 @@ void OvrScrollBarComponent::updateScrollBar( OvrVRMenuMgr & menuMgr, VRMenuObjec
 	VRMenuObject * thumb = menuMgr.toObject( self->childHandleForId( menuMgr, m_scrollBarThumbId ) );
 	if ( thumb != NULL && m_numOfItems > 0 )
 	{
-		thumb->setSurfaceDims( 0, Vector2f( m_scrollBarThumbWidth, m_scrollBarThumbHeight ) );
+        thumb->setSurfaceDims( 0, V2Vectf( m_scrollBarThumbWidth, m_scrollBarThumbHeight ) );
 		thumb->regenerateSurfaceGeometry( 0, false );
 	}
 
 	VRMenuObject * base = menuMgr.toObject( self->childHandleForId( menuMgr, m_scrollBarBaseId ) );
 	if ( thumb != NULL )
 	{
-		base->setSurfaceDims( 0, Vector2f( m_scrollBarBaseWidth, m_scrollBarBaseHeight ) );
+        base->setSurfaceDims( 0, V2Vectf( m_scrollBarBaseWidth, m_scrollBarBaseHeight ) );
 		base->regenerateSurfaceGeometry( 0, false );
 	}
 }
 
-void OvrScrollBarComponent::setBaseColor( OvrVRMenuMgr & menuMgr, VRMenuObject * self, const Vector4f & color )
+void OvrScrollBarComponent::setBaseColor( OvrVRMenuMgr & menuMgr, VRMenuObject * self, const V4Vectf & color )
 {
 	// Set alpha on the base - move this to somewhere more explicit if needed
 	VRMenuObject * base = menuMgr.toObject( self->childHandleForId( menuMgr, m_scrollBarBaseId ) );
@@ -186,8 +186,8 @@ VString GetImage( eScrollBarImage const type, const bool vertical )
 }
 
 void OvrScrollBarComponent::getScrollBarParms( VRMenu & menu, float scrollBarLength, const VRMenuId_t parentId, const VRMenuId_t rootId, const VRMenuId_t xformId,
-	const VRMenuId_t baseId, const VRMenuId_t thumbId, const Posef & rootLocalPose, const Posef & xformPose, const int startElementIndex, 
-	const int numElements, const bool verticalBar, const Vector4f & thumbBorder, VArray< const VRMenuObjectParms* > & parms )
+    const VRMenuId_t baseId, const VRMenuId_t thumbId, const VPosf & rootLocalPose, const VPosf & xformPose, const int startElementIndex,
+    const int numElements, const bool verticalBar, const V4Vectf & thumbBorder, VArray< const VRMenuObjectParms* > & parms )
 {
 	// Build up the scrollbar parms
 	OvrScrollBarComponent * scrollComponent = new OvrScrollBarComponent( rootId, baseId, thumbId, startElementIndex, numElements );
@@ -199,10 +199,10 @@ void OvrScrollBarComponent::getScrollBarParms( VRMenu & menu, float scrollBarLen
 		comps.append( scrollComponent );
 		VArray< VRMenuSurfaceParms > surfParms;
 		char const * text = "scrollBarRoot";
-		Vector3f scale( 1.0f );
-		Posef pose( rootLocalPose );
-		Posef textPose( Quatf(), Vector3f( 0.0f ) );
-		Vector3f textScale( 1.0f );
+        V3Vectf scale( 1.0f );
+        VPosf pose( rootLocalPose );
+        VPosf textPose( VQuatf(), V3Vectf( 0.0f ) );
+        V3Vectf textScale( 1.0f );
 		VRMenuFontParms fontParms;
 		VRMenuObjectFlags_t objectFlags( VRMENUOBJECT_DONT_HIT_ALL );
 		objectFlags |= VRMENUOBJECT_DONT_RENDER_TEXT;
@@ -219,10 +219,10 @@ void OvrScrollBarComponent::getScrollBarParms( VRMenu & menu, float scrollBarLen
 		VArray< VRMenuComponent* > comps;
 		VArray< VRMenuSurfaceParms > surfParms;
 		char const * text = "scrollBarTransform";
-		Vector3f scale( 1.0f );
-		Posef pose( xformPose );
-		Posef textPose( Quatf(), Vector3f( 0.0f ) );
-		Vector3f textScale( 1.0f );
+        V3Vectf scale( 1.0f );
+        VPosf pose( xformPose );
+        VPosf textPose( VQuatf(), V3Vectf( 0.0f ) );
+        V3Vectf textScale( 1.0f );
 		VRMenuFontParms fontParms;
 		VRMenuObjectFlags_t objectFlags( VRMENUOBJECT_DONT_HIT_ALL );
 		objectFlags |= VRMENUOBJECT_DONT_RENDER_TEXT;
@@ -257,10 +257,10 @@ void OvrScrollBarComponent::getScrollBarParms( VRMenu & menu, float scrollBarLen
 				0, 0, 0, SURFACE_TEXTURE_MAX,
 				0, 0, 0, SURFACE_TEXTURE_MAX );
 		surfParms.append( baseParms );
-		Vector3f scale( 1.0f );
-		Posef pose( Quatf(), Vector3f( 0.0f ) );
-		Posef textPose( Quatf(), Vector3f( 0.0f ) );
-		Vector3f textScale( 1.0f );
+        V3Vectf scale( 1.0f );
+        VPosf pose( VQuatf(), V3Vectf( 0.0f ) );
+        VPosf textPose( VQuatf(), V3Vectf( 0.0f ) );
+        V3Vectf textScale( 1.0f );
 		VRMenuFontParms fontParms;
 		VRMenuObjectFlags_t objectFlags( VRMENUOBJECT_DONT_HIT_ALL );
 		objectFlags |= VRMENUOBJECT_DONT_RENDER_TEXT;
@@ -288,11 +288,11 @@ void OvrScrollBarComponent::getScrollBarParms( VRMenu & menu, float scrollBarLen
 				0, 0, 0, SURFACE_TEXTURE_MAX );
 		//thumbParms.Border = thumbBorder;
 		surfParms.append( thumbParms );
-		Vector3f scale( 1.0f );
-		Posef pose( Quatf(), -FWD * THUMB_FROM_BASE_OFFSET );
+        V3Vectf scale( 1.0f );
+        VPosf pose( VQuatf(), -FWD * THUMB_FROM_BASE_OFFSET );
 		// Since we use left aligned anchors on the base and thumb, we offset the root once to center the scrollbar
-		Posef textPose( Quatf(), Vector3f( 0.0f ) );
-		Vector3f textScale( 1.0f );
+        VPosf textPose( VQuatf(), V3Vectf( 0.0f ) );
+        V3Vectf textScale( 1.0f );
 		VRMenuFontParms fontParms;
 		VRMenuObjectFlags_t objectFlags( VRMENUOBJECT_DONT_HIT_ALL );
 		objectFlags |= VRMENUOBJECT_DONT_RENDER_TEXT;
@@ -390,7 +390,7 @@ eMsgStatus OvrScrollBarComponent::onFrameUpdate( App * app, VrFrame const & vrFr
         const float fadeRate = ( m_fader.fadeState() == Fader::FADE_IN ) ? m_fadeInRate : m_fadeOutRate;
 		m_fader.update( fadeRate, vrFrame.DeltaSeconds );
 		const float CurrentFadeLevel = m_fader.finalAlpha();
-		self->setColor( Vector4f( 1.0f, 1.0f, 1.0f, CurrentFadeLevel ) );
+        self->setColor( V4Vectf( 1.0f, 1.0f, 1.0f, CurrentFadeLevel ) );
 	}
 	else if ( m_fader.fadeAlpha() == 1.0f )
 	{

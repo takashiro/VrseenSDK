@@ -4,6 +4,7 @@
 
 #include "TypesafeNumber.h"
 #include "VMath.h"
+#include "VBasicmath.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -82,10 +83,10 @@ public:
 	virtual void				ClearGhosts() = 0;
 
 	// Called once per frame to update logic.
-	virtual	void				Frame( Matrix4f const & viewMatrix, float const deltaTime ) = 0;
+    virtual	void				Frame( VR4Matrixf const & viewMatrix, float const deltaTime ) = 0;
 
 	// Renders the gaze cursor.
-	virtual void				Render( int const eye, Matrix4f const & mvp ) const = 0;
+    virtual void				Render( int const eye, VR4Matrixf const & mvp ) const = 0;
 
 	// Users should call this function to determine if the gaze cursor is relevant for them.
 	virtual bool				IsActiveForUser( gazeCursorUserId_t const userId ) const = 0;

@@ -29,7 +29,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 namespace NervGear {
 
-void LogMatrix( const char * title, const Matrix4f & m )
+void LogMatrix( const char * title, const VR4Matrixf & m )
 {
 	LOG( "%s:", title );
 	for ( int i = 0; i < 4; i++ )
@@ -39,13 +39,13 @@ void LogMatrix( const char * title, const Matrix4f & m )
 }
 
 #if 0
-static Vector3f	MatrixOrigin( const Matrix4f & m )
+static V3Vectf	MatrixOrigin( const VR4Matrixf & m )
 {
-	return Vector3f( -m.M[0][3], -m.M[1][3], -m.M[2][3] );
+    return V3Vectf( -m.M[0][3], -m.M[1][3], -m.M[2][3] );
 }
-static Vector3f	MatrixForward( const Matrix4f & m )
+static V3Vectf	MatrixForward( const VR4Matrixf & m )
 {
-	return Vector3f( -m.M[2][0], -m.M[2][1], -m.M[2][2] );
+    return V3Vectf( -m.M[2][0], -m.M[2][1], -m.M[2][2] );
 }
 #endif
 
@@ -119,7 +119,7 @@ bool MatchesHead( const char * head, const char * check )
 float LinearRangeMapFloat( float inValue, float inStart, float inEnd, float outStart, float outEnd )
 {
 	float outValue = inValue;
-	if( fabsf(inEnd - inStart) < Mathf::SmallestNonDenormal )
+    if( fabsf(inEnd - inStart) < VConstantsf::SmallestNonDenormal )
 	{
 		return 0.5f*(outStart + outEnd);
 	}
@@ -127,7 +127,7 @@ float LinearRangeMapFloat( float inValue, float inStart, float inEnd, float outS
 	outValue /= (inEnd - inStart);
 	outValue *= (outEnd - outStart);
 	outValue += outStart;
-	if( fabsf( outValue ) < Mathf::SmallestNonDenormal )
+    if( fabsf( outValue ) < VConstantsf::SmallestNonDenormal )
 	{
 		return 0.0f;
 	}

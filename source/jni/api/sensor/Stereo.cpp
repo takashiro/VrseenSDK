@@ -154,10 +154,10 @@ float LensConfig::DistortionFnScaleRadiusSquared (float rsq) const
 }
 
 // x,y,z components map to r,g,b
-Vector3f LensConfig::DistortionFnScaleRadiusSquaredChroma (float rsq) const
+V3Vectf LensConfig::DistortionFnScaleRadiusSquaredChroma (float rsq) const
 {
     float scale = DistortionFnScaleRadiusSquared ( rsq );
-    Vector3f scaleRGB;
+    V3Vectf scaleRGB;
     scaleRGB.x = scale * ( 1.0f + ChromaticAberration[0] + rsq * ChromaticAberration[1] );     // Red
     scaleRGB.y = scale;                                                                        // Green
     scaleRGB.z = scale * ( 1.0f + ChromaticAberration[2] + rsq * ChromaticAberration[3] );     // Blue
@@ -381,8 +381,8 @@ EyePos CalculateEyePositonFromPixelBoundaries ( DistortionRenderDesc const &dist
     // actually finds the center of rotation of the eyeball, not the position of the pupil.
 
     float pixelHeightMiddle = (float)distortionViewport.y + (float)distortionViewport.h * 0.5f;
-    Vector2f edgeTanFovLeft  = TransformScreenPixelToTanFovSpace ( distortionViewport, distortion, Vector2f ( pixelEdgeLeft,  pixelHeightMiddle ) );
-    Vector2f edgeTanFovRight = TransformScreenPixelToTanFovSpace ( distortionViewport, distortion, Vector2f ( pixelEdgeRight, pixelHeightMiddle ) );
+    V2Vectf edgeTanFovLeft  = TransformScreenPixelToTanFovSpace ( distortionViewport, distortion, V2Vectf ( pixelEdgeLeft,  pixelHeightMiddle ) );
+    V2Vectf edgeTanFovRight = TransformScreenPixelToTanFovSpace ( distortionViewport, distortion, V2Vectf ( pixelEdgeRight, pixelHeightMiddle ) );
 
     EyePos retVal;
     // |==L1====L2=====|   <--- lens surface
@@ -1636,13 +1636,13 @@ DistortionRenderDesc CalculateDistortionRenderDesc ( StereoEye eyeType, HmdRende
         localDistortion.Lens = *pLensOverride;
     }
 
-    Sizef pixelsPerMeter(hmd.ResolutionInPixels.Width / ( hmd.ScreenSizeInMeters.Width - hmd.ScreenGapSizeInMeters ),
+    VSizef pixelsPerMeter(hmd.ResolutionInPixels.Width / ( hmd.ScreenSizeInMeters.Width - hmd.ScreenGapSizeInMeters ),
                          hmd.ResolutionInPixels.Height / hmd.ScreenSizeInMeters.Height);
 
     localDistortion.PixelsPerTanAngleAtCenter = (pixelsPerMeter * localDistortion.Lens.MetersPerTanAngleAtCenter).ToVector();
     // Same thing, scaled to [-1,1] for each eye, rather than pixels.
 
-    localDistortion.TanEyeAngleScale = Vector2f(0.25f, 0.5f).EntrywiseMultiply(
+    localDistortion.TanEyeAngleScale = V2Vectf(0.25f, 0.5f).EntrywiseMultiply(
                                        (hmd.ScreenSizeInMeters / localDistortion.Lens.MetersPerTanAngleAtCenter).ToVector());
 
     // <--------------left eye------------------><-ScreenGapSizeInMeters-><--------------right eye----------------->
@@ -1755,7 +1755,7 @@ FovPort GetPhysicalScreenFov ( StereoEye eyeType, DistortionRenderDesc const &di
 
     // Figure out the boundaries of the screen. We take the middle pixel of the screen,
     // move to each of the four screen edges, and transform those back into TanAngle space.
-    Vector2f dmiddle = distortion.LensCenter;
+    V2Vectf dmiddle = distortion.LensCenter;
 
     // The gotcha is that for some distortion functions, the map will "wrap around"
     // for screen pixels that are not actually visible to the user (especially on DK1,
@@ -1766,7 +1766,7 @@ FovPort GetPhysicalScreenFov ( StereoEye eyeType, DistortionRenderDesc const &di
     // Solution - step gradually towards the boundary, noting the maximum distance.
     struct FunctionHider
     {
-        static FovPort FindRange ( Vector2f from, Vector2f to, int numSteps,
+        static FovPort FindRange ( V2Vectf from, V2Vectf to, int numSteps,
                                           DistortionRenderDesc const &distortion )
         {
             FovPort result;
@@ -1779,8 +1779,8 @@ FovPort GetPhysicalScreenFov ( StereoEye eyeType, DistortionRenderDesc const &di
             for ( int step = 0; step < numSteps; step++ )
             {
                 float    lerpFactor  = stepScale * (float)step;
-                Vector2f sample      = from + (to - from) * lerpFactor;
-                Vector2f tanEyeAngle = TransformScreenNDCToTanFovSpace ( distortion, sample );
+                V2Vectf sample      = from + (to - from) * lerpFactor;
+                V2Vectf tanEyeAngle = TransformScreenNDCToTanFovSpace ( distortion, sample );
 
                 result.LeftTan  = Alg::Max ( result.LeftTan,  -tanEyeAngle.x );
                 result.RightTan = Alg::Max ( result.RightTan,  tanEyeAngle.x );
@@ -1791,10 +1791,10 @@ FovPort GetPhysicalScreenFov ( StereoEye eyeType, DistortionRenderDesc const &di
         }
     };
 
-    FovPort leftFovPort  = FunctionHider::FindRange( dmiddle, Vector2f( -1.0f, dmiddle.y ), 10, distortion );
-    FovPort rightFovPort = FunctionHider::FindRange( dmiddle, Vector2f( 1.0f, dmiddle.y ),  10, distortion );
-    FovPort upFovPort    = FunctionHider::FindRange( dmiddle, Vector2f( dmiddle.x, -1.0f ), 10, distortion );
-    FovPort downFovPort  = FunctionHider::FindRange( dmiddle, Vector2f( dmiddle.x, 1.0f ),  10, distortion );
+    FovPort leftFovPort  = FunctionHider::FindRange( dmiddle, V2Vectf( -1.0f, dmiddle.y ), 10, distortion );
+    FovPort rightFovPort = FunctionHider::FindRange( dmiddle, V2Vectf( 1.0f, dmiddle.y ),  10, distortion );
+    FovPort upFovPort    = FunctionHider::FindRange( dmiddle, V2Vectf( dmiddle.x, -1.0f ), 10, distortion );
+    FovPort downFovPort  = FunctionHider::FindRange( dmiddle, V2Vectf( dmiddle.x, 1.0f ),  10, distortion );
 
     resultFovPort.LeftTan  = leftFovPort.LeftTan;
     resultFovPort.RightTan = rightFovPort.RightTan;
@@ -1817,10 +1817,10 @@ FovPort ClampToPhysicalScreenFov( StereoEye eyeType, DistortionRenderDesc const 
     return resultFovPort;
 }
 
-Sizei CalculateIdealPixelSize ( DistortionRenderDesc const &distortion,
+VSizei CalculateIdealPixelSize ( DistortionRenderDesc const &distortion,
                                 FovPort tanHalfFov, float pixelsPerDisplayPixel )
 {
-    Sizei result;
+    VSizei result;
     // TODO: if the app passes in a FOV that doesn't cover the centre, use the distortion values for the nearest edge/corner to match pixel size.
     result.Width  = (int)(0.5f + pixelsPerDisplayPixel * distortion.PixelsPerTanAngleAtCenter.x * ( tanHalfFov.LeftTan + tanHalfFov.RightTan ) );
     result.Height = (int)(0.5f + pixelsPerDisplayPixel * distortion.PixelsPerTanAngleAtCenter.y * ( tanHalfFov.UpTan   + tanHalfFov.DownTan  ) );
@@ -1841,11 +1841,11 @@ Viewport GetFramebufferViewport ( StereoEye eyeType, HmdRenderInfo const &hmd )
     return result;
 }
 
-Matrix4f CreateProjection( bool rightHanded, FovPort tanHalfFov,
+VR4Matrixf CreateProjection( bool rightHanded, FovPort tanHalfFov,
                            float zNear /*= 0.01f*/, float zFar /*= 10000.0f*/ )
 {
-    // Cribbed from Matrix4f::PerspectiveRH()
-    Matrix4f projection;
+    // Cribbed from VR4Matrixf::PerspectiveRH()
+    VR4Matrixf projection;
     // Produces X result, mapping clip edges to [-w,+w]
     float projXScale = 2.0f / ( tanHalfFov.LeftTan + tanHalfFov.RightTan );
     float projXOffset = ( tanHalfFov.RightTan - tanHalfFov.LeftTan ) * projXScale * 0.5f;
@@ -1886,7 +1886,7 @@ Matrix4f CreateProjection( bool rightHanded, FovPort tanHalfFov,
 }
 
 
-ScaleAndOffset2D CreateNDCScaleAndOffsetFromProjection ( bool rightHanded, Matrix4f projection )
+ScaleAndOffset2D CreateNDCScaleAndOffsetFromProjection ( bool rightHanded, VR4Matrixf projection )
 {
     float offsetScale = 1.0f;
     if ( rightHanded )
@@ -1899,8 +1899,8 @@ ScaleAndOffset2D CreateNDCScaleAndOffsetFromProjection ( bool rightHanded, Matri
     // This is very simple, since this is already what projection matrices almost do.
     // The exception is NDC wants [-1,-1] to be at top-left, not bottom-left.
     ScaleAndOffset2D result;
-    result.Scale    = Vector2f(projection.M[0][0], projection.M[1][1]);
-    result.Offset   = Vector2f(projection.M[0][2] * offsetScale, projection.M[1][2] * -offsetScale);
+    result.Scale    = V2Vectf(projection.M[0][0], projection.M[1][1]);
+    result.Offset   = V2Vectf(projection.M[0][2] * offsetScale, projection.M[1][2] * -offsetScale);
     // Hey - why is that Y.Offset negated?
     // It's because a projection matrix transforms from world coords with Y=up,
     // whereas this is from NDC which is Y=down.
@@ -1912,7 +1912,7 @@ ScaleAndOffset2D CreateNDCScaleAndOffsetFromProjection ( bool rightHanded, Matri
 
 ScaleAndOffset2D CreateUVScaleAndOffsetfromNDCScaleandOffset ( ScaleAndOffset2D scaleAndOffsetNDC,
                                                                Viewport renderedViewport,
-                                                               Sizei renderTargetSize )
+                                                               VSizei renderTargetSize )
 {
     // scaleAndOffsetNDC takes you to NDC space [-1,+1] within the given viewport on the rendertarget.
     // We want a scale to instead go to actual UV coordinates you can sample with,
@@ -1920,12 +1920,12 @@ ScaleAndOffset2D CreateUVScaleAndOffsetfromNDCScaleandOffset ( ScaleAndOffset2D 
     ScaleAndOffset2D result;
     // Scale [-1,1] to [0,1]
     result.Scale  = scaleAndOffsetNDC.Scale * 0.5f;
-    result.Offset = scaleAndOffsetNDC.Offset * 0.5f + Vector2f(0.5f);
+    result.Offset = scaleAndOffsetNDC.Offset * 0.5f + V2Vectf(0.5f);
 
     // ...but we will have rendered to a subsection of the RT, so scale for that.
-    Vector2f scale(  (float)renderedViewport.w / (float)renderTargetSize.Width,
+    V2Vectf scale(  (float)renderedViewport.w / (float)renderTargetSize.Width,
                      (float)renderedViewport.h / (float)renderTargetSize.Height );
-    Vector2f offset( (float)renderedViewport.x / (float)renderTargetSize.Width,
+    V2Vectf offset( (float)renderedViewport.x / (float)renderTargetSize.Width,
                      (float)renderedViewport.y / (float)renderTargetSize.Height );
 
 	result.Scale  = result.Scale.EntrywiseMultiply(scale);
@@ -1935,11 +1935,11 @@ ScaleAndOffset2D CreateUVScaleAndOffsetfromNDCScaleandOffset ( ScaleAndOffset2D 
 
 
 
-Matrix4f CreateOrthoSubProjection ( bool rightHanded, StereoEye eyeType,
+VR4Matrixf CreateOrthoSubProjection ( bool rightHanded, StereoEye eyeType,
                                     float tanHalfFovX, float tanHalfFovY,
                                     float unitsX, float unitsY,
                                     float distanceFromCamera, float interpupillaryDistance,
-                                    Matrix4f const &projection,
+                                    VR4Matrixf const &projection,
                                     float zNear /*= 0.0f*/, float zFar /*= 0.0f*/ )
 {
     OVR_UNUSED1 ( rightHanded );
@@ -1979,7 +1979,7 @@ Matrix4f CreateOrthoSubProjection ( bool rightHanded, StereoEye eyeType,
 
     float orthoScaleX = 2.0f * tanHalfFovX / unitsX;
     float orthoScaleY = 2.0f * tanHalfFovY / unitsY;
-    Matrix4f ortho;
+    VR4Matrixf ortho;
     ortho.M[0][0] = projection.M[0][0] * orthoScaleX;
     ortho.M[0][1] = 0.0f;
     ortho.M[0][2] = 0.0f;
@@ -2019,18 +2019,18 @@ Matrix4f CreateOrthoSubProjection ( bool rightHanded, StereoEye eyeType,
 // A set of "forward-mapping" functions, mapping from framebuffer space to real-world and/or texture space.
 
 // This mimics the first half of the distortion shader's function.
-Vector2f TransformScreenNDCToTanFovSpace( DistortionRenderDesc const &distortion,
-                                          const Vector2f &framebufferNDC )
+V2Vectf TransformScreenNDCToTanFovSpace( DistortionRenderDesc const &distortion,
+                                          const V2Vectf &framebufferNDC )
 {
     // Scale to TanHalfFov space, but still distorted.
-    Vector2f tanEyeAngleDistorted;
+    V2Vectf tanEyeAngleDistorted;
     tanEyeAngleDistorted.x = ( framebufferNDC.x - distortion.LensCenter.x ) * distortion.TanEyeAngleScale.x;
     tanEyeAngleDistorted.y = ( framebufferNDC.y - distortion.LensCenter.y ) * distortion.TanEyeAngleScale.y;
     // Distort.
     float radiusSquared = ( tanEyeAngleDistorted.x * tanEyeAngleDistorted.x )
                         + ( tanEyeAngleDistorted.y * tanEyeAngleDistorted.y );
     float distortionScale = distortion.Lens.DistortionFnScaleRadiusSquared ( radiusSquared );
-    Vector2f tanEyeAngle;
+    V2Vectf tanEyeAngle;
     tanEyeAngle.x = tanEyeAngleDistorted.x * distortionScale;
     tanEyeAngle.y = tanEyeAngleDistorted.y * distortionScale;
 
@@ -2038,72 +2038,72 @@ Vector2f TransformScreenNDCToTanFovSpace( DistortionRenderDesc const &distortion
 }
 
 // Same, with chromatic aberration correction.
-void TransformScreenNDCToTanFovSpaceChroma ( Vector2f *resultR, Vector2f *resultG, Vector2f *resultB,
+void TransformScreenNDCToTanFovSpaceChroma ( V2Vectf *resultR, V2Vectf *resultG, V2Vectf *resultB,
                                              DistortionRenderDesc const &distortion,
-                                             const Vector2f &framebufferNDC )
+                                             const V2Vectf &framebufferNDC )
 {
     // Scale to TanHalfFov space, but still distorted.
-    Vector2f tanEyeAngleDistorted;
+    V2Vectf tanEyeAngleDistorted;
     tanEyeAngleDistorted.x = ( framebufferNDC.x - distortion.LensCenter.x ) * distortion.TanEyeAngleScale.x;
     tanEyeAngleDistorted.y = ( framebufferNDC.y - distortion.LensCenter.y ) * distortion.TanEyeAngleScale.y;
     // Distort.
     float radiusSquared = ( tanEyeAngleDistorted.x * tanEyeAngleDistorted.x )
                         + ( tanEyeAngleDistorted.y * tanEyeAngleDistorted.y );
-    Vector3f distortionScales = distortion.Lens.DistortionFnScaleRadiusSquaredChroma ( radiusSquared );
+    V3Vectf distortionScales = distortion.Lens.DistortionFnScaleRadiusSquaredChroma ( radiusSquared );
     *resultR = tanEyeAngleDistorted * distortionScales.x;
     *resultG = tanEyeAngleDistorted * distortionScales.y;
     *resultB = tanEyeAngleDistorted * distortionScales.z;
 }
 
 // This mimics the second half of the distortion shader's function.
-Vector2f TransformTanFovSpaceToRendertargetTexUV( StereoEyeParams const &eyeParams,
-                                                  Vector2f const &tanEyeAngle )
+V2Vectf TransformTanFovSpaceToRendertargetTexUV( StereoEyeParams const &eyeParams,
+                                                  V2Vectf const &tanEyeAngle )
 {
-    Vector2f textureUV;
+    V2Vectf textureUV;
     textureUV.x = tanEyeAngle.x * eyeParams.EyeToSourceUV.Scale.x + eyeParams.EyeToSourceUV.Offset.x;
     textureUV.y = tanEyeAngle.y * eyeParams.EyeToSourceUV.Scale.y + eyeParams.EyeToSourceUV.Offset.y;
     return textureUV;
 }
 
-Vector2f TransformTanFovSpaceToRendertargetNDC( StereoEyeParams const &eyeParams,
-                                                Vector2f const &tanEyeAngle )
+V2Vectf TransformTanFovSpaceToRendertargetNDC( StereoEyeParams const &eyeParams,
+                                                V2Vectf const &tanEyeAngle )
 {
-    Vector2f textureNDC;
+    V2Vectf textureNDC;
     textureNDC.x = tanEyeAngle.x * eyeParams.EyeToSourceNDC.Scale.x + eyeParams.EyeToSourceNDC.Offset.x;
     textureNDC.y = tanEyeAngle.y * eyeParams.EyeToSourceNDC.Scale.y + eyeParams.EyeToSourceNDC.Offset.y;
     return textureNDC;
 }
 
-Vector2f TransformScreenPixelToScreenNDC( Viewport const &distortionViewport,
-                                          Vector2f const &pixel )
+V2Vectf TransformScreenPixelToScreenNDC( Viewport const &distortionViewport,
+                                          V2Vectf const &pixel )
 {
     // Move to [-1,1] NDC coords.
-    Vector2f framebufferNDC;
+    V2Vectf framebufferNDC;
     framebufferNDC.x = -1.0f + 2.0f * ( ( pixel.x - (float)distortionViewport.x ) / (float)distortionViewport.w );
     framebufferNDC.y = -1.0f + 2.0f * ( ( pixel.y - (float)distortionViewport.y ) / (float)distortionViewport.h );
     return framebufferNDC;
 }
 
-Vector2f TransformScreenPixelToTanFovSpace( Viewport const &distortionViewport,
+V2Vectf TransformScreenPixelToTanFovSpace( Viewport const &distortionViewport,
                                             DistortionRenderDesc const &distortion,
-                                            Vector2f const &pixel )
+                                            V2Vectf const &pixel )
 {
     return TransformScreenNDCToTanFovSpace( distortion,
                 TransformScreenPixelToScreenNDC( distortionViewport, pixel ) );
 }
 
-Vector2f TransformScreenNDCToRendertargetTexUV( DistortionRenderDesc const &distortion,
+V2Vectf TransformScreenNDCToRendertargetTexUV( DistortionRenderDesc const &distortion,
                                                 StereoEyeParams const &eyeParams,
-                                                Vector2f const &pixel )
+                                                V2Vectf const &pixel )
 {
     return TransformTanFovSpaceToRendertargetTexUV ( eyeParams,
                 TransformScreenNDCToTanFovSpace ( distortion, pixel ) );
 }
 
-Vector2f TransformScreenPixelToRendertargetTexUV( Viewport const &distortionViewport,
+V2Vectf TransformScreenPixelToRendertargetTexUV( Viewport const &distortionViewport,
                                                   DistortionRenderDesc const &distortion,
                                                   StereoEyeParams const &eyeParams,
-                                                  Vector2f const &pixel )
+                                                  V2Vectf const &pixel )
 {
     return TransformTanFovSpaceToRendertargetTexUV ( eyeParams,
                 TransformScreenPixelToTanFovSpace ( distortionViewport, distortion, pixel ) );
@@ -2113,8 +2113,8 @@ Vector2f TransformScreenPixelToRendertargetTexUV( Viewport const &distortionView
 //-----------------------------------------------------------------------------------
 // A set of "reverse-mapping" functions, mapping from real-world and/or texture space back to the framebuffer.
 
-Vector2f TransformTanFovSpaceToScreenNDC( DistortionRenderDesc const &distortion,
-                                          const Vector2f &tanEyeAngle, bool usePolyApprox /*= false*/ )
+V2Vectf TransformTanFovSpaceToScreenNDC( DistortionRenderDesc const &distortion,
+                                          const V2Vectf &tanEyeAngle, bool usePolyApprox /*= false*/ )
 {
     float tanEyeAngleRadius = tanEyeAngle.Length();
     float tanEyeAngleDistortedRadius = distortion.Lens.DistortionFnInverseApprox ( tanEyeAngleRadius );
@@ -2122,23 +2122,23 @@ Vector2f TransformTanFovSpaceToScreenNDC( DistortionRenderDesc const &distortion
     {
         tanEyeAngleDistortedRadius = distortion.Lens.DistortionFnInverse ( tanEyeAngleRadius );
     }
-    Vector2f tanEyeAngleDistorted = tanEyeAngle;
+    V2Vectf tanEyeAngleDistorted = tanEyeAngle;
     if ( tanEyeAngleRadius > 0.0f )
     {
         tanEyeAngleDistorted = tanEyeAngle * ( tanEyeAngleDistortedRadius / tanEyeAngleRadius );
     }
 
-    Vector2f framebufferNDC;
+    V2Vectf framebufferNDC;
     framebufferNDC.x = ( tanEyeAngleDistorted.x / distortion.TanEyeAngleScale.x ) + distortion.LensCenter.x;
     framebufferNDC.y = ( tanEyeAngleDistorted.y / distortion.TanEyeAngleScale.y ) + distortion.LensCenter.y;
 
     return framebufferNDC;
 }
 
-Vector2f TransformRendertargetNDCToTanFovSpace( StereoEyeParams const &eyeParams,
-                                                Vector2f const &textureNDC )
+V2Vectf TransformRendertargetNDCToTanFovSpace( StereoEyeParams const &eyeParams,
+                                                V2Vectf const &textureNDC )
 {
-    Vector2f tanEyeAngle;
+    V2Vectf tanEyeAngle;
     tanEyeAngle.x = ( textureNDC.x - eyeParams.EyeToSourceNDC.Offset.x ) / eyeParams.EyeToSourceNDC.Scale.x;
     tanEyeAngle.y = ( textureNDC.y - eyeParams.EyeToSourceNDC.Offset.y ) / eyeParams.EyeToSourceNDC.Scale.y;
     return tanEyeAngle;

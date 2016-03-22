@@ -38,8 +38,8 @@ protected:
     SensorDevice* pSensor;
 
     // Factory calibration data
-    Matrix4f AccelMatrix, GyroMatrix;
-    Vector3f AccelOffset;
+    VR4Matrixf AccelMatrix, GyroMatrix;
+    V3Vectf AccelOffset;
 
     // Temperature based data
     VArray<VArray<TemperatureReport> > TemperatureReports;
@@ -47,7 +47,7 @@ protected:
 
     // Autocalibration data
     SensorFilterf GyroFilter;
-    Vector3f GyroAutoOffset;
+    V3Vectf GyroAutoOffset;
     float GyroAutoTemperature;
 
 #ifdef USE_LOCAL_TEMPERATURE_CALIBRATION_STORAGE

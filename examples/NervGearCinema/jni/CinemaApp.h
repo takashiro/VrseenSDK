@@ -23,7 +23,7 @@ public:
     void init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI ) override;
     void shutdown() override;
 
-    Matrix4f drawEyeView( const int eye, const float fovDegrees ) override;
+    VR4Matrixf drawEyeView( const int eye, const float fovDegrees ) override;
 
     void configureVrMode(ovrModeParms & modeParms) override;
 
@@ -31,7 +31,7 @@ public:
     bool onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType ) override;
 
 	// Called by App loop
-    Matrix4f onNewFrame( const VrFrame m_vrFrame ) override;
+    VR4Matrixf onNewFrame( const VrFrame m_vrFrame ) override;
 
     void			    	setPlaylist( const VArray<const MovieDef *> &playList, const int nextMovie );
     void			    	setMovie( const MovieDef * nextMovie );

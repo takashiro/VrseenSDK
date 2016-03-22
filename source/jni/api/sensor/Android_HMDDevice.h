@@ -49,8 +49,8 @@ protected:
     }                   Desktop;
     unsigned int        Contents;
 
-    Sizei               ResolutionInPixels;
-    Sizef               ScreenSizeInMeters;
+    VSizei               ResolutionInPixels;
+    VSizef               ScreenSizeInMeters;
 
     // TODO: add VCenterFromTopInMeters, LensSeparationInMeters and LensDiameterInMeters
     DistortionEqnType   DistortionEqn;
@@ -92,8 +92,8 @@ public:
     {
         Desktop.X = x;
         Desktop.Y = y;
-        ResolutionInPixels = Sizei(hres, vres);
-        ScreenSizeInMeters = Sizef(hsize, vsize);
+        ResolutionInPixels = VSizei(hres, vres);
+        ScreenSizeInMeters = VSizef(hsize, vsize);
         Contents |= Contents_Screen;
     }
     void SetDistortion(const float* dks)

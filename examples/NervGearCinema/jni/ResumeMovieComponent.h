@@ -18,9 +18,9 @@ public:
 
 	VRMenuObject * 			Icon;
 
-	static const Vector4f	HighlightColor;
-	static const Vector4f	FocusColor;
-	static const Vector4f	NormalColor;
+    static const V4Vectf	HighlightColor;
+    static const V4Vectf	FocusColor;
+    static const V4Vectf	NormalColor;
 
 private:
     SoundLimiter			Sound;

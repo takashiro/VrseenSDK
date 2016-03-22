@@ -37,7 +37,7 @@ namespace NervGear
 
 	//=======================================================
 	//  OvrSwipeHintComponent::CreateSwipeSuggestionIndicator
-	menuHandle_t OvrSwipeHintComponent::CreateSwipeSuggestionIndicator( App * appPtr, VRMenu * rootMenu, const menuHandle_t rootHandle, const int menuId, const char * img, const Posef pose, const Vector3f direction )
+    menuHandle_t OvrSwipeHintComponent::CreateSwipeSuggestionIndicator( App * appPtr, VRMenu * rootMenu, const menuHandle_t rootHandle, const int menuId, const char * img, const VPosf pose, const V3Vectf direction )
 	{
 		const int NumSwipeTrails = 3;
 		int imgWidth, imgHeight;
@@ -48,7 +48,7 @@ namespace NervGear
 		VRMenuId_t swipeHintId( menuId );
 		VArray< VRMenuObjectParms const * > parms;
 		VRMenuObjectParms parm( VRMENU_CONTAINER, VArray< VRMenuComponent* >(), VRMenuSurfaceParms(),
-								"swipe hint root", pose, Vector3f( 1.0f ), VRMenuFontParms(),
+                                "swipe hint root", pose, V3Vectf( 1.0f ), VRMenuFontParms(),
 								swipeHintId, VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_ALL ),
 								VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 		parms.append( &parm );
@@ -62,7 +62,7 @@ namespace NervGear
 												0, 0, 0, SURFACE_TEXTURE_MAX,
 												0, 0, 0, SURFACE_TEXTURE_MAX );
 
-		Posef swipePose = pose;
+        VPosf swipePose = pose;
 		for( int i = 0; i < NumSwipeTrails; i++ )
 		{
 			swipePose.Position.y = ( imgHeight * ( i + 2 ) ) * 0.5f * direction.y * VRMenuObject::DEFAULT_TEXEL_SCALE;
@@ -74,7 +74,7 @@ namespace NervGear
 			hintArrowComp->show( ovr_GetTimeInSeconds() );
 
 			VRMenuObjectParms * swipeIconLeftParms = new VRMenuObjectParms( VRMENU_STATIC, hintArrowComps,
-				swipeHintSurfParms, "", swipePose, Vector3f( 1.0f ), fontParms, VRMenuId_t(),
+                swipeHintSurfParms, "", swipePose, V3Vectf( 1.0f ), fontParms, VRMenuId_t(),
 				VRMenuObjectFlags_t( VRMENUOBJECT_FLAG_NO_DEPTH ) | VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_ALL ),
 				VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 			parms.append( swipeIconLeftParms );
@@ -95,7 +95,7 @@ namespace NervGear
 		m_shouldShow 			= false;
 		const double now 	= ovr_GetTimeInSeconds();
 		m_totalAlpha.set( now, m_totalAlpha.value( now ), now, 0.0f );
-		self->setColor( Vector4f( 1.0f, 1.0f, 1.0f, 0.0f ) );
+        self->setColor( V4Vectf( 1.0f, 1.0f, 1.0f, 0.0f ) );
 	}
 
 	//==============================
@@ -177,7 +177,7 @@ namespace NervGear
 			}
 		}
 
-		self->setColor( Vector4f( 1.0f, 1.0f, 1.0f, alpha ) );
+        self->setColor( V4Vectf( 1.0f, 1.0f, 1.0f, alpha ) );
 
 		return MSG_STATUS_ALIVE;
 	}

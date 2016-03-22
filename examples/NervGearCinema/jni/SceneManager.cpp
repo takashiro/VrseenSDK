@@ -96,22 +96,22 @@ void SceneManager::OneTimeShutdown()
 
 //=========================================================================================
 
-static Vector3f MatrixUp( const Matrix4f & m )
+static V3Vectf MatrixUp( const VR4Matrixf & m )
 {
-	return Vector3f( m.M[1][0], m.M[1][1], m.M[1][2] );
+    return V3Vectf( m.M[1][0], m.M[1][1], m.M[1][2] );
 }
 
-static Vector3f MatrixForward( const Matrix4f & m )
+static V3Vectf MatrixForward( const VR4Matrixf & m )
 {
-	return Vector3f( -m.M[2][0], -m.M[2][1], -m.M[2][2] );
+    return V3Vectf( -m.M[2][0], -m.M[2][1], -m.M[2][2] );
 }
 
-static Vector3f AnglesForMatrix( const Matrix4f &m )
+static V3Vectf AnglesForMatrix( const VR4Matrixf &m )
 {
-	const Vector3f viewForward = MatrixForward( m );
-	const Vector3f viewUp = MatrixUp( m );
+    const V3Vectf viewForward = MatrixForward( m );
+    const V3Vectf viewUp = MatrixUp( m );
 
-	Vector3f angles;
+    V3Vectf angles;
 
 	angles.z = 0.0f;
 
@@ -238,7 +238,7 @@ void SceneManager::SetSceneModel( const SceneDef &sceneDef )
 	FreeScreenActive = false;
 	if ( SceneInfo.UseFreeScreen )
 	{
-		Vector3f angles = AnglesForMatrix( Scene.ViewMatrix );
+        V3Vectf angles = AnglesForMatrix( Scene.ViewMatrix );
 		angles.x = 0.0f;
 		angles.z = 0.0f;
 		SetFreeScreenAngles( angles );
@@ -308,44 +308,44 @@ void SceneManager::SetSceneProgram( const sceneProgram_t opaqueProgram, const sc
 
 //=========================================================================================
 
-static Vector3f ViewOrigin( const Matrix4f & view )
+static V3Vectf ViewOrigin( const VR4Matrixf & view )
 {
-	return Vector3f( view.M[0][3], view.M[1][3], view.M[2][3] );
+    return V3Vectf( view.M[0][3], view.M[1][3], view.M[2][3] );
 }
 
-Posef SceneManager::GetScreenPose() const
+VPosf SceneManager::GetScreenPose() const
 {
 	if ( FreeScreenActive )
 	{
 		const float applyScale = pow( 2.0f, FreeScreenScale );
-		const Matrix4f screenMvp = FreeScreenOrientation *
-				Matrix4f::Translation( 0, 0, -FreeScreenDistance*applyScale ) *
-				Matrix4f::Scaling( applyScale, applyScale * (3.0f/4.0f), applyScale );
+        const VR4Matrixf screenMvp = FreeScreenOrientation *
+                VR4Matrixf::Translation( 0, 0, -FreeScreenDistance*applyScale ) *
+                VR4Matrixf::Scaling( applyScale, applyScale * (3.0f/4.0f), applyScale );
 
-		return Posef( Quatf( FreeScreenOrientation ), ViewOrigin( screenMvp ) );
+        return VPosf( VQuatf( FreeScreenOrientation ), ViewOrigin( screenMvp ) );
 	}
 	else
 	{
-		Vector3f pos = SceneScreenBounds.GetCenter();
-		return Posef( Quatf(), pos );
+        V3Vectf pos = SceneScreenBounds.GetCenter();
+        return VPosf( VQuatf(), pos );
 	}
 }
 
-Vector2f SceneManager::GetScreenSize() const
+V2Vectf SceneManager::GetScreenSize() const
 {
 	if ( FreeScreenActive )
 	{
-		Vector3f size = GetFreeScreenScale();
-		return Vector2f( size.x * 2.0f, size.y * 2.0f );
+        V3Vectf size = GetFreeScreenScale();
+        return V2Vectf( size.x * 2.0f, size.y * 2.0f );
 	}
 	else
 	{
-		Vector3f size = SceneScreenBounds.GetSize();
-		return Vector2f( size.x, size.y );
+        V3Vectf size = SceneScreenBounds.GetSize();
+        return V2Vectf( size.x, size.y );
 	}
 }
 
-Vector3f SceneManager::GetFreeScreenScale() const
+V3Vectf SceneManager::GetFreeScreenScale() const
 {
 	// Scale is stored in a form that feels linear, raise to exponent to
 	// get value to apply.
@@ -360,22 +360,22 @@ Vector3f SceneManager::GetFreeScreenScale() const
 		scaleY = 0.6f;
 	}
 
-	return Vector3f( applyScale * scaleX, applyScale * scaleY, applyScale );
+    return V3Vectf( applyScale * scaleX, applyScale * scaleY, applyScale );
 }
 
-Matrix4f SceneManager::FreeScreenMatrix() const
+VR4Matrixf SceneManager::FreeScreenMatrix() const
 {
-	const Vector3f scale = GetFreeScreenScale();
+    const V3Vectf scale = GetFreeScreenScale();
 	return FreeScreenOrientation *
-			Matrix4f::Translation( 0, 0, -FreeScreenDistance * scale.z ) *
-			Matrix4f::Scaling( scale );
+            VR4Matrixf::Translation( 0, 0, -FreeScreenDistance * scale.z ) *
+            VR4Matrixf::Scaling( scale );
 }
 
 // Aspect is width / height
-Matrix4f SceneManager::BoundsScreenMatrix( const Bounds3f & bounds, const float movieAspect ) const
+VR4Matrixf SceneManager::BoundsScreenMatrix( const VBoxf & bounds, const float movieAspect ) const
 {
-	const Vector3f size = bounds.b[1] - bounds.b[0];
-	const Vector3f center = bounds.b[0] + size * 0.5f;
+    const V3Vectf size = bounds.b[1] - bounds.b[0];
+    const V3Vectf center = bounds.b[0] + size * 0.5f;
 	const float	screenHeight = size.y;
 	const float screenWidth = NervGear::Alg::Max( size.x, size.z );
 	float widthScale;
@@ -394,12 +394,12 @@ Matrix4f SceneManager::BoundsScreenMatrix( const Bounds3f & bounds, const float 
 
 	const float rotateAngle = ( size.x > size.z ) ? 0.0f : M_PI * 0.5f;
 
-	return	Matrix4f::Translation( center ) *
-			Matrix4f::RotationY( rotateAngle ) *
-			Matrix4f::Scaling( widthScale, heightScale, 1.0f );
+    return	VR4Matrixf::Translation( center ) *
+            VR4Matrixf::RotationY( rotateAngle ) *
+            VR4Matrixf::Scaling( widthScale, heightScale, 1.0f );
 }
 
-Matrix4f SceneManager::ScreenMatrix() const
+VR4Matrixf SceneManager::ScreenMatrix() const
 {
 	if ( FreeScreenActive )
 	{
@@ -438,21 +438,21 @@ void SceneManager::ClearMovie()
 	MovieTexture = NULL;
 }
 
-void SceneManager::SetFreeScreenAngles( const Vector3f &angles )
+void SceneManager::SetFreeScreenAngles( const V3Vectf &angles )
 {
 	FreeScreenAngles = angles;
 
-	Matrix4f rollPitchYaw = Matrix4f::RotationY( FreeScreenAngles.y ) * Matrix4f::RotationX( FreeScreenAngles.x );
-	const Vector3f ForwardVector( 0.0f, 0.0f, -1.0f );
-	const Vector3f UpVector( 0.0f, 1.0f, 0.0f );
-	const Vector3f forward = rollPitchYaw.Transform( ForwardVector );
-	const Vector3f up = rollPitchYaw.Transform( UpVector );
+    VR4Matrixf rollPitchYaw = VR4Matrixf::RotationY( FreeScreenAngles.y ) * VR4Matrixf::RotationX( FreeScreenAngles.x );
+    const V3Vectf ForwardVector( 0.0f, 0.0f, -1.0f );
+    const V3Vectf UpVector( 0.0f, 1.0f, 0.0f );
+    const V3Vectf forward = rollPitchYaw.Transform( ForwardVector );
+    const V3Vectf up = rollPitchYaw.Transform( UpVector );
 
-	Vector3f shiftedEyePos = Scene.CenterEyePos();
-	Vector3f headModelOffset = Scene.HeadModelOffset( 0.0f, FreeScreenAngles.x, FreeScreenAngles.y,
+    V3Vectf shiftedEyePos = Scene.CenterEyePos();
+    V3Vectf headModelOffset = Scene.HeadModelOffset( 0.0f, FreeScreenAngles.x, FreeScreenAngles.y,
 			Scene.ViewParms.HeadModelDepth, Scene.ViewParms.HeadModelHeight );
 	shiftedEyePos += headModelOffset;
-	Matrix4f result = Matrix4f::LookAtRH( shiftedEyePos, shiftedEyePos + forward, up );
+    VR4Matrixf result = VR4Matrixf::LookAtRH( shiftedEyePos, shiftedEyePos + forward, up );
 
 	FreeScreenOrientation = result.Inverted();
 }
@@ -470,8 +470,8 @@ void SceneManager::ClampScreenToView()
 		return;
 	}
 
-	Vector3f viewAngles = AnglesForMatrix( Scene.ViewMatrix );
-	Vector3f deltaAngles = FreeScreenAngles - viewAngles;
+    V3Vectf viewAngles = AnglesForMatrix( Scene.ViewMatrix );
+    V3Vectf deltaAngles = FreeScreenAngles - viewAngles;
 
 	if ( deltaAngles.y > M_PI )
 	{	// screen is a bit under PI and view is a bit above -PI
@@ -585,7 +585,7 @@ bool SceneManager::ChangeSeats( const VrFrame & vrFrame )
 	bool changed = false;
 	if ( SceneSeatCount > 0 )
 	{
-		Vector3f direction( 0.0f );
+        V3Vectf direction( 0.0f );
 		if ( vrFrame.Input.buttonPressed & BUTTON_LSTICK_UP )
 		{
 			changed = true;
@@ -612,7 +612,7 @@ bool SceneManager::ChangeSeats( const VrFrame & vrFrame )
 			// Find the closest seat in the desired direction away from the current seat.
 			direction.Normalize();
 			const float distance = direction.Dot( Scene.FootPos );
-			float bestSeatDistance = Math<float>::MaxValue;
+            float bestSeatDistance = VConstants<float>::MaxValue;
 			int bestSeat = -1;
 			for ( int i = 0; i < SceneSeatCount; i++ )
 			{
@@ -784,7 +784,7 @@ bool SceneManager::Command(const VEvent &event)
 /*
  * DrawEyeView
  */
-Matrix4f SceneManager::DrawEyeView( const int eye, const float fovDegrees )
+VR4Matrixf SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 {
 	// allow stereo movies to also be played in mono
 	const int stereoEye = ForceMono ? 0 : eye;
@@ -841,7 +841,7 @@ Matrix4f SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 		Scene.DrawEyeView( eye, fovDegrees );
 	}
 
-	const Matrix4f mvp = Scene.MvpForEye( eye, fovDegrees );
+    const VR4Matrixf mvp = Scene.MvpForEye( eye, fovDegrees );
 
 	// draw the screen on top
 	if ( !drawScreen )
@@ -859,7 +859,7 @@ Matrix4f SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 	{
 		const VGlShader * prog = &Cinema.shaderMgr.ScenePrograms[0];
 		glUseProgram( prog->program );
-		glUniformMatrix4fv( prog->uniformModelViewProMatrix, 1, GL_FALSE, mvp.Transposed().M[0] );
+        glUniformMatrix4fv( prog->uniformModelViewProMatrix, 1, GL_FALSE, mvp.Transposed().M[0] );
 		SceneScreenSurface->geo.Draw();
 	}
 
@@ -869,46 +869,46 @@ Matrix4f SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 
 	glVertexAttrib4f( 2, 1.0f, 1.0f, 1.0f, 1.0f );	// no color attributes on the surface verts, so force to 1.0
 
-	const Matrix4f stretchTop(
+    const VR4Matrixf stretchTop(
 			1, 0, 0, 0,
 			0, 0.5f, 0, 0,
 			0, 0, 1, 0,
 			0, 0, 0, 1 );
-	const Matrix4f stretchBottom(
+    const VR4Matrixf stretchBottom(
 			1, 0, 0, 0,
 			0, 0.5, 0, 0.5f,
 			0, 0, 1, 0,
 			0, 0, 0, 1 );
-	const Matrix4f stretchRight(
+    const VR4Matrixf stretchRight(
 			0.5f, 0, 0, 0.5f,
 			0, 1, 0, 0,
 			0, 0, 1, 0,
 			0, 0, 0, 1 );
-	const Matrix4f stretchLeft(
+    const VR4Matrixf stretchLeft(
 			0.5f, 0, 0, 0,
 			0, 1, 0, 0,
 			0, 0, 1, 0,
 			0, 0, 0, 1 );
 
-	const Matrix4f rotate90(
+    const VR4Matrixf rotate90(
 			0, 1, 0, 0,
 			-1, 0, 0, 1,
 			0, 0, 1, 0,
 			0, 0, 0, 1 );
 
-	const Matrix4f rotate180(
+    const VR4Matrixf rotate180(
 			-1, 0, 0, 1,
 			0, -1, 0, 1,
 			0, 0, 1, 0,
 			0, 0, 0, 1 );
 
-	const Matrix4f rotate270(
+    const VR4Matrixf rotate270(
 			0, -1, 0, 1,
 			1, 0, 0, 0,
 			0, 0, 1, 0,
 			0, 0, 0, 1 );
 
-	Matrix4f texMatrix;
+    VR4Matrixf texMatrix;
 
 	switch ( CurrentMovieFormat )
 	{
@@ -924,7 +924,7 @@ Matrix4f SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 			switch( MovieRotation )
 			{
 				case 0 :
-					texMatrix = Matrix4f::Identity();
+                    texMatrix = VR4Matrixf::Identity();
 					break;
 				case 90 :
 					texMatrix = rotate90;
@@ -954,22 +954,22 @@ Matrix4f SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 		glActiveTexture( GL_TEXTURE1 );
 		glBindTexture( GL_TEXTURE_2D, ScreenVignetteTexture );
 
-		glUniformMatrix4fv( prog->uniformTexMatrix, 1, GL_FALSE, /* not transposed */
+        glUniformMatrix4fv( prog->uniformTexMatrix, 1, GL_FALSE, /* not transposed */
 				texMatrix.Transposed().M[0] );
 		// The UI is always identity for now, but we may scale it later
-		glUniformMatrix4fv( prog->uniformTexMatrix2, 1, GL_FALSE, /* not transposed */
-				Matrix4f::Identity().Transposed().M[0] );
+        glUniformMatrix4fv( prog->uniformTexMatrix2, 1, GL_FALSE, /* not transposed */
+                VR4Matrixf::Identity().Transposed().M[0] );
 
 		if ( !SceneInfo.LobbyScreen && SceneInfo.UseScreenGeometry && ( SceneScreenSurface != NULL ) )
 		{
-			glUniformMatrix4fv( prog->uniformModelViewProMatrix, 1, GL_FALSE, mvp.Transposed().M[0] );
+            glUniformMatrix4fv( prog->uniformModelViewProMatrix, 1, GL_FALSE, mvp.Transposed().M[0] );
 			SceneScreenSurface->geo.Draw();
 		}
 		else
 		{
-			const Matrix4f screenModel = ScreenMatrix();
-			const Matrix4f screenMvp = mvp * screenModel;
-			glUniformMatrix4fv( prog->uniformModelViewProMatrix, 1, GL_FALSE, screenMvp.Transposed().M[0] );
+            const VR4Matrixf screenModel = ScreenMatrix();
+            const VR4Matrixf screenMvp = mvp * screenModel;
+            glUniformMatrix4fv( prog->uniformModelViewProMatrix, 1, GL_FALSE, screenMvp.Transposed().M[0] );
 			UnitSquare.Draw();
 		}
 
@@ -978,8 +978,8 @@ Matrix4f SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 	else
 	{
 		// use overlay
-		const Matrix4f screenModel = ScreenMatrix();
-		const ovrMatrix4f mv = Scene.ViewMatrixForEye( eye ) * screenModel;
+        const VR4Matrixf screenModel = ScreenMatrix();
+        const ovrMatrix4f mv = Scene.ViewMatrixForEye( eye ) * screenModel;
 
         vApp->swapParms().WarpProgram = WP_CHROMATIC_MASKED_PLANE;
         vApp->swapParms().Images[eye][1].TexId = MipMappedMovieTextures[CurrentMipMappedMovieTexture];
@@ -987,7 +987,7 @@ Matrix4f SceneManager::DrawEyeView( const int eye, const float fovDegrees )
         vApp->swapParms().Images[eye][1].TexCoordsFromTanAngles = texMatrix * TanAngleMatrixFromUnitSquare( &mv );
 
 		// explicitly clear a hole in alpha
-		const ovrMatrix4f screenMvp = mvp * screenModel;
+        const ovrMatrix4f screenMvp = mvp * screenModel;
         vApp->drawScreenMask( screenMvp, 0.0f, 0.0f );
 	}
 
@@ -1000,7 +1000,7 @@ Matrix4f SceneManager::DrawEyeView( const int eye, const float fovDegrees )
  *
  * App override
  */
-Matrix4f SceneManager::Frame( const VrFrame & vrFrame )
+VR4Matrixf SceneManager::Frame( const VrFrame & vrFrame )
 {
 	// disallow player movement
 	VrFrame vrFrameWithoutMove = vrFrame;

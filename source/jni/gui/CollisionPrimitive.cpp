@@ -19,8 +19,8 @@ namespace NervGear {
 
 //==============================
 // OvrCollisionPrimitive::IntersectRayBounds
-bool OvrCollisionPrimitive::intersectRayBounds( Vector3f const & start, Vector3f const & dir, 
-		Vector3f const & scale, ContentFlags_t const testContents, float & t0, float & t1 ) const
+bool OvrCollisionPrimitive::intersectRayBounds( V3Vectf const & start, V3Vectf const & dir,
+        V3Vectf const & scale, ContentFlags_t const testContents, float & t0, float & t1 ) const
 {
 	if ( !( testContents & contents() ) )
 	{
@@ -32,10 +32,10 @@ bool OvrCollisionPrimitive::intersectRayBounds( Vector3f const & start, Vector3f
 
 //==============================
 // OvrCollisionPrimitive::IntersectRayBounds
-bool OvrCollisionPrimitive::intersectRayBounds( Vector3f const & start, Vector3f const & dir, 
-		Vector3f const & scale, float & t0, float & t1 ) const
+bool OvrCollisionPrimitive::intersectRayBounds( V3Vectf const & start, V3Vectf const & dir,
+        V3Vectf const & scale, float & t0, float & t1 ) const
 {
-	Bounds3f scaledBounds = m_bounds * scale;
+    VBoxf scaledBounds = m_bounds * scale;
     if (scaledBounds.Contains( start, 0.1f ) )
     {
         return true;
@@ -66,7 +66,7 @@ OvrTriCollisionPrimitive::OvrTriCollisionPrimitive()
 
 //==============================
 // OvrTriCollisionPrimitive::OvrTriCollisionPrimitive
-OvrTriCollisionPrimitive::OvrTriCollisionPrimitive( VArray< Vector3f > const & vertices,
+OvrTriCollisionPrimitive::OvrTriCollisionPrimitive( VArray< V3Vectf > const & vertices,
 		VArray< TriangleIndex > const & indices, ContentFlags_t const contents ) :
 	OvrCollisionPrimitive( contents )
 {
@@ -81,7 +81,7 @@ OvrTriCollisionPrimitive::~OvrTriCollisionPrimitive()
 
 //==============================
 // OvrTriCollisionPrimitive::Init
-void OvrTriCollisionPrimitive::init( VArray< Vector3f > const & vertices, VArray< TriangleIndex > const & indices,
+void OvrTriCollisionPrimitive::init( VArray< V3Vectf > const & vertices, VArray< TriangleIndex > const & indices,
 		ContentFlags_t const contents )
 {
 	m_vertices = vertices;
@@ -89,7 +89,7 @@ void OvrTriCollisionPrimitive::init( VArray< Vector3f > const & vertices, VArray
 	setContents( contents );
 
 	// calculate the bounds
-	Bounds3f b;
+    VBoxf b;
 	b.Clear();
 	for ( int i = 0; i < vertices.length(); ++i )
 	{
@@ -101,8 +101,8 @@ void OvrTriCollisionPrimitive::init( VArray< Vector3f > const & vertices, VArray
 
 //==============================
 // OvrTriCollisionPrimitive::IntersectRay
-bool OvrTriCollisionPrimitive::intersectRay( Vector3f const & start, Vector3f const & dir, Posef const & pose,
-		Vector3f const & scale, ContentFlags_t const testContents, OvrCollisionResult & result ) const
+bool OvrTriCollisionPrimitive::intersectRay( V3Vectf const & start, V3Vectf const & dir, VPosf const & pose,
+        V3Vectf const & scale, ContentFlags_t const testContents, OvrCollisionResult & result ) const
 {
 	if ( !( testContents & contents() ) )
 	{
@@ -111,8 +111,8 @@ bool OvrTriCollisionPrimitive::intersectRay( Vector3f const & start, Vector3f co
 	}
 
     // transform the ray into local space
-    Vector3f localStart = ( start - pose.Position ) * pose.Orientation.Inverted();
-    Vector3f localDir = dir * pose.Orientation.Inverted();
+    V3Vectf localStart = ( start - pose.Position ) * pose.Orientation.Inverted();
+    V3Vectf localDir = dir * pose.Orientation.Inverted();
 
     return intersectRay( localStart, localDir, scale, testContents, result );
 }
@@ -120,8 +120,8 @@ bool OvrTriCollisionPrimitive::intersectRay( Vector3f const & start, Vector3f co
 //==============================
 // OvrTriCollisionPrimitive::IntersectRay
 // the ray should already be in local space
-bool OvrTriCollisionPrimitive::intersectRay( Vector3f const & localStart, Vector3f const & localDir,
-		Vector3f const & scale, ContentFlags_t const testContents, OvrCollisionResult & result ) const
+bool OvrTriCollisionPrimitive::intersectRay( V3Vectf const & localStart, V3Vectf const & localDir,
+        V3Vectf const & scale, ContentFlags_t const testContents, OvrCollisionResult & result ) const
 {
 	if ( !( testContents & contents() ) )
 	{
@@ -143,7 +143,7 @@ bool OvrTriCollisionPrimitive::intersectRay( Vector3f const & localStart, Vector
         float t_;
         float u_;
         float v_;
-        Vector3f verts[3];
+        V3Vectf verts[3];
         verts[0] = m_vertices[m_indices[i]] * scale;
         verts[1] = m_vertices[m_indices[i + 1]] * scale;
         verts[2] = m_vertices[m_indices[i + 2]] * scale;
@@ -163,19 +163,19 @@ bool OvrTriCollisionPrimitive::intersectRay( Vector3f const & localStart, Vector
 
 //==============================
 // OvrTriCollisionPrimitive::DebugRender
-void OvrTriCollisionPrimitive::debugRender( OvrDebugLines & debugLines, Posef & pose ) const
+void OvrTriCollisionPrimitive::debugRender( OvrDebugLines & debugLines, VPosf & pose ) const
 {
-	debugLines.AddBounds( pose, bounds(), Vector4f( 1.0f, 0.5f, 0.0f, 1.0f ) );
+    debugLines.AddBounds( pose, bounds(), V4Vectf( 1.0f, 0.5f, 0.0f, 1.0f ) );
 
-	Vector4f color( 1.0f, 0.0f, 1.0f, 1.0f );
+    V4Vectf color( 1.0f, 0.0f, 1.0f, 1.0f );
 	for ( int i = 0; i < m_indices.length(); i += 3 )
 	{
 		int i1 = m_indices[i + 0];
 		int i2 = m_indices[i + 1];
 		int i3 = m_indices[i + 2];
-		Vector3f v1 = pose.Position + ( pose.Orientation * m_vertices[i1] );
-		Vector3f v2 = pose.Position + ( pose.Orientation * m_vertices[i2] );
-		Vector3f v3 = pose.Position + ( pose.Orientation * m_vertices[i3] );
+        V3Vectf v1 = pose.Position + ( pose.Orientation * m_vertices[i1] );
+        V3Vectf v2 = pose.Position + ( pose.Orientation * m_vertices[i2] );
+        V3Vectf v3 = pose.Position + ( pose.Orientation * m_vertices[i3] );
 		debugLines.AddLine( v1, v2, color, color, 0, true );
 		debugLines.AddLine( v2, v3, color, color, 0, true );
 		debugLines.AddLine( v3, v1, color, color, 0, true );

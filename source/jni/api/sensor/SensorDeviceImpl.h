@@ -186,8 +186,8 @@ public:
     virtual bool SetRange(const SensorRange& range, bool waitFlag);
     virtual void GetRange(SensorRange* range) const;
 
-    virtual void GetFactoryCalibration(Vector3f* AccelOffset, Vector3f* GyroOffset,
-                                       Matrix4f* AccelMatrix, Matrix4f* GyroMatrix,
+    virtual void GetFactoryCalibration(V3Vectf* AccelOffset, V3Vectf* GyroOffset,
+                                       VR4Matrixf* AccelMatrix, VR4Matrixf* GyroMatrix,
                                        float* Temperature);
 	virtual bool SetOnboardCalibrationEnabled(bool enabled);
 
@@ -244,7 +244,7 @@ protected:
     // Called for decoded messages
     void    onTrackerMessage(TrackerMessage* message);
 
-	void	replaceWithPhoneMag(Vector3f* mag, Vector3f* bias);
+    void	replaceWithPhoneMag(V3Vectf* mag, V3Vectf* bias);
 
     // Helpers to reduce casting.
 /*
@@ -266,10 +266,10 @@ protected:
     UInt16      LastTimestamp;
     UByte       LastSampleCount;
     float       LastTemperature;
-    Vector3f    LastAcceleration;
-    Vector3f    LastRotationRate;
-    Vector3f    LastMagneticField;
-    Vector3f    LastMagneticBias;
+    V3Vectf    LastAcceleration;
+    V3Vectf    LastRotationRate;
+    V3Vectf    LastMagneticField;
+    V3Vectf    LastMagneticBias;
 
     // This tracks wrap around, and should be monotomically increasing.
     UInt32		FullTimestamp;
@@ -282,10 +282,10 @@ protected:
     SensorRange 		CurrentRange;
 
     // IMU calibration obtained from device.
-    Vector3f    		AccelCalibrationOffset;
-    Vector3f    		GyroCalibrationOffset;
-    Matrix4f    		AccelCalibrationMatrix;
-    Matrix4f    		GyroCalibrationMatrix;
+    V3Vectf    		AccelCalibrationOffset;
+    V3Vectf    		GyroCalibrationOffset;
+    VR4Matrixf    		AccelCalibrationMatrix;
+    VR4Matrixf    		GyroCalibrationMatrix;
     float       		CalibrationTemperature;
 
     UInt16      		OldCommandId;

@@ -14,6 +14,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #define OVR_ScrollManager_h
 
 #include "VMath.h"
+#include "VBasicmath.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -141,7 +142,7 @@ public:
 
     void 	touchDown();
     void 	touchUp();
-    void 	touchRelative( Vector3f touchPos );
+    void 	touchRelative( V3Vectf touchPos );
 
     bool 	isOutOfBounds() 		const;
     bool 	isOutOfWrapBounds()		const;
@@ -184,7 +185,7 @@ private:
     float 									m_maxPosition;
 
     bool 									m_touchIsDown;
-    Vector3f 								m_lastTouchPosistion;
+    V3Vectf 								m_lastTouchPosistion;
 	// Keeps track of last few(=5) touch movement information
     CircularArrayT< delta_t, 5 > 			m_deltas;
 	// Current State - smooth scrolling, wrap around and bounce back

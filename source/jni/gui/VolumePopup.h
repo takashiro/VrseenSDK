@@ -43,7 +43,7 @@ public:
     void					close( App * app );
 
 private:
-    Vector3f				m_volumeTextOffset;
+    V3Vectf				m_volumeTextOffset;
     int						m_currentVolume;
 
 private:

@@ -253,13 +253,13 @@ public:
 	// Submits the specified menu object to be renderered
 	virtual void				submitForRendering( OvrDebugLines & debugLines, BitmapFont const & font, 
                                         BitmapFontSurface & fontSurface, menuHandle_t const handle, 
-                                        Posef const & worldPose, VRMenuRenderFlags_t const & flags );
+                                        VPosf const & worldPose, VRMenuRenderFlags_t const & flags );
 
 	// Call once per frame before rendering to sort surfaces.
-	virtual void				finish( Matrix4f const & viewMatrix );
+    virtual void				finish( VR4Matrixf const & viewMatrix );
 
 	// Render's all objects that have been submitted on the current frame.
-	virtual void				renderSubmitted( Matrix4f const & mvp, Matrix4f const & viewMatrix ) const;
+    virtual void				renderSubmitted( VR4Matrixf const & mvp, VR4Matrixf const & viewMatrix ) const;
 
     virtual VGlShader const *   getGUIGlProgram( eGUIProgramType const programType ) const;
 
@@ -276,8 +276,8 @@ private:
 	void						CondenseList();
 	void						SubmitForRenderingRecursive( OvrDebugLines & debugLines, BitmapFont const & font, 
                                         BitmapFontSurface & fontSurface, VRMenuRenderFlags_t const & flags, 
-                                        VRMenuObjectLocal const * obj, Posef const & parentModelPose, 
-										Vector4f const & parentColor, Vector3f const & parentScale, Bounds3f & cullBounds,
+                                        VRMenuObjectLocal const * obj, VPosf const & parentModelPose,
+                                        V4Vectf const & parentColor, V3Vectf const & parentScale, VBoxf & cullBounds,
                                         SubmittedMenuObject * submitted, int const maxIndices, int & curIndex,
 										int const distanceIndex ) const;
 
@@ -597,7 +597,7 @@ void VRMenuMgrLocal::beginFrame()
 	NumSubmitted = 0;
 }
 /*
-static void LogBounds( const char * name, char const * prefix, Bounds3f const & bounds )
+static void LogBounds( const char * name, char const * prefix, VBoxf const & bounds )
 {
 	DROIDLOG( "Spam", "'%s' %s: min( %.2f, %.2f, %.2f ) - max( %.2f, %.2f, %.2f )", 
 		name, prefix,
@@ -610,8 +610,8 @@ static void LogBounds( const char * name, char const * prefix, Bounds3f const & 
 // VRMenuMgrLocal::SubmitForRenderingRecursive
 void VRMenuMgrLocal::SubmitForRenderingRecursive( OvrDebugLines & debugLines, BitmapFont const & font, 
         BitmapFontSurface & fontSurface, VRMenuRenderFlags_t const & flags, VRMenuObjectLocal const * obj, 
-        Posef const & parentModelPose, Vector4f const & parentColor, Vector3f const & parentScale, 
-        Bounds3f & cullBounds, SubmittedMenuObject * submitted, int const maxIndices, int & curIndex,
+        VPosf const & parentModelPose, V4Vectf const & parentColor, V3Vectf const & parentScale,
+        VBoxf & cullBounds, SubmittedMenuObject * submitted, int const maxIndices, int & curIndex,
 		int const distanceIndex ) const
 {
 	if ( curIndex >= maxIndices )
@@ -629,15 +629,15 @@ void VRMenuMgrLocal::SubmitForRenderingRecursive( OvrDebugLines & debugLines, Bi
 		return;
 	}
 
-	Posef const & localPose = obj->localPose();
+    VPosf const & localPose = obj->localPose();
 
-	Posef curModelPose;
+    VPosf curModelPose;
 	curModelPose.Position = parentModelPose.Position + ( parentModelPose.Orientation * parentScale.EntrywiseMultiply( localPose.Position ) );
 	curModelPose.Orientation = parentModelPose.Orientation * localPose.Orientation;
 
-	Vector4f curColor = parentColor * obj->color();
-	Vector3f const & localScale = obj->localScale();
-	Vector3f scale = parentScale.EntrywiseMultiply( localScale );
+    V4Vectf curColor = parentColor * obj->color();
+    V3Vectf const & localScale = obj->localScale();
+    V3Vectf scale = parentScale.EntrywiseMultiply( localScale );
 
 	OVR_ASSERT( obj != NULL );
 
@@ -645,12 +645,12 @@ void VRMenuMgrLocal::SubmitForRenderingRecursive( OvrDebugLines & debugLines, Bi
 	VRMenuObjectFlags_t const oFlags = obj->flags();
 	if ( obj->type() != VRMENU_CONTAINER )	// containers never render, but their children may
 	{
-        Posef const & hilightPose = obj->hilightPose();
-        Posef itemPose( curModelPose.Orientation * hilightPose.Orientation,
+        VPosf const & hilightPose = obj->hilightPose();
+        VPosf itemPose( curModelPose.Orientation * hilightPose.Orientation,
                         curModelPose.Position + ( curModelPose.Orientation * parentScale.EntrywiseMultiply( hilightPose.Position ) ) );
-		Matrix4f poseMat( itemPose.Orientation );
-		Vector3f itemUp = poseMat.GetYBasis();
-		Vector3f itemNormal = poseMat.GetZBasis();
+        VR4Matrixf poseMat( itemPose.Orientation );
+        V3Vectf itemUp = poseMat.GetYBasis();
+        V3Vectf itemNormal = poseMat.GetZBasis();
 		curModelPose = itemPose;	// so children like the slider bar caret use our hilight offset and don't end up clipping behind us!
 		VRMenuRenderFlags_t rFlags = flags;
 		if ( oFlags & VRMENUOBJECT_FLAG_POLYGON_OFFSET )
@@ -668,13 +668,13 @@ void VRMenuMgrLocal::SubmitForRenderingRecursive( OvrDebugLines & debugLines, Bi
 
 		if ( ShowPoses )
 		{
-			Matrix4f const poseMat( itemPose );
+            VR4Matrixf const poseMat( itemPose );
 			debugLines.AddLine( itemPose.Position, itemPose.Position + poseMat.GetXBasis() * 0.05f, 
-					Vector4f( 0.0f, 1.0f, 0.0f, 1.0f ), Vector4f( 0.0f, 1.0f, 0.0f, 1.0f ), 0, false );	
+                    V4Vectf( 0.0f, 1.0f, 0.0f, 1.0f ), V4Vectf( 0.0f, 1.0f, 0.0f, 1.0f ), 0, false );
 			debugLines.AddLine( itemPose.Position, itemPose.Position + poseMat.GetYBasis() * 0.05f, 
-					Vector4f( 1.0f, 0.0f, 0.0f, 1.0f ), Vector4f( 1.0f, 0.0f, 0.0f, 1.0f ), 0, false );	
+                    V4Vectf( 1.0f, 0.0f, 0.0f, 1.0f ), V4Vectf( 1.0f, 0.0f, 0.0f, 1.0f ), 0, false );
 			debugLines.AddLine( itemPose.Position, itemPose.Position + poseMat.GetZBasis() * 0.05f, 
-					Vector4f( 0.0f, 0.0f, 1.0f, 1.0f ), Vector4f( 0.0f, 0.0f, 1.0f, 1.0f ), 0, false );	
+                    V4Vectf( 0.0f, 0.0f, 1.0f, 1.0f ), V4Vectf( 0.0f, 0.0f, 1.0f, 1.0f ), 0, false );
 		}
 
 		// the menu object may have zero or more renderable surfaces (if 0, it may draw only text)
@@ -708,17 +708,17 @@ void VRMenuMgrLocal::SubmitForRenderingRecursive( OvrDebugLines & debugLines, Bi
 		NervGear::VString const & text = obj->text();
         if ( ( oFlags & VRMENUOBJECT_DONT_RENDER_TEXT ) == 0 && text.length() > 0 )
 		{
-            Posef const & textLocalPose = obj->textLocalPose();
-            Posef curTextPose;
+            VPosf const & textLocalPose = obj->textLocalPose();
+            VPosf curTextPose;
 // FIXME: this doesn't mirror the scale / rotation order for the localPose above
 //            curTextPose.Position = itemPose.Position + ( itemPose.Orientation * scale.EntrywiseMultiply( textLocalPose.Position ) );
             curTextPose.Position = itemPose.Position + ( itemPose.Orientation * textLocalPose.Position * scale );
             curTextPose.Orientation = textLocalPose.Orientation * itemPose.Orientation;
-            Vector3f textNormal = curTextPose.Orientation * Vector3f( 0.0f, 0.0f, 1.0f );
-			Vector3f position = curTextPose.Position + textNormal * 0.001f; // this is simply to prevent z-fighting right now
-            Vector3f textScale = scale * obj->textLocalScale();
+            V3Vectf textNormal = curTextPose.Orientation * V3Vectf( 0.0f, 0.0f, 1.0f );
+            V3Vectf position = curTextPose.Position + textNormal * 0.001f; // this is simply to prevent z-fighting right now
+            V3Vectf textScale = scale * obj->textLocalScale();
 
-            Vector4f textColor = obj->textColor();
+            V4Vectf textColor = obj->textColor();
             // Apply parent's alpha influence
             textColor.w *= parentColor.w;
 			VRMenuFontParms const & fp = obj->fontParms();
@@ -736,15 +736,15 @@ void VRMenuMgrLocal::SubmitForRenderingRecursive( OvrDebugLines & debugLines, Bi
 			if ( ShowDebugBounds )
 			{
 				// this shows a ruler for the wrap width when rendering text
-				Vector3f xofs( 0.1f, 0.0f, 0.0f );
+                V3Vectf xofs( 0.1f, 0.0f, 0.0f );
 				debugLines.AddLine( position - xofs, position + xofs,
-					Vector4f( 0.0f, 1.0f, 0.0f, 1.0f ), Vector4f( 1.0f, 0.0f, 0.0f, 1.0f ), 0, false );
-				Vector3f yofs( 0.0f, 0.1f, 0.0f );
+                    V4Vectf( 0.0f, 1.0f, 0.0f, 1.0f ), V4Vectf( 1.0f, 0.0f, 0.0f, 1.0f ), 0, false );
+                V3Vectf yofs( 0.0f, 0.1f, 0.0f );
 				debugLines.AddLine( position - yofs, position + yofs,
-					Vector4f( 0.0f, 1.0f, 0.0f, 1.0f ), Vector4f( 1.0f, 0.0f, 0.0f, 1.0f ), 0, false );
-				Vector3f zofs( 0.0f, 0.0f, 0.1f );
+                    V4Vectf( 0.0f, 1.0f, 0.0f, 1.0f ), V4Vectf( 1.0f, 0.0f, 0.0f, 1.0f ), 0, false );
+                V3Vectf zofs( 0.0f, 0.0f, 0.1f );
 				debugLines.AddLine( position - zofs, position + zofs,
-					Vector4f( 0.0f, 1.0f, 0.0f, 1.0f ), Vector4f( 1.0f, 0.0f, 0.0f, 1.0f ), 0, false );
+                    V4Vectf( 0.0f, 1.0f, 0.0f, 1.0f ), V4Vectf( 1.0f, 0.0f, 0.0f, 1.0f ), 0, false );
 			}
 		}
         //DROIDLOG( "Spam", "AddPoint for '%s'", text.toCString() );
@@ -773,14 +773,14 @@ void VRMenuMgrLocal::SubmitForRenderingRecursive( OvrDebugLines & debugLines, Bi
 			    continue;
 		    }
 
-            Bounds3f childCullBounds;
+            VBoxf childCullBounds;
 		    SubmitForRenderingRecursive( debugLines, font, fontSurface, flags, child, curModelPose, curColor, scale, 
                     childCullBounds, submitted, maxIndices, curIndex, di );
 
-		    Posef pose = child->localPose();
+            VPosf pose = child->localPose();
 		    pose.Position = pose.Position * scale;
-            childCullBounds = Bounds3f::Transform( pose, childCullBounds );
-            cullBounds = Bounds3f::Union( cullBounds, childCullBounds );
+            childCullBounds = VBoxf::Transform( pose, childCullBounds );
+            cullBounds = VBoxf::Union( cullBounds, childCullBounds );
 	    }
     }
 
@@ -797,16 +797,16 @@ void VRMenuMgrLocal::SubmitForRenderingRecursive( OvrDebugLines & debugLines, Bi
 		{
 			// for debug drawing, put the cull bounds in world space
             //LogBounds( obj->GetText().toCString(), "Transformed CullBounds", myCullBounds );
-			debugLines.AddBounds( curModelPose, obj->cullBounds(), Vector4f( 0.0f, 1.0f, 1.0f, 1.0f ) );
+            debugLines.AddBounds( curModelPose, obj->cullBounds(), V4Vectf( 0.0f, 1.0f, 1.0f, 1.0f ) );
 		}
 		{
-			Bounds3f localBounds = obj->getTextLocalBounds( font ) * parentScale;
+            VBoxf localBounds = obj->getTextLocalBounds( font ) * parentScale;
             //LogBounds( obj->GetText().toCString(), "localBounds", localBounds );
-    		debugLines.AddBounds( curModelPose, localBounds, Vector4f( 1.0f, 0.0f, 0.0f, 1.0f ) );
-			Bounds3f textLocalBounds = obj->setTextLocalBounds( font );
-			Posef hilightPose = obj->hilightPose();
-			textLocalBounds = Bounds3f::Transform( Posef( hilightPose.Orientation, hilightPose.Position * scale ), textLocalBounds );
-    		debugLines.AddBounds( curModelPose, textLocalBounds * parentScale, Vector4f( 1.0f, 1.0f, 0.0f, 1.0f ) );
+            debugLines.AddBounds( curModelPose, localBounds, V4Vectf( 1.0f, 0.0f, 0.0f, 1.0f ) );
+            VBoxf textLocalBounds = obj->setTextLocalBounds( font );
+            VPosf hilightPose = obj->hilightPose();
+            textLocalBounds = VBoxf::Transform( VPosf( hilightPose.Orientation, hilightPose.Position * scale ), textLocalBounds );
+            debugLines.AddBounds( curModelPose, textLocalBounds * parentScale, V4Vectf( 1.0f, 1.0f, 0.0f, 1.0f ) );
 		}
 	}
 
@@ -821,17 +821,17 @@ void VRMenuMgrLocal::SubmitForRenderingRecursive( OvrDebugLines & debugLines, Bi
 		VRMenuObject const * parent = ToObject( obj->GetParentHandle() );
 		if ( parent != NULL )
 		{
-			Vector3f itemUp = curModelPose.Orientation * Vector3f( 0.0f, 1.0f, 0.0f );
-			Vector3f itemNormal = curModelPose.Orientation * Vector3f( 0.0f, 0.0f, 1.0f );
+            V3Vectf itemUp = curModelPose.Orientation * V3Vectf( 0.0f, 1.0f, 0.0f );
+            V3Vectf itemNormal = curModelPose.Orientation * V3Vectf( 0.0f, 0.0f, 1.0f );
 			fontSurface.DrawTextBillboarded3D( font, fp, curModelPose.Position, itemNormal, itemUp,
-                    0.5f, Vector4f( 1.0f, 0.0f, 1.0f, 1.0f ), obj->GetSurfaces()[0] ); //parent->GetText().toCString() );
+                    0.5f, V4Vectf( 1.0f, 0.0f, 1.0f, 1.0f ), obj->GetSurfaces()[0] ); //parent->GetText().toCString() );
 		}
 #endif
-		debugLines.AddLine( parentModelPose.Position, curModelPose.Position, Vector4f( 1.0f, 0.0f, 0.0f, 1.0f ), Vector4f( 0.0f, 0.0f, 1.0f, 1.0f ), 5, false );
+        debugLines.AddLine( parentModelPose.Position, curModelPose.Position, V4Vectf( 1.0f, 0.0f, 0.0f, 1.0f ), V4Vectf( 0.0f, 0.0f, 1.0f, 1.0f ), 5, false );
 		if ( obj->surfaces().length() > 0 )
 		{
 			fontSurface.DrawTextBillboarded3D( font, fp, curModelPose.Position, 0.5f, 
-                    Vector4f( 0.8f, 0.8f, 0.8f, 1.0f ), obj->surfaces()[0].name().toCString() );
+                    V4Vectf( 0.8f, 0.8f, 0.8f, 1.0f ), obj->surfaces()[0].name().toCString() );
 		}
 	}
 }
@@ -840,7 +840,7 @@ void VRMenuMgrLocal::SubmitForRenderingRecursive( OvrDebugLines & debugLines, Bi
 // VRMenuMgrLocal::SubmitForRendering
 // Submits the specified menu object and it's children
 void VRMenuMgrLocal::submitForRendering( OvrDebugLines & debugLines, BitmapFont const & font, 
-        BitmapFontSurface & fontSurface, menuHandle_t const handle, Posef const & worldPose, 
+        BitmapFontSurface & fontSurface, menuHandle_t const handle, VPosf const & worldPose,
         VRMenuRenderFlags_t const & flags )
 {
 	//LOG( "VRMenuMgrLocal::SubmitForRendering" );
@@ -855,22 +855,22 @@ void VRMenuMgrLocal::submitForRendering( OvrDebugLines & debugLines, BitmapFont 
 		return;
 	}
 
-    Bounds3f cullBounds;
-	SubmitForRenderingRecursive( debugLines, font, fontSurface, flags, obj, worldPose, Vector4f( 1.0f ), 
-			Vector3f( 1.0f ), cullBounds, Submitted, MAX_SUBMITTED, NumSubmitted, -1 );
+    VBoxf cullBounds;
+    SubmitForRenderingRecursive( debugLines, font, fontSurface, flags, obj, worldPose, V4Vectf( 1.0f ),
+            V3Vectf( 1.0f ), cullBounds, Submitted, MAX_SUBMITTED, NumSubmitted, -1 );
 }
 
 //==============================
 // VRMenuMgrLocal::Finish
-void VRMenuMgrLocal::finish( Matrix4f const & viewMatrix )
+void VRMenuMgrLocal::finish( VR4Matrixf const & viewMatrix )
 {
 	if ( NumSubmitted == 0 )
 	{
 		return;
 	}
 
-	Matrix4f invViewMatrix = viewMatrix.Inverted(); // if the view is never scaled or sheared we could use Transposed() here instead
-	Vector3f viewPos = invViewMatrix.GetTranslation();
+    VR4Matrixf invViewMatrix = viewMatrix.Inverted(); // if the view is never scaled or sheared we could use Transposed() here instead
+    V3Vectf viewPos = invViewMatrix.GetTranslation();
 
 	// sort surfaces
 	SortKeys.resize( NumSubmitted );
@@ -891,7 +891,7 @@ void VRMenuMgrLocal::finish( Matrix4f const & viewMatrix )
 
 //==============================
 // VRMenuMgrLocal::RenderSubmitted
-void VRMenuMgrLocal::renderSubmitted( Matrix4f const & worldMVP, Matrix4f const & viewMatrix ) const
+void VRMenuMgrLocal::renderSubmitted( VR4Matrixf const & worldMVP, VR4Matrixf const & viewMatrix ) const
 {
 	if ( NumSubmitted == 0 )
 	{
@@ -902,8 +902,8 @@ void VRMenuMgrLocal::renderSubmitted( Matrix4f const & worldMVP, Matrix4f const 
     glOperation.GL_CheckErrors( "VRMenuMgrLocal::RenderSubmitted - pre" );
 
 	//LOG( "VRMenuMgrLocal::RenderSubmitted" );
-	Matrix4f invViewMatrix = viewMatrix.Inverted();
-	Vector3f viewPos = invViewMatrix.GetTranslation();
+    VR4Matrixf invViewMatrix = viewMatrix.Inverted();
+    V3Vectf viewPos = invViewMatrix.GetTranslation();
 
 	//LOG( "VRMenuMgrLocal::RenderSubmitted - rendering %i objects", NumSubmitted );
 	bool depthEnabled = true;
@@ -958,25 +958,25 @@ void VRMenuMgrLocal::renderSubmitted( Matrix4f const & worldMVP, Matrix4f const 
 					polygonOffset = false;
 				}
 			}
-			Vector3f translation( cur.pose.Position.x + cur.offsets.x, cur.pose.Position.y + cur.offsets.y, cur.pose.Position.z );
+            V3Vectf translation( cur.pose.Position.x + cur.offsets.x, cur.pose.Position.y + cur.offsets.y, cur.pose.Position.z );
 
-			Matrix4f transform( cur.pose.Orientation );
+            VR4Matrixf transform( cur.pose.Orientation );
 			if ( cur.flags & VRMENU_RENDER_BILLBOARD )
 			{
-				Vector3f normal = viewPos - cur.pose.Position;
-				Vector3f up( 0.0f, 1.0f, 0.0f );
+                V3Vectf normal = viewPos - cur.pose.Position;
+                V3Vectf up( 0.0f, 1.0f, 0.0f );
 				float length = normal.Length();
-				if ( length > Mathf::SmallestNonDenormal )
+                if ( length > VConstantsf::SmallestNonDenormal )
 				{
 					normal.Normalize();
-					if ( normal.Dot( up ) > Mathf::SmallestNonDenormal )
+                    if ( normal.Dot( up ) > VConstantsf::SmallestNonDenormal )
 					{
-						transform = Matrix4f::CreateFromBasisVectors( normal, Vector3f( 0.0f, 1.0f, 0.0f ) );
+                        transform = VR4Matrixf::CreateFromBasisVectors( normal, V3Vectf( 0.0f, 1.0f, 0.0f ) );
 					}
 				}
 			}
 
-			Matrix4f scaleMatrix;
+            VR4Matrixf scaleMatrix;
 			scaleMatrix.M[0][0] = cur.scale.x;
 			scaleMatrix.M[1][1] = cur.scale.y;
 			scaleMatrix.M[2][2] = cur.scale.z;
@@ -984,7 +984,7 @@ void VRMenuMgrLocal::renderSubmitted( Matrix4f const & worldMVP, Matrix4f const 
 			transform *= scaleMatrix;
 			transform.SetTranslation( translation );
 
-			Matrix4f mvp = transform.Transposed() * worldMVP;
+            VR4Matrixf mvp = transform.Transposed() * worldMVP;
 			obj->renderSurface( *this, mvp, cur );
 		}
 	}

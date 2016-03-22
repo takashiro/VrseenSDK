@@ -25,12 +25,12 @@ class OvrDefaultComponent : public VRMenuComponent
 public:
 	static const int TYPE_ID = 1;
 
-    OvrDefaultComponent( Vector3f const & hilightOffset = Vector3f( 0.0f, 0.0f, 0.05f ), 
+    OvrDefaultComponent( V3Vectf const & hilightOffset = V3Vectf( 0.0f, 0.0f, 0.05f ),
             float const hilightScale = 1.05f, 
             float const fadeDuration = 0.25f, 
             float const fadeDelay = 0.25f,
-			Vector4f const & textNormalColor = Vector4f( 1.0f ), 
-			Vector4f const & textHilightColor = Vector4f( 1.0f ) );
+            V4Vectf const & textNormalColor = V4Vectf( 1.0f ),
+            V4Vectf const & textHilightColor = V4Vectf( 1.0f ) );
 
 	virtual int		typeId() const { return TYPE_ID; }
 
@@ -46,12 +46,12 @@ private:
     SineFader       m_hilightFader;
     double          m_startFadeInTime;
     double          m_startFadeOutTime;
-    Vector3f        m_hilightOffset;
+    V3Vectf        m_hilightOffset;
     float           m_hilightScale;
     float           m_fadeDuration;
     float           m_fadeDelay;
-    Vector4f		m_textNormalColor;
-    Vector4f		m_textHilightColor;
+    V4Vectf		m_textNormalColor;
+    V4Vectf		m_textHilightColor;
     bool			m_suppressText;	// true if text should not be faded in
 
 private:

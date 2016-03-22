@@ -4,9 +4,9 @@
 
 namespace OculusCinema {
 
-const Vector4f ResumeMovieComponent::FocusColor( 1.0f, 1.0f, 1.0f, 1.0f );
-const Vector4f ResumeMovieComponent::HighlightColor( 1.0f, 1.0f, 1.0f, 1.0f );
-const Vector4f ResumeMovieComponent::NormalColor( 82.0f / 255.0f, 101.0f / 255.0f, 120.0f / 255.06, 255.0f / 255.0f );
+const V4Vectf ResumeMovieComponent::FocusColor( 1.0f, 1.0f, 1.0f, 1.0f );
+const V4Vectf ResumeMovieComponent::HighlightColor( 1.0f, 1.0f, 1.0f, 1.0f );
+const V4Vectf ResumeMovieComponent::NormalColor( 82.0f / 255.0f, 101.0f / 255.0f, 120.0f / 255.06, 255.0f / 255.0f );
 
 //==============================
 //  ResumeMovieComponent::
@@ -34,7 +34,7 @@ void ResumeMovieComponent::UpdateColor( VRMenuObject * self )
 	{
         Icon->setColor( HasFocus ? FocusColor : ( self->isHilighted() ? HighlightColor : NormalColor ) );
 	}
-    self->setColor( self->isHilighted() ? Vector4f( 1.0f ) : Vector4f( 0.0f ) );
+    self->setColor( self->isHilighted() ? V4Vectf( 1.0f ) : V4Vectf( 0.0f ) );
 }
 
 //==============================

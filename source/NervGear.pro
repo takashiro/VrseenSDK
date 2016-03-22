@@ -17,6 +17,7 @@ INCLUDEPATH += \
     jni/scene
 
 SOURCES += \
+    jni/core/VConstants.cpp \
     jni/core/Alg.cpp \
     jni/core/Allocator.cpp \
     jni/core/VAtomicInt.cpp \
@@ -52,6 +53,7 @@ SOURCES += \
     jni/api/Vsync.cpp \
     jni/api/VDevice.cpp \
     jni/api/DirectRender.cpp \
+    jni/api/VGlOperation.cpp \
     jni/api/HmdInfo.cpp \
     jni/api/HmdSensors.cpp \
     jni/api/Distortion.cpp \
@@ -123,11 +125,17 @@ SOURCES += \
     jni/DebugLines.cpp \
     jni/KeyState.cpp \
     jni/VrCommon.cpp \
-    jni/VrLocale.cpp \
-    jni/api/VGlOperation.cpp
+    jni/VrLocale.cpp
 
 
 HEADERS += \
+    jni/core/VBasicmath.h \
+    jni/core/VConstants.h \
+    jni/core/VVector.h \
+    jni/core/VMatrix.h \
+    jni/core/VGeometry.h \
+    jni/core/VTransform.h \
+    jni/core/android/GlUtils.h \
     jni/core/android/JniUtils.h \
     jni/core/android/LogUtils.h \
     jni/core/android/VOsBuild.h \
@@ -177,6 +185,12 @@ HEADERS += \
     jni/core/TypesafeNumber.h \
     jni/core/VUserSettings.h \
     jni/core/VWaitCondition.h \
+    jni/core/VConstants.h \
+    jni/core/VGeometry.h \
+    jni/core/VMatrix.h \
+    jni/core/VVector.h \
+    jni/core/VTransform.h \
+    jni/core/VBasicmath.h \
     jni/embedded/dependency_error_de.h \
     jni/embedded/dependency_error_en.h \
     jni/embedded/dependency_error_es.h \
@@ -200,6 +214,8 @@ HEADERS += \
     jni/api/VrApi_Helpers.h \
     jni/api/VrApi_local.h \
     jni/api/VDevice.h \
+    jni/api/VGlOperation.h \
+    jni/api/VGlTypeDefine.h \
     jni/api/sensor/DeviceConstants.h \
     jni/api/sensor/DeviceHandle.h \
     jni/api/sensor/DeviceImpl.h \
@@ -281,10 +297,7 @@ HEADERS += \
     jni/Input.h \
     jni/PointTracker.h \
     jni/UniversalMenu_Commands.h \
-    jni/PointTracker.h \
-    jni/api/VGlOperation.h \
-    jni/api/VGlTypeDefine.h
-
+    jni/PointTracker.h
 
 include(jni/3rdparty/minizip/minizip.pri)
 include(jni/3rdparty/stb/stb.pri)

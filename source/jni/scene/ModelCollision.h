@@ -3,6 +3,7 @@
 #include "vglobal.h"
 
 #include "VMath.h"
+#include "VBasicmath.h"
 #include "VString.h"
 #include "VArray.h"
 
@@ -13,46 +14,46 @@ NV_NAMESPACE_BEGIN
 class CollisionPolytope
 {
 public:
-	void	Add( const Planef & p ) { Planes.append( p ); }
+    void	Add( const VPlanef & p ) { Planes.append( p ); }
 
 	// Returns true if the given point is inside this polytope.
-	bool	TestPoint( const Vector3f & p ) const;
+    bool	TestPoint( const V3Vectf & p ) const;
 
 	// Returns true if the ray hits the polytope.
 	// The length of the ray is clipped to the point where the ray enters the polytope.
 	// Optionally the polytope boundary plane that is hit is returned.
-	bool	TestRay( const Vector3f & start, const Vector3f & dir, float & length, Planef * plane ) const;
+    bool	TestRay( const V3Vectf & start, const V3Vectf & dir, float & length, VPlanef * plane ) const;
 
 	// Pops the given point out of the polytope if inside.
-	bool	PopOut( Vector3f & p ) const;
+    bool	PopOut( V3Vectf & p ) const;
 
 public:
 	VString			Name;
-	VArray< Planef > Planes;
+    VArray< VPlanef > Planes;
 };
 
 class CollisionModel
 {
 public:
 	// Returns true if the given point is inside solid.
-	bool	TestPoint( const Vector3f & p ) const;
+    bool	TestPoint( const V3Vectf & p ) const;
 
 	// Returns true if the ray hits solid.
 	// The length of the ray is clipped to the point where the ray enters solid.
 	// Optionally the solid boundary plane that is hit is returned.
-	bool	TestRay( const Vector3f & start, const Vector3f & dir, float & length, Planef * plane ) const;
+    bool	TestRay( const V3Vectf & start, const V3Vectf & dir, float & length, VPlanef * plane ) const;
 
 	// Pops the given point out of any collision geometry the point may be inside of.
-	bool	PopOut( Vector3f & p ) const;
+    bool	PopOut( V3Vectf & p ) const;
 
 public:
 	VArray< CollisionPolytope > Polytopes;
 };
 
-Vector3f SlideMove(
-		const Vector3f & footPos,
+V3Vectf SlideMove(
+        const V3Vectf & footPos,
 		const float eyeHeight,
-		const Vector3f & moveDirection,
+        const V3Vectf & moveDirection,
 		const float moveDistance,
 		const CollisionModel & collisionModel,
 		const CollisionModel & groundCollisionModel

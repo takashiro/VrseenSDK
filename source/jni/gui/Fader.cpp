@@ -13,6 +13,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "Fader.h"
 
 #include "VMath.h"
+#include "VBasicmath.h"
 #include "Android/LogUtils.h"
 
 namespace NervGear {
@@ -39,18 +40,18 @@ void Fader::update( float const fadeRate, double const deltaSeconds )
     {
         float const fadeDelta = ( fadeRate * deltaSeconds ) * ( m_fadeState == FADE_IN ? 1.0f : -1.0f );
         m_fadeAlpha += fadeDelta;
-		OVR_ASSERT( fabs( fadeDelta ) > Mathf::SmallestNonDenormal );
-		if ( fabs( fadeDelta ) < Mathf::SmallestNonDenormal )
+        OVR_ASSERT( fabs( fadeDelta ) > VConstantsf::SmallestNonDenormal );
+        if ( fabs( fadeDelta ) < VConstantsf::SmallestNonDenormal )
 		{
-			LOG( "Fader::Update fabs( fadeDelta ) < Mathf::SmallestNonDenormal !!!!" );
+            LOG( "Fader::Update fabs( fadeDelta ) < VConstantsf::SmallestNonDenormal !!!!" );
 		}
-        if ( m_fadeAlpha < Mathf::SmallestNonDenormal )
+        if ( m_fadeAlpha < VConstantsf::SmallestNonDenormal )
         {
             m_fadeAlpha = 0.0f;
             m_fadeState = FADE_NONE;
             //LOG( "FadeState = FADE_NONE" );
         }
-        else if ( m_fadeAlpha >= 1.0f - Mathf::SmallestNonDenormal )
+        else if ( m_fadeAlpha >= 1.0f - VConstantsf::SmallestNonDenormal )
         {
             m_fadeAlpha = 1.0f;
             m_fadeState = FADE_NONE;
@@ -136,7 +137,7 @@ float SineFader::finalAlpha() const
         return fadeAlpha();   // already clamped
     }
     // map to sine wave
-    float radians = ( 1.0f - fadeAlpha() ) * Mathf::Pi;  // range 0 to pi
+    float radians = ( 1.0f - fadeAlpha() ) * VConstantsf::Pi;  // range 0 to pi
     return ( cos( radians ) + 1.0f ) * 0.5f; // range 0 to 1
 }
 

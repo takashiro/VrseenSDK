@@ -36,7 +36,7 @@ void SwipeHintComponent::Reset( VRMenuObject * self )
 	ShouldShow = false;
 	const double now = ovr_GetTimeInSeconds();
 	TotalAlpha.Set( now, TotalAlpha.Value( now ), now, 0.0f );
-    self->setColor( Vector4f( 1.0f, 1.0f, 1.0f, 0.0f ) );
+    self->setColor( V4Vectf( 1.0f, 1.0f, 1.0f, 0.0f ) );
 }
 
 //==============================
@@ -125,7 +125,7 @@ eMsgStatus SwipeHintComponent::Frame( App * app, VrFrame const & vrFrame, OvrVRM
 		}
 	}
 
-    self->setColor( Vector4f( 1.0f, 1.0f, 1.0f, alpha ) );
+    self->setColor( V4Vectf( 1.0f, 1.0f, 1.0f, alpha ) );
 
 	return MSG_STATUS_ALIVE;
 }

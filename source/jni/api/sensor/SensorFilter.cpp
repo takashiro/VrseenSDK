@@ -15,9 +15,9 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 namespace NervGear {
 
 template <typename T>
-Vector3<T> SensorFilter<T>::Median() const
+V3Vect<T> SensorFilter<T>::Median() const
 {
-    Vector3<T> result;
+    V3Vect<T> result;
     T* slice = (T*) OVR_ALLOC(this->m_elemCount * sizeof(T));
 
     for (int coord = 0; coord < 3; coord++)
@@ -33,10 +33,10 @@ Vector3<T> SensorFilter<T>::Median() const
 
 //  Only the diagonal of the covariance matrix.
 template <typename T>
-Vector3<T> SensorFilter<T>::Variance() const
+V3Vect<T> SensorFilter<T>::Variance() const
 {
-    Vector3<T> mean = this->Mean();
-    Vector3<T> total;
+    V3Vect<T> mean = this->Mean();
+    V3Vect<T> total;
     for (int i = 0; i < this->m_elemCount; i++)
     {
         total.x += (this->m_data[i].x - mean.x) * (this->m_data[i].x - mean.x);
@@ -47,10 +47,10 @@ Vector3<T> SensorFilter<T>::Variance() const
 }
 
 template <typename T>
-Matrix3<T> SensorFilter<T>::Covariance() const
+VR3Matrix<T> SensorFilter<T>::Covariance() const
 {
-    Vector3<T> mean = this->Mean();
-    Matrix3<T> total;
+    V3Vect<T> mean = this->Mean();
+    VR3Matrix<T> total;
     for (int i = 0; i < this->m_elemCount; i++)
     {
         total.M[0][0] += (this->m_data[i].x - mean.x) * (this->m_data[i].x - mean.x);
@@ -70,10 +70,10 @@ Matrix3<T> SensorFilter<T>::Covariance() const
 }
 
 template <typename T>
-Vector3<T> SensorFilter<T>::PearsonCoefficient() const
+V3Vect<T> SensorFilter<T>::PearsonCoefficient() const
 {
-    Matrix3<T> cov = this->Covariance();
-    Vector3<T> pearson;
+    VR3Matrix<T> cov = this->Covariance();
+    V3Vect<T> pearson;
     pearson.x = cov.M[0][1]/(sqrt(cov.M[0][0])*sqrt(cov.M[1][1]));
     pearson.y = cov.M[1][2]/(sqrt(cov.M[1][1])*sqrt(cov.M[2][2]));
     pearson.z = cov.M[2][0]/(sqrt(cov.M[2][2])*sqrt(cov.M[0][0]));
