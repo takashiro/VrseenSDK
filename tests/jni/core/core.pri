@@ -6,3 +6,6 @@ include(VArray.pri)
 include(VFlags.pri)
 include(VAtomicInt.pri)
 include(VList.pri)
+include(VVariant.pri)
+
+SOURCES += $$NV_ROOT/core/VLog.cpp
