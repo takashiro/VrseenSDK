@@ -101,10 +101,10 @@ static float DistortionFnScaleRadiusSquared(const VLensDistortion& lens,float rs
     return scale;
 }
 // x,y,z components map to r,g,b
-static Vector3f DistortionFnScaleRadiusSquaredChroma (const VLensDistortion& lens,float rsq)
+static V3Vectf DistortionFnScaleRadiusSquaredChroma (const VLensDistortion& lens,float rsq)
 {
     float scale = DistortionFnScaleRadiusSquared (lens, rsq );
-    Vector3f scaleRGB;
+    V3Vectf scaleRGB;
     scaleRGB.x = scale * ( 1.0f + lens.ChromaticAberration[0] + rsq * lens.ChromaticAberration[1] );     // Red
     scaleRGB.y = scale;                                                                        // Green
     scaleRGB.z = scale * ( 1.0f + lens.ChromaticAberration[2] + rsq * lens.ChromaticAberration[3] );     // Blue
@@ -125,7 +125,7 @@ static void WarpTexCoordChroma( const hmdInfoInternal_t & hmdInfo, const float i
 
     const float rsq = theta[0] * theta[0] + theta[1] * theta[1];
 
-    const Vector3f chromaScale = DistortionFnScaleRadiusSquaredChroma (hmdInfo.lens,rsq);
+    const V3Vectf chromaScale = DistortionFnScaleRadiusSquaredChroma (hmdInfo.lens,rsq);
 
     for ( int i = 0; i < 2; i++ ) {
         red[i] = chromaScale[0] * theta[i];
@@ -143,7 +143,7 @@ static void WarpTexCoordChroma( const hmdInfoInternal_t & hmdInfo, const float i
 // There is a hazard here, because the area up to the next vertex
 // past this will be drawn, so the density of tesselation effects
 // the area that the cursor will show in.
-static bool VectorHitsCursor( const Vector2f & v )
+static bool VectorHitsCursor( const V2Vectf & v )
 {
     if ( fabs( v.y ) > 0.017f ) // +/- 1 degree vertically
     {
@@ -214,7 +214,7 @@ VGlGeometry VLensDistortion::CreateTessellatedMesh(const hmdInfoInternal_t & hmd
             for ( int x = 0; x < totalX; x++ )
             {
                 const int vertIndex = (y*totalX+x );
-                Vector2f	v;
+                V2Vectf	v;
                 for ( int i = 0 ; i < 2; i++ )
                 {
                     v[i] = fovScale * bufferVerts[vertIndex*6+i];
