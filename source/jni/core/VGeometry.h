@@ -271,10 +271,10 @@ public:
 	    VAngle() : a(0) {}
 
 		// Fix the range to be between -Pi and Pi
-		VAngle(T a_, AngularUnits u = Radians) : a((u == Radians) ? a_ : a_*VConstants<T>::DegreeToRadFactor) { FixRange(); }
+        VAngle(T a_, AngularUnits u = Radians) : a((u == Radians) ? a_ : a_*VConstants<T>::VDTR) { FixRange(); }
 
-		T    Get(AngularUnits u = Radians) const       { return (u == Radians) ? a : a*VConstants<T>::RadToDegreeFactor; }
-		void Set(const T& x, AngularUnits u = Radians) { a = (u == Radians) ? x : x*VConstants<T>::DegreeToRadFactor; FixRange(); }
+        T    Get(AngularUnits u = Radians) const       { return (u == Radians) ? a : a*VConstants<T>::VRTD; }
+        void Set(const T& x, AngularUnits u = Radians) { a = (u == Radians) ? x : x*VConstants<T>::VDTR; FixRange(); }
 		int Sign() const                               { if (a == 0) return 0; else return (a > 0) ? 1 : -1; }
 		T   Abs() const                                { return (a > 0) ? a : -a; }
 

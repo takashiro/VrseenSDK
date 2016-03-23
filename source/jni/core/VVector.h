@@ -136,7 +136,7 @@ public:
      #if 0	// FIXME: use this safe normalization instead
      		T l = LengthSq();
      		OVR_ASSERT(l >= VConstants<T>::SmallestNonDenormal);
-     		*this *= RcpSqrt(l);
+            *this *= VRcpSqrt(l);
      #else
      		T l = Length();
      		OVR_ASSERT(l != T(0));
@@ -150,7 +150,7 @@ public:
      #if 0	// FIXME: use this safe normalization instead
      		T l = LengthSq();
      		OVR_ASSERT(l >= VConstants<T>::SmallestNonDenormal);
-     		return *this * RcpSqrt(l);
+            return *this * VRcpSqrt(l);
      #else
      		T l = Length();
      		OVR_ASSERT(l != T(0));
@@ -324,7 +324,7 @@ public:
        #if 0	// FIXME: use this safe normalization instead
        		T l = LengthSq();
        		OVR_ASSERT(l >= VConstants<T>::SmallestNonDenormal);
-       		*this *= RcpSqrt(l);
+            *this *= VRcpSqrt(l);
        #else
        		T l = Length();
        		OVR_ASSERT(l != T(0));
@@ -338,7 +338,7 @@ public:
        #if 0	// FIXME: use this safe normalization instead
        		T l = LengthSq();
        		OVR_ASSERT(l >= VConstants<T>::SmallestNonDenormal);
-       		return *this * RcpSqrt(l);
+            return *this * VRcpSqrt(l);
        #else
        		T l = Length();
        		OVR_ASSERT(l != T(0));
@@ -510,7 +510,7 @@ public:
       #if 0	// FIXME: use this safe normalization instead
       		T l = LengthSq();
       		OVR_ASSERT(l >= VConstants<T>::SmallestNonDenormal);
-      		*this *= RcpSqrt(l);
+            *this *= VRcpSqrt(l);
       #else
       		T l = Length();
       		OVR_ASSERT(l != T(0));
@@ -524,7 +524,7 @@ public:
       #if 0	// FIXME: use this safe normalization instead
       		T l = LengthSq();
       		OVR_ASSERT(l >= VConstants<T>::SmallestNonDenormal);
-      		return *this * RcpSqrt(l);
+            return *this * VRcpSqrt(l);
       #else
       		T l = Length();
       		OVR_ASSERT(l != T(0));

@@ -162,7 +162,7 @@ void SensorCalibration::AutocalibrateGyro(MessageBodyFrame const& msg)
 
     V3Vectf gyro = msg.RotationRate;
     // do a moving average to reject short term noise
-    V3Vectf avg = (GyroFilter.VDisEmpty()) ? gyro : gyro * alpha + GyroFilter.VDpeek_back() * (1 - alpha);
+    V3Vectf avg = (GyroFilter.isEmpty()) ? gyro : gyro * alpha + GyroFilter.peekLast() * (1 - alpha);
 
     // Make sure the absolute value is below what is likely motion
     // Make sure it is close enough to the current average that it is probably noise and not motion
@@ -171,13 +171,13 @@ void SensorCalibration::AutocalibrateGyro(MessageBodyFrame const& msg)
     GyroFilter.append(avg);
 
     // if had a reasonable number of samples already use it for the current offset
-    if (GyroFilter.size() > (uint)GyroFilter.VDcapacity() / 2)
+    if (GyroFilter.size() > GyroFilter.capacity() / 2)
     {
         GyroAutoOffset = GyroFilter.Mean();
         GyroAutoTemperature = msg.Temperature;
 
         // After ~6 seconds of no motion, use the average as the new zero rate offset
-        if (GyroFilter.VDisFull())
+        if (GyroFilter.isFull())
 		{
 			StoreAutoOffset();
 		}

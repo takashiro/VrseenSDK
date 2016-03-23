@@ -3,7 +3,6 @@
 #include "vglobal.h"
 
 // Use explicit path for FbxConvert
-#include "VMath.h"
 #include "VBasicmath.h"
 #include "VArray.h"
 NV_NAMESPACE_BEGIN

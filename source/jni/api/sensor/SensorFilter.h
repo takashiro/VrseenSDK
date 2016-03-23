@@ -1,6 +1,5 @@
 #pragma once
 
-#include "VMath.h"
 #include "VBasicmath.h"
 #include "VDeque.h"
 #include "Alg.h"
@@ -26,7 +25,7 @@ public:
     // The following methods are augmented to update the cached running sum value
     void append(const T &e)
     {
-        VCircularBuffer<T>::VCpush_front(e);
+        VCircularBuffer<T>::append(e);
         RunningTotal += e;
         if (this->v_end == 0)
         {
@@ -39,7 +38,7 @@ public:
 
     void prepend(const T &e)
     {
-        VCircularBuffer<T>::VCpush_back(e);
+        VCircularBuffer<T>::preAppend(e);
         RunningTotal += e;
         if (this->v_start == 0)
         {
@@ -52,21 +51,21 @@ public:
 
     T takeLast()
     {
-        T e = VCircularBuffer<T>::VDpop_back();
+        T e = VCircularBuffer<T>::takeLast();
         RunningTotal -= e;
         return e;
     }
 
     T takeFirst()
     {
-        T e = VCircularBuffer<T>::VDpop_front();
+        T e = VCircularBuffer<T>::takeFirst();
         RunningTotal -= e;
         return e;
     }
 
     void clear()
     {
-        VCircularBuffer<T>::VDclear();
+        VCircularBuffer<T>::clear();
         RunningTotal = T();
     }
 
@@ -78,7 +77,7 @@ public:
 
     T Mean() const
     {
-        return this->VDisEmpty() ? T() : (Total() / (float) this->v_count);
+        return this->isEmpty() ? T() : (Total() / (float) this->v_count);
     }
 
 	T MeanN(int n) const
@@ -88,7 +87,7 @@ public:
 		T total = T();
         for (int i = 0; i < n; i++)
         {
-			total += this->VDpeek_back(i);
+            total += this->peekLast(i);
 		}
 		return total / n;
 	}
@@ -98,57 +97,57 @@ public:
     T SavitzkyGolaySmooth4()
     {
         OVR_ASSERT(this->v_capacity >= 4);
-        return this->VDpeek_back(0)*0.7f +
-               this->VDpeek_back(1)*0.4f +
-               this->VDpeek_back(2)*0.1f -
-               this->VDpeek_back(3)*0.2f;
+        return this->peekLast(0)*0.7f +
+               this->peekLast(1)*0.4f +
+               this->peekLast(2)*0.1f -
+               this->peekLast(3)*0.2f;
     }
 
     T SavitzkyGolaySmooth8() const
     {
         OVR_ASSERT(this->v_capacity >= 8);
-        return this->VDpeek_back(0)*0.41667f +
-               this->VDpeek_back(1)*0.33333f +
-               this->VDpeek_back(2)*0.25f +
-               this->VDpeek_back(3)*0.16667f +
-               this->VDpeek_back(4)*0.08333f -
-               this->VDpeek_back(6)*0.08333f -
-               this->VDpeek_back(7)*0.16667f;
+        return this->peekLast(0)*0.41667f +
+               this->peekLast(1)*0.33333f +
+               this->peekLast(2)*0.25f +
+               this->peekLast(3)*0.16667f +
+               this->peekLast(4)*0.08333f -
+               this->peekLast(6)*0.08333f -
+               this->peekLast(7)*0.16667f;
     }
 
     T SavitzkyGolayDerivative4() const
     {
         OVR_ASSERT(this->v_capacity >= 4);
-        return this->VDpeek_back(0)*0.3f +
-               this->VDpeek_back(1)*0.1f -
-               this->VDpeek_back(2)*0.1f -
-               this->VDpeek_back(3)*0.3f;
+        return this->peekLast(0)*0.3f +
+               this->peekLast(1)*0.1f -
+               this->peekLast(2)*0.1f -
+               this->peekLast(3)*0.3f;
     }
 
     T SavitzkyGolayDerivative5() const
     {
             OVR_ASSERT(this->v_capacity >= 5);
-            return this->VDpeek_back(0)*0.2f +
-                   this->VDpeek_back(1)*0.1f -
-                   this->VDpeek_back(3)*0.1f -
-                   this->VDpeek_back(4)*0.2f;
+            return this->peekLast(0)*0.2f +
+                   this->peekLast(1)*0.1f -
+                   this->peekLast(3)*0.1f -
+                   this->peekLast(4)*0.2f;
    }
 
     T SavitzkyGolayDerivative12() const
     {
         OVR_ASSERT(this->v_capacity >= 12);
-        return this->VDpeek_back(0)*0.03846f +
-               this->VDpeek_back(1)*0.03147f +
-               this->VDpeek_back(2)*0.02448f +
-               this->VDpeek_back(3)*0.01748f +
-               this->VDpeek_back(4)*0.01049f +
-               this->VDpeek_back(5)*0.0035f -
-               this->VDpeek_back(6)*0.0035f -
-               this->VDpeek_back(7)*0.01049f -
-               this->VDpeek_back(8)*0.01748f -
-               this->VDpeek_back(9)*0.02448f -
-               this->VDpeek_back(10)*0.03147f -
-               this->VDpeek_back(11)*0.03846f;
+        return this->peekLast(0)*0.03846f +
+               this->peekLast(1)*0.03147f +
+               this->peekLast(2)*0.02448f +
+               this->peekLast(3)*0.01748f +
+               this->peekLast(4)*0.01049f +
+               this->peekLast(5)*0.0035f -
+               this->peekLast(6)*0.0035f -
+               this->peekLast(7)*0.01049f -
+               this->peekLast(8)*0.01748f -
+               this->peekLast(9)*0.02448f -
+               this->peekLast(10)*0.03147f -
+               this->peekLast(11)*0.03846f;
     }
 
     T SavitzkyGolayDerivativeN(int n) const
@@ -160,7 +159,7 @@ public:
         {
             int ind1 = m - k;
             int ind2 = n - m + k - 1;
-            result += (this->VDpeek_back(ind1) - this->VDpeek_back(ind2)) * (float) k;
+            result += (this->peekLast(ind1) - this->peekLast(ind2)) * (float) k;
         }
         float coef = 3.0f/(m*(m+1.0f)*(2.0f*m+1.0f));
         result = result*coef;
@@ -212,8 +211,8 @@ private:
     // for the purpose of variance computations
     void append(const V3Vectf &e)
     {
-        runningTotalLengthSq += this->VDisFull() ? (e.LengthSq() - this->VDpeek_front().LengthSq()) : e.LengthSq();
-        SensorFilterBase<V3Vectf>::VDpush_front(e);
+        runningTotalLengthSq += this->isFull() ? (e.LengthSq() - this->peekFirst().LengthSq()) : e.LengthSq();
+        SensorFilterBase<V3Vectf>::append(e);
         if (this->v_end == 0)
         {
             // update the cached total to avoid error accumulation
@@ -231,7 +230,7 @@ public:
     // return the scalar variance of the filter values (rotated to be in the same frame)
     float Variance() const
     {
-        return this->VDisEmpty() ? 0 : (runningTotalLengthSq / this->v_count - this->Mean().LengthSq());
+        return this->isEmpty() ? 0 : (runningTotalLengthSq / this->v_count - this->Mean().LengthSq());
     }
 
     // return the scalar standard deviation of the filter values (rotated to be in the same frame)
@@ -251,7 +250,7 @@ public:
     // in order to rotate the previous value to the current body frame
     void Update(V3Vectf value, float deltaT, VQuatf deltaQ = VQuatf())
     {
-        if (this->VDisEmpty())
+        if (this->isEmpty())
         {
             output = value;
         }

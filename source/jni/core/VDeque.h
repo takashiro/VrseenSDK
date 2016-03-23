@@ -9,22 +9,23 @@ NV_NAMESPACE_BEGIN
 template <class E>
 class VDeque : public std::deque<E>
 {
-public :
+    typedef std::deque<E> ParentType;
+public :    
     VDeque(int capacity = 500);
     VDeque(const VDeque<E> &oneVDque);
     virtual ~VDeque(void);
 
-    virtual void        VDpush_front      (const E &element);
-    virtual void        VDpush_back       (const E &element);
-    virtual E           VDpop_front       ();
-    virtual E           VDpop_back        ();
-    virtual const   E&  VDpeek_front       (int i = 0) const;
-    virtual const   E&  VDpeek_back        (int i = 0) const;
-    virtual int         VDsize            () const;
-    virtual int         VDcapacity        () const;
-    virtual void        VDclear           ();
-    virtual inline bool VDisEmpty         ()const;
-    virtual inline bool VDisFull          ()const;
+    virtual void        append          (const E &element);
+    virtual void        preAppend       (const E &element);
+    virtual E           takeFirst       ();
+    virtual E           takeLast        ();
+    virtual const   E&  peekFirst       (int i = 0) const;
+    virtual const   E&  peekLast        (int i = 0) const;
+    virtual int         size            () const;
+    virtual int         capacity        () const;
+    virtual void        clear           ();
+    virtual inline bool isEmpty         ()const;
+    virtual inline bool isFull          ()const;
 
 
 protected:
@@ -59,21 +60,21 @@ VDeque<E>::~VDeque()
 }
 
 template <class E>
-void VDeque<E>::VDpush_front(const E &element)
+void VDeque<E>::append(const E &element)
 {
     this->push_front(element);
     return;
 }
 
 template <class E>
-void VDeque<E>::VDpush_back(const E &element)
+void VDeque<E>::preAppend(const E &element)
 {
     this->push_back(element);
     return;
 }
 
 template <class E>
-E VDeque<E>::VDpop_front()
+E VDeque<E>::takeFirst()
 {
     E tmp = this->front();
     this->pop_front();
@@ -81,7 +82,7 @@ E VDeque<E>::VDpop_front()
 }
 
 template <class E>
-E VDeque<E>::VDpop_back()
+E VDeque<E>::takeLast()
 {
     E tmp = this->back();
     this->pop_back();
@@ -89,7 +90,7 @@ E VDeque<E>::VDpop_back()
 }
 
 template <class E>
-const E& VDeque<E>::VDpeek_front(int i) const
+const E& VDeque<E>::peekFirst(int i) const
 {
     if (i >= this->v_capacity)
     {
@@ -99,7 +100,7 @@ const E& VDeque<E>::VDpeek_front(int i) const
 }
 
 template <class E>
-const E& VDeque<E>::VDpeek_back(int i) const
+const E& VDeque<E>::peekLast(int i) const
 {
     int tmp = this->v_capacity-1-i;
     if (tmp < 0)
@@ -110,31 +111,31 @@ const E& VDeque<E>::VDpeek_back(int i) const
 }
 
 template <class E>
-int VDeque<E>::VDsize() const
+int VDeque<E>::size() const
 {
     return this->v_capacity;
 }
 
 template <class E>
-int VDeque<E>::VDcapacity() const
+int VDeque<E>::capacity() const
 {
     return this->max_size();
 }
 
 template <class E>
-void VDeque<E>::VDclear()
+void VDeque<E>::clear()
 {
-    this->clear();
+    ParentType::clear();
 }
 
 template <class E>
-inline bool VDeque<E>::VDisEmpty()const
+inline bool VDeque<E>::isEmpty()const
 {
     return this->size()==0;
 }
 
 template <class E>
-inline bool VDeque<E>::VDisFull() const
+inline bool VDeque<E>::isFull() const
 {
     return this->size()==this->v_capacity;
 }
@@ -153,26 +154,26 @@ public:
     VCircularBuffer(int MaxSize = 500) : VDeque<E>::VDeque(MaxSize) { }
     virtual ~VCircularBuffer(){}
 
-    inline virtual void VCpush_back  (const E &Item);    // Adds Item to the end, overwriting the oldest element at the beginning if necessary
-    inline virtual void VCpush_front (const E &Item);    // Adds Item to the beginning, overwriting the oldest element at the end if necessary
+    inline virtual void preAppend  (const E &Item);    // Adds Item to the end, overwriting the oldest element at the beginning if necessary
+    inline virtual void append (const E &Item);    // Adds Item to the beginning, overwriting the oldest element at the end if necessary
 };
 
 template <class E>
-inline void VCircularBuffer<E>::VCpush_back(const E &Item)
+inline void VCircularBuffer<E>::preAppend(const E &Item)
 {
-    if (this->VDisFull())
+    if (this->isFull())
     {
-     this->VDpop_back();
+     this->takeLast();
     }
     this->push_back(Item);
 }
 
 template <class E>
-inline void VCircularBuffer<E>::VCpush_front(const E &Item)
+inline void VCircularBuffer<E>::append(const E &Item)
 {
-    if (this->VDisFull())
+    if (this->isFull())
     {
-        this->VDpop_front();
+        this->takeFirst();
     }
     this->push_front(Item);
 }

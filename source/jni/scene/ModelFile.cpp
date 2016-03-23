@@ -3,7 +3,6 @@
 #include <math.h>
 
 #include "Alg.h"
-#include "VMath.h"
 #include "VBasicmath.h"
 #include "VArray.h"
 #include "VString.h"

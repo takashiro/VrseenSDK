@@ -21,7 +21,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "GuiSys.h"
 #include "DefaultComponent.h"
 #include "../VrCommon.h"
-#include "VMath.h"
 #include "VBasicmath.h"
 #include "3rdParty/stb/stb_image.h"
 #include "AnimComponents.h"
