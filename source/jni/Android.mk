@@ -135,7 +135,6 @@ LOCAL_SRC_FILES  := \
 	scene/ModelView.cpp \
 	scene/SurfaceTexture.cpp \
 	scene/SwipeView.cpp \
-	VrCommon.cpp \
 	KeyState.cpp \
 	App.cpp \
 	DebugLines.cpp \
