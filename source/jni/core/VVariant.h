@@ -85,13 +85,13 @@ public:
     const VVariantArray &toArray() const;
     const VVariantMap &toMap() const;
 
-    VVariant &at(uint index);
-    VVariant &operator[](uint index) { return at(index); }
+    VVariant &operator[](uint index) { return (*(m_value.array))[index]; }
+
     const VVariant &at(uint index) const;
     const VVariant &operator[](uint index) const { return at(index); }
 
-    VVariant &value(const VString &key);
-    VVariant &operator[](const VString &key) { return value(key); }
+    VVariant &operator[](const VString &key) { return (*(m_value.map))[key]; }
+
     const VVariant &value(const VString &key) const;
     const VVariant &operator[](const VString &key) const { return value(key); }
 

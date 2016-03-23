@@ -26,7 +26,7 @@ template<class T>
 class PoseState
 {
 public:
-    typedef typename CompatibleTypes<VPos<T> >::Type CompatibleType;
+    typedef typename VCompatibleTypes<VPos<T> >::Type CompatibleType;
 
     PoseState() : TimeInSeconds(0.0) { }
     // float <-> double conversion constructor.
@@ -38,16 +38,16 @@ public:
     { }
 
     // C-interop support: PoseStatef <-> ovrPoseStatef
-    PoseState(const typename CompatibleTypes<PoseState<T> >::Type& src)
+    PoseState(const typename VCompatibleTypes<PoseState<T> >::Type& src)
         : Transform(src.Pose),
           AngularVelocity(src.AngularVelocity), LinearVelocity(src.LinearVelocity),
           AngularAcceleration(src.AngularAcceleration), LinearAcceleration(src.LinearAcceleration),
           TimeInSeconds(src.TimeInSeconds)
     { }
 
-    operator const typename CompatibleTypes<PoseState<T> >::Type () const
+    operator const typename VCompatibleTypes<PoseState<T> >::Type () const
     {
-        typename CompatibleTypes<PoseState<T> >::Type result;
+        typename VCompatibleTypes<PoseState<T> >::Type result;
         result.Pose		            = Transform;
         result.AngularVelocity      = AngularVelocity;
         result.LinearVelocity       = LinearVelocity;

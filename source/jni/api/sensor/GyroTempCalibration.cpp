@@ -242,7 +242,7 @@ void GyroTempCalibration::LoadFile()
 {
     VString path = GetCalibrationPath(false);
 
-    VJson root = VJson::Load(path.toCString());
+    VJson root = VJson::Load(path);
     if (!root.isObject() || root.size() < 2)
         return;
 
@@ -282,15 +282,15 @@ void GyroTempCalibration::LoadFile()
 
 void GyroTempCalibration::SaveFile()
 {
-    VJson root(VJson::Object);
+    VJsonObject root;
     root.insert("Calibration Version", TEMP_CALIBRATION_FILE_VERSION_2);
 
 	VString str = GyroCalibrationToString();
-    root.insert("Data", std::string(str.toCString()));
+    root.insert("Data", str);
 
 	VString path = GetCalibrationPath(true);
-    std::ofstream fp(path.toCString(), std::ios::binary);
-    fp << root;
+    std::ofstream fp(path.toUtf8(), std::ios::binary);
+    fp << std::move(root);
 }
 
 void GyroTempCalibration::GetAllTemperatureReports(VArray<VArray<TemperatureReport> >* tempReports)

@@ -4,7 +4,6 @@
 #include "DeviceConstants.h"
 #include "DeviceHandle.h"
 
-#include "VMath.h"
 #include "VBasicmath.h"
 #include "VColor.h"
 #include "VArray.h"

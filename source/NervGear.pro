@@ -30,7 +30,6 @@ SOURCES += \
     jni/core/VLog.cpp \
     jni/core/VLock.cpp \
     jni/core/Lockless.cpp \
-    jni/core/VMath.cpp \
     jni/core/VPath.cpp \
     jni/core/RefCount.cpp \
     jni/core/VSignal.cpp \
@@ -145,7 +144,7 @@ HEADERS += \
     jni/core/VByteArray.h \
     jni/core/VColor.h \
     jni/core/VChar.h \
-    jni/core/Deque.h \
+    jni/core/VDeque.h \
     jni/core/VDir.h \
     jni/core/VEvent.h \
     jni/core/VEventLoop.h \
@@ -156,7 +155,6 @@ HEADERS += \
     jni/core/VLog.h \
     jni/core/VLock.h \
     jni/core/Lockless.h \
-    jni/core/VMath.h \
     jni/core/VMap.h \
     jni/core/VPath.h \
     jni/core/RefCount.h \

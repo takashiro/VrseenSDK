@@ -321,22 +321,10 @@ const VVariantMap &VVariant::toMap() const
     return m_type == Map ? *(m_value.map) : EmptyMap;
 }
 
-VVariant &VVariant::at(uint index)
-{
-    vAssert(m_type == Array);
-    return m_value.array->at(index);
-}
-
 const VVariant &VVariant::at(uint index) const
 {
     vAssert(m_type == Array);
     return m_value.array->at(index);
-}
-
-VVariant &VVariant::value(const VString &key)
-{
-    vAssert(m_type == Map);
-    return m_value.map->value(key);
 }
 
 const VVariant &VVariant::value(const VString &key) const

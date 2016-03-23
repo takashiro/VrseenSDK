@@ -12,23 +12,28 @@ class VMap : public std::map<Key, Value>
 public:
     typedef Key KeyType;
     typedef Value ValueType;
+    typedef std::map<Key, Value> ParentType;
 
-    typedef typename std::map<Key, Value>::iterator Iterator;
-    typedef typename std::map<Key, Value>::const_iterator ConstIterator;
+    typedef typename ParentType::iterator Iterator;
+    typedef typename ParentType::const_iterator ConstIterator;
 
-    bool isEmpty() const { return std::map<Key, Value>::empty(); }
+    bool isEmpty() const { return ParentType::empty(); }
 
-    bool contains(const Key &key) const { return std::map<Key, Value>::find(key) != std::map<Key, Value>::end(); }
+    bool contains(const Key &key) const { return ParentType::find(key) != ParentType::end(); }
 
-    Value &value(const Key &key) { return std::map<Key, Value>::at(key); }
-    Value &operator[](const Key &key) { return std::map<Key, Value>::operator[](key); }
-    const Value &value(const Key &key) const { return std::map<Key, Value>::at(key); }
-    const Value &operator[](const Key &key) const { return std::map<Key, Value>::operator[](key); }
+    const Value &value(const Key &key) const
+    {
+        static Value defaultValue;
+        return contains(key) ? ParentType::at(key) : defaultValue;
+    }
 
-    void insert(const Key &key, const Value &value) { (*this)[key] = value; }
-    void insert(const Key &key, Value &&value) { std::map<Key, Value>::insert(std::pair<Key, Value>(key, value)); }
+    Value &operator[](const Key &key) { return ParentType::operator[](key); }
+    const Value &operator[](const Key &key) const { return value(key); }
 
-    void remove(const Key &key) { std::map<Key, Value>::erase(key); }
+    void insert(const Key &key, const Value &value) { ParentType::insert(std::pair<Key, Value>(key, value)); }
+    void insert(const Key &key, Value &&value) { ParentType::insert(std::pair<Key, Value>(key, value)); }
+
+    void remove(const Key &key) { ParentType::erase(key); }
 };
 
 NV_NAMESPACE_END

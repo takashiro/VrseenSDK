@@ -139,8 +139,6 @@ void ovr_ReturnToHome( ovrMobile * ovr );
 
 void ovr_SendIntent( ovrMobile * ovr, const char * actionName, const char * toPackageName,
 		const char * toClassName, const char * command, const char * uri, eExitType exitType );
-void ovr_BroadcastSystemActivityEvent( ovrMobile * ovr, const char * actionName, const char * toPackageName,
-		const char * toClassName, const char * command, const char * jsonExtra, const char * uri );
 void ovr_SendLaunchIntent( ovrMobile * ovr, const char * toPackageName, const char * command,
 		const char * uri, eExitType exitType );
 bool ovr_StartSystemActivity( ovrMobile * ovr, const char * command, const char * jsonText );

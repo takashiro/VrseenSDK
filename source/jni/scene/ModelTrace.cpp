@@ -119,7 +119,7 @@ traceResult_t ModelTrace::Trace( const V3Vectf & start, const V3Vectf & end ) co
 
     const V3Vectf rayDelta = end - start;
 	const float rayLengthSqr = rayDelta.LengthSq();
-	const float rayLengthRcp = RcpSqrt( rayLengthSqr );
+    const float rayLengthRcp = VRcpSqrt( rayLengthSqr );
 	const float rayLength = rayLengthSqr * rayLengthRcp;
     const V3Vectf rayDir = rayDelta * rayLengthRcp;
 
@@ -274,7 +274,7 @@ traceResult_t ModelTrace::Trace_Exhaustive( const V3Vectf & start, const V3Vectf
 
     const V3Vectf rayDelta = end - start;
 	const float rayLengthSqr = rayDelta.LengthSq();
-	const float rayLengthRcp = RcpSqrt( rayLengthSqr );
+    const float rayLengthRcp = VRcpSqrt( rayLengthSqr );
 	const float rayLength = rayLengthSqr * rayLengthRcp;
     const V3Vectf rayStart = start;
     const V3Vectf rayDir = rayDelta * rayLengthRcp;

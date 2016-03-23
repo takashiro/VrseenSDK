@@ -14,9 +14,11 @@ void VUserSettings::load()
     // TODO: Switch this over to using a content provider when available.
     VJson root;
     std::ifstream fp(PROFILE_PATH, std::ios::binary);
-    fp >> root;
+    if (fp.is_open()) {
+        fp >> root;
+    }
 
-    if (root.isInvalid()) {
+    if (root.isNull()) {
         vWarn("Failed to load user profile \"" << PROFILE_PATH << "\". Using defaults.");
     } else {
         ipd = root.value("ipd").toDouble();
@@ -28,18 +30,17 @@ void VUserSettings::load()
 
 void VUserSettings::save()
 {
-    VJson root(VJson::Object);
-
-    root["ipd"] = ipd;
-    root["eyeHeight"] = eyeHeight;
-    root["headModelHeight"] = headModelHeight;
-    root["headModelDepth"] = headModelDepth;
+    VJsonObject root;
+    root.insert("ipd", ipd);
+    root.insert("eyeHeight", eyeHeight);
+    root.insert("headModelHeight", headModelHeight);
+    root.insert("headModelDepth", headModelDepth);
 
     std::ofstream fp(PROFILE_PATH, std::ios::binary);
     if (!fp.is_open()) {
         vWarn("Failed to save user profile" << PROFILE_PATH);
     } else {
-        fp << root;
+        fp << VJson(std::move(root));
     }
 }
 

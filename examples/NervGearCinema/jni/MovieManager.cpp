@@ -188,7 +188,7 @@ void MovieManager::ReadMetaData( MovieDef *movie )
     VJson metaData;
     std::ifstream fs(filename.toCString(), std::ios::binary);
     fs >> metaData;
-    if (metaData.isValid()) {
+    if (metaData.isObject()) {
         if (metaData.contains("title")) {
             movie->Title = metaData.value("title").toString();
 		}

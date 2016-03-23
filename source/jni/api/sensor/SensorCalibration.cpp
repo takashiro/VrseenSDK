@@ -162,7 +162,7 @@ void SensorCalibration::AutocalibrateGyro(MessageBodyFrame const& msg)
 
     V3Vectf gyro = msg.RotationRate;
     // do a moving average to reject short term noise
-    V3Vectf avg = (GyroFilter.isEmpty()) ? gyro : gyro * alpha + GyroFilter.peekBack() * (1 - alpha);
+    V3Vectf avg = (GyroFilter.isEmpty()) ? gyro : gyro * alpha + GyroFilter.peekLast() * (1 - alpha);
 
     // Make sure the absolute value is below what is likely motion
     // Make sure it is close enough to the current average that it is probably noise and not motion

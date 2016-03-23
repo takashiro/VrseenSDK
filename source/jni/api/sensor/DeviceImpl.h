@@ -33,25 +33,6 @@ enum
 	Device_KTracker_Samsung_ProductId_5 = 0xA505,
 };
 
-//-------------------------------------------------------------------------------------
-// Globally shared Lock implementation used for MessageHandlers.
-
-class SharedLock
-{
-public:
-    SharedLock() : m_useCount(0) {}
-
-    VLock* GetLockAddRef();
-    void  ReleaseLock(VLock* plock);
-
-private:
-    VLock* toLock() { return (VLock*)Buffer; }
-
-    // UseCount and max alignment.
-    VAtomicInt      m_useCount;
-    UInt64          Buffer[(sizeof(VLock)+sizeof(UInt64)-1)/sizeof(UInt64)];
-};
-
 
 // Wrapper for MessageHandler that includes synchronization logic.
 // References to MessageHandlers are organized in a list to allow for them to
