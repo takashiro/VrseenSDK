@@ -3,8 +3,8 @@
 #include "sensor/Device.h"
 #include "HmdInfo.h"
 
-#include "../core/Android/GlUtils.h"
 #include "VGlShader.h"
+#include "VGlOperation.h"
 
 #include "VLensDistortion.h"
 
