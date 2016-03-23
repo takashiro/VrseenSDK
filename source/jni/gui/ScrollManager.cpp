@@ -14,7 +14,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "Alg.h"
 #include "api/Vsync.h"
 #include "Input.h"
-#include "VrCommon.h"
 
 namespace NervGear {
 

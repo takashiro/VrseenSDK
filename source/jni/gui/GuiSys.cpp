@@ -17,7 +17,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "../api/VGlShader.h"
 #include "GlTexture.h"
 #include "../api/VGlGeometry.h"
-#include "VrCommon.h"
 #include "App.h"
 #include "GazeCursor.h"
 #include "VRMenuMgr.h"
@@ -62,7 +61,7 @@ void OvrGuiSysLocal::init( App * app, OvrVRMenuMgr & menuMgr, BitmapFont const &
 
 //==============================
 // OvrGuiSysLocal::RepositionMenus
-// Reposition any open menus 
+// Reposition any open menus
 void OvrGuiSysLocal::resetMenuOrientations( App * app, VR4Matrixf const & viewMatrix )
 {
 	for ( int i = 0; i < Menus.length(); ++i )
@@ -160,7 +159,7 @@ int OvrGuiSysLocal::FindMenuIndex( VRMenu const * menu ) const
 {
 	for ( int i = 0; i < Menus.length(); ++i )
 	{
-		if ( Menus[i] == menu ) 
+		if ( Menus[i] == menu )
 		{
 			return i;
 		}
@@ -174,7 +173,7 @@ int OvrGuiSysLocal::FindActiveMenuIndex( VRMenu const * menu ) const
 {
 	for ( int i = 0; i < ActiveMenus.length(); ++i )
 	{
-		if ( ActiveMenus[i] == menu ) 
+		if ( ActiveMenus[i] == menu )
 		{
 			return i;
 		}
@@ -240,7 +239,7 @@ void OvrGuiSysLocal::openMenu( App * app, OvrGazeCursor & gazeCursor, char const
 
 //==============================
 // OvrGuiSysLocal::CloseMenu
-void OvrGuiSysLocal::closeMenu( App * app, char const * menuName, bool const closeInstantly ) 
+void OvrGuiSysLocal::closeMenu( App * app, char const * menuName, bool const closeInstantly )
 {
 	int menuIndex = FindMenuIndex( menuName );
 	if ( menuIndex < 0 )
@@ -274,7 +273,7 @@ bool OvrGuiSysLocal::isMenuActive( char const * menuName ) const
 
 //==============================
 // OvrGuiSysLocal::IsAnyMenuOpen
-bool OvrGuiSysLocal::isAnyMenuActive() const 
+bool OvrGuiSysLocal::isAnyMenuActive() const
 {
 	return ActiveMenus.length() > 0;
 }
@@ -333,14 +332,14 @@ void OvrGuiSysLocal::frame( App * app, const VrFrame & vrFrame, OvrVRMenuMgr & m
 
 //==============================
 // OvrGuiSysLocal::OnKeyEvent
-bool OvrGuiSysLocal::onKeyEvent( App * app, int const keyCode, KeyState::eKeyEventType const eventType ) 
+bool OvrGuiSysLocal::onKeyEvent( App * app, int const keyCode, KeyState::eKeyEventType const eventType )
 {
 	for ( int i = 0; i < ActiveMenus.length(); ++i )
 	{
 		VRMenu * curMenu = ActiveMenus[i];
 		OVR_ASSERT( curMenu != NULL );
 
-		if ( keyCode == AKEYCODE_BACK ) 
+		if ( keyCode == AKEYCODE_BACK )
 		{
 			LOG( "OvrGuiSysLocal back key event '%s' for menu '%s'", KeyState::EventNames[eventType], curMenu->name() );
 		}

@@ -34,7 +34,6 @@
 #include "VrApi.h"
 #include "VrApi_Android.h"
 #include "VrApi_Helpers.h"
-#include "VrCommon.h"
 #include "VrLocale.h"
 #include "VRMenuMgr.h"
 #include "VUserSettings.h"
@@ -44,6 +43,7 @@
 #include "VLog.h"
 #include "VMainActivity.h"
 #include "VThread.h"
+#include "VStandardPath.h"
 
 //#define TEST_TIMEWARP_WATCHDOG
 

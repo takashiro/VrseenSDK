@@ -14,13 +14,13 @@ Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
 #include "Alg.h"
 #include "Android/LogUtils.h"
 
-#include "VrCommon.h"
 #include "VDir.h"
 #include "VPath.h"
 #include "VApkFile.h"
 #include "VJson.h"
 #include "VArray.h"
 #include "VLog.h"
+#include "VStandardPath.h"
 
 #include <algorithm>
 #include <unistd.h>

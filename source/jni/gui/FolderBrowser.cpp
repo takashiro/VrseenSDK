@@ -20,12 +20,10 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VRMenuMgr.h"
 #include "GuiSys.h"
 #include "DefaultComponent.h"
-#include "../VrCommon.h"
 #include "VBasicmath.h"
 #include "3rdParty/stb/stb_image.h"
 #include "AnimComponents.h"
 #include "linux/stat.h"
-#include "VrCommon.h"
 #include "VrLocale.h"
 #include "VRMenuObject.h"
 #include "ScrollBarComponent.h"
@@ -35,6 +33,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <VArray.h>
 #include <VDir.h>
 #include <VLog.h>
+#include <VStandardPath.h>
 
 namespace NervGear {
 

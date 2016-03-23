@@ -2,7 +2,6 @@
 #include <VPath.h>
 
 #include "VideosMetaData.h"
-#include "VrCommon.h"
 
 using namespace NervGear;
 

@@ -16,7 +16,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "api/VrApi.h"		// ovrPoseStatef
 
 #include "Input.h"
-#include "VrCommon.h"
 #include "App.h"
 #include "GazeCursor.h"
 #include "VRMenuMgr.h"
@@ -26,19 +25,19 @@ namespace NervGear {
 
 //==============================
 // VRMenuEventHandler::VRMenuEventHandler
-VRMenuEventHandler::VRMenuEventHandler() 
+VRMenuEventHandler::VRMenuEventHandler()
 {
 }
 
 //==============================
 // VRMenuEventHandler::~VRMenuEventHandler
-VRMenuEventHandler::~VRMenuEventHandler() 
-{ 
+VRMenuEventHandler::~VRMenuEventHandler()
+{
 }
 
 //==============================
 // VRMenuEventHandler::Frame
-void VRMenuEventHandler::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font, 
+void VRMenuEventHandler::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font,
         menuHandle_t const & rootHandle,VPosf const & menuPose, gazeCursorUserId_t const & gazeUserId,
 		VArray< VRMenuEvent > & events )
 {
@@ -116,17 +115,17 @@ void VRMenuEventHandler::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr
 		events.append( event );
     }
 
- /*   
+ /*
     // report swipe data
     char const * swipeNames[5] = { "none", "down", "up", "back", "forward" };
     int swipeUpDown = ( vrFrame.Input.buttonPressed & BUTTON_SWIPE_UP ) ? 2 : 0;
     swipeUpDown = ( vrFrame.Input.buttonPressed & BUTTON_SWIPE_DOWN ) ? 1 : swipeUpDown;
     int swipeForwardBack = ( vrFrame.Input.buttonPressed & BUTTON_SWIPE_FORWARD ) ? 4 : 0;
     swipeForwardBack = ( vrFrame.Input.buttonPressed & BUTTON_SWIPE_BACK ) ? 3 : swipeForwardBack;
- 
-    app->ShowInfoText( 1.0f, "touch %s\n( %s, %s )\n( %.2f, %.2f )\n( %.2f, %.2f )", 
+
+    app->ShowInfoText( 1.0f, "touch %s\n( %s, %s )\n( %.2f, %.2f )\n( %.2f, %.2f )",
             touchDown ? swipeNames[1] : swipeNames[2],
-            swipeNames[swipeUpDown], swipeNames[swipeForwardBack], 
+            swipeNames[swipeUpDown], swipeNames[swipeForwardBack],
             vrFrame.Input.touch[0], vrFrame.Input.touch[1],
             vrFrame.Input.touchRelative[0], vrFrame.Input.touchRelative[1] );
 */
@@ -240,7 +239,7 @@ static inline void LogEventType( VRMenuEvent const & event, char const * fmt, ..
 
 //==============================
 // FindTargetPath
-static void FindTargetPath( OvrVRMenuMgr const & menuMgr, 
+static void FindTargetPath( OvrVRMenuMgr const & menuMgr,
         menuHandle_t const curHandle, VArray< menuHandle_t > & targetPath )
 {
     VRMenuObject * obj = menuMgr.toObject( curHandle );
@@ -253,7 +252,7 @@ static void FindTargetPath( OvrVRMenuMgr const & menuMgr,
 
 //==============================
 // FindTargetPath
-static void FindTargetPath( OvrVRMenuMgr const & menuMgr, menuHandle_t const rootHandle, 
+static void FindTargetPath( OvrVRMenuMgr const & menuMgr, menuHandle_t const rootHandle,
         menuHandle_t const curHandle, VArray< menuHandle_t > & targetPath )
 {
     FindTargetPath( menuMgr, curHandle, targetPath );
@@ -265,7 +264,7 @@ static void FindTargetPath( OvrVRMenuMgr const & menuMgr, menuHandle_t const roo
 
 //==============================
 // VRMenuEventHandler::HandleEvents
-void VRMenuEventHandler::handleEvents( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, 
+void VRMenuEventHandler::handleEvents( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 		menuHandle_t const rootHandle, VArray< VRMenuEvent > const & events ) const
 {
     VRMenuObject * root = menuMgr.toObject( rootHandle );
@@ -277,7 +276,7 @@ void VRMenuEventHandler::handleEvents( App * app, VrFrame const & vrFrame, OvrVR
     // find the list of all objects that are in the focused path
     VArray< menuHandle_t > focusPath;
     FindTargetPath( menuMgr, rootHandle, m_focusedHandle, focusPath );
-    
+
     VArray< menuHandle_t > targetPath;
 
 	for ( int i = 0; i < events.length(); ++i )
@@ -346,14 +345,14 @@ bool VRMenuEventHandler::dispatchToPath( App * app, VrFrame const & vrFrame, Ovr
     {
         VRMenuObject * obj = menuMgr.toObject( path[i] );
 		char const * const indent = "                                                                ";
-        // set to 
+        // set to
         if ( obj != NULL && dispatchToComponents( app, vrFrame, menuMgr, event, obj ) )
         {
 			if ( log )
 			{
 				LOG( "%sDispatchToPath: %s, object '%s' consumed event.", &indent[64 - i * 2],
 						VRMenuEvent::EventTypeNames[event.eventType], ( obj != NULL ? obj->text().toCString() : "<null>" ) );
-			}	
+			}
             return true;    // consumed by a component
         }
 		if ( log )
@@ -367,7 +366,7 @@ bool VRMenuEventHandler::dispatchToPath( App * app, VrFrame const & vrFrame, Ovr
 
 //==============================
 // VRMenuEventHandler::BroadcastEvent
-bool VRMenuEventHandler::broadcastEvent( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, 
+bool VRMenuEventHandler::broadcastEvent( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuEvent const & event, VRMenuObject * receiver ) const
 {
 	DROID_ASSERT( receiver != NULL, "VrMenu" );
@@ -380,7 +379,7 @@ bool VRMenuEventHandler::broadcastEvent( App * app, VrFrame const & vrFrame, Ovr
 
     // if the parent did not consume, dispatch to children
     int numChildren = receiver->numChildren();
-    for ( int i = 0; i < numChildren; ++i ) 
+    for ( int i = 0; i < numChildren; ++i )
     {
         menuHandle_t childHandle = receiver->getChildHandleForIndex( i );
         VRMenuObject * child = menuMgr.toObject( childHandle );

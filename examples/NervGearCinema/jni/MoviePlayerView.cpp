@@ -3,7 +3,6 @@
 
 #include "CinemaApp.h"
 #include "Native.h"
-#include "VrCommon.h"
 #include "CinemaStrings.h"
 
 namespace OculusCinema

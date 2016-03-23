@@ -7,8 +7,8 @@
 #include <stdlib.h>
 #include <math.h>
 
+NV_NAMESPACE_BEGIN
 
-namespace NervGear{
 template <class T> class VR4Matrix;
 
 template<> struct VCompatibleTypes<VR4Matrix<float> >  { typedef ovrMatrix4f Type; };
@@ -1356,5 +1356,14 @@ inline VR3Matrix<T> operator*(const VR3Matrix<T>& a, const VSymMat3<T>& b)
 	#undef AJB_ARBC
 }
 
-
+inline V3Vectf GetViewMatrixPosition( VR4Matrixf const & m )
+{
+    return m.Inverted().GetTranslation();
 }
+
+inline V3Vectf GetViewMatrixForward( VR4Matrixf const & m )
+{
+    return V3Vectf( -m.M[2][0], -m.M[2][1], -m.M[2][2] ).Normalized();
+}
+
+NV_NAMESPACE_END
