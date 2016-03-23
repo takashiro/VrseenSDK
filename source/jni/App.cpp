@@ -16,7 +16,7 @@
 
 #include "Alg.h"
 #include "BitmapFont.h"
-#include "Console.h"
+#include "VConsole.h"
 #include "DebugLines.h"
 #include "EyePostRender.h"
 #include "GazeCursor.h"
@@ -34,7 +34,6 @@
 #include "VrApi.h"
 #include "VrApi_Android.h"
 #include "VrApi_Helpers.h"
-#include "VrCommon.h"
 #include "VrLocale.h"
 #include "VRMenuMgr.h"
 #include "VUserSettings.h"
@@ -44,6 +43,7 @@
 #include "VLog.h"
 #include "VMainActivity.h"
 #include "VThread.h"
+#include "VStandardPath.h"
 
 //#define TEST_TIMEWARP_WATCHDOG
 
@@ -1626,12 +1626,12 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
     d->viewParms.HeadModelHeight = config.headModelHeight;
 
 	// Register console functions
-	InitConsole();
-    RegisterConsoleFunction("print", NervGear::DebugPrint);
-    RegisterConsoleFunction("debugMenuBounds", NervGear::DebugMenuBounds);
-    RegisterConsoleFunction("debugMenuHierarchy", NervGear::DebugMenuHierarchy);
-    RegisterConsoleFunction("debugMenuPoses", NervGear::DebugMenuPoses);
-    RegisterConsoleFunction("showFPS", NervGear::ShowFPS);
+    VConsole::Instantialize();
+    VConsole::RegisterConsole("print", NervGear::VConsole::DebugPrint);
+    VConsole::RegisterConsole("debugMenuBounds", NervGear::DebugMenuBounds);
+    VConsole::RegisterConsole("debugMenuHierarchy", NervGear::DebugMenuHierarchy);
+    VConsole::RegisterConsole("debugMenuPoses", NervGear::DebugMenuPoses);
+    VConsole::RegisterConsole("showFPS", NervGear::ShowFPS);
 
     d->renderThread = new VThread([](void *data)->int{
         App::Private *d = static_cast<App::Private *>(data);
@@ -1644,8 +1644,8 @@ App::~App()
 {
     vInfo("---------- ~AppLocal() ----------");
 
-	UnRegisterConsoleFunctions();
-	ShutdownConsole();
+    VConsole::UnRegisterConsole();
+    VConsole::DestoryVConsole();
 
     if (d->javaObject != 0)
 	{

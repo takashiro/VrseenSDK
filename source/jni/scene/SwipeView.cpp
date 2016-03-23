@@ -23,7 +23,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "Input.h"
 #include "GlTexture.h"
-#include "VrCommon.h"		// LogMatrix
 #include "BitmapFont.h"
 #include "gui/VRMenuMgr.h"
 #include "gui/GuiSys.h"

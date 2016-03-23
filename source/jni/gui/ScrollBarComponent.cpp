@@ -15,7 +15,6 @@ Copyright   :   Copyright 2014 Oculus VR, Inc. All Rights reserved.
 #include "VRMenuMgr.h"
 #include "VApkFile.h"
 #include "Alg.h"
-#include "VrCommon.h"
 
 namespace NervGear {
 
@@ -214,7 +213,7 @@ void OvrScrollBarComponent::getScrollBarParms( VRMenu & menu, float scrollBarLen
 		parms.append( itemParms );
 	}
 
-	// add parms for the object that serves as a transform 
+	// add parms for the object that serves as a transform
 	{
 		VArray< VRMenuComponent* > comps;
 		VArray< VRMenuSurfaceParms > surfParms;
@@ -308,7 +307,7 @@ void OvrScrollBarComponent::getScrollBarParms( VRMenu & menu, float scrollBarLen
 
 //==============================
 // OvrScrollBarComponent::OnEvent_Impl
-eMsgStatus OvrScrollBarComponent::onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, 
+eMsgStatus OvrScrollBarComponent::onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 		VRMenuObject * self, VRMenuEvent const & event )
 {
 	switch ( event.eventType )
@@ -348,7 +347,7 @@ void OvrScrollBarComponent::setScrollState( VRMenuObject * self, const eScrollBa
 	{
 		return;
 	}
-	
+
 	switch ( m_currentScrollState )
 	{
 	case SCROLL_STATE_NONE:
@@ -381,7 +380,7 @@ void OvrScrollBarComponent::setScrollState( VRMenuObject * self, const eScrollBa
 
 //==============================
 // OvrScrollBarComponent::OnFrameUpdate
-eMsgStatus OvrScrollBarComponent::onFrameUpdate( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, 
+eMsgStatus OvrScrollBarComponent::onFrameUpdate( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 		VRMenuObject * self, VRMenuEvent const & event )
 {
 	OVR_ASSERT( self != NULL );

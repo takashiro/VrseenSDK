@@ -40,7 +40,6 @@
 #include "../api/VGlShader.h"
 #include "GlTexture.h"
 #include "../api/VGlGeometry.h"
-#include "VrCommon.h"
 #include "VString.h"
 
 NV_NAMESPACE_BEGIN

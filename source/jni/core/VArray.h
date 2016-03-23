@@ -47,7 +47,7 @@ public:
 
     VArray &operator << (E &&e)
     {
-        append(e);
+        append(std::move(e));
         return *this;
     }
 
@@ -69,7 +69,7 @@ public:
     const E &operator[](int i) const { return ParentType::at(i); }
 
     void append(const E &e) { ParentType::push_back(e); }
-    void append(E &&e) { ParentType::push_back(e); }
+    void append(E &&e) { ParentType::push_back(std::move(e)); }
 
     void append(const VArray<E> &elements)
     {
@@ -79,7 +79,7 @@ public:
     }
 
     void prepend(const E &e) { ParentType::insert(ParentType::begin(), e); }
-    void prepend(E &&e) { ParentType::insert(ParentType::begin(), e); }
+    void prepend(E &&e) { ParentType::insert(ParentType::begin(), std::move(e)); }
 
     void prepend(const VArray<E> &elements)
     {

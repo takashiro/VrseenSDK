@@ -34,8 +34,7 @@ std::list<TestUnit> &Tests();
     {\
         TestAdder()\
         {\
-            TestUnit unit(#name, test);\
-            Tests().push_back(unit);\
+            Tests().push_back(TestUnit(#name, test));\
         }\
     };\
     TestAdder adder;\

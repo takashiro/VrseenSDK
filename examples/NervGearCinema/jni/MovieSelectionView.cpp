@@ -23,7 +23,6 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "MovieSelectionComponent.h"
 #include "SwipeHintComponent.h"
 #include "VApkFile.h"
-#include "VrCommon.h"
 #include "CinemaStrings.h"
 #include "BitmapFont.h"
 #include "Native.h"

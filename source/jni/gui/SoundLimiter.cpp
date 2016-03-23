@@ -19,7 +19,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "api/VrApi.h"		// ovrPoseStatef
 
 #include "../Input.h"
-#include "../VrCommon.h"
 #include "../App.h"
 #include "VSoundManager.h"
 

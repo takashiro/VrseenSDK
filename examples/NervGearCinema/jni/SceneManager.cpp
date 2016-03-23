@@ -6,7 +6,6 @@
 #include "Native.h"
 #include "SceneManager.h"
 #include "SurfaceTexture.h"
-#include "VrCommon.h"
 
 #include "VLog.h"
 
