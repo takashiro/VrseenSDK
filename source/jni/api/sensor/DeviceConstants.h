@@ -103,5 +103,12 @@ enum EyeCupType
     EyeCup_LAST
 };
 
+enum PhoneTypeEnum
+{
+	HMD_GALAXY_S4,		// Galaxy S4 in Samsung's holder
+	HMD_GALAXY_S5,		// Galaxy S5 1080 with lens version 2
+	HMD_GALAXY_S5_WQHD,	// Galaxy S5 1440 with lens version 2
+	HMD_NOTE_4,			// Note4
+};
 
 NV_NAMESPACE_END

@@ -13,7 +13,7 @@
 
 #include "Android/JniUtils.h"
 #include "Vsync.h"
-#include "Distortion.h"
+#include "VLensDistortion.h"
 #include "VrApi_Android.h"
 
 #include "../embedded/oculus_loading_indicator.h"
@@ -96,14 +96,6 @@ swapProgram_t	spSyncSwappedBufferPortrait = {
         true,	false, { 0.0, 0.0},	{ {2.0, 2.5}, {2.5, 3.0} }
 };
 
-// Landscape scanned displays, like Rift DK1, will
-// always have identical top and bottom predictions.
-// For front buffer landscape rendering, We may want to split each eye
-// into a pair of renderings with a wait in the middle to avoid
-// tight timing near the bottom of the frame and assumptions about
-// the speed and raster order of warping.
-
-static const char * DefaultDistortionFile = "/Oculus/defaultDistortion.bin";
 
 //=========================================================================================
 
@@ -2067,51 +2059,19 @@ void VFrameSmooth::createFrameworkGraphics()
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
     glBindTexture( GL_TEXTURE_2D, 0 );
 
-    // Decide where we get our distortion mesh from
-    MemBuffer buf;
-    if ( m_initParms.distortionFileName )
-    {	// If we have an explicit distortion file request, use that.
-        MemBufferFile explicitFile( m_initParms.distortionFileName );
-        if ( explicitFile.length > 0 )
-        {
-            buf = explicitFile.toMemBuffer();
-        }
-        if ( buf.buffer == NULL )
-        {
-            FAIL( "Distortion file '%s' failed to load", m_initParms.distortionFileName );
-        }
-    }
-    else
-    {	// Look for the default file
-        VString fullPath = m_initParms.externalStorageDirectory + DefaultDistortionFile;
-        LOG( "Loading distortion file: %s", fullPath.toCString() );
-        MemBufferFile defaultFile( fullPath.toCString() );
-        if ( defaultFile.length > 0 )
-        {
-            buf = defaultFile.toMemBuffer();
-        }
-
-        if ( buf.buffer == NULL )
-        {	// Synthesize the standard distortion
-            buf = BuildDistortionBuffer( m_initParms.hmdInfo, 32, 32 );
-        }
-    }
-
     // single slice mesh for the normal rendering
-    m_warpMesh = VGlGeometryFactory::LoadMeshFromMemory( buf, 1, calibrateFovScale, false );
+    m_warpMesh = VLensDistortion::CreateTessellatedMesh( m_initParms.hmdInfo, 1, calibrateFovScale, false );
 
     // multi-slice mesh for sliced rendering
-    m_sliceMesh = VGlGeometryFactory::LoadMeshFromMemory( buf, NUM_SLICES_PER_EYE, calibrateFovScale, false );
+    m_sliceMesh = VLensDistortion::CreateTessellatedMesh( m_initParms.hmdInfo, NUM_SLICES_PER_EYE, calibrateFovScale, false );
 
     // small subset cursor mesh
-    m_cursorMesh = VGlGeometryFactory::LoadMeshFromMemory( buf, 1, calibrateFovScale, true );
+    m_cursorMesh = VLensDistortion::CreateTessellatedMesh( m_initParms.hmdInfo, 1, calibrateFovScale, true );
 
     if ( m_warpMesh.indexCount == 0 || m_sliceMesh.indexCount == 0 )
     {
         FAIL( "WarpMesh failed to load");
     }
-
-    buf.freeData();
 
     // Vertexes and indexes for debug graph, the verts will be updated
     // dynamically each frame.

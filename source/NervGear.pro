@@ -56,7 +56,7 @@ SOURCES += \
     jni/api/VGlOperation.cpp \
     jni/api/HmdInfo.cpp \
     jni/api/HmdSensors.cpp \
-    jni/api/Distortion.cpp \
+    jni/api/VLensDistortion.cpp \
     jni/api/SystemActivities.cpp \
     jni/api/VFrameSmooth.cpp \
     jni/api/VMainActivity.cpp \
@@ -79,7 +79,6 @@ SOURCES += \
     jni/api/sensor/Android_SensorDevice.cpp \
     jni/api/sensor/Android_PhoneSensors.cpp \
     jni/api/sensor/Common_HMDDevice.cpp \
-    jni/api/sensor/Stereo.cpp \
     jni/gui/VRMenuComponent.cpp \
     jni/gui/VRMenuMgr.cpp \
     jni/gui/VRMenuObjectLocal.cpp \
@@ -203,7 +202,7 @@ HEADERS += \
     jni/api/DirectRender.h \
     jni/api/HmdInfo.h \
     jni/api/HmdSensors.h \
-    jni/api/Distortion.h \
+    jni/api/VLensDistortion.h \
     jni/api/SystemActivities.h \
     jni/api/VFrameSmooth.h \
     jni/api/VGlGeometry.h \
@@ -232,7 +231,6 @@ HEADERS += \
     jni/api/sensor/Android_HMDDevice.h \
     jni/api/sensor/Android_SensorDevice.h \
     jni/api/sensor/Android_PhoneSensors.h \
-    jni/api/sensor/Stereo.h \
     jni/api/sensor/PhoneSensors.h \
     jni/api/sensor/Device.h \
     jni/api/sensor/DeviceMessages.h \

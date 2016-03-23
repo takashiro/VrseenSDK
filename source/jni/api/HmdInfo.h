@@ -1,13 +1,13 @@
 #pragma once
 
 #include <jni.h>
-#include "sensor/Stereo.h"		// for LensConfig
+#include "../api/VLensDistortion.h"		// for LensConfig
 
 NV_NAMESPACE_BEGIN
 
 struct hmdInfoInternal_t
 {
-	LensConfig lens;
+	VLens lens;
 
 	float	lensSeparation;		// in meters
 
@@ -45,6 +45,7 @@ struct hmdInfoInternal_t
 // We can't look up vrActivityClass here, because we may be on a non-startup thread
 // in native apps.
 hmdInfoInternal_t GetDeviceHmdInfo( const char * buildModel, JNIEnv * env, jobject activity, jclass vrActivityClass );
-}
+
+NV_NAMESPACE_END
 
 

@@ -1924,7 +1924,7 @@ void ovr_SetDistortionTuning( ovrMobile * ovr, NervGear::DistortionEqnType type,
 	}
 	else
 	{
-		for ( int i = 0; i < NervGear::LensConfig::MaxCoefficients; i++ )
+		for ( int i = 0; i < ovr->HmdInfo.lens.MaxCoefficients; i++ )
 		{
 			ovr->HmdInfo.lens.K[i] = distortionK[i];
 		}
