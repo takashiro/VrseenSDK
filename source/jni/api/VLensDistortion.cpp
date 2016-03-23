@@ -62,7 +62,7 @@ static float EvalCatmullRomSpline ( float const *K, float scaledVal, int NumSegm
 }
 
 // The result is a scaling applied to the distance.
-static float DistortionFnScaleRadiusSquared(const VLens& lens,float rsq)
+static float DistortionFnScaleRadiusSquared(const VLensDistortion& lens,float rsq)
 {
     float scale = 1.0f;
     switch ( lens.Eqn )
@@ -101,7 +101,7 @@ static float DistortionFnScaleRadiusSquared(const VLens& lens,float rsq)
     return scale;
 }
 // x,y,z components map to r,g,b
-static Vector3f DistortionFnScaleRadiusSquaredChroma (const VLens& lens,float rsq)
+static Vector3f DistortionFnScaleRadiusSquaredChroma (const VLensDistortion& lens,float rsq)
 {
     float scale = DistortionFnScaleRadiusSquared (lens, rsq );
     Vector3f scaleRGB;
@@ -373,7 +373,7 @@ VGlGeometry VLensDistortion::CreateTessellatedMesh(const hmdInfoInternal_t & hmd
     return geometry;
 }
 
-VLens::VLens()
+VLensDistortion::VLensDistortion()
 {
     for ( int i = 0; i < MaxCoefficients; i++ )
     {
@@ -392,7 +392,7 @@ VLens::VLens()
     MetersPerTanAngleAtCenter = 0.043875f;
 }
 
-void VLens::initLensByPhoneType(PhoneTypeEnum type)
+void VLensDistortion::initLensByPhoneType(PhoneTypeEnum type)
 {
     switch( type )
     {

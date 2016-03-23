@@ -9,10 +9,10 @@ NV_NAMESPACE_BEGIN
 
 struct hmdInfoInternal_t;
 
-class VLens
+class VLensDistortion
 {
 public:
-    VLens();
+    VLensDistortion();
     void initLensByPhoneType(PhoneTypeEnum type);
 
     const  static int MaxCoefficients = 21;
@@ -32,11 +32,7 @@ public:
 
     float               InvK[MaxCoefficients];
     float               MaxInvR;
-};
 
-class VLensDistortion
-{
-public:
     static VGlGeometry CreateTessellatedMesh(const hmdInfoInternal_t & hmdInfo,const int numSlicesPerEye, const float fovScale,
                                              const bool cursorOnly);
     //default is 32*32

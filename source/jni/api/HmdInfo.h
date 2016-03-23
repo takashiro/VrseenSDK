@@ -7,7 +7,7 @@ NV_NAMESPACE_BEGIN
 
 struct hmdInfoInternal_t
 {
-	VLens lens;
+	VLensDistortion lens;
 
 	float	lensSeparation;		// in meters
 
