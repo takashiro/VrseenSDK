@@ -2046,23 +2046,19 @@ void VFrameSmooth::createFrameworkGraphics()
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
     glBindTexture( GL_TEXTURE_2D, 0 );
 
-    void* buf = VLensDistortion::InitChromaticAberration( m_initParms.hmdInfo, 32, 32 );
     // single slice mesh for the normal rendering
-    m_warpMesh = VGlGeometryFactory::LoadMeshFromMemory( buf, 1, calibrateFovScale, false );
+    m_warpMesh = VLensDistortion::CreateTessellatedMesh( m_initParms.hmdInfo, 1, calibrateFovScale, false );
 
     // multi-slice mesh for sliced rendering
-    m_sliceMesh = VGlGeometryFactory::LoadMeshFromMemory( buf, NUM_SLICES_PER_EYE, calibrateFovScale, false );
+    m_sliceMesh = VLensDistortion::CreateTessellatedMesh( m_initParms.hmdInfo, NUM_SLICES_PER_EYE, calibrateFovScale, false );
 
     // small subset cursor mesh
-    m_cursorMesh = VGlGeometryFactory::LoadMeshFromMemory( buf, 1, calibrateFovScale, true );
+    m_cursorMesh = VLensDistortion::CreateTessellatedMesh( m_initParms.hmdInfo, 1, calibrateFovScale, true );
 
     if ( m_warpMesh.indexCount == 0 || m_sliceMesh.indexCount == 0 )
     {
         FAIL( "WarpMesh failed to load");
     }
-
-    free( (void *)buf );
-    buf = NULL;
 
     // Vertexes and indexes for debug graph, the verts will be updated
     // dynamically each frame.

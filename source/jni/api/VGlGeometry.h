@@ -117,12 +117,6 @@ public:
     static VGlGeometry CreateCalibrationLines2( const int extraLines, const bool fullGrid );
 
     static VGlGeometry CreateQuad();
-
-    static VGlGeometry LoadMeshFromMemory(void* & buf,
-                                           const int numSlicesPerEye, const float fovScale, const bool cursorOnly );
-
-    static VGlGeometry LoadMeshFromFile( const char* src,
-                                           const int numSlicesPerEye, const float fovScale, const bool cursorOnly );
 };
 
 
