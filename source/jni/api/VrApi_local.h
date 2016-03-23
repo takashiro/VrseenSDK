@@ -21,5 +21,4 @@ struct ovrMobile
     VFrameSmooth *			Warp;
     hmdInfoInternal_t	HmdInfo;
 	ovrModeParms			Parms;
-    TimeWarpInitParms	Twp;
 };

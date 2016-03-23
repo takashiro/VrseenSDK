@@ -1508,22 +1508,7 @@ ovrMobile * ovr_EnterVrMode( ovrModeParms parms, ovrHmdInfo * returnedHmdInfo )
 		LOG( "Cleared JNI exception" );
 	}
 
-	// Start the time warp thread
-	ovr->Twp.asynchronousTimeWarp = ovr->Parms.AsynchronousTimeWarp;
-
-	// For video capture or testing on reference platforms without frontbuffer rendering,
-	// frontbuffer can be forced off.
-	ovr->Twp.hmdInfo = ovr->HmdInfo;
-	ovr->Twp.javaVm = VrLibJavaVM;
-	ovr->Twp.vrLibClass = VrLibClass;
-	ovr->Twp.activityObject = ovr->Parms.ActivityObject;
-	ovr->Twp.gameThreadTid = ovr->Parms.GameThreadTid;
-	// NOTE: 2014-12-05 - Android-L support requires
-	// different behavior than KitKat for setting up
-	// front buffer rendering.
-	ovr->Twp.buildVersionSDK = BuildVersionSDK;
-	ovr->Twp.externalStorageDirectory = externalStorageDirectory;
-	ovr->Warp = VFrameSmooth::Factory( ovr->Twp );
+	ovr->Warp = VFrameSmooth::Factory( ovr->Parms.AsynchronousTimeWarp,ovr->HmdInfo);
 
 	// Enable our real time scheduling.
 
@@ -1701,9 +1686,9 @@ static void ResetTimeWarp( ovrMobile * ovr )
 	LOG( "ResetTimeWarp" );
 
 	// restart TimeWarp to generate new distortion meshes
-	ovr->Twp.hmdInfo = ovr->HmdInfo;
 	delete ovr->Warp;
-	ovr->Warp = VFrameSmooth::Factory( ovr->Twp );
+	ovr->Warp = VFrameSmooth::Factory( ovr->Parms.AsynchronousTimeWarp,ovr->HmdInfo);
+
 	if ( ovr->Parms.AsynchronousTimeWarp )
 	{
 		SetSchedFifo( ovr, ovr->Warp->warpThreadTid(), SCHED_FIFO_PRIORITY_TIMEWARP );

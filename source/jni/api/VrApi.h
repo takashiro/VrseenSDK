@@ -592,9 +592,6 @@ typedef struct
 	ovrTimeWarpDebugPerfMode	DebugGraphMode;			// FIXME:VRAPI move to local preferences
 	ovrTimeWarpDebugPerfValue	DebugGraphValue;		// FIXME:VRAPI move to local preferences
 
-	// jobject that will be updated before each eye for minimal
-	// latency with WP_MASKED_PLANE_EXTERNAL
-	void *						SurfaceTextureObject;
 } ovrTimeWarpParms;
 
 // Accepts a new pos + texture set that will be used for future warps.

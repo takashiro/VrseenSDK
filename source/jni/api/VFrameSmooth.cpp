@@ -234,39 +234,22 @@ void VFrameSmooth::threadFunction()
         // removes SCHED_FIFO from the calling thread to keep the Android watch dog from
         // rebooting the device.
         // SCHED_FIFO is set back as soon as the calling thread calls WarpSwap() again.
-        if ( m_setSchedFifoMethodId != 0 )
-        {
-            const double currentTime = ovr_GetTimeInSeconds();
-            const double lastWarpTime = m_lastWarpSwapTimeInSeconds.state();
-            if ( removedSchedFifo )
-            {
-                if ( lastWarpTime > currentTime - 0.1 )
-                {
-                    LOG( "VFrameSmooth Watchdog: restored SCHED_FIFO on tid %d", m_sStartupTid );
-                    m_jni->CallStaticIntMethod( m_initParms.vrLibClass, m_setSchedFifoMethodId, m_initParms.activityObject, m_sStartupTid, SCHED_FIFO_PRIORITY_VRTHREAD );
-                    if ( m_initParms.gameThreadTid )
-                    {
-                        LOG( "VFrameSmooth Watchdog: restored SCHED_FIFO on tid %d", m_initParms.gameThreadTid );
-                        m_jni->CallStaticIntMethod( m_initParms.vrLibClass, m_setSchedFifoMethodId, m_initParms.activityObject, m_initParms.gameThreadTid, SCHED_FIFO_PRIORITY_VRTHREAD );
-                    }
-                    removedSchedFifo = false;
-                }
-            }
-            else
-            {
-                if ( lastWarpTime < currentTime - 1.0 )
-                {
-                    LOG( "VFrameSmooth Watchdog: removed SCHED_FIFO from tid %d", m_sStartupTid );
-                    m_jni->CallStaticIntMethod( m_initParms.vrLibClass, m_setSchedFifoMethodId, m_initParms.activityObject, m_sStartupTid, SCHED_FIFO_PRIORITY_NONE );
-                    if ( m_initParms.gameThreadTid )
-                    {
-                        LOG( "VFrameSmooth Watchdog: removed SCHED_FIFO from tid %d", m_initParms.gameThreadTid );
-                        m_jni->CallStaticIntMethod( m_initParms.vrLibClass, m_setSchedFifoMethodId, m_initParms.activityObject, m_initParms.gameThreadTid, SCHED_FIFO_PRIORITY_NONE );
-                    }
-                    removedSchedFifo = true;
-                }
-            }
-        }
+       const double currentTime = ovr_GetTimeInSeconds();
+       const double lastWarpTime = m_lastWarpSwapTimeInSeconds.state();
+       if ( removedSchedFifo )
+       {
+           if ( lastWarpTime > currentTime - 0.1 )
+           {
+               removedSchedFifo = false;
+           }
+       }
+       else
+       {
+           if ( lastWarpTime < currentTime - 1.0 )
+           {
+               removedSchedFifo = true;
+           }
+       }
 
         warpToScreen( vsync,spAsyncSwappedBufferPortrait);
     }
@@ -290,15 +273,15 @@ static bool IsContextPriorityExtensionPresent()
     return true;
 }
 
-VFrameSmooth * VFrameSmooth::Factory( TimeWarpInitParms initParms )
+VFrameSmooth * VFrameSmooth::Factory(bool async,hmdInfoInternal_t	hmdInfo)
 {
-    return new VFrameSmooth( initParms );
+    return new VFrameSmooth(async,hmdInfo);
 }
 
 /*
 * Startup()
 */
-VFrameSmooth::VFrameSmooth( const TimeWarpInitParms initParms ) :
+VFrameSmooth::VFrameSmooth(bool async,hmdInfoInternal_t	hmdInfo) :
         m_untexturedMvpProgram(),
         m_debugLineProgram(),
         m_warpPrograms(),
@@ -307,9 +290,6 @@ VFrameSmooth::VFrameSmooth( const TimeWarpInitParms initParms ) :
         m_hasEXT_sRGB_write_control( false ),
         m_sStartupTid( 0 ),
         m_jni( NULL ),
-        m_setSchedFifoMethodId( 0 ),
-        m_updateTexImageMethodId( 0 ),
-        m_getTimestampMethodId( 0 ),
         m_eglDisplay( 0 ),
         m_eglPbufferSurface( 0 ),
         m_eglMainThreadSurface( 0 ),
@@ -353,8 +333,8 @@ VFrameSmooth::VFrameSmooth( const TimeWarpInitParms initParms ) :
     // If this isn't set, Shutdown() doesn't need to kill the thread
     m_warpThread = 0;
 
-    // Save our startup parms
-    m_initParms = initParms;
+    m_async = async;
+    m_hmdInfo = hmdInfo;
 
     // No buffers have been submitted yet
     m_eyeBufferCount.setState( 0 );
@@ -414,16 +394,8 @@ VFrameSmooth::VFrameSmooth( const TimeWarpInitParms initParms ) :
                                                              (const char *)glGetString( GL_EXTENSIONS ) );
 
     // Skip thread initialization if we are running synchronously
-    if ( !m_initParms.asynchronousTimeWarp )
+    if ( !m_async )
     {
-        // The current thread is presumably already attached, so this
-        // should just return a valid environment.
-        const jint rtn = m_initParms.javaVm->AttachCurrentThread( &m_jni, 0 );
-        if ( rtn != JNI_OK )
-        {
-            FAIL( "AttachCurrentThread() returned %i", rtn );
-        }
-
         initRenderEnvironment();
 
         // create the framework graphics on this thread
@@ -623,29 +595,6 @@ void VFrameSmooth::warpThreadInit()
         FAIL( "eglMakeCurrent failed: %s", glOperation.EglErrorString() );
     }
 
-    // Get a jni environment for front buffer setting, SurfaceTexture updating and changing SCHED_FIFO
-    const jint rtn = m_initParms.javaVm->AttachCurrentThread( &m_jni, 0 );
-    if ( rtn != JNI_OK )
-    {
-        FAIL( "AttachCurrentThread() returned %i", rtn );
-    }
-    m_setSchedFifoMethodId = JniUtils::GetStaticMethodID( m_jni, m_initParms.vrLibClass, "setSchedFifoStatic", "(Landroid/app/Activity;II)I" );
-
-    static const char * className = "android/graphics/SurfaceTexture";
-    const jclass surfaceTextureClass = m_jni->FindClass(className);
-    if ( surfaceTextureClass == 0 ) {
-        FAIL( "FindClass( %s ) failed", className );
-    }
-    m_updateTexImageMethodId = m_jni->GetMethodID( surfaceTextureClass, "updateTexImage", "()V" );
-    if ( !m_updateTexImageMethodId ) {
-        FAIL( "couldn't get updateTexImageMethodId" );
-    }
-    m_getTimestampMethodId = m_jni->GetMethodID( surfaceTextureClass, "getTimestamp", "()J" );
-    if ( !m_getTimestampMethodId ) {
-        FAIL( "couldn't get GetTimestampMethodId" );
-    }
-    m_jni->DeleteLocalRef( surfaceTextureClass );
-
     initRenderEnvironment();
 
     // create the framework graphics on this thread
@@ -695,11 +644,6 @@ void VFrameSmooth::warpThreadShutdown()
     }
     m_eglWarpContext = 0;
 
-    const jint rtn = m_initParms.javaVm->DetachCurrentThread();
-    if ( rtn != JNI_OK )
-    {
-        FAIL( "DetachCurrentThread() returned %i", rtn );
-    }
 
     LOG( "WarpThreadShutdown() - End" );
 }
@@ -808,44 +752,6 @@ void VFrameSmooth::bindCursorProgram() const
 
 int CameraTimeWarpLatency = 4;
 bool CameraTimeWarpPause;
-
-static void UpdateSurfaceTexture( JNIEnv * Jni, jobject surfaceTexture, jmethodID UpdateTexImageMethodId,
-                                  jmethodID GetTimestampMethodId, ovrPoseStatef & topPose, ovrPoseStatef & bottomPose )
-{
-    if ( !surfaceTexture )
-    {
-        return;
-    }
-
-    // Assume this is called at 120 hz
-    static const int NUM_POSES = 16;
-    static ovrPoseStatef loggedPose[NUM_POSES];
-    static int poseNum;
-    poseNum++;
-    loggedPose[poseNum&(NUM_POSES-1)] = ovr_GetSensorStateInternal( ovr_GetTimeInSeconds() ).Predicted;
-
-    // We might need to discard a frame if more than one
-    // is in the queue.
-    static long long prevTimeStamp;
-    static ovrPoseStatef	prevTopPose;
-    static ovrPoseStatef	prevBottomPose;
-    while( !CameraTimeWarpPause )
-    {
-        // Allow the Java SurfaceTexture object to swap in an updated image.
-        Jni->CallVoidMethod( surfaceTexture, UpdateTexImageMethodId );
-        const long long nanoTimeStamp = Jni->CallLongMethod( surfaceTexture, GetTimestampMethodId );
-
-        if ( prevTimeStamp == nanoTimeStamp )
-        {
-            break;
-        }
-        prevTimeStamp = nanoTimeStamp;
-        prevTopPose = loggedPose[(poseNum - CameraTimeWarpLatency)&(NUM_POSES-1)];
-        prevBottomPose = loggedPose[(poseNum - CameraTimeWarpLatency+1)&(NUM_POSES-1)];
-    }
-    topPose = prevTopPose;
-    bottomPose = prevBottomPose;
-}
 
 static void BindEyeTextures( const warpSource_t & currentWarpSource, const ScreenEye eye )
 {
@@ -1182,25 +1088,6 @@ void VFrameSmooth::warpToScreen( const double vsyncBase_, const swapProgram_t & 
             }
         }
 
-        // Update the SurfaceTexture before calculating VFrameSmooth
-        if ( currentWarpSource.WarpParms.SurfaceTextureObject )
-        {
-            ovrPoseStatef	pose[2];
-            UpdateSurfaceTexture( m_jni,
-                                  (jobject)currentWarpSource.WarpParms.SurfaceTextureObject,
-                    m_updateTexImageMethodId, m_getTimestampMethodId, pose[0], pose[1] );
-            // Both time warp matrix are from the time at the start of this eye.
-            // The rollingWarp matrix will first transform the vector to account
-            // for movement in the current eye display roll.
-            for ( int scan = 0 ; scan < 2 ; scan++ )
-            {
-                const VR4Matrixf warp2 = CalculateTimeWarpMatrix2(
-                        pose[scan].Pose.Orientation,
-                        sensor[0].Predicted.Pose.Orientation
-                );
-                timeWarps[1][scan] = VR4Matrixf( currentWarpSource.WarpParms.Images[eye][1].TexCoordsFromTanAngles ) * warp2;
-            }
-        }
 
         // The pass through camera support needs to know the warping from the head motion
         // across the display scan independent of any layers, which may drop frames.
@@ -1490,26 +1377,6 @@ void VFrameSmooth::warpToScreenSliced( const double vsyncBase, const swapProgram
             }
         }
 
-        // Update the SurfaceTexture before calculating VFrameSmooth
-        if ( currentWarpSource.WarpParms.SurfaceTextureObject )
-        {
-            ovrPoseStatef pose[2];
-            UpdateSurfaceTexture( m_jni,
-                                  (jobject)currentWarpSource.WarpParms.SurfaceTextureObject,
-                    m_updateTexImageMethodId, m_getTimestampMethodId, pose[0], pose[1] );
-            // Both time warp matrix are from the time at the start of this eye.
-            // The rollingWarp matrix will first transform the vector to account
-            // for movement in the current eye display roll.
-            for ( int scan = 0; scan < 2; scan++ )
-            {
-                const VR4Matrixf warp2 = CalculateTimeWarpMatrix2(
-                        pose[scan].Pose.Orientation,
-                        sensor[0].Predicted.Pose.Orientation
-                );
-                timeWarps[1][scan] = VR4Matrixf( currentWarpSource.WarpParms.Images[eye][1].TexCoordsFromTanAngles ) * warp2;
-            }
-        }
-
         // The pass through camera support needs to know the warping from the head motion
         // across the display scan independent of any layers, which may drop frames.
         const VR4Matrixf rollingWarp = CalculateTimeWarpMatrix2(
@@ -1692,7 +1559,7 @@ void VFrameSmooth::warpSwapInternal( const ovrTimeWarpParms & parms )
 
     // If we are running synchronously instead of using a background
     // thread, call WarpToScreen() directly.
-    if ( !m_initParms.asynchronousTimeWarp )
+    if ( !m_async )
     {
         // Make sure all eye drawing is completed before we warp the drawing
         // to the display buffer.
@@ -1926,7 +1793,7 @@ void VFrameSmooth::drawTimingGraph( const ScreenEye eye )
     // Use the same rect for viewport and scissor
     // FIXME: this is probably bad for convergence
     int	rectX, rectY, rectWidth, rectHeight;
-    EyeRect( m_initParms.hmdInfo, eye, RECT_SCREEN,
+    EyeRect( m_hmdInfo, eye, RECT_SCREEN,
              rectX, rectY, rectWidth, rectHeight );
 
     glViewport( rectX, rectY, rectWidth, rectHeight );
@@ -1990,13 +1857,13 @@ void VFrameSmooth::createFrameworkGraphics()
     glBindTexture( GL_TEXTURE_2D, 0 );
 
     // single slice mesh for the normal rendering
-    m_warpMesh = VLensDistortion::CreateTessellatedMesh( m_initParms.hmdInfo, 1, calibrateFovScale, false );
+    m_warpMesh = VLensDistortion::CreateTessellatedMesh( m_hmdInfo, 1, calibrateFovScale, false );
 
     // multi-slice mesh for sliced rendering
-    m_sliceMesh = VLensDistortion::CreateTessellatedMesh( m_initParms.hmdInfo, NUM_SLICES_PER_EYE, calibrateFovScale, false );
+    m_sliceMesh = VLensDistortion::CreateTessellatedMesh( m_hmdInfo, NUM_SLICES_PER_EYE, calibrateFovScale, false );
 
     // small subset cursor mesh
-    m_cursorMesh = VLensDistortion::CreateTessellatedMesh( m_initParms.hmdInfo, 1, calibrateFovScale, true );
+    m_cursorMesh = VLensDistortion::CreateTessellatedMesh( m_hmdInfo, 1, calibrateFovScale, true );
 
     if ( m_warpMesh.indexCount == 0 || m_sliceMesh.indexCount == 0 )
     {

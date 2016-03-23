@@ -139,43 +139,11 @@ enum TimeWarpMode_t
     TWM_ASYNCHRONOUS	// Default behavior -- front buffer from background thread.
 };
 
-class TimeWarpInitParms
-{
-public:
-    TimeWarpInitParms() :
-            asynchronousTimeWarp( true ),
-            javaVm( NULL ),
-            vrLibClass( NULL ),
-            activityObject( NULL ),
-            gameThreadTid( 0 ),
-            buildVersionSDK( 0 ) {}
-
-
-    // Shipping applications will almost always want this on,
-    // but if you want to draw directly to the screen for
-    // debug tasks, you can run synchronously so the init
-    // thread is still current on the window.
-    bool				asynchronousTimeWarp;
-
-    // directory to load external data from
-    VString				externalStorageDirectory;
-
-    hmdInfoInternal_t	hmdInfo;
-
-    // For changing SCHED_FIFO on the calling thread.
-    JavaVM *			javaVm;
-    jclass				vrLibClass;
-    jobject				activityObject;
-    pid_t				gameThreadTid;
-
-    int					buildVersionSDK;
-};
-
 // Abstract interface
 class VFrameSmooth
 {
 public:
-    VFrameSmooth( const TimeWarpInitParms initParms );
+    VFrameSmooth(bool async,hmdInfoInternal_t	hmdInfo);
 
     // Optionally spawns a separate thread that will warp
     // eye images directly to the screen, regardless of the
@@ -195,7 +163,7 @@ public:
     // Any problems during startup will be a fatal error.
     //
     // Vsync must be initialized before calling.
-    static VFrameSmooth * Factory( TimeWarpInitParms initParms );
+    static VFrameSmooth * Factory(bool async,hmdInfoInternal_t	hmdInfo);
 
     // The system should be able to shutdown and reinitialize multiple times
     // by an application.  Each pause of the application will require a shutdown,
@@ -256,6 +224,10 @@ private:
     void			destroyFrameworkGraphics();
     void			drawFrameworkGraphicsToWindow( const ScreenEye eye, const int swapOptions,
                                                    const bool drawTimingGraph );
+
+    bool m_async;
+    hmdInfoInternal_t	m_hmdInfo;
+
     VGlShader		m_untexturedMvpProgram;
     VGlShader		m_debugLineProgram;
     VGlShader		m_warpPrograms[ WP_PROGRAM_MAX ];
@@ -293,8 +265,7 @@ private:
     EGLDisplay			m_window_display;
     EGLSurface			m_window_surface;
 
-    // Parameters from Startup()
-    TimeWarpInitParms m_initParms;
+
 
     bool			m_hasEXT_sRGB_write_control;	// extension
 
@@ -303,11 +274,6 @@ private:
 
     // To change SCHED_FIFO on the StartupTid.
     JNIEnv *		m_jni;
-    jmethodID		m_setSchedFifoMethodId;
-
-    // Support for updating a SurfaceTexture from the warp thread
-    jmethodID		m_updateTexImageMethodId;
-    jmethodID 		m_getTimestampMethodId;
 
     // Last time WarpSwap() was called.
     LocklessUpdater<double>		m_lastWarpSwapTimeInSeconds;
