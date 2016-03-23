@@ -140,7 +140,7 @@ LOCAL_SRC_FILES  := \
 	App.cpp \
 	DebugLines.cpp \
 	VrLocale.cpp \
-	Console.cpp
+	VConsole.cpp
 
 
 LOCAL_SRC_FILES += \

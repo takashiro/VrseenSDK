@@ -118,7 +118,7 @@ SOURCES += \
     jni/scene/SurfaceTexture.cpp \
     jni/scene/SwipeView.cpp \
     jni/App.cpp \
-    jni/Console.cpp \
+    jni/VConsole.cpp \
     jni/DebugLines.cpp \
     jni/KeyState.cpp \
     jni/VrCommon.cpp \
@@ -285,7 +285,7 @@ HEADERS += \
     jni/AppRender.h \
     jni/DebugLines.h \
     jni/VrLocale.h \
-    jni/Console.h \
+    jni/VConsole.h \
     jni/vglobal.h \
     jni/Input.h \
     jni/PointTracker.h \
