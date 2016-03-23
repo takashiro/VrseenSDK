@@ -281,9 +281,9 @@ void DirectRender::initForCurrentSurface( JNIEnv * jni, bool wantFrontBuffer_, i
 	// as it will result in poor performance.
     VGlOperation glOperation;
 	static const int KITKAT_WATCH = 20;
-    const GpuType gpuType = glOperation.EglGetGpuType();
+    const VGlOperation::GpuType gpuType = glOperation.EglGetGpuType();
 	if ( ( buildVersionSDK_ > KITKAT_WATCH ) ||	// if the SDK is Lollipop or higher
-         ( gpuType & GpuType::GPU_TYPE_MALI ) != 0 )		// or the GPU is Mali
+         ( gpuType & VGlOperation::GPU_TYPE_MALI ) != 0 )		// or the GPU is Mali
 	{
 		LOG( "Performing an initial swapbuffers for Mali and/or Android-L" );
 		// When we use the protected Trust Zone framebuffer there is trash in the
@@ -311,12 +311,12 @@ void DirectRender::initForCurrentSurface( JNIEnv * jni, bool wantFrontBuffer_, i
 		m_gvrFrontbufferExtension = m_surfaceManager.setFrontBuffer( windowSurface, true );
 		LOG ( "gvrFrontbufferExtension = %s", ( m_gvrFrontbufferExtension ) ? "TRUE" : "FALSE" );
 
-        if ( ( gpuType & GpuType::GPU_TYPE_MALI ) != 0 )
+        if ( ( gpuType & VGlOperation::GPU_TYPE_MALI ) != 0 )
 		{
 			LOG( "Mali GPU" );
 			tilerControl = FB_MALI;
 		}
-        else if ( ( gpuType & GpuType::GPU_TYPE_ADRENO ) != 0 )
+        else if ( ( gpuType & VGlOperation::GPU_TYPE_ADRENO ) != 0 )
 		{
 			// Query the number of samples on the display
 			EGLint configID;
@@ -332,7 +332,7 @@ void DirectRender::initForCurrentSurface( JNIEnv * jni, bool wantFrontBuffer_, i
 			EGLint samples = 0;
 			eglGetConfigAttrib( m_display, eglConfig, EGL_SAMPLES, &samples );
 
-            if ( gpuType == GpuType::GPU_TYPE_ADRENO_330 )
+            if ( gpuType == VGlOperation::GPU_TYPE_ADRENO_330 )
 			{
 				LOG( "Adreno 330 GPU" );
 				tilerControl = FB_TILED_RENDERING;

@@ -3,21 +3,33 @@
 #include "vgltypedefine.h"
 
 NV_NAMESPACE_BEGIN
-enum GpuType
-{
-    GPU_TYPE_ADRENO					= 0x1000,
-    GPU_TYPE_ADRENO_330				= 0x1001,
-    GPU_TYPE_ADRENO_420				= 0x1002,
-    GPU_TYPE_MALI					= 0x2000,
-    GPU_TYPE_MALI_T760				= 0x2100,
-    GPU_TYPE_MALI_T760_EXYNOS_5433	= 0x2101,
-    GPU_TYPE_MALI_T760_EXYNOS_7420	= 0x2102,
-    GPU_TYPE_UNKNOWN				= 0xFFFF
-};
+//enum GpuType
+//{
+//    GPU_TYPE_ADRENO					= 0x1000,
+//    GPU_TYPE_ADRENO_330				= 0x1001,
+//    GPU_TYPE_ADRENO_420				= 0x1002,
+//    GPU_TYPE_MALI					= 0x2000,
+//    GPU_TYPE_MALI_T760				= 0x2100,
+//    GPU_TYPE_MALI_T760_EXYNOS_5433	= 0x2101,
+//    GPU_TYPE_MALI_T760_EXYNOS_7420	= 0x2102,
+//    GPU_TYPE_UNKNOWN				= 0xFFFF
+//};
 
 class VGlOperation
 {
  public:
+
+    enum GpuType
+    {
+        GPU_TYPE_ADRENO					= 0x1000,
+        GPU_TYPE_ADRENO_330				= 0x1001,
+        GPU_TYPE_ADRENO_420				= 0x1002,
+        GPU_TYPE_MALI					= 0x2000,
+        GPU_TYPE_MALI_T760				= 0x2100,
+        GPU_TYPE_MALI_T760_EXYNOS_5433	= 0x2101,
+        GPU_TYPE_MALI_T760_EXYNOS_7420	= 0x2102,
+        GPU_TYPE_UNKNOWN				= 0xFFFF
+    };
 
     enum invalidateTarget_t
     {

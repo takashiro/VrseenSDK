@@ -50,12 +50,12 @@ PFNGLINVALIDATEFRAMEBUFFER_			VGlOperation::glInvalidateFramebuffer_ = NULL;
 PFNGLMAPBUFFERRANGE_					VGlOperation::glMapBufferRange_ = NULL;
 PFNGLUNMAPBUFFEROESPROC_				VGlOperation::glUnmapBuffer_ = NULL;
 
-GpuType VGlOperation::EglGetGpuType()
+VGlOperation::GpuType VGlOperation::EglGetGpuType()
 {
     return EglGetGpuTypeLocal();
 }
 
-GpuType VGlOperation::EglGetGpuTypeLocal()
+VGlOperation::GpuType VGlOperation::EglGetGpuTypeLocal()
 {
     GpuType gpuType;
     const char * glRendererString = (const char *)glGetString( GL_RENDERER );

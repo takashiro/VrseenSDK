@@ -135,7 +135,7 @@ static EyeParms DefaultVrParmsForRenderer(const VGlOperation & glOperation)
     EyeParms vrParms;
 
     vrParms.resolution = 1024;
-    vrParms.multisamples = (glOperation.gpuType == GpuType::GPU_TYPE_ADRENO_330) ? 2 : 4;
+    vrParms.multisamples = (glOperation.gpuType == VGlOperation::GPU_TYPE_ADRENO_330) ? 2 : 4;
     vrParms.colorFormat = COLOR_8888;
     vrParms.depthFormat = DEPTH_24;
 
@@ -144,7 +144,7 @@ static EyeParms DefaultVrParmsForRenderer(const VGlOperation & glOperation)
 
 static bool ChromaticAberrationCorrection(const VGlOperation & glOperation)
 {
-    return (glOperation.gpuType & GpuType::GPU_TYPE_ADRENO) != 0 && (glOperation.gpuType >= GpuType::GPU_TYPE_ADRENO_420);
+    return (glOperation.gpuType & VGlOperation::GPU_TYPE_ADRENO) != 0 && (glOperation.gpuType >= VGlOperation::GPU_TYPE_ADRENO_420);
 }
 
 static const char* vertexShaderSource =
