@@ -86,9 +86,6 @@ double ovr_GetTimeSinceLastVolumeChange();
 // Must be called from the same thread that called ovr_EnterVrMode().
 void		ovr_AdjustClockLevels( ovrMobile * ovr, int cpuLevel, int gpuLevel );
 
-// Gather information related to CPU and GPU scheduling and clock frequencies.
-// The returned string is valid until the next call.
-const char * ovr_CreateSchedulingReport( ovrMobile * ovr );
 
 //-----------------------------------------------------------------
 // Audio focus
