@@ -1,12 +1,7 @@
 #pragma once
 
 #include "vglobal.h"
-
 #include "Types.h"
-
-#ifdef OVR_OS_WIN32
-#include <windows.h>
-#endif
 
 /*
 	Memory-mapped files are a fairly good compromise between performance and flexibility.
@@ -23,8 +18,6 @@
 	opened with random_access = true.  Random access is usually used for a
 	database-like file type, which is much better implemented using asynch IO.
 */
-
-#pragma once
 
 NV_NAMESPACE_BEGIN
 
@@ -51,11 +44,7 @@ public:
     bool			isValid() const { return ( m_length != 0 ); }
 
 private:
-#if defined( OVR_OS_WIN32 )
-    HANDLE			m_file;
-#else
     int				m_file;
-#endif
 
     bool			m_readOnly;
     uint			m_length;
@@ -70,26 +59,22 @@ public:
 					~MappedView();
 
     bool			open( MappedFile * file ); // Returns false on error
-    UByte *			mapView( uint offset = 0, UInt32 length = 0 ); // Returns 0 on error, 0 length means whole file
+    UByte *			mapView( uint offset = 0, uint length = 0 ); // Returns 0 on error, 0 length means whole file
     void			close();
 
     bool			isValid() const { return ( m_data != 0 ); }
     uint			offset() const { return m_offset; }
-    UInt32			length() const { return m_length; }
+    uint			length() const { return m_length; }
     MappedFile *	file() { return m_file; }
     UByte *			front() { return m_data; }
 
 private:
-#if defined( OVR_OS_WIN32 )
-    HANDLE			m_map;
-#else
     void *			m_map;
-#endif
 
     MappedFile *	m_file;
     UByte *			m_data;
     uint			m_offset;
-    UInt32			m_length;
+    uint			m_length;
 };
 
 NV_NAMESPACE_END
