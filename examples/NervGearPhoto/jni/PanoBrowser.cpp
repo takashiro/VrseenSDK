@@ -303,7 +303,7 @@ void PanoBrowser::addToFavorites( const OvrMetaDatum * panoData )
 	// Check if already in favorites
     for ( int i = 0; i < m_favoritesBuffer.length(); ++i )
 	{
-        Favorite & favorite = m_favoritesBuffer.at( i );
+        Favorite & favorite = m_favoritesBuffer[i];
 		if ( panoData == favorite.data )
 		{
 			// already in favorites, so make sure it's marked as a favorite
@@ -331,7 +331,7 @@ void PanoBrowser::removeFromFavorites( const OvrMetaDatum * panoData )
 	// First check if in fav buffer, and if so mark it as not a favorite
     for ( int i = 0; i < m_favoritesBuffer.length(); ++i )
 	{
-        Favorite & favorite = m_favoritesBuffer.at( i );
+        Favorite & favorite = m_favoritesBuffer[i];
 		if ( panoData == favorite.data )
 		{
 			favorite.isFavorite = false;

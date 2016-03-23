@@ -79,7 +79,7 @@ public:
 
     const VArray< Category > categories() const 							{ return m_categories; }
     const Category & 		getCategory( const int index ) const 			{ return m_categories.at( index ); }
-    Category & 				getCategory( const int index )   				{ return m_categories.at( index ); }
+    Category & 				getCategory( const int index )   				{ return m_categories[index]; }
     const OvrMetaDatum &	getMetaDatum( const int index ) const;
     bool 					getMetaData( const Category & category, VArray< const OvrMetaDatum * > & outMetaData ) const;
     void					setCategoryDatumIndicies( const int index, const VArray< int >& datumIndicies );

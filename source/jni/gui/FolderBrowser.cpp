@@ -1505,7 +1505,7 @@ void OvrFolderBrowser::buildFolder( OvrMetaData::Category & category, FolderView
 		// Assign handles to panels
 		for ( int i = 0; i < folder->panels.length(); ++i )
 		{
-			PanelView& panel = folder->panels.at( i );
+            PanelView& panel = folder->panels[i];
 			panel.handle = swipeObject->getChildHandleForIndex( i );
 		}
 	}
@@ -1625,7 +1625,7 @@ void OvrFolderBrowser::rebuildFolder( OvrMetaData & metaData, const int folderIn
 				outParms.clear();
 
 				// Assign handle to panel
-				PanelView& panel = folder->panels.at( panelIndex );
+                PanelView& panel = folder->panels[panelIndex];
 				panel.handle = swipeObject->getChildHandleForIndex( panelIndex );
 
 				newDatumIndicies.append( panelData->id );
@@ -1845,7 +1845,7 @@ void OvrFolderBrowser::loadThumbnailToTexture( const VEvent &event )
 	const int numPanels = panels->length();
 	for ( int index = 0; index < numPanels; ++index )
 	{
-		PanelView& currentPanel = panels->at( index );
+        PanelView& currentPanel = (*panels)[index];
 		if ( currentPanel.id == panelId )
 		{
 			panel = &currentPanel;
@@ -2211,7 +2211,7 @@ const OvrMetaDatum * OvrFolderBrowser::nextFileInDirectory( const int step )
 		nextPanelIndex = numPanels - 1;
 	}
 
-	PanelView & panel = folder->panels.at( nextPanelIndex );
+    PanelView & panel = folder->panels[nextPanelIndex];
 	VRMenuObject * panelObject = m_app->vrMenuMgr().toObject( panel.handle );
 	OVR_ASSERT( panelObject );
 

@@ -155,7 +155,7 @@ void OvrMetaData::initFromFileList( const VArray< VString > & fileList, const Ov
 		}
 
 		OVR_ASSERT( catIndex > -1 );
-		Category & currentCategory = m_categories.at( catIndex );
+        Category & currentCategory = m_categories[catIndex];
 
 		// See if we want this loose-file
 		if ( !shouldAddFile( filePath.toCString(), fileExtensions ) )
@@ -196,7 +196,7 @@ void OvrMetaData::renameCategory(const VString &currentTag, const VString &newNa
 {
 	for ( int i = 0; i < m_categories.length(); ++i )
 	{
-		Category & cat = m_categories.at( i );
+        Category & cat = m_categories[i];
 		if ( cat.categoryTag == currentTag )
 		{
 			cat.label = newName;
@@ -422,7 +422,7 @@ void OvrMetaData::processMetaData( const VJsonObject &dataFile, const VArray< VS
         finalCategories.append( m_categories.at( 0 ) );
         for ( int catIndex = 1; catIndex < m_categories.length(); ++catIndex )
         {
-            Category & cat = m_categories.at( catIndex );
+            Category & cat = m_categories[catIndex];
             if ( !cat.datumIndicies.isEmpty() )
             {
                 finalCategories.append( cat );
@@ -721,7 +721,7 @@ void OvrMetaData::regenerateCategoryIndices()
 {
 	for ( int catIndex = 0; catIndex < m_categories.length(); ++catIndex )
 	{
-		Category & cat = m_categories.at( catIndex );
+        Category & cat = m_categories[catIndex];
 		cat.datumIndicies.clear();
 	}
 
@@ -759,7 +759,7 @@ void OvrMetaData::regenerateCategoryIndices()
 
 		if ( tags.at( 0 ) == FAVORITES_TAG && tags.length() > 1 )
 		{
-			Alg::Swap( tags.at( 0 ), tags.at( 1 ) );
+            std::swap(tags[0], tags[1]);
 		}
 
 		for ( int tagIndex = 0; tagIndex < tags.length(); ++tagIndex )
@@ -909,7 +909,7 @@ OvrMetaData::Category * OvrMetaData::getCategory( const VString & categoryName )
 	const int numCategories = m_categories.length();
 	for ( int i = 0; i < numCategories; ++i )
 	{
-		Category & category = m_categories.at( i );
+        Category & category = m_categories[i];
 		if ( category.categoryTag == categoryName )
 		{
 			return &category;

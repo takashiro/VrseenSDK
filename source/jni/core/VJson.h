@@ -81,16 +81,18 @@ public:
     VJson &operator =(VJson &&source);
 
 	//Array Functions
-    VJson &at(uint i) { return m_value.array->at(i); }
-    VJson &operator[](uint i) { return m_value.array->at(i); }
+    VJson &operator[](uint i) { return (*m_value.array)[i]; }
+
     const VJson &operator[](uint i) const { return m_value.array->at(i); }
     const VJson &at(uint i) const { return m_value.array->at(i); }
 
 	//Object Functions
     VJson &operator[](const VString &key) { return (*(m_value.object))[key]; }
+
     const VJson &operator[](const VString &key) const { return m_value.object->value(key); }
     const VJson &value(const VString &key) const { return m_value.object->value(key); }
     const VJson &value(const VString &key, const VJson &defaultValue) const;
+
     bool contains(const VString &key) const { return m_value.object->contains(key); }
 
 	//Array/Object functions
