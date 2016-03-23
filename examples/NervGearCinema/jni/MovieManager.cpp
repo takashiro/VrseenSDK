@@ -20,7 +20,6 @@ of patent rights can be found in the PATENTS file in the same directory.
 
 #include <VPath.h>
 
-#include "String_Utils.h"
 #include "VJson.h"
 #include "VLog.h"
 

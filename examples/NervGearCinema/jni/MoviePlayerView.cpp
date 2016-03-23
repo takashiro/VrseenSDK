@@ -1,6 +1,5 @@
 #include <android/keycodes.h>
 #include <VRMenuMgr.h>
-#include <String_Utils.h>
 
 #include "CinemaApp.h"
 #include "Native.h"

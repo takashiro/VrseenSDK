@@ -18,7 +18,7 @@ public:
     VArray<double> Values;
 };
 
-class SensorCalibration : public NewOverrideBase
+class SensorCalibration
 {
 public:
     SensorCalibration(SensorDevice* pSensor);

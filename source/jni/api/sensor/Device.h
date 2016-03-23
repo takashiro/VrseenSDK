@@ -70,7 +70,7 @@ private:
 //   - Device is resources are cleaned up when it is Released, although its handles
 //     may survive longer if referenced.
 
-class DeviceBase : public NewOverrideBase
+class DeviceBase
 {
     friend class DeviceHandle;
     friend class DeviceManagerImpl;

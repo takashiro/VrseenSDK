@@ -1,20 +1,4 @@
-/************************************************************************************
-
-Filename    :   ModelManager.cpp
-Content     :
-Created     :	7/3/2014
-Authors     :   Jim Dos�
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-This source code is licensed under the BSD-style license found in the
-LICENSE file in the Cinema/ directory. An additional grant
-of patent rights can be found in the PATENTS file in the same directory.
-
-*************************************************************************************/
-
 #include <dirent.h>
-#include "String_Utils.h"
 #include "ModelManager.h"
 #include "CinemaApp.h"
 

@@ -17,7 +17,7 @@ typedef enum
 
 NV_USING_NAMESPACE
 
-class HMDState : public MessageHandler, public NewOverrideBase
+class HMDState : public MessageHandler
 {
 public:
 							HMDState();
