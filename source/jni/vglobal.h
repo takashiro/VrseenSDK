@@ -10,7 +10,6 @@
 # define NV_USING_NAMESPACE
 #endif
 
-#include <iostream>
 typedef unsigned char uchar;
 typedef unsigned short ushort;
 typedef unsigned int uint;
