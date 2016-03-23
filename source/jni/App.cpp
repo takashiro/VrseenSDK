@@ -130,21 +130,21 @@ extern void DebugMenuHierarchy(void * appPtr, const char * cmd);
 extern void DebugMenuPoses(void * appPtr, const char * cmd);
 extern void ShowFPS(void * appPtr, const char * cmd);
 
-static EyeParms DefaultVrParmsForRenderer(const eglSetup_t & eglr)
+static EyeParms DefaultVrParmsForRenderer(const VGlOperation & glOperation)
 {
     EyeParms vrParms;
 
     vrParms.resolution = 1024;
-    vrParms.multisamples = (eglr.gpuType == GpuType::GPU_TYPE_ADRENO_330) ? 2 : 4;
+    vrParms.multisamples = (glOperation.gpuType == GpuType::GPU_TYPE_ADRENO_330) ? 2 : 4;
     vrParms.colorFormat = COLOR_8888;
     vrParms.depthFormat = DEPTH_24;
 
     return vrParms;
 }
 
-static bool ChromaticAberrationCorrection(const eglSetup_t & eglr)
+static bool ChromaticAberrationCorrection(const VGlOperation & glOperation)
 {
-    return (eglr.gpuType & GpuType::GPU_TYPE_ADRENO) != 0 && (eglr.gpuType >= GpuType::GPU_TYPE_ADRENO_420);
+    return (glOperation.gpuType & GpuType::GPU_TYPE_ADRENO) != 0 && (glOperation.gpuType >= GpuType::GPU_TYPE_ADRENO_420);
 }
 
 static const char* vertexShaderSource =
@@ -181,7 +181,7 @@ struct App::Private : public TalkToJavaInterface
     ovrMobile *		OvrMobile;
 
     // Egl context and surface for rendering
-    eglSetup_t		eglr;
+    VGlOperation  glOperation;
 
     // Handles creating, destroying, and re-configuring the buffers
     // for drawing the eye views, which might be in different texture
@@ -451,11 +451,11 @@ struct App::Private : public TalkToJavaInterface
         // always reload the dev config on a resume
         JniUtils::LoadDevConfig(true);
 
-        VGlOperation glOperation;
+
         // Make sure the window surface is current, which it won't be
         // if we were previously in async mode
         // (Not needed now?)
-        if (eglMakeCurrent(eglr.display, windowSurface, windowSurface, eglr.context) == EGL_FALSE)
+        if (eglMakeCurrent(glOperation.display, windowSurface, windowSurface, glOperation.context) == EGL_FALSE)
         {
             vFatal("eglMakeCurrent failed:" << glOperation.EglErrorString());
         }
@@ -477,12 +477,12 @@ struct App::Private : public TalkToJavaInterface
 
     void initGlObjects()
     {
-        vrParms = DefaultVrParmsForRenderer(eglr);
+        vrParms = DefaultVrParmsForRenderer(glOperation);
 
-        swapParms.WarpProgram = ChromaticAberrationCorrection(eglr) ? WP_CHROMATIC : WP_SIMPLE;
+        swapParms.WarpProgram = ChromaticAberrationCorrection(glOperation) ? WP_CHROMATIC : WP_SIMPLE;
 
         // Let glUtils look up extensions
-        VGlOperation glOperation;
+
         glOperation.GL_FindExtensions();
 
         externalTextureProgram2.initShader( vertexShaderSource, externalFragmentShaderSource );
@@ -850,17 +850,17 @@ struct App::Private : public TalkToJavaInterface
 
             // Android doesn't let the non-standard extensions show up in the
             // extension string, so we need to try it blind.
-            windowSurface = eglCreateWindowSurface(eglr.display, eglr.config,
+            windowSurface = eglCreateWindowSurface(glOperation.display, glOperation.config,
                     nativeWindow, attribs);
 
-            VGlOperation glOperation;
+
             if (windowSurface == EGL_NO_SURFACE)
             {
                 const EGLint attribs2[] =
                 {
                     EGL_NONE
                 };
-                windowSurface = eglCreateWindowSurface(eglr.display, eglr.config,
+                windowSurface = eglCreateWindowSurface(glOperation.display, glOperation.config,
                         nativeWindow, attribs2);
                 if (windowSurface == EGL_NO_SURFACE)
                 {
@@ -875,7 +875,7 @@ struct App::Private : public TalkToJavaInterface
                 framebufferIsProtected = appInterface->wantProtectedFramebuffer();
             }
 
-            if (eglMakeCurrent(eglr.display, windowSurface, windowSurface, eglr.context) == EGL_FALSE)
+            if (eglMakeCurrent(glOperation.display, windowSurface, windowSurface, glOperation.context) == EGL_FALSE)
             {
                 vFatal("eglMakeCurrent failed:" << glOperation.EglErrorString());
             }
@@ -900,15 +900,15 @@ struct App::Private : public TalkToJavaInterface
             appInterface->onWindowDestroyed();
 
             // Handle it ourselves.
-            if (eglMakeCurrent(eglr.display, eglr.pbufferSurface, eglr.pbufferSurface,
-                    eglr.context) == EGL_FALSE)
+            if (eglMakeCurrent(glOperation.display, glOperation.pbufferSurface, glOperation.pbufferSurface,
+                    glOperation.context) == EGL_FALSE)
             {
                 vFatal("RC_SURFACE_DESTROYED: eglMakeCurrent pbuffer failed");
             }
 
             if (windowSurface != EGL_NO_SURFACE)
             {
-                eglDestroySurface(eglr.display, windowSurface);
+                eglDestroySurface(glOperation.display, windowSurface);
                 windowSurface = EGL_NO_SURFACE;
             }
             if (nativeWindow != nullptr)
@@ -1003,7 +1003,7 @@ struct App::Private : public TalkToJavaInterface
 
     void startRendering()
     {
-        VGlOperation glOperation;
+
         // Set the name that will show up in systrace
         pthread_setname_np(pthread_self(), "NervGear::VrThread");
 
@@ -1033,7 +1033,7 @@ struct App::Private : public TalkToJavaInterface
             const int windowDepth = 0;
             const int windowSamples = 0;
             const GLuint contextPriority = EGL_CONTEXT_PRIORITY_MEDIUM_IMG;
-            eglr = glOperation.EglSetup(EGL_NO_CONTEXT, GL_ES_VERSION,	// no share context,
+            glOperation.EglSetup(EGL_NO_CONTEXT, GL_ES_VERSION,	// no share context,
                     8,8,8, windowDepth, windowSamples, // r g b
                     contextPriority);
 
@@ -1408,7 +1408,7 @@ struct App::Private : public TalkToJavaInterface
 
             shutdownGlObjects();
 
-            glOperation.EglShutdown(eglr);
+            glOperation.EglShutdown();
 
             // Detach from the Java VM before exiting.
             vInfo("javaVM->DetachCurrentThread");
@@ -1733,22 +1733,22 @@ void App::setVrModeParms(ovrModeParms parms)
 	}
 }
 
-void ToggleScreenColor()
-{
-    VGlOperation glOperation;
-	static int	color;
+//void ToggleScreenColor()
+//{
+//    VGlOperation glOperation;
+//	static int	color;
 
-	color ^= 1;
+//	color ^= 1;
 
-    glEnable(GL_WRITEONLY_RENDERING_QCOM);
-    glClearColor(color, 1-color, 0, 1);
-    glClear(GL_COLOR_BUFFER_BIT);
+//    glEnable(GL_WRITEONLY_RENDERING_QCOM);
+//    glClearColor(color, 1-color, 0, 1);
+//    glClear(GL_COLOR_BUFFER_BIT);
 
-	// The Adreno driver has an unfortunate optimization so it doesn't
-	// actually flush if all that was done was a clear.
-    glOperation.GL_Finish();
-    glDisable(GL_WRITEONLY_RENDERING_QCOM);
-}
+//	// The Adreno driver has an unfortunate optimization so it doesn't
+//	// actually flush if all that was done was a clear.
+//    glOperation.GL_Finish();
+//    glDisable(GL_WRITEONLY_RENDERING_QCOM);
+//}
 
 /*
  * eyeParms()
@@ -2194,20 +2194,21 @@ void ShowFPS(void * appPtr, const char * cmd) {
 }
 
 // Debug tool to draw outlines of a 3D bounds
-void App::drawBounds( const V3Vectf &mins, const V3Vectf &maxs, const VR4Matrixf &mvp, const V3Vectf &color )
-{
-    VGlOperation glOperation;
-    VR4Matrixf	scaled = mvp * VR4Matrixf::Translation( mins ) * VR4Matrixf::Scaling( maxs - mins );
-    const VGlShader & prog = d->untexturedMvpProgram;
-    glUseProgram(prog.program);
-    glLineWidth( 1.0f );
-    glUniform4f(prog.uniformColor, color.x, color.y, color.z, 1);
-    glUniformMatrix4fv(prog.uniformModelViewProMatrix, 1, GL_FALSE /* not transposed */,
-            scaled.Transposed().M[0] );
-    glOperation.glBindVertexArrayOES_( d->unitCubeLines.vertexArrayObject );
-    glDrawElements(GL_LINES, d->unitCubeLines.indexCount, GL_UNSIGNED_SHORT, NULL);
-    glOperation.glBindVertexArrayOES_( 0 );
-}
+//void App::drawBounds( const V3Vectf &mins, const V3Vectf &maxs, const VR4Matrixf &mvp, const V3Vectf &color )
+//{
+
+//    VGlOperation glOperation;
+//    VR4Matrixf	scaled = mvp * VR4Matrixf::Translation( mins ) * VR4Matrixf::Scaling( maxs - mins );
+//    const VGlShader & prog = d->untexturedMvpProgram;
+//    glUseProgram(prog.program);
+//    glLineWidth( 1.0f );
+//    glUniform4f(prog.uniformColor, color.x, color.y, color.z, 1);
+//    glUniformMatrix4fv(prog.uniformModelViewProMatrix, 1, GL_FALSE /* not transposed */,
+//            scaled.Transposed().M[0] );
+//    glOperation.glBindVertexArrayOES_( d->unitCubeLines.vertexArrayObject );
+//    glDrawElements(GL_LINES, d->unitCubeLines.indexCount, GL_UNSIGNED_SHORT, NULL);
+//    glOperation.glBindVertexArrayOES_( 0 );
+//}
 
 void App::drawDialog( const VR4Matrixf & mvp )
 {
@@ -2249,6 +2250,7 @@ void App::drawPanel( const GLuint externalTextureId, const VR4Matrixf & dialogMv
 
 void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const int numPresents )
 {
+    VGlOperation glOperation;
     // update vr lib systems after the app frame, but before rendering anything
     guiSys().frame( this, d->vrFrame, vrMenuMgr(), defaultFont(), menuFontSurface(), centerViewMatrix );
     gazeCursor().Frame( centerViewMatrix, d->vrFrame.DeltaSeconds );
@@ -2270,7 +2272,7 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
     // and / or high refresh rate double-scan hardware modes.
     const int numEyes = d->renderMonoMode ? 1 : 2;
 
-    VGlOperation glOperation;
+
     // Flush out and report any errors
     glOperation.GL_CheckErrors("FrameStart");
 
@@ -2348,22 +2350,22 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
 
 // Draw a screen to an eye buffer the same way it would be drawn as a
 // time warp overlay.
-void App::drawScreenDirect( const GLuint texid, const ovrMatrix4f & mvp )
-{
-    VGlOperation glOperation;
-    const VR4Matrixf mvpMatrix( mvp );
-    glActiveTexture( GL_TEXTURE0 );
-    glBindTexture( GL_TEXTURE_2D, texid );
+//void App::drawScreenDirect( const GLuint texid, const ovrMatrix4f & mvp )
+//{
+//    VGlOperation glOperation;
+//    const VR4Matrixf mvpMatrix( mvp );
+//    glActiveTexture( GL_TEXTURE0 );
+//    glBindTexture( GL_TEXTURE_2D, texid );
 
-    glUseProgram( d->overlayScreenDirectProgram.program );
+//    glUseProgram( d->overlayScreenDirectProgram.program );
 
-    glUniformMatrix4fv( d->overlayScreenDirectProgram.uniformModelViewProMatrix, 1, GL_FALSE, mvpMatrix.Transposed().M[0] );
+//    glUniformMatrix4fv( d->overlayScreenDirectProgram.uniformModelViewProMatrix, 1, GL_FALSE, mvpMatrix.Transposed().M[0] );
 
-    glOperation.glBindVertexArrayOES_( d->unitSquare.vertexArrayObject );
-    glDrawElements( GL_TRIANGLES, d->unitSquare.indexCount, GL_UNSIGNED_SHORT, NULL );
+//    glOperation.glBindVertexArrayOES_( d->unitSquare.vertexArrayObject );
+//    glDrawElements( GL_TRIANGLES, d->unitSquare.indexCount, GL_UNSIGNED_SHORT, NULL );
 
-    glBindTexture( GL_TEXTURE_2D, 0 );	// don't leave it bound
-}
+//    glBindTexture( GL_TEXTURE_2D, 0 );	// don't leave it bound
+//}
 
 // draw a zero to destination alpha
 void App::drawScreenMask( const ovrMatrix4f & mvp, const float fadeFracX, const float fadeFracY )

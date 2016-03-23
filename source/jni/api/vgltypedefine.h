@@ -51,26 +51,3 @@ typedef void (GL_APIENTRYP PFNGLINVALIDATEFRAMEBUFFER_) (GLenum target, GLsizei 
 typedef GLvoid* (GL_APIENTRYP PFNGLMAPBUFFERRANGE_) (GLenum target, GLintptr offset, GLsizeiptr length, GLbitfield access);
 typedef GLboolean (GL_APIENTRYP PFNGLUNMAPBUFFEROESPROC_) (GLenum target);
 
-NV_NAMESPACE_BEGIN
-enum GpuType
-{
-    GPU_TYPE_ADRENO					= 0x1000,
-    GPU_TYPE_ADRENO_330				= 0x1001,
-    GPU_TYPE_ADRENO_420				= 0x1002,
-    GPU_TYPE_MALI					= 0x2000,
-    GPU_TYPE_MALI_T760				= 0x2100,
-    GPU_TYPE_MALI_T760_EXYNOS_5433	= 0x2101,
-    GPU_TYPE_MALI_T760_EXYNOS_7420	= 0x2102,
-    GPU_TYPE_UNKNOWN				= 0xFFFF
-};
-
-struct eglSetup_t
-{
-        int			glEsVersion;		// 2 or 3
-        GpuType		gpuType;
-        EGLDisplay	display;
-        EGLSurface	pbufferSurface;		// use to make context current when we don't have window surfaces
-        EGLConfig	config;
-        EGLContext	context;
-};
-NV_NAMESPACE_END

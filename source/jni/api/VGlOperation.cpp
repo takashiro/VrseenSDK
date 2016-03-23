@@ -540,7 +540,7 @@ EGLConfig VGlOperation::ChooseColorConfig( const EGLDisplay display, const int r
     return NULL;
 }
 
-eglSetup_t VGlOperation::EglSetup( const EGLContext shareContext,
+void VGlOperation::EglSetup( const EGLContext shareContext,
         const int requestedGlEsVersion,
         const int redBits, const int greenBits, const int blueBits,
         const int depthBits, const int multisamples, const GLuint contextPriority )
@@ -549,36 +549,35 @@ eglSetup_t VGlOperation::EglSetup( const EGLContext shareContext,
     LOG( "EglSetup: requestGlEsVersion(%d), redBits(%d), greenBits(%d), blueBits(%d), depthBits(%d), multisamples(%d), contextPriority(%d)",
             requestedGlEsVersion, redBits, greenBits, blueBits, depthBits, multisamples, contextPriority );
 
-    eglSetup_t egl = {};
 
     // Get the built in display
     // TODO: check for external HDMI displays
-    egl.display = eglGetDisplay( EGL_DEFAULT_DISPLAY );
+    display = eglGetDisplay( EGL_DEFAULT_DISPLAY );
 
     // Initialize EGL
     EGLint majorVersion;
     EGLint minorVersion;
-    eglInitialize( egl.display, &majorVersion, &minorVersion );
+    eglInitialize( display, &majorVersion, &minorVersion );
     LOG( "eglInitialize gives majorVersion %i, minorVersion %i", majorVersion, minorVersion);
 
-    const char * eglVendorString = eglQueryString( egl.display, EGL_VENDOR );
+    const char * eglVendorString = eglQueryString( display, EGL_VENDOR );
     LOG( "EGL_VENDOR: %s", eglVendorString );
-    const char * eglClientApisString = eglQueryString( egl.display, EGL_CLIENT_APIS );
+    const char * eglClientApisString = eglQueryString( display, EGL_CLIENT_APIS );
     LOG( "EGL_CLIENT_APIS: %s", eglClientApisString );
-    const char * eglVersionString = eglQueryString( egl.display, EGL_VERSION );
+    const char * eglVersionString = eglQueryString( display, EGL_VERSION );
     LOG( "EGL_VERSION: %s", eglVersionString );
-    const char * eglExtensionString = eglQueryString( egl.display, EGL_EXTENSIONS );
+    const char * eglExtensionString = eglQueryString( display, EGL_EXTENSIONS );
     LOG( "EGL_EXTENSIONS:" );
     LogStringWords( eglExtensionString );
 
     // We do NOT want to use eglChooseConfig, because the Android EGL code pushes in
     // multisample flags behind our back if the user has selected the "force 4x MSAA"
     // option in developer settings, and that is completely wasted for our warp target.
-    egl.config = ChooseColorConfig( egl.display, redBits, greenBits, blueBits, depthBits, multisamples, true /* pBuffer compatible */ );
-    if ( egl.config == 0 )
+    config = ChooseColorConfig( display, redBits, greenBits, blueBits, depthBits, multisamples, true /* pBuffer compatible */ );
+    if ( config == 0 )
     {
         FAIL( "No acceptable EGL color configs." );
-        return egl;
+        return ;
     }
 
     // The EGLContext is created with the EGLConfig
@@ -602,35 +601,35 @@ eglSetup_t VGlOperation::EglSetup( const EGLContext shareContext,
             contextAttribs[3] = contextPriority;
         }
 
-        egl.context = eglCreateContext( egl.display, egl.config, shareContext, contextAttribs );
-        if ( egl.context != EGL_NO_CONTEXT )
+        context = eglCreateContext( display, config, shareContext, contextAttribs );
+        if ( context != EGL_NO_CONTEXT )
         {
             LOG( "Succeeded." );
-            egl.glEsVersion = version;
+            glEsVersion = version;
 
             EGLint configIDReadback;
-            if ( !eglQueryContext( egl.display, egl.context, EGL_CONFIG_ID, &configIDReadback ) )
+            if ( !eglQueryContext( display, context, EGL_CONFIG_ID, &configIDReadback ) )
             {
                  WARN("eglQueryContext EGL_CONFIG_ID failed" );
             }
-            EGLConfig configCheck = glOperation.EglConfigForConfigID( egl.display, configIDReadback );
+            EGLConfig configCheck = glOperation.EglConfigForConfigID( display, configIDReadback );
 
             LOG( "Created context with config %i, query returned ID %i = config %i",
-                    (int)egl.config, configIDReadback, (int)configCheck );
+                    (int)config, configIDReadback, (int)configCheck );
             break;
         }
     }
-    if ( egl.context == EGL_NO_CONTEXT )
+    if ( context == EGL_NO_CONTEXT )
     {
         WARN( "eglCreateContext failed: %s", glOperation.EglErrorString() );
-        return egl;
+        return ;
     }
 
     if ( contextPriority != EGL_CONTEXT_PRIORITY_MEDIUM_IMG )
     {
         // See what context priority we actually got
         EGLint actualPriorityLevel;
-        eglQueryContext( egl.display, egl.context, EGL_CONTEXT_PRIORITY_LEVEL_IMG, &actualPriorityLevel );
+        eglQueryContext( display, context, EGL_CONTEXT_PRIORITY_LEVEL_IMG, &actualPriorityLevel );
         switch ( actualPriorityLevel )
         {
             case EGL_CONTEXT_PRIORITY_HIGH_IMG: LOG( "Context is EGL_CONTEXT_PRIORITY_HIGH_IMG" ); break;
@@ -656,22 +655,22 @@ eglSetup_t VGlOperation::EglSetup( const EGLContext shareContext,
         EGL_HEIGHT, 16,
         EGL_NONE
     };
-    egl.pbufferSurface = eglCreatePbufferSurface( egl.display, egl.config, attrib_list );
-    if ( egl.pbufferSurface == EGL_NO_SURFACE )
+    pbufferSurface = eglCreatePbufferSurface( display, config, attrib_list );
+    if ( pbufferSurface == EGL_NO_SURFACE )
     {
         WARN( "eglCreatePbufferSurface failed: %s", glOperation.EglErrorString() );
-        eglDestroyContext( egl.display, egl.context );
-        egl.context = EGL_NO_CONTEXT;
-        return egl;
+        eglDestroyContext( display, context );
+        context = EGL_NO_CONTEXT;
+        return ;
     }
 
-    if ( eglMakeCurrent( egl.display, egl.pbufferSurface, egl.pbufferSurface, egl.context ) == EGL_FALSE )
+    if ( eglMakeCurrent( display, pbufferSurface, pbufferSurface, context ) == EGL_FALSE )
     {
         WARN( "eglMakeCurrent pbuffer failed: %s", glOperation.EglErrorString() );
-        eglDestroySurface( egl.display, egl.pbufferSurface );
-        eglDestroyContext( egl.display, egl.context );
-        egl.context = EGL_NO_CONTEXT;
-        return egl;
+        eglDestroySurface( display, pbufferSurface );
+        eglDestroyContext( display, context );
+        context = EGL_NO_CONTEXT;
+        return ;
     }
 
     const char * glVendorString = (const char *) glGetString(GL_VENDOR);
@@ -684,32 +683,32 @@ eglSetup_t VGlOperation::EglSetup( const EGLContext shareContext,
             GL_SHADING_LANGUAGE_VERSION);
     LOG( "GL_SHADING_LANGUAGE_VERSION: %s", glSlVersionString);
 
-    egl.gpuType = glOperation.EglGetGpuType();
+    gpuType = glOperation.EglGetGpuType();
 
-    return egl;
+    return ;
 }
 
-void VGlOperation::EglShutdown( eglSetup_t & eglr )
+void VGlOperation::EglShutdown(  )
 {
     VGlOperation glOperation;
-    if ( eglMakeCurrent( eglr.display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT ) == EGL_FALSE )
+    if ( eglMakeCurrent( display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT ) == EGL_FALSE )
     {
         FAIL( "eglMakeCurrent: failed: %s", glOperation.EglErrorString() );
     }
-    if ( eglDestroyContext( eglr.display, eglr.context ) == EGL_FALSE )
+    if ( eglDestroyContext( display, context ) == EGL_FALSE )
     {
         FAIL( "eglDestroyContext: failed: %s", glOperation.EglErrorString() );
     }
-    if ( eglDestroySurface( eglr.display, eglr.pbufferSurface ) == EGL_FALSE )
+    if ( eglDestroySurface( display, pbufferSurface ) == EGL_FALSE )
     {
         FAIL( "eglDestroySurface: failed: %s", glOperation.EglErrorString() );
     }
 
-    eglr.glEsVersion = 0;
-    eglr.gpuType = GPU_TYPE_UNKNOWN;
-    eglr.display = 0;
-    eglr.pbufferSurface = 0;
-    eglr.config = 0;
-    eglr.context = 0;
+    glEsVersion = 0;
+    gpuType = GPU_TYPE_UNKNOWN;
+    display = 0;
+    pbufferSurface = 0;
+    config = 0;
+    context = 0;
 }
 NV_NAMESPACE_END
