@@ -1,7 +1,7 @@
 #pragma once
 
 #include "VBasicmath.h"
-#include "VDeque.h"
+#include "VCircularQueue.h"
 #include "Alg.h"
 
 NV_NAMESPACE_BEGIN
@@ -10,38 +10,39 @@ NV_NAMESPACE_BEGIN
 // various simple filters, most of which are linear functions of the data history.
 // Maintains the running sum of its elements for better performance on large capacity values
 template <typename T>
-class SensorFilterBase : public VCircularBuffer<T>
+class SensorFilterBase : public VCircularQueue<T>
 {
 protected:
+    typedef VCircularQueue<T> ParentType;
+
     T RunningTotal;               // Cached sum of the elements
 
 public:
-    SensorFilterBase(int capacity = 500 )
-        : VCircularBuffer<T>(capacity), RunningTotal()
+    SensorFilterBase(uint capacity = 500)
+        : VCircularQueue<T>(capacity)
     {
-        this->clear();
-    };
+    }
 
     // The following methods are augmented to update the cached running sum value
     void append(const T &e)
     {
-        VCircularBuffer<T>::append(e);
+        bool isFull = ParentType::isFull();
+        ParentType::append(e);
         RunningTotal += e;
-        if (this->v_end == 0)
-        {
+        if (isFull) {
             // update the cached total to avoid error accumulation
             RunningTotal = T();
-            for (int i = 0; i < this->v_count; i++)
-                RunningTotal += this->v_data[i];
+            for (uint i = 0, max = this->size(); i < max; i++)
+                RunningTotal += (*this)[i];
         }
     }
 
     void prepend(const T &e)
     {
-        VCircularBuffer<T>::preAppend(e);
+        bool isFull = ParentType::isFull();
+        VCircularQueue<T>::prepend(e);
         RunningTotal += e;
-        if (this->v_start == 0)
-        {
+        if (isFull) {
             // update the cached total to avoid error accumulation
             RunningTotal = T();
             for (int i = 0; i < this->v_count; i++)
@@ -51,21 +52,21 @@ public:
 
     T takeLast()
     {
-        T e = VCircularBuffer<T>::takeLast();
+        T e = VCircularQueue<T>::takeLast();
         RunningTotal -= e;
         return e;
     }
 
     T takeFirst()
     {
-        T e = VCircularBuffer<T>::takeFirst();
+        T e = VCircularQueue<T>::takeFirst();
         RunningTotal -= e;
         return e;
     }
 
     void clear()
     {
-        VCircularBuffer<T>::clear();
+        VCircularQueue<T>::clear();
         RunningTotal = T();
     }
 
@@ -77,7 +78,7 @@ public:
 
     T Mean() const
     {
-        return this->isEmpty() ? T() : (Total() / (float) this->v_count);
+        return ParentType::isEmpty() ? T() : (Total() / (float) ParentType::size());
     }
 
 	T MeanN(int n) const
@@ -127,27 +128,27 @@ public:
     T SavitzkyGolayDerivative5() const
     {
             OVR_ASSERT(this->v_capacity >= 5);
-            return this->peekLast(0)*0.2f +
-                   this->peekLast(1)*0.1f -
-                   this->peekLast(3)*0.1f -
-                   this->peekLast(4)*0.2f;
+            return this->peekLast(0) * 0.2f +
+                   this->peekLast(1) * 0.1f -
+                   this->peekLast(3) * 0.1f -
+                   this->peekLast(4) * 0.2f;
    }
 
     T SavitzkyGolayDerivative12() const
     {
-        OVR_ASSERT(this->v_capacity >= 12);
-        return this->peekLast(0)*0.03846f +
-               this->peekLast(1)*0.03147f +
-               this->peekLast(2)*0.02448f +
-               this->peekLast(3)*0.01748f +
-               this->peekLast(4)*0.01049f +
-               this->peekLast(5)*0.0035f -
-               this->peekLast(6)*0.0035f -
-               this->peekLast(7)*0.01049f -
-               this->peekLast(8)*0.01748f -
-               this->peekLast(9)*0.02448f -
-               this->peekLast(10)*0.03147f -
-               this->peekLast(11)*0.03846f;
+        OVR_ASSERT(this->capacity() >= 12);
+        return this->peekLast(0) * 0.03846f +
+               this->peekLast(1) * 0.03147f +
+               this->peekLast(2) * 0.02448f +
+               this->peekLast(3) * 0.01748f +
+               this->peekLast(4) * 0.01049f +
+               this->peekLast(5) * 0.0035f -
+               this->peekLast(6) * 0.0035f -
+               this->peekLast(7) * 0.01049f -
+               this->peekLast(8) * 0.01748f -
+               this->peekLast(9) * 0.02448f -
+               this->peekLast(10) * 0.03147f -
+               this->peekLast(11) * 0.03846f;
     }
 
     T SavitzkyGolayDerivativeN(int n) const
@@ -213,24 +214,24 @@ private:
     {
         runningTotalLengthSq += this->isFull() ? (e.LengthSq() - this->peekFirst().LengthSq()) : e.LengthSq();
         SensorFilterBase<V3Vectf>::append(e);
-        if (this->v_end == 0)
+        if (this->isFull())
         {
             // update the cached total to avoid error accumulation
             runningTotalLengthSq = 0;
-            for (int i = 0; i < this->v_count; i++)
-                runningTotalLengthSq += this->v_data[i].LengthSq();
+            for (uint i = 0, max = this->size(); i < max; i++)
+                runningTotalLengthSq += (*this)[i].LengthSq();
         }
     }
 
 public:
     SensorFilterBodyFrame(int capacity = 500)
         : SensorFilterBase<V3Vectf>(capacity), gain(2.5),
-          runningTotalLengthSq(0), Q(), output()  { };
+          runningTotalLengthSq(0), Q(), output()  { }
 
     // return the scalar variance of the filter values (rotated to be in the same frame)
     float Variance() const
     {
-        return this->isEmpty() ? 0 : (runningTotalLengthSq / this->v_count - this->Mean().LengthSq());
+        return this->isEmpty() ? 0 : (runningTotalLengthSq / this->size() - this->Mean().LengthSq());
     }
 
     // return the scalar standard deviation of the filter values (rotated to be in the same frame)
@@ -242,7 +243,7 @@ public:
     // confidence value based on the stddev of the data (between 0.0 and 1.0, more is better)
     float Confidence() const
     {
-        return Alg::Clamp(0.48f - 0.1f * logf(StdDev()), 0.0f, 1.0f) * this->v_capacity / this->v_capacity;
+        return Alg::Clamp(0.48f - 0.1f * logf(StdDev()), 0.0f, 1.0f) * this->capacity() / this->capacity();
     }
 
     // add a new element to the filter
