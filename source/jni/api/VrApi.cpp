@@ -28,7 +28,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "MemBuffer.h"		// needed for MemBufferT
 #include "sensor/DeviceImpl.h"
 
-#include "DirectRender.h"
 #include "HmdInfo.h"
 #include "HmdSensors.h"
 #include "VFrameSmooth.h"
@@ -1514,8 +1513,6 @@ ovrMobile * ovr_EnterVrMode( ovrModeParms parms, ovrHmdInfo * returnedHmdInfo )
 
 	// For video capture or testing on reference platforms without frontbuffer rendering,
 	// frontbuffer can be forced off.
-    ovr->Twp.frontBuffer = 1;
-	ovr->Twp.distortionFileName = ovr->Parms.DistortionFileName;
 	ovr->Twp.hmdInfo = ovr->HmdInfo;
 	ovr->Twp.javaVm = VrLibJavaVM;
 	ovr->Twp.vrLibClass = VrLibClass;

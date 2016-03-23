@@ -12,7 +12,6 @@
 #include <pthread.h>
 #include "api/VGlOperation.h"
 #include "Android/LogUtils.h"
-#include "DirectRender.h"
 #include "VrApi.h"
 #include "HmdInfo.h"
 #include "../core/VString.h"
@@ -144,26 +143,19 @@ class TimeWarpInitParms
 {
 public:
     TimeWarpInitParms() :
-            frontBuffer( true ),
             asynchronousTimeWarp( true ),
-            distortionFileName( NULL ),
             javaVm( NULL ),
             vrLibClass( NULL ),
             activityObject( NULL ),
             gameThreadTid( 0 ),
             buildVersionSDK( 0 ) {}
 
-    // Graphics debug and video capture tools may not like front buffer rendering.
-    bool				frontBuffer;
 
     // Shipping applications will almost always want this on,
     // but if you want to draw directly to the screen for
     // debug tasks, you can run synchronously so the init
     // thread is still current on the window.
     bool				asynchronousTimeWarp;
-
-    // If not NULL, the distortion mesh will be loaded from this file
-    const char *		distortionFileName;
 
     // directory to load external data from
     VString				externalStorageDirectory;
@@ -293,10 +285,16 @@ private:
                                      const VR4Matrixf rollingWarp, const int eye, const double vsyncBase ) const;
     void			bindCursorProgram() const;
 
+    void            initRenderEnvironment();
+    void            swapBuffers();
+
+    int                m_window_width;
+    int                m_window_height;
+    EGLDisplay			m_window_display;
+    EGLSurface			m_window_surface;
+
     // Parameters from Startup()
     TimeWarpInitParms m_initParms;
-
-    DirectRender	m_screen;
 
     bool			m_hasEXT_sRGB_write_control;	// extension
 

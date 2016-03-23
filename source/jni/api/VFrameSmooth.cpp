@@ -268,9 +268,7 @@ void VFrameSmooth::threadFunction()
             }
         }
 
-        warpToScreen( vsync,
-                      m_screen.isFrontBuffer() ? spAsyncFrontBufferPortrait
-                                               : spAsyncSwappedBufferPortrait );
+        warpToScreen( vsync,spAsyncSwappedBufferPortrait);
     }
 
     warpThreadShutdown();
@@ -426,13 +424,7 @@ VFrameSmooth::VFrameSmooth( const TimeWarpInitParms initParms ) :
             FAIL( "AttachCurrentThread() returned %i", rtn );
         }
 
-        m_screen.initForCurrentSurface( m_jni, m_initParms.frontBuffer, m_initParms.buildVersionSDK );
-
-        if ( m_screen.windowSurface == EGL_NO_SURFACE )
-        {
-            FAIL( "Screen.windowSurface == EGL_NO_SURFACE" );
-        }
-
+        initRenderEnvironment();
 
         // create the framework graphics on this thread
         createFrameworkGraphics();
@@ -557,9 +549,6 @@ VFrameSmooth::~VFrameSmooth()
     }
     else
     {
-        // Shutdown the front buffer rendering
-        m_screen.shutdown();
-
         // Vertex array objects can only be destroyed on the context they were created on
         // If there is no warp thread then InitParms.AsynchronousTimeWarp was false and
         // CreateFrameworkGraphics() was called from the VFrameSmooth constructor.
@@ -657,9 +646,7 @@ void VFrameSmooth::warpThreadInit()
     }
     m_jni->DeleteLocalRef( surfaceTextureClass );
 
-    // Make the current window into a front-buffer
-    // Must be called after a context is current on the window.
-    m_screen.initForCurrentSurface( m_jni, m_initParms.frontBuffer, m_initParms.buildVersionSDK );
+    initRenderEnvironment();
 
     // create the framework graphics on this thread
     createFrameworkGraphics();
@@ -694,9 +681,6 @@ void VFrameSmooth::warpThreadShutdown()
             ws.GpuSync = 0;
         }
     }
-
-    // Shutdown the front buffer rendering
-    m_screen.shutdown();
 
     // release the window so it can be made current by another thread
     if ( eglMakeCurrent( m_eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE,
@@ -1041,11 +1025,8 @@ void VFrameSmooth::warpToScreen( const double vsyncBase_, const swapProgram_t & 
     // This will only be updated in SCREENEYE_LEFT
     warpSource_t currentWarpSource = {};
 
-    // The mesh covers the full screen, but we only draw part of it at a time
-    int screenWidth, screenHeight;
-    m_screen.getScreenResolution( screenWidth, screenHeight );
-    glViewport( 0, 0, screenWidth, screenHeight );
-    glScissor( 0, 0, screenWidth, screenHeight );
+    glViewport( 0, 0, m_window_width, m_window_height );
+    glScissor( 0, 0, m_window_width, m_window_height );
 
      VGlOperation glOperation;
     // Warp each eye to the display surface
@@ -1144,16 +1125,6 @@ void VFrameSmooth::warpToScreen( const double vsyncBase_, const swapProgram_t & 
                 }
             }
 
-            if ( m_screen.windowSurface == EGL_NO_SURFACE )
-            {
-                static int logCount = 0;
-                if ( ( logCount++ & 31 ) == 0 )
-                {
-                    LOG( "WarpToScreen: no valid window surface" );
-                }
-                return;
-            }
-
             if ( currentWarpSource.WarpParms.Images[eye][0].TexId == 0 )
             {
                 // We don't have anything valid to draw, so just sleep until
@@ -1250,7 +1221,7 @@ void VFrameSmooth::warpToScreen( const double vsyncBase_, const swapProgram_t & 
 
         BindEyeTextures( currentWarpSource, eye );
 
-        m_screen.beginDirectRendering( eye * screenWidth/2, 0, screenWidth/2, screenHeight );
+        glScissor(eye * m_window_width/2, 0, m_window_width/2, m_window_height);
 
         // Draw the warp triangles.
         glOperation.glBindVertexArrayOES_( m_warpMesh.vertexArrayObject );
@@ -1278,15 +1249,11 @@ void VFrameSmooth::warpToScreen( const double vsyncBase_, const swapProgram_t & 
         drawFrameworkGraphicsToWindow( eye, currentWarpSource.WarpParms.WarpOptions,
                                        currentWarpSource.WarpParms.DebugGraphMode != DEBUG_PERF_OFF );
 
-        m_screen.endDirectRendering();
+        glFlush();
 
         m_logEyeWarpGpuTime.End( eye );
 
         const double justBeforeFinish = ovr_GetTimeInSeconds();
-        if ( m_screen.isFrontBuffer() )
-        {
-            glOperation.GL_Finish();
-        }
         const double postFinish = ovr_GetTimeInSeconds();
 
         const float latency = postFinish - justBeforeFinish;
@@ -1325,10 +1292,7 @@ void VFrameSmooth::warpToScreen( const double vsyncBase_, const swapProgram_t & 
 
     glOperation.glBindVertexArrayOES_( 0 );
 
-    if ( !m_screen.isFrontBuffer() )
-    {
-        m_screen.swapBuffers();
-    }
+    swapBuffers();
 }
 
 void VFrameSmooth::warpToScreenSliced( const double vsyncBase, const swapProgram_t & swap )
@@ -1358,10 +1322,8 @@ void VFrameSmooth::warpToScreenSliced( const double vsyncBase, const swapProgram
                         * 0.000000001 + startBias;
     }
 
-    int screenWide, screenTall;
-    m_screen.getScreenResolution( screenWide, screenTall );
-    glViewport( 0, 0, screenWide, screenTall );
-    glScissor( 0, 0, screenWide, screenTall );
+    glViewport( 0, 0, m_window_width, m_window_height );
+    glScissor( 0, 0, m_window_width, m_window_height );
 
     // This must be long enough to cover CPU scheduling delays, GPU in-flight commands,
     // and the actual drawing of this slice.
@@ -1460,16 +1422,6 @@ void VFrameSmooth::warpToScreenSliced( const double vsyncBase, const swapProgram
                     pthread_cond_signal( &m_swapIsLatched );
                     pthread_mutex_unlock( &m_swapMutex );
                 }
-            }
-
-            if ( m_screen.windowSurface == EGL_NO_SURFACE )
-            {
-                static int logCount = 0;
-                if ( ( logCount++ & 31 ) == 0 )
-                {
-                    LOG( "WarpToScreen: no valid window surface" );
-                }
-                return;
             }
 
             if ( currentWarpSource.WarpParms.Images[eye][0].TexId == 0 )
@@ -1580,9 +1532,9 @@ void VFrameSmooth::warpToScreenSliced( const double vsyncBase, const swapProgram
             BindEyeTextures( currentWarpSource, eye );
         }
 
-        const int sliceSize = screenWide / NUM_SLICES_PER_SCREEN;
+        const int sliceSize = m_window_width / NUM_SLICES_PER_SCREEN;
 
-        m_screen.beginDirectRendering( sliceSize*screenSlice, 0, sliceSize, screenTall );
+        glScissor( sliceSize*screenSlice, 0, sliceSize, m_window_height );
 
         // Draw the warp triangles.
         const VGlGeometry & mesh = m_sliceMesh;
@@ -1606,18 +1558,11 @@ void VFrameSmooth::warpToScreenSliced( const double vsyncBase, const swapProgram
         drawFrameworkGraphicsToWindow( eye, currentWarpSource.WarpParms.WarpOptions,
                                        currentWarpSource.WarpParms.DebugGraphMode != DEBUG_PERF_OFF );
 
-        m_screen.endDirectRendering();
+        glFlush();
 
         m_logEyeWarpGpuTime.End( screenSlice );
 
-        VGlOperation glOperation;
-
         const double justBeforeFinish = ovr_GetTimeInSeconds();
-        if ( m_screen.isFrontBuffer() &&
-             ( screenSlice == 1 * NUM_SLICES_PER_EYE - 1 || screenSlice == 2 * NUM_SLICES_PER_EYE - 1 ) )
-        {
-            glOperation.GL_Finish();
-        }
         const double postFinish = ovr_GetTimeInSeconds();
 
         const float latency = postFinish - justBeforeFinish;
@@ -1653,10 +1598,7 @@ void VFrameSmooth::warpToScreenSliced( const double vsyncBase, const swapProgram
 
     glOperation.glBindVertexArrayOES_( 0 );
 
-    if ( !m_screen.isFrontBuffer() )
-    {
-        m_screen.swapBuffers();
-    }
+    swapBuffers();
 }
 
 static uint64_t GetNanoSecondsUint64()
@@ -1675,11 +1617,6 @@ void VFrameSmooth::warpSwapInternal( const ovrTimeWarpParms & parms )
     if ( gettid() != m_sStartupTid )
     {
         FAIL( "WarpSwap: Called with tid %i instead of %i", gettid(), m_sStartupTid );
-    }
-
-    if ( m_screen.windowSurface == EGL_NO_SURFACE )
-    {
-        FAIL( "WarpSwap: no valid window surface" );
     }
 
     // Keep track of the last time WarpSwap() was called.
@@ -1764,14 +1701,7 @@ void VFrameSmooth::warpSwapInternal( const ovrTimeWarpParms & parms )
         glOperation.GL_Finish();
 
         swapProgram_t * swapProg;
-        if ( m_screen.isFrontBuffer() )
-        {
-            swapProg = &spSyncFrontBufferPortrait;
-        }
-        else
-        {
-            swapProg = &spSyncSwappedBufferPortrait;
-        }
+        swapProg = &spSyncSwappedBufferPortrait;
 
         warpToScreen( floor( GetFractionalVsync() ), *swapProg );
 
@@ -2185,11 +2115,10 @@ void VFrameSmooth::drawFrameworkGraphicsToWindow( const ScreenEye eye,
                             projectionMatrix.Transposed().M[0] );
         glOperation.glBindVertexArrayOES_( m_calibrationLines2.vertexArrayObject );
 
-        int width, height;
-        m_screen.getScreenResolution( width, height );
-        glViewport( width/2 * (int)eye, 0, width/2, height );
+
+        glViewport( m_window_width/2 * (int)eye, 0, m_window_width/2, m_window_height );
         glDrawElements( GL_LINES, m_calibrationLines2.indexCount, GL_UNSIGNED_SHORT, NULL );
-        glViewport( 0, 0, width, height );
+        glViewport( 0, 0, m_window_width, m_window_height );
     }
 
     // Draw the timing graph if it is enabled.
@@ -2991,6 +2920,20 @@ void VFrameSmooth::buildWarpProgs()
     );
 
 }
+
+void VFrameSmooth::initRenderEnvironment()
+{
+    m_window_display = eglGetDisplay( EGL_DEFAULT_DISPLAY );
+    m_window_surface = eglGetCurrentSurface( EGL_DRAW );
+    eglQuerySurface( m_window_display, m_window_surface, EGL_WIDTH, &m_window_width );
+    eglQuerySurface( m_window_display, m_window_surface, EGL_HEIGHT, &m_window_height );
+}
+
+void VFrameSmooth::swapBuffers()
+{
+    eglSwapBuffers( m_window_display, m_window_surface );
+}
+
 
 NV_NAMESPACE_END
 

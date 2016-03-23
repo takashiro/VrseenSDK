@@ -69,7 +69,6 @@ LOCAL_SRC_FILES  := \
 	api/VrApi.cpp \
 	api/Vsync.cpp \
 	api/VDevice.cpp \
-	api/DirectRender.cpp \
 	api/HmdInfo.cpp \
 	api/HmdSensors.cpp \
 	api/VLensDistortion.cpp \
