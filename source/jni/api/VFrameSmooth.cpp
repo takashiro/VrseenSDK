@@ -1735,7 +1735,7 @@ void VFrameSmooth::warpSwapInternal( const ovrTimeWarpParms & parms )
     }
 
     // Add a sync object for this buffer set.
-    ws.GpuSync = glOperation.eglCreateSyncKHR_( m_eglDisplay, EGL_SYNC_FENCE_KHR, NULL );
+    ws.GpuSync = glOperation.eglCreateSyncKHR( m_eglDisplay, EGL_SYNC_FENCE_KHR, NULL );
     if ( ws.GpuSync == EGL_NO_SYNC_KHR )
     {
         FAIL( "eglCreateSyncKHR_():EGL_NO_SYNC_KHR" );

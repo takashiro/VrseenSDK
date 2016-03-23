@@ -107,8 +107,7 @@ class VGlOperation
     void glRenderbufferStorageMultisampleIMG(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height);
     void glFramebufferTexture2DMultisampleIMG(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level, GLsizei samples);
 
-    static PFNEGLCREATESYNCKHRPROC eglCreateSyncKHR_;
-    void eglCreateSyncKHR(EGLDisplay dpy, EGLenum type, const EGLint *attrib_list);
+    EGLSyncKHR eglCreateSyncKHR(EGLDisplay dpy, EGLenum type, const EGLint *attrib_list);
     static PFNEGLDESTROYSYNCKHRPROC eglDestroySyncKHR_;
     static PFNEGLCLIENTWAITSYNCKHRPROC eglClientWaitSyncKHR_;
     static PFNEGLSIGNALSYNCKHRPROC eglSignalSyncKHR_;

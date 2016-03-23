@@ -10,7 +10,6 @@ bool VGlOperation::HasEXT_sRGB_texture_decode = false;
 bool VGlOperation::EXT_discard_framebuffer = false;
 bool VGlOperation::OES_vertex_array_object = false;
 
-PFNEGLCREATESYNCKHRPROC VGlOperation::eglCreateSyncKHR_ = NULL;
 PFNEGLDESTROYSYNCKHRPROC VGlOperation::eglDestroySyncKHR_ = NULL;
 PFNEGLCLIENTWAITSYNCKHRPROC VGlOperation::eglClientWaitSyncKHR_ = NULL;
 PFNEGLSIGNALSYNCKHRPROC VGlOperation::eglSignalSyncKHR_ = NULL;
@@ -179,14 +178,10 @@ bool VGlOperation::GL_CheckErrors(const char *logTitle)
 EGLint VGlOperation::GL_FlushSync(int timeout)
 {
     // if extension not present, return NO_SYNC
-    if ( eglCreateSyncKHR_ == NULL )
-    {
-        return EGL_FALSE;
-    }
 
     EGLDisplay eglDisplay = eglGetCurrentDisplay();
 
-    const EGLSyncKHR sync = eglCreateSyncKHR_( eglDisplay, EGL_SYNC_FENCE_KHR, NULL );
+    const EGLSyncKHR sync = eglCreateSyncKHR( eglDisplay, EGL_SYNC_FENCE_KHR, NULL );
     if ( sync == EGL_NO_SYNC_KHR )
     {
         return EGL_FALSE;
@@ -228,7 +223,6 @@ void VGlOperation::GL_FindExtensions()
     const bool es3 = ( strncmp( (const char *)glGetString( GL_VERSION ), "OpenGL ES 3", 11 ) == 0 );
     LOG( "es3 = %s", es3 ? "TRUE" : "FALSE" );
 
-    eglCreateSyncKHR_ = (PFNEGLCREATESYNCKHRPROC)GetExtensionProc( "eglCreateSyncKHR" );
     eglDestroySyncKHR_ = (PFNEGLDESTROYSYNCKHRPROC)GetExtensionProc( "eglDestroySyncKHR" );
     eglClientWaitSyncKHR_ = (PFNEGLCLIENTWAITSYNCKHRPROC)GetExtensionProc( "eglClientWaitSyncKHR" );
     eglSignalSyncKHR_ = (PFNEGLSIGNALSYNCKHRPROC)GetExtensionProc( "eglSignalSyncKHR" );
@@ -317,8 +311,6 @@ void VGlOperation::GL_Finish()
     // Given the common driver "optimization" of ignoring glFinish, we
     // can't run reliably while drawing to the front buffer without
     // the Sync extension.
-    if ( eglCreateSyncKHR_ != NULL )
-    {
         // 100 milliseconds == 100000000 nanoseconds
         const EGLint wait = GL_FlushSync( 100000000 );
         if ( wait == EGL_TIMEOUT_EXPIRED_KHR )
@@ -329,19 +321,15 @@ void VGlOperation::GL_Finish()
         {
             LOG( "eglClientWaitSyncKHR returned EGL_FALSE" );
         }
-    }
 }
 
 void VGlOperation::GL_Flush()
 {
-    if ( eglCreateSyncKHR_ != NULL )
-    {
         const EGLint wait = GL_FlushSync( 0 );
         if ( wait == EGL_FALSE )
         {
             LOG("eglClientWaitSyncKHR returned EGL_FALSE");
         }
-    }
 
     // Also do a glFlush() so it shows up in logging tools that
     // don't capture eglClientWaitSyncKHR_ calls.
@@ -715,9 +703,11 @@ void VGlOperation::glRenderbufferStorageMultisampleIMG(GLenum target, GLsizei sa
     glRenderbufferStorageMultisampleIMG_(target, samples, internalformat, width, height);
 }
 
-void VGlOperation::eglCreateSyncKHR(EGLDisplay dpy, EGLenum type, const EGLint *attrib_list)
+EGLSyncKHR VGlOperation::eglCreateSyncKHR(EGLDisplay dpy, EGLenum type, const EGLint *attrib_list)
 {
-
+    PFNEGLCREATESYNCKHRPROC eglCreateSyncKHR_;
+    eglCreateSyncKHR_ = (PFNEGLCREATESYNCKHRPROC)GetExtensionProc( "eglCreateSyncKHR" );
+    return eglCreateSyncKHR_(dpy, type, attrib_list);
 }
 
 NV_NAMESPACE_END

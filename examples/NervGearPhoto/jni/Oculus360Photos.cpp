@@ -489,7 +489,7 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
 			free( data );
 
 			// Add a sync object for uploading textures
-            EGLSyncKHR GpuSync = glOperation.eglCreateSyncKHR_( photos->m_eglDisplay, EGL_SYNC_FENCE_KHR, NULL );
+            EGLSyncKHR GpuSync = glOperation.eglCreateSyncKHR( photos->m_eglDisplay, EGL_SYNC_FENCE_KHR, NULL );
 			if ( GpuSync == EGL_NO_SYNC_KHR ) {
 				FAIL( "BackgroundGLLoadThread eglCreateSyncKHR_():EGL_NO_SYNC_KHR" );
 			}
@@ -521,7 +521,7 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
 			}
 
 			// Add a sync object for uploading textures
-            EGLSyncKHR GpuSync = glOperation.eglCreateSyncKHR_( photos->m_eglDisplay, EGL_SYNC_FENCE_KHR, NULL );
+            EGLSyncKHR GpuSync = glOperation.eglCreateSyncKHR( photos->m_eglDisplay, EGL_SYNC_FENCE_KHR, NULL );
 			if ( GpuSync == EGL_NO_SYNC_KHR ) {
 				FAIL( "BackgroundGLLoadThread eglCreateSyncKHR_():EGL_NO_SYNC_KHR" );
 			}
