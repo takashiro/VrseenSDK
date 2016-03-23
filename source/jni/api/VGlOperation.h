@@ -100,16 +100,15 @@ class VGlOperation
     static bool EXT_disjoint_timer_query;
     static bool EXT_discard_framebuffer;
     static bool EXT_texture_filter_anisotropic;
-    static bool IMG_multisampled_render_to_texture;
     static bool OES_vertex_array_object;
     static bool QCOM_tiled_rendering;
     static const int EGL_PROTECTED_CONTENT_EXT;
 
-
-    static PFNGLRENDERBUFFERSTORAGEMULTISAMPLEIMG glRenderbufferStorageMultisampleIMG_;
+    void glRenderbufferStorageMultisampleIMG(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height);
     void glFramebufferTexture2DMultisampleIMG(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level, GLsizei samples);
 
     static PFNEGLCREATESYNCKHRPROC eglCreateSyncKHR_;
+    void eglCreateSyncKHR(EGLDisplay dpy, EGLenum type, const EGLint *attrib_list);
     static PFNEGLDESTROYSYNCKHRPROC eglDestroySyncKHR_;
     static PFNEGLCLIENTWAITSYNCKHRPROC eglClientWaitSyncKHR_;
     static PFNEGLSIGNALSYNCKHRPROC eglSignalSyncKHR_;

@@ -9,9 +9,7 @@ bool VGlOperation::QCOM_tiled_rendering = false;
 bool VGlOperation::HasEXT_sRGB_texture_decode = false;
 bool VGlOperation::EXT_discard_framebuffer = false;
 bool VGlOperation::OES_vertex_array_object = false;
-bool VGlOperation::IMG_multisampled_render_to_texture = false;
 
-PFNGLRENDERBUFFERSTORAGEMULTISAMPLEIMG VGlOperation::glRenderbufferStorageMultisampleIMG_ = NULL;
 PFNEGLCREATESYNCKHRPROC VGlOperation::eglCreateSyncKHR_ = NULL;
 PFNEGLDESTROYSYNCKHRPROC VGlOperation::eglDestroySyncKHR_ = NULL;
 PFNEGLCLIENTWAITSYNCKHRPROC VGlOperation::eglClientWaitSyncKHR_ = NULL;
@@ -99,7 +97,7 @@ EGLConfig VGlOperation::EglConfigForConfigID(const EGLDisplay display, const GLi
     EGLint  	numConfigs = 0;
 
     if ( EGL_FALSE == eglGetConfigs( display,
-            configs, MAX_CONFIGS, &numConfigs ) )
+                                     configs, MAX_CONFIGS, &numConfigs ) )
     {
         WARN( "eglGetConfigs() failed" );
         return NULL;
@@ -195,7 +193,7 @@ EGLint VGlOperation::GL_FlushSync(int timeout)
     }
 
     const EGLint wait = eglClientWaitSyncKHR_( eglDisplay, sync,
-                            EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, timeout );
+                                               EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, timeout );
 
     eglDestroySyncKHR_( eglDisplay, sync );
 
@@ -229,19 +227,6 @@ void VGlOperation::GL_FindExtensions()
 
     const bool es3 = ( strncmp( (const char *)glGetString( GL_VERSION ), "OpenGL ES 3", 11 ) == 0 );
     LOG( "es3 = %s", es3 ? "TRUE" : "FALSE" );
-
-
-    if ( GL_ExtensionStringPresent( "GL_IMG_multisampled_render_to_texture", extensions ) )
-    {
-        IMG_multisampled_render_to_texture = true;
-        glRenderbufferStorageMultisampleIMG_ = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEIMG)GetExtensionProc ( "glRenderbufferStorageMultisampleIMG" );
-    }
-    else if ( GL_ExtensionStringPresent( "GL_EXT_multisampled_render_to_texture", extensions ) )
-    {
-        // assign to the same function pointers as the IMG extension
-        IMG_multisampled_render_to_texture = true;
-        glRenderbufferStorageMultisampleIMG_ = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEIMG)GetExtensionProc ( "glRenderbufferStorageMultisampleEXT" );
-    }
 
     eglCreateSyncKHR_ = (PFNEGLCREATESYNCKHRPROC)GetExtensionProc( "eglCreateSyncKHR" );
     eglDestroySyncKHR_ = (PFNEGLDESTROYSYNCKHRPROC)GetExtensionProc( "eglDestroySyncKHR" );
@@ -360,7 +345,7 @@ void VGlOperation::GL_Flush()
 
     // Also do a glFlush() so it shows up in logging tools that
     // don't capture eglClientWaitSyncKHR_ calls.
-//	glFlush();
+    //	glFlush();
 }
 
 void VGlOperation::GL_InvalidateFramebuffer(const invalidateTarget_t isFBO, const bool colorBuffer, const bool depthBuffer)
@@ -405,7 +390,7 @@ void VGlOperation::DumpEglConfigs( const EGLDisplay display )
     EGLint  	numConfigs = 0;
 
     if ( EGL_FALSE == eglGetConfigs( display,
-            configs, MAX_CONFIGS, &numConfigs ) )
+                                     configs, MAX_CONFIGS, &numConfigs ) )
     {
         WARN( "eglGetConfigs() failed" );
         return;
@@ -439,16 +424,16 @@ void VGlOperation::DumpEglConfigs( const EGLDisplay display )
         // EGL_RENDERABLE_TYPE is a bit field
         EGLint	renderable = 0;
         eglGetConfigAttrib( display, configs[i], EGL_RENDERABLE_TYPE , &renderable );
-//		EGLint window = (surface & EGL_WINDOW_BIT) != 0;
-//		EGLint pbuffer = (surface & EGL_PBUFFER_BIT) != 0;
+        //		EGLint window = (surface & EGL_WINDOW_BIT) != 0;
+        //		EGLint pbuffer = (surface & EGL_PBUFFER_BIT) != 0;
 
         LOG( "%8i %i %i %i %i %2i %i %i %i %i 0x%02x 0x%02x", (int)configs[i], red, green, blue, alpha,
-                depth, stencil, multisamples, window, pbuffer, renderable, surface);
+             depth, stencil, multisamples, window, pbuffer, renderable, surface);
     }
 }
 
 EGLConfig VGlOperation::ChooseColorConfig( const EGLDisplay display, const int redBits,
-        const int greeBits, const int blueBits, const int depthBits, const int samples, const bool pbuffer )
+                                           const int greeBits, const int blueBits, const int depthBits, const int samples, const bool pbuffer )
 {
 
     // DumpEglConfigs( display );
@@ -461,7 +446,7 @@ EGLConfig VGlOperation::ChooseColorConfig( const EGLDisplay display, const int r
     EGLint  	numConfigs = 0;
 
     if ( EGL_FALSE == eglGetConfigs( display,
-            configs, MAX_CONFIGS, &numConfigs ) ) {
+                                     configs, MAX_CONFIGS, &numConfigs ) ) {
         WARN( "eglGetConfigs() failed" );
         return NULL;
     }
@@ -469,13 +454,13 @@ EGLConfig VGlOperation::ChooseColorConfig( const EGLDisplay display, const int r
 
     // We don't want a depth/stencil buffer
     const EGLint configAttribs[] = {
-            EGL_BLUE_SIZE,  	blueBits,
-            EGL_GREEN_SIZE, 	greeBits,
-            EGL_RED_SIZE,   	redBits,
-            EGL_DEPTH_SIZE,   	depthBits,
-//			EGL_STENCIL_SIZE,  	0,
-            EGL_SAMPLES,		samples,
-            EGL_NONE
+        EGL_BLUE_SIZE,  	blueBits,
+        EGL_GREEN_SIZE, 	greeBits,
+        EGL_RED_SIZE,   	redBits,
+        EGL_DEPTH_SIZE,   	depthBits,
+        //			EGL_STENCIL_SIZE,  	0,
+        EGL_SAMPLES,		samples,
+        EGL_NONE
     };
 
     // look for OpenGL ES 3.0 configs first, then fall back to 2.0
@@ -529,13 +514,13 @@ EGLConfig VGlOperation::ChooseColorConfig( const EGLDisplay display, const int r
 }
 
 void VGlOperation::EglSetup( const EGLContext shareContext,
-        const int requestedGlEsVersion,
-        const int redBits, const int greenBits, const int blueBits,
-        const int depthBits, const int multisamples, const GLuint contextPriority )
+                             const int requestedGlEsVersion,
+                             const int redBits, const int greenBits, const int blueBits,
+                             const int depthBits, const int multisamples, const GLuint contextPriority )
 {
     VGlOperation glOperation;
     LOG( "EglSetup: requestGlEsVersion(%d), redBits(%d), greenBits(%d), blueBits(%d), depthBits(%d), multisamples(%d), contextPriority(%d)",
-            requestedGlEsVersion, redBits, greenBits, blueBits, depthBits, multisamples, contextPriority );
+         requestedGlEsVersion, redBits, greenBits, blueBits, depthBits, multisamples, contextPriority );
 
 
     // Get the built in display
@@ -574,12 +559,12 @@ void VGlOperation::EglSetup( const EGLContext shareContext,
     for ( int version = requestedGlEsVersion ; version >= 2 ; version-- )
     {
         LOG( "Trying for a EGL_CONTEXT_CLIENT_VERSION %i context shared with %p:",
-                version, shareContext );
+             version, shareContext );
         // We want the application context to be lower priority than the TimeWarp context.
         EGLint contextAttribs[] = {
-                EGL_CONTEXT_CLIENT_VERSION, version,
-                EGL_NONE, EGL_NONE,
-                EGL_NONE };
+            EGL_CONTEXT_CLIENT_VERSION, version,
+            EGL_NONE, EGL_NONE,
+            EGL_NONE };
 
         // Don't set EGL_CONTEXT_PRIORITY_LEVEL_IMG at all if set to EGL_CONTEXT_PRIORITY_MEDIUM_IMG,
         // It is the caller's responsibility to use that if the driver doesn't support it.
@@ -598,12 +583,12 @@ void VGlOperation::EglSetup( const EGLContext shareContext,
             EGLint configIDReadback;
             if ( !eglQueryContext( display, context, EGL_CONFIG_ID, &configIDReadback ) )
             {
-                 WARN("eglQueryContext EGL_CONFIG_ID failed" );
+                WARN("eglQueryContext EGL_CONFIG_ID failed" );
             }
             EGLConfig configCheck = glOperation.EglConfigForConfigID( display, configIDReadback );
 
             LOG( "Created context with config %i, query returned ID %i = config %i",
-                    (int)config, configIDReadback, (int)configCheck );
+                 (int)config, configIDReadback, (int)configCheck );
             break;
         }
     }
@@ -620,10 +605,10 @@ void VGlOperation::EglSetup( const EGLContext shareContext,
         eglQueryContext( display, context, EGL_CONTEXT_PRIORITY_LEVEL_IMG, &actualPriorityLevel );
         switch ( actualPriorityLevel )
         {
-            case EGL_CONTEXT_PRIORITY_HIGH_IMG: LOG( "Context is EGL_CONTEXT_PRIORITY_HIGH_IMG" ); break;
-            case EGL_CONTEXT_PRIORITY_MEDIUM_IMG: LOG( "Context is EGL_CONTEXT_PRIORITY_MEDIUM_IMG" ); break;
-            case EGL_CONTEXT_PRIORITY_LOW_IMG: LOG( "Context is EGL_CONTEXT_PRIORITY_LOW_IMG" ); break;
-            default: LOG( "Context has unknown priority level" ); break;
+        case EGL_CONTEXT_PRIORITY_HIGH_IMG: LOG( "Context is EGL_CONTEXT_PRIORITY_HIGH_IMG" ); break;
+        case EGL_CONTEXT_PRIORITY_MEDIUM_IMG: LOG( "Context is EGL_CONTEXT_PRIORITY_MEDIUM_IMG" ); break;
+        case EGL_CONTEXT_PRIORITY_LOW_IMG: LOG( "Context is EGL_CONTEXT_PRIORITY_LOW_IMG" ); break;
+        default: LOG( "Context has unknown priority level" ); break;
         }
     }
 
@@ -668,7 +653,7 @@ void VGlOperation::EglSetup( const EGLContext shareContext,
     const char * glVersionString = (const char *) glGetString(GL_VERSION);
     LOG( "GL_VERSION: %s", glVersionString);
     const char * glSlVersionString = (const char *) glGetString(
-            GL_SHADING_LANGUAGE_VERSION);
+                GL_SHADING_LANGUAGE_VERSION);
     LOG( "GL_SHADING_LANGUAGE_VERSION: %s", glSlVersionString);
 
     gpuType = glOperation.EglGetGpuType();
@@ -700,21 +685,39 @@ void VGlOperation::EglShutdown(  )
     context = 0;
 }
 
- void VGlOperation::glFramebufferTexture2DMultisampleIMG(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level, GLsizei samples)
- {
-     PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEIMG glFramebufferTexture2DMultisampleIMG_;
-     if ( GL_ExtensionStringPresent( "GL_IMG_multisampled_render_to_texture", extensions ) )
-     {
-         IMG_multisampled_render_to_texture = true;
-         glFramebufferTexture2DMultisampleIMG_ = (PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEIMG)GetExtensionProc ( "glFramebufferTexture2DMultisampleIMG" );
-     }
-     else if ( GL_ExtensionStringPresent( "GL_EXT_multisampled_render_to_texture", extensions ) )
-     {
-         // assign to the same function pointers as the IMG extension
-         IMG_multisampled_render_to_texture = true;
-         glFramebufferTexture2DMultisampleIMG_ = (PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEIMG)GetExtensionProc ( "glFramebufferTexture2DMultisampleEXT" );
-     }
-     glFramebufferTexture2DMultisampleIMG_(target, attachment, textarget, texture, level, samples);
- }
+void VGlOperation::glFramebufferTexture2DMultisampleIMG(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level, GLsizei samples)
+{
+    PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEIMG glFramebufferTexture2DMultisampleIMG_;
+    if ( GL_ExtensionStringPresent( "GL_IMG_multisampled_render_to_texture", extensions ) )
+    {
+        glFramebufferTexture2DMultisampleIMG_ = (PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEIMG)GetExtensionProc ( "glFramebufferTexture2DMultisampleIMG" );
+    }
+    else if ( GL_ExtensionStringPresent( "GL_EXT_multisampled_render_to_texture", extensions ) )
+    {
+        // assign to the same function pointers as the IMG extension
+        glFramebufferTexture2DMultisampleIMG_ = (PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEIMG)GetExtensionProc ( "glFramebufferTexture2DMultisampleEXT" );
+    }
+    glFramebufferTexture2DMultisampleIMG_(target, attachment, textarget, texture, level, samples);
+}
+
+void VGlOperation::glRenderbufferStorageMultisampleIMG(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height)
+{
+    PFNGLRENDERBUFFERSTORAGEMULTISAMPLEIMG glRenderbufferStorageMultisampleIMG_;
+    if ( GL_ExtensionStringPresent( "GL_IMG_multisampled_render_to_texture", extensions ) )
+    {
+        glRenderbufferStorageMultisampleIMG_ = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEIMG)GetExtensionProc ( "glRenderbufferStorageMultisampleIMG" );
+    }
+    else if ( GL_ExtensionStringPresent( "GL_EXT_multisampled_render_to_texture", extensions ) )
+    {
+        // assign to the same function pointers as the IMG extension
+        glRenderbufferStorageMultisampleIMG_ = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEIMG)GetExtensionProc ( "glRenderbufferStorageMultisampleEXT" );
+    }
+    glRenderbufferStorageMultisampleIMG_(target, samples, internalformat, width, height);
+}
+
+void VGlOperation::eglCreateSyncKHR(EGLDisplay dpy, EGLenum type, const EGLint *attrib_list)
+{
+
+}
 
 NV_NAMESPACE_END

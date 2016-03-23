@@ -153,7 +153,7 @@ void EyeBuffer::Allocate( const EyeParms & bufferParms, multisample_t multisampl
         {
             glGenRenderbuffers( 1, &DepthBuffer );
             glBindRenderbuffer( GL_RENDERBUFFER, DepthBuffer );
-            glOperation.glRenderbufferStorageMultisampleIMG_( GL_RENDERBUFFER,bufferParms. multisamples,
+            glOperation.glRenderbufferStorageMultisampleIMG( GL_RENDERBUFFER,bufferParms. multisamples,
                     depthFormat, bufferParms.WidthScale*bufferParms.resolution, bufferParms.resolution );
 
             glBindRenderbuffer( GL_RENDERBUFFER, 0 );
