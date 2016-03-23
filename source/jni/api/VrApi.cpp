@@ -601,59 +601,22 @@ void ovr_SendIntent( ovrMobile * ovr, const char * actionName, const char * toPa
 	}
 }
 
-void CreateSystemActivitiesCommand( const char * toPackageName, const char * command, const char * jsonExtra,
-		const char * uri, NervGear::VString & out )
+void CreateSystemActivitiesCommand(const char * toPackageName, const char * command, const char * uri, NervGear::VString & out )
 {
 	// serialize the command to a JSON object with version inf
-    VJson obj(VJson::Object);
+    VJsonObject obj;
     obj.insert("Command", command);
     obj.insert("OVRVersion", ovr_GetVersionString());
     obj.insert("PlatformUIVersion", PLATFORM_UI_VERSION);
     obj.insert("ToPackage", toPackageName);
 
     std::stringstream s;
-    s << obj;
+    s << VJson(std::move(obj));
 
     char text[10240];
     s.getline(text, 10240);
     out = text;
-
-    if ( jsonExtra != NULL && jsonExtra[0] != '\0' )
-    {
-        out.remove( out.length() - 2 );	// strip off the } and a line feed
-        out.append( ",\n" );
-        out.append( jsonExtra );
-        out.append( "\n}" );
-    }
 }
-
-void ovr_BroadcastSystemActivityEvent( ovrMobile * ovr, const char * actionName, const char * toPackageName,
-		const char * toClassName, const char * command, const char * jsonExtra, const char * uri )
-{
-	LOG( "ovr_BroadcastSystemActivityEvent( '%s' '%s/%s' '%s' '%s' '%s' )", actionName, toPackageName, toClassName,
-			( command != NULL ) ? command : "<NULL>",
-			( jsonExtra != NULL ) ? jsonExtra : "<NULL>",
-			( uri != NULL ) ? uri : "<NULL>" );
-
-	NervGear::VString commandJson;
-	CreateSystemActivitiesCommand( toPackageName, command, jsonExtra, uri, commandJson );
-
-	JavaString actionString( ovr->Jni, actionName );
-	JavaString packageString( ovr->Jni, toPackageName );
-	JavaString className( ovr->Jni, toClassName );
-    JavaString commandString( ovr->Jni, commandJson.toCString() );
-	JavaString uriString( ovr->Jni, uri == NULL ? "" : uri );
-
-	jmethodID sendIntentFromNativeId = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass,
-			"broadcastIntent", "(Landroid/app/Activity;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V" );
-	if ( sendIntentFromNativeId != NULL )
-	{
-		ovr->Jni->CallStaticVoidMethod( VrLibClass, sendIntentFromNativeId, ovr->Parms.ActivityObject,
-				actionString.toJString(), packageString.toJString(), className.toJString(),
-				commandString.toJString(), uriString.toJString() );
-	}
-}
-
 
 // This will query Android for the launch intent of the specified package, then append the
 // command and URI data to the intent.
@@ -708,14 +671,14 @@ bool ovr_CreateSystemActivityIntent( ovrMobile * ovr, const char * command, cons
 	}
 	outBuffer[0] = '\0';
 
-    VJson jsonObj(VJson::Object);
+    VJsonObject jsonObj;
 
     jsonObj.insert("Command", command );
     jsonObj.insert("OVRVersion", ovr_GetVersionString() );
     jsonObj.insert( "PlatformUIVersion", PLATFORM_UI_VERSION );
 
     std::stringstream s;
-    s << jsonObj;
+    s << VJson(std::move(jsonObj));
     std::string str;
     s.str(str);
 
@@ -1764,7 +1727,7 @@ void ovr_HandleHmdEvents( ovrMobile * ovr )
 				ovr_notifyMountHandled( ovr );
 
 				NervGear::VString reorientMessage;
-				CreateSystemActivitiesCommand( "", SYSTEM_ACTIVITY_EVENT_REORIENT, "", "", reorientMessage );
+                CreateSystemActivitiesCommand( "", SYSTEM_ACTIVITY_EVENT_REORIENT, "", reorientMessage );
                 NervGear::SystemActivities_AddEvent( reorientMessage );
 			}
 		}
@@ -1813,7 +1776,7 @@ void ovr_HandleDeviceStateChanges( ovrMobile * ovr )
 			continue;
 		}
 
-        VJson reader = VJson::Parse(eventBuffer.toCString());
+        VJson reader = VJson::Parse(eventBuffer.toLatin1());
         if ( reader.isObject() )
 		{
             VString command = reader.value("Command").toString();
@@ -2131,7 +2094,7 @@ eVrApiEventStatus ovr_nextPendingEvent( VString& buffer, unsigned int const buff
 	}
 
 	// Parse to JSON here to determine if we should handle the event natively, or pass it along to the client app.
-    VJson reader = VJson::Parse(buffer.toCString());
+    VJson reader = VJson::Parse(buffer.toLatin1());
     if (reader.isObject())
 	{
         VString command = reader.value( "Command" ).toString();

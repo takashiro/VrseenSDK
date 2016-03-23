@@ -88,7 +88,7 @@ protected:
 	// Overload to fill extended data during initialization
     virtual OvrMetaDatum *	createMetaDatum( const char* fileName ) const = 0;
     virtual	void			extractExtendedData( const VJson &jsonDatum, OvrMetaDatum & outDatum ) const = 0;
-    virtual	void			extendedDataToJson( const OvrMetaDatum & datum, VJson &outDatumObject ) const = 0;
+    virtual	void			extendedDataToJson( const OvrMetaDatum & datum, VJsonObject &outDatumObject ) const = 0;
     virtual void			swapExtendedData( OvrMetaDatum * left, OvrMetaDatum * right ) const = 0;
 
 	// Optional protected interface
@@ -99,7 +99,7 @@ protected:
 
 private:
     Category * 				getCategory( const VString & categoryName );
-    void					processMetaData( const VJson &dataFile, const VArray< VString > & searchPaths, const char * metaFile );
+    void					processMetaData(const VJsonObject &dataFile, const VArray< VString > & searchPaths, const char * metaFile );
     void					regenerateCategoryIndices();
     void					reconcileMetaData( VStringHash< OvrMetaDatum * > & storedMetaData );
     void					reconcileCategories( VArray< Category > & storedCategories );
@@ -107,9 +107,9 @@ private:
     VJson			metaDataToJson() const;
     void					writeMetaFile( const char * metaFile ) const;
     bool 					shouldAddFile( const char * filename, const OvrMetaDataFileExtensions & fileExtensions ) const;
-    void					extractVersion( const VJson &dataFile, double & outVersion ) const;
-    void					extractCategories( const VJson &dataFile, VArray< Category > & outCategories ) const;
-    void					extractMetaData( const VJson &dataFile, const VArray< VString > & searchPaths, VStringHash< OvrMetaDatum * > & outMetaData ) const;
+    void					extractVersion(const VJsonObject &dataFile, double & outVersion ) const;
+    void					extractCategories(const VJsonObject &dataFile, VArray< Category > & outCategories ) const;
+    void					extractMetaData(const VJsonObject &dataFile, const VArray< VString > & searchPaths, VStringHash< OvrMetaDatum * > & outMetaData ) const;
     void					extractRemoteMetaData( const VJson &dataFile, VStringHash< OvrMetaDatum * > & outMetaData ) const;
 
     VPath 					m_filePath;

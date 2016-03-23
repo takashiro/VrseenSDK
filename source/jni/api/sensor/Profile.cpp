@@ -220,7 +220,7 @@ void ProfileManager::LoadCache(ProfileType device)
 
     VString path = GetProfilePath(false);
 
-    VJson root = VJson::Load(path.toCString());
+    VJson root = VJson::Load(path);
     if (!root.isObject() || root.size() < 3)
         return;
 
@@ -236,7 +236,7 @@ void ProfileManager::LoadCache(ProfileType device)
 
     // Read a number of profiles
     const VJson &profileArray = root.value("Profiles");
-    const JsonArray &profiles = profileArray.toArray();
+    const VJsonArray &profiles = profileArray.toArray();
     for (const VJson &profileItem : profiles) {
         // Read the required Name field
         if (!profileItem.contains("Name"))
@@ -251,18 +251,18 @@ void ProfileManager::LoadCache(ProfileType device)
         // Read the base profile fields.
         if (profile && profileItem.isObject())
         {
-            const JsonObject &map = profileItem.toObject();
-            for (const std::pair<std::string, VJson> &i : map) {
+            const VJsonObject &map = profileItem.toObject();
+            for (const std::pair<VString, VJson> &i : map) {
                 const VJson &item = i.second;
                 if (!item.isObject()) {
-                    profile->ParseProperty(i.first.c_str(), i.second.toStdString().c_str());
+                    profile->ParseProperty(i.first.toUtf8().c_str(), i.second.toStdString().c_str());
                 } else {   // Search for the matching device to get device specific fields
                     if (!deviceFound && deviceName && i.first == deviceName) {
                         deviceFound = true;
 
-                        const JsonObject &deviceObject = item.toObject();
-                        for (const std::pair<std::string, VJson> &i : deviceObject) {
-                            profile->ParseProperty(i.first.c_str(), i.second.toStdString().c_str());
+                        const VJsonObject &deviceObject = item.toObject();
+                        for (const std::pair<VString, VJson> &i : deviceObject) {
+                            profile->ParseProperty(i.first.toUtf8().c_str(), i.second.toStdString().c_str());
                         }
                     }
                 }
@@ -283,7 +283,7 @@ void ProfileManager::SaveCache()
 
     VLock::Locker lockScope(&ProfileLock);
 
-    VJson oldroot = VJson::Load(path.toCString());
+    VJson oldroot = VJson::Load(path);
     if (oldroot.isObject()) {
         if (oldroot.size() >= 3) {
             const VJson &item0 = oldroot.value("Oculus Profile Version");
@@ -299,17 +299,17 @@ void ProfileManager::SaveCache()
     }
 
     // Create a new json root
-    VJson root(VJson::Object);
+    VJsonObject root;
     root.insert("Oculus Profile Version", PROFILE_VERSION);
     root.insert("CurrentProfile", DefaultProfile);
 
-    VJson profiles(VJson::Array);
+    VJsonArray profiles;
     // Generate a JSON subtree for each profile
     for (unsigned int i = 0; i < ProfileCache.size(); i++) {
         Profile* profile = ProfileCache[i];
 
         // Write the base profile information
-        VJson json_profile(VJson::Object);
+        VJsonObject json_profile;
         //json_profile->Name = "Profile";
         json_profile.insert("Name", profile->Name);
         if (profile->CloudUser != NULL) {
@@ -335,7 +335,7 @@ void ProfileManager::SaveCache()
             device_name = "RiftDK1";
 
             RiftDK1Profile* rift = (RiftDK1Profile*)profile;
-            VJson json_rift(VJson::Object);
+            VJsonObject json_rift;
 
             const char* eyecup = "A";
             switch (rift->EyeCups)
@@ -354,15 +354,14 @@ void ProfileManager::SaveCache()
             json_rift.insert("RL", rift->RL);
             json_rift.insert("RR", rift->RR);
 
-            json_profile.insert(device_name, json_rift);
+            json_profile.insert(device_name, std::move(json_rift));
         }
         else if (profile->Type == Profile_RiftDKHD)
         {
             device_name = "RiftDKHD";
 
             RiftDKHDProfile* rift = (RiftDKHDProfile*)profile;
-            VJson json_rift(VJson::Object);
-            json_profile.insert(device_name, json_rift);
+            VJsonObject json_rift;
 
             const char* eyecup = "A";
             switch (rift->EyeCups)
@@ -376,10 +375,8 @@ void ProfileManager::SaveCache()
             default: OVR_ASSERT ( false ); break;
             }
             json_rift.insert("EyeCup", eyecup);
-            //json_rift->AddNumberItem("LL", rift->LL);
-            //json_rift->AddNumberItem("LR", rift->LR);
-            //json_rift->AddNumberItem("RL", rift->RL);
-            //json_rift->AddNumberItem("RR", rift->RR);
+
+            json_profile.insert(device_name, std::move(json_rift));
         }
 
         // There may be multiple devices stored per user, but only a single
@@ -387,15 +384,15 @@ void ProfileManager::SaveCache()
         // the other devices so we need to examine the older root
         // and merge previous devices into new json root
         VJson old_profile_item = oldroot.value("Profiles");
-        const JsonArray &old_profiles = old_profile_item.toArray();
+        const VJsonArray &old_profiles = old_profile_item.toArray();
         for (const VJson &old_profile : old_profiles) {
             const VJson &profile_name = old_profile.value("Name");
             if (profile_name.isString() && profile->Name == profile_name.toString()) {
                 // Now that we found the user in the older root, add all the
                 // object children to the new root - except for the one for the
                 // current device
-                const JsonObject &old_item_object = old_profile.toObject();
-                for (const std::pair<std::string, VJson> &pair : old_item_object) {
+                const VJsonObject &old_item_object = old_profile.toObject();
+                for (const std::pair<VString, VJson> &pair : old_item_object) {
                     const VJson &old_item = pair.second;
                     if (old_item.isObject() && (device_name == NULL || pair.first != device_name)) {
                         // add the node pointer to the new root

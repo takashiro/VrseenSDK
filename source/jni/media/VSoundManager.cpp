@@ -22,16 +22,16 @@ struct VSoundManager::Private
 
     void loadSoundAssetsFromJsonObject(const VString &url, const VJson &dataFile)
     {
-        vAssert(dataFile.isValid());
+        vAssert(dataFile.isObject());
 
         // Read in sounds - add to map
         VJson sounds = dataFile.value("Sounds");
         vAssert(sounds.isObject());
 
-        const JsonObject &pairs = sounds.toObject();
-        for (const std::pair<std::string, VJson> &pair : pairs) {
+        const VJsonObject &pairs = sounds.toObject();
+        for (const std::pair<VString, VJson> &pair : pairs) {
             const VJson &sound = pair.second;
-            vAssert(sound.isValid());
+            vAssert(sound.isString());
 
             VString fullPath = url + sound.toString();
 
@@ -63,7 +63,7 @@ struct VSoundManager::Private
         s << reinterpret_cast<char *>(buffer);
         VJson dataFile;
         s >> dataFile;
-        if (dataFile.isInvalid()) {
+        if (dataFile.isNull()) {
             vFatal("OvrSoundManager::LoadSoundAssetsFromPackage failed json parse on" << jsonFile);
         }
         free(buffer);
@@ -94,7 +94,7 @@ void VSoundManager::loadSoundAssets()
         std::ifstream fp(foundPath.toStdString(), std::ios::binary);
 		VJson dataFile;
 		fp >> dataFile;
-        if (dataFile.isInvalid()) {
+        if (dataFile.isNull()) {
             vFatal("OvrSoundManager::LoadSoundAssets failed to load JSON meta file:" << foundPath);
 		}
 

@@ -249,7 +249,7 @@ void LoadModelFileJson( ModelFile & model,
 
 	const char * error = NULL;
 	VJson models = VJson::Parse(modelsJson);
-	if ( models.isInvalid() )
+	if ( models.isNull() )
 	{
 		WARN( "LoadModelFileJson: Error loading %s : %s", model.FileName.toCString(), error );
 		return;
@@ -282,7 +282,7 @@ void LoadModelFileJson( ModelFile & model,
 			const VJson &texture_array( render_model.value( "textures" ) );
 			if ( texture_array.isArray() )
 			{
-                const JsonArray &textures = texture_array.toArray();
+                const VJsonArray &textures = texture_array.toArray();
 				for (const VJson &texture : textures) {
 					if ( texture.isObject() )
 					{
@@ -343,7 +343,7 @@ void LoadModelFileJson( ModelFile & model,
 			{
 				model.Joints.clear();
 
-                const JsonArray &joints = joint_array.toArray();
+                const VJsonArray &joints = joint_array.toArray();
 				for ( const VJson &joint : joints ) {
 					if ( joint.isObject() )
 					{
@@ -375,7 +375,7 @@ void LoadModelFileJson( ModelFile & model,
 			{
 				model.Tags.clear();
 
-                const JsonArray &tags = tag_array.toArray();
+                const VJsonArray &tags = tag_array.toArray();
 				for ( const VJson &tag : tags ) {
 					if ( tag.isObject() )
 					{
@@ -395,7 +395,7 @@ void LoadModelFileJson( ModelFile & model,
 			const VJson surface_array( render_model.value( "surfaces" ) );
 			if ( surface_array.isArray() )
 			{
-                const JsonArray &surfaces = surface_array.toArray();
+                const VJsonArray &surfaces = surface_array.toArray();
 				for (const VJson &surface : surfaces) {
 					if ( surface.isObject() )
 					{
@@ -407,7 +407,7 @@ void LoadModelFileJson( ModelFile & model,
 
 						const VJson &source(surface.value( "source" ));
 						if (source.isArray()) {
-                            const JsonArray &elements = source.toArray();
+                            const VJsonArray &elements = source.toArray();
 							for (const VJson &e : elements) {
                                 if ( model.Def.surfaces[index].surfaceName.length() ) {
 									model.Def.surfaces[index].surfaceName += ";";
@@ -705,7 +705,7 @@ void LoadModelFileJson( ModelFile & model,
 		{
 			LOGV( "loading collision model.." );
 
-            const JsonArray &polytopes = collision_model.toArray();
+            const VJsonArray &polytopes = collision_model.toArray();
 			for (const VJson &polytope : polytopes) {
 				const uint index = model.Collisions.Polytopes.allocBack();
 
@@ -726,7 +726,7 @@ void LoadModelFileJson( ModelFile & model,
 		{
 			LOGV( "loading ground collision model.." );
 
-            const JsonArray &polytopes = ground_collision_model.toArray();
+            const VJsonArray &polytopes = ground_collision_model.toArray();
 			for (const VJson &polytope : polytopes) {
 				const uint index = model.GroundCollisions.Polytopes.allocBack();
 
@@ -767,7 +767,7 @@ void LoadModelFileJson( ModelFile & model,
 				const VJson &nodes_array( raytrace_model.value( "nodes" ) );
 				if ( nodes_array.isArray() )
 				{
-                    const JsonArray &nodes = nodes_array.toArray();
+                    const VJsonArray &nodes = nodes_array.toArray();
 					for (const VJson &node : nodes) {
 						const uint index = traceModel.nodes.allocBack();
 
@@ -785,7 +785,7 @@ void LoadModelFileJson( ModelFile & model,
 				const VJson &leafs_array( raytrace_model.value( "leafs" ) );
 				if ( leafs_array.isArray() )
 				{
-                    const JsonArray &leafs = leafs_array.toArray();
+                    const VJsonArray &leafs = leafs_array.toArray();
 					for (const VJson &leaf : leafs) {
 						const uint index = traceModel.leafs.allocBack();
 

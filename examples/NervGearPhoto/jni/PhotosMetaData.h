@@ -39,7 +39,7 @@ public:
 protected:
 	OvrMetaDatum *createMetaDatum(const char* url) const override;
 	void extractExtendedData( const NervGear::VJson & jsonDatum, OvrMetaDatum & outDatum ) const override;
-	void extendedDataToJson( const OvrMetaDatum & datum, NervGear::VJson &outDatumObject ) const override;
+	void extendedDataToJson(const OvrMetaDatum & datum, VJsonObject &outDatumObject ) const override;
 	void swapExtendedData( OvrMetaDatum * left, OvrMetaDatum * right ) const override;
 };
 

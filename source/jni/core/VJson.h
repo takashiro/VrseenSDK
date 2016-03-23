@@ -1,28 +1,25 @@
 #pragma once
 
-#include <vector>
-#include <map>
 #include <string>
 #include <istream>
 #include <ostream>
 
-#include "VSharedPointer.h"
 #include "VString.h"
+#include "VArray.h"
+#include "VMap.h"
 
 NV_NAMESPACE_BEGIN
 
 class VJson;
-class JsonData;
-typedef std::vector<VJson> JsonArray;
-typedef std::map<std::string, VJson> JsonObject;
+typedef VArray<VJson> VJsonArray;
+typedef VMap<VString, VJson> VJsonObject;
 
 class VJson
 {
 public:
 	enum Type
 	{
-		None,
-		Null,
+        Null,
 		Boolean,
 		Number,
 		String,
@@ -30,18 +27,35 @@ public:
 		Object
 	};
 
+    //Null
 	VJson();
+
+    //Boolean
     VJson(bool value);
+
+    //Number
     VJson(int value);
     VJson(double value);
+
+    //String
+    VJson(const char *value);
 	VJson(const std::string &value);
     VJson(const VString &value);
-    VJson(const char *value);
-    VJson(Type type);
+    VJson(VString &&value);
 
-	Type type() const;
-	bool isValid() const { return type() != VJson::None; }
-	bool isInvalid() const { return type() == VJson::None; }
+    //Array
+    VJson(const VJsonArray &array);
+    VJson(VJsonArray &&array);
+
+    //Object
+    VJson(const VJsonObject &object);
+    VJson(VJsonObject &&object);
+
+    VJson(const VJson &source);
+    VJson(VJson &&source);
+    ~VJson();
+
+    Type type() const { return m_type; }
 	bool isNull() const { return type() == VJson::Null; }
 	bool isNumber() const { return type() == VJson::Number; }
 	bool isString() const { return type() == VJson::String; }
@@ -49,91 +63,61 @@ public:
 	bool isObject() const { return type() == VJson::Object; }
 
 	bool toBool() const;
-	double toDouble() const;
+
+    double toDouble() const;
 	int toInt() const;
+
     VString toString() const;
     std::string toStdString() const;
-    const JsonArray &toArray() const;
-    const JsonObject &toObject() const;
 
-	bool operator==(bool value) const;
-	bool operator!=(bool value) const { return !(*this == value); }
+    VJsonArray &array();
+    const VJsonArray &toArray() const;
 
-	bool operator==(double value) const;
-	bool operator!=(double value) const { return !(*this == value); }
+    VJsonObject &object();
+    const VJsonObject &toObject() const;
 
-	bool operator==(const std::string &value) const;
-	bool operator!=(const std::string &value) const { return !(*this == value); }
-
-	bool operator==(const VJson &value) const;
-	bool operator!=(const VJson &value) const { return !(*this == value); }
+    //Assignment functions
+    VJson &operator =(const VJson &source);
+    VJson &operator =(VJson &&source);
 
 	//Array Functions
-	void append(const VJson &value);
-    VJson &operator << (const VJson &value);
-	void removeAt(int index);
-	void removeOne(const VJson &value);
-        void removeAll(const VJson &value);
-	VJson &operator[](int i);
-	const VJson &operator[](int i) const;
-    const VJson &at(int i) const;
+    VJson &at(uint i) { return m_value.array->at(i); }
+    VJson &operator[](uint i) { return m_value.array->at(i); }
+    const VJson &operator[](uint i) const { return m_value.array->at(i); }
+    const VJson &at(uint i) const { return m_value.array->at(i); }
 
 	//Object Functions
-	void insert(const std::string &key, const VJson &value);
-    void remove(const std::string &key);
-    VJson &operator[](const std::string &key);
-	const VJson &operator[](const std::string &key) const;
-	const VJson &value(const std::string &key) const;
-	const VJson &value(const std::string &key, const VJson &defaultValue) const;
-	bool contains(const std::string &key) const;
+    VJson &operator[](const VString &key) { return (*(m_value.object))[key]; }
+    const VJson &operator[](const VString &key) const { return m_value.object->value(key); }
+    const VJson &value(const VString &key) const { return m_value.object->value(key); }
+    const VJson &value(const VString &key, const VJson &defaultValue) const;
+    bool contains(const VString &key) const { return m_value.object->contains(key); }
 
 	//Array/Object functions
-	size_t size() const;
+    uint size() const;
 	void clear();
 
     friend std::istream &operator>>(std::istream &in, VJson &value);
     friend std::ostream &operator<<(std::ostream &out, const VJson &value);
 
-    static VJson Parse(const char *str);
-    static VJson Load(const char *path);
+    static VJson Parse(const VByteArray &str);
+    static VJson Load(const VString &path);
 
-protected:
-    VString &string();
-	std::vector<VJson> &array();
-	std::map<std::string, VJson> &object();
+private:
+    void copy(const VJson &source);
+    void release();
 
-    VSharedPointer<JsonData> p_ptr;
-};
+    VJson::Type m_type;
 
-class JsonData
-{
-public:
-    VJson::Type type;
-
-    union
+    union Value
     {
         bool boolean;
         double number;
         VString *str;
-        std::vector<VJson> *array;
-        std::map<std::string, VJson> *object;
+        VJsonArray *array;
+        VJsonObject *object;
     };
-
-    JsonData() = default;
-
-    JsonData(const JsonData &source)
-    {
-        cloneData(source);
-    }
-
-    const JsonData &operator = (const JsonData &source)
-    {
-        cloneData(source);
-        return *this;
-    }
-
-private:
-    void cloneData(const JsonData &source);
+    Value m_value;
 };
 
 NV_NAMESPACE_END
