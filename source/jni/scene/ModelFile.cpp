@@ -1,14 +1,3 @@
-/************************************************************************************
-
-Filename    :   ModelFile.cpp
-Content     :   Model file loading.
-Created     :   December 2013
-Authors     :   John Carmack, J.M.P. van Waveren
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
 #include "ModelFile.h"
 
 #include <math.h>
@@ -18,9 +7,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VBasicmath.h"
 #include "VArray.h"
 #include "VString.h"
-#include "String_Utils.h"
 #include "VJson.h"
-//#include "BinaryFile.h"
 #include "VBinaryFile.h"
 #include "MappedFile.h"
 #include "api/VGlOperation.h"
@@ -31,18 +18,83 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "GlTexture.h"
 #include "ModelRender.h"
 
-using namespace NervGear;
-
 // Verbose log, redefine this as LOG() to get lots more info dumped
 #define LOGV(...)
 
 #define MEMORY_MAPPED	1
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
-//-----------------------------------------------------------------------------
-//	ModelFile
-//-----------------------------------------------------------------------------
+namespace StringUtils
+{
+
+    // Convert a string to a common type.
+    //
+
+    template< typename _type_ > inline size_t StringTo( _type_ & value, const char * string ) { return 0; }
+
+    template< typename _type_ > inline size_t StringTo( _type_ * valueArray, const int count, const char * string )
+    {
+        size_t length = 0;
+        length += strspn( string + length, "{ \t\n\r" );
+        for ( int i = 0; i < count; i++ )
+        {
+            length += StringTo< _type_ >( valueArray[i], string + length );
+        }
+        length += strspn( string + length, "} \t\n\r" );
+        return length;
+    }
+
+    template< typename _type_ > inline size_t StringTo( VArray< _type_ > & valueArray, const char * string )
+    {
+        size_t length = 0;
+        length += strspn( string + length, "{ \t\n\r" );
+        for ( ; ; )
+        {
+            _type_ value;
+            size_t s = StringTo< _type_ >( value, string + length );
+            if ( s == 0 ) break;
+            valueArray.append( value );
+            length += s;
+        }
+        length += strspn( string + length, "} \t\n\r" );
+        return length;
+    }
+
+    // specializations
+
+    template<> inline size_t StringTo( short &          value, const char * str ) { char * endptr; value = (short) strtol( str, &endptr, 10 ); return endptr - str; }
+    template<> inline size_t StringTo( unsigned short & value, const char * str ) { char * endptr; value = (unsigned short) strtoul( str, &endptr, 10 ); return endptr - str; }
+    template<> inline size_t StringTo( int &            value, const char * str ) { char * endptr; value = strtol( str, &endptr, 10 ); return endptr - str; }
+    template<> inline size_t StringTo( unsigned int &   value, const char * str ) { char * endptr; value = strtoul( str, &endptr, 10 ); return endptr - str; }
+    template<> inline size_t StringTo( float &          value, const char * str ) { char * endptr; value = strtof( str, &endptr ); return endptr - str; }
+    template<> inline size_t StringTo( double &         value, const char * str ) { char * endptr; value = strtod( str, &endptr ); return endptr - str; }
+
+    template<> inline size_t StringTo( V2Vectf & value, const char * string ) { return StringTo( &value.x, 2, string ); }
+    template<> inline size_t StringTo( V2Vectd & value, const char * string ) { return StringTo( &value.x, 2, string ); }
+    template<> inline size_t StringTo( V2Vecti & value, const char * string ) { return StringTo( &value.x, 2, string ); }
+
+    template<> inline size_t StringTo( V3Vectf & value, const char * string ) { return StringTo( &value.x, 3, string ); }
+    template<> inline size_t StringTo( V3Vectd & value, const char * string ) { return StringTo( &value.x, 3, string ); }
+    template<> inline size_t StringTo( V3Vecti & value, const char * string ) { return StringTo( &value.x, 3, string ); }
+
+    template<> inline size_t StringTo( V4Vectf & value, const char * string ) { return StringTo( &value.x, 4, string ); }
+    template<> inline size_t StringTo( V4Vectd & value, const char * string ) { return StringTo( &value.x, 4, string ); }
+    template<> inline size_t StringTo( V4Vecti & value, const char * string ) { return StringTo( &value.x, 4, string ); }
+
+    template<> inline size_t StringTo( VR4Matrixf & value, const char * string ) { return StringTo( &value.M[0][0], 16, string ); }
+    template<> inline size_t StringTo( VR4Matrixd & value, const char * string ) { return StringTo( &value.M[0][0], 16, string ); }
+
+    template<> inline size_t StringTo( VQuatf &    value, const char * string ) { return StringTo( &value.x, 4, string ); }
+    template<> inline size_t StringTo( VQuatd &    value, const char * string ) { return StringTo( &value.x, 4, string ); }
+
+    template<> inline size_t StringTo( VPlanef &   value, const char * string ) { return StringTo( &value.N.x, 4, string ); }
+    template<> inline size_t StringTo( VPlaned &   value, const char * string ) { return StringTo( &value.N.x, 4, string ); }
+
+    template<> inline size_t StringTo( VBoxf & value, const char * string ) { return StringTo( value.b, 2, string ); }
+    template<> inline size_t StringTo( VBoxd & value, const char * string ) { return StringTo( value.b, 2, string ); }
+
+} // StringUtils
 
 ModelFile::ModelFile() :
 	UsingSrgbTextures( false )
@@ -1179,4 +1231,4 @@ ModelFile * LoadModelFile( const char * fileName,
 
 #endif	// MEMORY_MAPPED
 
-} // namespace NervGear
+NV_NAMESPACE_END
