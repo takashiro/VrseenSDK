@@ -1,19 +1,9 @@
 #pragma once
 
 #include "vgltypedefine.h"
+#define EGL_OPENGL_ES3_BIT_KHR      0x0040
 
 NV_NAMESPACE_BEGIN
-//enum GpuType
-//{
-//    GPU_TYPE_ADRENO					= 0x1000,
-//    GPU_TYPE_ADRENO_330				= 0x1001,
-//    GPU_TYPE_ADRENO_420				= 0x1002,
-//    GPU_TYPE_MALI					= 0x2000,
-//    GPU_TYPE_MALI_T760				= 0x2100,
-//    GPU_TYPE_MALI_T760_EXYNOS_5433	= 0x2101,
-//    GPU_TYPE_MALI_T760_EXYNOS_7420	= 0x2102,
-//    GPU_TYPE_UNKNOWN				= 0xFFFF
-//};
 
 class VGlOperation
 {
@@ -88,8 +78,14 @@ class VGlOperation
             const int redBits, const int greenBits, const int blueBits,
             const int depthBits, const int multisamples,
             const GLuint contextPriority );
-
     void	EglShutdown();
+
+    int			glEsVersion;
+    GpuType		gpuType;
+    EGLDisplay	display;
+    EGLSurface	pbufferSurface;
+    EGLConfig	config;
+    EGLContext	context;
 
     static bool HasEXT_sRGB_texture_decode;
     static bool EXT_disjoint_timer_query;
@@ -99,12 +95,6 @@ class VGlOperation
     static bool OES_vertex_array_object;
     static bool QCOM_tiled_rendering;
     static const int EGL_PROTECTED_CONTENT_EXT;
-    int			glEsVersion;
-    GpuType		gpuType;
-    EGLDisplay	display;
-    EGLSurface	pbufferSurface;
-    EGLConfig	config;
-    EGLContext	context;
 
     static PFNGLDISCARDFRAMEBUFFEREXTPROC glDiscardFramebufferEXT_;
 

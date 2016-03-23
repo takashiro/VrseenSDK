@@ -18,8 +18,9 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "api/VGlOperation.h"
 #include "Android/LogUtils.h"
 
-PFNEGLLOCKSURFACEKHRPROC	eglLockSurfaceKHR_;
-PFNEGLUNLOCKSURFACEKHRPROC	eglUnlockSurfaceKHR_;
+#define GL_BINNING_CONTROL_HINT_QCOM           0x8FB0
+#define GL_RENDER_DIRECT_TO_FRAMEBUFFER_QCOM   0x8FB3
+#define GL_DONT_CARE                           0x1100
 
 namespace NervGear
 {
