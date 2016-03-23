@@ -14,7 +14,6 @@ of patent rights can be found in the PATENTS file in the same directory.
 *************************************************************************************/
 
 #include <android/keycodes.h>
-#include "String_Utils.h"
 #include "App.h"
 #include "MovieSelectionView.h"
 #include "CinemaApp.h"

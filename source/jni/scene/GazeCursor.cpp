@@ -16,8 +16,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "Types.h"
 #include "VArray.h"
-#include "String_Utils.h"
-#include "Android/LogUtils.h"
+#include "android/LogUtils.h"
 #include "api/VrApi.h"
 #include "GlTexture.h"
 #include "VrCommon.h"

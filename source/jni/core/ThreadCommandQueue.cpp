@@ -158,7 +158,7 @@ void ThreadCommand::PopBuffer::Execute()
 
 //-------------------------------------------------------------------------------------
 
-class ThreadCommandQueueImpl : public NewOverrideBase
+class ThreadCommandQueueImpl
 {
     typedef ThreadCommand::NotifyEvent NotifyEvent;
     friend class ThreadCommandQueue;

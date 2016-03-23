@@ -1,4 +1,3 @@
-#include "String_Utils.h"
 #include "api/VrApi.h"
 #include "api/VrApi_Helpers.h"
 #include "api/VGlOperation.h"

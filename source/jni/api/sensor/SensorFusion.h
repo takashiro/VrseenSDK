@@ -120,7 +120,7 @@ public:
 //    automatically handle notifications from that device.
 
 
-class SensorFusion : public NewOverrideBase
+class SensorFusion
 {
     enum
     {

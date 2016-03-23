@@ -34,7 +34,7 @@ NV_NAMESPACE_BEGIN
 //							method is called.
 //
 
-class LatencyTest : public NewOverrideBase
+class LatencyTest
 {
 public:
     LatencyTest(LatencyTestDevice* device = NULL);
@@ -108,7 +108,7 @@ private:
 
     VColor                       RenderColor;
 
-    struct MeasurementResult : public NodeOfVList<VList<MeasurementResult*>>, public NewOverrideBase
+    struct MeasurementResult : public NodeOfVList<VList<MeasurementResult*>>
     {
         MeasurementResult()
          :  DeviceMeasuredElapsedMilliS(0),

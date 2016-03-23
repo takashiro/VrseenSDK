@@ -114,7 +114,7 @@ public:
 //   - DeviceCreateDesc may or may not be a part of DeviceManager::Devices list (check pNext != 0).
 //   - Referenced and kept alive by DeviceHandle.
 
-class DeviceCreateDesc : public NodeOfVList<VList<DeviceCreateDesc*>>, public NewOverrideBase
+class DeviceCreateDesc : public NodeOfVList<VList<DeviceCreateDesc*>>
 {
     void operator = (const DeviceCreateDesc&) { } // Assign not supported; suppress MSVC warning.
 public:
@@ -271,7 +271,7 @@ public:
 // DeviceFactory is maintained in DeviceManager for each separately-enumerable
 // device type; factories allow separation of unrelated enumeration code.
 
-class DeviceFactory : public NodeOfVList<VList<DeviceFactory*>>, public NewOverrideBase
+class DeviceFactory : public NodeOfVList<VList<DeviceFactory*>>
 {
 public:
 
