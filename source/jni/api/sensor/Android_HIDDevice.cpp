@@ -863,7 +863,7 @@ void HIDDeviceManager::scanForDevices(bool firstScan)
 
 		// A new device was connected. Go through all device factories and
 		// try to detect the device using HIDDeviceDesc.
-		VLock::VLocker deviceLock(DevManager->GetLock());
+		VLock::Locker deviceLock(DevManager->GetLock());
         for (DeviceFactory* factory : DevManager->Factories) {
 			if (factory->DetectHIDDevice(DevManager, devDesc))
 			{

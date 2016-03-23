@@ -700,7 +700,7 @@ void LatencyTestDeviceImpl::onLatencyTestSamplesMessage(LatencyTestSamplesMessag
     LatencyTestSamples& s = message->Samples;
 
     // Call OnMessage() within a lock to avoid conflicts with handlers.
-    VLock::VLocker scopeLock(HandlerRef.GetLock());
+    VLock::Locker scopeLock(HandlerRef.GetLock());
 
     if (HandlerRef.GetHandler())
     {
@@ -722,7 +722,7 @@ void LatencyTestDeviceImpl::onLatencyTestColorDetectedMessage(LatencyTestColorDe
     LatencyTestColorDetected& s = message->ColorDetected;
 
     // Call OnMessage() within a lock to avoid conflicts with handlers.
-    VLock::VLocker scopeLock(HandlerRef.GetLock());
+    VLock::Locker scopeLock(HandlerRef.GetLock());
 
     if (HandlerRef.GetHandler())
     {
@@ -743,7 +743,7 @@ void LatencyTestDeviceImpl::onLatencyTestStartedMessage(LatencyTestStartedMessag
     LatencyTestStarted& ts = message->TestStarted;
 
     // Call OnMessage() within a lock to avoid conflicts with handlers.
-    VLock::VLocker scopeLock(HandlerRef.GetLock());
+    VLock::Locker scopeLock(HandlerRef.GetLock());
 
     if (HandlerRef.GetHandler())
     {
@@ -762,7 +762,7 @@ void LatencyTestDeviceImpl::onLatencyTestButtonMessage(LatencyTestButtonMessage*
 //  LatencyTestButton& s = message->Button;
 
     // Call OnMessage() within a lock to avoid conflicts with handlers.
-    VLock::VLocker scopeLock(HandlerRef.GetLock());
+    VLock::Locker scopeLock(HandlerRef.GetLock());
 
     if (HandlerRef.GetHandler())
     {

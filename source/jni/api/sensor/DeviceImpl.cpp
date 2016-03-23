@@ -136,7 +136,7 @@ MessageHandlerRef::MessageHandlerRef(DeviceBase* device)
 MessageHandlerRef::~MessageHandlerRef()
 {
     {
-        VLock::VLocker lockScope(pLock);
+        VLock::Locker lockScope(pLock);
         if (pHandler)
         {
             pHandler = 0;
@@ -151,7 +151,7 @@ void MessageHandlerRef::SetHandler(MessageHandler* handler)
 {
     OVR_ASSERT(!handler ||
                MessageHandlerImpl::FromHandler(handler)->pLock == pLock);
-    VLock::VLocker lockScope(pLock);
+    VLock::Locker lockScope(pLock);
     SetHandler_NTS(handler);
 }
 
@@ -185,7 +185,7 @@ MessageHandler::~MessageHandler()
 {
     MessageHandlerImpl* handlerImpl = MessageHandlerImpl::FromHandler(this);
     {
-        VLock::VLocker lockedScope(handlerImpl->pLock);
+        VLock::Locker lockedScope(handlerImpl->pLock);
         OVR_ASSERT_LOG(handlerImpl->UseList.isEmpty(),
             ("~MessageHandler %p - Handler still active; call RemoveHandlerFromDevices", this));
     }
@@ -196,7 +196,7 @@ MessageHandler::~MessageHandler()
 bool MessageHandler::IsHandlerInstalled() const
 {
     const MessageHandlerImpl* handlerImpl = MessageHandlerImpl::FromHandler(this);
-    VLock::VLocker lockedScope(handlerImpl->pLock);
+    VLock::Locker lockedScope(handlerImpl->pLock);
     return handlerImpl->UseList.isEmpty() != true;
 }
 
@@ -204,7 +204,7 @@ bool MessageHandler::IsHandlerInstalled() const
 void MessageHandler::RemoveHandlerFromDevices()
 {
     MessageHandlerImpl* handlerImpl = MessageHandlerImpl::FromHandler(this);
-    VLock::VLocker lockedScope(handlerImpl->pLock);
+    VLock::Locker lockedScope(handlerImpl->pLock);
 
     while(!handlerImpl->UseList.isEmpty())
     {
@@ -371,7 +371,7 @@ DeviceBase* DeviceManagerImpl::CreateDevice_MgrThread(DeviceCreateDesc* createDe
     // so 'this' must remain valid.
     OVR_ASSERT(createDesc->pLock->pManager);
 
-    VLock::VLocker devicesLock(GetLock());
+    VLock::Locker devicesLock(GetLock());
 
     // If device already exists, just AddRef to it.
     if (createDesc->pDevice)
@@ -408,7 +408,7 @@ Void DeviceManagerImpl::ReleaseDevice_MgrThread(DeviceBase* device)
     // descKeepAlive will keep ManagerLock object alive as well,
     // allowing us to exit gracefully.
     Ptr<DeviceCreateDesc>  descKeepAlive;
-    VLock::VLocker           devicesLock(GetLock());
+    VLock::Locker           devicesLock(GetLock());
     DeviceCommon*          devCommon = device->getDeviceCommon();
 
     while(1)
@@ -453,7 +453,7 @@ Void DeviceManagerImpl::EnumerateAllFactoryDevices()
     //    was not matched.
     // 3. Remove non-matching devices.
 
-    VLock::VLocker deviceLock(GetLock());
+    VLock::Locker deviceLock(GetLock());
 
     // 1.
     for (DeviceCreateDesc* devDesc:Devices) {
@@ -538,7 +538,7 @@ Ptr<DeviceCreateDesc> DeviceManagerImpl::FindDevice(
     const VString& path,
     DeviceType deviceType)
 {
-    VLock::VLocker deviceLock(GetLock());
+    VLock::Locker deviceLock(GetLock());
     for (DeviceCreateDesc* devDesc:Devices) {
         if ((deviceType == Device_None || deviceType == devDesc->Type) &&
             devDesc->MatchDeviceByPath(path))
@@ -549,7 +549,7 @@ Ptr<DeviceCreateDesc> DeviceManagerImpl::FindDevice(
 
 Ptr<DeviceCreateDesc> DeviceManagerImpl::FindHIDDevice(const HIDDeviceDesc& hidDevDesc)
 {
-    VLock::VLocker deviceLock(GetLock());
+    VLock::Locker deviceLock(GetLock());
     for (DeviceCreateDesc* devDesc:Devices) {
         if (devDesc->MatchHIDDevice(hidDevDesc))
             return devDesc;
@@ -559,7 +559,7 @@ Ptr<DeviceCreateDesc> DeviceManagerImpl::FindHIDDevice(const HIDDeviceDesc& hidD
 
 void DeviceManagerImpl::DetectHIDDevice(const HIDDeviceDesc& hidDevDesc)
 {
-    VLock::VLocker deviceLock(GetLock());
+    VLock::Locker deviceLock(GetLock());
     for (DeviceFactory* factory:Factories) {
         if (factory->DetectHIDDevice(this, hidDevDesc))
             break;
@@ -594,7 +594,7 @@ Void DeviceManagerImpl::EnumerateFactoryDevices(DeviceFactory* factory)
 
 DeviceEnumerator<> DeviceManagerImpl::enumerateDevicesEx(const DeviceEnumerationArgs& args)
 {
-    VLock::VLocker deviceLock(GetLock());
+    VLock::Locker deviceLock(GetLock());
 
     if (Devices.isEmpty())
         return DeviceEnumerator<>();
@@ -677,7 +677,7 @@ void DeviceCreateDesc::Release()
         if (handleCount == 1)
         {
             Ptr<DeviceManagerLock>  lockKeepAlive;
-            VLock::VLocker            deviceLockScope(GetLock());
+            VLock::Locker            deviceLockScope(GetLock());
 
             if (!this->handleCount.compare_exchange_weak(handleCount, 0))
                 continue;
@@ -724,7 +724,7 @@ HMDDevice* HMDDevice::Disconnect(SensorDevice* psensor)
                 Visitor(DeviceCreateDesc* desc) : Desc(desc) {}
                 virtual void Visit(const DeviceCreateDesc& createDesc)
                 {
-                    VLock::VLocker lock(Desc->GetLock());
+                    VLock::Locker lock(Desc->GetLock());
                     Desc->UpdateMatchedCandidate(createDesc);
                 }
             } visitor(desc);

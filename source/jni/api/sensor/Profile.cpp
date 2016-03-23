@@ -174,7 +174,7 @@ Profile* ProfileManager::CreateProfileObject(const char* user,
                                              ProfileType device,
                                              const char** device_name)
 {
-    VLock::VLocker lockScope(&ProfileLock);
+    VLock::Locker lockScope(&ProfileLock);
 
     Profile* profile = NULL;
     switch (device)
@@ -202,7 +202,7 @@ Profile* ProfileManager::CreateProfileObject(const char* user,
 // Clear the local profile cache
 void ProfileManager::ClearCache()
 {
-    VLock::VLocker lockScope(&ProfileLock);
+    VLock::Locker lockScope(&ProfileLock);
 
     ProfileCache.clear();
     CacheDevice = Profile_Unknown;
@@ -214,7 +214,7 @@ void ProfileManager::ClearCache()
 // to disk.
 void ProfileManager::LoadCache(ProfileType device)
 {
-    VLock::VLocker lockScope(&ProfileLock);
+    VLock::Locker lockScope(&ProfileLock);
 
     ClearCache();
 
@@ -281,7 +281,7 @@ void ProfileManager::SaveCache()
 {
 	VString path = GetProfilePath(true);
 
-    VLock::VLocker lockScope(&ProfileLock);
+    VLock::Locker lockScope(&ProfileLock);
 
     VJson oldroot = VJson::Load(path.toCString());
     if (oldroot.isObject()) {
@@ -421,7 +421,7 @@ void ProfileManager::SaveCache()
 // Returns the number of stored profiles for this device type
 int ProfileManager::GetProfileCount(ProfileType device)
 {
-    VLock::VLocker lockScope(&ProfileLock);
+    VLock::Locker lockScope(&ProfileLock);
 
     if (CacheDevice == Profile_Unknown)
         LoadCache(device);
@@ -434,7 +434,7 @@ int ProfileManager::GetProfileCount(ProfileType device)
 // if the index is invalid
 VString ProfileManager::GetProfileName(ProfileType device, unsigned int index)
 {
-    VLock::VLocker lockScope(&ProfileLock);
+    VLock::Locker lockScope(&ProfileLock);
 
     if (CacheDevice == Profile_Unknown)
         LoadCache(device);
@@ -453,7 +453,7 @@ VString ProfileManager::GetProfileName(ProfileType device, unsigned int index)
 
 bool ProfileManager::HasProfile(ProfileType device, const char* name)
 {
-    VLock::VLocker lockScope(&ProfileLock);
+    VLock::Locker lockScope(&ProfileLock);
 
     if (CacheDevice == Profile_Unknown)
         LoadCache(device);
@@ -472,7 +472,7 @@ bool ProfileManager::HasProfile(ProfileType device, const char* name)
 // is invalid
 Profile* ProfileManager::LoadProfile(ProfileType device, unsigned int index)
 {
-    VLock::VLocker lockScope(&ProfileLock);
+    VLock::Locker lockScope(&ProfileLock);
 
     if (CacheDevice == Profile_Unknown)
         LoadCache(device);
@@ -496,7 +496,7 @@ Profile* ProfileManager::LoadProfile(ProfileType device, const char* user)
     if (user == NULL)
         return NULL;
 
-    VLock::VLocker lockScope(&ProfileLock);
+    VLock::Locker lockScope(&ProfileLock);
 
     if (CacheDevice == Profile_Unknown)
         LoadCache(device);
@@ -523,7 +523,7 @@ Profile* ProfileManager::GetDeviceDefaultProfile(ProfileType device)
 // Returns the name of the profile that is marked as the current default user.
 const char* ProfileManager::GetDefaultProfileName(ProfileType device)
 {
-    VLock::VLocker lockScope(&ProfileLock);
+    VLock::Locker lockScope(&ProfileLock);
 
     if (CacheDevice == Profile_Unknown)
         LoadCache(device);
@@ -543,7 +543,7 @@ const char* ProfileManager::GetDefaultProfileName(ProfileType device)
 // Marks a particular user as the current default user.
 bool ProfileManager::SetDefaultProfileName(ProfileType device, const char* name)
 {
-    VLock::VLocker lockScope(&ProfileLock);
+    VLock::Locker lockScope(&ProfileLock);
 
     if (CacheDevice == Profile_Unknown)
         LoadCache(device);
@@ -565,7 +565,7 @@ bool ProfileManager::SetDefaultProfileName(ProfileType device, const char* name)
 // invalid or failed save.
 bool ProfileManager::Save(const Profile* profile)
 {
-    VLock::VLocker lockScope(&ProfileLock);
+    VLock::Locker lockScope(&ProfileLock);
 
     if (profile->Name == "default")
         return false;  // don't save a default profile
@@ -607,7 +607,7 @@ bool ProfileManager::Save(const Profile* profile)
 // and returns false otherwise.
 bool ProfileManager::Delete(const Profile* profile)
 {
-    VLock::VLocker lockScope(&ProfileLock);
+    VLock::Locker lockScope(&ProfileLock);
 
     if (profile->Name == "default")
         return false;  // don't delete a default profile

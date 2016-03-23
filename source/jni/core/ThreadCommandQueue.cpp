@@ -13,6 +13,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VList.h"
 #include "VLock.h"
 
+#include <string.h>
+
 namespace NervGear {
 
 
@@ -189,7 +191,7 @@ public:
 
         virtual void Execute() const
         {
-            VLock::VLocker lock(&pImpl->QueueLock);
+            VLock::Locker lock(&pImpl->QueueLock);
             pImpl->ExitProcessed = true;
         }
         virtual ThreadCommand* CopyConstruct(void* p) const
@@ -237,7 +239,7 @@ public:
 
 ThreadCommandQueueImpl::~ThreadCommandQueueImpl()
 {
-    VLock::VLocker lock(&QueueLock);
+    VLock::Locker lock(&QueueLock);
     OVR_ASSERT(BlockedProducers.isEmpty());
     FreeNotifyEvents_NTS();
 }
@@ -251,7 +253,7 @@ bool ThreadCommandQueueImpl::PushCommand(const ThreadCommand& command)
     do {
 
         { // Lock Scope
-            VLock::VLocker lock(&QueueLock);
+            VLock::Locker lock(&QueueLock);
 
             if (queueAvailableEvent)
             {
@@ -289,7 +291,7 @@ bool ThreadCommandQueueImpl::PushCommand(const ThreadCommand& command)
     if (completeEvent)
     {
         completeEvent->Wait();
-        VLock::VLocker lock(&QueueLock);
+        VLock::Locker lock(&QueueLock);
         FreeNotifyEvent_NTS(completeEvent);
     }
 
@@ -300,7 +302,7 @@ bool ThreadCommandQueueImpl::PushCommand(const ThreadCommand& command)
 // Pops the next command from the thread queue, if any is available.
 bool ThreadCommandQueueImpl::PopCommand(ThreadCommand::PopBuffer* popBuffer)
 {
-    VLock::VLocker lock(&QueueLock);
+    VLock::Locker lock(&QueueLock);
 
     UByte* buffer = CommandBuffer.ReadBegin();
     if (!buffer)
@@ -353,7 +355,7 @@ void ThreadCommandQueue::PushExitCommand(bool wait)
     //    any prior commands.
     //    IsExiting() only returns true after exit has flushed.
     {
-        VLock::VLocker lock(&pImpl->QueueLock);
+        VLock::Locker lock(&pImpl->QueueLock);
         if (pImpl->ExitEnqueued)
             return;
         pImpl->ExitEnqueued = true;

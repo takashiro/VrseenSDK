@@ -97,7 +97,7 @@ DeviceBase* DeviceHandle::createDevice()
     // hold it while checking for availability.
     // AddRef to manager so that it doesn't get released on us.
     {
-        VLock::VLocker deviceLockScope(m_pImpl->GetLock());
+        VLock::Locker deviceLockScope(m_pImpl->GetLock());
 
         if (m_pImpl->pDevice)
         {
@@ -138,7 +138,7 @@ bool DeviceHandle::enumerateNext(const DeviceEnumerationArgs& args)
         return false;
 
     Ptr<DeviceManagerImpl> managerKeepAlive;
-    VLock::VLocker           lockScope(m_pImpl->GetLock());
+    VLock::Locker           lockScope(m_pImpl->GetLock());
 
     DeviceCreateDesc* next = m_pImpl;
     VList<DeviceCreateDesc*>* pointToVList = m_pImpl->pointToVList;

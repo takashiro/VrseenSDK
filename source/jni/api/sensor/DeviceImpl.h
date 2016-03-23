@@ -69,7 +69,7 @@ public:
 
     void Call(const Message& msg)
     {
-        VLock::VLocker lockScope(pLock);
+        VLock::Locker lockScope(pLock);
         if (pHandler)
             pHandler->onMessage(msg);
     }
@@ -377,7 +377,7 @@ public:
         // This lock is only needed if we call AddFactory after manager thread creation.
 
         factory->pointToVList = &Factories;
-        VLock::VLocker scopeLock(GetLock());
+        VLock::Locker scopeLock(GetLock());
         Factories.append(factory);
         factory->AddedToManager(this);
     }
