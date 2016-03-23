@@ -11,12 +11,7 @@ bool VGlOperation::EXT_discard_framebuffer = false;
 bool VGlOperation::OES_vertex_array_object = false;
 bool VGlOperation::IMG_multisampled_render_to_texture = false;
 
-
-PFNGLDISCARDFRAMEBUFFEREXTPROC VGlOperation::glDiscardFramebufferEXT_ = NULL;
-
 PFNGLRENDERBUFFERSTORAGEMULTISAMPLEIMG VGlOperation::glRenderbufferStorageMultisampleIMG_ = NULL;
-PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEIMG VGlOperation::glFramebufferTexture2DMultisampleIMG_ = NULL;
-
 PFNEGLCREATESYNCKHRPROC VGlOperation::eglCreateSyncKHR_ = NULL;
 PFNEGLDESTROYSYNCKHRPROC VGlOperation::eglDestroySyncKHR_ = NULL;
 PFNEGLCLIENTWAITSYNCKHRPROC VGlOperation::eglClientWaitSyncKHR_ = NULL;
@@ -235,24 +230,17 @@ void VGlOperation::GL_FindExtensions()
     const bool es3 = ( strncmp( (const char *)glGetString( GL_VERSION ), "OpenGL ES 3", 11 ) == 0 );
     LOG( "es3 = %s", es3 ? "TRUE" : "FALSE" );
 
-    if ( GL_ExtensionStringPresent( "GL_EXT_discard_framebuffer", extensions ) )
-    {
-        EXT_discard_framebuffer = true;
-        glDiscardFramebufferEXT_ = (PFNGLDISCARDFRAMEBUFFEREXTPROC)GetExtensionProc( "glDiscardFramebufferEXT" );
-    }
 
     if ( GL_ExtensionStringPresent( "GL_IMG_multisampled_render_to_texture", extensions ) )
     {
         IMG_multisampled_render_to_texture = true;
         glRenderbufferStorageMultisampleIMG_ = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEIMG)GetExtensionProc ( "glRenderbufferStorageMultisampleIMG" );
-        glFramebufferTexture2DMultisampleIMG_ = (PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEIMG)GetExtensionProc ( "glFramebufferTexture2DMultisampleIMG" );
     }
     else if ( GL_ExtensionStringPresent( "GL_EXT_multisampled_render_to_texture", extensions ) )
     {
         // assign to the same function pointers as the IMG extension
         IMG_multisampled_render_to_texture = true;
         glRenderbufferStorageMultisampleIMG_ = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEIMG)GetExtensionProc ( "glRenderbufferStorageMultisampleEXT" );
-        glFramebufferTexture2DMultisampleIMG_ = (PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEIMG)GetExtensionProc ( "glFramebufferTexture2DMultisampleEXT" );
     }
 
     eglCreateSyncKHR_ = (PFNEGLCREATESYNCKHRPROC)GetExtensionProc( "eglCreateSyncKHR" );
@@ -711,4 +699,22 @@ void VGlOperation::EglShutdown(  )
     config = 0;
     context = 0;
 }
+
+ void VGlOperation::glFramebufferTexture2DMultisampleIMG(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level, GLsizei samples)
+ {
+     PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEIMG glFramebufferTexture2DMultisampleIMG_;
+     if ( GL_ExtensionStringPresent( "GL_IMG_multisampled_render_to_texture", extensions ) )
+     {
+         IMG_multisampled_render_to_texture = true;
+         glFramebufferTexture2DMultisampleIMG_ = (PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEIMG)GetExtensionProc ( "glFramebufferTexture2DMultisampleIMG" );
+     }
+     else if ( GL_ExtensionStringPresent( "GL_EXT_multisampled_render_to_texture", extensions ) )
+     {
+         // assign to the same function pointers as the IMG extension
+         IMG_multisampled_render_to_texture = true;
+         glFramebufferTexture2DMultisampleIMG_ = (PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEIMG)GetExtensionProc ( "glFramebufferTexture2DMultisampleEXT" );
+     }
+     glFramebufferTexture2DMultisampleIMG_(target, attachment, textarget, texture, level, samples);
+ }
+
 NV_NAMESPACE_END

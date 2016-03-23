@@ -55,6 +55,14 @@ class VGlOperation
     };
 
 
+    VGlOperation()
+    {
+        extensions = (const char *)glGetString( GL_EXTENSIONS );
+        if ( NULL == extensions )
+        {
+            LOG( "glGetString( GL_EXTENSIONS ) returned NULL" );
+        }
+    }
 
     GpuType EglGetGpuType();
     GpuType EglGetGpuTypeLocal();
@@ -86,6 +94,7 @@ class VGlOperation
     EGLSurface	pbufferSurface;
     EGLConfig	config;
     EGLContext	context;
+    const char * extensions;
 
     static bool HasEXT_sRGB_texture_decode;
     static bool EXT_disjoint_timer_query;
@@ -96,10 +105,9 @@ class VGlOperation
     static bool QCOM_tiled_rendering;
     static const int EGL_PROTECTED_CONTENT_EXT;
 
-    static PFNGLDISCARDFRAMEBUFFEREXTPROC glDiscardFramebufferEXT_;
 
     static PFNGLRENDERBUFFERSTORAGEMULTISAMPLEIMG glRenderbufferStorageMultisampleIMG_;
-    static PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEIMG glFramebufferTexture2DMultisampleIMG_;
+    void glFramebufferTexture2DMultisampleIMG(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level, GLsizei samples);
 
     static PFNEGLCREATESYNCKHRPROC eglCreateSyncKHR_;
     static PFNEGLDESTROYSYNCKHRPROC eglDestroySyncKHR_;
