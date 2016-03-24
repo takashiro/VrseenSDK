@@ -47,6 +47,7 @@
 #include "VThread.h"
 
 //#define TEST_TIMEWARP_WATCHDOG
+#define EGL_PROTECTED_CONTENT_EXT 0x32c0
 
 NV_NAMESPACE_BEGIN
 
@@ -843,7 +844,7 @@ struct App::Private : public TalkToJavaInterface
             // Ask for TrustZone rendering support
             if (appInterface->wantProtectedFramebuffer())
             {
-                attribs[numAttribs++] = VGlOperation::EGL_PROTECTED_CONTENT_EXT;
+                attribs[numAttribs++] = EGL_PROTECTED_CONTENT_EXT;
                 attribs[numAttribs++] = EGL_TRUE;
             }
             attribs[numAttribs++] = EGL_NONE;

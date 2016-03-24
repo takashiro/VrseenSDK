@@ -7,7 +7,7 @@ NV_NAMESPACE_BEGIN
 
 class VGlOperation
 {
- public:
+public:
 
     enum GpuType
     {
@@ -80,12 +80,12 @@ class VGlOperation
     void *GetExtensionProc( const char * name );
     void DumpEglConfigs(const EGLDisplay display);
     EGLConfig ChooseColorConfig( const EGLDisplay display, const int redBits,
-            const int greeBits, const int blueBits, const int depthBits, const int samples, const bool pbuffer );
+                                 const int greeBits, const int blueBits, const int depthBits, const int samples, const bool pbuffer );
     void EglSetup( const EGLContext shareContext,
-            const int requestedGlEsVersion,
-            const int redBits, const int greenBits, const int blueBits,
-            const int depthBits, const int multisamples,
-            const GLuint contextPriority );
+                   const int requestedGlEsVersion,
+                   const int redBits, const int greenBits, const int blueBits,
+                   const int depthBits, const int multisamples,
+                   const GLuint contextPriority );
     void	EglShutdown();
 
     int			glEsVersion;
@@ -96,47 +96,26 @@ class VGlOperation
     EGLContext	context;
     const char * extensions;
 
-    static bool HasEXT_sRGB_texture_decode;
-    static bool EXT_disjoint_timer_query;
-    static bool EXT_discard_framebuffer;
-    static bool EXT_texture_filter_anisotropic;
-    static bool OES_vertex_array_object;
-    static bool QCOM_tiled_rendering;
-    static const int EGL_PROTECTED_CONTENT_EXT;
-
     void glRenderbufferStorageMultisampleIMG(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height);
     void glFramebufferTexture2DMultisampleIMG(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level, GLsizei samples);
     EGLSyncKHR eglCreateSyncKHR(EGLDisplay dpy, EGLenum type, const EGLint *attrib_list);
     EGLBoolean eglDestroySyncKHR(EGLDisplay dpy, EGLSyncKHR sync);
     EGLint eglClientWaitSyncKHR(EGLDisplay dpy, EGLSyncKHR sync, EGLint flags, EGLTimeKHR timeout);
-
-
-    static PFNGLBINDVERTEXARRAYOESPROC	glBindVertexArrayOES_;
-    static PFNGLDELETEVERTEXARRAYSOESPROC	glDeleteVertexArraysOES_;
-    static PFNGLGENVERTEXARRAYSOESPROC	glGenVertexArraysOES_;
-    static PFNGLISVERTEXARRAYOESPROC	glIsVertexArrayOES_;
-
-    static PFNGLSTARTTILINGQCOMPROC	glStartTilingQCOM_;
-    static PFNGLENDTILINGQCOMPROC		glEndTilingQCOM_;
-
-    static PFNGLGENQUERIESEXTPROC glGenQueriesEXT_;
-    static PFNGLDELETEQUERIESEXTPROC glDeleteQueriesEXT_;
-    static PFNGLISQUERYEXTPROC glIsQueryEXT_;
-    static PFNGLBEGINQUERYEXTPROC glBeginQueryEXT_;
-    static PFNGLENDQUERYEXTPROC glEndQueryEXT_;
-    static PFNGLQUERYCOUNTEREXTPROC glQueryCounterEXT_;
-    static PFNGLGETQUERYIVEXTPROC glGetQueryivEXT_;
-    static PFNGLGETQUERYOBJECTIVEXTPROC glGetQueryObjectivEXT_;
-    static PFNGLGETQUERYOBJECTUIVEXTPROC glGetQueryObjectuivEXT_;
-    static PFNGLGETQUERYOBJECTI64VEXTPROC glGetQueryObjecti64vEXT_;
-    static PFNGLGETQUERYOBJECTUI64VEXTPROC glGetQueryObjectui64vEXT_;
-    static PFNGLGETINTEGER64VPROC glGetInteger64v_;
-
-    static PFNGLBLITFRAMEBUFFER_				glBlitFramebuffer_;
-    static PFNGLRENDERBUFFERSTORAGEMULTISAMPLE_	glRenderbufferStorageMultisample_;
-    static PFNGLINVALIDATEFRAMEBUFFER_			glInvalidateFramebuffer_;
-    static PFNGLMAPBUFFERRANGE_					glMapBufferRange_;
-    static PFNGLUNMAPBUFFEROESPROC_				glUnmapBuffer_;
+    void glBindVertexArrayOES(GLuint array);
+    void glDeleteVertexArraysOES(GLsizei n, const GLuint *arrays);
+    void glGenVertexArraysOES(GLsizei n, GLuint *arrays);
+    void glStartTilingQCOM(GLuint x, GLuint y, GLuint width, GLuint height, GLbitfield preserveMask);
+    void glEndTilingQCOM(GLbitfield preserveMask);
+    void glGenQueriesEXT(GLsizei n, GLuint *ids);
+    void glDeleteQueriesEXT(GLsizei n, const GLuint *ids);
+    void glBeginQueryEXT(GLenum target, GLuint id);
+    void glEndQueryEXT(GLenum target);
+    void glQueryCounterEXT(GLuint id, GLenum target);
+    void glGetQueryObjectivEXT(GLuint id, GLenum pname, GLint *params);
+    void glGetQueryObjectui64vEXT(GLuint id, GLenum pname, GLuint64 *params);
+    void glGetInteger64v(GLenum pname, GLint64 *params);
+    void glBlitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter);
+    void  glInvalidateFramebuffer(GLenum target, GLsizei numAttachments, const GLenum* attachments);
 
 };
 NV_NAMESPACE_END

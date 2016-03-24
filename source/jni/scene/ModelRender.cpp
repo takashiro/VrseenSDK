@@ -469,7 +469,7 @@ DrawCounters RenderSurfaceList( const DrawSurfaceList & drawSurfaceList ) {
 	glActiveTexture( GL_TEXTURE0 );
 	glBindTexture( GL_TEXTURE_2D, 0 );
 	glUseProgram( 0 );
-    glOperation.glBindVertexArrayOES_( 0 );
+    glOperation.glBindVertexArrayOES( 0 );
 
 	return counters;
 }

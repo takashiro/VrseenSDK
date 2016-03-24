@@ -225,8 +225,8 @@ VGlGeometry VLensDistortion::CreateTessellatedMesh(const hmdInfoInternal_t & hmd
     }
 
     // build a VertexArrayObject
-    glOperation.glGenVertexArraysOES_( 1, &geometry.vertexArrayObject );
-    glOperation.glBindVertexArrayOES_( geometry.vertexArrayObject );
+    glOperation.glGenVertexArraysOES( 1, &geometry.vertexArrayObject );
+    glOperation.glBindVertexArrayOES( geometry.vertexArrayObject );
 
     const int attribCount = 10;
     const int sliceTess = tessellationsX / numSlicesPerEye;
@@ -363,7 +363,7 @@ VGlGeometry VLensDistortion::CreateTessellatedMesh(const hmdInfoInternal_t & hmd
     glEnableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_UV1 );
     glVertexAttribPointer( SHADER_ATTRIBUTE_LOCATION_UV1, 2, GL_FLOAT, false, attribCount * sizeof( float ), (void *)( 8 * sizeof( float ) ) );
 
-    glOperation.glBindVertexArrayOES_( 0 );
+    glOperation.glBindVertexArrayOES( 0 );
 
     delete[] vertInCursor;
 

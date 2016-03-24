@@ -911,7 +911,7 @@ void SwipeView::Draw( const VR4Matrixf & mvp )
 
 	}
 
-    glOperation.glBindVertexArrayOES_( 0 );
+    glOperation.glBindVertexArrayOES( 0 );
 
 	glActiveTexture( GL_TEXTURE1 );
 	glBindTexture( GL_TEXTURE_2D, 0 );

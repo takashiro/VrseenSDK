@@ -418,10 +418,8 @@ void DirectRender::beginDirectRendering( int x, int y, int width, int height )
 	{
 		case FB_TILED_RENDERING:
 		{
-            if ( VGlOperation::QCOM_tiled_rendering )
-			{
-                glOperation.glStartTilingQCOM_( x, y, width, height, 0 );
-			}
+
+            glOperation.glStartTilingQCOM( x, y, width, height, 0 );
 			glScissor( x, y, width, height );
 			break;
 		}
@@ -440,7 +438,7 @@ void DirectRender::beginDirectRendering( int x, int y, int width, int height )
 		case FB_MALI:
 		{
 			const GLenum attachments[3] = { GL_COLOR, GL_DEPTH, GL_STENCIL };
-            glOperation.glInvalidateFramebuffer_( GL_FRAMEBUFFER, 3, attachments );
+            glOperation.glInvalidateFramebuffer( GL_FRAMEBUFFER, 3, attachments );
 			glScissor( x, y, width, height );
 			// This clear is not absolutely necessarily but ARM prefers an explicit glClear call to avoid ambiguity.
 			//glClearColor( 0, 0, 0, 1 );
@@ -463,10 +461,7 @@ void DirectRender::endDirectRendering() const
 		case FB_TILED_RENDERING:
 		{
 			// This has an implicit flush
-            if ( VGlOperation::QCOM_tiled_rendering )
-			{
-                glOperation.glEndTilingQCOM_( GL_COLOR_BUFFER_BIT0_QCOM );
-			}
+            glOperation.glEndTilingQCOM( GL_COLOR_BUFFER_BIT0_QCOM );
 			break;
 		}
 		case FB_BINNING_CONTROL:
@@ -486,7 +481,7 @@ void DirectRender::endDirectRendering() const
 		case FB_MALI:
 		{
 			const GLenum attachments[2] = { GL_DEPTH, GL_STENCIL };
-            glOperation.glInvalidateFramebuffer_( GL_FRAMEBUFFER, 2, attachments );
+            glOperation.glInvalidateFramebuffer( GL_FRAMEBUFFER, 2, attachments );
 			// Flush explicitly
 			glFlush();		// GL_Flush() with KHR_sync seems to be synchronous
 			break;

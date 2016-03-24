@@ -379,7 +379,7 @@ void EyeBuffers::EndRenderingEye( const int eyeNum )
     {
         glBindFramebuffer( GL_READ_FRAMEBUFFER, eye.RenderFrameBuffer );
         glBindFramebuffer( GL_DRAW_FRAMEBUFFER, eye.ResolveFrameBuffer );
-        glOperation.glBlitFramebuffer_( 0, 0, resolution, resolution,
+        glOperation.glBlitFramebuffer( 0, 0, resolution, resolution,
                 0, 0, resolution, resolution,
                 GL_COLOR_BUFFER_BIT, GL_NEAREST );
         // Discard the multisample color buffer after we have resolved it,

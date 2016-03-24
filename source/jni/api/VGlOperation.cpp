@@ -2,42 +2,6 @@
 
 NV_NAMESPACE_BEGIN
 
-bool VGlOperation::EXT_disjoint_timer_query = false;
-bool VGlOperation::EXT_texture_filter_anisotropic = false;
-const int VGlOperation::EGL_PROTECTED_CONTENT_EXT = 0x32c0;
-bool VGlOperation::QCOM_tiled_rendering = false;
-bool VGlOperation::HasEXT_sRGB_texture_decode = false;
-bool VGlOperation::EXT_discard_framebuffer = false;
-bool VGlOperation::OES_vertex_array_object = false;
-
-
-PFNGLBINDVERTEXARRAYOESPROC	VGlOperation::glBindVertexArrayOES_ = NULL;
-PFNGLDELETEVERTEXARRAYSOESPROC	VGlOperation::glDeleteVertexArraysOES_ = NULL;
-PFNGLGENVERTEXARRAYSOESPROC	VGlOperation::glGenVertexArraysOES_ = NULL;
-PFNGLISVERTEXARRAYOESPROC	VGlOperation::glIsVertexArrayOES_ = NULL;
-
-PFNGLSTARTTILINGQCOMPROC	VGlOperation::glStartTilingQCOM_ = NULL;
-PFNGLENDTILINGQCOMPROC		VGlOperation::glEndTilingQCOM_ = NULL;
-
-PFNGLGENQUERIESEXTPROC VGlOperation::glGenQueriesEXT_ = NULL;
-PFNGLDELETEQUERIESEXTPROC VGlOperation::glDeleteQueriesEXT_ = NULL;
-PFNGLISQUERYEXTPROC VGlOperation::glIsQueryEXT_ = NULL;
-PFNGLBEGINQUERYEXTPROC VGlOperation::glBeginQueryEXT_ = NULL;
-PFNGLENDQUERYEXTPROC VGlOperation::glEndQueryEXT_ = NULL;
-PFNGLQUERYCOUNTEREXTPROC VGlOperation::glQueryCounterEXT_ = NULL;
-PFNGLGETQUERYIVEXTPROC VGlOperation::glGetQueryivEXT_ = NULL;
-PFNGLGETQUERYOBJECTIVEXTPROC VGlOperation::glGetQueryObjectivEXT_ = NULL;
-PFNGLGETQUERYOBJECTUIVEXTPROC VGlOperation::glGetQueryObjectuivEXT_ = NULL;
-PFNGLGETQUERYOBJECTI64VEXTPROC VGlOperation::glGetQueryObjecti64vEXT_ = NULL;
-PFNGLGETQUERYOBJECTUI64VEXTPROC VGlOperation::glGetQueryObjectui64vEXT_ = NULL;
-PFNGLGETINTEGER64VPROC VGlOperation::glGetInteger64v_ = NULL;
-
-PFNGLBLITFRAMEBUFFER_				VGlOperation::glBlitFramebuffer_ = NULL;
-PFNGLRENDERBUFFERSTORAGEMULTISAMPLE_	VGlOperation::glRenderbufferStorageMultisample_ = NULL;
-PFNGLINVALIDATEFRAMEBUFFER_			VGlOperation::glInvalidateFramebuffer_ = NULL;
-PFNGLMAPBUFFERRANGE_					VGlOperation::glMapBufferRange_ = NULL;
-PFNGLUNMAPBUFFEROESPROC_				VGlOperation::glUnmapBuffer_ = NULL;
-
 VGlOperation::GpuType VGlOperation::EglGetGpuType()
 {
     return EglGetGpuTypeLocal();
@@ -184,7 +148,7 @@ EGLint VGlOperation::GL_FlushSync(int timeout)
     }
 
     const EGLint wait = eglClientWaitSyncKHR( eglDisplay, sync,
-                                               EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, timeout );
+                                              EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, timeout );
 
     eglDestroySyncKHR( eglDisplay, sync );
 
@@ -219,49 +183,9 @@ void VGlOperation::GL_FindExtensions()
     const bool es3 = ( strncmp( (const char *)glGetString( GL_VERSION ), "OpenGL ES 3", 11 ) == 0 );
     LOG( "es3 = %s", es3 ? "TRUE" : "FALSE" );
 
-    if ( GL_ExtensionStringPresent( "GL_OES_vertex_array_object", extensions ) )
-    {
-        OES_vertex_array_object = true;
-        glBindVertexArrayOES_ = (PFNGLBINDVERTEXARRAYOESPROC)eglGetProcAddress("glBindVertexArrayOES");
-        glDeleteVertexArraysOES_ = (PFNGLDELETEVERTEXARRAYSOESPROC)eglGetProcAddress("glDeleteVertexArraysOES");
-        glGenVertexArraysOES_ = (PFNGLGENVERTEXARRAYSOESPROC)eglGetProcAddress("glGenVertexArraysOES");
-        glIsVertexArrayOES_ = (PFNGLISVERTEXARRAYOESPROC)eglGetProcAddress("glIsVertexArrayOES");
-    }
-
-    if ( GL_ExtensionStringPresent( "GL_QCOM_tiled_rendering", extensions ) )
-    {
-        QCOM_tiled_rendering = true;
-        glStartTilingQCOM_ = (PFNGLSTARTTILINGQCOMPROC)eglGetProcAddress("glStartTilingQCOM");
-        glEndTilingQCOM_ = (PFNGLENDTILINGQCOMPROC)eglGetProcAddress("glEndTilingQCOM");
-    }
 
     // Enabling this seems to cause strange problems in Unity
-    if ( GL_ExtensionStringPresent( "GL_EXT_disjoint_timer_query", extensions ) )
-    {
-        EXT_disjoint_timer_query = true;
-        glGenQueriesEXT_ = (PFNGLGENQUERIESEXTPROC)eglGetProcAddress("glGenQueriesEXT");
-        glDeleteQueriesEXT_ = (PFNGLDELETEQUERIESEXTPROC)eglGetProcAddress("glDeleteQueriesEXT");
-        glIsQueryEXT_ = (PFNGLISQUERYEXTPROC)eglGetProcAddress("glIsQueryEXT");
-        glBeginQueryEXT_ = (PFNGLBEGINQUERYEXTPROC)eglGetProcAddress("glBeginQueryEXT");
-        glEndQueryEXT_ = (PFNGLENDQUERYEXTPROC)eglGetProcAddress("glEndQueryEXT");
-        glQueryCounterEXT_ = (PFNGLQUERYCOUNTEREXTPROC)eglGetProcAddress("glQueryCounterEXT");
-        glGetQueryivEXT_ = (PFNGLGETQUERYIVEXTPROC)eglGetProcAddress("glGetQueryivEXT");
-        glGetQueryObjectivEXT_ = (PFNGLGETQUERYOBJECTIVEXTPROC)eglGetProcAddress("glGetQueryObjectivEXT");
-        glGetQueryObjectuivEXT_ = (PFNGLGETQUERYOBJECTUIVEXTPROC)eglGetProcAddress("glGetQueryObjectuivEXT");
-        glGetQueryObjecti64vEXT_ = (PFNGLGETQUERYOBJECTI64VEXTPROC)eglGetProcAddress("glGetQueryObjecti64vEXT");
-        glGetQueryObjectui64vEXT_  = (PFNGLGETQUERYOBJECTUI64VEXTPROC)eglGetProcAddress("glGetQueryObjectui64vEXT");
-        glGetInteger64v_  = (PFNGLGETINTEGER64VPROC)eglGetProcAddress("glGetInteger64v");
-    }
 
-    if ( GL_ExtensionStringPresent( "GL_EXT_texture_sRGB_decode", extensions ) )
-    {
-        HasEXT_sRGB_texture_decode = true;
-    }
-
-    if ( GL_ExtensionStringPresent( "GL_EXT_texture_filter_anisotropic", extensions ) )
-    {
-        EXT_texture_filter_anisotropic = true;
-    }
 
     GLint MaxTextureSize = 0;
     glGetIntegerv( GL_MAX_TEXTURE_SIZE, &MaxTextureSize );
@@ -276,11 +200,6 @@ void VGlOperation::GL_FindExtensions()
     LOG( "GL_MAX_FRAGMENT_UNIFORM_VECTORS = %d", MaxFragmentUniformVectors );
 
     // ES3 functions we need to getprocaddress to allow linking against ES2 lib
-    glBlitFramebuffer_  = (PFNGLBLITFRAMEBUFFER_)eglGetProcAddress("glBlitFramebuffer");
-    glRenderbufferStorageMultisample_  = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLE_)eglGetProcAddress("glRenderbufferStorageMultisample");
-    glInvalidateFramebuffer_  = (PFNGLINVALIDATEFRAMEBUFFER_)eglGetProcAddress("glInvalidateFramebuffer");
-    glMapBufferRange_  = (PFNGLMAPBUFFERRANGE_)eglGetProcAddress("glMapBufferRange");
-    glUnmapBuffer_  = (PFNGLUNMAPBUFFEROESPROC_)eglGetProcAddress("glUnmapBuffer");
 }
 
 bool VGlOperation::GL_ExtensionStringPresent(const char *extension, const char *allExtensions)
@@ -302,25 +221,25 @@ void VGlOperation::GL_Finish()
     // Given the common driver "optimization" of ignoring glFinish, we
     // can't run reliably while drawing to the front buffer without
     // the Sync extension.
-        // 100 milliseconds == 100000000 nanoseconds
-        const EGLint wait = GL_FlushSync( 100000000 );
-        if ( wait == EGL_TIMEOUT_EXPIRED_KHR )
-        {
-            LOG( "EGL_TIMEOUT_EXPIRED_KHR" );
-        }
-        if ( wait == EGL_FALSE )
-        {
-            LOG( "eglClientWaitSyncKHR returned EGL_FALSE" );
-        }
+    // 100 milliseconds == 100000000 nanoseconds
+    const EGLint wait = GL_FlushSync( 100000000 );
+    if ( wait == EGL_TIMEOUT_EXPIRED_KHR )
+    {
+        LOG( "EGL_TIMEOUT_EXPIRED_KHR" );
+    }
+    if ( wait == EGL_FALSE )
+    {
+        LOG( "eglClientWaitSyncKHR returned EGL_FALSE" );
+    }
 }
 
 void VGlOperation::GL_Flush()
 {
-        const EGLint wait = GL_FlushSync( 0 );
-        if ( wait == EGL_FALSE )
-        {
-            LOG("eglClientWaitSyncKHR returned EGL_FALSE");
-        }
+    const EGLint wait = GL_FlushSync( 0 );
+    if ( wait == EGL_FALSE )
+    {
+        LOG("eglClientWaitSyncKHR returned EGL_FALSE");
+    }
 
     // Also do a glFlush() so it shows up in logging tools that
     // don't capture eglClientWaitSyncKHR_ calls.
@@ -334,7 +253,7 @@ void VGlOperation::GL_InvalidateFramebuffer(const invalidateTarget_t isFBO, cons
 
     const GLenum fboAttachments[3] = { GL_COLOR_ATTACHMENT0, GL_DEPTH_ATTACHMENT, GL_STENCIL_ATTACHMENT };
     const GLenum attachments[3] = { GL_COLOR_EXT, GL_DEPTH_EXT, GL_STENCIL_EXT };
-    glInvalidateFramebuffer_( GL_FRAMEBUFFER, count, ( isFBO == INV_FBO ? fboAttachments : attachments ) + offset );
+    glInvalidateFramebuffer( GL_FRAMEBUFFER, count, ( isFBO == INV_FBO ? fboAttachments : attachments ) + offset );
 }
 
 void VGlOperation::LogStringWords(const char *allExtensions)
@@ -713,6 +632,159 @@ EGLint VGlOperation::eglClientWaitSyncKHR(EGLDisplay dpy, EGLSyncKHR sync, EGLin
     PFNEGLCLIENTWAITSYNCKHRPROC eglClientWaitSyncKHR_;
     eglClientWaitSyncKHR_ = (PFNEGLCLIENTWAITSYNCKHRPROC)GetExtensionProc( "eglClientWaitSyncKHR" );
     return eglClientWaitSyncKHR_(dpy, sync, flags, timeout);
+}
+
+void VGlOperation::glBindVertexArrayOES(GLuint array)
+{
+    PFNGLBINDVERTEXARRAYOESPROC glBindVertexArrayOES_;
+    if ( GL_ExtensionStringPresent( "GL_OES_vertex_array_object", extensions ) ) {
+        glBindVertexArrayOES_ = (PFNGLBINDVERTEXARRAYOESPROC)eglGetProcAddress("glBindVertexArrayOES");
+    }
+    glBindVertexArrayOES_(array);
+}
+
+void VGlOperation::glDeleteVertexArraysOES(GLsizei n, const GLuint *arrays)
+{
+    PFNGLDELETEVERTEXARRAYSOESPROC glDeleteVertexArraysOES_;
+    if ( GL_ExtensionStringPresent( "GL_OES_vertex_array_object", extensions ) )
+    {
+        glDeleteVertexArraysOES_ = (PFNGLDELETEVERTEXARRAYSOESPROC)eglGetProcAddress("glDeleteVertexArraysOES");
+    }
+    glDeleteVertexArraysOES_(n, arrays);
+}
+
+void VGlOperation::glGenVertexArraysOES(GLsizei n, GLuint *arrays)
+{
+    PFNGLGENVERTEXARRAYSOESPROC glGenVertexArraysOES_;
+    if ( GL_ExtensionStringPresent( "GL_OES_vertex_array_object", extensions ) )
+    {
+        glGenVertexArraysOES_ = (PFNGLGENVERTEXARRAYSOESPROC)eglGetProcAddress("glGenVertexArraysOES");
+    }
+    glGenVertexArraysOES_(n, arrays);
+}
+
+void VGlOperation::glStartTilingQCOM(GLuint x, GLuint y, GLuint width, GLuint height, GLbitfield preserveMask)
+{
+    PFNGLSTARTTILINGQCOMPROC glStartTilingQCOM_;
+    if ( GL_ExtensionStringPresent( "GL_QCOM_tiled_rendering", extensions ) )
+    {
+        glStartTilingQCOM_ = (PFNGLSTARTTILINGQCOMPROC)eglGetProcAddress("glStartTilingQCOM");
+    }
+    glStartTilingQCOM_(x, y, width, height, preserveMask);
+}
+
+void VGlOperation::glEndTilingQCOM(GLbitfield preserveMask)
+{
+    PFNGLENDTILINGQCOMPROC glEndTilingQCOM_;
+    if ( GL_ExtensionStringPresent( "GL_QCOM_tiled_rendering", extensions ) )
+    {
+        glEndTilingQCOM_ = (PFNGLENDTILINGQCOMPROC)eglGetProcAddress("glEndTilingQCOM");
+    }
+    glEndTilingQCOM_(preserveMask);
+}
+
+void VGlOperation::glGenQueriesEXT(GLsizei n, GLuint *ids)
+{
+    typedef void (GL_APIENTRYP PFNGLGENQUERIESEXTPROC) (GLsizei n, GLuint *ids);
+    PFNGLGENQUERIESEXTPROC glGenQueriesEXT_;
+    if ( GL_ExtensionStringPresent( "GL_EXT_disjoint_timer_query", extensions ) )
+    {
+        glGenQueriesEXT_ = (PFNGLGENQUERIESEXTPROC)eglGetProcAddress("glGenQueriesEXT");
+    }
+    glGenQueriesEXT_(n, ids);
+}
+
+void VGlOperation::glDeleteQueriesEXT(GLsizei n, const GLuint *ids)
+{
+    typedef void (GL_APIENTRYP PFNGLDELETEQUERIESEXTPROC) (GLsizei n, const GLuint *ids);
+    PFNGLDELETEQUERIESEXTPROC glDeleteQueriesEXT_;
+    if ( GL_ExtensionStringPresent( "GL_EXT_disjoint_timer_query", extensions ) )
+    {
+        glDeleteQueriesEXT_ = (PFNGLDELETEQUERIESEXTPROC)eglGetProcAddress("glDeleteQueriesEXT");
+    }
+    glDeleteQueriesEXT_(n, ids);
+}
+
+void VGlOperation::glBeginQueryEXT(GLenum target, GLuint id)
+{
+    typedef void (GL_APIENTRYP PFNGLBEGINQUERYEXTPROC) (GLenum target, GLuint id);
+    PFNGLBEGINQUERYEXTPROC glBeginQueryEXT_;
+    if ( GL_ExtensionStringPresent( "GL_EXT_disjoint_timer_query", extensions ) )
+    {
+        glBeginQueryEXT_ = (PFNGLBEGINQUERYEXTPROC)eglGetProcAddress("glBeginQueryEXT");
+    }
+    glBeginQueryEXT_(target, id);
+}
+
+void VGlOperation::glEndQueryEXT(GLenum target)
+{
+    typedef void (GL_APIENTRYP PFNGLENDQUERYEXTPROC) (GLenum target);
+    PFNGLENDQUERYEXTPROC glEndQueryEXT_;
+    if ( GL_ExtensionStringPresent( "GL_EXT_disjoint_timer_query", extensions ) )
+    {
+        glEndQueryEXT_ = (PFNGLENDQUERYEXTPROC)eglGetProcAddress("glEndQueryEXT");
+    }
+    glEndQueryEXT_(target);
+}
+
+void VGlOperation::glQueryCounterEXT(GLuint id, GLenum target)
+{
+    typedef void (GL_APIENTRYP PFNGLQUERYCOUNTEREXTPROC) (GLuint id, GLenum target);
+    PFNGLQUERYCOUNTEREXTPROC glQueryCounterEXT_;
+    if ( GL_ExtensionStringPresent( "GL_EXT_disjoint_timer_query", extensions ) )
+    {
+        glQueryCounterEXT_ = (PFNGLQUERYCOUNTEREXTPROC)eglGetProcAddress("glQueryCounterEXT");
+    }
+    glQueryCounterEXT_(id, target);
+}
+
+void VGlOperation::glGetQueryObjectivEXT(GLuint id, GLenum pname, GLint *params)
+{
+    typedef void (GL_APIENTRYP PFNGLGETQUERYOBJECTIVEXTPROC) (GLuint id, GLenum pname, GLint *params);
+    PFNGLGETQUERYOBJECTIVEXTPROC glGetQueryObjectivEXT_;
+    if ( GL_ExtensionStringPresent( "GL_EXT_disjoint_timer_query", extensions ) )
+    {
+        glGetQueryObjectivEXT_ = (PFNGLGETQUERYOBJECTIVEXTPROC)eglGetProcAddress("glGetQueryObjectivEXT");
+    }
+    glGetQueryObjectivEXT_(id, pname, params);
+}
+
+void VGlOperation::glGetQueryObjectui64vEXT(GLuint id, GLenum pname, GLuint64 *params)
+{
+    typedef void (GL_APIENTRYP PFNGLGETQUERYOBJECTUI64VEXTPROC) (GLuint id, GLenum pname, GLuint64 *params);
+    PFNGLGETQUERYOBJECTUI64VEXTPROC glGetQueryObjectui64vEXT_;
+    if ( GL_ExtensionStringPresent( "GL_EXT_disjoint_timer_query", extensions ) )
+    {
+        glGetQueryObjectui64vEXT_  = (PFNGLGETQUERYOBJECTUI64VEXTPROC)eglGetProcAddress("glGetQueryObjectui64vEXT");
+    }
+    glGetQueryObjectui64vEXT_(id, pname, params);
+}
+
+void VGlOperation::glGetInteger64v(GLenum pname, GLint64 *params)
+{
+    typedef void (GL_APIENTRYP PFNGLGETINTEGER64VPROC) (GLenum pname, GLint64 *params);
+    PFNGLGETINTEGER64VPROC glGetInteger64v_;
+    if ( GL_ExtensionStringPresent( "GL_EXT_disjoint_timer_query", extensions ) )
+    {
+        glGetInteger64v_  = (PFNGLGETINTEGER64VPROC)eglGetProcAddress("glGetInteger64v");
+    }
+    glGetInteger64v_(pname, params);
+}
+
+void VGlOperation::glBlitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter)
+{
+    typedef void (GL_APIENTRYP PFNGLBLITFRAMEBUFFER_) (GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter);
+    PFNGLBLITFRAMEBUFFER_ glBlitFramebuffer_;
+    glBlitFramebuffer_  = (PFNGLBLITFRAMEBUFFER_)eglGetProcAddress("glBlitFramebuffer");
+    glBlitFramebuffer_(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
+}
+
+void  VGlOperation::glInvalidateFramebuffer(GLenum target, GLsizei numAttachments, const GLenum* attachments)
+{
+    typedef void (GL_APIENTRYP PFNGLINVALIDATEFRAMEBUFFER_) (GLenum target, GLsizei numAttachments, const GLenum* attachments);
+    PFNGLINVALIDATEFRAMEBUFFER_ glInvalidateFramebuffer_;
+    glInvalidateFramebuffer_  = (PFNGLINVALIDATEFRAMEBUFFER_)eglGetProcAddress("glInvalidateFramebuffer");
+    glInvalidateFramebuffer_(target, numAttachments, attachments);
 }
 
 NV_NAMESPACE_END

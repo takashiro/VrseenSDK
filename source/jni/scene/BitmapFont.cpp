@@ -1059,8 +1059,8 @@ void BitmapFontSurfaceLocal::Init(const int maxVertices) {
 	const int vertexByteCount = maxVertices * sizeof(fontVertex_t);
     VGlOperation glOperation;
 	// font VAO
-    glOperation.glGenVertexArraysOES_(1, &Geo.vertexArrayObject);
-    glOperation.glBindVertexArrayOES_(Geo.vertexArrayObject);
+    glOperation.glGenVertexArraysOES(1, &Geo.vertexArrayObject);
+    glOperation.glBindVertexArrayOES(Geo.vertexArrayObject);
 
 	// vertex buffer
 	glGenBuffers(1, &Geo.vertexBuffer);
@@ -1111,7 +1111,7 @@ void BitmapFontSurfaceLocal::Init(const int maxVertices) {
 
 	Geo.indexCount = 0; // if there's anything to render this will be modified
 
-    glOperation.glBindVertexArrayOES_(0);
+    glOperation.glBindVertexArrayOES(0);
 
 	delete[] indices;
 
@@ -1438,11 +1438,11 @@ void BitmapFontSurfaceLocal::Finish(VR4Matrixf const & viewMatrix) {
 	VertexBlocks.clear();
 
     VGlOperation glOperation;
-    glOperation.glBindVertexArrayOES_(Geo.vertexArrayObject);
+    glOperation.glBindVertexArrayOES(Geo.vertexArrayObject);
 	glBindBuffer(GL_ARRAY_BUFFER, Geo.vertexBuffer);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, CurVertex * sizeof(fontVertex_t),
 			(void *) Vertices);
-    glOperation.glBindVertexArrayOES_(0);
+    glOperation.glBindVertexArrayOES(0);
 
 	Geo.indexCount = CurIndex;
 }
@@ -1481,9 +1481,9 @@ void BitmapFontSurfaceLocal::Render3D(BitmapFont const & font,
 	glUniform4fv(AsLocal(font).GetFontProgram().uniformColor, 1, textColor);
 
 	// draw all font vertices
-    glOperation.glBindVertexArrayOES_(Geo.vertexArrayObject);
+    glOperation.glBindVertexArrayOES(Geo.vertexArrayObject);
 	glDrawElements(GL_TRIANGLES, Geo.indexCount, GL_UNSIGNED_SHORT, NULL);
-    glOperation.glBindVertexArrayOES_(0);
+    glOperation.glBindVertexArrayOES(0);
 
 	glEnable(GL_CULL_FACE);
 
