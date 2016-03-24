@@ -213,7 +213,6 @@ HEADERS += \
     jni/api/VrApi_local.h \
     jni/api/VDevice.h \
     jni/api/VGlOperation.h \
-    jni/api/VGlTypeDefine.h \
     jni/api/sensor/DeviceConstants.h \
     jni/api/sensor/DeviceHandle.h \
     jni/api/sensor/DeviceImpl.h \
