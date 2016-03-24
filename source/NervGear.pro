@@ -286,7 +286,6 @@ HEADERS += \
     jni/VConsole.h \
     jni/vglobal.h \
     jni/Input.h \
-    jni/PointTracker.h \
     jni/UniversalMenu_Commands.h \
     jni/PointTracker.h
 
