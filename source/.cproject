@@ -28,6 +28,12 @@
 							</builder>
 							<tool id="com.android.gcc.compiler.2132692520" name="Android GCC Compiler" superClass="com.android.gcc.compiler">
 								<inputType id="com.android.gcc.inputType.856287396" superClass="com.android.gcc.inputType"/>
+								<option id="com.android.gcc.compiler.option.preprocessor.def.768340103" superClass="com.android.gcc.compiler.option.preprocessor.def" valueType="definedSymbols">
+									<listOptionValue builtIn="true" value="__cplusplus=201103L"/>
+									<listOptionValue builtIn="false" value="__cplusplus=201103L"/>
+									<listOptionValue builtIn="true" value="__GXX_EXPERIMENTAL_CXX0X__"/>
+									<listOptionValue builtIn="false" value="__GXX_EXPERIMENTAL_CXX0X__"/>
+								</option>
 							</tool>
 						</toolChain>
 					</folderInfo>
