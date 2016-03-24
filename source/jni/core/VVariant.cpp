@@ -108,6 +108,18 @@ VVariant::VVariant(VVariantMap &&map)
     m_value.map = new VVariantMap(map);
 }
 
+VVariant::VVariant(const Function &function)
+    : m_type(Closure)
+{
+    m_value.function = new Function(function);
+}
+
+VVariant::VVariant(VVariant::Function &&function)
+    : m_type(Closure)
+{
+    m_value.function = new Function(function);
+}
+
 VVariant::VVariant(const VVariant &var)
     : m_type(var.m_type)
 {
@@ -131,6 +143,8 @@ VVariant::VVariant(const VVariant &var)
         break;
     case Map:
         m_value.map = new VVariantMap(*(var.m_value.map));
+    case Closure:
+        m_value.function = new Function(*(var.m_value.function));
         break;
     default:
         vAssert("VVariant Does not support such a type.");
@@ -359,6 +373,12 @@ uint VVariant::size() const
     return 0;
 }
 
+void VVariant::execute() const
+{
+    vAssert(isClosure());
+    (*(m_value.function))();
+}
+
 void VVariant::release()
 {
     switch (m_type) {
@@ -370,6 +390,9 @@ void VVariant::release()
         break;
     case Map:
         delete m_value.map;
+        break;
+    case Closure:
+        delete m_value.function;
         break;
     default:;
     }
@@ -399,6 +422,9 @@ VVariant &VVariant::operator=(const VVariant &var)
         break;
     case Map:
         m_value.map = new VVariantMap(*(var.m_value.map));
+        break;
+    case Closure:
+        m_value.function = new Function(*(var.m_value.function));
         break;
     default:
         vAssert("VVariant Does not support such a type.");
