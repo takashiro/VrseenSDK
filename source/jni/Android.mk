@@ -123,6 +123,7 @@ LOCAL_SRC_FILES  := \
 	io/VSysFile.cpp \
 	media/VSoundManager.cpp \
 	scene/BitmapFont.cpp \
+	scene/DebugLines.cpp \
 	scene/EyeBuffers.cpp \
 	scene/EyePostRender.cpp \
 	scene/GazeCursor.cpp \
@@ -137,7 +138,6 @@ LOCAL_SRC_FILES  := \
 	scene/SwipeView.cpp \
 	KeyState.cpp \
 	App.cpp \
-	DebugLines.cpp \
 	VrLocale.cpp \
 	VConsole.cpp
 

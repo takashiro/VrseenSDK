@@ -105,6 +105,7 @@ SOURCES += \
     jni/io/VSysFile.cpp \
     jni/media/VSoundManager.cpp \
     jni/scene/BitmapFont.cpp \
+    jni/scene/DebugLines.cpp \
     jni/scene/EyeBuffers.cpp \
     jni/scene/EyePostRender.cpp \
     jni/scene/GazeCursor.cpp \
@@ -119,7 +120,6 @@ SOURCES += \
     jni/scene/SwipeView.cpp \
     jni/App.cpp \
     jni/VConsole.cpp \
-    jni/DebugLines.cpp \
     jni/KeyState.cpp \
     jni/VrLocale.cpp
 
@@ -265,6 +265,7 @@ HEADERS += \
     jni/io/VSysFile.h \
     jni/media/VSoundManager.h \
     jni/scene/BitmapFont.h \
+    jni/scene/DebugLines.h \
     jni/scene/EyeBuffers.h \
     jni/scene/EyePostRender.h \
     jni/scene/GazeCursor.h \
@@ -281,7 +282,6 @@ HEADERS += \
     jni/KeyState.h \
     jni/App.h \
     jni/AppRender.h \
-    jni/DebugLines.h \
     jni/VrLocale.h \
     jni/VConsole.h \
     jni/vglobal.h \
