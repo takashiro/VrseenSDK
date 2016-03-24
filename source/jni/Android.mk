@@ -54,7 +54,6 @@ LOCAL_SRC_FILES  := \
 	core/VSignal.cpp \
 	core/System.cpp \
 	core/VLock.cpp \
-	core/ThreadCommandQueue.cpp \
 	core/VThread.cpp \
 	core/VTimer.cpp \
 	core/MappedFile.cpp \
@@ -95,6 +94,7 @@ LOCAL_SRC_FILES  := \
 	api/sensor/Android_SensorDevice.cpp \
 	api/sensor/Android_PhoneSensors.cpp \
 	api/sensor/Common_HMDDevice.cpp \
+	api/sensor/ThreadCommandQueue.cpp \
 	gui/VRMenuComponent.cpp \
 	gui/VRMenuMgr.cpp \
 	gui/VRMenuObjectLocal.cpp \
