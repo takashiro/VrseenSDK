@@ -9,6 +9,7 @@
 #include "android/LogUtils.h"
 #include "VLog.h"
 #include "vglobal.h"
+
 #define __gl2_h_
 
 #include <EGL/egl.h>
@@ -79,9 +80,8 @@ public:
 
     VGlOperation()
     {
-        extensions = (const char *)glGetString( GL_EXTENSIONS );
-        if ( NULL == extensions )
-        {
+        extensions = reinterpret_cast<const char *>(glGetString(GL_EXTENSIONS));
+        if (NULL == extensions) {
             LOG( "glGetString( GL_EXTENSIONS ) returned NULL" );
         }
     }
@@ -97,12 +97,19 @@ public:
     void GL_Finish();
     void GL_Flush();
     EGLint GL_FlushSync(int timeout);
-    void GL_InvalidateFramebuffer(const invalidateTarget_t isFBO, const bool colorBuffer, const bool depthBuffer);
+    void GL_InvalidateFramebuffer(const invalidateTarget_t isFBO,
+                                  const bool colorBuffer,
+                                  const bool depthBuffer);
     void LogStringWords(const char *allExtensions);
     void *GetExtensionProc( const char * name );
     void DumpEglConfigs(const EGLDisplay display);
-    EGLConfig ChooseColorConfig( const EGLDisplay display, const int redBits,
-                                 const int greeBits, const int blueBits, const int depthBits, const int samples, const bool pbuffer );
+    EGLConfig ChooseColorConfig( const EGLDisplay display,
+                                 const int redBits,
+                                 const int greeBits,
+                                 const int blueBits,
+                                 const int depthBits,
+                                 const int samples,
+                                 const bool pbuffer );
     void EglSetup( const EGLContext shareContext,
                    const int requestedGlEsVersion,
                    const int redBits, const int greenBits, const int blueBits,
@@ -110,16 +117,17 @@ public:
                    const GLuint contextPriority );
     void	EglShutdown();
 
-    int			glEsVersion;
-    GpuType		gpuType;
-    EGLDisplay	display;
-    EGLSurface	pbufferSurface;
-    EGLConfig	config;
-    EGLContext	context;
-    const char * extensions;
-
-    void glRenderbufferStorageMultisampleIMG(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height);
-    void glFramebufferTexture2DMultisampleIMG(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level, GLsizei samples);
+    void glRenderbufferStorageMultisampleIMG(GLenum target,
+                                             GLsizei samples,
+                                             GLenum internalformat,
+                                             GLsizei width,
+                                             GLsizei height);
+    void glFramebufferTexture2DMultisampleIMG(GLenum target,
+                                              GLenum attachment,
+                                              GLenum textarget,
+                                              GLuint texture,
+                                              GLint level,
+                                              GLsizei samples);
     EGLSyncKHR eglCreateSyncKHR(EGLDisplay dpy, EGLenum type, const EGLint *attrib_list);
     EGLBoolean eglDestroySyncKHR(EGLDisplay dpy, EGLSyncKHR sync);
     EGLint eglClientWaitSyncKHR(EGLDisplay dpy, EGLSyncKHR sync, EGLint flags, EGLTimeKHR timeout);
@@ -136,8 +144,25 @@ public:
     void glGetQueryObjectivEXT(GLuint id, GLenum pname, GLint *params);
     void glGetQueryObjectui64vEXT(GLuint id, GLenum pname, GLuint64 *params);
     void glGetInteger64v(GLenum pname, GLint64 *params);
-    void glBlitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter);
+    void glBlitFramebuffer(GLint srcX0,
+                           GLint srcY0,
+                           GLint srcX1,
+                           GLint srcY1,
+                           GLint dstX0,
+                           GLint dstY0,
+                           GLint dstX1,
+                           GLint dstY1,
+                           GLbitfield mask,
+                           GLenum filter);
     void  glInvalidateFramebuffer(GLenum target, GLsizei numAttachments, const GLenum* attachments);
 
+
+    int	glEsVersion;
+    GpuType	gpuType;
+    EGLDisplay display;
+    EGLSurface pbufferSurface;
+    EGLConfig config;
+    EGLContext context;
+    const char * extensions;
 };
 NV_NAMESPACE_END
