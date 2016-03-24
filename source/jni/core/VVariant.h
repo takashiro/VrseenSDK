@@ -4,6 +4,8 @@
 #include "VArray.h"
 #include "VMap.h"
 
+#include <functional>
+
 NV_NAMESPACE_BEGIN
 
 class VVariant;
@@ -30,8 +32,12 @@ public:
         Array,
         Map,
 
+        Closure,
+
         TypeCount
     };
+
+    typedef std::function<void()> Function;
 
     VVariant();
     VVariant(bool value);
@@ -50,8 +56,12 @@ public:
 
     VVariant(const VVariantArray &array);
     VVariant(VVariantArray &&array);
+
     VVariant(const VVariantMap &map);
     VVariant(VVariantMap &&map);
+
+    VVariant(const Function &function);
+    VVariant(Function &&function);
 
     VVariant(const VVariant &var);
     VVariant(VVariant &&var);
@@ -72,6 +82,7 @@ public:
     bool isString() const { return m_type == String; }
     bool isArray() const { return m_type == Array; }
     bool isMap() const { return m_type == Map; }
+    bool isClosure() const { return m_type == Closure; }
 
     bool toBool() const;
     int toInt() const;
@@ -98,6 +109,9 @@ public:
     int length() const;
     uint size() const;
 
+    void execute() const;
+    void operator()() const { execute(); }
+
     VVariant &operator=(const VVariant &source);
     VVariant &operator=(VVariant &&source);
 
@@ -119,6 +133,7 @@ private:
         VString *str;
         VVariantArray *array;
         VVariantMap *map;
+        Function *function;
     };
     Value m_value;
 };

@@ -6,10 +6,6 @@
 #include <unistd.h>
 #include <pthread.h>
 
-#include <sys/time.h>
-#include <sys/resource.h>
-
-#include "Android/LogUtils.h"
 #include "VLog.h"
 
 NV_NAMESPACE_BEGIN
@@ -40,8 +36,8 @@ struct VEventLoop::Private
         pthread_cond_init( &received, NULL );
     }
 
-    bool			shutdown;
-    const int 		capacity;
+    bool shutdown;
+    const int capacity;
 
     struct Node
     {
@@ -124,6 +120,20 @@ void VEventLoop::post(const char *command)
     d->post(event, false);
 }
 
+void VEventLoop::post(const VVariant &data)
+{
+    VEvent event;
+    event.data = data;
+    d->post(event, false);
+}
+
+void VEventLoop::post(const VVariant::Function &func)
+{
+    VEvent event;
+    event.data = func;
+    d->post(event, false);
+}
+
 void VEventLoop::send(const VEvent &event)
 {
     d->post(event, true);
@@ -139,6 +149,20 @@ void VEventLoop::send(const VString &command, const VVariant &data)
 void VEventLoop::send(const char *command)
 {
     VEvent event(command);
+    d->post(event, true);
+}
+
+void VEventLoop::send(const VVariant &data)
+{
+    VEvent event;
+    event.data = data;
+    d->post(event, true);
+}
+
+void VEventLoop::send(const VVariant::Function &func)
+{
+    VEvent event;
+    event.data = func;
     d->post(event, true);
 }
 
