@@ -30,7 +30,7 @@ jobject Java_com_vrseen_nervgear_cinema_MainActivity_nativePrepareNewVideo(JNIEn
 
 	result.wait();
     VEvent event = result.next();
-    jobject	texobj;
+    jobject	texobj = nullptr;
     if (event.name == "surfaceTexture") {
         texobj = static_cast<jobject>(event.data.toPointer());
     }
