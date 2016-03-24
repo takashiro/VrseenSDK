@@ -28,7 +28,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "MemBuffer.h"		// needed for MemBufferT
 #include "sensor/DeviceImpl.h"
 
-#include "DirectRender.h"
 #include "HmdInfo.h"
 #include "HmdSensors.h"
 #include "VFrameSmooth.h"
@@ -602,59 +601,22 @@ void ovr_SendIntent( ovrMobile * ovr, const char * actionName, const char * toPa
 	}
 }
 
-void CreateSystemActivitiesCommand( const char * toPackageName, const char * command, const char * jsonExtra,
-		const char * uri, NervGear::VString & out )
+void CreateSystemActivitiesCommand(const char * toPackageName, const char * command, const char * uri, NervGear::VString & out )
 {
 	// serialize the command to a JSON object with version inf
-    VJson obj(VJson::Object);
+    VJsonObject obj;
     obj.insert("Command", command);
     obj.insert("OVRVersion", ovr_GetVersionString());
     obj.insert("PlatformUIVersion", PLATFORM_UI_VERSION);
     obj.insert("ToPackage", toPackageName);
 
     std::stringstream s;
-    s << obj;
+    s << VJson(std::move(obj));
 
     char text[10240];
     s.getline(text, 10240);
     out = text;
-
-    if ( jsonExtra != NULL && jsonExtra[0] != '\0' )
-    {
-        out.remove( out.length() - 2 );	// strip off the } and a line feed
-        out.append( ",\n" );
-        out.append( jsonExtra );
-        out.append( "\n}" );
-    }
 }
-
-void ovr_BroadcastSystemActivityEvent( ovrMobile * ovr, const char * actionName, const char * toPackageName,
-		const char * toClassName, const char * command, const char * jsonExtra, const char * uri )
-{
-	LOG( "ovr_BroadcastSystemActivityEvent( '%s' '%s/%s' '%s' '%s' '%s' )", actionName, toPackageName, toClassName,
-			( command != NULL ) ? command : "<NULL>",
-			( jsonExtra != NULL ) ? jsonExtra : "<NULL>",
-			( uri != NULL ) ? uri : "<NULL>" );
-
-	NervGear::VString commandJson;
-	CreateSystemActivitiesCommand( toPackageName, command, jsonExtra, uri, commandJson );
-
-	JavaString actionString( ovr->Jni, actionName );
-	JavaString packageString( ovr->Jni, toPackageName );
-	JavaString className( ovr->Jni, toClassName );
-    JavaString commandString( ovr->Jni, commandJson.toCString() );
-	JavaString uriString( ovr->Jni, uri == NULL ? "" : uri );
-
-	jmethodID sendIntentFromNativeId = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass,
-			"broadcastIntent", "(Landroid/app/Activity;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V" );
-	if ( sendIntentFromNativeId != NULL )
-	{
-		ovr->Jni->CallStaticVoidMethod( VrLibClass, sendIntentFromNativeId, ovr->Parms.ActivityObject,
-				actionString.toJString(), packageString.toJString(), className.toJString(),
-				commandString.toJString(), uriString.toJString() );
-	}
-}
-
 
 // This will query Android for the launch intent of the specified package, then append the
 // command and URI data to the intent.
@@ -709,14 +671,14 @@ bool ovr_CreateSystemActivityIntent( ovrMobile * ovr, const char * command, cons
 	}
 	outBuffer[0] = '\0';
 
-    VJson jsonObj(VJson::Object);
+    VJsonObject jsonObj;
 
     jsonObj.insert("Command", command );
     jsonObj.insert("OVRVersion", ovr_GetVersionString() );
     jsonObj.insert( "PlatformUIVersion", PLATFORM_UI_VERSION );
 
     std::stringstream s;
-    s << jsonObj;
+    s << VJson(std::move(jsonObj));
     std::string str;
     s.str(str);
 
@@ -1238,33 +1200,6 @@ static void ReleaseVrSystemPerformance( JNIEnv * VrJni, jclass vrActivityClass, 
 	VrJni->CallStaticVoidMethod( vrActivityClass, releaseSystemPerformanceId, activityObject );
 }
 
-static void SetSchedFifo( ovrMobile * ovr, int tid, int priority )
-{
-	const jmethodID setSchedFifoMethodId = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass, "setSchedFifoStatic", "(Landroid/app/Activity;II)I" );
-	const int r = ovr->Jni->CallStaticIntMethod( VrLibClass, setSchedFifoMethodId, ovr->Parms.ActivityObject, tid, priority );
-	if ( r >= 0 )
-	{
-		LOG( "SetSchedFifo( %i, %i ) = %s", tid, priority, "succeeded" );
-	}
-	else
-	{
-		WARN( "SetSchedFifo( %i, %i ) = %s", tid, priority,
-				( ( r == -1 ) ? "VRManager failed" :
-				( ( r == -2 ) ? "API not found" :
-				( ( r == -3 ) ? "security exception" : "unknown" ) ) ) );
-	}
-
-	if ( priority != 0 )
-	{
-		switch ( r )
-		{
-			case -1: WARN( "VRManager failed to set thread priority." ); break;
-			case -2: WARN( "Thread priority API does not exist. Update your device binary." ); break;
-			case -3: FAIL( "Thread priority security exception. Make sure the APK is signed." ); break;
-		}
-	}
-}
-
 static void UpdateHmdInfo( ovrMobile * ovr )
 {
 	short hmdVendorId = 0;
@@ -1509,45 +1444,7 @@ ovrMobile * ovr_EnterVrMode( ovrModeParms parms, ovrHmdInfo * returnedHmdInfo )
 		LOG( "Cleared JNI exception" );
 	}
 
-	// Start the time warp thread
-	ovr->Twp.asynchronousTimeWarp = ovr->Parms.AsynchronousTimeWarp;
-
-	// For video capture or testing on reference platforms without frontbuffer rendering,
-	// frontbuffer can be forced off.
-    ovr->Twp.frontBuffer = 1;
-	ovr->Twp.distortionFileName = ovr->Parms.DistortionFileName;
-	ovr->Twp.hmdInfo = ovr->HmdInfo;
-	ovr->Twp.javaVm = VrLibJavaVM;
-	ovr->Twp.vrLibClass = VrLibClass;
-	ovr->Twp.activityObject = ovr->Parms.ActivityObject;
-	ovr->Twp.gameThreadTid = ovr->Parms.GameThreadTid;
-	// NOTE: 2014-12-05 - Android-L support requires
-	// different behavior than KitKat for setting up
-	// front buffer rendering.
-	ovr->Twp.buildVersionSDK = BuildVersionSDK;
-	ovr->Twp.externalStorageDirectory = externalStorageDirectory;
-	ovr->Warp = VFrameSmooth::Factory( ovr->Twp );
-
-	// Enable our real time scheduling.
-
-	// The calling thread, which is presumably the eye buffer drawing thread,
-	// will be at the lowest realtime priority.
-	SetSchedFifo( ovr, gettid(), SCHED_FIFO_PRIORITY_VRTHREAD );
-	if ( ovr->Parms.GameThreadTid )
-	{
-		SetSchedFifo( ovr, ovr->Parms.GameThreadTid, SCHED_FIFO_PRIORITY_VRTHREAD );
-	}
-
-	// The device manager deals with sensor updates, which will happen at 500 hz, and should
-	// preempt the main thread, but not timewarp or audio mixing.
-	SetSchedFifo( ovr, ovr_GetDeviceManagerThreadTid(), SCHED_FIFO_PRIORITY_DEVICEMNGR );
-
-	// The timewarp thread, if present, will be very high.  It only uses a fraction of
-	// a millisecond of CPU, so it can be even higher than audio threads.
-	if ( ovr->Parms.AsynchronousTimeWarp )
-	{
-		SetSchedFifo( ovr, ovr->Warp->warpThreadTid(), SCHED_FIFO_PRIORITY_TIMEWARP );
-	}
+	ovr->Warp = new VFrameSmooth( ovr->Parms.AsynchronousTimeWarp,ovr->HmdInfo);
 
 	// reset brightness, DND and comfort modes because VRSVC, while maintaining the value, does not actually enforce these settings.
 	int brightness = ovr_GetSystemBrightness( ovr );
@@ -1653,14 +1550,6 @@ void ovr_LeaveVrMode( ovrMobile * ovr )
 	// This must be after pushing the textures to timewarp.
 	ovr->Destroyed = true;
 
-	// Remove SCHED_FIFO from the remaining threads.
-	SetSchedFifo( ovr, gettid(), SCHED_FIFO_PRIORITY_NONE );
-	if ( ovr->Parms.GameThreadTid )
-	{
-		SetSchedFifo( ovr, ovr->Parms.GameThreadTid, SCHED_FIFO_PRIORITY_NONE );
-	}
-	SetSchedFifo( ovr, ovr_GetDeviceManagerThreadTid(), SCHED_FIFO_PRIORITY_NONE );
-
 	getPowerLevelStateID = NULL;
 
 	// Always release clock locks.
@@ -1704,13 +1593,8 @@ static void ResetTimeWarp( ovrMobile * ovr )
 	LOG( "ResetTimeWarp" );
 
 	// restart TimeWarp to generate new distortion meshes
-	ovr->Twp.hmdInfo = ovr->HmdInfo;
 	delete ovr->Warp;
-	ovr->Warp = VFrameSmooth::Factory( ovr->Twp );
-	if ( ovr->Parms.AsynchronousTimeWarp )
-	{
-		SetSchedFifo( ovr, ovr->Warp->warpThreadTid(), SCHED_FIFO_PRIORITY_TIMEWARP );
-	}
+	ovr->Warp = new VFrameSmooth( ovr->Parms.AsynchronousTimeWarp,ovr->HmdInfo);
 }
 
 void ovr_HandleHmdEvents( ovrMobile * ovr )
@@ -1767,7 +1651,7 @@ void ovr_HandleHmdEvents( ovrMobile * ovr )
 				ovr_notifyMountHandled( ovr );
 
 				NervGear::VString reorientMessage;
-				CreateSystemActivitiesCommand( "", SYSTEM_ACTIVITY_EVENT_REORIENT, "", "", reorientMessage );
+                CreateSystemActivitiesCommand( "", SYSTEM_ACTIVITY_EVENT_REORIENT, "", reorientMessage );
                 NervGear::SystemActivities_AddEvent( reorientMessage );
 			}
 		}
@@ -1816,7 +1700,7 @@ void ovr_HandleDeviceStateChanges( ovrMobile * ovr )
 			continue;
 		}
 
-        VJson reader = VJson::Parse(eventBuffer.toCString());
+        VJson reader = VJson::Parse(eventBuffer.toLatin1());
         if ( reader.isObject() )
 		{
             VString command = reader.value("Command").toString();
@@ -1900,7 +1784,7 @@ void ovr_WarpSwap( ovrMobile * ovr, const ovrTimeWarpParms * parms )
 	}
 
 	// Push the new data
-	ovr->Warp->warpSwap( *parms );
+	ovr->Warp->doSmooth( *parms );
 }
 
 void ovr_SetDistortionTuning( ovrMobile * ovr, NervGear::DistortionEqnType type, float scale, float* distortionK)
@@ -1949,105 +1833,6 @@ void ovr_AdjustClockLevels( ovrMobile * ovr, int cpuLevel, int gpuLevel )
 	// set to new values
 	SetVrSystemPerformance( ovr->Jni, VrLibClass, ovr->Parms.ActivityObject,
 			ovr->Parms.CpuLevel, ovr->Parms.GpuLevel );
-}
-
-/*
- * CreateSchedulingReport
- *
- * Display information related to CPU scheduling
- */
-const char * ovr_CreateSchedulingReport( ovrMobile * ovr )
-{
-	if ( ovr == NULL )
-	{
-		return "";
-	}
-
-	static char report[16384];
-	static int reportLength = 0;
-
-	const pthread_t thisThread = pthread_self();
-	const pthread_t warpThread = ovr->Warp->warpThread();
-
-	int thisPolicy = 0;
-	struct sched_param thisSchedParma = {};
-	if ( !pthread_getschedparam( thisThread, &thisPolicy, &thisSchedParma ) )
-	{
-		WARN( "pthread_getschedparam() failed" );
-	}
-
-	reportLength += NervGear::Alg::Max( 0, snprintf( report + reportLength, sizeof( report ) - reportLength - 1,
-			"VrThread:%s:%i WarpThread:\n"
-			, thisPolicy == SCHED_FIFO ? "SCHED_FIFO" : "SCED_NORMAL"
-			, thisSchedParma.sched_priority ) );
-
-	if ( warpThread != 0 )
-	{
-		int timeWarpPolicy = 0;
-		struct sched_param timeWarpSchedParma = {};
-		if ( pthread_getschedparam( warpThread, &timeWarpPolicy, &timeWarpSchedParma ) )
-		{
-			WARN( "pthread_getschedparam() failed" );
-	    	reportLength += NervGear::Alg::Max( 0, snprintf( report + reportLength, sizeof( report ) - reportLength - 1, "???" ) );
-		}
-		else
-		{
-	    	reportLength += NervGear::Alg::Max( 0, snprintf( report + reportLength, sizeof( report ) - reportLength - 1, "%s:%i"
-	    			, timeWarpPolicy == SCHED_FIFO ? "SCHED_FIFO" : "SCED_NORMAL"
-	    			, timeWarpSchedParma.sched_priority ) );
-		}
-	}
-	else
-	{
-		reportLength += NervGear::Alg::Max( 0, snprintf( report + reportLength, sizeof( report ) - reportLength - 1, "sync" ) );
-	}
-
-	static const int maxCores = 8;
-	for ( int core = 0; core < maxCores; core++ )
-	{
-		char path[1024] = {};
-		snprintf( path, sizeof( path ) - 1, "/sys/devices/system/cpu/cpu%i/online", core );
-
-		const char * current = ReadSmallFile( path );
-		if ( current[0] == 0 )
-		{	// no more files
-			break;
-		}
-		const int online = atoi( current );
-		if ( !online )
-		{
-			continue;
-		}
-
-		snprintf( path, sizeof( path ) - 1, "/sys/devices/system/cpu/cpu%i/cpufreq/scaling_governor", core );
-		NervGear::VString governor = ReadSmallFile( path );
-		governor = StripLinefeed( governor );
-
-		// we won't be able to read the cpu clock unless it has been chmod'd to 0666, but try anyway.
-		//float curFreqGHz = ReadFreq( "/sys/devices/system/cpu/cpu%i/cpufreq/cpuinfo_cur_freq", core ) * ( 1.0f / 1000.0f / 1000.0f );
-		float curFreqGHz = ReadFreq( "/sys/devices/system/cpu/cpu%i/cpufreq/scaling_cur_freq", core ) * ( 1.0f / 1000.0f / 1000.0f );
-		float minFreqGHz = ReadFreq( "/sys/devices/system/cpu/cpu%i/cpufreq/cpuinfo_min_freq", core ) * ( 1.0f / 1000.0f / 1000.0f );
-		float maxFreqGHz = ReadFreq( "/sys/devices/system/cpu/cpu%i/cpufreq/cpuinfo_max_freq", core ) * ( 1.0f / 1000.0f / 1000.0f );
-
-		reportLength += NervGear::Alg::Max( 0, snprintf( report + reportLength, sizeof( report ) - reportLength - 1,
-									"cpu%i: \"%s\" %1.2f GHz (min:%1.2f max:%1.2f)\n",
-									core, governor.toCString(), curFreqGHz, minFreqGHz, maxFreqGHz ) );
-	}
-
-	NervGear::VString governor = ReadSmallFile( "/sys/class/kgsl/kgsl-3d0/pwrscale/trustzone/governor" );
-	governor = StripLinefeed( governor );
-
-    VGlOperation glOperation;
-    const uint64_t gpuUnit = ( ( glOperation.EglGetGpuType() & NervGear::VGlOperation::GPU_TYPE_MALI ) != 0 ) ? 1000000LL : 1000LL;
-    const uint64_t gpuFreq = ReadFreq( ( ( glOperation.EglGetGpuType() & NervGear::VGlOperation::GPU_TYPE_MALI ) != 0 ) ?
-									"/sys/devices/14ac0000.mali/clock" :
-									"/sys/class/kgsl/kgsl-3d0/gpuclk" );
-
-	reportLength += NervGear::Alg::Max( 0, snprintf( report + reportLength, sizeof( report ) - reportLength - 1,
-								"gpu: \"%s\" %3.0f MHz",
-								governor.toCString(), gpuFreq * gpuUnit * ( 1.0f / 1000.0f / 1000.0f ) ) );
-
-	return report;
 }
 
 int ovr_GetVolume()
@@ -2134,7 +1919,7 @@ eVrApiEventStatus ovr_nextPendingEvent( VString& buffer, unsigned int const buff
 	}
 
 	// Parse to JSON here to determine if we should handle the event natively, or pass it along to the client app.
-    VJson reader = VJson::Parse(buffer.toCString());
+    VJson reader = VJson::Parse(buffer.toLatin1());
     if (reader.isObject())
 	{
         VString command = reader.value( "Command" ).toString();

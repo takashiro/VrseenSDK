@@ -69,7 +69,6 @@ LOCAL_SRC_FILES  := \
 	api/VrApi.cpp \
 	api/Vsync.cpp \
 	api/VDevice.cpp \
-	api/DirectRender.cpp \
 	api/HmdInfo.cpp \
 	api/HmdSensors.cpp \
 	api/VLensDistortion.cpp \
@@ -136,12 +135,11 @@ LOCAL_SRC_FILES  := \
 	scene/ModelView.cpp \
 	scene/SurfaceTexture.cpp \
 	scene/SwipeView.cpp \
-	VrCommon.cpp \
 	KeyState.cpp \
 	App.cpp \
 	DebugLines.cpp \
 	VrLocale.cpp \
-	Console.cpp
+	VConsole.cpp
 
 
 LOCAL_SRC_FILES += \

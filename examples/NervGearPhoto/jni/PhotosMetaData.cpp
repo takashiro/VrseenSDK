@@ -15,7 +15,6 @@ Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
 #include <Alg.h>
 #include <VPath.h>
 
-#include "VrCommon.h"
 
 namespace NervGear {
 
@@ -54,17 +53,14 @@ void OvrPhotosMetaData::extractExtendedData( const NervGear::VJson & jsonDatum, 
 	}
 }
 
-void OvrPhotosMetaData::extendedDataToJson( const OvrMetaDatum & datum, NervGear::VJson &outDatumObject ) const
+void OvrPhotosMetaData::extendedDataToJson( const OvrMetaDatum & datum, VJsonObject &outDatumObject ) const
 {
-	if ( outDatumObject.isObject() )
-	{
-		const OvrPhotosMetaDatum * const photoData = static_cast< const OvrPhotosMetaDatum * const >( &datum );
-		if ( photoData )
-		{
-            outDatumObject.insert(TITLE_INNER, photoData->title);
-            outDatumObject.insert(AUTHOR_INNER, photoData->author);
-		}
-	}
+    const OvrPhotosMetaDatum * const photoData = static_cast< const OvrPhotosMetaDatum * const >( &datum );
+    if ( photoData )
+    {
+        outDatumObject.insert(TITLE_INNER, photoData->title);
+        outDatumObject.insert(AUTHOR_INNER, photoData->author);
+    }
 }
 
 void OvrPhotosMetaData::swapExtendedData( OvrMetaDatum * left, OvrMetaDatum * right ) const

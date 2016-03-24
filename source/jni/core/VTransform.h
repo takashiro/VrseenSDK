@@ -181,7 +181,7 @@ public:
 			const T sz = to.x * to.x + to.y * to.y;
 			if ( sx > sz )
 			{
-				const T rcpLength = RcpSqrt( sx );
+                const T rcpLength = VRcpSqrt( sx );
 				x = T(0);
 				y = to.z * rcpLength;
 				z = - to.y * rcpLength;
@@ -189,7 +189,7 @@ public:
 			}
 			else
 			{
-				const T rcpLength = RcpSqrt( sz );
+                const T rcpLength = VRcpSqrt( sz );
 				x = to.y * rcpLength;
 				y = - to.x * rcpLength;
 				z = T(0);
@@ -197,7 +197,7 @@ public:
 			}
 			return;
 		}
-		const T rcpLength = RcpSqrt( crossLengthSq + cw * cw );
+        const T rcpLength = VRcpSqrt( crossLengthSq + cw * cw );
 		x = cx * rcpLength;
 		y = cy * rcpLength;
 		z = cz * rcpLength;
@@ -276,7 +276,7 @@ public:
 		{
 	#if 0	// FIXME: use this safe normalization instead
 			T l = LengthSq();
-			*this *= RcpSqrt(l);
+            *this *= VRcpSqrt(l);
 	#else
 	 		T l = Length();
 			*this /= l;
@@ -288,7 +288,7 @@ public:
 		{
 	#if 0	// FIXME: use this safe normalization instead
 			T l = LengthSq();
-			return *this * RcpSqrt(l);
+            return *this * VRcpSqrt(l);
 	#else
 			T l = Length();
 			return *this / l;

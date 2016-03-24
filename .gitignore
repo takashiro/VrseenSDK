@@ -18,3 +18,5 @@ libs/
 .settings/
 MYTEMP/
 appcompat_v7/
+*.bat
+*.sh

@@ -241,7 +241,7 @@ VR4Matrixf OvrSceneView::ProjectionMatrixForEye( const int eye, const float fovD
 {
 	// We may want to make per-eye projection matrices if we move away from
 	// nearly-centered lenses.
-    return VR4Matrixf::PerspectiveRH( DegreeToRad( fovDegrees ), 1.0f, Znear, Zfar );
+    return VR4Matrixf::PerspectiveRH( VDegreeToRad( fovDegrees ), 1.0f, Znear, Zfar );
 }
 
 VR4Matrixf OvrSceneView::MvpForEye( const int eye, const float fovDegrees ) const

@@ -22,7 +22,6 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "PanoMenu.h"
 #include "FileLoader.h"
 #include "ImageData.h"
-#include "VrCommon.h"
 #include "PhotosMetaData.h"
 
 #include <VApkFile.h>

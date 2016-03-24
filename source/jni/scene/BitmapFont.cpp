@@ -40,7 +40,6 @@
 #include "../api/VGlShader.h"
 #include "GlTexture.h"
 #include "../api/VGlGeometry.h"
-#include "VrCommon.h"
 #include "VString.h"
 
 NV_NAMESPACE_BEGIN
@@ -450,7 +449,7 @@ bool FontInfoType::LoadFromBuffer(void const * buffer,
 	s << reinterpret_cast<char const *>(buffer);
 	VJson jsonRoot;
 	s >> jsonRoot;
-	if (jsonRoot.type() == VJson::None) {
+    if (jsonRoot.isNull()) {
 		WARN("JSON Error");
 		return false;
 	}
@@ -520,7 +519,7 @@ bool FontInfoType::LoadFromBuffer(void const * buffer,
 	double oHeight = 0.0;
 
 	if (jsonGlyphArray.type() == VJson::Array) {
-		const JsonArray &elements = jsonGlyphArray.toArray();
+		const VJsonArray &elements = jsonGlyphArray.toArray();
 
 		int i = 0;
 		for (const VJson &jsonGlyph : elements) {

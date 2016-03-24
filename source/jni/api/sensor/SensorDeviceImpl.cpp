@@ -233,7 +233,7 @@ struct SensorRangeImpl
     void GetSensorRange(SensorRange* r)
     {
         r->MaxAcceleration = AccelScale * 9.81f;
-        r->MaxRotationRate = DegreeToRad((float)GyroScale);
+        r->MaxRotationRate = VDegreeToRad((float)GyroScale);
         r->MaxMagneticField= MagScale * 0.001f;
     }
 

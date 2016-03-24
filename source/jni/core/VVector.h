@@ -5,15 +5,9 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <math.h>
-#include "Types.h"
 
+NV_NAMESPACE_BEGIN
 
-//-------------------------------------------------------------------------------------
-// ***** V2Vect<>
-
-// V2Vectf (V2Vectd) represents a 2-dimensional vector or point in space,
-// consisting of coordinates x and y
-namespace NervGear{
 template<class T> class V2Vect;
 template<class T> class V3Vect;
 
@@ -136,7 +130,7 @@ public:
      #if 0	// FIXME: use this safe normalization instead
      		T l = LengthSq();
      		OVR_ASSERT(l >= VConstants<T>::SmallestNonDenormal);
-     		*this *= RcpSqrt(l);
+            *this *= VRcpSqrt(l);
      #else
      		T l = Length();
      		OVR_ASSERT(l != T(0));
@@ -150,7 +144,7 @@ public:
      #if 0	// FIXME: use this safe normalization instead
      		T l = LengthSq();
      		OVR_ASSERT(l >= VConstants<T>::SmallestNonDenormal);
-     		return *this * RcpSqrt(l);
+            return *this * VRcpSqrt(l);
      #else
      		T l = Length();
      		OVR_ASSERT(l != T(0));
@@ -324,7 +318,7 @@ public:
        #if 0	// FIXME: use this safe normalization instead
        		T l = LengthSq();
        		OVR_ASSERT(l >= VConstants<T>::SmallestNonDenormal);
-       		*this *= RcpSqrt(l);
+            *this *= VRcpSqrt(l);
        #else
        		T l = Length();
        		OVR_ASSERT(l != T(0));
@@ -338,7 +332,7 @@ public:
        #if 0	// FIXME: use this safe normalization instead
        		T l = LengthSq();
        		OVR_ASSERT(l >= VConstants<T>::SmallestNonDenormal);
-       		return *this * RcpSqrt(l);
+            return *this * VRcpSqrt(l);
        #else
        		T l = Length();
        		OVR_ASSERT(l != T(0));
@@ -510,7 +504,7 @@ public:
       #if 0	// FIXME: use this safe normalization instead
       		T l = LengthSq();
       		OVR_ASSERT(l >= VConstants<T>::SmallestNonDenormal);
-      		*this *= RcpSqrt(l);
+            *this *= VRcpSqrt(l);
       #else
       		T l = Length();
       		OVR_ASSERT(l != T(0));
@@ -524,7 +518,7 @@ public:
       #if 0	// FIXME: use this safe normalization instead
       		T l = LengthSq();
       		OVR_ASSERT(l >= VConstants<T>::SmallestNonDenormal);
-      		return *this * RcpSqrt(l);
+            return *this * VRcpSqrt(l);
       #else
       		T l = Length();
       		OVR_ASSERT(l != T(0));
@@ -539,4 +533,4 @@ typedef V4Vect<float>  V4Vectf;
 typedef V4Vect<double> V4Vectd;
 typedef V4Vect<int>    V4Vecti;
 
-}
+NV_NAMESPACE_END

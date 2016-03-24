@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include "unistd.h"
 #include "Android/JniUtils.h"
-#include "VrCommon.h"
 #include "App.h"
 #include "VDir.h"
 

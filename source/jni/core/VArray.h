@@ -18,14 +18,17 @@ NV_NAMESPACE_BEGIN
 template <class E>
 class VArray : public std::vector<E>
 {
+    typedef std::vector<E> ParentType;
+
 public:
-    typedef typename VArray<E>::iterator Iterator;
-    typedef typename VArray<E>::const_iterator ConstIterator;
+    typedef typename ParentType::iterator Iterator;
+    typedef typename ParentType::const_iterator ConstIterator;
     typedef E ValueType;
 
     VArray() {}
 
-    int length() const { return (int) this->size(); }
+    int length() const { return (int) ParentType::size(); }
+    uint size() const { return ParentType::size(); }
 
     uint allocBack()
     {
@@ -34,7 +37,7 @@ public:
         return size_temp;
     }
 
-    bool isEmpty() const { return this->empty(); }
+    bool isEmpty() const { return ParentType::empty(); }
 
     VArray &operator << (const E &e)
     {
@@ -44,7 +47,7 @@ public:
 
     VArray &operator << (E &&e)
     {
-        append(e);
+        append(std::move(e));
         return *this;
     }
 
@@ -54,45 +57,44 @@ public:
         return *this;
     }
 
-    const E &first() const { return this->front(); }
+    const E &first() const { return ParentType::front(); }
+    E &first() { return ParentType::front(); }
 
-    E &first() { return this->front(); }
+    const E &last() const { return ParentType::back(); }
+    E &last() { return ParentType::back(); }
 
-    const E &last() const { return this->back(); }
+    E &operator[](int i) { return ParentType::at(i); }
 
-    E &last() { return this->back(); }
+    const E &at(uint i) const { return ParentType::at(i); }
+    const E &operator[](int i) const { return ParentType::at(i); }
 
-    E &operator[](int i) { return this->at(i); }
-
-    const E &operator[](int i) const { return this->at(i); }
-
-    void append(const E &e) { this->push_back(e); }
-    void append(E &&e) { this->push_back(e); }
+    void append(const E &e) { ParentType::push_back(e); }
+    void append(E &&e) { ParentType::push_back(std::move(e)); }
 
     void append(const VArray<E> &elements)
     {
-        for(const E &e : elements)
-        {
-            this->push_back(e);
+        for(const E &e : elements) {
+            append(e);
         }
     }
 
-    void prepend(const E &e) { this->insert(this->begin(), e); }
-    void prepend(E &&e) { this->insert(this->begin(), e); }
+    void prepend(const E &e) { ParentType::insert(ParentType::begin(), e); }
+    void prepend(E &&e) { ParentType::insert(ParentType::begin(), std::move(e)); }
 
     void prepend(const VArray<E> &elements)
     {
         for (auto i = elements.rbegin(); i != elements.rend(); i++) {
-            this->insert(this->begin(), *i);
+            ParentType::insert(ParentType::begin(), *i);
         }
     }
 
-    void removeFirst() { this->erase(this->begin()); }
-    void removeLast() { this->pop_back(); }
-    void removeAt(int i) { this->erase(this->begin() + i); }
+    void removeFirst() { ParentType::erase(ParentType::begin()); }
+    void removeLast() { ParentType::pop_back(); }
+    void removeAt(int i) { ParentType::erase(ParentType::begin() + i); }
+
     void removeOne(const E &e)
     {
-        for (auto i = this->begin(); i != this->end(); i++) {
+        for (auto i = ParentType::begin(); i != ParentType::end(); i++) {
             if (*i == e) {
                 this->erase(i);
                 break;
@@ -102,9 +104,9 @@ public:
 
     void removeAll(const E &e)
     {
-        for (uint i = 0, max = this->size(); i < max; i++) {
-            if (this->at(i) == e) {
-                this->removeAt(i);
+        for (uint i = 0, max = size(); i < max; i++) {
+            if (at(i) == e) {
+                removeAt(i);
                 i--;
                 max--;
             }

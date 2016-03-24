@@ -12,7 +12,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "EyePostRender.h"
 
 #include "Alg.h"
-#include "VMath.h"
 #include "VBasicmath.h"
 #include "VArray.h"
 #include "api/VGlOperation.h"
@@ -68,7 +67,7 @@ void EyePostRender::DrawEyeCalibrationLines( const float bufferFovDegrees, const
 	// later -- they should match very closely!
     const VR4Matrixf projectionMatrix =
     //VR4Matrixf::Identity();
-     VR4Matrixf::PerspectiveRH( DegreeToRad( bufferFovDegrees ), 1.0f, 0.01f, 2000.0f );
+     VR4Matrixf::PerspectiveRH( VDegreeToRad( bufferFovDegrees ), 1.0f, 0.01f, 2000.0f );
 
 	const VGlShader & prog = UntexturedMvpProgram;
 	glUseProgram( prog.program );

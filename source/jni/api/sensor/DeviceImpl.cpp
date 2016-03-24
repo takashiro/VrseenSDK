@@ -19,78 +19,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 namespace NervGear {
 
-
-//-------------------------------------------------------------------------------------
-// ***** SharedLock
-
-// This is a general purpose globally shared Lock implementation that should probably be
-// moved to Kernel.
-// May in theory busy spin-wait if we hit contention on first lock creation,
-// but this shouldn't matter in practice since Lock* should be cached.
-
-
-enum { LockInitMarker = 0xFFFFFFFF };
-
-VLock* SharedLock::GetLockAddRef()
-{
-    VAtomicInt::Type oldUseCount;
-    VAtomicInt::Type expectCount;
-
-    do {
-        oldUseCount = m_useCount.load();
-        if (oldUseCount == (int)LockInitMarker)
-            continue;
-
-        if (oldUseCount == 0)
-        {
-            // Initialize marker
-            expectCount = 0;
-            if (m_useCount.compare_exchange_weak(expectCount, LockInitMarker)) {
-                Construct<VLock>(Buffer);
-                do {
-                    expectCount = (VAtomicInt::Type)LockInitMarker;
-                } while (!m_useCount.compare_exchange_weak(expectCount, 1));
-                return toLock();
-            }
-            continue;
-        }
-        expectCount = oldUseCount;
-    } while (!m_useCount.compare_exchange_weak(expectCount, oldUseCount + 1));
-
-    return toLock();
-}
-
-void SharedLock::ReleaseLock(VLock* plock)
-{
-    OVR_UNUSED(plock);
-    OVR_ASSERT(plock == toLock());
-
-    VAtomicInt::Type oldUseCount;
-    VAtomicInt::Type expectCount;
-
-    do {
-        oldUseCount = m_useCount.load();
-        OVR_ASSERT(oldUseCount != (VAtomicInt::Type)LockInitMarker);
-
-        if (oldUseCount == 1)
-        {
-            // Initialize marker
-            expectCount = 1;
-            if (m_useCount.compare_exchange_weak(expectCount, LockInitMarker)) {
-                Destruct<VLock>(toLock());
-               do {
-                   expectCount = (VAtomicInt::Type)LockInitMarker;
-               } while (!m_useCount.compare_exchange_weak(expectCount, 0));
-                return;
-            }
-            continue;
-        }
-        expectCount = oldUseCount;
-    } while (!m_useCount.compare_exchange_weak(expectCount, oldUseCount - 1));
-}
-
-
-
 //-------------------------------------------------------------------------------------
 // ***** MessageHandler
 
@@ -99,20 +27,19 @@ void SharedLock::ReleaseLock(VLock* plock)
 // through a separately stored shared Lock object to avoid calling the handler
 // from background thread while it's being removed.
 
-static SharedLock MessageHandlerSharedLock;
+static VLock MessageHandlerSharedLock;
 
 
 class MessageHandlerImpl
 {
 public:
     MessageHandlerImpl()
-        : pLock(MessageHandlerSharedLock.GetLockAddRef())
+        : pLock(&MessageHandlerSharedLock)
     {
     }
     ~MessageHandlerImpl()
     {
-        MessageHandlerSharedLock.ReleaseLock(pLock);
-        pLock = 0;
+        pLock = nullptr;
     }
 
     static MessageHandlerImpl* FromHandler(MessageHandler* handler)
@@ -129,7 +56,7 @@ public:
 
 
 MessageHandlerRef::MessageHandlerRef(DeviceBase* device)
-    : pLock(MessageHandlerSharedLock.GetLockAddRef()), pDevice(device), pHandler(0)
+    : pLock(&MessageHandlerSharedLock), pDevice(device), pHandler(0)
 {
 }
 
@@ -143,8 +70,7 @@ MessageHandlerRef::~MessageHandlerRef()
             this->pointToVList->remove(this);
         }
     }
-    MessageHandlerSharedLock.ReleaseLock(pLock);
-    pLock = 0;
+    pLock = nullptr;
 }
 
 void MessageHandlerRef::SetHandler(MessageHandler* handler)

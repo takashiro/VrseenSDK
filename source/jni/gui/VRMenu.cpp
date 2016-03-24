@@ -21,7 +21,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VRMenuEventHandler.h"
 #include "App.h"
 #include "GuiSys.h"
-#include "VrCommon.h"
 #include "VArray.h"
 
 namespace NervGear {
@@ -82,7 +81,7 @@ void VRMenu::init( OvrVRMenuMgr & menuMgr, BitmapFont const & font, float const 
 
 	// create an empty root item
 	VRMenuObjectParms rootParms( VRMENU_CONTAINER, comps,
-            VRMenuSurfaceParms( "root" ), "Root", 
+            VRMenuSurfaceParms( "root" ), "Root",
             VPosf(), V3Vectf( 1.0f, 1.0f, 1.0f ), VRMenuFontParms(),
 			GetRootId(), VRMenuObjectFlags_t(), VRMenuObjectInitFlags_t() );
 	m_rootHandle = menuMgr.createObject( rootParms );
@@ -113,9 +112,9 @@ public:
 		Parms( parms )
 	{
 	}
-	ChildParmsPair() : 
-		Parms( NULL ) 
-	{ 
+	ChildParmsPair() :
+		Parms( NULL )
+	{
 	}
 
 	menuHandle_t				Handle;
@@ -124,9 +123,9 @@ public:
 
 //==============================
 // VRMenu::AddItems
-void VRMenu::addItems( OvrVRMenuMgr & menuMgr, BitmapFont const & font, 
+void VRMenu::addItems( OvrVRMenuMgr & menuMgr, BitmapFont const & font,
         NervGear::VArray< VRMenuObjectParms const * > & itemParms,
-        menuHandle_t parentHandle, bool const recenter ) 
+        menuHandle_t parentHandle, bool const recenter )
 {
     const V3Vectf fwd( 0.0f, 0.0f, 1.0f );
     const V3Vectf up( 0.0f, 1.0f, 0.0f );
@@ -247,7 +246,7 @@ void VRMenu::repositionMenu( App * app )
 
 //==============================
 // VRMenu::Frame
-void VRMenu::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, 
+void VRMenu::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         BitmapFont const & font, BitmapFontSurface & fontSurface, VR4Matrixf const & viewMatrix,
         gazeCursorUserId_t const gazeUserId )
 {
@@ -312,7 +311,7 @@ void VRMenu::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
             break;
         case MENUSTATE_CLOSED:
 	        // handle remaining events -- not focus path is empty right now, but this may still broadcast messages to controls
-		    m_eventHandler->handleEvents( app, vrFrame, menuMgr, m_rootHandle, events );	
+		    m_eventHandler->handleEvents( app, vrFrame, menuMgr, m_rootHandle, events );
 		    return;
         default:
             OVR_ASSERT( !"Unhandled menu state!" );
@@ -334,7 +333,7 @@ void VRMenu::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 
 	m_eventHandler->handleEvents( app, vrFrame, menuMgr, m_rootHandle, events );
 
-	VRMenuObject * root = menuMgr.toObject( m_rootHandle );		
+	VRMenuObject * root = menuMgr.toObject( m_rootHandle );
 	if ( root != NULL )
 	{
 		VRMenuRenderFlags_t renderFlags;
@@ -425,7 +424,7 @@ menuHandle_t VRMenu::handleForId( OvrVRMenuMgr & menuMgr, VRMenuId_t const id ) 
 VPosf VRMenu::CalcMenuPosition( VR4Matrixf const & viewMatrix, VR4Matrixf const & invViewMatrix,
         V3Vectf const & viewPos, V3Vectf const & viewFwd, float const menuDistance )
 {
-	// spawn directly in front 
+	// spawn directly in front
     VQuatf rotation( -viewFwd, 0.0f );
     VQuatf viewRot( invViewMatrix );
     VQuatf fullRotation = rotation * viewRot;
@@ -469,7 +468,7 @@ void VRMenu::onItemEvent( App * app, VRMenuId_t const itemId, VRMenuEvent const 
 
 //==============================
 // VRMenu::Init_Impl
-bool VRMenu::init_Impl( OvrVRMenuMgr & menuMgr, BitmapFont const & font, float const menuDistance, 
+bool VRMenu::init_Impl( OvrVRMenuMgr & menuMgr, BitmapFont const & font, float const menuDistance,
                 VRMenuFlags_t const & flags, VArray< VRMenuObjectParms const * > & itemParms )
 {
     return true;
@@ -519,7 +518,7 @@ menuHandle_t VRMenu::focusedHandle() const
 {
 	if ( m_eventHandler != NULL )
 	{
-		return m_eventHandler->focusedHandle(); 
+		return m_eventHandler->focusedHandle();
 	}
 	return menuHandle_t();
 }

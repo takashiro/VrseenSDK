@@ -2,7 +2,6 @@
 
 #include "vglobal.h"
 
-#include "VMath.h"
 #include "VBasicmath.h"
 #include "RefCount.h"
 

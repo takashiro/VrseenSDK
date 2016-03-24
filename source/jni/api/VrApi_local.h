@@ -1,6 +1,5 @@
 #pragma once
 
-#include "DirectRender.h"
 #include "HmdInfo.h"
 #include "VFrameSmooth.h"
 
@@ -22,5 +21,4 @@ struct ovrMobile
     VFrameSmooth *			Warp;
     hmdInfoInternal_t	HmdInfo;
 	ovrModeParms			Parms;
-    TimeWarpInitParms	Twp;
 };

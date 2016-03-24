@@ -12,14 +12,6 @@
 #include "Types.h"
 #include "VrApi.h"
 
-
-//------------------------------------------------------------------------------------//
-// ***** C Compatibility Types
-
-// These declarations are used to support conversion between C types used in
-// corelib C interfaces and their C++ versions. As an example, they allow passing
-// Vector3f into a function that expects ovrVector3f.
-
 typedef struct ovrQuatf_ ovrQuatf;
 typedef struct ovrQuatd_ ovrQuatd;
 typedef struct ovrSizei_ ovrSizei;
@@ -33,8 +25,7 @@ typedef struct ovrPosef_ ovrPosef;
 typedef struct ovrPoseStatef_ ovrPoseStatef;
 typedef struct ovrSensorState_ ovrSensorState;
 
-
-namespace NervGear{
+NV_NAMESPACE_BEGIN
 
 template<class T> class VQuat;
 template<class T> class VSize;
@@ -208,4 +199,6 @@ struct VWorldAxes
     {}
 };
 
-}
+float LinearRangeMapFloat( float inValue, float inStart, float inEnd, float outStart, float outEnd );
+
+NV_NAMESPACE_END

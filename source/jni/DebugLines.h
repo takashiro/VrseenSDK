@@ -1,7 +1,6 @@
 #pragma once
 
 #include "vglobal.h"
-#include "VMath.h"
 #include "VBasicmath.h"
 #include "VConstants.h"
 

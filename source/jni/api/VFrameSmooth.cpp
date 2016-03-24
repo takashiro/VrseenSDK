@@ -1,9 +1,6 @@
-#include "VFrameSmooth.h"
-#include "Alg.h"
-
+#include <pthread.h>
 #include <errno.h>
 #include <math.h>
-#include <pthread.h>
 #include <sched.h>
 #include <unistd.h>			// for usleep
 
@@ -11,17 +8,21 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 
+#include "VFrameSmooth.h"
+#include "Android/LogUtils.h"
 #include "Android/JniUtils.h"
 #include "Vsync.h"
 #include "VLensDistortion.h"
 #include "VrApi_Android.h"
+#include "api/VGlOperation.h"
+#include "Alg.h"
+#include "../core/VString.h"
 
 #include "../embedded/oculus_loading_indicator.h"
 
-#if defined( OVR_ENABLE_CAPTURE )
-#include "capture/Capture.h"
-#include "capture/Capture_GLES3.h"
-#endif
+#include "Lockless.h"
+#include "VGlGeometry.h"
+#include "VGlShader.h"
 
 ovrSensorState ovr_GetSensorStateInternal( double absTime );
 bool ovr_ProcessLatencyTest( unsigned char rgbColorOut[3] );
@@ -30,7 +31,74 @@ const char * ovr_GetLatencyTestResult();
 
 NV_NAMESPACE_BEGIN
 
-static const int WARP_TESSELATION = 32;	// This is probably a bit too low, I can see some wiggle.
+struct warpSource_t
+{
+    long long			MinimumVsync;				// Never pick up a source if it is from the current vsync.
+    long long			FirstDisplayedVsync[2];		// External velocity is added after this vsync.
+    bool				disableChromaticCorrection;	// Disable correction for chromatic aberration.
+    EGLSyncKHR			GpuSync;					// When this sync completes, the textures are done rendering.
+    ovrTimeWarpParms	WarpParms;					// passed into WarpSwap()
+};
+
+struct swapProgram_t
+{
+    // When a single thread is doing both the eye rendering and
+    // the warping, we will want to do the sensor read for the
+    // next frame on the second eye instead of the first.
+    bool	singleThread;
+
+    // The eye 0 texture will be used for both window eyes.
+    bool	dualMonoDisplay;
+
+    // Ensure that at least these Fractions of a frame have scanned
+    // before starting the eye warps.
+    float	deltaVsync[2];
+
+    // Use prediction values in frames from the same
+    // base vsync as deltaVsync, so they can be
+    // scaled by frame times to get milliseconds, allowing
+    // 60 / 90 / 120 hz displays.
+    //
+    // For a global shutter low persistence display, all of these
+    // values should be the same.
+    //
+    // If the single thread rendering rate can drop below the vsync
+    // rate, all of the values should also be the same, because it
+    // would stay on screen without changing.
+    //
+    // For an incrementally displayed landscape scanned display,
+    // The left and right values will be the same.
+    float	predictionPoints[2][2];	// [left/right][start/stop]
+};
+
+// This is communicated from the VFrameSmooth thread to the VrThread at
+// vsync time.
+struct SwapState
+{
+    SwapState() : VsyncCount(0),EyeBufferCount(0) {}
+    long long		VsyncCount;
+    long long		EyeBufferCount;
+};
+
+struct eyeLog_t
+{
+    // If we dropped an entire frame, this will be true for both eyes.
+    bool		skipped;
+
+    // if this hasn't changed from the previous frame, the main thread
+    // dropped a frame.
+    int			bufferNum;
+
+    // Time relative to the sleep point for this eye.  Both should
+    // be below 0.008 to avoid tearing.
+    float		issueFinish;
+    float		completeFinish;
+
+    // The delta from the time used to calculate the eye rendering pose
+    // to the top of this frame.  Should be one frame period plus sensor jitter
+    // if running synchronously at the video frame rate.
+    float		poseLatencySeconds;
+};
 
 // async	drawn by an independent thread
 // sync		drawn by the same thread that draws the eye buffers
@@ -106,22 +174,18 @@ swapProgram_t	spSyncSwappedBufferPortrait = {
 // for a scissor rect.
 
 // If the window is wider than it is tall, ie 1920x1080
-void EyeRectLandscape( const hmdInfoInternal_t & hmd, const ScreenEye eye,
-                       const WhichEyeRect rect, int &x, int &y, int &width, int &height )
+void EyeRectLandscape( const hmdInfoInternal_t & hmd,int eye,int &x, int &y, int &width, int &height )
 {
-    if ( rect == RECT_SCREEN )
-    {
-        // always scissor exactly to half the screen
-        int scissorX = ( eye == 0 ) ? 0 : hmd.widthPixels / 2;
-        int scissorY = 0;
-        int scissorWidth = hmd.widthPixels / 2;
-        int scissorHeight = hmd.heightPixels;
-        x = scissorX;
-        y = scissorY;
-        width = scissorWidth;
-        height = scissorHeight;
-        return;
-    }
+    // always scissor exactly to half the screen
+    int scissorX = ( eye == 0 ) ? 0 : hmd.widthPixels / 2;
+    int scissorY = 0;
+    int scissorWidth = hmd.widthPixels / 2;
+    int scissorHeight = hmd.heightPixels;
+    x = scissorX;
+    y = scissorY;
+    width = scissorWidth;
+    height = scissorHeight;
+    return;
 
     const float	metersToPixels = hmd.widthPixels / hmd.widthMeters;
 
@@ -140,11 +204,11 @@ void EyeRectLandscape( const hmdInfoInternal_t & hmd, const ScreenEye eye,
     height = pixelDiameter;
 }
 
-void EyeRect( const hmdInfoInternal_t & hmd, const ScreenEye eye, const WhichEyeRect rect,
+void EyeRect( const hmdInfoInternal_t & hmd,const int eye,
               int &x, int &y, int &width, int &height )
 {
     int	lx, ly, lWidth, lHeight;
-    EyeRectLandscape( hmd, eye, rect, lx, ly, lWidth, lHeight );
+    EyeRectLandscape( hmd, eye, lx, ly, lWidth, lHeight );
 
     x = lx;
     y = ly;
@@ -191,17 +255,409 @@ VR4Matrixf CalculateTimeWarpMatrix2( const VQuatf &inFrom, const VQuatf &inTo )
     return ( lastSensorMatrix.Inverted() * lastViewMatrix ).Inverted();
 }
 
+// Not in extension string, unfortunately.
+static bool IsContextPriorityExtensionPresent()
+{
+    EGLint currentPriorityLevel = -1;
+    if ( !eglQueryContext( eglGetCurrentDisplay(), eglGetCurrentContext(), EGL_CONTEXT_PRIORITY_LEVEL_IMG, &currentPriorityLevel )
+         || currentPriorityLevel == -1 )
+    {
+        // If we can't report the priority, assume the extension isn't there
+        return false;
+    }
+    return true;
+}
+
 //=========================================================================================
 
-// Shim to call a C++ object from a posix thread start.
-void *VFrameSmooth::ThreadStarter( void * parm )
+struct VFrameSmooth::Private
 {
-    VFrameSmooth & tw = *(VFrameSmooth *)parm;
+    Private(bool async,hmdInfoInternal_t	hmdInfo):
+            m_untexturedMvpProgram(),
+            m_debugLineProgram(),
+            m_warpPrograms(),
+            m_blackTexId( 0 ),
+            m_defaultLoadingIconTexId( 0 ),
+            m_hasEXT_sRGB_write_control( false ),
+            m_sStartupTid( 0 ),
+            m_jni( NULL ),
+            m_eglDisplay( 0 ),
+            m_eglPbufferSurface( 0 ),
+            m_eglMainThreadSurface( 0 ),
+            m_eglConfig( 0 ),
+            m_eglClientVersion( 0 ),
+            m_eglShareContext( 0 ),
+            m_eglWarpContext( 0 ),
+            m_contextPriority( 0 ),
+            m_eyeLog(),
+            m_lastEyeLog( 0 ),
+            m_logEyeWarpGpuTime(),
+            m_warpThread( 0 ),
+            m_warpThreadTid( 0 ),
+            m_lastSwapVsyncCount( 0 )
+    {
+        // Code which auto-disable chromatic aberration expects
+        // the warpProgram list to be symmetric.
+        // See disableChromaticCorrection.
+        OVR_COMPILER_ASSERT( ( WP_PROGRAM_MAX & 1 ) == 0 );
+        OVR_COMPILER_ASSERT( ( WP_CHROMATIC - WP_SIMPLE ) ==
+                             ( WP_PROGRAM_MAX - WP_CHROMATIC ) );
+
+        VGlOperation glOperation;
+        m_shutdownRequest.setState( false );
+        m_eyeBufferCount.setState( 0 );
+        memset( m_warpSources, 0, sizeof( m_warpSources ) );
+        memset( m_warpPrograms, 0, sizeof( m_warpPrograms ) );
+
+        // set up our synchronization primitives
+        pthread_mutex_init( &m_swapMutex, NULL /* default attributes */ );
+        pthread_cond_init( &m_swapIsLatched, NULL /* default attributes */ );
+
+        LOG( "-------------------- VFrameSmooth() --------------------" );
+
+        // Only allow WarpSwap() to be called from this thread
+        m_sStartupTid = gettid();
+
+        // Keep track of the last time WarpSwap() was called.
+        m_lastWarpSwapTimeInSeconds.setState( ovr_GetTimeInSeconds() );
+
+        // If this isn't set, Shutdown() doesn't need to kill the thread
+        m_warpThread = 0;
+
+        m_async = async;
+        m_hmdInfo = hmdInfo;
+
+        // No buffers have been submitted yet
+        m_eyeBufferCount.setState( 0 );
+
+        //---------------------------------------------------------
+        // OpenGL initialization that can be done on the main thread
+        //---------------------------------------------------------
+
+        // Get values for the current OpenGL context
+        m_eglDisplay = eglGetCurrentDisplay();
+        if ( m_eglDisplay == EGL_NO_DISPLAY )
+        {
+            FAIL( "EGL_NO_DISPLAY" );
+        }
+        m_eglMainThreadSurface = eglGetCurrentSurface( EGL_DRAW );
+        if ( m_eglMainThreadSurface == EGL_NO_SURFACE )
+        {
+            FAIL( "EGL_NO_SURFACE" );
+        }
+        m_eglShareContext = eglGetCurrentContext();
+        if ( m_eglShareContext == EGL_NO_CONTEXT )
+        {
+            FAIL( "EGL_NO_CONTEXT" );
+        }
+        EGLint configID;
+        if ( !eglQueryContext( m_eglDisplay, m_eglShareContext, EGL_CONFIG_ID, &configID ) )
+        {
+            FAIL( "eglQueryContext EGL_CONFIG_ID failed" );
+        }
+        m_eglConfig = glOperation.EglConfigForConfigID( m_eglDisplay, configID );
+        if ( m_eglConfig == NULL )
+        {
+            FAIL( "EglConfigForConfigID failed" );
+        }
+        if ( !eglQueryContext( m_eglDisplay, m_eglShareContext, EGL_CONTEXT_CLIENT_VERSION, (EGLint *)&m_eglClientVersion ) )
+        {
+            FAIL( "eglQueryContext EGL_CONTEXT_CLIENT_VERSION failed" );
+        }
+        LOG( "Current EGL_CONTEXT_CLIENT_VERSION:%i", m_eglClientVersion );
+
+        // It is wasteful for the main config to be anything but a color buffer.
+        EGLint depthSize = 0;
+        eglGetConfigAttrib( m_eglDisplay, m_eglConfig, EGL_DEPTH_SIZE, &depthSize );
+        if ( depthSize != 0 )
+        {
+            LOG( "Share context eglConfig has %i depth bits -- should be 0", depthSize );
+        }
+
+        EGLint samples = 0;
+        eglGetConfigAttrib( m_eglDisplay, m_eglConfig, EGL_SAMPLES, &samples );
+        if ( samples != 0 )
+        {
+            LOG( "Share context eglConfig has %i samples -- should be 0", samples );
+        }
+        // See if we have sRGB_write_control extension
+        m_hasEXT_sRGB_write_control = glOperation.GL_ExtensionStringPresent( "GL_EXT_sRGB_write_control",
+                                                                             (const char *)glGetString( GL_EXTENSIONS ) );
+
+        // Skip thread initialization if we are running synchronously
+        if ( !m_async )
+        {
+            initRenderEnvironment();
+
+            // create the framework graphics on this thread
+            createFrameworkGraphics();
+            LOG( "Skipping thread setup because !AsynchronousTimeWarp" );
+        }
+        else
+        {
+            //---------------------------------------------------------
+            // Thread initialization
+            //---------------------------------------------------------
+
+            // Make GL current on the pbuffer, because the window will be
+            // used by the background thread.
+
+            if ( IsContextPriorityExtensionPresent() )
+            {
+                LOG( "Requesting EGL_CONTEXT_PRIORITY_HIGH_IMG" );
+                m_contextPriority = EGL_CONTEXT_PRIORITY_HIGH_IMG;
+            }
+            else
+            {
+                // If we can't report the priority, assume the extension isn't there
+                LOG( "IMG_Context_Priority doesn't seem to be present." );
+                m_contextPriority = EGL_CONTEXT_PRIORITY_MEDIUM_IMG;
+            }
+
+            // Detach the windowSurface from the current context, because the
+            // windowSurface will be used by the context on the background thread.
+            //
+            // Because EGL_KHR_surfaceless_context is not widespread (Only on Tegra as of
+            // September 2013), we need to create and attach a tiny pbuffer surface to the
+            // current context.
+            //
+            // It is necessary to use a config with the same characteristics that the
+            // context was created with, plus the pbuffer flag, or we will get an
+            // EGL_BAD_MATCH error on the eglMakeCurrent() call.
+            const EGLint attrib_list[] =
+                    {
+                            EGL_WIDTH, 16,
+                            EGL_HEIGHT, 16,
+                            EGL_NONE
+                    };
+            m_eglPbufferSurface = eglCreatePbufferSurface( m_eglDisplay, m_eglConfig, attrib_list );
+            if ( m_eglPbufferSurface == EGL_NO_SURFACE )
+            {
+                FAIL( "eglCreatePbufferSurface failed: %s", glOperation.EglErrorString() );
+            }
+
+            if ( eglMakeCurrent( m_eglDisplay, m_eglPbufferSurface, m_eglPbufferSurface,
+                                 m_eglShareContext ) == EGL_FALSE )
+            {
+                FAIL( "eglMakeCurrent: eglMakeCurrent pbuffer failed" );
+            }
+
+            // The thread will exit when this is set true.
+            m_shutdownRequest.setState( false );
+
+            // Grab the mutex before spawning the warp thread, so it won't be
+            // able to exit until we do the pthread_cond_wait
+            pthread_mutex_lock( &m_swapMutex );
+
+            // spawn the warp thread
+            const int createErr = pthread_create( &m_warpThread, NULL /* default attributes */, &ThreadStarter, this );
+            if ( createErr != 0 )
+            {
+                FAIL( "pthread_create returned %i", createErr );
+            }
+
+            // Atomically unlock the mutex and block until the warp thread
+            // has completed the initialization and either failed or went
+            // into WarpThreadLoop()
+            pthread_cond_wait( &m_swapIsLatched, &m_swapMutex );
+
+            // Pthread_cond_wait re-locks the mutex before exit.
+            pthread_mutex_unlock( &m_swapMutex );
+        }
+
+        LOG( "----------------- VFrameSmooth() End -----------------" );
+    }
+
+    void destroy()
+    {
+        LOG( "---------------- ~VFrameSmooth() Start ----------------" );
+        if ( m_warpThread != 0 )
+        {
+            // Get the background thread to kill itself.
+            m_shutdownRequest.setState( true );
+
+            LOG( "pthread_join() called");
+            void * data;
+            pthread_join( m_warpThread, &data );
+
+            LOG( "pthread_join() returned");
+
+            m_warpThread = 0;
+
+            VGlOperation glOperation;
+            if ( eglGetCurrentSurface( EGL_DRAW ) != m_eglPbufferSurface )
+            {
+                LOG( "eglGetCurrentSurface( EGL_DRAW ) != eglPbufferSurface" );
+            }
+
+            // Attach the windowSurface to the calling context again.
+            if ( eglMakeCurrent( m_eglDisplay, m_eglMainThreadSurface,
+                                 m_eglMainThreadSurface, m_eglShareContext ) == EGL_FALSE)
+            {
+                FAIL( "eglMakeCurrent to window failed: %s", glOperation.EglErrorString() );
+            }
+
+            // Destroy the pbuffer surface that was attached to the calling context.
+            if ( EGL_FALSE == eglDestroySurface( m_eglDisplay, m_eglPbufferSurface ) )
+            {
+                WARN( "Failed to destroy pbuffer." );
+            }
+            else
+            {
+                LOG( "Destroyed pbuffer." );
+            }
+        }
+        else
+        {
+            // Vertex array objects can only be destroyed on the context they were created on
+            // If there is no warp thread then InitParms.AsynchronousTimeWarp was false and
+            // CreateFrameworkGraphics() was called from the VFrameSmooth constructor.
+            destroyFrameworkGraphics();
+        }
+
+        LOG( "---------------- ~VFrameSmooth() End ----------------" );
+    }
+
+    // POSIX thread launching shim, just calls WarpThread()
+    static void *	ThreadStarter( void * parm );
+
+    void			threadFunction();
+    void 			warpThreadInit();
+    void			warpThreadShutdown();
+    void			warpSwapInternal( const ovrTimeWarpParms & parms );
+
+    // Ensures that the warpPrograms have a matched set with and without
+    // chromatic aberration so it can be universally disabled for slower systems
+    // and power saving mode.
+    void			buildWarpProgPair( ovrTimeWarpProgram simpleIndex,
+                                       const char * simpleVertex, const char * simpleFragment,
+                                       const char * chromaticVertex, const char * chromaticFragment );
+
+    // If there is no difference between the low and high quality versions, use this function.
+    void			buildWarpProgMatchedPair( ovrTimeWarpProgram simpleIndex,
+                                              const char * vertex, const char * fragment );
+    void 			buildWarpProgs();
+
+    // FrameworkGraphics include the latency tester, calibration lines, edge vignette, fps counter,
+    // debug graphs.
+    void			createFrameworkGraphics();
+    void			destroyFrameworkGraphics();
+    void			drawFrameworkGraphicsToWindow( const int eye, const int swapOptions,
+                                                   const bool drawTimingGraph );
+
+    bool m_async;
+    hmdInfoInternal_t	m_hmdInfo;
+
+    VGlShader		m_untexturedMvpProgram;
+    VGlShader		m_debugLineProgram;
+    VGlShader		m_warpPrograms[ WP_PROGRAM_MAX ];
+    GLuint			m_blackTexId;
+    GLuint			m_defaultLoadingIconTexId;
+    VGlGeometry	m_calibrationLines2;		// simple cross
+    VGlGeometry	m_warpMesh;
+    VGlGeometry	m_sliceMesh;
+    VGlGeometry	m_cursorMesh;
+    VGlGeometry	m_timingGraph;
+    static const int NUM_SLICES_PER_EYE = 4;
+    static const int NUM_SLICES_PER_SCREEN = NUM_SLICES_PER_EYE*2;
+
+    // Wait for sync points amd warp to screen.
+    void			warpToScreen( const double vsyncBase, const swapProgram_t & swap );
+    void			warpToScreenSliced( const double vsyncBase, const swapProgram_t & swap );
+
+    // Build new verts for the timing graph, call once each frame
+    void			updateTimingGraphVerts( const ovrTimeWarpDebugPerfMode debugPerfMode, const ovrTimeWarpDebugPerfValue debugValue );
+
+    // Draw debug graphs
+    void 			drawTimingGraph( const int eye );
+
+    const VGlShader & programForParms( const ovrTimeWarpParms & parms, const bool disableChromaticCorrection ) const;
+    void			setWarpState( const warpSource_t & currentWarpSource ) const;
+    void			bindWarpProgram( const warpSource_t & currentWarpSource, const VR4Matrixf timeWarps[2][2],
+                                     const VR4Matrixf rollingWarp, const int eye, const double vsyncBase ) const;
+    void			bindCursorProgram() const;
+
+    void            initRenderEnvironment();
+    void            swapBuffers();
+
+    int                m_window_width;
+    int                m_window_height;
+    EGLDisplay			m_window_display;
+    EGLSurface			m_window_surface;
+
+
+
+    bool			m_hasEXT_sRGB_write_control;	// extension
+
+    // It is an error to call WarpSwap() from a different thread
+    pid_t			m_sStartupTid;
+
+    // To change SCHED_FIFO on the StartupTid.
+    JNIEnv *		m_jni;
+
+    // Last time WarpSwap() was called.
+    LocklessUpdater<double>		m_lastWarpSwapTimeInSeconds;
+
+    // Retrieved from the main thread context
+    EGLDisplay		m_eglDisplay;
+
+    EGLSurface		m_eglPbufferSurface;
+    EGLSurface		m_eglMainThreadSurface;
+    EGLConfig		m_eglConfig;
+    EGLint			m_eglClientVersion;	// VFrameSmooth can work with EGL 2.0 or 3.0
+    EGLContext		m_eglShareContext;
+
+    // Our private context, only used for warping to the screen.
+    EGLContext		m_eglWarpContext;
+    GLuint			m_contextPriority;
+
+    // Data for timing graph
+    static const int EYE_LOG_COUNT = 512;
+    eyeLog_t		m_eyeLog[EYE_LOG_COUNT];
+    long long		m_lastEyeLog;	// eyeLog[(lastEyeLog-1)&(EYE_LOG_COUNT-1)] has valid data
+
+    // GPU time queries around eye warp rendering.
+    LogGpuTime<NUM_SLICES_PER_SCREEN>	m_logEyeWarpGpuTime;
+
+    // The warp loop will exit when this is set true.
+    LocklessUpdater<bool>		m_shutdownRequest;
+
+    // If this is 0, we don't have a thread running.
+    pthread_t		m_warpThread;		// posix pthread
+    int				m_warpThreadTid;	// linux tid
+
+    // Used to allow the VrThread to sleep until next vsync.
+    pthread_mutex_t m_swapMutex;
+    pthread_cond_t	m_swapIsLatched;
+
+    // The VrThread submits a buffer set after all drawing commands have
+    // been issued for it and flushed, but probably are not completed.
+    //
+    // warpSources[eyeBufferCount%MAX_WARP_SOURCES] is the most recently
+    // submitted.
+    //
+    // WarpSwap will not continue until the previous buffer set has completed,
+    // to prevent GPU latency pileup.
+    static const int MAX_WARP_SOURCES = 4;
+    LocklessUpdater<long long>			m_eyeBufferCount;	// only set by WarpSwap()
+    warpSource_t	m_warpSources[MAX_WARP_SOURCES];
+
+    LocklessUpdater<SwapState>		m_swapVsync;		// Set by WarpToScreen(), read by WarpSwap()
+
+    long long			m_lastSwapVsyncCount;			// SwapVsync at return from last WarpSwap()
+};
+
+
+
+// Shim to call a C++ object from a posix thread start.
+void *VFrameSmooth::Private::ThreadStarter( void * parm )
+{
+    VFrameSmooth::Private & tw = *(VFrameSmooth::Private *)parm;
     tw.threadFunction();
     return NULL;
 }
 
-void VFrameSmooth::threadFunction()
+void VFrameSmooth::Private::threadFunction()
 {
     warpThreadInit();
 
@@ -234,43 +690,24 @@ void VFrameSmooth::threadFunction()
         // removes SCHED_FIFO from the calling thread to keep the Android watch dog from
         // rebooting the device.
         // SCHED_FIFO is set back as soon as the calling thread calls WarpSwap() again.
-        if ( m_setSchedFifoMethodId != 0 )
-        {
-            const double currentTime = ovr_GetTimeInSeconds();
-            const double lastWarpTime = m_lastWarpSwapTimeInSeconds.state();
-            if ( removedSchedFifo )
-            {
-                if ( lastWarpTime > currentTime - 0.1 )
-                {
-                    LOG( "VFrameSmooth Watchdog: restored SCHED_FIFO on tid %d", m_sStartupTid );
-                    m_jni->CallStaticIntMethod( m_initParms.vrLibClass, m_setSchedFifoMethodId, m_initParms.activityObject, m_sStartupTid, SCHED_FIFO_PRIORITY_VRTHREAD );
-                    if ( m_initParms.gameThreadTid )
-                    {
-                        LOG( "VFrameSmooth Watchdog: restored SCHED_FIFO on tid %d", m_initParms.gameThreadTid );
-                        m_jni->CallStaticIntMethod( m_initParms.vrLibClass, m_setSchedFifoMethodId, m_initParms.activityObject, m_initParms.gameThreadTid, SCHED_FIFO_PRIORITY_VRTHREAD );
-                    }
-                    removedSchedFifo = false;
-                }
-            }
-            else
-            {
-                if ( lastWarpTime < currentTime - 1.0 )
-                {
-                    LOG( "VFrameSmooth Watchdog: removed SCHED_FIFO from tid %d", m_sStartupTid );
-                    m_jni->CallStaticIntMethod( m_initParms.vrLibClass, m_setSchedFifoMethodId, m_initParms.activityObject, m_sStartupTid, SCHED_FIFO_PRIORITY_NONE );
-                    if ( m_initParms.gameThreadTid )
-                    {
-                        LOG( "VFrameSmooth Watchdog: removed SCHED_FIFO from tid %d", m_initParms.gameThreadTid );
-                        m_jni->CallStaticIntMethod( m_initParms.vrLibClass, m_setSchedFifoMethodId, m_initParms.activityObject, m_initParms.gameThreadTid, SCHED_FIFO_PRIORITY_NONE );
-                    }
-                    removedSchedFifo = true;
-                }
-            }
-        }
+       const double currentTime = ovr_GetTimeInSeconds();
+       const double lastWarpTime = m_lastWarpSwapTimeInSeconds.state();
+       if ( removedSchedFifo )
+       {
+           if ( lastWarpTime > currentTime - 0.1 )
+           {
+               removedSchedFifo = false;
+           }
+       }
+       else
+       {
+           if ( lastWarpTime < currentTime - 1.0 )
+           {
+               removedSchedFifo = true;
+           }
+       }
 
-        warpToScreen( vsync,
-                      m_screen.isFrontBuffer() ? spAsyncFrontBufferPortrait
-                                               : spAsyncSwappedBufferPortrait );
+        warpToScreen( vsync,spAsyncSwappedBufferPortrait);
     }
 
     warpThreadShutdown();
@@ -278,239 +715,13 @@ void VFrameSmooth::threadFunction()
     LOG( "Exiting WarpThreadLoop()" );
 }
 
-
-// Not in extension string, unfortunately.
-static bool IsContextPriorityExtensionPresent()
-{
-    EGLint currentPriorityLevel = -1;
-    if ( !eglQueryContext( eglGetCurrentDisplay(), eglGetCurrentContext(), EGL_CONTEXT_PRIORITY_LEVEL_IMG, &currentPriorityLevel )
-         || currentPriorityLevel == -1 )
-    {
-        // If we can't report the priority, assume the extension isn't there
-        return false;
-    }
-    return true;
-}
-
-VFrameSmooth * VFrameSmooth::Factory( TimeWarpInitParms initParms )
-{
-    return new VFrameSmooth( initParms );
-}
-
 /*
 * Startup()
 */
-VFrameSmooth::VFrameSmooth( const TimeWarpInitParms initParms ) :
-    m_untexturedMvpProgram(),
-    m_debugLineProgram(),
-    m_warpPrograms(),
-    m_blackTexId( 0 ),
-    m_defaultLoadingIconTexId( 0 ),
-    m_hasEXT_sRGB_write_control( false ),
-    m_sStartupTid( 0 ),
-    m_jni( NULL ),
-    m_setSchedFifoMethodId( 0 ),
-    m_updateTexImageMethodId( 0 ),
-    m_getTimestampMethodId( 0 ),
-    m_eglDisplay( 0 ),
-    m_eglPbufferSurface( 0 ),
-    m_eglMainThreadSurface( 0 ),
-    m_eglConfig( 0 ),
-    m_eglClientVersion( 0 ),
-    m_eglShareContext( 0 ),
-    m_eglWarpContext( 0 ),
-    m_contextPriority( 0 ),
-    m_eyeLog(),
-    m_lastEyeLog( 0 ),
-    m_logEyeWarpGpuTime(),
-    m_warpThread( 0 ),
-    m_warpThreadTid( 0 ),
-    m_lastSwapVsyncCount( 0 )
+VFrameSmooth::VFrameSmooth(bool async,hmdInfoInternal_t	hmdInfo)
+        : d(new Private(async,hmdInfo))
 {
-    // Code which auto-disable chromatic aberration expects
-    // the warpProgram list to be symmetric.
-    // See disableChromaticCorrection.
-    OVR_COMPILER_ASSERT( ( WP_PROGRAM_MAX & 1 ) == 0 );
-    OVR_COMPILER_ASSERT( ( WP_CHROMATIC - WP_SIMPLE ) ==
-                         ( WP_PROGRAM_MAX - WP_CHROMATIC ) );
 
-    VGlOperation glOperation;
-    m_shutdownRequest.setState( false );
-    m_eyeBufferCount.setState( 0 );
-    memset( m_warpSources, 0, sizeof( m_warpSources ) );
-    memset( m_warpPrograms, 0, sizeof( m_warpPrograms ) );
-
-    // set up our synchronization primitives
-    pthread_mutex_init( &m_swapMutex, NULL /* default attributes */ );
-    pthread_cond_init( &m_swapIsLatched, NULL /* default attributes */ );
-
-    LOG( "-------------------- VFrameSmooth() --------------------" );
-
-    // Only allow WarpSwap() to be called from this thread
-    m_sStartupTid = gettid();
-
-    // Keep track of the last time WarpSwap() was called.
-    m_lastWarpSwapTimeInSeconds.setState( ovr_GetTimeInSeconds() );
-
-    // If this isn't set, Shutdown() doesn't need to kill the thread
-    m_warpThread = 0;
-
-    // Save our startup parms
-    m_initParms = initParms;
-
-    // No buffers have been submitted yet
-    m_eyeBufferCount.setState( 0 );
-
-    //---------------------------------------------------------
-    // OpenGL initialization that can be done on the main thread
-    //---------------------------------------------------------
-
-    // Get values for the current OpenGL context
-    m_eglDisplay = eglGetCurrentDisplay();
-    if ( m_eglDisplay == EGL_NO_DISPLAY )
-    {
-        FAIL( "EGL_NO_DISPLAY" );
-    }
-    m_eglMainThreadSurface = eglGetCurrentSurface( EGL_DRAW );
-    if ( m_eglMainThreadSurface == EGL_NO_SURFACE )
-    {
-        FAIL( "EGL_NO_SURFACE" );
-    }
-    m_eglShareContext = eglGetCurrentContext();
-    if ( m_eglShareContext == EGL_NO_CONTEXT )
-    {
-        FAIL( "EGL_NO_CONTEXT" );
-    }
-    EGLint configID;
-    if ( !eglQueryContext( m_eglDisplay, m_eglShareContext, EGL_CONFIG_ID, &configID ) )
-    {
-        FAIL( "eglQueryContext EGL_CONFIG_ID failed" );
-    }
-    m_eglConfig = glOperation.EglConfigForConfigID( m_eglDisplay, configID );
-    if ( m_eglConfig == NULL )
-    {
-        FAIL( "EglConfigForConfigID failed" );
-    }
-    if ( !eglQueryContext( m_eglDisplay, m_eglShareContext, EGL_CONTEXT_CLIENT_VERSION, (EGLint *)&m_eglClientVersion ) )
-    {
-        FAIL( "eglQueryContext EGL_CONTEXT_CLIENT_VERSION failed" );
-    }
-    LOG( "Current EGL_CONTEXT_CLIENT_VERSION:%i", m_eglClientVersion );
-
-    // It is wasteful for the main config to be anything but a color buffer.
-    EGLint depthSize = 0;
-    eglGetConfigAttrib( m_eglDisplay, m_eglConfig, EGL_DEPTH_SIZE, &depthSize );
-    if ( depthSize != 0 )
-    {
-        LOG( "Share context eglConfig has %i depth bits -- should be 0", depthSize );
-    }
-
-    EGLint samples = 0;
-    eglGetConfigAttrib( m_eglDisplay, m_eglConfig, EGL_SAMPLES, &samples );
-    if ( samples != 0 )
-    {
-        LOG( "Share context eglConfig has %i samples -- should be 0", samples );
-    }
-    // See if we have sRGB_write_control extension
-    m_hasEXT_sRGB_write_control = glOperation.GL_ExtensionStringPresent( "GL_EXT_sRGB_write_control",
-                                                                         (const char *)glGetString( GL_EXTENSIONS ) );
-
-    // Skip thread initialization if we are running synchronously
-    if ( !m_initParms.asynchronousTimeWarp )
-    {
-        // The current thread is presumably already attached, so this
-        // should just return a valid environment.
-        const jint rtn = m_initParms.javaVm->AttachCurrentThread( &m_jni, 0 );
-        if ( rtn != JNI_OK )
-        {
-            FAIL( "AttachCurrentThread() returned %i", rtn );
-        }
-
-        m_screen.initForCurrentSurface( m_jni, m_initParms.frontBuffer, m_initParms.buildVersionSDK );
-
-        if ( m_screen.windowSurface == EGL_NO_SURFACE )
-        {
-            FAIL( "Screen.windowSurface == EGL_NO_SURFACE" );
-        }
-
-
-        // create the framework graphics on this thread
-        createFrameworkGraphics();
-        LOG( "Skipping thread setup because !AsynchronousTimeWarp" );
-    }
-    else
-    {
-        //---------------------------------------------------------
-        // Thread initialization
-        //---------------------------------------------------------
-
-        // Make GL current on the pbuffer, because the window will be
-        // used by the background thread.
-
-        if ( IsContextPriorityExtensionPresent() )
-        {
-            LOG( "Requesting EGL_CONTEXT_PRIORITY_HIGH_IMG" );
-            m_contextPriority = EGL_CONTEXT_PRIORITY_HIGH_IMG;
-        }
-        else
-        {
-            // If we can't report the priority, assume the extension isn't there
-            LOG( "IMG_Context_Priority doesn't seem to be present." );
-            m_contextPriority = EGL_CONTEXT_PRIORITY_MEDIUM_IMG;
-        }
-
-        // Detach the windowSurface from the current context, because the
-        // windowSurface will be used by the context on the background thread.
-        //
-        // Because EGL_KHR_surfaceless_context is not widespread (Only on Tegra as of
-        // September 2013), we need to create and attach a tiny pbuffer surface to the
-        // current context.
-        //
-        // It is necessary to use a config with the same characteristics that the
-        // context was created with, plus the pbuffer flag, or we will get an
-        // EGL_BAD_MATCH error on the eglMakeCurrent() call.
-        const EGLint attrib_list[] =
-        {
-            EGL_WIDTH, 16,
-            EGL_HEIGHT, 16,
-            EGL_NONE
-        };
-        m_eglPbufferSurface = eglCreatePbufferSurface( m_eglDisplay, m_eglConfig, attrib_list );
-        if ( m_eglPbufferSurface == EGL_NO_SURFACE )
-        {
-            FAIL( "eglCreatePbufferSurface failed: %s", glOperation.EglErrorString() );
-        }
-
-        if ( eglMakeCurrent( m_eglDisplay, m_eglPbufferSurface, m_eglPbufferSurface,
-                             m_eglShareContext ) == EGL_FALSE )
-        {
-            FAIL( "eglMakeCurrent: eglMakeCurrent pbuffer failed" );
-        }
-
-        // The thread will exit when this is set true.
-        m_shutdownRequest.setState( false );
-
-        // Grab the mutex before spawning the warp thread, so it won't be
-        // able to exit until we do the pthread_cond_wait
-        pthread_mutex_lock( &m_swapMutex );
-
-        // spawn the warp thread
-        const int createErr = pthread_create( &m_warpThread, NULL /* default attributes */, &ThreadStarter, this );
-        if ( createErr != 0 )
-        {
-            FAIL( "pthread_create returned %i", createErr );
-        }
-
-        // Atomically unlock the mutex and block until the warp thread
-        // has completed the initialization and either failed or went
-        // into WarpThreadLoop()
-        pthread_cond_wait( &m_swapIsLatched, &m_swapMutex );
-
-        // Pthread_cond_wait re-locks the mutex before exit.
-        pthread_mutex_unlock( &m_swapMutex );
-    }
-
-    LOG( "----------------- VFrameSmooth() End -----------------" );
 }
 
 /*
@@ -518,61 +729,13 @@ VFrameSmooth::VFrameSmooth( const TimeWarpInitParms initParms ) :
 */
 VFrameSmooth::~VFrameSmooth()
 {
-    LOG( "---------------- ~VFrameSmooth() Start ----------------" );
-    if ( m_warpThread != 0 )
-    {
-        // Get the background thread to kill itself.
-        m_shutdownRequest.setState( true );
-
-        LOG( "pthread_join() called");
-        void * data;
-        pthread_join( m_warpThread, &data );
-
-        LOG( "pthread_join() returned");
-
-        m_warpThread = 0;
-
-        VGlOperation glOperation;
-        if ( eglGetCurrentSurface( EGL_DRAW ) != m_eglPbufferSurface )
-        {
-            LOG( "eglGetCurrentSurface( EGL_DRAW ) != eglPbufferSurface" );
-        }
-
-        // Attach the windowSurface to the calling context again.
-        if ( eglMakeCurrent( m_eglDisplay, m_eglMainThreadSurface,
-                             m_eglMainThreadSurface, m_eglShareContext ) == EGL_FALSE)
-        {
-            FAIL( "eglMakeCurrent to window failed: %s", glOperation.EglErrorString() );
-        }
-
-        // Destroy the pbuffer surface that was attached to the calling context.
-        if ( EGL_FALSE == eglDestroySurface( m_eglDisplay, m_eglPbufferSurface ) )
-        {
-            WARN( "Failed to destroy pbuffer." );
-        }
-        else
-        {
-            LOG( "Destroyed pbuffer." );
-        }
-    }
-    else
-    {
-        // Shutdown the front buffer rendering
-        m_screen.shutdown();
-
-        // Vertex array objects can only be destroyed on the context they were created on
-        // If there is no warp thread then InitParms.AsynchronousTimeWarp was false and
-        // CreateFrameworkGraphics() was called from the VFrameSmooth constructor.
-        destroyFrameworkGraphics();
-    }
-
-    LOG( "---------------- ~VFrameSmooth() End ----------------" );
+    d->destroy();
 }
 
 /*
 * WarpThreadInit()
 */
-void VFrameSmooth::warpThreadInit()
+void VFrameSmooth::Private::warpThreadInit()
 {
     LOG( "WarpThreadInit()" );
 
@@ -634,32 +797,7 @@ void VFrameSmooth::warpThreadInit()
         FAIL( "eglMakeCurrent failed: %s", glOperation.EglErrorString() );
     }
 
-    // Get a jni environment for front buffer setting, SurfaceTexture updating and changing SCHED_FIFO
-    const jint rtn = m_initParms.javaVm->AttachCurrentThread( &m_jni, 0 );
-    if ( rtn != JNI_OK )
-    {
-        FAIL( "AttachCurrentThread() returned %i", rtn );
-    }
-    m_setSchedFifoMethodId = JniUtils::GetStaticMethodID( m_jni, m_initParms.vrLibClass, "setSchedFifoStatic", "(Landroid/app/Activity;II)I" );
-
-    static const char * className = "android/graphics/SurfaceTexture";
-    const jclass surfaceTextureClass = m_jni->FindClass(className);
-    if ( surfaceTextureClass == 0 ) {
-        FAIL( "FindClass( %s ) failed", className );
-    }
-    m_updateTexImageMethodId = m_jni->GetMethodID( surfaceTextureClass, "updateTexImage", "()V" );
-    if ( !m_updateTexImageMethodId ) {
-        FAIL( "couldn't get updateTexImageMethodId" );
-    }
-    m_getTimestampMethodId = m_jni->GetMethodID( surfaceTextureClass, "getTimestamp", "()J" );
-    if ( !m_getTimestampMethodId ) {
-        FAIL( "couldn't get GetTimestampMethodId" );
-    }
-    m_jni->DeleteLocalRef( surfaceTextureClass );
-
-    // Make the current window into a front-buffer
-    // Must be called after a context is current on the window.
-    m_screen.initForCurrentSurface( m_jni, m_initParms.frontBuffer, m_initParms.buildVersionSDK );
+    initRenderEnvironment();
 
     // create the framework graphics on this thread
     createFrameworkGraphics();
@@ -673,7 +811,7 @@ void VFrameSmooth::warpThreadInit()
 /*
 * WarpThreadShutdown()
 */
-void VFrameSmooth::warpThreadShutdown()
+void VFrameSmooth::Private::warpThreadShutdown()
 {
     LOG( "WarpThreadShutdown()" );
 
@@ -695,9 +833,6 @@ void VFrameSmooth::warpThreadShutdown()
         }
     }
 
-    // Shutdown the front buffer rendering
-    m_screen.shutdown();
-
     // release the window so it can be made current by another thread
     if ( eglMakeCurrent( m_eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE,
                          EGL_NO_CONTEXT ) == EGL_FALSE )
@@ -711,16 +846,11 @@ void VFrameSmooth::warpThreadShutdown()
     }
     m_eglWarpContext = 0;
 
-    const jint rtn = m_initParms.javaVm->DetachCurrentThread();
-    if ( rtn != JNI_OK )
-    {
-        FAIL( "DetachCurrentThread() returned %i", rtn );
-    }
 
     LOG( "WarpThreadShutdown() - End" );
 }
 
-const VGlShader & VFrameSmooth::programForParms( const ovrTimeWarpParms & parms, const bool disableChromaticCorrection ) const
+const VGlShader & VFrameSmooth::Private::programForParms( const ovrTimeWarpParms & parms, const bool disableChromaticCorrection ) const
 {
     int program = Alg::Clamp( (int)parms.WarpProgram, (int)WP_SIMPLE, (int)WP_PROGRAM_MAX - 1 );
 
@@ -731,7 +861,7 @@ const VGlShader & VFrameSmooth::programForParms( const ovrTimeWarpParms & parms,
     return m_warpPrograms[program];
 }
 
-void VFrameSmooth::setWarpState( const warpSource_t & currentWarpSource ) const
+void VFrameSmooth::Private::setWarpState( const warpSource_t & currentWarpSource ) const
 {
     glDepthMask( GL_FALSE );	// don't write to depth, even if Unity has depth on window
     glDisable( GL_DEPTH_TEST );
@@ -757,9 +887,9 @@ void VFrameSmooth::setWarpState( const warpSource_t & currentWarpSource ) const
     glOperation.GL_CheckErrors( "SetWarpState" );
 }
 
-void VFrameSmooth::bindWarpProgram( const warpSource_t & currentWarpSource,
-                                    const VR4Matrixf timeWarps[2][2], const VR4Matrixf rollingWarp,
-const int eye, const double vsyncBase /* for spinner */ ) const
+void VFrameSmooth::Private::bindWarpProgram( const warpSource_t & currentWarpSource,
+                                     const VR4Matrixf timeWarps[2][2], const VR4Matrixf rollingWarp,
+                                     const int eye, const double vsyncBase /* for spinner */ ) const
 {
     // TODO: bake this into the buffer objects
     const VR4Matrixf landscapeOrientationMatrix(
@@ -801,7 +931,7 @@ const int eye, const double vsyncBase /* for spinner */ ) const
     }
 }
 
-void VFrameSmooth::bindCursorProgram() const
+void VFrameSmooth::Private::bindCursorProgram() const
 {
     // TODO: bake this into the buffer objects
     const VR4Matrixf landscapeOrientationMatrix(
@@ -825,45 +955,7 @@ void VFrameSmooth::bindCursorProgram() const
 int CameraTimeWarpLatency = 4;
 bool CameraTimeWarpPause;
 
-static void UpdateSurfaceTexture( JNIEnv * Jni, jobject surfaceTexture, jmethodID UpdateTexImageMethodId,
-                                  jmethodID GetTimestampMethodId, ovrPoseStatef & topPose, ovrPoseStatef & bottomPose )
-{
-    if ( !surfaceTexture )
-    {
-        return;
-    }
-
-    // Assume this is called at 120 hz
-    static const int NUM_POSES = 16;
-    static ovrPoseStatef loggedPose[NUM_POSES];
-    static int poseNum;
-    poseNum++;
-    loggedPose[poseNum&(NUM_POSES-1)] = ovr_GetSensorStateInternal( ovr_GetTimeInSeconds() ).Predicted;
-
-    // We might need to discard a frame if more than one
-    // is in the queue.
-    static long long prevTimeStamp;
-    static ovrPoseStatef	prevTopPose;
-    static ovrPoseStatef	prevBottomPose;
-    while( !CameraTimeWarpPause )
-    {
-        // Allow the Java SurfaceTexture object to swap in an updated image.
-        Jni->CallVoidMethod( surfaceTexture, UpdateTexImageMethodId );
-        const long long nanoTimeStamp = Jni->CallLongMethod( surfaceTexture, GetTimestampMethodId );
-
-        if ( prevTimeStamp == nanoTimeStamp )
-        {
-            break;
-        }
-        prevTimeStamp = nanoTimeStamp;
-        prevTopPose = loggedPose[(poseNum - CameraTimeWarpLatency)&(NUM_POSES-1)];
-        prevBottomPose = loggedPose[(poseNum - CameraTimeWarpLatency+1)&(NUM_POSES-1)];
-    }
-    topPose = prevTopPose;
-    bottomPose = prevBottomPose;
-}
-
-static void BindEyeTextures( const warpSource_t & currentWarpSource, const ScreenEye eye )
+static void BindEyeTextures( const warpSource_t & currentWarpSource, const int eye )
 {
     glActiveTexture( GL_TEXTURE0 );
     glBindTexture( GL_TEXTURE_2D, currentWarpSource.WarpParms.Images[eye][0].TexId );
@@ -994,11 +1086,8 @@ static void UnbindEyeTextures()
  * Writes SwapVsync
  *
  */
-void VFrameSmooth::warpToScreen( const double vsyncBase_, const swapProgram_t & swap )
+void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapProgram_t & swap )
 {
-#if defined( OVR_ENABLE_CAPTURE )
-    OVR_CAPTURE_CPU_ZONE( warpToScreen );
-#endif
     static double lastReportTime = 0;
     const double timeNow = floor( ovr_GetTimeInSeconds() );
     if ( timeNow > lastReportTime )
@@ -1024,19 +1113,13 @@ void VFrameSmooth::warpToScreen( const double vsyncBase_, const swapProgram_t & 
     // This will only be updated in SCREENEYE_LEFT
     warpSource_t currentWarpSource = {};
 
-    // The mesh covers the full screen, but we only draw part of it at a time
-    int screenWidth, screenHeight;
-    m_screen.getScreenResolution( screenWidth, screenHeight );
-    glViewport( 0, 0, screenWidth, screenHeight );
-    glScissor( 0, 0, screenWidth, screenHeight );
+    glViewport( 0, 0, m_window_width, m_window_height );
+    glScissor( 0, 0, m_window_width, m_window_height );
 
     VGlOperation glOperation;
     // Warp each eye to the display surface
-    for ( ScreenEye eye = SCREENEYE_LEFT; eye <= SCREENEYE_RIGHT; eye = (ScreenEye)((int)eye+1) )
+    for ( int eye = 0; eye <= 1; ++eye )
     {
-#if defined( OVR_ENABLE_CAPTURE )
-        OVR_CAPTURE_CPU_ZONE( eye );
-#endif
         //LOG( "Eye %i: now=%f  sleepTo=%f", eye, GetFractionalVsync(), vsyncBase + swap.deltaVsync[eye] );
 
         // Sleep until we are in the correct half of the screen for
@@ -1055,7 +1138,7 @@ void VFrameSmooth::warpToScreen( const double vsyncBase_, const swapProgram_t & 
         long long thisEyeBufferNum = 0;
         int	back;
 
-        if ( eye == SCREENEYE_LEFT )
+        if ( eye == 0 )
         {
             const long long latestEyeBufferNum = m_eyeBufferCount.state();
             for ( back = 0; back < MAX_WARP_SOURCES - 1; back++ )
@@ -1127,16 +1210,6 @@ void VFrameSmooth::warpToScreen( const double vsyncBase_, const swapProgram_t & 
                 }
             }
 
-            if ( m_screen.windowSurface == EGL_NO_SURFACE )
-            {
-                static int logCount = 0;
-                if ( ( logCount++ & 31 ) == 0 )
-                {
-                    LOG( "WarpToScreen: no valid window surface" );
-                }
-                return;
-            }
-
             if ( currentWarpSource.WarpParms.Images[eye][0].TexId == 0 )
             {
                 // We don't have anything valid to draw, so just sleep until
@@ -1194,26 +1267,6 @@ void VFrameSmooth::warpToScreen( const double vsyncBase_, const swapProgram_t & 
             }
         }
 
-        // Update the SurfaceTexture before calculating VFrameSmooth
-        if ( currentWarpSource.WarpParms.SurfaceTextureObject )
-        {
-            ovrPoseStatef	pose[2];
-            UpdateSurfaceTexture( m_jni,
-                                  (jobject)currentWarpSource.WarpParms.SurfaceTextureObject,
-                                  m_updateTexImageMethodId, m_getTimestampMethodId, pose[0], pose[1] );
-            // Both time warp matrix are from the time at the start of this eye.
-            // The rollingWarp matrix will first transform the vector to account
-            // for movement in the current eye display roll.
-            for ( int scan = 0 ; scan < 2 ; scan++ )
-            {
-                const VR4Matrixf warp2 = CalculateTimeWarpMatrix2(
-                            pose[scan].Pose.Orientation,
-                            sensor[0].Predicted.Pose.Orientation
-                        );
-                timeWarps[1][scan] = VR4Matrixf( currentWarpSource.WarpParms.Images[eye][1].TexCoordsFromTanAngles ) * warp2;
-            }
-        }
-
         // The pass through camera support needs to know the warping from the head motion
         // across the display scan independent of any layers, which may drop frames.
         const VR4Matrixf rollingWarp = CalculateTimeWarpMatrix2(
@@ -1233,7 +1286,7 @@ void VFrameSmooth::warpToScreen( const double vsyncBase_, const swapProgram_t & 
 
         BindEyeTextures( currentWarpSource, eye );
 
-        m_screen.beginDirectRendering( eye * screenWidth/2, 0, screenWidth/2, screenHeight );
+        glScissor(eye * m_window_width/2, 0, m_window_width/2, m_window_height);
 
         // Draw the warp triangles.
         glOperation.glBindVertexArrayOES( m_warpMesh.vertexArrayObject );
@@ -1261,15 +1314,11 @@ void VFrameSmooth::warpToScreen( const double vsyncBase_, const swapProgram_t & 
         drawFrameworkGraphicsToWindow( eye, currentWarpSource.WarpParms.WarpOptions,
                                        currentWarpSource.WarpParms.DebugGraphMode != DEBUG_PERF_OFF );
 
-        m_screen.endDirectRendering();
+        glFlush();
 
         m_logEyeWarpGpuTime.End( eye );
 
         const double justBeforeFinish = ovr_GetTimeInSeconds();
-        if ( m_screen.isFrontBuffer() )
-        {
-            glOperation.GL_Finish();
-        }
         const double postFinish = ovr_GetTimeInSeconds();
 
         const float latency = postFinish - justBeforeFinish;
@@ -1308,13 +1357,10 @@ void VFrameSmooth::warpToScreen( const double vsyncBase_, const swapProgram_t & 
 
     glOperation.glBindVertexArrayOES( 0 );
 
-    if ( !m_screen.isFrontBuffer() )
-    {
-        m_screen.swapBuffers();
-    }
+    swapBuffers();
 }
 
-void VFrameSmooth::warpToScreenSliced( const double vsyncBase, const swapProgram_t & swap )
+void VFrameSmooth::Private::warpToScreenSliced( const double vsyncBase, const swapProgram_t & swap )
 {
     // Fetch vsync timing information once, so we don't have to worry
     // about it changing slightly inside a given frame.
@@ -1341,10 +1387,8 @@ void VFrameSmooth::warpToScreenSliced( const double vsyncBase, const swapProgram
                 * 0.000000001 + startBias;
     }
 
-    int screenWide, screenTall;
-    m_screen.getScreenResolution( screenWide, screenTall );
-    glViewport( 0, 0, screenWide, screenTall );
-    glScissor( 0, 0, screenWide, screenTall );
+    glViewport( 0, 0, m_window_width, m_window_height );
+    glScissor( 0, 0, m_window_width, m_window_height );
 
     // This must be long enough to cover CPU scheduling delays, GPU in-flight commands,
     // and the actual drawing of this slice.
@@ -1359,7 +1403,7 @@ void VFrameSmooth::warpToScreenSliced( const double vsyncBase, const swapProgram
     long long thisEyeBufferNum = 0;
     for ( int screenSlice = 0; screenSlice < NUM_SLICES_PER_SCREEN; screenSlice++ )
     {
-        const ScreenEye	eye = (ScreenEye)( screenSlice / NUM_SLICES_PER_EYE );
+        const int	eye = (int)( screenSlice / NUM_SLICES_PER_EYE );
 
         // Sleep until we are in the correct part of the screen for
         // rendering this slice.
@@ -1445,16 +1489,6 @@ void VFrameSmooth::warpToScreenSliced( const double vsyncBase, const swapProgram
                 }
             }
 
-            if ( m_screen.windowSurface == EGL_NO_SURFACE )
-            {
-                static int logCount = 0;
-                if ( ( logCount++ & 31 ) == 0 )
-                {
-                    LOG( "WarpToScreen: no valid window surface" );
-                }
-                return;
-            }
-
             if ( currentWarpSource.WarpParms.Images[eye][0].TexId == 0 )
             {
                 // We don't have anything valid to draw, so just sleep until
@@ -1520,27 +1554,6 @@ void VFrameSmooth::warpToScreenSliced( const double vsyncBase, const swapProgram
                 }
             }
         }
-
-        // Update the SurfaceTexture before calculating VFrameSmooth
-        if ( currentWarpSource.WarpParms.SurfaceTextureObject )
-        {
-            ovrPoseStatef pose[2];
-            UpdateSurfaceTexture( m_jni,
-                                  (jobject)currentWarpSource.WarpParms.SurfaceTextureObject,
-                                  m_updateTexImageMethodId, m_getTimestampMethodId, pose[0], pose[1] );
-            // Both time warp matrix are from the time at the start of this eye.
-            // The rollingWarp matrix will first transform the vector to account
-            // for movement in the current eye display roll.
-            for ( int scan = 0; scan < 2; scan++ )
-            {
-                const VR4Matrixf warp2 = CalculateTimeWarpMatrix2(
-                            pose[scan].Pose.Orientation,
-                            sensor[0].Predicted.Pose.Orientation
-                        );
-                timeWarps[1][scan] = VR4Matrixf( currentWarpSource.WarpParms.Images[eye][1].TexCoordsFromTanAngles ) * warp2;
-            }
-        }
-
         // The pass through camera support needs to know the warping from the head motion
         // across the display scan independent of any layers, which may drop frames.
         const VR4Matrixf rollingWarp = CalculateTimeWarpMatrix2(
@@ -1563,9 +1576,9 @@ void VFrameSmooth::warpToScreenSliced( const double vsyncBase, const swapProgram
             BindEyeTextures( currentWarpSource, eye );
         }
 
-        const int sliceSize = screenWide / NUM_SLICES_PER_SCREEN;
+        const int sliceSize = m_window_width / NUM_SLICES_PER_SCREEN;
 
-        m_screen.beginDirectRendering( sliceSize*screenSlice, 0, sliceSize, screenTall );
+        glScissor( sliceSize*screenSlice, 0, sliceSize, m_window_height );
 
         // Draw the warp triangles.
         const VGlGeometry & mesh = m_sliceMesh;
@@ -1589,18 +1602,11 @@ void VFrameSmooth::warpToScreenSliced( const double vsyncBase, const swapProgram
         drawFrameworkGraphicsToWindow( eye, currentWarpSource.WarpParms.WarpOptions,
                                        currentWarpSource.WarpParms.DebugGraphMode != DEBUG_PERF_OFF );
 
-        m_screen.endDirectRendering();
+        glFlush();
 
         m_logEyeWarpGpuTime.End( screenSlice );
 
-        VGlOperation glOperation;
-
         const double justBeforeFinish = ovr_GetTimeInSeconds();
-        if ( m_screen.isFrontBuffer() &&
-             ( screenSlice == 1 * NUM_SLICES_PER_EYE - 1 || screenSlice == 2 * NUM_SLICES_PER_EYE - 1 ) )
-        {
-            glOperation.GL_Finish();
-        }
         const double postFinish = ovr_GetTimeInSeconds();
 
         const float latency = postFinish - justBeforeFinish;
@@ -1636,10 +1642,7 @@ void VFrameSmooth::warpToScreenSliced( const double vsyncBase, const swapProgram
 
     glOperation.glBindVertexArrayOES( 0 );
 
-    if ( !m_screen.isFrontBuffer() )
-    {
-        m_screen.swapBuffers();
-    }
+    swapBuffers();
 }
 
 static uint64_t GetNanoSecondsUint64()
@@ -1649,20 +1652,11 @@ static uint64_t GetNanoSecondsUint64()
     return (uint64_t) now.tv_sec * 1000000000LL + now.tv_nsec;
 }
 
-void VFrameSmooth::warpSwapInternal( const ovrTimeWarpParms & parms )
+void VFrameSmooth::Private::warpSwapInternal( const ovrTimeWarpParms & parms )
 {
-#if defined( OVR_ENABLE_CAPTURE )
-    OVR_CAPTURE_CPU_ZONE( WarpSwapInternal );
-#endif
-
     if ( gettid() != m_sStartupTid )
     {
         FAIL( "WarpSwap: Called with tid %i instead of %i", gettid(), m_sStartupTid );
-    }
-
-    if ( m_screen.windowSurface == EGL_NO_SURFACE )
-    {
-        FAIL( "WarpSwap: no valid window surface" );
     }
 
     // Keep track of the last time WarpSwap() was called.
@@ -1671,15 +1665,6 @@ void VFrameSmooth::warpSwapInternal( const ovrTimeWarpParms & parms )
     // Explicitly bind the framebuffer back to the default, so the
     // eye targets will not be bound while they might be used as warp sources.
     glBindFramebuffer( GL_FRAMEBUFFER, 0 );
-
-    // If we are running the image server, let it add commands for resampling
-    // the eye buffer to a transfer buffer.
-#if defined( OVR_ENABLE_CAPTURE )
-    if( Capture::IsConnected() )
-    {
-        Capture::FrameBufferGLES3( parms.Images[0][0].TexId );
-    }
-#endif
     const int minimumVsyncs = ( ovr_GetPowerLevelStateThrottled() ) ? 2 : parms.MinimumVsyncs;
 
     VGlOperation glOperation;
@@ -1738,7 +1723,7 @@ void VFrameSmooth::warpSwapInternal( const ovrTimeWarpParms & parms )
 
     // If we are running synchronously instead of using a background
     // thread, call WarpToScreen() directly.
-    if ( !m_initParms.asynchronousTimeWarp )
+    if ( !m_async )
     {
         // Make sure all eye drawing is completed before we warp the drawing
         // to the display buffer.
@@ -1747,14 +1732,7 @@ void VFrameSmooth::warpSwapInternal( const ovrTimeWarpParms & parms )
         glOperation.GL_Finish();
 
         swapProgram_t * swapProg;
-        if ( m_screen.isFrontBuffer() )
-        {
-            swapProg = &spSyncFrontBufferPortrait;
-        }
-        else
-        {
-            swapProg = &spSyncSwappedBufferPortrait;
-        }
+        swapProg = &spSyncSwappedBufferPortrait;
 
         warpToScreen( floor( GetFractionalVsync() ), *swapProg );
 
@@ -1808,12 +1786,12 @@ void VFrameSmooth::warpSwapInternal( const ovrTimeWarpParms & parms )
 * Blocks until it is time to render a new pair of eye buffers.
 *
 */
-void VFrameSmooth::warpSwap( const ovrTimeWarpParms & parms )
+void VFrameSmooth::doSmooth( const ovrTimeWarpParms & parms )
 {
     const int count = ( ( parms.WarpOptions & SWAP_OPTION_FLUSH ) != 0 ) ? 3 : 1;
     for ( int i = 0; i < count; i++ )
     {
-        warpSwapInternal( parms );
+        d->warpSwapInternal( parms );
     }
 }
 
@@ -1864,7 +1842,7 @@ VGlGeometry CreateTimingGraphGeometry( const int lineVertCount )
     return geo;
 }
 
-void VFrameSmooth::updateTimingGraphVerts( const ovrTimeWarpDebugPerfMode debugPerfMode, const ovrTimeWarpDebugPerfValue debugValue )
+void VFrameSmooth::Private::updateTimingGraphVerts( const ovrTimeWarpDebugPerfMode debugPerfMode, const ovrTimeWarpDebugPerfValue debugValue )
 {
     VGlOperation glOperation;
     if ( debugPerfMode == DEBUG_PERF_OFF )
@@ -1973,13 +1951,13 @@ void VFrameSmooth::updateTimingGraphVerts( const ovrTimeWarpDebugPerfMode debugP
     glOperation.GL_CheckErrors( "After UpdateTimingGraph" );
 }
 
-void VFrameSmooth::drawTimingGraph( const ScreenEye eye )
+void VFrameSmooth::Private::drawTimingGraph( const int eye )
 {
     VGlOperation glOperation;
     // Use the same rect for viewport and scissor
     // FIXME: this is probably bad for convergence
     int	rectX, rectY, rectWidth, rectHeight;
-    EyeRect( m_initParms.hmdInfo, eye, RECT_SCREEN,
+    EyeRect( m_hmdInfo, eye,
              rectX, rectY, rectWidth, rectHeight );
 
     glViewport( rectX, rectY, rectWidth, rectHeight );
@@ -2018,7 +1996,7 @@ float calibrateFovScale = 1.0f;	// for interactive tweaking
 
 // VAO (and FBO) are not shared across different contexts, so this needs
 // to be called by the thread that will be drawing the warp.
-void VFrameSmooth::createFrameworkGraphics()
+void VFrameSmooth::Private::createFrameworkGraphics()
 {
     // Texture to display a black screen.
     unsigned char blackData[4] = {};
@@ -2043,13 +2021,13 @@ void VFrameSmooth::createFrameworkGraphics()
     glBindTexture( GL_TEXTURE_2D, 0 );
 
     // single slice mesh for the normal rendering
-    m_warpMesh = VLensDistortion::CreateTessellatedMesh( m_initParms.hmdInfo, 1, calibrateFovScale, false );
+    m_warpMesh = VLensDistortion::CreateTessellatedMesh( m_hmdInfo, 1, calibrateFovScale, false );
 
     // multi-slice mesh for sliced rendering
-    m_sliceMesh = VLensDistortion::CreateTessellatedMesh( m_initParms.hmdInfo, NUM_SLICES_PER_EYE, calibrateFovScale, false );
+    m_sliceMesh = VLensDistortion::CreateTessellatedMesh( m_hmdInfo, NUM_SLICES_PER_EYE, calibrateFovScale, false );
 
     // small subset cursor mesh
-    m_cursorMesh = VLensDistortion::CreateTessellatedMesh( m_initParms.hmdInfo, 1, calibrateFovScale, true );
+    m_cursorMesh = VLensDistortion::CreateTessellatedMesh( m_hmdInfo, 1, calibrateFovScale, true );
 
     if ( m_warpMesh.indexCount == 0 || m_sliceMesh.indexCount == 0 )
     {
@@ -2104,7 +2082,7 @@ void VFrameSmooth::createFrameworkGraphics()
     buildWarpProgs();
 }
 
-void VFrameSmooth::destroyFrameworkGraphics()
+void VFrameSmooth::Private::destroyFrameworkGraphics()
 {
     glDeleteTextures( 1, &m_blackTexId );
     glDeleteTextures( 1, &m_defaultLoadingIconTexId );
@@ -2126,8 +2104,8 @@ void VFrameSmooth::destroyFrameworkGraphics()
 
 // Assumes viewport and scissor is set for the eye already.
 // Assumes there is no depth buffer for the window.
-void VFrameSmooth::drawFrameworkGraphicsToWindow( const ScreenEye eye,
-                                                  const int swapOptions, const bool drawTimingGraph )
+void VFrameSmooth::Private::drawFrameworkGraphicsToWindow( const int eye,
+                                                   const int swapOptions, const bool drawTimingGraph )
 {
     VGlOperation glOperation;
     // Latency tester support.
@@ -2168,11 +2146,10 @@ void VFrameSmooth::drawFrameworkGraphicsToWindow( const ScreenEye eye,
                             projectionMatrix.Transposed().M[0] );
         glOperation.glBindVertexArrayOES( m_calibrationLines2.vertexArrayObject );
 
-        int width, height;
-        m_screen.getScreenResolution( width, height );
-        glViewport( width/2 * (int)eye, 0, width/2, height );
+
+        glViewport( m_window_width/2 * (int)eye, 0, m_window_width/2, m_window_height );
         glDrawElements( GL_LINES, m_calibrationLines2.indexCount, GL_UNSIGNED_SHORT, NULL );
-        glViewport( 0, 0, width, height );
+        glViewport( 0, 0, m_window_width, m_window_height );
     }
 
     // Draw the timing graph if it is enabled.
@@ -2182,25 +2159,25 @@ void VFrameSmooth::drawFrameworkGraphicsToWindow( const ScreenEye eye,
     }
 }
 
-void VFrameSmooth::buildWarpProgPair( ovrTimeWarpProgram simpleIndex,
-                                      const char * simpleVertex, const char * simpleFragment,
-                                      const char * chromaticVertex, const char * chromaticFragment
-                                      )
+void VFrameSmooth::Private::buildWarpProgPair( ovrTimeWarpProgram simpleIndex,
+                                       const char * simpleVertex, const char * simpleFragment,
+                                       const char * chromaticVertex, const char * chromaticFragment
+)
 {
     m_warpPrograms[ simpleIndex ] = VGlShader( simpleVertex, simpleFragment );
     m_warpPrograms[ simpleIndex + ( WP_CHROMATIC - WP_SIMPLE ) ] = VGlShader( chromaticVertex, chromaticFragment );
 }
 
-void VFrameSmooth::buildWarpProgMatchedPair( ovrTimeWarpProgram simpleIndex,
-                                             const char * simpleVertex, const char * simpleFragment
-                                             )
+void VFrameSmooth::Private::buildWarpProgMatchedPair( ovrTimeWarpProgram simpleIndex,
+                                              const char * simpleVertex, const char * simpleFragment
+)
 {
     m_warpPrograms[ simpleIndex ] = VGlShader( simpleVertex, simpleFragment );
     m_warpPrograms[ simpleIndex + ( WP_CHROMATIC - WP_SIMPLE ) ] = VGlShader( simpleVertex, simpleFragment );
 }
 
 
-void VFrameSmooth::buildWarpProgs()
+void VFrameSmooth::Private::buildWarpProgs()
 {
     buildWarpProgPair( WP_SIMPLE,
                        // low quality
@@ -2974,6 +2951,20 @@ void VFrameSmooth::buildWarpProgs()
                               );
 
 }
+
+void VFrameSmooth::Private::initRenderEnvironment()
+{
+    m_window_display = eglGetDisplay( EGL_DEFAULT_DISPLAY );
+    m_window_surface = eglGetCurrentSurface( EGL_DRAW );
+    eglQuerySurface( m_window_display, m_window_surface, EGL_WIDTH, &m_window_width );
+    eglQuerySurface( m_window_display, m_window_surface, EGL_HEIGHT, &m_window_height );
+}
+
+void VFrameSmooth::Private::swapBuffers()
+{
+    eglSwapBuffers( m_window_display, m_window_surface );
+}
+
 
 NV_NAMESPACE_END
 

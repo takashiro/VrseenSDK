@@ -8,13 +8,7 @@
 
 #include <float.h>
 
-
-namespace NervGear {
-
-
-//-------------------------------------------------------------------------------------
-// ***** VConstants
-
+NV_NAMESPACE_BEGIN
 
 // Single-precision VConstants constants class.
 const float VConstants<float>::Pi      = 3.1415926f;
@@ -79,5 +73,22 @@ const VR4Matrix<double> VR4Matrix<double>::IdentityValue = VR4Matrix<double>(1.0
                                                                        0.0, 0.0, 1.0, 0.0,
                                                                        0.0, 0.0, 0.0, 1.0);
 
-}//-------------------------------------------------------------------------------------
-// ***** Constants
+float LinearRangeMapFloat( float inValue, float inStart, float inEnd, float outStart, float outEnd )
+{
+    float outValue = inValue;
+    if( fabsf(inEnd - inStart) < VConstantsf::SmallestNonDenormal )
+    {
+        return 0.5f*(outStart + outEnd);
+    }
+    outValue -= inStart;
+    outValue /= (inEnd - inStart);
+    outValue *= (outEnd - outStart);
+    outValue += outStart;
+    if( fabsf( outValue ) < VConstantsf::SmallestNonDenormal )
+    {
+        return 0.0f;
+    }
+    return outValue;
+}
+
+NV_NAMESPACE_END

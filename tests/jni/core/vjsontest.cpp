@@ -1,5 +1,6 @@
 #include "test.h"
 
+#include <fstream>
 #include <sstream>
 
 #include <VJson.h>
@@ -77,7 +78,7 @@ void test()
 
     {
         stringstream s;
-        s << "{\"test\" : [1,2,3]}";
+        s << u8"{\"test\" : [1, 2, \"いつも好きです\"]}";
         VJson json;
         s >> json;
         assert(json.contains("test"));
@@ -87,7 +88,40 @@ void test()
         assert(test.isArray());
         assert(test[0].toInt() == 1);
         assert(test[1].toInt() == 2);
-        assert(test[2].toInt() == 3);
+        assert(test[2].toString() == u"いつも好きです");
+
+        stringstream out;
+        out << json;
+        assert(out.str() == u8"{\"test\" : [1, 2, \"いつも好きです\"]}");
+    }
+
+    {
+        stringstream s;
+        s << "[\"\"]";
+        VJson json;
+        s >> json;
+        assert(json.isArray());
+        assert(json.size() == 1);
+        assert(json.at(0).isString());
+        assert(json.at(0).size() == 0);
+    }
+
+    {
+        stringstream s;
+        s << "[]";
+        VJson json;
+        s >> json;
+        assert(json.isArray());
+        assert(json.size() == 0);
+    }
+
+    {
+        stringstream s;
+        s << "{}";
+        VJson json;
+        s >> json;
+        assert(json.isObject());
+        assert(json.size() == 0);
     }
 }
 

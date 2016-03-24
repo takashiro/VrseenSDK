@@ -30,7 +30,6 @@ SOURCES += \
     jni/core/VLog.cpp \
     jni/core/VLock.cpp \
     jni/core/Lockless.cpp \
-    jni/core/VMath.cpp \
     jni/core/VPath.cpp \
     jni/core/RefCount.cpp \
     jni/core/VSignal.cpp \
@@ -52,7 +51,6 @@ SOURCES += \
     jni/api/VrApi.cpp \
     jni/api/Vsync.cpp \
     jni/api/VDevice.cpp \
-    jni/api/DirectRender.cpp \
     jni/api/VGlOperation.cpp \
     jni/api/HmdInfo.cpp \
     jni/api/HmdSensors.cpp \
@@ -120,10 +118,9 @@ SOURCES += \
     jni/scene/SurfaceTexture.cpp \
     jni/scene/SwipeView.cpp \
     jni/App.cpp \
-    jni/Console.cpp \
+    jni/VConsole.cpp \
     jni/DebugLines.cpp \
     jni/KeyState.cpp \
-    jni/VrCommon.cpp \
     jni/VrLocale.cpp
 
 
@@ -146,7 +143,8 @@ HEADERS += \
     jni/core/VByteArray.h \
     jni/core/VColor.h \
     jni/core/VChar.h \
-    jni/core/Deque.h \
+    jni/core/VCircularQueue.h \
+    jni/core/VDeque.h \
     jni/core/VDir.h \
     jni/core/VEvent.h \
     jni/core/VEventLoop.h \
@@ -157,7 +155,6 @@ HEADERS += \
     jni/core/VLog.h \
     jni/core/VLock.h \
     jni/core/Lockless.h \
-    jni/core/VMath.h \
     jni/core/VMap.h \
     jni/core/VPath.h \
     jni/core/RefCount.h \
@@ -199,7 +196,6 @@ HEADERS += \
     jni/embedded/oculus_loading_indicator.h \
     jni/api/VrApi.h \
     jni/api/Vsync.h \
-    jni/api/DirectRender.h \
     jni/api/HmdInfo.h \
     jni/api/HmdSensors.h \
     jni/api/VLensDistortion.h \
@@ -282,13 +278,12 @@ HEADERS += \
     jni/scene/ModelView.h \
     jni/scene/SurfaceTexture.h \
     jni/scene/SwipeView.h \
-    jni/VrCommon.h \
     jni/KeyState.h \
     jni/App.h \
     jni/AppRender.h \
     jni/DebugLines.h \
     jni/VrLocale.h \
-    jni/Console.h \
+    jni/VConsole.h \
     jni/vglobal.h \
     jni/Input.h \
     jni/PointTracker.h \
