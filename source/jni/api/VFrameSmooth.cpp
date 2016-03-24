@@ -687,7 +687,7 @@ void VFrameSmooth::warpThreadShutdown()
         warpSource_t & ws = m_warpSources[i];
         if ( ws.GpuSync )
         {
-            if ( EGL_FALSE == glOperation.eglDestroySyncKHR_( m_eglDisplay, ws.GpuSync ) )
+            if ( EGL_FALSE == glOperation.eglDestroySyncKHR( m_eglDisplay, ws.GpuSync ) )
             {
                 LOG( "eglDestroySyncKHR returned EGL_FALSE" );
             }
@@ -1102,7 +1102,7 @@ void VFrameSmooth::warpToScreen( const double vsyncBase_, const swapProgram_t & 
                     break;
                 }
 
-                const EGLint wait = glOperation.eglClientWaitSyncKHR_( m_eglDisplay, testWarpSource.GpuSync,
+                const EGLint wait = glOperation.eglClientWaitSyncKHR( m_eglDisplay, testWarpSource.GpuSync,
                                                            EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, 0 );
                 if ( wait == EGL_TIMEOUT_EXPIRED_KHR )
                 {
@@ -1419,7 +1419,7 @@ void VFrameSmooth::warpToScreenSliced( const double vsyncBase, const swapProgram
                     continue;
                 }
 
-                const EGLint wait = glOperation.eglClientWaitSyncKHR_( m_eglDisplay, testWarpSource.GpuSync,
+                const EGLint wait = glOperation.eglClientWaitSyncKHR( m_eglDisplay, testWarpSource.GpuSync,
                                                            EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, 0 );
                 if ( wait == EGL_TIMEOUT_EXPIRED_KHR )
                 {
@@ -1728,7 +1728,7 @@ void VFrameSmooth::warpSwapInternal( const ovrTimeWarpParms & parms )
     // Destroy the sync object that was created for this buffer set.
     if ( ws.GpuSync != EGL_NO_SYNC_KHR )
     {
-        if ( EGL_FALSE == glOperation.eglDestroySyncKHR_( m_eglDisplay, ws.GpuSync ) )
+        if ( EGL_FALSE == glOperation.eglDestroySyncKHR( m_eglDisplay, ws.GpuSync ) )
         {
             LOG( "eglDestroySyncKHR returned EGL_FALSE" );
         }
@@ -1742,7 +1742,7 @@ void VFrameSmooth::warpSwapInternal( const ovrTimeWarpParms & parms )
     }
 
     // Force it to flush the commands
-    if ( EGL_FALSE == glOperation.eglClientWaitSyncKHR_( m_eglDisplay, ws.GpuSync,
+    if ( EGL_FALSE == glOperation.eglClientWaitSyncKHR( m_eglDisplay, ws.GpuSync,
                                              EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, 0 ) )
     {
         LOG( "eglClientWaitSyncKHR returned EGL_FALSE" );

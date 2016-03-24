@@ -10,10 +10,6 @@ bool VGlOperation::HasEXT_sRGB_texture_decode = false;
 bool VGlOperation::EXT_discard_framebuffer = false;
 bool VGlOperation::OES_vertex_array_object = false;
 
-PFNEGLDESTROYSYNCKHRPROC VGlOperation::eglDestroySyncKHR_ = NULL;
-PFNEGLCLIENTWAITSYNCKHRPROC VGlOperation::eglClientWaitSyncKHR_ = NULL;
-PFNEGLSIGNALSYNCKHRPROC VGlOperation::eglSignalSyncKHR_ = NULL;
-PFNEGLGETSYNCATTRIBKHRPROC VGlOperation::eglGetSyncAttribKHR_ = NULL;
 
 PFNGLBINDVERTEXARRAYOESPROC	VGlOperation::glBindVertexArrayOES_ = NULL;
 PFNGLDELETEVERTEXARRAYSOESPROC	VGlOperation::glDeleteVertexArraysOES_ = NULL;
@@ -187,10 +183,10 @@ EGLint VGlOperation::GL_FlushSync(int timeout)
         return EGL_FALSE;
     }
 
-    const EGLint wait = eglClientWaitSyncKHR_( eglDisplay, sync,
+    const EGLint wait = eglClientWaitSyncKHR( eglDisplay, sync,
                                                EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, timeout );
 
-    eglDestroySyncKHR_( eglDisplay, sync );
+    eglDestroySyncKHR( eglDisplay, sync );
 
     return wait;
 }
@@ -222,11 +218,6 @@ void VGlOperation::GL_FindExtensions()
 
     const bool es3 = ( strncmp( (const char *)glGetString( GL_VERSION ), "OpenGL ES 3", 11 ) == 0 );
     LOG( "es3 = %s", es3 ? "TRUE" : "FALSE" );
-
-    eglDestroySyncKHR_ = (PFNEGLDESTROYSYNCKHRPROC)GetExtensionProc( "eglDestroySyncKHR" );
-    eglClientWaitSyncKHR_ = (PFNEGLCLIENTWAITSYNCKHRPROC)GetExtensionProc( "eglClientWaitSyncKHR" );
-    eglSignalSyncKHR_ = (PFNEGLSIGNALSYNCKHRPROC)GetExtensionProc( "eglSignalSyncKHR" );
-    eglGetSyncAttribKHR_ = (PFNEGLGETSYNCATTRIBKHRPROC)GetExtensionProc( "eglGetSyncAttribKHR" );
 
     if ( GL_ExtensionStringPresent( "GL_OES_vertex_array_object", extensions ) )
     {
@@ -708,6 +699,20 @@ EGLSyncKHR VGlOperation::eglCreateSyncKHR(EGLDisplay dpy, EGLenum type, const EG
     PFNEGLCREATESYNCKHRPROC eglCreateSyncKHR_;
     eglCreateSyncKHR_ = (PFNEGLCREATESYNCKHRPROC)GetExtensionProc( "eglCreateSyncKHR" );
     return eglCreateSyncKHR_(dpy, type, attrib_list);
+}
+
+EGLBoolean VGlOperation::eglDestroySyncKHR(EGLDisplay dpy, EGLSyncKHR sync)
+{
+    PFNEGLDESTROYSYNCKHRPROC eglDestroySyncKHR_;
+    eglDestroySyncKHR_ = (PFNEGLDESTROYSYNCKHRPROC)GetExtensionProc( "eglDestroySyncKHR" );
+    return eglDestroySyncKHR_(dpy, sync);
+}
+
+EGLint VGlOperation::eglClientWaitSyncKHR(EGLDisplay dpy, EGLSyncKHR sync, EGLint flags, EGLTimeKHR timeout)
+{
+    PFNEGLCLIENTWAITSYNCKHRPROC eglClientWaitSyncKHR_;
+    eglClientWaitSyncKHR_ = (PFNEGLCLIENTWAITSYNCKHRPROC)GetExtensionProc( "eglClientWaitSyncKHR" );
+    return eglClientWaitSyncKHR_(dpy, sync, flags, timeout);
 }
 
 NV_NAMESPACE_END

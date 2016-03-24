@@ -495,7 +495,7 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
 			}
 
 			// Force it to flush the commands and wait until the textures are fully uploaded
-            if ( EGL_FALSE == glOperation.eglClientWaitSyncKHR_( photos->m_eglDisplay, GpuSync, EGL_SYNC_FLUSH_COMMANDS_BIT_KHR,
+            if ( EGL_FALSE == glOperation.eglClientWaitSyncKHR( photos->m_eglDisplay, GpuSync, EGL_SYNC_FLUSH_COMMANDS_BIT_KHR,
 				EGL_FOREVER_KHR ) )
 			{
 				LOG( "BackgroundGLLoadThread eglClientWaitSyncKHR returned EGL_FALSE" );
@@ -527,7 +527,7 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
 			}
 
 			// Force it to flush the commands and wait until the textures are fully uploaded
-            if ( EGL_FALSE == glOperation.eglClientWaitSyncKHR_( photos->m_eglDisplay, GpuSync, EGL_SYNC_FLUSH_COMMANDS_BIT_KHR,
+            if ( EGL_FALSE == glOperation.eglClientWaitSyncKHR( photos->m_eglDisplay, GpuSync, EGL_SYNC_FLUSH_COMMANDS_BIT_KHR,
 				EGL_FOREVER_KHR ) )
 			{
 				LOG( "BackgroundGLLoadThread eglClientWaitSyncKHR returned EGL_FALSE" );
