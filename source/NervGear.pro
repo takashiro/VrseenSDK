@@ -36,7 +36,6 @@ SOURCES += \
     jni/core/VStandardPath.cpp \
     jni/core/VString.cpp \
     jni/core/System.cpp \
-    jni/core/ThreadCommandQueue.cpp \
     jni/core/VThread.cpp \
     jni/core/VTimer.cpp \
     jni/core/MappedFile.cpp \
@@ -77,6 +76,7 @@ SOURCES += \
     jni/api/sensor/Android_SensorDevice.cpp \
     jni/api/sensor/Android_PhoneSensors.cpp \
     jni/api/sensor/Common_HMDDevice.cpp \
+    jni/api/sensor/ThreadCommandQueue.cpp \
     jni/gui/VRMenuComponent.cpp \
     jni/gui/VRMenuMgr.cpp \
     jni/gui/VRMenuObjectLocal.cpp \
@@ -165,7 +165,6 @@ HEADERS += \
     jni/core/String_FormatUtil.h \
     jni/core/String_PathUtil.h \
     jni/core/System.h \
-    jni/core/ThreadCommandQueue.h \
     jni/core/VThread.h \
     jni/core/VTimer.h \
     jni/core/MappedFile.h \
@@ -232,6 +231,7 @@ HEADERS += \
     jni/api/sensor/HIDDevice.h \
     jni/api/sensor/HIDDeviceBase.h \
     jni/api/sensor/HIDDeviceImpl.h \
+    jni/api/sensor/ThreadCommandQueue.h \
     jni/gui/VRMenuComponent.h \
     jni/gui/VRMenuMgr.h \
     jni/gui/VRMenuObjectLocal.h \
@@ -281,13 +281,10 @@ HEADERS += \
     jni/scene/SurfaceTexture.h \
     jni/scene/SwipeView.h \
     jni/App.h \
-    jni/AppRender.h \
     jni/VrLocale.h \
     jni/VConsole.h \
     jni/vglobal.h \
-    jni/Input.h \
-    jni/UniversalMenu_Commands.h \
-    jni/PointTracker.h
+    jni/Input.h
 
 include(jni/3rdparty/minizip/minizip.pri)
 include(jni/3rdparty/stb/stb.pri)
