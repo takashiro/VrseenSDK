@@ -82,15 +82,6 @@ VString::VString(const char *data, uint length)
     }
 }
 
-VString::VString(const std::u16string &source)
-{
-    uint length = source.length();
-    this->resize(length);
-    for (uint i = 0; i < length; i++) {
-        at(i) = source[i];
-    }
-}
-
 void VString::assign(const char *str)
 {
     if (str == nullptr) {
@@ -224,9 +215,21 @@ const VString &VString::operator = (const char *str)
     return *this;
 }
 
-const VString &VString::operator = (const VString &src)
+const VString &VString::operator =(const char16_t *str)
 {
-    std::u16string::assign(src.data(), src.size());
+    assign(str);
+    return *this;
+}
+
+const VString &VString::operator = (const VString &source)
+{
+    std::u16string::assign(source);
+    return *this;
+}
+
+const VString &VString::operator =(VString &&source)
+{
+    std::u16string::assign(std::move(source));
     return *this;
 }
 

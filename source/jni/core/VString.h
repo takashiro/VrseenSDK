@@ -18,11 +18,11 @@ public:
     VString(const char *data, uint length);
     VString(const std::string &str);
 
-    VString(const char16_t *data, uint length) { assign(data, length); }
-    VString(const std::u16string &source);
-
     VString(const VString &source) : basic_string(source) {}
-    VString(VString &&source) : basic_string(source) {}
+    VString(VString &&source) : basic_string(std::move(source)) {}
+
+    VString(const std::u16string &str) : basic_string(str) {}
+    VString(const char16_t *data, uint length) { assign(data, length); }
 
     // Returns number of bytes
     int length() const { return size(); }
@@ -35,7 +35,9 @@ public:
     void assign(const char16_t *str, uint size);
 
     const VString &operator = (const char *str);
-    const VString &operator = (const VString &src);
+    const VString &operator = (const char16_t *str);
+    const VString &operator = (const VString &source);
+    const VString &operator = (VString &&source);
 
     void append(char16_t ch) { basic_string::operator +=(ch); }
     void append(const VString &str) { basic_string::append(str.data()); }
