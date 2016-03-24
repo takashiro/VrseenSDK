@@ -117,6 +117,7 @@ LOCAL_SRC_FILES  := \
 	gui/SwipeHintComponent.cpp \
 	gui/MetaDataManager.cpp \
 	gui/OutOfSpaceMenu.cpp \
+	gui/KeyState.cpp \
 	io/VApkFile.cpp \
 	io/VBinaryFile.cpp \
 	io/VFileOperation.cpp \
@@ -136,7 +137,6 @@ LOCAL_SRC_FILES  := \
 	scene/ModelView.cpp \
 	scene/SurfaceTexture.cpp \
 	scene/SwipeView.cpp \
-	KeyState.cpp \
 	App.cpp \
 	VrLocale.cpp \
 	VConsole.cpp

@@ -99,6 +99,7 @@ SOURCES += \
     jni/gui/SwipeHintComponent.cpp \
     jni/gui/MetaDataManager.cpp \
     jni/gui/OutOfSpaceMenu.cpp \
+    jni/gui/KeyState.cpp \
     jni/io/VApkFile.cpp \
     jni/io/VBinaryFile.cpp \
     jni/io/VFileOperation.cpp \
@@ -120,7 +121,6 @@ SOURCES += \
     jni/scene/SwipeView.cpp \
     jni/App.cpp \
     jni/VConsole.cpp \
-    jni/KeyState.cpp \
     jni/VrLocale.cpp
 
 
@@ -257,6 +257,7 @@ HEADERS += \
     jni/gui/OutOfSpaceMenu.h \
     jni/gui/GuiSysLocal.h \
     jni/gui/ui_default.h \
+    jni/gui/KeyState.h \
     jni/io/VApkFile.h \
     jni/io/VBinaryFile.h \
     jni/io/VDelegatedFile.h \
@@ -279,7 +280,6 @@ HEADERS += \
     jni/scene/ModelView.h \
     jni/scene/SurfaceTexture.h \
     jni/scene/SwipeView.h \
-    jni/KeyState.h \
     jni/App.h \
     jni/AppRender.h \
     jni/VrLocale.h \
