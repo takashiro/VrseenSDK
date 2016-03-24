@@ -20,7 +20,7 @@
 					<folderInfo id="com.android.toolchain.gcc.1452903304.743334424" name="/" resourcePath="">
 						<toolChain id="com.android.toolchain.gcc.1192600760" name="Android GCC" superClass="com.android.toolchain.gcc">
 							<targetPlatform binaryParser="org.eclipse.cdt.core.ELF" id="com.android.targetPlatform.1813833324" isAbstract="false" superClass="com.android.targetPlatform"/>
-							<builder id="com.android.builder.1414487763" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Android Builder" superClass="com.android.builder">
+							<builder arguments="-j16 OVR_DEBUG=1 NDK_DEBUG=1" command="ndk-build" id="com.android.builder.1414487763" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Android Builder" superClass="com.android.builder">
 								<outputEntries>
 									<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="outputPath" name="obj"/>
 									<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="outputPath" name="libs"/>
@@ -48,5 +48,10 @@
 		<scannerConfigBuildInfo instanceId="com.android.toolchain.gcc.1452903304;com.android.toolchain.gcc.1452903304.743334424;com.android.gcc.compiler.1982687778;com.android.gcc.inputType.1016346699">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="com.android.AndroidPerProjectProfile"/>
 		</scannerConfigBuildInfo>
+	</storageModule>
+	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="Default">
+			<resource resourceType="PROJECT" workspacePath="/NervGearTemplate"/>
+		</configuration>
 	</storageModule>
 </cproject>
