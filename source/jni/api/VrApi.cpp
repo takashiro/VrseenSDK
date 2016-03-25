@@ -22,7 +22,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "api/VGlOperation.h"
 #include "android/JniUtils.h"
 #include "android/VOsBuild.h"
-#include "OVRVersion.h"					// for vrlib build version
+
 #include "VString.h"			// for ReadFreq()
 #include "VJson.h"			// needed for ovr_StartSystemActivity
 #include "MemBuffer.h"		// needed for MemBufferT

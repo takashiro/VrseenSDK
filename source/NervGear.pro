@@ -170,7 +170,6 @@ HEADERS += \
     jni/core/Types.h \
     jni/core/List.h \
     jni/core/VVariant.h \
-    jni/core/OVRVersion.h \
     jni/core/TypesafeNumber.h \
     jni/core/VUserSettings.h \
     jni/core/VWaitCondition.h \
