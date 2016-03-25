@@ -13,7 +13,6 @@
 #include "Android/JniUtils.h"
 #include "Vsync.h"
 #include "VLensDistortion.h"
-#include "VrApi_Android.h"
 #include "api/VGlOperation.h"
 #include "Alg.h"
 #include "../core/VString.h"
@@ -1665,7 +1664,7 @@ void VFrameSmooth::Private::warpSwapInternal( const ovrTimeWarpParms & parms )
     // Explicitly bind the framebuffer back to the default, so the
     // eye targets will not be bound while they might be used as warp sources.
     glBindFramebuffer( GL_FRAMEBUFFER, 0 );
-    const int minimumVsyncs = ( ovr_GetPowerLevelStateThrottled() ) ? 2 : parms.MinimumVsyncs;
+    const int minimumVsyncs =  parms.MinimumVsyncs;
 
     VGlOperation glOperation;
     // Prepare to pass the new eye buffers to the background thread if we are running multi-threaded.
@@ -1674,7 +1673,7 @@ void VFrameSmooth::Private::warpSwapInternal( const ovrTimeWarpParms & parms )
     ws.MinimumVsync = m_lastSwapVsyncCount + 2 * minimumVsyncs;	// don't use it if from same frame to avoid problems with very fast frames
     ws.FirstDisplayedVsync[0] = 0;			// will be set when it becomes the currentSource
     ws.FirstDisplayedVsync[1] = 0;			// will be set when it becomes the currentSource
-    ws.disableChromaticCorrection = ( ovr_GetPowerLevelStateThrottled() || ( glOperation.EglGetGpuType() & NervGear::VGlOperation::GPU_TYPE_MALI_T760_EXYNOS_5433 ) != 0 );
+    ws.disableChromaticCorrection = ( ( glOperation.EglGetGpuType() & NervGear::VGlOperation::GPU_TYPE_MALI_T760_EXYNOS_5433 ) != 0 );
     ws.WarpParms = parms;
 
     // Default images.

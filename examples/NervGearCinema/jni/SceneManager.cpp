@@ -1,5 +1,4 @@
 #include "api/VrApi.h"
-#include "api/VrApi_Helpers.h"
 #include "api/VGlOperation.h"
 
 #include "CinemaApp.h"
