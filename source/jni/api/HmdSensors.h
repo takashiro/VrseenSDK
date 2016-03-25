@@ -3,8 +3,6 @@
 #include "vglobal.h"
 #include "VMutex.h"
 
-#include <memory>
-
 #include "sensor/SensorFusion.h"
 #include "sensor/LatencyTest.h"
 #include "VAtomicInt.h"
@@ -41,12 +39,12 @@ public:
     bool					processLatencyTest( unsigned char rgbColorOut[3] );
     const char *			latencyTestResult() { return m_latencyUtil.GetResultsString(); }
 
-    DeviceManager *	deviceManager() { return m_deviceManager.get(); }
+    DeviceManager *	deviceManager() { return m_deviceManager.GetPtr(); }
 
     void					onMessage( const Message & msg );
 
 private:
-    std::shared_ptr<DeviceManager>		m_deviceManager;
+    Ptr<DeviceManager>		m_deviceManager;
     Ptr<HMDDevice>			m_device;
 
     bool								m_sensorStarted;

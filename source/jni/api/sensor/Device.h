@@ -11,8 +11,6 @@
 #include "VString.h"
 #include "VLock.h"
 
-#include <memory>
-
 NV_NAMESPACE_BEGIN
 
 // Declared externally
@@ -267,7 +265,7 @@ public:
     virtual DeviceEnumerator<> enumerateDevicesEx(const DeviceEnumerationArgs& args) = 0;
 
     // Creates a new DeviceManager. Only one instance of DeviceManager should be created at a time.
-    static   std::shared_ptr<DeviceManager> Create();
+    static   DeviceManager* Create();
 
     // Static constant for this device type, used in template cast type checks.
     enum { EnumDeviceType = Device_Manager };

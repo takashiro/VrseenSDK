@@ -21,7 +21,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "Log.h"
 
 #include <jni.h>
-#include <memory>
 
 jobject gRiftconnection;
 
@@ -352,7 +351,7 @@ void DeviceManagerThread::resumeThread()
 
 
 // Creates a new DeviceManager and initializes OVR.
-std::shared_ptr<DeviceManager> DeviceManager::Create()
+DeviceManager* DeviceManager::Create()
 {
     if (!System::IsInitialized())
     {
@@ -362,19 +361,26 @@ std::shared_ptr<DeviceManager> DeviceManager::Create()
         return 0;
     }
 
-    std::shared_ptr<Android::DeviceManager> manager = std::make_shared<Android::DeviceManager>();
-    if (manager != nullptr) {
-        if (manager->initialize(0)) {
+    Ptr<Android::DeviceManager> manager = *new Android::DeviceManager;
+
+    if (manager)
+    {
+        if (manager->initialize(0))
+        {
             manager->AddFactory(&LatencyTestDeviceFactory::GetInstance());
             manager->AddFactory(&SensorDeviceFactory::GetInstance());
             manager->AddFactory(&Android::HMDDeviceFactory::GetInstance());
-        } else {
-            manager.reset();
+
+            manager->AddRef();
+        }
+        else
+        {
+            manager.Clear();
         }
 
     }
 
-    return manager;
+    return manager.GetPtr();
 }
 
 
