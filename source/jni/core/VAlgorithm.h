@@ -13,12 +13,10 @@
 #include "types.h"
 
 using namespace std;
+
 NV_NAMESPACE_BEGIN
+
 namespace VAlgorithm {
-template <typename T> inline void Swap(T &a, T &b)
-{
-    swap(a, b);
-}
 
 template <typename T> inline const T Min(const T a, const T b)
 {

@@ -759,7 +759,7 @@ void OvrMetaData::regenerateCategoryIndices()
 
 		if ( tags.at( 0 ) == FAVORITES_TAG && tags.length() > 1 )
 		{
-           VAlgorithm::Swap(tags[0], tags[1]);
+           std::swap(tags[0], tags[1]);
 		}
 
 		for ( int tagIndex = 0; tagIndex < tags.length(); ++tagIndex )
