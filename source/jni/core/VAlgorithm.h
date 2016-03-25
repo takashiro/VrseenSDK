@@ -5,26 +5,22 @@
  *      Author: yangkai
  */
 #pragma once
-#include <utility>
-#include <algorithm>
-#include <cmath>
-#include <assert.h>
-#include "vglobal.h"
-#include "types.h"
 
-using namespace std;
+#include "vglobal.h"
+#include <algorithm>
 
 NV_NAMESPACE_BEGIN
 
 namespace VAlgorithm {
 
-template <typename T> inline const T Clamp(const T v, const T minVal, const T maxVal)
+template <typename T>
+inline T Clamp(const T &v, const T &minVal, const T &maxVal)
 {
-    return max(minVal, min(v, maxVal));
+    return std::max(minVal, std::min(v, maxVal));
 }
 
 template<class Array>
-typename Array::ValueType& Median(Array& arr)
+typename Array::ValueType &Median(Array &arr)
 {
     uint count = arr.size();
     uint mid = (count - 1) / 2;
@@ -42,4 +38,5 @@ typename Array::ValueType& Median(Array& arr)
 }
 
 }
+
 NV_NAMESPACE_END

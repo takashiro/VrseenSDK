@@ -17,8 +17,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 namespace NervGear {
 
-using namespace VAlgorithm;
-
 const UByte VERSION = 2;
 const UByte MAX_COMPAT_VERSION = 15;
 
@@ -281,7 +279,7 @@ const TemperatureReport& median(const VArray<TemperatureReport>& temperatureRepo
             values.append(temperatureReportsBin[i].Offset[coord]);
     if (values.size() > 0)
     {
-        double med = Median(values);
+        double med = VAlgorithm::Median(values);
         // this is kind of a hack
         for (unsigned i = 0; i < temperatureReportsBin.size(); i++)
             if (temperatureReportsBin[i].Offset[coord] == med)
