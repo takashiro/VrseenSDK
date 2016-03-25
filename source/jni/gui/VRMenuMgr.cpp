@@ -20,7 +20,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "DebugLines.h"
 #include "BitmapFont.h"
 #include "VRMenuObjectLocal.h"
-
+#include <algorithm>
 
 
 namespace NervGear {
@@ -885,7 +885,8 @@ void VRMenuMgrLocal::finish( VR4Matrixf const & viewMatrix )
 		SortKeys[i].Key = ( sortKey << 32ULL ) | ( NumSubmitted - i );	// invert i because we want items submitted sooner to be considered "further away"
 	}
 	
-	VAlgorithm::QuickSort( SortKeys );
+	std::sort(SortKeys.begin(), SortKeys.end());
+
 }
 
 //==============================

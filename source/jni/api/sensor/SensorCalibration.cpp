@@ -13,6 +13,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "Log.h"
 #include "VThread.h"
 #include <time.h>
+#include <cmath>
 
 namespace NervGear {
 
@@ -193,8 +194,8 @@ void SensorCalibration::StoreAutoOffset()
     // find the best bin
     uint binIdx = 0;
     for (uint i = 1; i < TemperatureReports.size(); i++)
-        if (Abs(GyroAutoTemperature - TemperatureReports[i][0].TargetTemperature) <
-            Abs(GyroAutoTemperature - TemperatureReports[binIdx][0].TargetTemperature))
+        if (std::abs(GyroAutoTemperature - TemperatureReports[i][0].TargetTemperature) <
+             std::abs(GyroAutoTemperature - TemperatureReports[binIdx][0].TargetTemperature))
             binIdx = i;
 
     // find the oldest and newest samples
@@ -222,7 +223,7 @@ void SensorCalibration::StoreAutoOffset()
     if (now - newestReport.Time > minDelay)
     {
         // only write a new sample if the temperature is close enough
-        if (Abs(GyroAutoTemperature - oldestReport.TargetTemperature) < maxDeltaT)
+        if (std::abs(GyroAutoTemperature - oldestReport.TargetTemperature) < maxDeltaT)
         {
             oldestReport.Time = now;
             oldestReport.ActualTemperature = GyroAutoTemperature;
@@ -240,8 +241,8 @@ void SensorCalibration::StoreAutoOffset()
     else
     {
         // if the newest sample is too recent - _update_ it if significantly closer to the target temp
-        if (Abs(GyroAutoTemperature - newestReport.TargetTemperature) + minExtraDeltaT
-            < Abs(newestReport.ActualTemperature - newestReport.TargetTemperature))
+        if (std::abs(GyroAutoTemperature - newestReport.TargetTemperature) + minExtraDeltaT
+            < std::abs(newestReport.ActualTemperature - newestReport.TargetTemperature))
         {
             // (do not update the time!)
             newestReport.ActualTemperature = GyroAutoTemperature;
@@ -318,7 +319,7 @@ double OffsetInterpolator::GetOffset(double targetTemperature, double autoTemper
     const double minInterpolationDist = 0.5;
 
     // difference between current and autocalibrated temperature adjusted for preference over historical data
-    const double adjustedDeltaT = Abs(autoTemperature - targetTemperature) - autoRangeExtra;
+    const double adjustedDeltaT = std::abs(autoTemperature - targetTemperature) - autoRangeExtra;
 
     int count = (int) Temperatures.size();
     // handle special cases when we don't have enough data for proper interpolation

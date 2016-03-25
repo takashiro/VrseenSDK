@@ -469,7 +469,7 @@ void OvrMetaData::reconcileMetaData( VStringHash< OvrMetaDatum * > & storedMetaD
 			sortedEntries.append( storedDatum );
 		}
 	}
-	VAlgorithm::QuickSortSlicedSafe( sortedEntries, 0, sortedEntries.size(), OvrMetaDatumIdComparator);
+	std::sort(sortedEntries.begin(), sortedEntries.end(), OvrMetaDatumIdComparator);
 	VArray< OvrMetaDatum * >::iterator sortedIter = sortedEntries.begin();
 	for ( ; sortedIter != sortedEntries.end(); ++sortedIter )
 	{

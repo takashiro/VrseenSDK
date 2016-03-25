@@ -14,7 +14,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "Log.h"
 #include "VTimer.h"
 #include "VAlgorithm.h"
-
+#include <algorithm>
+using namespace std;
 namespace NervGear {
 
 static const UInt32     TIME_TO_WAIT_FOR_SETTLE_PRE_CALIBRATION = 16*10;
