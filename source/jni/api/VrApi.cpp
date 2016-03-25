@@ -34,7 +34,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VrApi_local.h"
 #include "VrApi_Helpers.h"
 #include "Vsync.h"
-#include "SystemActivities.h"
+#include "VSystemActivities.h"
 
 NV_USING_NAMESPACE
 
@@ -559,7 +559,7 @@ void ovr_Init()
 	// After ovr_Initialize(), because it uses String
     VOsBuild::Init(jni);
 
-	NervGear::SystemActivities_InitEventQueues();
+	NervGear::VSystemActivities::instance()->initEventQueues();
 }
 
 // This sends an explicit intent to the package/classname with the command and URI in the intent.
@@ -779,7 +779,7 @@ void ovr_ExitActivity( ovrMobile * ovr, eExitType exitType )
 			FAIL( "ovr_ExitActivity( EXIT_TYPE_EXIT ): Called with tid %d instead of %d", gettid(), OnLoadTid );
 		}
 
-		NervGear::SystemActivities_ShutdownEventQueues();
+		NervGear::VSystemActivities::instance()->shutdownEventQueues();
 		ovr_Shutdown();
 		exit( 0 );
 	}
@@ -1669,7 +1669,7 @@ void ovr_HandleHmdEvents( ovrMobile * ovr )
 
 				NervGear::VString reorientMessage;
                 CreateSystemActivitiesCommand( "", SYSTEM_ACTIVITY_EVENT_REORIENT, "", reorientMessage );
-                NervGear::SystemActivities_AddEvent( reorientMessage );
+                NervGear::VSystemActivities::instance()->addEvent( reorientMessage );
 			}
 		}
 		else if ( mountState.MountState == HMT_MOUNT_UNMOUNTED )
@@ -1707,9 +1707,9 @@ void ovr_HandleDeviceStateChanges( ovrMobile * ovr )
 //	char eventBuffer[MAX_EVENT_SIZE];
     VString eventBuffer;
 
-	for ( eVrApiEventStatus status = NervGear::SystemActivities_nextPendingInternalEvent( eventBuffer, MAX_EVENT_SIZE );
+	for ( eVrApiEventStatus status = NervGear::VSystemActivities::instance()->nextPendingInternalEvent( eventBuffer, MAX_EVENT_SIZE );
 		status >= VRAPI_EVENT_PENDING;
-		status = NervGear::SystemActivities_nextPendingInternalEvent( eventBuffer, MAX_EVENT_SIZE ) )
+		status = NervGear::VSystemActivities::instance()->nextPendingInternalEvent( eventBuffer, MAX_EVENT_SIZE ) )
 	{
 		if ( status != VRAPI_EVENT_PENDING )
 		{
@@ -1929,7 +1929,7 @@ bool ovr_IsDeviceDocked()
 
 eVrApiEventStatus ovr_nextPendingEvent( VString& buffer, unsigned int const bufferSize )
 {
-	eVrApiEventStatus status = NervGear::SystemActivities_nextPendingMainEvent( buffer, bufferSize );
+	eVrApiEventStatus status = NervGear::VSystemActivities::instance()->nextPendingMainEvent( buffer, bufferSize );
 	if ( status < VRAPI_EVENT_PENDING )
 	{
 		return status;
@@ -1946,13 +1946,13 @@ eVrApiEventStatus ovr_nextPendingEvent( VString& buffer, unsigned int const buff
 			LOG( "Queuing internal reorient event." );
 			ovr_RecenterYawInternal();
 			// also queue as an internal event
-			NervGear::SystemActivities_AddInternalEvent( buffer );
+			NervGear::VSystemActivities::instance()->addInternalEvent( buffer );
         } else if (command == SYSTEM_ACTIVITY_EVENT_RETURN_TO_LAUNCHER) {
 			// In the case of the returnToLauncher event, we always handler it internally and pass
 			// along an empty buffer so that any remaining events still get processed by the client.
 			LOG( "Queuing internal returnToLauncher event." );
 			// queue as an internal event
-			NervGear::SystemActivities_AddInternalEvent( buffer );
+			NervGear::VSystemActivities::instance()->addInternalEvent( buffer );
 			// treat as an empty event externally
             buffer = "";
 			status = VRAPI_EVENT_CONSUMED;

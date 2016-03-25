@@ -69,11 +69,11 @@ LOCAL_SRC_FILES  := \
 	api/VDevice.cpp \
 	api/HmdSensors.cpp \
 	api/VLensDistortion.cpp \
-	api/SystemActivities.cpp \
 	api/VFrameSmooth.cpp \
 	api/VGlGeometry.cpp \
 	api/VMainActivity.cpp \
 	api/VGlOperation.cpp \
+	api/VSystemActivities.cpp \
 	api/VGlShader.cpp \
 	api/sensor/DeviceHandle.cpp \
 	api/sensor/DeviceImpl.cpp \
