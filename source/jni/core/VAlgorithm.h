@@ -1,60 +1,65 @@
+/*
+ * VAlgorithm.h
+ *
+ *  Created on: 2016年3月22日
+ *      Author: yangkai
+ */
 #pragma once
-
+#include <utility>
+#include <algorithm>
+#include <cmath>
+#include <assert.h>
 #include "vglobal.h"
+#include "types.h"
 
-#include "Types.h"
-#include <string.h>
-
+using namespace std;
 NV_NAMESPACE_BEGIN
-
-namespace Alg {
-
-
-//-----------------------------------------------------------------------------------
-// ***** Operator extensions
-
-template <typename T> OVR_FORCE_INLINE void Swap(T &a, T &b)
-{  T temp(a); a = b; b = temp; }
-
-
-// ***** min/max are not implemented in Visual Studio 6 standard STL
-
-template <typename T> OVR_FORCE_INLINE const T Min(const T a, const T b)
-{ return (a < b) ? a : b; }
-
-template <typename T> OVR_FORCE_INLINE const T Max(const T a, const T b)
-{ return (b < a) ? a : b; }
-
-template <typename T> OVR_FORCE_INLINE const T Clamp(const T v, const T minVal, const T maxVal)
-{ return Max<T>(minVal, Min<T>(v, maxVal)); }
-
-template <typename T> OVR_FORCE_INLINE int     Chop(T f)
-{ return (int)f; }
-
-template <typename T> OVR_FORCE_INLINE T       Lerp(T a, T b, T f)
-{ return (b - a) * f + a; }
-
-
-// These functions stand to fix a stupid VC++ warning (with /Wp64 on):
-// "warning C4267: 'argument' : conversion from 'size_t' to 'const unsigned', possible loss of data"
-// Use these functions instead of gmin/gmax if the argument has size
-// of the pointer to avoid the warning. Though, functionally they are
-// absolutelly the same as regular gmin/gmax.
-template <typename T>   OVR_FORCE_INLINE const T PMin(const T a, const T b)
+namespace VAlgorithm {
+template <typename T> inline void Swap(T &a, T &b)
 {
-    OVR_COMPILER_ASSERT(sizeof(T) == sizeof(uint));
+    swap(a, b);
+}
+
+template <typename T> inline const T Min(const T a, const T b)
+{
+    return min(a, b);
+}
+
+template <typename T> inline const T Max(const T a, const T b)
+{
+    return max(a, b);
+}
+
+template <typename T> inline const T Clamp(const T v, const T minVal, const T maxVal)
+{
+    return max(minVal, min(v, maxVal));
+}
+
+template <typename T> inline int Chop(T f)
+{
+    return int(f);
+}
+
+template <typename T> inline T Lerp(T a, T b, T f)
+{
+    return (b - a) * f + a;
+}
+
+template <typename T> inline const T Abs(const T v)
+{
+    return abs(v);
+}
+
+template <typename T>   inline const T PMin(const T a, const T b)
+{
+    assert(sizeof(T) == sizeof(uint));
     return (a < b) ? a : b;
 }
-template <typename T>   OVR_FORCE_INLINE const T PMax(const T a, const T b)
+template <typename T>   inline const T PMax(const T a, const T b)
 {
-    OVR_COMPILER_ASSERT(sizeof(T) == sizeof(uint));
+    assert(sizeof(T) == sizeof(uint));
     return (b < a) ? a : b;
 }
-
-
-template <typename T>   OVR_FORCE_INLINE const T Abs(const T v)
-{ return (v>=0) ? v : -v; }
-
 
 //-----------------------------------------------------------------------------------
 // ***** OperatorLess
@@ -420,7 +425,7 @@ typename Array::ValueType& Median(Array& arr)
 {
     uint count = arr.size();
     uint mid = (count - 1) / 2;
-    OVR_ASSERT(count > 0);
+    assert(count > 0);
 
     for (uint j = 0; j <= mid; j++)
     {
@@ -602,31 +607,31 @@ void AppendArray(CDst& dst, const CSrc& src)
 template<class CDst, class CSrc, class Less>
 void MergeArray( CDst & dst, const CSrc & src, Less less )
 {
-	uint dstIndex = dst.GetSize();
-	uint srcIndex = src.GetSize();
-	uint finalIndex = dstIndex + srcIndex;
-	dst.Resize( finalIndex );
-	while ( srcIndex > 0 )
-	{
-		if ( dstIndex > 0 && less( src[srcIndex - 1], dst[dstIndex - 1] ) )
-		{
-			Swap( dst[finalIndex - 1], dst[dstIndex - 1] );
-			dstIndex--;
-		}
-		else
-		{
-			dst[finalIndex - 1] = src[srcIndex - 1];
-			srcIndex--;
-		}
-		finalIndex--;
-	}
+    uint dstIndex = dst.GetSize();
+    uint srcIndex = src.GetSize();
+    uint finalIndex = dstIndex + srcIndex;
+    dst.Resize( finalIndex );
+    while ( srcIndex > 0 )
+    {
+        if ( dstIndex > 0 && less( src[srcIndex - 1], dst[dstIndex - 1] ) )
+        {
+            Swap( dst[finalIndex - 1], dst[dstIndex - 1] );
+            dstIndex--;
+        }
+        else
+        {
+            dst[finalIndex - 1] = src[srcIndex - 1];
+            srcIndex--;
+        }
+        finalIndex--;
+    }
 }
 
 template<class CDst, class CSrc>
 void MergeArray( CDst & dst, const CSrc & src )
 {
-	typedef typename CDst::ValueType ValueType;
-	MergeArray( dst, src, OperatorLess<ValueType>::Compare );
+    typedef typename CDst::ValueType ValueType;
+    MergeArray( dst, src, OperatorLess<ValueType>::Compare );
 }
 
 //-----------------------------------------------------------------------------------
@@ -827,72 +832,72 @@ inline int MemUtil::Cmp64(const void* p1, const void* p2, uint int64Count)
 namespace ByteUtil {
 
     // *** Swap Byte Order
-	template< typename _type_ >
-	inline _type_ SwapOrder( const _type_ & value )
-	{
-		_type_ bytes = value;
-		char * b = (char *)& bytes;
-		if ( sizeof( _type_ ) == 1 )
-		{
-		}
-		else if ( sizeof( _type_ ) == 2 )
-		{
-			Swap( b[0], b[1] );
-		}
-		else if ( sizeof( _type_ ) == 4 )
-		{
-			Swap( b[0], b[3] );
-			Swap( b[1], b[2] );
-		}
-		else if ( sizeof( _type_ ) == 8 )
-		{
-			Swap( b[0], b[7] );
-			Swap( b[1], b[6] );
-			Swap( b[2], b[5] );
-			Swap( b[3], b[4] );
-		}
-		else
-		{
-			OVR_ASSERT( false );
-		}
-		return bytes;
-	}
+    template< typename _type_ >
+    inline _type_ SwapOrder( const _type_ & value )
+    {
+        _type_ bytes = value;
+        char * b = (char *)& bytes;
+        if ( sizeof( _type_ ) == 1 )
+        {
+        }
+        else if ( sizeof( _type_ ) == 2 )
+        {
+            Swap( b[0], b[1] );
+        }
+        else if ( sizeof( _type_ ) == 4 )
+        {
+            Swap( b[0], b[3] );
+            Swap( b[1], b[2] );
+        }
+        else if ( sizeof( _type_ ) == 8 )
+        {
+            Swap( b[0], b[7] );
+            Swap( b[1], b[6] );
+            Swap( b[2], b[5] );
+            Swap( b[3], b[4] );
+        }
+        else
+        {
+            assert( false );
+        }
+        return bytes;
+    }
 
     // *** Byte-order conversion
 
 #if (OVR_BYTE_ORDER == OVR_LITTLE_ENDIAN)
-	// Little Endian to System (LE)
-	template< typename _type_ >
-	inline _type_ LEToSystem( _type_ v ) { return v; }
+    // Little Endian to System (LE)
+    template< typename _type_ >
+    inline _type_ LEToSystem( _type_ v ) { return v; }
 
-	// Big Endian to System (LE)
-	template< typename _type_ >
-	inline _type_ BEToSystem( _type_ v ) { return SwapOrder( v ); }
+    // Big Endian to System (LE)
+    template< typename _type_ >
+    inline _type_ BEToSystem( _type_ v ) { return SwapOrder( v ); }
 
-	// System (LE) to Little Endian
-	template< typename _type_ >
-	inline _type_ SystemToLE( _type_ v ) { return v; }
+    // System (LE) to Little Endian
+    template< typename _type_ >
+    inline _type_ SystemToLE( _type_ v ) { return v; }
 
-	// System (LE) to Big Endian
-	template< typename _type_ >
-	inline _type_ SystemToBE( _type_ v ) { return SwapOrder( v ); }
+    // System (LE) to Big Endian
+    template< typename _type_ >
+    inline _type_ SystemToBE( _type_ v ) { return SwapOrder( v ); }
 
 #elif (OVR_BYTE_ORDER == OVR_BIG_ENDIAN)
-	// Little Endian to System (BE)
-	template< typename _type_ >
-	inline _type_ LEToSystem( _type_ v ) { return SwapOrder( v ); }
+    // Little Endian to System (BE)
+    template< typename _type_ >
+    inline _type_ LEToSystem( _type_ v ) { return SwapOrder( v ); }
 
-	// Big Endian to System (BE)
-	template< typename _type_ >
-	inline _type_ BEToSystem( _type_ v ) { return v; }
+    // Big Endian to System (BE)
+    template< typename _type_ >
+    inline _type_ BEToSystem( _type_ v ) { return v; }
 
-	// System (BE) to Little Endian
-	template< typename _type_ >
-	inline _type_ SystemToLE( _type_ v ) { return SwapOrder( v ); }
+    // System (BE) to Little Endian
+    template< typename _type_ >
+    inline _type_ SystemToLE( _type_ v ) { return SwapOrder( v ); }
 
-	// System (BE) to Big Endian
-	template< typename _type_ >
-	inline _type_ SystemToBE( _type_ v ) { return v; }
+    // System (BE) to Big Endian
+    template< typename _type_ >
+    inline _type_ SystemToBE( _type_ v ) { return v; }
 
 #else
     #error "OVR_BYTE_ORDER must be defined to OVR_LITTLE_ENDIAN or OVR_BIG_ENDIAN"
@@ -975,7 +980,5 @@ inline SByte DecodeBCD(UByte byte)
     return (SByte)decimal;
 }
 
-
 }
-
 NV_NAMESPACE_END

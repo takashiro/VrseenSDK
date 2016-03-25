@@ -10,7 +10,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 *************************************************************************************/
 
 #include "ModelView.h"
-#include "Alg.h"
+#include "VAlgorithm.h"
 #include "api/VrApi.h"
 #include "api/VrApi_Helpers.h"
 
@@ -375,7 +375,7 @@ void OvrSceneView::UpdateViewMatrix(const VrFrame vrFrame )
         const V3Vectf orientationVector = yawRotate.Transform( GamepadMove );
 
 		// Don't let move get too crazy fast
-		const float moveDistance = NervGear::Alg::Min<float>( MoveSpeed * (float)dt, 1.0f );
+		const float moveDistance = NervGear::VAlgorithm::Min<float>( MoveSpeed * (float)dt, 1.0f );
 		if ( WorldModel.Definition )
 		{
 			FootPos = SlideMove( FootPos, ViewParms.EyeHeight, orientationVector, moveDistance,

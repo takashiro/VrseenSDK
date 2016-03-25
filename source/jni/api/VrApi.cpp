@@ -1834,7 +1834,103 @@ void ovr_AdjustClockLevels( ovrMobile * ovr, int cpuLevel, int gpuLevel )
 	SetVrSystemPerformance( ovr->Jni, VrLibClass, ovr->Parms.ActivityObject,
 			ovr->Parms.CpuLevel, ovr->Parms.GpuLevel );
 }
+/*
+ * CreateSchedulingReport
+ *
+ * Display information related to CPU scheduling
+ */
+const char * ovr_CreateSchedulingReport( ovrMobile * ovr )
+{
+	if ( ovr == NULL )
+	{
+		return "";
+	}
 
+	static char report[16384];
+	static int reportLength = 0;
+
+	const pthread_t thisThread = pthread_self();
+	const pthread_t warpThread = ovr->Warp->warpThread();
+
+	int thisPolicy = 0;
+	struct sched_param thisSchedParma = {};
+	if ( !pthread_getschedparam( thisThread, &thisPolicy, &thisSchedParma ) )
+	{
+		WARN( "pthread_getschedparam() failed" );
+	}
+
+	reportLength += NervGear::VAlgorithm::Max( 0, snprintf( report + reportLength, sizeof( report ) - reportLength - 1,
+			"VrThread:%s:%i WarpThread:\n"
+			, thisPolicy == SCHED_FIFO ? "SCHED_FIFO" : "SCED_NORMAL"
+			, thisSchedParma.sched_priority ) );
+
+	if ( warpThread != 0 )
+	{
+		int timeWarpPolicy = 0;
+		struct sched_param timeWarpSchedParma = {};
+		if ( pthread_getschedparam( warpThread, &timeWarpPolicy, &timeWarpSchedParma ) )
+		{
+			WARN( "pthread_getschedparam() failed" );
+	    	reportLength += NervGear::VAlgorithm::Max( 0, snprintf( report + reportLength, sizeof( report ) - reportLength - 1, "???" ) );
+		}
+		else
+		{
+	    	reportLength += NervGear::VAlgorithm::Max( 0, snprintf( report + reportLength, sizeof( report ) - reportLength - 1, "%s:%i"
+	    			, timeWarpPolicy == SCHED_FIFO ? "SCHED_FIFO" : "SCED_NORMAL"
+	    			, timeWarpSchedParma.sched_priority ) );
+		}
+	}
+	else
+	{
+		reportLength += NervGear::VAlgorithm::Max( 0, snprintf( report + reportLength, sizeof( report ) - reportLength - 1, "sync" ) );
+	}
+
+	static const int maxCores = 8;
+	for ( int core = 0; core < maxCores; core++ )
+	{
+		char path[1024] = {};
+		snprintf( path, sizeof( path ) - 1, "/sys/devices/system/cpu/cpu%i/online", core );
+
+		const char * current = ReadSmallFile( path );
+		if ( current[0] == 0 )
+		{	// no more files
+			break;
+		}
+		const int online = atoi( current );
+		if ( !online )
+		{
+			continue;
+		}
+
+		snprintf( path, sizeof( path ) - 1, "/sys/devices/system/cpu/cpu%i/cpufreq/scaling_governor", core );
+		NervGear::VString governor = ReadSmallFile( path );
+		governor = StripLinefeed( governor );
+
+		// we won't be able to read the cpu clock unless it has been chmod'd to 0666, but try anyway.
+		//float curFreqGHz = ReadFreq( "/sys/devices/system/cpu/cpu%i/cpufreq/cpuinfo_cur_freq", core ) * ( 1.0f / 1000.0f / 1000.0f );
+		float curFreqGHz = ReadFreq( "/sys/devices/system/cpu/cpu%i/cpufreq/scaling_cur_freq", core ) * ( 1.0f / 1000.0f / 1000.0f );
+		float minFreqGHz = ReadFreq( "/sys/devices/system/cpu/cpu%i/cpufreq/cpuinfo_min_freq", core ) * ( 1.0f / 1000.0f / 1000.0f );
+		float maxFreqGHz = ReadFreq( "/sys/devices/system/cpu/cpu%i/cpufreq/cpuinfo_max_freq", core ) * ( 1.0f / 1000.0f / 1000.0f );
+
+		reportLength += NervGear::VAlgorithm::Max( 0, snprintf( report + reportLength, sizeof( report ) - reportLength - 1,
+									"cpu%i: \"%s\" %1.2f GHz (min:%1.2f max:%1.2f)\n",
+									core, governor.toCString(), curFreqGHz, minFreqGHz, maxFreqGHz ) );
+	}
+
+	NervGear::VString governor = ReadSmallFile( "/sys/class/kgsl/kgsl-3d0/pwrscale/trustzone/governor" );
+	governor = StripLinefeed( governor );
+
+	const uint64_t gpuUnit = ( ( NervGear::EglGetGpuType() & NervGear::GPU_TYPE_MALI ) != 0 ) ? 1000000LL : 1000LL;
+	const uint64_t gpuFreq = ReadFreq( ( ( NervGear::EglGetGpuType() & NervGear::GPU_TYPE_MALI ) != 0 ) ?
+									"/sys/devices/14ac0000.mali/clock" :
+									"/sys/class/kgsl/kgsl-3d0/gpuclk" );
+
+	reportLength += NervGear::VAlgorithm::Max( 0, snprintf( report + reportLength, sizeof( report ) - reportLength - 1,
+								"gpu: \"%s\" %3.0f MHz",
+								governor.toCString(), gpuFreq * gpuUnit * ( 1.0f / 1000.0f / 1000.0f ) ) );
+
+	return report;
+}
 int ovr_GetVolume()
 {
 	return CurrentVolume.state().Value;

@@ -13,8 +13,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "VPath.h"
 #include "OVR.h"
-#include "Alg.h"
 #include "api/VGlOperation.h"
+#include "VAlgorithm.h"
 
 #include "3rdParty/stb/stb_image.h"
 
@@ -795,7 +795,7 @@ GlTexture LoadTexturePVR( const char * fileName, const unsigned char * buffer, c
 		return GlTexture( 0 );
 	}
 
-	const UInt32 mipCount = ( noMipMaps ) ? 1 : NervGear::Alg::Max( 1u, header.MipMapCount );
+	const UInt32 mipCount = ( noMipMaps ) ? 1 : NervGear::VAlgorithm::Max( 1u, header.MipMapCount );
 
 	width = header.Width;
 	height = header.Height;
@@ -966,7 +966,7 @@ GlTexture LoadTextureKTX( const char * fileName, const unsigned char * buffer, c
 
 	const UByte fileIdentifier[12] =
 	{
-		'«', 'K', 'T', 'X', ' ', '1', '1', '»', '\r', '\n', '\x1A', '\n'
+		'Â«', 'K', 'T', 'X', ' ', '1', '1', 'Â»', '\r', '\n', '\x1A', '\n'
 	};
 
 	const OVR_KTX_HEADER & header = *(OVR_KTX_HEADER *)buffer;
@@ -1011,7 +1011,7 @@ GlTexture LoadTextureKTX( const char * fileName, const unsigned char * buffer, c
 	width = header.pixelWidth;
 	height = header.pixelHeight;
 
-	const UInt32 mipCount = ( noMipMaps ) ? 1 : NervGear::Alg::Max( 1u, header.numberOfMipmapLevels );
+	const UInt32 mipCount = ( noMipMaps ) ? 1 : NervGear::VAlgorithm::Max( 1u, header.numberOfMipmapLevels );
 
 	if ( header.numberOfFaces == 1 )
 	{

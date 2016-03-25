@@ -3,9 +3,8 @@
 #include <math.h>
 #include <string.h>
 #include <assert.h>
-
-#include "../core/Alg.h"
 #include "api/VGlOperation.h"
+#include "../core/VAlgorithm.h"
 #include "../core/Android/LogUtils.h"
 #include "VLensDistortion.h"
 

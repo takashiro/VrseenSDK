@@ -14,7 +14,7 @@
 #include "android/JniUtils.h"
 #include "android/VOsBuild.h"
 
-#include "Alg.h"
+#include "VAlgorithm.h"
 #include "BitmapFont.h"
 #include "VConsole.h"
 #include "DebugLines.h"
@@ -1225,12 +1225,12 @@ struct App::Private : public TalkToJavaInterface
             static double prev;
             const double rawDelta = now - prev;
             prev = now;
-            const double clampedPrediction = Alg::Min(0.1, rawDelta * 2);
+            const double clampedPrediction = VAlgorithm::Min(0.1, rawDelta * 2);
             sensorForNextWarp = ovr_GetPredictedSensorState(OvrMobile, now + clampedPrediction);
 
             vrFrame.PoseState = sensorForNextWarp.Predicted;
             vrFrame.OvrStatus = sensorForNextWarp.Status;
-            vrFrame.DeltaSeconds   = Alg::Min(0.1, rawDelta);
+            vrFrame.DeltaSeconds   = VAlgorithm::Min(0.1, rawDelta);
             vrFrame.FrameNumber++;
 
             // Don't allow this to be excessively large, which can cause application problems.
@@ -1495,14 +1495,14 @@ struct App::Private : public TalkToJavaInterface
             else if (keyCode == AKEYCODE_COMMA && down && repeatCount == 0)
             {
                 float const IPD_MIN_CM = 0.0f;
-                viewParms.InterpupillaryDistance = Alg::Max(IPD_MIN_CM * 0.01f, viewParms.InterpupillaryDistance - IPD_STEP);
+                viewParms.InterpupillaryDistance = VAlgorithm::Max(IPD_MIN_CM * 0.01f, viewParms.InterpupillaryDistance - IPD_STEP);
                 self->showInfoText(1.0f, "%.3f", viewParms.InterpupillaryDistance);
                 return;
             }
             else if (keyCode == AKEYCODE_PERIOD && down && repeatCount == 0)
             {
                 float const IPD_MAX_CM = 8.0f;
-                viewParms.InterpupillaryDistance = Alg::Min(IPD_MAX_CM * 0.01f, viewParms.InterpupillaryDistance + IPD_STEP);
+                viewParms.InterpupillaryDistance = VAlgorithm::Min(IPD_MAX_CM * 0.01f, viewParms.InterpupillaryDistance + IPD_STEP);
                 self->showInfoText(1.0f, "%.3f", viewParms.InterpupillaryDistance);
                 return;
             }

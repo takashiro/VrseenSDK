@@ -19,7 +19,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include <jni.h>
 #include <android/keycodes.h>
 
-#include <Alg.h>
+#include <VAlgorithm.h>
 #include <VPath.h>
 #include <VApkFile.h>
 
@@ -648,7 +648,7 @@ VR4Matrixf Oculus360Videos::drawEyeView( const int eye, const float fovDegrees )
 
 float Fade( double now, double start, double length )
 {
-	return NervGear::Alg::Clamp( ( ( now - start ) / length ), 0.0, 1.0 );
+	return NervGear::VAlgorithm::Clamp( ( ( now - start ) / length ), 0.0, 1.0 );
 }
 
 bool Oculus360Videos::IsVideoPlaying() const

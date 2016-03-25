@@ -10,9 +10,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 *************************************************************************************/
 
 #include "EyePostRender.h"
-
-#include "Alg.h"
 #include "VBasicmath.h"
+#include "VAlgorithm.h"
 #include "VArray.h"
 #include "api/VGlOperation.h"
 #include "Android/LogUtils.h"

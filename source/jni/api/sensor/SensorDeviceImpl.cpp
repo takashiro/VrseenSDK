@@ -15,7 +15,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 // HMDDeviceDesc can be created/updated through Sensor carrying DisplayInfo.
 
 #include "VTimer.h"
-#include "Alg.h"
+#include "VAlgorithm.h"
 
 namespace NervGear {
 
@@ -47,7 +47,7 @@ static UInt32 DecodeUInt32(const UByte* buffer)
 
 static void EncodeUInt16(UByte* buffer, UInt16 val)
 {
-    *(UInt16*)buffer = Alg::ByteUtil::SystemToLE ( val );
+    *(UInt16*)buffer = VAlgorithm::ByteUtil::SystemToLE ( val );
 }
 
 static float DecodeFloat(const UByte* buffer)
@@ -384,7 +384,7 @@ struct SensorFactoryCalibrationImpl
 			PackSensor(Buffer + 43 + 8 * i, row[0], row[1], row[2]);
 		}
 
-		Alg::EncodeSInt16(Buffer + 67, SInt16(Temperature * 100.0f));
+		VAlgorithm::EncodeSInt16(Buffer + 67, SInt16(Temperature * 100.0f));
 	}
 
 	void Unpack()
@@ -481,14 +481,14 @@ struct SerialImpl
 	void  Pack()
 	{
     Buffer[0] = 10;
-    Alg::EncodeUInt16(Buffer+1, Settings.CommandId);
+    VAlgorithm::EncodeUInt16(Buffer+1, Settings.CommandId);
 	for (int i = 0; i < Settings.SERIAL_NUMBER_SIZE; ++i)
 		Buffer[3 + i] = Settings.SerialNumberValue[i];
 	}
 
 	void Unpack()
 	{
-		Settings.CommandId = Alg::DecodeUInt16(Buffer+1);
+		Settings.CommandId = VAlgorithm::DecodeUInt16(Buffer+1);
 		for (int i = 0; i < Settings.SERIAL_NUMBER_SIZE; ++i)
 			Settings.SerialNumberValue[i] = Buffer[3 + i];
 	}
@@ -554,7 +554,7 @@ struct TemperatureImpl
     {
 
         Buffer[0] = 20;
-        Alg::EncodeUInt16(Buffer + 1, Settings.CommandId);
+        VAlgorithm::EncodeUInt16(Buffer + 1, Settings.CommandId);
         Buffer[3] = Settings.Version;
 
         Buffer[4] = Settings.NumBins;
@@ -562,10 +562,10 @@ struct TemperatureImpl
         Buffer[6] = Settings.NumSamples;
         Buffer[7] = Settings.Sample;
 
-        Alg::EncodeSInt16(Buffer + 8 , SInt16(Settings.TargetTemperature * 1e2));
-        Alg::EncodeSInt16(Buffer + 10, SInt16(Settings.ActualTemperature * 1e2));
+        VAlgorithm::EncodeSInt16(Buffer + 8 , SInt16(Settings.TargetTemperature * 1e2));
+        VAlgorithm::EncodeSInt16(Buffer + 10, SInt16(Settings.ActualTemperature * 1e2));
 
-        Alg::EncodeUInt32(Buffer + 12, Settings.Time);
+        VAlgorithm::EncodeUInt32(Buffer + 12, Settings.Time);
 
         V3Vectd offset = Settings.Offset * 1e4;
         PackSensor(Buffer + 16, (SInt32) offset.x, (SInt32) offset.y, (SInt32) offset.z);
@@ -623,7 +623,7 @@ struct GyroOffsetImpl
         V3Vectd offset = Settings.Offset * 1e4;
 		PackSensor(Buffer + 4, (SInt32) offset.x, (SInt32) offset.y, (SInt32) offset.z);
 
-        Alg::EncodeSInt16(Buffer + 16, SInt16(Settings.Temperature * 1e2));
+        VAlgorithm::EncodeSInt16(Buffer + 16, SInt16(Settings.Temperature * 1e2));
     }
 
     void Unpack()

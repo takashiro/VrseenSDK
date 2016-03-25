@@ -11,9 +11,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 *************************************************************************************/
 
 #include "VRMenuMgr.h"
-
-#include "Alg.h"
 #include "api/VGlOperation.h"
+#include "VAlgorithm.h"
 #include "../api/VGlShader.h"
 #include "GlTexture.h"
 #include "../api/VGlGeometry.h"
@@ -886,7 +885,7 @@ void VRMenuMgrLocal::finish( VR4Matrixf const & viewMatrix )
 		SortKeys[i].Key = ( sortKey << 32ULL ) | ( NumSubmitted - i );	// invert i because we want items submitted sooner to be considered "further away"
 	}
 	
-	Alg::QuickSort( SortKeys );
+	VAlgorithm::QuickSort( SortKeys );
 }
 
 //==============================

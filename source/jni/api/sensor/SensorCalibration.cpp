@@ -16,7 +16,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 namespace NervGear {
 
-using namespace Alg;
+using namespace VAlgorithm;
 
 const UByte VERSION = 2;
 const UByte MAX_COMPAT_VERSION = 15;

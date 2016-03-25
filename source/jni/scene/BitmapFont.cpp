@@ -14,7 +14,7 @@
 // - in-world text really should sort with all other transparent surfaces
 //
 #include "BitmapFont.h"
-#include "Alg.h"
+#include "VAlgorithm.h"
 
 #include <errno.h>
 #include <math.h>
@@ -558,7 +558,7 @@ bool FontInfoType::LoadFromBuffer(void const * buffer,
 					MaxDescent = descent;
 				}
 
-				maxCharCode = Alg::Max(maxCharCode, g.CharCode);
+				maxCharCode = VAlgorithm::Max(maxCharCode, g.CharCode);
 			}
 			i++;
 		}
@@ -891,7 +891,7 @@ void BitmapFontLocal::WordWrapText(VString & inOutText, const float widthMeters,
 			if (endPos < totalLength) {
                 VString subInStr = inOutText.range(pos, endPos);
 				if (subInStr == wholeStrsList[i]) {
-					dontSplitUntilIdx = Alg::Max(dontSplitUntilIdx, endPos);
+					dontSplitUntilIdx = VAlgorithm::Max(dontSplitUntilIdx, endPos);
 				}
 			}
 		}
@@ -1225,11 +1225,11 @@ void BitmapFontSurfaceLocal::DrawText3D(BitmapFont const & font,
 	float const distanceScale = imageWidth / FontInfoType::DEFAULT_SCALE_FACTOR;
 	const uint8_t fontParms[4] =
 			{
-					(uint8_t) (NervGear::Alg::Clamp(
+					(uint8_t) (NervGear::VAlgorithm::Clamp(
 							parms.AlphaCenter + fontInfo.CenterOffset, 0.0f,
-							1.0f) * 255), (uint8_t) (NervGear::Alg::Clamp(
+							1.0f) * 255), (uint8_t) (NervGear::VAlgorithm::Clamp(
 							parms.ColorCenter + fontInfo.CenterOffset, 0.0f,
-							1.0f) * 255), (uint8_t) (NervGear::Alg::Clamp(
+							1.0f) * 255), (uint8_t) (NervGear::VAlgorithm::Clamp(
 							distanceScale, 1.0f, 255.0f)), 0 };
 
 	int iColor = ColorToABGR(color);

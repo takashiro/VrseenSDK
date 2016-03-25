@@ -1,4 +1,6 @@
 #include <pthread.h>
+#include "VFrameSmooth.h"
+#include "VAlgorithm.h"
 #include <errno.h>
 #include <math.h>
 #include <sched.h>
@@ -854,7 +856,7 @@ void VFrameSmooth::Private::warpThreadShutdown()
 
 const VGlShader & VFrameSmooth::Private::programForParms( const ovrTimeWarpParms & parms, const bool disableChromaticCorrection ) const
 {
-    int program = Alg::Clamp( (int)parms.WarpProgram, (int)WP_SIMPLE, (int)WP_PROGRAM_MAX - 1 );
+    int program = VAlgorithm::Clamp( (int)parms.WarpProgram, (int)WP_SIMPLE, (int)WP_PROGRAM_MAX - 1 );
 
     if ( disableChromaticCorrection && program >= WP_CHROMATIC )
     {
@@ -1241,7 +1243,7 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
 
         // Build up the external velocity transform
         VR4Matrixf velocity;
-        const int velocitySteps = NervGear::Alg::Min( 3, (int)((long long)vsyncBase - currentWarpSource.MinimumVsync) );
+        const int velocitySteps = NervGear::VAlgorithm::Min( 3, (int)((long long)vsyncBase - currentWarpSource.MinimumVsync) );
         for ( int i = 0; i < velocitySteps; i++ )
         {
             velocity = velocity * currentWarpSource.WarpParms.ExternalVelocity;
@@ -1521,7 +1523,7 @@ void VFrameSmooth::Private::warpToScreenSliced( const double vsyncBase, const sw
 
         // Build up the external velocity transform
         VR4Matrixf velocity;
-        const int velocitySteps = NervGear::Alg::Min( 3, (int)((long long)vsyncBase - currentWarpSource.MinimumVsync) );
+        const int velocitySteps = NervGear::VAlgorithm::Min( 3, (int)((long long)vsyncBase - currentWarpSource.MinimumVsync) );
         for ( int i = 0; i < velocitySteps; i++ )
         {
             velocity = velocity * currentWarpSource.WarpParms.ExternalVelocity;
@@ -1785,7 +1787,7 @@ void VFrameSmooth::Private::warpSwapInternal( const ovrTimeWarpParms & parms )
         {
             // If MinimumVsyncs was increased dynamically, it is necessary
             // to skip one or more vsyncs just as the change happens.
-            m_lastSwapVsyncCount = Alg::Max( state.VsyncCount, m_lastSwapVsyncCount + minimumVsyncs );
+            m_lastSwapVsyncCount = VAlgorithm::Max( state.VsyncCount, m_lastSwapVsyncCount + minimumVsyncs );
 
             // Sleep for at least one millisecond to make sure the main VR thread
             // cannot completely deny the Android watchdog from getting a time slice.

@@ -17,7 +17,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <stdlib.h>
 
 #include "Types.h"
-#include "Alg.h"
+#include "VAlgorithm.h"
 #include "Android/LogUtils.h"
 
 namespace NervGear {
@@ -122,8 +122,8 @@ unsigned char * QuarterImageSize( const unsigned char * src, const int width, co
 		}
 	}
 
-	const int newWidth = NervGear::Alg::Max( 1, width >> 1 );
-	const int newHeight = NervGear::Alg::Max( 1, height >> 1 );
+	const int newWidth = NervGear::VAlgorithm::Max( 1, width >> 1 );
+	const int newHeight = NervGear::VAlgorithm::Max( 1, height >> 1 );
 	unsigned char * out = (unsigned char *)malloc( newWidth * newHeight * 4 );
 	unsigned char * out_p = out;
 	for ( int y = 0; y < newHeight; y++ )

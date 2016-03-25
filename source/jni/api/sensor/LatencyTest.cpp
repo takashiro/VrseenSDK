@@ -13,7 +13,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "Log.h"
 #include "VTimer.h"
-#include "Alg.h"
+#include "VAlgorithm.h"
 
 namespace NervGear {
 
@@ -457,8 +457,8 @@ void LatencyTest::processResults()
                     {
                         UInt32 elapsed = pCurr->DeviceMeasuredElapsedMilliS;
 
-                        minTime1To2 = Alg::Min(elapsed, minTime1To2);
-                        maxTime1To2 = Alg::Max(elapsed, maxTime1To2);
+                        minTime1To2 = VAlgorithm::Min(elapsed, minTime1To2);
+                        maxTime1To2 = VAlgorithm::Max(elapsed, maxTime1To2);
 
                         averageTime1To2 += (float) elapsed;
                     }
@@ -471,16 +471,16 @@ void LatencyTest::processResults()
                     {
                         UInt32 elapsed = pCurr->DeviceMeasuredElapsedMilliS;
 
-                        minTime2To1 = Alg::Min(elapsed, minTime2To1);
-                        maxTime2To1 = Alg::Max(elapsed, maxTime2To1);
+                        minTime2To1 = VAlgorithm::Min(elapsed, minTime2To1);
+                        maxTime2To1 = VAlgorithm::Max(elapsed, maxTime2To1);
 
                         averageTime2To1 += (float) elapsed;
                     }
                 }
 
                 float usbRountripElapsedMilliS = 1000 * (float) (pCurr->TestStartedSeconds - pCurr->StartTestSeconds);
-                minUSBTripMilliS = Alg::Min(usbRountripElapsedMilliS, minUSBTripMilliS);
-                maxUSBTripMilliS = Alg::Max(usbRountripElapsedMilliS, maxUSBTripMilliS);
+                minUSBTripMilliS = VAlgorithm::Min(usbRountripElapsedMilliS, minUSBTripMilliS);
+                maxUSBTripMilliS = VAlgorithm::Max(usbRountripElapsedMilliS, maxUSBTripMilliS);
                 averageUSBTripMilliS += usbRountripElapsedMilliS;
                 countUSBTripTime++;
             }
@@ -532,7 +532,7 @@ void LatencyTest::updateForTimeouts()
     }
     OldTime = newTime;
 
-    elapsedMilliS = Alg::Min(elapsedMilliS, (UInt32) 100);   // Clamp at 100mS in case we're not being called very often.
+    elapsedMilliS = VAlgorithm::Min(elapsedMilliS, (UInt32) 100);   // Clamp at 100mS in case we're not being called very often.
 
 
     if (ActiveTimerMilliS == 0)

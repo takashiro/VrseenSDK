@@ -95,7 +95,7 @@ void UpdateWrapAroundIndicator(const OvrScrollManager & ScrollMgr, const OvrVRMe
 		rotationDirection = 1.0f;
 	}
 
-	fadeValue = Alg::Clamp( fadeValue, 0.0f, ScrollMgr.wrapAroundScrollOffset() ) / ScrollMgr.wrapAroundScrollOffset();
+	fadeValue = VAlgorithm::Clamp( fadeValue, 0.0f, ScrollMgr.wrapAroundScrollOffset() ) / ScrollMgr.wrapAroundScrollOffset();
     rotation += fadeValue * rotationDirection * VConstantsf::Pi;
 	float scaleValue = 0.0f;
 	if( ScrollMgr.isWrapAroundTimeInitiated() )
@@ -182,7 +182,7 @@ public:
 		const float maxHeight = deltaHeight * validNumFolders;
 		const float positionRatio = foldersRootObject->localPosition().y / maxHeight;
 		int idx = nearbyintf( positionRatio * validNumFolders );
-		idx = Alg::Clamp( idx, 0, FolderBrowser.numFolders() - 1 );
+		idx = VAlgorithm::Clamp( idx, 0, FolderBrowser.numFolders() - 1 );
 
 		// Remapping index with in valid folders to index in entire Folder array
 		const int numValidFolders = GetFolderBrowserValidFolderCount();
@@ -201,7 +201,7 @@ public:
 			}
 		}
 
-		return Alg::Clamp( remapedIdx, 0, FolderBrowser.numFolders() - 1 );
+		return VAlgorithm::Clamp( remapedIdx, 0, FolderBrowser.numFolders() - 1 );
 	}
 
 	void SetActiveFolder( int folderIdx )
@@ -329,7 +329,7 @@ private:
 				float ratio = absolutePosition / alphaSpace;
 				float ratioSq = ratio * ratio;
 				float finalAlpha = 1.0f - ratioSq;
-				color.w = Alg::Clamp( finalAlpha, 0.0f, 1.0f );
+				color.w = VAlgorithm::Clamp( finalAlpha, 0.0f, 1.0f );
 				flags &= ~( VRMenuObjectFlags_t( VRMENUOBJECT_DONT_RENDER ) | VRMENUOBJECT_DONT_HIT_ALL );
 
 				// Lerp the folder towards or away from viewer
@@ -402,7 +402,7 @@ private:
 				showScrollUpIndicator = ( ScrollMgr.position() >  0.8f );
 				showBottomIndicator = ( ScrollMgr.position() < ( ( ValidFoldersCount - 1 ) - 0.8f ) );
 
-				finalCol.w = Alg::Clamp( timeDiff, 5.0f, 6.0f ) - 5.0f;
+				finalCol.w = VAlgorithm::Clamp( timeDiff, 5.0f, 6.0f ) - 5.0f;
 			}
 		}
 
@@ -1638,7 +1638,7 @@ void OvrFolderBrowser::rebuildFolder( OvrMetaData & metaData, const int folderIn
 
 		// Recalculate accumulated rotation in the swipe component based on ratio of where user left off before adding/removing favorites
 		const float currentMaxRotation = folder->maxRotation > 0.0f ? folder->maxRotation : 1.0f;
-		const float positionRatio = Alg::Clamp( swipeComp->GetAccumulatedRotation() / currentMaxRotation, 0.0f, 1.0f );
+		const float positionRatio = VAlgorithm::Clamp( swipeComp->GetAccumulatedRotation() / currentMaxRotation, 0.0f, 1.0f );
 		folder->maxRotation = calcFolderMaxRotation( folder );
 		swipeComp->SetAccumulatedRotation( folder->maxRotation * positionRatio );
 
@@ -1857,7 +1857,7 @@ void OvrFolderBrowser::loadThumbnailToTexture( const VEvent &event )
 		return;
 	}
 
-	const int max = Alg::Max( width, height );
+	const int max = VAlgorithm::Max( width, height );
 
 	// Grab the Panel from VRMenu
 	VRMenuObject * panelObject = NULL;
@@ -2231,7 +2231,7 @@ float OvrFolderBrowser::calcFolderMaxRotation( const FolderView * folder ) const
 		OVR_ASSERT( false );
 		return 0.0f;
 	}
-	int numPanels = Alg::Clamp( folder->panels.length() - 1, 0, INT_MAX );
+	int numPanels = VAlgorithm::Clamp( folder->panels.length() - 1, 0, INT_MAX );
 	return static_cast< float >( numPanels );
 }
 
