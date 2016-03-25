@@ -174,7 +174,6 @@ HEADERS += \
     jni/core/VVariant.h \
     jni/core/OVR.h \
     jni/core/OVRVersion.h \
-    jni/core/VSharedPointer.h \
     jni/core/TypesafeNumber.h \
     jni/core/VUserSettings.h \
     jni/core/VWaitCondition.h \
