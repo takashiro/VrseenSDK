@@ -327,7 +327,7 @@ double OffsetInterpolator::GetOffset(double targetTemperature, double autoTemper
         return autoValue;
     if (count == 1)
     {
-        if (adjustedDeltaT < Abs(Temperatures[0] - targetTemperature))
+        if (adjustedDeltaT < std::abs(Temperatures[0] - targetTemperature))
             return autoValue;
         else
             return Values[0];
@@ -370,7 +370,7 @@ double OffsetInterpolator::GetOffset(double targetTemperature, double autoTemper
     else
         // avoid a badly conditioned problem
         slope = 0;
-    if (adjustedDeltaT < Abs(Temperatures[u] - targetTemperature))
+    if (adjustedDeltaT < std::abs(Temperatures[u] - targetTemperature))
         // use the autocalibrated value, if it's close
         return autoValue + slope * (targetTemperature - autoTemperature);
     else
