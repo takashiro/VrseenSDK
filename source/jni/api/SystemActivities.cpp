@@ -1,9 +1,7 @@
-#include "android/LogUtils.h"
-#include "android/JniUtils.h"
-#include "VrApi.h"
-#include "VrApi_Android.h"
 
 #include "SystemActivities.h"
+#include "android/LogUtils.h"
+#include "android/JniUtils.h"
 
 // System Activities Events -- Why They Exist
 //

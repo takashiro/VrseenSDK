@@ -12,7 +12,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "ModelView.h"
 #include "VAlgorithm.h"
 #include "api/VrApi.h"
-#include "api/VrApi_Helpers.h"
 
 #include "Input.h"		// VrFrame, etc
 #include "BitmapFont.h"

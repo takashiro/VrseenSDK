@@ -31,8 +31,6 @@
 #include "VBasicmath.h"
 #include "VolumePopup.h"
 #include "VrApi.h"
-#include "VrApi_Android.h"
-#include "VrApi_Helpers.h"
 #include "VrLocale.h"
 #include "VRMenuMgr.h"
 #include "VUserSettings.h"
@@ -318,9 +316,6 @@ struct App::Private
     VThread *renderThread;
     int				vrThreadTid;		// linux tid
 
-    int				batteryLevel;		// charge level of the batter as reported from Java
-    eBatteryStatus	batteryStatus;		// battery status as reported from Java
-
     bool			showFPS;			// true to show FPS on screen
     bool			showVolumePopup;	// true to show volume popup when volume changes
 
@@ -398,8 +393,6 @@ struct App::Private
         , framebufferIsProtected(false)
         , renderMonoMode(false)
         , vrThreadTid(0)
-        , batteryLevel(0)
-        , batteryStatus(BATTERY_STATUS_UNKNOWN)
         , showFPS(false)
         , showVolumePopup(true)
         , infoTextColor(1.0f)
@@ -1204,7 +1197,7 @@ struct App::Private
             {
                 if (ovr_GetTimeInSeconds() >= errorMessageEndTime)
                 {
-                    ovr_ReturnToHome(OvrMobile);
+                    ovr_ExitActivity(OvrMobile, EXIT_TYPE_FINISH_AFFINITY);
                 }
                 else
                 {
@@ -1229,13 +1222,6 @@ struct App::Private
 
                 appInterface->init(launchIntentFromPackage, launchIntentJSON, launchIntentURI);
                 self->oneTimeInitCalled = true;
-            }
-
-            // check updated battery status
-            {
-                batteryState_t state = ovr_GetBatteryState();
-                batteryStatus = static_cast< eBatteryStatus >(state.status);
-                batteryLevel = state.level;
             }
 
             // latch the current joypad state and note transitions
@@ -1620,11 +1606,7 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
 
 	// Default ovrModeParms
 	VrModeParms.AsynchronousTimeWarp = true;
-	VrModeParms.AllowPowerSave = true;
-    VrModeParms.DistortionFileName = nullptr;
 	VrModeParms.SkipWindowFullscreenReset = false;
-	VrModeParms.CpuLevel = 2;
-	VrModeParms.GpuLevel = 2;
 	VrModeParms.GameThreadTid = 0;
 
     d->javaObject = d->uiJni->NewGlobalRef(activityObject);
@@ -1939,35 +1921,9 @@ bool App::isGuiOpen() const
     return d->guiSys->isAnyMenuOpen();
 }
 
-int App::wifiSignalLevel() const
-{
-	int level = ovr_GetWifiSignalLevel();
-	return level;
-}
-
-eWifiState App::wifiState() const
-{
-	return ovr_GetWifiState();
-}
-
-int App::cellularSignalLevel() const
-{
-	int level = ovr_GetCellularSignalLevel();
-	return level;
-}
-
-eCellularState App::cellularState() const
-{
-	return ovr_GetCellularState();
-}
-
 bool App::isAsynchronousTimeWarp() const
 {
 	return VrModeParms.AsynchronousTimeWarp;
-}
-
-bool App::hasHeadphones() const {
-	return ovr_GetHeadsetPluggedState();
 }
 
 bool App::framebufferIsSrgb() const
@@ -2035,30 +1991,7 @@ float App::popupScale() const
     return d->popupScale;
 }
 
-bool App::isPowerSaveActive() const
-{
-	return ovr_GetPowerLevelStateThrottled();
-}
 
-int App::cpuLevel() const
-{
-	return VrModeParms.CpuLevel;
-}
-
-int App::gpuLevel() const
-{
-	return VrModeParms.GpuLevel;
-}
-
-int App::batteryLevel() const
-{
-    return d->batteryLevel;
-}
-
-eBatteryStatus App::batteryStatus() const
-{
-    return d->batteryStatus;
-}
 
 JavaVM	* App::javaVM()
 {
@@ -2296,7 +2229,7 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
     // Doing this dynamically based just on time causes visible flickering at the
     // periphery when the fov is increased, so only do it if minimumVsyncs is set.
     const float fovDegrees = d->hmdInfo.SuggestedEyeFov[0] +
-            ( ( ( d->swapParms.MinimumVsyncs > 1 ) || ovr_GetPowerLevelStateThrottled() ) ? 10.0f : 0.0f ) +
+            ( ( d->swapParms.MinimumVsyncs > 1 ) ? 10.0f : 0.0f ) +
             ( ( !d->showVignette ) ? 5.0f : 0.0f );
 
     // DisplayMonoMode uses a single eye rendering for speed improvement

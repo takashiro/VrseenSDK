@@ -573,19 +573,13 @@ void Oculus360Photos::command(const VEvent &event )
 
 bool Oculus360Photos::useOverlay() const {
     // Don't enable the overlay when in throttled state
-    return ( m_useOverlay && !ovr_GetPowerLevelStateThrottled() );
+    return m_useOverlay;
 }
 
 void Oculus360Photos::configureVrMode( ovrModeParms & modeParms ) {
     // We need very little CPU for pano browsing, but a fair amount of GPU.
     // The CPU clock should ramp up above the minimum when necessary.
     LOG( "ConfigureClocks: Oculus360Photos only needs minimal clocks" );
-    modeParms.CpuLevel = 1;	// jpeg loading is slow, but otherwise we need little
-    modeParms.GpuLevel = 3;	// we need a fair amount for cube map overlay support
-
-    // When the app is throttled, go to the platform UI and display a
-    // dismissable warning. On return to the app, force 30hz timewarp.
-    modeParms.AllowPowerSave = true;
 
     // No hard edged geometry, so no need for MSAA
     vApp->vrParms().multisamples = 1;

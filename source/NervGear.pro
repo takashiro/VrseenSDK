@@ -196,8 +196,6 @@ HEADERS += \
     jni/api/VGlGeometry.h \
     jni/api/VGlShader.h \
     jni/api/VMainActivity.h \
-    jni/api/VrApi_Android.h \
-    jni/api/VrApi_Helpers.h \
     jni/api/VrApi_local.h \
     jni/api/VDevice.h \
     jni/api/VGlOperation.h \
