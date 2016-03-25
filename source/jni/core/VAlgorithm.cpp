@@ -1,8 +1,15 @@
+/*
+ * VAlgorithm.cpp
+ *
+ *  Created on: 2016年3月22日
+ *      Author: yangkai
+ */
+
 #include "Types.h"
 
 NV_NAMESPACE_BEGIN
 
-namespace Alg {
+namespace VAlgorithm {
 
 //------------------------------------------------------------------------
 extern const UByte UpperBitTable[256] =
@@ -32,3 +39,6 @@ extern const UByte LowerBitTable[256] =
 }
 
 NV_NAMESPACE_END
+
+
+

@@ -11,7 +11,7 @@ Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
 *************************************************************************************/
 
 #include "MetaDataManager.h"
-#include "Alg.h"
+#include "VAlgorithm.h"
 #include "Android/LogUtils.h"
 
 #include "VDir.h"
@@ -469,7 +469,7 @@ void OvrMetaData::reconcileMetaData( VStringHash< OvrMetaDatum * > & storedMetaD
 			sortedEntries.append( storedDatum );
 		}
 	}
-	Alg::QuickSortSlicedSafe( sortedEntries, 0, sortedEntries.size(), OvrMetaDatumIdComparator);
+	std::sort(sortedEntries.begin(), sortedEntries.end(), OvrMetaDatumIdComparator);
 	VArray< OvrMetaDatum * >::iterator sortedIter = sortedEntries.begin();
 	for ( ; sortedIter != sortedEntries.end(); ++sortedIter )
 	{
@@ -759,7 +759,7 @@ void OvrMetaData::regenerateCategoryIndices()
 
 		if ( tags.at( 0 ) == FAVORITES_TAG && tags.length() > 1 )
 		{
-            std::swap(tags[0], tags[1]);
+           VAlgorithm::Swap(tags[0], tags[1]);
 		}
 
 		for ( int tagIndex = 0; tagIndex < tags.length(); ++tagIndex )

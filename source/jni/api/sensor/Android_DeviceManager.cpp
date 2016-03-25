@@ -238,10 +238,10 @@ int DeviceManagerThread::run()
                 if (m_suspend)
                 {
                     // only poll for commands when device polling is suspended
-                    nfds = Alg::Min(nfds, (nfds_t)1);
+                    nfds = VAlgorithm::Min(nfds, (nfds_t)1);
                     // wait no more than 100 milliseconds to allow polling of the devices to resume
                     // within 100 milliseconds to avoid any noticeable loss of head tracking
-                    waitMs = Alg::Min(waitMs, 100);
+                    waitMs = VAlgorithm::Min(waitMs, 100);
                 }
 
                 // wait until there is data available on one of the devices or the timeout expires

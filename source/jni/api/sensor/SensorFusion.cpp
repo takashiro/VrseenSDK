@@ -13,8 +13,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "Log.h"
 #include "System.h"
-
-
+#include <algorithm>
+using namespace std;
 //#define YAW_LOGGING
 
 namespace NervGear {
@@ -249,7 +249,7 @@ bool SensorFusion::getBufferedOrientation(VQuatf* orientation, const V3Vectf& gy
 	// Determine how far to look back in buffer.
 	int backDist = (int) ((float) MagLatencyCompensationMilliseconds / (1000.0f * deltaT));
 
-	backDist = Alg::Min(backDist, MagLatencyBufferSizeMax-1);
+	backDist = min(backDist, MagLatencyBufferSizeMax-1);
 
 
 	if (MagLatencyCompFillCount < MagLatencyBufferSizeMax)
@@ -409,7 +409,7 @@ void SensorFusion::applyMagYawCorrection(const V3Vectf& magUncalibrated, const V
 
 
         // If the vertical angle is wrong, decrease the score and do nothing.
-        if (Alg::Abs(magRefInWorldFrame.y - magInWorldFrame.y) > maxTiltError)
+        if (abs(magRefInWorldFrame.y - magInWorldFrame.y) > maxTiltError)
         {
             MagRefs[MagRefIdx].Score -= 1;
 #ifdef YAW_LOGGING
@@ -439,8 +439,8 @@ void SensorFusion::applyMagYawCorrection(const V3Vectf& magUncalibrated, const V
 		float totalCorrectionRadPerSec = propCorrectionRadPerSec;
 
         // Limit correction.
-		totalCorrectionRadPerSec = Alg::Min(totalCorrectionRadPerSec, correctionRadPerSecMax);
-		totalCorrectionRadPerSec = Alg::Max(totalCorrectionRadPerSec, -correctionRadPerSecMax);
+		totalCorrectionRadPerSec = min(totalCorrectionRadPerSec, correctionRadPerSecMax);
+		totalCorrectionRadPerSec = max(totalCorrectionRadPerSec, -correctionRadPerSecMax);
 
         VQuatf correction(V3Vectf(0.0f, 1.0f, 0.0f), totalCorrectionRadPerSec * deltaT);
         State.Transform.Orientation = correction * State.Transform.Orientation;
@@ -494,7 +494,7 @@ void SensorFusion::applyTiltCorrection(float deltaT)
 
     VQuatf correction;
     if (FAccelHeadset.size() == 1 ||
-        ((Alg::Abs(error.w) < cos(snapThreshold / 2) && FAccelHeadset.Confidence() > 0.75)))
+        ((abs(error.w) < cos(snapThreshold / 2) && FAccelHeadset.Confidence() > 0.75)))
 	{
         // full correction for start-up
         // or large error with high confidence
@@ -602,7 +602,7 @@ VPosf calcPredictedPose(const PoseStatef& poseState, float predictionDt )
 		dynamicDt = candidateDt;
 
 	const float MAX_DELTA_TIME = 1.0f / 10.0f;
-	dynamicDt = Alg::Clamp( dynamicDt, 0.0f, MAX_DELTA_TIME );
+	dynamicDt = VAlgorithm::Clamp( dynamicDt, 0.0f, MAX_DELTA_TIME );
 
     if (angularSpeed > 0.001)
         pose.Orientation = pose.Orientation * VQuatf(angularVelocity, angularSpeed * dynamicDt);

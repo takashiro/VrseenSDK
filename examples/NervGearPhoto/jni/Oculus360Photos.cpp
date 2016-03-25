@@ -13,7 +13,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 
 *************************************************************************************/
 
-#include <Alg.h>
+#include <VAlgorithm.h>
 
 #include "Oculus360Photos.h"
 #include <android/keycodes.h>
@@ -807,7 +807,7 @@ VR4Matrixf Oculus360Photos::drawEyeView( const int eye, const float fovDegrees )
 
 float Fade( double now, double start, double length )
 {
-    return NervGear::Alg::Clamp( ( ( now - start ) / length ), 0.0, 1.0 );
+    return NervGear::VAlgorithm::Clamp( ( ( now - start ) / length ), 0.0, 1.0 );
 }
 
 void Oculus360Photos::startBackgroundPanoLoad(const VString &filename)

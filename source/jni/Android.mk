@@ -35,7 +35,6 @@ LOCAL_EXPORT_C_INCLUDES := $(LOCAL_C_INCLUDES)
 
 LOCAL_SRC_FILES  := \
 	core/VConstants.cpp \
-	core/Alg.cpp \
 	core/Allocator.cpp \
 	core/VAtomicInt.cpp \
 	core/VByteArray.cpp \
@@ -144,7 +143,6 @@ LOCAL_SRC_FILES  := \
 LOCAL_SRC_FILES += \
 	3rdParty/stb/stb_image.c \
 	3rdParty/stb/stb_image_write.c
-
 # minizip for loading ovrscene files
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/$(NV_ROOT)/3rdparty/minizip
 

@@ -13,7 +13,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include <math.h>
 
-#include "Alg.h"
+#include "VAlgorithm.h"
 #include "VArray.h"
 
 namespace NervGear
@@ -35,16 +35,16 @@ bool Intersect_RayBounds( const V3Vectf & rayStart, const V3Vectf & rayDir,
 	const float tY = ( maxs.y - rayStart.y ) * rcpDirY;
 	const float tZ = ( maxs.z - rayStart.z ) * rcpDirZ;
 
-	const float minX = Alg::Min( sX, tX );
-	const float minY = Alg::Min( sY, tY );
-	const float minZ = Alg::Min( sZ, tZ );
+	const float minX = VAlgorithm::Min( sX, tX );
+	const float minY = VAlgorithm::Min( sY, tY );
+	const float minZ = VAlgorithm::Min( sZ, tZ );
 
-	const float maxX = Alg::Max( sX, tX );
-	const float maxY = Alg::Max( sY, tY );
-	const float maxZ = Alg::Max( sZ, tZ );
+	const float maxX = VAlgorithm::Max( sX, tX );
+	const float maxY = VAlgorithm::Max( sY, tY );
+	const float maxZ = VAlgorithm::Max( sZ, tZ );
 
-	t0 = Alg::Max( minX, Alg::Max( minY, minZ ) );
-	t1 = Alg::Min( maxX, Alg::Min( maxY, maxZ ) );
+	t0 = VAlgorithm::Max( minX, VAlgorithm::Max( minY, minZ ) );
+	t1 = VAlgorithm::Min( maxX, VAlgorithm::Min( maxY, maxZ ) );
 
 	return ( t0 <= t1 );
 }
@@ -135,26 +135,25 @@ traceResult_t ModelTrace::Trace( const V3Vectf & start, const V3Vectf & end ) co
 	const float tY = ( header.bounds.GetMaxs()[1] - start.y ) * rcpRayDirY;
 	const float tZ = ( header.bounds.GetMaxs()[2] - start.z ) * rcpRayDirZ;
 
-	const float minX = Alg::Min( sX, tX );
-	const float minY = Alg::Min( sY, tY );
-	const float minZ = Alg::Min( sZ, tZ );
+	const float minX = VAlgorithm::Min( sX, tX );
+	const float minY = VAlgorithm::Min( sY, tY );
+	const float minZ = VAlgorithm::Min( sZ, tZ );
 
-	const float maxX = Alg::Max( sX, tX );
-	const float maxY = Alg::Max( sY, tY );
-	const float maxZ = Alg::Max( sZ, tZ );
+	const float maxX = VAlgorithm::Max( sX, tX );
+	const float maxY = VAlgorithm::Max( sY, tY );
+	const float maxZ = VAlgorithm::Max( sZ, tZ );
 
-	const float t0 = Alg::Max( minX, Alg::Max( minY, minZ ) );
-	const float t1 = Alg::Min( maxX, Alg::Min( maxY, maxZ ) );
+	const float t0 = VAlgorithm::Max( minX, VAlgorithm::Max( minY, minZ ) );
+	const float t1 = VAlgorithm::Min( maxX, VAlgorithm::Min( maxY, maxZ ) );
 
 	if ( t0 >= t1 )
 	{
 		return result;
 	}
 
-	float entryDistance = Alg::Max( t0, 0.0f );
-	float bestDistance = Alg::Min( t1 + 0.00001f, rayLength );
+	float entryDistance = VAlgorithm::Max( t0, 0.0f );
+	float bestDistance = VAlgorithm::Min( t1 + 0.00001f, rayLength );
     V2Vectf uv;
-
 	const kdtree_node_t * currentNode = &nodes[0];
 
 	for ( int i = 0; i < RT_KDTREE_MAX_ITERATIONS; i++ )
@@ -224,11 +223,11 @@ traceResult_t ModelTrace::Trace( const V3Vectf & start, const V3Vectf & end ) co
 		const float tY = ( currentLeaf->bounds.GetMaxs()[1] - start.y ) * rcpRayDirY;
 		const float tZ = ( currentLeaf->bounds.GetMaxs()[2] - start.z ) * rcpRayDirZ;
 
-		const float maxX = Alg::Max( sX, tX );
-		const float maxY = Alg::Max( sY, tY );
-		const float maxZ = Alg::Max( sZ, tZ );
+		const float maxX = VAlgorithm::Max( sX, tX );
+		const float maxY = VAlgorithm::Max( sY, tY );
+		const float maxZ = VAlgorithm::Max( sZ, tZ );
 
-		entryDistance = Alg::Min( maxX, Alg::Min( maxY, maxZ ) );
+		entryDistance = VAlgorithm::Min( maxX, VAlgorithm::Min( maxY, maxZ ) );
 		if ( entryDistance >= bestDistance )
 		{
 			break;

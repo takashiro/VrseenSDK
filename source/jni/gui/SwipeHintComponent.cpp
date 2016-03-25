@@ -173,7 +173,7 @@ namespace NervGear
 			{
 				float normTime = time / m_totalTime;
 				alpha *= sin( M_PI * 2.0f * normTime );
-				alpha = NervGear::Alg::Max( alpha, 0.0f );
+				alpha = NervGear::VAlgorithm::Max( alpha, 0.0f );
 			}
 		}
 

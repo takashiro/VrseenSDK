@@ -16,7 +16,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #if !defined( Lerp_h )
 #define Lerp_h
 
-#include "Alg.h"
+#include "VAlgorithm.h"
 
 using namespace NervGear;
 
@@ -35,7 +35,7 @@ public:
 
 	double	Value( double domain ) const
 	{
-		const double f = NervGear::Alg::Clamp( ( domain - startDomain ) / ( endDomain - startDomain ), 0.0, 1.0 );
+		const double f = NervGear::VAlgorithm::Clamp( ( domain - startDomain ) / ( endDomain - startDomain ), 0.0, 1.0 );
 		return startValue * ( 1.0 - f ) + endValue * f;
 	}
 

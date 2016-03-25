@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Alg.h"
+#include "VAlgorithm.h"
 #include "VRMenuComponent.h"
 
 NV_NAMESPACE_BEGIN
@@ -22,7 +22,7 @@ NV_NAMESPACE_BEGIN
 
             double	value( double domain ) const
 			{
-                const double f = Alg::Clamp( ( domain - startDomain ) / ( endDomain - startDomain ), 0.0, 1.0 );
+                const double f = VAlgorithm::Clamp( ( domain - startDomain ) / ( endDomain - startDomain ), 0.0, 1.0 );
 				return startValue * ( 1.0 - f ) + endValue * f;
 			}
 

@@ -399,9 +399,8 @@ void MovieSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFo
 		Categories[ i ].Button->SetFontScale( 2.2f );
 		Categories[ i ].Button->SetText( Categories[ i ].Text.toCString() );
 		Categories[ i ].Button->AddComponent( new MovieCategoryComponent( this, Categories[ i ].Category ) );
-
         const VBoxf & bounds = Categories[ i ].Button->GetTextLocalBounds( vApp->defaultFont() );
-		Categories[ i ].Width = NervGear::Alg::Max( bounds.GetSize().x, itemWidth ) + 80.0f * VRMenuObject::DEFAULT_TEXEL_SCALE;
+		Categories[ i ].Width = NervGear::VAlgorithm::Max( bounds.GetSize().x, itemWidth ) + 80.0f * VRMenuObject::DEFAULT_TEXEL_SCALE;
 		Categories[ i ].Height = bounds.GetSize().y + 108.0f * VRMenuObject::DEFAULT_TEXEL_SCALE;
 		categoryBarWidth += Categories[ i ].Width;
 	}

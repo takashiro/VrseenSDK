@@ -24,7 +24,7 @@ V3Vect<T> SensorFilter<T>::Median() const
     {
         for (int i = 0; i < this->m_elemCount; i++)
             slice[i] = this->m_data[i][coord];
-        result[coord] = Alg::Median(ArrayAdaptor(slice, this->m_elemCount));
+        result[coord] = VAlgorithm::Median(ArrayAdaptor(slice, this->m_elemCount));
     }
 
     OVR_FREE(slice);

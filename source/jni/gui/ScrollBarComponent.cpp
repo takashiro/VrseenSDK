@@ -14,7 +14,7 @@ Copyright   :   Copyright 2014 Oculus VR, Inc. All Rights reserved.
 #include "App.h"
 #include "VRMenuMgr.h"
 #include "VApkFile.h"
-#include "Alg.h"
+#include "VAlgorithm.h"
 
 namespace NervGear {
 
@@ -97,7 +97,7 @@ void OvrScrollBarComponent::setScrollFrac( OvrVRMenuMgr & menuMgr, VRMenuObject 
 	}
 
 	// Updating thumb position
-	float clampedPos = Alg::Clamp( pos, 0.0f, (float)(m_numOfItems - 1) );
+	float clampedPos = VAlgorithm::Clamp( pos, 0.0f, (float)(m_numOfItems - 1) );
 	float thumbPos = LinearRangeMapFloat( clampedPos, 0.0f, (float)(m_numOfItems - 1), 0.0f, ( m_scrollBarCurrentbaseLength - currentThumbLength ) );
 	thumbPos -= ( m_scrollBarCurrentbaseLength - currentThumbLength ) * 0.5f;
 	thumbPos += thumbPosOffset;
