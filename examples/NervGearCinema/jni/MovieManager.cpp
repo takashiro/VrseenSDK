@@ -253,9 +253,9 @@ void MovieManager::LoadPoster( MovieDef *movie )
 		else
 		{
 			// no thumbnail found, so create it.  if it's on an external sdcard, posterFilename will contain the new filename at this point and will load it from the cache
-            if ( ( movie->Poster == 0 ) && Native::CreateVideoThumbnail( vApp, movie->Filename.toCString(), posterFilename.toCString(), PosterWidth, PosterHeight ) )
+            if ( ( movie->Poster == 0 ) && Native::CreateVideoThumbnail(movie->Filename, posterFilename, PosterWidth, PosterHeight))
 			{
-                movie->Poster = LoadTextureFromBuffer( posterFilename.toCString(), MemBufferFile( posterFilename.toCString() ),
+                movie->Poster = LoadTextureFromBuffer( posterFilename.toUtf8().data() , MemBufferFile( posterFilename.toUtf8().data() ),
 					TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), movie->PosterWidth, movie->PosterHeight );
 			}
 		}
@@ -311,7 +311,7 @@ void MovieManager::MoviesInDirectory(VArray<VString> &movies, const VString &dir
 
 	        if ( S_ISDIR( st.st_mode ) )
 	        {
-                VString subDir = dirName + '/' + entry->d_name;
+                VString subDir = dirName + '/' + VString::fromUtf8(entry->d_name);
                 MoviesInDirectory(movies, subDir);
                 continue;
             }
@@ -323,7 +323,7 @@ void MovieManager::MoviesInDirectory(VArray<VString> &movies, const VString &dir
 	        	continue;
 	        }
 
-			VString filename = entry->d_name;
+            VString filename = VString::fromUtf8(entry->d_name);
             VString ext = VPath(filename).extension().toLower();
 			if ( IsSupportedMovieFormat( ext ) )
 			{

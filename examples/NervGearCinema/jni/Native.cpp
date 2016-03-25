@@ -1,6 +1,8 @@
 #include "CinemaApp.h"
 #include "Native.h"
 
+#include <android/JniUtils.h>
+
 namespace OculusCinema
 {
 
@@ -114,19 +116,17 @@ VString Native::GetExternalCacheDirectory( App *app )
 	return externalCacheDirectory;
 }
 
-bool Native::CreateVideoThumbnail( App *app, const char *videoFilePath, const char *outputFilePath, const int width, const int height )
+bool Native::CreateVideoThumbnail(const VString &videoFilePath, const VString &outputFilePath, const int width, const int height )
 {
-	LOG( "CreateVideoThumbnail( %s, %s )", videoFilePath, outputFilePath );
+    vInfo( "CreateVideoThumbnail" << videoFilePath << outputFilePath);
 
-	jstring jstrVideoFilePath = app->vrJni()->NewStringUTF( videoFilePath );
-	jstring jstrOutputFilePath = app->vrJni()->NewStringUTF( outputFilePath );
+    jstring jstrVideoFilePath = JniUtils::Convert(vApp->vrJni(), videoFilePath);
+    jstring jstrOutputFilePath = JniUtils::Convert(vApp->vrJni(), outputFilePath);
 
-	jboolean result = app->vrJni()->CallBooleanMethod( app->javaObject(), createVideoThumbnailMethodId, jstrVideoFilePath, jstrOutputFilePath, width, height );
+    jboolean result = vApp->vrJni()->CallBooleanMethod( vApp->javaObject(), createVideoThumbnailMethodId, jstrVideoFilePath, jstrOutputFilePath, width, height );
 
-	app->vrJni()->DeleteLocalRef( jstrVideoFilePath );
-	app->vrJni()->DeleteLocalRef( jstrOutputFilePath );
-
-	LOG( "CreateVideoThumbnail( %s, %s )", videoFilePath, outputFilePath );
+    vApp->vrJni()->DeleteLocalRef( jstrVideoFilePath );
+    vApp->vrJni()->DeleteLocalRef( jstrOutputFilePath );
 
 	return result;
 }
