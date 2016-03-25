@@ -211,7 +211,7 @@ static const char* vertexShaderSource =
         "}\n";
 
 
-struct App::Private : public TalkToJavaInterface
+struct App::Private
 {
     App *self;
     // Primary apps will exit(0) when they get an onDestroy() so we
@@ -1074,7 +1074,7 @@ struct App::Private : public TalkToJavaInterface
 
             // Set up another thread for making longer-running java calls
             // to avoid hitches.
-            activity->Init(javaVM, this);
+            activity->Init(javaVM);
 
             // Create a new context and pbuffer surface
             const int windowDepth = 0;
@@ -1575,27 +1575,6 @@ struct App::Private : public TalkToJavaInterface
             }
         }
     }
-
-    void TtjCommand(JNIEnv *jni, const VEvent &event) override
-    {
-        if (event.name == "sound") {
-            jstring cmdString = JniUtils::Convert(jni, event.data.toString());
-            jni->CallVoidMethod(javaObject, playSoundPoolSoundMethodId, cmdString);
-            jni->DeleteLocalRef(cmdString);
-            return;
-        }
-
-        if (event.name == "toast") {
-            jstring cmdString = JniUtils::Convert(jni, event.data.toString());
-            jni->CallVoidMethod(javaObject, createVrToastMethodId, cmdString);
-            jni->DeleteLocalRef(cmdString);
-            return;
-        }
-
-        if (event.name == "finish") {
-            activity->finishActivity();
-        }
-    }
 };
 
 /*
@@ -1743,27 +1722,37 @@ void App::createToast(const char * fmt, ...)
     vsnprintf(bigBuffer, sizeof(bigBuffer), fmt, args);
     va_end(args);
 
-    vInfo("CreateToast" << bigBuffer);
+    JNIEnv *jni = nullptr;
+    jstring cmdString = nullptr;
+    if (d->javaVM->AttachCurrentThread(&jni, nullptr) == JNI_OK) {
+        cmdString = JniUtils::Convert(jni, bigBuffer);
 
-    d->activity->eventLoop().post("toast", bigBuffer);
+        d->activity->eventLoop().post([=]{
+            JNIEnv *jni = nullptr;
+            if (d->javaVM->AttachCurrentThread(&jni, nullptr) == JNI_OK) {
+                jni->CallVoidMethod(d->javaObject, d->createVrToastMethodId, cmdString);
+            }
+            jni->DeleteLocalRef(cmdString);
+        });
+    }
 }
 
-void App::playSound(const char * name)
+void App::playSound(const char *name)
 {
 	// Get sound from SoundManager
 	VString soundFile;
+    if (!d->soundManager.getSound(name, soundFile)) {
+        soundFile = VString::fromUtf8(name);
+    }
 
-    if (d->soundManager.getSound(name, soundFile))
-	{
-		// Run on the talk to java thread
-        d->activity->eventLoop().post("sound", soundFile);
-	}
-	else
-	{
-        WARN("AppLocal::playSound called with non SoundManager defined sound: %s", name);
-		// Run on the talk to java thread
-        d->activity->eventLoop().post("sound", name);
-	}
+    d->activity->eventLoop().post([=]{
+        JNIEnv *jni = nullptr;
+        if (d->javaVM->AttachCurrentThread(&jni, 0) == JNI_OK) {
+            jstring cmdString = JniUtils::Convert(jni, soundFile);
+            jni->CallVoidMethod(d->javaObject, d->playSoundPoolSoundMethodId, cmdString);
+            jni->DeleteLocalRef(cmdString);
+        }
+    });
 }
 
 void App::setVrModeParms(ovrModeParms parms)
