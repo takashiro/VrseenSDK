@@ -24,14 +24,13 @@ typename Array::ValueType &Median(Array &arr)
 {
     uint count = arr.size();
     uint mid = (count - 1) / 2;
-    assert(count > 0);
-
-    for (uint j = 0; j <= mid; j++)
-    {
+    for (uint j = 0; j <= mid; j++) {
         uint min = j;
-        for (uint k = j + 1; k < count; k++)
-            if (arr[k] < arr[min])
+        for (uint k = j + 1; k < count; k++) {
+            if (arr[k] < arr[min]) {
                 min = k;
+            }
+        }
         swap(arr[j], arr[min]);
     }
     return arr[mid];
