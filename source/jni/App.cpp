@@ -25,7 +25,6 @@
 #include "GuiSys.h"
 #include "GuiSysLocal.h"		// necessary to instantiate the gui system
 #include "ModelView.h"
-#include "PointTracker.h"
 #include "SurfaceTexture.h"
 #include "System.h"
 #include "TypesafeNumber.h"
@@ -49,6 +48,54 @@
 #define EGL_PROTECTED_CONTENT_EXT 0x32c0
 
 NV_NAMESPACE_BEGIN
+
+class VPointTracker
+{
+public:
+    static const int DEFAULT_FRAME_RATE = 60;
+
+    VPointTracker( float const rate = 0.1f ) :
+        LastFrameTime( 0.0 ),
+        Rate( 0.1f ),
+        CurPosition( 0.0f ),
+        FirstFrame( true )
+    {
+    }
+
+    void        Update( double const curFrameTime, V3Vectf const & newPos )
+    {
+        double frameDelta = curFrameTime - LastFrameTime;
+        LastFrameTime = curFrameTime;
+        float const rateScale = static_cast< float >( frameDelta / ( 1.0 / static_cast< double >( DEFAULT_FRAME_RATE ) ) );
+        float const rate = Rate * rateScale;
+        if ( FirstFrame )
+        {
+            CurPosition = newPos;
+        }
+        else
+        {
+            V3Vectf delta = ( newPos - CurPosition ) * rate;
+            if ( delta.Length() < 0.001f )
+            {
+                // don't allow a denormal to propagate from multiplications of very small numbers
+                delta = V3Vectf( 0.0f );
+            }
+            CurPosition += delta;
+        }
+        FirstFrame = false;
+    }
+
+    void                Reset() { FirstFrame = true; }
+    void                SetRate( float const r ) { Rate = r; }
+
+    V3Vectf const & GetCurPosition() const { return CurPosition; }
+
+private:
+    double      LastFrameTime;
+    float       Rate;
+    V3Vectf CurPosition;
+    bool        FirstFrame;
+};
 
 static const char * activityClassName = "com/vrseen/nervgear/VrActivity";
 
@@ -283,8 +330,8 @@ struct App::Private : public TalkToJavaInterface
     V4Vectf		infoTextColor;		// color of info text
     V3Vectf		infoTextOffset;		// offset from center of screen in view space
     long long		infoTextEndFrame;	// time to stop showing text
-    OvrPointTracker	infoTextPointTracker;	// smoothly tracks to text ideal location
-    OvrPointTracker	fpsPointTracker;		// smoothly tracks to ideal FPS text location
+    VPointTracker	infoTextPointTracker;	// smoothly tracks to text ideal location
+    VPointTracker	fpsPointTracker;		// smoothly tracks to ideal FPS text location
 
     float 			touchpadTimer;
     V2Vectf		touchOrigin;

@@ -143,6 +143,7 @@ VVariant::VVariant(const VVariant &var)
         break;
     case Map:
         m_value.map = new VVariantMap(*(var.m_value.map));
+        break;
     case Closure:
         m_value.function = new Function(*(var.m_value.function));
         break;
@@ -394,7 +395,8 @@ void VVariant::release()
     case Closure:
         delete m_value.function;
         break;
-    default:;
+    default:
+        break;
     }
 }
 

@@ -36,7 +36,6 @@ SOURCES += \
     jni/core/VStandardPath.cpp \
     jni/core/VString.cpp \
     jni/core/System.cpp \
-    jni/core/ThreadCommandQueue.cpp \
     jni/core/VThread.cpp \
     jni/core/VTimer.cpp \
     jni/core/MappedFile.cpp \
@@ -76,6 +75,7 @@ SOURCES += \
     jni/api/sensor/Android_SensorDevice.cpp \
     jni/api/sensor/Android_PhoneSensors.cpp \
     jni/api/sensor/Common_HMDDevice.cpp \
+    jni/api/sensor/ThreadCommandQueue.cpp \
     jni/gui/VRMenuComponent.cpp \
     jni/gui/VRMenuMgr.cpp \
     jni/gui/VRMenuObjectLocal.cpp \
@@ -98,12 +98,14 @@ SOURCES += \
     jni/gui/SwipeHintComponent.cpp \
     jni/gui/MetaDataManager.cpp \
     jni/gui/OutOfSpaceMenu.cpp \
+    jni/gui/KeyState.cpp \
     jni/io/VApkFile.cpp \
     jni/io/VBinaryFile.cpp \
     jni/io/VFileOperation.cpp \
     jni/io/VSysFile.cpp \
     jni/media/VSoundManager.cpp \
     jni/scene/BitmapFont.cpp \
+    jni/scene/DebugLines.cpp \
     jni/scene/EyeBuffers.cpp \
     jni/scene/EyePostRender.cpp \
     jni/scene/GazeCursor.cpp \
@@ -118,8 +120,6 @@ SOURCES += \
     jni/scene/SwipeView.cpp \
     jni/App.cpp \
     jni/VConsole.cpp \
-    jni/DebugLines.cpp \
-    jni/KeyState.cpp \
     jni/VrLocale.cpp
 
 
@@ -164,7 +164,6 @@ HEADERS += \
     jni/core/String_FormatUtil.h \
     jni/core/String_PathUtil.h \
     jni/core/System.h \
-    jni/core/ThreadCommandQueue.h \
     jni/core/VThread.h \
     jni/core/VTimer.h \
     jni/core/MappedFile.h \
@@ -230,6 +229,7 @@ HEADERS += \
     jni/api/sensor/HIDDevice.h \
     jni/api/sensor/HIDDeviceBase.h \
     jni/api/sensor/HIDDeviceImpl.h \
+    jni/api/sensor/ThreadCommandQueue.h \
     jni/gui/VRMenuComponent.h \
     jni/gui/VRMenuMgr.h \
     jni/gui/VRMenuObjectLocal.h \
@@ -255,6 +255,7 @@ HEADERS += \
     jni/gui/OutOfSpaceMenu.h \
     jni/gui/GuiSysLocal.h \
     jni/gui/ui_default.h \
+    jni/gui/KeyState.h \
     jni/io/VApkFile.h \
     jni/io/VBinaryFile.h \
     jni/io/VDelegatedFile.h \
@@ -263,6 +264,7 @@ HEADERS += \
     jni/io/VSysFile.h \
     jni/media/VSoundManager.h \
     jni/scene/BitmapFont.h \
+    jni/scene/DebugLines.h \
     jni/scene/EyeBuffers.h \
     jni/scene/EyePostRender.h \
     jni/scene/GazeCursor.h \
@@ -276,17 +278,11 @@ HEADERS += \
     jni/scene/ModelView.h \
     jni/scene/SurfaceTexture.h \
     jni/scene/SwipeView.h \
-    jni/KeyState.h \
     jni/App.h \
-    jni/AppRender.h \
-    jni/DebugLines.h \
     jni/VrLocale.h \
     jni/VConsole.h \
     jni/vglobal.h \
-    jni/Input.h \
-    jni/PointTracker.h \
-    jni/UniversalMenu_Commands.h \
-    jni/PointTracker.h
+    jni/Input.h
 
 include(jni/3rdparty/minizip/minizip.pri)
 include(jni/3rdparty/stb/stb.pri)

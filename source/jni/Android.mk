@@ -54,7 +54,6 @@ LOCAL_SRC_FILES  := \
 	core/VSignal.cpp \
 	core/System.cpp \
 	core/VLock.cpp \
-	core/ThreadCommandQueue.cpp \
 	core/VThread.cpp \
 	core/VTimer.cpp \
 	core/MappedFile.cpp \
@@ -94,6 +93,7 @@ LOCAL_SRC_FILES  := \
 	api/sensor/Android_SensorDevice.cpp \
 	api/sensor/Android_PhoneSensors.cpp \
 	api/sensor/Common_HMDDevice.cpp \
+	api/sensor/ThreadCommandQueue.cpp \
 	gui/VRMenuComponent.cpp \
 	gui/VRMenuMgr.cpp \
 	gui/VRMenuObjectLocal.cpp \
@@ -116,12 +116,14 @@ LOCAL_SRC_FILES  := \
 	gui/SwipeHintComponent.cpp \
 	gui/MetaDataManager.cpp \
 	gui/OutOfSpaceMenu.cpp \
+	gui/KeyState.cpp \
 	io/VApkFile.cpp \
 	io/VBinaryFile.cpp \
 	io/VFileOperation.cpp \
 	io/VSysFile.cpp \
 	media/VSoundManager.cpp \
 	scene/BitmapFont.cpp \
+	scene/DebugLines.cpp \
 	scene/EyeBuffers.cpp \
 	scene/EyePostRender.cpp \
 	scene/GazeCursor.cpp \
@@ -134,9 +136,7 @@ LOCAL_SRC_FILES  := \
 	scene/ModelView.cpp \
 	scene/SurfaceTexture.cpp \
 	scene/SwipeView.cpp \
-	KeyState.cpp \
 	App.cpp \
-	DebugLines.cpp \
 	VrLocale.cpp \
 	VConsole.cpp
 
