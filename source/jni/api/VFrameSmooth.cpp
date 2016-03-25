@@ -1223,7 +1223,7 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
 
         // Build up the external velocity transform
         VR4Matrixf velocity;
-        const int velocitySteps = NervGear::VAlgorithm::Min( 3, (int)((long long)vsyncBase - currentWarpSource.MinimumVsync) );
+        const int velocitySteps = std::min( 3, (int)((long long)vsyncBase - currentWarpSource.MinimumVsync) );
         for ( int i = 0; i < velocitySteps; i++ )
         {
             velocity = velocity * currentWarpSource.WarpParms.ExternalVelocity;
@@ -1502,7 +1502,7 @@ void VFrameSmooth::Private::warpToScreenSliced( const double vsyncBase, const sw
 
         // Build up the external velocity transform
         VR4Matrixf velocity;
-        const int velocitySteps = NervGear::VAlgorithm::Min( 3, (int)((long long)vsyncBase - currentWarpSource.MinimumVsync) );
+        const int velocitySteps = std::min( 3, (int)((long long)vsyncBase - currentWarpSource.MinimumVsync) );
         for ( int i = 0; i < velocitySteps; i++ )
         {
             velocity = velocity * currentWarpSource.WarpParms.ExternalVelocity;

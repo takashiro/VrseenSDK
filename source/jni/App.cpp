@@ -1273,12 +1273,12 @@ struct App::Private : public TalkToJavaInterface
             static double prev;
             const double rawDelta = now - prev;
             prev = now;
-            const double clampedPrediction = VAlgorithm::Min(0.1, rawDelta * 2);
+            const double clampedPrediction = std::min(0.1, rawDelta * 2);
             sensorForNextWarp = ovr_GetPredictedSensorState(OvrMobile, now + clampedPrediction);
 
             vrFrame.PoseState = sensorForNextWarp.Predicted;
             vrFrame.OvrStatus = sensorForNextWarp.Status;
-            vrFrame.DeltaSeconds   = VAlgorithm::Min(0.1, rawDelta);
+            vrFrame.DeltaSeconds   = std::min(0.1, rawDelta);
             vrFrame.FrameNumber++;
 
             // Don't allow this to be excessively large, which can cause application problems.
@@ -1550,7 +1550,7 @@ struct App::Private : public TalkToJavaInterface
             else if (keyCode == AKEYCODE_PERIOD && down && repeatCount == 0)
             {
                 float const IPD_MAX_CM = 8.0f;
-                viewParms.InterpupillaryDistance = VAlgorithm::Min(IPD_MAX_CM * 0.01f, viewParms.InterpupillaryDistance + IPD_STEP);
+                viewParms.InterpupillaryDistance = std::min(IPD_MAX_CM * 0.01f, viewParms.InterpupillaryDistance + IPD_STEP);
                 self->showInfoText(1.0f, "%.3f", viewParms.InterpupillaryDistance);
                 return;
             }

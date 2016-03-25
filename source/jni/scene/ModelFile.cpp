@@ -466,7 +466,7 @@ void LoadModelFileJson( ModelFile & model,
 						const VJson &vertices( surface.value( "vertices" ) );
 						if ( vertices.isObject() )
 						{
-							const int vertexCount = VAlgorithm::Min( vertices.value( "vertexCount" ).toInt(), MAX_GEOMETRY_VERTICES );
+							const int vertexCount = std::min( vertices.value( "vertexCount" ).toInt(), MAX_GEOMETRY_VERTICES );
 							// LOG( "%5d vertices", vertexCount );
 
                             ReadModelArray( attribs.position,     vertices.value( "position" ).toStdString().c_str(),		bin, vertexCount );
@@ -489,7 +489,7 @@ void LoadModelFileJson( ModelFile & model,
 						const VJson &triangles( surface.value( "triangles" ) );
 						if ( triangles.isObject() )
 						{
-							const int indexCount = VAlgorithm::Min( triangles.value( "indexCount" ).toInt(), MAX_GEOMETRY_INDICES );
+							const int indexCount = std::min( triangles.value( "indexCount" ).toInt(), MAX_GEOMETRY_INDICES );
 							// LOG( "%5d indices", indexCount );
 
                             ReadModelArray( indices, triangles.value( "indices" ).toStdString().c_str(), bin, indexCount );

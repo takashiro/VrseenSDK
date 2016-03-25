@@ -15,7 +15,7 @@ static float EvalCatmullRomSpline ( float const *K, float scaledVal, int NumSegm
     //int const NumSegments = LensConfig::NumCoefficients;
 
     float scaledValFloor = floorf ( scaledVal );
-    scaledValFloor = VAlgorithm::Max ( 0.0f, VAlgorithm::Min ( (float)(NumSegments-1), scaledValFloor ) );
+    scaledValFloor = VAlgorithm::Max ( 0.0f, std::min ( (float)(NumSegments-1), scaledValFloor ) );
     float t = scaledVal - scaledValFloor;
     int k = (int)scaledValFloor;
 

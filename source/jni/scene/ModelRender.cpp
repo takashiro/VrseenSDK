@@ -438,7 +438,7 @@ DrawCounters RenderSurfaceList( const DrawSurfaceList & drawSurfaceList ) {
 			{
 				if ( drawSurface.joints != NULL && drawSurface.joints->size() > 0 )
 				{
-                    glUniformMatrix4fv( materialDef.uniformJoints, VAlgorithm::Min( drawSurface.joints->length(), MAX_JOINTS ), 0, &drawSurface.joints->at( 0 ).M[0][0] );
+                    glUniformMatrix4fv( materialDef.uniformJoints, std::min( drawSurface.joints->length(), MAX_JOINTS ), 0, &drawSurface.joints->at( 0 ).M[0][0] );
 				}
 				else
 				{

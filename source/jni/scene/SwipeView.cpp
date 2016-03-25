@@ -664,7 +664,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 			SwipePanel & panel = Panels[index];
 			if ( index == SelectedPanel )
 			{
-				panel.SelectState = NervGear::VAlgorithm::Min( 1.0f, panel.SelectState + vrFrame.DeltaSeconds / SelectTime );
+				panel.SelectState = std::min( 1.0f, panel.SelectState + vrFrame.DeltaSeconds / SelectTime );
 			}
 			else
 			{	// shrink back
@@ -674,7 +674,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 	}
 
 	// Opening / closing animation
-	AnimationFraction = NervGear::VAlgorithm::Min( 1.0,
+	AnimationFraction = std::min( 1.0,
 			( vrFrame.PoseState.TimeInSeconds - AnimationStartTime ) / OpenAnimationTime );
 	// allowing AnimationFraction to reach 0.0 causes an invalid matrix to be formed in Draw()
 	AnimationFraction = NervGear::VAlgorithm::Clamp( AnimationFraction, 0.00001f, 1.0f );
@@ -707,7 +707,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 		int		updatedSelectedPanel = -1;
 
 		// update panel transforms
-		const float	animatedScale = NervGear::VAlgorithm::Min( 1.0f, AnimationFraction * 10.0f );
+		const float	animatedScale = std::min( 1.0f, AnimationFraction * 10.0f );
 
 		// Push this last
 		PanelRenderInfo selectedPanelInfo;
@@ -743,7 +743,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 
 			// animate the closer panels so they land sooner
 			// square it so they smack into the UI surface hard
-			const float animationFraction = sqr( NervGear::VAlgorithm::Min( 1.0f, AnimationFraction * maxDistance / clampedDistance ) );
+			const float animationFraction = sqr( std::min( 1.0f, AnimationFraction * maxDistance / clampedDistance ) );
 			const float invAnimationFraction = 1.0 - animationFraction;
 
 			const float distance = -( Radius.x - SelectDistance * panel.SelectState );

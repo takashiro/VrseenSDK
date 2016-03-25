@@ -35,16 +35,16 @@ bool Intersect_RayBounds( const V3Vectf & rayStart, const V3Vectf & rayDir,
 	const float tY = ( maxs.y - rayStart.y ) * rcpDirY;
 	const float tZ = ( maxs.z - rayStart.z ) * rcpDirZ;
 
-	const float minX = VAlgorithm::Min( sX, tX );
-	const float minY = VAlgorithm::Min( sY, tY );
-	const float minZ = VAlgorithm::Min( sZ, tZ );
+	const float minX = std::min( sX, tX );
+	const float minY = std::min( sY, tY );
+	const float minZ = std::min( sZ, tZ );
 
 	const float maxX = VAlgorithm::Max( sX, tX );
 	const float maxY = VAlgorithm::Max( sY, tY );
 	const float maxZ = VAlgorithm::Max( sZ, tZ );
 
 	t0 = VAlgorithm::Max( minX, VAlgorithm::Max( minY, minZ ) );
-	t1 = VAlgorithm::Min( maxX, VAlgorithm::Min( maxY, maxZ ) );
+	t1 = std::min( maxX, std::min( maxY, maxZ ) );
 
 	return ( t0 <= t1 );
 }
@@ -135,16 +135,16 @@ traceResult_t ModelTrace::Trace( const V3Vectf & start, const V3Vectf & end ) co
 	const float tY = ( header.bounds.GetMaxs()[1] - start.y ) * rcpRayDirY;
 	const float tZ = ( header.bounds.GetMaxs()[2] - start.z ) * rcpRayDirZ;
 
-	const float minX = VAlgorithm::Min( sX, tX );
-	const float minY = VAlgorithm::Min( sY, tY );
-	const float minZ = VAlgorithm::Min( sZ, tZ );
+	const float minX = std::min( sX, tX );
+	const float minY = std::min( sY, tY );
+	const float minZ = std::min( sZ, tZ );
 
 	const float maxX = VAlgorithm::Max( sX, tX );
 	const float maxY = VAlgorithm::Max( sY, tY );
 	const float maxZ = VAlgorithm::Max( sZ, tZ );
 
 	const float t0 = VAlgorithm::Max( minX, VAlgorithm::Max( minY, minZ ) );
-	const float t1 = VAlgorithm::Min( maxX, VAlgorithm::Min( maxY, maxZ ) );
+	const float t1 = std::min( maxX, std::min( maxY, maxZ ) );
 
 	if ( t0 >= t1 )
 	{
@@ -152,7 +152,7 @@ traceResult_t ModelTrace::Trace( const V3Vectf & start, const V3Vectf & end ) co
 	}
 
 	float entryDistance = VAlgorithm::Max( t0, 0.0f );
-	float bestDistance = VAlgorithm::Min( t1 + 0.00001f, rayLength );
+	float bestDistance = std::min( t1 + 0.00001f, rayLength );
     V2Vectf uv;
 	const kdtree_node_t * currentNode = &nodes[0];
 
@@ -227,7 +227,7 @@ traceResult_t ModelTrace::Trace( const V3Vectf & start, const V3Vectf & end ) co
 		const float maxY = VAlgorithm::Max( sY, tY );
 		const float maxZ = VAlgorithm::Max( sZ, tZ );
 
-		entryDistance = VAlgorithm::Min( maxX, VAlgorithm::Min( maxY, maxZ ) );
+		entryDistance = std::min( maxX, std::min( maxY, maxZ ) );
 		if ( entryDistance >= bestDistance )
 		{
 			break;
