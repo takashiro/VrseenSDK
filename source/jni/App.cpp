@@ -2182,11 +2182,6 @@ KeyState & App::backKeyState()
     return d->backKeyState;
 }
 
-ovrMobile * App::getOvrMobile()
-{
-    return d->OvrMobile;
-}
-
 void App::setShowVolumePopup(bool const show)
 {
     d->showVolumePopup = show;

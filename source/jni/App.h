@@ -104,8 +104,6 @@ public:
 
     KeyState &backKeyState();
 
-    ovrMobile *getOvrMobile();
-
     void setShowVolumePopup( bool const show );
     bool showVolumePopup() const;
 
