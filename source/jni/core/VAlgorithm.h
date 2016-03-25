@@ -41,12 +41,6 @@ typename Array::ValueType& Median(Array& arr)
     return arr[mid];
 }
 
-//-----------------------------------------------------------------------------------
-extern const UByte UpperBitTable[256];
-extern const UByte LowerBitTable[256];
-
-//-----------------------------------------------------------------------------------
-// ******* Byte Order Conversions
 namespace ByteUtil {
 
     // *** Swap Byte Order
@@ -132,32 +126,6 @@ inline UInt16 DecodeUInt16(const UByte* buffer)
     return ByteUtil::LEToSystem ( *(const UInt16*)buffer );
 }
 
-inline SInt16 DecodeSInt16(const UByte* buffer)
-{
-    return ByteUtil::LEToSystem ( *(const SInt16*)buffer );
-}
-
-inline UInt32 DecodeUInt32(const UByte* buffer)
-{
-    return ByteUtil::LEToSystem ( *(const UInt32*)buffer );
-}
-
-inline SInt32 DecodeSInt32(const UByte* buffer)
-{
-    return ByteUtil::LEToSystem ( *(const SInt32*)buffer );
-}
-
-inline float DecodeFloat(const UByte* buffer)
-{
-    union {
-        UInt32 U;
-        float  F;
-    };
-
-    U = DecodeUInt32(buffer);
-    return F;
-}
-
 inline void EncodeUInt16(UByte* buffer, UInt16 val)
 {
     *(UInt16*)buffer = ByteUtil::SystemToLE ( val );
@@ -171,22 +139,6 @@ inline void EncodeSInt16(UByte* buffer, SInt16 val)
 inline void EncodeUInt32(UByte* buffer, UInt32 val)
 {
     *(UInt32*)buffer = ByteUtil::SystemToLE ( val );
-}
-
-inline void EncodeSInt32(UByte* buffer, SInt32 val)
-{
-    *(SInt32*)buffer = ByteUtil::SystemToLE ( val );
-}
-
-inline void EncodeFloat(UByte* buffer, float val)
-{
-    union {
-        UInt32 U;
-        float  F;
-    };
-
-    F = val;
-    EncodeUInt32(buffer, U);
 }
 
 }

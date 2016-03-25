@@ -18,7 +18,6 @@ INCLUDEPATH += \
 
 SOURCES += \
     jni/core/VConstants.cpp \
-    jni/core/VAlgorithm.cpp \
     jni/core/Allocator.cpp \
     jni/core/VAtomicInt.cpp \
     jni/core/VByteArray.cpp \
