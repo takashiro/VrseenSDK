@@ -5,7 +5,6 @@
  *      Author: yangkai
  */
 
-#include "OVR.h"
 #include "Android/LogUtils.h"
 #include "Android/JniUtils.h"
 #include "api/VrApi.h"
