@@ -21,3 +21,22 @@ typedef unsigned long long ulonglong;
 
 #define NV_DECLARE_PRIVATE struct Private; friend struct Private; Private *d;
 #define NV_DISABLE_COPY(name) void operator=(const name &) = delete; name(const name &source) = delete;
+
+
+//Operating System Macros
+#if (defined(__APPLE__) && (defined(__GNUC__) || defined(__xlC__) || defined(__xlc__))) || defined(__MACOS__)
+#  if (defined(__ENVIRONMENT_IPHONE_OS_VERSION_MIN_REQUIRED__) || defined(__IPHONE_OS_VERSION_MIN_REQUIRED))
+#    define NV_OS_IPHONE
+#  else
+#    define NV_OS_MAC
+#  endif
+#elif (defined(WIN64) || defined(_WIN64) || defined(__WIN64__))
+#  define NV_OS_WIN
+#elif (defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__))
+#  define NV_OS_WIN
+#elif defined(__linux__) || defined(__linux)
+#  define NV_OS_LINUX
+#  if defined(ANDROID)
+#    define NV_OS_ANDROID
+#  endif
+#endif
