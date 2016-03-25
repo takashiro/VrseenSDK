@@ -30,7 +30,7 @@ HMDState::~HMDState()
 
 bool HMDState::initDevice()
 {
-	m_deviceManager = *NervGear::DeviceManager::Create();
+    m_deviceManager = NervGear::DeviceManager::Create();
 	m_deviceManager->SetMessageHandler( this );
 
 	// Just use the first HMDDevice found.
@@ -238,7 +238,7 @@ bool HMDState::processLatencyTest( unsigned char rgbColorOut[3] )
 // OnMessage() is called from the device manager thread.
 void HMDState::onMessage( const NervGear::Message & msg )
 {
-	if ( msg.pDevice != m_deviceManager )
+    if ( msg.pDevice != m_deviceManager.get() )
 	{
 		return;
 	}
