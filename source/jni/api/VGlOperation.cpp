@@ -505,7 +505,7 @@ void VGlOperation::EglShutdown(  )
 
 void VGlOperation::glFramebufferTexture2DMultisampleIMG(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level, GLsizei samples)
 {
-    PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEIMG glFramebufferTexture2DMultisampleIMG_;
+    PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEIMG glFramebufferTexture2DMultisampleIMG_ = NULL;
     if (GL_ExtensionStringPresent("GL_IMG_multisampled_render_to_texture", extensions)) {
         glFramebufferTexture2DMultisampleIMG_ = (PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEIMG)GetExtensionProc ("glFramebufferTexture2DMultisampleIMG");
     } else if (GL_ExtensionStringPresent("GL_EXT_multisampled_render_to_texture", extensions)) {
@@ -516,7 +516,7 @@ void VGlOperation::glFramebufferTexture2DMultisampleIMG(GLenum target, GLenum at
 
 void VGlOperation::glRenderbufferStorageMultisampleIMG(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height)
 {
-    PFNGLRENDERBUFFERSTORAGEMULTISAMPLEIMG glRenderbufferStorageMultisampleIMG_;
+    PFNGLRENDERBUFFERSTORAGEMULTISAMPLEIMG glRenderbufferStorageMultisampleIMG_ = NULL;
     if (GL_ExtensionStringPresent("GL_IMG_multisampled_render_to_texture", extensions)) {
         glRenderbufferStorageMultisampleIMG_ = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEIMG)GetExtensionProc ("glRenderbufferStorageMultisampleIMG");
     }
@@ -553,8 +553,8 @@ void VGlOperation::glBindVertexArrayOES(GLuint array)
     PFNGLBINDVERTEXARRAYOESPROC glBindVertexArrayOES_;
     if ( GL_ExtensionStringPresent("GL_OES_vertex_array_object", extensions)) {
         glBindVertexArrayOES_ = (PFNGLBINDVERTEXARRAYOESPROC)eglGetProcAddress("glBindVertexArrayOES");
+        glBindVertexArrayOES_(array);
     }
-    glBindVertexArrayOES_(array);
 }
 
 void VGlOperation::glDeleteVertexArraysOES(GLsizei n, const GLuint *arrays)
@@ -562,8 +562,8 @@ void VGlOperation::glDeleteVertexArraysOES(GLsizei n, const GLuint *arrays)
     PFNGLDELETEVERTEXARRAYSOESPROC glDeleteVertexArraysOES_;
     if (GL_ExtensionStringPresent("GL_OES_vertex_array_object", extensions)) {
         glDeleteVertexArraysOES_ = (PFNGLDELETEVERTEXARRAYSOESPROC)eglGetProcAddress("glDeleteVertexArraysOES");
+        glDeleteVertexArraysOES_(n, arrays);
     }
-    glDeleteVertexArraysOES_(n, arrays);
 }
 
 void VGlOperation::glGenVertexArraysOES(GLsizei n, GLuint *arrays)
@@ -571,8 +571,8 @@ void VGlOperation::glGenVertexArraysOES(GLsizei n, GLuint *arrays)
     PFNGLGENVERTEXARRAYSOESPROC glGenVertexArraysOES_;
     if (GL_ExtensionStringPresent("GL_OES_vertex_array_object", extensions)) {
         glGenVertexArraysOES_ = (PFNGLGENVERTEXARRAYSOESPROC)eglGetProcAddress("glGenVertexArraysOES");
+        glGenVertexArraysOES_(n, arrays);
     }
-    glGenVertexArraysOES_(n, arrays);
 }
 
 void VGlOperation::glStartTilingQCOM(GLuint x, GLuint y, GLuint width, GLuint height, GLbitfield preserveMask)
@@ -580,8 +580,8 @@ void VGlOperation::glStartTilingQCOM(GLuint x, GLuint y, GLuint width, GLuint he
     PFNGLSTARTTILINGQCOMPROC glStartTilingQCOM_;
     if (GL_ExtensionStringPresent("GL_QCOM_tiled_rendering", extensions)) {
         glStartTilingQCOM_ = (PFNGLSTARTTILINGQCOMPROC)eglGetProcAddress("glStartTilingQCOM");
+        glStartTilingQCOM_(x, y, width, height, preserveMask);
     }
-    glStartTilingQCOM_(x, y, width, height, preserveMask);
 }
 
 void VGlOperation::glEndTilingQCOM(GLbitfield preserveMask)
@@ -589,8 +589,8 @@ void VGlOperation::glEndTilingQCOM(GLbitfield preserveMask)
     PFNGLENDTILINGQCOMPROC glEndTilingQCOM_;
     if (GL_ExtensionStringPresent("GL_QCOM_tiled_rendering", extensions)) {
         glEndTilingQCOM_ = (PFNGLENDTILINGQCOMPROC)eglGetProcAddress("glEndTilingQCOM");
+        glEndTilingQCOM_(preserveMask);
     }
-    glEndTilingQCOM_(preserveMask);
 }
 
 void VGlOperation::glGenQueriesEXT(GLsizei n, GLuint *ids)
@@ -599,8 +599,8 @@ void VGlOperation::glGenQueriesEXT(GLsizei n, GLuint *ids)
     PFNGLGENQUERIESEXTPROC glGenQueriesEXT_;
     if (GL_ExtensionStringPresent("GL_EXT_disjoint_timer_query", extensions)) {
         glGenQueriesEXT_ = (PFNGLGENQUERIESEXTPROC)eglGetProcAddress("glGenQueriesEXT");
+        glGenQueriesEXT_(n, ids);
     }
-    glGenQueriesEXT_(n, ids);
 }
 
 void VGlOperation::glDeleteQueriesEXT(GLsizei n, const GLuint *ids)
@@ -609,8 +609,8 @@ void VGlOperation::glDeleteQueriesEXT(GLsizei n, const GLuint *ids)
     PFNGLDELETEQUERIESEXTPROC glDeleteQueriesEXT_;
     if (GL_ExtensionStringPresent("GL_EXT_disjoint_timer_query", extensions)) {
         glDeleteQueriesEXT_ = (PFNGLDELETEQUERIESEXTPROC)eglGetProcAddress("glDeleteQueriesEXT");
+        glDeleteQueriesEXT_(n, ids);
     }
-    glDeleteQueriesEXT_(n, ids);
 }
 
 void VGlOperation::glBeginQueryEXT(GLenum target, GLuint id)
@@ -619,8 +619,8 @@ void VGlOperation::glBeginQueryEXT(GLenum target, GLuint id)
     PFNGLBEGINQUERYEXTPROC glBeginQueryEXT_;
     if (GL_ExtensionStringPresent("GL_EXT_disjoint_timer_query", extensions)) {
         glBeginQueryEXT_ = (PFNGLBEGINQUERYEXTPROC)eglGetProcAddress("glBeginQueryEXT");
+        glBeginQueryEXT_(target, id);
     }
-    glBeginQueryEXT_(target, id);
 }
 
 void VGlOperation::glEndQueryEXT(GLenum target)
@@ -629,8 +629,8 @@ void VGlOperation::glEndQueryEXT(GLenum target)
     PFNGLENDQUERYEXTPROC glEndQueryEXT_;
     if (GL_ExtensionStringPresent("GL_EXT_disjoint_timer_query", extensions)) {
         glEndQueryEXT_ = (PFNGLENDQUERYEXTPROC)eglGetProcAddress("glEndQueryEXT");
+        glEndQueryEXT_(target);
     }
-    glEndQueryEXT_(target);
 }
 
 void VGlOperation::glQueryCounterEXT(GLuint id, GLenum target)
@@ -639,8 +639,8 @@ void VGlOperation::glQueryCounterEXT(GLuint id, GLenum target)
     PFNGLQUERYCOUNTEREXTPROC glQueryCounterEXT_;
     if (GL_ExtensionStringPresent("GL_EXT_disjoint_timer_query", extensions)) {
         glQueryCounterEXT_ = (PFNGLQUERYCOUNTEREXTPROC)eglGetProcAddress("glQueryCounterEXT");
+        glQueryCounterEXT_(id, target);
     }
-    glQueryCounterEXT_(id, target);
 }
 
 void VGlOperation::glGetQueryObjectivEXT(GLuint id, GLenum pname, GLint *params)
@@ -649,8 +649,8 @@ void VGlOperation::glGetQueryObjectivEXT(GLuint id, GLenum pname, GLint *params)
     PFNGLGETQUERYOBJECTIVEXTPROC glGetQueryObjectivEXT_;
     if (GL_ExtensionStringPresent("GL_EXT_disjoint_timer_query", extensions)) {
         glGetQueryObjectivEXT_ = (PFNGLGETQUERYOBJECTIVEXTPROC)eglGetProcAddress("glGetQueryObjectivEXT");
+        glGetQueryObjectivEXT_(id, pname, params);
     }
-    glGetQueryObjectivEXT_(id, pname, params);
 }
 
 void VGlOperation::glGetQueryObjectui64vEXT(GLuint id, GLenum pname, GLuint64 *params)
@@ -659,8 +659,8 @@ void VGlOperation::glGetQueryObjectui64vEXT(GLuint id, GLenum pname, GLuint64 *p
     PFNGLGETQUERYOBJECTUI64VEXTPROC glGetQueryObjectui64vEXT_;
     if (GL_ExtensionStringPresent("GL_EXT_disjoint_timer_query", extensions)) {
         glGetQueryObjectui64vEXT_  = (PFNGLGETQUERYOBJECTUI64VEXTPROC)eglGetProcAddress("glGetQueryObjectui64vEXT");
+        glGetQueryObjectui64vEXT_(id, pname, params);
     }
-    glGetQueryObjectui64vEXT_(id, pname, params);
 }
 
 void VGlOperation::glGetInteger64v(GLenum pname, GLint64 *params)
@@ -669,8 +669,8 @@ void VGlOperation::glGetInteger64v(GLenum pname, GLint64 *params)
     PFNGLGETINTEGER64VPROC glGetInteger64v_;
     if (GL_ExtensionStringPresent("GL_EXT_disjoint_timer_query", extensions)) {
         glGetInteger64v_  = (PFNGLGETINTEGER64VPROC)eglGetProcAddress("glGetInteger64v");
+        glGetInteger64v_(pname, params);
     }
-    glGetInteger64v_(pname, params);
 }
 
 void VGlOperation::glBlitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter)

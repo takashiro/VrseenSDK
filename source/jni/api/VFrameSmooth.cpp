@@ -174,41 +174,41 @@ swapProgram_t	spSyncSwappedBufferPortrait = {
 // for a scissor rect.
 
 // If the window is wider than it is tall, ie 1920x1080
-void EyeRectLandscape( const hmdInfoInternal_t & hmd,int eye,int &x, int &y, int &width, int &height )
+void EyeRectLandscape( const VDevice *device,int eye,int &x, int &y, int &width, int &height )
 {
     // always scissor exactly to half the screen
-    int scissorX = ( eye == 0 ) ? 0 : hmd.widthPixels / 2;
+    int scissorX = ( eye == 0 ) ? 0 : device->widthPixels / 2;
     int scissorY = 0;
-    int scissorWidth = hmd.widthPixels / 2;
-    int scissorHeight = hmd.heightPixels;
+    int scissorWidth = device->widthPixels / 2;
+    int scissorHeight = device->heightPixels;
     x = scissorX;
     y = scissorY;
     width = scissorWidth;
     height = scissorHeight;
     return;
 
-    const float	metersToPixels = hmd.widthPixels / hmd.widthMeters;
+    const float	metersToPixels = device->widthPixels / device->widthMeters;
 
     // Even though the lens center is shifted outwards slightly,
     // the height is still larger than the largest horizontal value.
     // TODO: check for sure on other HMD
-    const int	pixelRadius = hmd.heightPixels / 2;
+    const int	pixelRadius = device->heightPixels / 2;
     const int	pixelDiameter = pixelRadius * 2;
-    const float	horizontalShiftMeters = ( hmd.lensSeparation / 2 ) - ( hmd.widthMeters / 4 );
+    const float	horizontalShiftMeters = ( device->lensSeparation / 2 ) - ( device->widthMeters / 4 );
     const float	horizontalShiftPixels = horizontalShiftMeters * metersToPixels;
 
     // Make a viewport that is symetric, extending off the sides of the screen and into the other half.
-    x = hmd.widthPixels/4 - pixelRadius + ( ( eye == 0 ) ? - horizontalShiftPixels : hmd.widthPixels/2 + horizontalShiftPixels );
+    x = device->widthPixels/4 - pixelRadius + ( ( eye == 0 ) ? - horizontalShiftPixels : device->widthPixels/2 + horizontalShiftPixels );
     y = 0;
     width = pixelDiameter;
     height = pixelDiameter;
 }
 
-void EyeRect( const hmdInfoInternal_t & hmd,const int eye,
+void EyeRect( const VDevice *device,const int eye,
               int &x, int &y, int &width, int &height )
 {
     int	lx, ly, lWidth, lHeight;
-    EyeRectLandscape( hmd, eye, lx, ly, lWidth, lHeight );
+    EyeRectLandscape( device, eye, lx, ly, lWidth, lHeight );
 
     x = lx;
     y = ly;
@@ -272,7 +272,7 @@ static bool IsContextPriorityExtensionPresent()
 
 struct VFrameSmooth::Private
 {
-    Private(bool async,hmdInfoInternal_t	hmdInfo):
+    Private(bool async,VDevice *device):
             m_untexturedMvpProgram(),
             m_debugLineProgram(),
             m_warpPrograms(),
@@ -325,7 +325,7 @@ struct VFrameSmooth::Private
         m_warpThread = 0;
 
         m_async = async;
-        m_hmdInfo = hmdInfo;
+        m_device = device;
 
         // No buffers have been submitted yet
         m_eyeBufferCount.setState( 0 );
@@ -546,7 +546,7 @@ struct VFrameSmooth::Private
                                                    const bool drawTimingGraph );
 
     bool m_async;
-    hmdInfoInternal_t	m_hmdInfo;
+    VDevice *m_device;
 
     VGlShader		m_untexturedMvpProgram;
     VGlShader		m_debugLineProgram;
@@ -718,8 +718,8 @@ void VFrameSmooth::Private::threadFunction()
 /*
 * Startup()
 */
-VFrameSmooth::VFrameSmooth(bool async,hmdInfoInternal_t	hmdInfo)
-        : d(new Private(async,hmdInfo))
+VFrameSmooth::VFrameSmooth(bool async,VDevice *device)
+        : d(new Private(async,device))
 {
 
 }
@@ -1957,7 +1957,7 @@ void VFrameSmooth::Private::drawTimingGraph( const int eye )
     // Use the same rect for viewport and scissor
     // FIXME: this is probably bad for convergence
     int	rectX, rectY, rectWidth, rectHeight;
-    EyeRect( m_hmdInfo, eye,
+    EyeRect( m_device, eye,
              rectX, rectY, rectWidth, rectHeight );
 
     glViewport( rectX, rectY, rectWidth, rectHeight );
@@ -2021,13 +2021,13 @@ void VFrameSmooth::Private::createFrameworkGraphics()
     glBindTexture( GL_TEXTURE_2D, 0 );
 
     // single slice mesh for the normal rendering
-    m_warpMesh = VLensDistortion::CreateTessellatedMesh( m_hmdInfo, 1, calibrateFovScale, false );
+    m_warpMesh = VLensDistortion::CreateTessellatedMesh( m_device, 1, calibrateFovScale, false );
 
     // multi-slice mesh for sliced rendering
-    m_sliceMesh = VLensDistortion::CreateTessellatedMesh( m_hmdInfo, NUM_SLICES_PER_EYE, calibrateFovScale, false );
+    m_sliceMesh = VLensDistortion::CreateTessellatedMesh( m_device, NUM_SLICES_PER_EYE, calibrateFovScale, false );
 
     // small subset cursor mesh
-    m_cursorMesh = VLensDistortion::CreateTessellatedMesh( m_hmdInfo, 1, calibrateFovScale, true );
+    m_cursorMesh = VLensDistortion::CreateTessellatedMesh( m_device, 1, calibrateFovScale, true );
 
     if ( m_warpMesh.indexCount == 0 || m_sliceMesh.indexCount == 0 )
     {

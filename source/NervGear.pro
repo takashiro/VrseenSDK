@@ -52,7 +52,6 @@ SOURCES += \
     jni/api/Vsync.cpp \
     jni/api/VDevice.cpp \
     jni/api/VGlOperation.cpp \
-    jni/api/HmdInfo.cpp \
     jni/api/HmdSensors.cpp \
     jni/api/VLensDistortion.cpp \
     jni/api/SystemActivities.cpp \
@@ -196,7 +195,6 @@ HEADERS += \
     jni/embedded/oculus_loading_indicator.h \
     jni/api/VrApi.h \
     jni/api/Vsync.h \
-    jni/api/HmdInfo.h \
     jni/api/HmdSensors.h \
     jni/api/VLensDistortion.h \
     jni/api/SystemActivities.h \

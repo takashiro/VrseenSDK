@@ -1,7 +1,7 @@
 #include "../core/Alg.h"
 #include "sensor/Profile.h"
 #include "sensor/Device.h"
-#include "HmdInfo.h"
+#include "VDevice.h"
 
 #include "VGlShader.h"
 #include "VGlOperation.h"
@@ -111,21 +111,21 @@ static V3Vectf DistortionFnScaleRadiusSquaredChroma (const VLensDistortion& lens
     return scaleRGB;
 }
 
-static void WarpTexCoordChroma( const hmdInfoInternal_t & hmdInfo, const float in[2],
+static void WarpTexCoordChroma( const VDevice* device, const float in[2],
                                 float red[2], float green[2], float blue[2] ) {
     float theta[2];
     for ( int i = 0; i < 2; i++ ) {
         const float unit = in[i];
         const float ndc = 2.0f * ( unit - 0.5f );
-        const float pixels = ndc * hmdInfo.heightPixels * 0.5f;
-        const float meters = pixels * hmdInfo.widthMeters / hmdInfo.widthPixels;
-        const float tanAngle = meters / hmdInfo.lens.MetersPerTanAngleAtCenter;
+        const float pixels = ndc * device->heightPixels * 0.5f;
+        const float meters = pixels * device->widthMeters / device->widthPixels;
+        const float tanAngle = meters / device->lens.MetersPerTanAngleAtCenter;
         theta[i] = tanAngle;
     }
 
     const float rsq = theta[0] * theta[0] + theta[1] * theta[1];
 
-    const V3Vectf chromaScale = DistortionFnScaleRadiusSquaredChroma (hmdInfo.lens,rsq);
+    const V3Vectf chromaScale = DistortionFnScaleRadiusSquaredChroma (device->lens,rsq);
 
     for ( int i = 0; i < 2; i++ ) {
         red[i] = chromaScale[0] * theta[i];
@@ -156,19 +156,19 @@ static bool VectorHitsCursor( const V2Vectf & v )
     return true;
 }
 
-static void* CreateVertexBuffer( const hmdInfoInternal_t & hmdInfo,
+static void* CreateVertexBuffer( const VDevice* device,
                                  int tessellationsX, int tessellationsY)
 {
     const int vertexCount = 2 * ( tessellationsX + 1 ) * ( tessellationsY + 1 );
     void*	buf = malloc(4 * vertexCount * 6 );
 
     // the centers are offset horizontal in each eye
-    const float aspect = hmdInfo.widthPixels * 0.5 / hmdInfo.heightPixels;
+    const float aspect = device->widthPixels * 0.5 / device->heightPixels;
 
-    const float	horizontalShiftLeftMeters =  -(( hmdInfo.lensSeparation / 2 ) - ( hmdInfo.widthMeters / 4 )) + hmdInfo.horizontalOffsetMeters;
-    const float horizontalShiftRightMeters = (( hmdInfo.lensSeparation / 2 ) - ( hmdInfo.widthMeters / 4 )) + hmdInfo.horizontalOffsetMeters;
-    const float	horizontalShiftViewLeft = 2 * aspect * horizontalShiftLeftMeters / hmdInfo.widthMeters;
-    const float	horizontalShiftViewRight = 2 * aspect * horizontalShiftRightMeters / hmdInfo.widthMeters;
+    const float	horizontalShiftLeftMeters =  -(( device->lensSeparation / 2 ) - ( device->widthMeters / 4 )) + device->horizontalOffsetMeters;
+    const float horizontalShiftRightMeters = (( device->lensSeparation / 2 ) - ( device->widthMeters / 4 )) + device->horizontalOffsetMeters;
+    const float	horizontalShiftViewLeft = 2 * aspect * horizontalShiftLeftMeters / device->widthMeters;
+    const float	horizontalShiftViewRight = 2 * aspect * horizontalShiftRightMeters / device->widthMeters;
 
     for ( int eye = 0; eye < 2; eye++ )
     {
@@ -183,7 +183,7 @@ static void* CreateVertexBuffer( const hmdInfoInternal_t & hmdInfo,
                 float * v = &((float *)buf)[vertNum*6];
                 const float inTex[2] = { ( eye ? horizontalShiftViewLeft : horizontalShiftViewRight ) +
                                          xf *aspect + (1.0f-aspect) * 0.5f, yf };
-                WarpTexCoordChroma( hmdInfo, inTex, &v[0], &v[2], &v[4] );
+                WarpTexCoordChroma( device, inTex, &v[0], &v[2], &v[4] );
             }
         }
     }
@@ -193,7 +193,7 @@ static void* CreateVertexBuffer( const hmdInfoInternal_t & hmdInfo,
 int VLensDistortion::tessellationsX = 32;
 int VLensDistortion::tessellationsY = 32;
 
-VGlGeometry VLensDistortion::CreateTessellatedMesh(const hmdInfoInternal_t & hmdInfo,const int numSlicesPerEye, const float fovScale,
+VGlGeometry VLensDistortion::CreateTessellatedMesh(const VDevice* device,const int numSlicesPerEye, const float fovScale,
                                                    const bool cursorOnly)
 {
     VGlOperation glOperation;
@@ -202,7 +202,7 @@ VGlGeometry VLensDistortion::CreateTessellatedMesh(const hmdInfoInternal_t & hmd
 
     if (tessellationsX < 1 || tessellationsY < 1 ) return geometry;
 
-    const float * bufferVerts = &((float *)CreateVertexBuffer(hmdInfo,tessellationsX,tessellationsY))[0];
+    const float * bufferVerts = &((float *)CreateVertexBuffer(device,tessellationsX,tessellationsY))[0];
 
     // Identify which verts would be inside the cursor plane
     bool * vertInCursor = NULL;

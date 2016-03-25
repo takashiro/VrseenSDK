@@ -7,7 +7,7 @@
 
 NV_NAMESPACE_BEGIN
 
-struct hmdInfoInternal_t;
+class VDevice;
 
 class VLensDistortion
 {
@@ -33,7 +33,7 @@ public:
     float               InvK[MaxCoefficients];
     float               MaxInvR;
 
-    static VGlGeometry CreateTessellatedMesh(const hmdInfoInternal_t & hmdInfo,const int numSlicesPerEye, const float fovScale,
+    static VGlGeometry CreateTessellatedMesh(const VDevice* device,const int numSlicesPerEye, const float fovScale,
                                              const bool cursorOnly);
     //default is 32*32
     static int tessellationsX;

@@ -28,7 +28,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "MemBuffer.h"		// needed for MemBufferT
 #include "sensor/DeviceImpl.h"
 
-#include "HmdInfo.h"
+#include "VDevice.h"
 #include "HmdSensors.h"
 #include "VFrameSmooth.h"
 #include "VrApi_local.h"
@@ -1221,23 +1221,40 @@ static void UpdateHmdInfo( ovrMobile * ovr )
 	LOG( "ProductId = %i", hmdProductId );
 	LOG( "Version = %i", hmdVersion );
 
-    const char *model = VOsBuild::getString(VOsBuild::Model).toCString();
-    ovr->HmdInfo = NervGear::GetDeviceHmdInfo(model, ovr->Jni, ovr->Parms.ActivityObject, VrLibClass);
-    delete[] model;
+    ovr->device = VDevice::instance();
+
+    // Only use the Android info if we haven't explicitly set the screenWidth / height,
+    // because they are reported wrong on the note.
+    if(!ovr->device->widthMeters)
+    {
+        jmethodID getDisplayWidth = ovr->Jni->GetStaticMethodID( VrLibClass, "getDisplayWidth", "(Landroid/app/Activity;)F" );
+        if ( !getDisplayWidth )
+        {
+            FAIL( "couldn't get getDisplayWidth" );
+        }
+        ovr->device->widthMeters = ovr->Jni->CallStaticFloatMethod(VrLibClass, getDisplayWidth, ovr->Parms.ActivityObject );
+
+        jmethodID getDisplayHeight = ovr->Jni->GetStaticMethodID( VrLibClass, "getDisplayHeight", "(Landroid/app/Activity;)F" );
+        if ( !getDisplayHeight )
+        {
+            FAIL( "couldn't get getDisplayHeight" );
+        }
+         ovr->device->heightMeters = ovr->Jni->CallStaticFloatMethod( VrLibClass, getDisplayHeight, ovr->Parms.ActivityObject );
+    }
 
 	// Update the dimensions in pixels directly from the window
-	ovr->HmdInfo.widthPixels = windowSurfaceWidth;
-	ovr->HmdInfo.heightPixels = windowSurfaceHeight;
+	ovr->device->widthPixels = windowSurfaceWidth;
+	ovr->device->heightPixels = windowSurfaceHeight;
 
-	LOG( "hmdInfo.lensSeparation = %f", ovr->HmdInfo.lensSeparation );
-	LOG( "hmdInfo.widthMeters = %f", ovr->HmdInfo.widthMeters );
-	LOG( "hmdInfo.heightMeters = %f", ovr->HmdInfo.heightMeters );
-	LOG( "hmdInfo.widthPixels = %i", ovr->HmdInfo.widthPixels );
-	LOG( "hmdInfo.heightPixels = %i", ovr->HmdInfo.heightPixels );
-	LOG( "hmdInfo.eyeTextureResolution[0] = %i", ovr->HmdInfo.eyeTextureResolution[0] );
-	LOG( "hmdInfo.eyeTextureResolution[1] = %i", ovr->HmdInfo.eyeTextureResolution[1] );
-	LOG( "hmdInfo.eyeTextureFov[0] = %f", ovr->HmdInfo.eyeTextureFov[0] );
-	LOG( "hmdInfo.eyeTextureFov[1] = %f", ovr->HmdInfo.eyeTextureFov[1] );
+	LOG( "hmdInfo.lensSeparation = %f", ovr->device->lensSeparation );
+	LOG( "hmdInfo.widthMeters = %f", ovr->device->widthMeters );
+	LOG( "hmdInfo.heightMeters = %f", ovr->device->heightMeters );
+	LOG( "hmdInfo.widthPixels = %i", ovr->device->widthPixels );
+	LOG( "hmdInfo.heightPixels = %i", ovr->device->heightPixels );
+	LOG( "hmdInfo.eyeTextureResolution[0] = %i", ovr->device->eyeTextureResolution[0] );
+	LOG( "hmdInfo.eyeTextureResolution[1] = %i", ovr->device->eyeTextureResolution[1] );
+	LOG( "hmdInfo.eyeTextureFov[0] = %f", ovr->device->eyeTextureFov[0] );
+	LOG( "hmdInfo.eyeTextureFov[1] = %f", ovr->device->eyeTextureFov[1] );
 }
 
 int ovr_GetSystemBrightness( ovrMobile * ovr )
@@ -1444,7 +1461,7 @@ ovrMobile * ovr_EnterVrMode( ovrModeParms parms, ovrHmdInfo * returnedHmdInfo )
 		LOG( "Cleared JNI exception" );
 	}
 
-	ovr->Warp = new VFrameSmooth( ovr->Parms.AsynchronousTimeWarp,ovr->HmdInfo);
+	ovr->Warp = new VFrameSmooth( ovr->Parms.AsynchronousTimeWarp,ovr->device);
 
 	// reset brightness, DND and comfort modes because VRSVC, while maintaining the value, does not actually enforce these settings.
 	int brightness = ovr_GetSystemBrightness( ovr );
@@ -1457,10 +1474,10 @@ ovrMobile * ovr_EnterVrMode( ovrModeParms parms, ovrHmdInfo * returnedHmdInfo )
 	ovr_SetComfortModeEnabled( ovr, comfortMode );
 
 	ovrHmdInfo info = {};
-	info.SuggestedEyeResolution[0] = ovr->HmdInfo.eyeTextureResolution[0];
-	info.SuggestedEyeResolution[1] = ovr->HmdInfo.eyeTextureResolution[1];
-	info.SuggestedEyeFov[0] = ovr->HmdInfo.eyeTextureFov[0];
-	info.SuggestedEyeFov[1] = ovr->HmdInfo.eyeTextureFov[1];
+	info.SuggestedEyeResolution[0] = ovr->device->eyeTextureResolution[0];
+	info.SuggestedEyeResolution[1] = ovr->device->eyeTextureResolution[1];
+	info.SuggestedEyeFov[0] = ovr->device->eyeTextureFov[0];
+	info.SuggestedEyeFov[1] = ovr->device->eyeTextureFov[1];
 
 	*returnedHmdInfo = info;
 
@@ -1594,7 +1611,7 @@ static void ResetTimeWarp( ovrMobile * ovr )
 
 	// restart TimeWarp to generate new distortion meshes
 	delete ovr->Warp;
-	ovr->Warp = new VFrameSmooth( ovr->Parms.AsynchronousTimeWarp,ovr->HmdInfo);
+	ovr->Warp = new VFrameSmooth( ovr->Parms.AsynchronousTimeWarp,ovr->device);
 }
 
 void ovr_HandleHmdEvents( ovrMobile * ovr )
@@ -1790,27 +1807,27 @@ void ovr_WarpSwap( ovrMobile * ovr, const ovrTimeWarpParms * parms )
 void ovr_SetDistortionTuning( ovrMobile * ovr, NervGear::DistortionEqnType type, float scale, float* distortionK)
 {
 	// Dynamic adjustment of distortion
-	ovr->HmdInfo.lens.Eqn = type;
-	ovr->HmdInfo.lens.MetersPerTanAngleAtCenter = scale;
+	ovr->device->lens.Eqn = type;
+	ovr->device->lens.MetersPerTanAngleAtCenter = scale;
 	if ( type == NervGear::Distortion_RecipPoly4 )
 	{
 		for ( int i = 0; i < 4; i++ )
 		{
-			ovr->HmdInfo.lens.K[i] = distortionK[i];
+			ovr->device->lens.K[i] = distortionK[i];
 		}
 	}
 	else if ( type == NervGear::Distortion_CatmullRom10 )
 	{
 		for ( int i = 0; i < 11; i++ )
 		{
-			ovr->HmdInfo.lens.K[i] = distortionK[i];
+			ovr->device->lens.K[i] = distortionK[i];
 		}
 	}
 	else
 	{
-		for ( int i = 0; i < ovr->HmdInfo.lens.MaxCoefficients; i++ )
+		for ( int i = 0; i < ovr->device->lens.MaxCoefficients; i++ )
 		{
-			ovr->HmdInfo.lens.K[i] = distortionK[i];
+			ovr->device->lens.K[i] = distortionK[i];
 		}
 	}
 

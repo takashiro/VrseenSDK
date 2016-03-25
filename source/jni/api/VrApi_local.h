@@ -1,6 +1,6 @@
 #pragma once
 
-#include "HmdInfo.h"
+#include "VDevice.h"
 #include "VFrameSmooth.h"
 
 NV_USING_NAMESPACE
@@ -19,6 +19,6 @@ struct ovrMobile
 	pid_t					EnterTid;
 
     VFrameSmooth *			Warp;
-    hmdInfoInternal_t	HmdInfo;
+    VDevice* 	            device;
 	ovrModeParms			Parms;
 };
