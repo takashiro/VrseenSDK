@@ -17,7 +17,6 @@
 #include "VLensDistortion.h"
 #include "VrApi_Android.h"
 #include "api/VGlOperation.h"
-#include "Alg.h"
 #include "../core/VString.h"
 
 #include "../embedded/oculus_loading_indicator.h"

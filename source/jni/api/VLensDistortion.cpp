@@ -1,8 +1,7 @@
-#include "../core/Alg.h"
 #include "sensor/Profile.h"
 #include "sensor/Device.h"
 #include "HmdInfo.h"
-
+#include "VAlgorithm.h"
 #include "VGlShader.h"
 #include "VGlOperation.h"
 
@@ -16,7 +15,7 @@ static float EvalCatmullRomSpline ( float const *K, float scaledVal, int NumSegm
     //int const NumSegments = LensConfig::NumCoefficients;
 
     float scaledValFloor = floorf ( scaledVal );
-    scaledValFloor = Alg::Max ( 0.0f, Alg::Min ( (float)(NumSegments-1), scaledValFloor ) );
+    scaledValFloor = VAlgorithm::Max ( 0.0f, VAlgorithm::Min ( (float)(NumSegments-1), scaledValFloor ) );
     float t = scaledVal - scaledValFloor;
     int k = (int)scaledValFloor;
 

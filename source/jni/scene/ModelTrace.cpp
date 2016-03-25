@@ -151,8 +151,8 @@ traceResult_t ModelTrace::Trace( const V3Vectf & start, const V3Vectf & end ) co
 		return result;
 	}
 
-	float entryDistance = VAlgorithm:::Max( t0, 0.0f );
-	float bestDistance = VAlgorithm:::Min( t1 + 0.00001f, rayLength );
+	float entryDistance = VAlgorithm::Max( t0, 0.0f );
+	float bestDistance = VAlgorithm::Min( t1 + 0.00001f, rayLength );
     V2Vectf uv;
 	const kdtree_node_t * currentNode = &nodes[0];
 
