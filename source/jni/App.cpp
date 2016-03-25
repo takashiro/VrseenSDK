@@ -1543,7 +1543,7 @@ struct App::Private : public TalkToJavaInterface
             else if (keyCode == AKEYCODE_COMMA && down && repeatCount == 0)
             {
                 float const IPD_MIN_CM = 0.0f;
-                viewParms.InterpupillaryDistance = VAlgorithm::Max(IPD_MIN_CM * 0.01f, viewParms.InterpupillaryDistance - IPD_STEP);
+                viewParms.InterpupillaryDistance = std::max(IPD_MIN_CM * 0.01f, viewParms.InterpupillaryDistance - IPD_STEP);
                 self->showInfoText(1.0f, "%.3f", viewParms.InterpupillaryDistance);
                 return;
             }

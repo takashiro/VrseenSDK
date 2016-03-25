@@ -375,7 +375,7 @@ VR4Matrixf SceneManager::BoundsScreenMatrix( const VBoxf & bounds, const float m
     const V3Vectf size = bounds.b[1] - bounds.b[0];
     const V3Vectf center = bounds.b[0] + size * 0.5f;
 	const float	screenHeight = size.y;
-	const float screenWidth = NervGear::VAlgorithm::Max( size.x, size.z );
+    const float screenWidth = std::max( size.x, size.z );
 	float widthScale;
 	float heightScale;
 	float aspect = ( movieAspect == 0.0f ) ? 1.0f : movieAspect;
@@ -561,7 +561,7 @@ GLuint SceneManager::BuildScreenVignetteTexture( const int horizontalTile ) cons
 int SceneManager::BottomMipLevel( const int width, const int height ) const
 {
 	int bottomMipLevel = 0;
-	int dimension = NervGear::VAlgorithm::Max( width, height );
+    int dimension = std::max( width, height );
 
 	while( dimension > 1 )
 	{

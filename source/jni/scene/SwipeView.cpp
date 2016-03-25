@@ -668,7 +668,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 			}
 			else
 			{	// shrink back
-				panel.SelectState = NervGear::VAlgorithm::Max( 0.0f, panel.SelectState - vrFrame.DeltaSeconds / SelectTime );
+				panel.SelectState = std::max( 0.0f, panel.SelectState - vrFrame.DeltaSeconds / SelectTime );
 			}
 		}
 	}

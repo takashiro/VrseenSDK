@@ -1857,7 +1857,7 @@ void OvrFolderBrowser::loadThumbnailToTexture( const VEvent &event )
 		return;
 	}
 
-	const int max = VAlgorithm::Max( width, height );
+	const int max = std::max( width, height );
 
 	// Grab the Panel from VRMenu
 	VRMenuObject * panelObject = NULL;

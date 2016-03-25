@@ -459,7 +459,7 @@ void LatencyTest::processResults()
                         UInt32 elapsed = pCurr->DeviceMeasuredElapsedMilliS;
 
                         minTime1To2 = std::min(elapsed, minTime1To2);
-                        maxTime1To2 = VAlgorithm::Max(elapsed, maxTime1To2);
+                        maxTime1To2 = std::max(elapsed, maxTime1To2);
 
                         averageTime1To2 += (float) elapsed;
                     }
@@ -473,7 +473,7 @@ void LatencyTest::processResults()
                         UInt32 elapsed = pCurr->DeviceMeasuredElapsedMilliS;
 
                         minTime2To1 = std::min(elapsed, minTime2To1);
-                        maxTime2To1 = VAlgorithm::Max(elapsed, maxTime2To1);
+                        maxTime2To1 = std::max(elapsed, maxTime2To1);
 
                         averageTime2To1 += (float) elapsed;
                     }
@@ -481,7 +481,7 @@ void LatencyTest::processResults()
 
                 float usbRountripElapsedMilliS = 1000 * (float) (pCurr->TestStartedSeconds - pCurr->StartTestSeconds);
                 minUSBTripMilliS = std::min(usbRountripElapsedMilliS, minUSBTripMilliS);
-                maxUSBTripMilliS = VAlgorithm::Max(usbRountripElapsedMilliS, maxUSBTripMilliS);
+                maxUSBTripMilliS = std::max(usbRountripElapsedMilliS, maxUSBTripMilliS);
                 averageUSBTripMilliS += usbRountripElapsedMilliS;
                 countUSBTripTime++;
             }

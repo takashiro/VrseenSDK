@@ -1764,7 +1764,7 @@ void VFrameSmooth::Private::warpSwapInternal( const ovrTimeWarpParms & parms )
         {
             // If MinimumVsyncs was increased dynamically, it is necessary
             // to skip one or more vsyncs just as the change happens.
-            m_lastSwapVsyncCount = VAlgorithm::Max( state.VsyncCount, m_lastSwapVsyncCount + minimumVsyncs );
+            m_lastSwapVsyncCount = std::max( state.VsyncCount, m_lastSwapVsyncCount + minimumVsyncs );
 
             // Sleep for at least one millisecond to make sure the main VR thread
             // cannot completely deny the Android watchdog from getting a time slice.

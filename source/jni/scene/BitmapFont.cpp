@@ -558,7 +558,7 @@ bool FontInfoType::LoadFromBuffer(void const * buffer,
 					MaxDescent = descent;
 				}
 
-				maxCharCode = VAlgorithm::Max(maxCharCode, g.CharCode);
+				maxCharCode = std::max(maxCharCode, g.CharCode);
 			}
 			i++;
 		}
@@ -891,7 +891,7 @@ void BitmapFontLocal::WordWrapText(VString & inOutText, const float widthMeters,
 			if (endPos < totalLength) {
                 VString subInStr = inOutText.range(pos, endPos);
 				if (subInStr == wholeStrsList[i]) {
-					dontSplitUntilIdx = VAlgorithm::Max(dontSplitUntilIdx, endPos);
+					dontSplitUntilIdx = std::max(dontSplitUntilIdx, endPos);
 				}
 			}
 		}

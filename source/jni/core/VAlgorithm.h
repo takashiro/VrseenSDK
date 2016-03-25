@@ -18,11 +18,6 @@ NV_NAMESPACE_BEGIN
 
 namespace VAlgorithm {
 
-template <typename T> inline const T Max(const T a, const T b)
-{
-    return max(a, b);
-}
-
 template <typename T> inline const T Clamp(const T v, const T minVal, const T maxVal)
 {
     return max(minVal, min(v, maxVal));

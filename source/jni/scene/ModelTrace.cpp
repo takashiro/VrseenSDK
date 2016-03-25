@@ -39,11 +39,11 @@ bool Intersect_RayBounds( const V3Vectf & rayStart, const V3Vectf & rayDir,
 	const float minY = std::min( sY, tY );
 	const float minZ = std::min( sZ, tZ );
 
-	const float maxX = VAlgorithm::Max( sX, tX );
-	const float maxY = VAlgorithm::Max( sY, tY );
-	const float maxZ = VAlgorithm::Max( sZ, tZ );
+	const float maxX = std::max( sX, tX );
+	const float maxY = std::max( sY, tY );
+	const float maxZ = std::max( sZ, tZ );
 
-	t0 = VAlgorithm::Max( minX, VAlgorithm::Max( minY, minZ ) );
+	t0 = std::max( minX, std::max( minY, minZ ) );
 	t1 = std::min( maxX, std::min( maxY, maxZ ) );
 
 	return ( t0 <= t1 );
@@ -139,11 +139,11 @@ traceResult_t ModelTrace::Trace( const V3Vectf & start, const V3Vectf & end ) co
 	const float minY = std::min( sY, tY );
 	const float minZ = std::min( sZ, tZ );
 
-	const float maxX = VAlgorithm::Max( sX, tX );
-	const float maxY = VAlgorithm::Max( sY, tY );
-	const float maxZ = VAlgorithm::Max( sZ, tZ );
+	const float maxX = std::max( sX, tX );
+	const float maxY = std::max( sY, tY );
+	const float maxZ = std::max( sZ, tZ );
 
-	const float t0 = VAlgorithm::Max( minX, VAlgorithm::Max( minY, minZ ) );
+	const float t0 = std::max( minX, std::max( minY, minZ ) );
 	const float t1 = std::min( maxX, std::min( maxY, maxZ ) );
 
 	if ( t0 >= t1 )
@@ -151,7 +151,7 @@ traceResult_t ModelTrace::Trace( const V3Vectf & start, const V3Vectf & end ) co
 		return result;
 	}
 
-	float entryDistance = VAlgorithm::Max( t0, 0.0f );
+	float entryDistance = std::max( t0, 0.0f );
 	float bestDistance = std::min( t1 + 0.00001f, rayLength );
     V2Vectf uv;
 	const kdtree_node_t * currentNode = &nodes[0];
@@ -223,9 +223,9 @@ traceResult_t ModelTrace::Trace( const V3Vectf & start, const V3Vectf & end ) co
 		const float tY = ( currentLeaf->bounds.GetMaxs()[1] - start.y ) * rcpRayDirY;
 		const float tZ = ( currentLeaf->bounds.GetMaxs()[2] - start.z ) * rcpRayDirZ;
 
-		const float maxX = VAlgorithm::Max( sX, tX );
-		const float maxY = VAlgorithm::Max( sY, tY );
-		const float maxZ = VAlgorithm::Max( sZ, tZ );
+		const float maxX = std::max( sX, tX );
+		const float maxY = std::max( sY, tY );
+		const float maxZ = std::max( sZ, tZ );
 
 		entryDistance = std::min( maxX, std::min( maxY, maxZ ) );
 		if ( entryDistance >= bestDistance )

@@ -795,7 +795,7 @@ GlTexture LoadTexturePVR( const char * fileName, const unsigned char * buffer, c
 		return GlTexture( 0 );
 	}
 
-	const UInt32 mipCount = ( noMipMaps ) ? 1 : NervGear::VAlgorithm::Max( 1u, header.MipMapCount );
+	const UInt32 mipCount = ( noMipMaps ) ? 1 : std::max( 1u, header.MipMapCount );
 
 	width = header.Width;
 	height = header.Height;
@@ -1011,7 +1011,7 @@ GlTexture LoadTextureKTX( const char * fileName, const unsigned char * buffer, c
 	width = header.pixelWidth;
 	height = header.pixelHeight;
 
-	const UInt32 mipCount = ( noMipMaps ) ? 1 : NervGear::VAlgorithm::Max( 1u, header.numberOfMipmapLevels );
+	const UInt32 mipCount = ( noMipMaps ) ? 1 : std::max( 1u, header.numberOfMipmapLevels );
 
 	if ( header.numberOfFaces == 1 )
 	{
