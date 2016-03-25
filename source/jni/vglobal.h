@@ -14,6 +14,7 @@ typedef unsigned char uchar;
 typedef unsigned short ushort;
 typedef unsigned int uint;
 typedef unsigned long ulong;
+typedef long long longlong;
 typedef unsigned long long ulonglong;
 
 #define forever for(;;)
