@@ -35,11 +35,6 @@ template <typename T> inline const T Clamp(const T v, const T minVal, const T ma
     return max(minVal, min(v, maxVal));
 }
 
-template <typename T> inline int Chop(T f)
-{
-    return int(f);
-}
-
 template <typename T> inline T Lerp(T a, T b, T f)
 {
     return (b - a) * f + a;
