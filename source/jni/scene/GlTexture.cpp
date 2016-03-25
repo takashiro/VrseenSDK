@@ -12,7 +12,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "GlTexture.h"
 
 #include "VPath.h"
-#include "OVR.h"
+
 #include "api/VGlOperation.h"
 #include "VAlgorithm.h"
 

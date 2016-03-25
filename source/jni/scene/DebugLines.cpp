@@ -13,7 +13,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include <stdlib.h>
 
-#include "OVR.h"
+
 #include "api/VGlOperation.h"
 #include "Android/LogUtils.h"
 
@@ -67,7 +67,7 @@ public:
 		long long	EndFrame;
 	};
 
-	struct LineVertex_t 
+	struct LineVertex_t
 	{
 		LineVertex_t() :
 			x( 0.0f ),
@@ -79,7 +79,7 @@ public:
 			a( 0.0f )
 		{
 		}
-                
+
 		float           x;
 		float           y;
 		float			z;
@@ -123,7 +123,7 @@ private:
 	NervGear::VArray< DebugLine_t >	DepthTestedLines;
 	NervGear::VArray< DebugLine_t >	NonDepthTestedLines;
 	LineVertex_t *					Vertices;
-	
+
 	bool							Initialized;
 	VGlShader						LineProgram;
 
@@ -169,7 +169,7 @@ void OvrDebugLinesLocal::Init()
 
 	const int MAX_VERTS = MAX_DEBUG_LINES * 2;
 	Vertices = new LineVertex_t[ MAX_VERTS ];
-	
+
 	// the indices will never change once we've set them up, we just won't necessarily
 	// use all of the index buffer to render.
 	const int MAX_INDICES = MAX_DEBUG_LINES * 2;
@@ -217,7 +217,7 @@ void OvrDebugLinesLocal::InitVBO( VGlGeometry & geo, LineVertex_t * vertices, co
 	glGenBuffers( 1, &geo.indexBuffer );
 	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, geo.indexBuffer );
 	glBufferData( GL_ELEMENT_ARRAY_BUFFER, numIndexBytes, (void*)indices, GL_STATIC_DRAW );
-	
+
 	geo.indexCount = 0;	// nothing to render right now
 }
 
@@ -351,7 +351,7 @@ void OvrDebugLinesLocal::AddPoint(	const V3Vectf & pos, const float size, const 
     V3Vectf const fwd( 0.0f, 0.0f, hs );
     V3Vectf const right( hs, 0.0f, 0.0f );
     V3Vectf const up( 0.0f, hs, 0.0f );
-	
+
 	AddLine( pos - fwd, pos + fwd, color, color, endFrame, depthTest );
 	AddLine( pos - right , pos + right, color, color, endFrame, depthTest );
 	AddLine( pos - up, pos + up, color, color, endFrame, depthTest );
@@ -366,7 +366,7 @@ void OvrDebugLinesLocal::AddPoint(	const V3Vectf & pos, const float size,
     V3Vectf const fwd( 0.0f, 0.0f, hs );
     V3Vectf const right( hs, 0.0f, 0.0f );
     V3Vectf const up( 0.0f, hs, 0.0f );
-	
+
     AddLine( pos - fwd, pos + fwd, V4Vectf( 0.0f, 0.0f, 1.0f, 1.0f ), V4Vectf( 0.0f, 0.0f, 1.0f, 1.0f ), endFrame, depthTest );
     AddLine( pos - right, pos + right, V4Vectf( 1.0f, 0.0f, 0.0f, 1.0f ), V4Vectf( 1.0f, 0.0f, 0.0f, 1.0f ), endFrame, depthTest );
     AddLine( pos - up, pos + up, V4Vectf( 0.0f, 1.0f, 0.0f, 1.0f ), V4Vectf( 0.0f, 1.0f, 0.0f, 1.0f ), endFrame, depthTest );
