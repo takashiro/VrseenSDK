@@ -42,7 +42,6 @@ LOCAL_SRC_FILES  := \
 	core/VJson.cpp \
 	core/Log.cpp \
 	core/VLog.cpp \
-	core/Lockless.cpp \
 	core/VMath.cpp \
 	core/VPath.cpp \
 	core/RefCount.cpp \

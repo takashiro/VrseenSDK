@@ -27,7 +27,6 @@ SOURCES += \
     jni/core/Log.cpp \
     jni/core/VLog.cpp \
     jni/core/VLock.cpp \
-    jni/core/Lockless.cpp \
     jni/core/VPath.cpp \
     jni/core/RefCount.cpp \
     jni/core/VSignal.cpp \
@@ -148,7 +147,7 @@ HEADERS += \
     jni/core/Log.h \
     jni/core/VLog.h \
     jni/core/VLock.h \
-    jni/core/Lockless.h \
+    jni/core/VLockless.h \
     jni/core/VMap.h \
     jni/core/VPath.h \
     jni/core/RefCount.h \

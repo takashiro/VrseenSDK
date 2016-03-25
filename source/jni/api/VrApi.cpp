@@ -295,14 +295,14 @@ public:
 };
 
 typedef LocklessVar< int, -1> 						volume_t;
-NervGear::LocklessUpdater< volume_t >					CurrentVolume;
-NervGear::LocklessUpdater< LocklessDouble >				TimeOfLastVolumeChange;
-NervGear::LocklessUpdater< bool >						HeadsetPluggedState;
-NervGear::LocklessUpdater< bool >						PowerLevelStateThrottled;
-NervGear::LocklessUpdater< bool >						PowerLevelStateMinimum;
-NervGear::LocklessUpdater< HMTMountState_t >				HMTMountState;
-NervGear::LocklessUpdater< HMTDockState_t >				HMTDockState;	// edge triggered events, not the actual state
-static NervGear::LocklessUpdater< bool >					DockState;
+NervGear::VLockless< volume_t >					CurrentVolume;
+NervGear::VLockless< LocklessDouble >				TimeOfLastVolumeChange;
+NervGear::VLockless< bool >						HeadsetPluggedState;
+NervGear::VLockless< bool >						PowerLevelStateThrottled;
+NervGear::VLockless< bool >						PowerLevelStateMinimum;
+NervGear::VLockless< HMTMountState_t >				HMTMountState;
+NervGear::VLockless< HMTDockState_t >				HMTDockState;	// edge triggered events, not the actual state
+static NervGear::VLockless< bool >					DockState;
 
 extern "C"
 {
@@ -345,7 +345,7 @@ JNIEXPORT void Java_com_vrseen_nervgear_ProximityReceiver_nativeMountHandled(JNI
 
 	// If we're received this, the foreground app has already received
 	// and processed the mount event.
-	if ( HMTMountState.state().MountState == HMT_MOUNT_MOUNTED )
+    if ( HMTMountState.state().MountState == HMT_MOUNT_MOUNTED )
 	{
 		LOG( "RESETTING MOUNT" );
 		HMTMountState.setState( HMTMountState_t( HMT_MOUNT_NONE ) );
@@ -385,7 +385,7 @@ JNIEXPORT void Java_com_vrseen_nervgear_DockReceiver_nativeDockEvent(JNIEnv *jni
 	}
 	else
 	{
-		HMTDockState_t dockState = HMTDockState.state();
+        HMTDockState_t dockState = HMTDockState.state();
 		if ( dockState.DockState == HMT_DOCK_UNDOCKED )
 		{
 			LOG( "CLEARING UNDOCKED!!!!" );
@@ -768,12 +768,12 @@ enum ePowerLevelAction
 
 bool ovr_GetPowerLevelStateThrottled()
 {
-	return PowerLevelStateThrottled.state();
+    return PowerLevelStateThrottled.state();
 }
 
 bool ovr_GetPowerLevelStateMinimum()
 {
-	return PowerLevelStateMinimum.state();
+    return PowerLevelStateMinimum.state();
 }
 
 /*
@@ -1350,7 +1350,7 @@ void ovr_HandleHmdEvents( ovrMobile * ovr )
 	}
 
 	// check if the HMT has been undocked
-	HMTDockState_t dockState = HMTDockState.state();
+    HMTDockState_t dockState = HMTDockState.state();
 	if ( dockState.DockState == HMT_DOCK_UNDOCKED )
 	{
 		LOG( "ovr_HandleHmdEvents::Hmt was disconnected" );
@@ -1372,7 +1372,7 @@ void ovr_HandleHmdEvents( ovrMobile * ovr )
 	}
 
 	// check if the HMT has been mounted or unmounted
-	HMTMountState_t mountState = HMTMountState.state();
+    HMTMountState_t mountState = HMTMountState.state();
 	if ( mountState.MountState != HMT_MOUNT_NONE )
 	{
 		// reset the real mount state since we're handling the change
@@ -1520,12 +1520,12 @@ void ovr_WarpSwap( ovrMobile * ovr, const ovrTimeWarpParms * parms )
 
 int ovr_GetVolume()
 {
-	return CurrentVolume.state().Value;
+    return CurrentVolume.state().Value;
 }
 
 double ovr_GetTimeSinceLastVolumeChange()
 {
-	double value = TimeOfLastVolumeChange.state().Value;
+    double value = TimeOfLastVolumeChange.state().Value;
 	if ( value == -1 )
 	{
 		//LOG( "ovr_GetTimeSinceLastVolumeChange() : Not initialized.  Returning -1" );

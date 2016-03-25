@@ -53,7 +53,7 @@ extern "C"
 			prevFrameTimeNanos = frameTimeNanos;
 		}
 
-		NervGear::VsyncState	state = NervGear::UpdatedVsyncState.state();
+        NervGear::VsyncState	state = NervGear::UpdatedVsyncState.state();
 
 		// Round this, because different phone models have slightly different periods.
 		state.vsyncCount += floor( 0.5 + ( frameTimeNanos - state.vsyncBaseNano ) / state.vsyncPeriodNano );
@@ -70,7 +70,7 @@ namespace NervGear
 
 // This can be read without any locks, so a high priority rendering thread doesn't
 // have to worry about being blocked by a sensor thread that got preempted.
-NervGear::LocklessUpdater<VsyncState>	UpdatedVsyncState;
+NervGear::VLockless<VsyncState>	UpdatedVsyncState;
 
 // This is separate to allow easy switching to a fixed value.
 VsyncState GetVsyncState()
@@ -86,7 +86,7 @@ VsyncState GetVsyncState()
 	}
 	else
 	{	// normal update
-		return UpdatedVsyncState.state();
+        return UpdatedVsyncState.state();
 	}
 }
 

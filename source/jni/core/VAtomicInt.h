@@ -1,7 +1,7 @@
 /*
  * VAtomicInt.h
  *
- *  Created on: 2016年3月17日
+ *  Created on: 2016骞�鏈�7鏃�
  *      Author: yangkai
  */
 #pragma once
@@ -68,5 +68,9 @@ public:
     Type operator >>= (unsigned bits);
 
     Type operator <<= (unsigned bits);
+
+    VAtomicInt operator = (Type argument);
+
+    VAtomicInt operator & (Type argument);
 };
 NV_NAMESPACE_END

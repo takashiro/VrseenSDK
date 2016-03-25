@@ -20,7 +20,7 @@
 
 #include "../embedded/oculus_loading_indicator.h"
 
-#include "Lockless.h"
+#include "VLockless.h"
 #include "VGlGeometry.h"
 #include "VGlShader.h"
 
@@ -596,7 +596,7 @@ struct VFrameSmooth::Private
     JNIEnv *		m_jni;
 
     // Last time WarpSwap() was called.
-    LocklessUpdater<double>		m_lastWarpSwapTimeInSeconds;
+    VLockless<double>		m_lastWarpSwapTimeInSeconds;
 
     // Retrieved from the main thread context
     EGLDisplay		m_eglDisplay;
@@ -620,7 +620,7 @@ struct VFrameSmooth::Private
     LogGpuTime<NUM_SLICES_PER_SCREEN>	m_logEyeWarpGpuTime;
 
     // The warp loop will exit when this is set true.
-    LocklessUpdater<bool>		m_shutdownRequest;
+    VLockless<bool>		m_shutdownRequest;
 
     // If this is 0, we don't have a thread running.
     pthread_t		m_warpThread;		// posix pthread
@@ -639,10 +639,10 @@ struct VFrameSmooth::Private
     // WarpSwap will not continue until the previous buffer set has completed,
     // to prevent GPU latency pileup.
     static const int MAX_WARP_SOURCES = 4;
-    LocklessUpdater<long long>			m_eyeBufferCount;	// only set by WarpSwap()
+    VLockless<long long>			m_eyeBufferCount;	// only set by WarpSwap()
     warpSource_t	m_warpSources[MAX_WARP_SOURCES];
 
-    LocklessUpdater<SwapState>		m_swapVsync;		// Set by WarpToScreen(), read by WarpSwap()
+    VLockless<SwapState>		m_swapVsync;		// Set by WarpToScreen(), read by WarpSwap()
 
     long long			m_lastSwapVsyncCount;			// SwapVsync at return from last WarpSwap()
 };

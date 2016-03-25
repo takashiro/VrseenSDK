@@ -4,7 +4,7 @@
 
 #include "ModelView.h"
 #include "Fader.h"
-#include "Lockless.h"
+#include "VLockless.h"
 
 namespace NervGear {
 
@@ -142,7 +142,7 @@ private:
     VEventLoop		m_backgroundCommands;
 
 	// The background loader loop will exit when this is set true.
-    LocklessUpdater<bool>		m_shutdownRequest;
+    VLockless<bool>		m_shutdownRequest;
 
 	// BackgroundGLLoadThread private GL context used for loading background textures
     EGLint				m_eglClientVersion;
