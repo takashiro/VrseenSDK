@@ -30,7 +30,9 @@
 #include "TypesafeNumber.h"
 #include "VBasicmath.h"
 #include "VolumePopup.h"
-#include "VrApi.h"
+#include "api/VDevice.h"
+#include "api/VFrameSmooth.h"
+#include "api/VKernel.h"
 #include "VrLocale.h"
 #include "VRMenuMgr.h"
 #include "VUserSettings.h"
@@ -222,9 +224,6 @@ struct App::Private
     // Most calls in from java should communicate through this.
     VEventLoop	eventLoop;
 
-    // From EnterVrMode, used for WarpSwap and LeaveVrMode
-    ovrMobile *		OvrMobile;
-
     // Egl context and surface for rendering
     VGlOperation  glOperation;
 
@@ -281,8 +280,6 @@ struct App::Private
     bool			drawCalibrationLines;	// currently toggled by right trigger
     bool			calibrationLinesDrawn;	// after draw, go to static time warp test
     bool			showVignette;			// render the vignette
-
-    ovrHmdInfo		hmdInfo;
 
     bool			framebufferIsSrgb;			// requires KHR_gl_colorspace
     bool			framebufferIsProtected;		// requires GPU trust zone extension
@@ -360,6 +357,7 @@ struct App::Private
     VMainActivity *appInterface;
 
     VMainActivity *activity;
+    VKernel*        kernel;
 
     Private(App *self)
         : self(self)
@@ -367,7 +365,6 @@ struct App::Private
         , createdSurface(false)
         , readyToExit(false)
         , eventLoop(100)
-        , OvrMobile(nullptr)
         , eyeTargets(nullptr)
         , loadingIconTexId(0)
         , javaVM(VrLibJavaVM)
@@ -419,6 +416,7 @@ struct App::Private
         , javaObject(nullptr)
         , appInterface(nullptr)
         , activity(nullptr)
+        , kernel(VKernel::GetInstance())
     {
     }
 
@@ -481,7 +479,7 @@ struct App::Private
     {
         appInterface->onPause();
 
-        ovr_LeaveVrMode(OvrMobile);
+        kernel->exit();
     }
 
     void resume()
@@ -500,17 +498,14 @@ struct App::Private
             vFatal("eglMakeCurrent failed:" << glOperation.EglErrorString());
         }
 
-        ovrModeParms &VrModeParms = self->VrModeParms;
-        VrModeParms.ActivityObject = javaObject;
-
         // Allow the app to override
-        appInterface->configureVrMode(VrModeParms);
+        appInterface->configureVrMode(kernel);
 
         // Clear cursor trails
         gazeCursor->HideCursorForFrames(10);
 
         // Start up TimeWarp and the various performance options
-        OvrMobile = ovr_EnterVrMode(VrModeParms, &hmdInfo);
+        kernel->run();
 
         appInterface->onResume();
     }
@@ -1032,7 +1027,7 @@ struct App::Private
         }
 
         if (event.name == "quit") {
-            ovr_LeaveVrMode(OvrMobile);
+            kernel->exit();
             readyToExit = true;
             vInfo("VrThreadSynced=" << vrThreadSynced << " CreatedSurface=" << createdSurface << " ReadyToExit=" << readyToExit);
         }
@@ -1197,14 +1192,14 @@ struct App::Private
             {
                 if (ovr_GetTimeInSeconds() >= errorMessageEndTime)
                 {
-                    ovr_ExitActivity(OvrMobile, EXIT_TYPE_FINISH_AFFINITY);
+                    kernel->destroy(EXIT_TYPE_FINISH_AFFINITY);
                 }
                 else
                 {
                     ovrTimeWarpParms warpSwapMessageParms = InitTimeWarpParms(WARP_INIT_MESSAGE, errorTexture.texture);
                     warpSwapMessageParms.ProgramParms[0] = 0.0f;						// rotation in radians
                     warpSwapMessageParms.ProgramParms[1] = 1024.0f / errorTextureSize;	// message size factor
-                    ovr_WarpSwap(OvrMobile, &warpSwapMessageParms);
+                    kernel->frameSmooth->doSmooth(warpSwapMessageParms);
                 }
                 continue;
             }
@@ -1215,7 +1210,7 @@ struct App::Private
                 if (appInterface->showLoadingIcon())
                 {
                     const ovrTimeWarpParms warpSwapLoadingIconParms = InitTimeWarpParms(WARP_INIT_LOADING_ICON, loadingIconTexId);
-                    ovr_WarpSwap(OvrMobile, &warpSwapLoadingIconParms);
+                    kernel->frameSmooth->doSmooth(warpSwapLoadingIconParms);
                 }
                 vInfo("launchIntentJSON:" << launchIntentJSON);
                 vInfo("launchIntentURI:" << launchIntentURI);
@@ -1260,7 +1255,7 @@ struct App::Private
             const double rawDelta = now - prev;
             prev = now;
             const double clampedPrediction = std::min(0.1, rawDelta * 2);
-            sensorForNextWarp = ovr_GetPredictedSensorState(OvrMobile, now + clampedPrediction);
+            sensorForNextWarp = kernel->ovr_GetPredictedSensorState(now + clampedPrediction);
 
             vrFrame.PoseState = sensorForNextWarp.Predicted;
             vrFrame.OvrStatus = sensorForNextWarp.Status;
@@ -1300,7 +1295,7 @@ struct App::Private
                 else if (event == KeyState::KEY_EVENT_LONG_PRESS)
                 {
                     //StartSystemActivity(PUI_GLOBAL_MENU);
-                    ovr_ExitActivity(OvrMobile, EXIT_TYPE_FINISH);
+                    kernel->destroy(EXIT_TYPE_FINISH);
                 }
 
                 // let the menu handle it if it's open
@@ -1318,7 +1313,7 @@ struct App::Private
                     {
                         consumedKey = true;
                         LOG("BUTTON_BACK: confirming quit in platformUI");
-                        ovr_ExitActivity(OvrMobile, EXIT_TYPE_FINISH);
+                        kernel->destroy(EXIT_TYPE_FINISH);
                     }
                 }
             }
@@ -1382,7 +1377,7 @@ struct App::Private
                 lastViewMatrix = appInterface->onNewFrame(vrFrame);
             }
 
-            ovr_HandleDeviceStateChanges(OvrMobile);
+            kernel->ovr_HandleDeviceStateChanges();
 
             // MWC demo hack to allow keyboard swipes
             joypad.buttonState &= ~(BUTTON_SWIPE_FORWARD|BUTTON_SWIPE_BACK);
@@ -1604,11 +1599,6 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
     d->vrParms.colorFormat = COLOR_8888;
     d->vrParms.depthFormat = DEPTH_24;
 
-	// Default ovrModeParms
-	VrModeParms.AsynchronousTimeWarp = true;
-	VrModeParms.SkipWindowFullscreenReset = false;
-	VrModeParms.GameThreadTid = 0;
-
     d->javaObject = d->uiJni->NewGlobalRef(activityObject);
 
 	// A difficulty with JNI is that we can't resolve our (non-Android) package
@@ -1735,20 +1725,6 @@ void App::playSound(const char *name)
             jni->DeleteLocalRef(cmdString);
         }
     });
-}
-
-void App::setVrModeParms(ovrModeParms parms)
-{
-    if (d->OvrMobile)
-	{
-        ovr_LeaveVrMode(d->OvrMobile);
-		VrModeParms = parms;
-        d->OvrMobile = ovr_EnterVrMode(VrModeParms, &d->hmdInfo);
-	}
-	else
-	{
-		VrModeParms = parms;
-	}
 }
 
 //void ToggleScreenColor()
@@ -1921,11 +1897,6 @@ bool App::isGuiOpen() const
     return d->guiSys->isAnyMenuOpen();
 }
 
-bool App::isAsynchronousTimeWarp() const
-{
-	return VrModeParms.AsynchronousTimeWarp;
-}
-
 bool App::framebufferIsSrgb() const
 {
     return d->framebufferIsSrgb;
@@ -1964,11 +1935,6 @@ void App::setLastViewMatrix(VR4Matrixf const & m)
 EyeParms & App::vrParms()
 {
     return d->vrParms;
-}
-
-ovrModeParms App::vrModeParms()
-{
-	return VrModeParms;
 }
 
 void App::setPopupDistance(float const distance)
@@ -2016,6 +1982,11 @@ jobject	& App::javaObject()
 jclass & App::vrActivityClass()
 {
     return d->vrActivityClass;
+}
+
+VKernel* App::kernel()
+{
+    return  d->kernel;
 }
 
 SurfaceTexture * App::dialogTexture()
@@ -2120,9 +2091,10 @@ void App::recenterYaw(const bool showBlack)
     if (showBlack)
 	{
         const ovrTimeWarpParms warpSwapBlackParms = InitTimeWarpParms(WARP_INIT_BLACK);
-        ovr_WarpSwap(d->OvrMobile, &warpSwapBlackParms);
+        d->kernel->frameSmooth->doSmooth(warpSwapBlackParms);
+
 	}
-    ovr_RecenterYaw(d->OvrMobile);
+    d->kernel->ovr_RecenterYaw();
 
 	// Change lastViewMatrix to mirror what is done to the sensor orientation by ovr_RecenterYaw.
 	// Get the current yaw rotation and cancel it out. This is necessary so that subsystems that
@@ -2228,7 +2200,7 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
     //
     // Doing this dynamically based just on time causes visible flickering at the
     // periphery when the fov is increased, so only do it if minimumVsyncs is set.
-    const float fovDegrees = d->hmdInfo.SuggestedEyeFov[0] +
+    const float fovDegrees = d->kernel->device->eyeTextureFov[0] +
             ( ( d->swapParms.MinimumVsyncs > 1 ) ? 10.0f : 0.0f ) +
             ( ( !d->showVignette ) ? 5.0f : 0.0f );
 
@@ -2308,7 +2280,8 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
             d->swapParms.Images[eye][0].Pose = d->sensorForNextWarp.Predicted;
         }
 
-        ovr_WarpSwap( d->OvrMobile, &d->swapParms );
+        d->kernel->frameSmooth->doSmooth(d->swapParms);
+
     }
 }
 

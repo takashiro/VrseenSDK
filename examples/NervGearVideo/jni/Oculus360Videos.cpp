@@ -398,13 +398,13 @@ void Oculus360Videos::shutdown()
 	 SingleColorTextureProgram.destroy();
 }
 
-void Oculus360Videos::configureVrMode( ovrModeParms & modeParms )
+void Oculus360Videos::configureVrMode(VKernel* kernel)
 {
 	// We need very little CPU for pano browsing, but a fair amount of GPU.
 	// The CPU clock should ramp up above the minimum when necessary.
 	LOG( "ConfigureClocks: Oculus360Videos only needs minimal clocks" );
 	// All geometry is blended, so save power with no MSAA
-	vApp->vrParms().multisamples = 1;
+	kernel->msaa = 1;
 }
 
 bool Oculus360Videos::onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType )

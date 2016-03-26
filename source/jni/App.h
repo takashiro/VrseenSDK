@@ -1,8 +1,7 @@
 #pragma once
 
 #include "vglobal.h"
-
-#include "VrApi.h"
+#include "api/VKernel.h"
 #include "KeyState.h"
 #include "EyeBuffers.h"
 #include "Input.h"
@@ -62,7 +61,6 @@ public:
     const VStandardPath &storagePaths();
     VSoundManager &soundMgr();
 
-    bool isAsynchronousTimeWarp() const;
     bool hasHeadphones() const;
     bool framebufferIsSrgb() const;
     bool framebufferIsProtected() const;
@@ -75,8 +73,6 @@ public:
     void setLastViewMatrix( VR4Matrixf const & m );
 
     EyeParms &vrParms();
-    ovrModeParms vrModeParms();
-    void setVrModeParms( ovrModeParms parms );
 
     const VrViewParms &vrViewParms() const;
     void setVrViewParms( VrViewParms const & parms );
@@ -99,6 +95,7 @@ public:
     jobject &javaObject();
     jclass &vrActivityClass();
 
+    VKernel* kernel();
     SurfaceTexture *dialogTexture();
 
     const ovrTimeWarpParms &swapParms() const;
@@ -127,7 +124,7 @@ public:
     void syncVrThread();
 
     volatile bool oneTimeInitCalled;
-    ovrModeParms VrModeParms;
+
 
 private:
     NV_DECLARE_PRIVATE

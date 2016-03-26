@@ -67,7 +67,7 @@ public:
 
     void init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI ) override;
     void shutdown() override;
-    void configureVrMode( ovrModeParms & modeParms ) override;
+    void configureVrMode(VKernel* kernel) override;
     VR4Matrixf 	drawEyeView( const int eye, const float fovDegrees ) override;
     VR4Matrixf 	onNewFrame( VrFrame vrFrame ) override;
     void command(const VEvent &event) override;

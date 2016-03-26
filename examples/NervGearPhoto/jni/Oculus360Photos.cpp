@@ -576,16 +576,16 @@ bool Oculus360Photos::useOverlay() const {
     return m_useOverlay;
 }
 
-void Oculus360Photos::configureVrMode( ovrModeParms & modeParms ) {
+void Oculus360Photos::configureVrMode(VKernel* kernel) {
     // We need very little CPU for pano browsing, but a fair amount of GPU.
     // The CPU clock should ramp up above the minimum when necessary.
     LOG( "ConfigureClocks: Oculus360Photos only needs minimal clocks" );
 
     // No hard edged geometry, so no need for MSAA
-    vApp->vrParms().multisamples = 1;
+    kernel->msaa = 1;
 
-    vApp->vrParms().colorFormat = COLOR_8888;
-    vApp->vrParms().depthFormat = DEPTH_16;
+    kernel->colorFormat = COLOR_8888;
+    kernel->depthFormat = DEPTH_16;
 }
 
 bool Oculus360Photos::onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType )

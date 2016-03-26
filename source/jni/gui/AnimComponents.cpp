@@ -13,7 +13,7 @@ Copyright   :   Copyright 2014 Oculus VR, Inc. All Rights reserved.
 #include "AnimComponents.h"
 #include "VAlgorithm.h"
 #include "VRMenuObject.h"
-#include "../api/VrApi.h"
+#include "../api/VKernel.h"
 #include "VRMenuMgr.h"
 
 namespace NervGear {
