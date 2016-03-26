@@ -1199,7 +1199,7 @@ struct App::Private
                     ovrTimeWarpParms warpSwapMessageParms = InitTimeWarpParms(WARP_INIT_MESSAGE, errorTexture.texture);
                     warpSwapMessageParms.ProgramParms[0] = 0.0f;						// rotation in radians
                     warpSwapMessageParms.ProgramParms[1] = 1024.0f / errorTextureSize;	// message size factor
-                    kernel->frameSmooth->doSmooth(warpSwapMessageParms);
+                    kernel->doSmooth(&warpSwapMessageParms);
                 }
                 continue;
             }
@@ -1210,7 +1210,7 @@ struct App::Private
                 if (appInterface->showLoadingIcon())
                 {
                     const ovrTimeWarpParms warpSwapLoadingIconParms = InitTimeWarpParms(WARP_INIT_LOADING_ICON, loadingIconTexId);
-                    kernel->frameSmooth->doSmooth(warpSwapLoadingIconParms);
+                    kernel->doSmooth(&warpSwapLoadingIconParms);
                 }
                 vInfo("launchIntentJSON:" << launchIntentJSON);
                 vInfo("launchIntentURI:" << launchIntentURI);
@@ -2091,7 +2091,7 @@ void App::recenterYaw(const bool showBlack)
     if (showBlack)
 	{
         const ovrTimeWarpParms warpSwapBlackParms = InitTimeWarpParms(WARP_INIT_BLACK);
-        d->kernel->frameSmooth->doSmooth(warpSwapBlackParms);
+        d->kernel->doSmooth(&warpSwapBlackParms);
 
 	}
     d->kernel->ovr_RecenterYaw();
@@ -2280,7 +2280,7 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
             d->swapParms.Images[eye][0].Pose = d->sensorForNextWarp.Predicted;
         }
 
-        d->kernel->frameSmooth->doSmooth(d->swapParms);
+        d->kernel->doSmooth(&d->swapParms);
 
     }
 }

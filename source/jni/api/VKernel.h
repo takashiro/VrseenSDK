@@ -567,7 +567,6 @@ inline ovrTimeWarpParms InitTimeWarpParms( const ovrWarpInit init = WARP_INIT_DE
 NV_NAMESPACE_BEGIN
 
 class VDevice;
-class VFrameSmooth;
 
 class VKernel
 {
@@ -577,12 +576,13 @@ public:
     void exit();
     void destroy(eExitType type);
 
+    void doSmooth(const ovrTimeWarpParms * parms );
+
     void ovr_HandleDeviceStateChanges();
     ovrSensorState	ovr_GetPredictedSensorState(double absTime );
     void			ovr_RecenterYaw();
 
     VDevice* device;
-    VFrameSmooth* frameSmooth;
     bool asyncSmooth;
     int msaa;
     int colorFormat;

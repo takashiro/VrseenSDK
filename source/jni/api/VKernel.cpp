@@ -63,7 +63,7 @@ static VKernel* instance = NULL;
 static JNIEnv	*				Jni;
 // Thread from which VR mode was entered.
 static pid_t					EnterTid;
-
+static  VFrameSmooth* frameSmooth = NULL;
 
 void ovr_InitSensors()
 {
@@ -667,6 +667,8 @@ void UpdateHmdInfo()
 
 void VKernel::run()
 {
+    if(isRunning) return;
+
     LOG( "---------- VKernel run ----------" );
 #if defined( OVR_BUILD_DEBUG )
     char const * buildConfig = "DEBUG";
@@ -843,11 +845,14 @@ void VKernel::destroy(eExitType exitType)
     else if ( exitType == EXIT_TYPE_EXIT )
     {
         LOG( "Calling exitType EXIT_TYPE_EXIT" );
+        // Then delete the VrAppInterface derived class.
+        // Last delete AppLocal.
+        delete vApp;
+
         NervGear::SystemActivities_ShutdownEventQueues();
         ovr_ShutdownSensors();
         // We should clean up the system to be complete
         NervGear::System::Destroy();
-        std::exit(0);
     }
 }
 
@@ -968,4 +973,10 @@ ovrSensorState VKernel::ovr_GetPredictedSensorState(double absTime )
 void VKernel::ovr_RecenterYaw()
 {
     ovr_RecenterYawInternal();
+}
+
+void VKernel::doSmooth(const ovrTimeWarpParms * parms )
+{
+    if(frameSmooth==NULL||!isRunning) return;
+    frameSmooth->doSmooth(*parms);
 }
