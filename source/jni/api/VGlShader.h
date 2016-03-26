@@ -28,25 +28,19 @@ enum ShaderAttributeLocation
     SHADER_ATTRIBUTE_LOCATION_FONT_PARMS	= 9
 };
 
-// It probably isn't worth keeping these shared here, each user
-// should just duplicate them.
 extern const char * externalFragmentShaderSource;
 extern const char * textureFragmentShaderSource;
 extern const char * identityVertexShaderSource;
 extern const char * untexturedFragmentShaderSource;
-
 extern const char * VertexColorVertexShaderSrc;
 extern const char * VertexColorSkinned1VertexShaderSrc;
 extern const char * VertexColorFragmentShaderSrc;
-
 extern const char * SingleTextureVertexShaderSrc;
 extern const char * SingleTextureSkinned1VertexShaderSrc;
 extern const char * SingleTextureFragmentShaderSrc;
-
 extern const char * LightMappedVertexShaderSrc;
 extern const char * LightMappedSkinned1VertexShaderSrc;
 extern const char * LightMappedFragmentShaderSrc;
-
 extern const char * ReflectionMappedVertexShaderSrc;
 extern const char * ReflectionMappedSkinned1VertexShaderSrc;
 extern const char * ReflectionMappedFragmentShaderSrc;
@@ -80,9 +74,7 @@ public:
 
     GLuint	program;
     GLuint	vertexShader;
-    GLuint	fragmentShader;
-
-    // Uniforms that aren't found will have a -1 value
+    GLuint	fragmentShader; 
     GLint	uniformModelViewProMatrix;	    // ModelViewProMatrix
     GLint	uniformModelMatrix;				// uniform ModelMatrix
     GLint	uniformViewMatrix;				// uniform ViewMatrix
