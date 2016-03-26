@@ -789,6 +789,7 @@ void VKernel::exit()
     VString currentClassName = JniUtils::GetCurrentActivityName(Jni, vApp->javaObject());
     vInfo("ACTIVITY =" << currentClassName);
 
+    delete frameSmooth;
     frameSmooth = NULL;
     isRunning  = false;
 
@@ -845,10 +846,6 @@ void VKernel::destroy(eExitType exitType)
     else if ( exitType == EXIT_TYPE_EXIT )
     {
         LOG( "Calling exitType EXIT_TYPE_EXIT" );
-        // Then delete the VrAppInterface derived class.
-        // Last delete AppLocal.
-        delete vApp;
-
         NervGear::SystemActivities_ShutdownEventQueues();
         ovr_ShutdownSensors();
         // We should clean up the system to be complete
