@@ -13,7 +13,11 @@
 #include "VSystemActivities.h"
 #include "VLog.h"
 
-// System Activities Events -- Why They Exist
+#include "VEventLoop.h"
+
+#define QUEUE_SIZE 32
+NV_NAMESPACE_BEGIN
+/*// System Activities Events -- Why They Exist
 //
 // When an System Activities activity returns to an application, it sends an intent to bring
 // the application to the front. Unfortunately in the case of a Unity application the intent
@@ -194,19 +198,19 @@ bool VEventQueue::dequeue( VEventData const * & outData )
     m_tailIndex = ( m_tailIndex + 1 ) % QUEUE_SIZE;
 
     return true;
-}
+}*/
 
 //==============================================================================================
 // Default queue manangement - these functions operate on the main queue that is used by VrApi.
 // There may be other queues external to this file, like the queue used to re-queue events for
 // the Unity thread.
-VEventQueue * InternalVEventQueue = nullptr;
-VEventQueue * MainVEventQueue = nullptr;
+VEventLoop * InternalVEventQueue = nullptr;
+VEventLoop * MainVEventQueue = nullptr;
 
 void VSystemActivities::initEventQueues()
 {
-    InternalVEventQueue = new VEventQueue();
-    MainVEventQueue = new VEventQueue();
+    NervGear::InternalVEventQueue = new VEventLoop(QUEUE_SIZE);
+    NervGear::MainVEventQueue = new VEventLoop(QUEUE_SIZE);
 }
 
 void VSystemActivities::shutdownEventQueues()
@@ -220,19 +224,19 @@ void VSystemActivities::shutdownEventQueues()
 
 void VSystemActivities::addInternalEvent( const VString& data )
 {
-    NervGear::VEventData * VEventData = new NervGear::VEventData( data.toCString(), data.length() + 1 );
-    InternalVEventQueue->enqueue( VEventData );
+    VEvent * VEventData = new VEvent( data);
+    InternalVEventQueue->post( VEventData );
     vInfo( "SystemActivities: queued internal event " << data.toCString());
 }
 
 void VSystemActivities::addEvent( const VString& data )
 {
-    NervGear::VEventData * VEventData = new NervGear::VEventData( data.toCString(), data.length() + 1 );
-    MainVEventQueue->enqueue( VEventData );
+    VEvent * VEventData = new VEvent( data);
+    MainVEventQueue->post( VEventData );
     vInfo( "SystemActivities: queued event " << data.toCString() );
 }
 
-static eVrApiEventStatus nextPendingEvent( VEventQueue * queue, VString& buffer, unsigned int const bufferSize )
+static eVrApiEventStatus nextPendingEvent( VEventLoop * queue, VString& buffer, unsigned int const bufferSize )
 {
     if ( buffer.length() == 0 || bufferSize == 0 )
     {
@@ -250,18 +254,16 @@ static eVrApiEventStatus nextPendingEvent( VEventQueue * queue, VString& buffer,
         return VRAPI_EVENT_ERROR_INTERNAL;
     }
 
-    VEventQueue * q = reinterpret_cast< VEventQueue* >( queue );
-    VEventData const * VEventData;
-    if ( !q->dequeue( VEventData ) )
+    VEventLoop * q = reinterpret_cast< VEventLoop* >( queue );
+    VEvent VEventData = q->next();
+    if ( !VEventData.isValid() )
     {
         return VRAPI_EVENT_NOT_PENDING;
     }
 
 //  OVR_strncpy( buffer, bufferSize, static_cast< char const * >( VEventData->GetData() ), VEventData->GetSize() );
-    buffer = static_cast< char const * >( VEventData->getData() );
-    bool overflowed = VEventData->getSize() >= bufferSize;
-
-    delete VEventData;
+    buffer = VEventData.name;
+    bool overflowed = VEventData.name.size() >= bufferSize;
     return overflowed ? VRAPI_EVENT_BUFFER_OVERFLOW : VRAPI_EVENT_PENDING;
 }
 
@@ -286,7 +288,6 @@ VSystemActivities *VSystemActivities::instance()
     return &internal;
 }
 
-}
-
+NV_NAMESPACE_END
 
 
