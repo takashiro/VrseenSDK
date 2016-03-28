@@ -369,13 +369,13 @@ void Oculus360Photos::init(const VString &fromPackage, const VString &launchInte
     VGlOperation glOperation;
     m_eglPbufferSurface = eglCreatePbufferSurface( m_eglDisplay, m_eglConfig, SurfaceAttribs );
     if ( m_eglPbufferSurface == EGL_NO_SURFACE ) {
-        FAIL( "eglCreatePbufferSurface failed: %s", glOperation.EglErrorString() );
+        FAIL( "eglCreatePbufferSurface failed: %s", glOperation.getEglErrorString() );
     }
     EGLint bufferWidth, bufferHeight;
     if ( !eglQuerySurface( m_eglDisplay, m_eglPbufferSurface, EGL_WIDTH, &bufferWidth ) ||
          !eglQuerySurface( m_eglDisplay, m_eglPbufferSurface, EGL_HEIGHT, &bufferHeight ) )
     {
-        FAIL( "eglQuerySurface failed:  %s", glOperation.EglErrorString() );
+        FAIL( "eglQuerySurface failed:  %s", glOperation.getEglErrorString() );
     }
 
     // spawn the background loading thread with the command list
@@ -441,13 +441,13 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
     EGLContext EglBGLoaderContext = eglCreateContext( photos->m_eglDisplay, photos->m_eglConfig, photos->m_eglShareContext, loaderContextAttribs );
     if ( EglBGLoaderContext == EGL_NO_CONTEXT )
     {
-        FAIL( "eglCreateContext failed: %s", glOperation.EglErrorString() );
+        FAIL( "eglCreateContext failed: %s", glOperation.getEglErrorString() );
     }
 
     // Make the context current on the window, so no more makeCurrent calls will be needed
     if ( eglMakeCurrent( photos->m_eglDisplay, photos->m_eglPbufferSurface, photos->m_eglPbufferSurface, EglBGLoaderContext ) == EGL_FALSE )
     {
-        FAIL( "BackgroundGLLoadThread eglMakeCurrent failed: %s", glOperation.EglErrorString() );
+        FAIL( "BackgroundGLLoadThread eglMakeCurrent failed: %s", glOperation.getEglErrorString() );
     }
 
     // run until Shutdown requested

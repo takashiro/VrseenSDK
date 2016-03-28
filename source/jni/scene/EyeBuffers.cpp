@@ -354,7 +354,7 @@ void EyeBuffers::BeginRenderingEye( const int eyeNum )
     VGlOperation glOperation;
     if ( DiscardInsteadOfClear )
     {
-        glOperation.GL_InvalidateFramebuffer( VGlOperation::INV_FBO, true, true );
+        glOperation.glDisableFramebuffer( true, true );
         glClear( GL_DEPTH_BUFFER_BIT );
     }
     else
@@ -372,7 +372,7 @@ void EyeBuffers::EndRenderingEye( const int eyeNum )
     VGlOperation glOperation;;
 
     // Discard the depth buffer, so the tiler won't need to write it back out to memory
-    glOperation.GL_InvalidateFramebuffer( VGlOperation::INV_FBO, false, true );
+    glOperation.glDisableFramebuffer( false, true );
 
     // Do a blit-MSAA-resolve if necessary.
     if ( eye.ResolveFrameBuffer )
@@ -384,7 +384,7 @@ void EyeBuffers::EndRenderingEye( const int eyeNum )
                 GL_COLOR_BUFFER_BIT, GL_NEAREST );
         // Discard the multisample color buffer after we have resolved it,
         // so the tiler won't need to write it back out to memory
-        glOperation.GL_InvalidateFramebuffer( VGlOperation::INV_FBO, true, false );
+        glOperation.glDisableFramebuffer( true, false );
     }
 
     LogEyeSceneGpuTime.End( eyeNum );

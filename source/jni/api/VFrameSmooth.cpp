@@ -355,7 +355,7 @@ struct VFrameSmooth::Private
         {
             FAIL( "eglQueryContext EGL_CONFIG_ID failed" );
         }
-        m_eglConfig = glOperation.EglConfigForConfigID( m_eglDisplay, configID );
+        m_eglConfig = glOperation.eglConfigForConfigID( m_eglDisplay, configID );
         if ( m_eglConfig == NULL )
         {
             FAIL( "EglConfigForConfigID failed" );
@@ -381,7 +381,7 @@ struct VFrameSmooth::Private
             LOG( "Share context eglConfig has %i samples -- should be 0", samples );
         }
         // See if we have sRGB_write_control extension
-        m_hasEXT_sRGB_write_control = glOperation.GL_ExtensionStringPresent( "GL_EXT_sRGB_write_control",
+        m_hasEXT_sRGB_write_control = glOperation.glIsExtensionString( "GL_EXT_sRGB_write_control",
                                                                              (const char *)glGetString( GL_EXTENSIONS ) );
 
         // Skip thread initialization if we are running synchronously
@@ -433,7 +433,7 @@ struct VFrameSmooth::Private
             m_eglPbufferSurface = eglCreatePbufferSurface( m_eglDisplay, m_eglConfig, attrib_list );
             if ( m_eglPbufferSurface == EGL_NO_SURFACE )
             {
-                FAIL( "eglCreatePbufferSurface failed: %s", glOperation.EglErrorString() );
+                FAIL( "eglCreatePbufferSurface failed: %s", glOperation.getEglErrorString() );
             }
 
             if ( eglMakeCurrent( m_eglDisplay, m_eglPbufferSurface, m_eglPbufferSurface,
@@ -494,7 +494,7 @@ struct VFrameSmooth::Private
             if ( eglMakeCurrent( m_eglDisplay, m_eglMainThreadSurface,
                                  m_eglMainThreadSurface, m_eglShareContext ) == EGL_FALSE)
             {
-                FAIL( "eglMakeCurrent to window failed: %s", glOperation.EglErrorString() );
+                FAIL( "eglMakeCurrent to window failed: %s", glOperation.getEglErrorString() );
             }
 
             // Destroy the pbuffer surface that was attached to the calling context.
@@ -772,7 +772,7 @@ void VFrameSmooth::Private::warpThreadInit()
     m_eglWarpContext = eglCreateContext( m_eglDisplay, m_eglConfig, m_eglShareContext, contextAttribs );
     if ( m_eglWarpContext == EGL_NO_CONTEXT )
     {
-        FAIL( "eglCreateContext failed: %s", glOperation.EglErrorString() );
+        FAIL( "eglCreateContext failed: %s", glOperation.getEglErrorString() );
     }
     LOG( "eglWarpContext: %p", m_eglWarpContext );
     if ( m_contextPriority != EGL_CONTEXT_PRIORITY_MEDIUM_IMG )
@@ -794,7 +794,7 @@ void VFrameSmooth::Private::warpThreadInit()
     if ( eglMakeCurrent( m_eglDisplay, m_eglMainThreadSurface,
                          m_eglMainThreadSurface, m_eglWarpContext ) == EGL_FALSE )
     {
-        FAIL( "eglMakeCurrent failed: %s", glOperation.EglErrorString() );
+        FAIL( "eglMakeCurrent failed: %s", glOperation.getEglErrorString() );
     }
 
     initRenderEnvironment();
@@ -1674,7 +1674,7 @@ void VFrameSmooth::Private::warpSwapInternal( const ovrTimeWarpParms & parms )
     ws.MinimumVsync = m_lastSwapVsyncCount + 2 * minimumVsyncs;	// don't use it if from same frame to avoid problems with very fast frames
     ws.FirstDisplayedVsync[0] = 0;			// will be set when it becomes the currentSource
     ws.FirstDisplayedVsync[1] = 0;			// will be set when it becomes the currentSource
-    ws.disableChromaticCorrection = ( ( glOperation.EglGetGpuType() & NervGear::VGlOperation::GPU_TYPE_MALI_T760_EXYNOS_5433 ) != 0 );
+    ws.disableChromaticCorrection = ( ( glOperation.eglGetGpuType() & NervGear::VGlOperation::GPU_TYPE_MALI_T760_EXYNOS_5433 ) != 0 );
     ws.WarpParms = parms;
 
     // Default images.
@@ -1729,7 +1729,7 @@ void VFrameSmooth::Private::warpSwapInternal( const ovrTimeWarpParms & parms )
         // to the display buffer.
 
         VGlOperation glOperation;
-        glOperation.GL_Finish();
+        glOperation.glFinish();
 
         swapProgram_t * swapProg;
         swapProg = &spSyncSwappedBufferPortrait;

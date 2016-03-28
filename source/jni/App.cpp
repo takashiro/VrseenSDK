@@ -497,7 +497,7 @@ struct App::Private
         // (Not needed now?)
         if (eglMakeCurrent(glOperation.display, windowSurface, windowSurface, glOperation.context) == EGL_FALSE)
         {
-            vFatal("eglMakeCurrent failed:" << glOperation.EglErrorString());
+            vFatal("eglMakeCurrent failed:" << glOperation.getEglErrorString());
         }
 
         ovrModeParms &VrModeParms = self->VrModeParms;
@@ -523,7 +523,7 @@ struct App::Private
 
         // Let glUtils look up extensions
 
-        glOperation.GL_FindExtensions();
+        glOperation.logExtensions();
 
         externalTextureProgram2.initShader( vertexShaderSource, externalFragmentShaderSource );
         untexturedMvpProgram.initShader(
@@ -904,7 +904,7 @@ struct App::Private
                         nativeWindow, attribs2);
                 if (windowSurface == EGL_NO_SURFACE)
                 {
-                    FAIL("eglCreateWindowSurface failed: %s", glOperation.EglErrorString());
+                    FAIL("eglCreateWindowSurface failed: %s", glOperation.getEglErrorString());
                 }
                 framebufferIsSrgb = false;
                 framebufferIsProtected = false;
@@ -917,7 +917,7 @@ struct App::Private
 
             if (eglMakeCurrent(glOperation.display, windowSurface, windowSurface, glOperation.context) == EGL_FALSE)
             {
-                vFatal("eglMakeCurrent failed:" << glOperation.EglErrorString());
+                vFatal("eglMakeCurrent failed:" << glOperation.getEglErrorString());
             }
 
             createdSurface = true;
@@ -1073,7 +1073,7 @@ struct App::Private
             const int windowDepth = 0;
             const int windowSamples = 0;
             const GLuint contextPriority = EGL_CONTEXT_PRIORITY_MEDIUM_IMG;
-            glOperation.EglSetup(EGL_NO_CONTEXT, GL_ES_VERSION,	// no share context,
+            glOperation.eglInit(EGL_NO_CONTEXT, GL_ES_VERSION,	// no share context,
                     8,8,8, windowDepth, windowSamples, // r g b
                     contextPriority);
 
@@ -1441,7 +1441,7 @@ struct App::Private
 
             shutdownGlObjects();
 
-            glOperation.EglShutdown();
+            glOperation.eglExit();
 
             // Detach from the Java VM before exiting.
             vInfo("javaVM->DetachCurrentThread");

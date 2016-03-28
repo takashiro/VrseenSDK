@@ -959,7 +959,7 @@ ovrMobile * ovr_EnterVrMode( ovrModeParms parms, ovrHmdInfo * returnedHmdInfo )
 
 	// Let GlUtils look up extensions
     VGlOperation glOperation;
-    glOperation.GL_FindExtensions();
+    glOperation.logExtensions();
 
 	// Look up the window surface size (NOTE: This must happen before Direct Render
 	// Mode is initiated and the pbuffer surface is bound).

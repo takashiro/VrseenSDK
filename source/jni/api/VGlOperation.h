@@ -44,11 +44,7 @@ public:
         GPU_TYPE_UNKNOWN				= 0xFFFF
     };
 
-    enum invalidateTarget_t
-    {
-        INV_DEFAULT,
-        INV_FBO
-    };
+
 
     enum EglKhrGlColorSpace
     {
@@ -64,7 +60,7 @@ public:
 
     enum ExtSrgbDecode
     {
-        GL_TEXTURE_SRGB_DECODE_EXT = 0x8A48,
+        GL_TEXTURE_SRGB_DECODE_EXT = 0x8A88,
         GL_DECODE_EXT = 0x8A49,
         GL_SKIP_DECODE_EXT = 0x8A4A
     };
@@ -78,44 +74,42 @@ public:
     };
 
 
-    VGlOperation()
-    {
-        extensions = reinterpret_cast<const char *>(glGetString(GL_EXTENSIONS));
-        if (NULL == extensions) {
-            LOG( "glGetString( GL_EXTENSIONS ) returned NULL" );
-        }
-    }
+    VGlOperation();
 
-    GpuType EglGetGpuType();
-    GpuType EglGetGpuTypeLocal();
-    const char * GL_ErrorForEnum(const GLenum e);
-    EGLConfig EglConfigForConfigID(const EGLDisplay display, const GLint configID);
-    const char * EglErrorString();
+
+    GpuType eglGetGpuType();
+
+    const char * getGlErrorEnum(const GLenum e);
+    EGLConfig eglConfigForConfigID(const EGLDisplay display, const GLint configID);
+    const char * getEglErrorString();
     bool GL_CheckErrors(const char *logTitle);
-    void GL_FindExtensions();
-    bool GL_ExtensionStringPresent(const char *extension, const char *allExtensions);
-    void GL_Finish();
-    void GL_Flush();
-    EGLint GL_FlushSync(int timeout);
-    void GL_InvalidateFramebuffer(const invalidateTarget_t isFBO,
-                                  const bool colorBuffer,
+    void logExtensions();
+    bool glIsExtensionString(const char *extension, const char *allExtensions);
+    void glFinish();
+    void glFlush();
+    EGLint glWaitforFlush(int timeout);
+    void glDisableFramebuffer(const bool colorBuffer,
                                   const bool depthBuffer);
-    void LogStringWords(const char *allExtensions);
-    void *GetExtensionProc( const char * name );
-    void DumpEglConfigs(const EGLDisplay display);
-    EGLConfig ChooseColorConfig( const EGLDisplay display,
+
+
+
+    void * getExtensionProc( const char * name );
+
+
+
+    EGLConfig chooseColorConfig( const EGLDisplay display,
                                  const int redBits,
                                  const int greeBits,
                                  const int blueBits,
                                  const int depthBits,
                                  const int samples,
                                  const bool pbuffer );
-    void EglSetup( const EGLContext shareContext,
+    void eglInit( const EGLContext shareContext,
                    const int requestedGlEsVersion,
                    const int redBits, const int greenBits, const int blueBits,
                    const int depthBits, const int multisamples,
                    const GLuint contextPriority );
-    void	EglShutdown();
+    void	eglExit();
 
     void glRenderbufferStorageMultisampleIMG(GLenum target,
                                              GLsizei samples,

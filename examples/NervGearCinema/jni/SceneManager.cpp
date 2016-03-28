@@ -1047,7 +1047,7 @@ VR4Matrixf SceneManager::Frame( const VrFrame & vrFrame )
 		glBindFramebuffer( GL_FRAMEBUFFER, MipMappedMovieFBOs[CurrentMipMappedMovieTexture] );
 		glDisable( GL_DEPTH_TEST );
 		glDisable( GL_SCISSOR_TEST );
-        glOperation.GL_InvalidateFramebuffer( VGlOperation::INV_FBO, true, false );
+        glOperation.glDisableFramebuffer( true, false );
 		glViewport( 0, 0, MovieTextureWidth, MovieTextureHeight );
         if ( vApp->appInterface()->wantSrgbFramebuffer() )
 		{	// we need this copied without sRGB conversion on the top level
@@ -1081,7 +1081,7 @@ VR4Matrixf SceneManager::Frame( const VrFrame & vrFrame )
 
         VGlOperation glOperation;
 
-        glOperation.GL_Flush();
+        glOperation.glFlush();
 	}
 
 	// Generate callbacks into DrawEyeView
