@@ -1067,23 +1067,23 @@ void BitmapFontSurfaceLocal::Init(const int maxVertices) {
 	glBufferData(GL_ARRAY_BUFFER, vertexByteCount, (void*) Vertices,
 			GL_DYNAMIC_DRAW);
 
-	glEnableVertexAttribArray(SHADER_ATTRIBUTE_LOCATION_POSITION); // x, y and z
-	glVertexAttribPointer(SHADER_ATTRIBUTE_LOCATION_POSITION, 3, GL_FLOAT,
+	glEnableVertexAttribArray(VERTEX_POSITION); // x, y and z
+	glVertexAttribPointer(VERTEX_POSITION, 3, GL_FLOAT,
 			GL_FALSE, sizeof(fontVertex_t), (void*) 0);
 
-	glEnableVertexAttribArray(SHADER_ATTRIBUTE_LOCATION_UV0); // s and t
-	glVertexAttribPointer(SHADER_ATTRIBUTE_LOCATION_UV0, 2, GL_FLOAT, GL_FALSE,
+	glEnableVertexAttribArray(VERTEX_UVC0); // s and t
+	glVertexAttribPointer(VERTEX_UVC0, 2, GL_FLOAT, GL_FALSE,
 			sizeof(fontVertex_t), (void*) offsetof( fontVertex_t, s ));
 
-	glEnableVertexAttribArray(SHADER_ATTRIBUTE_LOCATION_COLOR); // color
-	glVertexAttribPointer(SHADER_ATTRIBUTE_LOCATION_COLOR, 4, GL_UNSIGNED_BYTE,
+	glEnableVertexAttribArray(VERTEX_COLOR); // color
+	glVertexAttribPointer(VERTEX_COLOR, 4, GL_UNSIGNED_BYTE,
 			GL_TRUE, sizeof(fontVertex_t),
 			(void*) offsetof( fontVertex_t, rgba ));
 
-	glDisableVertexAttribArray(SHADER_ATTRIBUTE_LOCATION_UV1);
+	glDisableVertexAttribArray(VERTEX_UVC1);
 
-	glEnableVertexAttribArray(SHADER_ATTRIBUTE_LOCATION_FONT_PARMS); // outline parms
-	glVertexAttribPointer(SHADER_ATTRIBUTE_LOCATION_FONT_PARMS, 4,
+	glEnableVertexAttribArray(FONT_PARMS); // outline parms
+	glVertexAttribPointer(FONT_PARMS, 4,
 			GL_UNSIGNED_BYTE, GL_TRUE, sizeof(fontVertex_t),
 			(void*) offsetof( fontVertex_t, fontParms ));
 

@@ -327,16 +327,16 @@ GLuint VGlShader::createProgram(GLuint vertexShader, GLuint fragmentShader)
     glAttachShader( program, fragmentShader );
 
     // set attributes before linking
-    glBindAttribLocation( program, SHADER_ATTRIBUTE_LOCATION_POSITION,		"Position" );
-    glBindAttribLocation( program, SHADER_ATTRIBUTE_LOCATION_NORMAL,			"Normal" );
-    glBindAttribLocation( program, SHADER_ATTRIBUTE_LOCATION_TANGENT,			"Tangent" );
-    glBindAttribLocation( program, SHADER_ATTRIBUTE_LOCATION_BINORMAL,		"Binormal" );
-    glBindAttribLocation( program, SHADER_ATTRIBUTE_LOCATION_COLOR,			"VertexColor" );
-    glBindAttribLocation( program, SHADER_ATTRIBUTE_LOCATION_UV0,				"TexCoord" );
-    glBindAttribLocation( program, SHADER_ATTRIBUTE_LOCATION_UV1,				"TexCoord1" );
-    glBindAttribLocation( program, SHADER_ATTRIBUTE_LOCATION_JOINT_WEIGHTS,	"JointWeights" );
-    glBindAttribLocation( program, SHADER_ATTRIBUTE_LOCATION_JOINT_INDICES,	"JointIndices" );
-    glBindAttribLocation( program, SHADER_ATTRIBUTE_LOCATION_FONT_PARMS,		"FontParms" );
+    glBindAttribLocation( program, VERTEX_POSITION,		"Position" );
+    glBindAttribLocation( program, VERTEX_NORMAL,			"Normal" );
+    glBindAttribLocation( program, VERTEX_TANGENT,			"Tangent" );
+    glBindAttribLocation( program, VERTEX_BINORMAL,		"Binormal" );
+    glBindAttribLocation( program, VERTEX_COLOR,			"VertexColor" );
+    glBindAttribLocation( program, VERTEX_UVC0,				"TexCoord" );
+    glBindAttribLocation( program, VERTEX_UVC1,				"TexCoord1" );
+    glBindAttribLocation( program, JOINT_WEIGHTS,	"JointWeights" );
+    glBindAttribLocation( program, JOINT_INDICES,	"JointIndices" );
+    glBindAttribLocation( program, FONT_PARMS,		"FontParms" );
 
 
     // link and error check

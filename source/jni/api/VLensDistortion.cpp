@@ -347,20 +347,20 @@ VGlGeometry VLensDistortion::CreateTessellatedMesh(const VDevice* device,const i
     glBufferData( GL_ELEMENT_ARRAY_BUFFER, indexBytes, (void *)tessIndices, GL_STATIC_DRAW );
     delete[] tessIndices;
 
-    glEnableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_POSITION );
-    glVertexAttribPointer( SHADER_ATTRIBUTE_LOCATION_POSITION, 2, GL_FLOAT, false, attribCount * sizeof( float ), (void *)( 0 * sizeof( float ) ) );
+    glEnableVertexAttribArray( VERTEX_POSITION );
+    glVertexAttribPointer( VERTEX_POSITION, 2, GL_FLOAT, false, attribCount * sizeof( float ), (void *)( 0 * sizeof( float ) ) );
 
-    glEnableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_NORMAL );
-    glVertexAttribPointer( SHADER_ATTRIBUTE_LOCATION_NORMAL, 2, GL_FLOAT, false, attribCount * sizeof( float ), (void *)( 2 * sizeof( float ) ) );
+    glEnableVertexAttribArray( VERTEX_NORMAL );
+    glVertexAttribPointer( VERTEX_NORMAL, 2, GL_FLOAT, false, attribCount * sizeof( float ), (void *)( 2 * sizeof( float ) ) );
 
-    glEnableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_UV0 );
-    glVertexAttribPointer( SHADER_ATTRIBUTE_LOCATION_UV0, 2, GL_FLOAT, false, attribCount * sizeof( float ), (void *)( 4 * sizeof( float ) ) );
+    glEnableVertexAttribArray( VERTEX_UVC0 );
+    glVertexAttribPointer( VERTEX_UVC0, 2, GL_FLOAT, false, attribCount * sizeof( float ), (void *)( 4 * sizeof( float ) ) );
 
-    glEnableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_TANGENT );
-    glVertexAttribPointer( SHADER_ATTRIBUTE_LOCATION_TANGENT, 2, GL_FLOAT, false, attribCount * sizeof( float ), (void *)( 6 * sizeof( float ) ) );
+    glEnableVertexAttribArray( VERTEX_TANGENT );
+    glVertexAttribPointer( VERTEX_TANGENT, 2, GL_FLOAT, false, attribCount * sizeof( float ), (void *)( 6 * sizeof( float ) ) );
 
-    glEnableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_UV1 );
-    glVertexAttribPointer( SHADER_ATTRIBUTE_LOCATION_UV1, 2, GL_FLOAT, false, attribCount * sizeof( float ), (void *)( 8 * sizeof( float ) ) );
+    glEnableVertexAttribArray( VERTEX_UVC1 );
+    glVertexAttribPointer( VERTEX_UVC1, 2, GL_FLOAT, false, attribCount * sizeof( float ), (void *)( 8 * sizeof( float ) ) );
 
     glOperation.glBindVertexArrayOES( 0 );
 

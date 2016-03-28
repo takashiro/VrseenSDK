@@ -1826,11 +1826,11 @@ VGlGeometry CreateTimingGraphGeometry( const int lineVertCount )
     glGenBuffers( 1, &geo.vertexBuffer );
     glBindBuffer( GL_ARRAY_BUFFER, geo.vertexBuffer );
     glBufferData( GL_ARRAY_BUFFER, byteCount, (void *) verts, GL_DYNAMIC_DRAW );
-    glEnableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_POSITION );
-    glVertexAttribPointer( SHADER_ATTRIBUTE_LOCATION_POSITION, 2, GL_SHORT, false, sizeof( lineVert_t ), (void *)0 );
+    glEnableVertexAttribArray( VERTEX_POSITION );
+    glVertexAttribPointer( VERTEX_POSITION, 2, GL_SHORT, false, sizeof( lineVert_t ), (void *)0 );
 
-    glEnableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_COLOR );
-    glVertexAttribPointer( SHADER_ATTRIBUTE_LOCATION_COLOR, 4, GL_UNSIGNED_BYTE, true, sizeof( lineVert_t ), (void *)4 );
+    glEnableVertexAttribArray( VERTEX_COLOR );
+    glVertexAttribPointer( VERTEX_COLOR, 4, GL_UNSIGNED_BYTE, true, sizeof( lineVert_t ), (void *)4 );
     delete[] verts;
 
     // these will be drawn with DrawArrays, so no index buffer is needed
