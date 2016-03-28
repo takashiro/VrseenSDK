@@ -516,9 +516,9 @@ struct App::Private
         overlayScreenDirectProgram.initShader(VGlShader::getSingleTextureVertexShaderSource(),VGlShader::getSingleTextureFragmentShaderSource() );
 
 
-        panelGeometry = VGlGeometryFactory::CreateTesselatedQuad( 32, 16 );;
-        unitSquare = VGlGeometryFactory::CreateTesselatedQuad( 1, 1 );
-        unitCubeLines = VGlGeometryFactory::CreateUnitCubeLines();
+        panelGeometry.createPlaneQuadGrid( 32, 16 );
+        unitSquare.createPlaneQuadGrid(1, 1 );
+        unitCubeLines.createUnitCubeGrid();
 
 
         eyeDecorations.Init();
