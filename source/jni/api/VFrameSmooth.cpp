@@ -884,7 +884,7 @@ void VFrameSmooth::Private::setWarpState( const warpSource_t & currentWarpSource
         }
     }
     VGlOperation glOperation;
-    glOperation.GL_CheckErrors( "SetWarpState" );
+    glOperation.logErrorsEnum( "SetWarpState" );
 }
 
 void VFrameSmooth::Private::bindWarpProgram( const warpSource_t & currentWarpSource,
@@ -1950,7 +1950,7 @@ void VFrameSmooth::Private::updateTimingGraphVerts( const ovrTimeWarpDebugPerfMo
     glOperation.glBindVertexArrayOES( 0 );
 
     m_timingGraph.indexCount = numVerts;
-    glOperation.GL_CheckErrors( "After UpdateTimingGraph" );
+    glOperation.logErrorsEnum( "After UpdateTimingGraph" );
 }
 
 void VFrameSmooth::Private::drawTimingGraph( const int eye )
@@ -1991,7 +1991,7 @@ void VFrameSmooth::Private::drawTimingGraph( const int eye )
     glViewport( 0, 0, rectWidth * 2, rectHeight );
     glScissor( 0, 0, rectWidth * 2, rectHeight );
 
-    glOperation.GL_CheckErrors( "DrawTimingGraph" );
+    glOperation.logErrorsEnum( "DrawTimingGraph" );
 }
 
 float calibrateFovScale = 1.0f;	// for interactive tweaking

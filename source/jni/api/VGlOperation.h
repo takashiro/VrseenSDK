@@ -82,7 +82,7 @@ public:
     const char * getGlErrorEnum(const GLenum e);
     EGLConfig eglConfigForConfigID(const EGLDisplay display, const GLint configID);
     const char * getEglErrorString();
-    bool GL_CheckErrors(const char *logTitle);
+    bool logErrorsEnum(const char *logTitle);
     void logExtensions();
     bool glIsExtensionString(const char *extension, const char *allExtensions);
     void glFinish();

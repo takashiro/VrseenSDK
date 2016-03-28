@@ -127,7 +127,7 @@ const char * VGlOperation::getGlErrorEnum(const GLenum e)
     }
 }
 
-bool VGlOperation::GL_CheckErrors(const char *logTitle)
+bool VGlOperation::logErrorsEnum(const char *logTitle)
 {
     bool hadError = false;
 

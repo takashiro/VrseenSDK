@@ -281,7 +281,7 @@ void VRMenuSurface::render( OvrVRMenuMgr const & menuMgr, VR4Matrixf const & mvp
     //LOG( "Render Surface '%s', skip = '%s'", SurfaceName.toCString(), skipAdditivePass ? "true" : "false" );
 
     VGlOperation glOperation;
-    glOperation.GL_CheckErrors( "VRMenuSurface::Render - pre" );
+    glOperation.logErrorsEnum( "VRMenuSurface::Render - pre" );
 
 	VGlShader const * program = NULL;
 
@@ -430,7 +430,7 @@ void VRMenuSurface::render( OvrVRMenuMgr const & menuMgr, VR4Matrixf const & mvp
 	glDrawElements( GL_TRIANGLES, m_geo.indexCount, GL_UNSIGNED_SHORT, NULL );
     glOperation.glBindVertexArrayOES( 0 );
 
-    glOperation.GL_CheckErrors( "VRMenuSurface::Render - post" );
+    glOperation.logErrorsEnum( "VRMenuSurface::Render - post" );
 }
 
 //==============================

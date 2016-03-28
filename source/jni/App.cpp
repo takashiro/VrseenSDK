@@ -2173,7 +2173,7 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
 
 
     // Flush out and report any errors
-    glOperation.GL_CheckErrors("FrameStart");
+    glOperation.logErrorsEnum("FrameStart");
 
     if ( d->drawCalibrationLines && d->calibrationLinesDrawn )
     {

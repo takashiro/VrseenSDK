@@ -553,7 +553,7 @@ GLuint SceneManager::BuildScreenVignetteTexture( const int horizontalTile ) cons
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
     glBindTexture( GL_TEXTURE_2D, 0 );
 
-    glOperation.GL_CheckErrors( "screenVignette" );
+    glOperation.logErrorsEnum( "screenVignette" );
     return texId;
 }
 

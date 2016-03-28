@@ -1454,7 +1454,7 @@ void BitmapFontSurfaceLocal::Finish(VR4Matrixf const & viewMatrix) {
 void BitmapFontSurfaceLocal::Render3D(BitmapFont const & font,
         VR4Matrixf const & worldMVP) const {
     VGlOperation glOperation;
-    glOperation.GL_CheckErrors("BitmapFontSurfaceLocal::Render3D - pre");
+    glOperation.logErrorsEnum("BitmapFontSurfaceLocal::Render3D - pre");
 
 	//SPAM( "BitmapFontSurfaceLocal::Render3D" );
 
@@ -1490,7 +1490,7 @@ void BitmapFontSurfaceLocal::Render3D(BitmapFont const & font,
 	glDisable(GL_BLEND);
 	glDepthMask(GL_FALSE);
 
-    glOperation.GL_CheckErrors("BitmapFontSurfaceLocal::Render3D - post");
+    glOperation.logErrorsEnum("BitmapFontSurfaceLocal::Render3D - post");
 }
 
 //==============================

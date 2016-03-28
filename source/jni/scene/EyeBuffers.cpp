@@ -171,7 +171,7 @@ void EyeBuffer::Allocate( const EyeParms & bufferParms, multisample_t multisampl
             glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER,
                     DepthBuffer );
         }
-        glOperation.GL_CheckErrors( "glRenderbufferStorageMultisampleIMG MSAA");
+        glOperation.logErrorsEnum( "glRenderbufferStorageMultisampleIMG MSAA");
     }
     else
     {
@@ -199,7 +199,7 @@ void EyeBuffer::Allocate( const EyeParms & bufferParms, multisample_t multisampl
                 DepthBuffer );
         }
 
-        glOperation.GL_CheckErrors( "NO MSAA");
+        glOperation.logErrorsEnum( "NO MSAA");
     }
 
     GLenum status = glCheckFramebufferStatus( GL_FRAMEBUFFER );
@@ -326,12 +326,12 @@ void EyeBuffers::BeginFrame( const EyeParms & bufferParms_ )
         } else {
             buffers.MultisampleMode = MSAA_OFF;
         }
-        glOperation.GL_CheckErrors( "Before framebuffer creation");
+        glOperation.logErrorsEnum( "Before framebuffer creation");
         for ( int eye = 0; eye < 2; eye++ ) {
             buffers.Eyes[eye].Allocate( bufferParms_, buffers.MultisampleMode );
         }
 
-        glOperation.GL_CheckErrors( "after framebuffer creation" );
+        glOperation.logErrorsEnum( "after framebuffer creation" );
     }
 }
 

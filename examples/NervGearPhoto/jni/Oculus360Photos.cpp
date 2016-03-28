@@ -622,7 +622,7 @@ bool Oculus360Photos::onKeyEvent( const int keyCode, const KeyState::eKeyEventTy
 void Oculus360Photos::loadRgbaCubeMap( const int resolution, const unsigned char * const rgba[ 6 ], const bool useSrgbFormat )
 {
     VGlOperation glOperation;
-    glOperation.GL_CheckErrors( "enter LoadRgbaCubeMap" );
+    glOperation.logErrorsEnum( "enter LoadRgbaCubeMap" );
 
     const GLenum glFormat = GL_RGBA;
     const GLenum glInternalFormat = useSrgbFormat ? GL_SRGB8_ALPHA8 : GL_RGBA;
@@ -658,13 +658,13 @@ void Oculus360Photos::loadRgbaCubeMap( const int resolution, const unsigned char
 
     glBindTexture( GL_TEXTURE_CUBE_MAP, 0 );
 
-    glOperation.GL_CheckErrors( "leave LoadRgbaCubeMap" );
+    glOperation.logErrorsEnum( "leave LoadRgbaCubeMap" );
 }
 
 void Oculus360Photos::loadRgbaTexture( const unsigned char * data, int width, int height, const bool useSrgbFormat )
 {
     VGlOperation glOperation;
-    glOperation.GL_CheckErrors( "enter LoadRgbaTexture" );
+    glOperation.logErrorsEnum( "enter LoadRgbaTexture" );
 
     const GLenum glFormat = GL_RGBA;
     const GLenum glInternalFormat = useSrgbFormat ? GL_SRGB8_ALPHA8 : GL_RGBA;
@@ -698,7 +698,7 @@ void Oculus360Photos::loadRgbaTexture( const unsigned char * data, int width, in
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 2 );
     glBindTexture( GL_TEXTURE_2D, 0 );
 
-    glOperation.GL_CheckErrors( "leave LoadRgbaTexture" );
+    glOperation.logErrorsEnum( "leave LoadRgbaTexture" );
 }
 
 VR4Matrixf CubeMatrixForViewMatrix( const VR4Matrixf & viewMatrix )
@@ -793,7 +793,7 @@ VR4Matrixf Oculus360Photos::drawEyeView( const int eye, const float fovDegrees )
     }
 
     VGlOperation glOperation;
-    glOperation.GL_CheckErrors( "draw" );
+    glOperation.logErrorsEnum( "draw" );
 
     return view;
 }
