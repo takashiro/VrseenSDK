@@ -192,21 +192,6 @@ static bool ChromaticAberrationCorrection(const VGlOperation & glOperation)
     return (glOperation.gpuType & VGlOperation::GPU_TYPE_ADRENO) != 0 && (glOperation.gpuType >= VGlOperation::GPU_TYPE_ADRENO_420);
 }
 
-static const char* vertexShaderSource =
-        "uniform mat4 Mvpm;\n"
-        "uniform mat4 Texm;\n"
-        "attribute vec4 Position;\n"
-        "attribute vec4 VertexColor;\n"
-        "attribute vec2 TexCoord;\n"
-        "uniform mediump vec4 UniformColor;\n"
-        "varying  highp vec2 oTexCoord;\n"
-        "varying  lowp vec4 oColor;\n"
-        "void main()\n"
-        "{\n"
-        "   gl_Position = Mvpm * Position;\n"
-        "   oTexCoord = vec2(Texm * vec4(TexCoord,1,1));\n"
-        "   oColor = VertexColor * UniformColor;\n"
-        "}\n";
 
 
 struct App::Private
@@ -521,70 +506,20 @@ struct App::Private
 
         swapParms.WarpProgram = ChromaticAberrationCorrection(glOperation) ? WP_CHROMATIC : WP_SIMPLE;
 
-        // Let glUtils look up extensions
 
         glOperation.logExtensions();
 
-        externalTextureProgram2.initShader( vertexShaderSource, externalFragmentShaderSource );
-        untexturedMvpProgram.initShader(
-            "uniform mat4 Mvpm;\n"
-            "attribute vec4 Position;\n"
-            "uniform mediump vec4 UniformColor;\n"
-            "varying  lowp vec4 oColor;\n"
-            "void main()\n"
-            "{\n"
-                "   gl_Position = Mvpm * Position;\n"
-                "   oColor = UniformColor;\n"
-            "}\n"
-        ,
-            "varying lowp vec4	oColor;\n"
-            "void main()\n"
-            "{\n"
-            "	gl_FragColor = oColor;\n"
-            "}\n"
-        );
-        untexturedScreenSpaceProgram.initShader( identityVertexShaderSource, untexturedFragmentShaderSource );
-        overlayScreenFadeMaskProgram.initShader(
-                "uniform mat4 Mvpm;\n"
-                "attribute vec4 VertexColor;\n"
-                "attribute vec4 Position;\n"
-                "varying  lowp vec4 oColor;\n"
-                "void main()\n"
-                "{\n"
-                "   gl_Position = Mvpm * Position;\n"
-                "   oColor = vec4(1.0, 1.0, 1.0, 1.0 - VertexColor.x);\n"
-                "}\n"
-            ,
-                "varying lowp vec4	oColor;\n"
-                "void main()\n"
-                "{\n"
-                "	gl_FragColor = oColor;\n"
-                "}\n"
-            );
-        overlayScreenDirectProgram.initShader(
-                "uniform mat4 Mvpm;\n"
-                "attribute vec4 Position;\n"
-                "attribute vec2 TexCoord;\n"
-                "varying  highp vec2 oTexCoord;\n"
-                "void main()\n"
-                "{\n"
-                "   gl_Position = Mvpm * Position;\n"
-                "   oTexCoord = TexCoord;\n"
-                "}\n"
-            ,
-                "uniform sampler2D Texture0;\n"
-                "varying highp vec2 oTexCoord;\n"
-                "void main()\n"
-                "{\n"
-                "	gl_FragColor = texture2D(Texture0, oTexCoord);\n"
-                "}\n"
-            );
+        externalTextureProgram2.initShader( VGlShader::getAdditionalVertexShaderSource(), VGlShader::getAdditionalFragmentShaderSource() );
+        untexturedMvpProgram.initShader( VGlShader::getUntextureMvpVertexShaderSource(),VGlShader::getUntexturedFragmentShaderSource()  );
+        untexturedScreenSpaceProgram.initShader( VGlShader::getUniformColorVertexShaderSource(), VGlShader::getUntexturedFragmentShaderSource() );
+        overlayScreenFadeMaskProgram.initShader(VGlShader::getUntextureInverseColorVertexShaderSource(),VGlShader::getUntexturedFragmentShaderSource() );
+        overlayScreenDirectProgram.initShader(VGlShader::getSingleTextureVertexShaderSource(),VGlShader::getSingleTextureFragmentShaderSource() );
 
-        // Build some geometries we need
-        panelGeometry.createPlaneQuadGrid( 32, 16 );;	// must be large to get faded edge
-        unitSquare.createPlaneQuadGrid( 1, 1 );
-        unitCubeLines.createUnitCubeGrid();
-        //FadedScreenMaskSquare = BuildFadedScreenMask(0.0f, 0.0f);	// TODO: clean up: app-specific values are being passed in on DrawScreenMask
+
+        panelGeometry = VGlGeometryFactory::CreateTesselatedQuad( 32, 16 );;
+        unitSquare = VGlGeometryFactory::CreateTesselatedQuad( 1, 1 );
+        unitCubeLines = VGlGeometryFactory::CreateUnitCubeLines();
+
 
         eyeDecorations.Init();
     }

@@ -356,7 +356,7 @@ DrawCounters RenderSurfaceList( const DrawSurfaceList & drawSurfaceList ) {
 	GLuint				currentProgramObject = 0;
 
 	// default joints if no joints are specified
-    static const VR4Matrixf defaultJoints[MAX_JOINTS];
+    static const VR4Matrixf defaultJoints[16];
 
 	// counters
 	DrawCounters counters;
@@ -438,11 +438,11 @@ DrawCounters RenderSurfaceList( const DrawSurfaceList & drawSurfaceList ) {
 			{
 				if ( drawSurface.joints != NULL && drawSurface.joints->size() > 0 )
 				{
-                    glUniformMatrix4fv( materialDef.uniformJoints, std::min( drawSurface.joints->length(), MAX_JOINTS ), 0, &drawSurface.joints->at( 0 ).M[0][0] );
+                    glUniformMatrix4fv( materialDef.uniformJoints, std::min( drawSurface.joints->length(), 16 ), 0, &drawSurface.joints->at( 0 ).M[0][0] );
 				}
 				else
 				{
-                    glUniformMatrix4fv( materialDef.uniformJoints, MAX_JOINTS, 0, &defaultJoints[0].M[0][0] );
+                    glUniformMatrix4fv( materialDef.uniformJoints, 16, 0, &defaultJoints[0].M[0][0] );
 				}
 			}
 		}

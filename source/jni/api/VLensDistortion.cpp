@@ -347,6 +347,7 @@ VGlGeometry VLensDistortion::CreateTessellatedMesh(const VDevice* device,const i
     glBufferData( GL_ELEMENT_ARRAY_BUFFER, indexBytes, (void *)tessIndices, GL_STATIC_DRAW );
     delete[] tessIndices;
 
+
     glEnableVertexAttribArray( VERTEX_POSITION );
     glVertexAttribPointer( VERTEX_POSITION, 2, GL_FLOAT, false, attribCount * sizeof( float ), (void *)( 0 * sizeof( float ) ) );
 
@@ -361,6 +362,7 @@ VGlGeometry VLensDistortion::CreateTessellatedMesh(const VDevice* device,const i
 
     glEnableVertexAttribArray( VERTEX_UVC1 );
     glVertexAttribPointer( VERTEX_UVC1, 2, GL_FLOAT, false, attribCount * sizeof( float ), (void *)( 8 * sizeof( float ) ) );
+
 
     glOperation.glBindVertexArrayOES( 0 );
 

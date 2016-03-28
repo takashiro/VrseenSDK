@@ -92,15 +92,15 @@ void VGlGeometry::createGlGeometry( const VertexAttribs & attribs, const VArray<
     glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer );
 
     VArray< uint8_t > packed;
-    PackVertexAttribute( packed, attribs.position,		SHADER_ATTRIBUTE_LOCATION_POSITION,			GL_FLOAT,	3 );
-    PackVertexAttribute( packed, attribs.normal,		SHADER_ATTRIBUTE_LOCATION_NORMAL,			GL_FLOAT,	3 );
-    PackVertexAttribute( packed, attribs.tangent,		SHADER_ATTRIBUTE_LOCATION_TANGENT,			GL_FLOAT,	3 );
-    PackVertexAttribute( packed, attribs.binormal,		SHADER_ATTRIBUTE_LOCATION_BINORMAL,			GL_FLOAT,	3 );
-    PackVertexAttribute( packed, attribs.color,			SHADER_ATTRIBUTE_LOCATION_COLOR,			GL_FLOAT,	4 );
-    PackVertexAttribute( packed, attribs.uv0,			SHADER_ATTRIBUTE_LOCATION_UV0,				GL_FLOAT,	2 );
-    PackVertexAttribute( packed, attribs.uv1,			SHADER_ATTRIBUTE_LOCATION_UV1,				GL_FLOAT,	2 );
-    PackVertexAttribute( packed, attribs.jointIndices,	SHADER_ATTRIBUTE_LOCATION_JOINT_INDICES,	GL_INT,		4 );
-    PackVertexAttribute( packed, attribs.jointWeights,	SHADER_ATTRIBUTE_LOCATION_JOINT_WEIGHTS,	GL_FLOAT,	4 );
+    PackVertexAttribute( packed, attribs.position,		LOCATION_POSITION,			GL_FLOAT,	3 );
+    PackVertexAttribute( packed, attribs.normal,		LOCATION_NORMAL,			GL_FLOAT,	3 );
+    PackVertexAttribute( packed, attribs.tangent,		LOCATION_TANGENT,			GL_FLOAT,	3 );
+    PackVertexAttribute( packed, attribs.binormal,		LOCATION_BINORMAL,			GL_FLOAT,	3 );
+    PackVertexAttribute( packed, attribs.color,			LOCATION_COLOR,			GL_FLOAT,	4 );
+    PackVertexAttribute( packed, attribs.uv0,			LOCATION_UV0,				GL_FLOAT,	2 );
+    PackVertexAttribute( packed, attribs.uv1,			LOCATION_UV1,				GL_FLOAT,	2 );
+    PackVertexAttribute( packed, attribs.jointIndices,	LOCATION_JOINT_INDICES,	GL_INT,		4 );
+    PackVertexAttribute( packed, attribs.jointWeights,	LOCATION_JOINT_WEIGHTS,	GL_FLOAT,	4 );
 
     glBufferData( GL_ARRAY_BUFFER, packed.size() * sizeof( packed[0] ), packed.data(), GL_STATIC_DRAW );
 
@@ -109,15 +109,15 @@ void VGlGeometry::createGlGeometry( const VertexAttribs & attribs, const VArray<
 
     glOperation.glBindVertexArrayOES( 0 );
 
-    glDisableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_POSITION );
-    glDisableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_NORMAL );
-    glDisableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_TANGENT );
-    glDisableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_BINORMAL );
-    glDisableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_COLOR );
-    glDisableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_UV0 );
-    glDisableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_UV1 );
-    glDisableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_JOINT_INDICES );
-    glDisableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_JOINT_WEIGHTS );
+    glDisableVertexAttribArray( LOCATION_POSITION );
+    glDisableVertexAttribArray( LOCATION_NORMAL );
+    glDisableVertexAttribArray( LOCATION_TANGENT );
+    glDisableVertexAttribArray( LOCATION_BINORMAL );
+    glDisableVertexAttribArray( LOCATION_COLOR );
+    glDisableVertexAttribArray( LOCATION_UV0 );
+    glDisableVertexAttribArray( LOCATION_UV1 );
+    glDisableVertexAttribArray( LOCATION_JOINT_INDICES );
+    glDisableVertexAttribArray( LOCATION_JOINT_WEIGHTS );
 }
 
 */
@@ -133,6 +133,7 @@ void VGlGeometry::updateGlGeometry( const VertexAttribs & attribs )
     glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer );
 
     VArray< uint8_t > packed;
+
     PackVertexAttribute( packed, attribs.position,		VERTEX_POSITION,			GL_FLOAT,	3 );
     PackVertexAttribute( packed, attribs.normal,		VERTEX_NORMAL,			GL_FLOAT,	3 );
     PackVertexAttribute( packed, attribs.tangent,		VERTEX_TANGENT,			GL_FLOAT,	3 );
@@ -142,7 +143,6 @@ void VGlGeometry::updateGlGeometry( const VertexAttribs & attribs )
     PackVertexAttribute( packed, attribs.uv1,			VERTEX_UVC1,				GL_FLOAT,	2 );
     PackVertexAttribute( packed, attribs.jointIndices,	JOINT_INDICES,	GL_INT,		4 );
     PackVertexAttribute( packed, attribs.jointWeights,	JOINT_WEIGHTS,	GL_FLOAT,	4 );
-
     glBufferData( GL_ARRAY_BUFFER, packed.size() * sizeof( packed[0] ), packed.data(), GL_STATIC_DRAW );
 }
 
@@ -784,6 +784,7 @@ void  VGlGeometry::createQuad()
     glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, geometry.indexBuffer );
     glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( indices ), indices, GL_STATIC_DRAW );
 
+
     glEnableVertexAttribArray( VERTEX_POSITION );
     glVertexAttribPointer( VERTEX_POSITION, 3, GL_FLOAT, false,
                            sizeof( vertices.positions[0] ), (const GLvoid *)offsetof( vertices_t, positions ) );
@@ -794,6 +795,7 @@ void  VGlGeometry::createQuad()
 
     glEnableVertexAttribArray( VERTEX_COLOR );
     glVertexAttribPointer( VERTEX_COLOR, 4, GL_FLOAT, false,
+
                            sizeof( vertices.colors[0] ), (const GLvoid *)offsetof( vertices_t, colors ) );
 
     glOperation.glBindVertexArrayOES( 0 );
@@ -801,8 +803,6 @@ void  VGlGeometry::createQuad()
 
 
 }
-
-
 
 
 

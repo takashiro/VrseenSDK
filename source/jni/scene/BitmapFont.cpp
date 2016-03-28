@@ -1067,6 +1067,7 @@ void BitmapFontSurfaceLocal::Init(const int maxVertices) {
 	glBufferData(GL_ARRAY_BUFFER, vertexByteCount, (void*) Vertices,
 			GL_DYNAMIC_DRAW);
 
+
 	glEnableVertexAttribArray(VERTEX_POSITION); // x, y and z
 	glVertexAttribPointer(VERTEX_POSITION, 3, GL_FLOAT,
 			GL_FALSE, sizeof(fontVertex_t), (void*) 0);
