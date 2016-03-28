@@ -13,20 +13,20 @@ class VLensDistortion
 {
 public:
     VLensDistortion();
-    void initLensByPhoneType(PhoneTypeEnum type);
+    void initDistortionParmsByMobileType(PhoneTypeEnum type);
     const  static int MaxCoefficients = 21;
-    DistortionEqnType   Eqn;
+    DistortionEqnType   equation;
 
-    float               K[MaxCoefficients];
-    float               MaxR;
-    float               MetersPerTanAngleAtCenter;   
-    float               ChromaticAberration[4];
-    float               InvK[MaxCoefficients];
-    float               MaxInvR;
-    static VGlGeometry CreateTessellatedMesh(const VDevice* device,const int numSlicesPerEye, const float fovScale,
+    float               kArray[MaxCoefficients];
+    float               maxR;
+    float               centMetersPerTanAngler;
+    float               chromaticAberration[4];
+    float               invKArray[MaxCoefficients];
+    float               maxInvR;
+    static VGlGeometry createDistortionGrid(const VDevice* device,const int numSlicesPerEye, const float fovScale,
                                              const bool cursorOnly);    
-    static int tessellationsX;
-    static int tessellationsY;
+    static int xxGridNum;
+    static int yyGridNum;
 };
 
 NV_NAMESPACE_END

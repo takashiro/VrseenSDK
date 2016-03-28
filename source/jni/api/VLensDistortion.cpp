@@ -12,8 +12,6 @@ NV_NAMESPACE_BEGIN
 
 static float EvalCatmullRomSpline ( float const *K, float scaledVal, int NumSegments )
 {
-    //int const NumSegments = LensConfig::NumCoefficients;
-
     float scaledValFloor = floorf ( scaledVal );
     scaledValFloor = std::max ( 0.0f, std::min ( (float)(NumSegments-1), scaledValFloor ) );
     float t = scaledVal - scaledValFloor;
@@ -25,28 +23,28 @@ static float EvalCatmullRomSpline ( float const *K, float scaledVal, int NumSegm
     float m1 = 0.0f;
 
     if (k == 0)
-    {   // Curve starts at 1.0 with gradient K[1]-K[0]
+    {
         p0 = 1.0f;
         m0 = K[1] - K[0];
         p1 = K[1];
         m1 = 0.5f * ( K[2] - K[0] );
     }
     else if (k < NumSegments-2)
-    {   // General case
+    {
         p0 = K[k];
         m0 = 0.5f * ( K[k+1] - K[k-1] );
         p1 = K[k+1];
         m1 = 0.5f * ( K[k+2] - K[k] );
     }
     else if (k == NumSegments-2)
-    {   // Last tangent is just the slope of the last two points.
+    {
         p0 = K[k];
         m0 = 0.5f * ( K[k+1] - K[k-1] );
         p1 = K[k+1];
         m1 = K[k+1] - K[k];
     }
     else if (k == NumSegments-1)
-    {   // Beyond the last segment it's just a straight line
+    {
         p0 = K[k];
         m0 = K[k] - K[k-1];
         p1 = p0 + m0;
@@ -60,37 +58,32 @@ static float EvalCatmullRomSpline ( float const *K, float scaledVal, int NumSegm
     return res;
 }
 
-// The result is a scaling applied to the distance.
+
 static float DistortionFnScaleRadiusSquared(const VLensDistortion& lens,float rsq)
 {
     float scale = 1.0f;
-    switch ( lens.Eqn )
+    switch ( lens.equation )
     {
         case Distortion_Poly4:
-            // This version is deprecated! Prefer one of the other two.
-            scale = ( lens.K[0] + rsq * ( lens.K[1] + rsq * ( lens.K[2] + rsq * lens.K[3] ) ) );
+            scale = ( lens.kArray[0] + rsq * ( lens.kArray[1] + rsq * ( lens.kArray[2] + rsq * lens.kArray[3] ) ) );
             break;
         case Distortion_RecipPoly4:
-            scale = 1.0f / ( lens.K[0] + rsq * ( lens.K[1] + rsq * ( lens.K[2] + rsq * lens.K[3] ) ) );
+            scale = 1.0f / ( lens.kArray[0] + rsq * ( lens.kArray[1] + rsq * ( lens.kArray[2] + rsq * lens.kArray[3] ) ) );
             break;
         case Distortion_CatmullRom10: {
-            // A Catmull-Rom spline through the values 1.0, K[1], K[2] ... K[10]
-            // evenly spaced in R^2 from 0.0 to MaxR^2
-            // K[0] controls the slope at radius=0.0, rather than the actual value.
+
             const int NumSegments = 11;
             OVR_ASSERT ( NumSegments <= lens.MaxCoefficients );
-            float scaledRsq = (float)(NumSegments-1) * rsq / ( lens.MaxR * lens.MaxR );
-            scale = EvalCatmullRomSpline ( lens.K, scaledRsq, NumSegments );
+            float scaledRsq = (float)(NumSegments-1) * rsq / ( lens.maxR * lens.maxR );
+            scale = EvalCatmullRomSpline ( lens.kArray, scaledRsq, NumSegments );
         } break;
 
         case Distortion_CatmullRom20: {
-            // A Catmull-Rom spline through the values 1.0, K[1], K[2] ... K[20]
-            // evenly spaced in R^2 from 0.0 to MaxR^2
-            // K[0] controls the slope at radius=0.0, rather than the actual value.
+
             const int NumSegments = 21;
             OVR_ASSERT ( NumSegments <= lens.MaxCoefficients );
-            float scaledRsq = (float)(NumSegments-1) * rsq / ( lens.MaxR * lens.MaxR );
-            scale = EvalCatmullRomSpline ( lens.K, scaledRsq, NumSegments );
+            float scaledRsq = (float)(NumSegments-1) * rsq / ( lens.maxR * lens.maxR );
+            scale = EvalCatmullRomSpline ( lens.kArray, scaledRsq, NumSegments );
         } break;
 
         default:
@@ -99,14 +92,14 @@ static float DistortionFnScaleRadiusSquared(const VLensDistortion& lens,float rs
     }
     return scale;
 }
-// x,y,z components map to r,g,b
+
 static V3Vectf DistortionFnScaleRadiusSquaredChroma (const VLensDistortion& lens,float rsq)
 {
     float scale = DistortionFnScaleRadiusSquared (lens, rsq );
     V3Vectf scaleRGB;
-    scaleRGB.x = scale * ( 1.0f + lens.ChromaticAberration[0] + rsq * lens.ChromaticAberration[1] );     // Red
+    scaleRGB.x = scale * ( 1.0f + lens.chromaticAberration[0] + rsq * lens.chromaticAberration[1] );     // Red
     scaleRGB.y = scale;                                                                        // Green
-    scaleRGB.z = scale * ( 1.0f + lens.ChromaticAberration[2] + rsq * lens.ChromaticAberration[3] );     // Blue
+    scaleRGB.z = scale * ( 1.0f + lens.chromaticAberration[2] + rsq * lens.chromaticAberration[3] );     // Blue
     return scaleRGB;
 }
 
@@ -116,9 +109,9 @@ static void WarpTexCoordChroma( const VDevice* device, const float in[2],
     for ( int i = 0; i < 2; i++ ) {
         const float unit = in[i];
         const float ndc = 2.0f * ( unit - 0.5f );
-        const float pixels = ndc * device->heightPixels * 0.5f;
-        const float meters = pixels * device->widthMeters / device->widthPixels;
-        const float tanAngle = meters / device->lens.MetersPerTanAngleAtCenter;
+        const float pixels = ndc * device->heightbyPixels * 0.5f;
+        const float meters = pixels * device->widthbyMeters / device->widthbyPixels;
+        const float tanAngle = meters / device->lens.centMetersPerTanAngler;
         theta[i] = tanAngle;
     }
 
@@ -133,22 +126,13 @@ static void WarpTexCoordChroma( const VDevice* device, const float in[2],
     }
 }
 
-// Assume the cursor is a small region around the center of projection,
-// extended horizontally to allow it to be at different 3D depths.
-// While this will be around the center of each screen half on Note 4,
-// smaller phone screens will be offset, and an automated distortion
-// calibration might also not be completely symmetric.
-//
-// There is a hazard here, because the area up to the next vertex
-// past this will be drawn, so the density of tesselation effects
-// the area that the cursor will show in.
 static bool VectorHitsCursor( const V2Vectf & v )
 {
-    if ( fabs( v.y ) > 0.017f ) // +/- 1 degree vertically
+    if ( fabs( v.y ) > 0.017f )
     {
         return false;
     }
-    if ( fabs( v.x ) > 0.070f ) // +/- 4 degree horizontally
+    if ( fabs( v.x ) > 0.070f )
     {
         return false;
     }
@@ -161,13 +145,13 @@ static void* CreateVertexBuffer( const VDevice* device,
     const int vertexCount = 2 * ( tessellationsX + 1 ) * ( tessellationsY + 1 );
     void*	buf = malloc(4 * vertexCount * 6 );
 
-    // the centers are offset horizontal in each eye
-    const float aspect = device->widthPixels * 0.5 / device->heightPixels;
 
-    const float	horizontalShiftLeftMeters =  -(( device->lensSeparation / 2 ) - ( device->widthMeters / 4 )) + device->horizontalOffsetMeters;
-    const float horizontalShiftRightMeters = (( device->lensSeparation / 2 ) - ( device->widthMeters / 4 )) + device->horizontalOffsetMeters;
-    const float	horizontalShiftViewLeft = 2 * aspect * horizontalShiftLeftMeters / device->widthMeters;
-    const float	horizontalShiftViewRight = 2 * aspect * horizontalShiftRightMeters / device->widthMeters;
+    const float aspect = device->widthbyPixels * 0.5 / device->heightbyPixels;
+
+    const float	horizontalShiftLeftMeters =  -(( device->lensDistance / 2 ) - ( device->widthbyMeters / 4 )) + device->xxOffsetbyMeters;
+    const float horizontalShiftRightMeters = (( device->lensDistance / 2 ) - ( device->widthbyMeters / 4 )) + device->xxOffsetbyMeters;
+    const float	horizontalShiftViewLeft = 2 * aspect * horizontalShiftLeftMeters / device->widthbyMeters;
+    const float	horizontalShiftViewRight = 2 * aspect * horizontalShiftRightMeters / device->widthbyMeters;
 
     for ( int eye = 0; eye < 2; eye++ )
     {
@@ -189,26 +173,26 @@ static void* CreateVertexBuffer( const VDevice* device,
     return buf;
 }
 
-int VLensDistortion::tessellationsX = 32;
-int VLensDistortion::tessellationsY = 32;
+int VLensDistortion::xxGridNum = 32;
+int VLensDistortion::yyGridNum = 32;
 
-VGlGeometry VLensDistortion::CreateTessellatedMesh(const VDevice* device,const int numSlicesPerEye, const float fovScale,
+VGlGeometry VLensDistortion::createDistortionGrid(const VDevice* device,const int numSlicesPerEye, const float fovScale,
                                                    const bool cursorOnly)
 {
     VGlOperation glOperation;
     VGlGeometry geometry;
-    const int totalX = (tessellationsX+1)*2;
+    const int totalX = (xxGridNum+1)*2;
 
-    if (tessellationsX < 1 || tessellationsY < 1 ) return geometry;
+    if (xxGridNum < 1 || yyGridNum < 1 ) return geometry;
 
-    const float * bufferVerts = &((float *)CreateVertexBuffer(device,tessellationsX,tessellationsY))[0];
+    const float * bufferVerts = &((float *)CreateVertexBuffer(device,xxGridNum,yyGridNum))[0];
 
     // Identify which verts would be inside the cursor plane
     bool * vertInCursor = NULL;
     if ( cursorOnly )
     {
-        vertInCursor = new bool[totalX*(tessellationsY+1)];
-        for ( int y = 0; y <= tessellationsY; y++ )
+        vertInCursor = new bool[totalX*(yyGridNum+1)];
+        for ( int y = 0; y <= yyGridNum; y++ )
         {
             for ( int x = 0; x < totalX; x++ )
             {
@@ -223,18 +207,18 @@ VGlGeometry VLensDistortion::CreateTessellatedMesh(const VDevice* device,const i
         }
     }
 
-    // build a VertexArrayObject
+
     glOperation.glGenVertexArraysOES( 1, &geometry.vertexArrayObject );
     glOperation.glBindVertexArrayOES( geometry.vertexArrayObject );
 
     const int attribCount = 10;
-    const int sliceTess = tessellationsX / numSlicesPerEye;
+    const int sliceTess = xxGridNum / numSlicesPerEye;
 
-    const int vertexCount = 2*numSlicesPerEye*(sliceTess+1)*(tessellationsY+1);
+    const int vertexCount = 2*numSlicesPerEye*(sliceTess+1)*(yyGridNum+1);
     const int floatCount = vertexCount * attribCount;
     float * tessVertices = new float[floatCount];
 
-    const int indexCount = 2*tessellationsX*tessellationsY*6;
+    const int indexCount = 2*xxGridNum*yyGridNum*6;
     unsigned short * tessIndices = new unsigned short[indexCount];
     const int indexBytes = indexCount * sizeof( *tessIndices );
 
@@ -247,13 +231,13 @@ VGlGeometry VLensDistortion::CreateTessellatedMesh(const VDevice* device,const i
         {
             const int vertBase = verts;
 
-            for ( int y = 0; y <= tessellationsY; y++ )
+            for ( int y = 0; y <= yyGridNum; y++ )
             {
-                const float	yf = (float)y / (float)tessellationsY;
+                const float	yf = (float)y / (float)yyGridNum;
                 for ( int x = 0; x <= sliceTess; x++ )
                 {
                     const int sx = slice * sliceTess + x;
-                    const float	xf = (float)sx / (float)tessellationsX;
+                    const float	xf = (float)sx / (float)xxGridNum;
                     float * v = &tessVertices[attribCount * ( vertBase + y * (sliceTess+1) + x ) ];
                     v[0] = -1.0 + eye + xf;
                     v[1] = yf*2.0f - 1.0f;
@@ -262,15 +246,12 @@ VGlGeometry VLensDistortion::CreateTessellatedMesh(const VDevice* device,const i
                     for ( int i = 0 ; i < 6; i++ )
                     {
                         v[2+i] = fovScale * bufferVerts
-                        [(y*(tessellationsX+1)*2+sx + eye * (tessellationsX+1))*6+i];
+                        [(y*(xxGridNum+1)*2+sx + eye * (xxGridNum+1))*6+i];
                     }
 
                     v[8] = (float)x / sliceTess;
-                    // Enable this to allow fading at the edges.
-                    // Samsung recommends not doing this, because it could cause
-                    // visible differences in pixel wear on the screen over long
-                    // periods of time.
-                    if ( 0 && ( y == 0 || y == tessellationsY || sx == 0 || sx == tessellationsX ) )
+
+                    if ( 0 && ( y == 0 || y == yyGridNum || sx == 0 || sx == xxGridNum ) )
                     {
                         v[9] = 0.0f;	// fade to black at edge
                     }
@@ -280,23 +261,16 @@ VGlGeometry VLensDistortion::CreateTessellatedMesh(const VDevice* device,const i
                     }
                 }
             }
-            verts += (tessellationsY+1)*(sliceTess+1);
+            verts += (yyGridNum+1)*(sliceTess+1);
 
-            // The order of triangles doesn't matter for tiled rendering,
-            // but when we can do direct rendering to the screen, we want the
-            // order to follow the raster order to minimize the chance
-            // of tear lines.
-            //
-            // This can be checked by quartering the number of indexes, and
-            // making sure that the drawn pixels are the first pixels that
-            // the raster will scan.
+
             for ( int x = 0; x < sliceTess; x++ )
             {
-                for ( int y = 0; y < tessellationsY; y++ )
+                for ( int y = 0; y < yyGridNum; y++ )
                 {
                     if ( vertInCursor )
                     {	// skip this quad if none of the verts are in the cursor region
-                        const int xx = x + eye * (tessellationsX+1) + slice * sliceTess;
+                        const int xx = x + eye * (xxGridNum+1) + slice * sliceTess;
                         if ( 0 ==
                              vertInCursor[ y * totalX + xx ]
                              + vertInCursor[ y * totalX + xx + 1 ]
@@ -307,8 +281,8 @@ VGlGeometry VLensDistortion::CreateTessellatedMesh(const VDevice* device,const i
                         }
                     }
 
-                    // flip the triangulation in opposite corners
-                    if ( (slice*sliceTess+x <  tessellationsX/2) ^ (y < (tessellationsY/2)) )
+
+                    if ( (slice*sliceTess+x <  xxGridNum/2) ^ (y < (yyGridNum/2)) )
                     {
                         tessIndices[index+0] = vertBase + y * (sliceTess+1) + x;
                         tessIndices[index+1] = vertBase + y * (sliceTess+1) + x + 1;
@@ -378,84 +352,84 @@ VLensDistortion::VLensDistortion()
 {
     for ( int i = 0; i < MaxCoefficients; i++ )
     {
-        K[i] = 0.0f;
-        InvK[i] = 0.0f;
+        kArray[i] = 0.0f;
+        invKArray[i] = 0.0f;
     }
-    Eqn = Distortion_RecipPoly4;
-    K[0] = 1.0f;
-    InvK[0] = 1.0f;
-    MaxR = 1.0f;
-    MaxInvR = 1.0f;
-    ChromaticAberration[0] = -0.006f;
-    ChromaticAberration[1] = 0.0f;
-    ChromaticAberration[2] = 0.014f;
-    ChromaticAberration[3] = 0.0f;
-    MetersPerTanAngleAtCenter = 0.043875f;
+    equation = Distortion_RecipPoly4;
+    kArray[0] = 1.0f;
+    invKArray[0] = 1.0f;
+    maxR = 1.0f;
+    maxInvR = 1.0f;
+    chromaticAberration[0] = -0.006f;
+    chromaticAberration[1] = 0.0f;
+    chromaticAberration[2] = 0.014f;
+    chromaticAberration[3] = 0.0f;
+    centMetersPerTanAngler = 0.043875f;
 }
 
-void VLensDistortion::initLensByPhoneType(PhoneTypeEnum type)
+void VLensDistortion::initDistortionParmsByMobileType(PhoneTypeEnum type)
 {
     switch( type )
     {
-        case HMD_GALAXY_S4:			// Galaxy S4 in Samsung's holder
-            Eqn = Distortion_RecipPoly4;
-            MetersPerTanAngleAtCenter = 0.043875f;
-            K[0] = 0.756f;
-            K[1] = -0.266f;
-            K[2] = -0.389f;
-            K[3] = 0.158f;
+        case HMD_GALAXY_S4:
+            equation = Distortion_RecipPoly4;
+            centMetersPerTanAngler = 0.043875f;
+            kArray[0] = 0.756f;
+            kArray[1] = -0.266f;
+            kArray[2] = -0.389f;
+            kArray[3] = 0.158f;
             break;
 
-        case HMD_GALAXY_S5:      // Galaxy S5 1080 paired with version 2 lenses
-            // Tuned for S5 DK2 with lens version 2 for E3 2014 (06-06-14)
-            Eqn = Distortion_CatmullRom10;
-            MetersPerTanAngleAtCenter     = 0.037f;
-            K[0]                          = 1.0f;
-            K[1]                          = 1.021f;
-            K[2]                          = 1.051f;
-            K[3]                          = 1.086f;
-            K[4]                          = 1.128f;
-            K[5]                          = 1.177f;
-            K[6]                          = 1.232f;
-            K[7]                          = 1.295f;
-            K[8]                          = 1.368f;
-            K[9]                          = 1.452f;
-            K[10]                         = 1.560f;
+        case HMD_GALAXY_S5:
+
+            equation = Distortion_CatmullRom10;
+            centMetersPerTanAngler     = 0.037f;
+            kArray[0]                          = 1.0f;
+            kArray[1]                          = 1.021f;
+            kArray[2]                          = 1.051f;
+            kArray[3]                          = 1.086f;
+            kArray[4]                          = 1.128f;
+            kArray[5]                          = 1.177f;
+            kArray[6]                          = 1.232f;
+            kArray[7]                          = 1.295f;
+            kArray[8]                          = 1.368f;
+            kArray[9]                          = 1.452f;
+            kArray[10]                         = 1.560f;
             break;
 
-        case HMD_GALAXY_S5_WQHD:            // Galaxy S5 1440 paired with version 2 lenses
-            // Tuned for S5 DK2 with lens version 2 for E3 2014 (06-06-14)
-            Eqn = Distortion_CatmullRom10;
-            MetersPerTanAngleAtCenter     = 0.037f;
-            K[0]                          = 1.0f;
-            K[1]                          = 1.021f;
-            K[2]                          = 1.051f;
-            K[3]                          = 1.086f;
-            K[4]                          = 1.128f;
-            K[5]                          = 1.177f;
-            K[6]                          = 1.232f;
-            K[7]                          = 1.295f;
-            K[8]                          = 1.368f;
-            K[9]                          = 1.452f;
-            K[10]                         = 1.560f;
+        case HMD_GALAXY_S5_WQHD:
+
+            equation = Distortion_CatmullRom10;
+            centMetersPerTanAngler     = 0.037f;
+            kArray[0]                          = 1.0f;
+            kArray[1]                          = 1.021f;
+            kArray[2]                          = 1.051f;
+            kArray[3]                          = 1.086f;
+            kArray[4]                          = 1.128f;
+            kArray[5]                          = 1.177f;
+            kArray[6]                          = 1.232f;
+            kArray[7]                          = 1.295f;
+            kArray[8]                          = 1.368f;
+            kArray[9]                          = 1.452f;
+            kArray[10]                         = 1.560f;
             break;
 
         default:
-        case HMD_NOTE_4:      // Note 4
-            // GearVR (Note 4)
-            Eqn = Distortion_CatmullRom10;
-            MetersPerTanAngleAtCenter     = 0.0365f;
-            K[0]                          = 1.0f;
-            K[1]                          = 1.029f;
-            K[2]                          = 1.0565f;
-            K[3]                          = 1.088f;
-            K[4]                          = 1.127f;
-            K[5]                          = 1.175f;
-            K[6]                          = 1.232f;
-            K[7]                          = 1.298f;
-            K[8]                          = 1.375f;
-            K[9]                          = 1.464f;
-            K[10]                         = 1.570f;
+        case HMD_NOTE_4:
+
+            equation = Distortion_CatmullRom10;
+            centMetersPerTanAngler     = 0.0365f;
+            kArray[0]                          = 1.0f;
+            kArray[1]                          = 1.029f;
+            kArray[2]                          = 1.0565f;
+            kArray[3]                          = 1.088f;
+            kArray[4]                          = 1.127f;
+            kArray[5]                          = 1.175f;
+            kArray[6]                          = 1.232f;
+            kArray[7]                          = 1.298f;
+            kArray[8]                          = 1.375f;
+            kArray[9]                          = 1.464f;
+            kArray[10]                         = 1.570f;
             break;
     }
 }

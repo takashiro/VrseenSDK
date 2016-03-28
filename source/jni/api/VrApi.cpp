@@ -775,36 +775,36 @@ static void UpdateHmdInfo( ovrMobile * ovr )
 
     // Only use the Android info if we haven't explicitly set the screenWidth / height,
     // because they are reported wrong on the note.
-    if(!ovr->device->widthMeters)
+    if(!ovr->device->widthbyMeters)
     {
         jmethodID getDisplayWidth = ovr->Jni->GetStaticMethodID( VrLibClass, "getDisplayWidth", "(Landroid/app/Activity;)F" );
         if ( !getDisplayWidth )
         {
             FAIL( "couldn't get getDisplayWidth" );
         }
-        ovr->device->widthMeters = ovr->Jni->CallStaticFloatMethod(VrLibClass, getDisplayWidth, ovr->Parms.ActivityObject );
+        ovr->device->widthbyMeters = ovr->Jni->CallStaticFloatMethod(VrLibClass, getDisplayWidth, ovr->Parms.ActivityObject );
 
         jmethodID getDisplayHeight = ovr->Jni->GetStaticMethodID( VrLibClass, "getDisplayHeight", "(Landroid/app/Activity;)F" );
         if ( !getDisplayHeight )
         {
             FAIL( "couldn't get getDisplayHeight" );
         }
-         ovr->device->heightMeters = ovr->Jni->CallStaticFloatMethod( VrLibClass, getDisplayHeight, ovr->Parms.ActivityObject );
+         ovr->device->heightbyMeters = ovr->Jni->CallStaticFloatMethod( VrLibClass, getDisplayHeight, ovr->Parms.ActivityObject );
     }
 
 	// Update the dimensions in pixels directly from the window
-	ovr->device->widthPixels = windowSurfaceWidth;
-	ovr->device->heightPixels = windowSurfaceHeight;
+	ovr->device->widthbyPixels = windowSurfaceWidth;
+	ovr->device->heightbyPixels = windowSurfaceHeight;
 
-	LOG( "hmdInfo.lensSeparation = %f", ovr->device->lensSeparation );
-	LOG( "hmdInfo.widthMeters = %f", ovr->device->widthMeters );
-	LOG( "hmdInfo.heightMeters = %f", ovr->device->heightMeters );
-	LOG( "hmdInfo.widthPixels = %i", ovr->device->widthPixels );
-	LOG( "hmdInfo.heightPixels = %i", ovr->device->heightPixels );
-	LOG( "hmdInfo.eyeTextureResolution[0] = %i", ovr->device->eyeTextureResolution[0] );
-	LOG( "hmdInfo.eyeTextureResolution[1] = %i", ovr->device->eyeTextureResolution[1] );
-	LOG( "hmdInfo.eyeTextureFov[0] = %f", ovr->device->eyeTextureFov[0] );
-	LOG( "hmdInfo.eyeTextureFov[1] = %f", ovr->device->eyeTextureFov[1] );
+	LOG( "hmdInfo.lensSeparation = %f", ovr->device->lensDistance );
+	LOG( "hmdInfo.widthMeters = %f", ovr->device->widthbyMeters );
+	LOG( "hmdInfo.heightMeters = %f", ovr->device->heightbyMeters );
+	LOG( "hmdInfo.widthPixels = %i", ovr->device->widthbyPixels );
+	LOG( "hmdInfo.heightPixels = %i", ovr->device->heightbyPixels );
+	LOG( "hmdInfo.eyeTextureResolution[0] = %i", ovr->device->eyeDisplayResolution[0] );
+	LOG( "hmdInfo.eyeTextureResolution[1] = %i", ovr->device->eyeDisplayResolution[1] );
+	LOG( "hmdInfo.eyeTextureFov[0] = %f", ovr->device->eyeDisplayFov[0] );
+	LOG( "hmdInfo.eyeTextureFov[1] = %f", ovr->device->eyeDisplayFov[1] );
 }
 
 int ovr_GetSystemBrightness( ovrMobile * ovr )
@@ -1016,10 +1016,10 @@ ovrMobile * ovr_EnterVrMode( ovrModeParms parms, ovrHmdInfo * returnedHmdInfo )
 	ovr_SetComfortModeEnabled( ovr, comfortMode );
 
 	ovrHmdInfo info = {};
-	info.SuggestedEyeResolution[0] = ovr->device->eyeTextureResolution[0];
-	info.SuggestedEyeResolution[1] = ovr->device->eyeTextureResolution[1];
-	info.SuggestedEyeFov[0] = ovr->device->eyeTextureFov[0];
-	info.SuggestedEyeFov[1] = ovr->device->eyeTextureFov[1];
+	info.SuggestedEyeResolution[0] = ovr->device->eyeDisplayResolution[0];
+	info.SuggestedEyeResolution[1] = ovr->device->eyeDisplayResolution[1];
+	info.SuggestedEyeFov[0] = ovr->device->eyeDisplayFov[0];
+	info.SuggestedEyeFov[1] = ovr->device->eyeDisplayFov[1];
 
 	*returnedHmdInfo = info;
 
