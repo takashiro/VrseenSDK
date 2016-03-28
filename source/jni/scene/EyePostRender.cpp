@@ -46,7 +46,7 @@ void EyePostRender::Init()
 		"}\n"
 	);
 
-	UntexturedScreenSpaceProgram.initShader( identityVertexShaderSource, untexturedFragmentShaderSource );
+    UntexturedScreenSpaceProgram.initShader( VGlShader::getUniformColorVertexShaderSource(), VGlShader::getUntexturedFragmentShaderSource() );
 }
 
 void EyePostRender::Shutdown()

@@ -138,14 +138,14 @@ ModelGlPrograms OvrSceneView::GetDefaultGLPrograms()
 
 	if ( !LoadedPrograms )
 	{
-		ProgVertexColor				.initShader( VertexColorVertexShaderSrc, VertexColorFragmentShaderSrc );
-		ProgSingleTexture			.initShader( SingleTextureVertexShaderSrc, SingleTextureFragmentShaderSrc );
-		ProgLightMapped				.initShader( LightMappedVertexShaderSrc, LightMappedFragmentShaderSrc );
-		ProgReflectionMapped		.initShader( ReflectionMappedVertexShaderSrc, ReflectionMappedFragmentShaderSrc );
-		ProgSkinnedVertexColor		.initShader( VertexColorSkinned1VertexShaderSrc, VertexColorFragmentShaderSrc );
-		ProgSkinnedSingleTexture	.initShader( SingleTextureSkinned1VertexShaderSrc, SingleTextureFragmentShaderSrc );
-		ProgSkinnedLightMapped		.initShader( LightMappedSkinned1VertexShaderSrc, LightMappedFragmentShaderSrc );
-		ProgSkinnedReflectionMapped	.initShader( ReflectionMappedSkinned1VertexShaderSrc, ReflectionMappedFragmentShaderSrc );
+        ProgVertexColor				.initShader( VGlShader::getVertexColorVertexShaderSource(), VGlShader::getVertexColorFragmentShaderSource() );
+        ProgSingleTexture			.initShader( VGlShader::getSingleTextureVertexShaderSource(), VGlShader::getSingleTextureFragmentShaderSource() );
+        ProgLightMapped				.initShader( VGlShader::getLightMappedVertexShaderSource(), VGlShader::getLightMappedFragmentShaderSource() );
+        ProgReflectionMapped		.initShader( VGlShader::getReflectionMappedVertexShaderSource(), VGlShader::getReflectionMappedFragmentShaderSource() );
+        ProgSkinnedVertexColor		.initShader( VGlShader::getVertexColorSkVertexShaderSource(), VGlShader::getVertexColorFragmentShaderSource() );
+        ProgSkinnedSingleTexture	.initShader( VGlShader::getSingleTextureSkVertexShaderSource(), VGlShader::getSingleTextureFragmentShaderSource() );
+        ProgSkinnedLightMapped		.initShader( VGlShader::getLightMappedSkVertexShaderSource(), VGlShader::getLightMappedFragmentShaderSource() );
+        ProgSkinnedReflectionMapped	.initShader( VGlShader::getReflectionMappedSkVertexShaderSource(), VGlShader::getReflectionMappedFragmentShaderSource() );
 		LoadedPrograms = true;
 	}
 
