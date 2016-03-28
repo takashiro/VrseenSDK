@@ -368,13 +368,12 @@ void Java_com_vrseen_nervgear_VrActivity_nativeDestroy(JNIEnv *, jclass)
 {
     // First kill the VrThread.
     vApp->stopVrThread();
-    VKernel* kernel = vApp->kernel();
     // Then delete the VrAppInterface derived class.
     // Last delete AppLocal.
     delete vApp;
 
     vInfo("ExitOnDestroy is true, exiting");
-    kernel->destroy(EXIT_TYPE_EXIT);
+    VKernel::GetInstance()->destroy(EXIT_TYPE_EXIT);
     exit(0);
 }
 

@@ -17,10 +17,6 @@ void * jobject;
 
 extern "C" {
 
-// Returns the version + compile time stamp as a string.
-// Can be called any time from any thread.
-char const *	ovr_GetVersionString();
-
 // Returns global, absolute high-resolution time in seconds. This is the same value
 // as used in sensor messages and on Android also the same as Java's system.nanoTime(),
 // which is what the Choreographer vsync timestamp is based on.
@@ -31,35 +27,8 @@ double			ovr_GetTimeInSeconds();
 // Initialization / Shutdown
 //-----------------------------------------------------------------
 
-// This must be called by a function called directly from a java thread,
-// preferably at JNI_OnLoad().  It will fail if called from a pthread created
-// in native code, or from a NativeActivity due to the class-lookup issue:
-//
-// http://developer.android.com/training/articles/perf-jni.html#faq_FindClass
-//
-// This should not start any threads or consume any significant amount of
-// resources, so hybrid apps aren't penalizing their normal mode of operation
-// by supporting VR.
-void		ovr_OnLoad( JavaVM * JavaVm_ );
-
 // The JavaVM will be saved in this global variable.
 extern JavaVM * VrLibJavaVM;
-
-// For a dedicated VR app this is called from JNI_OnLoad().
-// A hybrid app, however, may want to defer calling it until the first headset
-// plugin event to avoid starting the device manager.
-void		ovr_Init();
-
-// Shutdown without exiting the activity.
-// A dedicated VR app will call ovr_ExitActivity instead, but a hybrid
-// app may call this when leaving VR mode.
-void		ovr_Shutdown();
-
-// VR context
-// To allow multiple Android activities that live in the same address space
-// to cooperatively use the VrApi, each activity needs to maintain its own
-// separate contexts for a lot of the video related systems.
-struct ovrMobile;
 
 
 //-----------------------------------------------------------------
@@ -193,21 +162,6 @@ typedef enum
     WP_PROGRAM_MAX
 } ovrTimeWarpProgram;
 
-typedef enum
-{
-    DEBUG_PERF_OFF,			// data still being collected, just not displayed
-    DEBUG_PERF_RUNNING,		// display continuously changing graph
-    DEBUG_PERF_FROZEN,		// no new data collection, but displayed
-    DEBUG_PERF_MAX
-} ovrTimeWarpDebugPerfMode;
-
-typedef enum
-{
-    DEBUG_VALUE_DRAW,		// start and end times of the draw
-    DEBUG_VALUE_LATENCY,	// seconds from eye buffer orientation time
-    DEBUG_VALUE_MAX
-} ovrTimeWarpDebugPerfValue;
-
 // Note that if overlays are dynamic, they must be triple buffered just
 // like the eye images.
 typedef struct
@@ -280,11 +234,6 @@ typedef struct
 
     // Program-specific tuning values.
     float						ProgramParms[4];
-
-    // Controls the collection and display of timing data.
-    ovrTimeWarpDebugPerfMode	DebugGraphMode;			// FIXME:VRAPI move to local preferences
-    ovrTimeWarpDebugPerfValue	DebugGraphValue;		// FIXME:VRAPI move to local preferences
-
 } ovrTimeWarpParms;
 
 
@@ -322,93 +271,16 @@ eVrApiEventStatus ovr_nextPendingEvent(NervGear::VString& buffer, unsigned int c
 
 }	// extern "C"
 
-//-----------------------------------------------------------------
-// Matrix helper functions
-//-----------------------------------------------------------------
 
-// Returns a 3x3 minor of a 4x4 matrix.
-inline float ovrMatrix4f_Minor( const ovrMatrix4f * m, int r0, int r1, int r2, int c0, int c1, int c2 )
+// Utility function to default initialize the ovrTimeWarpParms.
+
+typedef enum
 {
-    return	m->M[r0][c0] * ( m->M[r1][c1] * m->M[r2][c2] - m->M[r2][c1] * m->M[r1][c2] ) -
-              m->M[r0][c1] * ( m->M[r1][c0] * m->M[r2][c2] - m->M[r2][c0] * m->M[r1][c2] ) +
-              m->M[r0][c2] * ( m->M[r1][c0] * m->M[r2][c1] - m->M[r2][c0] * m->M[r1][c1] );
-}
-
-// Returns the inverse of a 4x4 matrix.
-inline ovrMatrix4f ovrMatrix4f_Inverse( const ovrMatrix4f * m )
-{
-    const float rcpDet = 1.0f / (	m->M[0][0] * ovrMatrix4f_Minor( m, 1, 2, 3, 1, 2, 3 ) -
-                                     m->M[0][1] * ovrMatrix4f_Minor( m, 1, 2, 3, 0, 2, 3 ) +
-                                     m->M[0][2] * ovrMatrix4f_Minor( m, 1, 2, 3, 0, 1, 3 ) -
-                                     m->M[0][3] * ovrMatrix4f_Minor( m, 1, 2, 3, 0, 1, 2 ) );
-    ovrMatrix4f out;
-    out.M[0][0] =  ovrMatrix4f_Minor( m, 1, 2, 3, 1, 2, 3 ) * rcpDet;
-    out.M[0][1] = -ovrMatrix4f_Minor( m, 0, 2, 3, 1, 2, 3 ) * rcpDet;
-    out.M[0][2] =  ovrMatrix4f_Minor( m, 0, 1, 3, 1, 2, 3 ) * rcpDet;
-    out.M[0][3] = -ovrMatrix4f_Minor( m, 0, 1, 2, 1, 2, 3 ) * rcpDet;
-    out.M[1][0] = -ovrMatrix4f_Minor( m, 1, 2, 3, 0, 2, 3 ) * rcpDet;
-    out.M[1][1] =  ovrMatrix4f_Minor( m, 0, 2, 3, 0, 2, 3 ) * rcpDet;
-    out.M[1][2] = -ovrMatrix4f_Minor( m, 0, 1, 3, 0, 2, 3 ) * rcpDet;
-    out.M[1][3] =  ovrMatrix4f_Minor( m, 0, 1, 2, 0, 2, 3 ) * rcpDet;
-    out.M[2][0] =  ovrMatrix4f_Minor( m, 1, 2, 3, 0, 1, 3 ) * rcpDet;
-    out.M[2][1] = -ovrMatrix4f_Minor( m, 0, 2, 3, 0, 1, 3 ) * rcpDet;
-    out.M[2][2] =  ovrMatrix4f_Minor( m, 0, 1, 3, 0, 1, 3 ) * rcpDet;
-    out.M[2][3] = -ovrMatrix4f_Minor( m, 0, 1, 2, 0, 1, 3 ) * rcpDet;
-    out.M[3][0] = -ovrMatrix4f_Minor( m, 1, 2, 3, 0, 1, 2 ) * rcpDet;
-    out.M[3][1] =  ovrMatrix4f_Minor( m, 0, 2, 3, 0, 1, 2 ) * rcpDet;
-    out.M[3][2] = -ovrMatrix4f_Minor( m, 0, 1, 3, 0, 1, 2 ) * rcpDet;
-    out.M[3][3] =  ovrMatrix4f_Minor( m, 0, 1, 2, 0, 1, 2 ) * rcpDet;
-    return out;
-}
-
-
-// Returns the 4x4 rotation matrix for the given quaternion.
-inline ovrMatrix4f ovrMatrix4f_CreateFromQuaternion( const ovrQuatf * q )
-{
-    const float ww = q->w * q->w;
-    const float xx = q->x * q->x;
-    const float yy = q->y * q->y;
-    const float zz = q->z * q->z;
-
-    ovrMatrix4f out;
-    out.M[0][0] = ww + xx - yy - zz;
-    out.M[0][1] = 2 * ( q->x * q->y - q->w * q->z );
-    out.M[0][2] = 2 * ( q->x * q->z + q->w * q->y );
-    out.M[0][3] = 0;
-    out.M[1][0] = 2 * ( q->x * q->y + q->w * q->z );
-    out.M[1][1] = ww - xx + yy - zz;
-    out.M[1][2] = 2 * ( q->y * q->z - q->w * q->x );
-    out.M[1][3] = 0;
-    out.M[2][0] = 2 * ( q->x * q->z - q->w * q->y );
-    out.M[2][1] = 2 * ( q->y * q->z + q->w * q->x );
-    out.M[2][2] = ww - xx - yy + zz;
-    out.M[2][3] = 0;
-    out.M[3][0] = 0;
-    out.M[3][1] = 0;
-    out.M[3][2] = 0;
-    out.M[3][3] = 1;
-    return out;
-}
-
-//-----------------------------------------------------------------
-// ovrTimeWarpParms initialization helper functions
-//-----------------------------------------------------------------
-
-// Convert a standard projection matrix into a TanAngle matrix for
-// the primary time warp surface.
-inline ovrMatrix4f TanAngleMatrixFromProjection( const ovrMatrix4f * projection )
-{
-    // A projection matrix goes from a view point to NDC, or -1 to 1 space.
-    // Scale and bias to convert that to a 0 to 1 space.
-    const ovrMatrix4f tanAngleMatrix =
-            { {
-                      { 0.5f * projection->M[0][0], 0.5f * projection->M[0][1], 0.5f * projection->M[0][2] - 0.5f, 0.5f * projection->M[0][3] },
-                      { 0.5f * projection->M[1][0], 0.5f * projection->M[1][1], 0.5f * projection->M[1][2] - 0.5f, 0.5f * projection->M[1][3] },
-                      { 0.0f, 0.0f, -1.0f, 0.0f },
-                      { 0.0f, 0.0f, -1.0f, 0.0f }
-              } };
-    return tanAngleMatrix;
-}
+    WARP_INIT_DEFAULT,
+    WARP_INIT_BLACK,
+    WARP_INIT_LOADING_ICON,
+    WARP_INIT_MESSAGE
+} ovrWarpInit;
 
 // Trivial version of TanAngleMatrixFromProjection() for a symmetric field of view.
 inline ovrMatrix4f TanAngleMatrixFromFov( const float fovDegrees )
@@ -423,75 +295,6 @@ inline ovrMatrix4f TanAngleMatrixFromFov( const float fovDegrees )
               } };
     return tanAngleMatrix;
 }
-
-// If a simple quad defined as a -1 to 1 XY unit square is transformed to
-// the camera view with the given modelView matrix, it can alternately be
-// drawn as a TimeWarp overlay image to take advantage of the full window
-// resolution, which is usually higher than the eye buffer textures, and
-// avoid resampling both into the eye buffer, and again to the screen.
-// This is used for high quality movie screens and user interface planes.
-//
-// Note that this is NOT an MVP matrix -- the "projection" is handled
-// by the distortion process.
-//
-// The exact composition of the overlay image and the base image is
-// determined by the warpProgram, you may still need to draw the geometry
-// into the eye buffer to punch a hole in the alpha channel to let the
-// overlay/underlay show through.
-//
-// This utility functions converts a model-view matrix that would normally
-// draw a -1 to 1 unit square to the view into a TanAngle matrix for an
-// overlay surface.
-//
-// The resulting z value should be straight ahead distance to the plane.
-// The x and y values will be pre-multiplied by z for projective texturing.
-inline ovrMatrix4f TanAngleMatrixFromUnitSquare( const ovrMatrix4f * modelView )
-{
-    const ovrMatrix4f inv = ovrMatrix4f_Inverse( modelView );
-    ovrMatrix4f m;
-    m.M[0][0] = 0.5f * inv.M[2][0] - 0.5f * ( inv.M[0][0] * inv.M[2][3] - inv.M[0][3] * inv.M[2][0] );
-    m.M[0][1] = 0.5f * inv.M[2][1] - 0.5f * ( inv.M[0][1] * inv.M[2][3] - inv.M[0][3] * inv.M[2][1] );
-    m.M[0][2] = 0.5f * inv.M[2][2] - 0.5f * ( inv.M[0][2] * inv.M[2][3] - inv.M[0][3] * inv.M[2][2] );
-    m.M[0][3] = 0.0f;
-    m.M[1][0] = 0.5f * inv.M[2][0] + 0.5f * ( inv.M[1][0] * inv.M[2][3] - inv.M[1][3] * inv.M[2][0] );
-    m.M[1][1] = 0.5f * inv.M[2][1] + 0.5f * ( inv.M[1][1] * inv.M[2][3] - inv.M[1][3] * inv.M[2][1] );
-    m.M[1][2] = 0.5f * inv.M[2][2] + 0.5f * ( inv.M[1][2] * inv.M[2][3] - inv.M[1][3] * inv.M[2][2] );
-    m.M[1][3] = 0.0f;
-    m.M[2][0] = m.M[3][0] = inv.M[2][0];
-    m.M[2][1] = m.M[3][1] = inv.M[2][1];
-    m.M[2][2] = m.M[3][2] = inv.M[2][2];
-    m.M[2][3] = m.M[3][3] = 0.0f;
-    return m;
-}
-
-// Utility function to calculate external velocity for smooth stick yaw turning.
-// To reduce judder in FPS style experiences when the application framerate is
-// lower than the vsync rate, the rotation from a joypad can be applied to the
-// view space distorted eye vectors before applying the time warp.
-inline ovrMatrix4f CalculateExternalVelocity( const ovrMatrix4f * viewMatrix, const float yawRadiansPerSecond )
-{
-    const float angle = yawRadiansPerSecond * ( -1.0f / 60.0f );
-    const float sinHalfAngle = sinf( angle * 0.5f );
-    const float cosHalfAngle = cosf( angle * 0.5f );
-
-    // Yaw is always going to be around the world Y axis
-    ovrQuatf quat;
-    quat.x = viewMatrix->M[0][1] * sinHalfAngle;
-    quat.y = viewMatrix->M[1][1] * sinHalfAngle;
-    quat.z = viewMatrix->M[2][1] * sinHalfAngle;
-    quat.w = cosHalfAngle;
-    return ovrMatrix4f_CreateFromQuaternion( &quat );
-}
-
-// Utility function to default initialize the ovrTimeWarpParms.
-
-typedef enum
-{
-    WARP_INIT_DEFAULT,
-    WARP_INIT_BLACK,
-    WARP_INIT_LOADING_ICON,
-    WARP_INIT_MESSAGE
-} ovrWarpInit;
 
 inline ovrTimeWarpParms InitTimeWarpParms( const ovrWarpInit init = WARP_INIT_DEFAULT, const unsigned int texId = 0 )
 {
@@ -515,8 +318,6 @@ inline ovrTimeWarpParms InitTimeWarpParms( const ovrWarpInit init = WARP_INIT_DE
     parms.MinimumVsyncs = 1;
     parms.PreScheduleSeconds = 0.014f;
     parms.WarpProgram = WP_SIMPLE;
-    parms.DebugGraphMode = DEBUG_PERF_OFF;
-    parms.DebugGraphValue = DEBUG_VALUE_DRAW;
 
     switch ( init )
     {
@@ -585,8 +386,6 @@ public:
     VDevice* device;
     bool asyncSmooth;
     int msaa;
-    int colorFormat;
-    int depthFormat;
 
     bool isRunning;
 

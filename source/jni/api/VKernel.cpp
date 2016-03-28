@@ -61,28 +61,42 @@ float OvrHmdYaw;
 static VKernel* instance = NULL;
 // Valid for the thread that called ovr_EnterVrMode
 static JNIEnv	*				Jni;
-// Thread from which VR mode was entered.
-static pid_t					EnterTid;
 static  VFrameSmooth* frameSmooth = NULL;
+static jobject  ActivityObject = NULL;
+
+
+// This must be called by a function called directly from a java thread,
+// preferably at JNI_OnLoad().  It will fail if called from a pthread created
+// in native code, or from a NativeActivity due to the class-lookup issue:
+//
+// http://developer.android.com/training/articles/perf-jni.html#faq_FindClass
+//
+// This should not start any threads or consume any significant amount of
+// resources, so hybrid apps aren't penalizing their normal mode of operation
+// by supporting VR.
+void		ovr_OnLoad( JavaVM * JavaVm_ );
+
+// For a dedicated VR app this is called from JNI_OnLoad().
+// A hybrid app, however, may want to defer calling it until the first headset
+// plugin event to avoid starting the device manager.
+void		ovr_Init();
+
+// Shutdown without exiting the activity.
+// A dedicated VR app will call ovr_ExitActivity instead, but a hybrid
+// app may call this when leaving VR mode.
+void		ovr_Shutdown();
+
+// Returns a 3x3 minor of a 4x4 matrix.
+inline float ovrMatrix4f_Minor( const ovrMatrix4f * m, int r0, int r1, int r2, int c0, int c1, int c2 )
+{
+    return	m->M[r0][c0] * ( m->M[r1][c1] * m->M[r2][c2] - m->M[r2][c1] * m->M[r1][c2] ) -
+              m->M[r0][c1] * ( m->M[r1][c0] * m->M[r2][c2] - m->M[r2][c0] * m->M[r1][c2] ) +
+              m->M[r0][c2] * ( m->M[r1][c0] * m->M[r2][c1] - m->M[r2][c0] * m->M[r1][c1] );
+}
+
 
 void ovr_InitSensors()
 {
-#if 0
-    if ( OvrHmdState != NULL )
-	{
-		return;
-	}
-
-	OvrHmdState = new HMDState();
-	if ( !OvrHmdState->InitDevice() )
-	{
-		FAIL( "failed to create HMD device" );
-	}
-
-	OvrHmdState->StartSensor( ovrHmdCap_Orientation|ovrHmdCap_YawCorrection, 0 );
-	OvrHmdState->SetYaw( OvrHmdYaw );
-#else
-
     OvrHmdState = new HMDState();
     if ( OvrHmdState != NULL )
     {
@@ -96,7 +110,6 @@ void ovr_InitSensors()
 
     // Start the sensor running
     OvrHmdState->startSensor( ovrHmdCap_Orientation|ovrHmdCap_YawCorrection, 0 );
-#endif
 }
 
 void ovr_ShutdownSensors()
@@ -542,15 +555,15 @@ void ovr_RegisterHmtReceivers()
     }
     const jmethodID startProximityReceiverId = JniUtils::GetStaticMethodID( Jni, ProximityReceiverClass,
                                                                             "startReceiver", "(Landroid/app/Activity;)V" );
-    Jni->CallStaticVoidMethod( ProximityReceiverClass, startProximityReceiverId, vApp->javaObject() );
+    Jni->CallStaticVoidMethod( ProximityReceiverClass, startProximityReceiverId, ActivityObject );
 
     const jmethodID startDockReceiverId = JniUtils::GetStaticMethodID( Jni, DockReceiverClass,
                                                                        "startDockReceiver", "(Landroid/app/Activity;)V" );
-    Jni->CallStaticVoidMethod( DockReceiverClass, startDockReceiverId, vApp->javaObject() );
+    Jni->CallStaticVoidMethod( DockReceiverClass, startDockReceiverId, ActivityObject );
 
     const jmethodID startConsoleReceiverId = JniUtils::GetStaticMethodID( Jni, ConsoleReceiverClass,
                                                                           "startReceiver", "(Landroid/app/Activity;)V" );
-    Jni->CallStaticVoidMethod( ConsoleReceiverClass, startConsoleReceiverId, vApp->javaObject() );
+    Jni->CallStaticVoidMethod( ConsoleReceiverClass, startConsoleReceiverId, ActivityObject );
 
     registerHMTReceivers = true;
 }
@@ -639,14 +652,14 @@ void UpdateHmdInfo()
         {
             FAIL( "couldn't get getDisplayWidth" );
         }
-        instance->device->widthMeters = Jni->CallStaticFloatMethod(VrLibClass, getDisplayWidth, vApp->javaObject());
+        instance->device->widthMeters = Jni->CallStaticFloatMethod(VrLibClass, getDisplayWidth, ActivityObject);
 
         jmethodID getDisplayHeight = Jni->GetStaticMethodID( VrLibClass, "getDisplayHeight", "(Landroid/app/Activity;)F" );
         if ( !getDisplayHeight )
         {
             FAIL( "couldn't get getDisplayHeight" );
         }
-        instance->device->heightMeters = Jni->CallStaticFloatMethod( VrLibClass, getDisplayHeight, vApp->javaObject() );
+        instance->device->heightMeters = Jni->CallStaticFloatMethod( VrLibClass, getDisplayHeight, ActivityObject );
     }
 
     // Update the dimensions in pixels directly from the window
@@ -675,7 +688,7 @@ void VKernel::run()
 #else
     char const * buildConfig = "RELEASE";
 #endif
-
+    ActivityObject = vApp->javaObject();
     // This returns the existing jni if the caller has already created
     // one, or creates a new one.
     const jint rtn = VrLibJavaVM->AttachCurrentThread( &Jni, 0 );
@@ -686,22 +699,21 @@ void VKernel::run()
 
     // log the application name, version, activity, build, model, etc.
     jmethodID logApplicationNameMethodId = JniUtils::GetStaticMethodID( Jni, VrLibClass, "logApplicationName", "(Landroid/app/Activity;)V" );
-    Jni->CallStaticVoidMethod( VrLibClass, logApplicationNameMethodId, vApp->javaObject() );
+    Jni->CallStaticVoidMethod( VrLibClass, logApplicationNameMethodId, ActivityObject );
 
     jmethodID logApplicationVersionId = JniUtils::GetStaticMethodID( Jni, VrLibClass, "logApplicationVersion", "(Landroid/app/Activity;)V" );
-    Jni->CallStaticVoidMethod( VrLibClass, logApplicationVersionId, vApp->javaObject() );
+    Jni->CallStaticVoidMethod( VrLibClass, logApplicationVersionId, ActivityObject );
 
     jmethodID logApplicationVrType = JniUtils::GetStaticMethodID( Jni, VrLibClass, "logApplicationVrType", "(Landroid/app/Activity;)V" );
-    Jni->CallStaticVoidMethod( VrLibClass, logApplicationVrType, vApp->javaObject() );
+    Jni->CallStaticVoidMethod( VrLibClass, logApplicationVrType, ActivityObject );
 
-    VString currentClassName = JniUtils::GetCurrentActivityName(Jni, vApp->javaObject());
+    VString currentClassName = JniUtils::GetCurrentActivityName(Jni, ActivityObject);
     vInfo("ACTIVITY =" << currentClassName);
 
     vInfo("BUILD =" << VOsBuild::getString(VOsBuild::Display) << buildConfig);
     vInfo("MODEL =" << VOsBuild::getString(VOsBuild::Model));
     LOG( "OVR_VERSION = %s", ovr_GetVersionString() );
 
-    EnterTid = gettid();
     isRunning = true;
 
     ovrSensorState state = ovr_GetSensorStateInternal( ovr_GetTimeInSeconds() );
@@ -734,7 +746,7 @@ void VKernel::run()
     // Start up our vsync callbacks.
     const jmethodID startVsyncId = JniUtils::GetStaticMethodID( Jni, VrLibClass,
                                                                 "startVsync", "(Landroid/app/Activity;)V" );
-    Jni->CallStaticVoidMethod( VrLibClass, startVsyncId, vApp->javaObject() );
+    Jni->CallStaticVoidMethod( VrLibClass, startVsyncId, ActivityObject );
 
     // Register our HMT receivers if they have not already been registered.
     ovr_RegisterHmtReceivers();
@@ -742,7 +754,7 @@ void VKernel::run()
     // Register our receivers
     const jmethodID startReceiversId = JniUtils::GetStaticMethodID( Jni, VrLibClass,
                                                                     "startReceivers", "(Landroid/app/Activity;)V" );
-    Jni->CallStaticVoidMethod( VrLibClass, startReceiversId, vApp->javaObject() );
+    Jni->CallStaticVoidMethod( VrLibClass, startReceiversId, ActivityObject );
 
     getPowerLevelStateID = JniUtils::GetStaticMethodID( Jni, VrLibClass, "getPowerLevelState", "(Landroid/app/Activity;)I" );
     setActivityWindowFullscreenID = JniUtils::GetStaticMethodID( Jni, VrLibClass, "setActivityWindowFullscreen", "(Landroid/app/Activity;)V" );
@@ -764,7 +776,7 @@ void VKernel::run()
 
     if ( setActivityWindowFullscreenID != NULL)
     {
-        Jni->CallStaticVoidMethod( VrLibClass, setActivityWindowFullscreenID, vApp->javaObject() );
+        Jni->CallStaticVoidMethod( VrLibClass, setActivityWindowFullscreenID, ActivityObject );
     }
 
 }
@@ -781,12 +793,12 @@ void VKernel::exit()
 
     // log the application name, version, activity, build, model, etc.
     jmethodID logApplicationNameMethodId = JniUtils::GetStaticMethodID( Jni, VrLibClass, "logApplicationName", "(Landroid/app/Activity;)V" );
-    Jni->CallStaticVoidMethod( VrLibClass, logApplicationNameMethodId, vApp->javaObject() );
+    Jni->CallStaticVoidMethod( VrLibClass, logApplicationNameMethodId, ActivityObject );
 
     jmethodID logApplicationVersionId = JniUtils::GetStaticMethodID( Jni, VrLibClass, "logApplicationVersion", "(Landroid/app/Activity;)V" );
-    Jni->CallStaticVoidMethod( VrLibClass, logApplicationVersionId, vApp->javaObject() );
+    Jni->CallStaticVoidMethod( VrLibClass, logApplicationVersionId, ActivityObject );
 
-    VString currentClassName = JniUtils::GetCurrentActivityName(Jni, vApp->javaObject());
+    VString currentClassName = JniUtils::GetCurrentActivityName(Jni, ActivityObject);
     vInfo("ACTIVITY =" << currentClassName);
 
     delete frameSmooth;
@@ -798,12 +810,12 @@ void VKernel::exit()
     // Stop our vsync callbacks.
     const jmethodID stopVsyncId = JniUtils::GetStaticMethodID( Jni, VrLibClass,
                                                                "stopVsync", "(Landroid/app/Activity;)V" );
-    Jni->CallStaticVoidMethod( VrLibClass, stopVsyncId, vApp->javaObject() );
+    Jni->CallStaticVoidMethod( VrLibClass, stopVsyncId, ActivityObject );
 
     // Unregister our receivers
     const jmethodID stopReceiversId = JniUtils::GetStaticMethodID( Jni, VrLibClass,
                                                                    "stopReceivers", "(Landroid/app/Activity;)V" );
-    Jni->CallStaticVoidMethod( VrLibClass, stopReceiversId, vApp->javaObject() );
+    Jni->CallStaticVoidMethod( VrLibClass, stopReceiversId, ActivityObject );
 }
 
 void VKernel::destroy(eExitType exitType)
@@ -823,7 +835,7 @@ void VKernel::destroy(eExitType exitType)
             LOG("Cleared JNI exception");
         }
         LOG( "Calling activity.finishOnUiThread()" );
-        Jni->CallStaticVoidMethod( VrLibClass, mid, *static_cast< jobject* >( &vApp->javaObject() ) );
+        Jni->CallStaticVoidMethod( VrLibClass, mid, *static_cast< jobject* >( &ActivityObject ) );
         LOG( "Returned from activity.finishOnUiThread()" );
     }
     else if ( exitType == EXIT_TYPE_FINISH_AFFINITY )
@@ -840,7 +852,7 @@ void VKernel::destroy(eExitType exitType)
             LOG("Cleared JNI exception");
         }
         LOG( "Calling activity.finishAffinityOnUiThread()" );
-        Jni->CallStaticVoidMethod( VrLibClass, mid, *static_cast< jobject* >( &vApp->javaObject() ) );
+        Jni->CallStaticVoidMethod( VrLibClass, mid, *static_cast< jobject* >( &ActivityObject ) );
         LOG( "Returned from activity.finishAffinityOnUiThread()" );
     }
     else if ( exitType == EXIT_TYPE_EXIT )
@@ -896,7 +908,7 @@ static  void ovr_HandleHmdEvents()
                 // broadcast to background apps that mount has been handled
                 if ( notifyMountHandledID != NULL )
                 {
-                    Jni->CallStaticVoidMethod( VrLibClass, notifyMountHandledID, vApp->javaObject());
+                    Jni->CallStaticVoidMethod( VrLibClass, notifyMountHandledID, ActivityObject);
                 }
 
                 NervGear::VString reorientMessage;
