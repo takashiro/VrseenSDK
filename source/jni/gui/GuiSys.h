@@ -14,7 +14,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #define OVR_OvrGuiSys_h
 
 #include "VRMenuObject.h"
-#include "../KeyState.h"
+#include "KeyState.h"
 
 NV_NAMESPACE_BEGIN
 

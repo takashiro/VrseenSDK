@@ -5,8 +5,6 @@
 
 #include "VString.h"
 
-struct ovrMobile;
-
 NV_NAMESPACE_BEGIN
 
 class VrLocale

@@ -26,7 +26,7 @@ VSysFile::VSysFile(VFile *pfile)
 //根据路径打开一个文件
 bool VSysFile::open(const VString& path, int flags)
 {
-    m_file = *VOpenFile(path, flags);
+    m_file = VOpenFile(path, flags);
     if ((!m_file) || (!m_file->isOpened())) {
         return false;
     }

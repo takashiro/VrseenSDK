@@ -46,9 +46,6 @@ VrScene::~VrScene() {
 
 void VrScene::configureVrMode( ovrModeParms & modeParms )
 {
-	modeParms.CpuLevel = 2;
-	modeParms.GpuLevel = 2;
-
 	// Always use 2x MSAA for now
 	vApp->vrParms().multisamples = 2;
 }

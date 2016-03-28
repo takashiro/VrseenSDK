@@ -1,12 +1,49 @@
 #pragma once
 
-#include "vgltypedefine.h"
+#include <string.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <unistd.h>
+
+#include "android/VOsBuild.h"
+#include "android/LogUtils.h"
+#include "VLog.h"
+#include "vglobal.h"
+
+#define __gl2_h_
+
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+#ifdef __gl2_h_
+#include <GLES3/gl3.h>
+#include <GLES3/gl3ext.h>
+static const int GL_ES_VERSION = 3;
+#else
+#include <GLES2/gl2.h>
+static const int GL_ES_VERSION = 2;
+#endif
+#include <GLES2/gl2ext.h>
+
+#define EGL_OPENGL_ES3_BIT_KHR      0x0040
 
 NV_NAMESPACE_BEGIN
 
 class VGlOperation
 {
- public:
+public:
+
+    enum GpuType
+    {
+        GPU_TYPE_ADRENO					= 0x1000,
+        GPU_TYPE_ADRENO_330				= 0x1001,
+        GPU_TYPE_ADRENO_420				= 0x1002,
+        GPU_TYPE_MALI					= 0x2000,
+        GPU_TYPE_MALI_T760				= 0x2100,
+        GPU_TYPE_MALI_T760_EXYNOS_5433	= 0x2101,
+        GPU_TYPE_MALI_T760_EXYNOS_7420	= 0x2102,
+        GPU_TYPE_UNKNOWN				= 0xFFFF
+    };
+
     enum invalidateTarget_t
     {
         INV_DEFAULT,
@@ -41,6 +78,13 @@ class VGlOperation
     };
 
 
+    VGlOperation()
+    {
+        extensions = reinterpret_cast<const char *>(glGetString(GL_EXTENSIONS));
+        if (NULL == extensions) {
+            LOG( "glGetString( GL_EXTENSIONS ) returned NULL" );
+        }
+    }
 
     GpuType EglGetGpuType();
     GpuType EglGetGpuTypeLocal();
@@ -53,66 +97,72 @@ class VGlOperation
     void GL_Finish();
     void GL_Flush();
     EGLint GL_FlushSync(int timeout);
-    void GL_InvalidateFramebuffer(const invalidateTarget_t isFBO, const bool colorBuffer, const bool depthBuffer);
+    void GL_InvalidateFramebuffer(const invalidateTarget_t isFBO,
+                                  const bool colorBuffer,
+                                  const bool depthBuffer);
     void LogStringWords(const char *allExtensions);
     void *GetExtensionProc( const char * name );
     void DumpEglConfigs(const EGLDisplay display);
-    EGLConfig ChooseColorConfig( const EGLDisplay display, const int redBits,
-            const int greeBits, const int blueBits, const int depthBits, const int samples, const bool pbuffer );
-    eglSetup_t	EglSetup( const EGLContext shareContext,
-            const int requestedGlEsVersion,
-            const int redBits, const int greenBits, const int blueBits,
-            const int depthBits, const int multisamples,
-            const GLuint contextPriority );
+    EGLConfig ChooseColorConfig( const EGLDisplay display,
+                                 const int redBits,
+                                 const int greeBits,
+                                 const int blueBits,
+                                 const int depthBits,
+                                 const int samples,
+                                 const bool pbuffer );
+    void EglSetup( const EGLContext shareContext,
+                   const int requestedGlEsVersion,
+                   const int redBits, const int greenBits, const int blueBits,
+                   const int depthBits, const int multisamples,
+                   const GLuint contextPriority );
+    void	EglShutdown();
 
-    void	EglShutdown( eglSetup_t & eglr );
+    void glRenderbufferStorageMultisampleIMG(GLenum target,
+                                             GLsizei samples,
+                                             GLenum internalformat,
+                                             GLsizei width,
+                                             GLsizei height);
+    void glFramebufferTexture2DMultisampleIMG(GLenum target,
+                                              GLenum attachment,
+                                              GLenum textarget,
+                                              GLuint texture,
+                                              GLint level,
+                                              GLsizei samples);
+    EGLSyncKHR eglCreateSyncKHR(EGLDisplay dpy, EGLenum type, const EGLint *attrib_list);
+    EGLBoolean eglDestroySyncKHR(EGLDisplay dpy, EGLSyncKHR sync);
+    EGLint eglClientWaitSyncKHR(EGLDisplay dpy, EGLSyncKHR sync, EGLint flags, EGLTimeKHR timeout);
+    void glBindVertexArrayOES(GLuint array);
+    void glDeleteVertexArraysOES(GLsizei n, const GLuint *arrays);
+    void glGenVertexArraysOES(GLsizei n, GLuint *arrays);
+    void glStartTilingQCOM(GLuint x, GLuint y, GLuint width, GLuint height, GLbitfield preserveMask);
+    void glEndTilingQCOM(GLbitfield preserveMask);
+    void glGenQueriesEXT(GLsizei n, GLuint *ids);
+    void glDeleteQueriesEXT(GLsizei n, const GLuint *ids);
+    void glBeginQueryEXT(GLenum target, GLuint id);
+    void glEndQueryEXT(GLenum target);
+    void glQueryCounterEXT(GLuint id, GLenum target);
+    void glGetQueryObjectivEXT(GLuint id, GLenum pname, GLint *params);
+    void glGetQueryObjectui64vEXT(GLuint id, GLenum pname, GLuint64 *params);
+    void glGetInteger64v(GLenum pname, GLint64 *params);
+    void glBlitFramebuffer(GLint srcX0,
+                           GLint srcY0,
+                           GLint srcX1,
+                           GLint srcY1,
+                           GLint dstX0,
+                           GLint dstY0,
+                           GLint dstX1,
+                           GLint dstY1,
+                           GLbitfield mask,
+                           GLenum filter);
+    void  glInvalidateFramebuffer(GLenum target, GLsizei numAttachments, const GLenum* attachments);
 
-    static bool HasEXT_sRGB_texture_decode;
-    static bool EXT_disjoint_timer_query;
-    static bool EXT_discard_framebuffer;
-    static bool EXT_texture_filter_anisotropic;
-    static bool IMG_multisampled_render_to_texture;
-    static bool OES_vertex_array_object;
-    static bool QCOM_tiled_rendering;
-    static const int EGL_PROTECTED_CONTENT_EXT;
 
-   static PFNGLDISCARDFRAMEBUFFEREXTPROC glDiscardFramebufferEXT_;
-
-   static PFNGLRENDERBUFFERSTORAGEMULTISAMPLEIMG glRenderbufferStorageMultisampleIMG_;
-   static PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEIMG glFramebufferTexture2DMultisampleIMG_;
-
-   static PFNEGLCREATESYNCKHRPROC eglCreateSyncKHR_;
-   static PFNEGLDESTROYSYNCKHRPROC eglDestroySyncKHR_;
-   static PFNEGLCLIENTWAITSYNCKHRPROC eglClientWaitSyncKHR_;
-   static PFNEGLSIGNALSYNCKHRPROC eglSignalSyncKHR_;
-   static PFNEGLGETSYNCATTRIBKHRPROC eglGetSyncAttribKHR_;
-
-   static PFNGLBINDVERTEXARRAYOESPROC	glBindVertexArrayOES_;
-   static PFNGLDELETEVERTEXARRAYSOESPROC	glDeleteVertexArraysOES_;
-   static PFNGLGENVERTEXARRAYSOESPROC	glGenVertexArraysOES_;
-   static PFNGLISVERTEXARRAYOESPROC	glIsVertexArrayOES_;
-
-   static PFNGLSTARTTILINGQCOMPROC	glStartTilingQCOM_;
-   static PFNGLENDTILINGQCOMPROC		glEndTilingQCOM_;
-
-   static PFNGLGENQUERIESEXTPROC glGenQueriesEXT_;
-   static PFNGLDELETEQUERIESEXTPROC glDeleteQueriesEXT_;
-   static PFNGLISQUERYEXTPROC glIsQueryEXT_;
-   static PFNGLBEGINQUERYEXTPROC glBeginQueryEXT_;
-   static PFNGLENDQUERYEXTPROC glEndQueryEXT_;
-   static PFNGLQUERYCOUNTEREXTPROC glQueryCounterEXT_;
-   static PFNGLGETQUERYIVEXTPROC glGetQueryivEXT_;
-   static PFNGLGETQUERYOBJECTIVEXTPROC glGetQueryObjectivEXT_;
-   static PFNGLGETQUERYOBJECTUIVEXTPROC glGetQueryObjectuivEXT_;
-   static PFNGLGETQUERYOBJECTI64VEXTPROC glGetQueryObjecti64vEXT_;
-   static PFNGLGETQUERYOBJECTUI64VEXTPROC glGetQueryObjectui64vEXT_;
-   static PFNGLGETINTEGER64VPROC glGetInteger64v_;
-
-   static PFNGLBLITFRAMEBUFFER_				glBlitFramebuffer_;
-   static PFNGLRENDERBUFFERSTORAGEMULTISAMPLE_	glRenderbufferStorageMultisample_;
-   static PFNGLINVALIDATEFRAMEBUFFER_			glInvalidateFramebuffer_;
-   static PFNGLMAPBUFFERRANGE_					glMapBufferRange_;
-   static PFNGLUNMAPBUFFEROESPROC_				glUnmapBuffer_;
-
+    int	glEsVersion;
+    GpuType	gpuType;
+    EGLDisplay display;
+    EGLSurface pbufferSurface;
+    EGLConfig config;
+    EGLContext context;
+    const char * extensions;
 };
 NV_NAMESPACE_END

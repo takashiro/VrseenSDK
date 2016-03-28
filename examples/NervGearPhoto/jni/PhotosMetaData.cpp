@@ -12,7 +12,7 @@ Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
 #include "PhotosMetaData.h"
 
 #include <Android/LogUtils.h>
-#include <Alg.h>
+#include <VAlgorithm.h>
 #include <VPath.h>
 
 

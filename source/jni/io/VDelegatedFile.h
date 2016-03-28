@@ -8,11 +8,12 @@ NV_NAMESPACE_BEGIN
 class VDelegatedFile : public VFile
 {
 protected:
-    Ptr<VFile> m_file;
+    VFile *m_file;
 
     VDelegatedFile() : m_file(0) { }
 public:
     VDelegatedFile(VFile *pfile) : m_file(pfile) { }
+    ~VDelegatedFile() { delete m_file; }
 
     const std::string filePath() override { return m_file->filePath(); }
     bool isOpened() override { return m_file && m_file->isOpened(); }

@@ -16,14 +16,12 @@ struct VMainActivity::Private
     jobject activityObject;
     jclass activityClass;
 
-    TalkToJavaInterface	*interface;
     JavaVM *javaVM;
     pthread_t threadHandle;
     VEventLoop eventLoop;
 
     Private()
-        : interface(NULL)
-        , javaVM(NULL)
+        : javaVM(nullptr)
         , threadHandle(0)
         , eventLoop(1000)
     {
@@ -78,7 +76,9 @@ struct VMainActivity::Private
             Jni->PushLocalFrame(100);
 
             // Let whoever initialized us do what they want.
-            interface->TtjCommand(Jni, event);
+            if (event.isExecutable()) {
+                event.execute();
+            }
 
             // If we don't clean up exceptions now, later
             // calls may fail.
@@ -288,10 +288,9 @@ jobject VMainActivity::javaObject() const
     return d->activityObject;
 }
 
-void VMainActivity::Init(JavaVM *javaVM, TalkToJavaInterface *interface)
+void VMainActivity::Init(JavaVM *javaVM)
 {
     d->javaVM = javaVM;
-    d->interface = interface;
 
     auto ThreadStarter = [](void *d)->void *
     {

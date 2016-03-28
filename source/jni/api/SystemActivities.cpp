@@ -1,21 +1,7 @@
-/************************************************************************************
-
-Filename    :   SystemActivities.cpp
-Content     :   Event handling for system activities
-Created     :   February 23, 2015
-Authors     :   Jonathan E. Wright
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
-#include "OVR.h"
-#include "Android/LogUtils.h"
-#include "Android/JniUtils.h"
-#include "api/VrApi.h"
-#include "api/VrApi_Android.h"
 
 #include "SystemActivities.h"
+#include "android/LogUtils.h"
+#include "android/JniUtils.h"
 
 // System Activities Events -- Why They Exist
 //

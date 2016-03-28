@@ -19,7 +19,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include <jni.h>
 #include <android/keycodes.h>
 
-#include <Alg.h>
+#include <VAlgorithm.h>
 #include <VPath.h>
 #include <VApkFile.h>
 
@@ -88,7 +88,7 @@ jobject Java_com_vrseen_nervgear_video_MainActivity_nativePrepareNewVideo(JNIEnv
 
 	result.wait();
     VEvent event = result.next();
-	jobject	texobj;
+	jobject	texobj = nullptr;
     if (event.name == "surfaceTexture") {
         texobj = static_cast<jobject>(event.data.toPointer());
     }
@@ -403,13 +403,6 @@ void Oculus360Videos::configureVrMode( ovrModeParms & modeParms )
 	// We need very little CPU for pano browsing, but a fair amount of GPU.
 	// The CPU clock should ramp up above the minimum when necessary.
 	LOG( "ConfigureClocks: Oculus360Videos only needs minimal clocks" );
-	modeParms.CpuLevel = 1;
-	modeParms.GpuLevel = 0;
-
-	// When the app is throttled, go to the platform UI and display a
-	// dismissable warning. On return to the app, force 30hz timewarp.
-	modeParms.AllowPowerSave = true;
-
 	// All geometry is blended, so save power with no MSAA
 	vApp->vrParms().multisamples = 1;
 }
@@ -648,7 +641,7 @@ VR4Matrixf Oculus360Videos::drawEyeView( const int eye, const float fovDegrees )
 
 float Fade( double now, double start, double length )
 {
-	return NervGear::Alg::Clamp( ( ( now - start ) / length ), 0.0, 1.0 );
+	return NervGear::VAlgorithm::Clamp( ( ( now - start ) / length ), 0.0, 1.0 );
 }
 
 bool Oculus360Videos::IsVideoPlaying() const

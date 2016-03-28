@@ -9,7 +9,7 @@ public:
 	static void			OneTimeShutdown();
 
     static VString		GetExternalCacheDirectory( App *app );  	// returns path to app specific writable directory
-	static bool 		CreateVideoThumbnail( App *app, const char *videoFilePath, const char *outputFilePath, const int width, const int height );
+    static bool 		CreateVideoThumbnail(const NervGear::VString &videoFilePath, const NervGear::VString &outputFilePath, const int width, const int height );
 	static bool			CheckForMovieResume( App *app, const char * movieName );
 
 	static bool			IsPlaying( App *app );

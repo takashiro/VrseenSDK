@@ -3,7 +3,6 @@
 #include "vglobal.h"
 
 #include "VrApi.h"
-#include "VrApi_Android.h"
 #include "KeyState.h"
 #include "EyeBuffers.h"
 #include "Input.h"
@@ -63,11 +62,6 @@ public:
     const VStandardPath &storagePaths();
     VSoundManager &soundMgr();
 
-    int wifiSignalLevel() const;
-    eWifiState wifiState() const;
-    int cellularSignalLevel() const;
-    eCellularState cellularState() const;
-
     bool isAsynchronousTimeWarp() const;
     bool hasHeadphones() const;
     bool framebufferIsSrgb() const;
@@ -92,19 +86,9 @@ public:
     void setPopupScale( float const s );
     float popupScale() const;
 
-    int cpuLevel() const;
-    int gpuLevel() const;
-
-    bool isPowerSaveActive() const;
-
-    int batteryLevel() const;
-    eBatteryStatus batteryStatus() const;
-
     bool isGuiOpen() const;
 
     KeyState &backKeyState();
-
-    ovrMobile *getOvrMobile();
 
     void setShowVolumePopup( bool const show );
     bool showVolumePopup() const;

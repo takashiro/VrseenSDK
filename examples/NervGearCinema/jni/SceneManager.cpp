@@ -1,5 +1,4 @@
 #include "api/VrApi.h"
-#include "api/VrApi_Helpers.h"
 #include "api/VGlOperation.h"
 
 #include "CinemaApp.h"
@@ -375,7 +374,7 @@ VR4Matrixf SceneManager::BoundsScreenMatrix( const VBoxf & bounds, const float m
     const V3Vectf size = bounds.b[1] - bounds.b[0];
     const V3Vectf center = bounds.b[0] + size * 0.5f;
 	const float	screenHeight = size.y;
-	const float screenWidth = NervGear::Alg::Max( size.x, size.z );
+    const float screenWidth = std::max( size.x, size.z );
 	float widthScale;
 	float heightScale;
 	float aspect = ( movieAspect == 0.0f ) ? 1.0f : movieAspect;
@@ -479,7 +478,7 @@ void SceneManager::ClampScreenToView()
 	{	// screen is a bit above -PI and view is a bit below PI
 		deltaAngles.y += 2 * M_PI;
 	}
-	deltaAngles.y = NervGear::Alg::Clamp( deltaAngles.y, -( float )M_PI * 0.20f, ( float )M_PI * 0.20f );
+	deltaAngles.y = NervGear::VAlgorithm::Clamp( deltaAngles.y, -( float )M_PI * 0.20f, ( float )M_PI * 0.20f );
 
 	if ( deltaAngles.x > M_PI )
 	{	// screen is a bit under PI and view is a bit above -PI
@@ -489,7 +488,7 @@ void SceneManager::ClampScreenToView()
 	{	// screen is a bit above -PI and view is a bit below PI
 		deltaAngles.x += 2 * M_PI;
 	}
-	deltaAngles.x = NervGear::Alg::Clamp( deltaAngles.x, -( float )M_PI * 0.125f, ( float )M_PI * 0.125f );
+	deltaAngles.x = NervGear::VAlgorithm::Clamp( deltaAngles.x, -( float )M_PI * 0.125f, ( float )M_PI * 0.125f );
 
 	SetFreeScreenAngles( viewAngles + deltaAngles );
 }
@@ -561,7 +560,7 @@ GLuint SceneManager::BuildScreenVignetteTexture( const int horizontalTile ) cons
 int SceneManager::BottomMipLevel( const int width, const int height ) const
 {
 	int bottomMipLevel = 0;
-	int dimension = NervGear::Alg::Max( width, height );
+    int dimension = std::max( width, height );
 
 	while( dimension > 1 )
 	{

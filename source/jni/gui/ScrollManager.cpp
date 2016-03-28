@@ -11,7 +11,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 *************************************************************************************/
 
 #include "ScrollManager.h"
-#include "Alg.h"
+#include "VAlgorithm.h"
 #include "api/Vsync.h"
 #include "Input.h"
 
@@ -158,7 +158,7 @@ void OvrScrollManager::frame( float deltaSeconds, unsigned int controllerState )
 			{
 				m_velocity = 0.0f;
 				m_currentScrollState = SMOOTH_SCROLL;
-				m_position = Alg::Clamp( m_position, 0.0f, m_maxPosition );
+				m_position = VAlgorithm::Clamp( m_position, 0.0f, m_maxPosition );
 			}
 
 			else
@@ -256,16 +256,16 @@ void OvrScrollManager::frame( float deltaSeconds, unsigned int controllerState )
 		{
 			if( m_velocity > 0.0f )
 			{
-				m_position = Alg::Clamp( m_position, -m_scrollBehavior.padding, m_maxPosition );
+				m_position = VAlgorithm::Clamp( m_position, -m_scrollBehavior.padding, m_maxPosition );
 			}
 			else
 			{
-				m_position = Alg::Clamp( m_position, 0.0f, m_maxPosition + m_scrollBehavior.padding );
+				m_position = VAlgorithm::Clamp( m_position, 0.0f, m_maxPosition + m_scrollBehavior.padding );
 			}
 		}
 		else
 		{
-			m_position = Alg::Clamp( m_position, -m_scrollBehavior.padding, m_maxPosition + m_scrollBehavior.padding );
+			m_position = VAlgorithm::Clamp( m_position, -m_scrollBehavior.padding, m_maxPosition + m_scrollBehavior.padding );
 		}
 	}
 }

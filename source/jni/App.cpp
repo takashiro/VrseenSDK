@@ -14,7 +14,7 @@
 #include "android/JniUtils.h"
 #include "android/VOsBuild.h"
 
-#include "Alg.h"
+#include "VAlgorithm.h"
 #include "BitmapFont.h"
 #include "VConsole.h"
 #include "DebugLines.h"
@@ -25,15 +25,12 @@
 #include "GuiSys.h"
 #include "GuiSysLocal.h"		// necessary to instantiate the gui system
 #include "ModelView.h"
-#include "PointTracker.h"
 #include "SurfaceTexture.h"
 #include "System.h"
 #include "TypesafeNumber.h"
 #include "VBasicmath.h"
 #include "VolumePopup.h"
 #include "VrApi.h"
-#include "VrApi_Android.h"
-#include "VrApi_Helpers.h"
 #include "VrLocale.h"
 #include "VRMenuMgr.h"
 #include "VUserSettings.h"
@@ -46,8 +43,57 @@
 #include "VStandardPath.h"
 
 //#define TEST_TIMEWARP_WATCHDOG
+#define EGL_PROTECTED_CONTENT_EXT 0x32c0
 
 NV_NAMESPACE_BEGIN
+
+class VPointTracker
+{
+public:
+    static const int DEFAULT_FRAME_RATE = 60;
+
+    VPointTracker( float const rate = 0.1f ) :
+        LastFrameTime( 0.0 ),
+        Rate( 0.1f ),
+        CurPosition( 0.0f ),
+        FirstFrame( true )
+    {
+    }
+
+    void        Update( double const curFrameTime, V3Vectf const & newPos )
+    {
+        double frameDelta = curFrameTime - LastFrameTime;
+        LastFrameTime = curFrameTime;
+        float const rateScale = static_cast< float >( frameDelta / ( 1.0 / static_cast< double >( DEFAULT_FRAME_RATE ) ) );
+        float const rate = Rate * rateScale;
+        if ( FirstFrame )
+        {
+            CurPosition = newPos;
+        }
+        else
+        {
+            V3Vectf delta = ( newPos - CurPosition ) * rate;
+            if ( delta.Length() < 0.001f )
+            {
+                // don't allow a denormal to propagate from multiplications of very small numbers
+                delta = V3Vectf( 0.0f );
+            }
+            CurPosition += delta;
+        }
+        FirstFrame = false;
+    }
+
+    void                Reset() { FirstFrame = true; }
+    void                SetRate( float const r ) { Rate = r; }
+
+    V3Vectf const & GetCurPosition() const { return CurPosition; }
+
+private:
+    double      LastFrameTime;
+    float       Rate;
+    V3Vectf CurPosition;
+    bool        FirstFrame;
+};
 
 static const char * activityClassName = "com/vrseen/nervgear/VrActivity";
 
@@ -129,21 +175,21 @@ extern void DebugMenuHierarchy(void * appPtr, const char * cmd);
 extern void DebugMenuPoses(void * appPtr, const char * cmd);
 extern void ShowFPS(void * appPtr, const char * cmd);
 
-static EyeParms DefaultVrParmsForRenderer(const eglSetup_t & eglr)
+static EyeParms DefaultVrParmsForRenderer(const VGlOperation & glOperation)
 {
     EyeParms vrParms;
 
     vrParms.resolution = 1024;
-    vrParms.multisamples = (eglr.gpuType == GpuType::GPU_TYPE_ADRENO_330) ? 2 : 4;
+    vrParms.multisamples = (glOperation.gpuType == VGlOperation::GPU_TYPE_ADRENO_330) ? 2 : 4;
     vrParms.colorFormat = COLOR_8888;
     vrParms.depthFormat = DEPTH_24;
 
     return vrParms;
 }
 
-static bool ChromaticAberrationCorrection(const eglSetup_t & eglr)
+static bool ChromaticAberrationCorrection(const VGlOperation & glOperation)
 {
-    return (eglr.gpuType & GpuType::GPU_TYPE_ADRENO) != 0 && (eglr.gpuType >= GpuType::GPU_TYPE_ADRENO_420);
+    return (glOperation.gpuType & VGlOperation::GPU_TYPE_ADRENO) != 0 && (glOperation.gpuType >= VGlOperation::GPU_TYPE_ADRENO_420);
 }
 
 static const char* vertexShaderSource =
@@ -163,7 +209,7 @@ static const char* vertexShaderSource =
         "}\n";
 
 
-struct App::Private : public TalkToJavaInterface
+struct App::Private
 {
     App *self;
     // Primary apps will exit(0) when they get an onDestroy() so we
@@ -180,7 +226,7 @@ struct App::Private : public TalkToJavaInterface
     ovrMobile *		OvrMobile;
 
     // Egl context and surface for rendering
-    eglSetup_t		eglr;
+    VGlOperation  glOperation;
 
     // Handles creating, destroying, and re-configuring the buffers
     // for drawing the eye views, which might be in different texture
@@ -270,9 +316,6 @@ struct App::Private : public TalkToJavaInterface
     VThread *renderThread;
     int				vrThreadTid;		// linux tid
 
-    int				batteryLevel;		// charge level of the batter as reported from Java
-    eBatteryStatus	batteryStatus;		// battery status as reported from Java
-
     bool			showFPS;			// true to show FPS on screen
     bool			showVolumePopup;	// true to show volume popup when volume changes
 
@@ -282,8 +325,8 @@ struct App::Private : public TalkToJavaInterface
     V4Vectf		infoTextColor;		// color of info text
     V3Vectf		infoTextOffset;		// offset from center of screen in view space
     long long		infoTextEndFrame;	// time to stop showing text
-    OvrPointTracker	infoTextPointTracker;	// smoothly tracks to text ideal location
-    OvrPointTracker	fpsPointTracker;		// smoothly tracks to ideal FPS text location
+    VPointTracker	infoTextPointTracker;	// smoothly tracks to text ideal location
+    VPointTracker	fpsPointTracker;		// smoothly tracks to ideal FPS text location
 
     float 			touchpadTimer;
     V2Vectf		touchOrigin;
@@ -350,8 +393,6 @@ struct App::Private : public TalkToJavaInterface
         , framebufferIsProtected(false)
         , renderMonoMode(false)
         , vrThreadTid(0)
-        , batteryLevel(0)
-        , batteryStatus(BATTERY_STATUS_UNKNOWN)
         , showFPS(false)
         , showVolumePopup(true)
         , infoTextColor(1.0f)
@@ -450,11 +491,11 @@ struct App::Private : public TalkToJavaInterface
         // always reload the dev config on a resume
         JniUtils::LoadDevConfig(true);
 
-        VGlOperation glOperation;
+
         // Make sure the window surface is current, which it won't be
         // if we were previously in async mode
         // (Not needed now?)
-        if (eglMakeCurrent(eglr.display, windowSurface, windowSurface, eglr.context) == EGL_FALSE)
+        if (eglMakeCurrent(glOperation.display, windowSurface, windowSurface, glOperation.context) == EGL_FALSE)
         {
             vFatal("eglMakeCurrent failed:" << glOperation.EglErrorString());
         }
@@ -476,12 +517,12 @@ struct App::Private : public TalkToJavaInterface
 
     void initGlObjects()
     {
-        vrParms = DefaultVrParmsForRenderer(eglr);
+        vrParms = DefaultVrParmsForRenderer(glOperation);
 
-        swapParms.WarpProgram = ChromaticAberrationCorrection(eglr) ? WP_CHROMATIC : WP_SIMPLE;
+        swapParms.WarpProgram = ChromaticAberrationCorrection(glOperation) ? WP_CHROMATIC : WP_SIMPLE;
 
         // Let glUtils look up extensions
-        VGlOperation glOperation;
+
         glOperation.GL_FindExtensions();
 
         externalTextureProgram2.initShader( vertexShaderSource, externalFragmentShaderSource );
@@ -842,24 +883,24 @@ struct App::Private : public TalkToJavaInterface
             // Ask for TrustZone rendering support
             if (appInterface->wantProtectedFramebuffer())
             {
-                attribs[numAttribs++] = VGlOperation::EGL_PROTECTED_CONTENT_EXT;
+                attribs[numAttribs++] = EGL_PROTECTED_CONTENT_EXT;
                 attribs[numAttribs++] = EGL_TRUE;
             }
             attribs[numAttribs++] = EGL_NONE;
 
             // Android doesn't let the non-standard extensions show up in the
             // extension string, so we need to try it blind.
-            windowSurface = eglCreateWindowSurface(eglr.display, eglr.config,
+            windowSurface = eglCreateWindowSurface(glOperation.display, glOperation.config,
                     nativeWindow, attribs);
 
-            VGlOperation glOperation;
+
             if (windowSurface == EGL_NO_SURFACE)
             {
                 const EGLint attribs2[] =
                 {
                     EGL_NONE
                 };
-                windowSurface = eglCreateWindowSurface(eglr.display, eglr.config,
+                windowSurface = eglCreateWindowSurface(glOperation.display, glOperation.config,
                         nativeWindow, attribs2);
                 if (windowSurface == EGL_NO_SURFACE)
                 {
@@ -874,7 +915,7 @@ struct App::Private : public TalkToJavaInterface
                 framebufferIsProtected = appInterface->wantProtectedFramebuffer();
             }
 
-            if (eglMakeCurrent(eglr.display, windowSurface, windowSurface, eglr.context) == EGL_FALSE)
+            if (eglMakeCurrent(glOperation.display, windowSurface, windowSurface, glOperation.context) == EGL_FALSE)
             {
                 vFatal("eglMakeCurrent failed:" << glOperation.EglErrorString());
             }
@@ -899,15 +940,15 @@ struct App::Private : public TalkToJavaInterface
             appInterface->onWindowDestroyed();
 
             // Handle it ourselves.
-            if (eglMakeCurrent(eglr.display, eglr.pbufferSurface, eglr.pbufferSurface,
-                    eglr.context) == EGL_FALSE)
+            if (eglMakeCurrent(glOperation.display, glOperation.pbufferSurface, glOperation.pbufferSurface,
+                    glOperation.context) == EGL_FALSE)
             {
                 vFatal("RC_SURFACE_DESTROYED: eglMakeCurrent pbuffer failed");
             }
 
             if (windowSurface != EGL_NO_SURFACE)
             {
-                eglDestroySurface(eglr.display, windowSurface);
+                eglDestroySurface(glOperation.display, windowSurface);
                 windowSurface = EGL_NO_SURFACE;
             }
             if (nativeWindow != nullptr)
@@ -1002,7 +1043,7 @@ struct App::Private : public TalkToJavaInterface
 
     void startRendering()
     {
-        VGlOperation glOperation;
+
         // Set the name that will show up in systrace
         pthread_setname_np(pthread_self(), "NervGear::VrThread");
 
@@ -1026,13 +1067,13 @@ struct App::Private : public TalkToJavaInterface
 
             // Set up another thread for making longer-running java calls
             // to avoid hitches.
-            activity->Init(javaVM, this);
+            activity->Init(javaVM);
 
             // Create a new context and pbuffer surface
             const int windowDepth = 0;
             const int windowSamples = 0;
             const GLuint contextPriority = EGL_CONTEXT_PRIORITY_MEDIUM_IMG;
-            eglr = glOperation.EglSetup(EGL_NO_CONTEXT, GL_ES_VERSION,	// no share context,
+            glOperation.EglSetup(EGL_NO_CONTEXT, GL_ES_VERSION,	// no share context,
                     8,8,8, windowDepth, windowSamples, // r g b
                     contextPriority);
 
@@ -1156,7 +1197,7 @@ struct App::Private : public TalkToJavaInterface
             {
                 if (ovr_GetTimeInSeconds() >= errorMessageEndTime)
                 {
-                    ovr_ReturnToHome(OvrMobile);
+                    ovr_ExitActivity(OvrMobile, EXIT_TYPE_FINISH_AFFINITY);
                 }
                 else
                 {
@@ -1181,13 +1222,6 @@ struct App::Private : public TalkToJavaInterface
 
                 appInterface->init(launchIntentFromPackage, launchIntentJSON, launchIntentURI);
                 self->oneTimeInitCalled = true;
-            }
-
-            // check updated battery status
-            {
-                batteryState_t state = ovr_GetBatteryState();
-                batteryStatus = static_cast< eBatteryStatus >(state.status);
-                batteryLevel = state.level;
             }
 
             // latch the current joypad state and note transitions
@@ -1225,12 +1259,12 @@ struct App::Private : public TalkToJavaInterface
             static double prev;
             const double rawDelta = now - prev;
             prev = now;
-            const double clampedPrediction = Alg::Min(0.1, rawDelta * 2);
+            const double clampedPrediction = std::min(0.1, rawDelta * 2);
             sensorForNextWarp = ovr_GetPredictedSensorState(OvrMobile, now + clampedPrediction);
 
             vrFrame.PoseState = sensorForNextWarp.Predicted;
             vrFrame.OvrStatus = sensorForNextWarp.Status;
-            vrFrame.DeltaSeconds   = Alg::Min(0.1, rawDelta);
+            vrFrame.DeltaSeconds   = std::min(0.1, rawDelta);
             vrFrame.FrameNumber++;
 
             // Don't allow this to be excessively large, which can cause application problems.
@@ -1407,7 +1441,7 @@ struct App::Private : public TalkToJavaInterface
 
             shutdownGlObjects();
 
-            glOperation.EglShutdown(eglr);
+            glOperation.EglShutdown();
 
             // Detach from the Java VM before exiting.
             vInfo("javaVM->DetachCurrentThread");
@@ -1495,14 +1529,14 @@ struct App::Private : public TalkToJavaInterface
             else if (keyCode == AKEYCODE_COMMA && down && repeatCount == 0)
             {
                 float const IPD_MIN_CM = 0.0f;
-                viewParms.InterpupillaryDistance = Alg::Max(IPD_MIN_CM * 0.01f, viewParms.InterpupillaryDistance - IPD_STEP);
+                viewParms.InterpupillaryDistance = std::max(IPD_MIN_CM * 0.01f, viewParms.InterpupillaryDistance - IPD_STEP);
                 self->showInfoText(1.0f, "%.3f", viewParms.InterpupillaryDistance);
                 return;
             }
             else if (keyCode == AKEYCODE_PERIOD && down && repeatCount == 0)
             {
                 float const IPD_MAX_CM = 8.0f;
-                viewParms.InterpupillaryDistance = Alg::Min(IPD_MAX_CM * 0.01f, viewParms.InterpupillaryDistance + IPD_STEP);
+                viewParms.InterpupillaryDistance = std::min(IPD_MAX_CM * 0.01f, viewParms.InterpupillaryDistance + IPD_STEP);
                 self->showInfoText(1.0f, "%.3f", viewParms.InterpupillaryDistance);
                 return;
             }
@@ -1525,27 +1559,6 @@ struct App::Private : public TalkToJavaInterface
                 }
                 return;
             }
-        }
-    }
-
-    void TtjCommand(JNIEnv *jni, const VEvent &event) override
-    {
-        if (event.name == "sound") {
-            jstring cmdString = JniUtils::Convert(jni, event.data.toString());
-            jni->CallVoidMethod(javaObject, playSoundPoolSoundMethodId, cmdString);
-            jni->DeleteLocalRef(cmdString);
-            return;
-        }
-
-        if (event.name == "toast") {
-            jstring cmdString = JniUtils::Convert(jni, event.data.toString());
-            jni->CallVoidMethod(javaObject, createVrToastMethodId, cmdString);
-            jni->DeleteLocalRef(cmdString);
-            return;
-        }
-
-        if (event.name == "finish") {
-            activity->finishActivity();
         }
     }
 };
@@ -1593,11 +1606,7 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
 
 	// Default ovrModeParms
 	VrModeParms.AsynchronousTimeWarp = true;
-	VrModeParms.AllowPowerSave = true;
-    VrModeParms.DistortionFileName = nullptr;
 	VrModeParms.SkipWindowFullscreenReset = false;
-	VrModeParms.CpuLevel = 2;
-	VrModeParms.GpuLevel = 2;
 	VrModeParms.GameThreadTid = 0;
 
     d->javaObject = d->uiJni->NewGlobalRef(activityObject);
@@ -1695,27 +1704,37 @@ void App::createToast(const char * fmt, ...)
     vsnprintf(bigBuffer, sizeof(bigBuffer), fmt, args);
     va_end(args);
 
-    vInfo("CreateToast" << bigBuffer);
+    JNIEnv *jni = nullptr;
+    jstring cmdString = nullptr;
+    if (d->javaVM->AttachCurrentThread(&jni, nullptr) == JNI_OK) {
+        cmdString = JniUtils::Convert(jni, bigBuffer);
 
-    d->activity->eventLoop().post("toast", bigBuffer);
+        d->activity->eventLoop().post([=]{
+            JNIEnv *jni = nullptr;
+            if (d->javaVM->AttachCurrentThread(&jni, nullptr) == JNI_OK) {
+                jni->CallVoidMethod(d->javaObject, d->createVrToastMethodId, cmdString);
+            }
+            jni->DeleteLocalRef(cmdString);
+        });
+    }
 }
 
-void App::playSound(const char * name)
+void App::playSound(const char *name)
 {
 	// Get sound from SoundManager
 	VString soundFile;
+    if (!d->soundManager.getSound(name, soundFile)) {
+        soundFile = VString::fromUtf8(name);
+    }
 
-    if (d->soundManager.getSound(name, soundFile))
-	{
-		// Run on the talk to java thread
-        d->activity->eventLoop().post("sound", soundFile);
-	}
-	else
-	{
-        WARN("AppLocal::playSound called with non SoundManager defined sound: %s", name);
-		// Run on the talk to java thread
-        d->activity->eventLoop().post("sound", name);
-	}
+    d->activity->eventLoop().post([=]{
+        JNIEnv *jni = nullptr;
+        if (d->javaVM->AttachCurrentThread(&jni, 0) == JNI_OK) {
+            jstring cmdString = JniUtils::Convert(jni, soundFile);
+            jni->CallVoidMethod(d->javaObject, d->playSoundPoolSoundMethodId, cmdString);
+            jni->DeleteLocalRef(cmdString);
+        }
+    });
 }
 
 void App::setVrModeParms(ovrModeParms parms)
@@ -1732,22 +1751,22 @@ void App::setVrModeParms(ovrModeParms parms)
 	}
 }
 
-void ToggleScreenColor()
-{
-    VGlOperation glOperation;
-	static int	color;
+//void ToggleScreenColor()
+//{
+//    VGlOperation glOperation;
+//	static int	color;
 
-	color ^= 1;
+//	color ^= 1;
 
-    glEnable(GL_WRITEONLY_RENDERING_QCOM);
-    glClearColor(color, 1-color, 0, 1);
-    glClear(GL_COLOR_BUFFER_BIT);
+//    glEnable(GL_WRITEONLY_RENDERING_QCOM);
+//    glClearColor(color, 1-color, 0, 1);
+//    glClear(GL_COLOR_BUFFER_BIT);
 
-	// The Adreno driver has an unfortunate optimization so it doesn't
-	// actually flush if all that was done was a clear.
-    glOperation.GL_Finish();
-    glDisable(GL_WRITEONLY_RENDERING_QCOM);
-}
+//	// The Adreno driver has an unfortunate optimization so it doesn't
+//	// actually flush if all that was done was a clear.
+//    glOperation.GL_Finish();
+//    glDisable(GL_WRITEONLY_RENDERING_QCOM);
+//}
 
 /*
  * eyeParms()
@@ -1902,35 +1921,9 @@ bool App::isGuiOpen() const
     return d->guiSys->isAnyMenuOpen();
 }
 
-int App::wifiSignalLevel() const
-{
-	int level = ovr_GetWifiSignalLevel();
-	return level;
-}
-
-eWifiState App::wifiState() const
-{
-	return ovr_GetWifiState();
-}
-
-int App::cellularSignalLevel() const
-{
-	int level = ovr_GetCellularSignalLevel();
-	return level;
-}
-
-eCellularState App::cellularState() const
-{
-	return ovr_GetCellularState();
-}
-
 bool App::isAsynchronousTimeWarp() const
 {
 	return VrModeParms.AsynchronousTimeWarp;
-}
-
-bool App::hasHeadphones() const {
-	return ovr_GetHeadsetPluggedState();
 }
 
 bool App::framebufferIsSrgb() const
@@ -1998,30 +1991,7 @@ float App::popupScale() const
     return d->popupScale;
 }
 
-bool App::isPowerSaveActive() const
-{
-	return ovr_GetPowerLevelStateThrottled();
-}
 
-int App::cpuLevel() const
-{
-	return VrModeParms.CpuLevel;
-}
-
-int App::gpuLevel() const
-{
-	return VrModeParms.GpuLevel;
-}
-
-int App::batteryLevel() const
-{
-    return d->batteryLevel;
-}
-
-eBatteryStatus App::batteryStatus() const
-{
-    return d->batteryStatus;
-}
 
 JavaVM	* App::javaVM()
 {
@@ -2134,11 +2104,6 @@ KeyState & App::backKeyState()
     return d->backKeyState;
 }
 
-ovrMobile * App::getOvrMobile()
-{
-    return d->OvrMobile;
-}
-
 void App::setShowVolumePopup(bool const show)
 {
     d->showVolumePopup = show;
@@ -2193,20 +2158,21 @@ void ShowFPS(void * appPtr, const char * cmd) {
 }
 
 // Debug tool to draw outlines of a 3D bounds
-void App::drawBounds( const V3Vectf &mins, const V3Vectf &maxs, const VR4Matrixf &mvp, const V3Vectf &color )
-{
-    VGlOperation glOperation;
-    VR4Matrixf	scaled = mvp * VR4Matrixf::Translation( mins ) * VR4Matrixf::Scaling( maxs - mins );
-    const VGlShader & prog = d->untexturedMvpProgram;
-    glUseProgram(prog.program);
-    glLineWidth( 1.0f );
-    glUniform4f(prog.uniformColor, color.x, color.y, color.z, 1);
-    glUniformMatrix4fv(prog.uniformModelViewProMatrix, 1, GL_FALSE /* not transposed */,
-            scaled.Transposed().M[0] );
-    glOperation.glBindVertexArrayOES_( d->unitCubeLines.vertexArrayObject );
-    glDrawElements(GL_LINES, d->unitCubeLines.indexCount, GL_UNSIGNED_SHORT, NULL);
-    glOperation.glBindVertexArrayOES_( 0 );
-}
+//void App::drawBounds( const V3Vectf &mins, const V3Vectf &maxs, const VR4Matrixf &mvp, const V3Vectf &color )
+//{
+
+//    VGlOperation glOperation;
+//    VR4Matrixf	scaled = mvp * VR4Matrixf::Translation( mins ) * VR4Matrixf::Scaling( maxs - mins );
+//    const VGlShader & prog = d->untexturedMvpProgram;
+//    glUseProgram(prog.program);
+//    glLineWidth( 1.0f );
+//    glUniform4f(prog.uniformColor, color.x, color.y, color.z, 1);
+//    glUniformMatrix4fv(prog.uniformModelViewProMatrix, 1, GL_FALSE /* not transposed */,
+//            scaled.Transposed().M[0] );
+//    glOperation.glBindVertexArrayOES_( d->unitCubeLines.vertexArrayObject );
+//    glDrawElements(GL_LINES, d->unitCubeLines.indexCount, GL_UNSIGNED_SHORT, NULL);
+//    glOperation.glBindVertexArrayOES_( 0 );
+//}
 
 void App::drawDialog( const VR4Matrixf & mvp )
 {
@@ -2248,6 +2214,7 @@ void App::drawPanel( const GLuint externalTextureId, const VR4Matrixf & dialogMv
 
 void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const int numPresents )
 {
+    VGlOperation glOperation;
     // update vr lib systems after the app frame, but before rendering anything
     guiSys().frame( this, d->vrFrame, vrMenuMgr(), defaultFont(), menuFontSurface(), centerViewMatrix );
     gazeCursor().Frame( centerViewMatrix, d->vrFrame.DeltaSeconds );
@@ -2262,14 +2229,14 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
     // Doing this dynamically based just on time causes visible flickering at the
     // periphery when the fov is increased, so only do it if minimumVsyncs is set.
     const float fovDegrees = d->hmdInfo.SuggestedEyeFov[0] +
-            ( ( ( d->swapParms.MinimumVsyncs > 1 ) || ovr_GetPowerLevelStateThrottled() ) ? 10.0f : 0.0f ) +
+            ( ( d->swapParms.MinimumVsyncs > 1 ) ? 10.0f : 0.0f ) +
             ( ( !d->showVignette ) ? 5.0f : 0.0f );
 
     // DisplayMonoMode uses a single eye rendering for speed improvement
     // and / or high refresh rate double-scan hardware modes.
     const int numEyes = d->renderMonoMode ? 1 : 2;
 
-    VGlOperation glOperation;
+
     // Flush out and report any errors
     glOperation.GL_CheckErrors("FrameStart");
 
@@ -2347,22 +2314,22 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
 
 // Draw a screen to an eye buffer the same way it would be drawn as a
 // time warp overlay.
-void App::drawScreenDirect( const GLuint texid, const ovrMatrix4f & mvp )
-{
-    VGlOperation glOperation;
-    const VR4Matrixf mvpMatrix( mvp );
-    glActiveTexture( GL_TEXTURE0 );
-    glBindTexture( GL_TEXTURE_2D, texid );
+//void App::drawScreenDirect( const GLuint texid, const ovrMatrix4f & mvp )
+//{
+//    VGlOperation glOperation;
+//    const VR4Matrixf mvpMatrix( mvp );
+//    glActiveTexture( GL_TEXTURE0 );
+//    glBindTexture( GL_TEXTURE_2D, texid );
 
-    glUseProgram( d->overlayScreenDirectProgram.program );
+//    glUseProgram( d->overlayScreenDirectProgram.program );
 
-    glUniformMatrix4fv( d->overlayScreenDirectProgram.uniformModelViewProMatrix, 1, GL_FALSE, mvpMatrix.Transposed().M[0] );
+//    glUniformMatrix4fv( d->overlayScreenDirectProgram.uniformModelViewProMatrix, 1, GL_FALSE, mvpMatrix.Transposed().M[0] );
 
-    glOperation.glBindVertexArrayOES_( d->unitSquare.vertexArrayObject );
-    glDrawElements( GL_TRIANGLES, d->unitSquare.indexCount, GL_UNSIGNED_SHORT, NULL );
+//    glOperation.glBindVertexArrayOES_( d->unitSquare.vertexArrayObject );
+//    glDrawElements( GL_TRIANGLES, d->unitSquare.indexCount, GL_UNSIGNED_SHORT, NULL );
 
-    glBindTexture( GL_TEXTURE_2D, 0 );	// don't leave it bound
-}
+//    glBindTexture( GL_TEXTURE_2D, 0 );	// don't leave it bound
+//}
 
 // draw a zero to destination alpha
 void App::drawScreenMask( const ovrMatrix4f & mvp, const float fadeFracX, const float fadeFracY )

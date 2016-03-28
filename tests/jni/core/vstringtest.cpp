@@ -22,6 +22,31 @@ void test()
         assert(empty.isEmpty());
     }
 
+    //Copy constructor & copy assignement operator
+    {
+        VString str1 = "this is a test.";
+        VString str2 = str1;
+        VString str3 = "this is another test.";
+        str3 = str1;
+        assert(str1 == str2);
+        assert(str1.data() != str2.data());
+        assert(str1.data() != str3.data());
+    }
+
+    //Move constructor & move assignment operator
+    {
+        VString str1;
+        str1 = "this is a test.";
+        const void *addr = str1.data();
+        VString str2(std::move(str1));
+        assert(str2.data() == addr);
+        assert(str2 == "this is a test.");
+        VString str3;
+        str3 = std::move(str2);
+        assert(str3.data() == addr);
+        assert(str3 == "this is a test.");
+    }
+
     //Converted from a C-style string
     {
         const char *str = "this is a test.";

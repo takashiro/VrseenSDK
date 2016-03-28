@@ -1,14 +1,14 @@
 #pragma once
 
 #include "../vglobal.h"
-#include "HmdInfo.h"
+#include "VDevice.h"
 
 NV_NAMESPACE_BEGIN
 
 class VFrameSmooth
 {
 public:
-    VFrameSmooth(bool async,hmdInfoInternal_t	hmdInfo);
+    VFrameSmooth(bool async,VDevice *device);
     ~VFrameSmooth();
 
     void	doSmooth( const ovrTimeWarpParms & parms );

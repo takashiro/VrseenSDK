@@ -290,14 +290,6 @@ void CinemaApp::configureVrMode(ovrModeParms &modeParms)
 	// We need very little CPU for movie playing, but a fair amount of GPU.
 	// The CPU clock should ramp up above the minimum when necessary.
 	LOG( "ConfigureClocks: Cinema only needs minimal clocks" );
-
-	modeParms.CpuLevel = 1;
-	modeParms.GpuLevel = 2;
-
-	// when the app is throttled, go to the platform UI and display a
-	// dismissable warning. On return to the app, force 30hz timewarp.
-	modeParms.AllowPowerSave = true;
-
 	// Always use 2x MSAA for now
     vApp->vrParms().multisamples = 2;
 }

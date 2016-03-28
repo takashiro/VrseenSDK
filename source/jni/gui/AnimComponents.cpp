@@ -11,7 +11,7 @@ Copyright   :   Copyright 2014 Oculus VR, Inc. All Rights reserved.
 *************************************************************************************/
 
 #include "AnimComponents.h"
-#include "Alg.h"
+#include "VAlgorithm.h"
 #include "VRMenuObject.h"
 #include "../api/VrApi.h"
 #include "VRMenuMgr.h"
@@ -48,7 +48,7 @@ eMsgStatus OvrAnimComponent::frame( App * app, VrFrame const & vrFrame, OvrVRMen
 		m_fractionalFrame = m_floatFrame - totalFrames;
 		int numFrames = getNumFrames( self );
 		int frame = m_baseFrame + totalFrames;
-		m_curFrame = !m_looping ? Alg::Clamp( frame, 0, numFrames - 1 ) : frame % numFrames;
+		m_curFrame = !m_looping ? VAlgorithm::Clamp( frame, 0, numFrames - 1 ) : frame % numFrames;
 		setFrameVisibilities( app, vrFrame, menuMgr, self );
 	} 
 	else if ( m_forceVisibilityUpdate )
@@ -64,7 +64,7 @@ eMsgStatus OvrAnimComponent::frame( App * app, VrFrame const & vrFrame, OvrVRMen
 // OvrAnimComponent::SetFrame
 void OvrAnimComponent::setFrame( VRMenuObject * self, int const frameNum )
 {
-	m_curFrame = Alg::Clamp( frameNum, 0, getNumFrames( self ) - 1 );
+	m_curFrame = VAlgorithm::Clamp( frameNum, 0, getNumFrames( self ) - 1 );
 	// we must reset the base frame and the current time so that the frame calculation
 	// remains correct if we're playing.  If we're not playing, this will cause the
 	// next Play() to start from this frame.

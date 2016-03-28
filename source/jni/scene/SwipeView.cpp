@@ -15,9 +15,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <string.h>
 #include <sys/types.h>
 #include <dirent.h>
-
-#include "Alg.h"
 #include "VBasicmath.h"
+#include "VAlgorithm.h"
 #include "TypesafeNumber.h"
 #include "api/VGlOperation.h"
 
@@ -345,7 +344,7 @@ void	SwipeView::Close()
 		}
 		else
 		{	// close from the closest panel
-			AnimationCenterPanel[0] = NervGear::Alg::Clamp( (int)(Offset / SlotSize.x + 0.5f), 0, LayoutColumns()-1 );
+			AnimationCenterPanel[0] = NervGear::VAlgorithm::Clamp( (int)(Offset / SlotSize.x + 0.5f), 0, LayoutColumns()-1 );
 			AnimationCenterPanel[1] = (int)( ( LayoutRows - 1 ) * 0.5f );
 		}
 	}
@@ -489,7 +488,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 		if ( ClampPanelOffset )
 		{
 			const float offsetRange = ( float )( ( LayoutColumns() / 2 ) * SlotSize.x + M_PI * 0.25f );
-			Offset = NervGear::Alg::Clamp( Offset, -offsetRange, offsetRange );
+			Offset = NervGear::VAlgorithm::Clamp( Offset, -offsetRange, offsetRange );
 		}
 	}
 
@@ -631,7 +630,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 				Velocity = -SpeedScale * ( TouchPos[thisIndex].x - TouchPos[oldIndex].x ) / ( TimeHistory[thisIndex] - TimeHistory[oldIndex] );
 
 				// Clamp to a maximum speed
-				Velocity = NervGear::Alg::Clamp( Velocity, -MaxVelocity, MaxVelocity );
+				Velocity = NervGear::VAlgorithm::Clamp( Velocity, -MaxVelocity, MaxVelocity );
 			}
 
 
@@ -665,20 +664,20 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 			SwipePanel & panel = Panels[index];
 			if ( index == SelectedPanel )
 			{
-				panel.SelectState = NervGear::Alg::Min( 1.0f, panel.SelectState + vrFrame.DeltaSeconds / SelectTime );
+				panel.SelectState = std::min( 1.0f, panel.SelectState + vrFrame.DeltaSeconds / SelectTime );
 			}
 			else
 			{	// shrink back
-				panel.SelectState = NervGear::Alg::Max( 0.0f, panel.SelectState - vrFrame.DeltaSeconds / SelectTime );
+				panel.SelectState = std::max( 0.0f, panel.SelectState - vrFrame.DeltaSeconds / SelectTime );
 			}
 		}
 	}
 
 	// Opening / closing animation
-	AnimationFraction = NervGear::Alg::Min( 1.0,
+	AnimationFraction = std::min( 1.0,
 			( vrFrame.PoseState.TimeInSeconds - AnimationStartTime ) / OpenAnimationTime );
 	// allowing AnimationFraction to reach 0.0 causes an invalid matrix to be formed in Draw()
-	AnimationFraction = NervGear::Alg::Clamp( AnimationFraction, 0.00001f, 1.0f );
+	AnimationFraction = NervGear::VAlgorithm::Clamp( AnimationFraction, 0.00001f, 1.0f );
 	if ( State == SVS_CLOSING )
 	{
 		if ( AnimationFraction >= 1.0f )
@@ -708,7 +707,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 		int		updatedSelectedPanel = -1;
 
 		// update panel transforms
-		const float	animatedScale = NervGear::Alg::Min( 1.0f, AnimationFraction * 10.0f );
+		const float	animatedScale = std::min( 1.0f, AnimationFraction * 10.0f );
 
 		// Push this last
 		PanelRenderInfo selectedPanelInfo;
@@ -740,11 +739,11 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 					sqr( panelX - AnimationCenterPanel[0] )
 					+ sqr( panelY - AnimationCenterPanel[1] ) );
 			const float maxDistance = 3.0f;
-			const float clampedDistance = NervGear::Alg::Clamp( slotDistance, 1.0f, maxDistance );
+			const float clampedDistance = NervGear::VAlgorithm::Clamp( slotDistance, 1.0f, maxDistance );
 
 			// animate the closer panels so they land sooner
 			// square it so they smack into the UI surface hard
-			const float animationFraction = sqr( NervGear::Alg::Min( 1.0f, AnimationFraction * maxDistance / clampedDistance ) );
+			const float animationFraction = sqr( std::min( 1.0f, AnimationFraction * maxDistance / clampedDistance ) );
 			const float invAnimationFraction = 1.0 - animationFraction;
 
 			const float distance = -( Radius.x - SelectDistance * panel.SelectState );
@@ -909,7 +908,7 @@ void SwipeView::Draw( const VR4Matrixf & mvp )
 
 	}
 
-    glOperation.glBindVertexArrayOES_( 0 );
+    glOperation.glBindVertexArrayOES( 0 );
 
 	glActiveTexture( GL_TEXTURE1 );
 	glBindTexture( GL_TEXTURE_2D, 0 );

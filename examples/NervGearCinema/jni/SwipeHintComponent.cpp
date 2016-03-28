@@ -121,7 +121,7 @@ eMsgStatus SwipeHintComponent::Frame( App * app, VrFrame const & vrFrame, OvrVRM
 		{
 			float normTime = time / TotalTime;
 			alpha *= sin( M_PI * 2.0f * normTime );
-			alpha = NervGear::Alg::Max( alpha, 0.0f );
+			alpha = std::max( alpha, 0.0f );
 		}
 	}
 

@@ -2,6 +2,7 @@
 
 #include "vglobal.h"
 #include "VString.h"
+#include "VrApi.h"
 
 NV_NAMESPACE_BEGIN
 

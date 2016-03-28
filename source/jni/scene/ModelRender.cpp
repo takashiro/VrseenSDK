@@ -15,7 +15,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "api/VGlOperation.h"
 #include "Android/LogUtils.h"
-#include "Alg.h"
+#include "VAlgorithm.h"
 
 #include "GlTexture.h"
 #include "../api/VGlShader.h"
@@ -438,7 +438,7 @@ DrawCounters RenderSurfaceList( const DrawSurfaceList & drawSurfaceList ) {
 			{
 				if ( drawSurface.joints != NULL && drawSurface.joints->size() > 0 )
 				{
-                    glUniformMatrix4fv( materialDef.uniformJoints, Alg::Min( drawSurface.joints->length(), MAX_JOINTS ), 0, &drawSurface.joints->at( 0 ).M[0][0] );
+                    glUniformMatrix4fv( materialDef.uniformJoints, std::min( drawSurface.joints->length(), MAX_JOINTS ), 0, &drawSurface.joints->at( 0 ).M[0][0] );
 				}
 				else
 				{
@@ -469,7 +469,7 @@ DrawCounters RenderSurfaceList( const DrawSurfaceList & drawSurfaceList ) {
 	glActiveTexture( GL_TEXTURE0 );
 	glBindTexture( GL_TEXTURE_2D, 0 );
 	glUseProgram( 0 );
-    glOperation.glBindVertexArrayOES_( 0 );
+    glOperation.glBindVertexArrayOES( 0 );
 
 	return counters;
 }

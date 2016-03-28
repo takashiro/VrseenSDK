@@ -20,7 +20,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "DefaultComponent.h"
 #include "BitmapFont.h"
 #include "TextFade_Component.h"
-#include "Alg.h"
+#include "VAlgorithm.h"
 #include "VApkFile.h"
 
 namespace NervGear {

@@ -28,7 +28,8 @@ LOCAL_SRC_FILES := \
 	core/vpathtest.cpp \
 	core/vstringtest.cpp \
 	core/vatomicinttest.cpp \
-	core/vvarianttest.cpp
+	core/vvarianttest.cpp \
+	core/valgorithmtest.cpp
 
 NDK_MODULE_PATH := ../../Tools/
 $(call import-add-path,$(NDK_MODULE_PATH))

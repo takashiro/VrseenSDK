@@ -1,7 +1,6 @@
 #pragma once
 
 #include "vglobal.h"
-#include "RefCount.h"
 
 #include <iostream>
 #include <fstream>
@@ -11,7 +10,7 @@ NV_NAMESPACE_BEGIN
 
 class VFile;
 
-class VFile : public RefCountBase<VFile>
+class VFile
 {
 public:
 
@@ -35,6 +34,7 @@ public:
 
 public:
     VFile() { }
+    virtual ~VFile() { }
 
     virtual const std::string filePath() = 0;
 

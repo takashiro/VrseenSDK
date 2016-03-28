@@ -1,9 +1,8 @@
 #include "ModelFile.h"
 
 #include <math.h>
-
-#include "Alg.h"
 #include "VBasicmath.h"
+#include "VAlgorithm.h"
 #include "VArray.h"
 #include "VString.h"
 #include "VJson.h"
@@ -467,7 +466,7 @@ void LoadModelFileJson( ModelFile & model,
 						const VJson &vertices( surface.value( "vertices" ) );
 						if ( vertices.isObject() )
 						{
-							const int vertexCount = Alg::Min( vertices.value( "vertexCount" ).toInt(), MAX_GEOMETRY_VERTICES );
+							const int vertexCount = std::min( vertices.value( "vertexCount" ).toInt(), MAX_GEOMETRY_VERTICES );
 							// LOG( "%5d vertices", vertexCount );
 
                             ReadModelArray( attribs.position,     vertices.value( "position" ).toStdString().c_str(),		bin, vertexCount );
@@ -490,7 +489,7 @@ void LoadModelFileJson( ModelFile & model,
 						const VJson &triangles( surface.value( "triangles" ) );
 						if ( triangles.isObject() )
 						{
-							const int indexCount = Alg::Min( triangles.value( "indexCount" ).toInt(), MAX_GEOMETRY_INDICES );
+							const int indexCount = std::min( triangles.value( "indexCount" ).toInt(), MAX_GEOMETRY_INDICES );
 							// LOG( "%5d indices", indexCount );
 
                             ReadModelArray( indices, triangles.value( "indices" ).toStdString().c_str(), bin, indexCount );
@@ -1138,7 +1137,7 @@ static voidpf mz_open_file_func( voidpf opaque, const char* filename, int mode )
 static uLong mz_read_file_func( voidpf opaque, voidpf stream, void* buf, uLong size )
 {
 	mzBuffer_t * buffer = (mzBuffer_t *)opaque;
-	const int numCopyBytes = NervGear::Alg::Min( buffer->mzBufferLength - buffer->mzBufferPos, (int)size );
+	const int numCopyBytes = NervGear::VAlgorithm::Min( buffer->mzBufferLength - buffer->mzBufferPos, (int)size );
 	memcpy( buf, buffer->mzBufferBase + buffer->mzBufferPos, numCopyBytes );
 	buffer->mzBufferPos += numCopyBytes;
 	return numCopyBytes;
@@ -1176,13 +1175,13 @@ static long mz_seek_file_func( voidpf opaque, voidpf stream, uLong offset, int o
 	switch ( origin )
 	{
 		case ZLIB_FILEFUNC_SEEK_CUR :
-			buffer->mzBufferPos = NervGear::Alg::Min( buffer->mzBufferLength, buffer->mzBufferPos + (int)offset );
+			buffer->mzBufferPos = NervGear::VAlgorithm::Min( buffer->mzBufferLength, buffer->mzBufferPos + (int)offset );
 			break;
 		case ZLIB_FILEFUNC_SEEK_END :
-			buffer->mzBufferPos = NervGear::Alg::Min( buffer->mzBufferLength, buffer->mzBufferLength - (int)offset );
+			buffer->mzBufferPos = NervGear::VAlgorithm::Min( buffer->mzBufferLength, buffer->mzBufferLength - (int)offset );
 			break;
 		case ZLIB_FILEFUNC_SEEK_SET :
-			buffer->mzBufferPos = NervGear::Alg::Min( buffer->mzBufferLength, (int)offset );
+			buffer->mzBufferPos = NervGear::VAlgorithm::Min( buffer->mzBufferLength, (int)offset );
 			break;
 		default:
 			return -1;

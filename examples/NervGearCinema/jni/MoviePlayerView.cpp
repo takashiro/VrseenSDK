@@ -539,9 +539,9 @@ void MoviePlayerView::CheckDebugControls( const VrFrame & vrFrame )
     if ( Cinema.sceneMgr.FreeScreenActive && ( vrFrame.Input.buttonState & BUTTON_Y ) )
 	{
         Cinema.sceneMgr.FreeScreenDistance -= vrFrame.Input.sticks[0][1] * vrFrame.DeltaSeconds * 3;
-        Cinema.sceneMgr.FreeScreenDistance = NervGear::Alg::Clamp( Cinema.sceneMgr.FreeScreenDistance, 1.0f, 4.0f );
+        Cinema.sceneMgr.FreeScreenDistance = NervGear::VAlgorithm::Clamp( Cinema.sceneMgr.FreeScreenDistance, 1.0f, 4.0f );
         Cinema.sceneMgr.FreeScreenScale += vrFrame.Input.sticks[0][0] * vrFrame.DeltaSeconds * 3;
-        Cinema.sceneMgr.FreeScreenScale = NervGear::Alg::Clamp( Cinema.sceneMgr.FreeScreenScale, 1.0f, 4.0f );
+        Cinema.sceneMgr.FreeScreenScale = NervGear::VAlgorithm::Clamp( Cinema.sceneMgr.FreeScreenScale, 1.0f, 4.0f );
 
 		if ( vrFrame.Input.buttonReleased & (BUTTON_LSTICK_UP|BUTTON_LSTICK_DOWN|BUTTON_LSTICK_LEFT|BUTTON_LSTICK_RIGHT) )
 		{

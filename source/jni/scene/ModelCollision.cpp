@@ -14,7 +14,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <math.h>
 
 
-#include "Alg.h"
+#include "VAlgorithm.h"
 #include "VArray.h"
 #include "VArray.h"
 #include "VString.h"

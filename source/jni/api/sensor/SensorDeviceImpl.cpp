@@ -15,9 +15,106 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 // HMDDeviceDesc can be created/updated through Sensor carrying DisplayInfo.
 
 #include "VTimer.h"
-#include "Alg.h"
+#include "Types.h"
 
 namespace NervGear {
+
+
+namespace ByteUtil {
+
+    // *** Swap Byte Order
+    template< typename _type_ >
+    inline _type_ SwapOrder( const _type_ & value )
+    {
+        _type_ bytes = value;
+        char * b = (char *)& bytes;
+        if ( sizeof( _type_ ) == 1 )
+        {
+        }
+        else if ( sizeof( _type_ ) == 2 )
+        {
+            swap( b[0], b[1] );
+        }
+        else if ( sizeof( _type_ ) == 4 )
+        {
+            swap( b[0], b[3] );
+            swap( b[1], b[2] );
+        }
+        else if ( sizeof( _type_ ) == 8 )
+        {
+            swap( b[0], b[7] );
+            swap( b[1], b[6] );
+            swap( b[2], b[5] );
+            swap( b[3], b[4] );
+        }
+        else
+        {
+            assert( false );
+        }
+        return bytes;
+    }
+
+    // *** Byte-order conversion
+
+#if (OVR_BYTE_ORDER == OVR_LITTLE_ENDIAN)
+    // Little Endian to System (LE)
+    template< typename _type_ >
+    inline _type_ LEToSystem( _type_ v ) { return v; }
+
+    // Big Endian to System (LE)
+    template< typename _type_ >
+    inline _type_ BEToSystem( _type_ v ) { return SwapOrder( v ); }
+
+    // System (LE) to Little Endian
+    template< typename _type_ >
+    inline _type_ SystemToLE( _type_ v ) { return v; }
+
+    // System (LE) to Big Endian
+    template< typename _type_ >
+    inline _type_ SystemToBE( _type_ v ) { return SwapOrder( v ); }
+
+#elif (OVR_BYTE_ORDER == OVR_BIG_ENDIAN)
+    // Little Endian to System (BE)
+    template< typename _type_ >
+    inline _type_ LEToSystem( _type_ v ) { return SwapOrder( v ); }
+
+    // Big Endian to System (BE)
+    template< typename _type_ >
+    inline _type_ BEToSystem( _type_ v ) { return v; }
+
+    // System (BE) to Little Endian
+    template< typename _type_ >
+    inline _type_ SystemToLE( _type_ v ) { return SwapOrder( v ); }
+
+    // System (BE) to Big Endian
+    template< typename _type_ >
+    inline _type_ SystemToBE( _type_ v ) { return v; }
+
+#else
+    #error "OVR_BYTE_ORDER must be defined to OVR_LITTLE_ENDIAN or OVR_BIG_ENDIAN"
+#endif
+
+    inline UInt16 DecodeUInt16(const UByte* buffer)
+    {
+        return ByteUtil::LEToSystem ( *(const UInt16*)buffer );
+    }
+
+    inline void EncodeUInt16(UByte* buffer, UInt16 val)
+    {
+        *(UInt16*)buffer = ByteUtil::SystemToLE ( val );
+    }
+
+    inline void EncodeSInt16(UByte* buffer, SInt16 val)
+    {
+        *(SInt16*)buffer = ByteUtil::SystemToLE ( val );
+    }
+
+    inline void EncodeUInt32(UByte* buffer, UInt32 val)
+    {
+        *(UInt32*)buffer = ByteUtil::SystemToLE ( val );
+    }
+
+} // namespace ByteUtil
 
 //-------------------------------------------------------------------------------------
 // ***** Oculus Sensor-specific packet data structures
@@ -47,7 +144,7 @@ static UInt32 DecodeUInt32(const UByte* buffer)
 
 static void EncodeUInt16(UByte* buffer, UInt16 val)
 {
-    *(UInt16*)buffer = Alg::ByteUtil::SystemToLE ( val );
+    *(UInt16*)buffer = ByteUtil::SystemToLE ( val );
 }
 
 static float DecodeFloat(const UByte* buffer)
@@ -384,7 +481,7 @@ struct SensorFactoryCalibrationImpl
 			PackSensor(Buffer + 43 + 8 * i, row[0], row[1], row[2]);
 		}
 
-		Alg::EncodeSInt16(Buffer + 67, SInt16(Temperature * 100.0f));
+        ByteUtil::EncodeSInt16(Buffer + 67, SInt16(Temperature * 100.0f));
 	}
 
 	void Unpack()
@@ -481,14 +578,14 @@ struct SerialImpl
 	void  Pack()
 	{
     Buffer[0] = 10;
-    Alg::EncodeUInt16(Buffer+1, Settings.CommandId);
+    ByteUtil::EncodeUInt16(Buffer+1, Settings.CommandId);
 	for (int i = 0; i < Settings.SERIAL_NUMBER_SIZE; ++i)
 		Buffer[3 + i] = Settings.SerialNumberValue[i];
 	}
 
 	void Unpack()
 	{
-		Settings.CommandId = Alg::DecodeUInt16(Buffer+1);
+        Settings.CommandId = ByteUtil::DecodeUInt16(Buffer+1);
 		for (int i = 0; i < Settings.SERIAL_NUMBER_SIZE; ++i)
 			Settings.SerialNumberValue[i] = Buffer[3 + i];
 	}
@@ -554,7 +651,7 @@ struct TemperatureImpl
     {
 
         Buffer[0] = 20;
-        Alg::EncodeUInt16(Buffer + 1, Settings.CommandId);
+        ByteUtil::EncodeUInt16(Buffer + 1, Settings.CommandId);
         Buffer[3] = Settings.Version;
 
         Buffer[4] = Settings.NumBins;
@@ -562,10 +659,10 @@ struct TemperatureImpl
         Buffer[6] = Settings.NumSamples;
         Buffer[7] = Settings.Sample;
 
-        Alg::EncodeSInt16(Buffer + 8 , SInt16(Settings.TargetTemperature * 1e2));
-        Alg::EncodeSInt16(Buffer + 10, SInt16(Settings.ActualTemperature * 1e2));
+        ByteUtil::EncodeSInt16(Buffer + 8 , SInt16(Settings.TargetTemperature * 1e2));
+        ByteUtil::EncodeSInt16(Buffer + 10, SInt16(Settings.ActualTemperature * 1e2));
 
-        Alg::EncodeUInt32(Buffer + 12, Settings.Time);
+        ByteUtil::EncodeUInt32(Buffer + 12, Settings.Time);
 
         V3Vectd offset = Settings.Offset * 1e4;
         PackSensor(Buffer + 16, (SInt32) offset.x, (SInt32) offset.y, (SInt32) offset.z);
@@ -623,7 +720,7 @@ struct GyroOffsetImpl
         V3Vectd offset = Settings.Offset * 1e4;
 		PackSensor(Buffer + 4, (SInt32) offset.x, (SInt32) offset.y, (SInt32) offset.z);
 
-        Alg::EncodeSInt16(Buffer + 16, SInt16(Settings.Temperature * 1e2));
+        ByteUtil::EncodeSInt16(Buffer + 16, SInt16(Settings.Temperature * 1e2));
     }
 
     void Unpack()

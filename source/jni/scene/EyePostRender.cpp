@@ -10,9 +10,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 *************************************************************************************/
 
 #include "EyePostRender.h"
-
-#include "Alg.h"
 #include "VBasicmath.h"
+#include "VAlgorithm.h"
 #include "VArray.h"
 #include "api/VGlOperation.h"
 #include "Android/LogUtils.h"
@@ -76,11 +75,11 @@ void EyePostRender::DrawEyeCalibrationLines( const float bufferFovDegrees, const
     glUniformMatrix4fv( prog.uniformModelViewProMatrix, 1, GL_FALSE /* not transposed */,
 			projectionMatrix.Transposed().M[0] );
 
-    glOperation.glBindVertexArrayOES_( CalibrationLines.vertexArrayObject );
+    glOperation.glBindVertexArrayOES( CalibrationLines.vertexArrayObject );
 
 	glDrawElements( GL_LINES, CalibrationLines.indexCount, GL_UNSIGNED_SHORT,
 		NULL);
-    glOperation.glBindVertexArrayOES_( 0 );
+    glOperation.glBindVertexArrayOES( 0 );
 }
 
 void EyePostRender::DrawEyeVignette()
@@ -94,7 +93,7 @@ void EyePostRender::DrawEyeVignette()
 	VignetteSquare.Draw();
 	glDisable( GL_BLEND );
 	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-    glOperation.glBindVertexArrayOES_( 0 );
+    glOperation.glBindVertexArrayOES( 0 );
 }
 
 void EyePostRender::FillEdge( int fbWidth, int fbHeight )

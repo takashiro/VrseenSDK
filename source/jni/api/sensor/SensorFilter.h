@@ -2,7 +2,7 @@
 
 #include "VBasicmath.h"
 #include "VCircularQueue.h"
-#include "Alg.h"
+#include "VAlgorithm.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -170,7 +170,7 @@ public:
     T Median() const
     {
         T* copy = (T*) OVR_ALLOC(this->v_count * sizeof(T));
-        T result = Alg::Median(ArrayAdaptor(copy));
+        T result = VAlgorithm::Median(ArrayAdaptor(copy));
         OVR_FREE(copy);
         return result;
     }
@@ -243,7 +243,7 @@ public:
     // confidence value based on the stddev of the data (between 0.0 and 1.0, more is better)
     float Confidence() const
     {
-        return Alg::Clamp(0.48f - 0.1f * logf(StdDev()), 0.0f, 1.0f) * this->capacity() / this->capacity();
+        return VAlgorithm::Clamp(0.48f - 0.1f * logf(StdDev()), 0.0f, 1.0f) * this->capacity() / this->capacity();
     }
 
     // add a new element to the filter

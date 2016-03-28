@@ -16,7 +16,10 @@ struct VEvent
     {
     }
 
-    bool isValid() const { return !name.isEmpty(); }
+    bool isValid() const { return !name.isEmpty() || isExecutable(); }
+
+    bool isExecutable() const { return data.isClosure(); }
+    void execute() const { data.execute(); }
 
     VString name;
     VVariant data;

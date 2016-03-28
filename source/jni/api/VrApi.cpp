@@ -10,7 +10,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 *************************************************************************************/
 
 #include "VrApi.h"
-#include "VrApi_Android.h"
 
 #include <unistd.h>						// gettid, usleep, etc
 #include <jni.h>
@@ -22,21 +21,36 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "api/VGlOperation.h"
 #include "android/JniUtils.h"
 #include "android/VOsBuild.h"
-#include "OVRVersion.h"					// for vrlib build version
+
 #include "VString.h"			// for ReadFreq()
 #include "VJson.h"			// needed for ovr_StartSystemActivity
 #include "MemBuffer.h"		// needed for MemBufferT
 #include "sensor/DeviceImpl.h"
 
-#include "HmdInfo.h"
+#include "VDevice.h"
 #include "HmdSensors.h"
 #include "VFrameSmooth.h"
 #include "VrApi_local.h"
-#include "VrApi_Helpers.h"
 #include "Vsync.h"
 #include "SystemActivities.h"
 
 NV_USING_NAMESPACE
+
+// Platform UI command strings.
+#define PUI_GLOBAL_MENU				"globalMenu"
+#define PUI_GLOBAL_MENU_TUTORIAL	"globalMenuTutorial"
+#define PUI_CONFIRM_QUIT			"confirmQuit"
+#define PUI_THROTTLED1				"throttled1"	// Warn that Power Save Mode has been activated
+#define PUI_THROTTLED2				"throttled2"	// Warn that Minimum Mode has been activated
+#define PUI_HMT_UNMOUNT				"HMT_unmount"	// the HMT has been taken off the head
+#define PUI_HMT_MOUNT				"HMT_mount"		// the HMT has been placed on the head
+#define PUI_WARNING					"warning"		// the HMT has been placed on the head and a warning message shows
+
+// version 0 is pre-json
+// #define PLATFORM_UI_VERSION 1	// initial version
+#define PLATFORM_UI_VERSION 2		// added "exitToHome" - apps built with current versions only respond to "returnToLauncher" if
+// the Systems Activity that sent it is version 1 (meaning they'll never get an "exitToHome"
+// from System Activities)
 
 // FIXME:VRAPI move to ovrMobile
 static HMDState * OvrHmdState = NULL;
@@ -204,9 +218,6 @@ static jmethodID getPowerLevelStateID = NULL;
 static jmethodID setActivityWindowFullscreenID = NULL;
 static jmethodID notifyMountHandledID = NULL;
 
-static bool alwaysSkipPowerLevelCheck = false;
-static double startPowerLevelCheckTime = -1.0;
-static double powerLevelCheckLastReportTime = 0.0;
 
 static bool hmtIsMounted = false;
 
@@ -287,24 +298,12 @@ public:
 typedef LocklessVar< int, -1> 						volume_t;
 NervGear::LocklessUpdater< volume_t >					CurrentVolume;
 NervGear::LocklessUpdater< LocklessDouble >				TimeOfLastVolumeChange;
-NervGear::LocklessUpdater< batteryState_t >				BatteryState;
 NervGear::LocklessUpdater< bool >						HeadsetPluggedState;
 NervGear::LocklessUpdater< bool >						PowerLevelStateThrottled;
 NervGear::LocklessUpdater< bool >						PowerLevelStateMinimum;
 NervGear::LocklessUpdater< HMTMountState_t >				HMTMountState;
 NervGear::LocklessUpdater< HMTDockState_t >				HMTDockState;	// edge triggered events, not the actual state
 static NervGear::LocklessUpdater< bool >					DockState;
-
-
-typedef LocklessVar< int, -1> wifiSignalLevel_t;
-NervGear::LocklessUpdater< wifiSignalLevel_t >			WifiSignalLevel;
-typedef LocklessVar< eWifiState, WIFI_STATE_UNKNOWN > wifiState_t;
-NervGear::LocklessUpdater< wifiState_t >					WifiState;
-
-typedef LocklessVar< int, -1> cellularSignalLevel_t;
-NervGear::LocklessUpdater< cellularSignalLevel_t >		CellularSignalLevel;
-typedef LocklessVar< eCellularState, CELLULAR_STATE_IN_SERVICE > cellularState_t;
-NervGear::LocklessUpdater< cellularState_t >				CellularState;
 
 extern "C"
 {
@@ -335,40 +334,10 @@ JNIEXPORT void Java_com_vrseen_nervgear_VrLib_nativeVolumeEvent(JNIEnv *jni, jcl
     TimeOfLastVolumeChange.setState( now );
 }
 
-JNIEXPORT void Java_com_vrseen_nervgear_VrLib_nativeBatteryEvent(JNIEnv *jni, jclass clazz, jint status, jint level, jint temperature)
-{
-    LOG( "nativeBatteryEvent(%i, %i, %i)", status, level, temperature );
-
-    batteryState_t state;
-    state.level = level;
-    state.temperature = temperature;
-    state.status = (eBatteryStatus)status;
-    BatteryState.setState( state );
-}
-
 JNIEXPORT void Java_com_vrseen_nervgear_VrLib_nativeHeadsetEvent(JNIEnv *jni, jclass clazz, jint state)
 {
     LOG( "nativeHeadsetEvent(%i)", state );
     HeadsetPluggedState.setState( ( state == 1 ) );
-}
-
-JNIEXPORT void Java_com_vrseen_nervgear_VrLib_nativeWifiEvent( JNIEnv * jni, jclass clazz, jint state, jint level )
-{
-	LOG( "nativeWifiSignalEvent( %i, %i )", state, level );
-	WifiState.setState( wifiState_t( static_cast< eWifiState >( state ) ) );
-	WifiSignalLevel.setState( wifiSignalLevel_t( level ) );
-}
-
-JNIEXPORT void Java_com_vrseen_nervgear_VrLib_nativeCellularStateEvent( JNIEnv * jni, jclass clazz, jint state )
-{
-	LOG( "nativeCellularStateEvent( %i )", state );
-	CellularState.setState( cellularState_t( static_cast< eCellularState >( state ) ) );
-}
-
-JNIEXPORT void Java_com_vrseen_nervgear_VrLib_nativeCellularSignalEvent( JNIEnv * jni, jclass clazz, jint level )
-{
-	LOG( "nativeCellularSignalEvent( %i )", level );
-	CellularSignalLevel.setState( cellularSignalLevel_t( level ) );
 }
 
 JNIEXPORT void Java_com_vrseen_nervgear_ProximityReceiver_nativeMountHandled(JNIEnv *jni, jclass clazz)
@@ -513,11 +482,7 @@ void ovr_OnLoad( JavaVM * JavaVm_ )
 		{ ProximityReceiverClass, 	{ "nativeProximitySensor", "(I)V",(void*)Java_com_vrseen_nervgear_ProximityReceiver_nativeProximitySensor } },
 		{ ProximityReceiverClass, 	{ "nativeMountHandled", "()V",(void*)Java_com_vrseen_nervgear_ProximityReceiver_nativeMountHandled } },
 		{ VrLibClass, 				{ "nativeVolumeEvent", "(I)V",(void*)Java_com_vrseen_nervgear_VrLib_nativeVolumeEvent } },
-		{ VrLibClass, 				{ "nativeBatteryEvent", "(III)V",(void*)Java_com_vrseen_nervgear_VrLib_nativeBatteryEvent } },
 		{ VrLibClass, 				{ "nativeHeadsetEvent", "(I)V",(void*)Java_com_vrseen_nervgear_VrLib_nativeHeadsetEvent } },
-		{ VrLibClass, 				{ "nativeWifiEvent", "(II)V",(void*)Java_com_vrseen_nervgear_VrLib_nativeWifiEvent } },
-		{ VrLibClass, 				{ "nativeCellularStateEvent", "(I)V",(void*)Java_com_vrseen_nervgear_VrLib_nativeCellularStateEvent } },
-		{ VrLibClass, 				{ "nativeCellularSignalEvent", "(I)V",(void*)Java_com_vrseen_nervgear_VrLib_nativeCellularSignalEvent } },
 		{ VrLibClass, 				{ "nativeVsync", "(J)V",(void*)Java_com_vrseen_nervgear_VrLib_nativeVsync } },
 	};
 	const int count = sizeof( gMethods ) / sizeof( gMethods[0] );
@@ -560,6 +525,70 @@ void ovr_Init()
     VOsBuild::Init(jni);
 
 	NervGear::SystemActivities_InitEventQueues();
+}
+
+void ovr_ExitActivity( ovrMobile * ovr, eExitType exitType )
+{
+	if ( exitType == EXIT_TYPE_FINISH )
+	{
+		LOG( "ovr_ExitActivity( EXIT_TYPE_FINISH ) - act.finish()" );
+
+		ovr_LeaveVrMode( ovr );
+
+		OVR_ASSERT( ovr != NULL );
+
+		//	const char * name = "finish";
+		const char * name = "finishOnUiThread";
+		const jmethodID mid = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass,
+														   name, "(Landroid/app/Activity;)V" );
+
+		if ( ovr->Jni->ExceptionOccurred() )
+		{
+			ovr->Jni->ExceptionClear();
+			LOG("Cleared JNI exception");
+		}
+		LOG( "Calling activity.finishOnUiThread()" );
+		ovr->Jni->CallStaticVoidMethod( VrLibClass, mid, *static_cast< jobject* >( &ovr->Parms.ActivityObject ) );
+		LOG( "Returned from activity.finishOnUiThread()" );
+	}
+	else if ( exitType == EXIT_TYPE_FINISH_AFFINITY )
+	{
+		LOG( "ovr_ExitActivity( EXIT_TYPE_FINISH_AFFINITY ) - act.finishAffinity()" );
+
+		OVR_ASSERT( ovr != NULL );
+
+		ovr_LeaveVrMode( ovr );
+
+		const char * name = "finishAffinityOnUiThread";
+		const jmethodID mid = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass,
+														   name, "(Landroid/app/Activity;)V" );
+
+		if ( ovr->Jni->ExceptionOccurred() )
+		{
+			ovr->Jni->ExceptionClear();
+			LOG("Cleared JNI exception");
+		}
+		LOG( "Calling activity.finishAffinityOnUiThread()" );
+		ovr->Jni->CallStaticVoidMethod( VrLibClass, mid, *static_cast< jobject* >( &ovr->Parms.ActivityObject ) );
+		LOG( "Returned from activity.finishAffinityOnUiThread()" );
+	}
+	else if ( exitType == EXIT_TYPE_EXIT )
+	{
+		LOG( "ovr_ExitActivity( EXIT_TYPE_EXIT ) - exit(0)" );
+
+		// This should only ever be called from the Java thread.
+		// ovr_LeaveVrMode() should have been called already from the VrThread.
+		OVR_ASSERT( ovr == NULL || ovr->Destroyed );
+
+		if ( OnLoadTid != gettid() )
+		{
+			FAIL( "ovr_ExitActivity( EXIT_TYPE_EXIT ): Called with tid %d instead of %d", gettid(), OnLoadTid );
+		}
+
+		NervGear::SystemActivities_ShutdownEventQueues();
+		ovr_Shutdown();
+		exit( 0 );
+	}
 }
 
 // This sends an explicit intent to the package/classname with the command and URI in the intent.
@@ -721,485 +750,6 @@ bool ovr_StartSystemActivity( ovrMobile * ovr, const char * command, const char 
 	return ovr_StartSystemActivity_JSON( ovr, intentBuffer );
 }
 
-void ovr_ExitActivity( ovrMobile * ovr, eExitType exitType )
-{
-	if ( exitType == EXIT_TYPE_FINISH )
-	{
-		LOG( "ovr_ExitActivity( EXIT_TYPE_FINISH ) - act.finish()" );
-
-		ovr_LeaveVrMode( ovr );
-
-		OVR_ASSERT( ovr != NULL );
-
-	//	const char * name = "finish";
-		const char * name = "finishOnUiThread";
-		const jmethodID mid = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass,
-				name, "(Landroid/app/Activity;)V" );
-
-		if ( ovr->Jni->ExceptionOccurred() )
-		{
-			ovr->Jni->ExceptionClear();
-			LOG("Cleared JNI exception");
-		}
-		LOG( "Calling activity.finishOnUiThread()" );
-		ovr->Jni->CallStaticVoidMethod( VrLibClass, mid, *static_cast< jobject* >( &ovr->Parms.ActivityObject ) );
-		LOG( "Returned from activity.finishOnUiThread()" );
-	}
-	else if ( exitType == EXIT_TYPE_FINISH_AFFINITY )
-	{
-		LOG( "ovr_ExitActivity( EXIT_TYPE_FINISH_AFFINITY ) - act.finishAffinity()" );
-
-		OVR_ASSERT( ovr != NULL );
-
-		ovr_LeaveVrMode( ovr );
-
-		const char * name = "finishAffinityOnUiThread";
-		const jmethodID mid = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass,
-				name, "(Landroid/app/Activity;)V" );
-
-		if ( ovr->Jni->ExceptionOccurred() )
-		{
-			ovr->Jni->ExceptionClear();
-			LOG("Cleared JNI exception");
-		}
-		LOG( "Calling activity.finishAffinityOnUiThread()" );
-		ovr->Jni->CallStaticVoidMethod( VrLibClass, mid, *static_cast< jobject* >( &ovr->Parms.ActivityObject ) );
-		LOG( "Returned from activity.finishAffinityOnUiThread()" );
-	}
-	else if ( exitType == EXIT_TYPE_EXIT )
-	{
-		LOG( "ovr_ExitActivity( EXIT_TYPE_EXIT ) - exit(0)" );
-
-		// This should only ever be called from the Java thread.
-		// ovr_LeaveVrMode() should have been called already from the VrThread.
-		OVR_ASSERT( ovr == NULL || ovr->Destroyed );
-
-		if ( OnLoadTid != gettid() )
-		{
-			FAIL( "ovr_ExitActivity( EXIT_TYPE_EXIT ): Called with tid %d instead of %d", gettid(), OnLoadTid );
-		}
-
-		NervGear::SystemActivities_ShutdownEventQueues();
-		ovr_Shutdown();
-		exit( 0 );
-	}
-}
-
-// Always returns a 0 terminated, possibly empty, string.
-// Strips any trailing \n.
-static const char * ReadSmallFile( const char * path )
-{
-	static char buffer[1024];
-	buffer[0] = 0;
-
-	FILE * f = fopen( path, "r" );
-	if ( !f )
-	{
-		return buffer;
-	}
-	const int r = fread( buffer, 1, sizeof( buffer ) - 1, f );
-	fclose( f );
-
-	// Strip trailing \n that some sys files have.
-	for ( int n = r; n > 0 && buffer[n] == '\n'; n-- )
-	{
-		buffer[n] = 0;
-	}
-	return buffer;
-}
-
-static NervGear::VString StripLinefeed( const NervGear::VString s )
-{
-	NervGear::VString copy;
-    for ( int i = 0; i < (int) s.length() && s.at( i ) != '\n'; i++ )
-	{
-        copy += s.at( i );
-	}
-	return copy;
-}
-
-static int ReadFreq( const char * pathFormat, ... )
-{
-	char fullPath[1024] = {};
-
-	va_list argptr;
-	va_start( argptr, pathFormat );
-	vsnprintf( fullPath, sizeof( fullPath ) - 1, pathFormat, argptr );
-	va_end( argptr );
-
-	NervGear::VString clock = ReadSmallFile( fullPath );
-	clock = StripLinefeed( clock );
-	if ( clock == "" )
-	{
-		return -1;
-	}
-	return atoi( clock.toCString() );
-}
-
-// System Power Level State
-enum ePowerLevelState
-{
-	POWERLEVEL_NORMAL = 0,		// Device operating at full level
-	POWERLEVEL_POWERSAVE = 1,	// Device operating at throttled level
-	POWERLEVEL_MINIMUM = 2,		// Device operating at minimum level
-	MAX_POWERLEVEL_STATES
-};
-enum ePowerLevelAction
-{
-	POWERLEVEL_ACTION_NONE,
-	POWERLEVEL_ACTION_WAITING_FOR_UNMOUNT,
-	POWERLEVEL_ACTION_WAITING_FOR_UNDOCK,
-	POWERLEVEL_ACTION_WAITING_FOR_RESET,
-	MAX_POWERLEVEL_ACTIONS
-};
-static ePowerLevelAction powerLevelAction = POWERLEVEL_ACTION_NONE;
-
-bool ovr_GetPowerLevelStateThrottled()
-{
-	return PowerLevelStateThrottled.state();
-}
-
-bool ovr_GetPowerLevelStateMinimum()
-{
-	return PowerLevelStateMinimum.state();
-}
-
-void ovr_CheckPowerLevelState( ovrMobile * ovr )
-{
-	const double timeNow = floor( ovr_GetTimeInSeconds() );
-	bool checkThisFrame = false;
-	if ( timeNow > powerLevelCheckLastReportTime )
-	{
-		checkThisFrame = true;
-		powerLevelCheckLastReportTime = timeNow;
-	}
-	if ( !checkThisFrame )
-	{
-		return;
-	}
-
-	ePowerLevelState powerLevelState = POWERLEVEL_NORMAL;
-	if ( getPowerLevelStateID != NULL )
-	{
-		powerLevelState = (ePowerLevelState)ovr->Jni->CallStaticIntMethod( VrLibClass, getPowerLevelStateID, ovr->Parms.ActivityObject );
-	}
-#if 0
-	ovr_UpdateLocalPreferences();
-	const char * powerLevelStr = ovr_GetLocalPreferenceValueForKey( "dev_powerLevelState", "-1" );	// "0", "1", "2"
-	const int powerLevel = atoi( powerLevelStr );
-	if ( powerLevel >= 0 )
-	{
-		powerLevelState = (ePowerLevelState)powerLevel;
-	}
-	LOG( "powerlevelstate %d powerlevelaction %d", powerLevelState, powerLevelAction );
-#endif
-
-	// Skip handling of power level changes (ie, on unmount)
-	const bool isThrottled = PowerLevelStateThrottled.state();
-
-	// TODO: Test if we can leave the sys files open and do continuous read or do we always
-	// need to read then close?
-
-	// NOTE: Only testing one core for thermal throttling.
-	// we won't be able to read the cpu clock unless it has been chmod'd to 0666, but try anyway.
-    VGlOperation glOperation;
-    int cpuCore = 0;
-    if ( ( glOperation.EglGetGpuType() & NervGear::GpuType::GPU_TYPE_MALI ) != 0 )
-	{
-		// Use the first BIG core if it is online, otherwise use the first LITTLE core.
-		const char * online = ReadSmallFile( "/sys/devices/system/cpu/cpu4/online" );
-		cpuCore = ( online[0] != '\0' && atoi( online ) != 0 ) ? 4 : 0;
-	}
-
-    const int64_t cpuUnit = ( ( glOperation.EglGetGpuType() & NervGear::GpuType::GPU_TYPE_MALI ) != 0 ) ? 1000LL : 1000LL;
-	const int64_t cpuFreq = ReadFreq( "/sys/devices/system/cpu/cpu%i/cpufreq/scaling_cur_freq", cpuCore );
-    const int64_t gpuUnit = ( ( glOperation.EglGetGpuType() & NervGear::GpuType::GPU_TYPE_MALI ) != 0 ) ? 1000000LL : 1000LL;
-    const int64_t gpuFreq = ReadFreq( ( ( glOperation.EglGetGpuType() & NervGear::GpuType::GPU_TYPE_MALI ) != 0 ) ?
-									"/sys/devices/14ac0000.mali/clock" :
-									"/sys/class/kgsl/kgsl-3d0/gpuclk" );
-	// unused macros are so the spam can be #if 0'd out for debugging without getting unused variable compiler warnings
-	OVR_UNUSED( cpuUnit );
-	OVR_UNUSED( cpuFreq );
-	OVR_UNUSED( gpuUnit );
-	OVR_UNUSED( gpuFreq );
-#if 1
-	LOG( "CPU%d Clock %lld MHz, GPU Clock %lld MHz, Power Level State %d: %s, Temp %fC",
-			cpuCore, cpuFreq * cpuUnit / 1000000, gpuFreq * gpuUnit / 1000000,
-			powerLevelState, ( isThrottled ) ? "throttled" : "normal", ovr_GetBatteryState().temperature / 10.0f );
-#endif
-	/*
-	------------------------------------------------------------
-	When the device first transitions from NORMAL to POWERSAVE,
-	we display a warning that performance will be degraded and
-	force 30Hz TimeWarp operation.
-
-	We stay in this state even if the power level state goes back
-	to NORMAL after cooling down, because it would be expected to
-	rapidly go back up if 60Hz operation were resumed.
-
-	60Hz operation will only be re-enabled after the headset has
-	been taken off the user's head.
-
-	If the power level goes to MINIMUM, the platform UI will come
-	up with a warning and not allow the game to continue. The user
-	will have to take the headset off and wait to get it reset,
-	but no state in the app should be lost.
-	-------------------------------------------------------------
-	*/
-	if ( powerLevelState == POWERLEVEL_NORMAL )
-	{
-		if ( powerLevelAction == POWERLEVEL_ACTION_WAITING_FOR_RESET )
-		{
-			LOG( "RESET FROM POWERSAVE MODE" );
-			PowerLevelStateThrottled.setState( false );
-			powerLevelAction = POWERLEVEL_ACTION_NONE;
-		}
-	}
-	else if ( powerLevelState == POWERLEVEL_POWERSAVE )
-	{
-		// CPU and GPU have been de-clocked to power-save levels.
-		if ( !isThrottled )
-		{
-			if ( ovr->Parms.AllowPowerSave )
-			{
-				// If app allows power save, adjust application performance
-				// to account for lower clock frequencies and warn about
-				// performance degradation.
-				LOG( "THERMAL THROTTLING LEVEL 1 - POWER SAVE MODE FORCING 30FPS" );
-				PowerLevelStateThrottled.setState( true );
-				powerLevelAction = POWERLEVEL_ACTION_WAITING_FOR_UNMOUNT;
-				ovr_StartSystemActivity( ovr, PUI_THROTTLED1, NULL );
-			}
-			else
-			{
-				if ( powerLevelAction != POWERLEVEL_ACTION_WAITING_FOR_UNDOCK )
-				{
-					LOG( "THERMAL THROTTLING LEVEL 2 - CANNOT CONTINUE" );
-					PowerLevelStateThrottled.setState( true );
-					PowerLevelStateMinimum.setState( true );
-					powerLevelAction = POWERLEVEL_ACTION_WAITING_FOR_UNDOCK;
-					ovr_StartSystemActivity( ovr, PUI_THROTTLED2, NULL );
-				}
-			}
-		}
-	}
-	else if ( powerLevelState == POWERLEVEL_MINIMUM )
-	{
-		if ( powerLevelAction != POWERLEVEL_ACTION_WAITING_FOR_UNDOCK )
-		{
-			// Warn that the game cannot continue in minimum mode.
-			LOG( "THERMAL THROTTLING LEVEL 2 - CANNOT CONTINUE" );
-			PowerLevelStateThrottled.setState( true );
-			PowerLevelStateMinimum.setState( true );
-			powerLevelAction = POWERLEVEL_ACTION_WAITING_FOR_UNDOCK;
-			ovr_StartSystemActivity( ovr, PUI_THROTTLED2, NULL );
-		}
-	}
-}
-
-/*
-Fixed Clock Level API
-
-return2EnableFreqLev returns the [min,max] clock levels available for the
-CPU and GPU, ie [0,3]. However, not all clock combinations are valid for
-all devices. For instance, the highest GPU level may not be available for
-use with the highest CPU levels. If an invalid matrix combination is
-provided, the system will not acknowlege the request and clock settings
-will go into dynamic mode.
-
-Fixed clock level on Qualcomm Snapdragon 805 based Note 4
-GPU MHz: 0 =    240, 1 =   300, 2 =   389, 3 =   500
-CPU MHz: 0 =    884, 1 =  1191, 2 =  1498, 3 =  1728
-
-Fixed clock level on ARM Exynos 5433 based Note 4
-GPU MHz: 0 =    266, 1 =   350, 2 =   500, 3 =   550
-CPU MHz: 0 = L 1000, 1 = B 700, 2 = B 700, 3 = B 800
-
-Fixed clock level on ARM Exynos 7420 based Zero (as of 2015-02-10)
-GPU MHz: 0 =    266, 1 =   350, 2 =   420, 3 =   544  4 =    600
-			 1200/2		  1500/2
-CPU MHz: 0 = L  600, 1 = L 750, 2 = B 800, 3 = B 800, 4 = B 1000, 5 = B 1200
-
-VRSVC as of 2015-02-10 provides support for the cpu to remain in dynamic
-mode with a fixed GPU Level. NOTE: The intended usage for CPU dynamic mode
-is for apps like 360 photos which have a big burst of high performance needs
-for decompression, then long periods of low load. However, in testing, this
-appears to cause tearing due to TimeWarp not finishing on time. To enable
-CPU dynamic mode for testing purposes only, set cpuLevel = -1.
-*/
-
-enum {
-	LEVEL_GPU_MIN = 0,
-	LEVEL_GPU_MAX,
-	LEVEL_CPU_MIN,
-	LEVEL_CPU_MAX
-};
-
-enum {
-	CLOCK_CPU_FREQ = 0,
-	CLOCK_GPU_FREQ,
-	CLOCK_POWERSAVE_CPU_FREQ,
-	CLOCK_POWERSAVE_GPU_FREQ
-};
-
-static const int INVALID_CLOCK_LEVEL = -1;
-static const int DYNAMIC_MODE_LEVEL = -1;
-
-#if 0
-static bool WriteFreq( const int freq, const char * pathFormat, ... )
-{
-	char fullPath[1024] = {};
-
-	va_list argptr;
-	va_start( argptr, pathFormat );
-	vsnprintf( fullPath, sizeof( fullPath ) - 1, pathFormat, argptr );
-	va_end( argptr );
-
-	char string[1024] = {};
-	sprintf( string, "%d", freq );
-
-	FILE * f = fopen( fullPath, "w" );
-	if ( !f )
-	{
-		LOG( "failed to open %s", fullPath );
-		return false;
-	}
-	fwrite( string, 1, strlen( string ), f );
-	fclose( f );
-
-	LOG( "wrote %s to %s", string, fullPath );
-	return true;
-}
-#endif
-
-/*
- * Set the Fixed CPU/GPU Clock Levels
- */
-static void SetVrSystemPerformance( JNIEnv * VrJni, jclass vrActivityClass, jobject activityObject,
-		const int cpuLevel, const int gpuLevel )
-{
-}
-/*{
-	// Clear any previous exceptions.
-	// NOTE: This can be removed once security exception handling is moved to
-	// Java IF.
-	if ( VrJni->ExceptionOccurred() )
-	{
-		VrJni->ExceptionClear();
-		LOG( "SetVrSystemPerformance: Enter: JNI Exception occurred" );
-	}
-
-	LOG( "SetVrSystemPerformance( %i, %i )", cpuLevel, gpuLevel );
-
-	// Get the available clock levels for the device.
-	const jmethodID getAvailableClockLevelsId = ovr_GetStaticMethodID( VrJni, vrActivityClass,
-		"getAvailableFreqLevels", "(Landroid/app/Activity;)[I" );
-	jintArray jintLevels = (jintArray)VrJni->CallStaticObjectMethod( vrActivityClass,
-		getAvailableClockLevelsId, activityObject );
-
-	// Move security exception detection to the java IF.
-	// Catch Permission denied
-	if ( VrJni->ExceptionOccurred() )
-	{
-		VrJni->ExceptionClear();
-		LOG( "SetVrSystemPerformance: JNI Exception occurred, returning" );
-		return;
-	}
-
-	OVR_ASSERT( VrJni->GetArrayLength( jintLevels )== 4 );		// {GPU MIN, GPU MAX, CPU MIN, CPU MAX}
-
-	jint * levels = VrJni->GetIntArrayElements( jintLevels, NULL );
-	if ( levels != NULL )
-	{
-		// Verify levels are within appropriate range for the device
-		if ( cpuLevel >= 0 )
-		{
-			OVR_ASSERT( cpuLevel >= levels[LEVEL_CPU_MIN] && cpuLevel <= levels[LEVEL_CPU_MAX] );
-			LOG( "CPU levels [%d, %d]", levels[LEVEL_CPU_MIN], levels[LEVEL_CPU_MAX] );
-		}
-		if ( gpuLevel >= 0 )
-		{
-			OVR_ASSERT( gpuLevel >= levels[LEVEL_GPU_MIN] && gpuLevel <= levels[LEVEL_GPU_MAX] );
-			LOG( "GPU levels [%d, %d]", levels[LEVEL_GPU_MIN], levels[LEVEL_GPU_MAX] );
-		}
-
-		VrJni->ReleaseIntArrayElements( jintLevels, levels, 0 );
-	}
-	VrJni->DeleteLocalRef( jintLevels );
-
-	// Set the fixed cpu and gpu clock levels
-	const jmethodID setSystemPerformanceId = ovr_GetStaticMethodID( VrJni, vrActivityClass,
-			"setSystemPerformanceStatic", "(Landroid/app/Activity;II)[I" );
-
-	jintArray jintClocks = (jintArray)VrJni->CallStaticObjectMethod( vrActivityClass, setSystemPerformanceId,
-			activityObject, cpuLevel, gpuLevel );
-
-	OVR_ASSERT( VrJni->GetArrayLength( jintClocks ) == 4 );		//  {CPU CLOCK, GPU CLOCK, POWERSAVE CPU CLOCK, POWERSAVE GPU CLOCK}
-
-	jint * clocks = VrJni->GetIntArrayElements( jintClocks, NULL );
-	if ( clocks != NULL )
-	{
-		const int64_t cpuUnit = ( ( NervGear::EglGetGpuType() & NervGear::GPU_TYPE_MALI ) != 0 ) ? 1000LL : 1000LL;
-		const int64_t gpuUnit = ( ( NervGear::EglGetGpuType() & NervGear::GPU_TYPE_MALI ) != 0 ) ? 1000LL : 1LL;
-		const int64_t cpuFreq = clocks[CLOCK_CPU_FREQ];
-		const int64_t gpuFreq = clocks[CLOCK_GPU_FREQ];
-		//const int64_t powerSaveCpuMhz = clocks[CLOCK_POWERSAVE_CPU_FREQ];
-		//const int64_t powerSaveGpuMhz = clocks[CLOCK_POWERSAVE_GPU_FREQ];
-
-		LOG( "CPU Clock = %lld MHz", cpuFreq * cpuUnit / 1000000 );
-		LOG( "GPU Clock = %lld MHz", gpuFreq * gpuUnit / 1000000 );
-
-		// NOTE: If provided an invalid matrix combination, the system will not
-		// acknowledge the request and clock settings will go into dynamic mode.
-		// Warn when we've encountered this failure condition.
-		if ( ( ( cpuLevel != DYNAMIC_MODE_LEVEL ) && ( cpuFreq == INVALID_CLOCK_LEVEL ) ) || ( gpuFreq == INVALID_CLOCK_LEVEL ) )
-		{
-			// NOTE: Mali does not return proper values
-			if ( ( NervGear::EglGetGpuType() & NervGear::GPU_TYPE_MALI ) == 0 )
-			{
-				OVR_ASSERT( 0 );
-				const char * cpuValid = ( ( cpuFreq == INVALID_CLOCK_LEVEL ) ) ? "denied" : "accepted";
-				const char * gpuValid = ( ( gpuFreq == INVALID_CLOCK_LEVEL ) ) ? "denied" : "accepted";
-				WARN( "WARNING: Invalid clock level combination for this device (cpu:%d=%s,gpu:%d=%s), forcing dynamic mode on",
-					cpuLevel, cpuValid, gpuLevel, gpuValid );
-			}
-		}
-
-		VrJni->ReleaseIntArrayElements( jintClocks, clocks, 0 );
-	}
-	VrJni->DeleteLocalRef( jintClocks );
-
-	for ( int i = 0; i < 4; i++ )
-	{
-		WriteFreq( 1200000, "/sys/devices/system/cpu/cpu%i/cpufreq/scaling_min_freq", i );
-	}
-	for ( int i = 4; i < 8; i++ )
-	{
-		WriteFreq( 1300000, "/sys/devices/system/cpu/cpu%i/cpufreq/scaling_min_freq", i );
-	}
-}*/
-
-/*
- * Enter (-1,-1) to release the current clock levels.
- */
-static void ReleaseVrSystemPerformance( JNIEnv * VrJni, jclass vrActivityClass, jobject activityObject )
-{
-	// Clear any previous exceptions.
-	// NOTE: This can be removed once security exception handling is moved to Java IF.
-	if ( VrJni->ExceptionOccurred() )
-	{
-		VrJni->ExceptionClear();
-		LOG( "ReleaseVrSystemPerformance: Enter: JNI Exception occurred" );
-	}
-
-	LOG( "ReleaseVrSystemPerformance" );
-
-	// Release the fixed cpu and gpu clock levels
-	const jmethodID releaseSystemPerformanceId = JniUtils::GetStaticMethodID( VrJni, vrActivityClass,
-			"releaseSystemPerformanceStatic", "(Landroid/app/Activity;)V" );
-	VrJni->CallStaticVoidMethod( vrActivityClass, releaseSystemPerformanceId, activityObject );
-}
-
 static void UpdateHmdInfo( ovrMobile * ovr )
 {
 	short hmdVendorId = 0;
@@ -1221,23 +771,40 @@ static void UpdateHmdInfo( ovrMobile * ovr )
 	LOG( "ProductId = %i", hmdProductId );
 	LOG( "Version = %i", hmdVersion );
 
-    const char *model = VOsBuild::getString(VOsBuild::Model).toCString();
-    ovr->HmdInfo = NervGear::GetDeviceHmdInfo(model, ovr->Jni, ovr->Parms.ActivityObject, VrLibClass);
-    delete[] model;
+    ovr->device = VDevice::instance();
+
+    // Only use the Android info if we haven't explicitly set the screenWidth / height,
+    // because they are reported wrong on the note.
+    if(!ovr->device->widthMeters)
+    {
+        jmethodID getDisplayWidth = ovr->Jni->GetStaticMethodID( VrLibClass, "getDisplayWidth", "(Landroid/app/Activity;)F" );
+        if ( !getDisplayWidth )
+        {
+            FAIL( "couldn't get getDisplayWidth" );
+        }
+        ovr->device->widthMeters = ovr->Jni->CallStaticFloatMethod(VrLibClass, getDisplayWidth, ovr->Parms.ActivityObject );
+
+        jmethodID getDisplayHeight = ovr->Jni->GetStaticMethodID( VrLibClass, "getDisplayHeight", "(Landroid/app/Activity;)F" );
+        if ( !getDisplayHeight )
+        {
+            FAIL( "couldn't get getDisplayHeight" );
+        }
+         ovr->device->heightMeters = ovr->Jni->CallStaticFloatMethod( VrLibClass, getDisplayHeight, ovr->Parms.ActivityObject );
+    }
 
 	// Update the dimensions in pixels directly from the window
-	ovr->HmdInfo.widthPixels = windowSurfaceWidth;
-	ovr->HmdInfo.heightPixels = windowSurfaceHeight;
+	ovr->device->widthPixels = windowSurfaceWidth;
+	ovr->device->heightPixels = windowSurfaceHeight;
 
-	LOG( "hmdInfo.lensSeparation = %f", ovr->HmdInfo.lensSeparation );
-	LOG( "hmdInfo.widthMeters = %f", ovr->HmdInfo.widthMeters );
-	LOG( "hmdInfo.heightMeters = %f", ovr->HmdInfo.heightMeters );
-	LOG( "hmdInfo.widthPixels = %i", ovr->HmdInfo.widthPixels );
-	LOG( "hmdInfo.heightPixels = %i", ovr->HmdInfo.heightPixels );
-	LOG( "hmdInfo.eyeTextureResolution[0] = %i", ovr->HmdInfo.eyeTextureResolution[0] );
-	LOG( "hmdInfo.eyeTextureResolution[1] = %i", ovr->HmdInfo.eyeTextureResolution[1] );
-	LOG( "hmdInfo.eyeTextureFov[0] = %f", ovr->HmdInfo.eyeTextureFov[0] );
-	LOG( "hmdInfo.eyeTextureFov[1] = %f", ovr->HmdInfo.eyeTextureFov[1] );
+	LOG( "hmdInfo.lensSeparation = %f", ovr->device->lensSeparation );
+	LOG( "hmdInfo.widthMeters = %f", ovr->device->widthMeters );
+	LOG( "hmdInfo.heightMeters = %f", ovr->device->heightMeters );
+	LOG( "hmdInfo.widthPixels = %i", ovr->device->widthPixels );
+	LOG( "hmdInfo.heightPixels = %i", ovr->device->heightPixels );
+	LOG( "hmdInfo.eyeTextureResolution[0] = %i", ovr->device->eyeTextureResolution[0] );
+	LOG( "hmdInfo.eyeTextureResolution[1] = %i", ovr->device->eyeTextureResolution[1] );
+	LOG( "hmdInfo.eyeTextureFov[0] = %f", ovr->device->eyeTextureFov[0] );
+	LOG( "hmdInfo.eyeTextureFov[1] = %f", ovr->device->eyeTextureFov[1] );
 }
 
 int ovr_GetSystemBrightness( ovrMobile * ovr )
@@ -1372,11 +939,7 @@ ovrMobile * ovr_EnterVrMode( ovrModeParms parms, ovrHmdInfo * returnedHmdInfo )
     vInfo("MODEL =" << VOsBuild::getString(VOsBuild::Model));
 	LOG( "OVR_VERSION = %s", ovr_GetVersionString() );
 	LOG( "ovrModeParms.AsynchronousTimeWarp = %i", parms.AsynchronousTimeWarp );
-	LOG( "ovrModeParms.AllowPowerSave = %i", parms.AllowPowerSave );
-	LOG( "ovrModeParms.DistortionFileName = %s", parms.DistortionFileName ? parms.DistortionFileName : "" );
 	LOG( "ovrModeParms.GameThreadTid = %i", parms.GameThreadTid );
-	LOG( "ovrModeParms.CpuLevel = %i", parms.CpuLevel );
-	LOG( "ovrModeParms.GpuLevel = %i", parms.GpuLevel );
 
 	ovrMobile * ovr = new ovrMobile;
 	ovr->Jni = Jni;
@@ -1434,17 +997,13 @@ ovrMobile * ovr_EnterVrMode( ovrModeParms parms, ovrHmdInfo * returnedHmdInfo )
     VString externalStorageDirectory = JniUtils::Convert(ovr->Jni, externalStorageDirectoryString);
     ovr->Jni->DeleteLocalRef(externalStorageDirectoryString);
 
-	// Enable cpu and gpu clock locking
-	SetVrSystemPerformance( ovr->Jni, VrLibClass, ovr->Parms.ActivityObject,
-			ovr->Parms.CpuLevel, ovr->Parms.GpuLevel );
-
 	if ( ovr->Jni->ExceptionOccurred() )
 	{
 		ovr->Jni->ExceptionClear();
 		LOG( "Cleared JNI exception" );
 	}
 
-	ovr->Warp = new VFrameSmooth( ovr->Parms.AsynchronousTimeWarp,ovr->HmdInfo);
+	ovr->Warp = new VFrameSmooth( ovr->Parms.AsynchronousTimeWarp,ovr->device);
 
 	// reset brightness, DND and comfort modes because VRSVC, while maintaining the value, does not actually enforce these settings.
 	int brightness = ovr_GetSystemBrightness( ovr );
@@ -1457,15 +1016,12 @@ ovrMobile * ovr_EnterVrMode( ovrModeParms parms, ovrHmdInfo * returnedHmdInfo )
 	ovr_SetComfortModeEnabled( ovr, comfortMode );
 
 	ovrHmdInfo info = {};
-	info.SuggestedEyeResolution[0] = ovr->HmdInfo.eyeTextureResolution[0];
-	info.SuggestedEyeResolution[1] = ovr->HmdInfo.eyeTextureResolution[1];
-	info.SuggestedEyeFov[0] = ovr->HmdInfo.eyeTextureFov[0];
-	info.SuggestedEyeFov[1] = ovr->HmdInfo.eyeTextureFov[1];
+	info.SuggestedEyeResolution[0] = ovr->device->eyeTextureResolution[0];
+	info.SuggestedEyeResolution[1] = ovr->device->eyeTextureResolution[1];
+	info.SuggestedEyeFov[0] = ovr->device->eyeTextureFov[0];
+	info.SuggestedEyeFov[1] = ovr->device->eyeTextureFov[1];
 
 	*returnedHmdInfo = info;
-
-	double WAIT_AFTER_ENTER_VR_MODE_TIME = 5.0;
-	startPowerLevelCheckTime = ovr_GetTimeInSeconds() + WAIT_AFTER_ENTER_VR_MODE_TIME;
 
 	/*
 
@@ -1552,9 +1108,6 @@ void ovr_LeaveVrMode( ovrMobile * ovr )
 
 	getPowerLevelStateID = NULL;
 
-	// Always release clock locks.
-	ReleaseVrSystemPerformance( ovr->Jni, VrLibClass, ovr->Parms.ActivityObject );
-
 	// Stop our vsync callbacks.
 	const jmethodID stopVsyncId = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass,
 			"stopVsync", "(Landroid/app/Activity;)V" );
@@ -1586,15 +1139,6 @@ void ovr_LeaveVrMode( ovrMobile * ovr )
 			"stopHeadsetReceiver", "(Landroid/app/Activity;)V" );
 	ovr->Jni->CallStaticVoidMethod( VrLibClass, stopHeadsetReceiverId, ovr->Parms.ActivityObject );
 #endif
-}
-
-static void ResetTimeWarp( ovrMobile * ovr )
-{
-	LOG( "ResetTimeWarp" );
-
-	// restart TimeWarp to generate new distortion meshes
-	delete ovr->Warp;
-	ovr->Warp = new VFrameSmooth( ovr->Parms.AsynchronousTimeWarp,ovr->HmdInfo);
 }
 
 void ovr_HandleHmdEvents( ovrMobile * ovr )
@@ -1643,9 +1187,6 @@ void ovr_HandleHmdEvents( ovrMobile * ovr )
 			{
 				LOG( "ovr_HandleHmdEvents: HMT was mounted" );
 				hmtIsMounted = true;
-				alwaysSkipPowerLevelCheck = false;
-				double WAIT_AFTER_MOUNT_TIME = 5.0;
-				startPowerLevelCheckTime = ovr_GetTimeInSeconds() + WAIT_AFTER_MOUNT_TIME;
 
 				// broadcast to background apps that mount has been handled
 				ovr_notifyMountHandled( ovr );
@@ -1659,15 +1200,7 @@ void ovr_HandleHmdEvents( ovrMobile * ovr )
 		{
 			LOG( "ovr_HandleHmdEvents: HMT was UNmounted" );
 
-			alwaysSkipPowerLevelCheck = true;
 			hmtIsMounted = false;
-
-			// Reset power level state action if waiting for an unmount event
-			if ( powerLevelAction == POWERLEVEL_ACTION_WAITING_FOR_UNMOUNT )
-			{
-				LOG( "powerLevelAction = POWERLEVEL_ACTION_WAITING_FOR_RESET" );
-				powerLevelAction = POWERLEVEL_ACTION_WAITING_FOR_RESET;
-			}
 		}
 	}
 }
@@ -1681,9 +1214,6 @@ void ovr_HandleDeviceStateChanges( ovrMobile * ovr )
 
 	// Test for Hmd Events such as mount/unmount, dock/undock
 	ovr_HandleHmdEvents( ovr );
-
-	// Check for device power level state changes
-	ovr_CheckPowerLevelState( ovr );
 
 	// check for pending events that must be handled natively
 	size_t const MAX_EVENT_SIZE = 4096;
@@ -1718,7 +1248,7 @@ void ovr_HandleDeviceStateChanges( ovrMobile * ovr )
 				// along an empty buffer so that any remaining events still get processed by the client.
 				LOG( "ovr_HandleDeviceStateChanges: Acting on System Activity returnToLauncher event." );
 				// PlatformActivity and Home should NEVER get one of these!
-				ovr_ReturnToHome( ovr );
+				ovr_ExitActivity(ovr, EXIT_TYPE_FINISH_AFFINITY);
             }
 		}
 		else
@@ -1741,7 +1271,7 @@ double ovr_GetPredictedDisplayTime( ovrMobile * ovr, int minimumVsyncs, int pipe
 		return ovr_GetTimeInSeconds();
 	}
 	// Handle power throttling the same way ovr_WarpSwap() does.
-	const int throttledMinimumVsyncs = ovr_GetPowerLevelStateThrottled() ? 2 : minimumVsyncs;
+	const int throttledMinimumVsyncs = minimumVsyncs;
 	const double vsyncBase = floor( NervGear::GetFractionalVsync() );
 	const double predictedFrames = (double)throttledMinimumVsyncs * ( (double)pipelineDepth + 0.5 );
 	const double predictedVsync = vsyncBase + predictedFrames;
@@ -1787,54 +1317,6 @@ void ovr_WarpSwap( ovrMobile * ovr, const ovrTimeWarpParms * parms )
 	ovr->Warp->doSmooth( *parms );
 }
 
-void ovr_SetDistortionTuning( ovrMobile * ovr, NervGear::DistortionEqnType type, float scale, float* distortionK)
-{
-	// Dynamic adjustment of distortion
-	ovr->HmdInfo.lens.Eqn = type;
-	ovr->HmdInfo.lens.MetersPerTanAngleAtCenter = scale;
-	if ( type == NervGear::Distortion_RecipPoly4 )
-	{
-		for ( int i = 0; i < 4; i++ )
-		{
-			ovr->HmdInfo.lens.K[i] = distortionK[i];
-		}
-	}
-	else if ( type == NervGear::Distortion_CatmullRom10 )
-	{
-		for ( int i = 0; i < 11; i++ )
-		{
-			ovr->HmdInfo.lens.K[i] = distortionK[i];
-		}
-	}
-	else
-	{
-		for ( int i = 0; i < ovr->HmdInfo.lens.MaxCoefficients; i++ )
-		{
-			ovr->HmdInfo.lens.K[i] = distortionK[i];
-		}
-	}
-
-	ResetTimeWarp( ovr );
-}
-
-void ovr_AdjustClockLevels( ovrMobile * ovr, int cpuLevel, int gpuLevel )
-{
-	if ( ovr == NULL )
-	{
-		return;
-	}
-
-	// release the existing clock locks
-	ReleaseVrSystemPerformance( ovr->Jni, VrLibClass, ovr->Parms.ActivityObject );
-
-	ovr->Parms.CpuLevel = cpuLevel;
-	ovr->Parms.GpuLevel = gpuLevel;
-
-	// set to new values
-	SetVrSystemPerformance( ovr->Jni, VrLibClass, ovr->Parms.ActivityObject,
-			ovr->Parms.CpuLevel, ovr->Parms.GpuLevel );
-}
-
 int ovr_GetVolume()
 {
 	return CurrentVolume.state().Value;
@@ -1849,65 +1331,6 @@ double ovr_GetTimeSinceLastVolumeChange()
 		return -1;
 	}
 	return ovr_GetTimeInSeconds() - value;
-}
-
-void ovr_RequestAudioFocus( ovrMobile * ovr )
-{
-	if ( ovr == NULL )
-	{
-		return;
-	}
-
-	const jmethodID requestAudioFocusId = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass,
-    		"requestAudioFocus", "(Landroid/app/Activity;)V" );
-	ovr->Jni->CallStaticVoidMethod( VrLibClass, requestAudioFocusId, ovr->Parms.ActivityObject );
-}
-
-void ovr_ReleaseAudioFocus( ovrMobile * ovr )
-{
-	if ( ovr == NULL )
-	{
-		return;
-	}
-
-	const jmethodID releaseAudioFocusId = JniUtils::GetStaticMethodID( ovr->Jni, VrLibClass,
-			"releaseAudioFocus", "(Landroid/app/Activity;)V" );
-	ovr->Jni->CallStaticVoidMethod( VrLibClass, releaseAudioFocusId, ovr->Parms.ActivityObject );
-}
-
-int ovr_GetWifiSignalLevel()
-{
-	return WifiSignalLevel.state().Value;
-}
-
-eWifiState ovr_GetWifiState()
-{
-	return WifiState.state().Value;
-}
-
-int ovr_GetCellularSignalLevel()
-{
-	return CellularSignalLevel.state().Value;
-}
-
-eCellularState ovr_GetCellularState()
-{
-	return CellularState.state().Value;
-}
-
-batteryState_t ovr_GetBatteryState()
-{
-	return BatteryState.state();
-}
-
-bool ovr_GetHeadsetPluggedState()
-{
-	return HeadsetPluggedState.state();
-}
-
-bool ovr_IsDeviceDocked()
-{
-	return DockState.state();
 }
 
 eVrApiEventStatus ovr_nextPendingEvent( VString& buffer, unsigned int const bufferSize )
@@ -1948,93 +1371,4 @@ eVrApiEventStatus ovr_nextPendingEvent( VString& buffer, unsigned int const buff
 		return VRAPI_EVENT_INVALID_JSON;
 	}
 	return status;
-}
-
-void ovr_ReturnToHome( ovrMobile * ovr )
-{
-    /*jclass activityClass = ovr->Jni->GetObjectClass( ovr->Parms.ActivityObject );
-
-	if ( !ovr_IsCurrentActivity( ovr->Jni, ovr->Parms.ActivityObject, PUI_CLASS_NAME ) &&
-			!ovr_IsOculusHomePackage( ovr->Jni, activityClass, ovr->Parms.ActivityObject ) )
-	{
-		char homePackageName[128];
-		ovr_GetHomePackageName( homePackageName, sizeof( homePackageName ) );
-		ovr_SendLaunchIntent( ovr, homePackageName, "", "", EXIT_TYPE_FINISH_AFFINITY );
-	}
-
-    ovr->Jni->DeleteLocalRef( activityClass );*/
-    ovr_ExitActivity(ovr, EXIT_TYPE_FINISH_AFFINITY);
-}
-
-VString ovr_GetCurrentLanguage(ovrMobile * ovr)
-{
-    jmethodID getCurrentLanguageMethodId = JniUtils::GetStaticMethodID(ovr->Jni, VrLibClass, "getCurrentLanguage", "()Ljava/lang/String;");
-    if (getCurrentLanguageMethodId != NULL) {
-        VString language = JniUtils::Convert(ovr->Jni, (jstring) ovr->Jni->CallStaticObjectMethod(VrLibClass, getCurrentLanguageMethodId));
-        if (!ovr->Jni->ExceptionOccurred()) {
-            return language;
-		}
-	}
-    return VString();
-}
-
-#include "embedded/dependency_error_de.h"
-#include "embedded/dependency_error_en.h"
-#include "embedded/dependency_error_es.h"
-#include "embedded/dependency_error_fr.h"
-#include "embedded/dependency_error_it.h"
-#include "embedded/dependency_error_ja.h"
-#include "embedded/dependency_error_ko.h"
-
-
-struct embeddedImage_t
-{
-	char const *	ImageName;
-	void *			ImageBuffer;
-	size_t			ImageSize;
-};
-
-// for each error type, add an array of errorImage_t with an entry for each language
-embeddedImage_t EmbeddedImages[] =
-{
-	{ "dependency_error_en.png",		dependencyErrorEnData,		dependencyErrorEnSize },
-	{ "dependency_error_de.png",		dependencyErrorDeData,		dependencyErrorDeSize },
-	{ "dependency_error_en-rGB.png",	dependencyErrorEnData,		dependencyErrorEnSize },
-	{ "dependency_error_es.png",		dependencyErrorEsData,		dependencyErrorEsSize },
-	{ "dependency_error_es-rES.png",	dependencyErrorEsData,		dependencyErrorEsSize },
-	{ "dependency_error_fr.png",		dependencyErrorFrData,		dependencyErrorFrSize },
-	{ "dependency_error_it.png",		dependencyErrorItData,		dependencyErrorItSize },
-	{ "dependency_error_ja.png",		dependencyErrorJaData,		dependencyErrorJaSize },
-	{ "dependency_error_ko.png",		dependencyErrorKoData,		dependencyErrorKoSize },
-	{ NULL, NULL, 0 }
-};
-
-embeddedImage_t const * FindErrorImage( embeddedImage_t const * list, char const * name )
-{
-	for ( int i = 0; list[i].ImageName != NULL; ++i )
-	{
-        if ( strcasecmp( list[i].ImageName, name ) == 0 )
-        {
-			LOG( "Found embedded image for '%s'", name );
-			return &list[i];
-		}
-	}
-
-	return NULL;
-}
-
-bool ovr_FindEmbeddedImage( ovrMobile * ovr, char const * imageName, void * & buffer, int & bufferSize )
-{
-	buffer = NULL;
-	bufferSize = 0;
-
-	embeddedImage_t const * image = FindErrorImage( EmbeddedImages, imageName );
-	if ( image == NULL )
-	{
-		WARN( "No embedded image named '%s' was found!", imageName );
-	}
-
-	buffer = image->ImageBuffer;
-	bufferSize = image->ImageSize;
-	return true;
 }

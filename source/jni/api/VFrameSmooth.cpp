@@ -1,4 +1,6 @@
 #include <pthread.h>
+#include "VFrameSmooth.h"
+#include "VAlgorithm.h"
 #include <errno.h>
 #include <math.h>
 #include <sched.h>
@@ -13,9 +15,7 @@
 #include "Android/JniUtils.h"
 #include "Vsync.h"
 #include "VLensDistortion.h"
-#include "VrApi_Android.h"
 #include "api/VGlOperation.h"
-#include "Alg.h"
 #include "../core/VString.h"
 
 #include "../embedded/oculus_loading_indicator.h"
@@ -23,7 +23,6 @@
 #include "Lockless.h"
 #include "VGlGeometry.h"
 #include "VGlShader.h"
-#include "vgltypedefine.h"
 
 ovrSensorState ovr_GetSensorStateInternal( double absTime );
 bool ovr_ProcessLatencyTest( unsigned char rgbColorOut[3] );
@@ -138,14 +137,14 @@ struct eyeLog_t
 // If we have reliable GPU scheduling and front buffer rendering,
 // try to warp each eye exactly half a frame ahead.
 swapProgram_t	spAsyncFrontBufferPortrait = {
-        false,	false, { 0.5, 1.0},	{ {1.0, 1.5}, {1.5, 2.0} }
+    false,	false, { 0.5, 1.0},	{ {1.0, 1.5}, {1.5, 2.0} }
 };
 
 // If we have reliable GPU scheduling, but don't have front
 // buffer rendering, the warp thread should still wait until
 // mid frame before rendering the second eye, reducing latency.
 swapProgram_t	spAsyncSwappedBufferPortrait = {
-        false,	false, { 0.0, 0.5},	{ {1.0, 1.5}, {1.5, 2.0} }
+    false,	false, { 0.0, 0.5},	{ {1.0, 1.5}, {1.5, 2.0} }
 };
 
 // If a single thread of control is doing the warping as well
@@ -154,7 +153,7 @@ swapProgram_t	spAsyncSwappedBufferPortrait = {
 // rendering was unusually quick.  We will then need to wait for
 // vsync to start the right eye rendering.
 swapProgram_t	spSyncFrontBufferPortrait = {
-        true,	false, { 0.5, 1.0},	{ {1.0, 1.5}, {1.5, 2.0} }
+    true,	false, { 0.5, 1.0},	{ {1.0, 1.5}, {1.5, 2.0} }
 };
 
 // If we are drawing to a swapped buffer, we don't want to wait at all,
@@ -162,7 +161,7 @@ swapProgram_t	spSyncFrontBufferPortrait = {
 // The true prediction timings for android would be 3,3.5,3.5,4, but
 // that is way too much prediction.
 swapProgram_t	spSyncSwappedBufferPortrait = {
-        true,	false, { 0.0, 0.0},	{ {2.0, 2.5}, {2.5, 3.0} }
+    true,	false, { 0.0, 0.0},	{ {2.0, 2.5}, {2.5, 3.0} }
 };
 
 
@@ -175,41 +174,41 @@ swapProgram_t	spSyncSwappedBufferPortrait = {
 // for a scissor rect.
 
 // If the window is wider than it is tall, ie 1920x1080
-void EyeRectLandscape( const hmdInfoInternal_t & hmd,int eye,int &x, int &y, int &width, int &height )
+void EyeRectLandscape( const VDevice *device,int eye,int &x, int &y, int &width, int &height )
 {
     // always scissor exactly to half the screen
-    int scissorX = ( eye == 0 ) ? 0 : hmd.widthPixels / 2;
+    int scissorX = ( eye == 0 ) ? 0 : device->widthPixels / 2;
     int scissorY = 0;
-    int scissorWidth = hmd.widthPixels / 2;
-    int scissorHeight = hmd.heightPixels;
+    int scissorWidth = device->widthPixels / 2;
+    int scissorHeight = device->heightPixels;
     x = scissorX;
     y = scissorY;
     width = scissorWidth;
     height = scissorHeight;
     return;
 
-    const float	metersToPixels = hmd.widthPixels / hmd.widthMeters;
+    const float	metersToPixels = device->widthPixels / device->widthMeters;
 
     // Even though the lens center is shifted outwards slightly,
     // the height is still larger than the largest horizontal value.
     // TODO: check for sure on other HMD
-    const int	pixelRadius = hmd.heightPixels / 2;
+    const int	pixelRadius = device->heightPixels / 2;
     const int	pixelDiameter = pixelRadius * 2;
-    const float	horizontalShiftMeters = ( hmd.lensSeparation / 2 ) - ( hmd.widthMeters / 4 );
+    const float	horizontalShiftMeters = ( device->lensSeparation / 2 ) - ( device->widthMeters / 4 );
     const float	horizontalShiftPixels = horizontalShiftMeters * metersToPixels;
 
     // Make a viewport that is symetric, extending off the sides of the screen and into the other half.
-    x = hmd.widthPixels/4 - pixelRadius + ( ( eye == 0 ) ? - horizontalShiftPixels : hmd.widthPixels/2 + horizontalShiftPixels );
+    x = device->widthPixels/4 - pixelRadius + ( ( eye == 0 ) ? - horizontalShiftPixels : device->widthPixels/2 + horizontalShiftPixels );
     y = 0;
     width = pixelDiameter;
     height = pixelDiameter;
 }
 
-void EyeRect( const hmdInfoInternal_t & hmd,const int eye,
+void EyeRect( const VDevice *device,const int eye,
               int &x, int &y, int &width, int &height )
 {
     int	lx, ly, lWidth, lHeight;
-    EyeRectLandscape( hmd, eye, lx, ly, lWidth, lHeight );
+    EyeRectLandscape( device, eye, lx, ly, lWidth, lHeight );
 
     x = lx;
     y = ly;
@@ -273,7 +272,7 @@ static bool IsContextPriorityExtensionPresent()
 
 struct VFrameSmooth::Private
 {
-    Private(bool async,hmdInfoInternal_t	hmdInfo):
+    Private(bool async,VDevice *device):
             m_untexturedMvpProgram(),
             m_debugLineProgram(),
             m_warpPrograms(),
@@ -326,7 +325,7 @@ struct VFrameSmooth::Private
         m_warpThread = 0;
 
         m_async = async;
-        m_hmdInfo = hmdInfo;
+        m_device = device;
 
         // No buffers have been submitted yet
         m_eyeBufferCount.setState( 0 );
@@ -525,7 +524,6 @@ struct VFrameSmooth::Private
     void			threadFunction();
     void 			warpThreadInit();
     void			warpThreadShutdown();
-
     void			warpSwapInternal( const ovrTimeWarpParms & parms );
 
     // Ensures that the warpPrograms have a matched set with and without
@@ -548,7 +546,7 @@ struct VFrameSmooth::Private
                                                    const bool drawTimingGraph );
 
     bool m_async;
-    hmdInfoInternal_t	m_hmdInfo;
+    VDevice *m_device;
 
     VGlShader		m_untexturedMvpProgram;
     VGlShader		m_debugLineProgram;
@@ -720,8 +718,8 @@ void VFrameSmooth::Private::threadFunction()
 /*
 * Startup()
 */
-VFrameSmooth::VFrameSmooth(bool async,hmdInfoInternal_t	hmdInfo)
-        : d(new Private(async,hmdInfo))
+VFrameSmooth::VFrameSmooth(bool async,VDevice *device)
+        : d(new Private(async,device))
 {
 
 }
@@ -757,11 +755,11 @@ void VFrameSmooth::Private::warpThreadInit()
     // so the render targets can be passed back and forth.
 
     EGLint contextAttribs[] =
-            {
-                    EGL_CONTEXT_CLIENT_VERSION, m_eglClientVersion,
-                    EGL_NONE, EGL_NONE,
-                    EGL_NONE
-            };
+    {
+        EGL_CONTEXT_CLIENT_VERSION, m_eglClientVersion,
+        EGL_NONE, EGL_NONE,
+        EGL_NONE
+    };
     // Don't set EGL_CONTEXT_PRIORITY_LEVEL_IMG at all if set to EGL_CONTEXT_PRIORITY_MEDIUM_IMG,
     // It is the caller's responsibility to use that if the driver doesn't support it.
     if ( m_contextPriority != EGL_CONTEXT_PRIORITY_MEDIUM_IMG )
@@ -784,10 +782,10 @@ void VFrameSmooth::Private::warpThreadInit()
         eglQueryContext( m_eglDisplay, m_eglWarpContext, EGL_CONTEXT_PRIORITY_LEVEL_IMG, &actualPriorityLevel );
         switch ( actualPriorityLevel )
         {
-            case EGL_CONTEXT_PRIORITY_HIGH_IMG: LOG( "Context is EGL_CONTEXT_PRIORITY_HIGH_IMG" ); break;
-            case EGL_CONTEXT_PRIORITY_MEDIUM_IMG: LOG( "Context is EGL_CONTEXT_PRIORITY_MEDIUM_IMG" ); break;
-            case EGL_CONTEXT_PRIORITY_LOW_IMG: LOG( "Context is EGL_CONTEXT_PRIORITY_LOW_IMG" ); break;
-            default: LOG( "Context has unknown priority level" ); break;
+        case EGL_CONTEXT_PRIORITY_HIGH_IMG: LOG( "Context is EGL_CONTEXT_PRIORITY_HIGH_IMG" ); break;
+        case EGL_CONTEXT_PRIORITY_MEDIUM_IMG: LOG( "Context is EGL_CONTEXT_PRIORITY_MEDIUM_IMG" ); break;
+        case EGL_CONTEXT_PRIORITY_LOW_IMG: LOG( "Context is EGL_CONTEXT_PRIORITY_LOW_IMG" ); break;
+        default: LOG( "Context has unknown priority level" ); break;
         }
     }
 
@@ -827,7 +825,7 @@ void VFrameSmooth::Private::warpThreadShutdown()
         warpSource_t & ws = m_warpSources[i];
         if ( ws.GpuSync )
         {
-            if ( EGL_FALSE == glOperation.eglDestroySyncKHR_( m_eglDisplay, ws.GpuSync ) )
+            if ( EGL_FALSE == glOperation.eglDestroySyncKHR( m_eglDisplay, ws.GpuSync ) )
             {
                 LOG( "eglDestroySyncKHR returned EGL_FALSE" );
             }
@@ -854,7 +852,7 @@ void VFrameSmooth::Private::warpThreadShutdown()
 
 const VGlShader & VFrameSmooth::Private::programForParms( const ovrTimeWarpParms & parms, const bool disableChromaticCorrection ) const
 {
-    int program = Alg::Clamp( (int)parms.WarpProgram, (int)WP_SIMPLE, (int)WP_PROGRAM_MAX - 1 );
+    int program = VAlgorithm::Clamp( (int)parms.WarpProgram, (int)WP_SIMPLE, (int)WP_PROGRAM_MAX - 1 );
 
     if ( disableChromaticCorrection && program >= WP_CHROMATIC )
     {
@@ -895,10 +893,10 @@ void VFrameSmooth::Private::bindWarpProgram( const warpSource_t & currentWarpSou
 {
     // TODO: bake this into the buffer objects
     const VR4Matrixf landscapeOrientationMatrix(
-            1.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 1.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 0.0f, 1.0f );
+                1.0f, 0.0f, 0.0f, 0.0f,
+                0.0f, 1.0f, 0.0f, 0.0f,
+                0.0f, 0.0f, 0.0f, 0.0f,
+                0.0f, 0.0f, 0.0f, 1.0f );
 
     // Select the warp program.
     const VGlShader & warpProg = programForParms( currentWarpSource.WarpParms, currentWarpSource.disableChromaticCorrection );
@@ -937,10 +935,10 @@ void VFrameSmooth::Private::bindCursorProgram() const
 {
     // TODO: bake this into the buffer objects
     const VR4Matrixf landscapeOrientationMatrix(
-            1.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 1.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 0.0f, 1.0f );
+                1.0f, 0.0f, 0.0f, 0.0f,
+                0.0f, 1.0f, 0.0f, 0.0f,
+                0.0f, 0.0f, 0.0f, 0.0f,
+                0.0f, 0.0f, 0.0f, 1.0f );
 
     // Select the warp program.
     const VGlShader & warpProg = m_warpPrograms[ WP_SIMPLE ];
@@ -961,8 +959,25 @@ static void BindEyeTextures( const warpSource_t & currentWarpSource, const int e
 {
     glActiveTexture( GL_TEXTURE0 );
     glBindTexture( GL_TEXTURE_2D, currentWarpSource.WarpParms.Images[eye][0].TexId );
-    if ( VGlOperation::HasEXT_sRGB_texture_decode )
+    if ( currentWarpSource.WarpParms.WarpOptions & SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER )
     {
+        glTexParameteri( GL_TEXTURE_2D, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_SKIP_DECODE_EXT );
+    }
+    else
+    {
+        glTexParameteri( GL_TEXTURE_2D, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_DECODE_EXT );
+    }
+
+    if ( currentWarpSource.WarpParms.WarpProgram == WP_MASKED_PLANE
+         || currentWarpSource.WarpParms.WarpProgram == WP_CHROMATIC_MASKED_PLANE
+         || currentWarpSource.WarpParms.WarpProgram == WP_OVERLAY_PLANE
+         || currentWarpSource.WarpParms.WarpProgram == WP_CHROMATIC_OVERLAY_PLANE
+         || currentWarpSource.WarpParms.WarpProgram == WP_OVERLAY_PLANE_SHOW_LOD
+         || currentWarpSource.WarpParms.WarpProgram == WP_CHROMATIC_OVERLAY_PLANE_SHOW_LOD
+         )
+    {
+        glActiveTexture( GL_TEXTURE1 );
+        glBindTexture( GL_TEXTURE_2D, currentWarpSource.WarpParms.Images[eye][1].TexId );
         if ( currentWarpSource.WarpParms.WarpOptions & SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER )
         {
             glTexParameteri( GL_TEXTURE_2D, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_SKIP_DECODE_EXT );
@@ -972,29 +987,6 @@ static void BindEyeTextures( const warpSource_t & currentWarpSource, const int e
             glTexParameteri( GL_TEXTURE_2D, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_DECODE_EXT );
         }
     }
-
-    if ( currentWarpSource.WarpParms.WarpProgram == WP_MASKED_PLANE
-         || currentWarpSource.WarpParms.WarpProgram == WP_CHROMATIC_MASKED_PLANE
-         || currentWarpSource.WarpParms.WarpProgram == WP_OVERLAY_PLANE
-         || currentWarpSource.WarpParms.WarpProgram == WP_CHROMATIC_OVERLAY_PLANE
-         || currentWarpSource.WarpParms.WarpProgram == WP_OVERLAY_PLANE_SHOW_LOD
-         || currentWarpSource.WarpParms.WarpProgram == WP_CHROMATIC_OVERLAY_PLANE_SHOW_LOD
-            )
-    {
-        glActiveTexture( GL_TEXTURE1 );
-        glBindTexture( GL_TEXTURE_2D, currentWarpSource.WarpParms.Images[eye][1].TexId );
-        if ( VGlOperation::HasEXT_sRGB_texture_decode )
-        {
-            if ( currentWarpSource.WarpParms.WarpOptions & SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER )
-            {
-                glTexParameteri( GL_TEXTURE_2D, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_SKIP_DECODE_EXT );
-            }
-            else
-            {
-                glTexParameteri( GL_TEXTURE_2D, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_DECODE_EXT );
-            }
-        }
-    }
     if ( currentWarpSource.WarpParms.WarpProgram == WP_MASKED_PLANE_EXTERNAL
          || currentWarpSource.WarpParms.WarpProgram == WP_CHROMATIC_MASKED_PLANE_EXTERNAL
          || currentWarpSource.WarpParms.WarpProgram == WP_CAMERA
@@ -1002,8 +994,7 @@ static void BindEyeTextures( const warpSource_t & currentWarpSource, const int e
     {
         glActiveTexture( GL_TEXTURE1 );
         glBindTexture( GL_TEXTURE_EXTERNAL_OES, currentWarpSource.WarpParms.Images[eye][1].TexId );
-        if ( VGlOperation::HasEXT_sRGB_texture_decode )
-        {
+
             if ( currentWarpSource.WarpParms.WarpOptions & SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER )
             {
                 glTexParameteri( GL_TEXTURE_EXTERNAL_OES, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_SKIP_DECODE_EXT );
@@ -1012,14 +1003,11 @@ static void BindEyeTextures( const warpSource_t & currentWarpSource, const int e
             {
                 glTexParameteri( GL_TEXTURE_EXTERNAL_OES, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_DECODE_EXT );
             }
-        }
     }
     if ( currentWarpSource.WarpParms.WarpProgram == WP_MASKED_CUBE || currentWarpSource.WarpParms.WarpProgram == WP_CHROMATIC_MASKED_CUBE )
     {
         glActiveTexture( GL_TEXTURE1 );
         glBindTexture( GL_TEXTURE_CUBE_MAP, currentWarpSource.WarpParms.Images[eye][1].TexId );
-        if ( VGlOperation::HasEXT_sRGB_texture_decode )
-        {
             if ( currentWarpSource.WarpParms.WarpOptions & SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER )
             {
                 glTexParameteri( GL_TEXTURE_CUBE_MAP, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_SKIP_DECODE_EXT );
@@ -1028,7 +1016,6 @@ static void BindEyeTextures( const warpSource_t & currentWarpSource, const int e
             {
                 glTexParameteri( GL_TEXTURE_CUBE_MAP, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_DECODE_EXT );
             }
-        }
     }
 
     if ( currentWarpSource.WarpParms.WarpProgram == WP_CUBE || currentWarpSource.WarpParms.WarpProgram == WP_CHROMATIC_CUBE )
@@ -1037,8 +1024,6 @@ static void BindEyeTextures( const warpSource_t & currentWarpSource, const int e
         {
             glActiveTexture( GL_TEXTURE1 + i );
             glBindTexture( GL_TEXTURE_CUBE_MAP, currentWarpSource.WarpParms.Images[eye][1].PlanarTexId[i] );
-            if ( VGlOperation::HasEXT_sRGB_texture_decode )
-            {
                 if ( currentWarpSource.WarpParms.WarpOptions & SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER )
                 {
                     glTexParameteri( GL_TEXTURE_CUBE_MAP, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_SKIP_DECODE_EXT );
@@ -1047,7 +1032,6 @@ static void BindEyeTextures( const warpSource_t & currentWarpSource, const int e
                 {
                     glTexParameteri( GL_TEXTURE_CUBE_MAP, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_DECODE_EXT );
                 }
-            }
         }
     }
 
@@ -1055,8 +1039,6 @@ static void BindEyeTextures( const warpSource_t & currentWarpSource, const int e
     {
         glActiveTexture( GL_TEXTURE1 );
         glBindTexture( GL_TEXTURE_2D, currentWarpSource.WarpParms.Images[eye][1].TexId );
-        if ( VGlOperation::HasEXT_sRGB_texture_decode )
-        {
             if ( currentWarpSource.WarpParms.WarpOptions & SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER )
             {
                 glTexParameteri( GL_TEXTURE_2D, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_SKIP_DECODE_EXT );
@@ -1065,7 +1047,6 @@ static void BindEyeTextures( const warpSource_t & currentWarpSource, const int e
             {
                 glTexParameteri( GL_TEXTURE_2D, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_DECODE_EXT );
             }
-        }
     }
 }
 
@@ -1135,7 +1116,7 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
     glViewport( 0, 0, m_window_width, m_window_height );
     glScissor( 0, 0, m_window_width, m_window_height );
 
-     VGlOperation glOperation;
+    VGlOperation glOperation;
     // Warp each eye to the display surface
     for ( int eye = 0; eye <= 1; ++eye )
     {
@@ -1187,8 +1168,8 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
                     break;
                 }
 
-                const EGLint wait = glOperation.eglClientWaitSyncKHR_( m_eglDisplay, testWarpSource.GpuSync,
-                                                           EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, 0 );
+                const EGLint wait = glOperation.eglClientWaitSyncKHR( m_eglDisplay, testWarpSource.GpuSync,
+                                                                      EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, 0 );
                 if ( wait == EGL_TIMEOUT_EXPIRED_KHR )
                 {
                     continue;
@@ -1241,7 +1222,7 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
 
         // Build up the external velocity transform
         VR4Matrixf velocity;
-        const int velocitySteps = NervGear::Alg::Min( 3, (int)((long long)vsyncBase - currentWarpSource.MinimumVsync) );
+        const int velocitySteps = std::min( 3, (int)((long long)vsyncBase - currentWarpSource.MinimumVsync) );
         for ( int i = 0; i < velocitySteps; i++ )
         {
             velocity = velocity * currentWarpSource.WarpParms.ExternalVelocity;
@@ -1267,7 +1248,7 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
             const double timePoint = FramePointTimeInSeconds( vsyncPoint );
             sensor[scan] = ovr_GetSensorStateInternal( timePoint );
             const VR4Matrixf warp = CalculateTimeWarpMatrix2(
-                    currentWarpSource.WarpParms.Images[eye][0].Pose.Pose.Orientation,
+                        currentWarpSource.WarpParms.Images[eye][0].Pose.Pose.Orientation,
                     sensor[scan].Predicted.Pose.Orientation ) * velocity;
             timeWarps[0][scan] = VR4Matrixf( currentWarpSource.WarpParms.Images[eye][0].TexCoordsFromTanAngles ) * warp;
             if ( dualLayer )
@@ -1279,18 +1260,17 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
                 else
                 {	// locked-to-world surface
                     const VR4Matrixf warp2 = CalculateTimeWarpMatrix2(
-                            currentWarpSource.WarpParms.Images[eye][1].Pose.Pose.Orientation,
+                                currentWarpSource.WarpParms.Images[eye][1].Pose.Pose.Orientation,
                             sensor[scan].Predicted.Pose.Orientation ) * velocity;
                     timeWarps[1][scan] = VR4Matrixf( currentWarpSource.WarpParms.Images[eye][1].TexCoordsFromTanAngles ) * warp2;
                 }
             }
         }
 
-
         // The pass through camera support needs to know the warping from the head motion
         // across the display scan independent of any layers, which may drop frames.
         const VR4Matrixf rollingWarp = CalculateTimeWarpMatrix2(
-                sensor[0].Predicted.Pose.Orientation,
+                    sensor[0].Predicted.Pose.Orientation,
                 sensor[1].Predicted.Pose.Orientation );
 
         //---------------------------------------------------------
@@ -1309,7 +1289,7 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
         glScissor(eye * m_window_width/2, 0, m_window_width/2, m_window_height);
 
         // Draw the warp triangles.
-        glOperation.glBindVertexArrayOES_( m_warpMesh.vertexArrayObject );
+        glOperation.glBindVertexArrayOES( m_warpMesh.vertexArrayObject );
         const int indexCount = m_warpMesh.indexCount / 2;
         const int indexOffset = eye * indexCount;
         glDrawElements( GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, (void *)(indexOffset * 2 ) );
@@ -1319,7 +1299,7 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
         {
             bindCursorProgram();
             glEnable( GL_BLEND );
-            glOperation.glBindVertexArrayOES_( m_cursorMesh.vertexArrayObject );
+            glOperation.glBindVertexArrayOES( m_cursorMesh.vertexArrayObject );
             const int indexCount = m_cursorMesh.indexCount / 2;
             const int indexOffset = eye * indexCount;
             glDrawElements( GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, (void *)(indexOffset * 2 ) );
@@ -1354,7 +1334,7 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
                  postFinish - preFinish,
                  thisEyeBufferNum, back,
                  currentWarpSource.WarpParms.Images[0][0].TexId,
-                 currentWarpSource.WarpParms.Images[1][0].TexId );
+                    currentWarpSource.WarpParms.Images[1][0].TexId );
         }
 
         // Update debug graph data
@@ -1375,7 +1355,7 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
 
     glUseProgram( 0 );
 
-    glOperation.glBindVertexArrayOES_( 0 );
+    glOperation.glBindVertexArrayOES( 0 );
 
     swapBuffers();
 }
@@ -1404,7 +1384,7 @@ void VFrameSmooth::Private::warpToScreenSliced( const double vsyncBase, const sw
         const double framePoint = vsyncBase + activeFraction * (float)i / NUM_SLICES_PER_SCREEN;
         sliceTimes[i] = ( vsyncState.vsyncBaseNano +
                           ( framePoint - vsyncState.vsyncCount ) * vsyncState.vsyncPeriodNano )
-                        * 0.000000001 + startBias;
+                * 0.000000001 + startBias;
     }
 
     glViewport( 0, 0, m_window_width, m_window_height );
@@ -1466,8 +1446,8 @@ void VFrameSmooth::Private::warpToScreenSliced( const double vsyncBase, const sw
                     continue;
                 }
 
-                const EGLint wait = glOperation.eglClientWaitSyncKHR_( m_eglDisplay, testWarpSource.GpuSync,
-                                                           EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, 0 );
+                const EGLint wait = glOperation.eglClientWaitSyncKHR( m_eglDisplay, testWarpSource.GpuSync,
+                                                                      EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, 0 );
                 if ( wait == EGL_TIMEOUT_EXPIRED_KHR )
                 {
                     continue;
@@ -1521,7 +1501,7 @@ void VFrameSmooth::Private::warpToScreenSliced( const double vsyncBase, const sw
 
         // Build up the external velocity transform
         VR4Matrixf velocity;
-        const int velocitySteps = NervGear::Alg::Min( 3, (int)((long long)vsyncBase - currentWarpSource.MinimumVsync) );
+        const int velocitySteps = std::min( 3, (int)((long long)vsyncBase - currentWarpSource.MinimumVsync) );
         for ( int i = 0; i < velocitySteps; i++ )
         {
             velocity = velocity * currentWarpSource.WarpParms.ExternalVelocity;
@@ -1555,7 +1535,7 @@ void VFrameSmooth::Private::warpToScreenSliced( const double vsyncBase, const sw
                 const double timePoint = sliceTimes[screenSlice + scan];
                 sensor[scan] = ovr_GetSensorStateInternal( timePoint );
                 warp = CalculateTimeWarpMatrix2(
-                        currentWarpSource.WarpParms.Images[eye][0].Pose.Pose.Orientation,
+                            currentWarpSource.WarpParms.Images[eye][0].Pose.Pose.Orientation,
                         sensor[scan].Predicted.Pose.Orientation ) * velocity;
             }
             timeWarps[0][scan] = VR4Matrixf( currentWarpSource.WarpParms.Images[eye][0].TexCoordsFromTanAngles ) * warp;
@@ -1568,17 +1548,16 @@ void VFrameSmooth::Private::warpToScreenSliced( const double vsyncBase, const sw
                 else
                 {	// locked-to-world surface
                     const VR4Matrixf warp2 = CalculateTimeWarpMatrix2(
-                            currentWarpSource.WarpParms.Images[eye][1].Pose.Pose.Orientation,
+                                currentWarpSource.WarpParms.Images[eye][1].Pose.Pose.Orientation,
                             sensor[scan].Predicted.Pose.Orientation ) * velocity;
                     timeWarps[1][scan] = VR4Matrixf( currentWarpSource.WarpParms.Images[eye][1].TexCoordsFromTanAngles ) * warp2;
                 }
             }
         }
-
         // The pass through camera support needs to know the warping from the head motion
         // across the display scan independent of any layers, which may drop frames.
         const VR4Matrixf rollingWarp = CalculateTimeWarpMatrix2(
-                sensor[0].Predicted.Pose.Orientation,
+                    sensor[0].Predicted.Pose.Orientation,
                 sensor[1].Predicted.Pose.Orientation );
 
         //---------------------------------------------------------
@@ -1603,7 +1582,7 @@ void VFrameSmooth::Private::warpToScreenSliced( const double vsyncBase, const sw
 
         // Draw the warp triangles.
         const VGlGeometry & mesh = m_sliceMesh;
-        glOperation.glBindVertexArrayOES_( mesh.vertexArrayObject );
+        glOperation.glBindVertexArrayOES( mesh.vertexArrayObject );
         const int indexCount = mesh.indexCount / NUM_SLICES_PER_SCREEN;
         const int indexOffset = screenSlice * indexCount;
         glDrawElements( GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, (void *)(indexOffset * 2 ) );
@@ -1661,7 +1640,7 @@ void VFrameSmooth::Private::warpToScreenSliced( const double vsyncBase, const sw
 
     glUseProgram( 0 );
 
-    glOperation.glBindVertexArrayOES_( 0 );
+    glOperation.glBindVertexArrayOES( 0 );
 
     swapBuffers();
 }
@@ -1686,8 +1665,7 @@ void VFrameSmooth::Private::warpSwapInternal( const ovrTimeWarpParms & parms )
     // Explicitly bind the framebuffer back to the default, so the
     // eye targets will not be bound while they might be used as warp sources.
     glBindFramebuffer( GL_FRAMEBUFFER, 0 );
-
-    const int minimumVsyncs = ( ovr_GetPowerLevelStateThrottled() ) ? 2 : parms.MinimumVsyncs;
+    const int minimumVsyncs =  parms.MinimumVsyncs;
 
     VGlOperation glOperation;
     // Prepare to pass the new eye buffers to the background thread if we are running multi-threaded.
@@ -1696,7 +1674,7 @@ void VFrameSmooth::Private::warpSwapInternal( const ovrTimeWarpParms & parms )
     ws.MinimumVsync = m_lastSwapVsyncCount + 2 * minimumVsyncs;	// don't use it if from same frame to avoid problems with very fast frames
     ws.FirstDisplayedVsync[0] = 0;			// will be set when it becomes the currentSource
     ws.FirstDisplayedVsync[1] = 0;			// will be set when it becomes the currentSource
-    ws.disableChromaticCorrection = ( ovr_GetPowerLevelStateThrottled() || ( glOperation.EglGetGpuType() & NervGear::GpuType::GPU_TYPE_MALI_T760_EXYNOS_5433 ) != 0 );
+    ws.disableChromaticCorrection = ( ( glOperation.EglGetGpuType() & NervGear::VGlOperation::GPU_TYPE_MALI_T760_EXYNOS_5433 ) != 0 );
     ws.WarpParms = parms;
 
     // Default images.
@@ -1718,29 +1696,29 @@ void VFrameSmooth::Private::warpSwapInternal( const ovrTimeWarpParms & parms )
     // Destroy the sync object that was created for this buffer set.
     if ( ws.GpuSync != EGL_NO_SYNC_KHR )
     {
-        if ( EGL_FALSE == glOperation.eglDestroySyncKHR_( m_eglDisplay, ws.GpuSync ) )
+        if ( EGL_FALSE == glOperation.eglDestroySyncKHR( m_eglDisplay, ws.GpuSync ) )
         {
             LOG( "eglDestroySyncKHR returned EGL_FALSE" );
         }
     }
 
     // Add a sync object for this buffer set.
-    ws.GpuSync = glOperation.eglCreateSyncKHR_( m_eglDisplay, EGL_SYNC_FENCE_KHR, NULL );
+    ws.GpuSync = glOperation.eglCreateSyncKHR( m_eglDisplay, EGL_SYNC_FENCE_KHR, NULL );
     if ( ws.GpuSync == EGL_NO_SYNC_KHR )
     {
         FAIL( "eglCreateSyncKHR_():EGL_NO_SYNC_KHR" );
     }
 
     // Force it to flush the commands
-    if ( EGL_FALSE == glOperation.eglClientWaitSyncKHR_( m_eglDisplay, ws.GpuSync,
-                                             EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, 0 ) )
+    if ( EGL_FALSE == glOperation.eglClientWaitSyncKHR( m_eglDisplay, ws.GpuSync,
+                                                        EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, 0 ) )
     {
         LOG( "eglClientWaitSyncKHR returned EGL_FALSE" );
     }
 
     // Submit this buffer set for use by the VFrameSmooth thread
-//	LOG( "submitting bufferNum %lli: %i %i", lastBufferCount+1,
-//			ws.WarpParms.Images[0][0].TexId, ws.WarpParms.Images[1][0].TexId );
+    //	LOG( "submitting bufferNum %lli: %i %i", lastBufferCount+1,
+    //			ws.WarpParms.Images[0][0].TexId, ws.WarpParms.Images[1][0].TexId );
     m_eyeBufferCount.setState( lastBufferCount + 1 );
 
     // If we are running synchronously instead of using a background
@@ -1785,7 +1763,7 @@ void VFrameSmooth::Private::warpSwapInternal( const ovrTimeWarpParms & parms )
         {
             // If MinimumVsyncs was increased dynamically, it is necessary
             // to skip one or more vsyncs just as the change happens.
-            m_lastSwapVsyncCount = Alg::Max( state.VsyncCount, m_lastSwapVsyncCount + minimumVsyncs );
+            m_lastSwapVsyncCount = std::max( state.VsyncCount, m_lastSwapVsyncCount + minimumVsyncs );
 
             // Sleep for at least one millisecond to make sure the main VR thread
             // cannot completely deny the Android watchdog from getting a time slice.
@@ -1838,8 +1816,8 @@ VGlGeometry CreateTimingGraphGeometry( const int lineVertCount )
     VGlGeometry geo;
     VGlOperation glOperation;
 
-    glOperation.glGenVertexArraysOES_( 1, &geo.vertexArrayObject );
-    glOperation.glBindVertexArrayOES_( geo.vertexArrayObject );
+    glOperation.glGenVertexArraysOES( 1, &geo.vertexArrayObject );
+    glOperation.glBindVertexArrayOES( geo.vertexArrayObject );
 
     lineVert_t	* verts = new lineVert_t[lineVertCount];
     const int byteCount = lineVertCount * sizeof( verts[0] );
@@ -1859,7 +1837,7 @@ VGlGeometry CreateTimingGraphGeometry( const int lineVertCount )
 
     geo.indexCount = lineVertCount;
 
-    glOperation.glBindVertexArrayOES_( 0 );
+    glOperation.glBindVertexArrayOES( 0 );
 
     return geo;
 }
@@ -1963,11 +1941,11 @@ void VFrameSmooth::Private::updateTimingGraphVerts( const ovrTimeWarpDebugPerfMo
 
     // For reasons that I do not understand, if I don't bind the VAO, then all updates after the
     // first one produce no additional changes.
-    glOperation.glBindVertexArrayOES_( m_timingGraph.vertexArrayObject );
+    glOperation.glBindVertexArrayOES( m_timingGraph.vertexArrayObject );
     glBindBuffer( GL_ARRAY_BUFFER, m_timingGraph.vertexBuffer );
     glBufferSubData( GL_ARRAY_BUFFER, 0, numVerts * sizeof( verts[0] ), (void *) verts );
     glBindBuffer( GL_ARRAY_BUFFER, 0 );
-    glOperation.glBindVertexArrayOES_( 0 );
+    glOperation.glBindVertexArrayOES( 0 );
 
     m_timingGraph.indexCount = numVerts;
     glOperation.GL_CheckErrors( "After UpdateTimingGraph" );
@@ -1979,7 +1957,7 @@ void VFrameSmooth::Private::drawTimingGraph( const int eye )
     // Use the same rect for viewport and scissor
     // FIXME: this is probably bad for convergence
     int	rectX, rectY, rectWidth, rectHeight;
-    EyeRect( m_hmdInfo, eye,
+    EyeRect( m_device, eye,
              rectX, rectY, rectWidth, rectHeight );
 
     glViewport( rectX, rectY, rectWidth, rectHeight );
@@ -1995,18 +1973,18 @@ void VFrameSmooth::Private::drawTimingGraph( const int eye )
     float scale_x = 2.0f / (float)rectWidth;
     float scale_y = 2.0f / (float)rectHeight;
     const VR4Matrixf landscapePixelMatrix(
-            0, scale_x, 0.0f, -1.0f,
-            scale_y, 0, 0.0f, -1.0f,
-            0.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 0.0f, 1.0f );
+                0, scale_x, 0.0f, -1.0f,
+                scale_y, 0, 0.0f, -1.0f,
+                0.0f, 0.0f, 0.0f, 0.0f,
+                0.0f, 0.0f, 0.0f, 1.0f );
 
 
     glUniformMatrix4fv( m_debugLineProgram.uniformModelViewProMatrix, 1, GL_FALSE, /* not transposed */
                         landscapePixelMatrix.Transposed().M[0] );
 
-    glOperation.glBindVertexArrayOES_( m_timingGraph.vertexArrayObject );
+    glOperation.glBindVertexArrayOES( m_timingGraph.vertexArrayObject );
     glDrawArrays( GL_LINES, 0, m_timingGraph.indexCount );
-    glOperation.glBindVertexArrayOES_( 0 );
+    glOperation.glBindVertexArrayOES( 0 );
 
     glViewport( 0, 0, rectWidth * 2, rectHeight );
     glScissor( 0, 0, rectWidth * 2, rectHeight );
@@ -2043,13 +2021,13 @@ void VFrameSmooth::Private::createFrameworkGraphics()
     glBindTexture( GL_TEXTURE_2D, 0 );
 
     // single slice mesh for the normal rendering
-    m_warpMesh = VLensDistortion::CreateTessellatedMesh( m_hmdInfo, 1, calibrateFovScale, false );
+    m_warpMesh = VLensDistortion::CreateTessellatedMesh( m_device, 1, calibrateFovScale, false );
 
     // multi-slice mesh for sliced rendering
-    m_sliceMesh = VLensDistortion::CreateTessellatedMesh( m_hmdInfo, NUM_SLICES_PER_EYE, calibrateFovScale, false );
+    m_sliceMesh = VLensDistortion::CreateTessellatedMesh( m_device, NUM_SLICES_PER_EYE, calibrateFovScale, false );
 
     // small subset cursor mesh
-    m_cursorMesh = VLensDistortion::CreateTessellatedMesh( m_hmdInfo, 1, calibrateFovScale, true );
+    m_cursorMesh = VLensDistortion::CreateTessellatedMesh( m_device, 1, calibrateFovScale, true );
 
     if ( m_warpMesh.indexCount == 0 || m_sliceMesh.indexCount == 0 )
     {
@@ -2065,40 +2043,40 @@ void VFrameSmooth::Private::createFrameworkGraphics()
 
     // FPS and graph text
     m_untexturedMvpProgram.initShader(
-            "uniform mat4 Mvpm;\n"
-                    "attribute vec4 Position;\n"
-                    "uniform mediump vec4 UniformColor;\n"
-                    "varying  lowp vec4 oColor;\n"
-                    "void main()\n"
-                    "{\n"
-                    "   gl_Position = Mvpm * Position;\n"
-                    "   oColor = UniformColor;\n"
-                    "}\n"
-            ,
-            "varying lowp vec4	oColor;\n"
-                    "void main()\n"
-                    "{\n"
-                    "	gl_FragColor = oColor;\n"
-                    "}\n"
-    );
+                "uniform mat4 Mvpm;\n"
+                "attribute vec4 Position;\n"
+                "uniform mediump vec4 UniformColor;\n"
+                "varying  lowp vec4 oColor;\n"
+                "void main()\n"
+                "{\n"
+                "   gl_Position = Mvpm * Position;\n"
+                "   oColor = UniformColor;\n"
+                "}\n"
+                ,
+                "varying lowp vec4	oColor;\n"
+                "void main()\n"
+                "{\n"
+                "	gl_FragColor = oColor;\n"
+                "}\n"
+                );
 
     m_debugLineProgram.initShader(
-            "uniform mediump mat4 Mvpm;\n"
-                    "attribute vec4 Position;\n"
-                    "attribute vec4 VertexColor;\n"
-                    "varying  vec4 oColor;\n"
-                    "void main()\n"
-                    "{\n"
-                    "   gl_Position = Mvpm * Position;\n"
-                    "   oColor = VertexColor;\n"
-                    "}\n"
-            ,
-            "varying lowp vec4 oColor;\n"
-                    "void main()\n"
-                    "{\n"
-                    "	gl_FragColor = oColor;\n"
-                    "}\n"
-    );
+                "uniform mediump mat4 Mvpm;\n"
+                "attribute vec4 Position;\n"
+                "attribute vec4 VertexColor;\n"
+                "varying  vec4 oColor;\n"
+                "void main()\n"
+                "{\n"
+                "   gl_Position = Mvpm * Position;\n"
+                "   oColor = VertexColor;\n"
+                "}\n"
+                ,
+                "varying lowp vec4 oColor;\n"
+                "void main()\n"
+                "{\n"
+                "	gl_FragColor = oColor;\n"
+                "}\n"
+                );
 
     // Build our warp render programs
     buildWarpProgs();
@@ -2136,7 +2114,7 @@ void VFrameSmooth::Private::drawFrameworkGraphicsToWindow( const int eye,
     if ( ovr_ProcessLatencyTest( latencyTesterColorToDisplay ) )
     {
         glClearColor(
-                latencyTesterColorToDisplay[0] / 255.0f,
+                    latencyTesterColorToDisplay[0] / 255.0f,
                 latencyTesterColorToDisplay[1] / 255.0f,
                 latencyTesterColorToDisplay[2] / 255.0f,
                 1.0f );
@@ -2157,16 +2135,16 @@ void VFrameSmooth::Private::drawFrameworkGraphicsToWindow( const int eye,
         const float zfar = 150.0f;
         // flipped for portrait mode
         const VR4Matrixf projectionMatrix(
-                0, 1, 0, 0,
-                -1, 0, 0, 0,
-                0, 0, zfar / (znear - zfar), (zfar * znear) / (znear - zfar),
-                0, 0, -1, 0 );
+                    0, 1, 0, 0,
+                    -1, 0, 0, 0,
+                    0, 0, zfar / (znear - zfar), (zfar * znear) / (znear - zfar),
+                    0, 0, -1, 0 );
         glUseProgram( m_untexturedMvpProgram.program );
         glLineWidth( 2.0f );
         glUniform4f( m_untexturedMvpProgram.uniformColor, 1, 0, 0, 1 );
         glUniformMatrix4fv( m_untexturedMvpProgram.uniformModelViewProMatrix, 1, GL_FALSE,  // not transposed
                             projectionMatrix.Transposed().M[0] );
-        glOperation.glBindVertexArrayOES_( m_calibrationLines2.vertexArrayObject );
+        glOperation.glBindVertexArrayOES( m_calibrationLines2.vertexArrayObject );
 
 
         glViewport( m_window_width/2 * (int)eye, 0, m_window_width/2, m_window_height );
@@ -2202,775 +2180,775 @@ void VFrameSmooth::Private::buildWarpProgMatchedPair( ovrTimeWarpProgram simpleI
 void VFrameSmooth::Private::buildWarpProgs()
 {
     buildWarpProgPair( WP_SIMPLE,
-            // low quality
+                       // low quality
                        "uniform mediump mat4 Mvpm;\n"
-                               "uniform mediump mat4 Texm;\n"
-                               "uniform mediump mat4 Texm2;\n"
+                       "uniform mediump mat4 Texm;\n"
+                       "uniform mediump mat4 Texm2;\n"
 
-                               "attribute vec4 Position;\n"
-                               "attribute vec2 TexCoord;\n"
-                               "attribute vec2 TexCoord1;\n"
-                               "varying  vec2 oTexCoord;\n"
-                               "void main()\n"
-                               "{\n"
-                               "   gl_Position = Mvpm * Position;\n"
-                               "   vec3 left = vec3( Texm * vec4(TexCoord,-1,1) );\n"
-                               "   vec3 right = vec3( Texm2 * vec4(TexCoord,-1,1) );\n"
-                               "   vec3 proj = mix( left, right, TexCoord1.x );\n"
-                               "	float projIZ = 1.0 / max( proj.z, 0.00001 );\n"
-                               "	oTexCoord = vec2( proj.x * projIZ, proj.y * projIZ );\n"
-                               "}\n"
-            ,
+                       "attribute vec4 Position;\n"
+                       "attribute vec2 TexCoord;\n"
+                       "attribute vec2 TexCoord1;\n"
+                       "varying  vec2 oTexCoord;\n"
+                       "void main()\n"
+                       "{\n"
+                       "   gl_Position = Mvpm * Position;\n"
+                       "   vec3 left = vec3( Texm * vec4(TexCoord,-1,1) );\n"
+                       "   vec3 right = vec3( Texm2 * vec4(TexCoord,-1,1) );\n"
+                       "   vec3 proj = mix( left, right, TexCoord1.x );\n"
+                       "	float projIZ = 1.0 / max( proj.z, 0.00001 );\n"
+                       "	oTexCoord = vec2( proj.x * projIZ, proj.y * projIZ );\n"
+                       "}\n"
+                       ,
                        "uniform sampler2D Texture0;\n"
-                               "varying highp vec2 oTexCoord;\n"
-                               "void main()\n"
-                               "{\n"
-                               "	gl_FragColor = texture2D(Texture0, oTexCoord);\n"
-                               "}\n"
-            ,
-            // high quality
+                       "varying highp vec2 oTexCoord;\n"
+                       "void main()\n"
+                       "{\n"
+                       "	gl_FragColor = texture2D(Texture0, oTexCoord);\n"
+                       "}\n"
+                       ,
+                       // high quality
                        "uniform mediump mat4 Mvpm;\n"
-                               "uniform mediump mat4 Texm;\n"
-                               "uniform mediump mat4 Texm2;\n"
-                               "uniform mediump mat4 Texm3;\n"
-                               "uniform mediump mat4 Texm4;\n"
+                       "uniform mediump mat4 Texm;\n"
+                       "uniform mediump mat4 Texm2;\n"
+                       "uniform mediump mat4 Texm3;\n"
+                       "uniform mediump mat4 Texm4;\n"
 
-                               "attribute vec4 Position;\n"
-                               "attribute vec2 TexCoord;\n"	// green
-                               "attribute vec2 TexCoord1;\n"	// .x = interpolated warp frac, .y = intensity scale
-                               "attribute vec2 Normal;\n"		// red
-                               "attribute vec2 Tangent;\n"		// blue
-                               "varying  vec2 oTexCoord1r;\n"
-                               "varying  vec2 oTexCoord1g;\n"
-                               "varying  vec2 oTexCoord1b;\n"
-                               "void main()\n"
-                               "{\n"
-                               "   gl_Position = Mvpm * Position;\n"
-                               "	vec3 proj;\n"
-                               "	float projIZ;\n"
-                               ""
-                               "   proj = mix( vec3( Texm * vec4(Normal,-1,1) ), vec3( Texm2 * vec4(Normal,-1,1) ), TexCoord1.x );\n"
-                               "	projIZ = 1.0 / max( proj.z, 0.00001 );\n"
-                               "	oTexCoord1r = vec2( proj.x * projIZ, proj.y * projIZ );\n"
-                               ""
-                               "   proj = mix( vec3( Texm * vec4(TexCoord,-1,1) ), vec3( Texm2 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
-                               "	projIZ = 1.0 / max( proj.z, 0.00001 );\n"
-                               "	oTexCoord1g = vec2( proj.x * projIZ, proj.y * projIZ );\n"
-                               ""
-                               "   proj = mix( vec3( Texm * vec4(Tangent,-1,1) ), vec3( Texm2 * vec4(Tangent,-1,1) ), TexCoord1.x );\n"
-                               "	projIZ = 1.0 / max( proj.z, 0.00001 );\n"
-                               "	oTexCoord1b = vec2( proj.x * projIZ, proj.y * projIZ );\n"
-                               ""
-                               "}\n"
-            ,
+                       "attribute vec4 Position;\n"
+                       "attribute vec2 TexCoord;\n"	// green
+                       "attribute vec2 TexCoord1;\n"	// .x = interpolated warp frac, .y = intensity scale
+                       "attribute vec2 Normal;\n"		// red
+                       "attribute vec2 Tangent;\n"		// blue
+                       "varying  vec2 oTexCoord1r;\n"
+                       "varying  vec2 oTexCoord1g;\n"
+                       "varying  vec2 oTexCoord1b;\n"
+                       "void main()\n"
+                       "{\n"
+                       "   gl_Position = Mvpm * Position;\n"
+                       "	vec3 proj;\n"
+                       "	float projIZ;\n"
+                       ""
+                       "   proj = mix( vec3( Texm * vec4(Normal,-1,1) ), vec3( Texm2 * vec4(Normal,-1,1) ), TexCoord1.x );\n"
+                       "	projIZ = 1.0 / max( proj.z, 0.00001 );\n"
+                       "	oTexCoord1r = vec2( proj.x * projIZ, proj.y * projIZ );\n"
+                       ""
+                       "   proj = mix( vec3( Texm * vec4(TexCoord,-1,1) ), vec3( Texm2 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
+                       "	projIZ = 1.0 / max( proj.z, 0.00001 );\n"
+                       "	oTexCoord1g = vec2( proj.x * projIZ, proj.y * projIZ );\n"
+                       ""
+                       "   proj = mix( vec3( Texm * vec4(Tangent,-1,1) ), vec3( Texm2 * vec4(Tangent,-1,1) ), TexCoord1.x );\n"
+                       "	projIZ = 1.0 / max( proj.z, 0.00001 );\n"
+                       "	oTexCoord1b = vec2( proj.x * projIZ, proj.y * projIZ );\n"
+                       ""
+                       "}\n"
+                       ,
                        "uniform sampler2D Texture0;\n"
-                               "varying highp vec2 oTexCoord1r;\n"
-                               "varying highp vec2 oTexCoord1g;\n"
-                               "varying highp vec2 oTexCoord1b;\n"
-                               "void main()\n"
-                               "{\n"
-                               "	lowp vec4 color1r = texture2D(Texture0, oTexCoord1r);\n"
-                               "	lowp vec4 color1g = texture2D(Texture0, oTexCoord1g);\n"
-                               "	lowp vec4 color1b = texture2D(Texture0, oTexCoord1b);\n"
-                               "	lowp vec4 color1 = vec4( color1r.x, color1g.y, color1b.z, 1.0 );\n"
-                               "	gl_FragColor = color1;\n"
-                               "}\n"
-    );
+                       "varying highp vec2 oTexCoord1r;\n"
+                       "varying highp vec2 oTexCoord1g;\n"
+                       "varying highp vec2 oTexCoord1b;\n"
+                       "void main()\n"
+                       "{\n"
+                       "	lowp vec4 color1r = texture2D(Texture0, oTexCoord1r);\n"
+                       "	lowp vec4 color1g = texture2D(Texture0, oTexCoord1g);\n"
+                       "	lowp vec4 color1b = texture2D(Texture0, oTexCoord1b);\n"
+                       "	lowp vec4 color1 = vec4( color1r.x, color1g.y, color1b.z, 1.0 );\n"
+                       "	gl_FragColor = color1;\n"
+                       "}\n"
+                       );
 
     buildWarpProgPair( WP_MASKED_PLANE,
-            // low quality
+                       // low quality
                        "uniform mediump mat4 Mvpm;\n"
-                               "uniform mediump mat4 Texm;\n"
-                               "uniform mediump mat4 Texm2;\n"
-                               "uniform mediump mat4 Texm3;\n"
-                               "uniform mediump mat4 Texm4;\n"
+                       "uniform mediump mat4 Texm;\n"
+                       "uniform mediump mat4 Texm2;\n"
+                       "uniform mediump mat4 Texm3;\n"
+                       "uniform mediump mat4 Texm4;\n"
 
-                               "attribute vec4 Position;\n"
-                               "attribute vec2 TexCoord;\n"
-                               "attribute vec2 TexCoord1;\n"
-                               "varying  vec2 oTexCoord;\n"
-                               "varying  vec3 oTexCoord2;\n"	// Must do the proj in fragment shader or you get wiggles when you view the plane at even modest angles.
-                               "void main()\n"
-                               "{\n"
-                               "   gl_Position = Mvpm * Position;\n"
-                               "	vec3 proj;\n"
-                               "	float projIZ;\n"
-                               ""
-                               "   proj = mix( vec3( Texm * vec4(TexCoord,-1,1) ), vec3( Texm2 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
-                               "	projIZ = 1.0 / max( proj.z, 0.00001 );\n"
-                               "	oTexCoord = vec2( proj.x * projIZ, proj.y * projIZ );\n"
-                               ""
-                               "   oTexCoord2 = mix( vec3( Texm3 * vec4(TexCoord,-1,1) ), vec3( Texm4 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
-                               ""
-                               "}\n"
-            ,
+                       "attribute vec4 Position;\n"
+                       "attribute vec2 TexCoord;\n"
+                       "attribute vec2 TexCoord1;\n"
+                       "varying  vec2 oTexCoord;\n"
+                       "varying  vec3 oTexCoord2;\n"	// Must do the proj in fragment shader or you get wiggles when you view the plane at even modest angles.
+                       "void main()\n"
+                       "{\n"
+                       "   gl_Position = Mvpm * Position;\n"
+                       "	vec3 proj;\n"
+                       "	float projIZ;\n"
+                       ""
+                       "   proj = mix( vec3( Texm * vec4(TexCoord,-1,1) ), vec3( Texm2 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
+                       "	projIZ = 1.0 / max( proj.z, 0.00001 );\n"
+                       "	oTexCoord = vec2( proj.x * projIZ, proj.y * projIZ );\n"
+                       ""
+                       "   oTexCoord2 = mix( vec3( Texm3 * vec4(TexCoord,-1,1) ), vec3( Texm4 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
+                       ""
+                       "}\n"
+                       ,
                        "uniform sampler2D Texture0;\n"
-                               "uniform sampler2D Texture1;\n"
-                               "varying highp vec2 oTexCoord;\n"
-                               "varying highp vec3 oTexCoord2;\n"
-                               "void main()\n"
-                               "{\n"
-                               "	lowp vec4 color0 = texture2D(Texture0, oTexCoord);\n"
-                               "	{\n"
-                               "		lowp vec4 color1 = vec4( texture2DProj(Texture1, oTexCoord2).xyz, 1.0 );\n"
-                               "		gl_FragColor = mix( color1, color0, color0.w );\n"	// pass through destination alpha
-                               "	}\n"
-                               "}\n"
-            ,
-            // high quality
+                       "uniform sampler2D Texture1;\n"
+                       "varying highp vec2 oTexCoord;\n"
+                       "varying highp vec3 oTexCoord2;\n"
+                       "void main()\n"
+                       "{\n"
+                       "	lowp vec4 color0 = texture2D(Texture0, oTexCoord);\n"
+                       "	{\n"
+                       "		lowp vec4 color1 = vec4( texture2DProj(Texture1, oTexCoord2).xyz, 1.0 );\n"
+                       "		gl_FragColor = mix( color1, color0, color0.w );\n"	// pass through destination alpha
+                       "	}\n"
+                       "}\n"
+                       ,
+                       // high quality
                        "uniform mediump mat4 Mvpm;\n"
-                               "uniform mediump mat4 Texm;\n"
-                               "uniform mediump mat4 Texm2;\n"
-                               "uniform mediump mat4 Texm3;\n"
-                               "uniform mediump mat4 Texm4;\n"
+                       "uniform mediump mat4 Texm;\n"
+                       "uniform mediump mat4 Texm2;\n"
+                       "uniform mediump mat4 Texm3;\n"
+                       "uniform mediump mat4 Texm4;\n"
 
-                               "attribute vec4 Position;\n"
-                               "attribute vec2 TexCoord;\n"	// green
-                               "attribute vec2 TexCoord1;\n"
-                               "attribute vec2 Normal;\n"		// red
-                               "attribute vec2 Tangent;\n"		// blue
-                               "varying  vec2 oTexCoord;\n"
-                               "varying  vec3 oTexCoord2r;\n"	// These must do the proj in fragment shader or you
-                               "varying  vec3 oTexCoord2g;\n"	// get wiggles when you view the plane at even
-                               "varying  vec3 oTexCoord2b;\n"	// modest angles.
-                               "void main()\n"
-                               "{\n"
-                               "   gl_Position = Mvpm * Position;\n"
-                               "	vec3 proj;\n"
-                               "	float projIZ;\n"
-                               ""
-                               "   proj = mix( vec3( Texm * vec4(TexCoord,-1,1) ), vec3( Texm2 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
-                               "	projIZ = 1.0 / max( proj.z, 0.00001 );\n"
-                               "	oTexCoord = vec2( proj.x * projIZ, proj.y * projIZ );\n"
-                               ""
-                               "   oTexCoord2r = mix( vec3( Texm3 * vec4(Normal,-1,1) ), vec3( Texm4 * vec4(Normal,-1,1) ), TexCoord1.x );\n"
-                               "   oTexCoord2g = mix( vec3( Texm3 * vec4(TexCoord,-1,1) ), vec3( Texm4 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
-                               "   oTexCoord2b = mix( vec3( Texm3 * vec4(Tangent,-1,1) ), vec3( Texm4 * vec4(Tangent,-1,1) ), TexCoord1.x );\n"
-                               ""
-                               "}\n"
-            ,
+                       "attribute vec4 Position;\n"
+                       "attribute vec2 TexCoord;\n"	// green
+                       "attribute vec2 TexCoord1;\n"
+                       "attribute vec2 Normal;\n"		// red
+                       "attribute vec2 Tangent;\n"		// blue
+                       "varying  vec2 oTexCoord;\n"
+                       "varying  vec3 oTexCoord2r;\n"	// These must do the proj in fragment shader or you
+                       "varying  vec3 oTexCoord2g;\n"	// get wiggles when you view the plane at even
+                       "varying  vec3 oTexCoord2b;\n"	// modest angles.
+                       "void main()\n"
+                       "{\n"
+                       "   gl_Position = Mvpm * Position;\n"
+                       "	vec3 proj;\n"
+                       "	float projIZ;\n"
+                       ""
+                       "   proj = mix( vec3( Texm * vec4(TexCoord,-1,1) ), vec3( Texm2 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
+                       "	projIZ = 1.0 / max( proj.z, 0.00001 );\n"
+                       "	oTexCoord = vec2( proj.x * projIZ, proj.y * projIZ );\n"
+                       ""
+                       "   oTexCoord2r = mix( vec3( Texm3 * vec4(Normal,-1,1) ), vec3( Texm4 * vec4(Normal,-1,1) ), TexCoord1.x );\n"
+                       "   oTexCoord2g = mix( vec3( Texm3 * vec4(TexCoord,-1,1) ), vec3( Texm4 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
+                       "   oTexCoord2b = mix( vec3( Texm3 * vec4(Tangent,-1,1) ), vec3( Texm4 * vec4(Tangent,-1,1) ), TexCoord1.x );\n"
+                       ""
+                       "}\n"
+                       ,
                        "uniform sampler2D Texture0;\n"
-                               "uniform sampler2D Texture1;\n"
-                               "varying highp vec2 oTexCoord;\n"
-                               "varying highp vec3 oTexCoord2r;\n"
-                               "varying highp vec3 oTexCoord2g;\n"
-                               "varying highp vec3 oTexCoord2b;\n"
-                               "void main()\n"
-                               "{\n"
-                               "	lowp vec4 color0 = texture2D(Texture0, oTexCoord);\n"
-                               "	{\n"
-                               "		lowp vec4 color1r = texture2DProj(Texture1, oTexCoord2r);\n"
-                               "		lowp vec4 color1g = texture2DProj(Texture1, oTexCoord2g);\n"
-                               "		lowp vec4 color1b = texture2DProj(Texture1, oTexCoord2b);\n"
-                               "		lowp vec4 color1 = vec4( color1r.x, color1g.y, color1b.z, 1.0 );\n"
-                               "		gl_FragColor = mix( color1, color0, color0.w );\n"	// pass through destination alpha
-                               "	}\n"
-                               "}\n"
-    );
+                       "uniform sampler2D Texture1;\n"
+                       "varying highp vec2 oTexCoord;\n"
+                       "varying highp vec3 oTexCoord2r;\n"
+                       "varying highp vec3 oTexCoord2g;\n"
+                       "varying highp vec3 oTexCoord2b;\n"
+                       "void main()\n"
+                       "{\n"
+                       "	lowp vec4 color0 = texture2D(Texture0, oTexCoord);\n"
+                       "	{\n"
+                       "		lowp vec4 color1r = texture2DProj(Texture1, oTexCoord2r);\n"
+                       "		lowp vec4 color1g = texture2DProj(Texture1, oTexCoord2g);\n"
+                       "		lowp vec4 color1b = texture2DProj(Texture1, oTexCoord2b);\n"
+                       "		lowp vec4 color1 = vec4( color1r.x, color1g.y, color1b.z, 1.0 );\n"
+                       "		gl_FragColor = mix( color1, color0, color0.w );\n"	// pass through destination alpha
+                       "	}\n"
+                       "}\n"
+                       );
     buildWarpProgPair( WP_MASKED_PLANE_EXTERNAL,
-            // low quality
+                       // low quality
                        "uniform mediump mat4 Mvpm;\n"
-                               "uniform mediump mat4 Texm;\n"
-                               "uniform mediump mat4 Texm2;\n"
-                               "uniform mediump mat4 Texm3;\n"
-                               "uniform mediump mat4 Texm4;\n"
+                       "uniform mediump mat4 Texm;\n"
+                       "uniform mediump mat4 Texm2;\n"
+                       "uniform mediump mat4 Texm3;\n"
+                       "uniform mediump mat4 Texm4;\n"
 
-                               "attribute vec4 Position;\n"
-                               "attribute vec2 TexCoord;\n"
-                               "attribute vec2 TexCoord1;\n"
-                               "varying  vec2 oTexCoord;\n"
-                               "varying  vec3 oTexCoord2;\n"	// Must do the proj in fragment shader or you get wiggles when you view the plane at even modest angles.
-                               "void main()\n"
-                               "{\n"
-                               "   gl_Position = Mvpm * Position;\n"
-                               "	vec3 proj;\n"
-                               "	float projIZ;\n"
-                               ""
-                               "   proj = mix( vec3( Texm * vec4(TexCoord,-1,1) ), vec3( Texm2 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
-                               "	projIZ = 1.0 / max( proj.z, 0.00001 );\n"
-                               "	oTexCoord = vec2( proj.x * projIZ, proj.y * projIZ );\n"
-                               ""
-                               "   oTexCoord2 = mix( vec3( Texm3 * vec4(TexCoord,-1,1) ), vec3( Texm4 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
-                               ""
-                               "}\n"
-            ,
+                       "attribute vec4 Position;\n"
+                       "attribute vec2 TexCoord;\n"
+                       "attribute vec2 TexCoord1;\n"
+                       "varying  vec2 oTexCoord;\n"
+                       "varying  vec3 oTexCoord2;\n"	// Must do the proj in fragment shader or you get wiggles when you view the plane at even modest angles.
+                       "void main()\n"
+                       "{\n"
+                       "   gl_Position = Mvpm * Position;\n"
+                       "	vec3 proj;\n"
+                       "	float projIZ;\n"
+                       ""
+                       "   proj = mix( vec3( Texm * vec4(TexCoord,-1,1) ), vec3( Texm2 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
+                       "	projIZ = 1.0 / max( proj.z, 0.00001 );\n"
+                       "	oTexCoord = vec2( proj.x * projIZ, proj.y * projIZ );\n"
+                       ""
+                       "   oTexCoord2 = mix( vec3( Texm3 * vec4(TexCoord,-1,1) ), vec3( Texm4 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
+                       ""
+                       "}\n"
+                       ,
                        "#extension GL_OES_EGL_image_external : require\n"
-                               "uniform sampler2D Texture0;\n"
-                               "uniform samplerExternalOES Texture1;\n"
-                               "varying highp vec2 oTexCoord;\n"
-                               "varying highp vec3 oTexCoord2;\n"
-                               "void main()\n"
-                               "{\n"
-                               "	lowp vec4 color0 = texture2D(Texture0, oTexCoord);\n"
-                               "	{\n"
-                               "		lowp vec4 color1 = vec4( texture2DProj(Texture1, oTexCoord2).xyz, 1.0 );\n"
-                               "		gl_FragColor = mix( color1, color0, color0.w );\n"	// pass through destination alpha
-                               "	}\n"
-                               "}\n"
-            ,
-            // high quality
+                       "uniform sampler2D Texture0;\n"
+                       "uniform samplerExternalOES Texture1;\n"
+                       "varying highp vec2 oTexCoord;\n"
+                       "varying highp vec3 oTexCoord2;\n"
+                       "void main()\n"
+                       "{\n"
+                       "	lowp vec4 color0 = texture2D(Texture0, oTexCoord);\n"
+                       "	{\n"
+                       "		lowp vec4 color1 = vec4( texture2DProj(Texture1, oTexCoord2).xyz, 1.0 );\n"
+                       "		gl_FragColor = mix( color1, color0, color0.w );\n"	// pass through destination alpha
+                       "	}\n"
+                       "}\n"
+                       ,
+                       // high quality
                        "uniform mediump mat4 Mvpm;\n"
-                               "uniform mediump mat4 Texm;\n"
-                               "uniform mediump mat4 Texm2;\n"
-                               "uniform mediump mat4 Texm3;\n"
-                               "uniform mediump mat4 Texm4;\n"
+                       "uniform mediump mat4 Texm;\n"
+                       "uniform mediump mat4 Texm2;\n"
+                       "uniform mediump mat4 Texm3;\n"
+                       "uniform mediump mat4 Texm4;\n"
 
-                               "attribute vec4 Position;\n"
-                               "attribute vec2 TexCoord;\n"	// green
-                               "attribute vec2 TexCoord1;\n"
-                               "attribute vec2 Normal;\n"		// red
-                               "attribute vec2 Tangent;\n"		// blue
-                               "varying  vec2 oTexCoord;\n"
-                               "varying  vec3 oTexCoord2r;\n"	// These must do the proj in fragment shader or you
-                               "varying  vec3 oTexCoord2g;\n"	// get wiggles when you view the plane at even
-                               "varying  vec3 oTexCoord2b;\n"	// modest angles.
-                               "void main()\n"
-                               "{\n"
-                               "   gl_Position = Mvpm * Position;\n"
-                               "	vec3 proj;\n"
-                               "	float projIZ;\n"
-                               ""
-                               "   proj = mix( vec3( Texm * vec4(TexCoord,-1,1) ), vec3( Texm2 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
-                               "	projIZ = 1.0 / max( proj.z, 0.00001 );\n"
-                               "	oTexCoord = vec2( proj.x * projIZ, proj.y * projIZ );\n"
-                               ""
-                               "   oTexCoord2r = mix( vec3( Texm3 * vec4(Normal,-1,1) ), vec3( Texm4 * vec4(Normal,-1,1) ), TexCoord1.x );\n"
-                               "   oTexCoord2g = mix( vec3( Texm3 * vec4(TexCoord,-1,1) ), vec3( Texm4 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
-                               "   oTexCoord2b = mix( vec3( Texm3 * vec4(Tangent,-1,1) ), vec3( Texm4 * vec4(Tangent,-1,1) ), TexCoord1.x );\n"
-                               ""
-                               "}\n"
-            ,
+                       "attribute vec4 Position;\n"
+                       "attribute vec2 TexCoord;\n"	// green
+                       "attribute vec2 TexCoord1;\n"
+                       "attribute vec2 Normal;\n"		// red
+                       "attribute vec2 Tangent;\n"		// blue
+                       "varying  vec2 oTexCoord;\n"
+                       "varying  vec3 oTexCoord2r;\n"	// These must do the proj in fragment shader or you
+                       "varying  vec3 oTexCoord2g;\n"	// get wiggles when you view the plane at even
+                       "varying  vec3 oTexCoord2b;\n"	// modest angles.
+                       "void main()\n"
+                       "{\n"
+                       "   gl_Position = Mvpm * Position;\n"
+                       "	vec3 proj;\n"
+                       "	float projIZ;\n"
+                       ""
+                       "   proj = mix( vec3( Texm * vec4(TexCoord,-1,1) ), vec3( Texm2 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
+                       "	projIZ = 1.0 / max( proj.z, 0.00001 );\n"
+                       "	oTexCoord = vec2( proj.x * projIZ, proj.y * projIZ );\n"
+                       ""
+                       "   oTexCoord2r = mix( vec3( Texm3 * vec4(Normal,-1,1) ), vec3( Texm4 * vec4(Normal,-1,1) ), TexCoord1.x );\n"
+                       "   oTexCoord2g = mix( vec3( Texm3 * vec4(TexCoord,-1,1) ), vec3( Texm4 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
+                       "   oTexCoord2b = mix( vec3( Texm3 * vec4(Tangent,-1,1) ), vec3( Texm4 * vec4(Tangent,-1,1) ), TexCoord1.x );\n"
+                       ""
+                       "}\n"
+                       ,
                        "#extension GL_OES_EGL_image_external : require\n"
-                               "uniform sampler2D Texture0;\n"
-                               "uniform samplerExternalOES Texture1;\n"
-                               "varying highp vec2 oTexCoord;\n"
-                               "varying highp vec3 oTexCoord2r;\n"
-                               "varying highp vec3 oTexCoord2g;\n"
-                               "varying highp vec3 oTexCoord2b;\n"
-                               "void main()\n"
-                               "{\n"
-                               "	lowp vec4 color0 = texture2D(Texture0, oTexCoord);\n"
-                               "	{\n"
-                               "		lowp vec4 color1r = texture2DProj(Texture1, oTexCoord2r);\n"
-                               "		lowp vec4 color1g = texture2DProj(Texture1, oTexCoord2g);\n"
-                               "		lowp vec4 color1b = texture2DProj(Texture1, oTexCoord2b);\n"
-                               "		lowp vec4 color1 = vec4( color1r.x, color1g.y, color1b.z, 1.0 );\n"
-                               "		gl_FragColor = mix( color1, color0, color0.w );\n"	// pass through destination alpha
-                               "	}\n"
-                               "}\n"
-    );
+                       "uniform sampler2D Texture0;\n"
+                       "uniform samplerExternalOES Texture1;\n"
+                       "varying highp vec2 oTexCoord;\n"
+                       "varying highp vec3 oTexCoord2r;\n"
+                       "varying highp vec3 oTexCoord2g;\n"
+                       "varying highp vec3 oTexCoord2b;\n"
+                       "void main()\n"
+                       "{\n"
+                       "	lowp vec4 color0 = texture2D(Texture0, oTexCoord);\n"
+                       "	{\n"
+                       "		lowp vec4 color1r = texture2DProj(Texture1, oTexCoord2r);\n"
+                       "		lowp vec4 color1g = texture2DProj(Texture1, oTexCoord2g);\n"
+                       "		lowp vec4 color1b = texture2DProj(Texture1, oTexCoord2b);\n"
+                       "		lowp vec4 color1 = vec4( color1r.x, color1g.y, color1b.z, 1.0 );\n"
+                       "		gl_FragColor = mix( color1, color0, color0.w );\n"	// pass through destination alpha
+                       "	}\n"
+                       "}\n"
+                       );
     buildWarpProgPair( WP_MASKED_CUBE,
-            // low quality
+                       // low quality
                        "uniform mediump mat4 Mvpm;\n"
-                               "uniform mediump mat4 Texm;\n"
-                               "uniform mediump mat4 Texm2;\n"
-                               "uniform mediump mat4 Texm3;\n"
-                               "uniform mediump mat4 Texm4;\n"
-                               "uniform mediump vec2 FrameNum;\n"
+                       "uniform mediump mat4 Texm;\n"
+                       "uniform mediump mat4 Texm2;\n"
+                       "uniform mediump mat4 Texm3;\n"
+                       "uniform mediump mat4 Texm4;\n"
+                       "uniform mediump vec2 FrameNum;\n"
 
-                               "attribute vec4 Position;\n"
-                               "attribute vec2 TexCoord;\n"
-                               "attribute vec2 TexCoord1;\n"
-                               "varying  vec2 oTexCoord;\n"
-                               "varying  vec3 oTexCoord2;\n"
-                               "void main()\n"
-                               "{\n"
-                               "   gl_Position = Mvpm * Position;\n"
-                               "	vec3 proj;\n"
-                               "	float projIZ;\n"
-                               ""
-                               "   proj = mix( vec3( Texm * vec4(TexCoord,-1,1) ), vec3( Texm2 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
-                               "	projIZ = 1.0 / max( proj.z, 0.00001 );\n"
-                               "	oTexCoord = vec2( proj.x * projIZ, proj.y * projIZ );\n"
-                               ""
-                               "   oTexCoord2 = mix( vec3( Texm3 * vec4(TexCoord,-1,1) ), vec3( Texm4 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
-                               ""
-                               "}\n"
-            ,
+                       "attribute vec4 Position;\n"
+                       "attribute vec2 TexCoord;\n"
+                       "attribute vec2 TexCoord1;\n"
+                       "varying  vec2 oTexCoord;\n"
+                       "varying  vec3 oTexCoord2;\n"
+                       "void main()\n"
+                       "{\n"
+                       "   gl_Position = Mvpm * Position;\n"
+                       "	vec3 proj;\n"
+                       "	float projIZ;\n"
+                       ""
+                       "   proj = mix( vec3( Texm * vec4(TexCoord,-1,1) ), vec3( Texm2 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
+                       "	projIZ = 1.0 / max( proj.z, 0.00001 );\n"
+                       "	oTexCoord = vec2( proj.x * projIZ, proj.y * projIZ );\n"
+                       ""
+                       "   oTexCoord2 = mix( vec3( Texm3 * vec4(TexCoord,-1,1) ), vec3( Texm4 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
+                       ""
+                       "}\n"
+                       ,
                        "uniform sampler2D Texture0;\n"
-                               "uniform samplerCube Texture1;\n"
-                               "uniform lowp float UniformColor;\n"
-                               "varying highp vec2 oTexCoord;\n"
-                               "varying highp vec3 oTexCoord2;\n"
-                               "void main()\n"
-                               "{\n"
-                               "	lowp vec4 color0 = texture2D(Texture0, oTexCoord);\n"
-                               "	lowp vec4 color1 = textureCube(Texture1, oTexCoord2) * UniformColor;\n"
-                               "	gl_FragColor = vec4( mix( color1.xyz, color0.xyz, color0.w ), 1.0);\n"	// pass through destination alpha
-                               "}\n"
-            ,
-            // high quality
+                       "uniform samplerCube Texture1;\n"
+                       "uniform lowp float UniformColor;\n"
+                       "varying highp vec2 oTexCoord;\n"
+                       "varying highp vec3 oTexCoord2;\n"
+                       "void main()\n"
+                       "{\n"
+                       "	lowp vec4 color0 = texture2D(Texture0, oTexCoord);\n"
+                       "	lowp vec4 color1 = textureCube(Texture1, oTexCoord2) * UniformColor;\n"
+                       "	gl_FragColor = vec4( mix( color1.xyz, color0.xyz, color0.w ), 1.0);\n"	// pass through destination alpha
+                       "}\n"
+                       ,
+                       // high quality
                        "uniform mediump mat4 Mvpm;\n"
-                               "uniform mediump mat4 Texm;\n"
-                               "uniform mediump mat4 Texm2;\n"
-                               "uniform mediump mat4 Texm3;\n"
-                               "uniform mediump mat4 Texm4;\n"
-                               "uniform mediump vec2 FrameNum;\n"
+                       "uniform mediump mat4 Texm;\n"
+                       "uniform mediump mat4 Texm2;\n"
+                       "uniform mediump mat4 Texm3;\n"
+                       "uniform mediump mat4 Texm4;\n"
+                       "uniform mediump vec2 FrameNum;\n"
 
-                               "attribute vec4 Position;\n"
-                               "attribute vec2 TexCoord;\n"	// green
-                               "attribute vec2 TexCoord1;\n"
-                               "attribute vec2 Normal;\n"		// red
-                               "attribute vec2 Tangent;\n"		// blue
-                               "varying  vec2 oTexCoord;\n"
-                               "varying  vec3 oTexCoord2r;\n"
-                               "varying  vec3 oTexCoord2g;\n"
-                               "varying  vec3 oTexCoord2b;\n"
-                               "void main()\n"
-                               "{\n"
-                               "   gl_Position = Mvpm * Position;\n"
-                               "	vec3 proj;\n"
-                               "	float projIZ;\n"
-                               ""
-                               "   proj = mix( vec3( Texm * vec4(TexCoord,-1,1) ), vec3( Texm2 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
-                               "	projIZ = 1.0 / max( proj.z, 0.00001 );\n"
-                               "	oTexCoord = vec2( proj.x * projIZ, proj.y * projIZ );\n"
-                               ""
-                               "   oTexCoord2r = mix( vec3( Texm3 * vec4(Normal,-1,1) ), vec3( Texm4 * vec4(Normal,-1,1) ), TexCoord1.x );\n"
-                               "   oTexCoord2g = mix( vec3( Texm3 * vec4(TexCoord,-1,1) ), vec3( Texm4 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
-                               "   oTexCoord2b = mix( vec3( Texm3 * vec4(Tangent,-1,1) ), vec3( Texm4 * vec4(Tangent,-1,1) ), TexCoord1.x );\n"
-                               ""
-                               "}\n"
-            ,
+                       "attribute vec4 Position;\n"
+                       "attribute vec2 TexCoord;\n"	// green
+                       "attribute vec2 TexCoord1;\n"
+                       "attribute vec2 Normal;\n"		// red
+                       "attribute vec2 Tangent;\n"		// blue
+                       "varying  vec2 oTexCoord;\n"
+                       "varying  vec3 oTexCoord2r;\n"
+                       "varying  vec3 oTexCoord2g;\n"
+                       "varying  vec3 oTexCoord2b;\n"
+                       "void main()\n"
+                       "{\n"
+                       "   gl_Position = Mvpm * Position;\n"
+                       "	vec3 proj;\n"
+                       "	float projIZ;\n"
+                       ""
+                       "   proj = mix( vec3( Texm * vec4(TexCoord,-1,1) ), vec3( Texm2 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
+                       "	projIZ = 1.0 / max( proj.z, 0.00001 );\n"
+                       "	oTexCoord = vec2( proj.x * projIZ, proj.y * projIZ );\n"
+                       ""
+                       "   oTexCoord2r = mix( vec3( Texm3 * vec4(Normal,-1,1) ), vec3( Texm4 * vec4(Normal,-1,1) ), TexCoord1.x );\n"
+                       "   oTexCoord2g = mix( vec3( Texm3 * vec4(TexCoord,-1,1) ), vec3( Texm4 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
+                       "   oTexCoord2b = mix( vec3( Texm3 * vec4(Tangent,-1,1) ), vec3( Texm4 * vec4(Tangent,-1,1) ), TexCoord1.x );\n"
+                       ""
+                       "}\n"
+                       ,
                        "uniform sampler2D Texture0;\n"
-                               "uniform samplerCube Texture1;\n"
-                               "uniform lowp float UniformColor;\n"
-                               "varying highp vec2 oTexCoord;\n"
-                               "varying highp vec3 oTexCoord2r;\n"
-                               "varying highp vec3 oTexCoord2g;\n"
-                               "varying highp vec3 oTexCoord2b;\n"
-                               "void main()\n"
-                               "{\n"
-                               "	lowp vec4 color0 = texture2D(Texture0, oTexCoord);\n"
-                               "	lowp vec4 color1r = textureCube(Texture1, oTexCoord2r);\n"
-                               "	lowp vec4 color1g = textureCube(Texture1, oTexCoord2g);\n"
-                               "	lowp vec4 color1b = textureCube(Texture1, oTexCoord2b);\n"
-                               "	lowp vec3 color1 = vec3( color1r.x, color1g.y, color1b.z ) * UniformColor;\n"
-                               "	gl_FragColor = vec4( mix( color1, color0.xyz, color0.w ), 1.0);\n"	// pass through destination alpha
-                               "}\n"
-    );
+                       "uniform samplerCube Texture1;\n"
+                       "uniform lowp float UniformColor;\n"
+                       "varying highp vec2 oTexCoord;\n"
+                       "varying highp vec3 oTexCoord2r;\n"
+                       "varying highp vec3 oTexCoord2g;\n"
+                       "varying highp vec3 oTexCoord2b;\n"
+                       "void main()\n"
+                       "{\n"
+                       "	lowp vec4 color0 = texture2D(Texture0, oTexCoord);\n"
+                       "	lowp vec4 color1r = textureCube(Texture1, oTexCoord2r);\n"
+                       "	lowp vec4 color1g = textureCube(Texture1, oTexCoord2g);\n"
+                       "	lowp vec4 color1b = textureCube(Texture1, oTexCoord2b);\n"
+                       "	lowp vec3 color1 = vec3( color1r.x, color1g.y, color1b.z ) * UniformColor;\n"
+                       "	gl_FragColor = vec4( mix( color1, color0.xyz, color0.w ), 1.0);\n"	// pass through destination alpha
+                       "}\n"
+                       );
     buildWarpProgPair( WP_CUBE,
-            // low quality
+                       // low quality
                        "uniform mediump mat4 Mvpm;\n"
-                               "uniform mediump mat4 Texm;\n"
-                               "uniform mediump mat4 Texm2;\n"
-                               "uniform mediump mat4 Texm3;\n"
-                               "uniform mediump mat4 Texm4;\n"
-                               "uniform mediump vec2 FrameNum;\n"
+                       "uniform mediump mat4 Texm;\n"
+                       "uniform mediump mat4 Texm2;\n"
+                       "uniform mediump mat4 Texm3;\n"
+                       "uniform mediump mat4 Texm4;\n"
+                       "uniform mediump vec2 FrameNum;\n"
 
-                               "attribute vec4 Position;\n"
-                               "attribute vec2 TexCoord;\n"
-                               "attribute vec2 TexCoord1;\n"
-                               "varying  vec3 oTexCoord2;\n"
-                               "void main()\n"
-                               "{\n"
-                               "   gl_Position = Mvpm * Position;\n"
-                               "   oTexCoord2 = mix( vec3( Texm3 * vec4(TexCoord,-1,1) ), vec3( Texm4 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
-                               "}\n"
-            ,
+                       "attribute vec4 Position;\n"
+                       "attribute vec2 TexCoord;\n"
+                       "attribute vec2 TexCoord1;\n"
+                       "varying  vec3 oTexCoord2;\n"
+                       "void main()\n"
+                       "{\n"
+                       "   gl_Position = Mvpm * Position;\n"
+                       "   oTexCoord2 = mix( vec3( Texm3 * vec4(TexCoord,-1,1) ), vec3( Texm4 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
+                       "}\n"
+                       ,
                        "uniform samplerCube Texture1;\n"
-                               "uniform samplerCube Texture2;\n"
-                               "uniform samplerCube Texture3;\n"
-                               "varying highp vec3 oTexCoord2;\n"
-                               "void main()\n"
-                               "{\n"
-                               "	lowp vec4 color1 = vec4( textureCube(Texture2, oTexCoord2).xyz, 1.0 );\n"
-                               "	gl_FragColor = color1;\n"
-                               "}\n"
-            ,
-            // high quality
+                       "uniform samplerCube Texture2;\n"
+                       "uniform samplerCube Texture3;\n"
+                       "varying highp vec3 oTexCoord2;\n"
+                       "void main()\n"
+                       "{\n"
+                       "	lowp vec4 color1 = vec4( textureCube(Texture2, oTexCoord2).xyz, 1.0 );\n"
+                       "	gl_FragColor = color1;\n"
+                       "}\n"
+                       ,
+                       // high quality
                        "uniform mediump mat4 Mvpm;\n"
-                               "uniform mediump mat4 Texm;\n"
-                               "uniform mediump mat4 Texm2;\n"
-                               "uniform mediump mat4 Texm3;\n"
-                               "uniform mediump mat4 Texm4;\n"
-                               "uniform mediump vec2 FrameNum;\n"
+                       "uniform mediump mat4 Texm;\n"
+                       "uniform mediump mat4 Texm2;\n"
+                       "uniform mediump mat4 Texm3;\n"
+                       "uniform mediump mat4 Texm4;\n"
+                       "uniform mediump vec2 FrameNum;\n"
 
-                               "attribute vec4 Position;\n"
-                               "attribute vec2 TexCoord;\n"	// green
-                               "attribute vec2 TexCoord1;\n"
-                               "attribute vec2 Normal;\n"		// red
-                               "attribute vec2 Tangent;\n"		// blue
-                               "varying  vec3 oTexCoord2r;\n"
-                               "varying  vec3 oTexCoord2g;\n"
-                               "varying  vec3 oTexCoord2b;\n"
-                               "void main()\n"
-                               "{\n"
-                               "   gl_Position = Mvpm * Position;\n"
-                               "   oTexCoord2r = mix( vec3( Texm3 * vec4(Normal,-1,1) ), vec3( Texm4 * vec4(Normal,-1,1) ), TexCoord1.x );\n"
-                               "   oTexCoord2g = mix( vec3( Texm3 * vec4(TexCoord,-1,1) ), vec3( Texm4 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
-                               "   oTexCoord2b = mix( vec3( Texm3 * vec4(Tangent,-1,1) ), vec3( Texm4 * vec4(Tangent,-1,1) ), TexCoord1.x );\n"
-                               "}\n"
-            ,
+                       "attribute vec4 Position;\n"
+                       "attribute vec2 TexCoord;\n"	// green
+                       "attribute vec2 TexCoord1;\n"
+                       "attribute vec2 Normal;\n"		// red
+                       "attribute vec2 Tangent;\n"		// blue
+                       "varying  vec3 oTexCoord2r;\n"
+                       "varying  vec3 oTexCoord2g;\n"
+                       "varying  vec3 oTexCoord2b;\n"
+                       "void main()\n"
+                       "{\n"
+                       "   gl_Position = Mvpm * Position;\n"
+                       "   oTexCoord2r = mix( vec3( Texm3 * vec4(Normal,-1,1) ), vec3( Texm4 * vec4(Normal,-1,1) ), TexCoord1.x );\n"
+                       "   oTexCoord2g = mix( vec3( Texm3 * vec4(TexCoord,-1,1) ), vec3( Texm4 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
+                       "   oTexCoord2b = mix( vec3( Texm3 * vec4(Tangent,-1,1) ), vec3( Texm4 * vec4(Tangent,-1,1) ), TexCoord1.x );\n"
+                       "}\n"
+                       ,
                        "uniform samplerCube Texture1;\n"
-                               "uniform samplerCube Texture2;\n"
-                               "uniform samplerCube Texture3;\n"
-                               "varying highp vec3 oTexCoord2r;\n"
-                               "varying highp vec3 oTexCoord2g;\n"
-                               "varying highp vec3 oTexCoord2b;\n"
-                               "void main()\n"
-                               "{\n"
-                               "	lowp float color1r = textureCube(Texture1, oTexCoord2r).x;\n"
-                               "	lowp float color1g = textureCube(Texture2, oTexCoord2g).x;\n"
-                               "	lowp float color1b = textureCube(Texture3, oTexCoord2b).x;\n"
-                               "	gl_FragColor = vec4( color1r, color1g, color1b, 1.0);\n"
-                               "}\n"
-    );
+                       "uniform samplerCube Texture2;\n"
+                       "uniform samplerCube Texture3;\n"
+                       "varying highp vec3 oTexCoord2r;\n"
+                       "varying highp vec3 oTexCoord2g;\n"
+                       "varying highp vec3 oTexCoord2b;\n"
+                       "void main()\n"
+                       "{\n"
+                       "	lowp float color1r = textureCube(Texture1, oTexCoord2r).x;\n"
+                       "	lowp float color1g = textureCube(Texture2, oTexCoord2g).x;\n"
+                       "	lowp float color1b = textureCube(Texture3, oTexCoord2b).x;\n"
+                       "	gl_FragColor = vec4( color1r, color1g, color1b, 1.0);\n"
+                       "}\n"
+                       );
     buildWarpProgPair( WP_LOADING_ICON,
-            // low quality
+                       // low quality
                        "uniform mediump mat4 Mvpm;\n"
-                               "uniform mediump mat4 Texm;\n"
-                               "uniform mediump mat4 Texm2;\n"
+                       "uniform mediump mat4 Texm;\n"
+                       "uniform mediump mat4 Texm2;\n"
 
-                               "attribute vec4 Position;\n"
-                               "attribute vec2 TexCoord;\n"
-                               "attribute vec2 TexCoord1;\n"
-                               "varying  vec2 oTexCoord;\n"
-                               "void main()\n"
-                               "{\n"
-                               "   gl_Position = Mvpm * Position;\n"
-                               "   vec3 left = vec3( Texm * vec4(TexCoord,-1,1) );\n"
-                               "   vec3 right = vec3( Texm2 * vec4(TexCoord,-1,1) );\n"
-                               "   vec3 proj = mix( left, right, TexCoord1.x );\n"
-                               "	float projIZ = 1.0 / max( proj.z, 0.00001 );\n"
-                               "	oTexCoord = vec2( proj.x * projIZ, proj.y * projIZ );\n"
-                               "}\n"
-            ,
+                       "attribute vec4 Position;\n"
+                       "attribute vec2 TexCoord;\n"
+                       "attribute vec2 TexCoord1;\n"
+                       "varying  vec2 oTexCoord;\n"
+                       "void main()\n"
+                       "{\n"
+                       "   gl_Position = Mvpm * Position;\n"
+                       "   vec3 left = vec3( Texm * vec4(TexCoord,-1,1) );\n"
+                       "   vec3 right = vec3( Texm2 * vec4(TexCoord,-1,1) );\n"
+                       "   vec3 proj = mix( left, right, TexCoord1.x );\n"
+                       "	float projIZ = 1.0 / max( proj.z, 0.00001 );\n"
+                       "	oTexCoord = vec2( proj.x * projIZ, proj.y * projIZ );\n"
+                       "}\n"
+                       ,
                        "uniform sampler2D Texture0;\n"
-                               "uniform sampler2D Texture1;\n"
-                               "uniform highp vec4 RotateScale;\n"
-                               "varying highp vec2 oTexCoord;\n"
-                               "void main()\n"
-                               "{\n"
-                               "	lowp vec4 color = texture2D(Texture0, oTexCoord);\n"
-                               "	highp vec2 iconCenter = vec2( 0.5, 0.5 );\n"
-                               "	highp vec2 localCoords = oTexCoord - iconCenter;\n"
-                               "	highp vec2 iconCoords = vec2(	( localCoords.x * RotateScale.y - localCoords.y * RotateScale.x ) * RotateScale.z + iconCenter.x,\n"
-                               "								( localCoords.x * RotateScale.x + localCoords.y * RotateScale.y ) * -RotateScale.z + iconCenter.x );\n"
-                               "	if ( iconCoords.x > 0.0 && iconCoords.x < 1.0 && iconCoords.y > 0.0 && iconCoords.y < 1.0 )\n"
-                               "	{\n"
-                               "		lowp vec4 iconColor = texture2D(Texture1, iconCoords);"
-                               "		color.rgb = ( 1.0 - iconColor.a ) * color.rgb + ( iconColor.a ) * iconColor.rgb;\n"
-                               "	}\n"
-                               "	gl_FragColor = color;\n"
-                               "}\n"
-            ,
-            // high quality
+                       "uniform sampler2D Texture1;\n"
+                       "uniform highp vec4 RotateScale;\n"
+                       "varying highp vec2 oTexCoord;\n"
+                       "void main()\n"
+                       "{\n"
+                       "	lowp vec4 color = texture2D(Texture0, oTexCoord);\n"
+                       "	highp vec2 iconCenter = vec2( 0.5, 0.5 );\n"
+                       "	highp vec2 localCoords = oTexCoord - iconCenter;\n"
+                       "	highp vec2 iconCoords = vec2(	( localCoords.x * RotateScale.y - localCoords.y * RotateScale.x ) * RotateScale.z + iconCenter.x,\n"
+                       "								( localCoords.x * RotateScale.x + localCoords.y * RotateScale.y ) * -RotateScale.z + iconCenter.x );\n"
+                       "	if ( iconCoords.x > 0.0 && iconCoords.x < 1.0 && iconCoords.y > 0.0 && iconCoords.y < 1.0 )\n"
+                       "	{\n"
+                       "		lowp vec4 iconColor = texture2D(Texture1, iconCoords);"
+                       "		color.rgb = ( 1.0 - iconColor.a ) * color.rgb + ( iconColor.a ) * iconColor.rgb;\n"
+                       "	}\n"
+                       "	gl_FragColor = color;\n"
+                       "}\n"
+                       ,
+                       // high quality
                        "uniform mediump mat4 Mvpm;\n"
-                               "uniform mediump mat4 Texm;\n"
-                               "uniform mediump mat4 Texm2;\n"
+                       "uniform mediump mat4 Texm;\n"
+                       "uniform mediump mat4 Texm2;\n"
 
-                               "attribute vec4 Position;\n"
-                               "attribute vec2 TexCoord;\n"
-                               "attribute vec2 TexCoord1;\n"
-                               "varying  vec2 oTexCoord;\n"
-                               "void main()\n"
-                               "{\n"
-                               "   gl_Position = Mvpm * Position;\n"
-                               "   vec3 left = vec3( Texm * vec4(TexCoord,-1,1) );\n"
-                               "   vec3 right = vec3( Texm2 * vec4(TexCoord,-1,1) );\n"
-                               "   vec3 proj = mix( left, right, TexCoord1.x );\n"
-                               "	float projIZ = 1.0 / max( proj.z, 0.00001 );\n"
-                               "	oTexCoord = vec2( proj.x * projIZ, proj.y * projIZ );\n"
-                               "}\n"
-            ,
+                       "attribute vec4 Position;\n"
+                       "attribute vec2 TexCoord;\n"
+                       "attribute vec2 TexCoord1;\n"
+                       "varying  vec2 oTexCoord;\n"
+                       "void main()\n"
+                       "{\n"
+                       "   gl_Position = Mvpm * Position;\n"
+                       "   vec3 left = vec3( Texm * vec4(TexCoord,-1,1) );\n"
+                       "   vec3 right = vec3( Texm2 * vec4(TexCoord,-1,1) );\n"
+                       "   vec3 proj = mix( left, right, TexCoord1.x );\n"
+                       "	float projIZ = 1.0 / max( proj.z, 0.00001 );\n"
+                       "	oTexCoord = vec2( proj.x * projIZ, proj.y * projIZ );\n"
+                       "}\n"
+                       ,
                        "uniform sampler2D Texture0;\n"
-                               "uniform sampler2D Texture1;\n"
-                               "uniform highp vec4 RotateScale;\n"
-                               "varying highp vec2 oTexCoord;\n"
-                               "void main()\n"
-                               "{\n"
-                               "	lowp vec4 color = texture2D(Texture0, oTexCoord);\n"
-                               "	highp vec2 iconCenter = vec2( 0.5, 0.5 );\n"
-                               "	highp vec2 localCoords = oTexCoord - iconCenter;\n"
-                               "	highp vec2 iconCoords = vec2(	( localCoords.x * RotateScale.y - localCoords.y * RotateScale.x ) * RotateScale.z + iconCenter.x,\n"
-                               "								( localCoords.x * RotateScale.x + localCoords.y * RotateScale.y ) * -RotateScale.z + iconCenter.x );\n"
-                               "	if ( iconCoords.x > 0.0 && iconCoords.x < 1.0 && iconCoords.y > 0.0 && iconCoords.y < 1.0 )\n"
-                               "	{\n"
-                               "		lowp vec4 iconColor = texture2D(Texture1, iconCoords);"
-                               "		color.rgb = ( 1.0 - iconColor.a ) * color.rgb + ( iconColor.a ) * iconColor.rgb;\n"
-                               "	}\n"
-                               "	gl_FragColor = color;\n"
-                               "}\n"
-    );
+                       "uniform sampler2D Texture1;\n"
+                       "uniform highp vec4 RotateScale;\n"
+                       "varying highp vec2 oTexCoord;\n"
+                       "void main()\n"
+                       "{\n"
+                       "	lowp vec4 color = texture2D(Texture0, oTexCoord);\n"
+                       "	highp vec2 iconCenter = vec2( 0.5, 0.5 );\n"
+                       "	highp vec2 localCoords = oTexCoord - iconCenter;\n"
+                       "	highp vec2 iconCoords = vec2(	( localCoords.x * RotateScale.y - localCoords.y * RotateScale.x ) * RotateScale.z + iconCenter.x,\n"
+                       "								( localCoords.x * RotateScale.x + localCoords.y * RotateScale.y ) * -RotateScale.z + iconCenter.x );\n"
+                       "	if ( iconCoords.x > 0.0 && iconCoords.x < 1.0 && iconCoords.y > 0.0 && iconCoords.y < 1.0 )\n"
+                       "	{\n"
+                       "		lowp vec4 iconColor = texture2D(Texture1, iconCoords);"
+                       "		color.rgb = ( 1.0 - iconColor.a ) * color.rgb + ( iconColor.a ) * iconColor.rgb;\n"
+                       "	}\n"
+                       "	gl_FragColor = color;\n"
+                       "}\n"
+                       );
     buildWarpProgPair( WP_MIDDLE_CLAMP,
-            // low quality
+                       // low quality
                        "uniform mediump mat4 Mvpm;\n"
-                               "uniform mediump mat4 Texm;\n"
-                               "uniform mediump mat4 Texm2;\n"
+                       "uniform mediump mat4 Texm;\n"
+                       "uniform mediump mat4 Texm2;\n"
 
-                               "attribute vec4 Position;\n"
-                               "attribute vec2 TexCoord;\n"
-                               "attribute vec2 TexCoord1;\n"
-                               "varying  vec2 oTexCoord;\n"
-                               "void main()\n"
-                               "{\n"
-                               "   gl_Position = Mvpm * Position;\n"
-                               "   vec3 left = vec3( Texm * vec4(TexCoord,-1,1) );\n"
-                               "   vec3 right = vec3( Texm2 * vec4(TexCoord,-1,1) );\n"
-                               "   vec3 proj = mix( left, right, TexCoord1.x );\n"
-                               "	float projIZ = 1.0 / max( proj.z, 0.00001 );\n"
-                               "	oTexCoord = vec2( proj.x * projIZ, proj.y * projIZ );\n"
-                               "}\n"
-            ,
+                       "attribute vec4 Position;\n"
+                       "attribute vec2 TexCoord;\n"
+                       "attribute vec2 TexCoord1;\n"
+                       "varying  vec2 oTexCoord;\n"
+                       "void main()\n"
+                       "{\n"
+                       "   gl_Position = Mvpm * Position;\n"
+                       "   vec3 left = vec3( Texm * vec4(TexCoord,-1,1) );\n"
+                       "   vec3 right = vec3( Texm2 * vec4(TexCoord,-1,1) );\n"
+                       "   vec3 proj = mix( left, right, TexCoord1.x );\n"
+                       "	float projIZ = 1.0 / max( proj.z, 0.00001 );\n"
+                       "	oTexCoord = vec2( proj.x * projIZ, proj.y * projIZ );\n"
+                       "}\n"
+                       ,
                        "uniform sampler2D Texture0;\n"
-                               "uniform highp vec2 TexClamp;\n"
-                               "varying highp vec2 oTexCoord;\n"
-                               "void main()\n"
-                               "{\n"
-                               "	gl_FragColor = texture2D(Texture0, vec2( clamp( oTexCoord.x, TexClamp.x, TexClamp.y ), oTexCoord.y ) );\n"
-                               "}\n"
-            ,
-            // high quality
+                       "uniform highp vec2 TexClamp;\n"
+                       "varying highp vec2 oTexCoord;\n"
+                       "void main()\n"
+                       "{\n"
+                       "	gl_FragColor = texture2D(Texture0, vec2( clamp( oTexCoord.x, TexClamp.x, TexClamp.y ), oTexCoord.y ) );\n"
+                       "}\n"
+                       ,
+                       // high quality
                        "uniform mediump mat4 Mvpm;\n"
-                               "uniform mediump mat4 Texm;\n"
-                               "uniform mediump mat4 Texm2;\n"
+                       "uniform mediump mat4 Texm;\n"
+                       "uniform mediump mat4 Texm2;\n"
 
-                               "attribute vec4 Position;\n"
-                               "attribute vec2 TexCoord;\n"
-                               "attribute vec2 TexCoord1;\n"
-                               "varying  vec2 oTexCoord;\n"
-                               "void main()\n"
-                               "{\n"
-                               "   gl_Position = Mvpm * Position;\n"
-                               "   vec3 left = vec3( Texm * vec4(TexCoord,-1,1) );\n"
-                               "   vec3 right = vec3( Texm2 * vec4(TexCoord,-1,1) );\n"
-                               "   vec3 proj = mix( left, right, TexCoord1.x );\n"
-                               "	float projIZ = 1.0 / max( proj.z, 0.00001 );\n"
-                               "	oTexCoord = vec2( proj.x * projIZ, proj.y * projIZ );\n"
-                               "}\n"
-            ,
+                       "attribute vec4 Position;\n"
+                       "attribute vec2 TexCoord;\n"
+                       "attribute vec2 TexCoord1;\n"
+                       "varying  vec2 oTexCoord;\n"
+                       "void main()\n"
+                       "{\n"
+                       "   gl_Position = Mvpm * Position;\n"
+                       "   vec3 left = vec3( Texm * vec4(TexCoord,-1,1) );\n"
+                       "   vec3 right = vec3( Texm2 * vec4(TexCoord,-1,1) );\n"
+                       "   vec3 proj = mix( left, right, TexCoord1.x );\n"
+                       "	float projIZ = 1.0 / max( proj.z, 0.00001 );\n"
+                       "	oTexCoord = vec2( proj.x * projIZ, proj.y * projIZ );\n"
+                       "}\n"
+                       ,
                        "uniform sampler2D Texture0;\n"
-                               "uniform highp vec2 TexClamp;\n"
-                               "varying highp vec2 oTexCoord;\n"
-                               "void main()\n"
-                               "{\n"
-                               "	gl_FragColor = texture2D(Texture0, vec2( clamp( oTexCoord.x, TexClamp.x, TexClamp.y ), oTexCoord.y ) );\n"
-                               "}\n"
-    );
+                       "uniform highp vec2 TexClamp;\n"
+                       "varying highp vec2 oTexCoord;\n"
+                       "void main()\n"
+                       "{\n"
+                       "	gl_FragColor = texture2D(Texture0, vec2( clamp( oTexCoord.x, TexClamp.x, TexClamp.y ), oTexCoord.y ) );\n"
+                       "}\n"
+                       );
 
     buildWarpProgPair( WP_OVERLAY_PLANE,
-            // low quality
+                       // low quality
                        "uniform mediump mat4 Mvpm;\n"
-                               "uniform mediump mat4 Texm;\n"
-                               "uniform mediump mat4 Texm2;\n"
-                               "uniform mediump mat4 Texm3;\n"
-                               "uniform mediump mat4 Texm4;\n"
+                       "uniform mediump mat4 Texm;\n"
+                       "uniform mediump mat4 Texm2;\n"
+                       "uniform mediump mat4 Texm3;\n"
+                       "uniform mediump mat4 Texm4;\n"
 
-                               "attribute vec4 Position;\n"
-                               "attribute vec2 TexCoord;\n"
-                               "attribute vec2 TexCoord1;\n"
-                               "varying  vec2 oTexCoord;\n"
-                               "varying  vec3 oTexCoord2;\n"	// Must do the proj in fragment shader or you get wiggles when you view the plane at even modest angles.
-                               "varying  float clampVal;\n"
-                               "void main()\n"
-                               "{\n"
-                               "   gl_Position = Mvpm * Position;\n"
-                               "	vec3 proj;\n"
-                               "	float projIZ;\n"
-                               ""
-                               "   proj = mix( vec3( Texm * vec4(TexCoord,-1,1) ), vec3( Texm2 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
-                               "	projIZ = 1.0 / max( proj.z, 0.00001 );\n"
-                               "	oTexCoord = vec2( proj.x * projIZ, proj.y * projIZ );\n"
-                               ""
-                               "   oTexCoord2 = mix( vec3( Texm3 * vec4(TexCoord,-1,1) ), vec3( Texm4 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
-                               ""
-                               // We need to clamp the projected texcoords to keep from getting a mirror
-                               // image behind the view, and mip mapped edge clamp (I wish we had CLAMP_TO_BORDER)
-                               // issues far off to the sides.
-                               "	vec2 clampXY = oTexCoord2.xy / oTexCoord2.z;\n"
-// this is backwards on Stratum    		"	clampVal = ( oTexCoord2.z > -0.01 || clampXY.x < -0.1 || clampXY.y < -0.1 || clampXY.x > 1.1 || clampXY.y > 1.1 ) ? 1.0 : 0.0;\n"
-                    "	clampVal = ( oTexCoord2.z < -0.01 || clampXY.x < -0.1 || clampXY.y < -0.1 || clampXY.x > 1.1 || clampXY.y > 1.1 ) ? 1.0 : 0.0;\n"
-                    "}\n"
-            ,
+                       "attribute vec4 Position;\n"
+                       "attribute vec2 TexCoord;\n"
+                       "attribute vec2 TexCoord1;\n"
+                       "varying  vec2 oTexCoord;\n"
+                       "varying  vec3 oTexCoord2;\n"	// Must do the proj in fragment shader or you get wiggles when you view the plane at even modest angles.
+                       "varying  float clampVal;\n"
+                       "void main()\n"
+                       "{\n"
+                       "   gl_Position = Mvpm * Position;\n"
+                       "	vec3 proj;\n"
+                       "	float projIZ;\n"
+                       ""
+                       "   proj = mix( vec3( Texm * vec4(TexCoord,-1,1) ), vec3( Texm2 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
+                       "	projIZ = 1.0 / max( proj.z, 0.00001 );\n"
+                       "	oTexCoord = vec2( proj.x * projIZ, proj.y * projIZ );\n"
+                       ""
+                       "   oTexCoord2 = mix( vec3( Texm3 * vec4(TexCoord,-1,1) ), vec3( Texm4 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
+                       ""
+                       // We need to clamp the projected texcoords to keep from getting a mirror
+                       // image behind the view, and mip mapped edge clamp (I wish we had CLAMP_TO_BORDER)
+                       // issues far off to the sides.
+                       "	vec2 clampXY = oTexCoord2.xy / oTexCoord2.z;\n"
+                       // this is backwards on Stratum    		"	clampVal = ( oTexCoord2.z > -0.01 || clampXY.x < -0.1 || clampXY.y < -0.1 || clampXY.x > 1.1 || clampXY.y > 1.1 ) ? 1.0 : 0.0;\n"
+                       "	clampVal = ( oTexCoord2.z < -0.01 || clampXY.x < -0.1 || clampXY.y < -0.1 || clampXY.x > 1.1 || clampXY.y > 1.1 ) ? 1.0 : 0.0;\n"
+                       "}\n"
+                       ,
                        "uniform sampler2D Texture0;\n"
-                               "uniform sampler2D Texture1;\n"
-                               "varying lowp float clampVal;\n"
-                               "varying highp vec2 oTexCoord;\n"
-                               "varying highp vec3 oTexCoord2;\n"
-                               "void main()\n"
-                               "{\n"
-                               "	lowp vec4 color0 = texture2D(Texture0, oTexCoord);\n"
-                               "	if ( clampVal == 1.0 )\n"
-                               "	{\n"
-                               "		gl_FragColor = color0;\n"
-                               "	} else {\n"
-                               "		lowp vec4 color1 = texture2DProj(Texture1, oTexCoord2);\n"
-                               "		gl_FragColor = mix( color0, color1, color1.w );\n"
-                               "	}\n"
-                               "}\n"
-            ,
-            // high quality
+                       "uniform sampler2D Texture1;\n"
+                       "varying lowp float clampVal;\n"
+                       "varying highp vec2 oTexCoord;\n"
+                       "varying highp vec3 oTexCoord2;\n"
+                       "void main()\n"
+                       "{\n"
+                       "	lowp vec4 color0 = texture2D(Texture0, oTexCoord);\n"
+                       "	if ( clampVal == 1.0 )\n"
+                       "	{\n"
+                       "		gl_FragColor = color0;\n"
+                       "	} else {\n"
+                       "		lowp vec4 color1 = texture2DProj(Texture1, oTexCoord2);\n"
+                       "		gl_FragColor = mix( color0, color1, color1.w );\n"
+                       "	}\n"
+                       "}\n"
+                       ,
+                       // high quality
                        "uniform mediump mat4 Mvpm;\n"
-                               "uniform mediump mat4 Texm;\n"
-                               "uniform mediump mat4 Texm2;\n"
-                               "uniform mediump mat4 Texm3;\n"
-                               "uniform mediump mat4 Texm4;\n"
+                       "uniform mediump mat4 Texm;\n"
+                       "uniform mediump mat4 Texm2;\n"
+                       "uniform mediump mat4 Texm3;\n"
+                       "uniform mediump mat4 Texm4;\n"
 
-                               "attribute vec4 Position;\n"
-                               "attribute vec2 TexCoord;\n"	// green
-                               "attribute vec2 TexCoord1;\n"
-                               "attribute vec2 Normal;\n"		// red
-                               "attribute vec2 Tangent;\n"		// blue
-                               "varying  vec2 oTexCoord;\n"
-                               "varying  vec3 oTexCoord2r;\n"	// These must do the proj in fragment shader or you
-                               "varying  vec3 oTexCoord2g;\n"	// get wiggles when you view the plane at even
-                               "varying  vec3 oTexCoord2b;\n"	// modest angles.
-                               "varying  float clampVal;\n"
-                               "void main()\n"
-                               "{\n"
-                               "   gl_Position = Mvpm * Position;\n"
-                               "	vec3 proj;\n"
-                               "	float projIZ;\n"
-                               ""
-                               "   proj = mix( vec3( Texm * vec4(TexCoord,-1,1) ), vec3( Texm2 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
-                               "	projIZ = 1.0 / max( proj.z, 0.00001 );\n"
-                               "	oTexCoord = vec2( proj.x * projIZ, proj.y * projIZ );\n"
-                               ""
-                               "   oTexCoord2r = mix( vec3( Texm3 * vec4(Normal,-1,1) ), vec3( Texm4 * vec4(Normal,-1,1) ), TexCoord1.x );\n"
-                               "   oTexCoord2g = mix( vec3( Texm3 * vec4(TexCoord,-1,1) ), vec3( Texm4 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
-                               "   oTexCoord2b = mix( vec3( Texm3 * vec4(Tangent,-1,1) ), vec3( Texm4 * vec4(Tangent,-1,1) ), TexCoord1.x );\n"
-                               ""
-                               // We need to clamp the projected texcoords to keep from getting a mirror
-                               // image behind the view, and mip mapped edge clamp (I wish we had CLAMP_TO_BORDER)
-                               // issues far off to the sides.
-                               "	vec2 clampXY = oTexCoord2r.xy / oTexCoord2r.z;\n"
-                               "	clampVal = ( oTexCoord2r.z > -0.01 || clampXY.x < -0.1 || clampXY.y < -0.1 || clampXY.x > 1.1 || clampXY.y > 1.1 ) ? 1.0 : 0.0;\n"
-                               "}\n"
-            ,
+                       "attribute vec4 Position;\n"
+                       "attribute vec2 TexCoord;\n"	// green
+                       "attribute vec2 TexCoord1;\n"
+                       "attribute vec2 Normal;\n"		// red
+                       "attribute vec2 Tangent;\n"		// blue
+                       "varying  vec2 oTexCoord;\n"
+                       "varying  vec3 oTexCoord2r;\n"	// These must do the proj in fragment shader or you
+                       "varying  vec3 oTexCoord2g;\n"	// get wiggles when you view the plane at even
+                       "varying  vec3 oTexCoord2b;\n"	// modest angles.
+                       "varying  float clampVal;\n"
+                       "void main()\n"
+                       "{\n"
+                       "   gl_Position = Mvpm * Position;\n"
+                       "	vec3 proj;\n"
+                       "	float projIZ;\n"
+                       ""
+                       "   proj = mix( vec3( Texm * vec4(TexCoord,-1,1) ), vec3( Texm2 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
+                       "	projIZ = 1.0 / max( proj.z, 0.00001 );\n"
+                       "	oTexCoord = vec2( proj.x * projIZ, proj.y * projIZ );\n"
+                       ""
+                       "   oTexCoord2r = mix( vec3( Texm3 * vec4(Normal,-1,1) ), vec3( Texm4 * vec4(Normal,-1,1) ), TexCoord1.x );\n"
+                       "   oTexCoord2g = mix( vec3( Texm3 * vec4(TexCoord,-1,1) ), vec3( Texm4 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
+                       "   oTexCoord2b = mix( vec3( Texm3 * vec4(Tangent,-1,1) ), vec3( Texm4 * vec4(Tangent,-1,1) ), TexCoord1.x );\n"
+                       ""
+                       // We need to clamp the projected texcoords to keep from getting a mirror
+                       // image behind the view, and mip mapped edge clamp (I wish we had CLAMP_TO_BORDER)
+                       // issues far off to the sides.
+                       "	vec2 clampXY = oTexCoord2r.xy / oTexCoord2r.z;\n"
+                       "	clampVal = ( oTexCoord2r.z > -0.01 || clampXY.x < -0.1 || clampXY.y < -0.1 || clampXY.x > 1.1 || clampXY.y > 1.1 ) ? 1.0 : 0.0;\n"
+                       "}\n"
+                       ,
                        "uniform sampler2D Texture0;\n"
-                               "uniform sampler2D Texture1;\n"
-                               "varying lowp float clampVal;\n"
-                               "varying highp vec2 oTexCoord;\n"
-                               "varying highp vec3 oTexCoord2r;\n"
-                               "varying highp vec3 oTexCoord2g;\n"
-                               "varying highp vec3 oTexCoord2b;\n"
-                               "void main()\n"
-                               "{\n"
-                               "	lowp vec4 color0 = texture2D(Texture0, oTexCoord);\n"
-                               "	if ( clampVal == 1.0 )\n"
-                               "	{\n"
-                               "		gl_FragColor = color0;\n"
-                               "	} else {\n"
-                               "		lowp vec4 color1r = texture2DProj(Texture1, oTexCoord2r);\n"
-                               "		lowp vec4 color1g = texture2DProj(Texture1, oTexCoord2g);\n"
-                               "		lowp vec4 color1b = texture2DProj(Texture1, oTexCoord2b);\n"
-                               "		lowp vec4 color1 = vec4( color1r.x, color1g.y, color1b.z, 1.0 );\n"
-                               "		gl_FragColor = mix( color0, color1, vec4( color1r.w, color1g.w, color1b.w, 1.0 ) );\n"
-                               "	}\n"
-                               "}\n"
-    );
+                       "uniform sampler2D Texture1;\n"
+                       "varying lowp float clampVal;\n"
+                       "varying highp vec2 oTexCoord;\n"
+                       "varying highp vec3 oTexCoord2r;\n"
+                       "varying highp vec3 oTexCoord2g;\n"
+                       "varying highp vec3 oTexCoord2b;\n"
+                       "void main()\n"
+                       "{\n"
+                       "	lowp vec4 color0 = texture2D(Texture0, oTexCoord);\n"
+                       "	if ( clampVal == 1.0 )\n"
+                       "	{\n"
+                       "		gl_FragColor = color0;\n"
+                       "	} else {\n"
+                       "		lowp vec4 color1r = texture2DProj(Texture1, oTexCoord2r);\n"
+                       "		lowp vec4 color1g = texture2DProj(Texture1, oTexCoord2g);\n"
+                       "		lowp vec4 color1b = texture2DProj(Texture1, oTexCoord2b);\n"
+                       "		lowp vec4 color1 = vec4( color1r.x, color1g.y, color1b.z, 1.0 );\n"
+                       "		gl_FragColor = mix( color0, color1, vec4( color1r.w, color1g.w, color1b.w, 1.0 ) );\n"
+                       "	}\n"
+                       "}\n"
+                       );
 
 
     // Debug program to color tint the overlay for LOD visualization
     buildWarpProgMatchedPair( WP_OVERLAY_PLANE_SHOW_LOD,
                               "#version 300 es\n"
-                                      "uniform mediump mat4 Mvpm;\n"
-                                      "uniform mediump mat4 Texm;\n"
-                                      "uniform mediump mat4 Texm2;\n"
-                                      "uniform mediump mat4 Texm3;\n"
-                                      "uniform mediump mat4 Texm4;\n"
+                              "uniform mediump mat4 Mvpm;\n"
+                              "uniform mediump mat4 Texm;\n"
+                              "uniform mediump mat4 Texm2;\n"
+                              "uniform mediump mat4 Texm3;\n"
+                              "uniform mediump mat4 Texm4;\n"
 
-                                      "in vec4 Position;\n"
-                                      "in vec2 TexCoord;\n"
-                                      "in vec2 TexCoord1;\n"
-                                      "out vec2 oTexCoord;\n"
-                                      "out vec3 oTexCoord2;\n"	// Must do the proj in fragment shader or you get wiggles when you view the plane at even modest angles.
-                                      "out float clampVal;\n"
-                                      "void main()\n"
-                                      "{\n"
-                                      "   gl_Position = Mvpm * Position;\n"
-                                      "	vec3 proj;\n"
-                                      "	float projIZ;\n"
-                                      ""
-                                      "   proj = mix( vec3( Texm * vec4(TexCoord,-1,1) ), vec3( Texm2 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
-                                      "	projIZ = 1.0 / max( proj.z, 0.00001 );\n"
-                                      "	oTexCoord = vec2( proj.x * projIZ, proj.y * projIZ );\n"
-                                      ""
-                                      "   oTexCoord2 = mix( vec3( Texm3 * vec4(TexCoord,-1,1) ), vec3( Texm4 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
-                                      ""
-                                      // We need to clamp the projected texcoords to keep from getting a mirror
-                                      // image behind the view, and mip mapped edge clamp (I wish we had CLAMP_TO_BORDER)
-                                      // issues far off to the sides.
-                                      "	vec2 clampXY = oTexCoord2.xy / oTexCoord2.z;\n"
-                                      "	clampVal = ( oTexCoord2.z > -0.01 || clampXY.x < -0.1 || clampXY.y < -0.1 || clampXY.x > 1.1 || clampXY.y > 1.1 ) ? 1.0 : 0.0;\n"
-                                      "}\n"
-            ,
+                              "in vec4 Position;\n"
+                              "in vec2 TexCoord;\n"
+                              "in vec2 TexCoord1;\n"
+                              "out vec2 oTexCoord;\n"
+                              "out vec3 oTexCoord2;\n"	// Must do the proj in fragment shader or you get wiggles when you view the plane at even modest angles.
+                              "out float clampVal;\n"
+                              "void main()\n"
+                              "{\n"
+                              "   gl_Position = Mvpm * Position;\n"
+                              "	vec3 proj;\n"
+                              "	float projIZ;\n"
+                              ""
+                              "   proj = mix( vec3( Texm * vec4(TexCoord,-1,1) ), vec3( Texm2 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
+                              "	projIZ = 1.0 / max( proj.z, 0.00001 );\n"
+                              "	oTexCoord = vec2( proj.x * projIZ, proj.y * projIZ );\n"
+                              ""
+                              "   oTexCoord2 = mix( vec3( Texm3 * vec4(TexCoord,-1,1) ), vec3( Texm4 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
+                              ""
+                              // We need to clamp the projected texcoords to keep from getting a mirror
+                              // image behind the view, and mip mapped edge clamp (I wish we had CLAMP_TO_BORDER)
+                              // issues far off to the sides.
+                              "	vec2 clampXY = oTexCoord2.xy / oTexCoord2.z;\n"
+                              "	clampVal = ( oTexCoord2.z > -0.01 || clampXY.x < -0.1 || clampXY.y < -0.1 || clampXY.x > 1.1 || clampXY.y > 1.1 ) ? 1.0 : 0.0;\n"
+                              "}\n"
+                              ,
                               "#version 300 es\n"
-                                      "uniform sampler2D Texture0;\n"
-                                      "uniform sampler2D Texture1;\n"
-                                      "in lowp float clampVal;\n"
-                                      "in highp vec2 oTexCoord;\n"
-                                      "in highp vec3 oTexCoord2;\n"
-                                      "out mediump vec4 fragColor;\n"
-                                      "void main()\n"
-                                      "{\n"
-                                      "	lowp vec4 color0 = texture(Texture0, oTexCoord);\n"
-                                      "	if ( clampVal == 1.0 )\n"
-                                      "	{\n"
-                                      "		fragColor = color0;\n"
-                                      "	} else {\n"
-                                      "		highp vec2 proj = vec2( oTexCoord2.x, oTexCoord2.y ) / oTexCoord2.z;\n"
-                                      "		lowp vec4 color1 = texture(Texture1, proj);\n"
-                                      "		mediump vec2 stepVal = fwidth( proj ) * vec2( textureSize( Texture1, 0 ) );\n"
-                                      "		mediump float w = max( stepVal.x, stepVal.y );\n"
-                                      "		if ( w < 1.0 ) { color1 = mix( color1, vec4( 0.0, 1.0, 0.0, 1.0 ), min( 1.0, 2.0 * ( 1.0 - w ) ) ); }\n"
-                                      "		else { color1 = mix( color1, vec4( 1.0, 0.0, 0.0, 1.0 ), min( 1.0, w - 1.0 ) ); }\n"
-                                      "		fragColor = mix( color0, color1, color1.w );\n"
-                                      "	}\n"
-                                      "}\n"
-    );
+                              "uniform sampler2D Texture0;\n"
+                              "uniform sampler2D Texture1;\n"
+                              "in lowp float clampVal;\n"
+                              "in highp vec2 oTexCoord;\n"
+                              "in highp vec3 oTexCoord2;\n"
+                              "out mediump vec4 fragColor;\n"
+                              "void main()\n"
+                              "{\n"
+                              "	lowp vec4 color0 = texture(Texture0, oTexCoord);\n"
+                              "	if ( clampVal == 1.0 )\n"
+                              "	{\n"
+                              "		fragColor = color0;\n"
+                              "	} else {\n"
+                              "		highp vec2 proj = vec2( oTexCoord2.x, oTexCoord2.y ) / oTexCoord2.z;\n"
+                              "		lowp vec4 color1 = texture(Texture1, proj);\n"
+                              "		mediump vec2 stepVal = fwidth( proj ) * vec2( textureSize( Texture1, 0 ) );\n"
+                              "		mediump float w = max( stepVal.x, stepVal.y );\n"
+                              "		if ( w < 1.0 ) { color1 = mix( color1, vec4( 0.0, 1.0, 0.0, 1.0 ), min( 1.0, 2.0 * ( 1.0 - w ) ) ); }\n"
+                              "		else { color1 = mix( color1, vec4( 1.0, 0.0, 0.0, 1.0 ), min( 1.0, w - 1.0 ) ); }\n"
+                              "		fragColor = mix( color0, color1, color1.w );\n"
+                              "	}\n"
+                              "}\n"
+                              );
 
     buildWarpProgMatchedPair( WP_CAMERA,
-            // low quality
+                              // low quality
                               "uniform mediump mat4 Mvpm;\n"
-                                      "uniform mediump mat4 Texm;\n"
-                                      "uniform mediump mat4 Texm2;\n"
-                                      "uniform mediump mat4 Texm3;\n"
-                                      "uniform mediump mat4 Texm4;\n"
-                                      "uniform mediump mat4 Texm5;\n"
+                              "uniform mediump mat4 Texm;\n"
+                              "uniform mediump mat4 Texm2;\n"
+                              "uniform mediump mat4 Texm3;\n"
+                              "uniform mediump mat4 Texm4;\n"
+                              "uniform mediump mat4 Texm5;\n"
 
-                                      "attribute vec4 Position;\n"
-                                      "attribute vec2 TexCoord;\n"
-                                      "attribute vec2 TexCoord1;\n"
-                                      "varying  vec2 oTexCoord;\n"
-                                      "varying  vec2 oTexCoord2;\n"
-                                      "void main()\n"
-                                      "{\n"
-                                      "   gl_Position = Mvpm * Position;\n"
+                              "attribute vec4 Position;\n"
+                              "attribute vec2 TexCoord;\n"
+                              "attribute vec2 TexCoord1;\n"
+                              "varying  vec2 oTexCoord;\n"
+                              "varying  vec2 oTexCoord2;\n"
+                              "void main()\n"
+                              "{\n"
+                              "   gl_Position = Mvpm * Position;\n"
 
-                                      "   vec4 lens = vec4(TexCoord,-1.0,1.0);"
-                                      "	vec3 proj;\n"
-                                      "	float projIZ;\n"
-                                      ""
-                                      "   proj = mix( vec3( Texm * lens ), vec3( Texm2 * lens ), TexCoord1.x );\n"
-                                      "	projIZ = 1.0 / max( proj.z, 0.00001 );\n"
-                                      "	oTexCoord = vec2( proj.x * projIZ, proj.y * projIZ );\n"
-                                      ""
-                                      "   vec4 dir = mix( lens, Texm2 * lens, TexCoord1.x );\n"
-                                      " dir.xy /= dir.z*-1.0;\n"
-                                      " dir.z = -1.0;\n"
-                                      " dir.w = 1.0;\n"
-                                      "	float rolling = Position.y * -1.5 + 0.5;\n"	// roughly 0 = top of camera, 1 = bottom of camera
-                                      "   proj = mix( vec3( Texm3 * lens ), vec3( Texm4 * lens ), rolling );\n"
-                                      "	projIZ = 1.0 / max( proj.z, 0.00001 );\n"
-                                      "	oTexCoord2 = vec2( proj.x * projIZ, proj.y * projIZ );\n"
-                                      ""
-                                      "}\n"
-            ,
+                              "   vec4 lens = vec4(TexCoord,-1.0,1.0);"
+                              "	vec3 proj;\n"
+                              "	float projIZ;\n"
+                              ""
+                              "   proj = mix( vec3( Texm * lens ), vec3( Texm2 * lens ), TexCoord1.x );\n"
+                              "	projIZ = 1.0 / max( proj.z, 0.00001 );\n"
+                              "	oTexCoord = vec2( proj.x * projIZ, proj.y * projIZ );\n"
+                              ""
+                              "   vec4 dir = mix( lens, Texm2 * lens, TexCoord1.x );\n"
+                              " dir.xy /= dir.z*-1.0;\n"
+                              " dir.z = -1.0;\n"
+                              " dir.w = 1.0;\n"
+                              "	float rolling = Position.y * -1.5 + 0.5;\n"	// roughly 0 = top of camera, 1 = bottom of camera
+                              "   proj = mix( vec3( Texm3 * lens ), vec3( Texm4 * lens ), rolling );\n"
+                              "	projIZ = 1.0 / max( proj.z, 0.00001 );\n"
+                              "	oTexCoord2 = vec2( proj.x * projIZ, proj.y * projIZ );\n"
+                              ""
+                              "}\n"
+                              ,
                               "#extension GL_OES_EGL_image_external : require\n"
-                                      "uniform sampler2D Texture0;\n"
-                                      "uniform samplerExternalOES Texture1;\n"
-                                      "varying highp vec2 oTexCoord;\n"
-                                      "varying highp vec2 oTexCoord2;\n"
-                                      "void main()\n"
-                                      "{\n"
-                                      "	lowp vec4 color0 = texture2D(Texture0, oTexCoord);\n"
-                                      "		lowp vec4 color1 = vec4( texture2D(Texture1, oTexCoord2).xyz, 1.0 );\n"
-                                      "		gl_FragColor = mix( color1, color0, color0.w );\n"	// pass through destination alpha
-//		" gl_FragColor = color1;"
-                    "}\n"
-    );
+                              "uniform sampler2D Texture0;\n"
+                              "uniform samplerExternalOES Texture1;\n"
+                              "varying highp vec2 oTexCoord;\n"
+                              "varying highp vec2 oTexCoord2;\n"
+                              "void main()\n"
+                              "{\n"
+                              "	lowp vec4 color0 = texture2D(Texture0, oTexCoord);\n"
+                              "		lowp vec4 color1 = vec4( texture2D(Texture1, oTexCoord2).xyz, 1.0 );\n"
+                              "		gl_FragColor = mix( color1, color0, color0.w );\n"	// pass through destination alpha
+                              //		" gl_FragColor = color1;"
+                              "}\n"
+                              );
 
 }
 
