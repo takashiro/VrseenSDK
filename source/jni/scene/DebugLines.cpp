@@ -230,8 +230,8 @@ void OvrDebugLinesLocal::Shutdown()
 		DROID_ASSERT( !Initialized, "DebugLines" );
 		return;
 	}
-	DepthGeo.Free();
-	NonDepthGeo.Free();
+	DepthGeo.destroy();
+	NonDepthGeo.destroy();
 	delete [] Vertices;
 	Vertices = NULL;
 	Initialized = false;

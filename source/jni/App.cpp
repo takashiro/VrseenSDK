@@ -581,9 +581,9 @@ struct App::Private
             );
 
         // Build some geometries we need
-        panelGeometry = VGlGeometryFactory::CreateTesselatedQuad( 32, 16 );;	// must be large to get faded edge
-        unitSquare = VGlGeometryFactory::CreateTesselatedQuad( 1, 1 );
-        unitCubeLines = VGlGeometryFactory::CreateUnitCubeLines();
+        panelGeometry.createPlaneQuadGrid( 32, 16 );;	// must be large to get faded edge
+        unitSquare.createPlaneQuadGrid( 1, 1 );
+        unitCubeLines.createUnitCubeGrid();
         //FadedScreenMaskSquare = BuildFadedScreenMask(0.0f, 0.0f);	// TODO: clean up: app-specific values are being passed in on DrawScreenMask
 
         eyeDecorations.Init();
@@ -597,10 +597,10 @@ struct App::Private
         overlayScreenFadeMaskProgram.destroy();
         overlayScreenDirectProgram.destroy();
 
-        panelGeometry.Free();
-        unitSquare.Free();
-        unitCubeLines.Free();
-        fadedScreenMaskSquare.Free();
+        panelGeometry.destroy();
+        unitSquare.destroy();
+        unitCubeLines.destroy();
+        fadedScreenMaskSquare.destroy();
 
         eyeDecorations.Shutdown();
     }
@@ -2207,7 +2207,7 @@ void App::drawPanel( const GLuint externalTextureId, const VR4Matrixf & dialogMv
     glBindTexture(GL_TEXTURE_EXTERNAL_OES, externalTextureId);
     glEnable( GL_BLEND );
     glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-    d->panelGeometry.Draw();
+    d->panelGeometry.drawElements();
     glDisable( GL_BLEND );
     glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0 );	// don't leave it bound
 }
@@ -2342,11 +2342,11 @@ void App::drawScreenMask( const ovrMatrix4f & mvp, const float fadeFracX, const 
 
     if ( d->fadedScreenMaskSquare.vertexArrayObject == 0 )
     {
-        d->fadedScreenMaskSquare = VGlGeometryFactory::CreateFadedScreenMask( fadeFracX, fadeFracY );
+        d->fadedScreenMaskSquare.createScreenMaskSquare( fadeFracX, fadeFracY );
     }
 
     glColorMask( 0.0f, 0.0f, 0.0f, 1.0f );
-    d->fadedScreenMaskSquare.Draw();
+    d->fadedScreenMaskSquare.drawElements();
     glColorMask( 1.0f, 1.0f, 1.0f, 1.0f );
 }
 

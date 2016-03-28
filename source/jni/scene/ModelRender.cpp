@@ -461,7 +461,7 @@ DrawCounters RenderSurfaceList( const DrawSurfaceList & drawSurfaceList ) {
 		counters.numDrawCalls++;
 
 		// Bind all the vertex and element arrays
-		surfaceDef.geo.Draw();
+		surfaceDef.geo.drawElements();
 	}
 
 	// set the gpu state back to the default

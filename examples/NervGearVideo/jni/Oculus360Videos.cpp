@@ -270,7 +270,7 @@ void Oculus360Videos::init(const VString &fromPackage, const VString &launchInte
 	}
 
 	LOG( "Creating Globe" );
-	Globe = VGlGeometryFactory::CreateGlobe();
+    Globe.createSphere();
 
 	// Stay exactly at the origin, so the panorama globe is equidistant
 	// Don't clear the head model neck length, or swipe view panels feel wrong.
@@ -383,7 +383,7 @@ void Oculus360Videos::shutdown()
 		MetaData = NULL;
 	}
 
-	Globe.Free();
+	Globe.destroy();
 
 	FreeTexture( BackgroundTexId );
 
@@ -601,7 +601,7 @@ VR4Matrixf Oculus360Videos::drawEyeView( const int eye, const float fovDegrees )
 
 			glUniform4f( SingleColorTextureProgram.uniformColor, fadeColor, fadeColor, fadeColor, 1.0f );
 
-			sd.geo.Draw();
+			sd.geo.drawElements();
 
 			glBindTexture( GL_TEXTURE_2D, 0 ); // don't leave it bound
 		}
@@ -631,7 +631,7 @@ VR4Matrixf Oculus360Videos::drawEyeView( const int eye, const float fovDegrees )
 
         glUniformMatrix4fv( prog.uniformTexMatrix, 1, GL_FALSE, TexmForVideo( toggleStereo ).Transposed().M[ 0 ] );
         glUniformMatrix4fv( prog.uniformModelViewProMatrix, 1, GL_FALSE, ( proj * view ).Transposed().M[ 0 ] );
-		Globe.Draw();
+		Globe.drawElements();
 
 		glBindTexture( GL_TEXTURE_EXTERNAL_OES, 0 );	// don't leave it bound
 	}

@@ -21,11 +21,7 @@ struct VertexAttribs
     VArray< V4Vectf > jointWeights;
 };
 
-typedef unsigned short TriangleIndex;
 
-static const int MAX_GEOMETRY_VERTICES	= 1 << ( sizeof( TriangleIndex ) * 8 );
-
-static const int MAX_GEOMETRY_INDICES	= 1024 * 1024 * 3;
 
 class VGlGeometry
 {
@@ -37,20 +33,37 @@ public:
             vertexCount( 0 ),
             indexCount( 0 ) {}
 
-    VGlGeometry( const VertexAttribs & attribs, const VArray< TriangleIndex > & indices ) :
+
+    VGlGeometry( const VertexAttribs & attribs, const VArray< ushort > & indices ) :
             vertexBuffer( 0 ),
             indexBuffer( 0 ),
             vertexArrayObject( 0 ),
             vertexCount( 0 ),
-            indexCount( 0 ) { Create( attribs, indices ); }
+            indexCount( 0 ) { createGlGeometry( attribs, indices ); }
 
-    void	Create( const VertexAttribs & attribs, const VArray< TriangleIndex > & indices );
 
-    void	Update( const VertexAttribs & attribs );
 
-    void	Draw() const;
+    void	createGlGeometry( const VertexAttribs & attribs, const VArray< ushort > & indices );
+    void	updateGlGeometry( const VertexAttribs & attribs );
 
-    void	Free();
+    void	drawElements() const;
+
+    void	destroy();
+
+    void createPlaneQuadGrid( const int horizontal, const int vertical );
+    void createScreenMaskSquare( const float xx, const float yy );
+
+    void createCylinder( const float radius, const float height,const int horizontal, const int vertical, const float  uScale = 1.0f, const float  vScale = 1.0f );
+    void createStylePattern( const float xx, const float yy );
+
+
+    void createDome( const float radius, const float uScale = 1.0f, const float vScale = 1.0f );
+    void createSkybox( const float length, const float width, const float height );
+    void createSphere( const float uScale = 1.0f, const float vScale = 1.0f );
+    void createPartSphere( const float fov );
+    void createCalibrationGrid( const int lines, const bool full );
+    void createUnitCubeGrid();
+    void createQuad();
 
 public:
     unsigned 	vertexBuffer;
@@ -60,33 +73,7 @@ public:
     int 		indexCount;
 };
 
-class VGlGeometryFactory
-{
-public:
 
-    static VGlGeometry CreateTesselatedQuad( const int horizontal, const int vertical, bool twoSided = false );
-
-    static VGlGeometry CreateFadedScreenMask( const float xFraction, const float yFraction );
-
-    static VGlGeometry CreateVignette( const float xFraction, const float yFraction );
-
-    static VGlGeometry CreateTesselatedCylinder( const float radius, const float height,
-                                      const int horizontal, const int vertical, const float uScale, const float vScale );
-
-    static VGlGeometry CreateDome( const float latRads, const float uScale = 1.0f, const float vScale = 1.0f );
-
-    static VGlGeometry CreateGlobe( const float uScale = 1.0f, const float vScale = 1.0f );
-
-    static VGlGeometry CreateSpherePatch( const float fov );
-
-    static VGlGeometry CreateCalibrationLines( const int extraLines, const bool fullGrid );
-
-    static VGlGeometry CreateUnitCubeLines();
-
-    static VGlGeometry CreateCalibrationLines2( const int extraLines, const bool fullGrid );
-
-    static VGlGeometry CreateQuad();
-};
 
 
 NV_NAMESPACE_END

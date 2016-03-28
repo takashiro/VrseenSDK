@@ -105,8 +105,8 @@ void OvrGazeCursorLocal::Init()
 	{
 		LOG( "OvrGazeCursorLocal::Init - already initialized!" );
 		return;
-	}
-	CursorGeometry = VGlGeometryFactory::CreateTesselatedQuad( 1, 1 );
+    }
+    CursorGeometry.createPlaneQuadGrid( 1, 1 );
 	int w = 0;
 	int h = 0;
 	char const * const cursorStateNames[ CURSOR_STATE_MAX ] =
@@ -417,7 +417,7 @@ void OvrGazeCursorLocal::Render( int const eye, VR4Matrixf const & mvp ) const
 		glUniform4fv( CursorProgram.uniformColor, 1, &cursorColor.x );
         VR4Matrixf cursorMVP = mvp * CursorTransform[index];
         glUniformMatrix4fv( CursorProgram.uniformModelViewProMatrix, 1, GL_FALSE, cursorMVP.Transposed().M[0] );
-		CursorGeometry.Draw();
+		CursorGeometry.drawElements();
 	}
 
 	// Reverse depth test and draw the scattered ghosts where they are occluded
@@ -434,7 +434,7 @@ void OvrGazeCursorLocal::Render( int const eye, VR4Matrixf const & mvp ) const
 		glUniform4fv( CursorProgram.uniformColor, 1, &cursorColor.x );
         VR4Matrixf cursorMVP = mvp * CursorScatterTransform[index];
         glUniformMatrix4fv( CursorProgram.uniformModelViewProMatrix, 1, GL_FALSE, cursorMVP.Transposed().M[0] );
-		CursorGeometry.Draw();
+		CursorGeometry.drawElements();
 	}
 
 	glDepthFunc( GL_LEQUAL );
@@ -462,7 +462,7 @@ void OvrGazeCursorLocal::Render( int const eye, VR4Matrixf const & mvp ) const
 		glUniform4fv( TimerProgram.uniformColor, 1, &cursorColor.x );
 		glUniform2fv( TimerProgram.uniformColorTableOffset, 1, &ColorTableOffset.x );
 
-		CursorGeometry.Draw();
+		CursorGeometry.drawElements();
 	}
 
 	glDepthMask( GL_TRUE );

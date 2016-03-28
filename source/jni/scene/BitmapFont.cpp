@@ -1033,7 +1033,7 @@ BitmapFontSurfaceLocal::BitmapFontSurfaceLocal() :
 //==============================
 // BitmapFontSurfaceLocal::~BitmapFontSurfaceLocal
 BitmapFontSurfaceLocal::~BitmapFontSurfaceLocal() {
-	Geo.Free();
+	Geo.destroy();
 	delete[] Vertices;
 	Vertices = NULL;
 }

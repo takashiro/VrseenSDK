@@ -209,7 +209,7 @@ void Oculus360Photos::init(const VString &fromPackage, const VString &launchInte
     m_startupPano = DEFAULT_PANO;
 
     LOG( "Creating Globe" );
-    m_globe = VGlGeometryFactory::CreateGlobe();
+    m_globe.createSphere();
 
     // Stay exactly at the origin, so the panorama globe is equidistant
     // Don't clear the head model neck length, or swipe view panels feel wrong.
@@ -405,7 +405,7 @@ void Oculus360Photos::shutdown()
     // Shut down background loader
     m_shutdownRequest.setState( true );
 
-    m_globe.Free();
+    m_globe.destroy();
 
     if ( m_metaData )
     {
@@ -786,7 +786,7 @@ VR4Matrixf Oculus360Photos::drawEyeView( const int eye, const float fovDegrees )
         glUniformMatrix4fv( prog.uniformModelViewProMatrix, 1, GL_FALSE /* not transposed */,
                             view.Transposed().M[ 0 ] );
 
-        m_globe.Draw();
+        m_globe.drawElements();
 
         glBindTexture( GL_TEXTURE_CUBE_MAP, 0 );
         glBindTexture( GL_TEXTURE_2D, 0 );

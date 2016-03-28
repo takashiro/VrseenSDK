@@ -2039,7 +2039,7 @@ void VFrameSmooth::Private::createFrameworkGraphics()
     m_timingGraph = CreateTimingGraphGeometry( (256+10)*2 );
 
     // simple cross to draw to screen
-    m_calibrationLines2 = VGlGeometryFactory::CreateCalibrationLines2( 0, false );
+    m_calibrationLines2.createCalibrationGrid( 0, false );
 
     // FPS and graph text
     m_untexturedMvpProgram.initShader(
@@ -2087,11 +2087,11 @@ void VFrameSmooth::Private::destroyFrameworkGraphics()
     glDeleteTextures( 1, &m_blackTexId );
     glDeleteTextures( 1, &m_defaultLoadingIconTexId );
 
-    m_calibrationLines2.Free();
-    m_warpMesh.Free();
-    m_sliceMesh.Free();
-    m_cursorMesh.Free();
-    m_timingGraph.Free();
+    m_calibrationLines2.destroy();
+    m_warpMesh.destroy();
+    m_sliceMesh.destroy();
+    m_cursorMesh.destroy();
+    m_timingGraph.destroy();
 
     m_untexturedMvpProgram.destroy();
     m_debugLineProgram.destroy();

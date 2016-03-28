@@ -110,7 +110,7 @@ ModelFile::~ModelFile()
 
 	for ( int j = 0; j < Def.surfaces.length(); j++ )
 	{
-		const_cast<VGlGeometry *>(&Def.surfaces[j].geo)->Free();
+		const_cast<VGlGeometry *>(&Def.surfaces[j].geo)->destroy();
 	}
 }
 
@@ -466,7 +466,7 @@ void LoadModelFileJson( ModelFile & model,
 						const VJson &vertices( surface.value( "vertices" ) );
 						if ( vertices.isObject() )
 						{
-							const int vertexCount = std::min( vertices.value( "vertexCount" ).toInt(), MAX_GEOMETRY_VERTICES );
+                            const int vertexCount = std::min( vertices.value( "vertexCount" ).toInt(), 1024*1024 );
 							// LOG( "%5d vertices", vertexCount );
 
                             ReadModelArray( attribs.position,     vertices.value( "position" ).toStdString().c_str(),		bin, vertexCount );
@@ -484,12 +484,12 @@ void LoadModelFileJson( ModelFile & model,
 						// Triangles
 						//
 
-						VArray< TriangleIndex > indices;
+                        VArray< ushort > indices;
 
 						const VJson &triangles( surface.value( "triangles" ) );
 						if ( triangles.isObject() )
 						{
-							const int indexCount = std::min( triangles.value( "indexCount" ).toInt(), MAX_GEOMETRY_INDICES );
+                            const int indexCount = std::min( triangles.value( "indexCount" ).toInt(), 1024 * 1024 * 1024 );
 							// LOG( "%5d indices", indexCount );
 
                             ReadModelArray( indices, triangles.value( "indices" ).toStdString().c_str(), bin, indexCount );
@@ -499,7 +499,7 @@ void LoadModelFileJson( ModelFile & model,
 						// Setup geometry, textures and render programs now that the vertex attributes are known.
 						//
 
-						model.Def.surfaces[index].geo.Create( attribs, indices );
+						model.Def.surfaces[index].geo.createGlGeometry( attribs, indices );
 
 						const char * materialTypeString = "opaque";
 						OVR_UNUSED( materialTypeString );	// we'll get warnings if the LOGV's compile out

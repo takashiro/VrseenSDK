@@ -171,7 +171,7 @@ SwipeView::~SwipeView()
 {
 	FreeTexture( BorderTexture2_1 );
 	FreeTexture( BorderTexture1_1 );
-	GeoPanel.Free();
+	GeoPanel.destroy();
 	ProgPanel.destroy();
 	ProgHighlight.destroy();
 }
@@ -199,14 +199,14 @@ static GlTexture BuildBorderTexture( int width, int height )
 
 void SwipeView::Init( OvrGazeCursor & gazeCursor )
 {
-	GeoPanel = VGlGeometryFactory::CreateTesselatedQuad( 1, 1 );
+    GeoPanel.createPlaneQuadGrid( 1, 1 );
 
 	BorderTexture2_1 = BuildBorderTexture( 80, 40 );
 	BorderTexture1_1 = BuildBorderTexture( 40, 40 );
 
 	ProgPanel.initShader(
 		"uniform mat4 Mvpm;\n"
-		"attribute vec4 Position;\n"
+        "attribute vec4 Position;\n"
 		"attribute vec2 TexCoord;\n"
 		"varying  highp vec2 oTexCoord;\n"
 		"void main()\n"
@@ -895,7 +895,7 @@ void SwipeView::Draw( const VR4Matrixf & mvp )
 			glUniform4fv(ProgHighlight.uniformColor, 1,
 					State == SVS_CLOSING ? &colorAction.x :
 							( (PreviousButtonState && !HasMoved) ? &colorTouching.x : &color.x ) );
-			GeoPanel.Draw();
+			GeoPanel.drawElements();
 
 			glUseProgram( prog.program );
 		}
@@ -904,7 +904,7 @@ void SwipeView::Draw( const VR4Matrixf & mvp )
 
 		glActiveTexture( GL_TEXTURE0 );
 		glBindTexture( GL_TEXTURE_2D, panel.Texture );
-		GeoPanel.Draw();
+		GeoPanel.drawElements();
 
 	}
 

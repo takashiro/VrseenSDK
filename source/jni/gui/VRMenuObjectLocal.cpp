@@ -236,7 +236,7 @@ void VRMenuSurface::createImageGeometry( int const textureWidth, int const textu
 		}
 	}
 
-	VArray< TriangleIndex > indices;
+    VArray< ushort > indices;
 	indices.resize( horizontal * vertical * 6 );
 
 	// If this is to be used to draw a linear format texture, like
@@ -261,11 +261,11 @@ void VRMenuSurface::createImageGeometry( int const textureWidth, int const textu
 
 	if ( m_geo.vertexBuffer == 0 && m_geo.indexBuffer == 0 && m_geo.vertexArrayObject == 0 )
 	{
-		m_geo.Create( attribs, indices );
+		m_geo.createGlGeometry( attribs, indices );
 	}
 	else
 	{
-		m_geo.Update( attribs );
+		m_geo.updateGlGeometry( attribs );
 	}
 }
 
