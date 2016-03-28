@@ -33,6 +33,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VrApi_local.h"
 #include "Vsync.h"
 #include "VSystemActivities.h"
+#include "VThread.h"
 
 NV_USING_NAMESPACE
 
@@ -115,11 +116,6 @@ void ovr_ShutdownSensors()
 bool ovr_InitializeInternal()
 {
     // We must set up the system for the plugin to work
-    if ( !NervGear::System::IsInitialized() )
-	{
-    	NervGear::System::Init( NervGear::Log::ConfigureDefaultLog( NervGear::LogMask_All ) );
-	}
-
 	ovr_InitSensors();
 
     return true;
@@ -129,8 +125,11 @@ void ovr_Shutdown()
 {
 	ovr_ShutdownSensors();
 
-    // We should clean up the system to be complete
-    NervGear::System::Destroy();
+#ifdef OVR_ENABLE_THREADS
+    // Wait for all threads to finish; this must be done so that memory
+    // allocator and all destructors finalize correctly.
+    VThread::FinishAllThreads();
+#endif
 }
 
 using namespace NervGear;

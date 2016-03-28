@@ -35,7 +35,6 @@ LOCAL_EXPORT_C_INCLUDES := $(LOCAL_C_INCLUDES)
 
 LOCAL_SRC_FILES  := \
 	core/VConstants.cpp \
-	core/Allocator.cpp \
 	core/VAtomicInt.cpp \
 	core/VByteArray.cpp \
 	core/VChar.cpp \
@@ -51,7 +50,6 @@ LOCAL_SRC_FILES  := \
 	core/VString.cpp \
 	core/VDir.cpp \
 	core/VSignal.cpp \
-	core/System.cpp \
 	core/VLock.cpp \
 	core/VThread.cpp \
 	core/VTimer.cpp \

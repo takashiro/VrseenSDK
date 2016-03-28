@@ -12,7 +12,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "SensorFusion.h"
 
 #include "Log.h"
-#include "System.h"
 #include <algorithm>
 using namespace std;
 //#define YAW_LOGGING

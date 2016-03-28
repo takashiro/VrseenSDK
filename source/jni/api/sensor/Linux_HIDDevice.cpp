@@ -737,14 +737,6 @@ bool HIDDevice::OnDeviceNotification(MessageType messageType,
 HIDDeviceManager* HIDDeviceManager::CreateInternal(Linux::DeviceManager* devManager)
 {
 
-    if (!System::IsInitialized())
-    {
-        // Use custom message, since Log is not yet installed.
-        OVR_DEBUG_STATEMENT(Log::GetDefaultLog()->
-                            LogMessage(Log_Debug, "HIDDeviceManager::Create failed - NervGear::System not initialized"); );
-        return 0;
-    }
-
     Ptr<Linux::HIDDeviceManager> manager = *new Linux::HIDDeviceManager(devManager);
 
     if (manager)
@@ -771,14 +763,6 @@ HIDDeviceManager* HIDDeviceManager::CreateInternal(Linux::DeviceManager* devMana
 HIDDeviceManager* HIDDeviceManager::Create()
 {
     OVR_ASSERT_LOG(false, ("Standalone mode not implemented yet."));
-
-    if (!System::IsInitialized())
-    {
-        // Use custom message, since Log is not yet installed.
-        OVR_DEBUG_STATEMENT(Log::GetDefaultLog()->
-            LogMessage(Log_Debug, "HIDDeviceManager::Create failed - NervGear::System not initialized"); );
-        return 0;
-    }
 
     Ptr<Linux::HIDDeviceManager> manager = *new Linux::HIDDeviceManager(NULL);
 

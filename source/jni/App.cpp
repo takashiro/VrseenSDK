@@ -26,7 +26,7 @@
 #include "GuiSysLocal.h"		// necessary to instantiate the gui system
 #include "ModelView.h"
 #include "SurfaceTexture.h"
-#include "System.h"
+
 #include "TypesafeNumber.h"
 #include "VBasicmath.h"
 #include "VolumePopup.h"

@@ -353,14 +353,6 @@ void DeviceManagerThread::resumeThread()
 // Creates a new DeviceManager and initializes OVR.
 DeviceManager* DeviceManager::Create()
 {
-    if (!System::IsInitialized())
-    {
-        // Use custom message, since Log is not yet installed.
-        OVR_DEBUG_STATEMENT(Log::GetDefaultLog()->
-            LogMessage(Log_Debug, "DeviceManager::Create failed - NervGear::System not initialized"); );
-        return 0;
-    }
-
     Ptr<Android::DeviceManager> manager = *new Android::DeviceManager;
 
     if (manager)
