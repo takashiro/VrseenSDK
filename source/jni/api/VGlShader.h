@@ -20,7 +20,6 @@ enum ShaderAttributeLocation
     LOCATION_FONT_PARMS	    = 9
 };
 
-
 class VGlShader
 {
 public:
