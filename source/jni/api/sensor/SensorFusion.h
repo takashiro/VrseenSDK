@@ -2,7 +2,7 @@
 
 #include "Device.h"
 #include "SensorFilter.h"
-#include "Lockless.h"
+#include "VLockless.h"
 #include "VMutex.h"
 //#include <time.h>
 
@@ -270,7 +270,7 @@ private:
 
     // This can be read without any locks, so a high priority rendering thread doesn't
     // have to worry about being blocked by a sensor thread that got preempted.
-    LocklessUpdater<StateForPrediction>	UpdatedState;
+    VLockless<StateForPrediction>	UpdatedState;
 
     // The phase of the head as estimated by sensor fusion
 	PoseStatef              State;
@@ -303,7 +303,7 @@ private:
 	float					FocusFOV;
 
     VMutex					RecenterMutex;
-    LocklessUpdater<VPosf>	RecenterTransform;	// this is an additional transform that is applied to "recenter" the orientation in yaw.
+    VLockless<VPosf>	RecenterTransform;	// this is an additional transform that is applied to "recenter" the orientation in yaw.
 };
 
 

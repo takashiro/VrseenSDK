@@ -3,7 +3,6 @@
 #include "vglobal.h"
 
 #include "Types.h"
-#include "Allocator.h"
 #include "VAtomicInt.h"
 
 NV_NAMESPACE_BEGIN
@@ -165,6 +164,9 @@ public:
 #else
     #define OVR_REFCOUNTALLOC_CHECK_DELETE(class_name, p)
 #endif
+//////////////////////////////////////////
+#define OVR_MEMORY_REDEFINE_NEW_IMPL(class_name, check_delete)
+
 
     // Redefine all new & delete operators.
     OVR_MEMORY_REDEFINE_NEW_IMPL(Base, OVR_REFCOUNTALLOC_CHECK_DELETE)

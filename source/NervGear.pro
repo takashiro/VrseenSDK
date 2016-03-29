@@ -18,7 +18,6 @@ INCLUDEPATH += \
 
 SOURCES += \
     jni/core/VConstants.cpp \
-    jni/core/Allocator.cpp \
     jni/core/VAtomicInt.cpp \
     jni/core/VByteArray.cpp \
     jni/core/VChar.cpp \
@@ -28,13 +27,11 @@ SOURCES += \
     jni/core/Log.cpp \
     jni/core/VLog.cpp \
     jni/core/VLock.cpp \
-    jni/core/Lockless.cpp \
     jni/core/VPath.cpp \
     jni/core/RefCount.cpp \
     jni/core/VSignal.cpp \
     jni/core/VStandardPath.cpp \
     jni/core/VString.cpp \
-    jni/core/System.cpp \
     jni/core/VThread.cpp \
     jni/core/VTimer.cpp \
     jni/core/MappedFile.cpp \
@@ -46,13 +43,13 @@ SOURCES += \
     jni/core/android/JniUtils.cpp \
     jni/core/android/LogUtils.cpp \
     jni/core/android/VOsBuild.cpp \
-    jni/api/VrApi.cpp \
+    jni/api/VKernel.cpp \
     jni/api/Vsync.cpp \
     jni/api/VDevice.cpp \
     jni/api/VGlOperation.cpp \
     jni/api/HmdSensors.cpp \
     jni/api/VLensDistortion.cpp \
-    jni/api/SystemActivities.cpp \
+    jni/api/VSystemActivities.cpp \
     jni/api/VFrameSmooth.cpp \
     jni/api/VMainActivity.cpp \
     jni/api/VGlShader.cpp \
@@ -118,7 +115,6 @@ SOURCES += \
     jni/scene/SurfaceTexture.cpp \
     jni/scene/SwipeView.cpp \
     jni/App.cpp \
-    jni/VConsole.cpp \
     jni/VrLocale.cpp
 
 
@@ -134,7 +130,6 @@ HEADERS += \
     jni/core/android/LogUtils.h \
     jni/core/android/VOsBuild.h \
     jni/core/VAlgorithm.h \
-    jni/core/Allocator.h \
     jni/core/Atomic.h \
     jni/core/Array.h \
     jni/core/VByteArray.h \
@@ -151,7 +146,7 @@ HEADERS += \
     jni/core/Log.h \
     jni/core/VLog.h \
     jni/core/VLock.h \
-    jni/core/Lockless.h \
+    jni/core/VLockless.h \
     jni/core/VMap.h \
     jni/core/VPath.h \
     jni/core/RefCount.h \
@@ -161,7 +156,6 @@ HEADERS += \
     jni/core/VStringHash.h \
     jni/core/String_FormatUtil.h \
     jni/core/String_PathUtil.h \
-    jni/core/System.h \
     jni/core/VThread.h \
     jni/core/VTimer.h \
     jni/core/MappedFile.h \
@@ -187,16 +181,15 @@ HEADERS += \
     jni/embedded/dependency_error_ja.h \
     jni/embedded/dependency_error_ko.h \
     jni/embedded/oculus_loading_indicator.h \
-    jni/api/VrApi.h \
+    jni/api/VKernel.h \
     jni/api/Vsync.h \
     jni/api/HmdSensors.h \
     jni/api/VLensDistortion.h \
-    jni/api/SystemActivities.h \
+    jni/api/VSystemActivities.h \
     jni/api/VFrameSmooth.h \
     jni/api/VGlGeometry.h \
     jni/api/VGlShader.h \
     jni/api/VMainActivity.h \
-    jni/api/VrApi_local.h \
     jni/api/VDevice.h \
     jni/api/VGlOperation.h \
     jni/api/sensor/DeviceConstants.h \
@@ -273,7 +266,6 @@ HEADERS += \
     jni/scene/SwipeView.h \
     jni/App.h \
     jni/VrLocale.h \
-    jni/VConsole.h \
     jni/vglobal.h \
     jni/Input.h
 

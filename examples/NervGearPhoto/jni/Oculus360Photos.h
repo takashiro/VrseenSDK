@@ -4,7 +4,7 @@
 
 #include "ModelView.h"
 #include "Fader.h"
-#include "Lockless.h"
+#include "VLockless.h"
 
 namespace NervGear {
 
@@ -67,7 +67,7 @@ public:
 
     void init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI ) override;
     void shutdown() override;
-    void configureVrMode( ovrModeParms & modeParms ) override;
+    void configureVrMode(VKernel* kernel) override;
     VR4Matrixf 	drawEyeView( const int eye, const float fovDegrees ) override;
     VR4Matrixf 	onNewFrame( VrFrame vrFrame ) override;
     void command(const VEvent &event) override;
@@ -142,7 +142,7 @@ private:
     VEventLoop		m_backgroundCommands;
 
 	// The background loader loop will exit when this is set true.
-    LocklessUpdater<bool>		m_shutdownRequest;
+    VLockless<bool>		m_shutdownRequest;
 
 	// BackgroundGLLoadThread private GL context used for loading background textures
     EGLint				m_eglClientVersion;

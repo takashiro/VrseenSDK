@@ -1,7 +1,7 @@
 /*
  * VAtomicInt.cpp
  *
- *  Created on: 2016年3月18日
+ *  Created on: 2016骞�鏈�8鏃�
  *      Author: yangkai
  */
 #include "VAtomicInt.h"
@@ -46,4 +46,26 @@ VAtomicInt::Type VAtomicInt::operator <<= (unsigned bits)
     }while(compare_exchange_weak(oldValue, newValue));
     return newValue;
 }
+
+
+VAtomicInt VAtomicInt::operator = (Type argument)
+{
+	VAtomicInt::Type newValue, oldValue = load();
+	do
+	{
+		newValue = argument;
+	}while(compare_exchange_weak(oldValue, newValue));
+	return VAtomicInt(newValue);
+}
+
+VAtomicInt VAtomicInt::operator & (Type argument)
+{
+	VAtomicInt::Type newValue, oldValue = load();
+	do
+	{
+		newValue = oldValue & argument;
+	}while(compare_exchange_weak(oldValue, newValue));
+	return VAtomicInt(newValue);
+}
+
 NV_NAMESPACE_END

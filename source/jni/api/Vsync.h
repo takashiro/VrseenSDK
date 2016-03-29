@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Lockless.h"	// for LocklessUpdater
+#include "VLockless.h"	// for VLockless
 
 // Application code should not interact with this, all timing information
 // should be taken from VrShell.
@@ -27,7 +27,7 @@ public:
 
 // This can be read without any locks, so a high priority rendering thread doesn't
 // have to worry about being blocked by a sensor thread that got preempted.
-extern LocklessUpdater<VsyncState> UpdatedVsyncState;
+extern VLockless<VsyncState> UpdatedVsyncState;
 
 // Estimates the current vsync count and fraction based on the most
 // current timing provided from java.  This does not interact with

@@ -40,7 +40,7 @@ public:
 
 	virtual void		init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI );
 	virtual void		shutdown();
-	virtual void		configureVrMode( ovrModeParms & modeParms );
+	virtual void		configureVrMode(VKernel* kernel);
     virtual VR4Matrixf 	drawEyeView( const int eye, const float fovDegrees );
     virtual VR4Matrixf 	onNewFrame( VrFrame vrFrame );
     void command(const VEvent &event) override;

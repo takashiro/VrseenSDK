@@ -28,8 +28,8 @@ VGlOperation::GpuType VGlOperation::eglGetGpuType()
         gpuType = GPU_TYPE_UNKNOWN;
     }
 
-    vInfo("SoC:" << VOsBuild::getString(VOsBuild::Hardware));
-    vInfo("EglGetGpuType:" << gpuType);
+    //VInfo("SoC:" << VOsBuild::getString(VOsBuild::Hardware));
+    //VInfo("EglGetGpuType:" << gpuType);
 
     return gpuType;
 }
@@ -53,7 +53,7 @@ EGLConfig VGlOperation::eglConfigForConfigID(const EGLDisplay display, const GLi
                                    configs,
                                    MAX_CONFIGS,
                                    &numConfigs)) {
-        WARN("eglGetConfigs() failed");
+        //WARN("eglGetConfigs() failed");
         return NULL;
     }
 
@@ -166,7 +166,7 @@ void * VGlOperation::getExtensionProc( const char * name )
 {
     void * ptr = reinterpret_cast<void*>(eglGetProcAddress(name));
     if (!ptr) {
-        LOG("NOT FOUND: %s", name);
+        //LOG("NOT FOUND: %s", name);
     }
     return ptr;
 }
@@ -175,36 +175,37 @@ void VGlOperation::logExtensions()
 {
     const char * extensions = (const char *)glGetString( GL_EXTENSIONS );
     if (NULL == extensions) {
-        LOG("glGetString( GL_EXTENSIONS ) returned NULL");
+        //LOG("glGetString( GL_EXTENSIONS ) returned NULL");
         return;
     }
+
 
     LOG("GL_EXTENSIONS:");
 
 
-    const bool es3 = (strncmp((const char *)glGetString(GL_VERSION), "OpenGL ES 3", 11) == 0);
-    LOG("es3 = %s", es3 ? "TRUE" : "FALSE");
+//    const bool es3 = (strncmp((const char *)glGetString(GL_VERSION), "OpenGL ES 3", 11) == 0);
+    //LOG("es3 = %s", es3 ? "TRUE" : "FALSE");
 
     GLint MaxTextureSize = 0;
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &MaxTextureSize);
-    LOG("GL_MAX_TEXTURE_SIZE = %d", MaxTextureSize);
+    //LOG("GL_MAX_TEXTURE_SIZE = %d", MaxTextureSize);
 
     GLint MaxVertexUniformVectors = 0;
     glGetIntegerv(GL_MAX_VERTEX_UNIFORM_VECTORS, &MaxVertexUniformVectors);
-    LOG("GL_MAX_VERTEX_UNIFORM_VECTORS = %d", MaxVertexUniformVectors);
+    //LOG("GL_MAX_VERTEX_UNIFORM_VECTORS = %d", MaxVertexUniformVectors);
 
     GLint MaxFragmentUniformVectors = 0;
     glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_VECTORS, &MaxFragmentUniformVectors);
-    LOG("GL_MAX_FRAGMENT_UNIFORM_VECTORS = %d", MaxFragmentUniformVectors);
+    //LOG("GL_MAX_FRAGMENT_UNIFORM_VECTORS = %d", MaxFragmentUniformVectors);
 }
 
 bool VGlOperation::glIsExtensionString(const char *extension, const char *allExtensions)
 {
     if (strstr(allExtensions, extension)) {
-        LOG( "Found: %s", extension );
+        //LOG( "Found: %s", extension );
         return true;
     } else {
-        LOG("Not found: %s", extension);
+        //LOG("Not found: %s", extension);
         return false;
     }
 }
@@ -213,11 +214,11 @@ void VGlOperation::glFinish()
 {
     const EGLint wait = glWaitforFlush(100000000);
     if (wait == EGL_TIMEOUT_EXPIRED_KHR) {
-        LOG("EGL_TIMEOUT_EXPIRED_KHR");
+        //LOG("EGL_TIMEOUT_EXPIRED_KHR");
     }
 
     if ( wait == EGL_FALSE ) {
-        LOG("eglClientWaitSyncKHR returned EGL_FALSE");
+        //LOG("eglClientWaitSyncKHR returned EGL_FALSE");
     }
 }
 
@@ -225,7 +226,7 @@ void VGlOperation::glFlush()
 {
     const EGLint wait = glWaitforFlush(0);
     if (wait == EGL_FALSE) {
-        LOG("eglClientWaitSyncKHR returned EGL_FALSE");
+        //LOG("eglClientWaitSyncKHR returned EGL_FALSE");
     }
 }
 
@@ -235,9 +236,9 @@ void VGlOperation::glDisableFramebuffer(const bool colorBuffer, const bool depth
     const int count = static_cast<int>(colorBuffer) + (static_cast<int>(depthBuffer))*2;
 
     const GLenum fboAttachments[3] = {GL_COLOR_ATTACHMENT0, GL_DEPTH_ATTACHMENT, GL_STENCIL_ATTACHMENT};
-
     glInvalidateFramebuffer(GL_FRAMEBUFFER, count, fboAttachments + offset);
 }
+
 
 
 
@@ -254,7 +255,7 @@ EGLConfig VGlOperation::chooseColorConfig( const EGLDisplay display, const int r
         WARN("eglGetConfigs() failed");
         return NULL;
     }
-    LOG("eglGetConfigs() = %i configs", numConfigs);
+    //LOG("eglGetConfigs() = %i configs", numConfigs);
 
     const EGLint configAttribs[] = {
         EGL_BLUE_SIZE,  	blueBits,
@@ -294,7 +295,7 @@ EGLConfig VGlOperation::chooseColorConfig( const EGLDisplay display, const int r
                 }
             }
             if (configAttribs[j] == EGL_NONE) {
-                LOG("Got an ES %i renderable config: %i", esVersion, (int)configs[i]);
+                //LOG("Got an ES %i renderable config: %i", esVersion, (int)configs[i]);
                 return configs[i];
             }
         }
@@ -308,24 +309,14 @@ void VGlOperation::eglInit( const EGLContext shareContext,
                              const int depthBits, const int multisamples, const GLuint contextPriority )
 {
     VGlOperation glOperation;
-    LOG("EglSetup: requestGlEsVersion(%d), redBits(%d), greenBits(%d), blueBits(%d), depthBits(%d), multisamples(%d), contextPriority(%d)",
-         requestedGlEsVersion, redBits, greenBits, blueBits, depthBits, multisamples, contextPriority);
+    //LOG("EglSetup: requestGlEsVersion(%d), redBits(%d), greenBits(%d), blueBits(%d), depthBits(%d), multisamples(%d), contextPriority(%d)",
+//         requestedGlEsVersion, redBits, greenBits, blueBits, depthBits, multisamples, contextPriority);
 
     display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 
     EGLint majorVersion;
     EGLint minorVersion;
     eglInitialize(display, &majorVersion, &minorVersion);
-    LOG( "eglInitialize gives majorVersion %i, minorVersion %i", majorVersion, minorVersion);
-
-    const char * eglVendorString = eglQueryString(display, EGL_VENDOR);
-    LOG("EGL_VENDOR: %s", eglVendorString);
-    const char * eglClientApisString = eglQueryString(display, EGL_CLIENT_APIS);
-    LOG("EGL_CLIENT_APIS: %s", eglClientApisString);
-    const char * eglVersionString = eglQueryString(display, EGL_VERSION);
-    LOG("EGL_VERSION: %s", eglVersionString);
-
-
     config = chooseColorConfig(display, redBits, greenBits, blueBits, depthBits, multisamples, true);
     if (config == 0) {
         FAIL("No acceptable EGL color configs.");
@@ -334,8 +325,6 @@ void VGlOperation::eglInit( const EGLContext shareContext,
 
     for (int version = requestedGlEsVersion ; version >= 2 ; version--)
     {
-        LOG("Trying for a EGL_CONTEXT_CLIENT_VERSION %i context shared with %p:",
-             version, shareContext);
 
         EGLint contextAttribs[] = {
             EGL_CONTEXT_CLIENT_VERSION, version,
@@ -349,17 +338,13 @@ void VGlOperation::eglInit( const EGLContext shareContext,
 
         context = eglCreateContext(display, config, shareContext, contextAttribs);
         if (context != EGL_NO_CONTEXT) {
-            LOG("Succeeded.");
+            //LOG("Succeeded.");
             glEsVersion = version;
 
             EGLint configIDReadback;
             if (!eglQueryContext(display, context, EGL_CONFIG_ID, &configIDReadback)) {
-                WARN("eglQueryContext EGL_CONFIG_ID failed");
+                //WARN("eglQueryContext EGL_CONFIG_ID failed");
             }
-            EGLConfig configCheck = glOperation.eglConfigForConfigID(display, configIDReadback);
-
-            LOG("Created context with config %i, query returned ID %i = config %i",
-                 reinterpret_cast<int>(config), configIDReadback, reinterpret_cast<int>(configCheck));
             break;
         }
     }
@@ -372,13 +357,13 @@ void VGlOperation::eglInit( const EGLContext shareContext,
         EGLint actualPriorityLevel;
         eglQueryContext(display, context, EGL_CONTEXT_PRIORITY_LEVEL_IMG, &actualPriorityLevel);
         switch (actualPriorityLevel) {
-        case EGL_CONTEXT_PRIORITY_HIGH_IMG: LOG( "Context is EGL_CONTEXT_PRIORITY_HIGH_IMG" );
+        case EGL_CONTEXT_PRIORITY_HIGH_IMG: //LOG( "Context is EGL_CONTEXT_PRIORITY_HIGH_IMG" );
             break;
-        case EGL_CONTEXT_PRIORITY_MEDIUM_IMG: LOG( "Context is EGL_CONTEXT_PRIORITY_MEDIUM_IMG" );
+        case EGL_CONTEXT_PRIORITY_MEDIUM_IMG: //LOG( "Context is EGL_CONTEXT_PRIORITY_MEDIUM_IMG" );
             break;
-        case EGL_CONTEXT_PRIORITY_LOW_IMG: LOG( "Context is EGL_CONTEXT_PRIORITY_LOW_IMG" );
+        case EGL_CONTEXT_PRIORITY_LOW_IMG: //LOG( "Context is EGL_CONTEXT_PRIORITY_LOW_IMG" );
             break;
-        default: LOG( "Context has unknown priority level" );
+        default: //LOG( "Context has unknown priority level" );
             break;
         }
     }
@@ -404,15 +389,6 @@ void VGlOperation::eglInit( const EGLContext shareContext,
         context = EGL_NO_CONTEXT;
         return ;
     }
-
-    const char * glVendorString = reinterpret_cast<const char *>(glGetString(GL_VENDOR));
-    LOG("GL_VENDOR: %s", glVendorString);
-    const char * glRendererString = reinterpret_cast<const char *>(glGetString(GL_RENDERER));
-    LOG("GL_RENDERER: %s", glRendererString);
-    const char * glVersionString = reinterpret_cast<const char *>(glGetString(GL_VERSION));
-    LOG("GL_VERSION: %s", glVersionString);
-    const char * glSlVersionString = reinterpret_cast<const char *>(glGetString(GL_SHADING_LANGUAGE_VERSION));
-    LOG("GL_SHADING_LANGUAGE_VERSION: %s", glSlVersionString);
 
     gpuType = glOperation.eglGetGpuType();
 

@@ -35,7 +35,6 @@ LOCAL_EXPORT_C_INCLUDES := $(LOCAL_C_INCLUDES)
 
 LOCAL_SRC_FILES  := \
 	core/VConstants.cpp \
-	core/Allocator.cpp \
 	core/VAtomicInt.cpp \
 	core/VByteArray.cpp \
 	core/VChar.cpp \
@@ -43,7 +42,6 @@ LOCAL_SRC_FILES  := \
 	core/VJson.cpp \
 	core/Log.cpp \
 	core/VLog.cpp \
-	core/Lockless.cpp \
 	core/VMath.cpp \
 	core/VPath.cpp \
 	core/RefCount.cpp \
@@ -51,7 +49,6 @@ LOCAL_SRC_FILES  := \
 	core/VString.cpp \
 	core/VDir.cpp \
 	core/VSignal.cpp \
-	core/System.cpp \
 	core/VLock.cpp \
 	core/VThread.cpp \
 	core/VTimer.cpp \
@@ -64,16 +61,16 @@ LOCAL_SRC_FILES  := \
 	core/android/JniUtils.cpp \
 	core/android/LogUtils.cpp \
 	core/android/VOsBuild.cpp \
-	api/VrApi.cpp \
+	api/VKernel.cpp \
 	api/Vsync.cpp \
 	api/VDevice.cpp \
 	api/HmdSensors.cpp \
 	api/VLensDistortion.cpp \
-	api/SystemActivities.cpp \
 	api/VFrameSmooth.cpp \
 	api/VGlGeometry.cpp \
 	api/VMainActivity.cpp \
 	api/VGlOperation.cpp \
+	api/VSystemActivities.cpp \
 	api/VGlShader.cpp \
 	api/sensor/DeviceHandle.cpp \
 	api/sensor/DeviceImpl.cpp \
@@ -136,8 +133,7 @@ LOCAL_SRC_FILES  := \
 	scene/SurfaceTexture.cpp \
 	scene/SwipeView.cpp \
 	App.cpp \
-	VrLocale.cpp \
-	VConsole.cpp
+	VrLocale.cpp
 
 
 LOCAL_SRC_FILES += \

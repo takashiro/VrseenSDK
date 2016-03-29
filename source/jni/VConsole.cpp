@@ -13,46 +13,50 @@
 #include <string.h>
 #include <assert.h>
 using namespace std;
-namespace NervGear {
-/*VConsole::vconsoleFn_t VConsole::Function;
-VArray< VConsole >    VConsole::VConsoleFunctions;
-char    VConsole::Name[64];*/
+
+NV_NAMESPACE_BEGIN
+
 VConsole * VConsole = nullptr;
 typename NervGear::VConsole *VConsole::pInstance = nullptr;
 VArray<typename NervGear::VConsole>    VConsole::VConsoleFunctions;
 VConsole::VConsole(){
 
 }
-const char *    VConsole::GetName() const
+const VString &VConsole::name() const
 {
-    return Name;
+    return m_name;
 }
-void    VConsole::Execute( void * appPtr, const char * cmd ) const
+
+void VConsole::Execute( void * appPtr, const char * cmd ) const
 {
-    Function( appPtr, cmd );
+    m_function( appPtr, cmd );
 }
-VConsole::VConsole( const char * name, vconsoleFn_t function ) :
-    Function( function )
+
+VConsole::VConsole( const char * name, Function function )
+    : m_name(name)
+    , m_function( function )
 {
-    strcpy( Name, name );
 }
-typename NervGear::VConsole* VConsole::Instantialize() {
+
+VConsole* VConsole::Instantialize() {
     if (VConsole::pInstance == NULL) {
         VConsole::pInstance = new VConsole();
     }
     return VConsole::pInstance;
 }
+
 void VConsole::DestoryVConsole() {
     if (VConsole::pInstance != NULL) {
         delete VConsole::pInstance;
         VConsole::pInstance = NULL;
     }
 }
-void VConsole::RegisterConsole( const char * name, VConsole::vconsoleFn_t function )
+
+void VConsole::RegisterConsole( const char * name, VConsole::Function function )
 {
 for ( int i = 0 ; i < VConsoleFunctions.length(); ++i )
         {
-            if ( strcmp( VConsoleFunctions[i].GetName(), name ) == 0 )
+            if (VConsoleFunctions[i].name() == name)
             {
                 LOG( "OvrConsole", "Console function '%s' is already registered!!", name );
                 assert( false );    // why are you registering the same function twice??
@@ -63,10 +67,12 @@ for ( int i = 0 ; i < VConsoleFunctions.length(); ++i )
         VConsoleFunctions.append( VConsole( name, function ) );
 
 }
+
 void VConsole::UnRegisterConsole()
 {
     VConsoleFunctions.clear();
 }
+
 void VConsole::ExecuteConsole( long appPtr, char const * commandStr ) const
     {
         DROIDLOG( "OvrConsole", "Received console command \"%s\"", commandStr );
@@ -88,9 +94,8 @@ void VConsole::ExecuteConsole( long appPtr, char const * commandStr ) const
         LOG( "ExecuteConsoleFunction( %s, %s )", cmdName, parms );
         for ( int i = 0 ; i < VConsoleFunctions.length(); ++i )
         {
-            LOG( "Checking console function '%s'", VConsoleFunctions[i].GetName() );
-            if ( strcmp( VConsoleFunctions[i].GetName(), cmdName ) == 0 )
-            {
+            vInfo( "Checking console function " << VConsoleFunctions[i].name());
+            if (VConsoleFunctions[i].name() == cmdName) {
                 LOG( "Executing console function '%s'", cmdName );
                 VConsoleFunctions[i].Execute( reinterpret_cast< void* >( appPtr ), parms );
                 return;
@@ -99,9 +104,13 @@ void VConsole::ExecuteConsole( long appPtr, char const * commandStr ) const
 
         DROIDLOG( "OvrConsole", "ERROR: unknown console command '%s'", cmdName );
 }
+
 void VConsole::DebugPrint( void * appPtr, const char * cmd ) {
     DROIDLOG( "OvrDebug", "%s", cmd );
 }
+
+NV_NAMESPACE_END
+
 NV_USING_NAMESPACE
 
 extern "C" {
@@ -118,5 +127,4 @@ JNIEXPORT void Java_com_vrseen_nervgear_ConsoleReceiver_nativeConsoleCommand( JN
     }
 }
 
-}
 }

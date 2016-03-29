@@ -193,12 +193,12 @@ void Oculus360Photos::init(const VString &fromPackage, const VString &launchInte
 
     fileExtensions.goodExtensions.append( ".jpg" );
 
-    /*fileExtensions.badExtensions.append( ".jpg.x" );
+    fileExtensions.badExtensions.append( ".jpg.x" );
     fileExtensions.badExtensions.append( "_px.jpg" );
     fileExtensions.badExtensions.append( "_py.jpg" );
     fileExtensions.badExtensions.append( "_pz.jpg" );
     fileExtensions.badExtensions.append( "_nx.jpg" );
-    fileExtensions.badExtensions.append( "_ny.jpg" );*/
+    fileExtensions.badExtensions.append( "_ny.jpg" );
 
     const VStandardPath &storagePaths = vApp->storagePaths();
     storagePaths.PushBackSearchPathIfValid( VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", m_searchPaths );
@@ -511,16 +511,13 @@ bool Oculus360Photos::useOverlay() const {
     return m_useOverlay;
 }
 
-void Oculus360Photos::configureVrMode( ovrModeParms & modeParms ) {
+void Oculus360Photos::configureVrMode(VKernel* kernel) {
     // We need very little CPU for pano browsing, but a fair amount of GPU.
     // The CPU clock should ramp up above the minimum when necessary.
     LOG( "ConfigureClocks: Oculus360Photos only needs minimal clocks" );
 
     // No hard edged geometry, so no need for MSAA
-    vApp->vrParms().multisamples = 1;
-
-    vApp->vrParms().colorFormat = COLOR_8888;
-    vApp->vrParms().depthFormat = DEPTH_16;
+    kernel->msaa = 1;
 }
 
 bool Oculus360Photos::onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType )
