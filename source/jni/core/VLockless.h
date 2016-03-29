@@ -1,44 +1,31 @@
 #pragma once
 
 #include "vglobal.h"
-#include <pthread.h>
 #include "VAtomicInt.h"
 #include "VCircularQueue.h"
 
-// Define this to compile-in Lockless test logic
-//#define OVR_LOCKLESS_TEST
-
 NV_NAMESPACE_BEGIN
-
 
 template <class E>
 class VLockless
 {
 public:
-    VLockless() : count(0), buffer(8){}
+    VLockless() : m_count(0), m_buffer(8){}
 
     E state() const
     {
-        return buffer[count.exchangeAddSync(0)];
+        return m_buffer[m_count.exchangeAddSync(0)];
     }
 
     void setState(E state)
     {
-        buffer.prepend(state);
-        count = count.exchangeAddSync(1) & (int)(buffer.capacity() - 1);
+        m_buffer.prepend(state);
+        m_count = m_count.exchangeAddSync(1) & (int)(m_buffer.capacity() - 1);
     }
 
-    mutable VAtomicInt count;
-    VCircularQueue<E> buffer;
-
+private:
+    mutable VAtomicInt m_count;
+    VCircularQueue<E> m_buffer;
 };
 
-
-#ifdef OVR_LOCKLESS_TEST
-void StartLocklessTest();
-#endif
-
-
 NV_NAMESPACE_END
-
-
