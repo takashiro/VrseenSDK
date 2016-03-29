@@ -28,7 +28,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "VString.h"			// for ReadFreq()
 #include "VJson.h"			// needed for ovr_StartSystemActivity
-#include "MemBuffer.h"		// needed for MemBufferT
 #include "sensor/DeviceImpl.h"
 
 #include "HmdSensors.h"
