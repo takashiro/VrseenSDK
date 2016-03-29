@@ -2123,7 +2123,7 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
     //
     // Doing this dynamically based just on time causes visible flickering at the
     // periphery when the fov is increased, so only do it if minimumVsyncs is set.
-    const float fovDegrees = d->kernel->device->eyeTextureFov[0] +
+    const float fovDegrees = d->kernel->device->eyeDisplayFov[0] +
             ( ( d->swapParms.MinimumVsyncs > 1 ) ? 10.0f : 0.0f ) +
             ( ( !d->showVignette ) ? 5.0f : 0.0f );
 

@@ -644,36 +644,36 @@ void UpdateHmdInfo()
 
     // Only use the Android info if we haven't explicitly set the screenWidth / height,
     // because they are reported wrong on the note.
-    if(!instance->device->widthMeters)
+    if(!instance->device->widthbyMeters)
     {
         jmethodID getDisplayWidth = Jni->GetStaticMethodID( VrLibClass, "getDisplayWidth", "(Landroid/app/Activity;)F" );
         if ( !getDisplayWidth )
         {
             FAIL( "couldn't get getDisplayWidth" );
         }
-        instance->device->widthMeters = Jni->CallStaticFloatMethod(VrLibClass, getDisplayWidth, ActivityObject);
+        instance->device->widthbyMeters = Jni->CallStaticFloatMethod(VrLibClass, getDisplayWidth, ActivityObject);
 
         jmethodID getDisplayHeight = Jni->GetStaticMethodID( VrLibClass, "getDisplayHeight", "(Landroid/app/Activity;)F" );
         if ( !getDisplayHeight )
         {
             FAIL( "couldn't get getDisplayHeight" );
         }
-        instance->device->heightMeters = Jni->CallStaticFloatMethod( VrLibClass, getDisplayHeight, ActivityObject );
+        instance->device->heightbyMeters = Jni->CallStaticFloatMethod( VrLibClass, getDisplayHeight, ActivityObject );
     }
 
     // Update the dimensions in pixels directly from the window
-    instance->device->widthPixels = windowSurfaceWidth;
-    instance->device->heightPixels = windowSurfaceHeight;
+    instance->device->widthbyPixels = windowSurfaceWidth;
+    instance->device->heightbyPixels = windowSurfaceHeight;
 
-    LOG( "hmdInfo.lensSeparation = %f", instance->device->lensSeparation );
-    LOG( "hmdInfo.widthMeters = %f", instance->device->widthMeters );
-    LOG( "hmdInfo.heightMeters = %f", instance->device->heightMeters );
-    LOG( "hmdInfo.widthPixels = %i", instance->device->widthPixels );
-    LOG( "hmdInfo.heightPixels = %i", instance->device->heightPixels );
-    LOG( "hmdInfo.eyeTextureResolution[0] = %i", instance->device->eyeTextureResolution[0] );
-    LOG( "hmdInfo.eyeTextureResolution[1] = %i", instance->device->eyeTextureResolution[1] );
-    LOG( "hmdInfo.eyeTextureFov[0] = %f", instance->device->eyeTextureFov[0] );
-    LOG( "hmdInfo.eyeTextureFov[1] = %f", instance->device->eyeTextureFov[1] );
+    LOG( "hmdInfo.lensSeparation = %f", instance->device->lensDistance );
+    LOG( "hmdInfo.widthMeters = %f", instance->device->widthbyMeters );
+    LOG( "hmdInfo.heightMeters = %f", instance->device->heightbyMeters );
+    LOG( "hmdInfo.widthPixels = %i", instance->device->widthbyPixels );
+    LOG( "hmdInfo.heightPixels = %i", instance->device->heightbyPixels );
+    LOG( "hmdInfo.eyeTextureResolution[0] = %i", instance->device->eyeDisplayResolution[0] );
+    LOG( "hmdInfo.eyeTextureResolution[1] = %i", instance->device->eyeDisplayResolution[1] );
+    LOG( "hmdInfo.eyeTextureFov[0] = %f", instance->device->eyeDisplayFov[0] );
+    LOG( "hmdInfo.eyeTextureFov[1] = %f", instance->device->eyeDisplayFov[1] );
 }
 
 
@@ -727,7 +727,7 @@ void VKernel::run()
 
     // Let GlUtils look up extensions
     VGlOperation glOperation;
-    glOperation.GL_FindExtensions();
+    glOperation.logExtensions();
 
     // Look up the window surface size (NOTE: This must happen before Direct Render
     // Mode is initiated and the pbuffer surface is bound).
