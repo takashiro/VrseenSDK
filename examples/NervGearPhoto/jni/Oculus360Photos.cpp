@@ -258,12 +258,12 @@ void Oculus360Photos::init(const VString &fromPackage, const VString &launchInte
 
     fileExtensions.goodExtensions.append( ".jpg" );
 
-    /*fileExtensions.badExtensions.append( ".jpg.x" );
+    fileExtensions.badExtensions.append( ".jpg.x" );
     fileExtensions.badExtensions.append( "_px.jpg" );
     fileExtensions.badExtensions.append( "_py.jpg" );
     fileExtensions.badExtensions.append( "_pz.jpg" );
     fileExtensions.badExtensions.append( "_nx.jpg" );
-    fileExtensions.badExtensions.append( "_ny.jpg" );*/
+    fileExtensions.badExtensions.append( "_ny.jpg" );
 
     const VStandardPath &storagePaths = vApp->storagePaths();
     storagePaths.PushBackSearchPathIfValid( VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", m_searchPaths );
