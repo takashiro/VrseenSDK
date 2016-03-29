@@ -21,13 +21,14 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "PanoBrowser.h"
 #include "PanoMenu.h"
 #include "FileLoader.h"
-#include "ImageData.h"
+
 #include "PhotosMetaData.h"
 
 #include <VApkFile.h>
 #include <VThread.h>
 #include <VStandardPath.h>
 #include "VLog.h"
+#include "io/VFileOperation.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -477,7 +478,7 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
             while ( width > maxTextureSize || width > maxTextureSize )
             {
                 LOG( "Quartering oversize %ix%i image", width, height );
-                unsigned char * newBuf = QuarterImageSize( data, width, height, true );
+                unsigned char * newBuf = VFileOperation::QuarterImageSize( data, width, height, true );
                 free( data );
                 data = newBuf;
                 width >>= 1;
