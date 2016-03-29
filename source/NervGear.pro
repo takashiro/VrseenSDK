@@ -18,7 +18,6 @@ INCLUDEPATH += \
 
 SOURCES += \
     jni/core/VConstants.cpp \
-    jni/core/Allocator.cpp \
     jni/core/VAtomicInt.cpp \
     jni/core/VByteArray.cpp \
     jni/core/VChar.cpp \
@@ -34,7 +33,6 @@ SOURCES += \
     jni/core/VSignal.cpp \
     jni/core/VStandardPath.cpp \
     jni/core/VString.cpp \
-    jni/core/System.cpp \
     jni/core/VThread.cpp \
     jni/core/VTimer.cpp \
     jni/core/MappedFile.cpp \
@@ -134,7 +132,6 @@ HEADERS += \
     jni/core/android/LogUtils.h \
     jni/core/android/VOsBuild.h \
     jni/core/VAlgorithm.h \
-    jni/core/Allocator.h \
     jni/core/Atomic.h \
     jni/core/Array.h \
     jni/core/VByteArray.h \
@@ -161,7 +158,6 @@ HEADERS += \
     jni/core/VStringHash.h \
     jni/core/String_FormatUtil.h \
     jni/core/String_PathUtil.h \
-    jni/core/System.h \
     jni/core/VThread.h \
     jni/core/VTimer.h \
     jni/core/MappedFile.h \
