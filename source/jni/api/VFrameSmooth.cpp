@@ -2036,51 +2036,14 @@ void VFrameSmooth::Private::createFrameworkGraphics()
         FAIL( "WarpMesh failed to load");
     }
 
-    // Vertexes and indexes for debug graph, the verts will be updated
-    // dynamically each frame.
+
     m_timingGraph = CreateTimingGraphGeometry( (256+10)*2 );
 
-    // simple cross to draw to screen
+
     m_calibrationLines2.createCalibrationGrid( 0, false );
 
-    // FPS and graph text
-    m_untexturedMvpProgram.initShader(
-                "uniform mat4 Mvpm;\n"
-                "attribute vec4 Position;\n"
-                "uniform mediump vec4 UniformColor;\n"
-                "varying  lowp vec4 oColor;\n"
-                "void main()\n"
-                "{\n"
-                "   gl_Position = Mvpm * Position;\n"
-                "   oColor = UniformColor;\n"
-                "}\n"
-                ,
-                "varying lowp vec4	oColor;\n"
-                "void main()\n"
-                "{\n"
-                "	gl_FragColor = oColor;\n"
-                "}\n"
-                );
-
-    m_debugLineProgram.initShader(
-                "uniform mediump mat4 Mvpm;\n"
-                "attribute vec4 Position;\n"
-                "attribute vec4 VertexColor;\n"
-                "varying  vec4 oColor;\n"
-                "void main()\n"
-                "{\n"
-                "   gl_Position = Mvpm * Position;\n"
-                "   oColor = VertexColor;\n"
-                "}\n"
-                ,
-                "varying lowp vec4 oColor;\n"
-                "void main()\n"
-                "{\n"
-                "	gl_FragColor = oColor;\n"
-                "}\n"
-                );
-
-    // Build our warp render programs
+    m_untexturedMvpProgram.initShader(VGlShader::getUntextureMvpVertexShaderSource(),VGlShader::getUntexturedFragmentShaderSource());
+    m_debugLineProgram.initShader(VGlShader::getVertexColorVertexShaderSource(),VGlShader::getUntexturedFragmentShaderSource());
     buildWarpProgs();
 }
 

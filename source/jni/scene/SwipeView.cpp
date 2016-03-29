@@ -204,51 +204,10 @@ void SwipeView::Init( OvrGazeCursor & gazeCursor )
 	BorderTexture2_1 = BuildBorderTexture( 80, 40 );
 	BorderTexture1_1 = BuildBorderTexture( 40, 40 );
 
-	ProgPanel.initShader(
-		"uniform mat4 Mvpm;\n"
-        "attribute vec4 Position;\n"
-		"attribute vec2 TexCoord;\n"
-		"varying  highp vec2 oTexCoord;\n"
-		"void main()\n"
-		"{\n"
-		"   gl_Position = Mvpm * Position;\n"
-		"   oTexCoord = TexCoord;\n"
-		"}\n"
-	,
-		"uniform sampler2D Texture0;\n"
-		"uniform sampler2D Texture1;\n"
-		"varying highp vec2 oTexCoord;\n"
-		"void main()\n"
-		"{\n"
-		"	gl_FragColor.xyz = texture2D(Texture0, oTexCoord).xyz;\n"
-		"	gl_FragColor.w = texture2D(Texture1, oTexCoord).x;\n"
-		"}\n"
-	);
+    ProgPanel.initShader( VGlShader::getSingleTextureVertexShaderSource(),VGlShader::getDoubletextureTransparentColorVertexShaderSource());
 
 
-	ProgHighlight.initShader(
-		"uniform mat4 Mvpm;\n"
-		"uniform vec4 UniformColor;\n"
-		"attribute vec4 Position;\n"
-		"attribute vec2 TexCoord;\n"
-		"varying  highp vec2 oTexCoord;\n"
-		"varying  lowp vec4 oColor;\n"
-		"void main()\n"
-		"{\n"
-		"   gl_Position = Mvpm * Position;\n"
-		"   oTexCoord = TexCoord;\n"
-		"	oColor = UniformColor;\n"
-		"}\n"
-	,
-		"uniform sampler2D Texture1;\n"
-		"varying highp vec2 oTexCoord;\n"
-		"varying lowp vec4 oColor;\n"
-		"void main()\n"
-		"{\n"
-		"	gl_FragColor = oColor;\n"
-		"	gl_FragColor.w = texture2D(Texture1, oTexCoord).x;\n"
-		"}\n"
-	);
+    ProgHighlight.initShader(VGlShader::getHighlightColorVertexShaderSource(),VGlShader::getHighlightPragmentShaderSource());
 
 	GazeUserId = gazeCursor.GenerateUserId();
 }

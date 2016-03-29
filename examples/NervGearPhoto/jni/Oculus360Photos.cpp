@@ -136,74 +136,9 @@ void Oculus360Photos::init(const VString &fromPackage, const VString &launchInte
     LOG( "--------------- Oculus360Photos OneTimeInit ---------------" );
 
     //-------------------------------------------------------------------------
-    m_texturedMvpProgram.initShader(
-                "uniform mat4 Mvpm;\n"
-                "attribute vec4 Position;\n"
-                "attribute vec4 VertexColor;\n"
-                "attribute vec2 TexCoord;\n"
-                "uniform mediump vec4 UniformColor;\n"
-                "varying  lowp vec4 oColor;\n"
-                "varying highp vec2 oTexCoord;\n"
-                "void main()\n"
-                "{\n"
-                "   gl_Position = Mvpm * Position;\n"
-                "	oTexCoord = TexCoord;\n"
-                "   oColor = /* VertexColor * */ UniformColor;\n"
-                "}\n"
-                ,
-                "uniform sampler2D Texture0;\n"
-                "varying highp vec2 oTexCoord;\n"
-                "varying lowp vec4	oColor;\n"
-                "void main()\n"
-                "{\n"
-                "	gl_FragColor = oColor * texture2D( Texture0, oTexCoord );\n"
-                "}\n"
-                );
-
-    m_cubeMapPanoProgram.initShader(
-                "uniform mat4 Mvpm;\n"
-                "attribute vec4 Position;\n"
-                "uniform mediump vec4 UniformColor;\n"
-                "varying  lowp vec4 oColor;\n"
-                "varying highp vec3 oTexCoord;\n"
-                "void main()\n"
-                "{\n"
-                "   gl_Position = Mvpm * Position;\n"
-                "	oTexCoord = Position.xyz;\n"
-                "   oColor = UniformColor;\n"
-                "}\n"
-                ,
-                "uniform samplerCube Texture0;\n"
-                "varying highp vec3 oTexCoord;\n"
-                "varying lowp vec4	oColor;\n"
-                "void main()\n"
-                "{\n"
-                "	gl_FragColor = oColor * textureCube( Texture0, oTexCoord );\n"
-                "}\n"
-                );
-
-    m_panoramaProgram.initShader(
-                "uniform highp mat4 Mvpm;\n"
-                "uniform highp mat4 Texm;\n"
-                "attribute vec4 Position;\n"
-                "attribute vec2 TexCoord;\n"
-                "varying  highp vec2 oTexCoord;\n"
-                "void main()\n"
-                "{\n"
-                "   gl_Position = Mvpm * Position;\n"
-                "   oTexCoord = vec2( Texm * vec4( TexCoord, 0, 1 ) );\n"
-                "}\n"
-                ,
-                "#extension GL_OES_EGL_image_external : require\n"
-                "uniform samplerExternalOES Texture0;\n"
-                "uniform lowp vec4 UniformColor;\n"
-                "uniform lowp vec4 ColorBias;\n"
-                "varying highp vec2 oTexCoord;\n"
-                "void main()\n"
-                "{\n"
-                "	gl_FragColor = ColorBias + UniformColor * texture2D( Texture0, oTexCoord );\n"
-                "}\n"
-                );
+    m_texturedMvpProgram.initShader(VGlShader::getTexturedMvpVertexShaderSource(),VGlShader::getUniformTextureProgramShaderSource());
+    m_cubeMapPanoProgram.initShader(VGlShader::getCubeMapPanoVertexShaderSource(),VGlShader::getCubeMapPanoProgramShaderSource());
+    m_panoramaProgram.initShader(VGlShader::getPanoVertexShaderSource(),VGlShader::getPanoProgramShaderSource() );
 
     // launch cube pano -should always exist!
     m_startupPano = DEFAULT_PANO;

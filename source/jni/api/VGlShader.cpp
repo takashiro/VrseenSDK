@@ -8,6 +8,207 @@
 #include "../core/VLog.h"
 #define STRINGIZE( x )			#x
 NV_NAMESPACE_BEGIN
+
+
+
+
+const char * VGlShader::getFadedPanoVertexShaderSource()
+{
+const char * fadedPanoVertexShaderSource =
+"uniform highp mat4 Mvpm;\n"
+"uniform highp mat4 Texm;\n"
+"attribute vec4 Position;\n"
+"attribute vec2 TexCoord;\n"
+"varying  highp vec2 oTexCoord;\n"
+"void main()\n"
+"{\n"
+"   gl_Position = Mvpm * Position;\n"
+"   oTexCoord = vec2( Texm * vec4( TexCoord, 0, 1 ) );\n"
+"}\n";
+    return fadedPanoVertexShaderSource;
+    }
+const char * VGlShader::getFadedPanoProgramShaderSource()
+{
+    const char * fadedPanoProgramShaderSource =
+"#extension GL_OES_EGL_image_external : require\n"
+"uniform samplerExternalOES Texture0;\n"
+"uniform sampler2D Texture1;\n"
+"uniform lowp vec4 UniformColor;\n"
+"varying highp vec2 oTexCoord;\n"
+"void main()\n"
+"{\n"
+"	lowp vec4 staticColor = texture2D( Texture1, oTexCoord );\n"
+"	lowp vec4 movieColor = texture2D( Texture0, oTexCoord );\n"
+"	gl_FragColor = UniformColor * mix( movieColor, staticColor, staticColor.w );\n"
+"}\n";
+return fadedPanoProgramShaderSource;
+
+}
+
+
+
+
+
+
+const char * VGlShader::getUniformSingleTextureProgramShaderSource()
+{
+    const char * uniformSingleTextureProgramShaderSource=
+    "uniform sampler2D Texture0;\n"
+    "uniform lowp vec4 UniformColor;\n"
+    "varying highp vec2 oTexCoord;\n"
+    "void main()\n"
+    "{\n"
+    "   gl_FragColor = UniformColor * texture2D( Texture0, oTexCoord );\n"
+    "}\n";
+
+   return uniformSingleTextureProgramShaderSource;
+}
+const char * VGlShader::getUniformTextureProgramShaderSource()
+{
+    const char * uniformTextureProgramShaderSource=
+            "uniform sampler2D Texture0;\n"
+            "varying highp vec2 oTexCoord;\n"
+            "varying lowp vec4	oColor;\n"
+            "void main()\n"
+            "{\n"
+            "	gl_FragColor = oColor * texture2D( Texture0, oTexCoord );\n"
+            "}\n";
+
+   return uniformTextureProgramShaderSource;
+}
+const char * VGlShader::getPanoProgramShaderSource()
+{
+             const char * panoProgramSource =
+                     "#extension GL_OES_EGL_image_external : require\n"
+                     "uniform samplerExternalOES Texture0;\n"
+                     "uniform lowp vec4 UniformColor;\n"
+                     "uniform lowp vec4 ColorBias;\n"
+                     "varying highp vec2 oTexCoord;\n"
+                     "void main()\n"
+                     "{\n"
+                     "	gl_FragColor = ColorBias + UniformColor * texture2D( Texture0, oTexCoord );\n"
+                     "}\n";
+   return panoProgramSource;
+}
+
+
+
+
+
+const char * VGlShader::getPanoVertexShaderSource()
+{
+             const char * panoVertexShaderSource =
+                     "uniform highp mat4 Mvpm;\n"
+                     "uniform highp mat4 Texm;\n"
+                     "attribute vec4 Position;\n"
+                     "attribute vec2 TexCoord;\n"
+                     "varying  highp vec2 oTexCoord;\n"
+                     "void main()\n"
+                     "{\n"
+                     "   gl_Position = Mvpm * Position;\n"
+                     "   oTexCoord = vec2( Texm * vec4( TexCoord, 0, 1 ) );\n"
+                     "}\n";
+   return panoVertexShaderSource;
+}
+
+
+
+const char * VGlShader::getCubeMapPanoVertexShaderSource()
+{
+             const char * cubeMapPanoVertexSource =
+"uniform mat4 Mvpm;\n"
+"attribute vec4 Position;\n"
+"uniform mediump vec4 UniformColor;\n"
+"varying  lowp vec4 oColor;\n"
+"varying highp vec3 oTexCoord;\n"
+"void main()\n"
+"{\n"
+"   gl_Position = Mvpm * Position;\n"
+"	oTexCoord = Position.xyz;\n"
+"   oColor = UniformColor;\n"
+"}\n";
+  return cubeMapPanoVertexSource;
+}
+
+
+
+
+const char * VGlShader::getCubeMapPanoProgramShaderSource()
+{
+             const char * cubeMapPanoProgramSource =
+            "uniform samplerCube Texture0;\n"
+            "varying highp vec3 oTexCoord;\n"
+            "varying lowp vec4	oColor;\n"
+            "void main()\n"
+            "{\n"
+            "	gl_FragColor = oColor * textureCube( Texture0, oTexCoord );\n"
+            "}\n";
+   return cubeMapPanoProgramSource;
+}
+const char * VGlShader::getTexturedMvpVertexShaderSource()
+{
+    const char * texturedMvpVertexShaderSource =
+"uniform mat4 Mvpm;\n"
+"attribute vec4 Position;\n"
+"attribute vec4 VertexColor;\n"
+"attribute vec2 TexCoord;\n"
+"uniform mediump vec4 UniformColor;\n"
+"varying  lowp vec4 oColor;\n"
+"varying highp vec2 oTexCoord;\n"
+"void main()\n"
+"{\n"
+"   gl_Position = Mvpm * Position;\n"
+"	oTexCoord = TexCoord;\n"
+"   oColor = /* VertexColor * */ UniformColor;\n"
+"}\n";
+    return texturedMvpVertexShaderSource;
+}
+const char * VGlShader::getHighlightColorVertexShaderSource()
+{
+  const char * highlightColorVertexShaderSource =
+"uniform mat4 Mvpm;\n"
+"uniform vec4 UniformColor;\n"
+"attribute vec4 Position;\n"
+"attribute vec2 TexCoord;\n"
+"varying  highp vec2 oTexCoord;\n"
+"varying  lowp vec4 oColor;\n"
+"void main()\n"
+"{\n"
+"   gl_Position = Mvpm * Position;\n"
+"   oTexCoord = TexCoord;\n"
+"	oColor = UniformColor;\n"
+"}\n";
+  return highlightColorVertexShaderSource;
+}
+const char * VGlShader::getHighlightPragmentShaderSource()
+{
+
+  const char *  HighlightPragmentShaderSource =
+"uniform sampler2D Texture1;\n"
+"varying highp vec2 oTexCoord;\n"
+"varying lowp vec4 oColor;\n"
+"void main()\n"
+"{\n"
+"	gl_FragColor = oColor;\n"
+"	gl_FragColor.w = texture2D(Texture1, oTexCoord).x;\n"
+"}\n";
+  return HighlightPragmentShaderSource;
+
+}
+const char * VGlShader::getDoubletextureTransparentColorVertexShaderSource()
+{
+const char* getDoubletextureTransparentColorVertexShaderSource =
+"uniform sampler2D Texture0;\n"
+"uniform sampler2D Texture1;\n"
+"varying highp vec2 oTexCoord;\n"
+"void main()\n"
+"{\n"
+"	gl_FragColor.xyz = texture2D(Texture0, oTexCoord).xyz;\n"
+"	gl_FragColor.w = texture2D(Texture1, oTexCoord).x;\n"
+"}\n";
+   return getDoubletextureTransparentColorVertexShaderSource;
+
+}
 const char * VGlShader::getUntextureInverseColorVertexShaderSource()
 {
  const char * untextureInverseColorVertexShaderSource =

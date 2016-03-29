@@ -28,23 +28,7 @@ void EyePostRender::Init()
 	// thin border around the outside
     VignetteSquare.createStylePattern( 128.0f / 1024.0f, 128.0f / 1024.0f );
 
-	UntexturedMvpProgram.initShader(
-		"uniform mat4 Mvpm;\n"
-		"attribute vec4 Position;\n"
-		"uniform mediump vec4 UniformColor;\n"
-		"varying  lowp vec4 oColor;\n"
-		"void main()\n"
-		"{\n"
-			"   gl_Position = Mvpm * Position;\n"
-			"   oColor = UniformColor;\n"
-		"}\n"
-	,
-		"varying lowp vec4	oColor;\n"
-		"void main()\n"
-		"{\n"
-		"	gl_FragColor = oColor;\n"
-		"}\n"
-	);
+    UntexturedMvpProgram.initShader(VGlShader::getUntextureMvpVertexShaderSource(),VGlShader::getUntexturedFragmentShaderSource());
 
     UntexturedScreenSpaceProgram.initShader( VGlShader::getUniformColorVertexShaderSource(), VGlShader::getUntexturedFragmentShaderSource() );
 }

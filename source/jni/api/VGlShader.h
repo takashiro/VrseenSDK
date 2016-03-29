@@ -55,8 +55,11 @@ public:
    static const char * getUntextureMvpVertexShaderSource();
    static const char * getUntextureInverseColorVertexShaderSource();
    static const char * getUntexturedFragmentShaderSource();
-   static const char * getUniformColorVertexShaderSource();
 
+
+   static const char * getUniformColorVertexShaderSource();
+   static const char * getUniformTextureProgramShaderSource();
+   static const char * getUniformSingleTextureProgramShaderSource();
    static const char * getVertexColorVertexShaderSource();
    static const char * getVertexColorSkVertexShaderSource();
    static const char * getVertexColorFragmentShaderSource();
@@ -75,6 +78,20 @@ public:
    static const char * getReflectionMappedSkVertexShaderSource();
    static const char * getReflectionMappedFragmentShaderSource();
 
+   static const char * getDoubletextureTransparentColorVertexShaderSource();
+   static const char * getHighlightPragmentShaderSource();
+   static const char * getHighlightColorVertexShaderSource();
+   static const char * getTexturedMvpVertexShaderSource();
+
+   static const char * getCubeMapPanoProgramShaderSource();
+   static const char * getCubeMapPanoVertexShaderSource();
+
+   static  const char * getPanoProgramShaderSource();
+  static   const char * getPanoVertexShaderSource();
+
+
+   static const char * getFadedPanoVertexShaderSource();
+   static const char * getFadedPanoProgramShaderSource();
     GLuint	program;
     GLuint	vertexShader;
     GLuint	fragmentShader; 

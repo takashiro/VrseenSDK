@@ -188,6 +188,7 @@ void ShaderManager::OneTimeInit( const VString &launchIntent )
     ProgSkinnedLightMapped		.initShader( VGlShader::getLightMappedSkVertexShaderSource(), VGlShader::getLightMappedFragmentShaderSource() );
     ProgSkinnedReflectionMapped	.initShader( VGlShader::getReflectionMappedSkVertexShaderSource(), VGlShader::getReflectionMappedFragmentShaderSource() );
 
+
 	DefaultPrograms.ProgVertexColor				= & ProgVertexColor;
 	DefaultPrograms.ProgSingleTexture			= & ProgSingleTexture;
 	DefaultPrograms.ProgLightMapped				= & ProgLightMapped;
