@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vglobal.h"
+#include "../vglobal.h"
 #include "VArray.h"
 #include "VString.h"
 

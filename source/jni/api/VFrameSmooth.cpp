@@ -542,8 +542,7 @@ struct VFrameSmooth::Private
     // debug graphs.
     void			createFrameworkGraphics();
     void			destroyFrameworkGraphics();
-    void			drawFrameworkGraphicsToWindow( const int eye, const int swapOptions,
-                                                   const bool drawTimingGraph );
+    void			drawFrameworkGraphicsToWindow( const int eye, const int swapOptions);
 
     bool m_async;
     VDevice *m_device;
@@ -564,12 +563,6 @@ struct VFrameSmooth::Private
     // Wait for sync points amd warp to screen.
     void			warpToScreen( const double vsyncBase, const swapProgram_t & swap );
     void			warpToScreenSliced( const double vsyncBase, const swapProgram_t & swap );
-
-    // Build new verts for the timing graph, call once each frame
-    void			updateTimingGraphVerts( const ovrTimeWarpDebugPerfMode debugPerfMode, const ovrTimeWarpDebugPerfValue debugValue );
-
-    // Draw debug graphs
-    void 			drawTimingGraph( const int eye );
 
     const VGlShader & programForParms( const ovrTimeWarpParms & parms, const bool disableChromaticCorrection ) const;
     void			setWarpState( const warpSource_t & currentWarpSource ) const;
@@ -1107,9 +1100,6 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
 
     const double vsyncBase = vsyncBase_;
 
-    // Build new line verts if timing graph is enabled
-    updateTimingGraphVerts( latestWarpSource.WarpParms.DebugGraphMode, latestWarpSource.WarpParms.DebugGraphValue );
-
     // This will only be updated in SCREENEYE_LEFT
     warpSource_t currentWarpSource = {};
 
@@ -1127,9 +1117,9 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
         // the first eye will probably already be past the sleep point,
         // so only the second eye will be at a dependable time.
         const double sleepTargetVsync = vsyncBase + swap.deltaVsync[eye];
-        const double sleepTargetTime = FramePointTimeInSeconds( sleepTargetVsync );
-        const float secondsToSleep = SleepUntilTimePoint( sleepTargetTime, false );
-        const double preFinish = ovr_GetTimeInSeconds();
+//        const double sleepTargetTime = FramePointTimeInSeconds( sleepTargetVsync );
+        //const float secondsToSleep = SleepUntilTimePoint( sleepTargetTime, false );
+//        const double preFinish = ovr_GetTimeInSeconds();
 
         //LOG( "Vsync %f:%i sleep %f", vsyncBase, eye, secondsToSleep );
 
@@ -1311,8 +1301,7 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
         // was rendered at, so you can see the amount of interpolated time warp applied
         // to it as a delta from the red grid to the greed or blue grid that was drawn directly
         // into the texture.
-        drawFrameworkGraphicsToWindow( eye, currentWarpSource.WarpParms.WarpOptions,
-                                       currentWarpSource.WarpParms.DebugGraphMode != DEBUG_PERF_OFF );
+        drawFrameworkGraphicsToWindow( eye, currentWarpSource.WarpParms.WarpOptions);
 
         glFlush();
 
@@ -1326,29 +1315,6 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
         {
             LOG( "Frame %i Eye %i latency %5.3f", (int)vsyncBase, eye, latency );
         }
-
-        if ( 0 )
-        {
-            LOG( "eye %i sleep %5.3f fin %5.3f buf %lli (%i back):%i %i",
-                 eye, secondsToSleep,
-                 postFinish - preFinish,
-                 thisEyeBufferNum, back,
-                 currentWarpSource.WarpParms.Images[0][0].TexId,
-                    currentWarpSource.WarpParms.Images[1][0].TexId );
-        }
-
-        // Update debug graph data
-        if ( currentWarpSource.WarpParms.DebugGraphMode != DEBUG_PERF_FROZEN )
-        {
-            const int logIndex = (int)m_lastEyeLog & (EYE_LOG_COUNT-1);
-            eyeLog_t & thisLog = m_eyeLog[logIndex];
-            thisLog.skipped = false;
-            thisLog.bufferNum = thisEyeBufferNum;
-            thisLog.issueFinish = preFinish - sleepTargetTime;
-            thisLog.completeFinish = postFinish - sleepTargetTime;
-            m_lastEyeLog++;
-        }
-
     }	// for eye
 
     UnbindEyeTextures();
@@ -1392,8 +1358,8 @@ void VFrameSmooth::Private::warpToScreenSliced( const double vsyncBase, const sw
 
     // This must be long enough to cover CPU scheduling delays, GPU in-flight commands,
     // and the actual drawing of this slice.
-    const warpSource_t & latestWarpSource = m_warpSources[m_eyeBufferCount.state()%MAX_WARP_SOURCES];
-    const double schedulingCushion = latestWarpSource.WarpParms.PreScheduleSeconds;
+//    const warpSource_t & latestWarpSource = m_warpSources[m_eyeBufferCount.state()%MAX_WARP_SOURCES];
+//    const double schedulingCushion = latestWarpSource.WarpParms.PreScheduleSeconds;
 
     //LOG( "now %fv(%i) %f cush %f", GetFractionalVsync(), (int)vsyncBase, ovr_GetTimeInSeconds(), schedulingCushion );
 
@@ -1407,9 +1373,9 @@ void VFrameSmooth::Private::warpToScreenSliced( const double vsyncBase, const sw
 
         // Sleep until we are in the correct part of the screen for
         // rendering this slice.
-        const double sleepTargetTime = sliceTimes[ screenSlice ] - schedulingCushion;
-        const float secondsToSleep = SleepUntilTimePoint( sleepTargetTime, false );
-        const double preFinish = ovr_GetTimeInSeconds();
+//        const double sleepTargetTime = sliceTimes[ screenSlice ] - schedulingCushion;
+//        const float secondsToSleep = SleepUntilTimePoint( sleepTargetTime, false );
+        //const double preFinish = ovr_GetTimeInSeconds();
 
         //LOG( "slice %i targ %f slept %f", screenSlice, sleepTargetTime, secondsToSleep );
 
@@ -1599,8 +1565,7 @@ void VFrameSmooth::Private::warpToScreenSliced( const double vsyncBase, const sw
         // was rendered at, so you can see the amount of interpolated time warp applied
         // to it as a delta from the red grid to the greed or blue grid that was drawn directly
         // into the texture.
-        drawFrameworkGraphicsToWindow( eye, currentWarpSource.WarpParms.WarpOptions,
-                                       currentWarpSource.WarpParms.DebugGraphMode != DEBUG_PERF_OFF );
+        drawFrameworkGraphicsToWindow( eye, currentWarpSource.WarpParms.WarpOptions);
 
         glFlush();
 
@@ -1613,26 +1578,6 @@ void VFrameSmooth::Private::warpToScreenSliced( const double vsyncBase, const sw
         if ( latency > 0.008f )
         {
             LOG( "Frame %i Eye %i latency %5.3f", (int)vsyncBase, eye, latency );
-        }
-
-        if ( 0 )
-        {
-            LOG( "slice %i sleep %7.4f fin %6.4f buf %lli (%i back)",
-                 screenSlice, secondsToSleep,
-                 postFinish - preFinish,
-                 thisEyeBufferNum, back );
-        }
-
-        // Update debug graph data
-        if ( currentWarpSource.WarpParms.DebugGraphMode != DEBUG_PERF_FROZEN )
-        {
-            const int logIndex = (int)m_lastEyeLog & (EYE_LOG_COUNT-1);
-            eyeLog_t & thisLog = m_eyeLog[logIndex];
-            thisLog.skipped = false;
-            thisLog.bufferNum = thisEyeBufferNum;
-            thisLog.issueFinish = preFinish - sleepTargetTime;
-            thisLog.completeFinish = postFinish - sleepTargetTime;
-            m_lastEyeLog++;
         }
     }	// for screenSlice
 
@@ -1842,156 +1787,6 @@ VGlGeometry CreateTimingGraphGeometry( const int lineVertCount )
     return geo;
 }
 
-void VFrameSmooth::Private::updateTimingGraphVerts( const ovrTimeWarpDebugPerfMode debugPerfMode, const ovrTimeWarpDebugPerfValue debugValue )
-{
-    VGlOperation glOperation;
-    if ( debugPerfMode == DEBUG_PERF_OFF )
-    {
-        return;
-    }
-
-    // Draw graph markers every five milliseconds
-    lineVert_t	verts[EYE_LOG_COUNT*2+10];
-    int			numVerts = 0;
-    const int	colorRed = ColorAsInt( 255, 0, 0, 255 );
-    const int	colorGreen = ColorAsInt( 0, 255, 0, 255 );
-    // const int	colorYellow = ColorAsInt( 255, 255, 0, 255 );
-    const int	colorWhite = ColorAsInt( 255, 255, 255, 255 );
-
-    const float base = 250;
-    const int drawLogs = 256; // VSYNC_LOG_COUNT;
-    for ( int i = 0; i < drawLogs; i++ )
-    {
-        const int logIndex = ( m_lastEyeLog - 1 - i ) & ( EYE_LOG_COUNT - 1 );
-        const eyeLog_t & log = m_eyeLog[ logIndex ];
-        const int y = i*4;
-        if ( log.skipped )
-        {
-            verts[i*2+0].y = verts[i*2+1].y = y;
-            verts[i*2+0].x = base;
-            verts[i*2+1].x = base + 150;
-            verts[i*2+0].color = verts[i*2+1].color =  colorRed;
-        }
-        else
-        {
-            if ( debugValue == DEBUG_VALUE_LATENCY )
-            {
-                verts[i*2+0].y = verts[i*2+1].y = y;
-                verts[i*2+0].x = base;
-                verts[i*2+1].x = base + 10000 * log.poseLatencySeconds;
-                verts[i*2+0].color = verts[i*2+1].color =  colorGreen;
-            }
-            else
-            {
-                verts[i*2+0].y = verts[i*2+1].y = y;
-                verts[i*2+0].x = base + 10000 * log.issueFinish;
-                verts[i*2+1].x = base + 10000 * log.completeFinish;
-                if ( m_eyeLog[ ( logIndex - 2 ) & ( EYE_LOG_COUNT-1) ].bufferNum != log.bufferNum )
-                {	// green = fresh buffer
-                    verts[i*2+0].color = verts[i*2+1].color =  colorGreen;
-                }
-                else
-                {	// red = stale buffer reprojected
-                    verts[i*2+0].color = verts[i*2+1].color =  colorRed;
-                }
-            }
-        }
-    }
-    numVerts = drawLogs*2;
-
-    // markers every 5 milliseconds
-    if ( debugValue == DEBUG_VALUE_LATENCY )
-    {
-        for ( int t = 0; t <= 64; t += 16 )
-        {
-            const float dt = 0.001f * t;
-            const int x = base + 10000 * dt;
-
-            verts[numVerts+0].y = 0;
-            verts[numVerts+1].y = drawLogs * 4;
-            verts[numVerts+0].x = x;
-            verts[numVerts+1].x = x;
-            verts[numVerts+0].color = verts[numVerts+1].color = colorWhite;
-            numVerts += 2;
-        }
-    }
-    else
-    {
-        for ( int t = 0; t <= 1; t++ )
-        {
-            const float dt = 1.0f/120.0f * t;
-            const int x = base + 10000 * dt;
-
-            verts[numVerts+0].y = 0;
-            verts[numVerts+1].y = drawLogs * 4;
-            verts[numVerts+0].x = x;
-            verts[numVerts+1].x = x;
-            verts[numVerts+0].color = verts[numVerts+1].color = colorWhite;
-            numVerts += 2;
-        }
-    }
-
-    // Update the vertex buffer.
-    // We are updating buffer objects inside a vertex array object instead
-    // of using client arrays to avoid messing with Unity's attribute arrays.
-
-    // NOTE: vertex array objects do NOT include the GL_ARRAY_BUFFER_BINDING state, and
-    // binding a VAO does not change GL_ARRAY_BUFFER, so we do need to track the buffer
-    // in the geometry if we want to update it, or do a GetVertexAttrib( SHADER_ATTRIB_ARRAY_BUFFER_BINDING
-
-    // For reasons that I do not understand, if I don't bind the VAO, then all updates after the
-    // first one produce no additional changes.
-    glOperation.glBindVertexArrayOES( m_timingGraph.vertexArrayObject );
-    glBindBuffer( GL_ARRAY_BUFFER, m_timingGraph.vertexBuffer );
-    glBufferSubData( GL_ARRAY_BUFFER, 0, numVerts * sizeof( verts[0] ), (void *) verts );
-    glBindBuffer( GL_ARRAY_BUFFER, 0 );
-    glOperation.glBindVertexArrayOES( 0 );
-
-    m_timingGraph.indexCount = numVerts;
-    glOperation.GL_CheckErrors( "After UpdateTimingGraph" );
-}
-
-void VFrameSmooth::Private::drawTimingGraph( const int eye )
-{
-    VGlOperation glOperation;
-    // Use the same rect for viewport and scissor
-    // FIXME: this is probably bad for convergence
-    int	rectX, rectY, rectWidth, rectHeight;
-    EyeRect( m_device, eye,
-             rectX, rectY, rectWidth, rectHeight );
-
-    glViewport( rectX, rectY, rectWidth, rectHeight );
-    glScissor( rectX, rectY, rectWidth, rectHeight );
-
-    glDisable( GL_DEPTH_TEST );
-    glDisable( GL_BLEND );
-    glLineWidth( 2.0f );
-    glUseProgram( m_debugLineProgram.program );
-
-    // pixel identity matrix
-    // Map the rectWidth / rectHeight dimensions to -1 - 1 range
-    float scale_x = 2.0f / (float)rectWidth;
-    float scale_y = 2.0f / (float)rectHeight;
-    const VR4Matrixf landscapePixelMatrix(
-                0, scale_x, 0.0f, -1.0f,
-                scale_y, 0, 0.0f, -1.0f,
-                0.0f, 0.0f, 0.0f, 0.0f,
-                0.0f, 0.0f, 0.0f, 1.0f );
-
-
-    glUniformMatrix4fv( m_debugLineProgram.uniformModelViewProMatrix, 1, GL_FALSE, /* not transposed */
-                        landscapePixelMatrix.Transposed().M[0] );
-
-    glOperation.glBindVertexArrayOES( m_timingGraph.vertexArrayObject );
-    glDrawArrays( GL_LINES, 0, m_timingGraph.indexCount );
-    glOperation.glBindVertexArrayOES( 0 );
-
-    glViewport( 0, 0, rectWidth * 2, rectHeight );
-    glScissor( 0, 0, rectWidth * 2, rectHeight );
-
-    glOperation.GL_CheckErrors( "DrawTimingGraph" );
-}
-
 float calibrateFovScale = 1.0f;	// for interactive tweaking
 
 // VAO (and FBO) are not shared across different contexts, so this needs
@@ -2105,7 +1900,7 @@ void VFrameSmooth::Private::destroyFrameworkGraphics()
 // Assumes viewport and scissor is set for the eye already.
 // Assumes there is no depth buffer for the window.
 void VFrameSmooth::Private::drawFrameworkGraphicsToWindow( const int eye,
-                                                   const int swapOptions, const bool drawTimingGraph )
+                                                   const int swapOptions)
 {
     VGlOperation glOperation;
     // Latency tester support.
@@ -2150,12 +1945,6 @@ void VFrameSmooth::Private::drawFrameworkGraphicsToWindow( const int eye,
         glViewport( m_window_width/2 * (int)eye, 0, m_window_width/2, m_window_height );
         glDrawElements( GL_LINES, m_calibrationLines2.indexCount, GL_UNSIGNED_SHORT, NULL );
         glViewport( 0, 0, m_window_width, m_window_height );
-    }
-
-    // Draw the timing graph if it is enabled.
-    if ( drawTimingGraph )
-    {
-        this->drawTimingGraph( eye );
     }
 }
 

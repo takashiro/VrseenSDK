@@ -285,13 +285,13 @@ VR4Matrixf CinemaApp::drawEyeView( const int eye, const float fovDegrees ) {
 	return m_viewMgr.drawEyeView( eye, fovDegrees );
 }
 
-void CinemaApp::configureVrMode(ovrModeParms &modeParms)
+void CinemaApp::configureVrMode(VKernel* kernel)
 {
 	// We need very little CPU for movie playing, but a fair amount of GPU.
 	// The CPU clock should ramp up above the minimum when necessary.
 	LOG( "ConfigureClocks: Cinema only needs minimal clocks" );
 	// Always use 2x MSAA for now
-    vApp->vrParms().multisamples = 2;
+    kernel->msaa= 2;
 }
 
 /*

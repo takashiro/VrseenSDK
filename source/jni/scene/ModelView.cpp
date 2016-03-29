@@ -11,7 +11,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "ModelView.h"
 #include "VAlgorithm.h"
-#include "api/VrApi.h"
+#include "api/VKernel.h"
 
 #include "Input.h"		// VrFrame, etc
 #include "BitmapFont.h"
@@ -20,6 +20,53 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VLog.h"
 
 NV_NAMESPACE_BEGIN
+
+// Returns the 4x4 rotation matrix for the given quaternion.
+inline ovrMatrix4f ovrMatrix4f_CreateFromQuaternion( const ovrQuatf * q )
+{
+    const float ww = q->w * q->w;
+    const float xx = q->x * q->x;
+    const float yy = q->y * q->y;
+    const float zz = q->z * q->z;
+
+    ovrMatrix4f out;
+    out.M[0][0] = ww + xx - yy - zz;
+    out.M[0][1] = 2 * ( q->x * q->y - q->w * q->z );
+    out.M[0][2] = 2 * ( q->x * q->z + q->w * q->y );
+    out.M[0][3] = 0;
+    out.M[1][0] = 2 * ( q->x * q->y + q->w * q->z );
+    out.M[1][1] = ww - xx + yy - zz;
+    out.M[1][2] = 2 * ( q->y * q->z - q->w * q->x );
+    out.M[1][3] = 0;
+    out.M[2][0] = 2 * ( q->x * q->z - q->w * q->y );
+    out.M[2][1] = 2 * ( q->y * q->z + q->w * q->x );
+    out.M[2][2] = ww - xx - yy + zz;
+    out.M[2][3] = 0;
+    out.M[3][0] = 0;
+    out.M[3][1] = 0;
+    out.M[3][2] = 0;
+    out.M[3][3] = 1;
+    return out;
+}
+
+// Utility function to calculate external velocity for smooth stick yaw turning.
+// To reduce judder in FPS style experiences when the application framerate is
+// lower than the vsync rate, the rotation from a joypad can be applied to the
+// view space distorted eye vectors before applying the time warp.
+inline ovrMatrix4f CalculateExternalVelocity( const ovrMatrix4f * viewMatrix, const float yawRadiansPerSecond )
+{
+    const float angle = yawRadiansPerSecond * ( -1.0f / 60.0f );
+    const float sinHalfAngle = sinf( angle * 0.5f );
+    const float cosHalfAngle = cosf( angle * 0.5f );
+
+    // Yaw is always going to be around the world Y axis
+    ovrQuatf quat;
+    quat.x = viewMatrix->M[0][1] * sinHalfAngle;
+    quat.y = viewMatrix->M[1][1] * sinHalfAngle;
+    quat.z = viewMatrix->M[2][1] * sinHalfAngle;
+    quat.w = cosHalfAngle;
+    return ovrMatrix4f_CreateFromQuaternion( &quat );
+}
 
 void ModelInScene::SetModelFile( const ModelFile * mf ) 
 { 

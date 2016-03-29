@@ -32,8 +32,8 @@ VGlOperation::GpuType VGlOperation::EglGetGpuTypeLocal()
         gpuType = GPU_TYPE_UNKNOWN;
     }
 
-    vInfo("SoC:" << VOsBuild::getString(VOsBuild::Hardware));
-    vInfo("EglGetGpuType:" << gpuType);
+    //VInfo("SoC:" << VOsBuild::getString(VOsBuild::Hardware));
+    //VInfo("EglGetGpuType:" << gpuType);
 
     return gpuType;
 }
@@ -48,7 +48,7 @@ EGLConfig VGlOperation::EglConfigForConfigID(const EGLDisplay display, const GLi
                                    configs,
                                    MAX_CONFIGS,
                                    &numConfigs)) {
-        WARN("eglGetConfigs() failed");
+        //WARN("eglGetConfigs() failed");
         return NULL;
     }
 
@@ -161,7 +161,7 @@ void * VGlOperation::GetExtensionProc( const char * name )
 {
     void * ptr = reinterpret_cast<void*>(eglGetProcAddress(name));
     if (!ptr) {
-        LOG("NOT FOUND: %s", name);
+        //LOG("NOT FOUND: %s", name);
     }
     return ptr;
 }
@@ -170,36 +170,36 @@ void VGlOperation::GL_FindExtensions()
 {
     const char * extensions = (const char *)glGetString( GL_EXTENSIONS );
     if (NULL == extensions) {
-        LOG("glGetString( GL_EXTENSIONS ) returned NULL");
+        //LOG("glGetString( GL_EXTENSIONS ) returned NULL");
         return;
     }
 
-    LOG("GL_EXTENSIONS:");
+    //LOG("GL_EXTENSIONS:");
     LogStringWords( extensions );
 
-    const bool es3 = (strncmp((const char *)glGetString(GL_VERSION), "OpenGL ES 3", 11) == 0);
-    LOG("es3 = %s", es3 ? "TRUE" : "FALSE");
+//    const bool es3 = (strncmp((const char *)glGetString(GL_VERSION), "OpenGL ES 3", 11) == 0);
+    //LOG("es3 = %s", es3 ? "TRUE" : "FALSE");
 
     GLint MaxTextureSize = 0;
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &MaxTextureSize);
-    LOG("GL_MAX_TEXTURE_SIZE = %d", MaxTextureSize);
+    //LOG("GL_MAX_TEXTURE_SIZE = %d", MaxTextureSize);
 
     GLint MaxVertexUniformVectors = 0;
     glGetIntegerv(GL_MAX_VERTEX_UNIFORM_VECTORS, &MaxVertexUniformVectors);
-    LOG("GL_MAX_VERTEX_UNIFORM_VECTORS = %d", MaxVertexUniformVectors);
+    //LOG("GL_MAX_VERTEX_UNIFORM_VECTORS = %d", MaxVertexUniformVectors);
 
     GLint MaxFragmentUniformVectors = 0;
     glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_VECTORS, &MaxFragmentUniformVectors);
-    LOG("GL_MAX_FRAGMENT_UNIFORM_VECTORS = %d", MaxFragmentUniformVectors);
+    //LOG("GL_MAX_FRAGMENT_UNIFORM_VECTORS = %d", MaxFragmentUniformVectors);
 }
 
 bool VGlOperation::GL_ExtensionStringPresent(const char *extension, const char *allExtensions)
 {
     if (strstr(allExtensions, extension)) {
-        LOG( "Found: %s", extension );
+        //LOG( "Found: %s", extension );
         return true;
     } else {
-        LOG("Not found: %s", extension);
+        //LOG("Not found: %s", extension);
         return false;
     }
 }
@@ -208,11 +208,11 @@ void VGlOperation::GL_Finish()
 {
     const EGLint wait = GL_FlushSync(100000000);
     if (wait == EGL_TIMEOUT_EXPIRED_KHR) {
-        LOG("EGL_TIMEOUT_EXPIRED_KHR");
+        //LOG("EGL_TIMEOUT_EXPIRED_KHR");
     }
 
     if ( wait == EGL_FALSE ) {
-        LOG("eglClientWaitSyncKHR returned EGL_FALSE");
+        //LOG("eglClientWaitSyncKHR returned EGL_FALSE");
     }
 }
 
@@ -220,7 +220,7 @@ void VGlOperation::GL_Flush()
 {
     const EGLint wait = GL_FlushSync(0);
     if (wait == EGL_FALSE) {
-        LOG("eglClientWaitSyncKHR returned EGL_FALSE");
+        //LOG("eglClientWaitSyncKHR returned EGL_FALSE");
     }
 }
 
@@ -251,7 +251,7 @@ void VGlOperation::LogStringWords(const char *allExtensions)
         char * word = new char[nameLen+1];
         memcpy(word, start, nameLen);
         word[nameLen] = '\0';
-        LOG("%s", word);
+        //LOG("%s", word);
         delete[] word;
 
         start = end + 1;
@@ -269,8 +269,8 @@ void VGlOperation::DumpEglConfigs( const EGLDisplay display )
         return;
     }
 
-    LOG("ES2 configs:");
-    LOG("  Config R G B A DP S M W P REND");
+    //LOG("ES2 configs:");
+    //LOG("  Config R G B A DP S M W P REND");
     for (int i = 0; i < numConfigs; i++) {
         EGLint red = 0;
         eglGetConfigAttrib(display, configs[i], EGL_RED_SIZE, &red);
@@ -289,15 +289,15 @@ void VGlOperation::DumpEglConfigs( const EGLDisplay display )
 
         EGLint surface = 0;
         eglGetConfigAttrib(display, configs[i], EGL_SURFACE_TYPE , &surface);
-        EGLint window = (surface & EGL_WINDOW_BIT) != 0;
-        EGLint pbuffer = (surface & EGL_PBUFFER_BIT) != 0;
+//        EGLint window = (surface & EGL_WINDOW_BIT) != 0;
+//        EGLint pbuffer = (surface & EGL_PBUFFER_BIT) != 0;
 
         EGLint	renderable = 0;
         eglGetConfigAttrib( display, configs[i], EGL_RENDERABLE_TYPE , &renderable );
 
-        LOG("%8i %i %i %i %i %2i %i %i %i %i 0x%02x 0x%02x",
-             reinterpret_cast<int>(configs[i]), red, green, blue, alpha,
-             depth, stencil, multisamples, window, pbuffer, renderable, surface);
+        //LOG("%8i %i %i %i %i %2i %i %i %i %i 0x%02x 0x%02x",
+//             reinterpret_cast<int>(configs[i]), red, green, blue, alpha,
+//             depth, stencil, multisamples, window, pbuffer, renderable, surface);
     }
 }
 
@@ -313,7 +313,7 @@ EGLConfig VGlOperation::ChooseColorConfig( const EGLDisplay display, const int r
         WARN("eglGetConfigs() failed");
         return NULL;
     }
-    LOG("eglGetConfigs() = %i configs", numConfigs);
+    //LOG("eglGetConfigs() = %i configs", numConfigs);
 
     const EGLint configAttribs[] = {
         EGL_BLUE_SIZE,  	blueBits,
@@ -353,7 +353,7 @@ EGLConfig VGlOperation::ChooseColorConfig( const EGLDisplay display, const int r
                 }
             }
             if (configAttribs[j] == EGL_NONE) {
-                LOG("Got an ES %i renderable config: %i", esVersion, (int)configs[i]);
+                //LOG("Got an ES %i renderable config: %i", esVersion, (int)configs[i]);
                 return configs[i];
             }
         }
@@ -367,25 +367,25 @@ void VGlOperation::EglSetup( const EGLContext shareContext,
                              const int depthBits, const int multisamples, const GLuint contextPriority )
 {
     VGlOperation glOperation;
-    LOG("EglSetup: requestGlEsVersion(%d), redBits(%d), greenBits(%d), blueBits(%d), depthBits(%d), multisamples(%d), contextPriority(%d)",
-         requestedGlEsVersion, redBits, greenBits, blueBits, depthBits, multisamples, contextPriority);
+    //LOG("EglSetup: requestGlEsVersion(%d), redBits(%d), greenBits(%d), blueBits(%d), depthBits(%d), multisamples(%d), contextPriority(%d)",
+//         requestedGlEsVersion, redBits, greenBits, blueBits, depthBits, multisamples, contextPriority);
 
     display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 
     EGLint majorVersion;
     EGLint minorVersion;
     eglInitialize(display, &majorVersion, &minorVersion);
-    LOG( "eglInitialize gives majorVersion %i, minorVersion %i", majorVersion, minorVersion);
+    //LOG( "eglInitialize gives majorVersion %i, minorVersion %i", majorVersion, minorVersion);
 
-    const char * eglVendorString = eglQueryString(display, EGL_VENDOR);
-    LOG("EGL_VENDOR: %s", eglVendorString);
-    const char * eglClientApisString = eglQueryString(display, EGL_CLIENT_APIS);
-    LOG("EGL_CLIENT_APIS: %s", eglClientApisString);
-    const char * eglVersionString = eglQueryString(display, EGL_VERSION);
-    LOG("EGL_VERSION: %s", eglVersionString);
-    const char * eglExtensionString = eglQueryString(display, EGL_EXTENSIONS);
-    LOG("EGL_EXTENSIONS:");
-    LogStringWords(eglExtensionString);
+//    const char * eglVendorString = eglQueryString(display, EGL_VENDOR);
+    //LOG("EGL_VENDOR: %s", eglVendorString);
+ //   const char * eglClientApisString = eglQueryString(display, EGL_CLIENT_APIS);
+    //LOG("EGL_CLIENT_APIS: %s", eglClientApisString);
+ //   const char * eglVersionString = eglQueryString(display, EGL_VERSION);
+    //LOG("EGL_VERSION: %s", eglVersionString);
+ //   const char * eglExtensionString = eglQueryString(display, EGL_EXTENSIONS);
+    //LOG("EGL_EXTENSIONS:");
+//    LogStringWords(eglExtensionString);
 
     config = ChooseColorConfig(display, redBits, greenBits, blueBits, depthBits, multisamples, true);
     if (config == 0) {
@@ -395,8 +395,8 @@ void VGlOperation::EglSetup( const EGLContext shareContext,
 
     for (int version = requestedGlEsVersion ; version >= 2 ; version--)
     {
-        LOG("Trying for a EGL_CONTEXT_CLIENT_VERSION %i context shared with %p:",
-             version, shareContext);
+        //LOG("Trying for a EGL_CONTEXT_CLIENT_VERSION %i context shared with %p:",
+//             version, shareContext);
 
         EGLint contextAttribs[] = {
             EGL_CONTEXT_CLIENT_VERSION, version,
@@ -410,17 +410,17 @@ void VGlOperation::EglSetup( const EGLContext shareContext,
 
         context = eglCreateContext(display, config, shareContext, contextAttribs);
         if (context != EGL_NO_CONTEXT) {
-            LOG("Succeeded.");
+            //LOG("Succeeded.");
             glEsVersion = version;
 
             EGLint configIDReadback;
             if (!eglQueryContext(display, context, EGL_CONFIG_ID, &configIDReadback)) {
-                WARN("eglQueryContext EGL_CONFIG_ID failed");
+                //WARN("eglQueryContext EGL_CONFIG_ID failed");
             }
-            EGLConfig configCheck = glOperation.EglConfigForConfigID(display, configIDReadback);
+//            EGLConfig configCheck = glOperation.EglConfigForConfigID(display, configIDReadback);
 
-            LOG("Created context with config %i, query returned ID %i = config %i",
-                 reinterpret_cast<int>(config), configIDReadback, reinterpret_cast<int>(configCheck));
+            //LOG("Created context with config %i, query returned ID %i = config %i",
+//                 reinterpret_cast<int>(config), configIDReadback, reinterpret_cast<int>(configCheck));
             break;
         }
     }
@@ -433,13 +433,13 @@ void VGlOperation::EglSetup( const EGLContext shareContext,
         EGLint actualPriorityLevel;
         eglQueryContext(display, context, EGL_CONTEXT_PRIORITY_LEVEL_IMG, &actualPriorityLevel);
         switch (actualPriorityLevel) {
-        case EGL_CONTEXT_PRIORITY_HIGH_IMG: LOG( "Context is EGL_CONTEXT_PRIORITY_HIGH_IMG" );
+        case EGL_CONTEXT_PRIORITY_HIGH_IMG: //LOG( "Context is EGL_CONTEXT_PRIORITY_HIGH_IMG" );
             break;
-        case EGL_CONTEXT_PRIORITY_MEDIUM_IMG: LOG( "Context is EGL_CONTEXT_PRIORITY_MEDIUM_IMG" );
+        case EGL_CONTEXT_PRIORITY_MEDIUM_IMG: //LOG( "Context is EGL_CONTEXT_PRIORITY_MEDIUM_IMG" );
             break;
-        case EGL_CONTEXT_PRIORITY_LOW_IMG: LOG( "Context is EGL_CONTEXT_PRIORITY_LOW_IMG" );
+        case EGL_CONTEXT_PRIORITY_LOW_IMG: //LOG( "Context is EGL_CONTEXT_PRIORITY_LOW_IMG" );
             break;
-        default: LOG( "Context has unknown priority level" );
+        default: //LOG( "Context has unknown priority level" );
             break;
         }
     }
@@ -466,14 +466,14 @@ void VGlOperation::EglSetup( const EGLContext shareContext,
         return ;
     }
 
-    const char * glVendorString = reinterpret_cast<const char *>(glGetString(GL_VENDOR));
-    LOG("GL_VENDOR: %s", glVendorString);
-    const char * glRendererString = reinterpret_cast<const char *>(glGetString(GL_RENDERER));
-    LOG("GL_RENDERER: %s", glRendererString);
-    const char * glVersionString = reinterpret_cast<const char *>(glGetString(GL_VERSION));
-    LOG("GL_VERSION: %s", glVersionString);
-    const char * glSlVersionString = reinterpret_cast<const char *>(glGetString(GL_SHADING_LANGUAGE_VERSION));
-    LOG("GL_SHADING_LANGUAGE_VERSION: %s", glSlVersionString);
+//    const char * glVendorString = reinterpret_cast<const char *>(glGetString(GL_VENDOR));
+    //LOG("GL_VENDOR: %s", glVendorString);
+  //  const char * glRendererString = reinterpret_cast<const char *>(glGetString(GL_RENDERER));
+    //LOG("GL_RENDERER: %s", glRendererString);
+  //  const char * glVersionString = reinterpret_cast<const char *>(glGetString(GL_VERSION));
+    //LOG("GL_VERSION: %s", glVersionString);
+   // const char * glSlVersionString = reinterpret_cast<const char *>(glGetString(GL_SHADING_LANGUAGE_VERSION));
+    //LOG("GL_SHADING_LANGUAGE_VERSION: %s", glSlVersionString);
 
     gpuType = glOperation.EglGetGpuType();
 

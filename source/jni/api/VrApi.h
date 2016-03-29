@@ -290,21 +290,6 @@ typedef struct
 	// thread is still current on the window.
 	bool	AsynchronousTimeWarp;
 
-	// To avoid an incorrect fullscreen transparent window that
-	// wastes lots of bandwidth on return from platform UI, we
-	// explicitly reset the fullscreen flag.  Unfortunately, that
-	// causes Android life cycle events that mess up several
-	// NativeActivity codebases like Stratum and UE4, so we need
-	// to be able to conditionally disable that.
-	// Hopefully this all goes away when platform UI is moved
-	// to a separate apk.
-	bool	SkipWindowFullscreenReset;	// FIXME:VRAPI remove
-
-
-	// This thread, in addition to the calling one, will
-	// get SCHED_FIFO.
-	int		GameThreadTid;
-
 	// The java Activity object is needed to get the windowManager,
 	// packageName, systemService, etc.
 	jobject ActivityObject;

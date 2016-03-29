@@ -20,5 +20,4 @@ struct ovrMobile
 
     VFrameSmooth *			Warp;
     VDevice* 	            device;
-	ovrModeParms			Parms;
 };

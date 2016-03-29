@@ -28,7 +28,7 @@ public:
 
     virtual VR4Matrixf onNewFrame( VrFrame vrFrame );
     virtual VR4Matrixf drawEyeView( const int eye, const float fovDegrees );
-    virtual void configureVrMode( ovrModeParms & modeParms );
+    virtual void configureVrMode(VKernel* kernel);
 
     virtual void onNewIntent(const VString &fromPackageName, const VString &command, const VString &uri);
     virtual void onWindowCreated();

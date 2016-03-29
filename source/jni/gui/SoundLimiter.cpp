@@ -16,7 +16,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "TypesafeNumber.h"
 #include "VBasicmath.h"
 #include "Android/LogUtils.h"
-#include "api/VrApi.h"		// ovrPoseStatef
+#include "api/VKernel.h"		// ovrPoseStatef
 
 #include "../Input.h"
 #include "../App.h"
