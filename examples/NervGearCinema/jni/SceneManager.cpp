@@ -10,6 +10,15 @@
 
 namespace OculusCinema
 {
+
+// Returns a 3x3 minor of a 4x4 matrix.
+inline float ovrMatrix4f_Minor( const ovrMatrix4f * m, int r0, int r1, int r2, int c0, int c1, int c2 )
+{
+    return  m->M[r0][c0] * ( m->M[r1][c1] * m->M[r2][c2] - m->M[r2][c1] * m->M[r1][c2] ) -
+              m->M[r0][c1] * ( m->M[r1][c0] * m->M[r2][c2] - m->M[r2][c0] * m->M[r1][c2] ) +
+              m->M[r0][c2] * ( m->M[r1][c0] * m->M[r2][c1] - m->M[r2][c0] * m->M[r1][c1] );
+}
+
 // Returns the inverse of a 4x4 matrix.
 inline ovrMatrix4f ovrMatrix4f_Inverse( const ovrMatrix4f * m )
 {
