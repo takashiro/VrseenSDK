@@ -1448,7 +1448,7 @@ void OvrFolderBrowser::buildFolder( OvrMetaData::Category & category, FolderView
 
     VArray< V3Vectf > vertices;
     vertices.resize(m_circumferencePanelSlots * 2);
-    VArray< TriangleIndex > indices;
+    VArray< ushort > indices;
     indices.resize(m_circumferencePanelSlots * 6);
 
 	int curIndex = 0;

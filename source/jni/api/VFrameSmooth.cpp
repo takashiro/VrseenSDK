@@ -177,28 +177,28 @@ swapProgram_t	spSyncSwappedBufferPortrait = {
 void EyeRectLandscape( const VDevice *device,int eye,int &x, int &y, int &width, int &height )
 {
     // always scissor exactly to half the screen
-    int scissorX = ( eye == 0 ) ? 0 : device->widthPixels / 2;
+    int scissorX = ( eye == 0 ) ? 0 : device->widthbyPixels / 2;
     int scissorY = 0;
-    int scissorWidth = device->widthPixels / 2;
-    int scissorHeight = device->heightPixels;
+    int scissorWidth = device->widthbyPixels / 2;
+    int scissorHeight = device->heightbyPixels;
     x = scissorX;
     y = scissorY;
     width = scissorWidth;
     height = scissorHeight;
     return;
 
-    const float	metersToPixels = device->widthPixels / device->widthMeters;
+    const float	metersToPixels = device->widthbyPixels / device->widthbyMeters;
 
     // Even though the lens center is shifted outwards slightly,
     // the height is still larger than the largest horizontal value.
     // TODO: check for sure on other HMD
-    const int	pixelRadius = device->heightPixels / 2;
+    const int	pixelRadius = device->heightbyPixels / 2;
     const int	pixelDiameter = pixelRadius * 2;
-    const float	horizontalShiftMeters = ( device->lensSeparation / 2 ) - ( device->widthMeters / 4 );
+    const float	horizontalShiftMeters = ( device->lensDistance / 2 ) - ( device->widthbyMeters / 4 );
     const float	horizontalShiftPixels = horizontalShiftMeters * metersToPixels;
 
     // Make a viewport that is symetric, extending off the sides of the screen and into the other half.
-    x = device->widthPixels/4 - pixelRadius + ( ( eye == 0 ) ? - horizontalShiftPixels : device->widthPixels/2 + horizontalShiftPixels );
+    x = device->widthbyPixels/4 - pixelRadius + ( ( eye == 0 ) ? - horizontalShiftPixels : device->widthbyPixels/2 + horizontalShiftPixels );
     y = 0;
     width = pixelDiameter;
     height = pixelDiameter;
@@ -355,7 +355,7 @@ struct VFrameSmooth::Private
         {
             FAIL( "eglQueryContext EGL_CONFIG_ID failed" );
         }
-        m_eglConfig = glOperation.EglConfigForConfigID( m_eglDisplay, configID );
+        m_eglConfig = glOperation.eglConfigForConfigID( m_eglDisplay, configID );
         if ( m_eglConfig == NULL )
         {
             FAIL( "EglConfigForConfigID failed" );
@@ -381,7 +381,7 @@ struct VFrameSmooth::Private
             LOG( "Share context eglConfig has %i samples -- should be 0", samples );
         }
         // See if we have sRGB_write_control extension
-        m_hasEXT_sRGB_write_control = glOperation.GL_ExtensionStringPresent( "GL_EXT_sRGB_write_control",
+        m_hasEXT_sRGB_write_control = glOperation.glIsExtensionString( "GL_EXT_sRGB_write_control",
                                                                              (const char *)glGetString( GL_EXTENSIONS ) );
 
         // Skip thread initialization if we are running synchronously
@@ -433,7 +433,7 @@ struct VFrameSmooth::Private
             m_eglPbufferSurface = eglCreatePbufferSurface( m_eglDisplay, m_eglConfig, attrib_list );
             if ( m_eglPbufferSurface == EGL_NO_SURFACE )
             {
-                FAIL( "eglCreatePbufferSurface failed: %s", glOperation.EglErrorString() );
+                FAIL( "eglCreatePbufferSurface failed: %s", glOperation.getEglErrorString() );
             }
 
             if ( eglMakeCurrent( m_eglDisplay, m_eglPbufferSurface, m_eglPbufferSurface,
@@ -494,7 +494,7 @@ struct VFrameSmooth::Private
             if ( eglMakeCurrent( m_eglDisplay, m_eglMainThreadSurface,
                                  m_eglMainThreadSurface, m_eglShareContext ) == EGL_FALSE)
             {
-                FAIL( "eglMakeCurrent to window failed: %s", glOperation.EglErrorString() );
+                FAIL( "eglMakeCurrent to window failed: %s", glOperation.getEglErrorString() );
             }
 
             // Destroy the pbuffer surface that was attached to the calling context.
@@ -765,7 +765,7 @@ void VFrameSmooth::Private::warpThreadInit()
     m_eglWarpContext = eglCreateContext( m_eglDisplay, m_eglConfig, m_eglShareContext, contextAttribs );
     if ( m_eglWarpContext == EGL_NO_CONTEXT )
     {
-        FAIL( "eglCreateContext failed: %s", glOperation.EglErrorString() );
+        FAIL( "eglCreateContext failed: %s", glOperation.getEglErrorString() );
     }
     LOG( "eglWarpContext: %p", m_eglWarpContext );
     if ( m_contextPriority != EGL_CONTEXT_PRIORITY_MEDIUM_IMG )
@@ -787,7 +787,7 @@ void VFrameSmooth::Private::warpThreadInit()
     if ( eglMakeCurrent( m_eglDisplay, m_eglMainThreadSurface,
                          m_eglMainThreadSurface, m_eglWarpContext ) == EGL_FALSE )
     {
-        FAIL( "eglMakeCurrent failed: %s", glOperation.EglErrorString() );
+        FAIL( "eglMakeCurrent failed: %s", glOperation.getEglErrorString() );
     }
 
     initRenderEnvironment();
@@ -877,7 +877,7 @@ void VFrameSmooth::Private::setWarpState( const warpSource_t & currentWarpSource
         }
     }
     VGlOperation glOperation;
-    glOperation.GL_CheckErrors( "SetWarpState" );
+    glOperation.logErrorsEnum( "SetWarpState" );
 }
 
 void VFrameSmooth::Private::bindWarpProgram( const warpSource_t & currentWarpSource,
@@ -1619,7 +1619,7 @@ void VFrameSmooth::Private::warpSwapInternal( const ovrTimeWarpParms & parms )
     ws.MinimumVsync = m_lastSwapVsyncCount + 2 * minimumVsyncs;	// don't use it if from same frame to avoid problems with very fast frames
     ws.FirstDisplayedVsync[0] = 0;			// will be set when it becomes the currentSource
     ws.FirstDisplayedVsync[1] = 0;			// will be set when it becomes the currentSource
-    ws.disableChromaticCorrection = ( ( glOperation.EglGetGpuType() & NervGear::VGlOperation::GPU_TYPE_MALI_T760_EXYNOS_5433 ) != 0 );
+    ws.disableChromaticCorrection = ( ( glOperation.eglGetGpuType() & NervGear::VGlOperation::GPU_TYPE_MALI_T760_EXYNOS_5433 ) != 0 );
     ws.WarpParms = parms;
 
     // Default images.
@@ -1674,7 +1674,7 @@ void VFrameSmooth::Private::warpSwapInternal( const ovrTimeWarpParms & parms )
         // to the display buffer.
 
         VGlOperation glOperation;
-        glOperation.GL_Finish();
+        glOperation.glFinish();
 
         swapProgram_t * swapProg;
         swapProg = &spSyncSwappedBufferPortrait;
@@ -1771,11 +1771,13 @@ VGlGeometry CreateTimingGraphGeometry( const int lineVertCount )
     glGenBuffers( 1, &geo.vertexBuffer );
     glBindBuffer( GL_ARRAY_BUFFER, geo.vertexBuffer );
     glBufferData( GL_ARRAY_BUFFER, byteCount, (void *) verts, GL_DYNAMIC_DRAW );
-    glEnableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_POSITION );
-    glVertexAttribPointer( SHADER_ATTRIBUTE_LOCATION_POSITION, 2, GL_SHORT, false, sizeof( lineVert_t ), (void *)0 );
 
-    glEnableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_COLOR );
-    glVertexAttribPointer( SHADER_ATTRIBUTE_LOCATION_COLOR, 4, GL_UNSIGNED_BYTE, true, sizeof( lineVert_t ), (void *)4 );
+    glEnableVertexAttribArray( VERTEX_POSITION );
+    glVertexAttribPointer( VERTEX_POSITION, 2, GL_SHORT, false, sizeof( lineVert_t ), (void *)0 );
+
+    glEnableVertexAttribArray( VERTEX_COLOR );
+    glVertexAttribPointer( VERTEX_COLOR, 4, GL_UNSIGNED_BYTE, true, sizeof( lineVert_t ), (void *)4 );
+
     delete[] verts;
 
     // these will be drawn with DrawArrays, so no index buffer is needed
@@ -1786,6 +1788,7 @@ VGlGeometry CreateTimingGraphGeometry( const int lineVertCount )
 
     return geo;
 }
+
 
 float calibrateFovScale = 1.0f;	// for interactive tweaking
 
@@ -1816,64 +1819,27 @@ void VFrameSmooth::Private::createFrameworkGraphics()
     glBindTexture( GL_TEXTURE_2D, 0 );
 
     // single slice mesh for the normal rendering
-    m_warpMesh = VLensDistortion::CreateTessellatedMesh( m_device, 1, calibrateFovScale, false );
+    m_warpMesh = VLensDistortion::createDistortionGrid( m_device, 1, calibrateFovScale, false );
 
     // multi-slice mesh for sliced rendering
-    m_sliceMesh = VLensDistortion::CreateTessellatedMesh( m_device, NUM_SLICES_PER_EYE, calibrateFovScale, false );
+    m_sliceMesh = VLensDistortion::createDistortionGrid( m_device, NUM_SLICES_PER_EYE, calibrateFovScale, false );
 
     // small subset cursor mesh
-    m_cursorMesh = VLensDistortion::CreateTessellatedMesh( m_device, 1, calibrateFovScale, true );
+    m_cursorMesh = VLensDistortion::createDistortionGrid( m_device, 1, calibrateFovScale, true );
 
     if ( m_warpMesh.indexCount == 0 || m_sliceMesh.indexCount == 0 )
     {
         FAIL( "WarpMesh failed to load");
     }
 
-    // Vertexes and indexes for debug graph, the verts will be updated
-    // dynamically each frame.
+
     m_timingGraph = CreateTimingGraphGeometry( (256+10)*2 );
 
-    // simple cross to draw to screen
-    m_calibrationLines2 = VGlGeometryFactory::CreateCalibrationLines2( 0, false );
 
-    // FPS and graph text
-    m_untexturedMvpProgram.initShader(
-                "uniform mat4 Mvpm;\n"
-                "attribute vec4 Position;\n"
-                "uniform mediump vec4 UniformColor;\n"
-                "varying  lowp vec4 oColor;\n"
-                "void main()\n"
-                "{\n"
-                "   gl_Position = Mvpm * Position;\n"
-                "   oColor = UniformColor;\n"
-                "}\n"
-                ,
-                "varying lowp vec4	oColor;\n"
-                "void main()\n"
-                "{\n"
-                "	gl_FragColor = oColor;\n"
-                "}\n"
-                );
+    m_calibrationLines2.createCalibrationGrid( 0, false );
 
-    m_debugLineProgram.initShader(
-                "uniform mediump mat4 Mvpm;\n"
-                "attribute vec4 Position;\n"
-                "attribute vec4 VertexColor;\n"
-                "varying  vec4 oColor;\n"
-                "void main()\n"
-                "{\n"
-                "   gl_Position = Mvpm * Position;\n"
-                "   oColor = VertexColor;\n"
-                "}\n"
-                ,
-                "varying lowp vec4 oColor;\n"
-                "void main()\n"
-                "{\n"
-                "	gl_FragColor = oColor;\n"
-                "}\n"
-                );
-
-    // Build our warp render programs
+    m_untexturedMvpProgram.initShader(VGlShader::getUntextureMvpVertexShaderSource(),VGlShader::getUntexturedFragmentShaderSource());
+    m_debugLineProgram.initShader(VGlShader::getVertexColorVertexShaderSource(),VGlShader::getUntexturedFragmentShaderSource());
     buildWarpProgs();
 }
 
@@ -1882,11 +1848,11 @@ void VFrameSmooth::Private::destroyFrameworkGraphics()
     glDeleteTextures( 1, &m_blackTexId );
     glDeleteTextures( 1, &m_defaultLoadingIconTexId );
 
-    m_calibrationLines2.Free();
-    m_warpMesh.Free();
-    m_sliceMesh.Free();
-    m_cursorMesh.Free();
-    m_timingGraph.Free();
+    m_calibrationLines2.destroy();
+    m_warpMesh.destroy();
+    m_sliceMesh.destroy();
+    m_cursorMesh.destroy();
+    m_timingGraph.destroy();
 
     m_untexturedMvpProgram.destroy();
     m_debugLineProgram.destroy();

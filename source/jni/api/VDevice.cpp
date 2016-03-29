@@ -98,42 +98,42 @@ VDevice::VDevice()
     const char *buildModel = VOsBuild::getString(VOsBuild::Model).toCString();
     PhoneTypeEnum type = IdentifyHmdType( buildModel );
 
-    lens.initLensByPhoneType(type);
-    displayRefreshRate = 60.0f;
-    eyeTextureResolution[0] = 1024;
-    eyeTextureResolution[1] = 1024;
-    eyeTextureFov[0] = 90.0f;
-    eyeTextureFov[1] = 90.0f;
+    lens.initDistortionParmsByMobileType(type);
+    refreshRate = 60.0f;
+    eyeDisplayResolution[0] = 1024;
+    eyeDisplayResolution[1] = 1024;
+    eyeDisplayFov[0] = 90.0f;
+    eyeDisplayFov[1] = 90.0f;
 
     // Screen params.
     switch( type )
     {
         case HMD_GALAXY_S4:			// Galaxy S4 in Samsung's holder
-            lensSeparation = 0.062f;
-            eyeTextureFov[0] = 95.0f;
-            eyeTextureFov[1] = 95.0f;
+            lensDistance = 0.062f;
+            eyeDisplayFov[0] = 95.0f;
+            eyeDisplayFov[1] = 95.0f;
             break;
 
         case HMD_GALAXY_S5:      // Galaxy S5 1080 paired with version 2 lenses
-            lensSeparation = 0.062f;
-            eyeTextureFov[0] = 90.0f;
-            eyeTextureFov[1] = 90.0f;
+            lensDistance = 0.062f;
+            eyeDisplayFov[0] = 90.0f;
+            eyeDisplayFov[1] = 90.0f;
             break;
 
         case HMD_GALAXY_S5_WQHD:            // Galaxy S5 1440 paired with version 2 lenses
-            lensSeparation = 0.062f;
-            eyeTextureFov[0] = 90.0f;  // 95.0f
-            eyeTextureFov[1] = 90.0f;  // 95.0f
+            lensDistance = 0.062f;
+            eyeDisplayFov[0] = 90.0f;  // 95.0f
+            eyeDisplayFov[1] = 90.0f;  // 95.0f
             break;
 
         default:
         case HMD_NOTE_4:      // Note 4
-            lensSeparation = 0.063f;	// JDC: measured on 8/23/2014
-            eyeTextureFov[0] = 90.0f;
-            eyeTextureFov[1] = 90.0f;
+            lensDistance = 0.063f;	// JDC: measured on 8/23/2014
+            eyeDisplayFov[0] = 90.0f;
+            eyeDisplayFov[1] = 90.0f;
 
-            widthMeters = 0.125f;		// not reported correctly by display metrics!
-            heightMeters = 0.0707f;
+            widthbyMeters = 0.125f;		// not reported correctly by display metrics!
+            heightbyMeters = 0.0707f;
             break;
     }
     delete[] buildModel;

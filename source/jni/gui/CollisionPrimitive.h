@@ -95,12 +95,12 @@ class OvrTriCollisionPrimitive : public OvrCollisionPrimitive
 {
 public:
 	OvrTriCollisionPrimitive();
-    OvrTriCollisionPrimitive( VArray< V3Vectf > const & vertices, VArray< TriangleIndex > const & indices,
+    OvrTriCollisionPrimitive( VArray< V3Vectf > const & vertices, VArray< ushort > const & indices,
 			ContentFlags_t const contents );
 
 	virtual	~OvrTriCollisionPrimitive();
 
-    void				init( VArray< V3Vectf > const & vertices, VArray< TriangleIndex > const & indices,
+    void				init( VArray< V3Vectf > const & vertices, VArray< ushort > const & indices,
 								ContentFlags_t const contents );
 
     virtual  bool		intersectRay( V3Vectf const & start, V3Vectf const & dir, VPosf const & pose,
@@ -117,7 +117,7 @@ public:
 
 private:
     VArray< V3Vectf >		m_vertices;	// vertices for all triangles
-    VArray< TriangleIndex >	m_indices;	// indices indicating which vertices make up each triangle
+    VArray< ushort >	m_indices;	// indices indicating which vertices make up each triangle
 };
 
 NV_NAMESPACE_END

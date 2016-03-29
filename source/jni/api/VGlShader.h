@@ -5,51 +5,22 @@
 
 NV_NAMESPACE_BEGIN
 
-// STRINGIZE is used so program text strings can include lines like:
-// "uniform highp mat4 Joints["MAX_JOINTS_STRING"];\n"
 
-#define STRINGIZE( x )			#x
-#define STRINGIZE_VALUE( x )	STRINGIZE( x )
-
-#define MAX_JOINTS				16
-#define MAX_JOINTS_STRING		STRINGIZE_VALUE( MAX_JOINTS )
-
-enum ShaderAttributeLocation
+enum VertexLocation
 {
-    SHADER_ATTRIBUTE_LOCATION_POSITION		= 0,
-    SHADER_ATTRIBUTE_LOCATION_NORMAL		= 1,
-    SHADER_ATTRIBUTE_LOCATION_TANGENT		= 2,
-    SHADER_ATTRIBUTE_LOCATION_BINORMAL		= 3,
-    SHADER_ATTRIBUTE_LOCATION_COLOR			= 4,
-    SHADER_ATTRIBUTE_LOCATION_UV0			= 5,
-    SHADER_ATTRIBUTE_LOCATION_UV1			= 6,
-    SHADER_ATTRIBUTE_LOCATION_JOINT_INDICES	= 7,
-    SHADER_ATTRIBUTE_LOCATION_JOINT_WEIGHTS	= 8,
-    SHADER_ATTRIBUTE_LOCATION_FONT_PARMS	= 9
+
+    VERTEX_POSITION		= 0,
+    VERTEX_NORMAL		= 1,
+    VERTEX_TANGENT		= 2,
+    VERTEX_BINORMAL		= 3,
+    VERTEX_COLOR		= 4,
+    VERTEX_UVC0			= 5,
+    VERTEX_UVC1			= 6,
+    JOINT_INDICES	= 7,
+    JOINT_WEIGHTS	= 8,
+    FONT_PARMS	= 9
+
 };
-
-// It probably isn't worth keeping these shared here, each user
-// should just duplicate them.
-extern const char * externalFragmentShaderSource;
-extern const char * textureFragmentShaderSource;
-extern const char * identityVertexShaderSource;
-extern const char * untexturedFragmentShaderSource;
-
-extern const char * VertexColorVertexShaderSrc;
-extern const char * VertexColorSkinned1VertexShaderSrc;
-extern const char * VertexColorFragmentShaderSrc;
-
-extern const char * SingleTextureVertexShaderSrc;
-extern const char * SingleTextureSkinned1VertexShaderSrc;
-extern const char * SingleTextureFragmentShaderSrc;
-
-extern const char * LightMappedVertexShaderSrc;
-extern const char * LightMappedSkinned1VertexShaderSrc;
-extern const char * LightMappedFragmentShaderSrc;
-
-extern const char * ReflectionMappedVertexShaderSrc;
-extern const char * ReflectionMappedSkinned1VertexShaderSrc;
-extern const char * ReflectionMappedFragmentShaderSrc;
 
 class VGlShader
 {
@@ -78,11 +49,52 @@ public:
     GLuint initShader (const char * vertexSrc, const char * fragmentSrc);
     void destroy();
 
+   static const char * getAdditionalFragmentShaderSource();
+   static const char * getAdditionalVertexShaderSource();
+
+   static const char * getUntextureMvpVertexShaderSource();
+   static const char * getUntextureInverseColorVertexShaderSource();
+   static const char * getUntexturedFragmentShaderSource();
+
+
+   static const char * getUniformColorVertexShaderSource();
+   static const char * getUniformTextureProgramShaderSource();
+   static const char * getUniformSingleTextureProgramShaderSource();
+   static const char * getVertexColorVertexShaderSource();
+   static const char * getVertexColorSkVertexShaderSource();
+   static const char * getVertexColorFragmentShaderSource();
+
+
+   static const char * getSingleTextureVertexShaderSource();
+   static const char * getSingleTextureSkVertexShaderSource();
+   static const char * getSingleTextureFragmentShaderSource();
+
+   static const char * getLightMappedVertexShaderSource();
+   static const char * getLightMappedSkVertexShaderSource();
+   static const char * getLightMappedFragmentShaderSource();
+
+
+   static const char * getReflectionMappedVertexShaderSource();
+   static const char * getReflectionMappedSkVertexShaderSource();
+   static const char * getReflectionMappedFragmentShaderSource();
+
+   static const char * getDoubletextureTransparentColorVertexShaderSource();
+   static const char * getHighlightPragmentShaderSource();
+   static const char * getHighlightColorVertexShaderSource();
+   static const char * getTexturedMvpVertexShaderSource();
+
+   static const char * getCubeMapPanoProgramShaderSource();
+   static const char * getCubeMapPanoVertexShaderSource();
+
+   static  const char * getPanoProgramShaderSource();
+  static   const char * getPanoVertexShaderSource();
+
+
+   static const char * getFadedPanoVertexShaderSource();
+   static const char * getFadedPanoProgramShaderSource();
     GLuint	program;
     GLuint	vertexShader;
-    GLuint	fragmentShader;
-
-    // Uniforms that aren't found will have a -1 value
+    GLuint	fragmentShader; 
     GLint	uniformModelViewProMatrix;	    // ModelViewProMatrix
     GLint	uniformModelMatrix;				// uniform ModelMatrix
     GLint	uniformViewMatrix;				// uniform ViewMatrix
@@ -95,7 +107,7 @@ public:
     GLint	uniformTexMatrix5;				// uniform TexMatrix5
     GLint	uniformTexClamp;			// uniform TexClamp
     GLint	uniformRotateScale;		// uniform RotateScale
-    GLint   uniformColorTableOffset;	// uniform offset to apply to color table index
+    GLint   uniformColorTableOffset;	// uniform offset
     GLint	uniformFadeDirection;		// uniform FadeDirection
     GLint	uniformJoints;			// uniform Joints
 private:
