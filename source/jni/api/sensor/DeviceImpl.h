@@ -6,7 +6,6 @@
 #include "Device.h"
 #include "VAtomicInt.h"
 #include "Log.h"
-#include "System.h"
 
 #include "ThreadCommandQueue.h"
 #include "HIDDevice.h"

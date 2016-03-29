@@ -8,7 +8,6 @@
 #include <iostream>
 
 NV_NAMESPACE_BEGIN
-
 class VString : public std::u16string
 {
 public:

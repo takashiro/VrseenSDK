@@ -169,9 +169,9 @@ public:
 
     T Median() const
     {
-        T* copy = (T*) OVR_ALLOC(this->v_count * sizeof(T));
+        T* copy = (T*) malloc(this->v_count * sizeof(T));
         T result = VAlgorithm::Median(ArrayAdaptor(copy));
-        OVR_FREE(copy);
+        free(copy);
         return result;
     }
 };

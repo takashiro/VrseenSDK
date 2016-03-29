@@ -2,7 +2,6 @@
 
 #include "vglobal.h"
 
-#include "System.h"	// Array
 #include "VString.h"	// String
 #include "../api/VGlShader.h"			// VGlShader
 #include "ModelRender.h"		// ModelState

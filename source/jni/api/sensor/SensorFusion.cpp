@@ -12,7 +12,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "SensorFusion.h"
 
 #include "Log.h"
-#include "System.h"
 #include <algorithm>
 using namespace std;
 //#define YAW_LOGGING
@@ -107,7 +106,7 @@ void SensorFusion::Reset()
 float SensorFusion::GetYaw()
 {
 	// get the current state
-	const StateForPrediction state = UpdatedState.state();
+    const StateForPrediction state = UpdatedState.state();
 
 	// get the yaw in the current state
 	float yaw, pitch, roll;
@@ -119,7 +118,7 @@ float SensorFusion::GetYaw()
 void SensorFusion::SetYaw( float newYaw )
 {
 	// get the current state
-	const StateForPrediction state = UpdatedState.state();
+    const StateForPrediction state = UpdatedState.state();
 
 	// get the yaw in the current state
 	float yaw, pitch, roll;
@@ -129,7 +128,7 @@ void SensorFusion::SetYaw( float newYaw )
     VPosf yawAdjustment( VQuatf( VAxis_Y, newYaw - yaw ), V3Vectf( 0.0f ) );
 
 	// To allow SetYaw() to be called from multiple threads we need a mutex
-	// because LocklessUpdater is only safe for single producer cases.
+    // because VLockless is only safe for single producer cases.
 	RecenterMutex.lock();
 	RecenterTransform.setState( yawAdjustment );
 	RecenterMutex.unlock();
@@ -138,7 +137,7 @@ void SensorFusion::SetYaw( float newYaw )
 void SensorFusion::RecenterYaw()
 {
 	// get the current state
-	const StateForPrediction state = UpdatedState.state();
+    const StateForPrediction state = UpdatedState.state();
 
 	// get the yaw in the current state
 	float yaw, pitch, roll;
@@ -148,7 +147,7 @@ void SensorFusion::RecenterYaw()
     VPosf yawAdjustment( VQuatf( VAxis_Y, -yaw ), V3Vectf( 0.0f ) );
 
 	// To allow RecenterYaw() to be called from multiple threads we need a mutex
-	// because LocklessUpdater is only safe for single producer cases.
+    // because VLockless is only safe for single producer cases.
 	RecenterMutex.lock();
 	RecenterTransform.setState( yawAdjustment );
 	RecenterMutex.unlock();

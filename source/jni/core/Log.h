@@ -77,7 +77,6 @@ enum LogMessageType
 
 class Log
 {
-    friend class System;
 public:
     Log(unsigned logMask = LogMask_Debug) : LoggingMask(logMask) { }
     virtual ~Log();

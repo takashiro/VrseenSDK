@@ -32,7 +32,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VFrameSmooth.h"
 #include "VrApi_local.h"
 #include "Vsync.h"
-#include "SystemActivities.h"
+#include "VSystemActivities.h"
+#include "VThread.h"
 
 NV_USING_NAMESPACE
 
@@ -115,11 +116,6 @@ void ovr_ShutdownSensors()
 bool ovr_InitializeInternal()
 {
     // We must set up the system for the plugin to work
-    if ( !NervGear::System::IsInitialized() )
-	{
-    	NervGear::System::Init( NervGear::Log::ConfigureDefaultLog( NervGear::LogMask_All ) );
-	}
-
 	ovr_InitSensors();
 
     return true;
@@ -129,8 +125,11 @@ void ovr_Shutdown()
 {
 	ovr_ShutdownSensors();
 
-    // We should clean up the system to be complete
-    NervGear::System::Destroy();
+#ifdef OVR_ENABLE_THREADS
+    // Wait for all threads to finish; this must be done so that memory
+    // allocator and all destructors finalize correctly.
+    VThread::FinishAllThreads();
+#endif
 }
 
 using namespace NervGear;
@@ -212,7 +211,6 @@ static pid_t	OnLoadTid;
 static jclass	VrLibClass = NULL;
 static jclass	ProximityReceiverClass = NULL;
 static jclass	DockReceiverClass = NULL;
-static jclass	ConsoleReceiverClass = NULL;
 
 static jmethodID getPowerLevelStateID = NULL;
 static jmethodID setActivityWindowFullscreenID = NULL;
@@ -296,14 +294,14 @@ public:
 };
 
 typedef LocklessVar< int, -1> 						volume_t;
-NervGear::LocklessUpdater< volume_t >					CurrentVolume;
-NervGear::LocklessUpdater< LocklessDouble >				TimeOfLastVolumeChange;
-NervGear::LocklessUpdater< bool >						HeadsetPluggedState;
-NervGear::LocklessUpdater< bool >						PowerLevelStateThrottled;
-NervGear::LocklessUpdater< bool >						PowerLevelStateMinimum;
-NervGear::LocklessUpdater< HMTMountState_t >				HMTMountState;
-NervGear::LocklessUpdater< HMTDockState_t >				HMTDockState;	// edge triggered events, not the actual state
-static NervGear::LocklessUpdater< bool >					DockState;
+NervGear::VLockless< volume_t >					CurrentVolume;
+NervGear::VLockless< LocklessDouble >				TimeOfLastVolumeChange;
+NervGear::VLockless< bool >						HeadsetPluggedState;
+NervGear::VLockless< bool >						PowerLevelStateThrottled;
+NervGear::VLockless< bool >						PowerLevelStateMinimum;
+NervGear::VLockless< HMTMountState_t >				HMTMountState;
+NervGear::VLockless< HMTDockState_t >				HMTDockState;	// edge triggered events, not the actual state
+static NervGear::VLockless< bool >					DockState;
 
 extern "C"
 {
@@ -346,7 +344,7 @@ JNIEXPORT void Java_com_vrseen_nervgear_ProximityReceiver_nativeMountHandled(JNI
 
 	// If we're received this, the foreground app has already received
 	// and processed the mount event.
-	if ( HMTMountState.state().MountState == HMT_MOUNT_MOUNTED )
+    if ( HMTMountState.state().MountState == HMT_MOUNT_MOUNTED )
 	{
 		LOG( "RESETTING MOUNT" );
 		HMTMountState.setState( HMTMountState_t( HMT_MOUNT_NONE ) );
@@ -386,7 +384,7 @@ JNIEXPORT void Java_com_vrseen_nervgear_DockReceiver_nativeDockEvent(JNIEnv *jni
 	}
 	else
 	{
-		HMTDockState_t dockState = HMTDockState.state();
+        HMTDockState_t dockState = HMTDockState.state();
 		if ( dockState.DockState == HMT_DOCK_UNDOCKED )
 		{
 			LOG( "CLEARING UNDOCKED!!!!" );
@@ -453,8 +451,7 @@ void ovr_OnLoad( JavaVM * JavaVm_ )
 
 	VrLibClass = JniUtils::GetGlobalClassReference( jni, "com/vrseen/nervgear/VrLib" );
 	ProximityReceiverClass = JniUtils::GetGlobalClassReference( jni, "com/vrseen/nervgear/ProximityReceiver" );
-	DockReceiverClass = JniUtils::GetGlobalClassReference( jni, "com/vrseen/nervgear/DockReceiver" );
-	ConsoleReceiverClass = JniUtils::GetGlobalClassReference( jni, "com/vrseen/nervgear/ConsoleReceiver" );
+    DockReceiverClass = JniUtils::GetGlobalClassReference( jni, "com/vrseen/nervgear/DockReceiver" );
 
 	// Get the BuildVersion SDK
 	jclass versionClass = jni->FindClass( "android/os/Build$VERSION" );
@@ -524,7 +521,7 @@ void ovr_Init()
 	// After ovr_Initialize(), because it uses String
     VOsBuild::Init(jni);
 
-	NervGear::SystemActivities_InitEventQueues();
+	NervGear::VSystemActivities::instance()->initEventQueues();
 }
 
 void ovr_ExitActivity( ovrMobile * ovr, eExitType exitType )
@@ -585,7 +582,7 @@ void ovr_ExitActivity( ovrMobile * ovr, eExitType exitType )
 			FAIL( "ovr_ExitActivity( EXIT_TYPE_EXIT ): Called with tid %d instead of %d", gettid(), OnLoadTid );
 		}
 
-		NervGear::SystemActivities_ShutdownEventQueues();
+        NervGear::VSystemActivities::instance()->shutdownEventQueues();
 		ovr_Shutdown();
 		exit( 0 );
 	}
@@ -750,6 +747,208 @@ bool ovr_StartSystemActivity( ovrMobile * ovr, const char * command, const char 
 	return ovr_StartSystemActivity_JSON( ovr, intentBuffer );
 }
 
+// System Power Level State
+enum ePowerLevelState
+{
+	POWERLEVEL_NORMAL = 0,		// Device operating at full level
+	POWERLEVEL_POWERSAVE = 1,	// Device operating at throttled level
+	POWERLEVEL_MINIMUM = 2,		// Device operating at minimum level
+	MAX_POWERLEVEL_STATES
+};
+enum ePowerLevelAction
+{
+	POWERLEVEL_ACTION_NONE,
+	POWERLEVEL_ACTION_WAITING_FOR_UNMOUNT,
+	POWERLEVEL_ACTION_WAITING_FOR_UNDOCK,
+	POWERLEVEL_ACTION_WAITING_FOR_RESET,
+	MAX_POWERLEVEL_ACTIONS
+};
+
+bool ovr_GetPowerLevelStateThrottled()
+{
+    return PowerLevelStateThrottled.state();
+}
+
+bool ovr_GetPowerLevelStateMinimum()
+{
+    return PowerLevelStateMinimum.state();
+}
+
+/*
+Fixed Clock Level API
+
+return2EnableFreqLev returns the [min,max] clock levels available for the
+CPU and GPU, ie [0,3]. However, not all clock combinations are valid for
+all devices. For instance, the highest GPU level may not be available for
+use with the highest CPU levels. If an invalid matrix combination is
+provided, the system will not acknowlege the request and clock settings
+will go into dynamic mode.
+
+Fixed clock level on Qualcomm Snapdragon 805 based Note 4
+GPU MHz: 0 =    240, 1 =   300, 2 =   389, 3 =   500
+CPU MHz: 0 =    884, 1 =  1191, 2 =  1498, 3 =  1728
+
+Fixed clock level on ARM Exynos 5433 based Note 4
+GPU MHz: 0 =    266, 1 =   350, 2 =   500, 3 =   550
+CPU MHz: 0 = L 1000, 1 = B 700, 2 = B 700, 3 = B 800
+
+Fixed clock level on ARM Exynos 7420 based Zero (as of 2015-02-10)
+GPU MHz: 0 =    266, 1 =   350, 2 =   420, 3 =   544  4 =    600
+			 1200/2		  1500/2
+CPU MHz: 0 = L  600, 1 = L 750, 2 = B 800, 3 = B 800, 4 = B 1000, 5 = B 1200
+
+VRSVC as of 2015-02-10 provides support for the cpu to remain in dynamic
+mode with a fixed GPU Level. NOTE: The intended usage for CPU dynamic mode
+is for apps like 360 photos which have a big burst of high performance needs
+for decompression, then long periods of low load. However, in testing, this
+appears to cause tearing due to TimeWarp not finishing on time. To enable
+CPU dynamic mode for testing purposes only, set cpuLevel = -1.
+*/
+
+enum {
+	LEVEL_GPU_MIN = 0,
+	LEVEL_GPU_MAX,
+	LEVEL_CPU_MIN,
+	LEVEL_CPU_MAX
+};
+
+enum {
+	CLOCK_CPU_FREQ = 0,
+	CLOCK_GPU_FREQ,
+	CLOCK_POWERSAVE_CPU_FREQ,
+	CLOCK_POWERSAVE_GPU_FREQ
+};
+
+static const int INVALID_CLOCK_LEVEL = -1;
+static const int DYNAMIC_MODE_LEVEL = -1;
+
+#if 0
+static bool WriteFreq( const int freq, const char * pathFormat, ... )
+{
+	char fullPath[1024] = {};
+
+	va_list argptr;
+	va_start( argptr, pathFormat );
+	vsnprintf( fullPath, sizeof( fullPath ) - 1, pathFormat, argptr );
+	va_end( argptr );
+
+	char string[1024] = {};
+	sprintf( string, "%d", freq );
+
+	FILE * f = fopen( fullPath, "w" );
+	if ( !f )
+	{
+		LOG( "failed to open %s", fullPath );
+		return false;
+	}
+	fwrite( string, 1, strlen( string ), f );
+	fclose( f );
+
+	LOG( "wrote %s to %s", string, fullPath );
+	return true;
+}
+#endif
+
+/*{
+	// Clear any previous exceptions.
+	// NOTE: This can be removed once security exception handling is moved to
+	// Java IF.
+	if ( VrJni->ExceptionOccurred() )
+	{
+		VrJni->ExceptionClear();
+		LOG( "SetVrSystemPerformance: Enter: JNI Exception occurred" );
+	}
+
+	LOG( "SetVrSystemPerformance( %i, %i )", cpuLevel, gpuLevel );
+
+	// Get the available clock levels for the device.
+	const jmethodID getAvailableClockLevelsId = ovr_GetStaticMethodID( VrJni, vrActivityClass,
+		"getAvailableFreqLevels", "(Landroid/app/Activity;)[I" );
+	jintArray jintLevels = (jintArray)VrJni->CallStaticObjectMethod( vrActivityClass,
+		getAvailableClockLevelsId, activityObject );
+
+	// Move security exception detection to the java IF.
+	// Catch Permission denied
+	if ( VrJni->ExceptionOccurred() )
+	{
+		VrJni->ExceptionClear();
+		LOG( "SetVrSystemPerformance: JNI Exception occurred, returning" );
+		return;
+	}
+
+	OVR_ASSERT( VrJni->GetArrayLength( jintLevels )== 4 );		// {GPU MIN, GPU MAX, CPU MIN, CPU MAX}
+
+	jint * levels = VrJni->GetIntArrayElements( jintLevels, NULL );
+	if ( levels != NULL )
+	{
+		// Verify levels are within appropriate range for the device
+		if ( cpuLevel >= 0 )
+		{
+			OVR_ASSERT( cpuLevel >= levels[LEVEL_CPU_MIN] && cpuLevel <= levels[LEVEL_CPU_MAX] );
+			LOG( "CPU levels [%d, %d]", levels[LEVEL_CPU_MIN], levels[LEVEL_CPU_MAX] );
+		}
+		if ( gpuLevel >= 0 )
+		{
+			OVR_ASSERT( gpuLevel >= levels[LEVEL_GPU_MIN] && gpuLevel <= levels[LEVEL_GPU_MAX] );
+			LOG( "GPU levels [%d, %d]", levels[LEVEL_GPU_MIN], levels[LEVEL_GPU_MAX] );
+		}
+
+		VrJni->ReleaseIntArrayElements( jintLevels, levels, 0 );
+	}
+	VrJni->DeleteLocalRef( jintLevels );
+
+	// Set the fixed cpu and gpu clock levels
+	const jmethodID setSystemPerformanceId = ovr_GetStaticMethodID( VrJni, vrActivityClass,
+			"setSystemPerformanceStatic", "(Landroid/app/Activity;II)[I" );
+
+	jintArray jintClocks = (jintArray)VrJni->CallStaticObjectMethod( vrActivityClass, setSystemPerformanceId,
+			activityObject, cpuLevel, gpuLevel );
+
+	OVR_ASSERT( VrJni->GetArrayLength( jintClocks ) == 4 );		//  {CPU CLOCK, GPU CLOCK, POWERSAVE CPU CLOCK, POWERSAVE GPU CLOCK}
+
+	jint * clocks = VrJni->GetIntArrayElements( jintClocks, NULL );
+	if ( clocks != NULL )
+	{
+		const int64_t cpuUnit = ( ( NervGear::EglGetGpuType() & NervGear::GPU_TYPE_MALI ) != 0 ) ? 1000LL : 1000LL;
+		const int64_t gpuUnit = ( ( NervGear::EglGetGpuType() & NervGear::GPU_TYPE_MALI ) != 0 ) ? 1000LL : 1LL;
+		const int64_t cpuFreq = clocks[CLOCK_CPU_FREQ];
+		const int64_t gpuFreq = clocks[CLOCK_GPU_FREQ];
+		//const int64_t powerSaveCpuMhz = clocks[CLOCK_POWERSAVE_CPU_FREQ];
+		//const int64_t powerSaveGpuMhz = clocks[CLOCK_POWERSAVE_GPU_FREQ];
+
+		LOG( "CPU Clock = %lld MHz", cpuFreq * cpuUnit / 1000000 );
+		LOG( "GPU Clock = %lld MHz", gpuFreq * gpuUnit / 1000000 );
+
+		// NOTE: If provided an invalid matrix combination, the system will not
+		// acknowledge the request and clock settings will go into dynamic mode.
+		// Warn when we've encountered this failure condition.
+		if ( ( ( cpuLevel != DYNAMIC_MODE_LEVEL ) && ( cpuFreq == INVALID_CLOCK_LEVEL ) ) || ( gpuFreq == INVALID_CLOCK_LEVEL ) )
+		{
+			// NOTE: Mali does not return proper values
+			if ( ( NervGear::EglGetGpuType() & NervGear::GPU_TYPE_MALI ) == 0 )
+			{
+				OVR_ASSERT( 0 );
+				const char * cpuValid = ( ( cpuFreq == INVALID_CLOCK_LEVEL ) ) ? "denied" : "accepted";
+				const char * gpuValid = ( ( gpuFreq == INVALID_CLOCK_LEVEL ) ) ? "denied" : "accepted";
+				WARN( "WARNING: Invalid clock level combination for this device (cpu:%d=%s,gpu:%d=%s), forcing dynamic mode on",
+					cpuLevel, cpuValid, gpuLevel, gpuValid );
+			}
+		}
+
+		VrJni->ReleaseIntArrayElements( jintClocks, clocks, 0 );
+	}
+	VrJni->DeleteLocalRef( jintClocks );
+
+	for ( int i = 0; i < 4; i++ )
+	{
+		WriteFreq( 1200000, "/sys/devices/system/cpu/cpu%i/cpufreq/scaling_min_freq", i );
+	}
+	for ( int i = 4; i < 8; i++ )
+	{
+		WriteFreq( 1300000, "/sys/devices/system/cpu/cpu%i/cpufreq/scaling_min_freq", i );
+	}
+}*/
+
 static void UpdateHmdInfo( ovrMobile * ovr )
 {
 	short hmdVendorId = 0;
@@ -890,10 +1089,6 @@ void ovr_RegisterHmtReceivers( JNIEnv * Jni, jobject ActivityObject )
 	const jmethodID startDockReceiverId = JniUtils::GetStaticMethodID( Jni, DockReceiverClass,
 			"startDockReceiver", "(Landroid/app/Activity;)V" );
 	Jni->CallStaticVoidMethod( DockReceiverClass, startDockReceiverId, ActivityObject );
-
-	const jmethodID startConsoleReceiverId = JniUtils::GetStaticMethodID( Jni, ConsoleReceiverClass,
-			"startReceiver", "(Landroid/app/Activity;)V" );
-	Jni->CallStaticVoidMethod( ConsoleReceiverClass, startConsoleReceiverId, ActivityObject );
 
 	registerHMTReceivers = true;
 }
@@ -1149,7 +1344,7 @@ void ovr_HandleHmdEvents( ovrMobile * ovr )
 	}
 
 	// check if the HMT has been undocked
-	HMTDockState_t dockState = HMTDockState.state();
+    HMTDockState_t dockState = HMTDockState.state();
 	if ( dockState.DockState == HMT_DOCK_UNDOCKED )
 	{
 		LOG( "ovr_HandleHmdEvents::Hmt was disconnected" );
@@ -1171,7 +1366,7 @@ void ovr_HandleHmdEvents( ovrMobile * ovr )
 	}
 
 	// check if the HMT has been mounted or unmounted
-	HMTMountState_t mountState = HMTMountState.state();
+    HMTMountState_t mountState = HMTMountState.state();
 	if ( mountState.MountState != HMT_MOUNT_NONE )
 	{
 		// reset the real mount state since we're handling the change
@@ -1193,7 +1388,7 @@ void ovr_HandleHmdEvents( ovrMobile * ovr )
 
 				NervGear::VString reorientMessage;
                 CreateSystemActivitiesCommand( "", SYSTEM_ACTIVITY_EVENT_REORIENT, "", reorientMessage );
-                NervGear::SystemActivities_AddEvent( reorientMessage );
+                NervGear::VSystemActivities::instance()->addEvent( reorientMessage );
 			}
 		}
 		else if ( mountState.MountState == HMT_MOUNT_UNMOUNTED )
@@ -1220,9 +1415,9 @@ void ovr_HandleDeviceStateChanges( ovrMobile * ovr )
 //	char eventBuffer[MAX_EVENT_SIZE];
     VString eventBuffer;
 
-	for ( eVrApiEventStatus status = NervGear::SystemActivities_nextPendingInternalEvent( eventBuffer, MAX_EVENT_SIZE );
+	for ( eVrApiEventStatus status = NervGear::VSystemActivities::instance()->nextPendingInternalEvent( eventBuffer, MAX_EVENT_SIZE );
 		status >= VRAPI_EVENT_PENDING;
-		status = NervGear::SystemActivities_nextPendingInternalEvent( eventBuffer, MAX_EVENT_SIZE ) )
+		status = NervGear::VSystemActivities::instance()->nextPendingInternalEvent( eventBuffer, MAX_EVENT_SIZE ) )
 	{
 		if ( status != VRAPI_EVENT_PENDING )
 		{
@@ -1319,12 +1514,12 @@ void ovr_WarpSwap( ovrMobile * ovr, const ovrTimeWarpParms * parms )
 
 int ovr_GetVolume()
 {
-	return CurrentVolume.state().Value;
+    return CurrentVolume.state().Value;
 }
 
 double ovr_GetTimeSinceLastVolumeChange()
 {
-	double value = TimeOfLastVolumeChange.state().Value;
+    double value = TimeOfLastVolumeChange.state().Value;
 	if ( value == -1 )
 	{
 		//LOG( "ovr_GetTimeSinceLastVolumeChange() : Not initialized.  Returning -1" );
@@ -1335,7 +1530,7 @@ double ovr_GetTimeSinceLastVolumeChange()
 
 eVrApiEventStatus ovr_nextPendingEvent( VString& buffer, unsigned int const bufferSize )
 {
-	eVrApiEventStatus status = NervGear::SystemActivities_nextPendingMainEvent( buffer, bufferSize );
+	eVrApiEventStatus status = NervGear::VSystemActivities::instance()->nextPendingMainEvent( buffer, bufferSize );
 	if ( status < VRAPI_EVENT_PENDING )
 	{
 		return status;
@@ -1352,13 +1547,13 @@ eVrApiEventStatus ovr_nextPendingEvent( VString& buffer, unsigned int const buff
 			LOG( "Queuing internal reorient event." );
 			ovr_RecenterYawInternal();
 			// also queue as an internal event
-			NervGear::SystemActivities_AddInternalEvent( buffer );
+			NervGear::VSystemActivities::instance()->addInternalEvent( buffer );
         } else if (command == SYSTEM_ACTIVITY_EVENT_RETURN_TO_LAUNCHER) {
 			// In the case of the returnToLauncher event, we always handler it internally and pass
 			// along an empty buffer so that any remaining events still get processed by the client.
 			LOG( "Queuing internal returnToLauncher event." );
 			// queue as an internal event
-			NervGear::SystemActivities_AddInternalEvent( buffer );
+			NervGear::VSystemActivities::instance()->addInternalEvent( buffer );
 			// treat as an empty event externally
             buffer = "";
 			status = VRAPI_EVENT_CONSUMED;

@@ -10,7 +10,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 *************************************************************************************/
 
-#include "Lockless.h"
+#include "VLockless.h"
 
 #ifdef OVR_LOCKLESS_TEST
 

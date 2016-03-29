@@ -12,8 +12,9 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "ThreadCommandQueue.h"
 #include "VList.h"
 #include "VLock.h"
-
+#include <new>
 #include <string.h>
+#include <malloc.h>
 
 namespace NervGear {
 
@@ -46,13 +47,13 @@ public:
     CircularBuffer(uint size)
         : Size(size), Tail(0), Head(0), End(0)
     {
-        pBuffer = (UByte*)OVR_ALLOC_ALIGNED(roundUpSize(size), AlignSize);
+        pBuffer = (UByte*)memalign( AlignSize, roundUpSize(size));
     }
     ~CircularBuffer()
     {
         // For ThreadCommands, we must consume everything before shutdown.
         OVR_ASSERT(IsEmpty());
-        OVR_FREE_ALIGNED(pBuffer);
+        free(pBuffer);
     }
 
     bool    IsEmpty() const { return (Head == Tail); }
@@ -135,7 +136,7 @@ void CircularBuffer::ReadEnd(uint size)
 ThreadCommand::PopBuffer::~PopBuffer()
 {
     if (Size)
-        Destruct<ThreadCommand>(toCommand());
+        toCommand()->~ThreadCommand();
 }
 
 void ThreadCommand::PopBuffer::InitFromBuffer(void* data)
@@ -144,7 +145,7 @@ void ThreadCommand::PopBuffer::InitFromBuffer(void* data)
     OVR_ASSERT(cmd->Size <= MaxSize);
 
     if (Size)
-        Destruct<ThreadCommand>(toCommand());
+        toCommand()->~ThreadCommand();
     Size = cmd->Size;
     memcpy(Buffer, (void*)cmd, Size);
 }
@@ -195,7 +196,7 @@ public:
             pImpl->ExitProcessed = true;
         }
         virtual ThreadCommand* CopyConstruct(void* p) const
-        { return Construct<ExitCommand>(p, *this); }
+        { return ::new((ExitCommand*)p) ExitCommand(*this); }
     };
 
 

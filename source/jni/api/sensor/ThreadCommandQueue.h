@@ -4,9 +4,8 @@
 
 #include "Types.h"
 #include "VList.h"
-#include "Allocator.h"
 #include "VSignal.h"
-
+#include <new>
 NV_NAMESPACE_BEGIN
 
 class ThreadCommand;
@@ -131,7 +130,7 @@ public:
 
     virtual void           Execute() const { executeImpl(); }
     virtual ThreadCommand* CopyConstruct(void* p) const
-    { return Construct<ThreadCommandMF0>(p, *this); }
+    { return ::new ((ThreadCommandMF0*)p) ThreadCommandMF0(*this);}
 };
 
 
@@ -158,7 +157,8 @@ public:
 
     virtual void           Execute() const { executeImpl(); }
     virtual ThreadCommand* CopyConstruct(void* p) const
-    { return Construct<ThreadCommandMF1>(p, *this); }
+//    { return Construct<ThreadCommandMF1>(p, *this); }
+    { return ::new ((ThreadCommandMF1*)p) ThreadCommandMF1(*this); }
 };
 
 // ThreadCommand for member function with 2 arguments.
@@ -185,7 +185,7 @@ public:
 
     virtual void           Execute() const { executeImpl(); }
     virtual ThreadCommand* CopyConstruct(void* p) const
-    { return Construct<ThreadCommandMF2>(p, *this); }
+    {return ::new ((ThreadCommandMF2*)p) ThreadCommandMF2(*this);}
 };
 
 

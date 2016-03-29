@@ -11,12 +11,11 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "DeviceImpl.h"
 #include "Log.h"
-#include "System.h"
 
 #include "DeviceImpl.h"
 #include "SensorDeviceImpl.h"
 #include "Profile.h"
-
+#include <new>
 namespace NervGear {
 
 //-------------------------------------------------------------------------------------
@@ -104,7 +103,7 @@ void MessageHandlerRef::SetHandler_NTS(MessageHandler* handler)
 MessageHandler::MessageHandler()
 {
     OVR_COMPILER_ASSERT(sizeof(Internal) > sizeof(MessageHandlerImpl));
-    Construct<MessageHandlerImpl>(Internal);
+    ::new((MessageHandlerImpl*)Internal) MessageHandlerImpl;
 }
 
 MessageHandler::~MessageHandler()
@@ -116,7 +115,7 @@ MessageHandler::~MessageHandler()
             ("~MessageHandler %p - Handler still active; call RemoveHandlerFromDevices", this));
     }
 
-    Destruct<MessageHandlerImpl>(handlerImpl);
+    handlerImpl->~MessageHandlerImpl();
 }
 
 bool MessageHandler::IsHandlerInstalled() const
