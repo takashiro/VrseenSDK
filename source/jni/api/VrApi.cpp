@@ -211,7 +211,6 @@ static pid_t	OnLoadTid;
 static jclass	VrLibClass = NULL;
 static jclass	ProximityReceiverClass = NULL;
 static jclass	DockReceiverClass = NULL;
-static jclass	ConsoleReceiverClass = NULL;
 
 static jmethodID getPowerLevelStateID = NULL;
 static jmethodID setActivityWindowFullscreenID = NULL;
@@ -452,8 +451,7 @@ void ovr_OnLoad( JavaVM * JavaVm_ )
 
 	VrLibClass = JniUtils::GetGlobalClassReference( jni, "com/vrseen/nervgear/VrLib" );
 	ProximityReceiverClass = JniUtils::GetGlobalClassReference( jni, "com/vrseen/nervgear/ProximityReceiver" );
-	DockReceiverClass = JniUtils::GetGlobalClassReference( jni, "com/vrseen/nervgear/DockReceiver" );
-	ConsoleReceiverClass = JniUtils::GetGlobalClassReference( jni, "com/vrseen/nervgear/ConsoleReceiver" );
+    DockReceiverClass = JniUtils::GetGlobalClassReference( jni, "com/vrseen/nervgear/DockReceiver" );
 
 	// Get the BuildVersion SDK
 	jclass versionClass = jni->FindClass( "android/os/Build$VERSION" );
@@ -1091,10 +1089,6 @@ void ovr_RegisterHmtReceivers( JNIEnv * Jni, jobject ActivityObject )
 	const jmethodID startDockReceiverId = JniUtils::GetStaticMethodID( Jni, DockReceiverClass,
 			"startDockReceiver", "(Landroid/app/Activity;)V" );
 	Jni->CallStaticVoidMethod( DockReceiverClass, startDockReceiverId, ActivityObject );
-
-	const jmethodID startConsoleReceiverId = JniUtils::GetStaticMethodID( Jni, ConsoleReceiverClass,
-			"startReceiver", "(Landroid/app/Activity;)V" );
-	Jni->CallStaticVoidMethod( ConsoleReceiverClass, startConsoleReceiverId, ActivityObject );
 
 	registerHMTReceivers = true;
 }

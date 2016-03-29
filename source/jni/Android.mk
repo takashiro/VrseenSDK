@@ -133,8 +133,7 @@ LOCAL_SRC_FILES  := \
 	scene/SurfaceTexture.cpp \
 	scene/SwipeView.cpp \
 	App.cpp \
-	VrLocale.cpp \
-	VConsole.cpp
+	VrLocale.cpp
 
 
 LOCAL_SRC_FILES += \

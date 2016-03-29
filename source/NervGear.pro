@@ -115,7 +115,6 @@ SOURCES += \
     jni/scene/SurfaceTexture.cpp \
     jni/scene/SwipeView.cpp \
     jni/App.cpp \
-    jni/VConsole.cpp \
     jni/VrLocale.cpp
 
 
@@ -268,7 +267,6 @@ HEADERS += \
     jni/scene/SwipeView.h \
     jni/App.h \
     jni/VrLocale.h \
-    jni/VConsole.h \
     jni/vglobal.h \
     jni/Input.h
 

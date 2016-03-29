@@ -16,7 +16,6 @@
 
 #include "VAlgorithm.h"
 #include "BitmapFont.h"
-#include "VConsole.h"
 #include "DebugLines.h"
 #include "EyePostRender.h"
 #include "GazeCursor.h"
@@ -1634,14 +1633,6 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
     d->viewParms.HeadModelDepth = config.headModelDepth;
     d->viewParms.HeadModelHeight = config.headModelHeight;
 
-	// Register console functions
-    VConsole::Instantialize();
-    VConsole::RegisterConsole("print", NervGear::VConsole::DebugPrint);
-    VConsole::RegisterConsole("debugMenuBounds", NervGear::DebugMenuBounds);
-    VConsole::RegisterConsole("debugMenuHierarchy", NervGear::DebugMenuHierarchy);
-    VConsole::RegisterConsole("debugMenuPoses", NervGear::DebugMenuPoses);
-    VConsole::RegisterConsole("showFPS", NervGear::ShowFPS);
-
     d->renderThread = new VThread([](void *data)->int{
         App::Private *d = static_cast<App::Private *>(data);
         d->startRendering();
@@ -1652,9 +1643,6 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
 App::~App()
 {
     vInfo("---------- ~AppLocal() ----------");
-
-    VConsole::UnRegisterConsole();
-    VConsole::DestoryVConsole();
 
     if (d->javaObject != 0)
 	{
