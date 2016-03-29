@@ -583,9 +583,6 @@ void Oculus360Photos::configureVrMode(VKernel* kernel) {
 
     // No hard edged geometry, so no need for MSAA
     kernel->msaa = 1;
-
-    kernel->colorFormat = COLOR_8888;
-    kernel->depthFormat = DEPTH_16;
 }
 
 bool Oculus360Photos::onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType )

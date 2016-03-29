@@ -13,7 +13,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VFrameSmooth.h"
 
 #include "VKernel.h"
-#include "App.h"
+#include "../App.h"
 
 #include <unistd.h>						// gettid, usleep, etc
 #include <jni.h>
@@ -31,10 +31,10 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "MemBuffer.h"		// needed for MemBufferT
 #include "sensor/DeviceImpl.h"
 
-
 #include "HmdSensors.h"
 #include "Vsync.h"
-#include "SystemActivities.h"
+#include "VSystemActivities.h"
+#include "VThread.h"
 
 NV_USING_NAMESPACE
 
@@ -123,15 +123,20 @@ void ovr_ShutdownSensors()
 
 bool ovr_InitializeInternal()
 {
-    // We must set up the system for the plugin to work
-    if ( !NervGear::System::IsInitialized() )
-    {
-        NervGear::System::Init( NervGear::Log::ConfigureDefaultLog( NervGear::LogMask_All ) );
-    }
-
     ovr_InitSensors();
 
     return true;
+}
+
+void ovr_Shutdown()
+{
+    ovr_ShutdownSensors();
+
+#ifdef OVR_ENABLE_THREADS
+    // Wait for all threads to finish; this must be done so that memory
+    // allocator and all destructors finalize correctly.
+    VThread::FinishAllThreads();
+#endif
 }
 
 using namespace NervGear;
@@ -213,7 +218,6 @@ static pid_t	OnLoadTid;
 static jclass	VrLibClass = NULL;
 static jclass	ProximityReceiverClass = NULL;
 static jclass	DockReceiverClass = NULL;
-static jclass	ConsoleReceiverClass = NULL;
 
 static jmethodID getPowerLevelStateID = NULL;
 static jmethodID setActivityWindowFullscreenID = NULL;
@@ -297,14 +301,14 @@ public:
 };
 
 typedef LocklessVar< int, -1> 						volume_t;
-NervGear::LocklessUpdater< volume_t >					CurrentVolume;
-NervGear::LocklessUpdater< LocklessDouble >				TimeOfLastVolumeChange;
-NervGear::LocklessUpdater< bool >						HeadsetPluggedState;
-NervGear::LocklessUpdater< bool >						PowerLevelStateThrottled;
-NervGear::LocklessUpdater< bool >						PowerLevelStateMinimum;
-NervGear::LocklessUpdater< HMTMountState_t >				HMTMountState;
-NervGear::LocklessUpdater< HMTDockState_t >				HMTDockState;	// edge triggered events, not the actual state
-static NervGear::LocklessUpdater< bool >					DockState;
+NervGear::VLockless< volume_t >					CurrentVolume;
+NervGear::VLockless< LocklessDouble >				TimeOfLastVolumeChange;
+NervGear::VLockless< bool >						HeadsetPluggedState;
+NervGear::VLockless< bool >						PowerLevelStateThrottled;
+NervGear::VLockless< bool >						PowerLevelStateMinimum;
+NervGear::VLockless< HMTMountState_t >				HMTMountState;
+NervGear::VLockless< HMTDockState_t >				HMTDockState;	// edge triggered events, not the actual state
+static NervGear::VLockless< bool >					DockState;
 
 extern "C"
 {
@@ -455,7 +459,6 @@ void ovr_OnLoad( JavaVM * JavaVm_ )
     VrLibClass = JniUtils::GetGlobalClassReference( jni, "com/vrseen/nervgear/VrLib" );
     ProximityReceiverClass = JniUtils::GetGlobalClassReference( jni, "com/vrseen/nervgear/ProximityReceiver" );
     DockReceiverClass = JniUtils::GetGlobalClassReference( jni, "com/vrseen/nervgear/DockReceiver" );
-    ConsoleReceiverClass = JniUtils::GetGlobalClassReference( jni, "com/vrseen/nervgear/ConsoleReceiver" );
 
     // Get the BuildVersion SDK
     jclass versionClass = jni->FindClass( "android/os/Build$VERSION" );
@@ -525,7 +528,7 @@ void ovr_Init()
     // After ovr_Initialize(), because it uses String
     VOsBuild::Init(jni);
 
-    NervGear::SystemActivities_InitEventQueues();
+    NervGear::VSystemActivities::instance()->initEventQueues();
 }
 
 void CreateSystemActivitiesCommand(const char * toPackageName, const char * command, const char * uri, NervGear::VString & out )
@@ -561,10 +564,6 @@ void ovr_RegisterHmtReceivers()
                                                                        "startDockReceiver", "(Landroid/app/Activity;)V" );
     Jni->CallStaticVoidMethod( DockReceiverClass, startDockReceiverId, ActivityObject );
 
-    const jmethodID startConsoleReceiverId = JniUtils::GetStaticMethodID( Jni, ConsoleReceiverClass,
-                                                                          "startReceiver", "(Landroid/app/Activity;)V" );
-    Jni->CallStaticVoidMethod( ConsoleReceiverClass, startConsoleReceiverId, ActivityObject );
-
     registerHMTReceivers = true;
 }
 
@@ -586,7 +585,7 @@ double ovr_GetTimeSinceLastVolumeChange()
 
 eVrApiEventStatus ovr_nextPendingEvent( VString& buffer, unsigned int const bufferSize )
 {
-    eVrApiEventStatus status = NervGear::SystemActivities_nextPendingMainEvent( buffer, bufferSize );
+    eVrApiEventStatus status = NervGear::VSystemActivities::instance()->nextPendingMainEvent( buffer, bufferSize );
     if ( status < VRAPI_EVENT_PENDING )
     {
         return status;
@@ -603,13 +602,13 @@ eVrApiEventStatus ovr_nextPendingEvent( VString& buffer, unsigned int const buff
             LOG( "Queuing internal reorient event." );
             ovr_RecenterYawInternal();
             // also queue as an internal event
-            NervGear::SystemActivities_AddInternalEvent( buffer );
+            NervGear::VSystemActivities::instance()->addInternalEvent( buffer );
         } else if (command == SYSTEM_ACTIVITY_EVENT_RETURN_TO_LAUNCHER) {
             // In the case of the returnToLauncher event, we always handler it internally and pass
             // along an empty buffer so that any remaining events still get processed by the client.
             LOG( "Queuing internal returnToLauncher event." );
             // queue as an internal event
-            NervGear::SystemActivities_AddInternalEvent( buffer );
+            NervGear::VSystemActivities::instance()->addInternalEvent( buffer );
             // treat as an empty event externally
             buffer = "";
             status = VRAPI_EVENT_CONSUMED;
@@ -858,10 +857,8 @@ void VKernel::destroy(eExitType exitType)
     else if ( exitType == EXIT_TYPE_EXIT )
     {
         LOG( "Calling exitType EXIT_TYPE_EXIT" );
-        NervGear::SystemActivities_ShutdownEventQueues();
-        ovr_ShutdownSensors();
-        // We should clean up the system to be complete
-        NervGear::System::Destroy();
+        NervGear::VSystemActivities::instance()->shutdownEventQueues();
+        ovr_Shutdown();
     }
 }
 
@@ -913,7 +910,7 @@ static  void ovr_HandleHmdEvents()
 
                 NervGear::VString reorientMessage;
                 CreateSystemActivitiesCommand( "", SYSTEM_ACTIVITY_EVENT_REORIENT, "", reorientMessage );
-                NervGear::SystemActivities_AddEvent( reorientMessage );
+                NervGear::VSystemActivities::instance()->addEvent( reorientMessage );
             }
         }
         else if ( mountState.MountState == HMT_MOUNT_UNMOUNTED )
@@ -935,9 +932,9 @@ void VKernel::ovr_HandleDeviceStateChanges()
 //	char eventBuffer[MAX_EVENT_SIZE];
     VString eventBuffer;
 
-    for ( eVrApiEventStatus status = NervGear::SystemActivities_nextPendingInternalEvent( eventBuffer, MAX_EVENT_SIZE );
+    for ( eVrApiEventStatus status = NervGear::VSystemActivities::instance()->nextPendingInternalEvent( eventBuffer, MAX_EVENT_SIZE );
           status >= VRAPI_EVENT_PENDING;
-          status = NervGear::SystemActivities_nextPendingInternalEvent( eventBuffer, MAX_EVENT_SIZE ) )
+          status = NervGear::VSystemActivities::instance()->nextPendingInternalEvent( eventBuffer, MAX_EVENT_SIZE ) )
     {
         if ( status != VRAPI_EVENT_PENDING )
         {

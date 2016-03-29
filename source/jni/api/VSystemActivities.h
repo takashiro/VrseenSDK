@@ -8,7 +8,7 @@
 
 #include "vglobal.h"
 #include "VString.h"
-#include "VrApi.h"
+#include "VKernel.h"
 
 NV_NAMESPACE_BEGIN
 

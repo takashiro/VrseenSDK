@@ -10,8 +10,6 @@
 #include "VLog.h"
 #include "VEventLoop.h"
 
-#include "api/VrApi.h"
-
 NV_NAMESPACE_BEGIN
 
 static VEventLoop *InternalVEventQueue = nullptr;
