@@ -443,7 +443,7 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
             int size = event.data.at(0).toInt();
             uchar *data[6];
             for (int i = 0; i < 6; i++) {
-                data[0] = static_cast<uchar *>(event.data.at(i + 1).toPointer());
+                data[i] = static_cast<uchar *>(event.data.at(i + 1).toPointer());
             }
 
             const double start = ovr_GetTimeInSeconds( );
