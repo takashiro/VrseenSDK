@@ -81,7 +81,7 @@ VVariant::VVariant(const VString &str)
 VVariant::VVariant(VString &&str)
     : m_type(String)
 {
-    m_value.str = new VString(str);
+    m_value.str = new VString(std::move(str));
 }
 
 VVariant::VVariant(const VVariantArray &array)
@@ -93,7 +93,7 @@ VVariant::VVariant(const VVariantArray &array)
 VVariant::VVariant(VVariantArray &&array)
     : m_type(Array)
 {
-    m_value.array = new VVariantArray(array);
+    m_value.array = new VVariantArray(std::move(array));
 }
 
 VVariant::VVariant(const VVariantMap &map)
@@ -105,7 +105,7 @@ VVariant::VVariant(const VVariantMap &map)
 VVariant::VVariant(VVariantMap &&map)
     : m_type(Map)
 {
-    m_value.map = new VVariantMap(map);
+    m_value.map = new VVariantMap(std::move(map));
 }
 
 VVariant::VVariant(const Function &function)
@@ -117,7 +117,7 @@ VVariant::VVariant(const Function &function)
 VVariant::VVariant(VVariant::Function &&function)
     : m_type(Closure)
 {
-    m_value.function = new Function(function);
+    m_value.function = new Function(std::move(function));
 }
 
 VVariant::VVariant(const VVariant &var)
