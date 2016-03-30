@@ -2,6 +2,7 @@
 
 #include "../vglobal.h"
 #include "VDevice.h"
+#include "VrApi.h"
 
 NV_NAMESPACE_BEGIN
 

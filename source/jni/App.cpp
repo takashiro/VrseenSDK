@@ -2291,7 +2291,7 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
 
         for ( int eye = 0; eye < MAX_WARP_EYES; eye++ )
         {
-            d->swapParms.Images[eye][0].TexCoordsFromTanAngles = TanAngleMatrixFromFov( fovDegrees );
+            d->swapParms.Images[eye][0].TexCoordsFromTanAngles = NervGear::VR4Matrix<float>::TanAngleMatrixFromFov( fovDegrees );
             d->swapParms.Images[eye][0].TexId = eyes.Textures[d->renderMonoMode ? 0 : eye ];
             d->swapParms.Images[eye][0].Pose = d->sensorForNextWarp.Predicted;
         }

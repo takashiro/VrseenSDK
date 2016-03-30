@@ -981,7 +981,7 @@ VR4Matrixf SceneManager::DrawEyeView( const int eye, const float fovDegrees )
         vApp->swapParms().WarpProgram = WP_CHROMATIC_MASKED_PLANE;
         vApp->swapParms().Images[eye][1].TexId = MipMappedMovieTextures[CurrentMipMappedMovieTexture];
         vApp->swapParms().Images[eye][1].Pose = vApp->sensorForNextWarp().Predicted;
-        vApp->swapParms().Images[eye][1].TexCoordsFromTanAngles = texMatrix * TanAngleMatrixFromUnitSquare( &mv );
+        vApp->swapParms().Images[eye][1].TexCoordsFromTanAngles = texMatrix * VR4Matrix<float>::TanAngleMatrixFromUnitSquare( &mv );
 
 		// explicitly clear a hole in alpha
         const ovrMatrix4f screenMvp = mvp * screenModel;

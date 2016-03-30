@@ -23,6 +23,7 @@
 #include "VLockless.h"
 #include "VGlGeometry.h"
 #include "VGlShader.h"
+#include "VrApi.h"
 
 ovrSensorState ovr_GetSensorStateInternal( double absTime );
 bool ovr_ProcessLatencyTest( unsigned char rgbColorOut[3] );
