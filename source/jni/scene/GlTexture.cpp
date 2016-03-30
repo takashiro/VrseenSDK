@@ -457,7 +457,7 @@ static GlTexture CreateGlTexture( const char * fileName, const int format, const
 		if ( format & Texture_Compressed )
 		{
 			glCompressedTexImage2D( GL_TEXTURE_2D, i, glInternalFormat, w, h, 0, mipSize, level );
-            glOperation.GL_CheckErrors( "Texture_Compressed" );
+            glOperation.logErrorsEnum( "Texture_Compressed" );
 		}
 		else
 		{
@@ -495,7 +495,7 @@ static GlTexture CreateGlTexture( const char * fileName, const int format, const
 	}
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 
-    glOperation.GL_CheckErrors( "Texture load" );
+    glOperation.logErrorsEnum( "Texture load" );
 
 	glBindTexture( GL_TEXTURE_2D, 0 );
 
@@ -558,7 +558,7 @@ static GlTexture CreateGlCubeTexture( const char * fileName, const int format, c
 			{
 				LOG( "%s: Mip level %d exceeds buffer size (%d > %d)", fileName, i, mipSize, endOfBuffer - level );
 				glBindTexture( GL_TEXTURE_CUBE_MAP, 0 );
-				return GlTexture( texId, GL_TEXTURE_CUBE_MAP );
+                return GlTexture( texId,  GL_TEXTURE_CUBE_MAP );
 			}
 
 			if ( format & Texture_Compressed )
@@ -595,7 +595,7 @@ static GlTexture CreateGlCubeTexture( const char * fileName, const int format, c
 	}
 	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 
-    glOperation.GL_CheckErrors( "Texture load" );
+    glOperation.logErrorsEnum( "Texture load" );
 
 	glBindTexture( GL_TEXTURE_CUBE_MAP, 0 );
 

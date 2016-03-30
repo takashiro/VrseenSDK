@@ -136,80 +136,15 @@ void Oculus360Photos::init(const VString &fromPackage, const VString &launchInte
     LOG( "--------------- Oculus360Photos OneTimeInit ---------------" );
 
     //-------------------------------------------------------------------------
-    m_texturedMvpProgram.initShader(
-                "uniform mat4 Mvpm;\n"
-                "attribute vec4 Position;\n"
-                "attribute vec4 VertexColor;\n"
-                "attribute vec2 TexCoord;\n"
-                "uniform mediump vec4 UniformColor;\n"
-                "varying  lowp vec4 oColor;\n"
-                "varying highp vec2 oTexCoord;\n"
-                "void main()\n"
-                "{\n"
-                "   gl_Position = Mvpm * Position;\n"
-                "	oTexCoord = TexCoord;\n"
-                "   oColor = /* VertexColor * */ UniformColor;\n"
-                "}\n"
-                ,
-                "uniform sampler2D Texture0;\n"
-                "varying highp vec2 oTexCoord;\n"
-                "varying lowp vec4	oColor;\n"
-                "void main()\n"
-                "{\n"
-                "	gl_FragColor = oColor * texture2D( Texture0, oTexCoord );\n"
-                "}\n"
-                );
-
-    m_cubeMapPanoProgram.initShader(
-                "uniform mat4 Mvpm;\n"
-                "attribute vec4 Position;\n"
-                "uniform mediump vec4 UniformColor;\n"
-                "varying  lowp vec4 oColor;\n"
-                "varying highp vec3 oTexCoord;\n"
-                "void main()\n"
-                "{\n"
-                "   gl_Position = Mvpm * Position;\n"
-                "	oTexCoord = Position.xyz;\n"
-                "   oColor = UniformColor;\n"
-                "}\n"
-                ,
-                "uniform samplerCube Texture0;\n"
-                "varying highp vec3 oTexCoord;\n"
-                "varying lowp vec4	oColor;\n"
-                "void main()\n"
-                "{\n"
-                "	gl_FragColor = oColor * textureCube( Texture0, oTexCoord );\n"
-                "}\n"
-                );
-
-    m_panoramaProgram.initShader(
-                "uniform highp mat4 Mvpm;\n"
-                "uniform highp mat4 Texm;\n"
-                "attribute vec4 Position;\n"
-                "attribute vec2 TexCoord;\n"
-                "varying  highp vec2 oTexCoord;\n"
-                "void main()\n"
-                "{\n"
-                "   gl_Position = Mvpm * Position;\n"
-                "   oTexCoord = vec2( Texm * vec4( TexCoord, 0, 1 ) );\n"
-                "}\n"
-                ,
-                "#extension GL_OES_EGL_image_external : require\n"
-                "uniform samplerExternalOES Texture0;\n"
-                "uniform lowp vec4 UniformColor;\n"
-                "uniform lowp vec4 ColorBias;\n"
-                "varying highp vec2 oTexCoord;\n"
-                "void main()\n"
-                "{\n"
-                "	gl_FragColor = ColorBias + UniformColor * texture2D( Texture0, oTexCoord );\n"
-                "}\n"
-                );
+    m_texturedMvpProgram.initShader(VGlShader::getTexturedMvpVertexShaderSource(),VGlShader::getUniformTextureProgramShaderSource());
+    m_cubeMapPanoProgram.initShader(VGlShader::getCubeMapPanoVertexShaderSource(),VGlShader::getCubeMapPanoProgramShaderSource());
+    m_panoramaProgram.initShader(VGlShader::getPanoVertexShaderSource(),VGlShader::getPanoProgramShaderSource() );
 
     // launch cube pano -should always exist!
     m_startupPano = DEFAULT_PANO;
 
     LOG( "Creating Globe" );
-    m_globe = VGlGeometryFactory::CreateGlobe();
+    m_globe.createSphere();
 
     // Stay exactly at the origin, so the panorama globe is equidistant
     // Don't clear the head model neck length, or swipe view panels feel wrong.
@@ -258,12 +193,12 @@ void Oculus360Photos::init(const VString &fromPackage, const VString &launchInte
 
     fileExtensions.goodExtensions.append( ".jpg" );
 
-    /*fileExtensions.badExtensions.append( ".jpg.x" );
+    fileExtensions.badExtensions.append( ".jpg.x" );
     fileExtensions.badExtensions.append( "_px.jpg" );
     fileExtensions.badExtensions.append( "_py.jpg" );
     fileExtensions.badExtensions.append( "_pz.jpg" );
     fileExtensions.badExtensions.append( "_nx.jpg" );
-    fileExtensions.badExtensions.append( "_ny.jpg" );*/
+    fileExtensions.badExtensions.append( "_ny.jpg" );
 
     const VStandardPath &storagePaths = vApp->storagePaths();
     storagePaths.PushBackSearchPathIfValid( VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", m_searchPaths );
@@ -369,13 +304,13 @@ void Oculus360Photos::init(const VString &fromPackage, const VString &launchInte
     VGlOperation glOperation;
     m_eglPbufferSurface = eglCreatePbufferSurface( m_eglDisplay, m_eglConfig, SurfaceAttribs );
     if ( m_eglPbufferSurface == EGL_NO_SURFACE ) {
-        FAIL( "eglCreatePbufferSurface failed: %s", glOperation.EglErrorString() );
+        FAIL( "eglCreatePbufferSurface failed: %s", glOperation.getEglErrorString() );
     }
     EGLint bufferWidth, bufferHeight;
     if ( !eglQuerySurface( m_eglDisplay, m_eglPbufferSurface, EGL_WIDTH, &bufferWidth ) ||
          !eglQuerySurface( m_eglDisplay, m_eglPbufferSurface, EGL_HEIGHT, &bufferHeight ) )
     {
-        FAIL( "eglQuerySurface failed:  %s", glOperation.EglErrorString() );
+        FAIL( "eglQuerySurface failed:  %s", glOperation.getEglErrorString() );
     }
 
     // spawn the background loading thread with the command list
@@ -405,7 +340,7 @@ void Oculus360Photos::shutdown()
     // Shut down background loader
     m_shutdownRequest.setState( true );
 
-    m_globe.Free();
+    m_globe.destroy();
 
     if ( m_metaData )
     {
@@ -441,13 +376,13 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
     EGLContext EglBGLoaderContext = eglCreateContext( photos->m_eglDisplay, photos->m_eglConfig, photos->m_eglShareContext, loaderContextAttribs );
     if ( EglBGLoaderContext == EGL_NO_CONTEXT )
     {
-        FAIL( "eglCreateContext failed: %s", glOperation.EglErrorString() );
+        FAIL( "eglCreateContext failed: %s", glOperation.getEglErrorString() );
     }
 
     // Make the context current on the window, so no more makeCurrent calls will be needed
     if ( eglMakeCurrent( photos->m_eglDisplay, photos->m_eglPbufferSurface, photos->m_eglPbufferSurface, EglBGLoaderContext ) == EGL_FALSE )
     {
-        FAIL( "BackgroundGLLoadThread eglMakeCurrent failed: %s", glOperation.EglErrorString() );
+        FAIL( "BackgroundGLLoadThread eglMakeCurrent failed: %s", glOperation.getEglErrorString() );
     }
 
     // run until Shutdown requested
@@ -576,16 +511,13 @@ bool Oculus360Photos::useOverlay() const {
     return m_useOverlay;
 }
 
-void Oculus360Photos::configureVrMode( ovrModeParms & modeParms ) {
+void Oculus360Photos::configureVrMode(VKernel* kernel) {
     // We need very little CPU for pano browsing, but a fair amount of GPU.
     // The CPU clock should ramp up above the minimum when necessary.
     LOG( "ConfigureClocks: Oculus360Photos only needs minimal clocks" );
 
     // No hard edged geometry, so no need for MSAA
-    vApp->vrParms().multisamples = 1;
-
-    vApp->vrParms().colorFormat = COLOR_8888;
-    vApp->vrParms().depthFormat = DEPTH_16;
+    kernel->msaa = 1;
 }
 
 bool Oculus360Photos::onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType )
@@ -622,7 +554,7 @@ bool Oculus360Photos::onKeyEvent( const int keyCode, const KeyState::eKeyEventTy
 void Oculus360Photos::loadRgbaCubeMap( const int resolution, const unsigned char * const rgba[ 6 ], const bool useSrgbFormat )
 {
     VGlOperation glOperation;
-    glOperation.GL_CheckErrors( "enter LoadRgbaCubeMap" );
+    glOperation.logErrorsEnum( "enter LoadRgbaCubeMap" );
 
     const GLenum glFormat = GL_RGBA;
     const GLenum glInternalFormat = useSrgbFormat ? GL_SRGB8_ALPHA8 : GL_RGBA;
@@ -658,13 +590,13 @@ void Oculus360Photos::loadRgbaCubeMap( const int resolution, const unsigned char
 
     glBindTexture( GL_TEXTURE_CUBE_MAP, 0 );
 
-    glOperation.GL_CheckErrors( "leave LoadRgbaCubeMap" );
+    glOperation.logErrorsEnum( "leave LoadRgbaCubeMap" );
 }
 
 void Oculus360Photos::loadRgbaTexture( const unsigned char * data, int width, int height, const bool useSrgbFormat )
 {
     VGlOperation glOperation;
-    glOperation.GL_CheckErrors( "enter LoadRgbaTexture" );
+    glOperation.logErrorsEnum( "enter LoadRgbaTexture" );
 
     const GLenum glFormat = GL_RGBA;
     const GLenum glInternalFormat = useSrgbFormat ? GL_SRGB8_ALPHA8 : GL_RGBA;
@@ -698,7 +630,7 @@ void Oculus360Photos::loadRgbaTexture( const unsigned char * data, int width, in
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 2 );
     glBindTexture( GL_TEXTURE_2D, 0 );
 
-    glOperation.GL_CheckErrors( "leave LoadRgbaTexture" );
+    glOperation.logErrorsEnum( "leave LoadRgbaTexture" );
 }
 
 VR4Matrixf CubeMatrixForViewMatrix( const VR4Matrixf & viewMatrix )
@@ -786,14 +718,14 @@ VR4Matrixf Oculus360Photos::drawEyeView( const int eye, const float fovDegrees )
         glUniformMatrix4fv( prog.uniformModelViewProMatrix, 1, GL_FALSE /* not transposed */,
                             view.Transposed().M[ 0 ] );
 
-        m_globe.Draw();
+        m_globe.drawElements();
 
         glBindTexture( GL_TEXTURE_CUBE_MAP, 0 );
         glBindTexture( GL_TEXTURE_2D, 0 );
     }
 
     VGlOperation glOperation;
-    glOperation.GL_CheckErrors( "draw" );
+    glOperation.logErrorsEnum( "draw" );
 
     return view;
 }

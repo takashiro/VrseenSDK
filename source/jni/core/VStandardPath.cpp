@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include "unistd.h"
 #include "Android/JniUtils.h"
-#include "App.h"
 #include "VDir.h"
+#include "android/LogUtils.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -177,7 +177,6 @@ const char* FolderName[VStandardPath::FolderTypeCount] =
 
     bool GetFullPath( const VArray<VString> &searchPaths, const VString &relativePath, char *outPath, const int outMaxLen)
 	{
-		OVR_ASSERT( outPath != NULL && outMaxLen >= 1 );
 		VDir temp;
 		if ( temp.exists (relativePath ) )
 		{

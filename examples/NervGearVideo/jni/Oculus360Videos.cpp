@@ -151,13 +151,12 @@ Oculus360Videos::~Oculus360Videos()
 {
 }
 
-//============================================================================================
 void Oculus360Videos::init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI)
 {
-	// This is called by the VR thread, not the java UI thread.
+
 	LOG( "--------------- Oculus360Videos OneTimeInit ---------------" );
 
-//	RetailMode = FileExists( "/sdcard/RetailMedia" );
+
 	VDir vdir;
 	RetailMode = vdir.exists( "/sdcard/RetailMedia" );
 
@@ -165,101 +164,17 @@ void Oculus360Videos::init(const VString &fromPackage, const VString &launchInte
 	vApp->vrParms().depthFormat = DEPTH_16;
 	vApp->vrParms().multisamples = 2;
 
-	PanoramaProgram.initShader(
-		"uniform highp mat4 Mvpm;\n"
-		"uniform highp mat4 Texm;\n"
-		"attribute vec4 Position;\n"
-		"attribute vec2 TexCoord;\n"
-		"varying  highp vec2 oTexCoord;\n"
-		"void main()\n"
-		"{\n"
-		"   gl_Position = Mvpm * Position;\n"
-		"   oTexCoord = vec2( Texm * vec4( TexCoord, 0, 1 ) );\n"
-		"}\n"
-		,
-		"#extension GL_OES_EGL_image_external : require\n"
-		"uniform samplerExternalOES Texture0;\n"
-		"uniform lowp vec4 UniformColor;\n"
-		"uniform lowp vec4 ColorBias;\n"
-		"varying highp vec2 oTexCoord;\n"
-		"void main()\n"
-		"{\n"
-		"	gl_FragColor = ColorBias + UniformColor * texture2D( Texture0, oTexCoord );\n"
-		"}\n"
-		);
+    PanoramaProgram.initShader(VGlShader::getPanoVertexShaderSource(),VGlShader::getPanoProgramShaderSource()	);
 
-	FadedPanoramaProgram.initShader(
-		"uniform highp mat4 Mvpm;\n"
-		"uniform highp mat4 Texm;\n"
-		"attribute vec4 Position;\n"
-		"attribute vec2 TexCoord;\n"
-		"varying  highp vec2 oTexCoord;\n"
-		"void main()\n"
-		"{\n"
-		"   gl_Position = Mvpm * Position;\n"
-		"   oTexCoord = vec2( Texm * vec4( TexCoord, 0, 1 ) );\n"
-		"}\n"
-		,
-		"#extension GL_OES_EGL_image_external : require\n"
-		"uniform samplerExternalOES Texture0;\n"
-		"uniform sampler2D Texture1;\n"
-		"uniform lowp vec4 UniformColor;\n"
-		"varying highp vec2 oTexCoord;\n"
-		"void main()\n"
-		"{\n"
-		"	lowp vec4 staticColor = texture2D( Texture1, oTexCoord );\n"
-		"	lowp vec4 movieColor = texture2D( Texture0, oTexCoord );\n"
-		"	gl_FragColor = UniformColor * mix( movieColor, staticColor, staticColor.w );\n"
-		"}\n"
-		);
-
-	SingleColorTextureProgram.initShader(
-		"uniform highp mat4 Mvpm;\n"
-		"attribute highp vec4 Position;\n"
-		"attribute highp vec2 TexCoord;\n"
-		"varying highp vec2 oTexCoord;\n"
-		"void main()\n"
-		"{\n"
-		"   gl_Position = Mvpm * Position;\n"
-		"   oTexCoord = TexCoord;\n"
-		"}\n"
-		,
-		"uniform sampler2D Texture0;\n"
-		"uniform lowp vec4 UniformColor;\n"
-		"varying highp vec2 oTexCoord;\n"
-		"void main()\n"
-		"{\n"
-		"   gl_FragColor = UniformColor * texture2D( Texture0, oTexCoord );\n"
-		"}\n"
-		);
-
-	const char *launchPano = NULL;
-	if ( ( NULL != launchPano ) && launchPano[ 0 ] )
+    FadedPanoramaProgram.initShader(VGlShader::getFadedPanoVertexShaderSource(),VGlShader::getFadedPanoProgramShaderSource());
+    SingleColorTextureProgram.initShader(VGlShader::getSingleTextureVertexShaderSource(),VGlShader::getUniformSingleTextureProgramShaderSource());
+    const char *launchPano = NULL;
+    if ( ( NULL != launchPano ) && launchPano[ 0 ] )
 	{
-#if 0
-		unsigned char * texture;
-		texture = stbi_load( launchPano, &BackgroundWidth, &BackgroundHeight, NULL, 4 );
-		if ( texture )
-		{
-			for ( int i = 0; i < BackgroundWidth*BackgroundHeight; i++ )
-			{
-				texture[ i * 4 + 3 ] = 255;
-			}
 
-			// cut a hole in the middle
-			for ( int i = 0; i < BackgroundWidth / 2; i++ )
-			for ( int j = 0; j < BackgroundHeight / 4; j++ )
-			{
-				texture[ ( ( BackgroundHeight / 8 + j )*BackgroundWidth + BackgroundWidth / 4 + 256 + i ) * 4 + 3 ] = 0;
-				texture[ ( ( 5 * BackgroundHeight / 8 + j )*BackgroundWidth + BackgroundWidth / 4 + 256 + i ) * 4 + 3 ] = 0;
-			}
-
-			BackgroundTexId = LoadRGBATextureFromMemory( texture, BackgroundWidth, BackgroundHeight, false );
-		}
-#else
 		BackgroundTexId = LoadTextureFromBuffer( launchPano, MemBufferFile( launchPano ),
 			TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ) | TEXTUREFLAG_USE_SRGB, BackgroundWidth, BackgroundHeight );
-#endif
+
 	}
 
 	// always fall back to valid background
@@ -270,7 +185,7 @@ void Oculus360Videos::init(const VString &fromPackage, const VString &launchInte
 	}
 
 	LOG( "Creating Globe" );
-	Globe = VGlGeometryFactory::CreateGlobe();
+    Globe.createSphere();
 
 	// Stay exactly at the origin, so the panorama globe is equidistant
 	// Don't clear the head model neck length, or swipe view panels feel wrong.
@@ -383,7 +298,7 @@ void Oculus360Videos::shutdown()
 		MetaData = NULL;
 	}
 
-	Globe.Free();
+	Globe.destroy();
 
 	FreeTexture( BackgroundTexId );
 
@@ -398,13 +313,13 @@ void Oculus360Videos::shutdown()
 	 SingleColorTextureProgram.destroy();
 }
 
-void Oculus360Videos::configureVrMode( ovrModeParms & modeParms )
+void Oculus360Videos::configureVrMode(VKernel* kernel)
 {
 	// We need very little CPU for pano browsing, but a fair amount of GPU.
 	// The CPU clock should ramp up above the minimum when necessary.
 	LOG( "ConfigureClocks: Oculus360Videos only needs minimal clocks" );
 	// All geometry is blended, so save power with no MSAA
-	vApp->vrParms().multisamples = 1;
+	kernel->msaa = 1;
 }
 
 bool Oculus360Videos::onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType )
@@ -601,7 +516,7 @@ VR4Matrixf Oculus360Videos::drawEyeView( const int eye, const float fovDegrees )
 
 			glUniform4f( SingleColorTextureProgram.uniformColor, fadeColor, fadeColor, fadeColor, 1.0f );
 
-			sd.geo.Draw();
+			sd.geo.drawElements();
 
 			glBindTexture( GL_TEXTURE_2D, 0 ); // don't leave it bound
 		}
@@ -631,7 +546,7 @@ VR4Matrixf Oculus360Videos::drawEyeView( const int eye, const float fovDegrees )
 
         glUniformMatrix4fv( prog.uniformTexMatrix, 1, GL_FALSE, TexmForVideo( toggleStereo ).Transposed().M[ 0 ] );
         glUniformMatrix4fv( prog.uniformModelViewProMatrix, 1, GL_FALSE, ( proj * view ).Transposed().M[ 0 ] );
-		Globe.Draw();
+		Globe.drawElements();
 
 		glBindTexture( GL_TEXTURE_EXTERNAL_OES, 0 );	// don't leave it bound
 	}

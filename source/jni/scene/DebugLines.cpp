@@ -207,11 +207,13 @@ void OvrDebugLinesLocal::InitVBO( VGlGeometry & geo, LineVertex_t * vertices, co
 	glBindBuffer( GL_ARRAY_BUFFER, geo.vertexBuffer );
 	glBufferData( GL_ARRAY_BUFFER, numVertexBytes, (void*)vertices, GL_DYNAMIC_DRAW );
 
-	glEnableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_POSITION ); // x, y and z
-    glVertexAttribPointer( SHADER_ATTRIBUTE_LOCATION_POSITION, 3, GL_FLOAT, false, sizeof( LineVertex_t ), (void*)0 );
 
-    glEnableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_COLOR ); // color
-    glVertexAttribPointer( SHADER_ATTRIBUTE_LOCATION_COLOR, 4, GL_FLOAT, true, sizeof( LineVertex_t ), (void*)12 );
+	glEnableVertexAttribArray( VERTEX_POSITION ); // x, y and z
+    glVertexAttribPointer( VERTEX_POSITION, 3, GL_FLOAT, false, sizeof( LineVertex_t ), (void*)0 );
+
+    glEnableVertexAttribArray( VERTEX_COLOR ); // color
+    glVertexAttribPointer( VERTEX_COLOR, 4, GL_FLOAT, true, sizeof( LineVertex_t ), (void*)12 );
+
 
 	const int numIndexBytes = maxIndices * sizeof( LineIndex_t );
 	glGenBuffers( 1, &geo.indexBuffer );
@@ -230,8 +232,8 @@ void OvrDebugLinesLocal::Shutdown()
 		DROID_ASSERT( !Initialized, "DebugLines" );
 		return;
 	}
-	DepthGeo.Free();
-	NonDepthGeo.Free();
+	DepthGeo.destroy();
+	NonDepthGeo.destroy();
 	delete [] Vertices;
 	Vertices = NULL;
 	Initialized = false;

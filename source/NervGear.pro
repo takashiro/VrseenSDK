@@ -43,7 +43,7 @@ SOURCES += \
     jni/core/android/JniUtils.cpp \
     jni/core/android/LogUtils.cpp \
     jni/core/android/VOsBuild.cpp \
-    jni/api/VrApi.cpp \
+    jni/api/VKernel.cpp \
     jni/api/Vsync.cpp \
     jni/api/VDevice.cpp \
     jni/api/VGlOperation.cpp \
@@ -181,7 +181,7 @@ HEADERS += \
     jni/embedded/dependency_error_ja.h \
     jni/embedded/dependency_error_ko.h \
     jni/embedded/oculus_loading_indicator.h \
-    jni/api/VrApi.h \
+    jni/api/VKernel.h \
     jni/api/Vsync.h \
     jni/api/HmdSensors.h \
     jni/api/VLensDistortion.h \
@@ -190,7 +190,6 @@ HEADERS += \
     jni/api/VGlGeometry.h \
     jni/api/VGlShader.h \
     jni/api/VMainActivity.h \
-    jni/api/VrApi_local.h \
     jni/api/VDevice.h \
     jni/api/VGlOperation.h \
     jni/api/sensor/DeviceConstants.h \

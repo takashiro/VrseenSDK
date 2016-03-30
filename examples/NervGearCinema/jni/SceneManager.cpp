@@ -1,4 +1,4 @@
-#include "api/VrApi.h"
+#include "api/VKernel.h"
 #include "api/VGlOperation.h"
 
 #include "CinemaApp.h"
@@ -10,6 +10,60 @@
 
 namespace OculusCinema
 {
+
+
+inline float ovrMatrix4f_Minor( const ovrMatrix4f * m, int r0, int r1, int r2, int c0, int c1, int c2 )
+{
+    return	m->M[r0][c0] * ( m->M[r1][c1] * m->M[r2][c2] - m->M[r2][c1] * m->M[r1][c2] ) -
+              m->M[r0][c1] * ( m->M[r1][c0] * m->M[r2][c2] - m->M[r2][c0] * m->M[r1][c2] ) +
+              m->M[r0][c2] * ( m->M[r1][c0] * m->M[r2][c1] - m->M[r2][c0] * m->M[r1][c1] );
+}
+
+
+inline ovrMatrix4f ovrMatrix4f_Inverse( const ovrMatrix4f * m )
+{
+    const float rcpDet = 1.0f / (	m->M[0][0] * ovrMatrix4f_Minor( m, 1, 2, 3, 1, 2, 3 ) -
+                                     m->M[0][1] * ovrMatrix4f_Minor( m, 1, 2, 3, 0, 2, 3 ) +
+                                     m->M[0][2] * ovrMatrix4f_Minor( m, 1, 2, 3, 0, 1, 3 ) -
+                                     m->M[0][3] * ovrMatrix4f_Minor( m, 1, 2, 3, 0, 1, 2 ) );
+    ovrMatrix4f out;
+    out.M[0][0] =  ovrMatrix4f_Minor( m, 1, 2, 3, 1, 2, 3 ) * rcpDet;
+    out.M[0][1] = -ovrMatrix4f_Minor( m, 0, 2, 3, 1, 2, 3 ) * rcpDet;
+    out.M[0][2] =  ovrMatrix4f_Minor( m, 0, 1, 3, 1, 2, 3 ) * rcpDet;
+    out.M[0][3] = -ovrMatrix4f_Minor( m, 0, 1, 2, 1, 2, 3 ) * rcpDet;
+    out.M[1][0] = -ovrMatrix4f_Minor( m, 1, 2, 3, 0, 2, 3 ) * rcpDet;
+    out.M[1][1] =  ovrMatrix4f_Minor( m, 0, 2, 3, 0, 2, 3 ) * rcpDet;
+    out.M[1][2] = -ovrMatrix4f_Minor( m, 0, 1, 3, 0, 2, 3 ) * rcpDet;
+    out.M[1][3] =  ovrMatrix4f_Minor( m, 0, 1, 2, 0, 2, 3 ) * rcpDet;
+    out.M[2][0] =  ovrMatrix4f_Minor( m, 1, 2, 3, 0, 1, 3 ) * rcpDet;
+    out.M[2][1] = -ovrMatrix4f_Minor( m, 0, 2, 3, 0, 1, 3 ) * rcpDet;
+    out.M[2][2] =  ovrMatrix4f_Minor( m, 0, 1, 3, 0, 1, 3 ) * rcpDet;
+    out.M[2][3] = -ovrMatrix4f_Minor( m, 0, 1, 2, 0, 1, 3 ) * rcpDet;
+    out.M[3][0] = -ovrMatrix4f_Minor( m, 1, 2, 3, 0, 1, 2 ) * rcpDet;
+    out.M[3][1] =  ovrMatrix4f_Minor( m, 0, 2, 3, 0, 1, 2 ) * rcpDet;
+    out.M[3][2] = -ovrMatrix4f_Minor( m, 0, 1, 3, 0, 1, 2 ) * rcpDet;
+    out.M[3][3] =  ovrMatrix4f_Minor( m, 0, 1, 2, 0, 1, 2 ) * rcpDet;
+    return out;
+}
+
+inline ovrMatrix4f TanAngleMatrixFromUnitSquare( const ovrMatrix4f * modelView )
+{
+    const ovrMatrix4f inv = ovrMatrix4f_Inverse( modelView );
+    ovrMatrix4f m;
+    m.M[0][0] = 0.5f * inv.M[2][0] - 0.5f * ( inv.M[0][0] * inv.M[2][3] - inv.M[0][3] * inv.M[2][0] );
+    m.M[0][1] = 0.5f * inv.M[2][1] - 0.5f * ( inv.M[0][1] * inv.M[2][3] - inv.M[0][3] * inv.M[2][1] );
+    m.M[0][2] = 0.5f * inv.M[2][2] - 0.5f * ( inv.M[0][2] * inv.M[2][3] - inv.M[0][3] * inv.M[2][2] );
+    m.M[0][3] = 0.0f;
+    m.M[1][0] = 0.5f * inv.M[2][0] + 0.5f * ( inv.M[1][0] * inv.M[2][3] - inv.M[1][3] * inv.M[2][0] );
+    m.M[1][1] = 0.5f * inv.M[2][1] + 0.5f * ( inv.M[1][1] * inv.M[2][3] - inv.M[1][3] * inv.M[2][1] );
+    m.M[1][2] = 0.5f * inv.M[2][2] + 0.5f * ( inv.M[1][2] * inv.M[2][3] - inv.M[1][3] * inv.M[2][2] );
+    m.M[1][3] = 0.0f;
+    m.M[2][0] = m.M[3][0] = inv.M[2][0];
+    m.M[2][1] = m.M[3][1] = inv.M[2][1];
+    m.M[2][2] = m.M[3][2] = inv.M[2][2];
+    m.M[2][3] = m.M[3][3] = 0.0f;
+    return m;
+}
 
 SceneManager::SceneManager( CinemaApp &cinema ) :
 	Cinema( cinema ),
@@ -60,7 +114,7 @@ void SceneManager::OneTimeInit( const VString &launchIntent )
 
 	const double start = ovr_GetTimeInSeconds();
 
-	UnitSquare = VGlGeometryFactory::CreateTesselatedQuad( 1, 1 );
+    UnitSquare.createPlaneQuadGrid( 1, 1 );
 
 	UseOverlay = true;
 
@@ -76,7 +130,7 @@ void SceneManager::OneTimeShutdown()
 
 	// Free GL resources
 
-	UnitSquare.Free();
+    UnitSquare.destroy();
 
 	if ( ScreenVignetteTexture != 0 )
 	{
@@ -553,7 +607,7 @@ GLuint SceneManager::BuildScreenVignetteTexture( const int horizontalTile ) cons
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
     glBindTexture( GL_TEXTURE_2D, 0 );
 
-    glOperation.GL_CheckErrors( "screenVignette" );
+    glOperation.logErrorsEnum( "screenVignette" );
     return texId;
 }
 
@@ -857,7 +911,7 @@ VR4Matrixf SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 		const VGlShader * prog = &Cinema.shaderMgr.ScenePrograms[0];
 		glUseProgram( prog->program );
         glUniformMatrix4fv( prog->uniformModelViewProMatrix, 1, GL_FALSE, mvp.Transposed().M[0] );
-		SceneScreenSurface->geo.Draw();
+        SceneScreenSurface->geo.drawElements();
 	}
 
 	const VGlShader * prog = &Cinema.shaderMgr.MovieExternalUiProgram;
@@ -960,14 +1014,14 @@ VR4Matrixf SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 		if ( !SceneInfo.LobbyScreen && SceneInfo.UseScreenGeometry && ( SceneScreenSurface != NULL ) )
 		{
             glUniformMatrix4fv( prog->uniformModelViewProMatrix, 1, GL_FALSE, mvp.Transposed().M[0] );
-			SceneScreenSurface->geo.Draw();
+            SceneScreenSurface->geo.drawElements();
 		}
 		else
 		{
             const VR4Matrixf screenModel = ScreenMatrix();
             const VR4Matrixf screenMvp = mvp * screenModel;
             glUniformMatrix4fv( prog->uniformModelViewProMatrix, 1, GL_FALSE, screenMvp.Transposed().M[0] );
-			UnitSquare.Draw();
+            UnitSquare.drawElements();
 		}
 
 		glBindTexture( GL_TEXTURE_EXTERNAL_OES, 0 );	// don't leave it bound
@@ -1047,7 +1101,7 @@ VR4Matrixf SceneManager::Frame( const VrFrame & vrFrame )
 		glBindFramebuffer( GL_FRAMEBUFFER, MipMappedMovieFBOs[CurrentMipMappedMovieTexture] );
 		glDisable( GL_DEPTH_TEST );
 		glDisable( GL_SCISSOR_TEST );
-        glOperation.GL_InvalidateFramebuffer( VGlOperation::INV_FBO, true, false );
+        glOperation.glDisableFramebuffer( true, false );
 		glViewport( 0, 0, MovieTextureWidth, MovieTextureHeight );
         if ( vApp->appInterface()->wantSrgbFramebuffer() )
 		{	// we need this copied without sRGB conversion on the top level
@@ -1057,7 +1111,7 @@ VR4Matrixf SceneManager::Frame( const VrFrame & vrFrame )
 		{
 			glBindTexture( GL_TEXTURE_EXTERNAL_OES, MovieTexture->textureId );
 			glUseProgram( Cinema.shaderMgr.CopyMovieProgram.program );
-			UnitSquare.Draw();
+            UnitSquare.drawElements();
 			glBindTexture( GL_TEXTURE_EXTERNAL_OES, 0 );
             if ( vApp->appInterface()->wantSrgbFramebuffer() )
 			{	// we need this copied without sRGB conversion on the top level
@@ -1081,7 +1135,7 @@ VR4Matrixf SceneManager::Frame( const VrFrame & vrFrame )
 
         VGlOperation glOperation;
 
-        glOperation.GL_Flush();
+        glOperation.glFlush();
 	}
 
 	// Generate callbacks into DrawEyeView
