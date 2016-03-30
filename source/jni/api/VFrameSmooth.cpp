@@ -528,7 +528,7 @@ struct VFrameSmooth::Private
     void 			warpThreadInit();
     void			warpThreadShutdown();
     void			warpSwapInternal( const ovrTimeWarpParms & parms );
-
+    void            smoothInternal();
     // Ensures that the warpPrograms have a matched set with and without
     // chromatic aberration so it can be universally disabled for slower systems
     // and power saving mode.
@@ -547,7 +547,18 @@ struct VFrameSmooth::Private
     void			destroyFrameworkGraphics();
     void			drawFrameworkGraphicsToWindow( const int eye, const int swapOptions);
 
-    bool m_async;
+    // 平滑的参数：
+     bool m_async;
+     bool testc;
+     ovrTimeWarpImage 			m_images[2][3];
+     int 						m_smoothOptions;
+     ovrMatrix4f					m_externalVelocity;
+     int							m_minimumVsyncs;
+     float						m_preScheduleSeconds;
+     ovrTimeWarpProgram			m_smoothProgram;
+     float						m_programParms[4];
+
+    //平滑参数结束；
     VDevice *m_device;
 
     VGlShader		m_untexturedMvpProgram;
@@ -633,7 +644,57 @@ struct VFrameSmooth::Private
     long long			m_lastSwapVsyncCount;			// SwapVsync at return from last WarpSwap()
 };
 
+void VFrameSmooth::setSmoothEyeTexture(unsigned int texID,ushort eye,ushort layer)
+{
 
+
+     d->m_images[eye][layer].TexId =  texID;
+
+}
+void VFrameSmooth::setSmoothOption(int option)
+{
+
+   //smoothOptions = option;
+
+    d->m_smoothOptions = option;
+
+}
+void VFrameSmooth::setMinimumVsncs( int vsnc)
+{
+
+    d->m_minimumVsyncs = vsnc;
+}
+
+void VFrameSmooth::setExternalVelocity(ovrMatrix4f extV)
+
+{
+    for(int i=0;i<4;i++)
+        for( int j=0;j<4;j++)
+    {
+ d->m_externalVelocity.M[i][j] = extV.M[i][j];
+}
+}
+void VFrameSmooth::setPreScheduleSeconds(float pres)
+{
+
+    d->m_preScheduleSeconds = pres;
+
+}
+void VFrameSmooth::setSmoothProgram(ovrTimeWarpProgram program)
+{
+
+   d->m_smoothProgram = program;
+
+
+}
+void VFrameSmooth::setProgramParms( float * proParms)
+{
+   d->m_programParms[0] = proParms[0];
+   d->m_programParms[1] = proParms[1];
+   d->m_programParms[2] = proParms[2];
+    d->m_programParms[3] = proParms[3];
+
+}
 
 // Shim to call a C++ object from a posix thread start.
 void *VFrameSmooth::Private::ThreadStarter( void * parm )
@@ -1547,6 +1608,136 @@ static uint64_t GetNanoSecondsUint64()
     return (uint64_t) now.tv_sec * 1000000000LL + now.tv_nsec;
 }
 
+void VFrameSmooth::Private::smoothInternal( )
+{
+    if ( gettid() != m_sStartupTid )
+    {
+        FAIL( "WarpSwap: Called with tid %i instead of %i", gettid(), m_sStartupTid );
+    }
+
+    // Keep track of the last time WarpSwap() was called.
+    m_lastWarpSwapTimeInSeconds.setState( ovr_GetTimeInSeconds() );
+
+    // Explicitly bind the framebuffer back to the default, so the
+    // eye targets will not be bound while they might be used as warp sources.
+    glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+
+
+    VGlOperation glOperation;
+    // Prepare to pass the new eye buffers to the background thread if we are running multi-threaded.
+    const long long lastBufferCount = m_eyeBufferCount.state();
+    warpSource_t & ws = m_warpSources[0];
+    ws.MinimumVsync = m_lastSwapVsyncCount + 2 * m_minimumVsyncs;	// don't use it if from same frame to avoid problems with very fast frames
+    ws.FirstDisplayedVsync[0] = 0;			// will be set when it becomes the currentSource
+    ws.FirstDisplayedVsync[1] = 0;			// will be set when it becomes the currentSource
+    ws.disableChromaticCorrection = ( ( glOperation.eglGetGpuType() & NervGear::VGlOperation::GPU_TYPE_MALI_T760_EXYNOS_5433 ) != 0 );
+    //ws.WarpParms = parms;
+
+    // Default images.
+    if ( ( m_smoothProgram & SWAP_OPTION_DEFAULT_IMAGES ) != 0 )
+    {
+        for ( int eye = 0; eye < 2; eye++ )
+        {
+            if ( m_images[eye][0].TexId == 0 )
+            {
+                m_images[eye][0].TexId = m_blackTexId;
+            }
+            if ( m_images[eye][1].TexId == 0 )
+            {
+                m_images[eye][1].TexId = m_defaultLoadingIconTexId;
+            }
+        }
+    }
+
+    // Destroy the sync object that was created for this buffer set.
+    if ( ws.GpuSync != EGL_NO_SYNC_KHR )
+    {
+        if ( EGL_FALSE == glOperation.eglDestroySyncKHR( m_eglDisplay, ws.GpuSync ) )
+        {
+            LOG( "eglDestroySyncKHR returned EGL_FALSE" );
+        }
+    }
+
+    // Add a sync object for this buffer set.
+    ws.GpuSync = glOperation.eglCreateSyncKHR( m_eglDisplay, EGL_SYNC_FENCE_KHR, NULL );
+    if ( ws.GpuSync == EGL_NO_SYNC_KHR )
+    {
+        FAIL( "eglCreateSyncKHR_():EGL_NO_SYNC_KHR" );
+    }
+
+    // Force it to flush the commands
+    if ( EGL_FALSE == glOperation.eglClientWaitSyncKHR( m_eglDisplay, ws.GpuSync,
+                                                        EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, 0 ) )
+    {
+        LOG( "eglClientWaitSyncKHR returned EGL_FALSE" );
+    }
+
+    // Submit this buffer set for use by the VFrameSmooth thread
+    //	LOG( "submitting bufferNum %lli: %i %i", lastBufferCount+1,
+    //			ws.WarpParms.Images[0][0].TexId, ws.WarpParms.Images[1][0].TexId );
+    m_eyeBufferCount.setState( lastBufferCount + 1 );
+
+    // If we are running synchronously instead of using a background
+    // thread, call WarpToScreen() directly.
+    if ( !m_async )
+    {
+        // Make sure all eye drawing is completed before we warp the drawing
+        // to the display buffer.
+
+        VGlOperation glOperation;
+        glOperation.glFinish();
+
+        swapProgram_t * swapProg;
+        swapProg = &spSyncSwappedBufferPortrait;
+
+        warpToScreen( floor( GetFractionalVsync() ), *swapProg );
+
+        const SwapState state = m_swapVsync.state();
+        m_lastSwapVsyncCount = state.VsyncCount;
+
+        return;
+    }
+
+    for ( ; ; )
+    {
+        const uint64_t startSuspendNanoSeconds = GetNanoSecondsUint64();
+
+        // block until the next vsync
+        pthread_mutex_lock( &m_swapMutex );
+
+        // Atomically unlock the mutex and block until the warp thread
+        // has completed a warp and sampled the sensors, updating SwapVsync.
+        pthread_cond_wait( &m_swapIsLatched, &m_swapMutex );
+
+        // Pthread_cond_wait re-locks the mutex before exit.
+        pthread_mutex_unlock( &m_swapMutex );
+
+        const uint64_t endSuspendNanoSeconds = GetNanoSecondsUint64();
+
+        const SwapState state = m_swapVsync.state();
+        if ( state.EyeBufferCount >= lastBufferCount )
+        {
+            // If MinimumVsyncs was increased dynamically, it is necessary
+            // to skip one or more vsyncs just as the change happens.
+            m_lastSwapVsyncCount = std::max( state.VsyncCount, m_lastSwapVsyncCount + m_minimumVsyncs );
+
+            // Sleep for at least one millisecond to make sure the main VR thread
+            // cannot completely deny the Android watchdog from getting a time slice.
+            const uint64_t suspendNanoSeconds = endSuspendNanoSeconds - startSuspendNanoSeconds;
+            if ( suspendNanoSeconds < 1000 * 1000 )
+            {
+                const uint64_t suspendMicroSeconds = ( 1000 * 1000 - suspendNanoSeconds ) / 1000;
+                LOG( "WarpSwap: usleep( %lld )", suspendMicroSeconds );
+                usleep( suspendMicroSeconds );
+            }
+            return;
+        }
+    }
+}
+
+
+
+
 void VFrameSmooth::Private::warpSwapInternal( const ovrTimeWarpParms & parms )
 {
     if ( gettid() != m_sStartupTid )
@@ -1692,12 +1883,19 @@ void VFrameSmooth::doSmooth( const ovrTimeWarpParms & parms )
         d->warpSwapInternal( parms );
     }
 }
+void	VFrameSmooth::doSmooth()
+{
 
-/*
-* VisualizeTiming
-*
-* Draw graphs of the latency and frame drops.
-*/
+
+    const int count = ( ( d->m_smoothOptions & SWAP_OPTION_FLUSH ) != 0 ) ? 3 : 1;
+    for ( int i = 0; i < count; i++ )
+    {
+      //  d->warpSwapInternal( parms );
+
+        d->smoothInternal();
+    }
+
+}
 struct lineVert_t
 {
     unsigned short	x, y;
