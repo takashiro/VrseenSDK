@@ -330,7 +330,7 @@ struct VFrameSmooth::Private
         // No buffers have been submitted yet
         m_eyeBufferCount.setState( 0 );
 
-         LOG( " VFrameSmooth() ----m_eyeBufferCount----------- %d", m_eyeBufferCount.state() );
+        // LOG( " VFrameSmooth() ----m_eyeBufferCount----------- %d", m_eyeBufferCount.state() );
 
 
         //---------------------------------------------------------
@@ -696,7 +696,7 @@ void VFrameSmooth::Private::threadFunction()
                removedSchedFifo = true;
            }
        }
-
+ LOG( "WarpThreadLoop enter warptoscreen");
         warpToScreen( vsync,spAsyncSwappedBufferPortrait);
     }
 
@@ -1048,7 +1048,7 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
         lastReportTime = timeNow;
     }
 
-    const warpSource_t & latestWarpSource = m_warpSources[m_eyeBufferCount.state()%4];
+    const warpSource_t & latestWarpSource = m_warpSources[0];
 
     // switch to sliced rendering
     if ( latestWarpSource.WarpParms.WarpOptions & SWAP_OPTION_USE_SLICED_WARP )
@@ -1099,7 +1099,7 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
                     LOG( "WarpToScreen: No valid Eye Buffers" );
                     break;
                 }
-                warpSource_t & testWarpSource = m_warpSources[thisEyeBufferNum % 4];
+                warpSource_t & testWarpSource = m_warpSources[0];
                 if ( testWarpSource.MinimumVsync > vsyncBase )
                 {
                     // a full frame got completed in less time than a single eye; don't use it to avoid stuttering
@@ -1343,7 +1343,7 @@ void VFrameSmooth::Private::warpToScreenSliced( const double vsyncBase, const sw
                     break;
                 }
 
-                warpSource_t & testWarpSource = m_warpSources[thisEyeBufferNum % 4];
+                warpSource_t & testWarpSource = m_warpSources[0];
                 if ( testWarpSource.MinimumVsync > vsyncBase )
                 {
                     // a full frame got completed in less time than a single eye; don't use it to avoid stuttering
@@ -1568,7 +1568,7 @@ void VFrameSmooth::Private::warpSwapInternal( const ovrTimeWarpParms & parms )
     const long long lastBufferCount = m_eyeBufferCount.state();
 
      LOG( "smooth eye buffercount ( %lld )", lastBufferCount );
-    warpSource_t & ws = m_warpSources[ ( lastBufferCount + 1 ) % 4 ];
+    warpSource_t & ws = m_warpSources[0];
     ws.MinimumVsync = m_lastSwapVsyncCount + 2 * minimumVsyncs;	// don't use it if from same frame to avoid problems with very fast frames
     ws.FirstDisplayedVsync[0] = 0;			// will be set when it becomes the currentSource
     ws.FirstDisplayedVsync[1] = 0;			// will be set when it becomes the currentSource
