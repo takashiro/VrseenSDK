@@ -57,7 +57,7 @@ public:
 	// Models that have DontRenderForClientUid == supressModelsWithClientId will be skipped
 	// to prevent the client's own head model from drawing in their view.
 	void		Frame(const VrViewParms viewParms_, const VrFrame vrFrame,
-            ovrMatrix4f & timeWarpParmsExternalVelocity, const long long supressModelsWithClientId = -1 );
+            VR4Matrixf & timeWarpParmsExternalVelocity, const long long supressModelsWithClientId = -1 );
 
 	// Issues GL calls and returns the MVP for the eye, as needed by AppInterface DrawEyeVIew
     VR4Matrixf	DrawEyeView( const int eye, const float fovDegrees ) const;

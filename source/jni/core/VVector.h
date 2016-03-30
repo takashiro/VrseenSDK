@@ -11,10 +11,6 @@ NV_NAMESPACE_BEGIN
 template<class T> class V2Vect;
 template<class T> class V3Vect;
 
-template<> struct VCompatibleTypes<V2Vect<int> >    { typedef ovrVector2i Type; };
-template<> struct VCompatibleTypes<V2Vect<float> >  { typedef ovrVector2f Type; };
-template<> struct VCompatibleTypes<V3Vect<float> >  { typedef ovrVector3f Type; };
-template<> struct VCompatibleTypes<V3Vect<double> > { typedef ovrVector3d Type; };
 
 template<class T>
 class V2Vect
@@ -30,20 +26,6 @@ public:
 	             : x((T)src.x), y((T)src.y) { }
 
 	         static const V2Vect ZERO;
-    // C-interop support.
-      typedef  typename VCompatibleTypes<V2Vect<T> >::Type VCompatibleType;
-
-      V2Vect(const VCompatibleType& s) : x(s.x), y(s.y) {  }
-
-      operator const VCompatibleType& () const
-      {
-          OVR_COMPILER_ASSERT(sizeof(V2Vect<T>) == sizeof(VCompatibleType));
-          return reinterpret_cast<const VCompatibleType&>(*this);
-      }
-
-
-
-
 
          bool     operator== (const V2Vect& b) const  { return x == b.x && y == b.y; }
          bool     operator!= (const V2Vect& b) const  { return x != b.x || y != b.y; }
@@ -195,17 +177,6 @@ public:
 	   V3Vect( const V2Vect<T> & xy, const T z_ ) : x( xy.x ), y( xy.y ), z( z_ ) { }
 
 	   static const V3Vect ZERO;
-
-    // C-interop support.
-       typedef  typename VCompatibleTypes<V3Vect<T> >::Type VCompatibleType;
-
-       V3Vect(const VCompatibleType& s) : x(s.x), y(s.y), z(s.z) {  }
-
-       operator const VCompatibleType& () const
-       {
-           OVR_COMPILER_ASSERT(sizeof(V3Vect<T>) == sizeof(VCompatibleType));
-           return reinterpret_cast<const VCompatibleType&>(*this);
-       }
 
 
 
@@ -402,16 +373,6 @@ public:
 
 	  static const V4Vect ZERO;
 
-    // C-interop support.
-       typedef  typename VCompatibleTypes< V4Vect<T> >::Type VCompatibleType;
-
-       V4Vect(const VCompatibleType& s) : x(s.x), y(s.y), z(s.z), w(s.w) {  }
-
-       operator const VCompatibleType& () const
-       {
-           OVR_COMPILER_ASSERT(sizeof(V4Vect<T>) == sizeof(VCompatibleType));
-           return reinterpret_cast<const VCompatibleType&>(*this);
-       }
 
 
           bool     operator== (const V4Vect& b) const  { return x == b.x && y == b.y && z == b.z && w == b.w; }

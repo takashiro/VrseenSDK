@@ -17,10 +17,7 @@ template<class T> class VR3Matrix;
 
 template<class T> class PoseState;
 
-template<> struct VCompatibleTypes<VQuat<float> >     { typedef ovrQuatf Type; };
-template<> struct VCompatibleTypes<VQuat<double> >    { typedef ovrQuatd Type; };
-template<> struct VCompatibleTypes<VPos<float> >     { typedef ovrPosef Type; };
-template<> struct VCompatibleTypes<PoseState<float> >{ typedef ovrPoseStatef Type; };
+
 //-------------------------------------------------------------------------------------
 // ***** VBox
 
@@ -202,19 +199,6 @@ public:
 		y = cy * rcpLength;
 		z = cz * rcpLength;
 		w = cw * rcpLength;
-	}
-
-  // C-interop support.
-	VQuat(const typename VCompatibleTypes<VQuat<T> >::Type& s) : x(s.x), y(s.y), z(s.z), w(s.w) { }
-
-	operator const typename VCompatibleTypes<VQuat<T> >::Type () const
-	{
-		typename VCompatibleTypes<VQuat<T> >::Type result;
-		result.x = x;
-		result.y = y;
-		result.z = z;
-		result.w = w;
-		return result;
 	}
 
 
@@ -504,25 +488,17 @@ class VPos
 {
 public:
 
-    typedef typename VCompatibleTypes<VPos<T> >::Type VCompatibleType;
+
 
     VPos() { }
     VPos(const VQuat<T>& orientation, const V3Vect<T>& pos)
         : Orientation(orientation), Position(pos) {  }
     VPos(const VPos& s)
         : Orientation(s.Orientation), Position(s.Position) {  }
-    VPos(const VCompatibleType& s)
-        : Orientation(s.Orientation), Position(s.Position) {  }
+
     explicit VPos(const VPos<typename VConstants<T>::VdifFloat> &s)
         : Orientation(s.Orientation), Position(s.Position) {  }
 
-    operator const typename VCompatibleTypes<VPos<T> >::Type () const
-    {
-        typename VCompatibleTypes<VPos<T> >::Type result;
-        result.Orientation = Orientation;
-        result.Position = Position;
-        return result;
-    }
 
     V3Vect<T> Rotate(const V3Vect<T>& v) const
     {

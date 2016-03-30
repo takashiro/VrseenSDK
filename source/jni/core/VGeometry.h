@@ -14,8 +14,6 @@ template<class T> class VSize;
 template<class T> class VRect;
 template<class T> class VAngle;
 
-template<> struct VCompatibleTypes<VSize<int> >       { typedef ovrSizei Type; };
-template<> struct VCompatibleTypes<VSize<float> >     { typedef ovrSizef Type; };
 
 template <class T>
 class VBox
@@ -160,16 +158,6 @@ public:
     explicit VSize(T s)  : Width(s), Height(s)   { }
     explicit VSize(const VSize<typename VConstants<T>::VdifFloat> &src)
         : Width((T)src.w), Height((T)src.h) { }
-    // C-interop support.
-      typedef  typename VCompatibleTypes<VSize<T> >::Type VCompatibleType;
-
-      VSize(const VCompatibleType& s) : Width(s.w), Height(s.h) {  }
-
-      operator const VCompatibleType& () const
-{
-          OVR_COMPILER_ASSERT(sizeof(VSize<T>) == sizeof(VCompatibleType));
-          return reinterpret_cast<const VCompatibleType&>(*this);
-      }
 
     bool     operator== (const VSize& b) const  { return Width == b.Width && Height == b.Height; }
     bool     operator!= (const VSize& b) const  { return Width != b.Width || Height != b.Height; }
@@ -225,17 +213,6 @@ public:
     VRect(T x1, T y1, T w1, T h1)                   : x(x1), y(y1), w(w1), h(h1) { }
     VRect(const V2Vect<T>& pos, const VSize<T>& sz) : x(pos.x), y(pos.y), w(sz.w), h(sz.h) { }
     VRect(const VSize<T>& sz)                        : x(0), y(0), w(sz.w), h(sz.h) { }
-
-    // C-interop support.
-   typedef  typename VCompatibleTypes<VRect<T> >::Type VCompatibleType;
-
-   VRect(const VCompatibleType& s) : x(s.Pos.x), y(s.Pos.y), w(s.Size.Width), h(s.Size.Height) {  }
-
-   operator const VCompatibleType& () const
-   {
-           OVR_COMPILER_ASSERT(sizeof(VRect<T>) == sizeof(VCompatibleType));
-	   return reinterpret_cast<const VCompatibleType&>(*this);
-   }
 
    V2Vect<T> GetPos() const                { return V2Vect<T>(x, y); }
    VSize<T>    GetSize() const               { return VSize<T>(w, h); }
