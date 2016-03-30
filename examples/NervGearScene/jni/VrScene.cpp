@@ -44,10 +44,10 @@ VrScene::~VrScene() {
 	LOG( "~VrScene()");
 }
 
-void VrScene::configureVrMode( ovrModeParms & modeParms )
+void VrScene::configureVrMode(VKernel* kernel)
 {
 	// Always use 2x MSAA for now
-	vApp->vrParms().multisamples = 2;
+	kernel->msaa = 2;
 }
 
 void VrScene::init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI)

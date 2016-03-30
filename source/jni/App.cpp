@@ -29,7 +29,9 @@
 #include "TypesafeNumber.h"
 #include "VBasicmath.h"
 #include "VolumePopup.h"
-#include "VrApi.h"
+#include "api/VDevice.h"
+#include "api/VFrameSmooth.h"
+#include "api/VKernel.h"
 #include "VrLocale.h"
 #include "VRMenuMgr.h"
 #include "VUserSettings.h"
@@ -191,21 +193,6 @@ static bool ChromaticAberrationCorrection(const VGlOperation & glOperation)
     return (glOperation.gpuType & VGlOperation::GPU_TYPE_ADRENO) != 0 && (glOperation.gpuType >= VGlOperation::GPU_TYPE_ADRENO_420);
 }
 
-static const char* vertexShaderSource =
-        "uniform mat4 Mvpm;\n"
-        "uniform mat4 Texm;\n"
-        "attribute vec4 Position;\n"
-        "attribute vec4 VertexColor;\n"
-        "attribute vec2 TexCoord;\n"
-        "uniform mediump vec4 UniformColor;\n"
-        "varying  highp vec2 oTexCoord;\n"
-        "varying  lowp vec4 oColor;\n"
-        "void main()\n"
-        "{\n"
-        "   gl_Position = Mvpm * Position;\n"
-        "   oTexCoord = vec2(Texm * vec4(TexCoord,1,1));\n"
-        "   oColor = VertexColor * UniformColor;\n"
-        "}\n";
 
 
 struct App::Private
@@ -220,9 +207,6 @@ struct App::Private
 
     // Most calls in from java should communicate through this.
     VEventLoop	eventLoop;
-
-    // From EnterVrMode, used for WarpSwap and LeaveVrMode
-    ovrMobile *		OvrMobile;
 
     // Egl context and surface for rendering
     VGlOperation  glOperation;
@@ -280,8 +264,6 @@ struct App::Private
     bool			drawCalibrationLines;	// currently toggled by right trigger
     bool			calibrationLinesDrawn;	// after draw, go to static time warp test
     bool			showVignette;			// render the vignette
-
-    ovrHmdInfo		hmdInfo;
 
     bool			framebufferIsSrgb;			// requires KHR_gl_colorspace
     bool			framebufferIsProtected;		// requires GPU trust zone extension
@@ -359,6 +341,7 @@ struct App::Private
     VMainActivity *appInterface;
 
     VMainActivity *activity;
+    VKernel*        kernel;
 
     Private(App *self)
         : self(self)
@@ -366,7 +349,6 @@ struct App::Private
         , createdSurface(false)
         , readyToExit(false)
         , eventLoop(100)
-        , OvrMobile(nullptr)
         , eyeTargets(nullptr)
         , loadingIconTexId(0)
         , javaVM(VrLibJavaVM)
@@ -480,7 +462,7 @@ struct App::Private
     {
         appInterface->onPause();
 
-        ovr_LeaveVrMode(OvrMobile);
+        kernel->exit();
     }
 
     void resume()
@@ -496,20 +478,17 @@ struct App::Private
         // (Not needed now?)
         if (eglMakeCurrent(glOperation.display, windowSurface, windowSurface, glOperation.context) == EGL_FALSE)
         {
-            vFatal("eglMakeCurrent failed:" << glOperation.EglErrorString());
+            vFatal("eglMakeCurrent failed:" << glOperation.getEglErrorString());
         }
 
-        ovrModeParms &VrModeParms = self->VrModeParms;
-        VrModeParms.ActivityObject = javaObject;
-
         // Allow the app to override
-        appInterface->configureVrMode(VrModeParms);
+        appInterface->configureVrMode(kernel);
 
         // Clear cursor trails
         gazeCursor->HideCursorForFrames(10);
 
         // Start up TimeWarp and the various performance options
-        OvrMobile = ovr_EnterVrMode(VrModeParms, &hmdInfo);
+        kernel->run();
 
         appInterface->onResume();
     }
@@ -520,70 +499,20 @@ struct App::Private
 
         swapParms.WarpProgram = ChromaticAberrationCorrection(glOperation) ? WP_CHROMATIC : WP_SIMPLE;
 
-        // Let glUtils look up extensions
 
-        glOperation.GL_FindExtensions();
+        glOperation.logExtensions();
 
-        externalTextureProgram2.initShader( vertexShaderSource, externalFragmentShaderSource );
-        untexturedMvpProgram.initShader(
-            "uniform mat4 Mvpm;\n"
-            "attribute vec4 Position;\n"
-            "uniform mediump vec4 UniformColor;\n"
-            "varying  lowp vec4 oColor;\n"
-            "void main()\n"
-            "{\n"
-                "   gl_Position = Mvpm * Position;\n"
-                "   oColor = UniformColor;\n"
-            "}\n"
-        ,
-            "varying lowp vec4	oColor;\n"
-            "void main()\n"
-            "{\n"
-            "	gl_FragColor = oColor;\n"
-            "}\n"
-        );
-        untexturedScreenSpaceProgram.initShader( identityVertexShaderSource, untexturedFragmentShaderSource );
-        overlayScreenFadeMaskProgram.initShader(
-                "uniform mat4 Mvpm;\n"
-                "attribute vec4 VertexColor;\n"
-                "attribute vec4 Position;\n"
-                "varying  lowp vec4 oColor;\n"
-                "void main()\n"
-                "{\n"
-                "   gl_Position = Mvpm * Position;\n"
-                "   oColor = vec4(1.0, 1.0, 1.0, 1.0 - VertexColor.x);\n"
-                "}\n"
-            ,
-                "varying lowp vec4	oColor;\n"
-                "void main()\n"
-                "{\n"
-                "	gl_FragColor = oColor;\n"
-                "}\n"
-            );
-        overlayScreenDirectProgram.initShader(
-                "uniform mat4 Mvpm;\n"
-                "attribute vec4 Position;\n"
-                "attribute vec2 TexCoord;\n"
-                "varying  highp vec2 oTexCoord;\n"
-                "void main()\n"
-                "{\n"
-                "   gl_Position = Mvpm * Position;\n"
-                "   oTexCoord = TexCoord;\n"
-                "}\n"
-            ,
-                "uniform sampler2D Texture0;\n"
-                "varying highp vec2 oTexCoord;\n"
-                "void main()\n"
-                "{\n"
-                "	gl_FragColor = texture2D(Texture0, oTexCoord);\n"
-                "}\n"
-            );
+        externalTextureProgram2.initShader( VGlShader::getAdditionalVertexShaderSource(), VGlShader::getAdditionalFragmentShaderSource() );
+        untexturedMvpProgram.initShader( VGlShader::getUntextureMvpVertexShaderSource(),VGlShader::getUntexturedFragmentShaderSource()  );
+        untexturedScreenSpaceProgram.initShader( VGlShader::getUniformColorVertexShaderSource(), VGlShader::getUntexturedFragmentShaderSource() );
+        overlayScreenFadeMaskProgram.initShader(VGlShader::getUntextureInverseColorVertexShaderSource(),VGlShader::getUntexturedFragmentShaderSource() );
+        overlayScreenDirectProgram.initShader(VGlShader::getSingleTextureVertexShaderSource(),VGlShader::getSingleTextureFragmentShaderSource() );
 
-        // Build some geometries we need
-        panelGeometry = VGlGeometryFactory::CreateTesselatedQuad( 32, 16 );;	// must be large to get faded edge
-        unitSquare = VGlGeometryFactory::CreateTesselatedQuad( 1, 1 );
-        unitCubeLines = VGlGeometryFactory::CreateUnitCubeLines();
-        //FadedScreenMaskSquare = BuildFadedScreenMask(0.0f, 0.0f);	// TODO: clean up: app-specific values are being passed in on DrawScreenMask
+
+        panelGeometry.createPlaneQuadGrid( 32, 16 );
+        unitSquare.createPlaneQuadGrid(1, 1 );
+        unitCubeLines.createUnitCubeGrid();
+
 
         eyeDecorations.Init();
     }
@@ -596,10 +525,10 @@ struct App::Private
         overlayScreenFadeMaskProgram.destroy();
         overlayScreenDirectProgram.destroy();
 
-        panelGeometry.Free();
-        unitSquare.Free();
-        unitCubeLines.Free();
-        fadedScreenMaskSquare.Free();
+        panelGeometry.destroy();
+        unitSquare.destroy();
+        unitCubeLines.destroy();
+        fadedScreenMaskSquare.destroy();
 
         eyeDecorations.Shutdown();
     }
@@ -903,7 +832,7 @@ struct App::Private
                         nativeWindow, attribs2);
                 if (windowSurface == EGL_NO_SURFACE)
                 {
-                    FAIL("eglCreateWindowSurface failed: %s", glOperation.EglErrorString());
+                    FAIL("eglCreateWindowSurface failed: %s", glOperation.getEglErrorString());
                 }
                 framebufferIsSrgb = false;
                 framebufferIsProtected = false;
@@ -916,7 +845,7 @@ struct App::Private
 
             if (eglMakeCurrent(glOperation.display, windowSurface, windowSurface, glOperation.context) == EGL_FALSE)
             {
-                vFatal("eglMakeCurrent failed:" << glOperation.EglErrorString());
+                vFatal("eglMakeCurrent failed:" << glOperation.getEglErrorString());
             }
 
             createdSurface = true;
@@ -1031,7 +960,7 @@ struct App::Private
         }
 
         if (event.name == "quit") {
-            ovr_LeaveVrMode(OvrMobile);
+            kernel->exit();
             readyToExit = true;
             vInfo("VrThreadSynced=" << vrThreadSynced << " CreatedSurface=" << createdSurface << " ReadyToExit=" << readyToExit);
         }
@@ -1072,7 +1001,7 @@ struct App::Private
             const int windowDepth = 0;
             const int windowSamples = 0;
             const GLuint contextPriority = EGL_CONTEXT_PRIORITY_MEDIUM_IMG;
-            glOperation.EglSetup(EGL_NO_CONTEXT, GL_ES_VERSION,	// no share context,
+            glOperation.eglInit(EGL_NO_CONTEXT, GL_ES_VERSION,	// no share context,
                     8,8,8, windowDepth, windowSamples, // r g b
                     contextPriority);
 
@@ -1196,14 +1125,14 @@ struct App::Private
             {
                 if (ovr_GetTimeInSeconds() >= errorMessageEndTime)
                 {
-                    ovr_ExitActivity(OvrMobile, EXIT_TYPE_FINISH_AFFINITY);
+                    kernel->destroy(EXIT_TYPE_FINISH_AFFINITY);
                 }
                 else
                 {
                     ovrTimeWarpParms warpSwapMessageParms = InitTimeWarpParms(WARP_INIT_MESSAGE, errorTexture.texture);
                     warpSwapMessageParms.ProgramParms[0] = 0.0f;						// rotation in radians
                     warpSwapMessageParms.ProgramParms[1] = 1024.0f / errorTextureSize;	// message size factor
-                    ovr_WarpSwap(OvrMobile, &warpSwapMessageParms);
+                    kernel->doSmooth(&warpSwapMessageParms);
                 }
                 continue;
             }
@@ -1214,7 +1143,7 @@ struct App::Private
                 if (appInterface->showLoadingIcon())
                 {
                     const ovrTimeWarpParms warpSwapLoadingIconParms = InitTimeWarpParms(WARP_INIT_LOADING_ICON, loadingIconTexId);
-                    ovr_WarpSwap(OvrMobile, &warpSwapLoadingIconParms);
+                    kernel->doSmooth(&warpSwapLoadingIconParms);
                 }
                 vInfo("launchIntentJSON:" << launchIntentJSON);
                 vInfo("launchIntentURI:" << launchIntentURI);
@@ -1259,7 +1188,7 @@ struct App::Private
             const double rawDelta = now - prev;
             prev = now;
             const double clampedPrediction = std::min(0.1, rawDelta * 2);
-            sensorForNextWarp = ovr_GetPredictedSensorState(OvrMobile, now + clampedPrediction);
+            sensorForNextWarp = kernel->ovr_GetPredictedSensorState(now + clampedPrediction);
 
             vrFrame.PoseState = sensorForNextWarp.Predicted;
             vrFrame.OvrStatus = sensorForNextWarp.Status;
@@ -1299,7 +1228,7 @@ struct App::Private
                 else if (event == KeyState::KEY_EVENT_LONG_PRESS)
                 {
                     //StartSystemActivity(PUI_GLOBAL_MENU);
-                    ovr_ExitActivity(OvrMobile, EXIT_TYPE_FINISH);
+                    kernel->destroy(EXIT_TYPE_FINISH);
                 }
 
                 // let the menu handle it if it's open
@@ -1317,7 +1246,7 @@ struct App::Private
                     {
                         consumedKey = true;
                         LOG("BUTTON_BACK: confirming quit in platformUI");
-                        ovr_ExitActivity(OvrMobile, EXIT_TYPE_FINISH);
+                        kernel->destroy(EXIT_TYPE_FINISH);
                     }
                 }
             }
@@ -1381,7 +1310,7 @@ struct App::Private
                 lastViewMatrix = appInterface->onNewFrame(vrFrame);
             }
 
-            ovr_HandleDeviceStateChanges(OvrMobile);
+            kernel->ovr_HandleDeviceStateChanges();
 
             // MWC demo hack to allow keyboard swipes
             joypad.buttonState &= ~(BUTTON_SWIPE_FORWARD|BUTTON_SWIPE_BACK);
@@ -1440,7 +1369,7 @@ struct App::Private
 
             shutdownGlObjects();
 
-            glOperation.EglShutdown();
+            glOperation.eglExit();
 
             // Detach from the Java VM before exiting.
             vInfo("javaVM->DetachCurrentThread");
@@ -1584,6 +1513,7 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
     vAssert(NervGearAppInstance == nullptr);
     NervGearAppInstance = this;
 
+    d->kernel = VKernel::GetInstance();
     d->storagePaths = new VStandardPath(jni, activityObject);
 
 	//WaitForDebuggerToAttach();
@@ -1602,11 +1532,6 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
     d->vrParms.multisamples = 4;
     d->vrParms.colorFormat = COLOR_8888;
     d->vrParms.depthFormat = DEPTH_24;
-
-	// Default ovrModeParms
-	VrModeParms.AsynchronousTimeWarp = true;
-	VrModeParms.SkipWindowFullscreenReset = false;
-	VrModeParms.GameThreadTid = 0;
 
     d->javaObject = d->uiJni->NewGlobalRef(activityObject);
 
@@ -1723,20 +1648,6 @@ void App::playSound(const char *name)
             jni->DeleteLocalRef(cmdString);
         }
     });
-}
-
-void App::setVrModeParms(ovrModeParms parms)
-{
-    if (d->OvrMobile)
-	{
-        ovr_LeaveVrMode(d->OvrMobile);
-		VrModeParms = parms;
-        d->OvrMobile = ovr_EnterVrMode(VrModeParms, &d->hmdInfo);
-	}
-	else
-	{
-		VrModeParms = parms;
-	}
 }
 
 //void ToggleScreenColor()
@@ -1909,11 +1820,6 @@ bool App::isGuiOpen() const
     return d->guiSys->isAnyMenuOpen();
 }
 
-bool App::isAsynchronousTimeWarp() const
-{
-	return VrModeParms.AsynchronousTimeWarp;
-}
-
 bool App::framebufferIsSrgb() const
 {
     return d->framebufferIsSrgb;
@@ -1952,11 +1858,6 @@ void App::setLastViewMatrix(VR4Matrixf const & m)
 EyeParms & App::vrParms()
 {
     return d->vrParms;
-}
-
-ovrModeParms App::vrModeParms()
-{
-	return VrModeParms;
 }
 
 void App::setPopupDistance(float const distance)
@@ -2004,6 +1905,11 @@ jobject	& App::javaObject()
 jclass & App::vrActivityClass()
 {
     return d->vrActivityClass;
+}
+
+VKernel* App::kernel()
+{
+    return  d->kernel;
 }
 
 SurfaceTexture * App::dialogTexture()
@@ -2108,9 +2014,10 @@ void App::recenterYaw(const bool showBlack)
     if (showBlack)
 	{
         const ovrTimeWarpParms warpSwapBlackParms = InitTimeWarpParms(WARP_INIT_BLACK);
-        ovr_WarpSwap(d->OvrMobile, &warpSwapBlackParms);
+        d->kernel->doSmooth(&warpSwapBlackParms);
+
 	}
-    ovr_RecenterYaw(d->OvrMobile);
+    d->kernel->ovr_RecenterYaw();
 
 	// Change lastViewMatrix to mirror what is done to the sensor orientation by ovr_RecenterYaw.
 	// Get the current yaw rotation and cancel it out. This is necessary so that subsystems that
@@ -2195,7 +2102,7 @@ void App::drawPanel( const GLuint externalTextureId, const VR4Matrixf & dialogMv
     glBindTexture(GL_TEXTURE_EXTERNAL_OES, externalTextureId);
     glEnable( GL_BLEND );
     glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-    d->panelGeometry.Draw();
+    d->panelGeometry.drawElements();
     glDisable( GL_BLEND );
     glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0 );	// don't leave it bound
 }
@@ -2216,7 +2123,7 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
     //
     // Doing this dynamically based just on time causes visible flickering at the
     // periphery when the fov is increased, so only do it if minimumVsyncs is set.
-    const float fovDegrees = d->hmdInfo.SuggestedEyeFov[0] +
+    const float fovDegrees = d->kernel->device->eyeDisplayFov[0] +
             ( ( d->swapParms.MinimumVsyncs > 1 ) ? 10.0f : 0.0f ) +
             ( ( !d->showVignette ) ? 5.0f : 0.0f );
 
@@ -2226,7 +2133,7 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
 
 
     // Flush out and report any errors
-    glOperation.GL_CheckErrors("FrameStart");
+    glOperation.logErrorsEnum("FrameStart");
 
     if ( d->drawCalibrationLines && d->calibrationLinesDrawn )
     {
@@ -2296,7 +2203,8 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
             d->swapParms.Images[eye][0].Pose = d->sensorForNextWarp.Predicted;
         }
 
-        ovr_WarpSwap( d->OvrMobile, &d->swapParms );
+        d->kernel->doSmooth(&d->swapParms);
+
     }
 }
 
@@ -2330,11 +2238,11 @@ void App::drawScreenMask( const VR4Matrixf & mvp, const float fadeFracX, const f
 
     if ( d->fadedScreenMaskSquare.vertexArrayObject == 0 )
     {
-        d->fadedScreenMaskSquare = VGlGeometryFactory::CreateFadedScreenMask( fadeFracX, fadeFracY );
+        d->fadedScreenMaskSquare.createScreenMaskSquare( fadeFracX, fadeFracY );
     }
 
     glColorMask( 0.0f, 0.0f, 0.0f, 1.0f );
-    d->fadedScreenMaskSquare.Draw();
+    d->fadedScreenMaskSquare.drawElements();
     glColorMask( 1.0f, 1.0f, 1.0f, 1.0f );
 }
 

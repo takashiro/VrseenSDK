@@ -23,37 +23,21 @@ void EyePostRender::Init()
 	LOG( "EyePostRender::Init()" );
 
 	// grid of lines for drawing to eye buffer
-	CalibrationLines = VGlGeometryFactory::CreateCalibrationLines( 24, false );
+    CalibrationLines.createCalibrationGrid( 24, false );
 
 	// thin border around the outside
-	VignetteSquare = VGlGeometryFactory::CreateVignette( 128.0f / 1024.0f, 128.0f / 1024.0f );
+    VignetteSquare.createStylePattern( 128.0f / 1024.0f, 128.0f / 1024.0f );
 
-	UntexturedMvpProgram.initShader(
-		"uniform mat4 Mvpm;\n"
-		"attribute vec4 Position;\n"
-		"uniform mediump vec4 UniformColor;\n"
-		"varying  lowp vec4 oColor;\n"
-		"void main()\n"
-		"{\n"
-			"   gl_Position = Mvpm * Position;\n"
-			"   oColor = UniformColor;\n"
-		"}\n"
-	,
-		"varying lowp vec4	oColor;\n"
-		"void main()\n"
-		"{\n"
-		"	gl_FragColor = oColor;\n"
-		"}\n"
-	);
+    UntexturedMvpProgram.initShader(VGlShader::getUntextureMvpVertexShaderSource(),VGlShader::getUntexturedFragmentShaderSource());
 
-	UntexturedScreenSpaceProgram.initShader( identityVertexShaderSource, untexturedFragmentShaderSource );
+    UntexturedScreenSpaceProgram.initShader( VGlShader::getUniformColorVertexShaderSource(), VGlShader::getUntexturedFragmentShaderSource() );
 }
 
 void EyePostRender::Shutdown()
 {
 	LOG( "EyePostRender::Shutdown()" );
-	CalibrationLines.Free();
-	VignetteSquare.Free();
+	CalibrationLines.destroy();
+	VignetteSquare.destroy();
 	UntexturedMvpProgram.destroy();
 	UntexturedScreenSpaceProgram.destroy();
 }
@@ -90,7 +74,7 @@ void EyePostRender::DrawEyeVignette()
 	glUniform4f( UntexturedScreenSpaceProgram.uniformColor, 1, 1, 1, 1 );
 	glEnable( GL_BLEND );
 	glBlendFunc( GL_ZERO, GL_SRC_COLOR );
-	VignetteSquare.Draw();
+	VignetteSquare.drawElements();
 	glDisable( GL_BLEND );
 	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
     glOperation.glBindVertexArrayOES( 0 );

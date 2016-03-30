@@ -27,3 +27,4 @@ appcompat_v7/
 local.properties
 gradlew
 MYTEMP/
+*.autosave

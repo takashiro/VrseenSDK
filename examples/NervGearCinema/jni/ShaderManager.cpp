@@ -179,14 +179,15 @@ void ShaderManager::OneTimeInit( const VString &launchIntent )
 	// NOTE: make sure to load with SCENE_PROGRAM_STATIC_DYNAMIC because the textures are initially not swapped
 	DynamicPrograms = ModelGlPrograms( &ScenePrograms[ SCENE_PROGRAM_STATIC_DYNAMIC ] );
 
-	ProgVertexColor				.initShader( VertexColorVertexShaderSrc, VertexColorFragmentShaderSrc );
-	ProgSingleTexture			.initShader( SingleTextureVertexShaderSrc, SingleTextureFragmentShaderSrc );
-	ProgLightMapped				.initShader( LightMappedVertexShaderSrc, LightMappedFragmentShaderSrc );
-	ProgReflectionMapped		.initShader( ReflectionMappedVertexShaderSrc, ReflectionMappedFragmentShaderSrc );
-	ProgSkinnedVertexColor		.initShader( VertexColorSkinned1VertexShaderSrc, VertexColorFragmentShaderSrc );
-	ProgSkinnedSingleTexture	.initShader( SingleTextureSkinned1VertexShaderSrc, SingleTextureFragmentShaderSrc );
-	ProgSkinnedLightMapped		.initShader( LightMappedSkinned1VertexShaderSrc, LightMappedFragmentShaderSrc );
-	ProgSkinnedReflectionMapped	.initShader( ReflectionMappedSkinned1VertexShaderSrc, ReflectionMappedFragmentShaderSrc );
+    ProgVertexColor				.initShader( VGlShader::getVertexColorVertexShaderSource(), VGlShader::getVertexColorFragmentShaderSource() );
+    ProgSingleTexture			.initShader( VGlShader::getSingleTextureVertexShaderSource(), VGlShader::getSingleTextureFragmentShaderSource() );
+    ProgLightMapped				.initShader( VGlShader::getLightMappedVertexShaderSource(), VGlShader::getLightMappedFragmentShaderSource() );
+    ProgReflectionMapped		.initShader( VGlShader::getReflectionMappedVertexShaderSource(), VGlShader::getReflectionMappedFragmentShaderSource() );
+    ProgSkinnedVertexColor		.initShader( VGlShader::getVertexColorSkVertexShaderSource(), VGlShader::getVertexColorFragmentShaderSource() );
+    ProgSkinnedSingleTexture	.initShader( VGlShader::getSingleTextureSkVertexShaderSource(), VGlShader::getSingleTextureFragmentShaderSource() );
+    ProgSkinnedLightMapped		.initShader( VGlShader::getLightMappedSkVertexShaderSource(), VGlShader::getLightMappedFragmentShaderSource() );
+    ProgSkinnedReflectionMapped	.initShader( VGlShader::getReflectionMappedSkVertexShaderSource(), VGlShader::getReflectionMappedFragmentShaderSource() );
+
 
 	DefaultPrograms.ProgVertexColor				= & ProgVertexColor;
 	DefaultPrograms.ProgSingleTexture			= & ProgSingleTexture;

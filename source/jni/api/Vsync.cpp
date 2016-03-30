@@ -23,7 +23,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "VTimer.h"
 #include "Android/LogUtils.h"
-#include "VrApi.h"			// for ovr_GetTimeInSeconds()
+#include "VKernel.h"			// for ovr_GetTimeInSeconds()
 
 /*
  * As of 6/30/2014, I am seeing vsync frame timings of 16.71 ms for the 1080 S5,

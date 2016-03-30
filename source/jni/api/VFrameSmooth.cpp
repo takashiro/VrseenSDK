@@ -23,7 +23,7 @@
 #include "VLockless.h"
 #include "VGlGeometry.h"
 #include "VGlShader.h"
-#include "VrApi.h"
+#include "VKernel.h"
 
 ovrSensorState ovr_GetSensorStateInternal( double absTime );
 bool ovr_ProcessLatencyTest( unsigned char rgbColorOut[3] );
@@ -178,28 +178,28 @@ swapProgram_t	spSyncSwappedBufferPortrait = {
 void EyeRectLandscape( const VDevice *device,int eye,int &x, int &y, int &width, int &height )
 {
     // always scissor exactly to half the screen
-    int scissorX = ( eye == 0 ) ? 0 : device->widthPixels / 2;
+    int scissorX = ( eye == 0 ) ? 0 : device->widthbyPixels / 2;
     int scissorY = 0;
-    int scissorWidth = device->widthPixels / 2;
-    int scissorHeight = device->heightPixels;
+    int scissorWidth = device->widthbyPixels / 2;
+    int scissorHeight = device->heightbyPixels;
     x = scissorX;
     y = scissorY;
     width = scissorWidth;
     height = scissorHeight;
     return;
 
-    const float	metersToPixels = device->widthPixels / device->widthMeters;
+    const float	metersToPixels = device->widthbyPixels / device->widthbyMeters;
 
     // Even though the lens center is shifted outwards slightly,
     // the height is still larger than the largest horizontal value.
     // TODO: check for sure on other HMD
-    const int	pixelRadius = device->heightPixels / 2;
+    const int	pixelRadius = device->heightbyPixels / 2;
     const int	pixelDiameter = pixelRadius * 2;
-    const float	horizontalShiftMeters = ( device->lensSeparation / 2 ) - ( device->widthMeters / 4 );
+    const float	horizontalShiftMeters = ( device->lensDistance / 2 ) - ( device->widthbyMeters / 4 );
     const float	horizontalShiftPixels = horizontalShiftMeters * metersToPixels;
 
     // Make a viewport that is symetric, extending off the sides of the screen and into the other half.
-    x = device->widthPixels/4 - pixelRadius + ( ( eye == 0 ) ? - horizontalShiftPixels : device->widthPixels/2 + horizontalShiftPixels );
+    x = device->widthbyPixels/4 - pixelRadius + ( ( eye == 0 ) ? - horizontalShiftPixels : device->widthbyPixels/2 + horizontalShiftPixels );
     y = 0;
     width = pixelDiameter;
     height = pixelDiameter;
@@ -356,7 +356,7 @@ struct VFrameSmooth::Private
         {
             FAIL( "eglQueryContext EGL_CONFIG_ID failed" );
         }
-        m_eglConfig = glOperation.EglConfigForConfigID( m_eglDisplay, configID );
+        m_eglConfig = glOperation.eglConfigForConfigID( m_eglDisplay, configID );
         if ( m_eglConfig == NULL )
         {
             FAIL( "EglConfigForConfigID failed" );
@@ -382,7 +382,7 @@ struct VFrameSmooth::Private
             LOG( "Share context eglConfig has %i samples -- should be 0", samples );
         }
         // See if we have sRGB_write_control extension
-        m_hasEXT_sRGB_write_control = glOperation.GL_ExtensionStringPresent( "GL_EXT_sRGB_write_control",
+        m_hasEXT_sRGB_write_control = glOperation.glIsExtensionString( "GL_EXT_sRGB_write_control",
                                                                              (const char *)glGetString( GL_EXTENSIONS ) );
 
         // Skip thread initialization if we are running synchronously
@@ -434,7 +434,7 @@ struct VFrameSmooth::Private
             m_eglPbufferSurface = eglCreatePbufferSurface( m_eglDisplay, m_eglConfig, attrib_list );
             if ( m_eglPbufferSurface == EGL_NO_SURFACE )
             {
-                FAIL( "eglCreatePbufferSurface failed: %s", glOperation.EglErrorString() );
+                FAIL( "eglCreatePbufferSurface failed: %s", glOperation.getEglErrorString() );
             }
 
             if ( eglMakeCurrent( m_eglDisplay, m_eglPbufferSurface, m_eglPbufferSurface,
@@ -495,7 +495,7 @@ struct VFrameSmooth::Private
             if ( eglMakeCurrent( m_eglDisplay, m_eglMainThreadSurface,
                                  m_eglMainThreadSurface, m_eglShareContext ) == EGL_FALSE)
             {
-                FAIL( "eglMakeCurrent to window failed: %s", glOperation.EglErrorString() );
+                FAIL( "eglMakeCurrent to window failed: %s", glOperation.getEglErrorString() );
             }
 
             // Destroy the pbuffer surface that was attached to the calling context.
@@ -543,8 +543,7 @@ struct VFrameSmooth::Private
     // debug graphs.
     void			createFrameworkGraphics();
     void			destroyFrameworkGraphics();
-    void			drawFrameworkGraphicsToWindow( const int eye, const int swapOptions,
-                                                   const bool drawTimingGraph );
+    void			drawFrameworkGraphicsToWindow( const int eye, const int swapOptions);
 
     bool m_async;
     VDevice *m_device;
@@ -565,12 +564,6 @@ struct VFrameSmooth::Private
     // Wait for sync points amd warp to screen.
     void			warpToScreen( const double vsyncBase, const swapProgram_t & swap );
     void			warpToScreenSliced( const double vsyncBase, const swapProgram_t & swap );
-
-    // Build new verts for the timing graph, call once each frame
-    void			updateTimingGraphVerts( const ovrTimeWarpDebugPerfMode debugPerfMode, const ovrTimeWarpDebugPerfValue debugValue );
-
-    // Draw debug graphs
-    void 			drawTimingGraph( const int eye );
 
     const VGlShader & programForParms( const ovrTimeWarpParms & parms, const bool disableChromaticCorrection ) const;
     void			setWarpState( const warpSource_t & currentWarpSource ) const;
@@ -773,7 +766,7 @@ void VFrameSmooth::Private::warpThreadInit()
     m_eglWarpContext = eglCreateContext( m_eglDisplay, m_eglConfig, m_eglShareContext, contextAttribs );
     if ( m_eglWarpContext == EGL_NO_CONTEXT )
     {
-        FAIL( "eglCreateContext failed: %s", glOperation.EglErrorString() );
+        FAIL( "eglCreateContext failed: %s", glOperation.getEglErrorString() );
     }
     LOG( "eglWarpContext: %p", m_eglWarpContext );
     if ( m_contextPriority != EGL_CONTEXT_PRIORITY_MEDIUM_IMG )
@@ -795,7 +788,7 @@ void VFrameSmooth::Private::warpThreadInit()
     if ( eglMakeCurrent( m_eglDisplay, m_eglMainThreadSurface,
                          m_eglMainThreadSurface, m_eglWarpContext ) == EGL_FALSE )
     {
-        FAIL( "eglMakeCurrent failed: %s", glOperation.EglErrorString() );
+        FAIL( "eglMakeCurrent failed: %s", glOperation.getEglErrorString() );
     }
 
     initRenderEnvironment();
@@ -885,7 +878,7 @@ void VFrameSmooth::Private::setWarpState( const warpSource_t & currentWarpSource
         }
     }
     VGlOperation glOperation;
-    glOperation.GL_CheckErrors( "SetWarpState" );
+    glOperation.logErrorsEnum( "SetWarpState" );
 }
 
 void VFrameSmooth::Private::bindWarpProgram( const warpSource_t & currentWarpSource,
@@ -1108,9 +1101,6 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
 
     const double vsyncBase = vsyncBase_;
 
-    // Build new line verts if timing graph is enabled
-    updateTimingGraphVerts( latestWarpSource.WarpParms.DebugGraphMode, latestWarpSource.WarpParms.DebugGraphValue );
-
     // This will only be updated in SCREENEYE_LEFT
     warpSource_t currentWarpSource = {};
 
@@ -1128,9 +1118,9 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
         // the first eye will probably already be past the sleep point,
         // so only the second eye will be at a dependable time.
         const double sleepTargetVsync = vsyncBase + swap.deltaVsync[eye];
-        const double sleepTargetTime = FramePointTimeInSeconds( sleepTargetVsync );
-        const float secondsToSleep = SleepUntilTimePoint( sleepTargetTime, false );
-        const double preFinish = ovr_GetTimeInSeconds();
+//        const double sleepTargetTime = FramePointTimeInSeconds( sleepTargetVsync );
+        //const float secondsToSleep = SleepUntilTimePoint( sleepTargetTime, false );
+//        const double preFinish = ovr_GetTimeInSeconds();
 
         //LOG( "Vsync %f:%i sleep %f", vsyncBase, eye, secondsToSleep );
 
@@ -1312,8 +1302,7 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
         // was rendered at, so you can see the amount of interpolated time warp applied
         // to it as a delta from the red grid to the greed or blue grid that was drawn directly
         // into the texture.
-        drawFrameworkGraphicsToWindow( eye, currentWarpSource.WarpParms.WarpOptions,
-                                       currentWarpSource.WarpParms.DebugGraphMode != DEBUG_PERF_OFF );
+        drawFrameworkGraphicsToWindow( eye, currentWarpSource.WarpParms.WarpOptions);
 
         glFlush();
 
@@ -1327,29 +1316,6 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
         {
             LOG( "Frame %i Eye %i latency %5.3f", (int)vsyncBase, eye, latency );
         }
-
-        if ( 0 )
-        {
-            LOG( "eye %i sleep %5.3f fin %5.3f buf %lli (%i back):%i %i",
-                 eye, secondsToSleep,
-                 postFinish - preFinish,
-                 thisEyeBufferNum, back,
-                 currentWarpSource.WarpParms.Images[0][0].TexId,
-                    currentWarpSource.WarpParms.Images[1][0].TexId );
-        }
-
-        // Update debug graph data
-        if ( currentWarpSource.WarpParms.DebugGraphMode != DEBUG_PERF_FROZEN )
-        {
-            const int logIndex = (int)m_lastEyeLog & (EYE_LOG_COUNT-1);
-            eyeLog_t & thisLog = m_eyeLog[logIndex];
-            thisLog.skipped = false;
-            thisLog.bufferNum = thisEyeBufferNum;
-            thisLog.issueFinish = preFinish - sleepTargetTime;
-            thisLog.completeFinish = postFinish - sleepTargetTime;
-            m_lastEyeLog++;
-        }
-
     }	// for eye
 
     UnbindEyeTextures();
@@ -1393,8 +1359,8 @@ void VFrameSmooth::Private::warpToScreenSliced( const double vsyncBase, const sw
 
     // This must be long enough to cover CPU scheduling delays, GPU in-flight commands,
     // and the actual drawing of this slice.
-    const warpSource_t & latestWarpSource = m_warpSources[m_eyeBufferCount.state()%MAX_WARP_SOURCES];
-    const double schedulingCushion = latestWarpSource.WarpParms.PreScheduleSeconds;
+//    const warpSource_t & latestWarpSource = m_warpSources[m_eyeBufferCount.state()%MAX_WARP_SOURCES];
+//    const double schedulingCushion = latestWarpSource.WarpParms.PreScheduleSeconds;
 
     //LOG( "now %fv(%i) %f cush %f", GetFractionalVsync(), (int)vsyncBase, ovr_GetTimeInSeconds(), schedulingCushion );
 
@@ -1408,9 +1374,9 @@ void VFrameSmooth::Private::warpToScreenSliced( const double vsyncBase, const sw
 
         // Sleep until we are in the correct part of the screen for
         // rendering this slice.
-        const double sleepTargetTime = sliceTimes[ screenSlice ] - schedulingCushion;
-        const float secondsToSleep = SleepUntilTimePoint( sleepTargetTime, false );
-        const double preFinish = ovr_GetTimeInSeconds();
+//        const double sleepTargetTime = sliceTimes[ screenSlice ] - schedulingCushion;
+//        const float secondsToSleep = SleepUntilTimePoint( sleepTargetTime, false );
+        //const double preFinish = ovr_GetTimeInSeconds();
 
         //LOG( "slice %i targ %f slept %f", screenSlice, sleepTargetTime, secondsToSleep );
 
@@ -1600,8 +1566,7 @@ void VFrameSmooth::Private::warpToScreenSliced( const double vsyncBase, const sw
         // was rendered at, so you can see the amount of interpolated time warp applied
         // to it as a delta from the red grid to the greed or blue grid that was drawn directly
         // into the texture.
-        drawFrameworkGraphicsToWindow( eye, currentWarpSource.WarpParms.WarpOptions,
-                                       currentWarpSource.WarpParms.DebugGraphMode != DEBUG_PERF_OFF );
+        drawFrameworkGraphicsToWindow( eye, currentWarpSource.WarpParms.WarpOptions);
 
         glFlush();
 
@@ -1614,26 +1579,6 @@ void VFrameSmooth::Private::warpToScreenSliced( const double vsyncBase, const sw
         if ( latency > 0.008f )
         {
             LOG( "Frame %i Eye %i latency %5.3f", (int)vsyncBase, eye, latency );
-        }
-
-        if ( 0 )
-        {
-            LOG( "slice %i sleep %7.4f fin %6.4f buf %lli (%i back)",
-                 screenSlice, secondsToSleep,
-                 postFinish - preFinish,
-                 thisEyeBufferNum, back );
-        }
-
-        // Update debug graph data
-        if ( currentWarpSource.WarpParms.DebugGraphMode != DEBUG_PERF_FROZEN )
-        {
-            const int logIndex = (int)m_lastEyeLog & (EYE_LOG_COUNT-1);
-            eyeLog_t & thisLog = m_eyeLog[logIndex];
-            thisLog.skipped = false;
-            thisLog.bufferNum = thisEyeBufferNum;
-            thisLog.issueFinish = preFinish - sleepTargetTime;
-            thisLog.completeFinish = postFinish - sleepTargetTime;
-            m_lastEyeLog++;
         }
     }	// for screenSlice
 
@@ -1675,7 +1620,7 @@ void VFrameSmooth::Private::warpSwapInternal( const ovrTimeWarpParms & parms )
     ws.MinimumVsync = m_lastSwapVsyncCount + 2 * minimumVsyncs;	// don't use it if from same frame to avoid problems with very fast frames
     ws.FirstDisplayedVsync[0] = 0;			// will be set when it becomes the currentSource
     ws.FirstDisplayedVsync[1] = 0;			// will be set when it becomes the currentSource
-    ws.disableChromaticCorrection = ( ( glOperation.EglGetGpuType() & NervGear::VGlOperation::GPU_TYPE_MALI_T760_EXYNOS_5433 ) != 0 );
+    ws.disableChromaticCorrection = ( ( glOperation.eglGetGpuType() & NervGear::VGlOperation::GPU_TYPE_MALI_T760_EXYNOS_5433 ) != 0 );
     ws.WarpParms = parms;
 
     // Default images.
@@ -1730,7 +1675,7 @@ void VFrameSmooth::Private::warpSwapInternal( const ovrTimeWarpParms & parms )
         // to the display buffer.
 
         VGlOperation glOperation;
-        glOperation.GL_Finish();
+        glOperation.glFinish();
 
         swapProgram_t * swapProg;
         swapProg = &spSyncSwappedBufferPortrait;
@@ -1827,11 +1772,13 @@ VGlGeometry CreateTimingGraphGeometry( const int lineVertCount )
     glGenBuffers( 1, &geo.vertexBuffer );
     glBindBuffer( GL_ARRAY_BUFFER, geo.vertexBuffer );
     glBufferData( GL_ARRAY_BUFFER, byteCount, (void *) verts, GL_DYNAMIC_DRAW );
-    glEnableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_POSITION );
-    glVertexAttribPointer( SHADER_ATTRIBUTE_LOCATION_POSITION, 2, GL_SHORT, false, sizeof( lineVert_t ), (void *)0 );
 
-    glEnableVertexAttribArray( SHADER_ATTRIBUTE_LOCATION_COLOR );
-    glVertexAttribPointer( SHADER_ATTRIBUTE_LOCATION_COLOR, 4, GL_UNSIGNED_BYTE, true, sizeof( lineVert_t ), (void *)4 );
+    glEnableVertexAttribArray( VERTEX_POSITION );
+    glVertexAttribPointer( VERTEX_POSITION, 2, GL_SHORT, false, sizeof( lineVert_t ), (void *)0 );
+
+    glEnableVertexAttribArray( VERTEX_COLOR );
+    glVertexAttribPointer( VERTEX_COLOR, 4, GL_UNSIGNED_BYTE, true, sizeof( lineVert_t ), (void *)4 );
+
     delete[] verts;
 
     // these will be drawn with DrawArrays, so no index buffer is needed
@@ -1843,155 +1790,6 @@ VGlGeometry CreateTimingGraphGeometry( const int lineVertCount )
     return geo;
 }
 
-void VFrameSmooth::Private::updateTimingGraphVerts( const ovrTimeWarpDebugPerfMode debugPerfMode, const ovrTimeWarpDebugPerfValue debugValue )
-{
-    VGlOperation glOperation;
-    if ( debugPerfMode == DEBUG_PERF_OFF )
-    {
-        return;
-    }
-
-    // Draw graph markers every five milliseconds
-    lineVert_t	verts[EYE_LOG_COUNT*2+10];
-    int			numVerts = 0;
-    const int	colorRed = ColorAsInt( 255, 0, 0, 255 );
-    const int	colorGreen = ColorAsInt( 0, 255, 0, 255 );
-    // const int	colorYellow = ColorAsInt( 255, 255, 0, 255 );
-    const int	colorWhite = ColorAsInt( 255, 255, 255, 255 );
-
-    const float base = 250;
-    const int drawLogs = 256; // VSYNC_LOG_COUNT;
-    for ( int i = 0; i < drawLogs; i++ )
-    {
-        const int logIndex = ( m_lastEyeLog - 1 - i ) & ( EYE_LOG_COUNT - 1 );
-        const eyeLog_t & log = m_eyeLog[ logIndex ];
-        const int y = i*4;
-        if ( log.skipped )
-        {
-            verts[i*2+0].y = verts[i*2+1].y = y;
-            verts[i*2+0].x = base;
-            verts[i*2+1].x = base + 150;
-            verts[i*2+0].color = verts[i*2+1].color =  colorRed;
-        }
-        else
-        {
-            if ( debugValue == DEBUG_VALUE_LATENCY )
-            {
-                verts[i*2+0].y = verts[i*2+1].y = y;
-                verts[i*2+0].x = base;
-                verts[i*2+1].x = base + 10000 * log.poseLatencySeconds;
-                verts[i*2+0].color = verts[i*2+1].color =  colorGreen;
-            }
-            else
-            {
-                verts[i*2+0].y = verts[i*2+1].y = y;
-                verts[i*2+0].x = base + 10000 * log.issueFinish;
-                verts[i*2+1].x = base + 10000 * log.completeFinish;
-                if ( m_eyeLog[ ( logIndex - 2 ) & ( EYE_LOG_COUNT-1) ].bufferNum != log.bufferNum )
-                {	// green = fresh buffer
-                    verts[i*2+0].color = verts[i*2+1].color =  colorGreen;
-                }
-                else
-                {	// red = stale buffer reprojected
-                    verts[i*2+0].color = verts[i*2+1].color =  colorRed;
-                }
-            }
-        }
-    }
-    numVerts = drawLogs*2;
-
-    // markers every 5 milliseconds
-    if ( debugValue == DEBUG_VALUE_LATENCY )
-    {
-        for ( int t = 0; t <= 64; t += 16 )
-        {
-            const float dt = 0.001f * t;
-            const int x = base + 10000 * dt;
-
-            verts[numVerts+0].y = 0;
-            verts[numVerts+1].y = drawLogs * 4;
-            verts[numVerts+0].x = x;
-            verts[numVerts+1].x = x;
-            verts[numVerts+0].color = verts[numVerts+1].color = colorWhite;
-            numVerts += 2;
-        }
-    }
-    else
-    {
-        for ( int t = 0; t <= 1; t++ )
-        {
-            const float dt = 1.0f/120.0f * t;
-            const int x = base + 10000 * dt;
-
-            verts[numVerts+0].y = 0;
-            verts[numVerts+1].y = drawLogs * 4;
-            verts[numVerts+0].x = x;
-            verts[numVerts+1].x = x;
-            verts[numVerts+0].color = verts[numVerts+1].color = colorWhite;
-            numVerts += 2;
-        }
-    }
-
-    // Update the vertex buffer.
-    // We are updating buffer objects inside a vertex array object instead
-    // of using client arrays to avoid messing with Unity's attribute arrays.
-
-    // NOTE: vertex array objects do NOT include the GL_ARRAY_BUFFER_BINDING state, and
-    // binding a VAO does not change GL_ARRAY_BUFFER, so we do need to track the buffer
-    // in the geometry if we want to update it, or do a GetVertexAttrib( SHADER_ATTRIB_ARRAY_BUFFER_BINDING
-
-    // For reasons that I do not understand, if I don't bind the VAO, then all updates after the
-    // first one produce no additional changes.
-    glOperation.glBindVertexArrayOES( m_timingGraph.vertexArrayObject );
-    glBindBuffer( GL_ARRAY_BUFFER, m_timingGraph.vertexBuffer );
-    glBufferSubData( GL_ARRAY_BUFFER, 0, numVerts * sizeof( verts[0] ), (void *) verts );
-    glBindBuffer( GL_ARRAY_BUFFER, 0 );
-    glOperation.glBindVertexArrayOES( 0 );
-
-    m_timingGraph.indexCount = numVerts;
-    glOperation.GL_CheckErrors( "After UpdateTimingGraph" );
-}
-
-void VFrameSmooth::Private::drawTimingGraph( const int eye )
-{
-    VGlOperation glOperation;
-    // Use the same rect for viewport and scissor
-    // FIXME: this is probably bad for convergence
-    int	rectX, rectY, rectWidth, rectHeight;
-    EyeRect( m_device, eye,
-             rectX, rectY, rectWidth, rectHeight );
-
-    glViewport( rectX, rectY, rectWidth, rectHeight );
-    glScissor( rectX, rectY, rectWidth, rectHeight );
-
-    glDisable( GL_DEPTH_TEST );
-    glDisable( GL_BLEND );
-    glLineWidth( 2.0f );
-    glUseProgram( m_debugLineProgram.program );
-
-    // pixel identity matrix
-    // Map the rectWidth / rectHeight dimensions to -1 - 1 range
-    float scale_x = 2.0f / (float)rectWidth;
-    float scale_y = 2.0f / (float)rectHeight;
-    const VR4Matrixf landscapePixelMatrix(
-                0, scale_x, 0.0f, -1.0f,
-                scale_y, 0, 0.0f, -1.0f,
-                0.0f, 0.0f, 0.0f, 0.0f,
-                0.0f, 0.0f, 0.0f, 1.0f );
-
-
-    glUniformMatrix4fv( m_debugLineProgram.uniformModelViewProMatrix, 1, GL_FALSE, /* not transposed */
-                        landscapePixelMatrix.Transposed().M[0] );
-
-    glOperation.glBindVertexArrayOES( m_timingGraph.vertexArrayObject );
-    glDrawArrays( GL_LINES, 0, m_timingGraph.indexCount );
-    glOperation.glBindVertexArrayOES( 0 );
-
-    glViewport( 0, 0, rectWidth * 2, rectHeight );
-    glScissor( 0, 0, rectWidth * 2, rectHeight );
-
-    glOperation.GL_CheckErrors( "DrawTimingGraph" );
-}
 
 float calibrateFovScale = 1.0f;	// for interactive tweaking
 
@@ -2022,64 +1820,27 @@ void VFrameSmooth::Private::createFrameworkGraphics()
     glBindTexture( GL_TEXTURE_2D, 0 );
 
     // single slice mesh for the normal rendering
-    m_warpMesh = VLensDistortion::CreateTessellatedMesh( m_device, 1, calibrateFovScale, false );
+    m_warpMesh = VLensDistortion::createDistortionGrid( m_device, 1, calibrateFovScale, false );
 
     // multi-slice mesh for sliced rendering
-    m_sliceMesh = VLensDistortion::CreateTessellatedMesh( m_device, NUM_SLICES_PER_EYE, calibrateFovScale, false );
+    m_sliceMesh = VLensDistortion::createDistortionGrid( m_device, NUM_SLICES_PER_EYE, calibrateFovScale, false );
 
     // small subset cursor mesh
-    m_cursorMesh = VLensDistortion::CreateTessellatedMesh( m_device, 1, calibrateFovScale, true );
+    m_cursorMesh = VLensDistortion::createDistortionGrid( m_device, 1, calibrateFovScale, true );
 
     if ( m_warpMesh.indexCount == 0 || m_sliceMesh.indexCount == 0 )
     {
         FAIL( "WarpMesh failed to load");
     }
 
-    // Vertexes and indexes for debug graph, the verts will be updated
-    // dynamically each frame.
+
     m_timingGraph = CreateTimingGraphGeometry( (256+10)*2 );
 
-    // simple cross to draw to screen
-    m_calibrationLines2 = VGlGeometryFactory::CreateCalibrationLines2( 0, false );
 
-    // FPS and graph text
-    m_untexturedMvpProgram.initShader(
-                "uniform mat4 Mvpm;\n"
-                "attribute vec4 Position;\n"
-                "uniform mediump vec4 UniformColor;\n"
-                "varying  lowp vec4 oColor;\n"
-                "void main()\n"
-                "{\n"
-                "   gl_Position = Mvpm * Position;\n"
-                "   oColor = UniformColor;\n"
-                "}\n"
-                ,
-                "varying lowp vec4	oColor;\n"
-                "void main()\n"
-                "{\n"
-                "	gl_FragColor = oColor;\n"
-                "}\n"
-                );
+    m_calibrationLines2.createCalibrationGrid( 0, false );
 
-    m_debugLineProgram.initShader(
-                "uniform mediump mat4 Mvpm;\n"
-                "attribute vec4 Position;\n"
-                "attribute vec4 VertexColor;\n"
-                "varying  vec4 oColor;\n"
-                "void main()\n"
-                "{\n"
-                "   gl_Position = Mvpm * Position;\n"
-                "   oColor = VertexColor;\n"
-                "}\n"
-                ,
-                "varying lowp vec4 oColor;\n"
-                "void main()\n"
-                "{\n"
-                "	gl_FragColor = oColor;\n"
-                "}\n"
-                );
-
-    // Build our warp render programs
+    m_untexturedMvpProgram.initShader(VGlShader::getUntextureMvpVertexShaderSource(),VGlShader::getUntexturedFragmentShaderSource());
+    m_debugLineProgram.initShader(VGlShader::getVertexColorVertexShaderSource(),VGlShader::getUntexturedFragmentShaderSource());
     buildWarpProgs();
 }
 
@@ -2088,11 +1849,11 @@ void VFrameSmooth::Private::destroyFrameworkGraphics()
     glDeleteTextures( 1, &m_blackTexId );
     glDeleteTextures( 1, &m_defaultLoadingIconTexId );
 
-    m_calibrationLines2.Free();
-    m_warpMesh.Free();
-    m_sliceMesh.Free();
-    m_cursorMesh.Free();
-    m_timingGraph.Free();
+    m_calibrationLines2.destroy();
+    m_warpMesh.destroy();
+    m_sliceMesh.destroy();
+    m_cursorMesh.destroy();
+    m_timingGraph.destroy();
 
     m_untexturedMvpProgram.destroy();
     m_debugLineProgram.destroy();
@@ -2106,7 +1867,7 @@ void VFrameSmooth::Private::destroyFrameworkGraphics()
 // Assumes viewport and scissor is set for the eye already.
 // Assumes there is no depth buffer for the window.
 void VFrameSmooth::Private::drawFrameworkGraphicsToWindow( const int eye,
-                                                   const int swapOptions, const bool drawTimingGraph )
+                                                   const int swapOptions)
 {
     VGlOperation glOperation;
     // Latency tester support.
@@ -2151,12 +1912,6 @@ void VFrameSmooth::Private::drawFrameworkGraphicsToWindow( const int eye,
         glViewport( m_window_width/2 * (int)eye, 0, m_window_width/2, m_window_height );
         glDrawElements( GL_LINES, m_calibrationLines2.indexCount, GL_UNSIGNED_SHORT, NULL );
         glViewport( 0, 0, m_window_width, m_window_height );
-    }
-
-    // Draw the timing graph if it is enabled.
-    if ( drawTimingGraph )
-    {
-        this->drawTimingGraph( eye );
     }
 }
 

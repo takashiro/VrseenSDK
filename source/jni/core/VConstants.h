@@ -11,7 +11,6 @@
 #include <math.h>
 #include "Types.h"
 
-
 NV_NAMESPACE_BEGIN
 
 template<class T> class VQuat;

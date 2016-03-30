@@ -25,7 +25,7 @@ public:
 
     VR4Matrixf drawEyeView( const int eye, const float fovDegrees ) override;
 
-    void configureVrMode(ovrModeParms & modeParms) override;
+    void configureVrMode(VKernel* kernel) override;
 
     void command(const VEvent &event) override;
     bool onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType ) override;

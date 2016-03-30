@@ -61,7 +61,7 @@ LOCAL_SRC_FILES  := \
 	core/android/JniUtils.cpp \
 	core/android/LogUtils.cpp \
 	core/android/VOsBuild.cpp \
-	api/VrApi.cpp \
+	api/VKernel.cpp \
 	api/Vsync.cpp \
 	api/VDevice.cpp \
 	api/HmdSensors.cpp \

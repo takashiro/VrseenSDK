@@ -13,31 +13,20 @@ class VLensDistortion
 {
 public:
     VLensDistortion();
-    void initLensByPhoneType(PhoneTypeEnum type);
-
+    void initDistortionParmsByMobileType(PhoneTypeEnum type);
     const  static int MaxCoefficients = 21;
-    DistortionEqnType   Eqn;
+    DistortionEqnType   equation;
 
-    float               K[MaxCoefficients];
-    float               MaxR;       // The highest R you're going to query for - the curve is unpredictable beyond it.
-
-    float               MetersPerTanAngleAtCenter;
-
-    // Additional per-channel scaling is applied after distortion:
-    //  Index [0] - Red channel constant coefficient.
-    //  Index [1] - Red channel r^2 coefficient.
-    //  Index [2] - Blue channel constant coefficient.
-    //  Index [3] - Blue channel r^2 coefficient.
-    float               ChromaticAberration[4];
-
-    float               InvK[MaxCoefficients];
-    float               MaxInvR;
-
-    static VGlGeometry CreateTessellatedMesh(const VDevice* device,const int numSlicesPerEye, const float fovScale,
-                                             const bool cursorOnly);
-    //default is 32*32
-    static int tessellationsX;
-    static int tessellationsY;
+    float               kArray[MaxCoefficients];
+    float               maxR;
+    float               centMetersPerTanAngler;
+    float               chromaticAberration[4];
+    float               invKArray[MaxCoefficients];
+    float               maxInvR;
+    static VGlGeometry createDistortionGrid(const VDevice* device,const int numSlicesPerEye, const float fovScale,
+                                             const bool cursorOnly);    
+    static int xxGridNum;
+    static int yyGridNum;
 };
 
 NV_NAMESPACE_END

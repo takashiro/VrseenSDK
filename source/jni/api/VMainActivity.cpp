@@ -4,6 +4,7 @@
 
 #include "App.h"
 #include "SurfaceTexture.h"
+#include "VKernel.h"
 
 #include "android/JniUtils.h"
 #include "VLog.h"
@@ -185,7 +186,6 @@ void VMainActivity::onCreate(jstring javaFromPackageNameString, jstring javaComm
             jni->DeleteGlobalRef(vApp->javaObject());
         }
         vApp->javaObject() = jni->NewGlobalRef(activity);
-        vApp->VrModeParms.ActivityObject = vApp->javaObject();
     }
 
     // Send the intent and wait for it to complete.
@@ -240,7 +240,7 @@ VR4Matrixf VMainActivity::onNewFrame(VrFrame vrFrame)
     return VR4Matrixf();
 }
 
-void VMainActivity::configureVrMode(ovrModeParms & modeParms)
+void VMainActivity::configureVrMode(VKernel* kernel)
 {
     vInfo("VMainActivity::ConfigureVrMode - default handler called");
 }
@@ -373,7 +373,8 @@ void Java_com_vrseen_nervgear_VrActivity_nativeDestroy(JNIEnv *, jclass)
     delete vApp;
 
     vInfo("ExitOnDestroy is true, exiting");
-    ovr_ExitActivity(nullptr, EXIT_TYPE_EXIT);
+    VKernel::GetInstance()->destroy(EXIT_TYPE_EXIT);
+    exit(0);
 }
 
 void Java_com_vrseen_nervgear_VrActivity_nativeJoypadAxis(JNIEnv *jni, jclass clazz,
