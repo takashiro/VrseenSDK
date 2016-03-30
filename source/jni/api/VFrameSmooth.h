@@ -11,7 +11,7 @@ public:
     VFrameSmooth(bool async,VDevice *device);
     ~VFrameSmooth();
 
-    void	doSmooth( const ovrTimeWarpParms & parms );
+    //void	doSmooth( const ovrTimeWarpParms & parms );
 
 
 

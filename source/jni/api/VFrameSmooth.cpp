@@ -1931,12 +1931,8 @@ void VFrameSmooth::Private::warpSwapInternal( const ovrTimeWarpParms & parms )
 }
 
 /*
-* Called by the application thread to have a pair eye buffers
-* time warped to the screen.
-*
-* Blocks until it is time to render a new pair of eye buffers.
-*
-*/
+
+
 void VFrameSmooth::doSmooth( const ovrTimeWarpParms & parms )
 {
     const int count = ( ( parms.WarpOptions & SWAP_OPTION_FLUSH ) != 0 ) ? 3 : 1;
@@ -1945,6 +1941,8 @@ void VFrameSmooth::doSmooth( const ovrTimeWarpParms & parms )
         d->warpSwapInternal( parms );
     }
 }
+
+*/
 void	VFrameSmooth::doSmooth()
 {
 

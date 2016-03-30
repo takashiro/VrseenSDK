@@ -1071,7 +1071,7 @@ void VKernel::doSmooth(const ovrTimeWarpParms * parms )
 
     setSmoothParms(*parms);
     syncSmoothParms();
-    frameSmooth->doSmooth(*parms);
+    frameSmooth->doSmooth();
 }
 
 void VKernel::setSmoothParms(const ovrTimeWarpParms &  parms)
