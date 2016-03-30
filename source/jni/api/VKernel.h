@@ -399,7 +399,7 @@ public:
     void setPreScheduleSeconds(float pres);
     void setSmoothProgram(ovrTimeWarpProgram program);
     void setProgramParms( float * proParms);
-    void setSmoothParms(ovrTimeWarpParms   parms);
+    void setSmoothParms(const ovrTimeWarpParms &  parms);
     ovrTimeWarpParms  getSmoothParms();
 
 

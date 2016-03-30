@@ -17,6 +17,8 @@ public:
 
 
     void setSmoothEyeTexture(unsigned int texID,ushort eye,ushort layer);
+    void setSmoothEyeTexture(ushort i,ushort j,ovrTimeWarpImage tex);
+
     void setSmoothOption(int option);
     void setMinimumVsncs( int vsnc);
     void setExternalVelocity(ovrMatrix4f extV);

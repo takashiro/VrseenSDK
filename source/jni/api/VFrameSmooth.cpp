@@ -306,7 +306,7 @@ struct VFrameSmooth::Private
         VGlOperation glOperation;
         m_shutdownRequest.setState( false );
         m_eyeBufferCount.setState( 0 );
-        memset( m_warpSources, 0, sizeof( m_warpSources ) );
+       // memset( m_warpSources, 0, sizeof( m_warpSources ) );
         memset( m_warpPrograms, 0, sizeof( m_warpPrograms ) );
 
         // set up our synchronization primitives
@@ -575,12 +575,12 @@ struct VFrameSmooth::Private
     void			warpToScreen( const double vsyncBase, const swapProgram_t & swap );
     void			warpToScreenSliced( const double vsyncBase, const swapProgram_t & swap );
 
-    const VGlShader & programForParms( const ovrTimeWarpParms & parms, const bool disableChromaticCorrection ) const;
-    void			setSmoothpState( const warpSource_t & currentWarpSource ) const;
-    void			bindWarpProgram( const warpSource_t & currentWarpSource, const VR4Matrixf timeWarps[2][2],
+    const VGlShader & programForParms(const bool disableChromaticCorrection ) const;
+    void			setSmoothpState( ) const;
+    void			bindWarpProgram( const VR4Matrixf timeWarps[2][2],
                                      const VR4Matrixf rollingWarp, const int eye, const double vsyncBase ) const;
     void			bindCursorProgram() const;
-
+    void            bindEyeTextures( const int eye );
     void            initRenderEnvironment();
     void            swapBuffers();
 
@@ -634,18 +634,74 @@ struct VFrameSmooth::Private
     pthread_mutex_t m_swapMutex;
     pthread_cond_t	m_swapIsLatched;
     VLockless<long long>			m_eyeBufferCount;	// only set by WarpSwap()
-    warpSource_t	m_warpSources[4];
+    //warpSource_t	m_warpSources[4];
 
     VLockless<SwapState>		m_swapVsync;		// Set by WarpToScreen(), read by WarpSwap()
 
     long long			m_lastSwapVsyncCount;			// SwapVsync at return from last WarpSwap()
 };
+void VFrameSmooth::setSmoothEyeTexture(ushort i,ushort j,ovrTimeWarpImage m_images)
 
+{
+
+         {
+           d->m_images[i][j].PlanarTexId[0] = m_images.PlanarTexId[0];
+                   d->m_images[i][j].PlanarTexId[1] = m_images.PlanarTexId[1];
+                    d->m_images[i][j].PlanarTexId[2] = m_images.PlanarTexId[2];
+                    for(int m=0;m<4;m++)
+                        for(int n=0;n<4;n++)
+                        {
+                    d->m_images[i][j].TexCoordsFromTanAngles.M[m][n] = m_images.TexCoordsFromTanAngles.M[m][n];
+                        }
+                     d->m_images[i][j].TexId = m_images.TexId;
+                     d->m_images[i][j].Pose.AngularAcceleration.x =m_images.Pose.AngularAcceleration.x;
+                     d->m_images[i][j].Pose.AngularAcceleration.y =m_images.Pose.AngularAcceleration.y;
+                     d->m_images[i][j].Pose.AngularAcceleration.z =m_images.Pose.AngularAcceleration.z;
+             d->m_images[i][j].Pose.AngularVelocity.x =m_images.Pose.AngularVelocity.x;
+               d->m_images[i][j].Pose.AngularVelocity.y =m_images.Pose.AngularVelocity.y;
+                 d->m_images[i][j].Pose.AngularVelocity.z =m_images.Pose.AngularVelocity.z;
+             d->m_images[i][j].Pose.LinearAcceleration.x =m_images.Pose.LinearAcceleration.x;
+            d->m_images[i][j].Pose.LinearAcceleration.y =m_images.Pose.LinearAcceleration.y;
+            d->m_images[i][j].Pose.LinearAcceleration.z =m_images.Pose.LinearAcceleration.z;
+             d->m_images[i][j].Pose.LinearVelocity.x =m_images.Pose.LinearVelocity.x;
+               d->m_images[i][j].Pose.LinearVelocity.y =m_images.Pose.LinearVelocity.y;
+                d->m_images[i][j].Pose.LinearVelocity.z =m_images.Pose.LinearVelocity.z;
+               d->m_images[i][j].Pose.Pose.Orientation.w =m_images.Pose.Pose.Orientation.w;
+               d->m_images[i][j].Pose.Pose.Orientation.x =m_images.Pose.Pose.Orientation.x;
+               d->m_images[i][j].Pose.Pose.Orientation.y =m_images.Pose.Pose.Orientation.y;
+               d->m_images[i][j].Pose.Pose.Orientation.z =m_images.Pose.Pose.Orientation.z;
+
+
+               d->m_images[i][j].Pose.Pose.Position.x =m_images.Pose.Pose.Position.x;
+               d->m_images[i][j].Pose.Pose.Position.y =m_images.Pose.Pose.Position.y;
+              d->m_images[i][j].Pose.Pose.Position.z =m_images.Pose.Pose.Position.z;
+
+
+                d->m_images[i][j].Pose.TimeInSeconds =m_images.Pose.TimeInSeconds;
+
+
+
+
+         }
+
+
+
+}
 void VFrameSmooth::setSmoothEyeTexture(unsigned int texID,ushort eye,ushort layer)
 {
 
 
      d->m_images[eye][layer].TexId =  texID;
+
+
+
+
+
+
+
+
+
+
 
 }
 void VFrameSmooth::setSmoothOption(int option)
@@ -669,6 +725,8 @@ void VFrameSmooth::setExternalVelocity(ovrMatrix4f extV)
         for( int j=0;j<4;j++)
     {
  d->m_externalVelocity.M[i][j] = extV.M[i][j];
+
+
 }
 }
 void VFrameSmooth::setPreScheduleSeconds(float pres)
@@ -686,11 +744,15 @@ void VFrameSmooth::setSmoothProgram(ovrTimeWarpProgram program)
 }
 void VFrameSmooth::setProgramParms( float * proParms)
 {
-   d->m_programParms[0] = proParms[0];
-   d->m_programParms[1] = proParms[1];
-   d->m_programParms[2] = proParms[2];
-    d->m_programParms[3] = proParms[3];
+   //d->m_programParms[0] = proParms[0];
+  // d->m_programParms[1] = proParms[1];
+  // d->m_programParms[2] = proParms[2];
+  //  d->m_programParms[3] = proParms[3];
+    for(int i=0;i<4;i++)
+    {
+       d->m_programParms[i]= proParms[i];
 
+    }
 }
 
 // Shim to call a C++ object from a posix thread start.
@@ -856,16 +918,16 @@ void VFrameSmooth::Private::warpThreadShutdown()
     LOG( "WarpThreadShutdown()" );
     destroyFrameworkGraphics();
     VGlOperation glOperation;
-    for ( int i = 0; i < 4; i++ )
+    for ( int i = 0; i < 1; i++ )
     {
-        warpSource_t & ws = m_warpSources[i];
-        if ( ws.GpuSync )
+        //warpSource_t & ws = m_warpSources[i];
+        if ( m_gpuSync )
         {
-            if ( EGL_FALSE == glOperation.eglDestroySyncKHR( m_eglDisplay, ws.GpuSync ) )
+            if ( EGL_FALSE == glOperation.eglDestroySyncKHR( m_eglDisplay, m_gpuSync) )
             {
                 LOG( "eglDestroySyncKHR returned EGL_FALSE" );
             }
-            ws.GpuSync = 0;
+            m_gpuSync = 0;
         }
     }
 
@@ -886,9 +948,9 @@ void VFrameSmooth::Private::warpThreadShutdown()
     LOG( "WarpThreadShutdown() - End" );
 }
 
-const VGlShader & VFrameSmooth::Private::programForParms( const ovrTimeWarpParms & parms, const bool disableChromaticCorrection ) const
+const VGlShader & VFrameSmooth::Private::programForParms( const bool disableChromaticCorrection ) const
 {
-    int program = VAlgorithm::Clamp( (int)parms.WarpProgram, (int)WP_SIMPLE, (int)WP_PROGRAM_MAX - 1 );
+    int program = VAlgorithm::Clamp( (int)m_smoothProgram, (int)WP_SIMPLE, (int)WP_PROGRAM_MAX - 1 );
 
     if ( disableChromaticCorrection && program >= WP_CHROMATIC )
     {
@@ -896,7 +958,7 @@ const VGlShader & VFrameSmooth::Private::programForParms( const ovrTimeWarpParms
     }
     return m_warpPrograms[program];
 }
-void VFrameSmooth::Private::setSmoothpState( const warpSource_t & currentWarpSource ) const
+void VFrameSmooth::Private::setSmoothpState( ) const
 {
     glDepthMask( GL_FALSE );	// don't write to depth, even if Unity has depth on window
     glDisable( GL_DEPTH_TEST );
@@ -909,7 +971,7 @@ void VFrameSmooth::Private::setSmoothpState( const warpSource_t & currentWarpSou
     // and GL_FRAMEBUFFER_SRGB_EXT is enabled.
     if ( m_hasEXT_sRGB_write_control )
     {
-        if ( currentWarpSource.WarpParms.WarpOptions & SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER )
+        if ( m_smoothOptions & SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER )
         {
             glDisable( VGlOperation::GL_FRAMEBUFFER_SRGB_EXT );
         }
@@ -922,8 +984,7 @@ void VFrameSmooth::Private::setSmoothpState( const warpSource_t & currentWarpSou
     glOperation.logErrorsEnum( "SetWarpState" );
 }
 
-void VFrameSmooth::Private::bindWarpProgram( const warpSource_t & currentWarpSource,
-                                     const VR4Matrixf timeWarps[2][2], const VR4Matrixf rollingWarp,
+void VFrameSmooth::Private::bindWarpProgram( const VR4Matrixf timeWarps[2][2], const VR4Matrixf rollingWarp,
                                      const int eye, const double vsyncBase /* for spinner */ ) const
 {
      const VR4Matrixf landscapeOrientationMatrix(
@@ -933,11 +994,11 @@ void VFrameSmooth::Private::bindWarpProgram( const warpSource_t & currentWarpSou
                 0.0f, 0.0f, 0.0f, 1.0f );
 
     // Select the warp program.
-    const VGlShader & warpProg = programForParms( currentWarpSource.WarpParms, currentWarpSource.disableChromaticCorrection );
+    const VGlShader & warpProg = programForParms(m_disableChromaticCorrection );
     glUseProgram( warpProg.program );
 
     // Set the shader parameters.
-    glUniform1f( warpProg.uniformColor, currentWarpSource.WarpParms.ProgramParms[0] );
+    glUniform1f( warpProg.uniformColor, m_programParms[0] );
 
     glUniformMatrix4fv( warpProg.uniformModelViewProMatrix, 1, GL_FALSE, landscapeOrientationMatrix.Transposed().M[0] );
     glUniformMatrix4fv( warpProg.uniformTexMatrix, 1, GL_FALSE, timeWarps[0][0].Transposed().M[0] );
@@ -959,8 +1020,8 @@ void VFrameSmooth::Private::bindWarpProgram( const warpSource_t & currentWarpSou
     }
     if ( warpProg.uniformRotateScale > 0 )
     {
-        const float angle = FramePointTimeInSeconds( vsyncBase ) * M_PI * currentWarpSource.WarpParms.ProgramParms[0];
-        const V4Vectf RotateScale( sinf( angle ), cosf( angle ), currentWarpSource.WarpParms.ProgramParms[1], 1.0f );
+        const float angle = FramePointTimeInSeconds( vsyncBase ) * M_PI * m_programParms[0];
+        const V4Vectf RotateScale( sinf( angle ), cosf( angle ), m_programParms[1], 1.0f );
         glUniform4fv( warpProg.uniformRotateScale, 1, &RotateScale[0] );
     }
 }
@@ -984,11 +1045,11 @@ void VFrameSmooth::Private::bindCursorProgram() const
 int CameraTimeWarpLatency = 4;
 bool CameraTimeWarpPause;
 
-static void BindEyeTextures( const warpSource_t & currentWarpSource, const int eye )
+void VFrameSmooth::Private::bindEyeTextures( const int eye )
 {
     glActiveTexture( GL_TEXTURE0 );
-    glBindTexture( GL_TEXTURE_2D, currentWarpSource.WarpParms.Images[eye][0].TexId );
-    if ( currentWarpSource.WarpParms.WarpOptions & SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER )
+    glBindTexture( GL_TEXTURE_2D, m_images[eye][0].TexId );
+    if ( m_smoothOptions & SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER )
     {
         glTexParameteri( GL_TEXTURE_2D, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_SKIP_DECODE_EXT );
     }
@@ -997,17 +1058,17 @@ static void BindEyeTextures( const warpSource_t & currentWarpSource, const int e
         glTexParameteri( GL_TEXTURE_2D, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_DECODE_EXT );
     }
 
-    if ( currentWarpSource.WarpParms.WarpProgram == WP_MASKED_PLANE
-         || currentWarpSource.WarpParms.WarpProgram == WP_CHROMATIC_MASKED_PLANE
-         || currentWarpSource.WarpParms.WarpProgram == WP_OVERLAY_PLANE
-         || currentWarpSource.WarpParms.WarpProgram == WP_CHROMATIC_OVERLAY_PLANE
-         || currentWarpSource.WarpParms.WarpProgram == WP_OVERLAY_PLANE_SHOW_LOD
-         || currentWarpSource.WarpParms.WarpProgram == WP_CHROMATIC_OVERLAY_PLANE_SHOW_LOD
+    if ( m_smoothProgram == WP_MASKED_PLANE
+         || m_smoothProgram == WP_CHROMATIC_MASKED_PLANE
+         || m_smoothProgram == WP_OVERLAY_PLANE
+         || m_smoothProgram == WP_CHROMATIC_OVERLAY_PLANE
+         || m_smoothProgram == WP_OVERLAY_PLANE_SHOW_LOD
+         || m_smoothProgram == WP_CHROMATIC_OVERLAY_PLANE_SHOW_LOD
          )
     {
         glActiveTexture( GL_TEXTURE1 );
-        glBindTexture( GL_TEXTURE_2D, currentWarpSource.WarpParms.Images[eye][1].TexId );
-        if ( currentWarpSource.WarpParms.WarpOptions & SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER )
+        glBindTexture( GL_TEXTURE_2D, m_images[eye][1].TexId );
+        if ( m_smoothOptions & SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER )
         {
             glTexParameteri( GL_TEXTURE_2D, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_SKIP_DECODE_EXT );
         }
@@ -1016,15 +1077,15 @@ static void BindEyeTextures( const warpSource_t & currentWarpSource, const int e
             glTexParameteri( GL_TEXTURE_2D, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_DECODE_EXT );
         }
     }
-    if ( currentWarpSource.WarpParms.WarpProgram == WP_MASKED_PLANE_EXTERNAL
-         || currentWarpSource.WarpParms.WarpProgram == WP_CHROMATIC_MASKED_PLANE_EXTERNAL
-         || currentWarpSource.WarpParms.WarpProgram == WP_CAMERA
-         || currentWarpSource.WarpParms.WarpProgram == WP_CHROMATIC_CAMERA )
+    if ( m_smoothProgram == WP_MASKED_PLANE_EXTERNAL
+         || m_smoothProgram == WP_CHROMATIC_MASKED_PLANE_EXTERNAL
+         || m_smoothProgram == WP_CAMERA
+         || m_smoothProgram == WP_CHROMATIC_CAMERA )
     {
         glActiveTexture( GL_TEXTURE1 );
-        glBindTexture( GL_TEXTURE_EXTERNAL_OES, currentWarpSource.WarpParms.Images[eye][1].TexId );
+        glBindTexture( GL_TEXTURE_EXTERNAL_OES, m_images[eye][1].TexId );
 
-            if ( currentWarpSource.WarpParms.WarpOptions & SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER )
+            if ( m_smoothOptions & SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER )
             {
                 glTexParameteri( GL_TEXTURE_EXTERNAL_OES, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_SKIP_DECODE_EXT );
             }
@@ -1033,11 +1094,11 @@ static void BindEyeTextures( const warpSource_t & currentWarpSource, const int e
                 glTexParameteri( GL_TEXTURE_EXTERNAL_OES, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_DECODE_EXT );
             }
     }
-    if ( currentWarpSource.WarpParms.WarpProgram == WP_MASKED_CUBE || currentWarpSource.WarpParms.WarpProgram == WP_CHROMATIC_MASKED_CUBE )
+    if ( m_smoothProgram == WP_MASKED_CUBE || m_smoothProgram == WP_CHROMATIC_MASKED_CUBE )
     {
         glActiveTexture( GL_TEXTURE1 );
-        glBindTexture( GL_TEXTURE_CUBE_MAP, currentWarpSource.WarpParms.Images[eye][1].TexId );
-            if ( currentWarpSource.WarpParms.WarpOptions & SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER )
+        glBindTexture( GL_TEXTURE_CUBE_MAP, m_images[eye][1].TexId );
+            if ( m_smoothOptions & SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER )
             {
                 glTexParameteri( GL_TEXTURE_CUBE_MAP, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_SKIP_DECODE_EXT );
             }
@@ -1047,13 +1108,13 @@ static void BindEyeTextures( const warpSource_t & currentWarpSource, const int e
             }
     }
 
-    if ( currentWarpSource.WarpParms.WarpProgram == WP_CUBE || currentWarpSource.WarpParms.WarpProgram == WP_CHROMATIC_CUBE )
+    if ( m_smoothProgram == WP_CUBE || m_smoothProgram == WP_CHROMATIC_CUBE )
     {
         for ( int i = 0; i < 3; i++ )
         {
             glActiveTexture( GL_TEXTURE1 + i );
-            glBindTexture( GL_TEXTURE_CUBE_MAP, currentWarpSource.WarpParms.Images[eye][1].PlanarTexId[i] );
-                if ( currentWarpSource.WarpParms.WarpOptions & SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER )
+            glBindTexture( GL_TEXTURE_CUBE_MAP, m_images[eye][1].PlanarTexId[i] );
+                if ( m_smoothOptions & SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER )
                 {
                     glTexParameteri( GL_TEXTURE_CUBE_MAP, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_SKIP_DECODE_EXT );
                 }
@@ -1064,11 +1125,11 @@ static void BindEyeTextures( const warpSource_t & currentWarpSource, const int e
         }
     }
 
-    if ( currentWarpSource.WarpParms.WarpProgram == WP_LOADING_ICON || currentWarpSource.WarpParms.WarpProgram == WP_CHROMATIC_LOADING_ICON )
+    if ( m_smoothProgram == WP_LOADING_ICON || m_smoothProgram == WP_CHROMATIC_LOADING_ICON )
     {
         glActiveTexture( GL_TEXTURE1 );
-        glBindTexture( GL_TEXTURE_2D, currentWarpSource.WarpParms.Images[eye][1].TexId );
-            if ( currentWarpSource.WarpParms.WarpOptions & SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER )
+        glBindTexture( GL_TEXTURE_2D, m_images[eye][1].TexId );
+            if ( m_smoothOptions & SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER )
             {
                 glTexParameteri( GL_TEXTURE_2D, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_SKIP_DECODE_EXT );
             }
@@ -1106,10 +1167,10 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
         lastReportTime = timeNow;
     }
 
-    const warpSource_t & latestWarpSource = m_warpSources[0];
+   // const warpSource_t & latestWarpSource = m_warpSources[0];
 
     // switch to sliced rendering
-    if ( latestWarpSource.WarpParms.WarpOptions & SWAP_OPTION_USE_SLICED_WARP )
+    if ( m_smoothOptions & SWAP_OPTION_USE_SLICED_WARP )
     {
         warpToScreenSliced( vsyncBase_, swap );
         return;
@@ -1118,7 +1179,7 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
     const double vsyncBase = vsyncBase_;
 
     // This will only be updated in SCREENEYE_LEFT
-    warpSource_t currentWarpSource = {};
+    //warpSource_t currentWarpSource = {};
 
     glViewport( 0, 0, m_window_width, m_window_height );
     glScissor( 0, 0, m_window_width, m_window_height );
@@ -1157,25 +1218,25 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
                     LOG( "WarpToScreen: No valid Eye Buffers" );
                     break;
                 }
-                warpSource_t & testWarpSource = m_warpSources[0];
-                if ( testWarpSource.MinimumVsync > vsyncBase )
+               // warpSource_t & testWarpSource = m_warpSources[0];
+                if ( m_minimumVsync > vsyncBase )
                 {
                     // a full frame got completed in less time than a single eye; don't use it to avoid stuttering
                     continue;
                 }
-                if ( testWarpSource.GpuSync == 0 )
+                if ( m_gpuSync == 0 )
                 {
                     LOG( "thisEyeBufferNum %lli had 0 sync", thisEyeBufferNum );
                     break;
                 }
 
-                if ( VQuatf( testWarpSource.WarpParms.Images[eye][0].Pose.Pose.Orientation ).LengthSq() < 1e-18f )
+                if ( VQuatf( m_images[eye][0].Pose.Pose.Orientation ).LengthSq() < 1e-18f )
                 {
                     LOG( "Bad Pose.Orientation in bufferNum %lli!", thisEyeBufferNum );
                     break;
                 }
 
-                const EGLint wait = glOperation.eglClientWaitSyncKHR( m_eglDisplay, testWarpSource.GpuSync,
+                const EGLint wait = glOperation.eglClientWaitSyncKHR( m_eglDisplay, m_gpuSync,
                                                                       EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, 0 );
                 if ( wait == EGL_TIMEOUT_EXPIRED_KHR )
                 {
@@ -1187,11 +1248,11 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
                 }
 
                 // This buffer set is good to use
-                if ( testWarpSource.FirstDisplayedVsync[eye] == 0 )
+                if ( m_firstDisplayedVsync[eye] == 0 )
                 {
-                    testWarpSource.FirstDisplayedVsync[eye] = (long long)vsyncBase;
+                    m_firstDisplayedVsync[eye] = (long long)vsyncBase;
                 }
-                currentWarpSource = testWarpSource;
+               // currentWarpSource = testWarpSource;
                 break;
             }
 
@@ -1217,7 +1278,7 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
                 }
             }
 
-            if ( currentWarpSource.WarpParms.Images[eye][0].TexId == 0 )
+            if ( m_images[eye][0].TexId == 0 )
             {
                 // We don't have anything valid to draw, so just sleep until
                 // the next time point and check again.
@@ -1229,15 +1290,15 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
 
         // Build up the external velocity transform
         VR4Matrixf velocity;
-        const int velocitySteps = std::min( 3, (int)((long long)vsyncBase - currentWarpSource.MinimumVsync) );
+        const int velocitySteps = std::min( 3, (int)((long long)vsyncBase - m_minimumVsync) );
         for ( int i = 0; i < velocitySteps; i++ )
         {
-            velocity = velocity * currentWarpSource.WarpParms.ExternalVelocity;
+            velocity = velocity * m_externalVelocity;
         }
 
         // If we have a second image layer, we will need to calculate
         // a second set of time warps and use a different program.
-        const bool dualLayer = ( currentWarpSource.WarpParms.Images[eye][1].TexId > 0 );
+        const bool dualLayer = ( m_images[eye][1].TexId > 0 );
 
         // Calculate predicted poses for the start and end of this eye's
         // raster scanout, so we can warp the best image we have to it.
@@ -1255,21 +1316,21 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
             const double timePoint = FramePointTimeInSeconds( vsyncPoint );
             sensor[scan] = ovr_GetSensorStateInternal( timePoint );
             const VR4Matrixf warp = CalculateTimeWarpMatrix2(
-                        currentWarpSource.WarpParms.Images[eye][0].Pose.Pose.Orientation,
+                        m_images[eye][0].Pose.Pose.Orientation,
                     sensor[scan].Predicted.Pose.Orientation ) * velocity;
-            timeWarps[0][scan] = VR4Matrixf( currentWarpSource.WarpParms.Images[eye][0].TexCoordsFromTanAngles ) * warp;
+            timeWarps[0][scan] = VR4Matrixf( m_images[eye][0].TexCoordsFromTanAngles ) * warp;
             if ( dualLayer )
             {
-                if ( currentWarpSource.WarpParms.WarpOptions & SWAP_OPTION_FIXED_OVERLAY )
+                if ( m_smoothOptions & SWAP_OPTION_FIXED_OVERLAY )
                 {	// locked-to-face HUD
-                    timeWarps[1][scan] = VR4Matrixf( currentWarpSource.WarpParms.Images[eye][1].TexCoordsFromTanAngles );
+                    timeWarps[1][scan] = VR4Matrixf( m_images[eye][1].TexCoordsFromTanAngles );
                 }
                 else
                 {	// locked-to-world surface
                     const VR4Matrixf warp2 = CalculateTimeWarpMatrix2(
-                                currentWarpSource.WarpParms.Images[eye][1].Pose.Pose.Orientation,
+                                m_images[eye][1].Pose.Pose.Orientation,
                             sensor[scan].Predicted.Pose.Orientation ) * velocity;
-                    timeWarps[1][scan] = VR4Matrixf( currentWarpSource.WarpParms.Images[eye][1].TexCoordsFromTanAngles ) * warp2;
+                    timeWarps[1][scan] = VR4Matrixf( m_images[eye][1].TexCoordsFromTanAngles ) * warp2;
                 }
             }
         }
@@ -1287,11 +1348,11 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
         m_logEyeWarpGpuTime.Begin( eye );
         m_logEyeWarpGpuTime.PrintTime( eye, "GPU time for eye time warp" );
 
-        setSmoothpState( currentWarpSource );
+        setSmoothpState( );
 
-        bindWarpProgram( currentWarpSource, timeWarps, rollingWarp, eye, vsyncBase );
+        bindWarpProgram( timeWarps, rollingWarp, eye, vsyncBase );
 
-        BindEyeTextures( currentWarpSource, eye );
+        bindEyeTextures( eye );
 
         glScissor(eye * m_window_width/2, 0, m_window_width/2, m_window_height);
 
@@ -1302,7 +1363,7 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
         glDrawElements( GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, (void *)(indexOffset * 2 ) );
 
         // If the gaze cursor is enabled, render those subsets of triangles
-        if ( currentWarpSource.WarpParms.WarpOptions & SWAP_OPTION_SHOW_CURSOR )
+        if ( m_smoothOptions & SWAP_OPTION_SHOW_CURSOR )
         {
             bindCursorProgram();
             glEnable( GL_BLEND );
@@ -1318,7 +1379,7 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
         // was rendered at, so you can see the amount of interpolated time warp applied
         // to it as a delta from the red grid to the greed or blue grid that was drawn directly
         // into the texture.
-        drawFrameworkGraphicsToWindow( eye, currentWarpSource.WarpParms.WarpOptions);
+        drawFrameworkGraphicsToWindow( eye, m_smoothOptions);
 
         glFlush();
 
@@ -1372,7 +1433,7 @@ void VFrameSmooth::Private::warpToScreenSliced( const double vsyncBase, const sw
 
     glViewport( 0, 0, m_window_width, m_window_height );
     glScissor( 0, 0, m_window_width, m_window_height );
-    warpSource_t currentWarpSource = {};
+    //warpSource_t currentWarpSource = {};
     int	back = 0;	// frame back from most recent
     long long thisEyeBufferNum = 0;
     for ( int screenSlice = 0; screenSlice < NUM_SLICES_PER_SCREEN; screenSlice++ )
@@ -1401,26 +1462,26 @@ void VFrameSmooth::Private::warpToScreenSliced( const double vsyncBase, const sw
                     break;
                 }
 
-                warpSource_t & testWarpSource = m_warpSources[0];
-                if ( testWarpSource.MinimumVsync > vsyncBase )
+                //warpSource_t & testWarpSource = m_warpSources[0];
+                if ( m_minimumVsync > vsyncBase )
                 {
                     // a full frame got completed in less time than a single eye; don't use it to avoid stuttering
                     continue;
                 }
 
-                if ( testWarpSource.GpuSync == 0 )
+                if ( m_gpuSync == 0 )
                 {
                     LOG( "thisEyeBufferNum %lli had 0 sync", thisEyeBufferNum );
                     break;
                 }
 
-                if ( VQuatf( testWarpSource.WarpParms.Images[eye][0].Pose.Pose.Orientation ).LengthSq() < 1e-18f )
+                if ( VQuatf( m_images[eye][0].Pose.Pose.Orientation ).LengthSq() < 1e-18f )
                 {
                     LOG( "Bad Predicted.Pose.Orientation!" );
                     continue;
                 }
 
-                const EGLint wait = glOperation.eglClientWaitSyncKHR( m_eglDisplay, testWarpSource.GpuSync,
+                const EGLint wait = glOperation.eglClientWaitSyncKHR( m_eglDisplay, m_gpuSync,
                                                                       EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, 0 );
                 if ( wait == EGL_TIMEOUT_EXPIRED_KHR )
                 {
@@ -1432,11 +1493,11 @@ void VFrameSmooth::Private::warpToScreenSliced( const double vsyncBase, const sw
                 }
 
                 // This buffer set is good to use
-                if ( testWarpSource.FirstDisplayedVsync[eye] == 0 )
+                if ( m_firstDisplayedVsync[eye] == 0 )
                 {
-                    testWarpSource.FirstDisplayedVsync[eye] = (long long)vsyncBase;
+                    m_firstDisplayedVsync[eye] = (long long)vsyncBase;
                 }
-                currentWarpSource = testWarpSource;
+                //currentWarpSource = testWarpSource;
                 break;
             }
 
@@ -1463,7 +1524,7 @@ void VFrameSmooth::Private::warpToScreenSliced( const double vsyncBase, const sw
                 }
             }
 
-            if ( currentWarpSource.WarpParms.Images[eye][0].TexId == 0 )
+            if ( m_images[eye][0].TexId == 0 )
             {
                 // We don't have anything valid to draw, so just sleep until
                 // the next time point and check again.
@@ -1475,15 +1536,15 @@ void VFrameSmooth::Private::warpToScreenSliced( const double vsyncBase, const sw
 
         // Build up the external velocity transform
         VR4Matrixf velocity;
-        const int velocitySteps = std::min( 3, (int)((long long)vsyncBase - currentWarpSource.MinimumVsync) );
+        const int velocitySteps = std::min( 3, (int)((long long)vsyncBase - m_minimumVsync) );
         for ( int i = 0; i < velocitySteps; i++ )
         {
-            velocity = velocity * currentWarpSource.WarpParms.ExternalVelocity;
+            velocity = velocity * m_externalVelocity;
         }
 
         // If we have a second image layer, we will need to calculate
         // a second set of time warps and use a different program.
-        const bool dualLayer = ( currentWarpSource.WarpParms.Images[eye][1].TexId > 0 );
+        const bool dualLayer = ( m_images[eye][1].TexId > 0 );
 
         // Calculate predicted poses for the start and end of this eye's
         // raster scanout, so we can warp the best image we have to it.
@@ -1509,22 +1570,22 @@ void VFrameSmooth::Private::warpToScreenSliced( const double vsyncBase, const sw
                 const double timePoint = sliceTimes[screenSlice + scan];
                 sensor[scan] = ovr_GetSensorStateInternal( timePoint );
                 warp = CalculateTimeWarpMatrix2(
-                            currentWarpSource.WarpParms.Images[eye][0].Pose.Pose.Orientation,
+                            m_images[eye][0].Pose.Pose.Orientation,
                         sensor[scan].Predicted.Pose.Orientation ) * velocity;
             }
-            timeWarps[0][scan] = VR4Matrixf( currentWarpSource.WarpParms.Images[eye][0].TexCoordsFromTanAngles ) * warp;
+            timeWarps[0][scan] = VR4Matrixf( m_images[eye][0].TexCoordsFromTanAngles ) * warp;
             if ( dualLayer )
             {
-                if ( currentWarpSource.WarpParms.WarpOptions & SWAP_OPTION_FIXED_OVERLAY )
+                if ( m_smoothOptions & SWAP_OPTION_FIXED_OVERLAY )
                 {	// locked-to-face HUD
-                    timeWarps[1][scan] = VR4Matrixf( currentWarpSource.WarpParms.Images[eye][1].TexCoordsFromTanAngles );
+                    timeWarps[1][scan] = VR4Matrixf( m_images[eye][1].TexCoordsFromTanAngles );
                 }
                 else
                 {	// locked-to-world surface
                     const VR4Matrixf warp2 = CalculateTimeWarpMatrix2(
-                                currentWarpSource.WarpParms.Images[eye][1].Pose.Pose.Orientation,
+                                m_images[eye][1].Pose.Pose.Orientation,
                             sensor[scan].Predicted.Pose.Orientation ) * velocity;
-                    timeWarps[1][scan] = VR4Matrixf( currentWarpSource.WarpParms.Images[eye][1].TexCoordsFromTanAngles ) * warp2;
+                    timeWarps[1][scan] = VR4Matrixf( m_images[eye][1].TexCoordsFromTanAngles ) * warp2;
                 }
             }
         }
@@ -1541,13 +1602,13 @@ void VFrameSmooth::Private::warpToScreenSliced( const double vsyncBase, const sw
         m_logEyeWarpGpuTime.Begin( screenSlice );
         m_logEyeWarpGpuTime.PrintTime( screenSlice, "GPU time for eye time warp" );
 
-        setSmoothpState( currentWarpSource );
+        setSmoothpState();
 
-        bindWarpProgram( currentWarpSource, timeWarps, rollingWarp, eye, vsyncBase );
+        bindWarpProgram( timeWarps, rollingWarp, eye, vsyncBase );
 
         if ( screenSlice == 0 || screenSlice == NUM_SLICES_PER_EYE )
         {
-            BindEyeTextures( currentWarpSource, eye );
+            bindEyeTextures( eye );
         }
 
         const int sliceSize = m_window_width / NUM_SLICES_PER_SCREEN;
@@ -1573,7 +1634,7 @@ void VFrameSmooth::Private::warpToScreenSliced( const double vsyncBase, const sw
         // was rendered at, so you can see the amount of interpolated time warp applied
         // to it as a delta from the red grid to the greed or blue grid that was drawn directly
         // into the texture.
-        drawFrameworkGraphicsToWindow( eye, currentWarpSource.WarpParms.WarpOptions);
+        drawFrameworkGraphicsToWindow( eye, m_smoothOptions);
 
         glFlush();
 
@@ -1623,11 +1684,11 @@ void VFrameSmooth::Private::smoothInternal( )
     VGlOperation glOperation;
     // Prepare to pass the new eye buffers to the background thread if we are running multi-threaded.
     const long long lastBufferCount = m_eyeBufferCount.state();
-    warpSource_t & ws = m_warpSources[0];
-    ws.MinimumVsync = m_lastSwapVsyncCount + 2 * m_minimumVsyncs;	// don't use it if from same frame to avoid problems with very fast frames
-    ws.FirstDisplayedVsync[0] = 0;			// will be set when it becomes the currentSource
-    ws.FirstDisplayedVsync[1] = 0;			// will be set when it becomes the currentSource
-    ws.disableChromaticCorrection = ( ( glOperation.eglGetGpuType() & NervGear::VGlOperation::GPU_TYPE_MALI_T760_EXYNOS_5433 ) != 0 );
+   // warpSource_t & ws = m_warpSources[0];
+    m_minimumVsync = m_lastSwapVsyncCount + 2 * m_minimumVsyncs;	// don't use it if from same frame to avoid problems with very fast frames
+    m_firstDisplayedVsync[0] = 0;			// will be set when it becomes the currentSource
+    m_firstDisplayedVsync[1] = 0;			// will be set when it becomes the currentSource
+    m_disableChromaticCorrection = ( ( glOperation.eglGetGpuType() & NervGear::VGlOperation::GPU_TYPE_MALI_T760_EXYNOS_5433 ) != 0 );
     //ws.WarpParms = parms;
 
     // Default images.
@@ -1647,23 +1708,23 @@ void VFrameSmooth::Private::smoothInternal( )
     }
 
     // Destroy the sync object that was created for this buffer set.
-    if ( ws.GpuSync != EGL_NO_SYNC_KHR )
+    if ( m_gpuSync != EGL_NO_SYNC_KHR )
     {
-        if ( EGL_FALSE == glOperation.eglDestroySyncKHR( m_eglDisplay, ws.GpuSync ) )
+        if ( EGL_FALSE == glOperation.eglDestroySyncKHR( m_eglDisplay, m_gpuSync ) )
         {
             LOG( "eglDestroySyncKHR returned EGL_FALSE" );
         }
     }
 
     // Add a sync object for this buffer set.
-    ws.GpuSync = glOperation.eglCreateSyncKHR( m_eglDisplay, EGL_SYNC_FENCE_KHR, NULL );
-    if ( ws.GpuSync == EGL_NO_SYNC_KHR )
+    m_gpuSync = glOperation.eglCreateSyncKHR( m_eglDisplay, EGL_SYNC_FENCE_KHR, NULL );
+    if ( m_gpuSync == EGL_NO_SYNC_KHR )
     {
         FAIL( "eglCreateSyncKHR_():EGL_NO_SYNC_KHR" );
     }
 
     // Force it to flush the commands
-    if ( EGL_FALSE == glOperation.eglClientWaitSyncKHR( m_eglDisplay, ws.GpuSync,
+    if ( EGL_FALSE == glOperation.eglClientWaitSyncKHR( m_eglDisplay, m_gpuSync,
                                                         EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, 0 ) )
     {
         LOG( "eglClientWaitSyncKHR returned EGL_FALSE" );
@@ -1742,6 +1803,10 @@ void VFrameSmooth::Private::warpSwapInternal( const ovrTimeWarpParms & parms )
         FAIL( "WarpSwap: Called with tid %i instead of %i", gettid(), m_sStartupTid );
     }
 
+
+
+
+
     // Keep track of the last time WarpSwap() was called.
     m_lastWarpSwapTimeInSeconds.setState( ovr_GetTimeInSeconds() );
 
@@ -1756,47 +1821,47 @@ void VFrameSmooth::Private::warpSwapInternal( const ovrTimeWarpParms & parms )
     const long long lastBufferCount = m_eyeBufferCount.state();
 
      LOG( "smooth eye buffercount ( %lld )", lastBufferCount );
-    warpSource_t & ws = m_warpSources[0];
-    ws.MinimumVsync = m_lastSwapVsyncCount + 2 * minimumVsyncs;	// don't use it if from same frame to avoid problems with very fast frames
-    ws.FirstDisplayedVsync[0] = 0;			// will be set when it becomes the currentSource
-    ws.FirstDisplayedVsync[1] = 0;			// will be set when it becomes the currentSource
-    ws.disableChromaticCorrection = ( ( glOperation.eglGetGpuType() & NervGear::VGlOperation::GPU_TYPE_MALI_T760_EXYNOS_5433 ) != 0 );
-    ws.WarpParms = parms;
+   // warpSource_t & ws = m_warpSources[0];
+    m_minimumVsync = m_lastSwapVsyncCount + 2 * minimumVsyncs;	// don't use it if from same frame to avoid problems with very fast frames
+    m_firstDisplayedVsync[0] = 0;			// will be set when it becomes the currentSource
+    m_firstDisplayedVsync[1] = 0;			// will be set when it becomes the currentSource
+    m_disableChromaticCorrection = ( ( glOperation.eglGetGpuType() & NervGear::VGlOperation::GPU_TYPE_MALI_T760_EXYNOS_5433 ) != 0 );
+    //ws.WarpParms = parms;
 
     // Default images.
-    if ( ( parms.WarpOptions & SWAP_OPTION_DEFAULT_IMAGES ) != 0 )
+    if ( ( m_smoothOptions & SWAP_OPTION_DEFAULT_IMAGES ) != 0 )
     {
-        for ( int eye = 0; eye < MAX_WARP_EYES; eye++ )
+        for ( int eye = 0; eye < 2; eye++ )
         {
-            if ( parms.Images[eye][0].TexId == 0 )
+            if (m_images[eye][0].TexId == 0 )
             {
-                ws.WarpParms.Images[eye][0].TexId = m_blackTexId;
+                m_images[eye][0].TexId = m_blackTexId;
             }
-            if ( parms.Images[eye][1].TexId == 0 )
+            if ( m_images[eye][1].TexId == 0 )
             {
-                ws.WarpParms.Images[eye][1].TexId = m_defaultLoadingIconTexId;
+                m_images[eye][1].TexId = m_defaultLoadingIconTexId;
             }
         }
     }
 
     // Destroy the sync object that was created for this buffer set.
-    if ( ws.GpuSync != EGL_NO_SYNC_KHR )
+    if ( m_gpuSync != EGL_NO_SYNC_KHR )
     {
-        if ( EGL_FALSE == glOperation.eglDestroySyncKHR( m_eglDisplay, ws.GpuSync ) )
+        if ( EGL_FALSE == glOperation.eglDestroySyncKHR( m_eglDisplay, m_gpuSync ) )
         {
             LOG( "eglDestroySyncKHR returned EGL_FALSE" );
         }
     }
 
     // Add a sync object for this buffer set.
-    ws.GpuSync = glOperation.eglCreateSyncKHR( m_eglDisplay, EGL_SYNC_FENCE_KHR, NULL );
-    if ( ws.GpuSync == EGL_NO_SYNC_KHR )
+    m_gpuSync = glOperation.eglCreateSyncKHR( m_eglDisplay, EGL_SYNC_FENCE_KHR, NULL );
+    if ( m_gpuSync == EGL_NO_SYNC_KHR )
     {
         FAIL( "eglCreateSyncKHR_():EGL_NO_SYNC_KHR" );
     }
 
     // Force it to flush the commands
-    if ( EGL_FALSE == glOperation.eglClientWaitSyncKHR( m_eglDisplay, ws.GpuSync,
+    if ( EGL_FALSE == glOperation.eglClientWaitSyncKHR( m_eglDisplay, m_gpuSync,
                                                         EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, 0 ) )
     {
         LOG( "eglClientWaitSyncKHR returned EGL_FALSE" );
