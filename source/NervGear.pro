@@ -28,7 +28,6 @@ SOURCES += \
     jni/core/VLog.cpp \
     jni/core/VLock.cpp \
     jni/core/VPath.cpp \
-    jni/core/RefCount.cpp \
     jni/core/VSignal.cpp \
     jni/core/VStandardPath.cpp \
     jni/core/VString.cpp \
@@ -71,6 +70,7 @@ SOURCES += \
     jni/api/sensor/Android_PhoneSensors.cpp \
     jni/api/sensor/Common_HMDDevice.cpp \
     jni/api/sensor/ThreadCommandQueue.cpp \
+    jni/api/sensor/RefCount.cpp \
     jni/gui/VRMenuComponent.cpp \
     jni/gui/VRMenuMgr.cpp \
     jni/gui/VRMenuObjectLocal.cpp \
@@ -148,7 +148,6 @@ HEADERS += \
     jni/core/VLockless.h \
     jni/core/VMap.h \
     jni/core/VPath.h \
-    jni/core/RefCount.h \
     jni/core/VSignal.h \
     jni/core/VStandardPath.h \
     jni/core/VString.h \
@@ -214,6 +213,7 @@ HEADERS += \
     jni/api/sensor/HIDDeviceBase.h \
     jni/api/sensor/HIDDeviceImpl.h \
     jni/api/sensor/ThreadCommandQueue.h \
+    jni/api/sensor/RefCount.h \
     jni/gui/VRMenuComponent.h \
     jni/gui/VRMenuMgr.h \
     jni/gui/VRMenuObjectLocal.h \
