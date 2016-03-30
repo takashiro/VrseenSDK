@@ -2320,7 +2320,7 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
 //}
 
 // draw a zero to destination alpha
-void App::drawScreenMask( const ovrMatrix4f & mvp, const float fadeFracX, const float fadeFracY )
+void App::drawScreenMask( const VR4Matrixf & mvp, const float fadeFracX, const float fadeFracY )
 {
     VR4Matrixf mvpMatrix( mvp );
 

@@ -450,7 +450,7 @@ void OvrSceneView::UpdateSceneModels( const VrFrame vrFrame, const long long sup
 }
 
 void OvrSceneView::Frame( const VrViewParms viewParms_, const VrFrame vrFrame,
-        ovrMatrix4f & timeWarpParmsExternalVelocity, const long long supressModelsWithClientId )
+		VR4Matrixf & timeWarpParmsExternalVelocity, const long long supressModelsWithClientId )
 {
 	ViewParms = viewParms_;
 	UpdateViewMatrix( vrFrame );
@@ -461,7 +461,7 @@ void OvrSceneView::Frame( const VrViewParms viewParms_, const VrFrame vrFrame,
 
 	// Set the external velocity matrix so TimeWarp can smoothly rotate the
 	// view even if we are dropping frames.
-    const ovrMatrix4f localViewMatrix = ViewMatrix;
+    const VR4Matrixf localViewMatrix = ViewMatrix;
     timeWarpParmsExternalVelocity = VR4Matrix<float>::CalculateExternalVelocity( &localViewMatrix, YawVelocity );
 }
 

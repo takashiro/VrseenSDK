@@ -15,6 +15,7 @@ typedef const struct JNIInvokeInterface * JavaVM;
 void * jobject;
 #endif
 
+using namespace NervGear;
 /*
 
 Multiple Android activities that live in the same address space can cooperatively use the VrApi.
@@ -415,8 +416,6 @@ void			ovr_RecenterYaw( ovrMobile * ovr );
 // Warp Swap
 //-----------------------------------------------------------------
 
-// row-major 4x4 matrix
-typedef NervGear::VR4Matrix<float> ovrMatrix4f;
 
 typedef enum
 {
@@ -522,7 +521,7 @@ typedef struct
 	// function into ( TanX, TanY, 1, 1 ) vectors that are transformed
 	// by this matrix to get ( S, T, Q, _ ) vectors that are looked
 	// up with texture2dproj() to get texels.
-	ovrMatrix4f		TexCoordsFromTanAngles;
+    VR4Matrixf		TexCoordsFromTanAngles;
 
 	// The sensor state for which ModelViewMatrix is correct.
 	// It is ok to update the orientation for each eye, which
@@ -551,7 +550,7 @@ typedef struct
 	// eye vectors before applying the rest of the time warp.
 	// This will only be added when the same ovrTimeWarpParms is used for
 	// more than one vsync.
-	ovrMatrix4f					ExternalVelocity;
+    VR4Matrixf					ExternalVelocity;
 
 	// WarpSwap will not return until at least this many vsyncs have
 	// passed since the previous WarpSwap returned.
@@ -648,7 +647,7 @@ typedef enum
 
 inline ovrTimeWarpParms InitTimeWarpParms( const ovrWarpInit init = WARP_INIT_DEFAULT, const unsigned int texId = 0 )
 {
-    const ovrMatrix4f tanAngleMatrix = NervGear::VR4Matrix<float>::TanAngleMatrixFromFov( 90.0f );
+    const VR4Matrixf tanAngleMatrix = NervGear::VR4Matrix<float>::TanAngleMatrixFromFov( 90.0f );
 
 	ovrTimeWarpParms parms;
 	memset( &parms, 0, sizeof( parms ) );

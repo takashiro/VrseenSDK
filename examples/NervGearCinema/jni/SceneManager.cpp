@@ -976,7 +976,7 @@ VR4Matrixf SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 	{
 		// use overlay
         const VR4Matrixf screenModel = ScreenMatrix();
-        const ovrMatrix4f mv = Scene.ViewMatrixForEye( eye ) * screenModel;
+        const VR4Matrixf mv = Scene.ViewMatrixForEye( eye ) * screenModel;
 
         vApp->swapParms().WarpProgram = WP_CHROMATIC_MASKED_PLANE;
         vApp->swapParms().Images[eye][1].TexId = MipMappedMovieTextures[CurrentMipMappedMovieTexture];
@@ -984,7 +984,7 @@ VR4Matrixf SceneManager::DrawEyeView( const int eye, const float fovDegrees )
         vApp->swapParms().Images[eye][1].TexCoordsFromTanAngles = texMatrix * VR4Matrix<float>::TanAngleMatrixFromUnitSquare( &mv );
 
 		// explicitly clear a hole in alpha
-        const ovrMatrix4f screenMvp = mvp * screenModel;
+        const VR4Matrixf screenMvp = mvp * screenModel;
         vApp->drawScreenMask( screenMvp, 0.0f, 0.0f );
 	}
 
