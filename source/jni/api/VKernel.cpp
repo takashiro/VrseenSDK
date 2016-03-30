@@ -636,12 +636,11 @@ VKernel::VKernel()
 {
     asyncSmooth = true;
     msaa = 0;
+    device = VDevice::instance();
 }
 
 void UpdateHmdInfo()
 {
-    instance->device = VDevice::instance();
-
     // Only use the Android info if we haven't explicitly set the screenWidth / height,
     // because they are reported wrong on the note.
     if(!instance->device->widthbyMeters)
@@ -859,6 +858,8 @@ void VKernel::destroy(eExitType exitType)
         LOG( "Calling exitType EXIT_TYPE_EXIT" );
         NervGear::VSystemActivities::instance()->shutdownEventQueues();
         ovr_Shutdown();
+        delete  instance;
+        instance = NULL;
     }
 }
 
