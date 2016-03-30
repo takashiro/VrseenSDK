@@ -227,7 +227,16 @@ void MovieManager::LoadPoster( MovieDef *movie )
     VString posterFilename = VPath(movie->Filename).baseName();
     posterFilename.append(".png");
 
-    movie->Poster = LoadTextureFromBuffer( posterFilename.toCString(), MemBufferFile( posterFilename.toCString() ),
+    std::fstream fileBuffer;
+    fileBuffer.open(posterFilename.toCString());
+    fileBuffer.seekg(0, std::ios_base::end);
+    uint fileLength = 0;
+    fileLength = fileBuffer.tellg();
+    fileBuffer.seekg(0, std::ios_base::beg);
+    void *buffer = NULL;
+    buffer = malloc(fileLength);
+    fileBuffer.read(reinterpret_cast<std::istream::char_type*>(buffer), fileLength);
+    movie->Poster = LoadTextureFromBuffer( posterFilename.toCString(), buffer, fileLength,
 			TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), movie->PosterWidth, movie->PosterHeight );
 
 	if ( movie->Poster == 0 )
@@ -255,7 +264,16 @@ void MovieManager::LoadPoster( MovieDef *movie )
 			// no thumbnail found, so create it.  if it's on an external sdcard, posterFilename will contain the new filename at this point and will load it from the cache
             if ( ( movie->Poster == 0 ) && Native::CreateVideoThumbnail(movie->Filename, posterFilename, PosterWidth, PosterHeight))
 			{
-                movie->Poster = LoadTextureFromBuffer( posterFilename.toUtf8().data() , MemBufferFile( posterFilename.toUtf8().data() ),
+                std::fstream fileBuffer;
+                fileBuffer.open(posterFilename.toUtf8().data());
+                fileBuffer.seekg(0, std::ios_base::end);
+                uint fileLength = 0;
+                fileLength = fileBuffer.tellg();
+                fileBuffer.seekg(0, std::ios_base::beg);
+                void *buffer = NULL;
+                buffer = malloc(fileLength);
+                fileBuffer.read(reinterpret_cast<std::istream::char_type*>(buffer), fileLength);
+                movie->Poster = LoadTextureFromBuffer( posterFilename.toUtf8().data() , buffer, fileLength,
 					TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), movie->PosterWidth, movie->PosterHeight );
 			}
 		}

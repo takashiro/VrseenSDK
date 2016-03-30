@@ -3,7 +3,6 @@
 #include "vglobal.h"
 #include "Types.h"
 #include "VFlags.h"
-#include "MemBuffer.h"
 #include "api/VGlOperation.h"
 
 // Explicitly using unsigned instead of GLUint / GLenum to avoid including GL headers
@@ -63,7 +62,7 @@ void		BuildTextureMipmaps( GlTexture texid );
 // Otherwise a default square texture will be created on any failure.
 //
 // Uncompressed image formats will have mipmaps generated and trilinear filtering set.
-GlTexture	LoadTextureFromBuffer( const char * fileName, const MemBuffer & buffer,
+GlTexture	LoadTextureFromBuffer( const char * fileName, const void* buffer, uint length,
 				const TextureFlags_t & flags, int & width, int & height );
 
 unsigned char * LoadPVRBuffer( const char * fileName, int & width, int & height );

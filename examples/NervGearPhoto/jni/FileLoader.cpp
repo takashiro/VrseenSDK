@@ -18,6 +18,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "Oculus360Photos.h"
 #include "turbojpeg.h"
 #include "OVR_TurboJpeg.h"
+#include <fstream>
 
 #include <VApkFile.h>
 #include <VLog.h>
@@ -61,71 +62,57 @@ void * Queue1Thread( void * v )
 			// cube map
 			const char * const cubeSuffix[6] = { "_px.jpg", "_nx.jpg", "_py.jpg", "_ny.jpg", "_pz.jpg", "_nz.jpg" };
 
-			MemBufferFile mbfs[6];
-
             VString filenameWithoutSuffix = filename.left(filename.size() - 7);
+
+            VVariantArray args;
 			int side = 0;
 			for ( ; side < 6; side++ )
 			{
                 VString sideFilename = filenameWithoutSuffix + cubeSuffix[side];
-                if ( !mbfs[side].loadFile( sideFilename.toLatin1().data() ) )
+                fstream fileBuffer;
+                fileBuffer.open(sideFilename.toUtf8().data());
+                fileBuffer.seekg(0, ios_base::end);
+                uint fileLength = 0;
+                fileLength = fileBuffer.tellg();
+                fileBuffer.seekg(0, ios_base::beg);
+                void *buffer = NULL;
+                buffer = malloc(fileLength);
+                fileBuffer.read(reinterpret_cast<istream::char_type*>(buffer), fileLength);
+                if ( fileLength == 0 || buffer == NULL )
 				{
                     const VApkFile &apk = VApkFile::CurrentApkFile();
-                    if (!apk.read(sideFilename, mbfs[side])) {
+                    if (!apk.read(sideFilename, buffer, fileLength)) {
 						break;
 					}
 				}
+                 args << buffer << fileLength;
                 vInfo( "Queue1 loaded" << sideFilename);
 			}
-			if ( side >= 6 )
-			{
-				// if no error occured, post to next thread
-                LOG( "%s.PostPrintf( \"%s %p %i %p %i %p %i %p %i %p %i %p %i\" )", "Queue3", event.name.toUtf8().data(),
-						mbfs[0].buffer, mbfs[0].length,
-						mbfs[1].buffer, mbfs[1].length,
-						mbfs[2].buffer, mbfs[2].length,
-						mbfs[3].buffer, mbfs[3].length,
-						mbfs[4].buffer, mbfs[4].length,
-						mbfs[5].buffer, mbfs[5].length );
-
-                VVariantArray args;
-                for (int i = 0; i < 6; i++) {
-                    args << mbfs[i].buffer << mbfs[i].length;
-                }
-                queue->post(event.name, args);
-				for ( int i = 0; i < 6; ++i )
-				{
-					// make sure we do not free the actual buffers because they're used in the next thread
-					mbfs[i].buffer = NULL;
-					mbfs[i].length = 0;
-				}
-			}
-			else
-			{
-				// otherwise free the buffers we did manage to allocate
-				for ( int i = 0; i < side; ++i )
-				{
-					mbfs[i].freeData();
-				}
-			}
+            queue->post(event.name, args);
 		}
 		else
 		{
 			// non-cube map
-            MemBufferFile mbf( filename.toUtf8().data() );
-			if ( mbf.length <= 0 || mbf.buffer == NULL )
+            fstream fileBuffer;
+            fileBuffer.open(filename.toUtf8().data());
+            fileBuffer.seekg(0, ios_base::end);
+            uint fileLength = 0;
+            fileLength = fileBuffer.tellg();
+            fileBuffer.seekg(0, ios_base::beg);
+            void *buffer = NULL;
+            buffer = malloc(fileLength);
+            fileBuffer.read(reinterpret_cast<istream::char_type*>(buffer), fileLength);
+            if ( fileLength <= 0 || buffer == NULL )
 			{
                 const VApkFile &apk = VApkFile::CurrentApkFile();
-                if (!apk.read(filename, mbf)) {
+                if (!apk.read(filename,buffer, fileLength)) {
 					continue;
 				}
 			}
 
             VVariantArray args;
-            args << mbf.buffer << mbf.length;
+            args << buffer << fileLength;
             queue->post(event.name, args);
-			mbf.buffer = NULL;
-			mbf.length = 0;
 		}
 	}
 	return NULL;

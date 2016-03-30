@@ -1,6 +1,5 @@
 #pragma once
 
-#include "MemBuffer.h"
 #include "sensor/DeviceConstants.h"
 #include "VLensDistortion.h"
 #include "VGlGeometry.h"

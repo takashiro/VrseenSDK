@@ -10,8 +10,6 @@ NV_NAMESPACE_BEGIN
 class VString;
 class VByteArray;
 
-//@to-do: remove this
-class MemBufferFile;
 
 class VApkFile
 {
@@ -26,10 +24,8 @@ public:
 
     bool contains(const VString &filePath) const;
 
-    void read(const VString &filePath, void *&buffer, uint &length) const;
+    bool read(const VString &filePath, void *&buffer, uint &length) const;
 
-    //@to-do: remove this function
-    bool read(const VString &filePath, MemBufferFile &mem) const;
 
     static const VApkFile &CurrentApkFile();
 

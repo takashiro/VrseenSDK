@@ -202,7 +202,7 @@ void LoadModelFileTexture( ModelFile & model, const char * textureName,
     tex.name = VPath(textureName).baseName();
     int width;
     int height;
-	tex.texid = LoadTextureFromBuffer( textureName, MemBuffer( buffer, size ),
+    tex.texid = LoadTextureFromBuffer( textureName,buffer, size,
 			materialParms.UseSrgbTextureFormats ? TextureFlags_t( TEXTUREFLAG_USE_SRGB ) : TextureFlags_t(),
 			width, height );
 

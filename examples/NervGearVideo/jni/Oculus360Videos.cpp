@@ -22,6 +22,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include <VAlgorithm.h>
 #include <VPath.h>
 #include <VApkFile.h>
+#include <fstream>
 
 #include "TypesafeNumber.h"
 #include "VArray.h"
@@ -171,8 +172,17 @@ void Oculus360Videos::init(const VString &fromPackage, const VString &launchInte
     const char *launchPano = NULL;
     if ( ( NULL != launchPano ) && launchPano[ 0 ] )
 	{
+        std::fstream fileBuffer;
+        fileBuffer.open(launchPano);
+        fileBuffer.seekg(0, std::ios_base::end);
+        uint fileLength = 0;
+        fileLength = fileBuffer.tellg();
+        fileBuffer.seekg(0, std::ios_base::beg);
+        void *buffer = NULL;
+        buffer = malloc(fileLength);
+        fileBuffer.read(reinterpret_cast<std::istream::char_type*>(buffer), fileLength);
 
-		BackgroundTexId = LoadTextureFromBuffer( launchPano, MemBufferFile( launchPano ),
+        BackgroundTexId = LoadTextureFromBuffer( launchPano, buffer, fileLength,
 			TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ) | TEXTUREFLAG_USE_SRGB, BackgroundWidth, BackgroundHeight );
 
 	}
