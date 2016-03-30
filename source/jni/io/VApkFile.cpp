@@ -4,7 +4,6 @@
 #include "VLog.h"
 
 #include "App.h"
-#include "MemBuffer.h"
 
 #include <3rdparty/minizip/unzip.h>
 
@@ -72,11 +71,11 @@ bool VApkFile::contains(const VString &filePath) const
     return true;
 }
 
-void VApkFile::read(const VString &filePath, void *&buffer, uint &length) const
+bool VApkFile::read(const VString &filePath, void *&buffer, uint &length) const
 {
     if (d->handle == nullptr) {
         vError("VApkFile is not open");
-        return;
+        return false;
     }
 
     VByteArray path = filePath.toUtf8();
@@ -85,19 +84,19 @@ void VApkFile::read(const VString &filePath, void *&buffer, uint &length) const
     const int locateRet = unzLocateFile(d->handle, path.data(), 2 /* case insensitive */);
     if (locateRet != UNZ_OK) {
         vInfo("File '" << path << "' not found in apk!");
-        return;
+        return false;
     }
 
     unz_file_info info;
     const int getRet = unzGetCurrentFileInfo(d->handle, &info, NULL, 0, NULL, 0, NULL, 0);
     if (getRet != UNZ_OK) {
         vWarn("File info error reading '" << path << "' from apk!");
-        return;
+        return false;
     }
     const int openRet = unzOpenCurrentFile(d->handle);
     if (openRet != UNZ_OK) {
         vWarn("Error opening file '" << path << "' from apk!");
-        return;
+        return false;
     }
 
     length = info.uncompressed_size;
@@ -110,25 +109,11 @@ void VApkFile::read(const VString &filePath, void *&buffer, uint &length) const
         free(buffer);
         buffer = NULL;
         length = 0;
+        return false;
     }
+    return true;
 }
 
-bool VApkFile::read(const VString &filePath, MemBufferFile &memBufferFile) const
-{
-    memBufferFile.freeData();
-
-    uint length = 0;
-    void *buffer = nullptr;
-    read(filePath, buffer, length);
-
-    if (buffer != nullptr) {
-        memBufferFile.buffer = buffer;
-        memBufferFile.length = length;
-        return true;
-    }
-
-    return false;
-}
 
 const VApkFile &VApkFile::CurrentApkFile()
 {
@@ -150,7 +135,7 @@ uint LoadTextureFromApplicationPackage(const VString &nameInZip, const TextureFl
         return 0;
     }
     VByteArray name = nameInZip.toUtf8();
-    unsigned texId = LoadTextureFromBuffer(name.data(), MemBuffer(buffer, bufferLength), flags, width, height );
+    unsigned texId = LoadTextureFromBuffer(name.data(), buffer, bufferLength, flags, width, height );
     free(buffer);
     return texId;
 }

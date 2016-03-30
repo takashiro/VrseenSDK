@@ -35,7 +35,6 @@ SOURCES += \
     jni/core/VThread.cpp \
     jni/core/VTimer.cpp \
     jni/core/MappedFile.cpp \
-    jni/core/MemBuffer.cpp \
     jni/core/VMutex.cpp \
     jni/core/VUserSettings.cpp \
     jni/core/VVariant.cpp \
@@ -159,7 +158,6 @@ HEADERS += \
     jni/core/VThread.h \
     jni/core/VTimer.h \
     jni/core/MappedFile.h \
-    jni/core/MemBuffer.h \
     jni/core/VMutex.h \
     jni/core/Types.h \
     jni/core/List.h \

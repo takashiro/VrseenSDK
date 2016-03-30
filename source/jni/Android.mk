@@ -53,7 +53,6 @@ LOCAL_SRC_FILES  := \
 	core/VThread.cpp \
 	core/VTimer.cpp \
 	core/MappedFile.cpp \
-	core/MemBuffer.cpp \
 	core/VMutex.cpp \
 	core/VUserSettings.cpp \
 	core/VVariant.cpp \

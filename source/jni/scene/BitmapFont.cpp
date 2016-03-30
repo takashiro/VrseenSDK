@@ -842,7 +842,7 @@ bool BitmapFontLocal::LoadImageFromBuffer(char const * imageName,
 		Texture = LoadASTCTextureFromMemory(buffer, bufferSize, 1);
 	} else {
 		Texture = LoadTextureFromBuffer(imageName,
-				MemBuffer((void *) buffer, bufferSize),
+                buffer, bufferSize,
 				TextureFlags_t(TEXTUREFLAG_NO_DEFAULT), ImageWidth,
 				ImageHeight);
 	}
