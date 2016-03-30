@@ -400,7 +400,6 @@ struct App::Private
         , javaObject(nullptr)
         , appInterface(nullptr)
         , activity(nullptr)
-        , kernel(VKernel::GetInstance())
     {
     }
 
@@ -1514,6 +1513,7 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
     vAssert(NervGearAppInstance == nullptr);
     NervGearAppInstance = this;
 
+    d->kernel = VKernel::GetInstance();
     d->storagePaths = new VStandardPath(jni, activityObject);
 
 	//WaitForDebuggerToAttach();
