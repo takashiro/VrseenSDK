@@ -1071,3 +1071,73 @@ void VKernel::doSmooth(const ovrTimeWarpParms * parms )
     frameSmooth->doSmooth(*parms);
 }
 
+void VKernel::setSmoothParms(ovrTimeWarpParms   parms)
+{
+
+
+}
+ovrTimeWarpParms  VKernel::getSmoothParms()
+{
+    ovrTimeWarpParms parms;
+    memset( &parms, 0, sizeof( parms ) );
+    for(int i=0;i<2;i++)
+         for (int j=0;j<3;j++)
+         {
+           parms.Images[i][j].PlanarTexId[0] = m_images[i][j].PlanarTexId[0];
+                    parms.Images[i][j].PlanarTexId[1] = m_images[i][j].PlanarTexId[1];
+                    parms.Images[i][j].PlanarTexId[2] = m_images[i][j].PlanarTexId[2];
+                    for(int m=0;m<4;m++)
+                        for(int n=0;n<4;n++)
+                        {
+                    parms.Images[i][j].TexCoordsFromTanAngles.M[m][n] = m_images[i][j].TexCoordsFromTanAngles.M[m][n];
+                        }
+                     parms.Images[i][j].TexId = m_images[i][j].TexId;
+                     parms.Images[i][j].Pose.AngularAcceleration.x =m_images[i][j].Pose.AngularAcceleration.x;
+                     parms.Images[i][j].Pose.AngularAcceleration.y =m_images[i][j].Pose.AngularAcceleration.y;
+                     parms.Images[i][j].Pose.AngularAcceleration.z =m_images[i][j].Pose.AngularAcceleration.z;
+             parms.Images[i][j].Pose.AngularVelocity.x =m_images[i][j].Pose.AngularVelocity.x;
+               parms.Images[i][j].Pose.AngularVelocity.y =m_images[i][j].Pose.AngularVelocity.y;
+                 parms.Images[i][j].Pose.AngularVelocity.z =m_images[i][j].Pose.AngularVelocity.z;
+             parms.Images[i][j].Pose.LinearAcceleration.x =m_images[i][j].Pose.LinearAcceleration.x;
+             parms.Images[i][j].Pose.LinearAcceleration.y =m_images[i][j].Pose.LinearAcceleration.y;
+             parms.Images[i][j].Pose.LinearAcceleration.z =m_images[i][j].Pose.LinearAcceleration.z;
+              parms.Images[i][j].Pose.LinearVelocity.x =m_images[i][j].Pose.LinearVelocity.x;
+               parms.Images[i][j].Pose.LinearVelocity.y =m_images[i][j].Pose.LinearVelocity.y;
+                parms.Images[i][j].Pose.LinearVelocity.z =m_images[i][j].Pose.LinearVelocity.z;
+               parms.Images[i][j].Pose.Pose.Orientation.w =m_images[i][j].Pose.Pose.Orientation.w;
+               parms.Images[i][j].Pose.Pose.Orientation.x =m_images[i][j].Pose.Pose.Orientation.x;
+               parms.Images[i][j].Pose.Pose.Orientation.y =m_images[i][j].Pose.Pose.Orientation.y;
+               parms.Images[i][j].Pose.Pose.Orientation.z =m_images[i][j].Pose.Pose.Orientation.z;
+
+
+               parms.Images[i][j].Pose.Pose.Position.x =m_images[i][j].Pose.Pose.Position.x;
+               parms.Images[i][j].Pose.Pose.Position.y =m_images[i][j].Pose.Pose.Position.y;
+               parms.Images[i][j].Pose.Pose.Position.z =m_images[i][j].Pose.Pose.Position.z;
+
+
+                parms.Images[i][j].Pose.TimeInSeconds =m_images[i][j].Pose.TimeInSeconds;
+
+
+
+
+         }
+
+    parms.WarpOptions = m_smoothOptions;
+    for(int i=0;i<4;i++)
+        for(int j=0;j<4;j++)
+    {
+        parms.ExternalVelocity.M[i][j]= m_externalVelocity.M[i][j];
+
+    }
+
+   parms.MinimumVsyncs =		m_minimumVsyncs;
+   parms.PreScheduleSeconds =   m_preScheduleSeconds;
+   parms.WarpProgram =			m_smoothProgram;
+    for(int i=0;i<4;i++)
+    {
+        parms.ProgramParms[i]= m_programParms[i];
+
+    }
+
+ return parms;
+}

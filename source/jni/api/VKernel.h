@@ -399,6 +399,9 @@ public:
     void setPreScheduleSeconds(float pres);
     void setSmoothProgram(ovrTimeWarpProgram program);
     void setProgramParms( float * proParms);
+    void setSmoothParms(ovrTimeWarpParms   parms);
+    ovrTimeWarpParms  getSmoothParms();
+
 
     ovrTimeWarpImage 			m_images[2][3];
     int 						m_smoothOptions;
