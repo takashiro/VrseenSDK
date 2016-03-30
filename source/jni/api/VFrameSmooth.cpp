@@ -549,6 +549,12 @@ struct VFrameSmooth::Private
      ovrTimeWarpProgram			m_smoothProgram;
      float						m_programParms[4];
 
+
+
+     long long			m_minimumVsync;
+     long long			m_firstDisplayedVsync[2];
+     bool				m_disableChromaticCorrection;
+     EGLSyncKHR			m_gpuSync;
     //平滑参数结束；
     VDevice *m_device;
 
