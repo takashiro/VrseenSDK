@@ -637,6 +637,31 @@ VKernel::VKernel()
     asyncSmooth = true;
     msaa = 0;
     device = VDevice::instance();
+
+    m_smoothOptions =0;
+    const ovrMatrix4f tanAngleMatrix = TanAngleMatrixFromFov( 90.0f );
+    memset( &m_images, 0, sizeof( m_images ) );
+    memset( &m_externalVelocity, 0, sizeof( m_externalVelocity ) );
+   for ( int eye = 0; eye < 2; eye++ )
+   {
+       for ( int i = 0; i < 3; i++ )
+       {
+           m_images[eye][i].TexCoordsFromTanAngles = tanAngleMatrix;
+           m_images[eye][i].Pose.Pose.Orientation.w = 1.0f;
+       }
+   }
+
+   m_externalVelocity.M[0][0] = 1.0f;
+   m_externalVelocity.M[1][1] = 1.0f;
+   m_externalVelocity.M[2][2] = 1.0f;
+   m_externalVelocity.M[3][3] = 1.0f;
+   m_minimumVsyncs = 1;
+   m_preScheduleSeconds = 0.014f;
+   m_smoothProgram = WP_SIMPLE;
+   m_programParms[0] =0;
+   m_programParms[1] =0;
+   m_programParms[2] =0;
+   m_programParms[3] =0;
 }
 
 void UpdateHmdInfo()

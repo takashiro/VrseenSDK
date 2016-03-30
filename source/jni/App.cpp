@@ -1129,10 +1129,28 @@ struct App::Private
                 }
                 else
                 {
-                    ovrTimeWarpParms warpSwapMessageParms = kernel->InitTimeWarpParms(WARP_INIT_MESSAGE, errorTexture.texture);
-                    warpSwapMessageParms.ProgramParms[0] = 0.0f;						// rotation in radians
-                    warpSwapMessageParms.ProgramParms[1] = 1024.0f / errorTextureSize;	// message size factor
-                    kernel->doSmooth(&warpSwapMessageParms);
+                    //ovrTimeWarpParms warpSwapMessageParms = kernel->InitTimeWarpParms(WARP_INIT_MESSAGE, errorTexture.texture);
+                    //warpSwapMessageParms.ProgramParms[0] = 0.0f;						// rotation in radians
+                    //warpSwapMessageParms.ProgramParms[1] = 1024.0f / errorTextureSize;	// message size factor
+                    //kernel->doSmooth(&warpSwapMessageParms);
+
+
+                    kernel->setSmoothOption( SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER | SWAP_OPTION_FLUSH | SWAP_OPTION_DEFAULT_IMAGES);
+                    kernel->setSmoothProgram(WP_LOADING_ICON);
+                    float mprogramParms[4];
+                    mprogramParms[0] = 1.0f;		// rotation in radians per second
+                    mprogramParms[1] = 16.0f;
+                    kernel->setProgramParms(mprogramParms);
+                            // icon size factor smaller than fullscreen
+                    for ( int eye = 0; eye < 2; eye++ )
+                    {
+                       kernel->setSmoothEyeTexture(eye,0, 0);
+                       kernel->setSmoothEyeTexture(eye,1, loadingIconTexId);
+
+                    }
+
+                    kernel->doSmooth();
+
                 }
                 continue;
             }
@@ -1142,8 +1160,27 @@ struct App::Private
             {
                 if (appInterface->showLoadingIcon())
                 {
-                    const ovrTimeWarpParms warpSwapLoadingIconParms = kernel->InitTimeWarpParms(WARP_INIT_LOADING_ICON, loadingIconTexId);
-                    kernel->doSmooth(&warpSwapLoadingIconParms);
+                   // const ovrTimeWarpParms warpSwapLoadingIconParms = kernel->InitTimeWarpParms(WARP_INIT_LOADING_ICON, loadingIconTexId);
+                   // kernel->doSmooth(&warpSwapLoadingIconParms);
+
+
+
+                    kernel->setSmoothOption( SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER | SWAP_OPTION_FLUSH | SWAP_OPTION_DEFAULT_IMAGES);
+                    kernel->setSmoothProgram(WP_LOADING_ICON);
+                    float mprogramParms[4];
+                    mprogramParms[0] = 1.0f;		// rotation in radians per second
+                    mprogramParms[1] = 16.0f;
+                    kernel->setProgramParms(mprogramParms);
+                            // icon size factor smaller than fullscreen
+                    for ( int eye = 0; eye < 2; eye++ )
+                    {
+                       kernel->setSmoothEyeTexture(eye,0, 0);
+                       kernel->setSmoothEyeTexture(eye,1, loadingIconTexId);
+
+                    }
+
+                    kernel->doSmooth();
+
                 }
                 vInfo("launchIntentJSON:" << launchIntentJSON);
                 vInfo("launchIntentURI:" << launchIntentURI);
@@ -2013,8 +2050,19 @@ void App::recenterYaw(const bool showBlack)
     vInfo("AppLocal::RecenterYaw");
     if (showBlack)
 	{
-        const ovrTimeWarpParms warpSwapBlackParms = d->kernel->InitTimeWarpParms(WARP_INIT_BLACK);
-        d->kernel->doSmooth(&warpSwapBlackParms);
+        //const ovrTimeWarpParms warpSwapBlackParms = d->kernel->InitTimeWarpParms(WARP_INIT_BLACK);
+        //d->kernel->doSmooth(&warpSwapBlackParms);
+
+        d->kernel->setSmoothOption( SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER | SWAP_OPTION_FLUSH | SWAP_OPTION_DEFAULT_IMAGES);
+        d->kernel->setSmoothProgram( WP_SIMPLE);
+        for ( int eye = 0; eye < 2; eye++ )
+        {
+           d->kernel->setSmoothEyeTexture(eye,0,0);		// default replaced with a black texture
+        }
+
+
+        d->kernel->doSmooth();
+
 
 	}
     d->kernel->ovr_RecenterYaw();
@@ -2201,6 +2249,10 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
             d->swapParms.Images[eye][0].TexCoordsFromTanAngles = TanAngleMatrixFromFov( fovDegrees );
             d->swapParms.Images[eye][0].TexId = eyes.Textures[d->renderMonoMode ? 0 : eye ];
             d->swapParms.Images[eye][0].Pose = d->sensorForNextWarp.Predicted;
+
+           // d->kernel->m_images[eye][0].TexCoordsFromTanAngles = TanAngleMatrixFromFov( fovDegrees );
+           // d->kernel->m_images[eye][0].TexId = eyes.Textures[d->renderMonoMode ? 0 : eye ];
+           // d->kernel->m_images[eye][0].Pose = d->sensorForNextWarp.Predicted;
         }
 
         d->kernel->doSmooth(&d->swapParms);
