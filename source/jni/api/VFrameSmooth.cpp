@@ -330,6 +330,9 @@ struct VFrameSmooth::Private
         // No buffers have been submitted yet
         m_eyeBufferCount.setState( 0 );
 
+         LOG( " VFrameSmooth() ----m_eyeBufferCount----------- %d", m_eyeBufferCount.state() );
+
+
         //---------------------------------------------------------
         // OpenGL initialization that can be done on the main thread
         //---------------------------------------------------------
@@ -642,6 +645,8 @@ void *VFrameSmooth::Private::ThreadStarter( void * parm )
 
 void VFrameSmooth::Private::threadFunction()
 {
+
+   LOG( "-------smooth sub thread start()" );
     warpThreadInit();
 
     // Signal the main thread to wake up and return.
@@ -656,6 +661,8 @@ void VFrameSmooth::Private::threadFunction()
     // Loop until we get a shutdown request
     for ( double vsync = 0; ; vsync++ )
     {
+
+         LOG( "-------smooth sub thread main loop()" );
         const double current = ceil( GetFractionalVsync() );
         if ( abs( current - vsync ) > 2.0 )
         {
@@ -772,7 +779,6 @@ void VFrameSmooth::Private::warpThreadInit()
         }
     }
 
-    // Make the context current on the window, so no more makeCurrent calls will be needed
     LOG( "eglMakeCurrent on %p", m_eglMainThreadSurface );
     if ( eglMakeCurrent( m_eglDisplay, m_eglMainThreadSurface,
                          m_eglMainThreadSurface, m_eglWarpContext ) == EGL_FALSE )
@@ -781,28 +787,17 @@ void VFrameSmooth::Private::warpThreadInit()
     }
 
     initRenderEnvironment();
-
-    // create the framework graphics on this thread
     createFrameworkGraphics();
-
-    // Get the linux tid so App can set SCHED_FIFO on it
     m_warpThreadTid = gettid();
 
     LOG( "WarpThreadInit() - End" );
 }
 
-/*
-* WarpThreadShutdown()
-*/
 void VFrameSmooth::Private::warpThreadShutdown()
 {
     LOG( "WarpThreadShutdown()" );
-
-    // Vertex array objects can only be destroyed on the context they were created on
     destroyFrameworkGraphics();
-
     VGlOperation glOperation;
-    // Destroy the sync objects
     for ( int i = 0; i < 4; i++ )
     {
         warpSource_t & ws = m_warpSources[i];
@@ -843,7 +838,6 @@ const VGlShader & VFrameSmooth::Private::programForParms( const ovrTimeWarpParms
     }
     return m_warpPrograms[program];
 }
-
 void VFrameSmooth::Private::setSmoothpState( const warpSource_t & currentWarpSource ) const
 {
     glDepthMask( GL_FALSE );	// don't write to depth, even if Unity has depth on window
@@ -874,8 +868,7 @@ void VFrameSmooth::Private::bindWarpProgram( const warpSource_t & currentWarpSou
                                      const VR4Matrixf timeWarps[2][2], const VR4Matrixf rollingWarp,
                                      const int eye, const double vsyncBase /* for spinner */ ) const
 {
-    // TODO: bake this into the buffer objects
-    const VR4Matrixf landscapeOrientationMatrix(
+     const VR4Matrixf landscapeOrientationMatrix(
                 1.0f, 0.0f, 0.0f, 0.0f,
                 0.0f, 1.0f, 0.0f, 0.0f,
                 0.0f, 0.0f, 0.0f, 0.0f,
@@ -916,20 +909,15 @@ void VFrameSmooth::Private::bindWarpProgram( const warpSource_t & currentWarpSou
 
 void VFrameSmooth::Private::bindCursorProgram() const
 {
-    // TODO: bake this into the buffer objects
     const VR4Matrixf landscapeOrientationMatrix(
                 1.0f, 0.0f, 0.0f, 0.0f,
                 0.0f, 1.0f, 0.0f, 0.0f,
                 0.0f, 0.0f, 0.0f, 0.0f,
                 0.0f, 0.0f, 0.0f, 1.0f );
 
-    // Select the warp program.
     const VGlShader & warpProg = m_warpPrograms[ WP_SIMPLE ];
     glUseProgram( warpProg.program );
-
-    // Set the shader parameters.
     glUniform1f( warpProg.uniformColor, 1.0f );
-
     glUniformMatrix4fv( warpProg.uniformModelViewProMatrix, 1, GL_FALSE, landscapeOrientationMatrix.Transposed().M[0] );
     glUniformMatrix4fv( warpProg.uniformTexMatrix, 1, GL_FALSE, VR4Matrixf::Identity().M[0] );
     glUniformMatrix4fv( warpProg.uniformTexMatrix2, 1, GL_FALSE, VR4Matrixf::Identity().M[0] );
@@ -1050,25 +1038,6 @@ static void UnbindEyeTextures()
     }
 }
 
-/*
- * WarpToScreen
- *
- * Can be called by either the dedicated warp thread, or by the
- * application thread at swap time if running synchronously.
- *
- * Wait for sync point, read sensor, Warp both eyes and returns the next vsyncBase
- *
- * Calls GetFractionalVsync() multiple times, but this only calls kernel time functions, not java
- * Calls SleepUntilTimePoint() for each eye.
- * May write to the log
- * Writes eyeLog[]
- * Reads warpSources
- * Reads eyeBufferCount
- * May lock and unlock swapMutex
- * May signal swapIsLatched
- * Writes SwapVsync
- *
- */
 void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapProgram_t & swap )
 {
     static double lastReportTime = 0;
@@ -1595,7 +1564,10 @@ void VFrameSmooth::Private::warpSwapInternal( const ovrTimeWarpParms & parms )
 
     VGlOperation glOperation;
     // Prepare to pass the new eye buffers to the background thread if we are running multi-threaded.
+     LOG( "smooth internal before eyebuffercount ");
     const long long lastBufferCount = m_eyeBufferCount.state();
+
+     LOG( "smooth eye buffercount ( %lld )", lastBufferCount );
     warpSource_t & ws = m_warpSources[ ( lastBufferCount + 1 ) % 4 ];
     ws.MinimumVsync = m_lastSwapVsyncCount + 2 * minimumVsyncs;	// don't use it if from same frame to avoid problems with very fast frames
     ws.FirstDisplayedVsync[0] = 0;			// will be set when it becomes the currentSource
