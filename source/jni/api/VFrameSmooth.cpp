@@ -565,7 +565,7 @@ struct VFrameSmooth::Private
     void			warpToScreenSliced( const double vsyncBase, const swapProgram_t & swap );
 
     const VGlShader & programForParms( const ovrTimeWarpParms & parms, const bool disableChromaticCorrection ) const;
-    void			setWarpState( const warpSource_t & currentWarpSource ) const;
+    void			setSmoothpState( const warpSource_t & currentWarpSource ) const;
     void			bindWarpProgram( const warpSource_t & currentWarpSource, const VR4Matrixf timeWarps[2][2],
                                      const VR4Matrixf rollingWarp, const int eye, const double vsyncBase ) const;
     void			bindCursorProgram() const;
@@ -622,18 +622,8 @@ struct VFrameSmooth::Private
     // Used to allow the VrThread to sleep until next vsync.
     pthread_mutex_t m_swapMutex;
     pthread_cond_t	m_swapIsLatched;
-
-    // The VrThread submits a buffer set after all drawing commands have
-    // been issued for it and flushed, but probably are not completed.
-    //
-    // warpSources[eyeBufferCount%MAX_WARP_SOURCES] is the most recently
-    // submitted.
-    //
-    // WarpSwap will not continue until the previous buffer set has completed,
-    // to prevent GPU latency pileup.
-    static const int MAX_WARP_SOURCES = 4;
     VLockless<long long>			m_eyeBufferCount;	// only set by WarpSwap()
-    warpSource_t	m_warpSources[MAX_WARP_SOURCES];
+    warpSource_t	m_warpSources[4];
 
     VLockless<SwapState>		m_swapVsync;		// Set by WarpToScreen(), read by WarpSwap()
 
@@ -813,7 +803,7 @@ void VFrameSmooth::Private::warpThreadShutdown()
 
     VGlOperation glOperation;
     // Destroy the sync objects
-    for ( int i = 0; i < MAX_WARP_SOURCES; i++ )
+    for ( int i = 0; i < 4; i++ )
     {
         warpSource_t & ws = m_warpSources[i];
         if ( ws.GpuSync )
@@ -854,7 +844,7 @@ const VGlShader & VFrameSmooth::Private::programForParms( const ovrTimeWarpParms
     return m_warpPrograms[program];
 }
 
-void VFrameSmooth::Private::setWarpState( const warpSource_t & currentWarpSource ) const
+void VFrameSmooth::Private::setSmoothpState( const warpSource_t & currentWarpSource ) const
 {
     glDepthMask( GL_FALSE );	// don't write to depth, even if Unity has depth on window
     glDisable( GL_DEPTH_TEST );
@@ -1089,7 +1079,7 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
         lastReportTime = timeNow;
     }
 
-    const warpSource_t & latestWarpSource = m_warpSources[m_eyeBufferCount.state()%MAX_WARP_SOURCES];
+    const warpSource_t & latestWarpSource = m_warpSources[m_eyeBufferCount.state()%4];
 
     // switch to sliced rendering
     if ( latestWarpSource.WarpParms.WarpOptions & SWAP_OPTION_USE_SLICED_WARP )
@@ -1131,7 +1121,7 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
         if ( eye == 0 )
         {
             const long long latestEyeBufferNum = m_eyeBufferCount.state();
-            for ( back = 0; back < MAX_WARP_SOURCES - 1; back++ )
+            for ( back = 0; back < 3; back++ )
             {
                 thisEyeBufferNum = latestEyeBufferNum - back;
                 if ( thisEyeBufferNum <= 0 )
@@ -1140,7 +1130,7 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
                     LOG( "WarpToScreen: No valid Eye Buffers" );
                     break;
                 }
-                warpSource_t & testWarpSource = m_warpSources[thisEyeBufferNum % MAX_WARP_SOURCES];
+                warpSource_t & testWarpSource = m_warpSources[thisEyeBufferNum % 4];
                 if ( testWarpSource.MinimumVsync > vsyncBase )
                 {
                     // a full frame got completed in less time than a single eye; don't use it to avoid stuttering
@@ -1270,7 +1260,7 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
         m_logEyeWarpGpuTime.Begin( eye );
         m_logEyeWarpGpuTime.PrintTime( eye, "GPU time for eye time warp" );
 
-        setWarpState( currentWarpSource );
+        setSmoothpState( currentWarpSource );
 
         bindWarpProgram( currentWarpSource, timeWarps, rollingWarp, eye, vsyncBase );
 
@@ -1355,15 +1345,6 @@ void VFrameSmooth::Private::warpToScreenSliced( const double vsyncBase, const sw
 
     glViewport( 0, 0, m_window_width, m_window_height );
     glScissor( 0, 0, m_window_width, m_window_height );
-
-    // This must be long enough to cover CPU scheduling delays, GPU in-flight commands,
-    // and the actual drawing of this slice.
-//    const warpSource_t & latestWarpSource = m_warpSources[m_eyeBufferCount.state()%MAX_WARP_SOURCES];
-//    const double schedulingCushion = latestWarpSource.WarpParms.PreScheduleSeconds;
-
-    //LOG( "now %fv(%i) %f cush %f", GetFractionalVsync(), (int)vsyncBase, ovr_GetTimeInSeconds(), schedulingCushion );
-
-    // Warp each slice to the display surface
     warpSource_t currentWarpSource = {};
     int	back = 0;	// frame back from most recent
     long long thisEyeBufferNum = 0;
@@ -1383,7 +1364,7 @@ void VFrameSmooth::Private::warpToScreenSliced( const double vsyncBase, const sw
         if ( screenSlice == 0 )
         {
             const long long latestEyeBufferNum = m_eyeBufferCount.state();
-            for ( back = 0; back < MAX_WARP_SOURCES - 1; back++ )
+            for ( back = 0; back < 3; back++ )
             {
                 thisEyeBufferNum = latestEyeBufferNum - back;
                 if ( thisEyeBufferNum <= 0 )
@@ -1393,7 +1374,7 @@ void VFrameSmooth::Private::warpToScreenSliced( const double vsyncBase, const sw
                     break;
                 }
 
-                warpSource_t & testWarpSource = m_warpSources[thisEyeBufferNum % MAX_WARP_SOURCES];
+                warpSource_t & testWarpSource = m_warpSources[thisEyeBufferNum % 4];
                 if ( testWarpSource.MinimumVsync > vsyncBase )
                 {
                     // a full frame got completed in less time than a single eye; don't use it to avoid stuttering
@@ -1533,7 +1514,7 @@ void VFrameSmooth::Private::warpToScreenSliced( const double vsyncBase, const sw
         m_logEyeWarpGpuTime.Begin( screenSlice );
         m_logEyeWarpGpuTime.PrintTime( screenSlice, "GPU time for eye time warp" );
 
-        setWarpState( currentWarpSource );
+        setSmoothpState( currentWarpSource );
 
         bindWarpProgram( currentWarpSource, timeWarps, rollingWarp, eye, vsyncBase );
 
@@ -1615,7 +1596,7 @@ void VFrameSmooth::Private::warpSwapInternal( const ovrTimeWarpParms & parms )
     VGlOperation glOperation;
     // Prepare to pass the new eye buffers to the background thread if we are running multi-threaded.
     const long long lastBufferCount = m_eyeBufferCount.state();
-    warpSource_t & ws = m_warpSources[ ( lastBufferCount + 1 ) % MAX_WARP_SOURCES ];
+    warpSource_t & ws = m_warpSources[ ( lastBufferCount + 1 ) % 4 ];
     ws.MinimumVsync = m_lastSwapVsyncCount + 2 * minimumVsyncs;	// don't use it if from same frame to avoid problems with very fast frames
     ws.FirstDisplayedVsync[0] = 0;			// will be set when it becomes the currentSource
     ws.FirstDisplayedVsync[1] = 0;			// will be set when it becomes the currentSource
