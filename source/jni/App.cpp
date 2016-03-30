@@ -1129,7 +1129,7 @@ struct App::Private
                 }
                 else
                 {
-                    ovrTimeWarpParms warpSwapMessageParms = InitTimeWarpParms(WARP_INIT_MESSAGE, errorTexture.texture);
+                    ovrTimeWarpParms warpSwapMessageParms = kernel->InitTimeWarpParms(WARP_INIT_MESSAGE, errorTexture.texture);
                     warpSwapMessageParms.ProgramParms[0] = 0.0f;						// rotation in radians
                     warpSwapMessageParms.ProgramParms[1] = 1024.0f / errorTextureSize;	// message size factor
                     kernel->doSmooth(&warpSwapMessageParms);
@@ -1142,7 +1142,7 @@ struct App::Private
             {
                 if (appInterface->showLoadingIcon())
                 {
-                    const ovrTimeWarpParms warpSwapLoadingIconParms = InitTimeWarpParms(WARP_INIT_LOADING_ICON, loadingIconTexId);
+                    const ovrTimeWarpParms warpSwapLoadingIconParms = kernel->InitTimeWarpParms(WARP_INIT_LOADING_ICON, loadingIconTexId);
                     kernel->doSmooth(&warpSwapLoadingIconParms);
                 }
                 vInfo("launchIntentJSON:" << launchIntentJSON);
@@ -1525,7 +1525,7 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
     JniUtils::LoadDevConfig(false);
 
 	// Default time warp parms
-    d->swapParms = InitTimeWarpParms();
+    d->swapParms = d->kernel->InitTimeWarpParms();
 
 	// Default EyeParms
     d->vrParms.resolution = 1024;
@@ -2013,7 +2013,7 @@ void App::recenterYaw(const bool showBlack)
     vInfo("AppLocal::RecenterYaw");
     if (showBlack)
 	{
-        const ovrTimeWarpParms warpSwapBlackParms = InitTimeWarpParms(WARP_INIT_BLACK);
+        const ovrTimeWarpParms warpSwapBlackParms = d->kernel->InitTimeWarpParms(WARP_INIT_BLACK);
         d->kernel->doSmooth(&warpSwapBlackParms);
 
 	}

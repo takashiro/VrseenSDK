@@ -296,74 +296,7 @@ inline ovrMatrix4f TanAngleMatrixFromFov( const float fovDegrees )
     return tanAngleMatrix;
 }
 
-inline ovrTimeWarpParms InitTimeWarpParms( const ovrWarpInit init = WARP_INIT_DEFAULT, const unsigned int texId = 0 )
-{
-    const ovrMatrix4f tanAngleMatrix = TanAngleMatrixFromFov( 90.0f );
 
-    ovrTimeWarpParms parms;
-    memset( &parms, 0, sizeof( parms ) );
-
-    for ( int eye = 0; eye < MAX_WARP_EYES; eye++ )
-    {
-        for ( int i = 0; i < MAX_WARP_IMAGES; i++ )
-        {
-            parms.Images[eye][i].TexCoordsFromTanAngles = tanAngleMatrix;
-            parms.Images[eye][i].Pose.Pose.Orientation.w = 1.0f;
-        }
-    }
-    parms.ExternalVelocity.M[0][0] = 1.0f;
-    parms.ExternalVelocity.M[1][1] = 1.0f;
-    parms.ExternalVelocity.M[2][2] = 1.0f;
-    parms.ExternalVelocity.M[3][3] = 1.0f;
-    parms.MinimumVsyncs = 1;
-    parms.PreScheduleSeconds = 0.014f;
-    parms.WarpProgram = WP_SIMPLE;
-
-    switch ( init )
-    {
-        case WARP_INIT_DEFAULT:
-        {
-            break;
-        }
-        case WARP_INIT_BLACK:
-        {
-            parms.WarpOptions = SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER | SWAP_OPTION_FLUSH | SWAP_OPTION_DEFAULT_IMAGES;
-            parms.WarpProgram = WP_SIMPLE;
-            for ( int eye = 0; eye < MAX_WARP_EYES; eye++ )
-            {
-                parms.Images[eye][0].TexId = 0;		// default replaced with a black texture
-            }
-            break;
-        }
-        case WARP_INIT_LOADING_ICON:
-        {
-            parms.WarpOptions = SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER | SWAP_OPTION_FLUSH | SWAP_OPTION_DEFAULT_IMAGES;
-            parms.WarpProgram = WP_LOADING_ICON;
-            parms.ProgramParms[0] = 1.0f;		// rotation in radians per second
-            parms.ProgramParms[1] = 16.0f;		// icon size factor smaller than fullscreen
-            for ( int eye = 0; eye < MAX_WARP_EYES; eye++ )
-            {
-                parms.Images[eye][0].TexId = 0;		// default replaced with a black texture
-                parms.Images[eye][1].TexId = texId;	// loading icon texture
-            }
-            break;
-        }
-        case WARP_INIT_MESSAGE:
-        {
-            parms.WarpOptions = SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER | SWAP_OPTION_FLUSH | SWAP_OPTION_DEFAULT_IMAGES;
-            parms.WarpProgram = WP_LOADING_ICON;
-            parms.ProgramParms[0] = 0.0f;		// rotation in radians per second
-            parms.ProgramParms[1] = 2.0f;		// message size factor smaller than fullscreen
-            for ( int eye = 0; eye < MAX_WARP_EYES; eye++ )
-            {
-                parms.Images[eye][0].TexId = 0;		// default replaced with a black texture
-                parms.Images[eye][1].TexId = texId;	// message texture
-            }
-            break;
-        }
-    }
-    return parms;
-}
 
 NV_NAMESPACE_BEGIN
 
@@ -401,7 +334,7 @@ public:
     void setProgramParms( float * proParms);
     void setSmoothParms(const ovrTimeWarpParms &  parms);
     ovrTimeWarpParms  getSmoothParms();
-
+    ovrTimeWarpParms  InitTimeWarpParms( const ovrWarpInit init = WARP_INIT_DEFAULT, const unsigned int texId =0 );
 
     ovrTimeWarpImage 			m_images[2][3];
     int 						m_smoothOptions;
