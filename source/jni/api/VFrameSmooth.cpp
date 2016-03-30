@@ -520,8 +520,6 @@ struct VFrameSmooth::Private
 
         LOG( "---------------- ~VFrameSmooth() End ----------------" );
     }
-
-    // POSIX thread launching shim, just calls WarpThread()
     static void *	ThreadStarter( void * parm );
 
     void			threadFunction();
@@ -529,20 +527,13 @@ struct VFrameSmooth::Private
     void			warpThreadShutdown();
     void			warpSwapInternal( const ovrTimeWarpParms & parms );
     void            smoothInternal();
-    // Ensures that the warpPrograms have a matched set with and without
-    // chromatic aberration so it can be universally disabled for slower systems
-    // and power saving mode.
     void			buildWarpProgPair( ovrTimeWarpProgram simpleIndex,
                                        const char * simpleVertex, const char * simpleFragment,
                                        const char * chromaticVertex, const char * chromaticFragment );
 
-    // If there is no difference between the low and high quality versions, use this function.
     void			buildWarpProgMatchedPair( ovrTimeWarpProgram simpleIndex,
                                               const char * vertex, const char * fragment );
     void 			buildWarpProgs();
-
-    // FrameworkGraphics include the latency tester, calibration lines, edge vignette, fps counter,
-    // debug graphs.
     void			createFrameworkGraphics();
     void			destroyFrameworkGraphics();
     void			drawFrameworkGraphicsToWindow( const int eye, const int swapOptions);

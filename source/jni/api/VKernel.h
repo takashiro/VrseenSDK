@@ -389,6 +389,25 @@ public:
 
     bool isRunning;
 
+
+    void doSmooth();
+    void syncSmoothParms();
+    void setSmoothEyeTexture(unsigned int texID,ushort eye,ushort layer);
+    void setSmoothOption(int option);
+    void setMinimumVsncs( int vsnc);
+    void setExternalVelocity(ovrMatrix4f extV);
+    void setPreScheduleSeconds(float pres);
+    void setSmoothProgram(ovrTimeWarpProgram program);
+    void setProgramParms( float * proParms);
+
+    ovrTimeWarpImage 			m_images[2][3];
+    int 						m_smoothOptions;
+    ovrMatrix4f					m_externalVelocity;
+    int							m_minimumVsyncs;
+    float						m_preScheduleSeconds;
+    ovrTimeWarpProgram			m_smoothProgram;
+    float						m_programParms[4];
+
 private:
     VKernel();
 };

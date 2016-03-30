@@ -863,6 +863,89 @@ void VKernel::destroy(eExitType exitType)
     }
 }
 
+
+
+void VKernel::setSmoothEyeTexture(unsigned int texID,ushort eye,ushort layer)
+{
+
+   m_images[eye][layer].TexId =  texID;
+
+}
+void VKernel::setSmoothOption(int option)
+{
+  m_smoothOptions = option;
+
+}
+void VKernel::setMinimumVsncs( int vsnc)
+{
+
+  m_minimumVsyncs = vsnc;
+}
+void VKernel::setExternalVelocity(ovrMatrix4f extV)
+
+{
+    for(int i=0;i<4;i++)
+        for( int j=0;j<4;j++)
+    {
+ m_externalVelocity.M[i][j] = extV.M[i][j];
+}
+}
+void VKernel::setPreScheduleSeconds(float pres)
+{
+m_preScheduleSeconds = pres;
+
+}
+void VKernel::setSmoothProgram(ovrTimeWarpProgram program)
+{
+   m_smoothProgram = program;
+
+}
+void VKernel::setProgramParms( float * proParms)
+{
+   m_programParms[0] = proParms[0];
+    m_programParms[1] = proParms[1];
+     m_programParms[2] = proParms[2];
+      m_programParms[3] = proParms[3];
+
+}
+
+
+void VKernel::syncSmoothParms()
+{
+ if (frameSmooth==NULL)
+     return;
+ frameSmooth->setSmoothProgram(m_smoothProgram);
+ frameSmooth->setMinimumVsncs(m_minimumVsyncs);
+ frameSmooth->setProgramParms(m_programParms);
+ frameSmooth->setExternalVelocity(m_externalVelocity);
+ frameSmooth->setPreScheduleSeconds(m_preScheduleSeconds);
+ for ( int eye = 0; eye < 2; eye++ )
+ {
+     for ( int i = 0; i < 3; i++ )
+     {
+         frameSmooth->setSmoothEyeTexture(m_images[eye][i].TexId,eye,i) ;
+
+     }
+ }
+
+ frameSmooth->setSmoothOption(m_smoothOptions);
+
+}
+
+void VKernel::doSmooth()
+{
+    if(frameSmooth==NULL||!isRunning) return;
+    syncSmoothParms();
+
+    //ovrTimeWarpParms   parms = InitSmoothParms();
+    //parms.WarpOptions = SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER | SWAP_OPTION_FLUSH | SWAP_OPTION_DEFAULT_IMAGES;
+
+   // frameSmooth->doSmooth(parms);
+
+}
+
+
+
 static  void ovr_HandleHmdEvents()
 {
     // check if the HMT has been undocked
@@ -987,3 +1070,4 @@ void VKernel::doSmooth(const ovrTimeWarpParms * parms )
     if(frameSmooth==NULL||!isRunning) return;
     frameSmooth->doSmooth(*parms);
 }
+
