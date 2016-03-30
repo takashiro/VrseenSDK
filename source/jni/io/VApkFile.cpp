@@ -4,7 +4,6 @@
 #include "VLog.h"
 
 #include "App.h"
-#include "MemBuffer.h"
 
 #include <3rdparty/minizip/unzip.h>
 
