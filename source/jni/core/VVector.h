@@ -2,9 +2,11 @@
 
 #include "vglobal.h"
 #include "VConstants.h"
-#include <assert.h>
+
 #include <stdlib.h>
 #include <math.h>
+
+#include "VLog.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -59,13 +61,13 @@ public:
 
          T& operator[] (int idx)
          {
-             OVR_ASSERT(0 <= idx && idx < 2);
+             vAssert(0 <= idx && idx < 2);
              return *(&x + idx);
          }
 
          const T& operator[] (int idx) const
          {
-             OVR_ASSERT(0 <= idx && idx < 2);
+             vAssert(0 <= idx && idx < 2);
              return *(&x + idx);
          }
 
@@ -86,7 +88,7 @@ public:
          T       Angle(const V2Vect& b) const
      	{
      		T div = LengthSq()*b.LengthSq();
-     		OVR_ASSERT(div != T(0));
+            vAssert(div != T(0));
      		T result = Acos((this->Dot(b))/sqrt(div));
      		return result;
      	}
@@ -111,11 +113,11 @@ public:
      	{
      #if 0	// FIXME: use this safe normalization instead
      		T l = LengthSq();
-     		OVR_ASSERT(l >= VConstants<T>::SmallestNonDenormal);
+            vAssert(l >= VConstants<T>::SmallestNonDenormal);
             *this *= VRcpSqrt(l);
      #else
      		T l = Length();
-     		OVR_ASSERT(l != T(0));
+            vAssert(l != T(0));
      		*this /= l;
      #endif
      	}
@@ -125,11 +127,11 @@ public:
      	{
      #if 0	// FIXME: use this safe normalization instead
      		T l = LengthSq();
-     		OVR_ASSERT(l >= VConstants<T>::SmallestNonDenormal);
+            vAssert(l >= VConstants<T>::SmallestNonDenormal);
             return *this * VRcpSqrt(l);
      #else
      		T l = Length();
-     		OVR_ASSERT(l != T(0));
+            vAssert(l != T(0));
      		return *this / l;
      #endif
      	}
@@ -143,7 +145,7 @@ public:
          V2Vect ProjectTo(const V2Vect& b) const
      	{
      		T l2 = b.LengthSq();
-     		OVR_ASSERT(l2 != T(0));
+            vAssert(l2 != T(0));
      		return b * ( Dot(b) / l2 );
      	}
 };
@@ -222,13 +224,13 @@ public:
 
            T& operator[] (int idx)
            {
-               OVR_ASSERT(0 <= idx && idx < 3);
+               vAssert(0 <= idx && idx < 3);
                return *(&x + idx);
            }
 
            const T& operator[] (int idx) const
            {
-               OVR_ASSERT(0 <= idx && idx < 3);
+               vAssert(0 <= idx && idx < 3);
                return *(&x + idx);
            }
 
@@ -263,7 +265,7 @@ public:
            T       Angle(const V3Vect& b) const
        	{
        		T div = LengthSq()*b.LengthSq();
-       		OVR_ASSERT(div != T(0));
+            vAssert(div != T(0));
        		T result = VArccos((this->Dot(b))/sqrt(div));
        		return result;
        	}
@@ -288,11 +290,11 @@ public:
        	{
        #if 0	// FIXME: use this safe normalization instead
        		T l = LengthSq();
-       		OVR_ASSERT(l >= VConstants<T>::SmallestNonDenormal);
+            vAssert(l >= VConstants<T>::SmallestNonDenormal);
             *this *= VRcpSqrt(l);
        #else
        		T l = Length();
-       		OVR_ASSERT(l != T(0));
+            vAssert(l != T(0));
        		*this /= l;
        #endif
        	}
@@ -302,11 +304,11 @@ public:
        	{
        #if 0	// FIXME: use this safe normalization instead
        		T l = LengthSq();
-       		OVR_ASSERT(l >= VConstants<T>::SmallestNonDenormal);
+            vAssert(l >= VConstants<T>::SmallestNonDenormal);
             return *this * VRcpSqrt(l);
        #else
        		T l = Length();
-       		OVR_ASSERT(l != T(0));
+            vAssert(l != T(0));
        		return *this / l;
        #endif
        	}
@@ -320,7 +322,7 @@ public:
            V3Vect ProjectTo(const V3Vect& b) const
        	{
        		T l2 = b.LengthSq();
-       		OVR_ASSERT(l2 != T(0));
+            vAssert(l2 != T(0));
        		return b * ( Dot(b) / l2 );
        	}
 
@@ -420,13 +422,13 @@ public:
 
           T& operator[] (int idx)
           {
-              OVR_ASSERT(0 <= idx && idx < 4);
+              vAssert(0 <= idx && idx < 4);
               return *(&x + idx);
           }
 
           const T& operator[] (int idx) const
           {
-              OVR_ASSERT(0 <= idx && idx < 4);
+              vAssert(0 <= idx && idx < 4);
               return *(&x + idx);
           }
 
@@ -464,11 +466,11 @@ public:
       	{
       #if 0	// FIXME: use this safe normalization instead
       		T l = LengthSq();
-      		OVR_ASSERT(l >= VConstants<T>::SmallestNonDenormal);
+            vAssert(l >= VConstants<T>::SmallestNonDenormal);
             *this *= VRcpSqrt(l);
       #else
       		T l = Length();
-      		OVR_ASSERT(l != T(0));
+            vAssert(l != T(0));
       		*this /= l;
       #endif
       	}
@@ -478,11 +480,11 @@ public:
       	{
       #if 0	// FIXME: use this safe normalization instead
       		T l = LengthSq();
-      		OVR_ASSERT(l >= VConstants<T>::SmallestNonDenormal);
+            vAssert(l >= VConstants<T>::SmallestNonDenormal);
             return *this * VRcpSqrt(l);
       #else
       		T l = Length();
-      		OVR_ASSERT(l != T(0));
+            vAssert(l != T(0));
       		return *this / l;
       #endif
       	}

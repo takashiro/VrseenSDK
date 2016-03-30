@@ -50,7 +50,7 @@ public:
 		if (VAxis.LengthSq() == 0)
 		{
 			// Assert if the VAxis is zero, but the VAngle isn't
-			OVR_ASSERT(VAngle == 0);
+            vAssert(VAngle == 0);
 			x = 0; y = 0; z = 0; w = 1;
 			return;
 		}
@@ -359,7 +359,7 @@ public:
 	    template <VAxis A1, VAxis A2, VAxis A3, VRotateDirection D, VHandedSystem S>
 	    void GetEulerAngles(T *a, T *b, T *c) const
 	    {
-	        OVR_COMPILER_ASSERT((A1 != A2) && (A2 != A3) && (A1 != A3));
+            static_assert((A1 != A2) && (A2 != A3) && (A1 != A3), "A1,A2,A3 should be different");
 
 	        T Q[3] = { x, y, z };  //VQuaternion components x,y,z
 
@@ -420,7 +420,7 @@ public:
 	    template <VAxis A1, VAxis A2, VRotateDirection D, VHandedSystem S>
 	    void GetEulerAnglesABA(T *a, T *b, T *c) const
 	    {
-	        OVR_COMPILER_ASSERT(A1 != A2);
+            static_assert(A1 != A2, "A1 and A2 should be different");
 
 	        T Q[3] = {x, y, z}; // VQuaternion components
 

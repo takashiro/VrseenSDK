@@ -219,7 +219,7 @@ public:
    	// FIXME: take advantage of return value optimization instead.
        static VR4Matrix& Multiply(VR4Matrix* d, const VR4Matrix& a, const VR4Matrix& b)
        {
-           OVR_ASSERT((d != &a) && (d != &b));
+           vAssert((d != &a) && (d != &b));
            int i = 0;
            do {
                d->M[i][0] = a.M[i][0] * b.M[0][0] + a.M[i][1] * b.M[1][0] + a.M[i][2] * b.M[2][0] + a.M[i][3] * b.M[3][0];
@@ -371,7 +371,7 @@ public:
        template <VAxis A1, VAxis A2, VAxis A3, VRotateDirection D, VHandedSystem S>
        void ToEulerAngles(T *a, T *b, T *c) const
        {
-           OVR_COMPILER_ASSERT((A1 != A2) && (A2 != A3) && (A1 != A3));
+           static_assert((A1 != A2) && (A2 != A3) && (A1 != A3), "A1,A2,A3 should be different");
 
            T psign = -1;
            if (((A1 + 1) % 3 == A2) && ((A2 + 1) % 3 == A3)) // Determine whether even permutation
@@ -409,7 +409,7 @@ public:
        template <VAxis A1, VAxis A2, VRotateDirection D, VHandedSystem S>
        void ToEulerAnglesABA(T *a, T *b, T *c) const
        {
-            OVR_COMPILER_ASSERT(A1 != A2);
+            static_assert(A1 != A2, "A1 and A2 should be different");
 
            // Determine the VAxis that was not supplied
            int m = 3 - A1 - A2;
@@ -666,13 +666,13 @@ public:
 
        static VR4Matrix CreateFromBasisVectors( V3Vect<T> const & zBasis, V3Vect<T> const & up )
        {
-   	    OVR_ASSERT( zBasis.IsNormalized() );
-   	    OVR_ASSERT( up.IsNormalized() );
+        vAssert( zBasis.IsNormalized() );
+        vAssert( up.IsNormalized() );
    	    T dot = zBasis.Dot( up );
    	    if ( dot < (T)-0.9999 || dot > (T)0.9999 )
    	    {
    		    // z basis cannot be parallel to the specified up
-   		    OVR_ASSERT( dot >= (T)-0.9999 || dot <= (T)0.9999 );
+            vAssert( dot >= (T)-0.9999 || dot <= (T)0.9999 );
    		    return VR4Matrix<T>();
    	    }
 

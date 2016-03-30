@@ -70,23 +70,23 @@ public:
 
 	void AddPoint( const V3Vect<T> & v )
 	{
-		b[0].x = V_Min( b[0].x, v.x );
-		b[0].y = V_Min( b[0].y, v.y );
-		b[0].z = V_Min( b[0].z, v.z );
-		b[1].x = V_Max( b[1].x, v.x );
-		b[1].y = V_Max( b[1].y, v.y );
-		b[1].z = V_Max( b[1].z, v.z );
+		b[0].x = std::min( b[0].x, v.x );
+		b[0].y = std::min( b[0].y, v.y );
+		b[0].z = std::min( b[0].z, v.z );
+		b[1].x = std::max( b[1].x, v.x );
+		b[1].y = std::max( b[1].y, v.y );
+		b[1].z = std::max( b[1].z, v.z );
 	}
 
 	// return a bounds representing the union of a and b
 	static VBox Union( const VBox & a, const VBox & b )
 	{
-		return VBox( V_Min( a.b[0].x, b.b[0].x ),
-						V_Min( a.b[0].y, b.b[0].y ),
-						V_Min( a.b[0].z, b.b[0].z ),
-						V_Max( a.b[1].x, b.b[1].x ),
-						V_Max( a.b[1].y, b.b[1].y ),
-						V_Max( a.b[1].z, b.b[1].z ) );
+		return VBox( std::min( a.b[0].x, b.b[0].x ),
+						std::min( a.b[0].y, b.b[0].y ),
+						std::min( a.b[0].z, b.b[0].z ),
+						std::max( a.b[1].x, b.b[1].x ),
+						std::max( a.b[1].y, b.b[1].y ),
+						std::max( a.b[1].z, b.b[1].z ) );
 	}
 
 	const V3Vect<T> & GetMins() const { return b[0]; }

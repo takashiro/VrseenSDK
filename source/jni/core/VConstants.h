@@ -6,10 +6,7 @@
 
 #include "vglobal.h"
 
-#include <assert.h>
-#include <stdlib.h>
 #include <math.h>
-#include "Types.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -117,17 +114,7 @@ T VArcsin(T val)
 	if (val > T(1))				return VConstants<T>::Pi/2.0;
 	else if (val < T(-1))		return VConstants<T>::Pi/2.0 * T(3);
 	else						return asin(val);
-};
-
-
-
-template <typename T>
-const T V_Min(const T a, const T b)
-{ return (a < b) ? a : b; }
-
-template <typename T>
-const T V_Max(const T a, const T b)
-{ return (b < a) ? a : b; }
+}
 
 //-------------------------------------------------------------------------------------
 // ***** Constants for 3D world/axis definitions.
