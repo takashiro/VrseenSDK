@@ -633,6 +633,7 @@ VKernel* VKernel::GetInstance()
 }
 
 VKernel::VKernel()
+    : isRunning(false)
 {
     asyncSmooth = true;
     msaa = 0;
