@@ -21,9 +21,9 @@ typedef unsigned long long ulonglong;
 typedef short vint16;
 typedef ushort vuint16;
 typedef long vint32;
-typedef ulong vint32;
+typedef ulong vuint32;
 typedef longlong vint64;
-typedef ulonglong vint64;
+typedef ulonglong vuint64;
 
 #define forever for(;;)
 
