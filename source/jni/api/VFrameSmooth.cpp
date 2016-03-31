@@ -583,7 +583,7 @@ void *VFrameSmooth::Private::ThreadStarter( void * parm )
 void VFrameSmooth::Private::threadFunction()
 {
 
-   LOG( "-------smooth sub thread start()" );
+
     smoothThreadInit();
 
 
@@ -599,7 +599,7 @@ void VFrameSmooth::Private::threadFunction()
     for ( double vsync = 0; ; vsync++ )
     {
 
-         LOG( "-------smooth sub thread main loop()" );
+
         const double current = ceil( GetFractionalVsync() );
         if ( abs( current - vsync ) > 2.0 )
         {
@@ -629,7 +629,7 @@ void VFrameSmooth::Private::threadFunction()
                removedSchedFifo = true;
            }
        }
- LOG( "WarpThreadLoop enter rendertodisplay");
+ vInfo( "WarpThreadLoop enter rendertodisplay");
         renderToDisplay( vsync,spAsyncSwappedBufferPortrait);
     }
 
@@ -1441,7 +1441,7 @@ void VFrameSmooth::Private::smoothInternal( )
     {
         if ( EGL_FALSE == glOperation.eglDestroySyncKHR( m_eglDisplay, m_gpuSync ) )
         {
-            LOG( "eglDestroySyncKHR returned EGL_FALSE" );
+            vInfo( "eglDestroySyncKHR returned EGL_FALSE" );
         }
     }
 
@@ -1449,14 +1449,14 @@ void VFrameSmooth::Private::smoothInternal( )
     m_gpuSync = glOperation.eglCreateSyncKHR( m_eglDisplay, EGL_SYNC_FENCE_KHR, NULL );
     if ( m_gpuSync == EGL_NO_SYNC_KHR )
     {
-        FAIL( "eglCreateSyncKHR_():EGL_NO_SYNC_KHR" );
+        vInfo( "eglCreateSyncKHR_():EGL_NO_SYNC_KHR" );
     }
 
 
     if ( EGL_FALSE == glOperation.eglClientWaitSyncKHR( m_eglDisplay, m_gpuSync,
                                                         EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, 0 ) )
     {
-        LOG( "eglClientWaitSyncKHR returned EGL_FALSE" );
+        vInfo( "eglClientWaitSyncKHR returned EGL_FALSE" );
     }
 
 
@@ -1503,7 +1503,7 @@ void VFrameSmooth::Private::smoothInternal( )
             if ( suspendNanoSeconds < 1000 * 1000 )
             {
                 const uint64_t suspendMicroSeconds = ( 1000 * 1000 - suspendNanoSeconds ) / 1000;
-                LOG( "WarpSwap: usleep( %lld )", suspendMicroSeconds );
+
                 usleep( suspendMicroSeconds );
             }
             return;
@@ -1518,7 +1518,7 @@ void VFrameSmooth::Private::smoothInternal( const ovrTimeWarpParms & parms )
 {
     if ( gettid() != m_sStartupTid )
     {
-        FAIL( "WarpSwap: Called with tid %i instead of %i", gettid(), m_sStartupTid );
+        vInfo( " Called with thread wrong");
     }
 
 
@@ -1529,10 +1529,10 @@ void VFrameSmooth::Private::smoothInternal( const ovrTimeWarpParms & parms )
     const int minimumVsyncs =  parms.MinimumVsyncs;
 
     VGlOperation glOperation;
-        LOG( "smooth internal before eyebuffercount ");
+        vInfo( "smooth internal before eyebuffercount ");
     const long long lastBufferCount = m_eyeBufferCount.state();
 
-     LOG( "smooth eye buffercount ( %lld )", lastBufferCount );
+     vInfo( "smooth eye buffercount ");
 
     m_minimumVsync = m_lastSwapVsyncCount + 2 * minimumVsyncs;
     m_firstDisplayedVsync[0] = 0;

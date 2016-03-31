@@ -2030,7 +2030,7 @@ void ShowFPS(void * appPtr, const char * cmd) {
 
 void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const int numPresents )
 {
-    LOG("zhaolei2 %d",d->kernel->m_smoothProgram);
+
 
     VGlOperation glOperation;
     // update vr lib systems after the app frame, but before rendering anything
@@ -2131,7 +2131,7 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
            d->kernel->m_images[eye][0].TexId = eyes.Textures[d->renderMonoMode ? 0 : eye ];
            d->kernel->m_images[eye][0].Pose = d->sensorForNextWarp.Predicted;
           // d->kernel->m_smoothProgram = ChromaticAberrationCorrection(glOperation) ? WP_CHROMATIC : WP_SIMPLE;
-       LOG("zhaolei %d",d->kernel->m_smoothProgram);
+
 
         }
 
