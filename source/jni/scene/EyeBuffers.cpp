@@ -20,7 +20,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <stdlib.h>
 
 #include "VString.h"
-#include "Android/LogUtils.h"
 
 #include "3rdParty/stb/stb_image_write.h"
 #include "GlTexture.h"

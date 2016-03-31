@@ -8,9 +8,10 @@
 #include "VJson.h"
 #include "VBinaryFile.h"
 #include "MappedFile.h"
-#include "api/VGlOperation.h"
-#include "Android/LogUtils.h"
 #include "VPath.h"
+
+#include "api/VGlOperation.h"
+#include "android/LogUtils.h"
 
 #include "unzip.h"
 #include "GlTexture.h"
@@ -486,7 +487,7 @@ void LoadModelFileJson( ModelFile & model,
 						if ( triangles.isObject() )
 						{
                             const int indexCount = std::min( triangles.value( "indexCount" ).toInt(), 1024 * 1024 * 1024 );
-                            vInfo(indexCout << "indices");
+                            vInfo(indexCount << "indices");
 
                             ReadModelArray( indices, triangles.value( "indices" ).toStdString().c_str(), bin, indexCount );
 						}

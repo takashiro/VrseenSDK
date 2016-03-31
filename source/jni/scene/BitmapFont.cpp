@@ -35,7 +35,6 @@
 
 #include "android/JniUtils.h"
 #include "api/VGlOperation.h"
-#include "Android/LogUtils.h"
 
 #include "../api/VGlShader.h"
 #include "GlTexture.h"
@@ -1156,8 +1155,8 @@ void BitmapFontSurfaceLocal::DrawText3D(BitmapFont const & font,
 		return;
 	}
 
-	DROID_ASSERT( normal.IsNormalized(), "BitmapFont");
-	DROID_ASSERT( up.IsNormalized(), "BitmapFont");
+    vAssert(normal.IsNormalized());
+    vAssert(up.IsNormalized());
 
 	const FontInfoType & fontInfo = AsLocal(font).GetFontInfo();
 
@@ -1365,7 +1364,7 @@ int VertexBlockSortFn(void const * a, void const * b) {
 // We don't have to do this for each eye because the billboarded surfaces are sorted / aligned
 // based on their distance from / direction to the camera view position and not the camera direction.
 void BitmapFontSurfaceLocal::Finish(VR4Matrixf const & viewMatrix) {
-	DROID_ASSERT( this != NULL, "BitmapFont");
+    vAssert(this != NULL);
 
 	//SPAM( "BitmapFontSurfaceLocal::Finish" );
 

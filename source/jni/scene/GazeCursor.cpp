@@ -3,7 +3,6 @@
 #include "GazeCursorLocal.h"
 
 #include "VArray.h"
-#include "android/LogUtils.h"
 #include "api/VKernel.h"
 #include "GlTexture.h"
 #include "VApkFile.h"
@@ -86,7 +85,7 @@ OvrGazeCursorLocal::~OvrGazeCursorLocal()
 void OvrGazeCursorLocal::Init()
 {
 	vInfo("OvrGazeCursorLocal::Init");
-	DROID_ASSERT( Initialized == false, "GazeCursor" );
+    vAssert(Initialized == false);
 
 	if ( Initialized )
 	{
@@ -133,7 +132,7 @@ void OvrGazeCursorLocal::Init()
 void OvrGazeCursorLocal::Shutdown()
 {
 	vInfo("OvrGazeCursorLocal::Shutdown");
-	DROID_ASSERT( Initialized == true, "GazeCursor" );
+    vAssert(Initialized == true);
 
 	for ( int i = 0; i < CURSOR_STATE_MAX; ++i )
 	{

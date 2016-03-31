@@ -12,7 +12,6 @@ Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
 
 #include "MetaDataManager.h"
 #include "VAlgorithm.h"
-#include "Android/LogUtils.h"
 
 #include "VDir.h"
 #include "VPath.h"
@@ -179,8 +178,7 @@ void OvrMetaData::initFromFileList( const VArray< VString > & fileList, const Ov
 			{
                 m_urlToIndex.insert( datum->url, dataIndex );
 				m_etaData.append( datum );
-				LOG( "OvrMetaData::InitFromFileList adding datum %s with index %d to %s", datum->url.toCString(),
-					dataIndex, currentCategory.categoryTag.toCString() );
+                vInfo("OvrMetaData::InitFromFileList adding datum" << datum->url << "with index" << dataIndex << "to" << currentCategory.categoryTag);
 				// Register with category
 				currentCategory.datumIndicies.append( dataIndex );
 			}
@@ -779,8 +777,8 @@ void OvrMetaData::regenerateCategoryIndices()
 				}
 				else
 				{
-					WARN( "OvrMetaData::RegenerateCategoryIndices failed to find category with tag %s for datum %s at index %d",
-						tag.toCString(), datum.url.toCString(), metaDataIndex );
+                    vWarn("OvrMetaData::RegenerateCategoryIndices failed to find category with tag"
+                          << tag << "for datum" << datum.url << "at index" << metaDataIndex);
 				}
 			}
 		}

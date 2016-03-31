@@ -77,7 +77,7 @@ eMsgStatus MovieSelectionComponent::Frame( App * app, VrFrame const & vrFrame, O
 eMsgStatus MovieSelectionComponent::FocusGained( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
-	LOG( "FocusGained" );
+	vInfo("FocusGained");
     // set the hilight flag
     self->setHilighted( true );
     CallbackView->SelectionHighlighted( true );
@@ -92,7 +92,7 @@ eMsgStatus MovieSelectionComponent::FocusGained( App * app, VrFrame const & vrFr
 eMsgStatus MovieSelectionComponent::FocusLost( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
-	LOG( "FocusLost" );
+	vInfo("FocusLost");
     // clear the hilight flag
     self->setHilighted( false );
     CallbackView->SelectionHighlighted( false );
