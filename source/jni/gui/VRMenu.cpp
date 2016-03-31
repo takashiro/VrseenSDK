@@ -73,8 +73,8 @@ VRMenu * VRMenu::Create( char const * menuName )
 // VRMenu::Init
 void VRMenu::init( OvrVRMenuMgr & menuMgr, BitmapFont const & font, float const menuDistance, VRMenuFlags_t const & flags, VArray< VRMenuComponent* > comps /*= Array< VRMenuComponent* >( )*/ )
 {
-	OVR_ASSERT( !m_rootHandle.IsValid() );
-    OVR_ASSERT( !m_name.isEmpty() );
+	vAssert( !m_rootHandle.IsValid() );
+    vAssert( !m_name.isEmpty() );
 
 	m_flags = flags;
 	m_menuDistance = menuDistance;
@@ -134,7 +134,7 @@ void VRMenu::addItems( OvrVRMenuMgr & menuMgr, BitmapFont const & font,
 	// create all items in the itemParms array, add each one to the parent, and position all items
 	// without the INIT_FORCE_POSITION flag vertically, one on top of the other
     VRMenuObject * root = menuMgr.toObject( parentHandle );
-    OVR_ASSERT( root != NULL );
+    vAssert( root != NULL );
 
 	VArray< ChildParmsPair > pairs;
 
@@ -287,7 +287,7 @@ void VRMenu::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 				}
 				break;
             default:
-                OVR_ASSERT( !"Unhandled menu state!" );
+                vAssert( !"Unhandled menu state!" );
                 break;
 		}
 		m_curMenuState = m_nextMenuState;
@@ -314,7 +314,7 @@ void VRMenu::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 		    m_eventHandler->handleEvents( app, vrFrame, menuMgr, m_rootHandle, events );
 		    return;
         default:
-            OVR_ASSERT( !"Unhandled menu state!" );
+            vAssert( !"Unhandled menu state!" );
             break;
 	}
 

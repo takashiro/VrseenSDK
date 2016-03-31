@@ -125,7 +125,7 @@ namespace NervGear {
 
     SensorState::operator const ovrSensorState& () const
     {
-        OVR_COMPILER_ASSERT(sizeof(SensorState) == sizeof(ovrSensorState));
+        static_assert(sizeof(SensorState) == sizeof(ovrSensorState), "SensorState");
         return reinterpret_cast<const ovrSensorState&>(*this);
     }
 

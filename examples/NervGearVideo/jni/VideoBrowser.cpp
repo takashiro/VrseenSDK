@@ -46,7 +46,7 @@ VideoBrowser * VideoBrowser::Create(
 void VideoBrowser::onPanelActivated( const OvrMetaDatum * panelData )
 {
 	Oculus360Videos * videos = ( Oculus360Videos * )m_app->appInterface();
-	OVR_ASSERT( videos );
+	vAssert( videos );
 	videos->OnVideoActivated( panelData );
 }
 

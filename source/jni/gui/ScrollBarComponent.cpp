@@ -315,7 +315,7 @@ eMsgStatus OvrScrollBarComponent::onEventImpl( App * app, VrFrame const & vrFram
 		case VRMENU_EVENT_FRAME_UPDATE:
 			return onFrameUpdate( app, vrFrame, menuMgr, self, event );
 		default:
-			OVR_ASSERT( false );
+			vAssert( false );
 			return MSG_STATUS_ALIVE;
 	}
     return MSG_STATUS_CONSUMED;
@@ -333,7 +333,7 @@ const char * stateNames [ ] =
 
 const char* StateString( const OvrScrollBarComponent::eScrollBarState state )
 {
-	OVR_ASSERT( state >= 0 && state < OvrScrollBarComponent::NUM_SCROLL_STATES );
+	vAssert( state >= 0 && state < OvrScrollBarComponent::NUM_SCROLL_STATES );
 	return stateNames[ state ];
 }
 
@@ -373,7 +373,7 @@ void OvrScrollBarComponent::setScrollState( VRMenuObject * self, const eScrollBa
 		self->setVisible( false );
 		break;
 	default:
-		OVR_ASSERT( false );
+		vAssert( false );
 		break;
 	}
 }
@@ -383,7 +383,7 @@ void OvrScrollBarComponent::setScrollState( VRMenuObject * self, const eScrollBa
 eMsgStatus OvrScrollBarComponent::onFrameUpdate( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 		VRMenuObject * self, VRMenuEvent const & event )
 {
-	OVR_ASSERT( self != NULL );
+	vAssert( self != NULL );
     if ( m_fader.fadeState() != Fader::FADE_NONE )
 	{
         const float fadeRate = ( m_fader.fadeState() == Fader::FADE_IN ) ? m_fadeInRate : m_fadeOutRate;

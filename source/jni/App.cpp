@@ -2048,7 +2048,7 @@ long long App::recenterYawFrameStart() const
 void ShowFPS(void * appPtr, const char * cmd) {
 	int show = 0;
     sscanf(cmd, "%i", &show);
-    OVR_ASSERT(appPtr != nullptr);	// something changed / broke in the OvrConsole code if this is nullptr
+    vAssert(appPtr != nullptr);	// something changed / broke in the OvrConsole code if this is nullptr
     ((App*)appPtr)->setShowFPS(show != 0);
 }
 

@@ -148,7 +148,7 @@ protected:
     {
 
     }
-    void operator = (const DeviceInfo&) { OVR_ASSERT(0); } // Assignment not allowed.
+    void operator = (const DeviceInfo&) { vAssert(0); } // Assignment not allowed.
 };
 
 
@@ -477,7 +477,7 @@ public:
     VString SerialNumber;
 
 private:
-    void operator = (const SensorInfo&) { OVR_ASSERT(0); } // Assignment not allowed.
+    void operator = (const SensorInfo&) { vAssert(0); } // Assignment not allowed.
 };
 
 // Serial Number feature report.

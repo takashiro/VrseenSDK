@@ -15,7 +15,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 // HMDDeviceDesc can be created/updated through Sensor carrying DisplayInfo.
 
 #include "VTimer.h"
-#include "Types.h"
 
 namespace NervGear {
 
@@ -962,7 +961,7 @@ SensorDeviceImpl::SensorDeviceImpl(SensorDeviceCreateDesc* createDesc)
 SensorDeviceImpl::~SensorDeviceImpl()
 {
     // Check that Shutdown() was called.
-    OVR_ASSERT(!pCreateDesc->pDevice);
+    vAssert(!pCreateDesc->pDevice);
 
 	delete pCalibration;
 }
@@ -1513,7 +1512,7 @@ bool SensorDeviceImpl::getAllTemperatureReports(VArray<VArray<TemperatureReport>
             result = getTemperatureReport(&t);
             if (!result)
                 return false;
-            OVR_ASSERT(t.NumBins == bins && t.NumSamples == samples);
+            vAssert(t.NumBins == bins && t.NumSamples == samples);
 
             (*data)[t.Bin][t.Sample] = t;
         }

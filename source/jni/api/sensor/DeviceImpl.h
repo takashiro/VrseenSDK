@@ -106,7 +106,7 @@ public:
 
     virtual ~DeviceCreateDesc()
     {
-        OVR_ASSERT(!pDevice);
+        vAssert(!pDevice);
         /*if (!this->pointToVList->isEmpty()) {
             this->pointToVList->remove(this);
         }*/
@@ -266,7 +266,7 @@ public:
     // Notifiers called when we are added to/removed from a device.
     virtual bool AddedToManager(DeviceManagerImpl* manager)
     {
-        OVR_ASSERT(pManager == 0);
+        vAssert(pManager == 0);
         pManager = manager;
         return true;
     }

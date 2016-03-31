@@ -74,7 +74,7 @@ MessageHandlerRef::~MessageHandlerRef()
 
 void MessageHandlerRef::SetHandler(MessageHandler* handler)
 {
-    OVR_ASSERT(!handler ||
+    vAssert(!handler ||
                MessageHandlerImpl::FromHandler(handler)->pLock == pLock);
     VLock::Locker lockScope(pLock);
     SetHandler_NTS(handler);
@@ -102,7 +102,7 @@ void MessageHandlerRef::SetHandler_NTS(MessageHandler* handler)
 
 MessageHandler::MessageHandler()
 {
-    OVR_COMPILER_ASSERT(sizeof(Internal) > sizeof(MessageHandlerImpl));
+    static_assert(sizeof(Internal) > sizeof(MessageHandlerImpl), "MessageHandlerImple size is weird");
     ::new((MessageHandlerImpl*)Internal) MessageHandlerImpl;
 }
 
@@ -111,7 +111,7 @@ MessageHandler::~MessageHandler()
     MessageHandlerImpl* handlerImpl = MessageHandlerImpl::FromHandler(this);
     {
         VLock::Locker lockedScope(handlerImpl->pLock);
-        OVR_ASSERT_LOG(handlerImpl->UseList.isEmpty(),
+        vAssert_LOG(handlerImpl->UseList.isEmpty(),
             ("~MessageHandler %p - Handler still active; call RemoveHandlerFromDevices", this));
     }
 
@@ -232,7 +232,7 @@ DeviceManagerImpl::DeviceManagerImpl()
 DeviceManagerImpl::~DeviceManagerImpl()
 {
     // Shutdown must've been called.
-    OVR_ASSERT(!pCreateDesc->pDevice);
+    vAssert(!pCreateDesc->pDevice);
 
     // Remove all factories
     while(!Factories.isEmpty())
@@ -255,7 +255,7 @@ DeviceCreateDesc* DeviceManagerImpl::CreateManagerDesc()
 
 bool DeviceManagerImpl:: initialize(DeviceBase* parent)
 {
-    OVR_UNUSED(parent);
+    NV_UNUSED(parent);
     if (!pCreateDesc || !pCreateDesc->pLock)
 		return false;
 
@@ -271,7 +271,7 @@ void DeviceManagerImpl::shutdown()
     while(!Devices.isEmpty())
     {
         DeviceCreateDesc* devDesc = Devices.first();
-        OVR_ASSERT(!devDesc->pDevice); // Manager shouldn't be dying while Device exists.
+        vAssert(!devDesc->pDevice); // Manager shouldn't be dying while Device exists.
         devDesc->Enumerated = false;
         devDesc->pointToVList->remove(devDesc);
         if (devDesc->handleCount.load() == 0)
@@ -282,8 +282,8 @@ void DeviceManagerImpl::shutdown()
     Devices.clear();
 
     // These must've been cleared by caller.
-    OVR_ASSERT(pCreateDesc->pDevice == 0);
-    OVR_ASSERT(pCreateDesc->pLock->pManager == 0);
+    vAssert(pCreateDesc->pDevice == 0);
+    vAssert(pCreateDesc->pLock->pManager == 0);
 
     pProfileManager.Clear();
 }
@@ -294,7 +294,7 @@ DeviceBase* DeviceManagerImpl::CreateDevice_MgrThread(DeviceCreateDesc* createDe
 {
     // Calls to DeviceManagerImpl::CreateDevice are enqueued with wait while holding pManager,
     // so 'this' must remain valid.
-    OVR_ASSERT(createDesc->pLock->pManager);
+    vAssert(createDesc->pLock->pManager);
 
     VLock::Locker devicesLock(GetLock());
 
@@ -405,7 +405,7 @@ Void DeviceManagerImpl::EnumerateAllFactoryDevices()
             {
                 // Device must be dead if it ever existed, since it AddRefs to us.
                 // ~DeviceCreateDesc removes its node from list.
-                OVR_ASSERT(!devDesc->pDevice);
+                vAssert(!devDesc->pDevice);
                 delete devDesc;
             }
             */
@@ -548,7 +548,7 @@ void DeviceCommon::DeviceRelease()
     while(1)
     {
         VAtomicInt::Type refCount = this->refCount.load();
-        OVR_ASSERT(refCount > 0);
+        vAssert(refCount > 0);
 
         if (refCount == 1)
         {
@@ -564,7 +564,7 @@ void DeviceCommon::DeviceRelease()
             {
                 // PushCall shouldn't fail because background thread runs while manager is
                 // alive and we are holding Manager alive through pParent chain.
-                OVR_ASSERT(false);
+                vAssert(false);
             }
 
             // Warning! At his point everything, including manager, may be dead.
@@ -596,7 +596,7 @@ void DeviceCreateDesc::Release()
     {
         VAtomicInt::Type handleCount = this->handleCount;
         // HandleCount must obviously be >= 1, since we are releasing it.
-        OVR_ASSERT(handleCount > 0);
+        vAssert(handleCount > 0);
 
         // {1 -> 0} transition may cause us to be destroyed, so require a lock.
         if (handleCount == 1)
@@ -607,7 +607,7 @@ void DeviceCreateDesc::Release()
             if (!this->handleCount.compare_exchange_weak(handleCount, 0))
                 continue;
 
-            OVR_ASSERT(pDevice == 0);
+            vAssert(pDevice == 0);
 
             // Destroy *this if the manager was destroyed already, or Enumerated
             // is false (device no longer available).

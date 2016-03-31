@@ -1,7 +1,6 @@
 #pragma once
 
 #include "vglobal.h"
-#include "Types.h"
 
 /*
 	Memory-mapped files are a fairly good compromise between performance and flexibility.

@@ -390,7 +390,7 @@ static int32_t GetOvrTextureSize( const int format, const int w, const int h )
 		}
         default:
 		{
-            OVR_ASSERT( false );
+            vAssert( false );
             break;
 		}
     }
@@ -641,13 +641,13 @@ GlTexture LoadASTCTextureFromMemory( uint8_t const * buffer, const size_t buffer
 	int const h = ( (int)header->ysize[2] << 16 ) | ( (int)header->ysize[1] << 8 ) | ( (int)header->ysize[0] );
 
 	// only supporting R channel for now
-	OVR_ASSERT( numPlanes == 1 );
+	vAssert( numPlanes == 1 );
 	// only supporting 6x6x1 for now
-	//OVR_ASSERT( header->blockDim_x == 6 && header->blockDim_y == 6 && header->blockDim_z == 1 );
-	OVR_ASSERT( header->blockDim_x == 4 && header->blockDim_y == 4 && header->blockDim_z == 1 );
+	//vAssert( header->blockDim_x == 6 && header->blockDim_y == 6 && header->blockDim_z == 1 );
+	vAssert( header->blockDim_x == 4 && header->blockDim_y == 4 && header->blockDim_z == 1 );
 	if ( header->blockDim_z != 1 )
 	{
-		OVR_ASSERT( header->blockDim_z == 1 );
+		vAssert( header->blockDim_z == 1 );
 		LOG( "Only 2D ASTC textures are supported" );
 		return GlTexture();
 	}
@@ -741,18 +741,18 @@ Offset    Size       Name           Description
 #pragma pack(1)
 struct OVR_PVR_HEADER
 {
-    UInt32	Version;
-    UInt32	Flags;
-    UInt64  PixelFormat;
-    UInt32  ColorSpace;
-    UInt32  ChannelType;
-    UInt32	Height;
-    UInt32	Width;
-    UInt32	Depth;
-    UInt32  NumSurfaces;
-    UInt32  NumFaces;
-    UInt32  MipMapCount;
-    UInt32  MetaDataSize;
+    vuint32	Version;
+    vuint32	Flags;
+    vuint64  PixelFormat;
+    vuint32  ColorSpace;
+    vuint32  ChannelType;
+    vuint32	Height;
+    vuint32	Width;
+    vuint32	Depth;
+    vuint32  NumSurfaces;
+    vuint32  NumFaces;
+    vuint32  MipMapCount;
+    vuint32  MetaDataSize;
 };
 #pragma pack()
 
@@ -790,14 +790,14 @@ GlTexture LoadTexturePVR( const char * fileName, const unsigned char * buffer, c
 	}
 
 	// skip the metadata
-	const UInt32 startTex = sizeof( OVR_PVR_HEADER ) + header.MetaDataSize;
+	const vuint32 startTex = sizeof( OVR_PVR_HEADER ) + header.MetaDataSize;
 	if ( ( startTex < sizeof( OVR_PVR_HEADER ) ) || ( startTex >= static_cast< size_t >( bufferLength ) ) )
 	{
 		LOG( "%s: Invalid PVR header sizes", fileName );
 		return GlTexture( 0 );
 	}
 
-	const UInt32 mipCount = ( noMipMaps ) ? 1 : std::max( 1u, header.MipMapCount );
+	const vuint32 mipCount = ( noMipMaps ) ? 1 : std::max( 1u, header.MipMapCount );
 
 	width = header.Width;
 	height = header.Height;
@@ -867,7 +867,7 @@ unsigned char * LoadPVRBuffer( const char * fileName, int & width, int & height 
 	}
 
 	// skip the metadata
-	const UInt32 startTex = sizeof( OVR_PVR_HEADER ) + header.MetaDataSize;
+	const vuint32 startTex = sizeof( OVR_PVR_HEADER ) + header.MetaDataSize;
     if ( ( startTex < sizeof( OVR_PVR_HEADER ) ) || ( startTex >= static_cast< size_t >( fileLength ) ) )
 	{
 		LOG( "Invalid PVR header sizes" );
@@ -912,28 +912,28 @@ It is distinguished by the simplicity of the loader required to instantiate
 a GL texture object from the file contents.
 
 Byte[12] identifier
-UInt32 endianness
-UInt32 glType
-UInt32 glTypeSize
-UInt32 glFormat
+vuint32 endianness
+vuint32 glType
+vuint32 glTypeSize
+vuint32 glFormat
 Uint32 glInternalFormat
 Uint32 glBaseInternalFormat
-UInt32 pixelWidth
-UInt32 pixelHeight
-UInt32 pixelDepth
-UInt32 numberOfArrayElements
-UInt32 numberOfFaces
-UInt32 numberOfMipmapLevels
-UInt32 bytesOfKeyValueData
+vuint32 pixelWidth
+vuint32 pixelHeight
+vuint32 pixelDepth
+vuint32 numberOfArrayElements
+vuint32 numberOfFaces
+vuint32 numberOfMipmapLevels
+vuint32 bytesOfKeyValueData
 
 for each keyValuePair that fits in bytesOfKeyValueData
-    UInt32   keyAndValueByteSize
+    vuint32   keyAndValueByteSize
     Byte     keyAndValue[keyAndValueByteSize]
     Byte     valuePadding[3 - ((keyAndValueByteSize + 3) % 4)]
 end
 
 for each mipmap_level in numberOfMipmapLevels*
-    UInt32 imageSize;
+    vuint32 imageSize;
     for each array_element in numberOfArrayElements*
        for each face in numberOfFaces
            for each z_slice in pixelDepth*
@@ -954,20 +954,20 @@ end
 #pragma pack(1)
 struct OVR_KTX_HEADER
 {
-	UByte	identifier[12];
-	UInt32	endianness;
-	UInt32	glType;
-	UInt32	glTypeSize;
-	UInt32	glFormat;
-	UInt32	glInternalFormat;
-	UInt32	glBaseInternalFormat;
-	UInt32	pixelWidth;
-	UInt32	pixelHeight;
-	UInt32	pixelDepth;
-	UInt32	numberOfArrayElements;
-	UInt32	numberOfFaces;
-	UInt32	numberOfMipmapLevels;
-	UInt32	bytesOfKeyValueData;
+	uchar	identifier[12];
+	vuint32	endianness;
+	vuint32	glType;
+	vuint32	glTypeSize;
+	vuint32	glFormat;
+	vuint32	glInternalFormat;
+	vuint32	glBaseInternalFormat;
+	vuint32	pixelWidth;
+	vuint32	pixelHeight;
+	vuint32	pixelDepth;
+	vuint32	numberOfArrayElements;
+	vuint32	numberOfFaces;
+	vuint32	numberOfMipmapLevels;
+	vuint32	bytesOfKeyValueData;
 };
 #pragma pack()
 
@@ -983,7 +983,7 @@ GlTexture LoadTextureKTX( const char * fileName, const unsigned char * buffer, c
         return GlTexture( 0 );
 	}
 
-	const UByte fileIdentifier[12] =
+	const uchar fileIdentifier[12] =
 	{
 		'«', 'K', 'T', 'X', ' ', '1', '1', '»', '\r', '\n', '\x1A', '\n'
 	};
@@ -1030,7 +1030,7 @@ GlTexture LoadTextureKTX( const char * fileName, const unsigned char * buffer, c
 	width = header.pixelWidth;
 	height = header.pixelHeight;
 
-	const UInt32 mipCount = ( noMipMaps ) ? 1 : std::max( 1u, header.numberOfMipmapLevels );
+	const vuint32 mipCount = ( noMipMaps ) ? 1 : std::max( 1u, header.numberOfMipmapLevels );
 
 	if ( header.numberOfFaces == 1 )
 	{

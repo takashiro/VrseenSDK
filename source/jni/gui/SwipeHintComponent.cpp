@@ -56,7 +56,7 @@ namespace NervGear
 		parms.clear();
 
 		menuHandle_t scrollHintHandle = rootMenu->handleForId( menuManager, swipeHintId );
-		OVR_ASSERT( scrollHintHandle.IsValid() );
+		vAssert( scrollHintHandle.IsValid() );
 		GLuint swipeHintTexture = LoadTextureFromApplicationPackage( img, TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), imgWidth, imgHeight );
 		VRMenuSurfaceParms swipeHintSurfParms( "", swipeHintTexture, imgWidth, imgHeight, SURFACE_TEXTURE_DIFFUSE,
 												0, 0, 0, SURFACE_TEXTURE_MAX,
@@ -133,7 +133,7 @@ namespace NervGear
 		case VRMENU_EVENT_FRAME_UPDATE:
 			return frame( app, vrFrame, menuMgr, self, event );
 		default:
-			OVR_ASSERT( !"Event flags mismatch!" );
+			vAssert( !"Event flags mismatch!" );
 			return MSG_STATUS_ALIVE;
 		}
 	}

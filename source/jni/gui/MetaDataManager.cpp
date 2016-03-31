@@ -154,7 +154,7 @@ void OvrMetaData::initFromFileList( const VArray< VString > & fileList, const Ov
             catIndex = iter->second;
 		}
 
-		OVR_ASSERT( catIndex > -1 );
+		vAssert( catIndex > -1 );
         Category & currentCategory = m_categories[catIndex];
 
 		// See if we want this loose-file
@@ -284,7 +284,7 @@ void OvrMetaData::initFromDirectoryMergeMeta( const char * relativePath, const V
 
 	m_filePath = appFileStoragePath + metaFile;
 
-	OVR_ASSERT( vdir.contains( m_filePath, R_OK ) );
+	vAssert( vdir.contains( m_filePath, R_OK ) );
 
     initFromDirectory( relativePath, searchPaths, fileExtensions );
 
@@ -622,7 +622,7 @@ void OvrMetaData::extractMetaData(const VJsonObject &dataFile, const VArray< VSt
 					}
 				}
 
-				OVR_ASSERT( !metaDatum->tags.isEmpty() );
+				vAssert( !metaDatum->tags.isEmpty() );
 
                 const VString relativeUrl = datum.value( URL_INNER ).toString();
 				metaDatum->url = relativeUrl;
@@ -697,7 +697,7 @@ void OvrMetaData::extractRemoteMetaData( const VJson &dataFile, VStringHash< Ovr
 					}
 				}
 
-				OVR_ASSERT( !metaDatum->tags.isEmpty() );
+				vAssert( !metaDatum->tags.isEmpty() );
 
                 metaDatum->url = jsonDatum.value( URL_INNER ).toString();
 				extractExtendedData( jsonDatum, *metaDatum );
@@ -732,7 +732,7 @@ void OvrMetaData::regenerateCategoryIndices()
 		OvrMetaDatum & metaDatum = *m_etaData.at( metaDataIndex );
 		VArray< VString > & tags = metaDatum.tags;
 
-		OVR_ASSERT( metaDatum.tags.length() > 0 );
+		vAssert( metaDatum.tags.length() > 0 );
 		if ( tags.length() == 1 )
 		{
 			if ( tags.at( 0 ) == FAVORITES_TAG )
@@ -749,11 +749,11 @@ void OvrMetaData::regenerateCategoryIndices()
 		OvrMetaDatum & datum = *m_etaData.at( metaDataIndex );
 		VArray< VString > & tags = datum.tags;
 
-		OVR_ASSERT( tags.length() > 0 );
+		vAssert( tags.length() > 0 );
 
 		if ( tags.length() == 1 )
 		{
-			OVR_ASSERT( tags.at( 0 ) != FAVORITES_TAG );
+			vAssert( tags.at( 0 ) != FAVORITES_TAG );
 		}
 
 
@@ -845,7 +845,7 @@ TagAction OvrMetaData::toggleTag( OvrMetaDatum * metaDatum, const VString & newT
 		FAIL( "OvrMetaData failed to load JSON meta file: %s", m_filePath.toCString() );
 	}
 
-	OVR_ASSERT( metaDatum );
+	vAssert( metaDatum );
 
 	// First update the local data
 	TagAction action = TAG_ERROR;
@@ -920,7 +920,7 @@ OvrMetaData::Category * OvrMetaData::getCategory( const VString & categoryName )
 
 const OvrMetaDatum & OvrMetaData::getMetaDatum( const int index ) const
 {
-	OVR_ASSERT( index >= 0 && index < m_etaData.length() );
+	vAssert( index >= 0 && index < m_etaData.length() );
 	return *m_etaData.at( index );
 }
 
@@ -931,7 +931,7 @@ bool OvrMetaData::getMetaData( const Category & category, VArray< const OvrMetaD
 	for ( int i = 0; i < numPanos; ++i )
 	{
 		const int metaDataIndex = category.datumIndicies.at( i );
-		OVR_ASSERT( metaDataIndex >= 0 && metaDataIndex < m_etaData.length() );
+		vAssert( metaDataIndex >= 0 && metaDataIndex < m_etaData.length() );
 		//const OvrMetaDatum * panoData = &MetaData.At( metaDataIndex );
         //LOG( "Getting MetaData %d title %s from category %s", metaDataIndex, panoData->Title.toCString(), category.CategoryName.toCString() );
 		outMetaData.append( m_etaData.at( metaDataIndex ) );
@@ -967,7 +967,7 @@ bool OvrMetaData::shouldAddFile( const char * filename, const OvrMetaDataFileExt
 
 void OvrMetaData::setCategoryDatumIndicies( const int index, const VArray< int >& datumIndicies )
 {
-	OVR_ASSERT( index < m_categories.length() );
+	vAssert( index < m_categories.length() );
 
 	if ( index < m_categories.length() )
 	{

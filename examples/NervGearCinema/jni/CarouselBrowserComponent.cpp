@@ -21,7 +21,7 @@ CarouselBrowserComponent::CarouselBrowserComponent( const VArray<CarouselItem *>
 eMsgStatus CarouselBrowserComponent::onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 	VRMenuObject * self, VRMenuEvent const & event )
 {
-	OVR_ASSERT( handlesEvent( VRMenuEventFlags_t( event.eventType ) ) );
+	vAssert( handlesEvent( VRMenuEventFlags_t( event.eventType ) ) );
 
     switch( event.eventType )
 	{
@@ -40,7 +40,7 @@ eMsgStatus CarouselBrowserComponent::onEventImpl( App * app, VrFrame const & vrF
 		case VRMENU_EVENT_SWIPE_BACK:
 			return SwipeBack( app, vrFrame, menuMgr, self );
 		default:
-			OVR_ASSERT( !"Event flags mismatch!" ); // the constructor is specifying a flag that's not handled
+			vAssert( !"Event flags mismatch!" ); // the constructor is specifying a flag that's not handled
 			return MSG_STATUS_ALIVE;
 	}
 }

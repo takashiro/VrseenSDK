@@ -13,9 +13,9 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <stdarg.h>
 #include <stdio.h>
 
-#if defined(OVR_OS_WIN32)
+#if defined(NV_OS_WIN)
 #include <windows.h>
-#elif defined(OVR_OS_ANDROID)
+#elif defined(NV_OS_ANDROID)
 #include <android/log.h>
 #endif
 
@@ -88,7 +88,7 @@ void Log::FormatLog(VString& buffer, LogMessageType messageType,
 void Log::DefaultLogOutput(LogMessageType messageType, const char* formattedText)
 {
 
-#if defined(OVR_OS_WIN32)
+#if defined(NV_OS_WIN)
     // Under Win32, output regular messages to console if it exists; debug window otherwise.
     static DWORD dummyMode;
     static bool  hasConsole = (GetStdHandle(STD_OUTPUT_HANDLE) != INVALID_HANDLE_VALUE) &&
@@ -103,7 +103,7 @@ void Log::DefaultLogOutput(LogMessageType messageType, const char* formattedText
          fputs(formattedText, stdout);
     }
 
-#elif defined(OVR_OS_ANDROID)
+#elif defined(NV_OS_ANDROID)
 
     int logPriority = ANDROID_LOG_INFO;
     switch(messageType)

@@ -8,7 +8,7 @@ Authors     :   Jim Dos�
 Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 This source code is licensed under the BSD-style license found in the
-LICENSE file in the Cinema/ directory. An additional grant 
+LICENSE file in the Cinema/ directory. An additional grant
 of patent rights can be found in the PATENTS file in the same directory.
 
 *************************************************************************************/
@@ -137,7 +137,7 @@ void TheaterSelectionView::SetPosition( OvrVRMenuMgr & menuMgr, const V3Vectf &p
 
     menuHandle_t titleRootHandle = Menu->handleForId( menuMgr, ID_TITLE_ROOT );
     VRMenuObject * titleRoot = menuMgr.toObject( titleRootHandle );
-    OVR_ASSERT( titleRoot != NULL );
+    vAssert( titleRoot != NULL );
 
     pose = titleRoot->localPose();
     pose.Position = pos;
@@ -200,7 +200,7 @@ void TheaterSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, Bitmap
     // the centerroot item will get touch relative and touch absolute events and use them to rotate the centerRoot
     menuHandle_t centerRootHandle = Menu->handleForId( menuMgr, ID_CENTER_ROOT );
     CenterRoot = menuMgr.toObject( centerRootHandle );
-    OVR_ASSERT( CenterRoot != NULL );
+    vAssert( CenterRoot != NULL );
 
     TheaterBrowser = new CarouselBrowserComponent( Theaters, panelPoses );
     CenterRoot->addComponent( TheaterBrowser );

@@ -105,7 +105,7 @@ public:
 
     virtual bool        GetDeviceInfo(DeviceInfo* info) const
     {
-        OVR_UNUSED(info);
+        NV_UNUSED(info);
         return false;
     }
 };

@@ -61,7 +61,7 @@ void SensorCalibration::Initialize(const VString& deviceSerialNumber)
 	result = pSensor->GetAllTemperatureReports(&TemperatureReports);
 #endif
 
-    OVR_ASSERT(result);
+    vAssert(result);
     for (int i = 0; i < 3; i++)
         Interpolators[i].Initialize(TemperatureReports, i);
 
@@ -93,7 +93,7 @@ void SensorCalibration::DebugPrintLocalTemperatureTable()
 
 void SensorCalibration::DebugClearHeadsetTemperatureReports()
 {
-    OVR_ASSERT(pSensor != NULL);
+    vAssert(pSensor != NULL);
 
 	VArray<VArray<TemperatureReport> > temperatureReports;
 
@@ -104,8 +104,8 @@ void SensorCalibration::DebugClearHeadsetTemperatureReports()
 	pSensor->GetAllTemperatureReports(&temperatureReports);
 #endif
 
-	OVR_ASSERT(temperatureReports.size() > 0);
-	OVR_ASSERT(temperatureReports[0].size() > 0);
+	vAssert(temperatureReports.size() > 0);
+	vAssert(temperatureReports[0].size() > 0);
 
 	TemperatureReport& tr = TemperatureReports[0][0];
 
@@ -126,7 +126,7 @@ void SensorCalibration::DebugClearHeadsetTemperatureReports()
 			GyroCalibration.SetTemperatureReport(tr);
 #else
 			result = pSensor->SetTemperatureReport(tr);
-			OVR_ASSERT(result);
+			vAssert(result);
 #endif
 
 			// Need to wait for the tracker board to finish writing to eeprom.
@@ -211,7 +211,7 @@ void SensorCalibration::StoreAutoOffset()
     }
     TemperatureReport& oldestReport = TemperatureReports[binIdx][oldestIdx];
     TemperatureReport& newestReport = TemperatureReports[binIdx][newestIdx];
-    OVR_ASSERT((oldestReport.Sample == 0 && newestReport.Sample == 0 && newestReport.Version == 0) ||
+    vAssert((oldestReport.Sample == 0 && newestReport.Sample == 0 && newestReport.Version == 0) ||
                 oldestReport.Sample == (newestReport.Sample + 1) % newestReport.NumSamples);
 
 #ifndef USE_LOCAL_TEMPERATURE_CALIBRATION_STORAGE
@@ -232,7 +232,7 @@ void SensorCalibration::StoreAutoOffset()
 			GyroCalibration.SetTemperatureReport(oldestReport);
 #else
             writeSuccess = pSensor->SetTemperatureReport(oldestReport);
-            OVR_ASSERT(writeSuccess);
+            vAssert(writeSuccess);
 #endif
         }
     }
@@ -251,7 +251,7 @@ void SensorCalibration::StoreAutoOffset()
 			GyroCalibration.SetTemperatureReport(newestReport);
 #else
             writeSuccess = pSensor->SetTemperatureReport(newestReport);
-            OVR_ASSERT(writeSuccess);
+            vAssert(writeSuccess);
 #endif
         }
     }
@@ -285,7 +285,7 @@ const TemperatureReport& median(const VArray<TemperatureReport>& temperatureRepo
             if (temperatureReportsBin[i].Offset[coord] == med)
                 return temperatureReportsBin[i];
         // if we haven't found the median in the original array, something is wrong
-        OVR_DEBUG_BREAK;
+        vAssert(false);
     }
     return temperatureReportsBin[0];
 }
@@ -300,7 +300,7 @@ void OffsetInterpolator::Initialize(VArray<VArray<TemperatureReport> > const& te
 
     for (int bin = 0; bin < bins; bin++)
     {
-        OVR_ASSERT(temperatureReports[bin].size() == temperatureReports[0].size());
+        vAssert(temperatureReports[bin].size() == temperatureReports[0].size());
         const TemperatureReport& report = median(temperatureReports[bin], coord);
         if (report.Version > 0 && report.Version <= MAX_COMPAT_VERSION)
         {
@@ -355,11 +355,11 @@ double OffsetInterpolator::GetOffset(double targetTemperature, double autoTemper
     }
 
     // verify correctness
-    OVR_ASSERT(l >= 0 && u < count);
-    OVR_ASSERT(l == 0 || Temperatures[l] <= targetTemperature);
-    OVR_ASSERT(u == count - 1 || targetTemperature < Temperatures[u]);
-    OVR_ASSERT((l == 0 && u == count - 1) || Temperatures[u] - Temperatures[l] > minInterpolationDist);
-    OVR_ASSERT(Temperatures[l] <= Temperatures[u]);
+    vAssert(l >= 0 && u < count);
+    vAssert(l == 0 || Temperatures[l] <= targetTemperature);
+    vAssert(u == count - 1 || targetTemperature < Temperatures[u]);
+    vAssert((l == 0 && u == count - 1) || Temperatures[u] - Temperatures[l] > minInterpolationDist);
+    vAssert(Temperatures[l] <= Temperatures[u]);
 
     // perform the interpolation
     double slope;

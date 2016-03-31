@@ -279,7 +279,7 @@ void LatencyTest::handleMessage(const Message& msg, LatencyTestMessageType laten
             vuint16 elapsedTime = pDetected->Elapsed;
 
 			VColor col = getActiveResult()->TargetColor;
-			OVR_UNUSED( col );
+			NV_UNUSED( col );
             OVR_DEBUG_LOG(("Time to 'ColorDetected' (%d,%d,%d) = %d", col.red, col.green, col.blue, elapsedTime));
 
             getActiveResult()->DeviceMeasuredElapsedMilliS = elapsedTime;
@@ -312,7 +312,7 @@ void LatencyTest::handleMessage(const Message& msg, LatencyTestMessageType laten
 
 LatencyTest::MeasurementResult* LatencyTest::getActiveResult()
 {
-    OVR_ASSERT(!Results.isEmpty());
+    vAssert(!Results.isEmpty());
     return Results.last();
 }
 

@@ -192,7 +192,7 @@ public:
     // Should be called by user if not attaching to a sensor.
     void        OnMessage(const MessageBodyFrame& msg)
     {
-        OVR_ASSERT(!IsAttachedToSensor());
+        vAssert(!IsAttachedToSensor());
         handleMessage(msg);
     }
 

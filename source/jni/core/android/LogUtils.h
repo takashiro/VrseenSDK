@@ -58,7 +58,7 @@ void LogWithFileTag( int prio, const char * fileTag, const char * fmt, ... );
 #if !defined( OVR_BUILD_DEBUG )
 #define DROID_ASSERT( __expr__, __tag__ ) { if ( !( __expr__ ) ) { DROIDWARN( __tag__, "ASSERTION FAILED: %s", #__expr__ ); } }
 #else
-#define DROID_ASSERT( __expr__, __tag__ ) { if ( !( __expr__ ) ) { DROIDWARN( __tag__, "ASSERTION FAILED: %s", #__expr__ ); OVR_DEBUG_BREAK; } }
+#define DROID_ASSERT( __expr__, __tag__ ) { if ( !( __expr__ ) ) { DROIDWARN( __tag__, "ASSERTION FAILED: %s", #__expr__ ); } }
 #endif
 
 

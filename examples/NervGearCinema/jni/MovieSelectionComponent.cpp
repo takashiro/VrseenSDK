@@ -42,7 +42,7 @@ eMsgStatus MovieSelectionComponent::onEventImpl( App * app, VrFrame const & vrFr
         	}
             return MSG_STATUS_ALIVE;
         default:
-            OVR_ASSERT( !"Event flags mismatch!" );
+            vAssert( !"Event flags mismatch!" );
             return MSG_STATUS_ALIVE;
     }
 }
@@ -83,7 +83,7 @@ eMsgStatus MovieSelectionComponent::FocusGained( App * app, VrFrame const & vrFr
     CallbackView->SelectionHighlighted( true );
 
     Sound.playSound( app, "gaze_on", 0.1 );
-	
+
     return MSG_STATUS_ALIVE;
 }
 

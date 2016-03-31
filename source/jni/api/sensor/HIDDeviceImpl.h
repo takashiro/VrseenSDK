@@ -50,7 +50,7 @@ public:
                 DeviceImpl<B>::ConnectedFlag = false;
                 break;
 
-            default: OVR_ASSERT(0); return;
+            default: vAssert(0); return;
         }
 
         // Do device notification.
@@ -130,7 +130,7 @@ public:
 
         WriteData(uchar* data, uint size) : Size(size)
         {
-            OVR_ASSERT(size <= BufferSize);
+            vAssert(size <= BufferSize);
             memcpy(Buffer, data, size);
         }
     };

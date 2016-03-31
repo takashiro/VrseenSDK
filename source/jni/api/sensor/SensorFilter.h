@@ -97,7 +97,7 @@ public:
 
     T SavitzkyGolaySmooth4()
     {
-        OVR_ASSERT(this->v_capacity >= 4);
+        vAssert(this->v_capacity >= 4);
         return this->peekLast(0)*0.7f +
                this->peekLast(1)*0.4f +
                this->peekLast(2)*0.1f -
@@ -106,7 +106,7 @@ public:
 
     T SavitzkyGolaySmooth8() const
     {
-        OVR_ASSERT(this->v_capacity >= 8);
+        vAssert(this->v_capacity >= 8);
         return this->peekLast(0)*0.41667f +
                this->peekLast(1)*0.33333f +
                this->peekLast(2)*0.25f +
@@ -118,7 +118,7 @@ public:
 
     T SavitzkyGolayDerivative4() const
     {
-        OVR_ASSERT(this->v_capacity >= 4);
+        vAssert(this->v_capacity >= 4);
         return this->peekLast(0)*0.3f +
                this->peekLast(1)*0.1f -
                this->peekLast(2)*0.1f -
@@ -127,7 +127,7 @@ public:
 
     T SavitzkyGolayDerivative5() const
     {
-            OVR_ASSERT(this->v_capacity >= 5);
+            vAssert(this->v_capacity >= 5);
             return this->peekLast(0) * 0.2f +
                    this->peekLast(1) * 0.1f -
                    this->peekLast(3) * 0.1f -
@@ -136,7 +136,7 @@ public:
 
     T SavitzkyGolayDerivative12() const
     {
-        OVR_ASSERT(this->capacity() >= 12);
+        vAssert(this->capacity() >= 12);
         return this->peekLast(0) * 0.03846f +
                this->peekLast(1) * 0.03147f +
                this->peekLast(2) * 0.02448f +
@@ -153,7 +153,7 @@ public:
 
     T SavitzkyGolayDerivativeN(int n) const
     {
-        OVR_ASSERT(this->v_capacity >= n);
+        vAssert(this->v_capacity >= n);
         int m = (n-1)/2;
         T result = T();
         for (int k = 1; k <= m; k++)

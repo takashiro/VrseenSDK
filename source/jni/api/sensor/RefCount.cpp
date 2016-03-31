@@ -11,6 +11,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "RefCount.h"
 #include "Log.h"
+#include "VLog.h"
 
 namespace NervGear {
 
@@ -28,7 +29,7 @@ RefCountImplCore::~RefCountImplCore()
     // RefCount can be either 1 or 0 here.
     //  0 if Release() was properly called.
     //  1 if the object was declared on stack or as an aggregate.
-    OVR_ASSERT(m_refCount.load() <= 1);
+    vAssert(m_refCount.load() <= 1);
 }
 
 #ifdef OVR_BUILD_DEBUG
@@ -36,7 +37,7 @@ void RefCountImplCore::reportInvalidDelete(void *pmem)
 {
     OVR_DEBUG_LOG(
         ("Invalid delete call on ref-counted object at %p. Please use Release()", pmem));
-    OVR_ASSERT(0);
+    vAssert(0);
 }
 #endif
 
@@ -45,7 +46,7 @@ RefCountNTSImplCore::~RefCountNTSImplCore()
     // RefCount can be either 1 or 0 here.
     //  0 if Release() was properly called.
     //  1 if the object was declared on stack or as an aggregate.
-    OVR_ASSERT(m_refCount.load() <= 1);
+    vAssert(m_refCount.load() <= 1);
 }
 
 #ifdef OVR_BUILD_DEBUG
@@ -53,7 +54,7 @@ void RefCountNTSImplCore::reportInvalidDelete(void *pmem)
 {
     OVR_DEBUG_LOG(
         ("Invalid delete call on ref-counted object at %p. Please use Release()", pmem));
-    OVR_ASSERT(0);
+    vAssert(0);
 }
 #endif
 

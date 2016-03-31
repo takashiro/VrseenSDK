@@ -535,7 +535,7 @@ void ovr_ExitActivity( ovrMobile * ovr, eExitType exitType )
 
 		ovr_LeaveVrMode( ovr );
 
-		OVR_ASSERT( ovr != NULL );
+		vAssert( ovr != NULL );
 
 		//	const char * name = "finish";
 		const char * name = "finishOnUiThread";
@@ -555,7 +555,7 @@ void ovr_ExitActivity( ovrMobile * ovr, eExitType exitType )
 	{
 		LOG( "ovr_ExitActivity( EXIT_TYPE_FINISH_AFFINITY ) - act.finishAffinity()" );
 
-		OVR_ASSERT( ovr != NULL );
+		vAssert( ovr != NULL );
 
 		ovr_LeaveVrMode( ovr );
 
@@ -578,7 +578,7 @@ void ovr_ExitActivity( ovrMobile * ovr, eExitType exitType )
 
 		// This should only ever be called from the Java thread.
 		// ovr_LeaveVrMode() should have been called already from the VrThread.
-		OVR_ASSERT( ovr == NULL || ovr->Destroyed );
+		vAssert( ovr == NULL || ovr->Destroyed );
 
 		if ( OnLoadTid != gettid() )
 		{
@@ -736,13 +736,13 @@ bool ovr_StartSystemActivity( ovrMobile * ovr, const char * command, const char 
 	unsigned long long requiredSize = 0;
 	if ( !ovr_CreateSystemActivityIntent( ovr, command, extraJsonText, intentBuffer, INTENT_COMMAND_SIZE, requiredSize ) )
 	{
-		OVR_ASSERT( requiredSize > INTENT_COMMAND_SIZE );	// if this isn't true, command creation failed for some other reason
+		vAssert( requiredSize > INTENT_COMMAND_SIZE );	// if this isn't true, command creation failed for some other reason
 		// reallocate a buffer of the required size
 		intentBuffer.realloc( requiredSize );
 		bool ok = ovr_CreateSystemActivityIntent( ovr, command, extraJsonText, intentBuffer, INTENT_COMMAND_SIZE, requiredSize );
 		if ( !ok )
 		{
-			OVR_ASSERT( ok );
+			vAssert( ok );
 			return false;
 		}
 	}

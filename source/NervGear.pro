@@ -158,7 +158,6 @@ HEADERS += \
     jni/core/VTimer.h \
     jni/core/MappedFile.h \
     jni/core/VMutex.h \
-    jni/core/Types.h \
     jni/core/List.h \
     jni/core/VVariant.h \
     jni/core/TypesafeNumber.h \

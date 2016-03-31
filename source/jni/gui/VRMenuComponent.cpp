@@ -25,10 +25,10 @@ namespace NervGear {
 
 //==============================
 // VRMenuComponent::OnEvent
-eMsgStatus VRMenuComponent::onEvent( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, 
+eMsgStatus VRMenuComponent::onEvent( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
-    OVR_ASSERT( self != NULL );
+    vAssert( self != NULL );
 
     //-------------------
     // do any pre work that every event handler must do

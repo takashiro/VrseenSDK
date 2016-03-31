@@ -303,7 +303,7 @@ void VRMenuEventHandler::handleEvents( App * app, VrFrame const & vrFrame, OvrVR
                 dispatchToPath( app, vrFrame, menuMgr, event, targetPath, false );
                 break;
             default:
-                OVR_ASSERT( !"unknown dispatch type" );
+                vAssert( !"unknown dispatch type" );
                 break;
         }
 	}

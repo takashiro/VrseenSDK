@@ -2,8 +2,6 @@
 
 #include "vglobal.h"
 
-#include "Types.h"
-
 NV_NAMESPACE_BEGIN
 
 class HIDDeviceBase

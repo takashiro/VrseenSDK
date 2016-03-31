@@ -206,7 +206,7 @@ void * Queue3Thread( void * v )
 		{
 			if ( numBuffers == 1 )
 			{
-                OVR_ASSERT( data[0] != NULL );
+                vAssert( data[0] != NULL );
                 VVariantArray args;
                 args << data[0] << resolutionX << resolutionY;
                 ( ( Oculus360Photos * )v )->backgroundMessageQueue().post(event.name, std::move(args));

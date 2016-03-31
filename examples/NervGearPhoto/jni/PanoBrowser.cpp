@@ -163,7 +163,7 @@ VString PanoBrowser::getPanelTitle( const OvrMetaDatum & panelData ) const
 void PanoBrowser::onPanelActivated( const OvrMetaDatum * panelData )
 {
     Oculus360Photos * photos = ( Oculus360Photos * ) m_app->appInterface();
-	OVR_ASSERT( photos );
+	vAssert( photos );
 	photos->onPanoActivated( panelData );
 }
 
@@ -176,7 +176,7 @@ const OvrMetaDatum * PanoBrowser::nextFileInDirectory( const int step )
 		// find the current
 		int nextPanelIndex = -1;
         Oculus360Photos * photos = ( Oculus360Photos * )m_app->appInterface();
-		OVR_ASSERT( photos );
+		vAssert( photos );
 		for ( nextPanelIndex = 0; nextPanelIndex < numFavorites; ++nextPanelIndex )
 		{
             const Favorite & favorite = m_favoritesBuffer.at( nextPanelIndex );
@@ -356,7 +356,7 @@ int PanoBrowser::numPanosInActive() const
 		return numFavs;
 	}
     const OvrFolderBrowser::FolderView * folder = getFolderView( activeFolderIndex );
-	OVR_ASSERT( folder );
+	vAssert( folder );
     return folder->panels.length();
 }
 
@@ -452,7 +452,7 @@ void PanoBrowser::onMediaNotFound( App * app, VString & title, VString & imageFi
 bool PanoBrowser::onTouchUpNoFocused()
 {
     Oculus360Photos * photos = ( Oculus360Photos * )m_app->appInterface();
-	OVR_ASSERT( photos );
+	vAssert( photos );
     if ( photos->activePano() != NULL && isOpen() && !gazingAtMenu() )
 	{
         m_app->guiSys().closeMenu( m_app, this, false );

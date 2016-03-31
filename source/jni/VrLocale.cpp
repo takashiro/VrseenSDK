@@ -13,10 +13,10 @@ jclass			VrLocale::VrActivityClass;
 bool VrLocale::GetString( JNIEnv* jni, jobject activityObject, char const * key, char const * defaultOut, VString & out )
 {
     if (jni == NULL) {
-        vWarn("OVR_ASSERT jni = NULL!");
+        vWarn("vAssert jni = NULL!");
 	}
     if (activityObject == NULL) {
-        vWarn("OVR_ASSERT ctivityObject = NULL!");
+        vWarn("vAssert ctivityObject = NULL!");
 	}
 
 	//LOG( "Localizing key '%s'", key );

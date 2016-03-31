@@ -441,7 +441,7 @@ bool HIDDevice::HIDInitialize(const VString& path)
 bool HIDDevice::initDeviceInfo()
 {
     // Device must have been successfully opened.
-	OVR_ASSERT(Device >= 0);
+	vAssert(Device >= 0);
 
 #if 0
     int desc_size = 0;
@@ -452,7 +452,7 @@ bool HIDDevice::initDeviceInfo()
     int r = ioctl(Device, HIDIOCGRDESCSIZE, &desc_size);
     if (r < 0)
     {
-        OVR_ASSERT_LOG(false, ("Failed to get report descriptor size."));
+        vAssert_LOG(false, ("Failed to get report descriptor size."));
         return false;
     }
 
@@ -461,7 +461,7 @@ bool HIDDevice::initDeviceInfo()
     r = ioctl(Device, HIDIOCGRDESC, &rpt_desc);
     if (r < 0)
     {
-        OVR_ASSERT_LOG(false, ("Failed to get report descriptor."));
+        vAssert_LOG(false, ("Failed to get report descriptor."));
         return false;
     }
 
@@ -475,7 +475,7 @@ bool HIDDevice::initDeviceInfo()
 
     if (ReadBufferSize < InputReportBufferLength)
     {
-        OVR_ASSERT_LOG(false, ("Input report buffer length is bigger than read buffer."));
+        vAssert_LOG(false, ("Input report buffer length is bigger than read buffer."));
         return false;
     }
 
@@ -483,7 +483,7 @@ bool HIDDevice::initDeviceInfo()
 	// Get device desc.
     if (!HIDManager->getFullDesc(Device, DevNodePath, &DevDesc))
     {
-        OVR_ASSERT_LOG(false, ("Failed to get device desc while initializing device."));
+        vAssert_LOG(false, ("Failed to get device desc while initializing device."));
         return false;
     }
 
@@ -494,7 +494,7 @@ bool HIDDevice::initDeviceInfo()
 bool HIDDevice::openDevice()
 {
 
-	OVR_ASSERT(Device == -1);
+	vAssert(Device == -1);
 
 	OVR_DEBUG_LOG(("HIDDevice::openDevice %s", DevDesc.Path.toCString()));
 
@@ -552,7 +552,7 @@ bool HIDDevice::openDevice()
     // Add the device to the polling list.
     if (!HIDManager->DevManager->pThread->addSelectFd(this, Device))
     {
-        OVR_ASSERT_LOG(false, ("Failed to initialize polling for HIDDevice."));
+        vAssert_LOG(false, ("Failed to initialize polling for HIDDevice."));
 
         close(Device);
         Device = -1;
@@ -580,7 +580,7 @@ void HIDDevice::HIDShutdown()
 //-----------------------------------------------------------------------------
 void HIDDevice::closeDevice()
 {
-    OVR_ASSERT(Device >= 0);
+    vAssert(Device >= 0);
 
     HIDManager->DevManager->pThread->removeSelectFd(this, Device);
 
@@ -735,7 +735,7 @@ bool HIDDevice::OnDeviceNotification(MessageType messageType,
     }
     else
     {
-        OVR_ASSERT(0);
+        vAssert(0);
     }
 
     *error = false;
@@ -899,7 +899,7 @@ double HIDDeviceManager::onTicks(double tickSeconds)
 // Creates a new HIDDeviceManager and initializes OVR.
 HIDDeviceManager* HIDDeviceManager::Create()
 {
-    OVR_ASSERT_LOG(false, ("Standalone mode not implemented yet."));
+    vAssert_LOG(false, ("Standalone mode not implemented yet."));
 
 
     Ptr<Android::HIDDeviceManager> manager = *new Android::HIDDeviceManager(NULL);

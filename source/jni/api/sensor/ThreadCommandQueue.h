@@ -2,7 +2,6 @@
 
 #include "vglobal.h"
 
-#include "Types.h"
 #include "VList.h"
 #include "VSignal.h"
 #include <new>

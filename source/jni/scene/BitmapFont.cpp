@@ -475,7 +475,7 @@ bool FontInfoType::LoadFromBuffer(void const * buffer,
     ImageFileName = jsonRoot.value("ImageFileName").toStdString();
 	const int numGlyphs = jsonRoot.value("NumGlyphs").toInt();
 	if (numGlyphs < 0 || numGlyphs > MAX_GLYPHS) {
-		OVR_ASSERT( numGlyphs > 0 && numGlyphs <= MAX_GLYPHS);
+		vAssert( numGlyphs > 0 && numGlyphs <= MAX_GLYPHS);
 		return false;
 	}
 
@@ -584,7 +584,7 @@ bool FontInfoType::LoadFromBuffer(void const * buffer,
 	// This is not intended for wide or ucf character sets -- depending on the size range of
 	// character codes lookups may need to be changed to use a hash.
 	if (maxCharCode >= MAX_GLYPHS) {
-		OVR_ASSERT( maxCharCode <= MAX_GLYPHS);
+		vAssert( maxCharCode <= MAX_GLYPHS);
 		maxCharCode = MAX_GLYPHS;
 	}
 
@@ -625,7 +625,7 @@ FontGlyphType const & FontInfoType::GlyphForCharCode(
 		return Glyphs['*'];
 	}
 
-	OVR_ASSERT( glyphIndex >= 0 && glyphIndex < Glyphs.length());
+	vAssert( glyphIndex >= 0 && glyphIndex < Glyphs.length());
 	return Glyphs[glyphIndex];
 }
 
@@ -633,7 +633,7 @@ FontGlyphType const & FontInfoType::GlyphForCharCode(
 // BitmapFontLocal
 //==================================================================================================
 
-#if defined( OVR_OS_WIN32 )
+#if defined( NV_OS_WIN )
 #define PATH_SEPARATOR '\\'
 #define PATH_SEPARATOR_STR "\\"
 #define PATH_SEPARATOR_NON_CANONICAL '/'
@@ -1009,7 +1009,7 @@ void BitmapFontLocal::CalcTextMetrics(const VString &text, size_t & len,
 		}
 	}
 
-	OVR_ASSERT( numLines >= 1);
+	vAssert( numLines >= 1);
 
 	firstAscent *= FontInfo.ScaleFactorY;
 	lastDescent *= FontInfo.ScaleFactorY;
@@ -1017,7 +1017,7 @@ void BitmapFontLocal::CalcTextMetrics(const VString &text, size_t & len,
 	height += (numLines - 1) * FontInfo.FontHeight * FontInfo.ScaleFactorY;
 	height += lastDescent;
 
-	OVR_ASSERT( numLines <= maxLines);
+	vAssert( numLines <= maxLines);
 }
 
 //==================================================================================================
@@ -1242,7 +1242,7 @@ void BitmapFontSurfaceLocal::DrawText3D(BitmapFont const & font,
 	size_t i = 0;
     uint32_t charCode = *p;
     for (; charCode != '\0'; i++, charCode = *(++p)) {
-		OVR_ASSERT( i < len);
+		vAssert( i < len);
 		if (charCode == '\n' && curLine < numLines && curLine < MAX_LINES) {
 			// move to next line
 			curLine++;

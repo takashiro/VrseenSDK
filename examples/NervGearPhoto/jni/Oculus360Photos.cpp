@@ -181,7 +181,7 @@ void Oculus360Photos::init(const VString &fromPackage, const VString &launchInte
     {
         FAIL( "Oculus360Photos::OneTimeInit getPackageName failed" );
     }
-    OVR_ASSERT( packageName );
+    vAssert( packageName );
 
     m_metaData = new OvrPhotosMetaData();
     if ( m_metaData == NULL )
@@ -220,7 +220,7 @@ void Oculus360Photos::init(const VString &fromPackage, const VString &launchInte
     {
         m_panoMenu = OvrPanoMenu::Create(
                     vApp, this, vApp->vrMenuMgr(), vApp->defaultFont(), *m_metaData, 2.0f, 2.0f );
-        OVR_ASSERT( m_panoMenu );
+        vAssert( m_panoMenu );
 
         vApp->guiSys().addMenu( m_panoMenu );
     }
@@ -238,7 +238,7 @@ void Oculus360Photos::init(const VString &fromPackage, const VString &launchInte
                     160, 180.0f,
                     7,
                     5.3f );
-        OVR_ASSERT( m_browser );
+        vAssert( m_browser );
 
         vApp->guiSys().addMenu( m_browser );
     }
@@ -810,7 +810,7 @@ void Oculus360Photos::SetMenuState( const OvrMenuState state )
 #endif
         break;
     default:
-        OVR_ASSERT( false );
+        vAssert( false );
         break;
     }
 }
@@ -939,7 +939,7 @@ const char * menuStateNames[] =
 
 const char* Oculus360Photos::menuStateString( const OvrMenuState state )
 {
-    OVR_ASSERT( state >= 0 && state < NUM_MENU_STATES );
+    vAssert( state >= 0 && state < NUM_MENU_STATES );
     return menuStateNames[ state ];
 }
 
@@ -958,7 +958,7 @@ int Oculus360Photos::toggleCurrentAsFavorite()
         break;
     case TAG_ERROR:
     default:
-        OVR_ASSERT( false );
+        vAssert( false );
         break;
     }
 

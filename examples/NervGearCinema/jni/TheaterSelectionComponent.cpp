@@ -76,7 +76,7 @@ eMsgStatus TheaterSelectionComponent::onEventImpl( App * app, VrFrame const & vr
         	}
             return MSG_STATUS_ALIVE;
         default:
-            OVR_ASSERT( !"Event flags mismatch!" );
+            vAssert( !"Event flags mismatch!" );
             return MSG_STATUS_ALIVE;
     }
 }

@@ -62,7 +62,7 @@ struct TestData
                 {
                     LogText("LocklessTest Fail - corruption at %d inside block %d\n",
                             i, val/100);
-                    // OVR_ASSERT(Data[i] == val + i);
+                    // vAssert(Data[i] == val + i);
                 }
                 break;
             }
@@ -116,7 +116,7 @@ class Consumer : public Thread
             {
                 LogText("LocklessTest Fail - %d after %d;  delta = %d\n",
                         newValue, oldValue, newValue - oldValue);
-         //       OVR_ASSERT(0);
+         //       vAssert(0);
             }
 
 

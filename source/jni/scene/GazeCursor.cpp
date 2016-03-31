@@ -1,20 +1,7 @@
-/************************************************************************************
-
-Filename    :   GazeCursor.cpp
-Content     :   Global gaze cursor.
-Created     :   June 6, 2014
-Authors     :   Jonathan E. Wright
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-
-*************************************************************************************/
-
 #include "vglobal.h"
 
 #include "GazeCursorLocal.h"
 
-#include "Types.h"
 #include "VArray.h"
 #include "android/LogUtils.h"
 #include "api/VKernel.h"

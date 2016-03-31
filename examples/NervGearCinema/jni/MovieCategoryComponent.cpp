@@ -11,9 +11,9 @@ const V4Vectf MovieCategoryComponent::NormalColor( 82.0f / 255.0f, 101.0f / 255.
 //==============================
 //  MovieCategoryComponent::
 MovieCategoryComponent::MovieCategoryComponent( MovieSelectionView * view, MovieCategory category ) :
-    VRMenuComponent( VRMenuEventFlags_t( VRMENU_EVENT_TOUCH_DOWN ) | 
-            VRMENU_EVENT_TOUCH_UP | 
-            VRMENU_EVENT_FOCUS_GAINED | 
+    VRMenuComponent( VRMenuEventFlags_t( VRMENU_EVENT_TOUCH_DOWN ) |
+            VRMENU_EVENT_TOUCH_UP |
+            VRMENU_EVENT_FOCUS_GAINED |
             VRMENU_EVENT_FOCUS_LOST |
             VRMENU_EVENT_FRAME_UPDATE ),
     Sound(),
@@ -60,7 +60,7 @@ eMsgStatus MovieCategoryComponent::onEventImpl( App * app, VrFrame const & vrFra
         	}
             return MSG_STATUS_ALIVE;
         default:
-            OVR_ASSERT( !"Event flags mismatch!" );
+            vAssert( !"Event flags mismatch!" );
             return MSG_STATUS_ALIVE;
     }
 }

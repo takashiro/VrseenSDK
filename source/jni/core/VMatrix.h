@@ -1088,7 +1088,7 @@ public:
 	// FIXME: take advantage of return value optimization instead.
 	static VR3Matrix& Multiply(VR3Matrix* d, const VR3Matrix& a, const VR3Matrix& b)
 	{
-		OVR_ASSERT((d != &a) && (d != &b));
+		vAssert((d != &a) && (d != &b));
 		int i = 0;
 		do {
 			d->M[i][0] = a.M[i][0] * b.M[0][0] + a.M[i][1] * b.M[1][0] + a.M[i][2] * b.M[2][0];

@@ -13,7 +13,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #if !defined( OVR_VRMenuObject_h )
 #define OVR_VRMenuObject_h
 
-#include "Types.h"
 #include "VBasicmath.h"
 #include "VArray.h"
 #include "VString.h"

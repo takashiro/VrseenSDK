@@ -16,9 +16,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <math.h>
 #include <stdlib.h>
 
-#include "Types.h"
 #include "VAlgorithm.h"
-#include "Android/LogUtils.h"
+#include "android/LogUtils.h"
 
 namespace NervGear {
 

@@ -420,7 +420,7 @@ void LatencyTestDeviceFactory::EnumerateDevices(EnumerateVisitor& visitor)
 
         virtual void Visit(HIDDevice& device, const HIDDeviceDesc& desc)
         {
-            OVR_UNUSED(device);
+            NV_UNUSED(device);
 
             LatencyTestDeviceCreateDesc createDesc(pFactory, desc);
             ExternalVisitor.Visit(createDesc);
@@ -487,7 +487,7 @@ LatencyTestDeviceImpl::LatencyTestDeviceImpl(LatencyTestDeviceCreateDesc* create
 LatencyTestDeviceImpl::~LatencyTestDeviceImpl()
 {
     // Check that Shutdown() was called.
-    OVR_ASSERT(!pCreateDesc->pDevice);
+    vAssert(!pCreateDesc->pDevice);
 }
 
 // Internal creation APIs.

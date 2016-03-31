@@ -340,8 +340,8 @@ void OvrDebugLinesLocal::AddLine( const V3Vectf & start, const V3Vectf & end,
 	{
 		NonDepthTestedLines.append( line );
 	}
-    //OVR_ASSERT( DepthTestedLines.GetSizeI() < MAX_DEBUG_LINES );
-    //OVR_ASSERT( NonDepthTestedLines.GetSizeI() < MAX_DEBUG_LINES );
+    //vAssert( DepthTestedLines.GetSizeI() < MAX_DEBUG_LINES );
+    //vAssert( NonDepthTestedLines.GetSizeI() < MAX_DEBUG_LINES );
 }
 
 //==============================

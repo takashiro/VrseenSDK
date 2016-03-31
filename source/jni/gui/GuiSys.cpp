@@ -43,7 +43,7 @@ OvrGuiSysLocal::OvrGuiSysLocal() :
 // OvrGuiSysLocal::
 OvrGuiSysLocal::~OvrGuiSysLocal()
 {
-	OVR_ASSERT( IsInitialized == false ); // Shutdown should already have been called
+	vAssert( IsInitialized == false ); // Shutdown should already have been called
 }
 
 //==============================
@@ -82,7 +82,7 @@ void OvrGuiSysLocal::addMenu( VRMenu * menu )
 	if ( menuIndex >= 0 )
 	{
 		WARN( "Duplicate menu name '%s'", menu->name() );
-		OVR_ASSERT( menuIndex < 0 );
+		vAssert( menuIndex < 0 );
 	}
     Menus.append( menu );
 }
@@ -103,7 +103,7 @@ VRMenu * OvrGuiSysLocal::getMenu( char const * menuName ) const
 // OvrGuiSysLocal::DestroyMenu
 void OvrGuiSysLocal::destroyMenu( OvrVRMenuMgr & menuMgr, VRMenu * menu )
 {
-	OVR_ASSERT( menu != NULL );
+	vAssert( menu != NULL );
 
 	MakeInactive( menu );
 
@@ -225,11 +225,11 @@ void OvrGuiSysLocal::openMenu( App * app, OvrGazeCursor & gazeCursor, char const
 	if ( menuIndex < 0 )
 	{
 		WARN( "No menu named '%s'", menuName );
-		OVR_ASSERT( menuIndex >= 0 && menuIndex < Menus.length() );
+		vAssert( menuIndex >= 0 && menuIndex < Menus.length() );
 		return;
 	}
 	VRMenu * menu = Menus[menuIndex];
-	OVR_ASSERT( menu != NULL );
+	vAssert( menu != NULL );
 	if ( !menu->isOpenOrOpening() )
 	{
 		menu->open( app, gazeCursor );
@@ -245,7 +245,7 @@ void OvrGuiSysLocal::closeMenu( App * app, char const * menuName, bool const clo
 	if ( menuIndex < 0 )
 	{
 		WARN( "No menu named '%s'", menuName );
-		OVR_ASSERT( menuIndex >= 0 && menuIndex < Menus.length() );
+		vAssert( menuIndex >= 0 && menuIndex < Menus.length() );
 		return;
 	}
 	VRMenu * menu = Menus[menuIndex];
@@ -256,7 +256,7 @@ void OvrGuiSysLocal::closeMenu( App * app, char const * menuName, bool const clo
 // OvrGuiSysLocal::CloseMenu
 void OvrGuiSysLocal::closeMenu( App * app, VRMenu * menu, bool const closeInstantly )
 {
-	OVR_ASSERT( menu != NULL );
+	vAssert( menu != NULL );
 	if ( !menu->isClosedOrClosing() )
 	{
 		menu->close( app, app->gazeCursor(), closeInstantly );
@@ -303,7 +303,7 @@ void OvrGuiSysLocal::frame( App * app, const VrFrame & vrFrame, OvrVRMenuMgr & m
 	for ( int i = ActiveMenus.length() - 1; i >= 0; --i )
 	{
 		VRMenu * curMenu = ActiveMenus[i];
-		OVR_ASSERT( curMenu != NULL );
+		vAssert( curMenu != NULL );
 
 		// VRMenu::Frame() CPU performance test
 		if ( 0 )
@@ -337,7 +337,7 @@ bool OvrGuiSysLocal::onKeyEvent( App * app, int const keyCode, KeyState::eKeyEve
 	for ( int i = 0; i < ActiveMenus.length(); ++i )
 	{
 		VRMenu * curMenu = ActiveMenus[i];
-		OVR_ASSERT( curMenu != NULL );
+		vAssert( curMenu != NULL );
 
 		if ( keyCode == AKEYCODE_BACK )
 		{

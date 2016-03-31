@@ -978,7 +978,7 @@ eMsgStatus ControlsGazeTimer::onEventImpl( App * app, VrFrame const & vrFrame, O
         	HasFocus = false;
     		return MSG_STATUS_ALIVE;
         default:
-            OVR_ASSERT( !"Event flags mismatch!" );
+            vAssert( !"Event flags mismatch!" );
             return MSG_STATUS_ALIVE;
     }
 }
@@ -1087,7 +1087,7 @@ eMsgStatus ScrubBarComponent::onEventImpl( App * app, VrFrame const & vrFrame, O
     		return OnFrame( app, vrFrame, menuMgr, self, event );
 
         default:
-            OVR_ASSERT( !"Event flags mismatch!" );
+            vAssert( !"Event flags mismatch!" );
             return MSG_STATUS_ALIVE;
     }
 }

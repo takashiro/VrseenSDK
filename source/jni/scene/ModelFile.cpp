@@ -502,7 +502,7 @@ void LoadModelFileJson( ModelFile & model,
 						model.Def.surfaces[index].geo.createGlGeometry( attribs, indices );
 
 						const char * materialTypeString = "opaque";
-						OVR_UNUSED( materialTypeString );	// we'll get warnings if the LOGV's compile out
+						NV_UNUSED( materialTypeString );	// we'll get warnings if the LOGV's compile out
 
 						// set up additional material flags for the surface
 						if ( materialType == MATERIAL_TYPE_PERFORATED )

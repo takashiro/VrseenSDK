@@ -256,7 +256,7 @@ void Oculus360Videos::init(const VString &fromPackage, const VString &launchInte
 	{
 		VideoMenu = OvrVideoMenu::Create(
 			vApp, this, vApp->vrMenuMgr(), vApp->defaultFont(), *MetaData, 1.0f, 2.0f );
-		OVR_ASSERT( VideoMenu );
+		vAssert( VideoMenu );
 
 		vApp->guiSys().addMenu( VideoMenu );
 	}
@@ -274,7 +274,7 @@ void Oculus360Videos::init(const VString &fromPackage, const VString &launchInte
 			256, 200.0f,
 			7,
 			5.4f );
-		OVR_ASSERT( Browser );
+		vAssert( Browser );
 
 		vApp->guiSys().addMenu( Browser );
 	}
@@ -716,7 +716,7 @@ void Oculus360Videos::SetMenuState( const OvrMenuState state )
 		break;
 	default:
 		LOG( "Oculus360Videos::SetMenuState unknown state: %d", static_cast< int >( state ) );
-		OVR_ASSERT( false );
+		vAssert( false );
 		break;
 	}
 }
@@ -733,7 +733,7 @@ const char * menuStateNames [ ] =
 
 const char* Oculus360Videos::MenuStateString( const OvrMenuState state )
 {
-	OVR_ASSERT( state >= 0 && state < NUM_MENU_STATES );
+	vAssert( state >= 0 && state < NUM_MENU_STATES );
 	return menuStateNames[ state ];
 }
 

@@ -99,7 +99,7 @@ char const* GUIDiffuseColorRampTargetVertexShaderSrc =
 static const char * GUIColorRampTargetFragmentSrc =
 	"uniform sampler2D Texture0;\n"
 	"uniform sampler2D Texture1;\n"	// color ramp target
-	"uniform sampler2D Texture2;\n"	// color ramp 
+	"uniform sampler2D Texture2;\n"	// color ramp
 	"varying highp vec2 oTexCoord;\n"
 	"varying highp vec2 oTexCoord1;\n"
 	"varying lowp vec4 oColor;\n"
@@ -250,8 +250,8 @@ public:
 	virtual void				beginFrame();
 
 	// Submits the specified menu object to be renderered
-	virtual void				submitForRendering( OvrDebugLines & debugLines, BitmapFont const & font, 
-                                        BitmapFontSurface & fontSurface, menuHandle_t const handle, 
+	virtual void				submitForRendering( OvrDebugLines & debugLines, BitmapFont const & font,
+                                        BitmapFontSurface & fontSurface, menuHandle_t const handle,
                                         VPosf const & worldPose, VRMenuRenderFlags_t const & flags );
 
 	// Call once per frame before rendering to sort surfaces.
@@ -273,8 +273,8 @@ private:
 	// private methods
 	//--------------------------------------------------------------
 	void						CondenseList();
-	void						SubmitForRenderingRecursive( OvrDebugLines & debugLines, BitmapFont const & font, 
-                                        BitmapFontSurface & fontSurface, VRMenuRenderFlags_t const & flags, 
+	void						SubmitForRenderingRecursive( OvrDebugLines & debugLines, BitmapFont const & font,
+                                        BitmapFontSurface & fontSurface, VRMenuRenderFlags_t const & flags,
                                         VRMenuObjectLocal const * obj, VPosf const & parentModelPose,
                                         V4Vectf const & parentColor, V3Vectf const & parentScale, VBoxf & cullBounds,
                                         SubmittedMenuObject * submitted, int const maxIndices, int & curIndex,
@@ -297,7 +297,7 @@ private:
 	VGlShader					GUIProgramDiffuseComposite;				// has a two diffuse maps
 	VGlShader		            GUIProgramDiffuseColorRamp;				// has a diffuse and color ramp, and color ramp target is the diffuse
 	VGlShader		            GUIProgramDiffuseColorRampTarget;		// has diffuse, color ramp, and a separate color ramp target
-	//VGlShader		            GUIProgramDiffusePlusAdditiveColorRamp;	
+	//VGlShader		            GUIProgramDiffusePlusAdditiveColorRamp;
 	//VGlShader		            GUIProgramAdditiveColorRamp;
 
 	static bool			ShowDebugBounds;	// true to show the menu items' debug bounds. This is static so that the console command will turn on bounds for all activities.
@@ -313,7 +313,7 @@ void DebugMenuBounds( void * appPtr, const char * cmd )
 {
 	int show = 0;
 	sscanf( cmd, "%i", &show );
-	OVR_ASSERT( appPtr != NULL );	// something changed / broke in the OvrConsole code if this is NULL
+	vAssert( appPtr != NULL );	// something changed / broke in the OvrConsole code if this is NULL
     VRMenuMgrLocal::ToLocal( ( ( App* )appPtr )->vrMenuMgr() ).SetShowDebugBounds( show != 0 );
 }
 
@@ -321,7 +321,7 @@ void DebugMenuHierarchy( void * appPtr, const char * cmd )
 {
 	int show = 0;
 	sscanf( cmd, "%i", &show );
-	OVR_ASSERT( appPtr != NULL );	// something changed / broke in the OvrConsole code if this is NULL
+	vAssert( appPtr != NULL );	// something changed / broke in the OvrConsole code if this is NULL
     VRMenuMgrLocal::ToLocal( ( ( App* )appPtr )->vrMenuMgr() ).SetShowDebugHierarchy( show != 0 );
 }
 
@@ -329,7 +329,7 @@ void DebugMenuPoses( void * appPtr, const char * cmd )
 {
 	int show = 0;
 	sscanf( cmd, "%i", &show );
-	OVR_ASSERT( appPtr != NULL );	// something changed / broke in the OvrConsole code if this is NULL
+	vAssert( appPtr != NULL );	// something changed / broke in the OvrConsole code if this is NULL
     VRMenuMgrLocal::ToLocal( ( ( App* )appPtr )->vrMenuMgr() ).SetShowPoses( show != 0 );
 }
 
@@ -447,10 +447,10 @@ menuHandle_t VRMenuMgrLocal::createObject( VRMenuObjectParms const & parms )
 	if ( obj == NULL )
 	{
 		WARN( "VRMenuMgrLocal::CreateObject - failed to allocate menu object!" );
-		OVR_ASSERT( obj != NULL );	// this would be bad -- but we're likely just going to explode elsewhere
+		vAssert( obj != NULL );	// this would be bad -- but we're likely just going to explode elsewhere
 		return menuHandle_t();
 	}
-	
+
 	obj->init( parms );
 
 	if ( index == ObjectList.length() )
@@ -461,7 +461,7 @@ menuHandle_t VRMenuMgrLocal::createObject( VRMenuObjectParms const & parms )
 	else
 	{
 		// insert in existing slot
-		OVR_ASSERT( ObjectList[index] == NULL );
+		vAssert( ObjectList[index] == NULL );
 		ObjectList[index ] = obj;
 	}
 
@@ -507,7 +507,7 @@ void VRMenuMgrLocal::freeObject( menuHandle_t const handle )
 	ObjectList[index] = NULL;
 	// add the index to the free list
 	FreeList.append( index );
-	
+
 	CondenseList();
 }
 
@@ -518,7 +518,7 @@ void VRMenuMgrLocal::CondenseList()
 {
 	// we can only condense the array if we have a significant number of items at the end of the array buffer
 	// that are empty (because we cannot move an existing object around without changing its handle, too, which
-	// would invalidate any existing references to it).  
+	// would invalidate any existing references to it).
 	// This is the difference between the current size and the array capacity.
 	int const MIN_FREE = 64;	// very arbitray number
     if ( ObjectList.capacity() - ObjectList.length() < MIN_FREE )
@@ -598,7 +598,7 @@ void VRMenuMgrLocal::beginFrame()
 /*
 static void LogBounds( const char * name, char const * prefix, VBoxf const & bounds )
 {
-	DROIDLOG( "Spam", "'%s' %s: min( %.2f, %.2f, %.2f ) - max( %.2f, %.2f, %.2f )", 
+	DROIDLOG( "Spam", "'%s' %s: min( %.2f, %.2f, %.2f ) - max( %.2f, %.2f, %.2f )",
 		name, prefix,
 		bounds.GetMins().x, bounds.GetMins().y, bounds.GetMins().z,
 		bounds.GetMaxs().x, bounds.GetMaxs().y, bounds.GetMaxs().z );
@@ -607,8 +607,8 @@ static void LogBounds( const char * name, char const * prefix, VBoxf const & bou
 
 //==============================
 // VRMenuMgrLocal::SubmitForRenderingRecursive
-void VRMenuMgrLocal::SubmitForRenderingRecursive( OvrDebugLines & debugLines, BitmapFont const & font, 
-        BitmapFontSurface & fontSurface, VRMenuRenderFlags_t const & flags, VRMenuObjectLocal const * obj, 
+void VRMenuMgrLocal::SubmitForRenderingRecursive( OvrDebugLines & debugLines, BitmapFont const & font,
+        BitmapFontSurface & fontSurface, VRMenuRenderFlags_t const & flags, VRMenuObjectLocal const * obj,
         VPosf const & parentModelPose, V4Vectf const & parentColor, V3Vectf const & parentScale,
         VBoxf & cullBounds, SubmittedMenuObject * submitted, int const maxIndices, int & curIndex,
 		int const distanceIndex ) const
@@ -638,7 +638,7 @@ void VRMenuMgrLocal::SubmitForRenderingRecursive( OvrDebugLines & debugLines, Bi
     V3Vectf const & localScale = obj->localScale();
     V3Vectf scale = parentScale.EntrywiseMultiply( localScale );
 
-	OVR_ASSERT( obj != NULL );
+	vAssert( obj != NULL );
 
 	int submissionIndex = -1;
 	VRMenuObjectFlags_t const oFlags = obj->flags();
@@ -668,11 +668,11 @@ void VRMenuMgrLocal::SubmitForRenderingRecursive( OvrDebugLines & debugLines, Bi
 		if ( ShowPoses )
 		{
             VR4Matrixf const poseMat( itemPose );
-			debugLines.AddLine( itemPose.Position, itemPose.Position + poseMat.GetXBasis() * 0.05f, 
+			debugLines.AddLine( itemPose.Position, itemPose.Position + poseMat.GetXBasis() * 0.05f,
                     V4Vectf( 0.0f, 1.0f, 0.0f, 1.0f ), V4Vectf( 0.0f, 1.0f, 0.0f, 1.0f ), 0, false );
-			debugLines.AddLine( itemPose.Position, itemPose.Position + poseMat.GetYBasis() * 0.05f, 
+			debugLines.AddLine( itemPose.Position, itemPose.Position + poseMat.GetYBasis() * 0.05f,
                     V4Vectf( 1.0f, 0.0f, 0.0f, 1.0f ), V4Vectf( 1.0f, 0.0f, 0.0f, 1.0f ), 0, false );
-			debugLines.AddLine( itemPose.Position, itemPose.Position + poseMat.GetZBasis() * 0.05f, 
+			debugLines.AddLine( itemPose.Position, itemPose.Position + poseMat.GetZBasis() * 0.05f,
                     V4Vectf( 0.0f, 0.0f, 1.0f, 1.0f ), V4Vectf( 0.0f, 0.0f, 1.0f, 1.0f ), 0, false );
 		}
 
@@ -729,7 +729,7 @@ void VRMenuMgrLocal::SubmitForRenderingRecursive( OvrDebugLines & debugLines, Bi
 			fontParms.ColorCenter = fp.ColorCenter;
 			fontParms.AlphaCenter = fp.AlphaCenter;
 
-			fontSurface.DrawText3D( font, fontParms, position, itemNormal, itemUp, 
+			fontSurface.DrawText3D( font, fontParms, position, itemNormal, itemUp,
                     textScale.x * fp.Scale, textColor, text);
 
 			if ( ShowDebugBounds )
@@ -773,7 +773,7 @@ void VRMenuMgrLocal::SubmitForRenderingRecursive( OvrDebugLines & debugLines, Bi
 		    }
 
             VBoxf childCullBounds;
-		    SubmitForRenderingRecursive( debugLines, font, fontSurface, flags, child, curModelPose, curColor, scale, 
+		    SubmitForRenderingRecursive( debugLines, font, fontSurface, flags, child, curModelPose, curColor, scale,
                     childCullBounds, submitted, maxIndices, curIndex, di );
 
             VPosf pose = child->localPose();
@@ -829,7 +829,7 @@ void VRMenuMgrLocal::SubmitForRenderingRecursive( OvrDebugLines & debugLines, Bi
         debugLines.AddLine( parentModelPose.Position, curModelPose.Position, V4Vectf( 1.0f, 0.0f, 0.0f, 1.0f ), V4Vectf( 0.0f, 0.0f, 1.0f, 1.0f ), 5, false );
 		if ( obj->surfaces().length() > 0 )
 		{
-			fontSurface.DrawTextBillboarded3D( font, fp, curModelPose.Position, 0.5f, 
+			fontSurface.DrawTextBillboarded3D( font, fp, curModelPose.Position, 0.5f,
                     V4Vectf( 0.8f, 0.8f, 0.8f, 1.0f ), obj->surfaces()[0].name().toCString() );
 		}
 	}
@@ -838,7 +838,7 @@ void VRMenuMgrLocal::SubmitForRenderingRecursive( OvrDebugLines & debugLines, Bi
 //==============================
 // VRMenuMgrLocal::SubmitForRendering
 // Submits the specified menu object and it's children
-void VRMenuMgrLocal::submitForRendering( OvrDebugLines & debugLines, BitmapFont const & font, 
+void VRMenuMgrLocal::submitForRendering( OvrDebugLines & debugLines, BitmapFont const & font,
         BitmapFontSurface & fontSurface, menuHandle_t const handle, VPosf const & worldPose,
         VRMenuRenderFlags_t const & flags )
 {
@@ -884,7 +884,7 @@ void VRMenuMgrLocal::finish( VR4Matrixf const & viewMatrix )
 		int64_t sortKey = *reinterpret_cast< unsigned const* >( &distSq );
 		SortKeys[i].Key = ( sortKey << 32ULL ) | ( NumSubmitted - i );	// invert i because we want items submitted sooner to be considered "further away"
 	}
-	
+
 	std::sort(SortKeys.begin(), SortKeys.end());
 
 }
@@ -921,7 +921,7 @@ void VRMenuMgrLocal::renderSubmitted( VR4Matrixf const & worldMVP, VR4Matrixf co
         LOG( "Surface '%s', sk = %llu, df = %.2f, idx = %i", Submitted[idx].SurfaceName.toCString(), SortKeys[i].Key, df, idx );
 #endif
 		SubmittedMenuObject const & cur = Submitted[idx];
-			
+
 		VRMenuObjectLocal const * obj = static_cast< VRMenuObjectLocal const * >( toObject( cur.handle ) );
 		if ( obj != NULL )
 		{
@@ -1005,11 +1005,11 @@ VGlShader const * VRMenuMgrLocal::getGUIGlProgram( eGUIProgramType const program
         case PROGRAM_ADDITIVE_ONLY:
             return &GUIProgramDiffuseOnly;
         case PROGRAM_DIFFUSE_PLUS_ADDITIVE:
-            return &GUIProgramDiffusePlusAdditive;	
+            return &GUIProgramDiffusePlusAdditive;
         case PROGRAM_DIFFUSE_COMPOSITE:
-            return &GUIProgramDiffuseComposite;	
+            return &GUIProgramDiffuseComposite;
         case PROGRAM_DIFFUSE_COLOR_RAMP:
-            return &GUIProgramDiffuseColorRamp;		
+            return &GUIProgramDiffuseColorRamp;
         case PROGRAM_DIFFUSE_COLOR_RAMP_TARGET:
             return &GUIProgramDiffuseColorRampTarget;
         default:

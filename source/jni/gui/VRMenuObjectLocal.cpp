@@ -52,7 +52,7 @@ bool VRMenuSurfaceTexture::loadTexture( eSurfaceTextureType const type, char con
 {
     free();
 
-	OVR_ASSERT( type >= 0 && type < SURFACE_TEXTURE_MAX );
+	vAssert( type >= 0 && type < SURFACE_TEXTURE_MAX );
 
 	m_type = type;
 
@@ -90,7 +90,7 @@ void VRMenuSurfaceTexture::loadTexture( eSurfaceTextureType const type, const GL
 {
 	free();
 
-	OVR_ASSERT( type >= 0 && type < SURFACE_TEXTURE_MAX );
+	vAssert( type >= 0 && type < SURFACE_TEXTURE_MAX );
 
 	m_type = type;
     m_ownsTexture = false;
@@ -127,7 +127,7 @@ void VRMenuSurfaceTexture::free()
 #if 0
 static void PrintBounds( const char * name, char const * prefix, VBoxf const & bounds )
 {
-	LOG( "'%s' %s: min( %.2f, %.2f, %.2f ) - max( %.2f, %.2f, %.2f )", 
+	LOG( "'%s' %s: min( %.2f, %.2f, %.2f ) - max( %.2f, %.2f, %.2f )",
 		name, prefix,
 		bounds.GetMins().x, bounds.GetMins().y, bounds.GetMins().z,
 		bounds.GetMaxs().x, bounds.GetMaxs().y, bounds.GetMaxs().z );
@@ -158,7 +158,7 @@ VRMenuSurface::~VRMenuSurface()
 // This creates a quad for mapping the texture.
 void VRMenuSurface::createImageGeometry( int const textureWidth, int const textureHeight, const V2Vectf &dims, const V4Vectf &border, ContentFlags_t const contents )
 {
-	//OVR_ASSERT( Geo.vertexBuffer == 0 && Geo.indexBuffer == 0 && Geo.vertexArrayObject == 0 );
+	//vAssert( Geo.vertexBuffer == 0 && Geo.indexBuffer == 0 && Geo.vertexArrayObject == 0 );
 
 	int vertsX = 0;
 	int vertsY = 0;
@@ -443,9 +443,9 @@ void VRMenuSurface::createFromSurfaceParms( VRMenuSurfaceParms const & parms )
 
 	// verify the input parms have a valid image name and texture type
 	bool isValid = false;
-	for ( int i = 0; i < VRMENUSURFACE_IMAGE_MAX; ++i )	
+	for ( int i = 0; i < VRMENUSURFACE_IMAGE_MAX; ++i )
 	{
-		if ( !parms.ImageNames[i].isEmpty() && 
+		if ( !parms.ImageNames[i].isEmpty() &&
             ( parms.TextureTypes[i] >= 0 && parms.TextureTypes[i] < SURFACE_TEXTURE_MAX ) )
 	    {
     		isValid = true;
@@ -606,7 +606,7 @@ bool VRMenuSurface::intersectRay( V3Vectf const & localStart, V3Vectf const & lo
 
 //==============================
 // VRMenuSurface::LoadTexture
-void VRMenuSurface::loadTexture( int const textureIndex, eSurfaceTextureType const type, 
+void VRMenuSurface::loadTexture( int const textureIndex, eSurfaceTextureType const type,
         const GLuint texId, const int width, const int height )
 {
     if ( textureIndex < 0 || textureIndex >= VRMENUSURFACE_IMAGE_MAX )
@@ -621,7 +621,7 @@ void VRMenuSurface::loadTexture( int const textureIndex, eSurfaceTextureType con
 // VRMenuSurface::GetAnchorOffsets
 V2Vectf VRMenuSurface::anchorOffsets() const {
     return V2Vectf( ( ( 1.0f - m_anchors.x ) - 0.5f ) * m_dims.x * VRMenuObject::DEFAULT_TEXEL_SCALE, // inverted so that 0.0 is left-aligned
-					 ( m_anchors.y - 0.5f ) * m_dims.y * VRMenuObject::DEFAULT_TEXEL_SCALE ); 
+					 ( m_anchors.y - 0.5f ) * m_dims.y * VRMenuObject::DEFAULT_TEXEL_SCALE );
 }
 
 void VRMenuSurface::setOwnership( int const index, bool const isOwner )
@@ -634,7 +634,7 @@ void VRMenuSurface::setOwnership( int const index, bool const isOwner )
 
 //==================================
 // VRMenuObjectLocal::VRMenuObjectLocal
-VRMenuObjectLocal::VRMenuObjectLocal( VRMenuObjectParms const & parms, 
+VRMenuObjectLocal::VRMenuObjectLocal( VRMenuObjectParms const & parms,
 		menuHandle_t const handle ) :
 	m_type( parms.Type ),
 	m_handle( handle ),
@@ -805,7 +805,7 @@ void VRMenuObjectLocal::frame( OvrVRMenuMgr & menuMgr, VR4Matrixf const & viewMa
 
 //==============================
 // IntersectRayBounds
-// Reports true if the hit was at or beyond start in the ray direction, 
+// Reports true if the hit was at or beyond start in the ray direction,
 // or if the start point was inside of the bounds.
 bool VRMenuObjectLocal::intersectRayBounds( V3Vectf const & start, V3Vectf const & dir,
         V3Vectf const & mins, V3Vectf const & maxs, ContentFlags_t const testContents, float & t0, float & t1 ) const
@@ -853,7 +853,7 @@ bool VRMenuObjectLocal::intersectRay( V3Vectf const & localStart, V3Vectf const 
 	{
 		m_collisionPrimitive->intersectRay( localStart, localDir, scale, testContents, result );
 	}
-	
+
 	// test vs. surfaces
 	if (  type() != VRMENU_CONTAINER )
 	{
@@ -881,7 +881,7 @@ bool VRMenuObjectLocal::intersectRay( V3Vectf const & localStart, V3Vectf const 
 
 //==============================
 // VRMenuObjectLocal::HitTest_r
-bool VRMenuObjectLocal:: hitTest_r( App * app, OvrVRMenuMgr & menuMgr, BitmapFont const & font, 
+bool VRMenuObjectLocal:: hitTest_r( App * app, OvrVRMenuMgr & menuMgr, BitmapFont const & font,
         VPosf const & parentPose, V3Vectf const & parentScale, V3Vectf const & rayStart, V3Vectf const & rayDir,
 		ContentFlags_t const testContents, HitTestResult & result ) const
 {
@@ -922,7 +922,7 @@ bool VRMenuObjectLocal:: hitTest_r( App * app, OvrVRMenuMgr & menuMgr, BitmapFon
 		// any contents will hit cull bounds
         ContentFlags_t allContents;
         allContents.setAll();
-	    bool hitCullBounds = intersectRayBounds( localStart, localDir, m_cullBounds.GetMins(), m_cullBounds.GetMaxs(), 
+	    bool hitCullBounds = intersectRayBounds( localStart, localDir, m_cullBounds.GetMins(), m_cullBounds.GetMaxs(),
 									allContents, cullT0, cullT1 );
 
 //        DROIDLOG( "Spam", "Cull hit = %s, t0 = %.2f t1 = %.2f", hitCullBounds ? "true" : "false", cullT0, cullT1 );
@@ -956,7 +956,7 @@ bool VRMenuObjectLocal:: hitTest_r( App * app, OvrVRMenuMgr & menuMgr, BitmapFon
 	        float selfT1;
 			OvrCollisionResult cresult;
             VBoxf const & localBounds = getTextLocalBounds( font ) * parentScale;
-            OVR_ASSERT( !localBounds.IsInverted() );
+            vAssert( !localBounds.IsInverted() );
 
 	        bool hit = intersectRay( localStart, localDir, parentScale, localBounds, selfT0, selfT1, testContents, cresult );
             if ( hit )
@@ -1056,7 +1056,7 @@ VBoxf VRMenuObjectLocal::getTextLocalBounds( BitmapFont const & font ) const
 
 	// after everything is calculated, expand (or contract) the bounds some custom amount
     bounds = VBoxf::Expand( bounds, m_minsBoundsExpand, m_maxsBoundsExpand );
-    
+
     return bounds;
 }
 
@@ -1080,7 +1080,7 @@ VBoxf VRMenuObjectLocal::setTextLocalBounds( BitmapFont const & font ) const
 			float lineWidths[MAX_LINES];
 			int numLines = 0;
 
-			font.CalcTextMetrics( m_text.toCString(), len, m_textMetrics.w, m_textMetrics.h, 
+			font.CalcTextMetrics( m_text.toCString(), len, m_textMetrics.w, m_textMetrics.h,
 					m_textMetrics.ascent, m_textMetrics.descent, m_textMetrics.fontHeight, lineWidths, MAX_LINES, numLines );
 		}
     }
@@ -1179,7 +1179,7 @@ void VRMenuObjectLocal::removeComponent( VRMenuComponent * component )
 	{
 		return;
 	}
-	// maintain order because components of the same handler type may be have intentionally 
+	// maintain order because components of the same handler type may be have intentionally
 	// been added in a specific order
 	m_components.removeAt( componentIndex );
 }
@@ -1187,7 +1187,7 @@ void VRMenuObjectLocal::removeComponent( VRMenuComponent * component )
 //==============================
 // VRMenuObjectLocal::GetComponentIndex
 int VRMenuObjectLocal::getComponentIndex( VRMenuComponent * component ) const
-{	
+{
 	for ( int i = 0; i < m_components.length(); ++i )
 	{
 		if ( m_components[i] == component )
@@ -1214,7 +1214,7 @@ VRMenuComponent * VRMenuObjectLocal::getComponentById_Impl( int id ) const
 		}
 		else
 		{
-			OVR_ASSERT( comp );
+			vAssert( comp );
 		}
 	}
 
@@ -1237,7 +1237,7 @@ VRMenuComponent * VRMenuObjectLocal::getComponentByName_Impl( const char * typeN
 		}
 		else
 		{
-			OVR_ASSERT( comp );
+			vAssert( comp );
 		}
 	}
 
@@ -1314,7 +1314,7 @@ menuHandle_t VRMenuObjectLocal::childHandleForId( OvrVRMenuMgr & menuMgr, VRMenu
 //==============================
 // VRMenuObjectLocal::GetLocalScale
 V3Vectf VRMenuObjectLocal::localScale() const
-{ 
+{
     return V3Vectf( m_localScale.x * m_hilightScale, m_localScale.y * m_hilightScale, m_localScale.z * m_hilightScale );
 }
 
@@ -1327,7 +1327,7 @@ V3Vectf VRMenuObjectLocal::textLocalScale() const
 
 //==============================
 // VRMenuObjectLocal::SetSurfaceTexture
-void  VRMenuObjectLocal::setSurfaceTexture( int const surfaceIndex, int const textureIndex, 
+void  VRMenuObjectLocal::setSurfaceTexture( int const surfaceIndex, int const textureIndex,
         eSurfaceTextureType const type, GLuint const texId, int const width, int const height )
 {
     if ( surfaceIndex < 0 || surfaceIndex >= m_surfaces.length() )

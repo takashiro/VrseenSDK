@@ -10,8 +10,11 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 ************************************************************************************/
 
 #include "ThreadCommandQueue.h"
+
 #include "VList.h"
 #include "VLock.h"
+#include "VLog.h"
+
 #include <new>
 #include <string.h>
 #include <malloc.h>
@@ -52,7 +55,7 @@ public:
     ~CircularBuffer()
     {
         // For ThreadCommands, we must consume everything before shutdown.
-        OVR_ASSERT(IsEmpty());
+        vAssert(IsEmpty());
         free(pBuffer);
     }
 
@@ -78,11 +81,11 @@ uchar* CircularBuffer::Write(uint size)
 
     size = roundUpSize(size);
     // Since this is circular buffer, always allow at least one item.
-    OVR_ASSERT(size < Size/2);
+    vAssert(size < Size/2);
 
     if (Head >= Tail)
     {
-        OVR_ASSERT(End == 0);
+        vAssert(End == 0);
 
         if (size <= (Size - Head))
         {
@@ -94,18 +97,18 @@ uchar* CircularBuffer::Write(uint size)
             p    = pBuffer;
             End  = Head;
             Head = size;
-            OVR_ASSERT(Head != Tail);
+            vAssert(Head != Tail);
         }
     }
     else
     {
-        OVR_ASSERT(End != 0);
+        vAssert(End != 0);
 
         if ((Tail - Head) > size)
         {
             p    = pBuffer + Head;
             Head += size;
-            OVR_ASSERT(Head != Tail);
+            vAssert(Head != Tail);
         }
     }
 
@@ -114,7 +117,7 @@ uchar* CircularBuffer::Write(uint size)
 
 void CircularBuffer::ReadEnd(uint size)
 {
-    OVR_ASSERT(Head != Tail);
+    vAssert(Head != Tail);
     size = roundUpSize(size);
 
     Tail += size;
@@ -124,7 +127,7 @@ void CircularBuffer::ReadEnd(uint size)
     }
     else if (Tail == Head)
     {
-        OVR_ASSERT(End == 0);
+        vAssert(End == 0);
         Tail = Head = 0;
     }
 }
@@ -142,7 +145,7 @@ ThreadCommand::PopBuffer::~PopBuffer()
 void ThreadCommand::PopBuffer::InitFromBuffer(void* data)
 {
     ThreadCommand* cmd = (ThreadCommand*)data;
-    OVR_ASSERT(cmd->Size <= MaxSize);
+    vAssert(cmd->Size <= MaxSize);
 
     if (Size)
         toCommand()->~ThreadCommand();
@@ -153,7 +156,7 @@ void ThreadCommand::PopBuffer::InitFromBuffer(void* data)
 void ThreadCommand::PopBuffer::Execute()
 {
     ThreadCommand* command = toCommand();
-    OVR_ASSERT(command);
+    vAssert(command);
     command->Execute();
     if (NeedsWait())
         GetEvent()->PulseEvent();
@@ -241,7 +244,7 @@ public:
 ThreadCommandQueueImpl::~ThreadCommandQueueImpl()
 {
     VLock::Locker lock(&QueueLock);
-    OVR_ASSERT(BlockedProducers.isEmpty());
+    vAssert(BlockedProducers.isEmpty());
     FreeNotifyEvents_NTS();
 }
 
