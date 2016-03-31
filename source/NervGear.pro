@@ -71,6 +71,9 @@ SOURCES += \
     jni/api/sensor/ThreadCommandQueue.cpp \
     jni/api/sensor/RefCount.cpp \
     jni/api/sensor/Log.cpp \
+    jni/gui/VText.cpp \
+    jni/gui/VDialog.cpp \
+    jni/gui/VPanel.cpp \
     jni/gui/VRMenuComponent.cpp \
     jni/gui/VRMenuMgr.cpp \
     jni/gui/VRMenuObjectLocal.cpp \
@@ -206,6 +209,9 @@ HEADERS += \
     jni/api/sensor/ThreadCommandQueue.h \
     jni/api/sensor/RefCount.h \
     jni/api/sensor/Log.h \
+    jni/gui/VText.h \
+    jni/gui/VDialog.h \
+    jni/gui/VPanel.h \
     jni/gui/VRMenuComponent.h \
     jni/gui/VRMenuMgr.h \
     jni/gui/VRMenuObjectLocal.h \
