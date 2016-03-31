@@ -19,7 +19,7 @@ bool VrLocale::GetString( JNIEnv* jni, jobject activityObject, char const * key,
         vWarn("vAssert ctivityObject = NULL!");
 	}
 
-	//LOG( "Localizing key '%s'", key );
+	//vInfo("Localizing key '" << key << "'");
 	// if the key doesn't start with KEY_PREFIX then it's not a valid key, just return
 	// the key itself as the output text.
 	if ( strstr( key, LOCALIZED_KEY_PREFIX ) != key )

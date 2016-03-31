@@ -181,7 +181,7 @@ float OvrTrailsAnimComponent::getAlphaForFrame( const int frame ) const
 
 void OvrTrailsAnimComponent::setFrameVisibilities( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self ) const
 {
-//	LOG( "FracFrame: %f", GetFractionalFrame() );
+//	vInfo("FracFrame:" << GetFractionalFrame());
 	for ( int i = 0; i < self->numChildren(); ++i )
 	{
 		menuHandle_t childHandle = self->getChildHandleForIndex( i );

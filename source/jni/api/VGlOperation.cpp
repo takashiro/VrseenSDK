@@ -53,7 +53,7 @@ EGLConfig VGlOperation::eglConfigForConfigID(const EGLDisplay display, const GLi
                                    configs,
                                    MAX_CONFIGS,
                                    &numConfigs)) {
-        //WARN("eglGetConfigs() failed");
+        //vWarn("eglGetConfigs() failed");
         return NULL;
     }
 
@@ -166,7 +166,7 @@ void * VGlOperation::getExtensionProc( const char * name )
 {
     void * ptr = reinterpret_cast<void*>(eglGetProcAddress(name));
     if (!ptr) {
-        //LOG("NOT FOUND: %s", name);
+        //vInfo("NOT FOUND:" << name);
     }
     return ptr;
 }
@@ -175,7 +175,7 @@ void VGlOperation::logExtensions()
 {
     const char * extensions = (const char *)glGetString( GL_EXTENSIONS );
     if (NULL == extensions) {
-        //LOG("glGetString( GL_EXTENSIONS ) returned NULL");
+        //vInfo("glGetString( GL_EXTENSIONS ) returned NULL");
         return;
     }
 
@@ -184,28 +184,28 @@ void VGlOperation::logExtensions()
 
 
 //    const bool es3 = (strncmp((const char *)glGetString(GL_VERSION), "OpenGL ES 3", 11) == 0);
-    //LOG("es3 = %s", es3 ? "TRUE" : "FALSE");
+    //vInfo("es3 =" << es3 ? "TRUE" : "FALSE");
 
     GLint MaxTextureSize = 0;
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &MaxTextureSize);
-    //LOG("GL_MAX_TEXTURE_SIZE = %d", MaxTextureSize);
+    //vInfo("GL_MAX_TEXTURE_SIZE =" << MaxTextureSize);
 
     GLint MaxVertexUniformVectors = 0;
     glGetIntegerv(GL_MAX_VERTEX_UNIFORM_VECTORS, &MaxVertexUniformVectors);
-    //LOG("GL_MAX_VERTEX_UNIFORM_VECTORS = %d", MaxVertexUniformVectors);
+    //vInfo("GL_MAX_VERTEX_UNIFORM_VECTORS =" << MaxVertexUniformVectors);
 
     GLint MaxFragmentUniformVectors = 0;
     glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_VECTORS, &MaxFragmentUniformVectors);
-    //LOG("GL_MAX_FRAGMENT_UNIFORM_VECTORS = %d", MaxFragmentUniformVectors);
+    //vInfo("GL_MAX_FRAGMENT_UNIFORM_VECTORS =" << MaxFragmentUniformVectors);
 }
 
 bool VGlOperation::glIsExtensionString(const char *extension, const char *allExtensions)
 {
     if (strstr(allExtensions, extension)) {
-        //LOG( "Found: %s", extension );
+        //vInfo("Found:" << extension);
         return true;
     } else {
-        //LOG("Not found: %s", extension);
+        //vInfo("Not found:" << extension);
         return false;
     }
 }
@@ -214,11 +214,11 @@ void VGlOperation::glFinish()
 {
     const EGLint wait = glWaitforFlush(100000000);
     if (wait == EGL_TIMEOUT_EXPIRED_KHR) {
-        //LOG("EGL_TIMEOUT_EXPIRED_KHR");
+        //vInfo("EGL_TIMEOUT_EXPIRED_KHR");
     }
 
     if ( wait == EGL_FALSE ) {
-        //LOG("eglClientWaitSyncKHR returned EGL_FALSE");
+        //vInfo("eglClientWaitSyncKHR returned EGL_FALSE");
     }
 }
 
@@ -226,7 +226,7 @@ void VGlOperation::glFlush()
 {
     const EGLint wait = glWaitforFlush(0);
     if (wait == EGL_FALSE) {
-        //LOG("eglClientWaitSyncKHR returned EGL_FALSE");
+        //vInfo("eglClientWaitSyncKHR returned EGL_FALSE");
     }
 }
 
@@ -255,7 +255,7 @@ EGLConfig VGlOperation::chooseColorConfig( const EGLDisplay display, const int r
         vWarn("eglGetConfigs() failed");
         return NULL;
     }
-    //LOG("eglGetConfigs() = %i configs", numConfigs);
+    //vInfo("eglGetConfigs() =" << numConfigs << "configs");
 
     const EGLint configAttribs[] = {
         EGL_BLUE_SIZE,  	blueBits,
@@ -295,7 +295,7 @@ EGLConfig VGlOperation::chooseColorConfig( const EGLDisplay display, const int r
                 }
             }
             if (configAttribs[j] == EGL_NONE) {
-                //LOG("Got an ES %i renderable config: %i", esVersion, (int)configs[i]);
+                //vInfo("Got an ES" << esVersion << "renderable config:" << (int)configs[i]);
                 return configs[i];
             }
         }
@@ -338,12 +338,12 @@ void VGlOperation::eglInit( const EGLContext shareContext,
 
         context = eglCreateContext(display, config, shareContext, contextAttribs);
         if (context != EGL_NO_CONTEXT) {
-            //LOG("Succeeded.");
+            //vInfo("Succeeded.");
             glEsVersion = version;
 
             EGLint configIDReadback;
             if (!eglQueryContext(display, context, EGL_CONFIG_ID, &configIDReadback)) {
-                //WARN("eglQueryContext EGL_CONFIG_ID failed");
+                //vWarn("eglQueryContext EGL_CONFIG_ID failed");
             }
             break;
         }
@@ -357,13 +357,13 @@ void VGlOperation::eglInit( const EGLContext shareContext,
         EGLint actualPriorityLevel;
         eglQueryContext(display, context, EGL_CONTEXT_PRIORITY_LEVEL_IMG, &actualPriorityLevel);
         switch (actualPriorityLevel) {
-        case EGL_CONTEXT_PRIORITY_HIGH_IMG: //LOG( "Context is EGL_CONTEXT_PRIORITY_HIGH_IMG" );
+        case EGL_CONTEXT_PRIORITY_HIGH_IMG: //vInfo("Context is EGL_CONTEXT_PRIORITY_HIGH_IMG");
             break;
-        case EGL_CONTEXT_PRIORITY_MEDIUM_IMG: //LOG( "Context is EGL_CONTEXT_PRIORITY_MEDIUM_IMG" );
+        case EGL_CONTEXT_PRIORITY_MEDIUM_IMG: //vInfo("Context is EGL_CONTEXT_PRIORITY_MEDIUM_IMG");
             break;
-        case EGL_CONTEXT_PRIORITY_LOW_IMG: //LOG( "Context is EGL_CONTEXT_PRIORITY_LOW_IMG" );
+        case EGL_CONTEXT_PRIORITY_LOW_IMG: //vInfo("Context is EGL_CONTEXT_PRIORITY_LOW_IMG");
             break;
-        default: //LOG( "Context has unknown priority level" );
+        default: //vInfo("Context has unknown priority level");
             break;
         }
     }

@@ -165,7 +165,7 @@ static VR4Matrixf PanelMatrix(const VR4Matrixf & lastViewMatrix, const float pop
             xScale * right.z, yScale * up.z, forward.z, center.z,
             0, 0, 0, 1);
 
-//	LOG("PanelMatrix center: %f %f %f", center.x, center.y, center.z);
+//	vInfo("PanelMatrix center:" << center.xcenter.ycenter.z);
 //	LogMatrix("PanelMatrix", panelMatrix);
 
     return panelMatrix;
@@ -832,7 +832,7 @@ struct App::Private
                         nativeWindow, attribs2);
                 if (windowSurface == EGL_NO_SURFACE)
                 {
-                    FAIL("eglCreateWindowSurface failed: %s", glOperation.getEglErrorString());
+                    vFatal("eglCreateWindowSurface failed:" << glOperation.getEglErrorString());
                 }
                 framebufferIsSrgb = false;
                 framebufferIsProtected = false;
@@ -897,7 +897,7 @@ struct App::Private
         }
 
         if (event.name == "resume") {
-            LOG("resume");
+            vInfo("resume");
             paused = false;
             // Don't actually do the resume operations if we don't have
             // a window yet.  They will be done when the window is created.
@@ -990,7 +990,7 @@ struct App::Private
             const jint rtn = javaVM->AttachCurrentThread(&vrJni, 0);
             if (rtn != JNI_OK)
             {
-                FAIL("javaVM->AttachCurrentThread returned %i", rtn);
+                vFatal("javaVM->AttachCurrentThread returned" << rtn);
             }
 
             // Set up another thread for making longer-running java calls
@@ -1070,7 +1070,7 @@ struct App::Private
                 {
                     if (status != VRAPI_EVENT_CONSUMED)
                     {
-                        WARN("Error %i handing System Activities Event", status);
+                        vWarn("Error" << status << "handing System Activities Event");
                     }
                     continue;
                 }
@@ -1099,7 +1099,7 @@ struct App::Private
                 else
                 {
                     // a malformed event string was pushed! This implies an error in the native code somewhere.
-                    WARN("Error parsing System Activities Event: %s");
+                    vWarn("Error parsing System Activities Event:");
                 }
             }
 
@@ -1214,7 +1214,7 @@ struct App::Private
             KeyState::eKeyEventType event = backKeyState.Update(ovr_GetTimeInSeconds());
             if (event != KeyState::KEY_EVENT_NONE)
             {
-                //LOG("BackKey: event %s", KeyState::EventNames[ event ]);
+                //vInfo("BackKey: event" << KeyState::EventNames[ event ]);
                 // always allow the gaze cursor to peek at the event so it can start the gaze timer if necessary
                 // update the gaze cursor timer
                 if (event == KeyState::KEY_EVENT_DOWN)
@@ -1245,7 +1245,7 @@ struct App::Private
                     if (event == KeyState::KEY_EVENT_SHORT_PRESS)
                     {
                         consumedKey = true;
-                        LOG("BUTTON_BACK: confirming quit in platformUI");
+                        vInfo("BUTTON_BACK: confirming quit in platformUI");
                         kernel->destroy(EXIT_TYPE_FINISH);
                     }
                 }
@@ -1399,7 +1399,6 @@ struct App::Private
         // the back key is special because it has to handle long-press and double-tap
         if (keyCode == AKEYCODE_BACK)
         {
-            //DROIDLOG("BackKey", "BACK KEY PRESSED");
             // back key events, because of special handling for double-tap, short-press and long-press,
             // are handled in AppLocal::VrThreadFunction.
             backKeyState.HandleEvent(ovr_GetTimeInSeconds(), down, repeatCount);

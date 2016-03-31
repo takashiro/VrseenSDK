@@ -9,9 +9,8 @@
 #include <sstream>
 #include <math.h>
 
-#include <VLog.h>
-
-#include "api/VGlOperation.h"
+#include "VLog.h"
+#include "VGlOperation.h"
 #include "android/JniUtils.h"
 #include "android/VOsBuild.h"
 
@@ -85,7 +84,7 @@ void ovr_InitSensors()
 
     if ( OvrHmdState == NULL )
     {
-        FAIL( "failed to create HMD device" );
+        vFatal("failed to create HMD device");
     }
 
     // Start the sensor running
@@ -298,7 +297,7 @@ void Java_com_vrseen_nervgear_VrLib_nativeVsync( JNIEnv *jni, jclass clazz, jlon
 
 JNIEXPORT jint JNI_OnLoad( JavaVM * vm, void * reserved )
 {
-LOG( "JNI_OnLoad" );
+vInfo("JNI_OnLoad");
 
 // Lookup our classnames
 ovr_OnLoad( vm );
@@ -311,7 +310,7 @@ return JNI_VERSION_1_6;
 
 JNIEXPORT void Java_com_vrseen_nervgear_VrLib_nativeVolumeEvent(JNIEnv *jni, jclass clazz, jint volume)
 {
-    LOG( "nativeVolumeEvent(%i)", volume );
+    vInfo("nativeVolumeEvent(" << volume << ")");
 
     CurrentVolume.setState( volume );
     double now = ovr_GetTimeInSeconds();
@@ -321,26 +320,26 @@ JNIEXPORT void Java_com_vrseen_nervgear_VrLib_nativeVolumeEvent(JNIEnv *jni, jcl
 
 JNIEXPORT void Java_com_vrseen_nervgear_VrLib_nativeHeadsetEvent(JNIEnv *jni, jclass clazz, jint state)
 {
-    LOG( "nativeHeadsetEvent(%i)", state );
+    vInfo("nativeHeadsetEvent(" << state << ")");
     HeadsetPluggedState.setState( ( state == 1 ) );
 }
 
 JNIEXPORT void Java_com_vrseen_nervgear_ProximityReceiver_nativeMountHandled(JNIEnv *jni, jclass clazz)
 {
-    LOG( "Java_com_vrseen_nervgear_VrLib_nativeMountEventHandled" );
+    vInfo("Java_com_vrseen_nervgear_VrLib_nativeMountEventHandled");
 
     // If we're received this, the foreground app has already received
     // and processed the mount event.
     if ( HMTMountState.state().MountState == HMT_MOUNT_MOUNTED )
     {
-        LOG( "RESETTING MOUNT" );
+        vInfo("RESETTING MOUNT");
         HMTMountState.setState( HMTMountState_t( HMT_MOUNT_NONE ) );
     }
 }
 
 JNIEXPORT void Java_com_vrseen_nervgear_ProximityReceiver_nativeProximitySensor(JNIEnv *jni, jclass clazz, jint state)
 {
-    LOG( "nativeProximitySensor(%i)", state );
+    vInfo("nativeProximitySensor(" << state << ")");
     if ( state == 0 )
     {
         HMTMountState.setState( HMTMountState_t( HMT_MOUNT_UNMOUNTED ) );
@@ -353,7 +352,7 @@ JNIEXPORT void Java_com_vrseen_nervgear_ProximityReceiver_nativeProximitySensor(
 
 JNIEXPORT void Java_com_vrseen_nervgear_DockReceiver_nativeDockEvent(JNIEnv *jni, jclass clazz, jint state)
 {
-    LOG( "nativeDockEvent = %s", ( state == 0 ) ? "UNDOCKED" : "DOCKED" );
+    vInfo("nativeDockEvent =" << ((state == 0) ? "UNDOCKED" : "DOCKED"));
 
     DockState.setState( state != 0 );
 
@@ -374,7 +373,7 @@ JNIEXPORT void Java_com_vrseen_nervgear_DockReceiver_nativeDockEvent(JNIEnv *jni
         HMTDockState_t dockState = HMTDockState.state();
         if ( dockState.DockState == HMT_DOCK_UNDOCKED )
         {
-            LOG( "CLEARING UNDOCKED!!!!" );
+            vInfo("CLEARING UNDOCKED!!!!");
         }
         HMTDockState.setState( HMTDockState_t( HMT_DOCK_DOCKED ) );
     }
@@ -403,16 +402,16 @@ double ovr_GetTimeInSeconds()
 // by supporting VR.
 void ovr_OnLoad( JavaVM * JavaVm_ )
 {
-    LOG( "ovr_OnLoad()" );
+    vInfo("ovr_OnLoad()");
 
     if ( JavaVm_ == NULL )
     {
-        FAIL( "JavaVm == NULL" );
+        vFatal("JavaVm == NULL");
     }
     if ( VrLibJavaVM != NULL )
     {
         // Should we silently return instead?
-        FAIL( "ovr_OnLoad() called twice" );
+        vFatal("ovr_OnLoad() called twice");
     }
 
     VrLibJavaVM = JavaVm_;
@@ -422,18 +421,18 @@ void ovr_OnLoad( JavaVM * JavaVm_ )
     bool privateEnv = false;
     if ( JNI_OK != VrLibJavaVM->GetEnv( reinterpret_cast<void**>(&jni), JNI_VERSION_1_6 ) )
     {
-        LOG( "Creating temporary JNIEnv" );
+        vInfo("Creating temporary JNIEnv");
         // We will detach after we are done
         privateEnv = true;
         const jint rtn = VrLibJavaVM->AttachCurrentThread( &jni, 0 );
         if ( rtn != JNI_OK )
         {
-            FAIL( "AttachCurrentThread returned %i", rtn );
+            vFatal("AttachCurrentThread returned" << rtn);
         }
     }
     else
     {
-        LOG( "Using caller's JNIEnv" );
+        vInfo("Using caller's JNIEnv");
     }
 
     VrLibClass = JniUtils::GetGlobalClassReference( jni, "com/vrseen/nervgear/VrLib" );
@@ -448,7 +447,7 @@ void ovr_OnLoad( JavaVM * JavaVm_ )
         if ( sdkIntFieldID != 0 )
         {
             BuildVersionSDK = jni->GetStaticIntField( versionClass, sdkIntFieldID );
-            LOG( "BuildVersionSDK %d", BuildVersionSDK );
+            vInfo("BuildVersionSDK" << BuildVersionSDK);
         }
         jni->DeleteLocalRef( versionClass );
     }
@@ -476,14 +475,14 @@ void ovr_OnLoad( JavaVM * JavaVm_ )
     {
         if ( JNI_OK != jni->RegisterNatives( gMethods[i].Clazz, &gMethods[i].Jnim, 1 ) )
         {
-            FAIL( "RegisterNatives failed on %s", gMethods[i].Jnim.name, 1 );
+            vFatal("RegisterNatives failed on" << gMethods[i].Jnim.name);
         }
     }
 
     // Detach if the caller wasn't already attached
     if ( privateEnv )
     {
-        LOG( "Freeing temporary JNIEnv" );
+        vInfo("Freeing temporary JNIEnv");
         VrLibJavaVM->DetachCurrentThread();
     }
 }
@@ -493,7 +492,7 @@ void ovr_OnLoad( JavaVM * JavaVm_ )
 // plugin event to avoid starting the device manager.
 void ovr_Init()
 {
-    LOG( "ovr_Init" );
+    vInfo("ovr_Init");
 
     // initialize Oculus code
     ovr_InitializeInternal();
@@ -502,7 +501,7 @@ void ovr_Init()
     const jint rtn = VrLibJavaVM->AttachCurrentThread( &jni, 0 );
     if ( rtn != JNI_OK )
     {
-        FAIL( "AttachCurrentThread returned %i", rtn );
+        vFatal("AttachCurrentThread returned" << rtn);
     }
 
     // After ovr_Initialize(), because it uses String
@@ -557,7 +556,7 @@ double ovr_GetTimeSinceLastVolumeChange()
     double value = TimeOfLastVolumeChange.state().Value;
     if ( value == -1 )
     {
-        //LOG( "ovr_GetTimeSinceLastVolumeChange() : Not initialized.  Returning -1" );
+        //vInfo("ovr_GetTimeSinceLastVolumeChange() : Not initialized.  Returning -1");
         return -1;
     }
     return ovr_GetTimeInSeconds() - value;
@@ -579,14 +578,14 @@ eVrApiEventStatus ovr_nextPendingEvent( VString& buffer, unsigned int const buff
         if (command == SYSTEM_ACTIVITY_EVENT_REORIENT) {
             // for reorient, we recenter yaw natively, then pass the event along so that the client
             // application can also handle the event (for instance, to reposition menus)
-            LOG( "Queuing internal reorient event." );
+            vInfo("Queuing internal reorient event.");
             ovr_RecenterYawInternal();
             // also queue as an internal event
             NervGear::VSystemActivities::instance()->addInternalEvent( buffer );
         } else if (command == SYSTEM_ACTIVITY_EVENT_RETURN_TO_LAUNCHER) {
             // In the case of the returnToLauncher event, we always handler it internally and pass
             // along an empty buffer so that any remaining events still get processed by the client.
-            LOG( "Queuing internal returnToLauncher event." );
+            vInfo("Queuing internal returnToLauncher event.");
             // queue as an internal event
             NervGear::VSystemActivities::instance()->addInternalEvent( buffer );
             // treat as an empty event externally
@@ -597,7 +596,7 @@ eVrApiEventStatus ovr_nextPendingEvent( VString& buffer, unsigned int const buff
     else
     {
         // a malformed event string was pushed! This implies an error in the native code somewhere.
-        WARN( "Error parsing System Activities Event");
+        vWarn("Error parsing System Activities Event");
         return VRAPI_EVENT_INVALID_JSON;
     }
     return status;
@@ -629,14 +628,14 @@ void UpdateHmdInfo()
         jmethodID getDisplayWidth = Jni->GetStaticMethodID( VrLibClass, "getDisplayWidth", "(Landroid/app/Activity;)F" );
         if ( !getDisplayWidth )
         {
-            FAIL( "couldn't get getDisplayWidth" );
+            vFatal("couldn't get getDisplayWidth");
         }
         instance->device->widthbyMeters = Jni->CallStaticFloatMethod(VrLibClass, getDisplayWidth, ActivityObject);
 
         jmethodID getDisplayHeight = Jni->GetStaticMethodID( VrLibClass, "getDisplayHeight", "(Landroid/app/Activity;)F" );
         if ( !getDisplayHeight )
         {
-            FAIL( "couldn't get getDisplayHeight" );
+            vFatal("couldn't get getDisplayHeight");
         }
         instance->device->heightbyMeters = Jni->CallStaticFloatMethod( VrLibClass, getDisplayHeight, ActivityObject );
     }
@@ -645,15 +644,15 @@ void UpdateHmdInfo()
     instance->device->widthbyPixels = windowSurfaceWidth;
     instance->device->heightbyPixels = windowSurfaceHeight;
 
-    LOG( "hmdInfo.lensSeparation = %f", instance->device->lensDistance );
-    LOG( "hmdInfo.widthMeters = %f", instance->device->widthbyMeters );
-    LOG( "hmdInfo.heightMeters = %f", instance->device->heightbyMeters );
-    LOG( "hmdInfo.widthPixels = %i", instance->device->widthbyPixels );
-    LOG( "hmdInfo.heightPixels = %i", instance->device->heightbyPixels );
-    LOG( "hmdInfo.eyeTextureResolution[0] = %i", instance->device->eyeDisplayResolution[0] );
-    LOG( "hmdInfo.eyeTextureResolution[1] = %i", instance->device->eyeDisplayResolution[1] );
-    LOG( "hmdInfo.eyeTextureFov[0] = %f", instance->device->eyeDisplayFov[0] );
-    LOG( "hmdInfo.eyeTextureFov[1] = %f", instance->device->eyeDisplayFov[1] );
+    vInfo("hmdInfo.lensSeparation =" << instance->device->lensDistance);
+    vInfo("hmdInfo.widthMeters =" << instance->device->widthbyMeters);
+    vInfo("hmdInfo.heightMeters =" << instance->device->heightbyMeters);
+    vInfo("hmdInfo.widthPixels =" << instance->device->widthbyPixels);
+    vInfo("hmdInfo.heightPixels =" << instance->device->heightbyPixels);
+    vInfo("hmdInfo.eyeTextureResolution[0] =" << instance->device->eyeDisplayResolution[0]);
+    vInfo("hmdInfo.eyeTextureResolution[1] =" << instance->device->eyeDisplayResolution[1]);
+    vInfo("hmdInfo.eyeTextureFov[0] =" << instance->device->eyeDisplayFov[0]);
+    vInfo("hmdInfo.eyeTextureFov[1] =" << instance->device->eyeDisplayFov[1]);
 }
 
 
@@ -661,7 +660,7 @@ void VKernel::run()
 {
     if(isRunning) return;
 
-    LOG( "---------- VKernel run ----------" );
+    vInfo("---------- VKernel run ----------");
 #if defined( OVR_BUILD_DEBUG )
     char const * buildConfig = "DEBUG";
 #else
@@ -673,7 +672,7 @@ void VKernel::run()
     const jint rtn = VrLibJavaVM->AttachCurrentThread( &Jni, 0 );
     if ( rtn != JNI_OK )
     {
-        FAIL( "AttachCurrentThread returned %i", rtn );
+        vFatal("AttachCurrentThread returned" << rtn);
     }
 
     // log the application name, version, activity, build, model, etc.
@@ -691,18 +690,18 @@ void VKernel::run()
 
     vInfo("BUILD =" << VOsBuild::getString(VOsBuild::Display) << buildConfig);
     vInfo("MODEL =" << VOsBuild::getString(VOsBuild::Model));
-    LOG( "OVR_VERSION = %s", ovr_GetVersionString() );
+    vInfo("OVR_VERSION =" << ovr_GetVersionString());
 
     isRunning = true;
 
     ovrSensorState state = ovr_GetSensorStateInternal( ovr_GetTimeInSeconds() );
     if ( state.Status & ovrStatus_OrientationTracked )
     {
-        LOG( "HMD sensor attached.");
+        vInfo("HMD sensor attached.");
     }
     else
     {
-        WARN( "Operating without a sensor.");
+        vWarn("Operating without a sensor.");
     }
 
     // Let GlUtils look up extensions
@@ -716,7 +715,7 @@ void VKernel::run()
         EGLSurface surface = eglGetCurrentSurface( EGL_DRAW );
         eglQuerySurface( display, surface, EGL_WIDTH, &windowSurfaceWidth );
         eglQuerySurface( display, surface, EGL_HEIGHT, &windowSurfaceHeight );
-        LOG( "Window Surface Size: [%dx%d]", windowSurfaceWidth, windowSurfaceHeight );
+        vInfo("Window Surface Size: [" << windowSurfaceWidth << windowSurfaceHeight << "]");
     }
 
     // Based on sensor ID and platform, determine the HMD
@@ -748,7 +747,7 @@ void VKernel::run()
     if ( Jni->ExceptionOccurred() )
     {
         Jni->ExceptionClear();
-        LOG( "Cleared JNI exception" );
+        vInfo("Cleared JNI exception");
     }
 
     frameSmooth = new VFrameSmooth(asyncSmooth,device);
@@ -762,11 +761,11 @@ void VKernel::run()
 
 void VKernel::exit()
 {
-    LOG( "---------- VKernel Exit ----------" );
+    vInfo("---------- VKernel Exit ----------");
 
     if (!isRunning)
     {
-        WARN( "Skipping ovr_LeaveVrMode: ovr already Destroyed" );
+        vWarn("Skipping ovr_LeaveVrMode: ovr already Destroyed");
         return;
     }
 
@@ -811,11 +810,11 @@ void VKernel::destroy(eExitType exitType)
         if ( Jni->ExceptionOccurred() )
         {
             Jni->ExceptionClear();
-            LOG("Cleared JNI exception");
+            vInfo("Cleared JNI exception");
         }
-        LOG( "Calling activity.finishOnUiThread()" );
+        vInfo("Calling activity.finishOnUiThread()");
         Jni->CallStaticVoidMethod( VrLibClass, mid, *static_cast< jobject* >( &ActivityObject ) );
-        LOG( "Returned from activity.finishOnUiThread()" );
+        vInfo("Returned from activity.finishOnUiThread()");
     }
     else if ( exitType == EXIT_TYPE_FINISH_AFFINITY )
     {
@@ -828,15 +827,15 @@ void VKernel::destroy(eExitType exitType)
         if ( Jni->ExceptionOccurred() )
         {
             Jni->ExceptionClear();
-            LOG("Cleared JNI exception");
+            vInfo("Cleared JNI exception");
         }
-        LOG( "Calling activity.finishAffinityOnUiThread()" );
+        vInfo("Calling activity.finishAffinityOnUiThread()");
         Jni->CallStaticVoidMethod( VrLibClass, mid, *static_cast< jobject* >( &ActivityObject ) );
-        LOG( "Returned from activity.finishAffinityOnUiThread()" );
+        vInfo("Returned from activity.finishAffinityOnUiThread()");
     }
     else if ( exitType == EXIT_TYPE_EXIT )
     {
-        LOG( "Calling exitType EXIT_TYPE_EXIT" );
+        vInfo("Calling exitType EXIT_TYPE_EXIT");
         NervGear::VSystemActivities::instance()->shutdownEventQueues();
         ovr_Shutdown();
         delete  instance;
@@ -850,7 +849,7 @@ static  void ovr_HandleHmdEvents()
     HMTDockState_t dockState = HMTDockState.state();
     if ( dockState.DockState == HMT_DOCK_UNDOCKED )
     {
-        LOG( "ovr_HandleHmdEvents::Hmt was disconnected" );
+        vInfo("ovr_HandleHmdEvents::Hmt was disconnected");
 
         // reset the sensor info
         if ( OvrHmdState != NULL )
@@ -877,11 +876,11 @@ static  void ovr_HandleHmdEvents()
         {
             if ( hmtIsMounted )
             {
-                LOG( "ovr_HandleHmtEvents: HMT is already mounted" );
+                vInfo("ovr_HandleHmtEvents: HMT is already mounted");
             }
             else
             {
-                LOG( "ovr_HandleHmdEvents: HMT was mounted" );
+                vInfo("ovr_HandleHmdEvents: HMT was mounted");
                 hmtIsMounted = true;
 
                 // broadcast to background apps that mount has been handled
@@ -897,7 +896,7 @@ static  void ovr_HandleHmdEvents()
         }
         else if ( mountState.MountState == HMT_MOUNT_UNMOUNTED )
         {
-            LOG( "ovr_HandleHmdEvents: HMT was UNmounted" );
+            vInfo("ovr_HandleHmdEvents: HMT was UNmounted");
 
             hmtIsMounted = false;
         }
@@ -920,7 +919,7 @@ void VKernel::ovr_HandleDeviceStateChanges()
     {
         if ( status != VRAPI_EVENT_PENDING )
         {
-            WARN( "Error %i handing internal System Activities Event", status );
+            vWarn("Error" << status << "handing internal System Activities Event");
             continue;
         }
 
@@ -933,14 +932,14 @@ void VKernel::ovr_HandleDeviceStateChanges()
             {
                 // for reorient, we recenter yaw natively, then pass the event along so that the client
                 // application can also handle the event (for instance, to reposition menus)
-                LOG( "ovr_HandleDeviceStateChanges: Acting on System Activity reorient event." );
+                vInfo("ovr_HandleDeviceStateChanges: Acting on System Activity reorient event.");
                 ovr_RecenterYawInternal();
             }
             else if (command == SYSTEM_ACTIVITY_EVENT_RETURN_TO_LAUNCHER && platformUIVersion < 2 )
             {
                 // In the case of the returnToLauncher event, we always handler it internally and pass
                 // along an empty buffer so that any remaining events still get processed by the client.
-                LOG( "ovr_HandleDeviceStateChanges: Acting on System Activity returnToLauncher event." );
+                vInfo("ovr_HandleDeviceStateChanges: Acting on System Activity returnToLauncher event.");
                 // PlatformActivity and Home should NEVER get one of these!
                 instance->destroy(EXIT_TYPE_FINISH_AFFINITY);
             }
@@ -948,7 +947,7 @@ void VKernel::ovr_HandleDeviceStateChanges()
         else
         {
             // a malformed event string was pushed! This implies an error in the native code somewhere.
-            WARN( "Error parsing System Activities Event");
+            vWarn("Error parsing System Activities Event");
         }
     }
 }
