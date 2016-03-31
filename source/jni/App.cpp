@@ -498,9 +498,9 @@ struct App::Private
         vrParms = DefaultVrParmsForRenderer(glOperation);
 
 
-          swapParms.WarpProgram = ChromaticAberrationCorrection(glOperation) ? WP_CHROMATIC : WP_SIMPLE;
+         // swapParms.WarpProgram = ChromaticAberrationCorrection(glOperation) ? WP_CHROMATIC : WP_SIMPLE;
 
-
+          kernel->setSmoothProgram(ChromaticAberrationCorrection(glOperation) ? WP_CHROMATIC : WP_SIMPLE);
         glOperation.logExtensions();
 
         externalTextureProgram2.initShader( VGlShader::getAdditionalVertexShaderSource(), VGlShader::getAdditionalFragmentShaderSource() );
@@ -2251,9 +2251,9 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
             d->swapParms.Images[eye][0].TexId = eyes.Textures[d->renderMonoMode ? 0 : eye ];
             d->swapParms.Images[eye][0].Pose = d->sensorForNextWarp.Predicted;
 
-           //d->kernel->m_images[eye][0].TexCoordsFromTanAngles = TanAngleMatrixFromFov( fovDegrees );
+           d->kernel->m_images[eye][0].TexCoordsFromTanAngles = TanAngleMatrixFromFov( fovDegrees );
            d->kernel->m_images[eye][0].TexId = eyes.Textures[d->renderMonoMode ? 0 : eye ];
-          // d->kernel->m_images[eye][0].Pose = d->sensorForNextWarp.Predicted;
+           d->kernel->m_images[eye][0].Pose = d->sensorForNextWarp.Predicted;
            d->kernel->m_smoothProgram = ChromaticAberrationCorrection(glOperation) ? WP_CHROMATIC : WP_SIMPLE;
         }
 
