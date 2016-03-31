@@ -318,8 +318,7 @@ void EyeBuffers::BeginFrame( const EyeParms & bufferParms_ )
         // the following frame if we had to fall back for some reason.
         buffers.BufferParms = bufferParms_;
 
-        LOG( "Allocate FBO: res=%i color=%i depth=%i", bufferParms_.resolution,
-                bufferParms_.colorFormat, bufferParms_.depthFormat );
+        vInfo("Allocate FBO: res=" << bufferParms_.resolution << " color=" << bufferParms_.colorFormat << " depth=" << bufferParms_.depthFormat);
         if ( bufferParms_.multisamples > 1 ) {
             buffers.MultisampleMode = MSAA_RENDER_TO_TEXTURE;
         } else {
@@ -340,8 +339,8 @@ void EyeBuffers::BeginRenderingEye( const int eyeNum )
     EyePairs & pair = BufferData[ SwapCount % MAX_EYE_SETS ];
     EyeBuffer & eye = pair.Eyes[eyeNum];
 
-    LogEyeSceneGpuTime.Begin( eyeNum );
-    LogEyeSceneGpuTime.PrintTime( eyeNum, "GPU time for eye render" );
+    LogEyeSceneGpuTime.begin( eyeNum );
+    LogEyeSceneGpuTime.printTime( eyeNum, "GPU time for eye render" );
 
     glBindFramebuffer( GL_FRAMEBUFFER, eye.RenderFrameBuffer );
     glViewport( 0, 0, resolution, resolution );
@@ -386,7 +385,7 @@ void EyeBuffers::EndRenderingEye( const int eyeNum )
         glOperation.glDisableFramebuffer( true, false );
     }
 
-    LogEyeSceneGpuTime.End( eyeNum );
+    LogEyeSceneGpuTime.end( eyeNum );
 
     // Left to themselves, tiled GPU drivers will avoid starting rendering
     // until they are absolutely forced to by a swap or read of a buffer,

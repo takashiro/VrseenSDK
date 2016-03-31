@@ -34,7 +34,7 @@ eMsgStatus VRMenuComponent::onEvent( App * app, VrFrame const & vrFrame, OvrVRMe
     // do any pre work that every event handler must do
     //-------------------
 
-    //DROIDLOG( "VrMenu", "OnEvent '%s' for '%s'", VRMenuEventTypeNames[event.EventType], self->GetText().toCString() );
+    //vInfo("VrMenu: OnEvent '" << VRMenuEventTypeNames[event.EventType] << "' for '" << self->GetText() << "'");
 
     // call the overloaded implementation
     eMsgStatus status = onEventImpl( app, vrFrame, menuMgr, self, event );

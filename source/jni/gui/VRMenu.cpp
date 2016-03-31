@@ -208,7 +208,7 @@ void VRMenu::addItems( OvrVRMenuMgr & menuMgr, BitmapFont const & font,
 // VRMenu::Shutdown
 void VRMenu::shutdown( OvrVRMenuMgr & menuMgr )
 {
-	DROID_ASSERT( m_isInitialized, "VrMenu" );
+    vAssert(m_isInitialized);
 
 	// this will free the root and all children
 	if ( m_rootHandle.IsValid() )

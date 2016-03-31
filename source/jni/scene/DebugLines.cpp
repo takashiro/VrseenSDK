@@ -156,7 +156,7 @@ void OvrDebugLinesLocal::Init()
     VGlOperation glOperation;
 	if ( Initialized )
 	{
-// JDC: multi-activity test		DROID_ASSERT( !Initialized, "DebugLines" );
+// JDC: multi-activity test		vAssert(!Initialized);
 		return;
 	}
 

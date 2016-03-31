@@ -1086,7 +1086,7 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
     const double timeNow = floor( ovr_GetTimeInSeconds() );
     if ( timeNow > lastReportTime )
     {
-        vInfo("Warp GPU time: " << m_logEyeWarpGpuTime.GetTotalTime() << " ms");
+        vInfo("Warp GPU time: " << m_logEyeWarpGpuTime.totalTime() << " ms");
         lastReportTime = timeNow;
     }
 
@@ -1268,8 +1268,8 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
         // Warp a latched buffer to the screen
         //---------------------------------------------------------
 
-        m_logEyeWarpGpuTime.Begin( eye );
-        m_logEyeWarpGpuTime.PrintTime( eye, "GPU time for eye time warp" );
+        m_logEyeWarpGpuTime.begin( eye );
+        m_logEyeWarpGpuTime.printTime( eye, "GPU time for eye time warp" );
 
         setWarpState( currentWarpSource );
 
@@ -1306,7 +1306,7 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
 
         glFlush();
 
-        m_logEyeWarpGpuTime.End( eye );
+        m_logEyeWarpGpuTime.end( eye );
 
         const double justBeforeFinish = ovr_GetTimeInSeconds();
         const double postFinish = ovr_GetTimeInSeconds();
@@ -1531,8 +1531,8 @@ void VFrameSmooth::Private::warpToScreenSliced( const double vsyncBase, const sw
         // Warp a latched buffer to the screen
         //---------------------------------------------------------
 
-        m_logEyeWarpGpuTime.Begin( screenSlice );
-        m_logEyeWarpGpuTime.PrintTime( screenSlice, "GPU time for eye time warp" );
+        m_logEyeWarpGpuTime.begin( screenSlice );
+        m_logEyeWarpGpuTime.printTime( screenSlice, "GPU time for eye time warp" );
 
         setWarpState( currentWarpSource );
 
@@ -1570,7 +1570,7 @@ void VFrameSmooth::Private::warpToScreenSliced( const double vsyncBase, const sw
 
         glFlush();
 
-        m_logEyeWarpGpuTime.End( screenSlice );
+        m_logEyeWarpGpuTime.end( screenSlice );
 
         const double justBeforeFinish = ovr_GetTimeInSeconds();
         const double postFinish = ovr_GetTimeInSeconds();

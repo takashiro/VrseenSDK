@@ -216,7 +216,6 @@ void VRMenuEventHandler::closed( VArray< VRMenuEvent > & events )
 // LogEventType
 static inline void LogEventType( VRMenuEvent const & event, char const * fmt, ... )
 {
-#if 1
     if ( event.eventType != VRMENU_EVENT_TOUCH_RELATIVE )
     {
         return;
@@ -228,11 +227,7 @@ static inline void LogEventType( VRMenuEvent const & event, char const * fmt, ..
     vsnprintf( fmtBuff, sizeof( fmtBuff ), fmt, args );
     va_end( args );
 
-    char buffer[512];
-    sprintf(buffer, "%s: %s", VRMenuEvent::EventTypeNames[event.eventType], fmtBuff);
-
-    __android_log_write( ANDROID_LOG_WARN, "VrMenu", buffer );
-#endif
+    vWarn("VrMenu:" << VRMenuEvent::EventTypeNames[event.eventType] << fmtBuff);
 }
 
 //==============================
@@ -312,7 +307,7 @@ void VRMenuEventHandler::handleEvents( App * app, VrFrame const & vrFrame, OvrVR
 bool VRMenuEventHandler::dispatchToComponents( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuEvent const & event, VRMenuObject * receiver ) const
 {
-	DROID_ASSERT( receiver != NULL, "VrMenu" );
+    vAssert(receiver != NULL);
 
     VArray< VRMenuComponent* > const & list = receiver->componentList();
 	int numComps = list.length();
@@ -348,15 +343,13 @@ bool VRMenuEventHandler::dispatchToPath( App * app, VrFrame const & vrFrame, Ovr
         {
 			if ( log )
 			{
-				LOG( "%sDispatchToPath: %s, object '%s' consumed event.", &indent[64 - i * 2],
-						VRMenuEvent::EventTypeNames[event.eventType], ( obj != NULL ? obj->text().toCString() : "<null>" ) );
+                vInfo(&indent[64 - i * 2] << "DispatchToPath:" << VRMenuEvent::EventTypeNames[event.eventType] << ", object '" << ( obj != NULL ? obj->text().toCString() : "<null>" ) << "' consumed event.");
 			}
             return true;    // consumed by a component
         }
 		if ( log )
 		{
-			LOG( "%sDispatchToPath: %s, object '%s' passed event.", &indent[64 - i * 2],
-					VRMenuEvent::EventTypeNames[event.eventType], obj != NULL ? obj->text().toCString() : "<null>" );
+            vInfo(&indent[64 - i * 2] << "DispatchToPath:" << VRMenuEvent::EventTypeNames[event.eventType] << ", object '" << (obj != NULL ? obj->text().toCString() : "<null>") << "' passed event.");
 		}
     }
     return false;
@@ -367,7 +360,7 @@ bool VRMenuEventHandler::dispatchToPath( App * app, VrFrame const & vrFrame, Ovr
 bool VRMenuEventHandler::broadcastEvent( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuEvent const & event, VRMenuObject * receiver ) const
 {
-	DROID_ASSERT( receiver != NULL, "VrMenu" );
+    vAssert(receiver != NULL);
 
     // allow parent components to handle first
     if ( dispatchToComponents( app, vrFrame, menuMgr, event, receiver ) )

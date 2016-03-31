@@ -618,7 +618,7 @@ void VRMenuMgrLocal::SubmitForRenderingRecursive( OvrDebugLines & debugLines, Bi
 		// If this happens we're probably not correctly clearing the submitted surfaces each frame
 		// OR we've got a LOT of surfaces.
 		vInfo("maxIndices =" << maxIndices << ", curIndex =" << curIndex);
-		DROID_ASSERT( curIndex < maxIndices, "VrMenu" );
+        vAssert(curIndex < maxIndices);
 		return;
 	}
 
@@ -1013,7 +1013,7 @@ VGlShader const * VRMenuMgrLocal::getGUIGlProgram( eGUIProgramType const program
         case PROGRAM_DIFFUSE_COLOR_RAMP_TARGET:
             return &GUIProgramDiffuseColorRampTarget;
         default:
-            DROID_ASSERT( !"Invalid gui program type", "VrMenu" );
+            vFatal("Invalid gui program type");
             break;
     }
     return NULL;

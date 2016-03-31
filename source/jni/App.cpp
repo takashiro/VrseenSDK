@@ -1320,7 +1320,7 @@ struct App::Private
             const double timeNow = floor(ovr_GetTimeInSeconds());
             if (timeNow > lastReportTime)
             {
-                vInfo("FPS:" << countApplicationFrames << "GPU time:" << eyeTargets->LogEyeSceneGpuTime.GetTotalTime() << "ms");
+                vInfo("FPS:" << countApplicationFrames << "GPU time:" << eyeTargets->LogEyeSceneGpuTime.totalTime() << "ms");
                 countApplicationFrames = 0;
                 lastReportTime = timeNow;
             }

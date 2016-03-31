@@ -305,7 +305,7 @@ void VRMenuSurface::render( OvrVRMenuMgr const & menuMgr, VR4Matrixf const & mvp
 		{
 			glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 			int diffuseIndex = indexForTextureType( SURFACE_TEXTURE_DIFFUSE, 1 );
-			DROID_ASSERT( diffuseIndex >= 0, "VrMenu" );	// surface setup should have detected this!
+			vAssert( diffuseIndex >= 0);	// surface setup should have detected this!
 			// bind the texture
 			glActiveTexture( GL_TEXTURE0 );
 			glBindTexture( GL_TEXTURE_2D, m_textures[diffuseIndex].handle() );
@@ -317,9 +317,9 @@ void VRMenuSurface::render( OvrVRMenuMgr const & menuMgr, VR4Matrixf const & mvp
 		{
 			glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 			int diffuseIndex = indexForTextureType( SURFACE_TEXTURE_DIFFUSE, 1 );
-			DROID_ASSERT( diffuseIndex >= 0, "VrMenu" );	// surface setup should have detected this!
+			vAssert( diffuseIndex >= 0);	// surface setup should have detected this!
 			int diffuse2Index = indexForTextureType( SURFACE_TEXTURE_DIFFUSE, 2 );
-			DROID_ASSERT( diffuse2Index >= 0, "VrMenu" );	// surface setup should have detected this!
+			vAssert( diffuse2Index >= 0);	// surface setup should have detected this!
 			// bind both textures
 			glActiveTexture( GL_TEXTURE0 );
 			glBindTexture( GL_TEXTURE_2D, m_textures[diffuseIndex].handle() );
@@ -335,7 +335,7 @@ void VRMenuSurface::render( OvrVRMenuMgr const & menuMgr, VR4Matrixf const & mvp
 		{
 			glBlendFunc( GL_SRC_ALPHA, GL_ONE );
 			int additiveIndex = indexForTextureType( SURFACE_TEXTURE_ADDITIVE, 1 );
-			DROID_ASSERT( additiveIndex >= 0, "VrMenu" );	// surface setup should have detected this!
+			vAssert( additiveIndex >= 0);	// surface setup should have detected this!
 			// bind the texture
 			glActiveTexture( GL_TEXTURE0 );
 			glBindTexture( GL_TEXTURE_2D, m_textures[additiveIndex].handle() );
@@ -348,9 +348,9 @@ void VRMenuSurface::render( OvrVRMenuMgr const & menuMgr, VR4Matrixf const & mvp
 			//glBlendFunc( GL_ONE, GL_ONE );
             glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 			int diffuseIndex = indexForTextureType( SURFACE_TEXTURE_DIFFUSE, 1 );
-			DROID_ASSERT( diffuseIndex >= 0, "VrMenu" );	// surface setup should have detected this!
+			vAssert( diffuseIndex >= 0);	// surface setup should have detected this!
 			int additiveIndex = indexForTextureType( SURFACE_TEXTURE_ADDITIVE, 1 );
-			DROID_ASSERT( additiveIndex >= 0, "VrMenu" );	// surface setup should have detected this!
+			vAssert( additiveIndex >= 0);	// surface setup should have detected this!
 			// bind both textures
 			glActiveTexture( GL_TEXTURE0 );
 			glBindTexture( GL_TEXTURE_2D, m_textures[diffuseIndex].handle() );
@@ -362,9 +362,9 @@ void VRMenuSurface::render( OvrVRMenuMgr const & menuMgr, VR4Matrixf const & mvp
 		{
 			glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 			int diffuseIndex = indexForTextureType( SURFACE_TEXTURE_DIFFUSE, 1 );
-			DROID_ASSERT( diffuseIndex >= 0, "VrMenu" );	// surface setup should have detected this!
+			vAssert( diffuseIndex >= 0);	// surface setup should have detected this!
 			int rampIndex = indexForTextureType( SURFACE_TEXTURE_COLOR_RAMP, 1 );
-			DROID_ASSERT( rampIndex >= 0, "VrMenu" );	// surface setup should have detected this!
+			vAssert( rampIndex >= 0);	// surface setup should have detected this!
 			// bind both textures
 			glActiveTexture( GL_TEXTURE0 );
 			glBindTexture( GL_TEXTURE_2D, m_textures[diffuseIndex].handle() );
@@ -383,11 +383,11 @@ void VRMenuSurface::render( OvrVRMenuMgr const & menuMgr, VR4Matrixf const & mvp
 			//vInfo("Surface '" << SurfaceName << "' - PROGRAM_COLOR_RAMP_TARGET");
 			glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 			int diffuseIndex = indexForTextureType( SURFACE_TEXTURE_DIFFUSE, 1 );
-			DROID_ASSERT( diffuseIndex >= 0, "VrMenu" );	// surface setup should have detected this!
+			vAssert( diffuseIndex >= 0);	// surface setup should have detected this!
 			int rampIndex = indexForTextureType( SURFACE_TEXTURE_COLOR_RAMP, 1 );
-			DROID_ASSERT( rampIndex >= 0, "VrMenu" );	// surface setup should have detected this!
+			vAssert( rampIndex >= 0);	// surface setup should have detected this!
 			int targetIndex = indexForTextureType( SURFACE_TEXTURE_COLOR_RAMP_TARGET, 1 );
-			DROID_ASSERT( targetIndex >= 0, "VrMenu" );	// surface setup should have detected this!
+			vAssert( targetIndex >= 0);	// surface setup should have detected this!
 			// bind both textures
 			glActiveTexture( GL_TEXTURE0 );
 			glBindTexture( GL_TEXTURE_2D, m_textures[diffuseIndex].handle() );
@@ -410,12 +410,12 @@ void VRMenuSurface::render( OvrVRMenuMgr const & menuMgr, VR4Matrixf const & mvp
 		}
 		default:
 		{
-			DROID_ASSERT( !"Unhandled ProgramType", "Uhandled ProgramType" );
+			vAssert( !"Unhandled ProgramType");
 			return;
 		}
 	}
 
-	DROID_ASSERT( program != NULL, "VrMenu" );
+	vAssert( program != NULL);
 
 	glUseProgram( program->program );
 
@@ -611,7 +611,7 @@ void VRMenuSurface::loadTexture( int const textureIndex, eSurfaceTextureType con
 {
     if ( textureIndex < 0 || textureIndex >= VRMENUSURFACE_IMAGE_MAX )
     {
-        DROID_ASSERT( textureIndex >= 0 && textureIndex < VRMENUSURFACE_IMAGE_MAX, "VrMenu" );
+        vAssert( textureIndex >= 0 && textureIndex < VRMENUSURFACE_IMAGE_MAX);
         return;
     }
     m_textures[textureIndex].loadTexture( type, texId, width, height );
@@ -1162,7 +1162,7 @@ void VRMenuObjectLocal::addComponent( VRMenuComponent * component )
 	if ( componentIndex >= 0 )
 	{
 		// cannot add the same component twice!
-		DROID_ASSERT( componentIndex < 0, "VRMenu" );
+		vAssert( componentIndex < 0);
 		return;
 	}
 	m_components.append( component );
@@ -1330,7 +1330,7 @@ void  VRMenuObjectLocal::setSurfaceTexture( int const surfaceIndex, int const te
 {
     if ( surfaceIndex < 0 || surfaceIndex >= m_surfaces.length() )
     {
-        DROID_ASSERT( surfaceIndex >= 0 && surfaceIndex < m_surfaces.length(), "VrMenu" );
+        vAssert( surfaceIndex >= 0 && surfaceIndex < m_surfaces.length());
         return;
     }
     m_surfaces[surfaceIndex].loadTexture( textureIndex, type, texId, width, height );
@@ -1344,7 +1344,7 @@ void  VRMenuObjectLocal::setSurfaceTextureTakeOwnership( int const surfaceIndex,
 {
 	if ( surfaceIndex < 0 || surfaceIndex >= m_surfaces.length() )
 	{
-		DROID_ASSERT( surfaceIndex >= 0 && surfaceIndex < m_surfaces.length(), "VrMenu" );
+		vAssert( surfaceIndex >= 0 && surfaceIndex < m_surfaces.length());
 		return;
 	}
     m_surfaces[ surfaceIndex ].loadTexture( textureIndex, type, texId, width, height );
@@ -1357,7 +1357,7 @@ void VRMenuObjectLocal::regenerateSurfaceGeometry( int const surfaceIndex, const
 {
 	if ( surfaceIndex < 0 || surfaceIndex >= m_surfaces.length() )
 	{
-		DROID_ASSERT( surfaceIndex >= 0 && surfaceIndex < m_surfaces.length(), "VrMenu" );
+		vAssert( surfaceIndex >= 0 && surfaceIndex < m_surfaces.length());
 		return;
 	}
 
@@ -1375,7 +1375,7 @@ V2Vectf const & VRMenuObjectLocal::getSurfaceDims( int const surfaceIndex ) cons
 {
 	if ( surfaceIndex < 0 || surfaceIndex >= m_surfaces.length() )
 	{
-		DROID_ASSERT( surfaceIndex >= 0 && surfaceIndex < m_surfaces.length(), "VrMenu" );
+		vAssert( surfaceIndex >= 0 && surfaceIndex < m_surfaces.length());
         return V2Vectf::ZERO;
 	}
 
@@ -1388,7 +1388,7 @@ void VRMenuObjectLocal::setSurfaceDims( int const surfaceIndex, V2Vectf const &d
 {
 	if ( surfaceIndex < 0 || surfaceIndex >= m_surfaces.length() )
 	{
-		DROID_ASSERT( surfaceIndex >= 0 && surfaceIndex < m_surfaces.length(), "VrMenu" );
+		vAssert( surfaceIndex >= 0 && surfaceIndex < m_surfaces.length());
 		return;
 	}
 
@@ -1401,7 +1401,7 @@ V4Vectf const & VRMenuObjectLocal::getSurfaceBorder( int const surfaceIndex )
 {
 	if ( surfaceIndex < 0 || surfaceIndex >= m_surfaces.length() )
 	{
-		DROID_ASSERT( surfaceIndex >= 0 && surfaceIndex < m_surfaces.length(), "VrMenu" );
+		vAssert( surfaceIndex >= 0 && surfaceIndex < m_surfaces.length());
         return V4Vectf::ZERO;
 	}
 
@@ -1414,7 +1414,7 @@ void VRMenuObjectLocal::setSurfaceBorder( int const surfaceIndex, V4Vectf const 
 {
 	if ( surfaceIndex < 0 || surfaceIndex >= m_surfaces.length() )
 	{
-		DROID_ASSERT( surfaceIndex >= 0 && surfaceIndex < m_surfaces.length(), "VrMenu" );
+		vAssert( surfaceIndex >= 0 && surfaceIndex < m_surfaces.length());
 		return;
 	}
 
