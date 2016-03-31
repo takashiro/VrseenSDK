@@ -39,7 +39,7 @@ VGlOperation::VGlOperation()
 {
     extensions = reinterpret_cast<const char *>(glGetString(GL_EXTENSIONS));
     if (NULL == extensions) {
-        LOG( "glGetString( GL_EXTENSIONS ) returned NULL" );
+        vInfo("glGetString( GL_EXTENSIONS ) returned NULL");
     }
 }
 
@@ -137,9 +137,9 @@ bool VGlOperation::logErrorsEnum(const char *logTitle)
             break;
         }
         hadError = true;
-        WARN("%s GL Error: %s", logTitle, getGlErrorEnum(err));
+        vWarn(logTitle << "GL Error:" << getGlErrorEnum(err));
         if (err == GL_OUT_OF_MEMORY) {
-            FAIL("GL_OUT_OF_MEMORY");
+            vFatal("GL_OUT_OF_MEMORY");
         }
     } while (1);
     return hadError;
@@ -180,7 +180,7 @@ void VGlOperation::logExtensions()
     }
 
 
-    LOG("GL_EXTENSIONS:");
+    vInfo("GL_EXTENSIONS:");
 
 
 //    const bool es3 = (strncmp((const char *)glGetString(GL_VERSION), "OpenGL ES 3", 11) == 0);
@@ -252,7 +252,7 @@ EGLConfig VGlOperation::chooseColorConfig( const EGLDisplay display, const int r
 
     if (EGL_FALSE == eglGetConfigs(display,
                                      configs, MAX_CONFIGS, &numConfigs)) {
-        WARN("eglGetConfigs() failed");
+        vWarn("eglGetConfigs() failed");
         return NULL;
     }
     //LOG("eglGetConfigs() = %i configs", numConfigs);
@@ -319,7 +319,7 @@ void VGlOperation::eglInit( const EGLContext shareContext,
     eglInitialize(display, &majorVersion, &minorVersion);
     config = chooseColorConfig(display, redBits, greenBits, blueBits, depthBits, multisamples, true);
     if (config == 0) {
-        FAIL("No acceptable EGL color configs.");
+        vFatal("No acceptable EGL color configs.");
         return ;
     }
 
@@ -349,7 +349,7 @@ void VGlOperation::eglInit( const EGLContext shareContext,
         }
     }
     if (context == EGL_NO_CONTEXT) {
-        WARN("eglCreateContext failed: %s", glOperation.getEglErrorString());
+        vWarn("eglCreateContext failed:" << glOperation.getEglErrorString());
         return ;
     }
 
@@ -376,14 +376,14 @@ void VGlOperation::eglInit( const EGLContext shareContext,
     pbufferSurface = eglCreatePbufferSurface(display, config, attrib_list);
 
     if (pbufferSurface == EGL_NO_SURFACE) {
-        WARN("eglCreatePbufferSurface failed: %s", glOperation.getEglErrorString());
+        vWarn("eglCreatePbufferSurface failed:" << glOperation.getEglErrorString());
         eglDestroyContext(display, context);
         context = EGL_NO_CONTEXT;
         return ;
     }
 
     if (eglMakeCurrent(display, pbufferSurface, pbufferSurface, context) == EGL_FALSE) {
-        WARN("eglMakeCurrent pbuffer failed: %s", glOperation.getEglErrorString());
+        vWarn("eglMakeCurrent pbuffer failed:" << glOperation.getEglErrorString());
         eglDestroySurface(display, pbufferSurface);
         eglDestroyContext(display, context);
         context = EGL_NO_CONTEXT;
@@ -399,15 +399,15 @@ void VGlOperation::eglExit(  )
 {
     VGlOperation glOperation;
     if (eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT) == EGL_FALSE) {
-        FAIL("eglMakeCurrent: failed: %s", glOperation.getEglErrorString());
+        vFatal("eglMakeCurrent: failed:" << glOperation.getEglErrorString());
     }
 
     if (eglDestroyContext(display, context) == EGL_FALSE) {
-        FAIL("eglDestroyContext: failed: %s", glOperation.getEglErrorString());
+        vFatal("eglDestroyContext: failed:" << glOperation.getEglErrorString());
     }
 
     if (eglDestroySurface(display, pbufferSurface) == EGL_FALSE) {
-        FAIL("eglDestroySurface: failed: %s", glOperation.getEglErrorString());
+        vFatal("eglDestroySurface: failed:" << glOperation.getEglErrorString());
     }
 
     glEsVersion = 0;
