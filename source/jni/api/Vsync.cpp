@@ -22,7 +22,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <sys/resource.h>
 
 #include "VTimer.h"
-#include "Android/LogUtils.h"
 #include "VKernel.h"			// for ovr_GetTimeInSeconds()
 #include "VLog.h"
 
