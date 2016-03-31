@@ -1,8 +1,8 @@
 #include "VrLocale.h"
 #include "VArray.h"
-#include "android/JniUtils.h"
-#include "android/LogUtils.h"
 #include "VLog.h"
+
+#include "android/JniUtils.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -181,7 +181,7 @@ VString private_GetXliffFormattedString( const VString & inXliffStr, ... )
 			}
 			else
 			{
-                LOG( "%s has invalid xliff format - has unsupported format specifier.", inXliffStr.toCString() );
+                vInfo(inXliffStr << "has invalid xliff format - has unsupported format specifier.");
 				return inXliffStr;
 			}
 		}
