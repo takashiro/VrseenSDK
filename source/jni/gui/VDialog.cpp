@@ -7,7 +7,12 @@
 
 #include "VDialog.h"
 NV_NAMESPACE_BEGIN
-void VDialog::drawDialog( VPanel &panel, const VR4Matrixf & mvp )
+VDialog::VDialog():dialogStopSeconds(0.0f),
+                    dialogTexture(nullptr)
+{
+
+}
+void VDialog::draw( VPanel &panel, const VR4Matrixf & mvp )
 {
     // draw the pop-up dialog
     const float now = ovr_GetTimeInSeconds();
@@ -22,7 +27,7 @@ void VDialog::drawDialog( VPanel &panel, const VR4Matrixf & mvp )
     const float clampF = f < 0.0f ? 0.0f : f;
     const float alpha = 1.0f - clampF;
 
-    panel.drawPanel( dialogTexture->textureId, dialogMvp, alpha );
+    panel.draw( dialogTexture->textureId, dialogMvp, alpha );
 }
 NV_NAMESPACE_END
 

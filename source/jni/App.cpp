@@ -202,11 +202,9 @@ struct App::Private
     // drawing parameters
     int				dialogWidth;
     int				dialogHeight;
-    float			dialogStopSeconds;
 
     // Dialogs will be oriented base down in the view when they
     // were generated.
-    VR4Matrixf		dialogMatrix;
 
     VR4Matrixf		lastViewMatrix;
 
@@ -230,14 +228,12 @@ struct App::Private
 
     ovrTimeWarpParms	swapParms;			// passed to TimeWarp->WarpSwap()
 
-    VGlShader		externalTextureProgram2;
     VGlShader		untexturedMvpProgram;
     VGlShader		untexturedScreenSpaceProgram;
     VGlShader		overlayScreenFadeMaskProgram;
     VGlShader		overlayScreenDirectProgram;
 
     VGlGeometry		unitCubeLines;		// 12 lines that outline a 0 to 1 unit cube, intended to be scaled to cover bounds.
-    VGlGeometry		panelGeometry;		// used for dialogs
     VGlGeometry		unitSquare;			// -1 to 1 in x and Y, 0 to 1 in texcoords
     VGlGeometry		fadedScreenMaskSquare;// faded screen mask for overlay rendering
 
@@ -305,10 +301,8 @@ struct App::Private
         , paused(true)
         , popupDistance(2.0f)
         , popupScale(1.0f)
-        , dialogTexture(nullptr)
         , dialogWidth(0)
         , dialogHeight(0)
-        , dialogStopSeconds(0.0f)
         , nativeWindow(nullptr)
         , windowSurface(EGL_NO_SURFACE)
         , drawCalibrationLines(false)
@@ -443,14 +437,14 @@ struct App::Private
 
         glOperation.logExtensions();
 
-        externalTextureProgram2.initShader( VGlShader::getAdditionalVertexShaderSource(), VGlShader::getAdditionalFragmentShaderSource() );
+        self->panel.externalTextureProgram2.initShader( VGlShader::getAdditionalVertexShaderSource(), VGlShader::getAdditionalFragmentShaderSource() );
         untexturedMvpProgram.initShader( VGlShader::getUntextureMvpVertexShaderSource(),VGlShader::getUntexturedFragmentShaderSource()  );
         untexturedScreenSpaceProgram.initShader( VGlShader::getUniformColorVertexShaderSource(), VGlShader::getUntexturedFragmentShaderSource() );
         overlayScreenFadeMaskProgram.initShader(VGlShader::getUntextureInverseColorVertexShaderSource(),VGlShader::getUntexturedFragmentShaderSource() );
         overlayScreenDirectProgram.initShader(VGlShader::getSingleTextureVertexShaderSource(),VGlShader::getSingleTextureFragmentShaderSource() );
 
 
-        panelGeometry.createPlaneQuadGrid( 32, 16 );
+        self->panel.panelGeometry.createPlaneQuadGrid( 32, 16 );
         unitSquare.createPlaneQuadGrid(1, 1 );
         unitCubeLines.createUnitCubeGrid();
 
@@ -460,13 +454,13 @@ struct App::Private
 
     void shutdownGlObjects()
     {
-        externalTextureProgram2.destroy();
+        self->panel.externalTextureProgram2.destroy();
         untexturedMvpProgram.destroy();
         untexturedScreenSpaceProgram.destroy();
         overlayScreenFadeMaskProgram.destroy();
         overlayScreenDirectProgram.destroy();
 
-        panelGeometry.destroy();
+        self->panel.panelGeometry.destroy();
         unitSquare.destroy();
         unitCubeLines.destroy();
         fadedScreenMaskSquare.destroy();
@@ -884,13 +878,13 @@ struct App::Private
 
             dialogWidth = width;
             dialogHeight = height;
-            dialogStopSeconds = ovr_GetTimeInSeconds() + seconds;
+            self->dialog.dialogStopSeconds = ovr_GetTimeInSeconds() + seconds;
 
-            dialogMatrix = PanelMatrix(lastViewMatrix, popupDistance, popupScale, width, height);
+            self->dialog.dialogMatrix = PanelMatrix(lastViewMatrix, popupDistance, popupScale, width, height);
 
             glActiveTexture(GL_TEXTURE0);
-            vInfo("RC_UPDATE_POPUP dialogTexture" << dialogTexture->textureId);
-            dialogTexture->Update();
+            vInfo("RC_UPDATE_POPUP dialogTexture" << self->dialog.dialogTexture->textureId);
+            self->dialog.dialogTexture->Update();
             glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0);
 
             return;
@@ -961,7 +955,7 @@ struct App::Private
                                             TextureFlags_t(TEXTUREFLAG_NO_MIPMAPS), w, h);
 
             // Create the SurfaceTexture for dialog rendering.
-            dialogTexture = new SurfaceTexture(vrJni);
+            self->dialog.dialogTexture = new SurfaceTexture(vrJni);
 
             initFonts();
 
@@ -1293,8 +1287,8 @@ struct App::Private
 
             shutdownFonts();
 
-            delete dialogTexture;
-            dialogTexture = nullptr;
+            delete self->dialog.dialogTexture;
+            self->dialog.dialogTexture = nullptr;
 
             delete eyeTargets;
             eyeTargets = nullptr;
@@ -1855,7 +1849,7 @@ VKernel* App::kernel()
 
 SurfaceTexture * App::dialogTexture()
 {
-    return d->dialogTexture;
+    return dialog.dialogTexture;
 }
 
 ovrTimeWarpParms const & App::swapParms() const
@@ -1979,44 +1973,6 @@ void ShowFPS(void * appPtr, const char * cmd) {
 //    glOperation.glBindVertexArrayOES_( 0 );
 //}
 
-void App::drawDialog( const VR4Matrixf & mvp )
-{
-    // draw the pop-up dialog
-    const float now = ovr_GetTimeInSeconds();
-    if ( now >= d->dialogStopSeconds )
-    {
-        return;
-    }
-    const VR4Matrixf dialogMvp = mvp * d->dialogMatrix;
-
-    const float fadeSeconds = 0.5f;
-    const float f = now - ( d->dialogStopSeconds - fadeSeconds );
-    const float clampF = f < 0.0f ? 0.0f : f;
-    const float alpha = 1.0f - clampF;
-
-    drawPanel( d->dialogTexture->textureId, dialogMvp, alpha );
-}
-
-void App::drawPanel( const GLuint externalTextureId, const VR4Matrixf & dialogMvp, const float alpha )
-{
-    const VGlShader & prog = d->externalTextureProgram2;
-    glUseProgram( prog.program );
-    glUniform4f(prog.uniformColor, 1, 1, 1, alpha );
-
-    glUniformMatrix4fv(prog.uniformTexMatrix, 1, GL_FALSE, VR4Matrixf::Identity().Transposed().M[0]);
-    glUniformMatrix4fv(prog.uniformModelViewProMatrix, 1, GL_FALSE, dialogMvp.Transposed().M[0] );
-
-    // It is important that panels write to destination alpha, or they
-    // might get covered by an overlay plane/cube in TimeWarp.
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_EXTERNAL_OES, externalTextureId);
-    glEnable( GL_BLEND );
-    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-    d->panelGeometry.drawElements();
-    glDisable( GL_BLEND );
-    glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0 );	// don't leave it bound
-}
-
 void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const int numPresents )
 {
     VGlOperation glOperation;
@@ -2082,7 +2038,7 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
                 d->calibrationLinesDrawn = false;
             }
 
-            drawDialog( mvp );
+            dialog.draw( panel, mvp );
 
             gazeCursor().Render( eye, mvp );
 

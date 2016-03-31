@@ -14,10 +14,11 @@ NV_NAMESPACE_BEGIN
 class VDialog
 {
 public:
+    VDialog();
     VR4Matrixf      dialogMatrix;
     float           dialogStopSeconds;
     SurfaceTexture * dialogTexture;
 
-    void drawDialog( VPanel &panel, const VR4Matrixf & mvp );
+    void draw( VPanel &panel, const VR4Matrixf & mvp );
 };
 NV_NAMESPACE_END

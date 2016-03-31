@@ -15,7 +15,7 @@ class VPanel
 public:
     VGlShader       externalTextureProgram2;
     VGlGeometry     panelGeometry;      // used for dialogs
-    void drawPanel( const GLuint externalTextureId, const VR4Matrixf & dialogMvp, const float alpha );
+    void draw( const GLuint externalTextureId, const VR4Matrixf & dialogMvp, const float alpha );
 
 };
 NV_NAMESPACE_END

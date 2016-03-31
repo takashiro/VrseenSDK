@@ -6,7 +6,7 @@
  */
 #include "VPanel.h"
 NV_NAMESPACE_BEGIN
-void VPanel::drawPanel( const GLuint externalTextureId, const VR4Matrixf & dialogMvp, const float alpha )
+void VPanel::draw( const GLuint externalTextureId, const VR4Matrixf & dialogMvp, const float alpha )
 {
     const VGlShader & prog = externalTextureProgram2;
     glUseProgram( prog.program );

@@ -114,9 +114,6 @@ public:
 
     VR4Matrixf matrixInterpolation( const VR4Matrixf & startMatrix, const VR4Matrixf & endMatrix, double t );
 
-    void drawDialog( const VR4Matrixf & mvp );
-    void drawPanel( const GLuint externalTextureId, const VR4Matrixf & dialogMvp, const float alpha );
-
     void drawBounds( const V3Vectf &mins, const V3Vectf &maxs, const VR4Matrixf &mvp, const V3Vectf &color );
 
     void startVrThread();
@@ -124,6 +121,8 @@ public:
     void syncVrThread();
 
     VText text;
+    VPanel panel;
+    VDialog dialog;
     volatile bool oneTimeInitCalled;
 
 private:
