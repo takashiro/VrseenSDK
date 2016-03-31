@@ -83,8 +83,8 @@ public:
 
 	T MeanN(int n) const
 	{
-        OVR_ASSERT(n > 0);
-        OVR_ASSERT(this->v_capacity >= n);
+        vAssert(n > 0);
+        vAssert(this->v_capacity >= n);
 		T total = T();
         for (int i = 0; i < n; i++)
         {

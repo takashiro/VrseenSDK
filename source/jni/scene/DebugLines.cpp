@@ -229,7 +229,7 @@ void OvrDebugLinesLocal::Shutdown()
 {
 	if ( !Initialized )
 	{
-		DROID_ASSERT( !Initialized, "DebugLines" );
+        vAssert(!Initialized);
 		return;
 	}
 	DepthGeo.destroy();

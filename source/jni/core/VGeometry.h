@@ -14,8 +14,6 @@ template<class T> class VSize;
 template<class T> class VRect;
 template<class T> class VAngle;
 
-template<> struct VCompatibleTypes<VSize<int> >       { typedef ovrSizei Type; };
-template<> struct VCompatibleTypes<VSize<float> >     { typedef ovrSizef Type; };
 
 template <class T>
 class VBox
@@ -72,23 +70,23 @@ public:
 
 	void AddPoint( const V3Vect<T> & v )
 	{
-		b[0].x = V_Min( b[0].x, v.x );
-		b[0].y = V_Min( b[0].y, v.y );
-		b[0].z = V_Min( b[0].z, v.z );
-		b[1].x = V_Max( b[1].x, v.x );
-		b[1].y = V_Max( b[1].y, v.y );
-		b[1].z = V_Max( b[1].z, v.z );
+		b[0].x = std::min( b[0].x, v.x );
+		b[0].y = std::min( b[0].y, v.y );
+		b[0].z = std::min( b[0].z, v.z );
+		b[1].x = std::max( b[1].x, v.x );
+		b[1].y = std::max( b[1].y, v.y );
+		b[1].z = std::max( b[1].z, v.z );
 	}
 
 	// return a bounds representing the union of a and b
 	static VBox Union( const VBox & a, const VBox & b )
 	{
-		return VBox( V_Min( a.b[0].x, b.b[0].x ),
-						V_Min( a.b[0].y, b.b[0].y ),
-						V_Min( a.b[0].z, b.b[0].z ),
-						V_Max( a.b[1].x, b.b[1].x ),
-						V_Max( a.b[1].y, b.b[1].y ),
-						V_Max( a.b[1].z, b.b[1].z ) );
+		return VBox( std::min( a.b[0].x, b.b[0].x ),
+						std::min( a.b[0].y, b.b[0].y ),
+						std::min( a.b[0].z, b.b[0].z ),
+						std::max( a.b[1].x, b.b[1].x ),
+						std::max( a.b[1].y, b.b[1].y ),
+						std::max( a.b[1].z, b.b[1].z ) );
 	}
 
 	const V3Vect<T> & GetMins() const { return b[0]; }
@@ -160,16 +158,6 @@ public:
     explicit VSize(T s)  : Width(s), Height(s)   { }
     explicit VSize(const VSize<typename VConstants<T>::VdifFloat> &src)
         : Width((T)src.w), Height((T)src.h) { }
-    // C-interop support.
-      typedef  typename VCompatibleTypes<VSize<T> >::Type VCompatibleType;
-
-      VSize(const VCompatibleType& s) : Width(s.w), Height(s.h) {  }
-
-      operator const VCompatibleType& () const
-{
-          OVR_COMPILER_ASSERT(sizeof(VSize<T>) == sizeof(VCompatibleType));
-          return reinterpret_cast<const VCompatibleType&>(*this);
-      }
 
     bool     operator== (const VSize& b) const  { return Width == b.Width && Height == b.Height; }
     bool     operator!= (const VSize& b) const  { return Width != b.Width || Height != b.Height; }
@@ -225,17 +213,6 @@ public:
     VRect(T x1, T y1, T w1, T h1)                   : x(x1), y(y1), w(w1), h(h1) { }
     VRect(const V2Vect<T>& pos, const VSize<T>& sz) : x(pos.x), y(pos.y), w(sz.w), h(sz.h) { }
     VRect(const VSize<T>& sz)                        : x(0), y(0), w(sz.w), h(sz.h) { }
-
-    // C-interop support.
-   typedef  typename VCompatibleTypes<VRect<T> >::Type VCompatibleType;
-
-   VRect(const VCompatibleType& s) : x(s.Pos.x), y(s.Pos.y), w(s.Size.Width), h(s.Size.Height) {  }
-
-   operator const VCompatibleType& () const
-   {
-           OVR_COMPILER_ASSERT(sizeof(VRect<T>) == sizeof(VCompatibleType));
-	   return reinterpret_cast<const VCompatibleType&>(*this);
-   }
 
    V2Vect<T> GetPos() const                { return V2Vect<T>(x, y); }
    VSize<T>    GetSize() const               { return VSize<T>(w, h); }

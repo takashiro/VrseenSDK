@@ -12,9 +12,11 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "GlTexture.h"
 
 #include "VPath.h"
+#include <fstream>
 
 #include "api/VGlOperation.h"
 #include "VAlgorithm.h"
+#include "VSysFile.h"
 
 #include "3rdParty/stb/stb_image.h"
 
@@ -824,22 +826,31 @@ unsigned char * LoadPVRBuffer( const char * fileName, int & width, int & height 
 	width = 0;
 	height = 0;
 
-	MemBufferFile bufferFile( fileName );
-
-	MemBuffer buffer = bufferFile.toMemBuffer( );
-
-	if ( buffer.length < ( int )( sizeof( OVR_PVR_HEADER ) ) )
+    std::fstream fileBuffer;
+    fileBuffer.open(fileName);
+    fileBuffer.seekg(0, std::ios_base::end);
+    uint fileLength = 0;
+    fileLength = fileBuffer.tellg();
+    fileBuffer.seekg(0, std::ios_base::beg);
+    void *buffer = NULL;
+    buffer = malloc(fileLength);
+    fileBuffer.read(reinterpret_cast<std::istream::char_type*>(buffer), fileLength);
+    if ( fileLength < ( int )( sizeof( OVR_PVR_HEADER ) ) )
 	{
 		LOG( "Invalid PVR file" );
-		buffer.freeData( );
+        free( (void *)buffer );
+        buffer = NULL;
+        fileLength = 0;
 		return NULL;
 	}
 
-	const OVR_PVR_HEADER & header = *( OVR_PVR_HEADER * )buffer.buffer;
+    const OVR_PVR_HEADER & header = *( OVR_PVR_HEADER * )buffer;
 	if ( header.Version != 0x03525650 )
 	{
 		LOG( "Invalid PVR file version" );
-		buffer.freeData( );
+        free( (void *)buffer );
+        buffer = NULL;
+        fileLength = 0;
 		return NULL;
 	}
 
@@ -849,26 +860,32 @@ unsigned char * LoadPVRBuffer( const char * fileName, int & width, int & height 
  		case 578721384203708274llu:	format = Texture_RGBA;		break;
 		default:
 			LOG( "Unknown PVR texture format %llu, size %ix%i", header.PixelFormat, width, height );
-			buffer.freeData( );
+            free( (void *)buffer );
+            buffer = NULL;
+            fileLength = 0;
 			return NULL;
 	}
 
 	// skip the metadata
 	const UInt32 startTex = sizeof( OVR_PVR_HEADER ) + header.MetaDataSize;
-	if ( ( startTex < sizeof( OVR_PVR_HEADER ) ) || ( startTex >= static_cast< size_t >( buffer.length ) ) )
+    if ( ( startTex < sizeof( OVR_PVR_HEADER ) ) || ( startTex >= static_cast< size_t >( fileLength ) ) )
 	{
 		LOG( "Invalid PVR header sizes" );
-		buffer.freeData( );
+        free( (void *)buffer );
+        buffer = NULL;
+        fileLength = 0;
 		return NULL;
 	}
 
 	size_t mipSize = GetOvrTextureSize( format, header.Width, header.Height );
 
-	const int outBufferSizeBytes = buffer.length - startTex;
+    const int outBufferSizeBytes = fileLength - startTex;
 
 	if ( outBufferSizeBytes < 0 || mipSize > static_cast< size_t >( outBufferSizeBytes ) )
 	{
-		buffer.freeData();
+        free( (void *)buffer );
+        buffer = NULL;
+        fileLength = 0;
 		return NULL;
 	}
 
@@ -877,8 +894,10 @@ unsigned char * LoadPVRBuffer( const char * fileName, int & width, int & height 
 
 	// skip the metadata
 	unsigned char * outBuffer = ( unsigned char * )malloc( outBufferSizeBytes );
-	memcpy( outBuffer, ( unsigned char * )buffer.buffer + startTex, outBufferSizeBytes );
-	buffer.freeData( );
+    memcpy( outBuffer, ( unsigned char * )buffer + startTex, outBufferSizeBytes );
+    free( (void *)buffer );
+    buffer = NULL;
+    fileLength = 0;
 
 	return outBuffer;
 }
@@ -1031,7 +1050,7 @@ GlTexture LoadTextureKTX( const char * fileName, const unsigned char * buffer, c
 	return GlTexture( 0 );
 }
 
-GlTexture LoadTextureFromBuffer( const char * fileName, const MemBuffer & buffer,
+GlTexture LoadTextureFromBuffer( const char * fileName, const void*  buffer, uint length,
 		const TextureFlags_t & flags, int & width, int & height )
 {
 	const VString ext = VPath(fileName).extension().toLower();
@@ -1042,7 +1061,7 @@ GlTexture LoadTextureFromBuffer( const char * fileName, const MemBuffer & buffer
 	width = 0;
 	height = 0;
 
-	if ( fileName == NULL || buffer.buffer == NULL || buffer.length < 1 )
+    if ( fileName == NULL || buffer == NULL || length < 1 )
 	{
 		// can't load anything from an empty buffer
 	}
@@ -1053,7 +1072,7 @@ GlTexture LoadTextureFromBuffer( const char * fileName, const MemBuffer & buffer
 	{
 		// Uncompressed files loaded by stb_image
 		int comp;
-		stbi_uc * image = stbi_load_from_memory( (unsigned char *)buffer.buffer, buffer.length, &width, &height, &comp, 4 );
+        stbi_uc * image = stbi_load_from_memory( (unsigned char *)buffer, length, &width, &height, &comp, 4 );
 		if ( image != NULL )
 		{
 			const size_t dataSize = GetOvrTextureSize( Texture_RGBA, width, height );
@@ -1070,14 +1089,14 @@ GlTexture LoadTextureFromBuffer( const char * fileName, const MemBuffer & buffer
 	}
 	else if ( ext == "pvr" )
 	{
-		texId = LoadTexturePVR( fileName, (const unsigned char *)buffer.buffer, buffer.length,
+        texId = LoadTexturePVR( fileName, (const unsigned char *)buffer, length,
 						( flags & TEXTUREFLAG_USE_SRGB ),
 						( flags & TEXTUREFLAG_NO_MIPMAPS ),
 						width, height );
 	}
 	else if ( ext == "ktx" )
 	{
-		texId = LoadTextureKTX( fileName, (const unsigned char *)buffer.buffer, buffer.length,
+        texId = LoadTextureKTX( fileName, (const unsigned char *)buffer, length,
 						( flags & TEXTUREFLAG_USE_SRGB ),
 						( flags & TEXTUREFLAG_NO_MIPMAPS ),
 						width, height );

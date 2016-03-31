@@ -23,6 +23,7 @@
 #include "VLockless.h"
 #include "VGlGeometry.h"
 #include "VGlShader.h"
+#include "VKernel.h"
 
 ovrSensorState ovr_GetSensorStateInternal( double absTime );
 bool ovr_ProcessLatencyTest( unsigned char rgbColorOut[3] );
@@ -299,9 +300,9 @@ struct VFrameSmooth::Private
         // Code which auto-disable chromatic aberration expects
         // the warpProgram list to be symmetric.
         // See disableChromaticCorrection.
-        OVR_COMPILER_ASSERT( ( WP_PROGRAM_MAX & 1 ) == 0 );
-        OVR_COMPILER_ASSERT( ( WP_CHROMATIC - WP_SIMPLE ) ==
-                             ( WP_PROGRAM_MAX - WP_CHROMATIC ) );
+        static_assert( ( WP_PROGRAM_MAX & 1 ) == 0, "WP_PROGRAM_MAX" );
+        static_assert( ( WP_CHROMATIC - WP_SIMPLE ) ==
+                             ( WP_PROGRAM_MAX - WP_CHROMATIC ) , "WP_CHROMATIC");
 
         VGlOperation glOperation;
         m_shutdownRequest.setState( false );

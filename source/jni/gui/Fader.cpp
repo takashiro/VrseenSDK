@@ -39,7 +39,7 @@ void Fader::update( float const fadeRate, double const deltaSeconds )
     {
         float const fadeDelta = ( fadeRate * deltaSeconds ) * ( m_fadeState == FADE_IN ? 1.0f : -1.0f );
         m_fadeAlpha += fadeDelta;
-        OVR_ASSERT( fabs( fadeDelta ) > VConstantsf::SmallestNonDenormal );
+        vAssert( fabs( fadeDelta ) > VConstantsf::SmallestNonDenormal );
         if ( fabs( fadeDelta ) < VConstantsf::SmallestNonDenormal )
 		{
             LOG( "Fader::Update fabs( fadeDelta ) < VConstantsf::SmallestNonDenormal !!!!" );

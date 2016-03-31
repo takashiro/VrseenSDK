@@ -3,6 +3,7 @@
 #include "CinemaApp.h"
 
 #include <VPath.h>
+#include <fstream>
 #include <VApkFile.h>
 
 namespace OculusCinema {
@@ -192,10 +193,28 @@ SceneDef * ModelManager::LoadScene( const char *sceneFilename, bool useDynamicPr
         buffer = nullptr;
         length = 0;
         apk.read(iconFilename, buffer, length);
-        def->IconTexture = LoadTextureFromBuffer(iconFileName.data(), MemBuffer(buffer, length), TextureFlags_t(TEXTUREFLAG_NO_DEFAULT), textureWidth, textureHeight);
+        std::fstream fileBuffer;
+        fileBuffer.open(iconFileName.data());
+        fileBuffer.seekg(0, std::ios_base::end);
+        uint fileLength = 0;
+        fileLength = fileBuffer.tellg();
+        fileBuffer.seekg(0, std::ios_base::beg);
+        buffer = NULL;
+        buffer = malloc(fileLength);
+        fileBuffer.read(reinterpret_cast<std::istream::char_type*>(buffer), fileLength);
+        def->IconTexture = LoadTextureFromBuffer(iconFileName.data(), buffer, fileLength, TextureFlags_t(TEXTUREFLAG_NO_DEFAULT), textureWidth, textureHeight);
     } else {
         def->SceneModel = LoadModelFile(fileName.data(), glPrograms, materialParms );
-        def->IconTexture = LoadTextureFromBuffer(iconFileName.data(), MemBufferFile(iconFileName.data()), TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), textureWidth, textureHeight );
+        std::fstream fileBuffer;
+        fileBuffer.open(iconFileName.data());
+        fileBuffer.seekg(0, std::ios_base::end);
+        uint fileLength = 0;
+        fileLength = fileBuffer.tellg();
+        fileBuffer.seekg(0, std::ios_base::beg);
+        void *buffer = NULL;
+        buffer = malloc(fileLength);
+        fileBuffer.read(reinterpret_cast<std::istream::char_type*>(buffer), fileLength);
+        def->IconTexture = LoadTextureFromBuffer(iconFileName.data(), buffer, fileLength, TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), textureWidth, textureHeight );
 	}
 
 	if ( def->IconTexture != 0 )

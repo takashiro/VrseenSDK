@@ -233,7 +233,7 @@ void OvrScrollManager::frame( float deltaSeconds, unsigned int controllerState )
 	// --
 	// Scrolling physics update
 	m_accumulatedDeltaTimeInSeconds += deltaSeconds;
-	OVR_ASSERT( m_accumulatedDeltaTimeInSeconds <= 10.0f );
+    vAssert( m_accumulatedDeltaTimeInSeconds <= 10.0f );
 	while( true )
 	{
 		if( m_accumulatedDeltaTimeInSeconds < 0.016f )

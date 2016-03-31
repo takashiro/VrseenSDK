@@ -1,6 +1,7 @@
 #pragma once
 #include <VString.h>
 #include "math.h"
+#include "VBasicmath.h"
 
 
 #if defined( ANDROID )
@@ -35,31 +36,21 @@ extern JavaVM * VrLibJavaVM;
 // HMD sensor input
 //-----------------------------------------------------------------
 
-typedef struct ovrQuatf_
-{
-    float x, y, z, w;
-} ovrQuatf;
-
-typedef struct ovrVector3f_
-{
-    float x, y, z;
-} ovrVector3f;
-
 // Position and orientation together.
 typedef struct ovrPosef_
 {
-    ovrQuatf	Orientation;
-    ovrVector3f	Position;
+    NervGear::VQuat<float>	Orientation;
+    NervGear::V3Vect<float>	Position;
 } ovrPosef;
 
 // Full pose (rigid body) configuration with first and second derivatives.
 typedef struct ovrPoseStatef_
 {
     ovrPosef	Pose;
-    ovrVector3f	AngularVelocity;
-    ovrVector3f	LinearVelocity;
-    ovrVector3f	AngularAcceleration;
-    ovrVector3f	LinearAcceleration;
+    NervGear::V3Vect<float>	AngularVelocity;
+    NervGear::V3Vect<float>	LinearVelocity;
+    NervGear::V3Vect<float>	AngularAcceleration;
+    NervGear::V3Vect<float>	LinearAcceleration;
     double		TimeInSeconds;         // Absolute time of this state sample.
 } ovrPoseStatef;
 
@@ -91,12 +82,6 @@ typedef struct ovrSensorState_
 //-----------------------------------------------------------------
 // Warp Swap
 //-----------------------------------------------------------------
-
-// row-major 4x4 matrix
-typedef struct ovrMatrix4f_
-{
-    float M[4][4];
-} ovrMatrix4f;
 
 typedef enum
 {
@@ -187,7 +172,7 @@ typedef struct
     // function into ( TanX, TanY, 1, 1 ) vectors that are transformed
     // by this matrix to get ( S, T, Q, _ ) vectors that are looked
     // up with texture2dproj() to get texels.
-    ovrMatrix4f		TexCoordsFromTanAngles;
+    NervGear::VR4Matrix<float>		TexCoordsFromTanAngles;
 
     // The sensor state for which ModelViewMatrix is correct.
     // It is ok to update the orientation for each eye, which
@@ -216,7 +201,7 @@ typedef struct
     // eye vectors before applying the rest of the time warp.
     // This will only be added when the same ovrTimeWarpParms is used for
     // more than one vsync.
-    ovrMatrix4f					ExternalVelocity;
+    NervGear::VR4Matrix<float>					ExternalVelocity;
 
     // WarpSwap will not return until at least this many vsyncs have
     // passed since the previous WarpSwap returned.
@@ -282,23 +267,10 @@ typedef enum
     WARP_INIT_MESSAGE
 } ovrWarpInit;
 
-// Trivial version of TanAngleMatrixFromProjection() for a symmetric field of view.
-inline ovrMatrix4f TanAngleMatrixFromFov( const float fovDegrees )
-{
-    const float tanHalfFov = tanf( 0.5f * fovDegrees * ( M_PI / 180.0f ) );
-    const ovrMatrix4f tanAngleMatrix =
-            { {
-                      { 0.5f / tanHalfFov, 0.0f, -0.5f, 0.0f },
-                      { 0.0f, 0.5f / tanHalfFov, -0.5f, 0.0f },
-                      { 0.0f, 0.0f, -1.0f, 0.0f },
-                      { 0.0f, 0.0f, -1.0f, 0.0f }
-              } };
-    return tanAngleMatrix;
-}
 
 inline ovrTimeWarpParms InitTimeWarpParms( const ovrWarpInit init = WARP_INIT_DEFAULT, const unsigned int texId = 0 )
 {
-    const ovrMatrix4f tanAngleMatrix = TanAngleMatrixFromFov( 90.0f );
+    const NervGear::VR4Matrix<float> tanAngleMatrix = NervGear::VR4Matrix<float>::TanAngleMatrixFromFov( 90.0f );
 
     ovrTimeWarpParms parms;
     memset( &parms, 0, sizeof( parms ) );

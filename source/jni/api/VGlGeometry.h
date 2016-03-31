@@ -4,7 +4,6 @@
 
 #include "../core/VArray.h"
 #include "../core/VBasicmath.h"
-#include "../core/MemBuffer.h"
 
 NV_NAMESPACE_BEGIN
 

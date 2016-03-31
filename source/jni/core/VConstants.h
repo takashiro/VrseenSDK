@@ -6,24 +6,7 @@
 
 #include "vglobal.h"
 
-#include <assert.h>
-#include <stdlib.h>
 #include <math.h>
-#include "Types.h"
-#include "VKernel.h"
-
-typedef struct ovrQuatf_ ovrQuatf;
-typedef struct ovrQuatd_ ovrQuatd;
-typedef struct ovrSizei_ ovrSizei;
-typedef struct ovrSizef_ ovrSizef;
-typedef struct ovrVector2i_ ovrVector2i;
-typedef struct ovrVector2f_ ovrVector2f;
-typedef struct ovrVector3f_ ovrVector3f;
-typedef struct ovrVector3d_ ovrVector3d;
-typedef struct ovrMatrix4f_ ovrMatrix4f;
-typedef struct ovrPosef_ ovrPosef;
-typedef struct ovrPoseStatef_ ovrPoseStatef;
-typedef struct ovrSensorState_ ovrSensorState;
 
 NV_NAMESPACE_BEGIN
 
@@ -33,19 +16,11 @@ template<class T> class VRect;
 template<class T> class V2Vect;
 template<class T> class V3Vect;
 template<class T> class VR3Matrix;
-template<class T> class VR4matrix;
+template<class T> class VR4Matrix;
 template<class T> class VPos;
 template<class T> class PoseState;
 
 
-// CompatibleTypes::Type is used to lookup a compatible C-version of a C++ class.
-template<class C>
-struct VCompatibleTypes
-{
-    // Declaration here seems necessary for MSVC; specializations are
-    // used instead.
-	typedef struct {} Type;
-};
 //------------------------------------------------------------------------------------//
 // ***** VConstants
 //
@@ -139,17 +114,7 @@ T VArcsin(T val)
 	if (val > T(1))				return VConstants<T>::Pi/2.0;
 	else if (val < T(-1))		return VConstants<T>::Pi/2.0 * T(3);
 	else						return asin(val);
-};
-
-
-
-template <typename T>
-const T V_Min(const T a, const T b)
-{ return (a < b) ? a : b; }
-
-template <typename T>
-const T V_Max(const T a, const T b)
-{ return (b < a) ? a : b; }
+}
 
 //-------------------------------------------------------------------------------------
 // ***** Constants for 3D world/axis definitions.

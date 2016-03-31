@@ -133,7 +133,7 @@ public:
     {
     }
 
-    UInt16      Elapsed;
+    ushort      Elapsed;
     VColor       DetectedValue;
     VColor       TargetValue;
 };
