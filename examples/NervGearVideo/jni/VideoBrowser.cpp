@@ -15,7 +15,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 
 #include "VideoBrowser.h"
 #include "GlTexture.h"
-#include "ImageData.h"
+
 #include "Oculus360Videos.h"
 #include "VrLocale.h"
 #include "BitmapFont.h"
@@ -25,6 +25,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 
 #include <VPath.h>
 #include <VApkFile.h>
+#include "io/VFileOperation.h"
 
 namespace NervGear
 {
@@ -95,7 +96,8 @@ unsigned char * VideoBrowser::loadThumbnail( const char * filename, int & width,
 		}
 
         vInfo("VideoBrowser::LoadThumbnail resizing" << filename << "to" << ThumbWidth << ThumbHeight);
-		unsigned char * outBuffer = ScaleImageRGBA( ( const unsigned char * )orig, width, height, ThumbWidth, ThumbHeight, IMAGE_FILTER_CUBIC );
+        uchar *outBuffer = VFileOperation::ScaleImageRGBA( ( const unsigned char * )orig, width, height, ThumbWidth, ThumbHeight, IMAGE_FILTER_CUBIC );
+
 		free( orig );
 
 		if ( outBuffer )

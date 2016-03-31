@@ -23,7 +23,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "3rdParty/stb/stb_image_write.h"
 #include "GlTexture.h"
-#include "ImageData.h"
+
+#include "io/VFileOperation.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -268,11 +269,11 @@ static void ScreenShotTexture( const int eyeResolution, const GLuint texId )
     stbi_write_bmp( filename.toCString(), eyeResolution, eyeResolution, 4, (void *)flipped );
 
     // make a quarter size version for launcher thumbnails
-    unsigned char * shrunk1 = QuarterImageSize( flipped, eyeResolution, eyeResolution, true );
-    unsigned char * shrunk2 = QuarterImageSize( shrunk1, eyeResolution>>1, eyeResolution>>1, true );
+    unsigned char * shrunk1 = VFileOperation::QuarterImageSize( flipped, eyeResolution, eyeResolution, true );
+    unsigned char * shrunk2 = VFileOperation::QuarterImageSize( shrunk1, eyeResolution>>1, eyeResolution>>1, true );
     VString filename2;
     filename2.sprintf("/sdcard/Oculus/thumbnail%03i.pvr", v);
-    Write32BitPvrTexture( filename2.toCString(), shrunk2, eyeResolution>>2, eyeResolution>>2 );
+    VFileOperation::Write32BitPvrTexture( filename2.toCString(), shrunk2, eyeResolution>>2, eyeResolution>>2 );
 
     free( buf );
     free( shrunk1 );

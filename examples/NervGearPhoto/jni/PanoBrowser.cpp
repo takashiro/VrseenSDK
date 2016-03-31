@@ -15,7 +15,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 
 #include "PanoBrowser.h"
 #include "Oculus360Photos.h"
-#include "ImageData.h"
+
 #include "VrLocale.h"
 #include "BitmapFont.h"
 #include "gui/GuiSys.h"
@@ -26,6 +26,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include <unistd.h>
 #include <VPath.h>
 #include "VDir.h"
+#include "io/VFileOperation.h"
 namespace NervGear
 {
 
@@ -408,7 +409,7 @@ unsigned char * PanoBrowser::createAndCacheThumbnail( const char * soureFile, co
 	}
 	else // otherwise we let ScaleImageRGBA upscale ( for users that really really want a low res pano )
 	{
-		outBuffer = ScaleImageRGBA( data, width, height, outW, outH, IMAGE_FILTER_CUBIC );
+		outBuffer = VFileOperation::ScaleImageRGBA( data, width, height, outW, outH, IMAGE_FILTER_CUBIC );
 	}
 	free( data );
 
