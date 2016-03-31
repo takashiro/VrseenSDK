@@ -8,7 +8,7 @@ extern "C" {
 void Java_oculus_MainActivity_nativeSetAppInterface( JNIEnv * jni, jclass clazz, jobject activity,
 		jstring fromPackageName, jstring commandString, jstring uriString )
 {
-	LOG( "nativeSetAppInterface" );
+	vInfo("nativeSetAppInterface");
     (new OvrApp(jni, clazz, activity))->onCreate(fromPackageName, commandString, uriString );
 }
 
@@ -45,7 +45,7 @@ void OvrApp::init(const VString &fromPackage, const VString &launchIntentJSON, c
 	}
 	else
 	{
-		LOG( "OvrApp::OneTimeInit SearchPaths failed to find %s", scenePath );
+		vInfo("OvrApp::OneTimeInit SearchPaths failed to find" << scenePath);
 	}
 }
 
