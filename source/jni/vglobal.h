@@ -17,6 +17,14 @@ typedef unsigned long ulong;
 typedef long long longlong;
 typedef unsigned long long ulonglong;
 
+//@to-do: Check target platform and compiler
+typedef short vint16;
+typedef ushort vuint16;
+typedef long vint32;
+typedef ulong vint32;
+typedef longlong vint64;
+typedef ulonglong vint64;
+
 #define forever for(;;)
 
 #define NV_DECLARE_PRIVATE struct Private; friend struct Private; Private *d;
