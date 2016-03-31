@@ -1,9 +1,10 @@
 #define  GFILE_CXX
 
 #include "VFileOperation.h"
-#include "android/LogUtils.h"
-#include "Types.h"
-#include "math.h"
+#include "VLog.h"
+
+#include <math.h>
+
 NV_NAMESPACE_BEGIN
 
 static int FError ()
@@ -305,18 +306,18 @@ bool VFileOperation::close()
 #pragma pack(1)
 struct OVR_PVR_HEADER
 {
-    UInt32  Version;
-    UInt32  Flags;
-    UInt64  PixelFormat;
-    UInt32  ColorSpace;
-    UInt32  ChannelType;
-    UInt32  Height;
-    UInt32  Width;
-    UInt32  Depth;
-    UInt32  NumSurfaces;
-    UInt32  NumFaces;
-    UInt32  MipMapCount;
-    UInt32  MetaDataSize;
+    vuint32  Version;
+    vuint32  Flags;
+    vuint64  PixelFormat;
+    vuint32  ColorSpace;
+    vuint32  ChannelType;
+    vuint32  Height;
+    vuint32  Width;
+    vuint32  Depth;
+    vuint32  NumSurfaces;
+    vuint32  NumFaces;
+    vuint32  MipMapCount;
+    vuint32  MetaDataSize;
 };
 #pragma pack()
 
@@ -325,7 +326,7 @@ void VFileOperation::Write32BitPvrTexture( const char * fileName, const unsigned
     FILE *f = fopen( fileName, "wb" );
     if ( !f )
     {
-        WARN( "Failed to write %s", fileName );
+        vWarn("Failed to write" << fileName);
         return;
     }
 

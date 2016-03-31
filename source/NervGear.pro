@@ -108,7 +108,6 @@ SOURCES += \
     jni/scene/EyePostRender.cpp \
     jni/scene/GazeCursor.cpp \
     jni/scene/GlTexture.cpp \
-    jni/scene/ImageData.cpp \
     jni/scene/ModelCollision.cpp \
     jni/scene/ModelFile.cpp \
     jni/scene/ModelRender.cpp \
@@ -252,7 +251,6 @@ HEADERS += \
     jni/scene/GazeCursor.h \
     jni/scene/GazeCursorLocal.h \
     jni/scene/GlTexture.h \
-    jni/scene/ImageData.h \
     jni/scene/ModelCollision.h \
     jni/scene/ModelFile.h \
     jni/scene/ModelRender.h \
