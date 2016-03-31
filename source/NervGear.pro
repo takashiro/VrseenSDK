@@ -24,7 +24,6 @@ SOURCES += \
     jni/core/VDir.cpp \
     jni/core/VEventLoop.cpp \
     jni/core/VJson.cpp \
-    jni/core/Log.cpp \
     jni/core/VLog.cpp \
     jni/core/VLock.cpp \
     jni/core/VPath.cpp \
@@ -71,6 +70,7 @@ SOURCES += \
     jni/api/sensor/Common_HMDDevice.cpp \
     jni/api/sensor/ThreadCommandQueue.cpp \
     jni/api/sensor/RefCount.cpp \
+    jni/api/sensor/Log.cpp \
     jni/gui/VRMenuComponent.cpp \
     jni/gui/VRMenuMgr.cpp \
     jni/gui/VRMenuObjectLocal.cpp \
@@ -142,7 +142,6 @@ HEADERS += \
     jni/core/VFlags.h \
     jni/core/VJson.h \
     jni/core/VList.h \
-    jni/core/Log.h \
     jni/core/VLog.h \
     jni/core/VLock.h \
     jni/core/VLockless.h \
@@ -213,6 +212,7 @@ HEADERS += \
     jni/api/sensor/HIDDeviceImpl.h \
     jni/api/sensor/ThreadCommandQueue.h \
     jni/api/sensor/RefCount.h \
+    jni/api/sensor/Log.h \
     jni/gui/VRMenuComponent.h \
     jni/gui/VRMenuMgr.h \
     jni/gui/VRMenuObjectLocal.h \

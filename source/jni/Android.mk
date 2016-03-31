@@ -40,7 +40,6 @@ LOCAL_SRC_FILES  := \
 	core/VChar.cpp \
 	core/VEventLoop.cpp \
 	core/VJson.cpp \
-	core/Log.cpp \
 	core/VLog.cpp \
 	core/VPath.cpp \
 	core/VStandardPath.cpp \
@@ -88,6 +87,7 @@ LOCAL_SRC_FILES  := \
 	api/sensor/Common_HMDDevice.cpp \
 	api/sensor/ThreadCommandQueue.cpp \
 	api/sensor/RefCount.cpp \
+	api/sensor/Log.cpp \
 	gui/VRMenuComponent.cpp \
 	gui/VRMenuMgr.cpp \
 	gui/VRMenuObjectLocal.cpp \
