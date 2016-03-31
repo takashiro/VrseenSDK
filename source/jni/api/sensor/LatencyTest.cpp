@@ -18,14 +18,14 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 using namespace std;
 namespace NervGear {
 
-static const UInt32     TIME_TO_WAIT_FOR_SETTLE_PRE_CALIBRATION = 16*10;
-static const UInt32     TIME_TO_WAIT_FOR_SETTLE_POST_CALIBRATION = 16*10;
-static const UInt32     TIME_TO_WAIT_FOR_SETTLE_POST_MEASUREMENT = 16*5;
-static const UInt32     TIME_TO_WAIT_FOR_SETTLE_POST_MEASUREMENT_RANDOMNESS = 16*5;
-static const UInt32     DEFAULT_NUMBER_OF_SAMPLES = 10;                 // For both color 1->2 and color 2->1 transitions.
-static const UInt32     INITIAL_SAMPLES_TO_IGNORE = 4;
-static const UInt32     TIMEOUT_WAITING_FOR_TEST_STARTED = 1000;
-static const UInt32     TIMEOUT_WAITING_FOR_COLOR_DETECTED = 4000;
+static const vuint32     TIME_TO_WAIT_FOR_SETTLE_PRE_CALIBRATION = 16*10;
+static const vuint32     TIME_TO_WAIT_FOR_SETTLE_POST_CALIBRATION = 16*10;
+static const vuint32     TIME_TO_WAIT_FOR_SETTLE_POST_MEASUREMENT = 16*5;
+static const vuint32     TIME_TO_WAIT_FOR_SETTLE_POST_MEASUREMENT_RANDOMNESS = 16*5;
+static const vuint32     DEFAULT_NUMBER_OF_SAMPLES = 10;                 // For both color 1->2 and color 2->1 transitions.
+static const vuint32     INITIAL_SAMPLES_TO_IGNORE = 4;
+static const vuint32     TIMEOUT_WAITING_FOR_TEST_STARTED = 1000;
+static const vuint32     TIMEOUT_WAITING_FOR_COLOR_DETECTED = 4000;
 static const VColor      CALIBRATE_BLACK(0, 0, 0);
 static const VColor      CALIBRATE_WHITE(255, 255, 255);
 static const VColor      COLOR1(0, 0, 0);
@@ -93,9 +93,9 @@ bool LatencyTest::SetDevice(LatencyTestDevice* device)
     return true;
 }
 
-UInt32 LatencyTest::getRandomComponent(UInt32 range)
+vuint32 LatencyTest::getRandomComponent(vuint32 range)
 {
-    UInt32 val = rand() % range;
+    vuint32 val = rand() % range;
     return val;
 }
 
@@ -176,7 +176,7 @@ void LatencyTest::handleMessage(const Message& msg, LatencyTestMessageType laten
             State = State_WaitingForSettlePostMeasurement;
             OVR_DEBUG_LOG(("State_WaitingForSettlePostCalibrationColorWhite -> State_WaitingForSettlePostMeasurement."));
 
-            UInt32 waitTime = TIME_TO_WAIT_FOR_SETTLE_POST_MEASUREMENT + getRandomComponent(TIME_TO_WAIT_FOR_SETTLE_POST_MEASUREMENT_RANDOMNESS);
+            vuint32 waitTime = TIME_TO_WAIT_FOR_SETTLE_POST_MEASUREMENT + getRandomComponent(TIME_TO_WAIT_FOR_SETTLE_POST_MEASUREMENT_RANDOMNESS);
             setTimer(waitTime);
         }
         else if (State == State_WaitingForSettlePostMeasurement)
@@ -199,7 +199,7 @@ void LatencyTest::handleMessage(const Message& msg, LatencyTestMessageType laten
             OVR_DEBUG_LOG(("** Timed out waiting for 'TestStarted'."));
             OVR_DEBUG_LOG(("State_WaitingForTestStarted -> State_WaitingForSettlePostMeasurement."));
 
-            UInt32 waitTime = TIME_TO_WAIT_FOR_SETTLE_POST_MEASUREMENT + getRandomComponent(TIME_TO_WAIT_FOR_SETTLE_POST_MEASUREMENT_RANDOMNESS);
+            vuint32 waitTime = TIME_TO_WAIT_FOR_SETTLE_POST_MEASUREMENT + getRandomComponent(TIME_TO_WAIT_FOR_SETTLE_POST_MEASUREMENT_RANDOMNESS);
             setTimer(waitTime);
         }
         else if (State == State_WaitingForColorDetected)
@@ -211,7 +211,7 @@ void LatencyTest::handleMessage(const Message& msg, LatencyTestMessageType laten
             OVR_DEBUG_LOG(("** Timed out waiting for 'ColorDetected'."));
             OVR_DEBUG_LOG(("State_WaitingForColorDetected -> State_WaitingForSettlePostMeasurement."));
 
-            UInt32 waitTime = TIME_TO_WAIT_FOR_SETTLE_POST_MEASUREMENT + getRandomComponent(TIME_TO_WAIT_FOR_SETTLE_POST_MEASUREMENT_RANDOMNESS);
+            vuint32 waitTime = TIME_TO_WAIT_FOR_SETTLE_POST_MEASUREMENT + getRandomComponent(TIME_TO_WAIT_FOR_SETTLE_POST_MEASUREMENT_RANDOMNESS);
             setTimer(waitTime);
         }
     }
@@ -276,7 +276,7 @@ void LatencyTest::handleMessage(const Message& msg, LatencyTestMessageType laten
         {
             // Record time to detect color.
             MessageLatencyTestColorDetected* pDetected = (MessageLatencyTestColorDetected*) &msg;
-            UInt16 elapsedTime = pDetected->Elapsed;
+            vuint16 elapsedTime = pDetected->Elapsed;
 
 			VColor col = getActiveResult()->TargetColor;
 			OVR_UNUSED( col );
@@ -296,7 +296,7 @@ void LatencyTest::handleMessage(const Message& msg, LatencyTestMessageType laten
                 State = State_WaitingForSettlePostMeasurement;
                 OVR_DEBUG_LOG(("State_WaitingForColorDetected -> State_WaitingForSettlePostMeasurement."));
 
-                UInt32 waitTime = TIME_TO_WAIT_FOR_SETTLE_POST_MEASUREMENT + getRandomComponent(TIME_TO_WAIT_FOR_SETTLE_POST_MEASUREMENT_RANDOMNESS);
+                vuint32 waitTime = TIME_TO_WAIT_FOR_SETTLE_POST_MEASUREMENT + getRandomComponent(TIME_TO_WAIT_FOR_SETTLE_POST_MEASUREMENT_RANDOMNESS);
                 setTimer(waitTime);
 
                 LatencyTestDisplay ltd(2, 0x40400040);
@@ -316,7 +316,7 @@ LatencyTest::MeasurementResult* LatencyTest::getActiveResult()
     return Results.last();
 }
 
-void LatencyTest::setTimer(UInt32 timeMilliS)
+void LatencyTest::setTimer(vuint32 timeMilliS)
 {
     ActiveTimerMilliS = timeMilliS;
 }
@@ -385,10 +385,10 @@ const char*	LatencyTest::GetResultsString()
 
 bool LatencyTest::areResultsComplete()
 {
-    UInt32 initialMeasurements = 0;
+    vuint32 initialMeasurements = 0;
 
-    UInt32 measurements1to2 = 0;
-    UInt32 measurements2to1 = 0;
+    vuint32 measurements1to2 = 0;
+    vuint32 measurements2to1 = 0;
 
     for (MeasurementResult* pCurr:Results) {
         // Process.
@@ -423,23 +423,23 @@ bool LatencyTest::areResultsComplete()
 void LatencyTest::processResults()
 {
 
-    UInt32 minTime1To2 = UINT_MAX;
-    UInt32 maxTime1To2 = 0;
+    vuint32 minTime1To2 = UINT_MAX;
+    vuint32 maxTime1To2 = 0;
     float averageTime1To2 = 0.0f;
-    UInt32 minTime2To1 = UINT_MAX;
-    UInt32 maxTime2To1 = 0;
+    vuint32 minTime2To1 = UINT_MAX;
+    vuint32 maxTime2To1 = 0;
     float averageTime2To1 = 0.0f;
 
     float minUSBTripMilliS = BIG_FLOAT;
     float maxUSBTripMilliS = SMALL_FLOAT;
     float averageUSBTripMilliS = 0.0f;
-    UInt32 countUSBTripTime = 0;
+    vuint32 countUSBTripTime = 0;
 
-    UInt32 measurementsCount = 0;
-    UInt32 measurements1to2 = 0;
-    UInt32 measurements2to1 = 0;
+    vuint32 measurementsCount = 0;
+    vuint32 measurements1to2 = 0;
+    vuint32 measurements2to1 = 0;
 
-    UInt32 count = 0;
+    vuint32 count = 0;
     for (MeasurementResult* pCurr:Results) {
         count++;
 
@@ -456,7 +456,7 @@ void LatencyTest::processResults()
 
                     if (measurements1to2 <= DEFAULT_NUMBER_OF_SAMPLES)
                     {
-                        UInt32 elapsed = pCurr->DeviceMeasuredElapsedMilliS;
+                        vuint32 elapsed = pCurr->DeviceMeasuredElapsedMilliS;
 
                         minTime1To2 = std::min(elapsed, minTime1To2);
                         maxTime1To2 = std::max(elapsed, maxTime1To2);
@@ -470,7 +470,7 @@ void LatencyTest::processResults()
 
                     if (measurements2to1 <= DEFAULT_NUMBER_OF_SAMPLES)
                     {
-                        UInt32 elapsed = pCurr->DeviceMeasuredElapsedMilliS;
+                        vuint32 elapsed = pCurr->DeviceMeasuredElapsedMilliS;
 
                         minTime2To1 = std::min(elapsed, minTime2To1);
                         maxTime2To1 = std::max(elapsed, maxTime2To1);
@@ -524,8 +524,8 @@ void LatencyTest::updateForTimeouts()
         return;
     }
 
-    UInt32 newTime = VTimer::TicksMs();
-    UInt32 elapsedMilliS = newTime - OldTime;
+    vuint32 newTime = VTimer::TicksMs();
+    vuint32 elapsedMilliS = newTime - OldTime;
     if (newTime < OldTime)
     {
         elapsedMilliS = OldTime - newTime;
@@ -533,7 +533,7 @@ void LatencyTest::updateForTimeouts()
     }
     OldTime = newTime;
 
-    elapsedMilliS = std::min(elapsedMilliS, (UInt32) 100);   // Clamp at 100mS in case we're not being called very often.
+    elapsedMilliS = std::min(elapsedMilliS, (vuint32) 100);   // Clamp at 100mS in case we're not being called very often.
 
 
     if (ActiveTimerMilliS == 0)

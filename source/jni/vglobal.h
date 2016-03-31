@@ -20,8 +20,8 @@ typedef unsigned long long ulonglong;
 //@to-do: Check target platform and compiler
 typedef short vint16;
 typedef ushort vuint16;
-typedef long vint32;
-typedef ulong vuint32;
+typedef int vint32;
+typedef uint vuint32;
 typedef longlong vint64;
 typedef ulonglong vuint64;
 

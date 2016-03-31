@@ -469,8 +469,8 @@ public:
     }
 
     // HID Vendor and ProductId of the device.
-    UInt16      VendorId;
-    UInt16      ProductId;
+    vuint16      VendorId;
+    vuint16      ProductId;
     // MaxRanges report maximum sensor range values supported by HW.
     SensorRange MaxRanges;
     // Sensor (and display) serial number.
@@ -491,8 +491,8 @@ struct SerialReport
         memset(SerialNumberValue, 0, sizeof(SerialNumberValue));
     }
 
-    SerialReport(UInt16 commandId,
-                UByte SNo[SERIAL_NUMBER_SIZE])
+    SerialReport(vuint16 commandId,
+                uchar SNo[SERIAL_NUMBER_SIZE])
         :	    CommandId(commandId)
     {
         for (int i=0; i < SERIAL_NUMBER_SIZE; i++)
@@ -501,8 +501,8 @@ struct SerialReport
         }
     }
 
-    UInt16      CommandId;
-	UByte	    SerialNumberValue[SERIAL_NUMBER_SIZE];          // See 'Tracker Firmware Specification' document for
+    vuint16      CommandId;
+	uchar	    SerialNumberValue[SERIAL_NUMBER_SIZE];          // See 'Tracker Firmware Specification' document for
 													  // a description of Serial Report.
 };
 
@@ -517,8 +517,8 @@ struct UUIDReport
         memset(UUIDValue, 0, sizeof(UUIDValue));
     }
 
-    UUIDReport( UInt16 commandId,
-                UByte uuid[UUID_SIZE])
+    UUIDReport( vuint16 commandId,
+                uchar uuid[UUID_SIZE])
         :	    CommandId(commandId)
     {
         for (int i=0; i<UUID_SIZE; i++)
@@ -527,8 +527,8 @@ struct UUIDReport
         }
     }
 
-    UInt16      CommandId;
-	UByte	    UUIDValue[UUID_SIZE];          // See 'DK2 Firmware Specification' document for
+    vuint16      CommandId;
+	uchar	    UUIDValue[UUID_SIZE];          // See 'DK2 Firmware Specification' document for
                                         // a description of UUID.
 };
 
@@ -542,15 +542,15 @@ struct TemperatureReport
         Time(0), Offset(0)
     {}
 
-    TemperatureReport(  UInt16 commandId,
-                        UByte  version,
-                        UByte  numBins,
-                        UByte  bin,
-                        UByte  numSamples,
-                        UByte  sample,
+    TemperatureReport(  vuint16 commandId,
+                        uchar  version,
+                        uchar  numBins,
+                        uchar  bin,
+                        uchar  numSamples,
+                        uchar  sample,
                         double targetTemperature,
                         double actualTemperature,
-                        UInt32 time,
+                        vuint32 time,
                         V3Vectd offset)
         :	    CommandId(commandId), Version(version),
                 NumBins(numBins), Bin(bin), NumSamples(numSamples), Sample(sample),
@@ -558,15 +558,15 @@ struct TemperatureReport
                 Time(time), Offset(offset)
     { }
 
-    UInt16      CommandId;
-    UByte	    Version;          // See 'DK2 Firmware Specification' document for a description of
-    UByte	    NumBins;          // temperature calibration data.
-    UByte	    Bin;
-    UByte	    NumSamples;
-    UByte	    Sample;
+    vuint16      CommandId;
+    uchar	    Version;          // See 'DK2 Firmware Specification' document for a description of
+    uchar	    NumBins;          // temperature calibration data.
+    uchar	    Bin;
+    uchar	    NumSamples;
+    uchar	    Sample;
     double	    TargetTemperature;
     double	    ActualTemperature;
-    UInt32      Time;             // Better hope nobody tries to use this in 2038
+    vuint32      Time;             // Better hope nobody tries to use this in 2038
     V3Vectd    Offset;
 };
 
@@ -586,7 +586,7 @@ struct GyroOffsetReport
         Offset(0), Temperature(0)
     {}
 
-    GyroOffsetReport(	UInt16		commandId,
+    GyroOffsetReport(	vuint16		commandId,
 						VersionEnum version,
                         V3Vectd	offset,
 						double		temperature)
@@ -594,7 +594,7 @@ struct GyroOffsetReport
 				Offset(offset), Temperature(temperature)
     {}
 
-    UInt16      CommandId;
+    vuint16      CommandId;
     VersionEnum Version;
     V3Vectd    Offset;
     double      Temperature;
@@ -694,13 +694,13 @@ struct LatencyTestConfiguration
 // See the 'Latency Tester Specification' document for more details.
 struct LatencyTestDisplay
 {
-    LatencyTestDisplay(UByte mode, UInt32 value)
+    LatencyTestDisplay(uchar mode, vuint32 value)
         : Mode(mode), Value(value)
     {
     }
 
-    UByte       Mode;       // The display mode that we wish to select.
-    UInt32      Value;      // The value to display.
+    uchar       Mode;       // The display mode that we wish to select.
+    vuint32      Value;      // The value to display.
 };
 
 //-------------------------------------------------------------------------------------

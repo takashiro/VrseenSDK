@@ -23,9 +23,9 @@ enum {
 };
 
 // Reported data is little-endian now
-static UInt16 DecodeUInt16(const UByte* buffer)
+static vuint16 DecodeUInt16(const uchar* buffer)
 {
-    return (UInt16(buffer[1]) << 8) | UInt16(buffer[0]);
+    return (vuint16(buffer[1]) << 8) | vuint16(buffer[0]);
 }
 
 /* Unreferenced
@@ -34,7 +34,7 @@ static SInt16 DecodeSInt16(const UByte* buffer)
     return (SInt16(buffer[1]) << 8) | SInt16(buffer[0]);
 }*/
 
-static void UnpackSamples(const UByte* buffer, UByte* r, UByte* g, UByte* b)
+static void UnpackSamples(const uchar* buffer, uchar* r, uchar* g, uchar* b)
 {
     *r = buffer[0];
     *g = buffer[1];
@@ -55,17 +55,17 @@ enum LatencyTestMessageType
 
 struct LatencyTestSample
 {
-    UByte Value[3];
+    uchar Value[3];
 };
 
 struct LatencyTestSamples
 {
-    UByte	SampleCount;
-    UInt16	Timestamp;
+    uchar	SampleCount;
+    vuint16	Timestamp;
 
     LatencyTestSample Samples[20];
 
-    LatencyTestMessageType Decode(const UByte* buffer, int size)
+    LatencyTestMessageType Decode(const uchar* buffer, int size)
     {
         if (size < 64)
         {
@@ -75,7 +75,7 @@ struct LatencyTestSamples
         SampleCount		= buffer[1];
         Timestamp		= DecodeUInt16(buffer + 2);
 
-        for (UByte i = 0; i < SampleCount; i++)
+        for (uchar i = 0; i < SampleCount; i++)
         {
             UnpackSamples(buffer + 4 + (3 * i),  &Samples[i].Value[0], &Samples[i].Value[1], &Samples[i].Value[2]);
         }
@@ -90,7 +90,7 @@ struct LatencyTestSamplesMessage
     LatencyTestSamples        Samples;
 };
 
-bool DecodeLatencyTestSamplesMessage(LatencyTestSamplesMessage* message, UByte* buffer, int size)
+bool DecodeLatencyTestSamplesMessage(LatencyTestSamplesMessage* message, uchar* buffer, int size)
 {
     memset(message, 0, sizeof(LatencyTestSamplesMessage));
 
@@ -116,13 +116,13 @@ bool DecodeLatencyTestSamplesMessage(LatencyTestSamplesMessage* message, UByte* 
 
 struct LatencyTestColorDetected
 {
-    UInt16	CommandID;
-    UInt16	Timestamp;
-    UInt16  Elapsed;
-    UByte   TriggerValue[3];
-    UByte   TargetValue[3];
+    vuint16	CommandID;
+    vuint16	Timestamp;
+    vuint16  Elapsed;
+    uchar   TriggerValue[3];
+    uchar   TargetValue[3];
 
-    LatencyTestMessageType Decode(const UByte* buffer, int size)
+    LatencyTestMessageType Decode(const uchar* buffer, int size)
     {
         if (size < 13)
             return LatencyTestMessage_SizeError;
@@ -143,7 +143,7 @@ struct LatencyTestColorDetectedMessage
     LatencyTestColorDetected  ColorDetected;
 };
 
-bool DecodeLatencyTestColorDetectedMessage(LatencyTestColorDetectedMessage* message, UByte* buffer, int size)
+bool DecodeLatencyTestColorDetectedMessage(LatencyTestColorDetectedMessage* message, uchar* buffer, int size)
 {
     memset(message, 0, sizeof(LatencyTestColorDetectedMessage));
 
@@ -169,11 +169,11 @@ bool DecodeLatencyTestColorDetectedMessage(LatencyTestColorDetectedMessage* mess
 
 struct LatencyTestStarted
 {
-    UInt16	CommandID;
-    UInt16	Timestamp;
-    UByte   TargetValue[3];
+    vuint16	CommandID;
+    vuint16	Timestamp;
+    uchar   TargetValue[3];
 
-    LatencyTestMessageType Decode(const UByte* buffer, int size)
+    LatencyTestMessageType Decode(const uchar* buffer, int size)
     {
         if (size < 8)
             return LatencyTestMessage_SizeError;
@@ -192,7 +192,7 @@ struct LatencyTestStartedMessage
     LatencyTestStarted  TestStarted;
 };
 
-bool DecodeLatencyTestStartedMessage(LatencyTestStartedMessage* message, UByte* buffer, int size)
+bool DecodeLatencyTestStartedMessage(LatencyTestStartedMessage* message, uchar* buffer, int size)
 {
     memset(message, 0, sizeof(LatencyTestStartedMessage));
 
@@ -218,10 +218,10 @@ bool DecodeLatencyTestStartedMessage(LatencyTestStartedMessage* message, UByte* 
 
 struct LatencyTestButton
 {
-    UInt16	CommandID;
-    UInt16	Timestamp;
+    vuint16	CommandID;
+    vuint16	Timestamp;
 
-    LatencyTestMessageType Decode(const UByte* buffer, int size)
+    LatencyTestMessageType Decode(const uchar* buffer, int size)
     {
         if (size < 5)
             return LatencyTestMessage_SizeError;
@@ -239,7 +239,7 @@ struct LatencyTestButtonMessage
     LatencyTestButton         Button;
 };
 
-bool DecodeLatencyTestButtonMessage(LatencyTestButtonMessage* message, UByte* buffer, int size)
+bool DecodeLatencyTestButtonMessage(LatencyTestButtonMessage* message, uchar* buffer, int size)
 {
     memset(message, 0, sizeof(LatencyTestButtonMessage));
 
@@ -266,7 +266,7 @@ bool DecodeLatencyTestButtonMessage(LatencyTestButtonMessage* message, UByte* bu
 struct LatencyTestConfigurationImpl
 {
     enum  { PacketSize = 5 };
-    UByte   Buffer[PacketSize];
+    uchar   Buffer[PacketSize];
 
     NervGear::LatencyTestConfiguration  Configuration;
 
@@ -279,7 +279,7 @@ struct LatencyTestConfigurationImpl
     void Pack()
     {
         Buffer[0] = 5;
-		Buffer[1] = UByte(Configuration.SendSamples);
+		Buffer[1] = uchar(Configuration.SendSamples);
 		Buffer[2] = Configuration.Threshold.red;
         Buffer[3] = Configuration.Threshold.green;
         Buffer[4] = Configuration.Threshold.blue;
@@ -297,7 +297,7 @@ struct LatencyTestConfigurationImpl
 struct LatencyTestCalibrateImpl
 {
     enum  { PacketSize = 4 };
-    UByte   Buffer[PacketSize];
+    uchar   Buffer[PacketSize];
 
     VColor CalibrationColor;
 
@@ -326,7 +326,7 @@ struct LatencyTestCalibrateImpl
 struct LatencyTestStartTestImpl
 {
     enum  { PacketSize = 6 };
-    UByte   Buffer[PacketSize];
+    uchar   Buffer[PacketSize];
 
     VColor TargetColor;
 
@@ -338,11 +338,11 @@ struct LatencyTestStartTestImpl
 
     void Pack()
     {
-        UInt16 commandID = 1;
+        vuint16 commandID = 1;
 
         Buffer[0] = 8;
-		Buffer[1] = UByte(commandID  & 0xFF);
-		Buffer[2] = UByte(commandID >> 8);
+		Buffer[1] = uchar(commandID  & 0xFF);
+		Buffer[2] = uchar(commandID >> 8);
 		Buffer[3] = TargetColor.red;
 		Buffer[4] = TargetColor.green;
 		Buffer[5] = TargetColor.blue;
@@ -360,7 +360,7 @@ struct LatencyTestStartTestImpl
 struct LatencyTestDisplayImpl
 {
     enum  { PacketSize = 6 };
-    UByte   Buffer[PacketSize];
+    uchar   Buffer[PacketSize];
 
     NervGear::LatencyTestDisplay  Display;
 
@@ -374,19 +374,19 @@ struct LatencyTestDisplayImpl
     {
         Buffer[0] = 9;
         Buffer[1] = Display.Mode;
-        Buffer[2] = UByte(Display.Value & 0xFF);
-        Buffer[3] = UByte((Display.Value >> 8) & 0xFF);
-        Buffer[4] = UByte((Display.Value >> 16) & 0xFF);
-        Buffer[5] = UByte((Display.Value >> 24) & 0xFF);
+        Buffer[2] = uchar(Display.Value & 0xFF);
+        Buffer[3] = uchar((Display.Value >> 8) & 0xFF);
+        Buffer[4] = uchar((Display.Value >> 16) & 0xFF);
+        Buffer[5] = uchar((Display.Value >> 24) & 0xFF);
     }
 
     void Unpack()
     {
         Display.Mode = Buffer[1];
-        Display.Value = UInt32(Buffer[2]) |
-            (UInt32(Buffer[3]) << 8) |
-            (UInt32(Buffer[4]) << 16) |
-            (UInt32(Buffer[5]) << 24);
+        Display.Value = vuint32(Buffer[2]) |
+            (vuint32(Buffer[3]) << 8) |
+            (vuint32(Buffer[4]) << 16) |
+            (vuint32(Buffer[5]) << 24);
     }
 };
 
@@ -413,7 +413,7 @@ void LatencyTestDeviceFactory::EnumerateDevices(EnumerateVisitor& visitor)
         LatencyTestEnumerator(DeviceFactory* factory, EnumerateVisitor& externalVisitor)
             : pFactory(factory), ExternalVisitor(externalVisitor) { }
 
-        virtual bool MatchVendorProduct(UInt16 vendorId, UInt16 productId)
+        virtual bool MatchVendorProduct(vuint16 vendorId, vuint16 productId)
         {
             return pFactory->MatchVendorProduct(vendorId, productId);
         }
@@ -431,7 +431,7 @@ void LatencyTestDeviceFactory::EnumerateDevices(EnumerateVisitor& visitor)
     GetManagerImpl()->GetHIDDeviceManager()->Enumerate(&latencyTestEnumerator);
 }
 
-bool LatencyTestDeviceFactory::MatchVendorProduct(UInt16 vendorId, UInt16 productId) const
+bool LatencyTestDeviceFactory::MatchVendorProduct(vuint16 vendorId, vuint16 productId) const
 {
     return ((vendorId == LatencyTester_VendorId) && (productId == LatencyTester_ProductId));
 }
@@ -509,7 +509,7 @@ void LatencyTestDeviceImpl::shutdown()
     LogText("NervGear::LatencyTestDevice - Closed '%s'\n", getHIDDesc()->Path.toCString());
 }
 
-void LatencyTestDeviceImpl::OnInputReport(UByte* pData, UInt32 length)
+void LatencyTestDeviceImpl::OnInputReport(uchar* pData, vuint32 length)
 {
 
     bool processed = false;
@@ -705,7 +705,7 @@ void LatencyTestDeviceImpl::onLatencyTestSamplesMessage(LatencyTestSamplesMessag
     if (HandlerRef.GetHandler())
     {
         MessageLatencyTestSamples samples(this);
-        for (UByte i = 0; i < s.SampleCount; i++)
+        for (uchar i = 0; i < s.SampleCount; i++)
         {
             samples.Samples.append(VColor(s.Samples[i].Value[0], s.Samples[i].Value[1], s.Samples[i].Value[2]));
         }

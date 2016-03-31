@@ -20,7 +20,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 NV_NAMESPACE_BEGIN
 
-typedef SInt16 guiIndex_t;
+typedef vint16 guiIndex_t;
 
 struct textMetrics_t {
 	textMetrics_t() :

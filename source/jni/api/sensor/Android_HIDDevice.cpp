@@ -325,7 +325,7 @@ bool HIDDeviceManager::getFullDesc(int deviceHandle, const VString& devNodePath,
 
     VString versionStr;
     getStringProperty(devNodePath, "bcdDevice", &versionStr);
-    SInt32 versionNum;
+    vint32 versionNum;
     sscanf(versionStr.toCString(), "%x", &versionNum);
     desc->VersionNumber = versionNum;
 
@@ -598,12 +598,12 @@ void HIDDevice::closeDeviceOnIOError()
 }
 
 //-----------------------------------------------------------------------------
-bool HIDDevice::SetFeatureReport(UByte* data, UInt32 length)
+bool HIDDevice::SetFeatureReport(uchar* data, vuint32 length)
 {
     if (Device < 0)
         return false;
 
-    UByte reportID = data[0];
+    uchar reportID = data[0];
 
     if (reportID == 0)
     {
@@ -617,7 +617,7 @@ bool HIDDevice::SetFeatureReport(UByte* data, UInt32 length)
 }
 
 //-----------------------------------------------------------------------------
-bool HIDDevice::GetFeatureReport(UByte* data, UInt32 length)
+bool HIDDevice::GetFeatureReport(uchar* data, vuint32 length)
 {
     if (Device < 0)
         return false;

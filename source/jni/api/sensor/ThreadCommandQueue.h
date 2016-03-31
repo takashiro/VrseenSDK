@@ -41,7 +41,7 @@ public:
 
         uint Size;
         union {
-            UByte Buffer[MaxSize];
+            uchar Buffer[MaxSize];
             uint Align;
         };
 
@@ -63,13 +63,13 @@ public:
         void        Execute();
     };
 
-    UInt16       Size;
+    vuint16       Size;
     bool         WaitFlag;
     bool         ExitFlag; // Marks the last exit command.
     NotifyEvent* pEvent;
 
     ThreadCommand(uint size, bool waitFlag, bool exitFlag = false)
-        : Size((UInt16)size), WaitFlag(waitFlag), ExitFlag(exitFlag), pEvent(0) { }
+        : Size((vuint16)size), WaitFlag(waitFlag), ExitFlag(exitFlag), pEvent(0) { }
     virtual ~ThreadCommand() { }
 
     bool          NeedsWait() const { return WaitFlag; }

@@ -17,8 +17,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 namespace NervGear {
 
-const UByte VERSION = 2;
-const UByte MAX_COMPAT_VERSION = 15;
+const uchar VERSION = 2;
+const uchar MAX_COMPAT_VERSION = 15;
 
 SensorCalibration::SensorCalibration(SensorDevice* pSensor)
     : GyroFilter(6000), GyroAutoTemperature(0)
@@ -114,11 +114,11 @@ void SensorCalibration::DebugClearHeadsetTemperatureReports()
 	tr.Version = 0;
 	tr.Offset.x = tr.Offset.y = tr.Offset.z = 0.0;
 
-	for (UByte i = 0; i < tr.NumBins; i++)
+	for (uchar i = 0; i < tr.NumBins; i++)
 	{
 		tr.Bin = i;
 
-		for (UByte j = 0; j < tr.NumSamples; j++)
+		for (uchar j = 0; j < tr.NumSamples; j++)
 		{
 			tr.Sample = j;
 
@@ -187,7 +187,7 @@ void SensorCalibration::StoreAutoOffset()
 {
     const double maxDeltaT = 2.5;
     const double minExtraDeltaT = 0.5;
-    const UInt32 minDelay = 24 * 3600; // 1 day in seconds
+    const vuint32 minDelay = 24 * 3600; // 1 day in seconds
 
     // find the best bin
     uint binIdx = 0;
@@ -217,7 +217,7 @@ void SensorCalibration::StoreAutoOffset()
 #ifndef USE_LOCAL_TEMPERATURE_CALIBRATION_STORAGE
     bool writeSuccess = false;
 #endif
-    UInt32 now = (UInt32) time(0);
+    vuint32 now = (vuint32) time(0);
     if (now - newestReport.Time > minDelay)
     {
         // only write a new sample if the temperature is close enough

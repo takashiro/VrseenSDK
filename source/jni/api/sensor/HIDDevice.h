@@ -17,11 +17,11 @@ class DeviceManager;
 // that can be used to create it.
 struct HIDDeviceDesc
 {
-    UInt16  VendorId;
-    UInt16  ProductId;
-    UInt16  VersionNumber;
-    UInt16  Usage;
-    UInt16  UsagePage;
+    vuint16  VendorId;
+    vuint16  ProductId;
+    vuint16  VersionNumber;
+    vuint16  Usage;
+    vuint16  UsagePage;
     VString  Path;           // Platform specific.
     VString  Manufacturer;
     VString  Product;
@@ -37,7 +37,7 @@ public:
 
     // Should return true if we are interested in supporting
     // this HID VendorId and ProductId pair.
-    virtual bool MatchVendorProduct(UInt16 vendorId, UInt16 productId)
+    virtual bool MatchVendorProduct(vuint16 vendorId, vuint16 productId)
     { OVR_UNUSED2(vendorId, productId); return true; }
 
     // Override to get notified about available device. Will only be called for
@@ -88,8 +88,8 @@ public:
 
     virtual ~HIDDevice() {}
 
-    virtual bool SetFeatureReport(UByte* data, UInt32 length) = 0;
-    virtual bool GetFeatureReport(UByte* data, UInt32 length) = 0;
+    virtual bool SetFeatureReport(uchar* data, vuint32 length) = 0;
+    virtual bool GetFeatureReport(uchar* data, vuint32 length) = 0;
 
 // Not yet implemented.
 /*
@@ -102,7 +102,7 @@ public:
     class HIDHandler
     {
     public:
-        virtual void OnInputReport(UByte* pData, UInt32 length)
+        virtual void OnInputReport(uchar* pData, vuint32 length)
         { OVR_UNUSED2(pData, length); }
 
         virtual double OnTicks(double tickSeconds)

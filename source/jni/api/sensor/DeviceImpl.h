@@ -293,7 +293,7 @@ public:
 
     // Matches vendorId/productId pair with the factory; returns 'true'
     // if the factory can handle the device.
-    virtual bool MatchVendorProduct(UInt16 vendorId, UInt16 productId) const
+    virtual bool MatchVendorProduct(vuint16 vendorId, vuint16 productId) const
     {
         OVR_UNUSED2(vendorId, productId);
         return false;

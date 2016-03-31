@@ -237,7 +237,7 @@ void LoadModelFileJson( ModelFile & model,
 {
 	LOG( "parsing %s", model.FileName.toCString() );
 
-	const VBinaryFile bin( (const UByte *)modelsBin, modelsBinLength );
+    const VBinaryFile bin( (const uchar *)modelsBin, modelsBinLength );
 
 	if ( modelsBin != NULL && bin.readUint() != 0x6272766F )
 	{
@@ -771,7 +771,7 @@ void LoadModelFileJson( ModelFile & model,
 
 						if ( node.isObject() )
 						{
-							traceModel.nodes[index].data = (UInt32) node.value( "data" ).toDouble();
+							traceModel.nodes[index].data = (vuint32) node.value( "data" ).toDouble();
 							traceModel.nodes[index].dist = node.value( "dist" ).toDouble();
 						}
 					}
@@ -934,8 +934,8 @@ struct zlib_mmap_opaque
 {
 	MappedFile		file;
 	MappedView		view;
-	const UByte *	data;
-	const UByte *	ptr;
+    const uchar *	data;
+    const uchar *	ptr;
 	int				len;
 	int				left;
 };

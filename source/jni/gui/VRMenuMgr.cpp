@@ -178,23 +178,23 @@ char const* GUIDiffuseCompositeFragmentShaderSrc =
 
 //==================================
 // ComposeHandle
-menuHandle_t ComposeHandle( int const index, UInt32 const id )
+menuHandle_t ComposeHandle( int const index, vuint32 const id )
 {
-	UInt64 handle = ( ( (UInt64)id ) << 32ULL ) | (UInt64)index;
+	vuint64 handle = ( ( (vuint64)id ) << 32ULL ) | (vuint64)index;
 	return menuHandle_t( handle );
 }
 
 //==================================
 // DecomposeHandle
-void DecomposeHandle( menuHandle_t const handle, int & index, UInt32 & id )
+void DecomposeHandle( menuHandle_t const handle, int & index, vuint32 & id )
 {
 	index = (int)( handle.Get() & 0xFFFFFFFF );
-	id = (UInt32)( handle.Get() >> 32ULL );
+	id = (vuint32)( handle.Get() >> 32ULL );
 }
 
 //==================================
 // HandleComponentsAreValid
-static bool HandleComponentsAreValid( int const index, UInt32 const id )
+static bool HandleComponentsAreValid( int const index, vuint32 const id )
 {
 	if ( id == INVALID_MENU_OBJECT_ID )
 	{
@@ -283,7 +283,7 @@ private:
 	//--------------------------------------------------------------
 	// private members
 	//--------------------------------------------------------------
-	UInt32						CurrentId;		// ever-incrementing object ID (well... up to 4 billion or so :)
+	vuint32						CurrentId;		// ever-incrementing object ID (well... up to 4 billion or so :)
 	VArray< VRMenuObject* >		ObjectList;		// list of all menu objects
 	VArray< int >				FreeList;		// list of free slots in the array
 	bool						Initialized;	// true if Init has been called
@@ -439,7 +439,7 @@ menuHandle_t VRMenuMgrLocal::createObject( VRMenuObjectParms const & parms )
 		index = ObjectList.length();
 	}
 
-	UInt32 id = ++CurrentId;
+	vuint32 id = ++CurrentId;
 	menuHandle_t handle = ComposeHandle( index, id );
 	//LOG( "VRMenuMgrLocal::CreateObject - handle is %llu", handle.Get() );
 
@@ -475,7 +475,7 @@ menuHandle_t VRMenuMgrLocal::createObject( VRMenuObjectParms const & parms )
 void VRMenuMgrLocal::freeObject( menuHandle_t const handle )
 {
 	int index;
-	UInt32 id;
+	vuint32 id;
 	DecomposeHandle( handle, index, id );
 	if ( !HandleComponentsAreValid( index, id ) )
 	{
@@ -546,7 +546,7 @@ void VRMenuMgrLocal::CondenseList()
 bool VRMenuMgrLocal::isValid( menuHandle_t const handle ) const
 {
 	int index;
-	UInt32 id;
+	vuint32 id;
 	DecomposeHandle( handle, index, id );
 	return HandleComponentsAreValid( index, id );
 }
@@ -557,7 +557,7 @@ bool VRMenuMgrLocal::isValid( menuHandle_t const handle ) const
 VRMenuObject * VRMenuMgrLocal::toObject( menuHandle_t const handle ) const
 {
 	int index;
-	UInt32 id;
+	vuint32 id;
 	DecomposeHandle( handle, index, id );
 	if ( id == INVALID_MENU_OBJECT_ID )
 	{

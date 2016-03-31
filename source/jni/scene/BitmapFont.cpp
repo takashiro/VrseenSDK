@@ -227,8 +227,8 @@ public:
         V3Vectf xyz;
 		float s;
 		float t;
-		UByte rgba[4];
-		UByte fontParms[4];
+		uchar rgba[4];
+		uchar fontParms[4];
 	};
 
 	typedef unsigned short fontIndex_t;
@@ -1280,26 +1280,26 @@ void BitmapFontSurfaceLocal::DrawText3D(BitmapFont const & font,
 		v[i * 4 + 0].xyz = curPos + (r * bearingX) - (u * rh);
 		v[i * 4 + 0].s = s0;
 		v[i * 4 + 0].t = t1;
-		*(UInt32*) (&v[i * 4 + 0].rgba[0]) = iColor;
-		*(UInt32*) (&v[i * 4 + 0].fontParms[0]) = *(UInt32*) (&fontParms[0]);
+		*(vuint32*) (&v[i * 4 + 0].rgba[0]) = iColor;
+		*(vuint32*) (&v[i * 4 + 0].fontParms[0]) = *(vuint32*) (&fontParms[0]);
 		// upper left
 		v[i * 4 + 1].xyz = curPos + (r * bearingX) + (u * bearingY);
 		v[i * 4 + 1].s = s0;
 		v[i * 4 + 1].t = t0;
-		*(UInt32*) (&v[i * 4 + 1].rgba[0]) = iColor;
-		*(UInt32*) (&v[i * 4 + 1].fontParms[0]) = *(UInt32*) (&fontParms[0]);
+		*(vuint32*) (&v[i * 4 + 1].rgba[0]) = iColor;
+		*(vuint32*) (&v[i * 4 + 1].fontParms[0]) = *(vuint32*) (&fontParms[0]);
 		// upper right
 		v[i * 4 + 2].xyz = curPos + (r * rw) + (u * bearingY);
 		v[i * 4 + 2].s = s1;
 		v[i * 4 + 2].t = t0;
-		*(UInt32*) (&v[i * 4 + 2].rgba[0]) = iColor;
-		*(UInt32*) (&v[i * 4 + 2].fontParms[0]) = *(UInt32*) (&fontParms[0]);
+		*(vuint32*) (&v[i * 4 + 2].rgba[0]) = iColor;
+		*(vuint32*) (&v[i * 4 + 2].fontParms[0]) = *(vuint32*) (&fontParms[0]);
 		// lower right
 		v[i * 4 + 3].xyz = curPos + (r * rw) - (u * rh);
 		v[i * 4 + 3].s = s1;
 		v[i * 4 + 3].t = t1;
-		*(UInt32*) (&v[i * 4 + 3].rgba[0]) = iColor;
-		*(UInt32*) (&v[i * 4 + 3].fontParms[0]) = *(UInt32*) (&fontParms[0]);
+		*(vuint32*) (&v[i * 4 + 3].rgba[0]) = iColor;
+		*(vuint32*) (&v[i * 4 + 3].fontParms[0]) = *(vuint32*) (&fontParms[0]);
 		// advance to start of next char
 		curPos += r * (g.AdvanceX * xScale);
 	}
@@ -1424,9 +1424,9 @@ void BitmapFontSurfaceLocal::Finish(VR4Matrixf const & viewMatrix) {
 			Vertices[CurVertex].xyz = transform.Transform(v.xyz);
 			Vertices[CurVertex].s = v.s;
 			Vertices[CurVertex].t = v.t;
-			*(UInt32*) (&Vertices[CurVertex].rgba[0]) = *(UInt32*) (&v.rgba[0]);
-			*(UInt32*) (&Vertices[CurVertex].fontParms[0]) =
-					*(UInt32*) (&v.fontParms[0]);
+			*(vuint32*) (&Vertices[CurVertex].rgba[0]) = *(vuint32*) (&v.rgba[0]);
+			*(vuint32*) (&Vertices[CurVertex].fontParms[0]) =
+					*(vuint32*) (&v.fontParms[0]);
 			CurVertex++;
 		}
 		CurIndex += (vb.NumVerts / 2) * 3;
