@@ -15,7 +15,7 @@ class VPointTracker
 public:
     static const int DEFAULT_FRAME_RATE = 60;
 
-    VPointTracker(float const);
+    VPointTracker(float const rate = 0.1f );
 
     void        Update( double const curFrameTime, V3Vectf const & newPos );
 
@@ -35,6 +35,7 @@ private:
 class VText
 {
 public:
+    VText();
     VString         infoText;           // informative text to show in front of the view
     V4Vectf     infoTextColor;      // color of info text
     V3Vectf     infoTextOffset;     // offset from center of screen in view space

@@ -7,7 +7,7 @@
 #include "VText.h"
 NV_NAMESPACE_BEGIN
 
-VPointTracker::VPointTracker( float const rate = 0.1f ) :
+VPointTracker::VPointTracker( float const rate) :
     LastFrameTime( 0.0 ),
     Rate( 0.1f ),
     CurPosition( 0.0f ),
@@ -73,6 +73,13 @@ void VText::show( float const duration, V3Vectf const & offset, V4Vectf const & 
     }
     infoTextOffset = offset;
     infoTextEndFrame = vrFrame.FrameNumber + (long long)(duration * 60.0f) + 1;
+}
+VText::VText():
+        infoTextColor(1.0f),
+        infoTextOffset(0.0f),
+        infoTextEndFrame(-1)
+{
+
 }
 
 NV_NAMESPACE_END

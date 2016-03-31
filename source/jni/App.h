@@ -7,6 +7,9 @@
 #include "Input.h"
 #include "VEventLoop.h"
 #include "VSoundManager.h"
+#include "gui/VText.h"
+#include "gui/VPanel.h"
+#include "gui/VDialog.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -109,9 +112,6 @@ public:
     void setShowFPS( bool const show );
     bool showFPS() const;
 
-    void showInfoText( float const duration, const char * fmt, ... );
-    void showInfoText( float const duration, V3Vectf const & offset, V4Vectf const & color, const char * fmt, ... );
-
     VR4Matrixf matrixInterpolation( const VR4Matrixf & startMatrix, const VR4Matrixf & endMatrix, double t );
 
     void drawDialog( const VR4Matrixf & mvp );
@@ -123,8 +123,8 @@ public:
     void stopVrThread();
     void syncVrThread();
 
+    VText text;
     volatile bool oneTimeInitCalled;
-
 
 private:
     NV_DECLARE_PRIVATE

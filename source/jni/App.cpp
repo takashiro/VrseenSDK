@@ -48,54 +48,6 @@
 
 NV_NAMESPACE_BEGIN
 
-class VPointTracker
-{
-public:
-    static const int DEFAULT_FRAME_RATE = 60;
-
-    VPointTracker( float const rate = 0.1f ) :
-        LastFrameTime( 0.0 ),
-        Rate( 0.1f ),
-        CurPosition( 0.0f ),
-        FirstFrame( true )
-    {
-    }
-
-    void        Update( double const curFrameTime, V3Vectf const & newPos )
-    {
-        double frameDelta = curFrameTime - LastFrameTime;
-        LastFrameTime = curFrameTime;
-        float const rateScale = static_cast< float >( frameDelta / ( 1.0 / static_cast< double >( DEFAULT_FRAME_RATE ) ) );
-        float const rate = Rate * rateScale;
-        if ( FirstFrame )
-        {
-            CurPosition = newPos;
-        }
-        else
-        {
-            V3Vectf delta = ( newPos - CurPosition ) * rate;
-            if ( delta.Length() < 0.001f )
-            {
-                // don't allow a denormal to propagate from multiplications of very small numbers
-                delta = V3Vectf( 0.0f );
-            }
-            CurPosition += delta;
-        }
-        FirstFrame = false;
-    }
-
-    void                Reset() { FirstFrame = true; }
-    void                SetRate( float const r ) { Rate = r; }
-
-    V3Vectf const & GetCurPosition() const { return CurPosition; }
-
-private:
-    double      LastFrameTime;
-    float       Rate;
-    V3Vectf CurPosition;
-    bool        FirstFrame;
-};
-
 static const char * activityClassName = "com/vrseen/nervgear/VrActivity";
 
 // some parameters from the intent can be empty strings, which cannot be represented as empty strings for sscanf
@@ -272,7 +224,6 @@ struct App::Private
     // screen eyes.
     bool			renderMonoMode;
 
-    VrFrame			vrFrame;
     VrFrame			lastVrFrame;
 
     EyeParms		vrParms;
@@ -301,13 +252,6 @@ struct App::Private
     bool			showVolumePopup;	// true to show volume popup when volume changes
 
     VrViewParms		viewParms;
-
-    VString			infoText;			// informative text to show in front of the view
-    V4Vectf		infoTextColor;		// color of info text
-    V3Vectf		infoTextOffset;		// offset from center of screen in view space
-    long long		infoTextEndFrame;	// time to stop showing text
-    VPointTracker	infoTextPointTracker;	// smoothly tracks to text ideal location
-    VPointTracker	fpsPointTracker;		// smoothly tracks to ideal FPS text location
 
     float 			touchpadTimer;
     V2Vectf		touchOrigin;
@@ -376,9 +320,6 @@ struct App::Private
         , vrThreadTid(0)
         , showFPS(false)
         , showVolumePopup(true)
-        , infoTextColor(1.0f)
-        , infoTextOffset(0.0f)
-        , infoTextEndFrame(-1)
         , touchpadTimer(0.0f)
         , lastTouchpadTime(0.0f)
         , lastTouchDown(false)
@@ -1153,31 +1094,31 @@ struct App::Private
             }
 
             // latch the current joypad state and note transitions
-            vrFrame.Input = joypad;
-            vrFrame.Input.buttonPressed = joypad.buttonState & (~lastVrFrame.Input.buttonState);
-            vrFrame.Input.buttonReleased = ~joypad.buttonState & (lastVrFrame.Input.buttonState & ~BUTTON_TOUCH_WAS_SWIPE);
+            self->text.vrFrame.Input = joypad;
+            self->text.vrFrame.Input.buttonPressed = joypad.buttonState & (~lastVrFrame.Input.buttonState);
+            self->text.vrFrame.Input.buttonReleased = ~joypad.buttonState & (lastVrFrame.Input.buttonState & ~BUTTON_TOUCH_WAS_SWIPE);
 
             if (lastVrFrame.Input.buttonState & BUTTON_TOUCH_WAS_SWIPE)
             {
                 if (lastVrFrame.Input.buttonReleased & BUTTON_TOUCH)
                 {
-                    vrFrame.Input.buttonReleased |= BUTTON_TOUCH_WAS_SWIPE;
+                    self->text.vrFrame.Input.buttonReleased |= BUTTON_TOUCH_WAS_SWIPE;
                 }
                 else
                 {
                     // keep it around this frame
-                    vrFrame.Input.buttonState |= BUTTON_TOUCH_WAS_SWIPE;
+                    self->text.vrFrame.Input.buttonState |= BUTTON_TOUCH_WAS_SWIPE;
                 }
             }
 
             // Synthesize swipe gestures
-            interpretTouchpad(vrFrame.Input);
+            interpretTouchpad(self->text.vrFrame.Input);
 
             if (recenterYawFrameStart != 0)
             {
                 // Perform a reorient before sensor data is read.  Allows apps to reorient without having invalid orientation information for that frame.
                 // Do a warp swap black on the frame the recenter started.
-                self->recenterYaw(recenterYawFrameStart == (vrFrame.FrameNumber + 1));  // vrFrame.FrameNumber hasn't been incremented yet, so add 1.
+                self->recenterYaw(recenterYawFrameStart == (self->text.vrFrame.FrameNumber + 1));  // vrFrame.FrameNumber hasn't been incremented yet, so add 1.
             }
 
             // Get the latest head tracking state, predicted ahead to the midpoint of the time
@@ -1190,26 +1131,26 @@ struct App::Private
             const double clampedPrediction = std::min(0.1, rawDelta * 2);
             sensorForNextWarp = kernel->ovr_GetPredictedSensorState(now + clampedPrediction);
 
-            vrFrame.PoseState = sensorForNextWarp.Predicted;
-            vrFrame.OvrStatus = sensorForNextWarp.Status;
-            vrFrame.DeltaSeconds   = std::min(0.1, rawDelta);
-            vrFrame.FrameNumber++;
+            self->text.vrFrame.PoseState = sensorForNextWarp.Predicted;
+            self->text.vrFrame.OvrStatus = sensorForNextWarp.Status;
+            self->text.vrFrame.DeltaSeconds   = std::min(0.1, rawDelta);
+            self->text.vrFrame.FrameNumber++;
 
             // Don't allow this to be excessively large, which can cause application problems.
-            if (vrFrame.DeltaSeconds > 0.1f)
+            if (self->text.vrFrame.DeltaSeconds > 0.1f)
             {
-                vrFrame.DeltaSeconds = 0.1f;
+                self->text.vrFrame.DeltaSeconds = 0.1f;
             }
 
-            lastVrFrame = vrFrame;
+            lastVrFrame = self->text.vrFrame;
 
             // resend any debug lines that have expired
-            debugLines->BeginFrame(vrFrame.FrameNumber);
+            debugLines->BeginFrame(self->text.vrFrame.FrameNumber);
 
             // reset any VR menu submissions from previous frame
             vrMenuMgr->beginFrame();
 
-            frameworkButtonProcessing(vrFrame.Input);
+            frameworkButtonProcessing(self->text.vrFrame.Input);
 
             KeyState::eKeyEventType event = backKeyState.Update(ovr_GetTimeInSeconds());
             if (event != KeyState::KEY_EVENT_NONE)
@@ -1273,41 +1214,41 @@ struct App::Private
                 V3Vectf viewPos = GetViewMatrixPosition(lastViewMatrix);
                 V3Vectf viewFwd = GetViewMatrixForward(lastViewMatrix);
                 V3Vectf newPos = viewPos + viewFwd * 1.5f;
-                fpsPointTracker.Update(ovr_GetTimeInSeconds(), newPos);
+                self->text.fpsPointTracker.Update(ovr_GetTimeInSeconds(), newPos);
 
                 fontParms_t fp;
                 fp.AlignHoriz = HORIZONTAL_CENTER;
                 fp.Billboard = true;
                 fp.TrackRoll = false;
-                worldFontSurface->DrawTextBillboarded3Df(*defaultFont, fp, fpsPointTracker.GetCurPosition(),
+                worldFontSurface->DrawTextBillboarded3Df(*defaultFont, fp, self->text.fpsPointTracker.GetCurPosition(),
                         0.8f, V4Vectf(1.0f, 0.0f, 0.0f, 1.0f), "%.1f fps", LastFrameRate);
                 LastFrameTime = currentFrameTime;
             }
 
 
             // draw info text
-            if (infoTextEndFrame >= vrFrame.FrameNumber)
+            if (self->text.infoTextEndFrame >= self->text.vrFrame.FrameNumber)
             {
                 V3Vectf viewPos = GetViewMatrixPosition(lastViewMatrix);
                 V3Vectf viewFwd = GetViewMatrixForward(lastViewMatrix);
                 V3Vectf viewUp(0.0f, 1.0f, 0.0f);
                 V3Vectf viewLeft = viewUp.Cross(viewFwd);
-                V3Vectf newPos = viewPos + viewFwd * infoTextOffset.z + viewUp * infoTextOffset.y + viewLeft * infoTextOffset.x;
-                infoTextPointTracker.Update(ovr_GetTimeInSeconds(), newPos);
+                V3Vectf newPos = viewPos + viewFwd * self->text.infoTextOffset.z + viewUp * self->text.infoTextOffset.y + viewLeft * self->text.infoTextOffset.x;
+                self->text.infoTextPointTracker.Update(ovr_GetTimeInSeconds(), newPos);
 
                 fontParms_t fp;
                 fp.AlignHoriz = HORIZONTAL_CENTER;
                 fp.AlignVert = VERTICAL_CENTER;
                 fp.Billboard = true;
                 fp.TrackRoll = false;
-                worldFontSurface->DrawTextBillboarded3Df(*defaultFont, fp, infoTextPointTracker.GetCurPosition(),
-                        1.0f, infoTextColor, infoText.toCString());
+                worldFontSurface->DrawTextBillboarded3Df(*defaultFont, fp, self->text.infoTextPointTracker.GetCurPosition(),
+                        1.0f, self->text.infoTextColor, self->text.infoText.toCString());
             }
 
             // Main loop logic / draw code
             if (!readyToExit)
             {
-                lastViewMatrix = appInterface->onNewFrame(vrFrame);
+                lastViewMatrix = appInterface->onNewFrame(self->text.vrFrame);
             }
 
             kernel->ovr_HandleDeviceStateChanges();
@@ -1458,14 +1399,14 @@ struct App::Private
             {
                 float const IPD_MIN_CM = 0.0f;
                 viewParms.InterpupillaryDistance = std::max(IPD_MIN_CM * 0.01f, viewParms.InterpupillaryDistance - IPD_STEP);
-                self->showInfoText(1.0f, "%.3f", viewParms.InterpupillaryDistance);
+                self->text.show(1.0f, "%.3f", viewParms.InterpupillaryDistance);
                 return;
             }
             else if (keyCode == AKEYCODE_PERIOD && down && repeatCount == 0)
             {
                 float const IPD_MAX_CM = 8.0f;
                 viewParms.InterpupillaryDistance = std::min(IPD_MAX_CM * 0.01f, viewParms.InterpupillaryDistance + IPD_STEP);
-                self->showInfoText(1.0f, "%.3f", viewParms.InterpupillaryDistance);
+                self->text.show(1.0f, "%.3f", viewParms.InterpupillaryDistance);
                 return;
             }
         }
@@ -1938,7 +1879,7 @@ void App::setShowFPS(bool const show)
     d->showFPS = show;
     if (!wasShowing && d->showFPS)
 	{
-        d->fpsPointTracker.Reset();
+        text.fpsPointTracker.Reset();
 	}
 }
 
@@ -1960,37 +1901,6 @@ VrViewParms const &	App::vrViewParms() const
 void App::setVrViewParms(VrViewParms const & parms)
 {
     d->viewParms = parms;
-}
-
-void App::showInfoText(float const duration, const char * fmt, ...)
-{
-	char buffer[1024];
-	va_list args;
-    va_start(args, fmt);
-    vsnprintf(buffer, sizeof(buffer), fmt, args);
-    va_end(args);
-    d->infoText = buffer;
-    d->infoTextColor = V4Vectf(1.0f);
-    d->infoTextOffset = V3Vectf(0.0f, 0.0f, 1.5f);
-    d->infoTextPointTracker.Reset();
-    d->infoTextEndFrame = d->vrFrame.FrameNumber + (long long)(duration * 60.0f) + 1;
-}
-
-void App::showInfoText(float const duration, V3Vectf const & offset, V4Vectf const & color, const char * fmt, ...)
-{
-	char buffer[1024];
-	va_list args;
-    va_start(args, fmt);
-    vsnprintf(buffer, sizeof(buffer), fmt, args);
-    va_end(args);
-    d->infoText = buffer;
-    d->infoTextColor = color;
-    if (offset != d->infoTextOffset || d->infoTextEndFrame < d->vrFrame.FrameNumber)
-	{
-        d->infoTextPointTracker.Reset();
-	}
-    d->infoTextOffset = offset;
-    d->infoTextEndFrame = d->vrFrame.FrameNumber + (long long)(duration * 60.0f) + 1;
 }
 
 KeyState & App::backKeyState()
@@ -2111,8 +2021,8 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
 {
     VGlOperation glOperation;
     // update vr lib systems after the app frame, but before rendering anything
-    guiSys().frame( this, d->vrFrame, vrMenuMgr(), defaultFont(), menuFontSurface(), centerViewMatrix );
-    gazeCursor().Frame( centerViewMatrix, d->vrFrame.DeltaSeconds );
+    guiSys().frame( this, text.vrFrame, vrMenuMgr(), defaultFont(), menuFontSurface(), centerViewMatrix );
+    gazeCursor().Frame( centerViewMatrix, text.vrFrame.DeltaSeconds );
 
     menuFontSurface().Finish( centerViewMatrix );
     worldFontSurface().Finish( centerViewMatrix );
