@@ -708,31 +708,31 @@ struct App::Private
 
             if (input.buttonPressed & BUTTON_B)
             {
-                if (swapParms.WarpOptions & SWAP_OPTION_USE_SLICED_WARP)
+                if (kernel->m_smoothOptions & SWAP_OPTION_USE_SLICED_WARP)
                 {
-                    swapParms.WarpOptions &= ~SWAP_OPTION_USE_SLICED_WARP;
+                    kernel->m_smoothOptions &= ~SWAP_OPTION_USE_SLICED_WARP;
                     self->createToast("eye warp");
                 }
                 else
                 {
-                    swapParms.WarpOptions |= SWAP_OPTION_USE_SLICED_WARP;
+                    kernel->m_smoothOptions |= SWAP_OPTION_USE_SLICED_WARP;
                     self->createToast("slice warp");
                 }
             }
 
-            if (swapParms.WarpOptions & SWAP_OPTION_USE_SLICED_WARP)
+            if (kernel->m_smoothOptions & SWAP_OPTION_USE_SLICED_WARP)
             {
                 extern float calibrateFovScale;
 
                 if (input.buttonPressed & BUTTON_DPAD_LEFT)
                 {
-                    swapParms.PreScheduleSeconds -= 0.001f;
-                    self->createToast("Schedule: %f", swapParms.PreScheduleSeconds);
+                    kernel->m_preScheduleSeconds -= 0.001f;
+                    self->createToast("Schedule: %f",  kernel->m_preScheduleSeconds);
                 }
                 if (input.buttonPressed & BUTTON_DPAD_RIGHT)
                 {
-                    swapParms.PreScheduleSeconds += 0.001f;
-                    self->createToast("Schedule: %f", swapParms.PreScheduleSeconds);
+                    kernel->m_preScheduleSeconds += 0.001f;
+                    self->createToast("Schedule: %f",  kernel->m_preScheduleSeconds);
                 }
                 if (input.buttonPressed & BUTTON_DPAD_UP)
                 {
@@ -2173,7 +2173,7 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
     // Doing this dynamically based just on time causes visible flickering at the
     // periphery when the fov is increased, so only do it if minimumVsyncs is set.
     const float fovDegrees = d->kernel->device->eyeDisplayFov[0] +
-            ( ( d->swapParms.MinimumVsyncs > 1 ) ? 10.0f : 0.0f ) +
+            ( ( d->kernel->m_minimumVsyncs > 1 ) ? 10.0f : 0.0f ) +
             ( ( !d->showVignette ) ? 5.0f : 0.0f );
 
     // DisplayMonoMode uses a single eye rendering for speed improvement
@@ -2246,11 +2246,7 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
         const CompletedEyes eyes = d->eyeTargets->GetCompletedEyes();
 
         for ( int eye = 0; eye < 2; eye++ )
-        {
-            d->swapParms.Images[eye][0].TexCoordsFromTanAngles = NervGear::VR4Matrix<float>::TanAngleMatrixFromFov( fovDegrees );
-            d->swapParms.Images[eye][0].TexId = eyes.Textures[d->renderMonoMode ? 0 : eye ];
-            d->swapParms.Images[eye][0].Pose = d->sensorForNextWarp.Predicted;
-
+        {            
            d->kernel->m_images[eye][0].TexCoordsFromTanAngles = VR4Matrixf::TanAngleMatrixFromFov( fovDegrees );
            d->kernel->m_images[eye][0].TexId = eyes.Textures[d->renderMonoMode ? 0 : eye ];
            d->kernel->m_images[eye][0].Pose = d->sensorForNextWarp.Predicted;
