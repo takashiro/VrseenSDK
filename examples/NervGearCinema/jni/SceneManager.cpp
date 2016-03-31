@@ -942,8 +942,8 @@ VR4Matrixf SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 	if ( !GetUseOverlay() || SceneInfo.LobbyScreen || ( SceneInfo.UseScreenGeometry && ( SceneScreenSurface != NULL ) ) )
 	{
 		// no overlay
-        vApp->swapParms().WarpProgram = WP_CHROMATIC;
-        vApp->swapParms().Images[eye][1].TexId = 0;
+        vApp->kernel()->setSmoothProgram( WP_CHROMATIC);
+        vApp->kernel()->setSmoothEyeTexture((unsigned int)0,eye,1);
 
 		glActiveTexture( GL_TEXTURE0 );
 		glBindTexture( GL_TEXTURE_EXTERNAL_OES, MovieTexture->textureId );
@@ -978,10 +978,10 @@ VR4Matrixf SceneManager::DrawEyeView( const int eye, const float fovDegrees )
         const VR4Matrixf screenModel = ScreenMatrix();
         const VR4Matrixf mv = Scene.ViewMatrixForEye( eye ) * screenModel;
 
-        vApp->swapParms().WarpProgram = WP_CHROMATIC_MASKED_PLANE;
-        vApp->swapParms().Images[eye][1].TexId = MipMappedMovieTextures[CurrentMipMappedMovieTexture];
-        vApp->swapParms().Images[eye][1].Pose = vApp->sensorForNextWarp().Predicted;
-        vApp->swapParms().Images[eye][1].TexCoordsFromTanAngles = texMatrix * VR4Matrix<float>::TanAngleMatrixFromUnitSquare( &mv );
+        vApp->kernel()->setSmoothProgram(WP_CHROMATIC_MASKED_PLANE);
+        vApp->kernel()->setSmoothEyeTexture( MipMappedMovieTextures[CurrentMipMappedMovieTexture],eye,1);
+        vApp->kernel()->setSmoothPose(vApp->sensorForNextWarp().Predicted,eye,1);
+        vApp->kernel()->setTexMatrix(texMatrix * VR4Matrix<float>::TanAngleMatrixFromUnitSquare( &mv ),eye,1);
 
 		// explicitly clear a hole in alpha
         const VR4Matrixf screenMvp = mvp * screenModel;
@@ -1006,7 +1006,7 @@ VR4Matrixf SceneManager::Frame( const VrFrame & vrFrame )
 		vrFrameWithoutMove.Input.sticks[0][0] = 0.0f;
 		vrFrameWithoutMove.Input.sticks[0][1] = 0.0f;
 	}
-    Scene.Frame( vApp->vrViewParms(), vrFrameWithoutMove, vApp->swapParms().ExternalVelocity );
+    Scene.Frame( vApp->vrViewParms(), vrFrameWithoutMove, vApp->kernel()->m_externalVelocity);
 
 	if ( ClearGhostsFrames > 0 )
 	{

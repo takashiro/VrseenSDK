@@ -750,7 +750,7 @@ VR4Matrixf Oculus360Videos::onNewFrame( const VrFrame vrFrame )
 	VrFrame vrFrameWithoutMove = vrFrame;
 	vrFrameWithoutMove.Input.sticks[ 0 ][ 0 ] = 0.0f;
 	vrFrameWithoutMove.Input.sticks[ 0 ][ 1 ] = 0.0f;
-	Scene.Frame( vApp->vrViewParms(), vrFrameWithoutMove, vApp->swapParms().ExternalVelocity );
+    Scene.Frame( vApp->vrViewParms(), vrFrameWithoutMove, vApp->kernel()->m_externalVelocity );
 
 	// Check for new video frames
 	// latch the latest movie frame to the texture.

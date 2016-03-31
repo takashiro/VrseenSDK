@@ -226,7 +226,7 @@ struct App::Private
 
     EyeParms		vrParms;
 
-    ovrTimeWarpParms	swapParms;			// passed to TimeWarp->WarpSwap()
+
 
     VGlShader		untexturedMvpProgram;
     VGlShader		untexturedScreenSpaceProgram;
@@ -433,7 +433,6 @@ struct App::Private
         vrParms = DefaultVrParmsForRenderer(glOperation);
 
 
-         swapParms.WarpProgram = ChromaticAberrationCorrection(glOperation) ? WP_CHROMATIC : WP_SIMPLE;
 
           kernel->setSmoothProgram(ChromaticAberrationCorrection(glOperation) ? WP_CHROMATIC : WP_SIMPLE);
         glOperation.logExtensions();
@@ -1896,15 +1895,7 @@ SurfaceTexture * App::dialogTexture()
     return dialog.dialogTexture;
 }
 
-ovrTimeWarpParms const & App::swapParms() const
-{
-    return d->swapParms;
-}
 
-ovrTimeWarpParms & App::swapParms()
-{
-    return d->swapParms;
-}
 
 ovrSensorState const & App::sensorForNextWarp() const
 {
@@ -2121,17 +2112,10 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
 
         for ( int eye = 0; eye < 2; eye++ )
         {            
-
-            d->swapParms.Images[eye][0].TexCoordsFromTanAngles = VR4Matrixf::TanAngleMatrixFromFov( fovDegrees );
-            d->swapParms.Images[eye][0].TexId = eyes.Textures[d->renderMonoMode ? 0 : eye ];
-            d->swapParms.Images[eye][0].Pose = d->sensorForNextWarp.Predicted;
-
-
            d->kernel->m_texMatrix[eye][0] = VR4Matrixf::TanAngleMatrixFromFov( fovDegrees );
            d->kernel->m_texId[eye][0] = eyes.Textures[d->renderMonoMode ? 0 : eye ];
            d->kernel->m_pose[eye][0] = d->sensorForNextWarp.Predicted;
           // d->kernel->m_smoothProgram = ChromaticAberrationCorrection(glOperation) ? WP_CHROMATIC : WP_SIMPLE;
-
 
         }
 

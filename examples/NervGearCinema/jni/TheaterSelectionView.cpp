@@ -94,7 +94,7 @@ void TheaterSelectionView::OnOpen()
 
 	Cinema.sceneMgr.LightsOn( 0.5f );
 
-    vApp->swapParms().WarpProgram = WP_CHROMATIC;
+    vApp->kernel()->setSmoothProgram(WP_CHROMATIC);
 
 	Cinema.sceneMgr.ClearGazeCursorGhosts();
     vApp->guiSys().openMenu( vApp, vApp->gazeCursor(), "TheaterSelectionBrowser" );

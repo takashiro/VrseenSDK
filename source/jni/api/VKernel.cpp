@@ -919,7 +919,7 @@ void VKernel::setPreScheduleSeconds(float pres)
 m_preScheduleSeconds = pres;
 
 }
-void VKernel::setSmoothProgram(ovrTimeWarpProgram program)
+void VKernel::setSmoothProgram(ushort program)
 {
    m_smoothProgram = program;
 
@@ -1092,81 +1092,43 @@ void VKernel::ovr_RecenterYaw()
     ovr_RecenterYawInternal();
 }
 
-void VKernel::doSmooth(const ovrTimeWarpParms * parms )
+/*void VKernel::doSmooth(const ovrTimeWarpParms * parms )
 {
     if(frameSmooth==NULL||!isRunning) return;
 
     //setSmoothParms(*parms);
     syncSmoothParms();
    // frameSmooth->doSmooth();
-}
- ovrTimeWarpParms VKernel::InitTimeWarpParms( const ovrWarpInit init, const unsigned int texId )
+}*/
+ void VKernel::InitTimeWarpParms( )
 {
-    const VR4Matrixf tanAngleMatrix = VR4Matrixf::TanAngleMatrixFromFov( 90.0f );
-
-    ovrTimeWarpParms parms;
-    memset( &parms, 0, sizeof( parms ) );
-
+     m_smoothOptions =0;
+     const VR4Matrixf tanAngleMatrix = VR4Matrixf::TanAngleMatrixFromFov( 90.0f );
+     memset( &m_texId, 0, sizeof( m_texId ) );
+     memset( &m_pose, 0, sizeof( m_pose ) );
+     memset( &m_planarTexId, 0, sizeof( m_planarTexId ) );
+     memset( &m_texMatrix, 0, sizeof( m_texMatrix ) );
+     memset( &m_externalVelocity, 0, sizeof( m_externalVelocity ) );
     for ( int eye = 0; eye < 2; eye++ )
     {
         for ( int i = 0; i < 3; i++ )
         {
-            parms.Images[eye][i].TexCoordsFromTanAngles = tanAngleMatrix;
-            parms.Images[eye][i].Pose.Pose.Orientation.w = 1.0f;
+            m_texMatrix[eye][i] = tanAngleMatrix;
+            m_pose[eye][i].Pose.Orientation.w = 1.0f;
         }
     }
-    parms.ExternalVelocity.M[0][0] = 1.0f;
-    parms.ExternalVelocity.M[1][1] = 1.0f;
-    parms.ExternalVelocity.M[2][2] = 1.0f;
-    parms.ExternalVelocity.M[3][3] = 1.0f;
-    parms.MinimumVsyncs = 1;
-    parms.PreScheduleSeconds = 0.014f;
-    parms.WarpProgram = WP_SIMPLE;
 
-    switch ( init )
-    {
-        case WARP_INIT_DEFAULT:
-        {
-            break;
-        }
-        case WARP_INIT_BLACK:
-        {
-            parms.WarpOptions = SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER | SWAP_OPTION_FLUSH | SWAP_OPTION_DEFAULT_IMAGES;
-            parms.WarpProgram = WP_SIMPLE;
-            for ( int eye = 0; eye < 2; eye++ )
-            {
-                parms.Images[eye][0].TexId = 0;		// default replaced with a black texture
-            }
-            break;
-        }
-        case WARP_INIT_LOADING_ICON:
-        {
-            parms.WarpOptions = SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER | SWAP_OPTION_FLUSH | SWAP_OPTION_DEFAULT_IMAGES;
-            parms.WarpProgram = WP_LOADING_ICON;
-            parms.ProgramParms[0] = 1.0f;		// rotation in radians per second
-            parms.ProgramParms[1] = 16.0f;		// icon size factor smaller than fullscreen
-            for ( int eye = 0; eye <2; eye++ )
-            {
-                parms.Images[eye][0].TexId = 0;		// default replaced with a black texture
-                parms.Images[eye][1].TexId = texId;	// loading icon texture
-            }
-            break;
-        }
-        case WARP_INIT_MESSAGE:
-        {
-            parms.WarpOptions = SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER | SWAP_OPTION_FLUSH | SWAP_OPTION_DEFAULT_IMAGES;
-            parms.WarpProgram = WP_LOADING_ICON;
-            parms.ProgramParms[0] = 0.0f;		// rotation in radians per second
-            parms.ProgramParms[1] = 2.0f;		// message size factor smaller than fullscreen
-            for ( int eye = 0; eye < 2; eye++ )
-            {
-                parms.Images[eye][0].TexId = 0;		// default replaced with a black texture
-                parms.Images[eye][1].TexId = texId;	// message texture
-            }
-            break;
-        }
-    }
-    return parms;
+    m_externalVelocity.M[0][0] = 1.0f;
+    m_externalVelocity.M[1][1] = 1.0f;
+    m_externalVelocity.M[2][2] = 1.0f;
+    m_externalVelocity.M[3][3] = 1.0f;
+    m_minimumVsyncs = 1;
+    m_preScheduleSeconds = 0.014f;
+    m_smoothProgram = WP_SIMPLE;
+    m_programParms[0] =0;
+    m_programParms[1] =0;
+    m_programParms[2] =0;
+    m_programParms[3] =0;
 }
 /*
 void VKernel::setSmoothParms(const ovrTimeWarpParms &  parms)

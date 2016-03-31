@@ -21,7 +21,7 @@ public:
     void setMinimumVsncs( int vsnc);
     void setExternalVelocity(VR4Matrixf extV);
     void setPreScheduleSeconds(float pres);
-    void setSmoothProgram(ovrTimeWarpProgram program);
+    void setSmoothProgram(ushort program);
     void setProgramParms( float * proParms);
     void	doSmooth();
 

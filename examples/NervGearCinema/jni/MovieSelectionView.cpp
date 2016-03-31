@@ -170,7 +170,7 @@ void MovieSelectionView::OnOpen()
 
 	SwipeHintComponent::ShowSwipeHints = true;
 
-    vApp->swapParms().WarpProgram = WP_CHROMATIC;
+    vApp->kernel()->setSmoothProgram( WP_CHROMATIC);
 }
 
 void MovieSelectionView::OnClose()

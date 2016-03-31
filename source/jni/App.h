@@ -101,8 +101,6 @@ public:
     VKernel* kernel();
     SurfaceTexture *dialogTexture();
 
-    const ovrTimeWarpParms &swapParms() const;
-    ovrTimeWarpParms &swapParms();
 
     const ovrSensorState &sensorForNextWarp() const;
 

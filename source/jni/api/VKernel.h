@@ -122,27 +122,7 @@ typedef struct
 
 
 
-typedef struct
-{
 
-    ovrTimeWarpImage 			Images[2][3];
-
-
-    int 						WarpOptions;
-
-    NervGear::VR4Matrix<float>					ExternalVelocity;
-
-
-    int							MinimumVsyncs;
-
-
-    float						PreScheduleSeconds;
-
-
-    ovrTimeWarpProgram			WarpProgram;
-
-    float						ProgramParms[4];
-} ovrTimeWarpParms;
 
 
 typedef enum
@@ -202,9 +182,6 @@ public:
     void run();
     void exit();
     void destroy(eExitType type);
-
-    void doSmooth(const ovrTimeWarpParms * parms );
-
     void ovr_HandleDeviceStateChanges();
     ovrSensorState	ovr_GetPredictedSensorState(double absTime );
     void			ovr_RecenterYaw();
@@ -228,18 +205,17 @@ public:
     void setMinimumVsncs( int vsnc);
     void setExternalVelocity(VR4Matrixf extV);
     void setPreScheduleSeconds(float pres);
-    void setSmoothProgram(ovrTimeWarpProgram program);
+    void setSmoothProgram(ushort program);
     void setProgramParms( float * proParms);
-    void setSmoothParms(const ovrTimeWarpParms &  parms);
-    ovrTimeWarpParms  getSmoothParms();
-    ovrTimeWarpParms  InitTimeWarpParms( const ovrWarpInit init = WARP_INIT_DEFAULT, const unsigned int texId =0 );
+
+     void InitTimeWarpParms( );
 
 
     int 						m_smoothOptions;
     VR4Matrixf					m_externalVelocity;
     int							m_minimumVsyncs;
     float						m_preScheduleSeconds;
-    ovrTimeWarpProgram			m_smoothProgram;
+    ushort			            m_smoothProgram;
     float						m_programParms[4];
 
     unsigned int	m_texId[2][3];

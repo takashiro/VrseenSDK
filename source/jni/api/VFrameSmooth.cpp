@@ -32,14 +32,7 @@ const char * ovr_GetLatencyTestResult();
 
 NV_NAMESPACE_BEGIN
 
-struct warpSource_t
-{
-    long long			MinimumVsync;				// Never pick up a source if it is from the current vsync.
-    long long			FirstDisplayedVsync[2];		// External velocity is added after this vsync.
-    bool				disableChromaticCorrection;	// Disable correction for chromatic aberration.
-    EGLSyncKHR			GpuSync;					// When this sync completes, the textures are done rendering.
-    ovrTimeWarpParms	WarpParms;					// passed into WarpSwap()
-};
+
 
 struct swapProgram_t
 {
@@ -367,7 +360,7 @@ struct VFrameSmooth::Private
     void			threadFunction();
     void 			smoothThreadInit();
     void			smoothThreadShutdown();
-    void			smoothInternal( const ovrTimeWarpParms & parms );
+
     void            smoothInternal();
     void			buildSmoothProgPair( ovrTimeWarpProgram simpleIndex,
                                        const char * simpleVertex, const char * simpleFragment,
@@ -394,7 +387,7 @@ struct VFrameSmooth::Private
      VR4Matrixf					m_externalVelocity;
      int							m_minimumVsyncs;
      float						m_preScheduleSeconds;
-     ovrTimeWarpProgram			m_smoothProgram;
+     ushort			m_smoothProgram;
      float						m_programParms[4];
 
 
@@ -573,7 +566,7 @@ void VFrameSmooth::setPreScheduleSeconds(float pres)
     d->m_preScheduleSeconds = pres;
 
 }
-void VFrameSmooth::setSmoothProgram(ovrTimeWarpProgram program)
+void VFrameSmooth::setSmoothProgram(ushort program)
 {
 
    d->m_smoothProgram = program;
@@ -1532,123 +1525,6 @@ void VFrameSmooth::Private::smoothInternal( )
     }
 }
 
-
-
-
-void VFrameSmooth::Private::smoothInternal( const ovrTimeWarpParms & parms )
-{
-    if ( gettid() != m_sStartupTid )
-    {
-        vInfo( " Called with thread wrong");
-    }
-
-
-    m_lastsmoothTimeInSeconds.setState( ovr_GetTimeInSeconds() );
-
-
-    glBindFramebuffer( GL_FRAMEBUFFER, 0 );
-    const int minimumVsyncs =  parms.MinimumVsyncs;
-
-    VGlOperation glOperation;
-        vInfo( "smooth internal before eyebuffercount ");
-    const long long lastBufferCount = m_eyeBufferCount.state();
-
-     vInfo( "smooth eye buffercount ");
-
-    m_minimumVsync = m_lastSwapVsyncCount + 2 * minimumVsyncs;
-    m_firstDisplayedVsync[0] = 0;
-    m_firstDisplayedVsync[1] = 0;
-    m_disableChromaticCorrection = ( ( glOperation.eglGetGpuType() & NervGear::VGlOperation::GPU_TYPE_MALI_T760_EXYNOS_5433 ) != 0 );
-
-    if ( ( m_smoothOptions & SWAP_OPTION_DEFAULT_IMAGES ) != 0 )
-    {
-        for ( int eye = 0; eye < 2; eye++ )
-        {
-            if (m_texId[eye][0] == 0 )
-            {
-                m_texId[eye][0] = m_blackTexId;
-            }
-            if ( m_texId[eye][1] == 0 )
-            {
-                m_texId[eye][1] = m_defaultLoadingIconTexId;
-            }
-        }
-    }
-
-    if ( m_gpuSync != EGL_NO_SYNC_KHR )
-    {
-        if ( EGL_FALSE == glOperation.eglDestroySyncKHR( m_eglDisplay, m_gpuSync ) )
-        {
-            vInfo("eglDestroySyncKHR returned EGL_FALSE");
-        }
-    }
-
-    m_gpuSync = glOperation.eglCreateSyncKHR( m_eglDisplay, EGL_SYNC_FENCE_KHR, NULL );
-    if ( m_gpuSync == EGL_NO_SYNC_KHR )
-    {
-        vFatal("eglCreateSyncKHR_():EGL_NO_SYNC_KHR");
-    }
-
-    if ( EGL_FALSE == glOperation.eglClientWaitSyncKHR( m_eglDisplay, m_gpuSync,
-                                                        EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, 0 ) )
-    {
-        vInfo("eglClientWaitSyncKHR returned EGL_FALSE");
-    }
-
-
-    m_eyeBufferCount.setState( lastBufferCount + 1 );
-
-    if ( !m_async )
-    {
-
-
-        VGlOperation glOperation;
-        glOperation.glFinish();
-
-        swapProgram_t * swapProg;
-        swapProg = &spSyncSwappedBufferPortrait;
-
-        renderToDisplay( floor( GetFractionalVsync() ), *swapProg );
-
-        const SwapState state = m_swapVsync.state();
-        m_lastSwapVsyncCount = state.VsyncCount;
-
-        return;
-    }
-
-    for ( ; ; )
-    {
-        const uint64_t startSuspendNanoSeconds = GetNanoSecondsUint64();
-
-
-        pthread_mutex_lock( &m_smoothMutex );
-
-
-        pthread_cond_wait( &m_smoothIslocked, &m_smoothMutex );
-
-
-        pthread_mutex_unlock( &m_smoothMutex );
-
-        const uint64_t endSuspendNanoSeconds = GetNanoSecondsUint64();
-
-        const SwapState state = m_swapVsync.state();
-        if ( state.EyeBufferCount >= lastBufferCount )
-        {
-
-            m_lastSwapVsyncCount = std::max( state.VsyncCount, m_lastSwapVsyncCount + minimumVsyncs );
-
-
-            const uint64_t suspendNanoSeconds = endSuspendNanoSeconds - startSuspendNanoSeconds;
-            if ( suspendNanoSeconds < 1000 * 1000 )
-            {
-                const uint64_t suspendMicroSeconds = ( 1000 * 1000 - suspendNanoSeconds ) / 1000;
-                vInfo("WarpSwap: usleep( " << suspendMicroSeconds << " )");
-                usleep( suspendMicroSeconds );
-            }
-            return;
-        }
-    }
-}
 
 
 void	VFrameSmooth::doSmooth()
