@@ -1,9 +1,9 @@
 #pragma once
 
+#include <EyeBuf.h>
 #include "vglobal.h"
 #include "api/VKernel.h"
 #include "KeyState.h"
-#include "EyeBuffers.h"
 #include "Input.h"
 #include "VEventLoop.h"
 #include "VSoundManager.h"
@@ -51,8 +51,8 @@ public:
     void setRecenterYawFrameStart( const long long frameNumber );
     long long recenterYawFrameStart() const;
 
-    EyeParms eyeParms();
-    void setEyeParms(const EyeParms parms);
+    EyeBuf::EyeParms eyeParms();
+    void setEyeParms(const EyeBuf::EyeParms parms);
 
     OvrGuiSys &guiSys();
     OvrGazeCursor  &gazeCursor();
@@ -75,7 +75,7 @@ public:
     VR4Matrixf const &lastViewMatrix() const;
     void setLastViewMatrix( VR4Matrixf const & m );
 
-    EyeParms &vrParms();
+    EyeBuf::EyeParms &vrParms();
 
     const VrViewParms &vrViewParms() const;
     void setVrViewParms( VrViewParms const & parms );

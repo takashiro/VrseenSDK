@@ -9,8 +9,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 *************************************************************************************/
 
-#include "EyeBuffers.h"
-
+#include <EyeBuf.h>
 #include <math.h>
 #include <sys/syscall.h>
 #include <sys/time.h>
@@ -28,14 +27,14 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 NV_NAMESPACE_BEGIN
 
-EyeBuffers::EyeBuffers() :
+EyeBuf::EyeBuf() :
     LogEyeSceneGpuTime(),
     DiscardInsteadOfClear( true ),
     SwapCount( 0 )
 {
 }
 
-void EyeBuffer::Delete()
+void EyeBuf::EyeBuffer::Delete()
 {
     if ( Texture )
     {
@@ -64,7 +63,7 @@ void EyeBuffer::Delete()
     }
 }
 
-void EyeBuffer::Allocate( const EyeParms & bufferParms, multisample_t multisampleMode )
+void EyeBuf::EyeBuffer::Allocate( const EyeBuf::EyeParms & bufferParms, EyeBuf::multisample multisampleMode )
 {
     Delete();
 
@@ -86,17 +85,17 @@ void EyeBuffer::Allocate( const EyeParms & bufferParms, multisample_t multisampl
     glGenTextures( 1, &Texture );
     glBindTexture( GL_TEXTURE_2D, Texture );
 
-    if ( bufferParms.colorFormat == COLOR_565 )
+    if ( bufferParms.colorFormat == VColor::COLOR_565 )
     {
         glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, bufferParms.WidthScale*bufferParms.resolution, bufferParms.resolution, 0,
                 GL_RGB, GL_UNSIGNED_SHORT_5_6_5, NULL );
     }
-    else if ( bufferParms.colorFormat == COLOR_5551 )
+    else if ( bufferParms.colorFormat == VColor::COLOR_5551 )
     {
         glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB5_A1, bufferParms.WidthScale*bufferParms.resolution, bufferParms.resolution, 0,
                 GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, NULL );
     }
-    else if ( bufferParms.colorFormat == COLOR_8888_sRGB )
+    else if ( bufferParms.colorFormat == VColor::COLOR_8888_sRGB )
     {
         glTexImage2D( GL_TEXTURE_2D, 0, GL_SRGB8_ALPHA8, bufferParms.WidthScale*bufferParms.resolution, bufferParms.resolution, 0,
                 GL_RGBA, GL_UNSIGNED_BYTE, NULL );
@@ -280,7 +279,7 @@ static void ScreenShotTexture( const int eyeResolution, const GLuint texId )
     free( shrunk2 );
 }
 
-void EyeBuffers::BeginFrame( const EyeParms & bufferParms_ )
+void EyeBuf::BeginFrame( const EyeParms & bufferParms_ )
 {
     VGlOperation glOperation;
     SwapCount++;
@@ -334,7 +333,7 @@ void EyeBuffers::BeginFrame( const EyeParms & bufferParms_ )
     }
 }
 
-void EyeBuffers::BeginRenderingEye( const int eyeNum )
+void EyeBuf::BeginRenderingEye( const int eyeNum )
 {
     const int resolution = BufferParms.resolution;
     EyePairs & pair = BufferData[ SwapCount % MAX_EYE_SETS ];
@@ -363,7 +362,7 @@ void EyeBuffers::BeginRenderingEye( const int eyeNum )
     }
 }
 
-void EyeBuffers::EndRenderingEye( const int eyeNum )
+void EyeBuf::EndRenderingEye( const int eyeNum )
 {
     const int resolution = BufferParms.resolution;
     EyePairs & pair = BufferData[ SwapCount % MAX_EYE_SETS ];
@@ -408,7 +407,7 @@ void EyeBuffers::EndRenderingEye( const int eyeNum )
     glFlush();
 }
 
-CompletedEyes EyeBuffers::GetCompletedEyes()
+EyeBuf::CompletedEyes EyeBuf::GetCompletedEyes()
 {
     CompletedEyes	cmp = {};
     // The GPU commands are flushed for BufferData[ SwapCount % MAX_EYE_SETS ]
@@ -425,7 +424,7 @@ CompletedEyes EyeBuffers::GetCompletedEyes()
     return cmp;
 }
 
-void EyeBuffers::ScreenShot()
+void EyeBuf::ScreenShot()
 {
     ScreenShotTexture( BufferParms.resolution, BufferData[0].Eyes[0].Texture );
 }

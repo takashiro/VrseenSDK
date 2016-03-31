@@ -24,7 +24,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "VApkFile.h"
 #include "CinemaStrings.h"
 #include "Native.h"
-
+#include "EyeBuf.h"
 
 namespace OculusCinema {
 
@@ -361,7 +361,7 @@ void TheaterSelectionView::SelectPressed( void )
 VR4Matrixf TheaterSelectionView::Frame( const VrFrame & vrFrame )
 {
 	// We want 4x MSAA in the selection screen
-    EyeParms eyeParms = vApp->eyeParms();
+    EyeBuf::EyeParms eyeParms = vApp->eyeParms();
 	eyeParms.multisamples = 4;
     vApp->setEyeParms( eyeParms );
 
