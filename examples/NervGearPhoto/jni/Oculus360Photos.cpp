@@ -675,7 +675,7 @@ VR4Matrixf Oculus360Photos::drawEyeView( const int eye, const float fovDegrees )
         glTexParameteri( GL_TEXTURE_CUBE_MAP, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT,
                          m_useSrgb ? VGlOperation::GL_DECODE_EXT : VGlOperation::GL_SKIP_DECODE_EXT );
         glBindTexture( GL_TEXTURE_CUBE_MAP, 0 );
-
+/*
         vApp->swapParms().WarpOptions = ( m_useSrgb ? 0 : SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER );
         vApp->swapParms( ).Images[ eye ][ 1 ].TexId = texId;
         vApp->swapParms().Images[ eye ][ 1 ].TexCoordsFromTanAngles = m;
@@ -685,15 +685,34 @@ VR4Matrixf Oculus360Photos::drawEyeView( const int eye, const float fovDegrees )
         {
             vApp->swapParms().ProgramParms[ i ] = fadeColor;
         }
+        */
+        vApp->kernel()->m_smoothOptions = ( m_useSrgb ? 0 : SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER );
+        vApp->kernel()->m_images[ eye ][ 1 ].TexId = texId;
+        vApp->kernel()->m_images[ eye ][ 1 ].TexCoordsFromTanAngles = m;
+        vApp->kernel()->m_images[ eye ][ 1 ].Pose = m_frameInput.PoseState;
+        vApp->kernel()->m_smoothProgram = WP_CHROMATIC_MASKED_CUBE;
+        for ( int i = 0; i < 4; i++ )
+        {
+            vApp->kernel()->m_programParms[ i ] = fadeColor;
+        }
     }
     else
     {
+        /*
         vApp->swapParms().WarpOptions = m_useSrgb ? 0 : SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER;
         vApp->swapParms().Images[ eye ][ 1 ].TexId = 0;
         vApp->swapParms().WarpProgram = WP_CHROMATIC;
         for ( int i = 0; i < 4; i++ )
         {
             vApp->swapParms().ProgramParms[ i ] = 1.0f;
+        }
+        */
+        vApp->kernel()->m_smoothOptions = m_useSrgb ? 0 : SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER;
+        vApp->kernel()->m_images[ eye ][ 1 ].TexId = 0;
+        vApp->kernel()->m_smoothProgram = WP_CHROMATIC;
+        for ( int i = 0; i < 4; i++ )
+        {
+            vApp->kernel()->m_programParms[ i ] = 1.0f;
         }
 
         glActiveTexture( GL_TEXTURE0 );
@@ -837,7 +856,9 @@ VR4Matrixf Oculus360Photos::onNewFrame( const VrFrame vrFrame )
     VrFrame vrFrameWithoutMove = vrFrame;
     vrFrameWithoutMove.Input.sticks[ 0 ][ 0 ] = 0.0f;
     vrFrameWithoutMove.Input.sticks[ 0 ][ 1 ] = 0.0f;
-    m_scene.Frame( vApp->vrViewParms(), vrFrameWithoutMove, vApp->swapParms().ExternalVelocity );
+    //m_scene.Frame( vApp->vrViewParms(), vrFrameWithoutMove, vApp->swapParms().ExternalVelocity );
+
+      m_scene.Frame( vApp->vrViewParms(), vrFrameWithoutMove, vApp->kernel()->m_externalVelocity );
 
 #ifdef ENABLE_MENU
     // reopen PanoMenu when in pano

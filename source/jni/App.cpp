@@ -498,7 +498,7 @@ struct App::Private
         vrParms = DefaultVrParmsForRenderer(glOperation);
 
 
-         // swapParms.WarpProgram = ChromaticAberrationCorrection(glOperation) ? WP_CHROMATIC : WP_SIMPLE;
+         swapParms.WarpProgram = ChromaticAberrationCorrection(glOperation) ? WP_CHROMATIC : WP_SIMPLE;
 
           kernel->setSmoothProgram(ChromaticAberrationCorrection(glOperation) ? WP_CHROMATIC : WP_SIMPLE);
         glOperation.logExtensions();
@@ -1135,22 +1135,24 @@ struct App::Private
                     //warpSwapMessageParms.ProgramParms[1] = 1024.0f / errorTextureSize;	// message size factor
                     //kernel->doSmooth(&warpSwapMessageParms);
 
-
+                    kernel->InitTimeWarpParms();
                     kernel->setSmoothOption( SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER | SWAP_OPTION_FLUSH | SWAP_OPTION_DEFAULT_IMAGES);
+
                     kernel->setSmoothProgram(WP_LOADING_ICON);
                     float mprogramParms[4];
-                    mprogramParms[0] = 1.0f;		// rotation in radians per second
-                    mprogramParms[1] = 16.0f;
+                    mprogramParms[0] = 0.0f;		// rotation in radians per second
+                    mprogramParms[1] = 2.0f;
                     kernel->setProgramParms(mprogramParms);
                             // icon size factor smaller than fullscreen
                     for ( int eye = 0; eye < 2; eye++ )
                     {
-                       kernel->setSmoothEyeTexture(eye,0, 0);
-                       kernel->setSmoothEyeTexture(eye,1, loadingIconTexId);
+                       kernel->setSmoothEyeTexture(0,eye, 0);
+                       kernel->setSmoothEyeTexture(errorTexture.texture,eye,1);
 
                     }
 
                     kernel->doSmooth();
+                    kernel->setSmoothProgram(WP_SIMPLE);
 
                 }
                 continue;
@@ -1165,7 +1167,7 @@ struct App::Private
                    // kernel->doSmooth(&warpSwapLoadingIconParms);
 
 
-
+                    kernel->InitTimeWarpParms();
                     kernel->setSmoothOption( SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER | SWAP_OPTION_FLUSH | SWAP_OPTION_DEFAULT_IMAGES);
                     kernel->setSmoothProgram(WP_LOADING_ICON);
                     float mprogramParms[4];
@@ -1175,12 +1177,13 @@ struct App::Private
                             // icon size factor smaller than fullscreen
                     for ( int eye = 0; eye < 2; eye++ )
                     {
-                       kernel->setSmoothEyeTexture(eye,0, 0);
-                       kernel->setSmoothEyeTexture(eye,1, loadingIconTexId);
+                       kernel->setSmoothEyeTexture(0,eye, 0);
+                       kernel->setSmoothEyeTexture(loadingIconTexId,eye,1);
 
                     }
 
                     kernel->doSmooth();
+                    kernel->setSmoothProgram(WP_SIMPLE);
 
                 }
                 vInfo("launchIntentJSON:" << launchIntentJSON);
@@ -1563,7 +1566,7 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
     JniUtils::LoadDevConfig(false);
 
 	// Default time warp parms
-    //d->swapParms = d->kernel->InitTimeWarpParms();
+   d->kernel->InitTimeWarpParms();
 
 	// Default EyeParms
     d->vrParms.resolution = 1024;
@@ -2053,7 +2056,7 @@ void App::recenterYaw(const bool showBlack)
 	{
         //const ovrTimeWarpParms warpSwapBlackParms = d->kernel->InitTimeWarpParms(WARP_INIT_BLACK);
         //d->kernel->doSmooth(&warpSwapBlackParms);
-
+        d->kernel->InitTimeWarpParms();
         d->kernel->setSmoothOption( SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER | SWAP_OPTION_FLUSH | SWAP_OPTION_DEFAULT_IMAGES);
         d->kernel->setSmoothProgram( WP_SIMPLE);
         for ( int eye = 0; eye < 2; eye++ )
@@ -2158,6 +2161,8 @@ void App::drawPanel( const GLuint externalTextureId, const VR4Matrixf & dialogMv
 
 void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const int numPresents )
 {
+    LOG("zhaolei2 %d",d->kernel->m_smoothProgram);
+
     VGlOperation glOperation;
     // update vr lib systems after the app frame, but before rendering anything
     guiSys().frame( this, d->vrFrame, vrMenuMgr(), defaultFont(), menuFontSurface(), centerViewMatrix );
@@ -2247,10 +2252,18 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
 
         for ( int eye = 0; eye < 2; eye++ )
         {            
+
+            d->swapParms.Images[eye][0].TexCoordsFromTanAngles = VR4Matrixf::TanAngleMatrixFromFov( fovDegrees );
+            d->swapParms.Images[eye][0].TexId = eyes.Textures[d->renderMonoMode ? 0 : eye ];
+            d->swapParms.Images[eye][0].Pose = d->sensorForNextWarp.Predicted;
+
+
            d->kernel->m_images[eye][0].TexCoordsFromTanAngles = VR4Matrixf::TanAngleMatrixFromFov( fovDegrees );
            d->kernel->m_images[eye][0].TexId = eyes.Textures[d->renderMonoMode ? 0 : eye ];
            d->kernel->m_images[eye][0].Pose = d->sensorForNextWarp.Predicted;
-           d->kernel->m_smoothProgram = ChromaticAberrationCorrection(glOperation) ? WP_CHROMATIC : WP_SIMPLE;
+          // d->kernel->m_smoothProgram = ChromaticAberrationCorrection(glOperation) ? WP_CHROMATIC : WP_SIMPLE;
+       LOG("zhaolei %d",d->kernel->m_smoothProgram);
+
         }
 
         d->kernel->doSmooth();

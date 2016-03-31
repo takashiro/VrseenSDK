@@ -946,7 +946,7 @@ void VKernel::doSmooth()
     //ovrTimeWarpParms   parms = InitSmoothParms();
     //parms.WarpOptions = SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER | SWAP_OPTION_FLUSH | SWAP_OPTION_DEFAULT_IMAGES;
 
-   // frameSmooth->doSmooth(parms);
+   // frameSmooth->doSmooth();
 
 }
 
@@ -1077,7 +1077,7 @@ void VKernel::doSmooth(const ovrTimeWarpParms * parms )
 
     setSmoothParms(*parms);
     syncSmoothParms();
-    frameSmooth->doSmooth();
+   // frameSmooth->doSmooth();
 }
  ovrTimeWarpParms VKernel::InitTimeWarpParms( const ovrWarpInit init, const unsigned int texId )
 {
