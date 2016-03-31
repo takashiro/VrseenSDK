@@ -158,7 +158,7 @@ typedef enum
 	WP_CHROMATIC_CAMERA,
 
 	WP_PROGRAM_MAX
-} ovrTimeWarpProgram;
+} VrKernelProgram;
 
 typedef enum
 {
@@ -195,7 +195,7 @@ typedef struct
 	ovrMatrix4f					ExternalVelocity;	
 	int							MinimumVsyncs;
 	float						PreScheduleSeconds;
-    ovrTimeWarpProgram			WarpProgram;
+    VrKernelProgram			WarpProgram;
 	float						ProgramParms[4];
     ovrTimeWarpDebugPerfMode	DebugGraphMode;
     ovrTimeWarpDebugPerfValue	DebugGraphValue;

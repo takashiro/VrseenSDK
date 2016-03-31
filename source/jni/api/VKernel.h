@@ -80,47 +80,30 @@ typedef enum
 typedef enum
 {
 
-            WP_SIMPLE,
-    WP_MASKED_PLANE,
-    WP_MASKED_PLANE_EXTERNAL,
-    WP_MASKED_CUBE,
-    WP_CUBE,
-    WP_LOADING_ICON,
-    WP_MIDDLE_CLAMP,
-    WP_OVERLAY_PLANE,
-    WP_OVERLAY_PLANE_SHOW_LOD,
-    WP_CAMERA,
+    VK_DEFAULT,
+    VK_PLANE,
+    VK_PLANE_SPECIAL,
+    VK_CUBE,
+    VK_CUBE_SPECIAL,
+    VK_LOGO,
+    VK_HALF,
+    VK_PLANE_LAYER,
+    VK_PLANE_LOD,
+    VK_RESERVED,
 
-            WP_CHROMATIC,
-    WP_CHROMATIC_MASKED_PLANE,
-    WP_CHROMATIC_MASKED_PLANE_EXTERNAL,
-    WP_CHROMATIC_MASKED_CUBE,
-    WP_CHROMATIC_CUBE,
-    WP_CHROMATIC_LOADING_ICON,
-    WP_CHROMATIC_MIDDLE_CLAMP,
-    WP_CHROMATIC_OVERLAY_PLANE,
-    WP_CHROMATIC_OVERLAY_PLANE_SHOW_LOD,
-    WP_CHROMATIC_CAMERA,
+    VK_DEFAULT_CB,
+    VK_PLANE_CB,
+    VK_PLANE_SPECIAL_CB,
+    VK_CUBE_CB,
+    VK_CUBE_SPECIAL_CB,
+    VK_LOGO_CB,
+    VK_HALF_CB,
+    VK_PLANE_LAYER_CB,
+    VK_PLANE_LOD_CB,
+    VK_RESERVED_CB,
 
-    WP_PROGRAM_MAX
-} ovrTimeWarpProgram;
-
-typedef struct
-{
-
-    unsigned int	TexId;
-
-
-    unsigned int	PlanarTexId[3];
-
-
-    NervGear::VR4Matrix<float>		TexCoordsFromTanAngles;
-
-
-    ovrPoseStatef	Pose;
-} ovrTimeWarpImage;
-
-
+    VK_MAX
+} VrKernelProgram;
 
 
 
@@ -160,14 +143,6 @@ eVrApiEventStatus ovr_nextPendingEvent(NervGear::VString& buffer, unsigned int c
 }
 
 
-
-typedef enum
-{
-    WARP_INIT_DEFAULT,
-    WARP_INIT_BLACK,
-    WARP_INIT_LOADING_ICON,
-    WARP_INIT_MESSAGE
-} ovrWarpInit;
 
 
 

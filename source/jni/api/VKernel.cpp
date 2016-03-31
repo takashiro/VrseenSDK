@@ -640,7 +640,7 @@ VKernel::VKernel()
    m_externalVelocity.M[3][3] = 1.0f;
    m_minimumVsyncs = 1;
    m_preScheduleSeconds = 0.014f;
-   m_smoothProgram = WP_SIMPLE;
+   m_smoothProgram = VK_DEFAULT;
    m_programParms[0] =0;
    m_programParms[1] =0;
    m_programParms[2] =0;
@@ -1124,7 +1124,7 @@ void VKernel::ovr_RecenterYaw()
     m_externalVelocity.M[3][3] = 1.0f;
     m_minimumVsyncs = 1;
     m_preScheduleSeconds = 0.014f;
-    m_smoothProgram = WP_SIMPLE;
+    m_smoothProgram = VK_DEFAULT;
     m_programParms[0] =0;
     m_programParms[1] =0;
     m_programParms[2] =0;

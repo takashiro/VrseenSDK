@@ -49,7 +49,7 @@ void ResumeMovieView::OnOpen()
 
 	Cinema.sceneMgr.LightsOn( 0.5f );
 
-    vApp->kernel()->setSmoothProgram(WP_CHROMATIC);
+    vApp->kernel()->setSmoothProgram(VK_DEFAULT_CB);
 
 	SetPosition(vApp->vrMenuMgr(), Cinema.sceneMgr.Scene.FootPos);
 

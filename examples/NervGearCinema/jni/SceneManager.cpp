@@ -942,7 +942,7 @@ VR4Matrixf SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 	if ( !GetUseOverlay() || SceneInfo.LobbyScreen || ( SceneInfo.UseScreenGeometry && ( SceneScreenSurface != NULL ) ) )
 	{
 		// no overlay
-        vApp->kernel()->setSmoothProgram( WP_CHROMATIC);
+        vApp->kernel()->setSmoothProgram( VK_DEFAULT_CB);
         vApp->kernel()->setSmoothEyeTexture((unsigned int)0,eye,1);
 
 		glActiveTexture( GL_TEXTURE0 );
@@ -978,7 +978,7 @@ VR4Matrixf SceneManager::DrawEyeView( const int eye, const float fovDegrees )
         const VR4Matrixf screenModel = ScreenMatrix();
         const VR4Matrixf mv = Scene.ViewMatrixForEye( eye ) * screenModel;
 
-        vApp->kernel()->setSmoothProgram(WP_CHROMATIC_MASKED_PLANE);
+        vApp->kernel()->setSmoothProgram(VK_PLANE_CB);
         vApp->kernel()->setSmoothEyeTexture( MipMappedMovieTextures[CurrentMipMappedMovieTexture],eye,1);
         vApp->kernel()->setSmoothPose(vApp->sensorForNextWarp().Predicted,eye,1);
         vApp->kernel()->setTexMatrix(texMatrix * VR4Matrix<float>::TanAngleMatrixFromUnitSquare( &mv ),eye,1);

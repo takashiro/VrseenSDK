@@ -434,7 +434,7 @@ struct App::Private
 
 
 
-          kernel->setSmoothProgram(ChromaticAberrationCorrection(glOperation) ? WP_CHROMATIC : WP_SIMPLE);
+          kernel->setSmoothProgram(ChromaticAberrationCorrection(glOperation) ? VK_DEFAULT_CB : VK_DEFAULT);
         glOperation.logExtensions();
 
         self->panel.externalTextureProgram2.initShader( VGlShader::getAdditionalVertexShaderSource(), VGlShader::getAdditionalFragmentShaderSource() );
@@ -1072,7 +1072,7 @@ struct App::Private
                     kernel->InitTimeWarpParms();
                     kernel->setSmoothOption( SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER | SWAP_OPTION_FLUSH | SWAP_OPTION_DEFAULT_IMAGES);
 
-                    kernel->setSmoothProgram(WP_LOADING_ICON);
+                    kernel->setSmoothProgram(VK_LOGO);
                     float mprogramParms[4];
                     mprogramParms[0] = 0.0f;		// rotation in radians per second
                     mprogramParms[1] = 2.0f;
@@ -1086,7 +1086,7 @@ struct App::Private
                     }
 
                     kernel->doSmooth();
-                    kernel->setSmoothProgram(WP_SIMPLE);
+                    kernel->setSmoothProgram(VK_DEFAULT);
 
                 }
                 continue;
@@ -1103,7 +1103,7 @@ struct App::Private
 
                     kernel->InitTimeWarpParms();
                     kernel->setSmoothOption( SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER | SWAP_OPTION_FLUSH | SWAP_OPTION_DEFAULT_IMAGES);
-                    kernel->setSmoothProgram(WP_LOADING_ICON);
+                    kernel->setSmoothProgram(VK_LOGO);
                     float mprogramParms[4];
                     mprogramParms[0] = 1.0f;		// rotation in radians per second
                     mprogramParms[1] = 16.0f;
@@ -1117,7 +1117,7 @@ struct App::Private
                     }
 
                     kernel->doSmooth();
-                    kernel->setSmoothProgram(WP_SIMPLE);
+                    kernel->setSmoothProgram(VK_DEFAULT);
 
                 }
                 vInfo("launchIntentJSON:" << launchIntentJSON);
@@ -1956,7 +1956,7 @@ void App::recenterYaw(const bool showBlack)
         //d->kernel->doSmooth(&warpSwapBlackParms);
         d->kernel->InitTimeWarpParms();
         d->kernel->setSmoothOption( SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER | SWAP_OPTION_FLUSH | SWAP_OPTION_DEFAULT_IMAGES);
-        d->kernel->setSmoothProgram( WP_SIMPLE);
+        d->kernel->setSmoothProgram( VK_DEFAULT);
         for ( int eye = 0; eye < 2; eye++ )
         {
            d->kernel->setSmoothEyeTexture(eye,0,0);		// default replaced with a black texture

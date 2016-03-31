@@ -189,9 +189,9 @@ struct VFrameSmooth::Private
             m_lastSwapVsyncCount( 0 )
     {
 
-        static_assert( ( WP_PROGRAM_MAX & 1 ) == 0, "WP_PROGRAM_MAX" );
-        static_assert( ( WP_CHROMATIC - WP_SIMPLE ) ==
-                             ( WP_PROGRAM_MAX - WP_CHROMATIC ) , "WP_CHROMATIC");
+        static_assert( ( VK_MAX & 1 ) == 0, "WP_PROGRAM_MAX" );
+        static_assert( ( VK_DEFAULT_CB - VK_DEFAULT ) ==
+                             ( VK_MAX - VK_DEFAULT_CB ) , "WP_CHROMATIC");
         VGlOperation glOperation;
         m_shutdownRequest.setState( false );
         m_eyeBufferCount.setState( 0 );
@@ -362,11 +362,11 @@ struct VFrameSmooth::Private
     void			smoothThreadShutdown();
 
     void            smoothInternal();
-    void			buildSmoothProgPair( ovrTimeWarpProgram simpleIndex,
+    void			buildSmoothProgPair( VrKernelProgram simpleIndex,
                                        const char * simpleVertex, const char * simpleFragment,
                                        const char * chromaticVertex, const char * chromaticFragment );
 
-    void			buildSmoothProgMatchedPair( ovrTimeWarpProgram simpleIndex,
+    void			buildSmoothProgMatchedPair( VrKernelProgram simpleIndex,
                                             const char * vertex, const char * fragment );
     void 			buildSmoothProgs();
     void			createFrameworkGraphics();
@@ -401,7 +401,7 @@ struct VFrameSmooth::Private
 
     VGlShader		m_untexturedMvpProgram;
     VGlShader		m_debugLineProgram;
-    VGlShader		m_warpPrograms[ WP_PROGRAM_MAX ];
+    VGlShader		m_warpPrograms[ VK_MAX ];
     GLuint			m_blackTexId;
     GLuint			m_defaultLoadingIconTexId;
     VGlGeometry	m_calibrationLines2;		// simple cross
@@ -762,11 +762,11 @@ void VFrameSmooth::Private::smoothThreadShutdown()
 
 const VGlShader & VFrameSmooth::Private::chooseProgram( const bool disableChromaticCorrection ) const
 {
-    int program = VAlgorithm::Clamp( (int)m_smoothProgram, (int)WP_SIMPLE, (int)WP_PROGRAM_MAX - 1 );
+    int program = VAlgorithm::Clamp( (int)m_smoothProgram, (int)VK_DEFAULT, (int)VK_MAX - 1 );
 
-    if ( disableChromaticCorrection && program >= WP_CHROMATIC )
+    if ( disableChromaticCorrection && program >= VK_DEFAULT_CB )
     {
-        program -= ( WP_CHROMATIC - WP_SIMPLE );
+        program -= ( VK_DEFAULT_CB - VK_DEFAULT );
     }
     return m_warpPrograms[program];
 }
@@ -844,7 +844,7 @@ void VFrameSmooth::Private::bindCursorProgram() const
                 0.0f, 0.0f, 0.0f, 0.0f,
                 0.0f, 0.0f, 0.0f, 1.0f );
 
-    const VGlShader & warpProg = m_warpPrograms[ WP_SIMPLE ];
+    const VGlShader & warpProg = m_warpPrograms[ VK_DEFAULT ];
     glUseProgram( warpProg.program );
     glUniform1f( warpProg.uniformColor, 1.0f );
     glUniformMatrix4fv( warpProg.uniformModelViewProMatrix, 1, GL_FALSE, landscapeOrientationMatrix.Transposed().M[0] );
@@ -868,12 +868,12 @@ void VFrameSmooth::Private::bindEyeTextures( const int eye )
         glTexParameteri( GL_TEXTURE_2D, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_DECODE_EXT );
     }
 
-    if ( m_smoothProgram == WP_MASKED_PLANE
-         || m_smoothProgram == WP_CHROMATIC_MASKED_PLANE
-         || m_smoothProgram == WP_OVERLAY_PLANE
-         || m_smoothProgram == WP_CHROMATIC_OVERLAY_PLANE
-         || m_smoothProgram == WP_OVERLAY_PLANE_SHOW_LOD
-         || m_smoothProgram == WP_CHROMATIC_OVERLAY_PLANE_SHOW_LOD
+    if ( m_smoothProgram == VK_PLANE
+         || m_smoothProgram == VK_PLANE_CB
+         || m_smoothProgram == VK_PLANE_LAYER
+         || m_smoothProgram == VK_PLANE_LAYER_CB
+         || m_smoothProgram == VK_PLANE_LOD
+         || m_smoothProgram == VK_PLANE_LOD_CB
          )
     {
         glActiveTexture( GL_TEXTURE1 );
@@ -887,10 +887,10 @@ void VFrameSmooth::Private::bindEyeTextures( const int eye )
             glTexParameteri( GL_TEXTURE_2D, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_DECODE_EXT );
         }
     }
-    if ( m_smoothProgram == WP_MASKED_PLANE_EXTERNAL
-         || m_smoothProgram == WP_CHROMATIC_MASKED_PLANE_EXTERNAL
-         || m_smoothProgram == WP_CAMERA
-         || m_smoothProgram == WP_CHROMATIC_CAMERA )
+    if ( m_smoothProgram == VK_PLANE_SPECIAL
+         || m_smoothProgram == VK_PLANE_SPECIAL_CB
+         || m_smoothProgram == VK_RESERVED
+         || m_smoothProgram == VK_RESERVED_CB )
     {
         glActiveTexture( GL_TEXTURE1 );
         glBindTexture( GL_TEXTURE_EXTERNAL_OES, m_texId[eye][1] );
@@ -904,7 +904,7 @@ void VFrameSmooth::Private::bindEyeTextures( const int eye )
                 glTexParameteri( GL_TEXTURE_EXTERNAL_OES, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_DECODE_EXT );
             }
     }
-    if ( m_smoothProgram == WP_MASKED_CUBE || m_smoothProgram == WP_CHROMATIC_MASKED_CUBE )
+    if ( m_smoothProgram == VK_CUBE || m_smoothProgram == VK_CUBE_CB )
     {
         glActiveTexture( GL_TEXTURE1 );
         glBindTexture( GL_TEXTURE_CUBE_MAP, m_texId[eye][1]);
@@ -918,7 +918,7 @@ void VFrameSmooth::Private::bindEyeTextures( const int eye )
             }
     }
 
-    if ( m_smoothProgram == WP_CUBE || m_smoothProgram == WP_CHROMATIC_CUBE )
+    if ( m_smoothProgram == VK_CUBE_SPECIAL || m_smoothProgram == VK_CUBE_SPECIAL_CB )
     {
         for ( int i = 0; i < 3; i++ )
         {
@@ -935,7 +935,7 @@ void VFrameSmooth::Private::bindEyeTextures( const int eye )
         }
     }
 
-    if ( m_smoothProgram == WP_LOADING_ICON || m_smoothProgram == WP_CHROMATIC_LOADING_ICON )
+    if ( m_smoothProgram == VK_LOGO || m_smoothProgram == VK_LOGO_CB )
     {
         glActiveTexture( GL_TEXTURE1 );
         glBindTexture( GL_TEXTURE_2D, m_texId[eye][1] );
@@ -1647,7 +1647,7 @@ void VFrameSmooth::Private::destroyFrameworkGraphics()
     m_untexturedMvpProgram.destroy();
     m_debugLineProgram.destroy();
 
-    for ( int i = 0; i < WP_PROGRAM_MAX; i++ )
+    for ( int i = 0; i < VK_MAX; i++ )
     {
         m_warpPrograms[i].destroy();
     }
@@ -1703,27 +1703,27 @@ void VFrameSmooth::Private::drawFrameworkGraphicsToWindow( const int eye,
     }
 }
 
-void VFrameSmooth::Private::buildSmoothProgPair( ovrTimeWarpProgram simpleIndex,
+void VFrameSmooth::Private::buildSmoothProgPair( VrKernelProgram simpleIndex,
                                        const char * simpleVertex, const char * simpleFragment,
                                        const char * chromaticVertex, const char * chromaticFragment
 )
 {
     m_warpPrograms[ simpleIndex ] = VGlShader( simpleVertex, simpleFragment );
-    m_warpPrograms[ simpleIndex + ( WP_CHROMATIC - WP_SIMPLE ) ] = VGlShader( chromaticVertex, chromaticFragment );
+    m_warpPrograms[ simpleIndex + ( VK_DEFAULT_CB - VK_DEFAULT ) ] = VGlShader( chromaticVertex, chromaticFragment );
 }
 
-void VFrameSmooth::Private::buildSmoothProgMatchedPair( ovrTimeWarpProgram simpleIndex,
+void VFrameSmooth::Private::buildSmoothProgMatchedPair( VrKernelProgram simpleIndex,
                                               const char * simpleVertex, const char * simpleFragment
 )
 {
     m_warpPrograms[ simpleIndex ] = VGlShader( simpleVertex, simpleFragment );
-    m_warpPrograms[ simpleIndex + ( WP_CHROMATIC - WP_SIMPLE ) ] = VGlShader( simpleVertex, simpleFragment );
+    m_warpPrograms[ simpleIndex + ( VK_DEFAULT_CB - VK_DEFAULT ) ] = VGlShader( simpleVertex, simpleFragment );
 }
 
 
 void VFrameSmooth::Private::buildSmoothProgs()
 {
-    buildSmoothProgPair( WP_SIMPLE,
+    buildSmoothProgPair( VK_DEFAULT,
                        // low quality
                        "uniform mediump mat4 Mvpm;\n"
                        "uniform mediump mat4 Texm;\n"
@@ -1799,7 +1799,7 @@ void VFrameSmooth::Private::buildSmoothProgs()
                        "}\n"
                        );
 
-    buildSmoothProgPair( WP_MASKED_PLANE,
+    buildSmoothProgPair( VK_PLANE,
                        // low quality
                        "uniform mediump mat4 Mvpm;\n"
                        "uniform mediump mat4 Texm;\n"
@@ -1889,7 +1889,7 @@ void VFrameSmooth::Private::buildSmoothProgs()
                        "	}\n"
                        "}\n"
                        );
-    buildSmoothProgPair( WP_MASKED_PLANE_EXTERNAL,
+    buildSmoothProgPair( VK_PLANE_SPECIAL,
                        // low quality
                        "uniform mediump mat4 Mvpm;\n"
                        "uniform mediump mat4 Texm;\n"
@@ -1981,7 +1981,7 @@ void VFrameSmooth::Private::buildSmoothProgs()
                        "	}\n"
                        "}\n"
                        );
-    buildSmoothProgPair( WP_MASKED_CUBE,
+    buildSmoothProgPair( VK_CUBE,
                        // low quality
                        "uniform mediump mat4 Mvpm;\n"
                        "uniform mediump mat4 Texm;\n"
@@ -2071,7 +2071,7 @@ void VFrameSmooth::Private::buildSmoothProgs()
                        "	gl_FragColor = vec4( mix( color1, color0.xyz, color0.w ), 1.0);\n"	// pass through destination alpha
                        "}\n"
                        );
-    buildSmoothProgPair( WP_CUBE,
+    buildSmoothProgPair( VK_CUBE_SPECIAL,
                        // low quality
                        "uniform mediump mat4 Mvpm;\n"
                        "uniform mediump mat4 Texm;\n"
@@ -2138,7 +2138,7 @@ void VFrameSmooth::Private::buildSmoothProgs()
                        "	gl_FragColor = vec4( color1r, color1g, color1b, 1.0);\n"
                        "}\n"
                        );
-    buildSmoothProgPair( WP_LOADING_ICON,
+    buildSmoothProgPair( VK_LOGO,
                        // low quality
                        "uniform mediump mat4 Mvpm;\n"
                        "uniform mediump mat4 Texm;\n"
@@ -2215,7 +2215,7 @@ void VFrameSmooth::Private::buildSmoothProgs()
                        "	gl_FragColor = color;\n"
                        "}\n"
                        );
-    buildSmoothProgPair( WP_MIDDLE_CLAMP,
+    buildSmoothProgPair( VK_HALF,
                        // low quality
                        "uniform mediump mat4 Mvpm;\n"
                        "uniform mediump mat4 Texm;\n"
@@ -2271,7 +2271,7 @@ void VFrameSmooth::Private::buildSmoothProgs()
                        "}\n"
                        );
 
-    buildSmoothProgPair( WP_OVERLAY_PLANE,
+    buildSmoothProgPair( VK_PLANE_LAYER,
                        // low quality
                        "uniform mediump mat4 Mvpm;\n"
                        "uniform mediump mat4 Texm;\n"
@@ -2385,7 +2385,7 @@ void VFrameSmooth::Private::buildSmoothProgs()
 
 
     // Debug program to color tint the overlay for LOD visualization
-    buildSmoothProgMatchedPair( WP_OVERLAY_PLANE_SHOW_LOD,
+    buildSmoothProgMatchedPair( VK_PLANE_LOD,
                               "#version 300 es\n"
                               "uniform mediump mat4 Mvpm;\n"
                               "uniform mediump mat4 Texm;\n"
@@ -2443,7 +2443,7 @@ void VFrameSmooth::Private::buildSmoothProgs()
                               "}\n"
                               );
 
-    buildSmoothProgMatchedPair( WP_CAMERA,
+    buildSmoothProgMatchedPair( VK_RESERVED,
                               // low quality
                               "uniform mediump mat4 Mvpm;\n"
                               "uniform mediump mat4 Texm;\n"
