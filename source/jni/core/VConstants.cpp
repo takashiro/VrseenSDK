@@ -4,7 +4,6 @@
 #include "VConstants.h"
 #include "VVector.h"
 #include "VMatrix.h"
-#include "Log.h"
 
 #include <float.h>
 
