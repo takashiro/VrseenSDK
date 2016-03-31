@@ -402,7 +402,7 @@ void Oculus360Videos::command(const VEvent &event )
         message = VrLocale::GetXliffFormattedString( message, fileName.toCString() );
 		BitmapFont & font = vApp->defaultFont();
 		font.WordWrapText( message, 1.0f );
-        vApp->showInfoText( 4.5f, message.toCString() );
+        vApp->text.show( 4.5f, message.toCString() );
 		SetMenuState( MENU_BROWSER );
 		return;
 	}
