@@ -44,14 +44,9 @@ void    VPointTracker::SetRate( float const r ) { Rate = r; }
 
 V3Vectf const & VPointTracker::GetCurPosition() const { return CurPosition; }
 
-void VText::show( float const duration, const char * fmt, ... )
+void VText::show(const VString &text, float duration)
 {
-    char buffer[1024];
-    va_list args;
-    va_start(args, fmt);
-    vsnprintf(buffer, sizeof(buffer), fmt, args);
-    va_end(args);
-    infoText = buffer;
+    infoText = text;
     infoTextColor = V4Vectf(1.0f);
     infoTextOffset = V3Vectf(0.0f, 0.0f, 1.5f);
     infoTextPointTracker.Reset();

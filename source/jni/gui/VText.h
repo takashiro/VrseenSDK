@@ -44,7 +44,7 @@ public:
     VPointTracker   fpsPointTracker;
     VrFrame         vrFrame;
 
-    void show( float const duration, const char * fmt, ... );
+    void show(const VString &text, float duration);
     void show( float const duration, V3Vectf const & offset, V4Vectf const & color, const char * fmt, ... );
 
 };

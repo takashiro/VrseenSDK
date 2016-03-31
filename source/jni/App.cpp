@@ -1392,14 +1392,18 @@ struct App::Private
             {
                 float const IPD_MIN_CM = 0.0f;
                 viewParms.InterpupillaryDistance = std::max(IPD_MIN_CM * 0.01f, viewParms.InterpupillaryDistance - IPD_STEP);
-                self->text.show(1.0f, "%.3f", viewParms.InterpupillaryDistance);
+                VString text;
+                text.sprintf("%.3f", viewParms.InterpupillaryDistance);
+                self->text.show(text, 1.0f);
                 return;
             }
             else if (keyCode == AKEYCODE_PERIOD && down && repeatCount == 0)
             {
                 float const IPD_MAX_CM = 8.0f;
                 viewParms.InterpupillaryDistance = std::min(IPD_MAX_CM * 0.01f, viewParms.InterpupillaryDistance + IPD_STEP);
-                self->text.show(1.0f, "%.3f", viewParms.InterpupillaryDistance);
+                VString text;
+                text.sprintf("%.3f", viewParms.InterpupillaryDistance);
+                self->text.show(text, 1.0f);
                 return;
             }
         }
