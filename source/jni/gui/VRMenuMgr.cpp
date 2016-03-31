@@ -354,7 +354,7 @@ VRMenuMgrLocal::~VRMenuMgrLocal()
 // Initialize the VRMenu system
 void VRMenuMgrLocal::init()
 {
-	LOG( "VRMenuMgrLocal::Init" );
+	vInfo("VRMenuMgrLocal::Init");
 	if ( Initialized )
 	{
         return;
@@ -416,14 +416,14 @@ menuHandle_t VRMenuMgrLocal::createObject( VRMenuObjectParms const & parms )
 {
 	if ( !Initialized )
 	{
-		WARN( "VRMenuMgrLocal::CreateObject - manager has not been initialized!" );
+		vWarn("VRMenuMgrLocal::CreateObject - manager has not been initialized!");
 		return menuHandle_t();
 	}
 
 	// validate parameters
 	if ( parms.Type >= VRMENU_MAX )
 	{
-		WARN( "VRMenuMgrLocal::CreateObject - Invalid menu object type: %i", parms.Type );
+		vWarn("VRMenuMgrLocal::CreateObject - Invalid menu object type:" << parms.Type);
 		return menuHandle_t();
 	}
 
@@ -441,12 +441,12 @@ menuHandle_t VRMenuMgrLocal::createObject( VRMenuObjectParms const & parms )
 
 	vuint32 id = ++CurrentId;
 	menuHandle_t handle = ComposeHandle( index, id );
-	//LOG( "VRMenuMgrLocal::CreateObject - handle is %llu", handle.Get() );
+	//vInfo("VRMenuMgrLocal::CreateObject - handle is" << handle.Get());
 
 	VRMenuObject * obj = new VRMenuObjectLocal( parms, handle );
 	if ( obj == NULL )
 	{
-		WARN( "VRMenuMgrLocal::CreateObject - failed to allocate menu object!" );
+		vWarn("VRMenuMgrLocal::CreateObject - failed to allocate menu object!");
 		vAssert( obj != NULL );	// this would be bad -- but we're likely just going to explode elsewhere
 		return menuHandle_t();
 	}
@@ -565,25 +565,25 @@ VRMenuObject * VRMenuMgrLocal::toObject( menuHandle_t const handle ) const
 	}
 	if ( !HandleComponentsAreValid( index, id ) )
 	{
-		WARN( "VRMenuMgrLocal::ToObject - invalid handle." );
+		vWarn("VRMenuMgrLocal::ToObject - invalid handle.");
 		return NULL;
 	}
 	if ( index >= ObjectList.length() )
 	{
-		WARN( "VRMenuMgrLocal::ToObject - index out of range." );
+		vWarn("VRMenuMgrLocal::ToObject - index out of range.");
 		return NULL;
 	}
 	VRMenuObject * object = ObjectList[index];
 	if ( object == NULL )
 	{
-		WARN( "VRMenuMgrLocal::ToObject - slot empty." );
+		vWarn("VRMenuMgrLocal::ToObject - slot empty.");
 		return NULL;	// this can happen if someone is holding onto the handle of an object that's been freed
 	}
 	if ( object->handle() != handle )
 	{
 		// if the handle of the object in the slot does not match, then the object the handle refers to was deleted
 		// and a new object is in the slot
-		WARN( "VRMenuMgrLocal::ToObject - slot mismatch." );
+		vWarn("VRMenuMgrLocal::ToObject - slot mismatch.");
 		return NULL;
 	}
 	return object;
@@ -617,7 +617,7 @@ void VRMenuMgrLocal::SubmitForRenderingRecursive( OvrDebugLines & debugLines, Bi
 	{
 		// If this happens we're probably not correctly clearing the submitted surfaces each frame
 		// OR we've got a LOT of surfaces.
-		LOG( "maxIndices = %i, curIndex = %i", maxIndices, curIndex );
+		vInfo("maxIndices =" << maxIndices << ", curIndex =" << curIndex);
 		DROID_ASSERT( curIndex < maxIndices, "VrMenu" );
 		return;
 	}
@@ -746,7 +746,7 @@ void VRMenuMgrLocal::SubmitForRenderingRecursive( OvrDebugLines & debugLines, Bi
                     V4Vectf( 0.0f, 1.0f, 0.0f, 1.0f ), V4Vectf( 1.0f, 0.0f, 0.0f, 1.0f ), 0, false );
 			}
 		}
-        //DROIDLOG( "Spam", "AddPoint for '%s'", text.toCString() );
+        vInfo("AddPoint for" << text);
 		//GetDebugLines().AddPoint( curModelPose.Position, 0.05f, 1, true );
 	}
 
@@ -842,10 +842,10 @@ void VRMenuMgrLocal::submitForRendering( OvrDebugLines & debugLines, BitmapFont 
         BitmapFontSurface & fontSurface, menuHandle_t const handle, VPosf const & worldPose,
         VRMenuRenderFlags_t const & flags )
 {
-	//LOG( "VRMenuMgrLocal::SubmitForRendering" );
+	//vInfo("VRMenuMgrLocal::SubmitForRendering");
 	if ( NumSubmitted >= MAX_SUBMITTED )
 	{
-		WARN( "Too many menu objects submitted!" );
+		vWarn("Too many menu objects submitted!");
 		return;
 	}
 	VRMenuObjectLocal * obj = static_cast< VRMenuObjectLocal* >( toObject( handle ) );
@@ -901,11 +901,11 @@ void VRMenuMgrLocal::renderSubmitted( VR4Matrixf const & worldMVP, VR4Matrixf co
     VGlOperation glOperation;
     glOperation.logErrorsEnum( "VRMenuMgrLocal::RenderSubmitted - pre" );
 
-	//LOG( "VRMenuMgrLocal::RenderSubmitted" );
+	//vInfo("VRMenuMgrLocal::RenderSubmitted");
     VR4Matrixf invViewMatrix = viewMatrix.Inverted();
     V3Vectf viewPos = invViewMatrix.GetTranslation();
 
-	//LOG( "VRMenuMgrLocal::RenderSubmitted - rendering %i objects", NumSubmitted );
+	//vInfo("VRMenuMgrLocal::RenderSubmitted - rendering" << NumSubmitted << "objects");
 	bool depthEnabled = true;
 	glEnable( GL_DEPTH_TEST );
 	bool polygonOffset = false;
@@ -918,7 +918,7 @@ void VRMenuMgrLocal::renderSubmitted( VR4Matrixf const & worldMVP, VR4Matrixf co
 #if 0
 		int di = SortKeys[i].Key >> 32ULL;
 		float const df = *((float*)(&di ));
-        LOG( "Surface '%s', sk = %llu, df = %.2f, idx = %i", Submitted[idx].SurfaceName.toCString(), SortKeys[i].Key, df, idx );
+        vInfo("Surface '" << Submitted[idx].SurfaceName << "', sk =" << SortKeys[i].Key << ", df =" << df << ", idx =" << idx);
 #endif
 		SubmittedMenuObject const & cur = Submitted[idx];
 

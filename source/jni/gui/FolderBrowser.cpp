@@ -941,7 +941,7 @@ OvrFolderBrowser::OvrFolderBrowser(
 	const int createErr = pthread_create( &m_thumbnailThreadId, &loadingThreadAttr, &ThumbnailThread, this );
 	if ( createErr != 0 )
 	{
-		LOG( "pthread_create returned %i", createErr );
+		vInfo("pthread_create returned" << createErr);
 	}
 
 	m_panelWidth = panelWidth * VRMenuObject::DEFAULT_TEXEL_SCALE;
@@ -959,7 +959,7 @@ OvrFolderBrowser::OvrFolderBrowser(
 
 OvrFolderBrowser::~OvrFolderBrowser()
 {
-	LOG( "OvrFolderBrowser::~OvrFolderBrowser" );
+	vInfo("OvrFolderBrowser::~OvrFolderBrowser");
 	m_backgroundCommands.post( "shutDown" );
 
 	if ( ThumbPanelBG != NULL )
@@ -984,7 +984,7 @@ OvrFolderBrowser::~OvrFolderBrowser()
 		}
 	}
 
-    LOG( "OvrFolderBrowser::~OvrFolderBrowser COMPLETE" );
+    vInfo("OvrFolderBrowser::~OvrFolderBrowser COMPLETE");
 }
 
 uchar *OvrFolderBrowser::retrieveRemoteThumbnail(const VString &url, const VString &cacheDestinationFile, int folderId, int panelId, int &outWidth, int &outHeight)
@@ -1187,7 +1187,7 @@ void OvrFolderBrowser::buildDirtyMenu( OvrMetaData & metaData )
 		OvrMetaData::Category & currentCategory = metaData.getCategory( catIndex );
 		if ( currentCategory.dirty ) // Only build if dirty
 		{
-			LOG( "Loading folder %i named %s", catIndex, currentCategory.categoryTag.toCString() );
+			vInfo("Loading folder" << catIndex << "named" << currentCategory.categoryTag);
 			FolderView * folder = getFolderView( currentCategory.categoryTag );
 
 			// if building for the first time
@@ -1220,7 +1220,7 @@ void OvrFolderBrowser::buildDirtyMenu( OvrMetaData & metaData )
 				}
 				else
 				{
-					LOG( "Failed to get any metaData for folder %i named %s", catIndex, currentCategory.categoryTag.toCString() );
+					vInfo("Failed to get any metaData for folder" << catIndex << "named" << currentCategory.categoryTag);
 				}
 			}
 
@@ -1359,7 +1359,7 @@ void OvrFolderBrowser::buildFolder( OvrMetaData::Category & category, FolderView
 
 	// Create OvrFolderRootComponent for folder root
 	const VRMenuId_t folderId( uniqueId.Get( 1 ) );
-	LOG( "Building Folder %s id: %d with %d panels", category.categoryTag.toCString(), folderId.Get(), numPanels );
+	vInfo("Building Folder" << category.categoryTag << "id:" << folderId.Get() << "with" << numPanels << "panels");
 	VArray< VRMenuComponent* > comps;
 	comps.append( new OvrFolderRootComponent( *this, folder ) );
 	VRMenuObjectParms folderParms(
@@ -1599,7 +1599,7 @@ void OvrFolderBrowser::rebuildFolder( OvrMetaData & metaData, const int folderIn
 		FolderView * folder = getFolderView( folderIndex );
 		if ( folder == NULL )
 		{
-			LOG( "OvrFolderBrowser::RebuildFolder failed to Folder for folderIndex %d", folderIndex );
+			vInfo("OvrFolderBrowser::RebuildFolder failed to Folder for folderIndex" << folderIndex);
 			return;
 		}
 
@@ -1689,7 +1689,7 @@ void * OvrFolderBrowser::ThumbnailThread( void * v )
 	int result = pthread_setname_np( pthread_self(), "FolderBrowser" );
 	if ( result != 0 )
 	{
-		WARN( "FolderBrowser: pthread_setname_np failed %s", strerror( result ) );
+		vWarn("FolderBrowser: pthread_setname_np failed" << strerror( result ));
 	}
 
 	sched_param sparam;
@@ -1698,17 +1698,17 @@ void * OvrFolderBrowser::ThumbnailThread( void * v )
 	int setSchedparamResult = pthread_setschedparam( pthread_self(), SCHED_NORMAL, &sparam );
 	if ( setSchedparamResult != 0 )
 	{
-		WARN( "FolderBrowser: pthread_setschedparam failed %s", strerror( setSchedparamResult ) );
+		vWarn("FolderBrowser: pthread_setschedparam failed" << strerror( setSchedparamResult ));
 	}
 
 	for ( ;; )
 	{
 		folderBrowser->m_backgroundCommands.wait();
         VEvent event = folderBrowser->m_backgroundCommands.next();
-		//LOG( "BackgroundCommands: %s", msg );
+		//vInfo("BackgroundCommands:" << msg);
 
         if (event.name == "shutDown") {
-			LOG( "OvrFolderBrowser::ThumbnailThread shutting down" );
+			vInfo("OvrFolderBrowser::ThumbnailThread shutting down");
 			folderBrowser->m_backgroundCommands.clear();
 			break;
         } else if (event.name == "load") {
@@ -1735,7 +1735,7 @@ void * OvrFolderBrowser::ThumbnailThread( void * v )
 			}
 			else
 			{
-                WARN( "Thumbnail load fail for: %s", fullPath.toUtf8().data());
+                vWarn("Thumbnail load fail for:" << fullPath);
 			}
         } else if (event.name == "httpThumb") {
             VString panoUrl = event.data.at(0).toString();
@@ -1790,7 +1790,7 @@ void * OvrFolderBrowser::ThumbnailThread( void * v )
 					const int thumbPanelBytes = ThumbWidth * ThumbHeight * 4;
 					if ( numBytes != thumbPanelBytes )
 					{
-						WARN( "Thumbnail image '%s' is the wrong size! Regenerate thumbnails!", cmd.thumbDestination.toCString() );
+						vWarn("Thumbnail image '" << cmd.thumbDestination << "' is the wrong size! Regenerate thumbnails!");
 						free( data );
 					}
 					else
@@ -1889,7 +1889,7 @@ void OvrFolderBrowser::loadFolderPanels( const OvrMetaData & metaData, const Ovr
 	VArray< const OvrMetaDatum * > categoryPanos;
     metaData.getMetaData( category, categoryPanos );
 	const int numPanos = categoryPanos.length();
-	LOG( "Building %d panels for %s", numPanos, category.categoryTag.toCString() );
+	vInfo("Building" << numPanos << "panels for" << category.categoryTag);
 	for ( int panoIndex = 0; panoIndex < numPanos; panoIndex++ )
 	{
 		addPanelToFolder( const_cast< OvrMetaDatum * const >( categoryPanos.at( panoIndex ) ), folderIndex, folder, outParms );
@@ -2041,7 +2041,7 @@ void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const in
                     int pathLen = (int) panoUrl.length();
                     if ( pathLen > 2 && strcasecmp( panoUrl.toCString() + pathLen - 2, ".x" ) == 0 )
 					{
-						WARN( "Thumbnails cannot be generated from encrypted images." );
+						vWarn("Thumbnails cannot be generated from encrypted images.");
 						return; // No thumb & can't create
 					}
 
@@ -2086,7 +2086,7 @@ bool OvrFolderBrowser::applyThumbAntialiasing( unsigned char * inOutBuffer, int 
 			const int thumbPanelBytes = ThumbWidth * ThumbHeight * 4;
 			if ( numBytes != thumbPanelBytes )
 			{
-				WARN( "OvrFolderBrowser::ApplyAA - Thumbnail image '%s' is the wrong size!" );
+				vWarn("OvrFolderBrowser::ApplyAA - Thumbnail image '" << "' is the wrong size!");
 			}
 			else
 			{

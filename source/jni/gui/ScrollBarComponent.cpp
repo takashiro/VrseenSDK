@@ -355,7 +355,7 @@ void OvrScrollBarComponent::setScrollState( VRMenuObject * self, const eScrollBa
 	case SCROLL_STATE_FADE_IN:
 		if ( lastState == SCROLL_STATE_HIDDEN || lastState == SCROLL_STATE_FADE_OUT )
 		{
-			LOG( "%s to %s", StateString( lastState ), StateString( m_currentScrollState ) );
+			vInfo(StateString( lastState ) << "to" << StateString( m_currentScrollState ));
 			m_fader.startFadeIn();
 		}
 		break;
@@ -365,7 +365,7 @@ void OvrScrollBarComponent::setScrollState( VRMenuObject * self, const eScrollBa
 	case SCROLL_STATE_FADE_OUT:
 		if ( lastState == SCROLL_STATE_VISIBLE || lastState == SCROLL_STATE_FADE_IN )
 		{
-			LOG( "%s to %s", StateString( lastState ), StateString( m_currentScrollState ) );
+			vInfo(StateString( lastState ) << "to" << StateString( m_currentScrollState ));
 			m_fader.startFadeOut();
 		}
 		break;

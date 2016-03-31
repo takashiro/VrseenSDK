@@ -51,7 +51,7 @@ OvrGuiSysLocal::~OvrGuiSysLocal()
 // FIXME: the default items only apply to AppMenu now, and should be moved there once AppMenu overloads VRMenu.
 void OvrGuiSysLocal::init( App * app, OvrVRMenuMgr & menuMgr, BitmapFont const & font )
 {
-	LOG( "OvrGuiSysLocal::Init" );
+	vInfo("OvrGuiSysLocal::Init");
 
 	// get a use id for the gaze cursor
 	GazeUserId = app->gazeCursor().GenerateUserId();
@@ -68,7 +68,7 @@ void OvrGuiSysLocal::resetMenuOrientations( App * app, VR4Matrixf const & viewMa
 	{
 		if ( VRMenu* menu = Menus.at( i ) )
 		{
-			LOG( "ResetMenuOrientation -> '%s'", menu->name( ) );
+			vInfo("ResetMenuOrientation -> '" << menu->name( ) << "'");
 			menu->resetMenuOrientation( app, viewMatrix );
 		}
 	}
@@ -81,7 +81,7 @@ void OvrGuiSysLocal::addMenu( VRMenu * menu )
 	int menuIndex = FindMenuIndex( menu->name() );
 	if ( menuIndex >= 0 )
 	{
-		WARN( "Duplicate menu name '%s'", menu->name() );
+		vWarn("Duplicate menu name '" << menu->name() << "'");
 		vAssert( menuIndex < 0 );
 	}
     Menus.append( menu );
@@ -224,7 +224,7 @@ void OvrGuiSysLocal::openMenu( App * app, OvrGazeCursor & gazeCursor, char const
 	int menuIndex = FindMenuIndex( menuName );
 	if ( menuIndex < 0 )
 	{
-		WARN( "No menu named '%s'", menuName );
+		vWarn("No menu named '" << menuName << "'");
 		vAssert( menuIndex >= 0 && menuIndex < Menus.length() );
 		return;
 	}
@@ -244,7 +244,7 @@ void OvrGuiSysLocal::closeMenu( App * app, char const * menuName, bool const clo
 	int menuIndex = FindMenuIndex( menuName );
 	if ( menuIndex < 0 )
 	{
-		WARN( "No menu named '%s'", menuName );
+		vWarn("No menu named '" << menuName << "'");
 		vAssert( menuIndex >= 0 && menuIndex < Menus.length() );
 		return;
 	}
@@ -297,7 +297,7 @@ bool OvrGuiSysLocal::isAnyMenuOpen() const
 void OvrGuiSysLocal::frame( App * app, const VrFrame & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font,
         BitmapFontSurface & fontSurface, VR4Matrixf const & viewMatrix )
 {
-	//LOG( "OvrGuiSysLocal::Frame" );
+	//vInfo("OvrGuiSysLocal::Frame");
 
 	// go backwards through the list so we can use unordered remove when a menu finishes closing
 	for ( int i = ActiveMenus.length() - 1; i >= 0; --i )
@@ -316,7 +316,7 @@ void OvrGuiSysLocal::frame( App * app, const VrFrame & vrFrame, OvrVRMenuMgr & m
 				curMenu->frame( app, vrFrame, menuMgr, font, fontSurface, viewMatrix, GazeUserId );
 			}
 			double end = LogCpuTime::GetNanoSeconds();
-			LOG( "20x VRMenu::Frame() = %4.2f ms", ( end - start ) * ( 1.0 / ( 1000.0 * 1000.0 ) ) );
+			vInfo("20x VRMenu::Frame() =" << ( end - start ) * ( 1.0 / ( 1000.0 * 1000.0 ) ) << "ms");
 		}
 
 		curMenu->frame( app, vrFrame, menuMgr, font, fontSurface, viewMatrix, GazeUserId );
@@ -341,12 +341,12 @@ bool OvrGuiSysLocal::onKeyEvent( App * app, int const keyCode, KeyState::eKeyEve
 
 		if ( keyCode == AKEYCODE_BACK )
 		{
-			LOG( "OvrGuiSysLocal back key event '%s' for menu '%s'", KeyState::EventNames[eventType], curMenu->name() );
+			vInfo("OvrGuiSysLocal back key event '" << KeyState::EventNames[eventType] << "' for menu '" << curMenu->name() << "'");
 		}
 
 		if ( curMenu->onKeyEvent( app, keyCode, eventType ) )
 		{
-			LOG( "VRMenu '%s' consumed key event", curMenu->name() );
+			vInfo("VRMenu '" << curMenu->name() << "' consumed key event");
 			return true;
 		}
 	}

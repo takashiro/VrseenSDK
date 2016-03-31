@@ -78,7 +78,7 @@ bool VRMenuSurfaceTexture::loadTexture( eSurfaceTextureType const type, char con
 	{
         m_handle = LoadTextureFromBuffer( imageName, uiDefaultTgaData, uiDefaultTgaSize,
 							TextureFlags_t(), m_width, m_height );
-		WARN( "VRMenuSurfaceTexture::CreateFromImage: failed to load image '%s' - default loaded instead!", imageName );
+		vWarn("VRMenuSurfaceTexture::CreateFromImage: failed to load image '" << imageName << "' - default loaded instead!");
 	}
     m_ownsTexture = true;
 	return m_handle != 0;
@@ -278,7 +278,7 @@ void VRMenuSurface::render( OvrVRMenuMgr const & menuMgr, VR4Matrixf const & mvp
 		return;	// surface wasn't initialized with any geometry -- this can happen if diffuse and additive are both invalid
 	}
 
-    //LOG( "Render Surface '%s', skip = '%s'", SurfaceName.toCString(), skipAdditivePass ? "true" : "false" );
+    //vInfo("Render Surface '" << SurfaceName << "', skip = '" << skipAdditivePass ? "true" : "false" << "'");
 
     VGlOperation glOperation;
     glOperation.logErrorsEnum( "VRMenuSurface::Render - pre" );
@@ -380,7 +380,7 @@ void VRMenuSurface::render( OvrVRMenuMgr const & menuMgr, VR4Matrixf const & mvp
 		}
 		case PROGRAM_DIFFUSE_COLOR_RAMP_TARGET:	// has diffuse, color ramp, and a separate color ramp target
 		{
-			//LOG( "Surface '%s' - PROGRAM_COLOR_RAMP_TARGET", SurfaceName );
+			//vInfo("Surface '" << SurfaceName << "' - PROGRAM_COLOR_RAMP_TARGET");
 			glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 			int diffuseIndex = indexForTextureType( SURFACE_TEXTURE_DIFFUSE, 1 );
 			DROID_ASSERT( diffuseIndex >= 0, "VrMenu" );	// surface setup should have detected this!
@@ -405,7 +405,7 @@ void VRMenuSurface::render( OvrVRMenuMgr const & menuMgr, VR4Matrixf const & mvp
 		}
 		case PROGRAM_MAX:
 		{
-			WARN( "Unsupported texture map combination." );
+			vWarn("Unsupported texture map combination.");
 			return;
 		}
 		default:
@@ -460,7 +460,7 @@ void VRMenuSurface::createFromSurfaceParms( VRMenuSurfaceParms const & parms )
 	}
 	if ( !isValid )
 	{
-		//LOG( "VRMenuSurfaceParms '%s' - no valid images - skipping", parms.SurfaceName.toCString() );
+		//vInfo("VRMenuSurfaceParms '" << parms.SurfaceName << "' - no valid images - skipping");
 		return;
 	}
 
@@ -476,7 +476,7 @@ void VRMenuSurface::createFromSurfaceParms( VRMenuSurfaceParms const & parms )
 	}
 	if ( surfaceIdx < 0 )
 	{
-		//LOG( "VRMenuSurface::CreateFromImageParms - no suitable image for surface creation" );
+		//vInfo("VRMenuSurface::CreateFromImageParms - no suitable image for surface creation");
 		return;
 	}
 
@@ -534,7 +534,7 @@ void VRMenuSurface::createFromSurfaceParms( VRMenuSurfaceParms const & parms )
 	}
 	else
 	{
-		WARN( "Invalid material combination -- either add a shader to support it or fix it." );
+		vWarn("Invalid material combination -- either add a shader to support it or fix it.");
 		m_programType = PROGRAM_MAX;
 	}
 }
@@ -914,7 +914,7 @@ bool VRMenuObjectLocal:: hitTest_r( App * app, OvrVRMenuMgr & menuMgr, BitmapFon
     {
         if ( m_cullBounds.IsInverted() )
         {
-            DROIDLOG( "Spam", "CullBounds are inverted!!" );
+            vVerbose("CullBounds are inverted!!");
             return false;
         }
 	    float cullT0;
@@ -924,8 +924,6 @@ bool VRMenuObjectLocal:: hitTest_r( App * app, OvrVRMenuMgr & menuMgr, BitmapFon
         allContents.setAll();
 	    bool hitCullBounds = intersectRayBounds( localStart, localDir, m_cullBounds.GetMins(), m_cullBounds.GetMaxs(),
 									allContents, cullT0, cullT1 );
-
-//        DROIDLOG( "Spam", "Cull hit = %s, t0 = %.2f t1 = %.2f", hitCullBounds ? "true" : "false", cullT0, cullT1 );
 
 	    if ( !hitCullBounds )
 	    {

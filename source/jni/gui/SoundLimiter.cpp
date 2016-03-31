@@ -28,7 +28,7 @@ void SoundLimiter::playSound(App * app, char const * soundName, double const lim
 {
 	double curTime = ovr_GetTimeInSeconds();
 	double t = curTime - m_lastPlayTime;
-    //DROIDLOG( "VrMenu", "playSound( '%s', %.2f ) - t == %.2f : %s", soundName, limitSeconds, t, t >= limitSeconds ? "PLAYING" : "SKIPPING" );
+    vInfo("playSound(" << soundName << ", " << limitSeconds << ") - t ==" << t << ":" << (t >= limitSeconds ? "PLAYING" : "SKIPPING"));
 	if ( t >= limitSeconds )
 	{
 		app->playSound( soundName );

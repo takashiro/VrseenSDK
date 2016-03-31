@@ -88,7 +88,7 @@ void VRMenu::init( OvrVRMenuMgr & menuMgr, BitmapFont const & font, float const 
 	VRMenuObject * root = menuMgr.toObject( m_rootHandle );
 	if ( root == NULL )
 	{
-		WARN( "RootHandle (%llu) is invalid!", m_rootHandle.Get() );
+		vWarn("RootHandle (" << m_rootHandle.Get() << ") is invalid!");
 		return;
 	}
 
@@ -148,8 +148,7 @@ void VRMenu::addItems( OvrVRMenuMgr & menuMgr, BitmapFont const & font,
 		{
 			if ( j != i && parms->Id != VRMenuId_t() && parms->Id == itemParms[j]->Id )
 			{
-				LOG( "Duplicate menu object ids for '%s' and '%s'!",
-                        parms->Text.toCString(), itemParms[j]->Text.toCString() );
+                vInfo("Duplicate menu object ids for" << parms->Text << "and" << itemParms[j]->Text << "!");
 			}
 		}
 		menuHandle_t handle = menuMgr.createObject( *parms );
@@ -264,7 +263,7 @@ void VRMenu::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 
 	if ( m_nextMenuState != m_curMenuState )
 	{
-		LOG( "NextMenuState for '%s': %s", name(), MenuStateNames[m_nextMenuState] );
+		vInfo("NextMenuState for '" << name() << "':" << MenuStateNames[m_nextMenuState]);
 		switch( m_nextMenuState )
 		{
             case MENUSTATE_OPENING:
@@ -354,7 +353,7 @@ bool VRMenu::onKeyEvent( App * app, int const keyCode, KeyState::eKeyEventType c
 
 	if ( keyCode == AKEYCODE_BACK )
 	{
-		LOG( "VRMenu '%s' Back key event: %s", name(), KeyState::EventNames[eventType] );
+		vInfo("VRMenu '" << name() << "' Back key event:" << KeyState::EventNames[eventType]);
 
 		switch( eventType )
 		{
@@ -527,7 +526,7 @@ menuHandle_t VRMenu::focusedHandle() const
 // VRMenu::ResetMenuOrientation
 void VRMenu::resetMenuOrientation( App * app, VR4Matrixf const & viewMatrix )
 {
-	LOG( "ResetMenuOrientation for '%s'", name() );
+	vInfo("ResetMenuOrientation for '" << name() << "'");
 	resetMenuOrientation_Impl( app, viewMatrix );
 }
 
