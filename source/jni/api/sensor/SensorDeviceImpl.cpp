@@ -293,7 +293,7 @@ static vuint16 SelectSensorRampValue(const vuint16* ramp, unsigned count,
     }
     OVR_DEBUG_LOG(("SensorDevice::SetRange - %s clamped to %0.4f",
                    label, float(ramp[count-1]) / factor));
-    OVR_UNUSED2(factor, label);
+    NV_UNUSED(factor, label);
     return ramp[count-1];
 }
 

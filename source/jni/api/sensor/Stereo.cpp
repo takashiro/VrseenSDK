@@ -1749,7 +1749,7 @@ FovPort CalculateFovFromHmdInfo ( StereoEye eyeType,
 
 FovPort GetPhysicalScreenFov ( StereoEye eyeType, DistortionRenderDesc const &distortion )
 {
-    OVR_UNUSED1 ( eyeType );
+    NV_UNUSED ( eyeType );
 
     FovPort resultFovPort;
 
@@ -1942,7 +1942,7 @@ Matrix4f CreateOrthoSubProjection ( bool rightHanded, StereoEye eyeType,
                                     Matrix4f const &projection,
                                     float zNear /*= 0.0f*/, float zFar /*= 0.0f*/ )
 {
-    OVR_UNUSED1 ( rightHanded );
+    NV_UNUSED ( rightHanded );
 
     float orthoHorizontalOffset = interpupillaryDistance * 0.5f / distanceFromCamera;
     switch ( eyeType )

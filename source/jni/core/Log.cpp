@@ -124,7 +124,7 @@ void Log::DefaultLogOutput(LogMessageType messageType, const char* formattedText
 #endif
 
     // Just in case.
-    OVR_UNUSED2(formattedText, messageType);
+    NV_UNUSED(formattedText, messageType);
 }
 
 

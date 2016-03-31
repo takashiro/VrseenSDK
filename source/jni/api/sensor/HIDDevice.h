@@ -38,7 +38,7 @@ public:
     // Should return true if we are interested in supporting
     // this HID VendorId and ProductId pair.
     virtual bool MatchVendorProduct(vuint16 vendorId, vuint16 productId)
-    { OVR_UNUSED2(vendorId, productId); return true; }
+    { NV_UNUSED(vendorId, productId); return true; }
 
     // Override to get notified about available device. Will only be called for
     // devices that matched MatchVendorProduct.
@@ -103,10 +103,10 @@ public:
     {
     public:
         virtual void OnInputReport(uchar* pData, vuint32 length)
-        { OVR_UNUSED2(pData, length); }
+        { NV_UNUSED(pData, length); }
 
         virtual double OnTicks(double tickSeconds)
-        { OVR_UNUSED1(tickSeconds);  return 1000.0 ; }
+        { NV_UNUSED(tickSeconds);  return 1000.0 ; }
 
         enum HIDDeviceMessageType
         {
@@ -115,7 +115,7 @@ public:
         };
 
         virtual void OnDeviceMessage(HIDDeviceMessageType messageType)
-        { OVR_UNUSED1(messageType); }
+        { NV_UNUSED(messageType); }
     };
 
     void SetHandler(HIDHandler* handler)

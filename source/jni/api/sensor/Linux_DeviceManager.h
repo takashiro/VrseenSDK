@@ -66,7 +66,7 @@ public:
         // wait till next call.
         virtual double  OnTicks(double tickSeconds)
         {
-            OVR_UNUSED1(tickSeconds);
+            NV_UNUSED(tickSeconds);
             return 1000.0;
         }
     };
