@@ -6,6 +6,7 @@
  */
 
 #include "VDialog.h"
+#include "VTimer.h"
 NV_NAMESPACE_BEGIN
 VDialog::VDialog():dialogStopSeconds(0.0f),
                     dialogTexture(nullptr)
@@ -15,7 +16,7 @@ VDialog::VDialog():dialogStopSeconds(0.0f),
 void VDialog::draw( VPanel &panel, const VR4Matrixf & mvp )
 {
     // draw the pop-up dialog
-    const float now = ovr_GetTimeInSeconds();
+    const float now = NervGear::VTimer::Seconds();
     if ( now >= dialogStopSeconds )
     {
         return;
