@@ -17,10 +17,7 @@ template<class T> class VR3Matrix;
 
 template<class T> class PoseState;
 
-template<> struct VCompatibleTypes<VQuat<float> >     { typedef ovrQuatf Type; };
-template<> struct VCompatibleTypes<VQuat<double> >    { typedef ovrQuatd Type; };
-template<> struct VCompatibleTypes<VPos<float> >     { typedef ovrPosef Type; };
-template<> struct VCompatibleTypes<PoseState<float> >{ typedef ovrPoseStatef Type; };
+
 //-------------------------------------------------------------------------------------
 // ***** VBox
 
@@ -53,7 +50,7 @@ public:
 		if (VAxis.LengthSq() == 0)
 		{
 			// Assert if the VAxis is zero, but the VAngle isn't
-			OVR_ASSERT(VAngle == 0);
+            vAssert(VAngle == 0);
 			x = 0; y = 0; z = 0; w = 1;
 			return;
 		}
@@ -202,19 +199,6 @@ public:
 		y = cy * rcpLength;
 		z = cz * rcpLength;
 		w = cw * rcpLength;
-	}
-
-  // C-interop support.
-	VQuat(const typename VCompatibleTypes<VQuat<T> >::Type& s) : x(s.x), y(s.y), z(s.z), w(s.w) { }
-
-	operator const typename VCompatibleTypes<VQuat<T> >::Type () const
-	{
-		typename VCompatibleTypes<VQuat<T> >::Type result;
-		result.x = x;
-		result.y = y;
-		result.z = z;
-		result.w = w;
-		return result;
 	}
 
 
@@ -375,7 +359,7 @@ public:
 	    template <VAxis A1, VAxis A2, VAxis A3, VRotateDirection D, VHandedSystem S>
 	    void GetEulerAngles(T *a, T *b, T *c) const
 	    {
-	        OVR_COMPILER_ASSERT((A1 != A2) && (A2 != A3) && (A1 != A3));
+            static_assert((A1 != A2) && (A2 != A3) && (A1 != A3), "A1,A2,A3 should be different");
 
 	        T Q[3] = { x, y, z };  //VQuaternion components x,y,z
 
@@ -436,7 +420,7 @@ public:
 	    template <VAxis A1, VAxis A2, VRotateDirection D, VHandedSystem S>
 	    void GetEulerAnglesABA(T *a, T *b, T *c) const
 	    {
-	        OVR_COMPILER_ASSERT(A1 != A2);
+            static_assert(A1 != A2, "A1 and A2 should be different");
 
 	        T Q[3] = {x, y, z}; // VQuaternion components
 
@@ -504,25 +488,17 @@ class VPos
 {
 public:
 
-    typedef typename VCompatibleTypes<VPos<T> >::Type VCompatibleType;
+
 
     VPos() { }
     VPos(const VQuat<T>& orientation, const V3Vect<T>& pos)
         : Orientation(orientation), Position(pos) {  }
     VPos(const VPos& s)
         : Orientation(s.Orientation), Position(s.Position) {  }
-    VPos(const VCompatibleType& s)
-        : Orientation(s.Orientation), Position(s.Position) {  }
+
     explicit VPos(const VPos<typename VConstants<T>::VdifFloat> &s)
         : Orientation(s.Orientation), Position(s.Position) {  }
 
-    operator const typename VCompatibleTypes<VPos<T> >::Type () const
-    {
-        typename VCompatibleTypes<VPos<T> >::Type result;
-        result.Orientation = Orientation;
-        result.Position = Position;
-        return result;
-    }
 
     V3Vect<T> Rotate(const V3Vect<T>& v) const
     {

@@ -11,60 +11,6 @@
 namespace OculusCinema
 {
 
-
-inline float ovrMatrix4f_Minor( const ovrMatrix4f * m, int r0, int r1, int r2, int c0, int c1, int c2 )
-{
-    return	m->M[r0][c0] * ( m->M[r1][c1] * m->M[r2][c2] - m->M[r2][c1] * m->M[r1][c2] ) -
-              m->M[r0][c1] * ( m->M[r1][c0] * m->M[r2][c2] - m->M[r2][c0] * m->M[r1][c2] ) +
-              m->M[r0][c2] * ( m->M[r1][c0] * m->M[r2][c1] - m->M[r2][c0] * m->M[r1][c1] );
-}
-
-
-inline ovrMatrix4f ovrMatrix4f_Inverse( const ovrMatrix4f * m )
-{
-    const float rcpDet = 1.0f / (	m->M[0][0] * ovrMatrix4f_Minor( m, 1, 2, 3, 1, 2, 3 ) -
-                                     m->M[0][1] * ovrMatrix4f_Minor( m, 1, 2, 3, 0, 2, 3 ) +
-                                     m->M[0][2] * ovrMatrix4f_Minor( m, 1, 2, 3, 0, 1, 3 ) -
-                                     m->M[0][3] * ovrMatrix4f_Minor( m, 1, 2, 3, 0, 1, 2 ) );
-    ovrMatrix4f out;
-    out.M[0][0] =  ovrMatrix4f_Minor( m, 1, 2, 3, 1, 2, 3 ) * rcpDet;
-    out.M[0][1] = -ovrMatrix4f_Minor( m, 0, 2, 3, 1, 2, 3 ) * rcpDet;
-    out.M[0][2] =  ovrMatrix4f_Minor( m, 0, 1, 3, 1, 2, 3 ) * rcpDet;
-    out.M[0][3] = -ovrMatrix4f_Minor( m, 0, 1, 2, 1, 2, 3 ) * rcpDet;
-    out.M[1][0] = -ovrMatrix4f_Minor( m, 1, 2, 3, 0, 2, 3 ) * rcpDet;
-    out.M[1][1] =  ovrMatrix4f_Minor( m, 0, 2, 3, 0, 2, 3 ) * rcpDet;
-    out.M[1][2] = -ovrMatrix4f_Minor( m, 0, 1, 3, 0, 2, 3 ) * rcpDet;
-    out.M[1][3] =  ovrMatrix4f_Minor( m, 0, 1, 2, 0, 2, 3 ) * rcpDet;
-    out.M[2][0] =  ovrMatrix4f_Minor( m, 1, 2, 3, 0, 1, 3 ) * rcpDet;
-    out.M[2][1] = -ovrMatrix4f_Minor( m, 0, 2, 3, 0, 1, 3 ) * rcpDet;
-    out.M[2][2] =  ovrMatrix4f_Minor( m, 0, 1, 3, 0, 1, 3 ) * rcpDet;
-    out.M[2][3] = -ovrMatrix4f_Minor( m, 0, 1, 2, 0, 1, 3 ) * rcpDet;
-    out.M[3][0] = -ovrMatrix4f_Minor( m, 1, 2, 3, 0, 1, 2 ) * rcpDet;
-    out.M[3][1] =  ovrMatrix4f_Minor( m, 0, 2, 3, 0, 1, 2 ) * rcpDet;
-    out.M[3][2] = -ovrMatrix4f_Minor( m, 0, 1, 3, 0, 1, 2 ) * rcpDet;
-    out.M[3][3] =  ovrMatrix4f_Minor( m, 0, 1, 2, 0, 1, 2 ) * rcpDet;
-    return out;
-}
-
-inline ovrMatrix4f TanAngleMatrixFromUnitSquare( const ovrMatrix4f * modelView )
-{
-    const ovrMatrix4f inv = ovrMatrix4f_Inverse( modelView );
-    ovrMatrix4f m;
-    m.M[0][0] = 0.5f * inv.M[2][0] - 0.5f * ( inv.M[0][0] * inv.M[2][3] - inv.M[0][3] * inv.M[2][0] );
-    m.M[0][1] = 0.5f * inv.M[2][1] - 0.5f * ( inv.M[0][1] * inv.M[2][3] - inv.M[0][3] * inv.M[2][1] );
-    m.M[0][2] = 0.5f * inv.M[2][2] - 0.5f * ( inv.M[0][2] * inv.M[2][3] - inv.M[0][3] * inv.M[2][2] );
-    m.M[0][3] = 0.0f;
-    m.M[1][0] = 0.5f * inv.M[2][0] + 0.5f * ( inv.M[1][0] * inv.M[2][3] - inv.M[1][3] * inv.M[2][0] );
-    m.M[1][1] = 0.5f * inv.M[2][1] + 0.5f * ( inv.M[1][1] * inv.M[2][3] - inv.M[1][3] * inv.M[2][1] );
-    m.M[1][2] = 0.5f * inv.M[2][2] + 0.5f * ( inv.M[1][2] * inv.M[2][3] - inv.M[1][3] * inv.M[2][2] );
-    m.M[1][3] = 0.0f;
-    m.M[2][0] = m.M[3][0] = inv.M[2][0];
-    m.M[2][1] = m.M[3][1] = inv.M[2][1];
-    m.M[2][2] = m.M[3][2] = inv.M[2][2];
-    m.M[2][3] = m.M[3][3] = 0.0f;
-    return m;
-}
-
 SceneManager::SceneManager( CinemaApp &cinema ) :
 	Cinema( cinema ),
 	StaticLighting(),
@@ -1030,15 +976,15 @@ VR4Matrixf SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 	{
 		// use overlay
         const VR4Matrixf screenModel = ScreenMatrix();
-        const ovrMatrix4f mv = Scene.ViewMatrixForEye( eye ) * screenModel;
+        const VR4Matrixf mv = Scene.ViewMatrixForEye( eye ) * screenModel;
 
         vApp->swapParms().WarpProgram = WP_CHROMATIC_MASKED_PLANE;
         vApp->swapParms().Images[eye][1].TexId = MipMappedMovieTextures[CurrentMipMappedMovieTexture];
         vApp->swapParms().Images[eye][1].Pose = vApp->sensorForNextWarp().Predicted;
-        vApp->swapParms().Images[eye][1].TexCoordsFromTanAngles = texMatrix * TanAngleMatrixFromUnitSquare( &mv );
+        vApp->swapParms().Images[eye][1].TexCoordsFromTanAngles = texMatrix * VR4Matrix<float>::TanAngleMatrixFromUnitSquare( &mv );
 
 		// explicitly clear a hole in alpha
-        const ovrMatrix4f screenMvp = mvp * screenModel;
+        const VR4Matrixf screenMvp = mvp * screenModel;
         vApp->drawScreenMask( screenMvp, 0.0f, 0.0f );
 	}
 

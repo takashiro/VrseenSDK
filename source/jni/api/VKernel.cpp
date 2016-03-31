@@ -1,14 +1,3 @@
-/************************************************************************************
-
-Filename    :   VrApi.cpp
-Content     :   Primary C level interface necessary for VR, App builds on this
-Created     :   July, 2014
-Authors     :   John Carmack
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
 #include "VDevice.h"
 #include "VFrameSmooth.h"
 
@@ -84,14 +73,6 @@ void		ovr_Init();
 // A dedicated VR app will call ovr_ExitActivity instead, but a hybrid
 // app may call this when leaving VR mode.
 void		ovr_Shutdown();
-
-// Returns a 3x3 minor of a 4x4 matrix.
-inline float ovrMatrix4f_Minor( const ovrMatrix4f * m, int r0, int r1, int r2, int c0, int c1, int c2 )
-{
-    return	m->M[r0][c0] * ( m->M[r1][c1] * m->M[r2][c2] - m->M[r2][c1] * m->M[r1][c2] ) -
-              m->M[r0][c1] * ( m->M[r1][c0] * m->M[r2][c2] - m->M[r2][c0] * m->M[r1][c2] ) +
-              m->M[r0][c2] * ( m->M[r1][c0] * m->M[r2][c1] - m->M[r2][c0] * m->M[r1][c1] );
-}
 
 
 void ovr_InitSensors()

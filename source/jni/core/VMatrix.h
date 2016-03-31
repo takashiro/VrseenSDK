@@ -11,7 +11,6 @@ NV_NAMESPACE_BEGIN
 
 template <class T> class VR4Matrix;
 
-template<> struct VCompatibleTypes<VR4Matrix<float> >  { typedef ovrMatrix4f Type; };
 
 template<class T> class VQuat;
 template<class T> class VPos;
@@ -95,40 +94,7 @@ public:
 
 
 
-// C-interop support
-   explicit VR4Matrix(const VR4Matrix<typename VConstants<T>::VdifFloat> &src)
-   {
-	   for (int i = 0; i < 4; i++)
-		   for (int j = 0; j < 4; j++)
-			   M[i][j] = (T)src.M[i][j];
-   }
 
-   // C-interop support.
-   VR4Matrix(const typename VCompatibleTypes<VR4Matrix<T> >::Type& s)
-   {
-	   OVR_COMPILER_ASSERT(sizeof(s) == sizeof(VR4Matrix));
-	   memcpy(M, s.M, sizeof(M));
-   }
-
-   operator const typename VCompatibleTypes<VR4Matrix<T> >::Type () const
-   {
-	   typename VCompatibleTypes<VR4Matrix<T> >::Type result;
-	   OVR_COMPILER_ASSERT(sizeof(result) == sizeof(VR4Matrix));
-	   memcpy(result.M, M, sizeof(M));
-	   return result;
-   }
-
-
-
-
-
-       void ToString(char* dest, uint destsize) const
-       {
-           uint pos = 0;
-           for (int r=0; r<4; r++)
-               for (int c=0; c<4; c++)
-                   pos += OVR_sprintf(dest+pos, destsize-pos, "%g ", M[r][c]);
-       }
 
    	void FromQuat( const VQuat<T> & q )
    	{
@@ -253,7 +219,7 @@ public:
    	// FIXME: take advantage of return value optimization instead.
        static VR4Matrix& Multiply(VR4Matrix* d, const VR4Matrix& a, const VR4Matrix& b)
        {
-           OVR_ASSERT((d != &a) && (d != &b));
+           vAssert((d != &a) && (d != &b));
            int i = 0;
            do {
                d->M[i][0] = a.M[i][0] * b.M[0][0] + a.M[i][1] * b.M[1][0] + a.M[i][2] * b.M[2][0] + a.M[i][3] * b.M[3][0];
@@ -405,7 +371,7 @@ public:
        template <VAxis A1, VAxis A2, VAxis A3, VRotateDirection D, VHandedSystem S>
        void ToEulerAngles(T *a, T *b, T *c) const
        {
-           OVR_COMPILER_ASSERT((A1 != A2) && (A2 != A3) && (A1 != A3));
+           static_assert((A1 != A2) && (A2 != A3) && (A1 != A3), "A1,A2,A3 should be different");
 
            T psign = -1;
            if (((A1 + 1) % 3 == A2) && ((A2 + 1) % 3 == A3)) // Determine whether even permutation
@@ -443,7 +409,7 @@ public:
        template <VAxis A1, VAxis A2, VRotateDirection D, VHandedSystem S>
        void ToEulerAnglesABA(T *a, T *b, T *c) const
        {
-            OVR_COMPILER_ASSERT(A1 != A2);
+            static_assert(A1 != A2, "A1 and A2 should be different");
 
            // Determine the VAxis that was not supplied
            int m = 3 - A1 - A2;
@@ -700,13 +666,13 @@ public:
 
        static VR4Matrix CreateFromBasisVectors( V3Vect<T> const & zBasis, V3Vect<T> const & up )
        {
-   	    OVR_ASSERT( zBasis.IsNormalized() );
-   	    OVR_ASSERT( up.IsNormalized() );
+        vAssert( zBasis.IsNormalized() );
+        vAssert( up.IsNormalized() );
    	    T dot = zBasis.Dot( up );
    	    if ( dot < (T)-0.9999 || dot > (T)0.9999 )
    	    {
    		    // z basis cannot be parallel to the specified up
-   		    OVR_ASSERT( dot >= (T)-0.9999 || dot <= (T)0.9999 );
+            vAssert( dot >= (T)-0.9999 || dot <= (T)0.9999 );
    		    return VR4Matrix<T>();
    	    }
 
@@ -784,6 +750,156 @@ public:
            m.M[2][2] = T(0);
            return m;
        }
+
+       // Returns a 3x3 minor of a 4x4 matrix.
+       static T Matrix4_Minor( const VR4Matrix<T> * m, int r0, int r1, int r2, int c0, int c1, int c2 )
+       {
+           return	m->M[r0][c0] * ( m->M[r1][c1] * m->M[r2][c2] - m->M[r2][c1] * m->M[r1][c2] ) -
+                     m->M[r0][c1] * ( m->M[r1][c0] * m->M[r2][c2] - m->M[r2][c0] * m->M[r1][c2] ) +
+                     m->M[r0][c2] * ( m->M[r1][c0] * m->M[r2][c1] - m->M[r2][c0] * m->M[r1][c1] );
+       }
+
+       // Returns the inverse of a 4x4 matrix.
+       static VR4Matrix<T> Matrix4_Inverse( const VR4Matrix<T> * m )
+       {
+           const float rcpDet = 1.0f / (	m->M[0][0] * Matrix4_Minor( m, 1, 2, 3, 1, 2, 3 ) -
+                                            m->M[0][1] * Matrix4_Minor( m, 1, 2, 3, 0, 2, 3 ) +
+                                            m->M[0][2] * Matrix4_Minor( m, 1, 2, 3, 0, 1, 3 ) -
+                                            m->M[0][3] * Matrix4_Minor( m, 1, 2, 3, 0, 1, 2 ) );
+           VR4Matrix<T> out;
+           out.M[0][0] =  Matrix4_Minor( m, 1, 2, 3, 1, 2, 3 ) * rcpDet;
+           out.M[0][1] = -Matrix4_Minor( m, 0, 2, 3, 1, 2, 3 ) * rcpDet;
+           out.M[0][2] =  Matrix4_Minor( m, 0, 1, 3, 1, 2, 3 ) * rcpDet;
+           out.M[0][3] = -Matrix4_Minor( m, 0, 1, 2, 1, 2, 3 ) * rcpDet;
+           out.M[1][0] = -Matrix4_Minor( m, 1, 2, 3, 0, 2, 3 ) * rcpDet;
+           out.M[1][1] =  Matrix4_Minor( m, 0, 2, 3, 0, 2, 3 ) * rcpDet;
+           out.M[1][2] = -Matrix4_Minor( m, 0, 1, 3, 0, 2, 3 ) * rcpDet;
+           out.M[1][3] =  Matrix4_Minor( m, 0, 1, 2, 0, 2, 3 ) * rcpDet;
+           out.M[2][0] =  Matrix4_Minor( m, 1, 2, 3, 0, 1, 3 ) * rcpDet;
+           out.M[2][1] = -Matrix4_Minor( m, 0, 2, 3, 0, 1, 3 ) * rcpDet;
+           out.M[2][2] =  Matrix4_Minor( m, 0, 1, 3, 0, 1, 3 ) * rcpDet;
+           out.M[2][3] = -Matrix4_Minor( m, 0, 1, 2, 0, 1, 3 ) * rcpDet;
+           out.M[3][0] = -Matrix4_Minor( m, 1, 2, 3, 0, 1, 2 ) * rcpDet;
+           out.M[3][1] =  Matrix4_Minor( m, 0, 2, 3, 0, 1, 2 ) * rcpDet;
+           out.M[3][2] = -Matrix4_Minor( m, 0, 1, 3, 0, 1, 2 ) * rcpDet;
+           out.M[3][3] =  Matrix4_Minor( m, 0, 1, 2, 0, 1, 2 ) * rcpDet;
+           return out;
+       }
+
+       // Returns the 4x4 rotation matrix for the given quaternion.
+       static VR4Matrix<T> Matrix4_CreateFromQuaternion( const VQuat<T> * q )
+       {
+           const float ww = q->w * q->w;
+           const float xx = q->x * q->x;
+           const float yy = q->y * q->y;
+           const float zz = q->z * q->z;
+
+           VR4Matrix<T> out;
+           out.M[0][0] = ww + xx - yy - zz;
+           out.M[0][1] = 2 * ( q->x * q->y - q->w * q->z );
+           out.M[0][2] = 2 * ( q->x * q->z + q->w * q->y );
+           out.M[0][3] = 0;
+           out.M[1][0] = 2 * ( q->x * q->y + q->w * q->z );
+           out.M[1][1] = ww - xx + yy - zz;
+           out.M[1][2] = 2 * ( q->y * q->z - q->w * q->x );
+           out.M[1][3] = 0;
+           out.M[2][0] = 2 * ( q->x * q->z - q->w * q->y );
+           out.M[2][1] = 2 * ( q->y * q->z + q->w * q->x );
+           out.M[2][2] = ww - xx - yy + zz;
+           out.M[2][3] = 0;
+           out.M[3][0] = 0;
+           out.M[3][1] = 0;
+           out.M[3][2] = 0;
+           out.M[3][3] = 1;
+           return out;
+       }
+
+
+       // Convert a standard projection matrix into a TanAngle matrix for
+       // the primary time warp surface.
+       static VR4Matrix<T> TanAngleMatrixFromProjection( const VR4Matrix<T> * projection )
+       {
+           // A projection matrix goes from a view point to NDC, or -1 to 1 space.
+           // Scale and bias to convert that to a 0 to 1 space.
+           const VR4Matrix<T> tanAngleMatrix =
+                   { {
+                             { 0.5f * projection->M[0][0], 0.5f * projection->M[0][1], 0.5f * projection->M[0][2] - 0.5f, 0.5f * projection->M[0][3] },
+                             { 0.5f * projection->M[1][0], 0.5f * projection->M[1][1], 0.5f * projection->M[1][2] - 0.5f, 0.5f * projection->M[1][3] },
+                             { 0.0f, 0.0f, -1.0f, 0.0f },
+                             { 0.0f, 0.0f, -1.0f, 0.0f }
+                     } };
+           return tanAngleMatrix;
+       }
+
+       // Trivial version of TanAngleMatrixFromProjection() for a symmetric field of view.
+       static VR4Matrix<T> TanAngleMatrixFromFov( const float fovDegrees )
+       {
+           const float tanHalfFov = tanf( 0.5f * fovDegrees * ( M_PI / 180.0f ) );
+           const VR4Matrix<T> tanAngleMatrix(0.5f / tanHalfFov, 0.0f, -0.5f, 0.0f,
+        		   	   	   	   	   	   	   	 0.0f, 0.5f / tanHalfFov, -0.5f, 0.0f,
+        		   	   	   	   	   	   	   	 0.0f, 0.0f, -1.0f, 0.0f,
+        		   	   	   	   	   	   	   	 0.0f, 0.0f, -1.0f, 0.0f);
+           return tanAngleMatrix;
+       }
+
+       // If a simple quad defined as a -1 to 1 XY unit square is transformed to
+       // the camera view with the given modelView matrix, it can alternately be
+       // drawn as a TimeWarp overlay image to take advantage of the full window
+       // resolution, which is usually higher than the eye buffer textures, and
+       // avoid resampling both into the eye buffer, and again to the screen.
+       // This is used for high quality movie screens and user interface planes.
+       //
+       // Note that this is NOT an MVP matrix -- the "projection" is handled
+       // by the distortion process.
+       //
+       // The exact composition of the overlay image and the base image is
+       // determined by the warpProgram, you may still need to draw the geometry
+       // into the eye buffer to punch a hole in the alpha channel to let the
+       // overlay/underlay show through.
+       //
+       // This utility functions converts a model-view matrix that would normally
+       // draw a -1 to 1 unit square to the view into a TanAngle matrix for an
+       // overlay surface.
+       //
+       // The resulting z value should be straight ahead distance to the plane.
+       // The x and y values will be pre-multiplied by z for projective texturing.
+       static VR4Matrix<T> TanAngleMatrixFromUnitSquare( const VR4Matrix<T> * modelView )
+       {
+           const VR4Matrix<T> inv = Matrix4_Inverse( modelView );
+           VR4Matrix<T> m;
+           m.M[0][0] = 0.5f * inv.M[2][0] - 0.5f * ( inv.M[0][0] * inv.M[2][3] - inv.M[0][3] * inv.M[2][0] );
+           m.M[0][1] = 0.5f * inv.M[2][1] - 0.5f * ( inv.M[0][1] * inv.M[2][3] - inv.M[0][3] * inv.M[2][1] );
+           m.M[0][2] = 0.5f * inv.M[2][2] - 0.5f * ( inv.M[0][2] * inv.M[2][3] - inv.M[0][3] * inv.M[2][2] );
+           m.M[0][3] = 0.0f;
+           m.M[1][0] = 0.5f * inv.M[2][0] + 0.5f * ( inv.M[1][0] * inv.M[2][3] - inv.M[1][3] * inv.M[2][0] );
+           m.M[1][1] = 0.5f * inv.M[2][1] + 0.5f * ( inv.M[1][1] * inv.M[2][3] - inv.M[1][3] * inv.M[2][1] );
+           m.M[1][2] = 0.5f * inv.M[2][2] + 0.5f * ( inv.M[1][2] * inv.M[2][3] - inv.M[1][3] * inv.M[2][2] );
+           m.M[1][3] = 0.0f;
+           m.M[2][0] = m.M[3][0] = inv.M[2][0];
+           m.M[2][1] = m.M[3][1] = inv.M[2][1];
+           m.M[2][2] = m.M[3][2] = inv.M[2][2];
+           m.M[2][3] = m.M[3][3] = 0.0f;
+           return m;
+       }
+
+       // Utility function to calculate external velocity for smooth stick yaw turning.
+       // To reduce judder in FPS style experiences when the application framerate is
+       // lower than the vsync rate, the rotation from a joypad can be applied to the
+       // view space distorted eye vectors before applying the time warp.
+       static VR4Matrix<T> CalculateExternalVelocity( const VR4Matrix<T> * viewMatrix, const float yawRadiansPerSecond )
+       {
+           const float angle = yawRadiansPerSecond * ( -1.0f / 60.0f );
+           const float sinHalfAngle = sinf( angle * 0.5f );
+           const float cosHalfAngle = cosf( angle * 0.5f );
+
+           // Yaw is always going to be around the world Y axis
+           VQuat<T> quat;
+           quat.x = viewMatrix->M[0][1] * sinHalfAngle;
+           quat.y = viewMatrix->M[1][1] * sinHalfAngle;
+           quat.z = viewMatrix->M[2][1] * sinHalfAngle;
+           quat.w = cosHalfAngle;
+           return Matrix4_CreateFromQuaternion( &quat );
+       }
 };
 
 typedef VR4Matrix<float>  VR4Matrixf;
@@ -855,28 +971,7 @@ public:
 		}
 		*/
 
-	// C-interop support
-	explicit VR3Matrix(const VR4Matrix<typename VConstants<T>::VdifFloat> &src)
-	{
-		for (int i = 0; i < 3; i++)
-			for (int j = 0; j < 3; j++)
-				M[i][j] = (T)src.M[i][j];
-	}
 
-	// C-interop support.
-	VR3Matrix(const typename VCompatibleTypes<VR3Matrix<T> >::Type& s)
-	{
-		OVR_COMPILER_ASSERT(sizeof(s) == sizeof(VR3Matrix));
-		memcpy(M, s.M, sizeof(M));
-	}
-
-	operator const typename VCompatibleTypes<VR3Matrix<T> >::Type () const
-	{
-		typename VCompatibleTypes<VR3Matrix<T> >::Type result;
-		OVR_COMPILER_ASSERT(sizeof(result) == sizeof(VR3Matrix));
-		memcpy(result.M, M, sizeof(M));
-		return result;
-	}
 
 
 
@@ -899,13 +994,7 @@ public:
 
 
 
-	void ToString(char* dest, uint destsize) const
-	{
-		uint pos = 0;
-		for (int r=0; r<3; r++)
-			for (int c=0; c<3; c++)
-				pos += OVR_sprintf(dest+pos, destsize-pos, "%g ", M[r][c]);
-	}
+
 
 	static VR3Matrix FromString(const char* src)
 	{

@@ -44,7 +44,6 @@ LOCAL_SRC_FILES  := \
 	core/VLog.cpp \
 	core/VMath.cpp \
 	core/VPath.cpp \
-	core/RefCount.cpp \
 	core/VStandardPath.cpp \
 	core/VString.cpp \
 	core/VDir.cpp \
@@ -89,6 +88,7 @@ LOCAL_SRC_FILES  := \
 	api/sensor/Android_PhoneSensors.cpp \
 	api/sensor/Common_HMDDevice.cpp \
 	api/sensor/ThreadCommandQueue.cpp \
+	api/sensor/RefCount.cpp \
 	gui/VRMenuComponent.cpp \
 	gui/VRMenuMgr.cpp \
 	gui/VRMenuObjectLocal.cpp \
