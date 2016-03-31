@@ -642,19 +642,19 @@ struct App::Private
 
             if (input.buttonPressed & BUTTON_B)
             {
-                if (kernel->m_smoothOptions & SWAP_OPTION_USE_SLICED_WARP)
+                if (kernel->m_smoothOptions & VK_USE_S)
                 {
-                    kernel->m_smoothOptions &= ~SWAP_OPTION_USE_SLICED_WARP;
+                    kernel->m_smoothOptions &= ~VK_USE_S;
                     self->createToast("eye warp");
                 }
                 else
                 {
-                    kernel->m_smoothOptions |= SWAP_OPTION_USE_SLICED_WARP;
+                    kernel->m_smoothOptions |= VK_USE_S;
                     self->createToast("slice warp");
                 }
             }
 
-            if (kernel->m_smoothOptions & SWAP_OPTION_USE_SLICED_WARP)
+            if (kernel->m_smoothOptions & VK_USE_S)
             {
                 extern float calibrateFovScale;
 
@@ -1070,7 +1070,7 @@ struct App::Private
                     //kernel->doSmooth(&warpSwapMessageParms);
 
                     kernel->InitTimeWarpParms();
-                    kernel->setSmoothOption( SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER | SWAP_OPTION_FLUSH | SWAP_OPTION_DEFAULT_IMAGES);
+                    kernel->setSmoothOption( VK_INHIBIT_SRGB_FB | VK_FLUSH | VK_IMAGE);
 
                     kernel->setSmoothProgram(VK_LOGO);
                     float mprogramParms[4];
@@ -1102,7 +1102,7 @@ struct App::Private
 
 
                     kernel->InitTimeWarpParms();
-                    kernel->setSmoothOption( SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER | SWAP_OPTION_FLUSH | SWAP_OPTION_DEFAULT_IMAGES);
+                    kernel->setSmoothOption( VK_INHIBIT_SRGB_FB | VK_FLUSH | VK_IMAGE);
                     kernel->setSmoothProgram(VK_LOGO);
                     float mprogramParms[4];
                     mprogramParms[0] = 1.0f;		// rotation in radians per second
@@ -1498,7 +1498,7 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
 
     memset(& d->sensorForNextWarp, 0, sizeof(d->sensorForNextWarp));
 
-    d->sensorForNextWarp.Predicted.Pose.Orientation = VQuatf();
+    d->sensorForNextWarp.Predicted.Orientation = VQuatf();
 
     JniUtils::LoadDevConfig(false);
 
@@ -1955,7 +1955,7 @@ void App::recenterYaw(const bool showBlack)
         //const ovrTimeWarpParms warpSwapBlackParms = d->kernel->InitTimeWarpParms(WARP_INIT_BLACK);
         //d->kernel->doSmooth(&warpSwapBlackParms);
         d->kernel->InitTimeWarpParms();
-        d->kernel->setSmoothOption( SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER | SWAP_OPTION_FLUSH | SWAP_OPTION_DEFAULT_IMAGES);
+        d->kernel->setSmoothOption( VK_INHIBIT_SRGB_FB | VK_FLUSH | VK_IMAGE);
         d->kernel->setSmoothProgram( VK_DEFAULT);
         for ( int eye = 0; eye < 2; eye++ )
         {

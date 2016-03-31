@@ -380,7 +380,7 @@ struct VFrameSmooth::Private
      unsigned int	m_texId[2][3];
      unsigned int	m_planarTexId[2][3][3];
      VR4Matrixf		m_texMatrix[2][3];
-     ovrPoseStatef	m_pose[2][3];
+     VKpose	m_pose[2][3];
 
 
      int 						m_smoothOptions;
@@ -528,7 +528,7 @@ void VFrameSmooth::setTexMatrix(VR4Matrixf	mtexMatrix,ushort eye,ushort layer)
 {
      d->m_texMatrix[eye][layer] =  mtexMatrix;
 }
-void VFrameSmooth::setSmoothPose(ovrPoseStatef	mpose,ushort eye,ushort layer)
+void VFrameSmooth::setSmoothPose(VKpose	mpose,ushort eye,ushort layer)
 {
      d->m_pose[eye][layer] =  mpose;
 }
@@ -781,7 +781,7 @@ void VFrameSmooth::Private::setSmoothpState( ) const
 
     if ( m_hasEXT_sRGB_write_control )
     {
-        if ( m_smoothOptions & SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER )
+        if ( m_smoothOptions & VK_INHIBIT_SRGB_FB )
         {
             glDisable( VGlOperation::GL_FRAMEBUFFER_SRGB_EXT );
         }
@@ -859,7 +859,7 @@ void VFrameSmooth::Private::bindEyeTextures( const int eye )
 {
     glActiveTexture( GL_TEXTURE0 );
     glBindTexture( GL_TEXTURE_2D, m_texId[eye][0] );
-    if ( m_smoothOptions & SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER )
+    if ( m_smoothOptions & VK_INHIBIT_SRGB_FB )
     {
         glTexParameteri( GL_TEXTURE_2D, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_SKIP_DECODE_EXT );
     }
@@ -878,7 +878,7 @@ void VFrameSmooth::Private::bindEyeTextures( const int eye )
     {
         glActiveTexture( GL_TEXTURE1 );
         glBindTexture( GL_TEXTURE_2D, m_texId[eye][1] );
-        if ( m_smoothOptions & SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER )
+        if ( m_smoothOptions & VK_INHIBIT_SRGB_FB )
         {
             glTexParameteri( GL_TEXTURE_2D, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_SKIP_DECODE_EXT );
         }
@@ -895,7 +895,7 @@ void VFrameSmooth::Private::bindEyeTextures( const int eye )
         glActiveTexture( GL_TEXTURE1 );
         glBindTexture( GL_TEXTURE_EXTERNAL_OES, m_texId[eye][1] );
 
-            if ( m_smoothOptions & SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER )
+            if ( m_smoothOptions & VK_INHIBIT_SRGB_FB )
             {
                 glTexParameteri( GL_TEXTURE_EXTERNAL_OES, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_SKIP_DECODE_EXT );
             }
@@ -908,7 +908,7 @@ void VFrameSmooth::Private::bindEyeTextures( const int eye )
     {
         glActiveTexture( GL_TEXTURE1 );
         glBindTexture( GL_TEXTURE_CUBE_MAP, m_texId[eye][1]);
-            if ( m_smoothOptions & SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER )
+            if ( m_smoothOptions & VK_INHIBIT_SRGB_FB )
             {
                 glTexParameteri( GL_TEXTURE_CUBE_MAP, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_SKIP_DECODE_EXT );
             }
@@ -924,7 +924,7 @@ void VFrameSmooth::Private::bindEyeTextures( const int eye )
         {
             glActiveTexture( GL_TEXTURE1 + i );
             glBindTexture( GL_TEXTURE_CUBE_MAP, m_planarTexId[eye][1][i] );
-                if ( m_smoothOptions & SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER )
+                if ( m_smoothOptions & VK_INHIBIT_SRGB_FB )
                 {
                     glTexParameteri( GL_TEXTURE_CUBE_MAP, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_SKIP_DECODE_EXT );
                 }
@@ -939,7 +939,7 @@ void VFrameSmooth::Private::bindEyeTextures( const int eye )
     {
         glActiveTexture( GL_TEXTURE1 );
         glBindTexture( GL_TEXTURE_2D, m_texId[eye][1] );
-            if ( m_smoothOptions & SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER )
+            if ( m_smoothOptions & VK_INHIBIT_SRGB_FB )
             {
                 glTexParameteri( GL_TEXTURE_2D, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_SKIP_DECODE_EXT );
             }
@@ -979,7 +979,7 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
         lastReportTime = timeNow;
     }
 
-    if ( m_smoothOptions & SWAP_OPTION_USE_SLICED_WARP )
+    if ( m_smoothOptions & VK_USE_S )
     {
         renderToDisplayBySliced( vsyncBase_, swap );
         return;
@@ -1037,7 +1037,7 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
                     break;
                 }
 
-                if ( VQuatf( m_pose[eye][0].Pose.Orientation ).LengthSq() < 1e-18f )
+                if ( VQuatf( m_pose[eye][0].Orientation ).LengthSq() < 1e-18f )
                 {
                     vInfo("Bad Pose.Orientation in bufferNum " << thisEyeBufferNum << "!");
                     break;
@@ -1108,20 +1108,20 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
             const double timePoint = FramePointTimeInSeconds( vsyncPoint );
             sensor[scan] = ovr_GetSensorStateInternal( timePoint );
             const VR4Matrixf warp = CalculateTimeWarpMatrix2(
-                        m_pose[eye][0].Pose.Orientation,
-                    sensor[scan].Predicted.Pose.Orientation ) * velocity;
+                        m_pose[eye][0].Orientation,
+                    sensor[scan].Predicted.Orientation ) * velocity;
             timeWarps[0][scan] = VR4Matrixf( m_texMatrix[eye][0]) * warp;
             if ( dualLayer )
             {
-                if ( m_smoothOptions & SWAP_OPTION_FIXED_OVERLAY )
+                if ( m_smoothOptions & VK_FIXED_LAYER )
                 {
                     timeWarps[1][scan] = VR4Matrixf( m_texMatrix[eye][1]);
                 }
                 else
                 {
                     const VR4Matrixf warp2 = CalculateTimeWarpMatrix2(
-                                m_pose[eye][1].Pose.Orientation,
-                            sensor[scan].Predicted.Pose.Orientation ) * velocity;
+                                m_pose[eye][1].Orientation,
+                            sensor[scan].Predicted.Orientation ) * velocity;
                     timeWarps[1][scan] = VR4Matrixf( m_texMatrix[eye][1] ) * warp2;
                 }
             }
@@ -1129,8 +1129,8 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
 
 
         const VR4Matrixf rollingWarp = CalculateTimeWarpMatrix2(
-                    sensor[0].Predicted.Pose.Orientation,
-                sensor[1].Predicted.Pose.Orientation );
+                    sensor[0].Predicted.Orientation,
+                sensor[1].Predicted.Orientation );
 
 
 
@@ -1152,7 +1152,7 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
         glDrawElements( GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, (void *)(indexOffset * 2 ) );
 
 
-        if ( m_smoothOptions & SWAP_OPTION_SHOW_CURSOR )
+        if ( m_smoothOptions & VK_DISPLAY_CURSOR )
         {
             bindCursorProgram();
             glEnable( GL_BLEND );
@@ -1252,7 +1252,7 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
                     break;
                 }
 
-                if ( VQuatf( m_pose[eye][0].Pose.Orientation ).LengthSq() < 1e-18f )
+                if ( VQuatf( m_pose[eye][0].Orientation ).LengthSq() < 1e-18f )
                 {
                     vInfo("Bad Predicted.Pose.Orientation!");
                     continue;
@@ -1326,29 +1326,29 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
                 const double timePoint = sliceTimes[screenSlice + scan];
                 sensor[scan] = ovr_GetSensorStateInternal( timePoint );
                 warp = CalculateTimeWarpMatrix2(
-                            m_pose[eye][0].Pose.Orientation,
-                        sensor[scan].Predicted.Pose.Orientation ) * velocity;
+                            m_pose[eye][0].Orientation,
+                        sensor[scan].Predicted.Orientation ) * velocity;
             }
             timeWarps[0][scan] = VR4Matrixf( m_texMatrix[eye][0] ) * warp;
             if ( dualLayer )
             {
-                if ( m_smoothOptions & SWAP_OPTION_FIXED_OVERLAY )
+                if ( m_smoothOptions & VK_FIXED_LAYER )
                 {
                     timeWarps[1][scan] = VR4Matrixf( m_texMatrix[eye][1] );
                 }
                 else
                 {
                     const VR4Matrixf warp2 = CalculateTimeWarpMatrix2(
-                                m_pose[eye][1].Pose.Orientation,
-                            sensor[scan].Predicted.Pose.Orientation ) * velocity;
+                                m_pose[eye][1].Orientation,
+                            sensor[scan].Predicted.Orientation ) * velocity;
                     timeWarps[1][scan] = VR4Matrixf( m_texMatrix[eye][1] ) * warp2;
                 }
             }
         }
 
         const VR4Matrixf rollingWarp = CalculateTimeWarpMatrix2(
-                    sensor[0].Predicted.Pose.Orientation,
-                sensor[1].Predicted.Pose.Orientation );
+                    sensor[0].Predicted.Orientation,
+                sensor[1].Predicted.Orientation );
 
 
         m_logEyeWarpGpuTime.begin( screenSlice );
@@ -1435,7 +1435,7 @@ void VFrameSmooth::Private::smoothInternal( )
     m_firstDisplayedVsync[1] = 0;			// will be set when it becomes the currentSource
     m_disableChromaticCorrection = ( ( glOperation.eglGetGpuType() & NervGear::VGlOperation::GPU_TYPE_MALI_T760_EXYNOS_5433 ) != 0 );
 
-    if ( ( m_smoothProgram & SWAP_OPTION_DEFAULT_IMAGES ) != 0 )
+    if ( ( m_smoothProgram & VK_IMAGE ) != 0 )
     {
         for ( int eye = 0; eye < 2; eye++ )
         {
@@ -1531,7 +1531,7 @@ void	VFrameSmooth::doSmooth()
 {
 
 
-    const int count = ( ( d->m_smoothOptions & SWAP_OPTION_FLUSH ) != 0 ) ? 3 : 1;
+    const int count = ( ( d->m_smoothOptions & VK_FLUSH ) != 0 ) ? 3 : 1;
     for ( int i = 0; i < count; i++ )
     {
 
@@ -1679,7 +1679,7 @@ void VFrameSmooth::Private::drawFrameworkGraphicsToWindow( const int eye,
     }
 
 
-    if ( swapOptions & SWAP_OPTION_DRAW_CALIBRATION_LINES )
+    if ( swapOptions & VK_DRAW_LINES )
     {
         const float znear = 0.5f;
         const float zfar = 150.0f;

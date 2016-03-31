@@ -23,21 +23,18 @@ double			ovr_GetTimeInSeconds();
 
 extern JavaVM * VrLibJavaVM;
 
-typedef struct ovrPosef_
+
+
+typedef struct VKpose_
 {
     NervGear::VQuat<float>	Orientation;
     NervGear::V3Vect<float>	Position;
-} ovrPosef;
-
-typedef struct ovrPoseStatef_
-{
-    ovrPosef	Pose;
-    NervGear::V3Vect<float>	AngularVelocity;
-    NervGear::V3Vect<float>	LinearVelocity;
-    NervGear::V3Vect<float>	AngularAcceleration;
-    NervGear::V3Vect<float>	LinearAcceleration;
-    double		TimeInSeconds;
-} ovrPoseStatef;
+    NervGear::V3Vect<float>	Angular;
+    NervGear::V3Vect<float>	Linear;
+    NervGear::V3Vect<float>	AngularAc;
+    NervGear::V3Vect<float>	LinearAc;
+    double		TimeBySeconds;
+} VKpose;
 
 typedef enum
 {
@@ -49,9 +46,9 @@ typedef enum
 
 typedef struct ovrSensorState_
 {
-    ovrPoseStatef	Predicted;
+    VKpose	Predicted;
 
-    ovrPoseStatef	Recorded;
+    VKpose	Recorded;
 
     float			Temperature;
 
@@ -61,20 +58,20 @@ typedef struct ovrSensorState_
 
 typedef enum
 {
-            SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER	= 1,
+            VK_INHIBIT_SRGB_FB	= 1,
 
-            SWAP_OPTION_USE_SLICED_WARP				= 2,
+            VK_USE_S				= 2,
 
-            SWAP_OPTION_FLUSH						= 4,
+            VK_FLUSH						= 4,
 
-            SWAP_OPTION_FIXED_OVERLAY				= 8,
+            VK_FIXED_LAYER				= 8,
 
-            SWAP_OPTION_SHOW_CURSOR					= 16,
+            VK_DISPLAY_CURSOR					= 16,
 
-            SWAP_OPTION_DEFAULT_IMAGES				= 32,
+            VK_IMAGE				= 32,
 
-            SWAP_OPTION_DRAW_CALIBRATION_LINES		= 64
-} ovrSwapOption;
+            VK_DRAW_LINES		= 64
+} VKoption;
 
 
 typedef enum
@@ -172,7 +169,7 @@ public:
     void syncSmoothParms();
     void setSmoothEyeTexture(unsigned int texID,ushort eye,ushort layer);
     void setTexMatrix(VR4Matrixf	mtexMatrix,ushort eye,ushort layer);
-    void setSmoothPose(ovrPoseStatef	mpose,ushort eye,ushort layer);
+    void setSmoothPose(VKpose	mpose,ushort eye,ushort layer);
     void setpTex(unsigned int	*mpTexId,ushort eye,ushort layer);
 
 
@@ -196,7 +193,7 @@ public:
     unsigned int	m_texId[2][3];
     unsigned int	m_planarTexId[2][3][3];
     VR4Matrixf		m_texMatrix[2][3];
-    ovrPoseStatef	m_pose[2][3];
+    VKpose	m_pose[2][3];
 
 private:
     VKernel();

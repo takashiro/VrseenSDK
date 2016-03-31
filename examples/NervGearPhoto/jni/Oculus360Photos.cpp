@@ -687,7 +687,7 @@ VR4Matrixf Oculus360Photos::drawEyeView( const int eye, const float fovDegrees )
             vApp->swapParms().ProgramParms[ i ] = fadeColor;
         }
         */
-        vApp->kernel()->m_smoothOptions = ( m_useSrgb ? 0 : SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER );
+        vApp->kernel()->m_smoothOptions = ( m_useSrgb ? 0 : VK_INHIBIT_SRGB_FB );
         vApp->kernel()->m_texId[ eye ][ 1 ] = texId;
         vApp->kernel()->m_texMatrix[ eye ][ 1 ] = m;
         vApp->kernel()->m_pose[ eye ][ 1 ] = m_frameInput.PoseState;
@@ -708,7 +708,7 @@ VR4Matrixf Oculus360Photos::drawEyeView( const int eye, const float fovDegrees )
             vApp->swapParms().ProgramParms[ i ] = 1.0f;
         }
         */
-        vApp->kernel()->m_smoothOptions = m_useSrgb ? 0 : SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER;
+        vApp->kernel()->m_smoothOptions = m_useSrgb ? 0 : VK_INHIBIT_SRGB_FB;
         vApp->kernel()->m_texId[ eye ][ 1 ] = 0;
         vApp->kernel()->m_smoothProgram = VK_DEFAULT_CB;
         for ( int i = 0; i < 4; i++ )

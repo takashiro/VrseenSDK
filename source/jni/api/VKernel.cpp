@@ -136,8 +136,8 @@ ovrSensorState ovr_GetSensorStateInternal( double absTime )
     {
         ovrSensorState state;
         memset( &state, 0, sizeof( state ) );
-        state.Predicted.Pose.Orientation.w = 1.0f;
-        state.Recorded.Pose.Orientation.w = 1.0f;
+        state.Predicted.Orientation.w = 1.0f;
+        state.Recorded.Orientation.w = 1.0f;
         return state;
     }
     return OvrHmdState->predictedSensorState( absTime );
@@ -630,7 +630,7 @@ VKernel::VKernel()
        for ( int i = 0; i < 3; i++ )
        {
            m_texMatrix[eye][i] = tanAngleMatrix;
-           m_pose[eye][i].Pose.Orientation.w = 1.0f;
+           m_pose[eye][i].Orientation.w = 1.0f;
        }
    }
 
@@ -885,7 +885,7 @@ void VKernel::setTexMatrix(VR4Matrixf	mtexMatrix,ushort eye,ushort layer)
 {
   m_texMatrix[eye][layer] =  mtexMatrix;
 }
-void VKernel::setSmoothPose(ovrPoseStatef	mpose,ushort eye,ushort layer)
+void VKernel::setSmoothPose(VKpose	mpose,ushort eye,ushort layer)
 {
    m_pose[eye][layer] =  mpose;
 }
@@ -1114,7 +1114,7 @@ void VKernel::ovr_RecenterYaw()
         for ( int i = 0; i < 3; i++ )
         {
             m_texMatrix[eye][i] = tanAngleMatrix;
-            m_pose[eye][i].Pose.Orientation.w = 1.0f;
+            m_pose[eye][i].Orientation.w = 1.0f;
         }
     }
 

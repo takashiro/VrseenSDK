@@ -152,19 +152,19 @@ namespace NervGear
 	{
 		if ( ShowSwipeHints /* && Carousel->HasSelection() && CanSwipe() */ )
 		{
-			show( vrFrame.PoseState.TimeInSeconds );
+            show( vrFrame.PoseState.TimeBySeconds );
 		}
 		else
 		{
-			hide( vrFrame.PoseState.TimeInSeconds );
+            hide( vrFrame.PoseState.TimeBySeconds );
 		}
 
 		m_ignoreDelay = false;
 
-		float alpha = m_totalAlpha.value( vrFrame.PoseState.TimeInSeconds );
+        float alpha = m_totalAlpha.value( vrFrame.PoseState.TimeBySeconds );
 		if ( alpha > 0.0f )
 		{
-			double time = vrFrame.PoseState.TimeInSeconds - m_startTime;
+            double time = vrFrame.PoseState.TimeBySeconds - m_startTime;
 			if ( time < 0.0f )
 			{
 				alpha = 0.0f;

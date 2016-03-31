@@ -100,19 +100,19 @@ eMsgStatus SwipeHintComponent::Frame( App * app, VrFrame const & vrFrame, OvrVRM
 {
 	if ( ShowSwipeHints && Carousel->HasSelection() && CanSwipe() )
 	{
-		Show( vrFrame.PoseState.TimeInSeconds );
+        Show( vrFrame.PoseState.TimeBySeconds );
 	}
 	else
 	{
-		Hide( vrFrame.PoseState.TimeInSeconds );
+        Hide( vrFrame.PoseState.TimeBySeconds );
 	}
 
 	IgnoreDelay = false;
 
-	float alpha = TotalAlpha.Value( vrFrame.PoseState.TimeInSeconds );
+    float alpha = TotalAlpha.Value( vrFrame.PoseState.TimeBySeconds );
 	if ( alpha > 0.0f )
 	{
-		double time = vrFrame.PoseState.TimeInSeconds - StartTime;
+        double time = vrFrame.PoseState.TimeBySeconds - StartTime;
 		if ( time < 0.0f )
 		{
 			alpha = 0.0f;

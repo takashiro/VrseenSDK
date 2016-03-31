@@ -7,7 +7,7 @@
 //#include <time.h>
 
 // VrApi forward declarations.
-typedef struct ovrPoseStatef_ ovrPoseStatef;
+typedef struct VKpose_ VKpose;
 typedef struct ovrSensorState_ ovrSensorState;
 
 NV_NAMESPACE_BEGIN

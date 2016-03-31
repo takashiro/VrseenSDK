@@ -13,7 +13,7 @@ public:
     ~VFrameSmooth();
     void setSmoothEyeTexture(unsigned int texID,ushort eye,ushort layer);
     void setTexMatrix(VR4Matrixf	mtexMatrix,ushort eye,ushort layer);
-    void setSmoothPose(ovrPoseStatef	mpose,ushort eye,ushort layer);
+    void setSmoothPose(VKpose	mpose,ushort eye,ushort layer);
     void setpTex(unsigned int	*mpTexId,ushort eye,ushort layer);
 
 

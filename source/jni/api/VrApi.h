@@ -81,7 +81,7 @@ typedef struct ovrPosef_
 } ovrPosef;
 
 
-typedef struct ovrPoseStatef_
+typedef struct VKpose_
 {
 	ovrPosef	Pose;
 	ovrVector3f	AngularVelocity;
@@ -89,7 +89,7 @@ typedef struct ovrPoseStatef_
 	ovrVector3f	AngularAcceleration;
 	ovrVector3f	LinearAcceleration;
     double		TimeInSeconds;
-} ovrPoseStatef;
+} VKpose;
 
 
 typedef enum
@@ -103,8 +103,8 @@ typedef enum
 
 typedef struct ovrSensorState_
 {	
-	ovrPoseStatef	Predicted;	
-	ovrPoseStatef	Recorded;	
+	VKpose	Predicted;	
+	VKpose	Recorded;	
 	float			Temperature;	
 	unsigned		Status;
 } ovrSensorState;
@@ -129,7 +129,7 @@ typedef enum
 	SWAP_OPTION_SHOW_CURSOR					= 16,	
 	SWAP_OPTION_DEFAULT_IMAGES				= 32,
 	SWAP_OPTION_DRAW_CALIBRATION_LINES		= 64
-} ovrSwapOption;
+} VKoption;
 
 
 typedef enum
@@ -181,7 +181,7 @@ typedef struct
 	unsigned int	TexId;	
 	unsigned int	PlanarTexId[3];	
     ovrMatrix4f		TexCoordsFromTanAngles;
-	ovrPoseStatef	Pose;
+	VKpose	Pose;
 } ovrTimeWarpImage;
 
 static const int	MAX_WARP_EYES = 2;
