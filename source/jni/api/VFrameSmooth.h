@@ -11,15 +11,8 @@ class VFrameSmooth
 public:
     VFrameSmooth(bool async,VDevice *device);
     ~VFrameSmooth();
-
-    //void	doSmooth( const ovrTimeWarpParms & parms );
-
-
-
-
     void setSmoothEyeTexture(unsigned int texID,ushort eye,ushort layer);
     void setSmoothEyeTexture(ushort i,ushort j,ovrTimeWarpImage tex);
-
     void setSmoothOption(int option);
     void setMinimumVsncs( int vsnc);
     void setExternalVelocity(VR4Matrixf extV);
