@@ -17,7 +17,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <stdlib.h>
 
 #include "VAlgorithm.h"
-#include "android/LogUtils.h"
+#include "VLog.h"
 
 namespace NervGear {
 
@@ -45,7 +45,7 @@ void Write32BitPvrTexture( const char * fileName, const unsigned char * texture,
 	FILE *f = fopen( fileName, "wb" );
 	if ( !f )
 	{
-		WARN( "Failed to write %s", fileName );
+		vWarn("Failed to write " << fileName);
 		return;
 	}
 

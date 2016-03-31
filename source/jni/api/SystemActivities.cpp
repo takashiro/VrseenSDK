@@ -212,14 +212,14 @@ void SystemActivities_AddInternalEvent( const VString& data )
 {
     EventData * eventData = new EventData( data.toCString(), data.length() + 1 );
 	InternalEventQueue->Enqueue( eventData );
-    LOG( "SystemActivities: queued internal event '%s'", data.toCString() );
+    vInfo("SystemActivities: queued internal event '" << data << "'");
 }
 
 void SystemActivities_AddEvent( const VString& data )
 {
     EventData * eventData = new EventData( data.toCString(), data.length() + 1 );
 	MainEventQueue->Enqueue( eventData );
-    LOG( "SystemActivities: queued event '%s'", data.toCString() );
+    vInfo("SystemActivities: queued event '" << data << "'");
 }
 
 eVrApiEventStatus SystemActivities_nextPendingEvent( EventQueue * queue, VString& buffer, unsigned int const bufferSize )

@@ -20,7 +20,7 @@ NV_NAMESPACE_BEGIN
 
 void EyePostRender::Init()
 {
-	LOG( "EyePostRender::Init()" );
+	vInfo("EyePostRender::Init()");
 
 	// grid of lines for drawing to eye buffer
     CalibrationLines.createCalibrationGrid( 24, false );
@@ -35,7 +35,7 @@ void EyePostRender::Init()
 
 void EyePostRender::Shutdown()
 {
-	LOG( "EyePostRender::Shutdown()" );
+	vInfo("EyePostRender::Shutdown()");
 	CalibrationLines.destroy();
 	VignetteSquare.destroy();
 	UntexturedMvpProgram.destroy();

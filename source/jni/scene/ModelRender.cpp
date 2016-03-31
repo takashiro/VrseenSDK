@@ -278,7 +278,7 @@ const DrawSurfaceList & BuildDrawSurfaceList( const NervGear::VArray<ModelState>
 			{
 				continue;
 			}
-//			LOG( "surfaceOverloads[%i] = %u", overload.SurfaceIndex, overload.TextureId );
+//			vInfo("surfaceOverloads[" << overload.SurfaceIndex << "] = " << overload.TextureId);
 			surfaceOverloads[overload.SurfaceIndex] = overload.TextureId;
 		}
 
@@ -314,7 +314,7 @@ const DrawSurfaceList & BuildDrawSurfaceList( const NervGear::VArray<ModelState>
 			bsort[ numSurfaces ].transparent = surfaceDef.materialDef.gpuState.blendEnable;
 			if ( bsort[ numSurfaces ].textureOverload > 0 )
 			{
-				LOG( "surfaceNum = %i, surfaceOverloads[surfaceNum] = %i, bsort[%i].textureOverload = %u", surfaceNum, surfaceOverloads[surfaceNum], numSurfaces, bsort[ numSurfaces ].textureOverload );
+				vInfo("surfaceNum = " << surfaceNum << ", surfaceOverloads[surfaceNum] = " << surfaceOverloads[surfaceNum] << ", bsort[" << numSurfaces << "].textureOverload = " << bsort[ numSurfaces ].textureOverload);
 			}
 			numSurfaces++;
 		}
@@ -333,7 +333,7 @@ const DrawSurfaceList & BuildDrawSurfaceList( const NervGear::VArray<ModelState>
 		drawSurfaces[i].textureOverload = bsort[i].textureOverload;
 	}
 
-//	LOG( "Culled %i, draw %i", cullCount, numSurfaces );
+//	vInfo("Culled " << cullCount << ", draw " << numSurfaces);
 	static DrawSurfaceList surfaceList;
 	surfaceList.viewMatrix = viewMatrix.Transposed();
 	surfaceList.projectionMatrix = projectionMatrix.Transposed();

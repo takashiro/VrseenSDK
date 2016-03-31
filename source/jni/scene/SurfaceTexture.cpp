@@ -35,23 +35,23 @@ SurfaceTexture::SurfaceTexture( JNIEnv * jni_ ) : nanoTimeStamp( 0 ) {
 	static const char * className = "android/graphics/SurfaceTexture";
 	const jclass surfaceTextureClass = jni->FindClass(className);
 	if ( surfaceTextureClass == 0 ) {
-		FAIL( "FindClass( %s ) failed", className );
+		vFatal("FindClass( " << className << " ) failed");
 	}
 
 	// find the constructor that takes an int
 	const jmethodID constructor = jni->GetMethodID( surfaceTextureClass, "<init>", "(I)V" );
 	if ( constructor == 0 ) {
-		FAIL( "GetMethodID( <init> ) failed" );
+		vFatal("GetMethodID( <init> ) failed");
 	}
 
 	jobject obj = jni->NewObject( surfaceTextureClass, constructor, textureId );
 	if ( obj == 0 ) {
-		FAIL( "NewObject() failed" );
+		vFatal("NewObject() failed");
 	}
 
 	javaObject = jni->NewGlobalRef( obj );
 	if ( javaObject == 0 ) {
-		FAIL( "NewGlobalRef() failed" );
+		vFatal("NewGlobalRef() failed");
 	}
 
 	// Now that we have a globalRef, we can free the localRef
@@ -59,17 +59,17 @@ SurfaceTexture::SurfaceTexture( JNIEnv * jni_ ) : nanoTimeStamp( 0 ) {
 
     updateTexImageMethodId = jni->GetMethodID( surfaceTextureClass, "updateTexImage", "()V" );
     if ( !updateTexImageMethodId ) {
-    	FAIL( "couldn't get updateTexImageMethodId" );
+    	vFatal("couldn't get updateTexImageMethodId");
     }
 
     getTimestampMethodId = jni->GetMethodID( surfaceTextureClass, "getTimestamp", "()J" );
     if ( !getTimestampMethodId ) {
-    	FAIL( "couldn't get getTimestampMethodId" );
+    	vFatal("couldn't get getTimestampMethodId");
     }
 
 	setDefaultBufferSizeMethodId = jni->GetMethodID( surfaceTextureClass, "setDefaultBufferSize", "(II)V" );
     if ( !setDefaultBufferSizeMethodId ) {
-		FAIL( "couldn't get setDefaultBufferSize" );
+		vFatal("couldn't get setDefaultBufferSize");
     }
 
 	// jclass objects are localRefs that need to be freed

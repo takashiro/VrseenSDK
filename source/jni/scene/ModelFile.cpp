@@ -101,7 +101,7 @@ ModelFile::ModelFile() :
 
 ModelFile::~ModelFile()
 {
-	LOG( "Destroying ModelFileModel %s", FileName.toCString() );
+	vInfo("Destroying ModelFileModel " << FileName);
 
 	for ( int i = 0; i < Textures.length(); i++ )
 	{
@@ -121,11 +121,11 @@ SurfaceDef * ModelFile::FindNamedSurface( const char * name ) const
 		const SurfaceDef & sd = Def.surfaces[j];
 		if ( sd.surfaceName.icompare( name ) == 0 )
 		{
-			LOG( "Found named surface %s", name );
+			vInfo("Found named surface " << name);
 			return const_cast<SurfaceDef*>(&sd);
 		}
 	}
-	LOG( "Did not find named surface %s", name );
+	vInfo("Did not find named surface " << name);
 	return NULL;
 }
 
@@ -136,11 +136,11 @@ const ModelTexture * ModelFile::FindNamedTexture( const char * name ) const
 		const ModelTexture & st = Textures[i];
 		if ( st.name.icompare( name ) == 0 )
 		{
-			LOG( "Found named texture %s", name );
+			vInfo("Found named texture " << name);
 			return &st;
 		}
 	}
-	LOG( "Did not find named texture %s", name );
+	vInfo("Did not find named texture " << name);
 	return NULL;
 }
 
@@ -151,11 +151,11 @@ const ModelJoint * ModelFile::FindNamedJoint( const char *name ) const
 		const ModelJoint & joint = Joints[i];
 		if ( joint.name.icompare( name ) == 0 )
 		{
-			LOG( "Found named joint %s", name );
+			vInfo("Found named joint " << name);
 			return &joint;
 		}
 	}
-	LOG( "Did not find named joint %s", name );
+	vInfo("Did not find named joint " << name);
 	return NULL;
 }
 
@@ -165,16 +165,12 @@ const ModelTag * ModelFile::FindNamedTag(const VString &name) const
 	{
 		const ModelTag & tag = Tags[i];
 		if ( tag.name.icompare( name ) == 0 )
-		{
-            const char *s = name.toCString();
-            LOG("Found named tag %s", s);
-            delete[] s;
+        {
+            vInfo("Found named tag " << name);
 			return &tag;
 		}
-	}
-    const char *s = name.toCString();
-    LOG("Did not find named tag %s", s);
-    delete[] s;
+    }
+    vInfo("Did not find named tag " << name);
 	return NULL;
 }
 
@@ -235,13 +231,13 @@ void LoadModelFileJson( ModelFile & model,
 						const char * modelsBin, const int modelsBinLength,
 						const ModelGlPrograms & programs, const MaterialParms & materialParms )
 {
-	LOG( "parsing %s", model.FileName.toCString() );
+	vInfo("parsing " << model.FileName);
 
     const VBinaryFile bin( (const uchar *)modelsBin, modelsBinLength );
 
 	if ( modelsBin != NULL && bin.readUint() != 0x6272766F )
 	{
-		LOG( "LoadModelFileJson: bad binary file for %s", model.FileName.toCString() );
+		vInfo("LoadModelFileJson: bad binary file for " << model.FileName);
 		return;
 	}
 
@@ -249,7 +245,7 @@ void LoadModelFileJson( ModelFile & model,
 	VJson models = VJson::Parse(modelsJson);
 	if ( models.isNull() )
 	{
-		WARN( "LoadModelFileJson: Error loading %s : %s", model.FileName.toCString(), error );
+		vWarn("LoadModelFileJson: Error loading " << model.FileName << " : " << error);
 		return;
 	}
 
@@ -262,7 +258,7 @@ void LoadModelFileJson( ModelFile & model,
 		const VJson &render_model = models.value( "render_model" );
 		if ( render_model.isObject() )
 		{
-			LOG( "loading render model.." );
+			vInfo("loading render model..");
 
 			//
 			// Render Model Textures
@@ -298,7 +294,7 @@ void LoadModelFileJson( ModelFile & model,
 						}
 						if ( i == model.Textures.length() )
 						{
-                            LOG( "texture %s defaulted", name.toUtf8().data() );
+                            vInfo("texture " << name << " defaulted");
 							// Create a default texture.
                             LoadModelFileTexture( model, name.toUtf8().data(), NULL, 0, materialParms );
 						}
@@ -467,7 +463,7 @@ void LoadModelFileJson( ModelFile & model,
 						if ( vertices.isObject() )
 						{
                             const int vertexCount = std::min( vertices.value( "vertexCount" ).toInt(), 1024*1024 );
-							// LOG( "%5d vertices", vertexCount );
+                            vInfo(vertexCount << "vertices");
 
                             ReadModelArray( attribs.position,     vertices.value( "position" ).toStdString().c_str(),		bin, vertexCount );
                             ReadModelArray( attribs.normal,       vertices.value( "normal" ).toStdString().c_str(),		bin, vertexCount );
@@ -490,7 +486,7 @@ void LoadModelFileJson( ModelFile & model,
 						if ( triangles.isObject() )
 						{
                             const int indexCount = std::min( triangles.value( "indexCount" ).toInt(), 1024 * 1024 * 1024 );
-							// LOG( "%5d indices", indexCount );
+                            vInfo(indexCout << "indices");
 
                             ReadModelArray( indices, triangles.value( "indices" ).toStdString().c_str(), bin, indexCount );
 						}
@@ -556,7 +552,7 @@ void LoadModelFileJson( ModelFile & model,
 									{
 										if ( programs.ProgSkinnedReflectionMapped == NULL )
 										{
-											FAIL( "No ProgSkinnedReflectionMapped set");
+											vFatal("No ProgSkinnedReflectionMapped set");
 										}
 										model.Def.surfaces[index].materialDef.programObject = programs.ProgSkinnedReflectionMapped->program;
 										model.Def.surfaces[index].materialDef.uniformMvp = programs.ProgSkinnedReflectionMapped->uniformModelViewProMatrix;
@@ -569,7 +565,7 @@ void LoadModelFileJson( ModelFile & model,
 									{
 										if ( programs.ProgReflectionMapped == NULL )
 										{
-											FAIL( "No ProgReflectionMapped set");
+											vFatal("No ProgReflectionMapped set");
 										}
 										model.Def.surfaces[index].materialDef.programObject = programs.ProgReflectionMapped->program;
 										model.Def.surfaces[index].materialDef.uniformMvp = programs.ProgReflectionMapped->uniformModelViewProMatrix;
@@ -586,7 +582,7 @@ void LoadModelFileJson( ModelFile & model,
 									{
 										if ( programs.ProgSkinnedLightMapped == NULL )
 										{
-											FAIL( "No ProgSkinnedLightMapped set");
+											vFatal("No ProgSkinnedLightMapped set");
 										}
 										model.Def.surfaces[index].materialDef.programObject = programs.ProgSkinnedLightMapped->program;
 										model.Def.surfaces[index].materialDef.uniformMvp = programs.ProgSkinnedLightMapped->uniformModelViewProMatrix;
@@ -597,7 +593,7 @@ void LoadModelFileJson( ModelFile & model,
 									{
 										if ( programs.ProgLightMapped == NULL )
 										{
-											FAIL( "No ProgLightMapped set");
+											vFatal("No ProgLightMapped set");
 										}
 										model.Def.surfaces[index].materialDef.programObject = programs.ProgLightMapped->program;
 										model.Def.surfaces[index].materialDef.uniformMvp = programs.ProgLightMapped->uniformModelViewProMatrix;
@@ -613,7 +609,7 @@ void LoadModelFileJson( ModelFile & model,
 								{
 									if ( programs.ProgSkinnedSingleTexture == NULL )
 									{
-										FAIL( "No ProgSkinnedSingleTexture set");
+										vFatal("No ProgSkinnedSingleTexture set");
 									}
 									model.Def.surfaces[index].materialDef.programObject = programs.ProgSkinnedSingleTexture->program;
 									model.Def.surfaces[index].materialDef.uniformMvp = programs.ProgSkinnedSingleTexture->uniformModelViewProMatrix;
@@ -624,7 +620,7 @@ void LoadModelFileJson( ModelFile & model,
 								{
 									if ( programs.ProgSingleTexture == NULL )
 									{
-										FAIL( "No ProgSingleTexture set");
+										vFatal("No ProgSingleTexture set");
 									}
 									model.Def.surfaces[index].materialDef.programObject = programs.ProgSingleTexture->program;
 									model.Def.surfaces[index].materialDef.uniformMvp = programs.ProgSingleTexture->uniformModelViewProMatrix;
@@ -640,7 +636,7 @@ void LoadModelFileJson( ModelFile & model,
 							{
 								if ( programs.ProgSkinnedVertexColor == NULL )
 								{
-									FAIL( "No ProgSkinnedVertexColor set");
+									vFatal("No ProgSkinnedVertexColor set");
 								}
 								model.Def.surfaces[index].materialDef.programObject = programs.ProgSkinnedVertexColor->program;
 								model.Def.surfaces[index].materialDef.uniformMvp = programs.ProgSkinnedVertexColor->uniformModelViewProMatrix;
@@ -650,7 +646,7 @@ void LoadModelFileJson( ModelFile & model,
 							{
 								if ( programs.ProgVertexColor == NULL )
 								{
-									FAIL( "No ProgVertexColor set");
+									vFatal("No ProgVertexColor set");
 								}
 								model.Def.surfaces[index].materialDef.programObject = programs.ProgVertexColor->program;
 								model.Def.surfaces[index].materialDef.uniformMvp = programs.ProgVertexColor->uniformModelViewProMatrix;
@@ -666,7 +662,7 @@ void LoadModelFileJson( ModelFile & model,
 							{
 								if ( programs.ProgSkinnedSingleTexture == NULL )
 								{
-									FAIL( "No ProgSkinnedSingleTexture set");
+									vFatal("No ProgSkinnedSingleTexture set");
 								}
 								model.Def.surfaces[index].materialDef.programObject = programs.ProgSkinnedSingleTexture->program;
 								model.Def.surfaces[index].materialDef.uniformMvp = programs.ProgSingleTexture->uniformModelViewProMatrix;
@@ -676,7 +672,7 @@ void LoadModelFileJson( ModelFile & model,
 							{
 								if ( programs.ProgSingleTexture == NULL )
 								{
-									FAIL( "No ProgSingleTexture set");
+									vFatal("No ProgSingleTexture set");
 								}
 								model.Def.surfaces[index].materialDef.programObject = programs.ProgSingleTexture->program;
 								model.Def.surfaces[index].materialDef.uniformMvp = programs.ProgSingleTexture->uniformModelViewProMatrix;
@@ -803,7 +799,7 @@ void LoadModelFileJson( ModelFile & model,
 
 	if ( !bin.isEnd() )
 	{
-		WARN( "failed to properly read binary file" );
+		vWarn("failed to properly read binary file");
 	}
 }
 
@@ -822,7 +818,7 @@ static ModelFile * LoadModelFile( unzFile zfp, const char * fileName,
 
 	if ( !zfp )
 	{
-		WARN( "Error: can't load %s", fileName );
+		vWarn("Error: can't load " << fileName);
 		return modelPtr;
 	}
 
@@ -843,7 +839,7 @@ static ModelFile * LoadModelFile( unzFile zfp, const char * fileName,
 
 		if ( unzOpenCurrentFile( zfp ) != UNZ_OK )
 		{
-			WARN( "Failed to open %s from %s", entryName, fileName );
+			vWarn("Failed to open " << entryName << " from " << fileName);
 			continue;
 		}
 
@@ -861,7 +857,7 @@ static ModelFile * LoadModelFile( unzFile zfp, const char * fileName,
 
 			if ( unzReadCurrentFile( zfp, buffer, size ) != size )
 			{
-				WARN( "Failed to read %s from %s", entryName, fileName );
+				vWarn("Failed to read " << entryName << " from " << fileName);
 				delete [] buffer;
 				continue;
 			}
@@ -894,7 +890,7 @@ static ModelFile * LoadModelFile( unzFile zfp, const char * fileName,
 		else
 		{
 			// ignore other files
-			LOG( "Ignoring %s", entryName );
+			vInfo("Ignoring " << entryName);
 		}
 
 		if ( buffer < fileData || buffer > fileData + fileDataLength )
@@ -1026,24 +1022,24 @@ static bool mmap_open_opaque( const char * fileName, zlib_mmap_opaque & opaque )
 	// If unable to open the ZIP file,
 	if ( !opaque.file.openRead( fileName, true, true ) )
 	{
-		WARN( "Couldn't open %s", fileName );
+		vWarn("Couldn't open " << fileName);
 		return false;
 	}
 
 	int len = (int)opaque.file.length();
 	if ( len <= 0 )
 	{
-		WARN( "len = %i", len );
+		vWarn("len = " << len);
 		return false;
 	}
 	if ( !opaque.view.open( &opaque.file ) )
 	{
-		WARN( "View open failed" );
+		vWarn("View open failed");
 		return false;
 	}
 	if ( !opaque.view.mapView( 0, len ) )
 	{
-		WARN( "MapView failed" );
+		vWarn("MapView failed");
 		return false;
 	}
 
@@ -1078,7 +1074,7 @@ ModelFile * LoadModelFileFromMemory( const char * fileName,
 		const MaterialParms & materialParms )
 {
 	// Open the .ModelFile file as a zip.
-	LOG( "LoadModelFileFromMemory %s %i", fileName, bufferLength );
+    vInfo("LoadModelFileFromMemory " << fileName << bufferLength);
 
 	zlib_mmap_opaque zlib_opaque;
 
@@ -1090,7 +1086,7 @@ ModelFile * LoadModelFileFromMemory( const char * fileName,
 		return new ModelFile( fileName );
 	}
 
-	LOG( "LoadModelFileFromMemory zfp = %p", zfp );
+	vInfo("LoadModelFileFromMemory zfp = " << zfp);
 
 	return LoadModelFile( zfp, fileName, (char *)buffer, bufferLength, programs, materialParms );
 }
@@ -1101,7 +1097,7 @@ ModelFile * LoadModelFile( const char * fileName,
 {
 	zlib_mmap_opaque zlib_opaque;
 
-	LOG( "LoadModelFile %s", fileName );
+	vInfo("LoadModelFile " << fileName);
 
 	// Map and open the zip file
 	if ( !mmap_open_opaque( fileName, zlib_opaque ) )
@@ -1195,7 +1191,7 @@ ModelFile * LoadModelFileFromMemory( const char * fileName,
 		const MaterialParms & materialParms )
 {
 	// Open the .ModelFile file as a zip.
-	LOG( "LoadModelFileFromMemory %s %i", fileName, bufferLength );
+    vInfo("LoadModelFileFromMemory " << fileName << bufferLength);
 
 	mzBuffer_t mzBuffer;
 	mzBuffer.mzBufferBase = (unsigned char *)buffer;
@@ -1214,7 +1210,7 @@ ModelFile * LoadModelFileFromMemory( const char * fileName,
 
 	unzFile zfp = unzOpen2( fileName, &filefunc );
 
-	LOG( "OpenZipForMemory = %p", zfp );
+	vInfo("OpenZipForMemory = " << zfp);
 
 	return LoadModelFile( zfp, fileName, NULL, 0, programs, materialParms );
 }

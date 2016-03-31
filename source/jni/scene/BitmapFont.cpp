@@ -450,7 +450,7 @@ bool FontInfoType::LoadFromBuffer(void const * buffer,
 	VJson jsonRoot;
 	s >> jsonRoot;
     if (jsonRoot.isNull()) {
-		WARN("JSON Error");
+		vWarn("JSON Error");
 		return false;
 	}
 
@@ -494,15 +494,15 @@ bool FontInfoType::LoadFromBuffer(void const * buffer,
 			jsonRoot.contains("TweakScale") ?
 					jsonRoot.value("TweakScale").toDouble() : 1.0f;
 
-	LOG( "FontName = %s", FontName.c_str());
-	LOG( "CommandLine = %s", CommandLine.c_str());
-	LOG( "HorizontalPad = %.4f", HorizontalPad);
-	LOG( "VerticalPad = %.4f", VerticalPad);
-	LOG( "FontHeight = %.4f", FontHeight);
-	LOG( "CenterOffset = %.4f", CenterOffset);
-	LOG( "TweakScale = %.4f", TweakScale);
-	LOG( "ImageFileName = %s", ImageFileName.c_str());
-	LOG( "Loading %i glyphs.", numGlyphs);
+    vInfo("FontName = " << FontName);
+    vInfo("CommandLine = " << CommandLine);
+    vInfo("HorizontalPad = " << HorizontalPad);
+    vInfo("VerticalPad = " << VerticalPad);
+    vInfo("FontHeight = " << FontHeight);
+    vInfo("CenterOffset = " << CenterOffset);
+    vInfo("TweakScale = " << TweakScale);
+    vInfo("ImageFileName = " << ImageFileName);
+    vInfo("Loading " << numGlyphs << " glyphs.");
 
 /// HACK: this is hard-coded until we do not have a dependcy on reading the font from Home
 	if (FontName == "korean.fnt") {
@@ -615,12 +615,9 @@ FontGlyphType const & FontInfoType::GlyphForCharCode(
 	const int glyphIndex = CharCodeMap[charCode];
 
 	if (glyphIndex < 0 || glyphIndex >= Glyphs.length()) {
-		WARN(
-				"FontInfoType::GlyphForCharCode FAILED TO FIND GLYPH FOR CHARACTER!");
-		WARN(
-				"FontInfoType::GlyphForCharCode: charCode %u yielding %i", charCode, glyphIndex);
-		WARN(
-				"FontInfoType::GlyphForCharCode: CharCodeMap size %i Glyphs size %i", CharCodeMap.size(), Glyphs.length());
+		vWarn("FontInfoType::GlyphForCharCode FAILED TO FIND GLYPH FOR CHARACTER!");
+		vWarn("FontInfoType::GlyphForCharCode: charCode " << charCode << " yielding " << glyphIndex);
+		vWarn("FontInfoType::GlyphForCharCode: CharCodeMap size " << CharCodeMap.size() << " Glyphs size " << Glyphs.length());
 
 		return Glyphs['*'];
 	}
@@ -753,19 +750,19 @@ bool BitmapFontLocal::Load(const VString &languagePackageName, const VString &fo
 	// strip any path from the image file name path and prepend the path from the .fnt file -- i.e. always
 	// require them to be loaded from the same directory.
     VString baseName = VPath(FontInfo.ImageFileName).fileName();
-    LOG( "fontInfoFileName = %s", fontInfoFileName.toCString());
-	LOG( "image baseName = %s", baseName.toCString());
+    vInfo("fontInfoFileName = " << fontInfoFileName);
+	vInfo("image baseName = " << baseName);
 
     VString imagePath;
     StripFileName(fontInfoFileName, imagePath);
-    LOG( "imagePath = %s", imagePath.toCString());
+    vInfo("imagePath = " << imagePath);
 
     VString imageFileName;
     StripPath(fontInfoFileName.toCString(), imageFileName);
-    LOG( "imageFileName = %s", imageFileName.toCString());
+    vInfo("imageFileName = " << imageFileName);
 
     AppendPath(imagePath, baseName);
-    LOG( "imagePath = %s", imagePath.toCString());
+    vInfo("imagePath = " << imagePath);
     if (!LoadImage(languagePackageFile, imagePath.toCString())) {
 		return false;
 	}
@@ -823,8 +820,7 @@ bool BitmapFontLocal::LoadImage(const VApkFile &languagePackageFile, char const 
 	}
 
 	if (!result) {
-		WARN(
-				"BitmapFontLocal::LoadImage: failed to load image '%s'", imageName);
+		vWarn("BitmapFontLocal::LoadImage: failed to load image '" << imageName << "'");
 	}
 	return result;
 }
@@ -847,11 +843,11 @@ bool BitmapFontLocal::LoadImageFromBuffer(char const * imageName,
 				ImageHeight);
 	}
 	if (Texture == 0) {
-		WARN( "BitmapFontLocal::Load: failed to load '%s'", imageName);
+		vWarn("BitmapFontLocal::Load: failed to load '" << imageName << "'");
 		return false;
 	}
 
-	LOG( "BitmapFontLocal::LoadImageFromBuffer: success");
+	vInfo("BitmapFontLocal::LoadImageFromBuffer: success");
 	return true;
 }
 
@@ -1118,7 +1114,7 @@ void BitmapFontSurfaceLocal::Init(const int maxVertices) {
 	CurVertex = 0;
 	CurIndex = 0;
 
-	LOG( "BitmapFontSurfaceLocal::Init: success");
+	vInfo("BitmapFontSurfaceLocal::Init: success");
 }
 
 //==============================

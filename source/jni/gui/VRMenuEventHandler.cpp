@@ -170,7 +170,7 @@ void VRMenuEventHandler::initComponents( VArray< VRMenuEvent > & events )
 // VRMenuEventHandler::Opening
 void VRMenuEventHandler::opening( VArray< VRMenuEvent > & events )
 {
-	LOG( "Opening" );
+	vInfo("Opening");
 	// broadcast the opening event
     VRMenuEvent event( VRMENU_EVENT_OPENING, EVENT_DISPATCH_BROADCAST, menuHandle_t(), V3Vectf( 0.0f ), HitTestResult() );
 	events.append( event );
@@ -180,7 +180,7 @@ void VRMenuEventHandler::opening( VArray< VRMenuEvent > & events )
 // VRMenuEventHandler::Opened
 void VRMenuEventHandler::opened( VArray< VRMenuEvent > & events )
 {
-	LOG( "Opened" );
+	vInfo("Opened");
 	// broadcast the opened event
     VRMenuEvent event( VRMENU_EVENT_OPENED, EVENT_DISPATCH_BROADCAST, menuHandle_t(), V3Vectf( 0.0f ), HitTestResult() );
 	events.append( event );
@@ -190,7 +190,7 @@ void VRMenuEventHandler::opened( VArray< VRMenuEvent > & events )
 // VRMenuEventHandler::Closing
 void VRMenuEventHandler::closing( VArray< VRMenuEvent > & events )
 {
-	LOG( "Closing" );
+	vInfo("Closing");
 	// broadcast the closing event
     VRMenuEvent event( VRMENU_EVENT_CLOSING, EVENT_DISPATCH_BROADCAST, menuHandle_t(), V3Vectf( 0.0f ), HitTestResult() );
 	events.append( event );
@@ -200,7 +200,7 @@ void VRMenuEventHandler::closing( VArray< VRMenuEvent > & events )
 // VRMenuEventHandler::Closed
 void VRMenuEventHandler::closed( VArray< VRMenuEvent > & events )
 {
-	LOG( "Closed" );
+	vInfo("Closed");
 	// broadcast the closed event
     VRMenuEvent event( VRMENU_EVENT_CLOSED, EVENT_DISPATCH_BROADCAST, menuHandle_t(), V3Vectf( 0.0f ), HitTestResult() );
 	events.append( event );
@@ -210,7 +210,7 @@ void VRMenuEventHandler::closed( VArray< VRMenuEvent > & events )
         VRMenuEvent event( VRMENU_EVENT_FOCUS_LOST, EVENT_DISPATCH_TARGET, m_focusedHandle, V3Vectf( 0.0f ), HitTestResult() );
 		events.append( event );
 		m_focusedHandle.Release();
-		LOG( "Released FocusHandle" );
+		vInfo("Released FocusHandle");
 	}
 }
 

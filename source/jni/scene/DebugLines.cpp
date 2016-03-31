@@ -243,7 +243,7 @@ void OvrDebugLinesLocal::Shutdown()
 // OvrDebugLinesLocal::Render
 void OvrDebugLinesLocal::Render( VR4Matrixf const & mvp ) const
 {
-	// LOG( "OvrDebugLinesLocal::Render" );
+	// vInfo("OvrDebugLinesLocal::Render");
 
 	Render( mvp, DepthGeo, DepthTestedLines, true );
 	Render( mvp, NonDepthGeo, NonDepthTestedLines, false );
@@ -260,7 +260,7 @@ void OvrDebugLinesLocal::Render( VR4Matrixf const & mvp, VGlGeometry & geo,
 		return;
 	}
 
-	//LOG( "Rendering %i debug lines", lines.GetSizeI() );
+	//vInfo("Rendering " << lines.GetSizeI() << " debug lines");
 
 	// go through the debug lines and put them in the vertex list
     int numLines = lines.length() < MAX_DEBUG_LINES ? lines.length() : MAX_DEBUG_LINES;
@@ -330,7 +330,7 @@ void OvrDebugLinesLocal::AddLine( const V3Vectf & start, const V3Vectf & end,
         const V4Vectf & startColor, const V4Vectf & endColor,
 		const long long endFrame, const bool depthTest )
 {
-	//LOG( "OvrDebugLinesLocal::AddDebugLine" );
+	//vInfo("OvrDebugLinesLocal::AddDebugLine");
 	DebugLine_t line( start, end, startColor, endColor, endFrame );
 	if ( depthTest )
 	{
@@ -415,7 +415,7 @@ void OvrDebugLinesLocal::AddBounds( VPosf const & pose, VBoxf const & bounds, V4
 // OvrDebugLinesLocal::BeginFrame
 void OvrDebugLinesLocal::BeginFrame( const long long frameNum )
 {
-	// LOG( "OvrDebugLinesLocal::RemoveExpired: frame %lli, removing %i lines", frameNum, DepthTestedLines.GetSizeI() + NonDepthTestedLines.GetSizeI() );
+	// vInfo("OvrDebugLinesLocal::RemoveExpired: frame " << frameNum << ", removing " << DepthTestedLines.GetSizeI() + NonDepthTestedLines.GetSizeI() << " lines");
 	DepthGeo.indexCount = 0;
 	NonDepthGeo.indexCount = 0;
 	RemoveExpired( frameNum, DepthTestedLines );

@@ -115,29 +115,29 @@ void EyeBuffer::Allocate( const EyeParms & bufferParms, multisample_t multisampl
         case TEXTURE_FILTER_NEAREST:
             glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
             glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-            LOG( "textureFilter = TEXTURE_FILTER_NEAREST" );
+            vInfo("textureFilter = TEXTURE_FILTER_NEAREST");
             break;
         case TEXTURE_FILTER_BILINEAR:
             glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
             glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-            LOG( "textureFilter = TEXTURE_FILTER_BILINEAR" );
+            vInfo("textureFilter = TEXTURE_FILTER_BILINEAR");
             break;
         case TEXTURE_FILTER_ANISO_2:
             glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
             glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
             glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 2 );
-            LOG( "textureFilter = TEXTURE_FILTER_ANISO_2" );
+            vInfo("textureFilter = TEXTURE_FILTER_ANISO_2");
             break;
         case TEXTURE_FILTER_ANISO_4:
             glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
             glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
             glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4 );
-            LOG( "textureFilter = TEXTURE_FILTER_ANISO_4" );
+            vInfo("textureFilter = TEXTURE_FILTER_ANISO_4");
             break;
         default:
             glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
             glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-            LOG( "textureFilter = TEXTURE_FILTER_BILINEAR" );
+            vInfo("textureFilter = TEXTURE_FILTER_BILINEAR");
             break;
     }
 
@@ -147,7 +147,7 @@ void EyeBuffer::Allocate( const EyeParms & bufferParms, multisample_t multisampl
         // Imagination Technologies can automatically resolve a multisample rendering on a tile-by-tile
         // basis, without needing to draw to a full size multisample buffer, then blit resolve to a
         // normal texture.
-        LOG( "Making a %i sample buffer with glFramebufferTexture2DMultisample", bufferParms.multisamples );
+        vInfo("Making a " << bufferParms.multisamples << " sample buffer with glFramebufferTexture2DMultisample");
 
         if ( bufferParms.depthFormat != DEPTH_0 )
         {
@@ -176,7 +176,7 @@ void EyeBuffer::Allocate( const EyeParms & bufferParms, multisample_t multisampl
     else
     {
         // No MSAA, use ES 2 render targets
-        LOG( "Making a single sample buffer" );
+        vInfo("Making a single sample buffer");
 
         if ( bufferParms.depthFormat != DEPTH_0 )
         {
@@ -205,7 +205,7 @@ void EyeBuffer::Allocate( const EyeParms & bufferParms, multisample_t multisampl
     GLenum status = glCheckFramebufferStatus( GL_FRAMEBUFFER );
     if (status != GL_FRAMEBUFFER_COMPLETE )
     {
-        FAIL( "render FBO %i is not complete: 0x%x", RenderFrameBuffer, status );	// TODO: fall back to something else
+        vFatal("render FBO " << RenderFrameBuffer << " is not complete: " << status);	// TODO: fall back to something else
     }
 
     // Explicitly clear the color buffer to a color we would notice
@@ -313,7 +313,7 @@ void EyeBuffers::BeginFrame( const EyeParms & bufferParms_ )
          *
          * TODO: fall back to simpler cases on failure and mark a flag in bufferData?
          */
-        LOG( "Reallocating buffers" );
+        vInfo("Reallocating buffers");
 
         // Note the requested parameters, we don't want to allocate again
         // the following frame if we had to fall back for some reason.
