@@ -42,7 +42,7 @@ void Java_com_vrseen_nervgear_photo_MainActivity_nativeSetAppInterface( JNIEnv *
                                                                         jstring fromPackageName, jstring commandString, jstring uriString )
 {
     // This is called by the java UI thread.
-    LOG( "nativeSetAppInterface" );
+    vInfo("nativeSetAppInterface");
     (new Oculus360Photos(jni, clazz, activity))->onCreate(fromPackageName, commandString, uriString );
 }
 
@@ -133,7 +133,7 @@ Oculus360Photos::~Oculus360Photos()
 void Oculus360Photos::init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI)
 {
     // This is called by the VR thread, not the java UI thread.
-    LOG( "--------------- Oculus360Photos OneTimeInit ---------------" );
+    vInfo("--------------- Oculus360Photos OneTimeInit ---------------");
 
     //-------------------------------------------------------------------------
     m_texturedMvpProgram.initShader(VGlShader::getTexturedMvpVertexShaderSource(),VGlShader::getUniformTextureProgramShaderSource());
@@ -143,7 +143,7 @@ void Oculus360Photos::init(const VString &fromPackage, const VString &launchInte
     // launch cube pano -should always exist!
     m_startupPano = DEFAULT_PANO;
 
-    LOG( "Creating Globe" );
+    vInfo("Creating Globe");
     m_globe.createSphere();
 
     // Stay exactly at the origin, so the panorama globe is equidistant
@@ -179,14 +179,14 @@ void Oculus360Photos::init(const VString &fromPackage, const VString &launchInte
     }
     else
     {
-        FAIL( "Oculus360Photos::OneTimeInit getPackageName failed" );
+        vFatal("Oculus360Photos::OneTimeInit getPackageName failed");
     }
     vAssert( packageName );
 
     m_metaData = new OvrPhotosMetaData();
     if ( m_metaData == NULL )
     {
-        FAIL( "Oculus360Photos::OneTimeInit failed to create MetaData" );
+        vFatal("Oculus360Photos::OneTimeInit failed to create MetaData");
     }
 
     OvrMetaDataFileExtensions fileExtensions;
@@ -206,11 +206,11 @@ void Oculus360Photos::init(const VString &fromPackage, const VString &launchInte
     storagePaths.PushBackSearchPathIfValid( VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", m_searchPaths );
     storagePaths.PushBackSearchPathIfValid( VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "", m_searchPaths );
 
-    LOG( "360 PHOTOS using %d searchPaths", m_searchPaths.length() );
+    vInfo("360 PHOTOS using" << m_searchPaths.length() << "searchPaths");
 
     const double startTime = ovr_GetTimeInSeconds();
     m_metaData->initFromDirectoryMergeMeta( relativePath, m_searchPaths, fileExtensions, metaFile, packageName );
-    LOG( "META DATA INIT TIME: %f", ovr_GetTimeInSeconds() - startTime );
+    vInfo("META DATA INIT TIME:" << ovr_GetTimeInSeconds() - startTime);
 
     jni->ReleaseStringUTFChars( result, packageName );
 
@@ -262,13 +262,13 @@ void Oculus360Photos::init(const VString &fromPackage, const VString &launchInte
     m_eglDisplay = eglGetCurrentDisplay();
     if ( m_eglDisplay == EGL_NO_DISPLAY )
     {
-        FAIL( "EGL_NO_DISPLAY" );
+        vFatal("EGL_NO_DISPLAY");
     }
 
     m_eglShareContext = eglGetCurrentContext();
     if ( m_eglShareContext == EGL_NO_CONTEXT )
     {
-        FAIL( "EGL_NO_CONTEXT" );
+        vFatal("EGL_NO_CONTEXT");
     }
 
     EGLint attribList[] =
@@ -281,18 +281,18 @@ void Oculus360Photos::init(const VString &fromPackage, const VString &launchInte
     EGLint numConfigs;
     if ( !eglChooseConfig( m_eglDisplay, attribList, &m_eglConfig, 1, &numConfigs ) )
     {
-        FAIL( "eglChooseConfig failed" );
+        vFatal("eglChooseConfig failed");
     }
 
     if ( m_eglConfig == NULL )
     {
-        FAIL( "EglConfig NULL" );
+        vFatal("EglConfig NULL");
     }
     if ( !eglQueryContext( m_eglDisplay, m_eglShareContext, EGL_CONTEXT_CLIENT_VERSION, ( EGLint * )&m_eglClientVersion ) )
     {
-        FAIL( "eglQueryContext EGL_CONTEXT_CLIENT_VERSION failed" );
+        vFatal("eglQueryContext EGL_CONTEXT_CLIENT_VERSION failed");
     }
-    LOG( "Current EGL_CONTEXT_CLIENT_VERSION:%i", m_eglClientVersion );
+    vInfo("Current EGL_CONTEXT_CLIENT_VERSION:" << m_eglClientVersion);
 
     EGLint SurfaceAttribs [ ] =
     {
@@ -304,13 +304,13 @@ void Oculus360Photos::init(const VString &fromPackage, const VString &launchInte
     VGlOperation glOperation;
     m_eglPbufferSurface = eglCreatePbufferSurface( m_eglDisplay, m_eglConfig, SurfaceAttribs );
     if ( m_eglPbufferSurface == EGL_NO_SURFACE ) {
-        FAIL( "eglCreatePbufferSurface failed: %s", glOperation.getEglErrorString() );
+        vFatal("eglCreatePbufferSurface failed:" << glOperation.getEglErrorString());
     }
     EGLint bufferWidth, bufferHeight;
     if ( !eglQuerySurface( m_eglDisplay, m_eglPbufferSurface, EGL_WIDTH, &bufferWidth ) ||
          !eglQuerySurface( m_eglDisplay, m_eglPbufferSurface, EGL_HEIGHT, &bufferHeight ) )
     {
-        FAIL( "eglQuerySurface failed:  %s", glOperation.getEglErrorString() );
+        vFatal("eglQuerySurface failed:" << glOperation.getEglErrorString());
     }
 
     // spawn the background loading thread with the command list
@@ -324,7 +324,7 @@ void Oculus360Photos::init(const VString &fromPackage, const VString &launchInte
     const int createErr = pthread_create( &loadingThread, &loadingThreadAttr, &BackgroundGLLoadThread, this );
     if ( createErr != 0 )
     {
-        LOG( "pthread_create returned %i", createErr );
+        vInfo("pthread_create returned" << createErr);
     }
 
     // We might want to save the view state and position for perfect recall
@@ -335,7 +335,7 @@ void Oculus360Photos::init(const VString &fromPackage, const VString &launchInte
 void Oculus360Photos::shutdown()
 {
     // This is called by the VR thread, not the java UI thread.
-    LOG( "--------------- Oculus360Photos OneTimeShutdown ---------------" );
+    vInfo("--------------- Oculus360Photos OneTimeShutdown ---------------");
 
     // Shut down background loader
     m_shutdownRequest.setState( true );
@@ -353,7 +353,7 @@ void Oculus360Photos::shutdown()
 
     if ( eglDestroySurface( m_eglDisplay, m_eglPbufferSurface ) == EGL_FALSE )
     {
-        FAIL( "eglDestroySurface: shutdown failed" );
+        vFatal("eglDestroySurface: shutdown failed");
     }
 }
 
@@ -376,13 +376,13 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
     EGLContext EglBGLoaderContext = eglCreateContext( photos->m_eglDisplay, photos->m_eglConfig, photos->m_eglShareContext, loaderContextAttribs );
     if ( EglBGLoaderContext == EGL_NO_CONTEXT )
     {
-        FAIL( "eglCreateContext failed: %s", glOperation.getEglErrorString() );
+        vFatal("eglCreateContext failed:" << glOperation.getEglErrorString());
     }
 
     // Make the context current on the window, so no more makeCurrent calls will be needed
     if ( eglMakeCurrent( photos->m_eglDisplay, photos->m_eglPbufferSurface, photos->m_eglPbufferSurface, EglBGLoaderContext ) == EGL_FALSE )
     {
-        FAIL( "BackgroundGLLoadThread eglMakeCurrent failed: %s", glOperation.getEglErrorString() );
+        vFatal("BackgroundGLLoadThread eglMakeCurrent failed:" << glOperation.getEglErrorString());
     }
 
     // run until Shutdown requested
@@ -390,7 +390,7 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
     {
         if ( photos->m_shutdownRequest.state() )
         {
-            LOG( "BackgroundGLLoadThread ShutdownRequest received" );
+            vInfo("BackgroundGLLoadThread ShutdownRequest received");
             break;
         }
 
@@ -411,7 +411,7 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
 
             while ( width > maxTextureSize || width > maxTextureSize )
             {
-                LOG( "Quartering oversize %ix%i image", width, height );
+                vInfo("Quartering oversize" << width << height << "image");
                 unsigned char * newBuf = QuarterImageSize( data, width, height, true );
                 free( data );
                 data = newBuf;
@@ -425,20 +425,20 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
             // Add a sync object for uploading textures
             EGLSyncKHR GpuSync = glOperation.eglCreateSyncKHR( photos->m_eglDisplay, EGL_SYNC_FENCE_KHR, NULL );
             if ( GpuSync == EGL_NO_SYNC_KHR ) {
-                FAIL( "BackgroundGLLoadThread eglCreateSyncKHR_():EGL_NO_SYNC_KHR" );
+                vFatal("BackgroundGLLoadThread eglCreateSyncKHR_():EGL_NO_SYNC_KHR");
             }
 
             // Force it to flush the commands and wait until the textures are fully uploaded
             if ( EGL_FALSE == glOperation.eglClientWaitSyncKHR( photos->m_eglDisplay, GpuSync, EGL_SYNC_FLUSH_COMMANDS_BIT_KHR,
                                                                 EGL_FOREVER_KHR ) )
             {
-                LOG( "BackgroundGLLoadThread eglClientWaitSyncKHR returned EGL_FALSE" );
+                vInfo("BackgroundGLLoadThread eglClientWaitSyncKHR returned EGL_FALSE");
             }
 
             vApp->eventLoop().post("loaded pano");
 
             const double end = ovr_GetTimeInSeconds();
-            LOG( "%4.2fs to load %ix%i res pano map", end - start, width, height );
+            vInfo(end - start << "s to load" << width << height << "res pano map");
         } else if (event.name == "cube") {
             int size = event.data.at(0).toInt();
             uchar *data[6];
@@ -457,32 +457,32 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
             // Add a sync object for uploading textures
             EGLSyncKHR GpuSync = glOperation.eglCreateSyncKHR( photos->m_eglDisplay, EGL_SYNC_FENCE_KHR, NULL );
             if ( GpuSync == EGL_NO_SYNC_KHR ) {
-                FAIL( "BackgroundGLLoadThread eglCreateSyncKHR_():EGL_NO_SYNC_KHR" );
+                vFatal("BackgroundGLLoadThread eglCreateSyncKHR_():EGL_NO_SYNC_KHR");
             }
 
             // Force it to flush the commands and wait until the textures are fully uploaded
             if ( EGL_FALSE == glOperation.eglClientWaitSyncKHR( photos->m_eglDisplay, GpuSync, EGL_SYNC_FLUSH_COMMANDS_BIT_KHR,
                                                                 EGL_FOREVER_KHR ) )
             {
-                LOG( "BackgroundGLLoadThread eglClientWaitSyncKHR returned EGL_FALSE" );
+                vInfo("BackgroundGLLoadThread eglClientWaitSyncKHR returned EGL_FALSE");
             }
 
             vApp->eventLoop().post("loaded cube");
 
             const double end = ovr_GetTimeInSeconds();
-            LOG( "%4.2fs to load %i res cube map", end - start, size );
+            vInfo(end - start << "s to load" << size << "res cube map");
         }
     }
 
     // release the window so it can be made current by another thread
     if ( eglMakeCurrent( photos->m_eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT ) == EGL_FALSE )
     {
-        FAIL( "BackgroundGLLoadThread eglMakeCurrent: shutdown failed" );
+        vFatal("BackgroundGLLoadThread eglMakeCurrent: shutdown failed");
     }
 
     if ( eglDestroyContext( photos->m_eglDisplay, EglBGLoaderContext ) == EGL_FALSE )
     {
-        FAIL( "BackgroundGLLoadThread eglDestroyContext: shutdown failed" );
+        vFatal("BackgroundGLLoadThread eglDestroyContext: shutdown failed");
     }
     return NULL;
 }
@@ -514,7 +514,7 @@ bool Oculus360Photos::useOverlay() const {
 void Oculus360Photos::configureVrMode(VKernel* kernel) {
     // We need very little CPU for pano browsing, but a fair amount of GPU.
     // The CPU clock should ramp up above the minimum when necessary.
-    LOG( "ConfigureClocks: Oculus360Photos only needs minimal clocks" );
+    vInfo("ConfigureClocks: Oculus360Photos only needs minimal clocks");
 
     // No hard edged geometry, so no need for MSAA
     kernel->msaa = 1;
@@ -755,7 +755,7 @@ void Oculus360Photos::SetMenuState( const OvrMenuState state )
 {
     OvrMenuState lastState = m_menuState;
     m_menuState = state;
-    LOG( "%s to %s", menuStateString( lastState ), menuStateString( m_menuState ) );
+    vInfo(menuStateString( lastState ) << "to" << menuStateString( m_menuState ));
     switch ( m_menuState )
     {
     case MENU_NONE:

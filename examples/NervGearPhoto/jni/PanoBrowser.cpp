@@ -263,7 +263,7 @@ void PanoBrowser::onBrowserOpen()
 		// Favorites is empty and active folder - hide it in FolderBrowser by scrolling down
 		if ( !haveAnyFavorite )
 		{
-			LOG( "PanoBrowser::AddToFavorites setting OvrFolderBrowser::MOVE_ROOT_DOWN" );
+			vInfo("PanoBrowser::AddToFavorites setting OvrFolderBrowser::MOVE_ROOT_DOWN");
             setRootAdjust( OvrFolderBrowser::MOVE_ROOT_UP );
 		}
 	}
@@ -413,7 +413,7 @@ unsigned char * PanoBrowser::createAndCacheThumbnail( const char * soureFile, co
 	free( data );
 
 	// write it out to cache
-	LOG( "thumb create - writjpeg %s %p %dx%d", cacheDestinationFile, data, outW, outH );
+    vInfo("thumb create - writjpeg" << cacheDestinationFile << data << outW << outH);
 //	MakePath( cacheDestinationFile, S_IRUSR | S_IWUSR );
 	vdir.makePath( cacheDestinationFile, S_IRUSR | S_IWUSR );
 	if ( vdir.contains( cacheDestinationFile, W_OK ) )
