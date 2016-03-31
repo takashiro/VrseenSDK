@@ -2127,9 +2127,9 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
             d->swapParms.Images[eye][0].Pose = d->sensorForNextWarp.Predicted;
 
 
-           d->kernel->m_images[eye][0].TexCoordsFromTanAngles = VR4Matrixf::TanAngleMatrixFromFov( fovDegrees );
-           d->kernel->m_images[eye][0].TexId = eyes.Textures[d->renderMonoMode ? 0 : eye ];
-           d->kernel->m_images[eye][0].Pose = d->sensorForNextWarp.Predicted;
+           d->kernel->m_texMatrix[eye][0] = VR4Matrixf::TanAngleMatrixFromFov( fovDegrees );
+           d->kernel->m_texId[eye][0] = eyes.Textures[d->renderMonoMode ? 0 : eye ];
+           d->kernel->m_pose[eye][0] = d->sensorForNextWarp.Predicted;
           // d->kernel->m_smoothProgram = ChromaticAberrationCorrection(glOperation) ? WP_CHROMATIC : WP_SIMPLE;
 
 

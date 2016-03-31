@@ -12,7 +12,11 @@ public:
     VFrameSmooth(bool async,VDevice *device);
     ~VFrameSmooth();
     void setSmoothEyeTexture(unsigned int texID,ushort eye,ushort layer);
-    void setSmoothEyeTexture(ushort i,ushort j,ovrTimeWarpImage tex);
+    void setTexMatrix(VR4Matrixf	mtexMatrix,ushort eye,ushort layer);
+    void setSmoothPose(ovrPoseStatef	mpose,ushort eye,ushort layer);
+    void setpTex(unsigned int	*mpTexId,ushort eye,ushort layer);
+
+
     void setSmoothOption(int option);
     void setMinimumVsncs( int vsnc);
     void setExternalVelocity(VR4Matrixf extV);

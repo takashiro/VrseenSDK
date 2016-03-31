@@ -620,14 +620,17 @@ VKernel::VKernel()
 
     m_smoothOptions =0;
     const VR4Matrixf tanAngleMatrix = VR4Matrixf::TanAngleMatrixFromFov( 90.0f );
-    memset( &m_images, 0, sizeof( m_images ) );
+    memset( &m_texId, 0, sizeof( m_texId ) );
+    memset( &m_pose, 0, sizeof( m_pose ) );
+    memset( &m_planarTexId, 0, sizeof( m_planarTexId ) );
+    memset( &m_texMatrix, 0, sizeof( m_texMatrix ) );
     memset( &m_externalVelocity, 0, sizeof( m_externalVelocity ) );
    for ( int eye = 0; eye < 2; eye++ )
    {
        for ( int i = 0; i < 3; i++ )
        {
-           m_images[eye][i].TexCoordsFromTanAngles = tanAngleMatrix;
-           m_images[eye][i].Pose.Pose.Orientation.w = 1.0f;
+           m_texMatrix[eye][i] = tanAngleMatrix;
+           m_pose[eye][i].Pose.Orientation.w = 1.0f;
        }
    }
 
@@ -873,8 +876,24 @@ void VKernel::destroy(eExitType exitType)
 void VKernel::setSmoothEyeTexture(unsigned int texID,ushort eye,ushort layer)
 {
 
-   m_images[eye][layer].TexId =  texID;
+   m_texId[eye][layer] =  texID;
 
+}
+
+
+void VKernel::setTexMatrix(VR4Matrixf	mtexMatrix,ushort eye,ushort layer)
+{
+  m_texMatrix[eye][layer] =  mtexMatrix;
+}
+void VKernel::setSmoothPose(ovrPoseStatef	mpose,ushort eye,ushort layer)
+{
+   m_pose[eye][layer] =  mpose;
+}
+void VKernel::setpTex(unsigned int	*mpTexId,ushort eye,ushort layer)
+{
+    m_planarTexId[eye][layer][0] = mpTexId[0];
+    m_planarTexId[eye][layer][1] = mpTexId[1];
+    m_planarTexId[eye][layer][2] = mpTexId[2];
 }
 void VKernel::setSmoothOption(int option)
 {
@@ -928,7 +947,10 @@ void VKernel::syncSmoothParms()
  {
      for ( ushort i = 0; i < 3; i++ )
      {
-         frameSmooth->setSmoothEyeTexture(eye,i,m_images[eye][i]) ;
+         frameSmooth->setSmoothEyeTexture(m_texId[eye][i],eye,i) ;
+         frameSmooth->setTexMatrix(m_texMatrix[eye][i],eye,i) ;
+         frameSmooth->setpTex(m_planarTexId[eye][i],eye,i) ;
+         frameSmooth->setSmoothPose(m_pose[eye][i],eye,i);
 
      }
  }
@@ -1074,7 +1096,7 @@ void VKernel::doSmooth(const ovrTimeWarpParms * parms )
 {
     if(frameSmooth==NULL||!isRunning) return;
 
-    setSmoothParms(*parms);
+    //setSmoothParms(*parms);
     syncSmoothParms();
    // frameSmooth->doSmooth();
 }
@@ -1146,7 +1168,7 @@ void VKernel::doSmooth(const ovrTimeWarpParms * parms )
     }
     return parms;
 }
-
+/*
 void VKernel::setSmoothParms(const ovrTimeWarpParms &  parms)
 {
     //ovrTimeWarpParms parms;
@@ -1211,6 +1233,9 @@ void VKernel::setSmoothParms(const ovrTimeWarpParms &  parms)
     }
 
 }
+
+*/
+ /*
 ovrTimeWarpParms  VKernel::getSmoothParms()
 {
     ovrTimeWarpParms parms;
@@ -1276,3 +1301,4 @@ ovrTimeWarpParms  VKernel::getSmoothParms()
 
  return parms;
 }
+*/

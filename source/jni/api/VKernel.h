@@ -219,6 +219,11 @@ public:
     void doSmooth();
     void syncSmoothParms();
     void setSmoothEyeTexture(unsigned int texID,ushort eye,ushort layer);
+    void setTexMatrix(VR4Matrixf	mtexMatrix,ushort eye,ushort layer);
+    void setSmoothPose(ovrPoseStatef	mpose,ushort eye,ushort layer);
+    void setpTex(unsigned int	*mpTexId,ushort eye,ushort layer);
+
+
     void setSmoothOption(int option);
     void setMinimumVsncs( int vsnc);
     void setExternalVelocity(VR4Matrixf extV);
@@ -229,13 +234,18 @@ public:
     ovrTimeWarpParms  getSmoothParms();
     ovrTimeWarpParms  InitTimeWarpParms( const ovrWarpInit init = WARP_INIT_DEFAULT, const unsigned int texId =0 );
 
-    ovrTimeWarpImage 			m_images[2][3];
+
     int 						m_smoothOptions;
     VR4Matrixf					m_externalVelocity;
     int							m_minimumVsyncs;
     float						m_preScheduleSeconds;
     ovrTimeWarpProgram			m_smoothProgram;
     float						m_programParms[4];
+
+    unsigned int	m_texId[2][3];
+    unsigned int	m_planarTexId[2][3][3];
+    VR4Matrixf		m_texMatrix[2][3];
+    ovrPoseStatef	m_pose[2][3];
 
 private:
     VKernel();

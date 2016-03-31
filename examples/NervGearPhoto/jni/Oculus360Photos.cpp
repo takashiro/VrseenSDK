@@ -688,9 +688,9 @@ VR4Matrixf Oculus360Photos::drawEyeView( const int eye, const float fovDegrees )
         }
         */
         vApp->kernel()->m_smoothOptions = ( m_useSrgb ? 0 : SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER );
-        vApp->kernel()->m_images[ eye ][ 1 ].TexId = texId;
-        vApp->kernel()->m_images[ eye ][ 1 ].TexCoordsFromTanAngles = m;
-        vApp->kernel()->m_images[ eye ][ 1 ].Pose = m_frameInput.PoseState;
+        vApp->kernel()->m_texId[ eye ][ 1 ] = texId;
+        vApp->kernel()->m_texMatrix[ eye ][ 1 ] = m;
+        vApp->kernel()->m_pose[ eye ][ 1 ] = m_frameInput.PoseState;
         vApp->kernel()->m_smoothProgram = WP_CHROMATIC_MASKED_CUBE;
         for ( int i = 0; i < 4; i++ )
         {
@@ -709,7 +709,7 @@ VR4Matrixf Oculus360Photos::drawEyeView( const int eye, const float fovDegrees )
         }
         */
         vApp->kernel()->m_smoothOptions = m_useSrgb ? 0 : SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER;
-        vApp->kernel()->m_images[ eye ][ 1 ].TexId = 0;
+        vApp->kernel()->m_texId[ eye ][ 1 ] = 0;
         vApp->kernel()->m_smoothProgram = WP_CHROMATIC;
         for ( int i = 0; i < 4; i++ )
         {
