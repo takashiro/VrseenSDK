@@ -199,34 +199,19 @@ struct VFrameSmooth::Private
         static_assert( ( WP_PROGRAM_MAX & 1 ) == 0, "WP_PROGRAM_MAX" );
         static_assert( ( WP_CHROMATIC - WP_SIMPLE ) ==
                              ( WP_PROGRAM_MAX - WP_CHROMATIC ) , "WP_CHROMATIC");
-
         VGlOperation glOperation;
         m_shutdownRequest.setState( false );
         m_eyeBufferCount.setState( 0 );
-
         memset( m_warpPrograms, 0, sizeof( m_warpPrograms ) );
-
-
         pthread_mutex_init( &m_smoothMutex, NULL /* default attributes */ );
         pthread_cond_init( &m_smoothIslocked, NULL /* default attributes */ );
-
         LOG( "-------------------- VFrameSmooth() --------------------" );
-
         m_sStartupTid = gettid();
-
         m_lastsmoothTimeInSeconds.setState( ovr_GetTimeInSeconds() );
-
-
         m_smoothThread = 0;
-
         m_async = async;
         m_device = device;
-
         m_eyeBufferCount.setState( 0 );
-
-        // LOG( " VFrameSmooth() ----m_eyeBufferCount----------- %d", m_eyeBufferCount.state() );
-
-
         m_eglDisplay = eglGetCurrentDisplay();
         if ( m_eglDisplay == EGL_NO_DISPLAY )
         {
@@ -256,32 +241,24 @@ struct VFrameSmooth::Private
         {
             FAIL( "eglQueryContext EGL_CONTEXT_CLIENT_VERSION failed" );
         }
-        LOG( "Current EGL_CONTEXT_CLIENT_VERSION:%i", m_eglClientVersion );
-
-        // It is wasteful for the main config to be anything but a color buffer.
+        LOG( "Current EGL_CONTEXT_CLIENT_VERSION:%i", m_eglClientVersion );       
         EGLint depthSize = 0;
         eglGetConfigAttrib( m_eglDisplay, m_eglConfig, EGL_DEPTH_SIZE, &depthSize );
         if ( depthSize != 0 )
         {
             LOG( "Share context eglConfig has %i depth bits -- should be 0", depthSize );
         }
-
         EGLint samples = 0;
         eglGetConfigAttrib( m_eglDisplay, m_eglConfig, EGL_SAMPLES, &samples );
         if ( samples != 0 )
         {
             LOG( "Share context eglConfig has %i samples -- should be 0", samples );
-        }
-        // See if we have sRGB_write_control extension
+        }        
         m_hasEXT_sRGB_write_control = glOperation.glIsExtensionString( "GL_EXT_sRGB_write_control",
-                                                                             (const char *)glGetString( GL_EXTENSIONS ) );
-
-
+                                                                          (const char *)glGetString( GL_EXTENSIONS ) );
         if ( !m_async )
         {
             initRenderEnvironment();
-
-
             createFrameworkGraphics();
             LOG( "Skipping thread setup because !AsynchronousTimeWarp" );
         }
@@ -321,24 +298,14 @@ struct VFrameSmooth::Private
             {
                 FAIL( "eglMakeCurrent: eglMakeCurrent pbuffer failed" );
             }
-
-
             m_shutdownRequest.setState( false );
-
-
             pthread_mutex_lock( &m_smoothMutex );
-
-
             const int createErr = pthread_create( &m_smoothThread, NULL /* default attributes */, &ThreadStarter, this );
             if ( createErr != 0 )
             {
                 FAIL( "pthread_create returned %i", createErr );
             }
-
-
             pthread_cond_wait( &m_smoothIslocked, &m_smoothMutex );
-
-
             pthread_mutex_unlock( &m_smoothMutex );
         }
 
@@ -352,29 +319,21 @@ struct VFrameSmooth::Private
         {
 
             m_shutdownRequest.setState( true );
-
             LOG( "pthread_join() called");
             void * data;
             pthread_join( m_smoothThread, &data );
-
             LOG( "pthread_join() returned");
-
             m_smoothThread = 0;
-
             VGlOperation glOperation;
             if ( eglGetCurrentSurface( EGL_DRAW ) != m_eglPbufferSurface )
             {
                 LOG( "eglGetCurrentSurface( EGL_DRAW ) != eglPbufferSurface" );
             }
-
-
             if ( eglMakeCurrent( m_eglDisplay, m_eglMainThreadSurface,
                                  m_eglMainThreadSurface, m_eglShareContext ) == EGL_FALSE)
             {
                 FAIL( "eglMakeCurrent to window failed: %s", glOperation.getEglErrorString() );
             }
-
-            // Destroy the pbuffer surface that was attached to the calling context.
             if ( EGL_FALSE == eglDestroySurface( m_eglDisplay, m_eglPbufferSurface ) )
             {
                 WARN( "Failed to destroy pbuffer." );
@@ -404,7 +363,7 @@ struct VFrameSmooth::Private
                                        const char * chromaticVertex, const char * chromaticFragment );
 
     void			buildSmoothProgMatchedPair( ovrTimeWarpProgram simpleIndex,
-                                              const char * vertex, const char * fragment );
+                                            const char * vertex, const char * fragment );
     void 			buildSmoothProgs();
     void			createFrameworkGraphics();
     void			destroyFrameworkGraphics();
@@ -547,26 +506,15 @@ void VFrameSmooth::setSmoothEyeTexture(ushort i,ushort j,ovrTimeWarpImage m_imag
               d->m_images[i][j].Pose.Pose.Position.z =m_images.Pose.Pose.Position.z;
 
 
-                d->m_images[i][j].Pose.TimeInSeconds =m_images.Pose.TimeInSeconds;
-
-
-
-
-         }
-
-
-
+               d->m_images[i][j].Pose.TimeInSeconds =m_images.Pose.TimeInSeconds;
+        }
 }
 void VFrameSmooth::setSmoothEyeTexture(unsigned int texID,ushort eye,ushort layer)
 {
-
-
      d->m_images[eye][layer].TexId =  texID;
-
 }
 void VFrameSmooth::setSmoothOption(int option)
 {
-
     d->m_smoothOptions = option;
 
 }
@@ -670,7 +618,7 @@ void VFrameSmooth::Private::threadFunction()
                removedSchedFifo = true;
            }
        }
- LOG( "WarpThreadLoop enter warptoscreen");
+ LOG( "WarpThreadLoop enter rendertodisplay");
         renderToDisplay( vsync,spAsyncSwappedBufferPortrait);
     }
 
@@ -1031,7 +979,7 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
                 if ( thisEyeBufferNum <= 0 )
                 {
 
-                    LOG( "WarpToScreen: No valid Eye Buffers" );
+                    LOG( "rendertodisplay: No valid Eye Buffers" );
                     break;
                 }
 
@@ -1090,7 +1038,7 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
             if ( m_images[eye][0].TexId == 0 )
             {
 
-                LOG( "WarpToScreen: Nothing valid to draw" );
+                LOG( "rendertodisplay: Nothing valid to draw" );
                 SleepUntilTimePoint( FramePointTimeInSeconds( sleepTargetVsync + 1.0f ), false );
                 break;
             }
@@ -1238,7 +1186,7 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
                 thisEyeBufferNum = latestEyeBufferNum - back;
                 if ( thisEyeBufferNum <= 0 )
                 {
-                    LOG( "WarpToScreen: No valid Eye Buffers" );
+                    LOG( "rendertodisplay: No valid Eye Buffers" );
 
                     break;
                 }
@@ -1301,7 +1249,7 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
             if ( m_images[eye][0].TexId == 0 )
             {
 
-                LOG( "WarpToScreen: Nothing valid to draw" );
+                LOG( "rendertodisplay: Nothing valid to draw" );
                 SleepUntilTimePoint( FramePointTimeInSeconds( vsyncBase + 1.0f ), false );
                 break;
             }
