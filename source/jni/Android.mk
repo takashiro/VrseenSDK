@@ -96,6 +96,9 @@ LOCAL_SRC_FILES  := \
 	gui/SoundLimiter.cpp \
 	gui/VRMenu.cpp \
 	gui/GuiSys.cpp \
+	gui/VText.cpp \
+	gui/VPanel.cpp \
+	gui/VDialog.cpp \
 	gui/FolderBrowser.cpp \
 	gui/Fader.cpp \
 	gui/DefaultComponent.cpp \
