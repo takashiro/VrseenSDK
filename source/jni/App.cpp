@@ -2245,13 +2245,13 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
     {
         const CompletedEyes eyes = d->eyeTargets->GetCompletedEyes();
 
-        for ( int eye = 0; eye < MAX_WARP_EYES; eye++ )
+        for ( int eye = 0; eye < 2; eye++ )
         {
             d->swapParms.Images[eye][0].TexCoordsFromTanAngles = NervGear::VR4Matrix<float>::TanAngleMatrixFromFov( fovDegrees );
             d->swapParms.Images[eye][0].TexId = eyes.Textures[d->renderMonoMode ? 0 : eye ];
             d->swapParms.Images[eye][0].Pose = d->sensorForNextWarp.Predicted;
 
-           d->kernel->m_images[eye][0].TexCoordsFromTanAngles = TanAngleMatrixFromFov( fovDegrees );
+           d->kernel->m_images[eye][0].TexCoordsFromTanAngles = VR4Matrixf::TanAngleMatrixFromFov( fovDegrees );
            d->kernel->m_images[eye][0].TexId = eyes.Textures[d->renderMonoMode ? 0 : eye ];
            d->kernel->m_images[eye][0].Pose = d->sensorForNextWarp.Predicted;
            d->kernel->m_smoothProgram = ChromaticAberrationCorrection(glOperation) ? WP_CHROMATIC : WP_SIMPLE;

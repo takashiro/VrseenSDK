@@ -620,7 +620,7 @@ VKernel::VKernel()
     device = VDevice::instance();
 
     m_smoothOptions =0;
-    const ovrMatrix4f tanAngleMatrix = TanAngleMatrixFromFov( 90.0f );
+    const VR4Matrixf tanAngleMatrix = VR4Matrixf::TanAngleMatrixFromFov( 90.0f );
     memset( &m_images, 0, sizeof( m_images ) );
     memset( &m_externalVelocity, 0, sizeof( m_externalVelocity ) );
    for ( int eye = 0; eye < 2; eye++ )
@@ -887,7 +887,7 @@ void VKernel::setMinimumVsncs( int vsnc)
 
   m_minimumVsyncs = vsnc;
 }
-void VKernel::setExternalVelocity(ovrMatrix4f extV)
+void VKernel::setExternalVelocity(VR4Matrixf extV)
 
 {
     for(int i=0;i<4;i++)
@@ -1081,14 +1081,14 @@ void VKernel::doSmooth(const ovrTimeWarpParms * parms )
 }
  ovrTimeWarpParms VKernel::InitTimeWarpParms( const ovrWarpInit init, const unsigned int texId )
 {
-    const ovrMatrix4f tanAngleMatrix = TanAngleMatrixFromFov( 90.0f );
+    const VR4Matrixf tanAngleMatrix = VR4Matrixf::TanAngleMatrixFromFov( 90.0f );
 
     ovrTimeWarpParms parms;
     memset( &parms, 0, sizeof( parms ) );
 
-    for ( int eye = 0; eye < MAX_WARP_EYES; eye++ )
+    for ( int eye = 0; eye < 2; eye++ )
     {
-        for ( int i = 0; i < MAX_WARP_IMAGES; i++ )
+        for ( int i = 0; i < 3; i++ )
         {
             parms.Images[eye][i].TexCoordsFromTanAngles = tanAngleMatrix;
             parms.Images[eye][i].Pose.Pose.Orientation.w = 1.0f;
@@ -1112,7 +1112,7 @@ void VKernel::doSmooth(const ovrTimeWarpParms * parms )
         {
             parms.WarpOptions = SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER | SWAP_OPTION_FLUSH | SWAP_OPTION_DEFAULT_IMAGES;
             parms.WarpProgram = WP_SIMPLE;
-            for ( int eye = 0; eye < MAX_WARP_EYES; eye++ )
+            for ( int eye = 0; eye < 2; eye++ )
             {
                 parms.Images[eye][0].TexId = 0;		// default replaced with a black texture
             }
@@ -1124,7 +1124,7 @@ void VKernel::doSmooth(const ovrTimeWarpParms * parms )
             parms.WarpProgram = WP_LOADING_ICON;
             parms.ProgramParms[0] = 1.0f;		// rotation in radians per second
             parms.ProgramParms[1] = 16.0f;		// icon size factor smaller than fullscreen
-            for ( int eye = 0; eye < MAX_WARP_EYES; eye++ )
+            for ( int eye = 0; eye <2; eye++ )
             {
                 parms.Images[eye][0].TexId = 0;		// default replaced with a black texture
                 parms.Images[eye][1].TexId = texId;	// loading icon texture
@@ -1137,7 +1137,7 @@ void VKernel::doSmooth(const ovrTimeWarpParms * parms )
             parms.WarpProgram = WP_LOADING_ICON;
             parms.ProgramParms[0] = 0.0f;		// rotation in radians per second
             parms.ProgramParms[1] = 2.0f;		// message size factor smaller than fullscreen
-            for ( int eye = 0; eye < MAX_WARP_EYES; eye++ )
+            for ( int eye = 0; eye < 2; eye++ )
             {
                 parms.Images[eye][0].TexId = 0;		// default replaced with a black texture
                 parms.Images[eye][1].TexId = texId;	// message texture

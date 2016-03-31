@@ -22,7 +22,7 @@ public:
 
     void setSmoothOption(int option);
     void setMinimumVsncs( int vsnc);
-    void setExternalVelocity(ovrMatrix4f extV);
+    void setExternalVelocity(VR4Matrixf extV);
     void setPreScheduleSeconds(float pres);
     void setSmoothProgram(ovrTimeWarpProgram program);
     void setProgramParms( float * proParms);

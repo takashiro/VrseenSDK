@@ -544,7 +544,7 @@ struct VFrameSmooth::Private
      bool testc;
      ovrTimeWarpImage 			m_images[2][3];
      int 						m_smoothOptions;
-     ovrMatrix4f					m_externalVelocity;
+     VR4Matrixf					m_externalVelocity;
      int							m_minimumVsyncs;
      float						m_preScheduleSeconds;
      ovrTimeWarpProgram			m_smoothProgram;
@@ -719,7 +719,7 @@ void VFrameSmooth::setMinimumVsncs( int vsnc)
     d->m_minimumVsyncs = vsnc;
 }
 
-void VFrameSmooth::setExternalVelocity(ovrMatrix4f extV)
+void VFrameSmooth::setExternalVelocity(VR4Matrixf extV)
 
 {
     for(int i=0;i<4;i++)
