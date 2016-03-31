@@ -40,9 +40,7 @@ LOCAL_SRC_FILES  := \
 	core/VChar.cpp \
 	core/VEventLoop.cpp \
 	core/VJson.cpp \
-	core/Log.cpp \
 	core/VLog.cpp \
-	core/VMath.cpp \
 	core/VPath.cpp \
 	core/VStandardPath.cpp \
 	core/VString.cpp \
@@ -89,6 +87,7 @@ LOCAL_SRC_FILES  := \
 	api/sensor/Common_HMDDevice.cpp \
 	api/sensor/ThreadCommandQueue.cpp \
 	api/sensor/RefCount.cpp \
+	api/sensor/Log.cpp \
 	gui/VRMenuComponent.cpp \
 	gui/VRMenuMgr.cpp \
 	gui/VRMenuObjectLocal.cpp \
@@ -97,6 +96,9 @@ LOCAL_SRC_FILES  := \
 	gui/SoundLimiter.cpp \
 	gui/VRMenu.cpp \
 	gui/GuiSys.cpp \
+	gui/VText.cpp \
+	gui/VPanel.cpp \
+	gui/VDialog.cpp \
 	gui/FolderBrowser.cpp \
 	gui/Fader.cpp \
 	gui/DefaultComponent.cpp \
@@ -123,7 +125,6 @@ LOCAL_SRC_FILES  := \
 	scene/EyePostRender.cpp \
 	scene/GazeCursor.cpp \
 	scene/GlTexture.cpp \
-	scene/ImageData.cpp \
 	scene/ModelRender.cpp \
 	scene/ModelFile.cpp \
 	scene/ModelCollision.cpp \

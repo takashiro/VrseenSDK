@@ -1,7 +1,6 @@
 #pragma once
 
 #include "vglobal.h"
-#include "Types.h"
 
 /*
 	Memory-mapped files are a fairly good compromise between performance and flexibility.
@@ -59,20 +58,20 @@ public:
 					~MappedView();
 
     bool			open( MappedFile * file ); // Returns false on error
-    UByte *			mapView( uint offset = 0, uint length = 0 ); // Returns 0 on error, 0 length means whole file
+    uchar *mapView( uint offset = 0, uint length = 0 ); // Returns 0 on error, 0 length means whole file
     void			close();
 
     bool			isValid() const { return ( m_data != 0 ); }
     uint			offset() const { return m_offset; }
     uint			length() const { return m_length; }
     MappedFile *	file() { return m_file; }
-    UByte *			front() { return m_data; }
+    uchar *			front() { return m_data; }
 
 private:
     void *			m_map;
 
     MappedFile *	m_file;
-    UByte *			m_data;
+    uchar *			m_data;
     uint			m_offset;
     uint			m_length;
 };

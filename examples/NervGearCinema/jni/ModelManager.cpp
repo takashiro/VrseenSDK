@@ -29,7 +29,7 @@ ModelManager::~ModelManager()
 
 void ModelManager::OneTimeInit(const VString &launchIntent)
 {
-	LOG( "ModelManager::OneTimeInit" );
+	vInfo("ModelManager::OneTimeInit");
 	const double start = ovr_GetTimeInSeconds();
 	LaunchIntent = launchIntent;
 
@@ -37,12 +37,12 @@ void ModelManager::OneTimeInit(const VString &launchIntent)
 
 	LoadModels();
 
-    LOG( "ModelManager::OneTimeInit: %i theaters loaded, %3.1f seconds", Theaters.length(), ovr_GetTimeInSeconds() - start );
+    vInfo("ModelManager::OneTimeInit:" << Theaters.length() << "theaters loaded," << (ovr_GetTimeInSeconds() - start) << "seconds");
 }
 
 void ModelManager::OneTimeShutdown()
 {
-	LOG( "ModelManager::OneTimeShutdown" );
+	vInfo("ModelManager::OneTimeShutdown");
 
 	// Free GL resources
 
@@ -54,7 +54,7 @@ void ModelManager::OneTimeShutdown()
 
 void ModelManager::LoadModels()
 {
-	LOG( "ModelManager::LoadModels" );
+	vInfo("ModelManager::LoadModels");
 	const double start = ovr_GetTimeInSeconds();
 
 	BoxOffice = LoadScene( "assets/scenes/BoxOffice.ovrscene", false, true, true );
@@ -94,7 +94,7 @@ void ModelManager::LoadModels()
 		ScanDirectoryForScenes( Cinema.sdcardDir( TheatersDirectory ), true, false, Theaters );
 	}
 
-    LOG( "ModelManager::LoadModels: %i theaters loaded, %3.1f seconds", Theaters.length(), ovr_GetTimeInSeconds() - start );
+    vInfo("ModelManager::LoadModels:" << Theaters.length() << "theaters loaded," << (ovr_GetTimeInSeconds() - start) << "seconds");
 }
 
 void ModelManager::ScanDirectoryForScenes(const VString &directory, bool useDynamicProgram, bool useScreenGeometry, VArray<SceneDef *> &scenes ) const
@@ -127,7 +127,7 @@ SceneDef * ModelManager::LoadScene( const char *sceneFilename, bool useDynamicPr
     if (loadFromApplicationPackage) {
         const VApkFile &apk = VApkFile::CurrentApkFile();
         if (!apk.contains(sceneFilename)) {
-            LOG( "Scene %s not found in application package.  Checking sdcard.", sceneFilename);
+            vInfo("Scene" << sceneFilename << "not found in application package.  Checking sdcard.");
             loadFromApplicationPackage = false;
         }
 	}
@@ -153,7 +153,7 @@ SceneDef * ModelManager::LoadScene( const char *sceneFilename, bool useDynamicPr
 		filename = Cinema.sdcardDir( sceneFilename );
 	}
 
-    LOG( "Adding scene: %s, %s", filename.toCString(), sceneFilename );
+    vInfo("Adding scene:" << filename << "," << sceneFilename);
 
 	SceneDef *def = new SceneDef();
 	def->Filename = sceneFilename;
@@ -219,7 +219,7 @@ SceneDef * ModelManager::LoadScene( const char *sceneFilename, bool useDynamicPr
 
 	if ( def->IconTexture != 0 )
 	{
-        LOG( "Loaded external icon for theater: %s", iconFilename.toCString() );
+        vInfo("Loaded external icon for theater:" << iconFilename);
 	}
 	else
 	{
@@ -230,7 +230,7 @@ SceneDef * ModelManager::LoadScene( const char *sceneFilename, bool useDynamicPr
 		}
 		else
 		{
-			LOG( "No icon in scene.  Loading default." );
+			vInfo("No icon in scene.  Loading default.");
 
 			int	width = 0, height = 0;
 			def->IconTexture = LoadTextureFromApplicationPackage( "assets/noimage.png",

@@ -565,7 +565,7 @@ void SensorFusion::SetFocusDirection(V3Vectf direction)
 
 void SensorFusion::SetFocusFOV(float fov)
 {
-	OVR_ASSERT(fov >= 0.0);
+	vAssert(fov >= 0.0);
 	FocusFOV = fov;
 }
 

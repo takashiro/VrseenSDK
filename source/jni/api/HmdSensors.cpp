@@ -12,7 +12,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "HmdSensors.h"
 
 #include <unistd.h>					// gettid()
-#include "Android/LogUtils.h"
 
 HMDState::HMDState() :
 		m_sensorStarted( 0 ),
@@ -49,7 +48,7 @@ bool HMDState::startSensor( unsigned supportedCaps, unsigned requiredCaps )
 
 	if ( requiredCaps & ovrHmdCap_Position )
 	{
-		LOG( "HMDState::StartSensor: ovrHmdCap_Position not supported." );
+		vInfo("HMDState::StartSensor: ovrHmdCap_Position not supported.");
 		return false;
 	}
 
@@ -66,23 +65,23 @@ bool HMDState::startSensor( unsigned supportedCaps, unsigned requiredCaps )
 		{
 			if ( !m_sFusion.HasMagCalibration() )
 			{
-				LOG( "HMDState::StartSensor: ovrHmdCap_YawCorrection not available." );
+				vInfo("HMDState::StartSensor: ovrHmdCap_YawCorrection not available.");
 				m_sFusion.AttachToSensor( 0 );
 				m_sFusion.Reset();
 				m_sensor.Clear();
 				return false;
 			}
 		}
-		LOG( "HMDState::StartSensor: created sensor." );
+		vInfo("HMDState::StartSensor: created sensor.");
 	}
 	else
 	{
 		if ( requiredCaps & ovrHmdCap_Orientation )
 		{
-			LOG( "HMDState::StartSensor: ovrHmdCap_Orientation not available." );
+			vInfo("HMDState::StartSensor: ovrHmdCap_Orientation not available.");
 			return false;
 		}
-		LOG( "HMDState::StartSensor: wait for sensor." );
+		vInfo("HMDState::StartSensor: wait for sensor.");
 	}
 
 	m_sensorStarted = true;
@@ -101,7 +100,7 @@ void HMDState::stopSensor()
 		m_sensorCaps = 0;
 		m_sensorStarted = false;
 		m_lastSensorState = NervGear::SensorState();
-		LOG( "HMDState::StopSensor: stopped sensor.\n" );
+		vInfo("HMDState::StopSensor: stopped sensor.\n");
 	}
 }
 
@@ -163,12 +162,12 @@ NervGear::SensorState HMDState::predictedSensorState( double absTime )
                 m_lastSensorState.Predicted.Transform.Orientation.GetEulerAngles< NervGear::VAxis_Y, NervGear::VAxis_X, NervGear::VAxis_Z >( &yaw, &pitch, &roll );
 				m_sFusion.SetYaw( yaw );
 
-				LOG( "HMDState::PredictedSensorState: created sensor (tid=%d)", gettid() );
+				vInfo("HMDState::PredictedSensorState: created sensor (tid=" << gettid() << ")");
 			}
 			else
 			{
 				m_sFusion.AttachToSensor( 0 );
-				LOG( "HMDState::PredictedSensorState: wait for sensor (tid=%d)", gettid() );
+				vInfo("HMDState::PredictedSensorState: wait for sensor (tid=" << gettid() << ")");
 			}
 		}
 		m_sensorChangedMutex.unlock();
@@ -207,12 +206,12 @@ bool HMDState::processLatencyTest( unsigned char rgbColorOut[3] )
 			if ( m_latencyTester != NULL )
 			{
 				m_latencyUtil.SetDevice( m_latencyTester );
-				LOG( "HMDState::ProcessLatencyTest: created latency tester (tid=%d)", gettid() );
+				vInfo("HMDState::ProcessLatencyTest: created latency tester (tid=" << gettid() << ")");
 			}
 			else
 			{
 				m_latencyUtil.SetDevice( 0 );
-				LOG( "HMDState::ProcessLatencyTest: wait for latency tester (tid=%d)", gettid() );
+				vInfo("HMDState::ProcessLatencyTest: wait for latency tester (tid=" << gettid() << ")");
 			}
 		}
 		m_latencyTesterChangedMutex.unlock();
@@ -250,11 +249,11 @@ void HMDState::onMessage( const NervGear::Message & msg )
 		m_sensorChangedCount++;
 		if ( msg.Type == NervGear::Message_DeviceAdded )
 		{
-			LOG( "HMDState::OnMessage: added Device_Sensor (tid=%d, cnt=%d)", gettid(), m_sensorChangedCount.load());
+			vInfo("HMDState::OnMessage: added Device_Sensor (tid=" << gettid() << ", cnt=" << m_sensorChangedCount.load() << ")");
 		}
 		else if ( msg.Type == NervGear::Message_DeviceRemoved )
 		{
-			LOG( "HMDState::OnMessage: removed Device_Sensor (tid=%d, cnt=%d)", gettid(), m_sensorChangedCount.load() );
+			vInfo("HMDState::OnMessage: removed Device_Sensor (tid=" << gettid() << ", cnt=" << m_sensorChangedCount.load() << ")");
 		}
 	}
 	else if ( statusMsg.Handle.type() == NervGear::Device_LatencyTester )
@@ -262,11 +261,11 @@ void HMDState::onMessage( const NervGear::Message & msg )
 		m_latencyTesterChangedCount++;
 		if ( msg.Type == NervGear::Message_DeviceAdded )
 		{
-			LOG( "HMDState::OnMessage: added Device_LatencyTester (tid=%d, cnt=%d)", gettid(), m_latencyTesterChangedCount.load() );
+			vInfo("HMDState::OnMessage: added Device_LatencyTester (tid=" << gettid() << ", cnt=" << m_latencyTesterChangedCount.load() << ")");
 		}
 		else if ( msg.Type == NervGear::Message_DeviceRemoved )
 		{
-			LOG( "HMDState::OnMessage: removed Device_LatencyTester (tid=%d, cnt=%d)", gettid(), m_latencyTesterChangedCount.load() );
+			vInfo("HMDState::OnMessage: removed Device_LatencyTester (tid=" << gettid() << ", cnt=" << m_latencyTesterChangedCount.load() << ")");
 		}
 	}
 }

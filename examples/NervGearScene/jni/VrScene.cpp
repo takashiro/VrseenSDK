@@ -23,7 +23,7 @@ void Java_com_vrseen_nervgear_scene_MainActivity_nativeSetAppInterface( JNIEnv *
 	jstring fromPackageName, jstring commandString, jstring uriString )
 {
 	// This is called by the java UI thread.
-	LOG( "nativeSetAppInterface" );
+	vInfo("nativeSetAppInterface");
     (new VrScene(jni, clazz, activity))->onCreate(fromPackageName, commandString, uriString );
 }
 
@@ -41,7 +41,7 @@ VrScene::VrScene(JNIEnv *jni, jclass activityClass, jobject activityObject)
 }
 
 VrScene::~VrScene() {
-	LOG( "~VrScene()");
+	vInfo("~VrScene()");
 }
 
 void VrScene::configureVrMode(VKernel* kernel)
@@ -52,7 +52,7 @@ void VrScene::configureVrMode(VKernel* kernel)
 
 void VrScene::init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI)
 {
-	LOG( "VrScene::OneTimeInit" );
+	vInfo("VrScene::OneTimeInit");
 
     vApp->storagePaths().PushBackSearchPathIfValid(VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", SearchPaths);
     vApp->storagePaths().PushBackSearchPathIfValid(VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "", SearchPaths);
@@ -68,7 +68,7 @@ void VrScene::init(const VString &fromPackage, const VString &launchIntentJSON, 
 
 void VrScene::shutdown()
 {
-	LOG( "VrScene::OneTimeShutdown" );
+	vInfo("VrScene::OneTimeShutdown");
 
 	// Free GL resources
 }
@@ -101,10 +101,10 @@ void VrScene::LoadScene( const VString &path )
 
 	MaterialParms materialParms;
 	materialParms.UseSrgbTextureFormats = ( vApp->vrParms().colorFormat == COLOR_8888_sRGB );
-	LOG( "VrScene::LoadScene loading %s", SceneFile.toCString() );
+	vInfo("VrScene::LoadScene loading" << SceneFile);
     Scene.LoadWorldModel( SceneFile, materialParms );
 	ModelLoaded = true; 
-	LOG( "VrScene::LoadScene model is loaded" );
+	vInfo("VrScene::LoadScene model is loaded");
 	Scene.YawOffset = -M_PI / 2;
 
 #if defined( INTENT_TEST_MODEL )

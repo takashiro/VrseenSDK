@@ -73,7 +73,7 @@ static float DistortionFnScaleRadiusSquared(const VLensDistortion& lens,float rs
         case Distortion_CatmullRom10: {
 
             const int NumSegments = 11;
-            OVR_ASSERT ( NumSegments <= lens.MaxCoefficients );
+            vAssert( NumSegments <= lens.MaxCoefficients );
             float scaledRsq = (float)(NumSegments-1) * rsq / ( lens.maxR * lens.maxR );
             scale = EvalCatmullRomSpline ( lens.kArray, scaledRsq, NumSegments );
         } break;
@@ -81,13 +81,13 @@ static float DistortionFnScaleRadiusSquared(const VLensDistortion& lens,float rs
         case Distortion_CatmullRom20: {
 
             const int NumSegments = 21;
-            OVR_ASSERT ( NumSegments <= lens.MaxCoefficients );
+            vAssert(NumSegments <= lens.MaxCoefficients);
             float scaledRsq = (float)(NumSegments-1) * rsq / ( lens.maxR * lens.maxR );
             scale = EvalCatmullRomSpline ( lens.kArray, scaledRsq, NumSegments );
         } break;
 
         default:
-            OVR_ASSERT ( false );
+            vAssert(false);
             break;
     }
     return scale;

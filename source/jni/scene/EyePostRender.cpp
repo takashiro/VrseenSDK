@@ -14,13 +14,12 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VAlgorithm.h"
 #include "VArray.h"
 #include "api/VGlOperation.h"
-#include "Android/LogUtils.h"
 
 NV_NAMESPACE_BEGIN
 
 void EyePostRender::Init()
 {
-	LOG( "EyePostRender::Init()" );
+	vInfo("EyePostRender::Init()");
 
 	// grid of lines for drawing to eye buffer
     CalibrationLines.createCalibrationGrid( 24, false );
@@ -35,7 +34,7 @@ void EyePostRender::Init()
 
 void EyePostRender::Shutdown()
 {
-	LOG( "EyePostRender::Shutdown()" );
+	vInfo("EyePostRender::Shutdown()");
 	CalibrationLines.destroy();
 	VignetteSquare.destroy();
 	UntexturedMvpProgram.destroy();

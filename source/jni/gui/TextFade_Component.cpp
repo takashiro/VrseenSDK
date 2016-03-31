@@ -50,7 +50,7 @@ OvrTextFade_Component::OvrTextFade_Component( V3Vectf const & iconBaseOffset, V3
 eMsgStatus OvrTextFade_Component::onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 												VRMenuObject * self, VRMenuEvent const & event )
 {
-	OVR_ASSERT( handlesEvent( VRMenuEventFlags_t( event.eventType ) ) );
+	vAssert( handlesEvent( VRMenuEventFlags_t( event.eventType ) ) );
 	switch ( event.eventType )
 	{
 		case VRMENU_EVENT_FRAME_UPDATE:
@@ -60,7 +60,7 @@ eMsgStatus OvrTextFade_Component::onEventImpl( App * app, VrFrame const & vrFram
 		case VRMENU_EVENT_FOCUS_LOST:
 		return focusLost( app, vrFrame, menuMgr, self, event );
 		default:
-		OVR_ASSERT( !"Event flags mismatch!" ); // the constructor is specifying a flag that's not handled
+		vAssert( !"Event flags mismatch!" ); // the constructor is specifying a flag that's not handled
 		return MSG_STATUS_ALIVE;
 	}
 }

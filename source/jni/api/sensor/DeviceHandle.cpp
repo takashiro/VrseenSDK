@@ -147,7 +147,7 @@ bool DeviceHandle::enumerateNext(const DeviceEnumerationArgs& args)
         return false;
 
     managerKeepAlive = next->GetManagerImpl();
-    OVR_ASSERT(managerKeepAlive);
+    vAssert(managerKeepAlive);
 
     do {
         next = pointToVList->getNextByContent(next);

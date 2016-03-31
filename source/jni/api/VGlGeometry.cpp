@@ -3,11 +3,10 @@
 #include <math.h>
 #include <string.h>
 #include <assert.h>
-#include "api/VGlOperation.h"
-#include "../core/VAlgorithm.h"
-#include "../core/Android/LogUtils.h"
-#include "VLensDistortion.h"
 
+#include "VGlOperation.h"
+#include "VAlgorithm.h"
+#include "VLensDistortion.h"
 #include "VGlShader.h"
 
 /*

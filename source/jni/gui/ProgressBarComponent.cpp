@@ -51,8 +51,8 @@ OvrProgressBarComponent::OvrProgressBarComponent( const VRMenuId_t rootId, const
 
 void OvrProgressBarComponent::setProgressFrac( OvrVRMenuMgr & menuMgr, VRMenuObject * self, const float frac )
 {
-	//LOG( "OvrProgressBarComponent::SetProgressFrac to %f", Frac  );
-	OVR_ASSERT( frac >= 0.0f && frac <= 1.0f );
+	//vInfo("OvrProgressBarComponent::SetProgressFrac to" << Frac);
+	vAssert( frac >= 0.0f && frac <= 1.0f );
 
 	if ( m_frac == frac )
 	{
@@ -129,7 +129,7 @@ void OvrProgressBarComponent::getProgressBarParms( VRMenu & menu, const int widt
 		outParms.append( itemParms );
 	}
 
-	// add parms for the object that serves as a transform 
+	// add parms for the object that serves as a transform
 	{
 		VArray< VRMenuComponent* > comps;
 		VArray< VRMenuSurfaceParms > surfParms;
@@ -216,7 +216,7 @@ eMsgStatus OvrProgressBarComponent::onEventImpl( App * app, VrFrame const & vrFr
 		case VRMENU_EVENT_FRAME_UPDATE:
 			return onFrameUpdate( app, vrFrame, menuMgr, self, event );
 		default:
-			OVR_ASSERT( false );
+			vAssert( false );
 			return MSG_STATUS_ALIVE;
 	}
     return MSG_STATUS_CONSUMED;
@@ -234,7 +234,7 @@ const char * progressBarStateNames [ ] =
 
 const char* StateString( const OvrProgressBarComponent::eProgressBarState state )
 {
-	OVR_ASSERT( state >= 0 && state < OvrProgressBarComponent::PROGRESSBAR_STATES_COUNT );
+	vAssert( state >= 0 && state < OvrProgressBarComponent::PROGRESSBAR_STATES_COUNT );
 	return progressBarStateNames[ state ];
 }
 
@@ -248,7 +248,7 @@ void OvrProgressBarComponent::setProgressbarState( VRMenuObject * self, const eP
 	{
 		return;
 	}
-	
+
 	switch ( m_currentProgressBarState )
 	{
 	case PROGRESSBAR_STATE_NONE:
@@ -256,7 +256,7 @@ void OvrProgressBarComponent::setProgressbarState( VRMenuObject * self, const eP
 	case PROGRESSBAR_STATE_FADE_IN:
 		if ( lastState == PROGRESSBAR_STATE_HIDDEN || lastState == PROGRESSBAR_STATE_FADE_OUT )
 		{
-			LOG( "%s to %s", StateString( lastState ), StateString( m_currentProgressBarState ) );
+			vInfo(StateString( lastState ) << "to" << StateString( m_currentProgressBarState ));
 			m_fader.startFadeIn();
 		}
 		break;
@@ -266,7 +266,7 @@ void OvrProgressBarComponent::setProgressbarState( VRMenuObject * self, const eP
 	case PROGRESSBAR_STATE_FADE_OUT:
 		if ( lastState == PROGRESSBAR_STATE_VISIBLE || lastState == PROGRESSBAR_STATE_FADE_IN )
 		{
-			LOG( "%s to %s", StateString( lastState ), StateString( m_currentProgressBarState ) );
+			vInfo(StateString( lastState ) << "to" << StateString( m_currentProgressBarState ));
 			m_fader.startFadeOut();
 		}
 		break;
@@ -274,7 +274,7 @@ void OvrProgressBarComponent::setProgressbarState( VRMenuObject * self, const eP
 		self->setVisible( false );
 		break;
 	default:
-		OVR_ASSERT( false );
+		vAssert( false );
 		break;
 	}
 }
@@ -284,7 +284,7 @@ void OvrProgressBarComponent::setProgressbarState( VRMenuObject * self, const eP
 eMsgStatus OvrProgressBarComponent::onFrameUpdate( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 		VRMenuObject * self, VRMenuEvent const & event )
 {
-	OVR_ASSERT( self != NULL );
+	vAssert( self != NULL );
     if ( m_fader.fadeState() != Fader::FADE_NONE )
 	{
         const float fadeRate = ( m_fader.fadeState() == Fader::FADE_IN ) ? m_fadeInRate : m_fadeOutRate;

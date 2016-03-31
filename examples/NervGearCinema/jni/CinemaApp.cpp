@@ -37,7 +37,7 @@ CinemaApp::CinemaApp(JNIEnv *jni, jclass activityClass, jobject activityObject)
  */
 void CinemaApp::init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI)
 {
-	LOG( "--------------- CinemaApp OneTimeInit ---------------");
+	vInfo("--------------- CinemaApp OneTimeInit ---------------");
 
 	startTime = ovr_GetTimeInSeconds();
 
@@ -62,12 +62,12 @@ void CinemaApp::init(const VString &fromPackage, const VString &launchIntentJSON
 
     setMovieSelection( true );
 
-	LOG( "CinemaApp::OneTimeInit: %3.1f seconds", ovr_GetTimeInSeconds() - startTime );
+    vInfo("CinemaApp::OneTimeInit:" << (ovr_GetTimeInSeconds() - startTime) << "seconds");
 }
 
 void CinemaApp::shutdown()
 {
-	LOG( "--------------- CinemaApp OneTimeShutdown ---------------");
+	vInfo("--------------- CinemaApp OneTimeShutdown ---------------");
 
 	Native::OneTimeShutdown();
 	shaderMgr.OneTimeShutdown();
@@ -135,7 +135,7 @@ void CinemaApp::setPlaylist( const VArray<const MovieDef *> &playList, const int
 
 void CinemaApp::setMovie( const MovieDef *movie )
 {
-    LOG( "SetMovie( %s )", movie->Filename.toCString() );
+    vInfo("SetMovie(" << movie->Filename << ")");
 	m_currentMovie = movie;
 	m_movieFinishedPlaying = false;
 }
@@ -203,7 +203,7 @@ void CinemaApp::startMoviePlayback()
 
 void CinemaApp::resumeMovieFromSavedLocation()
 {
-	LOG( "ResumeMovie");
+	vInfo("ResumeMovie");
 	inLobby = false;
 	m_shouldResumeMovie = true;
 	m_viewMgr.openView( m_moviePlayer );
@@ -211,7 +211,7 @@ void CinemaApp::resumeMovieFromSavedLocation()
 
 void CinemaApp::playMovieFromBeginning()
 {
-	LOG( "PlayMovieFromBeginning");
+	vInfo("PlayMovieFromBeginning");
 	inLobby = false;
 	m_shouldResumeMovie = false;
 	m_viewMgr.openView( m_moviePlayer );
@@ -219,10 +219,10 @@ void CinemaApp::playMovieFromBeginning()
 
 void CinemaApp::resumeOrRestartMovie()
 {
-	LOG( "StartMovie");
+	vInfo("StartMovie");
     if ( Native::CheckForMovieResume( vApp, m_currentMovie->Filename.toCString() ) )
 	{
-		LOG( "Open ResumeMovieMenu");
+		vInfo("Open ResumeMovieMenu");
 		m_viewMgr.openView( m_resumeMovieMenu );
 	}
 	else
@@ -289,7 +289,7 @@ void CinemaApp::configureVrMode(VKernel* kernel)
 {
 	// We need very little CPU for movie playing, but a fair amount of GPU.
 	// The CPU clock should ramp up above the minimum when necessary.
-	LOG( "ConfigureClocks: Cinema only needs minimal clocks" );
+	vInfo("ConfigureClocks: Cinema only needs minimal clocks");
 	// Always use 2x MSAA for now
     kernel->msaa= 2;
 }

@@ -11,9 +11,9 @@ const V4Vectf ResumeMovieComponent::NormalColor( 82.0f / 255.0f, 101.0f / 255.0f
 //==============================
 //  ResumeMovieComponent::
 ResumeMovieComponent::ResumeMovieComponent( ResumeMovieView * view, int itemNum ) :
-    VRMenuComponent( VRMenuEventFlags_t( VRMENU_EVENT_TOUCH_DOWN ) | 
-            VRMENU_EVENT_TOUCH_UP | 
-            VRMENU_EVENT_FOCUS_GAINED | 
+    VRMenuComponent( VRMenuEventFlags_t( VRMENU_EVENT_TOUCH_DOWN ) |
+            VRMENU_EVENT_TOUCH_UP |
+            VRMENU_EVENT_FOCUS_GAINED |
             VRMENU_EVENT_FOCUS_LOST |
             VRMENU_EVENT_FRAME_UPDATE ),
 
@@ -66,7 +66,7 @@ eMsgStatus ResumeMovieComponent::onEventImpl( App * app, VrFrame const & vrFrame
         	}
             return MSG_STATUS_ALIVE;
         default:
-            OVR_ASSERT( !"Event flags mismatch!" );
+            vAssert( !"Event flags mismatch!" );
             return MSG_STATUS_ALIVE;
     }
 }
@@ -86,7 +86,7 @@ eMsgStatus ResumeMovieComponent::Frame( App * app, VrFrame const & vrFrame, OvrV
 eMsgStatus ResumeMovieComponent::FocusGained( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
-	//LOG( "FocusGained" );
+	//vInfo("FocusGained");
 	HasFocus = true;
     Sound.playSound( app, "gaze_on", 0.1 );
 
@@ -105,7 +105,7 @@ eMsgStatus ResumeMovieComponent::FocusGained( App * app, VrFrame const & vrFrame
 eMsgStatus ResumeMovieComponent::FocusLost( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
-	//LOG( "FocusLost" );
+	//vInfo("FocusLost");
 
 	HasFocus = false;
     Sound.playSound( app, "gaze_off", 0.1 );

@@ -131,7 +131,7 @@ float LensConfig::DistortionFnScaleRadiusSquared (float rsq) const
         // evenly spaced in R^2 from 0.0 to MaxR^2
         // K[0] controls the slope at radius=0.0, rather than the actual value.
         const int NumSegments = 11;
-        OVR_ASSERT ( NumSegments <= MaxCoefficients );
+        vAssert ( NumSegments <= MaxCoefficients );
         float scaledRsq = (float)(NumSegments-1) * rsq / ( MaxR * MaxR );
         scale = EvalCatmullRomSpline ( K, scaledRsq, NumSegments );
         } break;
@@ -141,13 +141,13 @@ float LensConfig::DistortionFnScaleRadiusSquared (float rsq) const
 		// evenly spaced in R^2 from 0.0 to MaxR^2
 		// K[0] controls the slope at radius=0.0, rather than the actual value.
 		const int NumSegments = 21;
-		OVR_ASSERT ( NumSegments <= MaxCoefficients );
+		vAssert ( NumSegments <= MaxCoefficients );
 		float scaledRsq = (float)(NumSegments-1) * rsq / ( MaxR * MaxR );
 		scale = EvalCatmullRomSpline ( K, scaledRsq, NumSegments );
         } break;
 
     default:
-        OVR_ASSERT ( false );
+        vAssert ( false );
         break;
     }
     return scale;
@@ -167,7 +167,7 @@ Vector3f LensConfig::DistortionFnScaleRadiusSquaredChroma (float rsq) const
 // DistortionFnInverse computes the inverse of the distortion function on an argument.
 float LensConfig::DistortionFnInverse(float r) const
 {
-    OVR_ASSERT((r <= 20.0f));
+    vAssert((r <= 20.0f));
 
     float s, d;
     float delta = r * 0.25f;
@@ -213,7 +213,7 @@ float LensConfig::DistortionFnInverseApprox(float r) const
     {
     case Distortion_Poly4:
         // Deprecated
-        OVR_ASSERT ( false );
+        vAssert ( false );
         break;
     case Distortion_RecipPoly4:
         scale = 1.0f / ( InvK[0] + rsq * ( InvK[1] + rsq * ( InvK[2] + rsq * InvK[3] ) ) );
@@ -223,7 +223,7 @@ float LensConfig::DistortionFnInverseApprox(float r) const
         // evenly spaced in R^2 from 0.0 to MaxR^2
         // K[0] controls the slope at radius=0.0, rather than the actual value.
         const int NumSegments = 11;
-        OVR_ASSERT ( NumSegments <= MaxCoefficients );
+        vAssert ( NumSegments <= MaxCoefficients );
         float scaledRsq = (float)(NumSegments-1) * rsq / ( MaxInvR * MaxInvR );
         scale = EvalCatmullRomSpline ( InvK, scaledRsq, NumSegments );
         } break;
@@ -233,14 +233,14 @@ float LensConfig::DistortionFnInverseApprox(float r) const
             // evenly spaced in R^2 from 0.0 to MaxR^2
             // K[0] controls the slope at radius=0.0, rather than the actual value.
             const int NumSegments = 21;
-            OVR_ASSERT ( NumSegments <= MaxCoefficients );
+            vAssert ( NumSegments <= MaxCoefficients );
             float scaledRsq = (float)(NumSegments-1) * rsq / ( MaxInvR * MaxInvR );
             scale = EvalCatmullRomSpline ( InvK, scaledRsq, NumSegments );
             break;
         } break;
 
     default:
-        OVR_ASSERT ( false );
+        vAssert ( false );
         break;
     }
     return r * scale;
@@ -255,7 +255,7 @@ void LensConfig::SetUpInverseApprox()
     default:
     case Distortion_Poly4:
         // Deprecated
-        OVR_ASSERT ( false );
+        vAssert ( false );
         break;
     case Distortion_RecipPoly4:{
 
@@ -280,10 +280,10 @@ void LensConfig::SetUpInverseApprox()
 
     #if 0
         // Should be a nearly exact match on the chosen points.
-        OVR_ASSERT ( fabs ( DistortionFnInverse ( sampleR[0] ) - DistortionFnInverseApprox ( sampleR[0] ) ) / maxR < 0.0001f );
-        OVR_ASSERT ( fabs ( DistortionFnInverse ( sampleR[1] ) - DistortionFnInverseApprox ( sampleR[1] ) ) / maxR < 0.0001f );
-        OVR_ASSERT ( fabs ( DistortionFnInverse ( sampleR[2] ) - DistortionFnInverseApprox ( sampleR[2] ) ) / maxR < 0.0001f );
-        OVR_ASSERT ( fabs ( DistortionFnInverse ( sampleR[3] ) - DistortionFnInverseApprox ( sampleR[3] ) ) / maxR < 0.0001f );
+        vAssert ( fabs ( DistortionFnInverse ( sampleR[0] ) - DistortionFnInverseApprox ( sampleR[0] ) ) / maxR < 0.0001f );
+        vAssert ( fabs ( DistortionFnInverse ( sampleR[1] ) - DistortionFnInverseApprox ( sampleR[1] ) ) / maxR < 0.0001f );
+        vAssert ( fabs ( DistortionFnInverse ( sampleR[2] ) - DistortionFnInverseApprox ( sampleR[2] ) ) / maxR < 0.0001f );
+        vAssert ( fabs ( DistortionFnInverse ( sampleR[3] ) - DistortionFnInverseApprox ( sampleR[3] ) ) / maxR < 0.0001f );
         // Should be a decent match on the rest of the range.
         const int maxCheck = 20;
         for ( int i = 0; i < maxCheck; i++ )
@@ -292,7 +292,7 @@ void LensConfig::SetUpInverseApprox()
             float realInv = DistortionFnInverse       ( checkR );
             float testInv = DistortionFnInverseApprox ( checkR );
             float error = fabsf ( realInv - testInv ) / maxR;
-            OVR_ASSERT ( error < 0.1f );
+            vAssert ( error < 0.1f );
         }
     #endif
 
@@ -300,7 +300,7 @@ void LensConfig::SetUpInverseApprox()
     case Distortion_CatmullRom10:{
 
         const int NumSegments = 11;
-        OVR_ASSERT ( NumSegments <= MaxCoefficients );
+        vAssert ( NumSegments <= MaxCoefficients );
         for ( int i = 1; i < NumSegments; i++ )
         {
             float scaledRsq = (float)i;
@@ -319,7 +319,7 @@ void LensConfig::SetUpInverseApprox()
             float realInv = DistortionFnInverse       ( checkR );
             float testInv = DistortionFnInverseApprox ( checkR );
             float error = fabsf ( realInv - testInv ) / MaxR;
-            OVR_ASSERT ( error < 0.01f );
+            vAssert ( error < 0.01f );
         }
 #endif
 
@@ -328,7 +328,7 @@ void LensConfig::SetUpInverseApprox()
     case Distortion_CatmullRom20:{
 
 		const int NumSegments = 21;
-		OVR_ASSERT ( NumSegments <= MaxCoefficients );
+		vAssert ( NumSegments <= MaxCoefficients );
 		for ( int i = 1; i < NumSegments; i++ )
 		{
 			float scaledRsq = (float)i;
@@ -425,7 +425,7 @@ HmdRenderInfo GenerateHmdRenderInfoFromHmdInfo ( HMDInfo const &hmdInfo,
     renderInfo.ScreenGapSizeInMeters                = hmdInfo.ScreenGapSizeInMeters;
     renderInfo.LensSeparationInMeters               = hmdInfo.LensSeparationInMeters;
 
-    OVR_ASSERT ( sizeof(renderInfo.Shutter) == sizeof(hmdInfo.Shutter) );   // Try to keep the files in sync!
+    vAssert ( sizeof(renderInfo.Shutter) == sizeof(hmdInfo.Shutter) );   // Try to keep the files in sync!
     renderInfo.Shutter.Type                         = hmdInfo.Shutter.Type;
     renderInfo.Shutter.VsyncToNextVsync             = hmdInfo.Shutter.VsyncToNextVsync;
     renderInfo.Shutter.VsyncToFirstScanline         = hmdInfo.Shutter.VsyncToFirstScanline;
@@ -569,7 +569,7 @@ HmdRenderInfo GenerateHmdRenderInfoFromHmdInfo ( HMDInfo const &hmdInfo,
         renderInfo.EyeLeft.ReliefInMeters                 = 0.014f;
         renderInfo.EyeRight.ReliefInMeters                = 0.014f;
         break;
-    default: OVR_ASSERT ( false ); break;
+    default: vAssert ( false ); break;
     }
 
     if ( hmd_profile != NULL )
@@ -629,7 +629,7 @@ HmdRenderInfo GenerateHmdRenderInfoFromHmdInfo ( HMDInfo const &hmdInfo,
                 if ( ( fabsf ( firstReliefInMeters - reliefInMeters ) > 0.005f ) || ( reliefInMeters < 0.002f ) || ( reliefInMeters > 0.05f ) )
                 {
                     // Something went wrong, and it's not converging, or it's not a sensible result.
-                    OVR_ASSERT ( !"Eye-relief not converging - going with first guess" );
+                    vAssert ( !"Eye-relief not converging - going with first guess" );
                     reliefInMeters = firstReliefInMeters;
                     offsetToRightInMeters = firstOffsetToRightInMeters;
                 }
@@ -1503,7 +1503,7 @@ LensConfig GenerateLensConfigFromEyeRelief ( float eyeReliefInMeters, HmdRenderI
         }
     }
 
-    OVR_ASSERT ( numDistortions < (int)(sizeof(distortions)/sizeof(distortions[0])) );
+    vAssert ( numDistortions < (int)(sizeof(distortions)/sizeof(distortions[0])) );
 
 
     DistortionDescriptor *pUpper = NULL;
@@ -1511,7 +1511,7 @@ LensConfig GenerateLensConfigFromEyeRelief ( float eyeReliefInMeters, HmdRenderI
     float lerpVal = 0.0f;
     for ( int i = 0; i < numDistortions-1; i++ )
     {
-        OVR_ASSERT ( distortions[i].EyeRelief < distortions[i+1].EyeRelief );
+        vAssert ( distortions[i].EyeRelief < distortions[i+1].EyeRelief );
         if ( ( distortions[i].EyeRelief <= eyeReliefInMeters ) && ( distortions[i+1].EyeRelief > eyeReliefInMeters ) )
         {
             pLower = &(distortions[i]);
@@ -1531,7 +1531,7 @@ LensConfig GenerateLensConfigFromEyeRelief ( float eyeReliefInMeters, HmdRenderI
         }
         else
         {
-            OVR_ASSERT ( distortions[numDistortions-1].EyeRelief <= eyeReliefInMeters );
+            vAssert ( distortions[numDistortions-1].EyeRelief <= eyeReliefInMeters );
             pLower = &(distortions[numDistortions-2]);
             pUpper = &(distortions[numDistortions-1]);
         }
@@ -1545,7 +1545,7 @@ LensConfig GenerateLensConfigFromEyeRelief ( float eyeReliefInMeters, HmdRenderI
         }
         else
         {
-            OVR_ASSERT ( distortions[numDistortions-1].EyeRelief <= eyeReliefInMeters );
+            vAssert ( distortions[numDistortions-1].EyeRelief <= eyeReliefInMeters );
             pLower = &(distortions[numDistortions-1]);
             pUpper = &(distortions[numDistortions-1]);
         }
@@ -1580,8 +1580,8 @@ LensConfig GenerateLensConfigFromEyeRelief ( float eyeReliefInMeters, HmdRenderI
     result.MetersPerTanAngleAtCenter =  pLower->Config.MetersPerTanAngleAtCenter * invLerpVal +
                                         pUpper->Config.MetersPerTanAngleAtCenter * lerpVal;
     bool bSuccess = FitCubicPolynomial ( result.K, fitX, fitY );
-    OVR_ASSERT ( bSuccess );
-    OVR_UNUSED ( bSuccess );
+    vAssert ( bSuccess );
+    NV_UNUSED ( bSuccess );
 
     // Set up the fast inverse.
     //float maxRDist = result.DistortionFn ( maxValidRadius );
@@ -1749,7 +1749,7 @@ FovPort CalculateFovFromHmdInfo ( StereoEye eyeType,
 
 FovPort GetPhysicalScreenFov ( StereoEye eyeType, DistortionRenderDesc const &distortion )
 {
-    OVR_UNUSED1 ( eyeType );
+    NV_UNUSED ( eyeType );
 
     FovPort resultFovPort;
 
@@ -1893,7 +1893,7 @@ ScaleAndOffset2D CreateNDCScaleAndOffsetFromProjection ( bool rightHanded, Matri
     {
         offsetScale = -1.0f;
     }
-    OVR_ASSERT ( offsetScale == projection.M[3][2] );
+    vAssert ( offsetScale == projection.M[3][2] );
 
     // Given a projection matrix, create the scale&offset for the shader code.
     // This is very simple, since this is already what projection matrices almost do.
@@ -1942,7 +1942,7 @@ Matrix4f CreateOrthoSubProjection ( bool rightHanded, StereoEye eyeType,
                                     Matrix4f const &projection,
                                     float zNear /*= 0.0f*/, float zFar /*= 0.0f*/ )
 {
-    OVR_UNUSED1 ( rightHanded );
+    NV_UNUSED ( rightHanded );
 
     float orthoHorizontalOffset = interpupillaryDistance * 0.5f / distanceFromCamera;
     switch ( eyeType )
@@ -1955,7 +1955,7 @@ Matrix4f CreateOrthoSubProjection ( bool rightHanded, StereoEye eyeType,
     case StereoEye_Right:
         orthoHorizontalOffset = -orthoHorizontalOffset;
         break;
-    default: OVR_ASSERT ( false ); break;
+    default: vAssert ( false ); break;
     }
 
     // Current projection maps real-world vector (x,y,1) to the RT.

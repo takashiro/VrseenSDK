@@ -83,7 +83,7 @@ MoviePlayerView::~MoviePlayerView()
 
 void MoviePlayerView::OneTimeInit( const VString & launchIntent )
 {
-	LOG( "MoviePlayerView::OneTimeInit" );
+	vInfo("MoviePlayerView::OneTimeInit");
 
 	const double start = ovr_GetTimeInSeconds();
 
@@ -91,12 +91,12 @@ void MoviePlayerView::OneTimeInit( const VString & launchIntent )
 
 	CreateMenu( vApp, vApp->vrMenuMgr(), vApp->defaultFont() );
 
-	LOG( "MoviePlayerView::OneTimeInit: %3.1f seconds", ovr_GetTimeInSeconds() - start );
+	vInfo("MoviePlayerView::OneTimeInit:" << (ovr_GetTimeInSeconds() - start) << "seconds");
 }
 
 void MoviePlayerView::OneTimeShutdown()
 {
-	LOG( "MoviePlayerView::OneTimeShutdown" );
+	vInfo("MoviePlayerView::OneTimeShutdown");
 }
 
 float PixelScale( const float x )
@@ -332,7 +332,7 @@ void MoviePlayerView::SetSeekIcon( const int seekSpeed )
 
 void MoviePlayerView::OnOpen()
 {
-	LOG( "OnOpen" );
+	vInfo("OnOpen");
 	CurViewState = VIEWSTATE_OPEN;
 
     Cinema.sceneMgr.ClearMovie();
@@ -362,7 +362,7 @@ void MoviePlayerView::OnOpen()
 
 void MoviePlayerView::OnClose()
 {
-	LOG( "OnClose" );
+	vInfo("OnClose");
 	CurViewState = VIEWSTATE_CLOSED;
 	HideUI();
 	vApp->gazeCursor().ShowCursor();
@@ -412,16 +412,16 @@ void MoviePlayerView::MovieLoaded( const int width, const int height, const int 
 
 void MoviePlayerView::BackPressed()
 {
-	LOG( "BackPressed" );
+	vInfo("BackPressed");
 	HideUI();
     if ( Cinema.allowTheaterSelection() )
 	{
-		LOG( "Opening TheaterSelection" );
+		vInfo("Opening TheaterSelection");
         Cinema.theaterSelection();
 	}
 	else
 	{
-		LOG( "Opening MovieSelection" );
+		vInfo("Opening MovieSelection");
         Cinema.setMovieSelection( true );
 	}
 }
@@ -435,12 +435,12 @@ bool MoviePlayerView::OnKeyEvent( const int keyCode, const KeyState::eKeyEventTy
 			switch ( eventType )
 			{
 				case KeyState::KEY_EVENT_SHORT_PRESS:
-				LOG( "KEY_EVENT_SHORT_PRESS" );
+				vInfo("KEY_EVENT_SHORT_PRESS");
 				BackPressed();
 				return true;
 				break;
 				default:
-				//LOG( "unexpected back key state %i", eventType );
+				//vInfo("unexpected back key state" << eventType);
 				break;
 			}
 		}
@@ -473,7 +473,7 @@ static bool InsideUnit( const V2Vectf v )
 
 void MoviePlayerView::ShowUI()
 {
-	LOG( "ShowUI" );
+	vInfo("ShowUI");
     Cinema.sceneMgr.ForceMono = true;
 	vApp->gazeCursor().ShowCursor();
 
@@ -488,7 +488,7 @@ void MoviePlayerView::ShowUI()
 
 void MoviePlayerView::HideUI()
 {
-	LOG( "HideUI" );
+	vInfo("HideUI");
 	PlaybackControlsMenu->Close();
 
 	vApp->gazeCursor().HideCursor();
@@ -730,7 +730,7 @@ void MoviePlayerView::CheckInput( const VrFrame & vrFrame )
 		}
 		else
 		{
-			LOG( "User pressed button 2" );
+			vInfo("User pressed button 2");
 			vApp->playSound( "touch_up" );
 			HideUI();
 			PlayMovie();
@@ -838,7 +838,7 @@ void MoviePlayerView::UpdateUI( const VrFrame & vrFrame )
 		double timeSinceLastGaze = ovr_GetTimeInSeconds() - GazeTimer.GetLastGazeTime();
 		if ( !ScrubBar.IsScrubbing() && ( SeekSpeed == 0 ) && ( timeSinceLastGaze > GazeTimeTimeout ) )
 		{
-			LOG( "Gaze timeout" );
+			vInfo("Gaze timeout");
 			HideUI();
 			PlayMovie();
 		}
@@ -855,7 +855,7 @@ void MoviePlayerView::UpdateUI( const VrFrame & vrFrame )
 		{
 			if ( !GazeTimer.IsFocused() && BackgroundClicked )
 			{
-				LOG( "Clicked outside playback controls" );
+				vInfo("Clicked outside playback controls");
 				vApp->playSound( "touch_up" );
 				HideUI();
 				PlayMovie();
@@ -905,12 +905,12 @@ VR4Matrixf MoviePlayerView::Frame( const VrFrame & vrFrame )
 
 	if ( Native::HadPlaybackError( vApp ) )
 	{
-		LOG( "Playback failed" );
+		vInfo("Playback failed");
         Cinema.unableToPlayMovie();
 	}
 	else if ( Native::IsPlaybackFinished( vApp ) )
 	{
-		LOG( "Playback finished" );
+		vInfo("Playback finished");
         Cinema.movieFinished();
 	}
 
@@ -978,7 +978,7 @@ eMsgStatus ControlsGazeTimer::onEventImpl( App * app, VrFrame const & vrFrame, O
         	HasFocus = false;
     		return MSG_STATUS_ALIVE;
         default:
-            OVR_ASSERT( !"Event flags mismatch!" );
+            vAssert( !"Event flags mismatch!" );
             return MSG_STATUS_ALIVE;
     }
 }
@@ -1087,7 +1087,7 @@ eMsgStatus ScrubBarComponent::onEventImpl( App * app, VrFrame const & vrFrame, O
     		return OnFrame( app, vrFrame, menuMgr, self, event );
 
         default:
-            OVR_ASSERT( !"Event flags mismatch!" );
+            vAssert( !"Event flags mismatch!" );
             return MSG_STATUS_ALIVE;
     }
 }

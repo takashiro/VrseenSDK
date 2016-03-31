@@ -8,7 +8,7 @@ Authors     :   Jim Dos�
 Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 This source code is licensed under the BSD-style license found in the
-LICENSE file in the Cinema/ directory. An additional grant 
+LICENSE file in the Cinema/ directory. An additional grant
 of patent rights can be found in the PATENTS file in the same directory.
 
 *************************************************************************************/
@@ -57,19 +57,19 @@ TheaterSelectionView::~TheaterSelectionView()
 
 void TheaterSelectionView::OneTimeInit( const VString &launchIntent )
 {
-	LOG( "TheaterSelectionView::OneTimeInit" );
+	vInfo("TheaterSelectionView::OneTimeInit");
 
 	const double start = ovr_GetTimeInSeconds();
 
 	// Start with "Home theater" selected
 	SelectedTheater = 0;
 
-	LOG( "TheaterSelectionView::OneTimeInit: %3.1f seconds", ovr_GetTimeInSeconds() - start );
+	vInfo("TheaterSelectionView::OneTimeInit:" << (ovr_GetTimeInSeconds() - start) << "seconds");
 }
 
 void TheaterSelectionView::OneTimeShutdown()
 {
-	LOG( "TheaterSelectionView::OneTimeShutdown" );
+	vInfo("TheaterSelectionView::OneTimeShutdown");
 }
 
 void TheaterSelectionView::SelectTheater(int theater)
@@ -82,7 +82,7 @@ void TheaterSelectionView::SelectTheater(int theater)
 
 void TheaterSelectionView::OnOpen()
 {
-	LOG( "OnOpen" );
+	vInfo("OnOpen");
 
 	if ( Menu == NULL )
 	{
@@ -107,7 +107,7 @@ void TheaterSelectionView::OnOpen()
 
 void TheaterSelectionView::OnClose()
 {
-	LOG( "OnClose" );
+	vInfo("OnClose");
 
     vApp->guiSys().closeMenu( vApp, Menu, false );
 
@@ -137,7 +137,7 @@ void TheaterSelectionView::SetPosition( OvrVRMenuMgr & menuMgr, const V3Vectf &p
 
     menuHandle_t titleRootHandle = Menu->handleForId( menuMgr, ID_TITLE_ROOT );
     VRMenuObject * titleRoot = menuMgr.toObject( titleRootHandle );
-    OVR_ASSERT( titleRoot != NULL );
+    vAssert( titleRoot != NULL );
 
     pose = titleRoot->localPose();
     pose.Position = pos;
@@ -200,7 +200,7 @@ void TheaterSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, Bitmap
     // the centerroot item will get touch relative and touch absolute events and use them to rotate the centerRoot
     menuHandle_t centerRootHandle = Menu->handleForId( menuMgr, ID_CENTER_ROOT );
     CenterRoot = menuMgr.toObject( centerRootHandle );
-    OVR_ASSERT( CenterRoot != NULL );
+    vAssert( CenterRoot != NULL );
 
     TheaterBrowser = new CarouselBrowserComponent( Theaters, panelPoses );
     CenterRoot->addComponent( TheaterBrowser );
@@ -375,7 +375,7 @@ VR4Matrixf TheaterSelectionView::Frame( const VrFrame & vrFrame )
 	{
         if ( ( selectedItem >= 0 ) && ( selectedItem < Theaters.length() ) )
 		{
-            LOG( "Select: %d, %d, %d, %d", selectedItem, SelectedTheater, Theaters.length(), Cinema.modelMgr.GetTheaterCount() );
+            vInfo("Select:" << selectedItem << "," << SelectedTheater << "," << Theaters.length() << "," << Cinema.modelMgr.GetTheaterCount());
 			SelectedTheater = selectedItem;
 			SelectTheater( SelectedTheater );
 		}

@@ -81,7 +81,7 @@ eMsgStatus SwipeHintComponent::onEventImpl( App * app, VrFrame const & vrFrame, 
         case VRMENU_EVENT_FRAME_UPDATE :
         	return Frame( app, vrFrame, menuMgr, self, event );
         default:
-            OVR_ASSERT( !"Event flags mismatch!" );
+            vAssert( !"Event flags mismatch!" );
             return MSG_STATUS_ALIVE;
     }
 }

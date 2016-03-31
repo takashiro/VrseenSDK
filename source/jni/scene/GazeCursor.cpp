@@ -1,22 +1,8 @@
-/************************************************************************************
-
-Filename    :   GazeCursor.cpp
-Content     :   Global gaze cursor.
-Created     :   June 6, 2014
-Authors     :   Jonathan E. Wright
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-
-*************************************************************************************/
-
 #include "vglobal.h"
 
 #include "GazeCursorLocal.h"
 
-#include "Types.h"
 #include "VArray.h"
-#include "android/LogUtils.h"
 #include "api/VKernel.h"
 #include "GlTexture.h"
 #include "VApkFile.h"
@@ -98,12 +84,12 @@ OvrGazeCursorLocal::~OvrGazeCursorLocal()
 // OvrGazeCursorLocal::
 void OvrGazeCursorLocal::Init()
 {
-	LOG( "OvrGazeCursorLocal::Init" );
-	DROID_ASSERT( Initialized == false, "GazeCursor" );
+	vInfo("OvrGazeCursorLocal::Init");
+    vAssert(Initialized == false);
 
 	if ( Initialized )
 	{
-		LOG( "OvrGazeCursorLocal::Init - already initialized!" );
+		vInfo("OvrGazeCursorLocal::Init - already initialized!");
 		return;
     }
     CursorGeometry.createPlaneQuadGrid( 1, 1 );
@@ -145,8 +131,8 @@ void OvrGazeCursorLocal::Init()
 // OvrGazeCursorLocal::
 void OvrGazeCursorLocal::Shutdown()
 {
-	LOG( "OvrGazeCursorLocal::Shutdown" );
-	DROID_ASSERT( Initialized == true, "GazeCursor" );
+	vInfo("OvrGazeCursorLocal::Shutdown");
+    vAssert(Initialized == true);
 
 	for ( int i = 0; i < CURSOR_STATE_MAX; ++i )
 	{
@@ -187,10 +173,10 @@ gazeCursorUserId_t	OvrGazeCursorLocal::GenerateUserId()
 void OvrGazeCursorLocal::UpdateForUser( gazeCursorUserId_t const userId, float const d,
 										eGazeCursorStateType const state )
 {
-	//LOG( "OvrGazeCursorLocal::UpdateForUser %i", userId.Get() );
+	//vInfo("OvrGazeCursorLocal::UpdateForUser " << userId.Get());
 	if ( d < Info.Distance )
 	{
-		//LOG( "OvrGazeCursorLocal::UpdateForUser %i - new closest distace %.2f", userId.Get(), d );
+		//vInfo("OvrGazeCursorLocal::UpdateForUser " << userId.Get() << " - new closest distace " << d);
 		Info.Distance = d;
 		Info.UserId = userId;
 		Info.State = state;
@@ -224,7 +210,7 @@ void OvrGazeCursorLocal::BeginFrame()
 // OvrGazeCursorLocal::Frame
 void OvrGazeCursorLocal::Frame( VR4Matrixf const & viewMatrix, float const deltaTime )
 {
-	//LOG( "OvrGazeCursorLocal::Frame" );
+	//vInfo("OvrGazeCursorLocal::Frame");
 	HiddenFrames -= 1;
 
 	if ( 0 ) //IsActive )
@@ -357,7 +343,7 @@ void OvrGazeCursorLocal::Render( int const eye, VR4Matrixf const & mvp ) const
     VGlOperation glOperation;
     glOperation.logErrorsEnum( "OvrGazeCursorLocal::Render - pre" );
 
-	//LOG( "OvrGazeCursorLocal::Render" );
+	//vInfo("OvrGazeCursorLocal::Render");
 
 	if ( HiddenFrames >= 0 )
 	{
@@ -376,7 +362,7 @@ void OvrGazeCursorLocal::Render( int const eye, VR4Matrixf const & mvp ) const
 
 	if ( CursorScale <= 0.0f )
 	{
-		LOG( "OvrGazeCursorLocal::Render - scale 0" );
+		vInfo("OvrGazeCursorLocal::Render - scale 0");
 		return;
 	}
 
@@ -521,7 +507,7 @@ void OvrGazeCursorLocal::ResetCursor()
 void OvrGazeCursorLocal::StartTimer( float const durationSeconds, float const timeBeforeShowingTimer )
 {
 	double curTime = ovr_GetTimeInSeconds();
-	LOG( "(%.4f) StartTimer = %.2f", curTime, durationSeconds );
+	vInfo("(" << curTime << ") StartTimer = " << durationSeconds);
 	TimerShowTime =  curTime + (double)timeBeforeShowingTimer;
 	TimerEndTime = curTime + (double)durationSeconds;
 }
@@ -531,7 +517,7 @@ void OvrGazeCursorLocal::StartTimer( float const durationSeconds, float const ti
 void OvrGazeCursorLocal::CancelTimer()
 {
 	double curTime = ovr_GetTimeInSeconds();
-	LOG( "(%.4f) Cancel Timer", curTime );
+	vInfo("(" << curTime << ") Cancel Timer");
 	TimerShowTime = -1.0;
 	TimerEndTime = -1.0;
 }

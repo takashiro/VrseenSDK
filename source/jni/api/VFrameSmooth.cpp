@@ -203,9 +203,11 @@ struct VFrameSmooth::Private
         m_shutdownRequest.setState( false );
         m_eyeBufferCount.setState( 0 );
         memset( m_warpPrograms, 0, sizeof( m_warpPrograms ) );
+
         pthread_mutex_init( &m_smoothMutex, NULL /* default attributes */ );
         pthread_cond_init( &m_smoothIslocked, NULL /* default attributes */ );
-        LOG( "-------------------- VFrameSmooth() --------------------" );
+        vInfo("-------------------- VFrameSmooth() --------------------");
+
         m_sStartupTid = gettid();
         m_lastsmoothTimeInSeconds.setState( ovr_GetTimeInSeconds() );
         m_smoothThread = 0;
@@ -215,52 +217,56 @@ struct VFrameSmooth::Private
         m_eglDisplay = eglGetCurrentDisplay();
         if ( m_eglDisplay == EGL_NO_DISPLAY )
         {
-            FAIL( "EGL_NO_DISPLAY" );
+            vFatal("EGL_NO_DISPLAY");
         }
         m_eglMainThreadSurface = eglGetCurrentSurface( EGL_DRAW );
         if ( m_eglMainThreadSurface == EGL_NO_SURFACE )
         {
-            FAIL( "EGL_NO_SURFACE" );
+            vFatal("EGL_NO_SURFACE");
         }
         m_eglShareContext = eglGetCurrentContext();
         if ( m_eglShareContext == EGL_NO_CONTEXT )
         {
-            FAIL( "EGL_NO_CONTEXT" );
+            vFatal("EGL_NO_CONTEXT");
         }
         EGLint configID;
         if ( !eglQueryContext( m_eglDisplay, m_eglShareContext, EGL_CONFIG_ID, &configID ) )
         {
-            FAIL( "eglQueryContext EGL_CONFIG_ID failed" );
+            vFatal("eglQueryContext EGL_CONFIG_ID failed");
         }
         m_eglConfig = glOperation.eglConfigForConfigID( m_eglDisplay, configID );
         if ( m_eglConfig == NULL )
         {
-            FAIL( "EglConfigForConfigID failed" );
+            vFatal("EglConfigForConfigID failed");
         }
         if ( !eglQueryContext( m_eglDisplay, m_eglShareContext, EGL_CONTEXT_CLIENT_VERSION, (EGLint *)&m_eglClientVersion ) )
         {
-            FAIL( "eglQueryContext EGL_CONTEXT_CLIENT_VERSION failed" );
+            vFatal("eglQueryContext EGL_CONTEXT_CLIENT_VERSION failed");
         }
-        LOG( "Current EGL_CONTEXT_CLIENT_VERSION:%i", m_eglClientVersion );       
+
+        vInfo("Current EGL_CONTEXT_CLIENT_VERSION:" << m_eglClientVersion);
+
         EGLint depthSize = 0;
         eglGetConfigAttrib( m_eglDisplay, m_eglConfig, EGL_DEPTH_SIZE, &depthSize );
         if ( depthSize != 0 )
         {
-            LOG( "Share context eglConfig has %i depth bits -- should be 0", depthSize );
+            vInfo("Share context eglConfig has " << depthSize << " depth bits -- should be 0");
         }
         EGLint samples = 0;
         eglGetConfigAttrib( m_eglDisplay, m_eglConfig, EGL_SAMPLES, &samples );
         if ( samples != 0 )
         {
-            LOG( "Share context eglConfig has %i samples -- should be 0", samples );
-        }        
+
+            vInfo("Share context eglConfig has " << samples << " samples -- should be 0");
+        }
+
         m_hasEXT_sRGB_write_control = glOperation.glIsExtensionString( "GL_EXT_sRGB_write_control",
                                                                           (const char *)glGetString( GL_EXTENSIONS ) );
         if ( !m_async )
         {
             initRenderEnvironment();
             createFrameworkGraphics();
-            LOG( "Skipping thread setup because !AsynchronousTimeWarp" );
+            vInfo("Skipping thread setup because !AsynchronousTimeWarp");
         }
         else
         {
@@ -270,13 +276,14 @@ struct VFrameSmooth::Private
 
             if ( IsContextPriorityExtensionPresent() )
             {
-                LOG( "Requesting EGL_CONTEXT_PRIORITY_HIGH_IMG" );
+                vInfo("Requesting EGL_CONTEXT_PRIORITY_HIGH_IMG");
                 m_contextPriority = EGL_CONTEXT_PRIORITY_HIGH_IMG;
             }
             else
             {
 
-                LOG( "IMG_Context_Priority doesn't seem to be present." );
+                vInfo("IMG_Context_Priority doesn't seem to be present.");
+
                 m_contextPriority = EGL_CONTEXT_PRIORITY_MEDIUM_IMG;
             }
 
@@ -290,57 +297,61 @@ struct VFrameSmooth::Private
             m_eglPbufferSurface = eglCreatePbufferSurface( m_eglDisplay, m_eglConfig, attrib_list );
             if ( m_eglPbufferSurface == EGL_NO_SURFACE )
             {
-                FAIL( "eglCreatePbufferSurface failed: %s", glOperation.getEglErrorString() );
+                vFatal("eglCreatePbufferSurface failed: " << glOperation.getEglErrorString());
             }
 
             if ( eglMakeCurrent( m_eglDisplay, m_eglPbufferSurface, m_eglPbufferSurface,
                                  m_eglShareContext ) == EGL_FALSE )
             {
-                FAIL( "eglMakeCurrent: eglMakeCurrent pbuffer failed" );
+                vFatal("eglMakeCurrent: eglMakeCurrent pbuffer failed");
             }
             m_shutdownRequest.setState( false );
             pthread_mutex_lock( &m_smoothMutex );
             const int createErr = pthread_create( &m_smoothThread, NULL /* default attributes */, &ThreadStarter, this );
             if ( createErr != 0 )
             {
-                FAIL( "pthread_create returned %i", createErr );
+                vFatal("pthread_create returned " << createErr);
             }
             pthread_cond_wait( &m_smoothIslocked, &m_smoothMutex );
             pthread_mutex_unlock( &m_smoothMutex );
         }
 
-        LOG( "----------------- VFrameSmooth() End -----------------" );
+        vInfo("----------------- VFrameSmooth() End -----------------");
     }
 
     void destroy()
     {
-        LOG( "---------------- ~VFrameSmooth() Start ----------------" );
+    vInfo("---------------- ~VFrameSmooth() Start ----------------");
         if ( m_smoothThread != 0 )
         {
 
+
             m_shutdownRequest.setState( true );
-            LOG( "pthread_join() called");
+
             void * data;
             pthread_join( m_smoothThread, &data );
-            LOG( "pthread_join() returned");
+
             m_smoothThread = 0;
+
+
+
             VGlOperation glOperation;
             if ( eglGetCurrentSurface( EGL_DRAW ) != m_eglPbufferSurface )
             {
-                LOG( "eglGetCurrentSurface( EGL_DRAW ) != eglPbufferSurface" );
+                vInfo("eglGetCurrentSurface( EGL_DRAW ) != eglPbufferSurface");
             }
             if ( eglMakeCurrent( m_eglDisplay, m_eglMainThreadSurface,
                                  m_eglMainThreadSurface, m_eglShareContext ) == EGL_FALSE)
             {
-                FAIL( "eglMakeCurrent to window failed: %s", glOperation.getEglErrorString() );
+                vFatal("eglMakeCurrent to window failed: " << glOperation.getEglErrorString());
             }
             if ( EGL_FALSE == eglDestroySurface( m_eglDisplay, m_eglPbufferSurface ) )
             {
-                WARN( "Failed to destroy pbuffer." );
+                vWarn("Failed to destroy pbuffer.");
             }
             else
             {
-                LOG( "Destroyed pbuffer." );
+                vInfo("Destroyed pbuffer.");
             }
         }
         else
@@ -349,7 +360,7 @@ struct VFrameSmooth::Private
             destroyFrameworkGraphics();
         }
 
-        LOG( "---------------- ~VFrameSmooth() End ----------------" );
+        vInfo("---------------- ~VFrameSmooth() End ----------------");
     }
     static void *	ThreadStarter( void * parm );
 
@@ -580,7 +591,7 @@ void VFrameSmooth::Private::threadFunction()
     pthread_cond_signal( &m_smoothIslocked );
     pthread_mutex_unlock( &m_smoothMutex );
 
-    LOG( "WarpThreadLoop()" );
+    vInfo("WarpThreadLoop()");
 
     bool removedSchedFifo = false;
 
@@ -592,12 +603,12 @@ void VFrameSmooth::Private::threadFunction()
         const double current = ceil( GetFractionalVsync() );
         if ( abs( current - vsync ) > 2.0 )
         {
-            LOG( "Changing vsync from %f to %f", vsync, current );
+            vInfo("Changing vsync from " << vsync << " to " << current);
             vsync = current;
         }
         if ( m_shutdownRequest.state() )
         {
-            LOG( "ShutdownRequest received" );
+            vInfo("ShutdownRequest received");
             break;
         }
 
@@ -624,7 +635,7 @@ void VFrameSmooth::Private::threadFunction()
 
     smoothThreadShutdown();
 
-    LOG( "Exiting WarpThreadLoop()" );
+    vInfo("Exiting WarpThreadLoop()");
 }
 
 
@@ -641,7 +652,7 @@ VFrameSmooth::~VFrameSmooth()
 
 void VFrameSmooth::Private::smoothThreadInit()
 {
-    LOG( "WarpThreadInit()" );
+    vInfo("WarpThreadInit()");
 
     pthread_setname_np( pthread_self(), "NervGear::VFrameSmooth" );
 
@@ -664,9 +675,9 @@ void VFrameSmooth::Private::smoothThreadInit()
     m_eglWarpContext = eglCreateContext( m_eglDisplay, m_eglConfig, m_eglShareContext, contextAttribs );
     if ( m_eglWarpContext == EGL_NO_CONTEXT )
     {
-        FAIL( "eglCreateContext failed: %s", glOperation.getEglErrorString() );
+        vFatal("eglCreateContext failed: " << glOperation.getEglErrorString());
     }
-    LOG( "eglWarpContext: %p", m_eglWarpContext );
+    vInfo("eglWarpContext: " << m_eglWarpContext);
     if ( m_contextPriority != EGL_CONTEXT_PRIORITY_MEDIUM_IMG )
     {
         // See what context priority we actually got
@@ -674,30 +685,35 @@ void VFrameSmooth::Private::smoothThreadInit()
         eglQueryContext( m_eglDisplay, m_eglWarpContext, EGL_CONTEXT_PRIORITY_LEVEL_IMG, &actualPriorityLevel );
         switch ( actualPriorityLevel )
         {
-        case EGL_CONTEXT_PRIORITY_HIGH_IMG: LOG( "Context is EGL_CONTEXT_PRIORITY_HIGH_IMG" ); break;
-        case EGL_CONTEXT_PRIORITY_MEDIUM_IMG: LOG( "Context is EGL_CONTEXT_PRIORITY_MEDIUM_IMG" ); break;
-        case EGL_CONTEXT_PRIORITY_LOW_IMG: LOG( "Context is EGL_CONTEXT_PRIORITY_LOW_IMG" ); break;
-        default: LOG( "Context has unknown priority level" ); break;
+        case EGL_CONTEXT_PRIORITY_HIGH_IMG: vInfo("Context is EGL_CONTEXT_PRIORITY_HIGH_IMG"); break;
+        case EGL_CONTEXT_PRIORITY_MEDIUM_IMG: vInfo("Context is EGL_CONTEXT_PRIORITY_MEDIUM_IMG"); break;
+        case EGL_CONTEXT_PRIORITY_LOW_IMG: vInfo("Context is EGL_CONTEXT_PRIORITY_LOW_IMG"); break;
+        default: vInfo("Context has unknown priority level"); break;
         }
     }
 
-    LOG( "eglMakeCurrent on %p", m_eglMainThreadSurface );
+
+    vInfo("eglMakeCurrent on " << m_eglMainThreadSurface);
+
     if ( eglMakeCurrent( m_eglDisplay, m_eglMainThreadSurface,
                          m_eglMainThreadSurface, m_eglWarpContext ) == EGL_FALSE )
     {
-        FAIL( "eglMakeCurrent failed: %s", glOperation.getEglErrorString() );
+        vFatal("eglMakeCurrent failed: " << glOperation.getEglErrorString());
     }
 
     initRenderEnvironment();
     createFrameworkGraphics();
     m_smoothThreadTid = gettid();
 
-    LOG( "WarpThreadInit() - End" );
+    vInfo("WarpThreadInit() - End");
 }
 
 void VFrameSmooth::Private::smoothThreadShutdown()
 {
-    LOG( "WarpThreadShutdown()" );
+
+    vInfo("smoothThreadShutdown()");
+
+
     destroyFrameworkGraphics();
     VGlOperation glOperation;
     for ( int i = 0; i < 1; i++ )
@@ -707,7 +723,7 @@ void VFrameSmooth::Private::smoothThreadShutdown()
         {
             if ( EGL_FALSE == glOperation.eglDestroySyncKHR( m_eglDisplay, m_gpuSync) )
             {
-                LOG( "eglDestroySyncKHR returned EGL_FALSE" );
+                vInfo("eglDestroySyncKHR returned EGL_FALSE");
             }
             m_gpuSync = 0;
         }
@@ -717,17 +733,17 @@ void VFrameSmooth::Private::smoothThreadShutdown()
     if ( eglMakeCurrent( m_eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE,
                          EGL_NO_CONTEXT ) == EGL_FALSE )
     {
-        FAIL( "eglMakeCurrent: shutdown failed" );
+        vFatal("eglMakeCurrent: shutdown failed");
     }
 
     if ( eglDestroyContext( m_eglDisplay, m_eglWarpContext ) == EGL_FALSE )
     {
-        FAIL( "eglDestroyContext: shutdown failed" );
+        vFatal("eglDestroyContext: shutdown failed");
     }
     m_eglWarpContext = 0;
 
 
-    LOG( "WarpThreadShutdown() - End" );
+    vInfo("WarpThreadShutdown() - End");
 }
 
 const VGlShader & VFrameSmooth::Private::chooseProgram( const bool disableChromaticCorrection ) const
@@ -943,7 +959,9 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
     const double timeNow = floor( ovr_GetTimeInSeconds() );
     if ( timeNow > lastReportTime )
     {
-        LOG( "GPU time: %3.1f ms", m_logEyeWarpGpuTime.GetTotalTime() );
+
+        vInfo(" GPU time: " << m_logEyeWarpGpuTime.totalTime() << " ms");
+
         lastReportTime = timeNow;
     }
 
@@ -965,7 +983,17 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
     for ( int eye = 0; eye <= 1; ++eye )
     {
 
+        //vInfo("Eye " << eye << ": now=" << GetFractionalVsync() << "  sleepTo=" << vsyncBase + swap.deltaVsync[eye]);
+
+
         const double sleepTargetVsync = vsyncBase + swap.deltaVsync[eye];
+
+//        const double sleepTargetTime = FramePointTimeInSeconds( sleepTargetVsync );
+        //const float secondsToSleep = SleepUntilTimePoint( sleepTargetTime, false );
+//        const double preFinish = ovr_GetTimeInSeconds();
+
+        //vInfo("Vsync " << vsyncBase << ":" << eye << " sleep " << secondsToSleep);
+
 
         long long thisEyeBufferNum = 0;
         int	back;
@@ -979,7 +1007,8 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
                 if ( thisEyeBufferNum <= 0 )
                 {
 
-                    LOG( "rendertodisplay: No valid Eye Buffers" );
+                    vInfo("WarpToScreen: No valid Eye Buffers");
+
                     break;
                 }
 
@@ -990,13 +1019,13 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
                 }
                 if ( m_gpuSync == 0 )
                 {
-                    LOG( "thisEyeBufferNum %lli had 0 sync", thisEyeBufferNum );
+                    vInfo("thisEyeBufferNum " << thisEyeBufferNum << " had 0 sync");
                     break;
                 }
 
                 if ( VQuatf( m_images[eye][0].Pose.Pose.Orientation ).LengthSq() < 1e-18f )
                 {
-                    LOG( "Bad Pose.Orientation in bufferNum %lli!", thisEyeBufferNum );
+                    vInfo("Bad Pose.Orientation in bufferNum " << thisEyeBufferNum << "!");
                     break;
                 }
 
@@ -1008,7 +1037,7 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
                 }
                 if ( wait == EGL_FALSE )
                 {
-                    LOG( "eglClientWaitSyncKHR returned EGL_FALSE" );
+                    vInfo("eglClientWaitSyncKHR returned EGL_FALSE");
                 }
 
 
@@ -1038,7 +1067,8 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
             if ( m_images[eye][0].TexId == 0 )
             {
 
-                LOG( "rendertodisplay: Nothing valid to draw" );
+                vInfo("WarpToScreen: Nothing valid to draw");
+
                 SleepUntilTimePoint( FramePointTimeInSeconds( sleepTargetVsync + 1.0f ), false );
                 break;
             }
@@ -1090,8 +1120,8 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
 
 
 
-        m_logEyeWarpGpuTime.Begin( eye );
-        m_logEyeWarpGpuTime.PrintTime( eye, "GPU time for eye time warp" );
+        m_logEyeWarpGpuTime.begin( eye );
+        m_logEyeWarpGpuTime.printTime( eye, "GPU time for eye time warp" );
 
         setSmoothpState( );
 
@@ -1124,7 +1154,7 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
 
         glFlush();
 
-        m_logEyeWarpGpuTime.End( eye );
+        m_logEyeWarpGpuTime.end( eye );
 
         const double justBeforeFinish = ovr_GetTimeInSeconds();
         const double postFinish = ovr_GetTimeInSeconds();
@@ -1132,7 +1162,7 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
         const float latency = postFinish - justBeforeFinish;
         if ( latency > 0.008f )
         {
-            LOG( "Frame %i Eye %i latency %5.3f", (int)vsyncBase, eye, latency );
+            vInfo("Frame " << (int)vsyncBase << " Eye " << eye << " latency " << latency);
         }
     }
 
@@ -1172,11 +1202,15 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
     glScissor( 0, 0, m_window_width, m_window_height );
 
     int	back = 0;
+
     long long thisEyeBufferNum = 0;
     for ( int screenSlice = 0; screenSlice < NUM_SLICES_PER_SCREEN; screenSlice++ )
     {
         const int	eye = (int)( screenSlice / NUM_SLICES_PER_EYE );
 
+
+
+        //vInfo("slice " << screenSlice << " targ " << sleepTargetTime << " slept " << secondsToSleep);
 
         if ( screenSlice == 0 )
         {
@@ -1186,8 +1220,8 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
                 thisEyeBufferNum = latestEyeBufferNum - back;
                 if ( thisEyeBufferNum <= 0 )
                 {
-                    LOG( "rendertodisplay: No valid Eye Buffers" );
 
+                    vInfo("WarpToScreen: No valid Eye Buffers");
                     break;
                 }
 
@@ -1200,13 +1234,13 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
 
                 if ( m_gpuSync == 0 )
                 {
-                    LOG( "thisEyeBufferNum %lli had 0 sync", thisEyeBufferNum );
+                    vInfo("thisEyeBufferNum " << thisEyeBufferNum << " had 0 sync");
                     break;
                 }
 
                 if ( VQuatf( m_images[eye][0].Pose.Pose.Orientation ).LengthSq() < 1e-18f )
                 {
-                    LOG( "Bad Predicted.Pose.Orientation!" );
+                    vInfo("Bad Predicted.Pose.Orientation!");
                     continue;
                 }
 
@@ -1218,7 +1252,7 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
                 }
                 if ( wait == EGL_FALSE )
                 {
-                    LOG( "eglClientWaitSyncKHR returned EGL_FALSE" );
+                    vInfo("eglClientWaitSyncKHR returned EGL_FALSE");
                 }
 
 
@@ -1249,7 +1283,8 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
             if ( m_images[eye][0].TexId == 0 )
             {
 
-                LOG( "rendertodisplay: Nothing valid to draw" );
+                vInfo("WarpToScreen: Nothing valid to draw");
+
                 SleepUntilTimePoint( FramePointTimeInSeconds( vsyncBase + 1.0f ), false );
                 break;
             }
@@ -1302,8 +1337,8 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
                 sensor[1].Predicted.Pose.Orientation );
 
 
-        m_logEyeWarpGpuTime.Begin( screenSlice );
-        m_logEyeWarpGpuTime.PrintTime( screenSlice, "GPU time for eye time warp" );
+        m_logEyeWarpGpuTime.begin( screenSlice );
+        m_logEyeWarpGpuTime.printTime( screenSlice, "GPU time for eye time warp" );
 
         setSmoothpState();
 
@@ -1336,7 +1371,7 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
 
         glFlush();
 
-        m_logEyeWarpGpuTime.End( screenSlice );
+        m_logEyeWarpGpuTime.end( screenSlice );
 
         const double justBeforeFinish = ovr_GetTimeInSeconds();
         const double postFinish = ovr_GetTimeInSeconds();
@@ -1344,7 +1379,7 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
         const float latency = postFinish - justBeforeFinish;
         if ( latency > 0.008f )
         {
-            LOG( "Frame %i Eye %i latency %5.3f", (int)vsyncBase, eye, latency );
+            vInfo("Frame " << (int)vsyncBase << " Eye " << eye << " latency " << latency);
         }
     }
 
@@ -1368,7 +1403,7 @@ void VFrameSmooth::Private::smoothInternal( )
 {
     if ( gettid() != m_sStartupTid )
     {
-        FAIL( "WarpSwap: Called with tid %i instead of %i", gettid(), m_sStartupTid );
+        vFatal("WarpSwap: Called with tid " << gettid() << " instead of " << m_sStartupTid);
     }
 
     m_lastsmoothTimeInSeconds.setState( ovr_GetTimeInSeconds() );
@@ -1523,20 +1558,20 @@ void VFrameSmooth::Private::smoothInternal( const ovrTimeWarpParms & parms )
     {
         if ( EGL_FALSE == glOperation.eglDestroySyncKHR( m_eglDisplay, m_gpuSync ) )
         {
-            LOG( "eglDestroySyncKHR returned EGL_FALSE" );
+            vInfo("eglDestroySyncKHR returned EGL_FALSE");
         }
     }
 
     m_gpuSync = glOperation.eglCreateSyncKHR( m_eglDisplay, EGL_SYNC_FENCE_KHR, NULL );
     if ( m_gpuSync == EGL_NO_SYNC_KHR )
     {
-        FAIL( "eglCreateSyncKHR_():EGL_NO_SYNC_KHR" );
+        vFatal("eglCreateSyncKHR_():EGL_NO_SYNC_KHR");
     }
 
     if ( EGL_FALSE == glOperation.eglClientWaitSyncKHR( m_eglDisplay, m_gpuSync,
                                                         EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, 0 ) )
     {
-        LOG( "eglClientWaitSyncKHR returned EGL_FALSE" );
+        vInfo("eglClientWaitSyncKHR returned EGL_FALSE");
     }
 
 
@@ -1586,7 +1621,7 @@ void VFrameSmooth::Private::smoothInternal( const ovrTimeWarpParms & parms )
             if ( suspendNanoSeconds < 1000 * 1000 )
             {
                 const uint64_t suspendMicroSeconds = ( 1000 * 1000 - suspendNanoSeconds ) / 1000;
-                LOG( "WarpSwap: usleep( %lld )", suspendMicroSeconds );
+                vInfo("WarpSwap: usleep( " << suspendMicroSeconds << " )");
                 usleep( suspendMicroSeconds );
             }
             return;
@@ -1687,7 +1722,7 @@ void VFrameSmooth::Private::createFrameworkGraphics()
 
     if ( m_smoothMesh.indexCount == 0 || m_slicesmoothMesh.indexCount == 0 )
     {
-        FAIL( "WarpMesh failed to load");
+        vFatal("WarpMesh failed to load");
     }
 
 
@@ -1743,7 +1778,7 @@ void VFrameSmooth::Private::drawFrameworkGraphicsToWindow( const int eye,
     const char * results = ovr_GetLatencyTestResult();
     if ( results != NULL )
     {
-        LOG( "LATENCY TESTER: %s", results );
+        vInfo("LATENCY TESTER: " << results);
     }
 
 

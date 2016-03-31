@@ -132,7 +132,7 @@ bool MappedView::open( MappedFile * file )
 	return true;
 }
 
-UByte * MappedView::mapView(uint offset, uint length )
+uchar *MappedView::mapView(uint offset, uint length )
 {
 	if ( length == 0)
 	{
@@ -166,7 +166,7 @@ UByte * MappedView::mapView(uint offset, uint length )
 		return 0;
 	}
 
-	m_data = reinterpret_cast<UByte*>( m_map );
+    m_data = reinterpret_cast<uchar *>( m_map );
 
 	m_offset = offset;
 	m_length = length;

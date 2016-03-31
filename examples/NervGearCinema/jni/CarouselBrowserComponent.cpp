@@ -21,7 +21,7 @@ CarouselBrowserComponent::CarouselBrowserComponent( const VArray<CarouselItem *>
 eMsgStatus CarouselBrowserComponent::onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 	VRMenuObject * self, VRMenuEvent const & event )
 {
-	OVR_ASSERT( handlesEvent( VRMenuEventFlags_t( event.eventType ) ) );
+	vAssert( handlesEvent( VRMenuEventFlags_t( event.eventType ) ) );
 
     switch( event.eventType )
 	{
@@ -40,7 +40,7 @@ eMsgStatus CarouselBrowserComponent::onEventImpl( App * app, VrFrame const & vrF
 		case VRMENU_EVENT_SWIPE_BACK:
 			return SwipeBack( app, vrFrame, menuMgr, self );
 		default:
-			OVR_ASSERT( !"Event flags mismatch!" ); // the constructor is specifying a flag that's not handled
+			vAssert( !"Event flags mismatch!" ); // the constructor is specifying a flag that's not handled
 			return MSG_STATUS_ALIVE;
 	}
 }
@@ -250,7 +250,7 @@ eMsgStatus CarouselBrowserComponent::SwipeBack( App * app, VrFrame const & vrFra
 
 eMsgStatus CarouselBrowserComponent::TouchDown( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
 {
-	//LOG( "TouchDown" );
+	//vInfo("TouchDown");
 	TouchDownTime = ovr_GetTimeInSeconds();
 
 	if ( Swiping )
@@ -263,7 +263,7 @@ eMsgStatus CarouselBrowserComponent::TouchDown( App * app, VrFrame const & vrFra
 
 eMsgStatus CarouselBrowserComponent::TouchUp( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
 {
-	//LOG( "TouchUp" );
+	//vInfo("TouchUp");
 
 	float const timeTouchHasBeenDown = (float)( ovr_GetTimeInSeconds() - TouchDownTime );
 	TouchDownTime = -1.0;
@@ -271,7 +271,7 @@ eMsgStatus CarouselBrowserComponent::TouchUp( App * app, VrFrame const & vrFrame
     float dist = event.floatValue.LengthSq();
 	if ( !Swiping && ( dist < 20.0f ) && ( timeTouchHasBeenDown < 1.0f ) )
 	{
-		LOG( "Selectmovie" );
+		vInfo("Selectmovie");
 		SelectPressed = true;
 	}
 	else if ( Swiping )
@@ -279,7 +279,7 @@ eMsgStatus CarouselBrowserComponent::TouchUp( App * app, VrFrame const & vrFrame
 		return MSG_STATUS_CONSUMED;
 	}
 
-	//LOG( "Ignore: %f, %f", RotationalVelocity, ( float )timeTouchHasBeenDown );
+	//vInfo("Ignore:" << RotationalVelocity << "," << ( float )timeTouchHasBeenDown);
 	return MSG_STATUS_ALIVE; // don't consume -- we are just listening
 }
 

@@ -78,7 +78,7 @@ public:
     PanoBrowser *		browser()										{ return m_browser; }
     OvrPhotosMetaData *	metaData()										{ return m_metaData; }
     const OvrPhotosMetaDatum * activePano() const						{ return m_activePano; }
-    void				setActivePano( const OvrPhotosMetaDatum * data )	{ OVR_ASSERT( data );  m_activePano = data; }
+    void				setActivePano( const OvrPhotosMetaDatum * data )	{ vAssert( data );  m_activePano = data; }
     float				fadeLevel() const								{ return m_currentFadeLevel;  }
     int					numPanosInActiveCategory() const;
 

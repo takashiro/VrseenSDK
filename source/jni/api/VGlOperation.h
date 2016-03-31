@@ -6,9 +6,7 @@
 #include <unistd.h>
 
 #include "android/VOsBuild.h"
-#include "android/LogUtils.h"
 #include "VLog.h"
-#include "vglobal.h"
 
 #define __gl2_h_
 

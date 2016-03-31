@@ -35,7 +35,6 @@
 
 #include "android/JniUtils.h"
 #include "api/VGlOperation.h"
-#include "Android/LogUtils.h"
 
 #include "../api/VGlShader.h"
 #include "GlTexture.h"
@@ -227,8 +226,8 @@ public:
         V3Vectf xyz;
 		float s;
 		float t;
-		UByte rgba[4];
-		UByte fontParms[4];
+		uchar rgba[4];
+		uchar fontParms[4];
 	};
 
 	typedef unsigned short fontIndex_t;
@@ -450,7 +449,7 @@ bool FontInfoType::LoadFromBuffer(void const * buffer,
 	VJson jsonRoot;
 	s >> jsonRoot;
     if (jsonRoot.isNull()) {
-		WARN("JSON Error");
+		vWarn("JSON Error");
 		return false;
 	}
 
@@ -475,7 +474,7 @@ bool FontInfoType::LoadFromBuffer(void const * buffer,
     ImageFileName = jsonRoot.value("ImageFileName").toStdString();
 	const int numGlyphs = jsonRoot.value("NumGlyphs").toInt();
 	if (numGlyphs < 0 || numGlyphs > MAX_GLYPHS) {
-		OVR_ASSERT( numGlyphs > 0 && numGlyphs <= MAX_GLYPHS);
+		vAssert( numGlyphs > 0 && numGlyphs <= MAX_GLYPHS);
 		return false;
 	}
 
@@ -494,15 +493,15 @@ bool FontInfoType::LoadFromBuffer(void const * buffer,
 			jsonRoot.contains("TweakScale") ?
 					jsonRoot.value("TweakScale").toDouble() : 1.0f;
 
-	LOG( "FontName = %s", FontName.c_str());
-	LOG( "CommandLine = %s", CommandLine.c_str());
-	LOG( "HorizontalPad = %.4f", HorizontalPad);
-	LOG( "VerticalPad = %.4f", VerticalPad);
-	LOG( "FontHeight = %.4f", FontHeight);
-	LOG( "CenterOffset = %.4f", CenterOffset);
-	LOG( "TweakScale = %.4f", TweakScale);
-	LOG( "ImageFileName = %s", ImageFileName.c_str());
-	LOG( "Loading %i glyphs.", numGlyphs);
+    vInfo("FontName = " << FontName);
+    vInfo("CommandLine = " << CommandLine);
+    vInfo("HorizontalPad = " << HorizontalPad);
+    vInfo("VerticalPad = " << VerticalPad);
+    vInfo("FontHeight = " << FontHeight);
+    vInfo("CenterOffset = " << CenterOffset);
+    vInfo("TweakScale = " << TweakScale);
+    vInfo("ImageFileName = " << ImageFileName);
+    vInfo("Loading " << numGlyphs << " glyphs.");
 
 /// HACK: this is hard-coded until we do not have a dependcy on reading the font from Home
 	if (FontName == "korean.fnt") {
@@ -584,7 +583,7 @@ bool FontInfoType::LoadFromBuffer(void const * buffer,
 	// This is not intended for wide or ucf character sets -- depending on the size range of
 	// character codes lookups may need to be changed to use a hash.
 	if (maxCharCode >= MAX_GLYPHS) {
-		OVR_ASSERT( maxCharCode <= MAX_GLYPHS);
+		vAssert( maxCharCode <= MAX_GLYPHS);
 		maxCharCode = MAX_GLYPHS;
 	}
 
@@ -615,17 +614,14 @@ FontGlyphType const & FontInfoType::GlyphForCharCode(
 	const int glyphIndex = CharCodeMap[charCode];
 
 	if (glyphIndex < 0 || glyphIndex >= Glyphs.length()) {
-		WARN(
-				"FontInfoType::GlyphForCharCode FAILED TO FIND GLYPH FOR CHARACTER!");
-		WARN(
-				"FontInfoType::GlyphForCharCode: charCode %u yielding %i", charCode, glyphIndex);
-		WARN(
-				"FontInfoType::GlyphForCharCode: CharCodeMap size %i Glyphs size %i", CharCodeMap.size(), Glyphs.length());
+		vWarn("FontInfoType::GlyphForCharCode FAILED TO FIND GLYPH FOR CHARACTER!");
+		vWarn("FontInfoType::GlyphForCharCode: charCode " << charCode << " yielding " << glyphIndex);
+		vWarn("FontInfoType::GlyphForCharCode: CharCodeMap size " << CharCodeMap.size() << " Glyphs size " << Glyphs.length());
 
 		return Glyphs['*'];
 	}
 
-	OVR_ASSERT( glyphIndex >= 0 && glyphIndex < Glyphs.length());
+	vAssert( glyphIndex >= 0 && glyphIndex < Glyphs.length());
 	return Glyphs[glyphIndex];
 }
 
@@ -633,7 +629,7 @@ FontGlyphType const & FontInfoType::GlyphForCharCode(
 // BitmapFontLocal
 //==================================================================================================
 
-#if defined( OVR_OS_WIN32 )
+#if defined( NV_OS_WIN )
 #define PATH_SEPARATOR '\\'
 #define PATH_SEPARATOR_STR "\\"
 #define PATH_SEPARATOR_NON_CANONICAL '/'
@@ -753,19 +749,19 @@ bool BitmapFontLocal::Load(const VString &languagePackageName, const VString &fo
 	// strip any path from the image file name path and prepend the path from the .fnt file -- i.e. always
 	// require them to be loaded from the same directory.
     VString baseName = VPath(FontInfo.ImageFileName).fileName();
-    LOG( "fontInfoFileName = %s", fontInfoFileName.toCString());
-	LOG( "image baseName = %s", baseName.toCString());
+    vInfo("fontInfoFileName = " << fontInfoFileName);
+	vInfo("image baseName = " << baseName);
 
     VString imagePath;
     StripFileName(fontInfoFileName, imagePath);
-    LOG( "imagePath = %s", imagePath.toCString());
+    vInfo("imagePath = " << imagePath);
 
     VString imageFileName;
     StripPath(fontInfoFileName.toCString(), imageFileName);
-    LOG( "imageFileName = %s", imageFileName.toCString());
+    vInfo("imageFileName = " << imageFileName);
 
     AppendPath(imagePath, baseName);
-    LOG( "imagePath = %s", imagePath.toCString());
+    vInfo("imagePath = " << imagePath);
     if (!LoadImage(languagePackageFile, imagePath.toCString())) {
 		return false;
 	}
@@ -823,8 +819,7 @@ bool BitmapFontLocal::LoadImage(const VApkFile &languagePackageFile, char const 
 	}
 
 	if (!result) {
-		WARN(
-				"BitmapFontLocal::LoadImage: failed to load image '%s'", imageName);
+		vWarn("BitmapFontLocal::LoadImage: failed to load image '" << imageName << "'");
 	}
 	return result;
 }
@@ -847,11 +842,11 @@ bool BitmapFontLocal::LoadImageFromBuffer(char const * imageName,
 				ImageHeight);
 	}
 	if (Texture == 0) {
-		WARN( "BitmapFontLocal::Load: failed to load '%s'", imageName);
+		vWarn("BitmapFontLocal::Load: failed to load '" << imageName << "'");
 		return false;
 	}
 
-	LOG( "BitmapFontLocal::LoadImageFromBuffer: success");
+	vInfo("BitmapFontLocal::LoadImageFromBuffer: success");
 	return true;
 }
 
@@ -1009,7 +1004,7 @@ void BitmapFontLocal::CalcTextMetrics(const VString &text, size_t & len,
 		}
 	}
 
-	OVR_ASSERT( numLines >= 1);
+	vAssert( numLines >= 1);
 
 	firstAscent *= FontInfo.ScaleFactorY;
 	lastDescent *= FontInfo.ScaleFactorY;
@@ -1017,7 +1012,7 @@ void BitmapFontLocal::CalcTextMetrics(const VString &text, size_t & len,
 	height += (numLines - 1) * FontInfo.FontHeight * FontInfo.ScaleFactorY;
 	height += lastDescent;
 
-	OVR_ASSERT( numLines <= maxLines);
+	vAssert( numLines <= maxLines);
 }
 
 //==================================================================================================
@@ -1118,7 +1113,7 @@ void BitmapFontSurfaceLocal::Init(const int maxVertices) {
 	CurVertex = 0;
 	CurIndex = 0;
 
-	LOG( "BitmapFontSurfaceLocal::Init: success");
+	vInfo("BitmapFontSurfaceLocal::Init: success");
 }
 
 //==============================
@@ -1160,8 +1155,8 @@ void BitmapFontSurfaceLocal::DrawText3D(BitmapFont const & font,
 		return;
 	}
 
-	DROID_ASSERT( normal.IsNormalized(), "BitmapFont");
-	DROID_ASSERT( up.IsNormalized(), "BitmapFont");
+    vAssert(normal.IsNormalized());
+    vAssert(up.IsNormalized());
 
 	const FontInfoType & fontInfo = AsLocal(font).GetFontInfo();
 
@@ -1242,7 +1237,7 @@ void BitmapFontSurfaceLocal::DrawText3D(BitmapFont const & font,
 	size_t i = 0;
     uint32_t charCode = *p;
     for (; charCode != '\0'; i++, charCode = *(++p)) {
-		OVR_ASSERT( i < len);
+		vAssert( i < len);
 		if (charCode == '\n' && curLine < numLines && curLine < MAX_LINES) {
 			// move to next line
 			curLine++;
@@ -1280,26 +1275,26 @@ void BitmapFontSurfaceLocal::DrawText3D(BitmapFont const & font,
 		v[i * 4 + 0].xyz = curPos + (r * bearingX) - (u * rh);
 		v[i * 4 + 0].s = s0;
 		v[i * 4 + 0].t = t1;
-		*(UInt32*) (&v[i * 4 + 0].rgba[0]) = iColor;
-		*(UInt32*) (&v[i * 4 + 0].fontParms[0]) = *(UInt32*) (&fontParms[0]);
+		*(vuint32*) (&v[i * 4 + 0].rgba[0]) = iColor;
+		*(vuint32*) (&v[i * 4 + 0].fontParms[0]) = *(vuint32*) (&fontParms[0]);
 		// upper left
 		v[i * 4 + 1].xyz = curPos + (r * bearingX) + (u * bearingY);
 		v[i * 4 + 1].s = s0;
 		v[i * 4 + 1].t = t0;
-		*(UInt32*) (&v[i * 4 + 1].rgba[0]) = iColor;
-		*(UInt32*) (&v[i * 4 + 1].fontParms[0]) = *(UInt32*) (&fontParms[0]);
+		*(vuint32*) (&v[i * 4 + 1].rgba[0]) = iColor;
+		*(vuint32*) (&v[i * 4 + 1].fontParms[0]) = *(vuint32*) (&fontParms[0]);
 		// upper right
 		v[i * 4 + 2].xyz = curPos + (r * rw) + (u * bearingY);
 		v[i * 4 + 2].s = s1;
 		v[i * 4 + 2].t = t0;
-		*(UInt32*) (&v[i * 4 + 2].rgba[0]) = iColor;
-		*(UInt32*) (&v[i * 4 + 2].fontParms[0]) = *(UInt32*) (&fontParms[0]);
+		*(vuint32*) (&v[i * 4 + 2].rgba[0]) = iColor;
+		*(vuint32*) (&v[i * 4 + 2].fontParms[0]) = *(vuint32*) (&fontParms[0]);
 		// lower right
 		v[i * 4 + 3].xyz = curPos + (r * rw) - (u * rh);
 		v[i * 4 + 3].s = s1;
 		v[i * 4 + 3].t = t1;
-		*(UInt32*) (&v[i * 4 + 3].rgba[0]) = iColor;
-		*(UInt32*) (&v[i * 4 + 3].fontParms[0]) = *(UInt32*) (&fontParms[0]);
+		*(vuint32*) (&v[i * 4 + 3].rgba[0]) = iColor;
+		*(vuint32*) (&v[i * 4 + 3].fontParms[0]) = *(vuint32*) (&fontParms[0]);
 		// advance to start of next char
 		curPos += r * (g.AdvanceX * xScale);
 	}
@@ -1369,7 +1364,7 @@ int VertexBlockSortFn(void const * a, void const * b) {
 // We don't have to do this for each eye because the billboarded surfaces are sorted / aligned
 // based on their distance from / direction to the camera view position and not the camera direction.
 void BitmapFontSurfaceLocal::Finish(VR4Matrixf const & viewMatrix) {
-	DROID_ASSERT( this != NULL, "BitmapFont");
+    vAssert(this != NULL);
 
 	//SPAM( "BitmapFontSurfaceLocal::Finish" );
 
@@ -1424,9 +1419,9 @@ void BitmapFontSurfaceLocal::Finish(VR4Matrixf const & viewMatrix) {
 			Vertices[CurVertex].xyz = transform.Transform(v.xyz);
 			Vertices[CurVertex].s = v.s;
 			Vertices[CurVertex].t = v.t;
-			*(UInt32*) (&Vertices[CurVertex].rgba[0]) = *(UInt32*) (&v.rgba[0]);
-			*(UInt32*) (&Vertices[CurVertex].fontParms[0]) =
-					*(UInt32*) (&v.fontParms[0]);
+			*(vuint32*) (&Vertices[CurVertex].rgba[0]) = *(vuint32*) (&v.rgba[0]);
+			*(vuint32*) (&Vertices[CurVertex].fontParms[0]) =
+					*(vuint32*) (&v.fontParms[0]);
 			CurVertex++;
 		}
 		CurIndex += (vb.NumVerts / 2) * 3;

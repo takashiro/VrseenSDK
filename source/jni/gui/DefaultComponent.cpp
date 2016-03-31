@@ -22,9 +22,9 @@ namespace NervGear {
 OvrDefaultComponent::OvrDefaultComponent( V3Vectf const & hilightOffset, float const hilightScale,
         float const fadeDuration, float const fadeDelay, V4Vectf const & textNormalColor,
         V4Vectf const & textHilightColor ) :
-    VRMenuComponent( VRMenuEventFlags_t( VRMENU_EVENT_TOUCH_DOWN ) | 
-            VRMENU_EVENT_TOUCH_UP | 
-            VRMENU_EVENT_FOCUS_GAINED | 
+    VRMenuComponent( VRMenuEventFlags_t( VRMENU_EVENT_TOUCH_DOWN ) |
+            VRMENU_EVENT_TOUCH_UP |
+            VRMENU_EVENT_FOCUS_GAINED |
             VRMENU_EVENT_FOCUS_LOST |
             VRMENU_EVENT_FRAME_UPDATE ),
     m_hilightFader( 0.0f ),
@@ -42,7 +42,7 @@ OvrDefaultComponent::OvrDefaultComponent( V3Vectf const & hilightOffset, float c
 
 //==============================
 //  OvrDefaultComponent::OnEvent_Impl
-eMsgStatus OvrDefaultComponent::onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, 
+eMsgStatus OvrDefaultComponent::onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
     switch( event.eventType )
@@ -60,14 +60,14 @@ eMsgStatus OvrDefaultComponent::onEventImpl( App * app, VrFrame const & vrFrame,
             m_upSoundLimiter.playSound( app, "sv_panel_touch_up", 0.1 );
             return MSG_STATUS_ALIVE;
         default:
-            OVR_ASSERT( !"Event flags mismatch!" );
+            vAssert( !"Event flags mismatch!" );
             return MSG_STATUS_ALIVE;
     }
 }
 
 //==============================
 //  OvrDefaultComponent::Frame
-eMsgStatus OvrDefaultComponent::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, 
+eMsgStatus OvrDefaultComponent::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
     double t = ovr_GetTimeInSeconds();
@@ -90,13 +90,13 @@ eMsgStatus OvrDefaultComponent::frame( App * app, VrFrame const & vrFrame, OvrVR
     self->setHilightPose( VPosf( VQuatf(), offset ) );
 
 	int additiveSurfIndex = self->findSurfaceWithTextureType( SURFACE_TEXTURE_ADDITIVE, true );
-	if ( additiveSurfIndex >= 0 ) 
+	if ( additiveSurfIndex >= 0 )
 	{
         V4Vectf surfColor = self->getSurfaceColor( additiveSurfIndex );
 		surfColor.w = hilightAlpha;
 		self->setSurfaceColor( additiveSurfIndex, surfColor );
 	}
-	
+
     float const scale = ( ( m_hilightScale - 1.0f ) * hilightAlpha ) + 1.0f;
     self->setHilightScale( scale );
 
@@ -116,7 +116,7 @@ eMsgStatus OvrDefaultComponent::frame( App * app, VrFrame const & vrFrame, OvrVR
 
 //==============================
 //  OvrDefaultComponent::FocusGained
-eMsgStatus OvrDefaultComponent::focusGained( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, 
+eMsgStatus OvrDefaultComponent::focusGained( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
     // set the hilight flag
@@ -130,7 +130,7 @@ eMsgStatus OvrDefaultComponent::focusGained( App * app, VrFrame const & vrFrame,
 
 //==============================
 //  OvrDefaultComponent::FocusLost
-eMsgStatus OvrDefaultComponent::focusLost( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, 
+eMsgStatus OvrDefaultComponent::focusLost( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
     // clear the hilight flag
@@ -154,7 +154,7 @@ eMsgStatus OvrSurfaceToggleComponent::onEventImpl( App * app, VrFrame const & vr
 	case VRMENU_EVENT_FRAME_UPDATE:
 		return frame( app, vrFrame, menuMgr, self, event );
 	default:
-		OVR_ASSERT( !"Event flags mismatch!" );
+		vAssert( !"Event flags mismatch!" );
 		return MSG_STATUS_ALIVE;
 	}
 }

@@ -20,11 +20,11 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <stdlib.h>
 
 #include "VString.h"
-#include "Android/LogUtils.h"
 
 #include "3rdParty/stb/stb_image_write.h"
 #include "GlTexture.h"
-#include "ImageData.h"
+
+#include "io/VFileOperation.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -115,29 +115,29 @@ void EyeBuffer::Allocate( const EyeParms & bufferParms, multisample_t multisampl
         case TEXTURE_FILTER_NEAREST:
             glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
             glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-            LOG( "textureFilter = TEXTURE_FILTER_NEAREST" );
+            vInfo("textureFilter = TEXTURE_FILTER_NEAREST");
             break;
         case TEXTURE_FILTER_BILINEAR:
             glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
             glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-            LOG( "textureFilter = TEXTURE_FILTER_BILINEAR" );
+            vInfo("textureFilter = TEXTURE_FILTER_BILINEAR");
             break;
         case TEXTURE_FILTER_ANISO_2:
             glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
             glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
             glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 2 );
-            LOG( "textureFilter = TEXTURE_FILTER_ANISO_2" );
+            vInfo("textureFilter = TEXTURE_FILTER_ANISO_2");
             break;
         case TEXTURE_FILTER_ANISO_4:
             glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
             glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
             glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4 );
-            LOG( "textureFilter = TEXTURE_FILTER_ANISO_4" );
+            vInfo("textureFilter = TEXTURE_FILTER_ANISO_4");
             break;
         default:
             glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
             glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-            LOG( "textureFilter = TEXTURE_FILTER_BILINEAR" );
+            vInfo("textureFilter = TEXTURE_FILTER_BILINEAR");
             break;
     }
 
@@ -147,7 +147,7 @@ void EyeBuffer::Allocate( const EyeParms & bufferParms, multisample_t multisampl
         // Imagination Technologies can automatically resolve a multisample rendering on a tile-by-tile
         // basis, without needing to draw to a full size multisample buffer, then blit resolve to a
         // normal texture.
-        LOG( "Making a %i sample buffer with glFramebufferTexture2DMultisample", bufferParms.multisamples );
+        vInfo("Making a " << bufferParms.multisamples << " sample buffer with glFramebufferTexture2DMultisample");
 
         if ( bufferParms.depthFormat != DEPTH_0 )
         {
@@ -176,7 +176,7 @@ void EyeBuffer::Allocate( const EyeParms & bufferParms, multisample_t multisampl
     else
     {
         // No MSAA, use ES 2 render targets
-        LOG( "Making a single sample buffer" );
+        vInfo("Making a single sample buffer");
 
         if ( bufferParms.depthFormat != DEPTH_0 )
         {
@@ -205,7 +205,7 @@ void EyeBuffer::Allocate( const EyeParms & bufferParms, multisample_t multisampl
     GLenum status = glCheckFramebufferStatus( GL_FRAMEBUFFER );
     if (status != GL_FRAMEBUFFER_COMPLETE )
     {
-        FAIL( "render FBO %i is not complete: 0x%x", RenderFrameBuffer, status );	// TODO: fall back to something else
+        vFatal("render FBO " << RenderFrameBuffer << " is not complete: " << status);	// TODO: fall back to something else
     }
 
     // Explicitly clear the color buffer to a color we would notice
@@ -269,11 +269,11 @@ static void ScreenShotTexture( const int eyeResolution, const GLuint texId )
     stbi_write_bmp( filename.toCString(), eyeResolution, eyeResolution, 4, (void *)flipped );
 
     // make a quarter size version for launcher thumbnails
-    unsigned char * shrunk1 = QuarterImageSize( flipped, eyeResolution, eyeResolution, true );
-    unsigned char * shrunk2 = QuarterImageSize( shrunk1, eyeResolution>>1, eyeResolution>>1, true );
+    unsigned char * shrunk1 = VFileOperation::QuarterImageSize( flipped, eyeResolution, eyeResolution, true );
+    unsigned char * shrunk2 = VFileOperation::QuarterImageSize( shrunk1, eyeResolution>>1, eyeResolution>>1, true );
     VString filename2;
     filename2.sprintf("/sdcard/Oculus/thumbnail%03i.pvr", v);
-    Write32BitPvrTexture( filename2.toCString(), shrunk2, eyeResolution>>2, eyeResolution>>2 );
+    VFileOperation::Write32BitPvrTexture( filename2.toCString(), shrunk2, eyeResolution>>2, eyeResolution>>2 );
 
     free( buf );
     free( shrunk1 );
@@ -313,14 +313,13 @@ void EyeBuffers::BeginFrame( const EyeParms & bufferParms_ )
          *
          * TODO: fall back to simpler cases on failure and mark a flag in bufferData?
          */
-        LOG( "Reallocating buffers" );
+        vInfo("Reallocating buffers");
 
         // Note the requested parameters, we don't want to allocate again
         // the following frame if we had to fall back for some reason.
         buffers.BufferParms = bufferParms_;
 
-        LOG( "Allocate FBO: res=%i color=%i depth=%i", bufferParms_.resolution,
-                bufferParms_.colorFormat, bufferParms_.depthFormat );
+        vInfo("Allocate FBO: res=" << bufferParms_.resolution << " color=" << bufferParms_.colorFormat << " depth=" << bufferParms_.depthFormat);
         if ( bufferParms_.multisamples > 1 ) {
             buffers.MultisampleMode = MSAA_RENDER_TO_TEXTURE;
         } else {
@@ -341,8 +340,8 @@ void EyeBuffers::BeginRenderingEye( const int eyeNum )
     EyePairs & pair = BufferData[ SwapCount % MAX_EYE_SETS ];
     EyeBuffer & eye = pair.Eyes[eyeNum];
 
-    LogEyeSceneGpuTime.Begin( eyeNum );
-    LogEyeSceneGpuTime.PrintTime( eyeNum, "GPU time for eye render" );
+    LogEyeSceneGpuTime.begin( eyeNum );
+    LogEyeSceneGpuTime.printTime( eyeNum, "GPU time for eye render" );
 
     glBindFramebuffer( GL_FRAMEBUFFER, eye.RenderFrameBuffer );
     glViewport( 0, 0, resolution, resolution );
@@ -387,7 +386,7 @@ void EyeBuffers::EndRenderingEye( const int eyeNum )
         glOperation.glDisableFramebuffer( true, false );
     }
 
-    LogEyeSceneGpuTime.End( eyeNum );
+    LogEyeSceneGpuTime.end( eyeNum );
 
     // Left to themselves, tiled GPU drivers will avoid starting rendering
     // until they are absolutely forced to by a swap or read of a buffer,

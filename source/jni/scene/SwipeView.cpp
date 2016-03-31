@@ -250,7 +250,7 @@ static V3Vectf	FlatForward( const VR4Matrixf & view )
 
 void	SwipeView::Activate( )
 {
-	LOG( "Activate" );
+	vInfo("Activate");
 
 	// Get time and view on next call to frame
 	ActivateOnNextFrame = true;
@@ -286,12 +286,12 @@ void	SwipeView::Activate( )
 
 void	SwipeView::Close()
 {
-	LOG( "Close" );
+	vInfo("Close");
 
 	if ( State == SVS_OPEN )
 	{
 		State = SVS_CLOSING;
-		LOG( "SVS_CLOSING" );
+		vInfo("SVS_CLOSING");
 
 		// start animation on next frame
 		CloseOnNextFrame = true;
@@ -530,7 +530,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 			if ( HasMoved )
 			{
                 ret.PlaySndSwipeRelease = true;
-				LOG( "Not tap because HasMoved" );
+				vInfo("Not tap because HasMoved");
 			}
 			else
 			{
@@ -542,13 +542,13 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 
 					if ( SelectedPanel != -1 )
 					{	// action on selected
-						LOG( "ActivatePanelIndex %i", SelectedPanel);
+						vInfo("ActivatePanelIndex" << SelectedPanel);
 						ret.ActivatePanelIndex = SelectedPanel;
 					}
 					else
 					{	// put away when clicking on nothing
 						// TODO: make this an option
-						LOG( "Closing swipeview");
+						vInfo("Closing swipeview");
 						Close();
 					}
 					ret.PlaySndReleaseAction = true;
@@ -672,7 +672,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 		PanelRenderInfo selectedPanelInfo;
 		selectedPanelInfo.PanelIndex = -1;
 
-		//LOG( "offset %f forward %f", Offset, ForwardYaw );
+		//vInfo("offset" << Offset << "forward" << ForwardYaw);
 		const float animationPanelOffset = AnimationCenterPanel[0] * SlotSize.x - Offset;
 		const float animationPanelOffsetY = PanelAngleY( AnimationCenterPanel[1] );
 		for ( int index = 0 ; index < Panels.length() ; index++ )

@@ -37,7 +37,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "SwipeView.h"
 #include "Oculus360Videos.h"
 #include "gui/GuiSys.h"
-#include "ImageData.h"
+
 #include "gui/Fader.h"
 #include "3rdParty/stb/stb_image.h"
 #include "3rdParty/stb/stb_image_write.h"
@@ -69,7 +69,7 @@ void Java_com_vrseen_nervgear_video_MainActivity_nativeSetAppInterface( JNIEnv *
 
 	GlobalActivityClass = (jclass)jni->NewGlobalRef( clazz );
 
-	LOG( "nativeSetAppInterface");
+	vInfo("nativeSetAppInterface");
     (new Oculus360Videos(jni, clazz, activity))->onCreate(fromPackageName, commandString, uriString );
 }
 
@@ -99,7 +99,7 @@ jobject Java_com_vrseen_nervgear_video_MainActivity_nativePrepareNewVideo(JNIEnv
 
 void Java_com_vrseen_nervgear_video_MainActivity_nativeSetVideoSize(JNIEnv *, jclass, int width, int height)
 {
-	LOG( "nativeSetVideoSizes: width=%i height=%i", width, height );
+	vInfo("nativeSetVideoSizes: width=" << width << "height=" << height);
     VVariantArray args;
     args << width << height;
     vApp->eventLoop().post("video", std::move(args));
@@ -107,13 +107,13 @@ void Java_com_vrseen_nervgear_video_MainActivity_nativeSetVideoSize(JNIEnv *, jc
 
 void Java_com_vrseen_nervgear_video_MainActivity_nativeVideoCompletion(JNIEnv *, jclass)
 {
-	LOG( "nativeVideoCompletion" );
+	vInfo("nativeVideoCompletion");
     vApp->eventLoop().post( "completion" );
 }
 
 void Java_com_vrseen_nervgear_video_MainActivity_nativeVideoStartError(JNIEnv *, jclass)
 {
-	LOG( "nativeVideoStartError" );
+	vInfo("nativeVideoStartError");
     vApp->eventLoop().post( "startError" );
 }
 
@@ -155,7 +155,7 @@ Oculus360Videos::~Oculus360Videos()
 void Oculus360Videos::init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI)
 {
 
-	LOG( "--------------- Oculus360Videos OneTimeInit ---------------" );
+	vInfo("--------------- Oculus360Videos OneTimeInit ---------------");
 
 
 	VDir vdir;
@@ -194,7 +194,7 @@ void Oculus360Videos::init(const VString &fromPackage, const VString &launchInte
 			TextureFlags_t( TEXTUREFLAG_USE_SRGB ), BackgroundWidth, BackgroundHeight );
 	}
 
-	LOG( "Creating Globe" );
+	vInfo("Creating Globe");
     Globe.createSphere();
 
 	// Stay exactly at the origin, so the panorama globe is equidistant
@@ -222,7 +222,7 @@ void Oculus360Videos::init(const VString &fromPackage, const VString &launchInte
 	MetaData = new OvrVideosMetaData();
 	if ( MetaData == NULL )
 	{
-		FAIL( "Oculus360Photos::OneTimeInit failed to create MetaData" );
+		vFatal("Oculus360Photos::OneTimeInit failed to create MetaData");
 	}
 
     const VStandardPath &storagePaths = vApp->storagePaths();
@@ -256,7 +256,7 @@ void Oculus360Videos::init(const VString &fromPackage, const VString &launchInte
 	{
 		VideoMenu = OvrVideoMenu::Create(
 			vApp, this, vApp->vrMenuMgr(), vApp->defaultFont(), *MetaData, 1.0f, 2.0f );
-		OVR_ASSERT( VideoMenu );
+		vAssert( VideoMenu );
 
 		vApp->guiSys().addMenu( VideoMenu );
 	}
@@ -274,7 +274,7 @@ void Oculus360Videos::init(const VString &fromPackage, const VString &launchInte
 			256, 200.0f,
 			7,
 			5.4f );
-		OVR_ASSERT( Browser );
+		vAssert( Browser );
 
 		vApp->guiSys().addMenu( Browser );
 	}
@@ -294,7 +294,7 @@ void Oculus360Videos::init(const VString &fromPackage, const VString &launchInte
 void Oculus360Videos::shutdown()
 {
 	// This is called by the VR thread, not the java UI thread.
-	LOG( "--------------- Oculus360Videos OneTimeShutdown ---------------" );
+	vInfo("--------------- Oculus360Videos OneTimeShutdown ---------------");
 
 	if ( BackgroundScene != NULL )
 	{
@@ -327,7 +327,7 @@ void Oculus360Videos::configureVrMode(VKernel* kernel)
 {
 	// We need very little CPU for pano browsing, but a fair amount of GPU.
 	// The CPU clock should ramp up above the minimum when necessary.
-	LOG( "ConfigureClocks: Oculus360Videos only needs minimal clocks" );
+	vInfo("ConfigureClocks: Oculus360Videos only needs minimal clocks");
 	// All geometry is blended, so save power with no MSAA
 	kernel->msaa = 1;
 }
@@ -365,7 +365,7 @@ void Oculus360Videos::command(const VEvent &event )
     if (event.name == "newVideo") {
 		delete MovieTexture;
 		MovieTexture = new SurfaceTexture( vApp->vrJni() );
-		LOG( "RC_NEW_VIDEO texId %i", MovieTexture->textureId );
+		vInfo("RC_NEW_VIDEO texId" << MovieTexture->textureId);
 
         VEventLoop *receiver = static_cast<VEventLoop *>(event.data.toPointer());
         receiver->post("surfaceTexture", MovieTexture->javaObject);
@@ -402,7 +402,7 @@ void Oculus360Videos::command(const VEvent &event )
         message = VrLocale::GetXliffFormattedString( message, fileName.toCString() );
 		BitmapFont & font = vApp->defaultFont();
 		font.WordWrapText( message, 1.0f );
-        vApp->showInfoText( 4.5f, message.toCString() );
+        vApp->text.show(message, 4.5f);
 		SetMenuState( MENU_BROWSER );
 		return;
 	}
@@ -574,7 +574,7 @@ bool Oculus360Videos::IsVideoPlaying() const
 	jmethodID methodId = vApp->vrJni()->GetMethodID( MainActivityClass, "isPlaying", "()Z" );
 	if ( !methodId )
 	{
-		LOG( "Couldn't find isPlaying methodID" );
+		vInfo("Couldn't find isPlaying methodID");
 		return false;
 	}
 
@@ -584,13 +584,13 @@ bool Oculus360Videos::IsVideoPlaying() const
 
 void Oculus360Videos::PauseVideo( bool const force )
 {
-	LOG( "PauseVideo()" );
+	vInfo("PauseVideo()");
 
 	jmethodID methodId = vApp->vrJni()->GetMethodID( MainActivityClass,
 		"pauseMovie", "()V" );
 	if ( !methodId )
 	{
-		LOG( "Couldn't find pauseMovie methodID" );
+		vInfo("Couldn't find pauseMovie methodID");
 		return;
 	}
 
@@ -599,13 +599,13 @@ void Oculus360Videos::PauseVideo( bool const force )
 
 void Oculus360Videos::StopVideo()
 {
-	LOG( "StopVideo()" );
+	vInfo("StopVideo()");
 
 	jmethodID methodId = vApp->vrJni()->GetMethodID( MainActivityClass,
 		"stopMovie", "()V" );
 	if ( !methodId )
 	{
-		LOG( "Couldn't find stopMovie methodID" );
+		vInfo("Couldn't find stopMovie methodID");
 		return;
 	}
 
@@ -617,7 +617,7 @@ void Oculus360Videos::StopVideo()
 
 void Oculus360Videos::ResumeVideo()
 {
-	LOG( "ResumeVideo()" );
+	vInfo("ResumeVideo()");
 
 	vApp->guiSys().closeMenu( vApp, Browser, false );
 
@@ -625,7 +625,7 @@ void Oculus360Videos::ResumeVideo()
 		"resumeMovie", "()V" );
 	if ( !methodId )
 	{
-		LOG( "Couldn't find resumeMovie methodID" );
+		vInfo("Couldn't find resumeMovie methodID");
 		return;
 	}
 
@@ -638,7 +638,7 @@ void Oculus360Videos::StartVideo( const double nowTime )
 	{
 		SetMenuState( MENU_VIDEO_LOADING );
 		VideoName = ActiveVideo->url;
-		LOG( "StartVideo( %s )", ActiveVideo->url.toCString() );
+		vInfo("StartVideo(" << ActiveVideo->url << ")");
 		vApp->playSound( "sv_select" );
 
 		jmethodID startMovieMethodId = vApp->vrJni()->GetMethodID( MainActivityClass,
@@ -646,16 +646,16 @@ void Oculus360Videos::StartVideo( const double nowTime )
 
 		if ( !startMovieMethodId )
 		{
-			LOG( "Couldn't find startMovie methodID" );
+			vInfo("Couldn't find startMovie methodID");
 			return;
 		}
 
-		LOG( "moviePath = '%s'", ActiveVideo->url.toCString() );
+		vInfo("moviePath = '" << ActiveVideo->url << "'");
         jstring jstr = vApp->vrJni()->NewStringUTF( ActiveVideo->url.toCString() );
 		vApp->vrJni()->CallVoidMethod( vApp->javaObject(), startMovieMethodId, jstr );
 		vApp->vrJni()->DeleteLocalRef( jstr );
 
-		LOG( "StartVideo done" );
+		vInfo("StartVideo done");
 	}
 }
 
@@ -668,13 +668,13 @@ void Oculus360Videos::SeekTo( const int seekPos )
 
 		if ( !seekToMethodId )
 		{
-			LOG( "Couldn't find seekToMethodId methodID" );
+			vInfo("Couldn't find seekToMethodId methodID");
 			return;
 		}
 
 		vApp->vrJni()->CallVoidMethod( vApp->javaObject(), seekToMethodId, seekPos );
 
-		LOG( "SeekTo %i done", seekPos );
+		vInfo("SeekTo" << seekPos << "done");
 	}
 }
 
@@ -682,7 +682,7 @@ void Oculus360Videos::SetMenuState( const OvrMenuState state )
 {
 	OvrMenuState lastState = MenuState;
 	MenuState = state;
-	LOG( "%s to %s", MenuStateString( lastState ), MenuStateString( MenuState ) );
+	vInfo(MenuStateString( lastState ) << "to" << MenuStateString( MenuState ));
 	switch ( MenuState )
 	{
 	case MENU_NONE:
@@ -715,8 +715,8 @@ void Oculus360Videos::SetMenuState( const OvrMenuState state )
 		VideoMenuTimeLeft = VideoMenuVisibleTime;
 		break;
 	default:
-		LOG( "Oculus360Videos::SetMenuState unknown state: %d", static_cast< int >( state ) );
-		OVR_ASSERT( false );
+		vInfo("Oculus360Videos::SetMenuState unknown state:" << static_cast< int >( state ));
+		vAssert( false );
 		break;
 	}
 }
@@ -733,7 +733,7 @@ const char * menuStateNames [ ] =
 
 const char* Oculus360Videos::MenuStateString( const OvrMenuState state )
 {
-	OVR_ASSERT( state >= 0 && state < NUM_MENU_STATES );
+	vAssert( state >= 0 && state < NUM_MENU_STATES );
 	return menuStateNames[ state ];
 }
 
@@ -805,7 +805,7 @@ VR4Matrixf Oculus360Videos::onNewFrame( const VrFrame vrFrame )
 
 void Oculus360Videos::OnResume()
 {
-	LOG( "Oculus360Videos::OnResume" );
+	vInfo("Oculus360Videos::OnResume");
 	if ( VideoWasPlayingWhenPaused )
 	{
 		vApp->guiSys().openMenu( vApp, vApp->gazeCursor(), OvrVideoMenu::MENU_NAME );
@@ -816,7 +816,7 @@ void Oculus360Videos::OnResume()
 
 void Oculus360Videos::OnPause()
 {
-	LOG( "Oculus360Videos::OnPause" );
+	vInfo("Oculus360Videos::OnPause");
 	VideoWasPlayingWhenPaused = IsVideoPlaying();
 	if ( VideoWasPlayingWhenPaused )
 	{
