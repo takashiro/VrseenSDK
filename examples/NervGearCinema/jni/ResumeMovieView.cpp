@@ -29,23 +29,23 @@ ResumeMovieView::~ResumeMovieView()
 
 void ResumeMovieView::OneTimeInit( const VString &launchIntent )
 {
-	LOG( "ResumeMovieView::OneTimeInit" );
+	vInfo("ResumeMovieView::OneTimeInit");
 
 	const double start = ovr_GetTimeInSeconds();
 
 	CreateMenu( vApp, vApp->vrMenuMgr(), vApp->defaultFont() );
 
-	LOG( "ResumeMovieView::OneTimeInit: %3.1f seconds", ovr_GetTimeInSeconds() - start );
+	vInfo("ResumeMovieView::OneTimeInit:" << (ovr_GetTimeInSeconds() - start) << "seconds");
 }
 
 void ResumeMovieView::OneTimeShutdown()
 {
-	LOG( "ResumeMovieView::OneTimeShutdown" );
+	vInfo("ResumeMovieView::OneTimeShutdown");
 }
 
 void ResumeMovieView::OnOpen()
 {
-	LOG( "OnOpen" );
+	vInfo("OnOpen");
 
 	Cinema.sceneMgr.LightsOn( 0.5f );
 
@@ -61,7 +61,7 @@ void ResumeMovieView::OnOpen()
 
 void ResumeMovieView::OnClose()
 {
-	LOG( "OnClose" );
+	vInfo("OnClose");
 
     vApp->guiSys().closeMenu( vApp, Menu, false );
 

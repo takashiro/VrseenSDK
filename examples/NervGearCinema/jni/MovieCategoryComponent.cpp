@@ -80,7 +80,7 @@ eMsgStatus MovieCategoryComponent::Frame( App * app, VrFrame const & vrFrame, Ov
 eMsgStatus MovieCategoryComponent::FocusGained( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
-	//LOG( "FocusGained" );
+	//vInfo("FocusGained");
 	HasFocus = true;
     Sound.playSound( app, "gaze_on", 0.1 );
 
@@ -94,7 +94,7 @@ eMsgStatus MovieCategoryComponent::FocusGained( App * app, VrFrame const & vrFra
 eMsgStatus MovieCategoryComponent::FocusLost( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
-	//LOG( "FocusLost" );
+	//vInfo("FocusLost");
 
 	HasFocus = false;
     Sound.playSound( app, "gaze_off", 0.1 );

@@ -57,19 +57,19 @@ TheaterSelectionView::~TheaterSelectionView()
 
 void TheaterSelectionView::OneTimeInit( const VString &launchIntent )
 {
-	LOG( "TheaterSelectionView::OneTimeInit" );
+	vInfo("TheaterSelectionView::OneTimeInit");
 
 	const double start = ovr_GetTimeInSeconds();
 
 	// Start with "Home theater" selected
 	SelectedTheater = 0;
 
-	LOG( "TheaterSelectionView::OneTimeInit: %3.1f seconds", ovr_GetTimeInSeconds() - start );
+	vInfo("TheaterSelectionView::OneTimeInit:" << (ovr_GetTimeInSeconds() - start) << "seconds");
 }
 
 void TheaterSelectionView::OneTimeShutdown()
 {
-	LOG( "TheaterSelectionView::OneTimeShutdown" );
+	vInfo("TheaterSelectionView::OneTimeShutdown");
 }
 
 void TheaterSelectionView::SelectTheater(int theater)
@@ -82,7 +82,7 @@ void TheaterSelectionView::SelectTheater(int theater)
 
 void TheaterSelectionView::OnOpen()
 {
-	LOG( "OnOpen" );
+	vInfo("OnOpen");
 
 	if ( Menu == NULL )
 	{
@@ -107,7 +107,7 @@ void TheaterSelectionView::OnOpen()
 
 void TheaterSelectionView::OnClose()
 {
-	LOG( "OnClose" );
+	vInfo("OnClose");
 
     vApp->guiSys().closeMenu( vApp, Menu, false );
 
@@ -375,7 +375,7 @@ VR4Matrixf TheaterSelectionView::Frame( const VrFrame & vrFrame )
 	{
         if ( ( selectedItem >= 0 ) && ( selectedItem < Theaters.length() ) )
 		{
-            LOG( "Select: %d, %d, %d, %d", selectedItem, SelectedTheater, Theaters.length(), Cinema.modelMgr.GetTheaterCount() );
+            vInfo("Select:" << selectedItem << "," << SelectedTheater << "," << Theaters.length() << "," << Cinema.modelMgr.GetTheaterCount());
 			SelectedTheater = selectedItem;
 			SelectTheater( SelectedTheater );
 		}

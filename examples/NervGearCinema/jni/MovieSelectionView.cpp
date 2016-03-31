@@ -101,7 +101,7 @@ MovieSelectionView::~MovieSelectionView()
 
 void MovieSelectionView::OneTimeInit( const VString & launchIntent )
 {
-	LOG( "MovieSelectionView::OneTimeInit" );
+	vInfo("MovieSelectionView::OneTimeInit");
 
 	const double start = ovr_GetTimeInSeconds();
 
@@ -109,17 +109,17 @@ void MovieSelectionView::OneTimeInit( const VString & launchIntent )
 
 	SetCategory( CATEGORY_TRAILERS );
 
-	LOG( "MovieSelectionView::OneTimeInit %3.1f seconds", ovr_GetTimeInSeconds() - start );
+	vInfo("MovieSelectionView::OneTimeInit" << (ovr_GetTimeInSeconds() - start) << "seconds");
 }
 
 void MovieSelectionView::OneTimeShutdown()
 {
-	LOG( "MovieSelectionView::OneTimeShutdown" );
+	vInfo("MovieSelectionView::OneTimeShutdown");
 }
 
 void MovieSelectionView::OnOpen()
 {
-	LOG( "OnOpen" );
+	vInfo("OnOpen");
 	CurViewState = VIEWSTATE_OPEN;
 
 	LastMovieDisplayed = NULL;
@@ -175,7 +175,7 @@ void MovieSelectionView::OnOpen()
 
 void MovieSelectionView::OnClose()
 {
-	LOG( "OnClose" );
+	vInfo("OnClose");
 	ShowTimer = false;
 	CurViewState = VIEWSTATE_CLOSED;
 	CenterRoot->SetVisible( false );
@@ -197,7 +197,7 @@ bool MovieSelectionView::OnKeyEvent( const int keyCode, const KeyState::eKeyEven
 			switch ( eventType )
 			{
 				case KeyState::KEY_EVENT_DOUBLE_TAP:
-					LOG( "KEY_EVENT_DOUBLE_TAP" );
+					vInfo("KEY_EVENT_DOUBLE_TAP");
 					return true;
 					break;
 				default:
@@ -562,7 +562,7 @@ void MovieSelectionView::UpdateMenuPosition()
 
 void MovieSelectionView::SelectMovie()
 {
-	LOG( "SelectMovie");
+	vInfo("SelectMovie");
 
 	// ignore selection while repositioning screen
 	if ( RepositionScreen )
@@ -613,7 +613,7 @@ const MovieDef *MovieSelectionView::GetSelectedMovie() const
 
 void MovieSelectionView::SetMovieList( const VArray<const MovieDef *> &movies, const MovieDef *nextMovie )
 {
-    LOG( "SetMovieList: %d movies", movies.size() );
+    vInfo("SetMovieList:" << movies.size() << "movies");
 
 	MovieList = movies;
 	DeletePointerArray( MovieBrowserItems );
@@ -621,7 +621,7 @@ void MovieSelectionView::SetMovieList( const VArray<const MovieDef *> &movies, c
 	{
 		const MovieDef *movie = MovieList[ i ];
 
-		LOG( "AddMovie: %s", movie->Filename.toCString() );
+		vInfo("AddMovie:" << movie->Filename);
 
 		CarouselItem *item = new CarouselItem();
 		item->texture 		= movie->Poster;
@@ -681,7 +681,7 @@ void MovieSelectionView::SetCategory( const MovieCategory category )
 		}
 	}
 
-	LOG( "SetCategory: %s", Categories[ categoryIndex ].Text.toCString() );
+	vInfo("SetCategory:" << Categories[ categoryIndex ].Text);
 	CurrentCategory = Categories[ categoryIndex ].Category;
     for( uint i = 0; i < Categories.size(); ++i )
 	{
@@ -699,7 +699,7 @@ void MovieSelectionView::SetCategory( const MovieCategory category )
 
 	SetMovieList( Cinema.movieMgr.GetMovieList( CurrentCategory ), NULL );
 
-    LOG( "%d movies added", MovieList.size() );
+    vInfo(MovieList.size() << "movies added");
 }
 
 void MovieSelectionView::UpdateMovieTitle()
@@ -795,7 +795,7 @@ void MovieSelectionView::SetError( const char *text, bool showSDCard, bool showE
 {
 	ClearError();
 
-	LOG( "SetError: %s", text );
+	vInfo("SetError:" << text);
 	if ( showSDCard )
 	{
 		SDCardMessage->SetVisible( true );
@@ -819,7 +819,7 @@ void MovieSelectionView::SetError( const char *text, bool showSDCard, bool showE
 
 void MovieSelectionView::ClearError()
 {
-	LOG( "ClearError" );
+	vInfo("ClearError");
 	ErrorMessageClicked = false;
 	ErrorMessage->SetVisible( false );
 	SDCardMessage->SetVisible( false );
@@ -872,18 +872,18 @@ VR4Matrixf MovieSelectionView::Frame( const VrFrame & vrFrame )
 		// if we finished the movie or have an error, don't resume it, go back to the lobby
 		if ( ErrorShown() )
 		{
-			LOG( "Error closed.  Return to lobby." );
+			vInfo("Error closed.  Return to lobby.");
 			ClearError();
 			Cinema.setMovieSelection( true );
 		}
 		else if ( Cinema.isMovieFinished() )
 		{
-			LOG( "Movie finished.  Return to lobby." );
+			vInfo("Movie finished.  Return to lobby.");
 			Cinema.setMovieSelection( true );
 		}
 		else
 		{
-			LOG( "Resume movie." );
+			vInfo("Resume movie.");
 			Cinema.resumeMovieFromSavedLocation();
 		}
 	}

@@ -56,7 +56,7 @@ SceneManager::SceneManager( CinemaApp &cinema ) :
 
 void SceneManager::OneTimeInit( const VString &launchIntent )
 {
-	LOG( "SceneManager::OneTimeInit" );
+	vInfo("SceneManager::OneTimeInit");
 
 	const double start = ovr_GetTimeInSeconds();
 
@@ -67,12 +67,12 @@ void SceneManager::OneTimeInit( const VString &launchIntent )
 	ScreenVignetteTexture = BuildScreenVignetteTexture( 1 );
 	ScreenVignetteSbsTexture = BuildScreenVignetteTexture( 2 );
 
-	LOG( "SceneManager::OneTimeInit: %3.1f seconds", ovr_GetTimeInSeconds() - start );
+	vInfo("SceneManager::OneTimeInit:" << (ovr_GetTimeInSeconds() - start) << "seconds");
 }
 
 void SceneManager::OneTimeShutdown()
 {
-	LOG( "SceneManager::OneTimeShutdown" );
+	vInfo("SceneManager::OneTimeShutdown");
 
 	// Free GL resources
 
@@ -144,7 +144,7 @@ static V3Vectf AnglesForMatrix( const VR4Matrixf &m )
 // SeatPosition
 void SceneManager::SetSceneModel( const SceneDef &sceneDef )
 {
-    LOG( "SetSceneModel %s", sceneDef.SceneModel->FileName.toCString() );
+    vInfo("SetSceneModel" << sceneDef.SceneModel->FileName);
 
 	VoidedScene = false;
 	UseOverlay = true;
@@ -255,7 +255,7 @@ void SceneManager::SetSceneProgram( const sceneProgram_t opaqueProgram, const sc
 	const VGlShader & additiveProg = Cinema.shaderMgr.ScenePrograms[additiveProgram];
 	const VGlShader & diffuseProg = Cinema.shaderMgr.ProgSingleTexture;
 
-	LOG( "SetSceneProgram: %d(%d), %d(%d)", opaqueProgram, opaqueProg.program, additiveProgram, additiveProg.program );
+	vInfo("SetSceneProgram:" << opaqueProgram << "(" << opaqueProg.program << ")," << additiveProgram << "(" << additiveProg.program << ")");
 
 	ModelDef & def = *const_cast< ModelDef * >( &Scene.WorldModel.Definition->Def );
     for ( int i = 0; i < def.surfaces.length(); i++ )
@@ -697,13 +697,13 @@ bool SceneManager::Command(const VEvent &event)
 		MovieTextureHeight = height;
 
 		// Disable overlay on larger movies to reduce judder
-		long numberOfPixels = MovieTextureWidth * MovieTextureHeight;
-		LOG( "Movie size: %dx%d = %d pixels", MovieTextureWidth, MovieTextureHeight, numberOfPixels );
+        longlong numberOfPixels = MovieTextureWidth * MovieTextureHeight;
+        vInfo("Movie size:" << MovieTextureWidth << MovieTextureHeight << "=" << numberOfPixels << "pixels");
 
 		// use the void theater on large movies
 		if ( numberOfPixels > 1920 * 1080 )
 		{
-			LOG( "Oversized movie.  Switching to Void scene to reduce judder" );
+			vInfo("Oversized movie.  Switching to Void scene to reduce judder");
 			SetSceneModel( *Cinema.modelMgr.VoidScene );
 			UseOverlay = false;
 			VoidedScene = true;

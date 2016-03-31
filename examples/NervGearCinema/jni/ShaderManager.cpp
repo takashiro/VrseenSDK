@@ -162,7 +162,7 @@ ShaderManager::ShaderManager( CinemaApp &cinema ) :
 
 void ShaderManager::OneTimeInit( const VString &launchIntent )
 {
-	LOG( "ShaderManager::OneTimeInit" );
+	vInfo("ShaderManager::OneTimeInit");
 
 	const double start = ovr_GetTimeInSeconds();
 
@@ -198,12 +198,12 @@ void ShaderManager::OneTimeInit( const VString &launchIntent )
 	DefaultPrograms.ProgSkinnedLightMapped		= & ProgSkinnedLightMapped;
 	DefaultPrograms.ProgSkinnedReflectionMapped	= & ProgSkinnedReflectionMapped;
 
-	LOG( "ShaderManager::OneTimeInit: %3.1f seconds", ovr_GetTimeInSeconds() - start );
+	vInfo("ShaderManager::OneTimeInit:" << (ovr_GetTimeInSeconds() - start) << "seconds");
 }
 
 void ShaderManager::OneTimeShutdown()
 {
-	LOG( "ShaderManager::OneTimeShutdown" );
+	vInfo("ShaderManager::OneTimeShutdown");
 
 	 MovieExternalUiProgram .destroy();
 	 CopyMovieProgram .destroy();
