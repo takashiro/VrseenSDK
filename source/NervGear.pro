@@ -168,13 +168,6 @@ HEADERS += \
     jni/core/VVector.h \
     jni/core/VTransform.h \
     jni/core/VBasicmath.h \
-    jni/embedded/dependency_error_de.h \
-    jni/embedded/dependency_error_en.h \
-    jni/embedded/dependency_error_es.h \
-    jni/embedded/dependency_error_fr.h \
-    jni/embedded/dependency_error_it.h \
-    jni/embedded/dependency_error_ja.h \
-    jni/embedded/dependency_error_ko.h \
     jni/embedded/oculus_loading_indicator.h \
     jni/api/VKernel.h \
     jni/api/Vsync.h \
