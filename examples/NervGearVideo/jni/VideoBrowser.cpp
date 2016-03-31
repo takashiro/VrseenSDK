@@ -58,7 +58,7 @@ unsigned char * VideoBrowser::createAndCacheThumbnail( const char * soureFile, c
 
 unsigned char * VideoBrowser::loadThumbnail( const char * filename, int & width, int & height )
 {
-	LOG( "VideoBrowser::LoadThumbnail loading on %s", filename );
+	vInfo("VideoBrowser::LoadThumbnail loading on" << filename);
 	unsigned char * orig = NULL;
 
 	if ( strstr( filename, "assets/" ) )
@@ -90,11 +90,11 @@ unsigned char * VideoBrowser::loadThumbnail( const char * filename, int & width,
 
 		if ( ThumbWidth == width && ThumbHeight == height )
 		{
-			LOG( "VideoBrowser::LoadThumbnail skip resize on %s", filename );
+			vInfo("VideoBrowser::LoadThumbnail skip resize on" << filename);
 			return orig;
 		}
 
-		LOG( "VideoBrowser::LoadThumbnail resizing %s to %ix%i", filename, ThumbWidth, ThumbHeight );
+        vInfo("VideoBrowser::LoadThumbnail resizing" << filename << "to" << ThumbWidth << ThumbHeight);
 		unsigned char * outBuffer = ScaleImageRGBA( ( const unsigned char * )orig, width, height, ThumbWidth, ThumbHeight, IMAGE_FILTER_CUBIC );
 		free( orig );
 
@@ -108,7 +108,7 @@ unsigned char * VideoBrowser::loadThumbnail( const char * filename, int & width,
 	}
 	else
 	{
-		LOG( "Error: VideoBrowser::LoadThumbnail failed to load %s", filename );
+		vInfo("Error: VideoBrowser::LoadThumbnail failed to load" << filename);
 	}
 	return NULL;
 }
