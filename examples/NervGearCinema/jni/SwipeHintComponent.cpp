@@ -1,5 +1,5 @@
 
-#include <Vsync.h>
+
 #include <Input.h>
 
 #include "SwipeHintComponent.h"

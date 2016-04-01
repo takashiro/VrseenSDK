@@ -41,7 +41,6 @@ SOURCES += \
     jni/core/android/LogUtils.cpp \
     jni/core/android/VOsBuild.cpp \
     jni/api/VKernel.cpp \
-    jni/api/Vsync.cpp \
     jni/api/VDevice.cpp \
     jni/api/VGlOperation.cpp \
     jni/api/HmdSensors.cpp \
@@ -172,7 +171,6 @@ HEADERS += \
     jni/core/VBasicmath.h \
     jni/embedded/oculus_loading_indicator.h \
     jni/api/VKernel.h \
-    jni/api/Vsync.h \
     jni/api/HmdSensors.h \
     jni/api/VLensDistortion.h \
     jni/api/VSystemActivities.h \

@@ -13,7 +13,7 @@
 #include "VFrameSmooth.h"
 #include "Android/LogUtils.h"
 #include "Android/JniUtils.h"
-#include "Vsync.h"
+
 #include "VLensDistortion.h"
 #include "api/VGlOperation.h"
 #include "../core/VString.h"
@@ -21,6 +21,7 @@
 #include "../embedded/oculus_loading_indicator.h"
 
 #include "VLockless.h"
+#include "VTimer.h"
 #include "VGlGeometry.h"
 #include "VGlShader.h"
 #include "VKernel.h"
@@ -33,6 +34,18 @@ const char * ovr_GetLatencyTestResult();
 NV_NAMESPACE_BEGIN
 
 
+
+class VsyncState
+{
+public:
+    long long vsyncCount;
+    double	vsyncPeriodNano;
+    double	vsyncBaseNano;
+};
+
+namespace {
+    VLockless<VsyncState>	UpdatedVsyncState;
+}
 
 struct swapProgram_t
 {
@@ -160,7 +173,24 @@ static bool IsContextPriorityExtensionPresent()
     return true;
 }
 
-//=========================================================================================
+
+extern "C"
+{
+
+    void Java_com_vrseen_nervgear_VrLib_nativeVsync( JNIEnv *jni, jclass clazz, jlong frameTimeNanos )
+    {
+
+        VsyncState	state = UpdatedVsyncState.state();
+
+        // Round this, because different phone models have slightly different periods.
+        state.vsyncCount += floor( 0.5 + ( frameTimeNanos - state.vsyncBaseNano ) / state.vsyncPeriodNano );
+        state.vsyncPeriodNano = 1e9 / 60.0;
+        state.vsyncBaseNano = frameTimeNanos;
+
+        UpdatedVsyncState.setState( state );
+    }
+}
+
 
 struct VFrameSmooth::Private
 {
@@ -372,6 +402,10 @@ struct VFrameSmooth::Private
     void			createFrameworkGraphics();
     void			destroyFrameworkGraphics();
     void			drawFrameworkGraphicsToWindow( const int eye, const int swapOptions);
+    //用于管理同步的函数
+    double			getFractionalVsync();
+    double			framePointTimeInSeconds( const double framePoint ) const;
+    float 			sleepUntilTimePoint( const double targetSeconds, const bool busyWait );
 
     // 平滑的参数：
      bool m_async;
@@ -474,6 +508,8 @@ struct VFrameSmooth::Private
 
 
     VLockless<SwapState>		m_swapVsync;
+
+   // VLockless<VsyncState>	m_updatedVsyncState;
 
     long long			m_lastSwapVsyncCount;
 };
@@ -592,6 +628,55 @@ void *VFrameSmooth::Private::ThreadStarter( void * parm )
     return NULL;
 }
 
+
+double	VFrameSmooth::Private::getFractionalVsync()
+{
+    const VsyncState state = UpdatedVsyncState.state();
+
+    const jlong t = VTimer::TicksNanos();
+    if ( state.vsyncBaseNano == 0 )
+    {
+        return 0;
+    }
+    const double vsync = (double)state.vsyncCount + (double)(t - state.vsyncBaseNano ) / state.vsyncPeriodNano;
+    return vsync;
+}
+double	VFrameSmooth::Private::framePointTimeInSeconds( const double framePoint )const
+{
+    const VsyncState state = UpdatedVsyncState.state();
+    const double seconds = ( state.vsyncBaseNano + ( framePoint - state.vsyncCount ) * state.vsyncPeriodNano ) * 1e-9;
+    return seconds;
+}
+float 	VFrameSmooth::Private::sleepUntilTimePoint( const double targetSeconds, const bool busyWait )
+{
+    const float sleepSeconds = targetSeconds - ovr_GetTimeInSeconds();
+    if ( sleepSeconds > 0 )
+    {
+        if ( busyWait )
+        {
+            while( targetSeconds - ovr_GetTimeInSeconds() > 0 )
+            {
+            }
+        }
+        else
+        {
+            // I'm assuming we will never sleep more than one full second.
+            timespec	t, rem;
+            t.tv_sec = 0;
+            t.tv_nsec = sleepSeconds * 1e9;
+            nanosleep( &t, &rem );
+            const double overSleep = ovr_GetTimeInSeconds() - targetSeconds;
+            if ( overSleep > 0.001 )
+            {
+    //			vInfo("Overslept " << overSleep << " seconds");
+            }
+        }
+    }
+    return sleepSeconds;
+}
+
+
+
 void VFrameSmooth::Private::threadFunction()
 {
 
@@ -612,7 +697,7 @@ void VFrameSmooth::Private::threadFunction()
     {
 
 
-        const double current = ceil( GetFractionalVsync() );
+        const double current = ceil( getFractionalVsync() );
         if ( abs( current - vsync ) > 2.0 )
         {
             vInfo("Changing vsync from " << vsync << " to " << current);
@@ -828,7 +913,8 @@ void VFrameSmooth::Private::bindSmoothProgram( const VR4Matrixf timeWarps[2][2],
     }
     if ( warpProg.uniformRotateScale > 0 )
     {
-        const float angle = FramePointTimeInSeconds( vsyncBase ) * M_PI * m_programParms[0];
+
+       const double angle = framePointTimeInSeconds( vsyncBase )* M_PI * m_programParms[0];
         const V4Vectf RotateScale( sinf( angle ), cosf( angle ), m_programParms[1], 1.0f );
         glUniform4fv( warpProg.uniformRotateScale, 1, &RotateScale[0] );
     }
@@ -995,14 +1081,11 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
     for ( int eye = 0; eye <= 1; ++eye )
     {
 
-        //vInfo("Eye " << eye << ": now=" << GetFractionalVsync() << "  sleepTo=" << vsyncBase + swap.deltaVsync[eye]);
+        //vInfo("Eye " << eye << ": now=" << getFractionalVsync() << "  sleepTo=" << vsyncBase + swap.deltaVsync[eye]);
 
 
         const double sleepTargetVsync = vsyncBase + swap.deltaVsync[eye];
 
-//        const double sleepTargetTime = FramePointTimeInSeconds( sleepTargetVsync );
-        //const float secondsToSleep = SleepUntilTimePoint( sleepTargetTime, false );
-//        const double preFinish = ovr_GetTimeInSeconds();
 
         //vInfo("Vsync " << vsyncBase << ":" << eye << " sleep " << secondsToSleep);
 
@@ -1081,7 +1164,7 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
 
                 vInfo("WarpToScreen: Nothing valid to draw");
 
-                SleepUntilTimePoint( FramePointTimeInSeconds( sleepTargetVsync + 1.0f ), false );
+                sleepUntilTimePoint( framePointTimeInSeconds( sleepTargetVsync + 1.0f ), false );
                 break;
             }
         }
@@ -1103,7 +1186,7 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
         for ( int scan = 0; scan < 2; scan++ )
         {
             const double vsyncPoint = vsyncBase + swap.predictionPoints[eye][scan];
-            const double timePoint = FramePointTimeInSeconds( vsyncPoint );
+            const double timePoint = framePointTimeInSeconds( vsyncPoint );
             sensor[scan] = ovr_GetSensorStateInternal( timePoint );
             const VR4Matrixf warp = CalculateTimeWarpMatrix2(
                         m_pose[eye][0].Orientation,
@@ -1297,7 +1380,7 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
 
                 vInfo("WarpToScreen: Nothing valid to draw");
 
-                SleepUntilTimePoint( FramePointTimeInSeconds( vsyncBase + 1.0f ), false );
+                sleepUntilTimePoint( framePointTimeInSeconds( vsyncBase + 1.0f ), false );
                 break;
             }
         }
@@ -1484,7 +1567,7 @@ void VFrameSmooth::Private::smoothInternal( )
         swapProgram_t * swapProg;
         swapProg = &spSyncSwappedBufferPortrait;
 
-        renderToDisplay( floor( GetFractionalVsync() ), *swapProg );
+        renderToDisplay( floor( getFractionalVsync() ), *swapProg );
 
         const SwapState state = m_swapVsync.state();
         m_lastSwapVsyncCount = state.VsyncCount;

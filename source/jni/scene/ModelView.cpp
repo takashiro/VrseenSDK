@@ -16,6 +16,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "Input.h"		// VrFrame, etc
 #include "BitmapFont.h"
 #include "DebugLines.h"
+#include "sensor/SensorFusion.h"
 
 #include "VLog.h"
 
@@ -341,7 +342,7 @@ void OvrSceneView::UpdateViewMatrix(const VrFrame vrFrame )
 	// latency on stick controls to avoid a bounce-back.
 	YawOffset -= YawVelocity * dt;
 
-	if ( !( vrFrame.OvrStatus & ovrStatus_OrientationTracked ) )
+    if ( !( vrFrame.OvrStatus & Status_OrientationTracked ) )
 	{
 		PitchOffset -= yawSpeed * vrFrame.Input.sticks[1][1] * dt;
 		YawVelocity = yawSpeed * vrFrame.Input.sticks[1][0];
@@ -362,7 +363,7 @@ void OvrSceneView::UpdateViewMatrix(const VrFrame vrFrame )
 	// If the sensor isn't plugged in, allow right stick up/down
 	// to adjust pitch, which can be useful for debugging.  Never
 	// do this when head tracking
-	if ( !( vrFrame.OvrStatus & ovrStatus_OrientationTracked ) )
+    if ( !( vrFrame.OvrStatus & Status_OrientationTracked ) )
 	{
 		EyePitch += PitchOffset;
 	}

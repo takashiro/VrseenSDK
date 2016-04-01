@@ -19,7 +19,7 @@
 #include "sensor/DeviceImpl.h"
 
 #include "HmdSensors.h"
-#include "Vsync.h"
+
 #include "VSystemActivities.h"
 #include "VThread.h"
 
@@ -723,7 +723,7 @@ void VKernel::run()
     isRunning = true;
 
     ovrSensorState state = ovr_GetSensorStateInternal( ovr_GetTimeInSeconds() );
-    if ( state.Status & ovrStatus_OrientationTracked )
+    if ( state.Status & Status_OrientationTracked )
     {
         vInfo("HMD sensor attached.");
     }

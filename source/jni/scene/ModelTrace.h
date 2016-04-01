@@ -61,8 +61,8 @@ struct kdtree_node_t
 
 struct kdtree_leaf_t
 {
-	int			triangles[RT_KDTREE_MAX_LEAF_TRIANGLES];
-	int			ropes[6];
+    int			triangles[RT_KDTREE_MAX_LEAF_TRIANGLES];
+    int			ropes[6];
     VBoxf	bounds;
 };
 
@@ -85,6 +85,7 @@ public:
 
 public:
 	kdtree_header_t			header;
+
     VArray< V3Vectf >		vertices;
     VArray< V2Vectf >		uvs;
 	VArray< int >			indices;

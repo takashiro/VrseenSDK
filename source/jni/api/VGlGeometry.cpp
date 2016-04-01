@@ -155,8 +155,11 @@ void VGlGeometry::drawElements() const
 void VGlGeometry::destroy()
 {
     VGlOperation glOperation;
+    if(vertexArrayObject != 0)
     glOperation.glDeleteVertexArraysOES( 1, &vertexArrayObject );
+     if(indexBuffer != 0)
     glDeleteBuffers( 1, &indexBuffer );
+      if(vertexBuffer != 0)
     glDeleteBuffers( 1, &vertexBuffer );
 
     indexBuffer = 0;

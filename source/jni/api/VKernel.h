@@ -36,13 +36,7 @@ typedef struct VKpose_
     double		TimeBySeconds;
 } VKpose;
 
-typedef enum
-{
-    ovrStatus_OrientationTracked	= 0x0001,
-    ovrStatus_PositionTracked		= 0x0002,
-    ovrStatus_PositionConnected		= 0x0020,
-    ovrStatus_HmdConnected			= 0x0080
-} ovrStatusBits;
+
 
 typedef struct ovrSensorState_
 {
