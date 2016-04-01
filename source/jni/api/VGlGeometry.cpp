@@ -176,7 +176,7 @@ void VGlGeometry::destroy()
 
 
 
-void VGlGeometry::createScreenMaskSquare( const float xx, const float yy )
+void VGlGeometry::createScreenQuad( const float xx, const float yy )
  {
      const float posx[] = { -1.001f, -1.0f + xx * 0.25f, -1.0f + xx, 1.0f - xx, 1.0f - xx * 0.25f, 1.001f };
      const float posy[] = { -1.001f, -1.0f + yy * 0.25f, -1.0f + yy, 1.0f - yy, 1.0f - yy * 0.25f, 1.001f };
