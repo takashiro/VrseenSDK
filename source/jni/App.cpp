@@ -42,7 +42,7 @@
 #include "VMainActivity.h"
 #include "VThread.h"
 #include "VStandardPath.h"
-
+#include "VColor.h"
 //#define TEST_TIMEWARP_WATCHDOG
 #define EGL_PROTECTED_CONTENT_EXT 0x32c0
 
@@ -128,14 +128,14 @@ extern void DebugMenuHierarchy(void * appPtr, const char * cmd);
 extern void DebugMenuPoses(void * appPtr, const char * cmd);
 extern void ShowFPS(void * appPtr, const char * cmd);
 
-static EyeParms DefaultVrParmsForRenderer(const VGlOperation & glOperation)
+static EyeBuf::EyeParms DefaultVrParmsForRenderer(const VGlOperation & glOperation)
 {
-    EyeParms vrParms;
+    EyeBuf::EyeParms vrParms;
 
     vrParms.resolution = 1024;
     vrParms.multisamples = (glOperation.gpuType == VGlOperation::GPU_TYPE_ADRENO_330) ? 2 : 4;
-    vrParms.colorFormat = COLOR_8888;
-    vrParms.depthFormat = DEPTH_24;
+    vrParms.colorFormat = VColor::COLOR_8888;
+    vrParms.depthFormat = EyeBuf::DepthFormat::DEPTH_24;
 
     return vrParms;
 }
@@ -166,7 +166,7 @@ struct App::Private
     // Handles creating, destroying, and re-configuring the buffers
     // for drawing the eye views, which might be in different texture
     // configurations for CPU warping, etc.
-    EyeBuffers *	eyeTargets;
+    EyeBuf *	eyeTargets;
 
     GLuint			loadingIconTexId;
 
@@ -224,7 +224,7 @@ struct App::Private
 
     VrFrame			lastVrFrame;
 
-    EyeParms		vrParms;
+    EyeBuf::EyeParms		vrParms;
 
 
 
@@ -943,7 +943,7 @@ struct App::Private
             // Create our GL data objects
             initGlObjects();
 
-            eyeTargets = new EyeBuffers;
+            eyeTargets = new EyeBuf;
             guiSys = new OvrGuiSysLocal;
             gazeCursor = new OvrGazeCursorLocal;
             vrMenuMgr = OvrVRMenuMgr::Create();
@@ -1508,8 +1508,8 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
 	// Default EyeParms
     d->vrParms.resolution = 1024;
     d->vrParms.multisamples = 4;
-    d->vrParms.colorFormat = COLOR_8888;
-    d->vrParms.depthFormat = DEPTH_24;
+    d->vrParms.colorFormat = VColor::COLOR_8888;
+    d->vrParms.depthFormat = EyeBuf::DepthFormat::DEPTH_24;
 
     d->javaObject = d->uiJni->NewGlobalRef(activityObject);
 
@@ -1648,7 +1648,7 @@ void App::playSound(const char *name)
 /*
  * eyeParms()
  */
-EyeParms App::eyeParms()
+EyeBuf::EyeParms App::eyeParms()
 {
     return d->vrParms;
 }
@@ -1656,7 +1656,7 @@ EyeParms App::eyeParms()
 /*
  * SetVrParms()
  */
-void App::setEyeParms(const EyeParms parms)
+void App::setEyeParms(const EyeBuf::EyeParms parms)
 {
     d->vrParms = parms;
 }
@@ -1833,7 +1833,7 @@ void App::setLastViewMatrix(VR4Matrixf const & m)
     d->lastViewMatrix = m;
 }
 
-EyeParms & App::vrParms()
+EyeBuf::EyeParms & App::vrParms()
 {
     return d->vrParms;
 }
@@ -2108,7 +2108,7 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
     // This eye set is complete, use it now.
     if ( numPresents > 0 )
     {
-        const CompletedEyes eyes = d->eyeTargets->GetCompletedEyes();
+        const EyeBuf::CompletedEyes eyes = d->eyeTargets->GetCompletedEyes();
 
         for ( int eye = 0; eye < 2; eye++ )
         {            

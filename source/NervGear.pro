@@ -103,7 +103,7 @@ SOURCES += \
     jni/media/VSoundManager.cpp \
     jni/scene/BitmapFont.cpp \
     jni/scene/DebugLines.cpp \
-    jni/scene/EyeBuffers.cpp \
+    jni/scene/VEyeBuffer.cpp \
     jni/scene/EyePostRender.cpp \
     jni/scene/GazeCursor.cpp \
     jni/scene/GlTexture.cpp \
@@ -244,7 +244,7 @@ HEADERS += \
     jni/media/VSoundManager.h \
     jni/scene/BitmapFont.h \
     jni/scene/DebugLines.h \
-    jni/scene/EyeBuffers.h \
+    jni/scene/VEyeBuffer.h \
     jni/scene/EyePostRender.h \
     jni/scene/GazeCursor.h \
     jni/scene/GazeCursorLocal.h \

@@ -1,7 +1,7 @@
 #include "CinemaApp.h"
 #include "Native.h"
 #include "CinemaStrings.h"
-
+#include "VColor.h"
 
 //=======================================================================================
 
@@ -41,7 +41,7 @@ void CinemaApp::init(const VString &fromPackage, const VString &launchIntentJSON
 
 	startTime = ovr_GetTimeInSeconds();
 
-    vApp->vrParms().colorFormat = COLOR_8888;
+    vApp->vrParms().colorFormat = VColor::COLOR_8888;
 	//app->GetVrParms().depthFormat = DEPTH_16;
     vApp->vrParms().multisamples = 2;
 

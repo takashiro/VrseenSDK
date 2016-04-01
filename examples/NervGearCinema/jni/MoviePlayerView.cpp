@@ -899,7 +899,7 @@ VR4Matrixf MoviePlayerView::Frame( const VrFrame & vrFrame )
 {
 	// Drop to 2x MSAA during playback, people should be focused
 	// on the high quality screen.
-	EyeParms eyeParms = vApp->eyeParms();
+    EyeBuf::EyeParms eyeParms = vApp->eyeParms();
 	eyeParms.multisamples = 2;
 	vApp->setEyeParms( eyeParms );
 

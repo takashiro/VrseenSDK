@@ -27,6 +27,8 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "BitmapFont.h"
 #include "Native.h"
 
+#include <VEyeBuffer.h>
+
 namespace OculusCinema {
 
 static const int PosterWidth = 228;
@@ -843,7 +845,7 @@ VR4Matrixf MovieSelectionView::DrawEyeView( const int eye, const float fovDegree
 VR4Matrixf MovieSelectionView::Frame( const VrFrame & vrFrame )
 {
 	// We want 4x MSAA in the lobby
-    EyeParms eyeParms = vApp->eyeParms();
+    EyeBuf::EyeParms eyeParms = vApp->eyeParms();
 	eyeParms.multisamples = 4;
     vApp->setEyeParms( eyeParms );
 

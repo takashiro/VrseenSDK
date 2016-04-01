@@ -36,6 +36,16 @@ struct VColor
     }
 
     bool operator == (const VColor &color) const { return red == color.red && green == color.green && blue == color.blue && alpha == color.alpha; }
+
+    enum colorFormat
+    {
+        COLOR_565,
+        COLOR_5551,     // single bit alpha useful for overlay planes
+        COLOR_4444,
+        COLOR_8888,
+        COLOR_8888_sRGB
+    };
+
 };
 
 NV_NAMESPACE_END

@@ -13,6 +13,8 @@ Copyright   :   Copyright 2012 Oculus VR, LCC. All Rights reserved.
 
 #include <VStandardPath.h>
 #include <VLog.h>
+#include <VColor.h>
+#include <VEyeBuffer.h>
 
 static const char * versionString = "VrScene v0.1.0";
 
@@ -100,8 +102,8 @@ void VrScene::LoadScene( const VString &path )
 	}
 
 	MaterialParms materialParms;
-	materialParms.UseSrgbTextureFormats = ( vApp->vrParms().colorFormat == COLOR_8888_sRGB );
-	vInfo("VrScene::LoadScene loading" << SceneFile);
+	materialParms.UseSrgbTextureFormats = ( vApp->vrParms().colorFormat == VColor::COLOR_8888_sRGB );
+    vInfo("VrScene::LoadScene loading" << SceneFile);
     Scene.LoadWorldModel( SceneFile, materialParms );
 	ModelLoaded = true; 
 	vInfo("VrScene::LoadScene model is loaded");
@@ -137,7 +139,7 @@ void VrScene::ReloadScene()
 	const float	yaw = Scene.YawOffset;
 
 	MaterialParms materialParms;
-	materialParms.UseSrgbTextureFormats = ( vApp->vrParms().colorFormat == COLOR_8888_sRGB );
+	materialParms.UseSrgbTextureFormats = ( vApp->vrParms().colorFormat == VColor::COLOR_8888_sRGB );
     Scene.LoadWorldModel( SceneFile, materialParms );
 
 	Scene.YawOffset = yaw;
@@ -160,7 +162,7 @@ VR4Matrixf VrScene::drawEyeView( const int eye, const float fovDegrees )
 VR4Matrixf VrScene::onNewFrame( const VrFrame vrFrame )
 {
 	// Get the current vrParms for the buffer resolution.
-	const EyeParms vrParms = vApp->eyeParms();
+	const EyeBuf::EyeParms vrParms = vApp->eyeParms();
 
 	// Player movement
     Scene.Frame( vApp->vrViewParms(), vrFrame, vApp->kernel()->m_externalVelocity );
@@ -189,7 +191,7 @@ VR4Matrixf VrScene::onNewFrame( const VrFrame vrFrame )
 			// Switch buffer parameters for testing
 			if ( vrFrame.Input.buttonPressed & BUTTON_X )
 			{
-				EyeParms newParms = vrParms;
+			    EyeBuf::EyeParms newParms = vrParms;
 				switch ( newParms.multisamples )
 				{
 					case 2: newParms.multisamples = 4; break;

@@ -36,6 +36,8 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "App.h"
 #include "SwipeView.h"
 #include "Oculus360Videos.h"
+
+#include <VEyeBuffer.h>
 #include "gui/GuiSys.h"
 
 #include "gui/Fader.h"
@@ -48,7 +50,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "VStandardPath.h"
 
 #include "VideosMetaData.h"
-
+#include "VColor.h"
 static bool	RetailMode = false;
 
 static const char * videosDirectory = "Oculus/360Videos/";
@@ -161,8 +163,8 @@ void Oculus360Videos::init(const VString &fromPackage, const VString &launchInte
 	VDir vdir;
 	RetailMode = vdir.exists( "/sdcard/RetailMedia" );
 
-	vApp->vrParms().colorFormat = COLOR_8888;
-	vApp->vrParms().depthFormat = DEPTH_16;
+	vApp->vrParms().colorFormat = VColor::COLOR_8888;
+	vApp->vrParms().depthFormat = EyeBuf::DepthFormat::DEPTH_16;
 	vApp->vrParms().multisamples = 2;
 
     PanoramaProgram.initShader(VGlShader::getPanoVertexShaderSource(),VGlShader::getPanoProgramShaderSource()	);
@@ -207,7 +209,7 @@ void Oculus360Videos::init(const VString &fromPackage, const VString &launchInte
 	Scene.Znear = 0.1f;
 	Scene.Zfar = 200.0f;
 	MaterialParms materialParms;
-	materialParms.UseSrgbTextureFormats = ( vApp->vrParms().colorFormat == COLOR_8888_sRGB );
+	materialParms.UseSrgbTextureFormats = ( vApp->vrParms().colorFormat == VColor::COLOR_8888_sRGB );
 
 
     const VApkFile &apk = VApkFile::CurrentApkFile();
@@ -795,7 +797,7 @@ VR4Matrixf Oculus360Videos::onNewFrame( const VrFrame vrFrame )
 	CurrentFadeLevel = Fader.finalAlpha();
 
 	// We could disable the srgb convert on the FBO. but this is easier
-	vApp->vrParms().colorFormat = UseSrgb ? COLOR_8888_sRGB : COLOR_8888;
+	vApp->vrParms().colorFormat = UseSrgb ? VColor::COLOR_8888_sRGB : VColor::COLOR_8888;
 
 	// Draw both eyes
 	vApp->drawEyeViewsPostDistorted( Scene.CenterViewMatrix() );
