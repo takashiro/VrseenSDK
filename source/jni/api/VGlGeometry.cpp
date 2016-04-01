@@ -55,9 +55,9 @@ void VGlGeometry::createGlGeometry( const VertexAttribs & attribs, const VArray<
     PackVertexAttribute( packed, attribs.tangent,		VERTEX_TANGENT,			GL_FLOAT,	3 );
     PackVertexAttribute( packed, attribs.binormal,		VERTEX_BINORMAL,			GL_FLOAT,	3 );
     PackVertexAttribute( packed, attribs.color,			VERTEX_COLOR,			GL_FLOAT,	4 );
-    PackVertexAttribute( packed, attribs.uv0,			VERTEX_UVC0,				GL_FLOAT,	2 );
-    PackVertexAttribute( packed, attribs.uv1,			VERTEX_UVC1,				GL_FLOAT,	2 );
-    PackVertexAttribute( packed, attribs.motionIndeices,	JOINT_INDICES,	GL_INT,		4 );
+    PackVertexAttribute( packed, attribs.uvCoordinate0,			VERTEX_UVC0,				GL_FLOAT,	2 );
+    PackVertexAttribute( packed, attribs.uvCoordinate1,			VERTEX_UVC1,				GL_FLOAT,	2 );
+    PackVertexAttribute( packed, attribs.motionIndices,	JOINT_INDICES,	GL_INT,		4 );
     PackVertexAttribute( packed, attribs.motionWeight,	JOINT_WEIGHTS,	GL_FLOAT,	4 );
 
     glBufferData( GL_ARRAY_BUFFER, packed.size() * sizeof( packed[0] ), packed.data(), GL_STATIC_DRAW );
@@ -138,9 +138,9 @@ void VGlGeometry::updateGlGeometry( const VertexAttribs & attribs )
     PackVertexAttribute( packed, attribs.tangent,		VERTEX_TANGENT,			GL_FLOAT,	3 );
     PackVertexAttribute( packed, attribs.binormal,		VERTEX_BINORMAL,			GL_FLOAT,	3 );
     PackVertexAttribute( packed, attribs.color,			VERTEX_COLOR,			GL_FLOAT,	4 );
-    PackVertexAttribute( packed, attribs.uv0,			VERTEX_UVC0,				GL_FLOAT,	2 );
-    PackVertexAttribute( packed, attribs.uv1,			VERTEX_UVC1,				GL_FLOAT,	2 );
-    PackVertexAttribute( packed, attribs.motionIndeices,	JOINT_INDICES,	GL_INT,		4 );
+    PackVertexAttribute( packed, attribs.uvCoordinate0,			VERTEX_UVC0,				GL_FLOAT,	2 );
+    PackVertexAttribute( packed, attribs.uvCoordinate1,			VERTEX_UVC1,				GL_FLOAT,	2 );
+    PackVertexAttribute( packed, attribs.motionIndices,	JOINT_INDICES,	GL_INT,		4 );
     PackVertexAttribute( packed, attribs.motionWeight,	JOINT_WEIGHTS,	GL_FLOAT,	4 );
     glBufferData( GL_ARRAY_BUFFER, packed.size() * sizeof( packed[0] ), packed.data(), GL_STATIC_DRAW );
 }
@@ -185,7 +185,7 @@ void VGlGeometry::createScreenQuad( const float xx, const float yy )
 
      VertexAttribs attribs;
      attribs.position.resize( vertexCount );
-     attribs.uv0.resize( vertexCount );
+     attribs.uvCoordinate0.resize( vertexCount );
      attribs.color.resize( vertexCount );
 
      for ( int y = 0; y < 6; y++ )
@@ -196,8 +196,8 @@ void VGlGeometry::createScreenQuad( const float xx, const float yy )
              attribs.position[index].x = posx[x];
              attribs.position[index].y = posy[y];
              attribs.position[index].z = 0.0f;
-             attribs.uv0[index].x = 0.0f;
-             attribs.uv0[index].y = 0.0f;
+             attribs.uvCoordinate0[index].x = 0.0f;
+             attribs.uvCoordinate0[index].y = 0.0f;
              // the outer edges will have 0 color
              const float c = ( y <= 1 || y >= 4 || x <= 1 || x >= 4 ) ? 0.0f : 1.0f;
              for ( int i = 0; i < 3; i++ )
@@ -239,7 +239,7 @@ void VGlGeometry::createPlaneQuadGrid( const int horizontal, const int vertical 
 
     VertexAttribs attribs;
     attribs.position.resize( vertexCount );
-    attribs.uv0.resize( vertexCount );
+    attribs.uvCoordinate0.resize( vertexCount );
     attribs.color.resize( vertexCount );
 
     for ( int y = 0; y <= vertical; y++ )
@@ -252,8 +252,8 @@ void VGlGeometry::createPlaneQuadGrid( const int horizontal, const int vertical 
             attribs.position[index].x = -1 + xf * 2;
             attribs.position[index].z = 0;
             attribs.position[index].y = -1 + yf * 2;
-            attribs.uv0[index].x = xf;
-            attribs.uv0[index].y = 1.0 - yf;
+            attribs.uvCoordinate0[index].x = xf;
+            attribs.uvCoordinate0[index].y = 1.0 - yf;
             for ( int i = 0; i < 4; i++ )
             {
                 attribs.color[index][i] = 1.0f;
@@ -296,7 +296,7 @@ void  VGlGeometry::createCylinder( const float radius, const float height,const 
 
        VertexAttribs attribs;
        attribs.position.resize( vertexCount );
-       attribs.uv0.resize( vertexCount );
+       attribs.uvCoordinate0.resize( vertexCount );
        attribs.color.resize( vertexCount );
 
        for ( int y = 0; y <= vertical; ++y )
@@ -309,8 +309,8 @@ void  VGlGeometry::createCylinder( const float radius, const float height,const 
                attribs.position[index].x = cosf( M_PI * 2 * xf ) * radius;
                attribs.position[index].y = sinf( M_PI * 2 * xf ) * radius;
                attribs.position[index].z = -height + yf * 2 * height;
-               attribs.uv0[index].x = xf * uScale;
-               attribs.uv0[index].y = ( 1.0f - yf ) * vScale;
+               attribs.uvCoordinate0[index].x = xf * uScale;
+               attribs.uvCoordinate0[index].y = ( 1.0f - yf ) * vScale;
                for ( int i = 0; i < 4; ++i )
                {
                    attribs.color[index][i] = 1.0f;
@@ -357,7 +357,7 @@ void VGlGeometry::createStylePattern( const float xx, const float yy )
 
     VertexAttribs attribs;
     attribs.position.resize( vertexCount );
-    attribs.uv0.resize( vertexCount );
+    attribs.uvCoordinate0.resize( vertexCount );
     attribs.color.resize( vertexCount );
 
     for ( int y = 0; y < 6; y++ )
@@ -368,8 +368,8 @@ void VGlGeometry::createStylePattern( const float xx, const float yy )
             attribs.position[index].x = posx[x];
             attribs.position[index].y = posy[y];
             attribs.position[index].z = 0.0f;
-            attribs.uv0[index].x = 0.0f;
-            attribs.uv0[index].y = 0.0f;
+            attribs.uvCoordinate0[index].x = 0.0f;
+            attribs.uvCoordinate0[index].y = 0.0f;
             // the outer edges will have 0 color
             const float c = ( y <= 1 || y >= 4 || x <= 1 || x >= 4 ) ? 0.0f : 1.0f;
             for ( int i = 0; i < 3; i++ )
@@ -430,7 +430,7 @@ void  VGlGeometry::createDome( const float rad, const float uScale, const float 
 
         VertexAttribs attribs;
         attribs.position.resize( vertexCount );
-        attribs.uv0.resize( vertexCount );
+        attribs.uvCoordinate0.resize( vertexCount );
         attribs.color.resize( vertexCount );
 
         for ( int y = 0; y <= vertical; y++ )
@@ -457,8 +457,8 @@ void  VGlGeometry::createDome( const float rad, const float uScale, const float 
                     attribs.position[index].y = radius * sinf( lat );
                 }
 
-                attribs.uv0[index].x = xf * uScale;
-                attribs.uv0[index].y = ( 1.0f - yf ) * vScale;
+                attribs.uvCoordinate0[index].x = xf * uScale;
+                attribs.uvCoordinate0[index].y = ( 1.0f - yf ) * vScale;
                 for ( int i = 0; i < 4; i++ )
                 {
                     attribs.color[index][i] = 1.0f;
@@ -508,7 +508,7 @@ void  VGlGeometry::createSphere( const float uScale, const float vScale )
 
     VertexAttribs attribs;
     attribs.position.resize( vertexCount );
-    attribs.uv0.resize( vertexCount );
+    attribs.uvCoordinate0.resize( vertexCount );
     attribs.color.resize( vertexCount );
 
     for ( int y = 0; y <= vertical; y++ )
@@ -552,13 +552,13 @@ void  VGlGeometry::createSphere( const float uScale, const float vScale )
             // a fan, and only get one seam.
             if ( y == 0 || y == vertical )
             {
-                attribs.uv0[index].x = 0.5f;
+                attribs.uvCoordinate0[index].x = 0.5f;
             }
             else
             {
-                attribs.uv0[index].x = xf * uScale;
+                attribs.uvCoordinate0[index].x = xf * uScale;
             }
-            attribs.uv0[index].y = ( 1.0 - yf ) * vScale;
+            attribs.uvCoordinate0[index].y = ( 1.0 - yf ) * vScale;
             for ( int i = 0; i < 4; i++ )
             {
                 attribs.color[index][i] = 1.0f;
@@ -604,7 +604,7 @@ void  VGlGeometry::createPartSphere( const float fov )
 
     VertexAttribs attribs;
     attribs.position.resize( vertexCount );
-    attribs.uv0.resize( vertexCount );
+    attribs.uvCoordinate0.resize( vertexCount );
     attribs.color.resize( vertexCount );
 
     for ( int y = 0; y <= vertical; y++ )
@@ -623,8 +623,8 @@ void  VGlGeometry::createPartSphere( const float fov )
             attribs.position[index].y = radius * sinf( lat );
 
             // center in the middle of the screen for roll rotation
-            attribs.uv0[index].x = xf - 0.5f;
-            attribs.uv0[index].y = ( 1.0f - yf ) - 0.5f;
+            attribs.uvCoordinate0[index].x = xf - 0.5f;
+            attribs.uvCoordinate0[index].y = ( 1.0f - yf ) - 0.5f;
 
             for ( int i = 0 ; i < 4 ; i++ )
             {
@@ -665,7 +665,7 @@ void  VGlGeometry::createCalibrationGrid( const int lines, const bool full )
 
     VertexAttribs attribs;
     attribs.position.resize( vertexCount );
-    attribs.uv0.resize( vertexCount );
+    attribs.uvCoordinate0.resize( vertexCount );
     attribs.color.resize( vertexCount );
 
     for ( int y = 0; y < lineCount; y++ )
@@ -678,8 +678,8 @@ void  VGlGeometry::createCalibrationGrid( const int lines, const bool full )
             attribs.position[v1].x = -1 + x * 2;
             attribs.position[v1].z = -1.001f;	// keep the -1 and 1 just off the projection edges
             attribs.position[v1].y = -1 + yf * 2;
-            attribs.uv0[v1].x = x;
-            attribs.uv0[v1].y = 1.0f - yf;
+            attribs.uvCoordinate0[v1].x = x;
+            attribs.uvCoordinate0[v1].y = 1.0f - yf;
             for ( int i = 0; i < 4; i++ )
             {
                 attribs.color[v1][i] = 1.0f;
@@ -690,8 +690,8 @@ void  VGlGeometry::createCalibrationGrid( const int lines, const bool full )
             attribs.position[v2].y = -1 + x * 2;
             attribs.position[v2].z = -1.001f;	// keep the -1 and 1 just off the projection edges
             attribs.position[v2].x = -1 + yf * 2;
-            attribs.uv0[v2].x = x;
-            attribs.uv0[v2].y = 1.0f - yf;
+            attribs.uvCoordinate0[v2].x = x;
+            attribs.uvCoordinate0[v2].y = 1.0f - yf;
             for ( int i = 0; i < 4; i++ )
             {
                 attribs.color[v2][i] = 1.0f;

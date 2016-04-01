@@ -471,9 +471,9 @@ void LoadModelFileJson( ModelFile & model,
                             ReadModelArray( attribs.tangent,      vertices.value( "tangent" ).toStdString().c_str(),		bin, vertexCount );
                             ReadModelArray( attribs.binormal,     vertices.value( "binormal" ).toStdString().c_str(),		bin, vertexCount );
                             ReadModelArray( attribs.color,        vertices.value( "color" ).toStdString().c_str(),			bin, vertexCount );
-                            ReadModelArray( attribs.uv0,          vertices.value( "uv0" ).toStdString().c_str(),			bin, vertexCount );
-                            ReadModelArray( attribs.uv1,          vertices.value( "uv1" ).toStdString().c_str(),			bin, vertexCount );
-                            ReadModelArray( attribs.motionIndeices, vertices.value( "jointIndices" ).toStdString().c_str(),	bin, vertexCount );
+                            ReadModelArray( attribs.uvCoordinate0,          vertices.value( "uv0" ).toStdString().c_str(),			bin, vertexCount );
+                            ReadModelArray( attribs.uvCoordinate1,          vertices.value( "uv1" ).toStdString().c_str(),			bin, vertexCount );
+                            ReadModelArray( attribs.motionIndices, vertices.value( "jointIndices" ).toStdString().c_str(),	bin, vertexCount );
                             ReadModelArray( attribs.motionWeight, vertices.value( "jointWeights" ).toStdString().c_str(),	bin, vertexCount );
 						}
 
@@ -528,7 +528,7 @@ void LoadModelFileJson( ModelFile & model,
 							materialTypeString = "additive";
 						}
 
-                        const bool skinned = (	attribs.motionIndeices.size() == attribs.position.size() &&
+                        const bool skinned = (	attribs.motionIndices.size() == attribs.position.size() &&
                                                 attribs.motionWeight.size() == attribs.position.size() );
 
 						if ( diffuseTextureIndex >= 0 && diffuseTextureIndex < glTextures.length() )

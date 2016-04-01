@@ -212,8 +212,8 @@ void VRMenuSurface::createImageGeometry( int const textureWidth, int const textu
 
 	VertexAttribs attribs;
 	attribs.position.resize( vertexCount );
-	attribs.uv0.resize( vertexCount );
-	attribs.uv1.resize( vertexCount );
+	attribs.uvCoordinate0.resize( vertexCount );
+	attribs.uvCoordinate1.resize( vertexCount );
 	attribs.color.resize( vertexCount );
 
     V4Vectf color( 1.0f, 1.0f, 1.0f, 1.0f );
@@ -229,9 +229,9 @@ void VRMenuSurface::createImageGeometry( int const textureWidth, int const textu
 			attribs.position[index].x = ( -1 + vertPosX[ x ] * 2 ) * ( dims.x * VRMenuObject::DEFAULT_TEXEL_SCALE * 0.5f );
 			attribs.position[index].z = 0;
 			attribs.position[index].y = yPos;
-			attribs.uv0[index].x = vertUVX[ x ];
-			attribs.uv0[index].y = uvY;
-			attribs.uv1[index] = attribs.uv0[index];
+			attribs.uvCoordinate0[index].x = vertUVX[ x ];
+			attribs.uvCoordinate0[index].y = uvY;
+			attribs.uvCoordinate1[index] = attribs.uvCoordinate0[index];
 			attribs.color[index] = color;
 		}
 	}
