@@ -30,19 +30,6 @@ class VGlOperation
 {
 public:
 
-    enum GpuType
-    {
-        GPU_TYPE_ADRENO					= 0x1000,
-        GPU_TYPE_ADRENO_330				= 0x1001,
-        GPU_TYPE_ADRENO_420				= 0x1002,
-        GPU_TYPE_MALI					= 0x2000,
-        GPU_TYPE_MALI_T760				= 0x2100,
-        GPU_TYPE_MALI_T760_EXYNOS_5433	= 0x2101,
-        GPU_TYPE_MALI_T760_EXYNOS_7420	= 0x2102,
-        GPU_TYPE_UNKNOWN				= 0xFFFF
-    };
-
-
 
     enum EglEnum
     {
@@ -59,11 +46,22 @@ public:
         GL_GPU_DISJOINT_EXT = 0x8FBB
     };
 
+    enum GpuType
+    {
+        GPU_TYPE_ADRENO					= 0x1000,
+        GPU_TYPE_ADRENO_330				= 0x1001,
+        GPU_TYPE_ADRENO_420				= 0x1002,
+        GPU_TYPE_MALI					= 0x2000,
+        GPU_TYPE_MALI_T760				= 0x2100,
+        GPU_TYPE_MALI_T760_EXYNOS_5433	= 0x2101,
+        GPU_TYPE_MALI_T760_EXYNOS_7420	= 0x2102,
+        GPU_TYPE_UNKNOWN				= 0xFFFF
+    };
 
     VGlOperation();
 
 
-    GpuType eglGetGpuType();
+    ushort eglGetGpuType();
 
     const char * getGlErrorEnum(const GLenum e);
     EGLConfig eglConfigForConfigID(const EGLDisplay display, const GLint configID);
@@ -138,7 +136,7 @@ public:
 
 
     int	glEsVersion;
-    GpuType	gpuType;
+    ushort	gpuType;
     EGLDisplay display;
     EGLSurface pbufferSurface;
     EGLConfig config;

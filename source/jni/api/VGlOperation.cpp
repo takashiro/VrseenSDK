@@ -2,7 +2,9 @@
 
 NV_NAMESPACE_BEGIN
 
-VGlOperation::GpuType VGlOperation::eglGetGpuType()
+
+
+ ushort VGlOperation::eglGetGpuType()
 {
 
     GpuType gpuType;

@@ -61,7 +61,7 @@ template< int NumTimers, int NumFrames >
 void LogGpuTime<NumTimers,NumFrames>::begin( int index )
 {
     NervGear::VGlOperation glOperation;
-    NervGear::VGlOperation::GpuType gpuType = glOperation.eglGetGpuType();
+    ushort gpuType = glOperation.eglGetGpuType();
 	// don't enable by default on Mali because this issues a glFinish() to work around a driver bug
     m_useTimerQuery = AllowGpuTimerQueries && ( ( gpuType & NervGear::VGlOperation::GPU_TYPE_MALI ) == 0 );
 	// use glQueryCounterEXT on Mali to time GPU rendering to a non-default FBO

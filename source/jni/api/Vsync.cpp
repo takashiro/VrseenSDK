@@ -17,12 +17,12 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <math.h>
 #include <pthread.h>
 #include <sched.h>
-#include <unistd.h>			// for usleep
+#include <unistd.h>
 #include <sys/time.h>
 #include <sys/resource.h>
 
 #include "VTimer.h"
-#include "VKernel.h"			// for ovr_GetTimeInSeconds()
+#include "VKernel.h"
 #include "VLog.h"
 
 /*
@@ -43,9 +43,7 @@ NV_USING_NAMESPACE
 
 extern "C"
 {
-	// The nativeVsync function is called from java with timing
-	// information that GetFractionalVsync() and FramePointTimeInSeconds()
-	// can use to closely estimate raster position.
+
 	void Java_com_vrseen_nervgear_VrLib_nativeVsync( JNIEnv *jni, jclass clazz, jlong frameTimeNanos )
 	{
 		if ( LogVsync )

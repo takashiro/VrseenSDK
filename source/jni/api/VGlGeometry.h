@@ -42,10 +42,10 @@ public:
 
 
 
-    void	createGlGeometry( const VertexAttribs & attribs, const VArray< ushort > & indices );
-    void	updateGlGeometry( const VertexAttribs & attribs );
-    void	drawElements() const;
-    void	destroy();
+    void createGlGeometry( const VertexAttribs & attribs, const VArray< ushort > & indices );
+    void updateGlGeometry( const VertexAttribs & attribs );
+    void drawElements() const;
+    void destroy();
     void createPlaneQuadGrid( const int horizontal, const int vertical );
     void createScreenQuad( const float xx, const float yy );
     void createCylinder( const float radius, const float height,const int horizontal, const int vertical, const float  uScale = 1.0f, const float  vScale = 1.0f );

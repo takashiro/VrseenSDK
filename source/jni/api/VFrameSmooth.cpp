@@ -409,8 +409,6 @@ struct VFrameSmooth::Private
     VGlGeometry	m_slicesmoothMesh;
     VGlGeometry	m_cursorMesh;
 
-    static const int NUM_SLICES_PER_EYE = 4;
-    static const int NUM_SLICES_PER_SCREEN = NUM_SLICES_PER_EYE*2;
 
 
     void			renderToDisplay( const double vsyncBase, const swapProgram_t & swap );
@@ -461,7 +459,7 @@ struct VFrameSmooth::Private
     long long		m_lastEyeLog;
 
 
-    LogGpuTime<NUM_SLICES_PER_SCREEN>	m_logEyeWarpGpuTime;
+    LogGpuTime<8>	m_logEyeWarpGpuTime;
 
 
     VLockless<bool>		m_shutdownRequest;
@@ -1200,13 +1198,13 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
 
     VGlOperation glOperation;
 
-    double	sliceTimes[NUM_SLICES_PER_SCREEN+1];
+    double	sliceTimes[9];
 
     static const double startBias = 0.0;
     static const double activeFraction = 112.0 / 135;
-    for ( int i = 0; i <= NUM_SLICES_PER_SCREEN; i++ )
+    for ( int i = 0; i <= 8; i++ )
     {
-        const double framePoint = vsyncBase + activeFraction * (float)i / NUM_SLICES_PER_SCREEN;
+        const double framePoint = vsyncBase + activeFraction * (float)i / 8;
         sliceTimes[i] = ( vsyncState.vsyncBaseNano +
                           ( framePoint - vsyncState.vsyncCount ) * vsyncState.vsyncPeriodNano )
                 * 0.000000001 + startBias;
@@ -1218,9 +1216,9 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
     int	back = 0;
 
     long long thisEyeBufferNum = 0;
-    for ( int screenSlice = 0; screenSlice < NUM_SLICES_PER_SCREEN; screenSlice++ )
+    for ( int screenSlice = 0; screenSlice < 8; screenSlice++ )
     {
-        const int	eye = (int)( screenSlice / NUM_SLICES_PER_EYE );
+        const int	eye = (int)( screenSlice / 4 );
 
 
 
@@ -1321,7 +1319,7 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
         {
 
             static VR4Matrixf	warp;
-            if ( scan == 1 || screenSlice == 0 || screenSlice == NUM_SLICES_PER_EYE )
+            if ( scan == 1 || screenSlice == 0 || screenSlice == 4 )
             {
                 const double timePoint = sliceTimes[screenSlice + scan];
                 sensor[scan] = ovr_GetSensorStateInternal( timePoint );
@@ -1358,18 +1356,18 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
 
         bindSmoothProgram( timeWarps, rollingWarp, eye, vsyncBase );
 
-        if ( screenSlice == 0 || screenSlice == NUM_SLICES_PER_EYE )
+        if ( screenSlice == 0 || screenSlice == 4 )
         {
             bindEyeTextures( eye );
         }
 
-        const int sliceSize = m_window_width / NUM_SLICES_PER_SCREEN;
+        const int sliceSize = m_window_width / 8;
 
         glScissor( sliceSize*screenSlice, 0, sliceSize, m_window_height );
 
         const VGlGeometry & mesh = m_slicesmoothMesh;
         glOperation.glBindVertexArrayOES( mesh.vertexArrayObject );
-        const int indexCount = mesh.indexCount / NUM_SLICES_PER_SCREEN;
+        const int indexCount = mesh.indexCount / 8;
         const int indexOffset = screenSlice * indexCount;
         glDrawElements( GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, (void *)(indexOffset * 2 ) );
 
@@ -1613,7 +1611,7 @@ void VFrameSmooth::Private::createFrameworkGraphics()
 
     m_smoothMesh = VLensDistortion::createDistortionGrid( m_device, 1, calibrateFovScale, false );
 
-    m_slicesmoothMesh = VLensDistortion::createDistortionGrid( m_device, NUM_SLICES_PER_EYE, calibrateFovScale, false );
+    m_slicesmoothMesh = VLensDistortion::createDistortionGrid( m_device, 4, calibrateFovScale, false );
 
     m_cursorMesh = VLensDistortion::createDistortionGrid( m_device, 1, calibrateFovScale, true );
 
