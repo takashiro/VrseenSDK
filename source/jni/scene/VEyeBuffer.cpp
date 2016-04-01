@@ -9,7 +9,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 *************************************************************************************/
 
-#include <EyeBuf.h>
+#include "VEyeBuffer.h"
 #include <math.h>
 #include <sys/syscall.h>
 #include <sys/time.h>

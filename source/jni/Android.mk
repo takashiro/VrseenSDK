@@ -121,7 +121,7 @@ LOCAL_SRC_FILES  := \
 	media/VSoundManager.cpp \
 	scene/BitmapFont.cpp \
 	scene/DebugLines.cpp \
-	scene/EyeBuf.cpp \
+	scene/VEyeBuffer.cpp \
 	scene/EyePostRender.cpp \
 	scene/GazeCursor.cpp \
 	scene/GlTexture.cpp \

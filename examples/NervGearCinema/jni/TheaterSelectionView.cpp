@@ -24,7 +24,8 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "VApkFile.h"
 #include "CinemaStrings.h"
 #include "Native.h"
-#include "EyeBuf.h"
+
+#include <VEyeBuffer.h>
 
 namespace OculusCinema {
 

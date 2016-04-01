@@ -37,7 +37,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "SwipeView.h"
 #include "Oculus360Videos.h"
 
-#include "../../../source/jni/scene/EyeBuf.h"
+#include <VEyeBuffer.h>
 #include "gui/GuiSys.h"
 
 #include "gui/Fader.h"

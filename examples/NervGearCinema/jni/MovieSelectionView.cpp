@@ -26,7 +26,9 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "CinemaStrings.h"
 #include "BitmapFont.h"
 #include "Native.h"
-#include "EyeBuf.h"
+
+#include <VEyeBuffer.h>
+
 namespace OculusCinema {
 
 static const int PosterWidth = 228;

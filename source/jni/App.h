@@ -1,6 +1,6 @@
 #pragma once
 
-#include <EyeBuf.h>
+#include "VEyeBuffer.h"
 #include "vglobal.h"
 #include "api/VKernel.h"
 #include "KeyState.h"
