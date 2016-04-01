@@ -57,8 +57,8 @@ void VGlGeometry::createGlGeometry( const VertexAttribs & attribs, const VArray<
     PackVertexAttribute( packed, attribs.color,			VERTEX_COLOR,			GL_FLOAT,	4 );
     PackVertexAttribute( packed, attribs.uv0,			VERTEX_UVC0,				GL_FLOAT,	2 );
     PackVertexAttribute( packed, attribs.uv1,			VERTEX_UVC1,				GL_FLOAT,	2 );
-    PackVertexAttribute( packed, attribs.jointIndices,	JOINT_INDICES,	GL_INT,		4 );
-    PackVertexAttribute( packed, attribs.jointWeights,	JOINT_WEIGHTS,	GL_FLOAT,	4 );
+    PackVertexAttribute( packed, attribs.motionIndeices,	JOINT_INDICES,	GL_INT,		4 );
+    PackVertexAttribute( packed, attribs.motionWeight,	JOINT_WEIGHTS,	GL_FLOAT,	4 );
 
     glBufferData( GL_ARRAY_BUFFER, packed.size() * sizeof( packed[0] ), packed.data(), GL_STATIC_DRAW );
 
@@ -140,8 +140,8 @@ void VGlGeometry::updateGlGeometry( const VertexAttribs & attribs )
     PackVertexAttribute( packed, attribs.color,			VERTEX_COLOR,			GL_FLOAT,	4 );
     PackVertexAttribute( packed, attribs.uv0,			VERTEX_UVC0,				GL_FLOAT,	2 );
     PackVertexAttribute( packed, attribs.uv1,			VERTEX_UVC1,				GL_FLOAT,	2 );
-    PackVertexAttribute( packed, attribs.jointIndices,	JOINT_INDICES,	GL_INT,		4 );
-    PackVertexAttribute( packed, attribs.jointWeights,	JOINT_WEIGHTS,	GL_FLOAT,	4 );
+    PackVertexAttribute( packed, attribs.motionIndeices,	JOINT_INDICES,	GL_INT,		4 );
+    PackVertexAttribute( packed, attribs.motionWeight,	JOINT_WEIGHTS,	GL_FLOAT,	4 );
     glBufferData( GL_ARRAY_BUFFER, packed.size() * sizeof( packed[0] ), packed.data(), GL_STATIC_DRAW );
 }
 

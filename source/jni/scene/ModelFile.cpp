@@ -473,8 +473,8 @@ void LoadModelFileJson( ModelFile & model,
                             ReadModelArray( attribs.color,        vertices.value( "color" ).toStdString().c_str(),			bin, vertexCount );
                             ReadModelArray( attribs.uv0,          vertices.value( "uv0" ).toStdString().c_str(),			bin, vertexCount );
                             ReadModelArray( attribs.uv1,          vertices.value( "uv1" ).toStdString().c_str(),			bin, vertexCount );
-                            ReadModelArray( attribs.jointIndices, vertices.value( "jointIndices" ).toStdString().c_str(),	bin, vertexCount );
-                            ReadModelArray( attribs.jointWeights, vertices.value( "jointWeights" ).toStdString().c_str(),	bin, vertexCount );
+                            ReadModelArray( attribs.motionIndeices, vertices.value( "jointIndices" ).toStdString().c_str(),	bin, vertexCount );
+                            ReadModelArray( attribs.motionWeight, vertices.value( "jointWeights" ).toStdString().c_str(),	bin, vertexCount );
 						}
 
 						//
@@ -528,8 +528,8 @@ void LoadModelFileJson( ModelFile & model,
 							materialTypeString = "additive";
 						}
 
-						const bool skinned = (	attribs.jointIndices.size() == attribs.position.size() &&
-												attribs.jointWeights.size() == attribs.position.size() );
+                        const bool skinned = (	attribs.motionIndeices.size() == attribs.position.size() &&
+                                                attribs.motionWeight.size() == attribs.position.size() );
 
 						if ( diffuseTextureIndex >= 0 && diffuseTextureIndex < glTextures.length() )
 						{

@@ -16,8 +16,8 @@ struct VertexAttribs
     VArray< V4Vectf > color;
     VArray< V2Vectf > uv0;
     VArray< V2Vectf > uv1;
-    VArray< V4Vecti > jointIndices;
-    VArray< V4Vectf > jointWeights;
+    VArray< V4Vecti > motionIndeices;
+    VArray< V4Vectf > motionWeight;
 };
 
 
@@ -44,18 +44,12 @@ public:
 
     void	createGlGeometry( const VertexAttribs & attribs, const VArray< ushort > & indices );
     void	updateGlGeometry( const VertexAttribs & attribs );
-
     void	drawElements() const;
-
     void	destroy();
-
     void createPlaneQuadGrid( const int horizontal, const int vertical );
-    void createScreenMaskSquare( const float xx, const float yy );
-
+    void createScreenQuad( const float xx, const float yy );
     void createCylinder( const float radius, const float height,const int horizontal, const int vertical, const float  uScale = 1.0f, const float  vScale = 1.0f );
     void createStylePattern( const float xx, const float yy );
-
-
     void createDome( const float radius, const float uScale = 1.0f, const float vScale = 1.0f );
     void createSkybox( const float length, const float width, const float height );
     void createSphere( const float uScale = 1.0f, const float vScale = 1.0f );

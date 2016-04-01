@@ -2154,7 +2154,7 @@ void App::drawScreenMask( const VR4Matrixf & mvp, const float fadeFracX, const f
 
     if ( d->fadedScreenMaskSquare.vertexArrayObject == 0 )
     {
-        d->fadedScreenMaskSquare.createScreenMaskSquare( fadeFracX, fadeFracY );
+        d->fadedScreenMaskSquare.createScreenQuad( fadeFracX, fadeFracY );
     }
 
     glColorMask( 0.0f, 0.0f, 0.0f, 1.0f );
