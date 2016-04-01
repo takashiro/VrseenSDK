@@ -27,14 +27,14 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 NV_NAMESPACE_BEGIN
 
-EyeBuf::EyeBuf() :
+VEyeBuffer::VEyeBuffer() :
     LogEyeSceneGpuTime(),
     DiscardInsteadOfClear( true ),
     SwapCount( 0 )
 {
 }
 
-void EyeBuf::EyeBuffer::Delete()
+void VEyeBuffer::EyeBuffer::Delete()
 {
     if ( Texture )
     {
@@ -63,7 +63,7 @@ void EyeBuf::EyeBuffer::Delete()
     }
 }
 
-void EyeBuf::EyeBuffer::Allocate( const EyeBuf::EyeParms & bufferParms, EyeBuf::multisample multisampleMode )
+void VEyeBuffer::EyeBuffer::Allocate( const VEyeBuffer::EyeParms & bufferParms, VEyeBuffer::multisample multisampleMode )
 {
     Delete();
 
@@ -279,7 +279,7 @@ static void ScreenShotTexture( const int eyeResolution, const GLuint texId )
     free( shrunk2 );
 }
 
-void EyeBuf::BeginFrame( const EyeParms & bufferParms_ )
+void VEyeBuffer::BeginFrame( const EyeParms & bufferParms_ )
 {
     VGlOperation glOperation;
     SwapCount++;
@@ -333,7 +333,7 @@ void EyeBuf::BeginFrame( const EyeParms & bufferParms_ )
     }
 }
 
-void EyeBuf::BeginRenderingEye( const int eyeNum )
+void VEyeBuffer::BeginRenderingEye( const int eyeNum )
 {
     const int resolution = BufferParms.resolution;
     EyePairs & pair = BufferData[ SwapCount % MAX_EYE_SETS ];
@@ -362,7 +362,7 @@ void EyeBuf::BeginRenderingEye( const int eyeNum )
     }
 }
 
-void EyeBuf::EndRenderingEye( const int eyeNum )
+void VEyeBuffer::EndRenderingEye( const int eyeNum )
 {
     const int resolution = BufferParms.resolution;
     EyePairs & pair = BufferData[ SwapCount % MAX_EYE_SETS ];
@@ -407,7 +407,7 @@ void EyeBuf::EndRenderingEye( const int eyeNum )
     glFlush();
 }
 
-EyeBuf::CompletedEyes EyeBuf::GetCompletedEyes()
+VEyeBuffer::CompletedEyes VEyeBuffer::GetCompletedEyes()
 {
     CompletedEyes	cmp = {};
     // The GPU commands are flushed for BufferData[ SwapCount % MAX_EYE_SETS ]
@@ -417,14 +417,14 @@ EyeBuf::CompletedEyes EyeBuf::GetCompletedEyes()
 
     for ( int e = 0 ; e < 2 ; e++ )
     {
-        cmp.Textures[e] = buffers->Eyes[e].Texture;
+        cmp.textures[e] = buffers->Eyes[e].Texture;
     }
-    cmp.ColorFormat = buffers->BufferParms.colorFormat;
+    cmp.colorFormat = buffers->BufferParms.colorFormat;
 
     return cmp;
 }
 
-void EyeBuf::ScreenShot()
+void VEyeBuffer::ScreenShot()
 {
     ScreenShotTexture( BufferParms.resolution, BufferData[0].Eyes[0].Texture );
 }

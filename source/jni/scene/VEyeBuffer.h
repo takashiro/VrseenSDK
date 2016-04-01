@@ -9,12 +9,11 @@
 
 NV_NAMESPACE_BEGIN
 
-
-
-class EyeBuf
+class VEyeBuffer
 {
 public:
-    EyeBuf();
+    VEyeBuffer();
+
     enum DepthFormat
     {
         DEPTH_0,        // useful for overlay planes
@@ -66,7 +65,7 @@ public:
         // dithering effects will be distorted by the warp to screen.
         //
         // Defaults to FMT_8888.
-        VColor::colorFormat     colorFormat;
+        VColor::Format     colorFormat;
 
         // Adreno and Tegra benefit from 16 bit depth buffers
         DepthFormat       depthFormat;
@@ -145,16 +144,10 @@ public:
         EYE_RIGHT = 1
     };
 
-
-    // This is handed off to TimeWarp
     struct CompletedEyes
     {
-        // Needed to determine sRGB conversions.
-        VColor::colorFormat ColorFormat;
-
-        // For GPU time warp
-        // This will be the MSAA resolved buffer if a blit was done.
-        GLuint          Textures[2];
+        VColor::Format colorFormat;
+        GLuint textures[2];
     };
 
     // Note the pose information for this frame and
