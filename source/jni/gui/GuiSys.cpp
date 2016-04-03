@@ -310,13 +310,24 @@ void OvrGuiSysLocal::frame( App * app, const VrFrame & vrFrame, OvrVRMenuMgr & m
 		if ( 0 )
 		{
 			//SetCurrentThreadAffinityMask( 0xF0 );
-            double start =VTimer::Seconds();
+
+            struct timespec now;
+            clock_gettime( CLOCK_MONOTONIC, &now );
+            double start =(double)now.tv_sec * 1e9 + now.tv_nsec;
+
+
 			for ( int i = 0; i < 20; i++ )
 			{
 				menuMgr.beginFrame();
 				curMenu->frame( app, vrFrame, menuMgr, font, fontSurface, viewMatrix, GazeUserId );
 			}
-            double end = VTimer::Seconds();
+
+
+            struct timespec now1;
+            clock_gettime( CLOCK_MONOTONIC, &now1 );
+             double end =(double)now1.tv_sec * 1e9 + now1.tv_nsec;
+
+
 			vInfo("20x VRMenu::Frame() =" << ( end - start ) * ( 1.0 / ( 1000.0 * 1000.0 ) ) << "ms");
 		}
 

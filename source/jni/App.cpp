@@ -1295,7 +1295,7 @@ struct App::Private
             const double timeNow = floor(VTimer::Seconds());
             if (timeNow > lastReportTime)
             {
-                vInfo("FPS:" << countApplicationFrames << "GPU time:" << eyeTargets->LogEyeSceneGpuTime.totalTime() << "ms");
+
                 countApplicationFrames = 0;
                 lastReportTime = timeNow;
             }

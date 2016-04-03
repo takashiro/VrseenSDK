@@ -27,8 +27,9 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 NV_NAMESPACE_BEGIN
 
+
 VEyeBuffer::VEyeBuffer() :
-    LogEyeSceneGpuTime(),
+
     DiscardInsteadOfClear( true ),
     SwapCount( 0 )
 {
@@ -339,8 +340,6 @@ void VEyeBuffer::BeginRenderingEye( const int eyeNum )
     EyePairs & pair = BufferData[ SwapCount % MAX_EYE_SETS ];
     EyeBuffer & eye = pair.Eyes[eyeNum];
 
-    LogEyeSceneGpuTime.begin( eyeNum );
-    LogEyeSceneGpuTime.printTime( eyeNum, "GPU time for eye render" );
 
     glBindFramebuffer( GL_FRAMEBUFFER, eye.RenderFrameBuffer );
     glViewport( 0, 0, resolution, resolution );
@@ -385,7 +384,7 @@ void VEyeBuffer::EndRenderingEye( const int eyeNum )
         glOperation.glDisableFramebuffer( true, false );
     }
 
-    LogEyeSceneGpuTime.end( eyeNum );
+
 
     // Left to themselves, tiled GPU drivers will avoid starting rendering
     // until they are absolutely forced to by a swap or read of a buffer,

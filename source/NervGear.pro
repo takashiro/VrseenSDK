@@ -38,7 +38,6 @@ SOURCES += \
     jni/core/VVariant.cpp \
     jni/core/VWaitCondition.cpp \
     jni/core/android/JniUtils.cpp \
-    jni/core/android/LogUtils.cpp \
     jni/core/android/VOsBuild.cpp \
     jni/api/VKernel.cpp \
     jni/api/VDevice.cpp \
@@ -127,7 +126,6 @@ HEADERS += \
     jni/core/VTransform.h \
     jni/core/android/GlUtils.h \
     jni/core/android/JniUtils.h \
-    jni/core/android/LogUtils.h \
     jni/core/android/VOsBuild.h \
     jni/core/VAlgorithm.h \
     jni/core/Atomic.h \

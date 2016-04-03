@@ -11,7 +11,7 @@
 #include <sys/resource.h>
 
 #include "VFrameSmooth.h"
-#include "Android/LogUtils.h"
+
 #include "Android/JniUtils.h"
 
 #include "VLensDistortion.h"
@@ -213,7 +213,7 @@ struct VFrameSmooth::Private
             m_contextPriority( 0 ),
             m_eyeLog(),
             m_lastEyeLog( 0 ),
-            m_logEyeWarpGpuTime(),
+
             m_smoothThread( 0 ),
             m_smoothThreadTid( 0 ),
             m_lastSwapVsyncCount( 0 )
@@ -493,7 +493,7 @@ struct VFrameSmooth::Private
     long long		m_lastEyeLog;
 
 
-    LogGpuTime<8>	m_logEyeWarpGpuTime;
+
 
 
     VLockless<bool>		m_shutdownRequest;
@@ -1058,7 +1058,7 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
     if ( timeNow > lastReportTime )
     {
 
-        vInfo(" GPU time: " << m_logEyeWarpGpuTime.totalTime() << " ms");
+
 
         lastReportTime = timeNow;
     }
@@ -1215,8 +1215,7 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
 
 
 
-        m_logEyeWarpGpuTime.begin( eye );
-        m_logEyeWarpGpuTime.printTime( eye, "GPU time for eye time warp" );
+
 
         setSmoothpState( );
 
@@ -1249,7 +1248,6 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
 
         glFlush();
 
-        m_logEyeWarpGpuTime.end( eye );
 
         const double justBeforeFinish = VTimer::Seconds();
         const double postFinish = VTimer::Seconds();
@@ -1432,8 +1430,7 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
                 sensor[1].Predicted.Orientation );
 
 
-        m_logEyeWarpGpuTime.begin( screenSlice );
-        m_logEyeWarpGpuTime.printTime( screenSlice, "GPU time for eye time warp" );
+
 
         setSmoothpState();
 
@@ -1466,7 +1463,6 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
 
         glFlush();
 
-        m_logEyeWarpGpuTime.end( screenSlice );
 
         const double justBeforeFinish = VTimer::Seconds();
         const double postFinish = VTimer::Seconds();
