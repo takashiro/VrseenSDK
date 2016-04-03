@@ -128,14 +128,14 @@ extern void DebugMenuHierarchy(void * appPtr, const char * cmd);
 extern void DebugMenuPoses(void * appPtr, const char * cmd);
 extern void ShowFPS(void * appPtr, const char * cmd);
 
-static EyeBuf::EyeParms DefaultVrParmsForRenderer(const VGlOperation & glOperation)
+static VEyeBuffer::EyeParms DefaultVrParmsForRenderer(const VGlOperation & glOperation)
 {
-    EyeBuf::EyeParms vrParms;
+    VEyeBuffer::EyeParms vrParms;
 
     vrParms.resolution = 1024;
     vrParms.multisamples = (glOperation.gpuType == VGlOperation::GPU_TYPE_ADRENO_330) ? 2 : 4;
     vrParms.colorFormat = VColor::COLOR_8888;
-    vrParms.depthFormat = EyeBuf::DepthFormat::DEPTH_24;
+    vrParms.depthFormat = VEyeBuffer::DepthFormat::DEPTH_24;
 
     return vrParms;
 }
@@ -166,7 +166,7 @@ struct App::Private
     // Handles creating, destroying, and re-configuring the buffers
     // for drawing the eye views, which might be in different texture
     // configurations for CPU warping, etc.
-    EyeBuf *	eyeTargets;
+    VEyeBuffer *	eyeTargets;
 
     GLuint			loadingIconTexId;
 
@@ -224,7 +224,7 @@ struct App::Private
 
     VrFrame			lastVrFrame;
 
-    EyeBuf::EyeParms		vrParms;
+    VEyeBuffer::EyeParms		vrParms;
 
 
 
@@ -943,7 +943,7 @@ struct App::Private
             // Create our GL data objects
             initGlObjects();
 
-            eyeTargets = new EyeBuf;
+            eyeTargets = new VEyeBuffer;
             guiSys = new OvrGuiSysLocal;
             gazeCursor = new OvrGazeCursorLocal;
             vrMenuMgr = OvrVRMenuMgr::Create();
@@ -1509,7 +1509,7 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
     d->vrParms.resolution = 1024;
     d->vrParms.multisamples = 4;
     d->vrParms.colorFormat = VColor::COLOR_8888;
-    d->vrParms.depthFormat = EyeBuf::DepthFormat::DEPTH_24;
+    d->vrParms.depthFormat = VEyeBuffer::DepthFormat::DEPTH_24;
 
     d->javaObject = d->uiJni->NewGlobalRef(activityObject);
 
@@ -1648,7 +1648,7 @@ void App::playSound(const char *name)
 /*
  * eyeParms()
  */
-EyeBuf::EyeParms App::eyeParms()
+VEyeBuffer::EyeParms App::eyeParms()
 {
     return d->vrParms;
 }
@@ -1656,7 +1656,7 @@ EyeBuf::EyeParms App::eyeParms()
 /*
  * SetVrParms()
  */
-void App::setEyeParms(const EyeBuf::EyeParms parms)
+void App::setEyeParms(const VEyeBuffer::EyeParms parms)
 {
     d->vrParms = parms;
 }
@@ -1833,7 +1833,7 @@ void App::setLastViewMatrix(VR4Matrixf const & m)
     d->lastViewMatrix = m;
 }
 
-EyeBuf::EyeParms & App::vrParms()
+VEyeBuffer::EyeParms & App::vrParms()
 {
     return d->vrParms;
 }
@@ -2108,12 +2108,12 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
     // This eye set is complete, use it now.
     if ( numPresents > 0 )
     {
-        const EyeBuf::CompletedEyes eyes = d->eyeTargets->GetCompletedEyes();
+        const VEyeBuffer::CompletedEyes eyes = d->eyeTargets->GetCompletedEyes();
 
         for ( int eye = 0; eye < 2; eye++ )
         {            
            d->kernel->m_texMatrix[eye][0] = VR4Matrixf::TanAngleMatrixFromFov( fovDegrees );
-           d->kernel->m_texId[eye][0] = eyes.Textures[d->renderMonoMode ? 0 : eye ];
+           d->kernel->m_texId[eye][0] = eyes.textures[d->renderMonoMode ? 0 : eye ];
            d->kernel->m_pose[eye][0] = d->sensorForNextWarp.Predicted;
           // d->kernel->m_smoothProgram = ChromaticAberrationCorrection(glOperation) ? WP_CHROMATIC : WP_SIMPLE;
 
