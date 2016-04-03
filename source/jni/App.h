@@ -51,8 +51,8 @@ public:
     void setRecenterYawFrameStart( const long long frameNumber );
     long long recenterYawFrameStart() const;
 
-    EyeBuf::EyeParms eyeParms();
-    void setEyeParms(const EyeBuf::EyeParms parms);
+    VEyeBuffer::EyeParms eyeParms();
+    void setEyeParms(const VEyeBuffer::EyeParms parms);
 
     OvrGuiSys &guiSys();
     OvrGazeCursor  &gazeCursor();
@@ -75,7 +75,7 @@ public:
     VR4Matrixf const &lastViewMatrix() const;
     void setLastViewMatrix( VR4Matrixf const & m );
 
-    EyeBuf::EyeParms &vrParms();
+    VEyeBuffer::EyeParms &vrParms();
 
     const VrViewParms &vrViewParms() const;
     void setVrViewParms( VrViewParms const & parms );
