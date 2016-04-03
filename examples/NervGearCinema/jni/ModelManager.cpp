@@ -1,7 +1,7 @@
 #include <dirent.h>
 #include "ModelManager.h"
 #include "CinemaApp.h"
-
+#include "core/VTimer.h"
 #include <VPath.h>
 #include <fstream>
 #include <VApkFile.h>
@@ -30,14 +30,14 @@ ModelManager::~ModelManager()
 void ModelManager::OneTimeInit(const VString &launchIntent)
 {
 	vInfo("ModelManager::OneTimeInit");
-	const double start = ovr_GetTimeInSeconds();
+    const double start = VTimer::Seconds();
 	LaunchIntent = launchIntent;
 
 	DefaultSceneModel = new ModelFile( "default" );
 
 	LoadModels();
 
-    vInfo("ModelManager::OneTimeInit:" << Theaters.length() << "theaters loaded," << (ovr_GetTimeInSeconds() - start) << "seconds");
+    vInfo("ModelManager::OneTimeInit:" << Theaters.length() << "theaters loaded," << (VTimer::Seconds() - start) << "seconds");
 }
 
 void ModelManager::OneTimeShutdown()
@@ -55,7 +55,7 @@ void ModelManager::OneTimeShutdown()
 void ModelManager::LoadModels()
 {
 	vInfo("ModelManager::LoadModels");
-	const double start = ovr_GetTimeInSeconds();
+    const double start = VTimer::Seconds();
 
 	BoxOffice = LoadScene( "assets/scenes/BoxOffice.ovrscene", false, true, true );
 	BoxOffice->UseSeats = false;
@@ -94,7 +94,7 @@ void ModelManager::LoadModels()
 		ScanDirectoryForScenes( Cinema.sdcardDir( TheatersDirectory ), true, false, Theaters );
 	}
 
-    vInfo("ModelManager::LoadModels:" << Theaters.length() << "theaters loaded," << (ovr_GetTimeInSeconds() - start) << "seconds");
+    vInfo("ModelManager::LoadModels:" << Theaters.length() << "theaters loaded," << (VTimer::Seconds() - start) << "seconds");
 }
 
 void ModelManager::ScanDirectoryForScenes(const VString &directory, bool useDynamicProgram, bool useScreenGeometry, VArray<SceneDef *> &scenes ) const

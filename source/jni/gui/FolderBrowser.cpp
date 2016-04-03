@@ -11,7 +11,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 *************************************************************************************/
 
 #include "FolderBrowser.h"
-
+#include "core/VTimer.h"
 #include "VThread.h"
 #include <stdio.h>
 #include <unistd.h>
@@ -161,7 +161,7 @@ public:
 		, TotalTouchDistance( 0.0f )
 		, ValidFoldersCount( 0 )
 	{
-		LastInteractionTimeStamp = ovr_GetTimeInSeconds() - SCROLL_HITNS_VISIBILITY_TOGGLE_TIME;
+        LastInteractionTimeStamp = VTimer::Seconds() - SCROLL_HITNS_VISIBILITY_TOGGLE_TIME;
 		ScrollMgr.setScrollPadding(0.5f);
 		ScrollMgr.setWrapAroundEnable( false );
 	}
@@ -280,7 +280,7 @@ private:
 			controllerInput = vrFrame.Input.buttonState;
 			if ( controllerInput & ( BUTTON_LSTICK_UP | BUTTON_DPAD_UP | BUTTON_LSTICK_DOWN | BUTTON_DPAD_DOWN | BUTTON_LSTICK_LEFT | BUTTON_DPAD_LEFT | BUTTON_LSTICK_RIGHT | BUTTON_DPAD_RIGHT ) )
 			{
-				LastInteractionTimeStamp = ovr_GetTimeInSeconds();
+                LastInteractionTimeStamp = VTimer::Seconds();
 			}
 
 			if ( restrictedScrolling )
@@ -395,7 +395,7 @@ private:
         V4Vectf 	finalCol( 1.0f, 1.0f, 1.0f, 1.0f );
 		if( LastInteractionTimeStamp > 0.0f ) // is user interaction currently going on? ( during interacion LastInteractionTimeStamp value will be negative )
 		{
-			float timeDiff = ovr_GetTimeInSeconds() - LastInteractionTimeStamp;
+            float timeDiff = VTimer::Seconds() - LastInteractionTimeStamp;
 			if( timeDiff > SCROLL_HITNS_VISIBILITY_TOGGLE_TIME ) // is user not interacting for a while?
 			{
 				// Show Indicators
@@ -465,7 +465,7 @@ private:
 		}
 
 		FolderBrowser.setAllowPanelTouchUp( allowPanelTouchUp );
-		LastInteractionTimeStamp = ovr_GetTimeInSeconds();
+        LastInteractionTimeStamp = VTimer::Seconds();
 
 		return MSG_STATUS_ALIVE;
 	}
@@ -1018,7 +1018,7 @@ void OvrFolderBrowser::frameImpl( App * app, VrFrame const & vrFrame, OvrVRMenuM
 	{
 		if( m_controllerDirectionLock != NO_LOCK )
 		{
-			if( ovr_GetTimeInSeconds() - LastControllerInputTimeStamp >= CONTROLER_COOL_DOWN )
+            if( VTimer::Seconds() - LastControllerInputTimeStamp >= CONTROLER_COOL_DOWN )
 			{
 				// Didn't receive any input for last 'CONTROLER_COOL_DOWN' seconds, so release direction lock
 				m_controllerDirectionLock = NO_LOCK;
@@ -1040,7 +1040,7 @@ void OvrFolderBrowser::frameImpl( App * app, VrFrame const & vrFrame, OvrVRMenuM
 				{
 					m_controllerDirectionLock = HORIZONTAL_LOCK;
 				}
-				LastControllerInputTimeStamp = ovr_GetTimeInSeconds();
+                LastControllerInputTimeStamp = VTimer::Seconds();
 			}
 		}
 
@@ -1057,7 +1057,7 @@ void OvrFolderBrowser::frameImpl( App * app, VrFrame const & vrFrame, OvrVRMenuM
 				{
 					m_controllerDirectionLock = VERTICAL_LOCK;
 				}
-				LastControllerInputTimeStamp = ovr_GetTimeInSeconds();
+                LastControllerInputTimeStamp = VTimer::Seconds();
 			}
 		}
 	}

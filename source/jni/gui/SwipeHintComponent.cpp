@@ -14,6 +14,7 @@ Copyright   :   Copyright 2014 Oculus VR, Inc. All Rights reserved.
 #include "VRMenu.h"
 #include "VApkFile.h"
 #include "App.h"
+#include "core/VTimer.h"
 
 namespace NervGear
 {
@@ -71,7 +72,7 @@ namespace NervGear
 			VArray< VRMenuComponent* > hintArrowComps;
 			OvrSwipeHintComponent* hintArrowComp = new OvrSwipeHintComponent(false, 1.3333f, 0.4f + (float)i * 0.13333f, 5.0f);
 			hintArrowComps.append( hintArrowComp );
-			hintArrowComp->show( ovr_GetTimeInSeconds() );
+            hintArrowComp->show( VTimer::Seconds() );
 
 			VRMenuObjectParms * swipeIconLeftParms = new VRMenuObjectParms( VRMENU_STATIC, hintArrowComps,
                 swipeHintSurfParms, "", swipePose, V3Vectf( 1.0f ), fontParms, VRMenuId_t(),
@@ -93,7 +94,7 @@ namespace NervGear
 	{
 		m_ignoreDelay 		= true;
 		m_shouldShow 			= false;
-		const double now 	= ovr_GetTimeInSeconds();
+        const double now 	= VTimer::Seconds();
 		m_totalAlpha.set( now, m_totalAlpha.value( now ), now, 0.0f );
         self->setColor( V4Vectf( 1.0f, 1.0f, 1.0f, 0.0f ) );
 	}

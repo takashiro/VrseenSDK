@@ -2,7 +2,7 @@
 #include "Native.h"
 #include "CinemaStrings.h"
 #include "VColor.h"
-
+#include "core/VTimer.h"
 //=======================================================================================
 
 namespace OculusCinema {
@@ -39,7 +39,7 @@ void CinemaApp::init(const VString &fromPackage, const VString &launchIntentJSON
 {
 	vInfo("--------------- CinemaApp OneTimeInit ---------------");
 
-	startTime = ovr_GetTimeInSeconds();
+    startTime = NervGear::VTimer::Seconds();
 
     vApp->vrParms().colorFormat = VColor::COLOR_8888;
 	//app->GetVrParms().depthFormat = DEPTH_16;
@@ -62,7 +62,7 @@ void CinemaApp::init(const VString &fromPackage, const VString &launchIntentJSON
 
     setMovieSelection( true );
 
-    vInfo("CinemaApp::OneTimeInit:" << (ovr_GetTimeInSeconds() - startTime) << "seconds");
+    vInfo("CinemaApp::OneTimeInit:" << (NervGear::VTimer::Seconds() - startTime) << "seconds");
 }
 
 void CinemaApp::shutdown()

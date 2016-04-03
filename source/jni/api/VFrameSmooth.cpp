@@ -232,7 +232,7 @@ struct VFrameSmooth::Private
         vInfo("-------------------- VFrameSmooth() --------------------");
 
         m_sStartupTid = gettid();
-        m_lastsmoothTimeInSeconds.setState( ovr_GetTimeInSeconds() );
+        m_lastsmoothTimeInSeconds.setState( VTimer::Seconds() );
         m_smoothThread = 0;
         m_async = async;
         m_device = device;
@@ -649,12 +649,12 @@ double	VFrameSmooth::Private::framePointTimeInSeconds( const double framePoint )
 }
 float 	VFrameSmooth::Private::sleepUntilTimePoint( const double targetSeconds, const bool busyWait )
 {
-    const float sleepSeconds = targetSeconds - ovr_GetTimeInSeconds();
+    const float sleepSeconds = targetSeconds - VTimer::Seconds();
     if ( sleepSeconds > 0 )
     {
         if ( busyWait )
         {
-            while( targetSeconds - ovr_GetTimeInSeconds() > 0 )
+            while( targetSeconds - VTimer::Seconds() > 0 )
             {
             }
         }
@@ -665,7 +665,7 @@ float 	VFrameSmooth::Private::sleepUntilTimePoint( const double targetSeconds, c
             t.tv_sec = 0;
             t.tv_nsec = sleepSeconds * 1e9;
             nanosleep( &t, &rem );
-            const double overSleep = ovr_GetTimeInSeconds() - targetSeconds;
+            const double overSleep = VTimer::Seconds() - targetSeconds;
             if ( overSleep > 0.001 )
             {
     //			vInfo("Overslept " << overSleep << " seconds");
@@ -710,7 +710,7 @@ void VFrameSmooth::Private::threadFunction()
         }
 
 
-       const double currentTime = ovr_GetTimeInSeconds();
+       const double currentTime = VTimer::Seconds();
        const double lastWarpTime = m_lastsmoothTimeInSeconds.state();
        if ( removedSchedFifo )
        {
@@ -1054,7 +1054,7 @@ static void UnbindEyeTextures()
 void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swapProgram_t & swap )
 {
     static double lastReportTime = 0;
-    const double timeNow = floor( ovr_GetTimeInSeconds() );
+    const double timeNow = floor( VTimer::Seconds() );
     if ( timeNow > lastReportTime )
     {
 
@@ -1251,8 +1251,8 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
 
         m_logEyeWarpGpuTime.end( eye );
 
-        const double justBeforeFinish = ovr_GetTimeInSeconds();
-        const double postFinish = ovr_GetTimeInSeconds();
+        const double justBeforeFinish = VTimer::Seconds();
+        const double postFinish = VTimer::Seconds();
 
         const float latency = postFinish - justBeforeFinish;
         if ( latency > 0.008f )
@@ -1468,8 +1468,8 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
 
         m_logEyeWarpGpuTime.end( screenSlice );
 
-        const double justBeforeFinish = ovr_GetTimeInSeconds();
-        const double postFinish = ovr_GetTimeInSeconds();
+        const double justBeforeFinish = VTimer::Seconds();
+        const double postFinish = VTimer::Seconds();
 
         const float latency = postFinish - justBeforeFinish;
         if ( latency > 0.008f )
@@ -1501,7 +1501,7 @@ void VFrameSmooth::Private::smoothInternal( )
         vFatal("WarpSwap: Called with tid " << gettid() << " instead of " << m_sStartupTid);
     }
 
-    m_lastsmoothTimeInSeconds.setState( ovr_GetTimeInSeconds() );
+    m_lastsmoothTimeInSeconds.setState( VTimer::Seconds() );
 
 
     glBindFramebuffer( GL_FRAMEBUFFER, 0 );

@@ -1,7 +1,7 @@
 #include "vglobal.h"
 
 #include "GazeCursorLocal.h"
-
+#include "core/VTimer.h"
 #include "VArray.h"
 #include "api/VKernel.h"
 #include "GlTexture.h"
@@ -233,7 +233,7 @@ void OvrGazeCursorLocal::Frame( VR4Matrixf const & viewMatrix, float const delta
 #if 1
 	if ( TimerEndTime > 0.0 )
 	{
-		double TimeRemaining = TimerEndTime - ovr_GetTimeInSeconds();
+        double TimeRemaining = TimerEndTime - VTimer::Seconds();
 		if ( TimeRemaining <= 0.0 )
 		{
 			TimerEndTime = -1.0;
@@ -426,7 +426,7 @@ void OvrGazeCursorLocal::Render( int const eye, VR4Matrixf const & mvp ) const
 	glDepthFunc( GL_LEQUAL );
 
 	// draw the timer if it's enabled
-	if ( TimerEndTime > 0.0 && ovr_GetTimeInSeconds() >= TimerShowTime )
+    if ( TimerEndTime > 0.0 && VTimer::Seconds() >= TimerShowTime )
 	{
 		glUseProgram( TimerProgram.program );
 		glActiveTexture( GL_TEXTURE0 );
@@ -506,7 +506,7 @@ void OvrGazeCursorLocal::ResetCursor()
 // OvrGazeCursorLocal::StartTimer
 void OvrGazeCursorLocal::StartTimer( float const durationSeconds, float const timeBeforeShowingTimer )
 {
-	double curTime = ovr_GetTimeInSeconds();
+    double curTime = VTimer::Seconds();
 	vInfo("(" << curTime << ") StartTimer = " << durationSeconds);
 	TimerShowTime =  curTime + (double)timeBeforeShowingTimer;
 	TimerEndTime = curTime + (double)durationSeconds;
@@ -516,7 +516,7 @@ void OvrGazeCursorLocal::StartTimer( float const durationSeconds, float const ti
 // OvrGazeCursorLocal::CancelTimer
 void OvrGazeCursorLocal::CancelTimer()
 {
-	double curTime = ovr_GetTimeInSeconds();
+    double curTime = VTimer::Seconds();
 	vInfo("(" << curTime << ") Cancel Timer");
 	TimerShowTime = -1.0;
 	TimerEndTime = -1.0;
@@ -525,7 +525,7 @@ void OvrGazeCursorLocal::CancelTimer()
 //==============================
 // OvrGazeCursorLocal::TimerActive
 bool OvrGazeCursorLocal::TimerActive() const {
-    return TimerEndTime > ovr_GetTimeInSeconds();
+    return TimerEndTime > VTimer::Seconds();
 }
 
 NV_NAMESPACE_END

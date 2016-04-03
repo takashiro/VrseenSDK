@@ -21,7 +21,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "PanoBrowser.h"
 #include "PanoMenu.h"
 #include "FileLoader.h"
-
+#include "core/VTimer.h"
 #include "PhotosMetaData.h"
 
 #include <VApkFile.h>
@@ -209,9 +209,9 @@ void Oculus360Photos::init(const VString &fromPackage, const VString &launchInte
 
     vInfo("360 PHOTOS using" << m_searchPaths.length() << "searchPaths");
 
-    const double startTime = ovr_GetTimeInSeconds();
+    const double startTime = VTimer::Seconds();
     m_metaData->initFromDirectoryMergeMeta( relativePath, m_searchPaths, fileExtensions, metaFile, packageName );
-    vInfo("META DATA INIT TIME:" << ovr_GetTimeInSeconds() - startTime);
+    vInfo("META DATA INIT TIME:" << VTimer::Seconds() - startTime);
 
     jni->ReleaseStringUTFChars( result, packageName );
 
@@ -403,7 +403,7 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
             int width = event.data.at(1).toInt();
             int height = event.data.at(2).toInt();
 
-            const double start = ovr_GetTimeInSeconds( );
+            const double start = VTimer::Seconds( );
 
             // Resample oversize images so gl can load them.
             // We could consider resampling to GL_MAX_TEXTURE_SIZE exactly for better quality.
@@ -438,7 +438,7 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
 
             vApp->eventLoop().post("loaded pano");
 
-            const double end = ovr_GetTimeInSeconds();
+            const double end = VTimer::Seconds();
             vInfo(end - start << "s to load" << width << height << "res pano map");
         } else if (event.name == "cube") {
             int size = event.data.at(0).toInt();
@@ -447,7 +447,7 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
                 data[i] = static_cast<uchar *>(event.data.at(i + 1).toPointer());
             }
 
-            const double start = ovr_GetTimeInSeconds( );
+            const double start = VTimer::Seconds( );
 
             photos->loadRgbaCubeMap( size, data, true );
             for ( int i = 0; i < 6; i++ )
@@ -470,7 +470,7 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
 
             vApp->eventLoop().post("loaded cube");
 
-            const double end = ovr_GetTimeInSeconds();
+            const double end = VTimer::Seconds();
             vInfo(end - start << "s to load" << size << "res cube map");
         }
     }

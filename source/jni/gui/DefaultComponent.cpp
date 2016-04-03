@@ -11,7 +11,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 *************************************************************************************/
 
 #include "DefaultComponent.h"
-
+#include "core/VTimer.h"
 
 #include "../Input.h"
 
@@ -70,7 +70,7 @@ eMsgStatus OvrDefaultComponent::onEventImpl( App * app, VrFrame const & vrFrame,
 eMsgStatus OvrDefaultComponent::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
-    double t = ovr_GetTimeInSeconds();
+    double t = VTimer::Seconds();
     if ( m_startFadeInTime >= 0.0f && t >= m_startFadeInTime )
     {
         m_hilightFader.startFadeIn();
@@ -124,7 +124,7 @@ eMsgStatus OvrDefaultComponent::focusGained( App * app, VrFrame const & vrFrame,
 	m_gazeOverSoundLimiter.playSound( app, "sv_focusgained", 0.1 );
 
     m_startFadeOutTime = -1.0;
-    m_startFadeInTime = m_fadeDelay + ovr_GetTimeInSeconds();
+    m_startFadeInTime = m_fadeDelay + VTimer::Seconds();
     return MSG_STATUS_ALIVE;
 }
 
@@ -137,7 +137,7 @@ eMsgStatus OvrDefaultComponent::focusLost( App * app, VrFrame const & vrFrame, O
     self->setHilighted( false );
 
     m_startFadeInTime = -1.0;
-    m_startFadeOutTime = m_fadeDelay + ovr_GetTimeInSeconds();
+    m_startFadeOutTime = m_fadeDelay + VTimer::Seconds();
     return MSG_STATUS_ALIVE;
 }
 

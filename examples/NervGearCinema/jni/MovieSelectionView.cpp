@@ -26,6 +26,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "CinemaStrings.h"
 #include "BitmapFont.h"
 #include "Native.h"
+#include "core/VTimer.h"
 
 #include <VEyeBuffer.h>
 
@@ -105,13 +106,13 @@ void MovieSelectionView::OneTimeInit( const VString & launchIntent )
 {
 	vInfo("MovieSelectionView::OneTimeInit");
 
-	const double start = ovr_GetTimeInSeconds();
+    const double start = VTimer::Seconds();
 
     CreateMenu( vApp, vApp->vrMenuMgr(), vApp->defaultFont() );
 
 	SetCategory( CATEGORY_TRAILERS );
 
-	vInfo("MovieSelectionView::OneTimeInit" << (ovr_GetTimeInSeconds() - start) << "seconds");
+    vInfo("MovieSelectionView::OneTimeInit" << (VTimer::Seconds() - start) << "seconds");
 }
 
 void MovieSelectionView::OneTimeShutdown()
@@ -140,7 +141,7 @@ void MovieSelectionView::OnOpen()
 
 	Cinema.sceneMgr.LightsOn( 1.5f );
 
-	const double now = ovr_GetTimeInSeconds();
+    const double now = VTimer::Seconds();
 	SelectionFader.Set( now, 0, now + 0.1, 1.0f );
 
 	if ( Cinema.inLobby )
@@ -596,7 +597,7 @@ void MovieSelectionView::SelectMovie()
 
 void MovieSelectionView::StartTimer()
 {
-	const double now = ovr_GetTimeInSeconds();
+    const double now = VTimer::Seconds();
 	TimerStartTime = now;
 	TimerValue = -1;
 	ShowTimer = true;
@@ -737,7 +738,7 @@ void MovieSelectionView::SelectionHighlighted( bool isHighlighted )
 
 void MovieSelectionView::UpdateSelectionFrame( const VrFrame & vrFrame )
 {
-	const double now = ovr_GetTimeInSeconds();
+    const double now = VTimer::Seconds();
 	if ( !MovieBrowser->HasSelection() )
 	{
 		SelectionFader.Set( now, 0, now + 0.1, 1.0f );
@@ -913,7 +914,7 @@ VR4Matrixf MovieSelectionView::Frame( const VrFrame & vrFrame )
         if ( !RepositionScreen && !SelectionFrame->GetMenuObject()->isHilighted() )
 		{
 			// outside of screen, so show reposition message
-			const double now = ovr_GetTimeInSeconds();
+            const double now = VTimer::Seconds();
 			float alpha = MoveScreenAlpha.Value( now );
 			if ( alpha > 0.0f )
 			{
@@ -931,7 +932,7 @@ VR4Matrixf MovieSelectionView::Frame( const VrFrame & vrFrame )
 		else
 		{
 			// onscreen, so hide message
-			const double now = ovr_GetTimeInSeconds();
+            const double now = VTimer::Seconds();
 			MoveScreenAlpha.Set( now, -1.0f, now + 1.0f, 1.0f );
 			MoveScreenLabel->SetVisible( false );
 		}

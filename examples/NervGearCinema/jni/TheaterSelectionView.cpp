@@ -24,6 +24,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "VApkFile.h"
 #include "CinemaStrings.h"
 #include "Native.h"
+#include "core/VTimer.h"
 
 #include <VEyeBuffer.h>
 
@@ -60,12 +61,12 @@ void TheaterSelectionView::OneTimeInit( const VString &launchIntent )
 {
 	vInfo("TheaterSelectionView::OneTimeInit");
 
-	const double start = ovr_GetTimeInSeconds();
+    const double start = VTimer::Seconds();
 
 	// Start with "Home theater" selected
 	SelectedTheater = 0;
 
-	vInfo("TheaterSelectionView::OneTimeInit:" << (ovr_GetTimeInSeconds() - start) << "seconds");
+    vInfo("TheaterSelectionView::OneTimeInit:" << (VTimer::Seconds() - start) << "seconds");
 }
 
 void TheaterSelectionView::OneTimeShutdown()
@@ -101,7 +102,7 @@ void TheaterSelectionView::OnOpen()
     vApp->guiSys().openMenu( vApp, vApp->gazeCursor(), "TheaterSelectionBrowser" );
 
 	// ignore clicks for 0.5 seconds to avoid accidentally clicking through
-	IgnoreSelectTime = ovr_GetTimeInSeconds() + 0.5;
+    IgnoreSelectTime = VTimer::Seconds() + 0.5;
 
 	CurViewState = VIEWSTATE_OPEN;
 }
@@ -341,7 +342,7 @@ void TheaterSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, Bitmap
 
 void TheaterSelectionView::SelectPressed( void )
 {
-	const double now = ovr_GetTimeInSeconds();
+    const double now = VTimer::Seconds();
 	if ( now < IgnoreSelectTime )
 	{
 		// ignore selection for first 0.5 seconds to reduce chances of accidentally clicking through

@@ -86,20 +86,7 @@ void EyePostRender::FillEdge( int fbWidth, int fbHeight )
 
 void EyePostRender::FillEdgeColor( int fbWidth, int fbHeight, float r, float g, float b, float a )
 {
-	// We need destination alpha to be solid 1 at the edges to prevent overlay
-	// plane rendering from bleeding past the rendered view border, but we do
-	// not want to fade to that, which would cause overlays to fade out differently
-	// than scene geometry.
 
-	// We could skip this for the cube map overlays when used for panoramic photo viewing
-	// with no foreground geometry to get a little more fov effect, but if there
-	// is a swipe view or anything else being rendered, the border needs to
-	// be respected.
-
-	// Note that this single pixel border won't be sufficient if mipmaps are made for
-	// the eye buffers.
-
-	// Probably should do this with GL_LINES instead of scissor changing.
 	glClearColor( r, g, b, a );
 	glEnable( GL_SCISSOR_TEST );
 

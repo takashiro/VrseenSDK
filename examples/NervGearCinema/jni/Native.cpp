@@ -1,5 +1,6 @@
 #include "CinemaApp.h"
 #include "Native.h"
+#include "core/VTimer.h"
 
 #include <android/JniUtils.h>
 
@@ -77,7 +78,7 @@ void Native::OneTimeInit( App *app, jclass mainActivityClass )
 {
 	vInfo("Native::OneTimeInit");
 
-	const double start = ovr_GetTimeInSeconds();
+    const double start = VTimer::Seconds();
 
 	getExternalCacheDirectoryMethodId 	= GetMethodID( app, mainActivityClass, "getExternalCacheDirectory", "()Ljava/lang/String;" );
 	createVideoThumbnailMethodId 		= GetMethodID( app, mainActivityClass, "createVideoThumbnail", "(Ljava/lang/String;Ljava/lang/String;II)Z" );
@@ -95,7 +96,7 @@ void Native::OneTimeInit( App *app, jclass mainActivityClass )
 	stopMovieMethodId 					= GetMethodID( app, mainActivityClass, "stopMovie", "()V" );
 	togglePlayingMethodId 				= GetMethodID( app, mainActivityClass, "togglePlaying", "()Z" );
 
-	vInfo("Native::OneTimeInit:" << (ovr_GetTimeInSeconds() - start) << "seconds");
+    vInfo("Native::OneTimeInit:" << (VTimer::Seconds() - start) << "seconds");
 }
 
 void Native::OneTimeShutdown()

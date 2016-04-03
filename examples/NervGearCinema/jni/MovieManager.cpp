@@ -27,7 +27,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "CinemaApp.h"
 #include "VApkFile.h"
 #include "Native.h"
-
+#include "core/VTimer.h"
 
 namespace OculusCinema {
 
@@ -73,11 +73,11 @@ MovieManager::~MovieManager()
 void MovieManager::OneTimeInit( const VString &launchIntent )
 {
 	vInfo("MovieManager::OneTimeInit");
-	const double start = ovr_GetTimeInSeconds();
+    const double start = VTimer::Seconds();
 
 	LoadMovies();
 
-    vInfo("MovieManager::OneTimeInit:" << Movies.length() << "movies loaded," << (ovr_GetTimeInSeconds() - start) << "seconds");
+    vInfo("MovieManager::OneTimeInit:" << Movies.length() << "movies loaded," << (VTimer::Seconds() - start) << "seconds");
 }
 
 void MovieManager::OneTimeShutdown()
@@ -89,10 +89,10 @@ void MovieManager::LoadMovies()
 {
 	vInfo("LoadMovies");
 
-	const double start = ovr_GetTimeInSeconds();
+    const double start = VTimer::Seconds();
 
 	VArray<VString> movieFiles = ScanMovieDirectories();
-    vInfo(movieFiles.length() << "movies scanned," << (ovr_GetTimeInSeconds() - start) << "seconds");
+    vInfo(movieFiles.length() << "movies scanned," << (VTimer::Seconds() - start) << "seconds");
 
     for( uint i = 0; i < movieFiles.size(); i++ )
 	{
@@ -128,7 +128,7 @@ void MovieManager::LoadMovies()
 		LoadPoster( movie );
 	}
 
-    vInfo(Movies.length() << "movies panels loaded," << (ovr_GetTimeInSeconds() - start) << "seconds");
+    vInfo(Movies.length() << "movies panels loaded," << (VTimer::Seconds() - start) << "seconds");
 }
 
 MovieFormat MovieManager::FormatFromString( const VString &formatString ) const

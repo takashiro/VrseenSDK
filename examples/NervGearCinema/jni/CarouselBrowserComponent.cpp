@@ -1,5 +1,6 @@
 #include "CarouselBrowserComponent.h"
 #include "App.h"
+#include "core/VTimer.h"
 
 using namespace NervGear;
 
@@ -251,7 +252,7 @@ eMsgStatus CarouselBrowserComponent::SwipeBack( App * app, VrFrame const & vrFra
 eMsgStatus CarouselBrowserComponent::TouchDown( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
 {
 	//vInfo("TouchDown");
-	TouchDownTime = ovr_GetTimeInSeconds();
+    TouchDownTime = VTimer::Seconds();
 
 	if ( Swiping )
 	{
@@ -265,7 +266,7 @@ eMsgStatus CarouselBrowserComponent::TouchUp( App * app, VrFrame const & vrFrame
 {
 	//vInfo("TouchUp");
 
-	float const timeTouchHasBeenDown = (float)( ovr_GetTimeInSeconds() - TouchDownTime );
+    float const timeTouchHasBeenDown = (float)( VTimer::Seconds() - TouchDownTime );
 	TouchDownTime = -1.0;
 
     float dist = event.floatValue.LengthSq();

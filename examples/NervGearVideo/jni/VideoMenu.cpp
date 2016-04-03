@@ -14,7 +14,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 *************************************************************************************/
 
 #include "VideoMenu.h"
-
+#include "core/VTimer.h"
 #include "gui/VRMenuMgr.h"
 #include "gui/GuiSys.h"
 #include "gui/DefaultComponent.h"
@@ -221,7 +221,7 @@ void OvrVideoMenu::openImpl( App * app, OvrGazeCursor & gazeCursor )
 {
 	ButtonCoolDown = BUTTON_COOL_DOWN_SECONDS;
 
-	OpenTime = ovr_GetTimeInSeconds();
+    OpenTime = VTimer::Seconds();
 }
 
 void OvrVideoMenu::frameImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font, BitmapFontSurface & fontSurface, gazeCursorUserId_t const gazeUserId )
@@ -234,7 +234,7 @@ void OvrVideoMenu::frameImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr &
 
 void OvrVideoMenu::onItemEvent_Impl( App * app, VRMenuId_t const itemId, VRMenuEvent const & event )
 {
-	const double now = ovr_GetTimeInSeconds();
+    const double now = VTimer::Seconds();
 	if ( ButtonCoolDown <= 0.0f && (now - OpenTime > 0.5))
 	{
 		ButtonCoolDown = BUTTON_COOL_DOWN_SECONDS;

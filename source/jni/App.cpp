@@ -1,5 +1,5 @@
 #include "App.h"
-
+#include "core/VTimer.h"
 #include <android/keycodes.h>
 #include <math.h>
 #include <jni.h>
@@ -478,7 +478,7 @@ struct App::Private
         static const float timer_finger_up = 0.3f;
         static const float min_swipe_distance = 100.0f;
 
-        float currentTime = ovr_GetTimeInSeconds();
+        float currentTime = VTimer::Seconds();
         float deltaTime = currentTime - lastTouchpadTime;
         lastTouchpadTime = currentTime;
         touchpadTimer = touchpadTimer + deltaTime;
@@ -620,7 +620,7 @@ struct App::Private
             struct tm * timeInfo = localtime(&rawTime);
             char timeStr[128];
             strftime(timeStr, sizeof(timeStr), "%H:%M:%S", timeInfo);
-            vInfo("QAEvent " << timeStr << " (" << ovr_GetTimeInSeconds() << ") - QA event occurred");
+            vInfo("QAEvent " << timeStr << " (" << VTimer::Seconds() << ") - QA event occurred");
         }
 
         // Display tweak testing, only when holding right trigger
@@ -878,7 +878,7 @@ struct App::Private
 
             dialogWidth = width;
             dialogHeight = height;
-            self->dialog.dialogStopSeconds = ovr_GetTimeInSeconds() + seconds;
+            self->dialog.dialogStopSeconds = VTimer::Seconds() + seconds;
 
             self->dialog.dialogMatrix = PanelMatrix(lastViewMatrix, popupDistance, popupScale, width, height);
 
@@ -971,12 +971,12 @@ struct App::Private
 
             volumePopup = OvrVolumePopup::Create(self, *vrMenuMgr, *defaultFont);
 
-            lastTouchpadTime = ovr_GetTimeInSeconds();
+            lastTouchpadTime = VTimer::Seconds();
         }
 
         // FPS counter information
         int countApplicationFrames = 0;
-        double lastReportTime = ceil(ovr_GetTimeInSeconds());
+        double lastReportTime = ceil(VTimer::Seconds());
 
         while(!(vrThreadSynced && createdSurface && readyToExit))
         {
@@ -1058,7 +1058,7 @@ struct App::Private
             // if there is an error condition, warp swap and nothing else
             if (errorTexture != 0)
             {
-                if (ovr_GetTimeInSeconds() >= errorMessageEndTime)
+                if (VTimer::Seconds() >= errorMessageEndTime)
                 {
                     kernel->destroy(EXIT_TYPE_FINISH_AFFINITY);
                 }
@@ -1158,7 +1158,7 @@ struct App::Private
             // Get the latest head tracking state, predicted ahead to the midpoint of the time
             // it will be displayed.  It will always be corrected to the real values by
             // time warp, but the closer we get, the less black will be pulled in at the edges.
-            const double now = ovr_GetTimeInSeconds();
+            const double now = VTimer::Seconds();
             static double prev;
             const double rawDelta = now - prev;
             prev = now;
@@ -1186,7 +1186,7 @@ struct App::Private
 
             frameworkButtonProcessing(self->text.vrFrame.Input);
 
-            KeyState::eKeyEventType event = backKeyState.Update(ovr_GetTimeInSeconds());
+            KeyState::eKeyEventType event = backKeyState.Update(VTimer::Seconds());
             if (event != KeyState::KEY_EVENT_NONE)
             {
                 //vInfo("BackKey: event" << KeyState::EventNames[ event ]);
@@ -1229,12 +1229,12 @@ struct App::Private
             if (showFPS)
             {
                 const int FPS_NUM_FRAMES_TO_AVERAGE = 30;
-                static double  LastFrameTime = ovr_GetTimeInSeconds();
+                static double  LastFrameTime = VTimer::Seconds();
                 static double  AccumulatedFrameInterval = 0.0;
                 static int   NumAccumulatedFrames = 0;
                 static float LastFrameRate = 60.0f;
 
-                double currentFrameTime = ovr_GetTimeInSeconds();
+                double currentFrameTime = VTimer::Seconds();
                 double frameInterval = currentFrameTime - LastFrameTime;
                 AccumulatedFrameInterval += frameInterval;
                 NumAccumulatedFrames++;
@@ -1248,7 +1248,7 @@ struct App::Private
                 V3Vectf viewPos = GetViewMatrixPosition(lastViewMatrix);
                 V3Vectf viewFwd = GetViewMatrixForward(lastViewMatrix);
                 V3Vectf newPos = viewPos + viewFwd * 1.5f;
-                self->text.fpsPointTracker.Update(ovr_GetTimeInSeconds(), newPos);
+                self->text.fpsPointTracker.Update(VTimer::Seconds(), newPos);
 
                 fontParms_t fp;
                 fp.AlignHoriz = HORIZONTAL_CENTER;
@@ -1268,7 +1268,7 @@ struct App::Private
                 V3Vectf viewUp(0.0f, 1.0f, 0.0f);
                 V3Vectf viewLeft = viewUp.Cross(viewFwd);
                 V3Vectf newPos = viewPos + viewFwd * self->text.infoTextOffset.z + viewUp * self->text.infoTextOffset.y + viewLeft * self->text.infoTextOffset.x;
-                self->text.infoTextPointTracker.Update(ovr_GetTimeInSeconds(), newPos);
+                self->text.infoTextPointTracker.Update(VTimer::Seconds(), newPos);
 
                 fontParms_t fp;
                 fp.AlignHoriz = HORIZONTAL_CENTER;
@@ -1292,7 +1292,7 @@ struct App::Private
 
             // Report frame counts once a second
             countApplicationFrames++;
-            const double timeNow = floor(ovr_GetTimeInSeconds());
+            const double timeNow = floor(VTimer::Seconds());
             if (timeNow > lastReportTime)
             {
                 vInfo("FPS:" << countApplicationFrames << "GPU time:" << eyeTargets->LogEyeSceneGpuTime.totalTime() << "ms");
@@ -1376,7 +1376,7 @@ struct App::Private
         {
             // back key events, because of special handling for double-tap, short-press and long-press,
             // are handled in AppLocal::VrThreadFunction.
-            backKeyState.HandleEvent(ovr_GetTimeInSeconds(), down, repeatCount);
+            backKeyState.HandleEvent(VTimer::Seconds(), down, repeatCount);
             return;
         }
 

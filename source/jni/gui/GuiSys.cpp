@@ -17,6 +17,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "../api/VGlShader.h"
 #include "GlTexture.h"
 #include "../api/VGlGeometry.h"
+#include "../core/VTimer.h"
 #include "App.h"
 #include "GazeCursor.h"
 #include "VRMenuMgr.h"
@@ -309,13 +310,13 @@ void OvrGuiSysLocal::frame( App * app, const VrFrame & vrFrame, OvrVRMenuMgr & m
 		if ( 0 )
 		{
 			//SetCurrentThreadAffinityMask( 0xF0 );
-			double start = LogCpuTime::GetNanoSeconds();
+            double start =VTimer::Seconds();
 			for ( int i = 0; i < 20; i++ )
 			{
 				menuMgr.beginFrame();
 				curMenu->frame( app, vrFrame, menuMgr, font, fontSurface, viewMatrix, GazeUserId );
 			}
-			double end = LogCpuTime::GetNanoSeconds();
+            double end = VTimer::Seconds();
 			vInfo("20x VRMenu::Frame() =" << ( end - start ) * ( 1.0 / ( 1000.0 * 1000.0 ) ) << "ms");
 		}
 

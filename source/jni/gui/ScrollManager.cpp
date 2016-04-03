@@ -12,7 +12,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "ScrollManager.h"
 #include "VAlgorithm.h"
-
+#include "core/VTimer.h"
 #include "Input.h"
 
 namespace NervGear {
@@ -367,7 +367,7 @@ void OvrScrollManager::touchRelative( V3Vectf touchPos )
 
 		float const DISTANCE_RAMP = 150.0f;
 		float const ramp = fabsf( touchVal ) / DISTANCE_RAMP;
-		m_deltas.Append( delta_t( curMove * DISTANCE_SCALE * ramp, ovr_GetTimeInSeconds() ) );
+        m_deltas.Append( delta_t( curMove * DISTANCE_SCALE * ramp, VTimer::Seconds() ) );
 	}
 
 	m_lastTouchPosistion = touchPos;

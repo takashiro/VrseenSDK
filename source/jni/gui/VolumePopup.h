@@ -14,11 +14,10 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #define OVR_VolumePopup_h
 
 #include "VRMenu.h"
-
+#include "core/VLockless.h"
 NV_NAMESPACE_BEGIN
 
-//==============================================================
-// OvrVolumePopup
+
 class OvrVolumePopup : public VRMenu
 {
 public:

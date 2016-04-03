@@ -1,6 +1,7 @@
 
 
 #include <Input.h>
+#include "core/VTimer.h"
 
 #include "SwipeHintComponent.h"
 #include "CarouselBrowserComponent.h"
@@ -34,7 +35,7 @@ void SwipeHintComponent::Reset( VRMenuObject * self )
 {
 	IgnoreDelay = true;
 	ShouldShow = false;
-	const double now = ovr_GetTimeInSeconds();
+    const double now = VTimer::Seconds();
 	TotalAlpha.Set( now, TotalAlpha.Value( now ), now, 0.0f );
     self->setColor( V4Vectf( 1.0f, 1.0f, 1.0f, 0.0f ) );
 }

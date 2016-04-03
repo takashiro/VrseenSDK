@@ -48,7 +48,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "VideoMenu.h"
 #include "VrLocale.h"
 #include "VStandardPath.h"
-
+#include "core/VTimer.h"
 #include "VideosMetaData.h"
 #include "VColor.h"
 static bool	RetailMode = false;
@@ -742,7 +742,7 @@ const char* Oculus360Videos::MenuStateString( const OvrMenuState state )
 void Oculus360Videos::OnVideoActivated( const OvrMetaDatum * videoData )
 {
 	ActiveVideo = videoData;
-	StartVideo( ovr_GetTimeInSeconds() );
+    StartVideo( VTimer::Seconds() );
 }
 
 VR4Matrixf Oculus360Videos::onNewFrame( const VrFrame vrFrame )

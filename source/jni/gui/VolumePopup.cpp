@@ -11,7 +11,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 *************************************************************************************/
 
 #include "VolumePopup.h"
-
+#include "core/VTimer.h"
 #include <android/keycodes.h>
 #include "App.h"
 #include "VRMenuComponent.h"
@@ -22,6 +22,47 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "TextFade_Component.h"
 #include "VAlgorithm.h"
 #include "VApkFile.h"
+#include "core/VLog.h"
+
+
+class LocklessDouble
+{
+public:
+    LocklessDouble( const double v ) : Value( v ) { };
+    LocklessDouble() : Value( -1 ) { };
+
+    double Value;
+};
+NervGear::VLockless< LocklessDouble >				TimeOfLastVolumeChange;
+
+
+template< typename T, T _initValue_ >
+class LocklessVar
+{
+public:
+    LocklessVar() : Value( _initValue_ ) { }
+    LocklessVar( T const v ) : Value( v ) { }
+
+    T	Value;
+};
+
+typedef LocklessVar< int, -1> 						volume_t;
+NervGear::VLockless< volume_t >					CurrentVolume;
+extern "C"
+{
+    JNIEXPORT void Java_com_vrseen_nervgear_VrLib_nativeVolumeEvent(JNIEnv *jni, jclass clazz, jint volume)
+    {
+        //vInfo("nativeVolumeEvent(" << volume << ")");
+
+        CurrentVolume.setState( volume );
+        double now = NervGear::VTimer::Seconds();
+
+        TimeOfLastVolumeChange.setState( now );
+    }
+
+
+}
+
 
 namespace NervGear {
 
@@ -182,7 +223,16 @@ void OvrVolumePopup::frameImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr
         return;
     }
 
-    const double timeSinceLastVolumeChange = ovr_GetTimeSinceLastVolumeChange();
+
+
+    double value = TimeOfLastVolumeChange.state().Value;
+    if ( value == -1 )
+    {
+        //vInfo("ovr_GetTimeSinceLastVolumeChange() : Not initialized.  Returning -1");
+        return ;
+    }
+    const double timeSinceLastVolumeChange = NervGear::VTimer::Seconds() - value;
+
 	if ( ( timeSinceLastVolumeChange < 0 ) || ( timeSinceLastVolumeChange > VolumeMenuFadeDelay ) )
 	{
 		menuHandle_t volumeTextHandle = handleForId( app->vrMenuMgr(), OvrVolumePopup::ID_VOLUME_TEXT );
@@ -240,10 +290,19 @@ void OvrVolumePopup::checkForVolumeChange( App * app )
 {
 	// ovr_GetTimeSinceLastVolumeChange() will return -1 if the volume listener hasn't initialized yet,
 	// which sometimes takes place after a frame has run in Unity.
-	double timeSinceLastVolumeChange = ovr_GetTimeSinceLastVolumeChange();
+
+    double value = TimeOfLastVolumeChange.state().Value;
+    if ( value == -1 )
+    {
+        //vInfo("ovr_GetTimeSinceLastVolumeChange() : Not initialized.  Returning -1");
+        return ;
+    }
+    double timeSinceLastVolumeChange =NervGear::VTimer::Seconds() - value;
+
+
 	if ( ( timeSinceLastVolumeChange != -1 ) && ( timeSinceLastVolumeChange < VolumeMenuFadeDelay ) )
 	{
-		showVolume( app, ovr_GetVolume() );
+        showVolume( app, CurrentVolume.state().Value);
 	}
 }
 

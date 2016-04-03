@@ -5,6 +5,7 @@
 #include "Native.h"
 #include "SceneManager.h"
 #include "SurfaceTexture.h"
+#include "core/VTimer.h"
 
 #include "VLog.h"
 
@@ -58,7 +59,7 @@ void SceneManager::OneTimeInit( const VString &launchIntent )
 {
 	vInfo("SceneManager::OneTimeInit");
 
-	const double start = ovr_GetTimeInSeconds();
+    const double start = VTimer::Seconds();
 
     UnitSquare.createPlaneQuadGrid( 1, 1 );
 
@@ -67,7 +68,7 @@ void SceneManager::OneTimeInit( const VString &launchIntent )
 	ScreenVignetteTexture = BuildScreenVignetteTexture( 1 );
 	ScreenVignetteSbsTexture = BuildScreenVignetteTexture( 2 );
 
-	vInfo("SceneManager::OneTimeInit:" << (ovr_GetTimeInSeconds() - start) << "seconds");
+    vInfo("SceneManager::OneTimeInit:" << (VTimer::Seconds() - start) << "seconds");
 }
 
 void SceneManager::OneTimeShutdown()
@@ -501,19 +502,19 @@ void SceneManager::ClearGazeCursorGhosts()
 
 void SceneManager::ToggleLights( const float duration )
 {
-	const double now = ovr_GetTimeInSeconds();
+    const double now = VTimer::Seconds();
 	StaticLighting.Set( now, StaticLighting.Value( now ), now + duration, 1.0 - StaticLighting.endValue );
 }
 
 void SceneManager::LightsOn( const float duration )
 {
-	const double now = ovr_GetTimeInSeconds();
+    const double now = VTimer::Seconds();
 	StaticLighting.Set( now, StaticLighting.Value( now ), now + duration, 1.0 );
 }
 
 void SceneManager::LightsOff( const float duration )
 {
-	const double now = ovr_GetTimeInSeconds();
+    const double now = VTimer::Seconds();
 	StaticLighting.Set( now, StaticLighting.Value( now ), now + duration, 0.0 );
 }
 
@@ -790,7 +791,7 @@ VR4Matrixf SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 	{
 		// lights fading in and out, always on if no movie loaded
 		const float cinemaLights = ( ( MovieTextureWidth > 0 ) && !SceneInfo.UseFreeScreen ) ?
-				(float)StaticLighting.Value( ovr_GetTimeInSeconds() ) : 1.0f;
+                (float)StaticLighting.Value( VTimer::Seconds() ) : 1.0f;
 
 		if ( cinemaLights <= 0.0f )
 		{

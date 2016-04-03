@@ -19,7 +19,7 @@ void * jobject;
 extern "C" {
 
 
-double			ovr_GetTimeInSeconds();
+
 
 extern JavaVM * VrLibJavaVM;
 
@@ -109,8 +109,8 @@ typedef enum
 } eExitType;
 
 
-int ovr_GetVolume();
-double ovr_GetTimeSinceLastVolumeChange();
+
+
 
 
 enum eVrApiEventStatus

@@ -6,6 +6,7 @@
 #include "ResumeMovieComponent.h"
 #include "VApkFile.h"
 #include "CinemaStrings.h"
+#include "core/VTimer.h"
 
 namespace OculusCinema {
 
@@ -31,11 +32,11 @@ void ResumeMovieView::OneTimeInit( const VString &launchIntent )
 {
 	vInfo("ResumeMovieView::OneTimeInit");
 
-	const double start = ovr_GetTimeInSeconds();
+    const double start = VTimer::Seconds();
 
 	CreateMenu( vApp, vApp->vrMenuMgr(), vApp->defaultFont() );
 
-	vInfo("ResumeMovieView::OneTimeInit:" << (ovr_GetTimeInSeconds() - start) << "seconds");
+    vInfo("ResumeMovieView::OneTimeInit:" << (VTimer::Seconds() - start) << "seconds");
 }
 
 void ResumeMovieView::OneTimeShutdown()

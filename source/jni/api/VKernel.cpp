@@ -52,25 +52,8 @@ static  VFrameSmooth* frameSmooth = NULL;
 static jobject  ActivityObject = NULL;
 
 
-// This must be called by a function called directly from a java thread,
-// preferably at JNI_OnLoad().  It will fail if called from a pthread created
-// in native code, or from a NativeActivity due to the class-lookup issue:
-//
-// http://developer.android.com/training/articles/perf-jni.html#faq_FindClass
-//
-// This should not start any threads or consume any significant amount of
-// resources, so hybrid apps aren't penalizing their normal mode of operation
-// by supporting VR.
 void		ovr_OnLoad( JavaVM * JavaVm_ );
-
-// For a dedicated VR app this is called from JNI_OnLoad().
-// A hybrid app, however, may want to defer calling it until the first headset
-// plugin event to avoid starting the device manager.
 void		ovr_Init();
-
-// Shutdown without exiting the activity.
-// A dedicated VR app will call ovr_ExitActivity instead, but a hybrid
-// app may call this when leaving VR mode.
 void		ovr_Shutdown();
 
 
@@ -100,12 +83,6 @@ void ovr_ShutdownSensors()
     }
 }
 
-bool ovr_InitializeInternal()
-{
-    ovr_InitSensors();
-
-    return true;
-}
 
 void ovr_Shutdown()
 {
@@ -260,28 +237,11 @@ struct HMTMountState_t
     eHMTMountState	MountState;
 };
 
-template< typename T, T _initValue_ >
-class LocklessVar
-{
-public:
-    LocklessVar() : Value( _initValue_ ) { }
-    LocklessVar( T const v ) : Value( v ) { }
 
-    T	Value;
-};
 
-class LocklessDouble
-{
-public:
-    LocklessDouble( const double v ) : Value( v ) { };
-    LocklessDouble() : Value( -1 ) { };
 
-    double Value;
-};
 
-typedef LocklessVar< int, -1> 						volume_t;
-NervGear::VLockless< volume_t >					CurrentVolume;
-NervGear::VLockless< LocklessDouble >				TimeOfLastVolumeChange;
+
 NervGear::VLockless< bool >						HeadsetPluggedState;
 NervGear::VLockless< bool >						PowerLevelStateThrottled;
 NervGear::VLockless< bool >						PowerLevelStateMinimum;
@@ -294,6 +254,7 @@ extern "C"
 // The JNIEXPORT macro prevents the functions from ever being stripped out of the library.
 
 void Java_com_vrseen_nervgear_VrLib_nativeVsync( JNIEnv *jni, jclass clazz, jlong frameTimeNanos );
+void Java_com_vrseen_nervgear_VrLib_nativeVolumeEvent(JNIEnv *jni, jclass clazz, jint volume);
 
 JNIEXPORT jint JNI_OnLoad( JavaVM * vm, void * reserved )
 {
@@ -308,15 +269,11 @@ ovr_Init();
 return JNI_VERSION_1_6;
 }
 
-JNIEXPORT void Java_com_vrseen_nervgear_VrLib_nativeVolumeEvent(JNIEnv *jni, jclass clazz, jint volume)
-{
-    vInfo("nativeVolumeEvent(" << volume << ")");
 
-    CurrentVolume.setState( volume );
-    double now = ovr_GetTimeInSeconds();
 
-    TimeOfLastVolumeChange.setState( now );
-}
+
+
+
 
 JNIEXPORT void Java_com_vrseen_nervgear_VrLib_nativeHeadsetEvent(JNIEnv *jni, jclass clazz, jint state)
 {
@@ -386,10 +343,7 @@ const char *ovr_GetVersionString()
     return NV_VERSION_STRING;
 }
 
-double ovr_GetTimeInSeconds()
-{
-    return NervGear::VTimer::Seconds();
-}
+
 
 // This must be called by a function called directly from a java thread,
 // preferably at JNI_OnLoad().  It will fail if called from a pthread created
@@ -495,8 +449,7 @@ void ovr_Init()
     vInfo("ovr_Init");
 
     // initialize Oculus code
-    ovr_InitializeInternal();
-
+    ovr_InitSensors();
     JNIEnv * jni;
     const jint rtn = VrLibJavaVM->AttachCurrentThread( &jni, 0 );
     if ( rtn != JNI_OK )
@@ -546,21 +499,7 @@ void ovr_RegisterHmtReceivers()
     registerHMTReceivers = true;
 }
 
-int ovr_GetVolume()
-{
-    return CurrentVolume.state().Value;
-}
 
-double ovr_GetTimeSinceLastVolumeChange()
-{
-    double value = TimeOfLastVolumeChange.state().Value;
-    if ( value == -1 )
-    {
-        //vInfo("ovr_GetTimeSinceLastVolumeChange() : Not initialized.  Returning -1");
-        return -1;
-    }
-    return ovr_GetTimeInSeconds() - value;
-}
 
 eVrApiEventStatus ovr_nextPendingEvent( VString& buffer, unsigned int const bufferSize )
 {
@@ -722,7 +661,7 @@ void VKernel::run()
 
     isRunning = true;
 
-    ovrSensorState state = ovr_GetSensorStateInternal( ovr_GetTimeInSeconds() );
+    ovrSensorState state = ovr_GetSensorStateInternal( VTimer::Seconds() );
     if ( state.Status & Status_OrientationTracked )
     {
         vInfo("HMD sensor attached.");

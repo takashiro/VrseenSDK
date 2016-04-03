@@ -1,6 +1,6 @@
 #include <android/keycodes.h>
 #include <VRMenuMgr.h>
-
+#include "core/VTimer.h"
 #include "CinemaApp.h"
 #include "Native.h"
 #include "CinemaStrings.h"
@@ -85,13 +85,13 @@ void MoviePlayerView::OneTimeInit( const VString & launchIntent )
 {
 	vInfo("MoviePlayerView::OneTimeInit");
 
-	const double start = ovr_GetTimeInSeconds();
+    const double start = VTimer::Seconds();
 
 	GazeUserId = vApp->gazeCursor().GenerateUserId();
 
 	CreateMenu( vApp, vApp->vrMenuMgr(), vApp->defaultFont() );
 
-	vInfo("MoviePlayerView::OneTimeInit:" << (ovr_GetTimeInSeconds() - start) << "seconds");
+    vInfo("MoviePlayerView::OneTimeInit:" << (VTimer::Seconds() - start) << "seconds");
 }
 
 void MoviePlayerView::OneTimeShutdown()
@@ -675,7 +675,7 @@ void MoviePlayerView::CheckInput( const VrFrame & vrFrame )
 		if ( !onscreen )
 		{
 			// outside of screen, so show reposition message
-			const double now = ovr_GetTimeInSeconds();
+            const double now = VTimer::Seconds();
 			float alpha = MoveScreenAlpha.Value( now );
 			if ( alpha > 0.0f )
 			{
@@ -691,7 +691,7 @@ void MoviePlayerView::CheckInput( const VrFrame & vrFrame )
 		else
 		{
 			// onscreen, so hide message
-			const double now = ovr_GetTimeInSeconds();
+            const double now = VTimer::Seconds();
 			MoveScreenAlpha.Set( now, -1.0f, now + 1.0f, 1.0f );
 			MoveScreenLabel.SetVisible( false );
 		}
@@ -817,7 +817,7 @@ void MoviePlayerView::ScrubBarClicked( const float progress )
 	}
 
 	// choke off the amount position changes we send to the media player
-	const double now = ovr_GetTimeInSeconds();
+    const double now = VTimer::Seconds();
 	if ( now <= NextSeekTime )
 	{
 		return;
@@ -828,14 +828,14 @@ void MoviePlayerView::ScrubBarClicked( const float progress )
 
 	ScrubBar.SetProgress( progress );
 
-	NextSeekTime = ovr_GetTimeInSeconds() + 0.1;
+    NextSeekTime = VTimer::Seconds() + 0.1;
 }
 
 void MoviePlayerView::UpdateUI( const VrFrame & vrFrame )
 {
 	if ( uiActive )
 	{
-		double timeSinceLastGaze = ovr_GetTimeInSeconds() - GazeTimer.GetLastGazeTime();
+        double timeSinceLastGaze = VTimer::Seconds() - GazeTimer.GetLastGazeTime();
 		if ( !ScrubBar.IsScrubbing() && ( SeekSpeed == 0 ) && ( timeSinceLastGaze > GazeTimeTimeout ) )
 		{
 			vInfo("Gaze timeout");
@@ -929,7 +929,7 @@ VR4Matrixf MoviePlayerView::Frame( const VrFrame & vrFrame )
 
 	if ( SeekSpeed != 0 )
 	{
-		const double now = ovr_GetTimeInSeconds();
+        const double now = VTimer::Seconds();
 		if ( now > NextSeekTime )
 		{
 			int PlaybackSpeed = ( SeekSpeed < 0 ) ? -( 1 << -SeekSpeed ) : ( 1 << SeekSpeed );
@@ -956,7 +956,7 @@ ControlsGazeTimer::ControlsGazeTimer() :
 
 void ControlsGazeTimer::SetGazeTime()
 {
-	LastGazeTime = ovr_GetTimeInSeconds();
+    LastGazeTime = VTimer::Seconds();
 }
 
 eMsgStatus ControlsGazeTimer::onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
@@ -967,12 +967,12 @@ eMsgStatus ControlsGazeTimer::onEventImpl( App * app, VrFrame const & vrFrame, O
     	case VRMENU_EVENT_FRAME_UPDATE:
     		if ( HasFocus )
     		{
-    			LastGazeTime = ovr_GetTimeInSeconds();
+                LastGazeTime = VTimer::Seconds();
     		}
     		return MSG_STATUS_ALIVE;
         case VRMENU_EVENT_FOCUS_GAINED:
         	HasFocus = true;
-        	LastGazeTime = ovr_GetTimeInSeconds();
+            LastGazeTime = VTimer::Seconds();
     		return MSG_STATUS_ALIVE;
         case VRMENU_EVENT_FOCUS_LOST:
         	HasFocus = false;

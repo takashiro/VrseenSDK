@@ -9,7 +9,7 @@ Copyright   :   Copyright 2014 Oculus VR, Inc. All Rights reserved.
 
 
 *************************************************************************************/
-
+#include "core/VTimer.h"
 #include "AnimComponents.h"
 #include "VAlgorithm.h"
 #include "VRMenuObject.h"
@@ -42,7 +42,7 @@ eMsgStatus OvrAnimComponent::frame( App * app, VrFrame const & vrFrame, OvrVRMen
 	// only recalculate the current frame if playing
 	if ( m_animState == ANIMSTATE_PLAYING )
 	{
-		double timePassed = ovr_GetTimeInSeconds() - m_baseTime;
+        double timePassed = VTimer::Seconds() - m_baseTime;
 		m_floatFrame = timePassed * m_framesPerSecond;
 		int totalFrames = ( int )floor( m_floatFrame );
 		m_fractionalFrame = m_floatFrame - totalFrames;
@@ -69,7 +69,7 @@ void OvrAnimComponent::setFrame( VRMenuObject * self, int const frameNum )
 	// remains correct if we're playing.  If we're not playing, this will cause the
 	// next Play() to start from this frame.
 	m_baseFrame = frameNum;
-	m_baseTime = ovr_GetTimeInSeconds();
+    m_baseTime = VTimer::Seconds();
 	m_forceVisibilityUpdate = true;	// make sure visibilities are set next frame update
 }
 
@@ -78,7 +78,7 @@ void OvrAnimComponent::setFrame( VRMenuObject * self, int const frameNum )
 void OvrAnimComponent::play()
 {
 	m_animState = ANIMSTATE_PLAYING;
-	m_baseTime = ovr_GetTimeInSeconds();
+    m_baseTime = VTimer::Seconds();
 	// on a play we offset the base frame to the current frame so a resume from pause doesn't restart
 	m_baseFrame = m_curFrame;
 }

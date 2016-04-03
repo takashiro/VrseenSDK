@@ -10,7 +10,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 *************************************************************************************/
 
 #include "KeyState.h"
-
+#include "core/VTimer.h"
 #include "Android/LogUtils.h"
 #include "api/VKernel.h"
 
@@ -41,7 +41,7 @@ KeyState::KeyState( double const doubleTapTime, double const longPressTime ) :
 // KeyState::HandleEvent
 void KeyState::HandleEvent( double const time, bool const down, int const repeatCount )
 {
-	vInfo("BackKey: (" << ovr_GetTimeInSeconds() << ") HandleEvent: NumEvents" << NumEvents << ", RepeatCount" << repeatCount);
+    vInfo("BackKey: (" << VTimer::Seconds() << ") HandleEvent: NumEvents" << NumEvents << ", RepeatCount" << repeatCount);
 	bool wasDown = this->Down;
 	this->Down = down;
 
@@ -128,7 +128,7 @@ KeyState::eKeyEventType KeyState::Update( double const time )
 		if ( NumEvents > 0 && time - EventTimes[0] >= LongPressTime )
 		{
 			Reset();
-			vInfo("BackKey: (" << ovr_GetTimeInSeconds() << ") Update() - KEY_EVENT_LONG_PRESS," << NumEvents);
+            vInfo("BackKey: (" << VTimer::Seconds() << ") Update() - KEY_EVENT_LONG_PRESS," << NumEvents);
 			return KEY_EVENT_LONG_PRESS;
 		}
 		if ( NumEvents == 2 )
@@ -140,13 +140,13 @@ KeyState::eKeyEventType KeyState::Update( double const time )
                 if ( EventTimes[1] - EventTimes[0] < DoubleTapTime )
 			    {
     				// the HMT button always releases a hold at 0.8 seconds right now :(
-				    vInfo("BackKey: (" << ovr_GetTimeInSeconds() << ") Update() - press released after" << time - EventTimes[0] << "seconds.");
+                    vInfo("BackKey: (" << VTimer::Seconds() << ") Update() - press released after" << time - EventTimes[0] << "seconds.");
 				    Reset();
 				    return KEY_EVENT_SHORT_PRESS;
                 }
                 else
                 {
-                    vInfo("BackKey: (" << ovr_GetTimeInSeconds() << ") Update() - discarding short-press after" << time - EventTimes[0] << "seconds.");
+                    vInfo("BackKey: (" << VTimer::Seconds() << ") Update() - discarding short-press after" << time - EventTimes[0] << "seconds.");
                     Reset();
                     return KEY_EVENT_UP;
                 }

@@ -11,7 +11,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 *************************************************************************************/
 
 #include "TextFade_Component.h"
-
+#include "core/VTimer.h"
 
 #include "Input.h"
 #include "BitmapFont.h"
@@ -70,7 +70,7 @@ eMsgStatus OvrTextFade_Component::onEventImpl( App * app, VrFrame const & vrFram
 eMsgStatus OvrTextFade_Component::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 											VRMenuObject * self, VRMenuEvent const & event )
 {
-	double t = ovr_GetTimeInSeconds();
+    double t = VTimer::Seconds();
 	if ( m_startFadeInTime >= 0.0f && t >= m_startFadeInTime )
 	{
 		m_textAlphaFader.startFadeIn();
@@ -114,7 +114,7 @@ eMsgStatus OvrTextFade_Component::focusGained( App * app, VrFrame const & vrFram
 {
 
 	m_startFadeOutTime = -1.0;
-	m_startFadeInTime = FADE_DELAY + ovr_GetTimeInSeconds();
+    m_startFadeInTime = FADE_DELAY + VTimer::Seconds();
 
 	return MSG_STATUS_ALIVE;
 }
@@ -124,7 +124,7 @@ eMsgStatus OvrTextFade_Component::focusGained( App * app, VrFrame const & vrFram
 eMsgStatus OvrTextFade_Component::focusLost( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 												VRMenuObject * self, VRMenuEvent const & event )
 {
-	m_startFadeOutTime = FADE_DELAY + ovr_GetTimeInSeconds();
+    m_startFadeOutTime = FADE_DELAY + VTimer::Seconds();
 	m_startFadeInTime = -1.0;
 
 	return MSG_STATUS_ALIVE;
