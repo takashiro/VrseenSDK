@@ -4,7 +4,7 @@
 
 #include "vglobal.h"
 #include "api/VGlOperation.h"
-#include "Android/LogUtils.h"
+
 #include "VColor.h"
 
 NV_NAMESPACE_BEGIN
@@ -180,8 +180,7 @@ public:
     // Create a screenshot and a thumbnail from the undistorted left eye view
     void 		ScreenShot();
 
-    // GPU time queries around eye scene rendering.
-    LogGpuTime<2>	LogEyeSceneGpuTime;
+
 
     // SGX wants a clear, Adreno wants a discard, not sure what Mali wants.
     bool			DiscardInsteadOfClear;

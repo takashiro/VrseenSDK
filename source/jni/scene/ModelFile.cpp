@@ -11,7 +11,7 @@
 #include "VPath.h"
 
 #include "api/VGlOperation.h"
-#include "android/LogUtils.h"
+
 
 #include "unzip.h"
 #include "GlTexture.h"
@@ -809,7 +809,7 @@ static ModelFile * LoadModelFile( unzFile zfp, const char * fileName,
 								const ModelGlPrograms & programs,
 								const MaterialParms & materialParms )
 {
-	const LogCpuTime logTime( "LoadModelFile" );
+
 
 	ModelFile * modelPtr = new ModelFile;
 	ModelFile & model = *modelPtr;

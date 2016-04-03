@@ -11,7 +11,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "KeyState.h"
 
-#include "Android/LogUtils.h"
+
 #include "api/VKernel.h"
 
 namespace NervGear {
