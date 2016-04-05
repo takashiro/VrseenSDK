@@ -100,6 +100,8 @@ SOURCES += \
     jni/io/VFileOperation.cpp \
     jni/io/VSysFile.cpp \
     jni/media/VSoundManager.cpp \
+    jni/scene/VItem.cpp \
+    jni/scene/VScene.cpp \
     jni/scene/BitmapFont.cpp \
     jni/scene/DebugLines.cpp \
     jni/scene/VEyeBuffer.cpp \
@@ -240,6 +242,8 @@ HEADERS += \
     jni/io/VFileOperation.h \
     jni/io/VSysFile.h \
     jni/media/VSoundManager.h \
+    jni/scene/VItem.h \
+    jni/scene/VScene.h \
     jni/scene/BitmapFont.h \
     jni/scene/DebugLines.h \
     jni/scene/VEyeBuffer.h \
