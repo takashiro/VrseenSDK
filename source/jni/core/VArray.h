@@ -96,7 +96,7 @@ public:
     {
         for (auto i = ParentType::begin(); i != ParentType::end(); i++) {
             if (*i == e) {
-                this->erase(i);
+                ParentType::erase(i);
                 break;
             }
         }
