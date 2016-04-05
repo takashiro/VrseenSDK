@@ -128,8 +128,8 @@ HEADERS += \
     jni/core/android/JniUtils.h \
     jni/core/android/VOsBuild.h \
     jni/core/VAlgorithm.h \
-    jni/core/Atomic.h \
-    jni/core/Array.h \
+    jni/core/VAtomicInt.h \
+    jni/core/VArray.h \
     jni/core/VByteArray.h \
     jni/core/VColor.h \
     jni/core/VChar.h \
