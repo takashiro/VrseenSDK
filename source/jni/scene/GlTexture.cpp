@@ -985,7 +985,7 @@ GlTexture LoadTextureKTX( const char * fileName, const unsigned char * buffer, c
 
 	const UByte fileIdentifier[12] =
 	{
-		'«', 'K', 'T', 'X', ' ', '1', '1', '»', '\r', '\n', '\x1A', '\n'
+		'?, 'K', 'T', 'X', ' ', '1', '1', '?, '\r', '\n', '\x1A', '\n'
 	};
 
 	const OVR_KTX_HEADER & header = *(OVR_KTX_HEADER *)buffer;

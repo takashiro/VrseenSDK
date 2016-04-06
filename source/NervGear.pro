@@ -265,7 +265,8 @@ HEADERS += \
     jni/App.h \
     jni/VrLocale.h \
     jni/vglobal.h \
-    jni/Input.h
+    jni/Input.h \
+    jni/scene/VReferenceCounted.h
 
 include(jni/3rdparty/minizip/minizip.pri)
 include(jni/3rdparty/stb/stb.pri)
