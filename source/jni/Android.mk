@@ -119,6 +119,8 @@ LOCAL_SRC_FILES  := \
 	io/VFileOperation.cpp \
 	io/VSysFile.cpp \
 	media/VSoundManager.cpp \
+	scene/VItem.cpp \
+	scene/VScene.cpp \
 	scene/BitmapFont.cpp \
 	scene/DebugLines.cpp \
 	scene/VEyeBuffer.cpp \
