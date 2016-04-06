@@ -118,6 +118,7 @@ LOCAL_SRC_FILES  := \
 	io/VBinaryFile.cpp \
 	io/VFileOperation.cpp \
 	io/VSysFile.cpp \
+	media/VImage.cpp \
 	media/VSoundManager.cpp \
 	scene/VItem.cpp \
 	scene/VScene.cpp \

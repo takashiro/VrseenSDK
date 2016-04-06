@@ -100,6 +100,7 @@ SOURCES += \
     jni/io/VBinaryFile.cpp \
     jni/io/VFileOperation.cpp \
     jni/io/VSysFile.cpp \
+    jni/media/VImage.cpp \
     jni/media/VSoundManager.cpp \
     jni/scene/VItem.cpp \
     jni/scene/VScene.cpp \
@@ -244,6 +245,7 @@ HEADERS += \
     jni/io/VFile.h \
     jni/io/VFileOperation.h \
     jni/io/VSysFile.h \
+    jni/media/VImage.h \
     jni/media/VSoundManager.h \
     jni/scene/VItem.h \
     jni/scene/VScene.h \
