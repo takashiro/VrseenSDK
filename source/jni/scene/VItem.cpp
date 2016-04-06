@@ -7,9 +7,11 @@ struct VItem::Private
     VItem *parent;
     VArray<VItem *> children;
     VPosF pos;
+    bool visible;
 
     Private()
         : parent(nullptr)
+        , visible(true)
     {
     }
 };
@@ -133,6 +135,16 @@ void VItem::setZ(vreal z)
 vreal VItem::z() const
 {
     return d->pos.z;
+}
+
+void VItem::setVisible(bool visible)
+{
+    d->visible = visible;
+}
+
+bool VItem::isVisible() const
+{
+    return d->visible;
 }
 
 void VItem::paint()

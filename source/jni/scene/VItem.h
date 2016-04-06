@@ -36,6 +36,9 @@ public:
     void setZ(vreal z);
     vreal z() const;
 
+    void setVisible(bool visible);
+    bool isVisible() const;
+
 protected:
     virtual void paint();
 
