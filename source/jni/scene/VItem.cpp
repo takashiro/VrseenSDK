@@ -77,7 +77,9 @@ void VItem::update()
 {
     paint();
     for (VItem *child : d->children) {
-        child->update();
+        if (child->isVisible()) {
+            child->update();
+        }
     }
 }
 
