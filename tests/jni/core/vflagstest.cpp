@@ -11,12 +11,10 @@ void test()
 {
     enum Module
     {
-        M1,
-        M2,
-        M3,
-        M4,
-
-        ModuleCount
+        M1 = 0x1,
+        M2 = 0x2,
+        M3 = 0x4,
+        M4 = 0x8,
     };
 
     VFlags<Module> flags(M1);
@@ -37,9 +35,9 @@ void test()
     assert(flags == 0);
 
     flags ^= M3;
-    for (int m = M1; m < ModuleCount; m++) {
-        assert(flags.contains(static_cast<Module>(m)) == (m == M3));
-    }
+    assert(!flags.contains(M1));
+    assert(!flags.contains(M2));
+    assert(flags.contains(M3));
 
     flags ^= M2;
     assert(flags.contains(M2));
