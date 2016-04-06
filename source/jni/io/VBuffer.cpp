@@ -1,21 +1,43 @@
 #include "VBuffer.h"
 
+#include <sstream>
+
 NV_NAMESPACE_BEGIN
 
-VBuffer::VBuffer()
+struct VBuffer::Private
 {
+    std::stringstream data;
+};
+
+VBuffer::VBuffer()
+    : d(new Private)
+{
+}
+
+VBuffer::~VBuffer()
+{
+    delete d;
+}
+
+vint64 VBuffer::bytesAvailable() const
+{
+    std::streampos curPos = d->data.tellp();
+    d->data.seekp(0, std::ios::end);
+    vint64 pos = d->data.tellp();
+    d->data.seekp(curPos);
+    return pos;
 }
 
 vint64 VBuffer::readData(char *data, vint64 maxSize)
 {
-    NV_UNUSED(data, maxSize);
-    return 0;
+    return d->data.readsome(data, maxSize);
+
 }
 
 vint64 VBuffer::writeData(const char *data, vint64 maxSize)
 {
-    NV_UNUSED(data, maxSize);
-    return 0;
+    d->data.write(data, maxSize);
+    return maxSize;
 }
 
 NV_NAMESPACE_END

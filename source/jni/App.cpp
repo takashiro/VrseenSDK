@@ -43,6 +43,8 @@
 #include "VThread.h"
 #include "VStandardPath.h"
 #include "VColor.h"
+#include "VScene.h"
+
 //#define TEST_TIMEWARP_WATCHDOG
 #define EGL_PROTECTED_CONTENT_EXT 0x32c0
 
@@ -282,6 +284,7 @@ struct App::Private
 
     VMainActivity *activity;
     VKernel*        kernel;
+    VScene *scene;
 
     Private(App *self)
         : self(self)
@@ -335,7 +338,13 @@ struct App::Private
         , javaObject(nullptr)
         , appInterface(nullptr)
         , activity(nullptr)
+        , scene(new VScene)
     {
+    }
+
+    ~Private()
+    {
+        delete scene;
     }
 
     void initFonts()
@@ -1283,6 +1292,7 @@ struct App::Private
             if (!readyToExit)
             {
                 lastViewMatrix = appInterface->onNewFrame(self->text.vrFrame);
+                scene->update();
             }
 
             kernel->ovr_HandleDeviceStateChanges();
