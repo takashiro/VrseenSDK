@@ -15,7 +15,7 @@ public:
     void add(VItem *item);
     void remove(VItem *item);
 
-    void paint();
+    void update();
 
 private:
     NV_DECLARE_PRIVATE

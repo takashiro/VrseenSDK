@@ -19,7 +19,7 @@ public:
     VItem *parent() const;
     void setParent(VItem *item);
 
-    void paintAll();
+    void update();
 
     void setPos(const VPosF &pos);
     VPosF &pos();

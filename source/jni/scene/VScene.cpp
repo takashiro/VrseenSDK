@@ -39,9 +39,9 @@ void VScene::remove(VItem *item)
     d->rootItem->removeChild(item);
 }
 
-void VScene::paint()
+void VScene::update()
 {
-    d->rootItem->paintAll();
+    d->rootItem->update();
 }
 
 NV_NAMESPACE_END

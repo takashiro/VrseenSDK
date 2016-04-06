@@ -73,11 +73,11 @@ void VItem::setParent(VItem *item)
     }
 }
 
-void VItem::paintAll()
+void VItem::update()
 {
     paint();
     for (VItem *child : d->children) {
-        child->paintAll();
+        child->update();
     }
 }
 
