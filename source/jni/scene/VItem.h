@@ -2,6 +2,7 @@
 
 #include "vglobal.h"
 #include "VArray.h"
+#include "VPos.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -19,6 +20,19 @@ public:
     void setParent(VItem *item);
 
     void paintAll();
+
+    void setPos(const VPosF &pos);
+    VPosF &pos();
+    VPosF pos() const;
+
+    void setX(vreal x);
+    vreal x() const;
+
+    void setY(vreal y);
+    vreal y() const;
+
+    void setZ(vreal z);
+    vreal z() const;
 
 protected:
     virtual void paint();

@@ -44,9 +44,4 @@ void VScene::paint()
     d->rootItem->paintAll();
 }
 
-VItem *VScene::rootItem() const
-{
-    return d->rootItem;
-}
-
 NV_NAMESPACE_END

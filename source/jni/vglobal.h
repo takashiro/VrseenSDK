@@ -17,6 +17,12 @@ typedef unsigned long ulong;
 typedef long long longlong;
 typedef unsigned long long ulonglong;
 
+#ifndef NV_FLOAT_AS_REAL
+typedef double vreal;
+#else
+typedef float vreal;
+#endif
+
 //@to-do: Check target platform and compiler
 typedef short vint16;
 typedef ushort vuint16;

@@ -6,6 +6,7 @@ struct VItem::Private
 {
     VItem *parent;
     VArray<VItem *> children;
+    VPosF pos;
 
     Private()
         : parent(nullptr)
@@ -40,8 +41,9 @@ void VItem::addChild(VItem *item)
 
 void VItem::removeChild(VItem *item)
 {
-    if (d->children.contains(item)) {
-        d->children.removeOne(item);
+    int i = d->children.indexOf(item);
+    if (i > 0) {
+        d->children.removeAt(i);
         item->d->parent = nullptr;
     }
 }
@@ -75,6 +77,51 @@ void VItem::paintAll()
     for (VItem *child : d->children) {
         child->paintAll();
     }
+}
+
+void VItem::setPos(const VPosF &pos)
+{
+    d->pos = pos;
+}
+
+VPosF &VItem::pos()
+{
+    return d->pos;
+}
+
+VPosF VItem::pos() const
+{
+    return d->pos;
+}
+
+void VItem::setX(vreal x)
+{
+    d->pos.x = x;
+}
+
+vreal VItem::x() const
+{
+    return d->pos.x;
+}
+
+void VItem::setY(vreal y)
+{
+    d->pos.y = y;
+}
+
+vreal VItem::y() const
+{
+    return d->pos.y;
+}
+
+void VItem::setZ(vreal z)
+{
+    d->pos.z = z;
+}
+
+vreal VItem::z() const
+{
+    return d->pos.z;
 }
 
 void VItem::paint()
