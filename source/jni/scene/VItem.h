@@ -25,6 +25,8 @@ public:
     VPosF &pos();
     VPosF pos() const;
 
+    VPosF globalPos() const;
+
     void setX(vreal x);
     vreal x() const;
 

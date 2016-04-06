@@ -31,6 +31,7 @@ public:
         x += pos.x;
         y += pos.y;
         z += pos.z;
+        return *this;
     }
 
     VPos &operator-=(const VPos &pos)
@@ -38,6 +39,7 @@ public:
         x -= pos.x;
         y -= pos.y;
         z -= pos.z;
+        return *this;
     }
 
     VPos &operator*=(T factor)
@@ -45,6 +47,7 @@ public:
         x *= factor;
         y *= factor;
         z *= factor;
+        return *this;
     }
 
     VPos &operator/=(T divisor)
@@ -52,6 +55,7 @@ public:
         x /= divisor;
         y /= divisor;
         z /= divisor;
+        return *this;
     }
 
     friend bool operator==(const VPos &p1, const VPos &p2)

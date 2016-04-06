@@ -94,6 +94,17 @@ VPosF VItem::pos() const
     return d->pos;
 }
 
+VPosF VItem::globalPos() const
+{
+    VPosF pos = this->pos();
+    VItem *parent = this->parent();
+    while (parent) {
+        pos += parent->pos();
+        parent = parent->parent();
+    }
+    return pos;
+}
+
 void VItem::setX(vreal x)
 {
     d->pos.x = x;
