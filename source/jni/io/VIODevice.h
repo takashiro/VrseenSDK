@@ -11,14 +11,14 @@ class VIODevice
 public:
     enum OpenModeFlag
     {
-        NotOpen = 0x0000,
-        ReadOnly = 0x0001,
-        WriteOnly = 0x0002,
+        NotOpen = 0x0,
+        ReadOnly = 0x1,
+        WriteOnly = 0x2,
         ReadWrite = ReadOnly | WriteOnly,
-        Append = 0x0004,
-        Truncate = 0x0008,
-        Text = 0x0010,
-        Unbuffered = 0x0020 //Unused yet
+        Append = 0x4,
+        Truncate = 0x8,
+        Text = 0x10,
+        Unbuffered = 0x20 //Unused yet
     };
     typedef VFlags<OpenModeFlag> OpenMode;
 

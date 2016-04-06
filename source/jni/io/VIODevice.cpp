@@ -24,6 +24,7 @@ VIODevice::VIODevice()
 
 VIODevice::~VIODevice()
 {
+    close();
     delete d;
 }
 
