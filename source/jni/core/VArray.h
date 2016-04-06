@@ -123,6 +123,16 @@ public:
         return false;
     }
 
+    int indexOf(const E &e) const
+    {
+        for (int i = 0, max = length(); i < max; i++) {
+            if (at(i) == e) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     void removeAtUnordered(uint index)
     {
         if (index >= this->size()) {
