@@ -8,9 +8,7 @@
 
 NV_NAMESPACE_BEGIN
 
-class VFile;
-
-class VFile
+class VAbstractFile
 {
 public:
 
@@ -33,8 +31,8 @@ public:
     };
 
 public:
-    VFile() { }
-    virtual ~VFile() { }
+    VAbstractFile() { }
+    virtual ~VAbstractFile() { }
 
     virtual const std::string filePath() = 0;
 
@@ -56,7 +54,7 @@ public:
     inline bool isEnd() { return !bytesAvailable(); }
     virtual int seek(int offset, std::ios_base::seekdir origin=std::ios_base::beg) = 0;
     virtual long long seek64(long long offset, std::ios_base::seekdir origin=std::ios_base::beg) = 0;
-    virtual int copyStream(VFile *pstream, int byteSize) = 0;
+    virtual int copyStream(VAbstractFile *pstream, int byteSize) = 0;
     virtual bool close() = 0;
 };
 

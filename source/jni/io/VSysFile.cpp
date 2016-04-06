@@ -3,7 +3,7 @@
 NV_NAMESPACE_BEGIN
 
 //通过路径打开文件系统中的文件，该函数在VFileOperation.cpp中实现
-VFile* VOpenFile(const VString& path, int flags);
+VAbstractFile* VOpenFile(const VString& path, int flags);
 
 VSysFile::VSysFile()
     : VDelegatedFile(0)
@@ -17,7 +17,7 @@ VSysFile::VSysFile(const VString& path, int flags)
     open(path, flags);
 }
 
-VSysFile::VSysFile(VFile *pfile)
+VSysFile::VSysFile(VAbstractFile *pfile)
     : VDelegatedFile(pfile)
 {
 

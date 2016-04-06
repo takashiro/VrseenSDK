@@ -15,7 +15,7 @@ enum ImageFilter
 };
 
 //实现文件具体操作的类，VSysFile通过指针授权给父类调用该类的函数
-class VFileOperation : public VFile, std::fstream
+class VFileOperation : public VAbstractFile, std::fstream
 {
 protected:
 
@@ -84,7 +84,7 @@ public:
     int seek(int offset, std::ios_base::seekdir origin) override;
     long long seek64(long long offset, std::ios_base::seekdir origin) override;
 
-    int copyStream(VFile *pStream, int byteSize) override;
+    int copyStream(VAbstractFile *pStream, int byteSize) override;
     bool close() override;
 
     // Uncompressed .pvr textures are much more efficient to load than bmp/tga/etc.

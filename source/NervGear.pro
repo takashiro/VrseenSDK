@@ -242,7 +242,6 @@ HEADERS += \
     jni/io/VIODevice.h \
     jni/io/VBinaryFile.h \
     jni/io/VDelegatedFile.h \
-    jni/io/VFile.h \
     jni/io/VFileOperation.h \
     jni/io/VSysFile.h \
     jni/media/VImage.h \
@@ -266,7 +265,8 @@ HEADERS += \
     jni/App.h \
     jni/VrLocale.h \
     jni/vglobal.h \
-    jni/Input.h
+    jni/Input.h \
+    jni/io/VAbstractFile.h
 
 include(jni/3rdparty/minizip/minizip.pri)
 include(jni/3rdparty/stb/stb.pri)

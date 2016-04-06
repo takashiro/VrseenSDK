@@ -17,7 +17,7 @@ VBinaryFile::VBinaryFile(const VString path, const char **error )
     , m_allocated(true)
 {
     VSysFile f;
-    if (!f.open(path, VFile::Open_Read)) {
+    if (!f.open(path, VAbstractFile::Open_Read)) {
         if (error != nullptr) {
             *error = "fail to open file!";
         }

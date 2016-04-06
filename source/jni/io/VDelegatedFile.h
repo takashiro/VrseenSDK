@@ -1,18 +1,18 @@
 #pragma once
 
-#include "VFile.h"
+#include "VAbstractFile.h"
 
 NV_NAMESPACE_BEGIN
 
 //io授权类，父类将相关的文件操作授权给子类完成
-class VDelegatedFile : public VFile
+class VDelegatedFile : public VAbstractFile
 {
 protected:
-    VFile *m_file;
+    VAbstractFile *m_file;
 
     VDelegatedFile() : m_file(0) { }
 public:
-    VDelegatedFile(VFile *pfile) : m_file(pfile) { }
+    VDelegatedFile(VAbstractFile *pfile) : m_file(pfile) { }
     ~VDelegatedFile() { delete m_file; }
 
     const std::string filePath() override { return m_file->filePath(); }
@@ -34,7 +34,7 @@ public:
     int seek(int offset, std::ios_base::seekdir origin=std::ios_base::beg) override { return m_file->seek(offset,origin); }
     long long seek64(long long offset, std::ios_base::seekdir origin=std::ios_base::beg) override { return m_file->seek64(offset,origin); }
 
-    int copyStream(VFile *pstream, int byteSize) override { return m_file->copyStream(pstream,byteSize); }
+    int copyStream(VAbstractFile *pstream, int byteSize) override { return m_file->copyStream(pstream,byteSize); }
     bool close() override { return m_file->close(); }
 };
 NV_NAMESPACE_END

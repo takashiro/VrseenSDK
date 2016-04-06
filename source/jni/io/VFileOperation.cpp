@@ -10,17 +10,17 @@ NV_NAMESPACE_BEGIN
 static int FError ()
 {
     if (errno == ENOENT) {
-        return VFile::FileNotFound;
+        return VAbstractFile::FileNotFound;
     } else if (errno == EACCES || errno == EPERM) {
-        return VFile::AccessError;
+        return VAbstractFile::AccessError;
     } else if (errno == ENOSPC) {
-        return VFile::iskFullError;
+        return VAbstractFile::iskFullError;
     } else {
-        return VFile::IOError;
+        return VAbstractFile::IOError;
     }
 }
 
-VFile *VOpenFile(const VString& path, int flags)
+VAbstractFile *VOpenFile(const VString& path, int flags)
 {
     return new VFileOperation(path, flags);
 }
@@ -261,7 +261,7 @@ long long  VFileOperation::seek64(long long offset,std::ios_base::seekdir startP
     return seek(static_cast<int>(offset),startPos);
 }
 
-int VFileOperation::copyStream(VFile *fstream, int num)
+int VFileOperation::copyStream(VAbstractFile *fstream, int num)
 {
     uchar temp[0x4000];
     int size = 0;
