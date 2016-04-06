@@ -114,6 +114,7 @@ LOCAL_SRC_FILES  := \
 	gui/OutOfSpaceMenu.cpp \
 	gui/KeyState.cpp \
 	io/VApkFile.cpp \
+	io/VBuffer.cpp \
 	io/VIODevice.cpp \
 	io/VBinaryFile.cpp \
 	io/VFileOperation.cpp \
