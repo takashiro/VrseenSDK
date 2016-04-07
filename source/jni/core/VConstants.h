@@ -166,4 +166,8 @@ struct VWorldAxes
 
 float LinearRangeMapFloat( float inValue, float inStart, float inEnd, float outStart, float outEnd );
 
+bool equal (const float a, const float b, const float tolerance = VConstantsf::Tolerance);
+
+bool iszero (const float a, const float tolerance = VConstantsf::Tolerance);
+
 NV_NAMESPACE_END

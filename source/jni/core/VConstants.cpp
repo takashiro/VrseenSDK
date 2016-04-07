@@ -91,4 +91,14 @@ float LinearRangeMapFloat( float inValue, float inStart, float inEnd, float outS
     return outValue;
 }
 
+bool equal(const float a, const float b, const float tolerance)
+{
+    return (a + tolerance >= b) && (a - tolerance <= b);
+}
+
+bool iszero(const float a, const float tolerance)
+{
+    return fabsf(a) <= tolerance;
+}
+
 NV_NAMESPACE_END
