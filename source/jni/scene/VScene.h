@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vglobal.h"
+#include "VColor.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -14,6 +14,9 @@ public:
 
     void add(VItem *item);
     void remove(VItem *item);
+
+    const VColor &backgroundColor() const;
+    void setBackgroundColor(const VColor &color);
 
     void update();
 

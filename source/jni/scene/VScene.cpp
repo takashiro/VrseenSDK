@@ -7,6 +7,7 @@ NV_NAMESPACE_BEGIN
 struct VScene::Private
 {
     VItem *rootItem;
+    VColor color;
 
     Private()
         : rootItem(new VItem)
@@ -37,6 +38,16 @@ void VScene::add(VItem *item)
 void VScene::remove(VItem *item)
 {
     d->rootItem->removeChild(item);
+}
+
+const VColor &VScene::backgroundColor() const
+{
+    return d->color;
+}
+
+void VScene::setBackgroundColor(const VColor &color)
+{
+    d->color = color;
 }
 
 void VScene::update()
