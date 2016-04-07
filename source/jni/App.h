@@ -105,8 +105,6 @@ public:
     const ovrSensorState &sensorForNextWarp() const;
 
     void drawScreenMask( const VR4Matrixf & mvp, const float fadeFracX, const float fadeFracY );
-    void drawScreenDirect( const GLuint texid, const VR4Matrixf & mvp );
-
     void drawBounds( const V3Vectf &mins, const V3Vectf &maxs, const VR4Matrixf &mvp, const V3Vectf &color );
 
     void execute();
