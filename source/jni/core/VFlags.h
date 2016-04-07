@@ -13,12 +13,12 @@ public:
 
     VFlags() : m_flags(0) {}
     VFlags(const VFlags &other) : m_flags(other.m_flags) {}
-    VFlags(Enum flag) : m_flags(flag) {}
+    VFlags(Enum flag) : m_flags(1 << flag) {}
     VFlags(StorageType flags) : m_flags(flags) {}
 
-    bool contains(Enum other) const { return (m_flags & other) != 0; }
-    void set(Enum other) { m_flags |= other; }
-    void unset(Enum other) { m_flags &= ~other; }
+    bool contains(Enum other) const { return (m_flags & (1 << other)) != 0; }
+    void set(Enum other) { m_flags |= (1 << other); }
+    void unset(Enum other) { m_flags &= ~(1 << other); }
 
     void setAll()
     {
@@ -30,33 +30,27 @@ public:
 
     operator Storage() const { return m_flags; }
 
-    friend bool operator == (const VFlags &flags, Enum other) { return flags.m_flags == other; }
-    friend bool operator == (Enum other, const VFlags &flags) { return flags.m_flags == other; }
-
-    friend bool operator != (const VFlags &flags, Enum other) { return flags.m_flags != other; }
-    friend bool operator != (Enum other, const VFlags &flags) { return flags.m_flags != other; }
-
     bool operator!() const { return m_flags == 0; }
     VFlags operator~() const { return ~m_flags; }
     VFlags &operator = (const VFlags &other) { m_flags = other; return *this; }
 
     VFlags operator & (Storage mask) const { return m_flags & mask; }
-    VFlags operator & (Enum mask) const { return m_flags & mask; }
+    VFlags operator & (Enum mask) const { return m_flags & (1 << mask); }
 
     const VFlags &operator &= (Storage mask) { m_flags &= mask; return *this; }
-    const VFlags &operator &= (Enum mask) { m_flags &= mask; return *this; }
+    const VFlags &operator &= (Enum mask) { m_flags &= (1 << mask); return *this; }
 
     VFlags operator ^ (VFlags other) const { return m_flags ^ other; }
-    VFlags operator ^ (Enum other) const { return m_flags ^ other; }
+    VFlags operator ^ (Enum other) const { return m_flags ^ (1 << other); }
 
     const VFlags &operator ^= (VFlags other) { m_flags ^= other; return *this; }
-    const VFlags &operator ^= (Enum other) { m_flags ^= other; return *this; }
+    const VFlags &operator ^= (Enum other) { m_flags ^= (1 << other); return *this; }
 
     VFlags operator | (VFlags other) const { return m_flags | other; }
-    VFlags operator | (Enum other) const { return m_flags | other; }
+    VFlags operator | (Enum other) const { return m_flags | (1 << other); }
 
     const VFlags &operator |= (VFlags other) { m_flags |= other; return *this; }
-    const VFlags &operator |= (Enum other) { m_flags |= other; return *this; }
+    const VFlags &operator |= (Enum other) { m_flags |= (1 << other); return *this; }
 
 
 private:
