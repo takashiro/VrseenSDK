@@ -137,7 +137,7 @@ static VEyeBuffer::EyeParms DefaultVrParmsForRenderer(const VGlOperation & glOpe
     vrParms.resolution = 1024;
     vrParms.multisamples = (glOperation.gpuType == VGlOperation::GPU_TYPE_ADRENO_330) ? 2 : 4;
     vrParms.colorFormat = VColor::COLOR_8888;
-    vrParms.depthFormat = VEyeBuffer::DepthFormat::DEPTH_24;
+    vrParms.commonParameterDepth = VEyeBuffer::CommonParameter::DEPTHFORMAT_DEPTH_24;
 
     return vrParms;
 }
@@ -1519,7 +1519,7 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
     d->vrParms.resolution = 1024;
     d->vrParms.multisamples = 4;
     d->vrParms.colorFormat = VColor::COLOR_8888;
-    d->vrParms.depthFormat = VEyeBuffer::DepthFormat::DEPTH_24;
+    d->vrParms.commonParameterDepth = VEyeBuffer::CommonParameter::DEPTHFORMAT_DEPTH_24;
 
     d->javaObject = d->uiJni->NewGlobalRef(activityObject);
 

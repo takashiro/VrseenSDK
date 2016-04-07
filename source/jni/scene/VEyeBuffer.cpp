@@ -1,20 +1,9 @@
-/************************************************************************************
-
-Filename    :   EyeBuffers.cpp
-Content     :   Handling of different eye buffer formats
-Created     :   March 8, 2014
-Authors     :   John Carmack
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
 #include "VEyeBuffer.h"
 #include <math.h>
 #include <sys/syscall.h>
 #include <sys/time.h>
 #include <sys/resource.h>
-#include <unistd.h>						// usleep, etc
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -35,191 +24,205 @@ VEyeBuffer::VEyeBuffer() :
 {
 }
 
-void VEyeBuffer::EyeBuffer::Delete()
-{
-    if ( Texture )
-    {
-        glDeleteTextures( 1, &Texture );
-        Texture = 0;
+struct EyeBuffer {
+    EyeBuffer() :
+            Texture(0), DepthBuffer(0), CommonParameterBuffer(0), MultisampleColorBuffer(
+                    0), RenderFrameBuffer(0), ResolveFrameBuffer(0) {
     }
-    if ( DepthBuffer )
-    {
-        glDeleteRenderbuffers( 1, &DepthBuffer );
-        DepthBuffer = 0;
-    }
-    if ( MultisampleColorBuffer )
-    {
-        glDeleteRenderbuffers( 1, &MultisampleColorBuffer );
-        MultisampleColorBuffer = 0;
-    }
-    if ( RenderFrameBuffer )
-    {
-        glDeleteFramebuffers( 1, &RenderFrameBuffer );
-        RenderFrameBuffer = 0;
-    }
-    if ( ResolveFrameBuffer )
-    {
-        glDeleteFramebuffers( 1, &ResolveFrameBuffer );
-        ResolveFrameBuffer = 0;
-    }
-}
-
-void VEyeBuffer::EyeBuffer::Allocate( const VEyeBuffer::EyeParms & bufferParms, VEyeBuffer::multisample multisampleMode )
-{
-    Delete();
-
-    // GL_DEPTH_COMPONENT16 is the only strictly legal thing in unextended GL ES 2.0
-    // The GL_OES_depth24 extension allows GL_DEPTH_COMPONENT24_OES.
-    // The GL_OES_packed_depth_stencil extension allows GL_DEPTH24_STENCIL8_OES.
-    GLenum depthFormat;
-    switch ( bufferParms.depthFormat )
-    {
-    case DEPTH_24: 				depthFormat = GL_DEPTH_COMPONENT24_OES; break;
-    case DEPTH_24_STENCIL_8:	depthFormat = GL_DEPTH24_STENCIL8_OES; break;
-    default: 					depthFormat = GL_DEPTH_COMPONENT16; break;
+    ~EyeBuffer() {
+        Delete();
     }
 
+    GLuint Texture;
 
+    GLuint DepthBuffer;
 
+    GLuint CommonParameterBuffer;
 
-    // Allocate new color texture with uninitialized data.
-    glGenTextures( 1, &Texture );
-    glBindTexture( GL_TEXTURE_2D, Texture );
+    GLuint MultisampleColorBuffer;
 
-    if ( bufferParms.colorFormat == VColor::COLOR_565 )
-    {
-        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, bufferParms.WidthScale*bufferParms.resolution, bufferParms.resolution, 0,
-                GL_RGB, GL_UNSIGNED_SHORT_5_6_5, NULL );
+    GLuint RenderFrameBuffer;
+
+    GLuint ResolveFrameBuffer;
+    void Delete() {
+        if (Texture) {
+            glDeleteTextures(1, &Texture);
+            Texture = 0;
+        }
+        if (DepthBuffer) {
+            glDeleteRenderbuffers(1, &DepthBuffer);
+            DepthBuffer = 0;
+        }
+        if (MultisampleColorBuffer) {
+            glDeleteRenderbuffers(1, &MultisampleColorBuffer);
+            MultisampleColorBuffer = 0;
+        }
+        if (RenderFrameBuffer) {
+            glDeleteFramebuffers(1, &RenderFrameBuffer);
+            RenderFrameBuffer = 0;
+        }
+        if (ResolveFrameBuffer) {
+            glDeleteFramebuffers(1, &ResolveFrameBuffer);
+            ResolveFrameBuffer = 0;
+        }
     }
-    else if ( bufferParms.colorFormat == VColor::COLOR_5551 )
-    {
-        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB5_A1, bufferParms.WidthScale*bufferParms.resolution, bufferParms.resolution, 0,
-                GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, NULL );
-    }
-    else if ( bufferParms.colorFormat == VColor::COLOR_8888_sRGB )
-    {
-        glTexImage2D( GL_TEXTURE_2D, 0, GL_SRGB8_ALPHA8, bufferParms.WidthScale*bufferParms.resolution, bufferParms.resolution, 0,
-                GL_RGBA, GL_UNSIGNED_BYTE, NULL );
-    }
-    else
-    {
-        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, bufferParms.WidthScale*bufferParms.resolution, bufferParms.resolution, 0,
-                GL_RGBA, GL_UNSIGNED_BYTE, NULL );
-    }
+    void Allocate(const VEyeBuffer::EyeParms & bufferParms,
+            VEyeBuffer::CommonParameter multisampleMode) {
+        Delete();
 
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-
-    switch ( bufferParms.textureFilter )
-    {
-        case TEXTURE_FILTER_NEAREST:
-            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-            vInfo("textureFilter = TEXTURE_FILTER_NEAREST");
+        GLenum commonParameterDepth;
+        switch (bufferParms.commonParameterDepth) {
+        case VEyeBuffer::DEPTHFORMAT_DEPTH_24:
+            commonParameterDepth = GL_DEPTH_COMPONENT24_OES;
             break;
-        case TEXTURE_FILTER_BILINEAR:
-            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-            vInfo("textureFilter = TEXTURE_FILTER_BILINEAR");
-            break;
-        case TEXTURE_FILTER_ANISO_2:
-            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-            glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 2 );
-            vInfo("textureFilter = TEXTURE_FILTER_ANISO_2");
-            break;
-        case TEXTURE_FILTER_ANISO_4:
-            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-            glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4 );
-            vInfo("textureFilter = TEXTURE_FILTER_ANISO_4");
+        case VEyeBuffer::DEPTHFORMAT_DEPTH_24_STENCIL_8:
+            commonParameterDepth = GL_DEPTH24_STENCIL8_OES;
             break;
         default:
-            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-            vInfo("textureFilter = TEXTURE_FILTER_BILINEAR");
+            commonParameterDepth = GL_DEPTH_COMPONENT16;
             break;
-    }
-
-    VGlOperation glOperation;
-    if ( multisampleMode == MSAA_RENDER_TO_TEXTURE )
-    {
-        // Imagination Technologies can automatically resolve a multisample rendering on a tile-by-tile
-        // basis, without needing to draw to a full size multisample buffer, then blit resolve to a
-        // normal texture.
-        vInfo("Making a " << bufferParms.multisamples << " sample buffer with glFramebufferTexture2DMultisample");
-
-        if ( bufferParms.depthFormat != DEPTH_0 )
-        {
-            glGenRenderbuffers( 1, &DepthBuffer );
-            glBindRenderbuffer( GL_RENDERBUFFER, DepthBuffer );
-            glOperation.glRenderbufferStorageMultisampleIMG( GL_RENDERBUFFER,bufferParms. multisamples,
-                    depthFormat, bufferParms.WidthScale*bufferParms.resolution, bufferParms.resolution );
-
-            glBindRenderbuffer( GL_RENDERBUFFER, 0 );
         }
 
-        // Allocate a new frame buffer and attach the two buffers.
-        glGenFramebuffers( 1, &RenderFrameBuffer );
-        glBindFramebuffer( GL_FRAMEBUFFER, RenderFrameBuffer );
+        glGenTextures(1, &Texture);
+        glBindTexture( GL_TEXTURE_2D, Texture);
 
-        glOperation.glFramebufferTexture2DMultisampleIMG( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                GL_TEXTURE_2D, Texture, 0, bufferParms.multisamples );
-
-        if ( bufferParms.depthFormat != DEPTH_0 )
-        {
-            glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER,
-                    DepthBuffer );
-        }
-        glOperation.logErrorsEnum( "glRenderbufferStorageMultisampleIMG MSAA");
-    }
-    else
-    {
-        // No MSAA, use ES 2 render targets
-        vInfo("Making a single sample buffer");
-
-        if ( bufferParms.depthFormat != DEPTH_0 )
-        {
-            glGenRenderbuffers( 1, &DepthBuffer );
-            glBindRenderbuffer( GL_RENDERBUFFER, DepthBuffer );
-            glRenderbufferStorage( GL_RENDERBUFFER, depthFormat, bufferParms.resolution, bufferParms.resolution );
-
-            glBindRenderbuffer( GL_RENDERBUFFER, 0 );
+        if (bufferParms.colorFormat == VColor::COLOR_565) {
+            glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB,
+                    bufferParms.WidthScale * bufferParms.resolution,
+                    bufferParms.resolution, 0,
+                    GL_RGB, GL_UNSIGNED_SHORT_5_6_5, NULL);
+        } else if (bufferParms.colorFormat == VColor::COLOR_5551) {
+            glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB5_A1,
+                    bufferParms.WidthScale * bufferParms.resolution,
+                    bufferParms.resolution, 0,
+                    GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, NULL);
+        } else if (bufferParms.colorFormat == VColor::COLOR_8888_sRGB) {
+            glTexImage2D( GL_TEXTURE_2D, 0, GL_SRGB8_ALPHA8,
+                    bufferParms.WidthScale * bufferParms.resolution,
+                    bufferParms.resolution, 0,
+                    GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+        } else {
+            glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8,
+                    bufferParms.WidthScale * bufferParms.resolution,
+                    bufferParms.resolution, 0,
+                    GL_RGBA, GL_UNSIGNED_BYTE, NULL);
         }
 
-        // Allocate a new frame buffer and attach the two buffers.
-        glGenFramebuffers( 1, &RenderFrameBuffer );
-        glBindFramebuffer( GL_FRAMEBUFFER, RenderFrameBuffer );
-        glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-                Texture, 0 );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-        if ( bufferParms.depthFormat != DEPTH_0 )
-        {
-            glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER,
-                DepthBuffer );
+        switch (bufferParms.commonParameterTexture) {
+        case VEyeBuffer::TEXTUREFILTER_NEAREST:
+            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            vInfo("textureFilter = TEXTURE_FILTER_NEAREST")
+            ;
+            break;
+        case VEyeBuffer::TEXTUREFILTER_BILINEAR:
+            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            vInfo("textureFilter = TEXTURE_FILTER_BILINEAR")
+            ;
+            break;
+        case VEyeBuffer::TEXTUREFILTER_ANISO_2:
+            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 2);
+            vInfo("textureFilter = TEXTURE_FILTER_ANISO_2")
+            ;
+            break;
+        case VEyeBuffer::TEXTUREFILTER_ANISO_4:
+            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4);
+            vInfo("textureFilter = TEXTURE_FILTER_ANISO_4")
+            ;
+            break;
+        default:
+            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            vInfo("textureFilter = TEXTURE_FILTER_BILINEAR")
+            ;
+            break;
         }
 
-        glOperation.logErrorsEnum( "NO MSAA");
+        VGlOperation glOperation;
+        if (multisampleMode == VEyeBuffer::MULTISAMPLE_RENDER_TO_TEXTURE) {
+            vInfo(
+                    "Making a " << bufferParms.multisamples << " sample buffer with glFramebufferTexture2DMultisample");
+
+            if (bufferParms.commonParameterDepth
+                    != VEyeBuffer::DEPTHFORMAT_DEPTH_0) {
+                glGenRenderbuffers(1, &DepthBuffer);
+                glBindRenderbuffer( GL_RENDERBUFFER, DepthBuffer);
+                glOperation.glRenderbufferStorageMultisampleIMG(
+                        GL_RENDERBUFFER, bufferParms.multisamples,
+                        commonParameterDepth,
+                        bufferParms.WidthScale * bufferParms.resolution,
+                        bufferParms.resolution);
+
+                glBindRenderbuffer( GL_RENDERBUFFER, 0);
+            }
+
+            glGenFramebuffers(1, &RenderFrameBuffer);
+            glBindFramebuffer( GL_FRAMEBUFFER, RenderFrameBuffer);
+
+            glOperation.glFramebufferTexture2DMultisampleIMG( GL_FRAMEBUFFER,
+                    GL_COLOR_ATTACHMENT0,
+                    GL_TEXTURE_2D, Texture, 0, bufferParms.multisamples);
+
+            if (bufferParms.commonParameterDepth
+                    != VEyeBuffer::DEPTHFORMAT_DEPTH_0) {
+                glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                        GL_RENDERBUFFER, DepthBuffer);
+            }
+            glOperation.logErrorsEnum(
+                    "glRenderbufferStorageMultisampleIMG MSAA");
+        } else {
+            vInfo("Making a single sample buffer");
+
+            if (bufferParms.commonParameterDepth
+                    != VEyeBuffer::DEPTHFORMAT_DEPTH_0) {
+                glGenRenderbuffers(1, &DepthBuffer);
+                glBindRenderbuffer( GL_RENDERBUFFER, DepthBuffer);
+                glRenderbufferStorage( GL_RENDERBUFFER, commonParameterDepth,
+                        bufferParms.resolution, bufferParms.resolution);
+
+                glBindRenderbuffer( GL_RENDERBUFFER, 0);
+            }
+
+            glGenFramebuffers(1, &RenderFrameBuffer);
+            glBindFramebuffer( GL_FRAMEBUFFER, RenderFrameBuffer);
+            glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                    GL_TEXTURE_2D, Texture, 0);
+
+            if (bufferParms.commonParameterDepth
+                    != VEyeBuffer::DEPTHFORMAT_DEPTH_0) {
+                glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                        GL_RENDERBUFFER, DepthBuffer);
+            }
+
+            glOperation.logErrorsEnum("NO MSAA");
+        }
+
+        GLenum status = glCheckFramebufferStatus( GL_FRAMEBUFFER);
+        if (status != GL_FRAMEBUFFER_COMPLETE) {
+            vFatal(
+                    "render FBO " << RenderFrameBuffer << " is not complete: " << status); // TODO: fall back to something else
+        }
+
+        glScissor(0, 0, bufferParms.WidthScale * bufferParms.resolution,
+                bufferParms.resolution);
+        glViewport(0, 0, bufferParms.WidthScale * bufferParms.resolution,
+                bufferParms.resolution);
+        glClearColor(0, 1, 0, 1);
+        glClear( GL_COLOR_BUFFER_BIT);
+        glBindFramebuffer( GL_FRAMEBUFFER, 0);
     }
+};
 
-    GLenum status = glCheckFramebufferStatus( GL_FRAMEBUFFER );
-    if (status != GL_FRAMEBUFFER_COMPLETE )
-    {
-        vFatal("render FBO " << RenderFrameBuffer << " is not complete: " << status);	// TODO: fall back to something else
-    }
+static const int MAX_EYE_SETS = 3;
 
-    // Explicitly clear the color buffer to a color we would notice
-    glScissor( 0, 0, bufferParms.WidthScale*bufferParms.resolution, bufferParms.resolution );
-    glViewport( 0, 0, bufferParms.WidthScale*bufferParms.resolution, bufferParms.resolution );
-    glClearColor( 0, 1, 0, 1 );
-    glClear( GL_COLOR_BUFFER_BIT );
-
-    // Back to the default framebuffer, which should never be
-    // used by a time warp client.
-    glBindFramebuffer( GL_FRAMEBUFFER, 0 );
-}
-
-// Call with a %i in the fmt string: "/sdcard/Oculus/screenshot%i.bmp"
 static int FindUnusedFilename( const char * fmt, int max )
 {
     for ( int i = 0 ; i <= max ; i++ )
@@ -268,7 +271,6 @@ static void ScreenShotTexture( const int eyeResolution, const GLuint texId )
     const unsigned char * flipped = (buf + eyeResolution*eyeResolution*4);
     stbi_write_bmp( filename.toCString(), eyeResolution, eyeResolution, 4, (void *)flipped );
 
-    // make a quarter size version for launcher thumbnails
     unsigned char * shrunk1 = VFileOperation::QuarterImageSize( flipped, eyeResolution, eyeResolution, true );
     unsigned char * shrunk2 = VFileOperation::QuarterImageSize( shrunk1, eyeResolution>>1, eyeResolution>>1, true );
     VString filename2;
@@ -279,51 +281,40 @@ static void ScreenShotTexture( const int eyeResolution, const GLuint texId )
     free( shrunk1 );
     free( shrunk2 );
 }
+struct EyePairs
+       {
+           EyePairs() : MultisampleMode( VEyeBuffer::MULTISAMPLE_OFF ) {}
 
+           VEyeBuffer::EyeParms            BufferParms;
+           VEyeBuffer::CommonParameter       MultisampleMode;
+           EyeBuffer           Eyes[2];
+       };
+
+       EyePairs      BufferData[MAX_EYE_SETS];
 void VEyeBuffer::BeginFrame( const EyeParms & bufferParms_ )
 {
     VGlOperation glOperation;
     SwapCount++;
 
+
     EyePairs & buffers = BufferData[ SwapCount % MAX_EYE_SETS ];
-
-    // Save the current buffer parms
     BufferParms = bufferParms_;
-
-    // Update the buffers if parameters have changed
     if ( buffers.Eyes[0].Texture == 0
             || buffers.BufferParms.resolution != bufferParms_.resolution
             || buffers.BufferParms.multisamples != bufferParms_.multisamples
             || buffers.BufferParms.colorFormat != bufferParms_.colorFormat
-            || buffers.BufferParms.depthFormat != bufferParms_.depthFormat
+            || buffers.BufferParms.commonParameterDepth != bufferParms_.commonParameterDepth
             )
     {
-        /*
-         * Changes a buffer set from one (possibly uninitialized) state to a new
-         * resolution / multisample / color depth state.
-         *
-         * This is normally only done at startup, but the resolutions and color depths can be
-         * freely changed without interrupting the background time warp.
-         *
-         * Various GL binding points are modified, as well as the clear color and scissor rect.
-         *
-         * Note that in OpenGL 3.0 and ARB_framebuffer_object, frame buffer objects are NOT
-         * shared across context share groups, so this work must be done in the rendering thread,
-         * not the timewarp thread.  The texture that is bound to the FBO is properly shared.
-         *
-         * TODO: fall back to simpler cases on failure and mark a flag in bufferData?
-         */
-        vInfo("Reallocating buffers");
 
-        // Note the requested parameters, we don't want to allocate again
-        // the following frame if we had to fall back for some reason.
+        vInfo("Reallocating buffers");
         buffers.BufferParms = bufferParms_;
 
-        vInfo("Allocate FBO: res=" << bufferParms_.resolution << " color=" << bufferParms_.colorFormat << " depth=" << bufferParms_.depthFormat);
+        vInfo("Allocate FBO: res=" << bufferParms_.resolution << " color=" << bufferParms_.colorFormat << " depth=" << bufferParms_.commonParameterDepth);
         if ( bufferParms_.multisamples > 1 ) {
-            buffers.MultisampleMode = MSAA_RENDER_TO_TEXTURE;
+            buffers.MultisampleMode = MULTISAMPLE_RENDER_TO_TEXTURE;
         } else {
-            buffers.MultisampleMode = MSAA_OFF;
+            buffers.MultisampleMode = MULTISAMPLE_OFF;
         }
         glOperation.logErrorsEnum( "Before framebuffer creation");
         for ( int eye = 0; eye < 2; eye++ ) {
@@ -367,11 +358,8 @@ void VEyeBuffer::EndRenderingEye( const int eyeNum )
     EyePairs & pair = BufferData[ SwapCount % MAX_EYE_SETS ];
     EyeBuffer & eye = pair.Eyes[eyeNum];
     VGlOperation glOperation;;
-
-    // Discard the depth buffer, so the tiler won't need to write it back out to memory
     glOperation.glDisableFramebuffer( false, true );
 
-    // Do a blit-MSAA-resolve if necessary.
     if ( eye.ResolveFrameBuffer )
     {
         glBindFramebuffer( GL_READ_FRAMEBUFFER, eye.RenderFrameBuffer );
@@ -379,30 +367,11 @@ void VEyeBuffer::EndRenderingEye( const int eyeNum )
         glOperation.glBlitFramebuffer( 0, 0, resolution, resolution,
                 0, 0, resolution, resolution,
                 GL_COLOR_BUFFER_BIT, GL_NEAREST );
-        // Discard the multisample color buffer after we have resolved it,
-        // so the tiler won't need to write it back out to memory
         glOperation.glDisableFramebuffer( true, false );
     }
 
 
 
-    // Left to themselves, tiled GPU drivers will avoid starting rendering
-    // until they are absolutely forced to by a swap or read of a buffer,
-    // because poorly implemented applications may switch away from an
-    // FBO (say, to render a shadow buffer), then switch back to it and
-    // continue rendering, which would cause a wasted resolve and unresolve
-    // from real memory if drawing started automatically on leaving an FBO.
-    //
-    // We are not going to do any such thing, and we want the drawing of the
-    // first eye to overlap with the command generation for the second eye
-    // if the GPU has idled, so explicitly flush the pipeline.
-    //
-    // Adreno and Mali Do The Right Thing on glFlush, but PVR is
-    // notorious for ignoring flushes to optimize naive apps.  The preferred
-    // solution there is to use EGL_SYNC_FLUSH_COMMANDS_BIT_KHR on a
-    // KHR sync object, but several versions of the Adreno driver have
-    // had broken implementations of this that performed a full finish
-    // instead of just a flush.
     glFlush();
 }
 
@@ -429,3 +398,6 @@ void VEyeBuffer::ScreenShot()
 }
 
 NV_NAMESPACE_END
+
+
+
