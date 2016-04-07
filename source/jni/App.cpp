@@ -128,7 +128,6 @@ static VR4Matrixf PanelMatrix(const VR4Matrixf & lastViewMatrix, const float pop
 extern void DebugMenuBounds(void * appPtr, const char * cmd);
 extern void DebugMenuHierarchy(void * appPtr, const char * cmd);
 extern void DebugMenuPoses(void * appPtr, const char * cmd);
-extern void ShowFPS(void * appPtr, const char * cmd);
 
 static VEyeBuffer::EyeParms DefaultVrParmsForRenderer(const VGlOperation & glOperation)
 {
@@ -246,7 +245,6 @@ struct App::Private
     VThread *renderThread;
     int				vrThreadTid;		// linux tid
 
-    bool			showFPS;			// true to show FPS on screen
     bool			showVolumePopup;	// true to show volume popup when volume changes
 
     VrViewParms		viewParms;
@@ -315,7 +313,6 @@ struct App::Private
         , framebufferIsProtected(false)
         , renderMonoMode(false)
         , vrThreadTid(0)
-        , showFPS(false)
         , showVolumePopup(true)
         , touchpadTimer(0.0f)
         , lastTouchpadTime(0.0f)
@@ -913,9 +910,8 @@ struct App::Private
         appInterface->command(event);
     }
 
-    void startRendering()
+    void run()
     {
-
         // Set the name that will show up in systrace
         pthread_setname_np(pthread_self(), "NervGear::VrThread");
 
@@ -1235,40 +1231,6 @@ struct App::Private
                 }
             }
 
-            if (showFPS)
-            {
-                const int FPS_NUM_FRAMES_TO_AVERAGE = 30;
-                static double  LastFrameTime = VTimer::Seconds();
-                static double  AccumulatedFrameInterval = 0.0;
-                static int   NumAccumulatedFrames = 0;
-                static float LastFrameRate = 60.0f;
-
-                double currentFrameTime = VTimer::Seconds();
-                double frameInterval = currentFrameTime - LastFrameTime;
-                AccumulatedFrameInterval += frameInterval;
-                NumAccumulatedFrames++;
-                if (NumAccumulatedFrames > FPS_NUM_FRAMES_TO_AVERAGE) {
-                    double interval = (AccumulatedFrameInterval / NumAccumulatedFrames);  // averaged
-                    AccumulatedFrameInterval = 0.0;
-                    NumAccumulatedFrames = 0;
-                    LastFrameRate = 1.0f / float(interval > 0.000001 ? interval : 0.00001);
-                }
-
-                V3Vectf viewPos = GetViewMatrixPosition(lastViewMatrix);
-                V3Vectf viewFwd = GetViewMatrixForward(lastViewMatrix);
-                V3Vectf newPos = viewPos + viewFwd * 1.5f;
-                self->text.fpsPointTracker.Update(VTimer::Seconds(), newPos);
-
-                fontParms_t fp;
-                fp.AlignHoriz = HORIZONTAL_CENTER;
-                fp.Billboard = true;
-                fp.TrackRoll = false;
-                worldFontSurface->DrawTextBillboarded3Df(*defaultFont, fp, self->text.fpsPointTracker.GetCurPosition(),
-                        0.8f, V4Vectf(1.0f, 0.0f, 0.0f, 1.0f), "%.1f fps", LastFrameRate);
-                LastFrameTime = currentFrameTime;
-            }
-
-
             // draw info text
             if (self->text.infoTextEndFrame >= self->text.vrFrame.FrameNumber)
             {
@@ -1433,11 +1395,6 @@ struct App::Private
                     return;
                 }
             }
-            else if (keyCode == AKEYCODE_F && down && repeatCount == 0)
-            {
-                self->setShowFPS(showFPS);
-                return;
-            }
             else if (keyCode == AKEYCODE_COMMA && down && repeatCount == 0)
             {
                 float const IPD_MIN_CM = 0.0f;
@@ -1548,7 +1505,7 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
 
     d->renderThread = new VThread([](void *data)->int{
         App::Private *d = static_cast<App::Private *>(data);
-        d->startRendering();
+        d->run();
         return 0;
     }, d);
 }
@@ -1908,21 +1865,6 @@ ovrSensorState const & App::sensorForNextWarp() const
     return d->sensorForNextWarp;
 }
 
-void App::setShowFPS(bool const show)
-{
-    bool wasShowing = d->showFPS;
-    d->showFPS = show;
-    if (!wasShowing && d->showFPS)
-	{
-        text.fpsPointTracker.Reset();
-	}
-}
-
-bool App::showFPS() const
-{
-    return d->showFPS;
-}
-
 VMainActivity *App::appInterface()
 {
     return d->appInterface;
@@ -1999,13 +1941,6 @@ void App::setRecenterYawFrameStart(const long long frameNumber)
 long long App::recenterYawFrameStart() const
 {
     return d->recenterYawFrameStart;
-}
-
-void ShowFPS(void * appPtr, const char * cmd) {
-	int show = 0;
-    sscanf(cmd, "%i", &show);
-    vAssert(appPtr != nullptr);	// something changed / broke in the OvrConsole code if this is nullptr
-    ((App*)appPtr)->setShowFPS(show != 0);
 }
 
 // Debug tool to draw outlines of a 3D bounds
