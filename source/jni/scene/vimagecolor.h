@@ -188,25 +188,25 @@ inline int getAverage(short color)
 stored in a single uint. So all four values may be between 0 and 255.
 Alpha in Irrlicht is opacity, so 0 is fully transparent, 255 is fully opaque (solid).
 This class is used by most parts of the Irrlicht Engine
-to specify a color. Another way is using the class SColorf, which
+to specify a color. Another way is using the class VImageColorf, which
 stores the color values in 4 floats.
 This class must consist of only one uint and must not use virtual functions.
 */
-class SColor
+class VImageColor
 {
 public:
 
     //! Constructor of the Color. Does nothing.
     /** The color value is not initialized to save time. */
-    SColor() {}
+    VImageColor() {}
 
     //! Constructs the color from 4 values representing the alpha, red, green and blue component.
     /** Must be values between 0 and 255. */
-    SColor (uint a, uint r, uint g, uint b)
+    VImageColor (uint a, uint r, uint g, uint b)
         : color(((a & 0xff)<<24) | ((r & 0xff)<<16) | ((g & 0xff)<<8) | (b & 0xff)) {}
 
     //! Constructs the color from a 32 bit value. Could be another color.
-    SColor(uint clr)
+    VImageColor(uint clr)
         : color(clr) {}
 
     //! Returns the alpha component of the color.
@@ -306,22 +306,22 @@ public:
 
     //! Compares the color to another color.
     /** \return True if the colors are the same, and false if not. */
-    bool operator==(const SColor& other) const { return other.color == color; }
+    bool operator==(const VImageColor& other) const { return other.color == color; }
 
     //! Compares the color to another color.
     /** \return True if the colors are different, and false if they are the same. */
-    bool operator!=(const SColor& other) const { return other.color != color; }
+    bool operator!=(const VImageColor& other) const { return other.color != color; }
 
     //! comparison operator
     /** \return True if this color is smaller than the other one */
-    bool operator<(const SColor& other) const { return (color < other.color); }
+    bool operator<(const VImageColor& other) const { return (color < other.color); }
 
     //! Adds two colors, result is clamped to 0..255 values
     /** \param other Color to add to this color
     \return Addition of the two colors, clamped to 0..255 values */
-    SColor operator+(const SColor& other) const
+    VImageColor operator+(const VImageColor& other) const
     {
-        return SColor(std::min(getAlpha() + other.getAlpha(), 255u),
+        return VImageColor(std::min(getAlpha() + other.getAlpha(), 255u),
                 std::min(getRed() + other.getRed(), 255u),
                 std::min(getGreen() + other.getGreen(), 255u),
                 std::min(getBlue() + other.getBlue(), 255u));
@@ -331,11 +331,11 @@ public:
     /** \param other: Other color
     \param d: value between 0.0f and 1.0f
     \return Interpolated color. */
-    SColor getInterpolated(const SColor &other, float d) const
+    VImageColor getInterpolated(const VImageColor &other, float d) const
     {
         d = std::min(std::max(d, 0.f), 1.f);
         const float inv = 1.0f - d;
-        return SColor((uint)floorf(other.getAlpha()*inv + getAlpha()*d + 0.5f),
+        return VImageColor((uint)floorf(other.getAlpha()*inv + getAlpha()*d + 0.5f),
             (uint)floorf(other.getRed()*inv + getRed()*d + 0.5f),
             (uint)floorf(other.getGreen()*inv + getGreen()*d + 0.5f),
             (uint)floorf(other.getBlue()*inv + getBlue()*d) + 0.5f);
@@ -345,7 +345,7 @@ public:
     /** \param c1: first color to interpolate with
     \param c2: second color to interpolate with
     \param d: value between 0.0f and 1.0f. */
-    SColor getInterpolated_quadratic(const SColor& c1, const SColor& c2, float d) const
+    VImageColor getInterpolated_quadratic(const VImageColor& c1, const VImageColor& c2, float d) const
     {
         // this*(1-d)*(1-d) + 2 * c1 * (1-d) + c2 * d * d;
         d = std::min(std::max(d, 0.f), 1.f);
@@ -354,7 +354,7 @@ public:
         const float mul1 = 2.f * d * inv;
         const float mul2 = d * d;
 
-        return SColor(
+        return VImageColor(
                 std::min(std::max( (int)floorf(
                         getAlpha() * mul0 + c1.getAlpha() * mul1 + c2.getAlpha() * mul2 ), 0), 255 ),
                 std::min(std::max( (int)floorf(
@@ -446,15 +446,15 @@ public:
 /** The color values for red, green, blue
 and alpha are each stored in a 32 bit floating point variable.
 So all four values may be between 0.0f and 1.0f.
-Another, faster way to define colors is using the class SColor, which
+Another, faster way to define colors is using the class VImageColor, which
 stores the color values in a single 32 bit integer.
 */
-class SColorf
+class VImageColorf
 {
 public:
-    //! Default constructor for SColorf.
+    //! Default constructor for VImageColorf.
     /** Sets red, green and blue to 0.0f and alpha to 1.0f. */
-    SColorf() : r(0.0f), g(0.0f), b(0.0f), a(1.0f) {}
+    VImageColorf() : r(0.0f), g(0.0f), b(0.0f), a(1.0f) {}
 
     //! Constructs a color from up to four color values: red, green, blue, and alpha.
     /** \param r: Red color component. Should be a value between
@@ -467,12 +467,12 @@ public:
     component defines how transparent a color should be. Has to be
     a value between 0.0f and 1.0f, 1.0f means not transparent
     (opaque), 0.0f means fully transparent. */
-    SColorf(float r, float g, float b, float a = 1.0f) : r(r), g(g), b(b), a(a) {}
+    VImageColorf(float r, float g, float b, float a = 1.0f) : r(r), g(g), b(b), a(a) {}
 
     //! Constructs a color from 32 bit Color.
-    /** \param c: 32 bit color from which this SColorf class is
+    /** \param c: 32 bit color from which this VImageColorf class is
     constructed from. */
-    SColorf(SColor c)
+    VImageColorf(VImageColor c)
     {
         const float inv = 1.0f / 255.0f;
         r = c.getRed() * inv;
@@ -481,10 +481,10 @@ public:
         a = c.getAlpha() * inv;
     }
 
-    //! Converts this color to a SColor without floats.
-    SColor toSColor() const
+    //! Converts this color to a VImageColor without floats.
+    VImageColor toVImageColor() const
     {
-        return SColor((uint)floorf(a*255.0f + 0.5f), (uint)floorf(r*255.0f + 0.5f), (uint)floorf(g*255.0f + 0.5f), (uint)floorf(b*255.0f + 0.5f));
+        return VImageColor((uint)floorf(a*255.0f + 0.5f), (uint)floorf(r*255.0f + 0.5f), (uint)floorf(g*255.0f + 0.5f), (uint)floorf(b*255.0f + 0.5f));
     }
 
     //! Sets three color components to new values at once.
@@ -511,11 +511,11 @@ public:
     /** \param other: Other color
     \param d: value between 0.0f and 1.0f
     \return Interpolated color. */
-    SColorf getInterpolated(const SColorf &other, float d) const
+    VImageColorf getInterpolated(const VImageColorf &other, float d) const
     {
         d = std::min(std::max(d, 0.f), 1.f);
         const float inv = 1.0f - d;
-        return SColorf(other.r*inv + r*d,
+        return VImageColorf(other.r*inv + r*d,
             other.g*inv + g*d, other.b*inv + b*d, other.a*inv + a*d);
     }
 
@@ -523,7 +523,7 @@ public:
     /** \param c1: first color to interpolate with
     \param c2: second color to interpolate with
     \param d: value between 0.0f and 1.0f. */
-    inline SColorf getInterpolated_quadratic(const SColorf& c1, const SColorf& c2,
+    inline VImageColorf getInterpolated_quadratic(const VImageColorf& c1, const VImageColorf& c2,
             float d) const
     {
         d = std::min(std::max(d, 0.f), 1.f);
@@ -533,7 +533,7 @@ public:
         const float mul1 = 2.f * d * inv;
         const float mul2 = d * d;
 
-        return SColorf (r * mul0 + c1.r * mul1 + c2.r * mul2,
+        return VImageColorf (r * mul0 + c1.r * mul1 + c2.r * mul2,
                 g * mul0 + c1.g * mul1 + c2.g * mul2,
                 b * mul0 + c1.b * mul1 + c2.b * mul2,
                 a * mul0 + c1.a * mul1 + c2.a * mul2);
@@ -583,14 +583,14 @@ public:
 are stored in 32bit floating point variables. Hue is in range [0,360],
 Luminance and Saturation are in percent [0,100]
 */
-class SColorHSL
+class VImageColorHSL
 {
 public:
-    SColorHSL ( float h = 0.f, float s = 0.f, float l = 0.f )
+    VImageColorHSL ( float h = 0.f, float s = 0.f, float l = 0.f )
         : Hue ( h ), Saturation ( s ), Luminance ( l ) {}
 
-    void fromRGB(const SColorf &color);
-    void toRGB(SColorf &color) const;
+    void fromRGB(const VImageColorf &color);
+    void toRGB(VImageColorf &color) const;
 
     float Hue;
     float Saturation;
@@ -601,7 +601,7 @@ private:
 
 };
 
-inline void SColorHSL::fromRGB(const SColorf &color)
+inline void VImageColorHSL::fromRGB(const VImageColorf &color)
 {
     const float maxVal = std::max(color.getRed(), color.getGreen(), color.getBlue());
     const float minVal = (float)std::min(color.getRed(), color.getGreen(), color.getBlue());
@@ -637,7 +637,7 @@ inline void SColorHSL::fromRGB(const SColorf &color)
 }
 
 
-inline void SColorHSL::toRGB(SColorf &color) const
+inline void VImageColorHSL::toRGB(VImageColorf &color) const
 {
     const float l = Luminance/100;
     if (NervGear::iszero(Saturation)) // grey
@@ -668,7 +668,7 @@ inline void SColorHSL::toRGB(SColorf &color) const
 
 
 // algorithm from Foley/Van-Dam
-inline float SColorHSL::toRGB1(float rm1, float rm2, float rh) const
+inline float VImageColorHSL::toRGB1(float rm1, float rm2, float rh) const
 {
     if (rh<0)
         rh += 1;

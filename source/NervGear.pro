@@ -267,7 +267,10 @@ HEADERS += \
     jni/vglobal.h \
     jni/Input.h \
     jni/scene/VReferenceCounted.h \
-    jni/scene/VImageColor.h
+    jni/scene/VImageColor.h \
+    jni/scene/VDimension.h \
+    jni/scene/VRect.h \
+    jni/scene/VImage.h
 
 include(jni/3rdparty/minizip/minizip.pri)
 include(jni/3rdparty/stb/stb.pri)
