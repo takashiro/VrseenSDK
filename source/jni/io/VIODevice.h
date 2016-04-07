@@ -20,7 +20,7 @@ public:
         Text = 0x10,
         Unbuffered = 0x20 //Unused yet
     };
-    typedef VFlags<OpenModeFlag> OpenMode;
+    typedef uint OpenMode;
 
     VIODevice();
     virtual ~VIODevice();

@@ -46,7 +46,7 @@ void test()
         {
             VFile file("test.bin", VFile::WriteOnly | VFile::Append);
             assert(file.isOpen());
-            assert(file.openMode().contains(VFile::Append));
+            assert(file.openMode() & VFile::Append);
             assert(file.write(bytes + 512, 512) == 512);
         }
 

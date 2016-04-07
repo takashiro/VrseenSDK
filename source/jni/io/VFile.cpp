@@ -42,21 +42,21 @@ bool VFile::open(const VString &path, VIODevice::OpenMode mode)
 bool VFile::open(VIODevice::OpenMode mode)
 {
     std::ios_base::openmode std_mode;
-    if (mode.contains(ReadOnly)) {
+    if (mode & ReadOnly) {
         std_mode = std::ios_base::in;
-    } else if (mode.contains(WriteOnly)) {
+    } else if (mode & WriteOnly) {
         std_mode = std::ios_base::out;
     } else {
         vAssert(false);
     }
 
-    if (mode.contains(Append)) {
+    if (mode & Append) {
         std_mode |= std::ios_base::app;
     }
-    if (!mode.contains(Text)) {
+    if (!(mode & Text)) {
         std_mode |= std::ios_base::binary;
     }
-    if (mode.contains(Truncate)) {
+    if (mode & Truncate) {
         std_mode |= std::ios_base::trunc;
     }
     d->data.open(d->path.toUtf8(), std_mode);

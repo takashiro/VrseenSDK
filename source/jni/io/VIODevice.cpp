@@ -45,12 +45,12 @@ void VIODevice::setTextModeEnabled(bool enabled)
 
 bool VIODevice::isReadable() const
 {
-    return d->openMode.contains(ReadOnly);
+    return d->openMode & ReadOnly;
 }
 
 bool VIODevice::isWritable() const
 {
-    return d->openMode.contains(WriteOnly);
+    return d->openMode & WriteOnly;
 }
 
 bool VIODevice::open(VIODevice::OpenMode mode)
