@@ -167,16 +167,10 @@ void VMainActivity::onCreate(jstring javaFromPackageNameString, jstring javaComm
     VString uri = JniUtils::Convert(jni, javaUriString);
     vInfo("VMainActivity::SetActivity:" << fromPackage << json << uri);
 
-    if (vApp == nullptr)
-    {	// First time initialization
-        // This will set the VrAppInterface app pointer directly,
-        // so it is set when OneTimeInit is called.
+    if (vApp == nullptr) {
         vInfo("new AppLocal()");
         new App(jni, activity, this);
-
-        // Start the VrThread and wait for it to have initialized.
-        vApp->startVrThread();
-        vApp->syncVrThread();
+        vApp->execute();
     }
     else
     {	// Just update the activity object.
@@ -191,8 +185,7 @@ void VMainActivity::onCreate(jstring javaFromPackageNameString, jstring javaComm
     // Send the intent and wait for it to complete.
     VVariantArray args;
     args << fromPackage << uri << json;
-    vApp->eventLoop().post("intent", args);
-    vApp->syncVrThread();
+    vApp->eventLoop().send("intent", args);
 }
 
 void VMainActivity::shutdown()
@@ -366,10 +359,7 @@ void Java_com_vrseen_nervgear_VrActivity_nativeResume(JNIEnv *jni, jclass clazz)
 
 void Java_com_vrseen_nervgear_VrActivity_nativeDestroy(JNIEnv *, jclass)
 {
-    // First kill the VrThread.
-    vApp->stopVrThread();
-    // Then delete the VrAppInterface derived class.
-    // Last delete AppLocal.
+    vApp->quit();
     delete vApp;
 
     vInfo("ExitOnDestroy is true, exiting");

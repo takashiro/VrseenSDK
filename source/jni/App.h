@@ -114,9 +114,8 @@ public:
 
     void drawBounds( const V3Vectf &mins, const V3Vectf &maxs, const VR4Matrixf &mvp, const V3Vectf &color );
 
-    void startVrThread();
-    void stopVrThread();
-    void syncVrThread();
+    void execute();
+    void quit();
 
     VText text;
     VPanel panel;

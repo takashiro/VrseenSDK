@@ -1572,24 +1572,20 @@ App::~App()
     delete d;
 }
 
-void App::startVrThread()
+void App::execute()
 {
     d->renderThread->start();
+    d->eventLoop.send("sync");
+    d->vrThreadSynced = true;
 }
 
-void App::stopVrThread()
+void App::quit()
 {
     d->eventLoop.post("quit");
     bool finished = d->renderThread->wait();
     if (!finished) {
         vWarn("failed to wait for VrThread");
 	}
-}
-
-void App::syncVrThread()
-{
-    d->eventLoop.send("sync");
-    d->vrThreadSynced = true;
 }
 
 VEventLoop &App::eventLoop()
