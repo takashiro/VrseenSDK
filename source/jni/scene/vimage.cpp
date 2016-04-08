@@ -1,5 +1,9 @@
 #include "VImage.h"
-
+#include "VColorConverter.h"
+#include <math.h>
+#include <cmath>
+#include <cerrno>
+#include <cfenv>
 
 namespace  NervGear {
 
@@ -331,8 +335,8 @@ void CImage::copyToScalingBoxFilter(VImage* target, int bias, bool blend)
 
     target->lock();
 
-    int fx = core::ceil32( sourceXStep );
-    int fy = core::ceil32( sourceYStep );
+    int fx = (int)ceilf( sourceXStep );
+    int fy = (int)ceilf( sourceYStep );
     float sx;
     float sy;
 
@@ -343,7 +347,7 @@ void CImage::copyToScalingBoxFilter(VImage* target, int bias, bool blend)
         for ( uint x = 0; x != destSize.Width; ++x )
         {
             target->setPixel( x, y,
-                getPixelBox( core::floor32(sx), core::floor32(sy), fx, fy, bias ), blend );
+                getPixelBox( (int)floorf(sx), (int)floorf(sy), fx, fy, bias ), blend );
             sx += sourceXStep;
         }
         sy += sourceYStep;
@@ -365,7 +369,7 @@ void CImage::fill(const VImageColor &color)
             c |= c << 16;
             break;
         case ECF_R5G6B5:
-            c = video::A8R8G8B8toR5G6B5( color.color );
+            c = A8R8G8B8toR5G6B5( color.color );
             c |= c << 16;
             break;
         case ECF_A8R8G8B8:
@@ -401,8 +405,8 @@ inline VImageColor CImage::getPixelBox( int x, int y, int fx, int fy, int bias )
     {
         for ( int dy = 0; dy != fy; ++dy )
         {
-            c = getPixel(	core::int_min ( x + dx, Size.Width - 1 ) ,
-                            core::int_min ( y + dy, Size.Height - 1 )
+            c = getPixel(	std::min ( x + dx, Size.Width - 1 ) ,
+                            std::min ( y + dy, Size.Height - 1 )
                         );
 
             a += c.getAlpha();
@@ -413,12 +417,12 @@ inline VImageColor CImage::getPixelBox( int x, int y, int fx, int fy, int bias )
 
     }
 
-    int sdiv = int_log2_int(fx * fy);
+    int sdiv = std::log10(fx * fy)/std::log10(2);
 
-    a = core::int_clamp( ( a >> sdiv ) + bias, 0, 255 );
-    r = core::int_clamp( ( r >> sdiv ) + bias, 0, 255 );
-    g = core::int_clamp( ( g >> sdiv ) + bias, 0, 255 );
-    b = core::int_clamp( ( b >> sdiv ) + bias, 0, 255 );
+    a = std::min( std::max(( a >> sdiv ) + bias, 0), 255 );
+    r = std::min( std::max(( r >> sdiv ) + bias, 0), 255 );
+    g = std::min( std::max(( g >> sdiv ) + bias, 0), 255 );
+    b = std::min( std::max(( b >> sdiv ) + bias, 0), 255 );
 
     c.set( a, r, g, b );
     return c;
