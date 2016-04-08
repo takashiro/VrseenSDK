@@ -114,7 +114,9 @@ SOURCES += \
     jni/scene/SurfaceTexture.cpp \
     jni/scene/SwipeView.cpp \
     jni/App.cpp \
-    jni/VrLocale.cpp
+    jni/VrLocale.cpp \
+    jni/scene/VImage.cpp \
+    jni/scene/VColorConverter.cpp
 
 
 HEADERS += \
@@ -270,7 +272,8 @@ HEADERS += \
     jni/scene/VImageColor.h \
     jni/scene/VDimension.h \
     jni/scene/VRect.h \
-    jni/scene/VImage.h
+    jni/scene/VImage.h \
+    jni/scene/VColorConverter.h
 
 include(jni/3rdparty/minizip/minizip.pri)
 include(jni/3rdparty/stb/stb.pri)

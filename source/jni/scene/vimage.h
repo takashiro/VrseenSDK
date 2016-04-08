@@ -6,7 +6,7 @@
 
 namespace  NervGear
 {
-class IImage : public virtual VReferenceCounted
+class VImage : public virtual VReferenceCounted
 {
 public:
 
@@ -66,21 +66,10 @@ public:
     virtual void copyToScaling(void* target, uint width, uint height, ECOLOR_FORMAT format=ECF_A8R8G8B8, uint pitch=0) =0;
 
     //! Copies the image into the target, scaling the image to fit
-    virtual void copyToScaling(IImage* target) =0;
-
-    //! copies this surface into another
-    virtual void copyTo(IImage* target, const V2Vect<int>& pos=V2Vect<int>(0,0)) =0;
-
-    //! copies this surface into another
-    virtual void copyTo(IImage* target, const V2Vect<int>& pos, const VRect<int>& sourceRect, const VRect<int>* clipRect=0) =0;
-
-    //! copies this surface into another, using the alpha mask and cliprect and a color to add with
-    virtual void copyToWithAlpha(IImage* target, const V2Vect<int>& pos,
-            const VRect<int>& sourceRect, const VImageColor &color,
-            const VRect<int>* clipRect = 0) =0;
+    virtual void copyToScaling(VImage* target) =0;
 
     //! copies this surface into another, scaling it to fit, appyling a box filter
-    virtual void copyToScalingBoxFilter(IImage* target, int bias = 0, bool blend = false) = 0;
+    virtual void copyToScalingBoxFilter(VImage* target, int bias = 0, bool blend = false) = 0;
 
     //! fills the surface with given color
     virtual void fill(const VImageColor &color) =0;
@@ -116,7 +105,7 @@ public:
     }
 
     //! test if the color format is only viable for RenderTarget textures
-    /** Since we don't have support for e.g. floating point IImage formats
+    /** Since we don't have support for e.g. floating point VImage formats
     one should test if the color format can be used for arbitrary usage, or
     if it is restricted to RTTs. */
     static bool isRenderTargetOnlyFormat(const ECOLOR_FORMAT format)
@@ -133,6 +122,99 @@ public:
         }
     }
 
+};
+
+class CImage : public VImage
+{
+public:
+
+    //! constructor from raw image data
+    /** \param useForeignMemory: If true, the image will use the data pointer
+    directly and own it from now on, which means it will also try to delete [] the
+    data when the image will be destructed. If false, the memory will by copied. */
+    CImage(ECOLOR_FORMAT format, const VDimension<uint>& size,
+        void* data, bool ownForeignMemory=true, bool deleteMemory = true);
+
+    //! constructor for empty image
+    CImage(ECOLOR_FORMAT format, const VDimension<uint>& size);
+
+    //! destructor
+    virtual ~CImage();
+
+    //! Lock function.
+    virtual void* lock()
+    {
+        return Data;
+    }
+
+    //! Unlock function.
+    virtual void unlock() {}
+
+    //! Returns width and height of image data.
+    virtual const VDimension<uint>& getDimension() const;
+
+    //! Returns bits per pixel.
+    virtual uint getBitsPerPixel() const;
+
+    //! Returns bytes per pixel
+    virtual uint getBytesPerPixel() const;
+
+    //! Returns image data size in bytes
+    virtual uint getImageDataSizeInBytes() const;
+
+    //! Returns image data size in pixels
+    virtual uint getImageDataSizeInPixels() const;
+
+    //! returns mask for red value of a pixel
+    virtual uint getRedMask() const;
+
+    //! returns mask for green value of a pixel
+    virtual uint getGreenMask() const;
+
+    //! returns mask for blue value of a pixel
+    virtual uint getBlueMask() const;
+
+    //! returns mask for alpha value of a pixel
+    virtual uint getAlphaMask() const;
+
+    //! returns a pixel
+    virtual VImageColor getPixel(uint x, uint y) const;
+
+    //! sets a pixel
+    virtual void setPixel(uint x, uint y, const VImageColor &color, bool blend = false );
+
+    //! returns the color format
+    virtual ECOLOR_FORMAT getColorFormat() const;
+
+    //! returns pitch of image
+    virtual uint getPitch() const { return Pitch; }
+
+    //! copies this surface into another, scaling it to fit.
+    virtual void copyToScaling(void* target, uint width, uint height, ECOLOR_FORMAT format, uint pitch=0);
+
+    //! copies this surface into another, scaling it to fit.
+    virtual void copyToScaling(VImage* target);
+
+    //! copies this surface into another, scaling it to fit, appyling a box filter
+    virtual void copyToScalingBoxFilter(VImage* target, int bias = 0, bool blend = false);
+
+    //! fills the surface with given color
+    virtual void fill(const VImageColor &color);
+
+private:
+
+    //! assumes format and size has been set and creates the rest
+    void initData();
+
+    inline VImageColor getPixelBox ( int x, int y, int fx, int fy, int bias ) const;
+
+    char* Data;
+    VDimension<uint> Size;
+    uint BytesPerPixel;
+    uint Pitch;
+    ECOLOR_FORMAT Format;
+
+    bool DeleteMemory;
 };
 
 
