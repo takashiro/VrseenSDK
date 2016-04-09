@@ -37,6 +37,9 @@ public:
     VLog &operator << (long long num);
     VLog &operator << (ulonglong num);
 
+    VLog &operator << (void *pointer);
+    VLog &operator << (const void *pointer);
+
     VLog &operator << (const char *str);
     VLog &operator << (const VString &str);
     VLog &operator << (const VByteArray &str);

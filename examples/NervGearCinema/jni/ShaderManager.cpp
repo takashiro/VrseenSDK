@@ -1,5 +1,6 @@
 #include "ShaderManager.h"
 #include "CinemaApp.h"
+#include "core/VTimer.h"
 
 
 using namespace NervGear;
@@ -162,9 +163,9 @@ ShaderManager::ShaderManager( CinemaApp &cinema ) :
 
 void ShaderManager::OneTimeInit( const VString &launchIntent )
 {
-	LOG( "ShaderManager::OneTimeInit" );
+	vInfo("ShaderManager::OneTimeInit");
 
-	const double start = ovr_GetTimeInSeconds();
+    const double start = VTimer::Seconds();
 
 	MovieExternalUiProgram 		.initShader( movieUiVertexShaderSrc, movieExternalUiFragmentShaderSource );
 	CopyMovieProgram 			.initShader( copyMovieVertexShaderSrc, copyMovieFragmentShaderSource );
@@ -198,12 +199,12 @@ void ShaderManager::OneTimeInit( const VString &launchIntent )
 	DefaultPrograms.ProgSkinnedLightMapped		= & ProgSkinnedLightMapped;
 	DefaultPrograms.ProgSkinnedReflectionMapped	= & ProgSkinnedReflectionMapped;
 
-	LOG( "ShaderManager::OneTimeInit: %3.1f seconds", ovr_GetTimeInSeconds() - start );
+    vInfo("ShaderManager::OneTimeInit:" << (VTimer::Seconds() - start) << "seconds");
 }
 
 void ShaderManager::OneTimeShutdown()
 {
-	LOG( "ShaderManager::OneTimeShutdown" );
+	vInfo("ShaderManager::OneTimeShutdown");
 
 	 MovieExternalUiProgram .destroy();
 	 CopyMovieProgram .destroy();

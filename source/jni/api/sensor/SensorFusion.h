@@ -7,7 +7,7 @@
 //#include <time.h>
 
 // VrApi forward declarations.
-typedef struct ovrPoseStatef_ ovrPoseStatef;
+typedef struct VKpose_ VKpose;
 typedef struct ovrSensorState_ ovrSensorState;
 
 NV_NAMESPACE_BEGIN
@@ -192,7 +192,7 @@ public:
     // Should be called by user if not attaching to a sensor.
     void        OnMessage(const MessageBodyFrame& msg)
     {
-        OVR_ASSERT(!IsAttachedToSensor());
+        vAssert(!IsAttachedToSensor());
         handleMessage(msg);
     }
 

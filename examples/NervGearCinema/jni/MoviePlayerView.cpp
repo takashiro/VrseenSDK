@@ -1,6 +1,6 @@
 #include <android/keycodes.h>
 #include <VRMenuMgr.h>
-
+#include "core/VTimer.h"
 #include "CinemaApp.h"
 #include "Native.h"
 #include "CinemaStrings.h"
@@ -83,20 +83,20 @@ MoviePlayerView::~MoviePlayerView()
 
 void MoviePlayerView::OneTimeInit( const VString & launchIntent )
 {
-	LOG( "MoviePlayerView::OneTimeInit" );
+	vInfo("MoviePlayerView::OneTimeInit");
 
-	const double start = ovr_GetTimeInSeconds();
+    const double start = VTimer::Seconds();
 
 	GazeUserId = vApp->gazeCursor().GenerateUserId();
 
 	CreateMenu( vApp, vApp->vrMenuMgr(), vApp->defaultFont() );
 
-	LOG( "MoviePlayerView::OneTimeInit: %3.1f seconds", ovr_GetTimeInSeconds() - start );
+    vInfo("MoviePlayerView::OneTimeInit:" << (VTimer::Seconds() - start) << "seconds");
 }
 
 void MoviePlayerView::OneTimeShutdown()
 {
-	LOG( "MoviePlayerView::OneTimeShutdown" );
+	vInfo("MoviePlayerView::OneTimeShutdown");
 }
 
 float PixelScale( const float x )
@@ -332,7 +332,7 @@ void MoviePlayerView::SetSeekIcon( const int seekSpeed )
 
 void MoviePlayerView::OnOpen()
 {
-	LOG( "OnOpen" );
+	vInfo("OnOpen");
 	CurViewState = VIEWSTATE_OPEN;
 
     Cinema.sceneMgr.ClearMovie();
@@ -362,7 +362,7 @@ void MoviePlayerView::OnOpen()
 
 void MoviePlayerView::OnClose()
 {
-	LOG( "OnClose" );
+	vInfo("OnClose");
 	CurViewState = VIEWSTATE_CLOSED;
 	HideUI();
 	vApp->gazeCursor().ShowCursor();
@@ -412,16 +412,16 @@ void MoviePlayerView::MovieLoaded( const int width, const int height, const int 
 
 void MoviePlayerView::BackPressed()
 {
-	LOG( "BackPressed" );
+	vInfo("BackPressed");
 	HideUI();
     if ( Cinema.allowTheaterSelection() )
 	{
-		LOG( "Opening TheaterSelection" );
+		vInfo("Opening TheaterSelection");
         Cinema.theaterSelection();
 	}
 	else
 	{
-		LOG( "Opening MovieSelection" );
+		vInfo("Opening MovieSelection");
         Cinema.setMovieSelection( true );
 	}
 }
@@ -435,12 +435,12 @@ bool MoviePlayerView::OnKeyEvent( const int keyCode, const KeyState::eKeyEventTy
 			switch ( eventType )
 			{
 				case KeyState::KEY_EVENT_SHORT_PRESS:
-				LOG( "KEY_EVENT_SHORT_PRESS" );
+				vInfo("KEY_EVENT_SHORT_PRESS");
 				BackPressed();
 				return true;
 				break;
 				default:
-				//LOG( "unexpected back key state %i", eventType );
+				//vInfo("unexpected back key state" << eventType);
 				break;
 			}
 		}
@@ -473,7 +473,7 @@ static bool InsideUnit( const V2Vectf v )
 
 void MoviePlayerView::ShowUI()
 {
-	LOG( "ShowUI" );
+	vInfo("ShowUI");
     Cinema.sceneMgr.ForceMono = true;
 	vApp->gazeCursor().ShowCursor();
 
@@ -488,7 +488,7 @@ void MoviePlayerView::ShowUI()
 
 void MoviePlayerView::HideUI()
 {
-	LOG( "HideUI" );
+	vInfo("HideUI");
 	PlaybackControlsMenu->Close();
 
 	vApp->gazeCursor().HideCursor();
@@ -675,7 +675,7 @@ void MoviePlayerView::CheckInput( const VrFrame & vrFrame )
 		if ( !onscreen )
 		{
 			// outside of screen, so show reposition message
-			const double now = ovr_GetTimeInSeconds();
+            const double now = VTimer::Seconds();
 			float alpha = MoveScreenAlpha.Value( now );
 			if ( alpha > 0.0f )
 			{
@@ -691,7 +691,7 @@ void MoviePlayerView::CheckInput( const VrFrame & vrFrame )
 		else
 		{
 			// onscreen, so hide message
-			const double now = ovr_GetTimeInSeconds();
+            const double now = VTimer::Seconds();
 			MoveScreenAlpha.Set( now, -1.0f, now + 1.0f, 1.0f );
 			MoveScreenLabel.SetVisible( false );
 		}
@@ -730,7 +730,7 @@ void MoviePlayerView::CheckInput( const VrFrame & vrFrame )
 		}
 		else
 		{
-			LOG( "User pressed button 2" );
+			vInfo("User pressed button 2");
 			vApp->playSound( "touch_up" );
 			HideUI();
 			PlayMovie();
@@ -817,7 +817,7 @@ void MoviePlayerView::ScrubBarClicked( const float progress )
 	}
 
 	// choke off the amount position changes we send to the media player
-	const double now = ovr_GetTimeInSeconds();
+    const double now = VTimer::Seconds();
 	if ( now <= NextSeekTime )
 	{
 		return;
@@ -828,17 +828,17 @@ void MoviePlayerView::ScrubBarClicked( const float progress )
 
 	ScrubBar.SetProgress( progress );
 
-	NextSeekTime = ovr_GetTimeInSeconds() + 0.1;
+    NextSeekTime = VTimer::Seconds() + 0.1;
 }
 
 void MoviePlayerView::UpdateUI( const VrFrame & vrFrame )
 {
 	if ( uiActive )
 	{
-		double timeSinceLastGaze = ovr_GetTimeInSeconds() - GazeTimer.GetLastGazeTime();
+        double timeSinceLastGaze = VTimer::Seconds() - GazeTimer.GetLastGazeTime();
 		if ( !ScrubBar.IsScrubbing() && ( SeekSpeed == 0 ) && ( timeSinceLastGaze > GazeTimeTimeout ) )
 		{
-			LOG( "Gaze timeout" );
+			vInfo("Gaze timeout");
 			HideUI();
 			PlayMovie();
 		}
@@ -855,7 +855,7 @@ void MoviePlayerView::UpdateUI( const VrFrame & vrFrame )
 		{
 			if ( !GazeTimer.IsFocused() && BackgroundClicked )
 			{
-				LOG( "Clicked outside playback controls" );
+				vInfo("Clicked outside playback controls");
 				vApp->playSound( "touch_up" );
 				HideUI();
 				PlayMovie();
@@ -899,18 +899,18 @@ VR4Matrixf MoviePlayerView::Frame( const VrFrame & vrFrame )
 {
 	// Drop to 2x MSAA during playback, people should be focused
 	// on the high quality screen.
-	EyeParms eyeParms = vApp->eyeParms();
+    VEyeBuffer::EyeParms eyeParms = vApp->eyeParms();
 	eyeParms.multisamples = 2;
 	vApp->setEyeParms( eyeParms );
 
 	if ( Native::HadPlaybackError( vApp ) )
 	{
-		LOG( "Playback failed" );
+		vInfo("Playback failed");
         Cinema.unableToPlayMovie();
 	}
 	else if ( Native::IsPlaybackFinished( vApp ) )
 	{
-		LOG( "Playback finished" );
+		vInfo("Playback finished");
         Cinema.movieFinished();
 	}
 
@@ -929,7 +929,7 @@ VR4Matrixf MoviePlayerView::Frame( const VrFrame & vrFrame )
 
 	if ( SeekSpeed != 0 )
 	{
-		const double now = ovr_GetTimeInSeconds();
+        const double now = VTimer::Seconds();
 		if ( now > NextSeekTime )
 		{
 			int PlaybackSpeed = ( SeekSpeed < 0 ) ? -( 1 << -SeekSpeed ) : ( 1 << SeekSpeed );
@@ -956,7 +956,7 @@ ControlsGazeTimer::ControlsGazeTimer() :
 
 void ControlsGazeTimer::SetGazeTime()
 {
-	LastGazeTime = ovr_GetTimeInSeconds();
+    LastGazeTime = VTimer::Seconds();
 }
 
 eMsgStatus ControlsGazeTimer::onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
@@ -967,18 +967,18 @@ eMsgStatus ControlsGazeTimer::onEventImpl( App * app, VrFrame const & vrFrame, O
     	case VRMENU_EVENT_FRAME_UPDATE:
     		if ( HasFocus )
     		{
-    			LastGazeTime = ovr_GetTimeInSeconds();
+                LastGazeTime = VTimer::Seconds();
     		}
     		return MSG_STATUS_ALIVE;
         case VRMENU_EVENT_FOCUS_GAINED:
         	HasFocus = true;
-        	LastGazeTime = ovr_GetTimeInSeconds();
+            LastGazeTime = VTimer::Seconds();
     		return MSG_STATUS_ALIVE;
         case VRMENU_EVENT_FOCUS_LOST:
         	HasFocus = false;
     		return MSG_STATUS_ALIVE;
         default:
-            OVR_ASSERT( !"Event flags mismatch!" );
+            vAssert( !"Event flags mismatch!" );
             return MSG_STATUS_ALIVE;
     }
 }
@@ -1087,7 +1087,7 @@ eMsgStatus ScrubBarComponent::onEventImpl( App * app, VrFrame const & vrFrame, O
     		return OnFrame( app, vrFrame, menuMgr, self, event );
 
         default:
-            OVR_ASSERT( !"Event flags mismatch!" );
+            vAssert( !"Event flags mismatch!" );
             return MSG_STATUS_ALIVE;
     }
 }

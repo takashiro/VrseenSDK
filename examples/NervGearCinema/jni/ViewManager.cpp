@@ -17,7 +17,7 @@ ViewManager::ViewManager() :
 
 void ViewManager::addView( View * view )
 {
-	LOG( "AddView: %s", view->name );
+	vInfo("AddView:" << view->name);
     m_views.append( view );
 }
 
@@ -34,12 +34,12 @@ void ViewManager::removeView( View * view )
 
 	// view wasn't in the array
 	assert( 1 );
-	LOG( "RemoveView: view not in array" );
+	vInfo("RemoveView: view not in array");
 }
 
 void ViewManager::openView( View & view )
 {
-	LOG( "OpenView: %s", view.name );
+	vInfo("OpenView:" << view.name);
 	m_nextView = &view;
 	m_closedCurrent = false;
 }
@@ -48,7 +48,7 @@ void ViewManager::closeView()
 {
 	if ( m_currentView != NULL )
 	{
-		LOG( "CloseView: %s", m_currentView->name );
+		vInfo("CloseView:" << m_currentView->name);
 		m_currentView->OnClose();
 	}
 }
@@ -94,7 +94,7 @@ VR4Matrixf ViewManager::frame( const VrFrame & vrFrame )
 {
 	if ( ( m_nextView != NULL ) && ( m_currentView != NULL ) && !m_closedCurrent )
 	{
-		LOG( "OnClose: %s", m_currentView->name );
+		vInfo("OnClose:" << m_currentView->name);
 		m_currentView->OnClose();
 		m_closedCurrent = true;
 	}
@@ -107,7 +107,7 @@ VR4Matrixf ViewManager::frame( const VrFrame & vrFrame )
 
 		if ( m_currentView != NULL )
 		{
-			LOG( "OnOpen: %s", m_currentView->name );
+			vInfo("OnOpen:" << m_currentView->name);
 			m_currentView->OnOpen();
 		}
 	}

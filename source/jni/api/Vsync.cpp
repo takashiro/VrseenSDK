@@ -17,13 +17,13 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <math.h>
 #include <pthread.h>
 #include <sched.h>
-#include <unistd.h>			// for usleep
+#include <unistd.h>
 #include <sys/time.h>
 #include <sys/resource.h>
 
 #include "VTimer.h"
-#include "Android/LogUtils.h"
-#include "VKernel.h"			// for ovr_GetTimeInSeconds()
+#include "VKernel.h"
+#include "VLog.h"
 
 /*
  * As of 6/30/2014, I am seeing vsync frame timings of 16.71 ms for the 1080 S5,
@@ -39,28 +39,28 @@ void SetLogVsync( void * appPtr, const char * cmd )
 	LogVsync = v != 0;
 }
 
+NV_USING_NAMESPACE
+
 extern "C"
 {
-	// The nativeVsync function is called from java with timing
-	// information that GetFractionalVsync() and FramePointTimeInSeconds()
-	// can use to closely estimate raster position.
+
 	void Java_com_vrseen_nervgear_VrLib_nativeVsync( JNIEnv *jni, jclass clazz, jlong frameTimeNanos )
 	{
 		if ( LogVsync )
 		{
 			static long long prevFrameTimeNanos;
-			LOG( "nativeSetVsync: %5.2f ms", ( frameTimeNanos - prevFrameTimeNanos ) * 0.000001 );
+            vInfo("nativeSetVsync:" << (( frameTimeNanos - prevFrameTimeNanos ) * 0.000001) << "ms");
 			prevFrameTimeNanos = frameTimeNanos;
 		}
 
-        NervGear::VsyncState	state = NervGear::UpdatedVsyncState.state();
+        VsyncState	state = UpdatedVsyncState.state();
 
 		// Round this, because different phone models have slightly different periods.
 		state.vsyncCount += floor( 0.5 + ( frameTimeNanos - state.vsyncBaseNano ) / state.vsyncPeriodNano );
 		state.vsyncPeriodNano = 1e9 / 60.0;
 		state.vsyncBaseNano = frameTimeNanos;
 
-		NervGear::UpdatedVsyncState.setState( state );
+        UpdatedVsyncState.setState( state );
 	}
 }	// extern "C"
 
@@ -142,7 +142,7 @@ float SleepUntilTimePoint( const double targetSeconds, const bool busyWait )
 			const double overSleep = ovr_GetTimeInSeconds() - targetSeconds;
 			if ( overSleep > 0.001 )
 			{
-	//			LOG( "Overslept %f seconds", overSleep );
+	//			vInfo("Overslept " << overSleep << " seconds");
 			}
 		}
 	}

@@ -13,7 +13,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "Fader.h"
 
 #include "VBasicmath.h"
-#include "Android/LogUtils.h"
 
 namespace NervGear {
 
@@ -42,21 +41,21 @@ void Fader::update( float const fadeRate, double const deltaSeconds )
         vAssert( fabs( fadeDelta ) > VConstantsf::SmallestNonDenormal );
         if ( fabs( fadeDelta ) < VConstantsf::SmallestNonDenormal )
 		{
-            LOG( "Fader::Update fabs( fadeDelta ) < VConstantsf::SmallestNonDenormal !!!!" );
+            vInfo("Fader::Update fabs( fadeDelta ) < VConstantsf::SmallestNonDenormal !!!!");
 		}
         if ( m_fadeAlpha < VConstantsf::SmallestNonDenormal )
         {
             m_fadeAlpha = 0.0f;
             m_fadeState = FADE_NONE;
-            //LOG( "FadeState = FADE_NONE" );
+            //vInfo("FadeState = FADE_NONE");
         }
         else if ( m_fadeAlpha >= 1.0f - VConstantsf::SmallestNonDenormal )
         {
             m_fadeAlpha = 1.0f;
             m_fadeState = FADE_NONE;
-            //LOG( "FadeState = FADE_NONE" );
+            //vInfo("FadeState = FADE_NONE");
         }
-        //LOG( "fadeState = %s, fadeDelta = %.4f, fadeAlpha = %.4f", GetFadeStateName( FadeState ), fadeDelta, FadeAlpha );
+        //vInfo("fadeState = " << GetFadeStateName( FadeState ) << ", fadeDelta = " << fadeDelta << ", fadeAlpha = " << FadeAlpha);
     }
 }
 
@@ -64,7 +63,7 @@ void Fader::update( float const fadeRate, double const deltaSeconds )
 // Fader::StartFadeIn
 void Fader::startFadeIn()
 {
-    //LOG( "StartFadeIn" );
+    //vInfo("StartFadeIn");
     m_fadeState = FADE_IN;
 }
 
@@ -72,7 +71,7 @@ void Fader::startFadeIn()
 // Fader::StartFadeOut
 void Fader::startFadeOut()
 {
-    //LOG( "StartFadeOut" );
+    //vInfo("StartFadeOut");
     m_fadeState = FADE_OUT;
 }
 
@@ -80,7 +79,7 @@ void Fader::startFadeOut()
 // Fader::PauseFade
 void Fader::pauseFade()
 {
-    //LOG( "PauseFade" );
+    //vInfo("PauseFade");
     m_prePauseState = m_fadeState;
     m_fadeState = FADE_PAUSED;
 }

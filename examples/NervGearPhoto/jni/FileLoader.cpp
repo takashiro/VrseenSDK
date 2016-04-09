@@ -37,7 +37,7 @@ void * Queue1Thread( void * v )
 	int result = pthread_setname_np( pthread_self(), "FileQueue1" );
 	if ( result != 0 )
 	{
-		LOG( "InitFileQueue: pthread_setname_np failed %s", strerror( result ) );
+		vInfo("InitFileQueue: pthread_setname_np failed" << strerror( result ));
 	}
 
 	// Process incoming messages until queue is empty
@@ -123,7 +123,7 @@ void * Queue3Thread( void * v )
 	int result = pthread_setname_np( pthread_self(), "FileQueue3" );
 	if ( result != 0 )
 	{
-		LOG( "InitFileQueue: pthread_setname_np failed %s", strerror( result ) );
+		vInfo("InitFileQueue: pthread_setname_np failed" << strerror( result ));
 	}
 
 	// Process incoming messages until queue is empty
@@ -189,7 +189,7 @@ void * Queue3Thread( void * v )
 
 			if ( data[buffCount] == NULL )
 			{
-				LOG( "LoadingThread: failed to load from buffer" );
+				vInfo("LoadingThread: failed to load from buffer");
 				break;
 			}
 		}
@@ -206,7 +206,7 @@ void * Queue3Thread( void * v )
 		{
 			if ( numBuffers == 1 )
 			{
-                OVR_ASSERT( data[0] != NULL );
+                vAssert( data[0] != NULL );
                 VVariantArray args;
                 args << data[0] << resolutionX << resolutionY;
                 ( ( Oculus360Photos * )v )->backgroundMessageQueue().post(event.name, std::move(args));
@@ -249,7 +249,7 @@ void InitFileQueue( App * app, Oculus360Photos * photos )
 		}
 		if ( createLoadingThreadErr != 0 )
 		{
-			LOG( "loadingThread: pthread_create returned %i", createLoadingThreadErr );
+			vInfo("loadingThread: pthread_create returned" << createLoadingThreadErr);
 		}
 	}
 }

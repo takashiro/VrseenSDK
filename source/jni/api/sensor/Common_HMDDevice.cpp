@@ -1,9 +1,9 @@
 /************************************************************************************
 
 Filename    :   OVR_Common_HMDDevice.cpp
-Content     :   
-Created     :   
-Authors     :   
+Content     :
+Created     :
+Authors     :
 
 Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
@@ -51,8 +51,8 @@ Profile* HMDDeviceCreateDesc::GetProfileAddRef() const
     const char *    profileName    = pDevice ?
                         ((HMDDevice*)pDevice)->profileName() :
                         profileManager->GetDefaultProfileName(profileType);
-    
-    return profileName ? 
+
+    return profileName ?
         profileManager->LoadProfile(profileType, profileName) :
         profileManager->GetDeviceDefaultProfile(profileType);
 }
@@ -65,7 +65,7 @@ bool HMDDeviceCreateDesc::GetDeviceInfo(DeviceInfo* info) const
         (info->InfoClassType != Device_None))
         return false;
 
-#if defined(OVR_OS_ANDROID)
+#if defined(NV_OS_ANDROID)
 	// LDC - Use zero data for now.
 	info->Version = 0;
     info->ProductName.clear();
@@ -109,7 +109,7 @@ bool HMDDeviceCreateDesc::GetDeviceInfo(DeviceInfo* info) const
     }
     else
     {
-        OVR_ASSERT ( "Unknown HMD" );
+        vAssert ( "Unknown HMD" );
     }
 
     OVR_strcpy(info->ProductName,  DeviceInfo::MaxNameLength, deviceName );
@@ -125,7 +125,7 @@ bool HMDDeviceCreateDesc::GetDeviceInfo(DeviceInfo* info) const
         hmdInfo->HmdType                = hmdType;
         hmdInfo->DesktopX               = Desktop.X;
         hmdInfo->DesktopY               = Desktop.Y;
-        hmdInfo->ResolutionInPixels     = ResolutionInPixels;                
+        hmdInfo->ResolutionInPixels     = ResolutionInPixels;
         hmdInfo->ScreenSizeInMeters     = ScreenSizeInMeters;        // Includes ScreenGapSizeInMeters
         hmdInfo->ScreenGapSizeInMeters  = 0.0f;
         hmdInfo->CenterFromTopInMeters  = ScreenSizeInMeters.Height * 0.5f;
@@ -189,19 +189,19 @@ bool HMDDeviceCreateDesc::GetDeviceInfo(DeviceInfo* info) const
             hmdInfo->Shutter.PixelPersistence                 = 0.18f * hmdInfo->Shutter.VsyncToNextVsync;     // Confgurable - currently set to 18% of total frame.
 #endif
             break;
-        default: OVR_ASSERT ( false ); break;
+        default: vAssert ( false ); break;
         }
 
 
         OVR_strcpy(hmdInfo->DisplayDeviceName, sizeof(hmdInfo->DisplayDeviceName),
                    DisplayDeviceName.toCString());
-#if   defined(OVR_OS_WIN32)
+#if   defined(NV_OS_WIN)
         // Nothing special for Win32.
-#elif defined(OVR_OS_MAC)
+#elif defined(NV_OS_MAC)
         hmdInfo->DisplayId = DisplayId;
-#elif defined(OVR_OS_LINUX)
+#elif defined(NV_OS_LINUX)
         hmdInfo->DisplayId = DisplayId;
-#elif defined(OVR_OS_ANDROID)
+#elif defined(NV_OS_ANDROID)
 #else
 #error Unknown platform
 #endif
@@ -229,7 +229,7 @@ bool HMDDevice::initialize(DeviceBase* parent)
     pParent = parent;
 
     // Initialize user profile to default for device.
-    ProfileManager* profileManager = GetManager()->GetProfileManager();    
+    ProfileManager* profileManager = GetManager()->GetProfileManager();
     m_profileName = profileManager->GetDefaultProfileName(getDesc()->GetProfileType());
 
     return true;
@@ -242,7 +242,7 @@ void HMDDevice::shutdown()
 }
 
 Profile* HMDDevice::profile() const
-{    
+{
     if (!m_pCachedProfile)
         m_pCachedProfile = *getDesc()->GetProfileAddRef();
     return m_pCachedProfile.GetPtr();

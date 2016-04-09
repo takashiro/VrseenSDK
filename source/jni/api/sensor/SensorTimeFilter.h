@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Types.h"
+#include "VLog.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -130,12 +130,12 @@ private:
 
         const MinRecord& GetOldest() const
         {
-            OVR_ASSERT(!IsEmpty());
+            vAssert(!IsEmpty());
             return Records[Tail];
         }
         const MinRecord& GetNewest() const
         {
-            OVR_ASSERT(!IsEmpty());
+            vAssert(!IsEmpty());
             return Records[(BufferSize + Head - 1) % BufferSize];
         }
 

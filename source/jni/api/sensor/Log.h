@@ -2,7 +2,6 @@
 
 #include "vglobal.h"
 
-#include "Types.h"
 #include <VString.h>
 #include <stdarg.h>
 
@@ -45,7 +44,7 @@ enum LogMaskConstants
 //
 // Log_Assert      -  Debug-build only message, formatted with "Assert: %s\n".
 //                    Intended for severe unrecoverable conditions in library
-//                    source code. Generated though OVR_ASSERT_MSG(c, "Text").
+//                    source code. Generated though vAssert_MSG(c, "Text").
 
 enum LogMessageType
 {
@@ -162,14 +161,14 @@ void LogError(const char* fmt, ...) OVR_LOG_VAARG_ATTRIBUTE(1,2);
     #define OVR_DEBUG_LOG(args)       do { NervGear::LogDebug args; } while(0)
     #define OVR_DEBUG_LOG_TEXT(args)  do { NervGear::LogDebugText args; } while(0)
 
-    #define OVR_ASSERT_LOG(c, args)   do { if (!(c)) { NervGear::LogAssert args; OVR_DEBUG_BREAK; } } while(0)
+    #define vAssert_LOG(c, args)   do { if (!(c)) { NervGear::LogAssert args; } } while(0)
 
 #else
 
     // If not in debug build, macros do nothing.
     #define OVR_DEBUG_LOG(args)         ((void)0)
     #define OVR_DEBUG_LOG_TEXT(args)    ((void)0)
-    #define OVR_ASSERT_LOG(c, args)     ((void)0)
+    #define vAssert_LOG(c, args)     ((void)0)
 
 #endif
 

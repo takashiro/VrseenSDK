@@ -40,9 +40,7 @@ LOCAL_SRC_FILES  := \
 	core/VChar.cpp \
 	core/VEventLoop.cpp \
 	core/VJson.cpp \
-	core/Log.cpp \
 	core/VLog.cpp \
-	core/VMath.cpp \
 	core/VPath.cpp \
 	core/VStandardPath.cpp \
 	core/VString.cpp \
@@ -60,7 +58,6 @@ LOCAL_SRC_FILES  := \
 	core/android/LogUtils.cpp \
 	core/android/VOsBuild.cpp \
 	api/VKernel.cpp \
-	api/Vsync.cpp \
 	api/VDevice.cpp \
 	api/HmdSensors.cpp \
 	api/VLensDistortion.cpp \
@@ -89,6 +86,7 @@ LOCAL_SRC_FILES  := \
 	api/sensor/Common_HMDDevice.cpp \
 	api/sensor/ThreadCommandQueue.cpp \
 	api/sensor/RefCount.cpp \
+	api/sensor/Log.cpp \
 	gui/VRMenuComponent.cpp \
 	gui/VRMenuMgr.cpp \
 	gui/VRMenuObjectLocal.cpp \
@@ -97,6 +95,9 @@ LOCAL_SRC_FILES  := \
 	gui/SoundLimiter.cpp \
 	gui/VRMenu.cpp \
 	gui/GuiSys.cpp \
+	gui/VText.cpp \
+	gui/VPanel.cpp \
+	gui/VDialog.cpp \
 	gui/FolderBrowser.cpp \
 	gui/Fader.cpp \
 	gui/DefaultComponent.cpp \
@@ -113,17 +114,22 @@ LOCAL_SRC_FILES  := \
 	gui/OutOfSpaceMenu.cpp \
 	gui/KeyState.cpp \
 	io/VApkFile.cpp \
+	io/VBuffer.cpp \
+	io/VFile.cpp \
+	io/VIODevice.cpp \
 	io/VBinaryFile.cpp \
 	io/VFileOperation.cpp \
 	io/VSysFile.cpp \
+	media/VImage.cpp \
 	media/VSoundManager.cpp \
+	scene/VItem.cpp \
+	scene/VScene.cpp \
 	scene/BitmapFont.cpp \
 	scene/DebugLines.cpp \
-	scene/EyeBuffers.cpp \
+	scene/VEyeBuffer.cpp \
 	scene/EyePostRender.cpp \
 	scene/GazeCursor.cpp \
 	scene/GlTexture.cpp \
-	scene/ImageData.cpp \
 	scene/ModelRender.cpp \
 	scene/ModelFile.cpp \
 	scene/ModelCollision.cpp \

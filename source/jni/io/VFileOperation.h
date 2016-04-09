@@ -7,11 +7,15 @@
 #include <errno.h>
 
 NV_NAMESPACE_BEGIN
-
-static int FError ();
+enum ImageFilter
+{
+    IMAGE_FILTER_NEAREST,
+    IMAGE_FILTER_LINEAR,
+    IMAGE_FILTER_CUBIC
+};
 
 //实现文件具体操作的类，VSysFile通过指针授权给父类调用该类的函数
-class VFileOperation : public VFile, std::fstream
+class VFileOperation : public VAbstractFile, std::fstream
 {
 protected:
 
@@ -80,8 +84,20 @@ public:
     int seek(int offset, std::ios_base::seekdir origin) override;
     long long seek64(long long offset, std::ios_base::seekdir origin) override;
 
-    int copyStream(VFile *pStream, int byteSize) override;
+    int copyStream(VAbstractFile *pStream, int byteSize) override;
     bool close() override;
+
+    // Uncompressed .pvr textures are much more efficient to load than bmp/tga/etc.
+    // Use when generating thumbnails, etc.
+    // Use stb_image_write.h for conventional files.
+    static void        Write32BitPvrTexture( const char * fileName, const unsigned char * texture, int width, int height );
+
+    // The returned buffer should be freed with free()
+    // If srgb is true, the resampling will be gamma correct, otherwise it is just sumOf4 >> 2
+    static unsigned char * QuarterImageSize( const unsigned char * src, const int width, const int height, const bool srgb );
+
+    static unsigned char * ScaleImageRGBA( const unsigned char * src, const int width, const int height, const int newWidth, const int newHeight, const ImageFilter filter );
+
 private:
     void fileInit();
 };

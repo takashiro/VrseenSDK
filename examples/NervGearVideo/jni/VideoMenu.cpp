@@ -8,13 +8,13 @@ Authors     :
 Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 This source code is licensed under the BSD-style license found in the
-LICENSE file in the Oculus360Videos/ directory. An additional grant 
+LICENSE file in the Oculus360Videos/ directory. An additional grant
 of patent rights can be found in the PATENTS file in the same directory.
 
 *************************************************************************************/
 
 #include "VideoMenu.h"
-
+#include "core/VTimer.h"
 #include "gui/VRMenuMgr.h"
 #include "gui/GuiSys.h"
 #include "gui/DefaultComponent.h"
@@ -41,7 +41,7 @@ static const int BUTTON_COOL_DOWN_SECONDS = 0.25f;
 
 //==============================
 // OvrVideoMenuRootComponent
-// This component is attached to the root of VideoMenu 
+// This component is attached to the root of VideoMenu
 class OvrVideoMenuRootComponent : public VRMenuComponent
 {
 public:
@@ -63,7 +63,7 @@ private:
 		case VRMENU_EVENT_OPENING:
 			return OnOpening( app, vrFrame, menuMgr, self, event );
 		default:
-			OVR_ASSERT( !"Event flags mismatch!" ); // the constructor is specifying a flag that's not handled
+			vAssert( !"Event flags mismatch!" ); // the constructor is specifying a flag that's not handled
 			return MSG_STATUS_ALIVE;
 		}
 	}
@@ -71,7 +71,7 @@ private:
 	eMsgStatus OnOpening( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
 	{
 		CurrentVideo = (OvrVideosMetaDatum *)( VideoMenu.GetVideos()->GetActiveVideo() );
-		// If opening VideoMenu without a Video selected, bail 
+		// If opening VideoMenu without a Video selected, bail
 		if ( CurrentVideo == NULL )
 		{
 			app->guiSys().closeMenu( app, &VideoMenu, false );
@@ -150,7 +150,7 @@ OvrVideoMenu::OvrVideoMenu( App * app, Oculus360Videos * videos, OvrVRMenuMgr & 
 
 	AttributionHandle = handleForId( MenuMgr, attributionPanelId );
 	VRMenuObject * attributionObject = MenuMgr.toObject( AttributionHandle );
-	OVR_ASSERT( attributionObject != NULL );
+	vAssert( attributionObject != NULL );
 
 	//Browser button
 	float const ICON_HEIGHT = 80.0f * VRMenuObject::DEFAULT_TEXEL_SCALE;
@@ -180,10 +180,10 @@ OvrVideoMenu::OvrVideoMenu( App * app, Oculus360Videos * videos, OvrVRMenuMgr & 
 
 	BrowserButtonHandle = attributionObject->childHandleForId( MenuMgr, ID_BROWSER_BUTTON );
 	VRMenuObject * browserButtonObject = MenuMgr.toObject( BrowserButtonHandle );
-	OVR_ASSERT( browserButtonObject != NULL );
-	OVR_UNUSED( browserButtonObject );
+	vAssert( browserButtonObject != NULL );
+	NV_UNUSED( browserButtonObject );
 
-	//Video control button 
+	//Video control button
     VPosf videoButtonPose( VQuatf(), DOWN * ICON_HEIGHT * 2.0f );
 
     comps.append( new OvrDefaultComponent( V3Vectf( 0.0f, 0.0f, 0.05f ), 1.05f, 0.25f, 0.0f, V4Vectf( 1.0f ), V4Vectf( 1.0f ) ) );
@@ -207,8 +207,8 @@ OvrVideoMenu::OvrVideoMenu( App * app, Oculus360Videos * videos, OvrVRMenuMgr & 
 
 	VideoControlButtonHandle = attributionObject->childHandleForId( MenuMgr, ID_VIDEO_BUTTON );
 	VRMenuObject * controlButtonObject = MenuMgr.toObject( VideoControlButtonHandle );
-	OVR_ASSERT( controlButtonObject != NULL );
-	OVR_UNUSED( controlButtonObject );
+	vAssert( controlButtonObject != NULL );
+	NV_UNUSED( controlButtonObject );
 
 }
 
@@ -221,7 +221,7 @@ void OvrVideoMenu::openImpl( App * app, OvrGazeCursor & gazeCursor )
 {
 	ButtonCoolDown = BUTTON_COOL_DOWN_SECONDS;
 
-	OpenTime = ovr_GetTimeInSeconds();
+    OpenTime = VTimer::Seconds();
 }
 
 void OvrVideoMenu::frameImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font, BitmapFontSurface & fontSurface, gazeCursorUserId_t const gazeUserId )
@@ -234,7 +234,7 @@ void OvrVideoMenu::frameImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr &
 
 void OvrVideoMenu::onItemEvent_Impl( App * app, VRMenuId_t const itemId, VRMenuEvent const & event )
 {
-	const double now = ovr_GetTimeInSeconds();
+    const double now = VTimer::Seconds();
 	if ( ButtonCoolDown <= 0.0f && (now - OpenTime > 0.5))
 	{
 		ButtonCoolDown = BUTTON_COOL_DOWN_SECONDS;

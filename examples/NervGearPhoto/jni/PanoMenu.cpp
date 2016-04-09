@@ -64,7 +64,7 @@ private:
 		case VRMENU_EVENT_OPENING:
 			return OnOpening( app, vrFrame, menuMgr, self, event );
 		default:
-			OVR_ASSERT( !"Event flags mismatch!" ); // the constructor is specifying a flag that's not handled
+			vAssert( !"Event flags mismatch!" ); // the constructor is specifying a flag that's not handled
 			return MSG_STATUS_ALIVE;
 		}
 	}
@@ -104,7 +104,7 @@ private:
         switch ( PanoMenu.photos()->currentState() )
 		{
 		case Oculus360Photos::MENU_PANO_LOADING:
-            OVR_ASSERT( PanoMenu.photos() );
+            vAssert( PanoMenu.photos() );
             if ( CurrentPano != PanoMenu.photos()->activePano() )
 			{
                 CurrentPano = PanoMenu.photos()->activePano();
@@ -212,7 +212,7 @@ OvrPanoMenu::OvrPanoMenu( App * app, Oculus360Photos * photos, OvrVRMenuMgr & me
 
 	m_attributionHandle = handleForId( m_menuMgr, attributionPanelId );
 	VRMenuObject * attributionObject = m_menuMgr.toObject( m_attributionHandle );
-	OVR_ASSERT( attributionObject != NULL );
+	vAssert( attributionObject != NULL );
 
 	//Browser button
 	float const ICON_HEIGHT = 80.0f * VRMenuObject::DEFAULT_TEXEL_SCALE;
@@ -242,8 +242,8 @@ OvrPanoMenu::OvrPanoMenu( App * app, Oculus360Photos * photos, OvrVRMenuMgr & me
 
 	m_browserButtonHandle = attributionObject->childHandleForId( m_menuMgr, ID_BROWSER_BUTTON );
 	VRMenuObject * browserButtonObject = m_menuMgr.toObject( m_browserButtonHandle );
-	OVR_ASSERT( browserButtonObject != NULL );
-	OVR_UNUSED( browserButtonObject );
+	vAssert( browserButtonObject != NULL );
+	NV_UNUSED( browserButtonObject );
 
 	//Favorites button
     VPosf favoritesButtonPose( VQuatf( ), DOWN * ICON_HEIGHT * 2.0f );
@@ -280,8 +280,8 @@ OvrPanoMenu::OvrPanoMenu( App * app, Oculus360Photos * photos, OvrVRMenuMgr & me
 
 	m_favoritesButtonHandle = attributionObject->childHandleForId( m_menuMgr, ID_FAVORITES_BUTTON );
 	VRMenuObject * favoritesButtonObject = m_menuMgr.toObject( m_favoritesButtonHandle );
-	OVR_ASSERT( favoritesButtonObject != NULL );
-	OVR_UNUSED( favoritesButtonObject );
+	vAssert( favoritesButtonObject != NULL );
+	NV_UNUSED( favoritesButtonObject );
 
 	// Swipe icons
 	const int numFrames = 10;
@@ -305,7 +305,7 @@ OvrPanoMenu::OvrPanoMenu( App * app, Oculus360Photos * photos, OvrVRMenuMgr & me
 
 	m_swipeRightIndicatorHandle = attributionObject->childHandleForId( m_menuMgr, swipeRightId );
 	VRMenuObject * swipeRightRootObject = m_menuMgr.toObject( m_swipeRightIndicatorHandle );
-	OVR_ASSERT( swipeRightRootObject != NULL );
+	vAssert( swipeRightRootObject != NULL );
 
 	// Left container
 	VRMenuId_t swipeLeftId( ID_CENTER_ROOT.Get( ) + 402 );
@@ -322,7 +322,7 @@ OvrPanoMenu::OvrPanoMenu( App * app, Oculus360Photos * photos, OvrVRMenuMgr & me
 
 	m_swipeLeftIndicatorHandle = attributionObject->childHandleForId( m_menuMgr, swipeLeftId );
 	VRMenuObject * swipeLeftRootObject = m_menuMgr.toObject( m_swipeLeftIndicatorHandle );
-	OVR_ASSERT( swipeLeftRootObject != NULL );
+	vAssert( swipeLeftRootObject != NULL );
 
 	// Arrow frame children
 	const char * swipeRightIcon = "assets/nav_arrow_right.png";
@@ -436,7 +436,7 @@ void OvrPanoMenu::updateButtonsState( const OvrMetaDatum * const ActivePano, boo
 	}
 
 	VRMenuObject * favoritesButtonObject = m_menuMgr.toObject( m_favoritesButtonHandle );
-	OVR_ASSERT( favoritesButtonObject != NULL );
+	vAssert( favoritesButtonObject != NULL );
 
 	if ( OvrSurfaceToggleComponent * favToggleComp = favoritesButtonObject->GetComponentByName<OvrSurfaceToggleComponent>() )
 	{
@@ -445,10 +445,10 @@ void OvrPanoMenu::updateButtonsState( const OvrMetaDatum * const ActivePano, boo
 	}
 
 	VRMenuObject * swipeRight = m_menuMgr.toObject( m_swipeRightIndicatorHandle );
-	OVR_ASSERT( swipeRight != NULL );
+	vAssert( swipeRight != NULL );
 
 	VRMenuObject * swipeLeft = m_menuMgr.toObject( m_swipeLeftIndicatorHandle );
-	OVR_ASSERT( swipeLeft != NULL );
+	vAssert( swipeLeft != NULL );
 
     const bool showSwipeIndicators = showSwipeOverride || ( m_photos->numPanosInActiveCategory( ) > 1 );
 

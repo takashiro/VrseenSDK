@@ -1,5 +1,5 @@
 #include "App.h"
-
+#include "core/VTimer.h"
 #include <android/keycodes.h>
 #include <math.h>
 #include <jni.h>
@@ -42,59 +42,13 @@
 #include "VMainActivity.h"
 #include "VThread.h"
 #include "VStandardPath.h"
+#include "VColor.h"
+#include "VScene.h"
 
 //#define TEST_TIMEWARP_WATCHDOG
 #define EGL_PROTECTED_CONTENT_EXT 0x32c0
 
 NV_NAMESPACE_BEGIN
-
-class VPointTracker
-{
-public:
-    static const int DEFAULT_FRAME_RATE = 60;
-
-    VPointTracker( float const rate = 0.1f ) :
-        LastFrameTime( 0.0 ),
-        Rate( 0.1f ),
-        CurPosition( 0.0f ),
-        FirstFrame( true )
-    {
-    }
-
-    void        Update( double const curFrameTime, V3Vectf const & newPos )
-    {
-        double frameDelta = curFrameTime - LastFrameTime;
-        LastFrameTime = curFrameTime;
-        float const rateScale = static_cast< float >( frameDelta / ( 1.0 / static_cast< double >( DEFAULT_FRAME_RATE ) ) );
-        float const rate = Rate * rateScale;
-        if ( FirstFrame )
-        {
-            CurPosition = newPos;
-        }
-        else
-        {
-            V3Vectf delta = ( newPos - CurPosition ) * rate;
-            if ( delta.Length() < 0.001f )
-            {
-                // don't allow a denormal to propagate from multiplications of very small numbers
-                delta = V3Vectf( 0.0f );
-            }
-            CurPosition += delta;
-        }
-        FirstFrame = false;
-    }
-
-    void                Reset() { FirstFrame = true; }
-    void                SetRate( float const r ) { Rate = r; }
-
-    V3Vectf const & GetCurPosition() const { return CurPosition; }
-
-private:
-    double      LastFrameTime;
-    float       Rate;
-    V3Vectf CurPosition;
-    bool        FirstFrame;
-};
 
 static const char * activityClassName = "com/vrseen/nervgear/VrActivity";
 
@@ -165,7 +119,7 @@ static VR4Matrixf PanelMatrix(const VR4Matrixf & lastViewMatrix, const float pop
             xScale * right.z, yScale * up.z, forward.z, center.z,
             0, 0, 0, 1);
 
-//	LOG("PanelMatrix center: %f %f %f", center.x, center.y, center.z);
+//	vInfo("PanelMatrix center:" << center.xcenter.ycenter.z);
 //	LogMatrix("PanelMatrix", panelMatrix);
 
     return panelMatrix;
@@ -174,16 +128,15 @@ static VR4Matrixf PanelMatrix(const VR4Matrixf & lastViewMatrix, const float pop
 extern void DebugMenuBounds(void * appPtr, const char * cmd);
 extern void DebugMenuHierarchy(void * appPtr, const char * cmd);
 extern void DebugMenuPoses(void * appPtr, const char * cmd);
-extern void ShowFPS(void * appPtr, const char * cmd);
 
-static EyeParms DefaultVrParmsForRenderer(const VGlOperation & glOperation)
+static VEyeBuffer::EyeParms DefaultVrParmsForRenderer(const VGlOperation & glOperation)
 {
-    EyeParms vrParms;
+    VEyeBuffer::EyeParms vrParms;
 
     vrParms.resolution = 1024;
     vrParms.multisamples = (glOperation.gpuType == VGlOperation::GPU_TYPE_ADRENO_330) ? 2 : 4;
-    vrParms.colorFormat = COLOR_8888;
-    vrParms.depthFormat = DEPTH_24;
+    vrParms.colorFormat = VColor::COLOR_8888;
+    vrParms.commonParameterDepth = VEyeBuffer::CommonParameter::DEPTHFORMAT_DEPTH_24;
 
     return vrParms;
 }
@@ -214,7 +167,7 @@ struct App::Private
     // Handles creating, destroying, and re-configuring the buffers
     // for drawing the eye views, which might be in different texture
     // configurations for CPU warping, etc.
-    EyeBuffers *	eyeTargets;
+    VEyeBuffer *	eyeTargets;
 
     GLuint			loadingIconTexId;
 
@@ -250,11 +203,9 @@ struct App::Private
     // drawing parameters
     int				dialogWidth;
     int				dialogHeight;
-    float			dialogStopSeconds;
 
     // Dialogs will be oriented base down in the view when they
     // were generated.
-    VR4Matrixf		dialogMatrix;
 
     VR4Matrixf		lastViewMatrix;
 
@@ -272,21 +223,18 @@ struct App::Private
     // screen eyes.
     bool			renderMonoMode;
 
-    VrFrame			vrFrame;
     VrFrame			lastVrFrame;
 
-    EyeParms		vrParms;
+    VEyeBuffer::EyeParms		vrParms;
 
-    ovrTimeWarpParms	swapParms;			// passed to TimeWarp->WarpSwap()
 
-    VGlShader		externalTextureProgram2;
+
     VGlShader		untexturedMvpProgram;
     VGlShader		untexturedScreenSpaceProgram;
     VGlShader		overlayScreenFadeMaskProgram;
     VGlShader		overlayScreenDirectProgram;
 
     VGlGeometry		unitCubeLines;		// 12 lines that outline a 0 to 1 unit cube, intended to be scaled to cover bounds.
-    VGlGeometry		panelGeometry;		// used for dialogs
     VGlGeometry		unitSquare;			// -1 to 1 in x and Y, 0 to 1 in texcoords
     VGlGeometry		fadedScreenMaskSquare;// faded screen mask for overlay rendering
 
@@ -297,17 +245,9 @@ struct App::Private
     VThread *renderThread;
     int				vrThreadTid;		// linux tid
 
-    bool			showFPS;			// true to show FPS on screen
     bool			showVolumePopup;	// true to show volume popup when volume changes
 
     VrViewParms		viewParms;
-
-    VString			infoText;			// informative text to show in front of the view
-    V4Vectf		infoTextColor;		// color of info text
-    V3Vectf		infoTextOffset;		// offset from center of screen in view space
-    long long		infoTextEndFrame;	// time to stop showing text
-    VPointTracker	infoTextPointTracker;	// smoothly tracks to text ideal location
-    VPointTracker	fpsPointTracker;		// smoothly tracks to ideal FPS text location
 
     float 			touchpadTimer;
     V2Vectf		touchOrigin;
@@ -342,6 +282,7 @@ struct App::Private
 
     VMainActivity *activity;
     VKernel*        kernel;
+    VScene *scene;
 
     Private(App *self)
         : self(self)
@@ -361,10 +302,8 @@ struct App::Private
         , paused(true)
         , popupDistance(2.0f)
         , popupScale(1.0f)
-        , dialogTexture(nullptr)
         , dialogWidth(0)
         , dialogHeight(0)
-        , dialogStopSeconds(0.0f)
         , nativeWindow(nullptr)
         , windowSurface(EGL_NO_SURFACE)
         , drawCalibrationLines(false)
@@ -374,11 +313,7 @@ struct App::Private
         , framebufferIsProtected(false)
         , renderMonoMode(false)
         , vrThreadTid(0)
-        , showFPS(false)
         , showVolumePopup(true)
-        , infoTextColor(1.0f)
-        , infoTextOffset(0.0f)
-        , infoTextEndFrame(-1)
         , touchpadTimer(0.0f)
         , lastTouchpadTime(0.0f)
         , lastTouchDown(false)
@@ -400,7 +335,13 @@ struct App::Private
         , javaObject(nullptr)
         , appInterface(nullptr)
         , activity(nullptr)
+        , scene(new VScene)
     {
+    }
+
+    ~Private()
+    {
+        delete scene;
     }
 
     void initFonts()
@@ -497,19 +438,19 @@ struct App::Private
     {
         vrParms = DefaultVrParmsForRenderer(glOperation);
 
-        swapParms.WarpProgram = ChromaticAberrationCorrection(glOperation) ? WP_CHROMATIC : WP_SIMPLE;
 
 
+          kernel->setSmoothProgram(ChromaticAberrationCorrection(glOperation) ? VK_DEFAULT_CB : VK_DEFAULT);
         glOperation.logExtensions();
 
-        externalTextureProgram2.initShader( VGlShader::getAdditionalVertexShaderSource(), VGlShader::getAdditionalFragmentShaderSource() );
+        self->panel.externalTextureProgram2.initShader( VGlShader::getAdditionalVertexShaderSource(), VGlShader::getAdditionalFragmentShaderSource() );
         untexturedMvpProgram.initShader( VGlShader::getUntextureMvpVertexShaderSource(),VGlShader::getUntexturedFragmentShaderSource()  );
         untexturedScreenSpaceProgram.initShader( VGlShader::getUniformColorVertexShaderSource(), VGlShader::getUntexturedFragmentShaderSource() );
         overlayScreenFadeMaskProgram.initShader(VGlShader::getUntextureInverseColorVertexShaderSource(),VGlShader::getUntexturedFragmentShaderSource() );
         overlayScreenDirectProgram.initShader(VGlShader::getSingleTextureVertexShaderSource(),VGlShader::getSingleTextureFragmentShaderSource() );
 
 
-        panelGeometry.createPlaneQuadGrid( 32, 16 );
+        self->panel.panelGeometry.createPlaneQuadGrid( 32, 16 );
         unitSquare.createPlaneQuadGrid(1, 1 );
         unitCubeLines.createUnitCubeGrid();
 
@@ -519,13 +460,13 @@ struct App::Private
 
     void shutdownGlObjects()
     {
-        externalTextureProgram2.destroy();
+        self->panel.externalTextureProgram2.destroy();
         untexturedMvpProgram.destroy();
         untexturedScreenSpaceProgram.destroy();
         overlayScreenFadeMaskProgram.destroy();
         overlayScreenDirectProgram.destroy();
 
-        panelGeometry.destroy();
+        self->panel.panelGeometry.destroy();
         unitSquare.destroy();
         unitCubeLines.destroy();
         fadedScreenMaskSquare.destroy();
@@ -543,7 +484,7 @@ struct App::Private
         static const float timer_finger_up = 0.3f;
         static const float min_swipe_distance = 100.0f;
 
-        float currentTime = ovr_GetTimeInSeconds();
+        float currentTime = VTimer::Seconds();
         float deltaTime = currentTime - lastTouchpadTime;
         lastTouchpadTime = currentTime;
         touchpadTimer = touchpadTimer + deltaTime;
@@ -685,7 +626,7 @@ struct App::Private
             struct tm * timeInfo = localtime(&rawTime);
             char timeStr[128];
             strftime(timeStr, sizeof(timeStr), "%H:%M:%S", timeInfo);
-            vInfo("QAEvent " << timeStr << " (" << ovr_GetTimeInSeconds() << ") - QA event occurred");
+            vInfo("QAEvent " << timeStr << " (" << VTimer::Seconds() << ") - QA event occurred");
         }
 
         // Display tweak testing, only when holding right trigger
@@ -707,31 +648,31 @@ struct App::Private
 
             if (input.buttonPressed & BUTTON_B)
             {
-                if (swapParms.WarpOptions & SWAP_OPTION_USE_SLICED_WARP)
+                if (kernel->m_smoothOptions & VK_USE_S)
                 {
-                    swapParms.WarpOptions &= ~SWAP_OPTION_USE_SLICED_WARP;
+                    kernel->m_smoothOptions &= ~VK_USE_S;
                     self->createToast("eye warp");
                 }
                 else
                 {
-                    swapParms.WarpOptions |= SWAP_OPTION_USE_SLICED_WARP;
+                    kernel->m_smoothOptions |= VK_USE_S;
                     self->createToast("slice warp");
                 }
             }
 
-            if (swapParms.WarpOptions & SWAP_OPTION_USE_SLICED_WARP)
+            if (kernel->m_smoothOptions & VK_USE_S)
             {
                 extern float calibrateFovScale;
 
                 if (input.buttonPressed & BUTTON_DPAD_LEFT)
                 {
-                    swapParms.PreScheduleSeconds -= 0.001f;
-                    self->createToast("Schedule: %f", swapParms.PreScheduleSeconds);
+                    kernel->m_preScheduleSeconds -= 0.001f;
+                    self->createToast("Schedule: %f",  kernel->m_preScheduleSeconds);
                 }
                 if (input.buttonPressed & BUTTON_DPAD_RIGHT)
                 {
-                    swapParms.PreScheduleSeconds += 0.001f;
-                    self->createToast("Schedule: %f", swapParms.PreScheduleSeconds);
+                    kernel->m_preScheduleSeconds += 0.001f;
+                    self->createToast("Schedule: %f",  kernel->m_preScheduleSeconds);
                 }
                 if (input.buttonPressed & BUTTON_DPAD_UP)
                 {
@@ -832,7 +773,7 @@ struct App::Private
                         nativeWindow, attribs2);
                 if (windowSurface == EGL_NO_SURFACE)
                 {
-                    FAIL("eglCreateWindowSurface failed: %s", glOperation.getEglErrorString());
+                    vFatal("eglCreateWindowSurface failed:" << glOperation.getEglErrorString());
                 }
                 framebufferIsSrgb = false;
                 framebufferIsProtected = false;
@@ -897,7 +838,7 @@ struct App::Private
         }
 
         if (event.name == "resume") {
-            LOG("resume");
+            vInfo("resume");
             paused = false;
             // Don't actually do the resume operations if we don't have
             // a window yet.  They will be done when the window is created.
@@ -943,13 +884,13 @@ struct App::Private
 
             dialogWidth = width;
             dialogHeight = height;
-            dialogStopSeconds = ovr_GetTimeInSeconds() + seconds;
+            self->dialog.dialogStopSeconds = VTimer::Seconds() + seconds;
 
-            dialogMatrix = PanelMatrix(lastViewMatrix, popupDistance, popupScale, width, height);
+            self->dialog.dialogMatrix = PanelMatrix(lastViewMatrix, popupDistance, popupScale, width, height);
 
             glActiveTexture(GL_TEXTURE0);
-            vInfo("RC_UPDATE_POPUP dialogTexture" << dialogTexture->textureId);
-            dialogTexture->Update();
+            vInfo("RC_UPDATE_POPUP dialogTexture" << self->dialog.dialogTexture->textureId);
+            self->dialog.dialogTexture->Update();
             glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0);
 
             return;
@@ -969,9 +910,8 @@ struct App::Private
         appInterface->command(event);
     }
 
-    void startRendering()
+    void run()
     {
-
         // Set the name that will show up in systrace
         pthread_setname_np(pthread_self(), "NervGear::VrThread");
 
@@ -990,7 +930,7 @@ struct App::Private
             const jint rtn = javaVM->AttachCurrentThread(&vrJni, 0);
             if (rtn != JNI_OK)
             {
-                FAIL("javaVM->AttachCurrentThread returned %i", rtn);
+                vFatal("javaVM->AttachCurrentThread returned" << rtn);
             }
 
             // Set up another thread for making longer-running java calls
@@ -1008,7 +948,7 @@ struct App::Private
             // Create our GL data objects
             initGlObjects();
 
-            eyeTargets = new EyeBuffers;
+            eyeTargets = new VEyeBuffer;
             guiSys = new OvrGuiSysLocal;
             gazeCursor = new OvrGazeCursorLocal;
             vrMenuMgr = OvrVRMenuMgr::Create();
@@ -1020,7 +960,7 @@ struct App::Private
                                             TextureFlags_t(TEXTUREFLAG_NO_MIPMAPS), w, h);
 
             // Create the SurfaceTexture for dialog rendering.
-            dialogTexture = new SurfaceTexture(vrJni);
+            self->dialog.dialogTexture = new SurfaceTexture(vrJni);
 
             initFonts();
 
@@ -1036,12 +976,12 @@ struct App::Private
 
             volumePopup = OvrVolumePopup::Create(self, *vrMenuMgr, *defaultFont);
 
-            lastTouchpadTime = ovr_GetTimeInSeconds();
+            lastTouchpadTime = VTimer::Seconds();
         }
 
         // FPS counter information
         int countApplicationFrames = 0;
-        double lastReportTime = ceil(ovr_GetTimeInSeconds());
+        double lastReportTime = ceil(VTimer::Seconds());
 
         while(!(vrThreadSynced && createdSurface && readyToExit))
         {
@@ -1070,7 +1010,7 @@ struct App::Private
                 {
                     if (status != VRAPI_EVENT_CONSUMED)
                     {
-                        WARN("Error %i handing System Activities Event", status);
+                        vWarn("Error" << status << "handing System Activities Event");
                     }
                     continue;
                 }
@@ -1099,7 +1039,7 @@ struct App::Private
                 else
                 {
                     // a malformed event string was pushed! This implies an error in the native code somewhere.
-                    WARN("Error parsing System Activities Event: %s");
+                    vWarn("Error parsing System Activities Event:");
                 }
             }
 
@@ -1123,16 +1063,36 @@ struct App::Private
             // if there is an error condition, warp swap and nothing else
             if (errorTexture != 0)
             {
-                if (ovr_GetTimeInSeconds() >= errorMessageEndTime)
+                if (VTimer::Seconds() >= errorMessageEndTime)
                 {
                     kernel->destroy(EXIT_TYPE_FINISH_AFFINITY);
                 }
                 else
                 {
-                    ovrTimeWarpParms warpSwapMessageParms = InitTimeWarpParms(WARP_INIT_MESSAGE, errorTexture.texture);
-                    warpSwapMessageParms.ProgramParms[0] = 0.0f;						// rotation in radians
-                    warpSwapMessageParms.ProgramParms[1] = 1024.0f / errorTextureSize;	// message size factor
-                    kernel->doSmooth(&warpSwapMessageParms);
+                    //ovrTimeWarpParms warpSwapMessageParms = kernel->InitTimeWarpParms(WARP_INIT_MESSAGE, errorTexture.texture);
+                    //warpSwapMessageParms.ProgramParms[0] = 0.0f;						// rotation in radians
+                    //warpSwapMessageParms.ProgramParms[1] = 1024.0f / errorTextureSize;	// message size factor
+                    //kernel->doSmooth(&warpSwapMessageParms);
+
+                    kernel->InitTimeWarpParms();
+                    kernel->setSmoothOption( VK_INHIBIT_SRGB_FB | VK_FLUSH | VK_IMAGE);
+
+                    kernel->setSmoothProgram(VK_LOGO);
+                    float mprogramParms[4];
+                    mprogramParms[0] = 0.0f;		// rotation in radians per second
+                    mprogramParms[1] = 2.0f;
+                    kernel->setProgramParms(mprogramParms);
+                            // icon size factor smaller than fullscreen
+                    for ( int eye = 0; eye < 2; eye++ )
+                    {
+                       kernel->setSmoothEyeTexture(0,eye, 0);
+                       kernel->setSmoothEyeTexture(errorTexture.texture,eye,1);
+
+                    }
+
+                    kernel->doSmooth();
+                    kernel->setSmoothProgram(VK_DEFAULT);
+
                 }
                 continue;
             }
@@ -1142,8 +1102,28 @@ struct App::Private
             {
                 if (appInterface->showLoadingIcon())
                 {
-                    const ovrTimeWarpParms warpSwapLoadingIconParms = InitTimeWarpParms(WARP_INIT_LOADING_ICON, loadingIconTexId);
-                    kernel->doSmooth(&warpSwapLoadingIconParms);
+                   // const ovrTimeWarpParms warpSwapLoadingIconParms = kernel->InitTimeWarpParms(WARP_INIT_LOADING_ICON, loadingIconTexId);
+                   // kernel->doSmooth(&warpSwapLoadingIconParms);
+
+
+                    kernel->InitTimeWarpParms();
+                    kernel->setSmoothOption( VK_INHIBIT_SRGB_FB | VK_FLUSH | VK_IMAGE);
+                    kernel->setSmoothProgram(VK_LOGO);
+                    float mprogramParms[4];
+                    mprogramParms[0] = 1.0f;		// rotation in radians per second
+                    mprogramParms[1] = 16.0f;
+                    kernel->setProgramParms(mprogramParms);
+                            // icon size factor smaller than fullscreen
+                    for ( int eye = 0; eye < 2; eye++ )
+                    {
+                       kernel->setSmoothEyeTexture(0,eye, 0);
+                       kernel->setSmoothEyeTexture(loadingIconTexId,eye,1);
+
+                    }
+
+                    kernel->doSmooth();
+                    kernel->setSmoothProgram(VK_DEFAULT);
+
                 }
                 vInfo("launchIntentJSON:" << launchIntentJSON);
                 vInfo("launchIntentURI:" << launchIntentURI);
@@ -1153,68 +1133,68 @@ struct App::Private
             }
 
             // latch the current joypad state and note transitions
-            vrFrame.Input = joypad;
-            vrFrame.Input.buttonPressed = joypad.buttonState & (~lastVrFrame.Input.buttonState);
-            vrFrame.Input.buttonReleased = ~joypad.buttonState & (lastVrFrame.Input.buttonState & ~BUTTON_TOUCH_WAS_SWIPE);
+            self->text.vrFrame.Input = joypad;
+            self->text.vrFrame.Input.buttonPressed = joypad.buttonState & (~lastVrFrame.Input.buttonState);
+            self->text.vrFrame.Input.buttonReleased = ~joypad.buttonState & (lastVrFrame.Input.buttonState & ~BUTTON_TOUCH_WAS_SWIPE);
 
             if (lastVrFrame.Input.buttonState & BUTTON_TOUCH_WAS_SWIPE)
             {
                 if (lastVrFrame.Input.buttonReleased & BUTTON_TOUCH)
                 {
-                    vrFrame.Input.buttonReleased |= BUTTON_TOUCH_WAS_SWIPE;
+                    self->text.vrFrame.Input.buttonReleased |= BUTTON_TOUCH_WAS_SWIPE;
                 }
                 else
                 {
                     // keep it around this frame
-                    vrFrame.Input.buttonState |= BUTTON_TOUCH_WAS_SWIPE;
+                    self->text.vrFrame.Input.buttonState |= BUTTON_TOUCH_WAS_SWIPE;
                 }
             }
 
             // Synthesize swipe gestures
-            interpretTouchpad(vrFrame.Input);
+            interpretTouchpad(self->text.vrFrame.Input);
 
             if (recenterYawFrameStart != 0)
             {
                 // Perform a reorient before sensor data is read.  Allows apps to reorient without having invalid orientation information for that frame.
                 // Do a warp swap black on the frame the recenter started.
-                self->recenterYaw(recenterYawFrameStart == (vrFrame.FrameNumber + 1));  // vrFrame.FrameNumber hasn't been incremented yet, so add 1.
+                self->recenterYaw(recenterYawFrameStart == (self->text.vrFrame.FrameNumber + 1));  // vrFrame.FrameNumber hasn't been incremented yet, so add 1.
             }
 
             // Get the latest head tracking state, predicted ahead to the midpoint of the time
             // it will be displayed.  It will always be corrected to the real values by
             // time warp, but the closer we get, the less black will be pulled in at the edges.
-            const double now = ovr_GetTimeInSeconds();
+            const double now = VTimer::Seconds();
             static double prev;
             const double rawDelta = now - prev;
             prev = now;
             const double clampedPrediction = std::min(0.1, rawDelta * 2);
             sensorForNextWarp = kernel->ovr_GetPredictedSensorState(now + clampedPrediction);
 
-            vrFrame.PoseState = sensorForNextWarp.Predicted;
-            vrFrame.OvrStatus = sensorForNextWarp.Status;
-            vrFrame.DeltaSeconds   = std::min(0.1, rawDelta);
-            vrFrame.FrameNumber++;
+            self->text.vrFrame.PoseState = sensorForNextWarp.Predicted;
+            self->text.vrFrame.OvrStatus = sensorForNextWarp.Status;
+            self->text.vrFrame.DeltaSeconds   = std::min(0.1, rawDelta);
+            self->text.vrFrame.FrameNumber++;
 
             // Don't allow this to be excessively large, which can cause application problems.
-            if (vrFrame.DeltaSeconds > 0.1f)
+            if (self->text.vrFrame.DeltaSeconds > 0.1f)
             {
-                vrFrame.DeltaSeconds = 0.1f;
+                self->text.vrFrame.DeltaSeconds = 0.1f;
             }
 
-            lastVrFrame = vrFrame;
+            lastVrFrame = self->text.vrFrame;
 
             // resend any debug lines that have expired
-            debugLines->BeginFrame(vrFrame.FrameNumber);
+            debugLines->BeginFrame(self->text.vrFrame.FrameNumber);
 
             // reset any VR menu submissions from previous frame
             vrMenuMgr->beginFrame();
 
-            frameworkButtonProcessing(vrFrame.Input);
+            frameworkButtonProcessing(self->text.vrFrame.Input);
 
-            KeyState::eKeyEventType event = backKeyState.Update(ovr_GetTimeInSeconds());
+            KeyState::eKeyEventType event = backKeyState.Update(VTimer::Seconds());
             if (event != KeyState::KEY_EVENT_NONE)
             {
-                //LOG("BackKey: event %s", KeyState::EventNames[ event ]);
+                //vInfo("BackKey: event" << KeyState::EventNames[ event ]);
                 // always allow the gaze cursor to peek at the event so it can start the gaze timer if necessary
                 // update the gaze cursor timer
                 if (event == KeyState::KEY_EVENT_DOWN)
@@ -1245,69 +1225,36 @@ struct App::Private
                     if (event == KeyState::KEY_EVENT_SHORT_PRESS)
                     {
                         consumedKey = true;
-                        LOG("BUTTON_BACK: confirming quit in platformUI");
+                        vInfo("BUTTON_BACK: confirming quit in platformUI");
                         kernel->destroy(EXIT_TYPE_FINISH);
                     }
                 }
             }
 
-            if (showFPS)
-            {
-                const int FPS_NUM_FRAMES_TO_AVERAGE = 30;
-                static double  LastFrameTime = ovr_GetTimeInSeconds();
-                static double  AccumulatedFrameInterval = 0.0;
-                static int   NumAccumulatedFrames = 0;
-                static float LastFrameRate = 60.0f;
-
-                double currentFrameTime = ovr_GetTimeInSeconds();
-                double frameInterval = currentFrameTime - LastFrameTime;
-                AccumulatedFrameInterval += frameInterval;
-                NumAccumulatedFrames++;
-                if (NumAccumulatedFrames > FPS_NUM_FRAMES_TO_AVERAGE) {
-                    double interval = (AccumulatedFrameInterval / NumAccumulatedFrames);  // averaged
-                    AccumulatedFrameInterval = 0.0;
-                    NumAccumulatedFrames = 0;
-                    LastFrameRate = 1.0f / float(interval > 0.000001 ? interval : 0.00001);
-                }
-
-                V3Vectf viewPos = GetViewMatrixPosition(lastViewMatrix);
-                V3Vectf viewFwd = GetViewMatrixForward(lastViewMatrix);
-                V3Vectf newPos = viewPos + viewFwd * 1.5f;
-                fpsPointTracker.Update(ovr_GetTimeInSeconds(), newPos);
-
-                fontParms_t fp;
-                fp.AlignHoriz = HORIZONTAL_CENTER;
-                fp.Billboard = true;
-                fp.TrackRoll = false;
-                worldFontSurface->DrawTextBillboarded3Df(*defaultFont, fp, fpsPointTracker.GetCurPosition(),
-                        0.8f, V4Vectf(1.0f, 0.0f, 0.0f, 1.0f), "%.1f fps", LastFrameRate);
-                LastFrameTime = currentFrameTime;
-            }
-
-
             // draw info text
-            if (infoTextEndFrame >= vrFrame.FrameNumber)
+            if (self->text.infoTextEndFrame >= self->text.vrFrame.FrameNumber)
             {
                 V3Vectf viewPos = GetViewMatrixPosition(lastViewMatrix);
                 V3Vectf viewFwd = GetViewMatrixForward(lastViewMatrix);
                 V3Vectf viewUp(0.0f, 1.0f, 0.0f);
                 V3Vectf viewLeft = viewUp.Cross(viewFwd);
-                V3Vectf newPos = viewPos + viewFwd * infoTextOffset.z + viewUp * infoTextOffset.y + viewLeft * infoTextOffset.x;
-                infoTextPointTracker.Update(ovr_GetTimeInSeconds(), newPos);
+                V3Vectf newPos = viewPos + viewFwd * self->text.infoTextOffset.z + viewUp * self->text.infoTextOffset.y + viewLeft * self->text.infoTextOffset.x;
+                self->text.infoTextPointTracker.Update(VTimer::Seconds(), newPos);
 
                 fontParms_t fp;
                 fp.AlignHoriz = HORIZONTAL_CENTER;
                 fp.AlignVert = VERTICAL_CENTER;
                 fp.Billboard = true;
                 fp.TrackRoll = false;
-                worldFontSurface->DrawTextBillboarded3Df(*defaultFont, fp, infoTextPointTracker.GetCurPosition(),
-                        1.0f, infoTextColor, infoText.toCString());
+                worldFontSurface->DrawTextBillboarded3Df(*defaultFont, fp, self->text.infoTextPointTracker.GetCurPosition(),
+                        1.0f, self->text.infoTextColor, self->text.infoText.toCString());
             }
 
             // Main loop logic / draw code
             if (!readyToExit)
             {
-                lastViewMatrix = appInterface->onNewFrame(vrFrame);
+                lastViewMatrix = appInterface->onNewFrame(self->text.vrFrame);
+                scene->update();
             }
 
             kernel->ovr_HandleDeviceStateChanges();
@@ -1317,10 +1264,10 @@ struct App::Private
 
             // Report frame counts once a second
             countApplicationFrames++;
-            const double timeNow = floor(ovr_GetTimeInSeconds());
+            const double timeNow = floor(VTimer::Seconds());
             if (timeNow > lastReportTime)
             {
-                vInfo("FPS:" << countApplicationFrames << "GPU time:" << eyeTargets->LogEyeSceneGpuTime.GetTotalTime() << "ms");
+
                 countApplicationFrames = 0;
                 lastReportTime = timeNow;
             }
@@ -1352,8 +1299,8 @@ struct App::Private
 
             shutdownFonts();
 
-            delete dialogTexture;
-            dialogTexture = nullptr;
+            delete self->dialog.dialogTexture;
+            self->dialog.dialogTexture = nullptr;
 
             delete eyeTargets;
             eyeTargets = nullptr;
@@ -1399,10 +1346,9 @@ struct App::Private
         // the back key is special because it has to handle long-press and double-tap
         if (keyCode == AKEYCODE_BACK)
         {
-            //DROIDLOG("BackKey", "BACK KEY PRESSED");
             // back key events, because of special handling for double-tap, short-press and long-press,
             // are handled in AppLocal::VrThreadFunction.
-            backKeyState.HandleEvent(ovr_GetTimeInSeconds(), down, repeatCount);
+            backKeyState.HandleEvent(VTimer::Seconds(), down, repeatCount);
             return;
         }
 
@@ -1449,23 +1395,22 @@ struct App::Private
                     return;
                 }
             }
-            else if (keyCode == AKEYCODE_F && down && repeatCount == 0)
-            {
-                self->setShowFPS(showFPS);
-                return;
-            }
             else if (keyCode == AKEYCODE_COMMA && down && repeatCount == 0)
             {
                 float const IPD_MIN_CM = 0.0f;
                 viewParms.InterpupillaryDistance = std::max(IPD_MIN_CM * 0.01f, viewParms.InterpupillaryDistance - IPD_STEP);
-                self->showInfoText(1.0f, "%.3f", viewParms.InterpupillaryDistance);
+                VString text;
+                text.sprintf("%.3f", viewParms.InterpupillaryDistance);
+                self->text.show(text, 1.0f);
                 return;
             }
             else if (keyCode == AKEYCODE_PERIOD && down && repeatCount == 0)
             {
                 float const IPD_MAX_CM = 8.0f;
                 viewParms.InterpupillaryDistance = std::min(IPD_MAX_CM * 0.01f, viewParms.InterpupillaryDistance + IPD_STEP);
-                self->showInfoText(1.0f, "%.3f", viewParms.InterpupillaryDistance);
+                VString text;
+                text.sprintf("%.3f", viewParms.InterpupillaryDistance);
+                self->text.show(text, 1.0f);
                 return;
             }
         }
@@ -1520,18 +1465,18 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
 
     memset(& d->sensorForNextWarp, 0, sizeof(d->sensorForNextWarp));
 
-    d->sensorForNextWarp.Predicted.Pose.Orientation = VQuatf();
+    d->sensorForNextWarp.Predicted.Orientation = VQuatf();
 
     JniUtils::LoadDevConfig(false);
 
 	// Default time warp parms
-    d->swapParms = InitTimeWarpParms();
+   d->kernel->InitTimeWarpParms();
 
 	// Default EyeParms
     d->vrParms.resolution = 1024;
     d->vrParms.multisamples = 4;
-    d->vrParms.colorFormat = COLOR_8888;
-    d->vrParms.depthFormat = DEPTH_24;
+    d->vrParms.colorFormat = VColor::COLOR_8888;
+    d->vrParms.commonParameterDepth = VEyeBuffer::CommonParameter::DEPTHFORMAT_DEPTH_24;
 
     d->javaObject = d->uiJni->NewGlobalRef(activityObject);
 
@@ -1560,7 +1505,7 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
 
     d->renderThread = new VThread([](void *data)->int{
         App::Private *d = static_cast<App::Private *>(data);
-        d->startRendering();
+        d->run();
         return 0;
     }, d);
 }
@@ -1584,24 +1529,20 @@ App::~App()
     delete d;
 }
 
-void App::startVrThread()
+void App::execute()
 {
     d->renderThread->start();
+    d->eventLoop.send("sync");
+    d->vrThreadSynced = true;
 }
 
-void App::stopVrThread()
+void App::quit()
 {
     d->eventLoop.post("quit");
     bool finished = d->renderThread->wait();
     if (!finished) {
         vWarn("failed to wait for VrThread");
 	}
-}
-
-void App::syncVrThread()
-{
-    d->eventLoop.send("sync");
-    d->vrThreadSynced = true;
 }
 
 VEventLoop &App::eventLoop()
@@ -1670,7 +1611,7 @@ void App::playSound(const char *name)
 /*
  * eyeParms()
  */
-EyeParms App::eyeParms()
+VEyeBuffer::EyeParms App::eyeParms()
 {
     return d->vrParms;
 }
@@ -1678,103 +1619,9 @@ EyeParms App::eyeParms()
 /*
  * SetVrParms()
  */
-void App::setEyeParms(const EyeParms parms)
+void App::setEyeParms(const VEyeBuffer::EyeParms parms)
 {
     d->vrParms = parms;
-}
-
-VR4Matrixf App::matrixInterpolation(const VR4Matrixf & startMatrix, const VR4Matrixf & endMatrix, double t)
-{
-    VR4Matrixf result;
-    VQuat<float> startQuat = (VQuat<float>) startMatrix ;
-    VQuat<float> endQuat = (VQuat<float>) endMatrix ;
-    VQuat<float> quatResult;
-
-	double cosHalfTheta = startQuat.w * endQuat.w +
-						  startQuat.x * endQuat.x +
-						  startQuat.y * endQuat.y +
-						  startQuat.z * endQuat.z;
-
-    if(fabs(cosHalfTheta) >= 1.0)
-	{
-		result = startMatrix;
-
-        V3Vect<float> startTrans(startMatrix.M[0][3], startMatrix.M[1][3], startMatrix.M[2][3]);
-        V3Vect<float> endTrans(endMatrix.M[0][3], endMatrix.M[1][3], endMatrix.M[2][3]);
-
-        V3Vect<float> interpolationVector = startTrans.Lerp(endTrans, t);
-
-		result.M[0][3] = interpolationVector.x;
-		result.M[1][3] = interpolationVector.y;
-		result.M[2][3] = interpolationVector.z;
-		return result;
-	}
-
-
-	bool reverse_q1 = false;
-    if (cosHalfTheta < 0)
-	{
-		reverse_q1 = true;
-		cosHalfTheta = -cosHalfTheta;
-	}
-
-	// Calculate intermediate rotation.
-    const double halfTheta = acos(cosHalfTheta);
-    const double sinHalfTheta = sqrt(1.0 - (cosHalfTheta * cosHalfTheta));
-
-	// if theta = 180 degrees then result is not fully defined
-	// we could rotate around any axis normal to qa or qb
-    if(fabs(sinHalfTheta) < 0.001)
-	{
-		if (!reverse_q1)
-		{
-            quatResult.w = (1 - t) * startQuat.w + t * endQuat.w;
-            quatResult.x = (1 - t) * startQuat.x + t * endQuat.x;
-            quatResult.y = (1 - t) * startQuat.y + t * endQuat.y;
-            quatResult.z = (1 - t) * startQuat.z + t * endQuat.z;
-		}
-		else
-		{
-            quatResult.w = (1 - t) * startQuat.w - t * endQuat.w;
-            quatResult.x = (1 - t) * startQuat.x - t * endQuat.x;
-            quatResult.y = (1 - t) * startQuat.y - t * endQuat.y;
-            quatResult.z = (1 - t) * startQuat.z - t * endQuat.z;
-		}
-        result = (VR4Matrixf) quatResult;
-	}
-	else
-	{
-
-        const double A = sin((1 - t) * halfTheta) / sinHalfTheta;
-        const double B = sin(t *halfTheta) / sinHalfTheta;
-		if (!reverse_q1)
-		{
-			quatResult.w =  A * startQuat.w + B * endQuat.w;
-			quatResult.x =  A * startQuat.x + B * endQuat.x;
-			quatResult.y =  A * startQuat.y + B * endQuat.y;
-			quatResult.z =  A * startQuat.z + B * endQuat.z;
-		}
-		else
-		{
-			quatResult.w =  A * startQuat.w - B * endQuat.w;
-			quatResult.x =  A * startQuat.x - B * endQuat.x;
-			quatResult.y =  A * startQuat.y - B * endQuat.y;
-			quatResult.z =  A * startQuat.z - B * endQuat.z;
-		}
-
-        result = (VR4Matrixf) quatResult;
-	}
-
-    V3Vect<float> startTrans(startMatrix.M[0][3], startMatrix.M[1][3], startMatrix.M[2][3]);
-    V3Vect<float> endTrans(endMatrix.M[0][3], endMatrix.M[1][3], endMatrix.M[2][3]);
-
-    V3Vect<float> interpolationVector = startTrans.Lerp(endTrans, t);
-
-	result.M[0][3] = interpolationVector.x;
-	result.M[1][3] = interpolationVector.y;
-	result.M[2][3] = interpolationVector.z;
-
-	return result;
 }
 
 OvrGuiSys & App::guiSys()
@@ -1855,7 +1702,7 @@ void App::setLastViewMatrix(VR4Matrixf const & m)
     d->lastViewMatrix = m;
 }
 
-EyeParms & App::vrParms()
+VEyeBuffer::EyeParms & App::vrParms()
 {
     return d->vrParms;
 }
@@ -1914,37 +1761,14 @@ VKernel* App::kernel()
 
 SurfaceTexture * App::dialogTexture()
 {
-    return d->dialogTexture;
+    return dialog.dialogTexture;
 }
 
-ovrTimeWarpParms const & App::swapParms() const
-{
-    return d->swapParms;
-}
 
-ovrTimeWarpParms & App::swapParms()
-{
-    return d->swapParms;
-}
 
 ovrSensorState const & App::sensorForNextWarp() const
 {
     return d->sensorForNextWarp;
-}
-
-void App::setShowFPS(bool const show)
-{
-    bool wasShowing = d->showFPS;
-    d->showFPS = show;
-    if (!wasShowing && d->showFPS)
-	{
-        d->fpsPointTracker.Reset();
-	}
-}
-
-bool App::showFPS() const
-{
-    return d->showFPS;
 }
 
 VMainActivity *App::appInterface()
@@ -1960,37 +1784,6 @@ VrViewParms const &	App::vrViewParms() const
 void App::setVrViewParms(VrViewParms const & parms)
 {
     d->viewParms = parms;
-}
-
-void App::showInfoText(float const duration, const char * fmt, ...)
-{
-	char buffer[1024];
-	va_list args;
-    va_start(args, fmt);
-    vsnprintf(buffer, sizeof(buffer), fmt, args);
-    va_end(args);
-    d->infoText = buffer;
-    d->infoTextColor = V4Vectf(1.0f);
-    d->infoTextOffset = V3Vectf(0.0f, 0.0f, 1.5f);
-    d->infoTextPointTracker.Reset();
-    d->infoTextEndFrame = d->vrFrame.FrameNumber + (long long)(duration * 60.0f) + 1;
-}
-
-void App::showInfoText(float const duration, V3Vectf const & offset, V4Vectf const & color, const char * fmt, ...)
-{
-	char buffer[1024];
-	va_list args;
-    va_start(args, fmt);
-    vsnprintf(buffer, sizeof(buffer), fmt, args);
-    va_end(args);
-    d->infoText = buffer;
-    d->infoTextColor = color;
-    if (offset != d->infoTextOffset || d->infoTextEndFrame < d->vrFrame.FrameNumber)
-	{
-        d->infoTextPointTracker.Reset();
-	}
-    d->infoTextOffset = offset;
-    d->infoTextEndFrame = d->vrFrame.FrameNumber + (long long)(duration * 60.0f) + 1;
 }
 
 KeyState & App::backKeyState()
@@ -2013,8 +1806,19 @@ void App::recenterYaw(const bool showBlack)
     vInfo("AppLocal::RecenterYaw");
     if (showBlack)
 	{
-        const ovrTimeWarpParms warpSwapBlackParms = InitTimeWarpParms(WARP_INIT_BLACK);
-        d->kernel->doSmooth(&warpSwapBlackParms);
+        //const ovrTimeWarpParms warpSwapBlackParms = d->kernel->InitTimeWarpParms(WARP_INIT_BLACK);
+        //d->kernel->doSmooth(&warpSwapBlackParms);
+        d->kernel->InitTimeWarpParms();
+        d->kernel->setSmoothOption( VK_INHIBIT_SRGB_FB | VK_FLUSH | VK_IMAGE);
+        d->kernel->setSmoothProgram( VK_DEFAULT);
+        for ( int eye = 0; eye < 2; eye++ )
+        {
+           d->kernel->setSmoothEyeTexture(eye,0,0);		// default replaced with a black texture
+        }
+
+
+        d->kernel->doSmooth();
+
 
 	}
     d->kernel->ovr_RecenterYaw();
@@ -2045,13 +1849,6 @@ long long App::recenterYawFrameStart() const
     return d->recenterYawFrameStart;
 }
 
-void ShowFPS(void * appPtr, const char * cmd) {
-	int show = 0;
-    sscanf(cmd, "%i", &show);
-    OVR_ASSERT(appPtr != nullptr);	// something changed / broke in the OvrConsole code if this is nullptr
-    ((App*)appPtr)->setShowFPS(show != 0);
-}
-
 // Debug tool to draw outlines of a 3D bounds
 //void App::drawBounds( const V3Vectf &mins, const V3Vectf &maxs, const VR4Matrixf &mvp, const V3Vectf &color )
 //{
@@ -2069,50 +1866,14 @@ void ShowFPS(void * appPtr, const char * cmd) {
 //    glOperation.glBindVertexArrayOES_( 0 );
 //}
 
-void App::drawDialog( const VR4Matrixf & mvp )
-{
-    // draw the pop-up dialog
-    const float now = ovr_GetTimeInSeconds();
-    if ( now >= d->dialogStopSeconds )
-    {
-        return;
-    }
-    const VR4Matrixf dialogMvp = mvp * d->dialogMatrix;
-
-    const float fadeSeconds = 0.5f;
-    const float f = now - ( d->dialogStopSeconds - fadeSeconds );
-    const float clampF = f < 0.0f ? 0.0f : f;
-    const float alpha = 1.0f - clampF;
-
-    drawPanel( d->dialogTexture->textureId, dialogMvp, alpha );
-}
-
-void App::drawPanel( const GLuint externalTextureId, const VR4Matrixf & dialogMvp, const float alpha )
-{
-    const VGlShader & prog = d->externalTextureProgram2;
-    glUseProgram( prog.program );
-    glUniform4f(prog.uniformColor, 1, 1, 1, alpha );
-
-    glUniformMatrix4fv(prog.uniformTexMatrix, 1, GL_FALSE, VR4Matrixf::Identity().Transposed().M[0]);
-    glUniformMatrix4fv(prog.uniformModelViewProMatrix, 1, GL_FALSE, dialogMvp.Transposed().M[0] );
-
-    // It is important that panels write to destination alpha, or they
-    // might get covered by an overlay plane/cube in TimeWarp.
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_EXTERNAL_OES, externalTextureId);
-    glEnable( GL_BLEND );
-    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-    d->panelGeometry.drawElements();
-    glDisable( GL_BLEND );
-    glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0 );	// don't leave it bound
-}
-
 void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const int numPresents )
 {
+
+
     VGlOperation glOperation;
     // update vr lib systems after the app frame, but before rendering anything
-    guiSys().frame( this, d->vrFrame, vrMenuMgr(), defaultFont(), menuFontSurface(), centerViewMatrix );
-    gazeCursor().Frame( centerViewMatrix, d->vrFrame.DeltaSeconds );
+    guiSys().frame( this, text.vrFrame, vrMenuMgr(), defaultFont(), menuFontSurface(), centerViewMatrix );
+    gazeCursor().Frame( centerViewMatrix, text.vrFrame.DeltaSeconds );
 
     menuFontSurface().Finish( centerViewMatrix );
     worldFontSurface().Finish( centerViewMatrix );
@@ -2124,7 +1885,7 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
     // Doing this dynamically based just on time causes visible flickering at the
     // periphery when the fov is increased, so only do it if minimumVsyncs is set.
     const float fovDegrees = d->kernel->device->eyeDisplayFov[0] +
-            ( ( d->swapParms.MinimumVsyncs > 1 ) ? 10.0f : 0.0f ) +
+            ( ( d->kernel->m_minimumVsyncs > 1 ) ? 10.0f : 0.0f ) +
             ( ( !d->showVignette ) ? 5.0f : 0.0f );
 
     // DisplayMonoMode uses a single eye rendering for speed improvement
@@ -2172,7 +1933,7 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
                 d->calibrationLinesDrawn = false;
             }
 
-            drawDialog( mvp );
+            dialog.draw( panel, mvp );
 
             gazeCursor().Render( eye, mvp );
 
@@ -2194,16 +1955,18 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
     // This eye set is complete, use it now.
     if ( numPresents > 0 )
     {
-        const CompletedEyes eyes = d->eyeTargets->GetCompletedEyes();
+        const VEyeBuffer::CompletedEyes eyes = d->eyeTargets->GetCompletedEyes();
 
-        for ( int eye = 0; eye < MAX_WARP_EYES; eye++ )
-        {
-            d->swapParms.Images[eye][0].TexCoordsFromTanAngles = NervGear::VR4Matrix<float>::TanAngleMatrixFromFov( fovDegrees );
-            d->swapParms.Images[eye][0].TexId = eyes.Textures[d->renderMonoMode ? 0 : eye ];
-            d->swapParms.Images[eye][0].Pose = d->sensorForNextWarp.Predicted;
+        for ( int eye = 0; eye < 2; eye++ )
+        {            
+           d->kernel->m_texMatrix[eye][0] = VR4Matrixf::TanAngleMatrixFromFov( fovDegrees );
+           d->kernel->m_texId[eye][0] = eyes.textures[d->renderMonoMode ? 0 : eye ];
+           d->kernel->m_pose[eye][0] = d->sensorForNextWarp.Predicted;
+          // d->kernel->m_smoothProgram = ChromaticAberrationCorrection(glOperation) ? WP_CHROMATIC : WP_SIMPLE;
+
         }
 
-        d->kernel->doSmooth(&d->swapParms);
+        d->kernel->doSmooth();
 
     }
 }
@@ -2238,7 +2001,7 @@ void App::drawScreenMask( const VR4Matrixf & mvp, const float fadeFracX, const f
 
     if ( d->fadedScreenMaskSquare.vertexArrayObject == 0 )
     {
-        d->fadedScreenMaskSquare.createScreenMaskSquare( fadeFracX, fadeFracY );
+        d->fadedScreenMaskSquare.createScreenQuad( fadeFracX, fadeFracY );
     }
 
     glColorMask( 0.0f, 0.0f, 0.0f, 1.0f );

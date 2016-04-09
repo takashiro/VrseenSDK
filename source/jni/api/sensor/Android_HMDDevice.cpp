@@ -110,7 +110,7 @@ bool HMDDeviceCreateDesc::UpdateMatchedCandidate(const DeviceCreateDesc& other,
                                                  bool* newDeviceFlag)
 {
     // This candidate was the the "best fit" to apply sensor DisplayInfo to.
-    OVR_ASSERT(other.Type == Device_HMD);
+    vAssert(other.Type == Device_HMD);
 
     const HMDDeviceCreateDesc& s2 = (const HMDDeviceCreateDesc&) other;
 

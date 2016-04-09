@@ -12,7 +12,6 @@ Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
 
 #include "MetaDataManager.h"
 #include "VAlgorithm.h"
-#include "Android/LogUtils.h"
 
 #include "VDir.h"
 #include "VPath.h"
@@ -52,7 +51,7 @@ static bool OvrMetaDatumIdComparator( const OvrMetaDatum * a, const OvrMetaDatum
 
 void OvrMetaData::initFromDirectory( const char * relativePath, const VArray< VString > & searchPaths, const OvrMetaDataFileExtensions & fileExtensions )
 {
-	LOG( "OvrMetaData::InitFromDirectory( %s )", relativePath );
+	vInfo("OvrMetaData::InitFromDirectory( " << relativePath << " )");
 	// Find all the files - checks all search paths
 //	StringHash< VString > uniqueFileList = RelativeDirectoryFileList( searchPaths, relativePath );
     VArray< VString > uniqueFileList = VDir::Search(searchPaths, relativePath);
@@ -68,7 +67,7 @@ void OvrMetaData::initFromDirectory( const char * relativePath, const VArray< VS
 	//Will be replaced if definition found in loaded metadata
 	currentCategory.label = currentCategory.categoryTag;
 
-	LOG( "OvrMetaData start category: %s", currentCategory.categoryTag.toCString() );
+	vInfo("OvrMetaData start category: " << currentCategory.categoryTag);
 	VArray< VString > subDirs;
 	// Grab the categories and loose files
 	for ( int i = 0; i < fileList.length(); i++ )
@@ -100,16 +99,16 @@ void OvrMetaData::initFromDirectory( const char * relativePath, const VArray< VS
                 if ( iter == m_urlToIndex.end() ) {
                     m_urlToIndex.insert(datum->url, dataIndex);
                     m_etaData.append(datum);
-					LOG( "OvrMetaData adding datum %s with index %d to %s", datum->url.toCString(), dataIndex, currentCategory.categoryTag.toCString() );
+					vInfo("OvrMetaData adding datum " << datum->url << " with index " << dataIndex << " to " << currentCategory.categoryTag);
 					// Register with category
 					currentCategory.datumIndicies.append( dataIndex );
                 } else {
-					WARN( "OvrMetaData::InitFromDirectory found duplicate url %s", datum->url.toCString() );
+					vWarn("OvrMetaData::InitFromDirectory found duplicate url " << datum->url);
 				}
 			}
 			else
 			{
-				WARN( "OvrMetaData::InitFromDirectory failed to find %s", s.toCString() );
+				vWarn("OvrMetaData::InitFromDirectory failed to find " << s);
 			}
 		}
 	}
@@ -139,7 +138,7 @@ void OvrMetaData::initFromFileList( const VArray< VString > & fileList, const Ov
 		int catIndex = -1;
         if ( iter == uniqueCategoryList.end() )
 		{
-			LOG( " category: %s", categoryTag.toCString() );
+			vInfo("category: " << categoryTag);
 			Category cat;
 			cat.categoryTag = categoryTag;
 			// The label is the same as the tag by default.
@@ -154,7 +153,7 @@ void OvrMetaData::initFromFileList( const VArray< VString > & fileList, const Ov
             catIndex = iter->second;
 		}
 
-		OVR_ASSERT( catIndex > -1 );
+		vAssert( catIndex > -1 );
         Category & currentCategory = m_categories[catIndex];
 
 		// See if we want this loose-file
@@ -179,14 +178,13 @@ void OvrMetaData::initFromFileList( const VArray< VString > & fileList, const Ov
 			{
                 m_urlToIndex.insert( datum->url, dataIndex );
 				m_etaData.append( datum );
-				LOG( "OvrMetaData::InitFromFileList adding datum %s with index %d to %s", datum->url.toCString(),
-					dataIndex, currentCategory.categoryTag.toCString() );
+                vInfo("OvrMetaData::InitFromFileList adding datum" << datum->url << "with index" << dataIndex << "to" << currentCategory.categoryTag);
 				// Register with category
 				currentCategory.datumIndicies.append( dataIndex );
 			}
 			else
 			{
-				WARN( "OvrMetaData::InitFromFileList found duplicate url %s", datum->url.toCString() );
+				vWarn("OvrMetaData::InitFromFileList found duplicate url " << datum->url);
 			}
 		}
 	}
@@ -215,7 +213,7 @@ VJson LoadPackageMetaFile( const char* metaFile )
     apk.read(assetsMetaFile, buffer, bufferLength);
     if ( buffer != nullptr )
 	{
-		WARN( "LoadPackageMetaFile failed to read %s", assetsMetaFile.toCString() );
+		vWarn("LoadPackageMetaFile failed to read " << assetsMetaFile);
 	}
     return VJson::Parse( static_cast<char*>(buffer) );
 }
@@ -225,7 +223,7 @@ VJson OvrMetaData::createOrGetStoredMetaFile( const VString &appFileStoragePath,
 	m_filePath = appFileStoragePath;
 	m_filePath += metaFile;
 
-	LOG( "CreateOrGetStoredMetaFile FilePath: %s", m_filePath.toCString() );
+	vInfo("CreateOrGetStoredMetaFile FilePath: " << m_filePath);
 
     VJson dataFile = VJson::Load(m_filePath);
     if (dataFile.isNull())
@@ -237,7 +235,7 @@ VJson OvrMetaData::createOrGetStoredMetaFile( const VString &appFileStoragePath,
         dataFile = VJson::Load(m_filePath);
         if ( dataFile.isNull() )
 		{
-			WARN( "OvrMetaData failed to load JSON meta file: %s", metaFile );
+			vWarn("OvrMetaData failed to load JSON meta file: " << metaFile);
 		}
     } else {
         vInfo("OvrMetaData::CreateOrGetStoredMetaFile found" << m_filePath);
@@ -276,7 +274,7 @@ void OvrMetaData::initFromDirectoryMergeMeta( const char * relativePath, const V
 	const OvrMetaDataFileExtensions & fileExtensions, const char * metaFile, const char * packageName )
 {
     VDir vdir;
-	LOG( "OvrMetaData::InitFromDirectoryMergeMeta" );
+	vInfo("OvrMetaData::InitFromDirectoryMergeMeta");
 
 	VString appFileStoragePath = "/data/data/";
 	appFileStoragePath += packageName;
@@ -284,7 +282,7 @@ void OvrMetaData::initFromDirectoryMergeMeta( const char * relativePath, const V
 
 	m_filePath = appFileStoragePath + metaFile;
 
-	OVR_ASSERT( vdir.contains( m_filePath, R_OK ) );
+	vAssert( vdir.contains( m_filePath, R_OK ) );
 
     initFromDirectory( relativePath, searchPaths, fileExtensions );
 
@@ -340,7 +338,7 @@ void OvrMetaData::processRemoteMetaFile( const char * metaFileString, const int 
             if ( iter == CurrentCategoriesSet.end() )
 			{
 				const int targetIndex = startIndex + remoteIndex;
-				LOG( "OvrMetaData::ProcessRemoteMetaFile merging %s into category index %d", remoteCat.categoryTag.toCString(), targetIndex );
+				vInfo("OvrMetaData::ProcessRemoteMetaFile merging " << remoteCat.categoryTag << " into category index " << targetIndex);
 				if ( startIndex >= 0 && startIndex < m_categories.length() )
 				{
 					m_categories.insert( m_categories.begin()+targetIndex, remoteCat );
@@ -352,7 +350,7 @@ void OvrMetaData::processRemoteMetaFile( const char * metaFileString, const int 
 			}
 			else
 			{
-				LOG( "OvrMetaData::ProcessRemoteMetaFile discarding duplicate category %s", remoteCat.categoryTag.toCString() );
+				vInfo("OvrMetaData::ProcessRemoteMetaFile discarding duplicate category " << remoteCat.categoryTag);
 			}
 		}
 
@@ -365,13 +363,13 @@ void OvrMetaData::processRemoteMetaFile( const char * metaFileString, const int 
 		// Serialize the new metadata
 		VJson dataFile = metaDataToJson();
         if (dataFile.isNull()) {
-			FAIL( "OvrMetaData::ProcessMetaData failed to generate JSON meta file" );
+			vFatal("OvrMetaData::ProcessMetaData failed to generate JSON meta file");
 		}
 
         std::ofstream fp(m_filePath.toUtf8(), std::ios::binary);
 		fp << dataFile;
 
-		LOG( "OvrMetaData::ProcessRemoteMetaFile updated %s", m_filePath.toCString() );
+		vInfo("OvrMetaData::ProcessRemoteMetaFile updated " << m_filePath);
 	}
 }
 
@@ -402,7 +400,7 @@ void OvrMetaData::processMetaData( const VJsonObject &dataFile, const VArray< VS
     }
     else
     {
-        WARN( "ProcessMetaData LoadPackageMetaFile failed for %s", metaFile );
+        vWarn("ProcessMetaData LoadPackageMetaFile failed for " << metaFile);
     }
 
     // Read in the stored data - overriding any found in the package
@@ -429,7 +427,7 @@ void OvrMetaData::processMetaData( const VJsonObject &dataFile, const VArray< VS
             }
             else
             {
-                WARN( "OvrMetaData::ProcessMetaData discarding empty %s", cat.categoryTag.toCString() );
+                vWarn("OvrMetaData::ProcessMetaData discarding empty " << cat.categoryTag);
             }
         }
         std::swap(finalCategories, m_categories);
@@ -439,7 +437,7 @@ void OvrMetaData::processMetaData( const VJsonObject &dataFile, const VArray< VS
 	VJson newDataFile = metaDataToJson();
     if ( newDataFile.isNull() )
 	{
-		FAIL( "OvrMetaData::ProcessMetaData failed to generate JSON meta file" );
+		vFatal("OvrMetaData::ProcessMetaData failed to generate JSON meta file");
 	}
 
     std::ofstream fp(m_filePath.toUtf8(), std::ios::binary);
@@ -465,7 +463,7 @@ void OvrMetaData::reconcileMetaData( VStringHash< OvrMetaDatum * > & storedMetaD
         OvrMetaDatum * storedDatum = storedIter->second;
 		if ( isRemote( storedDatum ) )
 		{
-			LOG( "ReconcileMetaData metadata adding remote %s", storedDatum->url.toCString() );
+			vInfo("ReconcileMetaData metadata adding remote " << storedDatum->url);
 			sortedEntries.append( storedDatum );
 		}
 	}
@@ -490,7 +488,7 @@ void OvrMetaData::dedupMetaData( const VArray< OvrMetaDatum * > & existingData, 
         if ( iter != newData.end() )
         {
             OvrMetaDatum * storedDatum = iter->second;
-            LOG( "DedupMetaData metadata for %s", storedDatum->url.toCString() );
+            vInfo("DedupMetaData metadata for " << storedDatum->url);
             std::swap(storedDatum->tags, metaDatum->tags);
             swapExtendedData( storedDatum, metaDatum );
             newData.remove( iter->first );
@@ -514,7 +512,7 @@ void OvrMetaData::reconcileCategories( VArray< Category > & storedCategories )
 	Category favorites = storedCategories.at( 0 );
 	if ( favorites.categoryTag != FAVORITES_TAG )
 	{
-		WARN( "OvrMetaData::ReconcileCategories failed to find expected category order -- missing assets/meta.json?" );
+		vWarn("OvrMetaData::ReconcileCategories failed to find expected category order -- missing assets/meta.json?");
 	}
 
 	finalCategories.append( favorites );
@@ -523,7 +521,7 @@ void OvrMetaData::reconcileCategories( VArray< Category > & storedCategories )
 	for ( int i = 0; i < storedCategories.length(); ++i )
 	{
 		const Category & storedCategory = storedCategories.at( i );
-		LOG( "OvrMetaData::ReconcileCategories storedCategory: %s", storedCategory.categoryTag.toCString() );
+		vInfo("OvrMetaData::ReconcileCategories storedCategory: " << storedCategory.categoryTag);
         StoredCategoryMap.insert( storedCategory.categoryTag, true );
 	}
 
@@ -535,7 +533,7 @@ void OvrMetaData::reconcileCategories( VArray< Category > & storedCategories )
 
         if ( iter == StoredCategoryMap.end() )
 		{
-			LOG( "OvrMetaData::ReconcileCategories adding %s", readInCategory.categoryTag.toCString() );
+			vInfo("OvrMetaData::ReconcileCategories adding " << readInCategory.categoryTag);
 			finalCategories.append( readInCategory );
 		}
 	}
@@ -544,7 +542,7 @@ void OvrMetaData::reconcileCategories( VArray< Category > & storedCategories )
 	for ( int i = 1; i < storedCategories.length(); ++i )
 	{
 		const  Category & storedCat = storedCategories.at( i );
-		LOG( "OvrMetaData::ReconcileCategories adding stored category %s", storedCat.categoryTag.toCString() );
+		vInfo("OvrMetaData::ReconcileCategories adding stored category " << storedCat.categoryTag);
 		finalCategories.append( storedCat );
 	}
 
@@ -584,7 +582,7 @@ void OvrMetaData::extractCategories(const VJsonObject &dataFile, VArray< Categor
 
 				if ( !exists )
 				{
-					LOG( "Extracting category: %s", extractedCategory.categoryTag.toCString() );
+					vInfo("Extracting category: " << extractedCategory.categoryTag);
 					outCategories.append( extractedCategory );
 				}
 			}
@@ -622,7 +620,7 @@ void OvrMetaData::extractMetaData(const VJsonObject &dataFile, const VArray< VSt
 					}
 				}
 
-				OVR_ASSERT( !metaDatum->tags.isEmpty() );
+				vAssert( !metaDatum->tags.isEmpty() );
 
                 const VString relativeUrl = datum.value( URL_INNER ).toString();
 				metaDatum->url = relativeUrl;
@@ -647,7 +645,7 @@ void OvrMetaData::extractMetaData(const VJsonObject &dataFile, const VArray< VSt
 				}
 
 				extractExtendedData( datum, *metaDatum );
-				LOG( "OvrMetaData::ExtractMetaData adding datum %s", metaDatum->url.toCString() );
+				vInfo("OvrMetaData::ExtractMetaData adding datum " << metaDatum->url);
 
                 VStringHash< OvrMetaDatum * >::Iterator iter = outMetaData.find( metaDatum->url );
                 if ( iter == outMetaData.end() )
@@ -697,7 +695,7 @@ void OvrMetaData::extractRemoteMetaData( const VJson &dataFile, VStringHash< Ovr
 					}
 				}
 
-				OVR_ASSERT( !metaDatum->tags.isEmpty() );
+				vAssert( !metaDatum->tags.isEmpty() );
 
                 metaDatum->url = jsonDatum.value( URL_INNER ).toString();
 				extractExtendedData( jsonDatum, *metaDatum );
@@ -732,12 +730,12 @@ void OvrMetaData::regenerateCategoryIndices()
 		OvrMetaDatum & metaDatum = *m_etaData.at( metaDataIndex );
 		VArray< VString > & tags = metaDatum.tags;
 
-		OVR_ASSERT( metaDatum.tags.length() > 0 );
+		vAssert( metaDatum.tags.length() > 0 );
 		if ( tags.length() == 1 )
 		{
 			if ( tags.at( 0 ) == FAVORITES_TAG )
 			{
-				LOG( "Removing broken metadatum %s", metaDatum.url.toCString() );
+				vInfo("Removing broken metadatum " << metaDatum.url);
 				m_etaData.removeAtUnordered( metaDataIndex );
 			}
 		}
@@ -749,11 +747,11 @@ void OvrMetaData::regenerateCategoryIndices()
 		OvrMetaDatum & datum = *m_etaData.at( metaDataIndex );
 		VArray< VString > & tags = datum.tags;
 
-		OVR_ASSERT( tags.length() > 0 );
+		vAssert( tags.length() > 0 );
 
 		if ( tags.length() == 1 )
 		{
-			OVR_ASSERT( tags.at( 0 ) != FAVORITES_TAG );
+			vAssert( tags.at( 0 ) != FAVORITES_TAG );
 		}
 
 
@@ -769,7 +767,7 @@ void OvrMetaData::regenerateCategoryIndices()
 			{
 				if ( Category * category = getCategory( tag ) )
 				{
-					LOG( "OvrMetaData inserting index %d for datum %s to %s", metaDataIndex, datum.url.toCString(), category->categoryTag.toCString() );
+					vInfo("OvrMetaData inserting index " << metaDataIndex << " for datum " << datum.url << " to " << category->categoryTag);
 
 					// fix the metadata index itself
 					datum.id = metaDataIndex;
@@ -779,8 +777,8 @@ void OvrMetaData::regenerateCategoryIndices()
 				}
 				else
 				{
-					WARN( "OvrMetaData::RegenerateCategoryIndices failed to find category with tag %s for datum %s at index %d",
-						tag.toCString(), datum.url.toCString(), metaDataIndex );
+                    vWarn("OvrMetaData::RegenerateCategoryIndices failed to find category with tag"
+                          << tag << "for datum" << datum.url << "at index" << metaDataIndex);
 				}
 			}
 		}
@@ -804,7 +802,7 @@ VJson OvrMetaData::metaDataToJson() const
 		const Category & cat = m_categories.at( c );
         catObject.insert(TAG, cat.categoryTag);
         catObject.insert(LABEL, cat.label);
-		LOG( "OvrMetaData::MetaDataToJson adding category %s", cat.categoryTag.toCString() );
+		vInfo("OvrMetaData::MetaDataToJson adding category " << cat.categoryTag);
         newCategoriesObject.append(std::move(catObject));
 	}
     DataFile.insert(CATEGORIES, std::move(newCategoriesObject));
@@ -819,7 +817,7 @@ VJson OvrMetaData::metaDataToJson() const
         VJsonObject datumObject;
         extendedDataToJson(metaDatum, datumObject);
         datumObject.insert(URL_INNER, metaDatum.url);
-		LOG( "OvrMetaData::MetaDataToJson adding datum url %s", metaDatum.url.toCString() );
+		vInfo("OvrMetaData::MetaDataToJson adding datum url " << metaDatum.url);
 
         VJsonArray newTagsObject;
         for (const VString &tag : metaDatum.tags) {
@@ -842,10 +840,10 @@ TagAction OvrMetaData::toggleTag( OvrMetaDatum * metaDatum, const VString & newT
     VJson DataFile = VJson::Load(m_filePath);
     if ( DataFile.isNull() )
 	{
-		FAIL( "OvrMetaData failed to load JSON meta file: %s", m_filePath.toCString() );
+		vFatal("OvrMetaData failed to load JSON meta file: " << m_filePath);
 	}
 
-	OVR_ASSERT( metaDatum );
+	vAssert( metaDatum );
 
 	// First update the local data
 	TagAction action = TAG_ERROR;
@@ -856,10 +854,10 @@ TagAction OvrMetaData::toggleTag( OvrMetaDatum * metaDatum, const VString & newT
 			// Handle case which leaves us with no tags - ie. broken state
 			if ( metaDatum->tags.length() < 2 )
 			{
-				WARN( "ToggleTag attempt to remove only tag: %s on %s", newTag.toCString(), metaDatum->url.toCString() );
+				vWarn("ToggleTag attempt to remove only tag: " << newTag << " on " << metaDatum->url);
 				return TAG_ERROR;
 			}
-			LOG( "ToggleTag TAG_REMOVED tag: %s on %s", newTag.toCString(), metaDatum->url.toCString() );
+			vInfo("ToggleTag TAG_REMOVED tag: " << newTag << " on " << metaDatum->url);
 			action = TAG_REMOVED;
 			metaDatum->tags.removeAt( t );
 			break;
@@ -868,7 +866,7 @@ TagAction OvrMetaData::toggleTag( OvrMetaDatum * metaDatum, const VString & newT
 
 	if ( action == TAG_ERROR )
 	{
-		LOG( "ToggleTag TAG_ADDED tag: %s on %s", newTag.toCString(), metaDatum->url.toCString() );
+		vInfo("ToggleTag TAG_ADDED tag: " << newTag << " on " << metaDatum->url);
 		metaDatum->tags.append( newTag );
 		action = TAG_ADDED;
 	}
@@ -920,7 +918,7 @@ OvrMetaData::Category * OvrMetaData::getCategory( const VString & categoryName )
 
 const OvrMetaDatum & OvrMetaData::getMetaDatum( const int index ) const
 {
-	OVR_ASSERT( index >= 0 && index < m_etaData.length() );
+	vAssert( index >= 0 && index < m_etaData.length() );
 	return *m_etaData.at( index );
 }
 
@@ -931,9 +929,9 @@ bool OvrMetaData::getMetaData( const Category & category, VArray< const OvrMetaD
 	for ( int i = 0; i < numPanos; ++i )
 	{
 		const int metaDataIndex = category.datumIndicies.at( i );
-		OVR_ASSERT( metaDataIndex >= 0 && metaDataIndex < m_etaData.length() );
+		vAssert( metaDataIndex >= 0 && metaDataIndex < m_etaData.length() );
 		//const OvrMetaDatum * panoData = &MetaData.At( metaDataIndex );
-        //LOG( "Getting MetaData %d title %s from category %s", metaDataIndex, panoData->Title.toCString(), category.CategoryName.toCString() );
+        //vInfo("Getting MetaData " << metaDataIndex << " title " << panoData->Title << " from category " << category.CategoryName);
 		outMetaData.append( m_etaData.at( metaDataIndex ) );
 	}
 	return true;
@@ -967,7 +965,7 @@ bool OvrMetaData::shouldAddFile( const char * filename, const OvrMetaDataFileExt
 
 void OvrMetaData::setCategoryDatumIndicies( const int index, const VArray< int >& datumIndicies )
 {
-	OVR_ASSERT( index < m_categories.length() );
+	vAssert( index < m_categories.length() );
 
 	if ( index < m_categories.length() )
 	{

@@ -26,6 +26,9 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "CinemaStrings.h"
 #include "BitmapFont.h"
 #include "Native.h"
+#include "core/VTimer.h"
+
+#include <VEyeBuffer.h>
 
 namespace OculusCinema {
 
@@ -101,25 +104,25 @@ MovieSelectionView::~MovieSelectionView()
 
 void MovieSelectionView::OneTimeInit( const VString & launchIntent )
 {
-	LOG( "MovieSelectionView::OneTimeInit" );
+	vInfo("MovieSelectionView::OneTimeInit");
 
-	const double start = ovr_GetTimeInSeconds();
+    const double start = VTimer::Seconds();
 
     CreateMenu( vApp, vApp->vrMenuMgr(), vApp->defaultFont() );
 
 	SetCategory( CATEGORY_TRAILERS );
 
-	LOG( "MovieSelectionView::OneTimeInit %3.1f seconds", ovr_GetTimeInSeconds() - start );
+    vInfo("MovieSelectionView::OneTimeInit" << (VTimer::Seconds() - start) << "seconds");
 }
 
 void MovieSelectionView::OneTimeShutdown()
 {
-	LOG( "MovieSelectionView::OneTimeShutdown" );
+	vInfo("MovieSelectionView::OneTimeShutdown");
 }
 
 void MovieSelectionView::OnOpen()
 {
-	LOG( "OnOpen" );
+	vInfo("OnOpen");
 	CurViewState = VIEWSTATE_OPEN;
 
 	LastMovieDisplayed = NULL;
@@ -138,7 +141,7 @@ void MovieSelectionView::OnOpen()
 
 	Cinema.sceneMgr.LightsOn( 1.5f );
 
-	const double now = ovr_GetTimeInSeconds();
+    const double now = VTimer::Seconds();
 	SelectionFader.Set( now, 0, now + 0.1, 1.0f );
 
 	if ( Cinema.inLobby )
@@ -170,12 +173,12 @@ void MovieSelectionView::OnOpen()
 
 	SwipeHintComponent::ShowSwipeHints = true;
 
-    vApp->swapParms().WarpProgram = WP_CHROMATIC;
+    vApp->kernel()->setSmoothProgram( VK_DEFAULT_CB);
 }
 
 void MovieSelectionView::OnClose()
 {
-	LOG( "OnClose" );
+	vInfo("OnClose");
 	ShowTimer = false;
 	CurViewState = VIEWSTATE_CLOSED;
 	CenterRoot->SetVisible( false );
@@ -197,7 +200,7 @@ bool MovieSelectionView::OnKeyEvent( const int keyCode, const KeyState::eKeyEven
 			switch ( eventType )
 			{
 				case KeyState::KEY_EVENT_DOUBLE_TAP:
-					LOG( "KEY_EVENT_DOUBLE_TAP" );
+					vInfo("KEY_EVENT_DOUBLE_TAP");
 					return true;
 					break;
 				default:
@@ -562,7 +565,7 @@ void MovieSelectionView::UpdateMenuPosition()
 
 void MovieSelectionView::SelectMovie()
 {
-	LOG( "SelectMovie");
+	vInfo("SelectMovie");
 
 	// ignore selection while repositioning screen
 	if ( RepositionScreen )
@@ -594,7 +597,7 @@ void MovieSelectionView::SelectMovie()
 
 void MovieSelectionView::StartTimer()
 {
-	const double now = ovr_GetTimeInSeconds();
+    const double now = VTimer::Seconds();
 	TimerStartTime = now;
 	TimerValue = -1;
 	ShowTimer = true;
@@ -613,7 +616,7 @@ const MovieDef *MovieSelectionView::GetSelectedMovie() const
 
 void MovieSelectionView::SetMovieList( const VArray<const MovieDef *> &movies, const MovieDef *nextMovie )
 {
-    LOG( "SetMovieList: %d movies", movies.size() );
+    vInfo("SetMovieList:" << movies.size() << "movies");
 
 	MovieList = movies;
 	DeletePointerArray( MovieBrowserItems );
@@ -621,7 +624,7 @@ void MovieSelectionView::SetMovieList( const VArray<const MovieDef *> &movies, c
 	{
 		const MovieDef *movie = MovieList[ i ];
 
-		LOG( "AddMovie: %s", movie->Filename.toCString() );
+		vInfo("AddMovie:" << movie->Filename);
 
 		CarouselItem *item = new CarouselItem();
 		item->texture 		= movie->Poster;
@@ -681,7 +684,7 @@ void MovieSelectionView::SetCategory( const MovieCategory category )
 		}
 	}
 
-	LOG( "SetCategory: %s", Categories[ categoryIndex ].Text.toCString() );
+	vInfo("SetCategory:" << Categories[ categoryIndex ].Text);
 	CurrentCategory = Categories[ categoryIndex ].Category;
     for( uint i = 0; i < Categories.size(); ++i )
 	{
@@ -699,7 +702,7 @@ void MovieSelectionView::SetCategory( const MovieCategory category )
 
 	SetMovieList( Cinema.movieMgr.GetMovieList( CurrentCategory ), NULL );
 
-    LOG( "%d movies added", MovieList.size() );
+    vInfo(MovieList.size() << "movies added");
 }
 
 void MovieSelectionView::UpdateMovieTitle()
@@ -735,7 +738,7 @@ void MovieSelectionView::SelectionHighlighted( bool isHighlighted )
 
 void MovieSelectionView::UpdateSelectionFrame( const VrFrame & vrFrame )
 {
-	const double now = ovr_GetTimeInSeconds();
+    const double now = VTimer::Seconds();
 	if ( !MovieBrowser->HasSelection() )
 	{
 		SelectionFader.Set( now, 0, now + 0.1, 1.0f );
@@ -795,7 +798,7 @@ void MovieSelectionView::SetError( const char *text, bool showSDCard, bool showE
 {
 	ClearError();
 
-	LOG( "SetError: %s", text );
+	vInfo("SetError:" << text);
 	if ( showSDCard )
 	{
 		SDCardMessage->SetVisible( true );
@@ -819,7 +822,7 @@ void MovieSelectionView::SetError( const char *text, bool showSDCard, bool showE
 
 void MovieSelectionView::ClearError()
 {
-	LOG( "ClearError" );
+	vInfo("ClearError");
 	ErrorMessageClicked = false;
 	ErrorMessage->SetVisible( false );
 	SDCardMessage->SetVisible( false );
@@ -843,7 +846,7 @@ VR4Matrixf MovieSelectionView::DrawEyeView( const int eye, const float fovDegree
 VR4Matrixf MovieSelectionView::Frame( const VrFrame & vrFrame )
 {
 	// We want 4x MSAA in the lobby
-    EyeParms eyeParms = vApp->eyeParms();
+    VEyeBuffer::EyeParms eyeParms = vApp->eyeParms();
 	eyeParms.multisamples = 4;
     vApp->setEyeParms( eyeParms );
 
@@ -872,18 +875,18 @@ VR4Matrixf MovieSelectionView::Frame( const VrFrame & vrFrame )
 		// if we finished the movie or have an error, don't resume it, go back to the lobby
 		if ( ErrorShown() )
 		{
-			LOG( "Error closed.  Return to lobby." );
+			vInfo("Error closed.  Return to lobby.");
 			ClearError();
 			Cinema.setMovieSelection( true );
 		}
 		else if ( Cinema.isMovieFinished() )
 		{
-			LOG( "Movie finished.  Return to lobby." );
+			vInfo("Movie finished.  Return to lobby.");
 			Cinema.setMovieSelection( true );
 		}
 		else
 		{
-			LOG( "Resume movie." );
+			vInfo("Resume movie.");
 			Cinema.resumeMovieFromSavedLocation();
 		}
 	}
@@ -911,7 +914,7 @@ VR4Matrixf MovieSelectionView::Frame( const VrFrame & vrFrame )
         if ( !RepositionScreen && !SelectionFrame->GetMenuObject()->isHilighted() )
 		{
 			// outside of screen, so show reposition message
-			const double now = ovr_GetTimeInSeconds();
+            const double now = VTimer::Seconds();
 			float alpha = MoveScreenAlpha.Value( now );
 			if ( alpha > 0.0f )
 			{
@@ -929,7 +932,7 @@ VR4Matrixf MovieSelectionView::Frame( const VrFrame & vrFrame )
 		else
 		{
 			// onscreen, so hide message
-			const double now = ovr_GetTimeInSeconds();
+            const double now = VTimer::Seconds();
 			MoveScreenAlpha.Set( now, -1.0f, now + 1.0f, 1.0f );
 			MoveScreenLabel->SetVisible( false );
 		}

@@ -27,7 +27,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "CinemaApp.h"
 #include "VApkFile.h"
 #include "Native.h"
-
+#include "core/VTimer.h"
 
 namespace OculusCinema {
 
@@ -72,27 +72,27 @@ MovieManager::~MovieManager()
 
 void MovieManager::OneTimeInit( const VString &launchIntent )
 {
-	LOG( "MovieManager::OneTimeInit" );
-	const double start = ovr_GetTimeInSeconds();
+	vInfo("MovieManager::OneTimeInit");
+    const double start = VTimer::Seconds();
 
 	LoadMovies();
 
-    LOG( "MovieManager::OneTimeInit: %i movies loaded, %3.1f seconds", Movies.length(), ovr_GetTimeInSeconds() - start );
+    vInfo("MovieManager::OneTimeInit:" << Movies.length() << "movies loaded," << (VTimer::Seconds() - start) << "seconds");
 }
 
 void MovieManager::OneTimeShutdown()
 {
-	LOG( "MovieManager::OneTimeShutdown" );
+	vInfo("MovieManager::OneTimeShutdown");
 }
 
 void MovieManager::LoadMovies()
 {
-	LOG( "LoadMovies" );
+	vInfo("LoadMovies");
 
-	const double start = ovr_GetTimeInSeconds();
+    const double start = VTimer::Seconds();
 
 	VArray<VString> movieFiles = ScanMovieDirectories();
-    LOG( "%i movies scanned, %3.1f seconds", movieFiles.length(), ovr_GetTimeInSeconds() - start );
+    vInfo(movieFiles.length() << "movies scanned," << (VTimer::Seconds() - start) << "seconds");
 
     for( uint i = 0; i < movieFiles.size(); i++ )
 	{
@@ -128,7 +128,7 @@ void MovieManager::LoadMovies()
 		LoadPoster( movie );
 	}
 
-    LOG( "%i movies panels loaded, %3.1f seconds", Movies.length(), ovr_GetTimeInSeconds() - start );
+    vInfo(Movies.length() << "movies panels loaded," << (VTimer::Seconds() - start) << "seconds");
 }
 
 MovieFormat MovieManager::FormatFromString( const VString &formatString ) const
@@ -214,11 +214,11 @@ void MovieManager::ReadMetaData( MovieDef *movie )
             movie->IsEncrypted = metaData.value("encrypted").toBool();
         }
 
-        LOG( "Loaded metadata: %s", filename.toCString() );
+        vInfo("Loaded metadata:" << filename);
 	}
 	else
 	{
-        LOG( "Error loading metadata for %s: %s", filename.toCString(), ( error == NULL ) ? "NULL" : error );
+        vInfo("Error loading metadata for" << filename << ":" << (( error == NULL ) ? "NULL" : error));
 	}
 }
 
@@ -255,7 +255,7 @@ void MovieManager::LoadPoster( MovieDef *movie )
 
 			if ( movie->Poster == 0 )
 			{
-                LOG( "No thumbnail found at %s", posterFilename.toCString() );
+                vInfo("No thumbnail found at" << posterFilename);
 			}
 #endif
 		}
@@ -307,8 +307,8 @@ bool MovieManager::IsSupportedMovieFormat( const VString &extension ) const
 void MovieManager::MoviesInDirectory(VArray<VString> &movies, const VString &dirName) const
 {
     const char *dirNameCStr = dirName.toCString();
-    LOG("scanning directory: %s", dirNameCStr);
-    LOG("scanning started");
+    vInfo("scanning directory:" << dirNameCStr);
+    vInfo("scanning started");
     DIR * dir = opendir(dirNameCStr);
     delete[] dirNameCStr;
 	if ( dir != NULL )
@@ -323,7 +323,7 @@ void MovieManager::MoviesInDirectory(VArray<VString> &movies, const VString &dir
 
 	        if ( fstatat( dirfd( dir ), entry->d_name, &st, 0 ) < 0 )
 	        {
-	        	LOG( "fstatat error on %s: %s", entry->d_name, strerror( errno ) );
+	        	vInfo("fstatat error on" << entry->d_name << ":" << strerror( errno ));
 	            continue;
 	        }
 
@@ -348,7 +348,7 @@ void MovieManager::MoviesInDirectory(VArray<VString> &movies, const VString &dir
 				VString fullpath = dirName;
                 fullpath.append( "/" );
                 fullpath.append( filename );
-                LOG( "Adding movie: %s", fullpath.toCString() );
+                vInfo("Adding movie:" << fullpath);
                 movies.append( fullpath );
 			}
 		}

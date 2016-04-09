@@ -16,6 +16,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "Input.h"		// VrFrame, etc
 #include "BitmapFont.h"
 #include "DebugLines.h"
+#include "sensor/SensorFusion.h"
 
 #include "VLog.h"
 
@@ -341,7 +342,7 @@ void OvrSceneView::UpdateViewMatrix(const VrFrame vrFrame )
 	// latency on stick controls to avoid a bounce-back.
 	YawOffset -= YawVelocity * dt;
 
-	if ( !( vrFrame.OvrStatus & ovrStatus_OrientationTracked ) )
+    if ( !( vrFrame.OvrStatus & Status_OrientationTracked ) )
 	{
 		PitchOffset -= yawSpeed * vrFrame.Input.sticks[1][1] * dt;
 		YawVelocity = yawSpeed * vrFrame.Input.sticks[1][0];
@@ -353,7 +354,7 @@ void OvrSceneView::UpdateViewMatrix(const VrFrame vrFrame )
 
 	// We extract Yaw, Pitch, Roll instead of directly using the orientation
 	// to allow "additional" yaw manipulation with mouse/controller.
-    const VQuatf quat = vrFrame.PoseState.Pose.Orientation;
+    const VQuatf quat = vrFrame.PoseState.Orientation;
 
     quat.GetEulerAngles<VAxis_Y, VAxis_X, VAxis_Z>( &EyeYaw, &EyePitch, &EyeRoll );
 
@@ -362,7 +363,7 @@ void OvrSceneView::UpdateViewMatrix(const VrFrame vrFrame )
 	// If the sensor isn't plugged in, allow right stick up/down
 	// to adjust pitch, which can be useful for debugging.  Never
 	// do this when head tracking
-	if ( !( vrFrame.OvrStatus & ovrStatus_OrientationTracked ) )
+    if ( !( vrFrame.OvrStatus & Status_OrientationTracked ) )
 	{
 		EyePitch += PitchOffset;
 	}
@@ -423,7 +424,7 @@ void OvrSceneView::UpdateViewMatrix(const VrFrame vrFrame )
 	{
 		// Use position tracking from the sensor system, which is in absolute
 		// coordinates without the YawOffset
-        ShiftedEyePos += VR4Matrixf::RotationY( YawOffset ).Transform( vrFrame.PoseState.Pose.Position );
+        ShiftedEyePos += VR4Matrixf::RotationY( YawOffset ).Transform( vrFrame.PoseState.Position );
 
 		ShiftedEyePos -= forward * ImuToEyeCenter.z;
 		ShiftedEyePos -= right * ImuToEyeCenter.x;
@@ -443,7 +444,7 @@ void OvrSceneView::UpdateSceneModels( const VrFrame vrFrame, const long long sup
 	{
 		if ( Models[i] != NULL && Models[i]->DontRenderForClientUid != supressModelsWithClientId )
 		{
-			Models[i]->AnimateJoints( vrFrame.PoseState.TimeInSeconds );
+            Models[i]->AnimateJoints( vrFrame.PoseState.TimeBySeconds );
 			RenderModels.append( Models[i]->State );
 		}
 	}

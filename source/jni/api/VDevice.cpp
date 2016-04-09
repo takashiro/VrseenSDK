@@ -33,7 +33,7 @@ static PhoneTypeEnum IdentifyHmdType( const char * buildModel ) {
         return HMD_NOTE_4;
     }
 
-    LOG("IdentifyHmdType: Model %s not found. Defaulting to Note4", buildModel);
+    vInfo("IdentifyHmdType: Model" << buildModel << "not found. Defaulting to Note4");
     return HMD_NOTE_4;
 }
 

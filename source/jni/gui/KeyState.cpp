@@ -11,8 +11,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "KeyState.h"
 
-#include "Types.h"
-#include "Android/LogUtils.h"
+#include "core/VTimer.h"
+
 #include "api/VKernel.h"
 
 namespace NervGear {
@@ -42,7 +42,7 @@ KeyState::KeyState( double const doubleTapTime, double const longPressTime ) :
 // KeyState::HandleEvent
 void KeyState::HandleEvent( double const time, bool const down, int const repeatCount )
 {
-	DROIDLOG( "BackKey", "(%.4f) HandleEvent: NumEvents %i, RepeatCount %i", ovr_GetTimeInSeconds(), NumEvents, repeatCount );
+    vInfo("BackKey: (" << VTimer::Seconds() << ") HandleEvent: NumEvents" << NumEvents << ", RepeatCount" << repeatCount);
 	bool wasDown = this->Down;
 	this->Down = down;
 
@@ -56,7 +56,7 @@ void KeyState::HandleEvent( double const time, bool const down, int const repeat
 
 	if ( repeatCount > 0 )
 	{
-		DROID_ASSERT( down == true, "BackKey" );	// only a hold should have a repeat count
+		vAssert(down == true);	// only a hold should have a repeat count
 		// key is held
 		PendingEvent = KEY_EVENT_NONE;
 		return;
@@ -64,7 +64,7 @@ void KeyState::HandleEvent( double const time, bool const down, int const repeat
 
 	if ( wasDown == down )
 	{
-		DROIDLOG( "BackKey", "wasDown != down" );	// this should always be a toggle unless we've missed an event, right?
+		vInfo("BackKey: wasDown != down");	// this should always be a toggle unless we've missed an event, right?
 		PendingEvent = KEY_EVENT_NONE;
 		return;
 	}
@@ -121,7 +121,7 @@ void KeyState::HandleEvent( double const time, bool const down, int const repeat
 // KeyState::Update
 KeyState::eKeyEventType KeyState::Update( double const time )
 {
-	//DROIDLOG( "BackKey", "Update: NumEvents %i", NumEvents );
+	//vInfo("BackKey: Update: NumEvents" << NumEvents);
 	if ( NumEvents > 0 )
 	{
 		// is long-press time expired? This will always trigger a long press, even if the button
@@ -129,7 +129,7 @@ KeyState::eKeyEventType KeyState::Update( double const time )
 		if ( NumEvents > 0 && time - EventTimes[0] >= LongPressTime )
 		{
 			Reset();
-			DROIDLOG( "BackKey", "(%.4f) Update() - KEY_EVENT_LONG_PRESS, %i", ovr_GetTimeInSeconds(), NumEvents );
+            vInfo("BackKey: (" << VTimer::Seconds() << ") Update() - KEY_EVENT_LONG_PRESS," << NumEvents);
 			return KEY_EVENT_LONG_PRESS;
 		}
 		if ( NumEvents == 2 )
@@ -141,13 +141,13 @@ KeyState::eKeyEventType KeyState::Update( double const time )
                 if ( EventTimes[1] - EventTimes[0] < DoubleTapTime )
 			    {
     				// the HMT button always releases a hold at 0.8 seconds right now :(
-				    DROIDLOG( "BackKey", "(%.4f) Update() - press released after %.2f seconds.", ovr_GetTimeInSeconds(), time - EventTimes[0] );
+                    vInfo("BackKey: (" << VTimer::Seconds() << ") Update() - press released after" << time - EventTimes[0] << "seconds.");
 				    Reset();
 				    return KEY_EVENT_SHORT_PRESS;
                 }
                 else
                 {
-                    DROIDLOG( "BackKey", "(%.4f) Update() - discarding short-press after %.2f seconds.", ovr_GetTimeInSeconds(), time - EventTimes[0] );
+                    vInfo("BackKey: (" << VTimer::Seconds() << ") Update() - discarding short-press after" << time - EventTimes[0] << "seconds.");
                     Reset();
                     return KEY_EVENT_UP;
                 }
@@ -159,7 +159,7 @@ KeyState::eKeyEventType KeyState::Update( double const time )
 	PendingEvent = KEY_EVENT_NONE;
 	if ( outEvent != KEY_EVENT_NONE )
 	{
-		DROIDLOG( "BackKey", "outEvent %s", EventNames[ outEvent ] );
+		vInfo("BackKey: outEvent" << EventNames[ outEvent ]);
 	}
 	return outEvent;
 }

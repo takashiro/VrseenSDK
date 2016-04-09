@@ -50,7 +50,7 @@ public:
                 DeviceImpl<B>::ConnectedFlag = false;
                 break;
 
-            default: OVR_ASSERT(0); return;
+            default: vAssert(0); return;
         }
 
         // Do device notification.
@@ -125,17 +125,17 @@ public:
     struct WriteData
     {
         enum { BufferSize = 64 };
-        UByte Buffer[64];
+        uchar Buffer[64];
         uint Size;
 
-        WriteData(UByte* data, uint size) : Size(size)
+        WriteData(uchar* data, uint size) : Size(size)
         {
-            OVR_ASSERT(size <= BufferSize);
+            vAssert(size <= BufferSize);
             memcpy(Buffer, data, size);
         }
     };
 
-    bool SetFeatureReport(UByte* data, UInt32 length)
+    bool SetFeatureReport(uchar* data, vuint32 length)
     {
         WriteData writeData(data, length);
 
@@ -151,10 +151,10 @@ public:
 
     bool setFeatureReport(const WriteData& data)
     {
-        return InternalDevice->SetFeatureReport((UByte*) data.Buffer, (UInt32) data.Size);
+        return InternalDevice->SetFeatureReport((uchar*) data.Buffer, (vuint32) data.Size);
     }
 
-    bool GetFeatureReport(UByte* data, UInt32 length)
+    bool GetFeatureReport(uchar* data, vuint32 length)
     {
         bool result = false;
 
@@ -165,7 +165,7 @@ public:
         return result;
     }
 
-    bool getFeatureReport(UByte* data, UInt32 length)
+    bool getFeatureReport(uchar* data, vuint32 length)
     {
         return InternalDevice->GetFeatureReport(data, length);
     }

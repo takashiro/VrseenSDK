@@ -14,6 +14,7 @@ Copyright   :   Copyright 2014 Oculus VR, Inc. All Rights reserved.
 #include "VRMenu.h"
 #include "VApkFile.h"
 #include "App.h"
+#include "core/VTimer.h"
 
 namespace NervGear
 {
@@ -56,7 +57,7 @@ namespace NervGear
 		parms.clear();
 
 		menuHandle_t scrollHintHandle = rootMenu->handleForId( menuManager, swipeHintId );
-		OVR_ASSERT( scrollHintHandle.IsValid() );
+		vAssert( scrollHintHandle.IsValid() );
 		GLuint swipeHintTexture = LoadTextureFromApplicationPackage( img, TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), imgWidth, imgHeight );
 		VRMenuSurfaceParms swipeHintSurfParms( "", swipeHintTexture, imgWidth, imgHeight, SURFACE_TEXTURE_DIFFUSE,
 												0, 0, 0, SURFACE_TEXTURE_MAX,
@@ -71,7 +72,7 @@ namespace NervGear
 			VArray< VRMenuComponent* > hintArrowComps;
 			OvrSwipeHintComponent* hintArrowComp = new OvrSwipeHintComponent(false, 1.3333f, 0.4f + (float)i * 0.13333f, 5.0f);
 			hintArrowComps.append( hintArrowComp );
-			hintArrowComp->show( ovr_GetTimeInSeconds() );
+            hintArrowComp->show( VTimer::Seconds() );
 
 			VRMenuObjectParms * swipeIconLeftParms = new VRMenuObjectParms( VRMENU_STATIC, hintArrowComps,
                 swipeHintSurfParms, "", swipePose, V3Vectf( 1.0f ), fontParms, VRMenuId_t(),
@@ -93,7 +94,7 @@ namespace NervGear
 	{
 		m_ignoreDelay 		= true;
 		m_shouldShow 			= false;
-		const double now 	= ovr_GetTimeInSeconds();
+        const double now 	= VTimer::Seconds();
 		m_totalAlpha.set( now, m_totalAlpha.value( now ), now, 0.0f );
         self->setColor( V4Vectf( 1.0f, 1.0f, 1.0f, 0.0f ) );
 	}
@@ -133,7 +134,7 @@ namespace NervGear
 		case VRMENU_EVENT_FRAME_UPDATE:
 			return frame( app, vrFrame, menuMgr, self, event );
 		default:
-			OVR_ASSERT( !"Event flags mismatch!" );
+			vAssert( !"Event flags mismatch!" );
 			return MSG_STATUS_ALIVE;
 		}
 	}
@@ -152,19 +153,19 @@ namespace NervGear
 	{
 		if ( ShowSwipeHints /* && Carousel->HasSelection() && CanSwipe() */ )
 		{
-			show( vrFrame.PoseState.TimeInSeconds );
+            show( vrFrame.PoseState.TimeBySeconds );
 		}
 		else
 		{
-			hide( vrFrame.PoseState.TimeInSeconds );
+            hide( vrFrame.PoseState.TimeBySeconds );
 		}
 
 		m_ignoreDelay = false;
 
-		float alpha = m_totalAlpha.value( vrFrame.PoseState.TimeInSeconds );
+        float alpha = m_totalAlpha.value( vrFrame.PoseState.TimeBySeconds );
 		if ( alpha > 0.0f )
 		{
-			double time = vrFrame.PoseState.TimeInSeconds - m_startTime;
+            double time = vrFrame.PoseState.TimeBySeconds - m_startTime;
 			if ( time < 0.0f )
 			{
 				alpha = 0.0f;

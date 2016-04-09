@@ -1,10 +1,11 @@
 #include "VStandardPath.h"
+#include "VDir.h"
+#include "VLog.h"
+
+#include "android/JniUtils.h"
 
 #include <stdio.h>
-#include "unistd.h"
-#include "Android/JniUtils.h"
-#include "VDir.h"
-#include "android/LogUtils.h"
+#include <unistd.h>
 
 NV_NAMESPACE_BEGIN
 
@@ -135,12 +136,12 @@ const char* FolderName[VStandardPath::FolderTypeCount] =
 			}
 			else
 			{
-				WARN( "Failed to get permission for %s storage in %s folder ", StorageName[toStorage], FolderName[toFolder] );
+                vWarn("Failed to get permission for" << StorageName[toStorage] << "storage in" <<  FolderName[toFolder] << "folder");
 			}
 		}
 		else
 		{
-			WARN( "Path not found for %s storage in %s folder ", StorageName[toStorage], FolderName[toFolder] );
+            vWarn("Path not found for" << StorageName[toStorage] << "storage in" << FolderName[toFolder] << "folder");
 		}
 		return false;
 	}

@@ -11,8 +11,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 *************************************************************************************/
 
 #include "TextFade_Component.h"
+#include "core/VTimer.h"
 
-#include "api/Vsync.h"
 #include "Input.h"
 #include "BitmapFont.h"
 #include "VRMenuMgr.h"
@@ -50,7 +50,7 @@ OvrTextFade_Component::OvrTextFade_Component( V3Vectf const & iconBaseOffset, V3
 eMsgStatus OvrTextFade_Component::onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 												VRMenuObject * self, VRMenuEvent const & event )
 {
-	OVR_ASSERT( handlesEvent( VRMenuEventFlags_t( event.eventType ) ) );
+	vAssert( handlesEvent( VRMenuEventFlags_t( event.eventType ) ) );
 	switch ( event.eventType )
 	{
 		case VRMENU_EVENT_FRAME_UPDATE:
@@ -60,7 +60,7 @@ eMsgStatus OvrTextFade_Component::onEventImpl( App * app, VrFrame const & vrFram
 		case VRMENU_EVENT_FOCUS_LOST:
 		return focusLost( app, vrFrame, menuMgr, self, event );
 		default:
-		OVR_ASSERT( !"Event flags mismatch!" ); // the constructor is specifying a flag that's not handled
+		vAssert( !"Event flags mismatch!" ); // the constructor is specifying a flag that's not handled
 		return MSG_STATUS_ALIVE;
 	}
 }
@@ -70,7 +70,7 @@ eMsgStatus OvrTextFade_Component::onEventImpl( App * app, VrFrame const & vrFram
 eMsgStatus OvrTextFade_Component::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 											VRMenuObject * self, VRMenuEvent const & event )
 {
-	double t = ovr_GetTimeInSeconds();
+    double t = VTimer::Seconds();
 	if ( m_startFadeInTime >= 0.0f && t >= m_startFadeInTime )
 	{
 		m_textAlphaFader.startFadeIn();
@@ -114,7 +114,7 @@ eMsgStatus OvrTextFade_Component::focusGained( App * app, VrFrame const & vrFram
 {
 
 	m_startFadeOutTime = -1.0;
-	m_startFadeInTime = FADE_DELAY + ovr_GetTimeInSeconds();
+    m_startFadeInTime = FADE_DELAY + VTimer::Seconds();
 
 	return MSG_STATUS_ALIVE;
 }
@@ -124,7 +124,7 @@ eMsgStatus OvrTextFade_Component::focusGained( App * app, VrFrame const & vrFram
 eMsgStatus OvrTextFade_Component::focusLost( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 												VRMenuObject * self, VRMenuEvent const & event )
 {
-	m_startFadeOutTime = FADE_DELAY + ovr_GetTimeInSeconds();
+    m_startFadeOutTime = FADE_DELAY + VTimer::Seconds();
 	m_startFadeInTime = -1.0;
 
 	return MSG_STATUS_ALIVE;

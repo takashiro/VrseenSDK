@@ -1,6 +1,7 @@
 
-#include <Vsync.h>
+
 #include <Input.h>
+#include "core/VTimer.h"
 
 #include "SwipeHintComponent.h"
 #include "CarouselBrowserComponent.h"
@@ -34,7 +35,7 @@ void SwipeHintComponent::Reset( VRMenuObject * self )
 {
 	IgnoreDelay = true;
 	ShouldShow = false;
-	const double now = ovr_GetTimeInSeconds();
+    const double now = VTimer::Seconds();
 	TotalAlpha.Set( now, TotalAlpha.Value( now ), now, 0.0f );
     self->setColor( V4Vectf( 1.0f, 1.0f, 1.0f, 0.0f ) );
 }
@@ -81,7 +82,7 @@ eMsgStatus SwipeHintComponent::onEventImpl( App * app, VrFrame const & vrFrame, 
         case VRMENU_EVENT_FRAME_UPDATE :
         	return Frame( app, vrFrame, menuMgr, self, event );
         default:
-            OVR_ASSERT( !"Event flags mismatch!" );
+            vAssert( !"Event flags mismatch!" );
             return MSG_STATUS_ALIVE;
     }
 }
@@ -100,19 +101,19 @@ eMsgStatus SwipeHintComponent::Frame( App * app, VrFrame const & vrFrame, OvrVRM
 {
 	if ( ShowSwipeHints && Carousel->HasSelection() && CanSwipe() )
 	{
-		Show( vrFrame.PoseState.TimeInSeconds );
+        Show( vrFrame.PoseState.TimeBySeconds );
 	}
 	else
 	{
-		Hide( vrFrame.PoseState.TimeInSeconds );
+        Hide( vrFrame.PoseState.TimeBySeconds );
 	}
 
 	IgnoreDelay = false;
 
-	float alpha = TotalAlpha.Value( vrFrame.PoseState.TimeInSeconds );
+    float alpha = TotalAlpha.Value( vrFrame.PoseState.TimeBySeconds );
 	if ( alpha > 0.0f )
 	{
-		double time = vrFrame.PoseState.TimeInSeconds - StartTime;
+        double time = vrFrame.PoseState.TimeBySeconds - StartTime;
 		if ( time < 0.0f )
 		{
 			alpha = 0.0f;

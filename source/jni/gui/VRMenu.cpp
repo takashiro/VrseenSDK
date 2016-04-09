@@ -73,8 +73,8 @@ VRMenu * VRMenu::Create( char const * menuName )
 // VRMenu::Init
 void VRMenu::init( OvrVRMenuMgr & menuMgr, BitmapFont const & font, float const menuDistance, VRMenuFlags_t const & flags, VArray< VRMenuComponent* > comps /*= Array< VRMenuComponent* >( )*/ )
 {
-	OVR_ASSERT( !m_rootHandle.IsValid() );
-    OVR_ASSERT( !m_name.isEmpty() );
+	vAssert( !m_rootHandle.IsValid() );
+    vAssert( !m_name.isEmpty() );
 
 	m_flags = flags;
 	m_menuDistance = menuDistance;
@@ -88,7 +88,7 @@ void VRMenu::init( OvrVRMenuMgr & menuMgr, BitmapFont const & font, float const 
 	VRMenuObject * root = menuMgr.toObject( m_rootHandle );
 	if ( root == NULL )
 	{
-		WARN( "RootHandle (%llu) is invalid!", m_rootHandle.Get() );
+		vWarn("RootHandle (" << m_rootHandle.Get() << ") is invalid!");
 		return;
 	}
 
@@ -134,7 +134,7 @@ void VRMenu::addItems( OvrVRMenuMgr & menuMgr, BitmapFont const & font,
 	// create all items in the itemParms array, add each one to the parent, and position all items
 	// without the INIT_FORCE_POSITION flag vertically, one on top of the other
     VRMenuObject * root = menuMgr.toObject( parentHandle );
-    OVR_ASSERT( root != NULL );
+    vAssert( root != NULL );
 
 	VArray< ChildParmsPair > pairs;
 
@@ -148,8 +148,7 @@ void VRMenu::addItems( OvrVRMenuMgr & menuMgr, BitmapFont const & font,
 		{
 			if ( j != i && parms->Id != VRMenuId_t() && parms->Id == itemParms[j]->Id )
 			{
-				LOG( "Duplicate menu object ids for '%s' and '%s'!",
-                        parms->Text.toCString(), itemParms[j]->Text.toCString() );
+                vInfo("Duplicate menu object ids for" << parms->Text << "and" << itemParms[j]->Text << "!");
 			}
 		}
 		menuHandle_t handle = menuMgr.createObject( *parms );
@@ -209,7 +208,7 @@ void VRMenu::addItems( OvrVRMenuMgr & menuMgr, BitmapFont const & font,
 // VRMenu::Shutdown
 void VRMenu::shutdown( OvrVRMenuMgr & menuMgr )
 {
-	DROID_ASSERT( m_isInitialized, "VrMenu" );
+    vAssert(m_isInitialized);
 
 	// this will free the root and all children
 	if ( m_rootHandle.IsValid() )
@@ -264,7 +263,7 @@ void VRMenu::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 
 	if ( m_nextMenuState != m_curMenuState )
 	{
-		LOG( "NextMenuState for '%s': %s", name(), MenuStateNames[m_nextMenuState] );
+		vInfo("NextMenuState for '" << name() << "':" << MenuStateNames[m_nextMenuState]);
 		switch( m_nextMenuState )
 		{
             case MENUSTATE_OPENING:
@@ -287,7 +286,7 @@ void VRMenu::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 				}
 				break;
             default:
-                OVR_ASSERT( !"Unhandled menu state!" );
+                vAssert( !"Unhandled menu state!" );
                 break;
 		}
 		m_curMenuState = m_nextMenuState;
@@ -314,7 +313,7 @@ void VRMenu::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 		    m_eventHandler->handleEvents( app, vrFrame, menuMgr, m_rootHandle, events );
 		    return;
         default:
-            OVR_ASSERT( !"Unhandled menu state!" );
+            vAssert( !"Unhandled menu state!" );
             break;
 	}
 
@@ -354,7 +353,7 @@ bool VRMenu::onKeyEvent( App * app, int const keyCode, KeyState::eKeyEventType c
 
 	if ( keyCode == AKEYCODE_BACK )
 	{
-		LOG( "VRMenu '%s' Back key event: %s", name(), KeyState::EventNames[eventType] );
+		vInfo("VRMenu '" << name() << "' Back key event:" << KeyState::EventNames[eventType]);
 
 		switch( eventType )
 		{
@@ -527,7 +526,7 @@ menuHandle_t VRMenu::focusedHandle() const
 // VRMenu::ResetMenuOrientation
 void VRMenu::resetMenuOrientation( App * app, VR4Matrixf const & viewMatrix )
 {
-	LOG( "ResetMenuOrientation for '%s'", name() );
+	vInfo("ResetMenuOrientation for '" << name() << "'");
 	resetMenuOrientation_Impl( app, viewMatrix );
 }
 

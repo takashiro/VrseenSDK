@@ -4,7 +4,7 @@
 
 NV_NAMESPACE_BEGIN
 
-#ifdef OVR_OS_WIN32
+#ifdef NV_OS_WIN
 #include "windows.h"
 // A simple helper class to disable/enable system error mode, if necessary
 // Disabling happens conditionally only if a drive name is involved
@@ -38,6 +38,6 @@ class SysErrorModeDisabler
 public:
     SysErrorModeDisabler(const char* pfileName) { }
 };
-#endif // OVR_OS_WIN32
+#endif // NV_OS_WIN
 
 NV_NAMESPACE_END

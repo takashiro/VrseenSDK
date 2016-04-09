@@ -11,8 +11,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "VRMenuEventHandler.h"
 
-#include "Android/LogUtils.h"
-
 #include "api/VKernel.h"		// ovrPoseStatef
 
 #include "Input.h"
@@ -170,7 +168,7 @@ void VRMenuEventHandler::initComponents( VArray< VRMenuEvent > & events )
 // VRMenuEventHandler::Opening
 void VRMenuEventHandler::opening( VArray< VRMenuEvent > & events )
 {
-	LOG( "Opening" );
+	vInfo("Opening");
 	// broadcast the opening event
     VRMenuEvent event( VRMENU_EVENT_OPENING, EVENT_DISPATCH_BROADCAST, menuHandle_t(), V3Vectf( 0.0f ), HitTestResult() );
 	events.append( event );
@@ -180,7 +178,7 @@ void VRMenuEventHandler::opening( VArray< VRMenuEvent > & events )
 // VRMenuEventHandler::Opened
 void VRMenuEventHandler::opened( VArray< VRMenuEvent > & events )
 {
-	LOG( "Opened" );
+	vInfo("Opened");
 	// broadcast the opened event
     VRMenuEvent event( VRMENU_EVENT_OPENED, EVENT_DISPATCH_BROADCAST, menuHandle_t(), V3Vectf( 0.0f ), HitTestResult() );
 	events.append( event );
@@ -190,7 +188,7 @@ void VRMenuEventHandler::opened( VArray< VRMenuEvent > & events )
 // VRMenuEventHandler::Closing
 void VRMenuEventHandler::closing( VArray< VRMenuEvent > & events )
 {
-	LOG( "Closing" );
+	vInfo("Closing");
 	// broadcast the closing event
     VRMenuEvent event( VRMENU_EVENT_CLOSING, EVENT_DISPATCH_BROADCAST, menuHandle_t(), V3Vectf( 0.0f ), HitTestResult() );
 	events.append( event );
@@ -200,7 +198,7 @@ void VRMenuEventHandler::closing( VArray< VRMenuEvent > & events )
 // VRMenuEventHandler::Closed
 void VRMenuEventHandler::closed( VArray< VRMenuEvent > & events )
 {
-	LOG( "Closed" );
+	vInfo("Closed");
 	// broadcast the closed event
     VRMenuEvent event( VRMENU_EVENT_CLOSED, EVENT_DISPATCH_BROADCAST, menuHandle_t(), V3Vectf( 0.0f ), HitTestResult() );
 	events.append( event );
@@ -210,7 +208,7 @@ void VRMenuEventHandler::closed( VArray< VRMenuEvent > & events )
         VRMenuEvent event( VRMENU_EVENT_FOCUS_LOST, EVENT_DISPATCH_TARGET, m_focusedHandle, V3Vectf( 0.0f ), HitTestResult() );
 		events.append( event );
 		m_focusedHandle.Release();
-		LOG( "Released FocusHandle" );
+		vInfo("Released FocusHandle");
 	}
 }
 
@@ -218,7 +216,6 @@ void VRMenuEventHandler::closed( VArray< VRMenuEvent > & events )
 // LogEventType
 static inline void LogEventType( VRMenuEvent const & event, char const * fmt, ... )
 {
-#if 1
     if ( event.eventType != VRMENU_EVENT_TOUCH_RELATIVE )
     {
         return;
@@ -230,11 +227,7 @@ static inline void LogEventType( VRMenuEvent const & event, char const * fmt, ..
     vsnprintf( fmtBuff, sizeof( fmtBuff ), fmt, args );
     va_end( args );
 
-    char buffer[512];
-    sprintf(buffer, "%s: %s", VRMenuEvent::EventTypeNames[event.eventType], fmtBuff);
-
-    __android_log_write( ANDROID_LOG_WARN, "VrMenu", buffer );
-#endif
+    vWarn("VrMenu:" << VRMenuEvent::EventTypeNames[event.eventType] << fmtBuff);
 }
 
 //==============================
@@ -303,7 +296,7 @@ void VRMenuEventHandler::handleEvents( App * app, VrFrame const & vrFrame, OvrVR
                 dispatchToPath( app, vrFrame, menuMgr, event, targetPath, false );
                 break;
             default:
-                OVR_ASSERT( !"unknown dispatch type" );
+                vAssert( !"unknown dispatch type" );
                 break;
         }
 	}
@@ -314,7 +307,7 @@ void VRMenuEventHandler::handleEvents( App * app, VrFrame const & vrFrame, OvrVR
 bool VRMenuEventHandler::dispatchToComponents( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuEvent const & event, VRMenuObject * receiver ) const
 {
-	DROID_ASSERT( receiver != NULL, "VrMenu" );
+    vAssert(receiver != NULL);
 
     VArray< VRMenuComponent* > const & list = receiver->componentList();
 	int numComps = list.length();
@@ -350,15 +343,13 @@ bool VRMenuEventHandler::dispatchToPath( App * app, VrFrame const & vrFrame, Ovr
         {
 			if ( log )
 			{
-				LOG( "%sDispatchToPath: %s, object '%s' consumed event.", &indent[64 - i * 2],
-						VRMenuEvent::EventTypeNames[event.eventType], ( obj != NULL ? obj->text().toCString() : "<null>" ) );
+                vInfo(&indent[64 - i * 2] << "DispatchToPath:" << VRMenuEvent::EventTypeNames[event.eventType] << ", object '" << ( obj != NULL ? obj->text().toCString() : "<null>" ) << "' consumed event.");
 			}
             return true;    // consumed by a component
         }
 		if ( log )
 		{
-			LOG( "%sDispatchToPath: %s, object '%s' passed event.", &indent[64 - i * 2],
-					VRMenuEvent::EventTypeNames[event.eventType], obj != NULL ? obj->text().toCString() : "<null>" );
+            vInfo(&indent[64 - i * 2] << "DispatchToPath:" << VRMenuEvent::EventTypeNames[event.eventType] << ", object '" << (obj != NULL ? obj->text().toCString() : "<null>") << "' passed event.");
 		}
     }
     return false;
@@ -369,7 +360,7 @@ bool VRMenuEventHandler::dispatchToPath( App * app, VrFrame const & vrFrame, Ovr
 bool VRMenuEventHandler::broadcastEvent( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuEvent const & event, VRMenuObject * receiver ) const
 {
-	DROID_ASSERT( receiver != NULL, "VrMenu" );
+    vAssert(receiver != NULL);
 
     // allow parent components to handle first
     if ( dispatchToComponents( app, vrFrame, menuMgr, event, receiver ) )

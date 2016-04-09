@@ -8,7 +8,7 @@ extern "C" {
 void Java_oculus_MainActivity_nativeSetAppInterface( JNIEnv * jni, jclass clazz, jobject activity,
 		jstring fromPackageName, jstring commandString, jstring uriString )
 {
-	LOG( "nativeSetAppInterface" );
+	vInfo("nativeSetAppInterface");
     (new OvrApp(jni, clazz, activity))->onCreate(fromPackageName, commandString, uriString );
 }
 
@@ -45,7 +45,7 @@ void OvrApp::init(const VString &fromPackage, const VString &launchIntentJSON, c
 	}
 	else
 	{
-		LOG( "OvrApp::OneTimeInit SearchPaths failed to find %s", scenePath );
+		vInfo("OvrApp::OneTimeInit SearchPaths failed to find" << scenePath);
 	}
 }
 
@@ -65,7 +65,7 @@ VR4Matrixf OvrApp::drawEyeView( const int eye, const float fovDegrees )
 VR4Matrixf OvrApp::onNewFrame(const VrFrame vrFrame)
 {
 	// Player movement
-    Scene.Frame( vApp->vrViewParms(), vrFrame, vApp->swapParms().ExternalVelocity );
+    Scene.Frame( vApp->vrViewParms(), vrFrame, vApp->kernel()->m_externalVelocity);
 
 	vApp->drawEyeViewsPostDistorted( Scene.CenterViewMatrix() );
 

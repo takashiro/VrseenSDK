@@ -133,7 +133,7 @@ DeviceManagerThread::DeviceManagerThread()
     : Thread(ThreadStackSize)
 {
     int result = pipe(CommandFd);
-    OVR_ASSERT(!result);
+    vAssert(!result);
 
     AddSelectFd(NULL, CommandFd[0]);
 }
@@ -158,7 +158,7 @@ bool DeviceManagerThread::AddSelectFd(Notifier* notify, int fd)
     FdNotifiers.PushBack(notify);
     PollFds.PushBack(pfd);
 
-    OVR_ASSERT(FdNotifiers.GetSize() == PollFds.GetSize());
+    vAssert(FdNotifiers.GetSize() == PollFds.GetSize());
     return true;
 }
 

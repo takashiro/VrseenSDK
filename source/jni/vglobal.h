@@ -17,6 +17,20 @@ typedef unsigned long ulong;
 typedef long long longlong;
 typedef unsigned long long ulonglong;
 
+#ifndef NV_FLOAT_AS_REAL
+typedef double vreal;
+#else
+typedef float vreal;
+#endif
+
+//@to-do: Check target platform and compiler
+typedef short vint16;
+typedef ushort vuint16;
+typedef int vint32;
+typedef uint vuint32;
+typedef longlong vint64;
+typedef ulonglong vuint64;
+
 #define forever for(;;)
 
 #define NV_DECLARE_PRIVATE struct Private; friend struct Private; Private *d;
@@ -40,6 +54,20 @@ typedef unsigned long long ulonglong;
 #    define NV_OS_ANDROID
 #  endif
 #endif
+
+//Surpress unused variable warnings
+#define __NV_UNUSED1(a) (void)(a)
+#define __NV_UNUSED2(a,b) (void)(a),(void)(b)
+#define __NV_UNUSED3(a,b,c) (void)(a),(void)(b),(void)(c)
+#define __NV_UNUSED4(a,b,c,d) (void)(a),(void)(b),(void)(c),(void)(d)
+#define __NV_UNUSED5(a,b,c,d,e) (void)(a),(void)(b),(void)(c),(void)(d),(void)(e)
+
+#define __VA_NUM_ARGS_IMPL(_1,_2,_3,_4,_5, N,...) N
+#define VA_NUM_ARGS(...) __VA_NUM_ARGS_IMPL(__VA_ARGS__, 5, 4, 3, 2, 1)
+
+#define __NV_ALL_UNUSED_IMPL_(nargs) __NV_UNUSED ## nargs
+#define __NV_ALL_UNUSED_IMPL(nargs) __NV_ALL_UNUSED_IMPL_(nargs)
+#define NV_UNUSED(...) __NV_ALL_UNUSED_IMPL( VA_NUM_ARGS(__VA_ARGS__))(__VA_ARGS__ )
 
 //Version Macros
 #define NV_MAJOR_VERSION 0

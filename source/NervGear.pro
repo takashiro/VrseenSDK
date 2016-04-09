@@ -24,7 +24,6 @@ SOURCES += \
     jni/core/VDir.cpp \
     jni/core/VEventLoop.cpp \
     jni/core/VJson.cpp \
-    jni/core/Log.cpp \
     jni/core/VLog.cpp \
     jni/core/VLock.cpp \
     jni/core/VPath.cpp \
@@ -39,10 +38,8 @@ SOURCES += \
     jni/core/VVariant.cpp \
     jni/core/VWaitCondition.cpp \
     jni/core/android/JniUtils.cpp \
-    jni/core/android/LogUtils.cpp \
     jni/core/android/VOsBuild.cpp \
     jni/api/VKernel.cpp \
-    jni/api/Vsync.cpp \
     jni/api/VDevice.cpp \
     jni/api/VGlOperation.cpp \
     jni/api/HmdSensors.cpp \
@@ -71,6 +68,10 @@ SOURCES += \
     jni/api/sensor/Common_HMDDevice.cpp \
     jni/api/sensor/ThreadCommandQueue.cpp \
     jni/api/sensor/RefCount.cpp \
+    jni/api/sensor/Log.cpp \
+    jni/gui/VText.cpp \
+    jni/gui/VDialog.cpp \
+    jni/gui/VPanel.cpp \
     jni/gui/VRMenuComponent.cpp \
     jni/gui/VRMenuMgr.cpp \
     jni/gui/VRMenuObjectLocal.cpp \
@@ -95,17 +96,22 @@ SOURCES += \
     jni/gui/OutOfSpaceMenu.cpp \
     jni/gui/KeyState.cpp \
     jni/io/VApkFile.cpp \
+    jni/io/VBuffer.cpp \
+    jni/io/VFile.cpp \
+    jni/io/VIODevice.cpp \
     jni/io/VBinaryFile.cpp \
     jni/io/VFileOperation.cpp \
     jni/io/VSysFile.cpp \
+    jni/media/VImage.cpp \
     jni/media/VSoundManager.cpp \
+    jni/scene/VItem.cpp \
+    jni/scene/VScene.cpp \
     jni/scene/BitmapFont.cpp \
     jni/scene/DebugLines.cpp \
-    jni/scene/EyeBuffers.cpp \
+    jni/scene/VEyeBuffer.cpp \
     jni/scene/EyePostRender.cpp \
     jni/scene/GazeCursor.cpp \
     jni/scene/GlTexture.cpp \
-    jni/scene/ImageData.cpp \
     jni/scene/ModelCollision.cpp \
     jni/scene/ModelFile.cpp \
     jni/scene/ModelRender.cpp \
@@ -126,11 +132,10 @@ HEADERS += \
     jni/core/VTransform.h \
     jni/core/android/GlUtils.h \
     jni/core/android/JniUtils.h \
-    jni/core/android/LogUtils.h \
     jni/core/android/VOsBuild.h \
     jni/core/VAlgorithm.h \
-    jni/core/Atomic.h \
-    jni/core/Array.h \
+    jni/core/VAtomicInt.h \
+    jni/core/VArray.h \
     jni/core/VByteArray.h \
     jni/core/VColor.h \
     jni/core/VChar.h \
@@ -142,12 +147,12 @@ HEADERS += \
     jni/core/VFlags.h \
     jni/core/VJson.h \
     jni/core/VList.h \
-    jni/core/Log.h \
     jni/core/VLog.h \
     jni/core/VLock.h \
     jni/core/VLockless.h \
     jni/core/VMap.h \
     jni/core/VPath.h \
+    jni/core/VPos.h \
     jni/core/VSignal.h \
     jni/core/VStandardPath.h \
     jni/core/VString.h \
@@ -158,7 +163,6 @@ HEADERS += \
     jni/core/VTimer.h \
     jni/core/MappedFile.h \
     jni/core/VMutex.h \
-    jni/core/Types.h \
     jni/core/List.h \
     jni/core/VVariant.h \
     jni/core/TypesafeNumber.h \
@@ -170,16 +174,8 @@ HEADERS += \
     jni/core/VVector.h \
     jni/core/VTransform.h \
     jni/core/VBasicmath.h \
-    jni/embedded/dependency_error_de.h \
-    jni/embedded/dependency_error_en.h \
-    jni/embedded/dependency_error_es.h \
-    jni/embedded/dependency_error_fr.h \
-    jni/embedded/dependency_error_it.h \
-    jni/embedded/dependency_error_ja.h \
-    jni/embedded/dependency_error_ko.h \
     jni/embedded/oculus_loading_indicator.h \
     jni/api/VKernel.h \
-    jni/api/Vsync.h \
     jni/api/HmdSensors.h \
     jni/api/VLensDistortion.h \
     jni/api/VSystemActivities.h \
@@ -214,6 +210,10 @@ HEADERS += \
     jni/api/sensor/HIDDeviceImpl.h \
     jni/api/sensor/ThreadCommandQueue.h \
     jni/api/sensor/RefCount.h \
+    jni/api/sensor/Log.h \
+    jni/gui/VText.h \
+    jni/gui/VDialog.h \
+    jni/gui/VPanel.h \
     jni/gui/VRMenuComponent.h \
     jni/gui/VRMenuMgr.h \
     jni/gui/VRMenuObjectLocal.h \
@@ -241,20 +241,24 @@ HEADERS += \
     jni/gui/ui_default.h \
     jni/gui/KeyState.h \
     jni/io/VApkFile.h \
+    jni/io/VBuffer.h \
+    jni/io/VFile.h \
+    jni/io/VIODevice.h \
     jni/io/VBinaryFile.h \
     jni/io/VDelegatedFile.h \
-    jni/io/VFile.h \
     jni/io/VFileOperation.h \
     jni/io/VSysFile.h \
+    jni/media/VImage.h \
     jni/media/VSoundManager.h \
+    jni/scene/VItem.h \
+    jni/scene/VScene.h \
     jni/scene/BitmapFont.h \
     jni/scene/DebugLines.h \
-    jni/scene/EyeBuffers.h \
+    jni/scene/VEyeBuffer.h \
     jni/scene/EyePostRender.h \
     jni/scene/GazeCursor.h \
     jni/scene/GazeCursorLocal.h \
     jni/scene/GlTexture.h \
-    jni/scene/ImageData.h \
     jni/scene/ModelCollision.h \
     jni/scene/ModelFile.h \
     jni/scene/ModelRender.h \
@@ -265,7 +269,8 @@ HEADERS += \
     jni/App.h \
     jni/VrLocale.h \
     jni/vglobal.h \
-    jni/Input.h
+    jni/Input.h \
+    jni/io/VAbstractFile.h
 
 include(jni/3rdparty/minizip/minizip.pri)
 include(jni/3rdparty/stb/stb.pri)

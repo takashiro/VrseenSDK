@@ -6,6 +6,7 @@
 #include "ResumeMovieComponent.h"
 #include "VApkFile.h"
 #include "CinemaStrings.h"
+#include "core/VTimer.h"
 
 namespace OculusCinema {
 
@@ -29,27 +30,27 @@ ResumeMovieView::~ResumeMovieView()
 
 void ResumeMovieView::OneTimeInit( const VString &launchIntent )
 {
-	LOG( "ResumeMovieView::OneTimeInit" );
+	vInfo("ResumeMovieView::OneTimeInit");
 
-	const double start = ovr_GetTimeInSeconds();
+    const double start = VTimer::Seconds();
 
 	CreateMenu( vApp, vApp->vrMenuMgr(), vApp->defaultFont() );
 
-	LOG( "ResumeMovieView::OneTimeInit: %3.1f seconds", ovr_GetTimeInSeconds() - start );
+    vInfo("ResumeMovieView::OneTimeInit:" << (VTimer::Seconds() - start) << "seconds");
 }
 
 void ResumeMovieView::OneTimeShutdown()
 {
-	LOG( "ResumeMovieView::OneTimeShutdown" );
+	vInfo("ResumeMovieView::OneTimeShutdown");
 }
 
 void ResumeMovieView::OnOpen()
 {
-	LOG( "OnOpen" );
+	vInfo("OnOpen");
 
 	Cinema.sceneMgr.LightsOn( 0.5f );
 
-	vApp->swapParms().WarpProgram = WP_CHROMATIC;
+    vApp->kernel()->setSmoothProgram(VK_DEFAULT_CB);
 
 	SetPosition(vApp->vrMenuMgr(), Cinema.sceneMgr.Scene.FootPos);
 
@@ -61,7 +62,7 @@ void ResumeMovieView::OnOpen()
 
 void ResumeMovieView::OnClose()
 {
-	LOG( "OnClose" );
+	vInfo("OnClose");
 
     vApp->guiSys().closeMenu( vApp, Menu, false );
 
@@ -87,7 +88,7 @@ void ResumeMovieView::SetPosition( OvrVRMenuMgr & menuMgr, const V3Vectf &pos )
 {
     menuHandle_t centerRootHandle = Menu->handleForId( menuMgr, ID_CENTER_ROOT );
     VRMenuObject * centerRoot = menuMgr.toObject( centerRootHandle );
-    OVR_ASSERT( centerRoot != NULL );
+    vAssert( centerRoot != NULL );
 
     VPosf pose = centerRoot->localPose();
     pose.Position = pos;
@@ -120,7 +121,7 @@ void ResumeMovieView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFont 
     // the centerroot item will get touch relative and touch absolute events and use them to rotate the centerRoot
     menuHandle_t centerRootHandle = Menu->handleForId( menuMgr, ID_CENTER_ROOT );
     VRMenuObject * centerRoot = menuMgr.toObject( centerRootHandle );
-    OVR_ASSERT( centerRoot != NULL );
+    vAssert( centerRoot != NULL );
 
     // ==============================================================================
     //
@@ -183,7 +184,7 @@ void ResumeMovieView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFont 
 		// add icon
         menuHandle_t optionHandle = centerRoot->childHandleForId( menuMgr, VRMenuId_t( ID_OPTIONS.Get() + i ) );
         VRMenuObject * optionObject = menuMgr.toObject( optionHandle );
-	    OVR_ASSERT( optionObject != NULL );
+	    vAssert( optionObject != NULL );
 
 	    int iconWidth = 0, iconHeight = 0;
 	    GLuint iconTexture = LoadTextureFromApplicationPackage( icons[ i ], TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), iconWidth, iconHeight );
@@ -230,7 +231,7 @@ void ResumeMovieView::ResumeChoice( int itemNum )
 VR4Matrixf ResumeMovieView::Frame( const VrFrame & vrFrame )
 {
 	// We want 4x MSAA in the selection screen
-	EyeParms eyeParms = vApp->eyeParms();
+	VEyeBuffer::EyeParms eyeParms = vApp->eyeParms();
 	eyeParms.multisamples = 4;
 	vApp->setEyeParms( eyeParms );
 

@@ -250,7 +250,7 @@ static V3Vectf	FlatForward( const VR4Matrixf & view )
 
 void	SwipeView::Activate( )
 {
-	LOG( "Activate" );
+	vInfo("Activate");
 
 	// Get time and view on next call to frame
 	ActivateOnNextFrame = true;
@@ -286,12 +286,12 @@ void	SwipeView::Activate( )
 
 void	SwipeView::Close()
 {
-	LOG( "Close" );
+	vInfo("Close");
 
 	if ( State == SVS_OPEN )
 	{
 		State = SVS_CLOSING;
-		LOG( "SVS_CLOSING" );
+		vInfo("SVS_CLOSING");
 
 		// start animation on next frame
 		CloseOnNextFrame = true;
@@ -381,7 +381,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 	{
 		ActivateOnNextFrame = false;
 
-		AnimationStartTime = vrFrame.PoseState.TimeInSeconds;
+        AnimationStartTime = vrFrame.PoseState.TimeBySeconds;
 		// allowing AnimationFraction to reach 0.0 causes an invalid matrix to be formed in Draw()
 		AnimationFraction = 0.00001f;
 
@@ -395,7 +395,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 	if ( CloseOnNextFrame )
 	{
 		CloseOnNextFrame = false;
-		AnimationStartTime = vrFrame.PoseState.TimeInSeconds;
+        AnimationStartTime = vrFrame.PoseState.TimeBySeconds;
 	}
 
 
@@ -496,13 +496,13 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 			for ( int i = 0 ; i < MAX_TOUCH_HISTORY ; i++ )
 			{
 				TouchPos[i] = touch;
-				TimeHistory[i] = vrFrame.PoseState.TimeInSeconds;
+                TimeHistory[i] = vrFrame.PoseState.TimeBySeconds;
 			}
 
 			TouchPoint = touch;
 			TouchGazePos = GazePos;
 			PrevTouch = touch;
-			PressTime = vrFrame.PoseState.TimeInSeconds;
+            PressTime = vrFrame.PoseState.TimeBySeconds;
 			HasMoved = false;
 
 			// If an Activate() was issued programatically, this needs to be
@@ -530,7 +530,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 			if ( HasMoved )
 			{
                 ret.PlaySndSwipeRelease = true;
-				LOG( "Not tap because HasMoved" );
+				vInfo("Not tap because HasMoved");
 			}
 			else
 			{
@@ -542,13 +542,13 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 
 					if ( SelectedPanel != -1 )
 					{	// action on selected
-						LOG( "ActivatePanelIndex %i", SelectedPanel);
+						vInfo("ActivatePanelIndex" << SelectedPanel);
 						ret.ActivatePanelIndex = SelectedPanel;
 					}
 					else
 					{	// put away when clicking on nothing
 						// TODO: make this an option
-						LOG( "Closing swipeview");
+						vInfo("Closing swipeview");
 						Close();
 					}
 					ret.PlaySndReleaseAction = true;
@@ -584,7 +584,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 				const int oldIndex = ( HistoryIndex + 1 ) % MAX_TOUCH_HISTORY;
 				HistoryIndex++;
 				TouchPos[thisIndex] = touch;
-				TimeHistory[thisIndex] = vrFrame.PoseState.TimeInSeconds;
+                TimeHistory[thisIndex] = vrFrame.PoseState.TimeBySeconds;
 
 				Velocity = -SpeedScale * ( TouchPos[thisIndex].x - TouchPos[oldIndex].x ) / ( TimeHistory[thisIndex] - TimeHistory[oldIndex] );
 
@@ -634,7 +634,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 
 	// Opening / closing animation
 	AnimationFraction = std::min( 1.0,
-			( vrFrame.PoseState.TimeInSeconds - AnimationStartTime ) / OpenAnimationTime );
+            ( vrFrame.PoseState.TimeBySeconds - AnimationStartTime ) / OpenAnimationTime );
 	// allowing AnimationFraction to reach 0.0 causes an invalid matrix to be formed in Draw()
 	AnimationFraction = NervGear::VAlgorithm::Clamp( AnimationFraction, 0.00001f, 1.0f );
 	if ( State == SVS_CLOSING )
@@ -672,7 +672,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 		PanelRenderInfo selectedPanelInfo;
 		selectedPanelInfo.PanelIndex = -1;
 
-		//LOG( "offset %f forward %f", Offset, ForwardYaw );
+		//vInfo("offset" << Offset << "forward" << ForwardYaw);
 		const float animationPanelOffset = AnimationCenterPanel[0] * SlotSize.x - Offset;
 		const float animationPanelOffsetY = PanelAngleY( AnimationCenterPanel[1] );
 		for ( int index = 0 ; index < Panels.length() ; index++ )

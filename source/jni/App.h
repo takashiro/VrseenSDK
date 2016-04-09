@@ -1,12 +1,15 @@
 #pragma once
 
+#include "VEyeBuffer.h"
 #include "vglobal.h"
 #include "api/VKernel.h"
 #include "KeyState.h"
-#include "EyeBuffers.h"
 #include "Input.h"
 #include "VEventLoop.h"
 #include "VSoundManager.h"
+#include "gui/VText.h"
+#include "gui/VPanel.h"
+#include "gui/VDialog.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -48,8 +51,8 @@ public:
     void setRecenterYawFrameStart( const long long frameNumber );
     long long recenterYawFrameStart() const;
 
-    EyeParms eyeParms();
-    void setEyeParms(const EyeParms parms);
+    VEyeBuffer::EyeParms eyeParms();
+    void setEyeParms(const VEyeBuffer::EyeParms parms);
 
     OvrGuiSys &guiSys();
     OvrGazeCursor  &gazeCursor();
@@ -72,7 +75,7 @@ public:
     VR4Matrixf const &lastViewMatrix() const;
     void setLastViewMatrix( VR4Matrixf const & m );
 
-    EyeParms &vrParms();
+    VEyeBuffer::EyeParms &vrParms();
 
     const VrViewParms &vrViewParms() const;
     void setVrViewParms( VrViewParms const & parms );
@@ -98,33 +101,19 @@ public:
     VKernel* kernel();
     SurfaceTexture *dialogTexture();
 
-    const ovrTimeWarpParms &swapParms() const;
-    ovrTimeWarpParms &swapParms();
 
     const ovrSensorState &sensorForNextWarp() const;
 
     void drawScreenMask( const VR4Matrixf & mvp, const float fadeFracX, const float fadeFracY );
-    void drawScreenDirect( const GLuint texid, const VR4Matrixf & mvp );
-
-    void setShowFPS( bool const show );
-    bool showFPS() const;
-
-    void showInfoText( float const duration, const char * fmt, ... );
-    void showInfoText( float const duration, V3Vectf const & offset, V4Vectf const & color, const char * fmt, ... );
-
-    VR4Matrixf matrixInterpolation( const VR4Matrixf & startMatrix, const VR4Matrixf & endMatrix, double t );
-
-    void drawDialog( const VR4Matrixf & mvp );
-    void drawPanel( const GLuint externalTextureId, const VR4Matrixf & dialogMvp, const float alpha );
-
     void drawBounds( const V3Vectf &mins, const V3Vectf &maxs, const VR4Matrixf &mvp, const V3Vectf &color );
 
-    void startVrThread();
-    void stopVrThread();
-    void syncVrThread();
+    void execute();
+    void quit();
 
+    VText text;
+    VPanel panel;
+    VDialog dialog;
     volatile bool oneTimeInitCalled;
-
 
 private:
     NV_DECLARE_PRIVATE

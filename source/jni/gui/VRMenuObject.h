@@ -13,13 +13,11 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #if !defined( OVR_VRMenuObject_h )
 #define OVR_VRMenuObject_h
 
-#include "Types.h"
 #include "VBasicmath.h"
 #include "VArray.h"
 #include "VString.h"
 #include "TypesafeNumber.h"
 #include "api/VGlOperation.h"
-#include "Android/LogUtils.h"
 #include "CollisionPrimitive.h"
 #include "BitmapFont.h" // HorizontalJustification & VerticalJustification
 
