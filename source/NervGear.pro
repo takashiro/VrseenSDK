@@ -116,7 +116,8 @@ SOURCES += \
     jni/App.cpp \
     jni/VrLocale.cpp \
     jni/scene/VImage.cpp \
-    jni/scene/VColorConverter.cpp
+    jni/scene/VColorConverter.cpp \
+    jni/media/VImageKtxLoader.cpp
 
 
 HEADERS += \
@@ -273,7 +274,9 @@ HEADERS += \
     jni/scene/VDimension.h \
     jni/scene/VRect.h \
     jni/scene/VImage.h \
-    jni/scene/VColorConverter.h
+    jni/scene/VColorConverter.h \
+    jni/media/VImageLoader.h \
+    jni/media/VImageKtxLoader.h
 
 include(jni/3rdparty/minizip/minizip.pri)
 include(jni/3rdparty/stb/stb.pri)
