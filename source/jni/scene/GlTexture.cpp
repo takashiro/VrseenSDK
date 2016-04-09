@@ -783,7 +783,7 @@ GlTexture LoadTexturePVR( const char * fileName, const unsigned char * buffer, c
 		case 6:						format = Texture_ETC1;		break;
 		case 22:					format = Texture_ETC2_RGB;	break;
 		case 23:					format = Texture_ETC2_RGBA;	break;
-		case 578721384203708274llu:	format = Texture_RGBA;		break;
+        case 578721384203708274ull:	format = Texture_RGBA;		break;
 		default:
 			vInfo(fileName << ": Unknown PVR texture format " << header.PixelFormat << "lu, size " << width << "x" << height);
 			return GlTexture( 0 );
@@ -857,7 +857,7 @@ unsigned char * LoadPVRBuffer( const char * fileName, int & width, int & height 
 	int format = 0;
 	switch ( header.PixelFormat )
 	{
- 		case 578721384203708274llu:	format = Texture_RGBA;		break;
+        case 578721384203708274ull:	format = Texture_RGBA;		break;
 		default:
 			vInfo("Unknown PVR texture format " << header.PixelFormat << "lu, size " << width << "x" << height);
             free( (void *)buffer );
@@ -985,7 +985,7 @@ GlTexture LoadTextureKTX( const char * fileName, const unsigned char * buffer, c
 
 	const uchar fileIdentifier[12] =
 	{
-		'«', 'K', 'T', 'X', ' ', '1', '1', '»', '\r', '\n', '\x1A', '\n'
+        171, 75, 84, 88, 32, 49, 49, 187, 13, 10, 26, 10
 	};
 
 	const OVR_KTX_HEADER & header = *(OVR_KTX_HEADER *)buffer;
