@@ -1,12 +1,9 @@
 /************************************************************************************
-
 Filename    :   GlTexture.cpp
 Content     :   OpenGL texture loading.
 Created     :   September 30, 2013
 Authors     :   John Carmack
-
 Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
 *************************************************************************************/
 
 #include "GlTexture.h"
@@ -88,7 +85,6 @@ struct TextureFormatMap
 	TextureFormat	Format;
 	const char *	Name;
 };
-
 static TextureFormatMap TextureFormatNames[] =
 {
     { Texture_R,			"Texture_R" },
@@ -114,7 +110,6 @@ static TextureFormatMap TextureFormatNames[] =
 	{ Texture_GenMipmaps,	"Texture_GenMipmaps" },
 	{ Texture_None,			NULL }
 };
-
 static const char * NameForTextureFormat( TextureFormat const format )
 {
 	for ( int i = 0; TextureFormatNames[i].Name != NULL; ++i )
@@ -146,12 +141,12 @@ static bool TextureFormatToGlFormat( const int format, const bool useSrgbFormat,
 			if ( useSrgbFormat )
 			{
 				glInternalFormat = GL_SRGB8;
-//				LOG( "GL texture format is GL_RGB / GL_SRGB8" );
+//				vInfo("GL texture format is GL_RGB / GL_SRGB8");
 			}
 			else
 			{
 				glInternalFormat = GL_RGB;
-//				LOG( "GL texture format is GL_RGB / GL_RGB" );
+//				vInfo("GL texture format is GL_RGB / GL_RGB");
 			}
 			return true;
 		}
@@ -161,12 +156,12 @@ static bool TextureFormatToGlFormat( const int format, const bool useSrgbFormat,
 			if ( useSrgbFormat )
 			{
 				glInternalFormat = GL_SRGB8_ALPHA8;
-//				LOG( "GL texture format is GL_RGBA / GL_SRGB8_ALPHA8" );
+//				vInfo("GL texture format is GL_RGBA / GL_SRGB8_ALPHA8");
 			}
 			else
 			{
 				glInternalFormat = GL_RGBA;
-//				LOG( "GL texture format is GL_RGBA / GL_RGBA" );
+//				vInfo("GL texture format is GL_RGBA / GL_RGBA");
 			}
 			return true;
 		}
@@ -174,13 +169,13 @@ static bool TextureFormatToGlFormat( const int format, const bool useSrgbFormat,
 		{
 			glInternalFormat = GL_R8;
 			glFormat = GL_RED;
-//			LOG( "GL texture format is GL_R8" );
+//			vInfo("GL texture format is GL_R8");
 			return true;
 		}
 		case Texture_DXT1:
 		{
 			glFormat = glInternalFormat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
-//			LOG( "GL texture format is GL_COMPRESSED_RGBA_S3TC_DXT1_EXT" );
+//			vInfo("GL texture format is GL_COMPRESSED_RGBA_S3TC_DXT1_EXT");
 			return true;
 		}
 	// unsupported on OpenGL ES:
@@ -190,14 +185,14 @@ static bool TextureFormatToGlFormat( const int format, const bool useSrgbFormat,
 		{
 			glFormat = GL_RGB;
 			glInternalFormat = GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG;
-//			LOG( "GL texture format is GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG" );
+//			vInfo("GL texture format is GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG");
 			return true;
 		}
 		case Texture_PVR4bRGBA:
 		{
 			glFormat = GL_RGBA;
 			glInternalFormat = GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG;
-//			LOG( "GL texture format is GL_RGBA / GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG" );
+//			vInfo("GL texture format is GL_RGBA / GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG");
 			return true;
 		}
 		case Texture_ETC1:
@@ -207,12 +202,12 @@ static bool TextureFormatToGlFormat( const int format, const bool useSrgbFormat,
 			{
 				// Note that ETC2 is backwards compatible with ETC1.
 				glInternalFormat = GL_COMPRESSED_SRGB8_ETC2;
-//				LOG( "GL texture format is GL_RGB / GL_COMPRESSED_SRGB8_ETC2 " );
+//				vInfo("GL texture format is GL_RGB / GL_COMPRESSED_SRGB8_ETC2");
 			}
 			else
 			{
 				glInternalFormat = GL_ETC1_RGB8_OES;
-//				LOG( "GL texture format is GL_RGB / GL_ETC1_RGB8_OES" );
+//				vInfo("GL texture format is GL_RGB / GL_ETC1_RGB8_OES");
 			}
 			return true;
 		}
@@ -222,12 +217,12 @@ static bool TextureFormatToGlFormat( const int format, const bool useSrgbFormat,
 			if ( useSrgbFormat )
 			{
 				glInternalFormat = GL_COMPRESSED_SRGB8_ETC2;
-//				LOG( "GL texture format is GL_RGB / GL_COMPRESSED_SRGB8_ETC2 " );
+//				vInfo("GL texture format is GL_RGB / GL_COMPRESSED_SRGB8_ETC2");
 			}
 			else
 			{
 				glInternalFormat = GL_COMPRESSED_RGB8_ETC2;
-//				LOG( "GL texture format is GL_RGB / GL_COMPRESSED_RGB8_ETC2 " );
+//				vInfo("GL texture format is GL_RGB / GL_COMPRESSED_RGB8_ETC2");
 			}
 			return true;
 		}
@@ -237,12 +232,12 @@ static bool TextureFormatToGlFormat( const int format, const bool useSrgbFormat,
 			if ( useSrgbFormat )
 			{
 				glInternalFormat = GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC;
-//				LOG( "GL texture format is GL_RGBA / GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC " );
+//				vInfo("GL texture format is GL_RGBA / GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC");
 			}
 			else
 			{
 				glInternalFormat = GL_COMPRESSED_RGBA8_ETC2_EAC;
-//				LOG( "GL texture format is GL_RGBA / GL_COMPRESSED_RGBA8_ETC2_EAC " );
+//				vInfo("GL texture format is GL_RGBA / GL_COMPRESSED_RGBA8_ETC2_EAC");
 			}
 			return true;
 		}
@@ -262,14 +257,14 @@ static bool TextureFormatToGlFormat( const int format, const bool useSrgbFormat,
 		{
 			glFormat = GL_RGB;
 			glInternalFormat = GL_ATC_RGB_AMD;
-//			LOG( "GL texture format is GL_RGB / GL_ATC_RGB_AMD" );
+//			vInfo("GL texture format is GL_RGB / GL_ATC_RGB_AMD");
 			return true;
 		}
 		case Texture_ATC_RGBA:
 		{
 			glFormat = GL_RGBA;
 			glInternalFormat = GL_ATC_RGBA_EXPLICIT_ALPHA_AMD;
-//			LOG( "GL texture format is GL_RGBA / GL_ATC_RGBA_EXPLICIT_ALPHA_AMD" );
+//			vInfo("GL texture format is GL_RGBA / GL_ATC_RGBA_EXPLICIT_ALPHA_AMD");
 			return true;
 		}
     }
@@ -390,7 +385,7 @@ static int32_t GetOvrTextureSize( const int format, const int w, const int h )
 		}
         default:
 		{
-            OVR_ASSERT( false );
+            vAssert( false );
             break;
 		}
     }
@@ -402,7 +397,7 @@ static GlTexture CreateGlTexture( const char * fileName, const int format, const
 						const int mipcount, const bool useSrgbFormat, const bool imageSizeStored )
 {
     VGlOperation glOperation;
-	// LOG( "CreateGLTexture(): format %s", NameForTextureFormat( static_cast< TextureFormat >( format ) ) );
+	// vInfo("CreateGLTexture(): format " << NameForTextureFormat( static_cast< TextureFormat >( format ) ));
 
 	GLenum glFormat;
 	GLenum glInternalFormat;
@@ -413,14 +408,14 @@ static GlTexture CreateGlTexture( const char * fileName, const int format, const
 
 	if ( mipcount <= 0 )
 	{
-		LOG( "%s: Invalid mip count %d", fileName, mipcount );
+		vInfo(fileName << ": Invalid mip count " << mipcount);
 		return GlTexture( 0 );
 	}
 
 	// larger than this would require mipSize below to be a larger type
 	if ( width <= 0 || width > 32768 || height <= 0 || height > 32768 )
 	{
-		LOG( "%s: Invalid texture size (%dx%d)", fileName, width, height );
+		vInfo(fileName << ": Invalid texture size (" << width << "x" << height << ")");
 		return GlTexture( 0 );
 	}
 
@@ -443,7 +438,7 @@ static GlTexture CreateGlTexture( const char * fileName, const int format, const
 			level += 4;
 			if ( level > endOfBuffer )
 			{
-				LOG( "%s: Image data exceeds buffer size", fileName );
+				vInfo(fileName << ": Image data exceeds buffer size");
 				glBindTexture( GL_TEXTURE_2D, 0 );
 				return GlTexture( texId, GL_TEXTURE_2D );
 			}
@@ -451,7 +446,7 @@ static GlTexture CreateGlTexture( const char * fileName, const int format, const
 
 		if ( mipSize <= 0 || mipSize > endOfBuffer - level )
 		{
-			LOG( "%s: Mip level %d exceeds buffer size (%d > %d)", fileName, i, mipSize, endOfBuffer - level );
+			vInfo(fileName << ": Mip level " << i << " exceeds buffer size (" << mipSize << " > " << (endOfBuffer - level) << ")");
 			glBindTexture( GL_TEXTURE_2D, 0 );
 			return GlTexture( texId, GL_TEXTURE_2D );
 		}
@@ -472,7 +467,7 @@ static GlTexture CreateGlTexture( const char * fileName, const int format, const
 			level += 3 - ( ( mipSize + 3 ) % 4 );
 			if ( level > endOfBuffer )
 			{
-				LOG( "%s: Image data exceeds buffer size", fileName );
+				vInfo(fileName << ": Image data exceeds buffer size");
 				glBindTexture( GL_TEXTURE_2D, 0 );
 				return GlTexture( texId, GL_TEXTURE_2D );
 			}
@@ -513,14 +508,14 @@ static GlTexture CreateGlCubeTexture( const char * fileName, const int format, c
 
 	if ( mipcount <= 0 )
 	{
-		LOG( "%s: Invalid mip count %d", fileName, mipcount );
+		vInfo(fileName << ": Invalid mip count " << mipcount);
 		return GlTexture( 0 );
 	}
 
 	// larger than this would require mipSize below to be a larger type
 	if ( width <= 0 || width > 32768 || height <= 0 || height > 32768 )
 	{
-		LOG( "%s: Invalid texture size (%dx%d)", fileName, width, height );
+		vInfo(fileName << ": Invalid texture size (" << width << "x" << height << ")");
 		return GlTexture( 0 );
 	}
 
@@ -548,7 +543,7 @@ static GlTexture CreateGlCubeTexture( const char * fileName, const int format, c
 			level += 4;
 			if ( level > endOfBuffer )
 			{
-				LOG( "%s: Image data exceeds buffer size", fileName );
+				vInfo(fileName << ": Image data exceeds buffer size");
 				glBindTexture( GL_TEXTURE_CUBE_MAP, 0 );
 				return GlTexture( texId, GL_TEXTURE_CUBE_MAP );
 			}
@@ -558,7 +553,7 @@ static GlTexture CreateGlCubeTexture( const char * fileName, const int format, c
 		{
 			if ( mipSize <= 0 || mipSize > endOfBuffer - level )
 			{
-				LOG( "%s: Mip level %d exceeds buffer size (%d > %d)", fileName, i, mipSize, endOfBuffer - level );
+				vInfo(fileName << ": Mip level " << i << " exceeds buffer size (" << mipSize << " > " << endOfBuffer - level << ")");
 				glBindTexture( GL_TEXTURE_CUBE_MAP, 0 );
                 return GlTexture( texId,  GL_TEXTURE_CUBE_MAP );
 			}
@@ -578,7 +573,7 @@ static GlTexture CreateGlCubeTexture( const char * fileName, const int format, c
 				level += 3 - ( ( mipSize + 3 ) % 4 );
 				if ( level > endOfBuffer )
 				{
-					LOG( "%s: Image data exceeds buffer size", fileName );
+					vInfo(fileName << ": Image data exceeds buffer size");
 					glBindTexture( GL_TEXTURE_CUBE_MAP, 0 );
 					return GlTexture( texId, GL_TEXTURE_CUBE_MAP );
 				}
@@ -641,14 +636,14 @@ GlTexture LoadASTCTextureFromMemory( uint8_t const * buffer, const size_t buffer
 	int const h = ( (int)header->ysize[2] << 16 ) | ( (int)header->ysize[1] << 8 ) | ( (int)header->ysize[0] );
 
 	// only supporting R channel for now
-	OVR_ASSERT( numPlanes == 1 );
+	vAssert( numPlanes == 1 );
 	// only supporting 6x6x1 for now
-	//OVR_ASSERT( header->blockDim_x == 6 && header->blockDim_y == 6 && header->blockDim_z == 1 );
-	OVR_ASSERT( header->blockDim_x == 4 && header->blockDim_y == 4 && header->blockDim_z == 1 );
+	//vAssert( header->blockDim_x == 6 && header->blockDim_y == 6 && header->blockDim_z == 1 );
+	vAssert( header->blockDim_x == 4 && header->blockDim_y == 4 && header->blockDim_z == 1 );
 	if ( header->blockDim_z != 1 )
 	{
-		OVR_ASSERT( header->blockDim_z == 1 );
-		LOG( "Only 2D ASTC textures are supported" );
+		vAssert( header->blockDim_z == 1 );
+		vInfo("Only 2D ASTC textures are supported");
 		return GlTexture();
 	}
 
@@ -662,9 +657,7 @@ GlTexture LoadASTCTextureFromMemory( uint8_t const * buffer, const size_t buffer
 }
 
 /*
-
 PVR Container Format
-
 Offset    Size       Name           Description
 0x0000    4 [DWORD]  Version        0x03525650
 0x0004    4 [DWORD]  Flags          0x0000 if no flags set
@@ -735,24 +728,23 @@ Offset    Size       Name           Description
 0x0028  4 [DWORD]    Face Count     The number of faces to this texture, used for cube maps.
 0x002C  4 [DWORD]    MIP-Map Count  The number of MIP-Map levels, including a top level.
 0x0030  4 [DWORD]    Metadata Size  The size, in bytes, of meta data that immediately follows this header.
-
 */
 
 #pragma pack(1)
 struct OVR_PVR_HEADER
 {
-    UInt32	Version;
-    UInt32	Flags;
-    UInt64  PixelFormat;
-    UInt32  ColorSpace;
-    UInt32  ChannelType;
-    UInt32	Height;
-    UInt32	Width;
-    UInt32	Depth;
-    UInt32  NumSurfaces;
-    UInt32  NumFaces;
-    UInt32  MipMapCount;
-    UInt32  MetaDataSize;
+    vuint32	Version;
+    vuint32	Flags;
+    vuint64  PixelFormat;
+    vuint32  ColorSpace;
+    vuint32  ChannelType;
+    vuint32	Height;
+    vuint32	Width;
+    vuint32	Depth;
+    vuint32  NumSurfaces;
+    vuint32  NumFaces;
+    vuint32  MipMapCount;
+    vuint32  MetaDataSize;
 };
 #pragma pack()
 
@@ -764,14 +756,14 @@ GlTexture LoadTexturePVR( const char * fileName, const unsigned char * buffer, c
 
 	if ( bufferLength < ( int )( sizeof( OVR_PVR_HEADER ) ) )
 	{
-		LOG( "%s: Invalid PVR file", fileName );
+		vInfo(fileName << ": Invalid PVR file");
 		return GlTexture( 0 );
 	}
 
 	const OVR_PVR_HEADER & header = *( OVR_PVR_HEADER * )buffer;
 	if ( header.Version != 0x03525650 )
 	{
-		LOG( "%s: Invalid PVR file version", fileName );
+		vInfo(fileName << ": Invalid PVR file version");
 		return GlTexture( 0 );
 	}
 
@@ -783,21 +775,21 @@ GlTexture LoadTexturePVR( const char * fileName, const unsigned char * buffer, c
 		case 6:						format = Texture_ETC1;		break;
 		case 22:					format = Texture_ETC2_RGB;	break;
 		case 23:					format = Texture_ETC2_RGBA;	break;
-		case 578721384203708274llu:	format = Texture_RGBA;		break;
+        case 578721384203708274ull:	format = Texture_RGBA;		break;
 		default:
-			LOG( "%s: Unknown PVR texture format %llu, size %ix%i", fileName, header.PixelFormat, width, height );
+			vInfo(fileName << ": Unknown PVR texture format " << header.PixelFormat << "lu, size " << width << "x" << height);
 			return GlTexture( 0 );
 	}
 
 	// skip the metadata
-	const UInt32 startTex = sizeof( OVR_PVR_HEADER ) + header.MetaDataSize;
+	const vuint32 startTex = sizeof( OVR_PVR_HEADER ) + header.MetaDataSize;
 	if ( ( startTex < sizeof( OVR_PVR_HEADER ) ) || ( startTex >= static_cast< size_t >( bufferLength ) ) )
 	{
-		LOG( "%s: Invalid PVR header sizes", fileName );
+		vInfo(fileName << ": Invalid PVR header sizes");
 		return GlTexture( 0 );
 	}
 
-	const UInt32 mipCount = ( noMipMaps ) ? 1 : std::max( 1u, header.MipMapCount );
+	const vuint32 mipCount = ( noMipMaps ) ? 1 : std::max( 1u, header.MipMapCount );
 
 	width = header.Width;
 	height = header.Height;
@@ -812,7 +804,7 @@ GlTexture LoadTexturePVR( const char * fileName, const unsigned char * buffer, c
 	}
 	else
 	{
-		LOG( "%s: PVR file has unsupported number of faces %d", fileName, header.NumFaces );
+		vInfo(fileName << ": PVR file has unsupported number of faces " << header.NumFaces);
 	}
 
 	width = 0;
@@ -837,7 +829,7 @@ unsigned char * LoadPVRBuffer( const char * fileName, int & width, int & height 
     fileBuffer.read(reinterpret_cast<std::istream::char_type*>(buffer), fileLength);
     if ( fileLength < ( int )( sizeof( OVR_PVR_HEADER ) ) )
 	{
-		LOG( "Invalid PVR file" );
+		vInfo("Invalid PVR file");
         free( (void *)buffer );
         buffer = NULL;
         fileLength = 0;
@@ -847,7 +839,7 @@ unsigned char * LoadPVRBuffer( const char * fileName, int & width, int & height 
     const OVR_PVR_HEADER & header = *( OVR_PVR_HEADER * )buffer;
 	if ( header.Version != 0x03525650 )
 	{
-		LOG( "Invalid PVR file version" );
+		vInfo("Invalid PVR file version");
         free( (void *)buffer );
         buffer = NULL;
         fileLength = 0;
@@ -857,9 +849,9 @@ unsigned char * LoadPVRBuffer( const char * fileName, int & width, int & height 
 	int format = 0;
 	switch ( header.PixelFormat )
 	{
- 		case 578721384203708274llu:	format = Texture_RGBA;		break;
+        case 578721384203708274ull:	format = Texture_RGBA;		break;
 		default:
-			LOG( "Unknown PVR texture format %llu, size %ix%i", header.PixelFormat, width, height );
+			vInfo("Unknown PVR texture format " << header.PixelFormat << "lu, size " << width << "x" << height);
             free( (void *)buffer );
             buffer = NULL;
             fileLength = 0;
@@ -867,10 +859,10 @@ unsigned char * LoadPVRBuffer( const char * fileName, int & width, int & height 
 	}
 
 	// skip the metadata
-	const UInt32 startTex = sizeof( OVR_PVR_HEADER ) + header.MetaDataSize;
+	const vuint32 startTex = sizeof( OVR_PVR_HEADER ) + header.MetaDataSize;
     if ( ( startTex < sizeof( OVR_PVR_HEADER ) ) || ( startTex >= static_cast< size_t >( fileLength ) ) )
 	{
-		LOG( "Invalid PVR header sizes" );
+		vInfo("Invalid PVR header sizes");
         free( (void *)buffer );
         buffer = NULL;
         fileLength = 0;
@@ -904,36 +896,31 @@ unsigned char * LoadPVRBuffer( const char * fileName, int & width, int & height 
 
 
 /*
-
 KTX Container Format
-
 KTX is a format for storing textures for OpenGL and OpenGL ES applications.
 It is distinguished by the simplicity of the loader required to instantiate
 a GL texture object from the file contents.
-
 Byte[12] identifier
-UInt32 endianness
-UInt32 glType
-UInt32 glTypeSize
-UInt32 glFormat
+vuint32 endianness
+vuint32 glType
+vuint32 glTypeSize
+vuint32 glFormat
 Uint32 glInternalFormat
 Uint32 glBaseInternalFormat
-UInt32 pixelWidth
-UInt32 pixelHeight
-UInt32 pixelDepth
-UInt32 numberOfArrayElements
-UInt32 numberOfFaces
-UInt32 numberOfMipmapLevels
-UInt32 bytesOfKeyValueData
-
+vuint32 pixelWidth
+vuint32 pixelHeight
+vuint32 pixelDepth
+vuint32 numberOfArrayElements
+vuint32 numberOfFaces
+vuint32 numberOfMipmapLevels
+vuint32 bytesOfKeyValueData
 for each keyValuePair that fits in bytesOfKeyValueData
-    UInt32   keyAndValueByteSize
+    vuint32   keyAndValueByteSize
     Byte     keyAndValue[keyAndValueByteSize]
     Byte     valuePadding[3 - ((keyAndValueByteSize + 3) % 4)]
 end
-
 for each mipmap_level in numberOfMipmapLevels*
-    UInt32 imageSize;
+    vuint32 imageSize;
     for each array_element in numberOfArrayElements*
        for each face in numberOfFaces
            for each z_slice in pixelDepth*
@@ -948,26 +935,25 @@ for each mipmap_level in numberOfMipmapLevels*
     end
     Byte mipPadding[3 - ((imageSize + 3) % 4)]
 end
-
 */
 
 #pragma pack(1)
 struct OVR_KTX_HEADER
 {
-	UByte	identifier[12];
-	UInt32	endianness;
-	UInt32	glType;
-	UInt32	glTypeSize;
-	UInt32	glFormat;
-	UInt32	glInternalFormat;
-	UInt32	glBaseInternalFormat;
-	UInt32	pixelWidth;
-	UInt32	pixelHeight;
-	UInt32	pixelDepth;
-	UInt32	numberOfArrayElements;
-	UInt32	numberOfFaces;
-	UInt32	numberOfMipmapLevels;
-	UInt32	bytesOfKeyValueData;
+	uchar	identifier[12];
+	vuint32	endianness;
+	vuint32	glType;
+	vuint32	glTypeSize;
+	vuint32	glFormat;
+	vuint32	glInternalFormat;
+	vuint32	glBaseInternalFormat;
+	vuint32	pixelWidth;
+	vuint32	pixelHeight;
+	vuint32	pixelDepth;
+	vuint32	numberOfArrayElements;
+	vuint32	numberOfFaces;
+	vuint32	numberOfMipmapLevels;
+	vuint32	bytesOfKeyValueData;
 };
 #pragma pack()
 
@@ -979,58 +965,58 @@ GlTexture LoadTextureKTX( const char * fileName, const unsigned char * buffer, c
 
 	if ( bufferLength < (int)( sizeof( OVR_KTX_HEADER ) ) )
 	{
-    	LOG( "%s: Invalid KTX file", fileName );
+    	vInfo(fileName << ": Invalid KTX file");
         return GlTexture( 0 );
 	}
 
-	const UByte fileIdentifier[12] =
+	const uchar fileIdentifier[12] =
 	{
-		'«', 'K', 'T', 'X', ' ', '1', '1', '»', '\r', '\n', '\x1A', '\n'
+        171, 75, 84, 88, 32, 49, 49, 187, 13, 10, 26, 10
 	};
 
 	const OVR_KTX_HEADER & header = *(OVR_KTX_HEADER *)buffer;
 	if ( memcmp( header.identifier, fileIdentifier, sizeof( fileIdentifier ) ) != 0 )
 	{
-		LOG( "%s: Invalid KTX file", fileName );
+		vInfo(fileName << ": Invalid KTX file");
 		return GlTexture( 0 );
 	}
 	// only support little endian
 	if ( header.endianness != 0x04030201 )
 	{
-		LOG( "%s: KTX file has wrong endianess", fileName );
+		vInfo(fileName << ": KTX file has wrong endianess");
 		return GlTexture( 0 );
 	}
 	// only support compressed or unsigned byte
 	if ( header.glType != 0 && header.glType != GL_UNSIGNED_BYTE )
 	{
-		LOG( "%s: KTX file has unsupported glType %d", fileName, header.glType );
+		vInfo(fileName << ": KTX file has unsupported glType " << header.glType);
 		return GlTexture( 0 );
 	}
 	// no support for texture arrays
 	if ( header.numberOfArrayElements != 0 )
 	{
-		LOG( "%s: KTX file has unsupported number of array elements %d", fileName, header.numberOfArrayElements );
+		vInfo(fileName << ": KTX file has unsupported number of array elements " << header.numberOfArrayElements);
 		return GlTexture( 0 );
 	}
 	// derive the texture format from the GL format
 	int format = 0;
 	if ( !GlFormatToTextureFormat( format, header.glFormat, header.glInternalFormat ) )
 	{
-		LOG( "%s: KTX file has unsupported glFormat %d, glInternalFormat %d", fileName, header.glFormat, header.glInternalFormat );
+		vInfo(fileName << ": KTX file has unsupported glFormat " << header.glFormat << ", glInternalFormat " << header.glInternalFormat);
 		return GlTexture( 0 );
 	}
 	// skip the key value data
 	const uintptr_t startTex = sizeof( OVR_KTX_HEADER ) + header.bytesOfKeyValueData;
 	if ( ( startTex < sizeof( OVR_KTX_HEADER ) ) || ( startTex >= static_cast< size_t >( bufferLength ) ) )
 	{
-		LOG( "%s: Invalid KTX header sizes", fileName );
+		vInfo(fileName << ": Invalid KTX header sizes");
 		return GlTexture( 0 );
 	}
 
 	width = header.pixelWidth;
 	height = header.pixelHeight;
 
-	const UInt32 mipCount = ( noMipMaps ) ? 1 : std::max( 1u, header.numberOfMipmapLevels );
+	const vuint32 mipCount = ( noMipMaps ) ? 1 : std::max( 1u, header.numberOfMipmapLevels );
 
 	if ( header.numberOfFaces == 1 )
 	{
@@ -1042,7 +1028,7 @@ GlTexture LoadTextureKTX( const char * fileName, const unsigned char * buffer, c
 	}
 	else
 	{
-		LOG( "%s: KTX file has unsupported number of faces %d", fileName, header.numberOfFaces );
+		vInfo(fileName << ": KTX file has unsupported number of faces " << header.numberOfFaces);
 	}
 
 	width = 0;
@@ -1055,7 +1041,7 @@ GlTexture LoadTextureFromBuffer( const char * fileName, const void*  buffer, uin
 {
 	const VString ext = VPath(fileName).extension().toLower();
 
-    // LOG( "Loading texture buffer %s (%s), length %i", fileName, ext.toCString(), buffer.Length );
+    // vInfo("Loading texture buffer " << fileName << " (" << ext.toCString() << "), length " << buffer.Length);
 
 	GlTexture texId = 0;
 	width = 0;
@@ -1103,17 +1089,17 @@ GlTexture LoadTextureFromBuffer( const char * fileName, const void*  buffer, uin
 	}
 	else if ( ext == "pkm" )
 	{
-		LOG( "PKM format not supported" );
+		vInfo("PKM format not supported");
 	}
 	else
 	{
-		LOG( "unsupported file extension %s", ext.toCString() );
+		vInfo("unsupported file extension " << ext.toCString());
 	}
 
 	// Create a default texture if the load failed
 	if ( texId.texture == 0 )
 	{
-    	WARN( "Failed to load %s", fileName );
+    	vWarn("Failed to load " << fileName);
     	if ( ( flags & TEXTUREFLAG_NO_DEFAULT ) == 0 )
     	{
 			static uint8_t defaultTexture[8 * 8 * 3] =
