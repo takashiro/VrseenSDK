@@ -1608,7 +1608,7 @@ void App::playSound(const char *name)
 /*
  * eyeParms()
  */
-VEyeBuffer::Settings App::eyeParms()
+VEyeBuffer::Settings App::eyeSettings()
 {
     return d->vrParms;
 }
@@ -1616,7 +1616,7 @@ VEyeBuffer::Settings App::eyeParms()
 /*
  * SetVrParms()
  */
-void App::setEyeParms(const VEyeBuffer::Settings parms)
+void App::setEyeSettings(const VEyeBuffer::Settings parms)
 {
     d->vrParms = parms;
 }

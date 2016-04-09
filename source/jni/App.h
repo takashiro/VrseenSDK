@@ -51,8 +51,8 @@ public:
     void setRecenterYawFrameStart( const long long frameNumber );
     long long recenterYawFrameStart() const;
 
-    VEyeBuffer::Settings eyeParms();
-    void setEyeParms(const VEyeBuffer::Settings parms);
+    VEyeBuffer::Settings eyeSettings();
+    void setEyeSettings(const VEyeBuffer::Settings parms);
 
     OvrGuiSys &guiSys();
     OvrGazeCursor  &gazeCursor();

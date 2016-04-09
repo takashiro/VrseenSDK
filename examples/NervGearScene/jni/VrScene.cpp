@@ -162,7 +162,7 @@ VR4Matrixf VrScene::drawEyeView( const int eye, const float fovDegrees )
 VR4Matrixf VrScene::onNewFrame( const VrFrame vrFrame )
 {
 	// Get the current vrParms for the buffer resolution.
-    const VEyeBuffer::Settings vrParms = vApp->eyeParms();
+    const VEyeBuffer::Settings vrParms = vApp->eyeSettings();
 
 	// Player movement
     Scene.Frame( vApp->vrViewParms(), vrFrame, vApp->kernel()->m_externalVelocity );
@@ -198,7 +198,7 @@ VR4Matrixf VrScene::onNewFrame( const VrFrame vrFrame )
 					case 4: newParms.multisamples = 1; break;
 					default: newParms.multisamples = 2; break;
 				}
-				vApp->setEyeParms( newParms );
+				vApp->setEyeSettings( newParms );
 				vApp->createToast( "multisamples: %i", newParms.multisamples );
 			}
 		}
