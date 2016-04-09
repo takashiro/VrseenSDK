@@ -164,7 +164,7 @@ void Oculus360Videos::init(const VString &fromPackage, const VString &launchInte
 	RetailMode = vdir.exists( "/sdcard/RetailMedia" );
 
 	vApp->vrParms().colorFormat = VColor::COLOR_8888;
-    vApp->vrParms().commonParameterDepth = VEyeBuffer::CommonParameter::DEPTHFORMAT_DEPTH_16;
+    vApp->vrParms().commonParameterDepth = VEyeBuffer::CommonParameter::DepthFormat_16;
 	vApp->vrParms().multisamples = 2;
 
     PanoramaProgram.initShader(VGlShader::getPanoVertexShaderSource(),VGlShader::getPanoProgramShaderSource()	);

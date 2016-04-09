@@ -129,14 +129,14 @@ extern void DebugMenuBounds(void * appPtr, const char * cmd);
 extern void DebugMenuHierarchy(void * appPtr, const char * cmd);
 extern void DebugMenuPoses(void * appPtr, const char * cmd);
 
-static VEyeBuffer::EyeParms DefaultVrParmsForRenderer(const VEglDriver & glOperation)
+static VEyeBuffer::Settings DefaultVrParmsForRenderer(const VEglDriver & glOperation)
 {
-    VEyeBuffer::EyeParms vrParms;
+    VEyeBuffer::Settings vrParms;
 
     vrParms.resolution = 1024;
     vrParms.multisamples = (glOperation.m_gpuType == VEglDriver::GPU_TYPE_ADRENO_330) ? 2 : 4;
     vrParms.colorFormat = VColor::COLOR_8888;
-    vrParms.commonParameterDepth = VEyeBuffer::CommonParameter::DEPTHFORMAT_DEPTH_24;
+    vrParms.commonParameterDepth = VEyeBuffer::CommonParameter::DepthFormat_24;
 
     return vrParms;
 }
@@ -225,7 +225,7 @@ struct App::Private
 
     VrFrame			lastVrFrame;
 
-    VEyeBuffer::EyeParms		vrParms;
+    VEyeBuffer::Settings		vrParms;
 
 
 
@@ -1387,7 +1387,7 @@ struct App::Private
             {
                 if (repeatCount == 0 && down) // first down only
                 {
-                    eyeTargets->ScreenShot();
+                    eyeTargets->snapshot();
                     self->createToast("screenshot");
                     return;
                 }
@@ -1473,7 +1473,7 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
     d->vrParms.resolution = 1024;
     d->vrParms.multisamples = 4;
     d->vrParms.colorFormat = VColor::COLOR_8888;
-    d->vrParms.commonParameterDepth = VEyeBuffer::CommonParameter::DEPTHFORMAT_DEPTH_24;
+    d->vrParms.commonParameterDepth = VEyeBuffer::CommonParameter::DepthFormat_24;
 
     d->javaObject = d->uiJni->NewGlobalRef(activityObject);
 
@@ -1608,7 +1608,7 @@ void App::playSound(const char *name)
 /*
  * eyeParms()
  */
-VEyeBuffer::EyeParms App::eyeParms()
+VEyeBuffer::Settings App::eyeParms()
 {
     return d->vrParms;
 }
@@ -1616,7 +1616,7 @@ VEyeBuffer::EyeParms App::eyeParms()
 /*
  * SetVrParms()
  */
-void App::setEyeParms(const VEyeBuffer::EyeParms parms)
+void App::setEyeParms(const VEyeBuffer::Settings parms)
 {
     d->vrParms = parms;
 }
@@ -1699,7 +1699,7 @@ void App::setLastViewMatrix(VR4Matrixf const & m)
     d->lastViewMatrix = m;
 }
 
-VEyeBuffer::EyeParms & App::vrParms()
+VEyeBuffer::Settings & App::vrParms()
 {
     return d->vrParms;
 }
@@ -1901,11 +1901,11 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
     else
     {
         // possibly change the buffer parameters
-        d->eyeTargets->BeginFrame( d->vrParms );
+        d->eyeTargets->beginFrame( d->vrParms );
 
         for ( int eye = 0; eye < numEyes; eye++ )
         {
-            d->eyeTargets->BeginRenderingEye( eye );
+            d->eyeTargets->beginRendering( eye );
 
             // Call back to the app for drawing.
             const VR4Matrixf mvp = d->appInterface->drawEyeView( eye, fovDegrees );
@@ -1945,14 +1945,14 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
                 d->eyeDecorations.FillEdge( d->vrParms.resolution, d->vrParms.resolution );
             }
 
-            d->eyeTargets->EndRenderingEye( eye );
+            d->eyeTargets->endRendering( eye );
         }
     }
 
     // This eye set is complete, use it now.
     if ( numPresents > 0 )
     {
-        const VEyeBuffer::CompletedEyes eyes = d->eyeTargets->GetCompletedEyes();
+        const VEyeBuffer::CompletedEyes eyes = d->eyeTargets->completedEyes();
 
         for ( int eye = 0; eye < 2; eye++ )
         {            
