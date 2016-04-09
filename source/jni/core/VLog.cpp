@@ -102,6 +102,18 @@ VLog &VLog::operator <<(ulonglong num)
     return *this;
 }
 
+VLog &VLog::operator <<(void *pointer)
+{
+    d->buffer << pointer << ' ';
+    return *this;
+}
+
+VLog &VLog::operator << (const void *pointer)
+{
+    d->buffer << pointer << ' ';
+    return *this;
+}
+
 VLog &VLog::operator << (const char *str)
 {
     d->buffer << str << ' ';

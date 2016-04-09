@@ -19,7 +19,7 @@ public:
     // Enumerates devices, creating and destroying relevant objects in manager.
     virtual void EnumerateDevices(EnumerateVisitor& visitor);
 
-    virtual bool MatchVendorProduct(UInt16 vendorId, UInt16 productId) const;
+    virtual bool MatchVendorProduct(vuint16 vendorId, vuint16 productId) const;
     virtual bool DetectHIDDevice(DeviceManager* pdevMgr, const HIDDeviceDesc& desc);
 
 protected:
@@ -79,7 +79,7 @@ public:
     virtual void shutdown();
 
     // DeviceManagerThread::Notifier interface.
-    virtual void OnInputReport(UByte* pData, UInt32 length);
+    virtual void OnInputReport(uchar* pData, vuint32 length);
 
     // LatencyTesterDevice interface
     virtual bool SetConfiguration(const LatencyTestConfiguration& configuration, bool waitFlag = false);

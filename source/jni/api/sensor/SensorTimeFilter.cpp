@@ -24,9 +24,9 @@ namespace NervGear {
 //#define OVR_TIMEFILTER_LOG_CODE( code )  code
 #define OVR_TIMEFILTER_LOG_CODE( code )
 
-#if defined(OVR_OS_ANDROID)
+#if defined(NV_OS_ANDROID)
     #define OVR_TIMEFILTER_LOG_FILENAME "/sdcard/TimeFilterLog.txt"
-#elif defined(OVR_OS_WIN32)
+#elif defined(NV_OS_WIN)
     #define OVR_TIMEFILTER_LOG_FILENAME "C:\\TimeFilterLog.txt"
 #else
     #define OVR_TIMEFILTER_LOG_FILENAME "TimeFilterLog.txt"
@@ -271,7 +271,7 @@ void SensorTimeFilter::processFinishedMinWindow(double sampleDeviceTime, double 
     }
     else
     {
-        OVR_ASSERT(MinWindowSamples >= FilterSettings.MinSamples);
+        vAssert(MinWindowSamples >= FilterSettings.MinSamples);
 
         double timeElapsed = 0;
 

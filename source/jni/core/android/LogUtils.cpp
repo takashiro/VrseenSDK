@@ -1,103 +1,46 @@
-/************************************************************************************
-
-Filename    :   Log.cpp
-Content     :   Macros and helpers for Android logging.
-Created     :   4/15/2014
-Authors     :   Jonathan E. Wright
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
 #include "LogUtils.h"
 
 #include <unistd.h>			// for gettid()
 #include <sys/syscall.h>	// for syscall()
 #include <stdarg.h>
 #include <string.h>
-#include <assert.h>
 
-#include "api/VGlOperation.h"
+#include "VGlOperation.h"
+#include "VLog.h"
 
-// GPU Timer queries cause instability on current
-// Adreno drivers. Disable by default, but allow
-// enabling via the local prefs file.
-// TODO: Test this on new Qualcomm driver under Lollipop.
+NV_USING_NAMESPACE
+
 static bool AllowGpuTimerQueries = false;
 
-void SetAllowGpuTimerQueries( bool allow )
+LogCpuTime::LogCpuTime(const char *label)
+    : m_label( label )
 {
-	LOG( "SetAllowGpuTimerQueries( %d )", allow );
-	AllowGpuTimerQueries = allow;
+    m_startTimeNanoSec = GetNanoSeconds();
 }
 
-void SetCurrentThreadAffinityMask( int mask )
+LogCpuTime::~LogCpuTime()
 {
-	int err, syscallres;
-	pid_t pid = gettid();
-	syscallres = syscall( __NR_sched_setaffinity, pid, sizeof( mask ), &mask );
-	if ( syscallres )
-	{
-		err = errno;
-		WARN( "Error in the syscall setaffinity: mask=%d=0x%x err=%d=0x%x", mask, mask, err, err );
-	}
+    const double endTimeNanoSec = GetNanoSeconds();
+    vInfo("LogCpuTime:" << m_label << "took" << ((endTimeNanoSec - m_startTimeNanoSec) * 1e-9) << "seconds");
 }
 
-// Log with an explicit tag
-void LogWithTag( int prio, const char * tag, const char * fmt, ... )
+double LogCpuTime::GetNanoSeconds()
 {
-	va_list ap;
-	va_start( ap, fmt );
-	__android_log_vprint( prio, tag, fmt, ap );
-	va_end( ap );
-}
-
-void LogWithFileTag( int prio, const char * fileTag, const char * fmt, ... )
-{
-	va_list ap;
-
-	// fileTag will be something like "jni/App.cpp", which we
-	// want to strip down to just "App"
-	char strippedTag[128];
-
-	// scan backwards from the end to the first slash
-	const int len = strlen( fileTag );
-	int	slash;
-	for ( slash = len - 1; slash > 0 && fileTag[slash] != '/'; slash-- )
-	{
-	}
-	if ( fileTag[slash] == '/' )
-	{
-		slash++;
-	}
-	// copy forward until a dot or 0
-	size_t i;
-	for ( i = 0; i < sizeof( strippedTag ) - 1; i++ )
-	{
-		const char c = fileTag[slash+i];
-		if ( c == '.' || c == 0 )
-		{
-			break;
-		}
-		strippedTag[i] = c;
-	}
-	strippedTag[i] = 0;
-
-	va_start( ap, fmt );
-	__android_log_vprint( prio, strippedTag, fmt, ap );
-	va_end( ap );
+    struct timespec now;
+    clock_gettime( CLOCK_MONOTONIC, &now );
+    return (double)now.tv_sec * 1e9 + now.tv_nsec;
 }
 
 template< int NumTimers, int NumFrames >
 LogGpuTime<NumTimers,NumFrames>::LogGpuTime() :
-	UseTimerQuery( false ),
-	UseQueryCounter( false ),
-	TimerQuery(),
-	BeginTimestamp(),
-	DisjointOccurred(),
-	TimeResultIndex(),
-	TimeResultMilliseconds(),
-	LastIndex( -1 )
+    m_useTimerQuery( false ),
+    m_useQueryCounter( false ),
+    m_timerQuery(),
+    m_beginTimestamp(),
+    m_disjointOccurred(),
+    m_timeResultIndex(),
+    m_timeResultMilliseconds(),
+    m_lastIndex( -1 )
 {
 }
 
@@ -107,79 +50,79 @@ LogGpuTime<NumTimers,NumFrames>::~LogGpuTime()
     NervGear::VGlOperation glOperation;
 	for ( int i = 0; i < NumTimers; i++ )
 	{
-		if ( TimerQuery[i] != 0 )
+        if ( m_timerQuery[i] != 0 )
 		{
-            glOperation.glDeleteQueriesEXT( 1, &TimerQuery[i] );
+            glOperation.glDeleteQueriesEXT( 1, &m_timerQuery[i] );
 		}
 	}
 }
 
 template< int NumTimers, int NumFrames >
-void LogGpuTime<NumTimers,NumFrames>::Begin( int index )
+void LogGpuTime<NumTimers,NumFrames>::begin( int index )
 {
     NervGear::VGlOperation glOperation;
-    NervGear::VGlOperation::GpuType gpuType = glOperation.eglGetGpuType();
+    ushort gpuType = glOperation.eglGetGpuType();
 	// don't enable by default on Mali because this issues a glFinish() to work around a driver bug
-    UseTimerQuery = AllowGpuTimerQueries && ( ( gpuType & NervGear::VGlOperation::GPU_TYPE_MALI ) == 0 );
+    m_useTimerQuery = AllowGpuTimerQueries && ( ( gpuType & NervGear::VGlOperation::GPU_TYPE_MALI ) == 0 );
 	// use glQueryCounterEXT on Mali to time GPU rendering to a non-default FBO
-    UseQueryCounter = AllowGpuTimerQueries && ( ( gpuType & NervGear::VGlOperation::GPU_TYPE_MALI ) != 0 );
+    m_useQueryCounter = AllowGpuTimerQueries && ( ( gpuType & NervGear::VGlOperation::GPU_TYPE_MALI ) != 0 );
 
-    if ( UseTimerQuery)
+    if ( m_useTimerQuery)
 	{
 		assert( index >= 0 && index < NumTimers );
-		assert( LastIndex == -1 );
-		LastIndex = index;
+        assert( m_lastIndex == -1 );
+        m_lastIndex = index;
 
-		if ( TimerQuery[index] )
+        if ( m_timerQuery[index] )
 		{
 			for ( GLint available = 0; available == 0; )
 			{
-                glOperation.glGetQueryObjectivEXT( TimerQuery[index], GL_QUERY_RESULT_AVAILABLE, &available );
+                glOperation.glGetQueryObjectivEXT( m_timerQuery[index], GL_QUERY_RESULT_AVAILABLE, &available );
 			}
 
-            glGetIntegerv( glOperation.GL_GPU_DISJOINT_EXT, &DisjointOccurred[index] );
+            glGetIntegerv( glOperation.GL_GPU_DISJOINT_EXT, &m_disjointOccurred[index] );
 
 			GLuint64 elapsedGpuTime = 0;
-            glOperation.glGetQueryObjectui64vEXT( TimerQuery[index], NervGear::VGlOperation::GL_QUERY_RESULT_EXT, &elapsedGpuTime );
+            glOperation.glGetQueryObjectui64vEXT( m_timerQuery[index], NervGear::VGlOperation::GL_QUERY_RESULT_EXT, &elapsedGpuTime );
 
-			TimeResultMilliseconds[index][TimeResultIndex[index]] = ( elapsedGpuTime - (GLuint64)BeginTimestamp[index] ) * 0.000001;
-			TimeResultIndex[index] = ( TimeResultIndex[index] + 1 ) % NumFrames;
+            m_timeResultMilliseconds[index][m_timeResultIndex[index]] = ( elapsedGpuTime - (GLuint64)m_beginTimestamp[index] ) * 0.000001;
+            m_timeResultIndex[index] = ( m_timeResultIndex[index] + 1 ) % NumFrames;
 		}
 		else
 		{
-            glOperation.glGenQueriesEXT( 1, &TimerQuery[index] );
+            glOperation.glGenQueriesEXT( 1, &m_timerQuery[index] );
 		}
-		if ( !UseQueryCounter )
+        if ( !m_useQueryCounter )
 		{
-			BeginTimestamp[index] = 0;
-            glOperation.glBeginQueryEXT( NervGear::VGlOperation::GL_TIME_ELAPSED_EXT, TimerQuery[index] );
+            m_beginTimestamp[index] = 0;
+            glOperation.glBeginQueryEXT( NervGear::VGlOperation::GL_TIME_ELAPSED_EXT, m_timerQuery[index] );
 		}
 		else
 		{
-            glOperation.glGetInteger64v(  NervGear::VGlOperation::GL_TIMESTAMP_EXT, &BeginTimestamp[index] );
+            glOperation.glGetInteger64v(  NervGear::VGlOperation::GL_TIMESTAMP_EXT, &m_beginTimestamp[index] );
 		}
 	}
 }
 
 template< int NumTimers, int NumFrames >
-void LogGpuTime<NumTimers,NumFrames>::End( int index )
+void LogGpuTime<NumTimers,NumFrames>::end( int index )
 {
     NervGear::VGlOperation glOperation;
-    if ( UseTimerQuery)
+    if ( m_useTimerQuery)
 	{
-		assert( index == LastIndex );
-		LastIndex = -1;
+        assert( index == m_lastIndex );
+        m_lastIndex = -1;
 
-		if ( !UseQueryCounter )
+        if ( !m_useQueryCounter )
 		{
             glOperation.glEndQueryEXT(  NervGear::VGlOperation::GL_TIME_ELAPSED_EXT );
 		}
 		else
 		{
-            glOperation.glQueryCounterEXT( TimerQuery[index],  NervGear::VGlOperation::GL_TIMESTAMP_EXT );
+            glOperation.glQueryCounterEXT( m_timerQuery[index],  NervGear::VGlOperation::GL_TIMESTAMP_EXT );
 			// Mali workaround: check for availability once to make sure all the pending flushes are resolved
 			GLint available = 0;
-            glOperation.glGetQueryObjectivEXT( TimerQuery[index], GL_QUERY_RESULT_AVAILABLE, &available );
+            glOperation.glGetQueryObjectivEXT( m_timerQuery[index], GL_QUERY_RESULT_AVAILABLE, &available );
 			// Mali workaround: need glFinish() when timing rendering to non-default FBO
 			//glFinish();
 		}
@@ -187,9 +130,9 @@ void LogGpuTime<NumTimers,NumFrames>::End( int index )
 }
 
 template< int NumTimers, int NumFrames >
-void LogGpuTime<NumTimers,NumFrames>::PrintTime( int index, const char * label ) const
+void LogGpuTime<NumTimers,NumFrames>::printTime( int index, const char * label ) const
 {
-    if ( UseTimerQuery)
+    if ( m_useTimerQuery)
 	{
 //		double averageTime = 0.0;
 //		for ( int i = 0; i < NumFrames; i++ )
@@ -202,26 +145,26 @@ void LogGpuTime<NumTimers,NumFrames>::PrintTime( int index, const char * label )
 }
 
 template< int NumTimers, int NumFrames >
-double LogGpuTime<NumTimers,NumFrames>::GetTime( int index ) const
+double LogGpuTime<NumTimers,NumFrames>::getTime( int index ) const
 {
 	double averageTime = 0;
 	for ( int i = 0; i < NumFrames; i++ )
 	{
-		averageTime += TimeResultMilliseconds[index][i];
+        averageTime += m_timeResultMilliseconds[index][i];
 	}
 	averageTime *= ( 1.0 / NumFrames );
 	return averageTime;
 }
 
 template< int NumTimers, int NumFrames >
-double LogGpuTime<NumTimers,NumFrames>::GetTotalTime() const
+double LogGpuTime<NumTimers,NumFrames>::totalTime() const
 {
 	double totalTime = 0;
 	for ( int j = 0; j < NumTimers; j++ )
 	{
 		for ( int i = 0; i < NumFrames; i++ )
 		{
-			totalTime += TimeResultMilliseconds[j][i];
+            totalTime += m_timeResultMilliseconds[j][i];
 		}
 	}
 	totalTime *= ( 1.0 / NumFrames );

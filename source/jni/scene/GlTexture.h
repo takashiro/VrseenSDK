@@ -1,9 +1,8 @@
 #pragma once
 
 #include "vglobal.h"
-#include "Types.h"
 #include "VFlags.h"
-#include "api/VGlOperation.h"
+#include "VGlOperation.h"
 
 // Explicitly using unsigned instead of GLUint / GLenum to avoid including GL headers
 

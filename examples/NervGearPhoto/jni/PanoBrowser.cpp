@@ -15,7 +15,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 
 #include "PanoBrowser.h"
 #include "Oculus360Photos.h"
-#include "ImageData.h"
+
 #include "VrLocale.h"
 #include "BitmapFont.h"
 #include "gui/GuiSys.h"
@@ -26,6 +26,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include <unistd.h>
 #include <VPath.h>
 #include "VDir.h"
+#include "io/VFileOperation.h"
 namespace NervGear
 {
 
@@ -163,7 +164,7 @@ VString PanoBrowser::getPanelTitle( const OvrMetaDatum & panelData ) const
 void PanoBrowser::onPanelActivated( const OvrMetaDatum * panelData )
 {
     Oculus360Photos * photos = ( Oculus360Photos * ) m_app->appInterface();
-	OVR_ASSERT( photos );
+	vAssert( photos );
 	photos->onPanoActivated( panelData );
 }
 
@@ -176,7 +177,7 @@ const OvrMetaDatum * PanoBrowser::nextFileInDirectory( const int step )
 		// find the current
 		int nextPanelIndex = -1;
         Oculus360Photos * photos = ( Oculus360Photos * )m_app->appInterface();
-		OVR_ASSERT( photos );
+		vAssert( photos );
 		for ( nextPanelIndex = 0; nextPanelIndex < numFavorites; ++nextPanelIndex )
 		{
             const Favorite & favorite = m_favoritesBuffer.at( nextPanelIndex );
@@ -263,7 +264,7 @@ void PanoBrowser::onBrowserOpen()
 		// Favorites is empty and active folder - hide it in FolderBrowser by scrolling down
 		if ( !haveAnyFavorite )
 		{
-			LOG( "PanoBrowser::AddToFavorites setting OvrFolderBrowser::MOVE_ROOT_DOWN" );
+			vInfo("PanoBrowser::AddToFavorites setting OvrFolderBrowser::MOVE_ROOT_DOWN");
             setRootAdjust( OvrFolderBrowser::MOVE_ROOT_UP );
 		}
 	}
@@ -356,7 +357,7 @@ int PanoBrowser::numPanosInActive() const
 		return numFavs;
 	}
     const OvrFolderBrowser::FolderView * folder = getFolderView( activeFolderIndex );
-	OVR_ASSERT( folder );
+	vAssert( folder );
     return folder->panels.length();
 }
 
@@ -408,12 +409,12 @@ unsigned char * PanoBrowser::createAndCacheThumbnail( const char * soureFile, co
 	}
 	else // otherwise we let ScaleImageRGBA upscale ( for users that really really want a low res pano )
 	{
-		outBuffer = ScaleImageRGBA( data, width, height, outW, outH, IMAGE_FILTER_CUBIC );
+		outBuffer = VFileOperation::ScaleImageRGBA( data, width, height, outW, outH, IMAGE_FILTER_CUBIC );
 	}
 	free( data );
 
 	// write it out to cache
-	LOG( "thumb create - writjpeg %s %p %dx%d", cacheDestinationFile, data, outW, outH );
+    vInfo("thumb create - writjpeg" << cacheDestinationFile << data << outW << outH);
 //	MakePath( cacheDestinationFile, S_IRUSR | S_IWUSR );
 	vdir.makePath( cacheDestinationFile, S_IRUSR | S_IWUSR );
 	if ( vdir.contains( cacheDestinationFile, W_OK ) )
@@ -452,7 +453,7 @@ void PanoBrowser::onMediaNotFound( App * app, VString & title, VString & imageFi
 bool PanoBrowser::onTouchUpNoFocused()
 {
     Oculus360Photos * photos = ( Oculus360Photos * )m_app->appInterface();
-	OVR_ASSERT( photos );
+	vAssert( photos );
     if ( photos->activePano() != NULL && isOpen() && !gazingAtMenu() )
 	{
         m_app->guiSys().closeMenu( m_app, this, false );

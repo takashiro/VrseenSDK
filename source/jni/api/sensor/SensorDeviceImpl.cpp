@@ -15,7 +15,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 // HMDDeviceDesc can be created/updated through Sensor carrying DisplayInfo.
 
 #include "VTimer.h"
-#include "Types.h"
 
 namespace NervGear {
 
@@ -94,24 +93,24 @@ namespace ByteUtil {
     #error "OVR_BYTE_ORDER must be defined to OVR_LITTLE_ENDIAN or OVR_BIG_ENDIAN"
 #endif
 
-    inline UInt16 DecodeUInt16(const UByte* buffer)
+    inline vuint16 DecodeUInt16(const uchar* buffer)
     {
-        return ByteUtil::LEToSystem ( *(const UInt16*)buffer );
+        return ByteUtil::LEToSystem ( *(const vuint16*)buffer );
     }
 
-    inline void EncodeUInt16(UByte* buffer, UInt16 val)
+    inline void EncodeUInt16(uchar* buffer, vuint16 val)
     {
-        *(UInt16*)buffer = ByteUtil::SystemToLE ( val );
+        *(vuint16*)buffer = ByteUtil::SystemToLE ( val );
     }
 
-    inline void EncodeSInt16(UByte* buffer, SInt16 val)
+    inline void EncodeSInt16(uchar* buffer, vint16 val)
     {
-        *(SInt16*)buffer = ByteUtil::SystemToLE ( val );
+        *(vint16*)buffer = ByteUtil::SystemToLE ( val );
     }
 
-    inline void EncodeUInt32(UByte* buffer, UInt32 val)
+    inline void EncodeUInt32(uchar* buffer, vuint32 val)
     {
-        *(UInt32*)buffer = ByteUtil::SystemToLE ( val );
+        *(vuint32*)buffer = ByteUtil::SystemToLE ( val );
     }
 
 } // namespace ByteUtil
@@ -127,30 +126,30 @@ enum {
 };
 
 // Reported data is little-endian now
-static UInt16 DecodeUInt16(const UByte* buffer)
+static vuint16 DecodeUInt16(const uchar* buffer)
 {
-    return (UInt16(buffer[1]) << 8) | UInt16(buffer[0]);
+    return (vuint16(buffer[1]) << 8) | vuint16(buffer[0]);
 }
 
-static SInt16 DecodeSInt16(const UByte* buffer)
+static vint16 DecodeSInt16(const uchar* buffer)
 {
-    return (SInt16(buffer[1]) << 8) | SInt16(buffer[0]);
+    return (vint16(buffer[1]) << 8) | vint16(buffer[0]);
 }
 
-static UInt32 DecodeUInt32(const UByte* buffer)
+static vuint32 DecodeUInt32(const uchar* buffer)
 {
-    return (buffer[0]) | UInt32(buffer[1] << 8) | UInt32(buffer[2] << 16) | UInt32(buffer[3] << 24);
+    return (buffer[0]) | vuint32(buffer[1] << 8) | vuint32(buffer[2] << 16) | vuint32(buffer[3] << 24);
 }
 
-static void EncodeUInt16(UByte* buffer, UInt16 val)
+static void EncodeUInt16(uchar* buffer, vuint16 val)
 {
-    *(UInt16*)buffer = ByteUtil::SystemToLE ( val );
+    *(vuint16*)buffer = ByteUtil::SystemToLE ( val );
 }
 
-static float DecodeFloat(const UByte* buffer)
+static float DecodeFloat(const uchar* buffer)
 {
     union {
-        UInt32 U;
+        vuint32 U;
         float  F;
     };
 
@@ -159,11 +158,11 @@ static float DecodeFloat(const UByte* buffer)
 }
 
 
-static void UnpackSensor(const UByte* buffer, SInt32* x, SInt32* y, SInt32* z)
+static void UnpackSensor(const uchar* buffer, vint32* x, vint32* y, vint32* z)
 {
     // Sign extending trick
     // from http://graphics.stanford.edu/~seander/bithacks.html#FixedSignExtend
-    struct {SInt32 x:21;} s;
+    struct {vint32 x:21;} s;
 
     *x = s.x = (buffer[0] << 13) | (buffer[1] << 5) | ((buffer[2] & 0xF8) >> 3);
     *y = s.x = ((buffer[2] & 0x07) << 18) | (buffer[3] << 10) | (buffer[4] << 2) |
@@ -171,17 +170,17 @@ static void UnpackSensor(const UByte* buffer, SInt32* x, SInt32* y, SInt32* z)
     *z = s.x = ((buffer[5] & 0x3F) << 15) | (buffer[6] << 7) | (buffer[7] >> 1);
 }
 
-void PackSensor(UByte* buffer, SInt32 x, SInt32 y, SInt32 z)
+void PackSensor(uchar* buffer, vint32 x, vint32 y, vint32 z)
 {
     // Pack 3 32 bit integers into 8 bytes
-    buffer[0] = UByte(x >> 13);
-    buffer[1] = UByte(x >> 5);
-    buffer[2] = UByte((x << 3) | ((y >> 18) & 0x07));
-    buffer[3] = UByte(y >> 10);
-    buffer[4] = UByte(y >> 2);
-    buffer[5] = UByte((y << 6) | ((z >> 15) & 0x3F));
-    buffer[6] = UByte(z >> 7);
-    buffer[7] = UByte(z << 1);
+    buffer[0] = uchar(x >> 13);
+    buffer[1] = uchar(x >> 5);
+    buffer[2] = uchar((x << 3) | ((y >> 18) & 0x07));
+    buffer[3] = uchar(y >> 10);
+    buffer[4] = uchar(y >> 2);
+    buffer[5] = uchar((y << 6) | ((z >> 15) & 0x3F));
+    buffer[6] = uchar(z >> 7);
+    buffer[7] = uchar(z << 1);
 }
 
 
@@ -196,23 +195,23 @@ enum TrackerMessageType
 
 struct TrackerSample
 {
-    SInt32 AccelX, AccelY, AccelZ;
-    SInt32 GyroX, GyroY, GyroZ;
+    vint32 AccelX, AccelY, AccelZ;
+    vint32 GyroX, GyroY, GyroZ;
 };
 
 
 struct TrackerSensors
 {
-    UByte	SampleCount;
-    UInt16	Timestamp;
-    UInt16	LastCommandID;
-    SInt16	Temperature;
+    uchar	SampleCount;
+    vuint16	Timestamp;
+    vuint16	LastCommandID;
+    vint16	Temperature;
 
     TrackerSample Samples[3];
 
-    SInt16	MagX, MagY, MagZ;
+    vint16	MagX, MagY, MagZ;
 
-    TrackerMessageType Decode(const UByte* buffer, int size)
+    TrackerMessageType Decode(const uchar* buffer, int size)
     {
         if (size < 62)
             return TrackerMessage_SizeError;
@@ -226,9 +225,9 @@ struct TrackerSensors
         //    OVR_DEBUG_LOG_TEXT(("TackerSensor::Decode SampleCount=%d\n", SampleCount));
 
         // Only unpack as many samples as there actually are
-        UByte iterationCount = (SampleCount > 2) ? 3 : SampleCount;
+        uchar iterationCount = (SampleCount > 2) ? 3 : SampleCount;
 
-        for (UByte i = 0; i < iterationCount; i++)
+        for (uchar i = 0; i < iterationCount; i++)
         {
             UnpackSensor(buffer + 8 + 16 * i,  &Samples[i].AccelX, &Samples[i].AccelY, &Samples[i].AccelZ);
             UnpackSensor(buffer + 16 + 16 * i, &Samples[i].GyroX,  &Samples[i].GyroY,  &Samples[i].GyroZ);
@@ -248,7 +247,7 @@ struct TrackerMessage
     TrackerSensors     Sensors;
 };
 
-bool DecodeTrackerMessage(TrackerMessage* message, UByte* buffer, int size)
+bool DecodeTrackerMessage(TrackerMessage* message, uchar* buffer, int size)
 {
     memset(message, 0, sizeof(TrackerMessage));
 
@@ -277,14 +276,14 @@ bool DecodeTrackerMessage(TrackerMessage* message, UByte* buffer, int size)
 
 // Sensor HW only accepts specific maximum range values, used to maximize
 // the 16-bit sensor outputs. Use these ramps to specify and report appropriate values.
-static const UInt16 AccelRangeRamp[] = { 2, 4, 8, 16 };
-static const UInt16 GyroRangeRamp[]  = { 250, 500, 1000, 2000 };
-static const UInt16 MagRangeRamp[]   = { 880, 1300, 1900, 2500 };
+static const vuint16 AccelRangeRamp[] = { 2, 4, 8, 16 };
+static const vuint16 GyroRangeRamp[]  = { 250, 500, 1000, 2000 };
+static const vuint16 MagRangeRamp[]   = { 880, 1300, 1900, 2500 };
 
-static UInt16 SelectSensorRampValue(const UInt16* ramp, unsigned count,
+static vuint16 SelectSensorRampValue(const vuint16* ramp, unsigned count,
                                     float val, float factor, const char* label)
 {
-    UInt16 threshold = (UInt16)(val * factor);
+    vuint16 threshold = (vuint16)(val * factor);
 
     for (unsigned i = 0; i<count; i++)
     {
@@ -293,7 +292,7 @@ static UInt16 SelectSensorRampValue(const UInt16* ramp, unsigned count,
     }
     OVR_DEBUG_LOG(("SensorDevice::SetRange - %s clamped to %0.4f",
                    label, float(ramp[count-1]) / factor));
-    OVR_UNUSED2(factor, label);
+    NV_UNUSED(factor, label);
     return ramp[count-1];
 }
 
@@ -303,19 +302,19 @@ static UInt16 SelectSensorRampValue(const UInt16* ramp, unsigned count,
 struct SensorRangeImpl
 {
     enum  { PacketSize = 8 };
-    UByte   Buffer[PacketSize];
+    uchar   Buffer[PacketSize];
 
-    UInt16  CommandId;
-    UInt16  AccelScale;
-    UInt16  GyroScale;
-    UInt16  MagScale;
+    vuint16  CommandId;
+    vuint16  AccelScale;
+    vuint16  GyroScale;
+    vuint16  MagScale;
 
-    SensorRangeImpl(const SensorRange& r, UInt16 commandId = 0)
+    SensorRangeImpl(const SensorRange& r, vuint16 commandId = 0)
     {
         SetSensorRange(r, commandId);
     }
 
-    void SetSensorRange(const SensorRange& r, UInt16 commandId = 0)
+    void SetSensorRange(const SensorRange& r, vuint16 commandId = 0)
     {
         CommandId  = commandId;
         AccelScale = SelectSensorRampValue(AccelRangeRamp, sizeof(AccelRangeRamp)/sizeof(AccelRangeRamp[0]),
@@ -345,21 +344,21 @@ struct SensorRangeImpl
     void  Pack()
     {
         Buffer[0] = 4;
-        Buffer[1] = UByte(CommandId & 0xFF);
-        Buffer[2] = UByte(CommandId >> 8);
-        Buffer[3] = UByte(AccelScale);
-        Buffer[4] = UByte(GyroScale & 0xFF);
-        Buffer[5] = UByte(GyroScale >> 8);
-        Buffer[6] = UByte(MagScale & 0xFF);
-        Buffer[7] = UByte(MagScale >> 8);
+        Buffer[1] = uchar(CommandId & 0xFF);
+        Buffer[2] = uchar(CommandId >> 8);
+        Buffer[3] = uchar(AccelScale);
+        Buffer[4] = uchar(GyroScale & 0xFF);
+        Buffer[5] = uchar(GyroScale >> 8);
+        Buffer[6] = uchar(MagScale & 0xFF);
+        Buffer[7] = uchar(MagScale >> 8);
     }
 
     void Unpack()
     {
-        CommandId = Buffer[1] | (UInt16(Buffer[2]) << 8);
+        CommandId = Buffer[1] | (vuint16(Buffer[2]) << 8);
         AccelScale= Buffer[3];
-        GyroScale = Buffer[4] | (UInt16(Buffer[5]) << 8);
-        MagScale  = Buffer[6] | (UInt16(Buffer[7]) << 8);
+        GyroScale = Buffer[4] | (vuint16(Buffer[5]) << 8);
+        MagScale  = Buffer[6] | (vuint16(Buffer[7]) << 8);
     }
 };
 
@@ -369,7 +368,7 @@ struct SensorRangeImpl
 struct SensorConfigImpl
 {
     enum  { PacketSize = 7 };
-    UByte   Buffer[PacketSize];
+    uchar   Buffer[PacketSize];
 
     // Flag values for Flags.
     enum {
@@ -382,10 +381,10 @@ struct SensorConfigImpl
         Flag_SensorCoordinates  = 0x40
     };
 
-    UInt16  CommandId;
-    UByte   Flags;
-    UInt16  PacketInterval;
-    UInt16  KeepAliveIntervalMs;
+    vuint16  CommandId;
+    uchar   Flags;
+    vuint16  PacketInterval;
+    vuint16  KeepAliveIntervalMs;
 
     SensorConfigImpl() : CommandId(0), Flags(0), PacketInterval(0), KeepAliveIntervalMs(0)
     {
@@ -401,20 +400,20 @@ struct SensorConfigImpl
     void Pack()
     {
         Buffer[0] = 2;
-        Buffer[1] = UByte(CommandId & 0xFF);
-        Buffer[2] = UByte(CommandId >> 8);
+        Buffer[1] = uchar(CommandId & 0xFF);
+        Buffer[2] = uchar(CommandId >> 8);
         Buffer[3] = Flags;
-        Buffer[4] = UByte(PacketInterval);
-        Buffer[5] = UByte(KeepAliveIntervalMs & 0xFF);
-        Buffer[6] = UByte(KeepAliveIntervalMs >> 8);
+        Buffer[4] = uchar(PacketInterval);
+        Buffer[5] = uchar(KeepAliveIntervalMs & 0xFF);
+        Buffer[6] = uchar(KeepAliveIntervalMs >> 8);
     }
 
     void Unpack()
     {
-        CommandId          = Buffer[1] | (UInt16(Buffer[2]) << 8);
+        CommandId          = Buffer[1] | (vuint16(Buffer[2]) << 8);
         Flags              = Buffer[3];
         PacketInterval     = Buffer[4];
-        KeepAliveIntervalMs= Buffer[5] | (UInt16(Buffer[6]) << 8);
+        KeepAliveIntervalMs= Buffer[5] | (vuint16(Buffer[6]) << 8);
     }
 
 };
@@ -423,7 +422,7 @@ struct SensorConfigImpl
 struct SensorFactoryCalibrationImpl
 {
     enum  { PacketSize = 69 };
-    UByte   Buffer[PacketSize];
+    uchar   Buffer[PacketSize];
 
     V3Vectf AccelOffset;
     V3Vectf GyroOffset;
@@ -441,53 +440,53 @@ struct SensorFactoryCalibrationImpl
 	void Pack()
 	{
 		static const float sensorMax = (1 << 20) - 1;
-		SInt32 x, y, z;
+		vint32 x, y, z;
 
 		Buffer[0] = 3;
 
-		x = SInt32(AccelOffset.x * 1e4f);
-		y = SInt32(AccelOffset.y * 1e4f);
-		z = SInt32(AccelOffset.z * 1e4f);
+		x = vint32(AccelOffset.x * 1e4f);
+		y = vint32(AccelOffset.y * 1e4f);
+		z = vint32(AccelOffset.z * 1e4f);
 		PackSensor(Buffer + 3, x, y, z);
 
-		x = SInt32(GyroOffset.x * 1e4f);
-		y = SInt32(GyroOffset.y * 1e4f);
-		z = SInt32(GyroOffset.z * 1e4f);
+		x = vint32(GyroOffset.x * 1e4f);
+		y = vint32(GyroOffset.y * 1e4f);
+		z = vint32(GyroOffset.z * 1e4f);
 		PackSensor(Buffer + 11, x, y, z);
 
 		for (int i = 0; i < 3; i++)
 		{
-			SInt32 row[3];
+			vint32 row[3];
 			for (int j = 0; j < 3; j++)
 			{
 				float val = AccelMatrix.M[i][j];
 				if (i == j)
 					val -= 1.0f;
-				row[j] = SInt32(val * sensorMax);
+				row[j] = vint32(val * sensorMax);
 			}
 			PackSensor(Buffer + 19 + 8 * i, row[0], row[1], row[2]);
 		}
 
 		for (int i = 0; i < 3; i++)
 		{
-			SInt32 row[3];
+			vint32 row[3];
 			for (int j = 0; j < 3; j++)
 			{
 				float val = GyroMatrix.M[i][j];
 				if (i == j)
 					val -= 1.0f;
-				row[j] = SInt32(val * sensorMax);
+				row[j] = vint32(val * sensorMax);
 			}
 			PackSensor(Buffer + 43 + 8 * i, row[0], row[1], row[2]);
 		}
 
-        ByteUtil::EncodeSInt16(Buffer + 67, SInt16(Temperature * 100.0f));
+        ByteUtil::EncodeSInt16(Buffer + 67, vint16(Temperature * 100.0f));
 	}
 
 	void Unpack()
 	{
 		static const float sensorMax = (1 << 20) - 1;
-		SInt32 x, y, z;
+		vint32 x, y, z;
 
 		UnpackSensor(Buffer + 3, &x, &y, &z);
 		AccelOffset.y = (float) y * 1e-4f;
@@ -528,12 +527,12 @@ struct SensorFactoryCalibrationImpl
 struct SensorKeepAliveImpl
 {
     enum  { PacketSize = 5 };
-    UByte   Buffer[PacketSize];
+    uchar   Buffer[PacketSize];
 
-    UInt16  CommandId;
-    UInt16  KeepAliveIntervalMs;
+    vuint16  CommandId;
+    vuint16  KeepAliveIntervalMs;
 
-    SensorKeepAliveImpl(UInt16 interval = 0, UInt16 commandId = 0)
+    SensorKeepAliveImpl(vuint16 interval = 0, vuint16 commandId = 0)
         : CommandId(commandId), KeepAliveIntervalMs(interval)
     {
         Pack();
@@ -542,16 +541,16 @@ struct SensorKeepAliveImpl
     void  Pack()
     {
         Buffer[0] = 8;
-        Buffer[1] = UByte(CommandId & 0xFF);
-        Buffer[2] = UByte(CommandId >> 8);
-        Buffer[3] = UByte(KeepAliveIntervalMs & 0xFF);
-        Buffer[4] = UByte(KeepAliveIntervalMs >> 8);
+        Buffer[1] = uchar(CommandId & 0xFF);
+        Buffer[2] = uchar(CommandId >> 8);
+        Buffer[3] = uchar(KeepAliveIntervalMs & 0xFF);
+        Buffer[4] = uchar(KeepAliveIntervalMs >> 8);
     }
 
     void Unpack()
     {
-        CommandId          = Buffer[1] | (UInt16(Buffer[2]) << 8);
-        KeepAliveIntervalMs= Buffer[3] | (UInt16(Buffer[4]) << 8);
+        CommandId          = Buffer[1] | (vuint16(Buffer[2]) << 8);
+        KeepAliveIntervalMs= Buffer[3] | (vuint16(Buffer[4]) << 8);
     }
 };
 
@@ -559,7 +558,7 @@ struct SensorKeepAliveImpl
 struct SerialImpl
 {
     enum  { PacketSize = 15 };
-    UByte   Buffer[PacketSize];
+    uchar   Buffer[PacketSize];
 
     SerialReport Settings;
 
@@ -595,7 +594,7 @@ struct SerialImpl
 struct UUIDImpl
 {
     enum  { PacketSize = 23 };
-    UByte   Buffer[PacketSize];
+    uchar   Buffer[PacketSize];
 
     UUIDReport Settings;
 
@@ -631,7 +630,7 @@ struct UUIDImpl
 struct TemperatureImpl
 {
     enum  { PacketSize = 24 };
-    UByte   Buffer[PacketSize];
+    uchar   Buffer[PacketSize];
 
     TemperatureReport Settings;
 
@@ -659,13 +658,13 @@ struct TemperatureImpl
         Buffer[6] = Settings.NumSamples;
         Buffer[7] = Settings.Sample;
 
-        ByteUtil::EncodeSInt16(Buffer + 8 , SInt16(Settings.TargetTemperature * 1e2));
-        ByteUtil::EncodeSInt16(Buffer + 10, SInt16(Settings.ActualTemperature * 1e2));
+        ByteUtil::EncodeSInt16(Buffer + 8 , vint16(Settings.TargetTemperature * 1e2));
+        ByteUtil::EncodeSInt16(Buffer + 10, vint16(Settings.ActualTemperature * 1e2));
 
         ByteUtil::EncodeUInt32(Buffer + 12, Settings.Time);
 
         V3Vectd offset = Settings.Offset * 1e4;
-        PackSensor(Buffer + 16, (SInt32) offset.x, (SInt32) offset.y, (SInt32) offset.z);
+        PackSensor(Buffer + 16, (vint32) offset.x, (vint32) offset.y, (vint32) offset.z);
     }
 
     void Unpack()
@@ -683,7 +682,7 @@ struct TemperatureImpl
 
         Settings.Time = DecodeUInt32(Buffer + 12);
 
-        SInt32 x, y, z;
+        vint32 x, y, z;
         UnpackSensor(Buffer + 16, &x, &y, &z);
         Settings.Offset = V3Vectd(x, y, z) * 1e-4;
     }
@@ -693,7 +692,7 @@ struct TemperatureImpl
 struct GyroOffsetImpl
 {
     enum  { PacketSize = 18 };
-    UByte   Buffer[PacketSize];
+    uchar   Buffer[PacketSize];
 
     GyroOffsetReport Settings;
 
@@ -713,14 +712,14 @@ struct GyroOffsetImpl
     {
 
         Buffer[0] = 21;
-        Buffer[1] = UByte(Settings.CommandId & 0xFF);
-        Buffer[2] = UByte(Settings.CommandId >> 8);
-        Buffer[3] = UByte(Settings.Version);
+        Buffer[1] = uchar(Settings.CommandId & 0xFF);
+        Buffer[2] = uchar(Settings.CommandId >> 8);
+        Buffer[3] = uchar(Settings.Version);
 
         V3Vectd offset = Settings.Offset * 1e4;
-		PackSensor(Buffer + 4, (SInt32) offset.x, (SInt32) offset.y, (SInt32) offset.z);
+		PackSensor(Buffer + 4, (vint32) offset.x, (vint32) offset.y, (vint32) offset.z);
 
-        ByteUtil::EncodeSInt16(Buffer + 16, SInt16(Settings.Temperature * 1e2));
+        ByteUtil::EncodeSInt16(Buffer + 16, vint16(Settings.Temperature * 1e2));
     }
 
     void Unpack()
@@ -728,7 +727,7 @@ struct GyroOffsetImpl
         Settings.CommandId   = DecodeUInt16(Buffer + 1);
         Settings.Version     = GyroOffsetReport::VersionEnum(Buffer[3]);
 
-        SInt32 x, y, z;
+        vint32 x, y, z;
         UnpackSensor(Buffer + 4, &x, &y, &z);
         Settings.Offset      = V3Vectd(x, y, z) * 1e-4f;
 
@@ -747,7 +746,7 @@ SensorDisplayInfoImpl::SensorDisplayInfoImpl()
 
 void SensorDisplayInfoImpl::Unpack()
 {
-    CommandId               = Buffer[1] | (UInt16(Buffer[2]) << 8);
+    CommandId               = Buffer[1] | (vuint16(Buffer[2]) << 8);
     DistortionType          = Buffer[3];
     Resolution.H            = DecodeUInt16(Buffer+4);
     Resolution.V            = DecodeUInt16(Buffer+6);
@@ -793,7 +792,7 @@ void SensorDeviceFactory::EnumerateDevices(EnumerateVisitor& visitor)
         SensorEnumerator(DeviceFactory* factory, EnumerateVisitor& externalVisitor)
             : pFactory(factory), ExternalVisitor(externalVisitor) { }
 
-        virtual bool MatchVendorProduct(UInt16 vendorId, UInt16 productId)
+        virtual bool MatchVendorProduct(vuint16 vendorId, vuint16 productId)
         {
             return pFactory->MatchVendorProduct(vendorId, productId);
         }
@@ -841,7 +840,7 @@ void SensorDeviceFactory::EnumerateDevices(EnumerateVisitor& visitor)
     //double totalSeconds = Timer::GetProfileSeconds() - start;
 }
 
-bool SensorDeviceFactory::MatchVendorProduct(UInt16 vendorId, UInt16 productId) const
+bool SensorDeviceFactory::MatchVendorProduct(vuint16 vendorId, vuint16 productId) const
 {
     return 	((vendorId == Oculus_VendorId) && (productId == Device_Tracker_ProductId)) ||
     		((vendorId == Oculus_VendorId) && (productId == Device_KTracker_ProductId)) ||
@@ -935,7 +934,7 @@ SensorDeviceImpl::SensorDeviceImpl(SensorDeviceCreateDesc* createDesc)
 		si.ProductId == Device_KTracker_ProductId)
 	{
 		// When using the old Oculus id's we used the version to indicate support.
-		UInt32 versionValue = si.Version & 0x00ff;	// LDC - We're using the top two bytes as flags and the bottom two as version number.
+		vuint32 versionValue = si.Version & 0x00ff;	// LDC - We're using the top two bytes as flags and the bottom two as version number.
 		if (versionValue == 2 || versionValue >= 4)
 		{
 			deviceSupportsPhoneTemperatureTable = true;
@@ -962,7 +961,7 @@ SensorDeviceImpl::SensorDeviceImpl(SensorDeviceCreateDesc* createDesc)
 SensorDeviceImpl::~SensorDeviceImpl()
 {
     // Check that Shutdown() was called.
-    OVR_ASSERT(!pCreateDesc->pDevice);
+    vAssert(!pCreateDesc->pDevice);
 
 	delete pCalibration;
 }
@@ -1089,7 +1088,7 @@ void SensorDeviceImpl::shutdown()
 }
 
 
-void SensorDeviceImpl::OnInputReport(UByte* pData, UInt32 length)
+void SensorDeviceImpl::OnInputReport(uchar* pData, vuint32 length)
 {
 
     bool processed = false;
@@ -1239,7 +1238,7 @@ Void SensorDeviceImpl::setReportRate(unsigned rateHz)
     else if (rateHz == 0)
         rateHz = Sensor_DefaultReportRate;
 
-    scfg.PacketInterval = UInt16((Sensor_MaxReportRate / rateHz) - 1);
+    scfg.PacketInterval = vuint16((Sensor_MaxReportRate / rateHz) - 1);
 
     scfg.Pack();
 
@@ -1310,7 +1309,7 @@ void SensorDeviceImpl::SetMessageHandler(MessageHandler* handler)
 // We need to convert it to the following RHS coordinate system:
 // X right, Y Up, Z Back (out of screen)
 //
-V3Vectf AccelFromBodyFrameUpdate(const TrackerSensors& update, UByte sampleNumber,
+V3Vectf AccelFromBodyFrameUpdate(const TrackerSensors& update, uchar sampleNumber,
                                   bool convertHMDToSensor = false)
 {
     const TrackerSample& sample = update.Samples[sampleNumber];
@@ -1340,7 +1339,7 @@ V3Vectf MagFromBodyFrameUpdate(const TrackerSensors& update,
                     -(float)update.MagZ) * 0.0001f;
 }
 
-V3Vectf EulerFromBodyFrameUpdate(const TrackerSensors& update, UByte sampleNumber,
+V3Vectf EulerFromBodyFrameUpdate(const TrackerSensors& update, uchar sampleNumber,
                                   bool convertHMDToSensor = false)
 {
     const TrackerSample& sample = update.Samples[sampleNumber];
@@ -1513,7 +1512,7 @@ bool SensorDeviceImpl::getAllTemperatureReports(VArray<VArray<TemperatureReport>
             result = getTemperatureReport(&t);
             if (!result)
                 return false;
-            OVR_ASSERT(t.NumBins == bins && t.NumSamples == samples);
+            vAssert(t.NumBins == bins && t.NumSamples == samples);
 
             (*data)[t.Bin][t.Sample] = t;
         }
@@ -1682,7 +1681,7 @@ void SensorDeviceImpl::onTrackerMessage(TrackerMessage* message)
     if (HandlerRef.GetHandler())
     {
         MessageBodyFrame sensors(this);
-        UByte            iterations = s.SampleCount;
+        uchar            iterations = s.SampleCount;
 
         if (s.SampleCount > 3)
         {
@@ -1694,7 +1693,7 @@ void SensorDeviceImpl::onTrackerMessage(TrackerMessage* message)
             sensors.TimeDelta = (float)scaledTimeUnit;
         }
 
-        for (UByte i = 0; i < iterations; i++)
+        for (uchar i = 0; i < iterations; i++)
         {
             sensors.AbsoluteTimeSeconds = absoluteTimeSeconds - ( iterations - 1 - i ) * scaledTimeUnit;
             sensors.Acceleration  = AccelFromBodyFrameUpdate(s, i, convertHMDToSensor);
@@ -1722,7 +1721,7 @@ void SensorDeviceImpl::onTrackerMessage(TrackerMessage* message)
     }
     else
     {
-        UByte i = (s.SampleCount > 3) ? 2 : (s.SampleCount - 1);
+        uchar i = (s.SampleCount > 3) ? 2 : (s.SampleCount - 1);
         LastAcceleration  = AccelFromBodyFrameUpdate(s, i, convertHMDToSensor);
         LastRotationRate  = EulerFromBodyFrameUpdate(s, i, convertHMDToSensor);
         LastMagneticField = MagFromBodyFrameUpdate(s, convertHMDToSensor);

@@ -161,7 +161,7 @@ struct VrFrame
 	//
 	// To make accurate journal playback possible, applications should
 	// use poseState.TimeInSeconds instead of geting system time directly.
-	ovrPoseStatef	PoseState;
+    VKpose	PoseState;
 
 	// ovrStatus_OrientationTracked, etc
 	unsigned		OvrStatus;

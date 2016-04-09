@@ -136,8 +136,8 @@ DeviceManagerThread::DeviceManagerThread()
       m_suspend( false )
 {
     int result = pipe(m_commandFd);
-	OVR_UNUSED( result );	// no warning
-    OVR_ASSERT(!result);
+	NV_UNUSED( result );	// no warning
+    vAssert(!result);
 
     addSelectFd(NULL, m_commandFd[0]);
 }
@@ -162,7 +162,7 @@ bool DeviceManagerThread::addSelectFd(Notifier* notify, int fd)
     m_fdNotifiers.append(notify);
     m_pollFds.append(pfd);
 
-    OVR_ASSERT(m_fdNotifiers.size() == m_pollFds.size());
+    vAssert(m_fdNotifiers.size() == m_pollFds.size());
     LogText( "DeviceManagerThread::AddSelectFd %d (Tid=%d)\n", fd, threadTid() );
     return true;
 }

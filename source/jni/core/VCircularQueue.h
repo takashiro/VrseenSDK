@@ -32,8 +32,13 @@ public:
         ParentType::append(element);
     }
 
+
+
+
+
 private:
     uint m_capacity;
+
 };
 
 NV_NAMESPACE_END

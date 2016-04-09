@@ -65,10 +65,10 @@ private:
         LatencyTest_ProcessInputs,
     };
 
-    UInt32 getRandomComponent(UInt32 range);
+    vuint32 getRandomComponent(vuint32 range);
     void handleMessage(const Message& msg, LatencyTestMessageType latencyTestMessage = LatencyTest_None);
     void reset();
-    void setTimer(UInt32 timeMilliS);
+    void setTimer(vuint32 timeMilliS);
     void clearTimer();
 
     class LatencyTestHandler : public MessageHandler
@@ -103,8 +103,8 @@ private:
     TesterState                 State;
 
     bool                        HaveOldTime;
-    UInt32                      OldTime;
-    UInt32                      ActiveTimerMilliS;
+    vuint32                      OldTime;
+    vuint32                      ActiveTimerMilliS;
 
     VColor                       RenderColor;
 
@@ -120,7 +120,7 @@ private:
 
         VColor                   TargetColor;
 
-        UInt32                  DeviceMeasuredElapsedMilliS;
+        vuint32                  DeviceMeasuredElapsedMilliS;
 
         bool                    TimedOutWaitingForTestStarted;
         bool                    TimedOutWaitingForColorDetected;

@@ -21,7 +21,7 @@ public:
     // Enumerates devices, creating and destroying relevant objects in manager.
     virtual void EnumerateDevices(EnumerateVisitor& visitor);
 
-    virtual bool MatchVendorProduct(UInt16 vendorId, UInt16 productId) const;
+    virtual bool MatchVendorProduct(vuint16 vendorId, vuint16 productId) const;
     virtual bool DetectHIDDevice(DeviceManager* pdevMgr, const HIDDeviceDesc& desc);
 protected:
     DeviceManager* getManager() const { return (DeviceManager*) pManager; }
@@ -105,7 +105,7 @@ public:
 
     virtual bool        GetDeviceInfo(DeviceInfo* info) const
     {
-        OVR_UNUSED(info);
+        NV_UNUSED(info);
         return false;
     }
 };
@@ -121,7 +121,7 @@ public:
 struct SensorDisplayInfoImpl
 {
     enum  { PacketSize = 56 };
-    UByte   Buffer[PacketSize];
+    uchar   Buffer[PacketSize];
 
     enum
     {
@@ -132,11 +132,11 @@ struct SensorDisplayInfoImpl
         Base_Distortion = 2,
     };
 
-    UInt16  CommandId;
-    UByte   DistortionType;
+    vuint16  CommandId;
+    uchar   DistortionType;
     struct
     {
-        UInt16 H, V;
+        vuint16 H, V;
     }       Resolution;                     // In pixels
     struct
     {
@@ -175,7 +175,7 @@ public:
     virtual void SetMessageHandler(MessageHandler* handler);
 
     // HIDDevice::Notifier interface.
-    virtual void OnInputReport(UByte* pData, UInt32 length);
+    virtual void OnInputReport(uchar* pData, vuint32 length);
     virtual double OnTicks(double tickSeconds);
 
     // HMD-Mounted sensor has a different coordinate frame.
@@ -263,8 +263,8 @@ protected:
     double      NextKeepAliveTickSeconds;
 
     bool        SequenceValid;
-    UInt16      LastTimestamp;
-    UByte       LastSampleCount;
+    vuint16      LastTimestamp;
+    uchar       LastSampleCount;
     float       LastTemperature;
     V3Vectf    LastAcceleration;
     V3Vectf    LastRotationRate;
@@ -272,7 +272,7 @@ protected:
     V3Vectf    LastMagneticBias;
 
     // This tracks wrap around, and should be monotomically increasing.
-    UInt32		FullTimestamp;
+    vuint32		FullTimestamp;
 
     // This is the delta added to FullTimeStamp * timestampScale to get a real time
     double		RealTimeDelta;
@@ -288,7 +288,7 @@ protected:
     VR4Matrixf    		GyroCalibrationMatrix;
     float       		CalibrationTemperature;
 
-    UInt16      		OldCommandId;
+    vuint16      		OldCommandId;
 
     SensorTimeFilter 	TimeFilter;
 

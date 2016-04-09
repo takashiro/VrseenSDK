@@ -99,7 +99,7 @@ bool HIDDeviceManager::Initialize()
 //-----------------------------------------------------------------------------
 void HIDDeviceManager::Shutdown()
 {
-    OVR_ASSERT_LOG((UdevInstance), ("Should have called 'Initialize' before 'Shutdown'."));
+    vAssert_LOG((UdevInstance), ("Should have called 'Initialize' before 'Shutdown'."));
 
     if (HIDMonitor)
     {
@@ -464,7 +464,7 @@ bool HIDDevice::HIDInitialize(const String& path)
 bool HIDDevice::initInfo()
 {
     // Device must have been successfully opened.
-    OVR_ASSERT(DeviceHandle >= 0);
+    vAssert(DeviceHandle >= 0);
 
     int desc_size = 0;
     hidraw_report_descriptor rpt_desc;
@@ -474,7 +474,7 @@ bool HIDDevice::initInfo()
     int r = ioctl(DeviceHandle, HIDIOCGRDESCSIZE, &desc_size);
     if (r < 0)
     {
-        OVR_ASSERT_LOG(false, ("Failed to get report descriptor size."));
+        vAssert_LOG(false, ("Failed to get report descriptor size."));
         return false;
     }
 
@@ -483,7 +483,7 @@ bool HIDDevice::initInfo()
     r = ioctl(DeviceHandle, HIDIOCGRDESC, &rpt_desc);
     if (r < 0)
     {
-        OVR_ASSERT_LOG(false, ("Failed to get report descriptor."));
+        vAssert_LOG(false, ("Failed to get report descriptor."));
         return false;
     }
 
@@ -491,28 +491,28 @@ bool HIDDevice::initInfo()
     // Get report lengths.
     SInt32 bufferLength;
     bool getResult = HIDManager->getIntProperty(Device, CFSTR(kIOHIDMaxInputReportSizeKey), &bufferLength);
-    OVR_ASSERT(getResult);
+    vAssert(getResult);
     InputReportBufferLength = (UInt16) bufferLength;
 
     getResult = HIDManager->getIntProperty(Device, CFSTR(kIOHIDMaxOutputReportSizeKey), &bufferLength);
-    OVR_ASSERT(getResult);
+    vAssert(getResult);
     OutputReportBufferLength = (UInt16) bufferLength;
 
     getResult = HIDManager->getIntProperty(Device, CFSTR(kIOHIDMaxFeatureReportSizeKey), &bufferLength);
-    OVR_ASSERT(getResult);
+    vAssert(getResult);
     FeatureReportBufferLength = (UInt16) bufferLength;
 
 
     if (ReadBufferSize < InputReportBufferLength)
     {
-        OVR_ASSERT_LOG(false, ("Input report buffer length is bigger than read buffer."));
+        vAssert_LOG(false, ("Input report buffer length is bigger than read buffer."));
         return false;
     }
 
     // Get device desc.
     if (!HIDManager->getFullDesc(Device, &DevDesc))
     {
-        OVR_ASSERT_LOG(false, ("Failed to get device desc while initializing device."));
+        vAssert_LOG(false, ("Failed to get device desc while initializing device."));
         return false;
     }
 
@@ -527,7 +527,7 @@ bool HIDDevice::initInfo()
 
     if (ReadBufferSize < InputReportBufferLength)
     {
-        OVR_ASSERT_LOG(false, ("Input report buffer length is bigger than read buffer."));
+        vAssert_LOG(false, ("Input report buffer length is bigger than read buffer."));
         return false;
     }
 
@@ -555,7 +555,7 @@ bool HIDDevice::openDevice(const char* device_path)
     // fill out some values from the feature report descriptor
     if (!initInfo())
     {
-        OVR_ASSERT_LOG(false, ("Failed to get HIDDevice info."));
+        vAssert_LOG(false, ("Failed to get HIDDevice info."));
 
         close(DeviceHandle);
         DeviceHandle = -1;
@@ -565,7 +565,7 @@ bool HIDDevice::openDevice(const char* device_path)
     // Add the device to the polling list
     if (!HIDManager->DevManager->pThread->AddSelectFd(this, DeviceHandle))
     {
-        OVR_ASSERT_LOG(false, ("Failed to initialize polling for HIDDevice."));
+        vAssert_LOG(false, ("Failed to initialize polling for HIDDevice."));
 
         close(DeviceHandle);
         DeviceHandle = -1;
@@ -593,7 +593,7 @@ void HIDDevice::HIDShutdown()
 //-----------------------------------------------------------------------------
 void HIDDevice::closeDevice(bool wasUnplugged)
 {
-    OVR_ASSERT(DeviceHandle >= 0);
+    vAssert(DeviceHandle >= 0);
 
 
     HIDManager->DevManager->pThread->RemoveSelectFd(this, DeviceHandle);
@@ -726,7 +726,7 @@ bool HIDDevice::OnDeviceNotification(MessageType messageType,
     }
     else
     {
-        OVR_ASSERT(0);
+        vAssert(0);
     }
 
     *error = false;
@@ -762,7 +762,7 @@ HIDDeviceManager* HIDDeviceManager::CreateInternal(Linux::DeviceManager* devMana
 // Creates a new HIDDeviceManager and initializes OVR.
 HIDDeviceManager* HIDDeviceManager::Create()
 {
-    OVR_ASSERT_LOG(false, ("Standalone mode not implemented yet."));
+    vAssert_LOG(false, ("Standalone mode not implemented yet."));
 
     Ptr<Linux::HIDDeviceManager> manager = *new Linux::HIDDeviceManager(NULL);
 

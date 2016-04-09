@@ -106,7 +106,7 @@ public:
 
     virtual ~DeviceCreateDesc()
     {
-        OVR_ASSERT(!pDevice);
+        vAssert(!pDevice);
         /*if (!this->pointToVList->isEmpty()) {
             this->pointToVList->remove(this);
         }*/
@@ -153,7 +153,7 @@ public:
     // Return 'false' to create new object, 'true' if done with this argument.
     virtual bool              UpdateMatchedCandidate(
         const DeviceCreateDesc& desc, bool* newDeviceFlag = NULL)
-    { OVR_UNUSED2(desc, newDeviceFlag); return false; }
+    { NV_UNUSED(desc, newDeviceFlag); return false; }
 
     // Matches HID device to the descriptor.
     virtual bool              MatchHIDDevice(const HIDDeviceDesc&) const { return false; }
@@ -266,7 +266,7 @@ public:
     // Notifiers called when we are added to/removed from a device.
     virtual bool AddedToManager(DeviceManagerImpl* manager)
     {
-        OVR_ASSERT(pManager == 0);
+        vAssert(pManager == 0);
         pManager = manager;
         return true;
     }
@@ -293,9 +293,9 @@ public:
 
     // Matches vendorId/productId pair with the factory; returns 'true'
     // if the factory can handle the device.
-    virtual bool MatchVendorProduct(UInt16 vendorId, UInt16 productId) const
+    virtual bool MatchVendorProduct(vuint16 vendorId, vuint16 productId) const
     {
-        OVR_UNUSED2(vendorId, productId);
+        NV_UNUSED(vendorId, productId);
         return false;
     }
 
@@ -303,7 +303,7 @@ public:
     // the device belongs to this factory. Returns 'false', if not.
     virtual bool DetectHIDDevice(DeviceManager* pdevMgr, const HIDDeviceDesc& desc)
     {
-        OVR_UNUSED2(pdevMgr, desc);
+        NV_UNUSED(pdevMgr, desc);
         return false;
     }
 

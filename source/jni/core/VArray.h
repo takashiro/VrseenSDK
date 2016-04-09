@@ -96,7 +96,7 @@ public:
     {
         for (auto i = ParentType::begin(); i != ParentType::end(); i++) {
             if (*i == e) {
-                this->erase(i);
+                ParentType::erase(i);
                 break;
             }
         }
@@ -121,6 +121,16 @@ public:
             }
         }
         return false;
+    }
+
+    int indexOf(const E &e) const
+    {
+        for (int i = 0, max = length(); i < max; i++) {
+            if (at(i) == e) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     void removeAtUnordered(uint index)

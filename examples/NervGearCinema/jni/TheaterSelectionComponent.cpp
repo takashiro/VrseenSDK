@@ -1,6 +1,7 @@
 
 #include <Input.h>
-#include <Vsync.h>
+#include "core/VTimer.h"
+
 
 #include "TheaterSelectionComponent.h"
 #include "TheaterSelectionView.h"
@@ -76,7 +77,7 @@ eMsgStatus TheaterSelectionComponent::onEventImpl( App * app, VrFrame const & vr
         	}
             return MSG_STATUS_ALIVE;
         default:
-            OVR_ASSERT( !"Event flags mismatch!" );
+            vAssert( !"Event flags mismatch!" );
             return MSG_STATUS_ALIVE;
     }
 }
@@ -90,7 +91,7 @@ eMsgStatus TheaterSelectionComponent::FocusGained( App * app, VrFrame const & vr
     self->setHilighted( true );
 
     StartFadeOutTime = -1.0;
-    StartFadeInTime = ovr_GetTimeInSeconds();
+    StartFadeInTime = VTimer::Seconds();
 
     Sound.playSound( app, "gaze_on", 0.1 );
 
@@ -106,7 +107,7 @@ eMsgStatus TheaterSelectionComponent::FocusLost( App * app, VrFrame const & vrFr
     self->setHilighted( false );
 
     StartFadeInTime = -1.0;
-    StartFadeOutTime = ovr_GetTimeInSeconds();
+    StartFadeOutTime = VTimer::Seconds();
 
     Sound.playSound( app, "gaze_off", 0.1 );
 
@@ -118,7 +119,7 @@ eMsgStatus TheaterSelectionComponent::FocusLost( App * app, VrFrame const & vrFr
 eMsgStatus TheaterSelectionComponent::Frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
-    double t = ovr_GetTimeInSeconds();
+    double t = VTimer::Seconds();
     if ( StartFadeInTime >= 0.0f && t >= StartFadeInTime )
     {
         HilightFader.startFadeIn();

@@ -30,7 +30,7 @@ class VSysFile : public VDelegatedFile
 public:
 
     VSysFile();
-    VSysFile(VFile *pfile);
+    VSysFile(VAbstractFile *pfile);
     VSysFile(const VString& path, int flags = Open_Read);
 
     bool  open(const VString& path, int flags = Open_Read);

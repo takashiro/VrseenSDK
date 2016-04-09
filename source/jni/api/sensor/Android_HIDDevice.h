@@ -42,8 +42,8 @@ public:
     bool HIDInitialize(const VString& path);
     void HIDShutdown();
 
-    virtual bool SetFeatureReport(UByte* data, UInt32 length);
-	virtual bool GetFeatureReport(UByte* data, UInt32 length);
+    virtual bool SetFeatureReport(uchar* data, vuint32 length);
+	virtual bool GetFeatureReport(uchar* data, vuint32 length);
 
     // DeviceManagerThread::Notifier
     void onEvent(int i, int fd);
@@ -74,11 +74,11 @@ private:
     HIDDeviceDesc           DevDesc;
 
     enum { ReadBufferSize = 96 };
-    UByte                   ReadBuffer[ReadBufferSize];
+    uchar                   ReadBuffer[ReadBufferSize];
 
-    UInt16                  InputReportBufferLength;
-    UInt16                  OutputReportBufferLength;
-    UInt16                  FeatureReportBufferLength;
+    vuint16                  InputReportBufferLength;
+    vuint16                  OutputReportBufferLength;
+    vuint16                  FeatureReportBufferLength;
 };
 
 

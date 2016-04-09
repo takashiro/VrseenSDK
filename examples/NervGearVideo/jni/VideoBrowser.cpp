@@ -15,7 +15,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 
 #include "VideoBrowser.h"
 #include "GlTexture.h"
-#include "ImageData.h"
+
 #include "Oculus360Videos.h"
 #include "VrLocale.h"
 #include "BitmapFont.h"
@@ -25,6 +25,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 
 #include <VPath.h>
 #include <VApkFile.h>
+#include "io/VFileOperation.h"
 
 namespace NervGear
 {
@@ -46,7 +47,7 @@ VideoBrowser * VideoBrowser::Create(
 void VideoBrowser::onPanelActivated( const OvrMetaDatum * panelData )
 {
 	Oculus360Videos * videos = ( Oculus360Videos * )m_app->appInterface();
-	OVR_ASSERT( videos );
+	vAssert( videos );
 	videos->OnVideoActivated( panelData );
 }
 
@@ -58,7 +59,7 @@ unsigned char * VideoBrowser::createAndCacheThumbnail( const char * soureFile, c
 
 unsigned char * VideoBrowser::loadThumbnail( const char * filename, int & width, int & height )
 {
-	LOG( "VideoBrowser::LoadThumbnail loading on %s", filename );
+	vInfo("VideoBrowser::LoadThumbnail loading on" << filename);
 	unsigned char * orig = NULL;
 
 	if ( strstr( filename, "assets/" ) )
@@ -90,12 +91,13 @@ unsigned char * VideoBrowser::loadThumbnail( const char * filename, int & width,
 
 		if ( ThumbWidth == width && ThumbHeight == height )
 		{
-			LOG( "VideoBrowser::LoadThumbnail skip resize on %s", filename );
+			vInfo("VideoBrowser::LoadThumbnail skip resize on" << filename);
 			return orig;
 		}
 
-		LOG( "VideoBrowser::LoadThumbnail resizing %s to %ix%i", filename, ThumbWidth, ThumbHeight );
-		unsigned char * outBuffer = ScaleImageRGBA( ( const unsigned char * )orig, width, height, ThumbWidth, ThumbHeight, IMAGE_FILTER_CUBIC );
+        vInfo("VideoBrowser::LoadThumbnail resizing" << filename << "to" << ThumbWidth << ThumbHeight);
+        uchar *outBuffer = VFileOperation::ScaleImageRGBA( ( const unsigned char * )orig, width, height, ThumbWidth, ThumbHeight, IMAGE_FILTER_CUBIC );
+
 		free( orig );
 
 		if ( outBuffer )
@@ -108,7 +110,7 @@ unsigned char * VideoBrowser::loadThumbnail( const char * filename, int & width,
 	}
 	else
 	{
-		LOG( "Error: VideoBrowser::LoadThumbnail failed to load %s", filename );
+		vInfo("Error: VideoBrowser::LoadThumbnail failed to load" << filename);
 	}
 	return NULL;
 }

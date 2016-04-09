@@ -2,7 +2,9 @@
 
 NV_NAMESPACE_BEGIN
 
-VGlOperation::GpuType VGlOperation::eglGetGpuType()
+
+
+ ushort VGlOperation::eglGetGpuType()
 {
 
     GpuType gpuType;
@@ -39,7 +41,7 @@ VGlOperation::VGlOperation()
 {
     extensions = reinterpret_cast<const char *>(glGetString(GL_EXTENSIONS));
     if (NULL == extensions) {
-        LOG( "glGetString( GL_EXTENSIONS ) returned NULL" );
+        vInfo("glGetString( GL_EXTENSIONS ) returned NULL");
     }
 }
 
@@ -53,7 +55,7 @@ EGLConfig VGlOperation::eglConfigForConfigID(const EGLDisplay display, const GLi
                                    configs,
                                    MAX_CONFIGS,
                                    &numConfigs)) {
-        //WARN("eglGetConfigs() failed");
+        //vWarn("eglGetConfigs() failed");
         return NULL;
     }
 
@@ -137,9 +139,9 @@ bool VGlOperation::logErrorsEnum(const char *logTitle)
             break;
         }
         hadError = true;
-        WARN("%s GL Error: %s", logTitle, getGlErrorEnum(err));
+        vWarn(logTitle << "GL Error:" << getGlErrorEnum(err));
         if (err == GL_OUT_OF_MEMORY) {
-            FAIL("GL_OUT_OF_MEMORY");
+            vFatal("GL_OUT_OF_MEMORY");
         }
     } while (1);
     return hadError;
@@ -166,7 +168,7 @@ void * VGlOperation::getExtensionProc( const char * name )
 {
     void * ptr = reinterpret_cast<void*>(eglGetProcAddress(name));
     if (!ptr) {
-        //LOG("NOT FOUND: %s", name);
+        //vInfo("NOT FOUND:" << name);
     }
     return ptr;
 }
@@ -175,37 +177,37 @@ void VGlOperation::logExtensions()
 {
     const char * extensions = (const char *)glGetString( GL_EXTENSIONS );
     if (NULL == extensions) {
-        //LOG("glGetString( GL_EXTENSIONS ) returned NULL");
+        //vInfo("glGetString( GL_EXTENSIONS ) returned NULL");
         return;
     }
 
 
-    LOG("GL_EXTENSIONS:");
+    vInfo("GL_EXTENSIONS:");
 
 
 //    const bool es3 = (strncmp((const char *)glGetString(GL_VERSION), "OpenGL ES 3", 11) == 0);
-    //LOG("es3 = %s", es3 ? "TRUE" : "FALSE");
+    //vInfo("es3 =" << es3 ? "TRUE" : "FALSE");
 
     GLint MaxTextureSize = 0;
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &MaxTextureSize);
-    //LOG("GL_MAX_TEXTURE_SIZE = %d", MaxTextureSize);
+    //vInfo("GL_MAX_TEXTURE_SIZE =" << MaxTextureSize);
 
     GLint MaxVertexUniformVectors = 0;
     glGetIntegerv(GL_MAX_VERTEX_UNIFORM_VECTORS, &MaxVertexUniformVectors);
-    //LOG("GL_MAX_VERTEX_UNIFORM_VECTORS = %d", MaxVertexUniformVectors);
+    //vInfo("GL_MAX_VERTEX_UNIFORM_VECTORS =" << MaxVertexUniformVectors);
 
     GLint MaxFragmentUniformVectors = 0;
     glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_VECTORS, &MaxFragmentUniformVectors);
-    //LOG("GL_MAX_FRAGMENT_UNIFORM_VECTORS = %d", MaxFragmentUniformVectors);
+    //vInfo("GL_MAX_FRAGMENT_UNIFORM_VECTORS =" << MaxFragmentUniformVectors);
 }
 
 bool VGlOperation::glIsExtensionString(const char *extension, const char *allExtensions)
 {
     if (strstr(allExtensions, extension)) {
-        //LOG( "Found: %s", extension );
+        //vInfo("Found:" << extension);
         return true;
     } else {
-        //LOG("Not found: %s", extension);
+        //vInfo("Not found:" << extension);
         return false;
     }
 }
@@ -214,11 +216,11 @@ void VGlOperation::glFinish()
 {
     const EGLint wait = glWaitforFlush(100000000);
     if (wait == EGL_TIMEOUT_EXPIRED_KHR) {
-        //LOG("EGL_TIMEOUT_EXPIRED_KHR");
+        //vInfo("EGL_TIMEOUT_EXPIRED_KHR");
     }
 
     if ( wait == EGL_FALSE ) {
-        //LOG("eglClientWaitSyncKHR returned EGL_FALSE");
+        //vInfo("eglClientWaitSyncKHR returned EGL_FALSE");
     }
 }
 
@@ -226,7 +228,7 @@ void VGlOperation::glFlush()
 {
     const EGLint wait = glWaitforFlush(0);
     if (wait == EGL_FALSE) {
-        //LOG("eglClientWaitSyncKHR returned EGL_FALSE");
+        //vInfo("eglClientWaitSyncKHR returned EGL_FALSE");
     }
 }
 
@@ -252,10 +254,10 @@ EGLConfig VGlOperation::chooseColorConfig( const EGLDisplay display, const int r
 
     if (EGL_FALSE == eglGetConfigs(display,
                                      configs, MAX_CONFIGS, &numConfigs)) {
-        WARN("eglGetConfigs() failed");
+        vWarn("eglGetConfigs() failed");
         return NULL;
     }
-    //LOG("eglGetConfigs() = %i configs", numConfigs);
+    //vInfo("eglGetConfigs() =" << numConfigs << "configs");
 
     const EGLint configAttribs[] = {
         EGL_BLUE_SIZE,  	blueBits,
@@ -295,7 +297,7 @@ EGLConfig VGlOperation::chooseColorConfig( const EGLDisplay display, const int r
                 }
             }
             if (configAttribs[j] == EGL_NONE) {
-                //LOG("Got an ES %i renderable config: %i", esVersion, (int)configs[i]);
+                //vInfo("Got an ES" << esVersion << "renderable config:" << (int)configs[i]);
                 return configs[i];
             }
         }
@@ -319,7 +321,7 @@ void VGlOperation::eglInit( const EGLContext shareContext,
     eglInitialize(display, &majorVersion, &minorVersion);
     config = chooseColorConfig(display, redBits, greenBits, blueBits, depthBits, multisamples, true);
     if (config == 0) {
-        FAIL("No acceptable EGL color configs.");
+        vFatal("No acceptable EGL color configs.");
         return ;
     }
 
@@ -338,18 +340,18 @@ void VGlOperation::eglInit( const EGLContext shareContext,
 
         context = eglCreateContext(display, config, shareContext, contextAttribs);
         if (context != EGL_NO_CONTEXT) {
-            //LOG("Succeeded.");
+            //vInfo("Succeeded.");
             glEsVersion = version;
 
             EGLint configIDReadback;
             if (!eglQueryContext(display, context, EGL_CONFIG_ID, &configIDReadback)) {
-                //WARN("eglQueryContext EGL_CONFIG_ID failed");
+                //vWarn("eglQueryContext EGL_CONFIG_ID failed");
             }
             break;
         }
     }
     if (context == EGL_NO_CONTEXT) {
-        WARN("eglCreateContext failed: %s", glOperation.getEglErrorString());
+        vWarn("eglCreateContext failed:" << glOperation.getEglErrorString());
         return ;
     }
 
@@ -357,13 +359,13 @@ void VGlOperation::eglInit( const EGLContext shareContext,
         EGLint actualPriorityLevel;
         eglQueryContext(display, context, EGL_CONTEXT_PRIORITY_LEVEL_IMG, &actualPriorityLevel);
         switch (actualPriorityLevel) {
-        case EGL_CONTEXT_PRIORITY_HIGH_IMG: //LOG( "Context is EGL_CONTEXT_PRIORITY_HIGH_IMG" );
+        case EGL_CONTEXT_PRIORITY_HIGH_IMG: //vInfo("Context is EGL_CONTEXT_PRIORITY_HIGH_IMG");
             break;
-        case EGL_CONTEXT_PRIORITY_MEDIUM_IMG: //LOG( "Context is EGL_CONTEXT_PRIORITY_MEDIUM_IMG" );
+        case EGL_CONTEXT_PRIORITY_MEDIUM_IMG: //vInfo("Context is EGL_CONTEXT_PRIORITY_MEDIUM_IMG");
             break;
-        case EGL_CONTEXT_PRIORITY_LOW_IMG: //LOG( "Context is EGL_CONTEXT_PRIORITY_LOW_IMG" );
+        case EGL_CONTEXT_PRIORITY_LOW_IMG: //vInfo("Context is EGL_CONTEXT_PRIORITY_LOW_IMG");
             break;
-        default: //LOG( "Context has unknown priority level" );
+        default: //vInfo("Context has unknown priority level");
             break;
         }
     }
@@ -376,14 +378,14 @@ void VGlOperation::eglInit( const EGLContext shareContext,
     pbufferSurface = eglCreatePbufferSurface(display, config, attrib_list);
 
     if (pbufferSurface == EGL_NO_SURFACE) {
-        WARN("eglCreatePbufferSurface failed: %s", glOperation.getEglErrorString());
+        vWarn("eglCreatePbufferSurface failed:" << glOperation.getEglErrorString());
         eglDestroyContext(display, context);
         context = EGL_NO_CONTEXT;
         return ;
     }
 
     if (eglMakeCurrent(display, pbufferSurface, pbufferSurface, context) == EGL_FALSE) {
-        WARN("eglMakeCurrent pbuffer failed: %s", glOperation.getEglErrorString());
+        vWarn("eglMakeCurrent pbuffer failed:" << glOperation.getEglErrorString());
         eglDestroySurface(display, pbufferSurface);
         eglDestroyContext(display, context);
         context = EGL_NO_CONTEXT;
@@ -399,15 +401,15 @@ void VGlOperation::eglExit(  )
 {
     VGlOperation glOperation;
     if (eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT) == EGL_FALSE) {
-        FAIL("eglMakeCurrent: failed: %s", glOperation.getEglErrorString());
+        vFatal("eglMakeCurrent: failed:" << glOperation.getEglErrorString());
     }
 
     if (eglDestroyContext(display, context) == EGL_FALSE) {
-        FAIL("eglDestroyContext: failed: %s", glOperation.getEglErrorString());
+        vFatal("eglDestroyContext: failed:" << glOperation.getEglErrorString());
     }
 
     if (eglDestroySurface(display, pbufferSurface) == EGL_FALSE) {
-        FAIL("eglDestroySurface: failed: %s", glOperation.getEglErrorString());
+        vFatal("eglDestroySurface: failed:" << glOperation.getEglErrorString());
     }
 
     glEsVersion = 0;

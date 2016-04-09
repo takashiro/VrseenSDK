@@ -13,6 +13,8 @@ Copyright   :   Copyright 2012 Oculus VR, LCC. All Rights reserved.
 
 #include <VStandardPath.h>
 #include <VLog.h>
+#include <VColor.h>
+#include <VEyeBuffer.h>
 
 static const char * versionString = "VrScene v0.1.0";
 
@@ -23,7 +25,7 @@ void Java_com_vrseen_nervgear_scene_MainActivity_nativeSetAppInterface( JNIEnv *
 	jstring fromPackageName, jstring commandString, jstring uriString )
 {
 	// This is called by the java UI thread.
-	LOG( "nativeSetAppInterface" );
+	vInfo("nativeSetAppInterface");
     (new VrScene(jni, clazz, activity))->onCreate(fromPackageName, commandString, uriString );
 }
 
@@ -41,7 +43,7 @@ VrScene::VrScene(JNIEnv *jni, jclass activityClass, jobject activityObject)
 }
 
 VrScene::~VrScene() {
-	LOG( "~VrScene()");
+	vInfo("~VrScene()");
 }
 
 void VrScene::configureVrMode(VKernel* kernel)
@@ -52,7 +54,7 @@ void VrScene::configureVrMode(VKernel* kernel)
 
 void VrScene::init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI)
 {
-	LOG( "VrScene::OneTimeInit" );
+	vInfo("VrScene::OneTimeInit");
 
     vApp->storagePaths().PushBackSearchPathIfValid(VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", SearchPaths);
     vApp->storagePaths().PushBackSearchPathIfValid(VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "", SearchPaths);
@@ -68,7 +70,7 @@ void VrScene::init(const VString &fromPackage, const VString &launchIntentJSON, 
 
 void VrScene::shutdown()
 {
-	LOG( "VrScene::OneTimeShutdown" );
+	vInfo("VrScene::OneTimeShutdown");
 
 	// Free GL resources
 }
@@ -100,11 +102,11 @@ void VrScene::LoadScene( const VString &path )
 	}
 
 	MaterialParms materialParms;
-	materialParms.UseSrgbTextureFormats = ( vApp->vrParms().colorFormat == COLOR_8888_sRGB );
-	LOG( "VrScene::LoadScene loading %s", SceneFile.toCString() );
+	materialParms.UseSrgbTextureFormats = ( vApp->vrParms().colorFormat == VColor::COLOR_8888_sRGB );
+    vInfo("VrScene::LoadScene loading" << SceneFile);
     Scene.LoadWorldModel( SceneFile, materialParms );
 	ModelLoaded = true; 
-	LOG( "VrScene::LoadScene model is loaded" );
+	vInfo("VrScene::LoadScene model is loaded");
 	Scene.YawOffset = -M_PI / 2;
 
 #if defined( INTENT_TEST_MODEL )
@@ -137,7 +139,7 @@ void VrScene::ReloadScene()
 	const float	yaw = Scene.YawOffset;
 
 	MaterialParms materialParms;
-	materialParms.UseSrgbTextureFormats = ( vApp->vrParms().colorFormat == COLOR_8888_sRGB );
+	materialParms.UseSrgbTextureFormats = ( vApp->vrParms().colorFormat == VColor::COLOR_8888_sRGB );
     Scene.LoadWorldModel( SceneFile, materialParms );
 
 	Scene.YawOffset = yaw;
@@ -160,14 +162,14 @@ VR4Matrixf VrScene::drawEyeView( const int eye, const float fovDegrees )
 VR4Matrixf VrScene::onNewFrame( const VrFrame vrFrame )
 {
 	// Get the current vrParms for the buffer resolution.
-	const EyeParms vrParms = vApp->eyeParms();
+    const VEyeBuffer::EyeParms vrParms = vApp->eyeParms();
 
 	// Player movement
-	Scene.Frame( vApp->vrViewParms(), vrFrame, vApp->swapParms().ExternalVelocity );
+    Scene.Frame( vApp->vrViewParms(), vrFrame, vApp->kernel()->m_externalVelocity );
 
 	// Make the test object hop up and down
 	{
-		const float y = 1 + sin( 2 * vrFrame.PoseState.TimeInSeconds );
+        const float y = 1 + sin( 2 * vrFrame.PoseState.TimeBySeconds );
 		TestObject.State.modelMatrix.M[0][3] = 2;
 		TestObject.State.modelMatrix.M[1][3] = y;
 	}
@@ -189,7 +191,7 @@ VR4Matrixf VrScene::onNewFrame( const VrFrame vrFrame )
 			// Switch buffer parameters for testing
 			if ( vrFrame.Input.buttonPressed & BUTTON_X )
 			{
-				EyeParms newParms = vrParms;
+                VEyeBuffer::EyeParms newParms = vrParms;
 				switch ( newParms.multisamples )
 				{
 					case 2: newParms.multisamples = 4; break;

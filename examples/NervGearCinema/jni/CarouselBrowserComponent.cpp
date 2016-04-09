@@ -1,5 +1,6 @@
 #include "CarouselBrowserComponent.h"
 #include "App.h"
+#include "core/VTimer.h"
 
 using namespace NervGear;
 
@@ -21,7 +22,7 @@ CarouselBrowserComponent::CarouselBrowserComponent( const VArray<CarouselItem *>
 eMsgStatus CarouselBrowserComponent::onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 	VRMenuObject * self, VRMenuEvent const & event )
 {
-	OVR_ASSERT( handlesEvent( VRMenuEventFlags_t( event.eventType ) ) );
+	vAssert( handlesEvent( VRMenuEventFlags_t( event.eventType ) ) );
 
     switch( event.eventType )
 	{
@@ -40,7 +41,7 @@ eMsgStatus CarouselBrowserComponent::onEventImpl( App * app, VrFrame const & vrF
 		case VRMENU_EVENT_SWIPE_BACK:
 			return SwipeBack( app, vrFrame, menuMgr, self );
 		default:
-			OVR_ASSERT( !"Event flags mismatch!" ); // the constructor is specifying a flag that's not handled
+			vAssert( !"Event flags mismatch!" ); // the constructor is specifying a flag that's not handled
 			return MSG_STATUS_ALIVE;
 	}
 }
@@ -188,7 +189,7 @@ eMsgStatus CarouselBrowserComponent::Frame( App * app, VrFrame const & vrFrame, 
 {
 	if ( Swiping )
 	{
-		float frac = ( vrFrame.PoseState.TimeInSeconds - StartTime ) / ( EndTime - StartTime );
+        float frac = ( vrFrame.PoseState.TimeBySeconds - StartTime ) / ( EndTime - StartTime );
 		if ( frac >= 1.0f )
 		{
 			frac = 1.0f;
@@ -219,7 +220,7 @@ eMsgStatus CarouselBrowserComponent::SwipeForward( App * app, VrFrame const & vr
 		{
 			app->playSound( "carousel_move" );
 			PrevPosition = Position;
-			StartTime = vrFrame.PoseState.TimeInSeconds;
+            StartTime = vrFrame.PoseState.TimeBySeconds;
 			EndTime = StartTime + 0.25;
 			NextPosition = nextPos;
 			Swiping = true;
@@ -238,7 +239,7 @@ eMsgStatus CarouselBrowserComponent::SwipeBack( App * app, VrFrame const & vrFra
 		{
 			app->playSound( "carousel_move" );
 			PrevPosition = Position;
-			StartTime = vrFrame.PoseState.TimeInSeconds;
+            StartTime = vrFrame.PoseState.TimeBySeconds;
 			EndTime = StartTime + 0.25;
 			NextPosition = nextPos;
 			Swiping = true;
@@ -250,8 +251,8 @@ eMsgStatus CarouselBrowserComponent::SwipeBack( App * app, VrFrame const & vrFra
 
 eMsgStatus CarouselBrowserComponent::TouchDown( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
 {
-	//LOG( "TouchDown" );
-	TouchDownTime = ovr_GetTimeInSeconds();
+	//vInfo("TouchDown");
+    TouchDownTime = VTimer::Seconds();
 
 	if ( Swiping )
 	{
@@ -263,15 +264,15 @@ eMsgStatus CarouselBrowserComponent::TouchDown( App * app, VrFrame const & vrFra
 
 eMsgStatus CarouselBrowserComponent::TouchUp( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
 {
-	//LOG( "TouchUp" );
+	//vInfo("TouchUp");
 
-	float const timeTouchHasBeenDown = (float)( ovr_GetTimeInSeconds() - TouchDownTime );
+    float const timeTouchHasBeenDown = (float)( VTimer::Seconds() - TouchDownTime );
 	TouchDownTime = -1.0;
 
     float dist = event.floatValue.LengthSq();
 	if ( !Swiping && ( dist < 20.0f ) && ( timeTouchHasBeenDown < 1.0f ) )
 	{
-		LOG( "Selectmovie" );
+		vInfo("Selectmovie");
 		SelectPressed = true;
 	}
 	else if ( Swiping )
@@ -279,7 +280,7 @@ eMsgStatus CarouselBrowserComponent::TouchUp( App * app, VrFrame const & vrFrame
 		return MSG_STATUS_CONSUMED;
 	}
 
-	//LOG( "Ignore: %f, %f", RotationalVelocity, ( float )timeTouchHasBeenDown );
+	//vInfo("Ignore:" << RotationalVelocity << "," << ( float )timeTouchHasBeenDown);
 	return MSG_STATUS_ALIVE; // don't consume -- we are just listening
 }
 

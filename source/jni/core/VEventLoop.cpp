@@ -120,13 +120,6 @@ void VEventLoop::post(const char *command)
     d->post(event, false);
 }
 
-void VEventLoop::post(const VVariant &data)
-{
-    VEvent event;
-    event.data = data;
-    d->post(event, false);
-}
-
 void VEventLoop::post(const VVariant::Function &func)
 {
     VEvent event;
@@ -149,13 +142,6 @@ void VEventLoop::send(const VString &command, const VVariant &data)
 void VEventLoop::send(const char *command)
 {
     VEvent event(command);
-    d->post(event, true);
-}
-
-void VEventLoop::send(const VVariant &data)
-{
-    VEvent event;
-    event.data = data;
     d->post(event, true);
 }
 

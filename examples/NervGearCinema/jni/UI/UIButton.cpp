@@ -28,7 +28,7 @@ void UIButton::AddToMenu( UIMenu *menu, UIWidget *parent )
 
     V3Vectf defaultScale( 1.0f );
 	VRMenuFontParms fontParms( true, true, false, false, false, 1.0f );
-	
+
 	VRMenuObjectParms parms( VRMENU_BUTTON, VArray< VRMenuComponent* >(), VRMenuSurfaceParms(),
 			"", pose, defaultScale, fontParms, menu->AllocId(),
 			VRMenuObjectFlags_t(), VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
@@ -36,7 +36,7 @@ void UIButton::AddToMenu( UIMenu *menu, UIWidget *parent )
 	AddToMenuWithParms( menu, parent, parms );
 
 	VRMenuObject * object = GetMenuObject();
-	OVR_ASSERT( object );
+	vAssert( object );
     object->addComponent( &ButtonComponent );
 }
 
@@ -119,7 +119,7 @@ eMsgStatus UIButtonComponent::onEventImpl( App * app, VrFrame const & vrFrame, O
             UpSoundLimiter.playSound( app, "touch_up", 0.1 );
             return MSG_STATUS_ALIVE;
         default:
-            OVR_ASSERT( !"Event flags mismatch!" );
+            vAssert( !"Event flags mismatch!" );
             return MSG_STATUS_ALIVE;
     }
 }

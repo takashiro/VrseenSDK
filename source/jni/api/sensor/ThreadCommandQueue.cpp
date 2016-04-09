@@ -10,8 +10,11 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 ************************************************************************************/
 
 #include "ThreadCommandQueue.h"
+
 #include "VList.h"
 #include "VLock.h"
+#include "VLog.h"
+
 #include <new>
 #include <string.h>
 #include <malloc.h>
@@ -33,7 +36,7 @@ class CircularBuffer
         AlignMask = AlignSize - 1
     };
 
-    UByte*  pBuffer;
+    uchar*  pBuffer;
     uint   Size;
     uint   Tail;   // Byte offset of next item to be popped.
     uint   Head;   // Byte offset of where next push will take place.
@@ -47,12 +50,12 @@ public:
     CircularBuffer(uint size)
         : Size(size), Tail(0), Head(0), End(0)
     {
-        pBuffer = (UByte*)memalign( AlignSize, roundUpSize(size));
+        pBuffer = (uchar*)memalign( AlignSize, roundUpSize(size));
     }
     ~CircularBuffer()
     {
         // For ThreadCommands, we must consume everything before shutdown.
-        OVR_ASSERT(IsEmpty());
+        vAssert(IsEmpty());
         free(pBuffer);
     }
 
@@ -60,10 +63,10 @@ public:
 
     // Allocates a state block of specified size and advances pointers,
     // returning 0 if buffer is full.
-    UByte*  Write(uint size);
+    uchar*  Write(uint size);
 
     // Returns a pointer to next available data block; 0 if none available.
-    UByte*  ReadBegin()
+    uchar*  ReadBegin()
     { return (Head != Tail) ? (pBuffer + Tail) : 0; }
     // Consumes data of specified size; this must match size passed to Write.
     void    ReadEnd(uint size);
@@ -72,17 +75,17 @@ public:
 
 // Allocates a state block of specified size and advances pointers,
 // returning 0 if buffer is full.
-UByte* CircularBuffer::Write(uint size)
+uchar* CircularBuffer::Write(uint size)
 {
-    UByte* p = 0;
+    uchar* p = 0;
 
     size = roundUpSize(size);
     // Since this is circular buffer, always allow at least one item.
-    OVR_ASSERT(size < Size/2);
+    vAssert(size < Size/2);
 
     if (Head >= Tail)
     {
-        OVR_ASSERT(End == 0);
+        vAssert(End == 0);
 
         if (size <= (Size - Head))
         {
@@ -94,18 +97,18 @@ UByte* CircularBuffer::Write(uint size)
             p    = pBuffer;
             End  = Head;
             Head = size;
-            OVR_ASSERT(Head != Tail);
+            vAssert(Head != Tail);
         }
     }
     else
     {
-        OVR_ASSERT(End != 0);
+        vAssert(End != 0);
 
         if ((Tail - Head) > size)
         {
             p    = pBuffer + Head;
             Head += size;
-            OVR_ASSERT(Head != Tail);
+            vAssert(Head != Tail);
         }
     }
 
@@ -114,7 +117,7 @@ UByte* CircularBuffer::Write(uint size)
 
 void CircularBuffer::ReadEnd(uint size)
 {
-    OVR_ASSERT(Head != Tail);
+    vAssert(Head != Tail);
     size = roundUpSize(size);
 
     Tail += size;
@@ -124,7 +127,7 @@ void CircularBuffer::ReadEnd(uint size)
     }
     else if (Tail == Head)
     {
-        OVR_ASSERT(End == 0);
+        vAssert(End == 0);
         Tail = Head = 0;
     }
 }
@@ -142,7 +145,7 @@ ThreadCommand::PopBuffer::~PopBuffer()
 void ThreadCommand::PopBuffer::InitFromBuffer(void* data)
 {
     ThreadCommand* cmd = (ThreadCommand*)data;
-    OVR_ASSERT(cmd->Size <= MaxSize);
+    vAssert(cmd->Size <= MaxSize);
 
     if (Size)
         toCommand()->~ThreadCommand();
@@ -153,7 +156,7 @@ void ThreadCommand::PopBuffer::InitFromBuffer(void* data)
 void ThreadCommand::PopBuffer::Execute()
 {
     ThreadCommand* command = toCommand();
-    OVR_ASSERT(command);
+    vAssert(command);
     command->Execute();
     if (NeedsWait())
         GetEvent()->PulseEvent();
@@ -241,7 +244,7 @@ public:
 ThreadCommandQueueImpl::~ThreadCommandQueueImpl()
 {
     VLock::Locker lock(&QueueLock);
-    OVR_ASSERT(BlockedProducers.isEmpty());
+    vAssert(BlockedProducers.isEmpty());
     FreeNotifyEvents_NTS();
 }
 
@@ -268,7 +271,7 @@ bool ThreadCommandQueueImpl::PushCommand(const ThreadCommand& command)
 
 
             bool   bufferWasEmpty = CommandBuffer.IsEmpty();
-            UByte* buffer = CommandBuffer.Write(command.GetSize());
+            uchar* buffer = CommandBuffer.Write(command.GetSize());
             if  (buffer)
             {
                 ThreadCommand* c = command.CopyConstruct(buffer);
@@ -305,7 +308,7 @@ bool ThreadCommandQueueImpl::PopCommand(ThreadCommand::PopBuffer* popBuffer)
 {
     VLock::Locker lock(&QueueLock);
 
-    UByte* buffer = CommandBuffer.ReadBegin();
+    uchar* buffer = CommandBuffer.ReadBegin();
     if (!buffer)
     {
         // Notify thread while in lock scope, enabling initialization of wait.

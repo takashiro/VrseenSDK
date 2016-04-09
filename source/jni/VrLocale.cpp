@@ -1,8 +1,8 @@
 #include "VrLocale.h"
 #include "VArray.h"
-#include "android/JniUtils.h"
-#include "android/LogUtils.h"
 #include "VLog.h"
+
+#include "android/JniUtils.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -13,13 +13,13 @@ jclass			VrLocale::VrActivityClass;
 bool VrLocale::GetString( JNIEnv* jni, jobject activityObject, char const * key, char const * defaultOut, VString & out )
 {
     if (jni == NULL) {
-        vWarn("OVR_ASSERT jni = NULL!");
+        vWarn("vAssert jni = NULL!");
 	}
     if (activityObject == NULL) {
-        vWarn("OVR_ASSERT ctivityObject = NULL!");
+        vWarn("vAssert ctivityObject = NULL!");
 	}
 
-	//LOG( "Localizing key '%s'", key );
+	//vInfo("Localizing key '" << key << "'");
 	// if the key doesn't start with KEY_PREFIX then it's not a valid key, just return
 	// the key itself as the output text.
 	if ( strstr( key, LOCALIZED_KEY_PREFIX ) != key )
@@ -181,7 +181,7 @@ VString private_GetXliffFormattedString( const VString & inXliffStr, ... )
 			}
 			else
 			{
-                LOG( "%s has invalid xliff format - has unsupported format specifier.", inXliffStr.toCString() );
+                vInfo(inXliffStr << "has invalid xliff format - has unsupported format specifier.");
 				return inXliffStr;
 			}
 		}

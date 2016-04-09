@@ -5,6 +5,7 @@
 #include "Native.h"
 #include "SceneManager.h"
 #include "SurfaceTexture.h"
+#include "core/VTimer.h"
 
 #include "VLog.h"
 
@@ -56,9 +57,9 @@ SceneManager::SceneManager( CinemaApp &cinema ) :
 
 void SceneManager::OneTimeInit( const VString &launchIntent )
 {
-	LOG( "SceneManager::OneTimeInit" );
+	vInfo("SceneManager::OneTimeInit");
 
-	const double start = ovr_GetTimeInSeconds();
+    const double start = VTimer::Seconds();
 
     UnitSquare.createPlaneQuadGrid( 1, 1 );
 
@@ -67,12 +68,12 @@ void SceneManager::OneTimeInit( const VString &launchIntent )
 	ScreenVignetteTexture = BuildScreenVignetteTexture( 1 );
 	ScreenVignetteSbsTexture = BuildScreenVignetteTexture( 2 );
 
-	LOG( "SceneManager::OneTimeInit: %3.1f seconds", ovr_GetTimeInSeconds() - start );
+    vInfo("SceneManager::OneTimeInit:" << (VTimer::Seconds() - start) << "seconds");
 }
 
 void SceneManager::OneTimeShutdown()
 {
-	LOG( "SceneManager::OneTimeShutdown" );
+	vInfo("SceneManager::OneTimeShutdown");
 
 	// Free GL resources
 
@@ -144,7 +145,7 @@ static V3Vectf AnglesForMatrix( const VR4Matrixf &m )
 // SeatPosition
 void SceneManager::SetSceneModel( const SceneDef &sceneDef )
 {
-    LOG( "SetSceneModel %s", sceneDef.SceneModel->FileName.toCString() );
+    vInfo("SetSceneModel" << sceneDef.SceneModel->FileName);
 
 	VoidedScene = false;
 	UseOverlay = true;
@@ -255,7 +256,7 @@ void SceneManager::SetSceneProgram( const sceneProgram_t opaqueProgram, const sc
 	const VGlShader & additiveProg = Cinema.shaderMgr.ScenePrograms[additiveProgram];
 	const VGlShader & diffuseProg = Cinema.shaderMgr.ProgSingleTexture;
 
-	LOG( "SetSceneProgram: %d(%d), %d(%d)", opaqueProgram, opaqueProg.program, additiveProgram, additiveProg.program );
+	vInfo("SetSceneProgram:" << opaqueProgram << "(" << opaqueProg.program << ")," << additiveProgram << "(" << additiveProg.program << ")");
 
 	ModelDef & def = *const_cast< ModelDef * >( &Scene.WorldModel.Definition->Def );
     for ( int i = 0; i < def.surfaces.length(); i++ )
@@ -501,19 +502,19 @@ void SceneManager::ClearGazeCursorGhosts()
 
 void SceneManager::ToggleLights( const float duration )
 {
-	const double now = ovr_GetTimeInSeconds();
+    const double now = VTimer::Seconds();
 	StaticLighting.Set( now, StaticLighting.Value( now ), now + duration, 1.0 - StaticLighting.endValue );
 }
 
 void SceneManager::LightsOn( const float duration )
 {
-	const double now = ovr_GetTimeInSeconds();
+    const double now = VTimer::Seconds();
 	StaticLighting.Set( now, StaticLighting.Value( now ), now + duration, 1.0 );
 }
 
 void SceneManager::LightsOff( const float duration )
 {
-	const double now = ovr_GetTimeInSeconds();
+    const double now = VTimer::Seconds();
 	StaticLighting.Set( now, StaticLighting.Value( now ), now + duration, 0.0 );
 }
 
@@ -697,13 +698,13 @@ bool SceneManager::Command(const VEvent &event)
 		MovieTextureHeight = height;
 
 		// Disable overlay on larger movies to reduce judder
-		long numberOfPixels = MovieTextureWidth * MovieTextureHeight;
-		LOG( "Movie size: %dx%d = %d pixels", MovieTextureWidth, MovieTextureHeight, numberOfPixels );
+        longlong numberOfPixels = MovieTextureWidth * MovieTextureHeight;
+        vInfo("Movie size:" << MovieTextureWidth << MovieTextureHeight << "=" << numberOfPixels << "pixels");
 
 		// use the void theater on large movies
 		if ( numberOfPixels > 1920 * 1080 )
 		{
-			LOG( "Oversized movie.  Switching to Void scene to reduce judder" );
+			vInfo("Oversized movie.  Switching to Void scene to reduce judder");
 			SetSceneModel( *Cinema.modelMgr.VoidScene );
 			UseOverlay = false;
 			VoidedScene = true;
@@ -790,7 +791,7 @@ VR4Matrixf SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 	{
 		// lights fading in and out, always on if no movie loaded
 		const float cinemaLights = ( ( MovieTextureWidth > 0 ) && !SceneInfo.UseFreeScreen ) ?
-				(float)StaticLighting.Value( ovr_GetTimeInSeconds() ) : 1.0f;
+                (float)StaticLighting.Value( VTimer::Seconds() ) : 1.0f;
 
 		if ( cinemaLights <= 0.0f )
 		{
@@ -942,8 +943,8 @@ VR4Matrixf SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 	if ( !GetUseOverlay() || SceneInfo.LobbyScreen || ( SceneInfo.UseScreenGeometry && ( SceneScreenSurface != NULL ) ) )
 	{
 		// no overlay
-        vApp->swapParms().WarpProgram = WP_CHROMATIC;
-        vApp->swapParms().Images[eye][1].TexId = 0;
+        vApp->kernel()->setSmoothProgram( VK_DEFAULT_CB);
+        vApp->kernel()->setSmoothEyeTexture((unsigned int)0,eye,1);
 
 		glActiveTexture( GL_TEXTURE0 );
 		glBindTexture( GL_TEXTURE_EXTERNAL_OES, MovieTexture->textureId );
@@ -978,10 +979,10 @@ VR4Matrixf SceneManager::DrawEyeView( const int eye, const float fovDegrees )
         const VR4Matrixf screenModel = ScreenMatrix();
         const VR4Matrixf mv = Scene.ViewMatrixForEye( eye ) * screenModel;
 
-        vApp->swapParms().WarpProgram = WP_CHROMATIC_MASKED_PLANE;
-        vApp->swapParms().Images[eye][1].TexId = MipMappedMovieTextures[CurrentMipMappedMovieTexture];
-        vApp->swapParms().Images[eye][1].Pose = vApp->sensorForNextWarp().Predicted;
-        vApp->swapParms().Images[eye][1].TexCoordsFromTanAngles = texMatrix * VR4Matrix<float>::TanAngleMatrixFromUnitSquare( &mv );
+        vApp->kernel()->setSmoothProgram(VK_PLANE_CB);
+        vApp->kernel()->setSmoothEyeTexture( MipMappedMovieTextures[CurrentMipMappedMovieTexture],eye,1);
+        vApp->kernel()->setSmoothPose(vApp->sensorForNextWarp().Predicted,eye,1);
+        vApp->kernel()->setTexMatrix(texMatrix * VR4Matrix<float>::TanAngleMatrixFromUnitSquare( &mv ),eye,1);
 
 		// explicitly clear a hole in alpha
         const VR4Matrixf screenMvp = mvp * screenModel;
@@ -1006,7 +1007,7 @@ VR4Matrixf SceneManager::Frame( const VrFrame & vrFrame )
 		vrFrameWithoutMove.Input.sticks[0][0] = 0.0f;
 		vrFrameWithoutMove.Input.sticks[0][1] = 0.0f;
 	}
-    Scene.Frame( vApp->vrViewParms(), vrFrameWithoutMove, vApp->swapParms().ExternalVelocity );
+    Scene.Frame( vApp->vrViewParms(), vrFrameWithoutMove, vApp->kernel()->m_externalVelocity);
 
 	if ( ClearGhostsFrames > 0 )
 	{

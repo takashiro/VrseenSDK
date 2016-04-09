@@ -42,7 +42,7 @@ eMsgStatus MovieSelectionComponent::onEventImpl( App * app, VrFrame const & vrFr
         	}
             return MSG_STATUS_ALIVE;
         default:
-            OVR_ASSERT( !"Event flags mismatch!" );
+            vAssert( !"Event flags mismatch!" );
             return MSG_STATUS_ALIVE;
     }
 }
@@ -77,13 +77,13 @@ eMsgStatus MovieSelectionComponent::Frame( App * app, VrFrame const & vrFrame, O
 eMsgStatus MovieSelectionComponent::FocusGained( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
-	LOG( "FocusGained" );
+	vInfo("FocusGained");
     // set the hilight flag
     self->setHilighted( true );
     CallbackView->SelectionHighlighted( true );
 
     Sound.playSound( app, "gaze_on", 0.1 );
-	
+
     return MSG_STATUS_ALIVE;
 }
 
@@ -92,7 +92,7 @@ eMsgStatus MovieSelectionComponent::FocusGained( App * app, VrFrame const & vrFr
 eMsgStatus MovieSelectionComponent::FocusLost( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
-	LOG( "FocusLost" );
+	vInfo("FocusLost");
     // clear the hilight flag
     self->setHilighted( false );
     CallbackView->SelectionHighlighted( false );

@@ -1,9 +1,12 @@
 /************************************************************************************
+
 Filename    :   GlTexture.cpp
 Content     :   OpenGL texture loading.
 Created     :   September 30, 2013
 Authors     :   John Carmack
+
 Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
+
 *************************************************************************************/
 
 #include "GlTexture.h"
@@ -85,6 +88,7 @@ struct TextureFormatMap
 	TextureFormat	Format;
 	const char *	Name;
 };
+
 static TextureFormatMap TextureFormatNames[] =
 {
     { Texture_R,			"Texture_R" },
@@ -110,6 +114,7 @@ static TextureFormatMap TextureFormatNames[] =
 	{ Texture_GenMipmaps,	"Texture_GenMipmaps" },
 	{ Texture_None,			NULL }
 };
+
 static const char * NameForTextureFormat( TextureFormat const format )
 {
 	for ( int i = 0; TextureFormatNames[i].Name != NULL; ++i )
@@ -657,7 +662,9 @@ GlTexture LoadASTCTextureFromMemory( uint8_t const * buffer, const size_t buffer
 }
 
 /*
+
 PVR Container Format
+
 Offset    Size       Name           Description
 0x0000    4 [DWORD]  Version        0x03525650
 0x0004    4 [DWORD]  Flags          0x0000 if no flags set
@@ -728,6 +735,7 @@ Offset    Size       Name           Description
 0x0028  4 [DWORD]    Face Count     The number of faces to this texture, used for cube maps.
 0x002C  4 [DWORD]    MIP-Map Count  The number of MIP-Map levels, including a top level.
 0x0030  4 [DWORD]    Metadata Size  The size, in bytes, of meta data that immediately follows this header.
+
 */
 
 #pragma pack(1)
@@ -896,10 +904,13 @@ unsigned char * LoadPVRBuffer( const char * fileName, int & width, int & height 
 
 
 /*
+
 KTX Container Format
+
 KTX is a format for storing textures for OpenGL and OpenGL ES applications.
 It is distinguished by the simplicity of the loader required to instantiate
 a GL texture object from the file contents.
+
 Byte[12] identifier
 vuint32 endianness
 vuint32 glType
@@ -914,11 +925,13 @@ vuint32 numberOfArrayElements
 vuint32 numberOfFaces
 vuint32 numberOfMipmapLevels
 vuint32 bytesOfKeyValueData
+
 for each keyValuePair that fits in bytesOfKeyValueData
     vuint32   keyAndValueByteSize
     Byte     keyAndValue[keyAndValueByteSize]
     Byte     valuePadding[3 - ((keyAndValueByteSize + 3) % 4)]
 end
+
 for each mipmap_level in numberOfMipmapLevels*
     vuint32 imageSize;
     for each array_element in numberOfArrayElements*
@@ -935,6 +948,7 @@ for each mipmap_level in numberOfMipmapLevels*
     end
     Byte mipPadding[3 - ((imageSize + 3) % 4)]
 end
+
 */
 
 #pragma pack(1)

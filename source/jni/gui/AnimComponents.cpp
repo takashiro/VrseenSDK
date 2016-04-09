@@ -9,7 +9,7 @@ Copyright   :   Copyright 2014 Oculus VR, Inc. All Rights reserved.
 
 
 *************************************************************************************/
-
+#include "core/VTimer.h"
 #include "AnimComponents.h"
 #include "VAlgorithm.h"
 #include "VRMenuObject.h"
@@ -36,13 +36,13 @@ OvrAnimComponent::OvrAnimComponent( float const framesPerSecond, bool const loop
 
 //================================
 // OvrAnimComponent::Frame
-eMsgStatus OvrAnimComponent::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, 
-	VRMenuObject * self, VRMenuEvent const & event ) 
+eMsgStatus OvrAnimComponent::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+	VRMenuObject * self, VRMenuEvent const & event )
 {
 	// only recalculate the current frame if playing
 	if ( m_animState == ANIMSTATE_PLAYING )
 	{
-		double timePassed = ovr_GetTimeInSeconds() - m_baseTime;
+        double timePassed = VTimer::Seconds() - m_baseTime;
 		m_floatFrame = timePassed * m_framesPerSecond;
 		int totalFrames = ( int )floor( m_floatFrame );
 		m_fractionalFrame = m_floatFrame - totalFrames;
@@ -50,7 +50,7 @@ eMsgStatus OvrAnimComponent::frame( App * app, VrFrame const & vrFrame, OvrVRMen
 		int frame = m_baseFrame + totalFrames;
 		m_curFrame = !m_looping ? VAlgorithm::Clamp( frame, 0, numFrames - 1 ) : frame % numFrames;
 		setFrameVisibilities( app, vrFrame, menuMgr, self );
-	} 
+	}
 	else if ( m_forceVisibilityUpdate )
 	{
 		setFrameVisibilities( app, vrFrame, menuMgr, self );
@@ -69,7 +69,7 @@ void OvrAnimComponent::setFrame( VRMenuObject * self, int const frameNum )
 	// remains correct if we're playing.  If we're not playing, this will cause the
 	// next Play() to start from this frame.
 	m_baseFrame = frameNum;
-	m_baseTime = ovr_GetTimeInSeconds();
+    m_baseTime = VTimer::Seconds();
 	m_forceVisibilityUpdate = true;	// make sure visibilities are set next frame update
 }
 
@@ -78,7 +78,7 @@ void OvrAnimComponent::setFrame( VRMenuObject * self, int const frameNum )
 void OvrAnimComponent::play()
 {
 	m_animState = ANIMSTATE_PLAYING;
-	m_baseTime = ovr_GetTimeInSeconds();
+    m_baseTime = VTimer::Seconds();
 	// on a play we offset the base frame to the current frame so a resume from pause doesn't restart
 	m_baseFrame = m_curFrame;
 }
@@ -97,7 +97,7 @@ eMsgStatus OvrAnimComponent::onEventImpl( App * app, VrFrame const & vrFrame, Ov
 	case VRMENU_EVENT_FRAME_UPDATE:
 		return frame( app, vrFrame, menuMgr, self, event );
 	default:
-		OVR_ASSERT( !"Event flags mismatch!" ); // the constructor is specifying a flag that's not handled
+		vAssert( !"Event flags mismatch!" ); // the constructor is specifying a flag that's not handled
 		return MSG_STATUS_ALIVE;
 	}
 }
@@ -140,7 +140,7 @@ int OvrSurfaceAnimComponent::getNumFrames( VRMenuObject * self ) const
 //
 const char * OvrTrailsAnimComponent::TYPE_NAME = "OvrChildrenAnimComponent";
 
-OvrTrailsAnimComponent::OvrTrailsAnimComponent( float const framesPerSecond, bool const looping, 
+OvrTrailsAnimComponent::OvrTrailsAnimComponent( float const framesPerSecond, bool const looping,
 	int const numFrames, int const numFramesAhead, int const numFramesBehind )
 	: OvrAnimComponent( framesPerSecond, looping )
 	, m_numFrames( numFrames )
@@ -181,7 +181,7 @@ float OvrTrailsAnimComponent::getAlphaForFrame( const int frame ) const
 
 void OvrTrailsAnimComponent::setFrameVisibilities( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self ) const
 {
-//	LOG( "FracFrame: %f", GetFractionalFrame() );
+//	vInfo("FracFrame:" << GetFractionalFrame());
 	for ( int i = 0; i < self->numChildren(); ++i )
 	{
 		menuHandle_t childHandle = self->getChildHandleForIndex( i );

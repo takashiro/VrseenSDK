@@ -11,11 +11,9 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 *************************************************************************************/
 
 #include "SoundLimiter.h"
-
-#include "Types.h"
+#include "core/VTimer.h"
 #include "TypesafeNumber.h"
 #include "VBasicmath.h"
-#include "Android/LogUtils.h"
 #include "api/VKernel.h"		// ovrPoseStatef
 
 #include "../Input.h"
@@ -28,9 +26,9 @@ namespace NervGear {
 // SoundLimiter::playSound
 void SoundLimiter::playSound(App * app, char const * soundName, double const limitSeconds )
 {
-	double curTime = ovr_GetTimeInSeconds();
+    double curTime = VTimer::Seconds();
 	double t = curTime - m_lastPlayTime;
-    //DROIDLOG( "VrMenu", "playSound( '%s', %.2f ) - t == %.2f : %s", soundName, limitSeconds, t, t >= limitSeconds ? "PLAYING" : "SKIPPING" );
+    vInfo("playSound(" << soundName << ", " << limitSeconds << ") - t ==" << t << ":" << (t >= limitSeconds ? "PLAYING" : "SKIPPING"));
 	if ( t >= limitSeconds )
 	{
 		app->playSound( soundName );

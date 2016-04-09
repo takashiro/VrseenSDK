@@ -28,7 +28,7 @@ VString CinemaStrings::MoviePlayer_Reorient;
 
 void CinemaStrings::OneTimeInit( CinemaApp &cinema )
 {
-	LOG( "CinemaStrings::OneTimeInit" );
+	vInfo("CinemaStrings::OneTimeInit");
 
     VrLocale::GetString( vApp->vrJni(), vApp->javaObject(), "@string/LoadingMenu_Title", 		"@string/LoadingMenu_Title", 		LoadingMenu_Title );
     VrLocale::GetString( vApp->vrJni(), vApp->javaObject(), "@string/Category_Trailers", 		"@string/Category_Trailers", 		Category_Trailers );

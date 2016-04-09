@@ -6,9 +6,7 @@
 #include <unistd.h>
 
 #include "android/VOsBuild.h"
-#include "android/LogUtils.h"
 #include "VLog.h"
-#include "vglobal.h"
 
 #define __gl2_h_
 
@@ -32,6 +30,22 @@ class VGlOperation
 {
 public:
 
+
+    enum EglEnum
+    {
+        EGL_GL_COLORSPACE_KHR = 0x309D,
+        EGL_GL_COLORSPACE_SRGB_KHR = 0x3089,
+        EGL_GL_COLORSPACE_LINEAR_KHR = 0x3089A,
+        GL_FRAMEBUFFER_SRGB_EXT = 0x8DB9,
+        GL_TEXTURE_SRGB_DECODE_EXT = 0x8A88,
+        GL_DECODE_EXT = 0x8A49,
+        GL_SKIP_DECODE_EXT = 0x8A4A,
+        GL_QUERY_RESULT_EXT = 0x8866,
+        GL_TIME_ELAPSED_EXT = 0x88BF,
+        GL_TIMESTAMP_EXT = 0x8E28,
+        GL_GPU_DISJOINT_EXT = 0x8FBB
+    };
+
     enum GpuType
     {
         GPU_TYPE_ADRENO					= 0x1000,
@@ -44,40 +58,10 @@ public:
         GPU_TYPE_UNKNOWN				= 0xFFFF
     };
 
-
-
-    enum EglKhrGlColorSpace
-    {
-        EGL_GL_COLORSPACE_KHR = 0x309D,
-        EGL_GL_COLORSPACE_SRGB_KHR = 0x3089,
-        EGL_GL_COLORSPACE_LINEAR_KHR = 0x3089A
-    };
-
-    enum ExtGLFrameSrgb
-    {
-        GL_FRAMEBUFFER_SRGB_EXT = 0x8DB9
-    };
-
-    enum ExtSrgbDecode
-    {
-        GL_TEXTURE_SRGB_DECODE_EXT = 0x8A88,
-        GL_DECODE_EXT = 0x8A49,
-        GL_SKIP_DECODE_EXT = 0x8A4A
-    };
-
-    enum QCOMBinningControl
-    {
-        GL_QUERY_RESULT_EXT = 0x8866,
-        GL_TIME_ELAPSED_EXT = 0x88BF,
-        GL_TIMESTAMP_EXT = 0x8E28,
-        GL_GPU_DISJOINT_EXT = 0x8FBB
-    };
-
-
     VGlOperation();
 
 
-    GpuType eglGetGpuType();
+    ushort eglGetGpuType();
 
     const char * getGlErrorEnum(const GLenum e);
     EGLConfig eglConfigForConfigID(const EGLDisplay display, const GLint configID);
@@ -152,7 +136,7 @@ public:
 
 
     int	glEsVersion;
-    GpuType	gpuType;
+    ushort	gpuType;
     EGLDisplay display;
     EGLSurface pbufferSurface;
     EGLConfig config;

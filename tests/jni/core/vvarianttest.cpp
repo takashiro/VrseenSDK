@@ -86,8 +86,10 @@ void test()
         assert(var.at(3).toString() == "this is a test");
         assert(var.at(4).toPointer() == pointer);
 
+        int length = array.length();
         VVariant moved(std::move(array));
-        assert(moved.length() == array.length());
+        assert(moved.length() != array.length());
+        assert(moved.length() == length);
         assert(moved.at(0).toInt() == 1);
         assert(moved.at(1).toInt() == 2);
         assert(moved.at(2).toInt() == 3);

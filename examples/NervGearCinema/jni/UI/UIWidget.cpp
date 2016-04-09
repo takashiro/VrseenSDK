@@ -53,35 +53,35 @@ void UIWidget::AddToMenuWithParms( UIMenu *menu, UIWidget *parent, VRMenuObjectP
 bool UIWidget::IsHilighted() const
 {
 	VRMenuObject * object = GetMenuObject();
-	OVR_ASSERT( object );
+	vAssert( object );
     return object->isHilighted();
 }
 
 void UIWidget::SetHilighted( bool const b )
 {
 	VRMenuObject * object = GetMenuObject();
-	OVR_ASSERT( object );
+	vAssert( object );
     object->setHilighted( b );
 }
 
 bool UIWidget::IsSelected() const
 {
 	VRMenuObject * object = GetMenuObject();
-	OVR_ASSERT( object );
+	vAssert( object );
     return object->isSelected();
 }
 
 void UIWidget::SetSelected( bool const b )
 {
 	VRMenuObject * object = GetMenuObject();
-	OVR_ASSERT( object );
+	vAssert( object );
     object->setSelected( b );
 }
 
 void UIWidget::SetLocalPose( const VPosf &pose )
 {
 	VRMenuObject * object = GetMenuObject();
-	OVR_ASSERT( object );
+	vAssert( object );
 	if ( object != NULL )
 	{
         object->setLocalPose( pose );
@@ -91,7 +91,7 @@ void UIWidget::SetLocalPose( const VPosf &pose )
 void UIWidget::SetLocalPose( const VQuatf &orientation, const V3Vectf &position )
 {
 	VRMenuObject * object = GetMenuObject();
-	OVR_ASSERT( object );
+	vAssert( object );
 	if ( object != NULL )
 	{
         object->setLocalPose( VPosf( orientation, position ) );
@@ -101,14 +101,14 @@ void UIWidget::SetLocalPose( const VQuatf &orientation, const V3Vectf &position 
 VPosf const & UIWidget::GetLocalPose() const
 {
 	VRMenuObject * object = GetMenuObject();
-	OVR_ASSERT( object );
+	vAssert( object );
     return object->localPose();
 }
 
 void UIWidget::SetLocalPosition( V3Vectf const & pos )
 {
 	VRMenuObject * object = GetMenuObject();
-	OVR_ASSERT( object );
+	vAssert( object );
 	if ( object != NULL )
 	{
         object->setLocalPosition( pos );
@@ -118,14 +118,14 @@ void UIWidget::SetLocalPosition( V3Vectf const & pos )
 V3Vectf const & UIWidget::GetLocalPosition() const
 {
 	VRMenuObject * object = GetMenuObject();
-	OVR_ASSERT( object );
+	vAssert( object );
     return object->localPosition();
 }
 
 void UIWidget::SetLocalRotation( VQuatf const & rot )
 {
 	VRMenuObject * object = GetMenuObject();
-	OVR_ASSERT( object );
+	vAssert( object );
 	if ( object != NULL )
 	{
         object->setLocalRotation( rot );
@@ -135,14 +135,14 @@ void UIWidget::SetLocalRotation( VQuatf const & rot )
 VQuatf const & UIWidget::GetLocalRotation() const
 {
 	VRMenuObject * object = GetMenuObject();
-	OVR_ASSERT( object );
+	vAssert( object );
     return object->localRotation();
 }
 
 void UIWidget::SetLocalScale( V3Vectf const & scale )
 {
 	VRMenuObject * object = GetMenuObject();
-	OVR_ASSERT( object );
+	vAssert( object );
 	if ( object != NULL )
 	{
         object->setLocalScale( scale );
@@ -152,7 +152,7 @@ void UIWidget::SetLocalScale( V3Vectf const & scale )
 void UIWidget::SetLocalScale( float const & scale )
 {
 	VRMenuObject * object = GetMenuObject();
-	OVR_ASSERT( object );
+	vAssert( object );
 	if ( object != NULL )
 	{
         object->setLocalScale( V3Vectf( scale ) );
@@ -162,14 +162,14 @@ void UIWidget::SetLocalScale( float const & scale )
 V3Vectf UIWidget::GetLocalScale() const
 {
 	VRMenuObject * object = GetMenuObject();
-	OVR_ASSERT( object );
+	vAssert( object );
     return object->localScale();
 }
 
 VPosf UIWidget::GetWorldPose() const
 {
 	VRMenuObject * object = GetMenuObject();
-	OVR_ASSERT( object );
+	vAssert( object );
 
     VPosf const & localPose = object->localPose();
 
@@ -191,7 +191,7 @@ VPosf UIWidget::GetWorldPose() const
 V3Vectf UIWidget::GetWorldPosition() const
 {
 	VRMenuObject * object = GetMenuObject();
-	OVR_ASSERT( object );
+	vAssert( object );
 
     VPosf const & localPose = object->localPose();
 
@@ -209,7 +209,7 @@ V3Vectf UIWidget::GetWorldPosition() const
 VQuatf UIWidget::GetWorldRotation() const
 {
 	VRMenuObject * object = GetMenuObject();
-	OVR_ASSERT( object );
+	vAssert( object );
 
     VQuatf const & rotation = object->localRotation();
 	if ( Parent == NULL )
@@ -223,7 +223,7 @@ VQuatf UIWidget::GetWorldRotation() const
 V3Vectf UIWidget::GetWorldScale() const
 {
 	VRMenuObject * object = GetMenuObject();
-	OVR_ASSERT( object );
+	vAssert( object );
 
     V3Vectf scale = object->localScale();
 
@@ -239,14 +239,14 @@ V3Vectf UIWidget::GetWorldScale() const
 bool UIWidget::GetVisible() const
 {
 	VRMenuObject * object = GetMenuObject();
-	OVR_ASSERT( object );
+	vAssert( object );
     return ( object->flags() & VRMENUOBJECT_DONT_RENDER ) == 0;
 }
 
 void UIWidget::SetVisible( const bool visible )
 {
 	VRMenuObject * object = GetMenuObject();
-	OVR_ASSERT( object );
+	vAssert( object );
 	if ( visible )
 	{
         object->removeFlags( VRMENUOBJECT_DONT_RENDER );
@@ -260,7 +260,7 @@ void UIWidget::SetVisible( const bool visible )
 void UIWidget::SetImage( const int surfaceIndex, const eSurfaceTextureType textureType, char const * imageName )
 {
 	VRMenuObject * object = GetMenuObject();
-	OVR_ASSERT( object );
+	vAssert( object );
 
     while( object->numSurfaces() <= surfaceIndex )
 	{
@@ -278,7 +278,7 @@ void UIWidget::SetImage( const int surfaceIndex, const eSurfaceTextureType textu
 void UIWidget::SetImage( const int surfaceIndex, const eSurfaceTextureType textureType, const GLuint image, const int width, const int height )
 {
 	VRMenuObject * object = GetMenuObject();
-	OVR_ASSERT( object );
+	vAssert( object );
 
     while( object->numSurfaces() <= surfaceIndex )
 	{
@@ -296,7 +296,7 @@ void UIWidget::SetImage( const int surfaceIndex, const eSurfaceTextureType textu
 void UIWidget::SetImage( const int surfaceIndex, const eSurfaceTextureType textureType, const UITexture &image )
 {
 	VRMenuObject * object = GetMenuObject();
-	OVR_ASSERT( object );
+	vAssert( object );
 
     while( object->numSurfaces() <= surfaceIndex )
 	{
@@ -314,7 +314,7 @@ void UIWidget::SetImage( const int surfaceIndex, const eSurfaceTextureType textu
 void UIWidget::SetImage( const int surfaceIndex, const eSurfaceTextureType textureType, const UITexture &image, const float dimsX, const float dimsY )
 {
 	VRMenuObject * object = GetMenuObject();
-	OVR_ASSERT( object );
+	vAssert( object );
 
     while( object->numSurfaces() <= surfaceIndex )
 	{
@@ -335,7 +335,7 @@ void UIWidget::SetImage( const int surfaceIndex, const eSurfaceTextureType textu
 void UIWidget::SetImage( const int surfaceIndex, const eSurfaceTextureType textureType, const UITexture &image, const float dimsX, const float dimsY, const V4Vectf &border )
 {
 	VRMenuObject * object = GetMenuObject();
-	OVR_ASSERT( object );
+	vAssert( object );
 
     while( object->numSurfaces() <= surfaceIndex )
 	{
@@ -357,7 +357,7 @@ void UIWidget::SetImage( const int surfaceIndex, const eSurfaceTextureType textu
 void UIWidget::SetImage( const int surfaceIndex, VRMenuSurfaceParms const & parms )
 {
 	VRMenuObject * object = GetMenuObject();
-	OVR_ASSERT( object );
+	vAssert( object );
 
     while( object->numSurfaces() <= surfaceIndex )
 	{

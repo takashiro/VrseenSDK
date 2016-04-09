@@ -16,13 +16,13 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "Log.h"
 #include <fstream>
 
-#ifdef OVR_OS_WIN32
+#ifdef NV_OS_WIN
 #include <Shlobj.h>
 #else
 #include <dirent.h>
 #include <sys/stat.h>
 
-#ifdef OVR_OS_LINUX
+#ifdef NV_OS_LINUX
 #include <unistd.h>
 #include <pwd.h>
 #endif
@@ -60,48 +60,6 @@ VString GyroTempCalibration::GetBaseOVRPath(bool create_dir)
 {
     VString path;
 
-#if defined(OVR_OS_WIN32)
-
-    TCHAR data_path[MAX_PATH];
-    SHGetFolderPath(0, CSIDL_LOCAL_APPDATA, NULL, 0, data_path);
-    path = String(data_path);
-
-    path += "/Oculus";
-
-    if (create_dir)
-    {   // Create the Oculus directory if it doesn't exist
-        WCHAR wpath[128];
-        NervGear::UTF8Util::DecodeString(wpath, path.toCString());
-
-        DWORD attrib = GetFileAttributes(wpath);
-        bool exists = attrib != INVALID_FILE_ATTRIBUTES && (attrib & FILE_ATTRIBUTE_DIRECTORY);
-        if (!exists)
-        {
-            CreateDirectory(wpath, NULL);
-        }
-    }
-
-#elif defined(OVR_OS_MAC)
-
-    const char* home = getenv("HOME");
-    path = home;
-    path += "/Library/Preferences/Oculus";
-
-    if (create_dir)
-    {   // Create the Oculus directory if it doesn't exist
-        DIR* dir = opendir(path);
-        if (dir == NULL)
-        {
-            mkdir(path, S_IRWXU | S_IRWXG | S_IRWXO);
-        }
-        else
-        {
-            closedir(dir);
-        }
-    }
-
-#elif defined(OVR_OS_ANDROID)
-
     // TODO: We probably should use the location of Environment.getExternalStoragePublicDirectory()
     const char* home = "/sdcard";
     path = home;
@@ -119,29 +77,6 @@ VString GyroTempCalibration::GetBaseOVRPath(bool create_dir)
             closedir(dir);
         }
     }
-
-#else
-
-    // Note that getpwuid is not safe - it sometimes returns NULL for users from LDAP.
-    const char* home = getenv("HOME");
-    path = home;
-    path += "/.config/Oculus";
-
-    if (create_dir)
-    {   // Create the Oculus directory if it doesn't exist
-        DIR* dir = opendir(path);
-        if (dir == NULL)
-        {
-            mkdir(path, S_IRWXU | S_IRWXG | S_IRWXO);
-        }
-        else
-        {
-            closedir(dir);
-        }
-    }
-
-#endif
-
     return path;
 }
 
@@ -165,7 +100,7 @@ VString GyroTempCalibration::GetCalibrationPath(bool create_dir)
 
 void GyroTempCalibration::TokenizeString(VArray<VString>* tokens, const VString& str, char separator)
 {
-//	OVR_ASSERT(tokens != NULL);	// LDC - Asserts are currently not handled well on mobile.
+//	vAssert(tokens != NULL);	// LDC - Asserts are currently not handled well on mobile.
 
 	tokens->clear();
 
@@ -201,7 +136,7 @@ void GyroTempCalibration::GyroCalibrationFromString(const VString& str)
 	if (tokens.size() != GyroCalibrationNumBins * GyroCalibrationNumSamples * 6)
 	{
 		LogError("Format of gyro calibration string in profile is incorrect.");
-//		OVR_ASSERT(false);	// LDC - Asserts are currently not handled well on mobile.
+//		vAssert(false);	// LDC - Asserts are currently not handled well on mobile.
 		return;
 	}
 
@@ -248,7 +183,7 @@ void GyroTempCalibration::LoadFile()
 
     if (!root.contains("Calibration Version")) {
 		LogError("Bad calibration file format.");
-//		OVR_ASSERT(false);	// LDC - Asserts are currently not handled well on mobile.
+//		vAssert(false);	// LDC - Asserts are currently not handled well on mobile.
 		return;
 	}
 
@@ -263,13 +198,13 @@ void GyroTempCalibration::LoadFile()
 	if (version != TEMP_CALIBRATION_FILE_VERSION_2)
 	{
 		LogError("Bad calibration file version.");
-//		OVR_ASSERT(false);	// LDC - Asserts are currently not handled well on mobile.
+//		vAssert(false);	// LDC - Asserts are currently not handled well on mobile.
 		return;
 	}
 
     if (!root.contains("Data")) {
 		LogError("Bad calibration file format.");
-//		OVR_ASSERT(false);	// LDC - Asserts are currently not handled well on mobile.
+//		vAssert(false);	// LDC - Asserts are currently not handled well on mobile.
 		return;
 	}
 

@@ -24,9 +24,9 @@ private:
 
 	struct GyroCalibrationEntry
 	{
-		UInt32		Version;
+		vuint32		Version;
 		double	    ActualTemperature;
-		UInt32      Time;
+		vuint32      Time;
         V3Vectd    Offset;
 	};
 	VString GetBaseOVRPath(bool create_dir);

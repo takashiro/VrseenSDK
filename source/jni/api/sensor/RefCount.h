@@ -1,8 +1,6 @@
 #pragma once
 
 #include "vglobal.h"
-
-#include "Types.h"
 #include "VAtomicInt.h"
 
 NV_NAMESPACE_BEGIN
@@ -40,7 +38,7 @@ protected:
 
 public:
     // RefCountImpl constructor always initializes RefCount to 1 by default.
-    OVR_FORCE_INLINE RefCountImplCore() : m_refCount(1) { }
+    RefCountImplCore() : m_refCount(1) { }
 
     // Need virtual destructor
     // This:    1. Makes sure the right destructor's called.
@@ -54,7 +52,7 @@ public:
     // objects. Direct delete calls are not allowed on them unless they come in
     // internally from Release.
 #ifdef OVR_BUILD_DEBUG
-    static void   OVR_CDECL  reportInvalidDelete(void *pmem);
+    static void reportInvalidDelete(void *pmem);
     inline static void checkInvalidDelete(RefCountImplCore *pmem)
     {
         if (pmem->m_refCount.load() != 0)
@@ -75,7 +73,7 @@ protected:
 
 public:
     // RefCountImpl constructor always initializes RefCount to 1 by default.
-    OVR_FORCE_INLINE RefCountNTSImplCore() : m_refCount(1) { }
+    RefCountNTSImplCore() : m_refCount(1) { }
 
     // Need virtual destructor
     // This:    1. Makes sure the right destructor's called.
@@ -89,14 +87,14 @@ public:
     // objects. Direct delete calls are not allowed on them unless they come in
     // internally from Release.
 #ifdef OVR_BUILD_DEBUG
-    static void   OVR_CDECL  reportInvalidDelete(void *pmem);
-    OVR_FORCE_INLINE static void checkInvalidDelete(RefCountNTSImplCore *pmem)
+    static void reportInvalidDelete(void *pmem);
+    static void checkInvalidDelete(RefCountNTSImplCore *pmem)
     {
         if (pmem->m_refCount.load() != 0)
             reportInvalidDelete(pmem);
     }
 #else
-    OVR_FORCE_INLINE static void checkInvalidDelete(RefCountNTSImplCore *) { }
+    static void checkInvalidDelete(RefCountNTSImplCore *) { }
 #endif
 
     // Base class ref-count content should not be copied.
@@ -134,7 +132,7 @@ public:
 class RefCountNTSImpl : public RefCountNTSImplCore
 {
 public:
-    OVR_FORCE_INLINE void    AddRef() const { m_refCount++; }
+    void    AddRef() const { m_refCount++; }
     void    Release() const;
 };
 
@@ -196,7 +194,7 @@ class RefCountBase : public RefCountBaseStatImpl<RefCountImpl>
 {
 public:
     // Constructor.
-    OVR_FORCE_INLINE RefCountBase() : RefCountBaseStatImpl<RefCountImpl>() { }
+    RefCountBase() : RefCountBaseStatImpl<RefCountImpl>() { }
 };
 
 // RefCountBaseV is the same as RefCountBase but with virtual AddRef/Release
@@ -206,7 +204,7 @@ class RefCountBaseV : public RefCountBaseStatImpl<RefCountVImpl>
 {
 public:
     // Constructor.
-    OVR_FORCE_INLINE RefCountBaseV() : RefCountBaseStatImpl<RefCountVImpl>() { }
+    RefCountBaseV() : RefCountBaseStatImpl<RefCountVImpl>() { }
 };
 
 
@@ -224,7 +222,7 @@ class RefCountBaseNTS : public RefCountBaseStatImpl<RefCountNTSImpl>
 {
 public:
     // Constructor.
-    OVR_FORCE_INLINE RefCountBaseNTS() : RefCountBaseStatImpl<RefCountNTSImpl>() { }
+    RefCountBaseNTS() : RefCountBaseStatImpl<RefCountNTSImpl>() { }
 };
 
 //-----------------------------------------------------------------------------------
@@ -239,7 +237,7 @@ public:
     explicit Pickable(T* p) : pV(p) {}
     Pickable(T* p, PickType) : pV(p)
     {
-        OVR_ASSERT(pV);
+        vAssert(pV);
         if (pV)
             pV->AddRef();
     }
@@ -249,7 +247,7 @@ public:
 public:
     Pickable& operator =(const Pickable& other)
     {
-        OVR_ASSERT(pV == NULL);
+        vAssert(pV == NULL);
         pV = other.pV;
         // Extra check.
         //other.pV = NULL;
@@ -264,7 +262,7 @@ public:
     }
     T& operator*() const
     {
-        OVR_ASSERT(pV);
+        vAssert(pV);
         return *pV;
     }
 
@@ -273,8 +271,7 @@ private:
 };
 
 template <typename T>
-OVR_FORCE_INLINE
-Pickable<T> MakePickable(T* p)
+inline Pickable<T> MakePickable(T* p)
 {
     return Pickable<T>(p);
 }
@@ -299,65 +296,65 @@ protected:
 public:
 
     // Constructors
-    OVR_FORCE_INLINE Ptr() : pObject(0)
+    Ptr() : pObject(0)
     { }
 #ifdef OVR_CC_ARM
-    OVR_FORCE_INLINE Ptr(C &robj) : pObject(ReturnArg(&robj))
+    Ptr(C &robj) : pObject(ReturnArg(&robj))
 #else
-    OVR_FORCE_INLINE Ptr(C &robj) : pObject(&robj)
+    Ptr(C &robj) : pObject(&robj)
 #endif
     { }
-    OVR_FORCE_INLINE Ptr(Pickable<C> v) : pObject(v.GetPtr())
+    Ptr(Pickable<C> v) : pObject(v.GetPtr())
     {
         // No AddRef() on purpose.
     }
-    OVR_FORCE_INLINE Ptr(Ptr<C>& other, PickType) : pObject(other.pObject)
+    Ptr(Ptr<C>& other, PickType) : pObject(other.pObject)
     {
         other.pObject = NULL;
         // No AddRef() on purpose.
     }
-    OVR_FORCE_INLINE Ptr(C *pobj)
+    Ptr(C *pobj)
     {
         if (pobj) pobj->AddRef();
         pObject = pobj;
     }
-    OVR_FORCE_INLINE Ptr(const Ptr<C> &src)
+    Ptr(const Ptr<C> &src)
     {
         if (src.pObject) src.pObject->AddRef();
         pObject = src.pObject;
     }
 
     template<class R>
-    OVR_FORCE_INLINE Ptr(Ptr<R> &src)
+    Ptr(Ptr<R> &src)
     {
         if (src) src->AddRef();
         pObject = src;
     }
     template<class R>
-    OVR_FORCE_INLINE Ptr(Pickable<R> v) : pObject(v.GetPtr())
+    Ptr(Pickable<R> v) : pObject(v.GetPtr())
     {
         // No AddRef() on purpose.
     }
 
     // Destructor
-    OVR_FORCE_INLINE ~Ptr()
+    ~Ptr()
     {
         if (pObject) pObject->Release();
     }
 
     // Compares
-    OVR_FORCE_INLINE bool operator == (const Ptr &other) const       { return pObject == other.pObject; }
-    OVR_FORCE_INLINE bool operator != (const Ptr &other) const       { return pObject != other.pObject; }
+    bool operator == (const Ptr &other) const       { return pObject == other.pObject; }
+    bool operator != (const Ptr &other) const       { return pObject != other.pObject; }
 
-    OVR_FORCE_INLINE bool operator == (C *pother) const              { return pObject == pother; }
-    OVR_FORCE_INLINE bool operator != (C *pother) const              { return pObject != pother; }
+    bool operator == (C *pother) const              { return pObject == pother; }
+    bool operator != (C *pother) const              { return pObject != pother; }
 
 
-    OVR_FORCE_INLINE bool operator < (const Ptr &other) const       { return pObject < other.pObject; }
+    bool operator < (const Ptr &other) const       { return pObject < other.pObject; }
 
     // Assignment
     template<class R>
-    OVR_FORCE_INLINE const Ptr<C>& operator = (const Ptr<R> &src)
+    const Ptr<C>& operator = (const Ptr<R> &src)
     {
         if (src) src->AddRef();
         if (pObject) pObject->Release();
@@ -365,7 +362,7 @@ public:
         return *this;
     }
     // Specialization
-    OVR_FORCE_INLINE const Ptr<C>& operator = (const Ptr<C> &src)
+    const Ptr<C>& operator = (const Ptr<C> &src)
     {
         if (src) src->AddRef();
         if (pObject) pObject->Release();
@@ -373,32 +370,32 @@ public:
         return *this;
     }
 
-    OVR_FORCE_INLINE const Ptr<C>& operator = (C *psrc)
+    const Ptr<C>& operator = (C *psrc)
     {
         if (psrc) psrc->AddRef();
         if (pObject) pObject->Release();
         pObject = psrc;
         return *this;
     }
-    OVR_FORCE_INLINE const Ptr<C>& operator = (C &src)
+    const Ptr<C>& operator = (C &src)
     {
         if (pObject) pObject->Release();
         pObject = &src;
         return *this;
     }
-    OVR_FORCE_INLINE Ptr<C>& operator = (Pickable<C> src)
+    Ptr<C>& operator = (Pickable<C> src)
     {
         return Pick(src);
     }
     template<class R>
-    OVR_FORCE_INLINE Ptr<C>& operator = (Pickable<R> src)
+    Ptr<C>& operator = (Pickable<R> src)
     {
         return Pick(src);
     }
 
     // Set Assignment
     template<class R>
-    OVR_FORCE_INLINE Ptr<C>& SetPtr(const Ptr<R> &src)
+    Ptr<C>& SetPtr(const Ptr<R> &src)
     {
         if (src) src->AddRef();
         if (pObject) pObject->Release();
@@ -406,7 +403,7 @@ public:
         return *this;
     }
     // Specialization
-    OVR_FORCE_INLINE Ptr<C>& SetPtr(const Ptr<C> &src)
+    Ptr<C>& SetPtr(const Ptr<C> &src)
     {
         if (src) src->AddRef();
         if (pObject) pObject->Release();
@@ -414,51 +411,51 @@ public:
         return *this;
     }
 
-    OVR_FORCE_INLINE Ptr<C>& SetPtr(C *psrc)
+    Ptr<C>& SetPtr(C *psrc)
     {
         if (psrc) psrc->AddRef();
         if (pObject) pObject->Release();
         pObject = psrc;
         return *this;
     }
-    OVR_FORCE_INLINE Ptr<C>& SetPtr(C &src)
+    Ptr<C>& SetPtr(C &src)
     {
         if (pObject) pObject->Release();
         pObject = &src;
         return *this;
     }
-    OVR_FORCE_INLINE Ptr<C>& SetPtr(Pickable<C> src)
+    Ptr<C>& SetPtr(Pickable<C> src)
     {
         return Pick(src);
     }
 
     // Nulls ref-counted pointer without decrement
-    OVR_FORCE_INLINE void    NullWithoutRelease()
+    void    NullWithoutRelease()
     {
         pObject = 0;
     }
 
     // Clears the pointer to the object
-    OVR_FORCE_INLINE void    Clear()
+    void    Clear()
     {
         if (pObject) pObject->Release();
         pObject = 0;
     }
 
     // Obtain pointer reference directly, for D3D interfaces
-    OVR_FORCE_INLINE C*& GetRawRef()                 { return pObject; }
+    C*& GetRawRef()                 { return pObject; }
 
     // Access Operators
-    OVR_FORCE_INLINE C* GetPtr() const               { return pObject; }
-    OVR_FORCE_INLINE C& operator * () const          { return *pObject; }
-    OVR_FORCE_INLINE C* operator -> ()  const        { return pObject; }
+    C* GetPtr() const               { return pObject; }
+    C& operator * () const          { return *pObject; }
+    C* operator -> ()  const        { return pObject; }
     // Conversion
-    OVR_FORCE_INLINE operator C* () const            { return pObject; }
+    operator C* () const            { return pObject; }
 
     // Pickers.
 
     // Pick a value.
-    OVR_FORCE_INLINE Ptr<C>& Pick(Ptr<C>& other)
+    Ptr<C>& Pick(Ptr<C>& other)
     {
         if (&other != this)
         {
@@ -470,7 +467,7 @@ public:
         return *this;
     }
 
-    OVR_FORCE_INLINE Ptr<C>& Pick(Pickable<C> v)
+    Ptr<C>& Pick(Pickable<C> v)
     {
         if (v.GetPtr() != pObject)
         {
@@ -482,7 +479,7 @@ public:
     }
 
     template<class R>
-    OVR_FORCE_INLINE Ptr<C>& Pick(Pickable<R> v)
+    Ptr<C>& Pick(Pickable<R> v)
     {
         if (v.GetPtr() != pObject)
         {
@@ -493,7 +490,7 @@ public:
         return *this;
     }
 
-    OVR_FORCE_INLINE Ptr<C>& Pick(C* p)
+    Ptr<C>& Pick(C* p)
     {
         if (p != pObject)
         {
