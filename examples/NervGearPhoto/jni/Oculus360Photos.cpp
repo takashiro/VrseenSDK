@@ -302,7 +302,7 @@ void Oculus360Photos::init(const VString &fromPackage, const VString &launchInte
         EGL_NONE
     };
 
-    VGlOperation glOperation;
+    VEglDriver glOperation;
     m_eglPbufferSurface = eglCreatePbufferSurface( m_eglDisplay, m_eglConfig, SurfaceAttribs );
     if ( m_eglPbufferSurface == EGL_NO_SURFACE ) {
         vFatal("eglCreatePbufferSurface failed:" << glOperation.getEglErrorString());
@@ -373,7 +373,7 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
         EGL_NONE
     };
 
-    VGlOperation glOperation;
+    VEglDriver glOperation;
     EGLContext EglBGLoaderContext = eglCreateContext( photos->m_eglDisplay, photos->m_eglConfig, photos->m_eglShareContext, loaderContextAttribs );
     if ( EglBGLoaderContext == EGL_NO_CONTEXT )
     {
@@ -554,7 +554,7 @@ bool Oculus360Photos::onKeyEvent( const int keyCode, const KeyState::eKeyEventTy
 
 void Oculus360Photos::loadRgbaCubeMap( const int resolution, const unsigned char * const rgba[ 6 ], const bool useSrgbFormat )
 {
-    VGlOperation glOperation;
+    VEglDriver glOperation;
     glOperation.logErrorsEnum( "enter LoadRgbaCubeMap" );
 
     const GLenum glFormat = GL_RGBA;
@@ -596,7 +596,7 @@ void Oculus360Photos::loadRgbaCubeMap( const int resolution, const unsigned char
 
 void Oculus360Photos::loadRgbaTexture( const unsigned char * data, int width, int height, const bool useSrgbFormat )
 {
-    VGlOperation glOperation;
+    VEglDriver glOperation;
     glOperation.logErrorsEnum( "enter LoadRgbaTexture" );
 
     const GLenum glFormat = GL_RGBA;
@@ -673,8 +673,8 @@ VR4Matrixf Oculus360Photos::drawEyeView( const int eye, const float fovDegrees )
         const VR4Matrixf	m( CubeMatrixForViewMatrix( m_scene.CenterViewMatrix() ) );
         GLuint texId = m_backgroundCubeTexData.GetRenderTexId();
         glBindTexture( GL_TEXTURE_CUBE_MAP, texId );
-        glTexParameteri( GL_TEXTURE_CUBE_MAP, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT,
-                         m_useSrgb ? VGlOperation::GL_DECODE_EXT : VGlOperation::GL_SKIP_DECODE_EXT );
+        glTexParameteri( GL_TEXTURE_CUBE_MAP, VEglDriver::GL_TEXTURE_SRGB_DECODE_EXT,
+                         m_useSrgb ? VEglDriver::GL_DECODE_EXT : VEglDriver::GL_SKIP_DECODE_EXT );
         glBindTexture( GL_TEXTURE_CUBE_MAP, 0 );
 /*
         vApp->swapParms().WarpOptions = ( m_useSrgb ? 0 : SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER );
@@ -720,14 +720,14 @@ VR4Matrixf Oculus360Photos::drawEyeView( const int eye, const float fovDegrees )
         if ( m_currentPanoIsCubeMap )
         {
             glBindTexture( GL_TEXTURE_CUBE_MAP, m_backgroundCubeTexData.GetRenderTexId( ) );
-            glTexParameteri( GL_TEXTURE_CUBE_MAP, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT,
-                             m_useSrgb ? VGlOperation::GL_DECODE_EXT : VGlOperation::GL_SKIP_DECODE_EXT );
+            glTexParameteri( GL_TEXTURE_CUBE_MAP, VEglDriver::GL_TEXTURE_SRGB_DECODE_EXT,
+                             m_useSrgb ? VEglDriver::GL_DECODE_EXT : VEglDriver::GL_SKIP_DECODE_EXT );
         }
         else
         {
             glBindTexture( GL_TEXTURE_2D, m_backgroundPanoTexData.GetRenderTexId( ) );
-            glTexParameteri( GL_TEXTURE_2D, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT,
-                             m_useSrgb ? VGlOperation::GL_DECODE_EXT : VGlOperation::GL_SKIP_DECODE_EXT );
+            glTexParameteri( GL_TEXTURE_2D, VEglDriver::GL_TEXTURE_SRGB_DECODE_EXT,
+                             m_useSrgb ? VEglDriver::GL_DECODE_EXT : VEglDriver::GL_SKIP_DECODE_EXT );
         }
 
         VGlShader & prog = m_currentPanoIsCubeMap ? m_cubeMapPanoProgram : m_texturedMvpProgram;
@@ -744,7 +744,7 @@ VR4Matrixf Oculus360Photos::drawEyeView( const int eye, const float fovDegrees )
         glBindTexture( GL_TEXTURE_2D, 0 );
     }
 
-    VGlOperation glOperation;
+    VEglDriver glOperation;
     glOperation.logErrorsEnum( "draw" );
 
     return view;

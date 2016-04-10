@@ -11,7 +11,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 *************************************************************************************/
 
 #include "VRMenuMgr.h"
-#include "api/VGlOperation.h"
+#include "api/VEglDriver.h"
 #include "VAlgorithm.h"
 #include "../api/VGlShader.h"
 #include "GlTexture.h"
@@ -898,7 +898,7 @@ void VRMenuMgrLocal::renderSubmitted( VR4Matrixf const & worldMVP, VR4Matrixf co
 		return;
 	}
 
-    VGlOperation glOperation;
+    VEglDriver glOperation;
     glOperation.logErrorsEnum( "VRMenuMgrLocal::RenderSubmitted - pre" );
 
 	//vInfo("VRMenuMgrLocal::RenderSubmitted");

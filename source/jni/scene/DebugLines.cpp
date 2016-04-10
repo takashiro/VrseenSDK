@@ -14,7 +14,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <stdlib.h>
 
 
-#include "api/VGlOperation.h"
+#include "api/VEglDriver.h"
 
 #include "api/VGlGeometry.h"
 #include "api/VGlShader.h"
@@ -153,7 +153,7 @@ OvrDebugLinesLocal::~OvrDebugLinesLocal()
 // OvrDebugLinesLocal::Init
 void OvrDebugLinesLocal::Init()
 {
-    VGlOperation glOperation;
+    VEglDriver glOperation;
 	if ( Initialized )
 	{
 // JDC: multi-activity test		vAssert(!Initialized);
@@ -194,7 +194,7 @@ void OvrDebugLinesLocal::Init()
 void OvrDebugLinesLocal::InitVBO( VGlGeometry & geo, LineVertex_t * vertices, const int maxVerts,
 		LineIndex_t * indices, const int maxIndices )
 {
-    VGlOperation glOperation;
+    VEglDriver glOperation;
 	const int numVertexBytes = maxVerts * sizeof( LineVertex_t );
 
 	// create vertex array object
@@ -253,7 +253,7 @@ void OvrDebugLinesLocal::Render( VR4Matrixf const & mvp ) const
 void OvrDebugLinesLocal::Render( VR4Matrixf const & mvp, VGlGeometry & geo,
 		NervGear::VArray< DebugLine_t > const & lines,  const bool depthTest ) const
 {
-    VGlOperation glOperation;
+    VEglDriver glOperation;
 	if ( lines.length() == 0 )
 	{
 		return;

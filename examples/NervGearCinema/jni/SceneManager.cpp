@@ -1,5 +1,5 @@
 #include "api/VKernel.h"
-#include "api/VGlOperation.h"
+#include "api/VEglDriver.h"
 
 #include "CinemaApp.h"
 #include "Native.h"
@@ -522,7 +522,7 @@ void SceneManager::LightsOff( const float duration )
 
 GLuint SceneManager::BuildScreenVignetteTexture( const int horizontalTile ) const
 {
-    VGlOperation glOperation;
+    VEglDriver glOperation;
 	// make it an even border at 16:9 aspect ratio, let it get a little squished at other aspects
 	static const int scale = 6;
 	static const int width = 16 * scale * horizontalTile;
@@ -1029,7 +1029,7 @@ VR4Matrixf SceneManager::Frame( const VrFrame & vrFrame )
 		}
 	}
 
-    VGlOperation glOperation;
+    VEglDriver glOperation;
 	// build the mip maps
 	if ( FrameUpdateNeeded )
 	{
@@ -1052,7 +1052,7 @@ VR4Matrixf SceneManager::Frame( const VrFrame & vrFrame )
 		glViewport( 0, 0, MovieTextureWidth, MovieTextureHeight );
         if ( vApp->appInterface()->wantSrgbFramebuffer() )
 		{	// we need this copied without sRGB conversion on the top level
-            glDisable( VGlOperation::GL_FRAMEBUFFER_SRGB_EXT );
+            glDisable( VEglDriver::GL_FRAMEBUFFER_SRGB_EXT );
 		}
 		if ( CurrentMovieWidth > 0 )
 		{
@@ -1062,7 +1062,7 @@ VR4Matrixf SceneManager::Frame( const VrFrame & vrFrame )
 			glBindTexture( GL_TEXTURE_EXTERNAL_OES, 0 );
             if ( vApp->appInterface()->wantSrgbFramebuffer() )
 			{	// we need this copied without sRGB conversion on the top level
-                glEnable( VGlOperation::GL_FRAMEBUFFER_SRGB_EXT );
+                glEnable( VEglDriver::GL_FRAMEBUFFER_SRGB_EXT );
 			}
 		}
 		else
@@ -1080,7 +1080,7 @@ VR4Matrixf SceneManager::Frame( const VrFrame & vrFrame )
 		glGenerateMipmap( GL_TEXTURE_2D );
 		glBindTexture( GL_TEXTURE_2D, 0 );
 
-        VGlOperation glOperation;
+        VEglDriver glOperation;
 
         glOperation.glFlush();
 	}

@@ -4,7 +4,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include "VGlOperation.h"
+#include "VEglDriver.h"
 #include "VAlgorithm.h"
 #include "VLensDistortion.h"
 #include "VGlShader.h"
@@ -39,7 +39,7 @@ void PackVertexAttribute( VArray< uint8_t > & packed, const VArray< _attrib_type
 }
 void VGlGeometry::createGlGeometry( const VertexAttribs & attribs, const VArray< ushort > & indices )
 {
-    VGlOperation glOperation;
+    VEglDriver glOperation;
     vertexCount = attribs.position.length();
     indexCount = indices.length();
 
@@ -124,7 +124,7 @@ void VGlGeometry::createGlGeometry( const VertexAttribs & attribs, const VArray<
 
 void VGlGeometry::updateGlGeometry( const VertexAttribs & attribs )
 {
-    VGlOperation glOperation;
+    VEglDriver glOperation;
     vertexCount = attribs.position.length();
 
     glOperation.glBindVertexArrayOES( vertexArrayObject );
@@ -147,14 +147,14 @@ void VGlGeometry::updateGlGeometry( const VertexAttribs & attribs )
 
 void VGlGeometry::drawElements() const
 {
-    VGlOperation glOperation;
+    VEglDriver glOperation;
     glOperation.glBindVertexArrayOES( vertexArrayObject );
     glDrawElements( GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT , NULL );
 }
 
 void VGlGeometry::destroy()
 {
-    VGlOperation glOperation;
+    VEglDriver glOperation;
     if(vertexArrayObject != 0)
     glOperation.glDeleteVertexArraysOES( 1, &vertexArrayObject );
      if(indexBuffer != 0)
@@ -756,7 +756,7 @@ void  VGlGeometry::createUnitCubeGrid()
 void  VGlGeometry::createQuad()
 {
 
-    VGlOperation glOperation;
+    VEglDriver glOperation;
     VGlGeometry geometry;
     struct vertices_t
     {

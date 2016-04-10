@@ -146,7 +146,7 @@ struct EyeBuffer {
             break;
         }
 
-        VGlOperation glOperation;
+        VEglDriver glOperation;
         if (multisampleMode == VEyeBuffer::MULTISAMPLE_RENDER_TO_TEXTURE) {
             vInfo(
                     "Making a " << bufferParms.multisamples << " sample buffer with glFramebufferTexture2DMultisample");
@@ -293,7 +293,7 @@ struct EyePairs
        EyePairs      BufferData[MAX_EYE_SETS];
 void VEyeBuffer::BeginFrame( const EyeParms & bufferParms_ )
 {
-    VGlOperation glOperation;
+    VEglDriver glOperation;
     SwapCount++;
 
 
@@ -339,7 +339,7 @@ void VEyeBuffer::BeginRenderingEye( const int eyeNum )
     glEnable( GL_DEPTH_TEST );
     glDepthFunc( GL_LEQUAL );
 
-    VGlOperation glOperation;
+    VEglDriver glOperation;
     if ( DiscardInsteadOfClear )
     {
         glOperation.glDisableFramebuffer( true, true );
@@ -357,7 +357,7 @@ void VEyeBuffer::EndRenderingEye( const int eyeNum )
     const int resolution = BufferParms.resolution;
     EyePairs & pair = BufferData[ SwapCount % MAX_EYE_SETS ];
     EyeBuffer & eye = pair.Eyes[eyeNum];
-    VGlOperation glOperation;;
+    VEglDriver glOperation;;
     glOperation.glDisableFramebuffer( false, true );
 
     if ( eye.ResolveFrameBuffer )

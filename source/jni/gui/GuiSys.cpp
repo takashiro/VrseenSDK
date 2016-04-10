@@ -13,7 +13,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "GuiSysLocal.h"
 
 #include <android/keycodes.h>
-#include "api/VGlOperation.h"
+#include "api/VEglDriver.h"
 #include "../api/VGlShader.h"
 #include "GlTexture.h"
 #include "../api/VGlGeometry.h"

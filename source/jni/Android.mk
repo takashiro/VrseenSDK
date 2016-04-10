@@ -55,7 +55,6 @@ LOCAL_SRC_FILES  := \
 	core/VVariant.cpp \
 	core/VWaitCondition.cpp \
 	core/android/JniUtils.cpp \
-	core/android/LogUtils.cpp \
 	core/android/VOsBuild.cpp \
 	api/VKernel.cpp \
 	api/VDevice.cpp \
@@ -64,7 +63,7 @@ LOCAL_SRC_FILES  := \
 	api/VFrameSmooth.cpp \
 	api/VGlGeometry.cpp \
 	api/VMainActivity.cpp \
-	api/VGlOperation.cpp \
+	api/VEglDriver.cpp \
 	api/VSystemActivities.cpp \
 	api/VGlShader.cpp \
 	api/sensor/DeviceHandle.cpp \

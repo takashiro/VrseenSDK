@@ -340,7 +340,7 @@ void OvrGazeCursorLocal::Frame( VR4Matrixf const & viewMatrix, float const delta
 // OvrGazeCursorLocal::Render
 void OvrGazeCursorLocal::Render( int const eye, VR4Matrixf const & mvp ) const
 {
-    VGlOperation glOperation;
+    VEglDriver glOperation;
     glOperation.logErrorsEnum( "OvrGazeCursorLocal::Render - pre" );
 
 	//vInfo("OvrGazeCursorLocal::Render");

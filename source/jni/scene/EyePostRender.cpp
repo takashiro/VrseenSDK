@@ -13,7 +13,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VBasicmath.h"
 #include "VAlgorithm.h"
 #include "VArray.h"
-#include "api/VGlOperation.h"
+#include "api/VEglDriver.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -43,7 +43,7 @@ void EyePostRender::Shutdown()
 
 void EyePostRender::DrawEyeCalibrationLines( const float bufferFovDegrees, const int eye )
 {
-    VGlOperation glOperation;
+    VEglDriver glOperation;
 	// Optionally draw thick calibration lines into the texture,
 	// which will be overlayed by the thinner pre-distorted lines
 	// later -- they should match very closely!
@@ -67,7 +67,7 @@ void EyePostRender::DrawEyeCalibrationLines( const float bufferFovDegrees, const
 
 void EyePostRender::DrawEyeVignette()
 {
-    VGlOperation glOperation;
+    VEglDriver glOperation;
 	// Draw a thin vignette at the edges of the view so clamping will give black
 	glUseProgram( UntexturedScreenSpaceProgram.program);
 	glUniform4f( UntexturedScreenSpaceProgram.uniformColor, 1, 1, 1, 1 );

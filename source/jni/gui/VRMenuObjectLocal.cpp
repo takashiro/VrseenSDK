@@ -280,7 +280,7 @@ void VRMenuSurface::render( OvrVRMenuMgr const & menuMgr, VR4Matrixf const & mvp
 
     //vInfo("Render Surface '" << SurfaceName << "', skip = '" << skipAdditivePass ? "true" : "false" << "'");
 
-    VGlOperation glOperation;
+    VEglDriver glOperation;
     glOperation.logErrorsEnum( "VRMenuSurface::Render - pre" );
 
 	VGlShader const * program = NULL;

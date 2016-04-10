@@ -10,7 +10,7 @@
 #include <math.h>
 
 #include "VLog.h"
-#include "VGlOperation.h"
+#include "VEglDriver.h"
 #include "android/JniUtils.h"
 #include "android/VOsBuild.h"
 
@@ -672,7 +672,7 @@ void VKernel::run()
     }
 
     // Let GlUtils look up extensions
-    VGlOperation glOperation;
+    VEglDriver glOperation;
     glOperation.logExtensions();
 
     // Look up the window surface size (NOTE: This must happen before Direct Render
@@ -802,6 +802,7 @@ void VKernel::destroy(eExitType exitType)
     }
     else if ( exitType == EXIT_TYPE_EXIT )
     {
+        exit();
         vInfo("Calling exitType EXIT_TYPE_EXIT");
         NervGear::VSystemActivities::instance()->shutdownEventQueues();
         ovr_Shutdown();

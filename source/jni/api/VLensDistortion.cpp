@@ -3,7 +3,7 @@
 #include "VDevice.h"
 #include "VAlgorithm.h"
 #include "VGlShader.h"
-#include "VGlOperation.h"
+#include "VEglDriver.h"
 
 #include "VLensDistortion.h"
 
@@ -179,7 +179,7 @@ int VLensDistortion::yyGridNum = 32;
 VGlGeometry VLensDistortion::createDistortionGrid(const VDevice* device,const int numSlicesPerEye, const float fovScale,
                                                    const bool cursorOnly)
 {
-    VGlOperation glOperation;
+    VEglDriver glOperation;
     VGlGeometry geometry;
     const int totalX = (xxGridNum+1)*2;
 

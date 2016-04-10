@@ -10,7 +10,7 @@
 #include "MappedFile.h"
 #include "VPath.h"
 
-#include "api/VGlOperation.h"
+#include "api/VEglDriver.h"
 
 
 #include "unzip.h"

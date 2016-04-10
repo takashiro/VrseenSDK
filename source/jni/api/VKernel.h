@@ -174,6 +174,7 @@ public:
     void setSmoothProgram(ushort program);
     void setProgramParms( float * proParms);
 
+
      void InitTimeWarpParms( );
 
 

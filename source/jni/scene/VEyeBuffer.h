@@ -3,7 +3,7 @@
 #include <jni.h>
 
 #include "vglobal.h"
-#include "api/VGlOperation.h"
+#include "api/VEglDriver.h"
 
 #include "VColor.h"
 
@@ -62,7 +62,7 @@ public:
 
     EyeParms    BufferParms;
 
-    VGlOperation    glOperation;
+    VEglDriver    glOperation;
 
     void    BeginFrame( const EyeParms &    bufferParms_ );
 

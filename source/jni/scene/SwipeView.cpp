@@ -18,7 +18,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VBasicmath.h"
 #include "VAlgorithm.h"
 #include "TypesafeNumber.h"
-#include "api/VGlOperation.h"
+#include "api/VEglDriver.h"
 
 #include "Input.h"
 #include "GlTexture.h"
@@ -806,7 +806,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 
 void SwipeView::Draw( const VR4Matrixf & mvp )
 {
-    VGlOperation glOperation;
+    VEglDriver glOperation;
 	if ( State == SVS_CLOSED )
 	{	// full closed
 		return;

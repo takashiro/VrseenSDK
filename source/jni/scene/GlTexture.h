@@ -2,7 +2,7 @@
 
 #include "vglobal.h"
 #include "VFlags.h"
-#include "VGlOperation.h"
+#include "VEglDriver.h"
 
 // Explicitly using unsigned instead of GLUint / GLenum to avoid including GL headers
 

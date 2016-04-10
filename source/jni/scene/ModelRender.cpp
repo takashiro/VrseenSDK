@@ -13,7 +13,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include <stdlib.h>
 
-#include "api/VGlOperation.h"
+#include "api/VEglDriver.h"
 #include "VAlgorithm.h"
 
 #include "GlTexture.h"
@@ -348,7 +348,7 @@ const DrawSurfaceList & BuildDrawSurfaceList( const NervGear::VArray<ModelState>
 DrawCounters RenderSurfaceList( const DrawSurfaceList & drawSurfaceList ) {
 	// This state could be made to persist across multiple calls to RenderModelList,
 	// but the benefit would be small.
-    VGlOperation glOperation;
+    VEglDriver glOperation;
     GpuState			currentGpuState;
 	GLuint				currentTextures[ MAX_PROGRAM_TEXTURES ] = {};	// TODO: This should be a range checked container.
 	const DrawMatrices * currentMatrices = NULL;

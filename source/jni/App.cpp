@@ -10,7 +10,7 @@
 
 #include <3rdparty/stb/stb_image_write.h>
 
-#include "api/VGlOperation.h"
+#include "api/VEglDriver.h"
 #include "android/JniUtils.h"
 #include "android/VOsBuild.h"
 
@@ -129,21 +129,21 @@ extern void DebugMenuBounds(void * appPtr, const char * cmd);
 extern void DebugMenuHierarchy(void * appPtr, const char * cmd);
 extern void DebugMenuPoses(void * appPtr, const char * cmd);
 
-static VEyeBuffer::EyeParms DefaultVrParmsForRenderer(const VGlOperation & glOperation)
+static VEyeBuffer::EyeParms DefaultVrParmsForRenderer(const VEglDriver & glOperation)
 {
     VEyeBuffer::EyeParms vrParms;
 
     vrParms.resolution = 1024;
-    vrParms.multisamples = (glOperation.gpuType == VGlOperation::GPU_TYPE_ADRENO_330) ? 2 : 4;
+    vrParms.multisamples = (glOperation.m_gpuType == VEglDriver::GPU_TYPE_ADRENO_330) ? 2 : 4;
     vrParms.colorFormat = VColor::COLOR_8888;
     vrParms.commonParameterDepth = VEyeBuffer::CommonParameter::DEPTHFORMAT_DEPTH_24;
 
     return vrParms;
 }
 
-static bool ChromaticAberrationCorrection(const VGlOperation & glOperation)
+static bool ChromaticAberrationCorrection(const VEglDriver & glOperation)
 {
-    return (glOperation.gpuType & VGlOperation::GPU_TYPE_ADRENO) != 0 && (glOperation.gpuType >= VGlOperation::GPU_TYPE_ADRENO_420);
+    return (glOperation.m_gpuType & VEglDriver::GPU_TYPE_ADRENO) != 0 && (glOperation.m_gpuType >= VEglDriver::GPU_TYPE_ADRENO_420);
 }
 
 
@@ -162,7 +162,7 @@ struct App::Private
     VEventLoop	eventLoop;
 
     // Egl context and surface for rendering
-    VGlOperation  glOperation;
+    VEglDriver  m_vrGlStatus;
 
     // Handles creating, destroying, and re-configuring the buffers
     // for drawing the eye views, which might be in different texture
@@ -417,9 +417,9 @@ struct App::Private
         // Make sure the window surface is current, which it won't be
         // if we were previously in async mode
         // (Not needed now?)
-        if (eglMakeCurrent(glOperation.display, windowSurface, windowSurface, glOperation.context) == EGL_FALSE)
+        if (eglMakeCurrent(m_vrGlStatus.m_display, windowSurface, windowSurface, m_vrGlStatus.m_context) == EGL_FALSE)
         {
-            vFatal("eglMakeCurrent failed:" << glOperation.getEglErrorString());
+            vFatal("eglMakeCurrent failed:" << m_vrGlStatus.getEglErrorString());
         }
 
         // Allow the app to override
@@ -436,12 +436,12 @@ struct App::Private
 
     void initGlObjects()
     {
-        vrParms = DefaultVrParmsForRenderer(glOperation);
+        vrParms = DefaultVrParmsForRenderer(m_vrGlStatus);
 
 
 
-          kernel->setSmoothProgram(ChromaticAberrationCorrection(glOperation) ? VK_DEFAULT_CB : VK_DEFAULT);
-        glOperation.logExtensions();
+          kernel->setSmoothProgram(ChromaticAberrationCorrection(m_vrGlStatus) ? VK_DEFAULT_CB : VK_DEFAULT);
+        m_vrGlStatus.logExtensions();
 
         self->panel.externalTextureProgram2.initShader( VGlShader::getAdditionalVertexShaderSource(), VGlShader::getAdditionalFragmentShaderSource() );
         untexturedMvpProgram.initShader( VGlShader::getUntextureMvpVertexShaderSource(),VGlShader::getUntexturedFragmentShaderSource()  );
@@ -746,8 +746,8 @@ struct App::Private
             windowSurface = EGL_NO_SURFACE;
             if (appInterface->wantSrgbFramebuffer())
             {
-                attribs[numAttribs++] = VGlOperation::EGL_GL_COLORSPACE_KHR;
-                attribs[numAttribs++] = VGlOperation::EGL_GL_COLORSPACE_SRGB_KHR;
+                attribs[numAttribs++] = VEglDriver::EGL_GL_COLORSPACE_KHR;
+                attribs[numAttribs++] = VEglDriver::EGL_GL_COLORSPACE_SRGB_KHR;
             }
             // Ask for TrustZone rendering support
             if (appInterface->wantProtectedFramebuffer())
@@ -759,7 +759,7 @@ struct App::Private
 
             // Android doesn't let the non-standard extensions show up in the
             // extension string, so we need to try it blind.
-            windowSurface = eglCreateWindowSurface(glOperation.display, glOperation.config,
+            windowSurface = eglCreateWindowSurface(m_vrGlStatus.m_display, m_vrGlStatus.m_config,
                     nativeWindow, attribs);
 
 
@@ -769,11 +769,11 @@ struct App::Private
                 {
                     EGL_NONE
                 };
-                windowSurface = eglCreateWindowSurface(glOperation.display, glOperation.config,
+                windowSurface = eglCreateWindowSurface(m_vrGlStatus.m_display, m_vrGlStatus.m_config,
                         nativeWindow, attribs2);
                 if (windowSurface == EGL_NO_SURFACE)
                 {
-                    vFatal("eglCreateWindowSurface failed:" << glOperation.getEglErrorString());
+                    vFatal("eglCreateWindowSurface failed:" << m_vrGlStatus.getEglErrorString());
                 }
                 framebufferIsSrgb = false;
                 framebufferIsProtected = false;
@@ -784,9 +784,9 @@ struct App::Private
                 framebufferIsProtected = appInterface->wantProtectedFramebuffer();
             }
 
-            if (eglMakeCurrent(glOperation.display, windowSurface, windowSurface, glOperation.context) == EGL_FALSE)
+            if (eglMakeCurrent(m_vrGlStatus.m_display, windowSurface, windowSurface, m_vrGlStatus.m_context) == EGL_FALSE)
             {
-                vFatal("eglMakeCurrent failed:" << glOperation.getEglErrorString());
+                vFatal("eglMakeCurrent failed:" << m_vrGlStatus.getEglErrorString());
             }
 
             createdSurface = true;
@@ -809,15 +809,15 @@ struct App::Private
             appInterface->onWindowDestroyed();
 
             // Handle it ourselves.
-            if (eglMakeCurrent(glOperation.display, glOperation.pbufferSurface, glOperation.pbufferSurface,
-                    glOperation.context) == EGL_FALSE)
+            if (eglMakeCurrent(m_vrGlStatus.m_display, m_vrGlStatus.m_pbufferSurface, m_vrGlStatus.m_pbufferSurface,
+                    m_vrGlStatus.m_context) == EGL_FALSE)
             {
                 vFatal("RC_SURFACE_DESTROYED: eglMakeCurrent pbuffer failed");
             }
 
             if (windowSurface != EGL_NO_SURFACE)
             {
-                eglDestroySurface(glOperation.display, windowSurface);
+                eglDestroySurface(m_vrGlStatus.m_display, windowSurface);
                 windowSurface = EGL_NO_SURFACE;
             }
             if (nativeWindow != nullptr)
@@ -941,9 +941,8 @@ struct App::Private
             const int windowDepth = 0;
             const int windowSamples = 0;
             const GLuint contextPriority = EGL_CONTEXT_PRIORITY_MEDIUM_IMG;
-            glOperation.eglInit(EGL_NO_CONTEXT, GL_ES_VERSION,	// no share context,
-                    8,8,8, windowDepth, windowSamples, // r g b
-                    contextPriority);
+            m_vrGlStatus.eglInit(EGL_NO_CONTEXT, GL_ES_VERSION,
+                    8,8,8, windowDepth, windowSamples, contextPriority);
 
             // Create our GL data objects
             initGlObjects();
@@ -1316,9 +1315,6 @@ struct App::Private
 
             shutdownGlObjects();
 
-            glOperation.eglExit();
-
-            // Detach from the Java VM before exiting.
             vInfo("javaVM->DetachCurrentThread");
             const jint rtn = javaVM->DetachCurrentThread();
             if (rtn != JNI_OK)
@@ -1593,7 +1589,7 @@ void App::playSound(const char *name)
 
 //void ToggleScreenColor()
 //{
-//    VGlOperation glOperation;
+//
 //	static int	color;
 
 //	color ^= 1;
@@ -1853,7 +1849,7 @@ long long App::recenterYawFrameStart() const
 //void App::drawBounds( const V3Vectf &mins, const V3Vectf &maxs, const VR4Matrixf &mvp, const V3Vectf &color )
 //{
 
-//    VGlOperation glOperation;
+//
 //    VR4Matrixf	scaled = mvp * VR4Matrixf::Translation( mins ) * VR4Matrixf::Scaling( maxs - mins );
 //    const VGlShader & prog = d->untexturedMvpProgram;
 //    glUseProgram(prog.program);
@@ -1870,7 +1866,7 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
 {
 
 
-    VGlOperation glOperation;
+    VEglDriver glOperation;
     // update vr lib systems after the app frame, but before rendering anything
     guiSys().frame( this, text.vrFrame, vrMenuMgr(), defaultFont(), menuFontSurface(), centerViewMatrix );
     gazeCursor().Frame( centerViewMatrix, text.vrFrame.DeltaSeconds );
@@ -1975,7 +1971,7 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
 // time warp overlay.
 //void App::drawScreenDirect( const GLuint texid, const ovrMatrix4f & mvp )
 //{
-//    VGlOperation glOperation;
+//
 //    const VR4Matrixf mvpMatrix( mvp );
 //    glActiveTexture( GL_TEXTURE0 );
 //    glBindTexture( GL_TEXTURE_2D, texid );

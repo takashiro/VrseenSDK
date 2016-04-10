@@ -34,7 +34,7 @@
 #include "VLog.h"
 
 #include "android/JniUtils.h"
-#include "api/VGlOperation.h"
+#include "api/VEglDriver.h"
 
 #include "../api/VGlShader.h"
 #include "GlTexture.h"
@@ -1051,7 +1051,7 @@ void BitmapFontSurfaceLocal::Init(const int maxVertices) {
 
 	Vertices = new fontVertex_t[maxVertices];
 	const int vertexByteCount = maxVertices * sizeof(fontVertex_t);
-    VGlOperation glOperation;
+    VEglDriver glOperation;
 	// font VAO
     glOperation.glGenVertexArraysOES(1, &Geo.vertexArrayObject);
     glOperation.glBindVertexArrayOES(Geo.vertexArrayObject);
@@ -1432,7 +1432,7 @@ void BitmapFontSurfaceLocal::Finish(VR4Matrixf const & viewMatrix) {
 	// needed on the next frame.
 	VertexBlocks.clear();
 
-    VGlOperation glOperation;
+    VEglDriver glOperation;
     glOperation.glBindVertexArrayOES(Geo.vertexArrayObject);
 	glBindBuffer(GL_ARRAY_BUFFER, Geo.vertexBuffer);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, CurVertex * sizeof(fontVertex_t),
@@ -1448,7 +1448,7 @@ void BitmapFontSurfaceLocal::Finish(VR4Matrixf const & viewMatrix) {
 // TODO: once we add support for multiple fonts per surface, this should not take a BitmapFont for input.
 void BitmapFontSurfaceLocal::Render3D(BitmapFont const & font,
         VR4Matrixf const & worldMVP) const {
-    VGlOperation glOperation;
+    VEglDriver glOperation;
     glOperation.logErrorsEnum("BitmapFontSurfaceLocal::Render3D - pre");
 
 	//SPAM( "BitmapFontSurfaceLocal::Render3D" );
