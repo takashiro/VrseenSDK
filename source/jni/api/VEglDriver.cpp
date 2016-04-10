@@ -46,6 +46,41 @@ VEglDriver::VEglDriver()
     m_context = EGL_NO_CONTEXT;
 }
 
+void VEglDriver::updateEglConfig(EGLContext eglShareContext)
+{
+
+EGLint configID;
+
+if ( !eglQueryContext(m_display, eglShareContext, EGL_CONFIG_ID, &configID ) )
+{
+    vFatal("eglQueryContext EGL_CONFIG_ID failed");
+}
+
+
+m_config = eglConfigForConfigID(configID );
+if ( m_config == NULL )
+{
+    vFatal("updateEglConfig failed");
+}
+}
+void VEglDriver::updateEglConfig()
+{
+
+EGLint configID;
+
+if ( !eglQueryContext(m_display, m_context, EGL_CONFIG_ID, &configID ) )
+{
+    vFatal("eglQueryContext EGL_CONFIG_ID failed");
+}
+
+
+m_config = eglConfigForConfigID(configID );
+if ( m_config == NULL )
+{
+    vFatal("updateEglConfig failed");
+}
+}
+
 EGLConfig VEglDriver::eglConfigForConfigID(const GLint configID)
 {
 
@@ -309,7 +344,10 @@ EGLConfig VEglDriver::chooseColorConfig( const int redBits,
  {
 
    m_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-
+   if (m_display == 0) {
+       vFatal("No acceptable display ( vegldriver:updateDisplay.");
+       return ;
+   }
 
  }
 
@@ -319,7 +357,7 @@ EGLConfig VEglDriver::chooseColorConfig( const int redBits,
    {
       if(m_context == EGL_NO_CONTEXT)
       {
-
+       vInfo("init extensions");
 
           if (m_display == EGL_NO_DISPLAY)
           m_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
@@ -379,6 +417,8 @@ void VEglDriver::eglInit( const EGLContext shareContext,
                              const int redBits, const int greenBits, const int blueBits,
                              const int depthBits, const int multisamples, const GLuint contextPriority )
 {
+
+    vInfo("egl init ");
     if (m_context == EGL_NO_CONTEXT)
     {
         if (m_display == EGL_NO_DISPLAY)
@@ -456,6 +496,36 @@ void VEglDriver::eglInit( const EGLContext shareContext,
   }
 }
 
+
+void VEglDriver::eglExit()
+{
+
+    if( m_display)
+    {
+         if (eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT) == EGL_FALSE) {
+        vFatal("eglMakeCurrent: failed:" << getEglErrorString());
+        }
+
+    }
+    if(m_context != EGL_NO_CONTEXT)
+    {
+        if (eglDestroyContext(m_display, m_context) == EGL_FALSE)
+        {
+        vFatal("eglDestroyContext: failed:" << getEglErrorString());
+        }
+         m_context = EGL_NO_CONTEXT;
+    }
+    if(m_pbufferSurface != EGL_NO_SURFACE)
+    {
+        if (eglDestroySurface(m_display, m_pbufferSurface) == EGL_FALSE)
+        {
+        vFatal("eglDestroySurface: failed:" << getEglErrorString());
+        }
+        m_pbufferSurface = EGL_NO_SURFACE;
+    }
+     m_display = 0;
+
+}
  VEglDriver::~VEglDriver(  )
 {
 
@@ -464,7 +534,7 @@ void VEglDriver::eglInit( const EGLContext shareContext,
          if (eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT) == EGL_FALSE) {
         vFatal("eglMakeCurrent: failed:" << getEglErrorString());
         }
-         m_display = 0;
+
     }
     if(m_context != EGL_NO_CONTEXT)
     {
@@ -486,6 +556,7 @@ void VEglDriver::eglInit( const EGLContext shareContext,
     m_glEsVersion = 0;
     m_gpuType = GPU_TYPE_UNKNOWN;
     m_config = 0;
+     m_display = 0;
 
 }
 

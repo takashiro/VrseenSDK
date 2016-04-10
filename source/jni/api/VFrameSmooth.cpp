@@ -203,12 +203,9 @@ struct VFrameSmooth::Private
             m_hasEXT_sRGB_write_control( false ),
             m_sStartupTid( 0 ),
             m_jni( NULL ),
-            m_eglPbufferSurface( 0 ),
             m_eglMainThreadSurface( 0 ),
-            m_eglConfig( 0 ),
             m_eglClientVersion( 0 ),
             m_eglShareContext( 0 ),
-            m_eglWarpContext( 0 ),
             m_contextPriority( 0 ),
             m_eyeLog(),
             m_lastEyeLog( 0 ),
@@ -236,13 +233,9 @@ struct VFrameSmooth::Private
         m_async = async;
         m_device = device;
         m_eyeBufferCount.setState( 0 );
+// 初始化smooth线程的gl状态
+        m_eglStatus.updateDisplay();
 
-
-        m_eglDisplay = eglGetCurrentDisplay();
-        if ( m_eglDisplay == EGL_NO_DISPLAY )
-        {
-            vFatal("EGL_NO_DISPLAY");
-        }
         m_eglMainThreadSurface = eglGetCurrentSurface( EGL_DRAW );
         if ( m_eglMainThreadSurface == EGL_NO_SURFACE )
         {
@@ -253,38 +246,8 @@ struct VFrameSmooth::Private
         {
             vFatal("EGL_NO_CONTEXT");
         }
-        EGLint configID;
-        if ( !eglQueryContext( m_eglDisplay, m_eglShareContext, EGL_CONFIG_ID, &configID ) )
-        {
-            vFatal("eglQueryContext EGL_CONFIG_ID failed");
-        }
-        m_eglConfig = m_eglStatus.eglConfigForConfigID(configID );
-        if ( m_eglConfig == NULL )
-        {
-            vFatal("EglConfigForConfigID failed");
-        }
-        if ( !eglQueryContext( m_eglDisplay, m_eglShareContext, EGL_CONTEXT_CLIENT_VERSION, (EGLint *)&m_eglClientVersion ) )
-        {
-            vFatal("eglQueryContext EGL_CONTEXT_CLIENT_VERSION failed");
-        }
+        m_eglStatus.updateEglConfig(m_eglShareContext);
 
-        vInfo("Current EGL_CONTEXT_CLIENT_VERSION:" << m_eglClientVersion);
-
-        EGLint depthSize = 0;
-        eglGetConfigAttrib( m_eglDisplay, m_eglConfig, EGL_DEPTH_SIZE, &depthSize );
-        if ( depthSize != 0 )
-        {
-            vInfo("Share context eglConfig has " << depthSize << " depth bits -- should be 0");
-        }
-        EGLint samples = 0;
-        eglGetConfigAttrib( m_eglDisplay, m_eglConfig, EGL_SAMPLES, &samples );
-        if ( samples != 0 )
-        {
-
-            vInfo("Share context eglConfig has " << samples << " samples -- should be 0");
-        }
-
-        m_hasEXT_sRGB_write_control = m_eglStatus.glIsExtensionString( "GL_EXT_sRGB_write_control");
         if ( !m_async )
         {
             initRenderEnvironment();
@@ -317,13 +280,13 @@ struct VFrameSmooth::Private
                             EGL_HEIGHT, 16,
                             EGL_NONE
                     };
-            m_eglPbufferSurface = eglCreatePbufferSurface( m_eglDisplay, m_eglConfig, attrib_list );
-            if ( m_eglPbufferSurface == EGL_NO_SURFACE )
+            m_eglStatus.m_pbufferSurface = eglCreatePbufferSurface( m_eglStatus.m_display, m_eglStatus.m_config, attrib_list );
+            if ( m_eglStatus.m_pbufferSurface == EGL_NO_SURFACE )
             {
                 vFatal("eglCreatePbufferSurface failed: " << m_eglStatus.getEglErrorString());
             }
 
-            if ( eglMakeCurrent( m_eglDisplay, m_eglPbufferSurface, m_eglPbufferSurface,
+            if ( eglMakeCurrent( m_eglStatus.m_display, m_eglStatus.m_pbufferSurface, m_eglStatus.m_pbufferSurface,
                                  m_eglShareContext ) == EGL_FALSE )
             {
                 vFatal("eglMakeCurrent: eglMakeCurrent pbuffer failed");
@@ -358,17 +321,17 @@ struct VFrameSmooth::Private
 
 
 
-            VEglDriver glOperation;
-            if ( eglGetCurrentSurface( EGL_DRAW ) != m_eglPbufferSurface )
+
+            if ( eglGetCurrentSurface( EGL_DRAW ) !=m_eglStatus.m_pbufferSurface)
             {
-                vInfo("eglGetCurrentSurface( EGL_DRAW ) != eglPbufferSurface");
+                vInfo("framesmooth destroy eglGetCurrentSurface( EGL_DRAW ) != eglPbufferSurface");
             }
-            if ( eglMakeCurrent( m_eglDisplay, m_eglMainThreadSurface,
+            if ( eglMakeCurrent( m_eglStatus.m_display, m_eglMainThreadSurface,
                                  m_eglMainThreadSurface, m_eglShareContext ) == EGL_FALSE)
             {
-                vFatal("eglMakeCurrent to window failed: " << glOperation.getEglErrorString());
+                vFatal("eglMakeCurrent to window failed: " << m_eglStatus.getEglErrorString());
             }
-            if ( EGL_FALSE == eglDestroySurface( m_eglDisplay, m_eglPbufferSurface ) )
+            if ( EGL_FALSE == eglDestroySurface( m_eglStatus.m_display, m_eglStatus.m_pbufferSurface ) )
             {
                 vWarn("Failed to destroy pbuffer.");
             }
@@ -476,18 +439,18 @@ struct VFrameSmooth::Private
     VLockless<double>		m_lastsmoothTimeInSeconds;
 
 
-    EGLDisplay		m_eglDisplay;
+   // EGLDisplay		m_eglDisplay;
 
-    VEglDriver m_eglStatus;
+    VEglDriver      m_eglStatus;
 
-    EGLSurface		m_eglPbufferSurface;
+    //EGLSurface		m_eglPbufferSurface;
     EGLSurface		m_eglMainThreadSurface;
-    EGLConfig		m_eglConfig;
+
     EGLint			m_eglClientVersion;
     EGLContext		m_eglShareContext;
 
 
-    EGLContext		m_eglWarpContext;
+
     GLuint			m_contextPriority;
 
     static const int EYE_LOG_COUNT = 512;
@@ -770,18 +733,18 @@ void VFrameSmooth::Private::smoothThreadInit()
         contextAttribs[3] = m_contextPriority;
     }
 
-    VEglDriver glOperation;
-    m_eglWarpContext = eglCreateContext( m_eglDisplay, m_eglConfig, m_eglShareContext, contextAttribs );
-    if ( m_eglWarpContext == EGL_NO_CONTEXT )
+
+    m_eglStatus.m_context = eglCreateContext( m_eglStatus.m_display, m_eglStatus.m_config, m_eglShareContext, contextAttribs );
+    if (m_eglStatus.m_context == EGL_NO_CONTEXT )
     {
-        vFatal("eglCreateContext failed: " << glOperation.getEglErrorString());
+        vFatal("eglCreateContext failed: " << m_eglStatus.getEglErrorString());
     }
-    vInfo("eglWarpContext: " << m_eglWarpContext);
+    vInfo("eglWarpContext: " << m_eglStatus.m_context);
     if ( m_contextPriority != EGL_CONTEXT_PRIORITY_MEDIUM_IMG )
     {
         // See what context priority we actually got
         EGLint actualPriorityLevel;
-        eglQueryContext( m_eglDisplay, m_eglWarpContext, EGL_CONTEXT_PRIORITY_LEVEL_IMG, &actualPriorityLevel );
+        eglQueryContext( m_eglStatus.m_display, m_eglStatus.m_context, EGL_CONTEXT_PRIORITY_LEVEL_IMG, &actualPriorityLevel );
         switch ( actualPriorityLevel )
         {
         case EGL_CONTEXT_PRIORITY_HIGH_IMG: vInfo("Context is EGL_CONTEXT_PRIORITY_HIGH_IMG"); break;
@@ -794,10 +757,10 @@ void VFrameSmooth::Private::smoothThreadInit()
 
     vInfo("eglMakeCurrent on " << m_eglMainThreadSurface);
 
-    if ( eglMakeCurrent( m_eglDisplay, m_eglMainThreadSurface,
-                         m_eglMainThreadSurface, m_eglWarpContext ) == EGL_FALSE )
+    if ( eglMakeCurrent( m_eglStatus.m_display, m_eglMainThreadSurface,
+                         m_eglMainThreadSurface, m_eglStatus.m_context ) == EGL_FALSE )
     {
-        vFatal("eglMakeCurrent failed: " << glOperation.getEglErrorString());
+        vFatal("eglMakeCurrent failed: " << m_eglStatus.getEglErrorString());
     }
 
     initRenderEnvironment();
@@ -814,13 +777,13 @@ void VFrameSmooth::Private::smoothThreadShutdown()
 
 
     destroyFrameworkGraphics();
-    VEglDriver glOperation;
+
     for ( int i = 0; i < 1; i++ )
     {
         //warpSource_t & ws = m_warpSources[i];
         if ( m_gpuSync )
         {
-            if ( EGL_FALSE == glOperation.eglDestroySyncKHR( m_eglDisplay, m_gpuSync) )
+            if ( EGL_FALSE == m_eglStatus.eglDestroySyncKHR( m_eglStatus.m_display, m_gpuSync) )
             {
                 vInfo("eglDestroySyncKHR returned EGL_FALSE");
             }
@@ -829,17 +792,17 @@ void VFrameSmooth::Private::smoothThreadShutdown()
     }
 
 
-    if ( eglMakeCurrent( m_eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE,
+    if ( eglMakeCurrent( m_eglStatus.m_display, EGL_NO_SURFACE, EGL_NO_SURFACE,
                          EGL_NO_CONTEXT ) == EGL_FALSE )
     {
         vFatal("eglMakeCurrent: shutdown failed");
     }
 
-    if ( eglDestroyContext( m_eglDisplay, m_eglWarpContext ) == EGL_FALSE )
+    if ( eglDestroyContext( m_eglStatus.m_display, m_eglStatus.m_context ) == EGL_FALSE )
     {
         vFatal("eglDestroyContext: shutdown failed");
     }
-    m_eglWarpContext = 0;
+    m_eglStatus.m_context = 0;
 
 
     vInfo("WarpThreadShutdown() - End");
@@ -863,20 +826,7 @@ void VFrameSmooth::Private::setSmoothpState( ) const
     glDisable( GL_BLEND );
     glEnable( GL_SCISSOR_TEST );
 
-
-    if ( m_hasEXT_sRGB_write_control )
-    {
-        if ( m_smoothOptions & VK_INHIBIT_SRGB_FB )
-        {
-            glDisable( VEglDriver::GL_FRAMEBUFFER_SRGB_EXT );
-        }
-        else
-        {
-            glEnable( VEglDriver::GL_FRAMEBUFFER_SRGB_EXT );
-        }
-    }
-    VEglDriver glOperation;
-    glOperation.logErrorsEnum( "SetWarpState" );
+  //m_eglStatus.logErrorsEnum( "SetWarpState" );
 }
 
 void VFrameSmooth::Private::bindSmoothProgram( const VR4Matrixf timeWarps[2][2], const VR4Matrixf rollingWarp,
@@ -1126,7 +1076,7 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
                     break;
                 }
 
-                const EGLint wait = glOperation.eglClientWaitSyncKHR( m_eglDisplay, m_gpuSync,
+                const EGLint wait = glOperation.eglClientWaitSyncKHR( m_eglStatus.m_display, m_gpuSync,
                                                                       EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, 0 );
                 if ( wait == EGL_TIMEOUT_EXPIRED_KHR )
                 {
@@ -1339,7 +1289,7 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
                     continue;
                 }
 
-                const EGLint wait = glOperation.eglClientWaitSyncKHR( m_eglDisplay, m_gpuSync,
+                const EGLint wait = glOperation.eglClientWaitSyncKHR( m_eglStatus.m_display, m_gpuSync,
                                                                       EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, 0 );
                 if ( wait == EGL_TIMEOUT_EXPIRED_KHR )
                 {
@@ -1505,14 +1455,14 @@ void VFrameSmooth::Private::smoothInternal( )
     glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 
 
-    VEglDriver glOperation;
+
 
     const long long lastBufferCount = m_eyeBufferCount.state();
 
     m_minimumVsync = m_lastSwapVsyncCount + 2 * m_minimumVsyncs;	// don't use it if from same frame to avoid problems with very fast frames
     m_firstDisplayedVsync[0] = 0;			// will be set when it becomes the currentSource
     m_firstDisplayedVsync[1] = 0;			// will be set when it becomes the currentSource
-    m_disableChromaticCorrection = ( ( glOperation.eglGetGpuType() & NervGear::VEglDriver::GPU_TYPE_MALI_T760_EXYNOS_5433 ) != 0 );
+    m_disableChromaticCorrection = ( ( m_eglStatus.eglGetGpuType() & NervGear::VEglDriver::GPU_TYPE_MALI_T760_EXYNOS_5433 ) != 0 );
 
     if ( ( m_smoothProgram & VK_IMAGE ) != 0 )
     {
@@ -1532,21 +1482,21 @@ void VFrameSmooth::Private::smoothInternal( )
 
     if ( m_gpuSync != EGL_NO_SYNC_KHR )
     {
-        if ( EGL_FALSE == glOperation.eglDestroySyncKHR( m_eglDisplay, m_gpuSync ) )
+        if ( EGL_FALSE == m_eglStatus.eglDestroySyncKHR( m_eglStatus.m_display, m_gpuSync ) )
         {
             vInfo( "eglDestroySyncKHR returned EGL_FALSE" );
         }
     }
 
 
-    m_gpuSync = glOperation.eglCreateSyncKHR( m_eglDisplay, EGL_SYNC_FENCE_KHR, NULL );
+    m_gpuSync = m_eglStatus.eglCreateSyncKHR( m_eglStatus.m_display, EGL_SYNC_FENCE_KHR, NULL );
     if ( m_gpuSync == EGL_NO_SYNC_KHR )
     {
         vInfo( "eglCreateSyncKHR_():EGL_NO_SYNC_KHR" );
     }
 
 
-    if ( EGL_FALSE == glOperation.eglClientWaitSyncKHR( m_eglDisplay, m_gpuSync,
+    if ( EGL_FALSE == m_eglStatus.eglClientWaitSyncKHR( m_eglStatus.m_display, m_gpuSync,
                                                         EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, 0 ) )
     {
         vInfo( "eglClientWaitSyncKHR returned EGL_FALSE" );
@@ -1559,8 +1509,8 @@ void VFrameSmooth::Private::smoothInternal( )
     if ( !m_async )
     {
 
-        VEglDriver glOperation;
-        glOperation.glFinish();
+
+        m_eglStatus.glFinish();
 
         swapProgram_t * swapProg;
         swapProg = &spSyncSwappedBufferPortrait;

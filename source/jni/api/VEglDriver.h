@@ -60,9 +60,11 @@ public:
 
     VEglDriver();
     ~VEglDriver();
+   void eglExit();
 
     ushort eglGetGpuType();
-
+    void updateEglConfig(EGLContext eglShareContext);
+    void updateEglConfig();
     const char * getGlErrorEnum(const GLenum e);
     EGLConfig eglConfigForConfigID( const GLint configID);
     const char * getEglErrorString();

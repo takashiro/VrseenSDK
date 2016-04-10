@@ -1314,6 +1314,7 @@ struct App::Private
             OvrDebugLines::Free(debugLines);
 
             shutdownGlObjects();
+            m_vrGlStatus.eglExit();
 
             vInfo("javaVM->DetachCurrentThread");
             const jint rtn = javaVM->DetachCurrentThread();
