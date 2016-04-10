@@ -23,7 +23,9 @@ HMDState::HMDState() :
 
 HMDState::~HMDState()
 {
-	stopSensor();
+    vInfo("stop sensor b")
+    stopSensor();
+    vInfo("stop sensor e")
 	RemoveHandlerFromDevices();
 }
 

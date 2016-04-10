@@ -247,17 +247,17 @@ bool VEglDriver::glIsExtensionString(const char *extension)
 
 
     if (strstr(extensions, extension)) {
-        vInfo("Found:" << extension);
-        vInfo("gl strstr end");
+       // vInfo("Found:" << extension);
+       // vInfo("gl strstr end");
         return true;
     } else {
-        vInfo("Not found:" << extension);
+        //vInfo("Not found:" << extension);
         return false;
     }
     }
     else
     {
-        vInfo("there is context for extensions");
+       // vInfo("there is context for extensions");
         return false;
     }
 }

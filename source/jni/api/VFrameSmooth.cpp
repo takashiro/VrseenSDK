@@ -246,7 +246,40 @@ struct VFrameSmooth::Private
         {
             vFatal("EGL_NO_CONTEXT");
         }
-        m_eglStatus.updateEglConfig(m_eglShareContext);
+      //  m_eglStatus.updateEglConfig(m_eglShareContext);
+
+
+
+        EGLint configID;
+        if ( !eglQueryContext( m_eglStatus.m_display, m_eglShareContext, EGL_CONFIG_ID, &configID ) )
+        {
+            vFatal("eglQueryContext EGL_CONFIG_ID failed");
+        }
+        m_eglStatus.m_config = m_eglStatus.eglConfigForConfigID( configID );
+        if (  m_eglStatus.m_config == NULL )
+        {
+            vFatal("EglConfigForConfigID failed");
+        }
+        if ( !eglQueryContext( m_eglStatus.m_display, m_eglShareContext, EGL_CONTEXT_CLIENT_VERSION, (EGLint *)&m_eglClientVersion ) )
+        {
+            vFatal("eglQueryContext EGL_CONTEXT_CLIENT_VERSION failed");
+        }
+
+        vInfo("Current EGL_CONTEXT_CLIENT_VERSION:" << m_eglClientVersion);
+
+        EGLint depthSize = 0;
+        eglGetConfigAttrib( m_eglStatus.m_display, m_eglStatus.m_config, EGL_DEPTH_SIZE, &depthSize );
+        if ( depthSize != 0 )
+        {
+            vInfo("Share context eglConfig has " << depthSize << " depth bits -- should be 0");
+        }
+        EGLint samples = 0;
+        eglGetConfigAttrib( m_eglStatus.m_display, m_eglStatus.m_config, EGL_SAMPLES, &samples );
+        if ( samples != 0 )
+        {
+
+            vInfo("Share context eglConfig has " << samples << " samples -- should be 0");
+        }
 
         if ( !m_async )
         {
