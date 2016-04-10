@@ -302,16 +302,16 @@ void Oculus360Photos::init(const VString &fromPackage, const VString &launchInte
         EGL_NONE
     };
 
-    VEglDriver glOperation;
+
     m_eglPbufferSurface = eglCreatePbufferSurface( m_eglDisplay, m_eglConfig, SurfaceAttribs );
     if ( m_eglPbufferSurface == EGL_NO_SURFACE ) {
-        vFatal("eglCreatePbufferSurface failed:" << glOperation.getEglErrorString());
+        vFatal("eglCreatePbufferSurface failed:" << VEglDriver::getEglErrorString());
     }
     EGLint bufferWidth, bufferHeight;
     if ( !eglQuerySurface( m_eglDisplay, m_eglPbufferSurface, EGL_WIDTH, &bufferWidth ) ||
          !eglQuerySurface( m_eglDisplay, m_eglPbufferSurface, EGL_HEIGHT, &bufferHeight ) )
     {
-        vFatal("eglQuerySurface failed:" << glOperation.getEglErrorString());
+        vFatal("eglQuerySurface failed:" << VEglDriver::getEglErrorString());
     }
 
     // spawn the background loading thread with the command list
@@ -373,17 +373,17 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
         EGL_NONE
     };
 
-    VEglDriver glOperation;
+
     EGLContext EglBGLoaderContext = eglCreateContext( photos->m_eglDisplay, photos->m_eglConfig, photos->m_eglShareContext, loaderContextAttribs );
     if ( EglBGLoaderContext == EGL_NO_CONTEXT )
     {
-        vFatal("eglCreateContext failed:" << glOperation.getEglErrorString());
+        vFatal("eglCreateContext failed:" << VEglDriver::getEglErrorString());
     }
 
     // Make the context current on the window, so no more makeCurrent calls will be needed
     if ( eglMakeCurrent( photos->m_eglDisplay, photos->m_eglPbufferSurface, photos->m_eglPbufferSurface, EglBGLoaderContext ) == EGL_FALSE )
     {
-        vFatal("BackgroundGLLoadThread eglMakeCurrent failed:" << glOperation.getEglErrorString());
+        vFatal("BackgroundGLLoadThread eglMakeCurrent failed:" << VEglDriver::getEglErrorString());
     }
 
     // run until Shutdown requested
@@ -424,13 +424,13 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
             free( data );
 
             // Add a sync object for uploading textures
-            EGLSyncKHR GpuSync = glOperation.eglCreateSyncKHR( photos->m_eglDisplay, EGL_SYNC_FENCE_KHR, NULL );
+            EGLSyncKHR GpuSync = VEglDriver::eglCreateSyncKHR( photos->m_eglDisplay, EGL_SYNC_FENCE_KHR, NULL );
             if ( GpuSync == EGL_NO_SYNC_KHR ) {
                 vFatal("BackgroundGLLoadThread eglCreateSyncKHR_():EGL_NO_SYNC_KHR");
             }
 
             // Force it to flush the commands and wait until the textures are fully uploaded
-            if ( EGL_FALSE == glOperation.eglClientWaitSyncKHR( photos->m_eglDisplay, GpuSync, EGL_SYNC_FLUSH_COMMANDS_BIT_KHR,
+            if ( EGL_FALSE == VEglDriver::eglClientWaitSyncKHR( photos->m_eglDisplay, GpuSync, EGL_SYNC_FLUSH_COMMANDS_BIT_KHR,
                                                                 EGL_FOREVER_KHR ) )
             {
                 vInfo("BackgroundGLLoadThread eglClientWaitSyncKHR returned EGL_FALSE");
@@ -456,13 +456,13 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
             }
 
             // Add a sync object for uploading textures
-            EGLSyncKHR GpuSync = glOperation.eglCreateSyncKHR( photos->m_eglDisplay, EGL_SYNC_FENCE_KHR, NULL );
+            EGLSyncKHR GpuSync = VEglDriver::eglCreateSyncKHR( photos->m_eglDisplay, EGL_SYNC_FENCE_KHR, NULL );
             if ( GpuSync == EGL_NO_SYNC_KHR ) {
                 vFatal("BackgroundGLLoadThread eglCreateSyncKHR_():EGL_NO_SYNC_KHR");
             }
 
             // Force it to flush the commands and wait until the textures are fully uploaded
-            if ( EGL_FALSE == glOperation.eglClientWaitSyncKHR( photos->m_eglDisplay, GpuSync, EGL_SYNC_FLUSH_COMMANDS_BIT_KHR,
+            if ( EGL_FALSE == VEglDriver::eglClientWaitSyncKHR( photos->m_eglDisplay, GpuSync, EGL_SYNC_FLUSH_COMMANDS_BIT_KHR,
                                                                 EGL_FOREVER_KHR ) )
             {
                 vInfo("BackgroundGLLoadThread eglClientWaitSyncKHR returned EGL_FALSE");
@@ -554,8 +554,8 @@ bool Oculus360Photos::onKeyEvent( const int keyCode, const KeyState::eKeyEventTy
 
 void Oculus360Photos::loadRgbaCubeMap( const int resolution, const unsigned char * const rgba[ 6 ], const bool useSrgbFormat )
 {
-    VEglDriver glOperation;
-    glOperation.logErrorsEnum( "enter LoadRgbaCubeMap" );
+
+    VEglDriver::logErrorsEnum( "enter LoadRgbaCubeMap" );
 
     const GLenum glFormat = GL_RGBA;
     const GLenum glInternalFormat = useSrgbFormat ? GL_SRGB8_ALPHA8 : GL_RGBA;
@@ -591,13 +591,13 @@ void Oculus360Photos::loadRgbaCubeMap( const int resolution, const unsigned char
 
     glBindTexture( GL_TEXTURE_CUBE_MAP, 0 );
 
-    glOperation.logErrorsEnum( "leave LoadRgbaCubeMap" );
+    VEglDriver::logErrorsEnum( "leave LoadRgbaCubeMap" );
 }
 
 void Oculus360Photos::loadRgbaTexture( const unsigned char * data, int width, int height, const bool useSrgbFormat )
 {
-    VEglDriver glOperation;
-    glOperation.logErrorsEnum( "enter LoadRgbaTexture" );
+
+    VEglDriver::logErrorsEnum( "enter LoadRgbaTexture" );
 
     const GLenum glFormat = GL_RGBA;
     const GLenum glInternalFormat = useSrgbFormat ? GL_SRGB8_ALPHA8 : GL_RGBA;
@@ -631,7 +631,7 @@ void Oculus360Photos::loadRgbaTexture( const unsigned char * data, int width, in
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 2 );
     glBindTexture( GL_TEXTURE_2D, 0 );
 
-    glOperation.logErrorsEnum( "leave LoadRgbaTexture" );
+    VEglDriver::logErrorsEnum( "leave LoadRgbaTexture" );
 }
 
 VR4Matrixf CubeMatrixForViewMatrix( const VR4Matrixf & viewMatrix )
@@ -744,9 +744,8 @@ VR4Matrixf Oculus360Photos::drawEyeView( const int eye, const float fovDegrees )
         glBindTexture( GL_TEXTURE_2D, 0 );
     }
 
-    VEglDriver glOperation;
-    glOperation.logErrorsEnum( "draw" );
 
+   VEglDriver::logErrorsEnum( "draw" );
     return view;
 }
 

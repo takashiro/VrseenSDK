@@ -179,7 +179,7 @@ int VLensDistortion::yyGridNum = 32;
 VGlGeometry VLensDistortion::createDistortionGrid(const VDevice* device,const int numSlicesPerEye, const float fovScale,
                                                    const bool cursorOnly)
 {
-    VEglDriver glOperation;
+
     VGlGeometry geometry;
     const int totalX = (xxGridNum+1)*2;
 
@@ -208,8 +208,8 @@ VGlGeometry VLensDistortion::createDistortionGrid(const VDevice* device,const in
     }
 
 
-    glOperation.glGenVertexArraysOES( 1, &geometry.vertexArrayObject );
-    glOperation.glBindVertexArrayOES( geometry.vertexArrayObject );
+    VEglDriver::glGenVertexArraysOES( 1, &geometry.vertexArrayObject );
+    VEglDriver::glBindVertexArrayOES( geometry.vertexArrayObject );
 
     const int attribCount = 10;
     const int sliceTess = xxGridNum / numSlicesPerEye;
@@ -338,7 +338,7 @@ VGlGeometry VLensDistortion::createDistortionGrid(const VDevice* device,const in
     glVertexAttribPointer( VERTEX_UVC1, 2, GL_FLOAT, false, attribCount * sizeof( float ), (void *)( 8 * sizeof( float ) ) );
 
 
-    glOperation.glBindVertexArrayOES( 0 );
+    VEglDriver::glBindVertexArrayOES( 0 );
 
     delete[] vertInCursor;
 

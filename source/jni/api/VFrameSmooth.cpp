@@ -1028,7 +1028,7 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
     glViewport( 0, 0, m_window_width, m_window_height );
     glScissor( 0, 0, m_window_width, m_window_height );
 
-    VEglDriver glOperation;
+
 
     for ( int eye = 0; eye <= 1; ++eye )
     {
@@ -1076,7 +1076,7 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
                     break;
                 }
 
-                const EGLint wait = glOperation.eglClientWaitSyncKHR( m_eglStatus.m_display, m_gpuSync,
+                const EGLint wait = VEglDriver::eglClientWaitSyncKHR( m_eglStatus.m_display, m_gpuSync,
                                                                       EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, 0 );
                 if ( wait == EGL_TIMEOUT_EXPIRED_KHR )
                 {
@@ -1178,7 +1178,7 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
         glScissor(eye * m_window_width/2, 0, m_window_width/2, m_window_height);
 
 
-        glOperation.glBindVertexArrayOES( m_smoothMesh.vertexArrayObject );
+        VEglDriver::glBindVertexArrayOES( m_smoothMesh.vertexArrayObject );
         const int indexCount = m_smoothMesh.indexCount / 2;
         const int indexOffset = eye * indexCount;
         glDrawElements( GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, (void *)(indexOffset * 2 ) );
@@ -1188,7 +1188,7 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
         {
             bindCursorProgram();
             glEnable( GL_BLEND );
-            glOperation.glBindVertexArrayOES( m_cursorMesh.vertexArrayObject );
+            VEglDriver::glBindVertexArrayOES( m_cursorMesh.vertexArrayObject );
             const int indexCount = m_cursorMesh.indexCount / 2;
             const int indexOffset = eye * indexCount;
             glDrawElements( GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, (void *)(indexOffset * 2 ) );
@@ -1215,7 +1215,7 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
 
     glUseProgram( 0 );
 
-    glOperation.glBindVertexArrayOES( 0 );
+    VEglDriver::glBindVertexArrayOES( 0 );
 
     swapBuffers();
 }
@@ -1229,7 +1229,7 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
         return;
     }
 
-    VEglDriver glOperation;
+
 
     double	sliceTimes[9];
 
@@ -1289,7 +1289,7 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
                     continue;
                 }
 
-                const EGLint wait = glOperation.eglClientWaitSyncKHR( m_eglStatus.m_display, m_gpuSync,
+                const EGLint wait = VEglDriver::eglClientWaitSyncKHR( m_eglStatus.m_display, m_gpuSync,
                                                                       EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, 0 );
                 if ( wait == EGL_TIMEOUT_EXPIRED_KHR )
                 {
@@ -1398,7 +1398,7 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
         glScissor( sliceSize*screenSlice, 0, sliceSize, m_window_height );
 
         const VGlGeometry & mesh = m_slicesmoothMesh;
-        glOperation.glBindVertexArrayOES( mesh.vertexArrayObject );
+        VEglDriver::glBindVertexArrayOES( mesh.vertexArrayObject );
         const int indexCount = mesh.indexCount / 8;
         const int indexOffset = screenSlice * indexCount;
         glDrawElements( GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, (void *)(indexOffset * 2 ) );
@@ -1430,7 +1430,7 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
 
     glUseProgram( 0 );
 
-    glOperation.glBindVertexArrayOES( 0 );
+    VEglDriver::glBindVertexArrayOES( 0 );
 
     swapBuffers();
 }
@@ -1583,10 +1583,10 @@ int ColorAsInt( const int r, const int g, const int b, const int a )
 VGlGeometry CreateTimingGraphGeometry( const int lineVertCount )
 {
     VGlGeometry geo;
-    VEglDriver glOperation;
 
-    glOperation.glGenVertexArraysOES( 1, &geo.vertexArrayObject );
-    glOperation.glBindVertexArrayOES( geo.vertexArrayObject );
+
+    VEglDriver::glGenVertexArraysOES( 1, &geo.vertexArrayObject );
+    VEglDriver::glBindVertexArrayOES( geo.vertexArrayObject );
 
     lineVert_t	* verts = new lineVert_t[lineVertCount];
     const int byteCount = lineVertCount * sizeof( verts[0] );
@@ -1607,7 +1607,7 @@ VGlGeometry CreateTimingGraphGeometry( const int lineVertCount )
 
     geo.indexCount = lineVertCount;
 
-    glOperation.glBindVertexArrayOES( 0 );
+    VEglDriver::glBindVertexArrayOES( 0 );
 
     return geo;
 }
@@ -1686,7 +1686,7 @@ void VFrameSmooth::Private::destroyFrameworkGraphics()
 void VFrameSmooth::Private::drawFrameworkGraphicsToWindow( const int eye,
                                                    const int swapOptions)
 {
-    VEglDriver glOperation;
+
 
     unsigned char latencyTesterColorToDisplay[3];
 
@@ -1723,7 +1723,7 @@ void VFrameSmooth::Private::drawFrameworkGraphicsToWindow( const int eye,
         glUniform4f( m_untexturedMvpProgram.uniformColor, 1, 0, 0, 1 );
         glUniformMatrix4fv( m_untexturedMvpProgram.uniformModelViewProMatrix, 1, GL_FALSE,  // not transposed
                             projectionMatrix.Transposed().M[0] );
-        glOperation.glBindVertexArrayOES( m_calibrationLines2.vertexArrayObject );
+        VEglDriver::glBindVertexArrayOES( m_calibrationLines2.vertexArrayObject );
 
 
         glViewport( m_window_width/2 * (int)eye, 0, m_window_width/2, m_window_height );

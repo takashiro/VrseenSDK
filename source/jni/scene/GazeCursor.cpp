@@ -340,8 +340,8 @@ void OvrGazeCursorLocal::Frame( VR4Matrixf const & viewMatrix, float const delta
 // OvrGazeCursorLocal::Render
 void OvrGazeCursorLocal::Render( int const eye, VR4Matrixf const & mvp ) const
 {
-    VEglDriver glOperation;
-    glOperation.logErrorsEnum( "OvrGazeCursorLocal::Render - pre" );
+
+    VEglDriver::logErrorsEnum( "OvrGazeCursorLocal::Render - pre" );
 
 	//vInfo("OvrGazeCursorLocal::Render");
 
@@ -454,7 +454,7 @@ void OvrGazeCursorLocal::Render( int const eye, VR4Matrixf const & mvp ) const
 	glDepthMask( GL_TRUE );
 	glDisable( GL_BLEND );
 
-    glOperation.logErrorsEnum( "OvrGazeCursorLocal::Render - post" );
+    VEglDriver::logErrorsEnum( "OvrGazeCursorLocal::Render - post" );
 }
 
 //==============================

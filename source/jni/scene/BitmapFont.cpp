@@ -1051,10 +1051,10 @@ void BitmapFontSurfaceLocal::Init(const int maxVertices) {
 
 	Vertices = new fontVertex_t[maxVertices];
 	const int vertexByteCount = maxVertices * sizeof(fontVertex_t);
-    VEglDriver glOperation;
+
 	// font VAO
-    glOperation.glGenVertexArraysOES(1, &Geo.vertexArrayObject);
-    glOperation.glBindVertexArrayOES(Geo.vertexArrayObject);
+    VEglDriver::glGenVertexArraysOES(1, &Geo.vertexArrayObject);
+    VEglDriver::glBindVertexArrayOES(Geo.vertexArrayObject);
 
 	// vertex buffer
 	glGenBuffers(1, &Geo.vertexBuffer);
@@ -1106,7 +1106,7 @@ void BitmapFontSurfaceLocal::Init(const int maxVertices) {
 
 	Geo.indexCount = 0; // if there's anything to render this will be modified
 
-    glOperation.glBindVertexArrayOES(0);
+    VEglDriver::glBindVertexArrayOES(0);
 
 	delete[] indices;
 
@@ -1432,12 +1432,12 @@ void BitmapFontSurfaceLocal::Finish(VR4Matrixf const & viewMatrix) {
 	// needed on the next frame.
 	VertexBlocks.clear();
 
-    VEglDriver glOperation;
-    glOperation.glBindVertexArrayOES(Geo.vertexArrayObject);
+
+    VEglDriver::glBindVertexArrayOES(Geo.vertexArrayObject);
 	glBindBuffer(GL_ARRAY_BUFFER, Geo.vertexBuffer);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, CurVertex * sizeof(fontVertex_t),
 			(void *) Vertices);
-    glOperation.glBindVertexArrayOES(0);
+    VEglDriver::glBindVertexArrayOES(0);
 
 	Geo.indexCount = CurIndex;
 }
@@ -1448,8 +1448,8 @@ void BitmapFontSurfaceLocal::Finish(VR4Matrixf const & viewMatrix) {
 // TODO: once we add support for multiple fonts per surface, this should not take a BitmapFont for input.
 void BitmapFontSurfaceLocal::Render3D(BitmapFont const & font,
         VR4Matrixf const & worldMVP) const {
-    VEglDriver glOperation;
-    glOperation.logErrorsEnum("BitmapFontSurfaceLocal::Render3D - pre");
+
+    VEglDriver::logErrorsEnum("BitmapFontSurfaceLocal::Render3D - pre");
 
 	//SPAM( "BitmapFontSurfaceLocal::Render3D" );
 
@@ -1476,16 +1476,16 @@ void BitmapFontSurfaceLocal::Render3D(BitmapFont const & font,
 	glUniform4fv(AsLocal(font).GetFontProgram().uniformColor, 1, textColor);
 
 	// draw all font vertices
-    glOperation.glBindVertexArrayOES(Geo.vertexArrayObject);
+    VEglDriver::glBindVertexArrayOES(Geo.vertexArrayObject);
 	glDrawElements(GL_TRIANGLES, Geo.indexCount, GL_UNSIGNED_SHORT, NULL);
-    glOperation.glBindVertexArrayOES(0);
+    VEglDriver::glBindVertexArrayOES(0);
 
 	glEnable(GL_CULL_FACE);
 
 	glDisable(GL_BLEND);
 	glDepthMask(GL_FALSE);
 
-    glOperation.logErrorsEnum("BitmapFontSurfaceLocal::Render3D - post");
+    VEglDriver::logErrorsEnum("BitmapFontSurfaceLocal::Render3D - post");
 }
 
 //==============================

@@ -522,7 +522,7 @@ void SceneManager::LightsOff( const float duration )
 
 GLuint SceneManager::BuildScreenVignetteTexture( const int horizontalTile ) const
 {
-    VEglDriver glOperation;
+
 	// make it an even border at 16:9 aspect ratio, let it get a little squished at other aspects
 	static const int scale = 6;
 	static const int width = 16 * scale * horizontalTile;
@@ -554,7 +554,7 @@ GLuint SceneManager::BuildScreenVignetteTexture( const int horizontalTile ) cons
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
     glBindTexture( GL_TEXTURE_2D, 0 );
 
-    glOperation.logErrorsEnum( "screenVignette" );
+    VEglDriver::logErrorsEnum( "screenVignette" );
     return texId;
 }
 
@@ -1029,7 +1029,6 @@ VR4Matrixf SceneManager::Frame( const VrFrame & vrFrame )
 		}
 	}
 
-    VEglDriver glOperation;
 	// build the mip maps
 	if ( FrameUpdateNeeded )
 	{
@@ -1048,7 +1047,7 @@ VR4Matrixf SceneManager::Frame( const VrFrame & vrFrame )
 		glBindFramebuffer( GL_FRAMEBUFFER, MipMappedMovieFBOs[CurrentMipMappedMovieTexture] );
 		glDisable( GL_DEPTH_TEST );
 		glDisable( GL_SCISSOR_TEST );
-        glOperation.glDisableFramebuffer( true, false );
+        VEglDriver::glDisableFramebuffer( true, false );
 		glViewport( 0, 0, MovieTextureWidth, MovieTextureHeight );
         if ( vApp->appInterface()->wantSrgbFramebuffer() )
 		{	// we need this copied without sRGB conversion on the top level
@@ -1080,9 +1079,9 @@ VR4Matrixf SceneManager::Frame( const VrFrame & vrFrame )
 		glGenerateMipmap( GL_TEXTURE_2D );
 		glBindTexture( GL_TEXTURE_2D, 0 );
 
-        VEglDriver glOperation;
 
-        glOperation.glFlush();
+
+        VEglDriver::glFlush();
 	}
 
 	// Generate callbacks into DrawEyeView

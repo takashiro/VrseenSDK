@@ -806,7 +806,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 
 void SwipeView::Draw( const VR4Matrixf & mvp )
 {
-    VEglDriver glOperation;
+
 	if ( State == SVS_CLOSED )
 	{	// full closed
 		return;
@@ -867,7 +867,7 @@ void SwipeView::Draw( const VR4Matrixf & mvp )
 
 	}
 
-    glOperation.glBindVertexArrayOES( 0 );
+    VEglDriver::glBindVertexArrayOES( 0 );
 
 	glActiveTexture( GL_TEXTURE1 );
 	glBindTexture( GL_TEXTURE_2D, 0 );

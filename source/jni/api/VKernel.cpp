@@ -672,8 +672,8 @@ void VKernel::run()
     }
 
     // Let GlUtils look up extensions
-    VEglDriver glOperation;
-    glOperation.logExtensions();
+
+    VEglDriver::logExtensions();
 
     // Look up the window surface size (NOTE: This must happen before Direct Render
     // Mode is initiated and the pbuffer surface is bound).

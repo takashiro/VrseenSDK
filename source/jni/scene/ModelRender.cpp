@@ -348,7 +348,7 @@ const DrawSurfaceList & BuildDrawSurfaceList( const NervGear::VArray<ModelState>
 DrawCounters RenderSurfaceList( const DrawSurfaceList & drawSurfaceList ) {
 	// This state could be made to persist across multiple calls to RenderModelList,
 	// but the benefit would be small.
-    VEglDriver glOperation;
+
     GpuState			currentGpuState;
 	GLuint				currentTextures[ MAX_PROGRAM_TEXTURES ] = {};	// TODO: This should be a range checked container.
 	const DrawMatrices * currentMatrices = NULL;
@@ -468,7 +468,7 @@ DrawCounters RenderSurfaceList( const DrawSurfaceList & drawSurfaceList ) {
 	glActiveTexture( GL_TEXTURE0 );
 	glBindTexture( GL_TEXTURE_2D, 0 );
 	glUseProgram( 0 );
-    glOperation.glBindVertexArrayOES( 0 );
+    VEglDriver::glBindVertexArrayOES( 0 );
 
 	return counters;
 }

@@ -43,7 +43,7 @@ void EyePostRender::Shutdown()
 
 void EyePostRender::DrawEyeCalibrationLines( const float bufferFovDegrees, const int eye )
 {
-    VEglDriver glOperation;
+
 	// Optionally draw thick calibration lines into the texture,
 	// which will be overlayed by the thinner pre-distorted lines
 	// later -- they should match very closely!
@@ -58,16 +58,16 @@ void EyePostRender::DrawEyeCalibrationLines( const float bufferFovDegrees, const
     glUniformMatrix4fv( prog.uniformModelViewProMatrix, 1, GL_FALSE /* not transposed */,
 			projectionMatrix.Transposed().M[0] );
 
-    glOperation.glBindVertexArrayOES( CalibrationLines.vertexArrayObject );
+    VEglDriver::glBindVertexArrayOES( CalibrationLines.vertexArrayObject );
 
 	glDrawElements( GL_LINES, CalibrationLines.indexCount, GL_UNSIGNED_SHORT,
 		NULL);
-    glOperation.glBindVertexArrayOES( 0 );
+    VEglDriver::glBindVertexArrayOES( 0 );
 }
 
 void EyePostRender::DrawEyeVignette()
 {
-    VEglDriver glOperation;
+
 	// Draw a thin vignette at the edges of the view so clamping will give black
 	glUseProgram( UntexturedScreenSpaceProgram.program);
 	glUniform4f( UntexturedScreenSpaceProgram.uniformColor, 1, 1, 1, 1 );
@@ -76,7 +76,7 @@ void EyePostRender::DrawEyeVignette()
 	VignetteSquare.drawElements();
 	glDisable( GL_BLEND );
 	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-    glOperation.glBindVertexArrayOES( 0 );
+    VEglDriver::glBindVertexArrayOES( 0 );
 }
 
 void EyePostRender::FillEdge( int fbWidth, int fbHeight )

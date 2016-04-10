@@ -146,7 +146,7 @@ struct EyeBuffer {
             break;
         }
 
-        VEglDriver glOperation;
+
         if (multisampleMode == VEyeBuffer::MULTISAMPLE_RENDER_TO_TEXTURE) {
             vInfo(
                     "Making a " << bufferParms.multisamples << " sample buffer with glFramebufferTexture2DMultisample");
@@ -155,7 +155,7 @@ struct EyeBuffer {
                     != VEyeBuffer::DEPTHFORMAT_DEPTH_0) {
                 glGenRenderbuffers(1, &DepthBuffer);
                 glBindRenderbuffer( GL_RENDERBUFFER, DepthBuffer);
-                glOperation.glRenderbufferStorageMultisampleIMG(
+                VEglDriver::glRenderbufferStorageMultisampleIMG(
                         GL_RENDERBUFFER, bufferParms.multisamples,
                         commonParameterDepth,
                         bufferParms.WidthScale * bufferParms.resolution,
@@ -167,7 +167,7 @@ struct EyeBuffer {
             glGenFramebuffers(1, &RenderFrameBuffer);
             glBindFramebuffer( GL_FRAMEBUFFER, RenderFrameBuffer);
 
-            glOperation.glFramebufferTexture2DMultisampleIMG( GL_FRAMEBUFFER,
+            VEglDriver::glFramebufferTexture2DMultisampleIMG( GL_FRAMEBUFFER,
                     GL_COLOR_ATTACHMENT0,
                     GL_TEXTURE_2D, Texture, 0, bufferParms.multisamples);
 
@@ -176,7 +176,7 @@ struct EyeBuffer {
                 glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
                         GL_RENDERBUFFER, DepthBuffer);
             }
-            glOperation.logErrorsEnum(
+            VEglDriver::logErrorsEnum(
                     "glRenderbufferStorageMultisampleIMG MSAA");
         } else {
             vInfo("Making a single sample buffer");
@@ -202,7 +202,7 @@ struct EyeBuffer {
                         GL_RENDERBUFFER, DepthBuffer);
             }
 
-            glOperation.logErrorsEnum("NO MSAA");
+            VEglDriver::logErrorsEnum("NO MSAA");
         }
 
         GLenum status = glCheckFramebufferStatus( GL_FRAMEBUFFER);
@@ -293,7 +293,7 @@ struct EyePairs
        EyePairs      BufferData[MAX_EYE_SETS];
 void VEyeBuffer::BeginFrame( const EyeParms & bufferParms_ )
 {
-    VEglDriver glOperation;
+
     SwapCount++;
 
 
@@ -316,12 +316,12 @@ void VEyeBuffer::BeginFrame( const EyeParms & bufferParms_ )
         } else {
             buffers.MultisampleMode = MULTISAMPLE_OFF;
         }
-        glOperation.logErrorsEnum( "Before framebuffer creation");
+        VEglDriver::logErrorsEnum( "Before framebuffer creation");
         for ( int eye = 0; eye < 2; eye++ ) {
             buffers.Eyes[eye].Allocate( bufferParms_, buffers.MultisampleMode );
         }
 
-        glOperation.logErrorsEnum( "after framebuffer creation" );
+        VEglDriver::logErrorsEnum( "after framebuffer creation" );
     }
 }
 
@@ -339,10 +339,10 @@ void VEyeBuffer::BeginRenderingEye( const int eyeNum )
     glEnable( GL_DEPTH_TEST );
     glDepthFunc( GL_LEQUAL );
 
-    VEglDriver glOperation;
+
     if ( DiscardInsteadOfClear )
     {
-        glOperation.glDisableFramebuffer( true, true );
+        VEglDriver::glDisableFramebuffer( true, true );
         glClear( GL_DEPTH_BUFFER_BIT );
     }
     else
@@ -357,17 +357,17 @@ void VEyeBuffer::EndRenderingEye( const int eyeNum )
     const int resolution = BufferParms.resolution;
     EyePairs & pair = BufferData[ SwapCount % MAX_EYE_SETS ];
     EyeBuffer & eye = pair.Eyes[eyeNum];
-    VEglDriver glOperation;;
-    glOperation.glDisableFramebuffer( false, true );
+
+    VEglDriver::glDisableFramebuffer( false, true );
 
     if ( eye.ResolveFrameBuffer )
     {
         glBindFramebuffer( GL_READ_FRAMEBUFFER, eye.RenderFrameBuffer );
         glBindFramebuffer( GL_DRAW_FRAMEBUFFER, eye.ResolveFrameBuffer );
-        glOperation.glBlitFramebuffer( 0, 0, resolution, resolution,
+        VEglDriver::glBlitFramebuffer( 0, 0, resolution, resolution,
                 0, 0, resolution, resolution,
                 GL_COLOR_BUFFER_BIT, GL_NEAREST );
-        glOperation.glDisableFramebuffer( true, false );
+        VEglDriver::glDisableFramebuffer( true, false );
     }
 
 

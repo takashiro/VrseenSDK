@@ -65,23 +65,23 @@ public:
     ushort eglGetGpuType();
     void updateEglConfig(EGLContext eglShareContext);
     void updateEglConfig();
-    const char * getGlErrorEnum(const GLenum e);
+   static const char * getGlErrorEnum(const GLenum e);
     EGLConfig eglConfigForConfigID( const GLint configID);
-    const char * getEglErrorString();
-    bool logErrorsEnum(const char *logTitle);
-    void logExtensions();
-    bool glIsExtensionString(const char *extension);
-    void glFinish();
-    void glFlush();
-    EGLint glWaitforFlush(int timeout);
-    void glDisableFramebuffer(const bool colorBuffer,
+   static const char * getEglErrorString();
+   static bool logErrorsEnum(const char *logTitle);
+   static void logExtensions();
+   static bool glIsExtensionString(const char *extension);
+    static  void glFinish();
+    static void glFlush();
+  static  EGLint glWaitforFlush(int timeout);
+  static  void glDisableFramebuffer(const bool colorBuffer,
                                   const bool depthBuffer);
 
 
 
-    void * getExtensionProc( const char * name );
+   static void * getExtensionProc( const char * name );
      void updateDisplay();
-     void initExtensions();
+    static const char * initExtensions();
 
 
     EGLConfig chooseColorConfig( const int redBits,
@@ -97,34 +97,34 @@ public:
                    const GLuint contextPriority );
 
 
-    void glRenderbufferStorageMultisampleIMG(GLenum target,
+   static void glRenderbufferStorageMultisampleIMG(GLenum target,
                                              GLsizei samples,
                                              GLenum internalformat,
                                              GLsizei width,
                                              GLsizei height);
-    void glFramebufferTexture2DMultisampleIMG(GLenum target,
+   static void glFramebufferTexture2DMultisampleIMG(GLenum target,
                                               GLenum attachment,
                                               GLenum textarget,
                                               GLuint texture,
                                               GLint level,
                                               GLsizei samples);
-    EGLSyncKHR eglCreateSyncKHR(EGLDisplay dpy, EGLenum type, const EGLint *attrib_list);
-    EGLBoolean eglDestroySyncKHR(EGLDisplay dpy, EGLSyncKHR sync);
-    EGLint eglClientWaitSyncKHR(EGLDisplay dpy, EGLSyncKHR sync, EGLint flags, EGLTimeKHR timeout);
-    void glBindVertexArrayOES(GLuint array);
-    void glDeleteVertexArraysOES(GLsizei n, const GLuint *arrays);
-    void glGenVertexArraysOES(GLsizei n, GLuint *arrays);
-    void glStartTilingQCOM(GLuint x, GLuint y, GLuint width, GLuint height, GLbitfield preserveMask);
-    void glEndTilingQCOM(GLbitfield preserveMask);
-    void glGenQueriesEXT(GLsizei n, GLuint *ids);
-    void glDeleteQueriesEXT(GLsizei n, const GLuint *ids);
-    void glBeginQueryEXT(GLenum target, GLuint id);
-    void glEndQueryEXT(GLenum target);
-    void glQueryCounterEXT(GLuint id, GLenum target);
-    void glGetQueryObjectivEXT(GLuint id, GLenum pname, GLint *params);
-    void glGetQueryObjectui64vEXT(GLuint id, GLenum pname, GLuint64 *params);
-    void glGetInteger64v(GLenum pname, GLint64 *params);
-    void glBlitFramebuffer(GLint srcX0,
+   static EGLSyncKHR eglCreateSyncKHR(EGLDisplay dpy, EGLenum type, const EGLint *attrib_list);
+    static EGLBoolean eglDestroySyncKHR(EGLDisplay dpy, EGLSyncKHR sync);
+   static EGLint eglClientWaitSyncKHR(EGLDisplay dpy, EGLSyncKHR sync, EGLint flags, EGLTimeKHR timeout);
+   static void glBindVertexArrayOES(GLuint array);
+   static void glDeleteVertexArraysOES(GLsizei n, const GLuint *arrays);
+   static void glGenVertexArraysOES(GLsizei n, GLuint *arrays);
+  static  void glStartTilingQCOM(GLuint x, GLuint y, GLuint width, GLuint height, GLbitfield preserveMask);
+   static void glEndTilingQCOM(GLbitfield preserveMask);
+  static  void glGenQueriesEXT(GLsizei n, GLuint *ids);
+   static void glDeleteQueriesEXT(GLsizei n, const GLuint *ids);
+  static  void glBeginQueryEXT(GLenum target, GLuint id);
+  static  void glEndQueryEXT(GLenum target);
+  static  void glQueryCounterEXT(GLuint id, GLenum target);
+  static  void glGetQueryObjectivEXT(GLuint id, GLenum pname, GLint *params);
+  static  void glGetQueryObjectui64vEXT(GLuint id, GLenum pname, GLuint64 *params);
+  static  void glGetInteger64v(GLenum pname, GLint64 *params);
+  static  void glBlitFramebuffer(GLint srcX0,
                            GLint srcY0,
                            GLint srcX1,
                            GLint srcY1,
@@ -134,7 +134,7 @@ public:
                            GLint dstY1,
                            GLbitfield mask,
                            GLenum filter);
-    void  glInvalidateFramebuffer(GLenum target, GLsizei numAttachments, const GLenum* attachments);
+   static void  glInvalidateFramebuffer(GLenum target, GLsizei numAttachments, const GLenum* attachments);
 
 
     int	m_glEsVersion;

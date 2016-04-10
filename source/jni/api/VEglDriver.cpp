@@ -8,7 +8,11 @@ NV_NAMESPACE_BEGIN
 {
 
     GpuType gpuType;
-    initExtensions();//确保渲染上下文已经存在，能够支持glgetstring的调用；
+    EGLContext mcontext = eglGetCurrentContext();
+    if (mcontext == EGL_NO_CONTEXT)
+        return GPU_TYPE_UNKNOWN;
+    else
+    {
     const char * glRendererString = reinterpret_cast<const char *>(glGetString(GL_RENDERER));
     if (strstr(glRendererString, "Adreno (TM) 420")) {
         gpuType = GPU_TYPE_ADRENO_420;
@@ -32,6 +36,7 @@ NV_NAMESPACE_BEGIN
     }
 
     return gpuType;
+    }
 }
 
 
@@ -51,7 +56,7 @@ void VEglDriver::updateEglConfig(EGLContext eglShareContext)
 
 EGLint configID;
 
-if ( !eglQueryContext(m_display, eglShareContext, EGL_CONFIG_ID, &configID ) )
+if ( !eglQueryContext(eglGetCurrentDisplay(), eglShareContext, EGL_CONFIG_ID, &configID ) )
 {
     vFatal("eglQueryContext EGL_CONFIG_ID failed");
 }
@@ -85,7 +90,7 @@ EGLConfig VEglDriver::eglConfigForConfigID(const GLint configID)
 {
 
     if(m_display == EGL_NO_DISPLAY)
-     m_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+     m_display = eglGetCurrentDisplay();
 
 
     static const int MAX_CONFIGS = 1024;
@@ -191,17 +196,16 @@ bool VEglDriver::logErrorsEnum(const char *logTitle)
 
 EGLint VEglDriver::glWaitforFlush(int timeout)
 {
-    if(m_display ==EGL_NO_DISPLAY)
-    m_display = eglGetCurrentDisplay();
 
-    const EGLSyncKHR sync = eglCreateSyncKHR(m_display, EGL_SYNC_FENCE_KHR, NULL);
+
+    const EGLSyncKHR sync = eglCreateSyncKHR(eglGetCurrentDisplay(), EGL_SYNC_FENCE_KHR, NULL);
     if (sync == EGL_NO_SYNC_KHR) {
         return EGL_FALSE;
     }
 
-    const EGLint wait = eglClientWaitSyncKHR(m_display, sync, EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, timeout);
+    const EGLint wait = eglClientWaitSyncKHR(eglGetCurrentDisplay(), sync, EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, timeout);
 
-    eglDestroySyncKHR(m_display, sync);
+    eglDestroySyncKHR(eglGetCurrentDisplay(), sync);
 
     return wait;
 }
@@ -236,12 +240,24 @@ void VEglDriver::logExtensions()
 bool VEglDriver::glIsExtensionString(const char *extension)
 {
 
-    initExtensions();
-    if (strstr(m_extensions, extension)) {
-        //vInfo("Found:" << extension);
+
+   const char * extensions = initExtensions();
+    if(extensions)
+    {
+
+
+    if (strstr(extensions, extension)) {
+        vInfo("Found:" << extension);
+        vInfo("gl strstr end");
         return true;
     } else {
-        //vInfo("Not found:" << extension);
+        vInfo("Not found:" << extension);
+        return false;
+    }
+    }
+    else
+    {
+        vInfo("there is context for extensions");
         return false;
     }
 }
@@ -351,65 +367,26 @@ EGLConfig VEglDriver::chooseColorConfig( const int redBits,
 
  }
 
-  void VEglDriver::initExtensions()
+ const char * VEglDriver::initExtensions()
   {
-   if (NULL == m_extensions)
+
+      EGLContext mcontext= eglGetCurrentContext();
+
+   if (mcontext != EGL_NO_CONTEXT)
    {
-      if(m_context == EGL_NO_CONTEXT)
+
+       const char* extensions = reinterpret_cast<const char *>(glGetString(GL_EXTENSIONS));
+
+      if (NULL == extensions)
       {
-       vInfo("init extensions");
-
-          if (m_display == EGL_NO_DISPLAY)
-          m_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-          m_config = chooseColorConfig(8,8,8, 0, 0, true);
-          if (m_config == 0) {
-              vFatal("No acceptable EGL color configs.");
-              return ;
-          }
-
-          for (int version = 3 ; version >= 2 ; version--)
-          {
-
-              EGLint contextAttribs[] = {
-                  EGL_CONTEXT_CLIENT_VERSION, version,
-                  EGL_NONE, EGL_NONE,
-                  EGL_NONE };
-
-               {
-                  contextAttribs[2] = EGL_CONTEXT_PRIORITY_LEVEL_IMG;
-                  contextAttribs[3] = EGL_CONTEXT_PRIORITY_MEDIUM_IMG;
-              }
-
-              m_context = eglCreateContext(m_display, m_config, EGL_NO_CONTEXT, contextAttribs);
-              if (m_context != EGL_NO_CONTEXT) {
-                  m_glEsVersion = version;
-                  vInfo("glEsVersion:"<< m_glEsVersion);
-                  EGLint configIDReadback;
-                  if (!eglQueryContext(m_display, m_context, EGL_CONFIG_ID, &configIDReadback)) {
-                    vWarn("eglQueryContext EGL_CONFIG_ID failed");
-                  }
-                  break;
-              }
-          }
-          if (m_context == EGL_NO_CONTEXT) {
-              vWarn("eglCreateContext failed:" << getEglErrorString());
-              return ;
-          }
-
-
-
-      }
-
-      m_extensions = reinterpret_cast<const char *>(glGetString(GL_EXTENSIONS));
-      if (NULL == m_extensions) {
           vInfo("glGetString( GL_EXTENSIONS ) returned NULL");
+          return NULL;
       }
-
-
+      vInfo("initExtensions  getstring ok ");
+      return extensions;
    }
-
-
-
+   else
+       return NULL;
   }
 
 void VEglDriver::eglInit( const EGLContext shareContext,
@@ -562,7 +539,7 @@ void VEglDriver::eglExit()
 
 void VEglDriver::glFramebufferTexture2DMultisampleIMG(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level, GLsizei samples)
 {
-    initExtensions();
+
     PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEIMG glFramebufferTexture2DMultisampleIMG_ = NULL;
     if (glIsExtensionString("GL_IMG_multisampled_render_to_texture")) {
         glFramebufferTexture2DMultisampleIMG_ = (PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEIMG)getExtensionProc ("glFramebufferTexture2DMultisampleIMG");
@@ -574,7 +551,7 @@ void VEglDriver::glFramebufferTexture2DMultisampleIMG(GLenum target, GLenum atta
 
 void VEglDriver::glRenderbufferStorageMultisampleIMG(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height)
 {
-    initExtensions();
+
     PFNGLRENDERBUFFERSTORAGEMULTISAMPLEIMG glRenderbufferStorageMultisampleIMG_ = NULL;
     if (glIsExtensionString("GL_IMG_multisampled_render_to_texture")) {
         glRenderbufferStorageMultisampleIMG_ = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEIMG)getExtensionProc ("glRenderbufferStorageMultisampleIMG");

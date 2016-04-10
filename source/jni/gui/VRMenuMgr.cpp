@@ -898,8 +898,8 @@ void VRMenuMgrLocal::renderSubmitted( VR4Matrixf const & worldMVP, VR4Matrixf co
 		return;
 	}
 
-    VEglDriver glOperation;
-    glOperation.logErrorsEnum( "VRMenuMgrLocal::RenderSubmitted - pre" );
+
+    VEglDriver::logErrorsEnum( "VRMenuMgrLocal::RenderSubmitted - pre" );
 
 	//vInfo("VRMenuMgrLocal::RenderSubmitted");
     VR4Matrixf invViewMatrix = viewMatrix.Inverted();
@@ -991,7 +991,7 @@ void VRMenuMgrLocal::renderSubmitted( VR4Matrixf const & worldMVP, VR4Matrixf co
 
 	glDisable( GL_POLYGON_OFFSET_FILL );
 
-    glOperation.logErrorsEnum( "VRMenuMgrLocal::RenderSubmitted - post" );
+    VEglDriver::logErrorsEnum( "VRMenuMgrLocal::RenderSubmitted - post" );
 }
 
 //==============================
