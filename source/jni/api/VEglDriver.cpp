@@ -241,7 +241,7 @@ bool VEglDriver::glIsExtensionString(const char *extension)
 {
 
 
-   const char * extensions = initExtensions();
+   static const char *extensions = initExtensions();
     if(extensions)
     {
 
@@ -379,10 +379,9 @@ EGLConfig VEglDriver::chooseColorConfig( const int redBits,
 
       if (NULL == extensions)
       {
-          vInfo("glGetString( GL_EXTENSIONS ) returned NULL");
+          vWarn("glGetString( GL_EXTENSIONS ) returned NULL");
           return NULL;
       }
-      vInfo("initExtensions  getstring ok ");
       return extensions;
    }
    else
