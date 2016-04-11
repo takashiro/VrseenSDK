@@ -40,7 +40,7 @@ DeviceBase* HMDDeviceCreateDesc::NewDeviceInstance()
 
 bool HMDDeviceCreateDesc::Is7Inch() const
 {
-    return (strstr(DeviceId.toCString(), "OVR0001") != 0) || (Contents & Contents_7Inch);
+    return DeviceId.contains("OVR0001") || (Contents & Contents_7Inch);
 }
 
 Profile* HMDDeviceCreateDesc::GetProfileAddRef() const

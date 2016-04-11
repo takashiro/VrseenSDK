@@ -175,7 +175,7 @@ HMDDeviceFactory &HMDDeviceFactory::GetInstance()
 void HMDDeviceFactory::EnumerateDevices(EnumerateVisitor& visitor)
 {
     // LDC - Use zero data for now.
-    HMDDeviceCreateDesc hmdCreateDesc(this, VString("Android Device"), 0);
+    HMDDeviceCreateDesc hmdCreateDesc(this, "Android Device", 0);
     hmdCreateDesc.SetScreenParameters(0, 0, 0, 0, 0.0f, 0.0f);
 
     // Notify caller about detected device. This will call EnumerateAddDevice
