@@ -8,7 +8,7 @@ namespace NervGear {
 
 //! An enum for the color format of textures used by the Irrlicht Engine.
 /** A color format specifies how color information is stored. */
-enum ECOLOR_FORMAT
+enum ColorFormat
 {
     //! 16 bit color format used by the software driver.
     /** It is thus preferred by all other irrlicht engine video drivers.
@@ -369,7 +369,7 @@ public:
     /** \param data: must point to valid memory containing color information in the given format
         \param format: tells the format in which data is available
     */
-    void setData(const void *data, ECOLOR_FORMAT format)
+    void setData(const void *data, ColorFormat format)
     {
         switch (format)
         {
@@ -398,7 +398,7 @@ public:
     /** \param data: target to write the color. Must contain sufficiently large memory to receive the number of bytes neede for format
         \param format: tells the format used to write the color into data
     */
-    void getData(void *data, ECOLOR_FORMAT format)
+    void getData(void *data, ColorFormat format)
     {
         switch(format)
         {

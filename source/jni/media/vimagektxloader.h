@@ -18,7 +18,7 @@ namespace NervGear
 
         virtual bool isALoadableFileFormat(VFile* file) const;
 
-        virtual VImage* loadImage(VFile* file) const;
+        virtual std::shared_ptr<VImage> loadImage(VFile* file) const;
 
     };
 

@@ -1,5 +1,4 @@
 #include "VImage.h"
-#include "VColorConverter.h"
 #include <math.h>
 #include <cmath>
 #include <cerrno>
@@ -7,29 +6,29 @@
 
 namespace  NervGear {
 
-CImage::CImage(ECOLOR_FORMAT format, const VDimension<uint>& size)
-:Data(0), Size(size), Format(format), DeleteMemory(true)
+CImage::CImage(ColorFormat format, const VDimension<uint>& size)
+:m_data(0), m_size(size), m_format(format), DeleteMemory(true)
 {
     initData();
 }
 
 
 //! Constructor from raw data
-CImage::CImage(ECOLOR_FORMAT format, const VDimension<uint>& size, void* data,
+CImage::CImage(ColorFormat format, const VDimension<uint>& size, void* data,
             bool ownForeignMemory, bool deleteForeignMemory)
-: Data(0), Size(size), Format(format), DeleteMemory(deleteForeignMemory)
+: m_data(0), m_size(size), m_format(format), DeleteMemory(deleteForeignMemory)
 {
     if (ownForeignMemory)
     {
-        Data = (char*)0xbadf00d;
+        m_data = (char*)0xbadf00d;
         initData();
-        Data = (char*)data;
+        m_data = (char*)data;
     }
     else
     {
-        Data = 0;
+        m_data = 0;
         initData();
-        memcpy(Data, data, Size.Height * Pitch);
+        memcpy(m_data, data, m_size.Height * m_pitch);
     }
 }
 
@@ -40,15 +39,15 @@ void CImage::initData()
 #ifdef _DEBUG
     setDebugName("CImage");
 #endif
-    BytesPerPixel = getBitsPerPixelFromFormat(Format) / 8;
+    m_bytesPerPixel = getBitsPerPixelFromFormat(m_format) / 8;
 
     // Pitch should be aligned...
-    Pitch = BytesPerPixel * Size.Width;
+    m_pitch = m_bytesPerPixel * m_size.Width;
 
-    if (!Data)
+    if (!m_data)
     {
         DeleteMemory=true;
-        Data = new char[Size.Height * Pitch];
+        m_data = new char[m_size.Height * m_pitch];
     }
 }
 
@@ -57,49 +56,49 @@ void CImage::initData()
 CImage::~CImage()
 {
     if ( DeleteMemory )
-        delete [] Data;
+        delete [] m_data;
 }
 
 
 //! Returns width and height of image data.
 const VDimension<uint>& CImage::getDimension() const
 {
-    return Size;
+    return m_size;
 }
 
 
 //! Returns bits per pixel.
 uint CImage::getBitsPerPixel() const
 {
-    return getBitsPerPixelFromFormat(Format);
+    return getBitsPerPixelFromFormat(m_format);
 }
 
 
 //! Returns bytes per pixel
 uint CImage::getBytesPerPixel() const
 {
-    return BytesPerPixel;
+    return m_bytesPerPixel;
 }
 
 
 //! Returns image data size in bytes
 uint CImage::getImageDataSizeInBytes() const
 {
-    return Pitch * Size.Height;
+    return m_pitch * m_size.Height;
 }
 
 
 //! Returns image data size in pixels
 uint CImage::getImageDataSizeInPixels() const
 {
-    return Size.Width * Size.Height;
+    return m_size.Width * m_size.Height;
 }
 
 
 //! returns mask for red value of a pixel
 uint CImage::getRedMask() const
 {
-    switch(Format)
+    switch(m_format)
     {
     case ECF_A1R5G5B5:
         return 0x1F<<10;
@@ -118,7 +117,7 @@ uint CImage::getRedMask() const
 //! returns mask for green value of a pixel
 uint CImage::getGreenMask() const
 {
-    switch(Format)
+    switch(m_format)
     {
     case ECF_A1R5G5B5:
         return 0x1F<<5;
@@ -137,7 +136,7 @@ uint CImage::getGreenMask() const
 //! returns mask for blue value of a pixel
 uint CImage::getBlueMask() const
 {
-    switch(Format)
+    switch(m_format)
     {
     case ECF_A1R5G5B5:
         return 0x1F;
@@ -156,7 +155,7 @@ uint CImage::getBlueMask() const
 //! returns mask for alpha value of a pixel
 uint CImage::getAlphaMask() const
 {
-    switch(Format)
+    switch(m_format)
     {
     case ECF_A1R5G5B5:
         return 0x1<<15;
@@ -175,26 +174,26 @@ uint CImage::getAlphaMask() const
 //! sets a pixel
 void CImage::setPixel(uint x, uint y, const VImageColor &color, bool blend)
 {
-    if (x >= Size.Width || y >= Size.Height)
+    if (x >= m_size.Width || y >= m_size.Height)
         return;
 
-    switch(Format)
+    switch(m_format)
     {
         case ECF_A1R5G5B5:
         {
-            ushort * dest = (ushort*) (Data + ( y * Pitch ) + ( x << 1 ));
+            ushort * dest = (ushort*) (m_data + ( y * m_pitch ) + ( x << 1 ));
             *dest = A8R8G8B8toA1R5G5B5( color.color );
         } break;
 
         case ECF_R5G6B5:
         {
-            ushort * dest = (ushort*) (Data + ( y * Pitch ) + ( x << 1 ));
+            ushort * dest = (ushort*) (m_data + ( y * m_pitch ) + ( x << 1 ));
             *dest = A8R8G8B8toR5G6B5( color.color );
         } break;
 
         case ECF_R8G8B8:
         {
-            char* dest = Data + ( y * Pitch ) + ( x * 3 );
+            char* dest = m_data + ( y * m_pitch ) + ( x * 3 );
             dest[0] = (char)color.getRed();
             dest[1] = (char)color.getGreen();
             dest[2] = (char)color.getBlue();
@@ -202,7 +201,7 @@ void CImage::setPixel(uint x, uint y, const VImageColor &color, bool blend)
 
         case ECF_A8R8G8B8:
         {
-            uint * dest = (uint*) (Data + ( y * Pitch ) + ( x << 2 ));
+            uint * dest = (uint*) (m_data + ( y * m_pitch ) + ( x << 2 ));
             *dest = blend ? PixelBlend32 ( *dest, color.color ) : color.color;
         } break;
 #ifndef _DEBUG
@@ -216,20 +215,20 @@ void CImage::setPixel(uint x, uint y, const VImageColor &color, bool blend)
 //! returns a pixel
 VImageColor CImage::getPixel(uint x, uint y) const
 {
-    if (x >= Size.Width || y >= Size.Height)
+    if (x >= m_size.Width || y >= m_size.Height)
         return VImageColor(0);
 
-    switch(Format)
+    switch(m_format)
     {
     case ECF_A1R5G5B5:
-        return A1R5G5B5toA8R8G8B8(((ushort*)Data)[y*Size.Width + x]);
+        return A1R5G5B5toA8R8G8B8(((ushort*)m_data)[y*m_size.Width + x]);
     case ECF_R5G6B5:
-        return R5G6B5toA8R8G8B8(((ushort*)Data)[y*Size.Width + x]);
+        return R5G6B5toA8R8G8B8(((ushort*)m_data)[y*m_size.Width + x]);
     case ECF_A8R8G8B8:
-        return ((uint*)Data)[y*Size.Width + x];
+        return ((uint*)m_data)[y*m_size.Width + x];
     case ECF_R8G8B8:
         {
-            char* p = Data+(y*3)*Size.Width + (x*3);
+            char* p = m_data+(y*3)*m_size.Width + (x*3);
             return VImageColor(255,p[0],p[1],p[2]);
         }
 #ifndef _DEBUG
@@ -243,15 +242,15 @@ VImageColor CImage::getPixel(uint x, uint y) const
 
 
 //! returns the color format
-ECOLOR_FORMAT CImage::getColorFormat() const
+ColorFormat CImage::getColorFormat() const
 {
-    return Format;
+    return m_format;
 }
 
 
 //! copies this surface into another, scaling it to the target image size
 // note: this is very very slow.
-void CImage::copyToScaling(void* target, uint width, uint height, ECOLOR_FORMAT format, uint pitch)
+void CImage::copyToScaling(void* target, uint width, uint height, ColorFormat format, uint pitch)
 {
     if (!target || !width || !height)
         return;
@@ -260,17 +259,17 @@ void CImage::copyToScaling(void* target, uint width, uint height, ECOLOR_FORMAT 
     if (0==pitch)
         pitch = width*bpp;
 
-    if (Format==format && Size.Width==width && Size.Height==height)
+    if (m_format==format && m_size.Width==width && m_size.Height==height)
     {
-        if (pitch==Pitch)
+        if (pitch==m_pitch)
         {
-            memcpy(target, Data, height*pitch);
+            memcpy(target, m_data, height*pitch);
             return;
         }
         else
         {
             char* tgtpos = (char*) target;
-            char* srcpos = Data;
+            char* srcpos = m_data;
             const uint bwidth = width*bpp;
             const uint rest = pitch-bwidth;
             for (uint y=0; y<height; ++y)
@@ -280,14 +279,14 @@ void CImage::copyToScaling(void* target, uint width, uint height, ECOLOR_FORMAT 
                 // clear pitch
                 memset(tgtpos+bwidth, 0, rest);
                 tgtpos += pitch;
-                srcpos += Pitch;
+                srcpos += m_pitch;
             }
             return;
         }
     }
 
-    const float sourceXStep = (float)Size.Width / (float)width;
-    const float sourceYStep = (float)Size.Height / (float)height;
+    const float sourceXStep = (float)m_size.Width / (float)width;
+    const float sourceYStep = (float)m_size.Height / (float)height;
     int yval=0, syval=0;
     float sy = 0.0f;
     for (uint y=0; y<height; ++y)
@@ -295,11 +294,11 @@ void CImage::copyToScaling(void* target, uint width, uint height, ECOLOR_FORMAT 
         float sx = 0.0f;
         for (uint x=0; x<width; ++x)
         {
-            CColorConverter::convert_viaFormat(Data+ syval + ((int)sx)*BytesPerPixel, Format, 1, ((char*)target)+ yval + (x*bpp), format);
+            CColorConverter::convert_viaFormat(m_data+ syval + ((int)sx)*m_bytesPerPixel, m_format, 1, ((char*)target)+ yval + (x*bpp), format);
             sx+=sourceXStep;
         }
         sy+=sourceYStep;
-        syval=((int)sy)*Pitch;
+        syval=((int)sy)*m_pitch;
         yval+=pitch;
     }
 }
@@ -314,7 +313,7 @@ void CImage::copyToScaling(VImage* target)
 
     const VDimension<uint>& targetSize = target->getDimension();
 
-    if (targetSize==Size)
+    if (targetSize==m_size)
     {
         copyTo(target);
         return;
@@ -330,8 +329,8 @@ void CImage::copyToScalingBoxFilter(VImage* target, int bias, bool blend)
 {
     const VDimension<uint> destSize = target->getDimension();
 
-    const float sourceXStep = (float) Size.Width / (float) destSize.Width;
-    const float sourceYStep = (float) Size.Height / (float) destSize.Height;
+    const float sourceXStep = (float) m_size.Width / (float) destSize.Width;
+    const float sourceYStep = (float) m_size.Height / (float) destSize.Height;
 
     target->lock();
 
@@ -362,7 +361,7 @@ void CImage::fill(const VImageColor &color)
 {
     uint c;
 
-    switch ( Format )
+    switch ( m_format )
     {
         case ECF_A1R5G5B5:
             c = color.toA1R5G5B5();
@@ -382,7 +381,7 @@ void CImage::fill(const VImageColor &color)
             const uint size = getImageDataSizeInBytes();
             for (uint i=0; i<size; i+=3)
             {
-                memcpy(Data+i, rgb, 3);
+                memcpy(m_data+i, rgb, 3);
             }
             return;
         }
@@ -391,7 +390,7 @@ void CImage::fill(const VImageColor &color)
         // TODO: Handle other formats
             return;
     }
-    memset32( Data, c, getImageDataSizeInBytes() );
+    memset32( m_data, c, getImageDataSizeInBytes() );
 }
 
 
@@ -405,8 +404,8 @@ inline VImageColor CImage::getPixelBox( int x, int y, int fx, int fy, int bias )
     {
         for ( int dy = 0; dy != fy; ++dy )
         {
-            c = getPixel(	std::min ( x + dx, Size.Width - 1 ) ,
-                            std::min ( y + dy, Size.Height - 1 )
+            c = getPixel(	std::min ( x + dx, m_size.Width - 1 ) ,
+                            std::min ( y + dy, m_size.Height - 1 )
                         );
 
             a += c.getAlpha();

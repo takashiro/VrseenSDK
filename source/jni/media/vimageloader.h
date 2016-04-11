@@ -1,19 +1,20 @@
 #ifndef VIMAGELOADER_H
 #define VIMAGELOADER_H
 
-#include "VReferenceCounted.h"
 #include "VImage.h"
 #include "VPath.h"
 #include "VFile.h"
+#include <memory>
+#include "VGlOperation.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 //! Class which is able to create a image from a file.
 /** If you want the Irrlicht Engine be able to load textures of
 currently unsupported file formats (e.g .gif), then implement
 this and add your new Surface loader with
 IVideoDriver::addExternalImageLoader() to the engine. */
-class VImageLoader : public virtual VReferenceCounted
+class VImageLoader
 {
 public:
 
@@ -32,11 +33,10 @@ public:
     //! Creates a surface from the file
     /** \param file File handle to check.
     \return Pointer to newly created image, or 0 upon error. */
-    virtual VImage* loadImage(VFile* file) const = 0;
+    virtual std::shared_ptr<VImage> loadImage(VFile* file) const = 0;
 };
 
-}
-
+NV_NAMESPACE_END
 
 #endif // VIMAGELOADER_H
 

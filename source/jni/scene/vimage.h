@@ -1,12 +1,13 @@
 #ifndef VIMAGE_H
 #define VIMAGE_H
-#include "VReferenceCounted.h"
+
 #include "VImageColor.h"
+#include "VColorConverter.h"
 #include "VRect.h"
 
 namespace  NervGear
 {
-class VImage : public virtual VReferenceCounted
+class VImage
 {
 public:
 
@@ -45,7 +46,7 @@ public:
     virtual void setPixel(uint x, uint y, const VImageColor &color, bool blend = false ) = 0;
 
     //! Returns the color format
-    virtual ECOLOR_FORMAT getColorFormat() const = 0;
+    virtual ColorFormat getColorFormat() const = 0;
 
     //! Returns mask for red value of a pixel
     virtual uint getRedMask() const = 0;
@@ -63,7 +64,7 @@ public:
     virtual uint getPitch() const =0;
 
     //! Copies the image into the target, scaling the image to fit
-    virtual void copyToScaling(void* target, uint width, uint height, ECOLOR_FORMAT format=ECF_A8R8G8B8, uint pitch=0) =0;
+    virtual void copyToScaling(void* target, uint width, uint height, ColorFormat format=ECF_A8R8G8B8, uint pitch=0) =0;
 
     //! Copies the image into the target, scaling the image to fit
     virtual void copyToScaling(VImage* target) =0;
@@ -75,7 +76,7 @@ public:
     virtual void fill(const VImageColor &color) =0;
 
     //! get the amount of Bits per Pixel of the given color format
-    static uint getBitsPerPixelFromFormat(const ECOLOR_FORMAT format)
+    static uint getBitsPerPixelFromFormat(const ColorFormat format)
     {
         switch(format)
         {
@@ -108,7 +109,7 @@ public:
     /** Since we don't have support for e.g. floating point VImage formats
     one should test if the color format can be used for arbitrary usage, or
     if it is restricted to RTTs. */
-    static bool isRenderTargetOnlyFormat(const ECOLOR_FORMAT format)
+    static bool isRenderTargetOnlyFormat(const ColorFormat format)
     {
         switch(format)
         {
@@ -132,11 +133,11 @@ public:
     /** \param useForeignMemory: If true, the image will use the data pointer
     directly and own it from now on, which means it will also try to delete [] the
     data when the image will be destructed. If false, the memory will by copied. */
-    CImage(ECOLOR_FORMAT format, const VDimension<uint>& size,
+    CImage(ColorFormat format, const VDimension<uint>& size,
         void* data, bool ownForeignMemory=true, bool deleteMemory = true);
 
     //! constructor for empty image
-    CImage(ECOLOR_FORMAT format, const VDimension<uint>& size);
+    CImage(ColorFormat format, const VDimension<uint>& size);
 
     //! destructor
     virtual ~CImage();
@@ -144,7 +145,7 @@ public:
     //! Lock function.
     virtual void* lock()
     {
-        return Data;
+        return m_data;
     }
 
     //! Unlock function.
@@ -184,13 +185,13 @@ public:
     virtual void setPixel(uint x, uint y, const VImageColor &color, bool blend = false );
 
     //! returns the color format
-    virtual ECOLOR_FORMAT getColorFormat() const;
+    virtual ColorFormat getColorFormat() const;
 
     //! returns pitch of image
-    virtual uint getPitch() const { return Pitch; }
+    virtual uint getPitch() const { return m_pitch; }
 
     //! copies this surface into another, scaling it to fit.
-    virtual void copyToScaling(void* target, uint width, uint height, ECOLOR_FORMAT format, uint pitch=0);
+    virtual void copyToScaling(void* target, uint width, uint height, ColorFormat format, uint pitch=0);
 
     //! copies this surface into another, scaling it to fit.
     virtual void copyToScaling(VImage* target);
@@ -208,11 +209,11 @@ private:
 
     inline VImageColor getPixelBox ( int x, int y, int fx, int fy, int bias ) const;
 
-    char* Data;
-    VDimension<uint> Size;
-    uint BytesPerPixel;
-    uint Pitch;
-    ECOLOR_FORMAT Format;
+    char* m_data;
+    VDimension<uint> m_size;
+    uint m_bytesPerPixel;
+    uint m_pitch;
+    ColorFormat m_format;
 
     bool DeleteMemory;
 };
