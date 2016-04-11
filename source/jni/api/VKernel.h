@@ -18,12 +18,7 @@ void * jobject;
 
 extern "C" {
 
-
-
-
 extern JavaVM * VrLibJavaVM;
-
-
 
 typedef struct VKpose_
 {
@@ -125,17 +120,10 @@ enum eVrApiEventStatus
 };
 eVrApiEventStatus ovr_nextPendingEvent(NervGear::VString& buffer, unsigned int const bufferSize );
 
-
-#define SYSTEM_ACTIVITY_INTENT "com.oculus.system_activity"
 #define	SYSTEM_ACTIVITY_EVENT_REORIENT "reorient"
 #define SYSTEM_ACTIVITY_EVENT_RETURN_TO_LAUNCHER "returnToLauncher"
-#define SYSTEM_ACTIVITY_EVENT_EXIT_TO_HOME "exitToHome"
 
 }
-
-
-
-
 
 NV_NAMESPACE_BEGIN
 
