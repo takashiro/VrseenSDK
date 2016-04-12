@@ -119,7 +119,6 @@ public:
     void run();
     void exit();
     void destroy(eExitType type);
-    void ovr_HandleDeviceStateChanges();
     ovrSensorState	ovr_GetPredictedSensorState(double absTime );
 
     VDevice* device;

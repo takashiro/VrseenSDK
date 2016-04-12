@@ -41,8 +41,6 @@ NV_USING_NAMESPACE
 // the Systems Activity that sent it is version 1 (meaning they'll never get an "exitToHome"
 // from System Activities)
 
-// FIXME:VRAPI move to ovrMobile
-static HMDState * OvrHmdState = NULL;
 float OvrHmdYaw;
 
 static VKernel* instance = NULL;
@@ -54,46 +52,6 @@ static jobject  ActivityObject = NULL;
 
 void		ovr_OnLoad( JavaVM * JavaVm_ );
 void		ovr_Init();
-void		ovr_Shutdown();
-
-
-void ovr_InitSensors()
-{
-    OvrHmdState = new HMDState();
-    if ( OvrHmdState != NULL )
-    {
-        OvrHmdState->initDevice();
-    }
-
-    if ( OvrHmdState == NULL )
-    {
-        vFatal("failed to create HMD device");
-    }
-
-    // Start the sensor running
-    OvrHmdState->startSensor( ovrHmdCap_Orientation|ovrHmdCap_YawCorrection, 0 );
-}
-
-void ovr_ShutdownSensors()
-{
-    if ( OvrHmdState != NULL )
-    {
-        delete OvrHmdState;
-        OvrHmdState = NULL;
-    }
-}
-
-
-void ovr_Shutdown()
-{
-    ovr_ShutdownSensors();
-
-#ifdef OVR_ENABLE_THREADS
-    // Wait for all threads to finish; this must be done so that memory
-    // allocator and all destructors finalize correctly.
-    VThread::FinishAllThreads();
-#endif
-}
 
 using namespace NervGear;
 
@@ -417,8 +375,6 @@ void ovr_Init()
 {
     vInfo("ovr_Init");
 
-    // initialize Oculus code
-    ovr_InitSensors();
     JNIEnv * jni;
     const jint rtn = VrLibJavaVM->AttachCurrentThread( &jni, 0 );
     if ( rtn != JNI_OK )
@@ -729,7 +685,6 @@ void VKernel::destroy(eExitType exitType)
     {
         exit();
         vInfo("Calling exitType EXIT_TYPE_EXIT");
-        ovr_Shutdown();
         delete  instance;
         instance = NULL;
     }
