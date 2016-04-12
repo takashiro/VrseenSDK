@@ -41,7 +41,6 @@ SOURCES += \
     jni/core/android/VOsBuild.cpp \
     jni/api/VKernel.cpp \
     jni/api/VDevice.cpp \
-    jni/api/HmdSensors.cpp \
     jni/api/VLensDistortion.cpp \
     jni/api/VRotationSensor.cpp \
     jni/api/VFrameSmooth.cpp \
@@ -176,7 +175,6 @@ HEADERS += \
     jni/core/VBasicmath.h \
     jni/embedded/oculus_loading_indicator.h \
     jni/api/VKernel.h \
-    jni/api/HmdSensors.h \
     jni/api/VLensDistortion.h \
     jni/api/VRotationSensor.h \
     jni/api/VFrameSmooth.h \

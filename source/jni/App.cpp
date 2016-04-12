@@ -1125,7 +1125,6 @@ struct App::Private
             sensorForNextWarp = kernel->ovr_GetPredictedSensorState(now + clampedPrediction);
 
             self->text.vrFrame.PoseState = sensorForNextWarp.Predicted;
-            self->text.vrFrame.OvrStatus = sensorForNextWarp.Status;
             self->text.vrFrame.DeltaSeconds   = std::min(0.1, rawDelta);
             self->text.vrFrame.FrameNumber++;
 

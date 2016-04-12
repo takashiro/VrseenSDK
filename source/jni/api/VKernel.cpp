@@ -18,9 +18,8 @@
 #include "VJson.h"			// needed for ovr_StartSystemActivity
 #include "sensor/DeviceImpl.h"
 
-#include "HmdSensors.h"
+#include "VLockless.h"
 #include "VRotationSensor.h"
-
 #include "VThread.h"
 
 NV_USING_NAMESPACE
@@ -53,23 +52,10 @@ static jobject  ActivityObject = NULL;
 void		ovr_OnLoad( JavaVM * JavaVm_ );
 void		ovr_Init();
 
-using namespace NervGear;
-
-namespace NervGear {
-
-    SensorState::operator const ovrSensorState& () const
-    {
-        static_assert(sizeof(SensorState) == sizeof(ovrSensorState), "SensorState");
-        return reinterpret_cast<const ovrSensorState&>(*this);
-    }
-
-} // namespace NervGear
-
 ovrSensorState ovr_GetSensorStateInternal( double absTime )
 {
     ovrSensorState state;
     memset( &state, 0, sizeof( state ) );
-    state.Status = Status_OrientationTracked | Status_HmdConnected;
 
     VRotationSensor *sensor = VRotationSensor::instance();
 
@@ -541,16 +527,6 @@ void VKernel::run()
     vInfo("OVR_VERSION =" << ovr_GetVersionString());
 
     isRunning = true;
-
-    ovrSensorState state = ovr_GetSensorStateInternal( VTimer::Seconds() );
-    if ( state.Status & Status_OrientationTracked )
-    {
-        vInfo("HMD sensor attached.");
-    }
-    else
-    {
-        vWarn("Operating without a sensor.");
-    }
 
     // Let GlUtils look up extensions
 

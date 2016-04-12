@@ -58,7 +58,6 @@ LOCAL_SRC_FILES  := \
 	core/android/VOsBuild.cpp \
 	api/VKernel.cpp \
 	api/VDevice.cpp \
-	api/HmdSensors.cpp \
 	api/VLensDistortion.cpp \
 	api/VFrameSmooth.cpp \
 	api/VGlGeometry.cpp \

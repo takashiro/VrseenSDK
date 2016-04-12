@@ -41,7 +41,6 @@ typedef struct ovrSensorState_
 
     float			Temperature;
 
-    unsigned		Status;
 } ovrSensorState;
 
 
