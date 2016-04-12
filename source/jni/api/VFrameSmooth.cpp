@@ -27,7 +27,6 @@
 #include "VKernel.h"
 
 ovrSensorState ovr_GetSensorStateInternal( double absTime );
-bool ovr_ProcessLatencyTest( unsigned char rgbColorOut[3] );
 
 NV_NAMESPACE_BEGIN
 
@@ -1715,10 +1714,7 @@ void VFrameSmooth::Private::destroyFrameworkGraphics()
 void VFrameSmooth::Private::drawFrameworkGraphicsToWindow( const int eye,
                                                    const int swapOptions)
 {
-
-
-    unsigned char latencyTesterColorToDisplay[3];
-
+    /*unsigned char latencyTesterColorToDisplay[3];
     if ( ovr_ProcessLatencyTest( latencyTesterColorToDisplay ) )
     {
         glClearColor(
@@ -1727,7 +1723,7 @@ void VFrameSmooth::Private::drawFrameworkGraphicsToWindow( const int eye,
                 latencyTesterColorToDisplay[2] / 255.0f,
                 1.0f );
         glClear( GL_COLOR_BUFFER_BIT );
-    }
+    }*/
 
     if ( swapOptions & VK_DRAW_LINES )
     {

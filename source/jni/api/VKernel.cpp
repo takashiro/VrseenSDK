@@ -132,17 +132,6 @@ ovrSensorState ovr_GetSensorStateInternal( double absTime )
     return state;
 }
 
-// Does latency test processing and returns 'true' if specified rgb color should
-// be used to clear the screen.
-bool ovr_ProcessLatencyTest( unsigned char rgbColorOut[3] )
-{
-    if ( OvrHmdState == NULL )
-    {
-        return false;
-    }
-    return OvrHmdState->processLatencyTest( rgbColorOut );
-}
-
 /*
  * This interacts with the VrLib java class to deal with Android platform issues.
  */
