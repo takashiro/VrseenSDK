@@ -64,8 +64,6 @@ ovrSensorState ovr_GetSensorStateInternal( double absTime )
 // This is public for any user.
 JavaVM	* VrLibJavaVM;
 
-static pid_t	OnLoadTid;
-
 // This needs to be looked up by a thread called directly from java,
 // not a native pthread.
 static jclass	VrLibClass = NULL;
@@ -263,7 +261,6 @@ void ovr_OnLoad( JavaVM * JavaVm_ )
     }
 
     VrLibJavaVM = JavaVm_;
-    OnLoadTid = gettid();
 
     JNIEnv * jni;
     bool privateEnv = false;
