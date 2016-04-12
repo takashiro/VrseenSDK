@@ -138,7 +138,6 @@ NervGear::VLockless< bool >						HeadsetPluggedState;
 NervGear::VLockless< bool >						PowerLevelStateThrottled;
 NervGear::VLockless< bool >						PowerLevelStateMinimum;
 NervGear::VLockless< HMTMountState_t >				HMTMountState;
-NervGear::VLockless< HMTDockState_t >				HMTDockState;	// edge triggered events, not the actual state
 static NervGear::VLockless< bool >					DockState;
 
 extern "C"
@@ -204,28 +203,6 @@ JNIEXPORT void Java_com_vrseen_nervgear_DockReceiver_nativeDockEvent(JNIEnv *jni
     vInfo("nativeDockEvent =" << ((state == 0) ? "UNDOCKED" : "DOCKED"));
 
     DockState.setState( state != 0 );
-
-    if ( state == 0 )
-    {
-        // On undock, we need to do the following 2 things:
-        // (1) Provide a means for apps to save their state.
-        // (2) Call finish() to kill app.
-
-        // NOTE: act.finish() triggers OnPause() -> OnStop() -> OnDestroy() to
-        // be called on the activity. Apps may place save data and state in
-        // OnPause() (or OnApplicationPause() for Unity)
-
-        HMTDockState.setState( HMTDockState_t( HMT_DOCK_UNDOCKED ) );
-    }
-    else
-    {
-        HMTDockState_t dockState = HMTDockState.state();
-        if ( dockState.DockState == HMT_DOCK_UNDOCKED )
-        {
-            vInfo("CLEARING UNDOCKED!!!!");
-        }
-        HMTDockState.setState( HMTDockState_t( HMT_DOCK_DOCKED ) );
-    }
 }
 
 } // extern "C"
