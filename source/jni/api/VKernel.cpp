@@ -132,15 +132,6 @@ ovrSensorState ovr_GetSensorStateInternal( double absTime )
     return state;
 }
 
-void ovr_RecenterYawInternal()
-{
-    if ( OvrHmdState == NULL )
-    {
-        return;
-    }
-    OvrHmdState->recenterYaw();
-}
-
 // Does latency test processing and returns 'true' if specified rgb color should
 // be used to clear the screen.
 bool ovr_ProcessLatencyTest( unsigned char rgbColorOut[3] )
@@ -877,11 +868,6 @@ void VKernel::doSmooth()
 ovrSensorState VKernel::ovr_GetPredictedSensorState(double absTime )
 {
     return ovr_GetSensorStateInternal( absTime );
-}
-
-void VKernel::ovr_RecenterYaw()
-{
-    ovr_RecenterYawInternal();
 }
 
 /*void VKernel::doSmooth(const ovrTimeWarpParms * parms )
