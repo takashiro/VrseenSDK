@@ -16,7 +16,6 @@
 
 #include "VString.h"			// for ReadFreq()
 #include "VJson.h"			// needed for ovr_StartSystemActivity
-#include "sensor/DeviceImpl.h"
 
 #include "VLockless.h"
 #include "VRotationSensor.h"

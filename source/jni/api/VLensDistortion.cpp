@@ -1,5 +1,3 @@
-#include "sensor/Profile.h"
-#include "sensor/Device.h"
 #include "VDevice.h"
 #include "VAlgorithm.h"
 #include "VGlShader.h"
@@ -61,35 +59,10 @@ static float EvalCatmullRomSpline ( float const *K, float scaledVal, int NumSegm
 
 static float DistortionFnScaleRadiusSquared(const VLensDistortion& lens,float rsq)
 {
-    float scale = 1.0f;
-    switch ( lens.equation )
-    {
-        case Distortion_Poly4:
-            scale = ( lens.kArray[0] + rsq * ( lens.kArray[1] + rsq * ( lens.kArray[2] + rsq * lens.kArray[3] ) ) );
-            break;
-        case Distortion_RecipPoly4:
-            scale = 1.0f / ( lens.kArray[0] + rsq * ( lens.kArray[1] + rsq * ( lens.kArray[2] + rsq * lens.kArray[3] ) ) );
-            break;
-        case Distortion_CatmullRom10: {
-
-            const int NumSegments = 11;
-            vAssert( NumSegments <= lens.MaxCoefficients );
-            float scaledRsq = (float)(NumSegments-1) * rsq / ( lens.maxR * lens.maxR );
-            scale = EvalCatmullRomSpline ( lens.kArray, scaledRsq, NumSegments );
-        } break;
-
-        case Distortion_CatmullRom20: {
-
-            const int NumSegments = 21;
-            vAssert(NumSegments <= lens.MaxCoefficients);
-            float scaledRsq = (float)(NumSegments-1) * rsq / ( lens.maxR * lens.maxR );
-            scale = EvalCatmullRomSpline ( lens.kArray, scaledRsq, NumSegments );
-        } break;
-
-        default:
-            vAssert(false);
-            break;
-    }
+    const int NumSegments = 11;
+    vAssert( NumSegments <= lens.MaxCoefficients );
+    float scaledRsq = (float)(NumSegments-1) * rsq / ( lens.maxR * lens.maxR );
+    float scale = EvalCatmullRomSpline ( lens.kArray, scaledRsq, NumSegments );
     return scale;
 }
 
@@ -355,7 +328,6 @@ VLensDistortion::VLensDistortion()
         kArray[i] = 0.0f;
         invKArray[i] = 0.0f;
     }
-    equation = Distortion_RecipPoly4;
     kArray[0] = 1.0f;
     invKArray[0] = 1.0f;
     maxR = 1.0f;
@@ -367,71 +339,20 @@ VLensDistortion::VLensDistortion()
     centMetersPerTanAngler = 0.043875f;
 }
 
-void VLensDistortion::initDistortionParmsByMobileType(PhoneTypeEnum type)
+void VLensDistortion::initDistortionParmsByMobileType()
 {
-    switch( type )
-    {
-        case HMD_GALAXY_S4:
-            equation = Distortion_RecipPoly4;
-            centMetersPerTanAngler = 0.043875f;
-            kArray[0] = 0.756f;
-            kArray[1] = -0.266f;
-            kArray[2] = -0.389f;
-            kArray[3] = 0.158f;
-            break;
-
-        case HMD_GALAXY_S5:
-
-            equation = Distortion_CatmullRom10;
-            centMetersPerTanAngler     = 0.037f;
-            kArray[0]                          = 1.0f;
-            kArray[1]                          = 1.021f;
-            kArray[2]                          = 1.051f;
-            kArray[3]                          = 1.086f;
-            kArray[4]                          = 1.128f;
-            kArray[5]                          = 1.177f;
-            kArray[6]                          = 1.232f;
-            kArray[7]                          = 1.295f;
-            kArray[8]                          = 1.368f;
-            kArray[9]                          = 1.452f;
-            kArray[10]                         = 1.560f;
-            break;
-
-        case HMD_GALAXY_S5_WQHD:
-
-            equation = Distortion_CatmullRom10;
-            centMetersPerTanAngler     = 0.037f;
-            kArray[0]                          = 1.0f;
-            kArray[1]                          = 1.021f;
-            kArray[2]                          = 1.051f;
-            kArray[3]                          = 1.086f;
-            kArray[4]                          = 1.128f;
-            kArray[5]                          = 1.177f;
-            kArray[6]                          = 1.232f;
-            kArray[7]                          = 1.295f;
-            kArray[8]                          = 1.368f;
-            kArray[9]                          = 1.452f;
-            kArray[10]                         = 1.560f;
-            break;
-
-        default:
-        case HMD_NOTE_4:
-
-            equation = Distortion_CatmullRom10;
-            centMetersPerTanAngler     = 0.0365f;
-            kArray[0]                          = 1.0f;
-            kArray[1]                          = 1.029f;
-            kArray[2]                          = 1.0565f;
-            kArray[3]                          = 1.088f;
-            kArray[4]                          = 1.127f;
-            kArray[5]                          = 1.175f;
-            kArray[6]                          = 1.232f;
-            kArray[7]                          = 1.298f;
-            kArray[8]                          = 1.375f;
-            kArray[9]                          = 1.464f;
-            kArray[10]                         = 1.570f;
-            break;
-    }
+    centMetersPerTanAngler = 0.0365f;
+    kArray[0] = 1.0f;
+    kArray[1] = 1.029f;
+    kArray[2] = 1.0565f;
+    kArray[3] = 1.088f;
+    kArray[4] = 1.127f;
+    kArray[5] = 1.175f;
+    kArray[6] = 1.232f;
+    kArray[7] = 1.298f;
+    kArray[8] = 1.375f;
+    kArray[9] = 1.464f;
+    kArray[10] = 1.570f;
 }
 
 NV_NAMESPACE_END

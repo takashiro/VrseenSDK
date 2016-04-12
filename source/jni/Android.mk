@@ -65,26 +65,6 @@ LOCAL_SRC_FILES  := \
 	api/VEglDriver.cpp \
 	api/VGlShader.cpp \
 	api/VRotationSensor.cpp \
-	api/sensor/DeviceHandle.cpp \
-	api/sensor/DeviceImpl.cpp \
-	api/sensor/LatencyTest.cpp \
-	api/sensor/LatencyTestDeviceImpl.cpp \
-	api/sensor/Profile.cpp \
-	api/sensor/SensorFilter.cpp \
-	api/sensor/SensorCalibration.cpp \
-	api/sensor/GyroTempCalibration.cpp \
-	api/sensor/SensorFusion.cpp \
-	api/sensor/SensorTimeFilter.cpp \
-	api/sensor/SensorDeviceImpl.cpp \
-	api/sensor/Android_DeviceManager.cpp \
-	api/sensor/Android_HIDDevice.cpp \
-	api/sensor/Android_HMDDevice.cpp \
-	api/sensor/Android_SensorDevice.cpp \
-	api/sensor/Android_PhoneSensors.cpp \
-	api/sensor/Common_HMDDevice.cpp \
-	api/sensor/ThreadCommandQueue.cpp \
-	api/sensor/RefCount.cpp \
-	api/sensor/Log.cpp \
 	gui/VRMenuComponent.cpp \
 	gui/VRMenuMgr.cpp \
 	gui/VRMenuObjectLocal.cpp \

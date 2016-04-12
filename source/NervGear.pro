@@ -47,26 +47,6 @@ SOURCES += \
     jni/api/VMainActivity.cpp \
     jni/api/VGlShader.cpp \
     jni/api/VGlGeometry.cpp \
-    jni/api/sensor/DeviceHandle.cpp \
-    jni/api/sensor/DeviceImpl.cpp \
-    jni/api/sensor/LatencyTest.cpp \
-    jni/api/sensor/LatencyTestDeviceImpl.cpp \
-    jni/api/sensor/Profile.cpp \
-    jni/api/sensor/SensorFilter.cpp \
-    jni/api/sensor/SensorCalibration.cpp \
-    jni/api/sensor/GyroTempCalibration.cpp \
-    jni/api/sensor/SensorFusion.cpp \
-    jni/api/sensor/SensorTimeFilter.cpp \
-    jni/api/sensor/SensorDeviceImpl.cpp \
-    jni/api/sensor/Android_DeviceManager.cpp \
-    jni/api/sensor/Android_HIDDevice.cpp \
-    jni/api/sensor/Android_HMDDevice.cpp \
-    jni/api/sensor/Android_SensorDevice.cpp \
-    jni/api/sensor/Android_PhoneSensors.cpp \
-    jni/api/sensor/Common_HMDDevice.cpp \
-    jni/api/sensor/ThreadCommandQueue.cpp \
-    jni/api/sensor/RefCount.cpp \
-    jni/api/sensor/Log.cpp \
     jni/gui/VText.cpp \
     jni/gui/VDialog.cpp \
     jni/gui/VPanel.cpp \
@@ -182,32 +162,6 @@ HEADERS += \
     jni/api/VGlShader.h \
     jni/api/VMainActivity.h \
     jni/api/VDevice.h \
-    jni/api/sensor/DeviceConstants.h \
-    jni/api/sensor/DeviceHandle.h \
-    jni/api/sensor/DeviceImpl.h \
-    jni/api/sensor/LatencyTest.h \
-    jni/api/sensor/LatencyTestDeviceImpl.h \
-    jni/api/sensor/Profile.h \
-    jni/api/sensor/SensorFilter.h \
-    jni/api/sensor/SensorCalibration.h \
-    jni/api/sensor/GyroTempCalibration.h \
-    jni/api/sensor/SensorFusion.h \
-    jni/api/sensor/SensorTimeFilter.h \
-    jni/api/sensor/SensorDeviceImpl.h \
-    jni/api/sensor/Android_DeviceManager.h \
-    jni/api/sensor/Android_HIDDevice.h \
-    jni/api/sensor/Android_HMDDevice.h \
-    jni/api/sensor/Android_SensorDevice.h \
-    jni/api/sensor/Android_PhoneSensors.h \
-    jni/api/sensor/PhoneSensors.h \
-    jni/api/sensor/Device.h \
-    jni/api/sensor/DeviceMessages.h \
-    jni/api/sensor/HIDDevice.h \
-    jni/api/sensor/HIDDeviceBase.h \
-    jni/api/sensor/HIDDeviceImpl.h \
-    jni/api/sensor/ThreadCommandQueue.h \
-    jni/api/sensor/RefCount.h \
-    jni/api/sensor/Log.h \
     jni/gui/VText.h \
     jni/gui/VDialog.h \
     jni/gui/VPanel.h \
