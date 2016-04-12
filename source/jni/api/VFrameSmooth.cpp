@@ -28,12 +28,8 @@
 
 ovrSensorState ovr_GetSensorStateInternal( double absTime );
 bool ovr_ProcessLatencyTest( unsigned char rgbColorOut[3] );
-const char * ovr_GetLatencyTestResult();
-
 
 NV_NAMESPACE_BEGIN
-
-
 
 class VsyncState
 {
@@ -1732,14 +1728,6 @@ void VFrameSmooth::Private::drawFrameworkGraphicsToWindow( const int eye,
                 1.0f );
         glClear( GL_COLOR_BUFFER_BIT );
     }
-
-
-    const char * results = ovr_GetLatencyTestResult();
-    if ( results != NULL )
-    {
-        vInfo("LATENCY TESTER: " << results);
-    }
-
 
     if ( swapOptions & VK_DRAW_LINES )
     {

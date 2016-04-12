@@ -143,17 +143,6 @@ bool ovr_ProcessLatencyTest( unsigned char rgbColorOut[3] )
     return OvrHmdState->processLatencyTest( rgbColorOut );
 }
 
-// Returns non-null string once with latency test result, when it is available.
-// Buffer is valid until next call.
-const char * ovr_GetLatencyTestResult()
-{
-    if ( OvrHmdState == NULL )
-    {
-        return "";
-    }
-    return OvrHmdState->latencyTestResult();
-}
-
 int ovr_GetDeviceManagerThreadTid()
 {
     if ( OvrHmdState == NULL )
