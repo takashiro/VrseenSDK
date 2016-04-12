@@ -520,11 +520,6 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 	protected void onPause() {
 		Log.d(TAG, this + " onPause()");
 
-		if (getApplication() instanceof VrApplication) {
-			VrApplication vrApp = (VrApplication) getApplication();
-			vrApp.setHostActivity(null);
-		}
-
 		super.onPause();
 		nativePause();
 		mVrseenDeviceManager.onPause();
@@ -533,11 +528,6 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 	@Override
 	protected void onResume() {
 		Log.d(TAG, this + " onResume()");
-
-		if (getApplication() instanceof VrApplication) {
-			VrApplication vrApp = (VrApplication) getApplication();
-			vrApp.setHostActivity(this);
-		}
 		
 		super.onResume();
 		nativeResume();
