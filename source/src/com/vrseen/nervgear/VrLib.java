@@ -434,12 +434,12 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 	public static boolean getComfortViewModeEnabled( Activity act ) {
 		Log.d(TAG, "getComfortViewModeEnabled" );
 
-		android.app.IVRManager vr = (android.app.IVRManager)a ct.getSystemService(android.app.IVRManager.VR_MANAGER);
+		android.app.IVRManager vr = (android.app.IVRManager) act.getSystemService(android.app.IVRManager.VR_MANAGER);
 		if ( vr == null ) {
 			Log.d(TAG, "VRManager was not found" );
 			return false;
 		}
-
+		
 		String result = vr.getSystemOption( android.app.IVRManager.VR_COMFORT_VIEW );
 		return ( result.equals( "1" ) );
 	}
