@@ -143,15 +143,6 @@ bool ovr_ProcessLatencyTest( unsigned char rgbColorOut[3] )
     return OvrHmdState->processLatencyTest( rgbColorOut );
 }
 
-int ovr_GetDeviceManagerThreadTid()
-{
-    if ( OvrHmdState == NULL )
-    {
-        return 0;
-    }
-    return static_cast<NervGear::DeviceManagerImpl *>( OvrHmdState->deviceManager() )->threadTid();
-}
-
 /*
  * This interacts with the VrLib java class to deal with Android platform issues.
  */
