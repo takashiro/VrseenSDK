@@ -67,18 +67,10 @@ JavaVM	* VrLibJavaVM;
 // This needs to be looked up by a thread called directly from java,
 // not a native pthread.
 static jclass	VrLibClass = NULL;
-static jclass	ProximityReceiverClass = NULL;
-static jclass	DockReceiverClass = NULL;
 
 static jmethodID getPowerLevelStateID = NULL;
 static jmethodID setActivityWindowFullscreenID = NULL;
 static jmethodID notifyMountHandledID = NULL;
-
-// Register the HMT receivers once, and do
-// not unregister in Pause(). We may miss
-// important mount or dock events while
-// the receiver is unregistered.
-static bool registerHMTReceivers = false;
 
 static int BuildVersionSDK = 19;		// default supported version for vrlib is KitKat 19
 
@@ -137,7 +129,6 @@ struct HMTMountState_t
 NervGear::VLockless< bool >						HeadsetPluggedState;
 NervGear::VLockless< bool >						PowerLevelStateThrottled;
 NervGear::VLockless< bool >						PowerLevelStateMinimum;
-static NervGear::VLockless< bool >					DockState;
 
 extern "C"
 {
@@ -169,23 +160,6 @@ JNIEXPORT void Java_com_vrseen_nervgear_VrLib_nativeHeadsetEvent(JNIEnv *jni, jc
 {
     vInfo("nativeHeadsetEvent(" << state << ")");
     HeadsetPluggedState.setState( ( state == 1 ) );
-}
-
-JNIEXPORT void Java_com_vrseen_nervgear_ProximityReceiver_nativeMountHandled(JNIEnv *jni, jclass clazz)
-{
-    vInfo("Java_com_vrseen_nervgear_VrLib_nativeMountEventHandled");
-}
-
-JNIEXPORT void Java_com_vrseen_nervgear_ProximityReceiver_nativeProximitySensor(JNIEnv *jni, jclass clazz, jint state)
-{
-    vInfo("nativeProximitySensor(" << state << ")");
-}
-
-JNIEXPORT void Java_com_vrseen_nervgear_DockReceiver_nativeDockEvent(JNIEnv *jni, jclass clazz, jint state)
-{
-    vInfo("nativeDockEvent =" << ((state == 0) ? "UNDOCKED" : "DOCKED"));
-
-    DockState.setState( state != 0 );
 }
 
 } // extern "C"
@@ -241,8 +215,6 @@ void ovr_OnLoad( JavaVM * JavaVm_ )
     }
 
     VrLibClass = JniUtils::GetGlobalClassReference( jni, "com/vrseen/nervgear/VrLib" );
-    ProximityReceiverClass = JniUtils::GetGlobalClassReference( jni, "com/vrseen/nervgear/ProximityReceiver" );
-    DockReceiverClass = JniUtils::GetGlobalClassReference( jni, "com/vrseen/nervgear/DockReceiver" );
 
     // Get the BuildVersion SDK
     jclass versionClass = jni->FindClass( "android/os/Build$VERSION" );
@@ -266,9 +238,6 @@ void ovr_OnLoad( JavaVM * JavaVm_ )
         JNINativeMethod	Jnim;
     } gMethods[] =
             {
-                    { DockReceiverClass, 		{ "nativeDockEvent", "(I)V",(void*)Java_com_vrseen_nervgear_DockReceiver_nativeDockEvent } },
-                    { ProximityReceiverClass, 	{ "nativeProximitySensor", "(I)V",(void*)Java_com_vrseen_nervgear_ProximityReceiver_nativeProximitySensor } },
-                    { ProximityReceiverClass, 	{ "nativeMountHandled", "()V",(void*)Java_com_vrseen_nervgear_ProximityReceiver_nativeMountHandled } },
                     { VrLibClass, 				{ "nativeVolumeEvent", "(I)V",(void*)Java_com_vrseen_nervgear_VrLib_nativeVolumeEvent } },
                     { VrLibClass, 				{ "nativeHeadsetEvent", "(I)V",(void*)Java_com_vrseen_nervgear_VrLib_nativeHeadsetEvent } },
                     { VrLibClass, 				{ "nativeVsync", "(J)V",(void*)Java_com_vrseen_nervgear_VrLib_nativeVsync } },
@@ -308,25 +277,6 @@ void ovr_Init()
 
     // After ovr_Initialize(), because it uses String
     VOsBuild::Init(jni);
-}
-
-// This can be called before ovr_EnterVrMode() so hybrid apps can tell
-// when they need to go to vr mode.
-void ovr_RegisterHmtReceivers()
-{
-    if ( registerHMTReceivers )
-    {
-        return;
-    }
-    const jmethodID startProximityReceiverId = JniUtils::GetStaticMethodID( Jni, ProximityReceiverClass,
-                                                                            "startReceiver", "(Landroid/app/Activity;)V" );
-    Jni->CallStaticVoidMethod( ProximityReceiverClass, startProximityReceiverId, ActivityObject );
-
-    const jmethodID startDockReceiverId = JniUtils::GetStaticMethodID( Jni, DockReceiverClass,
-                                                                       "startDockReceiver", "(Landroid/app/Activity;)V" );
-    Jni->CallStaticVoidMethod( DockReceiverClass, startDockReceiverId, ActivityObject );
-
-    registerHMTReceivers = true;
 }
 
 VKernel* VKernel::GetInstance()
@@ -471,9 +421,6 @@ void VKernel::run()
                                                                 "startVsync", "(Landroid/app/Activity;)V" );
     Jni->CallStaticVoidMethod( VrLibClass, startVsyncId, ActivityObject );
 
-    // Register our HMT receivers if they have not already been registered.
-    ovr_RegisterHmtReceivers();
-
     // Register our receivers
     const jmethodID startReceiversId = JniUtils::GetStaticMethodID( Jni, VrLibClass,
                                                                     "startReceivers", "(Landroid/app/Activity;)V" );
@@ -486,7 +433,6 @@ void VKernel::run()
     // get external storage directory
     const jmethodID getExternalStorageDirectoryMethodId = JniUtils::GetStaticMethodID( Jni, VrLibClass, "getExternalStorageDirectory", "()Ljava/lang/String;" );
     jstring externalStorageDirectoryString = (jstring)Jni->CallStaticObjectMethod( VrLibClass, getExternalStorageDirectoryMethodId );
-    VString externalStorageDirectory = JniUtils::Convert(Jni, externalStorageDirectoryString);
     Jni->DeleteLocalRef(externalStorageDirectoryString);
 
     if ( Jni->ExceptionOccurred() )
