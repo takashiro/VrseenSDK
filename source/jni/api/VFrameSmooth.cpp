@@ -1,19 +1,16 @@
-#include <pthread.h>
-#include "VFrameSmooth.h"
-#include "VAlgorithm.h"
 #include <errno.h>
 #include <math.h>
 #include <sched.h>
 #include <unistd.h>
-
-#include <android/sensor.h>
 #include <sys/time.h>
 #include <sys/resource.h>
 
+#include "android/JniUtils.h"
+
 #include "VFrameSmooth.h"
-
-#include "Android/JniUtils.h"
-
+#include "VAlgorithm.h"
+#include "VDevice.h"
+#include "VFrameSmooth.h"
 #include "VLensDistortion.h"
 #include "VEglDriver.h"
 #include "VString.h"
@@ -494,87 +491,48 @@ struct VFrameSmooth::Private
 
 
     pthread_mutex_t m_smoothMutex;
-    pthread_cond_t	m_smoothIslocked;
-    VLockless<long long>			m_eyeBufferCount;
+    pthread_cond_t m_smoothIslocked;
+    VLockless<longlong> m_eyeBufferCount;
 
 
-    VLockless<SwapState>		m_swapVsync;
-
-   // VLockless<VsyncState>	m_updatedVsyncState;
-
-    long long			m_lastSwapVsyncCount;
+    VLockless<SwapState> m_swapVsync;
+    longlong m_lastSwapVsyncCount;
 };
-/*void VFrameSmooth::setSmoothEyeTexture(ushort i,ushort j,ovrTimeWarpImage m_images)
 
+void VFrameSmooth::setSmoothEyeTexture(uint texID,ushort eye,ushort layer)
 {
-
-         {
-           d->m_images[i][j].PlanarTexId[0] = m_images.PlanarTexId[0];
-                   d->m_images[i][j].PlanarTexId[1] = m_images.PlanarTexId[1];
-                    d->m_images[i][j].PlanarTexId[2] = m_images.PlanarTexId[2];
-                    for(int m=0;m<4;m++)
-                        for(int n=0;n<4;n++)
-                        {
-                    d->m_images[i][j].TexCoordsFromTanAngles.M[m][n] = m_images.TexCoordsFromTanAngles.M[m][n];
-                        }
-                     d->m_images[i][j].TexId = m_images.TexId;
-                     d->m_images[i][j].Pose.AngularAcceleration.x =m_images.Pose.AngularAcceleration.x;
-                     d->m_images[i][j].Pose.AngularAcceleration.y =m_images.Pose.AngularAcceleration.y;
-                     d->m_images[i][j].Pose.AngularAcceleration.z =m_images.Pose.AngularAcceleration.z;
-             d->m_images[i][j].Pose.AngularVelocity.x =m_images.Pose.AngularVelocity.x;
-               d->m_images[i][j].Pose.AngularVelocity.y =m_images.Pose.AngularVelocity.y;
-                 d->m_images[i][j].Pose.AngularVelocity.z =m_images.Pose.AngularVelocity.z;
-             d->m_images[i][j].Pose.LinearAcceleration.x =m_images.Pose.LinearAcceleration.x;
-            d->m_images[i][j].Pose.LinearAcceleration.y =m_images.Pose.LinearAcceleration.y;
-            d->m_images[i][j].Pose.LinearAcceleration.z =m_images.Pose.LinearAcceleration.z;
-             d->m_images[i][j].Pose.LinearVelocity.x =m_images.Pose.LinearVelocity.x;
-               d->m_images[i][j].Pose.LinearVelocity.y =m_images.Pose.LinearVelocity.y;
-                d->m_images[i][j].Pose.LinearVelocity.z =m_images.Pose.LinearVelocity.z;
-               d->m_images[i][j].Pose.Pose.Orientation.w =m_images.Pose.Pose.Orientation.w;
-               d->m_images[i][j].Pose.Pose.Orientation.x =m_images.Pose.Pose.Orientation.x;
-               d->m_images[i][j].Pose.Pose.Orientation.y =m_images.Pose.Pose.Orientation.y;
-               d->m_images[i][j].Pose.Pose.Orientation.z =m_images.Pose.Pose.Orientation.z;
-
-
-               d->m_images[i][j].Pose.Pose.Position.x =m_images.Pose.Pose.Position.x;
-               d->m_images[i][j].Pose.Pose.Position.y =m_images.Pose.Pose.Position.y;
-              d->m_images[i][j].Pose.Pose.Position.z =m_images.Pose.Pose.Position.z;
-
-
-               d->m_images[i][j].Pose.TimeInSeconds =m_images.Pose.TimeInSeconds;
-        }
-}*/
-void VFrameSmooth::setSmoothEyeTexture(unsigned int texID,ushort eye,ushort layer)
-{
-     d->m_texId[eye][layer] =  texID;
+    d->m_texId[eye][layer] =  texID;
 }
 
-void VFrameSmooth::setTexMatrix(VR4Matrixf	mtexMatrix,ushort eye,ushort layer)
+void VFrameSmooth::setTexMatrix(const VR4Matrixf &mtexMatrix, ushort eye, ushort layer)
 {
-     d->m_texMatrix[eye][layer] =  mtexMatrix;
+    d->m_texMatrix[eye][layer] =  mtexMatrix;
 }
-void VFrameSmooth::setSmoothPose(VKpose	mpose,ushort eye,ushort layer)
+
+void VFrameSmooth::setSmoothPose(const VKpose &mpose, ushort eye, ushort layer)
 {
-     d->m_pose[eye][layer] =  mpose;
+    d->m_pose[eye][layer] =  mpose;
 }
-void VFrameSmooth::setpTex(unsigned int	*mpTexId,ushort eye,ushort layer)
+
+void VFrameSmooth::setpTex(uint *mpTexId, ushort eye, ushort layer)
 {
-     d->m_planarTexId[eye][layer][0] =  mpTexId[0];
-     d->m_planarTexId[eye][layer][1] =  mpTexId[1];
-     d->m_planarTexId[eye][layer][2] =  mpTexId[2];
+     d->m_planarTexId[eye][layer][0] = mpTexId[0];
+     d->m_planarTexId[eye][layer][1] = mpTexId[1];
+     d->m_planarTexId[eye][layer][2] = mpTexId[2];
 }
+
 void VFrameSmooth::setSmoothOption(int option)
 {
     d->m_smoothOptions = option;
 
 }
+
 void VFrameSmooth::setMinimumVsncs( int vsnc)
 {
-
     d->m_minimumVsyncs = vsnc;
 }
 
-void VFrameSmooth::setExternalVelocity(VR4Matrixf extV)
+void VFrameSmooth::setExternalVelocity(const VR4Matrixf &extV)
 
 {
     for(int i=0;i<4;i++)
