@@ -137,7 +137,6 @@ struct HMTMountState_t
 NervGear::VLockless< bool >						HeadsetPluggedState;
 NervGear::VLockless< bool >						PowerLevelStateThrottled;
 NervGear::VLockless< bool >						PowerLevelStateMinimum;
-NervGear::VLockless< HMTMountState_t >				HMTMountState;
 static NervGear::VLockless< bool >					DockState;
 
 extern "C"
@@ -175,27 +174,11 @@ JNIEXPORT void Java_com_vrseen_nervgear_VrLib_nativeHeadsetEvent(JNIEnv *jni, jc
 JNIEXPORT void Java_com_vrseen_nervgear_ProximityReceiver_nativeMountHandled(JNIEnv *jni, jclass clazz)
 {
     vInfo("Java_com_vrseen_nervgear_VrLib_nativeMountEventHandled");
-
-    // If we're received this, the foreground app has already received
-    // and processed the mount event.
-    if ( HMTMountState.state().MountState == HMT_MOUNT_MOUNTED )
-    {
-        vInfo("RESETTING MOUNT");
-        HMTMountState.setState( HMTMountState_t( HMT_MOUNT_NONE ) );
-    }
 }
 
 JNIEXPORT void Java_com_vrseen_nervgear_ProximityReceiver_nativeProximitySensor(JNIEnv *jni, jclass clazz, jint state)
 {
     vInfo("nativeProximitySensor(" << state << ")");
-    if ( state == 0 )
-    {
-        HMTMountState.setState( HMTMountState_t( HMT_MOUNT_UNMOUNTED ) );
-    }
-    else
-    {
-        HMTMountState.setState( HMTMountState_t( HMT_MOUNT_MOUNTED ) );
-    }
 }
 
 JNIEXPORT void Java_com_vrseen_nervgear_DockReceiver_nativeDockEvent(JNIEnv *jni, jclass clazz, jint state)
