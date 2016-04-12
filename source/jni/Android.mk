@@ -66,6 +66,7 @@ LOCAL_SRC_FILES  := \
 	api/VEglDriver.cpp \
 	api/VSystemActivities.cpp \
 	api/VGlShader.cpp \
+	api/VRotationSensor.cpp \
 	api/sensor/DeviceHandle.cpp \
 	api/sensor/DeviceImpl.cpp \
 	api/sensor/LatencyTest.cpp \

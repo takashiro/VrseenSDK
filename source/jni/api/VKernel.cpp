@@ -2,7 +2,7 @@
 #include "VFrameSmooth.h"
 
 #include "VKernel.h"
-#include "../App.h"
+#include "App.h"
 
 #include <unistd.h>						// gettid, usleep, etc
 #include <jni.h>
@@ -19,6 +19,7 @@
 #include "sensor/DeviceImpl.h"
 
 #include "HmdSensors.h"
+#include "VRotationSensor.h"
 
 #include "VSystemActivities.h"
 #include "VThread.h"
@@ -109,15 +110,27 @@ namespace NervGear {
 
 ovrSensorState ovr_GetSensorStateInternal( double absTime )
 {
-    if ( OvrHmdState == NULL )
-    {
-        ovrSensorState state;
-        memset( &state, 0, sizeof( state ) );
-        state.Predicted.Orientation.w = 1.0f;
-        state.Recorded.Orientation.w = 1.0f;
-        return state;
-    }
-    return OvrHmdState->predictedSensorState( absTime );
+    ovrSensorState state;
+    memset( &state, 0, sizeof( state ) );
+    state.Status = Status_OrientationTracked | Status_HmdConnected;
+
+    VRotationSensor *sensor = VRotationSensor::instance();
+
+    VRotationSensor::State recordedState = sensor->state();
+    state.Recorded.Orientation.w = recordedState.w;
+    state.Recorded.Orientation.x = recordedState.x;
+    state.Recorded.Orientation.y = recordedState.y;
+    state.Recorded.Orientation.z = recordedState.z;
+    state.Recorded.TimeBySeconds = recordedState.timestamp;
+
+    VRotationSensor::State predictedState = sensor->predictState(absTime);
+    state.Predicted.Orientation.w = predictedState.w;
+    state.Predicted.Orientation.x = predictedState.x;
+    state.Predicted.Orientation.y = predictedState.y;
+    state.Predicted.Orientation.z = predictedState.z;
+    state.Predicted.TimeBySeconds = absTime;
+
+    return state;
 }
 
 void ovr_RecenterYawInternal()
@@ -872,7 +885,6 @@ void VKernel::setProgramParms( float * proParms)
       m_programParms[3] = proParms[3];
 
 }
-
 
 void VKernel::syncSmoothParms()
 {

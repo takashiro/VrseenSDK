@@ -15,6 +15,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import com.VRSeen.sensor.VrseenDeviceManager;
+import com.VRSeen.sensor.VrseenTime;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityGroup;
@@ -27,8 +30,13 @@ import android.content.res.Resources;
 import android.content.pm.ApplicationInfo;
 import android.graphics.Canvas;
 import android.graphics.SurfaceTexture;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.media.AudioManager;
 import android.media.SoundPool;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -84,7 +92,9 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 	SoundPool soundPool;
 	List<Integer> soundPoolSoundIds;
 	List<String> soundPoolSoundNames;
-
+	
+    VrseenDeviceManager mVrseenDeviceManager = null;
+	
 	public void playSoundPoolSound(String name) {
 		for (int i = 0; i < soundPoolSoundNames.size(); i++) {
 			if (soundPoolSoundNames.get(i).equals(name)) {
@@ -463,6 +473,16 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 		Log.d(TAG, "fromPackageName:" + fromPackageNameString);
 		Log.d(TAG, "command:" + commandString);
 		Log.d(TAG, "uri:" + uriString);
+		
+		mVrseenDeviceManager = new VrseenDeviceManager(this)
+		{
+			@Override
+			public void onRotationSensor(long timeStamp, float w, float x, float y, float z, float gyroX, float gyroY, float gyroZ) {
+				super.onRotationSensor(timeStamp, w, x, y, z, gyroX, gyroY, gyroZ);
+				onRotationChanged(timeStamp, w, x, y, z, gyroX, gyroY, gyroZ);
+			}
+	
+		};
 
 		SurfaceView sv = new SurfaceView(this);
 		setContentView(sv);
@@ -507,6 +527,7 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 
 		super.onPause();
 		nativePause();
+		mVrseenDeviceManager.onPause();
 	}
 
 	@Override
@@ -517,9 +538,10 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 			VrApplication vrApp = (VrApplication) getApplication();
 			vrApp.setHostActivity(this);
 		}
-
+		
 		super.onResume();
 		nativeResume();
+		mVrseenDeviceManager.onResume();
 	}
 
 	// ==================================================================================
@@ -691,4 +713,6 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 		}
 		return outString;
 	}
+	
+	private native void onRotationChanged(long timeStamp, float w, float x, float y, float z, float gyroX, float gyroY, float gyroZ);
 }
