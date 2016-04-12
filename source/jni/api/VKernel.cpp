@@ -77,58 +77,9 @@ static int BuildVersionSDK = 19;		// default supported version for vrlib is KitK
 static int windowSurfaceWidth = 2560;	// default to Note4 resolution
 static int windowSurfaceHeight = 1440;	// default to Note4 resolution
 
-enum eHMTDockState
-{
-    HMT_DOCK_NONE,			// nothing to do
-    HMT_DOCK_DOCKED,		// the device is inserted into the HMT
-    HMT_DOCK_UNDOCKED		// the device has been removed from the HMT
-};
-
-struct HMTDockState_t
-{
-    HMTDockState_t() :
-            DockState( HMT_DOCK_NONE )
-    {
-    }
-
-    explicit HMTDockState_t( eHMTDockState const dockState ) :
-            DockState( dockState )
-    {
-    }
-
-    eHMTDockState	DockState;
-};
-
-enum eHMTMountState
-{
-    HMT_MOUNT_NONE,			// nothing to do
-    HMT_MOUNT_MOUNTED,		// the HMT has been placed on the head
-    HMT_MOUNT_UNMOUNTED		// the HMT has been removed from the head
-};
-
-struct HMTMountState_t
-{
-    HMTMountState_t() :
-            MountState( HMT_MOUNT_NONE )
-    {
-    }
-
-    explicit HMTMountState_t( eHMTMountState const mountState ) :
-            MountState( mountState )
-    {
-    }
-
-    eHMTMountState	MountState;
-};
-
-
-
-
-
-
-NervGear::VLockless< bool >						HeadsetPluggedState;
-NervGear::VLockless< bool >						PowerLevelStateThrottled;
-NervGear::VLockless< bool >						PowerLevelStateMinimum;
+VLockless<bool> HeadsetPluggedState;
+VLockless<bool> PowerLevelStateThrottled;
+VLockless<bool> PowerLevelStateMinimum;
 
 extern "C"
 {
@@ -149,12 +100,6 @@ ovr_Init();
 
 return JNI_VERSION_1_6;
 }
-
-
-
-
-
-
 
 JNIEXPORT void Java_com_vrseen_nervgear_VrLib_nativeHeadsetEvent(JNIEnv *jni, jclass clazz, jint state)
 {
