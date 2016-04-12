@@ -1,9 +1,9 @@
 /************************************************************************************
 
 Filename    :   VrLib.java
-Content     :   
-Created     :   
-Authors     :   
+Content     :
+Created     :
+Authors     :
 
 Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
@@ -52,7 +52,7 @@ import java.lang.reflect.Method;
 import java.util.Locale;
 
 /*
- * Static methods holding java code needed by VrLib. 
+ * Static methods holding java code needed by VrLib.
  */
 public class VrLib implements android.view.Choreographer.FrameCallback,
 		AudioManager.OnAudioFocusChangeListener {
@@ -107,7 +107,7 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 			activity.overridePendingTransition( 0, 0 );
 		}
 		catch( ActivityNotFoundException e ) {
-			Log.d( TAG, "startActivity " + intent + " not found!" );	
+			Log.d( TAG, "startActivity " + intent + " not found!" );
 		}
 		catch( Exception e ) {
 			Log.e( TAG, "sendIntentFromNative threw exception " + e );
@@ -117,7 +117,7 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 	// this creates an explicit intent
 	public static void sendIntentFromNative( Activity activity, String actionName, String toPackageName, String toClassName, String commandStr, String uriStr ) {
 		Log.d( TAG, "SendIntentFromNative: action: '" + actionName + "' toPackage: '" + toPackageName + "/" + toClassName + "' command: '" + commandStr + "' uri: '" + uriStr + "'" );
-			
+
 		Intent intent = new Intent( actionName );
 		if ( toPackageName != null && !toPackageName.isEmpty() && toClassName != null && !toClassName.isEmpty() ) {
 			// if there is no class name, this is an implicit intent. For launching another app with an
@@ -140,7 +140,7 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 
 	public static void broadcastIntent( Activity activity, String actionName, String toPackageName, String toClassName, String commandStr, String uriStr ) {
 		Log.d( TAG, "broadcastIntent: action: '" + actionName + "' toPackage: '" + toPackageName + "/" + toClassName + "' command: '" + commandStr + "' uri: '" + uriStr + "'" );
-		
+
 		Intent intent = new Intent( actionName );
 		if ( toPackageName != null && !toPackageName.isEmpty() && toClassName != null && !toClassName.isEmpty() ) {
 			// if there is no class name, this is an implicit intent. For launching another app with an
@@ -170,7 +170,7 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 			Log.d( TAG, "sendLaunchIntent: null destination activity" );
 			return;
 		}
-		
+
 		launchIntent.putExtra( INTENT_KEY_CMD, commandStr );
 		launchIntent.putExtra( INTENT_KEY_FROM_PKG, activity.getApplicationContext().getPackageName() );
 
@@ -182,7 +182,7 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 	}
 
 	public static String MOUNT_HANDLED_INTENT = "com.oculus.mount_handled";
-	
+
 	public static void notifyMountHandled( Activity activity )
 	{
 		Log.d( TAG, "notifyMountHandled" );
@@ -263,10 +263,8 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 
 	public static int setSchedFifoStatic( final Activity activity, int tid, int rtPriority ) {
 		Log.d(TAG, "setSchedFifoStatic tid:" + tid + " pto:" + rtPriority );
-		
-		return 0;
 
-		/*android.app.IVRManager vr = (android.app.IVRManager)activity.getSystemService(android.app.IVRManager.VR_MANAGER);
+		android.app.IVRManager vr = (android.app.IVRManager)activity.getSystemService(android.app.IVRManager.VR_MANAGER);
 		if ( vr == null ) {
 			Log.d(TAG, "VRManager was not found" );
 			return -1;
@@ -277,7 +275,7 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 			try
 			{
 				if ( vr.setThreadSchedFifo(activity.getPackageName(), android.os.Process.myPid(), tid, rtPriority) ) {
-					Log.d(TAG, "VRManager set thread priority to " + rtPriority );				
+					Log.d(TAG, "VRManager set thread priority to " + rtPriority );
 					return 0;
 				} else {
 					Log.d(TAG, "VRManager failed to set thread priority" );
@@ -295,8 +293,8 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 			 @Override
     			public void run()
     			{
-					Toast toast = Toast.makeText( activity.getApplicationContext(), 
-							"Security exception: make sure your application is signed for VR.", 
+					Toast toast = Toast.makeText( activity.getApplicationContext(),
+							"Security exception: make sure your application is signed for VR.",
 							Toast.LENGTH_LONG );
 					toast.show();
 				}
@@ -307,47 +305,43 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 			} while( System.currentTimeMillis() - startTime < 5000 );
 
 			return -3;
-		}*/
+		}
 	}
-	
+
 	static int [] defaultClockLevels = { -1, -1, -1, -1 };
 	public static int[] getAvailableFreqLevels(  Activity activity )
 	{
-		return defaultClockLevels;
-		
-		/*android.app.IVRManager vr = (android.app.IVRManager)activity.getSystemService(android.app.IVRManager.VR_MANAGER);
+		android.app.IVRManager vr = (android.app.IVRManager) activity.getSystemService(android.app.IVRManager.VR_MANAGER);
 		if ( vr == null ) {
 			Log.d(TAG, "VRManager was not found");
 			return defaultClockLevels;
 		}
-		
+
 		try {
 			int [] values = vr.return2EnableFreqLev();
 			// display available levels
 			Log.d(TAG, "Available levels: {GPU MIN, GPU MAX, CPU MIN, CPU MAX}");
 			for ( int i = 0; i < values.length; i++ ) {
 				Log.d(TAG, "-> " + "/ " + values[i]);
-			}			
+			}
 			return values;
 		} catch (NoSuchMethodError e ) {
 			return defaultClockLevels;
-		}*/
+		}
 	}
-	
-	static int [] defaultClockFreq = { -1, -1, 0, 0 };	
+
+	static int [] defaultClockFreq = { -1, -1, 0, 0 };
 	public static int [] setSystemPerformanceStatic( Activity activity,
 			int cpuLevel, int gpuLevel )
 	{
 		Log.d(TAG, "setSystemPerformance cpu: " + cpuLevel + " gpu: " + gpuLevel);
-		
-		return null;
-		
-		/*android.app.IVRManager vr = (android.app.IVRManager)activity.getSystemService(android.app.IVRManager.VR_MANAGER);
+
+		android.app.IVRManager vr = (android.app.IVRManager)activity.getSystemService(android.app.IVRManager.VR_MANAGER);
 		if ( vr == null ) {
 			Log.d(TAG, "VRManager was not found");
 			return defaultClockFreq;
 		}
-		
+
 		// lock the frequency
 		try
 		{
@@ -363,30 +357,30 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 			boolean success = vr.setFreq( activity.getPackageName(), cpuLevel, gpuLevel );
 			Log.d(TAG, "setFreq returned " + success );
 			return values;
-		}*/
+		}
 	}
 
 	public static void releaseSystemPerformanceStatic( Activity activity )
 	{
 		Log.d(TAG, "releaseSystemPerformanceStatic");
-		
-		/*android.app.IVRManager vr = (android.app.IVRManager)activity.getSystemService(android.app.IVRManager.VR_MANAGER);
+
+		android.app.IVRManager vr = (android.app.IVRManager)activity.getSystemService(android.app.IVRManager.VR_MANAGER);
 		if ( vr == null ) {
 			Log.d(TAG, "VRManager was not found");
 			return;
 		}
-		
+
 		// release the frequency locks
 		vr.relFreq( activity.getPackageName() );
-		Log.d(TAG, "Releasing frequency lock");*/
+		Log.d(TAG, "Releasing frequency lock");
 	}
 
 	public static int getPowerLevelState( Activity act ) {
 		//Log.d(TAG, "getPowerLevelState" );
 
-		int level = 0;	
-		
-		/*android.app.IVRManager vr = (android.app.IVRManager)act.getSystemService(android.app.IVRManager.VR_MANAGER);
+		int level = 0;
+
+		android.app.IVRManager vr = (android.app.IVRManager)act.getSystemService(android.app.IVRManager.VR_MANAGER);
 		if ( vr == null ) {
 			Log.d(TAG, "VRManager was not found" );
 			return level;
@@ -396,27 +390,27 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 			level = vr.GetPowerLevelState();
 		} catch (NoSuchMethodError e) {
 			//Log.d( TAG, "getPowerLevelState api does not exist");
-		}*/
-		
+		}
+
 		return level;
 	}
-		
+
 	// Get the system brightness level, return value in the [0,255] range
 	public static int getSystemBrightness( Activity act ) {
 		Log.d(TAG, "getSystemBrightness" );
-		
+
 		int bright = 50;
-		
+
 		// Get the current system brightness level by way of VrManager
-		/*android.app.IVRManager vr = (android.app.IVRManager)act.getSystemService(android.app.IVRManager.VR_MANAGER);
+		android.app.IVRManager vr = (android.app.IVRManager)act.getSystemService(android.app.IVRManager.VR_MANAGER);
 		if ( vr == null ) {
 			Log.d(TAG, "VRManager was not found" );
 			return bright;
 		}
 
 		String result = vr.getSystemOption( android.app.IVRManager.VR_BRIGHTNESS );
-		bright = Integer.parseInt( result );*/
-		
+		bright = Integer.parseInt( result );
+
 		return bright;
 	}
 
@@ -425,13 +419,13 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 		Log.d(TAG, "setSystemBrightness " + brightness );
 		//assert brightness >= 0 && brightness <= 255;
 
-		/*android.app.IVRManager vr = (android.app.IVRManager)act.getSystemService(android.app.IVRManager.VR_MANAGER);
+		android.app.IVRManager vr = (android.app.IVRManager)act.getSystemService(android.app.IVRManager.VR_MANAGER);
 		if ( vr == null ) {
 			Log.d(TAG, "VRManager was not found" );
 			return;
 		}
 
-		vr.setSystemOption( android.app.IVRManager.VR_BRIGHTNESS, Integer.toString( brightness ));*/
+		vr.setSystemOption( android.app.IVRManager.VR_BRIGHTNESS, Integer.toString( brightness ));
 	}
 
 	// Comfort viewing mode is a low blue light mode.
@@ -440,70 +434,68 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 	public static boolean getComfortViewModeEnabled( Activity act ) {
 		Log.d(TAG, "getComfortViewModeEnabled" );
 
-		return true;
-		/*android.app.IVRManager vr = (android.app.IVRManager)act.getSystemService(android.app.IVRManager.VR_MANAGER);
+		android.app.IVRManager vr = (android.app.IVRManager)a ct.getSystemService(android.app.IVRManager.VR_MANAGER);
 		if ( vr == null ) {
 			Log.d(TAG, "VRManager was not found" );
 			return false;
 		}
 
 		String result = vr.getSystemOption( android.app.IVRManager.VR_COMFORT_VIEW );
-		return ( result.equals( "1" ) );*/		
+		return ( result.equals( "1" ) );
 	}
 
 	// Enable system comfort view mode
 	public static void enableComfortViewMode( Activity act, boolean enable ) {
 		Log.d(TAG, "enableComfortableMode " + enable );
 
-		/*android.app.IVRManager vr = (android.app.IVRManager)act.getSystemService(android.app.IVRManager.VR_MANAGER);
+		android.app.IVRManager vr = (android.app.IVRManager) act.getSystemService(android.app.IVRManager.VR_MANAGER);
 		if ( vr == null ) {
 			Log.d(TAG, "VRManager was not found" );
 			return;
 		}
 
-		vr.setSystemOption( android.app.IVRManager.VR_COMFORT_VIEW, enable ? "1" : "0" );*/
+		vr.setSystemOption( android.app.IVRManager.VR_COMFORT_VIEW, enable ? "1" : "0" );
 	}
-	
+
 	public static void setDoNotDisturbMode( Activity act, boolean enable )
 	{
 		Log.d( TAG, "setDoNotDisturbMode " + enable );
-		
-		/*android.app.IVRManager vr = (android.app.IVRManager)act.getSystemService(android.app.IVRManager.VR_MANAGER);
+
+		android.app.IVRManager vr = (android.app.IVRManager) act.getSystemService(android.app.IVRManager.VR_MANAGER);
 		if ( vr == null ) {
 			Log.d(TAG, "VRManager was not found" );
 			return;
 		}
-		
+
 		vr.setSystemOption( android.app.IVRManager.VR_DO_NOT_DISTURB, ( enable ) ? "1" : "0" );
 
 		String result = vr.getSystemOption( android.app.IVRManager.VR_DO_NOT_DISTURB );
-		Log.d( TAG, "result after set = " + result );*/
+		Log.d( TAG, "result after set = " + result );
 	}
 
 	public static boolean getDoNotDisturbMode( Activity act )
 	{
 		Log.d( TAG, "getDoNotDisturbMode " );
-		
-		return true;
-		/*android.app.IVRManager vr = (android.app.IVRManager)act.getSystemService(android.app.IVRManager.VR_MANAGER);
+
+		android.app.IVRManager vr = (android.app.IVRManager) act.getSystemService(android.app.IVRManager.VR_MANAGER);
 		if ( vr == null ) {
 			Log.d(TAG, "VRManager was not found" );
 			return false;
 		}
-		
+
 		String result = vr.getSystemOption( android.app.IVRManager.VR_DO_NOT_DISTURB );
 		//Log.d( TAG, "getDoNotDisturb result = " + result );
-		return ( result.equals( "1" ) );	*/
+		return ( result.equals( "1" ) );
 	}
-	
-	// Note that displayMetrics changes in landscape vs portrait mode! 
+
+	// Note that displayMetrics changes in landscape vs portrait mode!
 	public static float getDisplayWidth( Activity act ) {
 		android.util.DisplayMetrics display = new android.util.DisplayMetrics();
-		act.getWindowManager().getDefaultDisplay().getMetrics(display);		
+		act.getWindowManager().getDefaultDisplay().getMetrics(display);
 		final float METERS_PER_INCH = 0.0254f;
 		return (display.widthPixels / display.xdpi) * METERS_PER_INCH;
 	}
-	
+
 	public static float getDisplayHeight( Activity act ) {
 		android.util.DisplayMetrics display = new android.util.DisplayMetrics();
 		act.getWindowManager().getDefaultDisplay().getMetrics(display);
@@ -513,7 +505,7 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 
 	public static boolean isLandscapeApp( Activity act ) {
 		int r = act.getWindowManager().getDefaultDisplay().getRotation();
-		Log.d(TAG, "getRotation():" + r );		
+		Log.d(TAG, "getRotation():" + r );
 		return ( r == Surface.ROTATION_90 ) || ( r == Surface.ROTATION_270 );
 	}
 
@@ -539,7 +531,7 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 				choreographerInstance.postFrameCallback(handler);
     		}
     	});
-		
+
 	}
 
 	// It is important to stop the callbacks when the app is paused,
@@ -553,7 +545,7 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
     		{
 				choreographerInstance.removeFrameCallback(handler);
     		}
-    	});		
+    	});
 	}
 
 	public void doFrame(long frameTimeNanos) {
@@ -566,15 +558,15 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 	public static void requestAudioFocus( Activity act )
 	{
 		AudioManager audioManager = (AudioManager)act.getSystemService( Context.AUDIO_SERVICE );
-		
+
 		// Request audio focus
 		int result = audioManager.requestAudioFocus( handler, AudioManager.STREAM_MUSIC,
 			AudioManager.AUDIOFOCUS_GAIN );
-		if ( result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED ) 
+		if ( result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED )
 		{
 			Log.d(TAG,"requestAudioFocus(): GRANTED audio focus");
-		} 
-		else if ( result == AudioManager.AUDIOFOCUS_REQUEST_FAILED ) 
+		}
+		else if ( result == AudioManager.AUDIOFOCUS_REQUEST_FAILED )
 		{
 			Log.d(TAG,"requestAudioFocus(): FAILED to gain audio focus");
 		}
@@ -585,10 +577,10 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 		AudioManager audioManager = (AudioManager)act.getSystemService( Context.AUDIO_SERVICE );
 		audioManager.abandonAudioFocus( handler );
 	}
-	
-    public void onAudioFocusChange(int focusChange) 
+
+    public void onAudioFocusChange(int focusChange)
     {
-		switch( focusChange ) 
+		switch( focusChange )
 		{
 		case AudioManager.AUDIOFOCUS_GAIN:
 			// resume() if coming back from transient loss, raise stream volume if duck applied
@@ -596,39 +588,39 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 			break;
 		case AudioManager.AUDIOFOCUS_LOSS:				// focus lost permanently
 			// stop() if isPlaying
-			Log.d(TAG, "onAudioFocusChangedListener: AUDIOFOCUS_LOSS");		
+			Log.d(TAG, "onAudioFocusChangedListener: AUDIOFOCUS_LOSS");
 			break;
 		case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:	// focus lost temporarily
 			// pause() if isPlaying
-			Log.d(TAG, "onAudioFocusChangedListener: AUDIOFOCUS_LOSS_TRANSIENT");	
+			Log.d(TAG, "onAudioFocusChangedListener: AUDIOFOCUS_LOSS_TRANSIENT");
 			break;
 		case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:	// focus lost temporarily
 			// lower stream volume
-			Log.d(TAG, "onAudioFocusChangedListener: AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK");		
+			Log.d(TAG, "onAudioFocusChangedListener: AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK");
 			break;
 		default:
 			break;
 		}
-	}	
+	}
 
-	
+
 	//--------------- Broadcast Receivers ---------------
 
 	//==========================================================
 	// headsetReceiver
-	public static native void nativeHeadsetEvent(int state);	
-	
+	public static native void nativeHeadsetEvent(int state);
+
 	private static class HeadsetReceiver extends BroadcastReceiver {
-	
+
 		public Activity act;
-		
+
 		@Override
 		public void onReceive(Context context, final Intent intent) {
-	
+
 			act.runOnUiThread(new Runnable() {
 				public void run() {
 					Log.d( TAG, "!$$$$$$! headsetReceiver::onReceive" );
-					if (intent.hasExtra("state")) 
+					if (intent.hasExtra("state"))
 					{
 						int state = intent.getIntExtra("state", 0);
 						nativeHeadsetEvent( state );
@@ -642,7 +634,7 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 	public static IntentFilter headsetFilter = null;
 
 	public static void startHeadsetReceiver( Activity act ) {
-	
+
 		Log.d( TAG, "Registering headset receiver" );
 		if ( headsetFilter == null ) {
 			headsetFilter = new IntentFilter(Intent.ACTION_HEADSET_PLUG);
@@ -653,29 +645,29 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 		headsetReceiver.act = act;
 
 		act.registerReceiver(headsetReceiver, headsetFilter);
-		
+
 		// initialize with the current headset state
 		int state = act.getIntent().getIntExtra("state", 0);
 		Log.d( TAG, "startHeadsetReceiver: " + state );
 		nativeHeadsetEvent( state );
 	}
-	
+
 	public static void stopHeadsetReceiver( Activity act ) {
-		Log.d( TAG, "Unregistering headset receiver" ); 
+		Log.d( TAG, "Unregistering headset receiver" );
 		act.unregisterReceiver(headsetReceiver);
 	}
 
 	//==========================================================
 	// VolumeReceiver
-	public static native void nativeVolumeEvent(int volume);		
+	public static native void nativeVolumeEvent(int volume);
 
 	private static class VolumeReceiver extends BroadcastReceiver {
 
 		public Activity act;
-		
+
 		@Override
 		public void onReceive(Context context, final Intent intent) {
-	
+
 			act.runOnUiThread(new Runnable() {
 				public void run() {
 					Log.d(TAG, "OnReceive VOLUME_CHANGED_ACTION" );
@@ -688,7 +680,7 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 					}
 					else
 					{
-						Log.d(TAG, "skipping volume change from stream " + stream );						
+						Log.d(TAG, "skipping volume change from stream " + stream );
 					}
 				}
 			});
@@ -699,11 +691,11 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 	public static IntentFilter volumeFilter = null;
 
 	public static void startVolumeReceiver( Activity act ) {
-	
+
 		Log.d( TAG, "Registering volume receiver" );
 		if ( volumeFilter == null ) {
 			volumeFilter = new IntentFilter();
-			volumeFilter.addAction( "android.media.VOLUME_CHANGED_ACTION" );			
+			volumeFilter.addAction( "android.media.VOLUME_CHANGED_ACTION" );
 		}
 		if ( volumeReceiver == null ) {
 			volumeReceiver = new VolumeReceiver();
@@ -711,15 +703,15 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 		volumeReceiver.act = act;
 
 		act.registerReceiver(volumeReceiver, volumeFilter);
-	
+
 		AudioManager audio = (AudioManager)act.getSystemService(Context.AUDIO_SERVICE);
 		int volume = audio.getStreamVolume(AudioManager.STREAM_MUSIC);
 		Log.d( TAG, "startVolumeReceiver: " + volume );
 		//nativeVolumeEvent( volume );
 	}
-	
+
 	public static void stopVolumeReceiver( Activity act ) {
-		Log.d( TAG, "Unregistering volume receiver" ); 
+		Log.d( TAG, "Unregistering volume receiver" );
 		act.unregisterReceiver(volumeReceiver);
 	}
 
@@ -745,7 +737,7 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
             }
     	});
 	}
-	
+
 	public static void finishAffinityOnUiThread( final Activity act ) {
     	act.runOnUiThread( new Runnable()
     	{
@@ -760,12 +752,12 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 	}
 
 	public static boolean getBluetoothEnabled( final Activity act ) {
-		return Settings.Global.getInt( act.getContentResolver(), 
+		return Settings.Global.getInt( act.getContentResolver(),
 				Settings.Global.BLUETOOTH_ON, 0 ) != 0;
 	}
 
-	public static boolean isAirplaneModeEnabled( final Activity act ) {        
-		return Settings.Global.getInt( act.getContentResolver(), 
+	public static boolean isAirplaneModeEnabled( final Activity act ) {
+		return Settings.Global.getInt( act.getContentResolver(),
 				Settings.Global.AIRPLANE_MODE_ON, 0 ) != 0;
 	}
 
@@ -779,12 +771,12 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 		return true;
 	}
 
-	public static boolean packageIsInstalled( Activity act, String packageName ) { 
+	public static boolean packageIsInstalled( Activity act, String packageName ) {
 		PackageManager pm = act.getPackageManager();
 		try {
 			pm.getPackageInfo( packageName,PackageManager.GET_META_DATA );
 		} catch ( NameNotFoundException e ) {
-			Log.d( TAG, "Package " + packageName + " does NOT exist on device" );	
+			Log.d( TAG, "Package " + packageName + " does NOT exist on device" );
 			return false;
 		}
 
@@ -829,9 +821,9 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 		} catch( NameNotFoundException e ) {
 			e.printStackTrace();
 		} catch( NullPointerException e ) {
-		    Log.e(TAG, "Failed to load meta-data, NullPointer: " + e.getMessage());         
-		} 
-		
+		    Log.e(TAG, "Failed to load meta-data, NullPointer: " + e.getMessage());
+		}
+
 		return false;
 	}
 
@@ -844,7 +836,7 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 	public static String getExternalStorageDirectory() {
 		return Environment.getExternalStorageDirectory().getAbsolutePath();
 	}
-	
+
 	// Converts some thing like "/sdcard" to "/sdcard/", always ends with "/" to indicate folder path
 	public static String toFolderPathFormat( String inStr ) {
 		if( inStr == null ||
@@ -852,20 +844,20 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 		{
 			return "/";
 		}
-		
+
 		if( inStr.charAt( inStr.length() - 1 ) != '/' )
 		{
 			return inStr + "/";
 		}
-		
+
 		return inStr;
 	}
-	
+
 	/*** Internal Storage ***/
 	public static String getInternalStorageRootDir() {
 		return toFolderPathFormat( Environment.getDataDirectory().getPath() );
 	}
-	
+
 	public static String getInternalStorageFilesDir( Activity act ) {
 		if ( act != null )
 		{
@@ -877,7 +869,7 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 		}
 		return "";
 	}
-	
+
 	public static String getInternalStorageCacheDir( Activity act ) {
 		if ( act != null )
 		{
@@ -904,7 +896,7 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 		}
 		return 0;
 	}
-	
+
 	/*** External Storage ***/
 	public static String getExternalStorageFilesDirAtIdx( Activity act, int idx ) {
 		if ( act != null )
@@ -921,7 +913,7 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 		}
 		return "";
 	}
-	
+
 	public static String getExternalStorageCacheDirAtIdx( Activity act, int idx ) {
 		if ( act != null )
 		{
@@ -937,17 +929,17 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 		}
 		return "";
 	}
-	
+
 	// Primary External Storage
 	public static final int PRIMARY_EXTERNAL_STORAGE_IDX = 0;
 	public static String getPrimaryExternalStorageRootDir( Activity act ) {
 		return toFolderPathFormat( Environment.getExternalStorageDirectory().getPath() );
 	}
-	
+
 	public static String getPrimaryExternalStorageFilesDir( Activity act ) {
 		return getExternalStorageFilesDirAtIdx( act, PRIMARY_EXTERNAL_STORAGE_IDX );
 	}
-	
+
 	public static String getPrimaryExternalStorageCacheDir( Activity act ) {
 		return getExternalStorageCacheDirAtIdx( act, PRIMARY_EXTERNAL_STORAGE_IDX );
 	}
@@ -957,11 +949,11 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 	public static String getSecondaryExternalStorageRootDir() {
 		return "/storage/extSdCard/";
 	}
-	
+
 	public static String getSecondaryExternalStorageFilesDir( Activity act ) {
 		return getExternalStorageFilesDirAtIdx( act, SECONDARY_EXTERNAL_STORAGE_IDX );
 	}
-	
+
 	public static String getSecondaryExternalStorageCacheDir( Activity act ) {
 		return getExternalStorageCacheDirAtIdx( act, SECONDARY_EXTERNAL_STORAGE_IDX );
 	}
