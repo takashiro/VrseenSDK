@@ -15,11 +15,9 @@
 #include "Android/JniUtils.h"
 
 #include "VLensDistortion.h"
-#include "api/VEglDriver.h"
-#include "../core/VString.h"
-
-#include "../embedded/oculus_loading_indicator.h"
-
+#include "VEglDriver.h"
+#include "VString.h"
+#include "VApkFile.h"
 #include "VLockless.h"
 #include "VTimer.h"
 #include "VGlGeometry.h"
@@ -1650,17 +1648,6 @@ void VFrameSmooth::Private::createFrameworkGraphics()
     glGenTextures( 1, &m_blackTexId );
     glBindTexture( GL_TEXTURE_2D, m_blackTexId );
     glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, blackData );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-    glBindTexture( GL_TEXTURE_2D, 0 );
-
-    // Default loading icon.
-    glGenTextures( 1, &m_defaultLoadingIconTexId );
-    glBindTexture( GL_TEXTURE_2D, m_defaultLoadingIconTexId );
-    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, oculus_loading_indicator_width, oculus_loading_indicator_height,
-                  0, GL_RGBA, GL_UNSIGNED_BYTE, oculus_loading_indicator_bufferData );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
