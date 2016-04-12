@@ -997,51 +997,6 @@ struct App::Private
                 command(event);
             }
 
-            // handle any pending system activity events
-            size_t const MAX_EVENT_SIZE = 4096;
-            VString eventBuffer;
-
-            for (eVrApiEventStatus status = ovr_nextPendingEvent(eventBuffer, MAX_EVENT_SIZE);
-                status >= VRAPI_EVENT_PENDING;
-                status = ovr_nextPendingEvent(eventBuffer, MAX_EVENT_SIZE))
-            {
-                if (status != VRAPI_EVENT_PENDING)
-                {
-                    if (status != VRAPI_EVENT_CONSUMED)
-                    {
-                        vWarn("Error" << status << "handing System Activities Event");
-                    }
-                    continue;
-                }
-
-                std::stringstream s;
-                s << eventBuffer;
-                VJson jsonObj;
-                s >> jsonObj;
-                if (jsonObj.type() == VJson::Object)
-                {
-                    VString command = jsonObj["Command"].toString();
-                    if (command == SYSTEM_ACTIVITY_EVENT_REORIENT)
-                    {
-                        // for reorient, we recenter yaw natively, then pass the event along so that the client
-                        // application can also handle the event (for instance, to reposition menus)
-                        vInfo("VtThreadFunction: Acting on System Activity reorient event.");
-                        self->recenterYaw(false);
-                    }
-                    else
-                    {
-                        // In the case of the returnToLauncher event, we always handler it internally and pass
-                        // along an empty buffer so that any remaining events still get processed by the client.
-                        vInfo("Unhandled System Activity event:" << command);
-                    }
-                }
-                else
-                {
-                    // a malformed event string was pushed! This implies an error in the native code somewhere.
-                    vWarn("Error parsing System Activities Event:");
-                }
-            }
-
             // update volume popup
             if (showVolumePopup)
             {
@@ -1255,8 +1210,6 @@ struct App::Private
                 lastViewMatrix = appInterface->onNewFrame(self->text.vrFrame);
                 scene->update();
             }
-
-            kernel->ovr_HandleDeviceStateChanges();
 
             // MWC demo hack to allow keyboard swipes
             joypad.buttonState &= ~(BUTTON_SWIPE_FORWARD|BUTTON_SWIPE_BACK);

@@ -44,7 +44,6 @@ SOURCES += \
     jni/api/HmdSensors.cpp \
     jni/api/VLensDistortion.cpp \
     jni/api/VRotationSensor.cpp \
-    jni/api/VSystemActivities.cpp \
     jni/api/VFrameSmooth.cpp \
     jni/api/VMainActivity.cpp \
     jni/api/VGlShader.cpp \
@@ -180,7 +179,6 @@ HEADERS += \
     jni/api/HmdSensors.h \
     jni/api/VLensDistortion.h \
     jni/api/VRotationSensor.h \
-    jni/api/VSystemActivities.h \
     jni/api/VFrameSmooth.h \
     jni/api/VGlGeometry.h \
     jni/api/VGlShader.h \

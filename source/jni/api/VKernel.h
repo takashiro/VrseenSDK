@@ -103,23 +103,6 @@ typedef enum
 
 } eExitType;
 
-
-
-
-
-
-enum eVrApiEventStatus
-{
-    VRAPI_EVENT_ERROR_INTERNAL = -2,
-    VRAPI_EVENT_ERROR_INVALID_BUFFER = -1,
-    VRAPI_EVENT_NOT_PENDING = 0,
-    VRAPI_EVENT_PENDING,
-    VRAPI_EVENT_CONSUMED,
-    VRAPI_EVENT_BUFFER_OVERFLOW,
-    VRAPI_EVENT_INVALID_JSON
-};
-eVrApiEventStatus ovr_nextPendingEvent(NervGear::VString& buffer, unsigned int const bufferSize );
-
 #define	SYSTEM_ACTIVITY_EVENT_REORIENT "reorient"
 #define SYSTEM_ACTIVITY_EVENT_RETURN_TO_LAUNCHER "returnToLauncher"
 

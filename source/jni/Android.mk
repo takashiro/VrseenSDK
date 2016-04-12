@@ -64,7 +64,6 @@ LOCAL_SRC_FILES  := \
 	api/VGlGeometry.cpp \
 	api/VMainActivity.cpp \
 	api/VEglDriver.cpp \
-	api/VSystemActivities.cpp \
 	api/VGlShader.cpp \
 	api/VRotationSensor.cpp \
 	api/sensor/DeviceHandle.cpp \

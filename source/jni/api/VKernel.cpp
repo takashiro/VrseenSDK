@@ -21,7 +21,6 @@
 #include "HmdSensors.h"
 #include "VRotationSensor.h"
 
-#include "VSystemActivities.h"
 #include "VThread.h"
 
 NV_USING_NAMESPACE
@@ -191,9 +190,6 @@ static jclass	DockReceiverClass = NULL;
 static jmethodID getPowerLevelStateID = NULL;
 static jmethodID setActivityWindowFullscreenID = NULL;
 static jmethodID notifyMountHandledID = NULL;
-
-
-static bool hmtIsMounted = false;
 
 // Register the HMT receivers once, and do
 // not unregister in Pause(). We may miss
@@ -472,8 +468,6 @@ void ovr_Init()
 
     // After ovr_Initialize(), because it uses String
     VOsBuild::Init(jni);
-
-    NervGear::VSystemActivities::instance()->initEventQueues();
 }
 
 void CreateSystemActivitiesCommand(const char * toPackageName, const char * command, const char * uri, NervGear::VString & out )
@@ -510,48 +504,6 @@ void ovr_RegisterHmtReceivers()
     Jni->CallStaticVoidMethod( DockReceiverClass, startDockReceiverId, ActivityObject );
 
     registerHMTReceivers = true;
-}
-
-
-
-eVrApiEventStatus ovr_nextPendingEvent( VString& buffer, unsigned int const bufferSize )
-{
-    eVrApiEventStatus status = NervGear::VSystemActivities::instance()->nextPendingMainEvent( buffer, bufferSize );
-    if ( status < VRAPI_EVENT_PENDING )
-    {
-        return status;
-    }
-
-    // Parse to JSON here to determine if we should handle the event natively, or pass it along to the client app.
-    VJson reader = VJson::Parse(buffer.toLatin1());
-    if (reader.isObject())
-    {
-        VString command = reader.value( "Command" ).toString();
-        if (command == SYSTEM_ACTIVITY_EVENT_REORIENT) {
-            // for reorient, we recenter yaw natively, then pass the event along so that the client
-            // application can also handle the event (for instance, to reposition menus)
-            vInfo("Queuing internal reorient event.");
-            ovr_RecenterYawInternal();
-            // also queue as an internal event
-            NervGear::VSystemActivities::instance()->addInternalEvent( buffer );
-        } else if (command == SYSTEM_ACTIVITY_EVENT_RETURN_TO_LAUNCHER) {
-            // In the case of the returnToLauncher event, we always handler it internally and pass
-            // along an empty buffer so that any remaining events still get processed by the client.
-            vInfo("Queuing internal returnToLauncher event.");
-            // queue as an internal event
-            NervGear::VSystemActivities::instance()->addInternalEvent( buffer );
-            // treat as an empty event externally
-            buffer = "";
-            status = VRAPI_EVENT_CONSUMED;
-        }
-    }
-    else
-    {
-        // a malformed event string was pushed! This implies an error in the native code somewhere.
-        vWarn("Error parsing System Activities Event");
-        return VRAPI_EVENT_INVALID_JSON;
-    }
-    return status;
 }
 
 VKernel* VKernel::GetInstance()
@@ -817,7 +769,6 @@ void VKernel::destroy(eExitType exitType)
     {
         exit();
         vInfo("Calling exitType EXIT_TYPE_EXIT");
-        NervGear::VSystemActivities::instance()->shutdownEventQueues();
         ovr_Shutdown();
         delete  instance;
         instance = NULL;
@@ -921,117 +872,6 @@ void VKernel::doSmooth()
 
    // frameSmooth->doSmooth();
 
-}
-
-
-
-static  void ovr_HandleHmdEvents()
-{
-    // check if the HMT has been undocked
-    HMTDockState_t dockState = HMTDockState.state();
-    if ( dockState.DockState == HMT_DOCK_UNDOCKED )
-    {
-        vInfo("ovr_HandleHmdEvents::Hmt was disconnected");
-
-        // reset the sensor info
-        if ( OvrHmdState != NULL )
-        {
-            OvrHmdState->resetSensor();
-        }
-
-        // reset the real dock state since we're handling the change
-        HMTDockState.setState( HMTDockState_t( HMT_DOCK_NONE ) );
-
-        instance->destroy(EXIT_TYPE_FINISH_AFFINITY );
-
-        return;
-    }
-
-    // check if the HMT has been mounted or unmounted
-    HMTMountState_t mountState = HMTMountState.state();
-    if ( mountState.MountState != HMT_MOUNT_NONE )
-    {
-        // reset the real mount state since we're handling the change
-        HMTMountState.setState( HMTMountState_t( HMT_MOUNT_NONE ) );
-
-        if ( mountState.MountState == HMT_MOUNT_MOUNTED )
-        {
-            if ( hmtIsMounted )
-            {
-                vInfo("ovr_HandleHmtEvents: HMT is already mounted");
-            }
-            else
-            {
-                vInfo("ovr_HandleHmdEvents: HMT was mounted");
-                hmtIsMounted = true;
-
-                // broadcast to background apps that mount has been handled
-                if ( notifyMountHandledID != NULL )
-                {
-                    Jni->CallStaticVoidMethod( VrLibClass, notifyMountHandledID, ActivityObject);
-                }
-
-                NervGear::VString reorientMessage;
-                CreateSystemActivitiesCommand( "", SYSTEM_ACTIVITY_EVENT_REORIENT, "", reorientMessage );
-                NervGear::VSystemActivities::instance()->addEvent( reorientMessage );
-            }
-        }
-        else if ( mountState.MountState == HMT_MOUNT_UNMOUNTED )
-        {
-            vInfo("ovr_HandleHmdEvents: HMT was UNmounted");
-
-            hmtIsMounted = false;
-        }
-    }
-}
-
-void VKernel::ovr_HandleDeviceStateChanges()
-{
-    // Test for Hmd Events such as mount/unmount, dock/undock
-    ovr_HandleHmdEvents();
-
-    // check for pending events that must be handled natively
-    size_t const MAX_EVENT_SIZE = 4096;
-//	char eventBuffer[MAX_EVENT_SIZE];
-    VString eventBuffer;
-
-    for ( eVrApiEventStatus status = NervGear::VSystemActivities::instance()->nextPendingInternalEvent( eventBuffer, MAX_EVENT_SIZE );
-          status >= VRAPI_EVENT_PENDING;
-          status = NervGear::VSystemActivities::instance()->nextPendingInternalEvent( eventBuffer, MAX_EVENT_SIZE ) )
-    {
-        if ( status != VRAPI_EVENT_PENDING )
-        {
-            vWarn("Error" << status << "handing internal System Activities Event");
-            continue;
-        }
-
-        VJson reader = VJson::Parse(eventBuffer.toLatin1());
-        if ( reader.isObject() )
-        {
-            VString command = reader.value("Command").toString();
-            int32_t platformUIVersion = reader.value("PlatformUIVersion").toInt();
-            if (command == SYSTEM_ACTIVITY_EVENT_REORIENT)
-            {
-                // for reorient, we recenter yaw natively, then pass the event along so that the client
-                // application can also handle the event (for instance, to reposition menus)
-                vInfo("ovr_HandleDeviceStateChanges: Acting on System Activity reorient event.");
-                ovr_RecenterYawInternal();
-            }
-            else if (command == SYSTEM_ACTIVITY_EVENT_RETURN_TO_LAUNCHER && platformUIVersion < 2 )
-            {
-                // In the case of the returnToLauncher event, we always handler it internally and pass
-                // along an empty buffer so that any remaining events still get processed by the client.
-                vInfo("ovr_HandleDeviceStateChanges: Acting on System Activity returnToLauncher event.");
-                // PlatformActivity and Home should NEVER get one of these!
-                instance->destroy(EXIT_TYPE_FINISH_AFFINITY);
-            }
-        }
-        else
-        {
-            // a malformed event string was pushed! This implies an error in the native code somewhere.
-            vWarn("Error parsing System Activities Event");
-        }
-    }
 }
 
 ovrSensorState VKernel::ovr_GetPredictedSensorState(double absTime )
