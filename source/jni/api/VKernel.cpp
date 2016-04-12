@@ -23,24 +23,6 @@
 
 NV_USING_NAMESPACE
 
-// Platform UI command strings.
-#define PUI_GLOBAL_MENU				"globalMenu"
-#define PUI_GLOBAL_MENU_TUTORIAL	"globalMenuTutorial"
-#define PUI_CONFIRM_QUIT			"confirmQuit"
-#define PUI_THROTTLED1				"throttled1"	// Warn that Power Save Mode has been activated
-#define PUI_THROTTLED2				"throttled2"	// Warn that Minimum Mode has been activated
-#define PUI_HMT_UNMOUNT				"HMT_unmount"	// the HMT has been taken off the head
-#define PUI_HMT_MOUNT				"HMT_mount"		// the HMT has been placed on the head
-#define PUI_WARNING					"warning"		// the HMT has been placed on the head and a warning message shows
-
-// version 0 is pre-json
-// #define PLATFORM_UI_VERSION 1	// initial version
-#define PLATFORM_UI_VERSION 2		// added "exitToHome" - apps built with current versions only respond to "returnToLauncher" if
-// the Systems Activity that sent it is version 1 (meaning they'll never get an "exitToHome"
-// from System Activities)
-
-float OvrHmdYaw;
-
 static VKernel* instance = NULL;
 // Valid for the thread that called ovr_EnterVrMode
 static JNIEnv	*				Jni;
@@ -369,23 +351,6 @@ void ovr_Init()
 
     // After ovr_Initialize(), because it uses String
     VOsBuild::Init(jni);
-}
-
-void CreateSystemActivitiesCommand(const char * toPackageName, const char * command, const char * uri, NervGear::VString & out )
-{
-    // serialize the command to a JSON object with version inf
-    VJsonObject obj;
-    obj.insert("Command", command);
-    obj.insert("OVRVersion", ovr_GetVersionString());
-    obj.insert("PlatformUIVersion", PLATFORM_UI_VERSION);
-    obj.insert("ToPackage", toPackageName);
-
-    std::stringstream s;
-    s << VJson(std::move(obj));
-
-    char text[10240];
-    s.getline(text, 10240);
-    out = text;
 }
 
 // This can be called before ovr_EnterVrMode() so hybrid apps can tell
