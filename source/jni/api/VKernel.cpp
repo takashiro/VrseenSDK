@@ -33,30 +33,6 @@ static jobject  ActivityObject = NULL;
 void		ovr_OnLoad( JavaVM * JavaVm_ );
 void		ovr_Init();
 
-ovrSensorState ovr_GetSensorStateInternal( double absTime )
-{
-    ovrSensorState state;
-    memset( &state, 0, sizeof( state ) );
-
-    VRotationSensor *sensor = VRotationSensor::instance();
-
-    VRotationSensor::State recordedState = sensor->state();
-    state.Recorded.Orientation.w = recordedState.w;
-    state.Recorded.Orientation.x = recordedState.x;
-    state.Recorded.Orientation.y = recordedState.y;
-    state.Recorded.Orientation.z = recordedState.z;
-    state.Recorded.TimeBySeconds = recordedState.timestamp;
-
-    VRotationSensor::State predictedState = sensor->predictState(absTime);
-    state.Predicted.Orientation.w = predictedState.w;
-    state.Predicted.Orientation.x = predictedState.x;
-    state.Predicted.Orientation.y = predictedState.y;
-    state.Predicted.Orientation.z = predictedState.z;
-    state.Predicted.TimeBySeconds = absTime;
-
-    return state;
-}
-
 /*
  * This interacts with the VrLib java class to deal with Android platform issues.
  */
@@ -575,11 +551,6 @@ void VKernel::doSmooth()
 
    // frameSmooth->doSmooth();
 
-}
-
-ovrSensorState VKernel::ovr_GetPredictedSensorState(double absTime )
-{
-    return ovr_GetSensorStateInternal( absTime );
 }
 
 /*void VKernel::doSmooth(const ovrTimeWarpParms * parms )

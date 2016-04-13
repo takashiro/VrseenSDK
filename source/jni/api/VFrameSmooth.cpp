@@ -20,8 +20,7 @@
 #include "VGlGeometry.h"
 #include "VGlShader.h"
 #include "VKernel.h"
-
-ovrSensorState ovr_GetSensorStateInternal( double absTime );
+#include "VRotationSensor.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -1123,7 +1122,7 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
         {
             const double vsyncPoint = vsyncBase + swap.predictionPoints[eye][scan];
             const double timePoint = framePointTimeInSeconds( vsyncPoint );
-            sensor[scan] = ovr_GetSensorStateInternal( timePoint );
+            sensor[scan] = VRotationSensor::instance()->predictState( timePoint );
             const VR4Matrixf warp = CalculateTimeWarpMatrix2(
                         m_pose[eye][0].Orientation,
                     sensor[scan].Predicted.Orientation ) * velocity;
@@ -1339,7 +1338,7 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
             if ( scan == 1 || screenSlice == 0 || screenSlice == 4 )
             {
                 const double timePoint = sliceTimes[screenSlice + scan];
-                sensor[scan] = ovr_GetSensorStateInternal( timePoint );
+                sensor[scan] = VRotationSensor::instance()->predictState(timePoint);
                 warp = CalculateTimeWarpMatrix2(
                             m_pose[eye][0].Orientation,
                         sensor[scan].Predicted.Orientation ) * velocity;

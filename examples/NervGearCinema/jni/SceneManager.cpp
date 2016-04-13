@@ -980,7 +980,7 @@ VR4Matrixf SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 
         vApp->kernel()->setSmoothProgram(VK_PLANE_CB);
         vApp->kernel()->setSmoothEyeTexture( MipMappedMovieTextures[CurrentMipMappedMovieTexture],eye,1);
-        vApp->kernel()->setSmoothPose(vApp->sensorForNextWarp().Predicted,eye,1);
+        vApp->kernel()->setSmoothPose(vApp->sensorForNextWarp(), eye, 1);
         vApp->kernel()->setTexMatrix(texMatrix * VR4Matrix<float>::TanAngleMatrixFromUnitSquare( &mv ),eye,1);
 
 		// explicitly clear a hole in alpha

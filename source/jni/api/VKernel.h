@@ -31,6 +31,19 @@ struct VKpose
     NervGear::V3Vect<float>	LinearAc;
     double		TimeBySeconds;
 
+    VKpose()
+    {
+    }
+
+    VKpose(const NervGear::VRotationSensor::State &state)
+    {
+        Orientation.w = state.w;
+        Orientation.x = state.x;
+        Orientation.y = state.y;
+        Orientation.z = state.z;
+        TimeBySeconds = state.timestamp;
+    }
+
     VKpose &operator = (const NervGear::VRotationSensor::State &state)
     {
         Orientation.w = state.w;
@@ -141,7 +154,6 @@ public:
     void run();
     void exit();
     void destroy(eExitType type);
-    ovrSensorState	ovr_GetPredictedSensorState(double absTime );
 
     VDevice* device;
     bool asyncSmooth;
