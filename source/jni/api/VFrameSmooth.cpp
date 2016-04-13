@@ -424,7 +424,7 @@ struct VFrameSmooth::Private
      unsigned int	m_texId[2][3];
      unsigned int	m_planarTexId[2][3][3];
      VR4Matrixf		m_texMatrix[2][3];
-     VKpose	m_pose[2][3];
+     VRotationSensor::State m_pose[2][3];
 
 
      int 						m_smoothOptions;
@@ -1078,8 +1078,7 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
                     break;
                 }
 
-                if ( VQuatf( m_pose[eye][0].Orientation ).LengthSq() < 1e-18f )
-                {
+                if (m_pose[eye][0].LengthSq() < 1e-18f) {
                     vInfo("Bad Pose.Orientation in bufferNum " << thisEyeBufferNum << "!");
                     break;
                 }
@@ -1148,7 +1147,7 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
             const double vsyncPoint = vsyncBase + swap.predictionPoints[eye][scan];
             const double timePoint = framePointTimeInSeconds( vsyncPoint );
             sensor[scan] = VRotationSensor::instance()->predictState( timePoint );
-            const VR4Matrixf warp = CalculateTimeWarpMatrix2(m_pose[eye][0].Orientation, sensor[scan]) * velocity;
+            const VR4Matrixf warp = CalculateTimeWarpMatrix2(m_pose[eye][0], sensor[scan]) * velocity;
             timeWarps[0][scan] = VR4Matrixf( m_texMatrix[eye][0]) * warp;
             if ( dualLayer )
             {
@@ -1158,7 +1157,7 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
                 }
                 else
                 {
-                    const VR4Matrixf warp2 = CalculateTimeWarpMatrix2(m_pose[eye][1].Orientation, sensor[scan]) * velocity;
+                    const VR4Matrixf warp2 = CalculateTimeWarpMatrix2(m_pose[eye][1], sensor[scan]) * velocity;
                     timeWarps[1][scan] = VR4Matrixf( m_texMatrix[eye][1] ) * warp2;
                 }
             }
@@ -1285,8 +1284,7 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
                     break;
                 }
 
-                if ( VQuatf( m_pose[eye][0].Orientation ).LengthSq() < 1e-18f )
-                {
+                if (m_pose[eye][0].LengthSq() < 1e-18f) {
                     vInfo("Bad Predicted.Pose.Orientation!");
                     continue;
                 }
@@ -1358,7 +1356,7 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
             {
                 const double timePoint = sliceTimes[screenSlice + scan];
                 sensor[scan] = VRotationSensor::instance()->predictState(timePoint);
-                warp = CalculateTimeWarpMatrix2(m_pose[eye][0].Orientation, sensor[scan]) * velocity;
+                warp = CalculateTimeWarpMatrix2(m_pose[eye][0], sensor[scan]) * velocity;
             }
             timeWarps[0][scan] = VR4Matrixf( m_texMatrix[eye][0] ) * warp;
             if ( dualLayer )
@@ -1369,7 +1367,7 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
                 }
                 else
                 {
-                    const VR4Matrixf warp2 = CalculateTimeWarpMatrix2(m_pose[eye][1].Orientation, sensor[scan]) * velocity;
+                    const VR4Matrixf warp2 = CalculateTimeWarpMatrix2(m_pose[eye][1], sensor[scan]) * velocity;
                     timeWarps[1][scan] = VR4Matrixf( m_texMatrix[eye][1] ) * warp2;
                 }
             }

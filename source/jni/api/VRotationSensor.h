@@ -1,22 +1,19 @@
 #pragma once
 
 #include "vglobal.h"
+#include "VTransform.h"
 
 NV_NAMESPACE_BEGIN
 
 class VRotationSensor
 {
 public:
-    struct State
+    struct State : public VQuatf
     {
-        long timestamp;
-        float w;
-        float x;
-        float y;
-        float z;
         float gyroX;
         float gyroY;
         float gyroZ;
+        long timestamp;
     };
 
     static VRotationSensor *instance();
