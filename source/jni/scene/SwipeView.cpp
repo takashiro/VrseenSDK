@@ -381,7 +381,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 	{
 		ActivateOnNextFrame = false;
 
-        AnimationStartTime = vrFrame.PoseState.TimeBySeconds;
+        AnimationStartTime = vrFrame.pose.timestamp;
 		// allowing AnimationFraction to reach 0.0 causes an invalid matrix to be formed in Draw()
 		AnimationFraction = 0.00001f;
 
@@ -395,7 +395,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 	if ( CloseOnNextFrame )
 	{
 		CloseOnNextFrame = false;
-        AnimationStartTime = vrFrame.PoseState.TimeBySeconds;
+        AnimationStartTime = vrFrame.pose.timestamp;
 	}
 
 
@@ -496,13 +496,13 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 			for ( int i = 0 ; i < MAX_TOUCH_HISTORY ; i++ )
 			{
 				TouchPos[i] = touch;
-                TimeHistory[i] = vrFrame.PoseState.TimeBySeconds;
+                TimeHistory[i] = vrFrame.pose.timestamp;
 			}
 
 			TouchPoint = touch;
 			TouchGazePos = GazePos;
 			PrevTouch = touch;
-            PressTime = vrFrame.PoseState.TimeBySeconds;
+            PressTime = vrFrame.pose.timestamp;
 			HasMoved = false;
 
 			// If an Activate() was issued programatically, this needs to be
@@ -584,7 +584,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 				const int oldIndex = ( HistoryIndex + 1 ) % MAX_TOUCH_HISTORY;
 				HistoryIndex++;
 				TouchPos[thisIndex] = touch;
-                TimeHistory[thisIndex] = vrFrame.PoseState.TimeBySeconds;
+                TimeHistory[thisIndex] = vrFrame.pose.timestamp;
 
 				Velocity = -SpeedScale * ( TouchPos[thisIndex].x - TouchPos[oldIndex].x ) / ( TimeHistory[thisIndex] - TimeHistory[oldIndex] );
 
@@ -634,7 +634,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 
 	// Opening / closing animation
 	AnimationFraction = std::min( 1.0,
-            ( vrFrame.PoseState.TimeBySeconds - AnimationStartTime ) / OpenAnimationTime );
+            ( vrFrame.pose.timestamp - AnimationStartTime ) / OpenAnimationTime );
 	// allowing AnimationFraction to reach 0.0 causes an invalid matrix to be formed in Draw()
 	AnimationFraction = NervGear::VAlgorithm::Clamp( AnimationFraction, 0.00001f, 1.0f );
 	if ( State == SVS_CLOSING )

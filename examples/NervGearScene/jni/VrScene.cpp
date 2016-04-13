@@ -169,7 +169,7 @@ VR4Matrixf VrScene::onNewFrame( const VrFrame vrFrame )
 
 	// Make the test object hop up and down
 	{
-        const float y = 1 + sin( 2 * vrFrame.PoseState.TimeBySeconds );
+        const float y = 1 + sin( 2 * vrFrame.pose.timestamp );
 		TestObject.State.modelMatrix.M[0][3] = 2;
 		TestObject.State.modelMatrix.M[1][3] = y;
 	}

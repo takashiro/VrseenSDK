@@ -355,7 +355,7 @@ void OvrSceneView::UpdateViewMatrix(const VrFrame vrFrame )
 
 	// We extract Yaw, Pitch, Roll instead of directly using the orientation
 	// to allow "additional" yaw manipulation with mouse/controller.
-    const VQuatf quat = vrFrame.PoseState.Orientation;
+    const VQuatf quat = vrFrame.pose;
 
     quat.GetEulerAngles<VAxis_Y, VAxis_X, VAxis_Z>( &EyeYaw, &EyePitch, &EyeRoll );
 
@@ -445,7 +445,7 @@ void OvrSceneView::UpdateSceneModels( const VrFrame vrFrame, const long long sup
 	{
 		if ( Models[i] != NULL && Models[i]->DontRenderForClientUid != supressModelsWithClientId )
 		{
-            Models[i]->AnimateJoints( vrFrame.PoseState.TimeBySeconds );
+            Models[i]->AnimateJoints( vrFrame.pose.timestamp );
 			RenderModels.append( Models[i]->State );
 		}
 	}

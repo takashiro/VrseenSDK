@@ -1124,7 +1124,7 @@ struct App::Private
             const double clampedPrediction = std::min(0.1, rawDelta * 2);
             sensorForNextWarp = VRotationSensor::instance()->predictState(now + clampedPrediction);
 
-            self->text.vrFrame.PoseState = sensorForNextWarp;
+            self->text.vrFrame.pose = sensorForNextWarp;
             self->text.vrFrame.DeltaSeconds   = std::min(0.1, rawDelta);
             self->text.vrFrame.FrameNumber++;
 
