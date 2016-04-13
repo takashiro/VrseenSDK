@@ -29,11 +29,12 @@ VRotationSensor::~VRotationSensor()
     delete d;
 }
 
-VRotationSensor::State VRotationSensor::predictState(double time) const
+VRotationSensor::State VRotationSensor::predictState(double timestamp) const
 {
     //@to-do: implement this
-    NV_UNUSED(time);
-    return d->state.state();
+    State state = this->state();
+    state.timestamp = timestamp;
+    return state;
 }
 
 VRotationSensor::VRotationSensor()

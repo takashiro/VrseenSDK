@@ -3,6 +3,7 @@
 #include "math.h"
 #include "VBasicmath.h"
 
+#include "VRotationSensor.h"
 
 #if defined( ANDROID )
 #include <jni.h>
@@ -20,7 +21,7 @@ extern "C" {
 
 extern JavaVM * VrLibJavaVM;
 
-typedef struct VKpose_
+struct VKpose
 {
     NervGear::VQuat<float>	Orientation;
     NervGear::V3Vect<float>	Position;
@@ -29,11 +30,21 @@ typedef struct VKpose_
     NervGear::V3Vect<float>	AngularAc;
     NervGear::V3Vect<float>	LinearAc;
     double		TimeBySeconds;
-} VKpose;
+
+    VKpose &operator = (const NervGear::VRotationSensor::State &state)
+    {
+        Orientation.w = state.w;
+        Orientation.x = state.x;
+        Orientation.y = state.y;
+        Orientation.z = state.z;
+        TimeBySeconds = state.timestamp;
+        return *this;
+    }
+};
 
 
 
-typedef struct ovrSensorState_
+struct ovrSensorState
 {
     VKpose	Predicted;
 
@@ -41,7 +52,19 @@ typedef struct ovrSensorState_
 
     float			Temperature;
 
-} ovrSensorState;
+    ovrSensorState()
+    {
+    }
+
+    ovrSensorState(const NervGear::VRotationSensor::State &state)
+    {
+        Predicted.Orientation.w = state.w;
+        Predicted.Orientation.x = state.x;
+        Predicted.Orientation.y = state.y;
+        Predicted.Orientation.z = state.z;
+        Predicted.TimeBySeconds = state.timestamp;
+    }
+};
 
 
 typedef enum

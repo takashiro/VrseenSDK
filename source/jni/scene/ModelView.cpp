@@ -425,7 +425,7 @@ void OvrSceneView::UpdateViewMatrix(const VrFrame vrFrame )
 	{
 		// Use position tracking from the sensor system, which is in absolute
 		// coordinates without the YawOffset
-        ShiftedEyePos += VR4Matrixf::RotationY( YawOffset ).Transform( vrFrame.PoseState.Position );
+        //ShiftedEyePos += VR4Matrixf::RotationY( YawOffset ).Transform( vrFrame.PoseState.Position );
 
 		ShiftedEyePos -= forward * ImuToEyeCenter.z;
 		ShiftedEyePos -= right * ImuToEyeCenter.x;

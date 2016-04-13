@@ -25,7 +25,7 @@ public:
     void setState(const State &state);
     State state() const;
 
-    State predictState(double time) const;
+    State predictState(double timestamp) const;
 
 private:
     VRotationSensor();

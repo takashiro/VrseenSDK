@@ -44,6 +44,7 @@
 #include "VStandardPath.h"
 #include "VColor.h"
 #include "VScene.h"
+#include "VRotationSensor.h"
 
 //#define TEST_TIMEWARP_WATCHDOG
 #define EGL_PROTECTED_CONTENT_EXT 0x32c0
@@ -241,7 +242,7 @@ struct App::Private
 
     EyePostRender	eyeDecorations;
 
-    ovrSensorState	sensorForNextWarp;
+    VRotationSensor::State sensorForNextWarp;
 
     VThread *renderThread;
     int				vrThreadTid;		// linux tid
@@ -290,8 +291,8 @@ struct App::Private
         , vrThreadSynced(false)
         , createdSurface(false)
         , readyToExit(false)
-        , eventLoop(100)
         , running(false)
+        , eventLoop(100)
         , eyeTargets(nullptr)
         , loadingIconTexId(0)
         , javaVM(VrLibJavaVM)
@@ -1121,9 +1122,9 @@ struct App::Private
             const double rawDelta = now - prev;
             prev = now;
             const double clampedPrediction = std::min(0.1, rawDelta * 2);
-            sensorForNextWarp = kernel->ovr_GetPredictedSensorState(now + clampedPrediction);
+            sensorForNextWarp = VRotationSensor::instance()->predictState(now + clampedPrediction);
 
-            self->text.vrFrame.PoseState = sensorForNextWarp.Predicted;
+            self->text.vrFrame.PoseState = sensorForNextWarp;
             self->text.vrFrame.DeltaSeconds   = std::min(0.1, rawDelta);
             self->text.vrFrame.FrameNumber++;
 
@@ -1412,7 +1413,10 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
 
     memset(& d->sensorForNextWarp, 0, sizeof(d->sensorForNextWarp));
 
-    d->sensorForNextWarp.Predicted.Orientation = VQuatf();
+    d->sensorForNextWarp.w = 1;
+    d->sensorForNextWarp.x = 0;
+    d->sensorForNextWarp.y = 0;
+    d->sensorForNextWarp.z = 0;
 
     JniUtils::LoadDevConfig(false);
 
@@ -1716,9 +1720,7 @@ SurfaceTexture * App::dialogTexture()
     return dialog.dialogTexture;
 }
 
-
-
-ovrSensorState const & App::sensorForNextWarp() const
+const VRotationSensor::State &App::sensorForNextWarp() const
 {
     return d->sensorForNextWarp;
 }
@@ -1913,9 +1915,8 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
         {            
            d->kernel->m_texMatrix[eye][0] = VR4Matrixf::TanAngleMatrixFromFov( fovDegrees );
            d->kernel->m_texId[eye][0] = eyes.textures[d->renderMonoMode ? 0 : eye ];
-           d->kernel->m_pose[eye][0] = d->sensorForNextWarp.Predicted;
+           d->kernel->m_pose[eye][0] = d->sensorForNextWarp;
           // d->kernel->m_smoothProgram = ChromaticAberrationCorrection(glOperation) ? WP_CHROMATIC : WP_SIMPLE;
-
         }
 
         d->kernel->doSmooth();
