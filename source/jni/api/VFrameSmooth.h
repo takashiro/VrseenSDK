@@ -15,7 +15,7 @@ public:
 
     void setSmoothEyeTexture(uint texID,ushort eye,ushort layer);
     void setTexMatrix(const VR4Matrixf &mtexMatrix, ushort eye, ushort layer);
-    void setSmoothPose(const VKpose &mpose, ushort eye, ushort layer);
+    void setSmoothPose(const VRotationSensor::State &mpose, ushort eye, ushort layer);
     void setpTex(uint *mpTexId, ushort eye, ushort layer);
     void setSmoothOption(int option);
     void setMinimumVsncs(int vsnc);

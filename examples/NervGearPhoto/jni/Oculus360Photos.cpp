@@ -690,7 +690,14 @@ VR4Matrixf Oculus360Photos::drawEyeView( const int eye, const float fovDegrees )
         vApp->kernel()->m_smoothOptions = ( m_useSrgb ? 0 : VK_INHIBIT_SRGB_FB );
         vApp->kernel()->m_texId[ eye ][ 1 ] = texId;
         vApp->kernel()->m_texMatrix[ eye ][ 1 ] = m;
-        vApp->kernel()->m_pose[ eye ][ 1 ] = m_frameInput.PoseState;
+
+        VRotationSensor::State &pose = vApp->kernel()->m_pose[ eye ][ 1 ];
+        pose.w = m_frameInput.PoseState.Orientation.w;
+        pose.x = m_frameInput.PoseState.Orientation.x;
+        pose.y = m_frameInput.PoseState.Orientation.y;
+        pose.z = m_frameInput.PoseState.Orientation.z;
+        pose.timestamp = m_frameInput.PoseState.TimeBySeconds;
+
         vApp->kernel()->m_smoothProgram = VK_CUBE_CB;
         for ( int i = 0; i < 4; i++ )
         {

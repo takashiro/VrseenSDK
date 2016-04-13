@@ -141,7 +141,7 @@ public:
     void syncSmoothParms();
     void setSmoothEyeTexture(unsigned int texID,ushort eye,ushort layer);
     void setTexMatrix(VR4Matrixf	mtexMatrix,ushort eye,ushort layer);
-    void setSmoothPose(VKpose	mpose,ushort eye,ushort layer);
+    void setSmoothPose(const VRotationSensor::State &pose, ushort eye, ushort layer);
     void setpTex(unsigned int	*mpTexId,ushort eye,ushort layer);
 
 
@@ -166,7 +166,7 @@ public:
     unsigned int	m_texId[2][3];
     unsigned int	m_planarTexId[2][3][3];
     VR4Matrixf		m_texMatrix[2][3];
-    VKpose	m_pose[2][3];
+    VRotationSensor::State m_pose[2][3];
 
 private:
     VKernel();

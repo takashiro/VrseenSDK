@@ -533,9 +533,9 @@ void VFrameSmooth::setTexMatrix(const VR4Matrixf &mtexMatrix, ushort eye, ushort
     d->m_texMatrix[eye][layer] =  mtexMatrix;
 }
 
-void VFrameSmooth::setSmoothPose(const VKpose &mpose, ushort eye, ushort layer)
+void VFrameSmooth::setSmoothPose(const VRotationSensor::State &pose, ushort eye, ushort layer)
 {
-    d->m_pose[eye][layer] =  mpose;
+    d->m_pose[eye][layer] = pose;
 }
 
 void VFrameSmooth::setpTex(uint *mpTexId, ushort eye, ushort layer)

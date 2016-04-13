@@ -228,7 +228,7 @@ VKernel::VKernel()
        for ( int i = 0; i < 3; i++ )
        {
            m_texMatrix[eye][i] = tanAngleMatrix;
-           m_pose[eye][i].Orientation.w = 1.0f;
+           m_pose[eye][i].w = 1.0f;
        }
    }
 
@@ -468,10 +468,12 @@ void VKernel::setTexMatrix(VR4Matrixf	mtexMatrix,ushort eye,ushort layer)
 {
   m_texMatrix[eye][layer] =  mtexMatrix;
 }
-void VKernel::setSmoothPose(VKpose	mpose,ushort eye,ushort layer)
+
+void VKernel::setSmoothPose(const VRotationSensor::State &pose, ushort eye, ushort layer)
 {
-   m_pose[eye][layer] =  mpose;
+    m_pose[eye][layer] = pose;
 }
+
 void VKernel::setpTex(unsigned int	*mpTexId,ushort eye,ushort layer)
 {
     m_planarTexId[eye][layer][0] = mpTexId[0];
@@ -532,7 +534,7 @@ void VKernel::syncSmoothParms()
          frameSmooth->setSmoothEyeTexture(m_texId[eye][i],eye,i) ;
          frameSmooth->setTexMatrix(m_texMatrix[eye][i],eye,i) ;
          frameSmooth->setpTex(m_planarTexId[eye][i],eye,i) ;
-         frameSmooth->setSmoothPose(m_pose[eye][i],eye,i);
+         frameSmooth->setSmoothPose(m_pose[eye][i], eye, i);
 
      }
  }
@@ -575,7 +577,7 @@ void VKernel::doSmooth()
         for ( int i = 0; i < 3; i++ )
         {
             m_texMatrix[eye][i] = tanAngleMatrix;
-            m_pose[eye][i].Orientation.w = 1.0f;
+            m_pose[eye][i].w = 1.0f;
         }
     }
 
