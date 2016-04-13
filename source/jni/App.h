@@ -110,10 +110,11 @@ public:
     void execute();
     void quit();
 
+    bool isRunning() const;
+
     VText text;
     VPanel panel;
     VDialog dialog;
-    volatile bool oneTimeInitCalled;
 
 private:
     NV_DECLARE_PRIVATE

@@ -157,6 +157,7 @@ struct App::Private
     volatile bool	vrThreadSynced;
     volatile bool	createdSurface;
     volatile bool	readyToExit;		// start exit procedure
+    volatile bool running;
 
     // Most calls in from java should communicate through this.
     VEventLoop	eventLoop;
@@ -290,6 +291,7 @@ struct App::Private
         , createdSurface(false)
         , readyToExit(false)
         , eventLoop(100)
+        , running(false)
         , eyeTargets(nullptr)
         , loadingIconTexId(0)
         , javaVM(VrLibJavaVM)
@@ -912,9 +914,6 @@ struct App::Private
 
     void run()
     {
-        // Set the name that will show up in systrace
-        pthread_setname_np(pthread_self(), "NervGear::VrThread");
-
         // Initialize the VR thread
         {
             vInfo("AppLocal::VrThreadFunction - init");
@@ -1052,7 +1051,7 @@ struct App::Private
             }
 
             // Let the client app initialize only once by calling OneTimeInit() when the windowSurface is valid.
-            if (!self->oneTimeInitCalled)
+            if (!running)
             {
                 if (appInterface->showLoadingIcon())
                 {
@@ -1083,7 +1082,7 @@ struct App::Private
                 vInfo("launchIntentURI:" << launchIntentURI);
 
                 appInterface->init(launchIntentFromPackage, launchIntentJSON, launchIntentURI);
-                self->oneTimeInitCalled = true;
+                running = true;
             }
 
             // latch the current joypad state and note transitions
@@ -1397,8 +1396,7 @@ struct App::Private
 App *NervGearAppInstance = nullptr;
 
 App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
-    : oneTimeInitCalled(false)
-    , d(new Private(this))
+    : d(new Private(this))
 {
     d->activity = activity;
 
@@ -1491,7 +1489,12 @@ void App::quit()
     bool finished = d->renderThread->wait();
     if (!finished) {
         vWarn("failed to wait for VrThread");
-	}
+    }
+}
+
+bool App::isRunning() const
+{
+    return d->running;
 }
 
 VEventLoop &App::eventLoop()
