@@ -153,6 +153,7 @@ HEADERS += \
     jni/core/VVector.h \
     jni/core/VTransform.h \
     jni/core/VBasicmath.h \
+    jni/core/VQuat.h \
     jni/api/VKernel.h \
     jni/api/VLensDistortion.h \
     jni/api/VRotationSensor.h \

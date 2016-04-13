@@ -1,7 +1,7 @@
 #pragma once
 
 #include "vglobal.h"
-#include "VTransform.h"
+#include "VQuat.h"
 
 NV_NAMESPACE_BEGIN
 
