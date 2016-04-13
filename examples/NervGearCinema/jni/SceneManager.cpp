@@ -1,13 +1,12 @@
-#include "api/VKernel.h"
-#include "api/VEglDriver.h"
-
 #include "CinemaApp.h"
 #include "Native.h"
 #include "SceneManager.h"
 #include "SurfaceTexture.h"
-#include "core/VTimer.h"
 
-#include "VLog.h"
+#include <VKernel.h>
+#include <VEglDriver.h>
+#include <VTimer.h>
+#include <VLog.h>
 
 namespace OculusCinema
 {
