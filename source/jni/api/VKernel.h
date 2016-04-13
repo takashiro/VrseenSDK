@@ -55,31 +55,6 @@ struct VKpose
     }
 };
 
-
-
-struct ovrSensorState
-{
-    VKpose	Predicted;
-
-    VKpose	Recorded;
-
-    float			Temperature;
-
-    ovrSensorState()
-    {
-    }
-
-    ovrSensorState(const NervGear::VRotationSensor::State &state)
-    {
-        Predicted.Orientation.w = state.w;
-        Predicted.Orientation.x = state.x;
-        Predicted.Orientation.y = state.y;
-        Predicted.Orientation.z = state.z;
-        Predicted.TimeBySeconds = state.timestamp;
-    }
-};
-
-
 typedef enum
 {
             VK_INHIBIT_SRGB_FB	= 1,
