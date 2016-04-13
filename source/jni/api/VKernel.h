@@ -21,40 +21,6 @@ extern "C" {
 
 extern JavaVM * VrLibJavaVM;
 
-struct VKpose
-{
-    NervGear::VQuat<float>	Orientation;
-    NervGear::V3Vect<float>	Position;
-    NervGear::V3Vect<float>	Angular;
-    NervGear::V3Vect<float>	Linear;
-    NervGear::V3Vect<float>	AngularAc;
-    NervGear::V3Vect<float>	LinearAc;
-    double		TimeBySeconds;
-
-    VKpose()
-    {
-    }
-
-    VKpose(const NervGear::VRotationSensor::State &state)
-    {
-        Orientation.w = state.w;
-        Orientation.x = state.x;
-        Orientation.y = state.y;
-        Orientation.z = state.z;
-        TimeBySeconds = state.timestamp;
-    }
-
-    VKpose &operator = (const NervGear::VRotationSensor::State &state)
-    {
-        Orientation.w = state.w;
-        Orientation.x = state.x;
-        Orientation.y = state.y;
-        Orientation.z = state.z;
-        TimeBySeconds = state.timestamp;
-        return *this;
-    }
-};
-
 typedef enum
 {
             VK_INHIBIT_SRGB_FB	= 1,
