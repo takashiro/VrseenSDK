@@ -149,6 +149,31 @@ VR4Matrixf CalculateTimeWarpMatrix2( const VQuatf &inFrom, const VQuatf &inTo )
     return ( lastSensorMatrix.Inverted() * lastViewMatrix ).Inverted();
 }
 
+VR4Matrixf CalculateTimeWarpMatrix2(const VRotationSensor::State &from, const VRotationSensor::State &to)
+{
+    VQuatf inFrom;
+    inFrom.w = from.w;
+    inFrom.x = from.x;
+    inFrom.y = from.y;
+    inFrom.z = from.z;
+
+    VQuatf inTo;
+    inTo.w = to.w;
+    inTo.x = to.x;
+    inTo.y = to.y;
+    inTo.z = to.z;
+    return CalculateTimeWarpMatrix2(inFrom, inTo);
+}
+
+VR4Matrixf CalculateTimeWarpMatrix2(const VQuatf &inFrom, const VRotationSensor::State &state)
+{
+    VQuatf inTo;
+    inTo.w = state.w;
+    inTo.x = state.x;
+    inTo.y = state.y;
+    inTo.z = state.z;
+    return CalculateTimeWarpMatrix2(inFrom, inTo);
+}
 
 static bool IsContextPriorityExtensionPresent()
 {
@@ -1117,15 +1142,13 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
 
 
         VR4Matrixf timeWarps[2][2];
-        ovrSensorState sensor[2];
+        VRotationSensor::State sensor[2];
         for ( int scan = 0; scan < 2; scan++ )
         {
             const double vsyncPoint = vsyncBase + swap.predictionPoints[eye][scan];
             const double timePoint = framePointTimeInSeconds( vsyncPoint );
             sensor[scan] = VRotationSensor::instance()->predictState( timePoint );
-            const VR4Matrixf warp = CalculateTimeWarpMatrix2(
-                        m_pose[eye][0].Orientation,
-                    sensor[scan].Predicted.Orientation ) * velocity;
+            const VR4Matrixf warp = CalculateTimeWarpMatrix2(m_pose[eye][0].Orientation, sensor[scan]) * velocity;
             timeWarps[0][scan] = VR4Matrixf( m_texMatrix[eye][0]) * warp;
             if ( dualLayer )
             {
@@ -1135,18 +1158,14 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
                 }
                 else
                 {
-                    const VR4Matrixf warp2 = CalculateTimeWarpMatrix2(
-                                m_pose[eye][1].Orientation,
-                            sensor[scan].Predicted.Orientation ) * velocity;
+                    const VR4Matrixf warp2 = CalculateTimeWarpMatrix2(m_pose[eye][1].Orientation, sensor[scan]) * velocity;
                     timeWarps[1][scan] = VR4Matrixf( m_texMatrix[eye][1] ) * warp2;
                 }
             }
         }
 
 
-        const VR4Matrixf rollingWarp = CalculateTimeWarpMatrix2(
-                    sensor[0].Predicted.Orientation,
-                sensor[1].Predicted.Orientation );
+        const VR4Matrixf rollingWarp = CalculateTimeWarpMatrix2(sensor[0], sensor[1]);
 
 
 
@@ -1330,7 +1349,7 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
 
 
         VR4Matrixf timeWarps[2][2];
-        static ovrSensorState sensor[2];
+        static VRotationSensor::State sensor[2];
         for ( int scan = 0; scan < 2; scan++ )
         {
 
@@ -1339,9 +1358,7 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
             {
                 const double timePoint = sliceTimes[screenSlice + scan];
                 sensor[scan] = VRotationSensor::instance()->predictState(timePoint);
-                warp = CalculateTimeWarpMatrix2(
-                            m_pose[eye][0].Orientation,
-                        sensor[scan].Predicted.Orientation ) * velocity;
+                warp = CalculateTimeWarpMatrix2(m_pose[eye][0].Orientation, sensor[scan]) * velocity;
             }
             timeWarps[0][scan] = VR4Matrixf( m_texMatrix[eye][0] ) * warp;
             if ( dualLayer )
@@ -1352,20 +1369,13 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
                 }
                 else
                 {
-                    const VR4Matrixf warp2 = CalculateTimeWarpMatrix2(
-                                m_pose[eye][1].Orientation,
-                            sensor[scan].Predicted.Orientation ) * velocity;
+                    const VR4Matrixf warp2 = CalculateTimeWarpMatrix2(m_pose[eye][1].Orientation, sensor[scan]) * velocity;
                     timeWarps[1][scan] = VR4Matrixf( m_texMatrix[eye][1] ) * warp2;
                 }
             }
         }
 
-        const VR4Matrixf rollingWarp = CalculateTimeWarpMatrix2(
-                    sensor[0].Predicted.Orientation,
-                sensor[1].Predicted.Orientation );
-
-
-
+        const VR4Matrixf rollingWarp = CalculateTimeWarpMatrix2(sensor[0], sensor[1]);
 
         setSmoothpState();
 
