@@ -11,6 +11,7 @@
 
 #include <3rdparty/stb/stb_image_write.h>
 
+#include "VStartup.h"
 #include "VEglDriver.h"
 #include "android/JniUtils.h"
 #include "android/VOsBuild.h"
@@ -148,7 +149,11 @@ static bool ChromaticAberrationCorrection(const VEglDriver & glOperation)
     return (glOperation.m_gpuType & VEglDriver::GPU_TYPE_ADRENO) != 0 && (glOperation.m_gpuType >= VEglDriver::GPU_TYPE_ADRENO_420);
 }
 
-std::list<void (*)()> NvAppStartupFunctions;
+std::list<VStartup> &VStartupList()
+{
+    static std::list<VStartup> list;
+    return list;
+}
 
 struct App::Private
 {
@@ -941,7 +946,8 @@ struct App::Private
             // Create our GL data objects
             initGlObjects();
 
-            for (void (*func)() : NvAppStartupFunctions) {
+            const std::list<VStartup> &startups = VStartupList();
+            for (void (*func)() : startups) {
                 func();
             }
 
