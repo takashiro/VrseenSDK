@@ -7,7 +7,6 @@
 #include "KeyState.h"
 #include "VFrame.h"
 #include "VEventLoop.h"
-#include "VSoundManager.h"
 #include "gui/VText.h"
 #include "gui/VPanel.h"
 #include "gui/VDialog.h"
@@ -63,7 +62,6 @@ public:
     OvrVRMenuMgr &vrMenuMgr();
     OvrDebugLines &debugLines();
     const VStandardPath &storagePaths();
-    VSoundManager &soundMgr();
 
     bool hasHeadphones() const;
     bool framebufferIsSrgb() const;

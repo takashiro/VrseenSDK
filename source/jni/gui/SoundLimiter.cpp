@@ -42,7 +42,7 @@ void SoundLimiter::playMenuSound(App * app, const VString &appendKey, char const
     overrideSound.append('_');
     overrideSound.append(soundName);
 
-    if (app->soundMgr().hasSound(overrideSound)) {
+    if (VSoundManager::instance()->hasSound(overrideSound)) {
         playSound(app, overrideSound.toUtf8().data(), limitSeconds);
     } else {
         playSound(app, soundName, limitSeconds);

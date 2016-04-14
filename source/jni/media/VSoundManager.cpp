@@ -4,6 +4,7 @@
 #include "VJson.h"
 #include "VLog.h"
 #include "VStandardPath.h"
+#include "VStartup.h"
 
 #include <list>
 #include <fstream>
@@ -15,6 +16,15 @@ NV_NAMESPACE_BEGIN
 static const char * DEV_SOUNDS_RELATIVE = "Oculus/sound_assets.json";
 static const char * VRLIB_SOUNDS = "res/raw/sound_assets.json";
 static const char * APP_SOUNDS = "assets/sound_assets.json";
+
+namespace
+{
+    void setup()
+    {
+        VSoundManager::instance()->loadSoundAssets();
+    }
+}
+NV_ADD_STARTUP_FUNCTION(setup)
 
 struct VSoundManager::Private
 {
@@ -75,6 +85,12 @@ struct VSoundManager::Private
 VSoundManager::VSoundManager()
     : d(new Private)
 {
+}
+
+VSoundManager *VSoundManager::instance()
+{
+    static VSoundManager manager;
+    return &manager;
 }
 
 VSoundManager::~VSoundManager()

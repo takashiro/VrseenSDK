@@ -136,6 +136,7 @@ HEADERS += \
     jni/core/VSignal.h \
     jni/core/VSize.h \
     jni/core/VStandardPath.h \
+    jni/core/VStartup.h \
     jni/core/VString.h \
     jni/core/VStringHash.h \
     jni/core/String_FormatUtil.h \

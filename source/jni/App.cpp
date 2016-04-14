@@ -1,5 +1,5 @@
 #include "App.h"
-#include "core/VTimer.h"
+
 #include <android/keycodes.h>
 #include <math.h>
 #include <jni.h>
@@ -7,13 +7,14 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <unistd.h>
+#include <list>
 
 #include <3rdparty/stb/stb_image_write.h>
 
-#include "api/VEglDriver.h"
+#include "VEglDriver.h"
 #include "android/JniUtils.h"
 #include "android/VOsBuild.h"
-
+#include "VTimer.h"
 #include "VAlgorithm.h"
 #include "BitmapFont.h"
 #include "DebugLines.h"
@@ -147,7 +148,7 @@ static bool ChromaticAberrationCorrection(const VEglDriver & glOperation)
     return (glOperation.m_gpuType & VEglDriver::GPU_TYPE_ADRENO) != 0 && (glOperation.m_gpuType >= VEglDriver::GPU_TYPE_ADRENO_420);
 }
 
-
+std::list<void (*)()> NvAppStartupFunctions;
 
 struct App::Private
 {
@@ -260,9 +261,6 @@ struct App::Private
     bool			enableDebugOptions;	// enable debug key-commands for development testing
 
     long long 		recenterYawFrameStart;	// Enables reorient before sensor data is read.  Allows apps to reorient without having invalid orientation information for that frame.
-
-    // Manages sound assets
-     VSoundManager	soundManager;
 
     OvrGuiSys *         guiSys;
     OvrGazeCursor *     gazeCursor;
@@ -947,6 +945,10 @@ struct App::Private
             // Create our GL data objects
             initGlObjects();
 
+            for (void (*func)() : NvAppStartupFunctions) {
+                func();
+            }
+
             eyeTargets = new VEyeBuffer;
             guiSys = new OvrGuiSysLocal;
             gazeCursor = new OvrGazeCursorLocal;
@@ -962,8 +964,6 @@ struct App::Private
             self->dialog.dialogTexture = new SurfaceTexture(vrJni);
 
             initFonts();
-
-            soundManager.loadSoundAssets();
 
             debugLines->Init();
 
@@ -1385,15 +1385,6 @@ struct App::Private
     }
 };
 
-/*
- * AppLocal
- *
- * Called once at startup.
- *
- * ?still true?: exit() from here causes an immediate app re-launch,
- * move everything to first surface init?
- */
-
 App *NervGearAppInstance = nullptr;
 
 App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
@@ -1531,16 +1522,10 @@ void App::createToast(const char * fmt, ...)
 
 void App::playSound(const char *name)
 {
-	// Get sound from SoundManager
-	VString soundFile;
-    if (!d->soundManager.getSound(name, soundFile)) {
-        soundFile = VString::fromUtf8(name);
-    }
-
     d->activity->eventLoop().post([=]{
         JNIEnv *jni = nullptr;
         if (d->javaVM->AttachCurrentThread(&jni, 0) == JNI_OK) {
-            jstring cmdString = JniUtils::Convert(jni, soundFile);
+            jstring cmdString = JniUtils::Convert(jni, name);
             jni->CallVoidMethod(d->javaObject, d->playSoundPoolSoundMethodId, cmdString);
             jni->DeleteLocalRef(cmdString);
         }
@@ -1612,10 +1597,6 @@ OvrDebugLines & App::debugLines()
 const VStandardPath & App::storagePaths()
 {
     return *d->storagePaths;
-}
- VSoundManager & App::soundMgr()
-{
-    return d->soundManager;
 }
 
 bool App::isGuiOpen() const
