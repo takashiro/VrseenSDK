@@ -845,10 +845,8 @@ VR4Matrixf MovieSelectionView::DrawEyeView( const int eye, const float fovDegree
 
 VR4Matrixf MovieSelectionView::Frame( const VFrame & vrFrame )
 {
-	// We want 4x MSAA in the lobby
-    VEyeBuffer::Settings eyeParms = vApp->eyeSettings();
-	eyeParms.multisamples = 4;
-    vApp->setEyeSettings( eyeParms );
+    // We want 4x MSAA in the lobby
+    vApp->eyeSettings().multisamples = 4;
 
 #if 0
 	if ( !Cinema.InLobby && Cinema.SceneMgr.ChangeSeats( vrFrame ) )

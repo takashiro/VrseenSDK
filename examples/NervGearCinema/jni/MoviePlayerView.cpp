@@ -898,10 +898,8 @@ VR4Matrixf MoviePlayerView::DrawEyeView( const int eye, const float fovDegrees )
 VR4Matrixf MoviePlayerView::Frame( const VFrame & vrFrame )
 {
 	// Drop to 2x MSAA during playback, people should be focused
-	// on the high quality screen.
-    VEyeBuffer::Settings eyeParms = vApp->eyeSettings();
-	eyeParms.multisamples = 2;
-	vApp->setEyeSettings( eyeParms );
+    // on the high quality screen.
+    vApp->eyeSettings().multisamples = 2;
 
 	if ( Native::HadPlaybackError( vApp ) )
 	{

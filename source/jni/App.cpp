@@ -1532,37 +1532,9 @@ void App::playSound(const char *name)
     });
 }
 
-//void ToggleScreenColor()
-//{
-//
-//	static int	color;
-
-//	color ^= 1;
-
-//    glEnable(GL_WRITEONLY_RENDERING_QCOM);
-//    glClearColor(color, 1-color, 0, 1);
-//    glClear(GL_COLOR_BUFFER_BIT);
-
-//	// The Adreno driver has an unfortunate optimization so it doesn't
-//	// actually flush if all that was done was a clear.
-//    glOperation.GL_Finish();
-//    glDisable(GL_WRITEONLY_RENDERING_QCOM);
-//}
-
-/*
- * eyeParms()
- */
-VEyeBuffer::Settings App::eyeSettings()
+VEyeBuffer::Settings &App::eyeSettings()
 {
     return d->vrParms;
-}
-
-/*
- * SetVrParms()
- */
-void App::setEyeSettings(const VEyeBuffer::Settings parms)
-{
-    d->vrParms = parms;
 }
 
 OvrGuiSys & App::guiSys()

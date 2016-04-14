@@ -363,9 +363,7 @@ void TheaterSelectionView::SelectPressed( void )
 VR4Matrixf TheaterSelectionView::Frame( const VFrame & vrFrame )
 {
 	// We want 4x MSAA in the selection screen
-    VEyeBuffer::Settings eyeParms = vApp->eyeSettings();
-	eyeParms.multisamples = 4;
-    vApp->setEyeSettings( eyeParms );
+    vApp->eyeSettings().multisamples = 4;
 
     if ( SelectionObject->isHilighted() )
 	{
