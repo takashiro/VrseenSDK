@@ -469,7 +469,7 @@ void VKernel::setTexMatrix(VR4Matrixf	mtexMatrix,ushort eye,ushort layer)
   m_texMatrix[eye][layer] =  mtexMatrix;
 }
 
-void VKernel::setSmoothPose(const VRotationSensor::State &pose, ushort eye, ushort layer)
+void VKernel::setSmoothPose(const VRotationState &pose, ushort eye, ushort layer)
 {
     m_pose[eye][layer] = pose;
 }

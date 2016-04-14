@@ -242,7 +242,7 @@ struct App::Private
 
     EyePostRender	eyeDecorations;
 
-    VRotationSensor::State sensorForNextWarp;
+    VRotationState sensorForNextWarp;
 
     VThread *renderThread;
     int				vrThreadTid;		// linux tid
@@ -1720,7 +1720,7 @@ SurfaceTexture * App::dialogTexture()
     return dialog.dialogTexture;
 }
 
-const VRotationSensor::State &App::sensorForNextWarp() const
+const VRotationState &App::sensorForNextWarp() const
 {
     return d->sensorForNextWarp;
 }

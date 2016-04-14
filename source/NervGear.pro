@@ -167,6 +167,7 @@ HEADERS += \
     jni/api/VLensDistortion.h \
     jni/api/VMainActivity.h \
     jni/api/VRotationSensor.h \
+    jni/api/VRotationState.h \
     jni/api/VViewSettings.h \
     jni/gui/VText.h \
     jni/gui/VDialog.h \

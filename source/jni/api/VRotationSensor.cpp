@@ -5,15 +5,15 @@ NV_NAMESPACE_BEGIN
 
 struct VRotationSensor::Private
 {
-    VLockless<VRotationSensor::State> state;
+    VLockless<VRotationState> state;
 };
 
-void VRotationSensor::setState(const VRotationSensor::State &state)
+void VRotationSensor::setState(const VRotationState &state)
 {
     d->state.setState(state);
 }
 
-VRotationSensor::State VRotationSensor::state() const
+VRotationState VRotationSensor::state() const
 {
     return d->state.state();
 }
@@ -29,10 +29,10 @@ VRotationSensor::~VRotationSensor()
     delete d;
 }
 
-VRotationSensor::State VRotationSensor::predictState(double timestamp) const
+VRotationState VRotationSensor::predictState(double timestamp) const
 {
     //@to-do: implement this
-    State state = this->state();
+    VRotationState state = this->state();
     state.timestamp = timestamp;
     return state;
 }

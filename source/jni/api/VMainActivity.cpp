@@ -417,7 +417,7 @@ void Java_com_vrseen_nervgear_VrActivity_nativeNewIntent(JNIEnv *jni, jclass cla
 void Java_com_vrseen_nervgear_VrActivity_onRotationChanged(JNIEnv *, jclass, jlong timeStamp, jfloat w, jfloat x, jfloat y, jfloat z, jfloat gyroX, jfloat gyroY, jfloat gyroZ)
 {
     VRotationSensor *sensor = VRotationSensor::instance();
-    VRotationSensor::State state;
+    VRotationState state;
     state.timestamp = timeStamp;
     state.w = w;
     state.x = x;

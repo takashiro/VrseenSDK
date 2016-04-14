@@ -149,7 +149,7 @@ VR4Matrixf CalculateTimeWarpMatrix2( const VQuatf &inFrom, const VQuatf &inTo )
     return ( lastSensorMatrix.Inverted() * lastViewMatrix ).Inverted();
 }
 
-VR4Matrixf CalculateTimeWarpMatrix2(const VRotationSensor::State &from, const VRotationSensor::State &to)
+VR4Matrixf CalculateTimeWarpMatrix2(const VRotationState &from, const VRotationState &to)
 {
     VQuatf inFrom;
     inFrom.w = from.w;
@@ -165,7 +165,7 @@ VR4Matrixf CalculateTimeWarpMatrix2(const VRotationSensor::State &from, const VR
     return CalculateTimeWarpMatrix2(inFrom, inTo);
 }
 
-VR4Matrixf CalculateTimeWarpMatrix2(const VQuatf &inFrom, const VRotationSensor::State &state)
+VR4Matrixf CalculateTimeWarpMatrix2(const VQuatf &inFrom, const VRotationState &state)
 {
     VQuatf inTo;
     inTo.w = state.w;
@@ -424,7 +424,7 @@ struct VFrameSmooth::Private
      unsigned int	m_texId[2][3];
      unsigned int	m_planarTexId[2][3][3];
      VR4Matrixf		m_texMatrix[2][3];
-     VRotationSensor::State m_pose[2][3];
+     VRotationState m_pose[2][3];
 
 
      int 						m_smoothOptions;
@@ -533,7 +533,7 @@ void VFrameSmooth::setTexMatrix(const VR4Matrixf &mtexMatrix, ushort eye, ushort
     d->m_texMatrix[eye][layer] =  mtexMatrix;
 }
 
-void VFrameSmooth::setSmoothPose(const VRotationSensor::State &pose, ushort eye, ushort layer)
+void VFrameSmooth::setSmoothPose(const VRotationState &pose, ushort eye, ushort layer)
 {
     d->m_pose[eye][layer] = pose;
 }
@@ -1141,7 +1141,7 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
 
 
         VR4Matrixf timeWarps[2][2];
-        VRotationSensor::State sensor[2];
+        VRotationState sensor[2];
         for ( int scan = 0; scan < 2; scan++ )
         {
             const double vsyncPoint = vsyncBase + swap.predictionPoints[eye][scan];
@@ -1347,7 +1347,7 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
 
 
         VR4Matrixf timeWarps[2][2];
-        static VRotationSensor::State sensor[2];
+        static VRotationState sensor[2];
         for ( int scan = 0; scan < 2; scan++ )
         {
 

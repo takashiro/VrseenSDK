@@ -1,7 +1,7 @@
 #pragma once
 
 #include "VInput.h"
-#include "VRotationSensor.h"
+#include "VRotationState.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -14,7 +14,7 @@ struct VFrame
 
     longlong id;
 
-    VRotationSensor::State pose;
+    VRotationState pose;
     VInput input;
     float deltaSeconds;
 };

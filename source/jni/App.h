@@ -103,7 +103,7 @@ public:
     SurfaceTexture *dialogTexture();
 
 
-    const VRotationSensor::State &sensorForNextWarp() const;
+    const VRotationState &sensorForNextWarp() const;
 
     void drawScreenMask( const VR4Matrixf & mvp, const float fadeFracX, const float fadeFracY );
     void drawBounds( const V3Vectf &mins, const V3Vectf &maxs, const VR4Matrixf &mvp, const V3Vectf &color );
