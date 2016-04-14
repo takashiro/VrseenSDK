@@ -527,7 +527,7 @@ void MovieSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFo
 
 V3Vectf MovieSelectionView::ScalePosition( const V3Vectf &startPos, const float scale, const float menuOffset ) const
 {
-	const float eyeHieght = Cinema.sceneMgr.Scene.ViewParms.EyeHeight;
+	const float eyeHieght = Cinema.sceneMgr.Scene.ViewParms.eyeHeight;
 
     V3Vectf pos = startPos;
 	pos.x *= scale;

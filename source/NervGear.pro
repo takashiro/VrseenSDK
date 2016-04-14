@@ -41,6 +41,7 @@ SOURCES += \
     jni/core/android/VOsBuild.cpp \
     jni/api/VKernel.cpp \
     jni/api/VDevice.cpp \
+    jni/api/VEglDriver.cpp \
     jni/api/VLensDistortion.cpp \
     jni/api/VRotationSensor.cpp \
     jni/api/VFrameSmooth.cpp \
@@ -98,8 +99,7 @@ SOURCES += \
     jni/scene/SurfaceTexture.cpp \
     jni/scene/SwipeView.cpp \
     jni/App.cpp \
-    jni/VrLocale.cpp \
-    jni/api/VEglDriver.cpp
+    jni/VrLocale.cpp
 
 
 HEADERS += \
@@ -159,10 +159,12 @@ HEADERS += \
     jni/api/VKernel.h \
     jni/api/VLensDistortion.h \
     jni/api/VRotationSensor.h \
+    jni/api/VEglDriver.h \
     jni/api/VFrameSmooth.h \
     jni/api/VGlGeometry.h \
     jni/api/VGlShader.h \
     jni/api/VMainActivity.h \
+    jni/api/VViewSettings.h \
     jni/api/VDevice.h \
     jni/gui/VText.h \
     jni/gui/VDialog.h \
@@ -223,8 +225,7 @@ HEADERS += \
     jni/VrLocale.h \
     jni/vglobal.h \
     jni/Input.h \
-    jni/io/VAbstractFile.h \
-    jni/api/VEglDriver.h
+    jni/io/VAbstractFile.h
 
 include(jni/3rdparty/minizip/minizip.pri)
 include(jni/3rdparty/stb/stb.pri)

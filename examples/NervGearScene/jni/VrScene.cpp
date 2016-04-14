@@ -165,7 +165,7 @@ VR4Matrixf VrScene::onNewFrame( const VrFrame vrFrame )
     const VEyeBuffer::Settings vrParms = vApp->eyeSettings();
 
 	// Player movement
-    Scene.Frame( vApp->vrViewParms(), vrFrame, vApp->kernel()->m_externalVelocity );
+    Scene.Frame( vApp->viewSettings(), vrFrame, vApp->kernel()->m_externalVelocity );
 
 	// Make the test object hop up and down
 	{

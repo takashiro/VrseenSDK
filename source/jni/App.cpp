@@ -249,7 +249,7 @@ struct App::Private
 
     bool			showVolumePopup;	// true to show volume popup when volume changes
 
-    VrViewParms		viewParms;
+    VViewSettings		viewSettings;
 
     float 			touchpadTimer;
     V2Vectf		touchOrigin;
@@ -1347,18 +1347,18 @@ struct App::Private
             else if (keyCode == AKEYCODE_COMMA && down && repeatCount == 0)
             {
                 float const IPD_MIN_CM = 0.0f;
-                viewParms.InterpupillaryDistance = std::max(IPD_MIN_CM * 0.01f, viewParms.InterpupillaryDistance - IPD_STEP);
+                viewSettings.interpupillaryDistance = std::max(IPD_MIN_CM * 0.01f, viewSettings.interpupillaryDistance - IPD_STEP);
                 VString text;
-                text.sprintf("%.3f", viewParms.InterpupillaryDistance);
+                text.sprintf("%.3f", viewSettings.interpupillaryDistance);
                 self->text.show(text, 1.0f);
                 return;
             }
             else if (keyCode == AKEYCODE_PERIOD && down && repeatCount == 0)
             {
                 float const IPD_MAX_CM = 8.0f;
-                viewParms.InterpupillaryDistance = std::min(IPD_MAX_CM * 0.01f, viewParms.InterpupillaryDistance + IPD_STEP);
+                viewSettings.interpupillaryDistance = std::min(IPD_MAX_CM * 0.01f, viewSettings.interpupillaryDistance + IPD_STEP);
                 VString text;
-                text.sprintf("%.3f", viewParms.InterpupillaryDistance);
+                text.sprintf("%.3f", viewSettings.interpupillaryDistance);
                 self->text.show(text, 1.0f);
                 return;
             }
@@ -1449,10 +1449,10 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
 	// Load user profile data relevant to rendering
     VUserSettings config;
     config.load();
-    d->viewParms.InterpupillaryDistance = config.ipd;
-    d->viewParms.EyeHeight = config.eyeHeight;
-    d->viewParms.HeadModelDepth = config.headModelDepth;
-    d->viewParms.HeadModelHeight = config.headModelHeight;
+    d->viewSettings.interpupillaryDistance = config.ipd;
+    d->viewSettings.eyeHeight = config.eyeHeight;
+    d->viewSettings.headModelDepth = config.headModelDepth;
+    d->viewSettings.headModelHeight = config.headModelHeight;
 
     d->renderThread = new VThread([](void *data)->int{
         App::Private *d = static_cast<App::Private *>(data);
@@ -1730,14 +1730,14 @@ VMainActivity *App::appInterface()
     return d->appInterface;
 }
 
-VrViewParms const &	App::vrViewParms() const
+const VViewSettings &App::viewSettings() const
 {
-    return d->viewParms;
+    return d->viewSettings;
 }
 
-void App::setVrViewParms(VrViewParms const & parms)
+void App::setViewSettings(const VViewSettings &settings)
 {
-    d->viewParms = parms;
+    d->viewSettings = settings;
 }
 
 KeyState & App::backKeyState()

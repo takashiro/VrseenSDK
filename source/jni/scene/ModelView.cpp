@@ -232,7 +232,7 @@ VR4Matrixf OvrSceneView::CenterViewMatrix() const
 
 VR4Matrixf OvrSceneView::ViewMatrixForEye( const int eye ) const
 {
-	const float eyeOffset = ( eye ? -1 : 1 ) * 0.5f * ViewParms.InterpupillaryDistance;
+	const float eyeOffset = ( eye ? -1 : 1 ) * 0.5f * ViewParms.interpupillaryDistance;
     return VR4Matrixf::Translation( eyeOffset, 0.0f, 0.0f ) * ViewMatrix;
 }
 
@@ -290,7 +290,7 @@ V3Vectf OvrSceneView::Forward() const
 
 V3Vectf OvrSceneView::CenterEyePos() const
 {
-    return V3Vectf( FootPos.x, FootPos.y + ViewParms.EyeHeight, FootPos.z );
+    return V3Vectf( FootPos.x, FootPos.y + ViewParms.eyeHeight, FootPos.z );
 }
 
 V3Vectf OvrSceneView::ShiftedCenterEyePos() const
@@ -379,14 +379,14 @@ void OvrSceneView::UpdateViewMatrix(const VrFrame vrFrame )
 		const float moveDistance = std::min<float>( MoveSpeed * (float)dt, 1.0f );
 		if ( WorldModel.Definition )
 		{
-			FootPos = SlideMove( FootPos, ViewParms.EyeHeight, orientationVector, moveDistance,
+			FootPos = SlideMove( FootPos, ViewParms.eyeHeight, orientationVector, moveDistance,
 						WorldModel.Definition->Collisions, WorldModel.Definition->GroundCollisions );
 		}
 		else
 		{	// no scene loaded, walk without any collisions
 			CollisionModel collisionModel;
 			CollisionModel groundCollisionModel;
-			FootPos = SlideMove( FootPos, ViewParms.EyeHeight, orientationVector, moveDistance,
+			FootPos = SlideMove( FootPos, ViewParms.eyeHeight, orientationVector, moveDistance,
 						collisionModel, groundCollisionModel );
 		}
 	}
@@ -410,7 +410,7 @@ void OvrSceneView::UpdateViewMatrix(const VrFrame vrFrame )
 	ShiftedEyePos = CenterEyePos();
 
     V3Vectf headModelOffset = HeadModelOffset( EyeRoll, EyePitch, EyeYaw,
-			ViewParms.HeadModelDepth, ViewParms.HeadModelHeight );
+			ViewParms.headModelDepth, ViewParms.headModelHeight );
 	if ( useHeadModel )
 	{
 		ShiftedEyePos += headModelOffset;
@@ -451,7 +451,7 @@ void OvrSceneView::UpdateSceneModels( const VrFrame vrFrame, const long long sup
 	}
 }
 
-void OvrSceneView::Frame( const VrViewParms viewParms_, const VrFrame vrFrame,
+void OvrSceneView::Frame( const VViewSettings viewParms_, const VrFrame vrFrame,
 		VR4Matrixf & timeWarpParmsExternalVelocity, const long long supressModelsWithClientId )
 {
 	ViewParms = viewParms_;

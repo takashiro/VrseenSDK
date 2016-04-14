@@ -201,9 +201,9 @@ void Oculus360Videos::init(const VString &fromPackage, const VString &launchInte
 
 	// Stay exactly at the origin, so the panorama globe is equidistant
 	// Don't clear the head model neck length, or swipe view panels feel wrong.
-	VrViewParms viewParms = vApp->vrViewParms();
-	viewParms.EyeHeight = 0.0f;
-	vApp->setVrViewParms( viewParms );
+	VViewSettings viewParms = vApp->viewSettings();
+	viewParms.eyeHeight = 0.0f;
+	vApp->setViewSettings( viewParms );
 
 	// Optimize for 16 bit depth in a modest theater size
 	Scene.Znear = 0.1f;
@@ -752,7 +752,7 @@ VR4Matrixf Oculus360Videos::onNewFrame( const VrFrame vrFrame )
 	VrFrame vrFrameWithoutMove = vrFrame;
 	vrFrameWithoutMove.Input.sticks[ 0 ][ 0 ] = 0.0f;
 	vrFrameWithoutMove.Input.sticks[ 0 ][ 1 ] = 0.0f;
-    Scene.Frame( vApp->vrViewParms(), vrFrameWithoutMove, vApp->kernel()->m_externalVelocity );
+    Scene.Frame( vApp->viewSettings(), vrFrameWithoutMove, vApp->kernel()->m_externalVelocity );
 
 	// Check for new video frames
 	// latch the latest movie frame to the texture.

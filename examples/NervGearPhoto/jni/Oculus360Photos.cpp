@@ -149,9 +149,9 @@ void Oculus360Photos::init(const VString &fromPackage, const VString &launchInte
 
     // Stay exactly at the origin, so the panorama globe is equidistant
     // Don't clear the head model neck length, or swipe view panels feel wrong.
-    VrViewParms viewParms = vApp->vrViewParms();
-    viewParms.EyeHeight = 0.0f;
-    vApp->setVrViewParms( viewParms );
+    VViewSettings viewParms = vApp->viewSettings();
+    viewParms.eyeHeight = 0.0f;
+    vApp->setViewSettings( viewParms );
 
     // Optimize for 16 bit depth in a modest globe size
     m_scene.Znear = 0.1f;
@@ -860,7 +860,7 @@ VR4Matrixf Oculus360Photos::onNewFrame( const VrFrame vrFrame )
     vrFrameWithoutMove.Input.sticks[ 0 ][ 1 ] = 0.0f;
     //m_scene.Frame( vApp->vrViewParms(), vrFrameWithoutMove, vApp->swapParms().ExternalVelocity );
 
-      m_scene.Frame( vApp->vrViewParms(), vrFrameWithoutMove, vApp->kernel()->m_externalVelocity );
+      m_scene.Frame( vApp->viewSettings(), vrFrameWithoutMove, vApp->kernel()->m_externalVelocity );
 
 #ifdef ENABLE_MENU
     // reopen PanoMenu when in pano

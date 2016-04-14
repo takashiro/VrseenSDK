@@ -176,7 +176,7 @@ void SceneManager::SetSceneModel( const SceneDef &sceneDef )
 			break;
 		}
 		SceneSeatPositions[SceneSeatCount] = tag->matrix.GetTranslation();
-        SceneSeatPositions[SceneSeatCount].y -= vApp->vrViewParms().EyeHeight;
+        SceneSeatPositions[SceneSeatCount].y -= vApp->viewSettings().eyeHeight;
 	}
 
 	if ( !sceneDef.UseSeats )
@@ -447,7 +447,7 @@ void SceneManager::SetFreeScreenAngles( const V3Vectf &angles )
 
     V3Vectf shiftedEyePos = Scene.CenterEyePos();
     V3Vectf headModelOffset = Scene.HeadModelOffset( 0.0f, FreeScreenAngles.x, FreeScreenAngles.y,
-			Scene.ViewParms.HeadModelDepth, Scene.ViewParms.HeadModelHeight );
+			Scene.ViewParms.headModelDepth, Scene.ViewParms.headModelHeight );
 	shiftedEyePos += headModelOffset;
     VR4Matrixf result = VR4Matrixf::LookAtRH( shiftedEyePos, shiftedEyePos + forward, up );
 
@@ -1006,7 +1006,7 @@ VR4Matrixf SceneManager::Frame( const VrFrame & vrFrame )
 		vrFrameWithoutMove.Input.sticks[0][0] = 0.0f;
 		vrFrameWithoutMove.Input.sticks[0][1] = 0.0f;
 	}
-    Scene.Frame( vApp->vrViewParms(), vrFrameWithoutMove, vApp->kernel()->m_externalVelocity);
+    Scene.Frame( vApp->viewSettings(), vrFrameWithoutMove, vApp->kernel()->m_externalVelocity);
 
 	if ( ClearGhostsFrames > 0 )
 	{

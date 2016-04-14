@@ -5,32 +5,7 @@
 #include "VBasicmath.h"
 #include "api/VKernel.h"
 
-#pragma once
-
 NV_NAMESPACE_BEGIN
-
-//==============================================================
-// VrViewParms
-//
-// Should probably be in a separate header.
-class VrViewParms
-{
-public:
-	VrViewParms() :
-        InterpupillaryDistance( 0.0640f ),
-        EyeHeight( 1.6750f ),
-        HeadModelDepth( 0.0805f ),
-        HeadModelHeight( 0.0750f )
-	{
-	}
-
-    // These should be a per-user configuration parameter
-    float					InterpupillaryDistance;
-    float					EyeHeight;
-    float					HeadModelDepth;
-    float					HeadModelHeight;
-};
-
 
 enum JoyButton
 {

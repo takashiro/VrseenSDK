@@ -56,7 +56,7 @@ public:
 	// Sets the timeWarpParms for smooth joypad turning while dropping frames.
 	// Models that have DontRenderForClientUid == supressModelsWithClientId will be skipped
 	// to prevent the client's own head model from drawing in their view.
-	void		Frame(const VrViewParms viewParms_, const VrFrame vrFrame,
+	void		Frame(const VViewSettings viewParms_, const VrFrame vrFrame,
             VR4Matrixf & timeWarpParmsExternalVelocity, const long long supressModelsWithClientId = -1 );
 
 	// Issues GL calls and returns the MVP for the eye, as needed by AppInterface DrawEyeVIew
@@ -127,7 +127,7 @@ public:
 	ModelGlPrograms			GlPrograms;
 
 	// Updated each Frame()
-	VrViewParms				ViewParms;
+	VViewSettings				ViewParms;
 
 	// 3.0 m/s by default.  Different apps may want different move speeds
     float					MoveSpeed;

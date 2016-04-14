@@ -1,7 +1,8 @@
 #pragma once
 
+#include "VViewSettings.h"
+
 #include "VEyeBuffer.h"
-#include "vglobal.h"
 #include "api/VKernel.h"
 #include "KeyState.h"
 #include "Input.h"
@@ -24,7 +25,7 @@ class BitmapFontSurface;
 class OvrVRMenuMgr;
 class OvrDebugLines;
 class App;
-class VrViewParms;
+class VViewSettings;
 class VStandardPath;
 class SurfaceTexture;
 class OvrGuiSys;
@@ -77,8 +78,8 @@ public:
 
     VEyeBuffer::Settings &vrParms();
 
-    const VrViewParms &vrViewParms() const;
-    void setVrViewParms( VrViewParms const & parms );
+    const VViewSettings &viewSettings() const;
+    void setViewSettings(const VViewSettings &settings);
 
     void setPopupDistance( float const d );
     float popupDistance() const;
