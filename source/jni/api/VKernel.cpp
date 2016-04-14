@@ -68,10 +68,12 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *)
     ovr_OnLoad(vm);
 
     JNIEnv *jni;
-    const jint result = vm->AttachCurrentThread( &jni, 0 );
+    const jint result = vm->AttachCurrentThread(&jni, 0);
     vAssert(result != JNI_OK);
 
     VOsBuild::Init(jni);
+
+    vm->DetachCurrentThread();
 
     return JNI_VERSION_1_6;
 }
@@ -83,13 +85,6 @@ JNIEXPORT void Java_com_vrseen_nervgear_VrLib_nativeHeadsetEvent(JNIEnv *jni, jc
 }
 
 } // extern "C"
-
-const char *ovr_GetVersionString()
-{
-    return NV_VERSION_STRING;
-}
-
-
 
 // This must be called by a function called directly from a java thread,
 // preferably at JNI_OnLoad().  It will fail if called from a pthread created
@@ -297,7 +292,6 @@ void VKernel::run()
 
     vInfo("BUILD =" << VOsBuild::getString(VOsBuild::Display) << buildConfig);
     vInfo("MODEL =" << VOsBuild::getString(VOsBuild::Model));
-    vInfo("OVR_VERSION =" << ovr_GetVersionString());
 
     isRunning = true;
 

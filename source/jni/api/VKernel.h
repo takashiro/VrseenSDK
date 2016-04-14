@@ -1,47 +1,31 @@
 #pragma once
-#include <VString.h>
-#include "math.h"
+
+#include <math.h>
+
 #include "VBasicmath.h"
+#include "VString.h"
+#include "VRotationState.h"
 
-#include "VRotationSensor.h"
-
-#if defined( ANDROID )
 #include <jni.h>
-#elif defined( __cplusplus )
-typedef struct _JNIEnv JNIEnv;
-typedef struct _JavaVM JavaVM;
-typedef class _jobject * jobject;
-#else
-typedef const struct JNINativeInterface * JNIEnv;
-typedef const struct JNIInvokeInterface * JavaVM;
-void * jobject;
-#endif
 
 extern "C" {
 
 extern JavaVM * VrLibJavaVM;
 
-typedef enum
-{
-            VK_INHIBIT_SRGB_FB	= 1,
+}
 
-            VK_USE_S				= 2,
-
-            VK_FLUSH						= 4,
-
-            VK_FIXED_LAYER				= 8,
-
-            VK_DISPLAY_CURSOR					= 16,
-
-            VK_IMAGE				= 32,
-
-            VK_DRAW_LINES		= 64
-} VKoption;
+enum{
+    VK_INHIBIT_SRGB_FB = 1,
+    VK_USE_S = 2,
+    VK_FLUSH = 4,
+    VK_FIXED_LAYER = 8,
+    VK_DISPLAY_CURSOR = 16,
+    VK_IMAGE = 32,
+    VK_DRAW_LINES = 64
+};
 
 
-typedef enum
-{
-
+enum VrKernelProgram {
     VK_DEFAULT,
     VK_PLANE,
     VK_PLANE_SPECIAL,
@@ -65,21 +49,17 @@ typedef enum
     VK_RESERVED_CB,
 
     VK_MAX
-} VrKernelProgram;
+};
 
 
 
 
-typedef enum
-{
+enum eExitType {
     EXIT_TYPE_NONE,
     EXIT_TYPE_FINISH,
     EXIT_TYPE_FINISH_AFFINITY,
     EXIT_TYPE_EXIT
-
-} eExitType;
-
-}
+};
 
 NV_NAMESPACE_BEGIN
 
