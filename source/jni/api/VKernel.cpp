@@ -31,7 +31,6 @@ static jobject  ActivityObject = NULL;
 
 
 void		ovr_OnLoad( JavaVM * JavaVm_ );
-void		ovr_Init();
 
 /*
  * This interacts with the VrLib java class to deal with Android platform issues.
@@ -64,17 +63,17 @@ extern "C"
 void Java_com_vrseen_nervgear_VrLib_nativeVsync( JNIEnv *jni, jclass clazz, jlong frameTimeNanos );
 void Java_com_vrseen_nervgear_VrLib_nativeVolumeEvent(JNIEnv *jni, jclass clazz, jint volume);
 
-JNIEXPORT jint JNI_OnLoad( JavaVM * vm, void * reserved )
+JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *)
 {
-vInfo("JNI_OnLoad");
+    ovr_OnLoad(vm);
 
-// Lookup our classnames
-ovr_OnLoad( vm );
+    JNIEnv *jni;
+    const jint result = vm->AttachCurrentThread( &jni, 0 );
+    vAssert(result != JNI_OK);
 
-// Start up the Oculus device manager
-ovr_Init();
+    VOsBuild::Init(jni);
 
-return JNI_VERSION_1_6;
+    return JNI_VERSION_1_6;
 }
 
 JNIEXPORT void Java_com_vrseen_nervgear_VrLib_nativeHeadsetEvent(JNIEnv *jni, jclass clazz, jint state)
@@ -180,24 +179,6 @@ void ovr_OnLoad( JavaVM * JavaVm_ )
         vInfo("Freeing temporary JNIEnv");
         VrLibJavaVM->DetachCurrentThread();
     }
-}
-
-// A dedicated VR app will usually call this immediately after ovr_OnLoad(),
-// but a hybrid app may want to defer calling it until the first headset
-// plugin event to avoid starting the device manager.
-void ovr_Init()
-{
-    vInfo("ovr_Init");
-
-    JNIEnv * jni;
-    const jint rtn = VrLibJavaVM->AttachCurrentThread( &jni, 0 );
-    if ( rtn != JNI_OK )
-    {
-        vFatal("AttachCurrentThread returned" << rtn);
-    }
-
-    // After ovr_Initialize(), because it uses String
-    VOsBuild::Init(jni);
 }
 
 VKernel* VKernel::GetInstance()
