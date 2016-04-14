@@ -186,8 +186,6 @@ struct App::Private
 
     jclass			vrActivityClass;		// must be looked up from main thread or FindClass() will fail
 
-    jmethodID		createVrToastMethodId;
-    jmethodID		clearVrToastsMethodId;
     jmethodID		playSoundPoolSoundMethodId;
 
     VString			launchIntentURI;			// URI app was launched with
@@ -302,8 +300,6 @@ struct App::Private
         , uiJni(nullptr)
         , vrJni(nullptr)
         , vrActivityClass(nullptr)
-        , createVrToastMethodId(nullptr)
-        , clearVrToastsMethodId(nullptr)
         , playSoundPoolSoundMethodId(nullptr)
         , paused(true)
         , popupDistance(2.0f)
@@ -653,12 +649,12 @@ struct App::Private
                 if (kernel->m_smoothOptions & VK_USE_S)
                 {
                     kernel->m_smoothOptions &= ~VK_USE_S;
-                    self->createToast("eye warp");
+                    //self->createToast("eye warp");
                 }
                 else
                 {
                     kernel->m_smoothOptions |= VK_USE_S;
-                    self->createToast("slice warp");
+                    //self->createToast("slice warp");
                 }
             }
 
@@ -669,24 +665,24 @@ struct App::Private
                 if (input.buttonPressed & BUTTON_DPAD_LEFT)
                 {
                     kernel->m_preScheduleSeconds -= 0.001f;
-                    self->createToast("Schedule: %f",  kernel->m_preScheduleSeconds);
+                    //self->createToast("Schedule: %f",  kernel->m_preScheduleSeconds);
                 }
                 if (input.buttonPressed & BUTTON_DPAD_RIGHT)
                 {
                     kernel->m_preScheduleSeconds += 0.001f;
-                    self->createToast("Schedule: %f",  kernel->m_preScheduleSeconds);
+                    //self->createToast("Schedule: %f",  kernel->m_preScheduleSeconds);
                 }
                 if (input.buttonPressed & BUTTON_DPAD_UP)
                 {
                     calibrateFovScale -= 0.01f;
-                    self->createToast("calibrateFovScale: %f", calibrateFovScale);
+                    //self->createToast("calibrateFovScale: %f", calibrateFovScale);
                     pause();
                     resume();
                 }
                 if (input.buttonPressed & BUTTON_DPAD_DOWN)
                 {
                     calibrateFovScale += 0.01f;
-                    self->createToast("calibrateFovScale: %f", calibrateFovScale);
+                    //self->createToast("calibrateFovScale: %f", calibrateFovScale);
                     pause();
                     resume();
                 }
@@ -1342,7 +1338,7 @@ struct App::Private
                 if (repeatCount == 0 && down) // first down only
                 {
                     eyeTargets->snapshot();
-                    self->createToast("screenshot");
+                    //self->createToast("screenshot");
                     return;
                 }
             }
@@ -1427,8 +1423,6 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
     d->vrActivityClass = d->getGlobalClassReference(activityClassName);
     VrLocale::VrActivityClass = d->vrActivityClass;
 
-    d->createVrToastMethodId = d->GetMethodID("createVrToastOnUiThread", "(Ljava/lang/String;)V");
-    d->clearVrToastsMethodId = d->GetMethodID("clearVrToasts", "()V");
     d->playSoundPoolSoundMethodId = d->GetMethodID("playSoundPoolSound", "(Ljava/lang/String;)V");
 
 	// Get the path to the .apk and package name
@@ -1495,29 +1489,6 @@ bool App::isRunning() const
 VEventLoop &App::eventLoop()
 {
     return d->eventLoop;
-}
-
-void App::createToast(const char * fmt, ...)
-{
-	char bigBuffer[4096];
-	va_list	args;
-    va_start(args, fmt);
-    vsnprintf(bigBuffer, sizeof(bigBuffer), fmt, args);
-    va_end(args);
-
-    JNIEnv *jni = nullptr;
-    jstring cmdString = nullptr;
-    if (d->javaVM->AttachCurrentThread(&jni, nullptr) == JNI_OK) {
-        cmdString = JniUtils::Convert(jni, bigBuffer);
-
-        d->activity->eventLoop().post([=]{
-            JNIEnv *jni = nullptr;
-            if (d->javaVM->AttachCurrentThread(&jni, nullptr) == JNI_OK) {
-                jni->CallVoidMethod(d->javaObject, d->createVrToastMethodId, cmdString);
-            }
-            jni->DeleteLocalRef(cmdString);
-        });
-    }
 }
 
 void App::playSound(const char *name)

@@ -526,7 +526,7 @@ void MoviePlayerView::CheckDebugControls( const VFrame & vrFrame )
 	if ( vrFrame.input.buttonPressed & BUTTON_SELECT )
 	{
         Cinema.sceneMgr.UseOverlay = !Cinema.sceneMgr.UseOverlay;
-        vApp->createToast( "Overlay: %i", Cinema.sceneMgr.UseOverlay );
+        //vApp->createToast( "Overlay: %i", Cinema.sceneMgr.UseOverlay );
 	}
 
 	// Press Y to toggle FreeScreen mode, while holding the scale and distance can be adjusted
@@ -545,7 +545,7 @@ void MoviePlayerView::CheckDebugControls( const VFrame & vrFrame )
 
 		if ( vrFrame.input.buttonReleased & (BUTTON_LSTICK_UP|BUTTON_LSTICK_DOWN|BUTTON_LSTICK_LEFT|BUTTON_LSTICK_RIGHT) )
 		{
-            vApp->createToast( "FreeScreenDistance:%3.1f  FreeScreenScale:%3.1f", Cinema.sceneMgr.FreeScreenDistance, Cinema.sceneMgr.FreeScreenScale );
+            //vApp->createToast( "FreeScreenDistance:%3.1f  FreeScreenScale:%3.1f", Cinema.sceneMgr.FreeScreenDistance, Cinema.sceneMgr.FreeScreenScale );
 		}
 	}
 }

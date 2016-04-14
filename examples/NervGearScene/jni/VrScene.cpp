@@ -15,8 +15,8 @@ Copyright   :   Copyright 2012 Oculus VR, LCC. All Rights reserved.
 #include <VLog.h>
 #include <VColor.h>
 #include <VEyeBuffer.h>
-
-static const char * versionString = "VrScene v0.1.0";
+#include <VFrame.h>
+#include <App.h>
 
 extern "C"
 {
@@ -185,7 +185,7 @@ VR4Matrixf VrScene::onNewFrame( const VFrame vrFrame )
 		{
 			if ( vrFrame.input.buttonPressed & BUTTON_SELECT )
 			{
-				vApp->createToast( "%s", versionString );
+                //vApp->createToast( "%s", versionString );
 			}
 
 			// Switch buffer parameters for testing
@@ -197,7 +197,7 @@ VR4Matrixf VrScene::onNewFrame( const VFrame vrFrame )
                     case 4: eyeSettings.multisamples = 1; break;
                     default: eyeSettings.multisamples = 2; break;
                 }
-                vApp->createToast( "multisamples: %i", eyeSettings.multisamples );
+                //vApp->createToast( "multisamples: %i", eyeSettings.multisamples );
 			}
 		}
 	}

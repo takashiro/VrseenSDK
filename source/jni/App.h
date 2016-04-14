@@ -43,8 +43,6 @@ public:
 
     void drawEyeViewsPostDistorted( VR4Matrixf const & viewMatrix, const int numPresents = 1);
 
-    void createToast( const char * fmt, ... );
-
     void playSound( const char * name );
 
     void recenterYaw( const bool showBlack );
