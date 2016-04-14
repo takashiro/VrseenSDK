@@ -147,48 +147,7 @@ typedef VBox<double> VBoxd;
 // VSize class represents 2D VSize with Width, Height components.
 // Used to describe distentions of render targets, etc.
 
-template<class T>
-class VSize
-{
-public:
-    T   Width, Height;
-
-    VSize()              : Width(0), Height(0)   { }
-    VSize(T w_, T h_)    : Width(w_), Height(h_) { }
-    explicit VSize(T s)  : Width(s), Height(s)   { }
-    explicit VSize(const VSize<typename VConstants<T>::VdifFloat> &src)
-        : Width((T)src.w), Height((T)src.h) { }
-
-    bool     operator== (const VSize& b) const  { return Width == b.Width && Height == b.Height; }
-    bool     operator!= (const VSize& b) const  { return Width != b.Width || Height != b.Height; }
-
-    VSize  operator+  (const VSize& b) const  { return VSize(Width + b.Width, Height + b.Height); }
-    VSize& operator+= (const VSize& b)        { Width += b.Width; Height += b.Height; return *this; }
-    VSize  operator-  (const VSize& b) const  { return VSize(Width - b.Width, Height - b.Height); }
-    VSize& operator-= (const VSize& b)        { Width -= b.Width; Height -= b.Height; return *this; }
-    VSize  operator- () const                { return VSize(-Width, -Height); }
-    VSize  operator*  (const VSize& b) const  { return VSize(Width * b.Width, Height * b.Height); }
-    VSize& operator*= (const VSize& b)        { Width *= b.Width; Height *= b.Height; return *this; }
-    VSize  operator/  (const VSize& b) const  { return VSize(Width / b.Width, Height / b.Height); }
-    VSize& operator/= (const VSize& b)        { Width /= b.Width; Height /= b.Height; return *this; }
-
-    // Scalar multiplication/division scales both components.
-    VSize  operator*  (T s) const            { return VSize(Width*s, Height*s); }
-    VSize& operator*= (T s)                  { Width *= s; Height *= s; return *this; }
-    VSize  operator/  (T s) const            { return VSize(Width/s, Height/s); }
-    VSize& operator/= (T s)                  { Width /= s; Height /= s; return *this; }
-
-    static VSize Min(const VSize& a, const VSize& b)  { return VSize((a.Width  < b.Width)  ? a.Width  : b.Width,
-                                                                 (a.Height < b.Height) ? a.Height : b.Height); }
-    static VSize Max(const VSize& a, const VSize& b)  { return VSize((a.Width  > b.Width)  ? a.Width  : b.Width,
-                                                                 (a.Height > b.Height) ? a.Height : b.Height); }
-
-
-    T       Area() const                    { return Width * Height; }
-
-    inline  V2Vect<T> ToVector() const     { return V2Vect<T>(Width, Height); }
-};
-
+#include "VSize.h"
 
 typedef VSize<int>       VSizei;
 typedef VSize<unsigned>  VSizeu;

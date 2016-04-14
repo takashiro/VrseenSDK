@@ -133,6 +133,7 @@ HEADERS += \
     jni/core/VPath.h \
     jni/core/VPos.h \
     jni/core/VSignal.h \
+    jni/core/VSize.h \
     jni/core/VStandardPath.h \
     jni/core/VString.h \
     jni/core/VStringHash.h \
