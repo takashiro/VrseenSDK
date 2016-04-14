@@ -236,7 +236,7 @@ void OvrScrollBarComponent::getScrollBarParms( VRMenu & menu, float scrollBarLen
 	// add parms for the base image that underlays the whole scrollbar
 	{
 		int sbWidth, sbHeight = 0;
-		GLuint sbTexture = NervGear::LoadTextureFromApplicationPackage( GetImage( SCROLLBAR_IMAGE_BASE, verticalBar ), TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), sbWidth, sbHeight );
+        GLuint sbTexture = LoadTextureFromApplicationPackage( GetImage( SCROLLBAR_IMAGE_BASE, verticalBar ), TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), sbWidth, sbHeight );
 		if ( verticalBar )
 		{
 			scrollComponent->setScrollBarBaseWidth( (float)( sbWidth ) );
@@ -274,7 +274,7 @@ void OvrScrollBarComponent::getScrollBarParms( VRMenu & menu, float scrollBarLen
 	// add parms for the thumb image of the scrollbar
 	{
 		int stWidth, stHeight = 0;
-		GLuint stTexture = NervGear::LoadTextureFromApplicationPackage( GetImage( SCROLLBAR_IMAGE_THUMB, verticalBar ), TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), stWidth, stHeight );
+        GLuint stTexture = LoadTextureFromApplicationPackage( GetImage( SCROLLBAR_IMAGE_THUMB, verticalBar ), TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), stWidth, stHeight );
 		scrollComponent->setScrollBarThumbWidth(  (float)( stWidth ) );
 		scrollComponent->setScrollBarThumbHeight( (float)( stHeight ) );
 

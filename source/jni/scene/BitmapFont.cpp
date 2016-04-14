@@ -131,8 +131,8 @@ public:
 	float CenterOffset; // +/- value applied to "center" distance in the signed distance field. Range [-1,1]. A negative offset will make the font appear bolder.
 	float MaxAscent; // maximum ascent of any character
 	float MaxDescent; // maximum descent of any character
-	NervGear::VArray<FontGlyphType> Glyphs; // info about each glyph in the font
-	NervGear::VArray<int32_t> CharCodeMap; // index by character code to get the index of a glyph for the character
+    VArray<FontGlyphType> Glyphs; // info about each glyph in the font
+    VArray<int32_t> CharCodeMap; // index by character code to get the index of a glyph for the character
 
 private:
     bool LoadFromPackage(const VApkFile &packageFile, const VString &fileName);
@@ -172,7 +172,7 @@ public:
 	void WordWrapText(VString & inOutText, const float widthMeters,
 			const float fontScale = 1.0f) const;
 	void WordWrapText(VString & inOutText, const float widthMeters,
-			NervGear::VArray<NervGear::VString> wholeStrsList,
+            VArray<VString> wholeStrsList,
 			const float fontScale = 1.0f) const;
 
 	FontGlyphType const & GlyphForCharCode(uint32_t const charCode) const {
@@ -854,13 +854,13 @@ bool BitmapFontLocal::LoadImageFromBuffer(char const * imageName,
 // BitmapFontLocal::WordWrapText
 void BitmapFontLocal::WordWrapText(VString & inOutText, const float widthMeters,
 		const float fontScale) const {
-	WordWrapText(inOutText, widthMeters, NervGear::VArray<NervGear::VString>(), fontScale);
+    WordWrapText(inOutText, widthMeters, VArray<VString>(), fontScale);
 }
 
 //==============================
 // BitmapFontLocal::WordWrapText
 void BitmapFontLocal::WordWrapText(VString & inOutText, const float widthMeters,
-		NervGear::VArray<NervGear::VString> wholeStrsList, const float fontScale) const {
+        VArray<VString> wholeStrsList, const float fontScale) const {
 	float const xScale = FontInfo.ScaleFactorX * fontScale;
     const int32_t totalLength = (int) inOutText.length();
 	int32_t lastWhitespaceIndex = -1;
@@ -1221,11 +1221,11 @@ void BitmapFontSurfaceLocal::DrawText3D(BitmapFont const & font,
 	float const distanceScale = imageWidth / FontInfoType::DEFAULT_SCALE_FACTOR;
 	const uint8_t fontParms[4] =
 			{
-					(uint8_t) (NervGear::VAlgorithm::Clamp(
+                    (uint8_t) (VAlgorithm::Clamp(
 							parms.AlphaCenter + fontInfo.CenterOffset, 0.0f,
-							1.0f) * 255), (uint8_t) (NervGear::VAlgorithm::Clamp(
+                            1.0f) * 255), (uint8_t) (VAlgorithm::Clamp(
 							parms.ColorCenter + fontInfo.CenterOffset, 0.0f,
-							1.0f) * 255), (uint8_t) (NervGear::VAlgorithm::Clamp(
+                            1.0f) * 255), (uint8_t) (VAlgorithm::Clamp(
 							distanceScale, 1.0f, 255.0f)), 0 };
 
 	int iColor = ColorToABGR(color);

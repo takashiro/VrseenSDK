@@ -241,7 +241,7 @@ int bsortComp( const void * p1, const void * p2 )
 	return -1;
 }
 
-const DrawSurfaceList & BuildDrawSurfaceList( const NervGear::VArray<ModelState> & modelRenderList,
+const DrawSurfaceList & BuildDrawSurfaceList( const VArray<ModelState> & modelRenderList,
             const VR4Matrixf & viewMatrix, const VR4Matrixf & projectionMatrix )
 {
 	// A mobile GPU will be in trouble if it draws more than this.

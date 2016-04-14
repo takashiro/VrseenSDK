@@ -1,12 +1,12 @@
 #pragma once
 
-#include "vglobal.h"
+#include "VConstants.h"
 #include "VVector.h"
 #include "VMatrix.h"
+#include "VSize.h"
+
 #include <assert.h>
 #include <stdlib.h>
-#include "VConstants.h"
-
 
 namespace NervGear {
 
@@ -146,8 +146,6 @@ typedef VBox<double> VBoxd;
 
 // VSize class represents 2D VSize with Width, Height components.
 // Used to describe distentions of render targets, etc.
-
-#include "VSize.h"
 
 typedef VSize<int>       VSizei;
 typedef VSize<unsigned>  VSizeu;

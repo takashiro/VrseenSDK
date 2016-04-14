@@ -16,7 +16,7 @@ VDialog::VDialog():dialogStopSeconds(0.0f),
 void VDialog::draw( VPanel &panel, const VR4Matrixf & mvp )
 {
     // draw the pop-up dialog
-    const float now = NervGear::VTimer::Seconds();
+    const float now = VTimer::Seconds();
     if ( now >= dialogStopSeconds )
     {
         return;

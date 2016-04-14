@@ -119,8 +119,8 @@ private:
 	mutable VGlGeometry				NonDepthGeo;
 //	NervGear::ArrayPOD< DebugLine_t >	DepthTestedLines;
 //	NervGear::ArrayPOD< DebugLine_t >	NonDepthTestedLines;
-	NervGear::VArray< DebugLine_t >	DepthTestedLines;
-	NervGear::VArray< DebugLine_t >	NonDepthTestedLines;
+    VArray< DebugLine_t >	DepthTestedLines;
+    VArray< DebugLine_t >	NonDepthTestedLines;
 	LineVertex_t *					Vertices;
 
 	bool							Initialized;
@@ -129,9 +129,9 @@ private:
 	void		InitVBO( VGlGeometry & geo, LineVertex_t * vertices, const int maxVerts,
 						 LineIndex_t * indices, const int maxIndices );
     void		Render( VR4Matrixf const & mvp, VGlGeometry & geo,
-						NervGear::VArray< DebugLine_t > const & lines,
+                        VArray< DebugLine_t > const & lines,
 						const bool depthTest ) const;
-	void		RemoveExpired( const long long frameNum, NervGear::VArray< DebugLine_t > & lines );
+    void		RemoveExpired( const long long frameNum, VArray< DebugLine_t > & lines );
 };
 
 //==============================
@@ -251,7 +251,7 @@ void OvrDebugLinesLocal::Render( VR4Matrixf const & mvp ) const
 //==============================
 // OvrDebugLinesLocal::Render
 void OvrDebugLinesLocal::Render( VR4Matrixf const & mvp, VGlGeometry & geo,
-		NervGear::VArray< DebugLine_t > const & lines,  const bool depthTest ) const
+        VArray< DebugLine_t > const & lines,  const bool depthTest ) const
 {
 
 	if ( lines.length() == 0 )
@@ -423,7 +423,7 @@ void OvrDebugLinesLocal::BeginFrame( const long long frameNum )
 
 //==============================
 // OvrDebugLinesLocal::RemoveExpired
-void OvrDebugLinesLocal::RemoveExpired( const long long frameNum, NervGear::VArray< DebugLine_t > & lines )
+void OvrDebugLinesLocal::RemoveExpired( const long long frameNum, VArray< DebugLine_t > & lines )
 {
 	for ( int i = lines.length() - 1; i >= 0; --i )
 	{

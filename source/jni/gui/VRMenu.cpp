@@ -124,7 +124,7 @@ public:
 //==============================
 // VRMenu::AddItems
 void VRMenu::addItems( OvrVRMenuMgr & menuMgr, BitmapFont const & font,
-        NervGear::VArray< VRMenuObjectParms const * > & itemParms,
+        VArray< VRMenuObjectParms const * > & itemParms,
         menuHandle_t parentHandle, bool const recenter )
 {
     const V3Vectf fwd( 0.0f, 0.0f, 1.0f );

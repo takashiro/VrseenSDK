@@ -1453,7 +1453,7 @@ void VFrameSmooth::Private::smoothInternal( )
     m_minimumVsync = m_lastSwapVsyncCount + 2 * m_minimumVsyncs;	// don't use it if from same frame to avoid problems with very fast frames
     m_firstDisplayedVsync[0] = 0;			// will be set when it becomes the currentSource
     m_firstDisplayedVsync[1] = 0;			// will be set when it becomes the currentSource
-    m_disableChromaticCorrection = ( ( m_eglStatus.eglGetGpuType() & NervGear::VEglDriver::GPU_TYPE_MALI_T760_EXYNOS_5433 ) != 0 );
+    m_disableChromaticCorrection = ( ( m_eglStatus.eglGetGpuType() & VEglDriver::GPU_TYPE_MALI_T760_EXYNOS_5433 ) != 0 );
 
     if ( ( m_smoothProgram & VK_IMAGE ) != 0 )
     {

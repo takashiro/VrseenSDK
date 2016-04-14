@@ -704,7 +704,7 @@ void VRMenuMgrLocal::SubmitForRenderingRecursive( OvrDebugLines & debugLines, Bi
 			}
 		}
 
-		NervGear::VString const & text = obj->text();
+        VString const & text = obj->text();
         if ( ( oFlags & VRMENUOBJECT_DONT_RENDER_TEXT ) == 0 && text.length() > 0 )
 		{
             VPosf const & textLocalPose = obj->textLocalPose();

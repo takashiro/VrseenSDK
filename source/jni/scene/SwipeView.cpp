@@ -303,7 +303,7 @@ void	SwipeView::Close()
 		}
 		else
 		{	// close from the closest panel
-			AnimationCenterPanel[0] = NervGear::VAlgorithm::Clamp( (int)(Offset / SlotSize.x + 0.5f), 0, LayoutColumns()-1 );
+            AnimationCenterPanel[0] = VAlgorithm::Clamp( (int)(Offset / SlotSize.x + 0.5f), 0, LayoutColumns()-1 );
 			AnimationCenterPanel[1] = (int)( ( LayoutRows - 1 ) * 0.5f );
 		}
 	}
@@ -447,7 +447,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 		if ( ClampPanelOffset )
 		{
 			const float offsetRange = ( float )( ( LayoutColumns() / 2 ) * SlotSize.x + M_PI * 0.25f );
-			Offset = NervGear::VAlgorithm::Clamp( Offset, -offsetRange, offsetRange );
+            Offset = VAlgorithm::Clamp( Offset, -offsetRange, offsetRange );
 		}
 	}
 
@@ -589,7 +589,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 				Velocity = -SpeedScale * ( TouchPos[thisIndex].x - TouchPos[oldIndex].x ) / ( TimeHistory[thisIndex] - TimeHistory[oldIndex] );
 
 				// Clamp to a maximum speed
-				Velocity = NervGear::VAlgorithm::Clamp( Velocity, -MaxVelocity, MaxVelocity );
+                Velocity = VAlgorithm::Clamp( Velocity, -MaxVelocity, MaxVelocity );
 			}
 
 
@@ -636,7 +636,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 	AnimationFraction = std::min( 1.0,
             ( vrFrame.pose.timestamp - AnimationStartTime ) / OpenAnimationTime );
 	// allowing AnimationFraction to reach 0.0 causes an invalid matrix to be formed in Draw()
-	AnimationFraction = NervGear::VAlgorithm::Clamp( AnimationFraction, 0.00001f, 1.0f );
+    AnimationFraction = VAlgorithm::Clamp( AnimationFraction, 0.00001f, 1.0f );
 	if ( State == SVS_CLOSING )
 	{
 		if ( AnimationFraction >= 1.0f )
@@ -698,7 +698,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 					sqr( panelX - AnimationCenterPanel[0] )
 					+ sqr( panelY - AnimationCenterPanel[1] ) );
 			const float maxDistance = 3.0f;
-			const float clampedDistance = NervGear::VAlgorithm::Clamp( slotDistance, 1.0f, maxDistance );
+            const float clampedDistance = VAlgorithm::Clamp( slotDistance, 1.0f, maxDistance );
 
 			// animate the closer panels so they land sooner
 			// square it so they smack into the UI surface hard
