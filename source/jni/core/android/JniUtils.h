@@ -18,7 +18,6 @@ namespace JniUtils {
     jclass GetGlobalClassReference(JNIEnv *jni, const char *className);
     jmethodID GetMethodID(JNIEnv *jni, jclass jniclass, const char *name, const char *signature);
     jmethodID GetStaticMethodID(JNIEnv *jni, jclass jniclass, const char *name, const char *signature);
-    void LoadDevConfig(bool const forceReload);
 }
 
 class JavaObject

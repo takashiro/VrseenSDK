@@ -99,27 +99,6 @@ namespace JniUtils {
         }
         return method;
     }
-
-    static VJson *DevConfig = nullptr;
-    void LoadDevConfig(const bool forceReload)
-    {
-    #ifndef RETAIL
-        if (DevConfig != nullptr) {
-            if (!forceReload) {
-                return;	// already loading and not forcing a reload
-            }
-            delete DevConfig;
-            DevConfig = nullptr;
-        }
-
-        // load the dev config if possible
-        std::ifstream fp("/storage/extSdCard/Oculus/dev.cfg", std::ios::binary);
-        if (fp.is_open()) {
-            DevConfig = new VJson;
-            fp >> (*DevConfig);
-        }
-    #endif
-    }
 }
 
 JavaObject::JavaObject(JNIEnv *jni, const jobject jObject)

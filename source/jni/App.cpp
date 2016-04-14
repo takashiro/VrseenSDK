@@ -411,10 +411,6 @@ struct App::Private
     {
         vInfo("OVRTimer AppLocal::Resume");
 
-        // always reload the dev config on a resume
-        JniUtils::LoadDevConfig(true);
-
-
         // Make sure the window surface is current, which it won't be
         // if we were previously in async mode
         // (Not needed now?)
@@ -1408,8 +1404,6 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
     d->sensorForNextWarp.x = 0;
     d->sensorForNextWarp.y = 0;
     d->sensorForNextWarp.z = 0;
-
-    JniUtils::LoadDevConfig(false);
 
 	// Default time warp parms
    d->kernel->InitTimeWarpParms();
