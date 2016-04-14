@@ -3,6 +3,7 @@
 #include "VLog.h"
 
 #include <fstream>
+#include <list>
 
 NV_NAMESPACE_BEGIN
 
@@ -98,6 +99,43 @@ namespace JniUtils {
             vFatal("couldn't get" << name << signature);
         }
         return method;
+    }
+
+    std::list<Loader> &Loaders()
+    {
+        static std::list<Loader> loaders;
+        return loaders;
+    }
+
+    void RegisterLoader(Loader loader)
+    {
+        Loaders().push_back(loader);
+    }
+
+}
+
+extern "C" {
+    JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *)
+    {
+        JNIEnv *jni;
+
+        bool privateEnv = false;
+        if (JNI_OK != vm->GetEnv(reinterpret_cast<void**>(&jni), JNI_VERSION_1_6)) {
+            privateEnv = true;
+            const jint result = vm->AttachCurrentThread(&jni, 0);
+            vAssert(result != JNI_OK);
+        }
+
+        const std::list<JniUtils::Loader> &loaders = JniUtils::Loaders();
+        for (JniUtils::Loader loader : loaders) {
+            loader(vm, jni);
+        }
+
+        if (privateEnv) {
+            vm->DetachCurrentThread();
+        }
+
+        return JNI_VERSION_1_6;
     }
 }
 

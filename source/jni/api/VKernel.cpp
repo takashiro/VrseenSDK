@@ -29,9 +29,6 @@ static JNIEnv	*				Jni;
 static  VFrameSmooth* frameSmooth = NULL;
 static jobject  ActivityObject = NULL;
 
-
-void		ovr_OnLoad( JavaVM * JavaVm_ );
-
 /*
  * This interacts with the VrLib java class to deal with Android platform issues.
  */
@@ -63,19 +60,6 @@ extern "C"
 void Java_com_vrseen_nervgear_VrLib_nativeVsync( JNIEnv *jni, jclass clazz, jlong frameTimeNanos );
 void Java_com_vrseen_nervgear_VrLib_nativeVolumeEvent(JNIEnv *jni, jclass clazz, jint volume);
 
-JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *)
-{
-    ovr_OnLoad(vm);
-
-    JNIEnv *jni;
-    const jint result = vm->AttachCurrentThread(&jni, 0);
-    vAssert(result == JNI_OK);
-
-    VOsBuild::Init(jni);
-
-    return JNI_VERSION_1_6;
-}
-
 JNIEXPORT void Java_com_vrseen_nervgear_VrLib_nativeHeadsetEvent(JNIEnv *jni, jclass clazz, jint state)
 {
     vInfo("nativeHeadsetEvent(" << state << ")");
@@ -93,7 +77,7 @@ JNIEXPORT void Java_com_vrseen_nervgear_VrLib_nativeHeadsetEvent(JNIEnv *jni, jc
 // This should not start any threads or consume any significant amount of
 // resources, so hybrid apps aren't penalizing their normal mode of operation
 // by supporting VR.
-void ovr_OnLoad( JavaVM * JavaVm_ )
+void ovr_OnLoad(JavaVM * JavaVm_, JNIEnv *jni)
 {
     vInfo("ovr_OnLoad()");
 
@@ -108,24 +92,6 @@ void ovr_OnLoad( JavaVM * JavaVm_ )
     }
 
     VrLibJavaVM = JavaVm_;
-
-    JNIEnv * jni;
-    bool privateEnv = false;
-    if ( JNI_OK != VrLibJavaVM->GetEnv( reinterpret_cast<void**>(&jni), JNI_VERSION_1_6 ) )
-    {
-        vInfo("Creating temporary JNIEnv");
-        // We will detach after we are done
-        privateEnv = true;
-        const jint rtn = VrLibJavaVM->AttachCurrentThread( &jni, 0 );
-        if ( rtn != JNI_OK )
-        {
-            vFatal("AttachCurrentThread returned" << rtn);
-        }
-    }
-    else
-    {
-        vInfo("Using caller's JNIEnv");
-    }
 
     VrLibClass = JniUtils::GetGlobalClassReference( jni, "com/vrseen/nervgear/VrLib" );
 
@@ -165,14 +131,8 @@ void ovr_OnLoad( JavaVM * JavaVm_ )
             vFatal("RegisterNatives failed on" << gMethods[i].Jnim.name);
         }
     }
-
-    // Detach if the caller wasn't already attached
-    if ( privateEnv )
-    {
-        vInfo("Freeing temporary JNIEnv");
-        VrLibJavaVM->DetachCurrentThread();
-    }
 }
+NV_REGISTER_JNI_LOADER(ovr_OnLoad)
 
 VKernel* VKernel::GetInstance()
 {

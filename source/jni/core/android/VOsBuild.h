@@ -29,9 +29,6 @@ public:
     };
 
     static const VString &getString(NameType name);
-
-    //@to-do: make it private
-    static void Init(JNIEnv *env);
 };
 
 NV_NAMESPACE_END

@@ -18,7 +18,20 @@ namespace JniUtils {
     jclass GetGlobalClassReference(JNIEnv *jni, const char *className);
     jmethodID GetMethodID(JNIEnv *jni, jclass jniclass, const char *name, const char *signature);
     jmethodID GetStaticMethodID(JNIEnv *jni, jclass jniclass, const char *name, const char *signature);
+
+    typedef void (*Loader)(JavaVM *, JNIEnv *);
+    void RegisterLoader(Loader loader);
 }
+
+#define NV_REGISTER_JNI_LOADER(func) namespace {\
+    struct Loader {\
+        Loader() {\
+            JniUtils::RegisterLoader(func);\
+        }\
+    };\
+    Loader loader;\
+}
+
 
 class JavaObject
 {
