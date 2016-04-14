@@ -141,57 +141,6 @@ typedef VBox<float>	VBoxf;
 typedef VBox<double> VBoxd;
 
 
-//-------------------------------------------------------------------------------------
-// ***** VSize
-
-// VSize class represents 2D VSize with Width, Height components.
-// Used to describe distentions of render targets, etc.
-
-typedef VSize<int>       VSizei;
-typedef VSize<unsigned>  VSizeu;
-typedef VSize<float>     VSizef;
-typedef VSize<double>    VSized;
-
-
-
-//-----------------------------------------------------------------------------------
-// ***** VRect
-
-// VRect describes a VRectangular area for rendering, that includes position and VSize.
-
-template<class T>
-class VRect
-{
-public:
-	T x, y;
-    T w, h;
-
-    VRect() { }
-    VRect(T x1, T y1, T w1, T h1)                   : x(x1), y(y1), w(w1), h(h1) { }
-    VRect(const V2Vect<T>& pos, const VSize<T>& sz) : x(pos.x), y(pos.y), w(sz.w), h(sz.h) { }
-    VRect(const VSize<T>& sz)                        : x(0), y(0), w(sz.w), h(sz.h) { }
-
-   V2Vect<T> GetPos() const                { return V2Vect<T>(x, y); }
-   VSize<T>    GetSize() const               { return VSize<T>(w, h); }
-   void       SetPos(const V2Vect<T>& pos) { x = pos.x; y = pos.y; }
-   void       SetSize(const VSize<T>& sz)    { w = sz.w; h = sz.h; }
-
-   bool operator == (const VRect& vp) const
-   { return (x == vp.x) && (y == vp.y) && (w == vp.w) && (h == vp.h); }
-   bool operator != (const VRect& vp) const
-   { return !operator == (vp); }
-};
-typedef VRect<int> VRecti;
-
-
-//-------------------------------------------------------------------------------------//
-
-
-// ***** VAngle
-
-// Cleanly representing the algebra of 2D rotations.
-// The operations maintain the VAngle between -Pi and Pi, the same range as atan2.
-
 template<class T>
 class VAngle
 {

@@ -132,6 +132,7 @@ HEADERS += \
     jni/core/VMap.h \
     jni/core/VPath.h \
     jni/core/VPos.h \
+    jni/core/VRect.h \
     jni/core/VSignal.h \
     jni/core/VSize.h \
     jni/core/VStandardPath.h \
