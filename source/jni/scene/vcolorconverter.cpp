@@ -261,6 +261,8 @@ static bool GlFormatToTextureFormat( int & format, const GLenum glFormat, const 
     return false;
 }
 
+
+
 //! converts a monochrome bitmap to A1R5G5B5 data
 void CColorConverter::convert1BitTo16Bit(const char* in, short* out, int width, int height, int linepad, bool flip)
 {

@@ -69,6 +69,12 @@ public:
     //! Copies the image into the target, scaling the image to fit
     virtual void copyToScaling(VImage* target) =0;
 
+    //! copies this surface into another
+    virtual void copyTo(VImage* target, const V2Vect<int>& pos=V2Vect<int>(0,0)) =0;
+
+    //! copies this surface into another
+    virtual void copyTo(VImage* target, const V2Vect<int>& pos, const VRect<int>& sourceRect, const VRect<int>* clipRect=0) =0;
+
     //! copies this surface into another, scaling it to fit, appyling a box filter
     virtual void copyToScalingBoxFilter(VImage* target, int bias = 0, bool blend = false) = 0;
 
@@ -195,6 +201,12 @@ public:
 
     //! copies this surface into another, scaling it to fit.
     virtual void copyToScaling(VImage* target);
+
+    //! copies this surface into another
+    virtual void copyTo(VImage* target, const V2Vect<int>& pos=V2Vect<int>(0,0));
+
+    //! copies this surface into another
+    virtual void copyTo(VImage* target, const V2Vect<int>& pos, const VRect<int>& sourceRect, const VRect<int>* clipRect=0);
 
     //! copies this surface into another, scaling it to fit, appyling a box filter
     virtual void copyToScalingBoxFilter(VImage* target, int bias = 0, bool blend = false);

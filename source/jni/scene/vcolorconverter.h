@@ -8,7 +8,7 @@ namespace NervGear {
 
 class CColorConverter
 {
-public:
+    public:
 
     //! converts a monochrome bitmap to A1R5G5B5
     static void convert1BitTo16Bit(const char* in, short* out, int width, int height, int linepad=0, bool flip=false);

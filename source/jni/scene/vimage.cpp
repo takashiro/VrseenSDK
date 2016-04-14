@@ -1,4 +1,5 @@
 #include "VImage.h"
+#include "VBlit.h"
 #include <math.h>
 #include <cmath>
 #include <cerrno>
@@ -245,6 +246,20 @@ VImageColor CImage::getPixel(uint x, uint y) const
 ColorFormat CImage::getColorFormat() const
 {
     return m_format;
+}
+
+
+//! copies this surface into another at given position
+void CImage::copyTo(VImage* target, const V2Vect<int>& pos)
+{
+    Blit(BLITTER_TEXTURE, target, 0, &pos, this, 0, 0);
+}
+
+
+//! copies this surface partially into another at given position
+void CImage::copyTo(VImage* target, const V2Vect<int>& pos, const core::rect<int>& sourceRect, const core::rect<int>* clipRect)
+{
+    Blit(BLITTER_TEXTURE, target, clipRect, &pos, this, &sourceRect, 0);
 }
 
 
