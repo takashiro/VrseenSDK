@@ -79,9 +79,6 @@ typedef enum
 
 } eExitType;
 
-#define	SYSTEM_ACTIVITY_EVENT_REORIENT "reorient"
-#define SYSTEM_ACTIVITY_EVENT_RETURN_TO_LAUNCHER "returnToLauncher"
-
 }
 
 NV_NAMESPACE_BEGIN
