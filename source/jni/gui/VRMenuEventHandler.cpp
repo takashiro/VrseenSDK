@@ -13,7 +13,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "api/VKernel.h"		// ovrPoseStatef
 
-#include "Input.h"
+#include "VFrame.h"
 #include "App.h"
 #include "GazeCursor.h"
 #include "VRMenuMgr.h"
@@ -35,7 +35,7 @@ VRMenuEventHandler::~VRMenuEventHandler()
 
 //==============================
 // VRMenuEventHandler::Frame
-void VRMenuEventHandler::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font,
+void VRMenuEventHandler::frame( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font,
         menuHandle_t const & rootHandle,VPosf const & menuPose, gazeCursorUserId_t const & gazeUserId,
 		VArray< VRMenuEvent > & events )
 {
@@ -86,28 +86,28 @@ void VRMenuEventHandler::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr
 		m_focusedHandle = hitHandle;
 	}
 
-	bool touchPressed = ( vrFrame.Input.buttonPressed & ( BUTTON_TOUCH | BUTTON_A ) ) != 0;
-	bool touchReleased = !touchPressed && ( vrFrame.Input.buttonReleased & ( BUTTON_TOUCH | BUTTON_A ) ) != 0;
-    bool touchDown = ( vrFrame.Input.buttonState & BUTTON_TOUCH ) != 0;
+	bool touchPressed = ( vrFrame.input.buttonPressed & ( BUTTON_TOUCH | BUTTON_A ) ) != 0;
+	bool touchReleased = !touchPressed && ( vrFrame.input.buttonReleased & ( BUTTON_TOUCH | BUTTON_A ) ) != 0;
+    bool touchDown = ( vrFrame.input.buttonState & BUTTON_TOUCH ) != 0;
 
-    if ( ( vrFrame.Input.buttonPressed & BUTTON_SWIPE_UP ) != 0 )
+    if ( ( vrFrame.input.buttonPressed & BUTTON_SWIPE_UP ) != 0 )
     {
         VRMenuEvent event( VRMENU_EVENT_SWIPE_UP, EVENT_DISPATCH_FOCUS, m_focusedHandle, V3Vectf( 0.0f ), result );
 		events.append( event );
     }
-    if ( ( vrFrame.Input.buttonPressed & BUTTON_SWIPE_DOWN ) != 0 )
+    if ( ( vrFrame.input.buttonPressed & BUTTON_SWIPE_DOWN ) != 0 )
     {
         VRMenuEvent event( VRMENU_EVENT_SWIPE_DOWN, EVENT_DISPATCH_FOCUS, m_focusedHandle, V3Vectf( 0.0f ), result );
 		events.append( event );
 
     }
-    if ( ( vrFrame.Input.buttonPressed & BUTTON_SWIPE_FORWARD ) != 0 )
+    if ( ( vrFrame.input.buttonPressed & BUTTON_SWIPE_FORWARD ) != 0 )
     {
         VRMenuEvent event( VRMENU_EVENT_SWIPE_FORWARD, EVENT_DISPATCH_FOCUS, m_focusedHandle, V3Vectf( 0.0f ), result );
 		events.append( event );
 
     }
-    if ( ( vrFrame.Input.buttonPressed & BUTTON_SWIPE_BACK ) != 0 )
+    if ( ( vrFrame.input.buttonPressed & BUTTON_SWIPE_BACK ) != 0 )
     {
         VRMenuEvent event( VRMENU_EVENT_SWIPE_BACK, EVENT_DISPATCH_FOCUS, m_focusedHandle, V3Vectf( 0.0f ), result );
 		events.append( event );
@@ -135,17 +135,17 @@ void VRMenuEventHandler::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr
 	}
 	if ( touchReleased )
 	{
-        VRMenuEvent event( VRMENU_EVENT_TOUCH_UP, EVENT_DISPATCH_FOCUS, m_focusedHandle, V3Vectf( vrFrame.Input.touchRelative, 0.0f ), result );
+        VRMenuEvent event( VRMENU_EVENT_TOUCH_UP, EVENT_DISPATCH_FOCUS, m_focusedHandle, V3Vectf( vrFrame.input.touchRelative, 0.0f ), result );
 		events.append( event );
 	}
     if ( touchDown )
     {
-        if ( vrFrame.Input.touchRelative.LengthSq() > VConstantsf::SmallestNonDenormal )
+        if ( vrFrame.input.touchRelative.LengthSq() > VConstantsf::SmallestNonDenormal )
         {
-            VRMenuEvent event( VRMENU_EVENT_TOUCH_RELATIVE, EVENT_DISPATCH_FOCUS, m_focusedHandle, V3Vectf( vrFrame.Input.touchRelative, 0.0f ), result );
+            VRMenuEvent event( VRMENU_EVENT_TOUCH_RELATIVE, EVENT_DISPATCH_FOCUS, m_focusedHandle, V3Vectf( vrFrame.input.touchRelative, 0.0f ), result );
             events.append( event );
         }
-        VRMenuEvent event( VRMENU_EVENT_TOUCH_ABSOLUTE, EVENT_DISPATCH_FOCUS, m_focusedHandle, V3Vectf( vrFrame.Input.touch, 0.0f ), result );
+        VRMenuEvent event( VRMENU_EVENT_TOUCH_ABSOLUTE, EVENT_DISPATCH_FOCUS, m_focusedHandle, V3Vectf( vrFrame.input.touch, 0.0f ), result );
         events.append( event );
     }
 
@@ -257,7 +257,7 @@ static void FindTargetPath( OvrVRMenuMgr const & menuMgr, menuHandle_t const roo
 
 //==============================
 // VRMenuEventHandler::HandleEvents
-void VRMenuEventHandler::handleEvents( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+void VRMenuEventHandler::handleEvents( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 		menuHandle_t const rootHandle, VArray< VRMenuEvent > const & events ) const
 {
     VRMenuObject * root = menuMgr.toObject( rootHandle );
@@ -304,7 +304,7 @@ void VRMenuEventHandler::handleEvents( App * app, VrFrame const & vrFrame, OvrVR
 
 //==============================
 // VRMenuEventHandler::DispatchToComponents
-bool VRMenuEventHandler::dispatchToComponents( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+bool VRMenuEventHandler::dispatchToComponents( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuEvent const & event, VRMenuObject * receiver ) const
 {
     vAssert(receiver != NULL);
@@ -330,7 +330,7 @@ bool VRMenuEventHandler::dispatchToComponents( App * app, VrFrame const & vrFram
 
 //==============================
 // VRMenuEventHandler::DispatchToPath
-bool VRMenuEventHandler::dispatchToPath( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+bool VRMenuEventHandler::dispatchToPath( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuEvent const & event, VArray< menuHandle_t > const & path, bool const log ) const
 {
     // send to the focus path only -- this list should be parent -> child order
@@ -357,7 +357,7 @@ bool VRMenuEventHandler::dispatchToPath( App * app, VrFrame const & vrFrame, Ovr
 
 //==============================
 // VRMenuEventHandler::BroadcastEvent
-bool VRMenuEventHandler::broadcastEvent( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+bool VRMenuEventHandler::broadcastEvent( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuEvent const & event, VRMenuObject * receiver ) const
 {
     vAssert(receiver != NULL);

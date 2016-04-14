@@ -736,7 +736,7 @@ void MovieSelectionView::SelectionHighlighted( bool isHighlighted )
 	}
 }
 
-void MovieSelectionView::UpdateSelectionFrame( const VrFrame & vrFrame )
+void MovieSelectionView::UpdateSelectionFrame( const VFrame & vrFrame )
 {
     const double now = VTimer::Seconds();
 	if ( !MovieBrowser->HasSelection() )
@@ -843,7 +843,7 @@ VR4Matrixf MovieSelectionView::DrawEyeView( const int eye, const float fovDegree
 	return Cinema.sceneMgr.DrawEyeView( eye, fovDegrees );
 }
 
-VR4Matrixf MovieSelectionView::Frame( const VrFrame & vrFrame )
+VR4Matrixf MovieSelectionView::Frame( const VFrame & vrFrame )
 {
 	// We want 4x MSAA in the lobby
     VEyeBuffer::Settings eyeParms = vApp->eyeSettings();
@@ -857,7 +857,7 @@ VR4Matrixf MovieSelectionView::Frame( const VrFrame & vrFrame )
 	}
 #endif
 
-	if ( vrFrame.Input.buttonPressed & BUTTON_B )
+	if ( vrFrame.input.buttonPressed & BUTTON_B )
 	{
 		if ( Cinema.inLobby )
         {
@@ -894,16 +894,16 @@ VR4Matrixf MovieSelectionView::Frame( const VrFrame & vrFrame )
 	if ( !Cinema.inLobby && ErrorShown() )
 	{
 		SwipeHintComponent::ShowSwipeHints = false;
-		if ( vrFrame.Input.buttonPressed & ( BUTTON_TOUCH | BUTTON_A ) )
+		if ( vrFrame.input.buttonPressed & ( BUTTON_TOUCH | BUTTON_A ) )
 		{
             vApp->playSound( "touch_down" );
 		}
-		else if ( vrFrame.Input.buttonReleased & ( BUTTON_TOUCH | BUTTON_A ) )
+		else if ( vrFrame.input.buttonReleased & ( BUTTON_TOUCH | BUTTON_A ) )
 		{
             vApp->playSound( "touch_up" );
 			ErrorMessageClicked = true;
 		}
-		else if ( ErrorMessageClicked && ( ( vrFrame.Input.buttonState & ( BUTTON_TOUCH | BUTTON_A ) ) == 0 ) )
+		else if ( ErrorMessageClicked && ( ( vrFrame.input.buttonState & ( BUTTON_TOUCH | BUTTON_A ) ) == 0 ) )
 		{
 			Menu->Close();
 		}
@@ -922,7 +922,7 @@ VR4Matrixf MovieSelectionView::Frame( const VrFrame & vrFrame )
                 MoveScreenLabel->SetTextColor( V4Vectf( alpha ) );
 			}
 
-			if ( vrFrame.Input.buttonPressed & ( BUTTON_A | BUTTON_TOUCH ) )
+			if ( vrFrame.input.buttonPressed & ( BUTTON_A | BUTTON_TOUCH ) )
 			{
 				// disable hit detection on selection frame
                 SelectionFrame->GetMenuObject()->addFlags( VRMENUOBJECT_DONT_HIT_ALL );
@@ -955,7 +955,7 @@ VR4Matrixf MovieSelectionView::Frame( const VrFrame & vrFrame )
 	// while we're holding down the button or touchpad, reposition screen
 	if ( RepositionScreen )
 	{
-		if ( vrFrame.Input.buttonState & ( BUTTON_A | BUTTON_TOUCH ) )
+		if ( vrFrame.input.buttonState & ( BUTTON_A | BUTTON_TOUCH ) )
 		{
 			Cinema.sceneMgr.PutScreenInFront();
             VQuatf orientation = VQuatf( Cinema.sceneMgr.FreeScreenOrientation );

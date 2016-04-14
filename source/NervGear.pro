@@ -158,6 +158,7 @@ HEADERS += \
     jni/core/VQuat.h \
     jni/api/VDevice.h \
     jni/api/VEglDriver.h \
+    jni/api/VFrame.h \
     jni/api/VFrameSmooth.h \
     jni/api/VGlGeometry.h \
     jni/api/VGlShader.h \
@@ -225,7 +226,6 @@ HEADERS += \
     jni/App.h \
     jni/VrLocale.h \
     jni/vglobal.h \
-    jni/Input.h \
     jni/io/VAbstractFile.h
 
 include(jni/3rdparty/minizip/minizip.pri)

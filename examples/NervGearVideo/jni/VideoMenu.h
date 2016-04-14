@@ -57,7 +57,7 @@ private:
 	virtual ~OvrVideoMenu( );
 	virtual void			openImpl( App * app, OvrGazeCursor & gazeCursor );
 	virtual void			onItemEvent_Impl( App * app, VRMenuId_t const itemId, VRMenuEvent const & event );
-	virtual void			frameImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font,
+	virtual void			frameImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font,
 		BitmapFontSurface & fontSurface, gazeCursorUserId_t const gazeUserId );
 
 	// Globals

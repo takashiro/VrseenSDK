@@ -228,7 +228,7 @@ void ResumeMovieView::ResumeChoice( int itemNum )
 	}
 }
 
-VR4Matrixf ResumeMovieView::Frame( const VrFrame & vrFrame )
+VR4Matrixf ResumeMovieView::Frame( const VFrame & vrFrame )
 {
 	// We want 4x MSAA in the selection screen
 	VEyeBuffer::Settings eyeParms = vApp->eyeSettings();

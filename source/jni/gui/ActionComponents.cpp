@@ -16,7 +16,7 @@ namespace NervGear {
 
 //==============================
 // OvrButton_OnUp::OnEvent_Impl
-eMsgStatus OvrButton_OnUp::onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus OvrButton_OnUp::onEventImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 	VRMenuObject * self, VRMenuEvent const & event )
 {
     vAssert(event.eventType == VRMENU_EVENT_TOUCH_UP);

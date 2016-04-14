@@ -25,7 +25,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "SoundLimiter.h"
 #include "VRMenuEventHandler.h"
 #include "FolderBrowser.h"
-#include "Input.h"
+#include "VFrame.h"
 #include "DefaultComponent.h"
 
 namespace NervGear {
@@ -295,7 +295,7 @@ bool OvrGuiSysLocal::isAnyMenuOpen() const
 
 //==============================
 // OvrGuiSysLocal::Frame
-void OvrGuiSysLocal::frame( App * app, const VrFrame & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font,
+void OvrGuiSysLocal::frame( App * app, const VFrame & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font,
         BitmapFontSurface & fontSurface, VR4Matrixf const & viewMatrix )
 {
 	//vInfo("OvrGuiSysLocal::Frame");

@@ -20,7 +20,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "TypesafeNumber.h"
 #include "api/VEglDriver.h"
 
-#include "Input.h"
+#include "VFrame.h"
 #include "GlTexture.h"
 #include "BitmapFont.h"
 #include "gui/VRMenuMgr.h"
@@ -372,7 +372,7 @@ static float LineOnMatrix( const V3Vectf & p1 , const V3Vectf & p2, const VR4Mat
 
 
 SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & font, BitmapFontSurface & fontSurface,
-        const VrFrame & vrFrame, const VR4Matrixf & view, const bool allowSwipe )
+        const VFrame & vrFrame, const VR4Matrixf & view, const bool allowSwipe )
 {
 	SwipeAction	ret = {};
 	ret.ActivatePanelIndex = -1;
@@ -400,7 +400,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 
 
 
-    const V2Vectf touch( vrFrame.Input.touch[0], vrFrame.Input.touch[1] );
+    const V2Vectf touch( vrFrame.input.touch[0], vrFrame.input.touch[1] );
 
 	// If we are in swipe mode and the touch moves away from the down point,
 	// or the gaze moves away from the down point
@@ -452,7 +452,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 	}
 
 	// page-swipe animation
-	int swipeButtons = vrFrame.Input.buttonPressed;
+	int swipeButtons = vrFrame.input.buttonPressed;
 	if ( !allowPageSwipes )
 	{
 		swipeButtons &= ~(BUTTON_SWIPE_FORWARD | BUTTON_SWIPE_BACK);
@@ -468,8 +468,8 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 		}
 		if ( PageSwipeSeconds > 0.0f )
 		{
-			Offset += PageSwipeDir * vrFrame.DeltaSeconds / PageSwipeTime * PageSwipeDistance;
-			PageSwipeSeconds -= vrFrame.DeltaSeconds;
+			Offset += PageSwipeDir * vrFrame.deltaSeconds / PageSwipeTime * PageSwipeDistance;
+			PageSwipeSeconds -= vrFrame.deltaSeconds;
 		}
 	}
 
@@ -485,7 +485,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 
 	{
 		// Allow single dot button on joypad to also trigger actions
-		const bool	buttonState = allowSwipe ? ( ( vrFrame.Input.buttonState & BUTTON_TOUCH ) || ( vrFrame.Input.buttonState & BUTTON_A ) ) : 0;
+		const bool	buttonState = allowSwipe ? ( ( vrFrame.input.buttonState & BUTTON_TOUCH ) || ( vrFrame.input.buttonState & BUTTON_A ) ) : 0;
 		const bool	buttonReleased = allowSwipe ? ( !buttonState && PreviousButtonState ) : 0;
 		const bool	buttonPressed = allowSwipe ? ( buttonState && !PreviousButtonState ) : 0;
 		PreviousButtonState = buttonState;
@@ -594,10 +594,10 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 
 
 			{	// Coast after release
-				Offset += Velocity * vrFrame.DeltaSeconds;
+				Offset += Velocity * vrFrame.deltaSeconds;
 
 				// Friction to targetVelocity
-				const float velocityAdjust = Friction * vrFrame.DeltaSeconds;
+				const float velocityAdjust = Friction * vrFrame.deltaSeconds;
 
 				Velocity -= Velocity * velocityAdjust;
 				if ( fabs( Velocity ) < MinVelocity )
@@ -623,11 +623,11 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 			SwipePanel & panel = Panels[index];
 			if ( index == SelectedPanel )
 			{
-				panel.SelectState = std::min( 1.0f, panel.SelectState + vrFrame.DeltaSeconds / SelectTime );
+				panel.SelectState = std::min( 1.0f, panel.SelectState + vrFrame.deltaSeconds / SelectTime );
 			}
 			else
 			{	// shrink back
-				panel.SelectState = std::max( 0.0f, panel.SelectState - vrFrame.DeltaSeconds / SelectTime );
+				panel.SelectState = std::max( 0.0f, panel.SelectState - vrFrame.deltaSeconds / SelectTime );
 			}
 		}
 	}

@@ -56,7 +56,7 @@ public:
 	// Sets the timeWarpParms for smooth joypad turning while dropping frames.
 	// Models that have DontRenderForClientUid == supressModelsWithClientId will be skipped
 	// to prevent the client's own head model from drawing in their view.
-	void		Frame(const VViewSettings viewParms_, const VrFrame vrFrame,
+	void		Frame(const VViewSettings viewParms_, const VFrame vrFrame,
             VR4Matrixf & timeWarpParmsExternalVelocity, const long long supressModelsWithClientId = -1 );
 
 	// Issues GL calls and returns the MVP for the eye, as needed by AppInterface DrawEyeVIew
@@ -95,8 +95,8 @@ public:
 
     static V3Vectf HeadModelOffset(float EyeRoll, float EyePitch, float EyeYaw, float HeadModelDepth, float HeadModelHeight);
 
-	void		UpdateViewMatrix(const VrFrame vrFrame );
-	void		UpdateSceneModels( const VrFrame vrFrame, const long long supressModelsWithClientId );
+	void		UpdateViewMatrix(const VFrame vrFrame );
+	void		UpdateSceneModels( const VFrame vrFrame, const long long supressModelsWithClientId );
 
 	// Entries can be NULL.
 	// None of these will be directly freed by OvrSceneView.

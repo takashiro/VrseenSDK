@@ -225,7 +225,7 @@ struct App::Private
     // screen eyes.
     bool			renderMonoMode;
 
-    VrFrame			lastVrFrame;
+    VFrame			lastVrFrame;
 
     VEyeBuffer::Settings		vrParms;
 
@@ -1087,31 +1087,31 @@ struct App::Private
             }
 
             // latch the current joypad state and note transitions
-            self->text.vrFrame.Input = joypad;
-            self->text.vrFrame.Input.buttonPressed = joypad.buttonState & (~lastVrFrame.Input.buttonState);
-            self->text.vrFrame.Input.buttonReleased = ~joypad.buttonState & (lastVrFrame.Input.buttonState & ~BUTTON_TOUCH_WAS_SWIPE);
+            self->text.vrFrame.input = joypad;
+            self->text.vrFrame.input.buttonPressed = joypad.buttonState & (~lastVrFrame.input.buttonState);
+            self->text.vrFrame.input.buttonReleased = ~joypad.buttonState & (lastVrFrame.input.buttonState & ~BUTTON_TOUCH_WAS_SWIPE);
 
-            if (lastVrFrame.Input.buttonState & BUTTON_TOUCH_WAS_SWIPE)
+            if (lastVrFrame.input.buttonState & BUTTON_TOUCH_WAS_SWIPE)
             {
-                if (lastVrFrame.Input.buttonReleased & BUTTON_TOUCH)
+                if (lastVrFrame.input.buttonReleased & BUTTON_TOUCH)
                 {
-                    self->text.vrFrame.Input.buttonReleased |= BUTTON_TOUCH_WAS_SWIPE;
+                    self->text.vrFrame.input.buttonReleased |= BUTTON_TOUCH_WAS_SWIPE;
                 }
                 else
                 {
                     // keep it around this frame
-                    self->text.vrFrame.Input.buttonState |= BUTTON_TOUCH_WAS_SWIPE;
+                    self->text.vrFrame.input.buttonState |= BUTTON_TOUCH_WAS_SWIPE;
                 }
             }
 
             // Synthesize swipe gestures
-            interpretTouchpad(self->text.vrFrame.Input);
+            interpretTouchpad(self->text.vrFrame.input);
 
             if (recenterYawFrameStart != 0)
             {
                 // Perform a reorient before sensor data is read.  Allows apps to reorient without having invalid orientation information for that frame.
                 // Do a warp swap black on the frame the recenter started.
-                self->recenterYaw(recenterYawFrameStart == (self->text.vrFrame.FrameNumber + 1));  // vrFrame.FrameNumber hasn't been incremented yet, so add 1.
+                self->recenterYaw(recenterYawFrameStart == (self->text.vrFrame.id + 1));  // vrFrame.FrameNumber hasn't been incremented yet, so add 1.
             }
 
             // Get the latest head tracking state, predicted ahead to the midpoint of the time
@@ -1125,24 +1125,24 @@ struct App::Private
             sensorForNextWarp = VRotationSensor::instance()->predictState(now + clampedPrediction);
 
             self->text.vrFrame.pose = sensorForNextWarp;
-            self->text.vrFrame.DeltaSeconds   = std::min(0.1, rawDelta);
-            self->text.vrFrame.FrameNumber++;
+            self->text.vrFrame.deltaSeconds   = std::min(0.1, rawDelta);
+            self->text.vrFrame.id++;
 
             // Don't allow this to be excessively large, which can cause application problems.
-            if (self->text.vrFrame.DeltaSeconds > 0.1f)
+            if (self->text.vrFrame.deltaSeconds > 0.1f)
             {
-                self->text.vrFrame.DeltaSeconds = 0.1f;
+                self->text.vrFrame.deltaSeconds = 0.1f;
             }
 
             lastVrFrame = self->text.vrFrame;
 
             // resend any debug lines that have expired
-            debugLines->BeginFrame(self->text.vrFrame.FrameNumber);
+            debugLines->BeginFrame(self->text.vrFrame.id);
 
             // reset any VR menu submissions from previous frame
             vrMenuMgr->beginFrame();
 
-            frameworkButtonProcessing(self->text.vrFrame.Input);
+            frameworkButtonProcessing(self->text.vrFrame.input);
 
             KeyState::eKeyEventType event = backKeyState.Update(VTimer::Seconds());
             if (event != KeyState::KEY_EVENT_NONE)
@@ -1185,7 +1185,7 @@ struct App::Private
             }
 
             // draw info text
-            if (self->text.infoTextEndFrame >= self->text.vrFrame.FrameNumber)
+            if (self->text.infoTextEndFrame >= self->text.vrFrame.id)
             {
                 V3Vectf viewPos = GetViewMatrixPosition(lastViewMatrix);
                 V3Vectf viewFwd = GetViewMatrixForward(lastViewMatrix);
@@ -1827,7 +1827,7 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
     VEglDriver glOperation;
     // update vr lib systems after the app frame, but before rendering anything
     guiSys().frame( this, text.vrFrame, vrMenuMgr(), defaultFont(), menuFontSurface(), centerViewMatrix );
-    gazeCursor().Frame( centerViewMatrix, text.vrFrame.DeltaSeconds );
+    gazeCursor().Frame( centerViewMatrix, text.vrFrame.deltaSeconds );
 
     menuFontSurface().Finish( centerViewMatrix );
     worldFontSurface().Finish( centerViewMatrix );

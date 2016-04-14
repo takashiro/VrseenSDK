@@ -56,11 +56,11 @@ NV_NAMESPACE_BEGIN
 	public:
         void 						show( const double now );
         void 						hide( const double now );
-		virtual eMsgStatus      	onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+		virtual eMsgStatus      	onEventImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 													VRMenuObject * self, VRMenuEvent const & event );
-        eMsgStatus              	opening( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+        eMsgStatus              	opening( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 													VRMenuObject * self, VRMenuEvent const & event );
-        eMsgStatus              	frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+        eMsgStatus              	frame( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 													VRMenuObject * self, VRMenuEvent const & event );
 	};
 

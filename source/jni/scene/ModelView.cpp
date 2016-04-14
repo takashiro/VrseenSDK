@@ -13,7 +13,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VAlgorithm.h"
 #include "api/VKernel.h"
 
-#include "Input.h"		// VrFrame, etc
+#include "VFrame.h"		// VrFrame, etc
 #include "BitmapFont.h"
 #include "DebugLines.h"
 
@@ -312,28 +312,28 @@ V3Vectf OvrSceneView::HeadModelOffset( float EyeRoll, float EyePitch, float EyeY
 	return lastHeadModelOffset;
 }
 
-void OvrSceneView::UpdateViewMatrix(const VrFrame vrFrame )
+void OvrSceneView::UpdateViewMatrix(const VFrame vrFrame )
 {
 	// Experiments with position tracking
 	const bool	useHeadModel = !AllowPositionTracking ||
-			( ( vrFrame.Input.buttonState & ( BUTTON_A | BUTTON_X ) ) == 0 );
+			( ( vrFrame.input.buttonState & ( BUTTON_A | BUTTON_X ) ) == 0 );
 
 	// Delta time in seconds since last frame.
-	const float dt = vrFrame.DeltaSeconds;
+	const float dt = vrFrame.deltaSeconds;
     //const float yawSpeed = 1.5f;
 
     V3Vectf GamepadMove;
 
 	// Allow up / down movement if there is no floor collision model
-	if ( vrFrame.Input.buttonState & BUTTON_RIGHT_TRIGGER )
+	if ( vrFrame.input.buttonState & BUTTON_RIGHT_TRIGGER )
 	{
-		FootPos.y -= vrFrame.Input.sticks[0][1] * dt * MoveSpeed;
+		FootPos.y -= vrFrame.input.sticks[0][1] * dt * MoveSpeed;
 	}
 	else
 	{
-		GamepadMove.z = vrFrame.Input.sticks[0][1];
+		GamepadMove.z = vrFrame.input.sticks[0][1];
 	}
-	GamepadMove.x = vrFrame.Input.sticks[0][0];
+	GamepadMove.x = vrFrame.input.sticks[0][0];
 
 	// Turn based on the look stick
 	// Because this can be predicted ahead by async TimeWarp, we apply
@@ -401,7 +401,7 @@ void OvrSceneView::UpdateViewMatrix(const VrFrame vrFrame )
 
 	// Have sensorFusion zero the integration when not using it, so the
 	// first frame is correct.
-	if ( vrFrame.Input.buttonPressed & (BUTTON_A | BUTTON_X) )
+	if ( vrFrame.input.buttonPressed & (BUTTON_A | BUTTON_X) )
 	{
 		LatchedHeadModelOffset = LastHeadModelOffset;
 	}
@@ -436,7 +436,7 @@ void OvrSceneView::UpdateViewMatrix(const VrFrame vrFrame )
     ViewMatrix = VR4Matrixf::LookAtRH( ShiftedEyePos, ShiftedEyePos + forward, up );
 }
 
-void OvrSceneView::UpdateSceneModels( const VrFrame vrFrame, const long long supressModelsWithClientId  )
+void OvrSceneView::UpdateSceneModels( const VFrame vrFrame, const long long supressModelsWithClientId  )
 {
 	// Build the packed array of ModelState to pass to the renderer for both eyes
 	RenderModels.resize( 0 );
@@ -451,7 +451,7 @@ void OvrSceneView::UpdateSceneModels( const VrFrame vrFrame, const long long sup
 	}
 }
 
-void OvrSceneView::Frame( const VViewSettings viewParms_, const VrFrame vrFrame,
+void OvrSceneView::Frame( const VViewSettings viewParms_, const VFrame vrFrame,
 		VR4Matrixf & timeWarpParmsExternalVelocity, const long long supressModelsWithClientId )
 {
 	ViewParms = viewParms_;

@@ -229,7 +229,7 @@ void VMainActivity::onNewIntent(const VString &fromPackageName, const VString &c
     vInfo("VMainActivity::NewIntent - default handler called -" << fromPackageName << command << uri);
 }
 
-VR4Matrixf VMainActivity::onNewFrame(VrFrame vrFrame)
+VR4Matrixf VMainActivity::onNewFrame(VFrame vrFrame)
 {
     vInfo("VMainActivity::Frame - default handler called");
     return VR4Matrixf();

@@ -219,7 +219,7 @@ public:
 private:
 	static const float ACTIVE_DEPTH_OFFSET;
 
-	virtual eMsgStatus      onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+	virtual eMsgStatus      onEventImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 										VRMenuObject * self, VRMenuEvent const & event )
 	{
 		switch( event.eventType )
@@ -240,7 +240,7 @@ private:
         }
 	}
 
-	eMsgStatus Frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
+	eMsgStatus Frame( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
 	{
 		const int folderCount = FolderBrowser.numFolders();
 		ValidFoldersCount = 0;
@@ -277,7 +277,7 @@ private:
 		unsigned int controllerInput = 0;
 		if ( ValidFoldersCount > 1 ) // Need at least one folder in order to enable vertical scrolling
 		{
-			controllerInput = vrFrame.Input.buttonState;
+			controllerInput = vrFrame.input.buttonState;
 			if ( controllerInput & ( BUTTON_LSTICK_UP | BUTTON_DPAD_UP | BUTTON_LSTICK_DOWN | BUTTON_DPAD_DOWN | BUTTON_LSTICK_LEFT | BUTTON_DPAD_LEFT | BUTTON_LSTICK_RIGHT | BUTTON_DPAD_RIGHT ) )
 			{
                 LastInteractionTimeStamp = VTimer::Seconds();
@@ -301,7 +301,7 @@ private:
 				}
 			}
 		}
-		ScrollMgr.frame( vrFrame.DeltaSeconds, controllerInput );
+		ScrollMgr.frame( vrFrame.deltaSeconds, controllerInput );
 
 		VRMenuObject * foldersRootObject = menuMgr.toObject( FoldersRootHandle );
         const V3Vectf & rootPosition = foldersRootObject->localPosition();
@@ -423,7 +423,7 @@ private:
 		return  MSG_STATUS_ALIVE;
     }
 
-	eMsgStatus TouchDown( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
+	eMsgStatus TouchDown( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
 	{
 		if ( FolderBrowser.hasNoMedia() )
 		{
@@ -445,7 +445,7 @@ private:
 		return MSG_STATUS_ALIVE;	// don't consume -- we're just listening
 	}
 
-	eMsgStatus TouchUp( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
+	eMsgStatus TouchUp( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
 	{
 		if ( FolderBrowser.hasNoMedia() )
 		{
@@ -470,7 +470,7 @@ private:
 		return MSG_STATUS_ALIVE;
 	}
 
-	eMsgStatus TouchRelative( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
+	eMsgStatus TouchRelative( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
 	{
 		if ( FolderBrowser.hasNoMedia() )
 		{
@@ -488,7 +488,7 @@ private:
 		return MSG_STATUS_ALIVE;
 	}
 
-	eMsgStatus OnOpening( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
+	eMsgStatus OnOpening( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
 	{
 		return MSG_STATUS_ALIVE;
 	}
@@ -541,7 +541,7 @@ public:
 	}
 
 private:
-	virtual eMsgStatus      onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+	virtual eMsgStatus      onEventImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 											VRMenuObject * self, VRMenuEvent const & event )
 		{
 			switch( event.eventType )
@@ -554,7 +554,7 @@ private:
 	        }
 		}
 
-    eMsgStatus Frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
+    eMsgStatus Frame( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
     {
 		VRMenuObjectFlags_t flags = self->flags();
 		vAssert( FolderPtr );
@@ -640,7 +640,7 @@ public:
 	int CurrentPanelIndex() const { return nearbyintf( ScrollMgr.position() ); }
 
 private:
-    virtual eMsgStatus Frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
+    virtual eMsgStatus Frame( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
     {
     	vAssert( FolderPtr );
     	bool const isActiveFolder = ( FolderPtr == FolderBrowser.getFolderView( FolderBrowser.activeFolderIndex() ) );
@@ -660,7 +660,7 @@ private:
 		unsigned int controllerInput = 0;
 		if( isActiveFolder )
 		{
-			controllerInput = vrFrame.Input.buttonState;
+			controllerInput = vrFrame.input.buttonState;
 			bool restrictedScrolling = FolderBrowser.numFolders() > 1;
 			if( restrictedScrolling )
 			{
@@ -689,7 +689,7 @@ private:
 			}
 		}
 
-		ScrollMgr.frame( vrFrame.DeltaSeconds, controllerInput );
+		ScrollMgr.frame( vrFrame.deltaSeconds, controllerInput );
 
     	if( numPanels <= 0 )
     	{
@@ -800,7 +800,7 @@ private:
 		return MSG_STATUS_ALIVE;
     }
 
-    eMsgStatus onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
+    eMsgStatus onEventImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
     {
     	switch( event.eventType )
     	{
@@ -821,14 +821,14 @@ private:
     	return MSG_STATUS_ALIVE;
     }
 
-	eMsgStatus OnTouchDown_Impl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
+	eMsgStatus OnTouchDown_Impl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
 	{
 		ScrollMgr.touchDown();
 		TouchDown = true;
 		return MSG_STATUS_ALIVE;
 	}
 
-	eMsgStatus OnTouchUp_Impl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
+	eMsgStatus OnTouchUp_Impl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
 	{
 		ScrollMgr.touchUp();
 		TouchDown = false;
@@ -992,7 +992,7 @@ uchar *OvrFolderBrowser::retrieveRemoteThumbnail(const VString &url, const VStri
     return nullptr;
 }
 
-void OvrFolderBrowser::frameImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font,
+void OvrFolderBrowser::frameImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font,
 	BitmapFontSurface & fontSurface, gazeCursorUserId_t const gazeUserId )
 {
 	// Check for thumbnail loads
@@ -1008,7 +1008,7 @@ void OvrFolderBrowser::frameImpl( App * app, VrFrame const & vrFrame, OvrVRMenuM
 
 	// --
 	// Logic for restricted scrolling
-	unsigned int controllerInput = vrFrame.Input.buttonState;
+	unsigned int controllerInput = vrFrame.input.buttonState;
 	bool rightPressed 	= controllerInput & ( BUTTON_LSTICK_RIGHT | BUTTON_DPAD_RIGHT );
 	bool leftPressed 	= controllerInput & ( BUTTON_LSTICK_LEFT | BUTTON_DPAD_LEFT );
 	bool downPressed 	= controllerInput & ( BUTTON_LSTICK_DOWN | BUTTON_DPAD_DOWN );
@@ -1919,7 +1919,7 @@ public:
 	const OvrMetaDatum *	GetData() const						{ return Data; }
 
 private:
-	virtual eMsgStatus  onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+	virtual eMsgStatus  onEventImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 		VRMenuObject * self, VRMenuEvent const & event )
 	{
 		vAssert( event.eventType == VRMENU_EVENT_TOUCH_UP );

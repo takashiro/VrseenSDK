@@ -36,7 +36,7 @@ OvrAnimComponent::OvrAnimComponent( float const framesPerSecond, bool const loop
 
 //================================
 // OvrAnimComponent::Frame
-eMsgStatus OvrAnimComponent::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus OvrAnimComponent::frame( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 	VRMenuObject * self, VRMenuEvent const & event )
 {
 	// only recalculate the current frame if playing
@@ -90,7 +90,7 @@ void OvrAnimComponent::pause()
 	m_animState = ANIMSTATE_PAUSED;
 }
 
-eMsgStatus OvrAnimComponent::onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
+eMsgStatus OvrAnimComponent::onEventImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
 {
 	switch ( event.eventType )
 	{
@@ -118,7 +118,7 @@ OvrSurfaceAnimComponent::OvrSurfaceAnimComponent( float const framesPerSecond, b
 
 //================================
 // OvrSurfaceAnimComponent::SetFrameVisibilities
-void OvrSurfaceAnimComponent::setFrameVisibilities( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self ) const
+void OvrSurfaceAnimComponent::setFrameVisibilities( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self ) const
 {
 	int minIndex = curFrame() * m_surfacesPerFrame;
 	int maxIndex = ( curFrame() + 1 ) * m_surfacesPerFrame;
@@ -179,7 +179,7 @@ float OvrTrailsAnimComponent::getAlphaForFrame( const int frame ) const
 	return 0.0f;
 }
 
-void OvrTrailsAnimComponent::setFrameVisibilities( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self ) const
+void OvrTrailsAnimComponent::setFrameVisibilities( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self ) const
 {
 //	vInfo("FracFrame:" << GetFractionalFrame());
 	for ( int i = 0; i < self->numChildren(); ++i )

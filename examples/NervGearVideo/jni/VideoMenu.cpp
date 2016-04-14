@@ -53,7 +53,7 @@ public:
 	}
 
 private:
-	virtual eMsgStatus	onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+	virtual eMsgStatus	onEventImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 		VRMenuObject * self, VRMenuEvent const & event )
 	{
 		switch ( event.eventType )
@@ -68,7 +68,7 @@ private:
 		}
 	}
 
-	eMsgStatus OnOpening( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
+	eMsgStatus OnOpening( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
 	{
 		CurrentVideo = (OvrVideosMetaDatum *)( VideoMenu.GetVideos()->GetActiveVideo() );
 		// If opening VideoMenu without a Video selected, bail
@@ -88,7 +88,7 @@ private:
 		}
 	}
 
-	eMsgStatus OnFrame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
+	eMsgStatus OnFrame( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
 	{
 		return MSG_STATUS_ALIVE;
 	}
@@ -224,11 +224,11 @@ void OvrVideoMenu::openImpl( App * app, OvrGazeCursor & gazeCursor )
     OpenTime = VTimer::Seconds();
 }
 
-void OvrVideoMenu::frameImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font, BitmapFontSurface & fontSurface, gazeCursorUserId_t const gazeUserId )
+void OvrVideoMenu::frameImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font, BitmapFontSurface & fontSurface, gazeCursorUserId_t const gazeUserId )
 {
 	if ( ButtonCoolDown > 0.0f )
 	{
-		ButtonCoolDown -= vrFrame.DeltaSeconds;
+		ButtonCoolDown -= vrFrame.deltaSeconds;
 	}
 }
 

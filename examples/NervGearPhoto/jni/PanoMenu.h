@@ -65,7 +65,7 @@ private:
     ~OvrPanoMenu();
 
     void onItemEvent_Impl( App * app, VRMenuId_t const itemId, VRMenuEvent const & event ) override;
-    void frameImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font,
+    void frameImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font,
                                     BitmapFontSurface & fontSurface, gazeCursorUserId_t const gazeUserId ) override;
 
 	// Globals

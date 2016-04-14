@@ -40,7 +40,7 @@ public:
     virtual int		typeId( ) const { return TYPE_ID; }
 	
 private:
-	virtual eMsgStatus  onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+	virtual eMsgStatus  onEventImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 		VRMenuObject * self, VRMenuEvent const & event );
 
 private:

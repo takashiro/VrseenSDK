@@ -50,7 +50,7 @@ void VText::show(const VString &text, float duration)
     infoTextColor = V4Vectf(1.0f);
     infoTextOffset = V3Vectf(0.0f, 0.0f, 1.5f);
     infoTextPointTracker.Reset();
-    infoTextEndFrame = vrFrame.FrameNumber + (long long)(duration * 60.0f) + 1;
+    infoTextEndFrame = vrFrame.id + (long long)(duration * 60.0f) + 1;
 }
 
 void VText::show( float const duration, V3Vectf const & offset, V4Vectf const & color, const char * fmt, ... )
@@ -62,12 +62,12 @@ void VText::show( float const duration, V3Vectf const & offset, V4Vectf const & 
     va_end(args);
     infoText = buffer;
     infoTextColor = color;
-    if (offset != infoTextOffset || infoTextEndFrame < vrFrame.FrameNumber)
+    if (offset != infoTextOffset || infoTextEndFrame < vrFrame.id)
     {
         infoTextPointTracker.Reset();
     }
     infoTextOffset = offset;
-    infoTextEndFrame = vrFrame.FrameNumber + (long long)(duration * 60.0f) + 1;
+    infoTextEndFrame = vrFrame.id + (long long)(duration * 60.0f) + 1;
 }
 VText::VText():
         infoTextColor(1.0f),

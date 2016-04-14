@@ -843,7 +843,7 @@ void Oculus360Photos::onPanoActivated( const OvrMetaDatum * panoData )
     SetMenuState( MENU_PANO_LOADING );
 }
 
-VR4Matrixf Oculus360Photos::onNewFrame( const VrFrame vrFrame )
+VR4Matrixf Oculus360Photos::onNewFrame( const VFrame vrFrame )
 {
     m_frameInput = vrFrame;
 
@@ -855,9 +855,9 @@ VR4Matrixf Oculus360Photos::onNewFrame( const VrFrame vrFrame )
     }
 
     // disallow player movement
-    VrFrame vrFrameWithoutMove = vrFrame;
-    vrFrameWithoutMove.Input.sticks[ 0 ][ 0 ] = 0.0f;
-    vrFrameWithoutMove.Input.sticks[ 0 ][ 1 ] = 0.0f;
+    VFrame vrFrameWithoutMove = vrFrame;
+    vrFrameWithoutMove.input.sticks[ 0 ][ 0 ] = 0.0f;
+    vrFrameWithoutMove.input.sticks[ 0 ][ 1 ] = 0.0f;
     //m_scene.Frame( vApp->vrViewParms(), vrFrameWithoutMove, vApp->swapParms().ExternalVelocity );
 
       m_scene.Frame( vApp->viewSettings(), vrFrameWithoutMove, vApp->kernel()->m_externalVelocity );
@@ -867,7 +867,7 @@ VR4Matrixf Oculus360Photos::onNewFrame( const VrFrame vrFrame )
     if ( m_activePano && m_browser->isClosedOrClosing( ) && ( m_menuState != MENU_PANO_LOADING ) )
     {
         // single touch
-        if ( m_menuState > MENU_PANO_FULLY_VISIBLE && vrFrame.Input.buttonPressed & ( BUTTON_TOUCH_SINGLE | BUTTON_A ) )
+        if ( m_menuState > MENU_PANO_FULLY_VISIBLE && vrFrame.input.buttonPressed & ( BUTTON_TOUCH_SINGLE | BUTTON_A ) )
         {
             SetMenuState( MENU_PANO_REOPEN_FADEIN );
         }
@@ -875,11 +875,11 @@ VR4Matrixf Oculus360Photos::onNewFrame( const VrFrame vrFrame )
         // PanoMenu input - needs to swipe even when PanoMenu is closed and in pano
         const OvrPhotosMetaDatum * nextPano = NULL;
 
-        if ( vrFrame.Input.buttonPressed & ( BUTTON_SWIPE_BACK | BUTTON_DPAD_LEFT | BUTTON_LSTICK_LEFT ) )
+        if ( vrFrame.input.buttonPressed & ( BUTTON_SWIPE_BACK | BUTTON_DPAD_LEFT | BUTTON_LSTICK_LEFT ) )
         {
             nextPano = static_cast< const OvrPhotosMetaDatum * >( m_browser->nextFileInDirectory( -1 ) );
         }
-        else if ( vrFrame.Input.buttonPressed & ( BUTTON_SWIPE_FORWARD | BUTTON_DPAD_RIGHT | BUTTON_LSTICK_RIGHT ) )
+        else if ( vrFrame.input.buttonPressed & ( BUTTON_SWIPE_FORWARD | BUTTON_DPAD_RIGHT | BUTTON_LSTICK_RIGHT ) )
         {
             nextPano = static_cast< const OvrPhotosMetaDatum * >( m_browser->nextFileInDirectory( 1 ) );
         }
@@ -896,7 +896,7 @@ VR4Matrixf Oculus360Photos::onNewFrame( const VrFrame vrFrame )
     if ( m_browser->isOpenOrOpening() )
     {
         // Close the browser if a Pano is active and not gazing at menu - ie. between panels
-        if ( m_activePano && !m_browser->gazingAtMenu() && vrFrame.Input.buttonReleased & ( BUTTON_TOUCH_SINGLE | BUTTON_A ) )
+        if ( m_activePano && !m_browser->gazingAtMenu() && vrFrame.input.buttonReleased & ( BUTTON_TOUCH_SINGLE | BUTTON_A ) )
         {
             vApp->guiSys().closeMenu( vApp, m_browser, false );
         }
@@ -906,7 +906,7 @@ VR4Matrixf Oculus360Photos::onNewFrame( const VrFrame vrFrame )
     // State transitions
     if ( m_fader.fadeState() != Fader::FADE_NONE )
     {
-        m_fader.update( m_currentFadeRate, vrFrame.DeltaSeconds );
+        m_fader.update( m_currentFadeRate, vrFrame.deltaSeconds );
         if ( m_menuState != MENU_PANO_REOPEN_FADEIN )
         {
             m_currentFadeLevel = m_fader.finalAlpha();
@@ -924,7 +924,7 @@ VR4Matrixf Oculus360Photos::onNewFrame( const VrFrame vrFrame )
         {
             if ( m_panoMenuTimeLeft > 0.0f )
             {
-                m_panoMenuTimeLeft -= vrFrame.DeltaSeconds;
+                m_panoMenuTimeLeft -= vrFrame.deltaSeconds;
             }
             else
             {

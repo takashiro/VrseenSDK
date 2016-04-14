@@ -57,13 +57,13 @@ private:
 	OvrScrollBarComponent( const VRMenuId_t rootId, const VRMenuId_t baseId,
 		const VRMenuId_t thumbId, const int startElementIndex, const int numElements );
 
-	virtual eMsgStatus  onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, 
+	virtual eMsgStatus  onEventImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, 
 								VRMenuObject * self, VRMenuEvent const & event );
 
-    eMsgStatus			onInit( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+    eMsgStatus			onInit( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 								VRMenuObject * self, VRMenuEvent const & event );
 
-    eMsgStatus			onFrameUpdate( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+    eMsgStatus			onFrameUpdate( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 								VRMenuObject * self, VRMenuEvent const & event );
 
     SineFader			m_fader;				// Used to fade the scroll bar in and out of view

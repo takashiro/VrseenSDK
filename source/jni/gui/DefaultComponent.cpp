@@ -1,19 +1,6 @@
-/************************************************************************************
-
-Filename    :   DefaultComponent.h
-Content     :   A default menu component that handles basic actions most menu items need.
-Created     :   July 25, 2014
-Authors     :   Jonathan E. Wright
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-
-*************************************************************************************/
-
 #include "DefaultComponent.h"
-#include "core/VTimer.h"
-
-#include "../Input.h"
+#include "VTimer.h"
+#include "VFrame.h"
 
 namespace NervGear {
 
@@ -42,7 +29,7 @@ OvrDefaultComponent::OvrDefaultComponent( V3Vectf const & hilightOffset, float c
 
 //==============================
 //  OvrDefaultComponent::OnEvent_Impl
-eMsgStatus OvrDefaultComponent::onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus OvrDefaultComponent::onEventImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
     switch( event.eventType )
@@ -67,7 +54,7 @@ eMsgStatus OvrDefaultComponent::onEventImpl( App * app, VrFrame const & vrFrame,
 
 //==============================
 //  OvrDefaultComponent::Frame
-eMsgStatus OvrDefaultComponent::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus OvrDefaultComponent::frame( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
     double t = VTimer::Seconds();
@@ -83,7 +70,7 @@ eMsgStatus OvrDefaultComponent::frame( App * app, VrFrame const & vrFrame, OvrVR
     }
 
     float const fadeRate = 1.0f / m_fadeDuration;
-    m_hilightFader.update( fadeRate, vrFrame.DeltaSeconds );
+    m_hilightFader.update( fadeRate, vrFrame.deltaSeconds );
 
     float const hilightAlpha = m_hilightFader.finalAlpha();
     V3Vectf offset = m_hilightOffset * hilightAlpha;
@@ -116,7 +103,7 @@ eMsgStatus OvrDefaultComponent::frame( App * app, VrFrame const & vrFrame, OvrVR
 
 //==============================
 //  OvrDefaultComponent::FocusGained
-eMsgStatus OvrDefaultComponent::focusGained( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus OvrDefaultComponent::focusGained( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
     // set the hilight flag
@@ -130,7 +117,7 @@ eMsgStatus OvrDefaultComponent::focusGained( App * app, VrFrame const & vrFrame,
 
 //==============================
 //  OvrDefaultComponent::FocusLost
-eMsgStatus OvrDefaultComponent::focusLost( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus OvrDefaultComponent::focusLost( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
     // clear the hilight flag
@@ -146,7 +133,7 @@ const char * OvrSurfaceToggleComponent::TYPE_NAME = "OvrSurfaceToggleComponent";
 
 //==============================
 //  OvrSurfaceToggleComponent::OnEvent_Impl
-eMsgStatus OvrSurfaceToggleComponent::onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus OvrSurfaceToggleComponent::onEventImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 	VRMenuObject * self, VRMenuEvent const & event )
 {
 	switch ( event.eventType )
@@ -161,7 +148,7 @@ eMsgStatus OvrSurfaceToggleComponent::onEventImpl( App * app, VrFrame const & vr
 
 //==============================
 //  OvrSurfaceToggleComponent::FocusLost
-eMsgStatus OvrSurfaceToggleComponent::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
+eMsgStatus OvrSurfaceToggleComponent::frame( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
 {
 	const int numSurfaces = self->numSurfaces();
 	for ( int i = 0; i < numSurfaces; ++i )

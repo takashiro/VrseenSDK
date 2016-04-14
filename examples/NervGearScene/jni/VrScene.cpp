@@ -159,7 +159,7 @@ VR4Matrixf VrScene::drawEyeView( const int eye, const float fovDegrees )
 	return view;
 }
 
-VR4Matrixf VrScene::onNewFrame( const VrFrame vrFrame )
+VR4Matrixf VrScene::onNewFrame( const VFrame vrFrame )
 {
 	// Get the current vrParms for the buffer resolution.
     const VEyeBuffer::Settings vrParms = vApp->eyeSettings();
@@ -181,15 +181,15 @@ VR4Matrixf VrScene::onNewFrame( const VrFrame vrFrame )
 		//-------------------------------------------
 		// Check for button actions
 		//-------------------------------------------
-		if ( !( vrFrame.Input.buttonState & BUTTON_RIGHT_TRIGGER ) )
+		if ( !( vrFrame.input.buttonState & BUTTON_RIGHT_TRIGGER ) )
 		{
-			if ( vrFrame.Input.buttonPressed & BUTTON_SELECT )
+			if ( vrFrame.input.buttonPressed & BUTTON_SELECT )
 			{
 				vApp->createToast( "%s", versionString );
 			}
 
 			// Switch buffer parameters for testing
-			if ( vrFrame.Input.buttonPressed & BUTTON_X )
+			if ( vrFrame.input.buttonPressed & BUTTON_X )
 			{
                 VEyeBuffer::Settings newParms = vrParms;
 				switch ( newParms.multisamples )

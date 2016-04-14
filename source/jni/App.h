@@ -5,7 +5,7 @@
 #include "VEyeBuffer.h"
 #include "api/VKernel.h"
 #include "KeyState.h"
-#include "Input.h"
+#include "VFrame.h"
 #include "VEventLoop.h"
 #include "VSoundManager.h"
 #include "gui/VText.h"

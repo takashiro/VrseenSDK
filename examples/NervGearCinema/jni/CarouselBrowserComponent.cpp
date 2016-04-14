@@ -19,7 +19,7 @@ CarouselBrowserComponent::CarouselBrowserComponent( const VArray<CarouselItem *>
 	SetItems( items );
 }
 
-eMsgStatus CarouselBrowserComponent::onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus CarouselBrowserComponent::onEventImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 	VRMenuObject * self, VRMenuEvent const & event )
 {
 	vAssert( handlesEvent( VRMenuEventFlags_t( event.eventType ) ) );
@@ -165,27 +165,27 @@ void CarouselBrowserComponent::UpdatePanels( OvrVRMenuMgr & menuMgr, VRMenuObjec
 	PanelsNeedUpdate = false;
 }
 
-void CarouselBrowserComponent::CheckGamepad( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self )
+void CarouselBrowserComponent::CheckGamepad( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self )
 {
 	if ( Swiping )
 	{
 		return;
 	}
 
-	if ( CanSwipeBack() && ( ( vrFrame.Input.buttonState & BUTTON_DPAD_LEFT ) || ( vrFrame.Input.sticks[0][0] < -0.5f ) ) )
+	if ( CanSwipeBack() && ( ( vrFrame.input.buttonState & BUTTON_DPAD_LEFT ) || ( vrFrame.input.sticks[0][0] < -0.5f ) ) )
 	{
 		SwipeBack( app, vrFrame, menuMgr, self );
 		return;
 	}
 
-	if ( CanSwipeForward() && ( ( vrFrame.Input.buttonState & BUTTON_DPAD_RIGHT ) || ( vrFrame.Input.sticks[0][0] > 0.5f ) ) )
+	if ( CanSwipeForward() && ( ( vrFrame.input.buttonState & BUTTON_DPAD_RIGHT ) || ( vrFrame.input.sticks[0][0] > 0.5f ) ) )
 	{
 		SwipeForward( app, vrFrame, menuMgr, self );
 		return;
 	}
 }
 
-eMsgStatus CarouselBrowserComponent::Frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
+eMsgStatus CarouselBrowserComponent::Frame( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
 {
 	if ( Swiping )
 	{
@@ -211,7 +211,7 @@ eMsgStatus CarouselBrowserComponent::Frame( App * app, VrFrame const & vrFrame, 
 	return MSG_STATUS_ALIVE;
 }
 
-eMsgStatus CarouselBrowserComponent::SwipeForward( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self )
+eMsgStatus CarouselBrowserComponent::SwipeForward( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self )
 {
 	if ( !Swiping )
 	{
@@ -230,7 +230,7 @@ eMsgStatus CarouselBrowserComponent::SwipeForward( App * app, VrFrame const & vr
 	return MSG_STATUS_CONSUMED;
 }
 
-eMsgStatus CarouselBrowserComponent::SwipeBack( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self )
+eMsgStatus CarouselBrowserComponent::SwipeBack( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self )
 {
 	if ( !Swiping )
 	{
@@ -249,7 +249,7 @@ eMsgStatus CarouselBrowserComponent::SwipeBack( App * app, VrFrame const & vrFra
 	return MSG_STATUS_CONSUMED;
 }
 
-eMsgStatus CarouselBrowserComponent::TouchDown( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
+eMsgStatus CarouselBrowserComponent::TouchDown( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
 {
 	//vInfo("TouchDown");
     TouchDownTime = VTimer::Seconds();
@@ -262,7 +262,7 @@ eMsgStatus CarouselBrowserComponent::TouchDown( App * app, VrFrame const & vrFra
 	return MSG_STATUS_ALIVE;	// don't consume -- we're just listening
 }
 
-eMsgStatus CarouselBrowserComponent::TouchUp( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
+eMsgStatus CarouselBrowserComponent::TouchUp( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
 {
 	//vInfo("TouchUp");
 
@@ -284,7 +284,7 @@ eMsgStatus CarouselBrowserComponent::TouchUp( App * app, VrFrame const & vrFrame
 	return MSG_STATUS_ALIVE; // don't consume -- we are just listening
 }
 
-eMsgStatus CarouselBrowserComponent::Opened( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
+eMsgStatus CarouselBrowserComponent::Opened( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
 {
 	Swiping = false;
 	Position = floor( Position );
@@ -292,7 +292,7 @@ eMsgStatus CarouselBrowserComponent::Opened( App * app, VrFrame const & vrFrame,
 	return MSG_STATUS_ALIVE;
 }
 
-eMsgStatus CarouselBrowserComponent::Closed( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
+eMsgStatus CarouselBrowserComponent::Closed( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
 {
 	SelectPressed = false;
 	return MSG_STATUS_ALIVE;

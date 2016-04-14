@@ -34,7 +34,7 @@ public:
 	virtual void 						OnClose();
 
     virtual VR4Matrixf 					DrawEyeView( const int eye, const float fovDegrees );
-    virtual VR4Matrixf 					Frame( const VrFrame & vrFrame );
+    virtual VR4Matrixf 					Frame( const VFrame & vrFrame );
     bool Command(const VEvent &) override;
 	virtual bool 						OnKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType );
 
@@ -138,7 +138,7 @@ private:
 	void								StartTimer();
 
 	void								UpdateMovieTitle();
-	void								UpdateSelectionFrame( const VrFrame & vrFrame );
+	void								UpdateSelectionFrame( const VFrame & vrFrame );
 
 	bool								ErrorShown() const;
 };

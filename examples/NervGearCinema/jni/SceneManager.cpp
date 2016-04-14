@@ -577,28 +577,28 @@ void SceneManager::SetSeat( int newSeat )
 	Scene.FootPos = SceneSeatPositions[ SeatPosition ];
 }
 
-bool SceneManager::ChangeSeats( const VrFrame & vrFrame )
+bool SceneManager::ChangeSeats( const VFrame & vrFrame )
 {
 	bool changed = false;
 	if ( SceneSeatCount > 0 )
 	{
         V3Vectf direction( 0.0f );
-		if ( vrFrame.Input.buttonPressed & BUTTON_LSTICK_UP )
+		if ( vrFrame.input.buttonPressed & BUTTON_LSTICK_UP )
 		{
 			changed = true;
 			direction[2] += 1.0f;
 		}
-		if ( vrFrame.Input.buttonPressed & BUTTON_LSTICK_DOWN )
+		if ( vrFrame.input.buttonPressed & BUTTON_LSTICK_DOWN )
 		{
 			changed = true;
 			direction[2] -= 1.0f;
 		}
-		if ( vrFrame.Input.buttonPressed & BUTTON_LSTICK_RIGHT )
+		if ( vrFrame.input.buttonPressed & BUTTON_LSTICK_RIGHT )
 		{
 			changed = true;
 			direction[0] += 1.0f;
 		}
-		if ( vrFrame.Input.buttonPressed & BUTTON_LSTICK_LEFT )
+		if ( vrFrame.input.buttonPressed & BUTTON_LSTICK_LEFT )
 		{
 			changed = true;
 			direction[0] -= 1.0f;
@@ -997,14 +997,14 @@ VR4Matrixf SceneManager::DrawEyeView( const int eye, const float fovDegrees )
  *
  * App override
  */
-VR4Matrixf SceneManager::Frame( const VrFrame & vrFrame )
+VR4Matrixf SceneManager::Frame( const VFrame & vrFrame )
 {
 	// disallow player movement
-	VrFrame vrFrameWithoutMove = vrFrame;
+	VFrame vrFrameWithoutMove = vrFrame;
 	if ( !AllowMove )
 	{
-		vrFrameWithoutMove.Input.sticks[0][0] = 0.0f;
-		vrFrameWithoutMove.Input.sticks[0][1] = 0.0f;
+		vrFrameWithoutMove.input.sticks[0][0] = 0.0f;
+		vrFrameWithoutMove.input.sticks[0][1] = 0.0f;
 	}
     Scene.Frame( vApp->viewSettings(), vrFrameWithoutMove, vApp->kernel()->m_externalVelocity);
 

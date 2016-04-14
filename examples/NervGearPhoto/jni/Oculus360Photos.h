@@ -69,7 +69,7 @@ public:
     void shutdown() override;
     void configureVrMode(VKernel* kernel) override;
     VR4Matrixf 	drawEyeView( const int eye, const float fovDegrees ) override;
-    VR4Matrixf 	onNewFrame( VrFrame vrFrame ) override;
+    VR4Matrixf 	onNewFrame( VFrame vrFrame ) override;
     void command(const VEvent &event) override;
     bool 		onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType ) override;
     bool		wantSrgbFramebuffer() const override;
@@ -124,7 +124,7 @@ private:
 	VGlShader			m_cubeMapPanoProgram;
 	VGlShader			m_panoramaProgram;
 
-    VrFrame				m_frameInput;
+    VFrame				m_frameInput;
     OvrMenuState		m_menuState;
 
     const float			m_fadeOutRate;

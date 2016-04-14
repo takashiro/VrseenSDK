@@ -745,13 +745,13 @@ void Oculus360Videos::OnVideoActivated( const OvrMetaDatum * videoData )
     StartVideo( VTimer::Seconds() );
 }
 
-VR4Matrixf Oculus360Videos::onNewFrame( const VrFrame vrFrame )
+VR4Matrixf Oculus360Videos::onNewFrame( const VFrame vrFrame )
 {
 	// Disallow player foot movement, but we still want the head model
 	// movement for the swipe view.
-	VrFrame vrFrameWithoutMove = vrFrame;
-	vrFrameWithoutMove.Input.sticks[ 0 ][ 0 ] = 0.0f;
-	vrFrameWithoutMove.Input.sticks[ 0 ][ 1 ] = 0.0f;
+	VFrame vrFrameWithoutMove = vrFrame;
+	vrFrameWithoutMove.input.sticks[ 0 ][ 0 ] = 0.0f;
+	vrFrameWithoutMove.input.sticks[ 0 ][ 1 ] = 0.0f;
     Scene.Frame( vApp->viewSettings(), vrFrameWithoutMove, vApp->kernel()->m_externalVelocity );
 
 	// Check for new video frames
@@ -765,7 +765,7 @@ VR4Matrixf Oculus360Videos::onNewFrame( const VrFrame vrFrame )
 
 	if ( MenuState != MENU_BROWSER && MenuState != MENU_VIDEO_LOADING )
 	{
-		if ( vrFrame.Input.buttonReleased & ( BUTTON_TOUCH | BUTTON_A ) )
+		if ( vrFrame.input.buttonReleased & ( BUTTON_TOUCH | BUTTON_A ) )
 		{
 			vApp->playSound( "sv_release_active" );
 			if ( IsVideoPlaying() )
@@ -785,7 +785,7 @@ VR4Matrixf Oculus360Videos::onNewFrame( const VrFrame vrFrame )
 	// State transitions
 	if ( Fader.fadeState() != Fader::FADE_NONE )
 	{
-		Fader.update( CurrentFadeRate, vrFrame.DeltaSeconds );
+		Fader.update( CurrentFadeRate, vrFrame.deltaSeconds );
 	}
 	else if ( ( MenuState == MENU_VIDEO_READY ) &&
 		( Fader.fadeAlpha() == 0.0f ) &&

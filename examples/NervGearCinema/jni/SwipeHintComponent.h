@@ -40,11 +40,11 @@ private:
     bool 						CanSwipe() const;
     void 						Show( const double now );
     void 						Hide( const double now );
-    eMsgStatus      	onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+    eMsgStatus      	onEventImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
                                     VRMenuObject * self, VRMenuEvent const & event ) override;
-    eMsgStatus              	Opening( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+    eMsgStatus              	Opening( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
                                     VRMenuObject * self, VRMenuEvent const & event );
-    eMsgStatus              	Frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+    eMsgStatus              	Frame( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
                                     VRMenuObject * self, VRMenuEvent const & event );
 };
 

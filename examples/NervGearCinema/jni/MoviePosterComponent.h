@@ -25,7 +25,7 @@ public:
 	virtual void 			SetItem( VRMenuObject * self, const CarouselItem * item, const PanelPose &pose );
 
 private:
-    eMsgStatus onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+    eMsgStatus onEventImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
                                     VRMenuObject * self, VRMenuEvent const & event ) override;
 
     const CarouselItem * 	CurrentItem;

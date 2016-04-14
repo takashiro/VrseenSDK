@@ -8,7 +8,7 @@
 #include "../api/VGlShader.h"
 #include "GlTexture.h"
 #include "GazeCursor.h"
-#include "Input.h"
+#include "VFrame.h"
 #include "BitmapFont.h"
 
 #pragma once
@@ -80,7 +80,7 @@ public:
 
 	void		Init( OvrGazeCursor & gazeCursor );
 	SwipeAction	Frame( OvrGazeCursor & gazeCursor, BitmapFont const & font, BitmapFontSurface & fontSurface,
-                        const VrFrame & vrFrame, const VR4Matrixf & view, const bool allowSwipe );
+                        const VFrame & vrFrame, const VR4Matrixf & view, const bool allowSwipe );
     void		Draw( const VR4Matrixf & mvp );
 
 	// The offset will be left where it was, unless

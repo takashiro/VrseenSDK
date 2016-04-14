@@ -360,7 +360,7 @@ void TheaterSelectionView::SelectPressed( void )
 	}
 }
 
-VR4Matrixf TheaterSelectionView::Frame( const VrFrame & vrFrame )
+VR4Matrixf TheaterSelectionView::Frame( const VFrame & vrFrame )
 {
 	// We want 4x MSAA in the selection screen
     VEyeBuffer::Settings eyeParms = vApp->eyeSettings();
@@ -388,7 +388,7 @@ VR4Matrixf TheaterSelectionView::Frame( const VrFrame & vrFrame )
 		Cinema.setMovieSelection( true );
 	}
 
-	if ( vrFrame.Input.buttonPressed & BUTTON_B )
+	if ( vrFrame.input.buttonPressed & BUTTON_B )
 	{
         vApp->playSound( "touch_up" );
 		Cinema.setMovieSelection( true );
