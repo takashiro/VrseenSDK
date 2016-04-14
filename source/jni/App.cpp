@@ -200,7 +200,7 @@ struct App::Private
     SurfaceTexture * dialogTexture;
 
     // Current joypad state, without pressed / released calculation
-    VrInput			joypad;
+    VInput			joypad;
 
     // drawing parameters
     int				dialogWidth;
@@ -477,7 +477,7 @@ struct App::Private
         eyeDecorations.Shutdown();
     }
 
-    void interpretTouchpad(VrInput &input)
+    void interpretTouchpad(VInput &input)
     {
         // 1) Down -> Up w/ Motion = Slide
         // 2) Down -> Up w/out Motion -> Timeout = Single Tap
@@ -617,7 +617,7 @@ struct App::Private
         }
     }
 
-    void frameworkButtonProcessing(const VrInput &input)
+    void frameworkButtonProcessing(const VInput &input)
     {
         // Toggle calibration lines
         bool const rightTrigger = input.buttonState & BUTTON_RIGHT_TRIGGER;

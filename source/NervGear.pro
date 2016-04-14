@@ -156,16 +156,17 @@ HEADERS += \
     jni/core/VTransform.h \
     jni/core/VBasicmath.h \
     jni/core/VQuat.h \
-    jni/api/VKernel.h \
-    jni/api/VLensDistortion.h \
-    jni/api/VRotationSensor.h \
+    jni/api/VDevice.h \
     jni/api/VEglDriver.h \
     jni/api/VFrameSmooth.h \
     jni/api/VGlGeometry.h \
     jni/api/VGlShader.h \
+    jni/api/VInput.h \
+    jni/api/VKernel.h \
+    jni/api/VLensDistortion.h \
     jni/api/VMainActivity.h \
+    jni/api/VRotationSensor.h \
     jni/api/VViewSettings.h \
-    jni/api/VDevice.h \
     jni/gui/VText.h \
     jni/gui/VDialog.h \
     jni/gui/VPanel.h \

@@ -5,10 +5,13 @@
 
 #include "Input.h"
 #include "KeyState.h"
+#include "VMatrix.h"
 
 #include <jni.h>
 
 NV_NAMESPACE_BEGIN
+
+class VKernel;
 
 class VMainActivity
 {
