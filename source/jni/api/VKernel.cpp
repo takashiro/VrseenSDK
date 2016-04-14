@@ -69,11 +69,9 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *)
 
     JNIEnv *jni;
     const jint result = vm->AttachCurrentThread(&jni, 0);
-    vAssert(result != JNI_OK);
+    vAssert(result == JNI_OK);
 
     VOsBuild::Init(jni);
-
-    vm->DetachCurrentThread();
 
     return JNI_VERSION_1_6;
 }
