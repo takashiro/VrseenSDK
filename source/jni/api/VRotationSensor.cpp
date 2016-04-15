@@ -39,8 +39,8 @@ class USensor
 public:
     USensor();
     ~USensor();
-    bool update(uint8_t  *buffer);
-    long long getLatestTime();
+    bool update(uint8_t *buffer);
+    longlong getLatestTime();
     VQuat<float> getSensorQuaternion();
     V3Vect<float> getAngularVelocity();
 
@@ -51,17 +51,15 @@ private:
     V3Vect<float> gyrocorrect(const V3Vect<float> &gyro, const V3Vect<float> &accel, const float DeltaT);
 
 private:
-    VQuat<float> q_;
+    VRotationState m_state;
     bool first_;
     int step_;
     uint first_real_time_delta_;
     vuint16 last_timestamp_;
     vuint32 full_timestamp_;
     vuint8 last_sample_count_;
-    longlong latest_time_;
     V3Vect<float> last_acceleration_;
     V3Vect<float> last_rotation_rate_;
-    V3Vect<float> last_corrected_gyro_;
     V3Vect<float> gyro_offset_;
 
     class Filter: public VCircularQueue<float>
@@ -142,18 +140,12 @@ VRotationSensor::VRotationSensor()
 }
 
 USensor::USensor()
-    : q_()
-    , first_(true)
+    : first_(true)
     , step_(0)
     , first_real_time_delta_(0.0f)
     , last_timestamp_(0)
     , full_timestamp_(0)
     , last_sample_count_(0)
-    , latest_time_(0)
-    , last_acceleration_(0.0f, 0.0f, 0.0f)
-    , last_rotation_rate_(0.0f, 0.0f, 0.0f)
-    , last_corrected_gyro_(0.0f, 0.0f, 0.0f)
-    , gyro_offset_(0.0f, 0.0f, 0.0f)
 {
 }
 
@@ -173,37 +165,31 @@ bool USensor::update(uint8_t  *buffer) {
     */
     pollSensor(&data, buffer);
 
-    latest_time_ = getCurrentTime();
-
+    m_state.timestamp = getCurrentTime();
     process(&data);
 
-    VRotationState state;
-    state.w = q_.w;
-    state.x = q_.x;
-    state.y = q_.y;
-    state.z = q_.z;
-    state.gyroX = last_corrected_gyro_.x;
-    state.gyroY = last_corrected_gyro_.y;
-    state.gyroZ = last_corrected_gyro_.z;
-    state.timestamp = latest_time_;
-    VRotationSensor::instance()->setState(state);
+    VRotationSensor::instance()->setState(m_state);
 
     return true;
 }
 
-long long USensor::getLatestTime() {
-    return latest_time_;
+longlong USensor::getLatestTime()
+{
+    return m_state.timestamp;
 }
 
-VQuat<float> USensor::getSensorQuaternion() {
-    return q_;
+VQuat<float> USensor::getSensorQuaternion()
+{
+    return m_state;
 }
 
-V3Vect<float> USensor::getAngularVelocity() {
-    return last_corrected_gyro_;
+V3Vect<float> USensor::getAngularVelocity()
+{
+    return V3Vect<float>(m_state.gyro.x, m_state.gyro.y, m_state.gyro.z);
 }
 
-bool USensor::pollSensor(KTrackerSensorZip* data,uint8_t  *buffer) {
+bool USensor::pollSensor(KTrackerSensorZip* data,uint8_t  *buffer)
+{
    /* if (fd_ < 0) {
         fd_ = open("/dev/ovr0", O_RDONLY);
     }
@@ -398,27 +384,30 @@ void USensor::updateQ(KTrackerMessage *msg) {
     V3Vect<float> gyro = msg->RotationRate;
     V3Vect<float> accel = msg->Acceleration;
     const float DeltaT = msg->TimeDelta;
-    V3Vect<float> gyroCorrected = gyrocorrect(gyro, accel, DeltaT);
-    last_corrected_gyro_ = gyroCorrected;
+    m_state.gyro = gyrocorrect(gyro, accel, DeltaT);
 
     // Update the orientation quaternion based on the corrected angular velocity vector
-    float gyro_length = gyroCorrected.Length();
+    float gyro_length = m_state.gyro.Length();
     if (gyro_length != 0.0f) {
         float angle = gyro_length * DeltaT;
-        q_ = q_ * VQuat<float>(gyroCorrected.Normalized() * sin(angle * 0.5f), angle);
+        VQuatf q = m_state * VQuat<float>(m_state.gyro.Normalized() * sin(angle * 0.5f), angle);
+        m_state.w = q.w;
+        m_state.x = q.x;
+        m_state.y = q.y;
+        m_state.z = q.z;
     }
 
     step_++;
 
     // Normalize error
     if (step_ % 500 == 0) {
-        q_.Normalize();
+        m_state.Normalize();
     }
 }
 
 V3Vect<float> USensor::gyrocorrect(const V3Vect<float> &gyro, const V3Vect<float> &accel, const float DeltaT) {
     // Small preprocessing
-    VQuat<float> Qinv = q_.Inverted();
+    VQuat<float> Qinv = m_state.Inverted();
     V3Vect<float> up = Qinv.Rotate(V3Vect<float>(0, 1, 0));
     V3Vect<float> gyroCorrected = gyro;
 
@@ -537,9 +526,9 @@ JNIEXPORT void JNICALL Java_com_vrseen_sensor_RotationSensor_update
     state.w = w;
     state.y = y;
     state.z = z;
-    state.gyroX = gryoX;
-    state.gyroY = gryoY;
-    state.gyroZ = gryoZ;
+    state.gyro.x = gryoX;
+    state.gyro.y = gryoY;
+    state.gyro.z = gryoZ;
     VRotationSensor::instance()->setState(state);
 }
 

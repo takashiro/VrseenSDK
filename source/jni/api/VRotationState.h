@@ -6,10 +6,8 @@ NV_NAMESPACE_BEGIN
 
 struct VRotationState : public VQuatf
 {
-    float gyroX;
-    float gyroY;
-    float gyroZ;
-    long timestamp;
+    V3Vectf gyro;
+    longlong timestamp;
 };
 
 NV_NAMESPACE_END

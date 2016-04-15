@@ -712,7 +712,6 @@ void VFrameSmooth::Private::threadFunction()
 VFrameSmooth::VFrameSmooth(bool async,VDevice *device)
         : d(new Private(async,device))
 {
-
 }
 
 VFrameSmooth::~VFrameSmooth()
