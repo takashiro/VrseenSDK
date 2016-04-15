@@ -100,7 +100,7 @@ static bool GlFormatToTextureFormat( ColorFormat & format, const GLenum glFormat
             return true;
     }
 
-    std::shared_ptr<VImage> VImageKtxLoader::loadImage(VFile *file) const
+    VImage* VImageKtxLoader::loadImage(VFile *file) const
     {
         char* buffer = new char[file->size()];
         file->read(buffer, file->size());
@@ -168,8 +168,7 @@ static bool GlFormatToTextureFormat( ColorFormat & format, const GLenum glFormat
             vInfo(file->path() << ": KTX file has unsupported number of faces " << header.numberOfFaces);
         }
 
-        std::shared_ptr<VImage> image = 0;
-        image = CImage(format, VDimension<uint>(width, height), buffer + startTex, file->size() - startTex, info);
+        VImage* image = new VImage(format, VDimension<uint>(width, height), buffer + startTex, file->size() - startTex, info);
         delete [] buffer;
 
         return image;

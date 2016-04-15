@@ -37,7 +37,7 @@ bool VImagePvrLoader::isALoadableFileFormat(VFile *file) const
         return true;
 }
 
-std::shared_ptr<VImage> VImagePvrLoader::loadImage(VFile *file) const
+VImage* VImagePvrLoader::loadImage(VFile *file) const
 {
     char* buffer = new char[file->size()];
     file->read(buffer, file->size());
@@ -90,8 +90,7 @@ std::shared_ptr<VImage> VImagePvrLoader::loadImage(VFile *file) const
         vInfo("PVR file has unsupported number of faces ");
     }
 
-    std::shared_ptr<VImage> image = 0;
-    image = CImage(format, VDimension<uint>(width, height), buffer + startTex, file->size() - startTex, info);
+    VImage* image = VImage(format, VDimension<uint>(width, height), buffer + startTex, file->size() - startTex, info);
     delete [] buffer;
 
     return image;

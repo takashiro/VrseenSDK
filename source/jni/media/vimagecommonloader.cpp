@@ -26,7 +26,7 @@ namespace NervGear {
 
     }
 
-    std::shared_ptr<VImage> VImageCommonLoader::loadImage(VFile *file) const
+    VImage* VImageCommonLoader::loadImage(VFile *file) const
     {
         char* buffer = new char[file->size()];
         file->read(buffer, file->size());
@@ -34,8 +34,7 @@ namespace NervGear {
         int width = 0;
         int height = 0;
         stbi_uc * image = stbi_load_from_memory( (unsigned char *)buffer, file->size(), &width, &height, &comp, 4 );
-        VImage* m_image = 0;
-        m_image = CImage(ECF_RGBA, VDimension<uint, uint>(width, height), image, file->size());
+        VImage* m_image = VImage(ECF_RGBA, VDimension<uint, uint>(width, height), image, file->size());
 
         delete [] buffer;
         return m_image;

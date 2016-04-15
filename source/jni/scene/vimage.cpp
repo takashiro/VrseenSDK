@@ -7,7 +7,7 @@
 
 namespace  NervGear {
 
-CImage::CImage(ColorFormat format, const VDimension<uint>& size)
+VImage::VImage(ColorFormat format, const VDimension<uint>& size)
 :m_data(0), m_size(size), m_format(format), m_length(0), m_info(),DeleteMemory(true)
 {
     initData();
@@ -15,7 +15,7 @@ CImage::CImage(ColorFormat format, const VDimension<uint>& size)
 
 
 //! Constructor from raw data
-CImage::CImage(ColorFormat format, const VDimension<uint>& size, void* data,
+VImage::VImage(ColorFormat format, const VDimension<uint>& size, void* data,
             bool ownForeignMemory, bool deleteForeignMemory)
 : m_data(0), m_size(size), m_format(format), m_length(0), m_info(), DeleteMemory(deleteForeignMemory)
 {
@@ -34,7 +34,7 @@ CImage::CImage(ColorFormat format, const VDimension<uint>& size, void* data,
 }
 
 //Construct from another raw data
-CImage::CImage(ColorFormat format, const VDimension<uint>& size, void* data, uint length, VMap<VString, VString> &info)
+VImage::VImage(ColorFormat format, const VDimension<uint>& size, void* data, uint length, VMap<VString, VString> &info)
     :m_data(0), m_size(size), m_format(format), m_length(length), m_info(info), DeleteMemory(true)
 {
     m_data = (char *)data;
@@ -43,10 +43,10 @@ CImage::CImage(ColorFormat format, const VDimension<uint>& size, void* data, uin
 
 
 //! assumes format and size has been set and creates the rest
-void CImage::initData()
+void VImage::initData()
 {
 #ifdef _DEBUG
-    setDebugName("CImage");
+    setDebugName("VImage");
 #endif
     m_bytesPerPixel = getBitsPerPixelFromFormat(m_format) / 8;
 
@@ -62,7 +62,7 @@ void CImage::initData()
 
 
 //! destructor
-CImage::~CImage()
+VImage::~VImage()
 {
     if ( DeleteMemory )
         delete [] m_data;
@@ -70,42 +70,42 @@ CImage::~CImage()
 
 
 //! Returns width and height of image data.
-const VDimension<uint>& CImage::getDimension() const
+const VDimension<uint>& VImage::getDimension() const
 {
     return m_size;
 }
 
 
 //! Returns bits per pixel.
-uint CImage::getBitsPerPixel() const
+uint VImage::getBitsPerPixel() const
 {
     return getBitsPerPixelFromFormat(m_format);
 }
 
 
 //! Returns bytes per pixel
-uint CImage::getBytesPerPixel() const
+uint VImage::getBytesPerPixel() const
 {
     return m_bytesPerPixel;
 }
 
 
 //! Returns image data size in bytes
-uint CImage::getImageDataSizeInBytes() const
+uint VImage::getImageDataSizeInBytes() const
 {
     return m_pitch * m_size.Height;
 }
 
 
 //! Returns image data size in pixels
-uint CImage::getImageDataSizeInPixels() const
+uint VImage::getImageDataSizeInPixels() const
 {
     return m_size.Width * m_size.Height;
 }
 
 
 //! returns mask for red value of a pixel
-uint CImage::getRedMask() const
+uint VImage::getRedMask() const
 {
     switch(m_format)
     {
@@ -124,7 +124,7 @@ uint CImage::getRedMask() const
 
 
 //! returns mask for green value of a pixel
-uint CImage::getGreenMask() const
+uint VImage::getGreenMask() const
 {
     switch(m_format)
     {
@@ -143,7 +143,7 @@ uint CImage::getGreenMask() const
 
 
 //! returns mask for blue value of a pixel
-uint CImage::getBlueMask() const
+uint VImage::getBlueMask() const
 {
     switch(m_format)
     {
@@ -162,7 +162,7 @@ uint CImage::getBlueMask() const
 
 
 //! returns mask for alpha value of a pixel
-uint CImage::getAlphaMask() const
+uint VImage::getAlphaMask() const
 {
     switch(m_format)
     {
@@ -179,13 +179,13 @@ uint CImage::getAlphaMask() const
     }
 }
 
-uint CImage::getLength() const
+uint VImage::getLength() const
 {
     return m_length;
 }
 
 //! sets a pixel
-void CImage::setPixel(uint x, uint y, const VImageColor &color, bool blend)
+void VImage::setPixel(uint x, uint y, const VImageColor &color, bool blend)
 {
     if (x >= m_size.Width || y >= m_size.Height)
         return;
@@ -226,7 +226,7 @@ void CImage::setPixel(uint x, uint y, const VImageColor &color, bool blend)
 
 
 //! returns a pixel
-VImageColor CImage::getPixel(uint x, uint y) const
+VImageColor VImage::getPixel(uint x, uint y) const
 {
     if (x >= m_size.Width || y >= m_size.Height)
         return VImageColor(0);
@@ -255,21 +255,21 @@ VImageColor CImage::getPixel(uint x, uint y) const
 
 
 //! returns the color format
-ColorFormat CImage::getColorFormat() const
+ColorFormat VImage::getColorFormat() const
 {
     return m_format;
 }
 
 
 //! copies this surface into another at given position
-void CImage::copyTo(VImage* target, const V2Vect<int>& pos)
+void VImage::copyTo(VImage* target, const V2Vect<int>& pos)
 {
     Blit(BLITTER_TEXTURE, target, 0, &pos, this, 0, 0);
 }
 
 
 //! copies this surface partially into another at given position
-void CImage::copyTo(VImage* target, const V2Vect<int>& pos, const VRectangle<int>& sourceRect, const VRectangle<int>* clipRect)
+void VImage::copyTo(VImage* target, const V2Vect<int>& pos, const VRectangle<int>& sourceRect, const VRectangle<int>* clipRect)
 {
     Blit(BLITTER_TEXTURE, target, clipRect, &pos, this, &sourceRect, 0);
 }
@@ -277,7 +277,7 @@ void CImage::copyTo(VImage* target, const V2Vect<int>& pos, const VRectangle<int
 
 //! copies this surface into another, scaling it to the target image size
 // note: this is very very slow.
-void CImage::copyToScaling(void* target, uint width, uint height, ColorFormat format, uint pitch)
+void VImage::copyToScaling(void* target, uint width, uint height, ColorFormat format, uint pitch)
 {
     if (!target || !width || !height)
         return;
@@ -333,7 +333,7 @@ void CImage::copyToScaling(void* target, uint width, uint height, ColorFormat fo
 
 //! copies this surface into another, scaling it to the target image size
 // note: this is very very slow.
-void CImage::copyToScaling(VImage* target)
+void VImage::copyToScaling(VImage* target)
 {
     if (!target)
         return;
@@ -352,7 +352,7 @@ void CImage::copyToScaling(VImage* target)
 
 
 //! copies this surface into another, scaling it to fit it.
-void CImage::copyToScalingBoxFilter(VImage* target, int bias, bool blend)
+void VImage::copyToScalingBoxFilter(VImage* target, int bias, bool blend)
 {
     const VDimension<uint> destSize = target->getDimension();
 
@@ -383,13 +383,13 @@ void CImage::copyToScalingBoxFilter(VImage* target, int bias, bool blend)
 }
 
 
-VMap<VString, VString> CImage::getInfo()
+VMap<VString, VString> VImage::getInfo()
 {
     return m_info;
 }
 
 //! fills the surface with given color
-void CImage::fill(const VImageColor &color)
+void VImage::fill(const VImageColor &color)
 {
     uint c;
 
@@ -427,7 +427,7 @@ void CImage::fill(const VImageColor &color)
 
 
 //! get a filtered pixel
-inline VImageColor CImage::getPixelBox( int x, int y, int fx, int fy, int bias ) const
+inline VImageColor VImage::getPixelBox( int x, int y, int fx, int fy, int bias ) const
 {
     VImageColor c;
     int a = 0, r = 0, g = 0, b = 0;

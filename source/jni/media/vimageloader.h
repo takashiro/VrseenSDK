@@ -33,7 +33,7 @@ public:
     //! Creates a surface from the file
     /** \param file File handle to check.
     \return Pointer to newly created image, or 0 upon error. */
-    virtual std::shared_ptr<VImage> loadImage(VFile* file) const = 0;
+    virtual VImage* loadImage(VFile* file) const = 0;
 };
 
 NV_NAMESPACE_END

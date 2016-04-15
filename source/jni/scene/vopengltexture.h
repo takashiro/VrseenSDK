@@ -4,6 +4,7 @@
 #include "VGlOperation.h"
 #include "VTexture.h"
 #include "VImage.h"
+#include "VFlags.h"
 
 namespace NervGear{
 
@@ -60,6 +61,9 @@ public:
     //! constructor
     VOpenGLTexture(VImage* surface, const VPath& name, void* mipmapData=0);
 
+    VOpenGLTexture();
+
+    VOpenGLTexture(VImage* origImage, const VPath& name, const TextureFlags_t & flags);
 
     //! destructor
     virtual ~VOpenGLTexture();
@@ -111,6 +115,9 @@ public:
     //! sets whether this texture is intended to be used as a render target.
     void setIsRenderTarget(bool isTarget);
 
+    GLuint TextureName;
+    GLuint TargetType;
+
 protected:
 
     //! protected constructor with basic setup, no GL texture name created, for derived classes
@@ -136,11 +143,10 @@ protected:
     VDimension<uint> TextureSize;
     ColorFormat m_ColorFormat;
     //COpenGLDriver* Driver;
-    std::shared_ptr<VImage> Image;
-    std::shared_ptr<VImage> MipImage;
+    VImage* Image;
+    VImage* MipImage;
 
-    GLuint TextureName;
-    GLuint TargetType;
+
     GLint InternalFormat;
     GLenum PixelFormat;
     GLenum PixelType;
@@ -156,3 +162,5 @@ protected:
 
 
 }
+
+#endif
