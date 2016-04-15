@@ -276,8 +276,9 @@ struct App::Private
 
     jobject javaObject;
     VMainActivity *activity;
-    VKernel*        kernel;
+    VKernel *kernel;
     VScene *scene;
+    const std::list<VModule *> &modules;
 
     Private(App *self)
         : self(self)
@@ -329,6 +330,7 @@ struct App::Private
         , javaObject(nullptr)
         , activity(nullptr)
         , scene(new VScene)
+        , modules(VModule::List())
     {
     }
 
@@ -396,7 +398,9 @@ struct App::Private
     {
         activity->onPause();
 
-        kernel->exit();
+        for(VModule *module : modules) {
+            module->onPause();
+        }
     }
 
     void resume()
@@ -417,10 +421,11 @@ struct App::Private
         // Clear cursor trails
         gazeCursor->HideCursorForFrames(10);
 
-        // Start up TimeWarp and the various performance options
-        kernel->run();
-
         activity->onResume();
+
+        for (VModule *module : modules) {
+            module->onResume();
+        }
     }
 
     void initGlObjects()
@@ -933,7 +938,6 @@ struct App::Private
             // Create our GL data objects
             initGlObjects();
 
-            const std::list<VModule *> &modules = VModule::List();
             for (VModule *module : modules) {
                 module->onStart();
             }

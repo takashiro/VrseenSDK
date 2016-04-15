@@ -12,6 +12,7 @@
 #include "VEglDriver.h"
 #include "VString.h"
 #include "VLockless.h"
+#include "VModule.h"
 
 #include "android/JniUtils.h"
 #include "android/VOsBuild.h"
@@ -127,6 +128,21 @@ void ovr_OnLoad(JavaVM * JavaVm_, JNIEnv *jni)
     }
 }
 NV_REGISTER_JNI_LOADER(ovr_OnLoad)
+
+class VKernelModule : public VModule
+{
+public:
+    void onPause() override
+    {
+        VKernel::instance()->exit();
+    }
+
+    void onResume() override
+    {
+        VKernel::instance()->run();
+    }
+};
+NV_ADD_MODULE(VKernelModule)
 
 VKernel *VKernel::instance()
 {
