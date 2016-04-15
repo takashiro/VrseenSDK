@@ -1391,7 +1391,7 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
     vAssert(NervGearAppInstance == nullptr);
     NervGearAppInstance = this;
 
-    d->kernel = VKernel::GetInstance();
+    d->kernel = VKernel::instance();
     d->storagePaths = new VStandardPath(jni, activityObject);
 
 	//WaitForDebuggerToAttach();
