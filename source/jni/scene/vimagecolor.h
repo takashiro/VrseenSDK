@@ -45,6 +45,50 @@ enum ColorFormat
     //! 128 bit floating point format. 32 bits are used for the red, green, blue and alpha channels.
     ECF_A32B32G32R32F,
 
+    ECF_None,
+
+    ECF_R,
+
+    ECF_RGB,
+
+    ECF_RGBA,
+
+    ECF_DXT1,
+
+    ECF_DXT3,
+
+    ECF_DXT5,
+
+    ECF_PVR4bRGB,
+
+    ECF_PVR4bRGBA,
+
+    ECF_ATC_RGB,
+
+    ECF_ATC_RGBA,
+
+    ECF_ETC1,
+
+    ECF_ETC2_RGB,
+
+    ECF_ETC2_RGBA,
+
+    ECF_ASTC_4x4,	// single channel, 4x4 block encoded ASTC
+
+    ECF_ASTC_6x6,	// single channel, 6x6 block encoded ASTC
+
+    ECF_Depth,
+
+    ECF_TypeMask,
+
+    ECF_Compressed,
+
+    ECF_SamplesMask,
+
+    ECF_RenderTarget,
+
+    ECF_GenMipmaps,
+
     //! Unknown color format:
     ECF_UNKNOWN
 };

@@ -26,7 +26,7 @@ struct OVR_KTX_HEADER
 
     bool VImageKtxLoader::isALoadableFileExtension(const VPath& filename) const
     {
-        return filename.extension() == "ktx";
+        return filename.extension().toLower() == "ktx";
     }
 
     bool VImageKtxLoader::isALoadableFileFormat(VFile *file) const
@@ -36,6 +36,8 @@ struct OVR_KTX_HEADER
             vInfo(file->path() << ": Invalid KTX file");
             return false;
         }
+        else
+            return true;
     }
 
     std::shared_ptr<VImage> VImageKtxLoader::loadImage(VFile *file) const
@@ -81,7 +83,7 @@ struct OVR_KTX_HEADER
         }
         // skip the key value data
         const uintptr_t startTex = sizeof( OVR_KTX_HEADER ) + header.bytesOfKeyValueData;
-        if ( ( startTex < sizeof( OVR_KTX_HEADER ) ) || ( startTex >= static_cast< size_t >( bufferLength ) ) )
+        if ( ( startTex < sizeof( OVR_KTX_HEADER ) ) || ( startTex >= static_cast< size_t >( file->size() ) ) )
         {
             vInfo(file->path() << ": Invalid KTX header sizes");
             return 0;
@@ -90,24 +92,88 @@ struct OVR_KTX_HEADER
         int width = header.pixelWidth;
         int height = header.pixelHeight;
 
-        const vuint32 mipCount = ( noMipMaps ) ? 1 : std::max( 1u, header.numberOfMipmapLevels );
+        VMap<VString, VString> info;
+        info["mipCount"] = (VString)header.numberOfMipmapLevels;
 
         if ( header.numberOfFaces == 1 )
         {
-            return CreateGlTexture( fileName, format, width, height, buffer + startTex, bufferLength - startTex, mipCount, useSrgbFormat, true );
+            info["numberOfFaces"] = "1";
         }
         else if ( header.numberOfFaces == 6 )
         {
-            return CreateGlCubeTexture( fileName, format, width, height, buffer + startTex, bufferLength - startTex, mipCount, useSrgbFormat, true );
+            info["numberOfFaces"] = "6";
         }
         else
         {
             vInfo(file->path() << ": KTX file has unsupported number of faces " << header.numberOfFaces);
         }
 
-        width = 0;
-        height = 0;
-        return 0;
+        VImage* image = 0;
+        image = new CImage(format, VDimension<uint>(width, height), buffer + startTex, file->size() - startTex, info);
+        delete [] buffer;
+
+        return image;
+    }
+
+
+    static bool GlFormatToTextureFormat( int & format, const GLenum glFormat, const GLenum glInternalFormat )
+    {
+        if ( glFormat == GL_RED && glInternalFormat == GL_R8 )
+        {
+            format = ECF_R;
+            return true;
+        }
+        if ( glFormat == GL_RGB && ( glInternalFormat == GL_RGB || glInternalFormat == GL_SRGB8 ) )
+        {
+            format = ECF_RGB;
+            return true;
+        }
+        if ( glFormat == GL_RGBA && ( glInternalFormat == GL_RGBA || glInternalFormat == GL_SRGB8_ALPHA8 ) )
+        {
+            format = ECF_RGBA;
+            return true;
+        }
+        if ( ( glFormat == 0 || glFormat == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT ) && glInternalFormat == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT )
+        {
+            format = ECF_DXT1;
+            return true;
+        }
+        if ( ( glFormat == 0 || glFormat == GL_RGB ) && glInternalFormat == GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG )
+        {
+            format = ECF_PVR4bRGB;
+            return true;
+        }
+        if ( ( glFormat == 0 || glFormat == GL_RGBA ) && glInternalFormat == GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG )
+        {
+            format = ECF_PVR4bRGBA;
+            return true;
+        }
+        if ( ( glFormat == 0 || glFormat == GL_RGB ) && ( glInternalFormat == GL_ETC1_RGB8_OES || glInternalFormat == GL_COMPRESSED_SRGB8_ETC2 ) )
+        {
+            format = ECF_ETC1;
+            return true;
+        }
+        if ( ( glFormat == 0 || glFormat == GL_RGB ) && ( glInternalFormat == GL_COMPRESSED_RGB8_ETC2 || glInternalFormat == GL_COMPRESSED_SRGB8_ETC2 ) )
+        {
+            format = ECF_ETC2_RGB;
+            return true;
+        }
+        if ( ( glFormat == 0 || glFormat == GL_RGBA ) && ( glInternalFormat == GL_COMPRESSED_RGBA8_ETC2_EAC || glInternalFormat == GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC ) )
+        {
+            format = ECF_ETC2_RGBA;
+            return true;
+        }
+        if ( ( glFormat == 0 || glFormat == GL_RGB ) && glInternalFormat == GL_ATC_RGB_AMD )
+        {
+            format = ECF_ATC_RGB;
+            return true;
+        }
+        if ( ( glFormat == 0 || glFormat == GL_RGBA ) && glInternalFormat == GL_ATC_RGBA_EXPLICIT_ALPHA_AMD )
+        {
+            format = ECF_ATC_RGBA;
+            return true;
+        }
+        return false;
     }
 
 

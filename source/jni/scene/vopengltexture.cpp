@@ -1,11 +1,15 @@
 #include "VOpenGLTexture.h"
+#include "3rdParty/stb/stb_image.h"
+#include "VImageCommonLoader.h"
+#include "VImageKtxLoader.h"
+#include "VImagePvrLoader.h"
 
 namespace NervGear{
 
 //! constructor for usual textures
 VOpenGLTexture::VOpenGLTexture(VImage* origImage, const VPath& name, void* mipmapData)
     : VTexture(name), ColorFormat(ECF_A8R8G8B8), Image(0), MipImage(0),
-    TextureName(0), InternalFormat(GL_RGBA), PixelFormat(GL_BGRA_EXT),
+    TextureName(0), TargetType(0), InternalFormat(GL_RGBA), PixelFormat(GL_BGRA_EXT),
     PixelType(GL_UNSIGNED_BYTE), MipLevelStored(0), MipmapLegacyMode(true),
     IsRenderTarget(false), AutomaticMipmapUpdate(false),
     ReadOnlyLock(false), KeepImage(true)
@@ -35,11 +39,111 @@ VOpenGLTexture::VOpenGLTexture(VImage* origImage, const VPath& name, void* mipma
     }
 }
 
+//! constructor for extra textures
+VOpenGLTexture::VOpenGLTexture(VImage* origImage, const VPath& name, const TextureFlags_t & flags)
+    : VTexture(name), m_ColorFormat(origImage->getColorFormat()), Image(0), MipImage(0),
+    TextureName(0), TargetType(0), InternalFormat(GL_RGBA), PixelFormat(GL_BGRA_EXT),
+    PixelType(GL_UNSIGNED_BYTE), MipLevelStored(0), MipmapLegacyMode(true),
+    IsRenderTarget(false), AutomaticMipmapUpdate(false),
+    ReadOnlyLock(false), KeepImage(true)
+{
+    const VString ext = name.extension().toLower();
+    bool UseSRGB = flags & TEXTUREFLAG_USE_SRGB;
+    HasMipMaps = !(flags & TEXTUREFLAG_NO_MIPMAPS);
+    VOpenGLTexture texture;
+    int width = 0;
+    int height = 0;
+    int mipCount = 0;
+    if ( name == NULL || origImage == NULL)
+    {
+        // can't load anything from an empty buffer
+    }
+    else if (	ext == "jpg" || ext == "tga" ||
+                ext == "png" || ext == "bmp" ||
+                ext == "psd" || ext == "gif" ||
+                ext == "hdr" || ext == "pic" )
+    {
+        if ( origImage != NULL )
+        {
+            const size_t dataSize = GetTextureSize( origImage->getColorFormat(), origImage->getDimension().Width, origImage->getDimension().Height );
+            texture = CreateGlTexture(origImage->getColorFormat(), width, height, origImage->lock(), dataSize,
+                    1 /* one mip level */, flags & TEXTUREFLAG_USE_SRGB, false );
+            if ( HasMipMaps )
+            {
+                glBindTexture( GL_TEXTURE_2D, texture.TextureName );
+                glGenerateMipmap( GL_TEXTURE_2D );
+                glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
+            }
+        }
+    }
+    else if ( ext == "pvr" )
+    {
+        if (HasMipMaps)
+            mipCount = origImage->getInfo()["mipCount"].toInt();
+        if (origImage->getInfo()["NumFaces"] == "1")
+            texture = CreateGlTexture(origImage->getColorFormat(), width, height, origImage->lock(), origImage->getLength(), mipCount, UseSRGB, false );
+        else if(origImage->getInfo()["NumFaces"] == "6")
+            texture = CreateGlCubeTexture(origImage->getColorFormat(), width, height, origImage->lock(), origImage->getLength(), mipCount, UseSRGB, false );
+    }
+    else if ( ext == "ktx" )
+    {
+        if (HasMipMaps)
+            mipCount = origImage->getInfo()["mipCount"].toInt();
+        if (origImage->getInfo()["numberOfFaces"] == "1")
+            texture = CreateGlTexture(origImage->getColorFormat(), width, height, origImage->lock(), origImage->getLength(), mipCount, UseSRGB, false );
+        else if (origImage->getInfo()["numberOfFaces"] == "6")
+            texture = CreateGlCubeTexture(origImage->getColorFormat(), width, height, origImage->lock(), origImage->getLength(), mipCount, UseSRGB, false );
+    }
+    else if ( ext == "pkm" )
+    {
+        vInfo("PKM format not supported");
+    }
+    else
+    {
+        vInfo("unsupported file extension " << ext.toCString());
+    }
+
+    // Create a default texture if the load failed
+    if ( texture.TextureName == 0 )
+    {
+        vWarn("Failed to load ");
+        if ( ( flags & TEXTUREFLAG_NO_DEFAULT ) == 0 )
+        {
+            static uint8_t defaultTexture[8 * 8 * 3] =
+            {
+                    255,255,255, 255,255,255, 255,255,255, 255,255,255, 255,255,255, 255,255,255, 255,255,255, 255,255,255,
+                    255,255,255,  64, 64, 64,  64, 64, 64,  64, 64, 64,  64, 64, 64,  64, 64, 64,  64, 64, 64, 255,255,255,
+                    255,255,255,  64, 64, 64,  64, 64, 64,  64, 64, 64,  64, 64, 64,  64, 64, 64,  64, 64, 64, 255,255,255,
+                    255,255,255,  64, 64, 64,  64, 64, 64, 255,255,255, 255,255,255,  64, 64, 64,  64, 64, 64, 255,255,255,
+                    255,255,255,  64, 64, 64,  64, 64, 64, 255,255,255, 255,255,255,  64, 64, 64,  64, 64, 64, 255,255,255,
+                    255,255,255,  64, 64, 64,  64, 64, 64,  64, 64, 64,  64, 64, 64,  64, 64, 64,  64, 64, 64, 255,255,255,
+                    255,255,255,  64, 64, 64,  64, 64, 64,  64, 64, 64,  64, 64, 64,  64, 64, 64,  64, 64, 64, 255,255,255,
+                    255,255,255, 255,255,255, 255,255,255, 255,255,255, 255,255,255, 255,255,255, 255,255,255, 255,255,255
+            };
+            texture = LoadRGBTextureFromMemory( defaultTexture, 8, 8, flags & TEXTUREFLAG_USE_SRGB );
+        }
+    }
+
+    return texture;
+
+
+}
+
+//! constructor for simple GLTexture
+VOpenGLTexture::VOpenGLTexture()
+    : VTexture(0), ColorFormat(ECF_A8R8G8B8), Image(0), MipImage(0),
+    TextureName(0), TargetType(0), InternalFormat(GL_RGBA), PixelFormat(GL_BGRA_EXT),
+    PixelType(GL_UNSIGNED_BYTE), MipLevelStored(0), HasMipMaps(true),
+    MipmapLegacyMode(true), IsRenderTarget(false), AutomaticMipmapUpdate(false),
+    ReadOnlyLock(false), KeepImage(true)
+{
+
+}
 
 //! constructor for basic setup (only for derived classes)
 VOpenGLTexture::VOpenGLTexture(const VPath& name)
     : VTexture(name), ColorFormat(ECF_A8R8G8B8), Image(0), MipImage(0),
-    TextureName(0), InternalFormat(GL_RGBA), PixelFormat(GL_BGRA_EXT),
+    TextureName(0), TargetType(0), InternalFormat(GL_RGBA), PixelFormat(GL_BGRA_EXT),
     PixelType(GL_UNSIGNED_BYTE), MipLevelStored(0), HasMipMaps(true),
     MipmapLegacyMode(true), IsRenderTarget(false), AutomaticMipmapUpdate(false),
     ReadOnlyLock(false), KeepImage(true)
@@ -533,6 +637,423 @@ static VImage* createImage(ColorFormat format, const VDimension<uint>& size)
         return 0;
     }
     return new CImage(format, size);
+}
+
+static int32_t GetTextureSize( const int format, const int w, const int h )
+{
+    switch ( format & ECF_TypeMask )
+    {
+        case ECF_R:            return w*h;
+        case ECF_RGB:          return w*h*3;
+        case ECF_RGBA:         return w*h*4;
+        case ECF_ATC_RGB:
+        case ECF_ETC1:
+        case ECF_ETC2_RGB:
+        case ECF_DXT1:
+        {
+            int bw = (w+3)/4, bh = (h+3)/4;
+            return bw * bh * 8;
+        }
+        case ECF_ATC_RGBA:
+        case ECF_ETC2_RGBA:
+        case ECF_DXT3:
+        case ECF_DXT5:
+        {
+            int bw = (w+3)/4, bh = (h+3)/4;
+            return bw * bh * 16;
+        }
+        case ECF_PVR4bRGB:
+        case ECF_PVR4bRGBA:
+        {
+            unsigned int width = (unsigned int)w;
+            unsigned int height = (unsigned int)h;
+            unsigned int min_width = 8;
+            unsigned int min_height = 8;
+
+            // pad the dimensions
+            width = width + ((-1*width) % min_width);
+            height = height + ((-1*height) % min_height);
+            unsigned int depth = 1;
+
+            unsigned int bpp = 4;
+            unsigned int bits = bpp * width * height * depth;
+            return (int)(bits / 8);
+        }
+        case ECF_ASTC_4x4:
+        {
+            int blocksWide = ( w + 3 ) / 4;
+            int blocksHigh = ( h + 3 ) / 4;
+            return blocksWide * blocksHigh * 16;
+        }
+        case ECF_ASTC_6x6:
+        {
+            int blocksWide = ( w + 5 ) / 6;
+            int blocksHigh = ( h + 5 ) / 6;
+            return blocksWide * blocksHigh * 16;
+        }
+        default:
+        {
+            vAssert( false );
+            break;
+        }
+    }
+    return 0;
+}
+
+static VOpenGLTexture CreateGlTexture(const int format, const int width, const int height,
+                        const void * data, const size_t dataSize,
+                        const int mipcount, const bool useSrgbFormat, const bool imageSizeStored )
+{
+    VOpenGLTexture texture;
+    texture.TargetType = GL_TEXTURE_2D;
+    VGlOperation glOperation;
+    // vInfo("CreateGLTexture(): format " << NameForTextureFormat( static_cast< TextureFormat >( format ) ));
+
+    GLenum glFormat;
+    GLenum glInternalFormat;
+    if ( !TextureFormatToGlFormat( format, useSrgbFormat, glFormat, glInternalFormat ) )
+    {
+        return texture;
+    }
+
+    if ( mipcount <= 0 )
+    {
+        vInfo(": Invalid mip count " << mipcount);
+        return texture;
+    }
+
+    // larger than this would require mipSize below to be a larger type
+    if ( width <= 0 || width > 32768 || height <= 0 || height > 32768 )
+    {
+        vInfo(": Invalid texture size (" << width << "x" << height << ")");
+        return texture;
+    }
+
+    glGenTextures( 1, &texture.TextureName );
+    glBindTexture( GL_TEXTURE_2D, texture.TextureName );
+
+    const unsigned char * level = (const unsigned char*)data;
+    const unsigned char * endOfBuffer = level + dataSize;
+
+    int w = width;
+    int h = height;
+    for ( int i = 0; i < mipcount; i++ )
+    {
+        int32_t mipSize = GetTextureSize( format, w, h );
+        if ( imageSizeStored )
+        {
+            mipSize = *(const size_t *)level;
+
+            level += 4;
+            if ( level > endOfBuffer )
+            {
+                vInfo(": Image data exceeds buffer size");
+                glBindTexture( GL_TEXTURE_2D, 0 );
+                return texture;
+            }
+        }
+
+        if ( mipSize <= 0 || mipSize > endOfBuffer - level )
+        {
+            vInfo(": Mip level " << i << " exceeds buffer size (" << mipSize << " > " << (endOfBuffer - level) << ")");
+            glBindTexture( GL_TEXTURE_2D, 0 );
+            return texture;
+        }
+
+        if ( format & ECF_Compressed )
+        {
+            glCompressedTexImage2D( GL_TEXTURE_2D, i, glInternalFormat, w, h, 0, mipSize, level );
+            glOperation.logErrorsEnum( "ECF_Compressed" );
+        }
+        else
+        {
+            glTexImage2D( GL_TEXTURE_2D, i, glInternalFormat, w, h, 0, glFormat, GL_UNSIGNED_BYTE, level );
+        }
+
+        level += mipSize;
+        if ( imageSizeStored )
+        {
+            level += 3 - ( ( mipSize + 3 ) % 4 );
+            if ( level > endOfBuffer )
+            {
+                vInfo(": Image data exceeds buffer size");
+                glBindTexture( GL_TEXTURE_2D, 0 );
+                return texture;
+            }
+        }
+
+        w >>= 1;
+        h >>= 1;
+        if ( w < 1 ) { w = 1; }
+        if ( h < 1 ) { h = 1; }
+    }
+
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+    // Surfaces look pretty terrible without trilinear filtering
+    if ( mipcount <= 1 )
+    {
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+    }
+    else
+    {
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
+    }
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+
+    glOperation.logErrorsEnum( "Texture load" );
+
+    glBindTexture( GL_TEXTURE_2D, 0 );
+
+    return texture;
+
+}
+
+static VOpenGLTexture CreateGlCubeTexture(const int format, const int width, const int height,
+                        const void * data, const size_t dataSize,
+                        const int mipcount, const bool useSrgbFormat, const bool imageSizeStored )
+{
+    VOpenGLTexture texture;
+    texture.TargetType = GL_TEXTURE_CUBE_MAP;
+    VGlOperation glOperation;
+    assert( width == height );
+
+    if ( mipcount <= 0 )
+    {
+        vInfo("Invalid mip count " << mipcount);
+        return texture;
+    }
+
+    // larger than this would require mipSize below to be a larger type
+    if ( width <= 0 || width > 32768 || height <= 0 || height > 32768 )
+    {
+        vInfo("Invalid texture size (" << width << "x" << height << ")");
+        return texture;
+    }
+
+    GLenum glFormat;
+    GLenum glInternalFormat;
+    if ( !TextureFormatToGlFormat( format, useSrgbFormat, glFormat, glInternalFormat ) )
+    {
+        return texture;
+    }
+
+    glGenTextures( 1, &texture.TextureName );
+    glBindTexture( GL_TEXTURE_CUBE_MAP, texture.TextureName );
+
+    const unsigned char * level = (const unsigned char*)data;
+    const unsigned char * endOfBuffer = level + dataSize;
+
+    for ( int i = 0; i < mipcount; i++ )
+    {
+        const int w = width >> i;
+        int32_t mipSize = GetTextureSize( format, w, w );
+        if ( imageSizeStored )
+        {
+            mipSize = *(const size_t *)level;
+            level += 4;
+            if ( level > endOfBuffer )
+            {
+                vInfo("Image data exceeds buffer size");
+                glBindTexture( GL_TEXTURE_CUBE_MAP, 0 );
+                return texture;
+            }
+        }
+
+        for ( int side = 0; side < 6; side++ )
+        {
+            if ( mipSize <= 0 || mipSize > endOfBuffer - level )
+            {
+                vInfo("Mip level " << i << " exceeds buffer size (" << mipSize << " > " << endOfBuffer - level << ")");
+                glBindTexture( GL_TEXTURE_CUBE_MAP, 0 );
+                return texture;
+            }
+
+            if ( format & Texture_Compressed )
+            {
+                glCompressedTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + side, i, glInternalFormat, w, w, 0, mipSize, level );
+            }
+            else
+            {
+                glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + side, i, glInternalFormat, w, w, 0, glFormat, GL_UNSIGNED_BYTE, level );
+            }
+
+            level += mipSize;
+            if ( imageSizeStored )
+            {
+                level += 3 - ( ( mipSize + 3 ) % 4 );
+                if ( level > endOfBuffer )
+                {
+                    vInfo("Image data exceeds buffer size");
+                    glBindTexture( GL_TEXTURE_CUBE_MAP, 0 );
+                    return texture;
+                }
+            }
+        }
+    }
+
+    // Surfaces look pretty terrible without trilinear filtering
+    if ( mipcount <= 1 )
+    {
+        glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+    }
+    else
+    {
+        glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
+    }
+    glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+
+    glOperation.logErrorsEnum( "Texture load" );
+
+    glBindTexture( GL_TEXTURE_CUBE_MAP, 0 );
+
+    return texture;
+}
+
+static bool TextureFormatToGlFormat( const int format, const bool useSrgbFormat, GLenum & glFormat, GLenum & glInternalFormat )
+{
+    switch ( format & ECF_TypeMask )
+    {
+        case ECF_RGB:
+        {
+            glFormat = GL_RGB;
+            if ( useSrgbFormat )
+            {
+                glInternalFormat = GL_SRGB8;
+//				vInfo("GL texture format is GL_RGB / GL_SRGB8");
+            }
+            else
+            {
+                glInternalFormat = GL_RGB;
+//				vInfo("GL texture format is GL_RGB / GL_RGB");
+            }
+            return true;
+        }
+        case ECF_RGBA:
+        {
+            glFormat = GL_RGBA;
+            if ( useSrgbFormat )
+            {
+                glInternalFormat = GL_SRGB8_ALPHA8;
+//				vInfo("GL texture format is GL_RGBA / GL_SRGB8_ALPHA8");
+            }
+            else
+            {
+                glInternalFormat = GL_RGBA;
+//				vInfo("GL texture format is GL_RGBA / GL_RGBA");
+            }
+            return true;
+        }
+        case ECF_R:
+        {
+            glInternalFormat = GL_R8;
+            glFormat = GL_RED;
+//			vInfo("GL texture format is GL_R8");
+            return true;
+        }
+        case ECF_DXT1:
+        {
+            glFormat = glInternalFormat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+//			vInfo("GL texture format is GL_COMPRESSED_RGBA_S3TC_DXT1_EXT");
+            return true;
+        }
+    // unsupported on OpenGL ES:
+    //    case Texture_DXT3:  glFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT; break;
+    //    case Texture_DXT5:  glFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT; break;
+        case ECF_PVR4bRGB:
+        {
+            glFormat = GL_RGB;
+            glInternalFormat = GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG;
+//			vInfo("GL texture format is GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG");
+            return true;
+        }
+        case ECF_PVR4bRGBA:
+        {
+            glFormat = GL_RGBA;
+            glInternalFormat = GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG;
+//			vInfo("GL texture format is GL_RGBA / GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG");
+            return true;
+        }
+        case ECF_ETC1:
+        {
+            glFormat = GL_RGB;
+            if ( useSrgbFormat )
+            {
+                // Note that ETC2 is backwards compatible with ETC1.
+                glInternalFormat = GL_COMPRESSED_SRGB8_ETC2;
+//				vInfo("GL texture format is GL_RGB / GL_COMPRESSED_SRGB8_ETC2");
+            }
+            else
+            {
+                glInternalFormat = GL_ETC1_RGB8_OES;
+//				vInfo("GL texture format is GL_RGB / GL_ETC1_RGB8_OES");
+            }
+            return true;
+        }
+        case ECF_ETC2_RGB:
+        {
+            glFormat = GL_RGB;
+            if ( useSrgbFormat )
+            {
+                glInternalFormat = GL_COMPRESSED_SRGB8_ETC2;
+//				vInfo("GL texture format is GL_RGB / GL_COMPRESSED_SRGB8_ETC2");
+            }
+            else
+            {
+                glInternalFormat = GL_COMPRESSED_RGB8_ETC2;
+//				vInfo("GL texture format is GL_RGB / GL_COMPRESSED_RGB8_ETC2");
+            }
+            return true;
+        }
+        case ECF_ETC2_RGBA:
+        {
+            glFormat = GL_RGBA;
+            if ( useSrgbFormat )
+            {
+                glInternalFormat = GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC;
+//				vInfo("GL texture format is GL_RGBA / GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC");
+            }
+            else
+            {
+                glInternalFormat = GL_COMPRESSED_RGBA8_ETC2_EAC;
+//				vInfo("GL texture format is GL_RGBA / GL_COMPRESSED_RGBA8_ETC2_EAC");
+            }
+            return true;
+        }
+        case ECF_ASTC_4x4:
+        {
+            glFormat = GL_RGBA;
+            glInternalFormat = GL_COMPRESSED_RGBA_ASTC_4x4_KHR;
+            return true;
+        }
+        case ECF_ASTC_6x6:
+        {
+            glFormat = GL_RGBA;
+            glInternalFormat = GL_COMPRESSED_RGBA_ASTC_6x6_KHR;
+            return true;
+        }
+        case ECF_ATC_RGB:
+        {
+            glFormat = GL_RGB;
+            glInternalFormat = GL_ATC_RGB_AMD;
+//			vInfo("GL texture format is GL_RGB / GL_ATC_RGB_AMD");
+            return true;
+        }
+        case ECF_ATC_RGBA:
+        {
+            glFormat = GL_RGBA;
+            glInternalFormat = GL_ATC_RGBA_EXPLICIT_ALPHA_AMD;
+//			vInfo("GL texture format is GL_RGBA / GL_ATC_RGBA_EXPLICIT_ALPHA_AMD");
+            return true;
+        }
+    }
+    return false;
+}
+
+VOpenGLTexture LoadRGBTextureFromMemory( const uint8_t * texture, const int width, const int height, const bool useSrgbFormat )
+{
+    const size_t dataSize = GetTextureSize( ECF_RGB, width, height );
+    return CreateGlTexture(ECF_RGB, width, height, texture, dataSize, 1, useSrgbFormat, false );
 }
 
 }

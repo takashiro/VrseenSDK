@@ -8,7 +8,7 @@
 namespace  NervGear {
 
 CImage::CImage(ColorFormat format, const VDimension<uint>& size)
-:m_data(0), m_size(size), m_format(format), DeleteMemory(true)
+:m_data(0), m_size(size), m_format(format), DeleteMemory(true), m_length(0), m_info(0)
 {
     initData();
 }
@@ -17,7 +17,7 @@ CImage::CImage(ColorFormat format, const VDimension<uint>& size)
 //! Constructor from raw data
 CImage::CImage(ColorFormat format, const VDimension<uint>& size, void* data,
             bool ownForeignMemory, bool deleteForeignMemory)
-: m_data(0), m_size(size), m_format(format), DeleteMemory(deleteForeignMemory)
+: m_data(0), m_size(size), m_format(format), DeleteMemory(deleteForeignMemory), m_length(0), m_info(0)
 {
     if (ownForeignMemory)
     {
@@ -31,6 +31,14 @@ CImage::CImage(ColorFormat format, const VDimension<uint>& size, void* data,
         initData();
         memcpy(m_data, data, m_size.Height * m_pitch);
     }
+}
+
+//Construct from another raw data
+CImage::CImage(ColorFormat format, const VDimension<uint>& size, void* data, uint length, VMap<VString, VString> &info)
+    :m_data(0), m_size(size), m_format(format), DeleteMemory(deleteForeignMemory), m_length(length), m_info(info)
+{
+    m_data = data;
+
 }
 
 
@@ -171,6 +179,10 @@ uint CImage::getAlphaMask() const
     }
 }
 
+uint CImage::getLength() const
+{
+    return m_length;
+}
 
 //! sets a pixel
 void CImage::setPixel(uint x, uint y, const VImageColor &color, bool blend)
@@ -370,6 +382,11 @@ void CImage::copyToScalingBoxFilter(VImage* target, int bias, bool blend)
     target->unlock();
 }
 
+
+VJson<VString, VString> CImage::getInfo()
+{
+    return m_info;
+}
 
 //! fills the surface with given color
 void CImage::fill(const VImageColor &color)

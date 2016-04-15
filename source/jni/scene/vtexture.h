@@ -91,8 +91,14 @@ class VTexture
 public:
 
     //! constructor
-    VTexture(const VPath& name) : m_NamedPath(name)
+    VTexture(const VPath& name) : m_NamedPath(name), m_texturecreationflag(0)
     {
+    }
+
+    //constructor
+    VTexture():m_NamedPath(0),m_texturecreationflag(0)
+    {
+
     }
 
     //! Lock function.

@@ -4,6 +4,7 @@
 #include "VImageColor.h"
 #include "VColorConverter.h"
 #include "VRect.h"
+#include "VJson.h"
 
 namespace  NervGear
 {
@@ -63,6 +64,8 @@ public:
     //! Returns pitch of image
     virtual uint getPitch() const =0;
 
+    virtual uint getLength() const = 0;
+
     //! Copies the image into the target, scaling the image to fit
     virtual void copyToScaling(void* target, uint width, uint height, ColorFormat format=ECF_A8R8G8B8, uint pitch=0) =0;
 
@@ -80,6 +83,8 @@ public:
 
     //! fills the surface with given color
     virtual void fill(const VImageColor &color) =0;
+
+    virtual VJson<VString, VString> getInfo() = 0;
 
     //! get the amount of Bits per Pixel of the given color format
     static uint getBitsPerPixelFromFormat(const ColorFormat format)
@@ -145,6 +150,8 @@ public:
     //! constructor for empty image
     CImage(ColorFormat format, const VDimension<uint>& size);
 
+    CImage(ColorFormat format, const VDimension<uint>& size, void* data, uint length, VMap<VString, VString> &info);
+
     //! destructor
     virtual ~CImage();
 
@@ -187,6 +194,8 @@ public:
     //! returns a pixel
     virtual VImageColor getPixel(uint x, uint y) const;
 
+    virtual uint getLength() const;
+
     //! sets a pixel
     virtual void setPixel(uint x, uint y, const VImageColor &color, bool blend = false );
 
@@ -214,6 +223,8 @@ public:
     //! fills the surface with given color
     virtual void fill(const VImageColor &color);
 
+    virtual VJson<VString, VString> getInfo();
+
 private:
 
     //! assumes format and size has been set and creates the rest
@@ -226,6 +237,8 @@ private:
     uint m_bytesPerPixel;
     uint m_pitch;
     ColorFormat m_format;
+    uint m_length;
+    VMap<VString, VString> m_info;
 
     bool DeleteMemory;
 };

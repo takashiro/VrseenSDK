@@ -1,12 +1,56 @@
 #ifndef VOPENGLTEXTURE_H
 #define VOPENGLTEXTURE_H
 
-
 #include "VGlOperation.h"
 #include "VTexture.h"
 #include "VImage.h"
 
 namespace NervGear{
+
+
+#define GL_COMPRESSED_RGBA_ASTC_4x4_KHR            0x93B0
+#define GL_COMPRESSED_RGBA_ASTC_5x4_KHR            0x93B1
+#define GL_COMPRESSED_RGBA_ASTC_5x5_KHR            0x93B2
+#define GL_COMPRESSED_RGBA_ASTC_6x5_KHR            0x93B3
+#define GL_COMPRESSED_RGBA_ASTC_6x6_KHR            0x93B4
+#define GL_COMPRESSED_RGBA_ASTC_8x5_KHR            0x93B5
+#define GL_COMPRESSED_RGBA_ASTC_8x6_KHR            0x93B6
+#define GL_COMPRESSED_RGBA_ASTC_8x8_KHR            0x93B7
+#define GL_COMPRESSED_RGBA_ASTC_10x5_KHR           0x93B8
+#define GL_COMPRESSED_RGBA_ASTC_10x6_KHR           0x93B9
+#define GL_COMPRESSED_RGBA_ASTC_10x8_KHR           0x93BA
+#define GL_COMPRESSED_RGBA_ASTC_10x10_KHR          0x93BB
+#define GL_COMPRESSED_RGBA_ASTC_12x10_KHR          0x93BC
+#define GL_COMPRESSED_RGBA_ASTC_12x12_KHR          0x93BD
+#define GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR    0x93D0
+#define GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR    0x93D1
+#define GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR    0x93D2
+#define GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR    0x93D3
+#define GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR    0x93D4
+#define GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR    0x93D5
+#define GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR    0x93D6
+#define GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR    0x93D7
+#define GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR   0x93D8
+#define GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR   0x93D9
+#define GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR   0x93DA
+#define GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR  0x93DB
+#define GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR  0x93DC
+#define GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR  0x93DD
+
+enum eTextureFlags
+{
+    // Normally, a failure to load will create an 8x8 default texture, but
+    // if you want to take explicit action, setting this flag will cause
+    // it to return 0 for the texId.
+    TEXTUREFLAG_NO_DEFAULT,
+    // Use GL_SRGB8 / GL_SRGB8_ALPHA8 / GL_COMPRESSED_SRGB8_ETC2 formats instead
+    // of GL_RGB / GL_RGBA / GL_ETC1_RGB8_OES
+    TEXTUREFLAG_USE_SRGB,
+    // No mip maps are loaded or generated when this flag is specified.
+    TEXTUREFLAG_NO_MIPMAPS
+};
+
+typedef VFlags<eTextureFlags> TextureFlags_t;
 
 //! OpenGL texture.
 class VOpenGLTexture : public VTexture
@@ -15,6 +59,7 @@ public:
 
     //! constructor
     VOpenGLTexture(VImage* surface, const VPath& name, void* mipmapData=0);
+
 
     //! destructor
     virtual ~VOpenGLTexture();
@@ -95,6 +140,7 @@ protected:
     std::shared_ptr<VImage> MipImage;
 
     GLuint TextureName;
+    GLuint TargetType;
     GLint InternalFormat;
     GLenum PixelFormat;
     GLenum PixelType;
