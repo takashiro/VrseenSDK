@@ -93,6 +93,16 @@ private:
     Filter tilt_filter_;
 };
 
+static long long getCurrentTime()
+{
+    timespec ts;
+    clock_gettime(CLOCK_REALTIME, &ts); // Works on Linux
+    long long time = static_cast<long long>(ts.tv_sec)
+            * static_cast<long long>(1000000000)
+            + static_cast<long long>(ts.tv_nsec);
+    return time;
+}
+
 struct VRotationSensor::Private
 {
     VLockless<VRotationState> state;
@@ -131,96 +141,6 @@ VRotationSensor::VRotationSensor()
     : d(new Private)
 {
 }
-
-NV_NAMESPACE_END
-
-NV_USING_NAMESPACE
-
-extern "C" {
-
-JNIEXPORT jlong JNICALL Java_com_vrseen_sensor_NativeUSensor_ctor
-  (JNIEnv *env, jclass obj)
-{
-    return reinterpret_cast<jlong>(new USensor());
-}
-
-JNIEXPORT jboolean JNICALL Java_com_vrseen_sensor_NativeUSensor_update
-  (JNIEnv *env, jclass obj, jlong jk_sensor, jbyteArray data)
-{
-    USensor* u_sensor = reinterpret_cast<USensor*>(jk_sensor);
-    jbyte tmp[100];
-    uint8_t tmp1[100];
-
-
-    (*env).GetByteArrayRegion(data,0,100,tmp);
-
-    for(int i=0; i<100; i++){
-        tmp1[i] = tmp[i];
-    }
-
-    return u_sensor->update(tmp1);
-}
-
-JNIEXPORT jlong JNICALL Java_com_vrseen_sensor_NativeUSensor_getTimeStamp
-  (JNIEnv *env, jclass obj, jlong jk_sensor)
-{
-    USensor* u_sensor = reinterpret_cast<USensor*>(jk_sensor);
-     return u_sensor->getLatestTime();
-}
-
-JNIEXPORT jfloatArray JNICALL Java_com_vrseen_sensor_NativeUSensor_getData
-  (JNIEnv *env, jclass obj, jlong jk_sensor)
-{
-    USensor* u_sensor = reinterpret_cast<USensor*>(jk_sensor);
-
-    VQuat<float> rotation = u_sensor->getSensorQuaternion();
-    V3Vect<float> angular_velocity = u_sensor->getAngularVelocity();
-
-    jfloatArray jdata = env->NewFloatArray(7);
-    jfloat data[7];
-    data[0] = rotation.w;
-    data[1] = rotation.x;
-    data[2] = rotation.y;
-    data[3] = rotation.z;
-    data[4] = angular_velocity.x;
-    data[5] = angular_velocity.y;
-    data[6] = angular_velocity.z;
-    env->SetFloatArrayRegion(jdata, 0, 7, data);
-
-    return jdata;
-}
-
-static long long getCurrentTime() {
-    timespec ts;
-    clock_gettime(CLOCK_REALTIME, &ts); // Works on Linux
-    long long time = static_cast<long long>(ts.tv_sec)
-            * static_cast<long long>(1000000000)
-            + static_cast<long long>(ts.tv_nsec);
-    return time;
-}
-
-JNIEXPORT jlong JNICALL Java_com_vrseen_sensor_NativeTime_getCurrentTime
-  (JNIEnv *, jclass)
-{
-    return getCurrentTime();
-}
-
-JNIEXPORT void JNICALL Java_com_vrseen_sensor_RotationSensor_update
-  (JNIEnv *, jclass, jlong timestamp, jfloat w, jfloat x, jfloat y, jfloat z, jfloat gryoX, jfloat gryoY, jfloat gryoZ)
-{
-    VRotationState state;
-    state.timestamp = timestamp;
-    state.w = w;
-    state.y = y;
-    state.z = z;
-    state.gyroX = gryoX;
-    state.gyroY = gryoY;
-    state.gyroZ = gryoZ;
-    VRotationSensor::instance()->setState(state);
-}
-
-}
-
 
 USensor::USensor()
     : q_()
@@ -548,4 +468,84 @@ V3Vect<float> USensor::gyrocorrect(const V3Vect<float> &gyro, const V3Vect<float
     }
 
     return gyroCorrected;
+}
+
+NV_NAMESPACE_END
+
+NV_USING_NAMESPACE
+
+extern "C" {
+
+JNIEXPORT jlong JNICALL Java_com_vrseen_sensor_NativeUSensor_ctor
+  (JNIEnv *env, jclass obj)
+{
+    return reinterpret_cast<jlong>(new USensor());
+}
+
+JNIEXPORT jboolean JNICALL Java_com_vrseen_sensor_NativeUSensor_update
+  (JNIEnv *env, jclass obj, jlong jk_sensor, jbyteArray data)
+{
+    USensor* u_sensor = reinterpret_cast<USensor*>(jk_sensor);
+    jbyte tmp[100];
+    uint8_t tmp1[100];
+
+
+    (*env).GetByteArrayRegion(data,0,100,tmp);
+
+    for(int i=0; i<100; i++){
+        tmp1[i] = tmp[i];
+    }
+
+    return u_sensor->update(tmp1);
+}
+
+JNIEXPORT jlong JNICALL Java_com_vrseen_sensor_NativeUSensor_getTimeStamp
+  (JNIEnv *env, jclass obj, jlong jk_sensor)
+{
+    USensor* u_sensor = reinterpret_cast<USensor*>(jk_sensor);
+     return u_sensor->getLatestTime();
+}
+
+JNIEXPORT jfloatArray JNICALL Java_com_vrseen_sensor_NativeUSensor_getData
+  (JNIEnv *env, jclass obj, jlong jk_sensor)
+{
+    USensor* u_sensor = reinterpret_cast<USensor*>(jk_sensor);
+
+    VQuat<float> rotation = u_sensor->getSensorQuaternion();
+    V3Vect<float> angular_velocity = u_sensor->getAngularVelocity();
+
+    jfloatArray jdata = env->NewFloatArray(7);
+    jfloat data[7];
+    data[0] = rotation.w;
+    data[1] = rotation.x;
+    data[2] = rotation.y;
+    data[3] = rotation.z;
+    data[4] = angular_velocity.x;
+    data[5] = angular_velocity.y;
+    data[6] = angular_velocity.z;
+    env->SetFloatArrayRegion(jdata, 0, 7, data);
+
+    return jdata;
+}
+
+JNIEXPORT jlong JNICALL Java_com_vrseen_sensor_NativeTime_getCurrentTime
+  (JNIEnv *, jclass)
+{
+    return getCurrentTime();
+}
+
+JNIEXPORT void JNICALL Java_com_vrseen_sensor_RotationSensor_update
+  (JNIEnv *, jclass, jlong timestamp, jfloat w, jfloat x, jfloat y, jfloat z, jfloat gryoX, jfloat gryoY, jfloat gryoZ)
+{
+    VRotationState state;
+    state.timestamp = timestamp;
+    state.w = w;
+    state.y = y;
+    state.z = z;
+    state.gyroX = gryoX;
+    state.gyroY = gryoY;
+    state.gyroZ = gryoZ;
+    VRotationSensor::instance()->setState(state);
+}
+
 }
