@@ -255,12 +255,8 @@ public class USensor {
 	}
 	
 	private boolean UsbDetached(UsbDevice device) {
-		int Vid;
-		int Pid;
-
-		Vid = device.getVendorId();
-		Pid = device.getProductId();
-
+		int Vid = device.getVendorId();
+		int Pid = device.getProductId();
 		System.out.println("usb dettach" + " " + Vid + " " + Pid);
 		
 		if ((Vid == VRSEEN_VID) && (Pid == VRSEEN_PID)) {
@@ -269,12 +265,9 @@ public class USensor {
 			//mKeepTimer.purge();
 			mTimer.cancel();
 			mTimer.purge();
-
-			
 			
 			uSensorListener.onSensorErrorDetected();
 			System.out.println("UsbDetached");
-
 		}
 
 		return true;
