@@ -647,8 +647,8 @@ private:
 
 inline void VImageColorHSL::fromRGB(const VImageColorf &color)
 {
-    const float maxVal = std::max(color.getRed(), color.getGreen(), color.getBlue());
-    const float minVal = (float)std::min(color.getRed(), color.getGreen(), color.getBlue());
+    const float maxVal = std::max(std::max(color.getRed(), color.getGreen()), color.getBlue());
+    const float minVal = (float)std::min(std::min(color.getRed(), color.getGreen()), color.getBlue());
     Luminance = (maxVal+minVal)*50;
     if (NervGear::equal(maxVal, minVal))
     {

@@ -50,7 +50,7 @@ std::shared_ptr<VImage> VImagePvrLoader::loadImage(VFile *file) const
         return 0;
     }
 
-    int format = 0;
+    ColorFormat format;
     switch ( header.PixelFormat )
     {
         case 2:						format = ECF_PVR4bRGB;	break;
@@ -90,8 +90,8 @@ std::shared_ptr<VImage> VImagePvrLoader::loadImage(VFile *file) const
         vInfo("PVR file has unsupported number of faces ");
     }
 
-    VImage* image = 0;
-    image = new CImage(format, VDimension<uint>(width, height), buffer + startTex, file->size() - startTex, info);
+    std::shared_ptr<VImage> image = 0;
+    image = CImage(format, VDimension<uint>(width, height), buffer + startTex, file->size() - startTex, info);
     delete [] buffer;
 
     return image;

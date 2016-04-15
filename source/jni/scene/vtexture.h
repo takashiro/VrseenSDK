@@ -188,7 +188,7 @@ public:
     const VPath& Name() const { return m_NamedPath; }
 
     //! Enables or disables a texture creation flag.
-    static void setTextureCreationFlag(E_TEXTURE_CREATION_FLAG flag, bool enabled)
+    void setTextureCreationFlag(E_TEXTURE_CREATION_FLAG flag, bool enabled)
     {
         if (enabled && ((flag == ETCF_ALWAYS_16_BIT) || (flag == ETCF_ALWAYS_32_BIT)
             || (flag == ETCF_OPTIMIZED_FOR_QUALITY) || (flag == ETCF_OPTIMIZED_FOR_SPEED)))
@@ -207,7 +207,7 @@ public:
 
 
     //! Returns if a texture creation flag is enabled or disabled.
-    static bool getTextureCreationFlag(E_TEXTURE_CREATION_FLAG flag) const
+    bool getTextureCreationFlag(E_TEXTURE_CREATION_FLAG flag) const
     {
         return (m_texturecreationflag & flag)!=0;
     }
@@ -236,7 +236,6 @@ protected:
 
 }
 
-#endif
 
 
 #endif // VTEXTURE_H

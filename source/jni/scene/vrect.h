@@ -1,40 +1,40 @@
-#ifndef VRect_H
-#define VRect_H
+#ifndef VRectangle_H
+#define VRectangle_H
 #include "VDimension.h"
 
 namespace NervGear
 {
 
-template <class T>
-    class VRect
+    template <class T>
+    class VRectangle
     {
     public:
 
-        //! Default constructor creating empty VRectangle at (0,0)
-        VRect() : UpperLeftCorner(0,0), LowerRightCorner(0,0) {}
+        //! Default constructor creating empty VRectangleangle at (0,0)
+        VRectangle() : UpperLeftCorner(0,0), LowerRightCorner(0,0) {}
 
         //! Constructor with two corners
-        VRect(T x, T y, T x2, T y2)
+        VRectangle(T x, T y, T x2, T y2)
             : UpperLeftCorner(x,y), LowerRightCorner(x2,y2) {}
 
         //! Constructor with two corners
-        VRect(const V2Vect<T>& upperLeft, const V2Vect<T>& lowerRight)
+        VRectangle(const V2Vect<T>& upperLeft, const V2Vect<T>& lowerRight)
             : UpperLeftCorner(upperLeft), LowerRightCorner(lowerRight) {}
 
         //! Constructor with upper left corner and dimension
         template <class U>
-        VRect(const V2Vect<T>& pos, const VDimension<U>& size)
+        VRectangle(const V2Vect<T>& pos, const VDimension<U>& size)
             : UpperLeftCorner(pos), LowerRightCorner(pos.x + size.Width, pos.y + size.Height) {}
 
         //! move right by given numbers
-        VRect<T> operator+(const V2Vect<T>& pos) const
+        VRectangle<T> operator+(const V2Vect<T>& pos) const
         {
-            VRect<T> ret(*this);
+            VRectangle<T> ret(*this);
             return ret+=pos;
         }
 
         //! move right by given numbers
-        VRect<T>& operator+=(const V2Vect<T>& pos)
+        VRectangle<T>& operator+=(const V2Vect<T>& pos)
         {
             UpperLeftCorner += pos;
             LowerRightCorner += pos;
@@ -42,14 +42,14 @@ template <class T>
         }
 
         //! move left by given numbers
-        VRect<T> operator-(const V2Vect<T>& pos) const
+        VRectangle<T> operator-(const V2Vect<T>& pos) const
         {
-            VRect<T> ret(*this);
+            VRectangle<T> ret(*this);
             return ret-=pos;
         }
 
         //! move left by given numbers
-        VRect<T>& operator-=(const V2Vect<T>& pos)
+        VRectangle<T>& operator-=(const V2Vect<T>& pos)
         {
             UpperLeftCorner -= pos;
             LowerRightCorner -= pos;
@@ -57,34 +57,34 @@ template <class T>
         }
 
         //! equality operator
-        bool operator==(const VRect<T>& other) const
+        bool operator==(const VRectangle<T>& other) const
         {
             return (UpperLeftCorner == other.UpperLeftCorner &&
                 LowerRightCorner == other.LowerRightCorner);
         }
 
         //! inequality operator
-        bool operator!=(const VRect<T>& other) const
+        bool operator!=(const VRectangle<T>& other) const
         {
             return (UpperLeftCorner != other.UpperLeftCorner ||
                 LowerRightCorner != other.LowerRightCorner);
         }
 
-        //! compares size of VRectangles
-        bool operator<(const VRect<T>& other) const
+        //! compares size of VRectangleangles
+        bool operator<(const VRectangle<T>& other) const
         {
             return getArea() < other.getArea();
         }
 
-        //! Returns size of VRectangle
+        //! Returns size of VRectangleangle
         T getArea() const
         {
             return getWidth() * getHeight();
         }
 
-        //! Returns if a 2d point is within this VRectangle.
-        /** \param pos Position to test if it lies within this VRectangle.
-        \return True if the position is within the VRectangle, false if not. */
+        //! Returns if a 2d point is within this VRectangleangle.
+        /** \param pos Position to test if it lies within this VRectangleangle.
+        \return True if the position is within the VRectangleangle, false if not. */
         bool isPointInside(const V2Vect<T>& pos) const
         {
             return (UpperLeftCorner.x <= pos.x &&
@@ -93,10 +93,10 @@ template <class T>
                 LowerRightCorner.y >= pos.y);
         }
 
-        //! Check if the VRectangle collides with another VRectangle.
-        /** \param other VRectangle to test collision with
-        \return True if the VRectangles collide. */
-        bool isVRectCollided(const VRect<T>& other) const
+        //! Check if the VRectangleangle collides with another VRectangleangle.
+        /** \param other VRectangleangle to test collision with
+        \return True if the VRectangleangles collide. */
+        bool isVRectangleCollided(const VRectangle<T>& other) const
         {
             return (LowerRightCorner.y > other.UpperLeftCorner.y &&
                 UpperLeftCorner.y < other.LowerRightCorner.y &&
@@ -104,9 +104,9 @@ template <class T>
                 UpperLeftCorner.x < other.LowerRightCorner.x);
         }
 
-        //! Clips this VRectangle with another one.
-        /** \param other VRectangle to clip with */
-        void clipAgainst(const VRect<T>& other)
+        //! Clips this VRectangleangle with another one.
+        /** \param other VRectangleangle to clip with */
+        void clipAgainst(const VRectangle<T>& other)
         {
             if (other.LowerRightCorner.x < LowerRightCorner.x)
                 LowerRightCorner.x = other.LowerRightCorner.x;
@@ -118,16 +118,16 @@ template <class T>
             if (other.UpperLeftCorner.y > UpperLeftCorner.y)
                 UpperLeftCorner.y = other.UpperLeftCorner.y;
 
-            // corVRect possible invalid VRect resulting from clipping
+            // corVRectangle possible invalid VRectangle resulting from clipping
             if (UpperLeftCorner.y > LowerRightCorner.y)
                 UpperLeftCorner.y = LowerRightCorner.y;
             if (UpperLeftCorner.x > LowerRightCorner.x)
                 UpperLeftCorner.x = LowerRightCorner.x;
         }
 
-        //! Moves this VRectangle to fit inside another one.
+        //! Moves this VRectangleangle to fit inside another one.
         /** \return True on success, false if not possible */
-        bool constrainTo(const VRect<T>& other)
+        bool constrainTo(const VRectangle<T>& other)
         {
             if (other.getWidth() < getWidth() || other.getHeight() < getHeight())
                 return false;
@@ -163,19 +163,19 @@ template <class T>
             return true;
         }
 
-        //! Get width of VRectangle.
+        //! Get width of VRectangleangle.
         T getWidth() const
         {
             return LowerRightCorner.x - UpperLeftCorner.x;
         }
 
-        //! Get height of VRectangle.
+        //! Get height of VRectangleangle.
         T getHeight() const
         {
             return LowerRightCorner.y - UpperLeftCorner.y;
         }
 
-        //! If the lower right corner of the VRect is smaller then the upper left, the points are swapped.
+        //! If the lower right corner of the VRectangle is smaller then the upper left, the points are swapped.
         void repair()
         {
             if (LowerRightCorner.x < UpperLeftCorner.x)
@@ -193,7 +193,7 @@ template <class T>
             }
         }
 
-        //! Returns if the VRect is valid to draw.
+        //! Returns if the VRectangle is valid to draw.
         /** It would be invalid if the UpperLeftCorner is lower or more
         right than the LowerRightCorner. */
         bool isValid() const
@@ -202,7 +202,7 @@ template <class T>
                 (LowerRightCorner.y >= UpperLeftCorner.y));
         }
 
-        //! Get the center of the VRectangle
+        //! Get the center of the VRectangleangle
         V2Vect<T> getCenter() const
         {
             return V2Vect<T>(
@@ -210,15 +210,15 @@ template <class T>
                     (UpperLeftCorner.y + LowerRightCorner.y) / 2);
         }
 
-        //! Get the dimensions of the VRectangle
+        //! Get the dimensions of the VRectangleangle
         VDimension<T> getSize() const
         {
             return VDimension<T>(getWidth(), getHeight());
         }
 
 
-        //! Adds a point to the VRectangle
-        /** Causes the VRectangle to grow bigger if point is outside of
+        //! Adds a point to the VRectangleangle
+        /** Causes the VRectangleangle to grow bigger if point is outside of
         the box
         \param p Point to add to the box. */
         void addInternalPoint(const V2Vect<T>& p)
@@ -226,8 +226,8 @@ template <class T>
             addInternalPoint(p.x, p.y);
         }
 
-        //! Adds a point to the bounding VRectangle
-        /** Causes the VRectangle to grow bigger if point is outside of
+        //! Adds a point to the bounding VRectangleangle
+        /** Causes the VRectangleangle to grow bigger if point is outside of
         the box
         \param x X-Coordinate of the point to add to this box.
         \param y Y-Coordinate of the point to add to this box. */
@@ -250,14 +250,14 @@ template <class T>
         V2Vect<T> LowerRightCorner;
     };
 
-    //! VRectangle with float values
-    typedef VRect<f32> VRectf;
-    //! VRectangle with int values
-    typedef VRect<s32> VRecti;
+    //! VRectangleangle with float values
+    typedef VRectangle<float> VRectanglef;
+    //! VRectangleangle with int values
+    typedef VRectangle<int> VRectanglei;
 
 
 }
 
 
-#endif // VVRect_H
+#endif // VVRectangle_H
 

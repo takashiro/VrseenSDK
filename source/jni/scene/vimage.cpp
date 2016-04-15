@@ -8,7 +8,7 @@
 namespace  NervGear {
 
 CImage::CImage(ColorFormat format, const VDimension<uint>& size)
-:m_data(0), m_size(size), m_format(format), DeleteMemory(true), m_length(0), m_info(0)
+:m_data(0), m_size(size), m_format(format), m_length(0), m_info(),DeleteMemory(true)
 {
     initData();
 }
@@ -17,7 +17,7 @@ CImage::CImage(ColorFormat format, const VDimension<uint>& size)
 //! Constructor from raw data
 CImage::CImage(ColorFormat format, const VDimension<uint>& size, void* data,
             bool ownForeignMemory, bool deleteForeignMemory)
-: m_data(0), m_size(size), m_format(format), DeleteMemory(deleteForeignMemory), m_length(0), m_info(0)
+: m_data(0), m_size(size), m_format(format), m_length(0), m_info(), DeleteMemory(deleteForeignMemory)
 {
     if (ownForeignMemory)
     {
@@ -35,9 +35,9 @@ CImage::CImage(ColorFormat format, const VDimension<uint>& size, void* data,
 
 //Construct from another raw data
 CImage::CImage(ColorFormat format, const VDimension<uint>& size, void* data, uint length, VMap<VString, VString> &info)
-    :m_data(0), m_size(size), m_format(format), DeleteMemory(deleteForeignMemory), m_length(length), m_info(info)
+    :m_data(0), m_size(size), m_format(format), m_length(length), m_info(info), DeleteMemory(true)
 {
-    m_data = data;
+    m_data = (char *)data;
 
 }
 
@@ -269,7 +269,7 @@ void CImage::copyTo(VImage* target, const V2Vect<int>& pos)
 
 
 //! copies this surface partially into another at given position
-void CImage::copyTo(VImage* target, const V2Vect<int>& pos, const core::rect<int>& sourceRect, const core::rect<int>* clipRect)
+void CImage::copyTo(VImage* target, const V2Vect<int>& pos, const VRectangle<int>& sourceRect, const VRectangle<int>* clipRect)
 {
     Blit(BLITTER_TEXTURE, target, clipRect, &pos, this, &sourceRect, 0);
 }
@@ -383,7 +383,7 @@ void CImage::copyToScalingBoxFilter(VImage* target, int bias, bool blend)
 }
 
 
-VJson<VString, VString> CImage::getInfo()
+VMap<VString, VString> CImage::getInfo()
 {
     return m_info;
 }
@@ -436,8 +436,8 @@ inline VImageColor CImage::getPixelBox( int x, int y, int fx, int fy, int bias )
     {
         for ( int dy = 0; dy != fy; ++dy )
         {
-            c = getPixel(	std::min ( x + dx, m_size.Width - 1 ) ,
-                            std::min ( y + dy, m_size.Height - 1 )
+            c = getPixel(	std::min ( x + dx, (int)m_size.Width - 1 ) ,
+                            std::min ( y + dy, (int)m_size.Height - 1 )
                         );
 
             a += c.getAlpha();

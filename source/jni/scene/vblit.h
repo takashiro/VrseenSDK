@@ -65,119 +65,230 @@ struct blitterTable
     tExecuteBlit func;
 };
 
-
-static tExecuteBlit getBlitter2( eBlitter operation,const VImage * dest,const VImage * source )
+inline uint PixelLerp32(const uint source, const uint value)
 {
-    ColorFormat sourceFormat = (ColorFormat) ( source ? source->getColorFormat() : -1 );
-    ColorFormat destFormat = (ColorFormat) ( dest ? dest->getColorFormat() : -1 );
+    uint srcRB = source & 0x00FF00FF;
+    uint srcXG = (source & 0xFF00FF00) >> 8;
 
-    const blitterTable * b = blitTable;
+    srcRB *= value;
+    srcXG *= value;
 
-    while ( b->operation != BLITTER_INVALID )
-    {
-        if ( b->operation == operation )
-        {
-            if (( b->destFormat == -1 || b->destFormat == destFormat ) &&
-                ( b->sourceFormat == -1 || b->sourceFormat == sourceFormat ) )
-                    return b->func;
-            else
-            if ( b->destFormat == -2 && ( sourceFormat == destFormat ) )
-                    return b->func;
-        }
-        b += 1;
-    }
-    return 0;
+    srcRB >>= 8;
+    //srcXG >>= 8;
+
+    srcXG &= 0xFF00FF00;
+    srcRB &= 0x00FF00FF;
+
+    return srcRB | srcXG;
 }
-static const blitterTable blitTable[] =
+
+static inline uint extractAlpha(const uint c)
 {
-    { BLITTER_TEXTURE, -2, -2, executeBlit_TextureCopy_x_to_x },
-    { BLITTER_TEXTURE, ECF_A1R5G5B5, ECF_A8R8G8B8, executeBlit_TextureCopy_32_to_16 },
-    { BLITTER_TEXTURE, ECF_A1R5G5B5, ECF_R8G8B8, executeBlit_TextureCopy_24_to_16 },
-    { BLITTER_TEXTURE, ECF_A8R8G8B8, ECF_A1R5G5B5, executeBlit_TextureCopy_16_to_32 },
-    { BLITTER_TEXTURE, ECF_A8R8G8B8, ECF_R8G8B8, executeBlit_TextureCopy_24_to_32 },
-    { BLITTER_TEXTURE, ECF_R8G8B8, ECF_A1R5G5B5, executeBlit_TextureCopy_16_to_24 },
-    { BLITTER_TEXTURE, ECF_R8G8B8, ECF_A8R8G8B8, executeBlit_TextureCopy_32_to_24 },
-    { BLITTER_TEXTURE_ALPHA_BLEND, ECF_A1R5G5B5, ECF_A1R5G5B5, executeBlit_TextureBlend_16_to_16 },
-    { BLITTER_TEXTURE_ALPHA_BLEND, ECF_A8R8G8B8, ECF_A8R8G8B8, executeBlit_TextureBlend_32_to_32 },
-    { BLITTER_TEXTURE_ALPHA_COLOR_BLEND, ECF_A1R5G5B5, ECF_A1R5G5B5, executeBlit_TextureBlendColor_16_to_16 },
-    { BLITTER_TEXTURE_ALPHA_COLOR_BLEND, ECF_A8R8G8B8, ECF_A8R8G8B8, executeBlit_TextureBlendColor_32_to_32 },
-    { BLITTER_COLOR, ECF_A1R5G5B5, -1, executeBlit_Color_16_to_16 },
-    { BLITTER_COLOR, ECF_A8R8G8B8, -1, executeBlit_Color_32_to_32 },
-    { BLITTER_COLOR_ALPHA, ECF_A1R5G5B5, -1, executeBlit_ColorAlpha_16_to_16 },
-    { BLITTER_COLOR_ALPHA, ECF_A8R8G8B8, -1, executeBlit_ColorAlpha_32_to_32 },
-    { BLITTER_INVALID, -1, -1, 0 }
-};
+    return ( c >> 24 ) + ( c >> 31 );
+}
 
-
-
-
-static int Blit(eBlitter operation,
-        VImage * dest,
-        const VRect<int> *destClipping,
-        const V2Vect<int> *destPos,
-        VImage * const source,
-        const VRect<int> *sourceClipping,
-        uint argb)
+inline uint if_c_a_else_b (const int condition, const uint a, const uint b)
 {
-    tExecuteBlit blitter = getBlitter2( operation, dest, source );
-    if ( 0 == blitter )
+    return ( ( -condition >> 31 ) & ( a ^ b ) ) ^ b;
+}
+
+// 1 - Bit Alpha Blending 16Bit SIMD
+inline uint PixelBlend16_simd (const uint c2, const uint c1 )
+{
+    uint mask = ((c1 & 0x80008000) >> 15 ) + 0x7fff7fff;
+    return (c2 & mask ) | ( c1 & ~mask );
+}
+
+// 1 - Bit Alpha Blending
+inline uint PixelBlend16 (const ushort c2, const ushort c1 )
+{
+    ushort mask = ((c1 & 0x8000) >> 15 ) + 0x7fff;
+    return (c2 & mask ) | ( c1 & ~mask );
+}
+
+inline ushort PixelBlend16 ( const ushort c2, const uint c1, const ushort alpha )
+{
+    const ushort srcRB = c1 & 0x7C1F;
+    const ushort srcXG = c1 & 0x03E0;
+
+    const ushort dstRB = c2 & 0x7C1F;
+    const ushort dstXG = c2 & 0x03E0;
+
+    uint rb = srcRB - dstRB;
+    uint xg = srcXG - dstXG;
+
+    rb *= alpha;
+    xg *= alpha;
+    rb >>= 5;
+    xg >>= 5;
+
+    rb += dstRB;
+    xg += dstXG;
+
+    rb &= 0x7C1F;
+    xg &= 0x03E0;
+
+    return (ushort)(rb | xg);
+}
+
+inline uint PixelBlend32 (const uint c2, const uint c1 )
+{
+    // alpha test
+    uint alpha = c1 & 0xFF000000;
+
+    if ( 0 == alpha )
+        return c2;
+
+    if ( 0xFF000000 == alpha )
     {
-        return 0;
+        return c1;
     }
 
-    // Clipping
-    AbsRectangle sourceClip;
-    AbsRectangle destClip;
-    AbsRectangle v;
+    alpha >>= 24;
 
-    SBlitJob job;
+    // add highbit alpha, if ( alpha > 127 ) alpha += 1;
+    alpha += ( alpha >> 7);
 
-    setClip ( sourceClip, sourceClipping, source, 1 );
-    setClip ( destClip, destClipping, dest, 0 );
+    uint srcRB = c1 & 0x00FF00FF;
+    uint srcXG = c1 & 0x0000FF00;
 
-    v.x0 = destPos ? destPos->x : 0;
-    v.y0 = destPos ? destPos->y : 0;
-    v.x1 = v.x0 + ( sourceClip.x1 - sourceClip.x0 );
-    v.y1 = v.y0 + ( sourceClip.y1 - sourceClip.y0 );
+    uint dstRB = c2 & 0x00FF00FF;
+    uint dstXG = c2 & 0x0000FF00;
 
-    if ( !intersect( job.Dest, destClip, v ) )
-        return 0;
 
-    job.width = job.Dest.x1 - job.Dest.x0;
-    job.height = job.Dest.y1 - job.Dest.y0;
+    uint rb = srcRB - dstRB;
+    uint xg = srcXG - dstXG;
 
-    job.Source.x0 = sourceClip.x0 + ( job.Dest.x0 - v.x0 );
-    job.Source.x1 = job.Source.x0 + job.width;
-    job.Source.y0 = sourceClip.y0 + ( job.Dest.y0 - v.y0 );
-    job.Source.y1 = job.Source.y0 + job.height;
+    rb *= alpha;
+    xg *= alpha;
+    rb >>= 8;
+    xg >>= 8;
 
-    job.argb = argb;
+    rb += dstRB;
+    xg += dstXG;
 
-    if ( source )
+    rb &= 0x00FF00FF;
+    xg &= 0x0000FF00;
+
+    return (c1 & 0xFF000000) | rb | xg;
+}
+
+uint PixelBlend32 ( const uint c2, const uint c1, uint alpha )
+{
+    uint srcRB = c1 & 0x00FF00FF;
+    uint srcXG = c1 & 0x0000FF00;
+
+    uint dstRB = c2 & 0x00FF00FF;
+    uint dstXG = c2 & 0x0000FF00;
+
+
+    uint rb = srcRB - dstRB;
+    uint xg = srcXG - dstXG;
+
+    rb *= alpha;
+    xg *= alpha;
+    rb >>= 8;
+    xg >>= 8;
+
+    rb += dstRB;
+    xg += dstXG;
+
+    rb &= 0x00FF00FF;
+    xg &= 0x0000FF00;
+
+    return rb | xg;
+}
+
+/*
+    Pixel = c0 * (c1/31).
+*/
+inline ushort PixelMul16_2 (ushort c0, ushort c1)
+{
+    return	(ushort)(( ( (c0 & 0x7C00) * (c1 & 0x7C00) ) & 0x3E000000 ) >> 15 |
+            ( ( (c0 & 0x03E0) * (c1 & 0x03E0) ) & 0x000F8000 ) >> 10 |
+            ( ( (c0 & 0x001F) * (c1 & 0x001F) ) & 0x000003E0 ) >> 5  |
+            ( c0 & c1 & 0x8000));
+}
+
+/*
+    Pixel = c0 * (c1/255).
+*/
+inline ushort PixelMul32_2 ( const uint c0, const uint c1)
+{
+    return	(( ( (c0 & 0xFF000000) >> 16 ) * ( (c1 & 0xFF000000) >> 16 ) ) & 0xFF000000 ) |
+            (( ( (c0 & 0x00FF0000) >> 12 ) * ( (c1 & 0x00FF0000) >> 12 ) ) & 0x00FF0000 ) |
+            (( ( (c0 & 0x0000FF00) * (c1 & 0x0000FF00) ) >> 16 ) & 0x0000FF00 ) |
+            (( ( (c0 & 0x000000FF) * (c1 & 0x000000FF) ) >> 8  ) & 0x000000FF);
+}
+
+//! a more useful memset for pixel
+// (standard memset only works with 8-bit values)
+inline void memset16(void * dest, const ushort value, uint bytesize)
+{
+    ushort * d = (ushort*) dest;
+
+    uint i;
+
+    // loops unrolled to reduce the number of increments by factor ~8.
+    i = bytesize >> (1 + 3);
+    while (i)
     {
-        job.srcPitch = source->getPitch();
-        job.srcPixelMul = source->getBytesPerPixel();
-        job.src = (void*) ( (char*) source->lock() + ( job.Source.y0 * job.srcPitch ) + ( job.Source.x0 * job.srcPixelMul ) );
+        d[0] = value;
+        d[1] = value;
+        d[2] = value;
+        d[3] = value;
+
+        d[4] = value;
+        d[5] = value;
+        d[6] = value;
+        d[7] = value;
+
+        d += 8;
+        --i;
     }
-    else
+
+    i = (bytesize >> 1 ) & 7;
+    while (i)
     {
-        // use srcPitch for color operation on dest
-        job.srcPitch = job.width * dest->getBytesPerPixel();
+        d[0] = value;
+        ++d;
+        --i;
+    }
+}
+
+//! a more useful memset for pixel
+// (standard memset only works with 8-bit values)
+inline void memset32(void * dest, const uint value, uint bytesize)
+{
+    uint * d = (uint*) dest;
+
+    uint i;
+
+    // loops unrolled to reduce the number of increments by factor ~8.
+    i = bytesize >> (2 + 3);
+    while (i)
+    {
+        d[0] = value;
+        d[1] = value;
+        d[2] = value;
+        d[3] = value;
+
+        d[4] = value;
+        d[5] = value;
+        d[6] = value;
+        d[7] = value;
+
+        d += 8;
+        i -= 1;
     }
 
-    job.dstPitch = dest->getPitch();
-    job.dstPixelMul = dest->getBytesPerPixel();
-    job.dst = (void*) ( (char*) dest->lock() + ( job.Dest.y0 * job.dstPitch ) + ( job.Dest.x0 * job.dstPixelMul ) );
-
-    blitter( &job );
-
-    if ( source )
-        source->unlock();
-
-    if ( dest )
-        dest->unlock();
-
-    return 1;
+    i = (bytesize >> 2 ) & 7;
+    while (i)
+    {
+        d[0] = value;
+        d += 1;
+        i -= 1;
+    }
 }
 
 static void executeBlit_TextureCopy_x_to_x( const SBlitJob * job )
@@ -696,191 +807,68 @@ static void executeBlit_ColorAlpha_32_to_32( const SBlitJob * job )
     }
 }
 
-inline uint PixelLerp32(const uint source, const uint value)
+static const blitterTable blitTable[] =
 {
-    uint srcRB = source & 0x00FF00FF;
-    uint srcXG = (source & 0xFF00FF00) >> 8;
+    { BLITTER_TEXTURE, -2, -2, executeBlit_TextureCopy_x_to_x },
+    { BLITTER_TEXTURE, ECF_A1R5G5B5, ECF_A8R8G8B8, executeBlit_TextureCopy_32_to_16 },
+    { BLITTER_TEXTURE, ECF_A1R5G5B5, ECF_R8G8B8, executeBlit_TextureCopy_24_to_16 },
+    { BLITTER_TEXTURE, ECF_A8R8G8B8, ECF_A1R5G5B5, executeBlit_TextureCopy_16_to_32 },
+    { BLITTER_TEXTURE, ECF_A8R8G8B8, ECF_R8G8B8, executeBlit_TextureCopy_24_to_32 },
+    { BLITTER_TEXTURE, ECF_R8G8B8, ECF_A1R5G5B5, executeBlit_TextureCopy_16_to_24 },
+    { BLITTER_TEXTURE, ECF_R8G8B8, ECF_A8R8G8B8, executeBlit_TextureCopy_32_to_24 },
+    { BLITTER_TEXTURE_ALPHA_BLEND, ECF_A1R5G5B5, ECF_A1R5G5B5, executeBlit_TextureBlend_16_to_16 },
+    { BLITTER_TEXTURE_ALPHA_BLEND, ECF_A8R8G8B8, ECF_A8R8G8B8, executeBlit_TextureBlend_32_to_32 },
+    { BLITTER_TEXTURE_ALPHA_COLOR_BLEND, ECF_A1R5G5B5, ECF_A1R5G5B5, executeBlit_TextureBlendColor_16_to_16 },
+    { BLITTER_TEXTURE_ALPHA_COLOR_BLEND, ECF_A8R8G8B8, ECF_A8R8G8B8, executeBlit_TextureBlendColor_32_to_32 },
+    { BLITTER_COLOR, ECF_A1R5G5B5, -1, executeBlit_Color_16_to_16 },
+    { BLITTER_COLOR, ECF_A8R8G8B8, -1, executeBlit_Color_32_to_32 },
+    { BLITTER_COLOR_ALPHA, ECF_A1R5G5B5, -1, executeBlit_ColorAlpha_16_to_16 },
+    { BLITTER_COLOR_ALPHA, ECF_A8R8G8B8, -1, executeBlit_ColorAlpha_32_to_32 },
+    { BLITTER_INVALID, -1, -1, 0 }
+};
 
-    srcRB *= value;
-    srcXG *= value;
-
-    srcRB >>= 8;
-    //srcXG >>= 8;
-
-    srcXG &= 0xFF00FF00;
-    srcRB &= 0x00FF00FF;
-
-    return srcRB | srcXG;
-}
-
-static inline uint extractAlpha(const uint c)
+static tExecuteBlit getBlitter2( eBlitter operation,const VImage * dest,const VImage * source )
 {
-    return ( c >> 24 ) + ( c >> 31 );
-}
+    ColorFormat sourceFormat = (ColorFormat) ( source ? source->getColorFormat() : -1 );
+    ColorFormat destFormat = (ColorFormat) ( dest ? dest->getColorFormat() : -1 );
 
-inline uint if_c_a_else_b (const int condition, const uint a, const uint b)
-{
-    return ( ( -condition >> 31 ) & ( a ^ b ) ) ^ b;
-}
+    const blitterTable * b = blitTable;
 
-// 1 - Bit Alpha Blending 16Bit SIMD
-inline uint PixelBlend16_simd (const uint c2, const uint c1 )
-{
-    uint mask = ((c1 & 0x80008000) >> 15 ) + 0x7fff7fff;
-    return (c2 & mask ) | ( c1 & ~mask );
-}
-
-// 1 - Bit Alpha Blending
-inline uint PixelBlend16 (const ushort c2, const ushort c1 )
-{
-    ushort mask = ((c1 & 0x8000) >> 15 ) + 0x7fff;
-    return (c2 & mask ) | ( c1 & ~mask );
-}
-
-inline uint PixelBlend32 (const uint c2, const uint c1 )
-{
-    // alpha test
-    uint alpha = c1 & 0xFF000000;
-
-    if ( 0 == alpha )
-        return c2;
-
-    if ( 0xFF000000 == alpha )
+    while ( b->operation != BLITTER_INVALID )
     {
-        return c1;
+        if ( b->operation == operation )
+        {
+            if (( b->destFormat == -1 || b->destFormat == destFormat ) &&
+                ( b->sourceFormat == -1 || b->sourceFormat == sourceFormat ) )
+                    return b->func;
+            else
+            if ( b->destFormat == -2 && ( sourceFormat == destFormat ) )
+                    return b->func;
+        }
+        b += 1;
     }
-
-    alpha >>= 24;
-
-    // add highbit alpha, if ( alpha > 127 ) alpha += 1;
-    alpha += ( alpha >> 7);
-
-    uint srcRB = c1 & 0x00FF00FF;
-    uint srcXG = c1 & 0x0000FF00;
-
-    uint dstRB = c2 & 0x00FF00FF;
-    uint dstXG = c2 & 0x0000FF00;
-
-
-    uint rb = srcRB - dstRB;
-    uint xg = srcXG - dstXG;
-
-    rb *= alpha;
-    xg *= alpha;
-    rb >>= 8;
-    xg >>= 8;
-
-    rb += dstRB;
-    xg += dstXG;
-
-    rb &= 0x00FF00FF;
-    xg &= 0x0000FF00;
-
-    return (c1 & 0xFF000000) | rb | xg;
+    return 0;
 }
 
-/*
-    Pixel = c0 * (c1/31).
-*/
-inline ushort PixelMul16_2 (ushort c0, ushort c1)
-{
-    return	(ushort)(( ( (c0 & 0x7C00) * (c1 & 0x7C00) ) & 0x3E000000 ) >> 15 |
-            ( ( (c0 & 0x03E0) * (c1 & 0x03E0) ) & 0x000F8000 ) >> 10 |
-            ( ( (c0 & 0x001F) * (c1 & 0x001F) ) & 0x000003E0 ) >> 5  |
-            ( c0 & c1 & 0x8000));
-}
 
-/*
-    Pixel = c0 * (c1/255).
-*/
-inline ushort PixelMul32_2 ( const uint c0, const uint c1)
-{
-    return	(( ( (c0 & 0xFF000000) >> 16 ) * ( (c1 & 0xFF000000) >> 16 ) ) & 0xFF000000 ) |
-            (( ( (c0 & 0x00FF0000) >> 12 ) * ( (c1 & 0x00FF0000) >> 12 ) ) & 0x00FF0000 ) |
-            (( ( (c0 & 0x0000FF00) * (c1 & 0x0000FF00) ) >> 16 ) & 0x0000FF00 ) |
-            (( ( (c0 & 0x000000FF) * (c1 & 0x000000FF) ) >> 8  ) & 0x000000FF);
-}
 
-//! a more useful memset for pixel
-// (standard memset only works with 8-bit values)
-inline void memset16(void * dest, const ushort value, uint bytesize)
-{
-    ushort * d = (ushort*) dest;
 
-    uint i;
 
-    // loops unrolled to reduce the number of increments by factor ~8.
-    i = bytesize >> (1 + 3);
-    while (i)
-    {
-        d[0] = value;
-        d[1] = value;
-        d[2] = value;
-        d[3] = value;
 
-        d[4] = value;
-        d[5] = value;
-        d[6] = value;
-        d[7] = value;
 
-        d += 8;
-        --i;
-    }
 
-    i = (bytesize >> 1 ) & 7;
-    while (i)
-    {
-        d[0] = value;
-        ++d;
-        --i;
-    }
-}
 
-//! a more useful memset for pixel
-// (standard memset only works with 8-bit values)
-inline void memset32(void * dest, const uint value, uint bytesize)
-{
-    uint * d = (uint*) dest;
-
-    uint i;
-
-    // loops unrolled to reduce the number of increments by factor ~8.
-    i = bytesize >> (2 + 3);
-    while (i)
-    {
-        d[0] = value;
-        d[1] = value;
-        d[2] = value;
-        d[3] = value;
-
-        d[4] = value;
-        d[5] = value;
-        d[6] = value;
-        d[7] = value;
-
-        d += 8;
-        i -= 1;
-    }
-
-    i = (bytesize >> 2 ) & 7;
-    while (i)
-    {
-        d[0] = value;
-        d += 1;
-        i -= 1;
-    }
-}
 
 // bounce clipping to texture
-inline void setClip ( AbsRectangle &out, const VRect<int> *clip,
+inline void setClip ( AbsRectangle &out, const VRectangle<int> *clip,
                      const VImage * tex, int passnative )
 {
     if ( clip && 0 == tex && passnative )
     {
-        out.x0 = clip->UpperLeftCorner.X;
-        out.x1 = clip->LowerRightCorner.X;
-        out.y0 = clip->UpperLeftCorner.Y;
-        out.y1 = clip->LowerRightCorner.Y;
+        out.x0 = clip->UpperLeftCorner.x;
+        out.x1 = clip->LowerRightCorner.x;
+        out.y0 = clip->UpperLeftCorner.y;
+        out.y1 = clip->LowerRightCorner.y;
         return;
     }
 
@@ -888,10 +876,10 @@ inline void setClip ( AbsRectangle &out, const VRect<int> *clip,
     const int h = tex ? tex->getDimension().Height : 0;
     if ( clip )
     {
-        out.x0 = std::min(std::max(clip->UpperLeftCorner.X, 0), w);
-        out.x1 = std::min(std::max(clip->LowerRightCorner.X, out.x0), w );
-        out.y0 = std::min(std::max(clip->UpperLeftCorner.Y, 0), h );
-        out.y1 = std::min(std::max(clip->LowerRightCorner.Y, out.y0), h );
+        out.x0 = std::min(std::max(clip->UpperLeftCorner.x, 0), w);
+        out.x1 = std::min(std::max(clip->LowerRightCorner.x, out.x0), w );
+        out.y0 = std::min(std::max(clip->UpperLeftCorner.y, 0), h );
+        out.y1 = std::min(std::max(clip->LowerRightCorner.y, out.y0), h );
     }
     else
     {
@@ -911,6 +899,77 @@ inline bool intersect ( AbsRectangle &dest, const AbsRectangle& a, const AbsRect
     dest.y1 = std::min( a.y1, b.y1 );
     return dest.x0 < dest.x1 && dest.y0 < dest.y1;
 }
+
+
+static int Blit(eBlitter operation,
+        VImage * dest,
+        const VRectangle<int> *destClipping,
+        const V2Vect<int> *destPos,
+        VImage * const source,
+        const VRectangle<int> *sourceClipping,
+        uint argb)
+{
+    tExecuteBlit blitter = getBlitter2( operation, dest, source );
+    if ( 0 == blitter )
+    {
+        return 0;
+    }
+
+    // Clipping
+    AbsRectangle sourceClip;
+    AbsRectangle destClip;
+    AbsRectangle v;
+
+    SBlitJob job;
+
+    setClip ( sourceClip, sourceClipping, source, 1 );
+    setClip ( destClip, destClipping, dest, 0 );
+
+    v.x0 = destPos ? destPos->x : 0;
+    v.y0 = destPos ? destPos->y : 0;
+    v.x1 = v.x0 + ( sourceClip.x1 - sourceClip.x0 );
+    v.y1 = v.y0 + ( sourceClip.y1 - sourceClip.y0 );
+
+    if ( !intersect( job.Dest, destClip, v ) )
+        return 0;
+
+    job.width = job.Dest.x1 - job.Dest.x0;
+    job.height = job.Dest.y1 - job.Dest.y0;
+
+    job.Source.x0 = sourceClip.x0 + ( job.Dest.x0 - v.x0 );
+    job.Source.x1 = job.Source.x0 + job.width;
+    job.Source.y0 = sourceClip.y0 + ( job.Dest.y0 - v.y0 );
+    job.Source.y1 = job.Source.y0 + job.height;
+
+    job.argb = argb;
+
+    if ( source )
+    {
+        job.srcPitch = source->getPitch();
+        job.srcPixelMul = source->getBytesPerPixel();
+        job.src = (void*) ( (char*) source->lock() + ( job.Source.y0 * job.srcPitch ) + ( job.Source.x0 * job.srcPixelMul ) );
+    }
+    else
+    {
+        // use srcPitch for color operation on dest
+        job.srcPitch = job.width * dest->getBytesPerPixel();
+    }
+
+    job.dstPitch = dest->getPitch();
+    job.dstPixelMul = dest->getBytesPerPixel();
+    job.dst = (void*) ( (char*) dest->lock() + ( job.Dest.y0 * job.dstPitch ) + ( job.Dest.x0 * job.dstPixelMul ) );
+
+    blitter( &job );
+
+    if ( source )
+        source->unlock();
+
+    if ( dest )
+        dest->unlock();
+
+    return 1;
+}
+
 
 }
 

@@ -76,7 +76,7 @@ public:
     virtual void copyTo(VImage* target, const V2Vect<int>& pos=V2Vect<int>(0,0)) =0;
 
     //! copies this surface into another
-    virtual void copyTo(VImage* target, const V2Vect<int>& pos, const VRect<int>& sourceRect, const VRect<int>* clipRect=0) =0;
+    virtual void copyTo(VImage* target, const V2Vect<int>& pos, const VRectangle<int>& sourceRect, const VRectangle<int>* clipRect=0) =0;
 
     //! copies this surface into another, scaling it to fit, appyling a box filter
     virtual void copyToScalingBoxFilter(VImage* target, int bias = 0, bool blend = false) = 0;
@@ -84,7 +84,7 @@ public:
     //! fills the surface with given color
     virtual void fill(const VImageColor &color) =0;
 
-    virtual VJson<VString, VString> getInfo() = 0;
+    virtual VMap<VString, VString> getInfo() = 0;
 
     //! get the amount of Bits per Pixel of the given color format
     static uint getBitsPerPixelFromFormat(const ColorFormat format)
@@ -215,7 +215,7 @@ public:
     virtual void copyTo(VImage* target, const V2Vect<int>& pos=V2Vect<int>(0,0));
 
     //! copies this surface into another
-    virtual void copyTo(VImage* target, const V2Vect<int>& pos, const VRect<int>& sourceRect, const VRect<int>* clipRect=0);
+    virtual void copyTo(VImage* target, const V2Vect<int>& pos, const VRectangle<int>& sourceRect, const VRectangle<int>* clipRect=0);
 
     //! copies this surface into another, scaling it to fit, appyling a box filter
     virtual void copyToScalingBoxFilter(VImage* target, int bias = 0, bool blend = false);
@@ -223,7 +223,7 @@ public:
     //! fills the surface with given color
     virtual void fill(const VImageColor &color);
 
-    virtual VJson<VString, VString> getInfo();
+    virtual VMap<VString, VString> getInfo();
 
 private:
 

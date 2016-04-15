@@ -1,8 +1,7 @@
 #ifndef VCOLORCONVERTER_H
 #define VCOLORCONVERTER_H
 
-#include "VImage.h"
-
+#include "VImageColor.h"
 
 namespace NervGear {
 
