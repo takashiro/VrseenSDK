@@ -15,12 +15,6 @@
 LOCAL_PATH_TEMP := $(LOCAL_PATH)
 LOCAL_PATH := $(call my-dir)
 
-# Load native sensor library
-include $(CLEAR_VARS)
-LOCAL_MODULE := sensor-prebuilt
-LOCAL_SRC_FILES := libs/libSensor.so
-include $(PREBUILT_SHARED_LIBRARY)
-
 # NervGear
 include $(CLEAR_VARS)
 

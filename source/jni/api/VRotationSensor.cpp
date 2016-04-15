@@ -1,11 +1,15 @@
 #include "VRotationSensor.h"
 #include "VLockless.h"
 
+#include "sensor/u_sensor_jni.h"
+#include "sensor/u_sensor.h"
+
 NV_NAMESPACE_BEGIN
 
 struct VRotationSensor::Private
 {
     VLockless<VRotationState> state;
+    USensor sensor;
 };
 
 void VRotationSensor::setState(const VRotationState &state)

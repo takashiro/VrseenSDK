@@ -15,8 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import com.VRSeen.sensor.VrseenDeviceManager;
-import com.VRSeen.sensor.VrseenTime;
+import com.vrseen.sensor.VrseenDeviceManager;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -30,13 +29,8 @@ import android.content.res.Resources;
 import android.content.pm.ApplicationInfo;
 import android.graphics.Canvas;
 import android.graphics.SurfaceTexture;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
 import android.media.AudioManager;
 import android.media.SoundPool;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;

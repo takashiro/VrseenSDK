@@ -118,6 +118,7 @@ LOCAL_SRC_FILES  := \
 	App.cpp \
 	VrLocale.cpp
 
+LOCAL_SRC_FILES += api/sensor/u_sensor.cpp
 
 LOCAL_SRC_FILES += \
 	3rdParty/stb/stb_image.c \
