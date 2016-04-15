@@ -1,12 +1,10 @@
 #include "VRotationSensor.h"
 #include "VLockless.h"
 
-#include "sensor/u_sensor_jni.h"
 #include "sensor/u_sensor.h"
 #include "sensor/ktracker_data_info.h"
 #include "util/vr_log.h"
 #include "util/vr_time.h"
-#include "util/vr_log.h"
 
 NV_NAMESPACE_BEGIN
 
