@@ -468,15 +468,7 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 		Log.d(TAG, "command:" + commandString);
 		Log.d(TAG, "uri:" + uriString);
 		
-		mVrseenDeviceManager = new VrseenDeviceManager(this)
-		{
-			@Override
-			public void onRotationSensor(long timeStamp, float w, float x, float y, float z, float gyroX, float gyroY, float gyroZ) {
-				super.onRotationSensor(timeStamp, w, x, y, z, gyroX, gyroY, gyroZ);
-				onRotationChanged(timeStamp, w, x, y, z, gyroX, gyroY, gyroZ);
-			}
-	
-		};
+		mVrseenDeviceManager = new VrseenDeviceManager(this);
 
 		SurfaceView sv = new SurfaceView(this);
 		setContentView(sv);
@@ -697,6 +689,4 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 		}
 		return outString;
 	}
-	
-	private native void onRotationChanged(long timeStamp, float w, float x, float y, float z, float gyroX, float gyroY, float gyroZ);
 }

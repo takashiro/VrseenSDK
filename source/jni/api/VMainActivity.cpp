@@ -8,7 +8,6 @@
 
 #include "android/JniUtils.h"
 #include "VLog.h"
-#include "VRotationSensor.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -412,21 +411,6 @@ void Java_com_vrseen_nervgear_VrActivity_nativeNewIntent(JNIEnv *jni, jclass cla
     VVariantArray args;
     args << packageName << uri << json;
     vApp->eventLoop().post("intent", args);
-}
-
-void Java_com_vrseen_nervgear_VrActivity_onRotationChanged(JNIEnv *, jclass, jlong timeStamp, jfloat w, jfloat x, jfloat y, jfloat z, jfloat gyroX, jfloat gyroY, jfloat gyroZ)
-{
-    VRotationSensor *sensor = VRotationSensor::instance();
-    VRotationState state;
-    state.timestamp = timeStamp;
-    state.w = w;
-    state.x = x;
-    state.y = y;
-    state.z = z;
-    state.gyroX = gyroX;
-    state.gyroY = gyroY;
-    state.gyroZ = gyroZ;
-    sensor->setState(state);
 }
 
 }	// extern "C"

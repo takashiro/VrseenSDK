@@ -34,11 +34,12 @@ struct KTrackerMessage {
     double AbsoluteTimeSeconds;
 };
 
-class SensorFilter: public VCircularQueue<float> {
+class SensorFilter: public VCircularQueue<float>
+{
 public:
     SensorFilter(int capacity = 20)
         : VCircularQueue(capacity)
-        , m_total()
+        , m_total(0.0f)
     {
     }
 
@@ -59,7 +60,8 @@ protected:
     float m_total;
 };
 
-class USensor {
+class USensor
+{
 public:
     USensor();
     ~USensor();
@@ -73,7 +75,7 @@ private:
     bool pollSensor(KTrackerSensorZip* data,uint8_t  *buffer);
     void process(KTrackerSensorZip* data);
     void updateQ(KTrackerMessage *msg);
-    V3Vect<float> gyrocorrect(V3Vect<float> gyro, V3Vect<float> accel, const float DeltaT);
+    V3Vect<float> gyrocorrect(const V3Vect<float> &gyro, const V3Vect<float> &accel, const float DeltaT);
 
 private:
     int fd_;
@@ -95,7 +97,6 @@ private:
 struct VRotationSensor::Private
 {
     VLockless<VRotationState> state;
-    USensor sensor;
 };
 
 void VRotationSensor::setState(const VRotationState &state)
@@ -158,9 +159,6 @@ JNIEXPORT jboolean JNICALL Java_com_vrseen_sensor_NativeUSensor_update
         tmp1[i] = tmp[i];
     }
 
-
-    //LOGI("data0=%d",tmp[0]);
-
     return u_sensor->update(tmp1);
 }
 
@@ -202,7 +200,7 @@ static long long getCurrentTime() {
     return time;
 }
 
-JNIEXPORT jlong JNICALL Java_com_VRSeen_sensor_NativeTime_getCurrentTime
+JNIEXPORT jlong JNICALL Java_com_vrseen_sensor_NativeTime_getCurrentTime
   (JNIEnv *, jclass)
 {
     return getCurrentTime();
@@ -237,6 +235,17 @@ bool USensor::update(uint8_t  *buffer) {
     latest_time_ = getCurrentTime();
 
     process(&data);
+
+    VRotationState state;
+    state.w = q_.w;
+    state.x = q_.x;
+    state.y = q_.y;
+    state.z = q_.z;
+    state.gyroX = last_corrected_gyro_.x;
+    state.gyroY = last_corrected_gyro_.y;
+    state.gyroZ = last_corrected_gyro_.z;
+    state.timestamp = latest_time_;
+    VRotationSensor::instance()->setState(state);
 
     return true;
 }
@@ -448,7 +457,6 @@ void USensor::process(KTrackerSensorZip* data) {
     last_timestamp_ = data->Timestamp;
     last_acceleration_ = sensors.Acceleration;
     last_rotation_rate_ = sensors.RotationRate;
-
 }
 
 void USensor::updateQ(KTrackerMessage *msg) {
@@ -474,7 +482,7 @@ void USensor::updateQ(KTrackerMessage *msg) {
     }
 }
 
-V3Vect<float> USensor::gyrocorrect(V3Vect<float> gyro, V3Vect<float> accel, const float DeltaT) {
+V3Vect<float> USensor::gyrocorrect(const V3Vect<float> &gyro, const V3Vect<float> &accel, const float DeltaT) {
     // Small preprocessing
     VQuat<float> Qinv = q_.Inverted();
     V3Vect<float> up = Qinv.Rotate(V3Vect<float>(0, 1, 0));
