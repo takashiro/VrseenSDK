@@ -281,8 +281,6 @@ struct App::Private
     double errorMessageEndTime;
 
     jobject javaObject;
-    VMainActivity *appInterface;
-
     VMainActivity *activity;
     VKernel*        kernel;
     VScene *scene;
@@ -335,7 +333,6 @@ struct App::Private
         , errorTextureSize(0)
         , errorMessageEndTime(-1.0)
         , javaObject(nullptr)
-        , appInterface(nullptr)
         , activity(nullptr)
         , scene(new VScene)
     {
@@ -403,7 +400,7 @@ struct App::Private
 
     void pause()
     {
-        appInterface->onPause();
+        activity->onPause();
 
         kernel->exit();
     }
@@ -421,7 +418,7 @@ struct App::Private
         }
 
         // Allow the app to override
-        appInterface->configureVrMode(kernel);
+        activity->configureVrMode(kernel);
 
         // Clear cursor trails
         gazeCursor->HideCursorForFrames(10);
@@ -429,7 +426,7 @@ struct App::Private
         // Start up TimeWarp and the various performance options
         kernel->run();
 
-        appInterface->onResume();
+        activity->onResume();
     }
 
     void initGlObjects()
@@ -742,13 +739,13 @@ struct App::Private
 
             // Set the colorspace on the window
             windowSurface = EGL_NO_SURFACE;
-            if (appInterface->wantSrgbFramebuffer())
+            if (activity->wantSrgbFramebuffer())
             {
                 attribs[numAttribs++] = VEglDriver::EGL_GL_COLORSPACE_KHR;
                 attribs[numAttribs++] = VEglDriver::EGL_GL_COLORSPACE_SRGB_KHR;
             }
             // Ask for TrustZone rendering support
-            if (appInterface->wantProtectedFramebuffer())
+            if (activity->wantProtectedFramebuffer())
             {
                 attribs[numAttribs++] = EGL_PROTECTED_CONTENT_EXT;
                 attribs[numAttribs++] = EGL_TRUE;
@@ -778,8 +775,8 @@ struct App::Private
             }
             else
             {
-                framebufferIsSrgb = appInterface->wantSrgbFramebuffer();
-                framebufferIsProtected = appInterface->wantProtectedFramebuffer();
+                framebufferIsSrgb = activity->wantSrgbFramebuffer();
+                framebufferIsProtected = activity->wantProtectedFramebuffer();
             }
 
             if (eglMakeCurrent(m_vrGlStatus.m_display, windowSurface, windowSurface, m_vrGlStatus.m_context) == EGL_FALSE)
@@ -790,7 +787,7 @@ struct App::Private
             createdSurface = true;
 
             // Let the client app setup now
-            appInterface->onWindowCreated();
+            activity->onWindowCreated();
 
             // Resume
             if (!paused)
@@ -804,7 +801,7 @@ struct App::Private
             vInfo("surfaceDestroyed");
 
             // Let the client app shutdown first.
-            appInterface->onWindowDestroyed();
+            activity->onWindowDestroyed();
 
             // Handle it ourselves.
             if (eglMakeCurrent(m_vrGlStatus.m_display, m_vrGlStatus.m_pbufferSurface, m_vrGlStatus.m_pbufferSurface,
@@ -870,7 +867,7 @@ struct App::Private
 
             // when the PlatformActivity is launched, this is how it gets its command to start
             // a particular UI.
-            appInterface->onNewIntent(fromPackageName, json, uri);
+            activity->onNewIntent(fromPackageName, json, uri);
             return;
         }
 
@@ -905,7 +902,7 @@ struct App::Private
         }
 
         // Pass it on to the client app.
-        appInterface->command(event);
+        activity->command(event);
     }
 
     void run()
@@ -1052,7 +1049,7 @@ struct App::Private
             // Let the client app initialize only once by calling OneTimeInit() when the windowSurface is valid.
             if (!running)
             {
-                if (appInterface->showLoadingIcon())
+                if (activity->showLoadingIcon())
                 {
                    // const ovrTimeWarpParms warpSwapLoadingIconParms = kernel->InitTimeWarpParms(WARP_INIT_LOADING_ICON, loadingIconTexId);
                    // kernel->doSmooth(&warpSwapLoadingIconParms);
@@ -1080,7 +1077,7 @@ struct App::Private
                 vInfo("launchIntentJSON:" << launchIntentJSON);
                 vInfo("launchIntentURI:" << launchIntentURI);
 
-                appInterface->init(launchIntentFromPackage, launchIntentJSON, launchIntentURI);
+                activity->init(launchIntentFromPackage, launchIntentJSON, launchIntentURI);
                 running = true;
             }
 
@@ -1168,7 +1165,7 @@ struct App::Private
                 // pass to the app if nothing handled it before this
                 if (!consumedKey)
                 {
-                    consumedKey = appInterface->onKeyEvent(AKEYCODE_BACK, event);
+                    consumedKey = activity->onKeyEvent(AKEYCODE_BACK, event);
                 }
                 // if nothing consumed the key and it's a short-press, exit the application to OculusHome
                 if (!consumedKey)
@@ -1204,7 +1201,7 @@ struct App::Private
             // Main loop logic / draw code
             if (!readyToExit)
             {
-                lastViewMatrix = appInterface->onNewFrame(self->text.vrFrame);
+                lastViewMatrix = activity->onNewFrame(self->text.vrFrame);
                 scene->update();
             }
 
@@ -1236,7 +1233,7 @@ struct App::Private
                 FreeTexture(errorTexture);
             }
 
-            appInterface->shutdown();
+            activity->shutdown();
 
             guiSys->shutdown(*vrMenuMgr);
 
@@ -1309,7 +1306,7 @@ struct App::Private
         // for all other keys, allow VrAppInterface the chance to handle and consume the key first
         if (!consumedKey)
         {
-            consumedKey = appInterface->onKeyEvent(keyCode, down ? KeyState::KEY_EVENT_DOWN : KeyState::KEY_EVENT_UP);
+            consumedKey = activity->onKeyEvent(keyCode, down ? KeyState::KEY_EVENT_DOWN : KeyState::KEY_EVENT_UP);
         }
 
         // ALL VRLIB KEY HANDLING OTHER THAN APP MENU SHOULD GO HERE
@@ -1388,8 +1385,6 @@ App *NervGearAppInstance = nullptr;
 App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
     : d(new Private(this))
 {
-    d->activity = activity;
-
     d->uiJni = jni;
     vInfo("----------------- AppLocal::AppLocal() -----------------");
     vAssert(NervGearAppInstance == nullptr);
@@ -1429,7 +1424,7 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
     d->packageCodePath = d->activity->getPackageCodePath();
 
 	// Hook the App and AppInterface together
-    d->appInterface = activity;
+    d->activity = activity;
 
 	// Load user profile data relevant to rendering
     VUserSettings config;
@@ -1651,7 +1646,7 @@ const VRotationState &App::sensorForNextWarp() const
 
 VMainActivity *App::appInterface()
 {
-    return d->appInterface;
+    return d->activity;
 }
 
 const VViewSettings &App::viewSettings() const
@@ -1789,7 +1784,7 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
             d->eyeTargets->beginRendering( eye );
 
             // Call back to the app for drawing.
-            const VR4Matrixf mvp = d->appInterface->drawEyeView( eye, fovDegrees );
+            const VR4Matrixf mvp = d->activity->drawEyeView( eye, fovDegrees );
 
             vrMenuMgr().renderSubmitted( mvp.Transposed(), centerViewMatrix );
             menuFontSurface().Render3D( defaultFont(), mvp.Transposed() );
