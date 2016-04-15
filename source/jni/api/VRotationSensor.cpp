@@ -34,32 +34,6 @@ struct KTrackerMessage {
     double AbsoluteTimeSeconds;
 };
 
-class SensorFilter: public VCircularQueue<float>
-{
-public:
-    SensorFilter(int capacity = 20)
-        : VCircularQueue(capacity)
-        , m_total(0.0f)
-    {
-    }
-
-    void append(float e) {
-        if (isFull()) {
-            float removed = VDeque::takeFirst();
-            m_total -= removed;
-        }
-        m_total += e;
-        VDeque::append(e);
-    }
-
-    float total() const { return m_total; }
-
-    float mean() const { return VDeque::isEmpty() ? 0.0f : (total() / (float) size()); }
-
-protected:
-    float m_total;
-};
-
 class USensor
 {
 public:
@@ -91,7 +65,33 @@ private:
     V3Vect<float> last_rotation_rate_;
     V3Vect<float> last_corrected_gyro_;
     V3Vect<float> gyro_offset_;
-    SensorFilter tilt_filter_;
+
+    class Filter: public VCircularQueue<float>
+    {
+    public:
+        Filter(int capacity = 20)
+            : VCircularQueue(capacity)
+            , m_total(0.0f)
+        {
+        }
+
+        void append(float e) {
+            if (isFull()) {
+                float removed = VDeque::takeFirst();
+                m_total -= removed;
+            }
+            m_total += e;
+            VDeque::append(e);
+        }
+
+        float total() const { return m_total; }
+
+        float mean() const { return VDeque::isEmpty() ? 0.0f : (total() / (float) size()); }
+
+    private:
+        float m_total;
+    };
+    Filter tilt_filter_;
 };
 
 struct VRotationSensor::Private
