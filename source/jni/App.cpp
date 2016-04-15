@@ -132,16 +132,14 @@ extern void DebugMenuBounds(void * appPtr, const char * cmd);
 extern void DebugMenuHierarchy(void * appPtr, const char * cmd);
 extern void DebugMenuPoses(void * appPtr, const char * cmd);
 
-static VEyeBuffer::Settings DefaultVrParmsForRenderer(const VEglDriver & glOperation)
+static VEyeItem::Settings DefaultVrParmsForRenderer(const VEglDriver & glOperation)
 {
-    VEyeBuffer::Settings vrParms;
+    VEyeItem::settings.resolution = 1024;
+    VEyeItem::settings.multisamples = (glOperation.m_gpuType == VEglDriver::GPU_TYPE_ADRENO_330) ? 2 : 4;
+    VEyeItem::settings.colorFormat = VColor::COLOR_8888;
+    VEyeItem::settings.commonParameterDepth = VEyeItem::CommonParameter::DepthFormat_24;
 
-    vrParms.resolution = 1024;
-    vrParms.multisamples = (glOperation.m_gpuType == VEglDriver::GPU_TYPE_ADRENO_330) ? 2 : 4;
-    vrParms.colorFormat = VColor::COLOR_8888;
-    vrParms.commonParameterDepth = VEyeBuffer::CommonParameter::DepthFormat_24;
-
-    return vrParms;
+    return VEyeItem::settings;
 }
 
 static bool ChromaticAberrationCorrection(const VEglDriver & glOperation)
@@ -172,10 +170,6 @@ struct App::Private
     // Egl context and surface for rendering
     VEglDriver  m_vrGlStatus;
 
-    // Handles creating, destroying, and re-configuring the buffers
-    // for drawing the eye views, which might be in different texture
-    // configurations for CPU warping, etc.
-    VEyeBuffer *	eyeTargets;
 
     GLuint			loadingIconTexId;
 
@@ -230,10 +224,6 @@ struct App::Private
     bool			renderMonoMode;
 
     VFrame			lastVrFrame;
-
-    VEyeBuffer::Settings		vrParms;
-
-
 
     VGlShader		untexturedMvpProgram;
     VGlShader		untexturedScreenSpaceProgram;
@@ -292,7 +282,6 @@ struct App::Private
         , readyToExit(false)
         , running(false)
         , eventLoop(100)
-        , eyeTargets(nullptr)
         , loadingIconTexId(0)
         , javaVM(JniUtils::GetJavaVM())
         , uiJni(nullptr)
@@ -431,11 +420,9 @@ struct App::Private
 
     void initGlObjects()
     {
-        vrParms = DefaultVrParmsForRenderer(m_vrGlStatus);
+        DefaultVrParmsForRenderer(m_vrGlStatus);
 
-
-
-          kernel->setSmoothProgram(ChromaticAberrationCorrection(m_vrGlStatus) ? VK_DEFAULT_CB : VK_DEFAULT);
+        kernel->setSmoothProgram(ChromaticAberrationCorrection(m_vrGlStatus) ? VK_DEFAULT_CB : VK_DEFAULT);
         m_vrGlStatus.logExtensions();
 
         self->panel.externalTextureProgram2.initShader( VGlShader::getAdditionalVertexShaderSource(), VGlShader::getAdditionalFragmentShaderSource() );
@@ -944,7 +931,9 @@ struct App::Private
                 func();
             }
 
-            eyeTargets = new VEyeBuffer;
+            scene->addEyeItem();
+            scene->addEyeItem();
+
             guiSys = new OvrGuiSysLocal;
             gazeCursor = new OvrGazeCursorLocal;
             vrMenuMgr = OvrVRMenuMgr::Create();
@@ -1247,10 +1236,7 @@ struct App::Private
 
             delete self->dialog.dialogTexture;
             self->dialog.dialogTexture = nullptr;
-
-            delete eyeTargets;
-            eyeTargets = nullptr;
-
+            
             delete guiSys;
             guiSys = nullptr;
 
@@ -1334,7 +1320,8 @@ struct App::Private
             {
                 if (repeatCount == 0 && down) // first down only
                 {
-                    eyeTargets->snapshot();
+                    //TODO snapshot功能需要修改
+                    //eyeTargets->snapshot();
                     //self->createToast("screenshot");
                     return;
                 }
@@ -1406,10 +1393,10 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
    d->kernel->InitTimeWarpParms();
 
 	// Default EyeParms
-    d->vrParms.resolution = 1024;
-    d->vrParms.multisamples = 4;
-    d->vrParms.colorFormat = VColor::COLOR_8888;
-    d->vrParms.commonParameterDepth = VEyeBuffer::CommonParameter::DepthFormat_24;
+    VEyeItem::settings.resolution = 1024;
+    VEyeItem::settings.multisamples = 4;
+    VEyeItem::settings.colorFormat = VColor::COLOR_8888;
+    VEyeItem::settings.commonParameterDepth = VEyeItem::CommonParameter::DepthFormat_24;
 
     d->javaObject = d->uiJni->NewGlobalRef(activityObject);
 
@@ -1498,9 +1485,9 @@ void App::playSound(const char *name)
     });
 }
 
-VEyeBuffer::Settings &App::eyeSettings()
+VEyeItem::Settings &App::eyeSettings()
 {
-    return d->vrParms;
+    return VEyeItem::settings;
 }
 
 OvrGuiSys & App::guiSys()
@@ -1577,9 +1564,9 @@ void App::setLastViewMatrix(VR4Matrixf const & m)
     d->lastViewMatrix = m;
 }
 
-VEyeBuffer::Settings & App::vrParms()
+VEyeItem::Settings & App::vrParms()
 {
-    return d->vrParms;
+    return VEyeItem::settings;
 }
 
 void App::setPopupDistance(float const distance)
@@ -1763,8 +1750,8 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
 
     // DisplayMonoMode uses a single eye rendering for speed improvement
     // and / or high refresh rate double-scan hardware modes.
+    VArray<VItem*> eyeItemList = d->scene->getEyeItemList();
     const int numEyes = d->renderMonoMode ? 1 : 2;
-
 
     // Flush out and report any errors
     glOperation.logErrorsEnum("FrameStart");
@@ -1776,70 +1763,61 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
     }
     else
     {
-        // possibly change the buffer parameters
-        d->eyeTargets->beginFrame( d->vrParms );
-
-        for ( int eye = 0; eye < numEyes; eye++ )
+        for(int eye = 0;eye<numEyes;++eye)
         {
-            d->eyeTargets->beginRendering( eye );
+            eyeItemList[eye]->paint();
 
             // Call back to the app for drawing.
-            const VR4Matrixf mvp = d->activity->drawEyeView( eye, fovDegrees );
+            const VR4Matrixf mvp = d->activity->drawEyeView(eye, fovDegrees);
 
-            vrMenuMgr().renderSubmitted( mvp.Transposed(), centerViewMatrix );
-            menuFontSurface().Render3D( defaultFont(), mvp.Transposed() );
-            worldFontSurface().Render3D( defaultFont(), mvp.Transposed() );
+            vrMenuMgr().renderSubmitted(mvp.Transposed(), centerViewMatrix);
+            menuFontSurface().Render3D(defaultFont(), mvp.Transposed());
+            worldFontSurface().Render3D(defaultFont(), mvp.Transposed());
 
-            glDisable( GL_DEPTH_TEST );
-            glDisable( GL_CULL_FACE );
+            glDisable(GL_DEPTH_TEST);
+            glDisable(GL_CULL_FACE);
 
             // Optionally draw thick calibration lines into the texture,
             // which will be overlayed by the thinner origin cross when
             // distorted to the window.
-            if ( d->drawCalibrationLines )
-            {
-                d->eyeDecorations.DrawEyeCalibrationLines( fovDegrees, eye );
+            if (d->drawCalibrationLines) {
+                d->eyeDecorations.DrawEyeCalibrationLines(fovDegrees, eye);
                 d->calibrationLinesDrawn = true;
             }
-            else
-            {
+            else {
                 d->calibrationLinesDrawn = false;
             }
 
-            dialog.draw( panel, mvp );
+            dialog.draw(panel, mvp);
 
-            gazeCursor().Render( eye, mvp );
+            gazeCursor().Render(eye, mvp);
 
-            debugLines().Render( mvp.Transposed() );
+            debugLines().Render(mvp.Transposed());
 
-            if ( d->showVignette )
-            {
+            if (d->showVignette) {
                 // Draw a thin vignette at the edges of the view so clamping will give black
                 // This will not be reflected correctly in overlay planes.
                 // EyeDecorations.DrawEyeVignette();
 
-                d->eyeDecorations.FillEdge( d->vrParms.resolution, d->vrParms.resolution );
+                d->eyeDecorations.FillEdge(VEyeItem::settings.resolution, VEyeItem::settings.resolution);
             }
 
-            d->eyeTargets->endRendering( eye );
+            glFlush();
         }
     }
 
     // This eye set is complete, use it now.
     if ( numPresents > 0 )
     {
-        const VEyeBuffer::CompletedEyes eyes = d->eyeTargets->completedEyes();
-
-        for ( int eye = 0; eye < 2; eye++ )
-        {            
-           d->kernel->m_texMatrix[eye][0] = VR4Matrixf::TanAngleMatrixFromFov( fovDegrees );
-           d->kernel->m_texId[eye][0] = eyes.textures[d->renderMonoMode ? 0 : eye ];
-           d->kernel->m_pose[eye][0] = d->sensorForNextWarp;
-          // d->kernel->m_smoothProgram = ChromaticAberrationCorrection(glOperation) ? WP_CHROMATIC : WP_SIMPLE;
+        for(int eye = 0;eye<numEyes;++eye)
+        {
+            d->kernel->m_texMatrix[eye][0] = VR4Matrixf::TanAngleMatrixFromFov( fovDegrees );
+            d->kernel->m_texId[eye][0] = ((VEyeItem*)(eyeItemList[d->renderMonoMode ? 0 : eye ]))->completedEyes().textures;
+            d->kernel->m_pose[eye][0] = d->sensorForNextWarp;
+            // d->kernel->m_smoothProgram = ChromaticAberrationCorrection(glOperation) ? WP_CHROMATIC : WP_SIMPLE;
         }
 
         d->kernel->doSmooth();
-
     }
 }
 

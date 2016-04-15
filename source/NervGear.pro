@@ -87,7 +87,7 @@ SOURCES += \
     jni/scene/VScene.cpp \
     jni/scene/BitmapFont.cpp \
     jni/scene/DebugLines.cpp \
-    jni/scene/VEyeBuffer.cpp \
+    jni/scene/VEyeItem.cpp \
     jni/scene/EyePostRender.cpp \
     jni/scene/GazeCursor.cpp \
     jni/scene/GlTexture.cpp \
@@ -213,7 +213,7 @@ HEADERS += \
     jni/scene/VScene.h \
     jni/scene/BitmapFont.h \
     jni/scene/DebugLines.h \
-    jni/scene/VEyeBuffer.h \
+    jni/scene/VEyeItem.h \
     jni/scene/EyePostRender.h \
     jni/scene/GazeCursor.h \
     jni/scene/GazeCursorLocal.h \

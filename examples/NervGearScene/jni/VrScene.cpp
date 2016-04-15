@@ -14,7 +14,7 @@ Copyright   :   Copyright 2012 Oculus VR, LCC. All Rights reserved.
 #include <VStandardPath.h>
 #include <VLog.h>
 #include <VColor.h>
-#include <VEyeBuffer.h>
+#include <VEyeItem.h>
 #include <VFrame.h>
 #include <App.h>
 

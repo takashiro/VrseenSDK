@@ -37,7 +37,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "SwipeView.h"
 #include "Oculus360Videos.h"
 
-#include <VEyeBuffer.h>
+#include <VEyeItem.h>
 #include "gui/GuiSys.h"
 
 #include "gui/Fader.h"
@@ -164,7 +164,7 @@ void Oculus360Videos::init(const VString &fromPackage, const VString &launchInte
 	RetailMode = vdir.exists( "/sdcard/RetailMedia" );
 
 	vApp->vrParms().colorFormat = VColor::COLOR_8888;
-    vApp->vrParms().commonParameterDepth = VEyeBuffer::CommonParameter::DepthFormat_16;
+    vApp->vrParms().commonParameterDepth = VEyeItem::CommonParameter::DepthFormat_16;
 	vApp->vrParms().multisamples = 2;
 
     PanoramaProgram.initShader(VGlShader::getPanoVertexShaderSource(),VGlShader::getPanoProgramShaderSource()	);

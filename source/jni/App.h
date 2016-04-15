@@ -2,7 +2,7 @@
 
 #include "VViewSettings.h"
 
-#include "VEyeBuffer.h"
+#include "scene/VEyeItem.h"
 #include "api/VKernel.h"
 #include "KeyState.h"
 #include "VFrame.h"
@@ -49,7 +49,7 @@ public:
     void setRecenterYawFrameStart( const long long frameNumber );
     long long recenterYawFrameStart() const;
 
-    VEyeBuffer::Settings &eyeSettings();
+    VEyeItem::Settings &eyeSettings();
 
     OvrGuiSys &guiSys();
     OvrGazeCursor  &gazeCursor();
@@ -71,7 +71,7 @@ public:
     VR4Matrixf const &lastViewMatrix() const;
     void setLastViewMatrix( VR4Matrixf const & m );
 
-    VEyeBuffer::Settings &vrParms();
+    VEyeItem::Settings &vrParms();
 
     const VViewSettings &viewSettings() const;
     void setViewSettings(const VViewSettings &settings);

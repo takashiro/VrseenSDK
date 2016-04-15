@@ -104,7 +104,7 @@ LOCAL_SRC_FILES  := \
 	scene/VScene.cpp \
 	scene/BitmapFont.cpp \
 	scene/DebugLines.cpp \
-	scene/VEyeBuffer.cpp \
+	scene/VEyeItem.cpp \
 	scene/EyePostRender.cpp \
 	scene/GazeCursor.cpp \
 	scene/GlTexture.cpp \
