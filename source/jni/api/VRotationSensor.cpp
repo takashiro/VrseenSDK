@@ -52,7 +52,6 @@ private:
     V3Vect<float> gyrocorrect(const V3Vect<float> &gyro, const V3Vect<float> &accel, const float DeltaT);
 
 private:
-    int fd_;
     VQuat<float> q_;
     bool first_;
     int step_;
@@ -223,11 +222,20 @@ JNIEXPORT void JNICALL Java_com_vrseen_sensor_RotationSensor_update
 }
 
 
-USensor::USensor() :
-        fd_(-1), q_(), first_(true), step_(0), first_real_time_delta_(0.0f), last_timestamp_(
-                0), full_timestamp_(0), last_sample_count_(0), latest_time_(0), last_acceleration_(
-                0.0f, 0.0f, 0.0f), last_rotation_rate_(0.0f, 0.0f, 0.0f), last_corrected_gyro_(
-                0.0f, 0.0f, 0.0f), gyro_offset_(0.0f, 0.0f, 0.0f), tilt_filter_() {
+USensor::USensor()
+    : q_()
+    , first_(true)
+    , step_(0)
+    , first_real_time_delta_(0.0f)
+    , last_timestamp_(0)
+    , full_timestamp_(0)
+    , last_sample_count_(0)
+    , latest_time_(0)
+    , last_acceleration_(0.0f, 0.0f, 0.0f)
+    , last_rotation_rate_(0.0f, 0.0f, 0.0f)
+    , last_corrected_gyro_(0.0f, 0.0f, 0.0f)
+    , gyro_offset_(0.0f, 0.0f, 0.0f)
+{
 }
 
 USensor::~USensor() {
@@ -276,11 +284,8 @@ V3Vect<float> USensor::getAngularVelocity() {
     return last_corrected_gyro_;
 }
 
-void USensor::closeSensor() {
-    if (fd_ >= 0) {
-        close(fd_);
-        fd_ = -1;
-    }
+void USensor::closeSensor()
+{
 }
 
 bool USensor::pollSensor(KTrackerSensorZip* data,uint8_t  *buffer) {
