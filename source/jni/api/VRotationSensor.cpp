@@ -1,14 +1,13 @@
 #include "VRotationSensor.h"
 #include "VLockless.h"
 #include "VCircularQueue.h"
+#include "VQuat.h"
 
 #include <time.h>
 #include <sys/ioctl.h>
 #include <poll.h>
 #include <fcntl.h>
 
-#include "sensor/math/quaternion.hpp"
-#include "sensor/math/vector.hpp"
 #include "util/vr_time.h"
 
 NV_NAMESPACE_BEGIN
@@ -30,9 +29,9 @@ struct KTrackerSensorZip {
 };
 
 struct KTrackerMessage {
-    vec3 Acceleration;
-    vec3 RotationRate;
-    vec3 MagneticField;
+    V3Vect<float> Acceleration;
+    V3Vect<float> RotationRate;
+    V3Vect<float> MagneticField;
     float Temperature;
     float TimeDelta;
     double AbsoluteTimeSeconds;
@@ -69,30 +68,30 @@ public:
     ~USensor();
     bool update(uint8_t  *buffer);
     long long getLatestTime();
-    Quaternion getSensorQuaternion();
-    vec3 getAngularVelocity();
+    VQuat<float> getSensorQuaternion();
+    V3Vect<float> getAngularVelocity();
     void closeSensor();
 
 private:
     bool pollSensor(KTrackerSensorZip* data,uint8_t  *buffer);
     void process(KTrackerSensorZip* data);
     void updateQ(KTrackerMessage *msg);
-    vec3 gyrocorrect(vec3 gyro, vec3 accel, const float DeltaT);
+    V3Vect<float> gyrocorrect(V3Vect<float> gyro, V3Vect<float> accel, const float DeltaT);
 
 private:
     int fd_;
-    Quaternion q_;
+    VQuat<float> q_;
     bool first_;
     int step_;
-    unsigned int first_real_time_delta_;
-    uint16_t last_timestamp_;
-    uint32_t full_timestamp_;
-    uint8_t last_sample_count_;
-    long long latest_time_;
-    vec3 last_acceleration_;
-    vec3 last_rotation_rate_;
-    vec3 last_corrected_gyro_;
-    vec3 gyro_offset_;
+    uint first_real_time_delta_;
+    vuint16 last_timestamp_;
+    vuint32 full_timestamp_;
+    vuint8 last_sample_count_;
+    longlong latest_time_;
+    V3Vect<float> last_acceleration_;
+    V3Vect<float> last_rotation_rate_;
+    V3Vect<float> last_corrected_gyro_;
+    V3Vect<float> gyro_offset_;
     SensorFilter tilt_filter_;
 };
 
@@ -208,8 +207,8 @@ JNIEXPORT jfloatArray JNICALL Java_com_vrseen_sensor_NativeUSensor_getData
 {
     USensor* u_sensor = reinterpret_cast<USensor*>(jk_sensor);
 
-    Quaternion rotation = u_sensor->getSensorQuaternion();
-    vec3 angular_velocity = u_sensor->getAngularVelocity();
+    VQuat<float> rotation = u_sensor->getSensorQuaternion();
+    V3Vect<float> angular_velocity = u_sensor->getAngularVelocity();
 
     jfloatArray jdata = env->NewFloatArray(7);
     jfloat data[7];
@@ -262,11 +261,11 @@ long long USensor::getLatestTime() {
     return latest_time_;
 }
 
-Quaternion USensor::getSensorQuaternion() {
+VQuat<float> USensor::getSensorQuaternion() {
     return q_;
 }
 
-vec3 USensor::getAngularVelocity() {
+V3Vect<float> USensor::getAngularVelocity() {
     return last_corrected_gyro_;
 }
 
@@ -387,8 +386,8 @@ void USensor::process(KTrackerSensorZip* data) {
     //double absoluteTimeSeconds = 0.0;
 
     if (first_) {
-        last_acceleration_ = vec3(0, 0, 0);
-        last_rotation_rate_ = vec3(0, 0, 0);
+        last_acceleration_ = V3Vect<float>(0, 0, 0);
+        last_rotation_rate_ = V3Vect<float>(0, 0, 0);
         first_ = false;
 
         // This is our baseline sensor to host time delta,
@@ -450,9 +449,9 @@ void USensor::process(KTrackerSensorZip* data) {
     }
 
     for (int i = 0; i < iterations; ++i) {
-        sensors.Acceleration = vec3(data->Samples[i].AccelX,
+        sensors.Acceleration = V3Vect<float>(data->Samples[i].AccelX,
                 data->Samples[i].AccelY, data->Samples[i].AccelZ) * 0.0001f;
-        sensors.RotationRate = vec3(data->Samples[i].GyroX,
+        sensors.RotationRate = V3Vect<float>(data->Samples[i].GyroX,
                 data->Samples[i].GyroY, data->Samples[i].GyroZ) * 0.0001f;
 
         updateQ(&sensors);
@@ -470,19 +469,17 @@ void USensor::process(KTrackerSensorZip* data) {
 
 void USensor::updateQ(KTrackerMessage *msg) {
     // Put the sensor readings into convenient local variables
-    vec3 gyro = msg->RotationRate;
-    vec3 accel = msg->Acceleration;
+    V3Vect<float> gyro = msg->RotationRate;
+    V3Vect<float> accel = msg->Acceleration;
     const float DeltaT = msg->TimeDelta;
-    vec3 gyroCorrected = gyrocorrect(gyro, accel, DeltaT);
+    V3Vect<float> gyroCorrected = gyrocorrect(gyro, accel, DeltaT);
     last_corrected_gyro_ = gyroCorrected;
 
     // Update the orientation quaternion based on the corrected angular velocity vector
     float gyro_length = gyroCorrected.Length();
     if (gyro_length != 0.0f) {
         float angle = gyro_length * DeltaT;
-        q_ = q_
-                * Quaternion(cos(angle * 0.5f),
-                        gyroCorrected.Normalized() * sin(angle * 0.5f));
+        q_ = q_ * VQuat<float>(gyroCorrected.Normalized() * sin(angle * 0.5f), angle);
     }
 
     step_++;
@@ -493,11 +490,11 @@ void USensor::updateQ(KTrackerMessage *msg) {
     }
 }
 
-vec3 USensor::gyrocorrect(vec3 gyro, vec3 accel, const float DeltaT) {
+V3Vect<float> USensor::gyrocorrect(V3Vect<float> gyro, V3Vect<float> accel, const float DeltaT) {
     // Small preprocessing
-    Quaternion Qinv = q_.Inverted();
-    vec3 up = Qinv.Rotate(vec3(0, 1, 0));
-    vec3 gyroCorrected = gyro;
+    VQuat<float> Qinv = q_.Inverted();
+    V3Vect<float> up = Qinv.Rotate(V3Vect<float>(0, 1, 0));
+    V3Vect<float> gyroCorrected = gyro;
 
     bool EnableGravity = true;
     bool valid_accel = accel.Length() > 0.001f;
@@ -509,12 +506,12 @@ vec3 USensor::gyrocorrect(vec3 gyro, vec3 accel, const float DeltaT) {
         const float gravityThreshold = 0.1f;
         float proportionalGain = 0.25f, integralGain = 0.0f;
 
-        vec3 accel_normalize = accel.Normalized();
-        vec3 up_normalize = up.Normalized();
-        vec3 correction = accel_normalize.Cross(up_normalize);
+        V3Vect<float> accel_normalize = accel.Normalized();
+        V3Vect<float> up_normalize = up.Normalized();
+        V3Vect<float> correction = accel_normalize.Cross(up_normalize);
         float cosError = accel_normalize.Dot(up_normalize);
         const float Tolerance = 0.00001f;
-        vec3 tiltCorrection = correction
+        V3Vect<float> tiltCorrection = correction
                 * sqrtf(2.0f / (1 + cosError + Tolerance));
 
         if (step_ > 5) {

@@ -24,6 +24,8 @@ typedef float vreal;
 #endif
 
 //@to-do: Check target platform and compiler
+typedef signed char vint8;
+typedef uchar vuint8;
 typedef short vint16;
 typedef ushort vuint16;
 typedef int vint32;
