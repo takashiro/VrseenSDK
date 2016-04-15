@@ -9,10 +9,45 @@
 
 NV_NAMESPACE_BEGIN
 
-struct KTrackerSensorRawData {
-    int32_t AccelX, AccelY, AccelZ;
-    int32_t GyroX, GyroY, GyroZ;
+struct VRotationSensor::Private
+{
+    VLockless<VRotationState> state;
 };
+
+void VRotationSensor::setState(const VRotationState &state)
+{
+    d->state.setState(state);
+}
+
+VRotationState VRotationSensor::state() const
+{
+    return d->state.state();
+}
+
+VRotationSensor *VRotationSensor::instance()
+{
+    static VRotationSensor sensor;
+    return &sensor;
+}
+
+VRotationSensor::~VRotationSensor()
+{
+    delete d;
+}
+
+VRotationState VRotationSensor::predictState(double timestamp) const
+{
+    //@to-do: implement this
+    VRotationState state = this->state();
+    state.timestamp = timestamp;
+    return state;
+}
+
+VRotationSensor::VRotationSensor()
+    : d(new Private)
+{
+}
+
 
 struct KTrackerSensorZip {
     uint8_t SampleCount;
@@ -20,7 +55,11 @@ struct KTrackerSensorZip {
     uint16_t LastCommandID;
     int16_t Temperature;
 
-    KTrackerSensorRawData Samples[3];
+    struct RawData {
+        int32_t AccelX, AccelY, AccelZ;
+        int32_t GyroX, GyroY, GyroZ;
+    };
+    RawData Samples[3];
 
     int16_t MagX, MagY, MagZ;
 };
@@ -98,45 +137,6 @@ static long long getCurrentTime()
             * static_cast<long long>(1000000000)
             + static_cast<long long>(ts.tv_nsec);
     return time;
-}
-
-struct VRotationSensor::Private
-{
-    VLockless<VRotationState> state;
-};
-
-void VRotationSensor::setState(const VRotationState &state)
-{
-    d->state.setState(state);
-}
-
-VRotationState VRotationSensor::state() const
-{
-    return d->state.state();
-}
-
-VRotationSensor *VRotationSensor::instance()
-{
-    static VRotationSensor sensor;
-    return &sensor;
-}
-
-VRotationSensor::~VRotationSensor()
-{
-    delete d;
-}
-
-VRotationState VRotationSensor::predictState(double timestamp) const
-{
-    //@to-do: implement this
-    VRotationState state = this->state();
-    state.timestamp = timestamp;
-    return state;
-}
-
-VRotationSensor::VRotationSensor()
-    : d(new Private)
-{
 }
 
 USensor::USensor()
