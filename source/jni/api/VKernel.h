@@ -1,12 +1,7 @@
 #pragma once
 
-#include <math.h>
-
-#include "VBasicmath.h"
-#include "VString.h"
 #include "VRotationState.h"
-
-#include <jni.h>
+#include "VMatrix.h"
 
 enum{
     VK_INHIBIT_SRGB_FB = 1,

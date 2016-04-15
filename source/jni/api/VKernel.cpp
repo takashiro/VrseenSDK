@@ -6,20 +6,15 @@
 
 #include <unistd.h>						// gettid, usleep, etc
 #include <jni.h>
-#include <sstream>
 #include <math.h>
 
 #include "VLog.h"
 #include "VEglDriver.h"
+#include "VString.h"
+#include "VLockless.h"
+
 #include "android/JniUtils.h"
 #include "android/VOsBuild.h"
-
-#include "VString.h"			// for ReadFreq()
-#include "VJson.h"			// needed for ovr_StartSystemActivity
-
-#include "VLockless.h"
-#include "VRotationSensor.h"
-#include "VThread.h"
 
 NV_USING_NAMESPACE
 
