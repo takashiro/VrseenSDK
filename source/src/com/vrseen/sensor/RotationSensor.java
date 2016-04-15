@@ -73,16 +73,14 @@ public class RotationSensor {
 	}
 	
 	void onDestroy() {
- 
 		mUSensor.close();
 	}
-	
 	
 	void onInternalRotationSensor(long timeStamp, float w, float x, float y,
 			float z, float gyroX, float gyroY, float gyroZ) {
 		if (mCurrentSensor == SensorType.INTERNAL) {
-			mListener.onRotationSensor(timeStamp, w, x, y, z, gyroX, gyroY,
-					gyroZ);
+			update(timeStamp, w, x, y, z, gyroX, gyroY, gyroZ);
+			mListener.onRotationSensor(timeStamp, w, x, y, z, gyroX, gyroY, gyroZ);
 		}
 	}
 	
@@ -90,9 +88,6 @@ public class RotationSensor {
 			float gyroX, float gyroY, float gyroZ) {
 		mCurrentSensor = SensorType.USBHOST;
 		mListener.onRotationSensor(timeStamp, w, x, y, z, gyroX, gyroY, gyroZ);
-		
-		//System.out.println("usensor:"+gyroX);
-		//System.out.println("on usensor");
 	}
 	
 	void onUSensorError() {
@@ -103,4 +98,6 @@ public class RotationSensor {
 	public int getCurrentSensor() {
 		return mCurrentSensor;
 	}
+
+	native void update(long timeStamp, float w, float x, float y, float z, float gyroX, float gyroY, float gyroZ);
 }

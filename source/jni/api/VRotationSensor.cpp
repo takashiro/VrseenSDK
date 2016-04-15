@@ -206,6 +206,20 @@ JNIEXPORT jlong JNICALL Java_com_vrseen_sensor_NativeTime_getCurrentTime
     return getCurrentTime();
 }
 
+JNIEXPORT void JNICALL Java_com_vrseen_sensor_RotationSensor_update
+  (JNIEnv *, jclass, jlong timestamp, jfloat w, jfloat x, jfloat y, jfloat z, jfloat gryoX, jfloat gryoY, jfloat gryoZ)
+{
+    VRotationState state;
+    state.timestamp = timestamp;
+    state.w = w;
+    state.y = y;
+    state.z = z;
+    state.gyroX = gryoX;
+    state.gyroY = gryoY;
+    state.gyroZ = gryoZ;
+    VRotationSensor::instance()->setState(state);
+}
+
 }
 
 
