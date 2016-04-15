@@ -43,7 +43,6 @@ public:
     long long getLatestTime();
     VQuat<float> getSensorQuaternion();
     V3Vect<float> getAngularVelocity();
-    void closeSensor();
 
 private:
     bool pollSensor(KTrackerSensorZip* data,uint8_t  *buffer);
@@ -202,10 +201,6 @@ VQuat<float> USensor::getSensorQuaternion() {
 
 V3Vect<float> USensor::getAngularVelocity() {
     return last_corrected_gyro_;
-}
-
-void USensor::closeSensor()
-{
 }
 
 bool USensor::pollSensor(KTrackerSensorZip* data,uint8_t  *buffer) {
