@@ -19,6 +19,8 @@ namespace JniUtils {
     jmethodID GetMethodID(JNIEnv *jni, jclass jniclass, const char *name, const char *signature);
     jmethodID GetStaticMethodID(JNIEnv *jni, jclass jniclass, const char *name, const char *signature);
 
+    JavaVM *GetJavaVM();
+
     typedef void (*Loader)(JavaVM *, JNIEnv *);
     void RegisterLoader(Loader loader);
 }

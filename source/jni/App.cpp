@@ -296,7 +296,7 @@ struct App::Private
         , eventLoop(100)
         , eyeTargets(nullptr)
         , loadingIconTexId(0)
-        , javaVM(VrLibJavaVM)
+        , javaVM(JniUtils::GetJavaVM())
         , uiJni(nullptr)
         , vrJni(nullptr)
         , vrActivityClass(nullptr)

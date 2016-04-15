@@ -8,12 +8,6 @@
 
 #include <jni.h>
 
-extern "C" {
-
-extern JavaVM * VrLibJavaVM;
-
-}
-
 enum{
     VK_INHIBIT_SRGB_FB = 1,
     VK_USE_S = 2,

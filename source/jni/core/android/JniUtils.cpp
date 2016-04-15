@@ -112,13 +112,19 @@ namespace JniUtils {
         Loaders().push_back(loader);
     }
 
+    JavaVM *GlobalJavaVM = nullptr;
+    JavaVM *GetJavaVM()
+    {
+        return GlobalJavaVM;
+    }
 }
 
 extern "C" {
     JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *)
     {
-        JNIEnv *jni;
+        JniUtils::GlobalJavaVM = vm;
 
+        JNIEnv *jni;
         bool privateEnv = false;
         if (JNI_OK != vm->GetEnv(reinterpret_cast<void**>(&jni), JNI_VERSION_1_6)) {
             privateEnv = true;
