@@ -3,12 +3,9 @@
 #include "VCircularQueue.h"
 #include "VQuat.h"
 
+#include <jni.h>
 #include <time.h>
-#include <sys/ioctl.h>
-#include <poll.h>
 #include <fcntl.h>
-
-#include "util/vr_time.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -141,30 +138,12 @@ NV_USING_NAMESPACE
 
 extern "C" {
 
-JNIEXPORT jlong JNICALL Java_com_vrseen_sensor_NativeTime_getCurrentTime
-  (JNIEnv *, jclass){
-    //jlong time = 0;
-    //time = getCurrentTime();
-    //__android_log_print(ANDROID_LOG_INFO, "JniX431FileTest", "time = %d", time);
-    return getCurrentTime();
-}
-
-/*
- * Class:     com_example_frameworktest_NativeUSensor
- * Method:    ctor
- * Signature: ()J
- */
 JNIEXPORT jlong JNICALL Java_com_vrseen_sensor_NativeUSensor_ctor
   (JNIEnv *env, jclass obj)
 {
     return reinterpret_cast<jlong>(new USensor());
 }
 
-/*
- * Class:     com_example_frameworktest_NativeUSensor
- * Method:    update
- * Signature: (J[B)Z
- */
 JNIEXPORT jboolean JNICALL Java_com_vrseen_sensor_NativeUSensor_update
   (JNIEnv *env, jclass obj, jlong jk_sensor, jbyteArray data)
 {
@@ -185,11 +164,6 @@ JNIEXPORT jboolean JNICALL Java_com_vrseen_sensor_NativeUSensor_update
     return u_sensor->update(tmp1);
 }
 
-/*
- * Class:     com_example_frameworktest_NativeUSensor
- * Method:    getTimeStamp
- * Signature: (J)J
- */
 JNIEXPORT jlong JNICALL Java_com_vrseen_sensor_NativeUSensor_getTimeStamp
   (JNIEnv *env, jclass obj, jlong jk_sensor)
 {
@@ -197,11 +171,6 @@ JNIEXPORT jlong JNICALL Java_com_vrseen_sensor_NativeUSensor_getTimeStamp
      return u_sensor->getLatestTime();
 }
 
-/*
- * Class:     com_example_frameworktest_NativeUSensor
- * Method:    getData
- * Signature: (J)[F
- */
 JNIEXPORT jfloatArray JNICALL Java_com_vrseen_sensor_NativeUSensor_getData
   (JNIEnv *env, jclass obj, jlong jk_sensor)
 {
@@ -222,6 +191,21 @@ JNIEXPORT jfloatArray JNICALL Java_com_vrseen_sensor_NativeUSensor_getData
     env->SetFloatArrayRegion(jdata, 0, 7, data);
 
     return jdata;
+}
+
+static long long getCurrentTime() {
+    timespec ts;
+    clock_gettime(CLOCK_REALTIME, &ts); // Works on Linux
+    long long time = static_cast<long long>(ts.tv_sec)
+            * static_cast<long long>(1000000000)
+            + static_cast<long long>(ts.tv_nsec);
+    return time;
+}
+
+JNIEXPORT jlong JNICALL Java_com_VRSeen_sensor_NativeTime_getCurrentTime
+  (JNIEnv *, jclass)
+{
+    return getCurrentTime();
 }
 
 }
