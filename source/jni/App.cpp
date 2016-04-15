@@ -1385,6 +1385,7 @@ App *NervGearAppInstance = nullptr;
 App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
     : d(new Private(this))
 {
+    d->activity = activity;
     d->uiJni = jni;
     vInfo("----------------- AppLocal::AppLocal() -----------------");
     vAssert(NervGearAppInstance == nullptr);
@@ -1422,9 +1423,6 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
 
 	// Get the path to the .apk and package name
     d->packageCodePath = d->activity->getPackageCodePath();
-
-	// Hook the App and AppInterface together
-    d->activity = activity;
 
 	// Load user profile data relevant to rendering
     VUserSettings config;
