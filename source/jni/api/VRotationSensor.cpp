@@ -1,5 +1,6 @@
 #include "VRotationSensor.h"
 #include "VLockless.h"
+#include "VCircularQueue.h"
 
 #include <time.h>
 #include <sys/ioctl.h>
@@ -8,10 +9,59 @@
 
 #include "sensor/math/quaternion.hpp"
 #include "sensor/math/vector.hpp"
-#include "sensor/ktracker_sensor_filter.h"
+#include "util/vr_time.h"
 
-class KTrackerSensorZip;
-class KTrackerMessage;
+NV_NAMESPACE_BEGIN
+
+struct KTrackerSensorRawData {
+    int32_t AccelX, AccelY, AccelZ;
+    int32_t GyroX, GyroY, GyroZ;
+};
+
+struct KTrackerSensorZip {
+    uint8_t SampleCount;
+    uint16_t Timestamp;
+    uint16_t LastCommandID;
+    int16_t Temperature;
+
+    KTrackerSensorRawData Samples[3];
+
+    int16_t MagX, MagY, MagZ;
+};
+
+struct KTrackerMessage {
+    vec3 Acceleration;
+    vec3 RotationRate;
+    vec3 MagneticField;
+    float Temperature;
+    float TimeDelta;
+    double AbsoluteTimeSeconds;
+};
+
+class SensorFilter: public VCircularQueue<float> {
+public:
+    SensorFilter(int capacity = 20)
+        : VCircularQueue(capacity)
+        , m_total()
+    {
+    }
+
+    void append(float e) {
+        if (isFull()) {
+            float removed = VDeque::takeFirst();
+            m_total -= removed;
+        }
+        m_total += e;
+        VDeque::append(e);
+    }
+
+    float total() const { return m_total; }
+
+    float mean() const { return VDeque::isEmpty() ? 0.0f : (total() / (float) size()); }
+
+protected:
+    float m_total;
+};
 
 class USensor {
 public:
@@ -43,15 +93,8 @@ private:
     vec3 last_rotation_rate_;
     vec3 last_corrected_gyro_;
     vec3 gyro_offset_;
-    SensorFilter<float> tilt_filter_;
+    SensorFilter tilt_filter_;
 };
-
-
-#include "sensor/ktracker_data_info.h"
-#include "util/vr_log.h"
-#include "util/vr_time.h"
-
-NV_NAMESPACE_BEGIN
 
 struct VRotationSensor::Private
 {
@@ -94,6 +137,8 @@ VRotationSensor::VRotationSensor()
 }
 
 NV_NAMESPACE_END
+
+NV_USING_NAMESPACE
 
 extern "C" {
 
@@ -475,8 +520,8 @@ vec3 USensor::gyrocorrect(vec3 gyro, vec3 accel, const float DeltaT) {
         if (step_ > 5) {
             // Spike detection
             float tiltAngle = up.Angle(accel);
-            tilt_filter_.AddElement(tiltAngle);
-            if (tiltAngle > tilt_filter_.Mean() + spikeThreshold)
+            tilt_filter_.append(tiltAngle);
+            if (tiltAngle > tilt_filter_.mean() + spikeThreshold)
                 proportionalGain = integralGain = 0;
             // Acceleration detection
             const float gravity = 9.8f;
@@ -491,7 +536,7 @@ vec3 USensor::gyrocorrect(vec3 gyro, vec3 accel, const float DeltaT) {
         gyroCorrected += (tiltCorrection * proportionalGain);
         gyro_offset_ -= (tiltCorrection * integralGain * DeltaT);
     } else {
-        LOGI("invalidaccel");
+        vInfo("invalidaccel");
     }
 
     return gyroCorrected;
