@@ -1,7 +1,52 @@
 #include "VRotationSensor.h"
 #include "VLockless.h"
 
-#include "sensor/u_sensor.h"
+#include <time.h>
+#include <sys/ioctl.h>
+#include <poll.h>
+#include <fcntl.h>
+
+#include "sensor/math/quaternion.hpp"
+#include "sensor/math/vector.hpp"
+#include "sensor/ktracker_sensor_filter.h"
+
+class KTrackerSensorZip;
+class KTrackerMessage;
+
+class USensor {
+public:
+    USensor();
+    ~USensor();
+    bool update(uint8_t  *buffer);
+    long long getLatestTime();
+    Quaternion getSensorQuaternion();
+    vec3 getAngularVelocity();
+    void closeSensor();
+
+private:
+    bool pollSensor(KTrackerSensorZip* data,uint8_t  *buffer);
+    void process(KTrackerSensorZip* data);
+    void updateQ(KTrackerMessage *msg);
+    vec3 gyrocorrect(vec3 gyro, vec3 accel, const float DeltaT);
+
+private:
+    int fd_;
+    Quaternion q_;
+    bool first_;
+    int step_;
+    unsigned int first_real_time_delta_;
+    uint16_t last_timestamp_;
+    uint32_t full_timestamp_;
+    uint8_t last_sample_count_;
+    long long latest_time_;
+    vec3 last_acceleration_;
+    vec3 last_rotation_rate_;
+    vec3 last_corrected_gyro_;
+    vec3 gyro_offset_;
+    SensorFilter<float> tilt_filter_;
+};
+
+
 #include "sensor/ktracker_data_info.h"
 #include "util/vr_log.h"
 #include "util/vr_time.h"
