@@ -72,7 +72,7 @@ VImage* VImagePvrLoader::loadImage(VFile *file) const
         return 0;
     }
     VMap<VString, VString> info;
-    info["mipCount"] = (VString)header.MipMapCount;
+    info["mipCount"] = VString::number((int)header.MipMapCount);
 
     int width = header.Width;
     int height = header.Height;
@@ -90,7 +90,7 @@ VImage* VImagePvrLoader::loadImage(VFile *file) const
         vInfo("PVR file has unsupported number of faces ");
     }
 
-    VImage* image = VImage(format, VDimension<uint>(width, height), buffer + startTex, file->size() - startTex, info);
+    VImage* image = new VImage(format, VDimension<uint>(width, height), buffer + startTex, file->size() - startTex, info);
     delete [] buffer;
 
     return image;

@@ -495,7 +495,7 @@ VOpenGLTexture::VOpenGLTexture(VImage* origImage, const VPath& name, const Textu
         if ( origImage != NULL )
         {
             const size_t dataSize = GetTextureSize( origImage->getColorFormat(), origImage->getDimension().Width, origImage->getDimension().Height );
-            CreateGlTexture(origImage->getColorFormat(), width, height, origImage->lock(), dataSize,
+            *this = CreateGlTexture(origImage->getColorFormat(), width, height, origImage->lock(), dataSize,
                     1 /* one mip level */, flags & TEXTUREFLAG_USE_SRGB, false );
             if ( HasMipMaps )
             {
@@ -510,18 +510,18 @@ VOpenGLTexture::VOpenGLTexture(VImage* origImage, const VPath& name, const Textu
         if (HasMipMaps)
             mipCount = origImage->getInfo()["mipCount"].toInt();
         if (origImage->getInfo()["NumFaces"] == "1")
-            texture = CreateGlTexture(origImage->getColorFormat(), width, height, origImage->lock(), origImage->getLength(), mipCount, UseSRGB, false );
+            *this = CreateGlTexture(origImage->getColorFormat(), width, height, origImage->lock(), origImage->getLength(), mipCount, UseSRGB, false );
         else if(origImage->getInfo()["NumFaces"] == "6")
-            texture = CreateGlCubeTexture(origImage->getColorFormat(), width, height, origImage->lock(), origImage->getLength(), mipCount, UseSRGB, false );
+            *this = CreateGlCubeTexture(origImage->getColorFormat(), width, height, origImage->lock(), origImage->getLength(), mipCount, UseSRGB, false );
     }
     else if ( ext == "ktx" )
     {
         if (HasMipMaps)
             mipCount = origImage->getInfo()["mipCount"].toInt();
         if (origImage->getInfo()["numberOfFaces"] == "1")
-            texture = CreateGlTexture(origImage->getColorFormat(), width, height, origImage->lock(), origImage->getLength(), mipCount, UseSRGB, false );
+            *this = CreateGlTexture(origImage->getColorFormat(), width, height, origImage->lock(), origImage->getLength(), mipCount, UseSRGB, false );
         else if (origImage->getInfo()["numberOfFaces"] == "6")
-            texture = CreateGlCubeTexture(origImage->getColorFormat(), width, height, origImage->lock(), origImage->getLength(), mipCount, UseSRGB, false );
+            *this = CreateGlCubeTexture(origImage->getColorFormat(), width, height, origImage->lock(), origImage->getLength(), mipCount, UseSRGB, false );
     }
     else if ( ext == "pkm" )
     {
@@ -533,7 +533,7 @@ VOpenGLTexture::VOpenGLTexture(VImage* origImage, const VPath& name, const Textu
     }
 
     // Create a default texture if the load failed
-    if ( texture.TextureName == 0 )
+    if ( this->TextureName == 0 )
     {
         vWarn("Failed to load ");
         if ( ( flags & TEXTUREFLAG_NO_DEFAULT ) == 0 )
@@ -549,7 +549,7 @@ VOpenGLTexture::VOpenGLTexture(VImage* origImage, const VPath& name, const Textu
                     255,255,255,  64, 64, 64,  64, 64, 64,  64, 64, 64,  64, 64, 64,  64, 64, 64,  64, 64, 64, 255,255,255,
                     255,255,255, 255,255,255, 255,255,255, 255,255,255, 255,255,255, 255,255,255, 255,255,255, 255,255,255
             };
-            texture = LoadRGBTextureFromMemory( defaultTexture, 8, 8, flags & TEXTUREFLAG_USE_SRGB );
+            *this = LoadRGBTextureFromMemory( defaultTexture, 8, 8, flags & TEXTUREFLAG_USE_SRGB );
         }
     }
 

@@ -115,6 +115,8 @@ public:
     //! sets whether this texture is intended to be used as a render target.
     void setIsRenderTarget(bool isTarget);
 
+
+
     GLuint TextureName;
     GLuint TargetType;
 
@@ -145,6 +147,7 @@ protected:
     //COpenGLDriver* Driver;
     VImage* Image;
     VImage* MipImage;
+
 
 
     GLint InternalFormat;
