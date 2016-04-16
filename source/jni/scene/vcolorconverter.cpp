@@ -60,7 +60,7 @@ void CColorConverter::convert4BitTo16Bit(const char* in, short* out, int width, 
 
         for (int x=0; x<width; ++x)
         {
-            out[x] = X8R8G8B8toA1R5G5B5(palette[(char)((*in >> shift) & 0xf)]);
+            out[x] = X8R8G8B8toA1R5G5B5(palette[(uchar)((*in >> shift) & 0xf)]);
 
             if (shift==0)
             {
@@ -97,7 +97,7 @@ void CColorConverter::convert8BitTo16Bit(const char* in, short* out, int width, 
             out -= width; // one line back
         for (int x=0; x<width; ++x)
         {
-            out[x] = X8R8G8B8toA1R5G5B5(palette[(char)(*in)]);
+            out[x] = X8R8G8B8toA1R5G5B5(palette[(uchar)(*in)]);
             ++in;
         }
         if (!flip)
@@ -691,6 +691,8 @@ void CColorConverter::convert_viaFormat(const void* sP, ColorFormat sF, int sN,
 #endif
             }
         break;
+            default:
+            	break;
     }
 }
 

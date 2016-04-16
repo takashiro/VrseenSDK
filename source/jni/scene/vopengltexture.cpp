@@ -209,9 +209,12 @@ static int32_t GetTextureSize( const int format, const int w, const int h )
             int blocksHigh = ( h + 5 ) / 6;
             return blocksWide * blocksHigh * 16;
         }
+        case ECF_A16B16G16R16F:
+        case ECF_A32B32G32R32F:
+
         default:
         {
-            vAssert( false );
+            vInfo( "false" );
             break;
         }
     }
@@ -223,7 +226,7 @@ static VOpenGLTexture CreateGlTexture(const int format, const int width, const i
                         const int mipcount, const bool useSrgbFormat, const bool imageSizeStored )
 {
     VOpenGLTexture texture;
-    texture.TargetType = GL_TEXTURE_2D;
+    texture.setTargetType(GL_TEXTURE_2D);
     VGlOperation glOperation;
     // vInfo("CreateGLTexture(): format " << NameForTextureFormat( static_cast< TextureFormat >( format ) ));
 
@@ -246,9 +249,10 @@ static VOpenGLTexture CreateGlTexture(const int format, const int width, const i
         vInfo(": Invalid texture size (" << width << "x" << height << ")");
         return texture;
     }
-
-    glGenTextures( 1, &texture.TextureName );
-    glBindTexture( GL_TEXTURE_2D, texture.TextureName );
+    GLuint tmpname;
+    glGenTextures( 1, &tmpname );
+    texture.setTextureName(tmpname);
+    glBindTexture( GL_TEXTURE_2D, texture.getTextureName() );
 
     const unsigned char * level = (const unsigned char*)data;
     const unsigned char * endOfBuffer = level + dataSize;
@@ -332,7 +336,7 @@ static VOpenGLTexture CreateGlCubeTexture(const int format, const int width, con
                         const int mipcount, const bool useSrgbFormat, const bool imageSizeStored )
 {
     VOpenGLTexture texture;
-    texture.TargetType = GL_TEXTURE_CUBE_MAP;
+    texture.setTargetType(GL_TEXTURE_CUBE_MAP);
     VGlOperation glOperation;
     assert( width == height );
 
@@ -355,9 +359,10 @@ static VOpenGLTexture CreateGlCubeTexture(const int format, const int width, con
     {
         return texture;
     }
-
-    glGenTextures( 1, &texture.TextureName );
-    glBindTexture( GL_TEXTURE_CUBE_MAP, texture.TextureName );
+    GLuint tmpname;
+    glGenTextures( 1, &tmpname );
+    texture.setTextureName(tmpname);
+    glBindTexture( GL_TEXTURE_CUBE_MAP, texture.getTextureName() );
 
     const unsigned char * level = (const unsigned char*)data;
     const unsigned char * endOfBuffer = level + dataSize;
@@ -1050,6 +1055,25 @@ void VOpenGLTexture::unbindRTT()
 }
 
 
+void VOpenGLTexture::setTextureName(GLuint name)
+{
+    TextureName = name;
+}
+
+void VOpenGLTexture::setTargetType(GLuint type)
+{
+    TargetType = type;
+}
+
+GLuint VOpenGLTexture::getTextureName()
+{
+    return TextureName;
+}
+
+GLuint VOpenGLTexture::getTargetType()
+{
+    return TargetType;
+}
 
 
 

@@ -120,8 +120,10 @@ LOCAL_SRC_FILES  := \
 	io/VBinaryFile.cpp \
 	io/VFileOperation.cpp \
 	io/VSysFile.cpp \
-	media/VImage.cpp \
 	media/VSoundManager.cpp \
+	media/VImageCommonLoader.cpp \
+	media/VImageKtxLoader.cpp \
+	media/VImagePvrLoader.cpp \
 	scene/VItem.cpp \
 	scene/VScene.cpp \
 	scene/BitmapFont.cpp \
@@ -137,6 +139,9 @@ LOCAL_SRC_FILES  := \
 	scene/ModelView.cpp \
 	scene/SurfaceTexture.cpp \
 	scene/SwipeView.cpp \
+	scene/VImage.cpp\
+	scene/VColorConverter.cpp\
+	scene/VOpenGLTexture.cpp \
 	App.cpp \
 	VrLocale.cpp
 
