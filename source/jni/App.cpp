@@ -11,7 +11,7 @@
 
 #include <3rdparty/stb/stb_image_write.h>
 
-#include "VStartup.h"
+#include "VModule.h"
 #include "VEglDriver.h"
 #include "android/JniUtils.h"
 #include "android/VOsBuild.h"
@@ -147,21 +147,15 @@ static bool ChromaticAberrationCorrection(const VEglDriver & glOperation)
     return (glOperation.m_gpuType & VEglDriver::GPU_TYPE_ADRENO) != 0 && (glOperation.m_gpuType >= VEglDriver::GPU_TYPE_ADRENO_420);
 }
 
-std::list<VStartup> &VStartupList()
-{
-    static std::list<VStartup> list;
-    return list;
-}
-
 struct App::Private
 {
     App *self;
     // Primary apps will exit(0) when they get an onDestroy() so we
     // never leave any cpu-sucking process running, but the platformUI
     // needs to just return to the primary activity.
-    volatile bool	vrThreadSynced;
-    volatile bool	createdSurface;
-    volatile bool	readyToExit;		// start exit procedure
+    volatile bool vrThreadSynced;
+    volatile bool createdSurface;
+    volatile bool readyToExit;		// start exit procedure
     volatile bool running;
 
     // Most calls in from java should communicate through this.
@@ -272,8 +266,9 @@ struct App::Private
 
     jobject javaObject;
     VMainActivity *activity;
-    VKernel*        kernel;
+    VKernel *kernel;
     VScene *scene;
+    const std::list<VModule *> &modules;
 
     Private(App *self)
         : self(self)
@@ -324,6 +319,7 @@ struct App::Private
         , javaObject(nullptr)
         , activity(nullptr)
         , scene(new VScene)
+        , modules(VModule::List())
     {
     }
 
@@ -391,7 +387,9 @@ struct App::Private
     {
         activity->onPause();
 
-        kernel->exit();
+        for(VModule *module : modules) {
+            module->onPause();
+        }
     }
 
     void resume()
@@ -412,10 +410,11 @@ struct App::Private
         // Clear cursor trails
         gazeCursor->HideCursorForFrames(10);
 
-        // Start up TimeWarp and the various performance options
-        kernel->run();
-
         activity->onResume();
+
+        for (VModule *module : modules) {
+            module->onResume();
+        }
     }
 
     void initGlObjects()
@@ -926,9 +925,8 @@ struct App::Private
             // Create our GL data objects
             initGlObjects();
 
-            const std::list<VStartup> &startups = VStartupList();
-            for (void (*func)() : startups) {
-                func();
+            for (VModule *module : modules) {
+                module->onStart();
             }
 
             scene->addEyeItem();
@@ -1372,12 +1370,13 @@ App *NervGearAppInstance = nullptr;
 App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
     : d(new Private(this))
 {
+    d->activity = activity;
     d->uiJni = jni;
     vInfo("----------------- AppLocal::AppLocal() -----------------");
     vAssert(NervGearAppInstance == nullptr);
     NervGearAppInstance = this;
 
-    d->kernel = VKernel::GetInstance();
+    d->kernel = VKernel::instance();
     d->storagePaths = new VStandardPath(jni, activityObject);
 
 	//WaitForDebuggerToAttach();
@@ -1409,9 +1408,6 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
 
 	// Get the path to the .apk and package name
     d->packageCodePath = d->activity->getPackageCodePath();
-
-	// Hook the App and AppInterface together
-    d->activity = activity;
 
 	// Load user profile data relevant to rendering
     VUserSettings config;

@@ -6,24 +6,19 @@
 
 #include <unistd.h>						// gettid, usleep, etc
 #include <jni.h>
-#include <sstream>
 #include <math.h>
 
 #include "VLog.h"
 #include "VEglDriver.h"
+#include "VString.h"
+#include "VLockless.h"
+#include "VModule.h"
+
 #include "android/JniUtils.h"
 #include "android/VOsBuild.h"
 
-#include "VString.h"			// for ReadFreq()
-#include "VJson.h"			// needed for ovr_StartSystemActivity
-
-#include "VLockless.h"
-#include "VRotationSensor.h"
-#include "VThread.h"
-
 NV_USING_NAMESPACE
 
-static VKernel* instance = NULL;
 // Valid for the thread that called ovr_EnterVrMode
 static JNIEnv	*				Jni;
 static  VFrameSmooth* frameSmooth = NULL;
@@ -134,13 +129,25 @@ void ovr_OnLoad(JavaVM * JavaVm_, JNIEnv *jni)
 }
 NV_REGISTER_JNI_LOADER(ovr_OnLoad)
 
-VKernel* VKernel::GetInstance()
+class VKernelModule : public VModule
 {
-    if(instance==NULL)
+public:
+    void onPause() override
     {
-        instance = new VKernel();
+        VKernel::instance()->exit();
     }
-    return  instance;
+
+    void onResume() override
+    {
+        VKernel::instance()->run();
+    }
+};
+NV_ADD_MODULE(VKernelModule)
+
+VKernel *VKernel::instance()
+{
+    static VKernel kernel;
+    return &kernel;
 }
 
 VKernel::VKernel()
@@ -181,6 +188,7 @@ VKernel::VKernel()
 
 void UpdateHmdInfo()
 {
+    VKernel *instance = VKernel::instance();
     // Only use the Android info if we haven't explicitly set the screenWidth / height,
     // because they are reported wrong on the note.
     if(!instance->device->widthbyMeters)
@@ -382,24 +390,19 @@ void VKernel::destroy(eExitType exitType)
     {
         exit();
         vInfo("Calling exitType EXIT_TYPE_EXIT");
-        delete  instance;
-        instance = NULL;
     }
 }
 
 
 
-void VKernel::setSmoothEyeTexture(unsigned int texID,ushort eye,ushort layer)
+void VKernel::setSmoothEyeTexture(uint texID, ushort eye, ushort layer)
 {
-
-   m_texId[eye][layer] =  texID;
-
+    m_texId[eye][layer] = texID;
 }
 
-
-void VKernel::setTexMatrix(VR4Matrixf	mtexMatrix,ushort eye,ushort layer)
+void VKernel::setTexMatrix(const VR4Matrixf &mtexMatrix, ushort eye,ushort layer)
 {
-  m_texMatrix[eye][layer] =  mtexMatrix;
+    m_texMatrix[eye][layer] =  mtexMatrix;
 }
 
 void VKernel::setSmoothPose(const VRotationState &pose, ushort eye, ushort layer)
@@ -407,108 +410,97 @@ void VKernel::setSmoothPose(const VRotationState &pose, ushort eye, ushort layer
     m_pose[eye][layer] = pose;
 }
 
-void VKernel::setpTex(unsigned int	*mpTexId,ushort eye,ushort layer)
+void VKernel::setpTex(uint *mpTexId, ushort eye, ushort layer)
 {
     m_planarTexId[eye][layer][0] = mpTexId[0];
     m_planarTexId[eye][layer][1] = mpTexId[1];
     m_planarTexId[eye][layer][2] = mpTexId[2];
 }
+
 void VKernel::setSmoothOption(int option)
 {
-  m_smoothOptions = option;
-
+    m_smoothOptions = option;
 }
+
 void VKernel::setMinimumVsncs( int vsnc)
 {
-
-  m_minimumVsyncs = vsnc;
+    m_minimumVsyncs = vsnc;
 }
-void VKernel::setExternalVelocity(VR4Matrixf extV)
 
+void VKernel::setExternalVelocity(const VR4Matrixf &extV)
 {
-    for(int i=0;i<4;i++)
-        for( int j=0;j<4;j++)
-    {
- m_externalVelocity.M[i][j] = extV.M[i][j];
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            m_externalVelocity.M[i][j] = extV.M[i][j];
+        }
+    }
 }
-}
+
 void VKernel::setPreScheduleSeconds(float pres)
 {
-m_preScheduleSeconds = pres;
-
+    m_preScheduleSeconds = pres;
 }
+
 void VKernel::setSmoothProgram(ushort program)
 {
-   m_smoothProgram = program;
-
+    m_smoothProgram = program;
 }
-void VKernel::setProgramParms( float * proParms)
-{
-   m_programParms[0] = proParms[0];
-    m_programParms[1] = proParms[1];
-     m_programParms[2] = proParms[2];
-      m_programParms[3] = proParms[3];
 
+void VKernel::setProgramParms(float proParms[4])
+{
+    m_programParms[0] = proParms[0];
+    m_programParms[1] = proParms[1];
+    m_programParms[2] = proParms[2];
+    m_programParms[3] = proParms[3];
 }
 
 void VKernel::syncSmoothParms()
 {
- if (frameSmooth==NULL)
-     return;
- frameSmooth->setSmoothProgram(m_smoothProgram);
- frameSmooth->setMinimumVsncs(m_minimumVsyncs);
- frameSmooth->setProgramParms(m_programParms);
- frameSmooth->setExternalVelocity(m_externalVelocity);
- frameSmooth->setPreScheduleSeconds(m_preScheduleSeconds);
- for ( ushort eye = 0; eye < 2; eye++ )
- {
-     for ( ushort i = 0; i < 3; i++ )
-     {
-         frameSmooth->setSmoothEyeTexture(m_texId[eye][i],eye,i) ;
-         frameSmooth->setTexMatrix(m_texMatrix[eye][i],eye,i) ;
-         frameSmooth->setpTex(m_planarTexId[eye][i],eye,i) ;
-         frameSmooth->setSmoothPose(m_pose[eye][i], eye, i);
+    if (frameSmooth == nullptr) {
+        return;
+    }
+    frameSmooth->setSmoothProgram(m_smoothProgram);
+    frameSmooth->setMinimumVsncs(m_minimumVsyncs);
+    frameSmooth->setProgramParms(m_programParms);
+    frameSmooth->setExternalVelocity(m_externalVelocity);
+    frameSmooth->setPreScheduleSeconds(m_preScheduleSeconds);
 
-     }
- }
-
- frameSmooth->setSmoothOption(m_smoothOptions);
-
+    for (ushort eye = 0; eye < 2; eye++) {
+        for (ushort i = 0; i < 3; i++) {
+            frameSmooth->setSmoothEyeTexture(m_texId[eye][i],eye,i) ;
+            frameSmooth->setTexMatrix(m_texMatrix[eye][i],eye,i) ;
+            frameSmooth->setpTex(m_planarTexId[eye][i],eye,i) ;
+            frameSmooth->setSmoothPose(m_pose[eye][i], eye, i);
+        }
+    }
+    frameSmooth->setSmoothOption(m_smoothOptions);
 }
 
 void VKernel::doSmooth()
 {
-    if(frameSmooth==NULL||!isRunning) return;
+    if(frameSmooth == nullptr || !isRunning) {
+        return;
+    }
+
     syncSmoothParms();
 
     //ovrTimeWarpParms   parms = InitSmoothParms();
     //parms.WarpOptions = SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER | SWAP_OPTION_FLUSH | SWAP_OPTION_DEFAULT_IMAGES;
 
-   // frameSmooth->doSmooth();
-
+    //frameSmooth->doSmooth();
 }
 
-/*void VKernel::doSmooth(const ovrTimeWarpParms * parms )
+void VKernel::InitTimeWarpParms()
 {
-    if(frameSmooth==NULL||!isRunning) return;
-
-    //setSmoothParms(*parms);
-    syncSmoothParms();
-   // frameSmooth->doSmooth();
-}*/
- void VKernel::InitTimeWarpParms( )
-{
-     m_smoothOptions =0;
-     const VR4Matrixf tanAngleMatrix = VR4Matrixf::TanAngleMatrixFromFov( 90.0f );
-     memset( &m_texId, 0, sizeof( m_texId ) );
-     memset( &m_pose, 0, sizeof( m_pose ) );
-     memset( &m_planarTexId, 0, sizeof( m_planarTexId ) );
-     memset( &m_texMatrix, 0, sizeof( m_texMatrix ) );
-     memset( &m_externalVelocity, 0, sizeof( m_externalVelocity ) );
-    for ( int eye = 0; eye < 2; eye++ )
-    {
-        for ( int i = 0; i < 3; i++ )
-        {
+    m_smoothOptions = 0;
+    const VR4Matrixf tanAngleMatrix = VR4Matrixf::TanAngleMatrixFromFov( 90.0f );
+    memset(&m_texId, 0, sizeof(m_texId));
+    memset(&m_pose, 0, sizeof(m_pose));
+    memset(&m_planarTexId, 0, sizeof(m_planarTexId));
+    memset(&m_texMatrix, 0, sizeof(m_texMatrix));
+    memset(&m_externalVelocity, 0, sizeof(m_externalVelocity ) );
+    for (int eye = 0; eye < 2; eye++) {
+        for(int i = 0; i < 3; i++) {
             m_texMatrix[eye][i] = tanAngleMatrix;
             m_pose[eye][i].w = 1.0f;
         }
@@ -521,142 +513,8 @@ void VKernel::doSmooth()
     m_minimumVsyncs = 1;
     m_preScheduleSeconds = 0.014f;
     m_smoothProgram = VK_DEFAULT;
-    m_programParms[0] =0;
-    m_programParms[1] =0;
-    m_programParms[2] =0;
-    m_programParms[3] =0;
+    m_programParms[0] = 0;
+    m_programParms[1] = 0;
+    m_programParms[2] = 0;
+    m_programParms[3] = 0;
 }
-/*
-void VKernel::setSmoothParms(const ovrTimeWarpParms &  parms)
-{
-    //ovrTimeWarpParms parms;
-   // memset( &parms, 0, sizeof( parms ) );
-    for(int i=0;i<2;i++)
-         for (int j=0;j<3;j++)
-         {
-    m_images[i][j].PlanarTexId[0]  =      parms.Images[i][j].PlanarTexId[0] ;
-    m_images[i][j].PlanarTexId[1]  =      parms.Images[i][j].PlanarTexId[1] ;
-    m_images[i][j].PlanarTexId[2] =       parms.Images[i][j].PlanarTexId[2] ;
-                    for(int m=0;m<4;m++)
-                        for(int n=0;n<4;n++)
-                        {
-                    m_images[i][j].TexCoordsFromTanAngles.M[m][n] =parms.Images[i][j].TexCoordsFromTanAngles.M[m][n];
-                        }
-                      m_images[i][j].TexId=parms.Images[i][j].TexId ;
-                     m_images[i][j].Pose.AngularAcceleration.x = parms.Images[i][j].Pose.AngularAcceleration.x ;
-                      m_images[i][j].Pose.AngularAcceleration.y = parms.Images[i][j].Pose.AngularAcceleration.y;
-                     m_images[i][j].Pose.AngularAcceleration.z = parms.Images[i][j].Pose.AngularAcceleration.z ;
-            m_images[i][j].Pose.AngularVelocity.x = parms.Images[i][j].Pose.AngularVelocity.x ;
-                m_images[i][j].Pose.AngularVelocity.y = parms.Images[i][j].Pose.AngularVelocity.y;
-                 m_images[i][j].Pose.AngularVelocity.z = parms.Images[i][j].Pose.AngularVelocity.z;
-             m_images[i][j].Pose.LinearAcceleration.x = parms.Images[i][j].Pose.LinearAcceleration.x;
-             m_images[i][j].Pose.LinearAcceleration.y = parms.Images[i][j].Pose.LinearAcceleration.y;
-             m_images[i][j].Pose.LinearAcceleration.z = parms.Images[i][j].Pose.LinearAcceleration.z;
-              m_images[i][j].Pose.LinearVelocity.x =parms.Images[i][j].Pose.LinearVelocity.x;
-               m_images[i][j].Pose.LinearVelocity.y =parms.Images[i][j].Pose.LinearVelocity.y;
-                m_images[i][j].Pose.LinearVelocity.z = parms.Images[i][j].Pose.LinearVelocity.z;
-              m_images[i][j].Pose.Pose.Orientation.w =  parms.Images[i][j].Pose.Pose.Orientation.w;
-               m_images[i][j].Pose.Pose.Orientation.x = parms.Images[i][j].Pose.Pose.Orientation.x;
-               m_images[i][j].Pose.Pose.Orientation.y = parms.Images[i][j].Pose.Pose.Orientation.y;
-               m_images[i][j].Pose.Pose.Orientation.z =parms.Images[i][j].Pose.Pose.Orientation.z;
-
-
-               m_images[i][j].Pose.Pose.Position.x =parms.Images[i][j].Pose.Pose.Position.x;
-               m_images[i][j].Pose.Pose.Position.y =parms.Images[i][j].Pose.Pose.Position.y;
-               m_images[i][j].Pose.Pose.Position.z =parms.Images[i][j].Pose.Pose.Position.z;
-
-
-                m_images[i][j].Pose.TimeInSeconds =parms.Images[i][j].Pose.TimeInSeconds;
-
-
-
-
-         }
-
-    m_smoothOptions =parms.WarpOptions;
-    for(int i=0;i<4;i++)
-        for(int j=0;j<4;j++)
-    {
-        m_externalVelocity.M[i][j] = parms.ExternalVelocity.M[i][j];
-
-    }
-
-   m_minimumVsyncs = parms.MinimumVsyncs ;
-   m_preScheduleSeconds =parms.PreScheduleSeconds;
-   m_smoothProgram = parms.WarpProgram;
-    for(int i=0;i<4;i++)
-    {
-        m_programParms[i] = parms.ProgramParms[i];
-
-    }
-
-}
-
-*/
- /*
-ovrTimeWarpParms  VKernel::getSmoothParms()
-{
-    ovrTimeWarpParms parms;
-    memset( &parms, 0, sizeof( parms ) );
-    for(int i=0;i<2;i++)
-         for (int j=0;j<3;j++)
-         {
-           parms.Images[i][j].PlanarTexId[0] = m_images[i][j].PlanarTexId[0];
-                    parms.Images[i][j].PlanarTexId[1] = m_images[i][j].PlanarTexId[1];
-                    parms.Images[i][j].PlanarTexId[2] = m_images[i][j].PlanarTexId[2];
-                    for(int m=0;m<4;m++)
-                        for(int n=0;n<4;n++)
-                        {
-                    parms.Images[i][j].TexCoordsFromTanAngles.M[m][n] = m_images[i][j].TexCoordsFromTanAngles.M[m][n];
-                        }
-                     parms.Images[i][j].TexId = m_images[i][j].TexId;
-                     parms.Images[i][j].Pose.AngularAcceleration.x =m_images[i][j].Pose.AngularAcceleration.x;
-                     parms.Images[i][j].Pose.AngularAcceleration.y =m_images[i][j].Pose.AngularAcceleration.y;
-                     parms.Images[i][j].Pose.AngularAcceleration.z =m_images[i][j].Pose.AngularAcceleration.z;
-             parms.Images[i][j].Pose.AngularVelocity.x =m_images[i][j].Pose.AngularVelocity.x;
-               parms.Images[i][j].Pose.AngularVelocity.y =m_images[i][j].Pose.AngularVelocity.y;
-                 parms.Images[i][j].Pose.AngularVelocity.z =m_images[i][j].Pose.AngularVelocity.z;
-             parms.Images[i][j].Pose.LinearAcceleration.x =m_images[i][j].Pose.LinearAcceleration.x;
-             parms.Images[i][j].Pose.LinearAcceleration.y =m_images[i][j].Pose.LinearAcceleration.y;
-             parms.Images[i][j].Pose.LinearAcceleration.z =m_images[i][j].Pose.LinearAcceleration.z;
-              parms.Images[i][j].Pose.LinearVelocity.x =m_images[i][j].Pose.LinearVelocity.x;
-               parms.Images[i][j].Pose.LinearVelocity.y =m_images[i][j].Pose.LinearVelocity.y;
-                parms.Images[i][j].Pose.LinearVelocity.z =m_images[i][j].Pose.LinearVelocity.z;
-               parms.Images[i][j].Pose.Pose.Orientation.w =m_images[i][j].Pose.Pose.Orientation.w;
-               parms.Images[i][j].Pose.Pose.Orientation.x =m_images[i][j].Pose.Pose.Orientation.x;
-               parms.Images[i][j].Pose.Pose.Orientation.y =m_images[i][j].Pose.Pose.Orientation.y;
-               parms.Images[i][j].Pose.Pose.Orientation.z =m_images[i][j].Pose.Pose.Orientation.z;
-
-
-               parms.Images[i][j].Pose.Pose.Position.x =m_images[i][j].Pose.Pose.Position.x;
-               parms.Images[i][j].Pose.Pose.Position.y =m_images[i][j].Pose.Pose.Position.y;
-               parms.Images[i][j].Pose.Pose.Position.z =m_images[i][j].Pose.Pose.Position.z;
-
-
-                parms.Images[i][j].Pose.TimeInSeconds =m_images[i][j].Pose.TimeInSeconds;
-
-
-
-
-         }
-
-    parms.WarpOptions = m_smoothOptions;
-    for(int i=0;i<4;i++)
-        for(int j=0;j<4;j++)
-    {
-        parms.ExternalVelocity.M[i][j]= m_externalVelocity.M[i][j];
-
-    }
-
-   parms.MinimumVsyncs =		m_minimumVsyncs;
-   parms.PreScheduleSeconds =   m_preScheduleSeconds;
-   parms.WarpProgram =			m_smoothProgram;
-    for(int i=0;i<4;i++)
-    {
-        parms.ProgramParms[i]= m_programParms[i];
-
-    }
-
- return parms;
-}
-*/

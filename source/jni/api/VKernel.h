@@ -1,12 +1,7 @@
 #pragma once
 
-#include <math.h>
-
-#include "VBasicmath.h"
-#include "VString.h"
 #include "VRotationState.h"
-
-#include <jni.h>
+#include "VMatrix.h"
 
 enum{
     VK_INHIBIT_SRGB_FB = 1,
@@ -17,7 +12,6 @@ enum{
     VK_IMAGE = 32,
     VK_DRAW_LINES = 64
 };
-
 
 enum VrKernelProgram {
     VK_DEFAULT,
@@ -45,9 +39,6 @@ enum VrKernelProgram {
     VK_MAX
 };
 
-
-
-
 enum eExitType {
     EXIT_TYPE_NONE,
     EXIT_TYPE_FINISH,
@@ -62,47 +53,42 @@ class VDevice;
 class VKernel
 {
 public:
-    static  VKernel*  GetInstance();
+    static VKernel *instance();
     void run();
     void exit();
     void destroy(eExitType type);
 
-    VDevice* device;
+    VDevice *device;
     bool asyncSmooth;
     int msaa;
-
     bool isRunning;
-
 
     void doSmooth();
     void syncSmoothParms();
-    void setSmoothEyeTexture(unsigned int texID,ushort eye,ushort layer);
-    void setTexMatrix(VR4Matrixf	mtexMatrix,ushort eye,ushort layer);
+    void setSmoothEyeTexture(uint texID, ushort eye, ushort layer);
+    void setTexMatrix(const VR4Matrixf &mtexMatrix, ushort eye, ushort layer);
     void setSmoothPose(const VRotationState &pose, ushort eye, ushort layer);
-    void setpTex(unsigned int	*mpTexId,ushort eye,ushort layer);
-
+    void setpTex(uint *mpTexId,ushort eye,ushort layer);
 
     void setSmoothOption(int option);
-    void setMinimumVsncs( int vsnc);
-    void setExternalVelocity(VR4Matrixf extV);
+    void setMinimumVsncs(int vsnc);
+    void setExternalVelocity(const VR4Matrixf &extV);
     void setPreScheduleSeconds(float pres);
     void setSmoothProgram(ushort program);
-    void setProgramParms( float * proParms);
+    void setProgramParms(float proParms[4]);
 
+    void InitTimeWarpParms();
 
-     void InitTimeWarpParms( );
+    int m_smoothOptions;
+    VR4Matrixf m_externalVelocity;
+    int m_minimumVsyncs;
+    float m_preScheduleSeconds;
+    ushort m_smoothProgram;
+    float m_programParms[4];
 
-
-    int 						m_smoothOptions;
-    VR4Matrixf					m_externalVelocity;
-    int							m_minimumVsyncs;
-    float						m_preScheduleSeconds;
-    ushort			            m_smoothProgram;
-    float						m_programParms[4];
-
-    unsigned int	m_texId[2][3];
-    unsigned int	m_planarTexId[2][3][3];
-    VR4Matrixf		m_texMatrix[2][3];
+    uint m_texId[2][3];
+    uint m_planarTexId[2][3][3];
+    VR4Matrixf m_texMatrix[2][3];
     VRotationState m_pose[2][3];
 
 private:

@@ -26,6 +26,7 @@ SOURCES += \
     jni/core/VJson.cpp \
     jni/core/VLog.cpp \
     jni/core/VLock.cpp \
+    jni/core/VModule.cpp \
     jni/core/VPath.cpp \
     jni/core/VSignal.cpp \
     jni/core/VStandardPath.cpp \
@@ -130,13 +131,13 @@ HEADERS += \
     jni/core/VLock.h \
     jni/core/VLockless.h \
     jni/core/VMap.h \
+    jni/core/VModule.h \
     jni/core/VPath.h \
     jni/core/VPos.h \
     jni/core/VRect.h \
     jni/core/VSignal.h \
     jni/core/VSize.h \
     jni/core/VStandardPath.h \
-    jni/core/VStartup.h \
     jni/core/VString.h \
     jni/core/VStringHash.h \
     jni/core/String_FormatUtil.h \

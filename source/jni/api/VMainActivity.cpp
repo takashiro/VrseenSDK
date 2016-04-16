@@ -364,7 +364,7 @@ void Java_com_vrseen_nervgear_VrActivity_nativeDestroy(JNIEnv *, jclass)
     delete vApp;
 
     vInfo("ExitOnDestroy is true, exiting");
-    VKernel::GetInstance()->destroy(EXIT_TYPE_EXIT);
+    VKernel::instance()->destroy(EXIT_TYPE_EXIT);
     exit(0);
 }
 

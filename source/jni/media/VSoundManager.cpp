@@ -4,7 +4,7 @@
 #include "VJson.h"
 #include "VLog.h"
 #include "VStandardPath.h"
-#include "VStartup.h"
+#include "VModule.h"
 
 #include <list>
 #include <fstream>
@@ -19,12 +19,15 @@ static const char * APP_SOUNDS = "assets/sound_assets.json";
 
 namespace
 {
-    void setup()
+    class VSoundModule : public VModule
     {
-        VSoundManager::instance()->loadSoundAssets();
-    }
+        void onStart() override
+        {
+            VSoundManager::instance()->loadSoundAssets();
+        }
+    };
 }
-NV_ADD_STARTUP_FUNCTION(setup)
+NV_ADD_MODULE(VSoundModule)
 
 struct VSoundManager::Private
 {

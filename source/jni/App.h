@@ -23,12 +23,9 @@ class BitmapFont;
 class BitmapFontSurface;
 class OvrVRMenuMgr;
 class OvrDebugLines;
-class App;
 class VViewSettings;
 class VStandardPath;
 class SurfaceTexture;
-class OvrGuiSys;
-class GazeCursor;
 class OvrVolumePopup;
 
 class App
