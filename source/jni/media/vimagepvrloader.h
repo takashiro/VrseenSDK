@@ -11,9 +11,6 @@ namespace NervGear
     {
     public:
 
-        VImagePvrLoader();
-
-        virtual ~VImagePvrLoader();
 
         virtual bool isALoadableFileExtension(const VPath& filename) const;
 

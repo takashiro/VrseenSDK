@@ -5,6 +5,8 @@
 #include <VPath.h>
 #include <fstream>
 #include <VApkFile.h>
+#include "VImageManager.h"
+#include "VOpenGLTexture.h"
 
 namespace OculusCinema {
 
@@ -177,7 +179,7 @@ SceneDef * ModelManager::LoadScene( const char *sceneFilename, bool useDynamicPr
     VPath iconFilename = filename;
     iconFilename.setExtension("png");
 
-	int textureWidth = 0, textureHeight = 0;
+	//int textureWidth = 0, textureHeight = 0;
 
 
     VByteArray fileName = filename.toUtf8();
@@ -192,30 +194,20 @@ SceneDef * ModelManager::LoadScene( const char *sceneFilename, bool useDynamicPr
         free(buffer);
         buffer = nullptr;
         length = 0;
-        apk.read(iconFilename, buffer, length);
-        std::fstream fileBuffer;
-        fileBuffer.open(iconFileName.data());
-        fileBuffer.seekg(0, std::ios_base::end);
-        uint fileLength = 0;
-        fileLength = fileBuffer.tellg();
-        fileBuffer.seekg(0, std::ios_base::beg);
-        buffer = NULL;
-        buffer = malloc(fileLength);
-        fileBuffer.read(reinterpret_cast<std::istream::char_type*>(buffer), fileLength);
-        def->IconTexture = LoadTextureFromBuffer(iconFileName.data(), buffer, fileLength, TextureFlags_t(TEXTUREFLAG_NO_DEFAULT), textureWidth, textureHeight);
+
+
+        VImageManager *imagemanager = new VImageManager();
+        VImage *iconimage = imagemanager->loadImage(iconFilename);
+        delete imagemanager;
+        def->IconTexture = VOpenGLTexture(iconimage, iconFilename,TextureFlags(_NO_DEFAULT)).getTextureName();
     } else {
         def->SceneModel = LoadModelFile(fileName.data(), glPrograms, materialParms );
-        std::fstream fileBuffer;
-        fileBuffer.open(iconFileName.data());
-        fileBuffer.seekg(0, std::ios_base::end);
-        uint fileLength = 0;
-        fileLength = fileBuffer.tellg();
-        fileBuffer.seekg(0, std::ios_base::beg);
-        void *buffer = NULL;
-        buffer = malloc(fileLength);
-        fileBuffer.read(reinterpret_cast<std::istream::char_type*>(buffer), fileLength);
-        def->IconTexture = LoadTextureFromBuffer(iconFileName.data(), buffer, fileLength, TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), textureWidth, textureHeight );
-	}
+
+        VImageManager *imagemanager = new VImageManager();
+        VImage *iconimage = imagemanager->loadImage(iconFilename);
+        delete imagemanager;
+        def->IconTexture = VOpenGLTexture(iconimage, iconFilename,TextureFlags(_NO_DEFAULT)).getTextureName();
+    }
 
 	if ( def->IconTexture != 0 )
 	{

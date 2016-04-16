@@ -474,7 +474,7 @@ VOpenGLTexture::VOpenGLTexture(VImage* origImage, const VPath& name, void* mipma
 }
 
 //! constructor for extra textures
-VOpenGLTexture::VOpenGLTexture(VImage* origImage, const VPath& name, const TextureFlags_t & flags)
+VOpenGLTexture::VOpenGLTexture(VImage* origImage, const VPath& name, const TextureFlags_o & flags)
     : VTexture(name), m_ColorFormat(origImage->getColorFormat()), Image(0), MipImage(0),
     TextureName(0), TargetType(0), InternalFormat(GL_RGBA), PixelFormat(GL_BGRA_EXT),
     PixelType(GL_UNSIGNED_BYTE), MipLevelStored(0), MipmapLegacyMode(true),
@@ -482,13 +482,13 @@ VOpenGLTexture::VOpenGLTexture(VImage* origImage, const VPath& name, const Textu
     ReadOnlyLock(false), KeepImage(true)
 {
     const VString ext = name.extension().toLower();
-    bool UseSRGB = flags & TEXTUREFLAG_USE_SRGB;
-    HasMipMaps = !(flags & TEXTUREFLAG_NO_MIPMAPS);
+    bool UseSRGB = flags & _USE_SRGB;
+    HasMipMaps = !(flags & _NO_MIPMAPS);
 
     int width = 0;
     int height = 0;
     int mipCount = 0;
-    if ( name == NULL || origImage == NULL)
+    if ( name.isEmpty() || origImage == nullptr)
     {
         // can't load anything from an empty buffer
     }
@@ -497,11 +497,11 @@ VOpenGLTexture::VOpenGLTexture(VImage* origImage, const VPath& name, const Textu
                 ext == "psd" || ext == "gif" ||
                 ext == "hdr" || ext == "pic" )
     {
-        if ( origImage != NULL )
+        if ( origImage != nullptr )
         {
             const size_t dataSize = GetTextureSize( origImage->getColorFormat(), origImage->getDimension().Width, origImage->getDimension().Height );
             *this = CreateGlTexture(origImage->getColorFormat(), width, height, origImage->lock(), dataSize,
-                    1 /* one mip level */, flags & TEXTUREFLAG_USE_SRGB, false );
+                    1 /* one mip level */, flags & _USE_SRGB, false );
             if ( HasMipMaps )
             {
                 glBindTexture( GL_TEXTURE_2D, TextureName );
@@ -541,7 +541,7 @@ VOpenGLTexture::VOpenGLTexture(VImage* origImage, const VPath& name, const Textu
     if ( this->TextureName == 0 )
     {
         vWarn("Failed to load ");
-        if ( ( flags & TEXTUREFLAG_NO_DEFAULT ) == 0 )
+        if ( ( flags & _NO_DEFAULT ) == 0 )
         {
             static uint8_t defaultTexture[8 * 8 * 3] =
             {
@@ -554,7 +554,7 @@ VOpenGLTexture::VOpenGLTexture(VImage* origImage, const VPath& name, const Textu
                     255,255,255,  64, 64, 64,  64, 64, 64,  64, 64, 64,  64, 64, 64,  64, 64, 64,  64, 64, 64, 255,255,255,
                     255,255,255, 255,255,255, 255,255,255, 255,255,255, 255,255,255, 255,255,255, 255,255,255, 255,255,255
             };
-            *this = LoadRGBTextureFromMemory( defaultTexture, 8, 8, flags & TEXTUREFLAG_USE_SRGB );
+            *this = LoadRGBTextureFromMemory( defaultTexture, 8, 8, flags & _USE_SRGB );
         }
     }
 

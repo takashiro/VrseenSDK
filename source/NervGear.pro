@@ -125,7 +125,8 @@ SOURCES += \
     jni/media/VImageKtxLoader.cpp \
     jni/scene/VOpenGLTexture.cpp \
     jni/media/VImageCommonLoader.cpp \
-    jni/media/VImagePvrLoader.cpp
+    jni/media/VImagePvrLoader.cpp \
+    jni/media/VImageManager.cpp
 
 
 HEADERS += \
@@ -286,7 +287,8 @@ HEADERS += \
     jni/scene/VOpenGLTexture.h \
     jni/scene/VBlit.h \
     jni/media/VImageCommonLoader.h \
-    jni/media/VImagePvrLoader.h
+    jni/media/VImagePvrLoader.h \
+    jni/media/VImageManager.h
 
 include(jni/3rdparty/minizip/minizip.pri)
 include(jni/3rdparty/stb/stb.pri)

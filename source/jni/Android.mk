@@ -124,6 +124,7 @@ LOCAL_SRC_FILES  := \
 	media/VImageCommonLoader.cpp \
 	media/VImageKtxLoader.cpp \
 	media/VImagePvrLoader.cpp \
+	media/VImageManager.cpp \
 	scene/VItem.cpp \
 	scene/VScene.cpp \
 	scene/BitmapFont.cpp \

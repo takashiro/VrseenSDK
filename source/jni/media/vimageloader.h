@@ -18,6 +18,8 @@ class VImageLoader
 {
 public:
 
+	virtual ~VImageLoader() = default;
+
     //! Check if the file might be loaded by this class
     /** Check is based on the file extension (e.g. ".tga")
     \param filename Name of file to check.
@@ -34,6 +36,7 @@ public:
     /** \param file File handle to check.
     \return Pointer to newly created image, or 0 upon error. */
     virtual VImage* loadImage(VFile* file) const = 0;
+
 };
 
 NV_NAMESPACE_END

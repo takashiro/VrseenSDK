@@ -21,6 +21,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VRMenuComponent.h"
 #include "ui_default.h"	// embedded default UI texture (loaded as a placeholder when something doesn't load)
 #include "VApkFile.h"
+#include "VImageManager.h"
+#include "VOpenGLTexture.h"
 
 namespace NervGear {
 
@@ -58,20 +60,29 @@ bool VRMenuSurfaceTexture::loadTexture( eSurfaceTextureType const type, char con
 
 	if ( imageName != NULL && imageName[0] != '\0' )
 	{
-		void * 	buffer;
-        uint		bufferLength;
-        const VApkFile &apk = VApkFile::CurrentApkFile();
-        apk.read(imageName, buffer, bufferLength);
-		if ( !buffer )
-		{
-			m_handle = 0;
-		}
-		else
-		{
-            m_handle = LoadTextureFromBuffer( imageName, buffer, bufferLength,
-					TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), m_width, m_height );
-            ::free( buffer );
-		}
+//		void * 	buffer;
+//        uint		bufferLength;
+//        const VApkFile &apk = VApkFile::CurrentApkFile();
+//        apk.read(imageName, buffer, bufferLength);
+//		if ( !buffer )
+//		{
+//			m_handle = 0;
+//		}
+//		else
+//		{
+//            m_handle = LoadTextureFromBuffer( imageName, buffer, bufferLength,
+//					TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), m_width, m_height );
+//            ::free( buffer );
+//		}
+        VImageManager* imagemanager = new VImageManager();
+        VImage* image = imagemanager->loadImage(VPath(imageName));
+        m_width = image->getDimension().Width;
+        m_height = image->getDimension().Height;
+        m_handle = VOpenGLTexture(image, VPath(imageName), TextureFlags_o(_NO_DEFAULT )).getTextureName();
+
+        delete imagemanager;
+
+
 	}
 
 	if ( m_handle == 0 && allowDefault )

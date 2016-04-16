@@ -38,20 +38,20 @@ namespace NervGear{
 #define GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR  0x93DC
 #define GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR  0x93DD
 
-enum eTextureFlags
+enum TextureFlags
 {
     // Normally, a failure to load will create an 8x8 default texture, but
     // if you want to take explicit action, setting this flag will cause
     // it to return 0 for the texId.
-    TEXTUREFLAG_NO_DEFAULT,
+    _NO_DEFAULT,
     // Use GL_SRGB8 / GL_SRGB8_ALPHA8 / GL_COMPRESSED_SRGB8_ETC2 formats instead
     // of GL_RGB / GL_RGBA / GL_ETC1_RGB8_OES
-    TEXTUREFLAG_USE_SRGB,
+    _USE_SRGB,
     // No mip maps are loaded or generated when this flag is specified.
-    TEXTUREFLAG_NO_MIPMAPS
+    _NO_MIPMAPS
 };
 
-typedef VFlags<eTextureFlags> TextureFlags_t;
+typedef VFlags<TextureFlags> TextureFlags_o;
 
 //! OpenGL texture.
 class VOpenGLTexture : public VTexture
@@ -63,7 +63,7 @@ public:
 
     VOpenGLTexture();
 
-    VOpenGLTexture(VImage* origImage, const VPath& name, const TextureFlags_t & flags);
+    VOpenGLTexture(VImage* origImage, const VPath& name, const TextureFlags_o & flags);
 
     //! destructor
     virtual ~VOpenGLTexture();

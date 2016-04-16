@@ -51,6 +51,8 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "core/VTimer.h"
 #include "VideosMetaData.h"
 #include "VColor.h"
+#include "VImagemanager.h"
+#include "VOpenGLTexture.h"
 static bool	RetailMode = false;
 
 static const char * videosDirectory = "Oculus/360Videos/";
@@ -174,18 +176,13 @@ void Oculus360Videos::init(const VString &fromPackage, const VString &launchInte
     const char *launchPano = NULL;
     if ( ( NULL != launchPano ) && launchPano[ 0 ] )
 	{
-        std::fstream fileBuffer;
-        fileBuffer.open(launchPano);
-        fileBuffer.seekg(0, std::ios_base::end);
-        uint fileLength = 0;
-        fileLength = fileBuffer.tellg();
-        fileBuffer.seekg(0, std::ios_base::beg);
-        void *buffer = NULL;
-        buffer = malloc(fileLength);
-        fileBuffer.read(reinterpret_cast<std::istream::char_type*>(buffer), fileLength);
 
-        BackgroundTexId = LoadTextureFromBuffer( launchPano, buffer, fileLength,
-			TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ) | TEXTUREFLAG_USE_SRGB, BackgroundWidth, BackgroundHeight );
+        VImageManager* imagemanager = new VImageManager();
+        VImage* panopic = imagemanager->loadImage(VPath(launchPano));
+        BackgroundTexId = VOpenGLTexture(panopic, VPath(launchPano), TextureFlags_o( _NO_DEFAULT ) | _USE_SRGB).getTextureName();
+
+        delete imagemanager;
+
 
 	}
 

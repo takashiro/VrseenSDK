@@ -28,6 +28,8 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "VApkFile.h"
 #include "Native.h"
 #include "core/VTimer.h"
+#include "VOpenGLTexture.h"
+#include "VImageManager.h"
 
 namespace OculusCinema {
 
@@ -227,17 +229,15 @@ void MovieManager::LoadPoster( MovieDef *movie )
     VString posterFilename = VPath(movie->Filename).baseName();
     posterFilename.append(".png");
 
-    std::fstream fileBuffer;
-    fileBuffer.open(posterFilename.toCString());
-    fileBuffer.seekg(0, std::ios_base::end);
-    uint fileLength = 0;
-    fileLength = fileBuffer.tellg();
-    fileBuffer.seekg(0, std::ios_base::beg);
-    void *buffer = NULL;
-    buffer = malloc(fileLength);
-    fileBuffer.read(reinterpret_cast<std::istream::char_type*>(buffer), fileLength);
-    movie->Poster = LoadTextureFromBuffer( posterFilename.toCString(), buffer, fileLength,
-			TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), movie->PosterWidth, movie->PosterHeight );
+
+    VImageManager* imagemanager =  new VImageManager();
+    VImage* poster = imagemanager->loadImage(VPath(posterFilename));
+    movie->PosterWidth = poster->getDimension().Width;
+    movie->PosterHeight = poster->getDimension().Height;
+    movie->Poster = VOpenGLTexture(poster, VPath(posterFilename), TextureFlags_o(_NO_DEFAULT )).getTextureName();
+
+    delete imagemanager;
+
 
 	if ( movie->Poster == 0 )
 	{
@@ -264,17 +264,14 @@ void MovieManager::LoadPoster( MovieDef *movie )
 			// no thumbnail found, so create it.  if it's on an external sdcard, posterFilename will contain the new filename at this point and will load it from the cache
             if ( ( movie->Poster == 0 ) && Native::CreateVideoThumbnail(movie->Filename, posterFilename, PosterWidth, PosterHeight))
 			{
-                std::fstream fileBuffer;
-                fileBuffer.open(posterFilename.toUtf8().data());
-                fileBuffer.seekg(0, std::ios_base::end);
-                uint fileLength = 0;
-                fileLength = fileBuffer.tellg();
-                fileBuffer.seekg(0, std::ios_base::beg);
-                void *buffer = NULL;
-                buffer = malloc(fileLength);
-                fileBuffer.read(reinterpret_cast<std::istream::char_type*>(buffer), fileLength);
-                movie->Poster = LoadTextureFromBuffer( posterFilename.toUtf8().data() , buffer, fileLength,
-					TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), movie->PosterWidth, movie->PosterHeight );
+
+                VImageManager* imagemanager =  new VImageManager();
+                VImage* poster = imagemanager->loadImage(posterFilename);
+                movie->PosterWidth = poster->getDimension().Width;
+                movie->PosterHeight = poster->getDimension().Height;
+                movie->Poster = VOpenGLTexture(poster, VPath(posterFilename), TextureFlags_o(_NO_DEFAULT )).getTextureName();
+
+                delete imagemanager;
 			}
 		}
 	}

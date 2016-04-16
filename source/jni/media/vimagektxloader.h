@@ -10,9 +10,6 @@ namespace NervGear
     {
     public:
 
-        VImageKtxLoader();
-
-        virtual ~VImageKtxLoader();
 
         virtual bool isALoadableFileExtension(const VPath& filename) const;
 
