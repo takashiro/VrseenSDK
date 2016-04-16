@@ -16,12 +16,6 @@
 
 NV_NAMESPACE_BEGIN
 
-VEyeItem::Settings VEyeItem::settings;
-
-VEyeItem::VEyeItem():discardInsteadOfClear( true ),swapCount( 0 )
-{
-}
-
 struct EyeBuffer {
     EyeBuffer() :
             Texture(0), DepthBuffer(0), CommonParameterBuffer(0), MultisampleColorBuffer(
@@ -218,6 +212,15 @@ struct EyeBuffer {
     }
 };
 
+struct EyePairs
+{
+    EyePairs() : MultisampleMode( VEyeItem::MultiSampleOff ) {}
+
+    VEyeItem::Settings            BufferParms;
+    VEyeItem::CommonParameter       MultisampleMode;
+    EyeBuffer           eyeBuffer;
+};
+
 static const int MAX_EYE_SETS = 3;
 
 static int FindUnusedFilename( const char * fmt, int max )
@@ -278,23 +281,29 @@ static void ScreenShotTexture( const int eyeResolution, const GLuint texId )
     free( shrunk1 );
     free( shrunk2 );
 }
-struct EyePairs
-{
-    EyePairs() : MultisampleMode( VEyeItem::MultiSampleOff ) {}
 
-    VEyeItem::Settings            BufferParms;
-    VEyeItem::CommonParameter       MultisampleMode;
-    EyeBuffer           eyeBuffer;
+VEyeItem::Settings VEyeItem::settings;
+
+struct VEyeItem::Private
+{
+    EyePairs     BufferData[MAX_EYE_SETS];
 };
 
-EyePairs      BufferData[MAX_EYE_SETS];
+VEyeItem::VEyeItem():discardInsteadOfClear( true ),swapCount( 0 ),d(new Private)
+{
+    
+}
 
+VEyeItem::~VEyeItem()
+{
+    delete d;
+}
 
 void VEyeItem::paint()
 {
     swapCount++;
 
-    EyePairs & buffers = BufferData[ swapCount % MAX_EYE_SETS ];
+    EyePairs & buffers = d->BufferData[ swapCount % MAX_EYE_SETS ];
     if ( buffers.eyeBuffer.Texture == 0
          || buffers.BufferParms.resolution != settings.resolution
          || buffers.BufferParms.multisamples != settings.multisamples
@@ -315,8 +324,8 @@ void VEyeItem::paint()
         VEglDriver::logErrorsEnum( "after framebuffer creation" );
     }
 
-    const int resolution = bufferParms.resolution;
-    EyePairs & pair = BufferData[ swapCount % MAX_EYE_SETS ];
+    const int resolution = buffers.BufferParms.resolution;
+    EyePairs & pair = d->BufferData[ swapCount % MAX_EYE_SETS ];
     EyeBuffer & eye = pair.eyeBuffer;
 
     glBindFramebuffer( GL_FRAMEBUFFER, eye.RenderFrameBuffer );
@@ -338,11 +347,32 @@ void VEyeItem::paint()
     }
 }
 
+void VEyeItem::afterPaint()
+{
+    EyePairs & pair = d->BufferData[ swapCount % MAX_EYE_SETS ];
+    EyeBuffer & eye = pair.eyeBuffer;
+    int resolution = pair.BufferParms.resolution;
+
+    VEglDriver::glDisableFramebuffer( false, true );
+
+    if ( eye.ResolveFrameBuffer )
+    {
+        glBindFramebuffer( GL_READ_FRAMEBUFFER, eye.RenderFrameBuffer );
+        glBindFramebuffer( GL_DRAW_FRAMEBUFFER, eye.ResolveFrameBuffer );
+        VEglDriver::glBlitFramebuffer( 0, 0, resolution, resolution,
+                0, 0, resolution, resolution,
+                GL_COLOR_BUFFER_BIT, GL_NEAREST );
+        VEglDriver::glDisableFramebuffer( true, false );
+    }
+
+    glFlush();
+}
+
 VEyeItem::CompletedEyes VEyeItem::completedEyes()
 {
     CompletedEyes	cmp = {};
     // The GPU commands are flushed for BufferData[ SwapCount % MAX_EYE_SETS ]
-    EyePairs & currentBuffers = BufferData[ swapCount % MAX_EYE_SETS ];
+    EyePairs & currentBuffers = d->BufferData[ swapCount % MAX_EYE_SETS ];
 
     EyePairs * buffers = &currentBuffers;
 
@@ -354,7 +384,7 @@ VEyeItem::CompletedEyes VEyeItem::completedEyes()
 
 void VEyeItem::snapshot()
 {
-    ScreenShotTexture( bufferParms.resolution, BufferData[0].eyeBuffer.Texture );
+    ScreenShotTexture(d->BufferData[0].BufferParms.resolution, d->BufferData[0].eyeBuffer.Texture );
 }
 
 NV_NAMESPACE_END

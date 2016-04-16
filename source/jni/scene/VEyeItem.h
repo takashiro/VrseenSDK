@@ -54,18 +54,22 @@ public:
     };
 
     VEyeItem();
+    virtual ~VEyeItem();
 
     CompletedEyes completedEyes();
 
     virtual void paint();
+    void afterPaint();
 
     void snapshot();
 
-    Settings bufferParms;
     bool discardInsteadOfClear;
     long swapCount;
 
     static Settings settings;
+
+private:
+    NV_DECLARE_PRIVATE
 };
 
 NV_NAMESPACE_END

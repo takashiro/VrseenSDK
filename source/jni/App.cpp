@@ -1798,7 +1798,7 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
                 d->eyeDecorations.FillEdge(VEyeItem::settings.resolution, VEyeItem::settings.resolution);
             }
 
-            glFlush();
+            ((VEyeItem*)eyeItemList[eye])->afterPaint();
         }
     }
 
@@ -1808,7 +1808,7 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
         for(int eye = 0;eye<numEyes;++eye)
         {
             d->kernel->m_texMatrix[eye][0] = VR4Matrixf::TanAngleMatrixFromFov( fovDegrees );
-            d->kernel->m_texId[eye][0] = ((VEyeItem*)(eyeItemList[d->renderMonoMode ? 0 : eye ]))->completedEyes().textures;
+            d->kernel->m_texId[eye][0] = ((VEyeItem*)eyeItemList[d->renderMonoMode ? 0 : eye ])->completedEyes().textures;
             d->kernel->m_pose[eye][0] = d->sensorForNextWarp;
             // d->kernel->m_smoothProgram = ChromaticAberrationCorrection(glOperation) ? WP_CHROMATIC : WP_SIMPLE;
         }
