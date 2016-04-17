@@ -114,6 +114,49 @@ bool VApkFile::read(const VString &filePath, void *&buffer, uint &length) const
     return true;
 }
 
+bool VApkFile::read(const VString &filePath, VIODevice *output) const
+{
+    if (d->handle == nullptr) {
+        vError("VApkFile is not open");
+        return false;
+    }
+
+    VByteArray path = filePath.toUtf8();
+    vInfo("nameInZip is" << path);
+
+    const int locateRet = unzLocateFile(d->handle, path.data(), 2 /* case insensitive */);
+    if (locateRet != UNZ_OK) {
+        vInfo("File '" << path << "' not found in apk!");
+        return false;
+    }
+
+    unz_file_info info;
+    const int getRet = unzGetCurrentFileInfo(d->handle, &info, NULL, 0, NULL, 0, NULL, 0);
+    if (getRet != UNZ_OK) {
+        vWarn("File info error reading '" << path << "' from apk!");
+        return false;
+    }
+    const int openRet = unzOpenCurrentFile(d->handle);
+    if (openRet != UNZ_OK) {
+        vWarn("Error opening file '" << path << "' from apk!");
+        return false;
+    }
+
+    void *buffer = malloc(info.uncompressed_size);
+    const int readRet = unzReadCurrentFile(d->handle, buffer, info.uncompressed_size);
+    unzCloseCurrentFile(d->handle);
+    if (readRet <= 0) {
+        free(buffer);
+        vWarn("Error reading file '" << path << "' from apk!");
+        return false;
+    }
+
+    output->write(static_cast<char *>(buffer), info.uncompressed_size);
+    free(buffer);
+
+    return true;
+}
+
 
 const VApkFile &VApkFile::CurrentApkFile()
 {

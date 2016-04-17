@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vglobal.h"
+#include "VIODevice.h"
 
 //@to-to: remove this
 #include "GlTexture.h"
@@ -8,8 +8,6 @@
 NV_NAMESPACE_BEGIN
 
 class VString;
-class VByteArray;
-
 
 class VApkFile
 {
@@ -25,6 +23,7 @@ public:
     bool contains(const VString &filePath) const;
 
     bool read(const VString &filePath, void *&buffer, uint &length) const;
+    bool read(const VString &filePath, VIODevice *output) const;
 
 
     static const VApkFile &CurrentApkFile();
