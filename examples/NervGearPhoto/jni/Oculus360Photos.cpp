@@ -149,9 +149,9 @@ void Oculus360Photos::init(const VString &fromPackage, const VString &launchInte
 
     // Stay exactly at the origin, so the panorama globe is equidistant
     // Don't clear the head model neck length, or swipe view panels feel wrong.
-    VrViewParms viewParms = vApp->vrViewParms();
-    viewParms.EyeHeight = 0.0f;
-    vApp->setVrViewParms( viewParms );
+    VViewSettings viewParms = vApp->viewSettings();
+    viewParms.eyeHeight = 0.0f;
+    vApp->setViewSettings( viewParms );
 
     // Optimize for 16 bit depth in a modest globe size
     m_scene.Znear = 0.1f;
@@ -302,16 +302,16 @@ void Oculus360Photos::init(const VString &fromPackage, const VString &launchInte
         EGL_NONE
     };
 
-    VGlOperation glOperation;
+
     m_eglPbufferSurface = eglCreatePbufferSurface( m_eglDisplay, m_eglConfig, SurfaceAttribs );
     if ( m_eglPbufferSurface == EGL_NO_SURFACE ) {
-        vFatal("eglCreatePbufferSurface failed:" << glOperation.getEglErrorString());
+        vFatal("eglCreatePbufferSurface failed:" << VEglDriver::getEglErrorString());
     }
     EGLint bufferWidth, bufferHeight;
     if ( !eglQuerySurface( m_eglDisplay, m_eglPbufferSurface, EGL_WIDTH, &bufferWidth ) ||
          !eglQuerySurface( m_eglDisplay, m_eglPbufferSurface, EGL_HEIGHT, &bufferHeight ) )
     {
-        vFatal("eglQuerySurface failed:" << glOperation.getEglErrorString());
+        vFatal("eglQuerySurface failed:" << VEglDriver::getEglErrorString());
     }
 
     // spawn the background loading thread with the command list
@@ -373,17 +373,17 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
         EGL_NONE
     };
 
-    VGlOperation glOperation;
+
     EGLContext EglBGLoaderContext = eglCreateContext( photos->m_eglDisplay, photos->m_eglConfig, photos->m_eglShareContext, loaderContextAttribs );
     if ( EglBGLoaderContext == EGL_NO_CONTEXT )
     {
-        vFatal("eglCreateContext failed:" << glOperation.getEglErrorString());
+        vFatal("eglCreateContext failed:" << VEglDriver::getEglErrorString());
     }
 
     // Make the context current on the window, so no more makeCurrent calls will be needed
     if ( eglMakeCurrent( photos->m_eglDisplay, photos->m_eglPbufferSurface, photos->m_eglPbufferSurface, EglBGLoaderContext ) == EGL_FALSE )
     {
-        vFatal("BackgroundGLLoadThread eglMakeCurrent failed:" << glOperation.getEglErrorString());
+        vFatal("BackgroundGLLoadThread eglMakeCurrent failed:" << VEglDriver::getEglErrorString());
     }
 
     // run until Shutdown requested
@@ -424,13 +424,13 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
             free( data );
 
             // Add a sync object for uploading textures
-            EGLSyncKHR GpuSync = glOperation.eglCreateSyncKHR( photos->m_eglDisplay, EGL_SYNC_FENCE_KHR, NULL );
+            EGLSyncKHR GpuSync = VEglDriver::eglCreateSyncKHR( photos->m_eglDisplay, EGL_SYNC_FENCE_KHR, NULL );
             if ( GpuSync == EGL_NO_SYNC_KHR ) {
                 vFatal("BackgroundGLLoadThread eglCreateSyncKHR_():EGL_NO_SYNC_KHR");
             }
 
             // Force it to flush the commands and wait until the textures are fully uploaded
-            if ( EGL_FALSE == glOperation.eglClientWaitSyncKHR( photos->m_eglDisplay, GpuSync, EGL_SYNC_FLUSH_COMMANDS_BIT_KHR,
+            if ( EGL_FALSE == VEglDriver::eglClientWaitSyncKHR( photos->m_eglDisplay, GpuSync, EGL_SYNC_FLUSH_COMMANDS_BIT_KHR,
                                                                 EGL_FOREVER_KHR ) )
             {
                 vInfo("BackgroundGLLoadThread eglClientWaitSyncKHR returned EGL_FALSE");
@@ -456,13 +456,13 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
             }
 
             // Add a sync object for uploading textures
-            EGLSyncKHR GpuSync = glOperation.eglCreateSyncKHR( photos->m_eglDisplay, EGL_SYNC_FENCE_KHR, NULL );
+            EGLSyncKHR GpuSync = VEglDriver::eglCreateSyncKHR( photos->m_eglDisplay, EGL_SYNC_FENCE_KHR, NULL );
             if ( GpuSync == EGL_NO_SYNC_KHR ) {
                 vFatal("BackgroundGLLoadThread eglCreateSyncKHR_():EGL_NO_SYNC_KHR");
             }
 
             // Force it to flush the commands and wait until the textures are fully uploaded
-            if ( EGL_FALSE == glOperation.eglClientWaitSyncKHR( photos->m_eglDisplay, GpuSync, EGL_SYNC_FLUSH_COMMANDS_BIT_KHR,
+            if ( EGL_FALSE == VEglDriver::eglClientWaitSyncKHR( photos->m_eglDisplay, GpuSync, EGL_SYNC_FLUSH_COMMANDS_BIT_KHR,
                                                                 EGL_FOREVER_KHR ) )
             {
                 vInfo("BackgroundGLLoadThread eglClientWaitSyncKHR returned EGL_FALSE");
@@ -554,8 +554,8 @@ bool Oculus360Photos::onKeyEvent( const int keyCode, const KeyState::eKeyEventTy
 
 void Oculus360Photos::loadRgbaCubeMap( const int resolution, const unsigned char * const rgba[ 6 ], const bool useSrgbFormat )
 {
-    VGlOperation glOperation;
-    glOperation.logErrorsEnum( "enter LoadRgbaCubeMap" );
+
+    VEglDriver::logErrorsEnum( "enter LoadRgbaCubeMap" );
 
     const GLenum glFormat = GL_RGBA;
     const GLenum glInternalFormat = useSrgbFormat ? GL_SRGB8_ALPHA8 : GL_RGBA;
@@ -591,13 +591,13 @@ void Oculus360Photos::loadRgbaCubeMap( const int resolution, const unsigned char
 
     glBindTexture( GL_TEXTURE_CUBE_MAP, 0 );
 
-    glOperation.logErrorsEnum( "leave LoadRgbaCubeMap" );
+    VEglDriver::logErrorsEnum( "leave LoadRgbaCubeMap" );
 }
 
 void Oculus360Photos::loadRgbaTexture( const unsigned char * data, int width, int height, const bool useSrgbFormat )
 {
-    VGlOperation glOperation;
-    glOperation.logErrorsEnum( "enter LoadRgbaTexture" );
+
+    VEglDriver::logErrorsEnum( "enter LoadRgbaTexture" );
 
     const GLenum glFormat = GL_RGBA;
     const GLenum glInternalFormat = useSrgbFormat ? GL_SRGB8_ALPHA8 : GL_RGBA;
@@ -631,7 +631,7 @@ void Oculus360Photos::loadRgbaTexture( const unsigned char * data, int width, in
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 2 );
     glBindTexture( GL_TEXTURE_2D, 0 );
 
-    glOperation.logErrorsEnum( "leave LoadRgbaTexture" );
+    VEglDriver::logErrorsEnum( "leave LoadRgbaTexture" );
 }
 
 VR4Matrixf CubeMatrixForViewMatrix( const VR4Matrixf & viewMatrix )
@@ -673,8 +673,8 @@ VR4Matrixf Oculus360Photos::drawEyeView( const int eye, const float fovDegrees )
         const VR4Matrixf	m( CubeMatrixForViewMatrix( m_scene.CenterViewMatrix() ) );
         GLuint texId = m_backgroundCubeTexData.GetRenderTexId();
         glBindTexture( GL_TEXTURE_CUBE_MAP, texId );
-        glTexParameteri( GL_TEXTURE_CUBE_MAP, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT,
-                         m_useSrgb ? VGlOperation::GL_DECODE_EXT : VGlOperation::GL_SKIP_DECODE_EXT );
+        glTexParameteri( GL_TEXTURE_CUBE_MAP, VEglDriver::GL_TEXTURE_SRGB_DECODE_EXT,
+                         m_useSrgb ? VEglDriver::GL_DECODE_EXT : VEglDriver::GL_SKIP_DECODE_EXT );
         glBindTexture( GL_TEXTURE_CUBE_MAP, 0 );
 /*
         vApp->swapParms().WarpOptions = ( m_useSrgb ? 0 : SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER );
@@ -690,7 +690,9 @@ VR4Matrixf Oculus360Photos::drawEyeView( const int eye, const float fovDegrees )
         vApp->kernel()->m_smoothOptions = ( m_useSrgb ? 0 : VK_INHIBIT_SRGB_FB );
         vApp->kernel()->m_texId[ eye ][ 1 ] = texId;
         vApp->kernel()->m_texMatrix[ eye ][ 1 ] = m;
-        vApp->kernel()->m_pose[ eye ][ 1 ] = m_frameInput.PoseState;
+
+        VRotationState &pose = vApp->kernel()->m_pose[ eye ][ 1 ];
+        pose = m_frameInput.pose;
         vApp->kernel()->m_smoothProgram = VK_CUBE_CB;
         for ( int i = 0; i < 4; i++ )
         {
@@ -720,14 +722,14 @@ VR4Matrixf Oculus360Photos::drawEyeView( const int eye, const float fovDegrees )
         if ( m_currentPanoIsCubeMap )
         {
             glBindTexture( GL_TEXTURE_CUBE_MAP, m_backgroundCubeTexData.GetRenderTexId( ) );
-            glTexParameteri( GL_TEXTURE_CUBE_MAP, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT,
-                             m_useSrgb ? VGlOperation::GL_DECODE_EXT : VGlOperation::GL_SKIP_DECODE_EXT );
+            glTexParameteri( GL_TEXTURE_CUBE_MAP, VEglDriver::GL_TEXTURE_SRGB_DECODE_EXT,
+                             m_useSrgb ? VEglDriver::GL_DECODE_EXT : VEglDriver::GL_SKIP_DECODE_EXT );
         }
         else
         {
             glBindTexture( GL_TEXTURE_2D, m_backgroundPanoTexData.GetRenderTexId( ) );
-            glTexParameteri( GL_TEXTURE_2D, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT,
-                             m_useSrgb ? VGlOperation::GL_DECODE_EXT : VGlOperation::GL_SKIP_DECODE_EXT );
+            glTexParameteri( GL_TEXTURE_2D, VEglDriver::GL_TEXTURE_SRGB_DECODE_EXT,
+                             m_useSrgb ? VEglDriver::GL_DECODE_EXT : VEglDriver::GL_SKIP_DECODE_EXT );
         }
 
         VGlShader & prog = m_currentPanoIsCubeMap ? m_cubeMapPanoProgram : m_texturedMvpProgram;
@@ -744,9 +746,8 @@ VR4Matrixf Oculus360Photos::drawEyeView( const int eye, const float fovDegrees )
         glBindTexture( GL_TEXTURE_2D, 0 );
     }
 
-    VGlOperation glOperation;
-    glOperation.logErrorsEnum( "draw" );
 
+   VEglDriver::logErrorsEnum( "draw" );
     return view;
 }
 
@@ -842,7 +843,7 @@ void Oculus360Photos::onPanoActivated( const OvrMetaDatum * panoData )
     SetMenuState( MENU_PANO_LOADING );
 }
 
-VR4Matrixf Oculus360Photos::onNewFrame( const VrFrame vrFrame )
+VR4Matrixf Oculus360Photos::onNewFrame( const VFrame vrFrame )
 {
     m_frameInput = vrFrame;
 
@@ -854,19 +855,19 @@ VR4Matrixf Oculus360Photos::onNewFrame( const VrFrame vrFrame )
     }
 
     // disallow player movement
-    VrFrame vrFrameWithoutMove = vrFrame;
-    vrFrameWithoutMove.Input.sticks[ 0 ][ 0 ] = 0.0f;
-    vrFrameWithoutMove.Input.sticks[ 0 ][ 1 ] = 0.0f;
+    VFrame vrFrameWithoutMove = vrFrame;
+    vrFrameWithoutMove.input.sticks[ 0 ][ 0 ] = 0.0f;
+    vrFrameWithoutMove.input.sticks[ 0 ][ 1 ] = 0.0f;
     //m_scene.Frame( vApp->vrViewParms(), vrFrameWithoutMove, vApp->swapParms().ExternalVelocity );
 
-      m_scene.Frame( vApp->vrViewParms(), vrFrameWithoutMove, vApp->kernel()->m_externalVelocity );
+      m_scene.Frame( vApp->viewSettings(), vrFrameWithoutMove, vApp->kernel()->m_externalVelocity );
 
 #ifdef ENABLE_MENU
     // reopen PanoMenu when in pano
     if ( m_activePano && m_browser->isClosedOrClosing( ) && ( m_menuState != MENU_PANO_LOADING ) )
     {
         // single touch
-        if ( m_menuState > MENU_PANO_FULLY_VISIBLE && vrFrame.Input.buttonPressed & ( BUTTON_TOUCH_SINGLE | BUTTON_A ) )
+        if ( m_menuState > MENU_PANO_FULLY_VISIBLE && vrFrame.input.buttonPressed & ( BUTTON_TOUCH_SINGLE | BUTTON_A ) )
         {
             SetMenuState( MENU_PANO_REOPEN_FADEIN );
         }
@@ -874,11 +875,11 @@ VR4Matrixf Oculus360Photos::onNewFrame( const VrFrame vrFrame )
         // PanoMenu input - needs to swipe even when PanoMenu is closed and in pano
         const OvrPhotosMetaDatum * nextPano = NULL;
 
-        if ( vrFrame.Input.buttonPressed & ( BUTTON_SWIPE_BACK | BUTTON_DPAD_LEFT | BUTTON_LSTICK_LEFT ) )
+        if ( vrFrame.input.buttonPressed & ( BUTTON_SWIPE_BACK | BUTTON_DPAD_LEFT | BUTTON_LSTICK_LEFT ) )
         {
             nextPano = static_cast< const OvrPhotosMetaDatum * >( m_browser->nextFileInDirectory( -1 ) );
         }
-        else if ( vrFrame.Input.buttonPressed & ( BUTTON_SWIPE_FORWARD | BUTTON_DPAD_RIGHT | BUTTON_LSTICK_RIGHT ) )
+        else if ( vrFrame.input.buttonPressed & ( BUTTON_SWIPE_FORWARD | BUTTON_DPAD_RIGHT | BUTTON_LSTICK_RIGHT ) )
         {
             nextPano = static_cast< const OvrPhotosMetaDatum * >( m_browser->nextFileInDirectory( 1 ) );
         }
@@ -895,7 +896,7 @@ VR4Matrixf Oculus360Photos::onNewFrame( const VrFrame vrFrame )
     if ( m_browser->isOpenOrOpening() )
     {
         // Close the browser if a Pano is active and not gazing at menu - ie. between panels
-        if ( m_activePano && !m_browser->gazingAtMenu() && vrFrame.Input.buttonReleased & ( BUTTON_TOUCH_SINGLE | BUTTON_A ) )
+        if ( m_activePano && !m_browser->gazingAtMenu() && vrFrame.input.buttonReleased & ( BUTTON_TOUCH_SINGLE | BUTTON_A ) )
         {
             vApp->guiSys().closeMenu( vApp, m_browser, false );
         }
@@ -905,7 +906,7 @@ VR4Matrixf Oculus360Photos::onNewFrame( const VrFrame vrFrame )
     // State transitions
     if ( m_fader.fadeState() != Fader::FADE_NONE )
     {
-        m_fader.update( m_currentFadeRate, vrFrame.DeltaSeconds );
+        m_fader.update( m_currentFadeRate, vrFrame.deltaSeconds );
         if ( m_menuState != MENU_PANO_REOPEN_FADEIN )
         {
             m_currentFadeLevel = m_fader.finalAlpha();
@@ -923,7 +924,7 @@ VR4Matrixf Oculus360Photos::onNewFrame( const VrFrame vrFrame )
         {
             if ( m_panoMenuTimeLeft > 0.0f )
             {
-                m_panoMenuTimeLeft -= vrFrame.DeltaSeconds;
+                m_panoMenuTimeLeft -= vrFrame.deltaSeconds;
             }
             else
             {

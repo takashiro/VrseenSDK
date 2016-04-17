@@ -18,7 +18,7 @@ public:
 
     void prepend(const E &element)
     {
-        if (isFull()) {
+        while (isFull()) {
             ParentType::takeLast();
         }
         ParentType::prepend(element);
@@ -26,19 +26,14 @@ public:
 
     void append(const E &element)
     {
-        if (isFull()) {
+        while (isFull()) {
             ParentType::removeFirst();
         }
         ParentType::append(element);
     }
 
-
-
-
-
 private:
     uint m_capacity;
-
 };
 
 NV_NAMESPACE_END

@@ -1,12 +1,12 @@
 #pragma once
 
-#include "vglobal.h"
+#include "VConstants.h"
 #include "VVector.h"
 #include "VMatrix.h"
+#include "VSize.h"
+
 #include <assert.h>
 #include <stdlib.h>
-#include "VConstants.h"
-
 
 namespace NervGear {
 
@@ -140,100 +140,6 @@ public:
 typedef VBox<float>	VBoxf;
 typedef VBox<double> VBoxd;
 
-
-//-------------------------------------------------------------------------------------
-// ***** VSize
-
-// VSize class represents 2D VSize with Width, Height components.
-// Used to describe distentions of render targets, etc.
-
-template<class T>
-class VSize
-{
-public:
-    T   Width, Height;
-
-    VSize()              : Width(0), Height(0)   { }
-    VSize(T w_, T h_)    : Width(w_), Height(h_) { }
-    explicit VSize(T s)  : Width(s), Height(s)   { }
-    explicit VSize(const VSize<typename VConstants<T>::VdifFloat> &src)
-        : Width((T)src.w), Height((T)src.h) { }
-
-    bool     operator== (const VSize& b) const  { return Width == b.Width && Height == b.Height; }
-    bool     operator!= (const VSize& b) const  { return Width != b.Width || Height != b.Height; }
-
-    VSize  operator+  (const VSize& b) const  { return VSize(Width + b.Width, Height + b.Height); }
-    VSize& operator+= (const VSize& b)        { Width += b.Width; Height += b.Height; return *this; }
-    VSize  operator-  (const VSize& b) const  { return VSize(Width - b.Width, Height - b.Height); }
-    VSize& operator-= (const VSize& b)        { Width -= b.Width; Height -= b.Height; return *this; }
-    VSize  operator- () const                { return VSize(-Width, -Height); }
-    VSize  operator*  (const VSize& b) const  { return VSize(Width * b.Width, Height * b.Height); }
-    VSize& operator*= (const VSize& b)        { Width *= b.Width; Height *= b.Height; return *this; }
-    VSize  operator/  (const VSize& b) const  { return VSize(Width / b.Width, Height / b.Height); }
-    VSize& operator/= (const VSize& b)        { Width /= b.Width; Height /= b.Height; return *this; }
-
-    // Scalar multiplication/division scales both components.
-    VSize  operator*  (T s) const            { return VSize(Width*s, Height*s); }
-    VSize& operator*= (T s)                  { Width *= s; Height *= s; return *this; }
-    VSize  operator/  (T s) const            { return VSize(Width/s, Height/s); }
-    VSize& operator/= (T s)                  { Width /= s; Height /= s; return *this; }
-
-    static VSize Min(const VSize& a, const VSize& b)  { return VSize((a.Width  < b.Width)  ? a.Width  : b.Width,
-                                                                 (a.Height < b.Height) ? a.Height : b.Height); }
-    static VSize Max(const VSize& a, const VSize& b)  { return VSize((a.Width  > b.Width)  ? a.Width  : b.Width,
-                                                                 (a.Height > b.Height) ? a.Height : b.Height); }
-
-
-    T       Area() const                    { return Width * Height; }
-
-    inline  V2Vect<T> ToVector() const     { return V2Vect<T>(Width, Height); }
-};
-
-
-typedef VSize<int>       VSizei;
-typedef VSize<unsigned>  VSizeu;
-typedef VSize<float>     VSizef;
-typedef VSize<double>    VSized;
-
-
-
-//-----------------------------------------------------------------------------------
-// ***** VRect
-
-// VRect describes a VRectangular area for rendering, that includes position and VSize.
-
-template<class T>
-class VRect
-{
-public:
-	T x, y;
-    T w, h;
-
-    VRect() { }
-    VRect(T x1, T y1, T w1, T h1)                   : x(x1), y(y1), w(w1), h(h1) { }
-    VRect(const V2Vect<T>& pos, const VSize<T>& sz) : x(pos.x), y(pos.y), w(sz.w), h(sz.h) { }
-    VRect(const VSize<T>& sz)                        : x(0), y(0), w(sz.w), h(sz.h) { }
-
-   V2Vect<T> GetPos() const                { return V2Vect<T>(x, y); }
-   VSize<T>    GetSize() const               { return VSize<T>(w, h); }
-   void       SetPos(const V2Vect<T>& pos) { x = pos.x; y = pos.y; }
-   void       SetSize(const VSize<T>& sz)    { w = sz.w; h = sz.h; }
-
-   bool operator == (const VRect& vp) const
-   { return (x == vp.x) && (y == vp.y) && (w == vp.w) && (h == vp.h); }
-   bool operator != (const VRect& vp) const
-   { return !operator == (vp); }
-};
-typedef VRect<int> VRecti;
-
-
-//-------------------------------------------------------------------------------------//
-
-
-// ***** VAngle
-
-// Cleanly representing the algebra of 2D rotations.
-// The operations maintain the VAngle between -Pi and Pi, the same range as atan2.
 
 template<class T>
 class VAngle

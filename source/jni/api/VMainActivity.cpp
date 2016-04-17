@@ -171,9 +171,8 @@ void VMainActivity::onCreate(jstring javaFromPackageNameString, jstring javaComm
         vInfo("new AppLocal()");
         new App(jni, activity, this);
         vApp->execute();
-    }
-    else
-    {	// Just update the activity object.
+    } else {
+        // Just update the activity object.
         vInfo("Update AppLocal");
         if (vApp->javaObject() != nullptr)
         {
@@ -227,7 +226,7 @@ void VMainActivity::onNewIntent(const VString &fromPackageName, const VString &c
     vInfo("VMainActivity::NewIntent - default handler called -" << fromPackageName << command << uri);
 }
 
-VR4Matrixf VMainActivity::onNewFrame(VrFrame vrFrame)
+VR4Matrixf VMainActivity::onNewFrame(VFrame vrFrame)
 {
     vInfo("VMainActivity::Frame - default handler called");
     return VR4Matrixf();
@@ -363,7 +362,7 @@ void Java_com_vrseen_nervgear_VrActivity_nativeDestroy(JNIEnv *, jclass)
     delete vApp;
 
     vInfo("ExitOnDestroy is true, exiting");
-    VKernel::GetInstance()->destroy(EXIT_TYPE_EXIT);
+    VKernel::instance()->destroy(EXIT_TYPE_EXIT);
     exit(0);
 }
 
@@ -371,7 +370,7 @@ void Java_com_vrseen_nervgear_VrActivity_nativeJoypadAxis(JNIEnv *jni, jclass cl
         jfloat lx, jfloat ly, jfloat rx, jfloat ry)
 {
     // Suspend input until OneTimeInit() has finished to avoid overflowing the message queue on long loads.
-    if (vApp->oneTimeInitCalled) {
+    if (vApp->isRunning()) {
         VVariantArray args;
         args << lx << ly << rx << ry;
         vApp->eventLoop().post("joy", args);
@@ -382,7 +381,7 @@ void Java_com_vrseen_nervgear_VrActivity_nativeTouch(JNIEnv *, jclass,
         jint action, jfloat x, jfloat y)
 {
     // Suspend input until OneTimeInit() has finished to avoid overflowing the message queue on long loads.
-    if (vApp->oneTimeInitCalled) {
+    if (vApp->isRunning()) {
         VVariantArray args;
         args << action << x << y;
         vApp->eventLoop().post("touch", args);
@@ -393,7 +392,7 @@ void Java_com_vrseen_nervgear_VrActivity_nativeKeyEvent(JNIEnv *jni, jclass claz
         jint key, jboolean down, jint repeatCount)
 {
     // Suspend input until OneTimeInit() has finished to avoid overflowing the message queue on long loads.
-    if (vApp->oneTimeInitCalled) {
+    if (vApp->isRunning()) {
         VVariantArray args;
         args << key << down << repeatCount;
         vApp->eventLoop().post("key", args);

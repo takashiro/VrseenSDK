@@ -208,7 +208,7 @@ void OvrProgressBarComponent::getProgressBarParms( VRMenu & menu, const int widt
 
 //==============================
 // OvrProgressBarComponent::OnEvent_Impl
-eMsgStatus OvrProgressBarComponent::onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus OvrProgressBarComponent::onEventImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 		VRMenuObject * self, VRMenuEvent const & event )
 {
 	switch ( event.eventType )
@@ -281,14 +281,14 @@ void OvrProgressBarComponent::setProgressbarState( VRMenuObject * self, const eP
 
 //==============================
 // OvrProgressBarComponent::OnFrameUpdate
-eMsgStatus OvrProgressBarComponent::onFrameUpdate( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus OvrProgressBarComponent::onFrameUpdate( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 		VRMenuObject * self, VRMenuEvent const & event )
 {
 	vAssert( self != NULL );
     if ( m_fader.fadeState() != Fader::FADE_NONE )
 	{
         const float fadeRate = ( m_fader.fadeState() == Fader::FADE_IN ) ? m_fadeInRate : m_fadeOutRate;
-		m_fader.update( fadeRate, vrFrame.DeltaSeconds );
+		m_fader.update( fadeRate, vrFrame.deltaSeconds );
 		const float CurrentFadeLevel = m_fader.finalAlpha();
         self->setColor( V4Vectf( 1.0f, 1.0f, 1.0f, CurrentFadeLevel ) );
 	}

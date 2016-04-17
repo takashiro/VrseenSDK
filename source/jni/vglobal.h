@@ -24,6 +24,8 @@ typedef float vreal;
 #endif
 
 //@to-do: Check target platform and compiler
+typedef signed char vint8;
+typedef uchar vuint8;
 typedef short vint16;
 typedef ushort vuint16;
 typedef int vint32;
@@ -77,6 +79,3 @@ typedef ulonglong vuint64;
 
 #define NV_VERSION_CHECK(major, minor, build, patch) ((major<<24)|(minor<<16)|(build<<8)|patch)
 #define NV_VERSION NV_VERSION_CHECK(NV_MAJOR_VERSION, NV_MINOR_VERSION, NV_BUILD_VERSION, NV_PATCH_VERSION)
-
-//@to-do: remove this
-#define NV_VERSION_STRING "0.0.0"

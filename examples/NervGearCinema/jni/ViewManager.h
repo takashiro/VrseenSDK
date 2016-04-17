@@ -1,5 +1,5 @@
 #include "VArray.h"
-#include "Input.h"
+#include "VFrame.h"
 #include "View.h"
 
 #include "VEvent.h"
@@ -26,7 +26,7 @@ public:
     bool 			onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType );
 
     VR4Matrixf 		drawEyeView( const int eye, const float fovDegrees );
-    VR4Matrixf 		frame( const VrFrame & vrFrame );
+    VR4Matrixf 		frame( const VFrame & vrFrame );
 
 private:
     VR4Matrixf		m_lastViewMatrix;

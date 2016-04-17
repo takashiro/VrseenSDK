@@ -1,12 +1,12 @@
 #pragma once
 
-#include "VEyeBuffer.h"
-#include "vglobal.h"
+#include "VViewSettings.h"
+
+#include "scene/VEyeItem.h"
 #include "api/VKernel.h"
 #include "KeyState.h"
-#include "Input.h"
+#include "VFrame.h"
 #include "VEventLoop.h"
-#include "VSoundManager.h"
 #include "gui/VText.h"
 #include "gui/VPanel.h"
 #include "gui/VDialog.h"
@@ -23,12 +23,9 @@ class BitmapFont;
 class BitmapFontSurface;
 class OvrVRMenuMgr;
 class OvrDebugLines;
-class App;
-class VrViewParms;
+class VViewSettings;
 class VStandardPath;
 class SurfaceTexture;
-class OvrGuiSys;
-class GazeCursor;
 class OvrVolumePopup;
 
 class App
@@ -43,16 +40,13 @@ public:
 
     void drawEyeViewsPostDistorted( VR4Matrixf const & viewMatrix, const int numPresents = 1);
 
-    void createToast( const char * fmt, ... );
-
     void playSound( const char * name );
 
     void recenterYaw( const bool showBlack );
     void setRecenterYawFrameStart( const long long frameNumber );
     long long recenterYawFrameStart() const;
 
-    VEyeBuffer::EyeParms eyeParms();
-    void setEyeParms(const VEyeBuffer::EyeParms parms);
+    VEyeItem::Settings &eyeSettings();
 
     OvrGuiSys &guiSys();
     OvrGazeCursor  &gazeCursor();
@@ -62,7 +56,6 @@ public:
     OvrVRMenuMgr &vrMenuMgr();
     OvrDebugLines &debugLines();
     const VStandardPath &storagePaths();
-    VSoundManager &soundMgr();
 
     bool hasHeadphones() const;
     bool framebufferIsSrgb() const;
@@ -75,10 +68,10 @@ public:
     VR4Matrixf const &lastViewMatrix() const;
     void setLastViewMatrix( VR4Matrixf const & m );
 
-    VEyeBuffer::EyeParms &vrParms();
+    VEyeItem::Settings &vrParms();
 
-    const VrViewParms &vrViewParms() const;
-    void setVrViewParms( VrViewParms const & parms );
+    const VViewSettings &viewSettings() const;
+    void setViewSettings(const VViewSettings &settings);
 
     void setPopupDistance( float const d );
     float popupDistance() const;
@@ -102,7 +95,7 @@ public:
     SurfaceTexture *dialogTexture();
 
 
-    const ovrSensorState &sensorForNextWarp() const;
+    const VRotationState &sensorForNextWarp() const;
 
     void drawScreenMask( const VR4Matrixf & mvp, const float fadeFracX, const float fadeFracY );
     void drawBounds( const V3Vectf &mins, const V3Vectf &maxs, const VR4Matrixf &mvp, const V3Vectf &color );
@@ -110,10 +103,11 @@ public:
     void execute();
     void quit();
 
+    bool isRunning() const;
+
     VText text;
     VPanel panel;
     VDialog dialog;
-    volatile bool oneTimeInitCalled;
 
 private:
     NV_DECLARE_PRIVATE

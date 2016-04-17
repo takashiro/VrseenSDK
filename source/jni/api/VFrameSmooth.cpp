@@ -1,39 +1,28 @@
-#include <pthread.h>
-#include "VFrameSmooth.h"
-#include "VAlgorithm.h"
 #include <errno.h>
 #include <math.h>
 #include <sched.h>
 #include <unistd.h>
-
-#include <android/sensor.h>
 #include <sys/time.h>
 #include <sys/resource.h>
 
+#include "android/JniUtils.h"
+
 #include "VFrameSmooth.h"
-
-#include "Android/JniUtils.h"
-
+#include "VAlgorithm.h"
+#include "VDevice.h"
+#include "VFrameSmooth.h"
 #include "VLensDistortion.h"
-#include "api/VGlOperation.h"
-#include "../core/VString.h"
-
-#include "../embedded/oculus_loading_indicator.h"
-
+#include "VEglDriver.h"
+#include "VString.h"
+#include "VApkFile.h"
 #include "VLockless.h"
 #include "VTimer.h"
 #include "VGlGeometry.h"
 #include "VGlShader.h"
 #include "VKernel.h"
-
-ovrSensorState ovr_GetSensorStateInternal( double absTime );
-bool ovr_ProcessLatencyTest( unsigned char rgbColorOut[3] );
-const char * ovr_GetLatencyTestResult();
-
+#include "VRotationSensor.h"
 
 NV_NAMESPACE_BEGIN
-
-
 
 class VsyncState
 {
@@ -160,6 +149,31 @@ VR4Matrixf CalculateTimeWarpMatrix2( const VQuatf &inFrom, const VQuatf &inTo )
     return ( lastSensorMatrix.Inverted() * lastViewMatrix ).Inverted();
 }
 
+VR4Matrixf CalculateTimeWarpMatrix2(const VRotationState &from, const VRotationState &to)
+{
+    VQuatf inFrom;
+    inFrom.w = from.w;
+    inFrom.x = from.x;
+    inFrom.y = from.y;
+    inFrom.z = from.z;
+
+    VQuatf inTo;
+    inTo.w = to.w;
+    inTo.x = to.x;
+    inTo.y = to.y;
+    inTo.z = to.z;
+    return CalculateTimeWarpMatrix2(inFrom, inTo);
+}
+
+VR4Matrixf CalculateTimeWarpMatrix2(const VQuatf &inFrom, const VRotationState &state)
+{
+    VQuatf inTo;
+    inTo.w = state.w;
+    inTo.x = state.x;
+    inTo.y = state.y;
+    inTo.z = state.z;
+    return CalculateTimeWarpMatrix2(inFrom, inTo);
+}
 
 static bool IsContextPriorityExtensionPresent()
 {
@@ -203,13 +217,9 @@ struct VFrameSmooth::Private
             m_hasEXT_sRGB_write_control( false ),
             m_sStartupTid( 0 ),
             m_jni( NULL ),
-            m_eglDisplay( 0 ),
-            m_eglPbufferSurface( 0 ),
             m_eglMainThreadSurface( 0 ),
-            m_eglConfig( 0 ),
             m_eglClientVersion( 0 ),
             m_eglShareContext( 0 ),
-            m_eglWarpContext( 0 ),
             m_contextPriority( 0 ),
             m_eyeLog(),
             m_lastEyeLog( 0 ),
@@ -222,7 +232,7 @@ struct VFrameSmooth::Private
         static_assert( ( VK_MAX & 1 ) == 0, "WP_PROGRAM_MAX" );
         static_assert( ( VK_DEFAULT_CB - VK_DEFAULT ) ==
                              ( VK_MAX - VK_DEFAULT_CB ) , "WP_CHROMATIC");
-        VGlOperation glOperation;
+
         m_shutdownRequest.setState( false );
         m_eyeBufferCount.setState( 0 );
         memset( m_warpPrograms, 0, sizeof( m_warpPrograms ) );
@@ -237,11 +247,9 @@ struct VFrameSmooth::Private
         m_async = async;
         m_device = device;
         m_eyeBufferCount.setState( 0 );
-        m_eglDisplay = eglGetCurrentDisplay();
-        if ( m_eglDisplay == EGL_NO_DISPLAY )
-        {
-            vFatal("EGL_NO_DISPLAY");
-        }
+// 初始化smooth线程的gl状态
+        m_eglStatus.updateDisplay();
+
         m_eglMainThreadSurface = eglGetCurrentSurface( EGL_DRAW );
         if ( m_eglMainThreadSurface == EGL_NO_SURFACE )
         {
@@ -252,17 +260,21 @@ struct VFrameSmooth::Private
         {
             vFatal("EGL_NO_CONTEXT");
         }
+      //  m_eglStatus.updateEglConfig(m_eglShareContext);
+
+
+
         EGLint configID;
-        if ( !eglQueryContext( m_eglDisplay, m_eglShareContext, EGL_CONFIG_ID, &configID ) )
+        if ( !eglQueryContext( m_eglStatus.m_display, m_eglShareContext, EGL_CONFIG_ID, &configID ) )
         {
             vFatal("eglQueryContext EGL_CONFIG_ID failed");
         }
-        m_eglConfig = glOperation.eglConfigForConfigID( m_eglDisplay, configID );
-        if ( m_eglConfig == NULL )
+        m_eglStatus.m_config = m_eglStatus.eglConfigForConfigID( configID );
+        if (  m_eglStatus.m_config == NULL )
         {
             vFatal("EglConfigForConfigID failed");
         }
-        if ( !eglQueryContext( m_eglDisplay, m_eglShareContext, EGL_CONTEXT_CLIENT_VERSION, (EGLint *)&m_eglClientVersion ) )
+        if ( !eglQueryContext( m_eglStatus.m_display, m_eglShareContext, EGL_CONTEXT_CLIENT_VERSION, (EGLint *)&m_eglClientVersion ) )
         {
             vFatal("eglQueryContext EGL_CONTEXT_CLIENT_VERSION failed");
         }
@@ -270,21 +282,19 @@ struct VFrameSmooth::Private
         vInfo("Current EGL_CONTEXT_CLIENT_VERSION:" << m_eglClientVersion);
 
         EGLint depthSize = 0;
-        eglGetConfigAttrib( m_eglDisplay, m_eglConfig, EGL_DEPTH_SIZE, &depthSize );
+        eglGetConfigAttrib( m_eglStatus.m_display, m_eglStatus.m_config, EGL_DEPTH_SIZE, &depthSize );
         if ( depthSize != 0 )
         {
             vInfo("Share context eglConfig has " << depthSize << " depth bits -- should be 0");
         }
         EGLint samples = 0;
-        eglGetConfigAttrib( m_eglDisplay, m_eglConfig, EGL_SAMPLES, &samples );
+        eglGetConfigAttrib( m_eglStatus.m_display, m_eglStatus.m_config, EGL_SAMPLES, &samples );
         if ( samples != 0 )
         {
 
             vInfo("Share context eglConfig has " << samples << " samples -- should be 0");
         }
 
-        m_hasEXT_sRGB_write_control = glOperation.glIsExtensionString( "GL_EXT_sRGB_write_control",
-                                                                          (const char *)glGetString( GL_EXTENSIONS ) );
         if ( !m_async )
         {
             initRenderEnvironment();
@@ -317,13 +327,13 @@ struct VFrameSmooth::Private
                             EGL_HEIGHT, 16,
                             EGL_NONE
                     };
-            m_eglPbufferSurface = eglCreatePbufferSurface( m_eglDisplay, m_eglConfig, attrib_list );
-            if ( m_eglPbufferSurface == EGL_NO_SURFACE )
+            m_eglStatus.m_pbufferSurface = eglCreatePbufferSurface( m_eglStatus.m_display, m_eglStatus.m_config, attrib_list );
+            if ( m_eglStatus.m_pbufferSurface == EGL_NO_SURFACE )
             {
-                vFatal("eglCreatePbufferSurface failed: " << glOperation.getEglErrorString());
+                vFatal("eglCreatePbufferSurface failed: " << m_eglStatus.getEglErrorString());
             }
 
-            if ( eglMakeCurrent( m_eglDisplay, m_eglPbufferSurface, m_eglPbufferSurface,
+            if ( eglMakeCurrent( m_eglStatus.m_display, m_eglStatus.m_pbufferSurface, m_eglStatus.m_pbufferSurface,
                                  m_eglShareContext ) == EGL_FALSE )
             {
                 vFatal("eglMakeCurrent: eglMakeCurrent pbuffer failed");
@@ -358,17 +368,17 @@ struct VFrameSmooth::Private
 
 
 
-            VGlOperation glOperation;
-            if ( eglGetCurrentSurface( EGL_DRAW ) != m_eglPbufferSurface )
+
+            if ( eglGetCurrentSurface( EGL_DRAW ) !=m_eglStatus.m_pbufferSurface)
             {
-                vInfo("eglGetCurrentSurface( EGL_DRAW ) != eglPbufferSurface");
+                vInfo("framesmooth destroy eglGetCurrentSurface( EGL_DRAW ) != eglPbufferSurface");
             }
-            if ( eglMakeCurrent( m_eglDisplay, m_eglMainThreadSurface,
+            if ( eglMakeCurrent( m_eglStatus.m_display, m_eglMainThreadSurface,
                                  m_eglMainThreadSurface, m_eglShareContext ) == EGL_FALSE)
             {
-                vFatal("eglMakeCurrent to window failed: " << glOperation.getEglErrorString());
+                vFatal("eglMakeCurrent to window failed: " << m_eglStatus.getEglErrorString());
             }
-            if ( EGL_FALSE == eglDestroySurface( m_eglDisplay, m_eglPbufferSurface ) )
+            if ( EGL_FALSE == eglDestroySurface( m_eglStatus.m_display, m_eglStatus.m_pbufferSurface ) )
             {
                 vWarn("Failed to destroy pbuffer.");
             }
@@ -414,7 +424,7 @@ struct VFrameSmooth::Private
      unsigned int	m_texId[2][3];
      unsigned int	m_planarTexId[2][3][3];
      VR4Matrixf		m_texMatrix[2][3];
-     VKpose	m_pose[2][3];
+     VRotationState m_pose[2][3];
 
 
      int 						m_smoothOptions;
@@ -476,16 +486,18 @@ struct VFrameSmooth::Private
     VLockless<double>		m_lastsmoothTimeInSeconds;
 
 
-    EGLDisplay		m_eglDisplay;
+   // EGLDisplay		m_eglDisplay;
 
-    EGLSurface		m_eglPbufferSurface;
+    VEglDriver      m_eglStatus;
+
+    //EGLSurface		m_eglPbufferSurface;
     EGLSurface		m_eglMainThreadSurface;
-    EGLConfig		m_eglConfig;
+
     EGLint			m_eglClientVersion;
     EGLContext		m_eglShareContext;
 
 
-    EGLContext		m_eglWarpContext;
+
     GLuint			m_contextPriority;
 
     static const int EYE_LOG_COUNT = 512;
@@ -503,87 +515,48 @@ struct VFrameSmooth::Private
 
 
     pthread_mutex_t m_smoothMutex;
-    pthread_cond_t	m_smoothIslocked;
-    VLockless<long long>			m_eyeBufferCount;
+    pthread_cond_t m_smoothIslocked;
+    VLockless<longlong> m_eyeBufferCount;
 
 
-    VLockless<SwapState>		m_swapVsync;
-
-   // VLockless<VsyncState>	m_updatedVsyncState;
-
-    long long			m_lastSwapVsyncCount;
+    VLockless<SwapState> m_swapVsync;
+    longlong m_lastSwapVsyncCount;
 };
-/*void VFrameSmooth::setSmoothEyeTexture(ushort i,ushort j,ovrTimeWarpImage m_images)
 
+void VFrameSmooth::setSmoothEyeTexture(uint texID,ushort eye,ushort layer)
 {
-
-         {
-           d->m_images[i][j].PlanarTexId[0] = m_images.PlanarTexId[0];
-                   d->m_images[i][j].PlanarTexId[1] = m_images.PlanarTexId[1];
-                    d->m_images[i][j].PlanarTexId[2] = m_images.PlanarTexId[2];
-                    for(int m=0;m<4;m++)
-                        for(int n=0;n<4;n++)
-                        {
-                    d->m_images[i][j].TexCoordsFromTanAngles.M[m][n] = m_images.TexCoordsFromTanAngles.M[m][n];
-                        }
-                     d->m_images[i][j].TexId = m_images.TexId;
-                     d->m_images[i][j].Pose.AngularAcceleration.x =m_images.Pose.AngularAcceleration.x;
-                     d->m_images[i][j].Pose.AngularAcceleration.y =m_images.Pose.AngularAcceleration.y;
-                     d->m_images[i][j].Pose.AngularAcceleration.z =m_images.Pose.AngularAcceleration.z;
-             d->m_images[i][j].Pose.AngularVelocity.x =m_images.Pose.AngularVelocity.x;
-               d->m_images[i][j].Pose.AngularVelocity.y =m_images.Pose.AngularVelocity.y;
-                 d->m_images[i][j].Pose.AngularVelocity.z =m_images.Pose.AngularVelocity.z;
-             d->m_images[i][j].Pose.LinearAcceleration.x =m_images.Pose.LinearAcceleration.x;
-            d->m_images[i][j].Pose.LinearAcceleration.y =m_images.Pose.LinearAcceleration.y;
-            d->m_images[i][j].Pose.LinearAcceleration.z =m_images.Pose.LinearAcceleration.z;
-             d->m_images[i][j].Pose.LinearVelocity.x =m_images.Pose.LinearVelocity.x;
-               d->m_images[i][j].Pose.LinearVelocity.y =m_images.Pose.LinearVelocity.y;
-                d->m_images[i][j].Pose.LinearVelocity.z =m_images.Pose.LinearVelocity.z;
-               d->m_images[i][j].Pose.Pose.Orientation.w =m_images.Pose.Pose.Orientation.w;
-               d->m_images[i][j].Pose.Pose.Orientation.x =m_images.Pose.Pose.Orientation.x;
-               d->m_images[i][j].Pose.Pose.Orientation.y =m_images.Pose.Pose.Orientation.y;
-               d->m_images[i][j].Pose.Pose.Orientation.z =m_images.Pose.Pose.Orientation.z;
-
-
-               d->m_images[i][j].Pose.Pose.Position.x =m_images.Pose.Pose.Position.x;
-               d->m_images[i][j].Pose.Pose.Position.y =m_images.Pose.Pose.Position.y;
-              d->m_images[i][j].Pose.Pose.Position.z =m_images.Pose.Pose.Position.z;
-
-
-               d->m_images[i][j].Pose.TimeInSeconds =m_images.Pose.TimeInSeconds;
-        }
-}*/
-void VFrameSmooth::setSmoothEyeTexture(unsigned int texID,ushort eye,ushort layer)
-{
-     d->m_texId[eye][layer] =  texID;
+    d->m_texId[eye][layer] =  texID;
 }
 
-void VFrameSmooth::setTexMatrix(VR4Matrixf	mtexMatrix,ushort eye,ushort layer)
+void VFrameSmooth::setTexMatrix(const VR4Matrixf &mtexMatrix, ushort eye, ushort layer)
 {
-     d->m_texMatrix[eye][layer] =  mtexMatrix;
+    d->m_texMatrix[eye][layer] =  mtexMatrix;
 }
-void VFrameSmooth::setSmoothPose(VKpose	mpose,ushort eye,ushort layer)
+
+void VFrameSmooth::setSmoothPose(const VRotationState &pose, ushort eye, ushort layer)
 {
-     d->m_pose[eye][layer] =  mpose;
+    d->m_pose[eye][layer] = pose;
 }
-void VFrameSmooth::setpTex(unsigned int	*mpTexId,ushort eye,ushort layer)
+
+void VFrameSmooth::setpTex(uint *mpTexId, ushort eye, ushort layer)
 {
-     d->m_planarTexId[eye][layer][0] =  mpTexId[0];
-     d->m_planarTexId[eye][layer][1] =  mpTexId[1];
-     d->m_planarTexId[eye][layer][2] =  mpTexId[2];
+     d->m_planarTexId[eye][layer][0] = mpTexId[0];
+     d->m_planarTexId[eye][layer][1] = mpTexId[1];
+     d->m_planarTexId[eye][layer][2] = mpTexId[2];
 }
+
 void VFrameSmooth::setSmoothOption(int option)
 {
     d->m_smoothOptions = option;
 
 }
+
 void VFrameSmooth::setMinimumVsncs( int vsnc)
 {
-
     d->m_minimumVsyncs = vsnc;
 }
 
-void VFrameSmooth::setExternalVelocity(VR4Matrixf extV)
+void VFrameSmooth::setExternalVelocity(const VR4Matrixf &extV)
 
 {
     for(int i=0;i<4;i++)
@@ -739,7 +712,6 @@ void VFrameSmooth::Private::threadFunction()
 VFrameSmooth::VFrameSmooth(bool async,VDevice *device)
         : d(new Private(async,device))
 {
-
 }
 
 VFrameSmooth::~VFrameSmooth()
@@ -768,18 +740,18 @@ void VFrameSmooth::Private::smoothThreadInit()
         contextAttribs[3] = m_contextPriority;
     }
 
-    VGlOperation glOperation;
-    m_eglWarpContext = eglCreateContext( m_eglDisplay, m_eglConfig, m_eglShareContext, contextAttribs );
-    if ( m_eglWarpContext == EGL_NO_CONTEXT )
+
+    m_eglStatus.m_context = eglCreateContext( m_eglStatus.m_display, m_eglStatus.m_config, m_eglShareContext, contextAttribs );
+    if (m_eglStatus.m_context == EGL_NO_CONTEXT )
     {
-        vFatal("eglCreateContext failed: " << glOperation.getEglErrorString());
+        vFatal("eglCreateContext failed: " << m_eglStatus.getEglErrorString());
     }
-    vInfo("eglWarpContext: " << m_eglWarpContext);
+    vInfo("eglWarpContext: " << m_eglStatus.m_context);
     if ( m_contextPriority != EGL_CONTEXT_PRIORITY_MEDIUM_IMG )
     {
         // See what context priority we actually got
         EGLint actualPriorityLevel;
-        eglQueryContext( m_eglDisplay, m_eglWarpContext, EGL_CONTEXT_PRIORITY_LEVEL_IMG, &actualPriorityLevel );
+        eglQueryContext( m_eglStatus.m_display, m_eglStatus.m_context, EGL_CONTEXT_PRIORITY_LEVEL_IMG, &actualPriorityLevel );
         switch ( actualPriorityLevel )
         {
         case EGL_CONTEXT_PRIORITY_HIGH_IMG: vInfo("Context is EGL_CONTEXT_PRIORITY_HIGH_IMG"); break;
@@ -792,10 +764,10 @@ void VFrameSmooth::Private::smoothThreadInit()
 
     vInfo("eglMakeCurrent on " << m_eglMainThreadSurface);
 
-    if ( eglMakeCurrent( m_eglDisplay, m_eglMainThreadSurface,
-                         m_eglMainThreadSurface, m_eglWarpContext ) == EGL_FALSE )
+    if ( eglMakeCurrent( m_eglStatus.m_display, m_eglMainThreadSurface,
+                         m_eglMainThreadSurface, m_eglStatus.m_context ) == EGL_FALSE )
     {
-        vFatal("eglMakeCurrent failed: " << glOperation.getEglErrorString());
+        vFatal("eglMakeCurrent failed: " << m_eglStatus.getEglErrorString());
     }
 
     initRenderEnvironment();
@@ -812,13 +784,13 @@ void VFrameSmooth::Private::smoothThreadShutdown()
 
 
     destroyFrameworkGraphics();
-    VGlOperation glOperation;
+
     for ( int i = 0; i < 1; i++ )
     {
         //warpSource_t & ws = m_warpSources[i];
         if ( m_gpuSync )
         {
-            if ( EGL_FALSE == glOperation.eglDestroySyncKHR( m_eglDisplay, m_gpuSync) )
+            if ( EGL_FALSE == m_eglStatus.eglDestroySyncKHR( m_eglStatus.m_display, m_gpuSync) )
             {
                 vInfo("eglDestroySyncKHR returned EGL_FALSE");
             }
@@ -827,17 +799,17 @@ void VFrameSmooth::Private::smoothThreadShutdown()
     }
 
 
-    if ( eglMakeCurrent( m_eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE,
+    if ( eglMakeCurrent( m_eglStatus.m_display, EGL_NO_SURFACE, EGL_NO_SURFACE,
                          EGL_NO_CONTEXT ) == EGL_FALSE )
     {
         vFatal("eglMakeCurrent: shutdown failed");
     }
 
-    if ( eglDestroyContext( m_eglDisplay, m_eglWarpContext ) == EGL_FALSE )
+    if ( eglDestroyContext( m_eglStatus.m_display, m_eglStatus.m_context ) == EGL_FALSE )
     {
         vFatal("eglDestroyContext: shutdown failed");
     }
-    m_eglWarpContext = 0;
+    m_eglStatus.m_context = 0;
 
 
     vInfo("WarpThreadShutdown() - End");
@@ -861,20 +833,7 @@ void VFrameSmooth::Private::setSmoothpState( ) const
     glDisable( GL_BLEND );
     glEnable( GL_SCISSOR_TEST );
 
-
-    if ( m_hasEXT_sRGB_write_control )
-    {
-        if ( m_smoothOptions & VK_INHIBIT_SRGB_FB )
-        {
-            glDisable( VGlOperation::GL_FRAMEBUFFER_SRGB_EXT );
-        }
-        else
-        {
-            glEnable( VGlOperation::GL_FRAMEBUFFER_SRGB_EXT );
-        }
-    }
-    VGlOperation glOperation;
-    glOperation.logErrorsEnum( "SetWarpState" );
+  //m_eglStatus.logErrorsEnum( "SetWarpState" );
 }
 
 void VFrameSmooth::Private::bindSmoothProgram( const VR4Matrixf timeWarps[2][2], const VR4Matrixf rollingWarp,
@@ -945,11 +904,11 @@ void VFrameSmooth::Private::bindEyeTextures( const int eye )
     glBindTexture( GL_TEXTURE_2D, m_texId[eye][0] );
     if ( m_smoothOptions & VK_INHIBIT_SRGB_FB )
     {
-        glTexParameteri( GL_TEXTURE_2D, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_SKIP_DECODE_EXT );
+        glTexParameteri( GL_TEXTURE_2D, VEglDriver::GL_TEXTURE_SRGB_DECODE_EXT, VEglDriver::GL_SKIP_DECODE_EXT );
     }
     else
     {
-        glTexParameteri( GL_TEXTURE_2D, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_DECODE_EXT );
+        glTexParameteri( GL_TEXTURE_2D, VEglDriver::GL_TEXTURE_SRGB_DECODE_EXT, VEglDriver::GL_DECODE_EXT );
     }
 
     if ( m_smoothProgram == VK_PLANE
@@ -964,11 +923,11 @@ void VFrameSmooth::Private::bindEyeTextures( const int eye )
         glBindTexture( GL_TEXTURE_2D, m_texId[eye][1] );
         if ( m_smoothOptions & VK_INHIBIT_SRGB_FB )
         {
-            glTexParameteri( GL_TEXTURE_2D, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_SKIP_DECODE_EXT );
+            glTexParameteri( GL_TEXTURE_2D, VEglDriver::GL_TEXTURE_SRGB_DECODE_EXT, VEglDriver::GL_SKIP_DECODE_EXT );
         }
         else
         {
-            glTexParameteri( GL_TEXTURE_2D, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_DECODE_EXT );
+            glTexParameteri( GL_TEXTURE_2D, VEglDriver::GL_TEXTURE_SRGB_DECODE_EXT, VEglDriver::GL_DECODE_EXT );
         }
     }
     if ( m_smoothProgram == VK_PLANE_SPECIAL
@@ -981,11 +940,11 @@ void VFrameSmooth::Private::bindEyeTextures( const int eye )
 
             if ( m_smoothOptions & VK_INHIBIT_SRGB_FB )
             {
-                glTexParameteri( GL_TEXTURE_EXTERNAL_OES, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_SKIP_DECODE_EXT );
+                glTexParameteri( GL_TEXTURE_EXTERNAL_OES, VEglDriver::GL_TEXTURE_SRGB_DECODE_EXT, VEglDriver::GL_SKIP_DECODE_EXT );
             }
             else
             {
-                glTexParameteri( GL_TEXTURE_EXTERNAL_OES, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_DECODE_EXT );
+                glTexParameteri( GL_TEXTURE_EXTERNAL_OES, VEglDriver::GL_TEXTURE_SRGB_DECODE_EXT, VEglDriver::GL_DECODE_EXT );
             }
     }
     if ( m_smoothProgram == VK_CUBE || m_smoothProgram == VK_CUBE_CB )
@@ -994,11 +953,11 @@ void VFrameSmooth::Private::bindEyeTextures( const int eye )
         glBindTexture( GL_TEXTURE_CUBE_MAP, m_texId[eye][1]);
             if ( m_smoothOptions & VK_INHIBIT_SRGB_FB )
             {
-                glTexParameteri( GL_TEXTURE_CUBE_MAP, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_SKIP_DECODE_EXT );
+                glTexParameteri( GL_TEXTURE_CUBE_MAP, VEglDriver::GL_TEXTURE_SRGB_DECODE_EXT, VEglDriver::GL_SKIP_DECODE_EXT );
             }
             else
             {
-                glTexParameteri( GL_TEXTURE_CUBE_MAP, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_DECODE_EXT );
+                glTexParameteri( GL_TEXTURE_CUBE_MAP, VEglDriver::GL_TEXTURE_SRGB_DECODE_EXT, VEglDriver::GL_DECODE_EXT );
             }
     }
 
@@ -1010,11 +969,11 @@ void VFrameSmooth::Private::bindEyeTextures( const int eye )
             glBindTexture( GL_TEXTURE_CUBE_MAP, m_planarTexId[eye][1][i] );
                 if ( m_smoothOptions & VK_INHIBIT_SRGB_FB )
                 {
-                    glTexParameteri( GL_TEXTURE_CUBE_MAP, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_SKIP_DECODE_EXT );
+                    glTexParameteri( GL_TEXTURE_CUBE_MAP, VEglDriver::GL_TEXTURE_SRGB_DECODE_EXT, VEglDriver::GL_SKIP_DECODE_EXT );
                 }
                 else
                 {
-                    glTexParameteri( GL_TEXTURE_CUBE_MAP, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_DECODE_EXT );
+                    glTexParameteri( GL_TEXTURE_CUBE_MAP, VEglDriver::GL_TEXTURE_SRGB_DECODE_EXT, VEglDriver::GL_DECODE_EXT );
                 }
         }
     }
@@ -1025,11 +984,11 @@ void VFrameSmooth::Private::bindEyeTextures( const int eye )
         glBindTexture( GL_TEXTURE_2D, m_texId[eye][1] );
             if ( m_smoothOptions & VK_INHIBIT_SRGB_FB )
             {
-                glTexParameteri( GL_TEXTURE_2D, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_SKIP_DECODE_EXT );
+                glTexParameteri( GL_TEXTURE_2D, VEglDriver::GL_TEXTURE_SRGB_DECODE_EXT, VEglDriver::GL_SKIP_DECODE_EXT );
             }
             else
             {
-                glTexParameteri( GL_TEXTURE_2D, VGlOperation::GL_TEXTURE_SRGB_DECODE_EXT, VGlOperation::GL_DECODE_EXT );
+                glTexParameteri( GL_TEXTURE_2D, VEglDriver::GL_TEXTURE_SRGB_DECODE_EXT, VEglDriver::GL_DECODE_EXT );
             }
     }
 }
@@ -1076,7 +1035,7 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
     glViewport( 0, 0, m_window_width, m_window_height );
     glScissor( 0, 0, m_window_width, m_window_height );
 
-    VGlOperation glOperation;
+
 
     for ( int eye = 0; eye <= 1; ++eye )
     {
@@ -1118,13 +1077,12 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
                     break;
                 }
 
-                if ( VQuatf( m_pose[eye][0].Orientation ).LengthSq() < 1e-18f )
-                {
+                if (m_pose[eye][0].LengthSq() < 1e-18f) {
                     vInfo("Bad Pose.Orientation in bufferNum " << thisEyeBufferNum << "!");
                     break;
                 }
 
-                const EGLint wait = glOperation.eglClientWaitSyncKHR( m_eglDisplay, m_gpuSync,
+                const EGLint wait = VEglDriver::eglClientWaitSyncKHR( m_eglStatus.m_display, m_gpuSync,
                                                                       EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, 0 );
                 if ( wait == EGL_TIMEOUT_EXPIRED_KHR )
                 {
@@ -1182,15 +1140,13 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
 
 
         VR4Matrixf timeWarps[2][2];
-        ovrSensorState sensor[2];
+        VRotationState sensor[2];
         for ( int scan = 0; scan < 2; scan++ )
         {
             const double vsyncPoint = vsyncBase + swap.predictionPoints[eye][scan];
             const double timePoint = framePointTimeInSeconds( vsyncPoint );
-            sensor[scan] = ovr_GetSensorStateInternal( timePoint );
-            const VR4Matrixf warp = CalculateTimeWarpMatrix2(
-                        m_pose[eye][0].Orientation,
-                    sensor[scan].Predicted.Orientation ) * velocity;
+            sensor[scan] = VRotationSensor::instance()->predictState( timePoint );
+            const VR4Matrixf warp = CalculateTimeWarpMatrix2(m_pose[eye][0], sensor[scan]) * velocity;
             timeWarps[0][scan] = VR4Matrixf( m_texMatrix[eye][0]) * warp;
             if ( dualLayer )
             {
@@ -1200,18 +1156,14 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
                 }
                 else
                 {
-                    const VR4Matrixf warp2 = CalculateTimeWarpMatrix2(
-                                m_pose[eye][1].Orientation,
-                            sensor[scan].Predicted.Orientation ) * velocity;
+                    const VR4Matrixf warp2 = CalculateTimeWarpMatrix2(m_pose[eye][1], sensor[scan]) * velocity;
                     timeWarps[1][scan] = VR4Matrixf( m_texMatrix[eye][1] ) * warp2;
                 }
             }
         }
 
 
-        const VR4Matrixf rollingWarp = CalculateTimeWarpMatrix2(
-                    sensor[0].Predicted.Orientation,
-                sensor[1].Predicted.Orientation );
+        const VR4Matrixf rollingWarp = CalculateTimeWarpMatrix2(sensor[0], sensor[1]);
 
 
 
@@ -1226,7 +1178,7 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
         glScissor(eye * m_window_width/2, 0, m_window_width/2, m_window_height);
 
 
-        glOperation.glBindVertexArrayOES( m_smoothMesh.vertexArrayObject );
+        VEglDriver::glBindVertexArrayOES( m_smoothMesh.vertexArrayObject );
         const int indexCount = m_smoothMesh.indexCount / 2;
         const int indexOffset = eye * indexCount;
         glDrawElements( GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, (void *)(indexOffset * 2 ) );
@@ -1236,7 +1188,7 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
         {
             bindCursorProgram();
             glEnable( GL_BLEND );
-            glOperation.glBindVertexArrayOES( m_cursorMesh.vertexArrayObject );
+            VEglDriver::glBindVertexArrayOES( m_cursorMesh.vertexArrayObject );
             const int indexCount = m_cursorMesh.indexCount / 2;
             const int indexOffset = eye * indexCount;
             glDrawElements( GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, (void *)(indexOffset * 2 ) );
@@ -1263,7 +1215,7 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
 
     glUseProgram( 0 );
 
-    glOperation.glBindVertexArrayOES( 0 );
+    VEglDriver::glBindVertexArrayOES( 0 );
 
     swapBuffers();
 }
@@ -1277,7 +1229,7 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
         return;
     }
 
-    VGlOperation glOperation;
+
 
     double	sliceTimes[9];
 
@@ -1331,13 +1283,12 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
                     break;
                 }
 
-                if ( VQuatf( m_pose[eye][0].Orientation ).LengthSq() < 1e-18f )
-                {
+                if (m_pose[eye][0].LengthSq() < 1e-18f) {
                     vInfo("Bad Predicted.Pose.Orientation!");
                     continue;
                 }
 
-                const EGLint wait = glOperation.eglClientWaitSyncKHR( m_eglDisplay, m_gpuSync,
+                const EGLint wait = VEglDriver::eglClientWaitSyncKHR( m_eglStatus.m_display, m_gpuSync,
                                                                       EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, 0 );
                 if ( wait == EGL_TIMEOUT_EXPIRED_KHR )
                 {
@@ -1395,7 +1346,7 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
 
 
         VR4Matrixf timeWarps[2][2];
-        static ovrSensorState sensor[2];
+        static VRotationState sensor[2];
         for ( int scan = 0; scan < 2; scan++ )
         {
 
@@ -1403,10 +1354,8 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
             if ( scan == 1 || screenSlice == 0 || screenSlice == 4 )
             {
                 const double timePoint = sliceTimes[screenSlice + scan];
-                sensor[scan] = ovr_GetSensorStateInternal( timePoint );
-                warp = CalculateTimeWarpMatrix2(
-                            m_pose[eye][0].Orientation,
-                        sensor[scan].Predicted.Orientation ) * velocity;
+                sensor[scan] = VRotationSensor::instance()->predictState(timePoint);
+                warp = CalculateTimeWarpMatrix2(m_pose[eye][0], sensor[scan]) * velocity;
             }
             timeWarps[0][scan] = VR4Matrixf( m_texMatrix[eye][0] ) * warp;
             if ( dualLayer )
@@ -1417,20 +1366,13 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
                 }
                 else
                 {
-                    const VR4Matrixf warp2 = CalculateTimeWarpMatrix2(
-                                m_pose[eye][1].Orientation,
-                            sensor[scan].Predicted.Orientation ) * velocity;
+                    const VR4Matrixf warp2 = CalculateTimeWarpMatrix2(m_pose[eye][1], sensor[scan]) * velocity;
                     timeWarps[1][scan] = VR4Matrixf( m_texMatrix[eye][1] ) * warp2;
                 }
             }
         }
 
-        const VR4Matrixf rollingWarp = CalculateTimeWarpMatrix2(
-                    sensor[0].Predicted.Orientation,
-                sensor[1].Predicted.Orientation );
-
-
-
+        const VR4Matrixf rollingWarp = CalculateTimeWarpMatrix2(sensor[0], sensor[1]);
 
         setSmoothpState();
 
@@ -1446,7 +1388,7 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
         glScissor( sliceSize*screenSlice, 0, sliceSize, m_window_height );
 
         const VGlGeometry & mesh = m_slicesmoothMesh;
-        glOperation.glBindVertexArrayOES( mesh.vertexArrayObject );
+        VEglDriver::glBindVertexArrayOES( mesh.vertexArrayObject );
         const int indexCount = mesh.indexCount / 8;
         const int indexOffset = screenSlice * indexCount;
         glDrawElements( GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, (void *)(indexOffset * 2 ) );
@@ -1478,7 +1420,7 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
 
     glUseProgram( 0 );
 
-    glOperation.glBindVertexArrayOES( 0 );
+    VEglDriver::glBindVertexArrayOES( 0 );
 
     swapBuffers();
 }
@@ -1503,14 +1445,14 @@ void VFrameSmooth::Private::smoothInternal( )
     glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 
 
-    VGlOperation glOperation;
+
 
     const long long lastBufferCount = m_eyeBufferCount.state();
 
     m_minimumVsync = m_lastSwapVsyncCount + 2 * m_minimumVsyncs;	// don't use it if from same frame to avoid problems with very fast frames
     m_firstDisplayedVsync[0] = 0;			// will be set when it becomes the currentSource
     m_firstDisplayedVsync[1] = 0;			// will be set when it becomes the currentSource
-    m_disableChromaticCorrection = ( ( glOperation.eglGetGpuType() & NervGear::VGlOperation::GPU_TYPE_MALI_T760_EXYNOS_5433 ) != 0 );
+    m_disableChromaticCorrection = ( ( m_eglStatus.eglGetGpuType() & VEglDriver::GPU_TYPE_MALI_T760_EXYNOS_5433 ) != 0 );
 
     if ( ( m_smoothProgram & VK_IMAGE ) != 0 )
     {
@@ -1530,21 +1472,21 @@ void VFrameSmooth::Private::smoothInternal( )
 
     if ( m_gpuSync != EGL_NO_SYNC_KHR )
     {
-        if ( EGL_FALSE == glOperation.eglDestroySyncKHR( m_eglDisplay, m_gpuSync ) )
+        if ( EGL_FALSE == m_eglStatus.eglDestroySyncKHR( m_eglStatus.m_display, m_gpuSync ) )
         {
             vInfo( "eglDestroySyncKHR returned EGL_FALSE" );
         }
     }
 
 
-    m_gpuSync = glOperation.eglCreateSyncKHR( m_eglDisplay, EGL_SYNC_FENCE_KHR, NULL );
+    m_gpuSync = m_eglStatus.eglCreateSyncKHR( m_eglStatus.m_display, EGL_SYNC_FENCE_KHR, NULL );
     if ( m_gpuSync == EGL_NO_SYNC_KHR )
     {
         vInfo( "eglCreateSyncKHR_():EGL_NO_SYNC_KHR" );
     }
 
 
-    if ( EGL_FALSE == glOperation.eglClientWaitSyncKHR( m_eglDisplay, m_gpuSync,
+    if ( EGL_FALSE == m_eglStatus.eglClientWaitSyncKHR( m_eglStatus.m_display, m_gpuSync,
                                                         EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, 0 ) )
     {
         vInfo( "eglClientWaitSyncKHR returned EGL_FALSE" );
@@ -1557,8 +1499,8 @@ void VFrameSmooth::Private::smoothInternal( )
     if ( !m_async )
     {
 
-        VGlOperation glOperation;
-        glOperation.glFinish();
+
+        m_eglStatus.glFinish();
 
         swapProgram_t * swapProg;
         swapProg = &spSyncSwappedBufferPortrait;
@@ -1631,10 +1573,10 @@ int ColorAsInt( const int r, const int g, const int b, const int a )
 VGlGeometry CreateTimingGraphGeometry( const int lineVertCount )
 {
     VGlGeometry geo;
-    VGlOperation glOperation;
 
-    glOperation.glGenVertexArraysOES( 1, &geo.vertexArrayObject );
-    glOperation.glBindVertexArrayOES( geo.vertexArrayObject );
+
+    VEglDriver::glGenVertexArraysOES( 1, &geo.vertexArrayObject );
+    VEglDriver::glBindVertexArrayOES( geo.vertexArrayObject );
 
     lineVert_t	* verts = new lineVert_t[lineVertCount];
     const int byteCount = lineVertCount * sizeof( verts[0] );
@@ -1655,7 +1597,7 @@ VGlGeometry CreateTimingGraphGeometry( const int lineVertCount )
 
     geo.indexCount = lineVertCount;
 
-    glOperation.glBindVertexArrayOES( 0 );
+    VEglDriver::glBindVertexArrayOES( 0 );
 
     return geo;
 }
@@ -1670,17 +1612,6 @@ void VFrameSmooth::Private::createFrameworkGraphics()
     glGenTextures( 1, &m_blackTexId );
     glBindTexture( GL_TEXTURE_2D, m_blackTexId );
     glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, blackData );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-    glBindTexture( GL_TEXTURE_2D, 0 );
-
-    // Default loading icon.
-    glGenTextures( 1, &m_defaultLoadingIconTexId );
-    glBindTexture( GL_TEXTURE_2D, m_defaultLoadingIconTexId );
-    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, oculus_loading_indicator_width, oculus_loading_indicator_height,
-                  0, GL_RGBA, GL_UNSIGNED_BYTE, oculus_loading_indicator_bufferData );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
@@ -1734,10 +1665,7 @@ void VFrameSmooth::Private::destroyFrameworkGraphics()
 void VFrameSmooth::Private::drawFrameworkGraphicsToWindow( const int eye,
                                                    const int swapOptions)
 {
-    VGlOperation glOperation;
-
-    unsigned char latencyTesterColorToDisplay[3];
-
+    /*unsigned char latencyTesterColorToDisplay[3];
     if ( ovr_ProcessLatencyTest( latencyTesterColorToDisplay ) )
     {
         glClearColor(
@@ -1746,15 +1674,7 @@ void VFrameSmooth::Private::drawFrameworkGraphicsToWindow( const int eye,
                 latencyTesterColorToDisplay[2] / 255.0f,
                 1.0f );
         glClear( GL_COLOR_BUFFER_BIT );
-    }
-
-
-    const char * results = ovr_GetLatencyTestResult();
-    if ( results != NULL )
-    {
-        vInfo("LATENCY TESTER: " << results);
-    }
-
+    }*/
 
     if ( swapOptions & VK_DRAW_LINES )
     {
@@ -1771,7 +1691,7 @@ void VFrameSmooth::Private::drawFrameworkGraphicsToWindow( const int eye,
         glUniform4f( m_untexturedMvpProgram.uniformColor, 1, 0, 0, 1 );
         glUniformMatrix4fv( m_untexturedMvpProgram.uniformModelViewProMatrix, 1, GL_FALSE,  // not transposed
                             projectionMatrix.Transposed().M[0] );
-        glOperation.glBindVertexArrayOES( m_calibrationLines2.vertexArrayObject );
+        VEglDriver::glBindVertexArrayOES( m_calibrationLines2.vertexArrayObject );
 
 
         glViewport( m_window_width/2 * (int)eye, 0, m_window_width/2, m_window_height );

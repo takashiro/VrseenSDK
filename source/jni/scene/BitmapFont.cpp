@@ -34,7 +34,7 @@
 #include "VLog.h"
 
 #include "android/JniUtils.h"
-#include "api/VGlOperation.h"
+#include "api/VEglDriver.h"
 
 #include "../api/VGlShader.h"
 #include "GlTexture.h"
@@ -131,8 +131,8 @@ public:
 	float CenterOffset; // +/- value applied to "center" distance in the signed distance field. Range [-1,1]. A negative offset will make the font appear bolder.
 	float MaxAscent; // maximum ascent of any character
 	float MaxDescent; // maximum descent of any character
-	NervGear::VArray<FontGlyphType> Glyphs; // info about each glyph in the font
-	NervGear::VArray<int32_t> CharCodeMap; // index by character code to get the index of a glyph for the character
+    VArray<FontGlyphType> Glyphs; // info about each glyph in the font
+    VArray<int32_t> CharCodeMap; // index by character code to get the index of a glyph for the character
 
 private:
     bool LoadFromPackage(const VApkFile &packageFile, const VString &fileName);
@@ -172,7 +172,7 @@ public:
 	void WordWrapText(VString & inOutText, const float widthMeters,
 			const float fontScale = 1.0f) const;
 	void WordWrapText(VString & inOutText, const float widthMeters,
-			NervGear::VArray<NervGear::VString> wholeStrsList,
+            VArray<VString> wholeStrsList,
 			const float fontScale = 1.0f) const;
 
 	FontGlyphType const & GlyphForCharCode(uint32_t const charCode) const {
@@ -854,13 +854,13 @@ bool BitmapFontLocal::LoadImageFromBuffer(char const * imageName,
 // BitmapFontLocal::WordWrapText
 void BitmapFontLocal::WordWrapText(VString & inOutText, const float widthMeters,
 		const float fontScale) const {
-	WordWrapText(inOutText, widthMeters, NervGear::VArray<NervGear::VString>(), fontScale);
+    WordWrapText(inOutText, widthMeters, VArray<VString>(), fontScale);
 }
 
 //==============================
 // BitmapFontLocal::WordWrapText
 void BitmapFontLocal::WordWrapText(VString & inOutText, const float widthMeters,
-		NervGear::VArray<NervGear::VString> wholeStrsList, const float fontScale) const {
+        VArray<VString> wholeStrsList, const float fontScale) const {
 	float const xScale = FontInfo.ScaleFactorX * fontScale;
     const int32_t totalLength = (int) inOutText.length();
 	int32_t lastWhitespaceIndex = -1;
@@ -1051,10 +1051,10 @@ void BitmapFontSurfaceLocal::Init(const int maxVertices) {
 
 	Vertices = new fontVertex_t[maxVertices];
 	const int vertexByteCount = maxVertices * sizeof(fontVertex_t);
-    VGlOperation glOperation;
+
 	// font VAO
-    glOperation.glGenVertexArraysOES(1, &Geo.vertexArrayObject);
-    glOperation.glBindVertexArrayOES(Geo.vertexArrayObject);
+    VEglDriver::glGenVertexArraysOES(1, &Geo.vertexArrayObject);
+    VEglDriver::glBindVertexArrayOES(Geo.vertexArrayObject);
 
 	// vertex buffer
 	glGenBuffers(1, &Geo.vertexBuffer);
@@ -1106,7 +1106,7 @@ void BitmapFontSurfaceLocal::Init(const int maxVertices) {
 
 	Geo.indexCount = 0; // if there's anything to render this will be modified
 
-    glOperation.glBindVertexArrayOES(0);
+    VEglDriver::glBindVertexArrayOES(0);
 
 	delete[] indices;
 
@@ -1221,11 +1221,11 @@ void BitmapFontSurfaceLocal::DrawText3D(BitmapFont const & font,
 	float const distanceScale = imageWidth / FontInfoType::DEFAULT_SCALE_FACTOR;
 	const uint8_t fontParms[4] =
 			{
-					(uint8_t) (NervGear::VAlgorithm::Clamp(
+                    (uint8_t) (VAlgorithm::Clamp(
 							parms.AlphaCenter + fontInfo.CenterOffset, 0.0f,
-							1.0f) * 255), (uint8_t) (NervGear::VAlgorithm::Clamp(
+                            1.0f) * 255), (uint8_t) (VAlgorithm::Clamp(
 							parms.ColorCenter + fontInfo.CenterOffset, 0.0f,
-							1.0f) * 255), (uint8_t) (NervGear::VAlgorithm::Clamp(
+                            1.0f) * 255), (uint8_t) (VAlgorithm::Clamp(
 							distanceScale, 1.0f, 255.0f)), 0 };
 
 	int iColor = ColorToABGR(color);
@@ -1432,12 +1432,12 @@ void BitmapFontSurfaceLocal::Finish(VR4Matrixf const & viewMatrix) {
 	// needed on the next frame.
 	VertexBlocks.clear();
 
-    VGlOperation glOperation;
-    glOperation.glBindVertexArrayOES(Geo.vertexArrayObject);
+
+    VEglDriver::glBindVertexArrayOES(Geo.vertexArrayObject);
 	glBindBuffer(GL_ARRAY_BUFFER, Geo.vertexBuffer);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, CurVertex * sizeof(fontVertex_t),
 			(void *) Vertices);
-    glOperation.glBindVertexArrayOES(0);
+    VEglDriver::glBindVertexArrayOES(0);
 
 	Geo.indexCount = CurIndex;
 }
@@ -1448,8 +1448,8 @@ void BitmapFontSurfaceLocal::Finish(VR4Matrixf const & viewMatrix) {
 // TODO: once we add support for multiple fonts per surface, this should not take a BitmapFont for input.
 void BitmapFontSurfaceLocal::Render3D(BitmapFont const & font,
         VR4Matrixf const & worldMVP) const {
-    VGlOperation glOperation;
-    glOperation.logErrorsEnum("BitmapFontSurfaceLocal::Render3D - pre");
+
+    VEglDriver::logErrorsEnum("BitmapFontSurfaceLocal::Render3D - pre");
 
 	//SPAM( "BitmapFontSurfaceLocal::Render3D" );
 
@@ -1476,16 +1476,16 @@ void BitmapFontSurfaceLocal::Render3D(BitmapFont const & font,
 	glUniform4fv(AsLocal(font).GetFontProgram().uniformColor, 1, textColor);
 
 	// draw all font vertices
-    glOperation.glBindVertexArrayOES(Geo.vertexArrayObject);
+    VEglDriver::glBindVertexArrayOES(Geo.vertexArrayObject);
 	glDrawElements(GL_TRIANGLES, Geo.indexCount, GL_UNSIGNED_SHORT, NULL);
-    glOperation.glBindVertexArrayOES(0);
+    VEglDriver::glBindVertexArrayOES(0);
 
 	glEnable(GL_CULL_FACE);
 
 	glDisable(GL_BLEND);
 	glDepthMask(GL_FALSE);
 
-    glOperation.logErrorsEnum("BitmapFontSurfaceLocal::Render3D - post");
+    VEglDriver::logErrorsEnum("BitmapFontSurfaceLocal::Render3D - post");
 }
 
 //==============================

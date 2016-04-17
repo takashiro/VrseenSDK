@@ -291,8 +291,8 @@ void VRMenuSurface::render( OvrVRMenuMgr const & menuMgr, VR4Matrixf const & mvp
 
     //vInfo("Render Surface '" << SurfaceName << "', skip = '" << skipAdditivePass ? "true" : "false" << "'");
 
-    VGlOperation glOperation;
-    glOperation.logErrorsEnum( "VRMenuSurface::Render - pre" );
+
+    VEglDriver::logErrorsEnum( "VRMenuSurface::Render - pre" );
 
 	VGlShader const * program = NULL;
 
@@ -437,11 +437,11 @@ void VRMenuSurface::render( OvrVRMenuMgr const & menuMgr, VR4Matrixf const & mvp
 	glUniform2fv( program->uniformColorTableOffset, 1, &sub.colorTableOffset.x );
 
 	// render
-    glOperation.glBindVertexArrayOES( m_geo.vertexArrayObject );
+    VEglDriver::glBindVertexArrayOES( m_geo.vertexArrayObject );
 	glDrawElements( GL_TRIANGLES, m_geo.indexCount, GL_UNSIGNED_SHORT, NULL );
-    glOperation.glBindVertexArrayOES( 0 );
+    VEglDriver::glBindVertexArrayOES( 0 );
 
-    glOperation.logErrorsEnum( "VRMenuSurface::Render - post" );
+    VEglDriver::logErrorsEnum( "VRMenuSurface::Render - post" );
 }
 
 //==============================

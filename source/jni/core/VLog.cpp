@@ -42,6 +42,12 @@ VLog &VLog::operator << (char ch)
     return *this;
 }
 
+VLog &VLog::operator << (ulong num)
+{
+    d->buffer << num << ' ';
+    return *this;
+}
+
 VLog &VLog::operator << (char16_t ch)
 {
     d->buffer << ch << ' ';
@@ -85,6 +91,12 @@ VLog &VLog::operator << (float num)
 }
 
 VLog &VLog::operator << (double num)
+{
+    d->buffer << num << ' ';
+    return *this;
+}
+
+VLog &VLog::operator <<(long num)
 {
     d->buffer << num << ' ';
     return *this;

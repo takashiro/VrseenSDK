@@ -26,6 +26,7 @@ SOURCES += \
     jni/core/VJson.cpp \
     jni/core/VLog.cpp \
     jni/core/VLock.cpp \
+    jni/core/VModule.cpp \
     jni/core/VPath.cpp \
     jni/core/VSignal.cpp \
     jni/core/VStandardPath.cpp \
@@ -41,34 +42,13 @@ SOURCES += \
     jni/core/android/VOsBuild.cpp \
     jni/api/VKernel.cpp \
     jni/api/VDevice.cpp \
-    jni/api/VGlOperation.cpp \
-    jni/api/HmdSensors.cpp \
+    jni/api/VEglDriver.cpp \
     jni/api/VLensDistortion.cpp \
-    jni/api/VSystemActivities.cpp \
+    jni/api/VRotationSensor.cpp \
     jni/api/VFrameSmooth.cpp \
     jni/api/VMainActivity.cpp \
     jni/api/VGlShader.cpp \
     jni/api/VGlGeometry.cpp \
-    jni/api/sensor/DeviceHandle.cpp \
-    jni/api/sensor/DeviceImpl.cpp \
-    jni/api/sensor/LatencyTest.cpp \
-    jni/api/sensor/LatencyTestDeviceImpl.cpp \
-    jni/api/sensor/Profile.cpp \
-    jni/api/sensor/SensorFilter.cpp \
-    jni/api/sensor/SensorCalibration.cpp \
-    jni/api/sensor/GyroTempCalibration.cpp \
-    jni/api/sensor/SensorFusion.cpp \
-    jni/api/sensor/SensorTimeFilter.cpp \
-    jni/api/sensor/SensorDeviceImpl.cpp \
-    jni/api/sensor/Android_DeviceManager.cpp \
-    jni/api/sensor/Android_HIDDevice.cpp \
-    jni/api/sensor/Android_HMDDevice.cpp \
-    jni/api/sensor/Android_SensorDevice.cpp \
-    jni/api/sensor/Android_PhoneSensors.cpp \
-    jni/api/sensor/Common_HMDDevice.cpp \
-    jni/api/sensor/ThreadCommandQueue.cpp \
-    jni/api/sensor/RefCount.cpp \
-    jni/api/sensor/Log.cpp \
     jni/gui/VText.cpp \
     jni/gui/VDialog.cpp \
     jni/gui/VPanel.cpp \
@@ -107,7 +87,7 @@ SOURCES += \
     jni/scene/VScene.cpp \
     jni/scene/BitmapFont.cpp \
     jni/scene/DebugLines.cpp \
-    jni/scene/VEyeBuffer.cpp \
+    jni/scene/VEyeItem.cpp \
     jni/scene/EyePostRender.cpp \
     jni/scene/GazeCursor.cpp \
     jni/scene/GlTexture.cpp \
@@ -157,9 +137,12 @@ HEADERS += \
     jni/core/VLock.h \
     jni/core/VLockless.h \
     jni/core/VMap.h \
+    jni/core/VModule.h \
     jni/core/VPath.h \
     jni/core/VPos.h \
+    jni/core/VRect.h \
     jni/core/VSignal.h \
+    jni/core/VSize.h \
     jni/core/VStandardPath.h \
     jni/core/VString.h \
     jni/core/VStringHash.h \
@@ -180,43 +163,20 @@ HEADERS += \
     jni/core/VVector.h \
     jni/core/VTransform.h \
     jni/core/VBasicmath.h \
-    jni/embedded/oculus_loading_indicator.h \
-    jni/api/VKernel.h \
-    jni/api/HmdSensors.h \
-    jni/api/VLensDistortion.h \
-    jni/api/VSystemActivities.h \
+    jni/core/VQuat.h \
+    jni/api/VDevice.h \
+    jni/api/VEglDriver.h \
+    jni/api/VFrame.h \
     jni/api/VFrameSmooth.h \
     jni/api/VGlGeometry.h \
     jni/api/VGlShader.h \
+    jni/api/VInput.h \
+    jni/api/VKernel.h \
+    jni/api/VLensDistortion.h \
     jni/api/VMainActivity.h \
-    jni/api/VDevice.h \
-    jni/api/VGlOperation.h \
-    jni/api/sensor/DeviceConstants.h \
-    jni/api/sensor/DeviceHandle.h \
-    jni/api/sensor/DeviceImpl.h \
-    jni/api/sensor/LatencyTest.h \
-    jni/api/sensor/LatencyTestDeviceImpl.h \
-    jni/api/sensor/Profile.h \
-    jni/api/sensor/SensorFilter.h \
-    jni/api/sensor/SensorCalibration.h \
-    jni/api/sensor/GyroTempCalibration.h \
-    jni/api/sensor/SensorFusion.h \
-    jni/api/sensor/SensorTimeFilter.h \
-    jni/api/sensor/SensorDeviceImpl.h \
-    jni/api/sensor/Android_DeviceManager.h \
-    jni/api/sensor/Android_HIDDevice.h \
-    jni/api/sensor/Android_HMDDevice.h \
-    jni/api/sensor/Android_SensorDevice.h \
-    jni/api/sensor/Android_PhoneSensors.h \
-    jni/api/sensor/PhoneSensors.h \
-    jni/api/sensor/Device.h \
-    jni/api/sensor/DeviceMessages.h \
-    jni/api/sensor/HIDDevice.h \
-    jni/api/sensor/HIDDeviceBase.h \
-    jni/api/sensor/HIDDeviceImpl.h \
-    jni/api/sensor/ThreadCommandQueue.h \
-    jni/api/sensor/RefCount.h \
-    jni/api/sensor/Log.h \
+    jni/api/VRotationSensor.h \
+    jni/api/VRotationState.h \
+    jni/api/VViewSettings.h \
     jni/gui/VText.h \
     jni/gui/VDialog.h \
     jni/gui/VPanel.h \
@@ -259,7 +219,7 @@ HEADERS += \
     jni/scene/VScene.h \
     jni/scene/BitmapFont.h \
     jni/scene/DebugLines.h \
-    jni/scene/VEyeBuffer.h \
+    jni/scene/VEyeItem.h \
     jni/scene/EyePostRender.h \
     jni/scene/GazeCursor.h \
     jni/scene/GazeCursorLocal.h \

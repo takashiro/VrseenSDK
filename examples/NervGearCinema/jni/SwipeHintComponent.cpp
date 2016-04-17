@@ -1,7 +1,7 @@
 
 
-#include <Input.h>
-#include "core/VTimer.h"
+#include "VFrame.h"
+#include "VTimer.h"
 
 #include "SwipeHintComponent.h"
 #include "CarouselBrowserComponent.h"
@@ -72,7 +72,7 @@ void SwipeHintComponent::Hide( const double now )
 
 //==============================
 //  SwipeHintComponent::OnEvent_Impl
-eMsgStatus SwipeHintComponent::onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus SwipeHintComponent::onEventImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
     switch( event.eventType )
@@ -89,7 +89,7 @@ eMsgStatus SwipeHintComponent::onEventImpl( App * app, VrFrame const & vrFrame, 
 
 //==============================
 //  SwipeHintComponent::Opening
-eMsgStatus SwipeHintComponent::Opening( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
+eMsgStatus SwipeHintComponent::Opening( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
 {
 	Reset( self );
 	return MSG_STATUS_ALIVE;
@@ -97,23 +97,23 @@ eMsgStatus SwipeHintComponent::Opening( App * app, VrFrame const & vrFrame, OvrV
 
 //==============================
 //  SwipeHintComponent::Frame
-eMsgStatus SwipeHintComponent::Frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
+eMsgStatus SwipeHintComponent::Frame( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
 {
 	if ( ShowSwipeHints && Carousel->HasSelection() && CanSwipe() )
 	{
-        Show( vrFrame.PoseState.TimeBySeconds );
+        Show( vrFrame.pose.timestamp );
 	}
 	else
 	{
-        Hide( vrFrame.PoseState.TimeBySeconds );
+        Hide( vrFrame.pose.timestamp );
 	}
 
 	IgnoreDelay = false;
 
-    float alpha = TotalAlpha.Value( vrFrame.PoseState.TimeBySeconds );
+    float alpha = TotalAlpha.Value( vrFrame.pose.timestamp );
 	if ( alpha > 0.0f )
 	{
-        double time = vrFrame.PoseState.TimeBySeconds - StartTime;
+        double time = vrFrame.pose.timestamp - StartTime;
 		if ( time < 0.0f )
 		{
 			alpha = 0.0f;

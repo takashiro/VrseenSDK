@@ -54,7 +54,7 @@ public:
 	}
 
 private:
-    eMsgStatus	onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+    eMsgStatus	onEventImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event ) override
 	{
 		switch ( event.eventType )
@@ -69,7 +69,7 @@ private:
 		}
 	}
 
-	eMsgStatus OnOpening( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
+	eMsgStatus OnOpening( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
 	{
         CurrentPano = PanoMenu.photos()->activePano();
 		// If opening PanoMenu without a Pano selected, bail
@@ -92,7 +92,7 @@ private:
 		}
 	}
 
-	eMsgStatus OnFrame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
+	eMsgStatus OnFrame( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
 	{
         V4Vectf selfColor = self->color( );
         V4Vectf selfTextColor = self->textColor();
@@ -375,13 +375,13 @@ OvrPanoMenu::~OvrPanoMenu()
 
 }
 
-void OvrPanoMenu::frameImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font, BitmapFontSurface & fontSurface, gazeCursorUserId_t const gazeUserId )
+void OvrPanoMenu::frameImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font, BitmapFontSurface & fontSurface, gazeCursorUserId_t const gazeUserId )
 {
-	m_fader.update( m_currentFadeRate, vrFrame.DeltaSeconds );
+	m_fader.update( m_currentFadeRate, vrFrame.deltaSeconds );
 
 	if ( m_buttonCoolDown > 0.0f )
 	{
-		m_buttonCoolDown -= vrFrame.DeltaSeconds;
+		m_buttonCoolDown -= vrFrame.deltaSeconds;
 	}
 }
 

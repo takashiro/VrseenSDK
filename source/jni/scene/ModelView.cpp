@@ -13,10 +13,9 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VAlgorithm.h"
 #include "api/VKernel.h"
 
-#include "Input.h"		// VrFrame, etc
+#include "VFrame.h"		// VrFrame, etc
 #include "BitmapFont.h"
 #include "DebugLines.h"
-#include "sensor/SensorFusion.h"
 
 #include "VLog.h"
 
@@ -233,7 +232,7 @@ VR4Matrixf OvrSceneView::CenterViewMatrix() const
 
 VR4Matrixf OvrSceneView::ViewMatrixForEye( const int eye ) const
 {
-	const float eyeOffset = ( eye ? -1 : 1 ) * 0.5f * ViewParms.InterpupillaryDistance;
+	const float eyeOffset = ( eye ? -1 : 1 ) * 0.5f * ViewParms.interpupillaryDistance;
     return VR4Matrixf::Translation( eyeOffset, 0.0f, 0.0f ) * ViewMatrix;
 }
 
@@ -291,7 +290,7 @@ V3Vectf OvrSceneView::Forward() const
 
 V3Vectf OvrSceneView::CenterEyePos() const
 {
-    return V3Vectf( FootPos.x, FootPos.y + ViewParms.EyeHeight, FootPos.z );
+    return V3Vectf( FootPos.x, FootPos.y + ViewParms.eyeHeight, FootPos.z );
 }
 
 V3Vectf OvrSceneView::ShiftedCenterEyePos() const
@@ -313,28 +312,28 @@ V3Vectf OvrSceneView::HeadModelOffset( float EyeRoll, float EyePitch, float EyeY
 	return lastHeadModelOffset;
 }
 
-void OvrSceneView::UpdateViewMatrix(const VrFrame vrFrame )
+void OvrSceneView::UpdateViewMatrix(const VFrame vrFrame )
 {
 	// Experiments with position tracking
 	const bool	useHeadModel = !AllowPositionTracking ||
-			( ( vrFrame.Input.buttonState & ( BUTTON_A | BUTTON_X ) ) == 0 );
+			( ( vrFrame.input.buttonState & ( BUTTON_A | BUTTON_X ) ) == 0 );
 
 	// Delta time in seconds since last frame.
-	const float dt = vrFrame.DeltaSeconds;
-	const float yawSpeed = 1.5f;
+	const float dt = vrFrame.deltaSeconds;
+    //const float yawSpeed = 1.5f;
 
     V3Vectf GamepadMove;
 
 	// Allow up / down movement if there is no floor collision model
-	if ( vrFrame.Input.buttonState & BUTTON_RIGHT_TRIGGER )
+	if ( vrFrame.input.buttonState & BUTTON_RIGHT_TRIGGER )
 	{
-		FootPos.y -= vrFrame.Input.sticks[0][1] * dt * MoveSpeed;
+		FootPos.y -= vrFrame.input.sticks[0][1] * dt * MoveSpeed;
 	}
 	else
 	{
-		GamepadMove.z = vrFrame.Input.sticks[0][1];
+		GamepadMove.z = vrFrame.input.sticks[0][1];
 	}
-	GamepadMove.x = vrFrame.Input.sticks[0][0];
+	GamepadMove.x = vrFrame.input.sticks[0][0];
 
 	// Turn based on the look stick
 	// Because this can be predicted ahead by async TimeWarp, we apply
@@ -342,19 +341,21 @@ void OvrSceneView::UpdateViewMatrix(const VrFrame vrFrame )
 	// latency on stick controls to avoid a bounce-back.
 	YawOffset -= YawVelocity * dt;
 
-    if ( !( vrFrame.OvrStatus & Status_OrientationTracked ) )
-	{
-		PitchOffset -= yawSpeed * vrFrame.Input.sticks[1][1] * dt;
-		YawVelocity = yawSpeed * vrFrame.Input.sticks[1][0];
-	}
-	else
-	{
-		YawVelocity = 0.0f;
-	}
+    /*if ( !( vrFrame.OvrStatus & Status_OrientationTracked ) )
+    {
+        PitchOffset -= yawSpeed * vrFrame.Input.sticks[1][1] * dt;
+        YawVelocity = yawSpeed * vrFrame.Input.sticks[1][0];
+    }
+    else
+    {
+        YawVelocity = 0.0f;
+    }*/
+    //@to-do: Sensor should output if orientation is tracked
+    YawVelocity = 0.0f;
 
 	// We extract Yaw, Pitch, Roll instead of directly using the orientation
 	// to allow "additional" yaw manipulation with mouse/controller.
-    const VQuatf quat = vrFrame.PoseState.Orientation;
+    const VQuatf quat = vrFrame.pose;
 
     quat.GetEulerAngles<VAxis_Y, VAxis_X, VAxis_Z>( &EyeYaw, &EyePitch, &EyeRoll );
 
@@ -363,10 +364,10 @@ void OvrSceneView::UpdateViewMatrix(const VrFrame vrFrame )
 	// If the sensor isn't plugged in, allow right stick up/down
 	// to adjust pitch, which can be useful for debugging.  Never
 	// do this when head tracking
-    if ( !( vrFrame.OvrStatus & Status_OrientationTracked ) )
+    /*if ( !( vrFrame.OvrStatus & Status_OrientationTracked ) )
 	{
 		EyePitch += PitchOffset;
-	}
+    }*/
 
 	// Perform player movement.
 	if ( GamepadMove.LengthSq() > 0.0f )
@@ -378,14 +379,14 @@ void OvrSceneView::UpdateViewMatrix(const VrFrame vrFrame )
 		const float moveDistance = std::min<float>( MoveSpeed * (float)dt, 1.0f );
 		if ( WorldModel.Definition )
 		{
-			FootPos = SlideMove( FootPos, ViewParms.EyeHeight, orientationVector, moveDistance,
+			FootPos = SlideMove( FootPos, ViewParms.eyeHeight, orientationVector, moveDistance,
 						WorldModel.Definition->Collisions, WorldModel.Definition->GroundCollisions );
 		}
 		else
 		{	// no scene loaded, walk without any collisions
 			CollisionModel collisionModel;
 			CollisionModel groundCollisionModel;
-			FootPos = SlideMove( FootPos, ViewParms.EyeHeight, orientationVector, moveDistance,
+			FootPos = SlideMove( FootPos, ViewParms.eyeHeight, orientationVector, moveDistance,
 						collisionModel, groundCollisionModel );
 		}
 	}
@@ -400,7 +401,7 @@ void OvrSceneView::UpdateViewMatrix(const VrFrame vrFrame )
 
 	// Have sensorFusion zero the integration when not using it, so the
 	// first frame is correct.
-	if ( vrFrame.Input.buttonPressed & (BUTTON_A | BUTTON_X) )
+	if ( vrFrame.input.buttonPressed & (BUTTON_A | BUTTON_X) )
 	{
 		LatchedHeadModelOffset = LastHeadModelOffset;
 	}
@@ -409,7 +410,7 @@ void OvrSceneView::UpdateViewMatrix(const VrFrame vrFrame )
 	ShiftedEyePos = CenterEyePos();
 
     V3Vectf headModelOffset = HeadModelOffset( EyeRoll, EyePitch, EyeYaw,
-			ViewParms.HeadModelDepth, ViewParms.HeadModelHeight );
+			ViewParms.headModelDepth, ViewParms.headModelHeight );
 	if ( useHeadModel )
 	{
 		ShiftedEyePos += headModelOffset;
@@ -424,7 +425,7 @@ void OvrSceneView::UpdateViewMatrix(const VrFrame vrFrame )
 	{
 		// Use position tracking from the sensor system, which is in absolute
 		// coordinates without the YawOffset
-        ShiftedEyePos += VR4Matrixf::RotationY( YawOffset ).Transform( vrFrame.PoseState.Position );
+        //ShiftedEyePos += VR4Matrixf::RotationY( YawOffset ).Transform( vrFrame.PoseState.Position );
 
 		ShiftedEyePos -= forward * ImuToEyeCenter.z;
 		ShiftedEyePos -= right * ImuToEyeCenter.x;
@@ -435,7 +436,7 @@ void OvrSceneView::UpdateViewMatrix(const VrFrame vrFrame )
     ViewMatrix = VR4Matrixf::LookAtRH( ShiftedEyePos, ShiftedEyePos + forward, up );
 }
 
-void OvrSceneView::UpdateSceneModels( const VrFrame vrFrame, const long long supressModelsWithClientId  )
+void OvrSceneView::UpdateSceneModels( const VFrame vrFrame, const long long supressModelsWithClientId  )
 {
 	// Build the packed array of ModelState to pass to the renderer for both eyes
 	RenderModels.resize( 0 );
@@ -444,13 +445,13 @@ void OvrSceneView::UpdateSceneModels( const VrFrame vrFrame, const long long sup
 	{
 		if ( Models[i] != NULL && Models[i]->DontRenderForClientUid != supressModelsWithClientId )
 		{
-            Models[i]->AnimateJoints( vrFrame.PoseState.TimeBySeconds );
+            Models[i]->AnimateJoints( vrFrame.pose.timestamp );
 			RenderModels.append( Models[i]->State );
 		}
 	}
 }
 
-void OvrSceneView::Frame( const VrViewParms viewParms_, const VrFrame vrFrame,
+void OvrSceneView::Frame( const VViewSettings viewParms_, const VFrame vrFrame,
 		VR4Matrixf & timeWarpParmsExternalVelocity, const long long supressModelsWithClientId )
 {
 	ViewParms = viewParms_;

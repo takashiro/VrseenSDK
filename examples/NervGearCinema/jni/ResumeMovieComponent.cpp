@@ -39,7 +39,7 @@ void ResumeMovieComponent::UpdateColor( VRMenuObject * self )
 
 //==============================
 //  ResumeMovieComponent::OnEvent_Impl
-eMsgStatus ResumeMovieComponent::onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus ResumeMovieComponent::onEventImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
     switch( event.eventType )
@@ -58,7 +58,7 @@ eMsgStatus ResumeMovieComponent::onEventImpl( App * app, VrFrame const & vrFrame
         	}
         	return MSG_STATUS_ALIVE;
         case VRMENU_EVENT_TOUCH_UP:
-        	if ( !( vrFrame.Input.buttonState & BUTTON_TOUCH_WAS_SWIPE ) && ( CallbackView != NULL ) )
+        	if ( !( vrFrame.input.buttonState & BUTTON_TOUCH_WAS_SWIPE ) && ( CallbackView != NULL ) )
         	{
                 Sound.playSound( app, "touch_up", 0.1 );
                	CallbackView->ResumeChoice( ItemNum );
@@ -73,7 +73,7 @@ eMsgStatus ResumeMovieComponent::onEventImpl( App * app, VrFrame const & vrFrame
 
 //==============================
 //  ResumeMovieComponent::Frame
-eMsgStatus ResumeMovieComponent::Frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus ResumeMovieComponent::Frame( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
 	UpdateColor( self );
@@ -83,7 +83,7 @@ eMsgStatus ResumeMovieComponent::Frame( App * app, VrFrame const & vrFrame, OvrV
 
 //==============================
 //  ResumeMovieComponent::FocusGained
-eMsgStatus ResumeMovieComponent::FocusGained( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus ResumeMovieComponent::FocusGained( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
 	//vInfo("FocusGained");
@@ -102,7 +102,7 @@ eMsgStatus ResumeMovieComponent::FocusGained( App * app, VrFrame const & vrFrame
 
 //==============================
 //  ResumeMovieComponent::FocusLost
-eMsgStatus ResumeMovieComponent::FocusLost( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus ResumeMovieComponent::FocusLost( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
 	//vInfo("FocusLost");

@@ -320,7 +320,7 @@ void CinemaApp::command(const VEvent &event )
  *
  * App override
  */
-VR4Matrixf CinemaApp::onNewFrame( const VrFrame vrFrame )
+VR4Matrixf CinemaApp::onNewFrame( const VFrame vrFrame )
 {
 	m_frameCount++;
 	this->m_vrFrame = vrFrame;

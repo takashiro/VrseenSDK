@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import com.vrseen.sensor.VrseenDeviceManager;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityGroup;
@@ -84,7 +86,9 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 	SoundPool soundPool;
 	List<Integer> soundPoolSoundIds;
 	List<String> soundPoolSoundNames;
-
+	
+    VrseenDeviceManager mVrseenDeviceManager = null;
+	
 	public void playSoundPoolSound(String name) {
 		for (int i = 0; i < soundPoolSoundNames.size(); i++) {
 			if (soundPoolSoundNames.get(i).equals(name)) {
@@ -463,6 +467,8 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 		Log.d(TAG, "fromPackageName:" + fromPackageNameString);
 		Log.d(TAG, "command:" + commandString);
 		Log.d(TAG, "uri:" + uriString);
+		
+		mVrseenDeviceManager = new VrseenDeviceManager(this);
 
 		SurfaceView sv = new SurfaceView(this);
 		setContentView(sv);
@@ -500,26 +506,18 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 	protected void onPause() {
 		Log.d(TAG, this + " onPause()");
 
-		if (getApplication() instanceof VrApplication) {
-			VrApplication vrApp = (VrApplication) getApplication();
-			vrApp.setHostActivity(null);
-		}
-
 		super.onPause();
 		nativePause();
+		mVrseenDeviceManager.onPause();
 	}
 
 	@Override
 	protected void onResume() {
 		Log.d(TAG, this + " onResume()");
-
-		if (getApplication() instanceof VrApplication) {
-			VrApplication vrApp = (VrApplication) getApplication();
-			vrApp.setHostActivity(this);
-		}
-
+		
 		super.onResume();
 		nativeResume();
+		mVrseenDeviceManager.onResume();
 	}
 
 	// ==================================================================================

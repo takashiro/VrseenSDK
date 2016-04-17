@@ -27,7 +27,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "TypesafeNumber.h"
 #include "VArray.h"
 #include "VString.h"
-#include "api/VGlOperation.h"
+#include "api/VEglDriver.h"
 #include "SurfaceTexture.h"
 
 #include "GlTexture.h"
@@ -37,7 +37,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "SwipeView.h"
 #include "Oculus360Videos.h"
 
-#include <VEyeBuffer.h>
+#include <VEyeItem.h>
 #include "gui/GuiSys.h"
 
 #include "gui/Fader.h"
@@ -166,7 +166,7 @@ void Oculus360Videos::init(const VString &fromPackage, const VString &launchInte
 	RetailMode = vdir.exists( "/sdcard/RetailMedia" );
 
 	vApp->vrParms().colorFormat = VColor::COLOR_8888;
-    vApp->vrParms().commonParameterDepth = VEyeBuffer::CommonParameter::DEPTHFORMAT_DEPTH_16;
+    vApp->vrParms().commonParameterDepth = VEyeItem::CommonParameter::DepthFormat_16;
 	vApp->vrParms().multisamples = 2;
 
     PanoramaProgram.initShader(VGlShader::getPanoVertexShaderSource(),VGlShader::getPanoProgramShaderSource()	);
@@ -198,9 +198,9 @@ void Oculus360Videos::init(const VString &fromPackage, const VString &launchInte
 
 	// Stay exactly at the origin, so the panorama globe is equidistant
 	// Don't clear the head model neck length, or swipe view panels feel wrong.
-	VrViewParms viewParms = vApp->vrViewParms();
-	viewParms.EyeHeight = 0.0f;
-	vApp->setVrViewParms( viewParms );
+	VViewSettings viewParms = vApp->viewSettings();
+	viewParms.eyeHeight = 0.0f;
+	vApp->setViewSettings( viewParms );
 
 	// Optimize for 16 bit depth in a modest theater size
 	Scene.Znear = 0.1f;
@@ -742,14 +742,14 @@ void Oculus360Videos::OnVideoActivated( const OvrMetaDatum * videoData )
     StartVideo( VTimer::Seconds() );
 }
 
-VR4Matrixf Oculus360Videos::onNewFrame( const VrFrame vrFrame )
+VR4Matrixf Oculus360Videos::onNewFrame( const VFrame vrFrame )
 {
 	// Disallow player foot movement, but we still want the head model
 	// movement for the swipe view.
-	VrFrame vrFrameWithoutMove = vrFrame;
-	vrFrameWithoutMove.Input.sticks[ 0 ][ 0 ] = 0.0f;
-	vrFrameWithoutMove.Input.sticks[ 0 ][ 1 ] = 0.0f;
-    Scene.Frame( vApp->vrViewParms(), vrFrameWithoutMove, vApp->kernel()->m_externalVelocity );
+	VFrame vrFrameWithoutMove = vrFrame;
+	vrFrameWithoutMove.input.sticks[ 0 ][ 0 ] = 0.0f;
+	vrFrameWithoutMove.input.sticks[ 0 ][ 1 ] = 0.0f;
+    Scene.Frame( vApp->viewSettings(), vrFrameWithoutMove, vApp->kernel()->m_externalVelocity );
 
 	// Check for new video frames
 	// latch the latest movie frame to the texture.
@@ -762,7 +762,7 @@ VR4Matrixf Oculus360Videos::onNewFrame( const VrFrame vrFrame )
 
 	if ( MenuState != MENU_BROWSER && MenuState != MENU_VIDEO_LOADING )
 	{
-		if ( vrFrame.Input.buttonReleased & ( BUTTON_TOUCH | BUTTON_A ) )
+		if ( vrFrame.input.buttonReleased & ( BUTTON_TOUCH | BUTTON_A ) )
 		{
 			vApp->playSound( "sv_release_active" );
 			if ( IsVideoPlaying() )
@@ -782,7 +782,7 @@ VR4Matrixf Oculus360Videos::onNewFrame( const VrFrame vrFrame )
 	// State transitions
 	if ( Fader.fadeState() != Fader::FADE_NONE )
 	{
-		Fader.update( CurrentFadeRate, vrFrame.DeltaSeconds );
+		Fader.update( CurrentFadeRate, vrFrame.deltaSeconds );
 	}
 	else if ( ( MenuState == MENU_VIDEO_READY ) &&
 		( Fader.fadeAlpha() == 0.0f ) &&

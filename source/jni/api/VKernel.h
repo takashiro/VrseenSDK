@@ -1,76 +1,19 @@
 #pragma once
-#include <VString.h>
-#include "math.h"
-#include "VBasicmath.h"
 
+#include "VRotationState.h"
+#include "VMatrix.h"
 
-#if defined( ANDROID )
-#include <jni.h>
-#elif defined( __cplusplus )
-typedef struct _JNIEnv JNIEnv;
-typedef struct _JavaVM JavaVM;
-typedef class _jobject * jobject;
-#else
-typedef const struct JNINativeInterface * JNIEnv;
-typedef const struct JNIInvokeInterface * JavaVM;
-void * jobject;
-#endif
+enum{
+    VK_INHIBIT_SRGB_FB = 1,
+    VK_USE_S = 2,
+    VK_FLUSH = 4,
+    VK_FIXED_LAYER = 8,
+    VK_DISPLAY_CURSOR = 16,
+    VK_IMAGE = 32,
+    VK_DRAW_LINES = 64
+};
 
-extern "C" {
-
-
-
-
-extern JavaVM * VrLibJavaVM;
-
-
-
-typedef struct VKpose_
-{
-    NervGear::VQuat<float>	Orientation;
-    NervGear::V3Vect<float>	Position;
-    NervGear::V3Vect<float>	Angular;
-    NervGear::V3Vect<float>	Linear;
-    NervGear::V3Vect<float>	AngularAc;
-    NervGear::V3Vect<float>	LinearAc;
-    double		TimeBySeconds;
-} VKpose;
-
-
-
-typedef struct ovrSensorState_
-{
-    VKpose	Predicted;
-
-    VKpose	Recorded;
-
-    float			Temperature;
-
-    unsigned		Status;
-} ovrSensorState;
-
-
-typedef enum
-{
-            VK_INHIBIT_SRGB_FB	= 1,
-
-            VK_USE_S				= 2,
-
-            VK_FLUSH						= 4,
-
-            VK_FIXED_LAYER				= 8,
-
-            VK_DISPLAY_CURSOR					= 16,
-
-            VK_IMAGE				= 32,
-
-            VK_DRAW_LINES		= 64
-} VKoption;
-
-
-typedef enum
-{
-
+enum VrKernelProgram {
     VK_DEFAULT,
     VK_PLANE,
     VK_PLANE_SPECIAL,
@@ -94,48 +37,14 @@ typedef enum
     VK_RESERVED_CB,
 
     VK_MAX
-} VrKernelProgram;
+};
 
-
-
-
-typedef enum
-{
+enum eExitType {
     EXIT_TYPE_NONE,
     EXIT_TYPE_FINISH,
     EXIT_TYPE_FINISH_AFFINITY,
     EXIT_TYPE_EXIT
-
-} eExitType;
-
-
-
-
-
-
-enum eVrApiEventStatus
-{
-    VRAPI_EVENT_ERROR_INTERNAL = -2,
-    VRAPI_EVENT_ERROR_INVALID_BUFFER = -1,
-    VRAPI_EVENT_NOT_PENDING = 0,
-    VRAPI_EVENT_PENDING,
-    VRAPI_EVENT_CONSUMED,
-    VRAPI_EVENT_BUFFER_OVERFLOW,
-    VRAPI_EVENT_INVALID_JSON
 };
-eVrApiEventStatus ovr_nextPendingEvent(NervGear::VString& buffer, unsigned int const bufferSize );
-
-
-#define SYSTEM_ACTIVITY_INTENT "com.oculus.system_activity"
-#define	SYSTEM_ACTIVITY_EVENT_REORIENT "reorient"
-#define SYSTEM_ACTIVITY_EVENT_RETURN_TO_LAUNCHER "returnToLauncher"
-#define SYSTEM_ACTIVITY_EVENT_EXIT_TO_HOME "exitToHome"
-
-}
-
-
-
-
 
 NV_NAMESPACE_BEGIN
 
@@ -144,50 +53,43 @@ class VDevice;
 class VKernel
 {
 public:
-    static  VKernel*  GetInstance();
+    static VKernel *instance();
     void run();
     void exit();
     void destroy(eExitType type);
-    void ovr_HandleDeviceStateChanges();
-    ovrSensorState	ovr_GetPredictedSensorState(double absTime );
-    void			ovr_RecenterYaw();
 
-    VDevice* device;
+    VDevice *device;
     bool asyncSmooth;
     int msaa;
-
     bool isRunning;
-
 
     void doSmooth();
     void syncSmoothParms();
-    void setSmoothEyeTexture(unsigned int texID,ushort eye,ushort layer);
-    void setTexMatrix(VR4Matrixf	mtexMatrix,ushort eye,ushort layer);
-    void setSmoothPose(VKpose	mpose,ushort eye,ushort layer);
-    void setpTex(unsigned int	*mpTexId,ushort eye,ushort layer);
-
+    void setSmoothEyeTexture(uint texID, ushort eye, ushort layer);
+    void setTexMatrix(const VR4Matrixf &mtexMatrix, ushort eye, ushort layer);
+    void setSmoothPose(const VRotationState &pose, ushort eye, ushort layer);
+    void setpTex(uint *mpTexId,ushort eye,ushort layer);
 
     void setSmoothOption(int option);
-    void setMinimumVsncs( int vsnc);
-    void setExternalVelocity(VR4Matrixf extV);
+    void setMinimumVsncs(int vsnc);
+    void setExternalVelocity(const VR4Matrixf &extV);
     void setPreScheduleSeconds(float pres);
     void setSmoothProgram(ushort program);
-    void setProgramParms( float * proParms);
+    void setProgramParms(float proParms[4]);
 
-     void InitTimeWarpParms( );
+    void InitTimeWarpParms();
 
+    int m_smoothOptions;
+    VR4Matrixf m_externalVelocity;
+    int m_minimumVsyncs;
+    float m_preScheduleSeconds;
+    ushort m_smoothProgram;
+    float m_programParms[4];
 
-    int 						m_smoothOptions;
-    VR4Matrixf					m_externalVelocity;
-    int							m_minimumVsyncs;
-    float						m_preScheduleSeconds;
-    ushort			            m_smoothProgram;
-    float						m_programParms[4];
-
-    unsigned int	m_texId[2][3];
-    unsigned int	m_planarTexId[2][3][3];
-    VR4Matrixf		m_texMatrix[2][3];
-    VKpose	m_pose[2][3];
+    uint m_texId[2][3];
+    uint m_planarTexId[2][3][3];
+    VR4Matrixf m_texMatrix[2][3];
+    VRotationState m_pose[2][3];
 
 private:
     VKernel();

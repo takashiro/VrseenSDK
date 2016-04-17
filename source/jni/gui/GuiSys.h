@@ -19,7 +19,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 NV_NAMESPACE_BEGIN
 
 class VRMenuEvent;
-struct VrFrame;
+struct VFrame;
 class App;
 class VRMenu;
 
@@ -36,7 +36,7 @@ public:
 
     virtual void		init( App * app, OvrVRMenuMgr & menuMgr, BitmapFont const & font ) = 0;
     virtual void		shutdown( OvrVRMenuMgr & menuMgr ) = 0;
-    virtual void		frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+    virtual void		frame( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
                                 BitmapFont const & font , BitmapFontSurface & fontSurface,
                                 VR4Matrixf const & viewMatrix ) = 0;
 

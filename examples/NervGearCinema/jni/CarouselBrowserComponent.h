@@ -59,20 +59,20 @@ public:
 	bool							CanSwipeBack() const;
 	bool							CanSwipeForward() const;
 
-	void 							CheckGamepad( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self );
+	void 							CheckGamepad( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self );
 
 private:
-    eMsgStatus onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event ) override;
+    eMsgStatus onEventImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event ) override;
     PanelPose 						GetPosition( const float t );
     void 							UpdatePanels( OvrVRMenuMgr & menuMgr, VRMenuObject * self );
 
-    eMsgStatus 						Frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event );
-    eMsgStatus 						SwipeForward( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self );
-    eMsgStatus 						SwipeBack( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self );
-	eMsgStatus 						TouchDown( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event );
-	eMsgStatus 						TouchUp( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event );
-	eMsgStatus 						Opened( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event );
-	eMsgStatus 						Closed( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event );
+    eMsgStatus 						Frame( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event );
+    eMsgStatus 						SwipeForward( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self );
+    eMsgStatus 						SwipeBack( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self );
+	eMsgStatus 						TouchDown( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event );
+	eMsgStatus 						TouchUp( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event );
+	eMsgStatus 						Opened( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event );
+	eMsgStatus 						Closed( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event );
 
 public:
     bool							SelectPressed;

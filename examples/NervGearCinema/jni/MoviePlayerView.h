@@ -50,7 +50,7 @@ private:
 	bool					HasFocus;
 
 private:
-    eMsgStatus onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+    eMsgStatus onEventImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
                                     VRMenuObject * self, VRMenuEvent const & event ) override;
 };
 
@@ -87,13 +87,13 @@ private:
 	void *					OnClickObject;
 
 private:
-    eMsgStatus onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+    eMsgStatus onEventImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
                                     VRMenuObject * self, VRMenuEvent const & event );
 
-    eMsgStatus 				OnFrame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+    eMsgStatus 				OnFrame( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
             VRMenuObject * self, VRMenuEvent const & event );
 
-    void 					OnClick( App * app, VrFrame const & vrFrame, VRMenuEvent const & event );
+    void 					OnClick( App * app, VFrame const & vrFrame, VRMenuEvent const & event );
 
     void 					SetTimeText( UILabel *label, const int time );
 };
@@ -116,7 +116,7 @@ public:
 	void 					MovieLoaded( const int width, const int height, const int duration );
 
     virtual VR4Matrixf 		DrawEyeView( const int eye, const float fovDegrees );
-    virtual VR4Matrixf 		Frame( const VrFrame & vrFrame );
+    virtual VR4Matrixf 		Frame( const VFrame & vrFrame );
 
 private:
 	CinemaApp &				Cinema;
@@ -227,9 +227,9 @@ private:
 
     V2Vectf 				GazeCoordinatesOnScreen( const VR4Matrixf & viewMatrix, const VR4Matrixf panelMatrix ) const;
 
-	void 					UpdateUI( const VrFrame & vrFrame );
-	void 					CheckInput( const VrFrame & vrFrame );
-	void 					CheckDebugControls( const VrFrame & vrFrame );
+	void 					UpdateUI( const VFrame & vrFrame );
+	void 					CheckInput( const VFrame & vrFrame );
+	void 					CheckDebugControls( const VFrame & vrFrame );
 
 	void 					ShowUI();
 	void 					HideUI();

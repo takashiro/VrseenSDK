@@ -42,7 +42,7 @@ public:
 	virtual void		shutdown();
 	virtual void		configureVrMode(VKernel* kernel);
     virtual VR4Matrixf 	drawEyeView( const int eye, const float fovDegrees );
-    virtual VR4Matrixf 	onNewFrame( VrFrame vrFrame );
+    virtual VR4Matrixf 	onNewFrame( VFrame vrFrame );
     void command(const VEvent &event) override;
 	virtual bool 		onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType );
 
@@ -54,8 +54,8 @@ public:
 	void 				StartVideo( const double nowTime );
 	void				SeekTo( const int seekPos );
 
-	void 				CloseSwipeView( const VrFrame &vrFrame );
-	void 				OpenSwipeView( const VrFrame &vrFrame, bool centerList );
+	void 				CloseSwipeView( const VFrame &vrFrame );
+	void 				OpenSwipeView( const VFrame &vrFrame, bool centerList );
     VR4Matrixf			TexmForVideo( const int eye );
     VR4Matrixf			TexmForBackground( const int eye );
 

@@ -16,8 +16,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VBasicmath.h"
 #include "api/VKernel.h"		// ovrPoseStatef
 
-#include "../Input.h"
-#include "../App.h"
+#include "VFrame.h"
+#include "App.h"
 #include "VSoundManager.h"
 
 namespace NervGear {
@@ -42,7 +42,7 @@ void SoundLimiter::playMenuSound(App * app, const VString &appendKey, char const
     overrideSound.append('_');
     overrideSound.append(soundName);
 
-    if (app->soundMgr().hasSound(overrideSound)) {
+    if (VSoundManager::instance()->hasSound(overrideSound)) {
         playSound(app, overrideSound.toUtf8().data(), limitSeconds);
     } else {
         playSound(app, soundName, limitSeconds);

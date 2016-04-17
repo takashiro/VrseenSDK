@@ -11,7 +11,6 @@ INCLUDEPATH += \
     $$PWD/jni/io \
     $$PWD/jni/media \
     $$PWD/jni/scene \
-    $PWD/jni/3rdparty/TinyXml \
     $$PWD/jni/3rdparty/minizip
 
 # OpenGL ES 3.0

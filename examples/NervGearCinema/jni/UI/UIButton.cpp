@@ -98,7 +98,7 @@ UIButtonComponent::UIButtonComponent( UIButton &button ) :
 
 //==============================
 //  UIButtonComponent::OnEvent_Impl
-eMsgStatus UIButtonComponent::onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus UIButtonComponent::onEventImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
     switch( event.eventType )
@@ -126,7 +126,7 @@ eMsgStatus UIButtonComponent::onEventImpl( App * app, VrFrame const & vrFrame, O
 
 //==============================
 //  UIButtonComponent::FocusGained
-eMsgStatus UIButtonComponent::FocusGained( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus UIButtonComponent::FocusGained( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
     // set the hilight flag
@@ -138,7 +138,7 @@ eMsgStatus UIButtonComponent::FocusGained( App * app, VrFrame const & vrFrame, O
 
 //==============================
 //  UIButtonComponent::FocusLost
-eMsgStatus UIButtonComponent::FocusLost( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus UIButtonComponent::FocusLost( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
     // clear the hilight flag

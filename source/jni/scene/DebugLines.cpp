@@ -14,7 +14,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <stdlib.h>
 
 
-#include "api/VGlOperation.h"
+#include "api/VEglDriver.h"
 
 #include "api/VGlGeometry.h"
 #include "api/VGlShader.h"
@@ -119,8 +119,8 @@ private:
 	mutable VGlGeometry				NonDepthGeo;
 //	NervGear::ArrayPOD< DebugLine_t >	DepthTestedLines;
 //	NervGear::ArrayPOD< DebugLine_t >	NonDepthTestedLines;
-	NervGear::VArray< DebugLine_t >	DepthTestedLines;
-	NervGear::VArray< DebugLine_t >	NonDepthTestedLines;
+    VArray< DebugLine_t >	DepthTestedLines;
+    VArray< DebugLine_t >	NonDepthTestedLines;
 	LineVertex_t *					Vertices;
 
 	bool							Initialized;
@@ -129,9 +129,9 @@ private:
 	void		InitVBO( VGlGeometry & geo, LineVertex_t * vertices, const int maxVerts,
 						 LineIndex_t * indices, const int maxIndices );
     void		Render( VR4Matrixf const & mvp, VGlGeometry & geo,
-						NervGear::VArray< DebugLine_t > const & lines,
+                        VArray< DebugLine_t > const & lines,
 						const bool depthTest ) const;
-	void		RemoveExpired( const long long frameNum, NervGear::VArray< DebugLine_t > & lines );
+    void		RemoveExpired( const long long frameNum, VArray< DebugLine_t > & lines );
 };
 
 //==============================
@@ -153,7 +153,7 @@ OvrDebugLinesLocal::~OvrDebugLinesLocal()
 // OvrDebugLinesLocal::Init
 void OvrDebugLinesLocal::Init()
 {
-    VGlOperation glOperation;
+
 	if ( Initialized )
 	{
 // JDC: multi-activity test		vAssert(!Initialized);
@@ -182,7 +182,7 @@ void OvrDebugLinesLocal::Init()
 	InitVBO( DepthGeo, Vertices, MAX_VERTS, indices, MAX_INDICES );
 	InitVBO( NonDepthGeo, Vertices, MAX_VERTS, indices, MAX_INDICES );
 
-    glOperation.glBindVertexArrayOES( 0 );
+    VEglDriver::glBindVertexArrayOES( 0 );
 
 	delete [] indices;	// never needs to change so we don't keep it around
 
@@ -194,12 +194,12 @@ void OvrDebugLinesLocal::Init()
 void OvrDebugLinesLocal::InitVBO( VGlGeometry & geo, LineVertex_t * vertices, const int maxVerts,
 		LineIndex_t * indices, const int maxIndices )
 {
-    VGlOperation glOperation;
+
 	const int numVertexBytes = maxVerts * sizeof( LineVertex_t );
 
 	// create vertex array object
-    glOperation.glGenVertexArraysOES( 1, &geo.vertexArrayObject );
-    glOperation.glBindVertexArrayOES( geo.vertexArrayObject );
+    VEglDriver::glGenVertexArraysOES( 1, &geo.vertexArrayObject );
+    VEglDriver::glBindVertexArrayOES( geo.vertexArrayObject );
 
 	// create the vertex buffer
 	glGenBuffers( 1, &geo.vertexBuffer );
@@ -251,9 +251,9 @@ void OvrDebugLinesLocal::Render( VR4Matrixf const & mvp ) const
 //==============================
 // OvrDebugLinesLocal::Render
 void OvrDebugLinesLocal::Render( VR4Matrixf const & mvp, VGlGeometry & geo,
-		NervGear::VArray< DebugLine_t > const & lines,  const bool depthTest ) const
+        VArray< DebugLine_t > const & lines,  const bool depthTest ) const
 {
-    VGlOperation glOperation;
+
 	if ( lines.length() == 0 )
 	{
 		return;
@@ -285,14 +285,14 @@ void OvrDebugLinesLocal::Render( VR4Matrixf const & mvp, VGlGeometry & geo,
 		v2.a = line.EndColor.w;
 	}
 
-    glOperation.glBindVertexArrayOES( geo.vertexArrayObject );
+    VEglDriver::glBindVertexArrayOES( geo.vertexArrayObject );
 
 	int numVertices = numLines * 2;
 	int numVertexBytes = numVertices * sizeof( LineVertex_t );
 	glBindBuffer( GL_ARRAY_BUFFER, geo.vertexBuffer );
 	glBufferSubData( GL_ARRAY_BUFFER, 0, numVertexBytes, (void*)Vertices );
 
-    glOperation.glBindVertexArrayOES( geo.vertexArrayObject );
+    VEglDriver::glBindVertexArrayOES( geo.vertexArrayObject );
 	geo.indexCount = numLines * 2;
 
 	if ( depthTest )
@@ -316,7 +316,7 @@ void OvrDebugLinesLocal::Render( VR4Matrixf const & mvp, VGlGeometry & geo,
 
 	glDrawElements( GL_LINES, geo.indexCount, GL_UNSIGNED_SHORT, NULL );
 
-    glOperation.glBindVertexArrayOES( 0 );
+    VEglDriver::glBindVertexArrayOES( 0 );
 
 	glEnable( GL_DEPTH_TEST );
 	glDepthMask( GL_TRUE );
@@ -423,7 +423,7 @@ void OvrDebugLinesLocal::BeginFrame( const long long frameNum )
 
 //==============================
 // OvrDebugLinesLocal::RemoveExpired
-void OvrDebugLinesLocal::RemoveExpired( const long long frameNum, NervGear::VArray< DebugLine_t > & lines )
+void OvrDebugLinesLocal::RemoveExpired( const long long frameNum, VArray< DebugLine_t > & lines )
 {
 	for ( int i = lines.length() - 1; i >= 0; --i )
 	{

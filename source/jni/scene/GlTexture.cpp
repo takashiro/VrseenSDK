@@ -14,7 +14,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VPath.h"
 #include <fstream>
 
-#include "api/VGlOperation.h"
+#include "api/VEglDriver.h"
 #include "VAlgorithm.h"
 #include "VSysFile.h"
 
@@ -401,7 +401,7 @@ static GlTexture CreateGlTexture( const char * fileName, const int format, const
 						const void * data, const size_t dataSize,
 						const int mipcount, const bool useSrgbFormat, const bool imageSizeStored )
 {
-    VGlOperation glOperation;
+
 	// vInfo("CreateGLTexture(): format " << NameForTextureFormat( static_cast< TextureFormat >( format ) ));
 
 	GLenum glFormat;
@@ -459,7 +459,7 @@ static GlTexture CreateGlTexture( const char * fileName, const int format, const
 		if ( format & Texture_Compressed )
 		{
 			glCompressedTexImage2D( GL_TEXTURE_2D, i, glInternalFormat, w, h, 0, mipSize, level );
-            glOperation.logErrorsEnum( "Texture_Compressed" );
+            VEglDriver::logErrorsEnum( "Texture_Compressed" );
 		}
 		else
 		{
@@ -497,7 +497,7 @@ static GlTexture CreateGlTexture( const char * fileName, const int format, const
 	}
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 
-    glOperation.logErrorsEnum( "Texture load" );
+    VEglDriver::logErrorsEnum( "Texture load" );
 
 	glBindTexture( GL_TEXTURE_2D, 0 );
 
@@ -508,7 +508,7 @@ static GlTexture CreateGlCubeTexture( const char * fileName, const int format, c
 						const void * data, const size_t dataSize,
 						const int mipcount, const bool useSrgbFormat, const bool imageSizeStored )
 {
-    VGlOperation glOperation;
+
 	assert( width == height );
 
 	if ( mipcount <= 0 )
@@ -597,7 +597,7 @@ static GlTexture CreateGlCubeTexture( const char * fileName, const int format, c
 	}
 	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 
-    glOperation.logErrorsEnum( "Texture load" );
+    VEglDriver::logErrorsEnum( "Texture load" );
 
 	glBindTexture( GL_TEXTURE_CUBE_MAP, 0 );
 

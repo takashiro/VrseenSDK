@@ -33,10 +33,10 @@ public:
 	OvrAnimComponent( float const framesPerSecond, bool const looping );
 	virtual ~OvrAnimComponent() { }
 
-    virtual eMsgStatus      onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+    virtual eMsgStatus      onEventImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 										  VRMenuObject * self, VRMenuEvent const & event );
 
-    eMsgStatus frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event );
+    eMsgStatus frame( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event );
 
     void			setFrame( VRMenuObject * self, int const frameNum );
     void			play();
@@ -48,7 +48,7 @@ public:
     int				curFrame() const { return m_curFrame; }
 
 protected:
-    virtual void	setFrameVisibilities( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self ) const = 0;
+    virtual void	setFrameVisibilities( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self ) const = 0;
     virtual int		getNumFrames( VRMenuObject * self ) const = 0;
 
     double			baseTime() const { return m_baseTime;  }
@@ -85,7 +85,7 @@ public:
     char const *	typeName() const { return TYPE_NAME; }
 
 protected:
-    virtual void	setFrameVisibilities( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self ) const;
+    virtual void	setFrameVisibilities( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self ) const;
     virtual int		getNumFrames( VRMenuObject * self ) const;
 
 private:
@@ -110,7 +110,7 @@ public:
 	}
 
 protected:
-    virtual void	setFrameVisibilities( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self ) const;
+    virtual void	setFrameVisibilities( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self ) const;
     virtual int		getNumFrames( VRMenuObject * self ) const;
 
 private:

@@ -34,6 +34,8 @@ public:
     VLog &operator << (uint num);
     VLog &operator << (float num);
     VLog &operator << (double num);
+    VLog &operator << (long num);
+    VLog &operator << (ulong num);
     VLog &operator << (long long num);
     VLog &operator << (ulonglong num);
 

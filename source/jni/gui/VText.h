@@ -8,7 +8,7 @@
 #pragma once
 #include "VString.h"
 #include "VVector.h"
-#include "Input.h"
+#include "VFrame.h"
 NV_NAMESPACE_BEGIN
 class VPointTracker
 {
@@ -42,7 +42,7 @@ public:
     long long       infoTextEndFrame;   // time to stop showing text
     VPointTracker   infoTextPointTracker;   // smoothly tracks to text ideal location
     VPointTracker   fpsPointTracker;
-    VrFrame         vrFrame;
+    VFrame         vrFrame;
 
     void show(const VString &text, float duration);
     void show( float const duration, V3Vectf const & offset, V4Vectf const & color, const char * fmt, ... );

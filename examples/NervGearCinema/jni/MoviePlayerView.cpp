@@ -504,7 +504,7 @@ void MoviePlayerView::HideUI()
 	SetSeekIcon( SeekSpeed );
 }
 
-void MoviePlayerView::CheckDebugControls( const VrFrame & vrFrame )
+void MoviePlayerView::CheckDebugControls( const VFrame & vrFrame )
 {
     if ( !Cinema.allowDebugControls )
 	{
@@ -518,34 +518,34 @@ void MoviePlayerView::CheckDebugControls( const VrFrame & vrFrame )
 	}
 #endif
 
-	if ( vrFrame.Input.buttonPressed & BUTTON_X )
+	if ( vrFrame.input.buttonPressed & BUTTON_X )
 	{
         Cinema.sceneMgr.ToggleLights( 0.5f );
 	}
 
-	if ( vrFrame.Input.buttonPressed & BUTTON_SELECT )
+	if ( vrFrame.input.buttonPressed & BUTTON_SELECT )
 	{
         Cinema.sceneMgr.UseOverlay = !Cinema.sceneMgr.UseOverlay;
-        vApp->createToast( "Overlay: %i", Cinema.sceneMgr.UseOverlay );
+        //vApp->createToast( "Overlay: %i", Cinema.sceneMgr.UseOverlay );
 	}
 
 	// Press Y to toggle FreeScreen mode, while holding the scale and distance can be adjusted
-	if ( vrFrame.Input.buttonPressed & BUTTON_Y )
+	if ( vrFrame.input.buttonPressed & BUTTON_Y )
 	{
         Cinema.sceneMgr.FreeScreenActive = !Cinema.sceneMgr.FreeScreenActive || Cinema.sceneMgr.SceneInfo.UseFreeScreen;
         Cinema.sceneMgr.PutScreenInFront();
 	}
 
-    if ( Cinema.sceneMgr.FreeScreenActive && ( vrFrame.Input.buttonState & BUTTON_Y ) )
+    if ( Cinema.sceneMgr.FreeScreenActive && ( vrFrame.input.buttonState & BUTTON_Y ) )
 	{
-        Cinema.sceneMgr.FreeScreenDistance -= vrFrame.Input.sticks[0][1] * vrFrame.DeltaSeconds * 3;
+        Cinema.sceneMgr.FreeScreenDistance -= vrFrame.input.sticks[0][1] * vrFrame.deltaSeconds * 3;
         Cinema.sceneMgr.FreeScreenDistance = NervGear::VAlgorithm::Clamp( Cinema.sceneMgr.FreeScreenDistance, 1.0f, 4.0f );
-        Cinema.sceneMgr.FreeScreenScale += vrFrame.Input.sticks[0][0] * vrFrame.DeltaSeconds * 3;
+        Cinema.sceneMgr.FreeScreenScale += vrFrame.input.sticks[0][0] * vrFrame.deltaSeconds * 3;
         Cinema.sceneMgr.FreeScreenScale = NervGear::VAlgorithm::Clamp( Cinema.sceneMgr.FreeScreenScale, 1.0f, 4.0f );
 
-		if ( vrFrame.Input.buttonReleased & (BUTTON_LSTICK_UP|BUTTON_LSTICK_DOWN|BUTTON_LSTICK_LEFT|BUTTON_LSTICK_RIGHT) )
+		if ( vrFrame.input.buttonReleased & (BUTTON_LSTICK_UP|BUTTON_LSTICK_DOWN|BUTTON_LSTICK_LEFT|BUTTON_LSTICK_RIGHT) )
 		{
-            vApp->createToast( "FreeScreenDistance:%3.1f  FreeScreenScale:%3.1f", Cinema.sceneMgr.FreeScreenDistance, Cinema.sceneMgr.FreeScreenScale );
+            //vApp->createToast( "FreeScreenDistance:%3.1f  FreeScreenScale:%3.1f", Cinema.sceneMgr.FreeScreenDistance, Cinema.sceneMgr.FreeScreenScale );
 		}
 	}
 }
@@ -600,11 +600,11 @@ V2Vectf MoviePlayerView::GazeCoordinatesOnScreen( const VR4Matrixf & viewMatrix,
     return V2Vectf( localCoordinate.x, localCoordinate.y );
 }
 
-void MoviePlayerView::CheckInput( const VrFrame & vrFrame )
+void MoviePlayerView::CheckInput( const VFrame & vrFrame )
 {
 	if ( !uiActive && !RepositionScreen )
 	{
-		if ( ( vrFrame.Input.buttonPressed & BUTTON_A ) || ( ( vrFrame.Input.buttonReleased & BUTTON_TOUCH ) && !( vrFrame.Input.buttonState & BUTTON_TOUCH_WAS_SWIPE ) ) )
+		if ( ( vrFrame.input.buttonPressed & BUTTON_A ) || ( ( vrFrame.input.buttonReleased & BUTTON_TOUCH ) && !( vrFrame.input.buttonState & BUTTON_TOUCH_WAS_SWIPE ) ) )
 		{
 			// open ui if it's not visible
 			vApp->playSound( "touch_up" );
@@ -615,9 +615,9 @@ void MoviePlayerView::CheckInput( const VrFrame & vrFrame )
 		}
 	}
 
-	if ( vrFrame.Input.buttonPressed & ( BUTTON_DPAD_LEFT | BUTTON_SWIPE_BACK ) )
+	if ( vrFrame.input.buttonPressed & ( BUTTON_DPAD_LEFT | BUTTON_SWIPE_BACK ) )
 	{
-		if ( ( vrFrame.Input.buttonPressed & BUTTON_DPAD_LEFT ) || !GazeTimer.IsFocused() )
+		if ( ( vrFrame.input.buttonPressed & BUTTON_DPAD_LEFT ) || !GazeTimer.IsFocused() )
 		{
 			ShowUI();
 			if ( SeekSpeed == 0 )
@@ -637,9 +637,9 @@ void MoviePlayerView::CheckInput( const VrFrame & vrFrame )
 		}
 	}
 
-	if ( vrFrame.Input.buttonPressed & ( BUTTON_DPAD_RIGHT | BUTTON_SWIPE_FORWARD ) )
+	if ( vrFrame.input.buttonPressed & ( BUTTON_DPAD_RIGHT | BUTTON_SWIPE_FORWARD ) )
 	{
-		if ( ( vrFrame.Input.buttonPressed & BUTTON_DPAD_RIGHT ) || !GazeTimer.IsFocused() )
+		if ( ( vrFrame.input.buttonPressed & BUTTON_DPAD_RIGHT ) || !GazeTimer.IsFocused() )
 		{
 			ShowUI();
 			if ( SeekSpeed == 0 )
@@ -683,7 +683,7 @@ void MoviePlayerView::CheckInput( const VrFrame & vrFrame )
                 MoveScreenLabel.SetTextColor( V4Vectf( alpha ) );
 			}
 
-			if ( vrFrame.Input.buttonPressed & ( BUTTON_A | BUTTON_TOUCH ) )
+			if ( vrFrame.input.buttonPressed & ( BUTTON_A | BUTTON_TOUCH ) )
 			{
 				RepositionScreen = true;
 			}
@@ -700,7 +700,7 @@ void MoviePlayerView::CheckInput( const VrFrame & vrFrame )
 	// while we're holding down the button or touchpad, reposition screen
 	if ( RepositionScreen )
 	{
-		if ( vrFrame.Input.buttonState & ( BUTTON_A | BUTTON_TOUCH ) )
+		if ( vrFrame.input.buttonState & ( BUTTON_A | BUTTON_TOUCH ) )
 		{
             Cinema.sceneMgr.PutScreenInFront();
 		}
@@ -710,19 +710,19 @@ void MoviePlayerView::CheckInput( const VrFrame & vrFrame )
 		}
 	}
 
-	if ( vrFrame.Input.buttonPressed & BUTTON_START )
+	if ( vrFrame.input.buttonPressed & BUTTON_START )
 	{
 		TogglePlayback();
 	}
 
-	if ( vrFrame.Input.buttonPressed & BUTTON_SELECT )
+	if ( vrFrame.input.buttonPressed & BUTTON_SELECT )
 	{
 		// movie select
 		vApp->playSound( "touch_up" );
         Cinema.setMovieSelection( false );
 	}
 
-	if ( vrFrame.Input.buttonPressed & BUTTON_B )
+	if ( vrFrame.input.buttonPressed & BUTTON_B )
 	{
 		if ( !uiActive )
 		{
@@ -831,7 +831,7 @@ void MoviePlayerView::ScrubBarClicked( const float progress )
     NextSeekTime = VTimer::Seconds() + 0.1;
 }
 
-void MoviePlayerView::UpdateUI( const VrFrame & vrFrame )
+void MoviePlayerView::UpdateUI( const VFrame & vrFrame )
 {
 	if ( uiActive )
 	{
@@ -844,14 +844,14 @@ void MoviePlayerView::UpdateUI( const VrFrame & vrFrame )
 		}
 
 		// if we press the touchpad or a button outside of the playback controls, then close the UI
-		if ( ( ( vrFrame.Input.buttonPressed & BUTTON_A ) != 0 ) || ( ( vrFrame.Input.buttonPressed & BUTTON_TOUCH ) != 0 ) )
+		if ( ( ( vrFrame.input.buttonPressed & BUTTON_A ) != 0 ) || ( ( vrFrame.input.buttonPressed & BUTTON_TOUCH ) != 0 ) )
 		{
 			// ignore button A or touchpad until release so we don't close the UI immediately after opening it
 			BackgroundClicked = !GazeTimer.IsFocused() && !UIOpened;
 		}
 
-		if ( ( ( vrFrame.Input.buttonReleased & BUTTON_A ) != 0 ) ||
-			( ( ( vrFrame.Input.buttonReleased & BUTTON_TOUCH ) != 0 ) && ( ( vrFrame.Input.buttonState & BUTTON_TOUCH_WAS_SWIPE ) == 0 ) )	)
+		if ( ( ( vrFrame.input.buttonReleased & BUTTON_A ) != 0 ) ||
+			( ( ( vrFrame.input.buttonReleased & BUTTON_TOUCH ) != 0 ) && ( ( vrFrame.input.buttonState & BUTTON_TOUCH_WAS_SWIPE ) == 0 ) )	)
 		{
 			if ( !GazeTimer.IsFocused() && BackgroundClicked )
 			{
@@ -895,13 +895,11 @@ VR4Matrixf MoviePlayerView::DrawEyeView( const int eye, const float fovDegrees )
  *
  * App override
  */
-VR4Matrixf MoviePlayerView::Frame( const VrFrame & vrFrame )
+VR4Matrixf MoviePlayerView::Frame( const VFrame & vrFrame )
 {
 	// Drop to 2x MSAA during playback, people should be focused
-	// on the high quality screen.
-    VEyeBuffer::EyeParms eyeParms = vApp->eyeParms();
-	eyeParms.multisamples = 2;
-	vApp->setEyeParms( eyeParms );
+    // on the high quality screen.
+    vApp->eyeSettings().multisamples = 2;
 
 	if ( Native::HadPlaybackError( vApp ) )
 	{
@@ -959,7 +957,7 @@ void ControlsGazeTimer::SetGazeTime()
     LastGazeTime = VTimer::Seconds();
 }
 
-eMsgStatus ControlsGazeTimer::onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus ControlsGazeTimer::onEventImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
     switch( event.eventType )
@@ -1065,7 +1063,7 @@ void ScrubBarComponent::SetTimeText( UILabel *label, const int time )
     label->SetText(text);
 }
 
-eMsgStatus ScrubBarComponent::onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus ScrubBarComponent::onEventImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
     switch( event.eventType )
@@ -1092,12 +1090,12 @@ eMsgStatus ScrubBarComponent::onEventImpl( App * app, VrFrame const & vrFrame, O
     }
 }
 
-eMsgStatus ScrubBarComponent::OnFrame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus ScrubBarComponent::OnFrame( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
 	if ( TouchDown )
 	{
-		if ( ( vrFrame.Input.buttonState & ( BUTTON_A | BUTTON_TOUCH ) ) != 0 )
+		if ( ( vrFrame.input.buttonState & ( BUTTON_A | BUTTON_TOUCH ) ) != 0 )
 		{
 			OnClick( app, vrFrame, event );
 		}
@@ -1133,7 +1131,7 @@ eMsgStatus ScrubBarComponent::OnFrame( App * app, VrFrame const & vrFrame, OvrVR
 	return MSG_STATUS_ALIVE;
 }
 
-void ScrubBarComponent::OnClick( App * app, VrFrame const & vrFrame, VRMenuEvent const & event )
+void ScrubBarComponent::OnClick( App * app, VFrame const & vrFrame, VRMenuEvent const & event )
 {
 	if ( OnClickFunction == NULL )
 	{

@@ -10,7 +10,7 @@ NV_NAMESPACE_BEGIN
 namespace JniUtils {
     VString Convert(JNIEnv *jni, jstring jstr);
     jstring Convert(JNIEnv *jni, const VString &str);
-    inline jstring Convert(JNIEnv *jni, char const * str) { return jni->NewStringUTF(str); }
+    inline jstring Convert(JNIEnv *jni, const char *str) { return jni->NewStringUTF(str); }
 
     VString GetCurrentPackageName(JNIEnv *jni, jobject activityObject);
     VString GetCurrentActivityName(JNIEnv * jni, jobject activityObject);
@@ -18,8 +18,22 @@ namespace JniUtils {
     jclass GetGlobalClassReference(JNIEnv *jni, const char *className);
     jmethodID GetMethodID(JNIEnv *jni, jclass jniclass, const char *name, const char *signature);
     jmethodID GetStaticMethodID(JNIEnv *jni, jclass jniclass, const char *name, const char *signature);
-    void LoadDevConfig(bool const forceReload);
+
+    JavaVM *GetJavaVM();
+
+    typedef void (*Loader)(JavaVM *, JNIEnv *);
+    void RegisterLoader(Loader loader);
 }
+
+#define NV_REGISTER_JNI_LOADER(func) namespace {\
+    struct Loader {\
+        Loader() {\
+            JniUtils::RegisterLoader(func);\
+        }\
+    };\
+    Loader loader;\
+}
+
 
 class JavaObject
 {

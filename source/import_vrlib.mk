@@ -15,7 +15,7 @@
 LOCAL_PATH_TEMP := $(LOCAL_PATH)
 LOCAL_PATH := $(call my-dir)
 
-# oculus
+# NervGear
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := nervgear

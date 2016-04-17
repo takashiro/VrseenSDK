@@ -14,9 +14,9 @@ Copyright   :   Copyright 2012 Oculus VR, LCC. All Rights reserved.
 #include <VStandardPath.h>
 #include <VLog.h>
 #include <VColor.h>
-#include <VEyeBuffer.h>
-
-static const char * versionString = "VrScene v0.1.0";
+#include <VEyeItem.h>
+#include <VFrame.h>
+#include <App.h>
 
 extern "C"
 {
@@ -159,17 +159,17 @@ VR4Matrixf VrScene::drawEyeView( const int eye, const float fovDegrees )
 	return view;
 }
 
-VR4Matrixf VrScene::onNewFrame( const VrFrame vrFrame )
+VR4Matrixf VrScene::onNewFrame( const VFrame vrFrame )
 {
 	// Get the current vrParms for the buffer resolution.
-    const VEyeBuffer::EyeParms vrParms = vApp->eyeParms();
+    VEyeItem::Settings &eyeSettings = vApp->eyeSettings();
 
 	// Player movement
-    Scene.Frame( vApp->vrViewParms(), vrFrame, vApp->kernel()->m_externalVelocity );
+    Scene.Frame( vApp->viewSettings(), vrFrame, vApp->kernel()->m_externalVelocity );
 
 	// Make the test object hop up and down
 	{
-        const float y = 1 + sin( 2 * vrFrame.PoseState.TimeBySeconds );
+        const float y = 1 + sin( 2 * vrFrame.pose.timestamp );
 		TestObject.State.modelMatrix.M[0][3] = 2;
 		TestObject.State.modelMatrix.M[1][3] = y;
 	}
@@ -181,25 +181,23 @@ VR4Matrixf VrScene::onNewFrame( const VrFrame vrFrame )
 		//-------------------------------------------
 		// Check for button actions
 		//-------------------------------------------
-		if ( !( vrFrame.Input.buttonState & BUTTON_RIGHT_TRIGGER ) )
+		if ( !( vrFrame.input.buttonState & BUTTON_RIGHT_TRIGGER ) )
 		{
-			if ( vrFrame.Input.buttonPressed & BUTTON_SELECT )
+			if ( vrFrame.input.buttonPressed & BUTTON_SELECT )
 			{
-				vApp->createToast( "%s", versionString );
+                //vApp->createToast( "%s", versionString );
 			}
 
 			// Switch buffer parameters for testing
-			if ( vrFrame.Input.buttonPressed & BUTTON_X )
-			{
-                VEyeBuffer::EyeParms newParms = vrParms;
-				switch ( newParms.multisamples )
+			if ( vrFrame.input.buttonPressed & BUTTON_X )
+            {
+                switch ( eyeSettings.multisamples )
 				{
-					case 2: newParms.multisamples = 4; break;
-					case 4: newParms.multisamples = 1; break;
-					default: newParms.multisamples = 2; break;
-				}
-				vApp->setEyeParms( newParms );
-				vApp->createToast( "multisamples: %i", newParms.multisamples );
+                    case 2: eyeSettings.multisamples = 4; break;
+                    case 4: eyeSettings.multisamples = 1; break;
+                    default: eyeSettings.multisamples = 2; break;
+                }
+                //vApp->createToast( "multisamples: %i", eyeSettings.multisamples );
 			}
 		}
 	}

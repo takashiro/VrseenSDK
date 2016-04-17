@@ -1,22 +1,8 @@
-/************************************************************************************
-
-Filename    :   VRMenuComponent.h
-Content     :   Menuing system for VR apps.
-Created     :   June 23, 2014
-Authors     :   Jonathan E. Wright
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
 #include "VRMenuComponent.h"
 
-#include "Android/Log.h"
-#include "api/VKernel.h"		// ovrPoseStatef
-
-#include "../Input.h"
-#include "../App.h"
-#include "../Input.h"
+#include "VKernel.h"		// ovrPoseStatef
+#include "VFrame.h"
+#include "App.h"
 #include "VRMenuMgr.h"
 
 namespace NervGear {
@@ -25,7 +11,7 @@ namespace NervGear {
 
 //==============================
 // VRMenuComponent::OnEvent
-eMsgStatus VRMenuComponent::onEvent( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus VRMenuComponent::onEvent( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
     vAssert( self != NULL );
