@@ -9,8 +9,6 @@
 #include <unistd.h>
 #include <list>
 
-#include <3rdparty/stb/stb_image_write.h>
-
 #include "VModule.h"
 #include "VEglDriver.h"
 #include "android/JniUtils.h"
@@ -28,12 +26,11 @@
 #include "ModelView.h"
 #include "SurfaceTexture.h"
 
-#include "TypesafeNumber.h"
 #include "VBasicmath.h"
 #include "VolumePopup.h"
-#include "api/VDevice.h"
-#include "api/VFrameSmooth.h"
-#include "api/VKernel.h"
+#include "VDevice.h"
+#include "VFrameSmooth.h"
+#include "VKernel.h"
 #include "VrLocale.h"
 #include "VRMenuMgr.h"
 #include "VUserSettings.h"
@@ -1214,6 +1211,10 @@ struct App::Private
 
             // Shut down the message queue so it cannot overflow.
             eventLoop.quit();
+
+            for (VModule *module : modules) {
+                module->onDestroy();
+            }
 
             if (errorTexture != 0)
             {

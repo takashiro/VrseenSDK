@@ -171,10 +171,8 @@ void VMainActivity::onCreate(jstring javaFromPackageNameString, jstring javaComm
         vInfo("new AppLocal()");
         new App(jni, activity, this);
         vApp->execute();
-        vInfo("new AppAppLocal()");
-    }
-    else
-    {	// Just update the activity object.
+    } else {
+        // Just update the activity object.
         vInfo("Update AppLocal");
         if (vApp->javaObject() != nullptr)
         {
