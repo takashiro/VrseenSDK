@@ -1,7 +1,7 @@
 #ifndef VOPENGLTEXTURE_H
 #define VOPENGLTEXTURE_H
 
-#include "VGlOperation.h"
+#include "VEglDriver.h"
 #include "VTexture.h"
 #include "VImage.h"
 #include "VFlags.h"

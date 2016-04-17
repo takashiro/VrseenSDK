@@ -5,7 +5,7 @@
 #include "VPath.h"
 #include "VFile.h"
 #include <memory>
-#include "VGlOperation.h"
+#include "VEglDriver.h"
 
 NV_NAMESPACE_BEGIN
 

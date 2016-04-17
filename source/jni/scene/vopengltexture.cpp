@@ -227,7 +227,7 @@ static VOpenGLTexture CreateGlTexture(const int format, const int width, const i
 {
     VOpenGLTexture texture;
     texture.setTargetType(GL_TEXTURE_2D);
-    VGlOperation glOperation;
+    VEglDriver glOperation;
     // vInfo("CreateGLTexture(): format " << NameForTextureFormat( static_cast< TextureFormat >( format ) ));
 
     GLenum glFormat;
@@ -337,7 +337,7 @@ static VOpenGLTexture CreateGlCubeTexture(const int format, const int width, con
 {
     VOpenGLTexture texture;
     texture.setTargetType(GL_TEXTURE_CUBE_MAP);
-    VGlOperation glOperation;
+    VEglDriver glOperation;
     assert( width == height );
 
     if ( mipcount <= 0 )
@@ -761,7 +761,7 @@ void VOpenGLTexture::uploadTexture(bool newTexture, void* mipmapData, uint level
 {
     // check which image needs to be uploaded
     VImage* image = level?MipImage:Image;
-    VGlOperation gloperation;
+    VEglDriver gloperation;
     if (!image)
     {
         vInfo("No image for OpenGL texture to upload");
