@@ -2,7 +2,7 @@
 
 #include "vglobal.h"
 #include "VArray.h"
-#include "VPos.h"
+//#include "VPos.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -21,25 +21,27 @@ public:
 
     void update();
 
-    void setPos(const VPosF &pos);
-    VPosF &pos();
-    VPosF pos() const;
-
-    VPosF globalPos() const;
-
-    void setX(vreal x);
-    vreal x() const;
-
-    void setY(vreal y);
-    vreal y() const;
-
-    void setZ(vreal z);
-    vreal z() const;
+    //TODO 暂时注释掉，否则有编译问题
+//    void setPos(const VPosF &pos);
+//    VPosF &pos();
+//    VPosF pos() const;
+//
+//    VPosF globalPos() const;
+//
+//    void setX(vreal x);
+//    vreal x() const;
+//
+//    void setY(vreal y);
+//    vreal y() const;
+//
+//    void setZ(vreal z);
+//    vreal z() const;
 
     void setVisible(bool visible);
     bool isVisible() const;
 
-protected:
+//TODO 暂时注释
+//protected:
     virtual void paint();
 
 private:

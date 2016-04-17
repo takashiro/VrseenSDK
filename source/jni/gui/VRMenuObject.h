@@ -17,7 +17,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VArray.h"
 #include "VString.h"
 #include "TypesafeNumber.h"
-#include "api/VGlOperation.h"
+#include "api/VEglDriver.h"
 #include "CollisionPrimitive.h"
 #include "BitmapFont.h" // HorizontalJustification & VerticalJustification
 

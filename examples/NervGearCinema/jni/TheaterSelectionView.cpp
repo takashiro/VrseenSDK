@@ -26,7 +26,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "Native.h"
 #include "core/VTimer.h"
 
-#include <VEyeBuffer.h>
+#include <VEyeItem.h>
 
 namespace OculusCinema {
 
@@ -360,12 +360,10 @@ void TheaterSelectionView::SelectPressed( void )
 	}
 }
 
-VR4Matrixf TheaterSelectionView::Frame( const VrFrame & vrFrame )
+VR4Matrixf TheaterSelectionView::Frame( const VFrame & vrFrame )
 {
 	// We want 4x MSAA in the selection screen
-    VEyeBuffer::EyeParms eyeParms = vApp->eyeParms();
-	eyeParms.multisamples = 4;
-    vApp->setEyeParms( eyeParms );
+    vApp->eyeSettings().multisamples = 4;
 
     if ( SelectionObject->isHilighted() )
 	{
@@ -388,7 +386,7 @@ VR4Matrixf TheaterSelectionView::Frame( const VrFrame & vrFrame )
 		Cinema.setMovieSelection( true );
 	}
 
-	if ( vrFrame.Input.buttonPressed & BUTTON_B )
+	if ( vrFrame.input.buttonPressed & BUTTON_B )
 	{
         vApp->playSound( "touch_up" );
 		Cinema.setMovieSelection( true );

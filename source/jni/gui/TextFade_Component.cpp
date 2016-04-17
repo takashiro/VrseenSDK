@@ -13,7 +13,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "TextFade_Component.h"
 #include "core/VTimer.h"
 
-#include "Input.h"
+#include "VFrame.h"
 #include "BitmapFont.h"
 #include "VRMenuMgr.h"
 
@@ -47,7 +47,7 @@ OvrTextFade_Component::OvrTextFade_Component( V3Vectf const & iconBaseOffset, V3
 
 //==============================
 // OvrTextFade_Component::OnEvent_Impl
-eMsgStatus OvrTextFade_Component::onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus OvrTextFade_Component::onEventImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 												VRMenuObject * self, VRMenuEvent const & event )
 {
 	vAssert( handlesEvent( VRMenuEventFlags_t( event.eventType ) ) );
@@ -67,7 +67,7 @@ eMsgStatus OvrTextFade_Component::onEventImpl( App * app, VrFrame const & vrFram
 
 //==============================
 // OvrTextFade_Component::Frame
-eMsgStatus OvrTextFade_Component::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus OvrTextFade_Component::frame( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 											VRMenuObject * self, VRMenuEvent const & event )
 {
     double t = VTimer::Seconds();
@@ -94,8 +94,8 @@ eMsgStatus OvrTextFade_Component::frame( App * app, VrFrame const & vrFrame, Ovr
 
 	float const FADE_RATE = 1.0f / FADE_DURATION;
 
-	m_textAlphaFader.update( FADE_RATE, vrFrame.DeltaSeconds );
-	m_iconOffsetFader.update( FADE_RATE, vrFrame.DeltaSeconds );
+	m_textAlphaFader.update( FADE_RATE, vrFrame.deltaSeconds );
+	m_iconOffsetFader.update( FADE_RATE, vrFrame.deltaSeconds );
 
     V4Vectf textColor = self->textColor();
 	textColor.w = m_textAlphaFader.finalAlpha();
@@ -109,7 +109,7 @@ eMsgStatus OvrTextFade_Component::frame( App * app, VrFrame const & vrFrame, Ovr
 
 //==============================
 // OvrTextFade_Component::FocusGained
-eMsgStatus OvrTextFade_Component::focusGained( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus OvrTextFade_Component::focusGained( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 												VRMenuObject * self, VRMenuEvent const & event )
 {
 
@@ -121,7 +121,7 @@ eMsgStatus OvrTextFade_Component::focusGained( App * app, VrFrame const & vrFram
 
 //==============================
 // OvrTextFade_Component::FocusLost
-eMsgStatus OvrTextFade_Component::focusLost( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus OvrTextFade_Component::focusLost( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 												VRMenuObject * self, VRMenuEvent const & event )
 {
     m_startFadeOutTime = FADE_DELAY + VTimer::Seconds();

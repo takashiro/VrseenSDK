@@ -236,7 +236,7 @@ void OvrScrollBarComponent::getScrollBarParms( VRMenu & menu, float scrollBarLen
 	// add parms for the base image that underlays the whole scrollbar
 	{
 		int sbWidth, sbHeight = 0;
-		GLuint sbTexture = NervGear::LoadTextureFromApplicationPackage( GetImage( SCROLLBAR_IMAGE_BASE, verticalBar ), TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), sbWidth, sbHeight );
+        GLuint sbTexture = LoadTextureFromApplicationPackage( GetImage( SCROLLBAR_IMAGE_BASE, verticalBar ), TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), sbWidth, sbHeight );
 		if ( verticalBar )
 		{
 			scrollComponent->setScrollBarBaseWidth( (float)( sbWidth ) );
@@ -274,7 +274,7 @@ void OvrScrollBarComponent::getScrollBarParms( VRMenu & menu, float scrollBarLen
 	// add parms for the thumb image of the scrollbar
 	{
 		int stWidth, stHeight = 0;
-		GLuint stTexture = NervGear::LoadTextureFromApplicationPackage( GetImage( SCROLLBAR_IMAGE_THUMB, verticalBar ), TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), stWidth, stHeight );
+        GLuint stTexture = LoadTextureFromApplicationPackage( GetImage( SCROLLBAR_IMAGE_THUMB, verticalBar ), TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), stWidth, stHeight );
 		scrollComponent->setScrollBarThumbWidth(  (float)( stWidth ) );
 		scrollComponent->setScrollBarThumbHeight( (float)( stHeight ) );
 
@@ -307,7 +307,7 @@ void OvrScrollBarComponent::getScrollBarParms( VRMenu & menu, float scrollBarLen
 
 //==============================
 // OvrScrollBarComponent::OnEvent_Impl
-eMsgStatus OvrScrollBarComponent::onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus OvrScrollBarComponent::onEventImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 		VRMenuObject * self, VRMenuEvent const & event )
 {
 	switch ( event.eventType )
@@ -380,14 +380,14 @@ void OvrScrollBarComponent::setScrollState( VRMenuObject * self, const eScrollBa
 
 //==============================
 // OvrScrollBarComponent::OnFrameUpdate
-eMsgStatus OvrScrollBarComponent::onFrameUpdate( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus OvrScrollBarComponent::onFrameUpdate( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 		VRMenuObject * self, VRMenuEvent const & event )
 {
 	vAssert( self != NULL );
     if ( m_fader.fadeState() != Fader::FADE_NONE )
 	{
         const float fadeRate = ( m_fader.fadeState() == Fader::FADE_IN ) ? m_fadeInRate : m_fadeOutRate;
-		m_fader.update( fadeRate, vrFrame.DeltaSeconds );
+		m_fader.update( fadeRate, vrFrame.deltaSeconds );
 		const float CurrentFadeLevel = m_fader.finalAlpha();
         self->setColor( V4Vectf( 1.0f, 1.0f, 1.0f, CurrentFadeLevel ) );
 	}

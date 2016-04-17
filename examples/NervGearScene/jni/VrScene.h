@@ -17,7 +17,7 @@ public:
 	virtual void		init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI );
 	virtual void		shutdown();
     virtual VR4Matrixf	drawEyeView( const int eye, const float fovDegrees );
-    virtual VR4Matrixf	onNewFrame( VrFrame vrFrame );
+    virtual VR4Matrixf	onNewFrame( VFrame vrFrame );
     virtual	void		onNewIntent(const VString &fromPackageName, const VString &command, const VString &uri);
 
     void				LoadScene(const VString &path );

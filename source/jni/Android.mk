@@ -50,43 +50,22 @@ LOCAL_SRC_FILES  := \
 	core/VThread.cpp \
 	core/VTimer.cpp \
 	core/MappedFile.cpp \
+	core/VModule.cpp \
 	core/VMutex.cpp \
 	core/VUserSettings.cpp \
 	core/VVariant.cpp \
 	core/VWaitCondition.cpp \
 	core/android/JniUtils.cpp \
-	core/android/LogUtils.cpp \
 	core/android/VOsBuild.cpp \
 	api/VKernel.cpp \
 	api/VDevice.cpp \
-	api/HmdSensors.cpp \
 	api/VLensDistortion.cpp \
 	api/VFrameSmooth.cpp \
 	api/VGlGeometry.cpp \
 	api/VMainActivity.cpp \
-	api/VGlOperation.cpp \
-	api/VSystemActivities.cpp \
+	api/VEglDriver.cpp \
 	api/VGlShader.cpp \
-	api/sensor/DeviceHandle.cpp \
-	api/sensor/DeviceImpl.cpp \
-	api/sensor/LatencyTest.cpp \
-	api/sensor/LatencyTestDeviceImpl.cpp \
-	api/sensor/Profile.cpp \
-	api/sensor/SensorFilter.cpp \
-	api/sensor/SensorCalibration.cpp \
-	api/sensor/GyroTempCalibration.cpp \
-	api/sensor/SensorFusion.cpp \
-	api/sensor/SensorTimeFilter.cpp \
-	api/sensor/SensorDeviceImpl.cpp \
-	api/sensor/Android_DeviceManager.cpp \
-	api/sensor/Android_HIDDevice.cpp \
-	api/sensor/Android_HMDDevice.cpp \
-	api/sensor/Android_SensorDevice.cpp \
-	api/sensor/Android_PhoneSensors.cpp \
-	api/sensor/Common_HMDDevice.cpp \
-	api/sensor/ThreadCommandQueue.cpp \
-	api/sensor/RefCount.cpp \
-	api/sensor/Log.cpp \
+	api/VRotationSensor.cpp \
 	gui/VRMenuComponent.cpp \
 	gui/VRMenuMgr.cpp \
 	gui/VRMenuObjectLocal.cpp \
@@ -126,7 +105,7 @@ LOCAL_SRC_FILES  := \
 	scene/VScene.cpp \
 	scene/BitmapFont.cpp \
 	scene/DebugLines.cpp \
-	scene/VEyeBuffer.cpp \
+	scene/VEyeItem.cpp \
 	scene/EyePostRender.cpp \
 	scene/GazeCursor.cpp \
 	scene/GlTexture.cpp \
@@ -139,7 +118,6 @@ LOCAL_SRC_FILES  := \
 	scene/SwipeView.cpp \
 	App.cpp \
 	VrLocale.cpp
-
 
 LOCAL_SRC_FILES += \
 	3rdParty/stb/stb_image.c \

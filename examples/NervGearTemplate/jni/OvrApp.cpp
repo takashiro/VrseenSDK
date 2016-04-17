@@ -62,10 +62,10 @@ VR4Matrixf OvrApp::drawEyeView( const int eye, const float fovDegrees )
 	return view;
 }
 
-VR4Matrixf OvrApp::onNewFrame(const VrFrame vrFrame)
+VR4Matrixf OvrApp::onNewFrame(const VFrame vrFrame)
 {
 	// Player movement
-    Scene.Frame( vApp->vrViewParms(), vrFrame, vApp->kernel()->m_externalVelocity);
+    Scene.Frame( vApp->viewSettings(), vrFrame, vApp->kernel()->m_externalVelocity);
 
 	vApp->drawEyeViewsPostDistorted( Scene.CenterViewMatrix() );
 

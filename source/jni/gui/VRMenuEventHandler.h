@@ -20,7 +20,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 NV_NAMESPACE_BEGIN
 
-struct VrFrame;
+struct VFrame;
 class App;
 
 //==============================================================
@@ -31,11 +31,11 @@ public:
 	VRMenuEventHandler();
 	~VRMenuEventHandler();
 
-    void			frame( App * app, const VrFrame & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font,
+    void			frame( App * app, const VFrame & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font,
                             menuHandle_t const & rootHandle, VPosf const & menuPose,
                             gazeCursorUserId_t const & gazeUserId, VArray< VRMenuEvent > & events );
 
-    void			handleEvents( App * app, const VrFrame & vrFrame, OvrVRMenuMgr & menuMgr,
+    void			handleEvents( App * app, const VFrame & vrFrame, OvrVRMenuMgr & menuMgr,
                             menuHandle_t const rootHandle, VArray< VRMenuEvent > const & events ) const;
 
     void			initComponents( VArray< VRMenuEvent > & events );
@@ -54,11 +54,11 @@ private:
     SoundLimiter	m_upSoundLimiter;
 
 private:
-    bool            dispatchToComponents( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+    bool            dispatchToComponents( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
                             VRMenuEvent const & event, VRMenuObject * receiver ) const;
-    bool            dispatchToPath( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+    bool            dispatchToPath( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
                             VRMenuEvent const & event, VArray< menuHandle_t > const & path, bool const log ) const;
-    bool            broadcastEvent( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+    bool            broadcastEvent( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
                             VRMenuEvent const & event, VRMenuObject * receiver ) const;
 };
 

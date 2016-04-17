@@ -11,7 +11,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 *************************************************************************************/
 
 #include "VRMenuMgr.h"
-#include "api/VGlOperation.h"
+#include "api/VEglDriver.h"
 #include "VAlgorithm.h"
 #include "../api/VGlShader.h"
 #include "GlTexture.h"
@@ -704,7 +704,7 @@ void VRMenuMgrLocal::SubmitForRenderingRecursive( OvrDebugLines & debugLines, Bi
 			}
 		}
 
-		NervGear::VString const & text = obj->text();
+        VString const & text = obj->text();
         if ( ( oFlags & VRMENUOBJECT_DONT_RENDER_TEXT ) == 0 && text.length() > 0 )
 		{
             VPosf const & textLocalPose = obj->textLocalPose();
@@ -898,8 +898,8 @@ void VRMenuMgrLocal::renderSubmitted( VR4Matrixf const & worldMVP, VR4Matrixf co
 		return;
 	}
 
-    VGlOperation glOperation;
-    glOperation.logErrorsEnum( "VRMenuMgrLocal::RenderSubmitted - pre" );
+
+    VEglDriver::logErrorsEnum( "VRMenuMgrLocal::RenderSubmitted - pre" );
 
 	//vInfo("VRMenuMgrLocal::RenderSubmitted");
     VR4Matrixf invViewMatrix = viewMatrix.Inverted();
@@ -991,7 +991,7 @@ void VRMenuMgrLocal::renderSubmitted( VR4Matrixf const & worldMVP, VR4Matrixf co
 
 	glDisable( GL_POLYGON_OFFSET_FILL );
 
-    glOperation.logErrorsEnum( "VRMenuMgrLocal::RenderSubmitted - post" );
+    VEglDriver::logErrorsEnum( "VRMenuMgrLocal::RenderSubmitted - post" );
 }
 
 //==============================

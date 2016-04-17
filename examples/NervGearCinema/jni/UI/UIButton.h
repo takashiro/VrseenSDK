@@ -37,12 +37,12 @@ private:
     bool			TouchDown;
 
 private:
-    eMsgStatus onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+    eMsgStatus onEventImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
                                     VRMenuObject * self, VRMenuEvent const & event ) override;
 
-    eMsgStatus FocusGained( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+    eMsgStatus FocusGained( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
                                     VRMenuObject * self, VRMenuEvent const & event );
-    eMsgStatus FocusLost( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+    eMsgStatus FocusLost( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
                                     VRMenuObject * self, VRMenuEvent const & event );
 };
 

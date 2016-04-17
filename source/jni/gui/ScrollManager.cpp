@@ -13,7 +13,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "ScrollManager.h"
 #include "VAlgorithm.h"
 #include "core/VTimer.h"
-#include "Input.h"
+#include "VFrame.h"
 
 namespace NervGear {
 

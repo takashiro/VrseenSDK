@@ -28,14 +28,14 @@ public:
 
     OvrTextFade_Component( V3Vectf const & iconBaseOffset, V3Vectf const & iconFadeOffset );
 
-	virtual eMsgStatus      onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+	virtual eMsgStatus      onEventImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 										  VRMenuObject * self, VRMenuEvent const & event );
 
-    eMsgStatus frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event );
+    eMsgStatus frame( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event );
 
-    eMsgStatus focusGained( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event );
+    eMsgStatus focusGained( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event );
 
-    eMsgStatus focusLost( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event );
+    eMsgStatus focusLost( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event );
 
     static V3Vectf CalcIconFadeOffset(const VString &text, BitmapFont const & font, V3Vectf const & axis, float const iconWidth );
 

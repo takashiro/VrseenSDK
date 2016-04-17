@@ -90,7 +90,7 @@ VR4Matrixf ViewManager::drawEyeView( const int eye, const float fovDegrees )
 	return m_lastEyeMatrix[ eye ];
 }
 
-VR4Matrixf ViewManager::frame( const VrFrame & vrFrame )
+VR4Matrixf ViewManager::frame( const VFrame & vrFrame )
 {
 	if ( ( m_nextView != NULL ) && ( m_currentView != NULL ) && !m_closedCurrent )
 	{

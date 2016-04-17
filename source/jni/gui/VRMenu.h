@@ -22,7 +22,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 NV_NAMESPACE_BEGIN
 
 class App;
-struct VrFrame;
+struct VFrame;
 class BitmapFont;
 class BitmapFontSurface;
 class VRMenuEventHandler;
@@ -91,7 +91,7 @@ public:
                                     VArray< VRMenuObjectParms const * > & itemParms,
                                     menuHandle_t parentHandle, bool const recenter );
     void					shutdown( OvrVRMenuMgr & menuMgr );
-    void					frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font,
+    void					frame( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font,
                                     BitmapFontSurface & fontSurface, VR4Matrixf const & viewMatrix, gazeCursorUserId_t const gazeUserId );
     bool					onKeyEvent( App * app, int const keyCode, KeyState::eKeyEventType const eventType );
     void					open( App * app, OvrGazeCursor & gazeCursor, bool const instant = false );
@@ -173,7 +173,7 @@ private:
     virtual bool    init_Impl( OvrVRMenuMgr & menuMgr, BitmapFont const & font, float const menuDistance,
                             VRMenuFlags_t const & flags, VArray< VRMenuObjectParms const * > & itemParms );
     virtual void    shutdown_Impl( OvrVRMenuMgr & menuMgr );
-    virtual void    frameImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font,
+    virtual void    frameImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font,
                                     BitmapFontSurface & fontSurface, gazeCursorUserId_t const gazeUserId );
     // return true if the key was consumed.
     virtual bool    onKeyEventImpl( App * app, int const keyCode, KeyState::eKeyEventType const eventType );

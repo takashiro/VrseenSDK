@@ -2,163 +2,27 @@
 #include "VFrameSmooth.h"
 
 #include "VKernel.h"
-#include "../App.h"
+#include "App.h"
 
 #include <unistd.h>						// gettid, usleep, etc
 #include <jni.h>
-#include <sstream>
 #include <math.h>
 
 #include "VLog.h"
-#include "VGlOperation.h"
+#include "VEglDriver.h"
+#include "VString.h"
+#include "VLockless.h"
+#include "VModule.h"
+
 #include "android/JniUtils.h"
 #include "android/VOsBuild.h"
 
-#include "VString.h"			// for ReadFreq()
-#include "VJson.h"			// needed for ovr_StartSystemActivity
-#include "sensor/DeviceImpl.h"
-
-#include "HmdSensors.h"
-
-#include "VSystemActivities.h"
-#include "VThread.h"
-
 NV_USING_NAMESPACE
 
-// Platform UI command strings.
-#define PUI_GLOBAL_MENU				"globalMenu"
-#define PUI_GLOBAL_MENU_TUTORIAL	"globalMenuTutorial"
-#define PUI_CONFIRM_QUIT			"confirmQuit"
-#define PUI_THROTTLED1				"throttled1"	// Warn that Power Save Mode has been activated
-#define PUI_THROTTLED2				"throttled2"	// Warn that Minimum Mode has been activated
-#define PUI_HMT_UNMOUNT				"HMT_unmount"	// the HMT has been taken off the head
-#define PUI_HMT_MOUNT				"HMT_mount"		// the HMT has been placed on the head
-#define PUI_WARNING					"warning"		// the HMT has been placed on the head and a warning message shows
-
-// version 0 is pre-json
-// #define PLATFORM_UI_VERSION 1	// initial version
-#define PLATFORM_UI_VERSION 2		// added "exitToHome" - apps built with current versions only respond to "returnToLauncher" if
-// the Systems Activity that sent it is version 1 (meaning they'll never get an "exitToHome"
-// from System Activities)
-
-// FIXME:VRAPI move to ovrMobile
-static HMDState * OvrHmdState = NULL;
-float OvrHmdYaw;
-
-static VKernel* instance = NULL;
 // Valid for the thread that called ovr_EnterVrMode
 static JNIEnv	*				Jni;
 static  VFrameSmooth* frameSmooth = NULL;
 static jobject  ActivityObject = NULL;
-
-
-void		ovr_OnLoad( JavaVM * JavaVm_ );
-void		ovr_Init();
-void		ovr_Shutdown();
-
-
-void ovr_InitSensors()
-{
-    OvrHmdState = new HMDState();
-    if ( OvrHmdState != NULL )
-    {
-        OvrHmdState->initDevice();
-    }
-
-    if ( OvrHmdState == NULL )
-    {
-        vFatal("failed to create HMD device");
-    }
-
-    // Start the sensor running
-    OvrHmdState->startSensor( ovrHmdCap_Orientation|ovrHmdCap_YawCorrection, 0 );
-}
-
-void ovr_ShutdownSensors()
-{
-    if ( OvrHmdState != NULL )
-    {
-        delete OvrHmdState;
-        OvrHmdState = NULL;
-    }
-}
-
-
-void ovr_Shutdown()
-{
-    ovr_ShutdownSensors();
-
-#ifdef OVR_ENABLE_THREADS
-    // Wait for all threads to finish; this must be done so that memory
-    // allocator and all destructors finalize correctly.
-    VThread::FinishAllThreads();
-#endif
-}
-
-using namespace NervGear;
-
-namespace NervGear {
-
-    SensorState::operator const ovrSensorState& () const
-    {
-        static_assert(sizeof(SensorState) == sizeof(ovrSensorState), "SensorState");
-        return reinterpret_cast<const ovrSensorState&>(*this);
-    }
-
-} // namespace NervGear
-
-ovrSensorState ovr_GetSensorStateInternal( double absTime )
-{
-    if ( OvrHmdState == NULL )
-    {
-        ovrSensorState state;
-        memset( &state, 0, sizeof( state ) );
-        state.Predicted.Orientation.w = 1.0f;
-        state.Recorded.Orientation.w = 1.0f;
-        return state;
-    }
-    return OvrHmdState->predictedSensorState( absTime );
-}
-
-void ovr_RecenterYawInternal()
-{
-    if ( OvrHmdState == NULL )
-    {
-        return;
-    }
-    OvrHmdState->recenterYaw();
-}
-
-// Does latency test processing and returns 'true' if specified rgb color should
-// be used to clear the screen.
-bool ovr_ProcessLatencyTest( unsigned char rgbColorOut[3] )
-{
-    if ( OvrHmdState == NULL )
-    {
-        return false;
-    }
-    return OvrHmdState->processLatencyTest( rgbColorOut );
-}
-
-// Returns non-null string once with latency test result, when it is available.
-// Buffer is valid until next call.
-const char * ovr_GetLatencyTestResult()
-{
-    if ( OvrHmdState == NULL )
-    {
-        return "";
-    }
-    return OvrHmdState->latencyTestResult();
-}
-
-int ovr_GetDeviceManagerThreadTid()
-{
-    if ( OvrHmdState == NULL )
-    {
-        return 0;
-    }
-    return static_cast<NervGear::DeviceManagerImpl *>( OvrHmdState->deviceManager() )->threadTid();
-}
 
 /*
  * This interacts with the VrLib java class to deal with Android platform issues.
@@ -167,87 +31,22 @@ int ovr_GetDeviceManagerThreadTid()
 // This is public for any user.
 JavaVM	* VrLibJavaVM;
 
-static pid_t	OnLoadTid;
-
 // This needs to be looked up by a thread called directly from java,
 // not a native pthread.
 static jclass	VrLibClass = NULL;
-static jclass	ProximityReceiverClass = NULL;
-static jclass	DockReceiverClass = NULL;
 
 static jmethodID getPowerLevelStateID = NULL;
 static jmethodID setActivityWindowFullscreenID = NULL;
 static jmethodID notifyMountHandledID = NULL;
-
-
-static bool hmtIsMounted = false;
-
-// Register the HMT receivers once, and do
-// not unregister in Pause(). We may miss
-// important mount or dock events while
-// the receiver is unregistered.
-static bool registerHMTReceivers = false;
 
 static int BuildVersionSDK = 19;		// default supported version for vrlib is KitKat 19
 
 static int windowSurfaceWidth = 2560;	// default to Note4 resolution
 static int windowSurfaceHeight = 1440;	// default to Note4 resolution
 
-enum eHMTDockState
-{
-    HMT_DOCK_NONE,			// nothing to do
-    HMT_DOCK_DOCKED,		// the device is inserted into the HMT
-    HMT_DOCK_UNDOCKED		// the device has been removed from the HMT
-};
-
-struct HMTDockState_t
-{
-    HMTDockState_t() :
-            DockState( HMT_DOCK_NONE )
-    {
-    }
-
-    explicit HMTDockState_t( eHMTDockState const dockState ) :
-            DockState( dockState )
-    {
-    }
-
-    eHMTDockState	DockState;
-};
-
-enum eHMTMountState
-{
-    HMT_MOUNT_NONE,			// nothing to do
-    HMT_MOUNT_MOUNTED,		// the HMT has been placed on the head
-    HMT_MOUNT_UNMOUNTED		// the HMT has been removed from the head
-};
-
-struct HMTMountState_t
-{
-    HMTMountState_t() :
-            MountState( HMT_MOUNT_NONE )
-    {
-    }
-
-    explicit HMTMountState_t( eHMTMountState const mountState ) :
-            MountState( mountState )
-    {
-    }
-
-    eHMTMountState	MountState;
-};
-
-
-
-
-
-
-NervGear::VLockless< bool >						HeadsetPluggedState;
-NervGear::VLockless< bool >						PowerLevelStateThrottled;
-NervGear::VLockless< bool >						PowerLevelStateMinimum;
-NervGear::VLockless< HMTMountState_t >				HMTMountState;
-NervGear::VLockless< HMTDockState_t >				HMTDockState;	// edge triggered events, not the actual state
-static NervGear::VLockless< bool >					DockState;
+VLockless<bool> HeadsetPluggedState;
+VLockless<bool> PowerLevelStateThrottled;
+VLockless<bool> PowerLevelStateMinimum;
 
 extern "C"
 {
@@ -256,94 +55,13 @@ extern "C"
 void Java_com_vrseen_nervgear_VrLib_nativeVsync( JNIEnv *jni, jclass clazz, jlong frameTimeNanos );
 void Java_com_vrseen_nervgear_VrLib_nativeVolumeEvent(JNIEnv *jni, jclass clazz, jint volume);
 
-JNIEXPORT jint JNI_OnLoad( JavaVM * vm, void * reserved )
-{
-vInfo("JNI_OnLoad");
-
-// Lookup our classnames
-ovr_OnLoad( vm );
-
-// Start up the Oculus device manager
-ovr_Init();
-
-return JNI_VERSION_1_6;
-}
-
-
-
-
-
-
-
 JNIEXPORT void Java_com_vrseen_nervgear_VrLib_nativeHeadsetEvent(JNIEnv *jni, jclass clazz, jint state)
 {
     vInfo("nativeHeadsetEvent(" << state << ")");
     HeadsetPluggedState.setState( ( state == 1 ) );
 }
 
-JNIEXPORT void Java_com_vrseen_nervgear_ProximityReceiver_nativeMountHandled(JNIEnv *jni, jclass clazz)
-{
-    vInfo("Java_com_vrseen_nervgear_VrLib_nativeMountEventHandled");
-
-    // If we're received this, the foreground app has already received
-    // and processed the mount event.
-    if ( HMTMountState.state().MountState == HMT_MOUNT_MOUNTED )
-    {
-        vInfo("RESETTING MOUNT");
-        HMTMountState.setState( HMTMountState_t( HMT_MOUNT_NONE ) );
-    }
-}
-
-JNIEXPORT void Java_com_vrseen_nervgear_ProximityReceiver_nativeProximitySensor(JNIEnv *jni, jclass clazz, jint state)
-{
-    vInfo("nativeProximitySensor(" << state << ")");
-    if ( state == 0 )
-    {
-        HMTMountState.setState( HMTMountState_t( HMT_MOUNT_UNMOUNTED ) );
-    }
-    else
-    {
-        HMTMountState.setState( HMTMountState_t( HMT_MOUNT_MOUNTED ) );
-    }
-}
-
-JNIEXPORT void Java_com_vrseen_nervgear_DockReceiver_nativeDockEvent(JNIEnv *jni, jclass clazz, jint state)
-{
-    vInfo("nativeDockEvent =" << ((state == 0) ? "UNDOCKED" : "DOCKED"));
-
-    DockState.setState( state != 0 );
-
-    if ( state == 0 )
-    {
-        // On undock, we need to do the following 2 things:
-        // (1) Provide a means for apps to save their state.
-        // (2) Call finish() to kill app.
-
-        // NOTE: act.finish() triggers OnPause() -> OnStop() -> OnDestroy() to
-        // be called on the activity. Apps may place save data and state in
-        // OnPause() (or OnApplicationPause() for Unity)
-
-        HMTDockState.setState( HMTDockState_t( HMT_DOCK_UNDOCKED ) );
-    }
-    else
-    {
-        HMTDockState_t dockState = HMTDockState.state();
-        if ( dockState.DockState == HMT_DOCK_UNDOCKED )
-        {
-            vInfo("CLEARING UNDOCKED!!!!");
-        }
-        HMTDockState.setState( HMTDockState_t( HMT_DOCK_DOCKED ) );
-    }
-}
-
 } // extern "C"
-
-const char *ovr_GetVersionString()
-{
-    return NV_VERSION_STRING;
-}
-
-
 
 // This must be called by a function called directly from a java thread,
 // preferably at JNI_OnLoad().  It will fail if called from a pthread created
@@ -354,7 +72,7 @@ const char *ovr_GetVersionString()
 // This should not start any threads or consume any significant amount of
 // resources, so hybrid apps aren't penalizing their normal mode of operation
 // by supporting VR.
-void ovr_OnLoad( JavaVM * JavaVm_ )
+void ovr_OnLoad(JavaVM * JavaVm_, JNIEnv *jni)
 {
     vInfo("ovr_OnLoad()");
 
@@ -369,29 +87,8 @@ void ovr_OnLoad( JavaVM * JavaVm_ )
     }
 
     VrLibJavaVM = JavaVm_;
-    OnLoadTid = gettid();
-
-    JNIEnv * jni;
-    bool privateEnv = false;
-    if ( JNI_OK != VrLibJavaVM->GetEnv( reinterpret_cast<void**>(&jni), JNI_VERSION_1_6 ) )
-    {
-        vInfo("Creating temporary JNIEnv");
-        // We will detach after we are done
-        privateEnv = true;
-        const jint rtn = VrLibJavaVM->AttachCurrentThread( &jni, 0 );
-        if ( rtn != JNI_OK )
-        {
-            vFatal("AttachCurrentThread returned" << rtn);
-        }
-    }
-    else
-    {
-        vInfo("Using caller's JNIEnv");
-    }
 
     VrLibClass = JniUtils::GetGlobalClassReference( jni, "com/vrseen/nervgear/VrLib" );
-    ProximityReceiverClass = JniUtils::GetGlobalClassReference( jni, "com/vrseen/nervgear/ProximityReceiver" );
-    DockReceiverClass = JniUtils::GetGlobalClassReference( jni, "com/vrseen/nervgear/DockReceiver" );
 
     // Get the BuildVersion SDK
     jclass versionClass = jni->FindClass( "android/os/Build$VERSION" );
@@ -415,9 +112,6 @@ void ovr_OnLoad( JavaVM * JavaVm_ )
         JNINativeMethod	Jnim;
     } gMethods[] =
             {
-                    { DockReceiverClass, 		{ "nativeDockEvent", "(I)V",(void*)Java_com_vrseen_nervgear_DockReceiver_nativeDockEvent } },
-                    { ProximityReceiverClass, 	{ "nativeProximitySensor", "(I)V",(void*)Java_com_vrseen_nervgear_ProximityReceiver_nativeProximitySensor } },
-                    { ProximityReceiverClass, 	{ "nativeMountHandled", "()V",(void*)Java_com_vrseen_nervgear_ProximityReceiver_nativeMountHandled } },
                     { VrLibClass, 				{ "nativeVolumeEvent", "(I)V",(void*)Java_com_vrseen_nervgear_VrLib_nativeVolumeEvent } },
                     { VrLibClass, 				{ "nativeHeadsetEvent", "(I)V",(void*)Java_com_vrseen_nervgear_VrLib_nativeHeadsetEvent } },
                     { VrLibClass, 				{ "nativeVsync", "(J)V",(void*)Java_com_vrseen_nervgear_VrLib_nativeVsync } },
@@ -432,122 +126,28 @@ void ovr_OnLoad( JavaVM * JavaVm_ )
             vFatal("RegisterNatives failed on" << gMethods[i].Jnim.name);
         }
     }
-
-    // Detach if the caller wasn't already attached
-    if ( privateEnv )
-    {
-        vInfo("Freeing temporary JNIEnv");
-        VrLibJavaVM->DetachCurrentThread();
-    }
 }
+NV_REGISTER_JNI_LOADER(ovr_OnLoad)
 
-// A dedicated VR app will usually call this immediately after ovr_OnLoad(),
-// but a hybrid app may want to defer calling it until the first headset
-// plugin event to avoid starting the device manager.
-void ovr_Init()
+class VKernelModule : public VModule
 {
-    vInfo("ovr_Init");
-
-    // initialize Oculus code
-    ovr_InitSensors();
-    JNIEnv * jni;
-    const jint rtn = VrLibJavaVM->AttachCurrentThread( &jni, 0 );
-    if ( rtn != JNI_OK )
+public:
+    void onPause() override
     {
-        vFatal("AttachCurrentThread returned" << rtn);
+        VKernel::instance()->exit();
     }
 
-    // After ovr_Initialize(), because it uses String
-    VOsBuild::Init(jni);
+    void onResume() override
+    {
+        VKernel::instance()->run();
+    }
+};
+NV_ADD_MODULE(VKernelModule)
 
-    NervGear::VSystemActivities::instance()->initEventQueues();
-}
-
-void CreateSystemActivitiesCommand(const char * toPackageName, const char * command, const char * uri, NervGear::VString & out )
+VKernel *VKernel::instance()
 {
-    // serialize the command to a JSON object with version inf
-    VJsonObject obj;
-    obj.insert("Command", command);
-    obj.insert("OVRVersion", ovr_GetVersionString());
-    obj.insert("PlatformUIVersion", PLATFORM_UI_VERSION);
-    obj.insert("ToPackage", toPackageName);
-
-    std::stringstream s;
-    s << VJson(std::move(obj));
-
-    char text[10240];
-    s.getline(text, 10240);
-    out = text;
-}
-
-// This can be called before ovr_EnterVrMode() so hybrid apps can tell
-// when they need to go to vr mode.
-void ovr_RegisterHmtReceivers()
-{
-    if ( registerHMTReceivers )
-    {
-        return;
-    }
-    const jmethodID startProximityReceiverId = JniUtils::GetStaticMethodID( Jni, ProximityReceiverClass,
-                                                                            "startReceiver", "(Landroid/app/Activity;)V" );
-    Jni->CallStaticVoidMethod( ProximityReceiverClass, startProximityReceiverId, ActivityObject );
-
-    const jmethodID startDockReceiverId = JniUtils::GetStaticMethodID( Jni, DockReceiverClass,
-                                                                       "startDockReceiver", "(Landroid/app/Activity;)V" );
-    Jni->CallStaticVoidMethod( DockReceiverClass, startDockReceiverId, ActivityObject );
-
-    registerHMTReceivers = true;
-}
-
-
-
-eVrApiEventStatus ovr_nextPendingEvent( VString& buffer, unsigned int const bufferSize )
-{
-    eVrApiEventStatus status = NervGear::VSystemActivities::instance()->nextPendingMainEvent( buffer, bufferSize );
-    if ( status < VRAPI_EVENT_PENDING )
-    {
-        return status;
-    }
-
-    // Parse to JSON here to determine if we should handle the event natively, or pass it along to the client app.
-    VJson reader = VJson::Parse(buffer.toLatin1());
-    if (reader.isObject())
-    {
-        VString command = reader.value( "Command" ).toString();
-        if (command == SYSTEM_ACTIVITY_EVENT_REORIENT) {
-            // for reorient, we recenter yaw natively, then pass the event along so that the client
-            // application can also handle the event (for instance, to reposition menus)
-            vInfo("Queuing internal reorient event.");
-            ovr_RecenterYawInternal();
-            // also queue as an internal event
-            NervGear::VSystemActivities::instance()->addInternalEvent( buffer );
-        } else if (command == SYSTEM_ACTIVITY_EVENT_RETURN_TO_LAUNCHER) {
-            // In the case of the returnToLauncher event, we always handler it internally and pass
-            // along an empty buffer so that any remaining events still get processed by the client.
-            vInfo("Queuing internal returnToLauncher event.");
-            // queue as an internal event
-            NervGear::VSystemActivities::instance()->addInternalEvent( buffer );
-            // treat as an empty event externally
-            buffer = "";
-            status = VRAPI_EVENT_CONSUMED;
-        }
-    }
-    else
-    {
-        // a malformed event string was pushed! This implies an error in the native code somewhere.
-        vWarn("Error parsing System Activities Event");
-        return VRAPI_EVENT_INVALID_JSON;
-    }
-    return status;
-}
-
-VKernel* VKernel::GetInstance()
-{
-    if(instance==NULL)
-    {
-        instance = new VKernel();
-    }
-    return  instance;
+    static VKernel kernel;
+    return &kernel;
 }
 
 VKernel::VKernel()
@@ -569,7 +169,7 @@ VKernel::VKernel()
        for ( int i = 0; i < 3; i++ )
        {
            m_texMatrix[eye][i] = tanAngleMatrix;
-           m_pose[eye][i].Orientation.w = 1.0f;
+           m_pose[eye][i].w = 1.0f;
        }
    }
 
@@ -588,6 +188,7 @@ VKernel::VKernel()
 
 void UpdateHmdInfo()
 {
+    VKernel *instance = VKernel::instance();
     // Only use the Android info if we haven't explicitly set the screenWidth / height,
     // because they are reported wrong on the note.
     if(!instance->device->widthbyMeters)
@@ -657,23 +258,12 @@ void VKernel::run()
 
     vInfo("BUILD =" << VOsBuild::getString(VOsBuild::Display) << buildConfig);
     vInfo("MODEL =" << VOsBuild::getString(VOsBuild::Model));
-    vInfo("OVR_VERSION =" << ovr_GetVersionString());
 
     isRunning = true;
 
-    ovrSensorState state = ovr_GetSensorStateInternal( VTimer::Seconds() );
-    if ( state.Status & Status_OrientationTracked )
-    {
-        vInfo("HMD sensor attached.");
-    }
-    else
-    {
-        vWarn("Operating without a sensor.");
-    }
-
     // Let GlUtils look up extensions
-    VGlOperation glOperation;
-    glOperation.logExtensions();
+
+    VEglDriver::logExtensions();
 
     // Look up the window surface size (NOTE: This must happen before Direct Render
     // Mode is initiated and the pbuffer surface is bound).
@@ -693,9 +283,6 @@ void VKernel::run()
                                                                 "startVsync", "(Landroid/app/Activity;)V" );
     Jni->CallStaticVoidMethod( VrLibClass, startVsyncId, ActivityObject );
 
-    // Register our HMT receivers if they have not already been registered.
-    ovr_RegisterHmtReceivers();
-
     // Register our receivers
     const jmethodID startReceiversId = JniUtils::GetStaticMethodID( Jni, VrLibClass,
                                                                     "startReceivers", "(Landroid/app/Activity;)V" );
@@ -708,7 +295,6 @@ void VKernel::run()
     // get external storage directory
     const jmethodID getExternalStorageDirectoryMethodId = JniUtils::GetStaticMethodID( Jni, VrLibClass, "getExternalStorageDirectory", "()Ljava/lang/String;" );
     jstring externalStorageDirectoryString = (jstring)Jni->CallStaticObjectMethod( VrLibClass, getExternalStorageDirectoryMethodId );
-    VString externalStorageDirectory = JniUtils::Convert(Jni, externalStorageDirectoryString);
     Jni->DeleteLocalRef(externalStorageDirectoryString);
 
     if ( Jni->ExceptionOccurred() )
@@ -802,258 +388,121 @@ void VKernel::destroy(eExitType exitType)
     }
     else if ( exitType == EXIT_TYPE_EXIT )
     {
+        exit();
         vInfo("Calling exitType EXIT_TYPE_EXIT");
-        NervGear::VSystemActivities::instance()->shutdownEventQueues();
-        ovr_Shutdown();
-        delete  instance;
-        instance = NULL;
     }
 }
 
 
 
-void VKernel::setSmoothEyeTexture(unsigned int texID,ushort eye,ushort layer)
+void VKernel::setSmoothEyeTexture(uint texID, ushort eye, ushort layer)
 {
-
-   m_texId[eye][layer] =  texID;
-
+    m_texId[eye][layer] = texID;
 }
 
+void VKernel::setTexMatrix(const VR4Matrixf &mtexMatrix, ushort eye,ushort layer)
+{
+    m_texMatrix[eye][layer] =  mtexMatrix;
+}
 
-void VKernel::setTexMatrix(VR4Matrixf	mtexMatrix,ushort eye,ushort layer)
+void VKernel::setSmoothPose(const VRotationState &pose, ushort eye, ushort layer)
 {
-  m_texMatrix[eye][layer] =  mtexMatrix;
+    m_pose[eye][layer] = pose;
 }
-void VKernel::setSmoothPose(VKpose	mpose,ushort eye,ushort layer)
-{
-   m_pose[eye][layer] =  mpose;
-}
-void VKernel::setpTex(unsigned int	*mpTexId,ushort eye,ushort layer)
+
+void VKernel::setpTex(uint *mpTexId, ushort eye, ushort layer)
 {
     m_planarTexId[eye][layer][0] = mpTexId[0];
     m_planarTexId[eye][layer][1] = mpTexId[1];
     m_planarTexId[eye][layer][2] = mpTexId[2];
 }
+
 void VKernel::setSmoothOption(int option)
 {
-  m_smoothOptions = option;
-
+    m_smoothOptions = option;
 }
+
 void VKernel::setMinimumVsncs( int vsnc)
 {
-
-  m_minimumVsyncs = vsnc;
+    m_minimumVsyncs = vsnc;
 }
-void VKernel::setExternalVelocity(VR4Matrixf extV)
 
+void VKernel::setExternalVelocity(const VR4Matrixf &extV)
 {
-    for(int i=0;i<4;i++)
-        for( int j=0;j<4;j++)
-    {
- m_externalVelocity.M[i][j] = extV.M[i][j];
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            m_externalVelocity.M[i][j] = extV.M[i][j];
+        }
+    }
 }
-}
+
 void VKernel::setPreScheduleSeconds(float pres)
 {
-m_preScheduleSeconds = pres;
-
+    m_preScheduleSeconds = pres;
 }
+
 void VKernel::setSmoothProgram(ushort program)
 {
-   m_smoothProgram = program;
-
+    m_smoothProgram = program;
 }
-void VKernel::setProgramParms( float * proParms)
+
+void VKernel::setProgramParms(float proParms[4])
 {
-   m_programParms[0] = proParms[0];
+    m_programParms[0] = proParms[0];
     m_programParms[1] = proParms[1];
-     m_programParms[2] = proParms[2];
-      m_programParms[3] = proParms[3];
-
+    m_programParms[2] = proParms[2];
+    m_programParms[3] = proParms[3];
 }
-
 
 void VKernel::syncSmoothParms()
 {
- if (frameSmooth==NULL)
-     return;
- frameSmooth->setSmoothProgram(m_smoothProgram);
- frameSmooth->setMinimumVsncs(m_minimumVsyncs);
- frameSmooth->setProgramParms(m_programParms);
- frameSmooth->setExternalVelocity(m_externalVelocity);
- frameSmooth->setPreScheduleSeconds(m_preScheduleSeconds);
- for ( ushort eye = 0; eye < 2; eye++ )
- {
-     for ( ushort i = 0; i < 3; i++ )
-     {
-         frameSmooth->setSmoothEyeTexture(m_texId[eye][i],eye,i) ;
-         frameSmooth->setTexMatrix(m_texMatrix[eye][i],eye,i) ;
-         frameSmooth->setpTex(m_planarTexId[eye][i],eye,i) ;
-         frameSmooth->setSmoothPose(m_pose[eye][i],eye,i);
+    if (frameSmooth == nullptr) {
+        return;
+    }
+    frameSmooth->setSmoothProgram(m_smoothProgram);
+    frameSmooth->setMinimumVsncs(m_minimumVsyncs);
+    frameSmooth->setProgramParms(m_programParms);
+    frameSmooth->setExternalVelocity(m_externalVelocity);
+    frameSmooth->setPreScheduleSeconds(m_preScheduleSeconds);
 
-     }
- }
-
- frameSmooth->setSmoothOption(m_smoothOptions);
-
+    for (ushort eye = 0; eye < 2; eye++) {
+        for (ushort i = 0; i < 3; i++) {
+            frameSmooth->setSmoothEyeTexture(m_texId[eye][i],eye,i) ;
+            frameSmooth->setTexMatrix(m_texMatrix[eye][i],eye,i) ;
+            frameSmooth->setpTex(m_planarTexId[eye][i],eye,i) ;
+            frameSmooth->setSmoothPose(m_pose[eye][i], eye, i);
+        }
+    }
+    frameSmooth->setSmoothOption(m_smoothOptions);
 }
 
 void VKernel::doSmooth()
 {
-    if(frameSmooth==NULL||!isRunning) return;
+    if(frameSmooth == nullptr || !isRunning) {
+        return;
+    }
+
     syncSmoothParms();
 
     //ovrTimeWarpParms   parms = InitSmoothParms();
     //parms.WarpOptions = SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER | SWAP_OPTION_FLUSH | SWAP_OPTION_DEFAULT_IMAGES;
 
-   // frameSmooth->doSmooth();
-
+    //frameSmooth->doSmooth();
 }
 
-
-
-static  void ovr_HandleHmdEvents()
+void VKernel::InitTimeWarpParms()
 {
-    // check if the HMT has been undocked
-    HMTDockState_t dockState = HMTDockState.state();
-    if ( dockState.DockState == HMT_DOCK_UNDOCKED )
-    {
-        vInfo("ovr_HandleHmdEvents::Hmt was disconnected");
-
-        // reset the sensor info
-        if ( OvrHmdState != NULL )
-        {
-            OvrHmdState->resetSensor();
-        }
-
-        // reset the real dock state since we're handling the change
-        HMTDockState.setState( HMTDockState_t( HMT_DOCK_NONE ) );
-
-        instance->destroy(EXIT_TYPE_FINISH_AFFINITY );
-
-        return;
-    }
-
-    // check if the HMT has been mounted or unmounted
-    HMTMountState_t mountState = HMTMountState.state();
-    if ( mountState.MountState != HMT_MOUNT_NONE )
-    {
-        // reset the real mount state since we're handling the change
-        HMTMountState.setState( HMTMountState_t( HMT_MOUNT_NONE ) );
-
-        if ( mountState.MountState == HMT_MOUNT_MOUNTED )
-        {
-            if ( hmtIsMounted )
-            {
-                vInfo("ovr_HandleHmtEvents: HMT is already mounted");
-            }
-            else
-            {
-                vInfo("ovr_HandleHmdEvents: HMT was mounted");
-                hmtIsMounted = true;
-
-                // broadcast to background apps that mount has been handled
-                if ( notifyMountHandledID != NULL )
-                {
-                    Jni->CallStaticVoidMethod( VrLibClass, notifyMountHandledID, ActivityObject);
-                }
-
-                NervGear::VString reorientMessage;
-                CreateSystemActivitiesCommand( "", SYSTEM_ACTIVITY_EVENT_REORIENT, "", reorientMessage );
-                NervGear::VSystemActivities::instance()->addEvent( reorientMessage );
-            }
-        }
-        else if ( mountState.MountState == HMT_MOUNT_UNMOUNTED )
-        {
-            vInfo("ovr_HandleHmdEvents: HMT was UNmounted");
-
-            hmtIsMounted = false;
-        }
-    }
-}
-
-void VKernel::ovr_HandleDeviceStateChanges()
-{
-    // Test for Hmd Events such as mount/unmount, dock/undock
-    ovr_HandleHmdEvents();
-
-    // check for pending events that must be handled natively
-    size_t const MAX_EVENT_SIZE = 4096;
-//	char eventBuffer[MAX_EVENT_SIZE];
-    VString eventBuffer;
-
-    for ( eVrApiEventStatus status = NervGear::VSystemActivities::instance()->nextPendingInternalEvent( eventBuffer, MAX_EVENT_SIZE );
-          status >= VRAPI_EVENT_PENDING;
-          status = NervGear::VSystemActivities::instance()->nextPendingInternalEvent( eventBuffer, MAX_EVENT_SIZE ) )
-    {
-        if ( status != VRAPI_EVENT_PENDING )
-        {
-            vWarn("Error" << status << "handing internal System Activities Event");
-            continue;
-        }
-
-        VJson reader = VJson::Parse(eventBuffer.toLatin1());
-        if ( reader.isObject() )
-        {
-            VString command = reader.value("Command").toString();
-            int32_t platformUIVersion = reader.value("PlatformUIVersion").toInt();
-            if (command == SYSTEM_ACTIVITY_EVENT_REORIENT)
-            {
-                // for reorient, we recenter yaw natively, then pass the event along so that the client
-                // application can also handle the event (for instance, to reposition menus)
-                vInfo("ovr_HandleDeviceStateChanges: Acting on System Activity reorient event.");
-                ovr_RecenterYawInternal();
-            }
-            else if (command == SYSTEM_ACTIVITY_EVENT_RETURN_TO_LAUNCHER && platformUIVersion < 2 )
-            {
-                // In the case of the returnToLauncher event, we always handler it internally and pass
-                // along an empty buffer so that any remaining events still get processed by the client.
-                vInfo("ovr_HandleDeviceStateChanges: Acting on System Activity returnToLauncher event.");
-                // PlatformActivity and Home should NEVER get one of these!
-                instance->destroy(EXIT_TYPE_FINISH_AFFINITY);
-            }
-        }
-        else
-        {
-            // a malformed event string was pushed! This implies an error in the native code somewhere.
-            vWarn("Error parsing System Activities Event");
-        }
-    }
-}
-
-ovrSensorState VKernel::ovr_GetPredictedSensorState(double absTime )
-{
-    return ovr_GetSensorStateInternal( absTime );
-}
-
-void VKernel::ovr_RecenterYaw()
-{
-    ovr_RecenterYawInternal();
-}
-
-/*void VKernel::doSmooth(const ovrTimeWarpParms * parms )
-{
-    if(frameSmooth==NULL||!isRunning) return;
-
-    //setSmoothParms(*parms);
-    syncSmoothParms();
-   // frameSmooth->doSmooth();
-}*/
- void VKernel::InitTimeWarpParms( )
-{
-     m_smoothOptions =0;
-     const VR4Matrixf tanAngleMatrix = VR4Matrixf::TanAngleMatrixFromFov( 90.0f );
-     memset( &m_texId, 0, sizeof( m_texId ) );
-     memset( &m_pose, 0, sizeof( m_pose ) );
-     memset( &m_planarTexId, 0, sizeof( m_planarTexId ) );
-     memset( &m_texMatrix, 0, sizeof( m_texMatrix ) );
-     memset( &m_externalVelocity, 0, sizeof( m_externalVelocity ) );
-    for ( int eye = 0; eye < 2; eye++ )
-    {
-        for ( int i = 0; i < 3; i++ )
-        {
+    m_smoothOptions = 0;
+    const VR4Matrixf tanAngleMatrix = VR4Matrixf::TanAngleMatrixFromFov( 90.0f );
+    memset(&m_texId, 0, sizeof(m_texId));
+    memset(&m_pose, 0, sizeof(m_pose));
+    memset(&m_planarTexId, 0, sizeof(m_planarTexId));
+    memset(&m_texMatrix, 0, sizeof(m_texMatrix));
+    memset(&m_externalVelocity, 0, sizeof(m_externalVelocity ) );
+    for (int eye = 0; eye < 2; eye++) {
+        for(int i = 0; i < 3; i++) {
             m_texMatrix[eye][i] = tanAngleMatrix;
-            m_pose[eye][i].Orientation.w = 1.0f;
+            m_pose[eye][i].w = 1.0f;
         }
     }
 
@@ -1064,142 +513,8 @@ void VKernel::ovr_RecenterYaw()
     m_minimumVsyncs = 1;
     m_preScheduleSeconds = 0.014f;
     m_smoothProgram = VK_DEFAULT;
-    m_programParms[0] =0;
-    m_programParms[1] =0;
-    m_programParms[2] =0;
-    m_programParms[3] =0;
+    m_programParms[0] = 0;
+    m_programParms[1] = 0;
+    m_programParms[2] = 0;
+    m_programParms[3] = 0;
 }
-/*
-void VKernel::setSmoothParms(const ovrTimeWarpParms &  parms)
-{
-    //ovrTimeWarpParms parms;
-   // memset( &parms, 0, sizeof( parms ) );
-    for(int i=0;i<2;i++)
-         for (int j=0;j<3;j++)
-         {
-    m_images[i][j].PlanarTexId[0]  =      parms.Images[i][j].PlanarTexId[0] ;
-    m_images[i][j].PlanarTexId[1]  =      parms.Images[i][j].PlanarTexId[1] ;
-    m_images[i][j].PlanarTexId[2] =       parms.Images[i][j].PlanarTexId[2] ;
-                    for(int m=0;m<4;m++)
-                        for(int n=0;n<4;n++)
-                        {
-                    m_images[i][j].TexCoordsFromTanAngles.M[m][n] =parms.Images[i][j].TexCoordsFromTanAngles.M[m][n];
-                        }
-                      m_images[i][j].TexId=parms.Images[i][j].TexId ;
-                     m_images[i][j].Pose.AngularAcceleration.x = parms.Images[i][j].Pose.AngularAcceleration.x ;
-                      m_images[i][j].Pose.AngularAcceleration.y = parms.Images[i][j].Pose.AngularAcceleration.y;
-                     m_images[i][j].Pose.AngularAcceleration.z = parms.Images[i][j].Pose.AngularAcceleration.z ;
-            m_images[i][j].Pose.AngularVelocity.x = parms.Images[i][j].Pose.AngularVelocity.x ;
-                m_images[i][j].Pose.AngularVelocity.y = parms.Images[i][j].Pose.AngularVelocity.y;
-                 m_images[i][j].Pose.AngularVelocity.z = parms.Images[i][j].Pose.AngularVelocity.z;
-             m_images[i][j].Pose.LinearAcceleration.x = parms.Images[i][j].Pose.LinearAcceleration.x;
-             m_images[i][j].Pose.LinearAcceleration.y = parms.Images[i][j].Pose.LinearAcceleration.y;
-             m_images[i][j].Pose.LinearAcceleration.z = parms.Images[i][j].Pose.LinearAcceleration.z;
-              m_images[i][j].Pose.LinearVelocity.x =parms.Images[i][j].Pose.LinearVelocity.x;
-               m_images[i][j].Pose.LinearVelocity.y =parms.Images[i][j].Pose.LinearVelocity.y;
-                m_images[i][j].Pose.LinearVelocity.z = parms.Images[i][j].Pose.LinearVelocity.z;
-              m_images[i][j].Pose.Pose.Orientation.w =  parms.Images[i][j].Pose.Pose.Orientation.w;
-               m_images[i][j].Pose.Pose.Orientation.x = parms.Images[i][j].Pose.Pose.Orientation.x;
-               m_images[i][j].Pose.Pose.Orientation.y = parms.Images[i][j].Pose.Pose.Orientation.y;
-               m_images[i][j].Pose.Pose.Orientation.z =parms.Images[i][j].Pose.Pose.Orientation.z;
-
-
-               m_images[i][j].Pose.Pose.Position.x =parms.Images[i][j].Pose.Pose.Position.x;
-               m_images[i][j].Pose.Pose.Position.y =parms.Images[i][j].Pose.Pose.Position.y;
-               m_images[i][j].Pose.Pose.Position.z =parms.Images[i][j].Pose.Pose.Position.z;
-
-
-                m_images[i][j].Pose.TimeInSeconds =parms.Images[i][j].Pose.TimeInSeconds;
-
-
-
-
-         }
-
-    m_smoothOptions =parms.WarpOptions;
-    for(int i=0;i<4;i++)
-        for(int j=0;j<4;j++)
-    {
-        m_externalVelocity.M[i][j] = parms.ExternalVelocity.M[i][j];
-
-    }
-
-   m_minimumVsyncs = parms.MinimumVsyncs ;
-   m_preScheduleSeconds =parms.PreScheduleSeconds;
-   m_smoothProgram = parms.WarpProgram;
-    for(int i=0;i<4;i++)
-    {
-        m_programParms[i] = parms.ProgramParms[i];
-
-    }
-
-}
-
-*/
- /*
-ovrTimeWarpParms  VKernel::getSmoothParms()
-{
-    ovrTimeWarpParms parms;
-    memset( &parms, 0, sizeof( parms ) );
-    for(int i=0;i<2;i++)
-         for (int j=0;j<3;j++)
-         {
-           parms.Images[i][j].PlanarTexId[0] = m_images[i][j].PlanarTexId[0];
-                    parms.Images[i][j].PlanarTexId[1] = m_images[i][j].PlanarTexId[1];
-                    parms.Images[i][j].PlanarTexId[2] = m_images[i][j].PlanarTexId[2];
-                    for(int m=0;m<4;m++)
-                        for(int n=0;n<4;n++)
-                        {
-                    parms.Images[i][j].TexCoordsFromTanAngles.M[m][n] = m_images[i][j].TexCoordsFromTanAngles.M[m][n];
-                        }
-                     parms.Images[i][j].TexId = m_images[i][j].TexId;
-                     parms.Images[i][j].Pose.AngularAcceleration.x =m_images[i][j].Pose.AngularAcceleration.x;
-                     parms.Images[i][j].Pose.AngularAcceleration.y =m_images[i][j].Pose.AngularAcceleration.y;
-                     parms.Images[i][j].Pose.AngularAcceleration.z =m_images[i][j].Pose.AngularAcceleration.z;
-             parms.Images[i][j].Pose.AngularVelocity.x =m_images[i][j].Pose.AngularVelocity.x;
-               parms.Images[i][j].Pose.AngularVelocity.y =m_images[i][j].Pose.AngularVelocity.y;
-                 parms.Images[i][j].Pose.AngularVelocity.z =m_images[i][j].Pose.AngularVelocity.z;
-             parms.Images[i][j].Pose.LinearAcceleration.x =m_images[i][j].Pose.LinearAcceleration.x;
-             parms.Images[i][j].Pose.LinearAcceleration.y =m_images[i][j].Pose.LinearAcceleration.y;
-             parms.Images[i][j].Pose.LinearAcceleration.z =m_images[i][j].Pose.LinearAcceleration.z;
-              parms.Images[i][j].Pose.LinearVelocity.x =m_images[i][j].Pose.LinearVelocity.x;
-               parms.Images[i][j].Pose.LinearVelocity.y =m_images[i][j].Pose.LinearVelocity.y;
-                parms.Images[i][j].Pose.LinearVelocity.z =m_images[i][j].Pose.LinearVelocity.z;
-               parms.Images[i][j].Pose.Pose.Orientation.w =m_images[i][j].Pose.Pose.Orientation.w;
-               parms.Images[i][j].Pose.Pose.Orientation.x =m_images[i][j].Pose.Pose.Orientation.x;
-               parms.Images[i][j].Pose.Pose.Orientation.y =m_images[i][j].Pose.Pose.Orientation.y;
-               parms.Images[i][j].Pose.Pose.Orientation.z =m_images[i][j].Pose.Pose.Orientation.z;
-
-
-               parms.Images[i][j].Pose.Pose.Position.x =m_images[i][j].Pose.Pose.Position.x;
-               parms.Images[i][j].Pose.Pose.Position.y =m_images[i][j].Pose.Pose.Position.y;
-               parms.Images[i][j].Pose.Pose.Position.z =m_images[i][j].Pose.Pose.Position.z;
-
-
-                parms.Images[i][j].Pose.TimeInSeconds =m_images[i][j].Pose.TimeInSeconds;
-
-
-
-
-         }
-
-    parms.WarpOptions = m_smoothOptions;
-    for(int i=0;i<4;i++)
-        for(int j=0;j<4;j++)
-    {
-        parms.ExternalVelocity.M[i][j]= m_externalVelocity.M[i][j];
-
-    }
-
-   parms.MinimumVsyncs =		m_minimumVsyncs;
-   parms.PreScheduleSeconds =   m_preScheduleSeconds;
-   parms.WarpProgram =			m_smoothProgram;
-    for(int i=0;i<4;i++)
-    {
-        parms.ProgramParms[i]= m_programParms[i];
-
-    }
-
- return parms;
-}
-*/

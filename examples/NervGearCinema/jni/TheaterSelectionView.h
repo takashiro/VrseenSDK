@@ -28,7 +28,7 @@ public:
 	virtual bool 				OnKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType );
 
     virtual VR4Matrixf 			DrawEyeView( const int eye, const float fovDegrees );
-    virtual VR4Matrixf 			Frame( const VrFrame & vrFrame );
+    virtual VR4Matrixf 			Frame( const VFrame & vrFrame );
 
 	void 						SelectPressed( void );
 	void 						SelectTheater( int theater );

@@ -6,7 +6,7 @@ struct VItem::Private
 {
     VItem *parent;
     VArray<VItem *> children;
-    VPosF pos;
+    //VPosF pos;
     bool visible;
 
     Private()
@@ -83,61 +83,61 @@ void VItem::update()
     }
 }
 
-void VItem::setPos(const VPosF &pos)
-{
-    d->pos = pos;
-}
-
-VPosF &VItem::pos()
-{
-    return d->pos;
-}
-
-VPosF VItem::pos() const
-{
-    return d->pos;
-}
-
-VPosF VItem::globalPos() const
-{
-    VPosF pos = this->pos();
-    VItem *parent = this->parent();
-    while (parent) {
-        pos += parent->pos();
-        parent = parent->parent();
-    }
-    return pos;
-}
-
-void VItem::setX(vreal x)
-{
-    d->pos.x = x;
-}
-
-vreal VItem::x() const
-{
-    return d->pos.x;
-}
-
-void VItem::setY(vreal y)
-{
-    d->pos.y = y;
-}
-
-vreal VItem::y() const
-{
-    return d->pos.y;
-}
-
-void VItem::setZ(vreal z)
-{
-    d->pos.z = z;
-}
-
-vreal VItem::z() const
-{
-    return d->pos.z;
-}
+//void VItem::setPos(const VPosF &pos)
+//{
+//    d->pos = pos;
+//}
+//
+//VPosF &VItem::pos()
+//{
+//    return d->pos;
+//}
+//
+//VPosF VItem::pos() const
+//{
+//    return d->pos;
+//}
+//
+//VPosF VItem::globalPos() const
+//{
+//    VPosF pos = this->pos();
+//    VItem *parent = this->parent();
+//    while (parent) {
+//        pos += parent->pos();
+//        parent = parent->parent();
+//    }
+//    return pos;
+//}
+//
+//void VItem::setX(vreal x)
+//{
+//    d->pos.x = x;
+//}
+//
+//vreal VItem::x() const
+//{
+//    return d->pos.x;
+//}
+//
+//void VItem::setY(vreal y)
+//{
+//    d->pos.y = y;
+//}
+//
+//vreal VItem::y() const
+//{
+//    return d->pos.y;
+//}
+//
+//void VItem::setZ(vreal z)
+//{
+//    d->pos.z = z;
+//}
+//
+//vreal VItem::z() const
+//{
+//    return d->pos.z;
+//}
 
 void VItem::setVisible(bool visible)
 {

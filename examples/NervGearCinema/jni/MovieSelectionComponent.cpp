@@ -1,5 +1,5 @@
 #include "MovieSelectionComponent.h"
-#include "Input.h"
+#include "VFrame.h"
 #include "MovieSelectionView.h"
 
 namespace OculusCinema {
@@ -19,7 +19,7 @@ MovieSelectionComponent::MovieSelectionComponent( MovieSelectionView *view ) :
 
 //==============================
 //  MovieSelectionComponent::OnEvent_Impl
-eMsgStatus MovieSelectionComponent::onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus MovieSelectionComponent::onEventImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
     switch( event.eventType )
@@ -34,7 +34,7 @@ eMsgStatus MovieSelectionComponent::onEventImpl( App * app, VrFrame const & vrFr
             Sound.playSound( app, "touch_down", 0.1 );
        		return MSG_STATUS_CONSUMED;
         case VRMENU_EVENT_TOUCH_UP:
-        	if ( !( vrFrame.Input.buttonState & BUTTON_TOUCH_WAS_SWIPE ) )
+        	if ( !( vrFrame.input.buttonState & BUTTON_TOUCH_WAS_SWIPE ) )
 			{
                 Sound.playSound( app, "touch_up", 0.1 );
         		CallbackView->SelectMovie();
@@ -49,7 +49,7 @@ eMsgStatus MovieSelectionComponent::onEventImpl( App * app, VrFrame const & vrFr
 
 //==============================
 //  MovieSelectionComponent::Frame
-eMsgStatus MovieSelectionComponent::Frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus MovieSelectionComponent::Frame( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
     CallbackView->SelectionHighlighted( self->isHilighted() );
@@ -74,7 +74,7 @@ eMsgStatus MovieSelectionComponent::Frame( App * app, VrFrame const & vrFrame, O
 
 //==============================
 //  MovieSelectionComponent::FocusGained
-eMsgStatus MovieSelectionComponent::FocusGained( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus MovieSelectionComponent::FocusGained( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
 	vInfo("FocusGained");
@@ -89,7 +89,7 @@ eMsgStatus MovieSelectionComponent::FocusGained( App * app, VrFrame const & vrFr
 
 //==============================
 //  MovieSelectionComponent::FocusLost
-eMsgStatus MovieSelectionComponent::FocusLost( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus MovieSelectionComponent::FocusLost( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
 	vInfo("FocusLost");

@@ -3,6 +3,7 @@
 #include "VLog.h"
 
 #include <fstream>
+#include <list>
 
 NV_NAMESPACE_BEGIN
 
@@ -100,25 +101,47 @@ namespace JniUtils {
         return method;
     }
 
-    static VJson *DevConfig = nullptr;
-    void LoadDevConfig(const bool forceReload)
+    std::list<Loader> &Loaders()
     {
-    #ifndef RETAIL
-        if (DevConfig != nullptr) {
-            if (!forceReload) {
-                return;	// already loading and not forcing a reload
-            }
-            delete DevConfig;
-            DevConfig = nullptr;
+        static std::list<Loader> loaders;
+        return loaders;
+    }
+
+    void RegisterLoader(Loader loader)
+    {
+        Loaders().push_back(loader);
+    }
+
+    JavaVM *GlobalJavaVM = nullptr;
+    JavaVM *GetJavaVM()
+    {
+        return GlobalJavaVM;
+    }
+}
+
+extern "C" {
+    JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *)
+    {
+        JniUtils::GlobalJavaVM = vm;
+
+        JNIEnv *jni;
+        bool privateEnv = false;
+        if (JNI_OK != vm->GetEnv(reinterpret_cast<void**>(&jni), JNI_VERSION_1_6)) {
+            privateEnv = true;
+            const jint result = vm->AttachCurrentThread(&jni, 0);
+            vAssert(result != JNI_OK);
         }
 
-        // load the dev config if possible
-        std::ifstream fp("/storage/extSdCard/Oculus/dev.cfg", std::ios::binary);
-        if (fp.is_open()) {
-            DevConfig = new VJson;
-            fp >> (*DevConfig);
+        const std::list<JniUtils::Loader> &loaders = JniUtils::Loaders();
+        for (JniUtils::Loader loader : loaders) {
+            loader(vm, jni);
         }
-    #endif
+
+        if (privateEnv) {
+            vm->DetachCurrentThread();
+        }
+
+        return JNI_VERSION_1_6;
     }
 }
 

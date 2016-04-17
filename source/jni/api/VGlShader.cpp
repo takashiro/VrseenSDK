@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "api/VGlOperation.h"
+#include "api/VEglDriver.h"
 #include "../core/VLog.h"
 #define STRINGIZE( x )			#x
 NV_NAMESPACE_BEGIN

@@ -5,7 +5,7 @@
 #include "VBasicmath.h"
 #include "VArray.h"
 #include "VString.h"
-#include "api/VGlOperation.h"
+#include "api/VEglDriver.h"
 
 #include "GlTexture.h"
 #include "../api/VGlGeometry.h"

@@ -22,10 +22,10 @@ public:
 
     bool Command(const VEvent &event);
 
-    VR4Matrixf 			Frame( const VrFrame & vrFrame );
+    VR4Matrixf 			Frame( const VFrame & vrFrame );
 
 	void 				SetSeat( int newSeat );
-	bool 				ChangeSeats( const VrFrame & vrFrame );
+	bool 				ChangeSeats( const VFrame & vrFrame );
 
 	void 				ClearMovie();
 	void 				PutScreenInFront();

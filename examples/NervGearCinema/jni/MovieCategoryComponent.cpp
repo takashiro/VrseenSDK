@@ -33,7 +33,7 @@ void MovieCategoryComponent::UpdateColor( VRMenuObject * self )
 
 //==============================
 //  MovieCategoryComponent::OnEvent_Impl
-eMsgStatus MovieCategoryComponent::onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus MovieCategoryComponent::onEventImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
     switch( event.eventType )
@@ -52,7 +52,7 @@ eMsgStatus MovieCategoryComponent::onEventImpl( App * app, VrFrame const & vrFra
         	}
         	return MSG_STATUS_ALIVE;
         case VRMENU_EVENT_TOUCH_UP:
-        	if ( !( vrFrame.Input.buttonState & BUTTON_TOUCH_WAS_SWIPE ) && ( CallbackView != NULL ) )
+        	if ( !( vrFrame.input.buttonState & BUTTON_TOUCH_WAS_SWIPE ) && ( CallbackView != NULL ) )
         	{
                 Sound.playSound( app, "touch_up", 0.1 );
                	CallbackView->SetCategory( Category );
@@ -67,7 +67,7 @@ eMsgStatus MovieCategoryComponent::onEventImpl( App * app, VrFrame const & vrFra
 
 //==============================
 //  MovieCategoryComponent::Frame
-eMsgStatus MovieCategoryComponent::Frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus MovieCategoryComponent::Frame( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
 	UpdateColor( self );
@@ -77,7 +77,7 @@ eMsgStatus MovieCategoryComponent::Frame( App * app, VrFrame const & vrFrame, Ov
 
 //==============================
 //  MovieCategoryComponent::FocusGained
-eMsgStatus MovieCategoryComponent::FocusGained( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus MovieCategoryComponent::FocusGained( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
 	//vInfo("FocusGained");
@@ -91,7 +91,7 @@ eMsgStatus MovieCategoryComponent::FocusGained( App * app, VrFrame const & vrFra
 
 //==============================
 //  MovieCategoryComponent::FocusLost
-eMsgStatus MovieCategoryComponent::FocusLost( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus MovieCategoryComponent::FocusLost( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
 	//vInfo("FocusLost");

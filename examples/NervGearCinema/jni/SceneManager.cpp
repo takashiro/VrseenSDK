@@ -1,13 +1,12 @@
-#include "api/VKernel.h"
-#include "api/VGlOperation.h"
-
 #include "CinemaApp.h"
 #include "Native.h"
 #include "SceneManager.h"
 #include "SurfaceTexture.h"
-#include "core/VTimer.h"
 
-#include "VLog.h"
+#include <VKernel.h>
+#include <VEglDriver.h>
+#include <VTimer.h>
+#include <VLog.h>
 
 namespace OculusCinema
 {
@@ -177,7 +176,7 @@ void SceneManager::SetSceneModel( const SceneDef &sceneDef )
 			break;
 		}
 		SceneSeatPositions[SceneSeatCount] = tag->matrix.GetTranslation();
-        SceneSeatPositions[SceneSeatCount].y -= vApp->vrViewParms().EyeHeight;
+        SceneSeatPositions[SceneSeatCount].y -= vApp->viewSettings().eyeHeight;
 	}
 
 	if ( !sceneDef.UseSeats )
@@ -448,7 +447,7 @@ void SceneManager::SetFreeScreenAngles( const V3Vectf &angles )
 
     V3Vectf shiftedEyePos = Scene.CenterEyePos();
     V3Vectf headModelOffset = Scene.HeadModelOffset( 0.0f, FreeScreenAngles.x, FreeScreenAngles.y,
-			Scene.ViewParms.HeadModelDepth, Scene.ViewParms.HeadModelHeight );
+			Scene.ViewParms.headModelDepth, Scene.ViewParms.headModelHeight );
 	shiftedEyePos += headModelOffset;
     VR4Matrixf result = VR4Matrixf::LookAtRH( shiftedEyePos, shiftedEyePos + forward, up );
 
@@ -522,7 +521,7 @@ void SceneManager::LightsOff( const float duration )
 
 GLuint SceneManager::BuildScreenVignetteTexture( const int horizontalTile ) const
 {
-    VGlOperation glOperation;
+
 	// make it an even border at 16:9 aspect ratio, let it get a little squished at other aspects
 	static const int scale = 6;
 	static const int width = 16 * scale * horizontalTile;
@@ -554,7 +553,7 @@ GLuint SceneManager::BuildScreenVignetteTexture( const int horizontalTile ) cons
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
     glBindTexture( GL_TEXTURE_2D, 0 );
 
-    glOperation.logErrorsEnum( "screenVignette" );
+    VEglDriver::logErrorsEnum( "screenVignette" );
     return texId;
 }
 
@@ -578,28 +577,28 @@ void SceneManager::SetSeat( int newSeat )
 	Scene.FootPos = SceneSeatPositions[ SeatPosition ];
 }
 
-bool SceneManager::ChangeSeats( const VrFrame & vrFrame )
+bool SceneManager::ChangeSeats( const VFrame & vrFrame )
 {
 	bool changed = false;
 	if ( SceneSeatCount > 0 )
 	{
         V3Vectf direction( 0.0f );
-		if ( vrFrame.Input.buttonPressed & BUTTON_LSTICK_UP )
+		if ( vrFrame.input.buttonPressed & BUTTON_LSTICK_UP )
 		{
 			changed = true;
 			direction[2] += 1.0f;
 		}
-		if ( vrFrame.Input.buttonPressed & BUTTON_LSTICK_DOWN )
+		if ( vrFrame.input.buttonPressed & BUTTON_LSTICK_DOWN )
 		{
 			changed = true;
 			direction[2] -= 1.0f;
 		}
-		if ( vrFrame.Input.buttonPressed & BUTTON_LSTICK_RIGHT )
+		if ( vrFrame.input.buttonPressed & BUTTON_LSTICK_RIGHT )
 		{
 			changed = true;
 			direction[0] += 1.0f;
 		}
-		if ( vrFrame.Input.buttonPressed & BUTTON_LSTICK_LEFT )
+		if ( vrFrame.input.buttonPressed & BUTTON_LSTICK_LEFT )
 		{
 			changed = true;
 			direction[0] -= 1.0f;
@@ -981,7 +980,7 @@ VR4Matrixf SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 
         vApp->kernel()->setSmoothProgram(VK_PLANE_CB);
         vApp->kernel()->setSmoothEyeTexture( MipMappedMovieTextures[CurrentMipMappedMovieTexture],eye,1);
-        vApp->kernel()->setSmoothPose(vApp->sensorForNextWarp().Predicted,eye,1);
+        vApp->kernel()->setSmoothPose(vApp->sensorForNextWarp(), eye, 1);
         vApp->kernel()->setTexMatrix(texMatrix * VR4Matrix<float>::TanAngleMatrixFromUnitSquare( &mv ),eye,1);
 
 		// explicitly clear a hole in alpha
@@ -998,16 +997,16 @@ VR4Matrixf SceneManager::DrawEyeView( const int eye, const float fovDegrees )
  *
  * App override
  */
-VR4Matrixf SceneManager::Frame( const VrFrame & vrFrame )
+VR4Matrixf SceneManager::Frame( const VFrame & vrFrame )
 {
 	// disallow player movement
-	VrFrame vrFrameWithoutMove = vrFrame;
+	VFrame vrFrameWithoutMove = vrFrame;
 	if ( !AllowMove )
 	{
-		vrFrameWithoutMove.Input.sticks[0][0] = 0.0f;
-		vrFrameWithoutMove.Input.sticks[0][1] = 0.0f;
+		vrFrameWithoutMove.input.sticks[0][0] = 0.0f;
+		vrFrameWithoutMove.input.sticks[0][1] = 0.0f;
 	}
-    Scene.Frame( vApp->vrViewParms(), vrFrameWithoutMove, vApp->kernel()->m_externalVelocity);
+    Scene.Frame( vApp->viewSettings(), vrFrameWithoutMove, vApp->kernel()->m_externalVelocity);
 
 	if ( ClearGhostsFrames > 0 )
 	{
@@ -1029,7 +1028,6 @@ VR4Matrixf SceneManager::Frame( const VrFrame & vrFrame )
 		}
 	}
 
-    VGlOperation glOperation;
 	// build the mip maps
 	if ( FrameUpdateNeeded )
 	{
@@ -1048,11 +1046,11 @@ VR4Matrixf SceneManager::Frame( const VrFrame & vrFrame )
 		glBindFramebuffer( GL_FRAMEBUFFER, MipMappedMovieFBOs[CurrentMipMappedMovieTexture] );
 		glDisable( GL_DEPTH_TEST );
 		glDisable( GL_SCISSOR_TEST );
-        glOperation.glDisableFramebuffer( true, false );
+        VEglDriver::glDisableFramebuffer( true, false );
 		glViewport( 0, 0, MovieTextureWidth, MovieTextureHeight );
         if ( vApp->appInterface()->wantSrgbFramebuffer() )
 		{	// we need this copied without sRGB conversion on the top level
-            glDisable( VGlOperation::GL_FRAMEBUFFER_SRGB_EXT );
+            glDisable( VEglDriver::GL_FRAMEBUFFER_SRGB_EXT );
 		}
 		if ( CurrentMovieWidth > 0 )
 		{
@@ -1062,7 +1060,7 @@ VR4Matrixf SceneManager::Frame( const VrFrame & vrFrame )
 			glBindTexture( GL_TEXTURE_EXTERNAL_OES, 0 );
             if ( vApp->appInterface()->wantSrgbFramebuffer() )
 			{	// we need this copied without sRGB conversion on the top level
-                glEnable( VGlOperation::GL_FRAMEBUFFER_SRGB_EXT );
+                glEnable( VEglDriver::GL_FRAMEBUFFER_SRGB_EXT );
 			}
 		}
 		else
@@ -1080,9 +1078,9 @@ VR4Matrixf SceneManager::Frame( const VrFrame & vrFrame )
 		glGenerateMipmap( GL_TEXTURE_2D );
 		glBindTexture( GL_TEXTURE_2D, 0 );
 
-        VGlOperation glOperation;
 
-        glOperation.glFlush();
+
+        VEglDriver::glFlush();
 	}
 
 	// Generate callbacks into DrawEyeView

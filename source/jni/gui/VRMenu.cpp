@@ -124,7 +124,7 @@ public:
 //==============================
 // VRMenu::AddItems
 void VRMenu::addItems( OvrVRMenuMgr & menuMgr, BitmapFont const & font,
-        NervGear::VArray< VRMenuObjectParms const * > & itemParms,
+        VArray< VRMenuObjectParms const * > & itemParms,
         menuHandle_t parentHandle, bool const recenter )
 {
     const V3Vectf fwd( 0.0f, 0.0f, 1.0f );
@@ -245,7 +245,7 @@ void VRMenu::repositionMenu( App * app )
 
 //==============================
 // VRMenu::Frame
-void VRMenu::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+void VRMenu::frame( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         BitmapFont const & font, BitmapFontSurface & fontSurface, VR4Matrixf const & viewMatrix,
         gazeCursorUserId_t const gazeUserId )
 {
@@ -481,7 +481,7 @@ void VRMenu::shutdown_Impl( OvrVRMenuMgr & menuMgr )
 
 //==============================
 // VRMenu::Frame_Impl
-void VRMenu::frameImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font,
+void VRMenu::frameImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font,
         BitmapFontSurface & fontSurface, gazeCursorUserId_t const gazeUserId )
 {
 }

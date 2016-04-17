@@ -124,7 +124,7 @@ namespace NervGear
 
 	//==============================
 	//  OvrSwipeHintComponent::OnEvent_Impl
-	eMsgStatus OvrSwipeHintComponent::onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+	eMsgStatus OvrSwipeHintComponent::onEventImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
 													VRMenuObject * self, VRMenuEvent const & event )
 	{
 		switch ( event.eventType )
@@ -141,7 +141,7 @@ namespace NervGear
 
 	//==============================
 	//  OvrSwipeHintComponent::Opening
-	eMsgStatus OvrSwipeHintComponent::opening( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
+	eMsgStatus OvrSwipeHintComponent::opening( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
 	{
 		reset( self );
 		return MSG_STATUS_ALIVE;
@@ -149,23 +149,23 @@ namespace NervGear
 
 	//==============================
 	//  OvrSwipeHintComponent::Frame
-	eMsgStatus OvrSwipeHintComponent::frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
+	eMsgStatus OvrSwipeHintComponent::frame( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, VRMenuObject * self, VRMenuEvent const & event )
 	{
 		if ( ShowSwipeHints /* && Carousel->HasSelection() && CanSwipe() */ )
 		{
-            show( vrFrame.PoseState.TimeBySeconds );
+            show( vrFrame.pose.timestamp );
 		}
 		else
 		{
-            hide( vrFrame.PoseState.TimeBySeconds );
+            hide( vrFrame.pose.timestamp );
 		}
 
 		m_ignoreDelay = false;
 
-        float alpha = m_totalAlpha.value( vrFrame.PoseState.TimeBySeconds );
+        float alpha = m_totalAlpha.value( vrFrame.pose.timestamp );
 		if ( alpha > 0.0f )
 		{
-            double time = vrFrame.PoseState.TimeBySeconds - m_startTime;
+            double time = vrFrame.pose.timestamp - m_startTime;
 			if ( time < 0.0f )
 			{
 				alpha = 0.0f;

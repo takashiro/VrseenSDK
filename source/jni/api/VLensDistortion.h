@@ -1,6 +1,5 @@
 #pragma once
 
-#include "sensor/DeviceConstants.h"
 #include "VLensDistortion.h"
 #include "VGlGeometry.h"
 
@@ -12,9 +11,8 @@ class VLensDistortion
 {
 public:
     VLensDistortion();
-    void initDistortionParmsByMobileType(PhoneTypeEnum type);
+    void initDistortionParmsByMobileType();
     const  static int MaxCoefficients = 21;
-    DistortionEqnType   equation;
 
     float               kArray[MaxCoefficients];
     float               maxR;

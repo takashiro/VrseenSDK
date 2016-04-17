@@ -31,7 +31,7 @@ public:
     bool onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType ) override;
 
 	// Called by App loop
-    VR4Matrixf onNewFrame( const VrFrame m_vrFrame ) override;
+    VR4Matrixf onNewFrame( const VFrame m_vrFrame ) override;
 
     void			    	setPlaylist( const VArray<const MovieDef *> &playList, const int nextMovie );
     void			    	setMovie( const MovieDef * nextMovie );
@@ -83,7 +83,7 @@ private:
     TheaterSelectionView	m_theaterSelectionMenu;
     ResumeMovieView			m_resumeMovieMenu;
 
-    VrFrame					m_vrFrame;
+    VFrame					m_vrFrame;
     int						m_frameCount;
 
     const MovieDef *		m_currentMovie;

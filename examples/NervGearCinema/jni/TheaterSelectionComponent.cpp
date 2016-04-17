@@ -1,6 +1,6 @@
 
-#include <Input.h>
-#include "core/VTimer.h"
+#include <VFrame.h>
+#include <VTimer.h>
 
 
 #include "TheaterSelectionComponent.h"
@@ -50,7 +50,7 @@ void TheaterSelectionComponent::SetItem( VRMenuObject * self, const CarouselItem
 
 //==============================
 //  TheaterSelectionComponent::OnEvent_Impl
-eMsgStatus TheaterSelectionComponent::onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus TheaterSelectionComponent::onEventImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
     switch( event.eventType )
@@ -69,7 +69,7 @@ eMsgStatus TheaterSelectionComponent::onEventImpl( App * app, VrFrame const & vr
         	}
         	return MSG_STATUS_ALIVE;
         case VRMENU_EVENT_TOUCH_UP:
-        	if ( !( vrFrame.Input.buttonState & BUTTON_TOUCH_WAS_SWIPE ) && ( CallbackView != NULL ) )
+            if ( !( vrFrame.input.buttonState & BUTTON_TOUCH_WAS_SWIPE ) && ( CallbackView != NULL ) )
         	{
                 Sound.playSound( app, "touch_up", 0.1 );
                 CallbackView->SelectPressed();
@@ -84,7 +84,7 @@ eMsgStatus TheaterSelectionComponent::onEventImpl( App * app, VrFrame const & vr
 
 //==============================
 //  TheaterSelectionComponent::FocusGained
-eMsgStatus TheaterSelectionComponent::FocusGained( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus TheaterSelectionComponent::FocusGained( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
     // set the hilight flag
@@ -100,7 +100,7 @@ eMsgStatus TheaterSelectionComponent::FocusGained( App * app, VrFrame const & vr
 
 //==============================
 //  TheaterSelectionComponent::FocusLost
-eMsgStatus TheaterSelectionComponent::FocusLost( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus TheaterSelectionComponent::FocusLost( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
     // clear the hilight flag
@@ -116,7 +116,7 @@ eMsgStatus TheaterSelectionComponent::FocusLost( App * app, VrFrame const & vrFr
 
 //==============================
 //  TheaterSelectionComponent::Frame
-eMsgStatus TheaterSelectionComponent::Frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+eMsgStatus TheaterSelectionComponent::Frame( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
         VRMenuObject * self, VRMenuEvent const & event )
 {
     double t = VTimer::Seconds();
@@ -132,7 +132,7 @@ eMsgStatus TheaterSelectionComponent::Frame( App * app, VrFrame const & vrFrame,
     }
 
     float const fadeRate = 1.0f / FadeDuration;
-    HilightFader.update( fadeRate, vrFrame.DeltaSeconds );
+    HilightFader.update( fadeRate, vrFrame.deltaSeconds );
 
     float const hilightAlpha = HilightFader.finalAlpha();
 

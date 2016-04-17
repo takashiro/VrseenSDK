@@ -35,7 +35,7 @@ typedef VFlags<eVRMenuComponentFlags> VRMenuComponentFlags_t;
 
 class VRMenuEvent;
 class App;
-struct VrFrame;
+struct VFrame;
 
 //==============================================================
 // VRMenuComponent
@@ -56,7 +56,7 @@ public:
     bool                    handlesEvent( VRMenuEventFlags_t const eventFlags ) const { return ( m_eventFlags & eventFlags ) != 0; }
 
     // only called if fla
-    eMsgStatus              onEvent( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+    eMsgStatus              onEvent( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
                                     VRMenuObject * self, VRMenuEvent const & event );
 
     VRMenuEventFlags_t      eventFlags() const { return m_eventFlags; }
@@ -65,7 +65,7 @@ public:
 	virtual const char *	typeName( ) const { return TYPE_NAME; }
 
 private:
-    virtual eMsgStatus      onEventImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, 
+    virtual eMsgStatus      onEventImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, 
                                     VRMenuObject * self, VRMenuEvent const & event ) = 0;
 
 private:

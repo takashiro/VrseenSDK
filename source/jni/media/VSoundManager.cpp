@@ -4,11 +4,12 @@
 #include "VJson.h"
 #include "VLog.h"
 #include "VStandardPath.h"
+#include "VModule.h"
+#include "VMap.h"
 
 #include <list>
 #include <fstream>
 #include <sstream>
-#include <map>
 
 NV_NAMESPACE_BEGIN
 
@@ -16,9 +17,21 @@ static const char * DEV_SOUNDS_RELATIVE = "Oculus/sound_assets.json";
 static const char * VRLIB_SOUNDS = "res/raw/sound_assets.json";
 static const char * APP_SOUNDS = "assets/sound_assets.json";
 
+namespace
+{
+    class VSoundModule : public VModule
+    {
+        void onStart() override
+        {
+            VSoundManager::instance()->loadSoundAssets();
+        }
+    };
+}
+NV_ADD_MODULE(VSoundModule)
+
 struct VSoundManager::Private
 {
-    std::map<VString, VString> soundMap;
+    VMap<VString, VString> soundMap;
 
     void loadSoundAssetsFromJsonObject(const VString &url, const VJson &dataFile)
     {
@@ -36,8 +49,7 @@ struct VSoundManager::Private
             VString fullPath = url + sound.toString();
 
             // Do we already have this sound?
-            std::map<VString, VString>::const_iterator soundMapping = soundMap.find(pair.first);
-            if (soundMapping != soundMap.end()) {
+            if (soundMap.contains(pair.first)) {
                 vInfo("SoundManger - adding Duplicate sound" << pair.first << "with asset" << fullPath);
                 soundMap[pair.first] = fullPath;
             // add new sound
@@ -75,6 +87,12 @@ struct VSoundManager::Private
 VSoundManager::VSoundManager()
     : d(new Private)
 {
+}
+
+VSoundManager *VSoundManager::instance()
+{
+    static VSoundManager manager;
+    return &manager;
 }
 
 VSoundManager::~VSoundManager()

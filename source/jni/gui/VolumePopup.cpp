@@ -215,7 +215,7 @@ OvrVolumePopup * OvrVolumePopup::Create( App * app, OvrVRMenuMgr & menuMgr, Bitm
 
 //==============================
 // OvrVolumePopup::Frame_Impl
-void OvrVolumePopup::frameImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font,
+void OvrVolumePopup::frameImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font,
         BitmapFontSurface & fontSurface, gazeCursorUserId_t const gazeUserId )
 {
     if ( curMenuState() == VRMenu::MENUSTATE_CLOSED )
@@ -231,7 +231,7 @@ void OvrVolumePopup::frameImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr
         //vInfo("ovr_GetTimeSinceLastVolumeChange() : Not initialized.  Returning -1");
         return ;
     }
-    const double timeSinceLastVolumeChange = NervGear::VTimer::Seconds() - value;
+    const double timeSinceLastVolumeChange = VTimer::Seconds() - value;
 
 	if ( ( timeSinceLastVolumeChange < 0 ) || ( timeSinceLastVolumeChange > VolumeMenuFadeDelay ) )
 	{
@@ -297,7 +297,7 @@ void OvrVolumePopup::checkForVolumeChange( App * app )
         //vInfo("ovr_GetTimeSinceLastVolumeChange() : Not initialized.  Returning -1");
         return ;
     }
-    double timeSinceLastVolumeChange =NervGear::VTimer::Seconds() - value;
+    double timeSinceLastVolumeChange = VTimer::Seconds() - value;
 
 
 	if ( ( timeSinceLastVolumeChange != -1 ) && ( timeSinceLastVolumeChange < VolumeMenuFadeDelay ) )

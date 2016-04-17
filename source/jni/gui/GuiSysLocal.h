@@ -28,7 +28,7 @@ public:
 
 	virtual void			init( App * app, OvrVRMenuMgr & menuMgr, BitmapFont const & font );
 	virtual void			shutdown( OvrVRMenuMgr & menuMgr );
-	virtual void			frame( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
+	virtual void			frame( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr,
                                     BitmapFont const & font, BitmapFontSurface & fontSurface,
                                     VR4Matrixf const & viewMatrix );
 	virtual bool			onKeyEvent( App * app, int const keyCode, KeyState::eKeyEventType const eventType );

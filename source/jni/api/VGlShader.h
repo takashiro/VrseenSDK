@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../vglobal.h"
-#include "api/VGlOperation.h"
+#include "api/VEglDriver.h"
 
 NV_NAMESPACE_BEGIN
 

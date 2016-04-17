@@ -211,7 +211,7 @@ private:
 	friend class OvrPanel_OnUp;
     void				onPanelUp( const OvrMetaDatum * data );
 
-    virtual void        frameImpl( App * app, VrFrame const & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font,
+    virtual void        frameImpl( App * app, VFrame const & vrFrame, OvrVRMenuMgr & menuMgr, BitmapFont const & font,
                                         BitmapFontSurface & fontSurface, gazeCursorUserId_t const gazeUserId );
     virtual void		openImpl( App * app, OvrGazeCursor & gazeCursor );
 

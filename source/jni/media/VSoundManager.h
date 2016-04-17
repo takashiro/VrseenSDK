@@ -8,7 +8,7 @@ NV_NAMESPACE_BEGIN
 class VSoundManager
 {
 public:
-    VSoundManager();
+    static VSoundManager *instance();
     ~VSoundManager();
 
     void loadSoundAssets();
@@ -16,6 +16,8 @@ public:
     bool getSound(const VString &soundName, VString &outSound);
 
 private:
+    VSoundManager();
+
     NV_DECLARE_PRIVATE
     NV_DISABLE_COPY(VSoundManager)
 };

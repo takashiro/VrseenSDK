@@ -18,9 +18,9 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VBasicmath.h"
 #include "VAlgorithm.h"
 #include "TypesafeNumber.h"
-#include "api/VGlOperation.h"
+#include "api/VEglDriver.h"
 
-#include "Input.h"
+#include "VFrame.h"
 #include "GlTexture.h"
 #include "BitmapFont.h"
 #include "gui/VRMenuMgr.h"
@@ -303,7 +303,7 @@ void	SwipeView::Close()
 		}
 		else
 		{	// close from the closest panel
-			AnimationCenterPanel[0] = NervGear::VAlgorithm::Clamp( (int)(Offset / SlotSize.x + 0.5f), 0, LayoutColumns()-1 );
+            AnimationCenterPanel[0] = VAlgorithm::Clamp( (int)(Offset / SlotSize.x + 0.5f), 0, LayoutColumns()-1 );
 			AnimationCenterPanel[1] = (int)( ( LayoutRows - 1 ) * 0.5f );
 		}
 	}
@@ -372,7 +372,7 @@ static float LineOnMatrix( const V3Vectf & p1 , const V3Vectf & p2, const VR4Mat
 
 
 SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & font, BitmapFontSurface & fontSurface,
-        const VrFrame & vrFrame, const VR4Matrixf & view, const bool allowSwipe )
+        const VFrame & vrFrame, const VR4Matrixf & view, const bool allowSwipe )
 {
 	SwipeAction	ret = {};
 	ret.ActivatePanelIndex = -1;
@@ -381,7 +381,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 	{
 		ActivateOnNextFrame = false;
 
-        AnimationStartTime = vrFrame.PoseState.TimeBySeconds;
+        AnimationStartTime = vrFrame.pose.timestamp;
 		// allowing AnimationFraction to reach 0.0 causes an invalid matrix to be formed in Draw()
 		AnimationFraction = 0.00001f;
 
@@ -395,12 +395,12 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 	if ( CloseOnNextFrame )
 	{
 		CloseOnNextFrame = false;
-        AnimationStartTime = vrFrame.PoseState.TimeBySeconds;
+        AnimationStartTime = vrFrame.pose.timestamp;
 	}
 
 
 
-    const V2Vectf touch( vrFrame.Input.touch[0], vrFrame.Input.touch[1] );
+    const V2Vectf touch( vrFrame.input.touch[0], vrFrame.input.touch[1] );
 
 	// If we are in swipe mode and the touch moves away from the down point,
 	// or the gaze moves away from the down point
@@ -447,12 +447,12 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 		if ( ClampPanelOffset )
 		{
 			const float offsetRange = ( float )( ( LayoutColumns() / 2 ) * SlotSize.x + M_PI * 0.25f );
-			Offset = NervGear::VAlgorithm::Clamp( Offset, -offsetRange, offsetRange );
+            Offset = VAlgorithm::Clamp( Offset, -offsetRange, offsetRange );
 		}
 	}
 
 	// page-swipe animation
-	int swipeButtons = vrFrame.Input.buttonPressed;
+	int swipeButtons = vrFrame.input.buttonPressed;
 	if ( !allowPageSwipes )
 	{
 		swipeButtons &= ~(BUTTON_SWIPE_FORWARD | BUTTON_SWIPE_BACK);
@@ -468,8 +468,8 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 		}
 		if ( PageSwipeSeconds > 0.0f )
 		{
-			Offset += PageSwipeDir * vrFrame.DeltaSeconds / PageSwipeTime * PageSwipeDistance;
-			PageSwipeSeconds -= vrFrame.DeltaSeconds;
+			Offset += PageSwipeDir * vrFrame.deltaSeconds / PageSwipeTime * PageSwipeDistance;
+			PageSwipeSeconds -= vrFrame.deltaSeconds;
 		}
 	}
 
@@ -485,7 +485,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 
 	{
 		// Allow single dot button on joypad to also trigger actions
-		const bool	buttonState = allowSwipe ? ( ( vrFrame.Input.buttonState & BUTTON_TOUCH ) || ( vrFrame.Input.buttonState & BUTTON_A ) ) : 0;
+		const bool	buttonState = allowSwipe ? ( ( vrFrame.input.buttonState & BUTTON_TOUCH ) || ( vrFrame.input.buttonState & BUTTON_A ) ) : 0;
 		const bool	buttonReleased = allowSwipe ? ( !buttonState && PreviousButtonState ) : 0;
 		const bool	buttonPressed = allowSwipe ? ( buttonState && !PreviousButtonState ) : 0;
 		PreviousButtonState = buttonState;
@@ -496,13 +496,13 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 			for ( int i = 0 ; i < MAX_TOUCH_HISTORY ; i++ )
 			{
 				TouchPos[i] = touch;
-                TimeHistory[i] = vrFrame.PoseState.TimeBySeconds;
+                TimeHistory[i] = vrFrame.pose.timestamp;
 			}
 
 			TouchPoint = touch;
 			TouchGazePos = GazePos;
 			PrevTouch = touch;
-            PressTime = vrFrame.PoseState.TimeBySeconds;
+            PressTime = vrFrame.pose.timestamp;
 			HasMoved = false;
 
 			// If an Activate() was issued programatically, this needs to be
@@ -584,20 +584,20 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 				const int oldIndex = ( HistoryIndex + 1 ) % MAX_TOUCH_HISTORY;
 				HistoryIndex++;
 				TouchPos[thisIndex] = touch;
-                TimeHistory[thisIndex] = vrFrame.PoseState.TimeBySeconds;
+                TimeHistory[thisIndex] = vrFrame.pose.timestamp;
 
 				Velocity = -SpeedScale * ( TouchPos[thisIndex].x - TouchPos[oldIndex].x ) / ( TimeHistory[thisIndex] - TimeHistory[oldIndex] );
 
 				// Clamp to a maximum speed
-				Velocity = NervGear::VAlgorithm::Clamp( Velocity, -MaxVelocity, MaxVelocity );
+                Velocity = VAlgorithm::Clamp( Velocity, -MaxVelocity, MaxVelocity );
 			}
 
 
 			{	// Coast after release
-				Offset += Velocity * vrFrame.DeltaSeconds;
+				Offset += Velocity * vrFrame.deltaSeconds;
 
 				// Friction to targetVelocity
-				const float velocityAdjust = Friction * vrFrame.DeltaSeconds;
+				const float velocityAdjust = Friction * vrFrame.deltaSeconds;
 
 				Velocity -= Velocity * velocityAdjust;
 				if ( fabs( Velocity ) < MinVelocity )
@@ -623,20 +623,20 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 			SwipePanel & panel = Panels[index];
 			if ( index == SelectedPanel )
 			{
-				panel.SelectState = std::min( 1.0f, panel.SelectState + vrFrame.DeltaSeconds / SelectTime );
+				panel.SelectState = std::min( 1.0f, panel.SelectState + vrFrame.deltaSeconds / SelectTime );
 			}
 			else
 			{	// shrink back
-				panel.SelectState = std::max( 0.0f, panel.SelectState - vrFrame.DeltaSeconds / SelectTime );
+				panel.SelectState = std::max( 0.0f, panel.SelectState - vrFrame.deltaSeconds / SelectTime );
 			}
 		}
 	}
 
 	// Opening / closing animation
 	AnimationFraction = std::min( 1.0,
-            ( vrFrame.PoseState.TimeBySeconds - AnimationStartTime ) / OpenAnimationTime );
+            ( vrFrame.pose.timestamp - AnimationStartTime ) / OpenAnimationTime );
 	// allowing AnimationFraction to reach 0.0 causes an invalid matrix to be formed in Draw()
-	AnimationFraction = NervGear::VAlgorithm::Clamp( AnimationFraction, 0.00001f, 1.0f );
+    AnimationFraction = VAlgorithm::Clamp( AnimationFraction, 0.00001f, 1.0f );
 	if ( State == SVS_CLOSING )
 	{
 		if ( AnimationFraction >= 1.0f )
@@ -698,7 +698,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 					sqr( panelX - AnimationCenterPanel[0] )
 					+ sqr( panelY - AnimationCenterPanel[1] ) );
 			const float maxDistance = 3.0f;
-			const float clampedDistance = NervGear::VAlgorithm::Clamp( slotDistance, 1.0f, maxDistance );
+            const float clampedDistance = VAlgorithm::Clamp( slotDistance, 1.0f, maxDistance );
 
 			// animate the closer panels so they land sooner
 			// square it so they smack into the UI surface hard
@@ -806,7 +806,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 
 void SwipeView::Draw( const VR4Matrixf & mvp )
 {
-    VGlOperation glOperation;
+
 	if ( State == SVS_CLOSED )
 	{	// full closed
 		return;
@@ -867,7 +867,7 @@ void SwipeView::Draw( const VR4Matrixf & mvp )
 
 	}
 
-    glOperation.glBindVertexArrayOES( 0 );
+    VEglDriver::glBindVertexArrayOES( 0 );
 
 	glActiveTexture( GL_TEXTURE1 );
 	glBindTexture( GL_TEXTURE_2D, 0 );

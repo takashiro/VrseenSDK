@@ -13,7 +13,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include <stdlib.h>
 
-#include "api/VGlOperation.h"
+#include "api/VEglDriver.h"
 #include "VAlgorithm.h"
 
 #include "GlTexture.h"
@@ -241,7 +241,7 @@ int bsortComp( const void * p1, const void * p2 )
 	return -1;
 }
 
-const DrawSurfaceList & BuildDrawSurfaceList( const NervGear::VArray<ModelState> & modelRenderList,
+const DrawSurfaceList & BuildDrawSurfaceList( const VArray<ModelState> & modelRenderList,
             const VR4Matrixf & viewMatrix, const VR4Matrixf & projectionMatrix )
 {
 	// A mobile GPU will be in trouble if it draws more than this.
@@ -348,7 +348,7 @@ const DrawSurfaceList & BuildDrawSurfaceList( const NervGear::VArray<ModelState>
 DrawCounters RenderSurfaceList( const DrawSurfaceList & drawSurfaceList ) {
 	// This state could be made to persist across multiple calls to RenderModelList,
 	// but the benefit would be small.
-    VGlOperation glOperation;
+
     GpuState			currentGpuState;
 	GLuint				currentTextures[ MAX_PROGRAM_TEXTURES ] = {};	// TODO: This should be a range checked container.
 	const DrawMatrices * currentMatrices = NULL;
@@ -468,7 +468,7 @@ DrawCounters RenderSurfaceList( const DrawSurfaceList & drawSurfaceList ) {
 	glActiveTexture( GL_TEXTURE0 );
 	glBindTexture( GL_TEXTURE_2D, 0 );
 	glUseProgram( 0 );
-    glOperation.glBindVertexArrayOES( 0 );
+    VEglDriver::glBindVertexArrayOES( 0 );
 
 	return counters;
 }

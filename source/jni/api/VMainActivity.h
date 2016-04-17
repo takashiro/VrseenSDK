@@ -3,12 +3,15 @@
 #include "VEventLoop.h"
 #include "VString.h"
 
-#include "Input.h"
+#include "VFrame.h"
 #include "KeyState.h"
+#include "VMatrix.h"
 
 #include <jni.h>
 
 NV_NAMESPACE_BEGIN
+
+class VKernel;
 
 class VMainActivity
 {
@@ -26,7 +29,7 @@ public:
     virtual void init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI) = 0;
     virtual void shutdown();
 
-    virtual VR4Matrixf onNewFrame( VrFrame vrFrame );
+    virtual VR4Matrixf onNewFrame( VFrame vrFrame );
     virtual VR4Matrixf drawEyeView( const int eye, const float fovDegrees );
     virtual void configureVrMode(VKernel* kernel);
 
