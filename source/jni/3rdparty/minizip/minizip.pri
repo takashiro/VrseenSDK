@@ -2,16 +2,16 @@
 INCLUDEPATH += $$PWD
 
 SOURCES += \
-    jni/3rdparty/minizip/ioapi.c \
-    jni/3rdparty/minizip/miniunz.c \
-    jni/3rdparty/minizip/mztools.c \
-    jni/3rdparty/minizip/unzip.c \
-    jni/3rdparty/minizip/zip.c
+    $$PWD/ioapi.c \
+    $$PWD/miniunz.c \
+    $$PWD/mztools.c \
+    $$PWD/unzip.c \
+    $$PWD/zip.c
 
 HEADERS += \
-    jni/3rdparty/minizip/crypt.h \
-    jni/3rdparty/minizip/ioapi.h \
-    jni/3rdparty/minizip/iowin32.h \
-    jni/3rdparty/minizip/mztools.h \
-    jni/3rdparty/minizip/unzip.h \
-    jni/3rdparty/minizip/zip.h
+    $$PWD/crypt.h \
+    $$PWD/ioapi.h \
+    $$PWD/iowin32.h \
+    $$PWD/mztools.h \
+    $$PWD/unzip.h \
+    $$PWD/zip.h

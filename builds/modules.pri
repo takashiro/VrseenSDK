@@ -6,7 +6,6 @@ NV_ROOT = $$absolute_path($PWD/../../source/jni)
 DESTDIR = $$absolute_path($PWD/../libs)
 LIBS += -L$$DESTDIR
 
-
 INCLUDEPATH += \
     $$NV_ROOT \
     $$NV_ROOT/api \
@@ -50,3 +49,4 @@ QMAKE_CXXFLAGS	+= -Wno-missing-field-initializers	# warns on this: SwipeAction	r
 QMAKE_CXXFLAGS  += -Wno-type-limits
 QMAKE_CXXFLAGS  += -Wno-invalid-offsetof
 
+QMAKE_LFLAGS += -Wl,--unresolved-symbols=ignore-all
