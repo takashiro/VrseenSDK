@@ -17,7 +17,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <dirent.h>
 #include "VBasicmath.h"
 #include "VAlgorithm.h"
-#include "TypesafeNumber.h"
 #include "api/VEglDriver.h"
 
 #include "VFrame.h"

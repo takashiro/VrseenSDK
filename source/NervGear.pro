@@ -138,6 +138,7 @@ HEADERS += \
     jni/core/VLockless.h \
     jni/core/VMap.h \
     jni/core/VModule.h \
+    jni/core/VNumber.h \
     jni/core/VPath.h \
     jni/core/VPos.h \
     jni/core/VRect.h \
@@ -154,7 +155,6 @@ HEADERS += \
     jni/core/VMutex.h \
     jni/core/List.h \
     jni/core/VVariant.h \
-    jni/core/TypesafeNumber.h \
     jni/core/VUserSettings.h \
     jni/core/VWaitCondition.h \
     jni/core/VConstants.h \

@@ -2,7 +2,7 @@
 
 #include "vglobal.h"
 
-#include "TypesafeNumber.h"
+#include "VNumber.h"
 #include "VBasicmath.h"
 
 NV_NAMESPACE_BEGIN

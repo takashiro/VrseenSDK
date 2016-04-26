@@ -24,10 +24,9 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include <VApkFile.h>
 #include <fstream>
 
-#include "TypesafeNumber.h"
 #include "VArray.h"
 #include "VString.h"
-#include "api/VEglDriver.h"
+#include "VEglDriver.h"
 #include "SurfaceTexture.h"
 
 #include "GlTexture.h"

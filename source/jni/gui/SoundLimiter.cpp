@@ -12,7 +12,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "SoundLimiter.h"
 #include "core/VTimer.h"
-#include "TypesafeNumber.h"
 #include "VBasicmath.h"
 #include "api/VKernel.h"		// ovrPoseStatef
 
