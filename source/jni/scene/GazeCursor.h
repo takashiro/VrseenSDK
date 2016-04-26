@@ -12,7 +12,7 @@ enum eGazeCursorUserIdType
 	INVALID_GAZE_CURSOR_USER_ID = 0
 };
 
-typedef TypesafeNumberT< int, eGazeCursorUserIdType, INVALID_GAZE_CURSOR_USER_ID > gazeCursorUserId_t;
+typedef VNumber< int, eGazeCursorUserIdType, INVALID_GAZE_CURSOR_USER_ID > gazeCursorUserId_t;
 
 enum eGazeCursorStateType
 {

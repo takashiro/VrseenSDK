@@ -4,52 +4,13 @@
 
 NV_NAMESPACE_BEGIN
 
-//----------------------------------------------
-// TypesafeNumberT
-//
-// This template implements typesafe numbers. An object of this templated type will
-// act like a built-in integer or floating point type in all respects except that it
-// cannot be mixed with other types.
-//
-// USAGE:
-// The second template parameter is normally an enum type.  The enum type is generally
-// an empty type definition or has very few members (perhaps an intial value and a max
-// value).  This type uniques the instanced template.
-//
-// EXAMPLE:
-//
-//     enum MyUniqueType
-//     {
-//         MYUNIQUE_INITIAL_VALUE = 0
-//     };
-//
-//     typedef TypesafeNumber< unsigned short, MyUniqueType, MYUNIQUE_INIITIAL_VALUE > uniqueType_t;
-//
-//     uniqueType_t var1;
-//     uniqueType_t var2( 100 );
-//     unsigned short foo;
-//     var1 = var2;    // this works
-//     var1 = foo;        // this will cause a compile error
-//     uniqueType_t var3( foo );    // this will work because of the explicit constructor
-//
-// In general it is better to do this:
-//     var1 = uniqueType_t( foo );
-//
-// Than it is to do this:
-//     var1.Set( foo );
-//
-// This is because the explicit construction is less ambiguous and therefore easier to identify
-// at a glance and search for in a large codebase, especially considering that Set() is a common
-// function name.
-//
-//----------------------------------------------
 template< typename T, typename UniqueType, UniqueType InitialValue >
-class TypesafeNumberT
+class VNumber
 {
 public:
     // constructors
-                        TypesafeNumberT();
-    explicit            TypesafeNumberT( T const value );
+                        VNumber();
+    explicit            VNumber( T const value );
 
 
 // NOTE: the assignmnet of a Type value is implemented here and PURPOSEFULLY
@@ -60,37 +21,37 @@ public:
     Type &                operator=( T const value );
 */
 
-    TypesafeNumberT &    operator=( TypesafeNumberT const & rhs );
+    VNumber &    operator=( VNumber const & rhs );
 
     // comparison operators
-    bool                operator==( TypesafeNumberT const & rhs ) const;
-    bool                operator!=( TypesafeNumberT const & rhs ) const;
+    bool                operator==( VNumber const & rhs ) const;
+    bool                operator!=( VNumber const & rhs ) const;
 
-    bool                operator< ( TypesafeNumberT const & rhs) const;
-    bool                operator> ( TypesafeNumberT const & rhs) const;
-    bool                operator<=( TypesafeNumberT const & rhs) const;
-    bool                operator>=( TypesafeNumberT const & rhs) const;
+    bool                operator< ( VNumber const & rhs) const;
+    bool                operator> ( VNumber const & rhs) const;
+    bool                operator<=( VNumber const & rhs) const;
+    bool                operator>=( VNumber const & rhs) const;
 
     // unary operators
-    TypesafeNumberT &  operator++();       // prefix
-    TypesafeNumberT    operator++( int );  // postfix
+    VNumber &  operator++();       // prefix
+    VNumber    operator++( int );  // postfix
 
-    TypesafeNumberT &  operator--();       // prefix
-    TypesafeNumberT    operator--( int );  // postfix
+    VNumber &  operator--();       // prefix
+    VNumber    operator--( int );  // postfix
 
     // compound assignment operators
-    TypesafeNumberT &  operator+=( TypesafeNumberT const & rhs );
-    TypesafeNumberT &  operator-=( TypesafeNumberT const & rhs );
-    TypesafeNumberT &  operator*=( TypesafeNumberT const & rhs );
-    TypesafeNumberT &  operator/=( TypesafeNumberT const & rhs );
-    TypesafeNumberT &  operator%=( TypesafeNumberT const & rhs );
+    VNumber &  operator+=( VNumber const & rhs );
+    VNumber &  operator-=( VNumber const & rhs );
+    VNumber &  operator*=( VNumber const & rhs );
+    VNumber &  operator/=( VNumber const & rhs );
+    VNumber &  operator%=( VNumber const & rhs );
 
     // binary arithmetic operators
-    TypesafeNumberT    operator+( TypesafeNumberT const & rhs ) const;
-    TypesafeNumberT    operator-( TypesafeNumberT const & rhs ) const;
-    TypesafeNumberT    operator*( TypesafeNumberT const & rhs ) const;
-    TypesafeNumberT    operator/( TypesafeNumberT const & rhs ) const;
-    TypesafeNumberT    operator%( TypesafeNumberT const & rhs ) const;
+    VNumber    operator+( VNumber const & rhs ) const;
+    VNumber    operator-( VNumber const & rhs ) const;
+    VNumber    operator*( VNumber const & rhs ) const;
+    VNumber    operator/( VNumber const & rhs ) const;
+    VNumber    operator%( VNumber const & rhs ) const;
 
     T                   Get() const;
     void                Set( T const value );
@@ -106,21 +67,21 @@ private:
 
 template< typename T, typename UniqueType, UniqueType InitialValue >
 inline
-TypesafeNumberT< T, UniqueType, InitialValue >::TypesafeNumberT() :
+VNumber< T, UniqueType, InitialValue >::VNumber() :
     Value( static_cast< T >( InitialValue ) )
 {
 }
 
 template< typename T, typename UniqueType, UniqueType InitialValue >
 inline
-TypesafeNumberT< T, UniqueType, InitialValue >::TypesafeNumberT( T const value ) :
+VNumber< T, UniqueType, InitialValue >::VNumber( T const value ) :
     Value( value )
 {
 }
 
 template< typename T, typename UniqueType, UniqueType InitialValue >
 inline
-TypesafeNumberT< T, UniqueType, InitialValue > & TypesafeNumberT< T, UniqueType, InitialValue >::operator=( TypesafeNumberT const & rhs )
+VNumber< T, UniqueType, InitialValue > & VNumber< T, UniqueType, InitialValue >::operator=( VNumber const & rhs )
 {
     if ( &rhs != this )
     {
@@ -131,49 +92,49 @@ TypesafeNumberT< T, UniqueType, InitialValue > & TypesafeNumberT< T, UniqueType,
 
 template< typename T, typename UniqueType, UniqueType InitialValue >
 inline
-bool TypesafeNumberT< T, UniqueType, InitialValue >::operator==( TypesafeNumberT const & rhs ) const
+bool VNumber< T, UniqueType, InitialValue >::operator==( VNumber const & rhs ) const
 {
     return this->Value == rhs.Value;
 }
 
 template< typename T, typename UniqueType, UniqueType InitialValue >
 inline
-bool TypesafeNumberT< T, UniqueType, InitialValue >::operator!=( TypesafeNumberT const & rhs ) const
+bool VNumber< T, UniqueType, InitialValue >::operator!=( VNumber const & rhs ) const
 {
     return !operator==( rhs );
 }
 
 template< typename T, typename UniqueType, UniqueType InitialValue >
 inline
-bool TypesafeNumberT< T, UniqueType, InitialValue >::operator< ( TypesafeNumberT const & rhs) const
+bool VNumber< T, UniqueType, InitialValue >::operator< ( VNumber const & rhs) const
 {
     return this->Value < rhs.Value;
 }
 
 template< typename T, typename UniqueType, UniqueType InitialValue >
 inline
-bool TypesafeNumberT< T, UniqueType, InitialValue >::operator> ( TypesafeNumberT const & rhs) const
+bool VNumber< T, UniqueType, InitialValue >::operator> ( VNumber const & rhs) const
 {
     return this->Value > rhs.Value;
 }
 
 template< typename T, typename UniqueType, UniqueType InitialValue >
 inline
-bool TypesafeNumberT< T, UniqueType, InitialValue >::operator<=( TypesafeNumberT const & rhs) const
+bool VNumber< T, UniqueType, InitialValue >::operator<=( VNumber const & rhs) const
 {
     return this->Value <= rhs.Value;
 }
 
 template< typename T, typename UniqueType, UniqueType InitialValue >
 inline
-bool TypesafeNumberT< T, UniqueType, InitialValue >::operator>=( TypesafeNumberT const & rhs) const
+bool VNumber< T, UniqueType, InitialValue >::operator>=( VNumber const & rhs) const
 {
     return this->Value >= rhs.Value;
 }
 
 template< typename T, typename UniqueType, UniqueType InitialValue >
 inline
-TypesafeNumberT< T, UniqueType, InitialValue > &  TypesafeNumberT< T, UniqueType, InitialValue >::operator++()
+VNumber< T, UniqueType, InitialValue > &  VNumber< T, UniqueType, InitialValue >::operator++()
 {
     this->Value++;
     return *this;
@@ -181,17 +142,17 @@ TypesafeNumberT< T, UniqueType, InitialValue > &  TypesafeNumberT< T, UniqueType
 
 template< typename T, typename UniqueType, UniqueType InitialValue >
 inline
-TypesafeNumberT< T, UniqueType, InitialValue > TypesafeNumberT< T, UniqueType, InitialValue >::operator++( int )
+VNumber< T, UniqueType, InitialValue > VNumber< T, UniqueType, InitialValue >::operator++( int )
 {
     // postfix
-    TypesafeNumberT temp( *this );
+    VNumber temp( *this );
     operator++();
     return temp;
 }
 
 template< typename T, typename UniqueType, UniqueType InitialValue >
 inline
-TypesafeNumberT< T, UniqueType, InitialValue > & TypesafeNumberT< T, UniqueType, InitialValue >::operator--()
+VNumber< T, UniqueType, InitialValue > & VNumber< T, UniqueType, InitialValue >::operator--()
 {
     this->Value--;
     return *this;
@@ -199,17 +160,17 @@ TypesafeNumberT< T, UniqueType, InitialValue > & TypesafeNumberT< T, UniqueType,
 
 template< typename T, typename UniqueType, UniqueType InitialValue >
 inline
-TypesafeNumberT< T, UniqueType, InitialValue > TypesafeNumberT< T, UniqueType, InitialValue >::operator--( int )
+VNumber< T, UniqueType, InitialValue > VNumber< T, UniqueType, InitialValue >::operator--( int )
 {
     // postfix
-    TypesafeNumberT temp( *this );
+    VNumber temp( *this );
     operator--();
     return temp;
 }
 
 template< typename T, typename UniqueType, UniqueType InitialValue >
 inline
-TypesafeNumberT< T, UniqueType, InitialValue > & TypesafeNumberT< T, UniqueType, InitialValue >::operator+=( TypesafeNumberT const & rhs )
+VNumber< T, UniqueType, InitialValue > & VNumber< T, UniqueType, InitialValue >::operator+=( VNumber const & rhs )
 {
     this->Value = this->Value + rhs.Value;
     return *this;
@@ -217,7 +178,7 @@ TypesafeNumberT< T, UniqueType, InitialValue > & TypesafeNumberT< T, UniqueType,
 
 template< typename T, typename UniqueType, UniqueType InitialValue >
 inline
-TypesafeNumberT< T, UniqueType, InitialValue > & TypesafeNumberT< T, UniqueType, InitialValue >::operator-=( TypesafeNumberT const & rhs )
+VNumber< T, UniqueType, InitialValue > & VNumber< T, UniqueType, InitialValue >::operator-=( VNumber const & rhs )
 {
     this->Value = this->Value - rhs.Value;
     return *this;
@@ -225,7 +186,7 @@ TypesafeNumberT< T, UniqueType, InitialValue > & TypesafeNumberT< T, UniqueType,
 
 template< typename T, typename UniqueType, UniqueType InitialValue >
 inline
-TypesafeNumberT< T, UniqueType, InitialValue > &    TypesafeNumberT< T, UniqueType, InitialValue >::operator*=( TypesafeNumberT const & rhs )
+VNumber< T, UniqueType, InitialValue > &    VNumber< T, UniqueType, InitialValue >::operator*=( VNumber const & rhs )
 {
     this->Value = this->Value * rhs.Value;
     return *this;
@@ -233,7 +194,7 @@ TypesafeNumberT< T, UniqueType, InitialValue > &    TypesafeNumberT< T, UniqueTy
 
 template< typename T, typename UniqueType, UniqueType InitialValue >
 inline
-TypesafeNumberT< T, UniqueType, InitialValue > &    TypesafeNumberT< T, UniqueType, InitialValue >::operator/=( TypesafeNumberT const & rhs )
+VNumber< T, UniqueType, InitialValue > &    VNumber< T, UniqueType, InitialValue >::operator/=( VNumber const & rhs )
 {
     this->Value = this->Value / rhs.Value;
     return *this;
@@ -241,7 +202,7 @@ TypesafeNumberT< T, UniqueType, InitialValue > &    TypesafeNumberT< T, UniqueTy
 
 template< typename T, typename UniqueType, UniqueType InitialValue >
 inline
-TypesafeNumberT< T, UniqueType, InitialValue > &    TypesafeNumberT< T, UniqueType, InitialValue >::operator%=( TypesafeNumberT const & rhs )
+VNumber< T, UniqueType, InitialValue > &    VNumber< T, UniqueType, InitialValue >::operator%=( VNumber const & rhs )
 {
     this->Value = this->Value % rhs.Value;
     return *this;
@@ -249,49 +210,49 @@ TypesafeNumberT< T, UniqueType, InitialValue > &    TypesafeNumberT< T, UniqueTy
 
 template< typename T, typename UniqueType, UniqueType InitialValue >
 inline
-TypesafeNumberT< T, UniqueType, InitialValue > TypesafeNumberT< T, UniqueType, InitialValue >::operator+( TypesafeNumberT const & rhs ) const
+VNumber< T, UniqueType, InitialValue > VNumber< T, UniqueType, InitialValue >::operator+( VNumber const & rhs ) const
 {
-    return TypesafeNumberT( this->Value + rhs.Value );
+    return VNumber( this->Value + rhs.Value );
 }
 
 template< typename T, typename UniqueType, UniqueType InitialValue >
 inline
-TypesafeNumberT< T, UniqueType, InitialValue > TypesafeNumberT< T, UniqueType, InitialValue >::operator-( TypesafeNumberT const & rhs ) const
+VNumber< T, UniqueType, InitialValue > VNumber< T, UniqueType, InitialValue >::operator-( VNumber const & rhs ) const
 {
-    return TypesafeNumberT( this->Value - rhs.Value );
+    return VNumber( this->Value - rhs.Value );
 }
 
 template< typename T, typename UniqueType, UniqueType InitialValue >
 inline
-TypesafeNumberT< T, UniqueType, InitialValue > TypesafeNumberT< T, UniqueType, InitialValue >::operator*( TypesafeNumberT const & rhs ) const
+VNumber< T, UniqueType, InitialValue > VNumber< T, UniqueType, InitialValue >::operator*( VNumber const & rhs ) const
 {
-    return TypesafeNumberT( this->Value * rhs.Value );
+    return VNumber( this->Value * rhs.Value );
 }
 
 template< typename T, typename UniqueType, UniqueType InitialValue >
 inline
-TypesafeNumberT< T, UniqueType, InitialValue > TypesafeNumberT< T, UniqueType, InitialValue >::operator/( TypesafeNumberT const & rhs ) const
+VNumber< T, UniqueType, InitialValue > VNumber< T, UniqueType, InitialValue >::operator/( VNumber const & rhs ) const
 {
-    return TypesafeNumberT( this->Value / rhs.Value );
+    return VNumber( this->Value / rhs.Value );
 }
 
 template< typename T, typename UniqueType, UniqueType InitialValue >
 inline
-TypesafeNumberT< T, UniqueType, InitialValue > TypesafeNumberT< T, UniqueType, InitialValue >::operator%( TypesafeNumberT const & rhs ) const
+VNumber< T, UniqueType, InitialValue > VNumber< T, UniqueType, InitialValue >::operator%( VNumber const & rhs ) const
 {
-    return TypesafeNumberT( this->Value % rhs.Value );
+    return VNumber( this->Value % rhs.Value );
 }
 
 template< typename T, typename UniqueType, UniqueType InitialValue >
 inline
-T TypesafeNumberT< T, UniqueType, InitialValue >::Get() const
+T VNumber< T, UniqueType, InitialValue >::Get() const
 {
     return this->Value;
 }
 
 template< typename T, typename UniqueType, UniqueType InitialValue >
 inline
-void TypesafeNumberT< T, UniqueType, InitialValue >::Set( T const value )
+void VNumber< T, UniqueType, InitialValue >::Set( T const value )
 {
     this->Value = value;
 }

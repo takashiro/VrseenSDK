@@ -80,14 +80,14 @@ enum eVRMenuId
 {
 	INVALID_MENU_ID = INT_MIN
 };
-typedef TypesafeNumberT< long long, eVRMenuId, INVALID_MENU_ID > VRMenuId_t;
+typedef VNumber< long long, eVRMenuId, INVALID_MENU_ID > VRMenuId_t;
 
 // menu object handles
 enum eMenuIdType
 {
 	INVALID_MENU_OBJECT_ID = 0
 };
-typedef TypesafeNumberT< uint64_t, eMenuIdType, INVALID_MENU_OBJECT_ID >	menuHandle_t;
+typedef VNumber< uint64_t, eMenuIdType, INVALID_MENU_OBJECT_ID >	menuHandle_t;
 
 // menu render flags
 enum eVRMenuRenderFlags
