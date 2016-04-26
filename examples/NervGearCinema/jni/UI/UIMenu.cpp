@@ -25,7 +25,7 @@ UIMenu::~UIMenu()
 VRMenuId_t UIMenu::AllocId()
 {
 	VRMenuId_t id = IdPool;
-	IdPool = VRMenuId_t( IdPool.Get() + 1 );
+	IdPool = VRMenuId_t( IdPool.value() + 1 );
 
 	return id;
 }

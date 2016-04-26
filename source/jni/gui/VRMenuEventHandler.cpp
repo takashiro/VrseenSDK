@@ -55,7 +55,7 @@ void VRMenuEventHandler::frame( App * app, VFrame const & vrFrame, OvrVRMenuMgr 
 	result.RayStart = viewPos;
 	result.RayDir = viewFwd;
 
-	VRMenuObject * hit = hitHandle.IsValid() ? menuMgr.toObject( hitHandle ) : NULL;
+	VRMenuObject * hit = hitHandle.isValid() ? menuMgr.toObject( hitHandle ) : NULL;
 	app->gazeCursor().UpdateForUser( gazeUserId, result.t, ( hit != NULL && !( hit->flags() & VRMenuObjectFlags_t( VRMENUOBJECT_NO_GAZE_HILIGHT ) ) ) ? CURSOR_STATE_HILIGHT : CURSOR_STATE_NORMAL );
 /*
     if ( hit != NULL )
@@ -203,11 +203,11 @@ void VRMenuEventHandler::closed( VArray< VRMenuEvent > & events )
     VRMenuEvent event( VRMENU_EVENT_CLOSED, EVENT_DISPATCH_BROADCAST, menuHandle_t(), V3Vectf( 0.0f ), HitTestResult() );
 	events.append( event );
 
-	if ( m_focusedHandle.IsValid() )
+	if ( m_focusedHandle.isValid() )
 	{
         VRMenuEvent event( VRMENU_EVENT_FOCUS_LOST, EVENT_DISPATCH_TARGET, m_focusedHandle, V3Vectf( 0.0f ), HitTestResult() );
 		events.append( event );
-		m_focusedHandle.Release();
+		m_focusedHandle.reset();
 		vInfo("Released FocusHandle");
 	}
 }

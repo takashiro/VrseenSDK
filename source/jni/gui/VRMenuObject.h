@@ -76,18 +76,10 @@ enum eVRMenuObjectInitFlags
 
 typedef VFlags<eVRMenuObjectInitFlags> VRMenuObjectInitFlags_t;
 
-enum eVRMenuId
-{
-	INVALID_MENU_ID = INT_MIN
-};
-typedef VNumber< long long, eVRMenuId, INVALID_MENU_ID > VRMenuId_t;
+typedef VNumber<longlong, INT_MIN> VRMenuId_t;
 
 // menu object handles
-enum eMenuIdType
-{
-	INVALID_MENU_OBJECT_ID = 0
-};
-typedef VNumber< uint64_t, eMenuIdType, INVALID_MENU_OBJECT_ID >	menuHandle_t;
+typedef VNumber<vuint64> menuHandle_t;
 
 // menu render flags
 enum eVRMenuRenderFlags
@@ -502,7 +494,7 @@ class HitTestResult : public OvrCollisionResult
 public:
 	HitTestResult &	operator=( OvrCollisionResult & rhs )
 	{
-		this->HitHandle.Release();
+		this->HitHandle.reset();
         this->RayStart = V3Vectf::ZERO;
         this->RayDir = V3Vectf::ZERO;
 		this->t = rhs.t;

@@ -73,7 +73,7 @@ VRMenu * VRMenu::Create( char const * menuName )
 // VRMenu::Init
 void VRMenu::init( OvrVRMenuMgr & menuMgr, BitmapFont const & font, float const menuDistance, VRMenuFlags_t const & flags, VArray< VRMenuComponent* > comps /*= Array< VRMenuComponent* >( )*/ )
 {
-	vAssert( !m_rootHandle.IsValid() );
+	vAssert( !m_rootHandle.isValid() );
     vAssert( !m_name.isEmpty() );
 
 	m_flags = flags;
@@ -88,7 +88,7 @@ void VRMenu::init( OvrVRMenuMgr & menuMgr, BitmapFont const & font, float const 
 	VRMenuObject * root = menuMgr.toObject( m_rootHandle );
 	if ( root == NULL )
 	{
-		vWarn("RootHandle (" << m_rootHandle.Get() << ") is invalid!");
+		vWarn("RootHandle (" << m_rootHandle.value() << ") is invalid!");
 		return;
 	}
 
@@ -152,7 +152,7 @@ void VRMenu::addItems( OvrVRMenuMgr & menuMgr, BitmapFont const & font,
 			}
 		}
 		menuHandle_t handle = menuMgr.createObject( *parms );
-		if ( handle.IsValid() && root != NULL )
+		if ( handle.isValid() && root != NULL )
 		{
 			pairs.append( ChildParmsPair( handle, parms ) );
 			root->addChild( menuMgr, handle );
@@ -162,7 +162,7 @@ void VRMenu::addItems( OvrVRMenuMgr & menuMgr, BitmapFont const & font,
                 VBoxf const & lb = obj->getTextLocalBounds( font );
                 V3Vectf size = lb.GetSize() * obj->localScale();
                 V3Vectf centerOfs( left * ( size.x * -0.5f ) );
-				if ( !parms->ParentId.IsValid() )	// only contribute to height if not being reparented
+				if ( !parms->ParentId.isValid() )	// only contribute to height if not being reparented
 				{
 					// stack the items
                     obj->setLocalPose( VPosf( VQuatf(), nextItemPos + centerOfs ) );
@@ -182,7 +182,7 @@ void VRMenu::addItems( OvrVRMenuMgr & menuMgr, BitmapFont const & font,
 	for ( int i = 0; i < pairs.length(); ++i )
 	{
 		ChildParmsPair const & pair = pairs[i];
-		if ( pair.Parms->ParentId.IsValid() )
+		if ( pair.Parms->ParentId.isValid() )
 		{
 			menuHandle_t parentHandle = handleForId( menuMgr, pair.Parms->ParentId );
 			VRMenuObject * parent = menuMgr.toObject( parentHandle );
@@ -211,10 +211,10 @@ void VRMenu::shutdown( OvrVRMenuMgr & menuMgr )
     vAssert(m_isInitialized);
 
 	// this will free the root and all children
-	if ( m_rootHandle.IsValid() )
+	if ( m_rootHandle.isValid() )
 	{
 		menuMgr.freeObject( m_rootHandle );
-		m_rootHandle.Release();
+		m_rootHandle.reset();
 	}
 }
 

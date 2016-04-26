@@ -692,8 +692,8 @@ VRMenuObjectLocal::~VRMenuObjectLocal()
         m_components[i] = NULL;
     }
     m_components.clear();
-	m_handle.Release();
-	m_parentHandle.Release();
+	m_handle.reset();
+	m_parentHandle.reset();
 	m_type = VRMENU_MAX;
 }
 
@@ -1006,7 +1006,7 @@ bool VRMenuObjectLocal:: hitTest_r( App * app, OvrVRMenuMgr & menuMgr, BitmapFon
 			}
 		}
     }
-	return result.HitHandle.IsValid();
+	return result.HitHandle.isValid();
 }
 
 //==============================
@@ -1310,7 +1310,7 @@ menuHandle_t VRMenuObjectLocal::childHandleForId( OvrVRMenuMgr & menuMgr, VRMenu
 			else
 			{
 				menuHandle_t handle = child->childHandleForId( menuMgr, id );
-				if ( handle.IsValid() )
+				if ( handle.isValid() )
 				{
 					return handle;
 				}

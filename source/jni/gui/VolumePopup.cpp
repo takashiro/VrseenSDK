@@ -68,10 +68,10 @@ namespace NervGear {
 
 const int OvrVolumePopup::NumVolumeTics = 15;
 
-VRMenuId_t OvrVolumePopup::ID_BACKGROUND( VRMenu::GetRootId().Get() + 1000 );
-VRMenuId_t OvrVolumePopup::ID_VOLUME_ICON( VRMenu::GetRootId().Get() + 1001 );
-VRMenuId_t OvrVolumePopup::ID_VOLUME_TEXT( VRMenu::GetRootId().Get() + 1002 );
-VRMenuId_t OvrVolumePopup::ID_VOLUME_TICKS( VRMenu::GetRootId().Get() + 1003 );
+VRMenuId_t OvrVolumePopup::ID_BACKGROUND( VRMenu::GetRootId().value() + 1000 );
+VRMenuId_t OvrVolumePopup::ID_VOLUME_ICON( VRMenu::GetRootId().value() + 1001 );
+VRMenuId_t OvrVolumePopup::ID_VOLUME_TEXT( VRMenu::GetRootId().value() + 1002 );
+VRMenuId_t OvrVolumePopup::ID_VOLUME_TICKS( VRMenu::GetRootId().value() + 1003 );
 
 const double OvrVolumePopup::VolumeMenuFadeDelay = 3;
 
@@ -177,7 +177,7 @@ OvrVolumePopup * OvrVolumePopup::Create( App * app, OvrVRMenuMgr & menuMgr, Bitm
 
 				VRMenuObjectParms volumeTickParms( VRMENU_BUTTON, VArray< VRMenuComponent* >(), volumeTickSurfaceParms, NULL,
                                              volumeTickPose, V3Vectf( 1.0f ), fontParms,
-											 VRMenuId_t( OvrVolumePopup::ID_VOLUME_TICKS.Get() + i ), VRMenuObjectFlags_t( VRMENUOBJECT_BOUND_ALL ) | VRMENUOBJECT_DONT_HIT_TEXT,
+											 VRMenuId_t( OvrVolumePopup::ID_VOLUME_TICKS.value() + i ), VRMenuObjectFlags_t( VRMENUOBJECT_BOUND_ALL ) | VRMENUOBJECT_DONT_HIT_TEXT,
 											 VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 
 				defaultAppMenuItems.append( volumeTickParms );
@@ -258,7 +258,7 @@ void OvrVolumePopup::showVolume( App * app, const int current )
 		// highlight the volume ticks
 		for( int i = 0; i < NumVolumeTics; i++ )
 		{
-			menuHandle_t volumeTickHandle = handleForId( app->vrMenuMgr(), VRMenuId_t( OvrVolumePopup::ID_VOLUME_TICKS.Get() + i ) );
+			menuHandle_t volumeTickHandle = handleForId( app->vrMenuMgr(), VRMenuId_t( OvrVolumePopup::ID_VOLUME_TICKS.value() + i ) );
 			VRMenuObject *volumeTick = app->vrMenuMgr().toObject( volumeTickHandle );
 			volumeTick->setHilighted( i < current );
 		}

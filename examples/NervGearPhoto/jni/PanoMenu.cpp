@@ -187,7 +187,7 @@ OvrPanoMenu::OvrPanoMenu( App * app, Oculus360Photos * photos, OvrVRMenuMgr & me
 	// Create Attribution info view
 	VArray< VRMenuObjectParms const * > parms;
 	VArray< VRMenuComponent* > comps;
-	VRMenuId_t attributionPanelId( ID_CENTER_ROOT.Get() + 10 );
+	VRMenuId_t attributionPanelId( ID_CENTER_ROOT.value() + 10 );
 
 	comps.append( new OvrPanoMenuRootComponent( *this ) );
 
@@ -291,7 +291,7 @@ OvrPanoMenu::OvrPanoMenu( App * app, Oculus360Photos * photos, OvrVRMenuMgr & me
 	const float factor = 1.0f / 8.0f;
 
 	// Right container
-	VRMenuId_t swipeRightId( ID_CENTER_ROOT.Get() + 401 );
+	VRMenuId_t swipeRightId( ID_CENTER_ROOT.value() + 401 );
     VQuatf rotRight( DOWN, ( VConstantsf::Pi * 2 * factor ) );
     V3Vectf rightDir( -FWD * rotRight );
 	comps.append( new OvrTrailsAnimComponent( swipeFPS, true, numFrames, numTrails, numTrails ) );
@@ -308,7 +308,7 @@ OvrPanoMenu::OvrPanoMenu( App * app, Oculus360Photos * photos, OvrVRMenuMgr & me
 	vAssert( swipeRightRootObject != NULL );
 
 	// Left container
-	VRMenuId_t swipeLeftId( ID_CENTER_ROOT.Get( ) + 402 );
+	VRMenuId_t swipeLeftId( ID_CENTER_ROOT.value( ) + 402 );
     VQuatf rotLeft( DOWN, ( VConstantsf::Pi * 2 * -factor ) );
     V3Vectf leftDir( -FWD * rotLeft );
 	comps.append( new OvrTrailsAnimComponent( swipeFPS, true, numFrames, numTrails, numTrails ) );
@@ -393,11 +393,11 @@ void OvrPanoMenu::onItemEvent_Impl( App * app, VRMenuId_t const itemId, VRMenuEv
 
         if ( m_photos->allowPanoInput() )
 		{
-			if ( itemId.Get() == ID_BROWSER_BUTTON.Get() )
+			if ( itemId.value() == ID_BROWSER_BUTTON.value() )
 			{
 				m_photos->SetMenuState( Oculus360Photos::MENU_BROWSER );
 			}
-			else if ( itemId.Get() == ID_FAVORITES_BUTTON.Get() )
+			else if ( itemId.value() == ID_FAVORITES_BUTTON.value() )
 			{
                 const TagAction actionTaken = static_cast< TagAction >( m_photos->toggleCurrentAsFavorite() );
                 const bool forceShowSwipeIndicators = ( actionTaken == TAG_REMOVED ) && ( m_photos->numPanosInActiveCategory() == 1 );

@@ -188,15 +188,15 @@ menuHandle_t ComposeHandle( int const index, vuint32 const id )
 // DecomposeHandle
 void DecomposeHandle( menuHandle_t const handle, int & index, vuint32 & id )
 {
-	index = (int)( handle.Get() & 0xFFFFFFFF );
-	id = (vuint32)( handle.Get() >> 32ULL );
+	index = (int)( handle.value() & 0xFFFFFFFF );
+	id = (vuint32)( handle.value() >> 32ULL );
 }
 
 //==================================
 // HandleComponentsAreValid
 static bool HandleComponentsAreValid( int const index, vuint32 const id )
 {
-	if ( id == INVALID_MENU_OBJECT_ID )
+    if ( id == 0 )
 	{
 		return false;
 	}
@@ -489,7 +489,7 @@ void VRMenuMgrLocal::freeObject( menuHandle_t const handle )
 
 	VRMenuObject * obj = ObjectList[index];
 	// remove this object from its parent's child list
-	if ( obj->parentHandle().IsValid() )
+	if ( obj->parentHandle().isValid() )
 	{
 		VRMenuObject * parentObj = toObject( obj->parentHandle() );
 		if ( parentObj != NULL )
@@ -559,7 +559,7 @@ VRMenuObject * VRMenuMgrLocal::toObject( menuHandle_t const handle ) const
 	int index;
 	vuint32 id;
 	DecomposeHandle( handle, index, id );
-	if ( id == INVALID_MENU_OBJECT_ID )
+    if ( id == 0 )
 	{
 		return NULL;
 	}

@@ -127,7 +127,7 @@ OvrVideoMenu::OvrVideoMenu( App * app, Oculus360Videos * videos, OvrVRMenuMgr & 
 	// Create Attribution info view
 	VArray< VRMenuObjectParms const * > parms;
 	VArray< VRMenuComponent* > comps;
-	VRMenuId_t attributionPanelId( ID_CENTER_ROOT.Get() + 10 );
+	VRMenuId_t attributionPanelId( ID_CENTER_ROOT.value() + 10 );
 
 	comps.append( new OvrVideoMenuRootComponent( *this ) );
 
@@ -239,11 +239,11 @@ void OvrVideoMenu::onItemEvent_Impl( App * app, VRMenuId_t const itemId, VRMenuE
 	{
 		ButtonCoolDown = BUTTON_COOL_DOWN_SECONDS;
 
-		if ( itemId.Get() == ID_BROWSER_BUTTON.Get() )
+		if ( itemId.value() == ID_BROWSER_BUTTON.value() )
 		{
 			Videos->SetMenuState( Oculus360Videos::MENU_BROWSER );
 		}
-		else if ( itemId.Get( ) == ID_VIDEO_BUTTON.Get( ) )
+		else if ( itemId.value( ) == ID_VIDEO_BUTTON.value( ) )
 		{
 			Videos->SeekTo( 0 );
 		}

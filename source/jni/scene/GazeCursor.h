@@ -7,12 +7,7 @@
 
 NV_NAMESPACE_BEGIN
 
-enum eGazeCursorUserIdType
-{
-	INVALID_GAZE_CURSOR_USER_ID = 0
-};
-
-typedef VNumber< int, eGazeCursorUserIdType, INVALID_GAZE_CURSOR_USER_ID > gazeCursorUserId_t;
+typedef VNumber<int> gazeCursorUserId_t;
 
 enum eGazeCursorStateType
 {
@@ -36,7 +31,7 @@ public:
 
 	void				Reset( float const d )
 	{
-		UserId.Release();
+		UserId.reset();
 		Distance = d;
 		State = CURSOR_STATE_NORMAL;
 	}

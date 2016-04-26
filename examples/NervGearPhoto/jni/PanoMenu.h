@@ -56,7 +56,7 @@ public:
     menuHandle_t			loadingIconHandle() const	{ return m_loadingIconHandle; }
 
     float					fadeAlpha() const;
-    bool					interacting() const				{ return focusedHandle().IsValid(); }
+    bool					interacting() const				{ return focusedHandle().isValid(); }
 
 private:
 	OvrPanoMenu( App * app, Oculus360Photos * photos, OvrVRMenuMgr & menuMgr, BitmapFont const & font,

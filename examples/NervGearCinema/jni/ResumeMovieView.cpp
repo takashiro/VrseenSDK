@@ -131,7 +131,7 @@ void ResumeMovieView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFont 
         VPosf panelPose( VQuatf( up, 0.0f ), V3Vectf( 0.0f, 2.2f, -3.0f ) );
 
 		VRMenuObjectParms p( VRMENU_STATIC, VArray< VRMenuComponent* >(),
-                VRMenuSurfaceParms(), CinemaStrings::ResumeMenu_Title.toCString(), panelPose, defaultScale, fontParms, VRMenuId_t( ID_TITLE.Get() ),
+                VRMenuSurfaceParms(), CinemaStrings::ResumeMenu_Title.toCString(), panelPose, defaultScale, fontParms, VRMenuId_t( ID_TITLE.value() ),
 				VRMenuObjectFlags_t(), VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 
         parms.append( &p );
@@ -172,7 +172,7 @@ void ResumeMovieView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFont 
 
         VPosf panelPose( optionPositions[ i ].Orientation, optionPositions[ i ].Position );
 		VRMenuObjectParms * p = new VRMenuObjectParms( VRMENU_BUTTON, optionComps,
-				panelSurfParms, options[ i ], panelPose, defaultScale, fontParms, VRMenuId_t( ID_OPTIONS.Get() + i ),
+				panelSurfParms, options[ i ], panelPose, defaultScale, fontParms, VRMenuId_t( ID_OPTIONS.value() + i ),
 				VRMenuObjectFlags_t(), VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 
         parms.append( p );
@@ -182,7 +182,7 @@ void ResumeMovieView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFont 
         parms.clear();
 
 		// add icon
-        menuHandle_t optionHandle = centerRoot->childHandleForId( menuMgr, VRMenuId_t( ID_OPTIONS.Get() + i ) );
+        menuHandle_t optionHandle = centerRoot->childHandleForId( menuMgr, VRMenuId_t( ID_OPTIONS.value() + i ) );
         VRMenuObject * optionObject = menuMgr.toObject( optionHandle );
 	    vAssert( optionObject != NULL );
 
@@ -200,7 +200,7 @@ void ResumeMovieView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFont 
 
         VPosf iconPose( optionPositions[ i ].Orientation, optionPositions[ i ].Position + V3Vectf( textBounds.GetMins().x, 0.0f, 0.01f ) );
 		p = new VRMenuObjectParms( VRMENU_STATIC, VArray< VRMenuComponent* >(),
-				iconSurfParms, NULL, iconPose, defaultScale, fontParms, VRMenuId_t( ID_OPTION_ICONS.Get() + i ),
+				iconSurfParms, NULL, iconPose, defaultScale, fontParms, VRMenuId_t( ID_OPTION_ICONS.value() + i ),
 				VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_ALL ), VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 
         parms.append( p );
@@ -209,7 +209,7 @@ void ResumeMovieView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFont 
 	    DeletePointerArray( parms );
         parms.clear();
 
-        menuHandle_t iconHandle = centerRoot->childHandleForId( menuMgr, VRMenuId_t( ID_OPTION_ICONS.Get() + i ) );
+        menuHandle_t iconHandle = centerRoot->childHandleForId( menuMgr, VRMenuId_t( ID_OPTION_ICONS.value() + i ) );
         resumeMovieComponent->Icon = menuMgr.toObject( iconHandle );
 	}
 

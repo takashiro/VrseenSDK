@@ -20,7 +20,7 @@ eMsgStatus OvrButton_OnUp::onEventImpl( App * app, VFrame const & vrFrame, OvrVR
 	VRMenuObject * self, VRMenuEvent const & event )
 {
     vAssert(event.eventType == VRMENU_EVENT_TOUCH_UP);
-    vInfo("Button id" << m_buttonId.Get() << "clicked");
+    vInfo("Button id" << m_buttonId.value() << "clicked");
 	m_menu->onItemEvent( app, m_buttonId, event );
 	return MSG_STATUS_CONSUMED;
 }

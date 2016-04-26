@@ -768,7 +768,7 @@ private:
 		for ( int i = 0; i < numPanels; ++i )
 		{
 			const OvrFolderBrowser::PanelView & panel = folder.panels.at( i );
-			vAssert( panel.handle.IsValid() );
+			vAssert( panel.handle.isValid() );
 			VRMenuObject * panelObject = menuMgr.toObject( panel.handle );
 			vAssert( panelObject );
 
@@ -1140,30 +1140,30 @@ void OvrFolderBrowser::oneTimeInit()
 	parms.clear();
 
 	m_scrollSuggestionRootHandle = root->childHandleForId( menuManager, scrollSuggestionRootId );
-	vAssert( m_scrollSuggestionRootHandle.IsValid() );
+	vAssert( m_scrollSuggestionRootHandle.isValid() );
 
 	VRMenuId_t suggestionDownId( uniqueId.Get( 1 ) );
 	VRMenuId_t suggestionUpId( uniqueId.Get( 1 ) );
 
     const VPosf swipeDownPose( VQuatf(), FWD * ( 0.33f * m_radius ) + DOWN * m_panelHeight * 0.5f );
-	menuHandle_t scrollDownHintHandle = OvrSwipeHintComponent::CreateSwipeSuggestionIndicator( m_app, this, m_scrollSuggestionRootHandle, suggestionDownId.Get(),
+	menuHandle_t scrollDownHintHandle = OvrSwipeHintComponent::CreateSwipeSuggestionIndicator( m_app, this, m_scrollSuggestionRootHandle, suggestionDownId.value(),
 		"res/raw/swipe_suggestion_arrow_down.png", swipeDownPose, DOWN );
 
     const VPosf swipeUpPose( VQuatf(), FWD * ( 0.33f * m_radius ) + UP * m_panelHeight * 0.5f );
-	menuHandle_t scrollUpHintHandle = OvrSwipeHintComponent::CreateSwipeSuggestionIndicator( m_app, this, m_scrollSuggestionRootHandle, suggestionUpId.Get(),
+	menuHandle_t scrollUpHintHandle = OvrSwipeHintComponent::CreateSwipeSuggestionIndicator( m_app, this, m_scrollSuggestionRootHandle, suggestionUpId.value(),
 		"res/raw/swipe_suggestion_arrow_up.png", swipeUpPose, UP );
 
 	OvrFolderBrowserRootComponent * rootComp = root->GetComponentById<OvrFolderBrowserRootComponent>();
 	vAssert( rootComp );
 
 	menuHandle_t foldersRootHandle = root->childHandleForId( menuManager, m_foldersRootId );
-	vAssert( foldersRootHandle.IsValid() );
+	vAssert( foldersRootHandle.isValid() );
 	rootComp->SetFoldersRootHandle( foldersRootHandle );
 
-	vAssert( scrollUpHintHandle.IsValid() );
+	vAssert( scrollUpHintHandle.isValid() );
 	rootComp->SetScrollDownHintHandle( scrollDownHintHandle );
 
-	vAssert( scrollDownHintHandle.IsValid() );
+	vAssert( scrollDownHintHandle.isValid() );
 	rootComp->SetScrollUpHintHandle( scrollUpHintHandle );
 }
 
@@ -1359,7 +1359,7 @@ void OvrFolderBrowser::buildFolder( OvrMetaData::Category & category, FolderView
 
 	// Create OvrFolderRootComponent for folder root
 	const VRMenuId_t folderId( uniqueId.Get( 1 ) );
-	vInfo("Building Folder" << category.categoryTag << "id:" << folderId.Get() << "with" << numPanels << "panels");
+	vInfo("Building Folder" << category.categoryTag << "id:" << folderId.value() << "with" << numPanels << "panels");
 	VArray< VRMenuComponent* > comps;
 	comps.append( new OvrFolderRootComponent( *this, folder ) );
 	VRMenuObjectParms folderParms(
@@ -2237,7 +2237,7 @@ float OvrFolderBrowser::calcFolderMaxRotation( const FolderView * folder ) const
 
 void OvrFolderBrowser::setWrapIndicatorVisible( FolderView& folder, const bool visible )
 {
-	if ( folder.wrapIndicatorHandle.IsValid() )
+	if ( folder.wrapIndicatorHandle.isValid() )
 	{
 		VRMenuObject * wrapIndicatorObject = m_app->vrMenuMgr().toObject( folder.wrapIndicatorHandle );
 		if ( wrapIndicatorObject )
@@ -2267,7 +2267,7 @@ OvrFolderSwipeComponent * OvrFolderBrowser::swipeComponentForActiveFolder()
 
 bool OvrFolderBrowser::gazingAtMenu() const
 {
-	if ( focusedHandle().IsValid() )
+	if ( focusedHandle().isValid() )
 	{
         const VR4Matrixf & view = m_app->lastViewMatrix();
         V3Vectf viewForwardFlat( view.M[ 2 ][ 0 ], 0.0f, view.M[ 2 ][ 2 ] );

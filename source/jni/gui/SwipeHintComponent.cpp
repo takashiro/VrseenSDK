@@ -57,7 +57,7 @@ namespace NervGear
 		parms.clear();
 
 		menuHandle_t scrollHintHandle = rootMenu->handleForId( menuManager, swipeHintId );
-		vAssert( scrollHintHandle.IsValid() );
+		vAssert( scrollHintHandle.isValid() );
 		GLuint swipeHintTexture = LoadTextureFromApplicationPackage( img, TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), imgWidth, imgHeight );
 		VRMenuSurfaceParms swipeHintSurfParms( "", swipeHintTexture, imgWidth, imgHeight, SURFACE_TEXTURE_DIFFUSE,
 												0, 0, 0, SURFACE_TEXTURE_MAX,

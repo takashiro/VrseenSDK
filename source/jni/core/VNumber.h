@@ -4,258 +4,56 @@
 
 NV_NAMESPACE_BEGIN
 
-template< typename T, typename UniqueType, UniqueType InitialValue >
+template<typename T, T InitialValue = 0>
 class VNumber
 {
 public:
-    // constructors
-                        VNumber();
-    explicit            VNumber( T const value );
+    VNumber() : m_value(InitialValue) { }
+    explicit VNumber(T value) : m_value(value) { }
 
-
-// NOTE: the assignmnet of a Type value is implemented here and PURPOSEFULLY
-// COMMENTED OUT to demonstrate that the whole point of this template is to
-// enforce type safety. Assignment without explicit conversion to the templated
-// type would break type safety.
-/*
-    Type &                operator=( T const value );
-*/
-
-    VNumber &    operator=( VNumber const & rhs );
+    VNumber &operator = (const VNumber &other) { m_value = other.value(); return *this; }
 
     // comparison operators
-    bool                operator==( VNumber const & rhs ) const;
-    bool                operator!=( VNumber const & rhs ) const;
+    bool operator == (const VNumber &other) const { return m_value == other.value(); }
+    bool operator != (const VNumber &other) const { return m_value != other.value(); }
 
-    bool                operator< ( VNumber const & rhs) const;
-    bool                operator> ( VNumber const & rhs) const;
-    bool                operator<=( VNumber const & rhs) const;
-    bool                operator>=( VNumber const & rhs) const;
+    bool operator < (const VNumber &other) const { return m_value < other.value(); }
+    bool operator <= (const VNumber &other) const { return m_value <= other.value(); }
+
+    bool operator > (const VNumber &other) const { return m_value > other.value(); }
+    bool operator >= (const VNumber &other) const { return m_value >= other.value(); }
 
     // unary operators
-    VNumber &  operator++();       // prefix
-    VNumber    operator++( int );  // postfix
+    VNumber &operator++() { m_value++; return *this; }
+    VNumber operator++(int) { VNumber prev(*this); m_value++; return prev; }
 
-    VNumber &  operator--();       // prefix
-    VNumber    operator--( int );  // postfix
+    VNumber &operator--(){ m_value--; return *this; }
+    VNumber operator--(int){ VNumber prev(*this); m_value--; return prev; }
 
     // compound assignment operators
-    VNumber &  operator+=( VNumber const & rhs );
-    VNumber &  operator-=( VNumber const & rhs );
-    VNumber &  operator*=( VNumber const & rhs );
-    VNumber &  operator/=( VNumber const & rhs );
-    VNumber &  operator%=( VNumber const & rhs );
+    VNumber &operator += (const VNumber &other) { m_value += other.value(); return *this; }
+    VNumber &operator -= (const VNumber &other) { m_value -= other.value(); return *this; }
+    VNumber &operator *= (const VNumber &other) { m_value *= other.value(); return *this; }
+    VNumber &operator /= (const VNumber &other) { m_value /= other.value(); return *this; }
+    VNumber &operator %= (const VNumber &other) { m_value %= other.value(); return *this; }
 
     // binary arithmetic operators
-    VNumber    operator+( VNumber const & rhs ) const;
-    VNumber    operator-( VNumber const & rhs ) const;
-    VNumber    operator*( VNumber const & rhs ) const;
-    VNumber    operator/( VNumber const & rhs ) const;
-    VNumber    operator%( VNumber const & rhs ) const;
+    VNumber operator + (const VNumber &other) const { return m_value + other.value(); }
+    VNumber operator - (const VNumber &other) const { return m_value - other.value(); }
+    VNumber operator * (const VNumber &other) const { return m_value * other.value(); }
+    VNumber operator / (const VNumber &other) const { return m_value / other.value(); }
+    VNumber operator % (const VNumber &other) const { return m_value % other.value(); }
 
-    T                   Get() const;
-    void                Set( T const value );
+    T value() const { return m_value; }
 
 	// for using as a handle
-	void				Release() { Value = InitialValue; }
+    void reset() { m_value = InitialValue; }
 
-	bool				IsValid() const { return Value != InitialValue; }
+    bool isValid() const { return m_value != InitialValue; }
 
 private:
-    T                   Value;    // the value itself
+    T m_value;    // the value itself
 };
-
-template< typename T, typename UniqueType, UniqueType InitialValue >
-inline
-VNumber< T, UniqueType, InitialValue >::VNumber() :
-    Value( static_cast< T >( InitialValue ) )
-{
-}
-
-template< typename T, typename UniqueType, UniqueType InitialValue >
-inline
-VNumber< T, UniqueType, InitialValue >::VNumber( T const value ) :
-    Value( value )
-{
-}
-
-template< typename T, typename UniqueType, UniqueType InitialValue >
-inline
-VNumber< T, UniqueType, InitialValue > & VNumber< T, UniqueType, InitialValue >::operator=( VNumber const & rhs )
-{
-    if ( &rhs != this )
-    {
-        this->Value = rhs.Value;
-    }
-    return *this;
-}
-
-template< typename T, typename UniqueType, UniqueType InitialValue >
-inline
-bool VNumber< T, UniqueType, InitialValue >::operator==( VNumber const & rhs ) const
-{
-    return this->Value == rhs.Value;
-}
-
-template< typename T, typename UniqueType, UniqueType InitialValue >
-inline
-bool VNumber< T, UniqueType, InitialValue >::operator!=( VNumber const & rhs ) const
-{
-    return !operator==( rhs );
-}
-
-template< typename T, typename UniqueType, UniqueType InitialValue >
-inline
-bool VNumber< T, UniqueType, InitialValue >::operator< ( VNumber const & rhs) const
-{
-    return this->Value < rhs.Value;
-}
-
-template< typename T, typename UniqueType, UniqueType InitialValue >
-inline
-bool VNumber< T, UniqueType, InitialValue >::operator> ( VNumber const & rhs) const
-{
-    return this->Value > rhs.Value;
-}
-
-template< typename T, typename UniqueType, UniqueType InitialValue >
-inline
-bool VNumber< T, UniqueType, InitialValue >::operator<=( VNumber const & rhs) const
-{
-    return this->Value <= rhs.Value;
-}
-
-template< typename T, typename UniqueType, UniqueType InitialValue >
-inline
-bool VNumber< T, UniqueType, InitialValue >::operator>=( VNumber const & rhs) const
-{
-    return this->Value >= rhs.Value;
-}
-
-template< typename T, typename UniqueType, UniqueType InitialValue >
-inline
-VNumber< T, UniqueType, InitialValue > &  VNumber< T, UniqueType, InitialValue >::operator++()
-{
-    this->Value++;
-    return *this;
-}
-
-template< typename T, typename UniqueType, UniqueType InitialValue >
-inline
-VNumber< T, UniqueType, InitialValue > VNumber< T, UniqueType, InitialValue >::operator++( int )
-{
-    // postfix
-    VNumber temp( *this );
-    operator++();
-    return temp;
-}
-
-template< typename T, typename UniqueType, UniqueType InitialValue >
-inline
-VNumber< T, UniqueType, InitialValue > & VNumber< T, UniqueType, InitialValue >::operator--()
-{
-    this->Value--;
-    return *this;
-}
-
-template< typename T, typename UniqueType, UniqueType InitialValue >
-inline
-VNumber< T, UniqueType, InitialValue > VNumber< T, UniqueType, InitialValue >::operator--( int )
-{
-    // postfix
-    VNumber temp( *this );
-    operator--();
-    return temp;
-}
-
-template< typename T, typename UniqueType, UniqueType InitialValue >
-inline
-VNumber< T, UniqueType, InitialValue > & VNumber< T, UniqueType, InitialValue >::operator+=( VNumber const & rhs )
-{
-    this->Value = this->Value + rhs.Value;
-    return *this;
-}
-
-template< typename T, typename UniqueType, UniqueType InitialValue >
-inline
-VNumber< T, UniqueType, InitialValue > & VNumber< T, UniqueType, InitialValue >::operator-=( VNumber const & rhs )
-{
-    this->Value = this->Value - rhs.Value;
-    return *this;
-}
-
-template< typename T, typename UniqueType, UniqueType InitialValue >
-inline
-VNumber< T, UniqueType, InitialValue > &    VNumber< T, UniqueType, InitialValue >::operator*=( VNumber const & rhs )
-{
-    this->Value = this->Value * rhs.Value;
-    return *this;
-}
-
-template< typename T, typename UniqueType, UniqueType InitialValue >
-inline
-VNumber< T, UniqueType, InitialValue > &    VNumber< T, UniqueType, InitialValue >::operator/=( VNumber const & rhs )
-{
-    this->Value = this->Value / rhs.Value;
-    return *this;
-}
-
-template< typename T, typename UniqueType, UniqueType InitialValue >
-inline
-VNumber< T, UniqueType, InitialValue > &    VNumber< T, UniqueType, InitialValue >::operator%=( VNumber const & rhs )
-{
-    this->Value = this->Value % rhs.Value;
-    return *this;
-}
-
-template< typename T, typename UniqueType, UniqueType InitialValue >
-inline
-VNumber< T, UniqueType, InitialValue > VNumber< T, UniqueType, InitialValue >::operator+( VNumber const & rhs ) const
-{
-    return VNumber( this->Value + rhs.Value );
-}
-
-template< typename T, typename UniqueType, UniqueType InitialValue >
-inline
-VNumber< T, UniqueType, InitialValue > VNumber< T, UniqueType, InitialValue >::operator-( VNumber const & rhs ) const
-{
-    return VNumber( this->Value - rhs.Value );
-}
-
-template< typename T, typename UniqueType, UniqueType InitialValue >
-inline
-VNumber< T, UniqueType, InitialValue > VNumber< T, UniqueType, InitialValue >::operator*( VNumber const & rhs ) const
-{
-    return VNumber( this->Value * rhs.Value );
-}
-
-template< typename T, typename UniqueType, UniqueType InitialValue >
-inline
-VNumber< T, UniqueType, InitialValue > VNumber< T, UniqueType, InitialValue >::operator/( VNumber const & rhs ) const
-{
-    return VNumber( this->Value / rhs.Value );
-}
-
-template< typename T, typename UniqueType, UniqueType InitialValue >
-inline
-VNumber< T, UniqueType, InitialValue > VNumber< T, UniqueType, InitialValue >::operator%( VNumber const & rhs ) const
-{
-    return VNumber( this->Value % rhs.Value );
-}
-
-template< typename T, typename UniqueType, UniqueType InitialValue >
-inline
-T VNumber< T, UniqueType, InitialValue >::Get() const
-{
-    return this->Value;
-}
-
-template< typename T, typename UniqueType, UniqueType InitialValue >
-inline
-void VNumber< T, UniqueType, InitialValue >::Set( T const value )
-{
-    this->Value = value;
-}
 
 NV_NAMESPACE_END
 

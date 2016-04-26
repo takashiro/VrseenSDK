@@ -220,7 +220,7 @@ void TheaterSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, Bitmap
 				0, 0, 0, SURFACE_TEXTURE_MAX,
 				0, 0, 0, SURFACE_TEXTURE_MAX );
 
-	    VRMenuId_t panelId = VRMenuId_t( ID_ICONS.Get() + i );
+	    VRMenuId_t panelId = VRMenuId_t( ID_ICONS.value() + i );
         VQuatf rot( up, 0.0f );
         VPosf panelPose( rot, fwd );
 		VRMenuObjectParms * p = new VRMenuObjectParms( VRMENU_BUTTON, VArray< VRMenuComponent* >(),
@@ -234,7 +234,7 @@ void TheaterSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, Bitmap
     DeletePointerArray( parms );
     parms.clear();
 
-    menuHandle_t selectionHandle = CenterRoot->childHandleForId( menuMgr, VRMenuId_t( ID_ICONS.Get() + centerIndex ) );
+    menuHandle_t selectionHandle = CenterRoot->childHandleForId( menuMgr, VRMenuId_t( ID_ICONS.value() + centerIndex ) );
     SelectionObject = menuMgr.toObject( selectionHandle );
 
     V3Vectf selectionBoundsExpandMin = V3Vectf( 0.0f, -0.25f, 0.0f );
@@ -246,7 +246,7 @@ void TheaterSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, Bitmap
 	VArray<CarouselItemComponent *> menuComps;
     for ( int i = 0; i < panelPoses.length(); ++i )
 	{
-        menuHandle_t posterImageHandle = CenterRoot->childHandleForId( menuMgr, VRMenuId_t( ID_ICONS.Get() + i ) );
+        menuHandle_t posterImageHandle = CenterRoot->childHandleForId( menuMgr, VRMenuId_t( ID_ICONS.value() + i ) );
         VRMenuObject *posterImage = menuMgr.toObject( posterImageHandle );
         menuObjs.append( posterImage );
 
@@ -266,7 +266,7 @@ void TheaterSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, Bitmap
 		VRMenuFontParms titleFontParms( true, true, false, false, false, 1.3f );
 
 		VRMenuObjectParms p( VRMENU_STATIC, VArray< VRMenuComponent* >(),
-				VRMenuSurfaceParms(), CinemaStrings::TheaterSelection_Title.toCString(), panelPose, defaultScale, titleFontParms, VRMenuId_t( ID_TITLE_ROOT.Get() + 1 ),
+				VRMenuSurfaceParms(), CinemaStrings::TheaterSelection_Title.toCString(), panelPose, defaultScale, titleFontParms, VRMenuId_t( ID_TITLE_ROOT.value() + 1 ),
 				VRMenuObjectFlags_t(), VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 
         parms.append( &p );
@@ -313,7 +313,7 @@ void TheaterSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, Bitmap
             leftComps.append( new SwipeHintComponent( TheaterBrowser, false, 1.3333f, 0.4f + ( float )i * 0.13333f, 5.0f ) );
 
 			VRMenuObjectParms * swipeIconLeftParms = new VRMenuObjectParms( VRMENU_BUTTON, leftComps,
-				swipeIconLeftSurfParms, "", swipePose, defaultScale, fontParms, VRMenuId_t( ID_SWIPE_ICON_LEFT.Get() + i ),
+				swipeIconLeftSurfParms, "", swipePose, defaultScale, fontParms, VRMenuId_t( ID_SWIPE_ICON_LEFT.value() + i ),
 				VRMenuObjectFlags_t( VRMENUOBJECT_FLAG_NO_DEPTH ) | VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_ALL ),
 				VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 
@@ -325,7 +325,7 @@ void TheaterSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, Bitmap
             rightComps.append( new SwipeHintComponent( TheaterBrowser, true, 1.3333f, 0.4f + ( float )i * 0.13333f, 5.0f ) );
 
 			VRMenuObjectParms * swipeIconRightParms = new VRMenuObjectParms( VRMENU_STATIC, rightComps,
-				swipeIconRightSurfParms, "", swipePose, defaultScale, fontParms, VRMenuId_t( ID_SWIPE_ICON_RIGHT.Get() + i ),
+				swipeIconRightSurfParms, "", swipePose, defaultScale, fontParms, VRMenuId_t( ID_SWIPE_ICON_RIGHT.value() + i ),
 				VRMenuObjectFlags_t( VRMENUOBJECT_FLAG_NO_DEPTH ) | VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_ALL ),
 				VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 
