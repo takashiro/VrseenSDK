@@ -409,7 +409,7 @@ void Oculus360Videos::command(const VEvent &event )
 
 VR4Matrixf	Oculus360Videos::TexmForVideo( const int eye )
 {
-	if ( strstr( VideoName.toCString(), "_TB.mp4" ) )
+    if (VideoName.endsWith("_TB.mp4"))
 	{	// top / bottom stereo panorama
 		return eye ?
             VR4Matrixf( 1, 0, 0, 0,
@@ -422,7 +422,7 @@ VR4Matrixf	Oculus360Videos::TexmForVideo( const int eye )
 			0, 0, 1, 0,
 			0, 0, 0, 1 );
 	}
-	if ( strstr( VideoName.toCString(), "_BT.mp4" ) )
+    if (VideoName.endsWith("_BT.mp4"))
 	{	// top / bottom stereo panorama
 		return ( !eye ) ?
             VR4Matrixf( 1, 0, 0, 0,
@@ -435,7 +435,7 @@ VR4Matrixf	Oculus360Videos::TexmForVideo( const int eye )
 			0, 0, 1, 0,
 			0, 0, 0, 1 );
 	}
-	if ( strstr( VideoName.toCString(), "_LR.mp4" ) )
+    if (VideoName.endsWith("_LR.mp4"))
 	{	// left / right stereo panorama
 		return eye ?
             VR4Matrixf( 0.5, 0, 0, 0,
@@ -448,7 +448,7 @@ VR4Matrixf	Oculus360Videos::TexmForVideo( const int eye )
 			0, 0, 1, 0,
 			0, 0, 0, 1 );
 	}
-	if ( strstr( VideoName.toCString(), "_RL.mp4" ) )
+    if (VideoName.endsWith("_RL.mp4"))
 	{	// left / right stereo panorama
 		return ( !eye ) ?
             VR4Matrixf( 0.5, 0, 0, 0,
