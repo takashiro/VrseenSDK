@@ -2000,11 +2000,10 @@ void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const in
     const VString & panoUrl = this->thumbUrl( panoData );
     const VString thumbName = this->thumbName( panoUrl );
 	VPath finalThumb;
-	char relativeThumbPath[ 1024 ];
-    ToRelativePath( m_thumbSearchPaths, panoUrl.toCString(), relativeThumbPath, 1024 );
+    VString relativeThumbPath;
+    ToRelativePath(m_thumbSearchPaths, panoUrl, relativeThumbPath);
 
-	char appCacheThumbPath[ 1024 ];
-    sprintf(appCacheThumbPath, "%s%s", m_appCachePath.toCString(), this->thumbName(relativeThumbPath).toCString());
+    VString appCacheThumbPath = m_appCachePath + this->thumbName(relativeThumbPath);
 
 	// if this url doesn't exist locally
     if ( !vdir.exists ( panoUrl ) )

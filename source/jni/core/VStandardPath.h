@@ -67,8 +67,7 @@ VString	GetFullPath(const VArray< VString > & searchPaths, const VString &relati
 bool GetFullPath(const VArray<VString> &searchPaths, const VString &relativePath, char *outPath, const int outMaxLen);
 bool GetFullPath(const VArray<VString> &searchPaths, const VString &relativePath, VString & outPath);
 
-bool ToRelativePath(const VArray<VString> &searchPaths, char const *fullPath, char * outPath, const int outMaxLen);
-bool ToRelativePath(const VArray<VString> &searchPaths, char const *fullPath, VString & outPath);
+bool ToRelativePath(const VArray<VString> &searchPaths, const VString &fullPath, VString & outPath);
 
 NV_NAMESPACE_END
 
