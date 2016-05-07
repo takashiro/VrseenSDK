@@ -42,6 +42,7 @@ SOURCES += \
     jni/core/android/VOsBuild.cpp \
     jni/api/VKernel.cpp \
     jni/api/VDevice.cpp \
+    jni/api/VDirectRender.cpp \
     jni/api/VEglDriver.cpp \
     jni/api/VLensDistortion.cpp \
     jni/api/VRotationSensor.cpp \
@@ -165,6 +166,7 @@ HEADERS += \
     jni/core/VBasicmath.h \
     jni/core/VQuat.h \
     jni/api/VDevice.h \
+    jni/api/VDirectRender.h \
     jni/api/VEglDriver.h \
     jni/api/VFrame.h \
     jni/api/VFrameSmooth.h \

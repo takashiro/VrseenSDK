@@ -21,6 +21,7 @@
 #include "VGlShader.h"
 #include "VKernel.h"
 #include "VRotationSensor.h"
+#include "VDirectRender.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -70,16 +71,17 @@ struct eyeLog_t
     float		poseLatencySeconds;
 };
 
+swapProgram_t	spAsyncFrontBufferPortrait = {
+        false,	false, { 0.5, 1.0},	{ {1.0, 1.5}, {1.5, 2.0} }
+};
 
 swapProgram_t	spAsyncSwappedBufferPortrait = {
     false,	false, { 0.0, 0.5},	{ {1.0, 1.5}, {1.5, 2.0} }
 };
 
-
 swapProgram_t	spSyncFrontBufferPortrait = {
     true,	false, { 0.5, 1.0},	{ {1.0, 1.5}, {1.5, 2.0} }
 };
-
 
 swapProgram_t	spSyncSwappedBufferPortrait = {
     true,	false, { 0.0, 0.0},	{ {2.0, 2.5}, {2.5, 3.0} }
@@ -214,6 +216,7 @@ struct VFrameSmooth::Private
             m_warpPrograms(),
             m_blackTexId( 0 ),
             m_defaultLoadingIconTexId( 0 ),
+            m_wantFrontBuffer(true),
             m_hasEXT_sRGB_write_control( false ),
             m_sStartupTid( 0 ),
             m_jni( NULL ),
@@ -297,7 +300,7 @@ struct VFrameSmooth::Private
 
         if ( !m_async )
         {
-            initRenderEnvironment();
+            m_screen.initForCurrentSurface( m_jni, m_wantFrontBuffer);
             createFrameworkGraphics();
             vInfo("Skipping thread setup because !AsynchronousTimeWarp");
         }
@@ -389,7 +392,8 @@ struct VFrameSmooth::Private
         }
         else
         {
-
+            // Shutdown the front buffer rendering
+            m_screen.shutdown();
             destroyFrameworkGraphics();
         }
 
@@ -453,7 +457,9 @@ struct VFrameSmooth::Private
     VGlGeometry	m_slicesmoothMesh;
     VGlGeometry	m_cursorMesh;
 
-
+    //single buffer
+    DirectRender	m_screen;
+    bool m_wantFrontBuffer;
 
     void			renderToDisplay( const double vsyncBase, const swapProgram_t & swap );
     void			renderToDisplayBySliced( const double vsyncBase, const swapProgram_t & swap );
@@ -464,8 +470,6 @@ struct VFrameSmooth::Private
                                      const VR4Matrixf rollingWarp, const int eye, const double vsyncBase ) const;
     void			bindCursorProgram() const;
     void            bindEyeTextures( const int eye );
-    void            initRenderEnvironment();
-    void            swapBuffers();
 
     int                m_window_width;
     int                m_window_height;
@@ -699,8 +703,10 @@ void VFrameSmooth::Private::threadFunction()
                removedSchedFifo = true;
            }
        }
- vInfo( "WarpThreadLoop enter rendertodisplay");
-        renderToDisplay( vsync,spAsyncSwappedBufferPortrait);
+
+        vInfo( "WarpThreadLoop enter rendertodisplay");
+        renderToDisplay( vsync,m_screen.isFrontBuffer() ? spAsyncFrontBufferPortrait
+                                                        : spAsyncSwappedBufferPortrait);
     }
 
     smoothThreadShutdown();
@@ -770,7 +776,8 @@ void VFrameSmooth::Private::smoothThreadInit()
         vFatal("eglMakeCurrent failed: " << m_eglStatus.getEglErrorString());
     }
 
-    initRenderEnvironment();
+    m_screen.initForCurrentSurface( m_jni, m_wantFrontBuffer);
+
     createFrameworkGraphics();
     m_smoothThreadTid = gettid();
 
@@ -1030,12 +1037,11 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
 
     const double vsyncBase = vsyncBase_;
 
-
-
-    glViewport( 0, 0, m_window_width, m_window_height );
-    glScissor( 0, 0, m_window_width, m_window_height );
-
-
+    // The mesh covers the full screen, but we only draw part of it at a time
+    int screenWidth, screenHeight;
+    m_screen.getScreenResolution( screenWidth, screenHeight );
+    glViewport( 0, 0, screenWidth, screenHeight );
+    glScissor( 0, 0, screenWidth, screenHeight );
 
     for ( int eye = 0; eye <= 1; ++eye )
     {
@@ -1175,8 +1181,7 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
 
         bindEyeTextures( eye );
 
-        glScissor(eye * m_window_width/2, 0, m_window_width/2, m_window_height);
-
+        m_screen.beginDirectRendering( eye * screenWidth/2, 0, screenWidth/2, screenHeight );
 
         VEglDriver::glBindVertexArrayOES( m_smoothMesh.vertexArrayObject );
         const int indexCount = m_smoothMesh.indexCount / 2;
@@ -1198,8 +1203,12 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
 
         drawFrameworkGraphicsToWindow( eye, m_smoothOptions);
 
-        glFlush();
+        m_screen.endDirectRendering();
 
+        if (m_screen.isFrontBuffer())
+        {
+            m_eglStatus.glFinish();
+        }
 
         const double justBeforeFinish = VTimer::Seconds();
         const double postFinish = VTimer::Seconds();
@@ -1217,7 +1226,10 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
 
     VEglDriver::glBindVertexArrayOES( 0 );
 
-    swapBuffers();
+    if ( !m_screen.isFrontBuffer() )
+    {
+        m_screen.swapBuffers();
+    }
 }
 
 void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, const swapProgram_t & swap )
@@ -1243,8 +1255,11 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
                 * 0.000000001 + startBias;
     }
 
-    glViewport( 0, 0, m_window_width, m_window_height );
-    glScissor( 0, 0, m_window_width, m_window_height );
+    // The mesh covers the full screen, but we only draw part of it at a time
+    int screenWidth, screenHeight;
+    m_screen.getScreenResolution( screenWidth, screenHeight );
+    glViewport( 0, 0, screenWidth, screenHeight );
+    glScissor( 0, 0, screenWidth, screenHeight );
 
     int	back = 0;
 
@@ -1383,9 +1398,9 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
             bindEyeTextures( eye );
         }
 
-        const int sliceSize = m_window_width / 8;
+        const int sliceSize = screenWidth / 8;
 
-        glScissor( sliceSize*screenSlice, 0, sliceSize, m_window_height );
+        m_screen.beginDirectRendering( sliceSize*screenSlice, 0, sliceSize, screenHeight );
 
         const VGlGeometry & mesh = m_slicesmoothMesh;
         VEglDriver::glBindVertexArrayOES( mesh.vertexArrayObject );
@@ -1403,8 +1418,12 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
 
         drawFrameworkGraphicsToWindow( eye, m_smoothOptions);
 
-        glFlush();
-
+        m_screen.endDirectRendering();
+        if (m_screen.isFrontBuffer() &&
+            ( screenSlice == 1 * 4 - 1 || screenSlice == 2 * 4 - 1 ) )
+        {
+            m_eglStatus.glFinish();
+        }
 
         const double justBeforeFinish = VTimer::Seconds();
         const double postFinish = VTimer::Seconds();
@@ -1422,7 +1441,10 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
 
     VEglDriver::glBindVertexArrayOES( 0 );
 
-    swapBuffers();
+    if ( !m_screen.isFrontBuffer() )
+    {
+        m_screen.swapBuffers();
+    }
 }
 
 static uint64_t GetNanoSecondsUint64()
@@ -1503,7 +1525,14 @@ void VFrameSmooth::Private::smoothInternal( )
         m_eglStatus.glFinish();
 
         swapProgram_t * swapProg;
-        swapProg = &spSyncSwappedBufferPortrait;
+        if ( m_screen.isFrontBuffer() )
+        {
+            swapProg = &spSyncFrontBufferPortrait;
+        }
+        else
+        {
+            swapProg = &spSyncSwappedBufferPortrait;
+        }
 
         renderToDisplay( floor( getFractionalVsync() ), *swapProg );
 
@@ -2492,20 +2521,6 @@ void VFrameSmooth::Private::buildSmoothProgs()
                               );
 
 }
-
-void VFrameSmooth::Private::initRenderEnvironment()
-{
-    m_window_display = eglGetDisplay( EGL_DEFAULT_DISPLAY );
-    m_window_surface = eglGetCurrentSurface( EGL_DRAW );
-    eglQuerySurface( m_window_display, m_window_surface, EGL_WIDTH, &m_window_width );
-    eglQuerySurface( m_window_display, m_window_surface, EGL_HEIGHT, &m_window_height );
-}
-
-void VFrameSmooth::Private::swapBuffers()
-{
-    eglSwapBuffers( m_window_display, m_window_surface );
-}
-
 
 NV_NAMESPACE_END
 

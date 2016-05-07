@@ -733,6 +733,10 @@ struct App::Private
                 attribs[numAttribs++] = EGL_PROTECTED_CONTENT_EXT;
                 attribs[numAttribs++] = EGL_TRUE;
             }
+            attribs[numAttribs++] = EGL_RENDER_BUFFER;
+
+            //use single buffer
+            attribs[numAttribs++] = EGL_SINGLE_BUFFER;
             attribs[numAttribs++] = EGL_NONE;
 
             // Android doesn't let the non-standard extensions show up in the
@@ -740,13 +744,14 @@ struct App::Private
             windowSurface = eglCreateWindowSurface(m_vrGlStatus.m_display, m_vrGlStatus.m_config,
                     nativeWindow, attribs);
 
-
-            if (windowSurface == EGL_NO_SURFACE)
+            if ( windowSurface == EGL_NO_SURFACE )
             {
                 const EGLint attribs2[] =
                 {
-                    EGL_NONE
+                        EGL_RENDER_BUFFER, EGL_SINGLE_BUFFER,
+                        EGL_NONE
                 };
+
                 windowSurface = eglCreateWindowSurface(m_vrGlStatus.m_display, m_vrGlStatus.m_config,
                         nativeWindow, attribs2);
                 if (windowSurface == EGL_NO_SURFACE)

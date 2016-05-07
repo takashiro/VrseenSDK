@@ -4,7 +4,7 @@ NV_NAMESPACE_BEGIN
 
 
 
- ushort VEglDriver::eglGetGpuType()
+VEglDriver::GpuType VEglDriver::eglGetGpuType()
 {
 
     GpuType gpuType;

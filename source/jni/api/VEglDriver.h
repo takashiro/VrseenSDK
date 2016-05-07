@@ -23,6 +23,8 @@ static const int GL_ES_VERSION = 2;
 #include <GLES2/gl2ext.h>
 
 #define EGL_OPENGL_ES3_BIT_KHR      0x0040
+#define GL_BINNING_CONTROL_HINT_QCOM           0x8FB0
+#define GL_RENDER_DIRECT_TO_FRAMEBUFFER_QCOM   0x8FB3
 
 NV_NAMESPACE_BEGIN
 
@@ -62,7 +64,7 @@ public:
     ~VEglDriver();
    void eglExit();
 
-    ushort eglGetGpuType();
+    GpuType eglGetGpuType();
     void updateEglConfig(EGLContext eglShareContext);
     void updateEglConfig();
    static const char * getGlErrorEnum(const GLenum e);
