@@ -249,7 +249,7 @@ DirectRender::DirectRender() :
 {
 }
 
-void DirectRender::initForCurrentSurface( JNIEnv * jni, bool wantFrontBuffer_)
+void DirectRender::initForCurrentSurface( JNIEnv * jni, bool wantFrontBuffer_,int buildVersionSDK_)
 {
     vInfo( "DirectRender::InitForCurrentSurface");
 
@@ -265,20 +265,6 @@ void DirectRender::initForCurrentSurface( JNIEnv * jni, bool wantFrontBuffer_)
     // to work.
     // NOTE: On Adreno KitKat, we cannot apply the initial swapbuffers
     // as it will result in poor performance.
-
-    int buildVersionSDK_ = 21;
-    // Get the BuildVersion SDK
-//        jclass versionClass = jni->FindClass( "android/os/Build$VERSION" );
-//        if ( versionClass != 0 )
-//        {
-//            jfieldID sdkIntFieldID = jni->GetStaticFieldID( versionClass, "SDK_INT", "I" );
-//            if ( sdkIntFieldID != 0 )
-//            {
-//                buildVersionSDK_ = jni->GetStaticIntField( versionClass, sdkIntFieldID );
-//                vInfo( "BuildVersionSDK "<<buildVersionSDK_ );
-//            }
-//            jni->DeleteLocalRef( versionClass );
-//        }
 
     static const int KITKAT_WATCH = 20;
     const VEglDriver::GpuType gpuType = m_eglStatus.eglGetGpuType();
@@ -304,11 +290,12 @@ void DirectRender::initForCurrentSurface( JNIEnv * jni, bool wantFrontBuffer_)
     }
     else
     {
-        vInfo( "Running with front buffer");
-
         m_surfaceManager.init( jni );
 
         m_gvrFrontbufferExtension = m_surfaceManager.setFrontBuffer( windowSurface, m_wantFrontBuffer );
+
+        if(m_gvrFrontbufferExtension) vInfo( "Running with front buffer")
+        vInfo( "Running without front buffer");
 
         if ( ( gpuType & VEglDriver::GpuType::GPU_TYPE_MALI ) != 0 )
         {

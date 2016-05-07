@@ -78,6 +78,7 @@ public:
     void setProgramParms(float proParms[4]);
 
     void InitTimeWarpParms();
+    int getBuildVersion();
 
     int m_smoothOptions;
     VR4Matrixf m_externalVelocity;

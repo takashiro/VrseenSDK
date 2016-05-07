@@ -518,3 +518,8 @@ void VKernel::InitTimeWarpParms()
     m_programParms[2] = 0;
     m_programParms[3] = 0;
 }
+
+int VKernel::getBuildVersion()
+{
+    return BuildVersionSDK;
+}

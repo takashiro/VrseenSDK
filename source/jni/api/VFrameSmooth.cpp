@@ -298,9 +298,11 @@ struct VFrameSmooth::Private
             vInfo("Share context eglConfig has " << samples << " samples -- should be 0");
         }
 
+        m_buildVersionSDK = VKernel::instance()->getBuildVersion();
+
         if ( !m_async )
         {
-            m_screen.initForCurrentSurface( m_jni, m_wantFrontBuffer);
+            m_screen.initForCurrentSurface( m_jni, m_wantFrontBuffer,m_buildVersionSDK);
             createFrameworkGraphics();
             vInfo("Skipping thread setup because !AsynchronousTimeWarp");
         }
@@ -460,6 +462,7 @@ struct VFrameSmooth::Private
     //single buffer
     DirectRender	m_screen;
     bool m_wantFrontBuffer;
+    int m_buildVersionSDK;
 
     void			renderToDisplay( const double vsyncBase, const swapProgram_t & swap );
     void			renderToDisplayBySliced( const double vsyncBase, const swapProgram_t & swap );
@@ -776,7 +779,7 @@ void VFrameSmooth::Private::smoothThreadInit()
         vFatal("eglMakeCurrent failed: " << m_eglStatus.getEglErrorString());
     }
 
-    m_screen.initForCurrentSurface( m_jni, m_wantFrontBuffer);
+    m_screen.initForCurrentSurface( m_jni, m_wantFrontBuffer,m_buildVersionSDK);
 
     createFrameworkGraphics();
     m_smoothThreadTid = gettid();

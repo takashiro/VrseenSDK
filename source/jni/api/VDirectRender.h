@@ -45,7 +45,7 @@ public:
     // Queries all information from EGL so it will work inside Unity as well
     // as our native code.
     // Must be called by the same thread that will be rendering to the surfaces.
-    void	initForCurrentSurface( JNIEnv * jni, bool m_wantFrontBuffer);
+    void	initForCurrentSurface( JNIEnv * jni, bool m_wantFrontBuffer,int buildVersionSDK_);
 
     // Go back to a normal swapped window.
     void	shutdown();
