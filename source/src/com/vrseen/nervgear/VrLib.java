@@ -1,14 +1,3 @@
-/************************************************************************************
-
-Filename    :   VrLib.java
-Content     :
-Created     :
-Authors     :
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
 package com.vrseen.nervgear;
 
 import android.app.Activity;
@@ -25,30 +14,19 @@ import android.net.Uri;
 import android.util.Log;
 import android.view.Choreographer;
 import android.view.Surface;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StatFs;
 import android.provider.Settings;
-import android.view.View;
 import android.view.WindowManager;
-import android.telephony.PhoneStateListener;
-import android.telephony.ServiceState;
-import android.telephony.SignalStrength;
-import android.telephony.TelephonyManager;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.PackageInfo;
-import android.content.Context;
 import android.content.ComponentName;
-import android.media.AudioManager;
-import android.media.AudioManager.OnAudioFocusChangeListener;
 import android.widget.Toast;
 
 import java.io.File;
-import java.lang.Class;
-import java.lang.reflect.Method;
 import java.util.Locale;
 
 /*
