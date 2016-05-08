@@ -20,6 +20,7 @@ import com.vrseen.sensor.VrseenDeviceManager;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityGroup;
+import android.app.IVRManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -47,7 +48,6 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Toast;
-//DVFS import android.os.DVFSHelper;
 
 @SuppressWarnings("deprecation")
 public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback {
@@ -87,7 +87,8 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 	List<Integer> soundPoolSoundIds;
 	List<String> soundPoolSoundNames;
 	
-    VrseenDeviceManager mVrseenDeviceManager = null;
+    private VrseenDeviceManager mVrseenDeviceManager = null;
+    private IVRManager mVrService = null;
 	
 	public void playSoundPoolSound(String name) {
 		for (int i = 0; i < soundPoolSoundNames.size(); i++) {
@@ -469,6 +470,10 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 		Log.d(TAG, "uri:" + uriString);
 		
 		mVrseenDeviceManager = new VrseenDeviceManager(this);
+		mVrService = (IVRManager) getSystemService(IVRManager.VR_MANAGER);
+		if (mVrService == null) {
+			Log.w(TAG, "VR Service not found");
+		}
 
 		SurfaceView sv = new SurfaceView(this);
 		setContentView(sv);
