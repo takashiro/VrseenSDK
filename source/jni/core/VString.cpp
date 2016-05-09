@@ -70,7 +70,7 @@ VString::VString(const std::string &str)
     uint size = str.size();
     resize(str.size());
     for (uint i = 0; i < size; i++) {
-        this->at(i) = str.at(i);
+        operator [](i) = str.at(i);
     }
 }
 
@@ -78,7 +78,7 @@ VString::VString(const char *data, uint length)
 {
     resize(length);
     for (uint i = 0; i < length; i++) {
-        at(i) = data[i];
+        operator [](i) = data[i];
     }
 }
 
@@ -108,7 +108,7 @@ void VString::assign(const char *str, uint size)
 
     resize(size);
     for (uint i = 0; i < size; i++) {
-        at(i) = str[i];
+        operator [](i) = str[i];
     }
 }
 
@@ -135,7 +135,7 @@ void VString::assign(const char16_t *str, uint size)
 
     resize(size);
     for (uint i = 0; i < size; i++) {
-        at(i) = str[i];
+        operator [](i) = str[i];
     }
 }
 
@@ -367,7 +367,7 @@ VString VString::fromLatin1(const VByteArray &latin1)
     VString utf16;
     utf16.resize(size);
     for (uint i = 0; i < size; i++) {
-        utf16.at(i) = latin1[i];
+        utf16[i] = latin1[i];
     }
     return utf16;
 }

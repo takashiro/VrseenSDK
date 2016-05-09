@@ -60,6 +60,10 @@ public:
     VString left(uint count) const { return mid(0, count); }
     VString right(uint count) const { return mid(size() - count, count); }
 
+    char16_t at(uint i) const { return basic_string::at(i); }
+    char16_t &operator [] (uint i) { return basic_string::operator[](i); }
+    char16_t operator [] (uint i) const { return basic_string::operator[](i); }
+
     char16_t first() const { return front(); }
     char16_t last() const { return back(); }
 
