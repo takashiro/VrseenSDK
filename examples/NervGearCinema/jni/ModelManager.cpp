@@ -142,11 +142,11 @@ SceneDef * ModelManager::LoadScene( const char *sceneFilename, bool useDynamicPr
 	{
 		filename = sceneFilename;
 	}
-	else if ( Cinema.fileExists( Cinema.externalRetailDir( sceneFilename ) ) )
+    else if (VFile::Exists(Cinema.externalRetailDir(sceneFilename)))
 	{
-		filename = Cinema.externalRetailDir( sceneFilename );
+        filename = Cinema.externalRetailDir(sceneFilename);
 	}
-	else if ( Cinema.fileExists( Cinema.retailDir( sceneFilename ) ) )
+    else if (VFile::Exists(Cinema.retailDir(sceneFilename)))
 	{
 		filename = Cinema.retailDir( sceneFilename );
 	}

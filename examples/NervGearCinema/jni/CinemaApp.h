@@ -61,7 +61,6 @@ public:
     VString externalSDCardDir(const VString &dir) const;
     VString externalCacheDir(const VString &dir) const;
     bool isExternalSDCardDir(const VString &dir ) const;
-    bool fileExists(const VString &filename ) const;
 
 public:
     double					startTime;

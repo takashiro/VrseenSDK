@@ -182,8 +182,7 @@ void MovieManager::ReadMetaData( MovieDef *movie )
 
 	const char* error = NULL;
 
-    if ( !Cinema.fileExists( filename.toCString() ) )
-	{
+    if (!VFile::Exists(filename)) {
 		return;
 	}
 

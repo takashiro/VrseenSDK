@@ -111,20 +111,6 @@ bool CinemaApp::isExternalSDCardDir(const VString &dir) const
     return dir.startsWith(sdcardDir);
 }
 
-bool CinemaApp::fileExists(const VString &filename) const
-{
-    FILE *f = fopen( filename.toCString(), "r" );
-	if ( !f )
-	{
-		return false;
-	}
-	else
-	{
-		fclose( f );
-		return true;
-	}
-}
-
 void CinemaApp::setPlaylist( const VArray<const MovieDef *> &playList, const int nextMovie )
 {
 	m_playList = playList;
