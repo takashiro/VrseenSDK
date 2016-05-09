@@ -65,7 +65,7 @@ void ModelManager::LoadModels()
 
     if ( LaunchIntent.length() > 0 )
 	{
-        Theaters.append( LoadScene( LaunchIntent.toCString(), true, true, false ) );
+        Theaters.append( LoadScene(LaunchIntent, true, true, false ) );
 	}
 	else
 	{
@@ -113,7 +113,7 @@ void ModelManager::ScanDirectoryForScenes(const VString &directory, bool useDyna
 				VString fullpath = directory;
                 fullpath.append( "/" );
                 fullpath.append( filename );
-                SceneDef *def = LoadScene( fullpath.toCString(), useDynamicProgram, useScreenGeometry, false );
+                SceneDef *def = LoadScene( fullpath, useDynamicProgram, useScreenGeometry, false );
                 scenes.append( def );
 			}
 		}
@@ -122,7 +122,7 @@ void ModelManager::ScanDirectoryForScenes(const VString &directory, bool useDyna
 	}
 }
 
-SceneDef * ModelManager::LoadScene( const char *sceneFilename, bool useDynamicProgram, bool useScreenGeometry, bool loadFromApplicationPackage ) const
+SceneDef * ModelManager::LoadScene(const VString &sceneFilename, bool useDynamicProgram, bool useScreenGeometry, bool loadFromApplicationPackage ) const
 {
 	VString filename;
 
@@ -138,7 +138,7 @@ SceneDef * ModelManager::LoadScene( const char *sceneFilename, bool useDynamicPr
 	{
 		filename = sceneFilename;
 	}
-	else if ( ( sceneFilename != NULL ) && ( *sceneFilename == '/' ) ) 	// intent will have full path for scene file, so check for /
+    else if ( ( sceneFilename != NULL ) && (sceneFilename[0] == '/' ) ) 	// intent will have full path for scene file, so check for /
 	{
 		filename = sceneFilename;
 	}
