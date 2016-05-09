@@ -182,7 +182,7 @@ void CinemaApp::startMoviePlayback()
 	if ( m_currentMovie != NULL )
 	{
 		m_movieFinishedPlaying = false;
-        Native::StartMovie( vApp, m_currentMovie->Filename.toCString(), m_shouldResumeMovie, m_currentMovie->IsEncrypted, false );
+        Native::StartMovie(m_currentMovie->Filename, m_shouldResumeMovie, m_currentMovie->IsEncrypted, false );
 		m_shouldResumeMovie = false;
 	}
 }
@@ -206,7 +206,7 @@ void CinemaApp::playMovieFromBeginning()
 void CinemaApp::resumeOrRestartMovie()
 {
 	vInfo("StartMovie");
-    if ( Native::CheckForMovieResume( vApp, m_currentMovie->Filename.toCString() ) )
+    if (Native::CheckForMovieResume(m_currentMovie->Filename))
 	{
 		vInfo("Open ResumeMovieMenu");
 		m_viewMgr.openView( m_resumeMovieMenu );
@@ -228,7 +228,7 @@ void CinemaApp::movieFinished()
 void CinemaApp::unableToPlayMovie()
 {
 	inLobby = false;
-    m_movieSelectionMenu.SetError( CinemaStrings::Error_UnableToPlayMovie.toCString(), false, true );
+    m_movieSelectionMenu.SetError(CinemaStrings::Error_UnableToPlayMovie, false, true);
 	m_viewMgr.openView( m_movieSelectionMenu );
 }
 

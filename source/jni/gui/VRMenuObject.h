@@ -583,7 +583,7 @@ public:
 
     virtual VString const &	text() const = 0;
     virtual void				setText( const VString &text ) = 0;
-	virtual void				setTextWordWrapped( char const * text, class BitmapFont const & font, float const widthInMeters ) = 0;
+    virtual void				setTextWordWrapped(const VString &text, class BitmapFont const & font, float const widthInMeters ) = 0;
 
 	virtual bool				isHilighted() const = 0;
 	virtual void				setHilighted( bool const b ) = 0;

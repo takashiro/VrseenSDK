@@ -794,7 +794,7 @@ void MovieSelectionView::UpdateSelectionFrame( const VFrame & vrFrame )
 	}
 }
 
-void MovieSelectionView::SetError( const char *text, bool showSDCard, bool showErrorIcon )
+void MovieSelectionView::SetError(const VString &text, bool showSDCard, bool showErrorIcon )
 {
 	ClearError();
 

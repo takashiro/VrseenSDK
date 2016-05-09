@@ -1542,7 +1542,7 @@ void VRMenuObjectLocal::createFromSurfaceParms( int const surfaceIndex, VRMenuSu
 
 //==============================
 // VRMenuObjectLocal::SetTextWordWrapped
-void VRMenuObjectLocal::setTextWordWrapped( char const * text, BitmapFont const & font, float const widthInMeters )
+void VRMenuObjectLocal::setTextWordWrapped(const VString &text, BitmapFont const & font, float const widthInMeters )
 {
 	setText( text );
 	font.WordWrapText( m_text, widthInMeters, m_fontParms.Scale );

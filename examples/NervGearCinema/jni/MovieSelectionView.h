@@ -43,7 +43,7 @@ public:
 	void 								SelectMovie( void );
 	void 								SelectionHighlighted( bool isHighlighted );
     void 								SetCategory( const MovieCategory category );
-	void								SetError( const char *text, bool showSDCard, bool showErrorIcon );
+	void								SetError(const VString &text, bool showSDCard, bool showErrorIcon );
 	void								ClearError();
 
 private:
