@@ -259,9 +259,6 @@ void VKernel::run()
     vInfo("BUILD =" << VOsBuild::getString(VOsBuild::Display) << buildConfig);
     vInfo("MODEL =" << VOsBuild::getString(VOsBuild::Model));
 
-    jmethodID setSchedFifoId = JniUtils::GetStaticMethodID(Jni, VrLibClass, "setSchedFifoStatic", "(Landroid/app/Activity;II)I");
-    Jni->CallStaticIntMethod(VrLibClass, setSchedFifoId, ActivityObject, gettid(), 1);
-
     isRunning = true;
 
     // Let GlUtils look up extensions
@@ -306,13 +303,16 @@ void VKernel::run()
         vInfo("Cleared JNI exception");
     }
 
-    frameSmooth = new VFrameSmooth(asyncSmooth,device);
+    frameSmooth = new VFrameSmooth(asyncSmooth, device);
+
+    jmethodID setSchedFifoId = JniUtils::GetStaticMethodID(Jni, VrLibClass, "setSchedFifoStatic", "(Landroid/app/Activity;II)I");
+    Jni->CallStaticIntMethod(VrLibClass, setSchedFifoId, ActivityObject, gettid(), 1);
+    Jni->CallStaticIntMethod(VrLibClass, setSchedFifoId, ActivityObject, frameSmooth->threadId(), 3);
 
     if ( setActivityWindowFullscreenID != NULL)
     {
         Jni->CallStaticVoidMethod( VrLibClass, setActivityWindowFullscreenID, ActivityObject );
     }
-
 }
 
 void VKernel::exit()

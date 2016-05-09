@@ -24,6 +24,7 @@ public:
     void setSmoothProgram(ushort program);
     void setProgramParms(float *proParms);
 
+    int threadId() const;
     void doSmooth();
 
 private:
