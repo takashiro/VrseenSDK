@@ -298,7 +298,7 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 		try {
 			int [] values = vr.return2EnableFreqLev();
 			// display available levels
-			Log.d(TAG, "Available levels: {GPU MIN, GPU MAX, CPU MIN, CPU MAX}");
+			Log.d(TAG, "Available levels: {GPU MIN = " + values[0] + ", GPU MAX = " + values[1] + ", CPU MIN = " + values[2] + ", CPU MAX = " + values[3] + "}");
 			for ( int i = 0; i < values.length; i++ ) {
 				Log.d(TAG, "-> " + "/ " + values[i]);
 			}
