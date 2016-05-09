@@ -42,9 +42,7 @@ LOCAL_SRC_FILES  := \
 	core/VJson.cpp \
 	core/VLog.cpp \
 	core/VPath.cpp \
-	core/VStandardPath.cpp \
 	core/VString.cpp \
-	core/VDir.cpp \
 	core/VSignal.cpp \
 	core/VLock.cpp \
 	core/VThread.cpp \
@@ -100,6 +98,8 @@ LOCAL_SRC_FILES  := \
 	io/VBinaryFile.cpp \
 	io/VFileOperation.cpp \
 	io/VSysFile.cpp \
+	io/VDir.cpp \
+	io/VStandardPath.cpp \
 	media/VSoundManager.cpp \
 	media/VImageCommonLoader.cpp \
 	media/VImageKtxLoader.cpp \
