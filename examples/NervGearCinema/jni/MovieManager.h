@@ -61,7 +61,7 @@ public:
 
 	VArray<const MovieDef *>	GetMovieList( MovieCategory category ) const;
 
-	static const VString 	GetMovieTitleFromFilename( const char *filepath );
+    static const VString GetMovieTitleFromFilename(const VString &filePath);
 
 public:
     VArray<MovieDef *> 		Movies;

@@ -1,35 +1,19 @@
-/************************************************************************************
-
-Filename    :   MovieManager.cpp
-Content     :
-Created     :	9/10/2014
-Authors     :   Jim Dos�
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-This source code is licensed under the BSD-style license found in the
-LICENSE file in the Cinema/ directory. An additional grant
-of patent rights can be found in the PATENTS file in the same directory.
-
-*************************************************************************************/
+#include "MovieManager.h"
+#include "CinemaApp.h"
+#include "Native.h"
 
 #include <sys/stat.h>
 #include <errno.h>
 #include <dirent.h>
 #include <fstream>
 
+#include <VTimer.h>
 #include <VPath.h>
-
-#include "VJson.h"
-#include "VLog.h"
-
-#include "MovieManager.h"
-#include "CinemaApp.h"
-#include "VApkFile.h"
-#include "Native.h"
-#include "core/VTimer.h"
-#include "VOpenGLTexture.h"
-#include "VImageManager.h"
+#include <VJson.h>
+#include <VLog.h>
+#include <VApkFile.h>
+#include <VOpenGLTexture.h>
+#include <VImageManager.h>
 
 namespace OculusCinema {
 
@@ -104,24 +88,19 @@ void MovieManager::LoadMovies()
 		movie->Filename = movieFiles[ i ];
 
 		// set reasonable defaults for when there's no metadata
-        movie->Title = GetMovieTitleFromFilename( movie->Filename.toCString() );
-        movie->Is3D = ( NULL != strstr( movie->Filename.toCString(), "/3D/" ) );
+        movie->Title = GetMovieTitleFromFilename(movie->Filename);
+        movie->Is3D = movie->Filename.contains("/3D/");
 		movie->Format = VT_UNKNOWN;
 		movie->Theater = "";
 
-        if ( NULL != strstr( movie->Filename.toCString(), "/DCIM/" ) )
-		{
+        if (movie->Filename.contains("/DCIM/")) {
 			// Everything in the DCIM folder goes to my videos
 			movie->Category = CATEGORY_MYVIDEOS;
 			movie->AllowTheaterSelection = true;
-		}
-        else if ( NULL != strstr( movie->Filename.toCString(), "/Trailers/" ) )
-		{
+        } else if (movie->Filename.contains("/Trailers/")) {
 			movie->Category = CATEGORY_TRAILERS;
 			movie->AllowTheaterSelection = true;
-		}
-		else
-		{
+        } else {
 			movie->Category = CATEGORY_MYVIDEOS;
 			movie->AllowTheaterSelection = true;
 		}
@@ -187,7 +166,7 @@ void MovieManager::ReadMetaData( MovieDef *movie )
 	}
 
     VJson metaData;
-    std::ifstream fs(filename.toCString(), std::ios::binary);
+    std::ifstream fs(filename.toUtf8(), std::ios::binary);
     fs >> metaData;
     if (metaData.isObject()) {
         if (metaData.contains("title")) {
@@ -302,11 +281,9 @@ bool MovieManager::IsSupportedMovieFormat( const VString &extension ) const
 
 void MovieManager::MoviesInDirectory(VArray<VString> &movies, const VString &dirName) const
 {
-    const char *dirNameCStr = dirName.toCString();
-    vInfo("scanning directory:" << dirNameCStr);
+    vInfo("scanning directory:" << dirName);
     vInfo("scanning started");
-    DIR * dir = opendir(dirNameCStr);
-    delete[] dirNameCStr;
+    DIR *dir = opendir(dirName.toUtf8().data());
 	if ( dir != NULL )
     {
 		struct dirent * entry;
@@ -366,9 +343,9 @@ VArray<VString> MovieManager::ScanMovieDirectories() const {
 	return movies;
 }
 
-const VString MovieManager::GetMovieTitleFromFilename( const char *filepath )
+const VString MovieManager::GetMovieTitleFromFilename(const VString &filePath)
 {
-    VString fileName = VPath(filepath).baseName();
+    VString fileName = VPath(filePath).baseName();
     fileName.replace('_', ' ');
     return fileName;
 }
