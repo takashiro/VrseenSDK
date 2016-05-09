@@ -1,12 +1,15 @@
-#include <dirent.h>
 #include "ModelManager.h"
 #include "CinemaApp.h"
-#include "core/VTimer.h"
-#include <VPath.h>
+
+#include <dirent.h>
 #include <fstream>
+
+#include <VTimer.h>
+#include <VPath.h>
 #include <VApkFile.h>
-#include "VImageManager.h"
-#include "VOpenGLTexture.h"
+#include <VDir.h>
+#include <VImageManager.h>
+#include <VOpenGLTexture.h>
 
 namespace OculusCinema {
 
@@ -101,25 +104,16 @@ void ModelManager::LoadModels()
 
 void ModelManager::ScanDirectoryForScenes(const VString &directory, bool useDynamicProgram, bool useScreenGeometry, VArray<SceneDef *> &scenes ) const
 {
-    DIR * dir = opendir( directory.toCString() );
-	if ( dir != NULL )
-	{
-		struct dirent * entry;
-		while( ( entry = readdir( dir ) ) != NULL ) {
-			VString filename = entry->d_name;
-            VString ext = VPath(filename).extension().toLower();
-            if ( ( ext == "ovrscene" ) )
-			{
-				VString fullpath = directory;
-                fullpath.append( "/" );
-                fullpath.append( filename );
-                SceneDef *def = LoadScene( fullpath, useDynamicProgram, useScreenGeometry, false );
-                scenes.append( def );
-			}
-		}
-
-		closedir( dir );
-	}
+    VDir dir(directory);
+    VArray<VString> entryList = dir.entryList();
+    for (const VString &fileName : entryList) {
+        VString ext = VPath(fileName).extension().toLower();
+        if (ext == "ovrscene") {
+            VString fullpath = directory + u'/' + fileName;
+            SceneDef *def = LoadScene(fullpath, useDynamicProgram, useScreenGeometry, false);
+            scenes.append(def);
+        }
+    }
 }
 
 SceneDef * ModelManager::LoadScene(const VString &sceneFilename, bool useDynamicProgram, bool useScreenGeometry, bool loadFromApplicationPackage ) const
