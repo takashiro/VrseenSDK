@@ -11,8 +11,9 @@ public:
     VPath(const char *str) : VString(str) {}
     VPath(const VString &source) : VString(source) {}
     VPath(const VPath &path) : VString(path.data(), path.size()) {}
-    VPath(const char *data, uint length);
-    VPath(const char16_t *data, uint length):VString(){VString::assign(data, length);}
+    VPath(const char *data, uint length) : VString(data, length) {}
+    VPath(const char16_t *data, uint length) : VString(data, length) {}
+
     bool isAbsolute() const;
 
     bool hasProtocol() const;
@@ -26,6 +27,7 @@ public:
     VString baseName() const;
 
     VString dirName() const;
+    VString dirPath() const;
 };
 
 NV_NAMESPACE_END

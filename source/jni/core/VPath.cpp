@@ -210,4 +210,36 @@ VString VPath::dirName() const
     return range(start, end);
 }
 
+VString VPath::dirPath() const
+{
+    if (isEmpty()) {
+        return *this;
+    }
+
+    uint end = size() - 1;
+    forever {
+        if (at(end) != '/') {
+            break;
+        }
+        end--;
+    }
+    if (end <= 0) {
+        return VString();
+    }
+
+    forever {
+        if (at(end) == '/' || at(end) == '\\' || at(end) == ':') {
+            break;
+        }
+
+        if (end > 0) {
+            end--;
+        } else {
+            return VString();
+        }
+    }
+
+    return range(0, end);
+}
+
 NV_NAMESPACE_END
