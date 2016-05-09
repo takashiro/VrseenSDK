@@ -3,6 +3,7 @@
 
 #include <fstream>
 
+#include <unistd.h>
 #include <sys/stat.h>
 
 NV_NAMESPACE_BEGIN
@@ -80,6 +81,16 @@ bool VFile::Exists(const VString &path)
 {
     struct stat buffer;
     return stat(path.toUtf8().data(), &buffer) == 0;
+}
+
+bool VFile::IsReadable(const VString &path)
+{
+    return access(path.toUtf8().data(), R_OK);
+}
+
+bool VFile::IsWritable(const VString &path)
+{
+    return access(path.toUtf8().data(), W_OK);
 }
 
 vint64 VFile::readData(char *data, vint64 maxSize)
