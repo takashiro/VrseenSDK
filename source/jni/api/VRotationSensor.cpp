@@ -523,6 +523,7 @@ JNIEXPORT void JNICALL Java_com_vrseen_sensor_RotationSensor_update
     VRotationState state;
     state.timestamp = timestamp;
     state.w = w;
+    state.x = x;
     state.y = y;
     state.z = z;
     state.gyro.x = gryoX;
