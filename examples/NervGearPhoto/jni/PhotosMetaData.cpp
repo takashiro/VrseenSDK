@@ -27,9 +27,9 @@ OvrPhotosMetaDatum::OvrPhotosMetaDatum(const VString &url)
     title = VPath(url).baseName();
 }
 
-OvrMetaDatum * OvrPhotosMetaData::createMetaDatum(const VString &url) const
+OvrMetaDatum *OvrPhotosMetaData::createMetaDatum(const VString &url) const
 {
-	return new OvrPhotosMetaDatum( url );
+    return new OvrPhotosMetaDatum(url);
 }
 
 void OvrPhotosMetaData::extractExtendedData( const NervGear::VJson & jsonDatum, OvrMetaDatum & datum ) const

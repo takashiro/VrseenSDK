@@ -52,7 +52,7 @@ public:
 	virtual ~OvrMetaData() {}
 
 	// Init meta data from contents on disk
-    void					initFromDirectory( const char * relativePath, const VArray< VString > & searchPaths, const OvrMetaDataFileExtensions & fileExtensions );
+    void					initFromDirectory(const VString &relativePath, const VArray< VString > & searchPaths, const OvrMetaDataFileExtensions & fileExtensions );
 
 	// Init meta data from a passed in list of files
     void					initFromFileList( const VArray< VString > & fileList, const OvrMetaDataFileExtensions & fileExtensions );

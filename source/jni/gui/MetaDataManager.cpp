@@ -49,7 +49,7 @@ static bool OvrMetaDatumIdComparator( const OvrMetaDatum * a, const OvrMetaDatum
 	return a->id < b->id;
 }
 
-void OvrMetaData::initFromDirectory( const char * relativePath, const VArray< VString > & searchPaths, const OvrMetaDataFileExtensions & fileExtensions )
+void OvrMetaData::initFromDirectory(const VString &relativePath, const VArray< VString > & searchPaths, const OvrMetaDataFileExtensions & fileExtensions )
 {
 	vInfo("OvrMetaData::InitFromDirectory( " << relativePath << " )");
 	// Find all the files - checks all search paths
@@ -118,10 +118,8 @@ void OvrMetaData::initFromDirectory( const char * relativePath, const VArray< VS
 	}
 
 	// Recurse into subdirs
-	for ( int i = 0; i < subDirs.length(); ++i )
-	{
-		const VString & subDir = subDirs.at( i );
-        initFromDirectory( subDir.toCString(), searchPaths, fileExtensions );
+    for (const VString &subDir : subDirs) {
+        initFromDirectory(subDir, searchPaths, fileExtensions );
 	}
 }
 
@@ -254,7 +252,7 @@ void OvrMetaData::writeMetaFile(const char * metaFile) const
     if (!buffer) {
         vWarn("OvrMetaData failed to read" << assetsMetaFile);
     } else {
-        if (FILE *newMetaFile = fopen(m_filePath.toCString(), "w")) {
+        if (FILE *newMetaFile = fopen(m_filePath.toUtf8().data(), "w")) {
             uint writtenCount = fwrite( buffer, 1, bufferLength, newMetaFile );
             if ( writtenCount != bufferLength )
             {
