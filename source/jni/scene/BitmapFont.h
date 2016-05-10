@@ -90,10 +90,7 @@ public:
 
 	virtual void DrawTextBillboarded3D(BitmapFont const & font,
             fontParms_t const & flags, V3Vectf const & pos, float const scale,
-            V4Vectf const & color, char const * text) = 0;
-	virtual void DrawTextBillboarded3Df(BitmapFont const & font,
-            fontParms_t const & flags, V3Vectf const & pos, float const scale,
-            V4Vectf const & color, char const * fmt, ...) = 0;
+            V4Vectf const & color, const VString &text) = 0;
 
     virtual void Finish(VR4Matrixf const & viewMatrix) = 0;
 
