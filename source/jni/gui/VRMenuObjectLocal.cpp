@@ -50,7 +50,7 @@ VRMenuSurfaceTexture::	VRMenuSurfaceTexture() :
 
 //==============================
 // VRMenuSurfaceTexture::LoadTexture
-bool VRMenuSurfaceTexture::loadTexture( eSurfaceTextureType const type, char const * imageName, bool const allowDefault )
+bool VRMenuSurfaceTexture::loadTexture( eSurfaceTextureType const type, const VString &imageName, bool const allowDefault )
 {
     free();
 
@@ -58,8 +58,7 @@ bool VRMenuSurfaceTexture::loadTexture( eSurfaceTextureType const type, char con
 
 	m_type = type;
 
-	if ( imageName != NULL && imageName[0] != '\0' )
-	{
+    if (!imageName.isEmpty()) {
 //		void * 	buffer;
 //        uint		bufferLength;
 //        const VApkFile &apk = VApkFile::CurrentApkFile();
@@ -75,10 +74,10 @@ bool VRMenuSurfaceTexture::loadTexture( eSurfaceTextureType const type, char con
 //            ::free( buffer );
 //		}
         VImageManager* imagemanager = new VImageManager();
-        VImage* image = imagemanager->loadImage(VPath(imageName));
+        VImage* image = imagemanager->loadImage(imageName);
         m_width = image->getDimension().Width;
         m_height = image->getDimension().Height;
-        m_handle = VOpenGLTexture(image, VPath(imageName), TextureFlags_o(_NO_DEFAULT )).getTextureName();
+        m_handle = VOpenGLTexture(image, imageName, TextureFlags_o(_NO_DEFAULT )).getTextureName();
 
         delete imagemanager;
 
@@ -87,7 +86,7 @@ bool VRMenuSurfaceTexture::loadTexture( eSurfaceTextureType const type, char con
 
 	if ( m_handle == 0 && allowDefault )
 	{
-        m_handle = LoadTextureFromBuffer( imageName, uiDefaultTgaData, uiDefaultTgaSize,
+        m_handle = LoadTextureFromBuffer( imageName.toUtf8().data(), uiDefaultTgaData, uiDefaultTgaSize,
 							TextureFlags_t(), m_width, m_height );
 		vWarn("VRMenuSurfaceTexture::CreateFromImage: failed to load image '" << imageName << "' - default loaded instead!");
 	}
@@ -460,13 +459,13 @@ void VRMenuSurface::createFromSurfaceParms( VRMenuSurfaceParms const & parms )
             ( parms.TextureTypes[i] >= 0 && parms.TextureTypes[i] < SURFACE_TEXTURE_MAX ) )
 	    {
     		isValid = true;
-            m_textures[i].loadTexture( parms.TextureTypes[i], parms.ImageNames[i].toCString(), true );
+            m_textures[i].loadTexture(parms.TextureTypes[i], parms.ImageNames[i], true);
 		}
 		else if ( ( parms.ImageTexId[i] != 0 ) &&
             ( parms.TextureTypes[i] >= 0 && parms.TextureTypes[i] < SURFACE_TEXTURE_MAX ) )
 	    {
     		isValid = true;
-            m_textures[i].loadTexture( parms.TextureTypes[i], parms.ImageTexId[i], parms.ImageWidth[i], parms.ImageHeight[i] );
+            m_textures[i].loadTexture(parms.TextureTypes[i], parms.ImageTexId[i], parms.ImageWidth[i], parms.ImageHeight[i]);
 		}
 	}
 	if ( !isValid )
@@ -1089,7 +1088,7 @@ VBoxf VRMenuObjectLocal::setTextLocalBounds( BitmapFont const & font ) const
 			float lineWidths[MAX_LINES];
 			int numLines = 0;
 
-			font.CalcTextMetrics( m_text.toCString(), len, m_textMetrics.w, m_textMetrics.h,
+            font.CalcTextMetrics(m_text, len, m_textMetrics.w, m_textMetrics.h,
 					m_textMetrics.ascent, m_textMetrics.descent, m_textMetrics.fontHeight, lineWidths, MAX_LINES, numLines );
 		}
     }

@@ -48,7 +48,7 @@ class VRMenuSurfaceTexture
 public:
 	VRMenuSurfaceTexture();
 
-    bool	loadTexture( eSurfaceTextureType const type, char const * imageName, bool const allowDefault );
+    bool	loadTexture(eSurfaceTextureType const type, const VString &imageName, bool const allowDefault );
     void 	loadTexture( eSurfaceTextureType const type, const GLuint texId, const int width, const int height );
     void	free();
     void	setOwnership( const bool isOwner )	{ m_ownsTexture = isOwner; }
