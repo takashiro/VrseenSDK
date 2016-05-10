@@ -136,11 +136,11 @@ PanoBrowser * PanoBrowser::Create(
 		thumbHeight );
 }
 
-VString PanoBrowser::getCategoryTitle( char const * key, char const * defaultStr ) const
+VString PanoBrowser::getCategoryTitle(const VString &key, const VString &defaultStr) const
 {
 	VString outStr;
-    VrLocale::GetString(  m_app->vrJni(), m_app->javaObject(), key, defaultStr, outStr );
-	return outStr;
+    VrLocale::GetString(  m_app->vrJni(), m_app->javaObject(), key, defaultStr, outStr);
+    return outStr;
 }
 
 VString PanoBrowser::getPanelTitle( const OvrMetaDatum & panelData ) const

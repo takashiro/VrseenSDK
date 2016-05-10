@@ -147,7 +147,7 @@ protected:
 	// Subclass protected interface
 
 	// Called from the base class when building a cateory.
-    virtual VString				getCategoryTitle( char const * key, char const * defaultStr ) const = 0;
+    virtual VString				getCategoryTitle(const VString &key, const VString &defaultStr ) const = 0;
 
 	// Called from the base class when building a panel
     virtual VString				getPanelTitle( const OvrMetaDatum & panelData ) const = 0;

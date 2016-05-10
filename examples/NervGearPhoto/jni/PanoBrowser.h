@@ -71,7 +71,7 @@ namespace NervGear
 
 	protected:
 		// Called from the base class when building category.
-        VString getCategoryTitle( char const * key, char const * defaultStr ) const override;
+        VString getCategoryTitle(const VString &key, const VString &defaultStr) const override;
 
 		// Called from the base class when building a panel.
         VString getPanelTitle( const OvrMetaDatum & panelData ) const override;

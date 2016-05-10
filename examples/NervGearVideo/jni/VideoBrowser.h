@@ -59,7 +59,7 @@ public:
 
 protected:
 	// Called from the base class when building a cateory.
-	virtual VString				getCategoryTitle( char const * key, char const * defaultStr ) const;
+	virtual VString				getCategoryTitle(const VString &key, const VString &defaultStr ) const;
 
 	// Called from the base class when building a panel
 	virtual VString				getPanelTitle( const OvrMetaDatum & panelData ) const;

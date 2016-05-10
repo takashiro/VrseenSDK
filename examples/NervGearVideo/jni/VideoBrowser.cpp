@@ -140,10 +140,10 @@ void VideoBrowser::onMediaNotFound( App * app, VString & title, VString & imageF
 	font.WordWrapText( message, 1.4f, wholeStrs );
 }
 
-VString VideoBrowser::getCategoryTitle( char const * key, char const * defaultStr ) const
+VString VideoBrowser::getCategoryTitle(const VString &key, const VString &defaultStr) const
 {
 	VString outStr;
-	VrLocale::GetString( m_app->vrJni(), m_app->javaObject(), key, defaultStr, outStr );
+    VrLocale::GetString( m_app->vrJni(), m_app->javaObject(), key, defaultStr, outStr);
 	return outStr;
 }
 
