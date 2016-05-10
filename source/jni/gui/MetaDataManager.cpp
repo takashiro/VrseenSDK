@@ -87,7 +87,7 @@ void OvrMetaData::initFromDirectory( const char * relativePath, const VArray< VS
 
 		// Add loose file
 		const int dataIndex = m_etaData.length();
-        OvrMetaDatum * datum = createMetaDatum( fileBase.toCString() );
+        OvrMetaDatum * datum = createMetaDatum(fileBase);
 		if ( datum )
 		{
 			datum->id = dataIndex;
@@ -163,7 +163,7 @@ void OvrMetaData::initFromFileList( const VArray< VString > & fileList, const Ov
 		// Add loose file
 
 		const int dataIndex = m_etaData.length();
-        OvrMetaDatum * datum = createMetaDatum( filePath.toCString() );
+        OvrMetaDatum * datum = createMetaDatum(filePath);
 
 		if ( datum )
 		{
@@ -599,7 +599,7 @@ void OvrMetaData::extractMetaData(const VJsonObject &dataFile, const VArray< VSt
 		for (const VJson &datum : datums) {
 			if ( datum.isObject() )
 			{
-				OvrMetaDatum * metaDatum = createMetaDatum( "" );
+                OvrMetaDatum * metaDatum = createMetaDatum("");
 				if ( !metaDatum )
 				{
 					continue;
@@ -675,7 +675,7 @@ void OvrMetaData::extractRemoteMetaData( const VJson &dataFile, VStringHash< Ovr
 		for (const VJson &jsonDatum : elements) {
 			if ( jsonDatum.isObject() )
 			{
-				OvrMetaDatum * metaDatum = createMetaDatum( "" );
+                OvrMetaDatum * metaDatum = createMetaDatum("");
 				if ( !metaDatum )
 				{
 					continue;

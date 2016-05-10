@@ -21,13 +21,13 @@ const char * const TITLE_INNER			= "title";
 const char * const AUTHOR_INNER			= "author";
 const char * const DEFAULT_AUTHOR_NAME	= "Unspecified Author";
 
-OvrPhotosMetaDatum::OvrPhotosMetaDatum( const VString& url )
+OvrPhotosMetaDatum::OvrPhotosMetaDatum(const VString &url)
 	: author( DEFAULT_AUTHOR_NAME )
 {
     title = VPath(url).baseName();
 }
 
-OvrMetaDatum * OvrPhotosMetaData::createMetaDatum( const char* url ) const
+OvrMetaDatum * OvrPhotosMetaData::createMetaDatum(const VString &url) const
 {
 	return new OvrPhotosMetaDatum( url );
 }

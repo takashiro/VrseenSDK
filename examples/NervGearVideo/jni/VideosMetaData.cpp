@@ -21,9 +21,9 @@ OvrVideosMetaDatum::OvrVideosMetaDatum( const VString& url )
     Title = VPath(url).baseName();
 }
 
-OvrMetaDatum * OvrVideosMetaData::createMetaDatum( const char* url ) const
+OvrMetaDatum * OvrVideosMetaData::createMetaDatum(const VString &url) const
 {
-	return new OvrVideosMetaDatum( url );
+    return new OvrVideosMetaDatum(url);
 }
 
 void OvrVideosMetaData::extractExtendedData( const VJson &jsonDatum, OvrMetaDatum & datum ) const

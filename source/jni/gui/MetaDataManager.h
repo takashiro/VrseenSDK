@@ -86,7 +86,7 @@ public:
 
 protected:
 	// Overload to fill extended data during initialization
-    virtual OvrMetaDatum *	createMetaDatum( const char* fileName ) const = 0;
+    virtual OvrMetaDatum *	createMetaDatum(const VString &fileName) const = 0;
     virtual	void			extractExtendedData( const VJson &jsonDatum, OvrMetaDatum & outDatum ) const = 0;
     virtual	void			extendedDataToJson( const OvrMetaDatum & datum, VJsonObject &outDatumObject ) const = 0;
     virtual void			swapExtendedData( OvrMetaDatum * left, OvrMetaDatum * right ) const = 0;
