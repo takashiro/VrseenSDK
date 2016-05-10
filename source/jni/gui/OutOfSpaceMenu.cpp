@@ -80,7 +80,7 @@ namespace NervGear {
 				VRMENU_STATIC,
 				VArray< VRMenuComponent* >(),
 				VRMenuSurfaceParms(),
-                outOfSpaceMsg.toCString(),
+                outOfSpaceMsg,
                 VPosf( VQuatf(), V3Vectf( 0.0f, CENTER_TO_TEXT_Y_OFFSET, 0.0f ) ),
                 V3Vectf( 1.0f ),
 				fontParms,
