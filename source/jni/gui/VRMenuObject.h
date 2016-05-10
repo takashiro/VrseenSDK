@@ -126,7 +126,7 @@ public:
 		InitSurfaceTextureTypes();
 	}
 
-	explicit VRMenuSurfaceParms( char const * surfaceName ) :
+    explicit VRMenuSurfaceParms(const VString &surfaceName) :
 		SurfaceName( surfaceName ),
 		ImageNames(),
 		Contents( CONTENT_SOLID ),
@@ -137,12 +137,12 @@ public:
 	{
 		InitSurfaceTextureTypes();
 	}
-	VRMenuSurfaceParms( char const * surfaceName,
-			char const * imageName0,
+    VRMenuSurfaceParms(const VString &surfaceName,
+            const VString &imageName0,
 			eSurfaceTextureType textureType0,
-			char const * imageName1,
+            const VString &imageName1,
 			eSurfaceTextureType textureType1,
-			char const * imageName2,
+            const VString &imageName2,
 			eSurfaceTextureType textureType2 ) :
 		SurfaceName( surfaceName ),
 		ImageNames(),
@@ -162,12 +162,12 @@ public:
 		ImageNames[VRMENUSURFACE_IMAGE_2] = imageName2;
 		TextureTypes[VRMENUSURFACE_IMAGE_2] = textureType2;
 	}
-	VRMenuSurfaceParms( char const * surfaceName,
-			char const * imageName0,
+    VRMenuSurfaceParms(const VString &surfaceName,
+            const VString &imageName0,
 			eSurfaceTextureType textureType0,
-			char const * imageName1,
+            const VString &imageName1,
 			eSurfaceTextureType textureType1,
-			char const * imageName2,
+            const VString &imageName2,
 			eSurfaceTextureType textureType2,
             V2Vectf const & anchors ) :
 		SurfaceName( surfaceName ),
@@ -188,8 +188,8 @@ public:
 		ImageNames[VRMENUSURFACE_IMAGE_2] = imageName2;
 		TextureTypes[VRMENUSURFACE_IMAGE_2] = textureType2;
 	}
-	VRMenuSurfaceParms( char const * surfaceName,
-			char const * imageNames[],
+    VRMenuSurfaceParms(const VString &surfaceName,
+            const char *imageNames[],
 			eSurfaceTextureType textureTypes[] ) :
 		SurfaceName( surfaceName ),
 		ImageNames(),

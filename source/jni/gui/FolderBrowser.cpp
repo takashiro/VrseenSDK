@@ -1275,12 +1275,12 @@ void OvrFolderBrowser::buildDirtyMenu( OvrMetaData & metaData )
         const VPosf textPose( VQuatf(), V3Vectf( 0.0f, -0.3f, 0.0f ) );
 
 		VRMenuSurfaceParms panelSurfParms( "panelSurface",
-            imageFile.toCString(), SURFACE_TEXTURE_DIFFUSE,
+            imageFile, SURFACE_TEXTURE_DIFFUSE,
 			NULL, SURFACE_TEXTURE_MAX,
 			NULL, SURFACE_TEXTURE_MAX );
 
 		VRMenuObjectParms * p = new VRMenuObjectParms( VRMENU_STATIC, VArray< VRMenuComponent* >(),
-            panelSurfParms, message.toCString(), panelPose, panelScale, textPose, V3Vectf( 1.3f ), fontParms, VRMenuId_t(),
+            panelSurfParms, message, panelPose, panelScale, textPose, V3Vectf( 1.3f ), fontParms, VRMenuId_t(),
 			VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_ALL ), VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 
 		parms.append( p );
@@ -1366,7 +1366,7 @@ void OvrFolderBrowser::buildFolder( OvrMetaData::Category & category, FolderView
 		VRMENU_CONTAINER,
 		comps,
 		VRMenuSurfaceParms(),
-		( folder->localizedName + " root" ).toCString(),
+        folder->localizedName + " root",
         VPosf(),
         V3Vectf( 1.0f ),
 		fontParms,
@@ -1426,7 +1426,7 @@ void OvrFolderBrowser::buildFolder( OvrMetaData::Category & category, FolderView
 		VRMENU_CONTAINER,
 		swipeComps,
 		VRMenuSurfaceParms(),
-		( folder->localizedName + " swipe" ).toCString(),
+        folder->localizedName + " swipe",
         VPosf(),
         V3Vectf( 1.0f ),
 		fontParms,
@@ -1514,7 +1514,7 @@ void OvrFolderBrowser::buildFolder( OvrMetaData::Category & category, FolderView
 		VRMENU_CONTAINER,
 		VArray< VRMenuComponent* >(),
 		VRMenuSurfaceParms(),
-		( folder->localizedName + " title root" ).toCString(),
+        folder->localizedName + " title root",
         VPosf(),
         V3Vectf( 1.0f ),
 		fontParms,
@@ -1778,7 +1778,7 @@ void * OvrFolderBrowser::ThumbnailThread( void * v )
 				const OvrCreateThumbCmd & cmd = ThumbCreateAndLoadCommands->at( i );
 				int	width = 0;
 				int height = 0;
-                unsigned char * data = folderBrowser->createAndCacheThumbnail( cmd.sourceImagePath.toCString(), cmd.thumbDestination.toCString(), width, height );
+                unsigned char * data = folderBrowser->createAndCacheThumbnail(cmd.sourceImagePath, cmd.thumbDestination, width, height );
 
 				if ( data != NULL )
 				{
@@ -1801,10 +1801,8 @@ void * OvrFolderBrowser::ThumbnailThread( void * v )
 							data[ i ] = ThumbPanelBG[ i ];
 						}
 
-						int folderId;
-						int panelId;
-
-                        sscanf( cmd.loadCmd.toCString(), "load %i %i", &folderId, &panelId );
+                        int folderId = cmd.loadCmd.at(0).toInt();
+                        int panelId = cmd.loadCmd.at(1).toInt();
 
                         VVariantArray args;
                         args << folderId << panelId;
@@ -2055,9 +2053,7 @@ void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const in
 							OvrCreateThumbCmd createCmd;
 							createCmd.sourceImagePath = panoUrl;
 							createCmd.thumbDestination = finalThumb;
-							char loadCmd[ 1024 ];
-                            sprintf(loadCmd, "load %i %i:%s", folderIndex, panel.id, finalThumb.toCString());
-							createCmd.loadCmd = loadCmd;
+                            createCmd.loadCmd << folderIndex << panel.id << finalThumb;
 							m_thumbCreateAndLoadCommands.append( createCmd );
 						}
 						return;

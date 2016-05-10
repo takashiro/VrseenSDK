@@ -257,7 +257,7 @@ private:
 	{
         VString sourceImagePath;
         VString thumbDestination;
-        VString loadCmd;
+        VVariantArray loadCmd;
 	};
     VArray< OvrCreateThumbCmd > m_thumbCreateAndLoadCommands;
     VEventLoop		m_backgroundCommands;
