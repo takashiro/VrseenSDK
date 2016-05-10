@@ -39,7 +39,7 @@ static const int FAVORITES_FOLDER_INDEX = 0;
 //
 // Note that this won't be an actual wide-angle projection, but it is at least continuous
 // and somewhat reasonable looking.
-unsigned char * CubeMapVista( const char * nzName, float const ratio, int & width, int & height )
+unsigned char * CubeMapVista( const VString &nzName, float const ratio, int & width, int & height )
 {
 	int	faceWidth = 0;
 	int	faceHeight = 0;
@@ -56,7 +56,7 @@ unsigned char * CubeMapVista( const char * nzName, float const ratio, int & widt
 	unsigned char * combined = NULL;
 
 	// make _nx.jpg and _px.jpg from provided _nz.jpg name
-	const int len = strlen( nzName );
+    const int len = nzName.length();
 	if ( len < 6 )
 	{
 		return NULL;
@@ -67,7 +67,7 @@ unsigned char * CubeMapVista( const char * nzName, float const ratio, int & widt
     VString nxName( nzName );
     nxName[len - 5] = 'x';
 
-	nzData = TurboJpegLoadFromFile( nzName, &faceWidth, &faceHeight );
+    nzData = TurboJpegLoadFromFile( nzName.toUtf8().data(), &faceWidth, &faceHeight );
     pxData = TurboJpegLoadFromFile( pxName.toUtf8().data(), &faceWidth2, &faceHeight2 );
     nxData = TurboJpegLoadFromFile( nxName.toUtf8().data(), &faceWidth3, &faceHeight3 );
 
@@ -358,20 +358,17 @@ int PanoBrowser::numPanosInActive() const
 }
 
 
-unsigned char * PanoBrowser::createAndCacheThumbnail( const char * soureFile, const char * cacheDestinationFile, int & outW, int & outH )
+unsigned char * PanoBrowser::createAndCacheThumbnail(const VString &soureFile, const VString &cacheDestinationFile, int & outW, int & outH )
 {
     VDir vdir;
 	int		width = 0;
 	int		height = 0;
-	unsigned char * data = NULL;
+    unsigned char *data = NULL;
 
-	if ( strstr( soureFile, "_nz.jpg" ) )
-	{
+    if (soureFile.endsWith("_nz.jpg")) {
 		data = CubeMapVista( soureFile, 1.6f, width, height );
-	}
-	else
-	{
-		data = TurboJpegLoadFromFile( soureFile, &width, &height );
+    } else {
+        data = TurboJpegLoadFromFile(soureFile.toUtf8().data(), &width, &height);
 	}
 
 	if ( !data )
@@ -415,7 +412,7 @@ unsigned char * PanoBrowser::createAndCacheThumbnail( const char * soureFile, co
 	vdir.makePath( cacheDestinationFile, S_IRUSR | S_IWUSR );
 	if ( vdir.contains( cacheDestinationFile, W_OK ) )
 	{
-		WriteJpeg( cacheDestinationFile, outBuffer, outW, outH );
+        WriteJpeg(cacheDestinationFile.toUtf8().data(), outBuffer, outW, outH );
 	}
 
 	return outBuffer;

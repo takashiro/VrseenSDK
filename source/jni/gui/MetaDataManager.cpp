@@ -81,8 +81,7 @@ void OvrMetaData::initFromDirectory( const char * relativePath, const VArray< VS
 		}
 
 		// See if we want this loose-file
-		if ( !shouldAddFile( s.toCString(), fileExtensions ) )
-		{
+        if (!shouldAddFile(s, fileExtensions)) {
 			continue;
 		}
 
@@ -157,8 +156,7 @@ void OvrMetaData::initFromFileList( const VArray< VString > & fileList, const Ov
         Category & currentCategory = m_categories[catIndex];
 
 		// See if we want this loose-file
-		if ( !shouldAddFile( filePath.toCString(), fileExtensions ) )
-		{
+        if (!shouldAddFile(filePath, fileExtensions)) {
 			continue;
 		}
 
@@ -937,25 +935,16 @@ bool OvrMetaData::getMetaData( const Category & category, VArray< const OvrMetaD
 	return true;
 }
 
-bool OvrMetaData::shouldAddFile( const char * filename, const OvrMetaDataFileExtensions & fileExtensions ) const
+bool OvrMetaData::shouldAddFile(const VString &fileName, const OvrMetaDataFileExtensions &fileExtensions) const
 {
-	const int pathLen = strlen( filename );
-	for ( int index = 0; index < fileExtensions.badExtensions.length(); ++index )
-	{
-		const VString & ext = fileExtensions.badExtensions.at( index );
-        const int extLen = ext.length();
-        if ( pathLen > extLen && ext.icompare(filename + pathLen - extLen) == 0 )
-		{
+    for (const VString &ext : fileExtensions.badExtensions) {
+        if (fileName.endsWith(ext)) {
 			return false;
 		}
 	}
 
-	for ( int index = 0; index < fileExtensions.goodExtensions.length(); ++index )
-	{
-		const VString & ext = fileExtensions.goodExtensions.at( index );
-        const int extLen = ext.length();
-        if ( pathLen > extLen && ext.icompare(filename + pathLen - extLen) == 0 )
-		{
+    for (const VString &ext : fileExtensions.goodExtensions) {
+        if (fileName.endsWith(ext)) {
 			return true;
 		}
 	}

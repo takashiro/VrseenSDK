@@ -1986,7 +1986,7 @@ void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const in
 
 	const VRMenuFontParms fontParms( HORIZONTAL_CENTER, VERTICAL_CENTER, false, false, true, 0.525f, 0.45f, 0.5f );
 	VRMenuObjectParms * p = new VRMenuObjectParms( VRMENU_BUTTON, panelComps,
-        panelSurfParms, panelTitle.toCString(), panelPose, panelScale, textPose, V3Vectf( 1.0f ), fontParms, id,
+        panelSurfParms, panelTitle, panelPose, panelScale, textPose, V3Vectf( 1.0f ), fontParms, id,
 		VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_TEXT ), VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 
 	outParms.append( p );
@@ -2023,7 +2023,7 @@ void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const in
 	if ( finalThumb.isEmpty() )
 	{
 		// Try search paths next to image for retail photos
-        if ( !GetFullPath( m_thumbSearchPaths, thumbName.toCString(), finalThumb ) )
+        if ( !GetFullPath( m_thumbSearchPaths, thumbName, finalThumb ) )
 		{
 			// Try app cache for cached user pano thumbs
             if ( vdir.exists( appCacheThumbPath ) )
@@ -2033,11 +2033,9 @@ void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const in
 			else
 			{
 				const VString altThumbPath = alternateThumbName( panoUrl );
-                if ( altThumbPath.isEmpty() || !GetFullPath( m_thumbSearchPaths, altThumbPath.toCString(), finalThumb ) )
-				{
-                    int pathLen = (int) panoUrl.length();
-                    if ( pathLen > 2 && strcasecmp( panoUrl.toCString() + pathLen - 2, ".x" ) == 0 )
-					{
+                if ( altThumbPath.isEmpty() || !GetFullPath( m_thumbSearchPaths, altThumbPath, finalThumb ) )
+                {
+                    if (panoUrl.endsWith(".x")) {
 						vWarn("Thumbnails cannot be generated from encrypted images.");
 						return; // No thumb & can't create
 					}

@@ -106,7 +106,7 @@ private:
 
     VJson			metaDataToJson() const;
     void					writeMetaFile( const char * metaFile ) const;
-    bool 					shouldAddFile( const char * filename, const OvrMetaDataFileExtensions & fileExtensions ) const;
+    bool shouldAddFile(const VString &filename, const OvrMetaDataFileExtensions & fileExtensions ) const;
     void					extractVersion(const VJsonObject &dataFile, double & outVersion ) const;
     void					extractCategories(const VJsonObject &dataFile, VArray< Category > & outCategories ) const;
     void					extractMetaData(const VJsonObject &dataFile, const VArray< VString > & searchPaths, VStringHash< OvrMetaDatum * > & outMetaData ) const;

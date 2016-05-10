@@ -51,7 +51,7 @@ void VideoBrowser::onPanelActivated( const OvrMetaDatum * panelData )
 	videos->OnVideoActivated( panelData );
 }
 
-unsigned char * VideoBrowser::createAndCacheThumbnail( const char * soureFile, const char * cacheDestinationFile, int & outW, int & outH )
+unsigned char * VideoBrowser::createAndCacheThumbnail(const VString &soureFile, const VString &cacheDestinationFile, int & outW, int & outH )
 {
 	// TODO
 	return NULL;

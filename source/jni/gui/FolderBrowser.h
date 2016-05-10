@@ -158,7 +158,7 @@ protected:
 	// Called on a background thread
 	// The returned memory buffer will be free()'d after writing the thumbnail.
 	// Return NULL if the thumbnail couldn't be created.
-    virtual unsigned char *		createAndCacheThumbnail( const char * soureFile, const char * cacheDestinationFile, int & outWidth, int & outHeight ) = 0;
+    virtual unsigned char *createAndCacheThumbnail(const VString &soureFile, const VString &cacheDestinationFile, int & outWidth, int & outHeight ) = 0;
 
 	// Called on a background thread to load thumbnail
     virtual	unsigned char *		loadThumbnail( const char * filename, int & width, int & height ) = 0;
