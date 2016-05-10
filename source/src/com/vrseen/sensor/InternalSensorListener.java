@@ -3,9 +3,9 @@ package com.vrseen.sensor;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
-import android.os.Build;
+import android.hardware.SensorManager;
 
-public class InternalSensorListener  implements SensorEventListener {
+public class InternalSensorListener implements SensorEventListener {
 	private RotationSensor mSensor = null;
 
 	public InternalSensorListener(RotationSensor sensor) {
@@ -16,21 +16,15 @@ public class InternalSensorListener  implements SensorEventListener {
 	public void onSensorChanged(SensorEvent event) {
 		// TODO Auto-generated method stub
 		if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
-			float w;
-			float x = event.values[0];
-			float y = event.values[1];
-			float z = event.values[2];
-
-			if (Build.VERSION.SDK_INT < 18) {
-				w = getQuaternionW(event.values[0], event.values[1],
-						event.values[2]);
-			} else {
-				w = event.values[3];
-			}
+			float[] quaternion = new float[4];
+			SensorManager.getQuaternionFromVector(quaternion, event.values);
+			float w = quaternion[0];
+			float y = quaternion[1];
+			float x = -quaternion[2];
+			float z = quaternion[3];
 
 			mSensor.onInternalRotationSensor(VrseenTime.getCurrentTime(), w, x, y, z, 0, 0, 0);
 		}
-		
 	}
 
 	@Override
@@ -38,10 +32,4 @@ public class InternalSensorListener  implements SensorEventListener {
 		// TODO Auto-generated method stub
 		
 	}
-	
-	private float getQuaternionW(float x, float y, float z) {
-		return (float) Math.cos(Math.asin(Math.sqrt(x * x + y * y + z * z)));
-	}
- 
-
 }

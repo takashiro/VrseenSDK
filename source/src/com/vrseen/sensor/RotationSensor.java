@@ -76,8 +76,7 @@ public class RotationSensor {
 		mUSensor.close();
 	}
 	
-	void onInternalRotationSensor(long timeStamp, float w, float x, float y,
-			float z, float gyroX, float gyroY, float gyroZ) {
+	void onInternalRotationSensor(long timeStamp, float w, float x, float y, float z, float gyroX, float gyroY, float gyroZ) {
 		if (mCurrentSensor == SensorType.INTERNAL) {
 			update(timeStamp, w, x, y, z, gyroX, gyroY, gyroZ);
 			mListener.onRotationSensor(timeStamp, w, x, y, z, gyroX, gyroY, gyroZ);
