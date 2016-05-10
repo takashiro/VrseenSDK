@@ -123,7 +123,7 @@ public:
     menuHandle_t			handleForId( OvrVRMenuMgr & menuMgr, VRMenuId_t const id ) const;
 
     const VString &name() const { return m_name; }
-    bool                    isMenu( char const * menuName ) const { return strcasecmp( m_name.toCString(), menuName ) == 0; }
+    bool isMenu(const VString &menuName) const { return m_name.icompare(menuName) == 0; }
 
 	// Use an arbitrary view matrix. This is used when updating the menus and passing the current matrix
     void					repositionMenu( App * app, VR4Matrixf const & viewMatrix );
