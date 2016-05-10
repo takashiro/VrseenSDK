@@ -26,7 +26,7 @@ struct OvrPhotosMetaDatum: public OvrMetaDatum {
     VString author;
     VString title;
 
-	OvrPhotosMetaDatum(const VString& url);
+    OvrPhotosMetaDatum(const VString &url);
 };
 
 //==============================================================

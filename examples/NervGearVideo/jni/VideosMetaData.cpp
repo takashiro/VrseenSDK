@@ -40,7 +40,7 @@ void OvrVideosMetaData::extractExtendedData( const VJson &jsonDatum, OvrMetaDatu
 
 		if ( videoData->Title.isEmpty() )
 		{
-            videoData->Title = VPath(datum.url).baseName();
+            videoData->Title = datum.url.baseName();
 		}
 
 		if ( videoData->Author.isEmpty() )

@@ -12,7 +12,7 @@ struct OvrMetaDatum
 {
     int id;
     VArray<VString> tags;
-    VString	url;
+    VPath url;
 
 protected:
 	OvrMetaDatum() {}
