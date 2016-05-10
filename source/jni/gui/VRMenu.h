@@ -122,7 +122,7 @@ public:
 
     menuHandle_t			handleForId( OvrVRMenuMgr & menuMgr, VRMenuId_t const id ) const;
 
-    char const *			name() const { return m_name.toCString(); }
+    const VString &name() const { return m_name; }
     bool                    isMenu( char const * menuName ) const { return strcasecmp( m_name.toCString(), menuName ) == 0; }
 
 	// Use an arbitrary view matrix. This is used when updating the menus and passing the current matrix
