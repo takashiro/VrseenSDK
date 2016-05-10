@@ -67,13 +67,9 @@ unsigned char * CubeMapVista( const char * nzName, float const ratio, int & widt
     VString nxName( nzName );
     nxName[len - 5] = 'x';
 
-    const char *pxNameStr = pxName.toCString();
-    const char *nxNameStr = nxName.toCString();
 	nzData = TurboJpegLoadFromFile( nzName, &faceWidth, &faceHeight );
-    pxData = TurboJpegLoadFromFile( pxNameStr, &faceWidth2, &faceHeight2 );
-    nxData = TurboJpegLoadFromFile( nxNameStr, &faceWidth3, &faceHeight3 );
-    delete[] pxNameStr;
-    delete[] nxNameStr;
+    pxData = TurboJpegLoadFromFile( pxName.toUtf8().data(), &faceWidth2, &faceHeight2 );
+    nxData = TurboJpegLoadFromFile( nxName.toUtf8().data(), &faceWidth3, &faceHeight3 );
 
 	if ( nzData && pxData && nxData && ( faceWidth & 1 ) == 0 && faceWidth == faceHeight
 		&& faceWidth2 == faceWidth && faceHeight2 == faceHeight
@@ -154,7 +150,7 @@ VString PanoBrowser::getPanelTitle( const OvrMetaDatum & panelData ) const
 	{
 		// look first in our own locale table for titles that were downloaded at run-time.
 		VString outStr;
-        VrLocale::GetString(  m_app->vrJni(), m_app->javaObject(), photosDatum->title.toCString(), photosDatum->title.toCString(), outStr );
+        VrLocale::GetString(m_app->vrJni(), m_app->javaObject(), photosDatum->title, photosDatum->title, outStr );
 		return outStr;
 	}
 	return VString();

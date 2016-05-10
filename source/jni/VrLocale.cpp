@@ -10,7 +10,7 @@ char const *	VrLocale::LOCALIZED_KEY_PREFIX = "@string/";
 size_t			VrLocale::LOCALIZED_KEY_PREFIX_LEN = strlen( LOCALIZED_KEY_PREFIX );
 jclass			VrLocale::VrActivityClass;
 
-bool VrLocale::GetString( JNIEnv* jni, jobject activityObject, char const * key, char const * defaultOut, VString & out )
+bool VrLocale::GetString(JNIEnv *jni, jobject activityObject, const VString &key, const VString &defaultOut, VString &out)
 {
     if (jni == NULL) {
         vWarn("vAssert jni = NULL!");
@@ -22,14 +22,13 @@ bool VrLocale::GetString( JNIEnv* jni, jobject activityObject, char const * key,
 	//vInfo("Localizing key '" << key << "'");
 	// if the key doesn't start with KEY_PREFIX then it's not a valid key, just return
 	// the key itself as the output text.
-	if ( strstr( key, LOCALIZED_KEY_PREFIX ) != key )
-	{
+    if (!key.startsWith(LOCALIZED_KEY_PREFIX)) {
 		out = defaultOut;
         vInfo("no prefix, localized to '%s'" << out);
 		return true;
 	}
 
-	char const * realKey = key + LOCALIZED_KEY_PREFIX_LEN;
+    const VString realKey = key + LOCALIZED_KEY_PREFIX_LEN;
 
     jmethodID const getLocalizedStringId = JniUtils::GetMethodID( jni, VrActivityClass, "getLocalizedString", "(Ljava/lang/String;)Ljava/lang/String;" );
 	if ( getLocalizedStringId != NULL )

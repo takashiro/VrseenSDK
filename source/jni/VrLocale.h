@@ -14,7 +14,7 @@ public:
 	static size_t		LOCALIZED_KEY_PREFIX_LEN;
 
 	// Get's a localized UTF-8-encoded string from the string table.
-	static bool 	GetString( JNIEnv* jni, jobject activityObject, char const * key, char const * defaultOut, VString & out );
+    static bool 	GetString(JNIEnv* jni, jobject activityObject, const VString &key, const VString &defaultOut, VString & out );
 
 	// Takes an ANSI string and returns an identifier that can be used as an Android string id.
     static VString	MakeStringId(const VString &str);
