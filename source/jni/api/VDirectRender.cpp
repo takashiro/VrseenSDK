@@ -295,7 +295,7 @@ void DirectRender::initForCurrentSurface( JNIEnv * jni, bool wantFrontBuffer_,in
         m_gvrFrontbufferExtension = m_surfaceManager.setFrontBuffer( windowSurface, m_wantFrontBuffer );
 
         if(m_gvrFrontbufferExtension) vInfo( "Running with front buffer")
-        vInfo( "Running without front buffer");
+        else vInfo( "Running without front buffer");
 
         if ( ( gpuType & VEglDriver::GpuType::GPU_TYPE_MALI ) != 0 )
         {

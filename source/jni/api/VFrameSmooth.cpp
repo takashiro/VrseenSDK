@@ -474,13 +474,6 @@ struct VFrameSmooth::Private
     void			bindCursorProgram() const;
     void            bindEyeTextures( const int eye );
 
-    int                m_window_width;
-    int                m_window_height;
-    EGLDisplay			m_window_display;
-    EGLSurface			m_window_surface;
-
-
-
     bool			m_hasEXT_sRGB_write_control;
 
 
@@ -1726,9 +1719,11 @@ void VFrameSmooth::Private::drawFrameworkGraphicsToWindow( const int eye,
         VEglDriver::glBindVertexArrayOES( m_calibrationLines2.vertexArrayObject );
 
 
-        glViewport( m_window_width/2 * (int)eye, 0, m_window_width/2, m_window_height );
+        int width, height;
+        m_screen.getScreenResolution( width, height );
+        glViewport( width/2 * (int)eye, 0, width/2, height );
         glDrawElements( GL_LINES, m_calibrationLines2.indexCount, GL_UNSIGNED_SHORT, NULL );
-        glViewport( 0, 0, m_window_width, m_window_height );
+        glViewport( 0, 0, width, height );
     }
 }
 

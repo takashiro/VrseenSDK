@@ -733,10 +733,11 @@ struct App::Private
                 attribs[numAttribs++] = EGL_PROTECTED_CONTENT_EXT;
                 attribs[numAttribs++] = EGL_TRUE;
             }
-            attribs[numAttribs++] = EGL_RENDER_BUFFER;
 
             //use single buffer
+            attribs[numAttribs++] = EGL_RENDER_BUFFER;
             attribs[numAttribs++] = EGL_SINGLE_BUFFER;
+
             attribs[numAttribs++] = EGL_NONE;
 
             // Android doesn't let the non-standard extensions show up in the
@@ -748,6 +749,7 @@ struct App::Private
             {
                 const EGLint attribs2[] =
                 {
+                        //use single buffer
                         EGL_RENDER_BUFFER, EGL_SINGLE_BUFFER,
                         EGL_NONE
                 };
