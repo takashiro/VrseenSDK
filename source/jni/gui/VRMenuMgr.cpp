@@ -830,7 +830,7 @@ void VRMenuMgrLocal::SubmitForRenderingRecursive( OvrDebugLines & debugLines, Bi
 		if ( obj->surfaces().length() > 0 )
 		{
 			fontSurface.DrawTextBillboarded3D( font, fp, curModelPose.Position, 0.5f,
-                    V4Vectf( 0.8f, 0.8f, 0.8f, 1.0f ), obj->surfaces()[0].name().toCString() );
+                    V4Vectf( 0.8f, 0.8f, 0.8f, 1.0f ), obj->surfaces()[0].name());
 		}
 	}
 }

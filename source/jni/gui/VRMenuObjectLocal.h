@@ -48,7 +48,7 @@ class VRMenuSurfaceTexture
 public:
 	VRMenuSurfaceTexture();
 
-    bool	loadTexture( eSurfaceTextureType const type, char const * imageName, bool const allowDefault );
+    bool	loadTexture(eSurfaceTextureType const type, const VString &imageName, bool const allowDefault );
     void 	loadTexture( eSurfaceTextureType const type, const GLuint texId, const int width, const int height );
     void	free();
     void	setOwnership( const bool isOwner )	{ m_ownsTexture = isOwner; }
@@ -246,7 +246,7 @@ public:
 
     virtual VString const &	text() const { return m_text; }
     void setText(const VString &text) override { m_text = text; m_textDirty = true; }
-    virtual void				setTextWordWrapped( char const * text, class BitmapFont const & font, float const widthInMeters );
+    virtual void				setTextWordWrapped(const VString &text, class BitmapFont const & font, float const widthInMeters );
 
     virtual bool				isHilighted() const { return m_hilighted; }
     virtual void				setHilighted( bool const b ) { m_hilighted = b; }

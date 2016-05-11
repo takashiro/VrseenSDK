@@ -1,12 +1,15 @@
-#include <dirent.h>
 #include "ModelManager.h"
 #include "CinemaApp.h"
-#include "core/VTimer.h"
-#include <VPath.h>
+
+#include <dirent.h>
 #include <fstream>
+
+#include <VTimer.h>
+#include <VPath.h>
 #include <VApkFile.h>
-#include "VImageManager.h"
-#include "VOpenGLTexture.h"
+#include <VDir.h>
+#include <VImageManager.h>
+#include <VOpenGLTexture.h>
 
 namespace OculusCinema {
 
@@ -65,7 +68,7 @@ void ModelManager::LoadModels()
 
     if ( LaunchIntent.length() > 0 )
 	{
-        Theaters.append( LoadScene( LaunchIntent.toCString(), true, true, false ) );
+        Theaters.append( LoadScene(LaunchIntent, true, true, false ) );
 	}
 	else
 	{
@@ -101,28 +104,19 @@ void ModelManager::LoadModels()
 
 void ModelManager::ScanDirectoryForScenes(const VString &directory, bool useDynamicProgram, bool useScreenGeometry, VArray<SceneDef *> &scenes ) const
 {
-    DIR * dir = opendir( directory.toCString() );
-	if ( dir != NULL )
-	{
-		struct dirent * entry;
-		while( ( entry = readdir( dir ) ) != NULL ) {
-			VString filename = entry->d_name;
-            VString ext = VPath(filename).extension().toLower();
-            if ( ( ext == "ovrscene" ) )
-			{
-				VString fullpath = directory;
-                fullpath.append( "/" );
-                fullpath.append( filename );
-                SceneDef *def = LoadScene( fullpath.toCString(), useDynamicProgram, useScreenGeometry, false );
-                scenes.append( def );
-			}
-		}
-
-		closedir( dir );
-	}
+    VDir dir(directory);
+    VArray<VString> entryList = dir.entryList();
+    for (const VString &fileName : entryList) {
+        VString ext = VPath(fileName).extension().toLower();
+        if (ext == "ovrscene") {
+            VString fullpath = directory + u'/' + fileName;
+            SceneDef *def = LoadScene(fullpath, useDynamicProgram, useScreenGeometry, false);
+            scenes.append(def);
+        }
+    }
 }
 
-SceneDef * ModelManager::LoadScene( const char *sceneFilename, bool useDynamicProgram, bool useScreenGeometry, bool loadFromApplicationPackage ) const
+SceneDef * ModelManager::LoadScene(const VString &sceneFilename, bool useDynamicProgram, bool useScreenGeometry, bool loadFromApplicationPackage ) const
 {
 	VString filename;
 
@@ -138,15 +132,15 @@ SceneDef * ModelManager::LoadScene( const char *sceneFilename, bool useDynamicPr
 	{
 		filename = sceneFilename;
 	}
-	else if ( ( sceneFilename != NULL ) && ( *sceneFilename == '/' ) ) 	// intent will have full path for scene file, so check for /
+    else if ( ( sceneFilename != NULL ) && (sceneFilename[0] == '/' ) ) 	// intent will have full path for scene file, so check for /
 	{
 		filename = sceneFilename;
 	}
-	else if ( Cinema.fileExists( Cinema.externalRetailDir( sceneFilename ) ) )
+    else if (VFile::Exists(Cinema.externalRetailDir(sceneFilename)))
 	{
-		filename = Cinema.externalRetailDir( sceneFilename );
+        filename = Cinema.externalRetailDir(sceneFilename);
 	}
-	else if ( Cinema.fileExists( Cinema.retailDir( sceneFilename ) ) )
+    else if (VFile::Exists(Cinema.retailDir(sceneFilename)))
 	{
 		filename = Cinema.retailDir( sceneFilename );
 	}

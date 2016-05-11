@@ -5,61 +5,37 @@
  *      Author: yangkai
  */
 #pragma once
-#include <atomic>
 #include "vglobal.h"
-using namespace std;
+
+#include <atomic>
+
 NV_NAMESPACE_BEGIN
-class VAtomicInt : public atomic<int>
+
+class VAtomicInt : public std::atomic<int>
 {
 public:
     typedef int Type;
-    inline VAtomicInt() : atomic<Type>()
-    {
+    inline VAtomicInt() : atomic<Type>() {}
 
-    }
-    explicit inline VAtomicInt(Type value) : atomic<Type>(value)
-    {
+    explicit inline VAtomicInt(Type value) : atomic<Type>(value) {}
 
-    }
-    inline VAtomicInt(const VAtomicInt &src) : atomic<Type>()
-    {
-        store(src.load());
-    }
-    inline Type exchangeAddSync(Type value)
-    {
-        return fetch_add(value);
-    }
-    inline Type exchangeAddRelease(Type value)
-    {
-        return fetch_add(value);
-    }
-    inline Type exchangeAddAcquire(Type value)
-    {
-        return fetch_add(value);
-    }
-    inline Type exchangeAddNoSync(Type value)
-    {
-        return fetch_add(value);
-    }
-    inline void incrementSync()
-    {
-        (*this)++;
-    }
+    inline VAtomicInt(const VAtomicInt &src) : atomic<Type>() { store(src.load()); }
 
-    inline void incrementRelease()
-    {
-        (*this)++;
-    }
+    inline Type exchangeAddSync(Type value) { return fetch_add(value); }
 
-    inline void incrementAcquire()
-    {
-        (*this)++;
-    }
+    inline Type exchangeAddRelease(Type value) { return fetch_add(value); }
 
-    inline void incrementNoSync()
-    {
-        (*this)++;
-    }
+    inline Type exchangeAddAcquire(Type value) { return fetch_add(value); }
+
+    inline Type exchangeAddNoSync(Type value) { return fetch_add(value); }
+
+    inline void incrementSync() { operator++(); }
+
+    inline void incrementRelease() { operator++(); }
+
+    inline void incrementAcquire() { operator++(); }
+
+    inline void incrementNoSync() { operator++(); }
 
     Type operator *= (Type argument);
 
@@ -73,4 +49,5 @@ public:
 
     VAtomicInt operator & (Type argument);
 };
+
 NV_NAMESPACE_END

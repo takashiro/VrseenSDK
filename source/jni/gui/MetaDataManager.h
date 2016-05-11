@@ -12,7 +12,7 @@ struct OvrMetaDatum
 {
     int id;
     VArray<VString> tags;
-    VString	url;
+    VPath url;
 
 protected:
 	OvrMetaDatum() {}
@@ -52,7 +52,7 @@ public:
 	virtual ~OvrMetaData() {}
 
 	// Init meta data from contents on disk
-    void					initFromDirectory( const char * relativePath, const VArray< VString > & searchPaths, const OvrMetaDataFileExtensions & fileExtensions );
+    void					initFromDirectory(const VString &relativePath, const VArray< VString > & searchPaths, const OvrMetaDataFileExtensions & fileExtensions );
 
 	// Init meta data from a passed in list of files
     void					initFromFileList( const VArray< VString > & fileList, const OvrMetaDataFileExtensions & fileExtensions );
@@ -86,7 +86,7 @@ public:
 
 protected:
 	// Overload to fill extended data during initialization
-    virtual OvrMetaDatum *	createMetaDatum( const char* fileName ) const = 0;
+    virtual OvrMetaDatum *	createMetaDatum(const VString &fileName) const = 0;
     virtual	void			extractExtendedData( const VJson &jsonDatum, OvrMetaDatum & outDatum ) const = 0;
     virtual	void			extendedDataToJson( const OvrMetaDatum & datum, VJsonObject &outDatumObject ) const = 0;
     virtual void			swapExtendedData( OvrMetaDatum * left, OvrMetaDatum * right ) const = 0;
@@ -106,7 +106,7 @@ private:
 
     VJson			metaDataToJson() const;
     void					writeMetaFile( const char * metaFile ) const;
-    bool 					shouldAddFile( const char * filename, const OvrMetaDataFileExtensions & fileExtensions ) const;
+    bool shouldAddFile(const VString &filename, const OvrMetaDataFileExtensions & fileExtensions ) const;
     void					extractVersion(const VJsonObject &dataFile, double & outVersion ) const;
     void					extractCategories(const VJsonObject &dataFile, VArray< Category > & outCategories ) const;
     void					extractMetaData(const VJsonObject &dataFile, const VArray< VString > & searchPaths, VStringHash< OvrMetaDatum * > & outMetaData ) const;

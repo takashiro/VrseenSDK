@@ -132,15 +132,15 @@ bool Native::CreateVideoThumbnail(const VString &videoFilePath, const VString &o
 	return result;
 }
 
-bool Native::CheckForMovieResume( App *app, const char * movieName )
+bool Native::CheckForMovieResume(const VString &movieName)
 {
 	vInfo("CheckForMovieResume(" << movieName << ")");
 
-	jstring jstrMovieName = app->vrJni()->NewStringUTF( movieName );
+    jstring jstrMovieName = JniUtils::Convert(vApp->vrJni(), movieName);
 
-	jboolean result = app->vrJni()->CallBooleanMethod( app->javaObject(), checkForMovieResumeId, jstrMovieName );
+    jboolean result = vApp->vrJni()->CallBooleanMethod( vApp->javaObject(), checkForMovieResumeId, jstrMovieName );
 
-	app->vrJni()->DeleteLocalRef( jstrMovieName );
+    vApp->vrJni()->DeleteLocalRef( jstrMovieName );
 
 	return result;
 }
@@ -187,15 +187,15 @@ void Native::SeekDelta( App *app, int deltaMS )
 	app->vrJni()->CallVoidMethod( app->javaObject(), seekDeltaMethodId, deltaMS );
 }
 
-void Native::StartMovie( App *app, const char * movieName, bool resumePlayback, bool isEncrypted, bool loop )
+void Native::StartMovie(const VString &movieName, bool resumePlayback, bool isEncrypted, bool loop )
 {
 	vInfo("StartMovie(" << movieName << ")");
 
-	jstring jstrMovieName = app->vrJni()->NewStringUTF( movieName );
+    jstring jstrMovieName = JniUtils::Convert(vApp->vrJni(), movieName);
 
-	app->vrJni()->CallVoidMethod( app->javaObject(), startMovieMethodId, jstrMovieName, resumePlayback, isEncrypted, loop );
+    vApp->vrJni()->CallVoidMethod( vApp->javaObject(), startMovieMethodId, jstrMovieName, resumePlayback, isEncrypted, loop );
 
-	app->vrJni()->DeleteLocalRef( jstrMovieName );
+    vApp->vrJni()->DeleteLocalRef( jstrMovieName );
 }
 
 void Native::PauseMovie( App *app )

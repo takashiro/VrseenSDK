@@ -246,12 +246,9 @@ public:
             const V3Vectf & pos, V3Vectf const & normal, V3Vectf const & up,
             float const scale, V4Vectf const & color, const char *text, ...) override;
 
-	virtual void DrawTextBillboarded3D(BitmapFont const & font,
+    virtual void DrawTextBillboarded3D(BitmapFont const & font,
             fontParms_t const & flags, V3Vectf const & pos, float const scale,
-            V4Vectf const & color, char const * text);
-	virtual void DrawTextBillboarded3Df(BitmapFont const & font,
-            fontParms_t const & flags, V3Vectf const & pos, float const scale,
-            V4Vectf const & color, char const * fmt, ...);
+            V4Vectf const & color, const VString &text);
 
 	// transform the billboarded font strings
     virtual void Finish(VR4Matrixf const & viewMatrix);
@@ -1320,24 +1317,11 @@ void BitmapFontSurfaceLocal::DrawText3Df(BitmapFont const & font,
 // BitmapFontSurfaceLocal::DrawTextBillboarded3D
 void BitmapFontSurfaceLocal::DrawTextBillboarded3D(BitmapFont const & font,
         fontParms_t const & parms, V3Vectf const & pos, float const scale,
-        V4Vectf const & color, char const * text) {
+        V4Vectf const & color, const VString &text) {
 	fontParms_t billboardParms = parms;
 	billboardParms.Billboard = true;
     DrawText3D(font, billboardParms, pos, V3Vectf(1.0f, 0.0f, 0.0f),
             V3Vectf(0.0f, -1.0f, 0.0f), scale, color, text);
-}
-
-//==============================
-// BitmapFontSurfaceLocal::DrawTextBillboarded3Df
-void BitmapFontSurfaceLocal::DrawTextBillboarded3Df(BitmapFont const & font,
-        fontParms_t const & parms, V3Vectf const & pos, float const scale,
-        V4Vectf const & color, char const * fmt, ...) {
-	char buffer[256];
-	va_list args;
-	va_start( args, fmt);
-	vsnprintf(buffer, sizeof(buffer), fmt, args);
-	va_end( args);
-	DrawTextBillboarded3D(font, parms, pos, scale, color, buffer);
 }
 
 //==============================================================

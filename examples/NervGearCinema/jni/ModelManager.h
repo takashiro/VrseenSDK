@@ -65,7 +65,7 @@ public:
 private:
 	void 				LoadModels();
     void 				ScanDirectoryForScenes(const VString &directory, bool useDynamicProgram, bool useScreenGeometry, VArray<SceneDef *> &scenes ) const;
-	SceneDef *			LoadScene( const char *filename, bool useDynamicProgram, bool useScreenGeometry, bool loadFromApplicationPackage ) const;
+	SceneDef *			LoadScene(const VString &filename, bool useDynamicProgram, bool useScreenGeometry, bool loadFromApplicationPackage ) const;
 };
 
 } // namespace OculusCinema

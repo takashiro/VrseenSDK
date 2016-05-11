@@ -10,8 +10,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 *************************************************************************************/
 package com.vrseen.nervgear;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -24,14 +22,12 @@ import android.app.IVRManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.AssetFileDescriptor;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.pm.ApplicationInfo;
 import android.graphics.Canvas;
 import android.graphics.SurfaceTexture;
 import android.media.AudioManager;
-import android.media.SoundPool;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -81,57 +77,16 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 	//
 	// This is set by the subclass in onCreate
 	// appPtr = nativeSetAppInterface( this, ... );
-
-	// For trivial feedback sound effects
-	SoundPool soundPool;
-	List<Integer> soundPoolSoundIds;
-	List<String> soundPoolSoundNames;
 	
     private VrseenDeviceManager mVrseenDeviceManager = null;
     private IVRManager mVrService = null;
-	
-	public void playSoundPoolSound(String name) {
-		for (int i = 0; i < soundPoolSoundNames.size(); i++) {
-			if (soundPoolSoundNames.get(i).equals(name)) {
-				soundPool.play(soundPoolSoundIds.get(i), 1.0f, 1.0f, 1, 0, 1);
-				return;
-			}
-		}
-
-		Log.d(TAG, "playSoundPoolSound: loading " + name);
-
-		// check first if this is a raw resource
-		int soundId = 0;
-		if (name.indexOf("res/raw/") == 0) {
-			String resourceName = name.substring(4, name.length() - 4);
-			int id = getResources().getIdentifier(resourceName, "raw", getPackageName());
-			if (id == 0) {
-				Log.e(TAG, "No resource named " + resourceName);
-			} else {
-				AssetFileDescriptor afd = getResources().openRawResourceFd(id);
-				soundId = soundPool.load(afd, 1);
-			}
-		} else {
-			try {
-				AssetFileDescriptor afd = getAssets().openFd(name);
-				soundId = soundPool.load(afd, 1);
-			} catch (IOException t) {
-				Log.e(TAG, "Couldn't open " + name + " because " + t.getMessage());
-			}
-		}
-
-		if (soundId == 0) {
-			// Try to load the sound directly - works for absolute path - for
-			// wav files for sdcard for ex.
-			soundId = soundPool.load(name, 1);
-		}
-
-		soundPoolSoundNames.add(name);
-		soundPoolSoundIds.add(soundId);
-
-		soundPool.play(soundPoolSoundIds.get(soundPoolSoundNames.size() - 1), 1.0f, 1.0f, 1, 0, 1);
-	}
-
+    private SoundManager mSoundManager = null;
+    
+    //TODO Remove the function
+    public void playSoundPoolSound(String name) {
+    	mSoundManager.playSoundPoolSound(name);
+    }
+    
 	@Override
 	public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
 		Log.d(TAG, this + " surfaceChanged() format: " + format + " width: " + width + " height: " + height);
@@ -414,10 +369,6 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 		// prevent nativeSurfaceDestroyed from trying to use appPtr after the
 		// AppLocal it's pointing to has been freed.
 		nativeDestroy();
-
-		soundPool.release();
-		soundPoolSoundIds.clear();
-		soundPoolSoundNames.clear();
 	}
 
 	@Override
@@ -439,10 +390,8 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 
 		VrLib.setCurrentLanguage(Locale.getDefault().getLanguage());
 
-		// Create the SoundPool
-		soundPool = new SoundPool(3 /* voices */, AudioManager.STREAM_MUSIC, 100);
-		soundPoolSoundIds = new ArrayList<Integer>();
-		soundPoolSoundNames = new ArrayList<String>();
+		// Create the Sound Manager
+		mSoundManager = new SoundManager(this);
 
 		AudioManager audioMgr;
 		audioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);

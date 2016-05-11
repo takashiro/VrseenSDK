@@ -147,7 +147,7 @@ protected:
 	// Subclass protected interface
 
 	// Called from the base class when building a cateory.
-    virtual VString				getCategoryTitle( char const * key, char const * defaultStr ) const = 0;
+    virtual VString				getCategoryTitle(const VString &key, const VString &defaultStr ) const = 0;
 
 	// Called from the base class when building a panel
     virtual VString				getPanelTitle( const OvrMetaDatum & panelData ) const = 0;
@@ -158,7 +158,7 @@ protected:
 	// Called on a background thread
 	// The returned memory buffer will be free()'d after writing the thumbnail.
 	// Return NULL if the thumbnail couldn't be created.
-    virtual unsigned char *		createAndCacheThumbnail( const char * soureFile, const char * cacheDestinationFile, int & outWidth, int & outHeight ) = 0;
+    virtual unsigned char *createAndCacheThumbnail(const VString &soureFile, const VString &cacheDestinationFile, int & outWidth, int & outHeight ) = 0;
 
 	// Called on a background thread to load thumbnail
     virtual	unsigned char *		loadThumbnail( const char * filename, int & width, int & height ) = 0;
@@ -257,7 +257,7 @@ private:
 	{
         VString sourceImagePath;
         VString thumbDestination;
-        VString loadCmd;
+        VVariantArray loadCmd;
 	};
     VArray< OvrCreateThumbCmd > m_thumbCreateAndLoadCommands;
     VEventLoop		m_backgroundCommands;

@@ -129,6 +129,64 @@ void ovr_OnLoad(JavaVM * JavaVm_, JNIEnv *jni)
 }
 NV_REGISTER_JNI_LOADER(ovr_OnLoad)
 
+enum {
+    LEVEL_GPU_MIN = 0,
+    LEVEL_GPU_MAX,
+    LEVEL_CPU_MIN,
+    LEVEL_CPU_MAX
+};
+
+static void SetVrSystemPerformance(JNIEnv * VrJni, jclass vrActivityClass, int cpuLevel, int gpuLevel)
+{
+    // Clear any previous exceptions.
+    // NOTE: This can be removed once security exception handling is moved to
+    // Java IF.
+    if (VrJni->ExceptionOccurred()) {
+        VrJni->ExceptionClear();
+        vWarn("SetVrSystemPerformance: Enter: JNI Exception occurred");
+    }
+
+    vInfo("SetVrSystemPerformance:" << cpuLevel << gpuLevel);
+
+    // Get the available clock levels for the device.
+    const jmethodID getAvailableClockLevelsId = JniUtils::GetStaticMethodID(VrJni, vrActivityClass, "getAvailableFreqLevels", "(Landroid/app/Activity;)[I");
+    jintArray jintLevels = (jintArray) VrJni->CallStaticObjectMethod(vrActivityClass, getAvailableClockLevelsId, ActivityObject);
+
+    // Move security exception detection to the java IF.
+    // Catch Permission denied
+    if ( VrJni->ExceptionOccurred() ) {
+        VrJni->ExceptionClear();
+        vInfo("SetVrSystemPerformance: JNI Exception occurred, returning");
+        return;
+    }
+
+    vAssert(VrJni->GetArrayLength(jintLevels) == 4);		// {GPU MIN, GPU MAX, CPU MIN, CPU MAX}
+
+    jint * levels = VrJni->GetIntArrayElements(jintLevels, NULL);
+    if (levels != NULL) {
+        // Verify levels are within appropriate range for the device
+        if (cpuLevel < levels[LEVEL_CPU_MIN]) {
+            cpuLevel = levels[LEVEL_CPU_MIN];
+        } else if (cpuLevel > levels[LEVEL_CPU_MAX]) {
+            cpuLevel = levels[LEVEL_CPU_MAX];
+        }
+        if (gpuLevel < levels[LEVEL_GPU_MIN]) {
+            gpuLevel = levels[LEVEL_GPU_MIN];
+        } else if (gpuLevel > levels[LEVEL_GPU_MAX]) {
+            gpuLevel = levels[LEVEL_GPU_MAX];
+        }
+
+        VrJni->ReleaseIntArrayElements(jintLevels, levels, 0);
+    }
+    VrJni->DeleteLocalRef(jintLevels);
+
+    // Set the fixed cpu and gpu clock levels
+    const jmethodID setSystemPerformanceId = JniUtils::GetStaticMethodID(VrJni, vrActivityClass, "setSystemPerformanceStatic", "(Landroid/app/Activity;II)[I");
+    jintArray jintClocks = (jintArray) VrJni->CallStaticObjectMethod(vrActivityClass, setSystemPerformanceId, ActivityObject, cpuLevel, gpuLevel);
+
+    vAssert(VrJni->GetArrayLength(jintClocks) == 4);		//  {CPU CLOCK, GPU CLOCK, POWERSAVE CPU CLOCK, POWERSAVE GPU CLOCK}
+}
+
 class VKernelModule : public VModule
 {
 public:
@@ -297,19 +355,25 @@ void VKernel::run()
     jstring externalStorageDirectoryString = (jstring)Jni->CallStaticObjectMethod( VrLibClass, getExternalStorageDirectoryMethodId );
     Jni->DeleteLocalRef(externalStorageDirectoryString);
 
+    //TODO: CPU Level and GPU Level should be read from a config file
+    SetVrSystemPerformance(Jni, VrLibClass, 2, 2);
+
     if ( Jni->ExceptionOccurred() )
     {
         Jni->ExceptionClear();
         vInfo("Cleared JNI exception");
     }
 
-    frameSmooth = new VFrameSmooth(asyncSmooth,device);
+    frameSmooth = new VFrameSmooth(asyncSmooth, device);
+
+    jmethodID setSchedFifoId = JniUtils::GetStaticMethodID(Jni, VrLibClass, "setSchedFifoStatic", "(Landroid/app/Activity;II)I");
+    Jni->CallStaticIntMethod(VrLibClass, setSchedFifoId, ActivityObject, gettid(), 1);
+    Jni->CallStaticIntMethod(VrLibClass, setSchedFifoId, ActivityObject, frameSmooth->threadId(), 3);
 
     if ( setActivityWindowFullscreenID != NULL)
     {
         Jni->CallStaticVoidMethod( VrLibClass, setActivityWindowFullscreenID, ActivityObject );
     }
-
 }
 
 void VKernel::exit()

@@ -21,7 +21,6 @@ SOURCES += \
     jni/core/VAtomicInt.cpp \
     jni/core/VByteArray.cpp \
     jni/core/VChar.cpp \
-    jni/core/VDir.cpp \
     jni/core/VEventLoop.cpp \
     jni/core/VJson.cpp \
     jni/core/VLog.cpp \
@@ -29,7 +28,6 @@ SOURCES += \
     jni/core/VModule.cpp \
     jni/core/VPath.cpp \
     jni/core/VSignal.cpp \
-    jni/core/VStandardPath.cpp \
     jni/core/VString.cpp \
     jni/core/VThread.cpp \
     jni/core/VTimer.cpp \
@@ -83,6 +81,8 @@ SOURCES += \
     jni/io/VBinaryFile.cpp \
     jni/io/VFileOperation.cpp \
     jni/io/VSysFile.cpp \
+    jni/io/VDir.cpp \
+    jni/io/VStandardPath.cpp \
     jni/media/VSoundManager.cpp \
     jni/scene/VItem.cpp \
     jni/scene/VScene.cpp \
@@ -128,7 +128,6 @@ HEADERS += \
     jni/core/VChar.h \
     jni/core/VCircularQueue.h \
     jni/core/VDeque.h \
-    jni/core/VDir.h \
     jni/core/VEvent.h \
     jni/core/VEventLoop.h \
     jni/core/VFlags.h \
@@ -145,7 +144,6 @@ HEADERS += \
     jni/core/VRect.h \
     jni/core/VSignal.h \
     jni/core/VSize.h \
-    jni/core/VStandardPath.h \
     jni/core/VString.h \
     jni/core/VStringHash.h \
     jni/core/String_FormatUtil.h \
@@ -216,6 +214,8 @@ HEADERS += \
     jni/io/VDelegatedFile.h \
     jni/io/VFileOperation.h \
     jni/io/VSysFile.h \
+    jni/io/VDir.h \
+    jni/io/VStandardPath.h \
     jni/media/VSoundManager.h \
     jni/scene/VItem.h \
     jni/scene/VScene.h \

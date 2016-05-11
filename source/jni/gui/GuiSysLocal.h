@@ -37,7 +37,7 @@ public:
     virtual void            addMenu( VRMenu * menu );
 	virtual VRMenu *		getMenu( char const * menuName ) const;
 	virtual void			destroyMenu( OvrVRMenuMgr & menuMgr, VRMenu * menu );
-    virtual void			openMenu( App * app, OvrGazeCursor & gazeCursor, char const * menuName );
+    virtual void			openMenu(App * app, OvrGazeCursor & gazeCursor, const VString &menuName );
 	virtual void			closeMenu( App * app, char const * menuName, bool const closeInstantly );
 	virtual void			closeMenu( App * app, VRMenu * menu, bool const closeInstantly );
 	virtual bool			isMenuActive( char const * menuName ) const;
@@ -55,10 +55,10 @@ private:
     gazeCursorUserId_t		GazeUserId;			// user id for the gaze cursor
 
 private:
-    int                     FindMenuIndex( char const * menuName ) const;
+    int                     FindMenuIndex(const VString &menuName ) const;
 	int						FindMenuIndex( VRMenu const * menu ) const;
 	int						FindActiveMenuIndex( VRMenu const * menu ) const;
-	int						FindActiveMenuIndex( char const * menuName ) const;
+    int						FindActiveMenuIndex(const VString &menuName ) const;
 	void					MakeActive( VRMenu * menu );
 	void					MakeInactive( VRMenu * menu );
 

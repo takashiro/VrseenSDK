@@ -87,7 +87,7 @@ private:
     bool pollSensor(KTrackerSensorZip* data,uint8_t  *buffer);
     void process(KTrackerSensorZip* data);
     void updateQ(KTrackerMessage *msg);
-    V3Vect<float> gyrocorrect(const V3Vect<float> &gyro, const V3Vect<float> &accel, const float DeltaT);
+    V3Vect<float> gyrocorrect(const V3Vectf &gyro, const V3Vectf &accel, const float DeltaT);
 
 private:
     VRotationState m_state;
@@ -381,8 +381,8 @@ void USensor::process(KTrackerSensorZip* data) {
 
 void USensor::updateQ(KTrackerMessage *msg) {
     // Put the sensor readings into convenient local variables
-    V3Vect<float> gyro = msg->RotationRate;
-    V3Vect<float> accel = msg->Acceleration;
+    V3Vectf gyro = msg->RotationRate;
+    V3Vectf accel = msg->Acceleration;
     const float DeltaT = msg->TimeDelta;
     m_state.gyro = gyrocorrect(gyro, accel, DeltaT);
 
@@ -390,7 +390,7 @@ void USensor::updateQ(KTrackerMessage *msg) {
     float gyro_length = m_state.gyro.Length();
     if (gyro_length != 0.0f) {
         float angle = gyro_length * DeltaT;
-        VQuatf q = m_state * VQuat<float>(m_state.gyro.Normalized() * sin(angle * 0.5f), angle);
+        VQuatf q = m_state * VQuatf(m_state.gyro.Normalized() * sin(angle * 0.5f), angle);
         m_state.w = q.w;
         m_state.x = q.x;
         m_state.y = q.y;
@@ -405,11 +405,11 @@ void USensor::updateQ(KTrackerMessage *msg) {
     }
 }
 
-V3Vect<float> USensor::gyrocorrect(const V3Vect<float> &gyro, const V3Vect<float> &accel, const float DeltaT) {
+V3Vect<float> USensor::gyrocorrect(const V3Vectf &gyro, const V3Vectf &accel, const float DeltaT) {
     // Small preprocessing
-    VQuat<float> Qinv = m_state.Inverted();
-    V3Vect<float> up = Qinv.Rotate(V3Vect<float>(0, 1, 0));
-    V3Vect<float> gyroCorrected = gyro;
+    VQuatf Qinv = m_state.Inverted();
+    V3Vectf up = Qinv.Rotate(V3Vectf(0, 1, 0));
+    V3Vectf gyroCorrected = gyro;
 
     bool EnableGravity = true;
     bool valid_accel = accel.Length() > 0.001f;
@@ -421,13 +421,12 @@ V3Vect<float> USensor::gyrocorrect(const V3Vect<float> &gyro, const V3Vect<float
         const float gravityThreshold = 0.1f;
         float proportionalGain = 0.25f, integralGain = 0.0f;
 
-        V3Vect<float> accel_normalize = accel.Normalized();
-        V3Vect<float> up_normalize = up.Normalized();
-        V3Vect<float> correction = accel_normalize.Cross(up_normalize);
+        V3Vectf accel_normalize = accel.Normalized();
+        V3Vectf up_normalize = up.Normalized();
+        V3Vectf correction = accel_normalize.Cross(up_normalize);
         float cosError = accel_normalize.Dot(up_normalize);
         const float Tolerance = 0.00001f;
-        V3Vect<float> tiltCorrection = correction
-                * sqrtf(2.0f / (1 + cosError + Tolerance));
+        V3Vectf tiltCorrection = correction * sqrtf(2.0f / (1 + cosError + Tolerance));
 
         if (step_ > 5) {
             // Spike detection
@@ -524,6 +523,7 @@ JNIEXPORT void JNICALL Java_com_vrseen_sensor_RotationSensor_update
     VRotationState state;
     state.timestamp = timestamp;
     state.w = w;
+    state.x = x;
     state.y = y;
     state.z = z;
     state.gyro.x = gryoX;

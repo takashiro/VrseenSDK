@@ -10,7 +10,7 @@ public:
 
     static VString		GetExternalCacheDirectory( App *app );  	// returns path to app specific writable directory
     static bool 		CreateVideoThumbnail(const NervGear::VString &videoFilePath, const NervGear::VString &outputFilePath, const int width, const int height );
-	static bool			CheckForMovieResume( App *app, const char * movieName );
+	static bool			CheckForMovieResume(const NervGear::VString &movieName );
 
 	static bool			IsPlaying( App *app );
 	static bool 		IsPlaybackFinished( App *app );
@@ -21,7 +21,7 @@ public:
 	static void 		SetPosition( App *app, int positionMS );
 	static void 		SeekDelta( App *app, int deltaMS );
 
-	static void 		StartMovie( App *app, const char * movieName, bool resumePlayback, bool isEncrypted, bool loop );
+	static void 		StartMovie(const NervGear::VString &movieName, bool resumePlayback, bool isEncrypted, bool loop );
 	static void 		PauseMovie( App *app );
 	static void 		ResumeMovie( App *app );
 	static void 		StopMovie( App *app );

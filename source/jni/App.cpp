@@ -1185,8 +1185,8 @@ struct App::Private
                 fp.AlignVert = VERTICAL_CENTER;
                 fp.Billboard = true;
                 fp.TrackRoll = false;
-                worldFontSurface->DrawTextBillboarded3Df(*defaultFont, fp, self->text.infoTextPointTracker.GetCurPosition(),
-                        1.0f, self->text.infoTextColor, self->text.infoText.toCString());
+                worldFontSurface->DrawTextBillboarded3D(*defaultFont, fp, self->text.infoTextPointTracker.GetCurPosition(),
+                        1.0f, self->text.infoTextColor, self->text.infoText);
             }
 
             // Main loop logic / draw code

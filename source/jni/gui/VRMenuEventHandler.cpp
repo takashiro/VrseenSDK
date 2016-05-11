@@ -214,20 +214,13 @@ void VRMenuEventHandler::closed( VArray< VRMenuEvent > & events )
 
 //==============================
 // LogEventType
-static inline void LogEventType( VRMenuEvent const & event, char const * fmt, ... )
+static inline void LogEventType(const VRMenuEvent &event, const VString &message)
 {
-    if ( event.eventType != VRMENU_EVENT_TOUCH_RELATIVE )
-    {
+    if (event.eventType != VRMENU_EVENT_TOUCH_RELATIVE) {
         return;
     }
 
-    char fmtBuff[256];
-    va_list args;
-    va_start( args, fmt );
-    vsnprintf( fmtBuff, sizeof( fmtBuff ), fmt, args );
-    va_end( args );
-
-    vWarn("VrMenu:" << VRMenuEvent::EventTypeNames[event.eventType] << fmtBuff);
+    vWarn("VrMenu:" << VRMenuEvent::EventTypeNames[event.eventType] << message);
 }
 
 //==============================
@@ -316,11 +309,10 @@ bool VRMenuEventHandler::dispatchToComponents( App * app, VFrame const & vrFrame
 		VRMenuComponent * item = list[i];
 		if ( item->handlesEvent( VRMenuEventFlags_t( event.eventType ) ) )
 		{
-            LogEventType( event, "DispatchEvent: to '%s'", receiver->text().toCString() );
+            LogEventType(event, "DispatchEvent: to '" + receiver->text() + "'");
 
-			if ( item->onEvent( app, vrFrame, menuMgr, receiver, event ) == MSG_STATUS_CONSUMED )
-            {
-                LogEventType( event, "DispatchEvent: receiver '%s', component %i consumed event.", receiver->text().toCString(), i );
+            if (item->onEvent(app, vrFrame, menuMgr, receiver, event ) == MSG_STATUS_CONSUMED) {
+                LogEventType(event, "DispatchEvent: receiver '" + receiver->text() + "', component " + VString::number(i) + " consumed event.");
                 return true;    // consumed by component
             }
 		}
@@ -343,13 +335,13 @@ bool VRMenuEventHandler::dispatchToPath( App * app, VFrame const & vrFrame, OvrV
         {
 			if ( log )
 			{
-                vInfo(&indent[64 - i * 2] << "DispatchToPath:" << VRMenuEvent::EventTypeNames[event.eventType] << ", object '" << ( obj != NULL ? obj->text().toCString() : "<null>" ) << "' consumed event.");
+                vInfo(&indent[64 - i * 2] << "DispatchToPath:" << VRMenuEvent::EventTypeNames[event.eventType] << ", object '" << VString( obj != NULL ? obj->text() : "<null>" ) << "' consumed event.");
 			}
             return true;    // consumed by a component
         }
 		if ( log )
 		{
-            vInfo(&indent[64 - i * 2] << "DispatchToPath:" << VRMenuEvent::EventTypeNames[event.eventType] << ", object '" << (obj != NULL ? obj->text().toCString() : "<null>") << "' passed event.");
+            vInfo(&indent[64 - i * 2] << "DispatchToPath:" << VRMenuEvent::EventTypeNames[event.eventType] << ", object '" << VString(obj != NULL ? obj->text() : "<null>") << "' passed event.");
 		}
     }
     return false;

@@ -49,7 +49,7 @@ static bool OvrMetaDatumIdComparator( const OvrMetaDatum * a, const OvrMetaDatum
 	return a->id < b->id;
 }
 
-void OvrMetaData::initFromDirectory( const char * relativePath, const VArray< VString > & searchPaths, const OvrMetaDataFileExtensions & fileExtensions )
+void OvrMetaData::initFromDirectory(const VString &relativePath, const VArray< VString > & searchPaths, const OvrMetaDataFileExtensions & fileExtensions )
 {
 	vInfo("OvrMetaData::InitFromDirectory( " << relativePath << " )");
 	// Find all the files - checks all search paths
@@ -81,14 +81,13 @@ void OvrMetaData::initFromDirectory( const char * relativePath, const VArray< VS
 		}
 
 		// See if we want this loose-file
-		if ( !shouldAddFile( s.toCString(), fileExtensions ) )
-		{
+        if (!shouldAddFile(s, fileExtensions)) {
 			continue;
 		}
 
 		// Add loose file
 		const int dataIndex = m_etaData.length();
-        OvrMetaDatum * datum = createMetaDatum( fileBase.toCString() );
+        OvrMetaDatum * datum = createMetaDatum(fileBase);
 		if ( datum )
 		{
 			datum->id = dataIndex;
@@ -119,10 +118,8 @@ void OvrMetaData::initFromDirectory( const char * relativePath, const VArray< VS
 	}
 
 	// Recurse into subdirs
-	for ( int i = 0; i < subDirs.length(); ++i )
-	{
-		const VString & subDir = subDirs.at( i );
-        initFromDirectory( subDir.toCString(), searchPaths, fileExtensions );
+    for (const VString &subDir : subDirs) {
+        initFromDirectory(subDir, searchPaths, fileExtensions );
 	}
 }
 
@@ -157,15 +154,14 @@ void OvrMetaData::initFromFileList( const VArray< VString > & fileList, const Ov
         Category & currentCategory = m_categories[catIndex];
 
 		// See if we want this loose-file
-		if ( !shouldAddFile( filePath.toCString(), fileExtensions ) )
-		{
+        if (!shouldAddFile(filePath, fileExtensions)) {
 			continue;
 		}
 
 		// Add loose file
 
 		const int dataIndex = m_etaData.length();
-        OvrMetaDatum * datum = createMetaDatum( filePath.toCString() );
+        OvrMetaDatum * datum = createMetaDatum(filePath);
 
 		if ( datum )
 		{
@@ -256,7 +252,7 @@ void OvrMetaData::writeMetaFile(const char * metaFile) const
     if (!buffer) {
         vWarn("OvrMetaData failed to read" << assetsMetaFile);
     } else {
-        if (FILE *newMetaFile = fopen(m_filePath.toCString(), "w")) {
+        if (FILE *newMetaFile = fopen(m_filePath.toUtf8().data(), "w")) {
             uint writtenCount = fwrite( buffer, 1, bufferLength, newMetaFile );
             if ( writtenCount != bufferLength )
             {
@@ -601,7 +597,7 @@ void OvrMetaData::extractMetaData(const VJsonObject &dataFile, const VArray< VSt
 		for (const VJson &datum : datums) {
 			if ( datum.isObject() )
 			{
-				OvrMetaDatum * metaDatum = createMetaDatum( "" );
+                OvrMetaDatum * metaDatum = createMetaDatum("");
 				if ( !metaDatum )
 				{
 					continue;
@@ -677,7 +673,7 @@ void OvrMetaData::extractRemoteMetaData( const VJson &dataFile, VStringHash< Ovr
 		for (const VJson &jsonDatum : elements) {
 			if ( jsonDatum.isObject() )
 			{
-				OvrMetaDatum * metaDatum = createMetaDatum( "" );
+                OvrMetaDatum * metaDatum = createMetaDatum("");
 				if ( !metaDatum )
 				{
 					continue;
@@ -937,25 +933,16 @@ bool OvrMetaData::getMetaData( const Category & category, VArray< const OvrMetaD
 	return true;
 }
 
-bool OvrMetaData::shouldAddFile( const char * filename, const OvrMetaDataFileExtensions & fileExtensions ) const
+bool OvrMetaData::shouldAddFile(const VString &fileName, const OvrMetaDataFileExtensions &fileExtensions) const
 {
-	const int pathLen = strlen( filename );
-	for ( int index = 0; index < fileExtensions.badExtensions.length(); ++index )
-	{
-		const VString & ext = fileExtensions.badExtensions.at( index );
-        const int extLen = ext.length();
-        if ( pathLen > extLen && ext.icompare(filename + pathLen - extLen) == 0 )
-		{
+    for (const VString &ext : fileExtensions.badExtensions) {
+        if (fileName.endsWith(ext)) {
 			return false;
 		}
 	}
 
-	for ( int index = 0; index < fileExtensions.goodExtensions.length(); ++index )
-	{
-		const VString & ext = fileExtensions.goodExtensions.at( index );
-        const int extLen = ext.length();
-        if ( pathLen > extLen && ext.icompare(filename + pathLen - extLen) == 0 )
-		{
+    for (const VString &ext : fileExtensions.goodExtensions) {
+        if (fileName.endsWith(ext)) {
 			return true;
 		}
 	}

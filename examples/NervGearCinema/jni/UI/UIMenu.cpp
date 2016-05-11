@@ -33,14 +33,14 @@ VRMenuId_t UIMenu::AllocId()
 void UIMenu::Open()
 {
 	vInfo("Open");
-    vApp->guiSys().openMenu( vApp, vApp->gazeCursor(), MenuName.toCString() );
+    vApp->guiSys().openMenu(vApp, vApp->gazeCursor(), MenuName);
 	MenuOpen = true;
 }
 
 void UIMenu::Close()
 {
 	vInfo("Close");
-    vApp->guiSys().closeMenu( vApp, Menu, false );
+    vApp->guiSys().closeMenu(vApp, Menu, false);
 	MenuOpen = false;
 }
 

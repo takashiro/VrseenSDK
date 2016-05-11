@@ -21,7 +21,7 @@ public:
 
 	void								SetText( const char *text );
 	void								SetText( const VString &text );
-	void								SetTextWordWrapped( char const * text, class BitmapFont const & font, float const widthInMeters );
+	void								SetTextWordWrapped(const VString &text, class BitmapFont const & font, float const widthInMeters );
 	const VString & 						GetText() const;
 
 	void								SetFontScale( float const scale );

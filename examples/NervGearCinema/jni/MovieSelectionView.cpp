@@ -400,7 +400,7 @@ void MovieSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFo
 		Categories[ i ].Button = new UILabel( Cinema );
 		Categories[ i ].Button->AddToMenu( Menu, CategoryRoot );
 		Categories[ i ].Button->SetFontScale( 2.2f );
-		Categories[ i ].Button->SetText( Categories[ i ].Text.toCString() );
+        Categories[ i ].Button->SetText(Categories[i].Text);
 		Categories[ i ].Button->AddComponent( new MovieCategoryComponent( this, Categories[ i ].Category ) );
         const VBoxf & bounds = Categories[ i ].Button->GetTextLocalBounds( vApp->defaultFont() );
 		Categories[ i ].Width = std::max( bounds.GetSize().x, itemWidth ) + 80.0f * VRMenuObject::DEFAULT_TEXEL_SCALE;
@@ -479,7 +479,7 @@ void MovieSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFo
     ResumeIcon->GetMenuObject()->addFlags( VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_ALL ) );
 	ResumeIcon->SetFontScale( 0.3f );
 	ResumeIcon->SetLocalScale( 6.0f );
-	ResumeIcon->SetText( CinemaStrings::MovieSelection_Resume.toCString() );
+    ResumeIcon->SetText(CinemaStrings::MovieSelection_Resume);
     ResumeIcon->SetTextOffset( V3Vectf( 0.0f, -ResumeIconTexture.Height * VRMenuObject::DEFAULT_TEXEL_SCALE * 0.5f, 0.0f ) );
 	ResumeIcon->SetVisible( false );
 
@@ -658,11 +658,11 @@ void MovieSelectionView::SetMovieList( const VArray<const MovieDef *> &movies, c
 	{
 		if ( CurrentCategory == CATEGORY_MYVIDEOS )
 		{
-			SetError( CinemaStrings::Error_NoVideosInMyVideos.toCString(), false, false );
+            SetError(CinemaStrings::Error_NoVideosInMyVideos, false, false );
 		}
 		else
 		{
-			SetError( CinemaStrings::Error_NoVideosOnPhone.toCString(), true, false );
+            SetError(CinemaStrings::Error_NoVideosOnPhone, true, false );
 		}
 	}
 	else
@@ -712,11 +712,11 @@ void MovieSelectionView::UpdateMovieTitle()
 	{
 		if ( currentMovie != NULL )
 		{
-			MovieTitle->SetText( currentMovie->Title.toCString() );
+            MovieTitle->SetText(currentMovie->Title);
 		}
 		else
 		{
-			MovieTitle->SetText( "" );
+            MovieTitle->SetText("");
 		}
 
 		LastMovieDisplayed = currentMovie;
@@ -794,7 +794,7 @@ void MovieSelectionView::UpdateSelectionFrame( const VFrame & vrFrame )
 	}
 }
 
-void MovieSelectionView::SetError( const char *text, bool showSDCard, bool showErrorIcon )
+void MovieSelectionView::SetError(const VString &text, bool showSDCard, bool showErrorIcon )
 {
 	ClearError();
 

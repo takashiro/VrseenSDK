@@ -69,15 +69,15 @@ void * Queue1Thread( void * v )
 			for ( ; side < 6; side++ )
 			{
                 VString sideFilename = filenameWithoutSuffix + cubeSuffix[side];
-                fstream fileBuffer;
+                std::fstream fileBuffer;
                 fileBuffer.open(sideFilename.toUtf8().data());
-                fileBuffer.seekg(0, ios_base::end);
+                fileBuffer.seekg(0, std::ios_base::end);
                 uint fileLength = 0;
                 fileLength = fileBuffer.tellg();
-                fileBuffer.seekg(0, ios_base::beg);
+                fileBuffer.seekg(0, std::ios_base::beg);
                 void *buffer = NULL;
                 buffer = malloc(fileLength);
-                fileBuffer.read(reinterpret_cast<istream::char_type*>(buffer), fileLength);
+                fileBuffer.read(reinterpret_cast<std::istream::char_type*>(buffer), fileLength);
                 if ( fileLength == 0 || buffer == NULL )
 				{
                     const VApkFile &apk = VApkFile::CurrentApkFile();
@@ -93,15 +93,15 @@ void * Queue1Thread( void * v )
 		else
 		{
 			// non-cube map
-            fstream fileBuffer;
+            std::fstream fileBuffer;
             fileBuffer.open(filename.toUtf8().data());
-            fileBuffer.seekg(0, ios_base::end);
+            fileBuffer.seekg(0, std::ios_base::end);
             uint fileLength = 0;
             fileLength = fileBuffer.tellg();
-            fileBuffer.seekg(0, ios_base::beg);
+            fileBuffer.seekg(0, std::ios_base::beg);
             void *buffer = NULL;
             buffer = malloc(fileLength);
-            fileBuffer.read(reinterpret_cast<istream::char_type*>(buffer), fileLength);
+            fileBuffer.read(reinterpret_cast<std::istream::char_type*>(buffer), fileLength);
             if ( fileLength <= 0 || buffer == NULL )
 			{
                 const VApkFile &apk = VApkFile::CurrentApkFile();

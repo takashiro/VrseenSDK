@@ -3,6 +3,9 @@
 
 #include <fstream>
 
+#include <unistd.h>
+#include <sys/stat.h>
+
 NV_NAMESPACE_BEGIN
 
 struct VFile::Private
@@ -67,6 +70,26 @@ bool VFile::open(VIODevice::OpenMode mode)
 void VFile::close()
 {
     d->data.close();
+}
+
+bool VFile::exists() const
+{
+    return Exists(d->path);
+}
+
+bool VFile::Exists(const VString &path)
+{
+    return access(path.toUtf8().data(), F_OK) == 0;
+}
+
+bool VFile::IsReadable(const VString &path)
+{
+    return access(path.toUtf8().data(), R_OK) == 0;
+}
+
+bool VFile::IsWritable(const VString &path)
+{
+    return access(path.toUtf8().data(), W_OK) == 0;
 }
 
 vint64 VFile::readData(char *data, vint64 maxSize)

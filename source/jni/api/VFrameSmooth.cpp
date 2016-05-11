@@ -593,6 +593,11 @@ void VFrameSmooth::setProgramParms( float * proParms)
     }
 }
 
+int VFrameSmooth::threadId() const
+{
+    return d->m_smoothThreadTid;
+}
+
 
 void *VFrameSmooth::Private::ThreadStarter( void * parm )
 {

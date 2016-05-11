@@ -62,10 +62,7 @@ private:
 };
 
 VString	GetFullPath(const VArray< VString > & searchPaths, const VString &relativePath);
-
-// Return false if it fails to find the relativePath in any of the search locations
-bool GetFullPath(const VArray<VString> &searchPaths, const VString &relativePath, char *outPath, const int outMaxLen);
-bool GetFullPath(const VArray<VString> &searchPaths, const VString &relativePath, VString & outPath);
+bool GetFullPath(const VArray<VString> &searchPaths, const VString &relativePath, VString &outPath);
 
 bool ToRelativePath(const VArray<VString> &searchPaths, const VString &fullPath, VString & outPath);
 

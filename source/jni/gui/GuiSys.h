@@ -55,7 +55,7 @@ public:
     virtual VRMenu *	getMenu( char const * menuName ) const = 0;
 
 	// Opens a menu and places it in the active list
-    virtual void		openMenu( App * app, OvrGazeCursor & gazeCursor, char const * name ) = 0;
+    virtual void		openMenu( App * app, OvrGazeCursor & gazeCursor, const VString &name) = 0;
 	// Closes a menu. It will be removed from the active list once it has finished closing.
     virtual void		closeMenu( App * app, const char * name, bool const closeInstantly ) = 0;
 	// Closes a menu. It will be removed from the active list once it has finished closing.

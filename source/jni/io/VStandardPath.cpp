@@ -1,6 +1,7 @@
 #include "VStandardPath.h"
 #include "VDir.h"
 #include "VLog.h"
+#include "VFile.h"
 
 #include "android/JniUtils.h"
 
@@ -158,17 +159,14 @@ long long VStandardPath::GetAvailableInternalMemoryInBytes(JNIEnv * jni, jobject
 
 VString GetFullPath(const VArray<VString> &searchPaths, const VString &relativePath)
 {
-    VDir temp;
-    if ( temp.exists ( relativePath ) )
-    {
+    if (VFile::Exists(relativePath)) {
         return relativePath;
     }
 
     const int numSearchPaths = searchPaths.length();
     for ( int index = 0; index < numSearchPaths; ++index) {
         const VString fullPath = searchPaths.at(index) + relativePath;
-        if ( temp.exists( fullPath ) )
-        {
+        if (VFile::Exists(fullPath)) {
             return fullPath;
         }
     }
@@ -176,37 +174,22 @@ VString GetFullPath(const VArray<VString> &searchPaths, const VString &relativeP
     return VString();
 }
 
-bool GetFullPath( const VArray<VString> &searchPaths, const VString &relativePath, char *outPath, const int outMaxLen)
+bool GetFullPath(const VArray<VString> &searchPaths, const VString &relativePath, VString &outPath)
 {
-    VDir temp;
-    if ( temp.exists (relativePath ) )
-    {
-        sprintf(outPath, "%s", relativePath.toCString());
+    if (VFile::Exists(relativePath)) {
+        outPath = relativePath;
         return true;
     }
 
-    for ( int i = 0; i < searchPaths.length(); ++i )
-    {
-        sprintf(outPath, "%s%s", searchPaths[i].toCString(), relativePath.toCString());
-        if ( temp.exists (outPath ) )
-        {
+    for (const VString &searchPath : searchPaths) {
+        outPath = searchPath + relativePath;
+        if (VFile::Exists(outPath)) {
             return true;	// outpath is now set to the full path
         }
     }
     // just return the relative path if we never found the file
-    sprintf(outPath, "%s", relativePath.toCString());
+    outPath = relativePath;
     return false;
-}
-
-bool GetFullPath(const VArray<VString> &searchPaths, const VString &relativePath, VString &outPath)
-{
-    char largePath[1024];
-    bool result = GetFullPath( searchPaths, relativePath, largePath, sizeof( largePath ) );
-    if( result )
-    {
-        outPath = largePath;
-    }
-    return result;
 }
 
 bool ToRelativePath(const VArray<VString> &searchPaths, const VString &fullPath, VString &outPath)

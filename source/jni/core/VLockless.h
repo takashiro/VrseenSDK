@@ -19,7 +19,7 @@ public:
 
     void setState(E state)
     {
-        m_buffer.prepend(state);
+        m_buffer.append(state);
         m_count = m_count.exchangeAddSync(1) & (int)(m_buffer.capacity() - 1);
     }
 

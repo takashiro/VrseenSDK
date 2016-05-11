@@ -53,7 +53,7 @@ namespace NervGear
 		//
 		// Create the thumbnail image for the file, which will
 		// be saved out as a _thumb.jpg.
-        unsigned char *createAndCacheThumbnail( const char * soureFile, const char * cacheDestinationFile, int & width, int & height ) override;
+        unsigned char *createAndCacheThumbnail( const VString &soureFile, const VString &cacheDestinationFile, int & width, int & height ) override;
 
 		// Called on a background thread to load thumbnail
         unsigned char *loadThumbnail( const char * filename, int & width, int & height ) override;
@@ -71,7 +71,7 @@ namespace NervGear
 
 	protected:
 		// Called from the base class when building category.
-        VString getCategoryTitle( char const * key, char const * defaultStr ) const override;
+        VString getCategoryTitle(const VString &key, const VString &defaultStr) const override;
 
 		// Called from the base class when building a panel.
         VString getPanelTitle( const OvrMetaDatum & panelData ) const override;

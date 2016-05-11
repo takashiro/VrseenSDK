@@ -131,7 +131,7 @@ void ResumeMovieView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFont 
         VPosf panelPose( VQuatf( up, 0.0f ), V3Vectf( 0.0f, 2.2f, -3.0f ) );
 
 		VRMenuObjectParms p( VRMENU_STATIC, VArray< VRMenuComponent* >(),
-                VRMenuSurfaceParms(), CinemaStrings::ResumeMenu_Title.toCString(), panelPose, defaultScale, fontParms, VRMenuId_t( ID_TITLE.value() ),
+                VRMenuSurfaceParms(), CinemaStrings::ResumeMenu_Title, panelPose, defaultScale, fontParms, VRMenuId_t( ID_TITLE.value() ),
 				VRMenuObjectFlags_t(), VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 
         parms.append( &p );
@@ -144,9 +144,9 @@ void ResumeMovieView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFont 
     //
     // options
     //
-    VArray<const char *> options;
-    options.append( CinemaStrings::ResumeMenu_Resume.toCString() );
-    options.append( CinemaStrings::ResumeMenu_Restart.toCString() );
+    VArray<VString> options;
+    options.append(CinemaStrings::ResumeMenu_Resume);
+    options.append(CinemaStrings::ResumeMenu_Restart);
 
     VArray<const char *> icons;
     icons.append( "assets/resume.png" );

@@ -43,7 +43,7 @@ public:
 	//
 	// Create the thumbnail image for the file, which will
 	// be saved out as a _thumb.jpg.
-	virtual unsigned char * createAndCacheThumbnail( const char * soureFile, const char * cacheDestinationFile, int & width, int & height );
+    virtual unsigned char * createAndCacheThumbnail( const VString &soureFile, const VString &cacheDestinationFile, int & width, int & height );
 
 	// Called on a background thread to load thumbnail
 	virtual	unsigned char * loadThumbnail( const char * filename, int & width, int & height );
@@ -59,7 +59,7 @@ public:
 
 protected:
 	// Called from the base class when building a cateory.
-	virtual VString				getCategoryTitle( char const * key, char const * defaultStr ) const;
+	virtual VString				getCategoryTitle(const VString &key, const VString &defaultStr ) const;
 
 	// Called from the base class when building a panel
 	virtual VString				getPanelTitle( const OvrMetaDatum & panelData ) const;

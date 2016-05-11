@@ -24,6 +24,8 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include <VApkFile.h>
 #include <fstream>
 
+#include <android/JniUtils.h>
+
 #include "VArray.h"
 #include "VString.h"
 #include "VEglDriver.h"
@@ -396,7 +398,7 @@ void Oculus360Videos::command(const VEvent &event )
 		// FIXME: this needs to do some parameter magic to fix xliff tags
 		VString message;
 		VrLocale::GetString( vApp->vrJni(), vApp->javaObject(), "@string/playback_failed", "@string/playback_failed", message );
-        VString fileName = VPath(ActiveVideo->url).fileName();
+        VString fileName = ActiveVideo->url.fileName();
         message = VrLocale::GetXliffFormattedString( message, fileName.toCString() );
 		BitmapFont & font = vApp->defaultFont();
 		font.WordWrapText( message, 1.0f );
@@ -649,7 +651,7 @@ void Oculus360Videos::StartVideo( const double nowTime )
 		}
 
 		vInfo("moviePath = '" << ActiveVideo->url << "'");
-        jstring jstr = vApp->vrJni()->NewStringUTF( ActiveVideo->url.toCString() );
+        jstring jstr = JniUtils::Convert(vApp->vrJni(), ActiveVideo->url);
 		vApp->vrJni()->CallVoidMethod( vApp->javaObject(), startMovieMethodId, jstr );
 		vApp->vrJni()->DeleteLocalRef( jstr );
 

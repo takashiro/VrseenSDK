@@ -12,12 +12,14 @@ void test()
         VPath path("/mnt/media/sdcard/");
         assert(path.isAbsolute());
         assert(!path.hasProtocol());
+        assert(path.dirPath() == "/mnt/media");
     }
 
     {
         VPath path("file:///d/test");
         assert(path.isAbsolute());
         assert(path.protocol() == "file://");
+        assert(path.dirPath() == "file:///d");
     }
 
     {

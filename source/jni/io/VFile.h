@@ -17,6 +17,12 @@ public:
     bool open(OpenMode mode) override;
     void close() override;
 
+    bool exists() const;
+    static bool Exists(const VString &path);
+
+    static bool IsReadable(const VString &path);
+    static bool IsWritable(const VString &path);
+
 protected:
     vint64 readData(char *data, vint64 maxSize) override;
     vint64 writeData(const char *data, vint64 maxSize) override;

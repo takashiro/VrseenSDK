@@ -266,7 +266,7 @@ void TheaterSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, Bitmap
 		VRMenuFontParms titleFontParms( true, true, false, false, false, 1.3f );
 
 		VRMenuObjectParms p( VRMENU_STATIC, VArray< VRMenuComponent* >(),
-				VRMenuSurfaceParms(), CinemaStrings::TheaterSelection_Title.toCString(), panelPose, defaultScale, titleFontParms, VRMenuId_t( ID_TITLE_ROOT.value() + 1 ),
+                VRMenuSurfaceParms(), CinemaStrings::TheaterSelection_Title, panelPose, defaultScale, titleFontParms, VRMenuId_t( ID_TITLE_ROOT.value() + 1 ),
 				VRMenuObjectFlags_t(), VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 
         parms.append( &p );
