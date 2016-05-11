@@ -936,13 +936,13 @@ bool OvrMetaData::getMetaData( const Category & category, VArray< const OvrMetaD
 bool OvrMetaData::shouldAddFile(const VString &fileName, const OvrMetaDataFileExtensions &fileExtensions) const
 {
     for (const VString &ext : fileExtensions.badExtensions) {
-        if (fileName.endsWith(ext)) {
+        if (fileName.endsWith(ext, false)) {
 			return false;
 		}
 	}
 
     for (const VString &ext : fileExtensions.goodExtensions) {
-        if (fileName.endsWith(ext)) {
+        if (fileName.endsWith(ext, false)) {
 			return true;
 		}
 	}

@@ -763,7 +763,7 @@ void Oculus360Photos::startBackgroundPanoLoad(const VString &filename)
 
     // Queue1 will determine if this is a cube map and then post a message for each
     // cube face to the other queues.
-    char const * command = filename.endsWith("_nz.jpg") ? "cube" : "pano";
+    char const * command = filename.endsWith("_nz.jpg", false) ? "cube" : "pano";
 
     // Dump any load that hasn't started
     Queue1.clear();

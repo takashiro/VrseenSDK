@@ -58,7 +58,7 @@ void * Queue1Thread( void * v )
         VString filename = event.data.toString();
 
         VEventLoop *queue = &Queue3;
-        if (filename.endsWith("_nz.jpg")) {
+        if (filename.endsWith("_nz.jpg", false)) {
 			// cube map
 			const char * const cubeSuffix[6] = { "_px.jpg", "_nx.jpg", "_py.jpg", "_ny.jpg", "_pz.jpg", "_nz.jpg" };
 

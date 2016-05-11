@@ -365,7 +365,7 @@ unsigned char * PanoBrowser::createAndCacheThumbnail(const VString &soureFile, c
 	int		height = 0;
     unsigned char *data = NULL;
 
-    if (soureFile.endsWith("_nz.jpg")) {
+    if (soureFile.endsWith("_nz.jpg", false)) {
 		data = CubeMapVista( soureFile, 1.6f, width, height );
     } else {
         data = TurboJpegLoadFromFile(soureFile.toUtf8().data(), &width, &height);

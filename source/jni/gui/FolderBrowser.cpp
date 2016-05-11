@@ -2035,7 +2035,7 @@ void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const in
 				const VString altThumbPath = alternateThumbName( panoUrl );
                 if ( altThumbPath.isEmpty() || !GetFullPath( m_thumbSearchPaths, altThumbPath, finalThumb ) )
                 {
-                    if (panoUrl.endsWith(".x")) {
+                    if (panoUrl.endsWith(".x", false)) {
 						vWarn("Thumbnails cannot be generated from encrypted images.");
 						return; // No thumb & can't create
 					}
