@@ -71,10 +71,10 @@ public:
     bool contains(const VString &substr) const { return find(substr) != npos; }
 
     bool startsWith(char16_t ch) const { return front() == ch; }
-    bool startsWith(const VString &prefix) const;
+    bool startsWith(const VString &prefix, bool caseSensitive = true) const;
 
     bool endsWith(char16_t ch) const { return back() == ch; }
-    bool endsWith(const VString &postfix) const;
+    bool endsWith(const VString &postfix, bool caseSensitive = true) const;
 
     VString toUpper() const;
     VString toLower() const;

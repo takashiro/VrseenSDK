@@ -7,14 +7,6 @@ NV_NAMESPACE_BEGIN
 
 namespace {
     template<class C, class T>
-    void CopyString(C *to, const T *from, uint length)
-    {
-        for (uint i = 0; i < length; i++) {
-            to[i] = from[i];
-        }
-    }
-
-    template<class C, class T>
     int StringCompare(const C *str1, const T *str2)
     {
         if (str1 == nullptr) {
@@ -32,7 +24,7 @@ namespace {
     }
 
     template<class C, class T>
-    int CaseCompareString(const C *str1, const T *str2)
+    int StringCaseCompare(const C *str1, const T *str2)
     {
         if (str1 == nullptr) {
             return str2 == nullptr ? 0 : -1;
@@ -43,7 +35,7 @@ namespace {
         forever {
             ch1 = *str1;
             ch2 = *str2;
-            if (ch1 != ch2) {
+            if (ch1 != ch2 && tolower(ch1) != tolower(ch2)) {
                 break;
             }
             if (ch1 == '\0') {
@@ -176,7 +168,7 @@ void VString::replace(char16_t from, char16_t to)
     }
 }
 
-bool VString::startsWith(const VString &prefix) const
+bool VString::startsWith(const VString &prefix, bool caseSensitive) const
 {
     if (prefix.size() > this->size()) {
         return false;
@@ -184,24 +176,23 @@ bool VString::startsWith(const VString &prefix) const
 
     for (uint i = 0; i < prefix.size(); i++) {
         if (prefix[i] != this->at(i)) {
-            return false;
+            if (caseSensitive || tolower(prefix[i]) != tolower(at(i))) {
+                return false;
+            }
         }
     }
     return true;
 }
 
-bool VString::endsWith(const VString &postfix) const
+bool VString::endsWith(const VString &postfix, bool caseSensitive) const
 {
     if (postfix.size() > this->size()) {
         return false;
     }
 
-    for (uint i = this->size() - postfix.size(), j = 0; j < postfix.size(); i++, j++) {
-        if (this->at(i) != postfix[j]) {
-            return false;
-        }
-    }
-    return true;
+    const char16_t *str1 = this->data() + this->size() - postfix.size();
+    const char16_t *str2 = postfix.data();
+    return (caseSensitive ? StringCompare(str1, str2) : StringCaseCompare(str1, str2)) == 0;
 }
 
 void VString::insert(uint pos, char16_t ch)
@@ -414,12 +405,12 @@ int VString::compare(const char *str) const
 
 int VString::icompare(const VString &str) const
 {
-    return CaseCompareString(data(), str.data());
+    return StringCaseCompare(data(), str.data());
 }
 
 int VString::icompare(const char *str) const
 {
-    return CaseCompareString(data(), str);
+    return StringCaseCompare(data(), str);
 }
 
 VString VString::number(int num)

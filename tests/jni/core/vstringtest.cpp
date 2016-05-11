@@ -289,6 +289,15 @@ void test()
         VString str = VString::fromUcs4(utf32);
         assert(str == u"向日葵的约定");
     }
+
+    //Case-insensitive compare
+    {
+        VString str1 = "this is a test.";
+        VString str2 = "THIS IS A TEST.";
+        assert(str1.icompare(str2) == 0);
+        assert(str1.startsWith("ThIs", false));
+        assert(str1.endsWith("TeSt.", false));
+    }
 }
 
 ADD_TEST(VString, test)
