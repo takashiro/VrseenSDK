@@ -204,10 +204,10 @@ private:
 
 private:
     bool LoadImage(const VApkFile &languagePackageFile,
-            char const * imageName);
-	bool LoadImageFromBuffer(char const * imageName,
-			unsigned char const * buffer, size_t const bufferSize,
-			bool const isASTC);
+            const VString &imageName);
+    bool LoadImageFromBuffer(const VString &imageName,
+            const uchar *buffer, size_t const bufferSize,
+            bool const isASTC);
 	bool LoadFontInfo(char const * glyphFileName);
 	bool LoadFontInfoFromBuffer(unsigned char const * buffer,
 			size_t const bufferSize);
@@ -723,18 +723,6 @@ static void StripFileName(const VString& path, VString& outPath) {
 	}
 }
 
-static bool ExtensionMatches(char const * fileName, char const * ext) {
-	if (fileName == NULL || ext == NULL) {
-		return false;
-	}
-	size_t extLen = strlen(ext);
-	size_t fileNameLen = strlen(fileName);
-	if (extLen > fileNameLen) {
-		return false;
-	}
-    return strcasecmp(fileName + fileNameLen - extLen, ext) == 0;
-}
-
 //==============================
 // BitmapFontLocal::Load
 bool BitmapFontLocal::Load(const VString &languagePackageName, const VString &fontInfoFileName) {
@@ -754,7 +742,7 @@ bool BitmapFontLocal::Load(const VString &languagePackageName, const VString &fo
     vInfo("imagePath = " << imagePath);
 
     VString imageFileName;
-    StripPath(fontInfoFileName.toCString(), imageFileName);
+    StripPath(fontInfoFileName, imageFileName);
     vInfo("imageFileName = " << imageFileName);
 
     AppendPath(imagePath, baseName);
@@ -774,7 +762,8 @@ bool BitmapFontLocal::Load(const VString &languagePackageName, const VString &fo
 
 //==============================
 // BitmapFontLocal::LoadImage
-bool BitmapFontLocal::LoadImage(const VApkFile &languagePackageFile, char const * imageName) {
+bool BitmapFontLocal::LoadImage(const VApkFile &languagePackageFile, const VString &imageName)
+{
 	// try to open the language pack apk
     uint length = 0;
     void *packageBuffer = nullptr;
@@ -793,12 +782,13 @@ bool BitmapFontLocal::LoadImage(const VApkFile &languagePackageFile, char const 
 
 	bool result = false;
 	if (packageBuffer != NULL) {
-		result = LoadImageFromBuffer(imageName,
+        result = LoadImageFromBuffer(imageName,
 				(unsigned char const*) packageBuffer, length,
-				ExtensionMatches(imageName, ".astc"));
+                imageName.endsWith(".astc", false));
 		free(packageBuffer);
 	} else {
-		FILE * f = fopen(imageName, "rb");
+        //TODO Replace the block with VFile
+        FILE * f = fopen(imageName.toUtf8().data(), "rb");
 		if (f != NULL) {
 			size_t fsize = FileSize(f);
 
@@ -808,8 +798,8 @@ bool BitmapFontLocal::LoadImage(const VApkFile &languagePackageFile, char const 
 			fclose(f);
 			f = NULL;
 			if (countRead == 1) {
-				result = LoadImageFromBuffer(imageName, buffer, fsize,
-						ExtensionMatches(imageName, ".astc"));
+                result = LoadImageFromBuffer(imageName, buffer, fsize,
+                        imageName.endsWith(".astc", false));
 			}
 			delete[] buffer;
 		}
@@ -823,8 +813,8 @@ bool BitmapFontLocal::LoadImage(const VApkFile &languagePackageFile, char const 
 
 //==============================
 // BitmapFontLocal::LoadImageFromBuffer
-bool BitmapFontLocal::LoadImageFromBuffer(char const * imageName,
-		unsigned char const * buffer, size_t bufferSize, bool const isASTC) {
+bool BitmapFontLocal::LoadImageFromBuffer(const VString &imageName, const uchar * buffer, size_t bufferSize, bool const isASTC)
+{
 	if (Texture != 0) {
 		glDeleteTextures(1, &Texture);
 		Texture = 0;
@@ -833,7 +823,7 @@ bool BitmapFontLocal::LoadImageFromBuffer(char const * imageName,
 	if (isASTC) {
 		Texture = LoadASTCTextureFromMemory(buffer, bufferSize, 1);
 	} else {
-		Texture = LoadTextureFromBuffer(imageName,
+        Texture = LoadTextureFromBuffer(imageName.toUtf8().data(),
                 buffer, bufferSize,
 				TextureFlags_t(TEXTUREFLAG_NO_DEFAULT), ImageWidth,
 				ImageHeight);

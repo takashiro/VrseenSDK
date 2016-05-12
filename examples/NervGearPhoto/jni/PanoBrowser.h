@@ -53,7 +53,7 @@ namespace NervGear
 		//
 		// Create the thumbnail image for the file, which will
 		// be saved out as a _thumb.jpg.
-        unsigned char *createAndCacheThumbnail( const VString &soureFile, const VString &cacheDestinationFile, int & width, int & height ) override;
+        unsigned char *createAndCacheThumbnail(const VString &soureFile, const VString &cacheDestinationFile, int & width, int & height ) override;
 
 		// Called on a background thread to load thumbnail
         unsigned char *loadThumbnail( const char * filename, int & width, int & height ) override;

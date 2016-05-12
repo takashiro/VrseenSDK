@@ -110,51 +110,19 @@ VStandardPath::~VStandardPath()
     delete d;
 }
 
-void VStandardPath::PushBackSearchPathIfValid(StorageType toStorage, FolderType toFolder, const char * subfolder, VArray<VString> &searchPaths ) const
+VString VStandardPath::findFolder(StorageType toStorage, FolderType toFolder, const char * subfolder) const
 {
-    PushBackSearchPathIfValidPermission( toStorage, toFolder, subfolder, R_OK, searchPaths );
-}
-
-void VStandardPath::PushBackSearchPathIfValidPermission(StorageType toStorage, FolderType toFolder, const char * subfolder, mode_t permission, VArray<VString> &searchPaths) const
-{
-    VString checkPath;
-    if ( GetPathIfValidPermission( toStorage, toFolder, subfolder, permission, checkPath ) )
-    {
-        searchPaths.append( checkPath );
-    }
-}
-
-bool VStandardPath::GetPathIfValidPermission(StorageType toStorage, FolderType toFolder, const char * subfolder, mode_t permission, VString &outPath) const
-{
-    VDir vdir;
-    if ( d->storageFolderPaths[ toStorage ][ toFolder ].size() > 0 )
-    {
-        VPath checkPath = d->storageFolderPaths[ toStorage ][ toFolder ] + subfolder;
-        if ( vdir.contains( checkPath, permission ) )
-        {
-            outPath = checkPath;
-            return true;
-        }
-        else
-        {
-            vWarn("Failed to get permission for" << StorageName[toStorage] << "storage in" <<  FolderName[toFolder] << "folder");
-        }
-    }
-    else
-    {
+    if (d->storageFolderPaths[toStorage][toFolder].size() > 0) {
+        return d->storageFolderPaths[toStorage][toFolder] + subfolder;
+    } else {
         vWarn("Path not found for" << StorageName[toStorage] << "storage in" << FolderName[toFolder] << "folder");
+        return VString();
     }
-    return false;
 }
 
-bool VStandardPath::HasStoragePath(const StorageType toStorage, const FolderType toFolder) const
+bool VStandardPath::contains(StorageType toStorage, FolderType toFolder) const
 {
-    return ( d->storageFolderPaths[ toStorage ][ toFolder ].size() > 0 );
-}
-
-long long VStandardPath::GetAvailableInternalMemoryInBytes(JNIEnv * jni, jobject activityObj) const
-{
-    return (long long )( jni->CallStaticLongMethod( d->vrLibClass, d->internalCacheMemoryId, activityObj ) );
+    return !d->storageFolderPaths[toStorage][toFolder].isEmpty();
 }
 
 VString GetFullPath(const VArray<VString> &searchPaths, const VString &relativePath)

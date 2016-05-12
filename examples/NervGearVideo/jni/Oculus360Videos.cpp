@@ -162,9 +162,7 @@ void Oculus360Videos::init(const VString &fromPackage, const VString &launchInte
 
 	vInfo("--------------- Oculus360Videos OneTimeInit ---------------");
 
-
-	VDir vdir;
-	RetailMode = vdir.exists( "/sdcard/RetailMedia" );
+    RetailMode = VFile::Exists( "/sdcard/RetailMedia" );
 
 	vApp->vrParms().colorFormat = VColor::COLOR_8888;
     vApp->vrParms().commonParameterDepth = VEyeItem::CommonParameter::DepthFormat_16;
@@ -225,11 +223,24 @@ void Oculus360Videos::init(const VString &fromPackage, const VString &launchInte
 		vFatal("Oculus360Photos::OneTimeInit failed to create MetaData");
 	}
 
+    VStandardPath::Info pathInfoList[] = {
+        {VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/"},
+        {VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, ""},
+        {VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/"},
+        {VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, ""}
+    };
+
     const VStandardPath &storagePaths = vApp->storagePaths();
-    storagePaths.PushBackSearchPathIfValid( VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", SearchPaths );
-    storagePaths.PushBackSearchPathIfValid( VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "", SearchPaths );
-    storagePaths.PushBackSearchPathIfValid( VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", SearchPaths );
-    storagePaths.PushBackSearchPathIfValid( VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "", SearchPaths );
+    for (const VStandardPath::Info &pathInfo : pathInfoList) {
+        VString path = storagePaths.findFolder(pathInfo);
+        vWarn("Check path: " << path);
+        if (path.length() > 0 && VFile::IsReadable(path)) {
+            SearchPaths.append(std::move(path));
+            vWarn("true");
+        } else {
+            vWarn("false");
+        }
+    }
 
 	OvrMetaDataFileExtensions fileExtensions;
 	fileExtensions.goodExtensions.append( ".mp4" );

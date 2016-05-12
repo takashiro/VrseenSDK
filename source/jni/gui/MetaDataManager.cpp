@@ -52,14 +52,8 @@ static bool OvrMetaDatumIdComparator( const OvrMetaDatum * a, const OvrMetaDatum
 void OvrMetaData::initFromDirectory(const VString &relativePath, const VArray< VString > & searchPaths, const OvrMetaDataFileExtensions & fileExtensions )
 {
 	vInfo("OvrMetaData::InitFromDirectory( " << relativePath << " )");
-	// Find all the files - checks all search paths
-//	StringHash< VString > uniqueFileList = RelativeDirectoryFileList( searchPaths, relativePath );
-    VArray< VString > uniqueFileList = VDir::Search(searchPaths, relativePath);
-	VArray<VString> fileList;
-//    for (const std::pair<VString, VString> &iter : uniqueFileList) {
-    for (auto &iter : uniqueFileList) {
-        fileList.append(iter);
-	}
+
+    VArray<VString> fileList = VDir::Search(searchPaths, relativePath);
     std::sort(fileList.begin(),fileList.end());
 	Category currentCategory;
     currentCategory.categoryTag = VPath(relativePath).baseName();
@@ -277,10 +271,7 @@ void OvrMetaData::initFromDirectoryMergeMeta( const char * relativePath, const V
 	appFileStoragePath += "/files/";
 
 	m_filePath = appFileStoragePath + metaFile;
-
-	vAssert( vdir.contains( m_filePath, R_OK ) );
-
-    initFromDirectory( relativePath, searchPaths, fileExtensions );
+    initFromDirectory(relativePath, searchPaths, fileExtensions );
 
     //@to-do: Remove MetaData
     /*VJson dataFile = createOrGetStoredMetaFile( appFileStoragePath, metaFile );

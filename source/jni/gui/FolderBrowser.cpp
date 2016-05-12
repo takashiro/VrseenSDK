@@ -34,6 +34,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <VDir.h>
 #include <VLog.h>
 #include <VStandardPath.h>
+#include <VFile.h>
 
 namespace NervGear {
 
@@ -1076,15 +1077,23 @@ void OvrFolderBrowser::openImpl( App * app, OvrGazeCursor & gazeCursor )
 
 void OvrFolderBrowser::oneTimeInit()
 {
-	const VStandardPath & storagePaths = m_app->storagePaths();
-    storagePaths.GetPathIfValidPermission(VStandardPath::PrimaryExternalStorage, VStandardPath::CacheFolder, "", W_OK, m_appCachePath );
-	vAssert( !m_appCachePath.isEmpty() );
+    const VStandardPath &storagePaths = m_app->storagePaths();
+    m_appCachePath = storagePaths.findFolder(VStandardPath::PrimaryExternalStorage, VStandardPath::CacheFolder, "");
+    vAssert(!m_appCachePath.isEmpty() && VFile::IsWritable(m_appCachePath));
 
-    storagePaths.PushBackSearchPathIfValid(VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", m_thumbSearchPaths );
-    storagePaths.PushBackSearchPathIfValid(VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "", m_thumbSearchPaths );
-    storagePaths.PushBackSearchPathIfValid(VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", m_thumbSearchPaths );
-    storagePaths.PushBackSearchPathIfValid(VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "", m_thumbSearchPaths );
-	vAssert( !m_thumbSearchPaths.isEmpty() );
+    VStandardPath::Info pathList[] = {
+        {VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/"},
+        {VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, ""},
+        {VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/"},
+        {VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, ""}
+    };
+    for (const VStandardPath::Info &pathInfo : pathList) {
+        VString path = storagePaths.findFolder(pathInfo);
+        if (path.length() > 0 && VFile::IsReadable(path)) {
+            m_thumbSearchPaths.append(std::move(path));
+        }
+    }
+    vAssert(!m_thumbSearchPaths.isEmpty());
 
 	// move the root up to eye height
 	OvrVRMenuMgr & menuManager = m_app->vrMenuMgr();
@@ -1950,7 +1959,6 @@ void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const in
 
 	// Load a panel
 	VArray< VRMenuComponent* > panelComps;
-	VDir vdir;
 	VRMenuId_t id( uniqueId.Get( 1 ) );
 
 	//int  folderIndexShifted = folderIndex << 24;
@@ -2004,11 +2012,9 @@ void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const in
     VString appCacheThumbPath = m_appCachePath + this->thumbName(relativeThumbPath);
 
 	// if this url doesn't exist locally
-    if ( !vdir.exists ( panoUrl ) )
-	{
+    if (!VFile::Exists(panoUrl)) {
 		// Check app cache to see if we already downloaded it
-        if ( vdir.exists( appCacheThumbPath ) )
-		{
+        if (VFile::Exists(appCacheThumbPath)) {
 			finalThumb = appCacheThumbPath;
 		}
 		else // download and cache it
@@ -2026,8 +2032,7 @@ void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const in
         if ( !GetFullPath( m_thumbSearchPaths, thumbName, finalThumb ) )
 		{
 			// Try app cache for cached user pano thumbs
-            if ( vdir.exists( appCacheThumbPath ) )
-			{
+            if (VFile::Exists(appCacheThumbPath)) {
 				finalThumb = appCacheThumbPath;
 			}
 			else
@@ -2042,12 +2047,11 @@ void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const in
 
 					finalThumb = appCacheThumbPath;
 
-					vdir.makePath( finalThumb, S_IRUSR | S_IWUSR );
-
-					if ( vdir.contains( finalThumb, W_OK ) )
-					{
-                        if ( vdir.exists( panoData->url ) )
-						{
+                    VDir thumbDir(finalThumb);
+                    if (!thumbDir.exists()) {
+                        thumbDir.makeDir();
+                    } else {
+                        if (VFile::Exists(panoData->url)) {
 							OvrCreateThumbCmd createCmd;
 							createCmd.sourceImagePath = panoUrl;
 							createCmd.thumbDestination = finalThumb;

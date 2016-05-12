@@ -1,5 +1,6 @@
 #include <jni.h>
 #include <VStandardPath.h>
+#include <VFile.h>
 
 #include "OvrApp.h"
 
@@ -33,11 +34,20 @@ void OvrApp::init(const VString &fromPackage, const VString &launchIntentJSON, c
 	VString	        SceneFile;
 	VArray<VString>   SearchPaths;
 
+    VStandardPath::Info pathList[] = {
+        {VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/"},
+        {VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, ""},
+        {VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/"},
+        {VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, ""}
+    };
+
     const VStandardPath &paths = vApp->storagePaths();
-    paths.PushBackSearchPathIfValid(VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", SearchPaths);
-    paths.PushBackSearchPathIfValid(VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "", SearchPaths);
-    paths.PushBackSearchPathIfValid(VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", SearchPaths);
-    paths.PushBackSearchPathIfValid(VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "", SearchPaths);
+    for (const VStandardPath::Info &pathInfo : pathList) {
+        VString path = paths.findFolder(pathInfo);
+        if (path.size() > 0 && VFile::IsReadable(path)) {
+            SearchPaths.append(std::move(path));
+        }
+    }
 
 	if ( GetFullPath( SearchPaths, scenePath, SceneFile ) )
 	{

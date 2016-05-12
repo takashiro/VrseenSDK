@@ -1,15 +1,4 @@
-/*
- * VDir.cpp
- *
- *  Created on: 2016年3月18日
- *      Author: gaojialing
- */
 #include "VDir.h"
-
-#include "VPath.h"
-#include "VString.h"
-
-#include "VStringHash.h"
 
 #include <sys/stat.h>
 #include <dirent.h>
@@ -18,50 +7,38 @@
 
 NV_NAMESPACE_BEGIN
 
-VDir::VDir(const VPath &path)
-{
-    m_path = path;
-}
-
 VDir::VDir()
+    : m_path(".")
 {
 }
 
-const VPath &VDir::getPath() const
+VDir::VDir(const VPath &path)
+    : m_path(path)
 {
-    return m_path;
 }
 
-bool VDir::exists(const VString &filename)
+bool VDir::exists() const
 {
-    struct stat st;
-    int result = stat(filename.toCString(), &st);
-    return result == 0;
+    return access(m_path.toUtf8().data(), F_OK) == 0;
 }
 
-bool VDir::contains(VPath path, mode_t mode)
+bool VDir::contains(const VString &path)
 {
-    int len = path.size();
-    if (path.at(len - 1) != '/') { // directory ends in a slash
-        int end = len - 1;
-        for (; end > 0 && path.at(end) != '/'; end--)
-            ;
-        path = VPath(path.data(), end);
-    }
-    return access(path.toCString(), mode) == 0;
+    VString fullPath = m_path + path;
+    return access(fullPath.toUtf8().data(), F_OK) == 0;
 }
 
-void VDir::makePath(const VPath &path, mode_t mode)
+void VDir::makeDir()
 {
-    char *vpath = strdup(path.toUtf8().data());
-    char *currentChar = nullptr;
+    char *path = strdup(m_path.toUtf8().data());
+    int mode = S_IRUSR | S_IWUSR;
 
-    for (currentChar = vpath + 1; *currentChar; ++currentChar) {
+    for (char *currentChar = path + 1; *currentChar; ++currentChar) {
         if (*currentChar == '/') {
             *currentChar = 0;
-            DIR * checkDir = opendir(vpath);
+            DIR *checkDir = opendir(path);
             if (checkDir == NULL) {
-                mkdir(vpath, mode);
+                mkdir(path, mode);
             } else {
                 closedir(checkDir);
             }
@@ -69,71 +46,59 @@ void VDir::makePath(const VPath &path, mode_t mode)
         }
     }
 
-    free(vpath);
+    free(path);
+}
+
+bool VDir::isReadable() const
+{
+    return access(m_path.toUtf8().data(), R_OK) == 0;
+}
+
+bool VDir::isWritable() const
+{
+    return access(m_path.toUtf8().data(), W_OK) == 0;
 }
 
 VArray<VString> VDir::entryList() const
 {
-    VArray<VString> strings;
-    if (0 == getPath().size()) {
-        return strings;
-    }
-    const char* DirPath = getPath().toCString();
-    DIR * dir = opendir(DirPath);
+    VArray<VString> entries;
+    DIR *dir = opendir(m_path.toUtf8().data());
     if (dir != NULL) {
-        struct dirent * entry;
+        struct dirent *entry;
         while ((entry = readdir(dir)) != NULL) {
             if (entry->d_name[0] == '.') {
                 continue;
             }
             if (entry->d_type == DT_DIR) {
-                VString s(DirPath);
-                s += entry->d_name;
-                s += "/";
-                strings.append(s);
+                VString subdir(entry->d_name);
+                subdir += u'/';
+                entries.append(std::move(subdir));
             } else if (entry->d_type == DT_REG) {
-                VString s(DirPath);
-                s += entry->d_name;
-                strings.append(s);
+                VString file(entry->d_name);
+                entries.append(std::move(file));
             }
         }
         closedir(dir);
     }
-    std::sort(strings.begin(), strings.end());
-    return strings;
+    std::sort(entries.begin(), entries.end());
+    return entries;
 }
 
 VArray<VString> VDir::Search(const VArray<VString> &searchPaths, const VString &relativePath)
 {
-    VArray<VString> uniqueStrings;
+    VArray<VString> result;
 
-    const int numSearchPaths = searchPaths.length();
-    for (int index = 0; index < numSearchPaths; ++index) {
-        const VString fullPath = searchPaths[index] + VString(relativePath);
+    for (const VString &searchPath : searchPaths) {
+        const VString fullPath = searchPath + relativePath;
 
-        DIR * dir = opendir(fullPath.toCString());
-        if (dir != NULL) {
-            struct dirent * entry;
-            while ((entry = readdir(dir)) != NULL) {
-                if (entry->d_name[0] == '.') {
-                    continue;
-                }
-                if (entry->d_type == DT_DIR) {
-                    VString s(relativePath);
-                    s += entry->d_name;
-                    s += "/";
-                    uniqueStrings.push_back(s);
-                } else if (entry->d_type == DT_REG) {
-                    VString s(relativePath);
-                    s += entry->d_name;
-                    uniqueStrings.push_back(s);
-                }
-            }
-            closedir(dir);
+        VDir dir(fullPath);
+        VArray<VString> entryList = dir.entryList();
+        for (const VString &entry : entryList) {
+            result << fullPath + entry;
         }
     }
 
-    return uniqueStrings;
+    return result;
 }
 
 NV_NAMESPACE_END

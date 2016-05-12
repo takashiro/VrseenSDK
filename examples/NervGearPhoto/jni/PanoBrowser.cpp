@@ -409,9 +409,9 @@ unsigned char * PanoBrowser::createAndCacheThumbnail(const VString &soureFile, c
 	// write it out to cache
     vInfo("thumb create - writjpeg" << cacheDestinationFile << data << outW << outH);
 //	MakePath( cacheDestinationFile, S_IRUSR | S_IWUSR );
-	vdir.makePath( cacheDestinationFile, S_IRUSR | S_IWUSR );
-	if ( vdir.contains( cacheDestinationFile, W_OK ) )
-	{
+    VDir cacheDir(VPath(cacheDestinationFile).dirPath());
+    cacheDir.makeDir();
+    if (cacheDir.isWritable()) {
         WriteJpeg(cacheDestinationFile.toUtf8().data(), outBuffer, outW, outH );
 	}
 

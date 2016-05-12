@@ -17,6 +17,7 @@ Copyright   :   Copyright 2012 Oculus VR, LCC. All Rights reserved.
 #include <VEyeItem.h>
 #include <VFrame.h>
 #include <App.h>
+#include <VFile.h>
 
 extern "C"
 {
@@ -56,10 +57,19 @@ void VrScene::init(const VString &fromPackage, const VString &launchIntentJSON, 
 {
 	vInfo("VrScene::OneTimeInit");
 
-    vApp->storagePaths().PushBackSearchPathIfValid(VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", SearchPaths);
-    vApp->storagePaths().PushBackSearchPathIfValid(VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "", SearchPaths);
-    vApp->storagePaths().PushBackSearchPathIfValid(VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", SearchPaths);
-    vApp->storagePaths().PushBackSearchPathIfValid(VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "", SearchPaths);
+    VStandardPath::Info pathList[] = {
+        {VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/"},
+        {VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, ""},
+        {VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/"},
+        {VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, ""}
+    };
+    const VStandardPath &storages = vApp->storagePaths();
+    for (const VStandardPath::Info &pathInfo : pathList) {
+        VString path = storages.findFolder(pathInfo);
+        if (path.length() > 0 && VFile::IsReadable(path)) {
+            SearchPaths.append(std::move(path));
+        }
+    }
 
 	// Check if we already loaded the model through an intent
 	if ( !ModelLoaded )

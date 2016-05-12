@@ -27,7 +27,9 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include <VApkFile.h>
 #include <VThread.h>
 #include <VStandardPath.h>
-#include "VLog.h"
+#include <VFile.h>
+#include <VLog.h>
+
 #include "io/VFileOperation.h"
 
 NV_NAMESPACE_BEGIN
@@ -201,11 +203,20 @@ void Oculus360Photos::init(const VString &fromPackage, const VString &launchInte
     fileExtensions.badExtensions.append( "_nx.jpg" );
     fileExtensions.badExtensions.append( "_ny.jpg" );
 
+    VStandardPath::Info pathInfoList[] = {
+        {VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/"},
+        {VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, ""},
+        {VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/"},
+        {VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, ""}
+    };
+
     const VStandardPath &storagePaths = vApp->storagePaths();
-    storagePaths.PushBackSearchPathIfValid( VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", m_searchPaths );
-    storagePaths.PushBackSearchPathIfValid( VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "", m_searchPaths );
-    storagePaths.PushBackSearchPathIfValid( VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/", m_searchPaths );
-    storagePaths.PushBackSearchPathIfValid( VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "", m_searchPaths );
+    for (const VStandardPath::Info &pathInfo : pathInfoList) {
+        VString path = storagePaths.findFolder(pathInfo);
+        if (path.length() > 0 && VFile::IsReadable(path)) {
+            m_searchPaths.append(std::move(path));
+        }
+    }
 
     vInfo("360 PHOTOS using" << m_searchPaths.length() << "searchPaths");
 

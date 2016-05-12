@@ -11,7 +11,6 @@ NV_NAMESPACE_BEGIN
 class VStandardPath
 {
 public:
-
     enum StorageType
     {
         // By default data here is private and other apps shouldn't be able to access data from here
@@ -47,14 +46,20 @@ public:
         FolderTypeCount
     };
 
-    VStandardPath( JNIEnv * jni, jobject activityObj );
+    struct Info
+    {
+        StorageType storageType;
+        FolderType folderType;
+        const char *subfolder;
+    };
+
+    VStandardPath(JNIEnv *jni, jobject activityObj);
     ~VStandardPath();
 
-    void PushBackSearchPathIfValid(StorageType toStorage, FolderType toFolder, const char * subfolder, VArray<VString> & searchPaths ) const;
-    void PushBackSearchPathIfValidPermission(StorageType toStorage, FolderType toFolder, const char * subfolder, mode_t permission, VArray<VString> &searchPaths) const;
-    bool GetPathIfValidPermission(StorageType toStorage, FolderType toFolder, const char * subfolder, mode_t permission, VString & outPath) const;
-    bool HasStoragePath(const StorageType toStorage, const FolderType toFolder) const;
-    long long GetAvailableInternalMemoryInBytes(JNIEnv * jni, jobject activityObj) const;
+    bool contains(StorageType toStorage, FolderType toFolder) const;
+
+    VString findFolder(StorageType toStorage, FolderType toFolder, const char *subfolder) const;
+    VString findFolder(const Info &info) const { return findFolder(info.storageType, info.folderType, info.subfolder); }
 
 private:
     NV_DECLARE_PRIVATE
