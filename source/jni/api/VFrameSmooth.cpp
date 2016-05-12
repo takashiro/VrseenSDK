@@ -151,32 +151,6 @@ VR4Matrixf CalculateTimeWarpMatrix2( const VQuatf &inFrom, const VQuatf &inTo )
     return ( lastSensorMatrix.Inverted() * lastViewMatrix ).Inverted();
 }
 
-VR4Matrixf CalculateTimeWarpMatrix2(const VRotationState &from, const VRotationState &to)
-{
-    VQuatf inFrom;
-    inFrom.w = from.w;
-    inFrom.x = from.x;
-    inFrom.y = from.y;
-    inFrom.z = from.z;
-
-    VQuatf inTo;
-    inTo.w = to.w;
-    inTo.x = to.x;
-    inTo.y = to.y;
-    inTo.z = to.z;
-    return CalculateTimeWarpMatrix2(inFrom, inTo);
-}
-
-VR4Matrixf CalculateTimeWarpMatrix2(const VQuatf &inFrom, const VRotationState &state)
-{
-    VQuatf inTo;
-    inTo.w = state.w;
-    inTo.x = state.x;
-    inTo.y = state.y;
-    inTo.z = state.z;
-    return CalculateTimeWarpMatrix2(inFrom, inTo);
-}
-
 static bool IsContextPriorityExtensionPresent()
 {
     EGLint currentPriorityLevel = -1;
