@@ -233,12 +233,8 @@ void Oculus360Videos::init(const VString &fromPackage, const VString &launchInte
     const VStandardPath &storagePaths = vApp->storagePaths();
     for (const VStandardPath::Info &pathInfo : pathInfoList) {
         VString path = storagePaths.findFolder(pathInfo);
-        vWarn("Check path: " << path);
         if (path.length() > 0 && VFile::IsReadable(path)) {
             SearchPaths.append(std::move(path));
-            vWarn("true");
-        } else {
-            vWarn("false");
         }
     }
 

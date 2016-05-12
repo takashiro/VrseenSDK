@@ -652,7 +652,7 @@ void VFrameSmooth::Private::threadFunction()
         const double current = ceil( getFractionalVsync() );
         if ( abs( current - vsync ) > 2.0 )
         {
-            vInfo("Changing vsync from " << vsync << " to " << current);
+            //vInfo("Changing vsync from " << vsync << " to " << current);
             vsync = current;
         }
         if ( m_shutdownRequest.state() )
@@ -679,7 +679,7 @@ void VFrameSmooth::Private::threadFunction()
            }
        }
 
-        vInfo( "WarpThreadLoop enter rendertodisplay");
+        //vInfo( "WarpThreadLoop enter rendertodisplay");
         renderToDisplay( vsync,m_screen.isFrontBuffer() ? spAsyncFrontBufferPortrait
                                                         : spAsyncSwappedBufferPortrait);
     }
@@ -1041,9 +1041,7 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
                 thisEyeBufferNum = latestEyeBufferNum - back;
                 if ( thisEyeBufferNum <= 0 )
                 {
-
-                    vInfo("WarpToScreen: No valid Eye Buffers");
-
+                    //vInfo("WarpToScreen: No valid Eye Buffers");
                     break;
                 }
 
@@ -1101,7 +1099,7 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
             if ( m_texId[eye][0] == 0 )
             {
 
-                vInfo("WarpToScreen: Nothing valid to draw");
+                //vInfo("WarpToScreen: Nothing valid to draw");
 
                 sleepUntilTimePoint( framePointTimeInSeconds( sleepTargetVsync + 1.0f ), false );
                 break;
