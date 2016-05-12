@@ -171,7 +171,7 @@ void OvrSceneView::LoadWorldModel(const VString &sceneFileName, const MaterialPa
 	}
 
 	// Load the scene we are going to draw
-    ModelFile * model = LoadModelFile( sceneFileName.toCString(), GlPrograms, materialParms );
+    ModelFile * model = LoadModelFile( sceneFileName.toUtf8().data(), GlPrograms, materialParms );
 
 	SetWorldModel( *model );
 

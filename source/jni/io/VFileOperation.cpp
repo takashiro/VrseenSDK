@@ -70,7 +70,7 @@ void VFileOperation::fileInit()
                 | std::ios_base::binary;
     }
 
-    open(m_fileName.toCString(), openMode);
+    open(m_fileName.toUtf8().data(), openMode);
 
     m_opened = is_open();
 
@@ -587,7 +587,7 @@ bool    VSysFile::GetFileStat(VFileStat* pfileStat, const VString& path)
 {
     struct stat fileStat;
 
-    if (stat(path.toCString(), &fileStat) != 0) {
+    if (stat(path.toUtf8().data(), &fileStat) != 0) {
         return false;
     }
 

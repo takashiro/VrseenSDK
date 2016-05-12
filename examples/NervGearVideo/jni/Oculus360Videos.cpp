@@ -410,7 +410,7 @@ void Oculus360Videos::command(const VEvent &event )
 		VString message;
 		VrLocale::GetString( vApp->vrJni(), vApp->javaObject(), "@string/playback_failed", "@string/playback_failed", message );
         VString fileName = ActiveVideo->url.fileName();
-        message = VrLocale::GetXliffFormattedString( message, fileName.toCString() );
+        message = VrLocale::GetXliffFormattedString(message, fileName.toLatin1().data());
 		BitmapFont & font = vApp->defaultFont();
 		font.WordWrapText( message, 1.0f );
         vApp->text.show(message, 4.5f);

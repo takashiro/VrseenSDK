@@ -1107,7 +1107,7 @@ GlTexture LoadTextureFromBuffer( const char * fileName, const void*  buffer, uin
 	}
 	else
 	{
-		vInfo("unsupported file extension " << ext.toCString());
+        vInfo("unsupported file extension " << ext);
 	}
 
 	// Create a default texture if the load failed

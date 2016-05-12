@@ -257,17 +257,6 @@ std::string VString::toStdString() const
     return str;
 }
 
-const char *VString::toCString() const
-{
-    //@to-do: fix the memory leak
-    char *str = new char[size() + 1];
-    for (uint i = 0; i < size(); i++) {
-        str[i] = at(i);
-    }
-    str[size()] = '\0';
-    return str;
-}
-
 VByteArray VString::toUtf8() const
 {
     VByteArray utf8;

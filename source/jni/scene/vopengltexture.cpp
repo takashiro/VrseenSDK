@@ -534,7 +534,7 @@ VOpenGLTexture::VOpenGLTexture(VImage* origImage, const VPath& name, const Textu
     }
     else
     {
-        vInfo("unsupported file extension " << ext.toCString());
+        vInfo("unsupported file extension " << ext);
     }
 
     // Create a default texture if the load failed

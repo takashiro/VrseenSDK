@@ -747,7 +747,7 @@ bool BitmapFontLocal::Load(const VString &languagePackageName, const VString &fo
 
     AppendPath(imagePath, baseName);
     vInfo("imagePath = " << imagePath);
-    if (!LoadImage(languagePackageFile, imagePath.toCString())) {
+    if (!LoadImage(languagePackageFile, imagePath)) {
 		return false;
 	}
 

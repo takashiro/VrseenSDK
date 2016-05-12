@@ -8,6 +8,7 @@
 #include <stdlib.h>
 
 #include "VString.h"
+#include "VFile.h"
 
 #include "3rdParty/stb/stb_image_write.h"
 #include "GlTexture.h"
@@ -223,18 +224,14 @@ struct EyePairs
 
 static const int MAX_EYE_SETS = 3;
 
-static int FindUnusedFilename( const char * fmt, int max )
+static int FindUnusedFilename(const char *format, int max)
 {
-    for ( int i = 0 ; i <= max ; i++ )
-    {
-        VString buf;
-        buf.sprintf(fmt, i);
-        FILE * f = fopen( buf.toCString(), "r" );
-        if ( !f )
-        {
+    for (int i = 0; i <= max; i++) {
+        VString fileName;
+        fileName.sprintf(format, i);
+        if (!VFile::Exists(fileName)) {
             return i;
         }
-        fclose( f );
     }
     return max;
 }
@@ -269,13 +266,13 @@ static void ScreenShotTexture( const int eyeResolution, const GLuint texId )
     filename.sprintf(fmt, v);
 
     const unsigned char * flipped = (buf + eyeResolution*eyeResolution*4);
-    stbi_write_bmp( filename.toCString(), eyeResolution, eyeResolution, 4, (void *)flipped );
+    stbi_write_bmp( filename.toUtf8().data(), eyeResolution, eyeResolution, 4, (void *)flipped );
 
     unsigned char * shrunk1 = VFileOperation::QuarterImageSize( flipped, eyeResolution, eyeResolution, true );
     unsigned char * shrunk2 = VFileOperation::QuarterImageSize( shrunk1, eyeResolution>>1, eyeResolution>>1, true );
     VString filename2;
     filename2.sprintf("/sdcard/Oculus/thumbnail%03i.pvr", v);
-    VFileOperation::Write32BitPvrTexture( filename2.toCString(), shrunk2, eyeResolution>>2, eyeResolution>>2 );
+    VFileOperation::Write32BitPvrTexture( filename2.toUtf8().data(), shrunk2, eyeResolution>>2, eyeResolution>>2 );
 
     free( buf );
     free( shrunk1 );

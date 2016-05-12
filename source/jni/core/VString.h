@@ -80,7 +80,6 @@ public:
     VString toLower() const;
 
     std::string toStdString() const;
-    const char *toCString() const;
 
     VByteArray toUtf8() const;
     static VString fromUtf8(const VByteArray &utf8);
