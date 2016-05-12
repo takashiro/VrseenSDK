@@ -3,14 +3,13 @@
 #include "VMatrix.h"
 #include "VKernel.h"
 
-class VDevice;
 
 NV_NAMESPACE_BEGIN
 
 class VFrameSmooth
 {
 public:
-    VFrameSmooth(bool async, VDevice *device);
+    VFrameSmooth(bool async, bool wantSingleBuffer);
     ~VFrameSmooth();
 
     void setSmoothEyeTexture(uint texID,ushort eye,ushort layer);

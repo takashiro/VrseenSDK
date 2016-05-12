@@ -184,13 +184,13 @@ extern "C"
 
 struct VFrameSmooth::Private
 {
-    Private(bool async,VDevice *device):
+    Private(bool async, bool wantSingleBuffer):
             m_untexturedMvpProgram(),
             m_debugLineProgram(),
             m_warpPrograms(),
             m_blackTexId( 0 ),
             m_defaultLoadingIconTexId( 0 ),
-            m_wantFrontBuffer(true),
+            m_wantSingleBuffer(wantSingleBuffer),
             m_hasEXT_sRGB_write_control( false ),
             m_sStartupTid( 0 ),
             m_jni( NULL ),
@@ -222,7 +222,7 @@ struct VFrameSmooth::Private
         m_lastsmoothTimeInSeconds.setState( VTimer::Seconds() );
         m_smoothThread = 0;
         m_async = async;
-        m_device = device;
+        m_device = VDevice::instance();
         m_eyeBufferCount.setState( 0 );
 // 初始化smooth线程的gl状态
         m_eglStatus.updateDisplay();
@@ -276,7 +276,7 @@ struct VFrameSmooth::Private
 
         if ( !m_async )
         {
-            m_screen.initForCurrentSurface( m_jni, m_wantFrontBuffer,m_buildVersionSDK);
+            m_screen.initForCurrentSurface( m_jni, m_wantSingleBuffer,m_buildVersionSDK);
             createFrameworkGraphics();
             vInfo("Skipping thread setup because !AsynchronousTimeWarp");
         }
@@ -435,7 +435,7 @@ struct VFrameSmooth::Private
 
     //single buffer
     DirectRender	m_screen;
-    bool m_wantFrontBuffer;
+    bool m_wantSingleBuffer;
     int m_buildVersionSDK;
 
     void			renderToDisplay( const double vsyncBase, const swapProgram_t & swap );
@@ -690,8 +690,8 @@ void VFrameSmooth::Private::threadFunction()
 }
 
 
-VFrameSmooth::VFrameSmooth(bool async,VDevice *device)
-        : d(new Private(async,device))
+VFrameSmooth::VFrameSmooth(bool async,bool wantSingleBuffer)
+        : d(new Private(async,wantSingleBuffer))
 {
 }
 
@@ -751,7 +751,7 @@ void VFrameSmooth::Private::smoothThreadInit()
         vFatal("eglMakeCurrent failed: " << m_eglStatus.getEglErrorString());
     }
 
-    m_screen.initForCurrentSurface( m_jni, m_wantFrontBuffer,m_buildVersionSDK);
+    m_screen.initForCurrentSurface( m_jni, m_wantSingleBuffer,m_buildVersionSDK);
 
     createFrameworkGraphics();
     m_smoothThreadTid = gettid();

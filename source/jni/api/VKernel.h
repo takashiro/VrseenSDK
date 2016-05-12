@@ -48,7 +48,6 @@ enum eExitType {
 
 NV_NAMESPACE_BEGIN
 
-class VDevice;
 
 class VKernel
 {
@@ -58,7 +57,6 @@ public:
     void exit();
     void destroy(eExitType type);
 
-    VDevice *device;
     bool asyncSmooth;
     int msaa;
     bool isRunning;

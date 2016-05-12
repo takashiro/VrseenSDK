@@ -136,6 +136,9 @@ static VEyeItem::Settings DefaultVrParmsForRenderer(const VEglDriver & glOperati
     VEyeItem::settings.colorFormat = VColor::COLOR_8888;
     VEyeItem::settings.commonParameterDepth = VEyeItem::CommonParameter::DepthFormat_24;
 
+    if(VOsBuild::getString(VOsBuild::Model) == "ZTE A2017") VEyeItem::settings.wantSingleBuffer = false;
+    else VEyeItem::settings.wantSingleBuffer = true;
+
     return VEyeItem::settings;
 }
 
@@ -735,8 +738,11 @@ struct App::Private
             }
 
             //use single buffer
-            attribs[numAttribs++] = EGL_RENDER_BUFFER;
-            attribs[numAttribs++] = EGL_SINGLE_BUFFER;
+            if(self->vrParms().wantSingleBuffer)
+            {
+                attribs[numAttribs++] = EGL_RENDER_BUFFER;
+                attribs[numAttribs++] = EGL_SINGLE_BUFFER;
+            }
 
             attribs[numAttribs++] = EGL_NONE;
 
@@ -745,17 +751,20 @@ struct App::Private
             windowSurface = eglCreateWindowSurface(m_vrGlStatus.m_display, m_vrGlStatus.m_config,
                     nativeWindow, attribs);
 
-            if ( windowSurface == EGL_NO_SURFACE )
+            if (windowSurface == EGL_NO_SURFACE )
             {
-                const EGLint attribs2[] =
+                numAttribs = 0;
+                //use single buffer
+                if(self->vrParms().wantSingleBuffer)
                 {
-                        //use single buffer
-                        EGL_RENDER_BUFFER, EGL_SINGLE_BUFFER,
-                        EGL_NONE
-                };
+                    attribs[numAttribs++] = EGL_RENDER_BUFFER;
+                    attribs[numAttribs++] = EGL_SINGLE_BUFFER;
+                }
+                attribs[numAttribs++] = EGL_NONE;
+
 
                 windowSurface = eglCreateWindowSurface(m_vrGlStatus.m_display, m_vrGlStatus.m_config,
-                        nativeWindow, attribs2);
+                        nativeWindow, attribs);
                 if (windowSurface == EGL_NO_SURFACE)
                 {
                     vFatal("eglCreateWindowSurface failed:" << m_vrGlStatus.getEglErrorString());
@@ -1397,14 +1406,7 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
     d->sensorForNextWarp.z = 0;
 
 	// Default time warp parms
-   d->kernel->InitTimeWarpParms();
-
-	// Default EyeParms
-    VEyeItem::settings.resolution = 1024;
-    VEyeItem::settings.multisamples = 4;
-    VEyeItem::settings.colorFormat = VColor::COLOR_8888;
-    VEyeItem::settings.commonParameterDepth = VEyeItem::CommonParameter::DepthFormat_24;
-
+    d->kernel->InitTimeWarpParms();
     d->javaObject = d->uiJni->NewGlobalRef(activityObject);
 
 	// A difficulty with JNI is that we can't resolve our (non-Android) package
@@ -1748,7 +1750,7 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
     //
     // Doing this dynamically based just on time causes visible flickering at the
     // periphery when the fov is increased, so only do it if minimumVsyncs is set.
-    const float fovDegrees = d->kernel->device->eyeDisplayFov[0] +
+    const float fovDegrees = VDevice::instance()->eyeDisplayFov[0] +
             ( ( d->kernel->m_minimumVsyncs > 1 ) ? 10.0f : 0.0f ) +
             ( ( !d->showVignette ) ? 5.0f : 0.0f );
 

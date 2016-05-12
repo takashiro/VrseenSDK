@@ -33,6 +33,7 @@ public:
                 : resolution(1024)
                 , widthScale(1)
                 , multisamples(2)
+                , wantSingleBuffer(true)
                 , colorFormat(VColor::COLOR_8888)
                 , commonParameterDepth(DepthFormat_24)
                 , commonParameterTexture(NearestTextureFilter)
@@ -42,6 +43,8 @@ public:
         int resolution;
         int widthScale;
         int multisamples;
+        bool wantSingleBuffer;
+
         VColor::Format colorFormat;
         CommonParameter commonParameterDepth;
         CommonParameter commonParameterTexture;

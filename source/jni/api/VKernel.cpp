@@ -213,7 +213,6 @@ VKernel::VKernel()
 {
     asyncSmooth = true;
     msaa = 0;
-    device = VDevice::instance();
 
     m_smoothOptions =0;
     const VR4Matrixf tanAngleMatrix = VR4Matrixf::TanAngleMatrixFromFov( 90.0f );
@@ -246,39 +245,40 @@ VKernel::VKernel()
 
 void UpdateHmdInfo()
 {
-    VKernel *instance = VKernel::instance();
+    VDevice *device = VDevice::instance();
+
     // Only use the Android info if we haven't explicitly set the screenWidth / height,
     // because they are reported wrong on the note.
-    if(!instance->device->widthbyMeters)
+    if(!device->widthbyMeters)
     {
         jmethodID getDisplayWidth = Jni->GetStaticMethodID( VrLibClass, "getDisplayWidth", "(Landroid/app/Activity;)F" );
         if ( !getDisplayWidth )
         {
             vFatal("couldn't get getDisplayWidth");
         }
-        instance->device->widthbyMeters = Jni->CallStaticFloatMethod(VrLibClass, getDisplayWidth, ActivityObject);
+        device->widthbyMeters = Jni->CallStaticFloatMethod(VrLibClass, getDisplayWidth, ActivityObject);
 
         jmethodID getDisplayHeight = Jni->GetStaticMethodID( VrLibClass, "getDisplayHeight", "(Landroid/app/Activity;)F" );
         if ( !getDisplayHeight )
         {
             vFatal("couldn't get getDisplayHeight");
         }
-        instance->device->heightbyMeters = Jni->CallStaticFloatMethod( VrLibClass, getDisplayHeight, ActivityObject );
+        device->heightbyMeters = Jni->CallStaticFloatMethod( VrLibClass, getDisplayHeight, ActivityObject );
     }
 
     // Update the dimensions in pixels directly from the window
-    instance->device->widthbyPixels = windowSurfaceWidth;
-    instance->device->heightbyPixels = windowSurfaceHeight;
+    device->widthbyPixels = windowSurfaceWidth;
+    device->heightbyPixels = windowSurfaceHeight;
 
-    vInfo("hmdInfo.lensSeparation =" << instance->device->lensDistance);
-    vInfo("hmdInfo.widthMeters =" << instance->device->widthbyMeters);
-    vInfo("hmdInfo.heightMeters =" << instance->device->heightbyMeters);
-    vInfo("hmdInfo.widthPixels =" << instance->device->widthbyPixels);
-    vInfo("hmdInfo.heightPixels =" << instance->device->heightbyPixels);
-    vInfo("hmdInfo.eyeTextureResolution[0] =" << instance->device->eyeDisplayResolution[0]);
-    vInfo("hmdInfo.eyeTextureResolution[1] =" << instance->device->eyeDisplayResolution[1]);
-    vInfo("hmdInfo.eyeTextureFov[0] =" << instance->device->eyeDisplayFov[0]);
-    vInfo("hmdInfo.eyeTextureFov[1] =" << instance->device->eyeDisplayFov[1]);
+    vInfo("hmdInfo.lensSeparation =" << device->lensDistance);
+    vInfo("hmdInfo.widthMeters =" << device->widthbyMeters);
+    vInfo("hmdInfo.heightMeters =" << device->heightbyMeters);
+    vInfo("hmdInfo.widthPixels =" << device->widthbyPixels);
+    vInfo("hmdInfo.heightPixels =" << device->heightbyPixels);
+    vInfo("hmdInfo.eyeTextureResolution[0] =" << device->eyeDisplayResolution[0]);
+    vInfo("hmdInfo.eyeTextureResolution[1] =" << device->eyeDisplayResolution[1]);
+    vInfo("hmdInfo.eyeTextureFov[0] =" << device->eyeDisplayFov[0]);
+    vInfo("hmdInfo.eyeTextureFov[1] =" << device->eyeDisplayFov[1]);
 }
 
 
@@ -364,7 +364,7 @@ void VKernel::run()
         vInfo("Cleared JNI exception");
     }
 
-    frameSmooth = new VFrameSmooth(asyncSmooth, device);
+    frameSmooth = new VFrameSmooth(asyncSmooth, vApp->vrParms().wantSingleBuffer);
 
     jmethodID setSchedFifoId = JniUtils::GetStaticMethodID(Jni, VrLibClass, "setSchedFifoStatic", "(Landroid/app/Activity;II)I");
     Jni->CallStaticIntMethod(VrLibClass, setSchedFifoId, ActivityObject, gettid(), 1);
