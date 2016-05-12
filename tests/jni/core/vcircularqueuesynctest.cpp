@@ -28,6 +28,19 @@ void test()
         for (int i = 0;i < vqr.size();i++) {
             vInfo("real: " << vqr.get(i) << " except: " << i);
         }
+
+        vqr.clear();
+        vqr.append(1);
+        vqr.prepend(0);
+        vqr.append(2);
+        for (int i = 0;i < vqr.size();i++) {
+            vInfo("real: " << vqr.get(i) << " except: " << i);
+        }
+        vqr.append(3);
+        vqr.prepend(0);
+        for (int i = 0;i < vqr.size();i++) {
+            vInfo("real: " << vqr.get(i) << " except: " << i);
+        }
     }
 
     //performance
@@ -49,6 +62,7 @@ void test()
         vInfo("VCircularQueueSync::append  loop:" << LOOPMAX
                 << " time:" << clock()-start);
 
+        vq.clear();
         start = clock();
         for (int i = 0;i < LOOPMAX;i++) {
             vq.prepend(1);
@@ -56,6 +70,7 @@ void test()
         vInfo("VCircularQueue::prepend  loop:" << LOOPMAX
                 << " time:" << clock()-start);
 
+        vqs.clear();
         start = clock();
         for (int i = 0;i < LOOPMAX;i++) {
             vqs.prepend(1);

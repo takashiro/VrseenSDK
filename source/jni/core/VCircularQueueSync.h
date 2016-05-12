@@ -80,6 +80,12 @@ public:
         return data[(front + index) % m_capacity];
     }
 
+    void clear()
+    {
+        count = 0;
+        front = tail = 0;
+    }
+
 private:
     uint m_capacity;
     int count;
