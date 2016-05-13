@@ -7,92 +7,81 @@
 
 #pragma once
 
-#include "pthread.h"
-#include "vglobal.h"
-#include "assert.h"
+#include <VMutex.h>
+
 NV_NAMESPACE_BEGIN
 
 template <class E>
 class VCircularQueueSync
 {
 public:
-    VCircularQueueSync(uint capacity = 500) :
-        m_capacity(capacity),
-        count(0),
-        front(0),
-        tail(0),
-        data(new E[m_capacity])
+    VCircularQueueSync(uint capacity = 500)
+        : m_capacity(capacity)
+        , m_count(0)
+        , m_front(0)
+        , m_tail(0)
+        , m_data(new E[m_capacity])
+        , m_mutex(false)
     {
-        assert(0 == pthread_mutex_init(&m_mutex, nullptr));
     }
 
     ~VCircularQueueSync()
     {
-        assert(0 == pthread_mutex_destroy(&m_mutex));
-        delete [] data;
+        delete[] m_data;
     }
 
-    bool isFull() const
-    {
-        assert(0 == pthread_mutex_lock(&m_mutex));
-        bool val = count >= m_capacity;
-        assert(0 == pthread_mutex_unlock(&m_mutex));
-        return  val;
-    }
+    bool isEmpty() const { return m_front == m_tail; }
+
+    bool isFull() const { return m_count >= m_capacity; }
 
     uint capacity() const { return m_capacity; }
 
     void prepend(const E &element)
     {
-        assert(0 == pthread_mutex_lock(&m_mutex));
-        front = (m_capacity + front - 1) % m_capacity;
-        data[front] = element;
-        if (count >= m_capacity) {
-            tail = front;
+        m_mutex.lock();
+        m_front = (m_capacity + m_front - 1) % m_capacity;
+        m_data[m_front] = element;
+        if (m_count >= m_capacity) {
+            m_tail = m_front;
+        } else {
+            m_count++;
         }
-        else {
-            count++;
-        }
-        assert(0 == pthread_mutex_unlock(&m_mutex));
+        m_mutex.unlock();
     }
 
     void append(const E &element)
     {
-        assert(0 == pthread_mutex_lock(&m_mutex));
-        data[tail] = element;
-        tail = (m_capacity + tail + 1) % m_capacity;
-        if (count >= m_capacity) {
-            front = tail;
+        m_mutex.lock();
+        m_data[m_tail] = element;
+        m_tail = (m_capacity + m_tail + 1) % m_capacity;
+        if (m_count >= m_capacity) {
+            m_front = m_tail;
         }
         else {
-            count++;
+            m_count++;
         }
-        assert(0 == pthread_mutex_unlock(&m_mutex));
+        m_mutex.unlock();
     }
 
-    int size() const
-    {
-        return count;
-    }
+    int size() const { return m_count; }
 
-    E & get(int index) const
-    {
-        return data[(front + index) % m_capacity];
-    }
+    const E &at(uint index) const { return m_data[(m_front + index) % m_capacity]; }
+    E &operator[](uint index) { return m_data[(m_front + index) % m_capacity]; }
+    const E &operator[] (uint index) const { return m_data[(m_front + index) % m_capacity]; }
 
     void clear()
     {
-        count = 0;
-        front = tail = 0;
+        m_count = 0;
+        m_front = m_tail = 0;
     }
 
 private:
     uint m_capacity;
-    int count;
-    int front;
-    int tail;
-    E * data;
-    pthread_mutex_t m_mutex;
+    int m_count;
+    int m_front;
+    int m_tail;
+    E *m_data;
+    VMutex m_mutex;
 };
 
 NV_NAMESPACE_END

@@ -6,7 +6,7 @@
 #else
 #include <assert.h>
 #undef vInfo
-#define vInfo(args) cout << args << endl
+#define vInfo(args) std::cout << args << std::endl
 #endif
 
 #include <stdlib.h>
