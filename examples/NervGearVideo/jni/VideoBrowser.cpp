@@ -22,7 +22,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "OVR_TurboJpeg.h"
 #include "linux/stat.h"
 #include <unistd.h>
-
+#include "scene/vimage.h"
 #include <VPath.h>
 #include <VApkFile.h>
 

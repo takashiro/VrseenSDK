@@ -1,6 +1,7 @@
 #pragma once
 
 #include "VIODevice.h"
+#include "core/VArray.h"
 
 NV_NAMESPACE_BEGIN
 

@@ -29,7 +29,6 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include <VThread.h>
 #include <VStandardPath.h>
 #include "VLog.h"
-#include "io/VFileOperation.h"
 
 NV_NAMESPACE_BEGIN
 

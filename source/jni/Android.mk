@@ -95,8 +95,6 @@ LOCAL_SRC_FILES  := \
 	io/VBuffer.cpp \
 	io/VFile.cpp \
 	io/VIODevice.cpp \
-	io/VBinaryFile.cpp \
-	io/VSysFile.cpp \
 	io/VDir.cpp \
 	io/VStandardPath.cpp \
 	media/VSoundManager.cpp \

@@ -8,7 +8,7 @@
 #include "VJson.h"
 #include "MappedFile.h"
 #include "VPath.h"
-
+#include "io/VBuffer.h"
 #include "api/VEglDriver.h"
 
 
