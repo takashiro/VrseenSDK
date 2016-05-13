@@ -1,20 +1,18 @@
 #include "test.h"
-#include "VCircularQueueSync.h"
 #include "VCircularQueue.h"
 
 #include <time.h>
-
-#define LOOPMAX 10000000
+#include <deque>
 
 NV_USING_NAMESPACE
 
 namespace {
 
-    void test()
+void test()
 {
     //logic
     {
-        VCircularQueueSync<int> vqr(3);
+        VCircularQueue<int> vqr(3);
         vqr.append(1);
         vqr.prepend(0);
         vqr.append(2);
@@ -53,44 +51,48 @@ namespace {
         assert(vqr.at(2) == 2);
     }
 
+
+    constexpr int loopMax = 1000000;
     //performance
     {
-        VCircularQueue<int> vq;
-        VCircularQueueSync<int> vqs;
+        std::deque<int> q1;
+        VCircularQueue<int> q2;
 
-        int start = clock();
-        for (int i = 0;i < LOOPMAX;i++) {
-            vq.append(1);
+        int timestamp = clock();
+        for (int i = 0; i < loopMax; i++) {
+            q1.push_back(1);
         }
-        vInfo("VCircularQueue::append  loop:" << LOOPMAX
-                << " time:" << clock()-start);
+        int t1 = clock() - timestamp;
 
-        start = clock();
-        for (int i = 0;i < LOOPMAX;i++) {
-            vqs.append(1);
+        timestamp = clock();
+        for (int i = 0; i < loopMax; i++) {
+            q2.append(1);
         }
-        vInfo("VCircularQueueSync::append  loop:" << LOOPMAX
-                << " time:" << clock()-start);
+        int t2 = clock() - timestamp;
 
-        vq.clear();
-        start = clock();
-        for (int i = 0;i < LOOPMAX;i++) {
-            vq.prepend(1);
-        }
-        vInfo("VCircularQueue::prepend  loop:" << LOOPMAX
-                << " time:" << clock()-start);
+        assert(t2 < t1);
+    }
 
-        vqs.clear();
-        start = clock();
-        for (int i = 0;i < LOOPMAX;i++) {
-            vqs.prepend(1);
+    {
+        int timestamp = clock();
+        std::deque<int> q1;
+        for (int i = 0; i < loopMax; i++) {
+            q1.push_front(1);
         }
-        vInfo("VCircularQueueSync::prepend  loop:" << LOOPMAX
-                << " time:" << clock()-start);
+        int t1 = clock() - timestamp;
+
+        timestamp = clock();
+        VCircularQueue<int> q2;
+        for (int i = 0; i < loopMax; i++) {
+            q2.prepend(1);
+        }
+        int t2 = clock() - timestamp;
+
+        assert(t2 < t1);
     }
 }
 
-ADD_TEST(VCircularQueueSync, test)
+ADD_TEST(VCircularQueue, test)
 }
 
 

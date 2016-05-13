@@ -112,16 +112,16 @@ private:
 
         void append(float e) {
             if (isFull()) {
-                float removed = VDeque::takeFirst();
+                float removed = first();
                 m_total -= removed;
             }
             m_total += e;
-            VDeque::append(e);
+            VCircularQueue::append(e);
         }
 
         float total() const { return m_total; }
 
-        float mean() const { return VDeque::isEmpty() ? 0.0f : (total() / (float) size()); }
+        float mean() const { return VCircularQueue::isEmpty() ? 0.0f : (total() / (float) size()); }
 
     private:
         float m_total;
