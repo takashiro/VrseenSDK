@@ -204,12 +204,6 @@ void test()
         assert(num1 == num2);
     }
 
-    //Converted to C String
-    {
-        const VString &str("res/raw/efigs_sdf.ktx");
-        assert(strcmp(str.toCString(), "res/raw/efigs_sdf.ktx") == 0);
-    }
-
     {
         //contains, startsWith, endsWith
         VString str("this is a test.");
