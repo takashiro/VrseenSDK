@@ -25,6 +25,20 @@ VBuffer::~VBuffer()
     delete d;
 }
 
+uint VBuffer::readUint() const
+{
+    const int byteNum = sizeof(uint);
+    if (m_data == NULL || byteNum > m_size - m_offset) {
+        return 0;
+    }
+    m_offset += byteNum;
+    return *(uint *)(m_data + m_offset - byteNum);
+}
+bool VBuffer::isEnd() const
+{
+    return (m_offset == m_size);
+}
+
 vint64 VBuffer::bytesAvailable() const
 {
     std::streampos curPos = d->data.tellp();

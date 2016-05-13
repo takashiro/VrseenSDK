@@ -28,19 +28,8 @@ public:
         m_offset += byteNum;
         return true;
     }
-    uint readUint() const
-    {
-        const int byteNum = sizeof(uint);
-        if (m_data == NULL || byteNum > m_size - m_offset) {
-            return 0;
-        }
-        m_offset += byteNum;
-        return *(uint *)(m_data + m_offset - byteNum);
-    }
-    bool isEnd() const
-    {
-        return (m_offset == m_size);
-    }
+    uint readUint() const;
+    bool isEnd() const;
 protected:
     vint64 readData(char *data, vint64 maxSize) override;
     vint64 writeData(const char *data, vint64 maxSize) override;
