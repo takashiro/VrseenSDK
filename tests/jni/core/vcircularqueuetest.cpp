@@ -1,18 +1,16 @@
-/*
- * vcircularqueuesync.cpp
- *
- *  Created on: 2016年5月11日
- *      Author: yangkai
- */
 #include "test.h"
-#include "core/VCircularQueueSync.h"
-#include "core/VCircularQueue.h"
-#include <ctime>
-#define LOOPMAX 10000
+#include "VCircularQueueSync.h"
+#include "VCircularQueue.h"
+
+#include <time.h>
+
+#define LOOPMAX 10000000
+
 NV_USING_NAMESPACE
 
 namespace {
-void test()
+
+    void test()
 {
     //logic
     {
@@ -20,27 +18,39 @@ void test()
         vqr.append(1);
         vqr.prepend(0);
         vqr.append(2);
-        for (int i = 0;i < vqr.size();i++) {
-            vInfo("real: " << vqr.get(i) << " except: " << i);
-        }
+        assert(vqr.at(0) == 0);
+        assert(vqr.at(1) == 1);
+        assert(vqr.at(2) == 2);
+
         vqr.append(3);
+        assert(vqr.at(0) == 1);
+        assert(vqr.at(1) == 2);
+        assert(vqr.at(2) == 3);
+
         vqr.prepend(0);
-        for (int i = 0;i < vqr.size();i++) {
-            vInfo("real: " << vqr.get(i) << " except: " << i);
-        }
+        assert(vqr.at(0) == 0);
+        assert(vqr.at(1) == 1);
+        assert(vqr.at(2) == 2);
 
         vqr.clear();
+
         vqr.append(1);
         vqr.prepend(0);
         vqr.append(2);
-        for (int i = 0;i < vqr.size();i++) {
-            vInfo("real: " << vqr.get(i) << " except: " << i);
-        }
+        assert(vqr.at(0) == 0);
+        assert(vqr.at(1) == 1);
+        assert(vqr.at(2) == 2);
+
+
         vqr.append(3);
+        assert(vqr.at(0) == 1);
+        assert(vqr.at(1) == 2);
+        assert(vqr.at(2) == 3);
+
         vqr.prepend(0);
-        for (int i = 0;i < vqr.size();i++) {
-            vInfo("real: " << vqr.get(i) << " except: " << i);
-        }
+        assert(vqr.at(0) == 0);
+        assert(vqr.at(1) == 1);
+        assert(vqr.at(2) == 2);
     }
 
     //performance

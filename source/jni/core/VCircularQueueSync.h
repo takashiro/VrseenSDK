@@ -17,11 +17,10 @@ class VCircularQueueSync
 public:
     VCircularQueueSync(uint capacity = 500)
         : m_capacity(capacity)
-        , m_count(0)
+        , m_size(0)
         , m_front(0)
-        , m_tail(0)
+        , m_back(0)
         , m_data(new E[m_capacity])
-        , m_mutex(false)
     {
     }
 
@@ -30,40 +29,32 @@ public:
         delete[] m_data;
     }
 
-    bool isEmpty() const { return m_front == m_tail; }
-
-    bool isFull() const { return m_count >= m_capacity; }
-
     uint capacity() const { return m_capacity; }
-
-    void prepend(const E &element)
-    {
-        m_mutex.lock();
-        m_front = (m_capacity + m_front - 1) % m_capacity;
-        m_data[m_front] = element;
-        if (m_count >= m_capacity) {
-            m_tail = m_front;
-        } else {
-            m_count++;
-        }
-        m_mutex.unlock();
-    }
+    uint size() const { return m_size; }
 
     void append(const E &element)
     {
-        m_mutex.lock();
-        m_data[m_tail] = element;
-        m_tail = (m_capacity + m_tail + 1) % m_capacity;
-        if (m_count >= m_capacity) {
-            m_front = m_tail;
-        }
-        else {
-            m_count++;
-        }
-        m_mutex.unlock();
+        m_data[m_back] = element;
+        forward();
     }
 
-    int size() const { return m_count; }
+    void append(E &&element)
+    {
+        m_data[m_back] = element;
+        forward();
+    }
+
+    void prepend(const E &element)
+    {
+        backward();
+        m_data[m_front] = element;
+    }
+
+    void prepend(E &&element)
+    {
+        backward();
+        m_data[m_front] = element;
+    }
 
     const E &at(uint index) const { return m_data[(m_front + index) % m_capacity]; }
     E &operator[](uint index) { return m_data[(m_front + index) % m_capacity]; }
@@ -71,17 +62,36 @@ public:
 
     void clear()
     {
-        m_count = 0;
-        m_front = m_tail = 0;
+        m_front = m_back = 0;
+        m_size = 0;
     }
 
 private:
+    void forward()
+    {
+        m_back = (m_back + 1) % m_capacity;
+        if (m_size >= m_capacity) {
+            m_front = (m_front + 1) % m_capacity;
+        } else {
+            m_size++;
+        }
+    }
+
+    void backward()
+    {
+        m_front = m_front ? m_front - 1 : m_capacity - 1;
+        if (m_size >= m_capacity) {
+            m_back = m_back ? m_back - 1 : m_capacity - 1;
+        } else {
+            m_size++;
+        }
+    }
+
     uint m_capacity;
-    int m_count;
-    int m_front;
-    int m_tail;
+    uint m_size;
+    uint m_front;
+    uint m_back;
     E *m_data;
-    VMutex m_mutex;
 };
 
 NV_NAMESPACE_END

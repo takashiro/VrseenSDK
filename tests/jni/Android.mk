@@ -23,7 +23,7 @@ LOCAL_MODULE    := unittest
 LOCAL_SRC_FILES := \
 	main.cpp \
 	core/varraytest.cpp \
-	core/vcircularqueuesynctest.cpp \
+	core/vcircularqueuetest.cpp \
 	core/vflagstest.cpp \
 	core/vjsontest.cpp \
 	core/vpathtest.cpp \
