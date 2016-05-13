@@ -135,9 +135,7 @@ static VEyeItem::Settings DefaultVrParmsForRenderer(const VEglDriver & glOperati
     VEyeItem::settings.multisamples = (glOperation.m_gpuType == VEglDriver::GPU_TYPE_ADRENO_330) ? 2 : 4;
     VEyeItem::settings.colorFormat = VColor::COLOR_8888;
     VEyeItem::settings.commonParameterDepth = VEyeItem::CommonParameter::DepthFormat_24;
-
-    if(VOsBuild::getString(VOsBuild::Model) == "ZTE A2017") VEyeItem::settings.wantSingleBuffer = false;
-    else VEyeItem::settings.wantSingleBuffer = true;
+    VEyeItem::settings.wantSingleBuffer = VOsBuild::getString(VOsBuild::Model) == "ZTE A2017";
 
     return VEyeItem::settings;
 }
