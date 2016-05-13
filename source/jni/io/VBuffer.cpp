@@ -13,7 +13,13 @@ VBuffer::VBuffer()
     : d(new Private)
 {
 }
+VBuffer::VBuffer( const uchar * bData, const int bSize )
+        : m_data(bData)
+        , m_size(bSize)
+        , m_offset(0)
+    {
 
+    }
 VBuffer::~VBuffer()
 {
     delete d;

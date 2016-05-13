@@ -6,7 +6,6 @@
 #include "VArray.h"
 #include "VString.h"
 #include "VJson.h"
-#include "VBinaryFile.h"
 #include "MappedFile.h"
 #include "VPath.h"
 
@@ -1015,7 +1014,7 @@ void LoadModelFileTexture( ModelFile & model, const char * textureName,
 }
 
 template< typename _type_ >
-void ReadModelArray( VArray< _type_ > & out, const char * string, const VBinaryFile & bin, const int numElements )
+void ReadModelArray( VArray< _type_ > & out, const char * string, const VBuffer & bin, const int numElements )
 {
 	if ( string != NULL && string[0] != '\0' && numElements > 0 )
 	{
@@ -1033,7 +1032,7 @@ void LoadModelFileJson( ModelFile & model,
 {
 	vInfo("parsing " << model.FileName);
 
-    const VBinaryFile bin( (const uchar *)modelsBin, modelsBinLength );
+    const VBuffer bin( (const uchar *)modelsBin, modelsBinLength );
 
 	if ( modelsBin != NULL && bin.readUint() != 0x6272766F )
 	{
