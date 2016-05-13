@@ -11,9 +11,7 @@
 
 #include "3rdParty/stb/stb_image_write.h"
 #include "GlTexture.h"
-
-#include "io/VFileOperation.h"
-
+#include "scene/vimage.h"
 NV_NAMESPACE_BEGIN
 
 struct EyeBuffer {
@@ -271,11 +269,11 @@ static void ScreenShotTexture( const int eyeResolution, const GLuint texId )
     const unsigned char * flipped = (buf + eyeResolution*eyeResolution*4);
     stbi_write_bmp( filename.toCString(), eyeResolution, eyeResolution, 4, (void *)flipped );
 
-    unsigned char * shrunk1 = VFileOperation::QuarterImageSize( flipped, eyeResolution, eyeResolution, true );
-    unsigned char * shrunk2 = VFileOperation::QuarterImageSize( shrunk1, eyeResolution>>1, eyeResolution>>1, true );
+    unsigned char * shrunk1 = VImage::QuarterSize( flipped, eyeResolution, eyeResolution, true );
+    unsigned char * shrunk2 = VImage::QuarterSize( shrunk1, eyeResolution>>1, eyeResolution>>1, true );
     VString filename2;
     filename2.sprintf("/sdcard/Oculus/thumbnail%03i.pvr", v);
-    VFileOperation::Write32BitPvrTexture( filename2.toCString(), shrunk2, eyeResolution>>2, eyeResolution>>2 );
+    VImage::WritePvrTexture( filename2.toCString(), shrunk2, eyeResolution>>2, eyeResolution>>2 );
 
     free( buf );
     free( shrunk1 );

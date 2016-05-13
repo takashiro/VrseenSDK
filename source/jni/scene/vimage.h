@@ -8,6 +8,12 @@
 
 namespace  NervGear
 {
+enum ImageFilter
+{
+    IMAGE_FILTER_NEAREST,
+    IMAGE_FILTER_LINEAR,
+    IMAGE_FILTER_CUBIC
+};
 class VImage
 {
 public:
@@ -140,6 +146,9 @@ public:
         }
     }
 
+    static unsigned char * QuarterSize( const unsigned char * src, const int width, const int height, const bool srgb );
+    static void WritePvrTexture( const char * fileName, const unsigned char * texture, int width, int height );
+    static unsigned char * ScaleRGBA( const unsigned char * src, const int width, const int height, const int newWidth, const int newHeight, const ImageFilter filter );
 private:
 
     //! assumes format and size has been set and creates the rest
