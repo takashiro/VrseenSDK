@@ -406,7 +406,7 @@ void LoadModelFileJson( ModelFile & model,
 							}
 						}
 
-						vInfo( "surface " << model.Def.surfaces[index].surfaceName.toCString() );
+						vInfo( "surface " << model.Def.surfaces[index].surfaceName );
 
 						//
 						// Surface Material

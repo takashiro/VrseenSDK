@@ -40,7 +40,7 @@ bool VrLocale::GetString(JNIEnv *jni, jobject activityObject, const VString &key
 
             if (out.isEmpty()) {
 				out = defaultOut;
-                vInfo("key not found, localized to '%s'" << out);
+                vInfo("key not found, localized to " << out);
 				return false;
 			}
 			return true;
