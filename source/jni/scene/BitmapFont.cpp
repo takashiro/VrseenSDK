@@ -1134,10 +1134,6 @@ void BitmapFontSurfaceLocal::DrawText3D(BitmapFont const & font,
 	int numLines;
 	AsLocal(font).CalcTextMetrics(text, len, width, height, ascent, descent,
 			fontHeight, lineWidths, MAX_LINES, numLines);
-//	LOG( "BitmapFontSurfaceLocal::DrawText3D( \"%s\" %s %s ) : width = %.2f, height = %.2f, numLines = %i, fh = %.2f",
-//			text, ( parms.AlignVert == VERTICAL_CENTER ) ? "cv" : ( ( parms.AlignVert == VERTICAL_BOTTOM ) ? "bv" : "tv" ),
-// 			( parms.AlignHoriz == HORIZONTAL_CENTER ) ? "ch" : ( ( parms.AlignVert == HORIZONTAL_LEFT ) ? "lh" : "rh" ),
-//			width, height, numLines, AsLocal( font ).GetFontInfo().FontHeight );
 	if (len == 0) {
 		return;
 	}

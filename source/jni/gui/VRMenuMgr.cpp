@@ -595,16 +595,6 @@ void VRMenuMgrLocal::beginFrame()
 {
 	NumSubmitted = 0;
 }
-/*
-static void LogBounds( const char * name, char const * prefix, VBoxf const & bounds )
-{
-	DROIDLOG( "Spam", "'%s' %s: min( %.2f, %.2f, %.2f ) - max( %.2f, %.2f, %.2f )",
-		name, prefix,
-		bounds.GetMins().x, bounds.GetMins().y, bounds.GetMins().z,
-		bounds.GetMaxs().x, bounds.GetMaxs().y, bounds.GetMaxs().z );
-}
-*/
-
 //==============================
 // VRMenuMgrLocal::SubmitForRenderingRecursive
 void VRMenuMgrLocal::SubmitForRenderingRecursive( OvrDebugLines & debugLines, BitmapFont const & font,

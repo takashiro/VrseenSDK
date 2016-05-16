@@ -23,6 +23,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VApkFile.h"
 #include "VImageManager.h"
 #include "VOpenGLTexture.h"
+#include "core/VLog.h"
 
 namespace NervGear {
 
@@ -59,20 +60,6 @@ bool VRMenuSurfaceTexture::loadTexture( eSurfaceTextureType const type, const VS
 	m_type = type;
 
     if (!imageName.isEmpty()) {
-//		void * 	buffer;
-//        uint		bufferLength;
-//        const VApkFile &apk = VApkFile::CurrentApkFile();
-//        apk.read(imageName, buffer, bufferLength);
-//		if ( !buffer )
-//		{
-//			m_handle = 0;
-//		}
-//		else
-//		{
-//            m_handle = LoadTextureFromBuffer( imageName, buffer, bufferLength,
-//					TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), m_width, m_height );
-//            ::free( buffer );
-//		}
         VImageManager* imagemanager = new VImageManager();
         VImage* image = imagemanager->loadImage(imageName);
         m_width = image->getDimension().Width;
@@ -137,10 +124,9 @@ void VRMenuSurfaceTexture::free()
 #if 0
 static void PrintBounds( const char * name, char const * prefix, VBoxf const & bounds )
 {
-	LOG( "'%s' %s: min( %.2f, %.2f, %.2f ) - max( %.2f, %.2f, %.2f )",
-		name, prefix,
-		bounds.GetMins().x, bounds.GetMins().y, bounds.GetMins().z,
-		bounds.GetMaxs().x, bounds.GetMaxs().y, bounds.GetMaxs().z );
+	vInfo("'" << name << "' " << prefix << ": min( " <<
+	        bounds.GetMins().x << ", " << bounds.GetMins().y << ", " << bounds.GetMins().z << " ) - max( " <<
+	        bounds.GetMaxs().x << ", " << bounds.GetMaxs().y << ", " << bounds.GetMaxs().z) << " )";
 }
 #endif
 
@@ -913,13 +899,6 @@ bool VRMenuObjectLocal:: hitTest_r( App * app, OvrVRMenuMgr & menuMgr, BitmapFon
 	modelPose.Orientation = m_localPose.Orientation * parentPose.Orientation;
     V3Vectf localStart = modelPose.Orientation.Inverted().Rotate( rayStart - modelPose.Position );
     V3Vectf localDir = modelPose.Orientation.Inverted().Rotate( rayDir );
-/*
-    DROIDLOG( "Spam", "Hit test vs '%s', start: (%.2f, %.2f, %.2f ) cull bounds( %.2f, %.2f, %.2f ) -> ( %.2f, %.2f, %.2f )", GetText().toCString(),
-            localStart.x, localStart.y, localStart.z,
-            CullBounds.b[0].x, CullBounds.b[0].y, CullBounds.b[0].z,
-            CullBounds.b[1].x, CullBounds.b[1].y, CullBounds.b[1].z );
-*/
-    // test against cull bounds if we have children  ... otherwise cullBounds == localBounds
     if ( m_children.length() > 0 )
     {
         if ( m_cullBounds.IsInverted() )

@@ -190,26 +190,6 @@ V3Vect<float> USensor::getAngularVelocity()
 
 bool USensor::pollSensor(KTrackerSensorZip* data,uint8_t  *buffer)
 {
-   /* if (fd_ < 0) {
-        fd_ = open("/dev/ovr0", O_RDONLY);
-    }
-    if (fd_ < 0) {
-        return false;
-    }
-
-    struct pollfd pfds;
-    pfds.fd = fd_;
-    pfds.events = POLLIN;
-
-    int n = poll(&pfds, 1, 100);
-    if (n > 0 && (pfds.revents & POLLIN)) {
-        uint8_t buffer[100];
-        int r = read(fd_, buffer, 100);
-        if (r < 0) {
-            LOGI("OnSensorEvent() read error %d", r);
-            return false;
-        }*/
-
         data->SampleCount = buffer[1];
         data->Timestamp = (uint16_t)(*(buffer + 3) << 8)
                 | (uint16_t)(*(buffer + 2));
@@ -218,26 +198,14 @@ bool USensor::pollSensor(KTrackerSensorZip* data,uint8_t  *buffer)
         data->Temperature = (int16_t)(*(buffer + 7) << 8)
                 | (int16_t)(*(buffer + 6));
 
-        //LOGI("data:%d,%d,%d",buffer[8] ,buffer[9],buffer[10]);
-
         for (int i = 0; i < (data->SampleCount > 3 ? 3 : data->SampleCount);
                 ++i)
 
         {
-            //int i=0;
-
-
 
             struct {
                 int32_t x :21;
             } s;
-
-
-            //s.x = 0;
-
-            //LOGI("sx = %d ", s.x);
-
-            //LOGI("data:%d,%d,%d",(buffer[0 + 8 + 16 * i] << 13) ,(buffer[1 + 8 + 16 * i] << 5),((buffer[2 + 8 + 16 * i] & 0xF8) >> 3));
 
             data->Samples[i].AccelX = s.x = (buffer[0 + 8 + 16 * i] << 13)
                     | (buffer[1 + 8 + 16 * i] << 5)
@@ -267,26 +235,7 @@ bool USensor::pollSensor(KTrackerSensorZip* data,uint8_t  *buffer)
         data->MagY = (int16_t)(*(buffer + 59) << 8) | (int16_t)(*(buffer + 58));
         data->MagZ = (int16_t)(*(buffer + 61) << 8) | (int16_t)(*(buffer + 60));
 
-
-        //uint8_t a,b,c,d;
-
-
-        //a = (data->Samples[0].AccelX & 0xff000000)>>24;
-        //b = (data->Samples[0].AccelX & 0x00ff0000)>>16;
-        //c = (data->Samples[0].AccelX & 0x0000ff00)>>8;
-        //d = (data->Samples[0].AccelX & 0x000000ff);
-
-
-        //if (a == 0xff){
-        //	LOGI("count %d raw data:%ld,%d,%d,%d,%d ",data->SampleCount,data->Samples[0].AccelX,a,b,c,d);
-        //}
-        //LOGI("raw data:%lu,%lu,%",data->Samples[0].AccelX,data->Samples[0].AccelY,data->Samples[0].AccelZ);
-
-
         return true;
-
-
-    //return false;
 }
 
 void USensor::process(KTrackerSensorZip* data) {
