@@ -74,6 +74,7 @@ VDevice::VDevice()
     d->uiJni = vApp->uiJni();
     d->vrJni = vApp->vrJni();
 
+
     lens.initDistortionParmsByMobileType();
     refreshRate = 60.0f;
     eyeDisplayResolution[0] = 1024;
