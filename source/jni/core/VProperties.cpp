@@ -7,6 +7,8 @@
 #include <VProperties.h>
 #include <cctype>
 #include <iostream>
+#include "VLog.h"
+NV_NAMESPACE_BEGIN
 static bool isBlankLine(string line)
 {
     for(auto e:line) {
@@ -20,11 +22,11 @@ VProperties::VProperties(string path)
 {
     ifstream ifs(path);
     if(!ifs) {
-        cout << "failed" << endl;
+        vFatal("open " << path << "failed!");
         return;
     }
     string line;
-    int pos;
+    size_t pos;
     while(getline(ifs, line))
     {
         if(isBlankLine(line)) {
@@ -47,14 +49,12 @@ VProperties::VProperties(string path)
 }
 string VProperties:: operator [] (string key)
 {
-    try {
-        return data.at(key);
-    }
-    catch (const out_of_range& oor) {
-        cerr << oor.what() << endl;
+    if(data.end() == data.find(key)) {
         return nullptr;
     }
+    return data[key];
 }
+NV_NAMESPACE_END
 
 
 

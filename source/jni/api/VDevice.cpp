@@ -6,6 +6,7 @@
 
 #include <jni.h>
 #include "../core/android/JniUtils.h"
+#include "core/VProperties.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -75,6 +76,7 @@ VDevice::VDevice()
     d->vrJni = vApp->vrJni();
 
 
+    VProperties prop("/system/build.prop");
     lens.initDistortionParmsByMobileType();
     refreshRate = 60.0f;
     eyeDisplayResolution[0] = 1024;
@@ -89,6 +91,12 @@ VDevice::VDevice()
 
     widthbyMeters = 0.125f;		// not reported correctly by display metrics!
     heightbyMeters = 0.0707f;
+    vInfo("mark: " << prop["ro.product.model"]);
+    if("SM-N9109W" == prop["ro.product.model"]) {
+        vInfo("product model: SM-N9109W");
+        //change parameters
+
+    }
 }
 
 NV_NAMESPACE_END

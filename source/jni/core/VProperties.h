@@ -8,7 +8,9 @@
 #include <string>
 #include <fstream>
 #include <map>
+#include "vglobal.h"
 using namespace std;
+NV_NAMESPACE_BEGIN
 class VProperties
 {
 private:
@@ -17,3 +19,4 @@ public:
     VProperties(string path);
     string operator [] (string key);
 };
+NV_NAMESPACE_END
