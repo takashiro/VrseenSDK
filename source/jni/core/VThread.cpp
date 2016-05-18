@@ -121,6 +121,7 @@ struct VThread::Private
 
         // Call the virtual run function
         exitCode = self->run();
+        self->exit();
         return exitCode;
     }
 
