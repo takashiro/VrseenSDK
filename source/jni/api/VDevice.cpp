@@ -75,7 +75,6 @@ VDevice::VDevice()
     d->uiJni = vApp->uiJni();
     d->vrJni = vApp->vrJni();
 
-
     VProperties prop("/system/build.prop");
     lens.initDistortionParmsByMobileType();
     refreshRate = 60.0f;
@@ -91,11 +90,15 @@ VDevice::VDevice()
 
     widthbyMeters = 0.125f;		// not reported correctly by display metrics!
     heightbyMeters = 0.0707f;
-    vInfo("mark: " << prop["ro.product.model"]);
-    if("SM-N9109W" == prop["ro.product.model"]) {
+    string model = prop["ro.product.model"];
+    if("SM-N9109W" == model) {
         vInfo("product model: SM-N9109W");
         //change parameters
 
+    }
+    else if("m1 note" == model) {
+        vInfo("product model: m1 note");
+        //change parameters
     }
 }
 
