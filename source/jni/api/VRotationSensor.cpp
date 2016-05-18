@@ -2,6 +2,7 @@
 #include "VLockless.h"
 #include "VCircularQueue.h"
 #include "VQuat.h"
+#include "VAlgorithm.h"
 
 #include <jni.h>
 #include <time.h>
@@ -40,6 +41,27 @@ VRotationState VRotationSensor::predictState(double timestamp) const
     //@to-do: implement this
     VRotationState state = this->state();
     state.timestamp = timestamp;
+
+    // Delta time from the last processed message
+    const float predictionDt = timestamp - state.timestamp;
+
+    float speed = state.gyro.Length();
+    const float slope = 0.2; // The rate at which the dynamic prediction interval varies
+    float candidateDt = slope * speed; // TODO: Replace with smoothstep function
+
+    float dynamicDt = std::min(predictionDt, candidateDt);
+
+    const float maxDeltaTime = 1.0f / 10.0f;
+    dynamicDt = VAlgorithm::Clamp(dynamicDt, 0.0f, maxDeltaTime);
+
+    if (speed > 0.001) {
+        VQuatf pose = state * VQuatf(state.gyro, speed * dynamicDt);
+        state.w = pose.w;
+        state.x = pose.x;
+        state.y = pose.y;
+        state.z = pose.z;
+    }
+
     return state;
 }
 
