@@ -903,7 +903,7 @@ bool VRMenuObjectLocal:: hitTest_r( App * app, OvrVRMenuMgr & menuMgr, BitmapFon
     {
         if ( m_cullBounds.IsInverted() )
         {
-            vVerbose("CullBounds are inverted!!");
+            vVerbose("m_cullBounds has been inverted!!");
             return false;
         }
 	    float cullT0;

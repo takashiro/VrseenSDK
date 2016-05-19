@@ -394,7 +394,7 @@ void VEglDriver::eglInit( const EGLContext shareContext,
                              const int depthBits, const int multisamples, const GLuint contextPriority )
 {
 
-    vInfo("egl init ");
+    vInfo("Running VEglDriver::eglInit().");
     if (m_context == EGL_NO_CONTEXT)
     {
         if (m_display == EGL_NO_DISPLAY)
@@ -404,7 +404,7 @@ void VEglDriver::eglInit( const EGLContext shareContext,
     eglInitialize(m_display, &majorVersion, &minorVersion);
     m_config = chooseColorConfig(redBits, greenBits, blueBits, depthBits, multisamples, true);
     if (m_config == 0) {
-        vFatal("No acceptable EGL color configs.");
+        vFatal("There isn't acceptable EGL color configure!");
         return ;
     }
 
@@ -424,16 +424,16 @@ void VEglDriver::eglInit( const EGLContext shareContext,
         m_context = eglCreateContext(m_display,m_config, shareContext, contextAttribs);
         if (m_context != EGL_NO_CONTEXT) {
             m_glEsVersion = version;
-            vInfo("glEsVersion:"<< m_glEsVersion);
+            vInfo("glEsVersion: "<< m_glEsVersion << ".");
             EGLint configIDReadback;
             if (!eglQueryContext(m_display, m_context, EGL_CONFIG_ID, &configIDReadback)) {
-              vWarn("eglQueryContext EGL_CONFIG_ID failed");
+              vWarn("Calling eglQueryContext with EGL_CONFIG_ID failed!");
             }
             break;
         }
     }
     if (m_context == EGL_NO_CONTEXT) {
-        vWarn("eglCreateContext failed:" << getEglErrorString());
+        vWarn("Calling eglCreateContext failed: " << getEglErrorString());
         return ;
     }
     if (m_pbufferSurface == EGL_NO_SURFACE)
@@ -448,7 +448,7 @@ void VEglDriver::eglInit( const EGLContext shareContext,
 
         if (m_pbufferSurface == EGL_NO_SURFACE)
         {
-        vWarn("eglCreatePbufferSurface failed:" << getEglErrorString());
+        vWarn("Calling eglCreatePbufferSurface failed: " << getEglErrorString());
         eglDestroyContext(m_display, m_context);
         m_context = EGL_NO_CONTEXT;
         return ;
@@ -457,7 +457,7 @@ void VEglDriver::eglInit( const EGLContext shareContext,
 
     if (eglMakeCurrent(m_display, m_pbufferSurface, m_pbufferSurface, m_context) == EGL_FALSE)
     {
-        vWarn("eglMakeCurrent pbuffer failed:" << getEglErrorString());
+        vWarn("Calling eglMakeCurrent failed: " << getEglErrorString());
         eglDestroySurface(m_display, m_pbufferSurface);
         eglDestroyContext(m_display, m_context);
         m_context = EGL_NO_CONTEXT;
@@ -465,7 +465,7 @@ void VEglDriver::eglInit( const EGLContext shareContext,
     }
     m_extensions = reinterpret_cast<const char *>(glGetString(GL_EXTENSIONS));
     if (NULL == m_extensions) {
-        vInfo("glGetString( GL_EXTENSIONS ) returned NULL");
+        vWarn("The return value of glGetString(GL_EXTENSIONS) is NULL!");
     }
 
     m_gpuType = eglGetGpuType();
@@ -479,7 +479,7 @@ void VEglDriver::eglExit()
     if( m_display)
     {
          if (eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT) == EGL_FALSE) {
-        vFatal("eglMakeCurrent: failed:" << getEglErrorString());
+        vFatal("Calling eglMakeCurrent failed: " << getEglErrorString());
         }
 
     }
@@ -487,7 +487,7 @@ void VEglDriver::eglExit()
     {
         if (eglDestroyContext(m_display, m_context) == EGL_FALSE)
         {
-        vFatal("eglDestroyContext: failed:" << getEglErrorString());
+          vFatal("Calling eglDestroyContext failed: " << getEglErrorString());
         }
          m_context = EGL_NO_CONTEXT;
     }
