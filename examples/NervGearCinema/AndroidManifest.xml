@@ -27,7 +27,6 @@
         <category android:name="android.intent.category.DEFAULT" />
         <data android:mimeType="video/vr" />
       </intent-filter>
-      <meta-data android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" android:resource="@xml/usb_devices" />
     </activity>
     <activity android:name="com.vrseen.nervgear.cinema.ScrubberActivity" android:label="@string/title_activity_scrubber">
     </activity>

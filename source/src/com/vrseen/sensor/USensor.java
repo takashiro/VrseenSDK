@@ -1,6 +1,6 @@
 package com.vrseen.sensor;
 
- 
+
 
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -36,25 +36,36 @@ public class USensor {
 
 	private ByteBuffer buffer = null;
 	private UsbRequest request = null;
-	
+
     int count = 0;
 
 	private Timer mTimer = null;
 
 	private boolean mConnected;
-	
+
 	private boolean isPause;
 
-	private final static int VRSEEN_VID = 10291;
-	private final static int VRSEEN_PID = 1;
+	static private final class UsbDeviceInfo {
+		int ventorId;
+		int productId;
+
+		UsbDeviceInfo(int ventorId, int productId) {
+			this.ventorId = ventorId;
+			this.productId = productId;
+		}
+	}
+	static private final UsbDeviceInfo[] mUsbDeviceList = {
+		new UsbDeviceInfo(10291, 1),
+		new UsbDeviceInfo(6610, 1536)
+	};
 
 	private final long mNativePointer = NativeUSensor.ctor();
 
 	private Context mContext;
 
 	private static final String ACTION_USB_PERMISSION = "com.VRSeen.sensor.USB_PERMISSION";
-	
-	
+
+
 	USensor(Context context) {
 		mContext = context;
 		IntentFilter filterPermission = new IntentFilter(ACTION_USB_PERMISSION);
@@ -66,20 +77,20 @@ public class USensor {
 		mContext.registerReceiver(mUsbReceiver, filterPermission);
 		mContext.registerReceiver(mUsbReceiver, filterUsbAttach);
 		mContext.registerReceiver(mUsbReceiver, filterUsbDetach);
-		
+
 		usbManager = (UsbManager) mContext
 				.getSystemService(Context.USB_SERVICE);
 		//intent = new Intent(context, USensor.class);
 
 		buffer = ByteBuffer.allocate(100);
-		
+
 		data = new byte[64];
 		sensordata = new byte[64];
 
 		mConnected = false;
 		isPause = true;
 	}
-	
+
 	public boolean Open() {
 		if (GetUsbDevice()) {
 
@@ -88,9 +99,9 @@ public class USensor {
 		} else {
 			return false;
 		}
-		
+
 	}
-	
+
 	public boolean GetUsbDevice() {
 
 		// mUsbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
@@ -112,7 +123,7 @@ public class USensor {
 								if(request == null){
 									request = new UsbRequest();
 								}
-								
+
 								request.initialize(usbDeviceConnection,
 										usbEndpoint);
 
@@ -135,37 +146,37 @@ public class USensor {
 		}
 		return false;
 	}
-	
+
 	void registerListener(USensorListener listener) {
 		uSensorListener = listener;
 	}
-	
+
 	void pause() {
 		isPause = true;
 	}
-	
+
 	void resume() {
 		isPause = false;
 	}
-	
+
 	void close() {
 		if (mConnected) {
 			System.out.println("close");
-	 
+
 			//mKeepTimer.cancel();
 			//mKeepTimer.purge();
 			mTimer.cancel();
 			mTimer.purge();
-		
-			
+
+
 			request.cancel();
 			request.close();
 			usbDeviceConnection.releaseInterface(usbInterface);
 			usbDeviceConnection.close();
-			
-			
-			
-			
+
+
+
+
 			usbDevice = null;
 			usbInterface = null;
 			usbEndpoint = null;
@@ -177,7 +188,7 @@ public class USensor {
 			mContext.unregisterReceiver(mUsbReceiver);
 		}
 	}
-	
+
 	private BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
 
 		@Override
@@ -200,14 +211,19 @@ public class USensor {
 						.getParcelableExtra(UsbManager.EXTRA_DEVICE);
 
 				UsbDetached(device);
-
 			}
-
-
-
 		}
 	};
-	
+
+	static private boolean isValidProduct(int ventorId, int productId) {
+		for (UsbDeviceInfo usb : mUsbDeviceList) {
+			if (usb.ventorId == ventorId && usb.productId == productId) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	private boolean UsbAttached(UsbDevice device) {
 		int Vid;
 		int Pid;
@@ -215,8 +231,8 @@ public class USensor {
 		Vid = device.getVendorId();
 		Pid = device.getProductId();
 		System.out.println("usb attach" + " " + Vid + " " + Pid);
-		
-		if ((Vid == VRSEEN_VID) && (Pid == VRSEEN_PID)) {
+
+		if (isValidProduct(Vid, Pid)) {
 			usbDevice = device;
 			if (!IsPermission()) {
 				RequestPermission();
@@ -253,26 +269,26 @@ public class USensor {
 		}
 		return true;
 	}
-	
+
 	private boolean UsbDetached(UsbDevice device) {
 		int Vid = device.getVendorId();
 		int Pid = device.getProductId();
 		System.out.println("usb dettach" + " " + Vid + " " + Pid);
-		
-		if ((Vid == VRSEEN_VID) && (Pid == VRSEEN_PID)) {
+
+		if (isValidProduct(Vid, Pid)) {
 			mConnected = false;
 			//mKeepTimer.cancel();
 			//mKeepTimer.purge();
 			mTimer.cancel();
 			mTimer.purge();
-			
+
 			uSensorListener.onSensorErrorDetected();
 			System.out.println("UsbDetached");
 		}
 
 		return true;
 	}
-	
+
 	public boolean enumerateDevice() {
 		HashMap<String, UsbDevice> deviceList = usbManager.getDeviceList();
 		if (!(deviceList.isEmpty())) {
@@ -286,7 +302,7 @@ public class USensor {
 				System.out.println("DeviceInof" + strName + "," + Vid + ","
 						+ Pid);
 
-				if ((Vid == VRSEEN_VID) && (Pid == VRSEEN_PID)) {
+				if (isValidProduct(Vid, Pid)) {
 					usbDevice = device;
 				}
 			}
@@ -298,7 +314,7 @@ public class USensor {
 			return true;
 		}
 	}
-	
+
 	public boolean getDeviceInterface() {
 		if (usbDevice != null) {
 			int count = usbDevice.getInterfaceCount();
@@ -324,7 +340,7 @@ public class USensor {
 		}
 
 	}
-	
+
 	public boolean getEndpoint() {
 		int endpointcount = usbInterface.getEndpointCount();
 		for (int i = 0; i < endpointcount; i++) {
@@ -359,7 +375,7 @@ public class USensor {
 		}
 
 	}
-	
+
 	private boolean IsPermission() {
 		if (usbManager.hasPermission(usbDevice)) {
 			System.out.println("has permission");
@@ -370,7 +386,7 @@ public class USensor {
 			return false;
 		}
 	}
-	
+
 	private void RequestPermission() {
 
 		PendingIntent pIntent = PendingIntent.getBroadcast(mContext, 0,
@@ -379,7 +395,7 @@ public class USensor {
 		System.out.println("request permission");
 
 	}
-	
+
 	public boolean GetConnection() {
 		UsbDeviceConnection connection = null;
 		connection = usbManager.openDevice(usbDevice);
@@ -392,7 +408,7 @@ public class USensor {
 		}
 
 	}
-	
+
 	void SetKeepAlive(int interval) {
 		byte[] message = new byte[5];
 		message[0] = USBCMD.FEATURE_KEEP_ALIVE;
@@ -410,7 +426,7 @@ public class USensor {
 		System.out.println("count = " + count);
 		count = 0;
 	}
-	
+
 	void dispatchData() {
 		if (isPause) {
 			return;
@@ -425,15 +441,15 @@ public class USensor {
 				uSensorListener.onSensorChanged(
 						 NativeUSensor.getTimeStamp(mNativePointer), data[0],
 						 data[1], data[2], data[3], data[4], data[5], data[6]);
-				
+
 				count++;
-				
+
 				if(count>4500)
 				{
 					SetKeepAlive(10000);
 				}
 			}
-			 
+
 		} catch (Exception e) {
 			// TODO: handle exception
 			System.out.println("usb err");
