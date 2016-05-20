@@ -22,6 +22,10 @@
 #include "VKernel.h"
 #include "VRotationSensor.h"
 #include "VDirectRender.h"
+#include "App.h"
+
+//TODO: Remove the hacking extern variable
+extern jclass VrLibClass;
 
 NV_NAMESPACE_BEGIN
 
@@ -193,7 +197,7 @@ struct VFrameSmooth::Private
             m_wantSingleBuffer(wantSingleBuffer),
             m_hasEXT_sRGB_write_control( false ),
             m_sStartupTid( 0 ),
-            m_jni( NULL ),
+            m_jni(nullptr),
             m_eglMainThreadSurface( 0 ),
             m_eglClientVersion( 0 ),
             m_eglShareContext( 0 ),
@@ -631,7 +635,8 @@ float 	VFrameSmooth::Private::sleepUntilTimePoint( const double targetSeconds, c
 
 void VFrameSmooth::Private::threadFunction()
 {
-
+    JavaVM *javaVM = JniUtils::GetJavaVM();
+    javaVM->AttachCurrentThread(&m_jni, nullptr);
 
     smoothThreadInit();
 
@@ -643,41 +648,34 @@ void VFrameSmooth::Private::threadFunction()
     vInfo("WarpThreadLoop()");
 
     bool removedSchedFifo = false;
+    jobject activityObject = vApp->javaObject();
 
-
-    for ( double vsync = 0; ; vsync++ )
-    {
-
-
-        const double current = ceil( getFractionalVsync() );
-        if ( abs( current - vsync ) > 2.0 )
-        {
+    for (double vsync = 0; ; vsync++) {
+        const double current = ceil(getFractionalVsync());
+        if (abs(current - vsync) > 2.0) {
             //vInfo("Changing vsync from " << vsync << " to " << current);
             vsync = current;
         }
-        if ( m_shutdownRequest.state() )
-        {
+        if (m_shutdownRequest.state()) {
             vInfo("ShutdownRequest received");
             break;
         }
 
 
-       const double currentTime = VTimer::Seconds();
-       const double lastWarpTime = m_lastsmoothTimeInSeconds.state();
-       if ( removedSchedFifo )
-       {
-           if ( lastWarpTime > currentTime - 0.1 )
-           {
-               removedSchedFifo = false;
-           }
-       }
-       else
-       {
-           if ( lastWarpTime < currentTime - 1.0 )
-           {
-               removedSchedFifo = true;
-           }
-       }
+        const double currentTime = VTimer::Seconds();
+        const double lastWarpTime = m_lastsmoothTimeInSeconds.state();
+        jmethodID setSchedFifoMethodId = JniUtils::GetStaticMethodID(m_jni, VrLibClass, "setSchedFifoStatic", "(Landroid/app/Activity;II)I");
+        if (removedSchedFifo) {
+            if (lastWarpTime > currentTime - 0.1) {
+                m_jni->CallStaticIntMethod(VrLibClass, setSchedFifoMethodId, activityObject, m_sStartupTid, 1);
+                removedSchedFifo = false;
+            }
+        } else {
+            if (lastWarpTime < currentTime - 1.0) {
+                m_jni->CallStaticIntMethod(VrLibClass, setSchedFifoMethodId, activityObject, m_sStartupTid, 0);
+                removedSchedFifo = true;
+            }
+        }
 
         //vInfo( "WarpThreadLoop enter rendertodisplay");
         renderToDisplay( vsync,m_screen.isFrontBuffer() ? spAsyncFrontBufferPortrait
@@ -686,12 +684,13 @@ void VFrameSmooth::Private::threadFunction()
 
     smoothThreadShutdown();
 
+    javaVM->DetachCurrentThread();
     vInfo("Exiting WarpThreadLoop()");
 }
 
 
-VFrameSmooth::VFrameSmooth(bool async,bool wantSingleBuffer)
-        : d(new Private(async,wantSingleBuffer))
+VFrameSmooth::VFrameSmooth(bool async, bool wantSingleBuffer)
+        : d(new Private(async, wantSingleBuffer))
 {
 }
 
