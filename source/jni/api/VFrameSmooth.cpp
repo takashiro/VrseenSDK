@@ -1023,8 +1023,13 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
 
         //vInfo("Eye " << eye << ": now=" << getFractionalVsync() << "  sleepTo=" << vsyncBase + swap.deltaVsync[eye]);
 
-
+        // Sleep until we are in the correct half of the screen for
+        // rendering this eye.  If we are running single threaded,
+        // the first eye will probably already be past the sleep point,
+        // so only the second eye will be at a dependable time.
         const double sleepTargetVsync = vsyncBase + swap.deltaVsync[eye];
+        const double sleepTargetTime = framePointTimeInSeconds( sleepTargetVsync );
+        sleepUntilTimePoint( sleepTargetTime, false );
 
 
         //vInfo("Vsync " << vsyncBase << ":" << eye << " sleep " << secondsToSleep);
@@ -1234,6 +1239,12 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
     glViewport( 0, 0, screenWidth, screenHeight );
     glScissor( 0, 0, screenWidth, screenHeight );
 
+    // This must be long enough to cover CPU scheduling delays, GPU in-flight commands,
+    // and the actual drawing of this slice.
+//    const warpSource_t & latestWarpSource = m_warpSources[m_eyeBufferCount.state()%MAX_WARP_SOURCES];
+//    const double schedulingCushion = latestWarpSource.WarpParms.PreScheduleSeconds;
+
+    const double schedulingCushion = m_preScheduleSeconds;
     int	back = 0;
 
     long long thisEyeBufferNum = 0;
@@ -1241,6 +1252,10 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
     {
         const int	eye = (int)( screenSlice / 4 );
 
+        // Sleep until we are in the correct part of the screen for
+        // rendering this slice.
+        const double sleepTargetTime = sliceTimes[ screenSlice ] - schedulingCushion;
+        sleepUntilTimePoint( sleepTargetTime, false );
 
 
         //vInfo("slice " << screenSlice << " targ " << sleepTargetTime << " slept " << secondsToSleep);
