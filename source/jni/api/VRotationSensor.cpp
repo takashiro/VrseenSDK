@@ -3,9 +3,9 @@
 #include "VCircularQueue.h"
 #include "VQuat.h"
 #include "VAlgorithm.h"
+#include "VTimer.h"
 
 #include <jni.h>
-#include <time.h>
 #include <fcntl.h>
 
 NV_NAMESPACE_BEGIN
@@ -38,29 +38,29 @@ VRotationSensor::~VRotationSensor()
 
 VRotationState VRotationSensor::predictState(double timestamp) const
 {
-    //@to-do: implement this
     VRotationState state = this->state();
-    state.timestamp = timestamp;
-
-    // Delta time from the last processed message
-    const float predictionDt = timestamp - state.timestamp;
 
     float speed = state.gyro.Length();
-    const float slope = 0.2; // The rate at which the dynamic prediction interval varies
-    float candidateDt = slope * speed; // TODO: Replace with smoothstep function
-
-    float dynamicDt = std::min(predictionDt, candidateDt);
-
-    const float maxDeltaTime = 1.0f / 10.0f;
-    dynamicDt = VAlgorithm::Clamp(dynamicDt, 0.0f, maxDeltaTime);
-
     if (speed > 0.001) {
+        // Delta time from the last processed message
+        const float predictionDt = timestamp - state.timestamp;
+
+        const float slope = 0.2; // The rate at which the dynamic prediction interval varies
+        float candidateDt = slope * speed; // TODO: Replace with smoothstep function
+
+        float dynamicDt = std::min(predictionDt, candidateDt);
+
+        const float maxDeltaTime = 1.0f / 10.0f;
+        dynamicDt = VAlgorithm::Clamp(dynamicDt, 0.0f, maxDeltaTime);
+
         VQuatf pose = state * VQuatf(state.gyro, speed * dynamicDt);
         state.w = pose.w;
         state.x = pose.x;
         state.y = pose.y;
         state.z = pose.z;
     }
+
+    state.timestamp = timestamp;
 
     return state;
 }
@@ -187,7 +187,7 @@ bool USensor::update(uint8_t  *buffer) {
     */
     pollSensor(&data, buffer);
 
-    m_state.timestamp = getCurrentTime();
+    m_state.timestamp = VTimer::Seconds();
     process(&data);
 
     VRotationSensor::instance()->setState(m_state);
@@ -197,7 +197,7 @@ bool USensor::update(uint8_t  *buffer) {
 
 longlong USensor::getLatestTime()
 {
-    return m_state.timestamp;
+    return m_state.timestamp * 1000000000;
 }
 
 VQuat<float> USensor::getSensorQuaternion()
@@ -207,7 +207,7 @@ VQuat<float> USensor::getSensorQuaternion()
 
 V3Vect<float> USensor::getAngularVelocity()
 {
-    return V3Vect<float>(m_state.gyro.x, m_state.gyro.y, m_state.gyro.z);
+    return m_state.gyro;
 }
 
 bool USensor::pollSensor(KTrackerSensorZip* data,uint8_t  *buffer)
@@ -330,7 +330,7 @@ void USensor::process(KTrackerSensorZip* data) {
         full_timestamp_ = data->Timestamp;
         first_real_time_delta_ = now - (full_timestamp_ * timeUnit);
     } else {
-        unsigned timestampDelta;
+        uint timestampDelta;
 
         if (data->Timestamp < last_timestamp_) {
             // The timestamp rolled around the 16 bit counter, so FullTimeStamp
@@ -543,7 +543,7 @@ JNIEXPORT void JNICALL Java_com_vrseen_sensor_RotationSensor_update
   (JNIEnv *, jclass, jlong timestamp, jfloat w, jfloat x, jfloat y, jfloat z, jfloat gryoX, jfloat gryoY, jfloat gryoZ)
 {
     VRotationState state;
-    state.timestamp = timestamp;
+    state.timestamp = timestamp * 0.000000001;
     state.w = w;
     state.x = x;
     state.y = y;
