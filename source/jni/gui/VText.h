@@ -41,7 +41,7 @@ public:
     V3Vectf     infoTextOffset;     // offset from center of screen in view space
     long long       infoTextEndFrame;   // time to stop showing text
     VPointTracker   infoTextPointTracker;   // smoothly tracks to text ideal location
-    VPointTracker   fpsPointTracker;
+
     VFrame         vrFrame;
 
     void show(const VString &text, float duration);

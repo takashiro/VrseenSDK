@@ -186,6 +186,8 @@ struct App::Private
     float 			popupScale;
 
 
+    VPointTracker   fpsPointTracker;
+
     // Every application gets a basic dialog surface.
     SurfaceTexture * dialogTexture;
 
@@ -1175,6 +1177,42 @@ struct App::Private
                         kernel->destroy(EXIT_TYPE_FINISH);
                     }
                 }
+            }
+
+            if ( true )
+            {
+                const int FPS_NUM_FRAMES_TO_AVERAGE = 30;
+                static double  LastFrameTime = VTimer::Seconds();
+                static double  AccumulatedFrameInterval = 0.0;
+                static int   NumAccumulatedFrames = 0;
+                static float LastFrameRate = 60.0f;
+
+                double currentFrameTime = VTimer::Seconds();
+                double frameInterval = currentFrameTime - LastFrameTime;
+                AccumulatedFrameInterval += frameInterval;
+                NumAccumulatedFrames++;
+                if ( NumAccumulatedFrames > FPS_NUM_FRAMES_TO_AVERAGE ) {
+                    double interval = ( AccumulatedFrameInterval / NumAccumulatedFrames );  // averaged
+                    AccumulatedFrameInterval = 0.0;
+                    NumAccumulatedFrames = 0;
+                    LastFrameRate = 1.0f / float( interval > 0.000001 ? interval : 0.00001 );
+                }
+
+                V3Vectf viewPos = GetViewMatrixPosition( lastViewMatrix );
+                V3Vectf viewFwd = GetViewMatrixForward( lastViewMatrix );
+                V3Vectf newPos = viewPos + viewFwd * 1.5f;
+                fpsPointTracker.Update( VTimer::Seconds(), newPos );
+
+                fontParms_t fp;
+                fp.AlignHoriz = HORIZONTAL_CENTER;
+                fp.Billboard = true;
+                fp.TrackRoll = false;
+                VString temp;
+                temp.sprintf("%.1f fps", LastFrameRate);
+                worldFontSurface->DrawTextBillboarded3D( *defaultFont, fp, fpsPointTracker.GetCurPosition(),
+                        0.8f, V4Vectf( 1.0f, 0.0f, 0.0f, 1.0f ), temp);
+
+                LastFrameTime = currentFrameTime;
             }
 
             // draw info text
