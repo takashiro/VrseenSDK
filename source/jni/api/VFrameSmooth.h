@@ -3,7 +3,6 @@
 #include "VMatrix.h"
 #include "VKernel.h"
 
-
 NV_NAMESPACE_BEGIN
 
 class VFrameSmooth
