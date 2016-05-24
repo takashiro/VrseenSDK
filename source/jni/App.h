@@ -104,43 +104,12 @@ public:
     void quit();
 
     bool isRunning() const;
+    bool isShowFPS() const;
+    void showFPS(bool const show);
 
     VText text;
     VPanel panel;
     VDialog dialog;
-    /*
-     *if ( ShowFPS )
-        {
-            const int FPS_NUM_FRAMES_TO_AVERAGE = 30;
-            static double  LastFrameTime = vrapi_GetTimeInSeconds();
-            static double  AccumulatedFrameInterval = 0.0;
-            static int   NumAccumulatedFrames = 0;
-            static float LastFrameRate = 60.0f;
-
-            double currentFrameTime = vrapi_GetTimeInSeconds();
-            double frameInterval = currentFrameTime - LastFrameTime;
-            AccumulatedFrameInterval += frameInterval;
-            NumAccumulatedFrames++;
-            if ( NumAccumulatedFrames > FPS_NUM_FRAMES_TO_AVERAGE ) {
-                double interval = ( AccumulatedFrameInterval / NumAccumulatedFrames );  // averaged
-                AccumulatedFrameInterval = 0.0;
-                NumAccumulatedFrames = 0;
-                LastFrameRate = 1.0f / float( interval > 0.000001 ? interval : 0.00001 );
-            }
-
-            Vector3f viewPos = GetViewMatrixPosition( lastViewMatrix );
-            Vector3f viewFwd = GetViewMatrixForward( lastViewMatrix );
-            Vector3f newPos = viewPos + viewFwd * 1.5f;
-            FPSPointTracker.Update( vrapi_GetTimeInSeconds(), newPos );
-
-            fontParms_t fp;
-            fp.AlignHoriz = HORIZONTAL_CENTER;
-            fp.Billboard = true;
-            fp.TrackRoll = false;
-            DebugFontSurface->DrawTextBillboarded3Df( *DebugFont, fp, FPSPointTracker.GetCurPosition(),
-                    0.8f, Vector4f( 1.0f, 0.0f, 0.0f, 1.0f ), "%.1f fps", LastFrameRate );
-            LastFrameTime = currentFrameTime;
-        }*/
 
 private:
     NV_DECLARE_PRIVATE

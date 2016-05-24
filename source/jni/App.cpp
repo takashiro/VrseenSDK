@@ -187,6 +187,7 @@ struct App::Private
 
 
     VPointTracker   fpsPointTracker;
+    bool showFPS;
 
     // Every application gets a basic dialog surface.
     SurfaceTexture * dialogTexture;
@@ -286,6 +287,7 @@ struct App::Private
         , paused(true)
         , popupDistance(2.0f)
         , popupScale(1.0f)
+        , showFPS(true)
         , dialogWidth(0)
         , dialogHeight(0)
         , nativeWindow(nullptr)
@@ -1179,7 +1181,7 @@ struct App::Private
                 }
             }
 
-            if ( true )
+            if ( showFPS )
             {
                 const int FPS_NUM_FRAMES_TO_AVERAGE = 30;
                 static double  LastFrameTime = VTimer::Seconds();
@@ -1900,5 +1902,16 @@ void App::drawScreenMask( const VR4Matrixf & mvp, const float fadeFracX, const f
     d->fadedScreenMaskSquare.drawElements();
     glColorMask( 1.0f, 1.0f, 1.0f, 1.0f );
 }
-
+bool App::isShowFPS() const
+{
+    return d->showFPS;
+}
+void App::showFPS(bool const show)
+{
+    bool temp = d->showFPS;
+    d->showFPS = show;
+    if(d->showFPS && !temp) {
+        d->fpsPointTracker.Reset();
+    }
+}
 NV_NAMESPACE_END
