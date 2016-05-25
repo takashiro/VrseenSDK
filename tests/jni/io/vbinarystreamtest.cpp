@@ -15,6 +15,8 @@ void test()
         VBuffer buffer;
         buffer.write(data, sizeof(int));
 
+        assert(buffer.bytesAvailable() == 4);
+
         VBinaryStream stream(&buffer);
         int output;
         stream >> output;
