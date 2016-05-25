@@ -96,7 +96,6 @@ LOCAL_SRC_FILES  := \
 	io/VBinaryStream.cpp \
 	io/VFile.cpp \
 	io/VIODevice.cpp \
-	io/VBinaryFile.cpp \
 	io/VFileOperation.cpp \
 	io/VSysFile.cpp \
 	io/VDir.cpp \
