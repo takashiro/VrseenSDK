@@ -13,11 +13,31 @@ NV_NAMESPACE_BEGIN
 struct VRotationSensor::Private
 {
     VLockless<VRotationState> state;
+    VQuatf recenter;
+    bool initialized;
+
+    Private()
+        : initialized(false)
+    {
+    }
 };
 
 void VRotationSensor::setState(const VRotationState &state)
 {
-    d->state.setState(state);
+    if (!d->initialized) {
+        float yaw, pitch, roll;
+        state.GetEulerAngles<VAxis_Y, VAxis_X, VAxis_Z>(&yaw, &pitch, &roll);
+        d->recenter = VQuatf(VAxis_Y, -yaw);
+        d->initialized = true;
+    } else {
+        VRotationState recentered = state;
+        VQuatf base = d->recenter * state;
+        recentered.w = base.w;
+        recentered.x = base.x;
+        recentered.y = base.y;
+        recentered.z = base.z;
+        d->state.setState(state);
+    }
 }
 
 VRotationState VRotationSensor::state() const
@@ -38,30 +58,9 @@ VRotationSensor::~VRotationSensor()
 
 VRotationState VRotationSensor::predictState(double timestamp) const
 {
+    NV_UNUSED(timestamp);
     VRotationState state = this->state();
-
-    float speed = state.gyro.Length();
-    if (speed > 0.001) {
-        // Delta time from the last processed message
-        const float predictionDt = timestamp - state.timestamp;
-
-        const float slope = 0.2; // The rate at which the dynamic prediction interval varies
-        float candidateDt = slope * speed; // TODO: Replace with smoothstep function
-
-        float dynamicDt = std::min(predictionDt, candidateDt);
-
-        const float maxDeltaTime = 1.0f / 10.0f;
-        dynamicDt = VAlgorithm::Clamp(dynamicDt, 0.0f, maxDeltaTime);
-
-        VQuatf pose = state * VQuatf(state.gyro, speed * dynamicDt);
-        state.w = pose.w;
-        state.x = pose.x;
-        state.y = pose.y;
-        state.z = pose.z;
-    }
-
-    state.timestamp = timestamp;
-
+    //state.timestamp = timestamp;
     return state;
 }
 
