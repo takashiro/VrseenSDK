@@ -35,6 +35,7 @@ LOCAL_EXPORT_C_INCLUDES := $(LOCAL_C_INCLUDES)
 
 LOCAL_SRC_FILES  := \
 	core/VConstants.cpp \
+	core/VProperties.cpp \
 	core/VAtomicInt.cpp \
 	core/VByteArray.cpp \
 	core/VChar.cpp \
