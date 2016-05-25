@@ -543,13 +543,18 @@ JNIEXPORT void JNICALL Java_com_vrseen_sensor_RotationSensor_update
 {
     VRotationState state;
     state.timestamp = timestamp * 0.000000001;
-    state.w = w;
-    state.x = x;
-    state.y = y;
-    state.z = z;
     state.gyro.x = gryoX;
     state.gyro.y = gryoY;
     state.gyro.z = gryoZ;
+
+    static VQuatf correct(VAxis_X, -90 * 3.1415926 / 180);
+    VQuatf raw(-y, x, z, w);
+    raw = correct * raw;
+    state.w = raw.w;
+    state.x = raw.x;
+    state.y = raw.y;
+    state.z = raw.z;
+
     VRotationSensor::instance()->setState(state);
 }
 
