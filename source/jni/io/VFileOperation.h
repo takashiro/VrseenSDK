@@ -1,7 +1,7 @@
 #pragma once
 
-#include "VSysFile.h"
-
+#include "VAbstractFile.h"
+#include "VString.h"
 
 #include <sys/stat.h>
 #include <errno.h>

@@ -582,21 +582,6 @@ unsigned char * VFileOperation::ScaleImageRGBA( const unsigned char * src, const
     return scaled;
 }
 
-// Helper function: obtain file information time.
-bool    VSysFile::GetFileStat(VFileStat* pfileStat, const VString& path)
-{
-    struct stat fileStat;
-
-    if (stat(path.toUtf8().data(), &fileStat) != 0) {
-        return false;
-    }
-
-    pfileStat->accessTime = fileStat.st_atime;
-    pfileStat->modifyTime = fileStat.st_mtime;
-    pfileStat->fileSize = fileStat.st_size;
-    return true;
-}
-
 
 NV_NAMESPACE_END
 

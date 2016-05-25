@@ -80,7 +80,6 @@ SOURCES += \
     jni/io/VFile.cpp \
     jni/io/VIODevice.cpp \
     jni/io/VFileOperation.cpp \
-    jni/io/VSysFile.cpp \
     jni/io/VDir.cpp \
     jni/io/VStandardPath.cpp \
     jni/media/VSoundManager.cpp \
@@ -213,7 +212,6 @@ HEADERS += \
     jni/io/VIODevice.h \
     jni/io/VDelegatedFile.h \
     jni/io/VFileOperation.h \
-    jni/io/VSysFile.h \
     jni/io/VDir.h \
     jni/io/VStandardPath.h \
     jni/media/VSoundManager.h \
