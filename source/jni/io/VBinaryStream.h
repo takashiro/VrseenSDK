@@ -54,6 +54,8 @@ public:
         return true;
     }
 
+    bool atEnd() const { return m_device->atEnd(); }
+
 private:
     VIODevice *m_device;
 };
