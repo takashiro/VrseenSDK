@@ -210,7 +210,6 @@ HEADERS += \
     jni/io/VBuffer.h \
     jni/io/VFile.h \
     jni/io/VIODevice.h \
-    jni/io/VDelegatedFile.h \
     jni/io/VFileOperation.h \
     jni/io/VDir.h \
     jni/io/VStandardPath.h \
