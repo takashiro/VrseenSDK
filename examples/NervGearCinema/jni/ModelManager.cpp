@@ -10,6 +10,7 @@
 #include <VDir.h>
 #include <VImageManager.h>
 #include <VOpenGLTexture.h>
+#include <VFile.h>
 
 namespace OculusCinema {
 

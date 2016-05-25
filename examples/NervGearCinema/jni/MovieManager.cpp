@@ -14,6 +14,7 @@
 #include <VZipFile.h>
 #include <VOpenGLTexture.h>
 #include <VImageManager.h>
+#include <VFile.h>
 
 namespace OculusCinema {
 
