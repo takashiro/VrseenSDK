@@ -241,7 +241,6 @@ HEADERS += \
     jni/scene/VColorConverter.h \
     jni/media/VImageLoader.h \
     jni/media/VImageKtxLoader.h\
-    jni/io/VAbstractFile.h \
     jni/scene/VTexture.h \
     jni/scene/VOpenGLTexture.h \
     jni/scene/VBlit.h \
