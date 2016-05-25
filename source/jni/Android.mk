@@ -91,7 +91,7 @@ LOCAL_SRC_FILES  := \
 	gui/MetaDataManager.cpp \
 	gui/OutOfSpaceMenu.cpp \
 	gui/KeyState.cpp \
-	io/VApkFile.cpp \
+	io/VZipFile.cpp \
 	io/VBuffer.cpp \
 	io/VBinaryStream.cpp \
 	io/VFile.cpp \

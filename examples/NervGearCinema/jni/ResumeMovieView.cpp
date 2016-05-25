@@ -4,7 +4,7 @@
 #include "CinemaApp.h"
 #include "ResumeMovieView.h"
 #include "ResumeMovieComponent.h"
-#include "VApkFile.h"
+#include "VZipFile.h"
 #include "CinemaStrings.h"
 #include "core/VTimer.h"
 

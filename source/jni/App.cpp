@@ -35,7 +35,7 @@
 #include "VRMenuMgr.h"
 #include "VUserSettings.h"
 
-#include "VApkFile.h"
+#include "VZipFile.h"
 #include "VJson.h"
 #include "VLog.h"
 #include "VMainActivity.h"

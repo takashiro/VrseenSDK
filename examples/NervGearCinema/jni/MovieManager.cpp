@@ -11,7 +11,7 @@
 #include <VPath.h>
 #include <VJson.h>
 #include <VLog.h>
-#include <VApkFile.h>
+#include <VZipFile.h>
 #include <VOpenGLTexture.h>
 #include <VImageManager.h>
 

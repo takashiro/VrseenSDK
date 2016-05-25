@@ -1,4 +1,4 @@
-#include "VApkFile.h"
+#include "VZipFile.h"
 #include "VString.h"
 #include "VByteArray.h"
 #include "VLog.h"
@@ -10,50 +10,50 @@
 
 NV_NAMESPACE_BEGIN
 
-struct VApkFile::Private
+struct VZipFile::Private
 {
     unzFile handle;
 };
 
-VApkFile::VApkFile()
+VZipFile::VZipFile()
     : d(new Private)
 {
     d->handle = nullptr;
 }
 
-VApkFile::VApkFile(const VString &packageName)
+VZipFile::VZipFile(const VString &packageName)
     : d(new Private)
 {
     open(packageName);
 }
 
-VApkFile::~VApkFile()
+VZipFile::~VZipFile()
 {
     close();
     delete d;
 }
 
-bool VApkFile::open(const VString &packageName)
+bool VZipFile::open(const VString &packageName)
 {
     VByteArray latin1 = packageName.toLatin1();
-    vInfo("VApkFile is opening" << latin1);
+    vInfo("VZipFile is opening" << latin1);
     d->handle = unzOpen(latin1.c_str());
     return d->handle != nullptr;
 }
 
-bool VApkFile::isOpen() const
+bool VZipFile::isOpen() const
 {
     return d->handle != nullptr;
 }
 
-void VApkFile::close()
+void VZipFile::close()
 {
     if (d->handle) {
         unzClose(d->handle);
     }
 }
 
-bool VApkFile::contains(const VString &filePath) const
+bool VZipFile::contains(const VString &filePath) const
 {
     VByteArray path = filePath.toUtf8();
     const int locateRet = unzLocateFile(d->handle, path.c_str(), 2/* case insensitive */);
@@ -72,10 +72,10 @@ bool VApkFile::contains(const VString &filePath) const
     return true;
 }
 
-bool VApkFile::read(const VString &filePath, void *&buffer, uint &length) const
+bool VZipFile::read(const VString &filePath, void *&buffer, uint &length) const
 {
     if (d->handle == nullptr) {
-        vError("VApkFile is not open");
+        vError("VZipFile is not open");
         return false;
     }
 
@@ -115,10 +115,10 @@ bool VApkFile::read(const VString &filePath, void *&buffer, uint &length) const
     return true;
 }
 
-bool VApkFile::read(const VString &filePath, VIODevice *output) const
+bool VZipFile::read(const VString &filePath, VIODevice *output) const
 {
     if (d->handle == nullptr) {
-        vError("VApkFile is not open");
+        vError("VZipFile is not open");
         return false;
     }
 
@@ -159,9 +159,9 @@ bool VApkFile::read(const VString &filePath, VIODevice *output) const
 }
 
 
-const VApkFile &VApkFile::CurrentApkFile()
+const VZipFile &VZipFile::CurrentApkFile()
 {
-    static VApkFile current(vApp->packageCodePath());
+    static VZipFile current(vApp->packageCodePath());
     return current;
 }
 
@@ -173,7 +173,7 @@ uint LoadTextureFromApplicationPackage(const VString &nameInZip, const TextureFl
     void *buffer = nullptr;
     uint bufferLength;
 
-    const VApkFile &apk = VApkFile::CurrentApkFile();
+    const VZipFile &apk = VZipFile::CurrentApkFile();
     apk.read(nameInZip, buffer, bufferLength);
     if (buffer == nullptr) {
         return 0;

@@ -14,7 +14,7 @@
 #include "VLensDistortion.h"
 #include "VEglDriver.h"
 #include "VString.h"
-#include "VApkFile.h"
+#include "VZipFile.h"
 #include "VLockless.h"
 #include "VTimer.h"
 #include "VGlGeometry.h"

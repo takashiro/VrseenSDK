@@ -29,7 +29,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "ScrollBarComponent.h"
 #include "SwipeHintComponent.h"
 
-#include <VApkFile.h>
+#include <VZipFile.h>
 #include <VArray.h>
 #include <VDir.h>
 #include <VLog.h>
@@ -898,7 +898,7 @@ OvrFolderBrowser::OvrFolderBrowser(
 			panel = "res/raw/panel.tga";
 		}
 
-        const VApkFile &apk = VApkFile::CurrentApkFile();
+        const VZipFile &apk = VZipFile::CurrentApkFile();
         apk.read(panel, buffer, bufferLength);
 
 		int panelW = 0;

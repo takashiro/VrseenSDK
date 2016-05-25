@@ -20,7 +20,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VRMenuMgr.h"
 #include "VRMenuComponent.h"
 #include "ui_default.h"	// embedded default UI texture (loaded as a placeholder when something doesn't load)
-#include "VApkFile.h"
+#include "VZipFile.h"
 #include "VImageManager.h"
 #include "VOpenGLTexture.h"
 
@@ -61,7 +61,7 @@ bool VRMenuSurfaceTexture::loadTexture( eSurfaceTextureType const type, const VS
     if (!imageName.isEmpty()) {
 //		void * 	buffer;
 //        uint		bufferLength;
-//        const VApkFile &apk = VApkFile::CurrentApkFile();
+//        const VZipFile &apk = VZipFile::CurrentApkFile();
 //        apk.read(imageName, buffer, bufferLength);
 //		if ( !buffer )
 //		{
