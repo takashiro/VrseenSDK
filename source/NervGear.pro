@@ -75,6 +75,7 @@ SOURCES += \
     jni/gui/OutOfSpaceMenu.cpp \
     jni/gui/KeyState.cpp \
     jni/io/VApkFile.cpp \
+    jni/io/VBinaryStream.cpp \
     jni/io/VBuffer.cpp \
     jni/io/VFile.cpp \
     jni/io/VIODevice.cpp \
@@ -207,6 +208,7 @@ HEADERS += \
     jni/gui/ui_default.h \
     jni/gui/KeyState.h \
     jni/io/VApkFile.h \
+    jni/io/VBinaryStream.h \
     jni/io/VBuffer.h \
     jni/io/VFile.h \
     jni/io/VIODevice.h \

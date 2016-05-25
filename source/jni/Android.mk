@@ -93,6 +93,7 @@ LOCAL_SRC_FILES  := \
 	gui/KeyState.cpp \
 	io/VApkFile.cpp \
 	io/VBuffer.cpp \
+	io/VBinaryStream.cpp \
 	io/VFile.cpp \
 	io/VIODevice.cpp \
 	io/VBinaryFile.cpp \
