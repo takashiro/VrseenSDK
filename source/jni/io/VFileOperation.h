@@ -1,8 +1,11 @@
 #pragma once
 
+//TODO: Remove this file
+
 #include "vglobal.h"
 
 NV_NAMESPACE_BEGIN
+
 enum ImageFilter
 {
     IMAGE_FILTER_NEAREST,
