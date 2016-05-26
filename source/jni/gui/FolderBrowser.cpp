@@ -2003,15 +2003,13 @@ void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const in
 	vAssert( folderIndex < m_folders.length() );
 
 	// Create or load thumbnail - request built up here to be processed ThumbnailThread
-    const VString & panoUrl = this->thumbUrl( panoData );
-    const VString thumbName = this->thumbName( panoUrl );
-	VPath finalThumb;
-    VString relativeThumbPath;
-    ToRelativePath(m_thumbSearchPaths, panoUrl, relativeThumbPath);
-
+    const VPath &panoUrl = this->thumbUrl(panoData);
+    const VString thumbName = this->thumbName(panoUrl);
+    VString relativeThumbPath = panoUrl.toRelativePath(m_thumbSearchPaths);
     VString appCacheThumbPath = m_appCachePath + this->thumbName(relativeThumbPath);
 
 	// if this url doesn't exist locally
+    VPath finalThumb;
     if (!VFile::Exists(panoUrl)) {
 		// Check app cache to see if we already downloaded it
         if (VFile::Exists(appCacheThumbPath)) {
