@@ -5,7 +5,7 @@
 #include "VArray.h"
 #include "api/VKernel.h"
 #include "GlTexture.h"
-#include "VApkFile.h"
+#include "VZipFile.h"
 
 NV_NAMESPACE_BEGIN
 

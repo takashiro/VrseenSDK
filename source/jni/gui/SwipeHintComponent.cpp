@@ -12,7 +12,7 @@ Copyright   :   Copyright 2014 Oculus VR, Inc. All Rights reserved.
 #include "SwipeHintComponent.h"
 #include "VRMenuMgr.h"
 #include "VRMenu.h"
-#include "VApkFile.h"
+#include "VZipFile.h"
 #include "App.h"
 #include "core/VTimer.h"
 

@@ -1,34 +1,22 @@
-#ifndef VIMAGEMANAGER_H
-#define VIMAGEMANAGER_H
-#include "VImageCommonLoader.h"
-#include "VImageKtxLoader.h"
-#include "VImagePvrLoader.h"
+#pragma once
 
+#include "VPath.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
-class VImageManager{
+class VImage;
 
+class VImageManager
+{
 public:
     VImageManager();
-
     ~VImageManager();
 
+    VImage *loadImage(const VPath &filename) const;
 
-    VImage* loadImage(const VPath &filename) const;
-
-    VArray<VImageLoader*> ImageLoaderList;
-
-
-
-
-
+private:
+    NV_DECLARE_PRIVATE
+    NV_DISABLE_COPY(VImageManager)
 };
 
-
-}
-
-
-
-#endif // VIMAGEMANAGER_H
-
+NV_NAMESPACE_END

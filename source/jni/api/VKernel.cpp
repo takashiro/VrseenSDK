@@ -33,7 +33,7 @@ JavaVM	* VrLibJavaVM;
 
 // This needs to be looked up by a thread called directly from java,
 // not a native pthread.
-static jclass	VrLibClass = NULL;
+jclass VrLibClass = NULL;
 
 static jmethodID getPowerLevelStateID = NULL;
 static jmethodID setActivityWindowFullscreenID = NULL;

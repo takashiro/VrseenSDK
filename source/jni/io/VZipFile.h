@@ -9,12 +9,12 @@ NV_NAMESPACE_BEGIN
 
 class VString;
 
-class VApkFile
+class VZipFile
 {
 public:
-    VApkFile();
-    VApkFile(const VString &packageName);
-    ~VApkFile();
+    VZipFile();
+    VZipFile(const VString &packageName);
+    ~VZipFile();
 
     bool open(const VString &packageName);
     bool isOpen() const;
@@ -26,11 +26,11 @@ public:
     bool read(const VString &filePath, VIODevice *output) const;
 
 
-    static const VApkFile &CurrentApkFile();
+    static const VZipFile &CurrentApkFile();
 
 private:
     NV_DECLARE_PRIVATE
-    NV_DISABLE_COPY(VApkFile)
+    NV_DISABLE_COPY(VZipFile)
 };
 
 //@to-do: remove this function

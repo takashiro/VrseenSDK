@@ -3,9 +3,9 @@
 #include "VCircularQueue.h"
 #include "VQuat.h"
 #include "VAlgorithm.h"
+#include "VTimer.h"
 
 #include <jni.h>
-#include <time.h>
 #include <fcntl.h>
 
 NV_NAMESPACE_BEGIN
@@ -13,11 +13,31 @@ NV_NAMESPACE_BEGIN
 struct VRotationSensor::Private
 {
     VLockless<VRotationState> state;
+    VQuatf recenter;
+    bool initialized;
+
+    Private()
+        : initialized(false)
+    {
+    }
 };
 
 void VRotationSensor::setState(const VRotationState &state)
 {
-    d->state.setState(state);
+    if (!d->initialized) {
+        float yaw, pitch, roll;
+        state.GetEulerAngles<VAxis_Y, VAxis_X, VAxis_Z>(&yaw, &pitch, &roll);
+        d->recenter = VQuatf(VAxis_Y, -yaw);
+        d->initialized = true;
+    } else {
+        VRotationState recentered = state;
+        VQuatf base = d->recenter * state;
+        recentered.w = base.w;
+        recentered.x = base.x;
+        recentered.y = base.y;
+        recentered.z = base.z;
+        d->state.setState(state);
+    }
 }
 
 VRotationState VRotationSensor::state() const
@@ -38,30 +58,9 @@ VRotationSensor::~VRotationSensor()
 
 VRotationState VRotationSensor::predictState(double timestamp) const
 {
-    //@to-do: implement this
+    NV_UNUSED(timestamp);
     VRotationState state = this->state();
-    state.timestamp = timestamp;
-
-    // Delta time from the last processed message
-    const float predictionDt = timestamp - state.timestamp;
-
-    float speed = state.gyro.Length();
-    const float slope = 0.2; // The rate at which the dynamic prediction interval varies
-    float candidateDt = slope * speed; // TODO: Replace with smoothstep function
-
-    float dynamicDt = std::min(predictionDt, candidateDt);
-
-    const float maxDeltaTime = 1.0f / 10.0f;
-    dynamicDt = VAlgorithm::Clamp(dynamicDt, 0.0f, maxDeltaTime);
-
-    if (speed > 0.001) {
-        VQuatf pose = state * VQuatf(state.gyro, speed * dynamicDt);
-        state.w = pose.w;
-        state.x = pose.x;
-        state.y = pose.y;
-        state.z = pose.z;
-    }
-
+    //state.timestamp = timestamp;
     return state;
 }
 
@@ -154,7 +153,7 @@ private:
 static long long getCurrentTime()
 {
     timespec ts;
-    clock_gettime(CLOCK_REALTIME, &ts); // Works on Linux
+    clock_gettime(CLOCK_MONOTONIC, &ts); // Works on Linux
     long long time = static_cast<long long>(ts.tv_sec)
             * static_cast<long long>(1000000000)
             + static_cast<long long>(ts.tv_nsec);
@@ -187,7 +186,7 @@ bool USensor::update(uint8_t  *buffer) {
     */
     pollSensor(&data, buffer);
 
-    m_state.timestamp = getCurrentTime();
+    m_state.timestamp = VTimer::Seconds();
     process(&data);
 
     VRotationSensor::instance()->setState(m_state);
@@ -197,7 +196,7 @@ bool USensor::update(uint8_t  *buffer) {
 
 longlong USensor::getLatestTime()
 {
-    return m_state.timestamp;
+    return m_state.timestamp * 1000000000;
 }
 
 VQuat<float> USensor::getSensorQuaternion()
@@ -207,7 +206,7 @@ VQuat<float> USensor::getSensorQuaternion()
 
 V3Vect<float> USensor::getAngularVelocity()
 {
-    return V3Vect<float>(m_state.gyro.x, m_state.gyro.y, m_state.gyro.z);
+    return m_state.gyro;
 }
 
 bool USensor::pollSensor(KTrackerSensorZip* data,uint8_t  *buffer)
@@ -279,7 +278,7 @@ void USensor::process(KTrackerSensorZip* data) {
         full_timestamp_ = data->Timestamp;
         first_real_time_delta_ = now - (full_timestamp_ * timeUnit);
     } else {
-        unsigned timestampDelta;
+        uint timestampDelta;
 
         if (data->Timestamp < last_timestamp_) {
             // The timestamp rolled around the 16 bit counter, so FullTimeStamp
@@ -492,14 +491,19 @@ JNIEXPORT void JNICALL Java_com_vrseen_sensor_RotationSensor_update
   (JNIEnv *, jclass, jlong timestamp, jfloat w, jfloat x, jfloat y, jfloat z, jfloat gryoX, jfloat gryoY, jfloat gryoZ)
 {
     VRotationState state;
-    state.timestamp = timestamp;
-    state.w = w;
-    state.x = x;
-    state.y = y;
-    state.z = z;
+    state.timestamp = timestamp * 0.000000001;
     state.gyro.x = gryoX;
     state.gyro.y = gryoY;
     state.gyro.z = gryoZ;
+
+    static VQuatf correct(VAxis_X, -90 * 3.1415926 / 180);
+    VQuatf raw(-y, x, z, w);
+    raw = correct * raw;
+    state.w = raw.w;
+    state.x = raw.x;
+    state.y = raw.y;
+    state.z = raw.z;
+
     VRotationSensor::instance()->setState(state);
 }
 

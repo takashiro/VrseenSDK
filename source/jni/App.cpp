@@ -35,7 +35,7 @@
 #include "VRMenuMgr.h"
 #include "VUserSettings.h"
 
-#include "VApkFile.h"
+#include "VZipFile.h"
 #include "VJson.h"
 #include "VLog.h"
 #include "VMainActivity.h"
@@ -1111,7 +1111,7 @@ struct App::Private
             // it will be displayed.  It will always be corrected to the real values by
             // time warp, but the closer we get, the less black will be pulled in at the edges.
             const double now = VTimer::Seconds();
-            static double prev;
+            static double prev = 0.0;
             const double rawDelta = now - prev;
             prev = now;
             const double clampedPrediction = std::min(0.1, rawDelta * 2);

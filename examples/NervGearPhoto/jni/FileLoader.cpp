@@ -20,7 +20,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "OVR_TurboJpeg.h"
 #include <fstream>
 
-#include <VApkFile.h>
+#include <VZipFile.h>
 #include <VLog.h>
 
 namespace NervGear {
@@ -80,7 +80,7 @@ void * Queue1Thread( void * v )
                 fileBuffer.read(reinterpret_cast<std::istream::char_type*>(buffer), fileLength);
                 if ( fileLength == 0 || buffer == NULL )
 				{
-                    const VApkFile &apk = VApkFile::CurrentApkFile();
+                    const VZipFile &apk = VZipFile::CurrentApkFile();
                     if (!apk.read(sideFilename, buffer, fileLength)) {
 						break;
 					}
@@ -104,7 +104,7 @@ void * Queue1Thread( void * v )
             fileBuffer.read(reinterpret_cast<std::istream::char_type*>(buffer), fileLength);
             if ( fileLength <= 0 || buffer == NULL )
 			{
-                const VApkFile &apk = VApkFile::CurrentApkFile();
+                const VZipFile &apk = VZipFile::CurrentApkFile();
                 if (!apk.read(filename,buffer, fileLength)) {
 					continue;
 				}

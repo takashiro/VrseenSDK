@@ -30,7 +30,7 @@
 
 #include "VPath.h"
 #include "VJson.h"
-#include "VApkFile.h"
+#include "VZipFile.h"
 #include "VLog.h"
 
 #include "android/JniUtils.h"
@@ -114,7 +114,7 @@ public:
 					1.0f), CenterOffset(0.0f), MaxAscent(0.0f), MaxDescent(0.0f) {
 	}
 
-    bool Load(const VApkFile &languagePackageFile, const VString &fileName);
+    bool Load(const VZipFile &languagePackageFile, const VString &fileName);
 	FontGlyphType const & GlyphForCharCode(uint32_t const charCode) const;
 
 	std::string FontName; // name of the font (not necessarily the file name)
@@ -135,7 +135,7 @@ public:
     VArray<int32_t> CharCodeMap; // index by character code to get the index of a glyph for the character
 
 private:
-    bool LoadFromPackage(const VApkFile &packageFile, const VString &fileName);
+    bool LoadFromPackage(const VZipFile &packageFile, const VString &fileName);
 	bool LoadFromBuffer(void const * buffer, size_t const bufferSize);
 };
 
@@ -203,7 +203,7 @@ private:
 	VGlShader FontProgram;
 
 private:
-    bool LoadImage(const VApkFile &languagePackageFile,
+    bool LoadImage(const VZipFile &languagePackageFile,
             const VString &imageName);
     bool LoadImageFromBuffer(const VString &imageName,
             const uchar *buffer, size_t const bufferSize,
@@ -399,7 +399,7 @@ static size_t FileSize(FILE * f) {
 
 //==============================
 // FontInfoType::LoadFromPackage
-bool FontInfoType::LoadFromPackage(const VApkFile &packageFile, const VString &fileName) {
+bool FontInfoType::LoadFromPackage(const VZipFile &packageFile, const VString &fileName) {
     uint length = 0;
     void *packageBuffer = NULL;
 
@@ -427,13 +427,13 @@ bool FontInfoType::LoadFromPackage(const VApkFile &packageFile, const VString &f
 
 //==============================
 // FontInfoType::Load
-bool FontInfoType::Load(const VApkFile &languagePackageFile, const VString &fileName) {
+bool FontInfoType::Load(const VZipFile &languagePackageFile, const VString &fileName) {
     if (languagePackageFile.isOpen() && LoadFromPackage(languagePackageFile, fileName)) {
 		return true;
 	}
 
 	// if it wasn't loaded from the language package, try again from the app package
-    const VApkFile &apk = VApkFile::CurrentApkFile();
+    const VZipFile &apk = VZipFile::CurrentApkFile();
     return LoadFromPackage(apk, fileName);
 }
 
@@ -726,7 +726,7 @@ static void StripFileName(const VString& path, VString& outPath) {
 //==============================
 // BitmapFontLocal::Load
 bool BitmapFontLocal::Load(const VString &languagePackageName, const VString &fontInfoFileName) {
-    VApkFile languagePackageFile(languagePackageName);
+    VZipFile languagePackageFile(languagePackageName);
 	if (!FontInfo.Load(languagePackageFile, fontInfoFileName)) {
 		return false;
 	}
@@ -762,7 +762,7 @@ bool BitmapFontLocal::Load(const VString &languagePackageName, const VString &fo
 
 //==============================
 // BitmapFontLocal::LoadImage
-bool BitmapFontLocal::LoadImage(const VApkFile &languagePackageFile, const VString &imageName)
+bool BitmapFontLocal::LoadImage(const VZipFile &languagePackageFile, const VString &imageName)
 {
 	// try to open the language pack apk
     uint length = 0;
@@ -776,7 +776,7 @@ bool BitmapFontLocal::LoadImage(const VApkFile &languagePackageFile, const VStri
 	// - we opened the language apk and failed to open the texture file
 	// - we failed to open the language apk
     if (packageBuffer == nullptr) {
-        const VApkFile &apk = VApkFile::CurrentApkFile();
+        const VZipFile &apk = VZipFile::CurrentApkFile();
         apk.read(imageName, packageBuffer, length);
 	}
 

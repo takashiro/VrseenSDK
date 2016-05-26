@@ -1,6 +1,6 @@
 #include "UI/UITexture.h"
 #include "CinemaApp.h"
-#include "VApkFile.h"
+#include "VZipFile.h"
 
 namespace OculusCinema {
 

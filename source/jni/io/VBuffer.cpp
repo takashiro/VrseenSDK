@@ -21,10 +21,19 @@ VBuffer::~VBuffer()
 
 vint64 VBuffer::bytesAvailable() const
 {
-    std::streampos curPos = d->data.tellp();
-    d->data.seekp(0, std::ios::end);
-    vint64 pos = d->data.tellp();
-    d->data.seekp(curPos);
+    vint64 curPos = d->data.tellg();
+    d->data.seekg(0, std::ios::end);
+    vint64 pos = d->data.tellg();
+    d->data.seekg(curPos);
+    return pos - curPos;
+}
+
+vint64 VBuffer::size() const
+{
+    std::streampos curPos = d->data.tellg();
+    d->data.seekg(0, std::ios::end);
+    vint64 pos = d->data.tellg();
+    d->data.seekg(curPos);
     return pos;
 }
 

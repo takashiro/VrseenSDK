@@ -14,7 +14,7 @@
 #include "VLensDistortion.h"
 #include "VEglDriver.h"
 #include "VString.h"
-#include "VApkFile.h"
+#include "VZipFile.h"
 #include "VLockless.h"
 #include "VTimer.h"
 #include "VGlGeometry.h"
@@ -22,6 +22,10 @@
 #include "VKernel.h"
 #include "VRotationSensor.h"
 #include "VDirectRender.h"
+#include "App.h"
+
+//TODO: Remove the hacking extern variable
+extern jclass VrLibClass;
 
 NV_NAMESPACE_BEGIN
 
@@ -145,8 +149,8 @@ VR4Matrixf CalculateTimeWarpMatrix2( const VQuatf &inFrom, const VQuatf &inTo )
         }
     }
 
-    VR4Matrixf		lastSensorMatrix = VR4Matrixf( to );
-    VR4Matrixf		lastViewMatrix = VR4Matrixf( from );
+    VR4Matrixf lastSensorMatrix(to);
+    VR4Matrixf lastViewMatrix(from);
 
     return ( lastSensorMatrix.Inverted() * lastViewMatrix ).Inverted();
 }
@@ -193,7 +197,7 @@ struct VFrameSmooth::Private
             m_wantSingleBuffer(wantSingleBuffer),
             m_hasEXT_sRGB_write_control( false ),
             m_sStartupTid( 0 ),
-            m_jni( NULL ),
+            m_jni(nullptr),
             m_eglMainThreadSurface( 0 ),
             m_eglClientVersion( 0 ),
             m_eglShareContext( 0 ),
@@ -631,7 +635,8 @@ float 	VFrameSmooth::Private::sleepUntilTimePoint( const double targetSeconds, c
 
 void VFrameSmooth::Private::threadFunction()
 {
-
+    JavaVM *javaVM = JniUtils::GetJavaVM();
+    javaVM->AttachCurrentThread(&m_jni, nullptr);
 
     smoothThreadInit();
 
@@ -643,15 +648,11 @@ void VFrameSmooth::Private::threadFunction()
     vInfo("VFrameSmooth::Private::threadFunction().");
 
     bool removedSchedFifo = false;
+    jobject activityObject = vApp->javaObject();
 
-
-    for ( double vsync = 0; ; vsync++ )
-    {
-
-
-        const double current = ceil( getFractionalVsync() );
-        if ( abs( current - vsync ) > 2.0 )
-        {
+    for (double vsync = 0; ; vsync++) {
+        const double current = ceil(getFractionalVsync());
+        if (abs(current - vsync) > 2.0) {
             //vInfo("Changing vsync from " << vsync << " to " << current);
             vsync = current;
         }
@@ -662,22 +663,20 @@ void VFrameSmooth::Private::threadFunction()
         }
 
 
-       const double currentTime = VTimer::Seconds();
-       const double lastWarpTime = m_lastsmoothTimeInSeconds.state();
-       if ( removedSchedFifo )
-       {
-           if ( lastWarpTime > currentTime - 0.1 )
-           {
-               removedSchedFifo = false;
-           }
-       }
-       else
-       {
-           if ( lastWarpTime < currentTime - 1.0 )
-           {
-               removedSchedFifo = true;
-           }
-       }
+        const double currentTime = VTimer::Seconds();
+        const double lastWarpTime = m_lastsmoothTimeInSeconds.state();
+        jmethodID setSchedFifoMethodId = JniUtils::GetStaticMethodID(m_jni, VrLibClass, "setSchedFifoStatic", "(Landroid/app/Activity;II)I");
+        if (removedSchedFifo) {
+            if (lastWarpTime > currentTime - 0.1) {
+                m_jni->CallStaticIntMethod(VrLibClass, setSchedFifoMethodId, activityObject, m_sStartupTid, 1);
+                removedSchedFifo = false;
+            }
+        } else {
+            if (lastWarpTime < currentTime - 1.0) {
+                m_jni->CallStaticIntMethod(VrLibClass, setSchedFifoMethodId, activityObject, m_sStartupTid, 0);
+                removedSchedFifo = true;
+            }
+        }
 
         //vInfo( "WarpThreadLoop enter rendertodisplay");
         renderToDisplay( vsync,m_screen.isFrontBuffer() ? spAsyncFrontBufferPortrait
@@ -685,13 +684,12 @@ void VFrameSmooth::Private::threadFunction()
     }
 
     smoothThreadShutdown();
-
+    javaVM->DetachCurrentThread();
     vInfo("Exiting VFrameSmooth::Private::threadFunction().");
 }
 
-
-VFrameSmooth::VFrameSmooth(bool async,bool wantSingleBuffer)
-        : d(new Private(async,wantSingleBuffer))
+VFrameSmooth::VFrameSmooth(bool async, bool wantSingleBuffer)
+        : d(new Private(async, wantSingleBuffer))
 {
 }
 
@@ -1023,8 +1021,13 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
 
         //vInfo("Eye " << eye << ": now=" << getFractionalVsync() << "  sleepTo=" << vsyncBase + swap.deltaVsync[eye]);
 
-
+        // Sleep until we are in the correct half of the screen for
+        // rendering this eye.  If we are running single threaded,
+        // the first eye will probably already be past the sleep point,
+        // so only the second eye will be at a dependable time.
         const double sleepTargetVsync = vsyncBase + swap.deltaVsync[eye];
+        const double sleepTargetTime = framePointTimeInSeconds( sleepTargetVsync );
+        sleepUntilTimePoint( sleepTargetTime, false );
 
 
         //vInfo("Vsync " << vsyncBase << ":" << eye << " sleep " << secondsToSleep);
@@ -1126,17 +1129,17 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
             const double timePoint = framePointTimeInSeconds( vsyncPoint );
             sensor[scan] = VRotationSensor::instance()->predictState( timePoint );
             const VR4Matrixf warp = CalculateTimeWarpMatrix2(m_pose[eye][0], sensor[scan]) * velocity;
-            timeWarps[0][scan] = VR4Matrixf( m_texMatrix[eye][0]) * warp;
+            timeWarps[0][scan] = m_texMatrix[eye][0] * warp;
             if ( dualLayer )
             {
                 if ( m_smoothOptions & VK_FIXED_LAYER )
                 {
-                    timeWarps[1][scan] = VR4Matrixf( m_texMatrix[eye][1]);
+                    timeWarps[1][scan] = m_texMatrix[eye][1];
                 }
                 else
                 {
                     const VR4Matrixf warp2 = CalculateTimeWarpMatrix2(m_pose[eye][1], sensor[scan]) * velocity;
-                    timeWarps[1][scan] = VR4Matrixf( m_texMatrix[eye][1] ) * warp2;
+                    timeWarps[1][scan] = m_texMatrix[eye][1] * warp2;
                 }
             }
         }
@@ -1234,6 +1237,12 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
     glViewport( 0, 0, screenWidth, screenHeight );
     glScissor( 0, 0, screenWidth, screenHeight );
 
+    // This must be long enough to cover CPU scheduling delays, GPU in-flight commands,
+    // and the actual drawing of this slice.
+//    const warpSource_t & latestWarpSource = m_warpSources[m_eyeBufferCount.state()%MAX_WARP_SOURCES];
+//    const double schedulingCushion = latestWarpSource.WarpParms.PreScheduleSeconds;
+
+    const double schedulingCushion = m_preScheduleSeconds;
     int	back = 0;
 
     long long thisEyeBufferNum = 0;
@@ -1241,6 +1250,10 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
     {
         const int	eye = (int)( screenSlice / 4 );
 
+        // Sleep until we are in the correct part of the screen for
+        // rendering this slice.
+        const double sleepTargetTime = sliceTimes[ screenSlice ] - schedulingCushion;
+        sleepUntilTimePoint( sleepTargetTime, false );
 
 
         //vInfo("slice " << screenSlice << " targ " << sleepTargetTime << " slept " << secondsToSleep);
@@ -1345,17 +1358,17 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
                 sensor[scan] = VRotationSensor::instance()->predictState(timePoint);
                 warp = CalculateTimeWarpMatrix2(m_pose[eye][0], sensor[scan]) * velocity;
             }
-            timeWarps[0][scan] = VR4Matrixf( m_texMatrix[eye][0] ) * warp;
+            timeWarps[0][scan] = m_texMatrix[eye][0] * warp;
             if ( dualLayer )
             {
                 if ( m_smoothOptions & VK_FIXED_LAYER )
                 {
-                    timeWarps[1][scan] = VR4Matrixf( m_texMatrix[eye][1] );
+                    timeWarps[1][scan] = m_texMatrix[eye][1];
                 }
                 else
                 {
                     const VR4Matrixf warp2 = CalculateTimeWarpMatrix2(m_pose[eye][1], sensor[scan]) * velocity;
-                    timeWarps[1][scan] = VR4Matrixf( m_texMatrix[eye][1] ) * warp2;
+                    timeWarps[1][scan] = m_texMatrix[eye][1] * warp2;
                 }
             }
         }

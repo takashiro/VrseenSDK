@@ -7,7 +7,7 @@ NV_NAMESPACE_BEGIN
 struct VRotationState : public VQuatf
 {
     V3Vectf gyro;
-    longlong timestamp;
+    double timestamp;
 };
 
 NV_NAMESPACE_END

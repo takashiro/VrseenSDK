@@ -91,13 +91,12 @@ LOCAL_SRC_FILES  := \
 	gui/MetaDataManager.cpp \
 	gui/OutOfSpaceMenu.cpp \
 	gui/KeyState.cpp \
-	io/VApkFile.cpp \
+	io/VZipFile.cpp \
 	io/VBuffer.cpp \
+	io/VBinaryStream.cpp \
 	io/VFile.cpp \
 	io/VIODevice.cpp \
-	io/VBinaryFile.cpp \
 	io/VFileOperation.cpp \
-	io/VSysFile.cpp \
 	io/VDir.cpp \
 	io/VStandardPath.cpp \
 	media/VSoundManager.cpp \
