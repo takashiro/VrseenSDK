@@ -1,6 +1,7 @@
 #pragma once
 
 #include "VString.h"
+#include "VArray.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -28,6 +29,8 @@ public:
 
     VString dirName() const;
     VString dirPath() const;
+
+    VString toRelativePath(const VArray<VString> &searchPaths) const;
 };
 
 NV_NAMESPACE_END

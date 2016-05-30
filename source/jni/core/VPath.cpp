@@ -242,4 +242,15 @@ VString VPath::dirPath() const
     return range(0, end);
 }
 
+VString VPath::toRelativePath(const VArray<VString> &parents) const
+{
+    // check if the path starts with any of the search paths
+    for (const VString &parent : parents) {
+        if (startsWith(parent)) {
+            return mid(parent.size());
+        }
+    }
+    return *this;
+}
+
 NV_NAMESPACE_END

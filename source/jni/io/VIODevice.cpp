@@ -93,10 +93,10 @@ bool VIODevice::seek(vint64 pos)
 
 VByteArray VIODevice::read(vint64 maxSize)
 {
-    char *data = new char[maxSize];
-    vint64 length = readData(data, maxSize);
-    VByteArray array(data, length);
-    delete[] data;
+    char *buffer = new char[maxSize];
+    vint64 length = readData(buffer, maxSize);
+    VByteArray array(buffer, length);
+    delete[] buffer;
     return array;
 }
 
