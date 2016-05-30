@@ -157,107 +157,107 @@ struct App::Private
     volatile bool running;
 
     // Most calls in from java should communicate through this.
-    VEventLoop	eventLoop;
+    VEventLoop eventLoop;
 
     // Egl context and surface for rendering
-    VEglDriver  m_vrGlStatus;
+    VEglDriver m_vrGlStatus;
 
 
-    GLuint			loadingIconTexId;
+    GLuint loadingIconTexId;
 
-    JavaVM *		javaVM;
+    JavaVM *javaVM;
 
-    JNIEnv *		uiJni;			// for use by the Java UI thread
-    JNIEnv *		vrJni;			// for use by the VR thread
+    JNIEnv *uiJni;			// for use by the Java UI thread
+    JNIEnv *vrJni;			// for use by the VR thread
 
-    jclass			vrActivityClass;		// must be looked up from main thread or FindClass() will fail
+    jclass vrActivityClass;		// must be looked up from main thread or FindClass() will fail
 
-    jmethodID		playSoundPoolSoundMethodId;
+    jmethodID playSoundPoolSoundMethodId;
 
-    VString			launchIntentURI;			// URI app was launched with
-    VString			launchIntentJSON;			// extra JSON data app was launched with
-    VString			launchIntentFromPackage;	// package that sent us the launch intent
+    VString launchIntentURI;			// URI app was launched with
+    VString launchIntentJSON;			// extra JSON data app was launched with
+    VString launchIntentFromPackage;	// package that sent us the launch intent
 
-    VString			packageCodePath;	// path to apk to open as zip and load resources
+    VString packageCodePath;	// path to apk to open as zip and load resources
 
-    bool			paused;				// set/cleared by onPause / onResume
+    bool paused;				// set/cleared by onPause / onResume
 
-    float 			popupDistance;
-    float 			popupScale;
+    float popupDistance;
+    float popupScale;
 
 
-    VPointTracker   fpsPointTracker;
+    VPointTracker fpsPointTracker;
     bool showFPS;
 
     // Every application gets a basic dialog surface.
-    SurfaceTexture * dialogTexture;
+    SurfaceTexture *dialogTexture;
 
     // Current joypad state, without pressed / released calculation
-    VInput			joypad;
+    VInput joypad;
 
     // drawing parameters
-    int				dialogWidth;
-    int				dialogHeight;
+    int dialogWidth;
+    int dialogHeight;
 
     // Dialogs will be oriented base down in the view when they
     // were generated.
 
-    VR4Matrixf		lastViewMatrix;
+    VR4Matrixf lastViewMatrix;
 
-    ANativeWindow * nativeWindow;
-    EGLSurface 		windowSurface;
+    ANativeWindow *nativeWindow;
+    EGLSurface windowSurface;
 
-    bool			drawCalibrationLines;	// currently toggled by right trigger
-    bool			calibrationLinesDrawn;	// after draw, go to static time warp test
-    bool			showVignette;			// render the vignette
+    bool drawCalibrationLines;	// currently toggled by right trigger
+    bool calibrationLinesDrawn;	// after draw, go to static time warp test
+    bool showVignette;			// render the vignette
 
-    bool			framebufferIsSrgb;			// requires KHR_gl_colorspace
-    bool			framebufferIsProtected;		// requires GPU trust zone extension
+    bool framebufferIsSrgb;			// requires KHR_gl_colorspace
+    bool framebufferIsProtected;		// requires GPU trust zone extension
 
     // Only render a single eye view, which will get warped for both
     // screen eyes.
-    bool			renderMonoMode;
+    bool renderMonoMode;
 
-    VFrame			lastVrFrame;
+    VFrame lastVrFrame;
 
-    VGlShader		untexturedMvpProgram;
-    VGlShader		untexturedScreenSpaceProgram;
-    VGlShader		overlayScreenFadeMaskProgram;
-    VGlShader		overlayScreenDirectProgram;
+    VGlShader untexturedMvpProgram;
+    VGlShader untexturedScreenSpaceProgram;
+    VGlShader overlayScreenFadeMaskProgram;
+    VGlShader overlayScreenDirectProgram;
 
-    VGlGeometry		unitCubeLines;		// 12 lines that outline a 0 to 1 unit cube, intended to be scaled to cover bounds.
-    VGlGeometry		unitSquare;			// -1 to 1 in x and Y, 0 to 1 in texcoords
-    VGlGeometry		fadedScreenMaskSquare;// faded screen mask for overlay rendering
+    VGlGeometry unitCubeLines;		// 12 lines that outline a 0 to 1 unit cube, intended to be scaled to cover bounds.
+    VGlGeometry unitSquare;			// -1 to 1 in x and Y, 0 to 1 in texcoords
+    VGlGeometry fadedScreenMaskSquare;// faded screen mask for overlay rendering
 
-    EyePostRender	eyeDecorations;
+    EyePostRender eyeDecorations;
 
     VRotationState sensorForNextWarp;
 
     VThread *renderThread;
-    int				vrThreadTid;		// linux tid
+    int vrThreadTid;		// linux tid
 
-    bool			showVolumePopup;	// true to show volume popup when volume changes
+    bool showVolumePopup;	// true to show volume popup when volume changes
 
-    VViewSettings		viewSettings;
+    VViewSettings viewSettings;
 
-    float 			touchpadTimer;
-    V2Vectf		touchOrigin;
-    float 			lastTouchpadTime;
-    bool 			lastTouchDown;
-    int 			touchState;
+    float touchpadTimer;
+    V2Vectf touchOrigin;
+    float lastTouchpadTime;
+    bool lastTouchDown;
+    int touchState;
 
-    bool			enableDebugOptions;	// enable debug key-commands for development testing
+    bool enableDebugOptions;	// enable debug key-commands for development testing
 
-    long long 		recenterYawFrameStart;	// Enables reorient before sensor data is read.  Allows apps to reorient without having invalid orientation information for that frame.
+    long long recenterYawFrameStart;	// Enables reorient before sensor data is read.  Allows apps to reorient without having invalid orientation information for that frame.
 
-    OvrGuiSys *         guiSys;
-    OvrGazeCursor *     gazeCursor;
-    BitmapFont *        defaultFont;
-    BitmapFontSurface * worldFontSurface;
-    BitmapFontSurface * menuFontSurface;
-    OvrVRMenuMgr *      vrMenuMgr;
-    OvrVolumePopup *	volumePopup;
-    OvrDebugLines *     debugLines;
+    OvrGuiSys *guiSys;
+    OvrGazeCursor *gazeCursor;
+    BitmapFont *defaultFont;
+    BitmapFontSurface *worldFontSurface;
+    BitmapFontSurface *menuFontSurface;
+    OvrVRMenuMgr *vrMenuMgr;
+    OvrVolumePopup *volumePopup;
+    OvrDebugLines *debugLines;
     KeyState backKeyState;
     VStandardPath *storagePaths;
 
@@ -1181,8 +1181,7 @@ struct App::Private
                 }
             }
 
-            if ( showFPS )
-            {
+            if (showFPS) {
                 const int FPS_NUM_FRAMES_TO_AVERAGE = 30;
                 static double  LastFrameTime = VTimer::Seconds();
                 static double  AccumulatedFrameInterval = 0.0;
@@ -1193,17 +1192,17 @@ struct App::Private
                 double frameInterval = currentFrameTime - LastFrameTime;
                 AccumulatedFrameInterval += frameInterval;
                 NumAccumulatedFrames++;
-                if ( NumAccumulatedFrames > FPS_NUM_FRAMES_TO_AVERAGE ) {
-                    double interval = ( AccumulatedFrameInterval / NumAccumulatedFrames );  // averaged
+                if (NumAccumulatedFrames > FPS_NUM_FRAMES_TO_AVERAGE) {
+                    double interval = (AccumulatedFrameInterval / NumAccumulatedFrames);  // averaged
                     AccumulatedFrameInterval = 0.0;
                     NumAccumulatedFrames = 0;
-                    LastFrameRate = 1.0f / float( interval > 0.000001 ? interval : 0.00001 );
+                    LastFrameRate = 1.0f / float(interval > 0.000001 ? interval : 0.00001);
                 }
 
-                V3Vectf viewPos = GetViewMatrixPosition( lastViewMatrix );
-                V3Vectf viewFwd = GetViewMatrixForward( lastViewMatrix );
+                V3Vectf viewPos = GetViewMatrixPosition(lastViewMatrix);
+                V3Vectf viewFwd = GetViewMatrixForward(lastViewMatrix);
                 V3Vectf newPos = viewPos + viewFwd * 1.5f;
-                fpsPointTracker.Update( VTimer::Seconds(), newPos );
+                fpsPointTracker.Update(VTimer::Seconds(), newPos);
 
                 fontParms_t fp;
                 fp.AlignHoriz = HORIZONTAL_CENTER;
@@ -1211,8 +1210,8 @@ struct App::Private
                 fp.TrackRoll = false;
                 VString temp;
                 temp.sprintf("%.1f fps", LastFrameRate);
-                worldFontSurface->DrawTextBillboarded3D( *defaultFont, fp, fpsPointTracker.GetCurPosition(),
-                        0.8f, V4Vectf( 1.0f, 0.0f, 0.0f, 1.0f ), temp);
+                worldFontSurface->DrawTextBillboarded3D(*defaultFont, fp, fpsPointTracker.GetCurPosition(),
+                        0.8f, V4Vectf(1.0f, 0.0f, 0.0f, 1.0f), temp);
 
                 LastFrameTime = currentFrameTime;
             }
@@ -1885,22 +1884,21 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
 //}
 
 // draw a zero to destination alpha
-void App::drawScreenMask( const VR4Matrixf & mvp, const float fadeFracX, const float fadeFracY )
+void App::drawScreenMask(const VR4Matrixf &mvp, const float fadeFracX, const float fadeFracY)
 {
-    VR4Matrixf mvpMatrix( mvp );
+    VR4Matrixf mvpMatrix(mvp);
 
-    glUseProgram( d->overlayScreenFadeMaskProgram.program );
+    glUseProgram(d->overlayScreenFadeMaskProgram.program);
 
-    glUniformMatrix4fv( d->overlayScreenFadeMaskProgram.uniformModelViewProMatrix, 1, GL_FALSE, mvpMatrix.Transposed().M[0] );
+    glUniformMatrix4fv(d->overlayScreenFadeMaskProgram.uniformModelViewProMatrix, 1, GL_FALSE, mvpMatrix.Transposed().M[0]);
 
-    if ( d->fadedScreenMaskSquare.vertexArrayObject == 0 )
-    {
+    if (d->fadedScreenMaskSquare.vertexArrayObject == 0) {
         d->fadedScreenMaskSquare.createScreenQuad( fadeFracX, fadeFracY );
     }
 
-    glColorMask( 0.0f, 0.0f, 0.0f, 1.0f );
+    glColorMask(0.0f, 0.0f, 0.0f, 1.0f);
     d->fadedScreenMaskSquare.drawElements();
-    glColorMask( 1.0f, 1.0f, 1.0f, 1.0f );
+    glColorMask(1.0f, 1.0f, 1.0f, 1.0f);
 }
 bool App::isShowFPS() const
 {
@@ -1910,7 +1908,7 @@ void App::showFPS(bool const show)
 {
     bool temp = d->showFPS;
     d->showFPS = show;
-    if(d->showFPS && !temp) {
+    if (d->showFPS && !temp) {
         d->fpsPointTracker.Reset();
     }
 }
