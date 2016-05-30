@@ -14,7 +14,7 @@
 #include "VLensDistortion.h"
 #include "VEglDriver.h"
 #include "VString.h"
-#include "VApkFile.h"
+#include "VZipFile.h"
 #include "VLockless.h"
 #include "VTimer.h"
 #include "VGlGeometry.h"
@@ -149,8 +149,8 @@ VR4Matrixf CalculateTimeWarpMatrix2( const VQuatf &inFrom, const VQuatf &inTo )
         }
     }
 
-    VR4Matrixf		lastSensorMatrix = VR4Matrixf( to );
-    VR4Matrixf		lastViewMatrix = VR4Matrixf( from );
+    VR4Matrixf lastSensorMatrix(to);
+    VR4Matrixf lastViewMatrix(from);
 
     return ( lastSensorMatrix.Inverted() * lastViewMatrix ).Inverted();
 }
@@ -1130,17 +1130,17 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
             const double timePoint = framePointTimeInSeconds( vsyncPoint );
             sensor[scan] = VRotationSensor::instance()->predictState( timePoint );
             const VR4Matrixf warp = CalculateTimeWarpMatrix2(m_pose[eye][0], sensor[scan]) * velocity;
-            timeWarps[0][scan] = VR4Matrixf( m_texMatrix[eye][0]) * warp;
+            timeWarps[0][scan] = m_texMatrix[eye][0] * warp;
             if ( dualLayer )
             {
                 if ( m_smoothOptions & VK_FIXED_LAYER )
                 {
-                    timeWarps[1][scan] = VR4Matrixf( m_texMatrix[eye][1]);
+                    timeWarps[1][scan] = m_texMatrix[eye][1];
                 }
                 else
                 {
                     const VR4Matrixf warp2 = CalculateTimeWarpMatrix2(m_pose[eye][1], sensor[scan]) * velocity;
-                    timeWarps[1][scan] = VR4Matrixf( m_texMatrix[eye][1] ) * warp2;
+                    timeWarps[1][scan] = m_texMatrix[eye][1] * warp2;
                 }
             }
         }
@@ -1359,17 +1359,17 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
                 sensor[scan] = VRotationSensor::instance()->predictState(timePoint);
                 warp = CalculateTimeWarpMatrix2(m_pose[eye][0], sensor[scan]) * velocity;
             }
-            timeWarps[0][scan] = VR4Matrixf( m_texMatrix[eye][0] ) * warp;
+            timeWarps[0][scan] = m_texMatrix[eye][0] * warp;
             if ( dualLayer )
             {
                 if ( m_smoothOptions & VK_FIXED_LAYER )
                 {
-                    timeWarps[1][scan] = VR4Matrixf( m_texMatrix[eye][1] );
+                    timeWarps[1][scan] = m_texMatrix[eye][1];
                 }
                 else
                 {
                     const VR4Matrixf warp2 = CalculateTimeWarpMatrix2(m_pose[eye][1], sensor[scan]) * velocity;
-                    timeWarps[1][scan] = VR4Matrixf( m_texMatrix[eye][1] ) * warp2;
+                    timeWarps[1][scan] = m_texMatrix[eye][1] * warp2;
                 }
             }
         }

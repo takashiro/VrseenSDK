@@ -1,54 +1,50 @@
 #include "VImageManager.h"
-#include "VIODevice.h"
 
-namespace NervGear {
+#include "VFile.h"
+#include "VImageCommonLoader.h"
+#include "VImageKtxLoader.h"
+#include "VImagePvrLoader.h"
+
+NV_NAMESPACE_BEGIN
+
+struct VImageManager::Private
+{
+    VArray<VImageLoader *> loaders;
+};
 
 VImageManager::VImageManager()
+    : d(new Private)
 {
-    ImageLoaderList.push_back(new VImageCommonLoader());
-    ImageLoaderList.push_back(new VImageKtxLoader());
-    ImageLoaderList.push_back(new VImagePvrLoader());
+    d->loaders.append(new VImageCommonLoader);
+    d->loaders.append(new VImageKtxLoader);
+    d->loaders.append(new VImagePvrLoader);
 }
 
 VImageManager::~VImageManager()
 {
-    for (int i = 0; i < (int)ImageLoaderList.size(); i++)
-    {
-        delete ImageLoaderList[i];
+    for (VImageLoader *loader : d->loaders) {
+        delete loader;
     }
-    ImageLoaderList.clear();
+    delete d;
 }
 
-VImage* VImageManager::loadImage(const VPath &filename) const
+VImage *VImageManager::loadImage(const VPath &fileName) const
 {
-    VFile* file =  new VFile(filename, VIODevice::ReadOnly);
-    if (!file)
-    {
+    VFile file(fileName, VIODevice::ReadOnly);
+    if (!file.exists()) {
         vInfo("Error File doesn't exist!");
         return 0;
     }
 
-    for (int i = 0; i < (int)ImageLoaderList.size(); i++)
-    {
-        if (ImageLoaderList[i]->isALoadableFileExtension(filename))
-        {
-            file->seek(0);
-            return ImageLoaderList[i]->loadImage(file);
+    for (VImageLoader *loader : d->loaders) {
+        if (loader->isALoadableFileExtension(fileName)) {
+            file.seek(0);
+            return loader->loadImage(&file);
         }
     }
 
-    delete file;
-
-    vInfo("Failed to load image!");
-
+    vWarn("Failed to load image!");
     return 0;
-
-
-
-
-
 }
 
-
-
-}
+NV_NAMESPACE_END

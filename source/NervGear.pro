@@ -74,13 +74,12 @@ SOURCES += \
     jni/gui/MetaDataManager.cpp \
     jni/gui/OutOfSpaceMenu.cpp \
     jni/gui/KeyState.cpp \
-    jni/io/VApkFile.cpp \
+    jni/io/VZipFile.cpp \
+    jni/io/VBinaryStream.cpp \
     jni/io/VBuffer.cpp \
     jni/io/VFile.cpp \
     jni/io/VIODevice.cpp \
-    jni/io/VBinaryFile.cpp \
     jni/io/VFileOperation.cpp \
-    jni/io/VSysFile.cpp \
     jni/io/VDir.cpp \
     jni/io/VStandardPath.cpp \
     jni/media/VSoundManager.cpp \
@@ -206,14 +205,12 @@ HEADERS += \
     jni/gui/GuiSysLocal.h \
     jni/gui/ui_default.h \
     jni/gui/KeyState.h \
-    jni/io/VApkFile.h \
+    jni/io/VZipFile.h \
+    jni/io/VBinaryStream.h \
     jni/io/VBuffer.h \
     jni/io/VFile.h \
     jni/io/VIODevice.h \
-    jni/io/VBinaryFile.h \
-    jni/io/VDelegatedFile.h \
     jni/io/VFileOperation.h \
-    jni/io/VSysFile.h \
     jni/io/VDir.h \
     jni/io/VStandardPath.h \
     jni/media/VSoundManager.h \
@@ -244,7 +241,6 @@ HEADERS += \
     jni/scene/VColorConverter.h \
     jni/media/VImageLoader.h \
     jni/media/VImageKtxLoader.h\
-    jni/io/VAbstractFile.h \
     jni/scene/VTexture.h \
     jni/scene/VOpenGLTexture.h \
     jni/scene/VBlit.h \

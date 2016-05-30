@@ -164,7 +164,7 @@ protected:
     virtual	unsigned char *		loadThumbnail( const char * filename, int & width, int & height ) = 0;
 
 	// Returns the proper thumbnail URL
-    virtual VString				thumbUrl( const OvrMetaDatum * item ) { return item->url; }
+    virtual const VPath &thumbUrl(const OvrMetaDatum *item) { return item->url; }
 
 	// Adds thumbnail extension to a file to find/create its thumbnail
     virtual VString				thumbName( const VString & s ) = 0;

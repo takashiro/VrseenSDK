@@ -13,11 +13,31 @@ NV_NAMESPACE_BEGIN
 struct VRotationSensor::Private
 {
     VLockless<VRotationState> state;
+    VQuatf recenter;
+    bool initialized;
+
+    Private()
+        : initialized(false)
+    {
+    }
 };
 
 void VRotationSensor::setState(const VRotationState &state)
 {
-    d->state.setState(state);
+    if (!d->initialized) {
+        float yaw, pitch, roll;
+        state.GetEulerAngles<VAxis_Y, VAxis_X, VAxis_Z>(&yaw, &pitch, &roll);
+        d->recenter = VQuatf(VAxis_Y, -yaw);
+        d->initialized = true;
+    } else {
+        VRotationState recentered = state;
+        VQuatf base = d->recenter * state;
+        recentered.w = base.w;
+        recentered.x = base.x;
+        recentered.y = base.y;
+        recentered.z = base.z;
+        d->state.setState(state);
+    }
 }
 
 VRotationState VRotationSensor::state() const
@@ -38,30 +58,9 @@ VRotationSensor::~VRotationSensor()
 
 VRotationState VRotationSensor::predictState(double timestamp) const
 {
+    NV_UNUSED(timestamp);
     VRotationState state = this->state();
-
-    float speed = state.gyro.Length();
-    if (speed > 0.001) {
-        // Delta time from the last processed message
-        const float predictionDt = timestamp - state.timestamp;
-
-        const float slope = 0.2; // The rate at which the dynamic prediction interval varies
-        float candidateDt = slope * speed; // TODO: Replace with smoothstep function
-
-        float dynamicDt = std::min(predictionDt, candidateDt);
-
-        const float maxDeltaTime = 1.0f / 10.0f;
-        dynamicDt = VAlgorithm::Clamp(dynamicDt, 0.0f, maxDeltaTime);
-
-        VQuatf pose = state * VQuatf(state.gyro, speed * dynamicDt);
-        state.w = pose.w;
-        state.x = pose.x;
-        state.y = pose.y;
-        state.z = pose.z;
-    }
-
-    state.timestamp = timestamp;
-
+    //state.timestamp = timestamp;
     return state;
 }
 
@@ -154,7 +153,7 @@ private:
 static long long getCurrentTime()
 {
     timespec ts;
-    clock_gettime(CLOCK_REALTIME, &ts); // Works on Linux
+    clock_gettime(CLOCK_MONOTONIC, &ts); // Works on Linux
     long long time = static_cast<long long>(ts.tv_sec)
             * static_cast<long long>(1000000000)
             + static_cast<long long>(ts.tv_nsec);
@@ -544,13 +543,18 @@ JNIEXPORT void JNICALL Java_com_vrseen_sensor_RotationSensor_update
 {
     VRotationState state;
     state.timestamp = timestamp * 0.000000001;
-    state.w = w;
-    state.x = x;
-    state.y = y;
-    state.z = z;
     state.gyro.x = gryoX;
     state.gyro.y = gryoY;
     state.gyro.z = gryoZ;
+
+    static VQuatf correct(VAxis_X, -90 * 3.1415926 / 180);
+    VQuatf raw(-y, x, z, w);
+    raw = correct * raw;
+    state.w = raw.w;
+    state.x = raw.x;
+    state.y = raw.y;
+    state.z = raw.z;
+
     VRotationSensor::instance()->setState(state);
 }
 

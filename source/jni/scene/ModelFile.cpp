@@ -4,14 +4,15 @@
 #include "VBasicmath.h"
 #include "VAlgorithm.h"
 #include "VArray.h"
+#include "VBuffer.h"
+#include "VBinaryStream.h"
 #include "VString.h"
 #include "VJson.h"
-#include "VBinaryFile.h"
 #include "MappedFile.h"
 #include "VPath.h"
+#include "VEglDriver.h"
 
-#include "api/VEglDriver.h"
-
+#include <sstream>
 
 #include "unzip.h"
 #include "GlTexture.h"
@@ -1015,34 +1016,33 @@ void LoadModelFileTexture( ModelFile & model, const char * textureName,
 }
 
 template< typename _type_ >
-void ReadModelArray( VArray< _type_ > & out, const char * string, const VBinaryFile & bin, const int numElements )
+void ReadModelArray( VArray< _type_ > & out, const char * string, VBinaryStream &bin, const int numElements)
 {
-	if ( string != NULL && string[0] != '\0' && numElements > 0 )
-	{
-		if ( !bin.readArray( out, numElements ) )
-		{
-			StringUtils::StringTo( out, string );
+    if (string != NULL && string[0] != '\0' && numElements > 0) {
+        if (!bin.read(out, numElements)) {
+            StringUtils::StringTo(out, string);
 		}
 	}
 }
 
-void LoadModelFileJson( ModelFile & model,
-						const char * modelsJson, const int modelsJsonLength,
-						const char * modelsBin, const int modelsBinLength,
+void LoadModelFileJson(ModelFile &model,
+                        std::istream &modelsJson,
+                        VBinaryStream &modelsBin,
 						const ModelGlPrograms & programs, const MaterialParms & materialParms )
 {
 	vInfo("parsing " << model.FileName);
 
-    const VBinaryFile bin( (const uchar *)modelsBin, modelsBinLength );
-
-	if ( modelsBin != NULL && bin.readUint() != 0x6272766F )
+    uint tag = 0;
+    modelsBin >> tag;
+    if (tag != 0x6272766F)
 	{
 		vInfo("LoadModelFileJson: bad binary file for " << model.FileName);
 		return;
 	}
 
 	const char * error = NULL;
-	VJson models = VJson::Parse(modelsJson);
+    VJson models;
+    modelsJson >> models;
 	if ( models.isNull() )
 	{
 		vWarn("LoadModelFileJson: Error loading " << model.FileName << " : " << error);
@@ -1265,15 +1265,15 @@ void LoadModelFileJson( ModelFile & model,
                             const int vertexCount = std::min( vertices.value( "vertexCount" ).toInt(), 1024*1024 );
                             vInfo(vertexCount << "vertices");
 
-                            ReadModelArray( attribs.position,     vertices.value( "position" ).toStdString().c_str(),		bin, vertexCount );
-                            ReadModelArray( attribs.normal,       vertices.value( "normal" ).toStdString().c_str(),		bin, vertexCount );
-                            ReadModelArray( attribs.tangent,      vertices.value( "tangent" ).toStdString().c_str(),		bin, vertexCount );
-                            ReadModelArray( attribs.binormal,     vertices.value( "binormal" ).toStdString().c_str(),		bin, vertexCount );
-                            ReadModelArray( attribs.color,        vertices.value( "color" ).toStdString().c_str(),			bin, vertexCount );
-                            ReadModelArray( attribs.uvCoordinate0,          vertices.value( "uv0" ).toStdString().c_str(),			bin, vertexCount );
-                            ReadModelArray( attribs.uvCoordinate1,          vertices.value( "uv1" ).toStdString().c_str(),			bin, vertexCount );
-                            ReadModelArray( attribs.motionIndices, vertices.value( "jointIndices" ).toStdString().c_str(),	bin, vertexCount );
-                            ReadModelArray( attribs.motionWeight, vertices.value( "jointWeights" ).toStdString().c_str(),	bin, vertexCount );
+                            ReadModelArray( attribs.position,     vertices.value( "position" ).toStdString().c_str(),		modelsBin, vertexCount );
+                            ReadModelArray( attribs.normal,       vertices.value( "normal" ).toStdString().c_str(),		modelsBin, vertexCount );
+                            ReadModelArray( attribs.tangent,      vertices.value( "tangent" ).toStdString().c_str(),		modelsBin, vertexCount );
+                            ReadModelArray( attribs.binormal,     vertices.value( "binormal" ).toStdString().c_str(),		modelsBin, vertexCount );
+                            ReadModelArray( attribs.color,        vertices.value( "color" ).toStdString().c_str(),			modelsBin, vertexCount );
+                            ReadModelArray( attribs.uvCoordinate0,          vertices.value( "uv0" ).toStdString().c_str(),			modelsBin, vertexCount );
+                            ReadModelArray( attribs.uvCoordinate1,          vertices.value( "uv1" ).toStdString().c_str(),			modelsBin, vertexCount );
+                            ReadModelArray( attribs.motionIndices, vertices.value( "jointIndices" ).toStdString().c_str(),	modelsBin, vertexCount );
+                            ReadModelArray( attribs.motionWeight, vertices.value( "jointWeights" ).toStdString().c_str(),	modelsBin, vertexCount );
 						}
 
 						//
@@ -1288,7 +1288,7 @@ void LoadModelFileJson( ModelFile & model,
                             const int indexCount = std::min( triangles.value( "indexCount" ).toInt(), 1024 * 1024 * 1024 );
                             vInfo(indexCount << "indices");
 
-                            ReadModelArray( indices, triangles.value( "indices" ).toStdString().c_str(), bin, indexCount );
+                            ReadModelArray( indices, triangles.value( "indices" ).toStdString().c_str(), modelsBin, indexCount );
 						}
 
 						//
@@ -1552,12 +1552,11 @@ void LoadModelFileJson( ModelFile & model,
 
             StringUtils::StringTo( traceModel.header.bounds, raytrace_model.value( "bounds" ).toStdString().c_str() );
 
-            ReadModelArray( traceModel.vertices, raytrace_model.value( "vertices" ).toStdString().c_str(), bin, traceModel.header.numVertices );
-            ReadModelArray( traceModel.uvs, raytrace_model.value( "uvs" ).toStdString().c_str(), bin, traceModel.header.numUvs );
-            ReadModelArray( traceModel.indices, raytrace_model.value( "indices" ).toStdString().c_str(), bin, traceModel.header.numIndices );
+            ReadModelArray( traceModel.vertices, raytrace_model.value( "vertices" ).toStdString().c_str(), modelsBin, traceModel.header.numVertices );
+            ReadModelArray( traceModel.uvs, raytrace_model.value( "uvs" ).toStdString().c_str(), modelsBin, traceModel.header.numUvs );
+            ReadModelArray( traceModel.indices, raytrace_model.value( "indices" ).toStdString().c_str(), modelsBin, traceModel.header.numIndices );
 
-			if ( !bin.readArray( traceModel.nodes, traceModel.header.numNodes ) )
-			{
+            if (!modelsBin.read(traceModel.nodes, traceModel.header.numNodes)) {
 				const VJson &nodes_array( raytrace_model.value( "nodes" ) );
 				if ( nodes_array.isArray() )
 				{
@@ -1574,8 +1573,7 @@ void LoadModelFileJson( ModelFile & model,
 				}
 			}
 
-			if ( !bin.readArray( traceModel.leafs, traceModel.header.numLeafs ) )
-			{
+            if (!modelsBin.read(traceModel.leafs, traceModel.header.numLeafs)) {
 				const VJson &leafs_array( raytrace_model.value( "leafs" ) );
 				if ( leafs_array.isArray() )
 				{
@@ -1593,12 +1591,11 @@ void LoadModelFileJson( ModelFile & model,
 				}
 			}
 
-            ReadModelArray( traceModel.overflow, raytrace_model.value( "overflow" ).toStdString().c_str(), bin, traceModel.header.numOverflow );
+            ReadModelArray( traceModel.overflow, raytrace_model.value( "overflow" ).toStdString().c_str(), modelsBin, traceModel.header.numOverflow );
 		}
 	}
 
-	if ( !bin.isEnd() )
-	{
+    if (!modelsBin.atEnd()) {
 		vWarn("failed to properly read binary file");
 	}
 }
@@ -1624,11 +1621,8 @@ static ModelFile * LoadModelFile( unzFile zfp, const char * fileName,
 
 	// load all texture files and locate the model files
 
-	const char * modelsJson = NULL;
-	int modelsJsonLength = 0;
-
-	const char * modelsBin = NULL;
-	int modelsBinLength = 0;
+    std::stringstream modelsJson;
+    VBuffer modelsBin;
 
 	for ( int ret = unzGoToFirstFile( zfp ); ret == UNZ_OK; ret = unzGoToNextFile( zfp ) )
 	{
@@ -1670,16 +1664,15 @@ static ModelFile * LoadModelFile( unzFile zfp, const char * fileName,
 		if ( strcasecmp( entryName, "models.json" ) == 0 )
 		{
 			// save this for parsing
-			modelsJson = (const char *)buffer;
-			modelsJsonLength = size;
-			buffer = NULL;	// don't free it now
+            modelsJson.write(buffer, size);
 		}
 		else if ( strcasecmp( entryName, "models.bin" ) == 0 )
 		{
 			// save this for parsing
-			modelsBin = (const char *)buffer;
-			modelsBinLength = size;
-			buffer = NULL;	// don't free it now
+            vint64 count = 0;
+            do {
+                count += modelsBin.write(buffer + count, size - count);
+            } while (count < size);
 		}
 		else if (	strcasecmp( extension, ".pvr" ) == 0 ||
 					strcasecmp( extension, ".ktx" ) == 0 )
@@ -1693,31 +1686,12 @@ static ModelFile * LoadModelFile( unzFile zfp, const char * fileName,
 			vInfo("Ignoring " << entryName);
 		}
 
-		if ( buffer < fileData || buffer > fileData + fileDataLength )
-		{
-			delete [] buffer;
-		}
-
 		unzCloseCurrentFile( zfp );
 	}
 	unzClose( zfp );
 
-	if ( modelsJson != NULL )
-	{
-		LoadModelFileJson( model,
-							modelsJson, modelsJsonLength,
-							modelsBin, modelsBinLength,
-							programs, materialParms );
-	}
-
-	if ( modelsJson < fileData || modelsJson > fileData + fileDataLength )
-	{
-		delete modelsJson;
-	}
-	if ( modelsBin < fileData || modelsBin > fileData + fileDataLength )
-	{
-		delete modelsBin;
-	}
+    VBinaryStream bin(&modelsBin);
+    LoadModelFileJson(model, modelsJson, bin, programs, materialParms);
 
 	return modelPtr;
 }

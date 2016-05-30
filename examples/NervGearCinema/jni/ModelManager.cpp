@@ -6,10 +6,11 @@
 
 #include <VTimer.h>
 #include <VPath.h>
-#include <VApkFile.h>
+#include <VZipFile.h>
 #include <VDir.h>
 #include <VImageManager.h>
 #include <VOpenGLTexture.h>
+#include <VFile.h>
 
 namespace OculusCinema {
 
@@ -121,7 +122,7 @@ SceneDef * ModelManager::LoadScene(const VString &sceneFilename, bool useDynamic
 	VString filename;
 
     if (loadFromApplicationPackage) {
-        const VApkFile &apk = VApkFile::CurrentApkFile();
+        const VZipFile &apk = VZipFile::CurrentApkFile();
         if (!apk.contains(sceneFilename)) {
             vInfo("Scene" << sceneFilename << "not found in application package.  Checking sdcard.");
             loadFromApplicationPackage = false;
@@ -180,7 +181,7 @@ SceneDef * ModelManager::LoadScene(const VString &sceneFilename, bool useDynamic
     VByteArray iconFileName = iconFilename.toUtf8();
 	if ( loadFromApplicationPackage )
     {
-        const VApkFile &apk = VApkFile::CurrentApkFile();
+        const VZipFile &apk = VZipFile::CurrentApkFile();
         void *buffer = nullptr;
         uint length = 0;
         apk.read(filename, buffer, length);

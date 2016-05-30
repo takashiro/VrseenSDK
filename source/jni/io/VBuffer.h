@@ -11,6 +11,7 @@ public:
     ~VBuffer();
 
     vint64 bytesAvailable() const override;
+    vint64 size() const override;
 
 protected:
     vint64 readData(char *data, vint64 maxSize) override;

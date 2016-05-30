@@ -24,7 +24,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "core/VTimer.h"
 #include "PhotosMetaData.h"
 
-#include <VApkFile.h>
+#include <VZipFile.h>
 #include <VThread.h>
 #include <VStandardPath.h>
 #include <VFile.h>

@@ -21,7 +21,9 @@ of patent rights can be found in the PATENTS file in the same directory.
 
 #include <VAlgorithm.h>
 #include <VPath.h>
-#include <VApkFile.h>
+#include <VZipFile.h>
+#include <VFile.h>
+
 #include <fstream>
 
 #include <android/JniUtils.h>
@@ -208,7 +210,7 @@ void Oculus360Videos::init(const VString &fromPackage, const VString &launchInte
 	materialParms.UseSrgbTextureFormats = ( vApp->vrParms().colorFormat == VColor::COLOR_8888_sRGB );
 
 
-    const VApkFile &apk = VApkFile::CurrentApkFile();
+    const VZipFile &apk = VZipFile::CurrentApkFile();
     void *buffer = nullptr;
     uint length = 0;
     apk.read("assets/stars.ovrscene", buffer, length);

@@ -160,20 +160,4 @@ bool GetFullPath(const VArray<VString> &searchPaths, const VString &relativePath
     return false;
 }
 
-bool ToRelativePath(const VArray<VString> &searchPaths, const VString &fullPath, VString &outPath)
-{
-    // check if the path starts with any of the search paths
-    const int n = searchPaths.length();
-    for ( int i = 0; i < n; ++i )
-    {
-        const VString &path = searchPaths[i];
-        if (fullPath.startsWith(path)) {
-            outPath = fullPath.mid(path.size());
-            return true;
-        }
-    }
-    outPath = fullPath;
-    return false;
-}
-
 NV_NAMESPACE_END

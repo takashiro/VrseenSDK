@@ -19,8 +19,8 @@ public class InternalSensorListener implements SensorEventListener {
 			float[] quaternion = new float[4];
 			SensorManager.getQuaternionFromVector(quaternion, event.values);
 			float w = quaternion[0];
-			float y = quaternion[1];
-			float x = -quaternion[2];
+			float x = quaternion[1];
+			float y = quaternion[2];
 			float z = quaternion[3];
 
 			mSensor.onInternalRotationSensor(VrseenTime.getCurrentTime(), w, x, y, z, 0, 0, 0);

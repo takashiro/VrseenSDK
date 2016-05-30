@@ -21,7 +21,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "BitmapFont.h"
 #include "TextFade_Component.h"
 #include "VAlgorithm.h"
-#include "VApkFile.h"
+#include "VZipFile.h"
 #include "core/VLog.h"
 
 

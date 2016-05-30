@@ -29,7 +29,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "ScrollBarComponent.h"
 #include "SwipeHintComponent.h"
 
-#include <VApkFile.h>
+#include <VZipFile.h>
 #include <VArray.h>
 #include <VDir.h>
 #include <VLog.h>
@@ -898,7 +898,7 @@ OvrFolderBrowser::OvrFolderBrowser(
 			panel = "res/raw/panel.tga";
 		}
 
-        const VApkFile &apk = VApkFile::CurrentApkFile();
+        const VZipFile &apk = VZipFile::CurrentApkFile();
         apk.read(panel, buffer, bufferLength);
 
 		int panelW = 0;
@@ -2003,15 +2003,13 @@ void OvrFolderBrowser::addPanelToFolder( const OvrMetaDatum * panoData, const in
 	vAssert( folderIndex < m_folders.length() );
 
 	// Create or load thumbnail - request built up here to be processed ThumbnailThread
-    const VString & panoUrl = this->thumbUrl( panoData );
-    const VString thumbName = this->thumbName( panoUrl );
-	VPath finalThumb;
-    VString relativeThumbPath;
-    ToRelativePath(m_thumbSearchPaths, panoUrl, relativeThumbPath);
-
+    const VPath &panoUrl = this->thumbUrl(panoData);
+    const VString thumbName = this->thumbName(panoUrl);
+    VString relativeThumbPath = panoUrl.toRelativePath(m_thumbSearchPaths);
     VString appCacheThumbPath = m_appCachePath + this->thumbName(relativeThumbPath);
 
 	// if this url doesn't exist locally
+    VPath finalThumb;
     if (!VFile::Exists(panoUrl)) {
 		// Check app cache to see if we already downloaded it
         if (VFile::Exists(appCacheThumbPath)) {
