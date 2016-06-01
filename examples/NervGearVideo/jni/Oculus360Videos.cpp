@@ -179,8 +179,10 @@ void Oculus360Videos::init(const VString &fromPackage, const VString &launchInte
 	{
 
         VImageManager* imagemanager = new VImageManager();
-        VImage* panopic = imagemanager->loadImage(VPath(launchPano));
-        BackgroundTexId = VOpenGLTexture(panopic, VPath(launchPano), TextureFlags_o( _NO_DEFAULT ) | _USE_SRGB).getTextureName();
+        VImage* panopic = imagemanager->loadImage(launchPano);
+        if (panopic) {
+            BackgroundTexId = VOpenGLTexture(panopic, VPath(launchPano), TextureFlags_o( _NO_DEFAULT ) | _USE_SRGB).getTextureName();
+        }
 
         delete imagemanager;
 

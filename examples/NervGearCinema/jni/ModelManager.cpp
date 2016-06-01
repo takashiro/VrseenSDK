@@ -194,14 +194,18 @@ SceneDef * ModelManager::LoadScene(const VString &sceneFilename, bool useDynamic
         VImageManager *imagemanager = new VImageManager();
         VImage *iconimage = imagemanager->loadImage(iconFilename);
         delete imagemanager;
-        def->IconTexture = VOpenGLTexture(iconimage, iconFilename,TextureFlags(_NO_DEFAULT)).getTextureName();
+        if (iconimage) {
+            def->IconTexture = VOpenGLTexture(iconimage, iconFilename,TextureFlags(_NO_DEFAULT)).getTextureName();
+        }
     } else {
         def->SceneModel = LoadModelFile(fileName.data(), glPrograms, materialParms );
 
         VImageManager *imagemanager = new VImageManager();
         VImage *iconimage = imagemanager->loadImage(iconFilename);
         delete imagemanager;
-        def->IconTexture = VOpenGLTexture(iconimage, iconFilename,TextureFlags(_NO_DEFAULT)).getTextureName();
+        if (iconimage) {
+            def->IconTexture = VOpenGLTexture(iconimage, iconFilename,TextureFlags(_NO_DEFAULT)).getTextureName();
+        }
     }
 
 	if ( def->IconTexture != 0 )

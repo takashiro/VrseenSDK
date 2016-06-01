@@ -210,10 +210,12 @@ void MovieManager::LoadPoster( MovieDef *movie )
 
 
     VImageManager* imagemanager =  new VImageManager();
-    VImage* poster = imagemanager->loadImage(VPath(posterFilename));
-    movie->PosterWidth = poster->getDimension().Width;
-    movie->PosterHeight = poster->getDimension().Height;
-    movie->Poster = VOpenGLTexture(poster, VPath(posterFilename), TextureFlags_o(_NO_DEFAULT )).getTextureName();
+    VImage* poster = imagemanager->loadImage(posterFilename);
+    if (poster) {
+        movie->PosterWidth = poster->getDimension().Width;
+        movie->PosterHeight = poster->getDimension().Height;
+        movie->Poster = VOpenGLTexture(poster, VPath(posterFilename), TextureFlags_o(_NO_DEFAULT )).getTextureName();
+    }
 
     delete imagemanager;
 
