@@ -1,6 +1,8 @@
 #include "VImageManager.h"
 
 #include "VFile.h"
+#include "VZipFile.h"
+#include "VBuffer.h"
 #include "VImageCommonLoader.h"
 #include "VImageKtxLoader.h"
 #include "VImagePvrLoader.h"
@@ -29,19 +31,35 @@ VImageManager::~VImageManager()
     delete d;
 }
 
-VImage *VImageManager::loadImage(const VPath &fileName) const
+VImage *VImageManager::loadImage(const VPath &filePath) const
 {
-    VFile file(fileName, VIODevice::ReadOnly);
-    if (!file.exists()) {
-        vWarn("\"" << fileName << "\" doesn't exist!");
-        return 0;
+    VIODevice *device = nullptr;
+
+    VFile *file = new VFile(filePath, VIODevice::ReadOnly);
+    if (!file->exists()) {
+        delete file;
+
+        const VZipFile &apk = VZipFile::CurrentApkFile();
+        if (apk.contains(filePath)) {
+            VBuffer *buffer = new VBuffer;
+            if (apk.read(filePath, buffer)) {
+                device = buffer;
+            } else {
+                delete buffer;
+            }
+        }
+    } else {
+        device = file;
     }
 
-    for (VImageLoader *loader : d->loaders) {
-        if (loader->isValid(fileName)) {
-            file.seek(0);
-            return loader->load(&file);
+    if (device) {
+        for (VImageLoader *loader : d->loaders) {
+            if (loader->isValid(filePath)) {
+                device->seek(0);
+                return loader->load(device);
+            }
         }
+        delete device;
     }
 
     vWarn("Failed to load image!");
