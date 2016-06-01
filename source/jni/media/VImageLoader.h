@@ -1,45 +1,22 @@
-#ifndef VIMAGELOADER_H
-#define VIMAGELOADER_H
+#pragma once
 
-#include "VImage.h"
-#include "VPath.h"
-#include "VFile.h"
-#include <memory>
-#include "VEglDriver.h"
+#include "vglobal.h"
 
 NV_NAMESPACE_BEGIN
 
-//! Class which is able to create a image from a file.
-/** If you want the Irrlicht Engine be able to load textures of
-currently unsupported file formats (e.g .gif), then implement
-this and add your new Surface loader with
-IVideoDriver::addExternalImageLoader() to the engine. */
+class VPath;
+class VIODevice;
+class VImage;
+
 class VImageLoader
 {
 public:
-
 	virtual ~VImageLoader() = default;
 
-    //! Check if the file might be loaded by this class
-    /** Check is based on the file extension (e.g. ".tga")
-    \param filename Name of file to check.
-    \return True if file seems to be loadable. */
-    virtual bool isALoadableFileExtension(const VPath& filename) const = 0;
+    virtual bool isValid(const VPath &fileName) const = 0;
+    virtual bool isValid(VIODevice *input) const = 0;
 
-    //! Check if the file might be loaded by this class
-    /** Check might look into the file.
-    \param file File handle to check.
-    \return True if file seems to be loadable. */
-    virtual bool isALoadableFileFormat(VFile* file) const = 0;
-
-    //! Creates a surface from the file
-    /** \param file File handle to check.
-    \return Pointer to newly created image, or 0 upon error. */
-    virtual VImage* loadImage(VFile* file) const = 0;
-
+    virtual VImage *load(VIODevice *input) const = 0;
 };
 
 NV_NAMESPACE_END
-
-#endif // VIMAGELOADER_H
-

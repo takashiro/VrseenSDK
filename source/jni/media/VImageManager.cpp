@@ -4,6 +4,7 @@
 #include "VImageCommonLoader.h"
 #include "VImageKtxLoader.h"
 #include "VImagePvrLoader.h"
+#include "VLog.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -32,14 +33,14 @@ VImage *VImageManager::loadImage(const VPath &fileName) const
 {
     VFile file(fileName, VIODevice::ReadOnly);
     if (!file.exists()) {
-        vInfo("Error File doesn't exist!");
+        vWarn("\"" << fileName << "\" doesn't exist!");
         return 0;
     }
 
     for (VImageLoader *loader : d->loaders) {
-        if (loader->isALoadableFileExtension(fileName)) {
+        if (loader->isValid(fileName)) {
             file.seek(0);
-            return loader->loadImage(&file);
+            return loader->load(&file);
         }
     }
 

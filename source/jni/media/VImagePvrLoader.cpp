@@ -1,5 +1,8 @@
 #include "VImagePvrLoader.h"
 #include "VLog.h"
+#include "VPath.h"
+#include "VIODevice.h"
+#include "VImage.h"
 
 namespace NervGear{
 
@@ -21,12 +24,12 @@ struct OVR_PVR_HEADER
 };
 #pragma pack()
 
-bool VImagePvrLoader::isALoadableFileExtension(const VPath &filename) const
+bool VImagePvrLoader::isValid(const VPath &filename) const
 {
     return filename.extension().toLower() == "pvr";
 }
 
-bool VImagePvrLoader::isALoadableFileFormat(VFile *file) const
+bool VImagePvrLoader::isValid(VIODevice *file) const
 {
     if ( file->size() < ( int )( sizeof( OVR_PVR_HEADER ) ) )
     {
@@ -37,7 +40,7 @@ bool VImagePvrLoader::isALoadableFileFormat(VFile *file) const
         return true;
 }
 
-VImage* VImagePvrLoader::loadImage(VFile *file) const
+VImage* VImagePvrLoader::load(VIODevice *file) const
 {
     char* buffer = new char[file->size()];
     file->read(buffer, file->size());

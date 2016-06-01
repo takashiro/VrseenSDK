@@ -1,11 +1,19 @@
 #include "VImageCommonLoader.h"
-#include "3rdParty/stb/stb_image.h"
+#include "VString.h"
+#include "VPath.h"
+#include "VIODevice.h"
+#include "VImage.h"
+#include "VImageColor.h"
+#include "VDimension.h"
+
+#include <3rdParty/stb/stb_image.h>
+
 
 namespace NervGear {
 
-    bool VImageCommonLoader::isALoadableFileExtension(const VPath &filename) const
+    bool VImageCommonLoader::isValid(const VPath &fileName) const
     {
-        const VString ext = filename.extension().toLower();
+        const VString ext = fileName.extension().toLower();
 
         if (    ext == "jpg" || ext == "tga" ||
                 ext == "png" || ext == "bmp" ||
@@ -17,7 +25,7 @@ namespace NervGear {
 
     }
 
-    bool VImageCommonLoader::isALoadableFileFormat(VFile *file) const
+    bool VImageCommonLoader::isValid(VIODevice *file) const
     {
          if (!file)
              return false;
@@ -26,7 +34,7 @@ namespace NervGear {
 
     }
 
-    VImage* VImageCommonLoader::loadImage(VFile *file) const
+    VImage* VImageCommonLoader::load(VIODevice *file) const
     {
         char* buffer = new char[file->size()];
         file->read(buffer, file->size());

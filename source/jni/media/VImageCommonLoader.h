@@ -12,11 +12,11 @@ namespace NervGear
     public:
 
 
-        virtual bool isALoadableFileExtension(const VPath& filename) const;
+        virtual bool isValid(const VPath &fileName) const;
 
-        virtual bool isALoadableFileFormat(VFile* file) const;
+        virtual bool isValid(VIODevice *file) const;
 
-        virtual VImage* loadImage(VFile* file) const;
+        virtual VImage *load(VIODevice *file) const;
 
     };
 

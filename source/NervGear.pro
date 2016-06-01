@@ -214,6 +214,11 @@ HEADERS += \
     jni/io/VDir.h \
     jni/io/VStandardPath.h \
     jni/media/VSoundManager.h \
+    jni/media/VImageLoader.h \
+    jni/media/VImageCommonLoader.h \
+    jni/media/VImagePvrLoader.h \
+    jni/media/VImageManager.h \
+    jni/media/VImageKtxLoader.h\
     jni/scene/VItem.h \
     jni/scene/VScene.h \
     jni/scene/BitmapFont.h \
@@ -230,23 +235,18 @@ HEADERS += \
     jni/scene/ModelView.h \
     jni/scene/SurfaceTexture.h \
     jni/scene/SwipeView.h \
-    jni/App.h \
-    jni/VrLocale.h \
-    jni/vglobal.h \
-    jni/Input.h \
     jni/scene/VImageColor.h \
     jni/scene/VDimension.h \
     jni/scene/VRect.h \
     jni/scene/VImage.h \
     jni/scene/VColorConverter.h \
-    jni/media/VImageLoader.h \
-    jni/media/VImageKtxLoader.h\
     jni/scene/VTexture.h \
     jni/scene/VOpenGLTexture.h \
     jni/scene/VBlit.h \
-    jni/media/VImageCommonLoader.h \
-    jni/media/VImagePvrLoader.h \
-    jni/media/VImageManager.h
+    jni/App.h \
+    jni/VrLocale.h \
+    jni/vglobal.h \
+    jni/Input.h
 
 include(jni/3rdparty/minizip/minizip.pri)
 include(jni/3rdparty/stb/stb.pri)

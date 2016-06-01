@@ -1,5 +1,12 @@
 #include "VImageKtxLoader.h"
 #include "VLog.h"
+#include "VImageColor.h"
+#include "VEglDriver.h"
+#include "VPath.h"
+#include "VIODevice.h"
+#include "VMap.h"
+#include "VDimension.h"
+#include "VImage.h"
 
 namespace NervGear
 {
@@ -84,23 +91,23 @@ static bool GlFormatToTextureFormat( ColorFormat & format, const GLenum glFormat
     return false;
 }
 
-    bool VImageKtxLoader::isALoadableFileExtension(const VPath& filename) const
+    bool VImageKtxLoader::isValid(const VPath& filename) const
     {
         return filename.extension().toLower() == "ktx";
     }
 
-    bool VImageKtxLoader::isALoadableFileFormat(VFile *file) const
+    bool VImageKtxLoader::isValid(VIODevice *file) const
     {
         if (file->size() < (int)sizeof(OVR_KTX_HEADER))
         {
-            vInfo(file->path() << ": Invalid KTX file");
+            vWarn("Invalid KTX file");
             return false;
         }
         else
             return true;
     }
 
-    VImage* VImageKtxLoader::loadImage(VFile *file) const
+    VImage* VImageKtxLoader::load(VIODevice *file) const
     {
         char* buffer = new char[file->size()];
         file->read(buffer, file->size());
@@ -113,39 +120,39 @@ static bool GlFormatToTextureFormat( ColorFormat & format, const GLenum glFormat
         const OVR_KTX_HEADER & header = *(OVR_KTX_HEADER *)buffer;
         if ( memcmp( header.identifier, fileIdentifier, sizeof( fileIdentifier ) ) != 0 )
         {
-            vInfo(file->path() << ": Invalid KTX file");
+            vInfo("Invalid KTX file");
             return 0;
         }
         // only support little endian
         if ( header.endianness != 0x04030201 )
         {
-            vInfo(file->path() << ": KTX file has wrong endianess");
+            vInfo("KTX file has wrong endianess");
             return 0;
         }
         // only support compressed or unsigned byte
         if ( header.glType != 0 && header.glType != GL_UNSIGNED_BYTE )
         {
-            vInfo(file->path() << ": KTX file has unsupported glType " << header.glType);
+            vInfo("KTX file has unsupported glType " << header.glType);
             return 0;
         }
         // no support for texture arrays
         if ( header.numberOfArrayElements != 0 )
         {
-            vInfo(file->path() << ": KTX file has unsupported number of array elements " << header.numberOfArrayElements);
+            vInfo("KTX file has unsupported number of array elements " << header.numberOfArrayElements);
             return 0;
         }
         // derive the texture format from the GL format
         ColorFormat format;
         if ( !GlFormatToTextureFormat( format, header.glFormat, header.glInternalFormat ) )
         {
-            vInfo(file->path() << ": KTX file has unsupported glFormat " << header.glFormat << ", glInternalFormat " << header.glInternalFormat);
+            vInfo("KTX file has unsupported glFormat " << header.glFormat << ", glInternalFormat " << header.glInternalFormat);
             return 0;
         }
         // skip the key value data
         const uintptr_t startTex = sizeof( OVR_KTX_HEADER ) + header.bytesOfKeyValueData;
         if ( ( startTex < sizeof( OVR_KTX_HEADER ) ) || ( startTex >= static_cast< size_t >( file->size() ) ) )
         {
-            vInfo(file->path() << ": Invalid KTX header sizes");
+            vInfo("Invalid KTX header sizes");
             return 0;
         }
 
@@ -165,7 +172,7 @@ static bool GlFormatToTextureFormat( ColorFormat & format, const GLenum glFormat
         }
         else
         {
-            vInfo(file->path() << ": KTX file has unsupported number of faces " << header.numberOfFaces);
+            vInfo("KTX file has unsupported number of faces " << header.numberOfFaces);
         }
 
         VImage* image = new VImage(format, VDimension<uint>(width, height), buffer + startTex, file->size() - startTex, info);
