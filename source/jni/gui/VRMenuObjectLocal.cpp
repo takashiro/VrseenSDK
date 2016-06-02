@@ -59,34 +59,23 @@ bool VRMenuSurfaceTexture::loadTexture( eSurfaceTextureType const type, const VS
 	m_type = type;
 
     if (!imageName.isEmpty()) {
-//		void * 	buffer;
-//        uint		bufferLength;
-//        const VZipFile &apk = VZipFile::CurrentApkFile();
-//        apk.read(imageName, buffer, bufferLength);
-//		if ( !buffer )
-//		{
-//			m_handle = 0;
-//		}
-//		else
-//		{
-//            m_handle = LoadTextureFromBuffer( imageName, buffer, bufferLength,
-//					TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), m_width, m_height );
-//            ::free( buffer );
-//		}
-        VImageManager* imagemanager = new VImageManager();
-        VImage* image = imagemanager->loadImage(imageName);
-        m_width = image->getDimension().Width;
-        m_height = image->getDimension().Height;
-        m_handle = VOpenGLTexture(image, imageName, TextureFlags_o(_NO_DEFAULT )).getTextureName();
+        void *buffer;
+        uint bufferLength;
+        const VZipFile &apk = VZipFile::CurrentApkFile();
+        apk.read(imageName, buffer, bufferLength);
 
-        delete imagemanager;
-
-
+        if (!buffer) {
+            m_handle = 0;
+        } else {
+              m_handle = LoadTextureFromBuffer(imageName.toUtf8().data(), buffer, bufferLength,
+                    TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), m_width, m_height );
+              ::free( buffer );
+        }
 	}
 
 	if ( m_handle == 0 && allowDefault )
 	{
-        m_handle = LoadTextureFromBuffer( imageName.toUtf8().data(), uiDefaultTgaData, uiDefaultTgaSize,
+        m_handle = LoadTextureFromBuffer(imageName.toUtf8().data(), uiDefaultTgaData, uiDefaultTgaSize,
 							TextureFlags_t(), m_width, m_height );
 		vWarn("VRMenuSurfaceTexture::CreateFromImage: failed to load image '" << imageName << "' - default loaded instead!");
 	}
