@@ -4,8 +4,6 @@
 #include "VLog.h"
 
 #include "App.h"
-#include "VImageManager.h"
-#include "VOpenGLTexture.h"
 
 #include <3rdparty/minizip/unzip.h>
 
@@ -180,35 +178,7 @@ uint LoadTextureFromApplicationPackage(const VString &nameInZip, const TextureFl
         return 0;
     }
     VByteArray name = nameInZip.toUtf8();
-    unsigned texId = LoadTextureFromBuffer(name.data(), buffer, bufferLength, flags, width, height );
-
-//    TextureFlags_o flag;
-//    switch(flags)
-//    {
-//        case TEXTUREFLAG_NO_DEFAULT:
-//            flag = _NO_DEFAULT;
-//        break;
-
-//        case TEXTUREFLAG_USE_SRGB:
-//            flag = _USE_SRGB;
-//        break;
-
-//        case TEXTUREFLAG_NO_MIPMAPS:
-//            flag = _NO_MIPMAPS;
-//        break;
-
-//        default:
-//        break;
-//    }
-
-
-//    VImageManager* imagemanager = new VImageManager();
-//    VImage* image = imagemanager->loadImage(VPath(nameInZip));
-//    width = image->getDimension().Width;
-//    height = image->getDimension().Height;
-//    texId = VOpenGLTexture(image, VPath(nameInZip), flag).getTextureName();
-
-//    delete imagemanager;
+    unsigned texId = LoadTextureFromBuffer(name.data(), buffer, bufferLength, flags, width, height);
 
     return texId;
 }
