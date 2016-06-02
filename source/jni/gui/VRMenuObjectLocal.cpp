@@ -21,8 +21,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VRMenuComponent.h"
 #include "ui_default.h"	// embedded default UI texture (loaded as a placeholder when something doesn't load)
 #include "VZipFile.h"
-#include "VImageManager.h"
-#include "VOpenGLTexture.h"
 
 namespace NervGear {
 
