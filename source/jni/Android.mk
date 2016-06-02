@@ -99,6 +99,7 @@ LOCAL_SRC_FILES  := \
 	io/VFileOperation.cpp \
 	io/VDir.cpp \
 	io/VStandardPath.cpp \
+	media/VImage.cpp \
 	media/VSoundManager.cpp \
 	scene/VItem.cpp \
 	scene/VScene.cpp \
