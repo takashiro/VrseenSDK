@@ -160,7 +160,7 @@ struct App::Private
     VEventLoop eventLoop;
 
     // Egl context and surface for rendering
-    VEglDriver m_vrGlStatus;
+    VEglDriver m_glStatus;
 
 
     GLuint loadingIconTexId;
@@ -401,9 +401,9 @@ struct App::Private
         // Make sure the window surface is current, which it won't be
         // if we were previously in async mode
         // (Not needed now?)
-        if (eglMakeCurrent(m_vrGlStatus.m_display, windowSurface, windowSurface, m_vrGlStatus.m_context) == EGL_FALSE)
+        if (eglMakeCurrent(m_glStatus.m_display, windowSurface, windowSurface, m_glStatus.m_context) == EGL_FALSE)
         {
-            vFatal("eglMakeCurrent failed:" << m_vrGlStatus.getEglErrorString());
+            vFatal("eglMakeCurrent failed:" << m_glStatus.getEglErrorString());
         }
 
         // Allow the app to override
@@ -421,10 +421,10 @@ struct App::Private
 
     void initGlObjects()
     {
-        DefaultVrParmsForRenderer(m_vrGlStatus);
+        DefaultVrParmsForRenderer(m_glStatus);
 
-        kernel->setSmoothProgram(ChromaticAberrationCorrection(m_vrGlStatus) ? VK_DEFAULT_CB : VK_DEFAULT);
-        m_vrGlStatus.logExtensions();
+        kernel->setSmoothProgram(ChromaticAberrationCorrection(m_glStatus) ? VK_DEFAULT_CB : VK_DEFAULT);
+        m_glStatus.logExtensions();
 
         self->panel.externalTextureProgram2.initShader( VGlShader::getAdditionalVertexShaderSource(), VGlShader::getAdditionalFragmentShaderSource() );
         untexturedMvpProgram.initShader( VGlShader::getUntextureMvpVertexShaderSource(),VGlShader::getUntexturedFragmentShaderSource()  );
@@ -750,7 +750,7 @@ struct App::Private
 
             // Android doesn't let the non-standard extensions show up in the
             // extension string, so we need to try it blind.
-            windowSurface = eglCreateWindowSurface(m_vrGlStatus.m_display, m_vrGlStatus.m_config,
+            windowSurface = eglCreateWindowSurface(m_glStatus.m_display, m_glStatus.m_config,
                     nativeWindow, attribs);
 
             if (windowSurface == EGL_NO_SURFACE )
@@ -765,11 +765,11 @@ struct App::Private
                 attribs[numAttribs++] = EGL_NONE;
 
 
-                windowSurface = eglCreateWindowSurface(m_vrGlStatus.m_display, m_vrGlStatus.m_config,
+                windowSurface = eglCreateWindowSurface(m_glStatus.m_display, m_glStatus.m_config,
                         nativeWindow, attribs);
                 if (windowSurface == EGL_NO_SURFACE)
                 {
-                    vFatal("eglCreateWindowSurface failed:" << m_vrGlStatus.getEglErrorString());
+                    vFatal("eglCreateWindowSurface failed:" << m_glStatus.getEglErrorString());
                 }
                 framebufferIsSrgb = false;
                 framebufferIsProtected = false;
@@ -780,9 +780,9 @@ struct App::Private
                 framebufferIsProtected = activity->wantProtectedFramebuffer();
             }
 
-            if (eglMakeCurrent(m_vrGlStatus.m_display, windowSurface, windowSurface, m_vrGlStatus.m_context) == EGL_FALSE)
+            if (eglMakeCurrent(m_glStatus.m_display, windowSurface, windowSurface, m_glStatus.m_context) == EGL_FALSE)
             {
-                vFatal("eglMakeCurrent failed:" << m_vrGlStatus.getEglErrorString());
+                vFatal("eglMakeCurrent failed:" << m_glStatus.getEglErrorString());
             }
 
             createdSurface = true;
@@ -805,15 +805,15 @@ struct App::Private
             activity->onWindowDestroyed();
 
             // Handle it ourselves.
-            if (eglMakeCurrent(m_vrGlStatus.m_display, m_vrGlStatus.m_pbufferSurface, m_vrGlStatus.m_pbufferSurface,
-                    m_vrGlStatus.m_context) == EGL_FALSE)
+            if (eglMakeCurrent(m_glStatus.m_display, m_glStatus.m_pbufferSurface, m_glStatus.m_pbufferSurface,
+                    m_glStatus.m_context) == EGL_FALSE)
             {
                 vFatal("RC_SURFACE_DESTROYED: eglMakeCurrent pbuffer failed");
             }
 
             if (windowSurface != EGL_NO_SURFACE)
             {
-                eglDestroySurface(m_vrGlStatus.m_display, windowSurface);
+                eglDestroySurface(m_glStatus.m_display, windowSurface);
                 windowSurface = EGL_NO_SURFACE;
             }
             if (nativeWindow != nullptr)
@@ -934,7 +934,7 @@ struct App::Private
             const int windowDepth = 0;
             const int windowSamples = 0;
             const GLuint contextPriority = EGL_CONTEXT_PRIORITY_MEDIUM_IMG;
-            m_vrGlStatus.eglInit(EGL_NO_CONTEXT, GL_ES_VERSION,
+            m_glStatus.eglInit(EGL_NO_CONTEXT, GL_ES_VERSION,
                     8,8,8, windowDepth, windowSamples, contextPriority);
 
             // Create our GL data objects
@@ -1299,7 +1299,7 @@ struct App::Private
             OvrDebugLines::Free(debugLines);
 
             shutdownGlObjects();
-            m_vrGlStatus.eglExit();
+            m_glStatus.eglExit();
 
             vInfo("javaVM->DetachCurrentThread");
             const jint rtn = javaVM->DetachCurrentThread();
@@ -1771,9 +1771,6 @@ long long App::recenterYawFrameStart() const
 
 void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const int numPresents )
 {
-
-
-    VEglDriver glOperation;
     // update vr lib systems after the app frame, but before rendering anything
     guiSys().frame( this, text.vrFrame, vrMenuMgr(), defaultFont(), menuFontSurface(), centerViewMatrix );
     gazeCursor().Frame( centerViewMatrix, text.vrFrame.deltaSeconds );
@@ -1797,7 +1794,7 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
     const int numEyes = d->renderMonoMode ? 1 : 2;
 
     // Flush out and report any errors
-    glOperation.logErrorsEnum("FrameStart");
+    d->m_glStatus.logErrorsEnum("FrameStart");
 
     if ( d->drawCalibrationLines && d->calibrationLinesDrawn )
     {
