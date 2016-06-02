@@ -25,8 +25,11 @@ of patent rights can be found in the PATENTS file in the same directory.
 
 #include <unistd.h>
 #include <VPath.h>
-#include "VDir.h"
+#include <VDir.h>
+#include <VImage.h>
 #include "io/VFileOperation.h"
+
+
 namespace NervGear
 {
 
@@ -399,10 +402,13 @@ unsigned char * PanoBrowser::createAndCacheThumbnail(const VString &soureFile, c
 				}
 			}
 		}
-	}
-	else // otherwise we let ScaleImageRGBA upscale ( for users that really really want a low res pano )
-	{
-		outBuffer = VFileOperation::ScaleImageRGBA( data, width, height, outW, outH, IMAGE_FILTER_CUBIC );
+    } else {
+        // otherwise we let ScaleImageRGBA upscale ( for users that really really want a low res pano )
+        VImage image(data, width, height);
+        data = NULL;
+        image.resize(outW, outH, VImage::CubicFilter);
+        outBuffer = (uchar *) malloc(image.length());
+        memcpy(outBuffer, image.data(), image.length());
 	}
 	free( data );
 

@@ -25,6 +25,8 @@ of patent rights can be found in the PATENTS file in the same directory.
 
 #include <VPath.h>
 #include <VZipFile.h>
+#include <VImage.h>
+
 #include "io/VFileOperation.h"
 
 namespace NervGear
@@ -96,20 +98,17 @@ unsigned char * VideoBrowser::loadThumbnail( const char * filename, int & width,
 		}
 
         vInfo("VideoBrowser::LoadThumbnail resizing" << filename << "to" << ThumbWidth << ThumbHeight);
-        uchar *outBuffer = VFileOperation::ScaleImageRGBA( ( const unsigned char * )orig, width, height, ThumbWidth, ThumbHeight, IMAGE_FILTER_CUBIC );
+        VImage image(orig, width, height);
+        image.resize(ThumbWidth, ThumbHeight, VImage::CubicFilter);
+        uchar *outBuffer = (uchar *) malloc(image.length());
+        memcpy(outBuffer, image.data(), image.length());
 
-		free( orig );
-
-		if ( outBuffer )
-		{
+        if (outBuffer) {
 			width = ThumbWidth;
 			height = ThumbHeight;
-
 			return outBuffer;
 		}
-	}
-	else
-	{
+    } else {
 		vInfo("Error: VideoBrowser::LoadThumbnail failed to load" << filename);
 	}
 	return NULL;
