@@ -26,6 +26,14 @@ void test()
     assert(pixel.green == 130);
     assert(pixel.blue == 124);
     assert(pixel.alpha == 0);
+
+    image.resize(1, 2);
+    pixel = image.at(0, 0);
+    assert(pixel.red == 128);
+    assert(pixel.green == 130);
+    assert(pixel.blue == 124);
+    assert(pixel.alpha == 0);
+    assert(pixel == image.at(0, 1));
 }
 
 ADD_TEST(VArray, test)

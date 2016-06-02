@@ -29,6 +29,8 @@ public:
     const uchar *data() const;
     VColor at(int x, int y) const;
 
+    void resize(int width, int height, Filter filter = NearestFilter);
+
 private:
     NV_DECLARE_PRIVATE
     NV_DISABLE_COPY(VImage)
