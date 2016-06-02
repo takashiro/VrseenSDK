@@ -44,18 +44,18 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "gui/GuiSys.h"
 
 #include "gui/Fader.h"
-#include "3rdParty/stb/stb_image.h"
-#include "3rdParty/stb/stb_image_write.h"
 #include "VDir.h"
 #include "VideoBrowser.h"
 #include "VideoMenu.h"
 #include "VrLocale.h"
 #include "VStandardPath.h"
-#include "core/VTimer.h"
+#include "VTimer.h"
 #include "VideosMetaData.h"
 #include "VColor.h"
-#include "VImagemanager.h"
-#include "VOpenGLTexture.h"
+
+#include <3rdParty/stb/stb_image.h>
+#include <3rdParty/stb/stb_image_write.h>
+
 static bool	RetailMode = false;
 
 static const char * videosDirectory = "Oculus/360Videos/";
@@ -174,20 +174,6 @@ void Oculus360Videos::init(const VString &fromPackage, const VString &launchInte
 
     FadedPanoramaProgram.initShader(VGlShader::getFadedPanoVertexShaderSource(),VGlShader::getFadedPanoProgramShaderSource());
     SingleColorTextureProgram.initShader(VGlShader::getSingleTextureVertexShaderSource(),VGlShader::getUniformSingleTextureProgramShaderSource());
-    const char *launchPano = NULL;
-    if ( ( NULL != launchPano ) && launchPano[ 0 ] )
-	{
-
-        VImageManager* imagemanager = new VImageManager();
-        VImage* panopic = imagemanager->loadImage(launchPano);
-        if (panopic) {
-            BackgroundTexId = VOpenGLTexture(panopic, VPath(launchPano), TextureFlags_o( _NO_DEFAULT ) | _USE_SRGB).getTextureName();
-        }
-
-        delete imagemanager;
-
-
-	}
 
 	// always fall back to valid background
 	if ( BackgroundTexId == 0 )
