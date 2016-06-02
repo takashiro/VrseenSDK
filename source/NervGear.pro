@@ -99,14 +99,7 @@ SOURCES += \
     jni/scene/SurfaceTexture.cpp \
     jni/scene/SwipeView.cpp \
     jni/App.cpp \
-    jni/VrLocale.cpp \
-    jni/scene/VImage.cpp \
-    jni/scene/VColorConverter.cpp \
-    jni/media/VImageKtxLoader.cpp \
-    jni/scene/VOpenGLTexture.cpp \
-    jni/media/VImageCommonLoader.cpp \
-    jni/media/VImagePvrLoader.cpp \
-    jni/media/VImageManager.cpp
+    jni/VrLocale.cpp
 
 
 HEADERS += \
@@ -214,11 +207,6 @@ HEADERS += \
     jni/io/VDir.h \
     jni/io/VStandardPath.h \
     jni/media/VSoundManager.h \
-    jni/media/VImageLoader.h \
-    jni/media/VImageCommonLoader.h \
-    jni/media/VImagePvrLoader.h \
-    jni/media/VImageManager.h \
-    jni/media/VImageKtxLoader.h\
     jni/scene/VItem.h \
     jni/scene/VScene.h \
     jni/scene/BitmapFont.h \
@@ -235,14 +223,7 @@ HEADERS += \
     jni/scene/ModelView.h \
     jni/scene/SurfaceTexture.h \
     jni/scene/SwipeView.h \
-    jni/scene/VImageColor.h \
-    jni/scene/VDimension.h \
     jni/scene/VRect.h \
-    jni/scene/VImage.h \
-    jni/scene/VColorConverter.h \
-    jni/scene/VTexture.h \
-    jni/scene/VOpenGLTexture.h \
-    jni/scene/VBlit.h \
     jni/App.h \
     jni/VrLocale.h \
     jni/vglobal.h \
