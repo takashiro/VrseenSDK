@@ -197,7 +197,6 @@ SceneDef * ModelManager::LoadScene(const VString &sceneFilename, bool useDynamic
         VByteArray iconData = icon.readAll();
         def->IconTexture = LoadTextureFromBuffer(iconFileName.data(), iconData.data(), iconData.length(), TEXTUREFLAG_NO_DEFAULT, textureWidth, textureHeight);
     }
-    vAssert(def->IconTexture);
 
 	if ( def->IconTexture != 0 )
 	{
