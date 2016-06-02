@@ -1,10 +1,6 @@
 #pragma once
 
-#include "vglobal.h"
 #include "VFlags.h"
-#include "VEglDriver.h"
-
-// Explicitly using unsigned instead of GLUint / GLenum to avoid including GL headers
 
 NV_NAMESPACE_BEGIN
 
@@ -25,29 +21,41 @@ typedef VFlags<eTextureFlags> TextureFlags_t;
 
 // texture id/target pair
 // the auto-casting should be removed but allows the target to be ignored by the code that does not care
-struct GlTexture
+class VTexture
 {
-	GlTexture() : texture( 0 ), target( 0 ) {}
-	GlTexture( unsigned texture_ );
-	GlTexture( unsigned texture_, unsigned target_ ) : texture( texture_ ), target( target_ ) {}
-	operator unsigned() const { return texture; }
+public:
+    VTexture();
+    VTexture(uint id);
+    VTexture(uint id, uint target);
 
-	unsigned	texture;
-	unsigned	target;
+    VTexture(const VTexture &source);
+    VTexture(VTexture &&source);
+
+    ~VTexture();
+
+    VTexture &operator=(const VTexture &source);
+    VTexture &operator=(VTexture &&source);
+
+    operator uint() const { return id(); }
+    const uint &id() const;
+    const uint &target() const;
+
+private:
+    NV_DECLARE_PRIVATE
 };
 
 // Allocates a GPU texture and uploads the raw data.
-GlTexture	LoadRGBATextureFromMemory( const unsigned char * texture, const int width, const int height, const bool useSrgbFormat );
-GlTexture	LoadRGBTextureFromMemory( const unsigned char * texture, const int width, const int height, const bool useSrgbFormat );
-GlTexture	LoadRTextureFromMemory( const unsigned char * texture, const int width, const int height );
-GlTexture	LoadASTCTextureFromMemory( const uchar * buffer, const size_t bufferSize, const int numPlanes );
+VTexture LoadRGBATextureFromMemory(const uchar * texture, const int width, const int height, const bool useSrgbFormat);
+VTexture LoadRGBTextureFromMemory(const uchar *texture, const int width, const int height, const bool useSrgbFormat);
+VTexture LoadRTextureFromMemory(const uchar * texture, const int width, const int height);
+VTexture LoadASTCTextureFromMemory(const uchar * buffer, uint bufferSize, const int numPlanes);
 
-void		MakeTextureClamped( GlTexture texid );
-void		MakeTextureLodClamped( GlTexture texId, int maxLod );
-void		MakeTextureTrilinear( GlTexture texid );
-void		MakeTextureLinear( GlTexture texId );
-void		MakeTextureAniso( GlTexture texId, float maxAniso );
-void		BuildTextureMipmaps( GlTexture texid );
+void		MakeTextureClamped(const VTexture &texid);
+void		MakeTextureLodClamped(const VTexture &texId, int maxLod );
+void		MakeTextureTrilinear(const VTexture &texture);
+void		MakeTextureLinear(const VTexture &texture);
+void		MakeTextureAniso(const VTexture &texId, float maxAniso);
+void		BuildTextureMipmaps(const VTexture &texture);
 
 // FileName's extension determines the file type, but the data is taken from an
 // already loaded buffer.
@@ -61,13 +69,9 @@ void		BuildTextureMipmaps( GlTexture texid );
 // Otherwise a default square texture will be created on any failure.
 //
 // Uncompressed image formats will have mipmaps generated and trilinear filtering set.
-GlTexture	LoadTextureFromBuffer( const char * fileName, const void* buffer, uint length,
+VTexture	LoadTextureFromBuffer( const char * fileName, const void* buffer, uint length,
 				const TextureFlags_t & flags, int & width, int & height );
 
 unsigned char * LoadPVRBuffer( const char * fileName, int & width, int & height );
-
-// glDeleteTextures()
-// Can be safely called on a 0 texture without checking.
-void		FreeTexture( GlTexture texId );
 
 NV_NAMESPACE_END

@@ -1875,7 +1875,7 @@ void OvrFolderBrowser::loadThumbnailToTexture( const VEvent &event )
 	panel->size[ 1 ] *= ( float )height / max;
 
 	GLuint texId = LoadRGBATextureFromMemory(
-		data, width, height, true /* srgb */ ).texture;
+        data, width, height, true /* srgb */ ).id();
 
 	vAssert( texId );
 

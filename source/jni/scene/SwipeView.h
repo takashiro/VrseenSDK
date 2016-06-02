@@ -133,8 +133,8 @@ public:
 	VGlShader	ProgPanel;
 	VGlShader	ProgHighlight;
 	VGlGeometry	GeoPanel;
-	GlTexture	BorderTexture2_1;
-	GlTexture	BorderTexture1_1;
+	VTexture	BorderTexture2_1;
+	VTexture	BorderTexture1_1;
 
 	SwipeViewState		State;
 	SwipeViewTouchState	TouchState;

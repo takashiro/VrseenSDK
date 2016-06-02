@@ -307,7 +307,7 @@ void Oculus360Videos::shutdown()
 
 	Globe.destroy();
 
-	FreeTexture( BackgroundTexId );
+    glDeleteTextures(1, &BackgroundTexId);
 
 	if ( MovieTexture != NULL )
 	{

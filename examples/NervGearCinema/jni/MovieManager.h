@@ -4,6 +4,8 @@
 #include "VArray.h"
 #include "VTexture.h"
 
+#include <GLES3/gl3.h>
+
 namespace OculusCinema {
 
 class CinemaApp;

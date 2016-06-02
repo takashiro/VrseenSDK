@@ -168,15 +168,15 @@ SwipeView::SwipeView() :
 
 SwipeView::~SwipeView()
 {
-	FreeTexture( BorderTexture2_1 );
-	FreeTexture( BorderTexture1_1 );
+    glDeleteTextures(1, &BorderTexture2_1.id());
+    glDeleteTextures(1, &BorderTexture1_1.id());
 	GeoPanel.destroy();
 	ProgPanel.destroy();
 	ProgHighlight.destroy();
 }
 
 // Texture has a single 0 pixel border around edge.
-static GlTexture BuildBorderTexture( int width, int height )
+static VTexture BuildBorderTexture( int width, int height )
 {
 	unsigned char * data = (unsigned char *)malloc( width * height * 4 );
 	memset( data, 255, width * height );
@@ -190,7 +190,7 @@ static GlTexture BuildBorderTexture( int width, int height )
 		data[i*width] = 0;
 		data[i*width+width-1] = 0;
 	}
-	GlTexture	tex = LoadRTextureFromMemory( data, width, height );
+	VTexture	tex = LoadRTextureFromMemory( data, width, height );
 	free( data );
 	MakeTextureClamped( tex );
 	return tex;
@@ -827,8 +827,8 @@ void SwipeView::Draw( const VR4Matrixf & mvp )
 	glEnable( GL_BLEND );
 	glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA );
 
-	glActiveTexture( GL_TEXTURE1 );
-	glBindTexture( GL_TEXTURE_2D, BorderTexture2_1.texture );
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, BorderTexture2_1.id());
 
 	for ( int index = 0 ; index < PanelRenderList.length() ; index++ )
 	{

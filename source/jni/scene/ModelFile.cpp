@@ -105,10 +105,9 @@ ModelFile::~ModelFile()
 {
 	vInfo("Destroying ModelFileModel " << FileName);
 
-	for ( int i = 0; i < Textures.length(); i++ )
-	{
-		FreeTexture( Textures[i].texid );
-	}
+    for (const ModelTexture &texture : Textures) {
+        glDeleteTextures(1, &texture.texid.id());
+    }
 
 	for ( int j = 0; j < Def.surfaces.length(); j++ )
 	{
@@ -1071,7 +1070,7 @@ void LoadModelFileJson(ModelFile &model,
 				TEXTURE_OCCLUSION_TRANSPARENT
 			};
 
-			VArray< GlTexture > glTextures;
+			VArray< VTexture > glTextures;
 
 			const VJson &texture_array( render_model.value( "textures" ) );
 			if ( texture_array.isArray() )
@@ -1098,7 +1097,7 @@ void LoadModelFileJson(ModelFile &model,
 							// Create a default texture.
                             LoadModelFileTexture( model, name.toUtf8().data(), NULL, 0, materialParms );
 						}
-						glTextures.append( model.Textures[i].texid );
+                        glTextures.append(model.Textures[i].texid);
 
                         const VString usage = texture.value( "usage" ).toString();
 						if ( usage == "diffuse" )

@@ -378,15 +378,14 @@ DrawCounters RenderSurfaceList( const DrawSurfaceList & drawSurfaceList ) {
 		assert( materialDef.numTextures <= MAX_PROGRAM_TEXTURES );
 		for ( int textureNum = 0; textureNum < materialDef.numTextures; textureNum++ ) 
 		{
-			const GLuint texNObj = ( drawSurface.textureOverload == 0 ) ? materialDef.textures[textureNum].texture : drawSurface.textureOverload;
+            const GLuint texNObj = (drawSurface.textureOverload == 0) ? materialDef.textures[textureNum].id() : drawSurface.textureOverload;
 			if ( currentTextures[textureNum] != texNObj )
 			{
 				counters.numTextureBinds++;
 				currentTextures[textureNum] = texNObj;
 				glActiveTexture( GL_TEXTURE0 + textureNum );
 				// Something is leaving target set to 0; assume GL_TEXTURE_2D
-				glBindTexture( materialDef.textures[textureNum].target ?
-						materialDef.textures[textureNum].target : GL_TEXTURE_2D, texNObj );
+                glBindTexture(materialDef.textures[textureNum].target() ? materialDef.textures[textureNum].target() : GL_TEXTURE_2D, texNObj);
 			}
 		}
 

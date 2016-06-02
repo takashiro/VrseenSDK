@@ -3,12 +3,10 @@
 #include "VPath.h"
 #include <fstream>
 
-#include "api/VEglDriver.h"
+#include "VEglDriver.h"
 #include "VAlgorithm.h"
 
 #include "3rdParty/stb/stb_image.h"
-
-using namespace NervGear;
 
 #define GL_COMPRESSED_RGBA_ASTC_4x4_KHR            0x93B0
 #define GL_COMPRESSED_RGBA_ASTC_5x4_KHR            0x93B1
@@ -39,8 +37,85 @@ using namespace NervGear;
 #define GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR  0x93DC
 #define GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR  0x93DD
 
+NV_NAMESPACE_BEGIN
+
+struct VTexture::Private
+{
+    uint id;
+    uint target;
+
+    Private()
+        : id(0)
+        , target(0)
+    {
+    }
+};
+
 // Not declared inline in the header to avoid having to use GL_TEXTURE_2D
-GlTexture::GlTexture( unsigned texture_ ) : texture( texture_ ), target( GL_TEXTURE_2D ) {}
+VTexture::VTexture()
+    : d(new Private)
+{
+}
+
+VTexture::VTexture(uint id)
+    : d(new Private)
+{
+    d->id = id;
+    d->target = GL_TEXTURE_2D;
+}
+
+VTexture::VTexture(uint id, uint target)
+    : d(new Private)
+{
+    d->id = id;
+    d->target = target;
+}
+
+VTexture::VTexture(const VTexture &source)
+    : d(new Private)
+{
+    d->id = source.id();
+    d->target = source.target();
+}
+
+VTexture::VTexture(VTexture &&source)
+    : d(source.d)
+{
+    source.d = nullptr;
+}
+
+VTexture::~VTexture()
+{
+    if (d) {
+        //glDeleteTextures(1, &d->id);
+        delete d;
+    }
+}
+
+VTexture &VTexture::operator=(const VTexture &source)
+{
+    d->id = source.id();
+    d->target = source.target();
+    return *this;
+}
+
+VTexture &VTexture::operator=(VTexture &&source)
+{
+    delete d;
+    d = source.d;
+    source.d = nullptr;
+    return *this;
+}
+
+const uint &VTexture::id() const
+{
+    return d->id;
+}
+
+const uint &VTexture::target() const
+{
+    return d->target;
+}
 
 // From corelib/CommonSrc/Render/Render_Device.h
 enum TextureFormat
@@ -119,10 +194,6 @@ static const char * NameForTextureFormat( TextureFormat const format )
 /*
  * OpenGL convenience functions
  */
-
-namespace NervGear {
-
-
 
 static bool TextureFormatToGlFormat( const int format, const bool useSrgbFormat, GLenum & glFormat, GLenum & glInternalFormat )
 {
@@ -385,8 +456,8 @@ static int32_t GetOvrTextureSize( const int format, const int w, const int h )
     return 0;
 }
 
-static GlTexture CreateGlTexture( const char * fileName, const int format, const int width, const int height,
-						const void * data, const size_t dataSize,
+static VTexture CreateGlTexture( const char * fileName, const int format, const int width, const int height,
+                        const void * data, uint dataSize,
 						const int mipcount, const bool useSrgbFormat, const bool imageSizeStored )
 {
 
@@ -396,20 +467,20 @@ static GlTexture CreateGlTexture( const char * fileName, const int format, const
 	GLenum glInternalFormat;
 	if ( !TextureFormatToGlFormat( format, useSrgbFormat, glFormat, glInternalFormat ) )
 	{
-		return GlTexture( 0 );
+		return VTexture( 0 );
 	}
 
 	if ( mipcount <= 0 )
 	{
 		vInfo(fileName << ": Invalid mip count " << mipcount);
-		return GlTexture( 0 );
+		return VTexture( 0 );
 	}
 
 	// larger than this would require mipSize below to be a larger type
 	if ( width <= 0 || width > 32768 || height <= 0 || height > 32768 )
 	{
 		vInfo(fileName << ": Invalid texture size (" << width << "x" << height << ")");
-		return GlTexture( 0 );
+		return VTexture( 0 );
 	}
 
 	GLuint texId;
@@ -433,7 +504,7 @@ static GlTexture CreateGlTexture( const char * fileName, const int format, const
 			{
 				vInfo(fileName << ": Image data exceeds buffer size");
 				glBindTexture( GL_TEXTURE_2D, 0 );
-				return GlTexture( texId, GL_TEXTURE_2D );
+				return VTexture( texId, GL_TEXTURE_2D );
 			}
 		}
 
@@ -441,7 +512,7 @@ static GlTexture CreateGlTexture( const char * fileName, const int format, const
 		{
 			vInfo(fileName << ": Mip level " << i << " exceeds buffer size (" << mipSize << " > " << (endOfBuffer - level) << ")");
 			glBindTexture( GL_TEXTURE_2D, 0 );
-			return GlTexture( texId, GL_TEXTURE_2D );
+			return VTexture( texId, GL_TEXTURE_2D );
 		}
 
 		if ( format & Texture_Compressed )
@@ -462,7 +533,7 @@ static GlTexture CreateGlTexture( const char * fileName, const int format, const
 			{
 				vInfo(fileName << ": Image data exceeds buffer size");
 				glBindTexture( GL_TEXTURE_2D, 0 );
-				return GlTexture( texId, GL_TEXTURE_2D );
+				return VTexture( texId, GL_TEXTURE_2D );
 			}
 		}
 
@@ -489,10 +560,10 @@ static GlTexture CreateGlTexture( const char * fileName, const int format, const
 
 	glBindTexture( GL_TEXTURE_2D, 0 );
 
-	return GlTexture( texId, GL_TEXTURE_2D );
+	return VTexture( texId, GL_TEXTURE_2D );
 }
 
-static GlTexture CreateGlCubeTexture( const char * fileName, const int format, const int width, const int height,
+static VTexture CreateGlCubeTexture( const char * fileName, const int format, const int width, const int height,
 						const void * data, const size_t dataSize,
 						const int mipcount, const bool useSrgbFormat, const bool imageSizeStored )
 {
@@ -502,21 +573,21 @@ static GlTexture CreateGlCubeTexture( const char * fileName, const int format, c
 	if ( mipcount <= 0 )
 	{
 		vInfo(fileName << ": Invalid mip count " << mipcount);
-		return GlTexture( 0 );
+		return VTexture( 0 );
 	}
 
 	// larger than this would require mipSize below to be a larger type
 	if ( width <= 0 || width > 32768 || height <= 0 || height > 32768 )
 	{
 		vInfo(fileName << ": Invalid texture size (" << width << "x" << height << ")");
-		return GlTexture( 0 );
+		return VTexture( 0 );
 	}
 
 	GLenum glFormat;
 	GLenum glInternalFormat;
 	if ( !TextureFormatToGlFormat( format, useSrgbFormat, glFormat, glInternalFormat ) )
 	{
-		return GlTexture( 0 );
+		return VTexture( 0 );
 	}
 
 	GLuint texId;
@@ -538,7 +609,7 @@ static GlTexture CreateGlCubeTexture( const char * fileName, const int format, c
 			{
 				vInfo(fileName << ": Image data exceeds buffer size");
 				glBindTexture( GL_TEXTURE_CUBE_MAP, 0 );
-				return GlTexture( texId, GL_TEXTURE_CUBE_MAP );
+				return VTexture( texId, GL_TEXTURE_CUBE_MAP );
 			}
 		}
 
@@ -548,7 +619,7 @@ static GlTexture CreateGlCubeTexture( const char * fileName, const int format, c
 			{
 				vInfo(fileName << ": Mip level " << i << " exceeds buffer size (" << mipSize << " > " << endOfBuffer - level << ")");
 				glBindTexture( GL_TEXTURE_CUBE_MAP, 0 );
-                return GlTexture( texId,  GL_TEXTURE_CUBE_MAP );
+                return VTexture( texId,  GL_TEXTURE_CUBE_MAP );
 			}
 
 			if ( format & Texture_Compressed )
@@ -568,7 +639,7 @@ static GlTexture CreateGlCubeTexture( const char * fileName, const int format, c
 				{
 					vInfo(fileName << ": Image data exceeds buffer size");
 					glBindTexture( GL_TEXTURE_CUBE_MAP, 0 );
-					return GlTexture( texId, GL_TEXTURE_CUBE_MAP );
+					return VTexture( texId, GL_TEXTURE_CUBE_MAP );
 				}
 			}
 		}
@@ -589,25 +660,25 @@ static GlTexture CreateGlCubeTexture( const char * fileName, const int format, c
 
 	glBindTexture( GL_TEXTURE_CUBE_MAP, 0 );
 
-	return GlTexture( texId, GL_TEXTURE_CUBE_MAP );
+	return VTexture( texId, GL_TEXTURE_CUBE_MAP );
 }
 
-GlTexture LoadRGBATextureFromMemory( const uint8_t * texture, const int width, const int height, const bool useSrgbFormat )
+VTexture LoadRGBATextureFromMemory(const uchar *texture, const int width, const int height, const bool useSrgbFormat)
 {
-	const size_t dataSize = GetOvrTextureSize( Texture_RGBA, width, height );
-	return CreateGlTexture( "memory-RGBA", Texture_RGBA, width, height, texture, dataSize, 1, useSrgbFormat, false );
+    const size_t dataSize = GetOvrTextureSize(Texture_RGBA, width, height);
+    return CreateGlTexture("memory-RGBA", Texture_RGBA, width, height, texture, dataSize, 1, useSrgbFormat, false);
 }
 
-GlTexture LoadRGBTextureFromMemory( const uint8_t * texture, const int width, const int height, const bool useSrgbFormat )
+VTexture LoadRGBTextureFromMemory(const uchar *texture, const int width, const int height, const bool useSrgbFormat)
 {
-	const size_t dataSize = GetOvrTextureSize( Texture_RGB, width, height );
-	return CreateGlTexture( "memory-RGB", Texture_RGB, width, height, texture, dataSize, 1, useSrgbFormat, false );
+    const size_t dataSize = GetOvrTextureSize(Texture_RGB, width, height);
+    return CreateGlTexture("memory-RGB", Texture_RGB, width, height, texture, dataSize, 1, useSrgbFormat, false);
 }
 
-GlTexture LoadRTextureFromMemory( const uint8_t * texture, const int width, const int height )
+VTexture LoadRTextureFromMemory(const uchar *texture, const int width, const int height)
 {
-	const size_t dataSize = GetOvrTextureSize( Texture_R, width, height );
-	return CreateGlTexture( "memory-R", Texture_R, width, height, texture, dataSize, 1, false, false );
+    const size_t dataSize = GetOvrTextureSize(Texture_R, width, height );
+    return CreateGlTexture("memory-R", Texture_R, width, height, texture, dataSize, 1, false, false);
 }
 
 struct astcHeader
@@ -621,7 +692,7 @@ struct astcHeader
 	unsigned char		zsize[3];
 };
 
-GlTexture LoadASTCTextureFromMemory( uint8_t const * buffer, const size_t bufferSize, const int numPlanes )
+VTexture LoadASTCTextureFromMemory( uint8_t const * buffer, const size_t bufferSize, const int numPlanes )
 {
 	astcHeader const * header = reinterpret_cast< astcHeader const * >( buffer );
 
@@ -637,7 +708,7 @@ GlTexture LoadASTCTextureFromMemory( uint8_t const * buffer, const size_t buffer
 	{
 		vAssert( header->blockDim_z == 1 );
 		vInfo("Only 2D ASTC textures are supported");
-		return GlTexture();
+		return VTexture();
 	}
 
 	TextureFormat format = Texture_ASTC_4x4;
@@ -744,7 +815,7 @@ struct OVR_PVR_HEADER
 };
 #pragma pack()
 
-GlTexture LoadTexturePVR( const char * fileName, const unsigned char * buffer, const int bufferLength,
+VTexture LoadTexturePVR( const char * fileName, const unsigned char * buffer, const int bufferLength,
 						bool useSrgbFormat, bool noMipMaps, int & width, int & height )
 {
 	width = 0;
@@ -753,14 +824,14 @@ GlTexture LoadTexturePVR( const char * fileName, const unsigned char * buffer, c
 	if ( bufferLength < ( int )( sizeof( OVR_PVR_HEADER ) ) )
 	{
 		vInfo(fileName << ": Invalid PVR file");
-		return GlTexture( 0 );
+		return VTexture( 0 );
 	}
 
 	const OVR_PVR_HEADER & header = *( OVR_PVR_HEADER * )buffer;
 	if ( header.Version != 0x03525650 )
 	{
 		vInfo(fileName << ": Invalid PVR file version");
-		return GlTexture( 0 );
+		return VTexture( 0 );
 	}
 
 	int format = 0;
@@ -774,7 +845,7 @@ GlTexture LoadTexturePVR( const char * fileName, const unsigned char * buffer, c
         case 578721384203708274ull:	format = Texture_RGBA;		break;
 		default:
 			vInfo(fileName << ": Unknown PVR texture format " << header.PixelFormat << "lu, size " << width << "x" << height);
-			return GlTexture( 0 );
+			return VTexture( 0 );
 	}
 
 	// skip the metadata
@@ -782,7 +853,7 @@ GlTexture LoadTexturePVR( const char * fileName, const unsigned char * buffer, c
 	if ( ( startTex < sizeof( OVR_PVR_HEADER ) ) || ( startTex >= static_cast< size_t >( bufferLength ) ) )
 	{
 		vInfo(fileName << ": Invalid PVR header sizes");
-		return GlTexture( 0 );
+		return VTexture( 0 );
 	}
 
 	const vuint32 mipCount = ( noMipMaps ) ? 1 : std::max( 1u, header.MipMapCount );
@@ -805,7 +876,7 @@ GlTexture LoadTexturePVR( const char * fileName, const unsigned char * buffer, c
 
 	width = 0;
 	height = 0;
-	return GlTexture( 0 );
+	return VTexture( 0 );
 }
 
 
@@ -959,7 +1030,7 @@ struct OVR_KTX_HEADER
 };
 #pragma pack()
 
-GlTexture LoadTextureKTX( const char * fileName, const unsigned char * buffer, const int bufferLength,
+VTexture LoadTextureKTX( const char * fileName, const unsigned char * buffer, const int bufferLength,
 						bool useSrgbFormat, bool noMipMaps, int & width, int & height )
 {
 	width = 0;
@@ -968,7 +1039,7 @@ GlTexture LoadTextureKTX( const char * fileName, const unsigned char * buffer, c
 	if ( bufferLength < (int)( sizeof( OVR_KTX_HEADER ) ) )
 	{
     	vInfo(fileName << ": Invalid KTX file");
-        return GlTexture( 0 );
+        return VTexture( 0 );
 	}
 
 	const uchar fileIdentifier[12] =
@@ -980,39 +1051,39 @@ GlTexture LoadTextureKTX( const char * fileName, const unsigned char * buffer, c
 	if ( memcmp( header.identifier, fileIdentifier, sizeof( fileIdentifier ) ) != 0 )
 	{
 		vInfo(fileName << ": Invalid KTX file");
-		return GlTexture( 0 );
+		return VTexture( 0 );
 	}
 	// only support little endian
 	if ( header.endianness != 0x04030201 )
 	{
 		vInfo(fileName << ": KTX file has wrong endianess");
-		return GlTexture( 0 );
+		return VTexture( 0 );
 	}
 	// only support compressed or unsigned byte
 	if ( header.glType != 0 && header.glType != GL_UNSIGNED_BYTE )
 	{
 		vInfo(fileName << ": KTX file has unsupported glType " << header.glType);
-		return GlTexture( 0 );
+		return VTexture( 0 );
 	}
 	// no support for texture arrays
 	if ( header.numberOfArrayElements != 0 )
 	{
 		vInfo(fileName << ": KTX file has unsupported number of array elements " << header.numberOfArrayElements);
-		return GlTexture( 0 );
+		return VTexture( 0 );
 	}
 	// derive the texture format from the GL format
 	int format = 0;
 	if ( !GlFormatToTextureFormat( format, header.glFormat, header.glInternalFormat ) )
 	{
 		vInfo(fileName << ": KTX file has unsupported glFormat " << header.glFormat << ", glInternalFormat " << header.glInternalFormat);
-		return GlTexture( 0 );
+		return VTexture( 0 );
 	}
 	// skip the key value data
 	const uintptr_t startTex = sizeof( OVR_KTX_HEADER ) + header.bytesOfKeyValueData;
 	if ( ( startTex < sizeof( OVR_KTX_HEADER ) ) || ( startTex >= static_cast< size_t >( bufferLength ) ) )
 	{
 		vInfo(fileName << ": Invalid KTX header sizes");
-		return GlTexture( 0 );
+		return VTexture( 0 );
 	}
 
 	width = header.pixelWidth;
@@ -1035,17 +1106,17 @@ GlTexture LoadTextureKTX( const char * fileName, const unsigned char * buffer, c
 
 	width = 0;
 	height = 0;
-	return GlTexture( 0 );
+	return VTexture( 0 );
 }
 
-GlTexture LoadTextureFromBuffer( const char * fileName, const void*  buffer, uint length,
+VTexture LoadTextureFromBuffer( const char * fileName, const void*  buffer, uint length,
 		const TextureFlags_t & flags, int & width, int & height )
 {
 	const VString ext = VPath(fileName).extension().toLower();
 
     // vInfo("Loading texture buffer " << fileName << " (" << ext.toCString() << "), length " << buffer.Length);
 
-	GlTexture texId = 0;
+	VTexture texId = 0;
 	width = 0;
 	height = 0;
 
@@ -1069,9 +1140,9 @@ GlTexture LoadTextureFromBuffer( const char * fileName, const void*  buffer, uin
 			free( image );
 			if ( !( flags & TEXTUREFLAG_NO_MIPMAPS ) )
 			{
-				glBindTexture( texId.target, texId.texture );
-				glGenerateMipmap( texId.target );
-				glTexParameteri( texId.target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
+                glBindTexture(texId.target(), texId.id());
+                glGenerateMipmap(texId.target());
+                glTexParameteri(texId.target(), GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
 			}
 	    }
 	}
@@ -1099,12 +1170,12 @@ GlTexture LoadTextureFromBuffer( const char * fileName, const void*  buffer, uin
 	}
 
 	// Create a default texture if the load failed
-	if ( texId.texture == 0 )
+    if ( texId.id() == 0 )
 	{
     	vWarn("Failed to load " << fileName);
     	if ( ( flags & TEXTUREFLAG_NO_DEFAULT ) == 0 )
     	{
-			static uint8_t defaultTexture[8 * 8 * 3] =
+            static uchar defaultTexture[8 * 8 * 3] =
 			{
 					255,255,255, 255,255,255, 255,255,255, 255,255,255, 255,255,255, 255,255,255, 255,255,255, 255,255,255,
 					255,255,255,  64, 64, 64,  64, 64, 64,  64, 64, 64,  64, 64, 64,  64, 64, 64,  64, 64, 64, 255,255,255,
@@ -1122,57 +1193,49 @@ GlTexture LoadTextureFromBuffer( const char * fileName, const void*  buffer, uin
 	return texId;
 }
 
-void FreeTexture( GlTexture texId )
+void MakeTextureClamped(const VTexture &texture)
 {
-	if ( texId.texture )
-	{
-		glDeleteTextures( 1, &texId.texture );
-	}
+    glBindTexture(texture.target(), texture.id());
+    glTexParameteri(texture.target(), GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(texture.target(), GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glBindTexture(texture.target(), 0);
 }
 
-void MakeTextureClamped( GlTexture texId )
+void MakeTextureLodClamped(const VTexture &texture, int maxLod)
 {
-	glBindTexture( texId.target, texId.texture );
-	glTexParameteri( texId.target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-	glTexParameteri( texId.target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-	glBindTexture( texId.target, 0 );
+    glBindTexture(texture.target(), texture.id());
+    glTexParameteri(texture.target(), GL_TEXTURE_MAX_LEVEL, maxLod);
+    glBindTexture(texture.target(), 0);
 }
 
-void MakeTextureLodClamped( GlTexture texId, int maxLod )
+void MakeTextureTrilinear(const VTexture &texture)
 {
-	glBindTexture( texId.target, texId.texture );
-   	glTexParameteri( texId.target, GL_TEXTURE_MAX_LEVEL, maxLod );
-	glBindTexture( texId.target, 0 );
+    glBindTexture(texture.target(), texture.id());
+    glTexParameteri(texture.target(), GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
+    glTexParameteri(texture.target(), GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+    glBindTexture(texture.target(), 0);
 }
 
-void MakeTextureTrilinear( GlTexture texId )
+void MakeTextureLinear(const VTexture &texture)
 {
-	glBindTexture( texId.target, texId.texture );
-   	glTexParameteri( texId.target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
-	glTexParameteri( texId.target, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-	glBindTexture( texId.target, 0 );
+    glBindTexture(texture.target(), texture.id());
+    glTexParameteri(texture.target(), GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+    glTexParameteri(texture.target(), GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+    glBindTexture(texture.target(), 0);
 }
 
-void MakeTextureLinear( GlTexture texId )
+void MakeTextureAniso(const VTexture &texture, float maxAniso)
 {
-	glBindTexture( texId.target, texId.texture );
-   	glTexParameteri( texId.target, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-	glTexParameteri( texId.target, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-	glBindTexture( texId.target, 0 );
+    glBindTexture(texture.target(), texture.id());
+    glTexParameterf(texture.target(), GL_TEXTURE_MAX_ANISOTROPY_EXT, maxAniso);
+    glBindTexture(texture.target(), 0);
 }
 
-void MakeTextureAniso( GlTexture texId, float maxAniso )
+void BuildTextureMipmaps(const VTexture &texture)
 {
-	glBindTexture( texId.target, texId.texture );
-   	glTexParameterf( texId.target, GL_TEXTURE_MAX_ANISOTROPY_EXT, maxAniso );
-	glBindTexture( texId.target, 0 );
+    glBindTexture(texture.target(), texture.id());
+    glGenerateMipmap(texture.target());
+    glBindTexture(texture.target(), 0);
 }
 
-void BuildTextureMipmaps( GlTexture texId )
-{
-	glBindTexture( texId.target, texId.texture );
-	glGenerateMipmap( texId.target );
-	glBindTexture( texId.target, 0 );
-}
-
-}	// namespace NervGear
+NV_NAMESPACE_END

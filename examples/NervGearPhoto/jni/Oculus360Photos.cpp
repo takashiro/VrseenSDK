@@ -64,8 +64,8 @@ Oculus360Photos::DoubleBufferedTextureData::DoubleBufferedTextureData()
 
 Oculus360Photos::DoubleBufferedTextureData::~DoubleBufferedTextureData()
 {
-    FreeTexture( TexId[ 0 ] );
-    FreeTexture( TexId[ 1 ] );
+    glDeleteTextures(1, &TexId[0]);
+    glDeleteTextures(1, &TexId[1]);
 }
 
 GLuint Oculus360Photos::DoubleBufferedTextureData::GetRenderTexId() const
@@ -575,7 +575,7 @@ void Oculus360Photos::loadRgbaCubeMap( const int resolution, const unsigned char
     GLuint texId = m_backgroundCubeTexData.GetLoadTexId();
     if ( texId == 0 || !m_backgroundCubeTexData.SameSize( resolution, resolution ) )
     {
-        FreeTexture( texId );
+        glDeleteTextures(1, &texId);
         glGenTextures( 1, &texId );
         glBindTexture( GL_TEXTURE_CUBE_MAP, texId );
         glTexStorage2D( GL_TEXTURE_CUBE_MAP, 1, glInternalFormat, resolution, resolution );
@@ -617,7 +617,7 @@ void Oculus360Photos::loadRgbaTexture( const unsigned char * data, int width, in
     GLuint texId = m_backgroundPanoTexData.GetLoadTexId();
     if ( texId == 0 || !m_backgroundPanoTexData.SameSize( width, height ) )
     {
-        FreeTexture( texId );
+        glDeleteTextures(1, &texId);
         glGenTextures( 1, &texId );
         glBindTexture( GL_TEXTURE_2D, texId );
         glTexStorage2D( GL_TEXTURE_2D, 1, glInternalFormat, width, height );

@@ -96,7 +96,7 @@ struct MaterialDef
 	//
 	// This should be a range checked container.
 	int			numTextures;
-	GlTexture	textures[MAX_PROGRAM_TEXTURES];
+	VTexture	textures[MAX_PROGRAM_TEXTURES];
 };
 
 struct SurfaceDef

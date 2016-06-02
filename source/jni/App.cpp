@@ -261,7 +261,7 @@ struct App::Private
     KeyState backKeyState;
     VStandardPath *storagePaths;
 
-    GlTexture errorTexture;
+    VTexture errorTexture;
     int errorTextureSize;
     double errorMessageEndTime;
 
@@ -1036,8 +1036,8 @@ struct App::Private
                             // icon size factor smaller than fullscreen
                     for ( int eye = 0; eye < 2; eye++ )
                     {
-                       kernel->setSmoothEyeTexture(0,eye, 0);
-                       kernel->setSmoothEyeTexture(errorTexture.texture,eye,1);
+                       kernel->setSmoothEyeTexture(0, eye, 0);
+                       kernel->setSmoothEyeTexture(errorTexture.id(), eye, 1);
 
                     }
 
@@ -1271,7 +1271,7 @@ struct App::Private
 
             if (errorTexture != 0)
             {
-                FreeTexture(errorTexture);
+                glDeleteTextures(1, &errorTexture.id());
             }
 
             activity->shutdown();
