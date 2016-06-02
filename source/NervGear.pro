@@ -116,7 +116,6 @@ HEADERS += \
     jni/core/VAtomicInt.h \
     jni/core/VArray.h \
     jni/core/VByteArray.h \
-    jni/core/VColor.h \
     jni/core/VChar.h \
     jni/core/VCircularQueue.h \
     jni/core/VDeque.h \
@@ -206,6 +205,7 @@ HEADERS += \
     jni/io/VFileOperation.h \
     jni/io/VDir.h \
     jni/io/VStandardPath.h \
+    jni/media/VColor.h \
     jni/media/VSoundManager.h \
     jni/scene/VItem.h \
     jni/scene/VScene.h \
