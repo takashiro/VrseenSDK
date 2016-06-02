@@ -11,7 +11,7 @@
 #include "VFile.h"
 
 #include "3rdParty/stb/stb_image_write.h"
-#include "GlTexture.h"
+#include "VTexture.h"
 
 #include "io/VFileOperation.h"
 

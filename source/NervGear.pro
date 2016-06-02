@@ -91,7 +91,7 @@ SOURCES += \
     jni/scene/VEyeItem.cpp \
     jni/scene/EyePostRender.cpp \
     jni/scene/GazeCursor.cpp \
-    jni/scene/GlTexture.cpp \
+    jni/scene/VTexture.cpp \
     jni/scene/ModelCollision.cpp \
     jni/scene/ModelFile.cpp \
     jni/scene/ModelRender.cpp \
@@ -214,10 +214,10 @@ HEADERS += \
     jni/scene/BitmapFont.h \
     jni/scene/DebugLines.h \
     jni/scene/VEyeItem.h \
+    jni/scene/VTexture.h \
     jni/scene/EyePostRender.h \
     jni/scene/GazeCursor.h \
     jni/scene/GazeCursorLocal.h \
-    jni/scene/GlTexture.h \
     jni/scene/ModelCollision.h \
     jni/scene/ModelFile.h \
     jni/scene/ModelRender.h \

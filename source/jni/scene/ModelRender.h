@@ -7,7 +7,7 @@
 #include "VString.h"
 #include "api/VEglDriver.h"
 
-#include "GlTexture.h"
+#include "VTexture.h"
 #include "../api/VGlGeometry.h"
 
 NV_NAMESPACE_BEGIN

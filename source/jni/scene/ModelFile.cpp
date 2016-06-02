@@ -15,7 +15,7 @@
 #include <sstream>
 
 #include "unzip.h"
-#include "GlTexture.h"
+#include "VTexture.h"
 #include "ModelRender.h"
 
 // Verbose log, redefine this as LOG() to get lots more info dumped

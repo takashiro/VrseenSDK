@@ -20,7 +20,7 @@
 #include "EyePostRender.h"
 #include "GazeCursor.h"
 #include "GazeCursorLocal.h"		// necessary to instantiate the gaze cursor
-#include "GlTexture.h"
+#include "VTexture.h"
 #include "GuiSys.h"
 #include "GuiSysLocal.h"		// necessary to instantiate the gui system
 #include "ModelView.h"

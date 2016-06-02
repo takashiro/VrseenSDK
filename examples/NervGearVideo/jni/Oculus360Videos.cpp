@@ -33,7 +33,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "VEglDriver.h"
 #include "SurfaceTexture.h"
 
-#include "GlTexture.h"
+#include "VTexture.h"
 #include "BitmapFont.h"
 #include "GazeCursor.h"
 #include "App.h"

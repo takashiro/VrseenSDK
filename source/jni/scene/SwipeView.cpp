@@ -20,7 +20,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "api/VEglDriver.h"
 
 #include "VFrame.h"
-#include "GlTexture.h"
+#include "VTexture.h"
 #include "BitmapFont.h"
 #include "gui/VRMenuMgr.h"
 #include "gui/GuiSys.h"

@@ -1,15 +1,4 @@
-/************************************************************************************
-
-Filename    :   GlTexture.cpp
-Content     :   OpenGL texture loading.
-Created     :   September 30, 2013
-Authors     :   John Carmack
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
-#include "GlTexture.h"
+#include "VTexture.h"
 
 #include "VPath.h"
 #include <fstream>

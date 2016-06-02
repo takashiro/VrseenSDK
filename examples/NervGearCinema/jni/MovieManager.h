@@ -2,7 +2,7 @@
 
 #include "VString.h"
 #include "VArray.h"
-#include "GlTexture.h"
+#include "VTexture.h"
 
 namespace OculusCinema {
 

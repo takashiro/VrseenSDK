@@ -3,7 +3,7 @@
 #include "VIODevice.h"
 
 //@to-to: remove this
-#include "GlTexture.h"
+#include "VTexture.h"
 
 NV_NAMESPACE_BEGIN
 

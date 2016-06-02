@@ -14,7 +14,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 *************************************************************************************/
 
 #include "VideoBrowser.h"
-#include "GlTexture.h"
+#include "VTexture.h"
 
 #include "Oculus360Videos.h"
 #include "VrLocale.h"

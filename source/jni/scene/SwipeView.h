@@ -6,7 +6,7 @@
 #include "VArray.h"
 #include "../api/VGlGeometry.h"
 #include "../api/VGlShader.h"
-#include "GlTexture.h"
+#include "VTexture.h"
 #include "GazeCursor.h"
 #include "VFrame.h"
 #include "BitmapFont.h"

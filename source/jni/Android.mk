@@ -108,7 +108,7 @@ LOCAL_SRC_FILES  := \
 	scene/VEyeItem.cpp \
 	scene/EyePostRender.cpp \
 	scene/GazeCursor.cpp \
-	scene/GlTexture.cpp \
+	scene/VTexture.cpp \
 	scene/ModelRender.cpp \
 	scene/ModelFile.cpp \
 	scene/ModelCollision.cpp \

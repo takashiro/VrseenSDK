@@ -37,7 +37,7 @@
 #include "api/VEglDriver.h"
 
 #include "../api/VGlShader.h"
-#include "GlTexture.h"
+#include "VTexture.h"
 #include "../api/VGlGeometry.h"
 #include "VString.h"
 
