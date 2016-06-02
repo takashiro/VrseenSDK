@@ -13,10 +13,12 @@ INCLUDEPATH += \
     jni \
     $$NV_ROOT \
     $$NV_ROOT/core \
-    $$NV_ROOT/io
+    $$NV_ROOT/io \
+    $$NV_ROOT/media
 
 HEADERS += jni/test.h
 SOURCES += jni/main.cpp
 
 include(jni/core/core.pri)
 include(jni/io/io.pri)
+include(jni/media/media.pri)

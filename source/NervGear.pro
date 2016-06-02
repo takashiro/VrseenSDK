@@ -82,6 +82,7 @@ SOURCES += \
     jni/io/VFileOperation.cpp \
     jni/io/VDir.cpp \
     jni/io/VStandardPath.cpp \
+    jni/media/VImage.cpp \
     jni/media/VSoundManager.cpp \
     jni/scene/VItem.cpp \
     jni/scene/VScene.cpp \
@@ -206,6 +207,7 @@ HEADERS += \
     jni/io/VDir.h \
     jni/io/VStandardPath.h \
     jni/media/VColor.h \
+    jni/media/VImage.h \
     jni/media/VSoundManager.h \
     jni/scene/VItem.h \
     jni/scene/VScene.h \
