@@ -8,8 +8,6 @@
 #include <VPath.h>
 #include <VZipFile.h>
 #include <VDir.h>
-#include <VImageManager.h>
-#include <VOpenGLTexture.h>
 #include <VFile.h>
 
 namespace OculusCinema {
@@ -174,8 +172,7 @@ SceneDef * ModelManager::LoadScene(const VString &sceneFilename, bool useDynamic
     VPath iconFilename = filename;
     iconFilename.setExtension("png");
 
-	//int textureWidth = 0, textureHeight = 0;
-
+    int textureWidth = 0, textureHeight = 0;
 
     VByteArray fileName = filename.toUtf8();
     VByteArray iconFileName = iconFilename.toUtf8();
@@ -190,23 +187,17 @@ SceneDef * ModelManager::LoadScene(const VString &sceneFilename, bool useDynamic
         buffer = nullptr;
         length = 0;
 
-
-        VImageManager *imagemanager = new VImageManager();
-        VImage *iconimage = imagemanager->loadImage(iconFilename);
-        delete imagemanager;
-        if (iconimage) {
-            def->IconTexture = VOpenGLTexture(iconimage, iconFilename,TextureFlags(_NO_DEFAULT)).getTextureName();
-        }
+        VFile icon(iconFilename, VFile::ReadOnly);
+        VByteArray iconData = icon.readAll();
+        def->IconTexture = LoadTextureFromBuffer(iconFileName.data(), iconData.data(), iconData.length(), TEXTUREFLAG_NO_DEFAULT, textureWidth, textureHeight);
     } else {
         def->SceneModel = LoadModelFile(fileName.data(), glPrograms, materialParms );
 
-        VImageManager *imagemanager = new VImageManager();
-        VImage *iconimage = imagemanager->loadImage(iconFilename);
-        delete imagemanager;
-        if (iconimage) {
-            def->IconTexture = VOpenGLTexture(iconimage, iconFilename,TextureFlags(_NO_DEFAULT)).getTextureName();
-        }
+        VFile icon(iconFilename, VFile::ReadOnly);
+        VByteArray iconData = icon.readAll();
+        def->IconTexture = LoadTextureFromBuffer(iconFileName.data(), iconData.data(), iconData.length(), TEXTUREFLAG_NO_DEFAULT, textureWidth, textureHeight);
     }
+    vAssert(def->IconTexture);
 
 	if ( def->IconTexture != 0 )
 	{
