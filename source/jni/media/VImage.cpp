@@ -18,6 +18,13 @@ struct VImage::Private
     {
     }
 
+    ~Private()
+    {
+        if (data) {
+            free(data);
+        }
+    }
+
     void load(const VPath &path)
     {
         int cmp;
@@ -36,11 +43,31 @@ VImage::VImage(const VPath &path)
     d->load(path);
 }
 
+VImage::VImage(const VImage &source)
+    : d(new Private)
+{
+    d->data = (uchar *) malloc(source.length());
+    memcpy(d->data, source.data(), source.length());
+    d->width = source.width();
+    d->height = source.height();
+}
+
+VImage::VImage(VImage &&source)
+    : d(source.d)
+{
+    source.d = nullptr;
+}
+
+VImage::VImage(uchar *raw, int width, int height)
+    : d(new Private)
+{
+    d->data = raw;
+    d->width = width;
+    d->height = height;
+}
+
 VImage::~VImage()
 {
-    if (d->data) {
-        free(d->data);
-    }
     delete d;
 }
 
@@ -62,6 +89,11 @@ int VImage::height() const
 const uchar *VImage::data() const
 {
     return d->data;
+}
+
+uint VImage::length() const
+{
+    return d->width * d->height * 4;
 }
 
 VColor VImage::at(int x, int y) const
@@ -230,6 +262,21 @@ void VImage::resize(int newWidth, int newHeight, Filter filter)
     d->data = scaled;
     d->width = newWidth;
     d->height = newHeight;
+}
+
+bool VImage::operator==(const VImage &source) const
+{
+    if (width() != source.width() || height() != source.height()) {
+        return false;
+    }
+
+    const uchar *data = source.data();
+    for (uint i = 0, max = length(); i < max; i++) {
+        if (d->data[i] != data[i]) {
+            return false;
+        }
+    }
+    return true;
 }
 
 NV_NAMESPACE_END

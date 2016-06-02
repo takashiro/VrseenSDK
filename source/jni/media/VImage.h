@@ -19,6 +19,9 @@ public:
 
     VImage();
     VImage(const VPath &path);
+    VImage(const VImage &source);
+    VImage(VImage &&source);
+    VImage(uchar *raw, int width, int height);
     ~VImage();
 
     bool isValid() const;
@@ -27,13 +30,16 @@ public:
     int height() const;
 
     const uchar *data() const;
+    uint length() const;
+
     VColor at(int x, int y) const;
 
     void resize(int width, int height, Filter filter = NearestFilter);
 
+    bool operator==(const VImage &source) const;
+
 private:
     NV_DECLARE_PRIVATE
-    NV_DISABLE_COPY(VImage)
 };
 
 NV_NAMESPACE_END
