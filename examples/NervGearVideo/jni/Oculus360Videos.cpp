@@ -53,9 +53,6 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "VideosMetaData.h"
 #include "VColor.h"
 
-#include <3rdParty/stb/stb_image.h>
-#include <3rdParty/stb/stb_image_write.h>
-
 static bool	RetailMode = false;
 
 static const char * videosDirectory = "Oculus/360Videos/";
