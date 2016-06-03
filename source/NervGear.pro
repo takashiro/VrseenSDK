@@ -79,6 +79,7 @@ SOURCES += \
     jni/io/VDir.cpp \
     jni/io/VFile.cpp \
     jni/io/VIODevice.cpp \
+    jni/io/VResource.cpp \
     jni/io/VStandardPath.cpp \
     jni/io/VZipFile.cpp \
     jni/media/VImage.cpp \
@@ -202,6 +203,7 @@ HEADERS += \
     jni/io/VDir.h \
     jni/io/VFile.h \
     jni/io/VIODevice.h \
+    jni/io/VResource.h \
     jni/io/VStandardPath.h \
     jni/io/VZipFile.h \
     jni/media/VColor.h \
