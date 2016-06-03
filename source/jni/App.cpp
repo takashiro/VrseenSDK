@@ -44,6 +44,8 @@
 #include "VColor.h"
 #include "VScene.h"
 #include "VRotationSensor.h"
+#include "VResource.h"
+#include "VTexture.h"
 
 //#define TEST_TIMEWARP_WATCHDOG
 #define EGL_PROTECTED_CONTENT_EXT 0x32c0
@@ -952,10 +954,8 @@ struct App::Private
             vrMenuMgr = OvrVRMenuMgr::Create();
             debugLines = OvrDebugLines::Create();
 
-            int w = 0;
-            int h = 0;
-            loadingIconTexId = LoadTextureFromApplicationPackage("res/raw/loading_indicator.png",
-                                            VTexture::Flags(VTexture::NoMipmaps), w, h);
+            VTexture loadingIcon(VResource("res/raw/loading_indicator.png"), VTexture::NoMipmaps);
+            loadingIconTexId = loadingIcon.id();
 
             // Create the SurfaceTexture for dialog rendering.
             self->dialog.dialogTexture = new SurfaceTexture(vrJni);

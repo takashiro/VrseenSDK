@@ -1,17 +1,5 @@
-/************************************************************************************
-
-Filename    :   VolumePopup.cpp
-Content     :   The main menu that appears in native apps when pressing the HMT button.
-Created     :   July 25, 2014
-Authors     :   Jonathan E. Wright
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-
-*************************************************************************************/
-
 #include "VolumePopup.h"
-#include "core/VTimer.h"
+#include "VTimer.h"
 #include <android/keycodes.h>
 #include "App.h"
 #include "VRMenuComponent.h"
@@ -22,7 +10,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "TextFade_Component.h"
 #include "VAlgorithm.h"
 #include "VZipFile.h"
-#include "core/VLog.h"
+#include "VLog.h"
+#include "VResource.h"
 
 
 class LocklessDouble
@@ -110,25 +99,25 @@ OvrVolumePopup * OvrVolumePopup::Create( App * app, OvrVRMenuMgr & menuMgr, Bitm
 
         V3Vectf menuOffset( 0.0f, 64 * VRMenuObject::DEFAULT_TEXEL_SCALE, 0.0f );
 
-	    int backgroundWidth = 0;
-	    int backgroundHeight = 0;
-		GLuint backgroundTexture = LoadTextureFromApplicationPackage( "res/raw/volume_bg.png",
-			VTexture::Flags( VTexture::NoDefault ), backgroundWidth, backgroundHeight );
+        VTexture background(VResource("res/raw/volume_bg.png"));
+        int backgroundWidth = background.width();
+        int backgroundHeight = background.height();
+        GLuint backgroundTexture = background.id();
 
-	    int volumeIconWidth = 0;
-	    int volumeIconHeight = 0;
-		GLuint volumeIconTexture = LoadTextureFromApplicationPackage( "res/raw/volume_icon.png",
-			VTexture::Flags( VTexture::NoDefault ), volumeIconWidth, volumeIconHeight );
+        VTexture volumeIcon(VResource("res/raw/volume_icon.png"));
+        int volumeIconWidth = volumeIcon.width();
+        int volumeIconHeight = volumeIcon.height();
+        GLuint volumeIconTexture = volumeIcon.id();
 
-	    int volumeTickOffWidth = 0;
-	    int volumeTickOffHeight = 0;
-		GLuint volumeTickOffTexture = LoadTextureFromApplicationPackage( "res/raw/volume_tick_off.png",
-			VTexture::Flags( VTexture::NoDefault ), volumeTickOffWidth, volumeTickOffHeight );
+        VTexture volumeTickOff(VResource("res/raw/volume_tick_off.png"));
+        int volumeTickOffWidth = volumeTickOff.width();
+        int volumeTickOffHeight = volumeTickOff.height();
+        GLuint volumeTickOffTexture = volumeTickOff.id();
 
-	    int volumeTickOnWidth = 0;
-	    int volumeTickOnHeight = 0;
-		GLuint volumeTickOnTexture = LoadTextureFromApplicationPackage( "res/raw/volume_tick_on.png",
-			VTexture::Flags( VTexture::NoDefault ), volumeTickOnWidth, volumeTickOnHeight );
+        VTexture volumeTickOn(VResource("res/raw/volume_tick_on.png"));
+        int volumeTickOnWidth = volumeTickOn.width();
+        int volumeTickOnHeight = volumeTickOn.height();
+        GLuint volumeTickOnTexture = volumeTickOn.id();
 
 		int volumeTickPadding = 4;
 		int volumeTickWidth = 6 + volumeTickPadding;

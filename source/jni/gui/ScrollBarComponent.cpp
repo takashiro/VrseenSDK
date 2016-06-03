@@ -15,6 +15,8 @@ Copyright   :   Copyright 2014 Oculus VR, Inc. All Rights reserved.
 #include "VRMenuMgr.h"
 #include "VZipFile.h"
 #include "VAlgorithm.h"
+#include "VResource.h"
+#include "VPath.h"
 
 namespace NervGear {
 
@@ -171,17 +173,16 @@ enum eScrollBarImage
 	SCROLLBAR_IMAGE_MAX
 };
 
-VString GetImage( eScrollBarImage const type, const bool vertical )
+VPath GetImage( eScrollBarImage const type, const bool vertical )
 {
-	static char const * images[ SCROLLBAR_IMAGE_MAX ] =
-	{
+    static char const * images[SCROLLBAR_IMAGE_MAX] = {
 		"res/raw/scrollbar_base_%s.png",
 		"res/raw/scrollbar_thumb_%s.png",
 	};
 
-	char buff[ 256 ];
-    sprintf(buff,images[type], vertical ? "vert" : "horz" );
-	return VString( buff );
+    VPath path;
+    path.sprintf(images[type], vertical ? "vert" : "horz");
+    return path;
 }
 
 void OvrScrollBarComponent::getScrollBarParms( VRMenu & menu, float scrollBarLength, const VRMenuId_t parentId, const VRMenuId_t rootId, const VRMenuId_t xformId,
@@ -235,17 +236,16 @@ void OvrScrollBarComponent::getScrollBarParms( VRMenu & menu, float scrollBarLen
 
 	// add parms for the base image that underlays the whole scrollbar
 	{
-		int sbWidth, sbHeight = 0;
-        GLuint sbTexture = LoadTextureFromApplicationPackage( GetImage( SCROLLBAR_IMAGE_BASE, verticalBar ), VTexture::Flags( VTexture::NoDefault ), sbWidth, sbHeight );
-		if ( verticalBar )
-		{
-			scrollComponent->setScrollBarBaseWidth( (float)( sbWidth ) );
-			scrollComponent->setScrollBarBaseHeight( scrollBarLength );
-		}
-		else
-		{
-			scrollComponent->setScrollBarBaseWidth( scrollBarLength );
-			scrollComponent->setScrollBarBaseHeight( (float)( sbHeight ) );
+        VTexture texture(VResource(GetImage(SCROLLBAR_IMAGE_BASE, verticalBar)));
+        uint sbTexture = texture.id();
+        int sbWidth = texture.width();
+        int sbHeight = texture.height();
+        if (verticalBar) {
+            scrollComponent->setScrollBarBaseWidth((float) sbWidth);
+            scrollComponent->setScrollBarBaseHeight(scrollBarLength);
+        } else {
+            scrollComponent->setScrollBarBaseWidth(scrollBarLength);
+            scrollComponent->setScrollBarBaseHeight((float) sbHeight);
 		}
 
 		VArray< VRMenuComponent* > comps;
@@ -273,8 +273,10 @@ void OvrScrollBarComponent::getScrollBarParms( VRMenu & menu, float scrollBarLen
 
 	// add parms for the thumb image of the scrollbar
 	{
-		int stWidth, stHeight = 0;
-        GLuint stTexture = LoadTextureFromApplicationPackage( GetImage( SCROLLBAR_IMAGE_THUMB, verticalBar ), VTexture::Flags( VTexture::NoDefault ), stWidth, stHeight );
+        VTexture st(VResource(GetImage(SCROLLBAR_IMAGE_THUMB, verticalBar)));
+        GLuint stTexture = st.id();
+        int stWidth = st.width();
+        int stHeight = st.height();
 		scrollComponent->setScrollBarThumbWidth(  (float)( stWidth ) );
 		scrollComponent->setScrollBarThumbHeight( (float)( stHeight ) );
 

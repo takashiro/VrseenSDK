@@ -15,6 +15,8 @@ Copyright   :   Copyright 2014 Oculus VR, Inc. All Rights reserved.
 #include "VZipFile.h"
 #include "App.h"
 #include "core/VTimer.h"
+#include "VTexture.h"
+#include "VResource.h"
 
 namespace NervGear
 {
@@ -58,7 +60,10 @@ namespace NervGear
 
 		menuHandle_t scrollHintHandle = rootMenu->handleForId( menuManager, swipeHintId );
 		vAssert( scrollHintHandle.isValid() );
-		GLuint swipeHintTexture = LoadTextureFromApplicationPackage( img, VTexture::Flags( VTexture::NoDefault ), imgWidth, imgHeight );
+        VTexture swipeHint = VResource(img);
+        GLuint swipeHintTexture = swipeHint.id();
+        imgWidth = swipeHint.width();
+        imgHeight = swipeHint.height();
 		VRMenuSurfaceParms swipeHintSurfParms( "", swipeHintTexture, imgWidth, imgHeight, SURFACE_TEXTURE_DIFFUSE,
 												0, 0, 0, SURFACE_TEXTURE_MAX,
 												0, 0, 0, SURFACE_TEXTURE_MAX );

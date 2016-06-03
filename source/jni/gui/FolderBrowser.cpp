@@ -34,6 +34,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <VLog.h>
 #include <VStandardPath.h>
 #include <VFile.h>
+#include <VResource.h>
 
 namespace NervGear {
 
@@ -912,12 +913,10 @@ OvrFolderBrowser::OvrFolderBrowser(
 			panelSrc[ 1 ]  = "res/raw/panel_hi.tga";
 		}
 
-		for ( int t = 0; t < 2; ++t )
-		{
-			int width = 0;
-			int height = 0;
-			m_defaultPanelTextureIds[ t ] = LoadTextureFromApplicationPackage( panelSrc[ t ], VTexture::Flags( VTexture::NoDefault ), width, height );
-			vAssert( m_defaultPanelTextureIds[ t ] && ( width == m_thumbWidth ) && ( height == m_thumbHeight ) );
+        for (int t = 0; t < 2; t++) {
+            VTexture texture(VResource(panelSrc[t]));
+            m_defaultPanelTextureIds[t] = texture.id();
+            vAssert(m_defaultPanelTextureIds[t] && (texture.width() == m_thumbWidth) && (texture.height() == m_thumbHeight));
 		}
 	}
 
