@@ -23,6 +23,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include <VPath.h>
 #include <VZipFile.h>
 #include <VFile.h>
+#include <VResource.h>
 
 #include <fstream>
 
@@ -173,10 +174,12 @@ void Oculus360Videos::init(const VString &fromPackage, const VString &launchInte
     SingleColorTextureProgram.initShader(VGlShader::getSingleTextureVertexShaderSource(),VGlShader::getUniformSingleTextureProgramShaderSource());
 
 	// always fall back to valid background
-	if ( BackgroundTexId == 0 )
-	{
-		BackgroundTexId = LoadTextureFromApplicationPackage( "assets/background.jpg",
-			VTexture::Flags( VTexture::UseSRGB ), BackgroundWidth, BackgroundHeight );
+    if (BackgroundTexId == 0) {
+        VTexture background(VResource("assets/background.jpg"), VTexture::UseSRGB);
+        BackgroundTexId = background.id();
+        vAssert(BackgroundTexId);
+        BackgroundWidth = background.width();
+        BackgroundHeight = background.height();
 	}
 
 	vInfo("Creating Globe");
