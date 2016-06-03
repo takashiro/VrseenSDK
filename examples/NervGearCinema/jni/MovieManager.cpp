@@ -13,6 +13,7 @@
 #include <VLog.h>
 #include <VZipFile.h>
 #include <VFile.h>
+#include <VResource.h>
 
 namespace OculusCinema {
 
@@ -239,10 +240,11 @@ void MovieManager::LoadPoster( MovieDef *movie )
 	}
 
 	// if all else failed, then just use the default poster
-	if ( movie->Poster == 0 )
-	{
-		movie->Poster = LoadTextureFromApplicationPackage( "assets/default_poster.png",
-				VTexture::Flags( VTexture::NoDefault ), movie->PosterWidth, movie->PosterHeight );
+    if (movie->Poster == 0) {
+        VTexture poster(VResource("assets/default_poster.png"), VTexture::NoDefault);
+        movie->Poster = poster.id();
+        movie->PosterWidth = poster.width();
+        movie->PosterHeight = poster.height();
 	}
 
 	BuildTextureMipmaps( movie->Poster );

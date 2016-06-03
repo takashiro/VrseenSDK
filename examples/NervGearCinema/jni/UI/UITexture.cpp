@@ -1,6 +1,7 @@
 #include "UI/UITexture.h"
 #include "CinemaApp.h"
 #include "VZipFile.h"
+#include "VResource.h"
 
 namespace OculusCinema {
 
@@ -18,7 +19,10 @@ UITexture::~UITexture()
 
 void UITexture::LoadTextureFromApplicationPackage( const char *assetPath )
 {
-	Texture = NervGear::LoadTextureFromApplicationPackage( assetPath, VTexture::Flags( VTexture::NoDefault ), Width, Height );
+    VTexture texture(VResource(assetPath), VTexture::NoDefault);
+    Texture = texture.id();
+    Width = texture.width();
+    Height = texture.height();
 }
 
 } // namespace OculusCinema

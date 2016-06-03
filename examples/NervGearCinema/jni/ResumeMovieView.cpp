@@ -1,5 +1,7 @@
 #include <GazeCursor.h>
 #include <VRMenuMgr.h>
+#include <VTexture.h>
+#include <VResource.h>
 
 #include "CinemaApp.h"
 #include "ResumeMovieView.h"
@@ -156,8 +158,10 @@ void ResumeMovieView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFont 
     optionPositions.append( PanelPose( VQuatf( up, 0.0f / 180.0f * VConstantsf::Pi ), V3Vectf( -0.5f, 1.7f, -3.0f ), V4Vectf( 1.0f, 1.0f, 1.0f, 1.0f ) ) );
     optionPositions.append( PanelPose( VQuatf( up, 0.0f / 180.0f * VConstantsf::Pi ), V3Vectf(  0.5f, 1.7f, -3.0f ), V4Vectf( 1.0f, 1.0f, 1.0f, 1.0f ) ) );
 
-    int borderWidth = 0, borderHeight = 0;
-    GLuint borderTexture = LoadTextureFromApplicationPackage( "assets/resume_restart_border.png", VTexture::Flags( VTexture::NoDefault ), borderWidth, borderHeight );
+    VTexture border(VResource("assets/resume_restart_border.png"));
+    GLuint borderTexture = border.id();
+    int borderWidth = border.width();
+    int borderHeight = border.height();
 
     for ( int i = 0; i < optionPositions.length(); ++i )
 	{
@@ -186,8 +190,10 @@ void ResumeMovieView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFont 
         VRMenuObject * optionObject = menuMgr.toObject( optionHandle );
 	    vAssert( optionObject != NULL );
 
-	    int iconWidth = 0, iconHeight = 0;
-	    GLuint iconTexture = LoadTextureFromApplicationPackage( icons[ i ], VTexture::Flags( VTexture::NoDefault ), iconWidth, iconHeight );
+        VTexture icon(VResource(icons[i]));
+        GLuint iconTexture = icon.id();
+        int iconWidth = icon.width();
+        int iconHeight = icon.height();
 
 		VRMenuSurfaceParms iconSurfParms( "",
 				iconTexture, iconWidth, iconHeight, SURFACE_TEXTURE_DIFFUSE,

@@ -9,6 +9,8 @@
 #include <VZipFile.h>
 #include <VDir.h>
 #include <VFile.h>
+#include <VResource.h>
+#include <VTexture.h>
 
 namespace OculusCinema {
 
@@ -82,9 +84,9 @@ void ModelManager::LoadModels()
 		VoidScene->UseScreenGeometry = false;
 		VoidScene->UseFreeScreen = true;
 
-		int width = 0, height = 0;
-		VoidScene->IconTexture = LoadTextureFromApplicationPackage( "assets/VoidTheater.png",
-                VTexture::Flags( VTexture::NoDefault ), width, height );
+        VTexture icon(VResource("assets/VoidTheater.png"), VTexture::NoDefault);
+        vAssert(icon.id() > 0);
+        VoidScene->IconTexture = icon.id();
 
 		BuildTextureMipmaps( VoidScene->IconTexture );
 		MakeTextureTrilinear( VoidScene->IconTexture );
@@ -213,9 +215,8 @@ SceneDef * ModelManager::LoadScene(const VString &sceneFilename, bool useDynamic
 		{
 			vInfo("No icon in scene.  Loading default.");
 
-			int	width = 0, height = 0;
-			def->IconTexture = LoadTextureFromApplicationPackage( "assets/noimage.png",
-                VTexture::Flags( VTexture::NoDefault ), width, height );
+            VTexture icon(VResource("assets/noimage.png"), VTexture::NoDefault);
+            def->IconTexture = icon.id();
 		}
 	}
 
