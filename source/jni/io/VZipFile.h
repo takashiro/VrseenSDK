@@ -3,9 +3,6 @@
 #include "VIODevice.h"
 #include "VByteArray.h"
 
-//@to-to: remove this
-#include "VTexture.h"
-
 NV_NAMESPACE_BEGIN
 
 class VString;
@@ -31,8 +28,5 @@ private:
     NV_DECLARE_PRIVATE
     NV_DISABLE_COPY(VZipFile)
 };
-
-//@to-do: remove this function
-uint LoadTextureFromApplicationPackage(const VString &nameInZip, const VTexture::Flags &flags, int & width, int & height);
 
 NV_NAMESPACE_END

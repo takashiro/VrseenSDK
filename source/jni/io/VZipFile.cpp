@@ -1,7 +1,6 @@
 #include "VZipFile.h"
 #include "VString.h"
 #include "VLog.h"
-#include "App.h"
 
 #include <3rdparty/minizip/unzip.h>
 
@@ -187,25 +186,6 @@ VByteArray VZipFile::read(const VString &filePath) const
     }
 
     return buffer;
-}
-
-uint LoadTextureFromApplicationPackage(const VString &nameInZip, const VTexture::Flags &flags, int &width, int &height)
-{
-    width = 0;
-    height = 0;
-
-    void *buffer = nullptr;
-    uint bufferLength;
-
-    const VZipFile &apk = vApp->apkFile();
-    apk.read(nameInZip, buffer, bufferLength);
-    if (buffer == nullptr) {
-        return 0;
-    }
-    VByteArray name = nameInZip.toUtf8();
-    unsigned texId = LoadTextureFromBuffer(name.data(), buffer, bufferLength, flags, width, height);
-
-    return texId;
 }
 
 NV_NAMESPACE_END
