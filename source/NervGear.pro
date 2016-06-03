@@ -74,13 +74,13 @@ SOURCES += \
     jni/gui/MetaDataManager.cpp \
     jni/gui/OutOfSpaceMenu.cpp \
     jni/gui/KeyState.cpp \
-    jni/io/VZipFile.cpp \
     jni/io/VBinaryStream.cpp \
     jni/io/VBuffer.cpp \
+    jni/io/VDir.cpp \
     jni/io/VFile.cpp \
     jni/io/VIODevice.cpp \
-    jni/io/VDir.cpp \
     jni/io/VStandardPath.cpp \
+    jni/io/VZipFile.cpp \
     jni/media/VImage.cpp \
     jni/media/VSoundManager.cpp \
     jni/scene/VItem.cpp \
@@ -197,13 +197,13 @@ HEADERS += \
     jni/gui/GuiSysLocal.h \
     jni/gui/ui_default.h \
     jni/gui/KeyState.h \
-    jni/io/VZipFile.h \
     jni/io/VBinaryStream.h \
     jni/io/VBuffer.h \
+    jni/io/VDir.h \
     jni/io/VFile.h \
     jni/io/VIODevice.h \
-    jni/io/VDir.h \
     jni/io/VStandardPath.h \
+    jni/io/VZipFile.h \
     jni/media/VColor.h \
     jni/media/VImage.h \
     jni/media/VSoundManager.h \
