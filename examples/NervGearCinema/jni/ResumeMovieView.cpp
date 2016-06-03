@@ -157,7 +157,7 @@ void ResumeMovieView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFont 
     optionPositions.append( PanelPose( VQuatf( up, 0.0f / 180.0f * VConstantsf::Pi ), V3Vectf(  0.5f, 1.7f, -3.0f ), V4Vectf( 1.0f, 1.0f, 1.0f, 1.0f ) ) );
 
     int borderWidth = 0, borderHeight = 0;
-    GLuint borderTexture = LoadTextureFromApplicationPackage( "assets/resume_restart_border.png", TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), borderWidth, borderHeight );
+    GLuint borderTexture = LoadTextureFromApplicationPackage( "assets/resume_restart_border.png", VTexture::Flags( VTexture::NoDefault ), borderWidth, borderHeight );
 
     for ( int i = 0; i < optionPositions.length(); ++i )
 	{
@@ -187,7 +187,7 @@ void ResumeMovieView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, BitmapFont 
 	    vAssert( optionObject != NULL );
 
 	    int iconWidth = 0, iconHeight = 0;
-	    GLuint iconTexture = LoadTextureFromApplicationPackage( icons[ i ], TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), iconWidth, iconHeight );
+	    GLuint iconTexture = LoadTextureFromApplicationPackage( icons[ i ], VTexture::Flags( VTexture::NoDefault ), iconWidth, iconHeight );
 
 		VRMenuSurfaceParms iconSurfParms( "",
 				iconTexture, iconWidth, iconHeight, SURFACE_TEXTURE_DIFFUSE,

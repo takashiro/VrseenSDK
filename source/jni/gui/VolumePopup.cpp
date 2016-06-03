@@ -113,22 +113,22 @@ OvrVolumePopup * OvrVolumePopup::Create( App * app, OvrVRMenuMgr & menuMgr, Bitm
 	    int backgroundWidth = 0;
 	    int backgroundHeight = 0;
 		GLuint backgroundTexture = LoadTextureFromApplicationPackage( "res/raw/volume_bg.png",
-			TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), backgroundWidth, backgroundHeight );
+			VTexture::Flags( VTexture::NoDefault ), backgroundWidth, backgroundHeight );
 
 	    int volumeIconWidth = 0;
 	    int volumeIconHeight = 0;
 		GLuint volumeIconTexture = LoadTextureFromApplicationPackage( "res/raw/volume_icon.png",
-			TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), volumeIconWidth, volumeIconHeight );
+			VTexture::Flags( VTexture::NoDefault ), volumeIconWidth, volumeIconHeight );
 
 	    int volumeTickOffWidth = 0;
 	    int volumeTickOffHeight = 0;
 		GLuint volumeTickOffTexture = LoadTextureFromApplicationPackage( "res/raw/volume_tick_off.png",
-			TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), volumeTickOffWidth, volumeTickOffHeight );
+			VTexture::Flags( VTexture::NoDefault ), volumeTickOffWidth, volumeTickOffHeight );
 
 	    int volumeTickOnWidth = 0;
 	    int volumeTickOnHeight = 0;
 		GLuint volumeTickOnTexture = LoadTextureFromApplicationPackage( "res/raw/volume_tick_on.png",
-			TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), volumeTickOnWidth, volumeTickOnHeight );
+			VTexture::Flags( VTexture::NoDefault ), volumeTickOnWidth, volumeTickOnHeight );
 
 		int volumeTickPadding = 4;
 		int volumeTickWidth = 6 + volumeTickPadding;

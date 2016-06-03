@@ -114,12 +114,12 @@ void OvrGazeCursorLocal::Init()
 
 	for ( int i = 0; i < CURSOR_STATE_MAX; ++i )
 	{
-		CursorTextureHandle[i] = LoadTextureFromApplicationPackage( cursorStateNames[i], TextureFlags_t(), w, h );
+		CursorTextureHandle[i] = LoadTextureFromApplicationPackage( cursorStateNames[i], VTexture::Flags(), w, h );
 	}
 
-	TimerTextureHandle = LoadTextureFromApplicationPackage( "res/raw/gaze_cursor_timer.tga", TextureFlags_t(), w, h );
+	TimerTextureHandle = LoadTextureFromApplicationPackage( "res/raw/gaze_cursor_timer.tga", VTexture::Flags(), w, h );
 
-	ColorTableHandle = LoadTextureFromApplicationPackage( "res/raw/color_ramp_timer.tga", TextureFlags_t(), w, h );
+	ColorTableHandle = LoadTextureFromApplicationPackage( "res/raw/color_ramp_timer.tga", VTexture::Flags(), w, h );
 
 	CursorProgram .initShader( GazeCursorVertexSrc, GazeCursorFragmentSrc );
 	TimerProgram .initShader( GazeCursorVertexSrc, GazeCursorColorTableFragmentSrc );//GazeCursorFragmentSrc );

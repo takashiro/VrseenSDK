@@ -66,7 +66,7 @@ bool VRMenuSurfaceTexture::loadTexture( eSurfaceTextureType const type, const VS
             m_handle = 0;
         } else {
               m_handle = LoadTextureFromBuffer(imageName.toUtf8().data(), buffer, bufferLength,
-                    TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), m_width, m_height );
+                    VTexture::Flags( VTexture::NoDefault ), m_width, m_height );
               ::free( buffer );
         }
 	}
@@ -74,7 +74,7 @@ bool VRMenuSurfaceTexture::loadTexture( eSurfaceTextureType const type, const VS
 	if ( m_handle == 0 && allowDefault )
 	{
         m_handle = LoadTextureFromBuffer(imageName.toUtf8().data(), uiDefaultTgaData, uiDefaultTgaSize,
-							TextureFlags_t(), m_width, m_height );
+							VTexture::Flags(), m_width, m_height );
 		vWarn("VRMenuSurfaceTexture::CreateFromImage: failed to load image '" << imageName << "' - default loaded instead!");
 	}
     m_ownsTexture = true;

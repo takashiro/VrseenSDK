@@ -210,7 +210,7 @@ void TheaterSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, Bitmap
     int selectionWidth = 0;
     int selectionHeight = 0;
 	GLuint selectionTexture = LoadTextureFromApplicationPackage( "assets/VoidTheater.png",
-			TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), selectionWidth, selectionHeight );
+			VTexture::Flags( VTexture::NoDefault ), selectionWidth, selectionHeight );
 
     int centerIndex = panelPoses.length() / 2;
     for ( int i = 0; i < panelPoses.length(); ++i )
@@ -287,10 +287,10 @@ void TheaterSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, Bitmap
     	int		swipeIconRightHeight = 0;
 
     	GLuint swipeIconLeftTexture = LoadTextureFromApplicationPackage( "assets/SwipeSuggestionArrowLeft.png",
-				TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), swipeIconLeftWidth, swipeIconLeftHeight );
+				VTexture::Flags( VTexture::NoDefault ), swipeIconLeftWidth, swipeIconLeftHeight );
 
 		GLuint swipeIconRightTexture = LoadTextureFromApplicationPackage( "assets/SwipeSuggestionArrowRight.png",
-				TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), swipeIconRightWidth, swipeIconRightHeight );
+				VTexture::Flags( VTexture::NoDefault ), swipeIconRightWidth, swipeIconRightHeight );
 
 		VRMenuSurfaceParms swipeIconLeftSurfParms( "",
 				swipeIconLeftTexture, swipeIconLeftWidth, swipeIconLeftHeight, SURFACE_TEXTURE_DIFFUSE,

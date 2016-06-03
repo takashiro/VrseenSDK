@@ -825,7 +825,7 @@ bool BitmapFontLocal::LoadImageFromBuffer(const VString &imageName, const uchar 
 	} else {
         Texture = LoadTextureFromBuffer(imageName.toUtf8().data(),
                 buffer, bufferSize,
-				TextureFlags_t(TEXTUREFLAG_NO_DEFAULT), ImageWidth,
+				VTexture::Flags(VTexture::NoDefault), ImageWidth,
 				ImageHeight);
 	}
 	if (Texture == 0) {

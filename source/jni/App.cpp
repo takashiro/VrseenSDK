@@ -955,7 +955,7 @@ struct App::Private
             int w = 0;
             int h = 0;
             loadingIconTexId = LoadTextureFromApplicationPackage("res/raw/loading_indicator.png",
-                                            TextureFlags_t(TEXTUREFLAG_NO_MIPMAPS), w, h);
+                                            VTexture::Flags(VTexture::NoMipmaps), w, h);
 
             // Create the SurfaceTexture for dialog rendering.
             self->dialog.dialogTexture = new SurfaceTexture(vrJni);

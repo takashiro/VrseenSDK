@@ -916,7 +916,7 @@ OvrFolderBrowser::OvrFolderBrowser(
 		{
 			int width = 0;
 			int height = 0;
-			m_defaultPanelTextureIds[ t ] = LoadTextureFromApplicationPackage( panelSrc[ t ], TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), width, height );
+			m_defaultPanelTextureIds[ t ] = LoadTextureFromApplicationPackage( panelSrc[ t ], VTexture::Flags( VTexture::NoDefault ), width, height );
 			vAssert( m_defaultPanelTextureIds[ t ] && ( width == m_thumbWidth ) && ( height == m_thumbHeight ) );
 		}
 	}

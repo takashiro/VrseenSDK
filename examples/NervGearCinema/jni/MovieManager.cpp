@@ -208,7 +208,7 @@ void MovieManager::LoadPoster( MovieDef *movie )
 
     VFile poster(posterFilename, VFile::ReadOnly);
     VByteArray posterData = poster.readAll();
-    movie->Poster = LoadTextureFromBuffer(posterFilename.toUtf8().data(), posterData.data(), posterData.length(), TEXTUREFLAG_NO_DEFAULT, movie->PosterWidth, movie->PosterHeight);
+    movie->Poster = LoadTextureFromBuffer(posterFilename.toUtf8().data(), posterData.data(), posterData.length(), VTexture::NoDefault, movie->PosterWidth, movie->PosterHeight);
 
     if (movie->Poster == 0) {
         if (Cinema.isExternalSDCardDir(posterFilename)) {
@@ -233,7 +233,7 @@ void MovieManager::LoadPoster( MovieDef *movie )
             if ( ( movie->Poster == 0 ) && Native::CreateVideoThumbnail(movie->Filename, posterFilename, PosterWidth, PosterHeight)) {
                 VFile poster(posterFilename, VFile::ReadOnly);
                 VByteArray posterData = poster.readAll();
-                movie->Poster = LoadTextureFromBuffer(posterFilename.toUtf8().data(), posterData.data(), posterData.length(), TEXTUREFLAG_NO_DEFAULT, movie->PosterWidth, movie->PosterHeight);
+                movie->Poster = LoadTextureFromBuffer(posterFilename.toUtf8().data(), posterData.data(), posterData.length(), VTexture::NoDefault, movie->PosterWidth, movie->PosterHeight);
 			}
 		}
 	}
@@ -242,7 +242,7 @@ void MovieManager::LoadPoster( MovieDef *movie )
 	if ( movie->Poster == 0 )
 	{
 		movie->Poster = LoadTextureFromApplicationPackage( "assets/default_poster.png",
-				TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), movie->PosterWidth, movie->PosterHeight );
+				VTexture::Flags( VTexture::NoDefault ), movie->PosterWidth, movie->PosterHeight );
 	}
 
 	BuildTextureMipmaps( movie->Poster );

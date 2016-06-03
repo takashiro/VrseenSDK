@@ -999,7 +999,7 @@ void LoadModelFileTexture( ModelFile & model, const char * textureName,
     int width;
     int height;
     tex.texid = LoadTextureFromBuffer( textureName,buffer, size,
-			materialParms.UseSrgbTextureFormats ? TextureFlags_t( TEXTUREFLAG_USE_SRGB ) : TextureFlags_t(),
+			materialParms.UseSrgbTextureFormats ? VTexture::Flags( VTexture::UseSRGB ) : VTexture::Flags(),
 			width, height );
 
 	// LOG( ( tex.texid.target == GL_TEXTURE_CUBE_MAP ) ? "GL_TEXTURE_CUBE_MAP: %s" : "GL_TEXTURE_2D: %s", textureName );

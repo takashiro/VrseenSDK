@@ -198,7 +198,7 @@ const VZipFile &VZipFile::CurrentApkFile()
     return current;
 }
 
-uint LoadTextureFromApplicationPackage(const VString &nameInZip, const TextureFlags_t &flags, int &width, int &height)
+uint LoadTextureFromApplicationPackage(const VString &nameInZip, const VTexture::Flags &flags, int &width, int &height)
 {
     width = 0;
     height = 0;

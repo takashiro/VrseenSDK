@@ -176,7 +176,7 @@ void Oculus360Videos::init(const VString &fromPackage, const VString &launchInte
 	if ( BackgroundTexId == 0 )
 	{
 		BackgroundTexId = LoadTextureFromApplicationPackage( "assets/background.jpg",
-			TextureFlags_t( TEXTUREFLAG_USE_SRGB ), BackgroundWidth, BackgroundHeight );
+			VTexture::Flags( VTexture::UseSRGB ), BackgroundWidth, BackgroundHeight );
 	}
 
 	vInfo("Creating Globe");

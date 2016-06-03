@@ -84,7 +84,7 @@ void ModelManager::LoadModels()
 
 		int width = 0, height = 0;
 		VoidScene->IconTexture = LoadTextureFromApplicationPackage( "assets/VoidTheater.png",
-				TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), width, height );
+                VTexture::Flags( VTexture::NoDefault ), width, height );
 
 		BuildTextureMipmaps( VoidScene->IconTexture );
 		MakeTextureTrilinear( VoidScene->IconTexture );
@@ -189,13 +189,13 @@ SceneDef * ModelManager::LoadScene(const VString &sceneFilename, bool useDynamic
 
         VFile icon(iconFilename, VFile::ReadOnly);
         VByteArray iconData = icon.readAll();
-        def->IconTexture = LoadTextureFromBuffer(iconFileName.data(), iconData.data(), iconData.length(), TEXTUREFLAG_NO_DEFAULT, textureWidth, textureHeight);
+        def->IconTexture = LoadTextureFromBuffer(iconFileName.data(), iconData.data(), iconData.length(), VTexture::NoDefault, textureWidth, textureHeight);
     } else {
         def->SceneModel = LoadModelFile(fileName.data(), glPrograms, materialParms );
 
         VFile icon(iconFilename, VFile::ReadOnly);
         VByteArray iconData = icon.readAll();
-        def->IconTexture = LoadTextureFromBuffer(iconFileName.data(), iconData.data(), iconData.length(), TEXTUREFLAG_NO_DEFAULT, textureWidth, textureHeight);
+        def->IconTexture = LoadTextureFromBuffer(iconFileName.data(), iconData.data(), iconData.length(), VTexture::NoDefault, textureWidth, textureHeight);
     }
 
 	if ( def->IconTexture != 0 )
@@ -215,7 +215,7 @@ SceneDef * ModelManager::LoadScene(const VString &sceneFilename, bool useDynamic
 
 			int	width = 0, height = 0;
 			def->IconTexture = LoadTextureFromApplicationPackage( "assets/noimage.png",
-				TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), width, height );
+                VTexture::Flags( VTexture::NoDefault ), width, height );
 		}
 	}
 

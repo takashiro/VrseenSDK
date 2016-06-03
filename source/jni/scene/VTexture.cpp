@@ -1110,7 +1110,7 @@ VTexture LoadTextureKTX( const char * fileName, const unsigned char * buffer, co
 }
 
 VTexture LoadTextureFromBuffer( const char * fileName, const void*  buffer, uint length,
-		const TextureFlags_t & flags, int & width, int & height )
+        const VTexture::Flags & flags, int & width, int & height )
 {
 	const VString ext = VPath(fileName).extension().toLower();
 
@@ -1136,9 +1136,9 @@ VTexture LoadTextureFromBuffer( const char * fileName, const void*  buffer, uint
 		{
 			const size_t dataSize = GetOvrTextureSize( Texture_RGBA, width, height );
 			texId = CreateGlTexture( fileName, Texture_RGBA, width, height, image, dataSize,
-					1 /* one mip level */, flags & TEXTUREFLAG_USE_SRGB, false );
+                    1 /* one mip level */, flags & VTexture::UseSRGB, false );
 			free( image );
-			if ( !( flags & TEXTUREFLAG_NO_MIPMAPS ) )
+            if ( !( flags & VTexture::NoMipmaps ) )
 			{
                 glBindTexture(texId.target(), texId.id());
                 glGenerateMipmap(texId.target());
@@ -1149,15 +1149,15 @@ VTexture LoadTextureFromBuffer( const char * fileName, const void*  buffer, uint
 	else if ( ext == "pvr" )
 	{
         texId = LoadTexturePVR( fileName, (const unsigned char *)buffer, length,
-						( flags & TEXTUREFLAG_USE_SRGB ),
-						( flags & TEXTUREFLAG_NO_MIPMAPS ),
+                        ( flags & VTexture::UseSRGB ),
+                        ( flags & VTexture::NoMipmaps ),
 						width, height );
 	}
 	else if ( ext == "ktx" )
 	{
         texId = LoadTextureKTX( fileName, (const unsigned char *)buffer, length,
-						( flags & TEXTUREFLAG_USE_SRGB ),
-						( flags & TEXTUREFLAG_NO_MIPMAPS ),
+                        ( flags & VTexture::UseSRGB ),
+                        ( flags & VTexture::NoMipmaps ),
 						width, height );
 	}
 	else if ( ext == "pkm" )
@@ -1173,7 +1173,7 @@ VTexture LoadTextureFromBuffer( const char * fileName, const void*  buffer, uint
     if ( texId.id() == 0 )
 	{
     	vWarn("Failed to load " << fileName);
-    	if ( ( flags & TEXTUREFLAG_NO_DEFAULT ) == 0 )
+        if ( ( flags & VTexture::NoDefault ) == 0 )
     	{
             static uchar defaultTexture[8 * 8 * 3] =
 			{
@@ -1186,7 +1186,7 @@ VTexture LoadTextureFromBuffer( const char * fileName, const void*  buffer, uint
 					255,255,255,  64, 64, 64,  64, 64, 64,  64, 64, 64,  64, 64, 64,  64, 64, 64,  64, 64, 64, 255,255,255,
 					255,255,255, 255,255,255, 255,255,255, 255,255,255, 255,255,255, 255,255,255, 255,255,255, 255,255,255
 			};
-			texId = LoadRGBTextureFromMemory( defaultTexture, 8, 8, flags & TEXTUREFLAG_USE_SRGB );
+            texId = LoadRGBTextureFromMemory( defaultTexture, 8, 8, flags & VTexture::UseSRGB );
     	}
 	}
 

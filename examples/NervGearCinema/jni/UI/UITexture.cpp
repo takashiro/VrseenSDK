@@ -18,7 +18,7 @@ UITexture::~UITexture()
 
 void UITexture::LoadTextureFromApplicationPackage( const char *assetPath )
 {
-	Texture = NervGear::LoadTextureFromApplicationPackage( assetPath, TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), Width, Height );
+	Texture = NervGear::LoadTextureFromApplicationPackage( assetPath, VTexture::Flags( VTexture::NoDefault ), Width, Height );
 }
 
 } // namespace OculusCinema

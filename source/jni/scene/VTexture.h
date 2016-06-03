@@ -4,26 +4,25 @@
 
 NV_NAMESPACE_BEGIN
 
-enum eTextureFlags
-{
-	// Normally, a failure to load will create an 8x8 default texture, but
-	// if you want to take explicit action, setting this flag will cause
-	// it to return 0 for the texId.
-	TEXTUREFLAG_NO_DEFAULT,
-	// Use GL_SRGB8 / GL_SRGB8_ALPHA8 / GL_COMPRESSED_SRGB8_ETC2 formats instead
-	// of GL_RGB / GL_RGBA / GL_ETC1_RGB8_OES
-	TEXTUREFLAG_USE_SRGB,
-	// No mip maps are loaded or generated when this flag is specified.
-	TEXTUREFLAG_NO_MIPMAPS
-};
-
-typedef VFlags<eTextureFlags> TextureFlags_t;
-
-// texture id/target pair
-// the auto-casting should be removed but allows the target to be ignored by the code that does not care
 class VTexture
 {
 public:
+    enum Flag
+    {
+        // Normally, a failure to load will create an 8x8 default texture, but
+        // if you want to take explicit action, setting this flag will cause
+        // it to return 0 for the texId.
+
+        NoDefault,
+        // Use GL_SRGB8 / GL_SRGB8_ALPHA8 / GL_COMPRESSED_SRGB8_ETC2 formats instead
+        // of GL_RGB / GL_RGBA / GL_ETC1_RGB8_OES
+        UseSRGB,
+
+        // No mip maps are loaded or generated when this flag is specified.
+        NoMipmaps
+    };
+    typedef VFlags<Flag> Flags;
+
     VTexture();
     VTexture(uint id);
     VTexture(uint id, uint target);
@@ -70,7 +69,7 @@ void		BuildTextureMipmaps(const VTexture &texture);
 //
 // Uncompressed image formats will have mipmaps generated and trilinear filtering set.
 VTexture	LoadTextureFromBuffer( const char * fileName, const void* buffer, uint length,
-				const TextureFlags_t & flags, int & width, int & height );
+                const VTexture::Flags & flags, int & width, int & height );
 
 unsigned char * LoadPVRBuffer( const char * fileName, int & width, int & height );
 
