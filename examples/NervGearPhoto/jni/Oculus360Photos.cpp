@@ -31,8 +31,6 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include <VLog.h>
 #include <VImage.h>
 
-#include "io/VFileOperation.h"
-
 NV_NAMESPACE_BEGIN
 
 static const char * DEFAULT_PANO = "assets/placeholderBackground.jpg";

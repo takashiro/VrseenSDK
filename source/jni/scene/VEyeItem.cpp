@@ -9,11 +9,7 @@
 
 #include "VString.h"
 #include "VFile.h"
-
-#include "3rdParty/stb/stb_image_write.h"
 #include "VTexture.h"
-
-#include "io/VFileOperation.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -223,18 +219,6 @@ struct EyePairs
 };
 
 static const int MAX_EYE_SETS = 3;
-
-static int FindUnusedFilename(const char *format, int max)
-{
-    for (int i = 0; i <= max; i++) {
-        VString fileName;
-        fileName.sprintf(format, i);
-        if (!VFile::Exists(fileName)) {
-            return i;
-        }
-    }
-    return max;
-}
 
 VEyeItem::Settings VEyeItem::settings;
 

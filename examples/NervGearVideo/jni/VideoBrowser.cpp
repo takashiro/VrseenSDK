@@ -27,8 +27,6 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include <VZipFile.h>
 #include <VImage.h>
 
-#include "io/VFileOperation.h"
-
 namespace NervGear
 {
 

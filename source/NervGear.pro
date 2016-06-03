@@ -79,7 +79,6 @@ SOURCES += \
     jni/io/VBuffer.cpp \
     jni/io/VFile.cpp \
     jni/io/VIODevice.cpp \
-    jni/io/VFileOperation.cpp \
     jni/io/VDir.cpp \
     jni/io/VStandardPath.cpp \
     jni/media/VImage.cpp \
@@ -203,7 +202,6 @@ HEADERS += \
     jni/io/VBuffer.h \
     jni/io/VFile.h \
     jni/io/VIODevice.h \
-    jni/io/VFileOperation.h \
     jni/io/VDir.h \
     jni/io/VStandardPath.h \
     jni/media/VColor.h \
