@@ -12,18 +12,29 @@ struct VResource::Private
     VPath path;
     bool exists;
     VByteArray data;
+
+    void load()
+    {
+        const VZipFile &apk = vApp->apkFile();
+        exists = apk.contains(path);
+        if (exists) {
+            data = apk.read(path);
+        }
+    }
 };
 
 VResource::VResource(const VPath &path)
     : d(new Private)
 {
     d->path = path;
+    d->load();
+}
 
-    const VZipFile &apk = vApp->apkFile();
-    d->exists = apk.contains(path);
-    if (d->exists) {
-        d->data = apk.read(path);
-    }
+VResource::VResource(const char *path)
+    : d(new Private)
+{
+    d->path = path;
+    d->load();
 }
 
 VResource::~VResource()

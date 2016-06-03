@@ -10,6 +10,7 @@ class VResource
 {
 public:
     VResource(const VPath &path);
+    VResource(const char *path);
     ~VResource();
 
     bool exists() const;

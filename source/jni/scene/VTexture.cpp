@@ -296,20 +296,20 @@ static VTexture CreateGlTexture(const int format, const int width, const int hei
 	GLenum glInternalFormat;
 	if ( !TextureFormatToGlFormat( format, useSrgbFormat, glFormat, glInternalFormat ) )
 	{
-		return VTexture( 0 );
+        return VTexture();
 	}
 
 	if ( mipcount <= 0 )
 	{
         vInfo("Invalid mip count " << mipcount);
-		return VTexture( 0 );
+        return VTexture();
 	}
 
 	// larger than this would require mipSize below to be a larger type
 	if ( width <= 0 || width > 32768 || height <= 0 || height > 32768 )
 	{
         vInfo("Invalid texture size (" << width << "x" << height << ")");
-		return VTexture( 0 );
+        return VTexture();
 	}
 
 	GLuint texId;
@@ -402,21 +402,21 @@ static VTexture CreateGlCubeTexture(const int format, const int width, const int
 	if ( mipcount <= 0 )
 	{
         vInfo("Invalid mip count " << mipcount);
-		return VTexture( 0 );
+        return VTexture();
 	}
 
 	// larger than this would require mipSize below to be a larger type
 	if ( width <= 0 || width > 32768 || height <= 0 || height > 32768 )
 	{
         vInfo("Invalid texture size (" << width << "x" << height << ")");
-		return VTexture( 0 );
+        return VTexture();
 	}
 
 	GLenum glFormat;
 	GLenum glInternalFormat;
 	if ( !TextureFormatToGlFormat( format, useSrgbFormat, glFormat, glInternalFormat ) )
 	{
-		return VTexture( 0 );
+        return VTexture();
 	}
 
 	GLuint texId;
@@ -681,7 +681,7 @@ VTexture LoadTexturePVR(const unsigned char * buffer, const int bufferLength,
 	if ( ( startTex < sizeof( OVR_PVR_HEADER ) ) || ( startTex >= static_cast< size_t >( bufferLength ) ) )
 	{
         vInfo("Invalid PVR header sizes");
-		return VTexture( 0 );
+        return VTexture();
 	}
 
 	const vuint32 mipCount = ( noMipMaps ) ? 1 : std::max( 1u, header.MipMapCount );
@@ -943,7 +943,7 @@ VTexture LoadTextureFromBuffer( const char * fileName, const void*  buffer, uint
 
     // vInfo("Loading texture buffer " << fileName << " (" << ext.toCString() << "), length " << buffer.Length);
 
-	VTexture texId = 0;
+    VTexture texId;
 	width = 0;
 	height = 0;
 
@@ -1483,10 +1483,10 @@ VTexture::VTexture(VTexture &&source)
     source.d = nullptr;
 }
 
-VTexture::VTexture(VFile *file, const Flags &flags)
+VTexture::VTexture(VFile &file, const Flags &flags)
     : d(new Private)
 {
-    d->load(file->path(), file->readAll(), flags);
+    d->load(file.path(), file.readAll(), flags);
 }
 
 VTexture::VTexture(const VResource &resource, const Flags &flags)

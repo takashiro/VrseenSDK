@@ -33,8 +33,8 @@ public:
     VTexture(const VTexture &source);
     VTexture(VTexture &&source);
 
-    VTexture(VFile *file, const Flags &flags);
-    VTexture(const VResource &resource, const Flags &flags);
+    VTexture(VFile &file, const Flags &flags = NoDefault);
+    VTexture(const VResource &resource, const Flags &flags = NoDefault);
 
     ~VTexture();
 
