@@ -30,6 +30,12 @@ struct VImage::Private
         int cmp;
         data = stbi_load(path.toUtf8().data(), &width, &height, &cmp, 4);
     }
+
+    void load(const VByteArray &encoded)
+    {
+        int cmp;
+        data = stbi_load_from_memory(reinterpret_cast<const uchar *>(encoded.data()), encoded.size(), &width, &height, &cmp, 4);
+    }
 };
 
 VImage::VImage()
@@ -58,17 +64,35 @@ VImage::VImage(VImage &&source)
     source.d = nullptr;
 }
 
-VImage::VImage(uchar *raw, int width, int height)
+VImage::VImage(uchar *decoded, int width, int height)
     : d(new Private)
 {
-    d->data = raw;
+    d->data = decoded;
     d->width = width;
     d->height = height;
+}
+
+VImage::VImage(const VByteArray &encoded)
+    : d(new Private)
+{
+    d->load(encoded);
 }
 
 VImage::~VImage()
 {
     delete d;
+}
+
+bool VImage::load(const VPath &path)
+{
+    d->load(path);
+    return isValid();
+}
+
+bool VImage::load(const VByteArray &data)
+{
+    d->load(data);
+    return isValid();
 }
 
 bool VImage::isValid() const

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "VIODevice.h"
+#include "VByteArray.h"
 
 //@to-to: remove this
 #include "VTexture.h"
@@ -24,7 +25,7 @@ public:
 
     bool read(const VString &filePath, void *&buffer, uint &length) const;
     bool read(const VString &filePath, VIODevice *output) const;
-
+    VByteArray read(const VString &filePath) const;
 
     static const VZipFile &CurrentApkFile();
 

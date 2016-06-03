@@ -79,11 +79,9 @@ bool VZipFile::read(const VString &filePath, void *&buffer, uint &length) const
     }
 
     VByteArray path = filePath.toUtf8();
-    vInfo("nameInZip is" << path);
-
     const int locateRet = unzLocateFile(d->handle, path.data(), 2 /* case insensitive */);
     if (locateRet != UNZ_OK) {
-        vInfo("File '" << path << "' not found in apk!");
+        vWarn("File '" << path << "' not found in apk!");
         return false;
     }
 
@@ -122,11 +120,9 @@ bool VZipFile::read(const VString &filePath, VIODevice *output) const
     }
 
     VByteArray path = filePath.toUtf8();
-    vInfo("nameInZip is" << path);
-
     const int locateRet = unzLocateFile(d->handle, path.data(), 2 /* case insensitive */);
     if (locateRet != UNZ_OK) {
-        vInfo("File '" << path << "' not found in apk!");
+        vWarn("File '" << path << "' not found in apk!");
         return false;
     }
 
@@ -155,6 +151,44 @@ bool VZipFile::read(const VString &filePath, VIODevice *output) const
     free(buffer);
 
     return true;
+}
+
+VByteArray VZipFile::read(const VString &filePath) const
+{
+    if (d->handle == nullptr) {
+        vError("VZipFile is not open");
+        return VByteArray();
+    }
+
+    VByteArray path = filePath.toUtf8();
+    const int locateRet = unzLocateFile(d->handle, path.data(), 2 /* case insensitive */);
+    if (locateRet != UNZ_OK) {
+        vWarn("File '" << path << "' not found in apk!");
+        return VByteArray();
+    }
+
+    unz_file_info info;
+    const int getRet = unzGetCurrentFileInfo(d->handle, &info, NULL, 0, NULL, 0, NULL, 0);
+    if (getRet != UNZ_OK) {
+        vWarn("File info error reading '" << path << "' from apk!");
+        return VByteArray();
+    }
+    const int openRet = unzOpenCurrentFile(d->handle);
+    if (openRet != UNZ_OK) {
+        vWarn("Error opening file '" << path << "' from apk!");
+        return VByteArray();
+    }
+
+    VByteArray buffer;
+    buffer.resize(info.uncompressed_size);
+    const int readRet = unzReadCurrentFile(d->handle, &buffer[0], info.uncompressed_size);
+    unzCloseCurrentFile(d->handle);
+    if (readRet <= 0) {
+        vWarn("Error reading file '" << path << "' from apk!");
+        return VByteArray();
+    }
+
+    return buffer;
 }
 
 

@@ -21,8 +21,12 @@ public:
     VImage(const VPath &path);
     VImage(const VImage &source);
     VImage(VImage &&source);
-    VImage(uchar *raw, int width, int height);
+    VImage(uchar *decoded, int width, int height);
+    VImage(const VByteArray &encoded);
     ~VImage();
+
+    bool load(const VPath &path);
+    bool load(const VByteArray &data);
 
     bool isValid() const;
 

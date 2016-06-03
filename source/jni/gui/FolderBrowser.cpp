@@ -21,7 +21,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "GuiSys.h"
 #include "DefaultComponent.h"
 #include "VBasicmath.h"
-#include "3rdParty/stb/stb_image.h"
 #include "AnimComponents.h"
 #include "linux/stat.h"
 #include "VrLocale.h"
@@ -845,7 +844,7 @@ private:
 
 //==============================
 // OvrFolderBrowser
-unsigned char * OvrFolderBrowser::ThumbPanelBG = NULL;
+VImage OvrFolderBrowser::ThumbPanelBG;
 
 OvrFolderBrowser::OvrFolderBrowser(
 		App * app,
@@ -882,30 +881,20 @@ OvrFolderBrowser::OvrFolderBrowser(
 	m_defaultPanelTextureIds[ 1 ] = 0;
 
 	//  Load up thumbnail alpha from panel.tga
-	if ( ThumbPanelBG == NULL )
-	{
-		void * 	buffer;
-        uint		bufferLength;
-
-		const char * panel = NULL;
-
-		if ( m_thumbWidth == m_thumbHeight )
-		{
+    if (!ThumbPanelBG.isValid()) {
+        const char *panel = nullptr;
+        if (m_thumbWidth == m_thumbHeight) {
 			panel = "res/raw/panel_square.tga";
-		}
-		else
-		{
+        } else {
 			panel = "res/raw/panel.tga";
 		}
 
         const VZipFile &apk = VZipFile::CurrentApkFile();
-        apk.read(panel, buffer, bufferLength);
+        VByteArray buffer = apk.read(panel);
+        vAssert(buffer.size() > 0);
 
-		int panelW = 0;
-		int panelH = 0;
-		ThumbPanelBG = stbi_load_from_memory( ( stbi_uc const * )buffer, bufferLength, &panelW, &panelH, NULL, 4 );
-
-		vAssert( ThumbPanelBG != 0 && panelW == m_thumbWidth && panelH == m_thumbHeight );
+        ThumbPanelBG.load(buffer);
+        vAssert(ThumbPanelBG.isValid() && ThumbPanelBG.width() == m_thumbWidth && ThumbPanelBG.height() == m_thumbHeight);
 	}
 
 	// load up the default panel textures once
@@ -961,18 +950,11 @@ OvrFolderBrowser::OvrFolderBrowser(
 OvrFolderBrowser::~OvrFolderBrowser()
 {
 	vInfo("OvrFolderBrowser::~OvrFolderBrowser");
-	m_backgroundCommands.post( "shutDown" );
+    m_backgroundCommands.post("shutDown");
 
-	if ( ThumbPanelBG != NULL )
-	{
-		free( ThumbPanelBG );
-		ThumbPanelBG = NULL;
-	}
-
-	for ( int t = 0; t < 2; ++t )
-	{
-		glDeleteTextures( 1, &m_defaultPanelTextureIds[ t ] );
-		m_defaultPanelTextureIds[ t ] = 0;
+    for (int t = 0; t < 2; t++) {
+        glDeleteTextures(1, &m_defaultPanelTextureIds[t]);
+        m_defaultPanelTextureIds[t] = 0;
 	}
 
 	int numFolders = m_folders.length();
@@ -1787,7 +1769,7 @@ void * OvrFolderBrowser::ThumbnailThread( void * v )
 				const OvrCreateThumbCmd & cmd = ThumbCreateAndLoadCommands->at( i );
 				int	width = 0;
 				int height = 0;
-                unsigned char * data = folderBrowser->createAndCacheThumbnail(cmd.sourceImagePath, cmd.thumbDestination, width, height );
+                uchar *data = folderBrowser->createAndCacheThumbnail(cmd.sourceImagePath, cmd.thumbDestination, width, height );
 
 				if ( data != NULL )
 				{
@@ -1805,9 +1787,9 @@ void * OvrFolderBrowser::ThumbnailThread( void * v )
 					else
 					{
 						// Apply alpha from vrlib/res/raw to alpha channel for anti-aliasing
-						for ( int i = 3; i < thumbPanelBytes; i += 4 )
-						{
-							data[ i ] = ThumbPanelBG[ i ];
+                        const uchar *ThumbPanelBGData = ThumbPanelBG.data();
+                        for (int i = 3; i < thumbPanelBytes; i += 4) {
+                            data[i] = ThumbPanelBGData[i];
 						}
 
                         int folderId = cmd.loadCmd.at(0).toInt();
@@ -2072,10 +2054,9 @@ bool OvrFolderBrowser::applyThumbAntialiasing( unsigned char * inOutBuffer, int 
 {
 	if ( inOutBuffer != NULL )
 	{
-		if ( ThumbPanelBG != NULL )
-		{
-			const unsigned ThumbWidth = thumbWidth();
-			const unsigned ThumbHeight = thumbHeight();
+        if (ThumbPanelBG.isValid()) {
+            const uint ThumbWidth = thumbWidth();
+            const uint ThumbHeight = thumbHeight();
 
 			const int numBytes = width * height * 4;
 			const int thumbPanelBytes = ThumbWidth * ThumbHeight * 4;
@@ -2086,9 +2067,9 @@ bool OvrFolderBrowser::applyThumbAntialiasing( unsigned char * inOutBuffer, int 
 			else
 			{
 				// Apply alpha from vrlib/res/raw to alpha channel for anti-aliasing
-				for ( int i = 3; i < thumbPanelBytes; i += 4 )
-				{
-					inOutBuffer[ i ] = ThumbPanelBG[ i ];
+                const uchar *ThumbPanelBGData = ThumbPanelBG.data();
+                for (int i = 3; i < thumbPanelBytes; i += 4) {
+                    inOutBuffer[i] = ThumbPanelBGData[i];
 				}
 				return true;
 			}

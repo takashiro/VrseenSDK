@@ -18,6 +18,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "MetaDataManager.h"
 #include "ScrollManager.h"
 #include "VArray.h"
+#include "VImage.h"
+
 NV_NAMESPACE_BEGIN
 
 class OvrFolderBrowserRootComponent;
@@ -265,7 +267,7 @@ private:
     VString				m_appCachePath;
 
 	// Keep a reference to Panel texture used for AA alpha when creating thumbnails
-	static unsigned char *		ThumbPanelBG;
+    static VImage ThumbPanelBG;
 
 	// Default panel textures (base and highlight) - loaded once
     GLuint				m_defaultPanelTextureIds[ 2 ];
