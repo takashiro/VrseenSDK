@@ -264,6 +264,46 @@ void VImage::resize(int newWidth, int newHeight, Filter filter)
     d->height = newHeight;
 }
 
+void VImage::quarter(bool srgb)
+{
+    float table[256];
+    if (srgb) {
+        for (int i = 0; i < 256; i++) {
+            table[i] = SRGBToLinear(i * (1.0f / 255.0f));
+        }
+    }
+
+    const int width = this->width();
+    const int height = this->height();
+    const int newWidth = std::max(1, width >> 1);
+    const int newHeight = std::max(1, height >> 1);
+    uchar *out = (uchar *) malloc(newWidth * newHeight * 4);
+    uchar *out_p = out;
+    for (int y = 0; y < newHeight; y++) {
+        const uchar *in_p = d->data + y * 2 * width * 4;
+        for (int x = 0; x < newWidth; x++) {
+            for (int i = 0; i < 4; i++) {
+                if (srgb) {
+                    const float linear = (table[in_p[i]]
+                            + table[in_p[4 + i]]
+                            + table[in_p[width * 4 + i]]
+                            + table[in_p[width * 4 + 4 + i]]) * 0.25f;
+                    const float gamma = LinearToSRGB(linear);
+                    out_p[i] = (uchar) std::min(std::max(0, (int) (gamma * 255.0f + 0.5f)), 255);
+                } else {
+                    out_p[i] = (in_p[i] + in_p[4 + i] + in_p[width * 4 + i] + in_p[width * 4 + 4 + i]) >> 2;
+                }
+            }
+            out_p += 4;
+            in_p += 8;
+        }
+    }
+    free(d->data);
+    d->data = out;
+    d->width = newWidth;
+    d->height = newHeight;
+}
+
 bool VImage::operator==(const VImage &source) const
 {
     if (width() != source.width() || height() != source.height()) {

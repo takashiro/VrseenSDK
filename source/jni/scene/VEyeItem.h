@@ -64,8 +64,6 @@ public:
     virtual void paint();
     void afterPaint();
 
-    void snapshot();
-
     bool discardInsteadOfClear;
     long swapCount;
 

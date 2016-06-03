@@ -35,6 +35,7 @@ public:
     VColor at(int x, int y) const;
 
     void resize(int width, int height, Filter filter = NearestFilter);
+    void quarter(bool srgb);
 
     bool operator==(const VImage &source) const;
 

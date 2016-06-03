@@ -29,6 +29,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include <VStandardPath.h>
 #include <VFile.h>
 #include <VLog.h>
+#include <VImage.h>
 
 #include "io/VFileOperation.h"
 
@@ -421,18 +422,16 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
             GLint maxTextureSize = 0;
             glGetIntegerv( GL_MAX_TEXTURE_SIZE, &maxTextureSize );
 
-            while ( width > maxTextureSize || width > maxTextureSize )
-            {
+            VImage image(data, width, height);
+            data = nullptr;
+            while (width > maxTextureSize || width > maxTextureSize) {
                 vInfo("Quartering oversize" << width << height << "image");
-                uchar * newBuf = VFileOperation::QuarterImageSize( data, width, height, true );
-                free( data );
-                data = newBuf;
-                width >>= 1;
-                height >>= 1;
+                image.quarter(true);
+                width = image.width();
+                height = image.height();
             }
 
-            photos->loadRgbaTexture( data, width, height, true );
-            free( data );
+            photos->loadRgbaTexture(image.data(), width, height, true);
 
             // Add a sync object for uploading textures
             EGLSyncKHR GpuSync = VEglDriver::eglCreateSyncKHR( photos->m_eglDisplay, EGL_SYNC_FENCE_KHR, NULL );
