@@ -117,7 +117,6 @@ const uint &VTexture::target() const
     return d->target;
 }
 
-// From corelib/CommonSrc/Render/Render_Device.h
 enum TextureFormat
 {
 	Texture_None			= 0x00000,
@@ -145,318 +144,223 @@ enum TextureFormat
     Texture_GenMipmaps      = 0x20000
 };
 
-/*
-struct TextureFormatMap
+static bool TextureFormatToGlFormat(const int format, const bool useSrgbFormat, GLenum &glFormat, GLenum &glInternalFormat)
 {
-	TextureFormat	Format;
-	const char *	Name;
-};
+    switch (format & Texture_TypeMask) {
+    case Texture_RGB:
+        glFormat = GL_RGB;
+        if (useSrgbFormat) {
+            glInternalFormat = GL_SRGB8;
+        } else {
+            glInternalFormat = GL_RGB;
+        }
+        return true;
 
-static TextureFormatMap TextureFormatNames[] =
-{
-    { Texture_R,			"Texture_R" },
-    { Texture_RGB,			"Texture_RGB" },
-	{ Texture_RGBA,			"Texture_RGBA" },
-    { Texture_DXT1,			"Texture_DXT1" },
-    { Texture_DXT3,			"Texture_DXT3" },
-    { Texture_DXT5,			"Texture_DXT5" },
-    { Texture_PVR4bRGB,		"Texture_PVR4bRGB" },
-    { Texture_PVR4bRGBA,	"Texture_PVR4bRGBA" },
-    { Texture_ATC_RGB,		"Texture_ATC_RGB" },
-    { Texture_ATC_RGBA,		"Texture_ATC_RGBA" },
-    { Texture_ETC1,			"Texture_ETC1" },
-	{ Texture_ETC2_RGB,		"Texture_ETC2_RGB" },
-	{ Texture_ETC2_RGBA,	"Texture_ETC2_RGBA" },
-	{ Texture_ASTC_4x4,		"Texture_ASTC_4x4" },
-	{ Texture_ASTC_6x6,		"Texture_ASTC_6x6" },
-    { Texture_Depth,		"Texture_Depth" },
-    { Texture_TypeMask,		"Texture_TypeMask" },
-    { Texture_Compressed,	"Texture_Compressed" },
-    { Texture_SamplesMask,	"Texture_SamplesMask" },
-    { Texture_RenderTarget,	"Texture_RenderTarget" },
-	{ Texture_GenMipmaps,	"Texture_GenMipmaps" },
-	{ Texture_None,			NULL }
-};
+    case Texture_RGBA:
+        glFormat = GL_RGBA;
+        if (useSrgbFormat) {
+            glInternalFormat = GL_SRGB8_ALPHA8;
+        } else {
+            glInternalFormat = GL_RGBA;
+        }
+        return true;
 
-static const char * NameForTextureFormat( TextureFormat const format )
-{
-	for ( int i = 0; TextureFormatNames[i].Name != NULL; ++i )
-	{
-		if ( TextureFormatNames[i].Format == format )
-		{
-			return TextureFormatNames[i].Name;
-		}
-	}
-	return "<unknown>";
-}
-*/
+    case Texture_R:
+        glInternalFormat = GL_R8;
+        glFormat = GL_RED;
+        return true;
 
-/*
- * OpenGL convenience functions
- */
+    case Texture_DXT1:
+        glFormat = glInternalFormat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+        return true;
 
-static bool TextureFormatToGlFormat( const int format, const bool useSrgbFormat, GLenum & glFormat, GLenum & glInternalFormat )
-{
-    switch ( format & Texture_TypeMask )
-    {
-		case Texture_RGB:
-		{
-			glFormat = GL_RGB;
-			if ( useSrgbFormat )
-			{
-				glInternalFormat = GL_SRGB8;
-//				vInfo("GL texture format is GL_RGB / GL_SRGB8");
-			}
-			else
-			{
-				glInternalFormat = GL_RGB;
-//				vInfo("GL texture format is GL_RGB / GL_RGB");
-			}
-			return true;
-		}
-		case Texture_RGBA:
-		{
-			glFormat = GL_RGBA;
-			if ( useSrgbFormat )
-			{
-				glInternalFormat = GL_SRGB8_ALPHA8;
-//				vInfo("GL texture format is GL_RGBA / GL_SRGB8_ALPHA8");
-			}
-			else
-			{
-				glInternalFormat = GL_RGBA;
-//				vInfo("GL texture format is GL_RGBA / GL_RGBA");
-			}
-			return true;
-		}
-		case Texture_R:
-		{
-			glInternalFormat = GL_R8;
-			glFormat = GL_RED;
-//			vInfo("GL texture format is GL_R8");
-			return true;
-		}
-		case Texture_DXT1:
-		{
-			glFormat = glInternalFormat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
-//			vInfo("GL texture format is GL_COMPRESSED_RGBA_S3TC_DXT1_EXT");
-			return true;
-		}
-	// unsupported on OpenGL ES:
-	//    case Texture_DXT3:  glFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT; break;
-	//    case Texture_DXT5:  glFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT; break;
-		case Texture_PVR4bRGB:
-		{
-			glFormat = GL_RGB;
-			glInternalFormat = GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG;
-//			vInfo("GL texture format is GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG");
-			return true;
-		}
-		case Texture_PVR4bRGBA:
-		{
-			glFormat = GL_RGBA;
-			glInternalFormat = GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG;
-//			vInfo("GL texture format is GL_RGBA / GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG");
-			return true;
-		}
-		case Texture_ETC1:
-		{
-			glFormat = GL_RGB;
-			if ( useSrgbFormat )
-			{
-				// Note that ETC2 is backwards compatible with ETC1.
-				glInternalFormat = GL_COMPRESSED_SRGB8_ETC2;
-//				vInfo("GL texture format is GL_RGB / GL_COMPRESSED_SRGB8_ETC2");
-			}
-			else
-			{
-				glInternalFormat = GL_ETC1_RGB8_OES;
-//				vInfo("GL texture format is GL_RGB / GL_ETC1_RGB8_OES");
-			}
-			return true;
-		}
-		case Texture_ETC2_RGB:
-		{
-			glFormat = GL_RGB;
-			if ( useSrgbFormat )
-			{
-				glInternalFormat = GL_COMPRESSED_SRGB8_ETC2;
-//				vInfo("GL texture format is GL_RGB / GL_COMPRESSED_SRGB8_ETC2");
-			}
-			else
-			{
-				glInternalFormat = GL_COMPRESSED_RGB8_ETC2;
-//				vInfo("GL texture format is GL_RGB / GL_COMPRESSED_RGB8_ETC2");
-			}
-			return true;
-		}
-		case Texture_ETC2_RGBA:
-		{
-			glFormat = GL_RGBA;
-			if ( useSrgbFormat )
-			{
-				glInternalFormat = GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC;
-//				vInfo("GL texture format is GL_RGBA / GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC");
-			}
-			else
-			{
-				glInternalFormat = GL_COMPRESSED_RGBA8_ETC2_EAC;
-//				vInfo("GL texture format is GL_RGBA / GL_COMPRESSED_RGBA8_ETC2_EAC");
-			}
-			return true;
-		}
-		case Texture_ASTC_4x4:
-		{
-			glFormat = GL_RGBA;
-			glInternalFormat = GL_COMPRESSED_RGBA_ASTC_4x4_KHR;
-			return true;
-		}
-		case Texture_ASTC_6x6:
-		{
-			glFormat = GL_RGBA;
-			glInternalFormat = GL_COMPRESSED_RGBA_ASTC_6x6_KHR;
-			return true;
-		}
-		case Texture_ATC_RGB:
-		{
-			glFormat = GL_RGB;
-			glInternalFormat = GL_ATC_RGB_AMD;
-//			vInfo("GL texture format is GL_RGB / GL_ATC_RGB_AMD");
-			return true;
-		}
-		case Texture_ATC_RGBA:
-		{
-			glFormat = GL_RGBA;
-			glInternalFormat = GL_ATC_RGBA_EXPLICIT_ALPHA_AMD;
-//			vInfo("GL texture format is GL_RGBA / GL_ATC_RGBA_EXPLICIT_ALPHA_AMD");
-			return true;
-		}
+    //unsupported on OpenGL ES:
+    //case Texture_DXT3:  glFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT; break;
+    //case Texture_DXT5:  glFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT; break;
+
+    case Texture_PVR4bRGB:
+        glFormat = GL_RGB;
+        glInternalFormat = GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG;
+        return true;
+
+    case Texture_PVR4bRGBA:
+        glFormat = GL_RGBA;
+        glInternalFormat = GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG;
+        return true;
+
+    case Texture_ETC1:
+        glFormat = GL_RGB;
+        if (useSrgbFormat) {
+            // Note that ETC2 is backwards compatible with ETC1.
+            glInternalFormat = GL_COMPRESSED_SRGB8_ETC2;
+        } else {
+            glInternalFormat = GL_ETC1_RGB8_OES;
+        }
+        return true;
+
+    case Texture_ETC2_RGB:
+        glFormat = GL_RGB;
+        if (useSrgbFormat) {
+            glInternalFormat = GL_COMPRESSED_SRGB8_ETC2;
+        } else {
+            glInternalFormat = GL_COMPRESSED_RGB8_ETC2;
+        }
+        return true;
+
+    case Texture_ETC2_RGBA:
+        glFormat = GL_RGBA;
+        if (useSrgbFormat) {
+            glInternalFormat = GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC;
+        } else {
+            glInternalFormat = GL_COMPRESSED_RGBA8_ETC2_EAC;
+        }
+        return true;
+
+    case Texture_ASTC_4x4:
+        glFormat = GL_RGBA;
+        glInternalFormat = GL_COMPRESSED_RGBA_ASTC_4x4_KHR;
+        return true;
+
+    case Texture_ASTC_6x6:
+        glFormat = GL_RGBA;
+        glInternalFormat = GL_COMPRESSED_RGBA_ASTC_6x6_KHR;
+        return true;
+
+    case Texture_ATC_RGB:
+        glFormat = GL_RGB;
+        glInternalFormat = GL_ATC_RGB_AMD;
+        return true;
+
+    case Texture_ATC_RGBA:
+        glFormat = GL_RGBA;
+        glInternalFormat = GL_ATC_RGBA_EXPLICIT_ALPHA_AMD;
+        return true;
     }
 	return false;
 }
 
-static bool GlFormatToTextureFormat( int & format, const GLenum glFormat, const GLenum glInternalFormat )
+static bool GlFormatToTextureFormat(int &format, GLenum glFormat, GLenum glInternalFormat)
 {
-	if ( glFormat == GL_RED && glInternalFormat == GL_R8 )
-	{
+    if (glFormat == GL_RED && glInternalFormat == GL_R8) {
 		format = Texture_R;
 		return true;
 	}
-	if ( glFormat == GL_RGB && ( glInternalFormat == GL_RGB || glInternalFormat == GL_SRGB8 ) )
-	{
+
+    if (glFormat == GL_RGB && (glInternalFormat == GL_RGB || glInternalFormat == GL_SRGB8)) {
 		format = Texture_RGB;
 		return true;
 	}
-	if ( glFormat == GL_RGBA && ( glInternalFormat == GL_RGBA || glInternalFormat == GL_SRGB8_ALPHA8 ) )
-	{
+
+    if (glFormat == GL_RGBA && (glInternalFormat == GL_RGBA || glInternalFormat == GL_SRGB8_ALPHA8)) {
 		format = Texture_RGBA;
 		return true;
 	}
-	if ( ( glFormat == 0 || glFormat == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT ) && glInternalFormat == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT )
-	{
+
+    if ((glFormat == 0 || glFormat == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT) && glInternalFormat == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT) {
 		format = Texture_DXT1;
 		return true;
 	}
-	if ( ( glFormat == 0 || glFormat == GL_RGB ) && glInternalFormat == GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG )
+
+    if ((glFormat == 0 || glFormat == GL_RGB) && glInternalFormat == GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG)
 	{
 		format = Texture_PVR4bRGB;
 		return true;
 	}
-	if ( ( glFormat == 0 || glFormat == GL_RGBA ) && glInternalFormat == GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG )
+
+    if ((glFormat == 0 || glFormat == GL_RGBA) && glInternalFormat == GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG)
 	{
 		format = Texture_PVR4bRGBA;
 		return true;
 	}
-	if ( ( glFormat == 0 || glFormat == GL_RGB ) && ( glInternalFormat == GL_ETC1_RGB8_OES || glInternalFormat == GL_COMPRESSED_SRGB8_ETC2 ) )
+
+    if ((glFormat == 0 || glFormat == GL_RGB) && (glInternalFormat == GL_ETC1_RGB8_OES || glInternalFormat == GL_COMPRESSED_SRGB8_ETC2))
 	{
 		format = Texture_ETC1;
 		return true;
 	}
-	if ( ( glFormat == 0 || glFormat == GL_RGB ) && ( glInternalFormat == GL_COMPRESSED_RGB8_ETC2 || glInternalFormat == GL_COMPRESSED_SRGB8_ETC2 ) )
+
+    if ((glFormat == 0 || glFormat == GL_RGB) && (glInternalFormat == GL_COMPRESSED_RGB8_ETC2 || glInternalFormat == GL_COMPRESSED_SRGB8_ETC2))
 	{
 		format = Texture_ETC2_RGB;
 		return true;
 	}
-	if ( ( glFormat == 0 || glFormat == GL_RGBA ) && ( glInternalFormat == GL_COMPRESSED_RGBA8_ETC2_EAC || glInternalFormat == GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC ) )
+
+    if ((glFormat == 0 || glFormat == GL_RGBA) && (glInternalFormat == GL_COMPRESSED_RGBA8_ETC2_EAC || glInternalFormat == GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC))
 	{
 		format = Texture_ETC2_RGBA;
 		return true;
 	}
-	if ( ( glFormat == 0 || glFormat == GL_RGB ) && glInternalFormat == GL_ATC_RGB_AMD )
+
+    if ((glFormat == 0 || glFormat == GL_RGB) && glInternalFormat == GL_ATC_RGB_AMD)
 	{
 		format = Texture_ATC_RGB;
 		return true;
 	}
-	if ( ( glFormat == 0 || glFormat == GL_RGBA ) && glInternalFormat == GL_ATC_RGBA_EXPLICIT_ALPHA_AMD )
+
+    if ((glFormat == 0 || glFormat == GL_RGBA) && glInternalFormat == GL_ATC_RGBA_EXPLICIT_ALPHA_AMD)
 	{
 		format = Texture_ATC_RGBA;
 		return true;
     }
+
 	return false;
 }
 
-static int32_t GetOvrTextureSize( const int format, const int w, const int h )
+static int32_t CalculateTextureSize(int format, int width, int height)
 {
-    switch ( format & Texture_TypeMask )
+    switch (format & Texture_TypeMask) {
+    case Texture_R: return width * height;
+    case Texture_RGB: return width * height * 3;
+    case Texture_RGBA: return width * height * 4;
+    case Texture_ATC_RGB:
+    case Texture_ETC1:
+    case Texture_ETC2_RGB:
+    case Texture_DXT1: {
+        int bw = (width + 3) / 4, bh = (height + 3) / 4;
+        return bw * bh * 8;
+    }
+    case Texture_ATC_RGBA:
+    case Texture_ETC2_RGBA:
+    case Texture_DXT3:
+    case Texture_DXT5: {
+        int blockWidth = (width + 3) / 4, blockHeight = (height + 3) / 4;
+        return blockWidth * blockHeight * 16;
+    }
+    case Texture_PVR4bRGB:
+    case Texture_PVR4bRGBA: {
+        uint uwidth = (uint) width;
+        uint uheight = (uint) height;
+        uint minWidth = 8;
+        uint minHeight = 8;
+
+        // pad the dimensions
+        uwidth = uwidth + ((-1 * uwidth) % minWidth);
+        uheight = uheight + ((-1 * uheight) % minHeight);
+        uint depth = 1;
+
+        uint bpp = 4;
+        uint bits = bpp * uwidth * uheight * depth;
+        return (int) (bits / 8);
+    }
+    case Texture_ASTC_4x4: {
+        int blocksWidth = (width + 3) / 4;
+        int blocksHeight = (height + 3) / 4;
+        return blocksWidth * blocksHeight * 16;
+    }
+    case Texture_ASTC_6x6:
     {
-    	case Texture_R:            return w*h;
-        case Texture_RGB:          return w*h*3;
-        case Texture_RGBA:         return w*h*4;
-        case Texture_ATC_RGB:
-        case Texture_ETC1:
-		case Texture_ETC2_RGB:
-        case Texture_DXT1:
-		{
-            int bw = (w+3)/4, bh = (h+3)/4;
-            return bw * bh * 8;
-        }
-        case Texture_ATC_RGBA:
-		case Texture_ETC2_RGBA:
-        case Texture_DXT3:
-        case Texture_DXT5:
-		{
-            int bw = (w+3)/4, bh = (h+3)/4;
-            return bw * bh * 16;
-        }
-        case Texture_PVR4bRGB:
-        case Texture_PVR4bRGBA:
-		{
-            unsigned int width = (unsigned int)w;
-            unsigned int height = (unsigned int)h;
-            unsigned int min_width = 8;
-	        unsigned int min_height = 8;
-
-            // pad the dimensions
-	        width = width + ((-1*width) % min_width);
-	        height = height + ((-1*height) % min_height);
-            unsigned int depth = 1;
-
-            unsigned int bpp = 4;
-            unsigned int bits = bpp * width * height * depth;
-            return (int)(bits / 8);
-        }
-		case Texture_ASTC_4x4:
-		{
-			int blocksWide = ( w + 3 ) / 4;
-			int blocksHigh = ( h + 3 ) / 4;
-			return blocksWide * blocksHigh * 16;
-		}
-		case Texture_ASTC_6x6:
-		{
-			int blocksWide = ( w + 5 ) / 6;
-			int blocksHigh = ( h + 5 ) / 6;
-			return blocksWide * blocksHigh * 16;
-		}
-        default:
-		{
-            vAssert( false );
-            break;
-		}
+        int blocksWidth = ( width + 5 ) / 6;
+        int blocksHeight = ( height + 5 ) / 6;
+        return blocksWidth * blocksHeight * 16;
+    }
+    default:
+        vAssert(false);
+        break;
     }
     return 0;
 }
 
-static VTexture CreateGlTexture( const char * fileName, const int format, const int width, const int height,
+static VTexture CreateGlTexture(const int format, const int width, const int height,
                         const void * data, uint dataSize,
 						const int mipcount, const bool useSrgbFormat, const bool imageSizeStored )
 {
@@ -472,14 +376,14 @@ static VTexture CreateGlTexture( const char * fileName, const int format, const 
 
 	if ( mipcount <= 0 )
 	{
-		vInfo(fileName << ": Invalid mip count " << mipcount);
+        vInfo("Invalid mip count " << mipcount);
 		return VTexture( 0 );
 	}
 
 	// larger than this would require mipSize below to be a larger type
 	if ( width <= 0 || width > 32768 || height <= 0 || height > 32768 )
 	{
-		vInfo(fileName << ": Invalid texture size (" << width << "x" << height << ")");
+        vInfo("Invalid texture size (" << width << "x" << height << ")");
 		return VTexture( 0 );
 	}
 
@@ -494,7 +398,7 @@ static VTexture CreateGlTexture( const char * fileName, const int format, const 
 	int h = height;
 	for ( int i = 0; i < mipcount; i++ )
 	{
-		int32_t mipSize = GetOvrTextureSize( format, w, h );
+        int32_t mipSize = CalculateTextureSize( format, w, h );
 		if ( imageSizeStored )
 		{
 			mipSize = *(const size_t *)level;
@@ -502,7 +406,7 @@ static VTexture CreateGlTexture( const char * fileName, const int format, const 
 			level += 4;
 			if ( level > endOfBuffer )
 			{
-				vInfo(fileName << ": Image data exceeds buffer size");
+                vInfo("Image data exceeds buffer size");
 				glBindTexture( GL_TEXTURE_2D, 0 );
 				return VTexture( texId, GL_TEXTURE_2D );
 			}
@@ -510,7 +414,7 @@ static VTexture CreateGlTexture( const char * fileName, const int format, const 
 
 		if ( mipSize <= 0 || mipSize > endOfBuffer - level )
 		{
-			vInfo(fileName << ": Mip level " << i << " exceeds buffer size (" << mipSize << " > " << (endOfBuffer - level) << ")");
+            vInfo("Mip level " << i << " exceeds buffer size (" << mipSize << " > " << (endOfBuffer - level) << ")");
 			glBindTexture( GL_TEXTURE_2D, 0 );
 			return VTexture( texId, GL_TEXTURE_2D );
 		}
@@ -531,7 +435,7 @@ static VTexture CreateGlTexture( const char * fileName, const int format, const 
 			level += 3 - ( ( mipSize + 3 ) % 4 );
 			if ( level > endOfBuffer )
 			{
-				vInfo(fileName << ": Image data exceeds buffer size");
+                vInfo("Image data exceeds buffer size");
 				glBindTexture( GL_TEXTURE_2D, 0 );
 				return VTexture( texId, GL_TEXTURE_2D );
 			}
@@ -558,12 +462,12 @@ static VTexture CreateGlTexture( const char * fileName, const int format, const 
 
     VEglDriver::logErrorsEnum( "Texture load" );
 
-	glBindTexture( GL_TEXTURE_2D, 0 );
+    glBindTexture(GL_TEXTURE_2D, 0);
 
-	return VTexture( texId, GL_TEXTURE_2D );
+    return VTexture(texId, GL_TEXTURE_2D);
 }
 
-static VTexture CreateGlCubeTexture( const char * fileName, const int format, const int width, const int height,
+static VTexture CreateGlCubeTexture(const int format, const int width, const int height,
 						const void * data, const size_t dataSize,
 						const int mipcount, const bool useSrgbFormat, const bool imageSizeStored )
 {
@@ -572,14 +476,14 @@ static VTexture CreateGlCubeTexture( const char * fileName, const int format, co
 
 	if ( mipcount <= 0 )
 	{
-		vInfo(fileName << ": Invalid mip count " << mipcount);
+        vInfo("Invalid mip count " << mipcount);
 		return VTexture( 0 );
 	}
 
 	// larger than this would require mipSize below to be a larger type
 	if ( width <= 0 || width > 32768 || height <= 0 || height > 32768 )
 	{
-		vInfo(fileName << ": Invalid texture size (" << width << "x" << height << ")");
+        vInfo("Invalid texture size (" << width << "x" << height << ")");
 		return VTexture( 0 );
 	}
 
@@ -600,14 +504,14 @@ static VTexture CreateGlCubeTexture( const char * fileName, const int format, co
 	for ( int i = 0; i < mipcount; i++ )
 	{
 		const int w = width >> i;
-		int32_t mipSize = GetOvrTextureSize( format, w, w );
+        int32_t mipSize = CalculateTextureSize( format, w, w );
 		if ( imageSizeStored )
 		{
 			mipSize = *(const size_t *)level;
 			level += 4;
 			if ( level > endOfBuffer )
 			{
-				vInfo(fileName << ": Image data exceeds buffer size");
+                vInfo("Image data exceeds buffer size");
 				glBindTexture( GL_TEXTURE_CUBE_MAP, 0 );
 				return VTexture( texId, GL_TEXTURE_CUBE_MAP );
 			}
@@ -617,7 +521,7 @@ static VTexture CreateGlCubeTexture( const char * fileName, const int format, co
 		{
 			if ( mipSize <= 0 || mipSize > endOfBuffer - level )
 			{
-				vInfo(fileName << ": Mip level " << i << " exceeds buffer size (" << mipSize << " > " << endOfBuffer - level << ")");
+                vInfo("Mip level " << i << " exceeds buffer size (" << mipSize << " > " << endOfBuffer - level << ")");
 				glBindTexture( GL_TEXTURE_CUBE_MAP, 0 );
                 return VTexture( texId,  GL_TEXTURE_CUBE_MAP );
 			}
@@ -637,7 +541,7 @@ static VTexture CreateGlCubeTexture( const char * fileName, const int format, co
 				level += 3 - ( ( mipSize + 3 ) % 4 );
 				if ( level > endOfBuffer )
 				{
-					vInfo(fileName << ": Image data exceeds buffer size");
+                    vInfo("Image data exceeds buffer size");
 					glBindTexture( GL_TEXTURE_CUBE_MAP, 0 );
 					return VTexture( texId, GL_TEXTURE_CUBE_MAP );
 				}
@@ -665,20 +569,20 @@ static VTexture CreateGlCubeTexture( const char * fileName, const int format, co
 
 VTexture LoadRGBATextureFromMemory(const uchar *texture, const int width, const int height, const bool useSrgbFormat)
 {
-    const size_t dataSize = GetOvrTextureSize(Texture_RGBA, width, height);
-    return CreateGlTexture("memory-RGBA", Texture_RGBA, width, height, texture, dataSize, 1, useSrgbFormat, false);
+    const size_t dataSize = CalculateTextureSize(Texture_RGBA, width, height);
+    return CreateGlTexture(Texture_RGBA, width, height, texture, dataSize, 1, useSrgbFormat, false);
 }
 
 VTexture LoadRGBTextureFromMemory(const uchar *texture, const int width, const int height, const bool useSrgbFormat)
 {
-    const size_t dataSize = GetOvrTextureSize(Texture_RGB, width, height);
-    return CreateGlTexture("memory-RGB", Texture_RGB, width, height, texture, dataSize, 1, useSrgbFormat, false);
+    const size_t dataSize = CalculateTextureSize(Texture_RGB, width, height);
+    return CreateGlTexture(Texture_RGB, width, height, texture, dataSize, 1, useSrgbFormat, false);
 }
 
 VTexture LoadRTextureFromMemory(const uchar *texture, const int width, const int height)
 {
-    const size_t dataSize = GetOvrTextureSize(Texture_R, width, height );
-    return CreateGlTexture("memory-R", Texture_R, width, height, texture, dataSize, 1, false, false);
+    const size_t dataSize = CalculateTextureSize(Texture_R, width, height );
+    return CreateGlTexture(Texture_R, width, height, texture, dataSize, 1, false, false);
 }
 
 struct astcHeader
@@ -717,7 +621,7 @@ VTexture LoadASTCTextureFromMemory( uint8_t const * buffer, const size_t bufferS
 		format = Texture_ASTC_6x6;
 	}
 
-	return CreateGlTexture( "memory-ASTC", format, w, h, buffer, bufferSize, 1, false, false );
+    return CreateGlTexture(format, w, h, buffer, bufferSize, 1, false, false );
 }
 
 /*
@@ -815,7 +719,7 @@ struct OVR_PVR_HEADER
 };
 #pragma pack()
 
-VTexture LoadTexturePVR( const char * fileName, const unsigned char * buffer, const int bufferLength,
+VTexture LoadTexturePVR(const unsigned char * buffer, const int bufferLength,
 						bool useSrgbFormat, bool noMipMaps, int & width, int & height )
 {
 	width = 0;
@@ -823,36 +727,35 @@ VTexture LoadTexturePVR( const char * fileName, const unsigned char * buffer, co
 
 	if ( bufferLength < ( int )( sizeof( OVR_PVR_HEADER ) ) )
 	{
-		vInfo(fileName << ": Invalid PVR file");
-		return VTexture( 0 );
+        vWarn("Invalid PVR file");
+        return VTexture();
 	}
 
 	const OVR_PVR_HEADER & header = *( OVR_PVR_HEADER * )buffer;
 	if ( header.Version != 0x03525650 )
 	{
-		vInfo(fileName << ": Invalid PVR file version");
-		return VTexture( 0 );
+        vWarn("Invalid PVR file version");
+        return VTexture();
 	}
 
 	int format = 0;
-	switch ( header.PixelFormat )
-	{
-		case 2:						format = Texture_PVR4bRGB;	break;
-		case 3:						format = Texture_PVR4bRGBA;	break;
-		case 6:						format = Texture_ETC1;		break;
-		case 22:					format = Texture_ETC2_RGB;	break;
-		case 23:					format = Texture_ETC2_RGBA;	break;
-        case 578721384203708274ull:	format = Texture_RGBA;		break;
-		default:
-			vInfo(fileName << ": Unknown PVR texture format " << header.PixelFormat << "lu, size " << width << "x" << height);
-			return VTexture( 0 );
+    switch (header.PixelFormat) {
+    case 2:						format = Texture_PVR4bRGB;	break;
+    case 3:						format = Texture_PVR4bRGBA;	break;
+    case 6:						format = Texture_ETC1;		break;
+    case 22:					format = Texture_ETC2_RGB;	break;
+    case 23:					format = Texture_ETC2_RGBA;	break;
+    case 578721384203708274ull:	format = Texture_RGBA;		break;
+    default:
+        vWarn("Unknown PVR texture format " << header.PixelFormat << "lu, size " << width << "x" << height);
+        return VTexture();
 	}
 
 	// skip the metadata
 	const vuint32 startTex = sizeof( OVR_PVR_HEADER ) + header.MetaDataSize;
 	if ( ( startTex < sizeof( OVR_PVR_HEADER ) ) || ( startTex >= static_cast< size_t >( bufferLength ) ) )
 	{
-		vInfo(fileName << ": Invalid PVR header sizes");
+        vInfo("Invalid PVR header sizes");
 		return VTexture( 0 );
 	}
 
@@ -863,20 +766,20 @@ VTexture LoadTexturePVR( const char * fileName, const unsigned char * buffer, co
 
 	if ( header.NumFaces == 1 )
 	{
-		return CreateGlTexture( fileName, format, width, height, buffer + startTex, bufferLength - startTex, mipCount, useSrgbFormat, false );
+        return CreateGlTexture(format, width, height, buffer + startTex, bufferLength - startTex, mipCount, useSrgbFormat, false );
 	}
 	else if ( header.NumFaces == 6 )
 	{
-		return CreateGlCubeTexture( fileName, format, width, height, buffer + startTex, bufferLength - startTex, mipCount, useSrgbFormat, false );
+        return CreateGlCubeTexture(format, width, height, buffer + startTex, bufferLength - startTex, mipCount, useSrgbFormat, false );
 	}
 	else
 	{
-		vInfo(fileName << ": PVR file has unsupported number of faces " << header.NumFaces);
+        vInfo("PVR file has unsupported number of faces " << header.NumFaces);
 	}
 
 	width = 0;
 	height = 0;
-	return VTexture( 0 );
+    return VTexture();
 }
 
 
@@ -936,7 +839,7 @@ unsigned char * LoadPVRBuffer( const char * fileName, int & width, int & height 
 		return NULL;
 	}
 
-	size_t mipSize = GetOvrTextureSize( format, header.Width, header.Height );
+    size_t mipSize = CalculateTextureSize( format, header.Width, header.Height );
 
     const int outBufferSizeBytes = fileLength - startTex;
 
@@ -1030,16 +933,15 @@ struct OVR_KTX_HEADER
 };
 #pragma pack()
 
-VTexture LoadTextureKTX( const char * fileName, const unsigned char * buffer, const int bufferLength,
-						bool useSrgbFormat, bool noMipMaps, int & width, int & height )
+VTexture LoadTextureKTX(const unsigned char * buffer, const int bufferLength, bool useSrgbFormat, bool noMipMaps, int & width, int & height )
 {
 	width = 0;
 	height = 0;
 
 	if ( bufferLength < (int)( sizeof( OVR_KTX_HEADER ) ) )
 	{
-    	vInfo(fileName << ": Invalid KTX file");
-        return VTexture( 0 );
+        vWarn("Invalid KTX file");
+        return VTexture();
 	}
 
 	const uchar fileIdentifier[12] =
@@ -1050,40 +952,40 @@ VTexture LoadTextureKTX( const char * fileName, const unsigned char * buffer, co
 	const OVR_KTX_HEADER & header = *(OVR_KTX_HEADER *)buffer;
 	if ( memcmp( header.identifier, fileIdentifier, sizeof( fileIdentifier ) ) != 0 )
 	{
-		vInfo(fileName << ": Invalid KTX file");
-		return VTexture( 0 );
+        vWarn("Invalid KTX file");
+        return VTexture();
 	}
 	// only support little endian
 	if ( header.endianness != 0x04030201 )
 	{
-		vInfo(fileName << ": KTX file has wrong endianess");
-		return VTexture( 0 );
+        vWarn("KTX file has wrong endianess");
+        return VTexture();
 	}
 	// only support compressed or unsigned byte
 	if ( header.glType != 0 && header.glType != GL_UNSIGNED_BYTE )
 	{
-		vInfo(fileName << ": KTX file has unsupported glType " << header.glType);
-		return VTexture( 0 );
+        vWarn("KTX file has unsupported glType " << header.glType);
+        return VTexture();
 	}
 	// no support for texture arrays
 	if ( header.numberOfArrayElements != 0 )
 	{
-		vInfo(fileName << ": KTX file has unsupported number of array elements " << header.numberOfArrayElements);
-		return VTexture( 0 );
+        vWarn("KTX file has unsupported number of array elements " << header.numberOfArrayElements);
+        return VTexture();
 	}
 	// derive the texture format from the GL format
 	int format = 0;
 	if ( !GlFormatToTextureFormat( format, header.glFormat, header.glInternalFormat ) )
 	{
-		vInfo(fileName << ": KTX file has unsupported glFormat " << header.glFormat << ", glInternalFormat " << header.glInternalFormat);
-		return VTexture( 0 );
+        vWarn("KTX file has unsupported glFormat " << header.glFormat << ", glInternalFormat " << header.glInternalFormat);
+        return VTexture();
 	}
 	// skip the key value data
 	const uintptr_t startTex = sizeof( OVR_KTX_HEADER ) + header.bytesOfKeyValueData;
 	if ( ( startTex < sizeof( OVR_KTX_HEADER ) ) || ( startTex >= static_cast< size_t >( bufferLength ) ) )
 	{
-		vInfo(fileName << ": Invalid KTX header sizes");
-		return VTexture( 0 );
+        vWarn("Invalid KTX header sizes");
+        return VTexture();
 	}
 
 	width = header.pixelWidth;
@@ -1093,20 +995,20 @@ VTexture LoadTextureKTX( const char * fileName, const unsigned char * buffer, co
 
 	if ( header.numberOfFaces == 1 )
 	{
-		return CreateGlTexture( fileName, format, width, height, buffer + startTex, bufferLength - startTex, mipCount, useSrgbFormat, true );
+        return CreateGlTexture(format, width, height, buffer + startTex, bufferLength - startTex, mipCount, useSrgbFormat, true );
 	}
 	else if ( header.numberOfFaces == 6 )
 	{
-		return CreateGlCubeTexture( fileName, format, width, height, buffer + startTex, bufferLength - startTex, mipCount, useSrgbFormat, true );
+        return CreateGlCubeTexture(format, width, height, buffer + startTex, bufferLength - startTex, mipCount, useSrgbFormat, true );
 	}
 	else
 	{
-		vInfo(fileName << ": KTX file has unsupported number of faces " << header.numberOfFaces);
+        vWarn("KTX file has unsupported number of faces " << header.numberOfFaces);
 	}
 
 	width = 0;
 	height = 0;
-	return VTexture( 0 );
+    return VTexture();
 }
 
 VTexture LoadTextureFromBuffer( const char * fileName, const void*  buffer, uint length,
@@ -1134,8 +1036,8 @@ VTexture LoadTextureFromBuffer( const char * fileName, const void*  buffer, uint
         stbi_uc * image = stbi_load_from_memory( (unsigned char *)buffer, length, &width, &height, &comp, 4 );
 		if ( image != NULL )
 		{
-			const size_t dataSize = GetOvrTextureSize( Texture_RGBA, width, height );
-			texId = CreateGlTexture( fileName, Texture_RGBA, width, height, image, dataSize,
+            const size_t dataSize = CalculateTextureSize( Texture_RGBA, width, height );
+            texId = CreateGlTexture(Texture_RGBA, width, height, image, dataSize,
                     1 /* one mip level */, flags & VTexture::UseSRGB, false );
 			free( image );
             if ( !( flags & VTexture::NoMipmaps ) )
@@ -1148,14 +1050,14 @@ VTexture LoadTextureFromBuffer( const char * fileName, const void*  buffer, uint
 	}
 	else if ( ext == "pvr" )
 	{
-        texId = LoadTexturePVR( fileName, (const unsigned char *)buffer, length,
+        texId = LoadTexturePVR((const unsigned char *) buffer, length,
                         ( flags & VTexture::UseSRGB ),
                         ( flags & VTexture::NoMipmaps ),
 						width, height );
 	}
 	else if ( ext == "ktx" )
 	{
-        texId = LoadTextureKTX( fileName, (const unsigned char *)buffer, length,
+        texId = LoadTextureKTX((const unsigned char *)buffer, length,
                         ( flags & VTexture::UseSRGB ),
                         ( flags & VTexture::NoMipmaps ),
 						width, height );
