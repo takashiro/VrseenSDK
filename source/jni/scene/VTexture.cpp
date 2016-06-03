@@ -1,12 +1,15 @@
 #include "VTexture.h"
 
 #include "VPath.h"
-#include <fstream>
-
+#include "VFile.h"
+#include "VResource.h"
+#include "VImage.h"
 #include "VEglDriver.h"
 #include "VAlgorithm.h"
 
 #include "3rdParty/stb/stb_image.h"
+
+#include <fstream>
 
 #define GL_COMPRESSED_RGBA_ASTC_4x4_KHR            0x93B0
 #define GL_COMPRESSED_RGBA_ASTC_5x4_KHR            0x93B1
@@ -38,84 +41,6 @@
 #define GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR  0x93DD
 
 NV_NAMESPACE_BEGIN
-
-struct VTexture::Private
-{
-    uint id;
-    uint target;
-
-    Private()
-        : id(0)
-        , target(0)
-    {
-    }
-};
-
-// Not declared inline in the header to avoid having to use GL_TEXTURE_2D
-VTexture::VTexture()
-    : d(new Private)
-{
-}
-
-VTexture::VTexture(uint id)
-    : d(new Private)
-{
-    d->id = id;
-    d->target = GL_TEXTURE_2D;
-}
-
-VTexture::VTexture(uint id, uint target)
-    : d(new Private)
-{
-    d->id = id;
-    d->target = target;
-}
-
-VTexture::VTexture(const VTexture &source)
-    : d(new Private)
-{
-    d->id = source.id();
-    d->target = source.target();
-}
-
-VTexture::VTexture(VTexture &&source)
-    : d(source.d)
-{
-    source.d = nullptr;
-}
-
-VTexture::~VTexture()
-{
-    if (d) {
-        //glDeleteTextures(1, &d->id);
-        delete d;
-    }
-}
-
-VTexture &VTexture::operator=(const VTexture &source)
-{
-    d->id = source.id();
-    d->target = source.target();
-    return *this;
-}
-
-VTexture &VTexture::operator=(VTexture &&source)
-{
-    delete d;
-    d = source.d;
-    source.d = nullptr;
-    return *this;
-}
-
-const uint &VTexture::id() const
-{
-    return d->id;
-}
-
-const uint &VTexture::target() const
-{
-    return d->target;
-}
 
 enum TextureFormat
 {
@@ -1138,6 +1063,479 @@ void BuildTextureMipmaps(const VTexture &texture)
     glBindTexture(texture.target(), texture.id());
     glGenerateMipmap(texture.target());
     glBindTexture(texture.target(), 0);
+}
+
+struct VTexture::Private
+{
+    uint id;
+    uint target;
+    int width;
+    int height;
+
+    Private()
+        : id(0)
+        , target(0)
+        , width(0)
+        , height(0)
+    {
+    }
+
+    void load(const VPath &path, const VByteArray &data, const VTexture::Flags &flags)
+    {
+        const VString ext = path.extension().toLower();
+
+        if (ext.isEmpty() || data.isEmpty()) {
+            // can't load anything from an empty buffer
+            return;
+        }
+
+        if (ext == "jpg" || ext == "tga" || ext == "png" || ext == "bmp"
+            || ext == "psd" || ext == "gif" || ext == "hdr" || ext == "pic") {
+            // Uncompressed files loaded by stb_image
+            VImage image(data);
+            if (image.isValid()) {
+                width = image.width();
+                height = image.height();
+                create2D(Texture_RGBA, image.data(), image.length(), 1, flags & VTexture::UseSRGB, false);
+
+                if (!(flags & VTexture::NoMipmaps)) {
+                    glBindTexture(target, id);
+                    glGenerateMipmap(target);
+                    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+                }
+            }
+        } else if (ext == "pvr") {
+            loadPVR(data, flags & VTexture::UseSRGB, flags & VTexture::NoMipmaps);
+        } else if (ext == "ktx") {
+            loadKTX(data, flags & VTexture::UseSRGB, flags & VTexture::NoMipmaps);
+        } else {
+            vWarn("unsupported file extension " << ext);
+        }
+
+        // Create a default texture if the load failed
+        if (id == 0) {
+            vWarn("Failed to load " << path);
+            if (!(flags & VTexture::NoDefault)) {
+                static uchar defaultTexture[8 * 8 * 3] = {
+                    255,255,255, 255,255,255, 255,255,255, 255,255,255, 255,255,255, 255,255,255, 255,255,255, 255,255,255,
+                    255,255,255,  64, 64, 64,  64, 64, 64,  64, 64, 64,  64, 64, 64,  64, 64, 64,  64, 64, 64, 255,255,255,
+                    255,255,255,  64, 64, 64,  64, 64, 64,  64, 64, 64,  64, 64, 64,  64, 64, 64,  64, 64, 64, 255,255,255,
+                    255,255,255,  64, 64, 64,  64, 64, 64, 255,255,255, 255,255,255,  64, 64, 64,  64, 64, 64, 255,255,255,
+                    255,255,255,  64, 64, 64,  64, 64, 64, 255,255,255, 255,255,255,  64, 64, 64,  64, 64, 64, 255,255,255,
+                    255,255,255,  64, 64, 64,  64, 64, 64,  64, 64, 64,  64, 64, 64,  64, 64, 64,  64, 64, 64, 255,255,255,
+                    255,255,255,  64, 64, 64,  64, 64, 64,  64, 64, 64,  64, 64, 64,  64, 64, 64,  64, 64, 64, 255,255,255,
+                    255,255,255, 255,255,255, 255,255,255, 255,255,255, 255,255,255, 255,255,255, 255,255,255, 255,255,255
+                };
+                const size_t dataSize = CalculateTextureSize(Texture_RGB, width, height);
+                width = height = 8;
+                create2D(Texture_RGB, defaultTexture, dataSize, 1, true, false);
+            }
+        }
+    }
+
+    void create2D(int format, const uchar *data, uint dataSize, int mipCount, bool useSrgbFormat, bool imageSizeStored)
+    {
+        GLenum glFormat;
+        GLenum glInternalFormat;
+        if (!TextureFormatToGlFormat(format, useSrgbFormat, glFormat, glInternalFormat)) {
+            return;
+        }
+
+        if (mipCount <= 0) {
+            vWarn("Invalid mip count " << mipCount);
+            return;
+        }
+
+        // larger than this would require mipSize below to be a larger type
+        if (width <= 0 || width > 32768 || height <= 0 || height > 32768) {
+            vWarn("Invalid texture size (" << width << "x" << height << ")");
+            return;
+        }
+
+        GLuint texId;
+        glGenTextures(1, &texId);
+        glBindTexture(GL_TEXTURE_2D, texId);
+
+        const uchar *level = data;
+        const uchar *endOfBuffer = level + dataSize;
+
+        int w = width;
+        int h = height;
+        for (int i = 0; i < mipCount; i++) {
+            int32_t mipSize = CalculateTextureSize(format, w, h);
+            if (imageSizeStored) {
+                mipSize = * (const size_t *) level;
+
+                level += 4;
+                if (level > endOfBuffer) {
+                    vWarn("Image data exceeds buffer size");
+                    glBindTexture(GL_TEXTURE_2D, 0);
+                    id = texId;
+                    target = GL_TEXTURE_2D;
+                    return;
+                }
+            }
+
+            if (mipSize <= 0 || mipSize > endOfBuffer - level) {
+                vWarn("Mip level " << i << " exceeds buffer size (" << mipSize << " > " << (endOfBuffer - level) << ")");
+                glBindTexture(GL_TEXTURE_2D, 0);
+
+                id = texId;
+                target = GL_TEXTURE_2D;
+                return;
+            }
+
+            if (format & Texture_Compressed) {
+                glCompressedTexImage2D(GL_TEXTURE_2D, i, glInternalFormat, w, h, 0, mipSize, level);
+                VEglDriver::logErrorsEnum("Texture_Compressed");
+            } else {
+                glTexImage2D(GL_TEXTURE_2D, i, glInternalFormat, w, h, 0, glFormat, GL_UNSIGNED_BYTE, level);
+            }
+
+            level += mipSize;
+            if (imageSizeStored) {
+                level += 3 - ((mipSize + 3) % 4);
+                if (level > endOfBuffer) {
+                    vWarn("Image data exceeds buffer size");
+                    glBindTexture(GL_TEXTURE_2D, 0);
+
+                    id = texId;
+                    target = GL_TEXTURE_2D;
+                    return;
+                }
+            }
+
+            w >>= 1;
+            h >>= 1;
+            if (w < 1) {
+                w = 1;
+            }
+            if (h < 1) {
+                h = 1;
+            }
+        }
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        // Surfaces look pretty terrible without trilinear filtering
+        if (mipCount <= 1) {
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        } else {
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        }
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        VEglDriver::logErrorsEnum("Texture load");
+
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        id = texId;
+        target = GL_TEXTURE_2D;
+    }
+
+    void createCube(const int format, const uchar *data, uint dataSize, const int mipCount, const bool useSrgbFormat, const bool imageSizeStored)
+    {
+        vAssert(width == height);
+
+        if (mipCount <= 0) {
+            vInfo("Invalid mip count " << mipCount);
+            return;
+        }
+
+        // larger than this would require mipSize below to be a larger type
+        height = width;
+        if (width <= 0 || width > 32768) {
+            vInfo("Invalid texture size (" << width << "x" << height << ")");
+            return;
+        }
+
+        GLenum glFormat;
+        GLenum glInternalFormat;
+        if (!TextureFormatToGlFormat(format, useSrgbFormat, glFormat, glInternalFormat)) {
+            return;
+        }
+
+        GLuint texId;
+        glGenTextures(1, &texId);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, texId);
+
+        const uchar *level = data;
+        const uchar *endOfBuffer = level + dataSize;
+
+        for (int i = 0; i < mipCount; i++) {
+            const int w = width >> i;
+            int32_t mipSize = CalculateTextureSize(format, w, w);
+            if (imageSizeStored) {
+                mipSize = * (const size_t *) level;
+                level += 4;
+                if (level > endOfBuffer) {
+                    vWarn("Image data exceeds buffer size");
+                    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+                    id = texId;
+                    target = GL_TEXTURE_CUBE_MAP;
+                    return;
+                }
+            }
+
+            for (int side = 0; side < 6; side++) {
+                if (mipSize <= 0 || mipSize > endOfBuffer - level) {
+                    vWarn("Mip level " << i << " exceeds buffer size (" << mipSize << " > " << endOfBuffer - level << ")");
+                    glBindTexture( GL_TEXTURE_CUBE_MAP, 0);
+
+                    id = texId;
+                    target = GL_TEXTURE_CUBE_MAP;
+                    return;
+                }
+
+                if (format & Texture_Compressed) {
+                    glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + side, i, glInternalFormat, w, w, 0, mipSize, level);
+                } else {
+                    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + side, i, glInternalFormat, w, w, 0, glFormat, GL_UNSIGNED_BYTE, level);
+                }
+
+                level += mipSize;
+                if (imageSizeStored) {
+                    level += 3 - ((mipSize + 3) % 4);
+                    if (level > endOfBuffer) {
+                        vWarn("Image data exceeds buffer size");
+                        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+                        id = texId;
+                        target = GL_TEXTURE_CUBE_MAP;
+                        return;
+                    }
+                }
+            }
+        }
+
+        // Surfaces look pretty terrible without trilinear filtering
+        if (mipCount <= 1) {
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        } else {
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        }
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        VEglDriver::logErrorsEnum("Texture load");
+
+        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+        id = texId;
+        target = GL_TEXTURE_CUBE_MAP;
+    }
+
+    void loadPVR(const VByteArray &buffer, bool useSrgbFormat, bool noMipMaps)
+    {
+        width = 0;
+        height = 0;
+
+        if (buffer.size() < sizeof(OVR_PVR_HEADER)) {
+            vWarn("Invalid PVR file");
+            return;
+        }
+
+        const OVR_PVR_HEADER *header = reinterpret_cast<const OVR_PVR_HEADER *>(buffer.data());
+        if (header->Version != 0x03525650) {
+            vWarn("Invalid PVR file version");
+            return;
+        }
+
+        int format = 0;
+        switch (header->PixelFormat) {
+        case 2: format = Texture_PVR4bRGB; break;
+        case 3: format = Texture_PVR4bRGBA; break;
+        case 6: format = Texture_ETC1; break;
+        case 22: format = Texture_ETC2_RGB; break;
+        case 23: format = Texture_ETC2_RGBA; break;
+        case 578721384203708274ull: format = Texture_RGBA; break;
+        default:
+            vWarn("Unknown PVR texture format " << header->PixelFormat << "lu, size " << width << "x" << height);
+            return;
+        }
+
+        // skip the metadata
+        const vuint32 startTex = sizeof(OVR_PVR_HEADER) + header->MetaDataSize;
+        if ((startTex < sizeof(OVR_PVR_HEADER)) || (startTex >= buffer.size())) {
+            vWarn("Invalid PVR header sizes");
+            return;
+        }
+
+        const vuint32 mipCount = (noMipMaps) ? 1 : std::max(1u, header->MipMapCount);
+
+        width = header->Width;
+        height = header->Height;
+
+        const uchar *data = reinterpret_cast<const uchar *>(buffer.data());
+        if (header->NumFaces == 1) {
+            create2D(format, data + startTex, buffer.size() - startTex, mipCount, useSrgbFormat, false);
+        } else if (header->NumFaces == 6) {
+            createCube(format, data + startTex, buffer.size() - startTex, mipCount, useSrgbFormat, false);
+        } else {
+            vWarn("PVR file has unsupported number of faces " << header->NumFaces);
+
+            width = 0;
+            height = 0;
+        }
+    }
+
+    void loadKTX(const VByteArray &buffer, bool useSrgbFormat, bool noMipMaps)
+    {
+        width = 0;
+        height = 0;
+
+        if (buffer.size() < sizeof(OVR_KTX_HEADER)) {
+            vWarn("Invalid KTX file");
+            return;
+        }
+
+        const uchar fileIdentifier[12] = {
+            171, 75, 84, 88, 32, 49, 49, 187, 13, 10, 26, 10
+        };
+
+        const OVR_KTX_HEADER *header = reinterpret_cast<const OVR_KTX_HEADER *>(buffer.data());
+        if (memcmp(header->identifier, fileIdentifier, sizeof(fileIdentifier)) != 0) {
+            vWarn("Invalid KTX file");
+            return;
+        }
+
+        // only support little endian
+        if (header->endianness != 0x04030201) {
+            vWarn("KTX file has wrong endianess");
+            return;
+        }
+
+        // only support compressed or unsigned byte
+        if (header->glType != 0 && header->glType != GL_UNSIGNED_BYTE) {
+            vWarn("KTX file has unsupported glType " << header->glType);
+            return;
+        }
+
+        // no support for texture arrays
+        if (header->numberOfArrayElements != 0) {
+            vWarn("KTX file has unsupported number of array elements " << header->numberOfArrayElements);
+            return;
+        }
+
+        // derive the texture format from the GL format
+        int format = 0;
+        if (!GlFormatToTextureFormat(format, header->glFormat, header->glInternalFormat)) {
+            vWarn("KTX file has unsupported glFormat " << header->glFormat << ", glInternalFormat " << header->glInternalFormat);
+            return;
+        }
+
+        // skip the key value data
+        const uintptr_t startTex = sizeof(OVR_KTX_HEADER) + header->bytesOfKeyValueData;
+        if ((startTex < sizeof(OVR_KTX_HEADER)) || (startTex >= buffer.size())) {
+            vWarn("Invalid KTX header sizes");
+            return;
+        }
+
+        width = header->pixelWidth;
+        height = header->pixelHeight;
+
+        const vuint32 mipCount = noMipMaps ? 1 : std::max(1u, header->numberOfMipmapLevels);
+
+        const uchar *bufferData = reinterpret_cast<const uchar *>(buffer.data());
+        if (header->numberOfFaces == 1) {
+            create2D(format, bufferData + startTex, buffer.size() - startTex, mipCount, useSrgbFormat, true);
+        } else if (header->numberOfFaces == 6) {
+            createCube(format, bufferData + startTex, buffer.size() - startTex, mipCount, useSrgbFormat, true);
+        } else {
+            vWarn("KTX file has unsupported number of faces " << header->numberOfFaces);
+
+            width = 0;
+            height = 0;
+        }
+    }
+};
+
+// Not declared inline in the header to avoid having to use GL_TEXTURE_2D
+VTexture::VTexture()
+    : d(new Private)
+{
+}
+
+VTexture::VTexture(uint id)
+    : d(new Private)
+{
+    d->id = id;
+    d->target = GL_TEXTURE_2D;
+}
+
+VTexture::VTexture(uint id, uint target)
+    : d(new Private)
+{
+    d->id = id;
+    d->target = target;
+}
+
+VTexture::VTexture(const VTexture &source)
+    : d(new Private)
+{
+    d->id = source.id();
+    d->target = source.target();
+}
+
+VTexture::VTexture(VTexture &&source)
+    : d(source.d)
+{
+    source.d = nullptr;
+}
+
+VTexture::VTexture(VFile *file, const Flags &flags)
+    : d(new Private)
+{
+    d->load(file->path(), file->readAll(), flags);
+}
+
+VTexture::VTexture(const VResource &resource, const Flags &flags)
+    : d(new Private)
+{
+    d->load(resource.path(), resource.data(), flags);
+}
+
+VTexture::~VTexture()
+{
+    if (d) {
+        //glDeleteTextures(1, &d->id);
+        delete d;
+    }
+}
+
+VTexture &VTexture::operator=(const VTexture &source)
+{
+    d->id = source.id();
+    d->target = source.target();
+    return *this;
+}
+
+VTexture &VTexture::operator=(VTexture &&source)
+{
+    delete d;
+    d = source.d;
+    source.d = nullptr;
+    return *this;
+}
+
+const uint &VTexture::id() const
+{
+    return d->id;
+}
+
+const uint &VTexture::target() const
+{
+    return d->target;
+}
+
+int VTexture::width() const
+{
+    return d->width;
+}
+
+int VTexture::height() const
+{
+    return d->height;
 }
 
 NV_NAMESPACE_END

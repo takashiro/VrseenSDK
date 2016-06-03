@@ -4,6 +4,9 @@
 
 NV_NAMESPACE_BEGIN
 
+class VFile;
+class VResource;
+
 class VTexture
 {
 public:
@@ -30,6 +33,9 @@ public:
     VTexture(const VTexture &source);
     VTexture(VTexture &&source);
 
+    VTexture(VFile *file, const Flags &flags);
+    VTexture(const VResource &resource, const Flags &flags);
+
     ~VTexture();
 
     VTexture &operator=(const VTexture &source);
@@ -38,6 +44,9 @@ public:
     operator uint() const { return id(); }
     const uint &id() const;
     const uint &target() const;
+
+    int width() const;
+    int height() const;
 
 private:
     NV_DECLARE_PRIVATE
