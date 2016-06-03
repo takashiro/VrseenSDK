@@ -66,7 +66,7 @@ unsigned char * VideoBrowser::loadThumbnail( const char * filename, int & width,
 	{
 		void * buffer = NULL;
         uint length = 0;
-        const VZipFile &apk = VZipFile::CurrentApkFile();
+        const VZipFile &apk = vApp->apkFile();
         apk.read(filename, buffer, length);
 
 		if ( buffer )

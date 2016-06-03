@@ -15,6 +15,7 @@ Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
 
 #include "VDir.h"
 #include "VPath.h"
+#include "App.h"
 #include "VZipFile.h"
 #include "VJson.h"
 #include "VArray.h"
@@ -199,7 +200,7 @@ VJson LoadPackageMetaFile( const char* metaFile )
     void * 	buffer = NULL;
 	VString assetsMetaFile = "assets/";
 	assetsMetaFile += metaFile;
-    const VZipFile &apk = VZipFile::CurrentApkFile();
+    const VZipFile &apk = vApp->apkFile();
     apk.read(assetsMetaFile, buffer, bufferLength);
     if ( buffer != nullptr )
 	{
@@ -241,7 +242,7 @@ void OvrMetaData::writeMetaFile(const char * metaFile) const
     void *buffer = NULL;
     VString assetsMetaFile = "assets/";
     assetsMetaFile += metaFile;
-    const VZipFile &apk = VZipFile::CurrentApkFile();
+    const VZipFile &apk = vApp->apkFile();
     apk.read(assetsMetaFile, buffer, bufferLength);
     if (!buffer) {
         vWarn("OvrMetaData failed to read" << assetsMetaFile);

@@ -1909,4 +1909,11 @@ void App::showFPS(bool const show)
         d->fpsPointTracker.Reset();
     }
 }
+
+const VZipFile &App::apkFile() const
+{
+    static VZipFile current(packageCodePath());
+    return current;
+}
+
 NV_NAMESPACE_END

@@ -32,6 +32,7 @@
 #include "VJson.h"
 #include "VZipFile.h"
 #include "VLog.h"
+#include "App.h"
 
 #include "android/JniUtils.h"
 #include "api/VEglDriver.h"
@@ -433,7 +434,7 @@ bool FontInfoType::Load(const VZipFile &languagePackageFile, const VString &file
 	}
 
 	// if it wasn't loaded from the language package, try again from the app package
-    const VZipFile &apk = VZipFile::CurrentApkFile();
+    const VZipFile &apk = vApp->apkFile();
     return LoadFromPackage(apk, fileName);
 }
 
@@ -776,7 +777,7 @@ bool BitmapFontLocal::LoadImage(const VZipFile &languagePackageFile, const VStri
 	// - we opened the language apk and failed to open the texture file
 	// - we failed to open the language apk
     if (packageBuffer == nullptr) {
-        const VZipFile &apk = VZipFile::CurrentApkFile();
+        const VZipFile &apk = vApp->apkFile();
         apk.read(imageName, packageBuffer, length);
 	}
 

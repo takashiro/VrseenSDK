@@ -889,7 +889,7 @@ OvrFolderBrowser::OvrFolderBrowser(
 			panel = "res/raw/panel.tga";
 		}
 
-        const VZipFile &apk = VZipFile::CurrentApkFile();
+        const VZipFile &apk = vApp->apkFile();
         VByteArray buffer = apk.read(panel);
         vAssert(buffer.size() > 0);
 

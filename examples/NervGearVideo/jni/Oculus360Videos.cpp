@@ -195,7 +195,7 @@ void Oculus360Videos::init(const VString &fromPackage, const VString &launchInte
 	materialParms.UseSrgbTextureFormats = ( vApp->vrParms().colorFormat == VColor::COLOR_8888_sRGB );
 
 
-    const VZipFile &apk = VZipFile::CurrentApkFile();
+    const VZipFile &apk = vApp->apkFile();
     void *buffer = nullptr;
     uint length = 0;
     apk.read("assets/stars.ovrscene", buffer, length);

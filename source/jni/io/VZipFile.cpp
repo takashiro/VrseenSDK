@@ -1,8 +1,6 @@
 #include "VZipFile.h"
 #include "VString.h"
-#include "VByteArray.h"
 #include "VLog.h"
-
 #include "App.h"
 
 #include <3rdparty/minizip/unzip.h>
@@ -191,13 +189,6 @@ VByteArray VZipFile::read(const VString &filePath) const
     return buffer;
 }
 
-
-const VZipFile &VZipFile::CurrentApkFile()
-{
-    static VZipFile current(vApp->packageCodePath());
-    return current;
-}
-
 uint LoadTextureFromApplicationPackage(const VString &nameInZip, const VTexture::Flags &flags, int &width, int &height)
 {
     width = 0;
@@ -206,7 +197,7 @@ uint LoadTextureFromApplicationPackage(const VString &nameInZip, const VTexture:
     void *buffer = nullptr;
     uint bufferLength;
 
-    const VZipFile &apk = VZipFile::CurrentApkFile();
+    const VZipFile &apk = vApp->apkFile();
     apk.read(nameInZip, buffer, bufferLength);
     if (buffer == nullptr) {
         return 0;

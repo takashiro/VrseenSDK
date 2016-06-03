@@ -6,6 +6,7 @@
 #include "VStandardPath.h"
 #include "VModule.h"
 #include "VMap.h"
+#include "App.h"
 
 #include <list>
 #include <fstream>
@@ -65,7 +66,7 @@ struct VSoundManager::Private
         uint bufferLength = 0;
         void *buffer = nullptr;
 
-        const VZipFile &apk = VZipFile::CurrentApkFile();
+        const VZipFile &apk = vApp->apkFile();
         apk.read(jsonFile, buffer, bufferLength);
         if (!buffer) {
             vFatal("OvrSoundManager::LoadSoundAssetsFromPackage failed to read" << jsonFile);
@@ -121,7 +122,7 @@ void VSoundManager::loadSoundAssets()
 
     // if that fails, we are in release - load sounds from vrlib/res/raw and the assets folder
     } else {
-        const VZipFile &apk = VZipFile::CurrentApkFile();
+        const VZipFile &apk = vApp->apkFile();
         if (apk.contains(VRLIB_SOUNDS)) {
             d->loadSoundAssetsFromPackage("res/raw/", VRLIB_SOUNDS);
 		}

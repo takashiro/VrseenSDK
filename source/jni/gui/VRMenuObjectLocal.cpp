@@ -59,7 +59,7 @@ bool VRMenuSurfaceTexture::loadTexture( eSurfaceTextureType const type, const VS
     if (!imageName.isEmpty()) {
         void *buffer;
         uint bufferLength;
-        const VZipFile &apk = VZipFile::CurrentApkFile();
+        const VZipFile &apk = vApp->apkFile();
         apk.read(imageName, buffer, bufferLength);
 
         if (!buffer) {

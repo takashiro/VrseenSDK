@@ -120,7 +120,7 @@ SceneDef * ModelManager::LoadScene(const VString &sceneFilename, bool useDynamic
 	VString filename;
 
     if (loadFromApplicationPackage) {
-        const VZipFile &apk = VZipFile::CurrentApkFile();
+        const VZipFile &apk = vApp->apkFile();
         if (!apk.contains(sceneFilename)) {
             vInfo("Scene" << sceneFilename << "not found in application package.  Checking sdcard.");
             loadFromApplicationPackage = false;
@@ -178,7 +178,7 @@ SceneDef * ModelManager::LoadScene(const VString &sceneFilename, bool useDynamic
     VByteArray iconFileName = iconFilename.toUtf8();
 	if ( loadFromApplicationPackage )
     {
-        const VZipFile &apk = VZipFile::CurrentApkFile();
+        const VZipFile &apk = vApp->apkFile();
         void *buffer = nullptr;
         uint length = 0;
         apk.read(filename, buffer, length);

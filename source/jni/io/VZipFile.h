@@ -27,8 +27,6 @@ public:
     bool read(const VString &filePath, VIODevice *output) const;
     VByteArray read(const VString &filePath) const;
 
-    static const VZipFile &CurrentApkFile();
-
 private:
     NV_DECLARE_PRIVATE
     NV_DISABLE_COPY(VZipFile)

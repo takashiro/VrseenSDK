@@ -14,6 +14,7 @@
 NV_NAMESPACE_BEGIN
 
 class VMainActivity;
+class VZipFile;
 
 struct MaterialParms;
 class VRMenuObjectParms;
@@ -106,6 +107,8 @@ public:
     bool isRunning() const;
     bool isShowFPS() const;
     void showFPS(bool const show);
+
+    const VZipFile &apkFile() const;
 
     VText text;
     VPanel panel;
