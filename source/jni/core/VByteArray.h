@@ -14,11 +14,11 @@ public:
     VByteArray(uint length, char ch = '\0');
     VByteArray(const char *str) : basic_string(str) {}
     VByteArray(const char *bytes, uint length) : basic_string(bytes, length) {}
-    VByteArray(const VByteArray &source) : basic_string(source) {}
-    VByteArray(VByteArray &&source) : basic_string(std::move(source)) {}
 
     void append(char ch) { basic_string::operator +=(ch); }
     void append(char *bytes, vint64 length) { basic_string::append(bytes, length); }
+
+    bool isEmpty() const { return empty(); }
 };
 
 NV_NAMESPACE_END
