@@ -791,16 +791,16 @@ void VFrameSmooth::Private::smoothThreadShutdown()
 
     destroyFrameworkGraphics();
 
-    for ( int i = 0; i < 1; i++ )
+    for ( int i = 0; i < MAX_WARP_SOURCES; i++ )
     {
-        //warpSource_t & ws = m_warpSources[i];
-        if ( m_gpuSync )
+        warpSource_t & ws = m_warpSources[i];
+        if ( ws.m_gpuSync )
         {
-            if ( EGL_FALSE == m_eglStatus.eglDestroySyncKHR( m_eglStatus.m_display, m_gpuSync) )
+            if ( EGL_FALSE == m_eglStatus.eglDestroySyncKHR( m_eglStatus.m_display, ws.m_gpuSync) )
             {
                 vInfo("eglDestroySyncKHR returned EGL_FALSE");
             }
-            m_gpuSync = 0;
+            ws.m_gpuSync = 0;
         }
     }
 
@@ -1487,7 +1487,7 @@ void VFrameSmooth::Private::smoothInternal( )
 
 
 
-
+    const int minimumVsyncs = m_minimumVsyncs;
     const long long lastBufferCount = m_eyeBufferCount.state();
 	warpSource_t & ws = m_warpSources[ ( lastBufferCount + 1 ) % MAX_WARP_SOURCES ];
 	ws.m_minimumVsync = m_lastSwapVsyncCount + 2 * m_minimumVsyncs;	// don't use it if from same frame to avoid problems with very fast frames
@@ -1528,7 +1528,7 @@ void VFrameSmooth::Private::smoothInternal( )
 
     if ( ws.m_gpuSync != EGL_NO_SYNC_KHR )
     {
-        if ( EGL_FALSE == m_eglStatus.eglDestroySyncKHR( m_eglStatus.m_display, m_gpuSync ) )
+        if ( EGL_FALSE == m_eglStatus.eglDestroySyncKHR( m_eglStatus.m_display, ws.m_gpuSync ) )
         {
             vInfo( "eglDestroySyncKHR returned EGL_FALSE" );
         }
@@ -1593,7 +1593,7 @@ void VFrameSmooth::Private::smoothInternal( )
         if ( state.EyeBufferCount >= lastBufferCount )
         {
 
-            m_lastSwapVsyncCount = std::max( state.VsyncCount, m_lastSwapVsyncCount + m_minimumVsyncs );
+            m_lastSwapVsyncCount = std::max( state.VsyncCount, m_lastSwapVsyncCount + minimumVsyncs );
 
             const uint64_t suspendNanoSeconds = endSuspendNanoSeconds - startSuspendNanoSeconds;
             if ( suspendNanoSeconds < 1000 * 1000 )
