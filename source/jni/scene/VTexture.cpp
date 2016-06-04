@@ -1141,6 +1141,8 @@ VTexture::VTexture(const VTexture &source)
 {
     d->id = source.id();
     d->target = source.target();
+    d->width = source.width();
+    d->height = source.height();
 }
 
 VTexture::VTexture(VTexture &&source)
@@ -1194,6 +1196,8 @@ VTexture &VTexture::operator=(const VTexture &source)
 {
     d->id = source.id();
     d->target = source.target();
+    d->width = source.width();
+    d->height = source.height();
     return *this;
 }
 
