@@ -1856,17 +1856,15 @@ void OvrFolderBrowser::loadThumbnailToTexture( const VEvent &event )
 	panel->size[ 0 ] *= ( float )width / max;
 	panel->size[ 1 ] *= ( float )height / max;
 
-	GLuint texId = LoadRGBATextureFromMemory(
-        data, width, height, true /* srgb */ ).id();
-
-	vAssert( texId );
+    VTexture texture = LoadRGBATextureFromMemory(data, width, height, true);
+    vAssert(texture.id());
 
 	panelObject->setSurfaceTextureTakeOwnership( 0, 0, SURFACE_TEXTURE_DIFFUSE,
-		texId, panel->size[ 0 ], panel->size[ 1 ] );
+        texture.id(), panel->size[ 0 ], panel->size[ 1 ] );
 
-	BuildTextureMipmaps( texId );
-	MakeTextureTrilinear( texId );
-	MakeTextureClamped( texId );
+    texture.buildMipmaps();
+    texture.trilinear();
+    texture.clamp();
 
 	free( data );
 }
