@@ -1082,7 +1082,11 @@ struct VTexture::Private
 
     void load(const VPath &path, const VByteArray &data, const VTexture::Flags &flags)
     {
-        const VString ext = path.extension().toLower();
+        VString ext = path.extension();
+        if (ext.isEmpty()) {
+            ext = path;
+        }
+        ext = ext.toLower();
 
         if (ext.isEmpty() || data.isEmpty()) {
             // can't load anything from an empty buffer
@@ -1493,6 +1497,12 @@ VTexture::VTexture(const VResource &resource, const Flags &flags)
     : d(new Private)
 {
     d->load(resource.path(), resource.data(), flags);
+}
+
+VTexture::VTexture(const VString &format, const VByteArray &data, const VTexture::Flags &flags)
+    : d(new Private)
+{
+    d->load(format, data, flags);
 }
 
 VTexture::~VTexture()

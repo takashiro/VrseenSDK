@@ -995,12 +995,10 @@ void LoadModelFileTexture( ModelFile & model, const char * textureName,
 							const char * buffer, const int size, const MaterialParms & materialParms )
 {
 	ModelTexture tex;
-    tex.name = VPath(textureName).baseName();
-    int width;
-    int height;
-    tex.texid = LoadTextureFromBuffer( textureName,buffer, size,
-			materialParms.UseSrgbTextureFormats ? VTexture::Flags( VTexture::UseSRGB ) : VTexture::Flags(),
-			width, height );
+    VPath texturePath = textureName;
+    tex.name = texturePath.baseName();
+    VTexture texture(texturePath, VByteArray(buffer, size), materialParms.UseSrgbTextureFormats ? VTexture::UseSRGB : VTexture::NoDefault);
+    tex.texid = texture.id();
 
 	// LOG( ( tex.texid.target == GL_TEXTURE_CUBE_MAP ) ? "GL_TEXTURE_CUBE_MAP: %s" : "GL_TEXTURE_2D: %s", textureName );
 

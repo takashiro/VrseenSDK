@@ -1,6 +1,7 @@
 #pragma once
 
 #include "VFlags.h"
+#include "VString.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -35,6 +36,8 @@ public:
 
     VTexture(VFile &file, const Flags &flags = NoDefault);
     VTexture(const VResource &resource, const Flags &flags = NoDefault);
+
+    VTexture(const VString &format, const VByteArray &data, const Flags &flags = NoDefault);
 
     ~VTexture();
 

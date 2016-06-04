@@ -824,10 +824,10 @@ bool BitmapFontLocal::LoadImageFromBuffer(const VString &imageName, const uchar 
 	if (isASTC) {
 		Texture = LoadASTCTextureFromMemory(buffer, bufferSize, 1);
 	} else {
-        Texture = LoadTextureFromBuffer(imageName.toUtf8().data(),
-                buffer, bufferSize,
-				VTexture::Flags(VTexture::NoDefault), ImageWidth,
-				ImageHeight);
+        VTexture texture(imageName, VByteArray(reinterpret_cast<const char *>(buffer), bufferSize));
+        Texture = texture.id();
+        ImageWidth = texture.width();
+        ImageHeight = texture.height();
 	}
 	if (Texture == 0) {
 		vWarn("BitmapFontLocal::Load: failed to load '" << imageName << "'");

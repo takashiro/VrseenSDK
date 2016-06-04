@@ -64,8 +64,10 @@ bool VRMenuSurfaceTexture::loadTexture( eSurfaceTextureType const type, const VS
 	}
 
     if (m_handle == 0 && allowDefault) {
-        m_handle = LoadTextureFromBuffer(imageName.toUtf8().data(), uiDefaultTgaData, uiDefaultTgaSize,
-							VTexture::Flags(), m_width, m_height );
+        VTexture defaultTga("tga", VByteArray(reinterpret_cast<const char *>(uiDefaultTgaData), uiDefaultTgaSize));
+        m_handle = defaultTga.id();
+        m_width = defaultTga.width();
+        m_height = defaultTga.height();
 		vWarn("VRMenuSurfaceTexture::CreateFromImage: failed to load image '" << imageName << "' - default loaded instead!");
 	}
     m_ownsTexture = true;
