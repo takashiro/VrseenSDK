@@ -1,13 +1,10 @@
 #include "VTexture.h"
 
-#include "VPath.h"
-#include "VFile.h"
-#include "VResource.h"
-#include "VImage.h"
 #include "VEglDriver.h"
-#include "VAlgorithm.h"
-
-#include "3rdParty/stb/stb_image.h"
+#include "VFile.h"
+#include "VImage.h"
+#include "VPath.h"
+#include "VResource.h"
 
 #include <fstream>
 
@@ -285,15 +282,15 @@ static int32_t CalculateTextureSize(int format, int width, int height)
     return 0;
 }
 
-struct astcHeader
+struct AstcHeader
 {
-    unsigned char		magic[4];
-    unsigned char		blockDim_x;
-    unsigned char		blockDim_y;
-    unsigned char		blockDim_z;
-    unsigned char		xsize[3];
-    unsigned char		ysize[3];
-    unsigned char		zsize[3];
+    uchar magic[4];
+    uchar blockDim_x;
+    uchar blockDim_y;
+    uchar blockDim_z;
+    uchar xsize[3];
+    uchar ysize[3];
+    uchar zsize[3];
 };
 
 /*
@@ -374,20 +371,20 @@ Offset    Size       Name           Description
 */
 
 #pragma pack(1)
-struct OVR_PVR_HEADER
+struct PvrHeader
 {
-    vuint32	Version;
-    vuint32	Flags;
-    vuint64  PixelFormat;
-    vuint32  ColorSpace;
-    vuint32  ChannelType;
-    vuint32	Height;
-    vuint32	Width;
-    vuint32	Depth;
-    vuint32  NumSurfaces;
-    vuint32  NumFaces;
-    vuint32  MipMapCount;
-    vuint32  MetaDataSize;
+    vuint32 version;
+    vuint32 flags;
+    vuint64 pixelFormat;
+    vuint32 colorSpace;
+    vuint32 channelType;
+    vuint32 height;
+    vuint32 width;
+    vuint32 depth;
+    vuint32 numSurfaces;
+    vuint32 numFaces;
+    vuint32 mipMapCount;
+    vuint32 metaDataSize;
 };
 #pragma pack()
 
@@ -405,7 +402,7 @@ unsigned char * LoadPVRBuffer( const char * fileName, int & width, int & height 
     void *buffer = NULL;
     buffer = malloc(fileLength);
     fileBuffer.read(reinterpret_cast<std::istream::char_type*>(buffer), fileLength);
-    if ( fileLength < ( int )( sizeof( OVR_PVR_HEADER ) ) )
+    if ( fileLength < ( int )( sizeof( PvrHeader ) ) )
 	{
 		vInfo("Invalid PVR file");
         free( (void *)buffer );
@@ -414,8 +411,8 @@ unsigned char * LoadPVRBuffer( const char * fileName, int & width, int & height 
 		return NULL;
 	}
 
-    const OVR_PVR_HEADER & header = *( OVR_PVR_HEADER * )buffer;
-	if ( header.Version != 0x03525650 )
+    const PvrHeader & header = *( PvrHeader * )buffer;
+    if ( header.version != 0x03525650 )
 	{
 		vInfo("Invalid PVR file version");
         free( (void *)buffer );
@@ -425,11 +422,11 @@ unsigned char * LoadPVRBuffer( const char * fileName, int & width, int & height 
 	}
 
 	int format = 0;
-	switch ( header.PixelFormat )
+    switch ( header.pixelFormat )
 	{
         case 578721384203708274ull:	format = Texture_RGBA;		break;
 		default:
-			vInfo("Unknown PVR texture format " << header.PixelFormat << "lu, size " << width << "x" << height);
+            vInfo("Unknown PVR texture format " << header.pixelFormat << "lu, size " << width << "x" << height);
             free( (void *)buffer );
             buffer = NULL;
             fileLength = 0;
@@ -437,8 +434,8 @@ unsigned char * LoadPVRBuffer( const char * fileName, int & width, int & height 
 	}
 
 	// skip the metadata
-	const vuint32 startTex = sizeof( OVR_PVR_HEADER ) + header.MetaDataSize;
-    if ( ( startTex < sizeof( OVR_PVR_HEADER ) ) || ( startTex >= static_cast< size_t >( fileLength ) ) )
+    const vuint32 startTex = sizeof( PvrHeader ) + header.metaDataSize;
+    if ( ( startTex < sizeof( PvrHeader ) ) || ( startTex >= static_cast< size_t >( fileLength ) ) )
 	{
 		vInfo("Invalid PVR header sizes");
         free( (void *)buffer );
@@ -447,7 +444,7 @@ unsigned char * LoadPVRBuffer( const char * fileName, int & width, int & height 
 		return NULL;
 	}
 
-    size_t mipSize = CalculateTextureSize( format, header.Width, header.Height );
+    size_t mipSize = CalculateTextureSize( format, header.width, header.height );
 
     const int outBufferSizeBytes = fileLength - startTex;
 
@@ -459,8 +456,8 @@ unsigned char * LoadPVRBuffer( const char * fileName, int & width, int & height 
 		return NULL;
 	}
 
-	width = header.Width;
-	height = header.Height;
+    width = header.width;
+    height = header.height;
 
 	// skip the metadata
 	unsigned char * outBuffer = ( unsigned char * )malloc( outBufferSizeBytes );
@@ -522,22 +519,22 @@ end
 */
 
 #pragma pack(1)
-struct OVR_KTX_HEADER
+struct KtxHeader
 {
-	uchar	identifier[12];
-	vuint32	endianness;
-	vuint32	glType;
-	vuint32	glTypeSize;
-	vuint32	glFormat;
-	vuint32	glInternalFormat;
-	vuint32	glBaseInternalFormat;
-	vuint32	pixelWidth;
-	vuint32	pixelHeight;
-	vuint32	pixelDepth;
-	vuint32	numberOfArrayElements;
-	vuint32	numberOfFaces;
-	vuint32	numberOfMipmapLevels;
-	vuint32	bytesOfKeyValueData;
+    uchar identifier[12];
+    vuint32 endianness;
+    vuint32 glType;
+    vuint32 glTypeSize;
+    vuint32 glFormat;
+    vuint32 glInternalFormat;
+    vuint32 glBaseInternalFormat;
+    vuint32 pixelWidth;
+    vuint32 pixelHeight;
+    vuint32 pixelDepth;
+    vuint32 numberOfArrayElements;
+    vuint32 numberOfFaces;
+    vuint32 numberOfMipmapLevels;
+    vuint32 bytesOfKeyValueData;
 };
 #pragma pack()
 
@@ -810,19 +807,19 @@ struct VTexture::Private
         width = 0;
         height = 0;
 
-        if (buffer.size() < sizeof(OVR_PVR_HEADER)) {
+        if (buffer.size() < sizeof(PvrHeader)) {
             vWarn("Invalid PVR file");
             return;
         }
 
-        const OVR_PVR_HEADER *header = reinterpret_cast<const OVR_PVR_HEADER *>(buffer.data());
-        if (header->Version != 0x03525650) {
+        const PvrHeader *header = reinterpret_cast<const PvrHeader *>(buffer.data());
+        if (header->version != 0x03525650) {
             vWarn("Invalid PVR file version");
             return;
         }
 
         int format = 0;
-        switch (header->PixelFormat) {
+        switch (header->pixelFormat) {
         case 2: format = Texture_PVR4bRGB; break;
         case 3: format = Texture_PVR4bRGBA; break;
         case 6: format = Texture_ETC1; break;
@@ -830,29 +827,29 @@ struct VTexture::Private
         case 23: format = Texture_ETC2_RGBA; break;
         case 578721384203708274ull: format = Texture_RGBA; break;
         default:
-            vWarn("Unknown PVR texture format " << header->PixelFormat << "lu, size " << width << "x" << height);
+            vWarn("Unknown PVR texture format " << header->pixelFormat << "lu, size " << width << "x" << height);
             return;
         }
 
         // skip the metadata
-        const vuint32 startTex = sizeof(OVR_PVR_HEADER) + header->MetaDataSize;
-        if ((startTex < sizeof(OVR_PVR_HEADER)) || (startTex >= buffer.size())) {
+        const vuint32 startTex = sizeof(PvrHeader) + header->metaDataSize;
+        if ((startTex < sizeof(PvrHeader)) || (startTex >= buffer.size())) {
             vWarn("Invalid PVR header sizes");
             return;
         }
 
-        const vuint32 mipCount = (noMipMaps) ? 1 : std::max(1u, header->MipMapCount);
+        const vuint32 mipCount = (noMipMaps) ? 1 : std::max(1u, header->mipMapCount);
 
-        width = header->Width;
-        height = header->Height;
+        width = header->width;
+        height = header->height;
 
         const uchar *data = reinterpret_cast<const uchar *>(buffer.data());
-        if (header->NumFaces == 1) {
+        if (header->numFaces == 1) {
             create2D(format, data + startTex, buffer.size() - startTex, mipCount, useSrgbFormat, false);
-        } else if (header->NumFaces == 6) {
+        } else if (header->numFaces == 6) {
             createCube(format, data + startTex, buffer.size() - startTex, mipCount, useSrgbFormat, false);
         } else {
-            vWarn("PVR file has unsupported number of faces " << header->NumFaces);
+            vWarn("PVR file has unsupported number of faces " << header->numFaces);
 
             width = 0;
             height = 0;
@@ -864,7 +861,7 @@ struct VTexture::Private
         width = 0;
         height = 0;
 
-        if (buffer.size() < sizeof(OVR_KTX_HEADER)) {
+        if (buffer.size() < sizeof(KtxHeader)) {
             vWarn("Invalid KTX file");
             return;
         }
@@ -873,7 +870,7 @@ struct VTexture::Private
             171, 75, 84, 88, 32, 49, 49, 187, 13, 10, 26, 10
         };
 
-        const OVR_KTX_HEADER *header = reinterpret_cast<const OVR_KTX_HEADER *>(buffer.data());
+        const KtxHeader *header = reinterpret_cast<const KtxHeader *>(buffer.data());
         if (memcmp(header->identifier, fileIdentifier, sizeof(fileIdentifier)) != 0) {
             vWarn("Invalid KTX file");
             return;
@@ -905,8 +902,8 @@ struct VTexture::Private
         }
 
         // skip the key value data
-        const uintptr_t startTex = sizeof(OVR_KTX_HEADER) + header->bytesOfKeyValueData;
-        if ((startTex < sizeof(OVR_KTX_HEADER)) || (startTex >= buffer.size())) {
+        const uintptr_t startTex = sizeof(KtxHeader) + header->bytesOfKeyValueData;
+        if ((startTex < sizeof(KtxHeader)) || (startTex >= buffer.size())) {
             vWarn("Invalid KTX header sizes");
             return;
         }
@@ -1024,7 +1021,7 @@ void VTexture::loadRed(const uchar *data, int width, int height)
 
 void VTexture::loadAstc(const uchar *data, uint size, int numPlanes)
 {
-    const astcHeader *header = reinterpret_cast<const astcHeader *>(data);
+    const AstcHeader *header = reinterpret_cast<const AstcHeader *>(data);
 
 
     // only supporting R channel for now
