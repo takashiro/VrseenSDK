@@ -208,11 +208,12 @@ void MovieManager::LoadPoster( MovieDef *movie )
     posterFileName.append(".png");
 
     VFile posterFile(posterFileName, VFile::ReadOnly);
-    vAssert(posterFile.exists() && posterFile.isReadable());
-    VTexture poster(posterFile);
-    movie->Poster = poster.id();
-    movie->PosterWidth = poster.width();
-    movie->PosterHeight = poster.height();
+    if (posterFile.exists() && posterFile.isReadable()) {
+        VTexture poster(posterFile);
+        movie->Poster = poster.id();
+        movie->PosterWidth = poster.width();
+        movie->PosterHeight = poster.height();
+    }
 
     if (movie->Poster == 0) {
         if (Cinema.isExternalSDCardDir(posterFileName)) {
@@ -236,11 +237,12 @@ void MovieManager::LoadPoster( MovieDef *movie )
 			// no thumbnail found, so create it.  if it's on an external sdcard, posterFilename will contain the new filename at this point and will load it from the cache
             if ( ( movie->Poster == 0 ) && Native::CreateVideoThumbnail(movie->Filename, posterFileName, PosterWidth, PosterHeight)) {
                 VFile posterFile(posterFileName, VFile::ReadOnly);
-                vAssert(posterFile.exists() && posterFile.isReadable());
-                VTexture poster(posterFile);
-                movie->Poster = poster.id();
-                movie->PosterWidth = poster.width();
-                movie->PosterHeight = poster.height();
+                if (posterFile.exists() && posterFile.isReadable()) {
+                    VTexture poster(posterFile);
+                    movie->Poster = poster.id();
+                    movie->PosterWidth = poster.width();
+                    movie->PosterHeight = poster.height();
+                }
 			}
 		}
 	}

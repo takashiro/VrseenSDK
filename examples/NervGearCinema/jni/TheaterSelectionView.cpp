@@ -185,7 +185,7 @@ void TheaterSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, Bitmap
 		const SceneDef & theater = Cinema.modelMgr.GetTheater( i );
 
 		CarouselItem *item = new CarouselItem();
-		item->texture = theater.IconTexture;
+        item->texture = theater.IconTexture.id();
 
         Theaters.append( item );
 	}

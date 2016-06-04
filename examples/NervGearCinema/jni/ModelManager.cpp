@@ -83,14 +83,11 @@ void ModelManager::LoadModels()
 		VoidScene->UseDynamicProgram = false;
 		VoidScene->UseScreenGeometry = false;
 		VoidScene->UseFreeScreen = true;
+        VoidScene->IconTexture.load(VResource("assets/VoidTheater.png"));
 
-        VTexture icon(VResource("assets/VoidTheater.png"), VTexture::NoDefault);
-        vAssert(icon.id() > 0);
-        VoidScene->IconTexture = icon.id();
-
-		BuildTextureMipmaps( VoidScene->IconTexture );
-		MakeTextureTrilinear( VoidScene->IconTexture );
-		MakeTextureClamped( VoidScene->IconTexture );
+        VoidScene->IconTexture.buildMipmaps();
+        VoidScene->IconTexture.trilinear();
+        VoidScene->IconTexture.clamp();
 
         Theaters.append( VoidScene );
 
@@ -185,24 +182,21 @@ SceneDef * ModelManager::LoadScene(const VString &sceneFilename, bool useDynamic
         length = 0;
 
         VFile icon(iconFileName, VFile::ReadOnly);
-        vAssert(icon.exists() && icon.isReadable());
-        VTexture texture(icon);
-        def->IconTexture = texture.id();
+        if(icon.exists() && icon.isReadable()) {
+            def->IconTexture.load(icon);
+        }
     } else {
         def->SceneModel = LoadModelFile(fileName.toUtf8().data(), glPrograms, materialParms );
 
         VFile icon(iconFileName, VFile::ReadOnly);
-        vAssert(icon.exists() && icon.isReadable());
-        VTexture texture(icon);
-        def->IconTexture = texture.id();
+        if (icon.exists() && icon.isReadable()) {
+            def->IconTexture.load(icon);
+        }
     }
 
-	if ( def->IconTexture != 0 )
-	{
+    if (def->IconTexture.id() != 0) {
         vInfo("Loaded external icon for theater:" << iconFileName);
-	}
-	else
-	{
+    } else {
 		const ModelTexture * iconTexture = def->SceneModel->FindNamedTexture( "icon" );
 		if ( iconTexture != NULL )
 		{
@@ -211,15 +205,13 @@ SceneDef * ModelManager::LoadScene(const VString &sceneFilename, bool useDynamic
 		else
 		{
 			vInfo("No icon in scene.  Loading default.");
-
-            VTexture icon(VResource("assets/noimage.png"), VTexture::NoDefault);
-            def->IconTexture = icon.id();
+            def->IconTexture.load(VResource("assets/noimage.png"));
 		}
 	}
 
-	BuildTextureMipmaps( def->IconTexture );
-	MakeTextureTrilinear( def->IconTexture );
-	MakeTextureClamped( def->IconTexture );
+    def->IconTexture.buildMipmaps();
+    def->IconTexture.trilinear();
+    def->IconTexture.clamp();
 
 	def->UseScreenGeometry = useScreenGeometry;
 	def->UseFreeScreen = false;

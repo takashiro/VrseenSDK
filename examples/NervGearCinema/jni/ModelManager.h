@@ -2,9 +2,10 @@
 
 #include "ModelFile.h"
 
-#include "VArray.h"
-#include "VEvent.h"
-#include "VString.h"
+#include <VArray.h>
+#include <VEvent.h>
+#include <VString.h>
+#include <VTexture.h>
 
 NV_USING_NAMESPACE
 
@@ -16,9 +17,7 @@ class SceneDef
 {
 public:
 						SceneDef() :
-							SceneModel( NULL ),
-							Filename(),
-							IconTexture( 0 ),
+                            SceneModel( NULL ),
 							UseScreenGeometry( false ),
 							LobbyScreen( false ),
 							UseFreeScreen( false ),
@@ -28,7 +27,7 @@ public:
 
 	ModelFile *			SceneModel;
 	VString				Filename;
-	GLuint				IconTexture;
+    VTexture IconTexture;
 	bool				UseScreenGeometry;	// set to true to draw using the screen geoemetry (for curved screens)
 	bool				LobbyScreen;
 	bool				UseFreeScreen;
