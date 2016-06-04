@@ -1846,6 +1846,7 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
         }
     }
 
+    d->kernel->InitTimeWarpParms();
     // This eye set is complete, use it now.
     if ( numPresents > 0 )
     {
