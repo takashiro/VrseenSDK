@@ -35,6 +35,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <VStandardPath.h>
 #include <VFile.h>
 #include <VResource.h>
+#include <VTexture.h>
 
 namespace NervGear {
 

@@ -12,7 +12,7 @@
 #include "VZipFile.h"
 #include "VLog.h"
 #include "VResource.h"
-
+#include "VTexture.h"
 
 class LocklessDouble
 {
