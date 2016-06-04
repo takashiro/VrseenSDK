@@ -1004,9 +1004,8 @@ void LoadModelFileTexture( ModelFile & model, const char * textureName,
 
 	// file name metadata for enabling clamp mode
 	// Used for sky sides in Tuscany.
-	if ( strstr( textureName, "_c." ) )
-	{
-		MakeTextureClamped( tex.texid );
+    if ( strstr( textureName, "_c." ) ) {
+        tex.texid.clamp();
 	}
 
 	model.Textures.append( tex );
@@ -1102,7 +1101,7 @@ void LoadModelFileJson(ModelFile &model,
 						{
 							if ( materialParms.EnableDiffuseAniso == true )
 							{
-								MakeTextureAniso( model.Textures[i].texid, 2.0f );
+                                model.Textures[i].texid.aniso(2.0f);
 							}
 						}
 						else if ( usage == "emissive" )
@@ -1110,7 +1109,7 @@ void LoadModelFileJson(ModelFile &model,
 							if ( materialParms.EnableEmissiveLodClamp == true )
 							{
 								// LOD clamp lightmap textures to avoid light bleeding
-								MakeTextureLodClamped( model.Textures[i].texid, 1 );
+                                model.Textures[i].texid.clamp(1);
 							}
 						}
 						/*

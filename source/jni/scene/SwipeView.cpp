@@ -190,9 +190,9 @@ static VTexture BuildBorderTexture( int width, int height )
 		data[i*width] = 0;
 		data[i*width+width-1] = 0;
 	}
-	VTexture	tex = LoadRTextureFromMemory( data, width, height );
+    VTexture tex = LoadRTextureFromMemory( data, width, height );
 	free( data );
-	MakeTextureClamped( tex );
+    tex.clamp();
 	return tex;
 }
 

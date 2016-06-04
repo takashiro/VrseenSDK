@@ -628,8 +628,10 @@ void Oculus360Photos::loadRgbaTexture( const unsigned char * data, int width, in
         glTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, width, height, glFormat, GL_UNSIGNED_BYTE, data );
     }
 
-    BuildTextureMipmaps( texId );
-    MakeTextureTrilinear( texId );
+    VTexture texture(texId);
+    texture.buildMipmaps();
+    texture.trilinear();
+
     glBindTexture( GL_TEXTURE_2D, texId );
     // Because equirect panos pinch at the poles so much,
     // they would pull in mip maps so deep you would see colors

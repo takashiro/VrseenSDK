@@ -682,51 +682,6 @@ struct OVR_KTX_HEADER
 };
 #pragma pack()
 
-void MakeTextureClamped(const VTexture &texture)
-{
-    glBindTexture(texture.target(), texture.id());
-    glTexParameteri(texture.target(), GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(texture.target(), GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glBindTexture(texture.target(), 0);
-}
-
-void MakeTextureLodClamped(const VTexture &texture, int maxLod)
-{
-    glBindTexture(texture.target(), texture.id());
-    glTexParameteri(texture.target(), GL_TEXTURE_MAX_LEVEL, maxLod);
-    glBindTexture(texture.target(), 0);
-}
-
-void MakeTextureTrilinear(const VTexture &texture)
-{
-    glBindTexture(texture.target(), texture.id());
-    glTexParameteri(texture.target(), GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
-    glTexParameteri(texture.target(), GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-    glBindTexture(texture.target(), 0);
-}
-
-void MakeTextureLinear(const VTexture &texture)
-{
-    glBindTexture(texture.target(), texture.id());
-    glTexParameteri(texture.target(), GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-    glTexParameteri(texture.target(), GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-    glBindTexture(texture.target(), 0);
-}
-
-void MakeTextureAniso(const VTexture &texture, float maxAniso)
-{
-    glBindTexture(texture.target(), texture.id());
-    glTexParameterf(texture.target(), GL_TEXTURE_MAX_ANISOTROPY_EXT, maxAniso);
-    glBindTexture(texture.target(), 0);
-}
-
-void BuildTextureMipmaps(const VTexture &texture)
-{
-    glBindTexture(texture.target(), texture.id());
-    glGenerateMipmap(texture.target());
-    glBindTexture(texture.target(), 0);
-}
-
 struct VTexture::Private
 {
     uint id;
@@ -1237,7 +1192,7 @@ void VTexture::clamp()
     glBindTexture(d->target, 0);
 }
 
-void VTexture::clampLOD(int maxLod)
+void VTexture::clamp(int maxLod)
 {
     glBindTexture(d->target, d->id);
     glTexParameteri(d->target, GL_TEXTURE_MAX_LEVEL, maxLod);

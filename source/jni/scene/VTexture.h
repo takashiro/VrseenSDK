@@ -55,7 +55,7 @@ public:
     int height() const;
 
     void clamp();
-    void clampLOD(int maxLod);
+    void clamp(int maxLod);
 
     void linear();
     void trilinear();
@@ -71,13 +71,6 @@ private:
 VTexture LoadRGBATextureFromMemory(const uchar * texture, const int width, const int height, const bool useSrgbFormat);
 VTexture LoadRTextureFromMemory(const uchar * texture, const int width, const int height);
 VTexture LoadASTCTextureFromMemory(const uchar * buffer, uint bufferSize, const int numPlanes);
-
-void		MakeTextureClamped(const VTexture &texid);
-void		MakeTextureLodClamped(const VTexture &texId, int maxLod );
-void		MakeTextureTrilinear(const VTexture &texture);
-void		MakeTextureLinear(const VTexture &texture);
-void		MakeTextureAniso(const VTexture &texId, float maxAniso);
-void		BuildTextureMipmaps(const VTexture &texture);
 
 unsigned char * LoadPVRBuffer( const char * fileName, int & width, int & height );
 
