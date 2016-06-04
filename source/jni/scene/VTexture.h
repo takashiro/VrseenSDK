@@ -51,13 +51,21 @@ public:
     int width() const;
     int height() const;
 
+    void clamp();
+    void clampLOD(int maxLod);
+
+    void linear();
+    void trilinear();
+
+    void aniso(float maxAniso);
+
+    void buildMipmaps();
+
 private:
     NV_DECLARE_PRIVATE
 };
 
-// Allocates a GPU texture and uploads the raw data.
 VTexture LoadRGBATextureFromMemory(const uchar * texture, const int width, const int height, const bool useSrgbFormat);
-VTexture LoadRGBTextureFromMemory(const uchar *texture, const int width, const int height, const bool useSrgbFormat);
 VTexture LoadRTextureFromMemory(const uchar * texture, const int width, const int height);
 VTexture LoadASTCTextureFromMemory(const uchar * buffer, uint bufferSize, const int numPlanes);
 
