@@ -209,13 +209,10 @@ void MovieManager::LoadPoster( MovieDef *movie )
 
     VFile posterFile(posterFileName, VFile::ReadOnly);
     if (posterFile.exists() && posterFile.isReadable()) {
-        VTexture poster(posterFile);
-        movie->Poster = poster.id();
-        movie->PosterWidth = poster.width();
-        movie->PosterHeight = poster.height();
+        movie->Poster.load(posterFile);
     }
 
-    if (movie->Poster == 0) {
+    if (movie->Poster.id() == 0) {
         if (Cinema.isExternalSDCardDir(posterFileName)) {
 			// Since we're unable to write to the external sd card and writing to the
 			// cache directory doesn't seem to work, just disable generation of
@@ -235,29 +232,23 @@ void MovieManager::LoadPoster( MovieDef *movie )
 #endif
         } else {
 			// no thumbnail found, so create it.  if it's on an external sdcard, posterFilename will contain the new filename at this point and will load it from the cache
-            if ( ( movie->Poster == 0 ) && Native::CreateVideoThumbnail(movie->Filename, posterFileName, PosterWidth, PosterHeight)) {
+            if (movie->Poster.id() == 0 && Native::CreateVideoThumbnail(movie->Filename, posterFileName, PosterWidth, PosterHeight)) {
                 VFile posterFile(posterFileName, VFile::ReadOnly);
                 if (posterFile.exists() && posterFile.isReadable()) {
-                    VTexture poster(posterFile);
-                    movie->Poster = poster.id();
-                    movie->PosterWidth = poster.width();
-                    movie->PosterHeight = poster.height();
+                    movie->Poster.load(posterFile);
                 }
 			}
 		}
 	}
 
 	// if all else failed, then just use the default poster
-    if (movie->Poster == 0) {
-        VTexture poster(VResource("assets/default_poster.png"), VTexture::NoDefault);
-        movie->Poster = poster.id();
-        movie->PosterWidth = poster.width();
-        movie->PosterHeight = poster.height();
+    if (movie->Poster.id() == 0) {
+        movie->Poster.load(VResource("assets/default_poster.png"));
 	}
 
-	BuildTextureMipmaps( movie->Poster );
-	MakeTextureTrilinear( movie->Poster );
-	MakeTextureClamped( movie->Poster );
+    movie->Poster.buildMipmaps();
+    movie->Poster.trilinear();
+    movie->Poster.clamp();
 }
 
 bool MovieManager::IsSupportedMovieFormat( const VString &extension ) const

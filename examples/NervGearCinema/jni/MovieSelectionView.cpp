@@ -628,8 +628,8 @@ void MovieSelectionView::SetMovieList( const VArray<const MovieDef *> &movies, c
 
 		CarouselItem *item = new CarouselItem();
 		item->texture 		= movie->Poster;
-		item->textureWidth 	= movie->PosterWidth;
-		item->textureHeight	= movie->PosterHeight;
+        item->textureWidth 	= movie->Poster.width();
+        item->textureHeight	= movie->Poster.height();
 		item->userFlags 	= movie->Is3D ? 1 : 0;
         MovieBrowserItems.append( item );
 	}
