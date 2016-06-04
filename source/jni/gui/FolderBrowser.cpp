@@ -1856,7 +1856,8 @@ void OvrFolderBrowser::loadThumbnailToTexture( const VEvent &event )
 	panel->size[ 0 ] *= ( float )width / max;
 	panel->size[ 1 ] *= ( float )height / max;
 
-    VTexture texture = LoadRGBATextureFromMemory(data, width, height, true);
+    VTexture texture;
+    texture.loadRgba(data, width, height);
     vAssert(texture.id());
 
 	panelObject->setSurfaceTextureTakeOwnership( 0, 0, SURFACE_TEXTURE_DIFFUSE,

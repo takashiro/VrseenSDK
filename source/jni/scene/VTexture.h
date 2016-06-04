@@ -44,6 +44,10 @@ public:
     void load(const VResource &resource, const Flags &flags = NoDefault);
     void load(const VString &format, const VByteArray &data, const Flags &flags = NoDefault);
 
+    void loadRgba(const uchar *data, int width, int height, bool useSrgb = true);
+    void loadRed(const uchar *data, int width, int height);
+    void loadAstc(const uchar *data, uint size, int numPlanes);
+
     VTexture &operator=(const VTexture &source);
     VTexture &operator=(VTexture &&source);
 
@@ -67,10 +71,6 @@ public:
 private:
     NV_DECLARE_PRIVATE
 };
-
-VTexture LoadRGBATextureFromMemory(const uchar * texture, const int width, const int height, const bool useSrgbFormat);
-VTexture LoadRTextureFromMemory(const uchar * texture, const int width, const int height);
-VTexture LoadASTCTextureFromMemory(const uchar * buffer, uint bufferSize, const int numPlanes);
 
 unsigned char * LoadPVRBuffer( const char * fileName, int & width, int & height );
 

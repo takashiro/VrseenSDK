@@ -822,7 +822,9 @@ bool BitmapFontLocal::LoadImageFromBuffer(const VString &imageName, const uchar 
 	}
 
 	if (isASTC) {
-		Texture = LoadASTCTextureFromMemory(buffer, bufferSize, 1);
+        VTexture texture;
+        texture.loadAstc(buffer, bufferSize, 1);
+        Texture = texture.id();
 	} else {
         VTexture texture(imageName, VByteArray(reinterpret_cast<const char *>(buffer), bufferSize));
         Texture = texture.id();

@@ -392,50 +392,16 @@ static VTexture CreateGlTexture(const int format, const int width, const int hei
     return VTexture(texId, GL_TEXTURE_2D);
 }
 
-VTexture LoadRTextureFromMemory(const uchar *texture, const int width, const int height)
-{
-    const size_t dataSize = CalculateTextureSize(Texture_R, width, height );
-    return CreateGlTexture(Texture_R, width, height, texture, dataSize, 1, false, false);
-}
-
 struct astcHeader
 {
-	unsigned char		magic[4];
-	unsigned char		blockDim_x;
-	unsigned char		blockDim_y;
-	unsigned char		blockDim_z;
-	unsigned char		xsize[3];
-	unsigned char		ysize[3];
-	unsigned char		zsize[3];
+    unsigned char		magic[4];
+    unsigned char		blockDim_x;
+    unsigned char		blockDim_y;
+    unsigned char		blockDim_z;
+    unsigned char		xsize[3];
+    unsigned char		ysize[3];
+    unsigned char		zsize[3];
 };
-
-VTexture LoadASTCTextureFromMemory( uint8_t const * buffer, const size_t bufferSize, const int numPlanes )
-{
-	astcHeader const * header = reinterpret_cast< astcHeader const * >( buffer );
-
-	int const w = ( (int)header->xsize[2] << 16 ) | ( (int)header->xsize[1] << 8 ) | ( (int)header->xsize[0] );
-	int const h = ( (int)header->ysize[2] << 16 ) | ( (int)header->ysize[1] << 8 ) | ( (int)header->ysize[0] );
-
-	// only supporting R channel for now
-	vAssert( numPlanes == 1 );
-	// only supporting 6x6x1 for now
-	//vAssert( header->blockDim_x == 6 && header->blockDim_y == 6 && header->blockDim_z == 1 );
-	vAssert( header->blockDim_x == 4 && header->blockDim_y == 4 && header->blockDim_z == 1 );
-	if ( header->blockDim_z != 1 )
-	{
-		vAssert( header->blockDim_z == 1 );
-		vInfo("Only 2D ASTC textures are supported");
-		return VTexture();
-	}
-
-	TextureFormat format = Texture_ASTC_4x4;
-	if ( header->blockDim_x == 6 && header->blockDim_y == 6 )
-	{
-		format = Texture_ASTC_6x6;
-	}
-
-    return CreateGlTexture(format, w, h, buffer, bufferSize, 1, false, false );
-}
 
 /*
 
@@ -1147,6 +1113,49 @@ void VTexture::load(const VString &format, const VByteArray &data, const VTextur
     d->load(format, data, flags);
 }
 
+void VTexture::loadRgba(const uchar *data, int width, int height, bool useSrgb)
+{
+    const size_t dataSize = CalculateTextureSize(Texture_RGBA, width, height);
+    d->width = width;
+    d->height = height;
+    d->create2D(Texture_RGBA, data, dataSize, 1, useSrgb, false);
+}
+
+void VTexture::loadRed(const uchar *data, int width, int height)
+{
+    const size_t dataSize = CalculateTextureSize(Texture_R, width, height);
+    d->width = width;
+    d->height = height;
+    d->create2D(Texture_R, data, dataSize, 1, false, false);
+}
+
+void VTexture::loadAstc(const uchar *data, uint size, int numPlanes)
+{
+    const astcHeader *header = reinterpret_cast<const astcHeader *>(data);
+
+
+    // only supporting R channel for now
+    vAssert(numPlanes == 1);
+
+    // only supporting 6x6x1 for now
+    //vAssert( header->blockDim_x == 6 && header->blockDim_y == 6 && header->blockDim_z == 1 );
+    vAssert(header->blockDim_x == 4 && header->blockDim_y == 4 && header->blockDim_z == 1);
+    if (header->blockDim_z != 1) {
+        vAssert(header->blockDim_z == 1);
+        vInfo("Only 2D ASTC textures are supported");
+        return;
+    }
+
+    TextureFormat format = Texture_ASTC_4x4;
+    if (header->blockDim_x == 6 && header->blockDim_y == 6) {
+        format = Texture_ASTC_6x6;
+    }
+
+    d->width = ((int) header->xsize[2] << 16) | ((int) header->xsize[1] << 8) | ((int) header->xsize[0]);
+    d->height = ((int) header->ysize[2] << 16) | ((int) header->ysize[1] << 8) | ((int) header->ysize[0]);
+    d->create2D(format, data, size, 1, false, false);
+}
+
 VTexture &VTexture::operator=(const VTexture &source)
 {
     d->id = source.id();
@@ -1227,12 +1236,6 @@ void VTexture::buildMipmaps()
     glBindTexture(d->target, d->id);
     glGenerateMipmap(d->target);
     glBindTexture(d->target, 0);
-}
-
-VTexture LoadRGBATextureFromMemory(const uchar *texture, const int width, const int height, const bool useSrgbFormat)
-{
-    const size_t dataSize = CalculateTextureSize(Texture_RGBA, width, height);
-    return CreateGlTexture(Texture_RGBA, width, height, texture, dataSize, 1, useSrgbFormat, false);
 }
 
 NV_NAMESPACE_END
