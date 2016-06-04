@@ -68,21 +68,6 @@ void		MakeTextureLinear(const VTexture &texture);
 void		MakeTextureAniso(const VTexture &texId, float maxAniso);
 void		BuildTextureMipmaps(const VTexture &texture);
 
-// FileName's extension determines the file type, but the data is taken from an
-// already loaded buffer.
-//
-// The stb_image file formats are supported:
-// .jpg .tga .png .bmp .psd .gif .hdr .pic
-//
-// Limited support for the PVR and KTX container formats.
-//
-// If TEXTUREFLAG_NO_DEFAULT, no default texture will be created.
-// Otherwise a default square texture will be created on any failure.
-//
-// Uncompressed image formats will have mipmaps generated and trilinear filtering set.
-VTexture	LoadTextureFromBuffer( const char * fileName, const void* buffer, uint length,
-                const VTexture::Flags & flags, int & width, int & height );
-
 unsigned char * LoadPVRBuffer( const char * fileName, int & width, int & height );
 
 NV_NAMESPACE_END
