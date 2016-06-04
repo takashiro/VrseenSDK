@@ -469,7 +469,7 @@ struct VFrameSmooth::Private
     void			renderToDisplayBySliced( const double vsyncBase, const swapProgram_t & swap );
 
     const VGlShader & chooseProgram(const warpSource_t & currentWarpSource,const bool disableChromaticCorrection ) const;
-    void			setSmoothpState( ) const;
+    void			setSmoothpState(const warpSource_t & currentWarpSource ) const;
     void			bindSmoothProgram(const warpSource_t & currentWarpSource,const VR4Matrixf timeWarps[2][2],
                                      const VR4Matrixf rollingWarp, const int eye, const double vsyncBase ) const;
     void			bindCursorProgram() const;
@@ -831,13 +831,25 @@ const VGlShader & VFrameSmooth::Private::chooseProgram(const warpSource_t & curr
     }
     return m_warpPrograms[program];
 }
-void VFrameSmooth::Private::setSmoothpState( ) const
+void VFrameSmooth::Private::setSmoothpState( const warpSource_t & currentWarpSource) const
 {
     glDepthMask( GL_FALSE );	// don't write to depth, even if Unity has depth on window
     glDisable( GL_DEPTH_TEST );
     glDisable( GL_CULL_FACE );
     glDisable( GL_BLEND );
     glEnable( GL_SCISSOR_TEST );
+
+	if ( m_hasEXT_sRGB_write_control )
+	{
+		if ( currentWarpSource.m_smoothOptions & VK_INHIBIT_SRGB_FB )
+		{
+			glDisable( VEglDriver::GL_FRAMEBUFFER_SRGB_EXT );
+		}
+		else
+		{
+			glEnable( VEglDriver::GL_FRAMEBUFFER_SRGB_EXT );
+		}
+	}
 
   //m_eglStatus.logErrorsEnum( "SetWarpState" );
 }
@@ -1069,7 +1081,7 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
         if ( eye == 0 )
         {
             const long long latestEyeBufferNum = m_eyeBufferCount.state();
-            for ( back = 0; back < 3; back++ )
+            for ( back = 0; back < MAX_WARP_SOURCES-1; back++ )
             {
                 thisEyeBufferNum = latestEyeBufferNum - back;
                 if ( thisEyeBufferNum <= 0 )
@@ -1183,7 +1195,7 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
 
 
 
-        setSmoothpState();
+        setSmoothpState(currentWarpSource);
 
         bindSmoothProgram(currentWarpSource,timeWarps, rollingWarp, eye, vsyncBase );
 
@@ -1293,7 +1305,7 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
         if ( screenSlice == 0 )
         {
             const long long latestEyeBufferNum = m_eyeBufferCount.state();
-            for ( back = 0; back < 3; back++ )
+            for ( back = 0; back < MAX_WARP_SOURCES-1; back++ )
             {
                 thisEyeBufferNum = latestEyeBufferNum - back;
                 if ( thisEyeBufferNum <= 0 )
@@ -1408,7 +1420,7 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
 
         const VR4Matrixf rollingWarp = CalculateTimeWarpMatrix2(sensor[0], sensor[1]);
 
-        setSmoothpState();
+        setSmoothpState(currentWarpSource);
 
         bindSmoothProgram(currentWarpSource, timeWarps, rollingWarp, eye, vsyncBase );
 
@@ -1510,15 +1522,15 @@ void VFrameSmooth::Private::smoothInternal( )
 //    m_firstDisplayedVsync[1] = 0;			// will be set when it becomes the currentSource
 //    m_disableChromaticCorrection = ( ( m_eglStatus.eglGetGpuType() & VEglDriver::GPU_TYPE_MALI_T760_EXYNOS_5433 ) != 0 );
 
-    if ( ( m_smoothProgram & VK_IMAGE ) != 0 )
+    if ( (ws.m_smoothOptions & VK_IMAGE ) != 0 )
     {
         for ( int eye = 0; eye < 2; eye++ )
         {
-            if ( m_texId[eye][0] == 0 )
+            if (ws.m_texId[eye][0] == 0 )
             {
                 ws.m_texId[eye][0] = m_blackTexId;
             }
-            if ( m_texId[eye][1] == 0 )
+            if (ws.m_texId[eye][1] == 0 )
             {
                 ws.m_texId[eye][1] = m_defaultLoadingIconTexId;
             }
