@@ -1175,6 +1175,21 @@ VTexture::~VTexture()
     }
 }
 
+void VTexture::load(VFile &file, const VTexture::Flags &flags)
+{
+    d->load(file.path(), file.readAll(), flags);
+}
+
+void VTexture::load(const VResource &resource, const VTexture::Flags &flags)
+{
+    d->load(resource.path(), resource.data(), flags);
+}
+
+void VTexture::load(const VString &format, const VByteArray &data, const VTexture::Flags &flags)
+{
+    d->load(format, data, flags);
+}
+
 VTexture &VTexture::operator=(const VTexture &source)
 {
     d->id = source.id();

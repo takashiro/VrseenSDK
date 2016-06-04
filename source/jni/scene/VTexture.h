@@ -36,10 +36,13 @@ public:
 
     VTexture(VFile &file, const Flags &flags = NoDefault);
     VTexture(const VResource &resource, const Flags &flags = NoDefault);
-
     VTexture(const VString &format, const VByteArray &data, const Flags &flags = NoDefault);
 
     ~VTexture();
+
+    void load(VFile &file, const Flags &flags = NoDefault);
+    void load(const VResource &resource, const Flags &flags = NoDefault);
+    void load(const VString &format, const VByteArray &data, const Flags &flags = NoDefault);
 
     VTexture &operator=(const VTexture &source);
     VTexture &operator=(VTexture &&source);
