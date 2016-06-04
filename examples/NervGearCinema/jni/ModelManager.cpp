@@ -119,7 +119,7 @@ void ModelManager::ScanDirectoryForScenes(const VString &directory, bool useDyna
 
 SceneDef * ModelManager::LoadScene(const VString &sceneFilename, bool useDynamicProgram, bool useScreenGeometry, bool loadFromApplicationPackage ) const
 {
-	VString filename;
+    VString fileName;
 
     if (loadFromApplicationPackage) {
         const VZipFile &apk = vApp->apkFile();
@@ -131,26 +131,26 @@ SceneDef * ModelManager::LoadScene(const VString &sceneFilename, bool useDynamic
 
 	if ( loadFromApplicationPackage )
 	{
-		filename = sceneFilename;
+        fileName = sceneFilename;
 	}
     else if ( ( sceneFilename != NULL ) && (sceneFilename[0] == '/' ) ) 	// intent will have full path for scene file, so check for /
 	{
-		filename = sceneFilename;
+        fileName = sceneFilename;
 	}
     else if (VFile::Exists(Cinema.externalRetailDir(sceneFilename)))
 	{
-        filename = Cinema.externalRetailDir(sceneFilename);
+        fileName = Cinema.externalRetailDir(sceneFilename);
 	}
     else if (VFile::Exists(Cinema.retailDir(sceneFilename)))
 	{
-		filename = Cinema.retailDir( sceneFilename );
+        fileName = Cinema.retailDir( sceneFilename );
 	}
 	else
 	{
-		filename = Cinema.sdcardDir( sceneFilename );
+        fileName = Cinema.sdcardDir( sceneFilename );
 	}
 
-    vInfo("Adding scene:" << filename << "," << sceneFilename);
+    vInfo("Adding scene:" << fileName << "," << sceneFilename);
 
 	SceneDef *def = new SceneDef();
 	def->Filename = sceneFilename;
@@ -171,38 +171,35 @@ SceneDef * ModelManager::LoadScene(const VString &sceneFilename, bool useDynamic
 
 	ModelGlPrograms glPrograms = ( useDynamicProgram ) ? Cinema.shaderMgr.DynamicPrograms : Cinema.shaderMgr.DefaultPrograms;
 
-    VPath iconFilename = filename;
-    iconFilename.setExtension("png");
+    VPath iconFileName = fileName;
+    iconFileName.setExtension("png");
 
-    int textureWidth = 0, textureHeight = 0;
-
-    VByteArray fileName = filename.toUtf8();
-    VByteArray iconFileName = iconFilename.toUtf8();
-	if ( loadFromApplicationPackage )
-    {
+    if (loadFromApplicationPackage) {
         const VZipFile &apk = vApp->apkFile();
         void *buffer = nullptr;
         uint length = 0;
-        apk.read(filename, buffer, length);
-        def->SceneModel = LoadModelFileFromMemory(fileName.data(), buffer, length, glPrograms, materialParms);
+        apk.read(fileName, buffer, length);
+        def->SceneModel = LoadModelFileFromMemory(fileName.toUtf8().data(), buffer, length, glPrograms, materialParms);
         free(buffer);
         buffer = nullptr;
         length = 0;
 
-        VFile icon(iconFilename, VFile::ReadOnly);
-        VByteArray iconData = icon.readAll();
-        def->IconTexture = LoadTextureFromBuffer(iconFileName.data(), iconData.data(), iconData.length(), VTexture::NoDefault, textureWidth, textureHeight);
+        VFile icon(iconFileName, VFile::ReadOnly);
+        vAssert(icon.exists() && icon.isReadable());
+        VTexture texture(icon);
+        def->IconTexture = texture.id();
     } else {
-        def->SceneModel = LoadModelFile(fileName.data(), glPrograms, materialParms );
+        def->SceneModel = LoadModelFile(fileName.toUtf8().data(), glPrograms, materialParms );
 
-        VFile icon(iconFilename, VFile::ReadOnly);
-        VByteArray iconData = icon.readAll();
-        def->IconTexture = LoadTextureFromBuffer(iconFileName.data(), iconData.data(), iconData.length(), VTexture::NoDefault, textureWidth, textureHeight);
+        VFile icon(iconFileName, VFile::ReadOnly);
+        vAssert(icon.exists() && icon.isReadable());
+        VTexture texture(icon);
+        def->IconTexture = texture.id();
     }
 
 	if ( def->IconTexture != 0 )
 	{
-        vInfo("Loaded external icon for theater:" << iconFilename);
+        vInfo("Loaded external icon for theater:" << iconFileName);
 	}
 	else
 	{

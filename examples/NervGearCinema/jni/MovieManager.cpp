@@ -204,15 +204,18 @@ void MovieManager::ReadMetaData( MovieDef *movie )
 
 void MovieManager::LoadPoster( MovieDef *movie )
 {
-    VString posterFilename = VPath(movie->Filename).baseName();
-    posterFilename.append(".png");
+    VString posterFileName = VPath(movie->Filename).baseName();
+    posterFileName.append(".png");
 
-    VFile poster(posterFilename, VFile::ReadOnly);
-    VByteArray posterData = poster.readAll();
-    movie->Poster = LoadTextureFromBuffer(posterFilename.toUtf8().data(), posterData.data(), posterData.length(), VTexture::NoDefault, movie->PosterWidth, movie->PosterHeight);
+    VFile posterFile(posterFileName, VFile::ReadOnly);
+    vAssert(posterFile.exists() && posterFile.isReadable());
+    VTexture poster(posterFile);
+    movie->Poster = poster.id();
+    movie->PosterWidth = poster.width();
+    movie->PosterHeight = poster.height();
 
     if (movie->Poster == 0) {
-        if (Cinema.isExternalSDCardDir(posterFilename)) {
+        if (Cinema.isExternalSDCardDir(posterFileName)) {
 			// Since we're unable to write to the external sd card and writing to the
 			// cache directory doesn't seem to work, just disable generation of
 			// thumbnails for the external sd card.
@@ -231,10 +234,13 @@ void MovieManager::LoadPoster( MovieDef *movie )
 #endif
         } else {
 			// no thumbnail found, so create it.  if it's on an external sdcard, posterFilename will contain the new filename at this point and will load it from the cache
-            if ( ( movie->Poster == 0 ) && Native::CreateVideoThumbnail(movie->Filename, posterFilename, PosterWidth, PosterHeight)) {
-                VFile poster(posterFilename, VFile::ReadOnly);
-                VByteArray posterData = poster.readAll();
-                movie->Poster = LoadTextureFromBuffer(posterFilename.toUtf8().data(), posterData.data(), posterData.length(), VTexture::NoDefault, movie->PosterWidth, movie->PosterHeight);
+            if ( ( movie->Poster == 0 ) && Native::CreateVideoThumbnail(movie->Filename, posterFileName, PosterWidth, PosterHeight)) {
+                VFile posterFile(posterFileName, VFile::ReadOnly);
+                vAssert(posterFile.exists() && posterFile.isReadable());
+                VTexture poster(posterFile);
+                movie->Poster = poster.id();
+                movie->PosterWidth = poster.width();
+                movie->PosterHeight = poster.height();
 			}
 		}
 	}

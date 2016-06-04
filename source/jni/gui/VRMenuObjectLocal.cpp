@@ -12,7 +12,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "VRMenuObjectLocal.h"
 
-#include "../api/VGlShader.h"
+#include "VGlShader.h"
 #include "VTexture.h"
 #include "App.h"			// for loading images from the assets folder
 #include "ModelTrace.h"
@@ -20,7 +20,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VRMenuMgr.h"
 #include "VRMenuComponent.h"
 #include "ui_default.h"	// embedded default UI texture (loaded as a placeholder when something doesn't load)
-#include "VZipFile.h"
+#include "VResource.h"
 
 namespace NervGear {
 
@@ -57,22 +57,13 @@ bool VRMenuSurfaceTexture::loadTexture( eSurfaceTextureType const type, const VS
 	m_type = type;
 
     if (!imageName.isEmpty()) {
-        void *buffer;
-        uint bufferLength;
-        const VZipFile &apk = vApp->apkFile();
-        apk.read(imageName, buffer, bufferLength);
-
-        if (!buffer) {
-            m_handle = 0;
-        } else {
-              m_handle = LoadTextureFromBuffer(imageName.toUtf8().data(), buffer, bufferLength,
-                    VTexture::Flags( VTexture::NoDefault ), m_width, m_height );
-              ::free( buffer );
-        }
+        VTexture image{VResource{imageName}};
+        m_handle = image.id();
+        m_width = image.width();
+        m_height = image.height();
 	}
 
-	if ( m_handle == 0 && allowDefault )
-	{
+    if (m_handle == 0 && allowDefault) {
         m_handle = LoadTextureFromBuffer(imageName.toUtf8().data(), uiDefaultTgaData, uiDefaultTgaSize,
 							VTexture::Flags(), m_width, m_height );
 		vWarn("VRMenuSurfaceTexture::CreateFromImage: failed to load image '" << imageName << "' - default loaded instead!");

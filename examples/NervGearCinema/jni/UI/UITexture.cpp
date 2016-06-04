@@ -19,7 +19,7 @@ UITexture::~UITexture()
 
 void UITexture::LoadTextureFromApplicationPackage( const char *assetPath )
 {
-    VTexture texture(VResource(assetPath), VTexture::NoDefault);
+    VTexture texture{VResource{assetPath}};
     Texture = texture.id();
     Width = texture.width();
     Height = texture.height();

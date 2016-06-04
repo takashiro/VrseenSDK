@@ -1,10 +1,9 @@
 #pragma once
 
+#include "VPath.h"
 #include "VByteArray.h"
 
 NV_NAMESPACE_BEGIN
-
-class VPath;
 
 class VResource
 {
