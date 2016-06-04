@@ -422,9 +422,9 @@ unsigned char * PanoBrowser::createAndCacheThumbnail(const VString &soureFile, c
 	return outBuffer;
 }
 
-unsigned char * PanoBrowser::loadThumbnail( const char * filename, int & width, int & height )
+uchar *PanoBrowser::loadThumbnail(const VString &fileName, int & width, int & height)
 {
-	return TurboJpegLoadFromFile( filename, &width, &height );
+    return TurboJpegLoadFromFile(fileName.toUtf8().data(), &width, &height);
 }
 
 VString PanoBrowser::thumbName( const VString & s )

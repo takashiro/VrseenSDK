@@ -1712,7 +1712,7 @@ void * OvrFolderBrowser::ThumbnailThread( void * v )
 
 			int		width;
 			int		height;
-            unsigned char * data = folderBrowser->loadThumbnail(fullPath.toUtf8().data(), width, height );
+            uchar *data = folderBrowser->loadThumbnail(fullPath, width, height);
 			if ( data != NULL )
 			{
 				if ( folderBrowser->applyThumbAntialiasing( data, width, height ) )

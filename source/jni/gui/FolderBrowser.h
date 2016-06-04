@@ -163,7 +163,7 @@ protected:
     virtual unsigned char *createAndCacheThumbnail(const VString &soureFile, const VString &cacheDestinationFile, int & outWidth, int & outHeight ) = 0;
 
 	// Called on a background thread to load thumbnail
-    virtual	unsigned char *		loadThumbnail( const char * filename, int & width, int & height ) = 0;
+    virtual uchar *loadThumbnail(const VString &fileName, int &width, int &height) = 0;
 
 	// Returns the proper thumbnail URL
     virtual const VPath &thumbUrl(const OvrMetaDatum *item) { return item->url; }

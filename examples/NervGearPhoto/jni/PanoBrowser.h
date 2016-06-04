@@ -56,7 +56,7 @@ namespace NervGear
         unsigned char *createAndCacheThumbnail(const VString &soureFile, const VString &cacheDestinationFile, int & width, int & height ) override;
 
 		// Called on a background thread to load thumbnail
-        unsigned char *loadThumbnail( const char * filename, int & width, int & height ) override;
+        uchar *loadThumbnail(const VString &fileName, int &width, int &height) override;
 
 		// Adds thumbnail extension to a file to find/create its thumbnail
         VString thumbName( const VString & s ) override;

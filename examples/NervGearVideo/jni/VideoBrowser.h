@@ -46,7 +46,7 @@ public:
     virtual unsigned char * createAndCacheThumbnail( const VString &soureFile, const VString &cacheDestinationFile, int & width, int & height );
 
 	// Called on a background thread to load thumbnail
-	virtual	unsigned char * loadThumbnail( const char * filename, int & width, int & height );
+    uchar *loadThumbnail(const VString &fileName, int &width, int &height) override;
 
 	// Adds thumbnail extension to a file to find/create its thumbnail
 	virtual VString	thumbName( const VString & s );

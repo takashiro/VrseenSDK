@@ -8,6 +8,8 @@ NV_NAMESPACE_BEGIN
 
 class VByteArray : public std::basic_string<char>
 {
+    typedef std::basic_string<char> ParentType;
+
 public:
     VByteArray() {}
     VByteArray(const std::string &source) : basic_string(source) {}
@@ -17,6 +19,9 @@ public:
 
     void append(char ch) { basic_string::operator +=(ch); }
     void append(char *bytes, vint64 length) { basic_string::append(bytes, length); }
+
+    uint size() const { return ParentType::size(); }
+    int length() const { return (int) ParentType::length(); }
 
     bool isEmpty() const { return empty(); }
 };
