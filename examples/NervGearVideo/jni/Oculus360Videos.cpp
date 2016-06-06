@@ -160,7 +160,7 @@ Oculus360Videos::~Oculus360Videos()
 void Oculus360Videos::init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI)
 {
 
-	vInfo("--------------- Oculus360Videos OneTimeInit ---------------");
+	vInfo("--------------- 360Videos init() ---------------");
 
     RetailMode = VFile::Exists( "/sdcard/RetailMedia" );
 
@@ -210,7 +210,7 @@ void Oculus360Videos::init(const VString &fromPackage, const VString &launchInte
 	MetaData = new OvrVideosMetaData();
 	if ( MetaData == NULL )
 	{
-		vFatal("Oculus360Photos::OneTimeInit failed to create MetaData");
+		vFatal("360Photos::init failed to create MetaData");
 	}
 
     VStandardPath::Info pathInfoList[] = {
@@ -291,7 +291,7 @@ void Oculus360Videos::init(const VString &fromPackage, const VString &launchInte
 void Oculus360Videos::shutdown()
 {
 	// This is called by the VR thread, not the java UI thread.
-	vInfo("--------------- Oculus360Videos OneTimeShutdown ---------------");
+	vInfo("--------------- 360Videos shutdown() ---------------");
 
 	if ( BackgroundScene != NULL )
 	{
@@ -324,7 +324,7 @@ void Oculus360Videos::configureVrMode(VKernel* kernel)
 {
 	// We need very little CPU for pano browsing, but a fair amount of GPU.
 	// The CPU clock should ramp up above the minimum when necessary.
-	vInfo("ConfigureClocks: Oculus360Videos only needs minimal clocks");
+	vInfo("ConfigureClocks: 360Videos only needs minimal clocks");
 	// All geometry is blended, so save power with no MSAA
 	kernel->msaa = 1;
 }
@@ -712,7 +712,7 @@ void Oculus360Videos::SetMenuState( const OvrMenuState state )
 		VideoMenuTimeLeft = VideoMenuVisibleTime;
 		break;
 	default:
-		vInfo("Oculus360Videos::SetMenuState unknown state:" << static_cast< int >( state ));
+		vInfo("360Videos::SetMenuState unknown state:" << static_cast< int >( state ));
 		vAssert( false );
 		break;
 	}
@@ -802,7 +802,7 @@ VR4Matrixf Oculus360Videos::onNewFrame( const VFrame vrFrame )
 
 void Oculus360Videos::OnResume()
 {
-	vInfo("Oculus360Videos::OnResume");
+	vInfo("360Videos::OnResume");
 	if ( VideoWasPlayingWhenPaused )
 	{
 		vApp->guiSys().openMenu( vApp, vApp->gazeCursor(), OvrVideoMenu::MENU_NAME );
@@ -813,7 +813,7 @@ void Oculus360Videos::OnResume()
 
 void Oculus360Videos::OnPause()
 {
-	vInfo("Oculus360Videos::OnPause");
+	vInfo("360Videos::OnPause");
 	VideoWasPlayingWhenPaused = IsVideoPlaying();
 	if ( VideoWasPlayingWhenPaused )
 	{

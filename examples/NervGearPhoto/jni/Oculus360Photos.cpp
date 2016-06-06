@@ -135,7 +135,7 @@ Oculus360Photos::~Oculus360Photos()
 void Oculus360Photos::init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI)
 {
     // This is called by the VR thread, not the java UI thread.
-    vInfo("--------------- Oculus360Photos OneTimeInit ---------------");
+    vInfo("--------------- 360Photos init() ---------------");
 
     //-------------------------------------------------------------------------
     m_texturedMvpProgram.initShader(VGlShader::getTexturedMvpVertexShaderSource(),VGlShader::getUniformTextureProgramShaderSource());
@@ -181,14 +181,14 @@ void Oculus360Photos::init(const VString &fromPackage, const VString &launchInte
     }
     else
     {
-        vFatal("Oculus360Photos::OneTimeInit getPackageName failed");
+        vFatal("360Photos::init getPackageName failed");
     }
     vAssert( packageName );
 
     m_metaData = new OvrPhotosMetaData();
     if ( m_metaData == NULL )
     {
-        vFatal("Oculus360Photos::OneTimeInit failed to create MetaData");
+        vFatal("360Photos::init failed to create MetaData");
     }
 
     OvrMetaDataFileExtensions fileExtensions;
@@ -346,7 +346,7 @@ void Oculus360Photos::init(const VString &fromPackage, const VString &launchInte
 void Oculus360Photos::shutdown()
 {
     // This is called by the VR thread, not the java UI thread.
-    vInfo("--------------- Oculus360Photos OneTimeShutdown ---------------");
+    vInfo("--------------- 360Photos shutdown() ---------------");
 
     // Shut down background loader
     m_shutdownRequest.setState( true );
@@ -523,7 +523,7 @@ bool Oculus360Photos::useOverlay() const {
 void Oculus360Photos::configureVrMode(VKernel* kernel) {
     // We need very little CPU for pano browsing, but a fair amount of GPU.
     // The CPU clock should ramp up above the minimum when necessary.
-    vInfo("ConfigureClocks: Oculus360Photos only needs minimal clocks");
+    vInfo("ConfigureClocks: 360Photos only needs minimal clocks.");
 
     // No hard edged geometry, so no need for MSAA
     kernel->msaa = 1;
