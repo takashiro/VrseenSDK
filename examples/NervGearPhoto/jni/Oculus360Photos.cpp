@@ -29,8 +29,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include <VStandardPath.h>
 #include <VFile.h>
 #include <VLog.h>
-
-#include "io/VFileOperation.h"
+#include <VImage.h>
 
 NV_NAMESPACE_BEGIN
 
@@ -64,8 +63,8 @@ Oculus360Photos::DoubleBufferedTextureData::DoubleBufferedTextureData()
 
 Oculus360Photos::DoubleBufferedTextureData::~DoubleBufferedTextureData()
 {
-    FreeTexture( TexId[ 0 ] );
-    FreeTexture( TexId[ 1 ] );
+    glDeleteTextures(1, &TexId[0]);
+    glDeleteTextures(1, &TexId[1]);
 }
 
 GLuint Oculus360Photos::DoubleBufferedTextureData::GetRenderTexId() const
@@ -421,18 +420,16 @@ void * Oculus360Photos::BackgroundGLLoadThread( void * v )
             GLint maxTextureSize = 0;
             glGetIntegerv( GL_MAX_TEXTURE_SIZE, &maxTextureSize );
 
-            while ( width > maxTextureSize || width > maxTextureSize )
-            {
+            VImage image(data, width, height);
+            data = nullptr;
+            while (width > maxTextureSize || width > maxTextureSize) {
                 vInfo("Quartering oversize" << width << height << "image");
-                uchar * newBuf = VFileOperation::QuarterImageSize( data, width, height, true );
-                free( data );
-                data = newBuf;
-                width >>= 1;
-                height >>= 1;
+                image.quarter(true);
+                width = image.width();
+                height = image.height();
             }
 
-            photos->loadRgbaTexture( data, width, height, true );
-            free( data );
+            photos->loadRgbaTexture(image.data(), width, height, true);
 
             // Add a sync object for uploading textures
             EGLSyncKHR GpuSync = VEglDriver::eglCreateSyncKHR( photos->m_eglDisplay, EGL_SYNC_FENCE_KHR, NULL );
@@ -575,7 +572,7 @@ void Oculus360Photos::loadRgbaCubeMap( const int resolution, const unsigned char
     GLuint texId = m_backgroundCubeTexData.GetLoadTexId();
     if ( texId == 0 || !m_backgroundCubeTexData.SameSize( resolution, resolution ) )
     {
-        FreeTexture( texId );
+        glDeleteTextures(1, &texId);
         glGenTextures( 1, &texId );
         glBindTexture( GL_TEXTURE_CUBE_MAP, texId );
         glTexStorage2D( GL_TEXTURE_CUBE_MAP, 1, glInternalFormat, resolution, resolution );
@@ -617,7 +614,7 @@ void Oculus360Photos::loadRgbaTexture( const unsigned char * data, int width, in
     GLuint texId = m_backgroundPanoTexData.GetLoadTexId();
     if ( texId == 0 || !m_backgroundPanoTexData.SameSize( width, height ) )
     {
-        FreeTexture( texId );
+        glDeleteTextures(1, &texId);
         glGenTextures( 1, &texId );
         glBindTexture( GL_TEXTURE_2D, texId );
         glTexStorage2D( GL_TEXTURE_2D, 1, glInternalFormat, width, height );
@@ -631,8 +628,10 @@ void Oculus360Photos::loadRgbaTexture( const unsigned char * data, int width, in
         glTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, width, height, glFormat, GL_UNSIGNED_BYTE, data );
     }
 
-    BuildTextureMipmaps( texId );
-    MakeTextureTrilinear( texId );
+    VTexture texture(texId);
+    texture.buildMipmaps();
+    texture.trilinear();
+
     glBindTexture( GL_TEXTURE_2D, texId );
     // Because equirect panos pinch at the poles so much,
     // they would pull in mip maps so deep you would see colors

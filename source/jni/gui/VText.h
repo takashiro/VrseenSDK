@@ -15,37 +15,37 @@ class VPointTracker
 public:
     static const int DEFAULT_FRAME_RATE = 60;
 
-    VPointTracker(float const rate = 0.1f );
+    VPointTracker(float const rate = 0.1f);
 
-    void        Update( double const curFrameTime, V3Vectf const & newPos );
+    void Update(double const curFrameTime, V3Vectf const &newPos);
 
-    void        Reset();
+    void Reset();
 
-    void        SetRate( float const r );
+    void SetRate(float const r);
 
-    V3Vectf const & GetCurPosition() const;
+    V3Vectf const &GetCurPosition() const;
 
 private:
-    double      LastFrameTime;
-    float       Rate;
+    double LastFrameTime;
+    float Rate;
     V3Vectf CurPosition;
-    bool        FirstFrame;
+    bool FirstFrame;
 };
 
 class VText
 {
 public:
     VText();
-    VString         infoText;           // informative text to show in front of the view
-    V4Vectf     infoTextColor;      // color of info text
-    V3Vectf     infoTextOffset;     // offset from center of screen in view space
-    long long       infoTextEndFrame;   // time to stop showing text
-    VPointTracker   infoTextPointTracker;   // smoothly tracks to text ideal location
-    VPointTracker   fpsPointTracker;
-    VFrame         vrFrame;
+    VString infoText;           // informative text to show in front of the view
+    V4Vectf infoTextColor;      // color of info text
+    V3Vectf infoTextOffset;     // offset from center of screen in view space
+    long long infoTextEndFrame;   // time to stop showing text
+    VPointTracker infoTextPointTracker;   // smoothly tracks to text ideal location
+
+    VFrame vrFrame;
 
     void show(const VString &text, float duration);
-    void show( float const duration, V3Vectf const & offset, V4Vectf const & color, const char * fmt, ... );
+    void show(float const duration, V3Vectf const & offset, V4Vectf const &color, const char *fmt, ...);
 
 };
 NV_NAMESPACE_END

@@ -9,11 +9,7 @@
 
 #include "VString.h"
 #include "VFile.h"
-
-#include "3rdParty/stb/stb_image_write.h"
-#include "GlTexture.h"
-
-#include "io/VFileOperation.h"
+#include "VTexture.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -224,61 +220,6 @@ struct EyePairs
 
 static const int MAX_EYE_SETS = 3;
 
-static int FindUnusedFilename(const char *format, int max)
-{
-    for (int i = 0; i <= max; i++) {
-        VString fileName;
-        fileName.sprintf(format, i);
-        if (!VFile::Exists(fileName)) {
-            return i;
-        }
-    }
-    return max;
-}
-
-static void ScreenShotTexture( const int eyeResolution, const GLuint texId )
-{
-    GLuint	fbo;
-    glGenFramebuffers( 1, &fbo );
-    glBindFramebuffer( GL_FRAMEBUFFER, fbo );
-    glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texId, 0 );
-
-    unsigned char * buf = (unsigned char *)malloc( eyeResolution * eyeResolution * 8 );
-    glReadPixels( 0, 0, eyeResolution, eyeResolution, GL_RGBA, GL_UNSIGNED_BYTE, (void *)buf );
-    glDeleteFramebuffers( 1, &fbo );
-
-    for ( int y = 0 ; y < eyeResolution ; y++ )
-    {
-        const int iy = eyeResolution - 1 - y;
-        unsigned char * src = buf + y * eyeResolution * 4;
-        unsigned char * dest = buf + (eyeResolution + iy ) * eyeResolution * 4;
-        memcpy( dest, src, eyeResolution*4 );
-        for ( int x = 0 ; x < eyeResolution ; x++ )
-        {
-            dest[x*4+3] = 255;
-        }
-    }
-
-
-    const char * fmt = "/sdcard/Oculus/screenshot%03i.bmp";
-    const int v = FindUnusedFilename( fmt, 999 );
-    VString filename;
-    filename.sprintf(fmt, v);
-
-    const unsigned char * flipped = (buf + eyeResolution*eyeResolution*4);
-    stbi_write_bmp( filename.toUtf8().data(), eyeResolution, eyeResolution, 4, (void *)flipped );
-
-    unsigned char * shrunk1 = VFileOperation::QuarterImageSize( flipped, eyeResolution, eyeResolution, true );
-    unsigned char * shrunk2 = VFileOperation::QuarterImageSize( shrunk1, eyeResolution>>1, eyeResolution>>1, true );
-    VString filename2;
-    filename2.sprintf("/sdcard/Oculus/thumbnail%03i.pvr", v);
-    VFileOperation::Write32BitPvrTexture( filename2.toUtf8().data(), shrunk2, eyeResolution>>2, eyeResolution>>2 );
-
-    free( buf );
-    free( shrunk1 );
-    free( shrunk2 );
-}
-
 VEyeItem::Settings VEyeItem::settings;
 
 struct VEyeItem::Private
@@ -377,11 +318,6 @@ VEyeItem::CompletedEyes VEyeItem::completedEyes()
     cmp.colorFormat = buffers->BufferParms.colorFormat;
 
     return cmp;
-}
-
-void VEyeItem::snapshot()
-{
-    ScreenShotTexture(d->BufferData[0].BufferParms.resolution, d->BufferData[0].eyeBuffer.Texture );
 }
 
 NV_NAMESPACE_END

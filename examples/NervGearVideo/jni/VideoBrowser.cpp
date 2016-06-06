@@ -14,7 +14,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 *************************************************************************************/
 
 #include "VideoBrowser.h"
-#include "GlTexture.h"
+#include "VTexture.h"
 
 #include "Oculus360Videos.h"
 #include "VrLocale.h"
@@ -25,7 +25,8 @@ of patent rights can be found in the PATENTS file in the same directory.
 
 #include <VPath.h>
 #include <VZipFile.h>
-#include "io/VFileOperation.h"
+#include <VImage.h>
+#include <VResource.h>
 
 namespace NervGear
 {
@@ -57,31 +58,21 @@ unsigned char * VideoBrowser::createAndCacheThumbnail(const VString &soureFile, 
 	return NULL;
 }
 
-unsigned char * VideoBrowser::loadThumbnail( const char * filename, int & width, int & height )
+uchar *VideoBrowser::loadThumbnail(const VString &fileName, int &width, int &height)
 {
-	vInfo("VideoBrowser::LoadThumbnail loading on" << filename);
+    vInfo("VideoBrowser::LoadThumbnail loading on" << fileName);
 	unsigned char * orig = NULL;
 
-	if ( strstr( filename, "assets/" ) )
-	{
-		void * buffer = NULL;
-        uint length = 0;
-        const VZipFile &apk = VZipFile::CurrentApkFile();
-        apk.read(filename, buffer, length);
-
-		if ( buffer )
-		{
-			orig = TurboJpegLoadFromMemory( reinterpret_cast< const unsigned char * >( buffer ), length, &width, &height );
-			free( buffer );
+    if (fileName.contains("assets/")) {
+        VResource res(fileName);
+        if (res.exists()) {
+            VByteArray buffer = res.data();
+            orig = TurboJpegLoadFromMemory(reinterpret_cast<const uchar *>(buffer.data()), buffer.length(), &width, &height);
 		}
-	}
-	else if ( strstr( filename, ".pvr" ) )
-	{
-		orig = LoadPVRBuffer( filename, width, height );
-	}
-	else
-	{
-		orig = TurboJpegLoadFromFile( filename, &width, &height );
+	} else if (fileName.endsWith(".pvr")) {
+        orig = LoadPVRBuffer(fileName.toUtf8().data(), width, height );
+	} else {
+        orig = TurboJpegLoadFromFile(fileName.toUtf8().data(), &width, &height );
 	}
 
 	if ( orig )
@@ -91,26 +82,23 @@ unsigned char * VideoBrowser::loadThumbnail( const char * filename, int & width,
 
 		if ( ThumbWidth == width && ThumbHeight == height )
 		{
-			vInfo("VideoBrowser::LoadThumbnail skip resize on" << filename);
+            vInfo("VideoBrowser::LoadThumbnail skip resize on" << fileName);
 			return orig;
 		}
 
-        vInfo("VideoBrowser::LoadThumbnail resizing" << filename << "to" << ThumbWidth << ThumbHeight);
-        uchar *outBuffer = VFileOperation::ScaleImageRGBA( ( const unsigned char * )orig, width, height, ThumbWidth, ThumbHeight, IMAGE_FILTER_CUBIC );
+        vInfo("VideoBrowser::LoadThumbnail resizing" << fileName << "to" << ThumbWidth << ThumbHeight);
+        VImage image(orig, width, height);
+        image.resize(ThumbWidth, ThumbHeight, VImage::CubicFilter);
+        uchar *outBuffer = (uchar *) malloc(image.length());
+        memcpy(outBuffer, image.data(), image.length());
 
-		free( orig );
-
-		if ( outBuffer )
-		{
+        if (outBuffer) {
 			width = ThumbWidth;
 			height = ThumbHeight;
-
 			return outBuffer;
 		}
-	}
-	else
-	{
-		vInfo("Error: VideoBrowser::LoadThumbnail failed to load" << filename);
+    } else {
+        vInfo("Error: VideoBrowser::LoadThumbnail failed to load" << fileName);
 	}
 	return NULL;
 }

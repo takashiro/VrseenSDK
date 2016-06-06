@@ -20,7 +20,7 @@
 #include "EyePostRender.h"
 #include "GazeCursor.h"
 #include "GazeCursorLocal.h"		// necessary to instantiate the gaze cursor
-#include "GlTexture.h"
+#include "VTexture.h"
 #include "GuiSys.h"
 #include "GuiSysLocal.h"		// necessary to instantiate the gui system
 #include "ModelView.h"
@@ -44,6 +44,8 @@
 #include "VColor.h"
 #include "VScene.h"
 #include "VRotationSensor.h"
+#include "VResource.h"
+#include "VTexture.h"
 
 //#define TEST_TIMEWARP_WATCHDOG
 #define EGL_PROTECTED_CONTENT_EXT 0x32c0
@@ -157,108 +159,111 @@ struct App::Private
     volatile bool running;
 
     // Most calls in from java should communicate through this.
-    VEventLoop	eventLoop;
+    VEventLoop eventLoop;
 
     // Egl context and surface for rendering
-    VEglDriver  m_vrGlStatus;
+    VEglDriver m_glStatus;
 
 
-    GLuint			loadingIconTexId;
+    GLuint loadingIconTexId;
 
-    JavaVM *		javaVM;
+    JavaVM *javaVM;
 
-    JNIEnv *		uiJni;			// for use by the Java UI thread
-    JNIEnv *		vrJni;			// for use by the VR thread
+    JNIEnv *uiJni;			// for use by the Java UI thread
+    JNIEnv *vrJni;			// for use by the VR thread
 
-    jclass			vrActivityClass;		// must be looked up from main thread or FindClass() will fail
+    jclass vrActivityClass;		// must be looked up from main thread or FindClass() will fail
 
-    jmethodID		playSoundPoolSoundMethodId;
+    jmethodID playSoundPoolSoundMethodId;
 
-    VString			launchIntentURI;			// URI app was launched with
-    VString			launchIntentJSON;			// extra JSON data app was launched with
-    VString			launchIntentFromPackage;	// package that sent us the launch intent
+    VString launchIntentURI;			// URI app was launched with
+    VString launchIntentJSON;			// extra JSON data app was launched with
+    VString launchIntentFromPackage;	// package that sent us the launch intent
 
-    VString			packageCodePath;	// path to apk to open as zip and load resources
+    VString packageCodePath;	// path to apk to open as zip and load resources
 
-    bool			paused;				// set/cleared by onPause / onResume
+    bool paused;				// set/cleared by onPause / onResume
 
-    float 			popupDistance;
-    float 			popupScale;
+    float popupDistance;
+    float popupScale;
 
+
+    VPointTracker fpsPointTracker;
+    bool showFPS;
 
     // Every application gets a basic dialog surface.
-    SurfaceTexture * dialogTexture;
+    SurfaceTexture *dialogTexture;
 
     // Current joypad state, without pressed / released calculation
-    VInput			joypad;
+    VInput joypad;
 
     // drawing parameters
-    int				dialogWidth;
-    int				dialogHeight;
+    int dialogWidth;
+    int dialogHeight;
 
     // Dialogs will be oriented base down in the view when they
     // were generated.
 
-    VR4Matrixf		lastViewMatrix;
+    VR4Matrixf lastViewMatrix;
 
-    ANativeWindow * nativeWindow;
-    EGLSurface 		windowSurface;
+    ANativeWindow *nativeWindow;
+    EGLSurface windowSurface;
 
-    bool			drawCalibrationLines;	// currently toggled by right trigger
-    bool			calibrationLinesDrawn;	// after draw, go to static time warp test
-    bool			showVignette;			// render the vignette
+    bool drawCalibrationLines;	// currently toggled by right trigger
+    bool calibrationLinesDrawn;	// after draw, go to static time warp test
+    bool showVignette;			// render the vignette
 
-    bool			framebufferIsSrgb;			// requires KHR_gl_colorspace
-    bool			framebufferIsProtected;		// requires GPU trust zone extension
+    bool framebufferIsSrgb;			// requires KHR_gl_colorspace
+    bool framebufferIsProtected;		// requires GPU trust zone extension
 
     // Only render a single eye view, which will get warped for both
     // screen eyes.
-    bool			renderMonoMode;
+    bool renderMonoMode;
 
-    VFrame			lastVrFrame;
+    VFrame lastVrFrame;
 
-    VGlShader		untexturedMvpProgram;
-    VGlShader		untexturedScreenSpaceProgram;
-    VGlShader		overlayScreenFadeMaskProgram;
-    VGlShader		overlayScreenDirectProgram;
+    VGlShader untexturedMvpProgram;
+    VGlShader untexturedScreenSpaceProgram;
+    VGlShader overlayScreenFadeMaskProgram;
+    VGlShader overlayScreenDirectProgram;
 
-    VGlGeometry		unitCubeLines;		// 12 lines that outline a 0 to 1 unit cube, intended to be scaled to cover bounds.
-    VGlGeometry		unitSquare;			// -1 to 1 in x and Y, 0 to 1 in texcoords
-    VGlGeometry		fadedScreenMaskSquare;// faded screen mask for overlay rendering
+    VGlGeometry unitCubeLines;		// 12 lines that outline a 0 to 1 unit cube, intended to be scaled to cover bounds.
+    VGlGeometry unitSquare;			// -1 to 1 in x and Y, 0 to 1 in texcoords
+    VGlGeometry fadedScreenMaskSquare;// faded screen mask for overlay rendering
 
-    EyePostRender	eyeDecorations;
+    EyePostRender eyeDecorations;
 
     VRotationState sensorForNextWarp;
 
     VThread *renderThread;
-    int				vrThreadTid;		// linux tid
+    int vrThreadTid;		// linux tid
 
-    bool			showVolumePopup;	// true to show volume popup when volume changes
+    bool showVolumePopup;	// true to show volume popup when volume changes
 
-    VViewSettings		viewSettings;
+    VViewSettings viewSettings;
 
-    float 			touchpadTimer;
-    V2Vectf		touchOrigin;
-    float 			lastTouchpadTime;
-    bool 			lastTouchDown;
-    int 			touchState;
+    float touchpadTimer;
+    V2Vectf touchOrigin;
+    float lastTouchpadTime;
+    bool lastTouchDown;
+    int touchState;
 
-    bool			enableDebugOptions;	// enable debug key-commands for development testing
+    bool enableDebugOptions;	// enable debug key-commands for development testing
 
-    long long 		recenterYawFrameStart;	// Enables reorient before sensor data is read.  Allows apps to reorient without having invalid orientation information for that frame.
+    long long recenterYawFrameStart;	// Enables reorient before sensor data is read.  Allows apps to reorient without having invalid orientation information for that frame.
 
-    OvrGuiSys *         guiSys;
-    OvrGazeCursor *     gazeCursor;
-    BitmapFont *        defaultFont;
-    BitmapFontSurface * worldFontSurface;
-    BitmapFontSurface * menuFontSurface;
-    OvrVRMenuMgr *      vrMenuMgr;
-    OvrVolumePopup *	volumePopup;
-    OvrDebugLines *     debugLines;
+    OvrGuiSys *guiSys;
+    OvrGazeCursor *gazeCursor;
+    BitmapFont *defaultFont;
+    BitmapFontSurface *worldFontSurface;
+    BitmapFontSurface *menuFontSurface;
+    OvrVRMenuMgr *vrMenuMgr;
+    OvrVolumePopup *volumePopup;
+    OvrDebugLines *debugLines;
     KeyState backKeyState;
     VStandardPath *storagePaths;
 
-    GlTexture errorTexture;
+    VTexture errorTexture;
     int errorTextureSize;
     double errorMessageEndTime;
 
@@ -284,6 +289,7 @@ struct App::Private
         , paused(true)
         , popupDistance(2.0f)
         , popupScale(1.0f)
+        , showFPS(true)
         , dialogWidth(0)
         , dialogHeight(0)
         , nativeWindow(nullptr)
@@ -397,9 +403,9 @@ struct App::Private
         // Make sure the window surface is current, which it won't be
         // if we were previously in async mode
         // (Not needed now?)
-        if (eglMakeCurrent(m_vrGlStatus.m_display, windowSurface, windowSurface, m_vrGlStatus.m_context) == EGL_FALSE)
+        if (eglMakeCurrent(m_glStatus.m_display, windowSurface, windowSurface, m_glStatus.m_context) == EGL_FALSE)
         {
-            vFatal("eglMakeCurrent failed:" << m_vrGlStatus.getEglErrorString());
+            vFatal("eglMakeCurrent failed:" << m_glStatus.getEglErrorString());
         }
 
         // Allow the app to override
@@ -417,10 +423,10 @@ struct App::Private
 
     void initGlObjects()
     {
-        DefaultVrParmsForRenderer(m_vrGlStatus);
+        DefaultVrParmsForRenderer(m_glStatus);
 
-        kernel->setSmoothProgram(ChromaticAberrationCorrection(m_vrGlStatus) ? VK_DEFAULT_CB : VK_DEFAULT);
-        m_vrGlStatus.logExtensions();
+        kernel->setSmoothProgram(ChromaticAberrationCorrection(m_glStatus) ? VK_DEFAULT_CB : VK_DEFAULT);
+        m_glStatus.logExtensions();
 
         self->panel.externalTextureProgram2.initShader( VGlShader::getAdditionalVertexShaderSource(), VGlShader::getAdditionalFragmentShaderSource() );
         untexturedMvpProgram.initShader( VGlShader::getUntextureMvpVertexShaderSource(),VGlShader::getUntexturedFragmentShaderSource()  );
@@ -746,7 +752,7 @@ struct App::Private
 
             // Android doesn't let the non-standard extensions show up in the
             // extension string, so we need to try it blind.
-            windowSurface = eglCreateWindowSurface(m_vrGlStatus.m_display, m_vrGlStatus.m_config,
+            windowSurface = eglCreateWindowSurface(m_glStatus.m_display, m_glStatus.m_config,
                     nativeWindow, attribs);
 
             if (windowSurface == EGL_NO_SURFACE )
@@ -761,11 +767,11 @@ struct App::Private
                 attribs[numAttribs++] = EGL_NONE;
 
 
-                windowSurface = eglCreateWindowSurface(m_vrGlStatus.m_display, m_vrGlStatus.m_config,
+                windowSurface = eglCreateWindowSurface(m_glStatus.m_display, m_glStatus.m_config,
                         nativeWindow, attribs);
                 if (windowSurface == EGL_NO_SURFACE)
                 {
-                    vFatal("eglCreateWindowSurface failed:" << m_vrGlStatus.getEglErrorString());
+                    vFatal("eglCreateWindowSurface failed:" << m_glStatus.getEglErrorString());
                 }
                 framebufferIsSrgb = false;
                 framebufferIsProtected = false;
@@ -776,9 +782,9 @@ struct App::Private
                 framebufferIsProtected = activity->wantProtectedFramebuffer();
             }
 
-            if (eglMakeCurrent(m_vrGlStatus.m_display, windowSurface, windowSurface, m_vrGlStatus.m_context) == EGL_FALSE)
+            if (eglMakeCurrent(m_glStatus.m_display, windowSurface, windowSurface, m_glStatus.m_context) == EGL_FALSE)
             {
-                vFatal("eglMakeCurrent failed:" << m_vrGlStatus.getEglErrorString());
+                vFatal("eglMakeCurrent failed:" << m_glStatus.getEglErrorString());
             }
 
             createdSurface = true;
@@ -801,15 +807,15 @@ struct App::Private
             activity->onWindowDestroyed();
 
             // Handle it ourselves.
-            if (eglMakeCurrent(m_vrGlStatus.m_display, m_vrGlStatus.m_pbufferSurface, m_vrGlStatus.m_pbufferSurface,
-                    m_vrGlStatus.m_context) == EGL_FALSE)
+            if (eglMakeCurrent(m_glStatus.m_display, m_glStatus.m_pbufferSurface, m_glStatus.m_pbufferSurface,
+                    m_glStatus.m_context) == EGL_FALSE)
             {
                 vFatal("RC_SURFACE_DESTROYED: eglMakeCurrent pbuffer failed");
             }
 
             if (windowSurface != EGL_NO_SURFACE)
             {
-                eglDestroySurface(m_vrGlStatus.m_display, windowSurface);
+                eglDestroySurface(m_glStatus.m_display, windowSurface);
                 windowSurface = EGL_NO_SURFACE;
             }
             if (nativeWindow != nullptr)
@@ -930,7 +936,7 @@ struct App::Private
             const int windowDepth = 0;
             const int windowSamples = 0;
             const GLuint contextPriority = EGL_CONTEXT_PRIORITY_MEDIUM_IMG;
-            m_vrGlStatus.eglInit(EGL_NO_CONTEXT, GL_ES_VERSION,
+            m_glStatus.eglInit(EGL_NO_CONTEXT, GL_ES_VERSION,
                     8,8,8, windowDepth, windowSamples, contextPriority);
 
             // Create our GL data objects
@@ -948,10 +954,8 @@ struct App::Private
             vrMenuMgr = OvrVRMenuMgr::Create();
             debugLines = OvrDebugLines::Create();
 
-            int w = 0;
-            int h = 0;
-            loadingIconTexId = LoadTextureFromApplicationPackage("res/raw/loading_indicator.png",
-                                            TextureFlags_t(TEXTUREFLAG_NO_MIPMAPS), w, h);
+            VTexture loadingIcon(VResource("res/raw/loading_indicator.png"), VTexture::NoMipmaps);
+            loadingIconTexId = loadingIcon.id();
 
             // Create the SurfaceTexture for dialog rendering.
             self->dialog.dialogTexture = new SurfaceTexture(vrJni);
@@ -1032,8 +1036,8 @@ struct App::Private
                             // icon size factor smaller than fullscreen
                     for ( int eye = 0; eye < 2; eye++ )
                     {
-                       kernel->setSmoothEyeTexture(0,eye, 0);
-                       kernel->setSmoothEyeTexture(errorTexture.texture,eye,1);
+                       kernel->setSmoothEyeTexture(0, eye, 0);
+                       kernel->setSmoothEyeTexture(errorTexture.id(), eye, 1);
 
                     }
 
@@ -1177,6 +1181,41 @@ struct App::Private
                 }
             }
 
+            if (showFPS) {
+                const int FPS_NUM_FRAMES_TO_AVERAGE = 30;
+                static double  LastFrameTime = VTimer::Seconds();
+                static double  AccumulatedFrameInterval = 0.0;
+                static int   NumAccumulatedFrames = 0;
+                static float LastFrameRate = 60.0f;
+
+                double currentFrameTime = VTimer::Seconds();
+                double frameInterval = currentFrameTime - LastFrameTime;
+                AccumulatedFrameInterval += frameInterval;
+                NumAccumulatedFrames++;
+                if (NumAccumulatedFrames > FPS_NUM_FRAMES_TO_AVERAGE) {
+                    double interval = (AccumulatedFrameInterval / NumAccumulatedFrames);  // averaged
+                    AccumulatedFrameInterval = 0.0;
+                    NumAccumulatedFrames = 0;
+                    LastFrameRate = 1.0f / float(interval > 0.000001 ? interval : 0.00001);
+                }
+
+                V3Vectf viewPos = GetViewMatrixPosition(lastViewMatrix);
+                V3Vectf viewFwd = GetViewMatrixForward(lastViewMatrix);
+                V3Vectf newPos = viewPos + viewFwd * 1.5f;
+                fpsPointTracker.Update(VTimer::Seconds(), newPos);
+
+                fontParms_t fp;
+                fp.AlignHoriz = HORIZONTAL_CENTER;
+                fp.Billboard = true;
+                fp.TrackRoll = false;
+                VString temp;
+                temp.sprintf("%.1f fps", LastFrameRate);
+                worldFontSurface->DrawTextBillboarded3D(*defaultFont, fp, fpsPointTracker.GetCurPosition(),
+                        0.8f, V4Vectf(1.0f, 0.0f, 0.0f, 1.0f), temp);
+
+                LastFrameTime = currentFrameTime;
+            }
+
             // draw info text
             if (self->text.infoTextEndFrame >= self->text.vrFrame.id)
             {
@@ -1232,7 +1271,7 @@ struct App::Private
 
             if (errorTexture != 0)
             {
-                FreeTexture(errorTexture);
+                glDeleteTextures(1, &errorTexture.id());
             }
 
             activity->shutdown();
@@ -1260,7 +1299,7 @@ struct App::Private
             OvrDebugLines::Free(debugLines);
 
             shutdownGlObjects();
-            m_vrGlStatus.eglExit();
+            m_glStatus.eglExit();
 
             vInfo("javaVM->DetachCurrentThread");
             const jint rtn = javaVM->DetachCurrentThread();
@@ -1732,9 +1771,6 @@ long long App::recenterYawFrameStart() const
 
 void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const int numPresents )
 {
-
-
-    VEglDriver glOperation;
     // update vr lib systems after the app frame, but before rendering anything
     guiSys().frame( this, text.vrFrame, vrMenuMgr(), defaultFont(), menuFontSurface(), centerViewMatrix );
     gazeCursor().Frame( centerViewMatrix, text.vrFrame.deltaSeconds );
@@ -1758,7 +1794,7 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
     const int numEyes = d->renderMonoMode ? 1 : 2;
 
     // Flush out and report any errors
-    glOperation.logErrorsEnum("FrameStart");
+    d->m_glStatus.logErrorsEnum("FrameStart");
 
     if ( d->drawCalibrationLines && d->calibrationLinesDrawn )
     {
@@ -1810,6 +1846,7 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
         }
     }
 
+    d->kernel->InitTimeWarpParms();
     // This eye set is complete, use it now.
     if ( numPresents > 0 )
     {
@@ -1845,22 +1882,39 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
 //}
 
 // draw a zero to destination alpha
-void App::drawScreenMask( const VR4Matrixf & mvp, const float fadeFracX, const float fadeFracY )
+void App::drawScreenMask(const VR4Matrixf &mvp, const float fadeFracX, const float fadeFracY)
 {
-    VR4Matrixf mvpMatrix( mvp );
+    VR4Matrixf mvpMatrix(mvp);
 
-    glUseProgram( d->overlayScreenFadeMaskProgram.program );
+    glUseProgram(d->overlayScreenFadeMaskProgram.program);
 
-    glUniformMatrix4fv( d->overlayScreenFadeMaskProgram.uniformModelViewProMatrix, 1, GL_FALSE, mvpMatrix.Transposed().M[0] );
+    glUniformMatrix4fv(d->overlayScreenFadeMaskProgram.uniformModelViewProMatrix, 1, GL_FALSE, mvpMatrix.Transposed().M[0]);
 
-    if ( d->fadedScreenMaskSquare.vertexArrayObject == 0 )
-    {
+    if (d->fadedScreenMaskSquare.vertexArrayObject == 0) {
         d->fadedScreenMaskSquare.createScreenQuad( fadeFracX, fadeFracY );
     }
 
-    glColorMask( 0.0f, 0.0f, 0.0f, 1.0f );
+    glColorMask(0.0f, 0.0f, 0.0f, 1.0f);
     d->fadedScreenMaskSquare.drawElements();
-    glColorMask( 1.0f, 1.0f, 1.0f, 1.0f );
+    glColorMask(1.0f, 1.0f, 1.0f, 1.0f);
+}
+bool App::isShowFPS() const
+{
+    return d->showFPS;
+}
+void App::showFPS(bool const show)
+{
+    bool temp = d->showFPS;
+    d->showFPS = show;
+    if (d->showFPS && !temp) {
+        d->fpsPointTracker.Reset();
+    }
+}
+
+const VZipFile &App::apkFile() const
+{
+    static VZipFile current(packageCodePath());
+    return current;
 }
 
 NV_NAMESPACE_END

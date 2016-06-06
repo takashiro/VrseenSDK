@@ -32,12 +32,13 @@
 #include "VJson.h"
 #include "VZipFile.h"
 #include "VLog.h"
+#include "App.h"
 
 #include "android/JniUtils.h"
 #include "api/VEglDriver.h"
 
 #include "../api/VGlShader.h"
-#include "GlTexture.h"
+#include "VTexture.h"
 #include "../api/VGlGeometry.h"
 #include "VString.h"
 
@@ -433,7 +434,7 @@ bool FontInfoType::Load(const VZipFile &languagePackageFile, const VString &file
 	}
 
 	// if it wasn't loaded from the language package, try again from the app package
-    const VZipFile &apk = VZipFile::CurrentApkFile();
+    const VZipFile &apk = vApp->apkFile();
     return LoadFromPackage(apk, fileName);
 }
 
@@ -776,7 +777,7 @@ bool BitmapFontLocal::LoadImage(const VZipFile &languagePackageFile, const VStri
 	// - we opened the language apk and failed to open the texture file
 	// - we failed to open the language apk
     if (packageBuffer == nullptr) {
-        const VZipFile &apk = VZipFile::CurrentApkFile();
+        const VZipFile &apk = vApp->apkFile();
         apk.read(imageName, packageBuffer, length);
 	}
 
@@ -821,12 +822,14 @@ bool BitmapFontLocal::LoadImageFromBuffer(const VString &imageName, const uchar 
 	}
 
 	if (isASTC) {
-		Texture = LoadASTCTextureFromMemory(buffer, bufferSize, 1);
+        VTexture texture;
+        texture.loadAstc(buffer, bufferSize, 1);
+        Texture = texture.id();
 	} else {
-        Texture = LoadTextureFromBuffer(imageName.toUtf8().data(),
-                buffer, bufferSize,
-				TextureFlags_t(TEXTUREFLAG_NO_DEFAULT), ImageWidth,
-				ImageHeight);
+        VTexture texture(imageName, VByteArray(reinterpret_cast<const char *>(buffer), bufferSize));
+        Texture = texture.id();
+        ImageWidth = texture.width();
+        ImageHeight = texture.height();
 	}
 	if (Texture == 0) {
 		vWarn("BitmapFontLocal::Load: failed to load '" << imageName << "'");

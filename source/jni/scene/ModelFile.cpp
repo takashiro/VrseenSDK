@@ -15,7 +15,7 @@
 #include <sstream>
 
 #include "unzip.h"
-#include "GlTexture.h"
+#include "VTexture.h"
 #include "ModelRender.h"
 
 #define MEMORY_MAPPED	1
@@ -102,10 +102,9 @@ ModelFile::~ModelFile()
 {
 	vInfo("Destroying ModelFileModel " << FileName);
 
-	for ( int i = 0; i < Textures.length(); i++ )
-	{
-		FreeTexture( Textures[i].texid );
-	}
+    for (const ModelTexture &texture : Textures) {
+        glDeleteTextures(1, &texture.texid.id());
+    }
 
 	for ( int j = 0; j < Def.surfaces.length(); j++ )
 	{
@@ -194,18 +193,15 @@ void LoadModelFileTexture( ModelFile & model, const char * textureName,
 							const char * buffer, const int size, const MaterialParms & materialParms )
 {
 	ModelTexture tex;
-    tex.name = VPath(textureName).baseName();
-    int width;
-    int height;
-    tex.texid = LoadTextureFromBuffer( textureName,buffer, size,
-			materialParms.UseSrgbTextureFormats ? TextureFlags_t( TEXTUREFLAG_USE_SRGB ) : TextureFlags_t(),
-			width, height );
+    VPath texturePath = textureName;
+    tex.name = texturePath.baseName();
+    VTexture texture(texturePath, VByteArray(buffer, size), materialParms.UseSrgbTextureFormats ? VTexture::UseSRGB : VTexture::NoDefault);
+    tex.texid = texture.id();
 
 	// file name metadata for enabling clamp mode
 	// Used for sky sides in Tuscany.
-	if ( strstr( textureName, "_c." ) )
-	{
-		MakeTextureClamped( tex.texid );
+    if ( strstr( textureName, "_c." ) ) {
+        tex.texid.clamp();
 	}
 
 	model.Textures.append( tex );
@@ -267,7 +263,7 @@ void LoadModelFileJson(ModelFile &model,
 				TEXTURE_OCCLUSION_TRANSPARENT
 			};
 
-			VArray< GlTexture > glTextures;
+			VArray< VTexture > glTextures;
 
 			const VJson &texture_array( render_model.value( "textures" ) );
 			if ( texture_array.isArray() )
@@ -294,14 +290,14 @@ void LoadModelFileJson(ModelFile &model,
 							// Create a default texture.
                             LoadModelFileTexture( model, name.toUtf8().data(), NULL, 0, materialParms );
 						}
-						glTextures.append( model.Textures[i].texid );
+                        glTextures.append(model.Textures[i].texid);
 
                         const VString usage = texture.value( "usage" ).toString();
 						if ( usage == "diffuse" )
 						{
 							if ( materialParms.EnableDiffuseAniso == true )
 							{
-								MakeTextureAniso( model.Textures[i].texid, 2.0f );
+                                model.Textures[i].texid.aniso(2.0f);
 							}
 						}
 						else if ( usage == "emissive" )
@@ -309,7 +305,7 @@ void LoadModelFileJson(ModelFile &model,
 							if ( materialParms.EnableEmissiveLodClamp == true )
 							{
 								// LOD clamp lightmap textures to avoid light bleeding
-								MakeTextureLodClamped( model.Textures[i].texid, 1 );
+                                model.Textures[i].texid.clamp(1);
 							}
 						}
 						/*

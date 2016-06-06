@@ -80,7 +80,7 @@ void * Queue1Thread( void * v )
                 fileBuffer.read(reinterpret_cast<std::istream::char_type*>(buffer), fileLength);
                 if ( fileLength == 0 || buffer == NULL )
 				{
-                    const VZipFile &apk = VZipFile::CurrentApkFile();
+                    const VZipFile &apk = vApp->apkFile();
                     if (!apk.read(sideFilename, buffer, fileLength)) {
 						break;
 					}
@@ -104,7 +104,7 @@ void * Queue1Thread( void * v )
             fileBuffer.read(reinterpret_cast<std::istream::char_type*>(buffer), fileLength);
             if ( fileLength <= 0 || buffer == NULL )
 			{
-                const VZipFile &apk = VZipFile::CurrentApkFile();
+                const VZipFile &apk = vApp->apkFile();
                 if (!apk.read(filename,buffer, fileLength)) {
 					continue;
 				}

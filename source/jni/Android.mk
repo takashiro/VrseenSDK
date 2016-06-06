@@ -91,19 +91,16 @@ LOCAL_SRC_FILES  := \
 	gui/MetaDataManager.cpp \
 	gui/OutOfSpaceMenu.cpp \
 	gui/KeyState.cpp \
-	io/VZipFile.cpp \
 	io/VBuffer.cpp \
 	io/VBinaryStream.cpp \
+	io/VDir.cpp \
 	io/VFile.cpp \
 	io/VIODevice.cpp \
-	io/VFileOperation.cpp \
-	io/VDir.cpp \
+	io/VResource.cpp \
 	io/VStandardPath.cpp \
+	io/VZipFile.cpp \
+	media/VImage.cpp \
 	media/VSoundManager.cpp \
-	media/VImageCommonLoader.cpp \
-	media/VImageKtxLoader.cpp \
-	media/VImagePvrLoader.cpp \
-	media/VImageManager.cpp \
 	scene/VItem.cpp \
 	scene/VScene.cpp \
 	scene/BitmapFont.cpp \
@@ -111,7 +108,7 @@ LOCAL_SRC_FILES  := \
 	scene/VEyeItem.cpp \
 	scene/EyePostRender.cpp \
 	scene/GazeCursor.cpp \
-	scene/GlTexture.cpp \
+	scene/VTexture.cpp \
 	scene/ModelRender.cpp \
 	scene/ModelFile.cpp \
 	scene/ModelCollision.cpp \
@@ -119,9 +116,6 @@ LOCAL_SRC_FILES  := \
 	scene/ModelView.cpp \
 	scene/SurfaceTexture.cpp \
 	scene/SwipeView.cpp \
-	scene/VImage.cpp\
-	scene/VColorConverter.cpp\
-	scene/VOpenGLTexture.cpp \
 	App.cpp \
 	VrLocale.cpp
 

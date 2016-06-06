@@ -21,7 +21,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "GuiSys.h"
 #include "DefaultComponent.h"
 #include "VBasicmath.h"
-#include "3rdParty/stb/stb_image.h"
 #include "AnimComponents.h"
 #include "linux/stat.h"
 #include "VrLocale.h"
@@ -35,6 +34,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <VLog.h>
 #include <VStandardPath.h>
 #include <VFile.h>
+#include <VResource.h>
+#include <VTexture.h>
 
 namespace NervGear {
 
@@ -845,7 +846,7 @@ private:
 
 //==============================
 // OvrFolderBrowser
-unsigned char * OvrFolderBrowser::ThumbPanelBG = NULL;
+VImage OvrFolderBrowser::ThumbPanelBG;
 
 OvrFolderBrowser::OvrFolderBrowser(
 		App * app,
@@ -882,30 +883,20 @@ OvrFolderBrowser::OvrFolderBrowser(
 	m_defaultPanelTextureIds[ 1 ] = 0;
 
 	//  Load up thumbnail alpha from panel.tga
-	if ( ThumbPanelBG == NULL )
-	{
-		void * 	buffer;
-        uint		bufferLength;
-
-		const char * panel = NULL;
-
-		if ( m_thumbWidth == m_thumbHeight )
-		{
+    if (!ThumbPanelBG.isValid()) {
+        const char *panel = nullptr;
+        if (m_thumbWidth == m_thumbHeight) {
 			panel = "res/raw/panel_square.tga";
-		}
-		else
-		{
+        } else {
 			panel = "res/raw/panel.tga";
 		}
 
-        const VZipFile &apk = VZipFile::CurrentApkFile();
-        apk.read(panel, buffer, bufferLength);
+        const VZipFile &apk = vApp->apkFile();
+        VByteArray buffer = apk.read(panel);
+        vAssert(buffer.size() > 0);
 
-		int panelW = 0;
-		int panelH = 0;
-		ThumbPanelBG = stbi_load_from_memory( ( stbi_uc const * )buffer, bufferLength, &panelW, &panelH, NULL, 4 );
-
-		vAssert( ThumbPanelBG != 0 && panelW == m_thumbWidth && panelH == m_thumbHeight );
+        ThumbPanelBG.load(buffer);
+        vAssert(ThumbPanelBG.isValid() && ThumbPanelBG.width() == m_thumbWidth && ThumbPanelBG.height() == m_thumbHeight);
 	}
 
 	// load up the default panel textures once
@@ -923,12 +914,10 @@ OvrFolderBrowser::OvrFolderBrowser(
 			panelSrc[ 1 ]  = "res/raw/panel_hi.tga";
 		}
 
-		for ( int t = 0; t < 2; ++t )
-		{
-			int width = 0;
-			int height = 0;
-			m_defaultPanelTextureIds[ t ] = LoadTextureFromApplicationPackage( panelSrc[ t ], TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), width, height );
-			vAssert( m_defaultPanelTextureIds[ t ] && ( width == m_thumbWidth ) && ( height == m_thumbHeight ) );
+        for (int t = 0; t < 2; t++) {
+            VTexture texture(VResource(panelSrc[t]));
+            m_defaultPanelTextureIds[t] = texture.id();
+            vAssert(m_defaultPanelTextureIds[t] && (texture.width() == m_thumbWidth) && (texture.height() == m_thumbHeight));
 		}
 	}
 
@@ -961,18 +950,11 @@ OvrFolderBrowser::OvrFolderBrowser(
 OvrFolderBrowser::~OvrFolderBrowser()
 {
 	vInfo("OvrFolderBrowser::~OvrFolderBrowser");
-	m_backgroundCommands.post( "shutDown" );
+    m_backgroundCommands.post("shutDown");
 
-	if ( ThumbPanelBG != NULL )
-	{
-		free( ThumbPanelBG );
-		ThumbPanelBG = NULL;
-	}
-
-	for ( int t = 0; t < 2; ++t )
-	{
-		glDeleteTextures( 1, &m_defaultPanelTextureIds[ t ] );
-		m_defaultPanelTextureIds[ t ] = 0;
+    for (int t = 0; t < 2; t++) {
+        glDeleteTextures(1, &m_defaultPanelTextureIds[t]);
+        m_defaultPanelTextureIds[t] = 0;
 	}
 
 	int numFolders = m_folders.length();
@@ -1730,7 +1712,7 @@ void * OvrFolderBrowser::ThumbnailThread( void * v )
 
 			int		width;
 			int		height;
-            unsigned char * data = folderBrowser->loadThumbnail(fullPath.toUtf8().data(), width, height );
+            uchar *data = folderBrowser->loadThumbnail(fullPath, width, height);
 			if ( data != NULL )
 			{
 				if ( folderBrowser->applyThumbAntialiasing( data, width, height ) )
@@ -1787,7 +1769,7 @@ void * OvrFolderBrowser::ThumbnailThread( void * v )
 				const OvrCreateThumbCmd & cmd = ThumbCreateAndLoadCommands->at( i );
 				int	width = 0;
 				int height = 0;
-                unsigned char * data = folderBrowser->createAndCacheThumbnail(cmd.sourceImagePath, cmd.thumbDestination, width, height );
+                uchar *data = folderBrowser->createAndCacheThumbnail(cmd.sourceImagePath, cmd.thumbDestination, width, height );
 
 				if ( data != NULL )
 				{
@@ -1805,9 +1787,9 @@ void * OvrFolderBrowser::ThumbnailThread( void * v )
 					else
 					{
 						// Apply alpha from vrlib/res/raw to alpha channel for anti-aliasing
-						for ( int i = 3; i < thumbPanelBytes; i += 4 )
-						{
-							data[ i ] = ThumbPanelBG[ i ];
+                        const uchar *ThumbPanelBGData = ThumbPanelBG.data();
+                        for (int i = 3; i < thumbPanelBytes; i += 4) {
+                            data[i] = ThumbPanelBGData[i];
 						}
 
                         int folderId = cmd.loadCmd.at(0).toInt();
@@ -1874,17 +1856,16 @@ void OvrFolderBrowser::loadThumbnailToTexture( const VEvent &event )
 	panel->size[ 0 ] *= ( float )width / max;
 	panel->size[ 1 ] *= ( float )height / max;
 
-	GLuint texId = LoadRGBATextureFromMemory(
-		data, width, height, true /* srgb */ ).texture;
-
-	vAssert( texId );
+    VTexture texture;
+    texture.loadRgba(data, width, height);
+    vAssert(texture.id());
 
 	panelObject->setSurfaceTextureTakeOwnership( 0, 0, SURFACE_TEXTURE_DIFFUSE,
-		texId, panel->size[ 0 ], panel->size[ 1 ] );
+        texture.id(), panel->size[ 0 ], panel->size[ 1 ] );
 
-	BuildTextureMipmaps( texId );
-	MakeTextureTrilinear( texId );
-	MakeTextureClamped( texId );
+    texture.buildMipmaps();
+    texture.trilinear();
+    texture.clamp();
 
 	free( data );
 }
@@ -2072,10 +2053,9 @@ bool OvrFolderBrowser::applyThumbAntialiasing( unsigned char * inOutBuffer, int 
 {
 	if ( inOutBuffer != NULL )
 	{
-		if ( ThumbPanelBG != NULL )
-		{
-			const unsigned ThumbWidth = thumbWidth();
-			const unsigned ThumbHeight = thumbHeight();
+        if (ThumbPanelBG.isValid()) {
+            const uint ThumbWidth = thumbWidth();
+            const uint ThumbHeight = thumbHeight();
 
 			const int numBytes = width * height * 4;
 			const int thumbPanelBytes = ThumbWidth * ThumbHeight * 4;
@@ -2086,9 +2066,9 @@ bool OvrFolderBrowser::applyThumbAntialiasing( unsigned char * inOutBuffer, int 
 			else
 			{
 				// Apply alpha from vrlib/res/raw to alpha channel for anti-aliasing
-				for ( int i = 3; i < thumbPanelBytes; i += 4 )
-				{
-					inOutBuffer[ i ] = ThumbPanelBG[ i ];
+                const uchar *ThumbPanelBGData = ThumbPanelBG.data();
+                for (int i = 3; i < thumbPanelBytes; i += 4) {
+                    inOutBuffer[i] = ThumbPanelBGData[i];
 				}
 				return true;
 			}

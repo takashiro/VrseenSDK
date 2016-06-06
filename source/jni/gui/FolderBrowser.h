@@ -18,6 +18,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "MetaDataManager.h"
 #include "ScrollManager.h"
 #include "VArray.h"
+#include "VImage.h"
+
 NV_NAMESPACE_BEGIN
 
 class OvrFolderBrowserRootComponent;
@@ -161,7 +163,7 @@ protected:
     virtual unsigned char *createAndCacheThumbnail(const VString &soureFile, const VString &cacheDestinationFile, int & outWidth, int & outHeight ) = 0;
 
 	// Called on a background thread to load thumbnail
-    virtual	unsigned char *		loadThumbnail( const char * filename, int & width, int & height ) = 0;
+    virtual uchar *loadThumbnail(const VString &fileName, int &width, int &height) = 0;
 
 	// Returns the proper thumbnail URL
     virtual const VPath &thumbUrl(const OvrMetaDatum *item) { return item->url; }
@@ -265,7 +267,7 @@ private:
     VString				m_appCachePath;
 
 	// Keep a reference to Panel texture used for AA alpha when creating thumbnails
-	static unsigned char *		ThumbPanelBG;
+    static VImage ThumbPanelBG;
 
 	// Default panel textures (base and highlight) - loaded once
     GLuint				m_defaultPanelTextureIds[ 2 ];

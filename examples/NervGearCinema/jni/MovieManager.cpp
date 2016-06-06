@@ -12,9 +12,8 @@
 #include <VJson.h>
 #include <VLog.h>
 #include <VZipFile.h>
-#include <VOpenGLTexture.h>
-#include <VImageManager.h>
 #include <VFile.h>
+#include <VResource.h>
 
 namespace OculusCinema {
 
@@ -205,22 +204,16 @@ void MovieManager::ReadMetaData( MovieDef *movie )
 
 void MovieManager::LoadPoster( MovieDef *movie )
 {
-    VString posterFilename = VPath(movie->Filename).baseName();
-    posterFilename.append(".png");
+    VString posterFileName = VPath(movie->Filename).baseName();
+    posterFileName.append(".png");
 
+    VFile posterFile(posterFileName, VFile::ReadOnly);
+    if (posterFile.exists() && posterFile.isReadable()) {
+        movie->Poster.load(posterFile);
+    }
 
-    VImageManager* imagemanager =  new VImageManager();
-    VImage* poster = imagemanager->loadImage(VPath(posterFilename));
-    movie->PosterWidth = poster->getDimension().Width;
-    movie->PosterHeight = poster->getDimension().Height;
-    movie->Poster = VOpenGLTexture(poster, VPath(posterFilename), TextureFlags_o(_NO_DEFAULT )).getTextureName();
-
-    delete imagemanager;
-
-
-	if ( movie->Poster == 0 )
-	{
-        if (Cinema.isExternalSDCardDir(posterFilename)) {
+    if (movie->Poster.id() == 0) {
+        if (Cinema.isExternalSDCardDir(posterFileName)) {
 			// Since we're unable to write to the external sd card and writing to the
 			// cache directory doesn't seem to work, just disable generation of
 			// thumbnails for the external sd card.
@@ -237,34 +230,25 @@ void MovieManager::LoadPoster( MovieDef *movie )
                 vInfo("No thumbnail found at" << posterFilename);
 			}
 #endif
-		}
-		else
-		{
+        } else {
 			// no thumbnail found, so create it.  if it's on an external sdcard, posterFilename will contain the new filename at this point and will load it from the cache
-            if ( ( movie->Poster == 0 ) && Native::CreateVideoThumbnail(movie->Filename, posterFilename, PosterWidth, PosterHeight))
-			{
-
-                VImageManager* imagemanager =  new VImageManager();
-                VImage* poster = imagemanager->loadImage(posterFilename);
-                movie->PosterWidth = poster->getDimension().Width;
-                movie->PosterHeight = poster->getDimension().Height;
-                movie->Poster = VOpenGLTexture(poster, VPath(posterFilename), TextureFlags_o(_NO_DEFAULT )).getTextureName();
-
-                delete imagemanager;
+            if (movie->Poster.id() == 0 && Native::CreateVideoThumbnail(movie->Filename, posterFileName, PosterWidth, PosterHeight)) {
+                VFile posterFile(posterFileName, VFile::ReadOnly);
+                if (posterFile.exists() && posterFile.isReadable()) {
+                    movie->Poster.load(posterFile);
+                }
 			}
 		}
 	}
 
 	// if all else failed, then just use the default poster
-	if ( movie->Poster == 0 )
-	{
-		movie->Poster = LoadTextureFromApplicationPackage( "assets/default_poster.png",
-				TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), movie->PosterWidth, movie->PosterHeight );
+    if (movie->Poster.id() == 0) {
+        movie->Poster.load(VResource("assets/default_poster.png"));
 	}
 
-	BuildTextureMipmaps( movie->Poster );
-	MakeTextureTrilinear( movie->Poster );
-	MakeTextureClamped( movie->Poster );
+    movie->Poster.buildMipmaps();
+    movie->Poster.trilinear();
+    movie->Poster.clamp();
 }
 
 bool MovieManager::IsSupportedMovieFormat( const VString &extension ) const

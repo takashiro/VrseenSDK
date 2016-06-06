@@ -1,11 +1,7 @@
 #include "VZipFile.h"
 #include "VString.h"
-#include "VByteArray.h"
 #include "VLog.h"
 
-#include "App.h"
-#include "VImageManager.h"
-#include "VOpenGLTexture.h"
 #include <3rdparty/minizip/unzip.h>
 
 NV_NAMESPACE_BEGIN
@@ -80,11 +76,9 @@ bool VZipFile::read(const VString &filePath, void *&buffer, uint &length) const
     }
 
     VByteArray path = filePath.toUtf8();
-    vInfo("nameInZip is" << path);
-
     const int locateRet = unzLocateFile(d->handle, path.data(), 2 /* case insensitive */);
     if (locateRet != UNZ_OK) {
-        vInfo("File '" << path << "' not found in apk!");
+        vWarn("File '" << path << "' not found in apk!");
         return false;
     }
 
@@ -123,11 +117,9 @@ bool VZipFile::read(const VString &filePath, VIODevice *output) const
     }
 
     VByteArray path = filePath.toUtf8();
-    vInfo("nameInZip is" << path);
-
     const int locateRet = unzLocateFile(d->handle, path.data(), 2 /* case insensitive */);
     if (locateRet != UNZ_OK) {
-        vInfo("File '" << path << "' not found in apk!");
+        vWarn("File '" << path << "' not found in apk!");
         return false;
     }
 
@@ -158,58 +150,42 @@ bool VZipFile::read(const VString &filePath, VIODevice *output) const
     return true;
 }
 
-
-const VZipFile &VZipFile::CurrentApkFile()
+VByteArray VZipFile::read(const VString &filePath) const
 {
-    static VZipFile current(vApp->packageCodePath());
-    return current;
-}
-
-uint LoadTextureFromApplicationPackage(const VString &nameInZip, const TextureFlags_t &flags, int &width, int &height)
-{
-    width = 0;
-    height = 0;
-
-    void *buffer = nullptr;
-    uint bufferLength;
-
-    const VZipFile &apk = VZipFile::CurrentApkFile();
-    apk.read(nameInZip, buffer, bufferLength);
-    if (buffer == nullptr) {
-        return 0;
+    if (d->handle == nullptr) {
+        vError("VZipFile is not open");
+        return VByteArray();
     }
-    VByteArray name = nameInZip.toUtf8();
-    unsigned texId = LoadTextureFromBuffer(name.data(), buffer, bufferLength, flags, width, height );
 
-//    TextureFlags_o flag;
-//    switch(flags)
-//    {
-//        case TEXTUREFLAG_NO_DEFAULT:
-//            flag = _NO_DEFAULT;
-//        break;
+    VByteArray path = filePath.toUtf8();
+    const int locateRet = unzLocateFile(d->handle, path.data(), 2 /* case insensitive */);
+    if (locateRet != UNZ_OK) {
+        vWarn("File '" << path << "' not found in apk!");
+        return VByteArray();
+    }
 
-//        case TEXTUREFLAG_USE_SRGB:
-//            flag = _USE_SRGB;
-//        break;
+    unz_file_info info;
+    const int getRet = unzGetCurrentFileInfo(d->handle, &info, NULL, 0, NULL, 0, NULL, 0);
+    if (getRet != UNZ_OK) {
+        vWarn("File info error reading '" << path << "' from apk!");
+        return VByteArray();
+    }
+    const int openRet = unzOpenCurrentFile(d->handle);
+    if (openRet != UNZ_OK) {
+        vWarn("Error opening file '" << path << "' from apk!");
+        return VByteArray();
+    }
 
-//        case TEXTUREFLAG_NO_MIPMAPS:
-//            flag = _NO_MIPMAPS;
-//        break;
+    VByteArray buffer;
+    buffer.resize(info.uncompressed_size);
+    const int readRet = unzReadCurrentFile(d->handle, &buffer[0], info.uncompressed_size);
+    unzCloseCurrentFile(d->handle);
+    if (readRet <= 0) {
+        vWarn("Error reading file '" << path << "' from apk!");
+        return VByteArray();
+    }
 
-//        default:
-//        break;
-//    }
-
-
-//    VImageManager* imagemanager = new VImageManager();
-//    VImage* image = imagemanager->loadImage(VPath(nameInZip));
-//    width = image->getDimension().Width;
-//    height = image->getDimension().Height;
-//    texId = VOpenGLTexture(image, VPath(nameInZip), flag).getTextureName();
-
-//    delete imagemanager;
-
-    return texId;
+    return buffer;
 }
 
 NV_NAMESPACE_END

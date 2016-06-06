@@ -4,7 +4,8 @@
 #include "core/VTimer.h"
 #include "VArray.h"
 #include "api/VKernel.h"
-#include "GlTexture.h"
+#include "VTexture.h"
+#include "VResource.h"
 #include "VZipFile.h"
 
 NV_NAMESPACE_BEGIN
@@ -93,9 +94,7 @@ void OvrGazeCursorLocal::Init()
 		return;
     }
     CursorGeometry.createPlaneQuadGrid( 1, 1 );
-	int w = 0;
-	int h = 0;
-	char const * const cursorStateNames[ CURSOR_STATE_MAX ] =
+    const char * const cursorStateNames[ CURSOR_STATE_MAX ] =
 	{
 		//"res/raw/color_ramp_test.tga",
 		//"res/raw/color_ramp_test.tga",
@@ -112,14 +111,16 @@ void OvrGazeCursorLocal::Init()
 		"res/raw/gaze_cursor_hand.tga"
 	};
 
-	for ( int i = 0; i < CURSOR_STATE_MAX; ++i )
-	{
-		CursorTextureHandle[i] = LoadTextureFromApplicationPackage( cursorStateNames[i], TextureFlags_t(), w, h );
+    for (int i = 0; i < CURSOR_STATE_MAX; i++) {
+        VTexture cursor(VResource(cursorStateNames[i]));
+        CursorTextureHandle[i] = cursor.id();
 	}
 
-	TimerTextureHandle = LoadTextureFromApplicationPackage( "res/raw/gaze_cursor_timer.tga", TextureFlags_t(), w, h );
+    VTexture timer(VResource("res/raw/gaze_cursor_timer.tga"));
+    TimerTextureHandle = timer.id();
 
-	ColorTableHandle = LoadTextureFromApplicationPackage( "res/raw/color_ramp_timer.tga", TextureFlags_t(), w, h );
+    VTexture colorTable(VResource("res/raw/color_ramp_timer.tga"));
+    ColorTableHandle = colorTable.id();
 
 	CursorProgram .initShader( GazeCursorVertexSrc, GazeCursorFragmentSrc );
 	TimerProgram .initShader( GazeCursorVertexSrc, GazeCursorColorTableFragmentSrc );//GazeCursorFragmentSrc );

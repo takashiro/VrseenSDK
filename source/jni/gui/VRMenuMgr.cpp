@@ -14,7 +14,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "api/VEglDriver.h"
 #include "VAlgorithm.h"
 #include "../api/VGlShader.h"
-#include "GlTexture.h"
+#include "VTexture.h"
 #include "../api/VGlGeometry.h"
 #include "ModelView.h"
 #include "DebugLines.h"

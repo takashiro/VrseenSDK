@@ -6,7 +6,7 @@
 #include "VArray.h"
 #include "../api/VGlGeometry.h"
 #include "../api/VGlShader.h"
-#include "GlTexture.h"
+#include "VTexture.h"
 #include "GazeCursor.h"
 #include "VFrame.h"
 #include "BitmapFont.h"
@@ -133,8 +133,8 @@ public:
 	VGlShader	ProgPanel;
 	VGlShader	ProgHighlight;
 	VGlGeometry	GeoPanel;
-	GlTexture	BorderTexture2_1;
-	GlTexture	BorderTexture1_1;
+	VTexture	BorderTexture2_1;
+	VTexture	BorderTexture1_1;
 
 	SwipeViewState		State;
 	SwipeViewTouchState	TouchState;

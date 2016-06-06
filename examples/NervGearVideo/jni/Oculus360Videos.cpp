@@ -23,6 +23,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include <VPath.h>
 #include <VZipFile.h>
 #include <VFile.h>
+#include <VResource.h>
 
 #include <fstream>
 
@@ -33,7 +34,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "VEglDriver.h"
 #include "SurfaceTexture.h"
 
-#include "GlTexture.h"
+#include "VTexture.h"
 #include "BitmapFont.h"
 #include "GazeCursor.h"
 #include "App.h"
@@ -44,18 +45,15 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "gui/GuiSys.h"
 
 #include "gui/Fader.h"
-#include "3rdParty/stb/stb_image.h"
-#include "3rdParty/stb/stb_image_write.h"
 #include "VDir.h"
 #include "VideoBrowser.h"
 #include "VideoMenu.h"
 #include "VrLocale.h"
 #include "VStandardPath.h"
-#include "core/VTimer.h"
+#include "VTimer.h"
 #include "VideosMetaData.h"
 #include "VColor.h"
-#include "VImagemanager.h"
-#include "VOpenGLTexture.h"
+
 static bool	RetailMode = false;
 
 static const char * videosDirectory = "Oculus/360Videos/";
@@ -174,24 +172,14 @@ void Oculus360Videos::init(const VString &fromPackage, const VString &launchInte
 
     FadedPanoramaProgram.initShader(VGlShader::getFadedPanoVertexShaderSource(),VGlShader::getFadedPanoProgramShaderSource());
     SingleColorTextureProgram.initShader(VGlShader::getSingleTextureVertexShaderSource(),VGlShader::getUniformSingleTextureProgramShaderSource());
-    const char *launchPano = NULL;
-    if ( ( NULL != launchPano ) && launchPano[ 0 ] )
-	{
-
-        VImageManager* imagemanager = new VImageManager();
-        VImage* panopic = imagemanager->loadImage(VPath(launchPano));
-        BackgroundTexId = VOpenGLTexture(panopic, VPath(launchPano), TextureFlags_o( _NO_DEFAULT ) | _USE_SRGB).getTextureName();
-
-        delete imagemanager;
-
-
-	}
 
 	// always fall back to valid background
-	if ( BackgroundTexId == 0 )
-	{
-		BackgroundTexId = LoadTextureFromApplicationPackage( "assets/background.jpg",
-			TextureFlags_t( TEXTUREFLAG_USE_SRGB ), BackgroundWidth, BackgroundHeight );
+    if (BackgroundTexId == 0) {
+        VTexture background(VResource("assets/background.jpg"), VTexture::UseSRGB);
+        BackgroundTexId = background.id();
+        vAssert(BackgroundTexId);
+        BackgroundWidth = background.width();
+        BackgroundHeight = background.height();
 	}
 
 	vInfo("Creating Globe");
@@ -210,7 +198,7 @@ void Oculus360Videos::init(const VString &fromPackage, const VString &launchInte
 	materialParms.UseSrgbTextureFormats = ( vApp->vrParms().colorFormat == VColor::COLOR_8888_sRGB );
 
 
-    const VZipFile &apk = VZipFile::CurrentApkFile();
+    const VZipFile &apk = vApp->apkFile();
     void *buffer = nullptr;
     uint length = 0;
     apk.read("assets/stars.ovrscene", buffer, length);
@@ -319,7 +307,7 @@ void Oculus360Videos::shutdown()
 
 	Globe.destroy();
 
-	FreeTexture( BackgroundTexId );
+    glDeleteTextures(1, &BackgroundTexId);
 
 	if ( MovieTexture != NULL )
 	{

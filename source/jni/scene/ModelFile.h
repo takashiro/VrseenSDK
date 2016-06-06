@@ -29,7 +29,7 @@ struct MaterialParms
 struct ModelTexture
 {
 	VString		name;
-	GlTexture	texid;
+	VTexture	texid;
 };
 
 enum ModelJointAnimation

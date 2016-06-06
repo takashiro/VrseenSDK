@@ -15,7 +15,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 
 #include "GazeCursor.h"
 #include "BitmapFont.h"
-#include "gui/VRMenuMgr.h"
+#include "VRMenuMgr.h"
 #include "CarouselBrowserComponent.h"
 #include "TheaterSelectionComponent.h"
 #include "TheaterSelectionView.h"
@@ -24,7 +24,8 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "VZipFile.h"
 #include "CinemaStrings.h"
 #include "Native.h"
-#include "core/VTimer.h"
+#include "VTimer.h"
+#include "VResource.h"
 
 #include <VEyeItem.h>
 
@@ -184,7 +185,7 @@ void TheaterSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, Bitmap
 		const SceneDef & theater = Cinema.modelMgr.GetTheater( i );
 
 		CarouselItem *item = new CarouselItem();
-		item->texture = theater.IconTexture;
+        item->texture = theater.IconTexture.id();
 
         Theaters.append( item );
 	}
@@ -207,10 +208,10 @@ void TheaterSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, Bitmap
     TheaterBrowser = new CarouselBrowserComponent( Theaters, panelPoses );
     CenterRoot->addComponent( TheaterBrowser );
 
-    int selectionWidth = 0;
-    int selectionHeight = 0;
-	GLuint selectionTexture = LoadTextureFromApplicationPackage( "assets/VoidTheater.png",
-			TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), selectionWidth, selectionHeight );
+    VTexture selection(VResource("assets/VoidTheater.png"));
+    GLuint selectionTexture = selection.id();
+    int selectionWidth = selection.width();
+    int selectionHeight = selection.height();
 
     int centerIndex = panelPoses.length() / 2;
     for ( int i = 0; i < panelPoses.length(); ++i )
@@ -281,16 +282,16 @@ void TheaterSelectionView::CreateMenu( App * app, OvrVRMenuMgr & menuMgr, Bitmap
     // swipe icons
     //
     {
-    	int 	swipeIconLeftWidth = 0;
-    	int		swipeIconLeftHeight = 0;
-    	int 	swipeIconRightWidth = 0;
-    	int		swipeIconRightHeight = 0;
 
-    	GLuint swipeIconLeftTexture = LoadTextureFromApplicationPackage( "assets/SwipeSuggestionArrowLeft.png",
-				TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), swipeIconLeftWidth, swipeIconLeftHeight );
+        VTexture swipeLeft(VResource("assets/SwipeSuggestionArrowLeft.png"));
+        GLuint swipeIconLeftTexture = swipeLeft.id();
+        int swipeIconLeftWidth = swipeLeft.width();
+        int swipeIconLeftHeight = swipeLeft.height();
 
-		GLuint swipeIconRightTexture = LoadTextureFromApplicationPackage( "assets/SwipeSuggestionArrowRight.png",
-				TextureFlags_t( TEXTUREFLAG_NO_DEFAULT ), swipeIconRightWidth, swipeIconRightHeight );
+        VTexture swipeRight(VResource("assets/SwipeSuggestionArrowRight.png"));
+        GLuint swipeIconRightTexture = swipeRight.id();
+        int swipeIconRightWidth = swipeRight.width();
+        int swipeIconRightHeight = swipeRight.height();
 
 		VRMenuSurfaceParms swipeIconLeftSurfParms( "",
 				swipeIconLeftTexture, swipeIconLeftWidth, swipeIconLeftHeight, SURFACE_TEXTURE_DIFFUSE,

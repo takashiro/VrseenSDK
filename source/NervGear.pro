@@ -74,14 +74,15 @@ SOURCES += \
     jni/gui/MetaDataManager.cpp \
     jni/gui/OutOfSpaceMenu.cpp \
     jni/gui/KeyState.cpp \
-    jni/io/VZipFile.cpp \
     jni/io/VBinaryStream.cpp \
     jni/io/VBuffer.cpp \
+    jni/io/VDir.cpp \
     jni/io/VFile.cpp \
     jni/io/VIODevice.cpp \
-    jni/io/VFileOperation.cpp \
-    jni/io/VDir.cpp \
+    jni/io/VResource.cpp \
     jni/io/VStandardPath.cpp \
+    jni/io/VZipFile.cpp \
+    jni/media/VImage.cpp \
     jni/media/VSoundManager.cpp \
     jni/scene/VItem.cpp \
     jni/scene/VScene.cpp \
@@ -90,7 +91,7 @@ SOURCES += \
     jni/scene/VEyeItem.cpp \
     jni/scene/EyePostRender.cpp \
     jni/scene/GazeCursor.cpp \
-    jni/scene/GlTexture.cpp \
+    jni/scene/VTexture.cpp \
     jni/scene/ModelCollision.cpp \
     jni/scene/ModelFile.cpp \
     jni/scene/ModelRender.cpp \
@@ -99,14 +100,7 @@ SOURCES += \
     jni/scene/SurfaceTexture.cpp \
     jni/scene/SwipeView.cpp \
     jni/App.cpp \
-    jni/VrLocale.cpp \
-    jni/scene/VImage.cpp \
-    jni/scene/VColorConverter.cpp \
-    jni/media/VImageKtxLoader.cpp \
-    jni/scene/VOpenGLTexture.cpp \
-    jni/media/VImageCommonLoader.cpp \
-    jni/media/VImagePvrLoader.cpp \
-    jni/media/VImageManager.cpp
+    jni/VrLocale.cpp
 
 
 HEADERS += \
@@ -123,7 +117,6 @@ HEADERS += \
     jni/core/VAtomicInt.h \
     jni/core/VArray.h \
     jni/core/VByteArray.h \
-    jni/core/VColor.h \
     jni/core/VChar.h \
     jni/core/VCircularQueue.h \
     jni/core/VDeque.h \
@@ -205,24 +198,26 @@ HEADERS += \
     jni/gui/GuiSysLocal.h \
     jni/gui/ui_default.h \
     jni/gui/KeyState.h \
-    jni/io/VZipFile.h \
     jni/io/VBinaryStream.h \
     jni/io/VBuffer.h \
+    jni/io/VDir.h \
     jni/io/VFile.h \
     jni/io/VIODevice.h \
-    jni/io/VFileOperation.h \
-    jni/io/VDir.h \
+    jni/io/VResource.h \
     jni/io/VStandardPath.h \
+    jni/io/VZipFile.h \
+    jni/media/VColor.h \
+    jni/media/VImage.h \
     jni/media/VSoundManager.h \
     jni/scene/VItem.h \
     jni/scene/VScene.h \
     jni/scene/BitmapFont.h \
     jni/scene/DebugLines.h \
     jni/scene/VEyeItem.h \
+    jni/scene/VTexture.h \
     jni/scene/EyePostRender.h \
     jni/scene/GazeCursor.h \
     jni/scene/GazeCursorLocal.h \
-    jni/scene/GlTexture.h \
     jni/scene/ModelCollision.h \
     jni/scene/ModelFile.h \
     jni/scene/ModelRender.h \
@@ -230,23 +225,11 @@ HEADERS += \
     jni/scene/ModelView.h \
     jni/scene/SurfaceTexture.h \
     jni/scene/SwipeView.h \
+    jni/scene/VRect.h \
     jni/App.h \
     jni/VrLocale.h \
     jni/vglobal.h \
-    jni/Input.h \
-    jni/scene/VImageColor.h \
-    jni/scene/VDimension.h \
-    jni/scene/VRect.h \
-    jni/scene/VImage.h \
-    jni/scene/VColorConverter.h \
-    jni/media/VImageLoader.h \
-    jni/media/VImageKtxLoader.h\
-    jni/scene/VTexture.h \
-    jni/scene/VOpenGLTexture.h \
-    jni/scene/VBlit.h \
-    jni/media/VImageCommonLoader.h \
-    jni/media/VImagePvrLoader.h \
-    jni/media/VImageManager.h
+    jni/Input.h
 
 include(jni/3rdparty/minizip/minizip.pri)
 include(jni/3rdparty/stb/stb.pri)

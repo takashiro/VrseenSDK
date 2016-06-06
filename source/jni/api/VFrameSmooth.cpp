@@ -41,6 +41,28 @@ namespace {
     VLockless<VsyncState>	UpdatedVsyncState;
 }
 
+struct warpSource_t
+{
+	long long			m_firstDisplayedVsync[2];		// External velocity is added after this vsync.
+	bool				m_disableChromaticCorrection;	// Disable correction for chromatic aberration.
+	EGLSyncKHR			m_gpuSync;					// When this sync completes, the textures are done rendering.
+
+
+    unsigned int	m_texId[2][3];
+    int 						m_smoothOptions;
+    VR4Matrixf					m_externalVelocity;
+
+
+    unsigned int	m_planarTexId[2][3][3];
+    VR4Matrixf		m_texMatrix[2][3];
+    VRotationState m_pose[2][3];
+    int							m_minimumVsync;
+    float						m_preScheduleSeconds;
+    ushort			m_smoothProgram;
+    float						m_programParms[4];
+};
+
+
 struct swapProgram_t
 {
 
@@ -216,6 +238,7 @@ struct VFrameSmooth::Private
 
         m_shutdownRequest.setState( false );
         m_eyeBufferCount.setState( 0 );
+        memset( m_warpSources, 0, sizeof( m_warpSources ) );
         memset( m_warpPrograms, 0, sizeof( m_warpPrograms ) );
 
         pthread_mutex_init( &m_smoothMutex, NULL /* default attributes */ );
@@ -445,12 +468,12 @@ struct VFrameSmooth::Private
     void			renderToDisplay( const double vsyncBase, const swapProgram_t & swap );
     void			renderToDisplayBySliced( const double vsyncBase, const swapProgram_t & swap );
 
-    const VGlShader & chooseProgram(const bool disableChromaticCorrection ) const;
-    void			setSmoothpState( ) const;
-    void			bindSmoothProgram( const VR4Matrixf timeWarps[2][2],
+    const VGlShader & chooseProgram(const warpSource_t & currentWarpSource,const bool disableChromaticCorrection ) const;
+    void			setSmoothpState(const warpSource_t & currentWarpSource ) const;
+    void			bindSmoothProgram(const warpSource_t & currentWarpSource,const VR4Matrixf timeWarps[2][2],
                                      const VR4Matrixf rollingWarp, const int eye, const double vsyncBase ) const;
     void			bindCursorProgram() const;
-    void            bindEyeTextures( const int eye );
+    void            bindEyeTextures( const warpSource_t & currentWarpSource, const int eye );
 
     bool			m_hasEXT_sRGB_write_control;
 
@@ -496,6 +519,8 @@ struct VFrameSmooth::Private
     pthread_cond_t m_smoothIslocked;
     VLockless<longlong> m_eyeBufferCount;
 
+	static const int MAX_WARP_SOURCES = 4;
+	warpSource_t	m_warpSources[MAX_WARP_SOURCES];
 
     VLockless<SwapState> m_swapVsync;
     longlong m_lastSwapVsyncCount;
@@ -765,16 +790,16 @@ void VFrameSmooth::Private::smoothThreadShutdown()
 
     destroyFrameworkGraphics();
 
-    for ( int i = 0; i < 1; i++ )
+    for ( int i = 0; i < MAX_WARP_SOURCES; i++ )
     {
-        //warpSource_t & ws = m_warpSources[i];
-        if ( m_gpuSync )
+        warpSource_t & ws = m_warpSources[i];
+        if ( ws.m_gpuSync )
         {
-            if ( EGL_FALSE == m_eglStatus.eglDestroySyncKHR( m_eglStatus.m_display, m_gpuSync) )
+            if ( EGL_FALSE == m_eglStatus.eglDestroySyncKHR( m_eglStatus.m_display, ws.m_gpuSync) )
             {
                 vInfo("m_eglStatus.eglDestroySyncKHR returned EGL_FALSE.");
             }
-            m_gpuSync = 0;
+            ws.m_gpuSync = 0;
         }
     }
 
@@ -795,9 +820,9 @@ void VFrameSmooth::Private::smoothThreadShutdown()
     vInfo("VFrameSmooth::Private::smoothThreadShutdown() - End.");
 }
 
-const VGlShader & VFrameSmooth::Private::chooseProgram( const bool disableChromaticCorrection ) const
+const VGlShader & VFrameSmooth::Private::chooseProgram(const warpSource_t & currentWarpSource, const bool disableChromaticCorrection ) const
 {
-    int program = VAlgorithm::Clamp( (int)m_smoothProgram, (int)VK_DEFAULT, (int)VK_MAX - 1 );
+    int program = VAlgorithm::Clamp( (int)currentWarpSource.m_smoothProgram, (int)VK_DEFAULT, (int)VK_MAX - 1 );
 
     if ( disableChromaticCorrection && program >= VK_DEFAULT_CB )
     {
@@ -805,7 +830,7 @@ const VGlShader & VFrameSmooth::Private::chooseProgram( const bool disableChroma
     }
     return m_warpPrograms[program];
 }
-void VFrameSmooth::Private::setSmoothpState( ) const
+void VFrameSmooth::Private::setSmoothpState( const warpSource_t & currentWarpSource) const
 {
     glDepthMask( GL_FALSE );	// don't write to depth, even if Unity has depth on window
     glDisable( GL_DEPTH_TEST );
@@ -813,10 +838,22 @@ void VFrameSmooth::Private::setSmoothpState( ) const
     glDisable( GL_BLEND );
     glEnable( GL_SCISSOR_TEST );
 
+	if ( m_hasEXT_sRGB_write_control )
+	{
+		if ( currentWarpSource.m_smoothOptions & VK_INHIBIT_SRGB_FB )
+		{
+			glDisable( VEglDriver::GL_FRAMEBUFFER_SRGB_EXT );
+		}
+		else
+		{
+			glEnable( VEglDriver::GL_FRAMEBUFFER_SRGB_EXT );
+		}
+	}
+
   //m_eglStatus.logErrorsEnum( "SetWarpState" );
 }
 
-void VFrameSmooth::Private::bindSmoothProgram( const VR4Matrixf timeWarps[2][2], const VR4Matrixf rollingWarp,
+void VFrameSmooth::Private::bindSmoothProgram(const warpSource_t & currentWarpSource, const VR4Matrixf timeWarps[2][2], const VR4Matrixf rollingWarp,
                                      const int eye, const double vsyncBase /* for spinner */ ) const
 {
      const VR4Matrixf landscapeOrientationMatrix(
@@ -826,11 +863,11 @@ void VFrameSmooth::Private::bindSmoothProgram( const VR4Matrixf timeWarps[2][2],
                 0.0f, 0.0f, 0.0f, 1.0f );
 
     // Select the warp program.
-    const VGlShader & warpProg = chooseProgram(m_disableChromaticCorrection );
+    const VGlShader & warpProg = chooseProgram(currentWarpSource,currentWarpSource.m_disableChromaticCorrection );
     glUseProgram( warpProg.program );
 
     // Set the shader parameters.
-    glUniform1f( warpProg.uniformColor, m_programParms[0] );
+    glUniform1f( warpProg.uniformColor, currentWarpSource.m_programParms[0] );
 
     glUniformMatrix4fv( warpProg.uniformModelViewProMatrix, 1, GL_FALSE, landscapeOrientationMatrix.Transposed().M[0] );
     glUniformMatrix4fv( warpProg.uniformTexMatrix, 1, GL_FALSE, timeWarps[0][0].Transposed().M[0] );
@@ -853,8 +890,8 @@ void VFrameSmooth::Private::bindSmoothProgram( const VR4Matrixf timeWarps[2][2],
     if ( warpProg.uniformRotateScale > 0 )
     {
 
-       const double angle = framePointTimeInSeconds( vsyncBase )* M_PI * m_programParms[0];
-        const V4Vectf RotateScale( sinf( angle ), cosf( angle ), m_programParms[1], 1.0f );
+       const double angle = framePointTimeInSeconds( vsyncBase )* M_PI * currentWarpSource.m_programParms[0];
+        const V4Vectf RotateScale( sinf( angle ), cosf( angle ), currentWarpSource.m_programParms[1], 1.0f );
         glUniform4fv( warpProg.uniformRotateScale, 1, &RotateScale[0] );
     }
 }
@@ -878,11 +915,11 @@ void VFrameSmooth::Private::bindCursorProgram() const
 int CameraTimeWarpLatency = 4;
 bool CameraTimeWarpPause;
 
-void VFrameSmooth::Private::bindEyeTextures( const int eye )
+void VFrameSmooth::Private::bindEyeTextures( const warpSource_t & currentWarpSource, const int eye )
 {
     glActiveTexture( GL_TEXTURE0 );
-    glBindTexture( GL_TEXTURE_2D, m_texId[eye][0] );
-    if ( m_smoothOptions & VK_INHIBIT_SRGB_FB )
+    glBindTexture( GL_TEXTURE_2D, currentWarpSource.m_texId[eye][0] );
+    if (currentWarpSource.m_smoothOptions & VK_INHIBIT_SRGB_FB )
     {
         glTexParameteri( GL_TEXTURE_2D, VEglDriver::GL_TEXTURE_SRGB_DECODE_EXT, VEglDriver::GL_SKIP_DECODE_EXT );
     }
@@ -891,17 +928,17 @@ void VFrameSmooth::Private::bindEyeTextures( const int eye )
         glTexParameteri( GL_TEXTURE_2D, VEglDriver::GL_TEXTURE_SRGB_DECODE_EXT, VEglDriver::GL_DECODE_EXT );
     }
 
-    if ( m_smoothProgram == VK_PLANE
-         || m_smoothProgram == VK_PLANE_CB
-         || m_smoothProgram == VK_PLANE_LAYER
-         || m_smoothProgram == VK_PLANE_LAYER_CB
-         || m_smoothProgram == VK_PLANE_LOD
-         || m_smoothProgram == VK_PLANE_LOD_CB
+    if (currentWarpSource.m_smoothProgram == VK_PLANE
+         || currentWarpSource.m_smoothProgram == VK_PLANE_CB
+         || currentWarpSource.m_smoothProgram == VK_PLANE_LAYER
+         || currentWarpSource.m_smoothProgram == VK_PLANE_LAYER_CB
+         || currentWarpSource.m_smoothProgram == VK_PLANE_LOD
+         || currentWarpSource.m_smoothProgram == VK_PLANE_LOD_CB
          )
     {
         glActiveTexture( GL_TEXTURE1 );
-        glBindTexture( GL_TEXTURE_2D, m_texId[eye][1] );
-        if ( m_smoothOptions & VK_INHIBIT_SRGB_FB )
+        glBindTexture( GL_TEXTURE_2D, currentWarpSource.m_texId[eye][1] );
+        if (currentWarpSource.m_smoothOptions & VK_INHIBIT_SRGB_FB )
         {
             glTexParameteri( GL_TEXTURE_2D, VEglDriver::GL_TEXTURE_SRGB_DECODE_EXT, VEglDriver::GL_SKIP_DECODE_EXT );
         }
@@ -910,15 +947,15 @@ void VFrameSmooth::Private::bindEyeTextures( const int eye )
             glTexParameteri( GL_TEXTURE_2D, VEglDriver::GL_TEXTURE_SRGB_DECODE_EXT, VEglDriver::GL_DECODE_EXT );
         }
     }
-    if ( m_smoothProgram == VK_PLANE_SPECIAL
-         || m_smoothProgram == VK_PLANE_SPECIAL_CB
-         || m_smoothProgram == VK_RESERVED
-         || m_smoothProgram == VK_RESERVED_CB )
+    if ( currentWarpSource.m_smoothProgram == VK_PLANE_SPECIAL
+         || currentWarpSource.m_smoothProgram == VK_PLANE_SPECIAL_CB
+         || currentWarpSource.m_smoothProgram == VK_RESERVED
+         || currentWarpSource.m_smoothProgram == VK_RESERVED_CB )
     {
         glActiveTexture( GL_TEXTURE1 );
-        glBindTexture( GL_TEXTURE_EXTERNAL_OES, m_texId[eye][1] );
+        glBindTexture( GL_TEXTURE_EXTERNAL_OES, currentWarpSource.m_texId[eye][1] );
 
-            if ( m_smoothOptions & VK_INHIBIT_SRGB_FB )
+            if ( currentWarpSource.m_smoothOptions & VK_INHIBIT_SRGB_FB )
             {
                 glTexParameteri( GL_TEXTURE_EXTERNAL_OES, VEglDriver::GL_TEXTURE_SRGB_DECODE_EXT, VEglDriver::GL_SKIP_DECODE_EXT );
             }
@@ -927,11 +964,11 @@ void VFrameSmooth::Private::bindEyeTextures( const int eye )
                 glTexParameteri( GL_TEXTURE_EXTERNAL_OES, VEglDriver::GL_TEXTURE_SRGB_DECODE_EXT, VEglDriver::GL_DECODE_EXT );
             }
     }
-    if ( m_smoothProgram == VK_CUBE || m_smoothProgram == VK_CUBE_CB )
+    if ( currentWarpSource.m_smoothProgram == VK_CUBE || currentWarpSource.m_smoothProgram == VK_CUBE_CB )
     {
         glActiveTexture( GL_TEXTURE1 );
-        glBindTexture( GL_TEXTURE_CUBE_MAP, m_texId[eye][1]);
-            if ( m_smoothOptions & VK_INHIBIT_SRGB_FB )
+        glBindTexture( GL_TEXTURE_CUBE_MAP, currentWarpSource.m_texId[eye][1]);
+            if ( currentWarpSource.m_smoothOptions & VK_INHIBIT_SRGB_FB )
             {
                 glTexParameteri( GL_TEXTURE_CUBE_MAP, VEglDriver::GL_TEXTURE_SRGB_DECODE_EXT, VEglDriver::GL_SKIP_DECODE_EXT );
             }
@@ -941,13 +978,13 @@ void VFrameSmooth::Private::bindEyeTextures( const int eye )
             }
     }
 
-    if ( m_smoothProgram == VK_CUBE_SPECIAL || m_smoothProgram == VK_CUBE_SPECIAL_CB )
+    if ( currentWarpSource.m_smoothProgram == VK_CUBE_SPECIAL || currentWarpSource.m_smoothProgram == VK_CUBE_SPECIAL_CB )
     {
         for ( int i = 0; i < 3; i++ )
         {
             glActiveTexture( GL_TEXTURE1 + i );
-            glBindTexture( GL_TEXTURE_CUBE_MAP, m_planarTexId[eye][1][i] );
-                if ( m_smoothOptions & VK_INHIBIT_SRGB_FB )
+            glBindTexture( GL_TEXTURE_CUBE_MAP, currentWarpSource.m_planarTexId[eye][1][i] );
+                if ( currentWarpSource.m_smoothOptions & VK_INHIBIT_SRGB_FB )
                 {
                     glTexParameteri( GL_TEXTURE_CUBE_MAP, VEglDriver::GL_TEXTURE_SRGB_DECODE_EXT, VEglDriver::GL_SKIP_DECODE_EXT );
                 }
@@ -958,11 +995,11 @@ void VFrameSmooth::Private::bindEyeTextures( const int eye )
         }
     }
 
-    if ( m_smoothProgram == VK_LOGO || m_smoothProgram == VK_LOGO_CB )
+    if ( currentWarpSource.m_smoothProgram == VK_LOGO || currentWarpSource.m_smoothProgram == VK_LOGO_CB )
     {
         glActiveTexture( GL_TEXTURE1 );
-        glBindTexture( GL_TEXTURE_2D, m_texId[eye][1] );
-            if ( m_smoothOptions & VK_INHIBIT_SRGB_FB )
+        glBindTexture( GL_TEXTURE_2D, currentWarpSource.m_texId[eye][1] );
+            if ( currentWarpSource.m_smoothOptions & VK_INHIBIT_SRGB_FB )
             {
                 glTexParameteri( GL_TEXTURE_2D, VEglDriver::GL_TEXTURE_SRGB_DECODE_EXT, VEglDriver::GL_SKIP_DECODE_EXT );
             }
@@ -1002,13 +1039,17 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
         lastReportTime = timeNow;
     }
 
-    if ( m_smoothOptions & VK_USE_S )
+    const warpSource_t & latestWarpSource = m_warpSources[m_eyeBufferCount.state()%MAX_WARP_SOURCES];
+
+    if (latestWarpSource.m_smoothOptions & VK_USE_S )
     {
         renderToDisplayBySliced( vsyncBase_, swap );
         return;
     }
 
     const double vsyncBase = vsyncBase_;
+
+    warpSource_t currentWarpSource = {};
 
     // The mesh covers the full screen, but we only draw part of it at a time
     int screenWidth, screenHeight;
@@ -1039,7 +1080,7 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
         if ( eye == 0 )
         {
             const long long latestEyeBufferNum = m_eyeBufferCount.state();
-            for ( back = 0; back < 3; back++ )
+            for ( back = 0; back < MAX_WARP_SOURCES-1; back++ )
             {
                 thisEyeBufferNum = latestEyeBufferNum - back;
                 if ( thisEyeBufferNum <= 0 )
@@ -1048,23 +1089,23 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
                     break;
                 }
 
-                if ( m_minimumVsync > vsyncBase )
+                warpSource_t & testWarpSource = m_warpSources[thisEyeBufferNum % MAX_WARP_SOURCES];
+                if (testWarpSource.m_minimumVsync > vsyncBase )
                 {
 
                     continue;
                 }
-                if ( m_gpuSync == 0 )
+                if (testWarpSource.m_gpuSync == 0 )
                 {
                     vInfo("thisEyeBufferNum " << thisEyeBufferNum << " had 0 sync.");
                     break;
                 }
-
                 if (m_pose[eye][0].LengthSq() < 1e-18f) {
                     vWarn("m_pose[eye][0] is invalid and now thisEyeBufferNum is " << thisEyeBufferNum << "!");
                     break;
                 }
 
-                const EGLint wait = VEglDriver::eglClientWaitSyncKHR( m_eglStatus.m_display, m_gpuSync,
+                const EGLint wait = VEglDriver::eglClientWaitSyncKHR( m_eglStatus.m_display, testWarpSource.m_gpuSync,
                                                                       EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, 0 );
                 if ( wait == EGL_TIMEOUT_EXPIRED_KHR )
                 {
@@ -1076,11 +1117,12 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
                 }
 
 
-                if ( m_firstDisplayedVsync[eye] == 0 )
+                if (testWarpSource.m_firstDisplayedVsync[eye] == 0 )
                 {
-                    m_firstDisplayedVsync[eye] = (long long)vsyncBase;
+                    testWarpSource.m_firstDisplayedVsync[eye] = (long long)vsyncBase;
                 }
 
+                currentWarpSource = testWarpSource;
                 break;
             }
 
@@ -1099,7 +1141,7 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
                 }
             }
 
-            if ( m_texId[eye][0] == 0 )
+            if (currentWarpSource.m_texId[eye][0] == 0 )
             {
 
                 //vInfo("WarpToScreen: Nothing valid to draw");
@@ -1111,14 +1153,14 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
 
 
         VR4Matrixf velocity;
-        const int velocitySteps = std::min( 3, (int)((long long)vsyncBase - m_minimumVsync) );
+        const int velocitySteps = std::min( 3, (int)((long long)vsyncBase - currentWarpSource.m_minimumVsync) );
         for ( int i = 0; i < velocitySteps; i++ )
         {
-            velocity = velocity * m_externalVelocity;
+            velocity = velocity * currentWarpSource.m_externalVelocity;
         }
 
 
-        const bool dualLayer = ( m_texId[eye][1] > 0 );
+        const bool dualLayer = ( currentWarpSource.m_texId[eye][1] > 0 );
 
 
         VR4Matrixf timeWarps[2][2];
@@ -1128,18 +1170,18 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
             const double vsyncPoint = vsyncBase + swap.predictionPoints[eye][scan];
             const double timePoint = framePointTimeInSeconds( vsyncPoint );
             sensor[scan] = VRotationSensor::instance()->predictState( timePoint );
-            const VR4Matrixf warp = CalculateTimeWarpMatrix2(m_pose[eye][0], sensor[scan]) * velocity;
-            timeWarps[0][scan] = m_texMatrix[eye][0] * warp;
+            const VR4Matrixf warp = CalculateTimeWarpMatrix2(currentWarpSource.m_pose[eye][0], sensor[scan]) * velocity;
+            timeWarps[0][scan] = currentWarpSource.m_texMatrix[eye][0] * warp;
             if ( dualLayer )
             {
-                if ( m_smoothOptions & VK_FIXED_LAYER )
+                if (currentWarpSource.m_smoothOptions & VK_FIXED_LAYER )
                 {
-                    timeWarps[1][scan] = m_texMatrix[eye][1];
+                    timeWarps[1][scan] = currentWarpSource.m_texMatrix[eye][1];
                 }
                 else
                 {
-                    const VR4Matrixf warp2 = CalculateTimeWarpMatrix2(m_pose[eye][1], sensor[scan]) * velocity;
-                    timeWarps[1][scan] = m_texMatrix[eye][1] * warp2;
+                    const VR4Matrixf warp2 = CalculateTimeWarpMatrix2(currentWarpSource.m_pose[eye][1], sensor[scan]) * velocity;
+                    timeWarps[1][scan] = currentWarpSource.m_texMatrix[eye][1] * warp2;
                 }
             }
         }
@@ -1151,11 +1193,11 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
 
 
 
-        setSmoothpState( );
+        setSmoothpState(currentWarpSource);
 
-        bindSmoothProgram( timeWarps, rollingWarp, eye, vsyncBase );
+        bindSmoothProgram(currentWarpSource,timeWarps, rollingWarp, eye, vsyncBase );
 
-        bindEyeTextures( eye );
+        bindEyeTextures(currentWarpSource,eye );
 
         m_screen.beginDirectRendering( eye * screenWidth/2, 0, screenWidth/2, screenHeight );
 
@@ -1165,7 +1207,7 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
         glDrawElements( GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, (void *)(indexOffset * 2 ) );
 
 
-        if ( m_smoothOptions & VK_DISPLAY_CURSOR )
+        if (currentWarpSource.m_smoothOptions & VK_DISPLAY_CURSOR )
         {
             bindCursorProgram();
             glEnable( GL_BLEND );
@@ -1177,7 +1219,7 @@ void VFrameSmooth::Private::renderToDisplay( const double vsyncBase_, const swap
         }
 
 
-        drawFrameworkGraphicsToWindow( eye, m_smoothOptions);
+        drawFrameworkGraphicsToWindow( eye, currentWarpSource.m_smoothOptions);
 
         m_screen.endDirectRendering();
 
@@ -1239,10 +1281,10 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
 
     // This must be long enough to cover CPU scheduling delays, GPU in-flight commands,
     // and the actual drawing of this slice.
-//    const warpSource_t & latestWarpSource = m_warpSources[m_eyeBufferCount.state()%MAX_WARP_SOURCES];
-//    const double schedulingCushion = latestWarpSource.WarpParms.PreScheduleSeconds;
+    const warpSource_t & latestWarpSource = m_warpSources[m_eyeBufferCount.state()%MAX_WARP_SOURCES];
+    const double schedulingCushion = latestWarpSource.m_preScheduleSeconds;
 
-    const double schedulingCushion = m_preScheduleSeconds;
+    warpSource_t currentWarpSource = {};
     int	back = 0;
 
     long long thisEyeBufferNum = 0;
@@ -1261,7 +1303,7 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
         if ( screenSlice == 0 )
         {
             const long long latestEyeBufferNum = m_eyeBufferCount.state();
-            for ( back = 0; back < 3; back++ )
+            for ( back = 0; back < MAX_WARP_SOURCES-1; back++ )
             {
                 thisEyeBufferNum = latestEyeBufferNum - back;
                 if ( thisEyeBufferNum <= 0 )
@@ -1271,25 +1313,24 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
                     break;
                 }
 
-
-                if ( m_minimumVsync > vsyncBase )
+                warpSource_t & testWarpSource = m_warpSources[thisEyeBufferNum % MAX_WARP_SOURCES];
+                if ( testWarpSource.m_minimumVsync > vsyncBase )
                 {
                     // a full frame got completed in less time than a single eye; don't use it to avoid stuttering
                     continue;
                 }
 
-                if ( m_gpuSync == 0 )
+                if ( testWarpSource.m_gpuSync == 0 )
                 {
                     vInfo("thisEyeBufferNum " << thisEyeBufferNum << " had 0 sync");
                     break;
                 }
-
-                if (m_pose[eye][0].LengthSq() < 1e-18f) {
-                    vWarn("m_pose[eye][0] is invalid!");
+                if (testWarpSource.m_pose[eye][0].LengthSq() < 1e-18f) {
+                    vInfo("Bad Predicted.Pose.Orientation!");
                     continue;
                 }
 
-                const EGLint wait = VEglDriver::eglClientWaitSyncKHR( m_eglStatus.m_display, m_gpuSync,
+                const EGLint wait = VEglDriver::eglClientWaitSyncKHR( m_eglStatus.m_display, testWarpSource.m_gpuSync,
                                                                       EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, 0 );
                 if ( wait == EGL_TIMEOUT_EXPIRED_KHR )
                 {
@@ -1301,11 +1342,12 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
                 }
 
 
-                if ( m_firstDisplayedVsync[eye] == 0 )
+                if ( testWarpSource.m_firstDisplayedVsync[eye] == 0 )
                 {
-                    m_firstDisplayedVsync[eye] = (long long)vsyncBase;
+                    testWarpSource.m_firstDisplayedVsync[eye] = (long long)vsyncBase;
                 }
 
+                currentWarpSource = testWarpSource;
                 break;
             }
 
@@ -1325,7 +1367,7 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
                 }
             }
 
-            if ( m_texId[eye][0] == 0 )
+            if ( currentWarpSource.m_texId[eye][0] == 0 )
             {
 
                 vInfo("Nothing valid to draw.");
@@ -1337,13 +1379,13 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
 
 
         VR4Matrixf velocity;
-        const int velocitySteps = std::min( 3, (int)((long long)vsyncBase - m_minimumVsync) );
+        const int velocitySteps = std::min( 3, (int)((long long)vsyncBase - currentWarpSource.m_minimumVsync) );
         for ( int i = 0; i < velocitySteps; i++ )
         {
-            velocity = velocity * m_externalVelocity;
+            velocity = velocity * currentWarpSource.m_externalVelocity;
         }
 
-        const bool dualLayer = ( m_texId[eye][1] > 0 );
+        const bool dualLayer = ( currentWarpSource.m_texId[eye][1] > 0 );
 
 
         VR4Matrixf timeWarps[2][2];
@@ -1356,32 +1398,32 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
             {
                 const double timePoint = sliceTimes[screenSlice + scan];
                 sensor[scan] = VRotationSensor::instance()->predictState(timePoint);
-                warp = CalculateTimeWarpMatrix2(m_pose[eye][0], sensor[scan]) * velocity;
+                warp = CalculateTimeWarpMatrix2(currentWarpSource.m_pose[eye][0], sensor[scan]) * velocity;
             }
-            timeWarps[0][scan] = m_texMatrix[eye][0] * warp;
+            timeWarps[0][scan] = currentWarpSource.m_texMatrix[eye][0] * warp;
             if ( dualLayer )
             {
-                if ( m_smoothOptions & VK_FIXED_LAYER )
+                if ( currentWarpSource.m_smoothOptions & VK_FIXED_LAYER )
                 {
-                    timeWarps[1][scan] = m_texMatrix[eye][1];
+                    timeWarps[1][scan] = currentWarpSource.m_texMatrix[eye][1];
                 }
                 else
                 {
-                    const VR4Matrixf warp2 = CalculateTimeWarpMatrix2(m_pose[eye][1], sensor[scan]) * velocity;
-                    timeWarps[1][scan] = m_texMatrix[eye][1] * warp2;
+                    const VR4Matrixf warp2 = CalculateTimeWarpMatrix2(currentWarpSource.m_pose[eye][1], sensor[scan]) * velocity;
+                    timeWarps[1][scan] = currentWarpSource.m_texMatrix[eye][1] * warp2;
                 }
             }
         }
 
         const VR4Matrixf rollingWarp = CalculateTimeWarpMatrix2(sensor[0], sensor[1]);
 
-        setSmoothpState();
+        setSmoothpState(currentWarpSource);
 
-        bindSmoothProgram( timeWarps, rollingWarp, eye, vsyncBase );
+        bindSmoothProgram(currentWarpSource, timeWarps, rollingWarp, eye, vsyncBase );
 
         if ( screenSlice == 0 || screenSlice == 4 )
         {
-            bindEyeTextures( eye );
+            bindEyeTextures(currentWarpSource, eye );
         }
 
         const int sliceSize = screenWidth / 8;
@@ -1402,7 +1444,7 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
         }
 
 
-        drawFrameworkGraphicsToWindow( eye, m_smoothOptions);
+        drawFrameworkGraphicsToWindow( eye, currentWarpSource.m_smoothOptions);
 
         m_screen.endDirectRendering();
         if (m_screen.isFrontBuffer() &&
@@ -1454,47 +1496,62 @@ void VFrameSmooth::Private::smoothInternal( )
 
 
 
-
+    const int minimumVsyncs = m_minimumVsyncs;
     const long long lastBufferCount = m_eyeBufferCount.state();
+	warpSource_t & ws = m_warpSources[ ( lastBufferCount + 1 ) % MAX_WARP_SOURCES ];
+	ws.m_minimumVsync = m_lastSwapVsyncCount + 2 * m_minimumVsyncs;	// don't use it if from same frame to avoid problems with very fast frames
+	ws.m_firstDisplayedVsync[0] = 0;			// will be set when it becomes the currentSource
+	ws.m_firstDisplayedVsync[1] = 0;			// will be set when it becomes the currentSource
+	ws.m_disableChromaticCorrection = ( ( m_eglStatus.eglGetGpuType() & VEglDriver::GPU_TYPE_MALI_T760_EXYNOS_5433 ) != 0 );
 
-    m_minimumVsync = m_lastSwapVsyncCount + 2 * m_minimumVsyncs;	// don't use it if from same frame to avoid problems with very fast frames
-    m_firstDisplayedVsync[0] = 0;			// will be set when it becomes the currentSource
-    m_firstDisplayedVsync[1] = 0;			// will be set when it becomes the currentSource
-    m_disableChromaticCorrection = ( ( m_eglStatus.eglGetGpuType() & VEglDriver::GPU_TYPE_MALI_T760_EXYNOS_5433 ) != 0 );
+	memcpy(ws.m_texId,m_texId,sizeof(ws.m_texId));
+	ws.m_smoothOptions = m_smoothOptions;
+	ws.m_externalVelocity = m_externalVelocity;
+	memcpy(ws.m_planarTexId,m_planarTexId,sizeof(ws.m_planarTexId));
+	memcpy(ws.m_texMatrix,m_texMatrix,sizeof(ws.m_texMatrix));
+	memcpy(ws.m_pose,m_pose,sizeof(ws.m_pose));
+	ws.m_preScheduleSeconds = m_preScheduleSeconds;
+	ws.m_smoothProgram = m_smoothProgram;
+	memcpy(ws.m_programParms,m_programParms,sizeof(ws.m_programParms));
 
-    if ( ( m_smoothProgram & VK_IMAGE ) != 0 )
+//    m_minimumVsync = m_lastSwapVsyncCount + 2 * m_minimumVsyncs;	// don't use it if from same frame to avoid problems with very fast frames
+//    m_firstDisplayedVsync[0] = 0;			// will be set when it becomes the currentSource
+//    m_firstDisplayedVsync[1] = 0;			// will be set when it becomes the currentSource
+//    m_disableChromaticCorrection = ( ( m_eglStatus.eglGetGpuType() & VEglDriver::GPU_TYPE_MALI_T760_EXYNOS_5433 ) != 0 );
+
+    if ( (ws.m_smoothOptions & VK_IMAGE ) != 0 )
     {
         for ( int eye = 0; eye < 2; eye++ )
         {
-            if ( m_texId[eye][0] == 0 )
+            if (ws.m_texId[eye][0] == 0 )
             {
-                m_texId[eye][0] = m_blackTexId;
+                ws.m_texId[eye][0] = m_blackTexId;
             }
-            if ( m_texId[eye][1] == 0 )
+            if (ws.m_texId[eye][1] == 0 )
             {
-                m_texId[eye][1] = m_defaultLoadingIconTexId;
+                ws.m_texId[eye][1] = m_defaultLoadingIconTexId;
             }
         }
     }
 
 
-    if ( m_gpuSync != EGL_NO_SYNC_KHR )
+    if ( ws.m_gpuSync != EGL_NO_SYNC_KHR )
     {
-        if ( EGL_FALSE == m_eglStatus.eglDestroySyncKHR( m_eglStatus.m_display, m_gpuSync ) )
+        if ( EGL_FALSE == m_eglStatus.eglDestroySyncKHR( m_eglStatus.m_display, ws.m_gpuSync ) )
         {
             vInfo( "m_eglStatus.eglDestroySyncKHR returned EGL_FALSE." );
         }
     }
 
 
-    m_gpuSync = m_eglStatus.eglCreateSyncKHR( m_eglStatus.m_display, EGL_SYNC_FENCE_KHR, NULL );
-    if ( m_gpuSync == EGL_NO_SYNC_KHR )
+    ws.m_gpuSync = m_eglStatus.eglCreateSyncKHR( m_eglStatus.m_display, EGL_SYNC_FENCE_KHR, NULL );
+    if ( ws.m_gpuSync == EGL_NO_SYNC_KHR )
     {
         vInfo( "eglCreateSyncKHR_(): EGL_NO_SYNC_KHR." );
     }
 
 
-    if ( EGL_FALSE == m_eglStatus.eglClientWaitSyncKHR( m_eglStatus.m_display, m_gpuSync,
+    if ( EGL_FALSE == m_eglStatus.eglClientWaitSyncKHR( m_eglStatus.m_display, ws.m_gpuSync,
                                                         EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, 0 ) )
     {
         vInfo( "eglClientWaitSyncKHR returned EGL_FALSE." );
@@ -1545,7 +1602,7 @@ void VFrameSmooth::Private::smoothInternal( )
         if ( state.EyeBufferCount >= lastBufferCount )
         {
 
-            m_lastSwapVsyncCount = std::max( state.VsyncCount, m_lastSwapVsyncCount + m_minimumVsyncs );
+            m_lastSwapVsyncCount = std::max( state.VsyncCount, m_lastSwapVsyncCount + minimumVsyncs );
 
             const uint64_t suspendNanoSeconds = endSuspendNanoSeconds - startSuspendNanoSeconds;
             if ( suspendNanoSeconds < 1000 * 1000 )

@@ -551,7 +551,7 @@ void VKernel::doSmooth()
     //ovrTimeWarpParms   parms = InitSmoothParms();
     //parms.WarpOptions = SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER | SWAP_OPTION_FLUSH | SWAP_OPTION_DEFAULT_IMAGES;
 
-    //frameSmooth->doSmooth();
+    frameSmooth->doSmooth();
 }
 
 void VKernel::InitTimeWarpParms()

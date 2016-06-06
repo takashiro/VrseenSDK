@@ -12,19 +12,15 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "VRMenuObjectLocal.h"
 
-#include "../api/VGlShader.h"
-#include "GlTexture.h"
+#include "VGlShader.h"
+#include "VTexture.h"
 #include "App.h"			// for loading images from the assets folder
 #include "ModelTrace.h"
 #include "BitmapFont.h"
 #include "VRMenuMgr.h"
 #include "VRMenuComponent.h"
 #include "ui_default.h"	// embedded default UI texture (loaded as a placeholder when something doesn't load)
-#include "VZipFile.h"
-#include "VImageManager.h"
-#include "VOpenGLTexture.h"
-#include "core/VLog.h"
-
+#include "VResource.h"
 namespace NervGear {
 
 float const	VRMenuObject::TEXELS_PER_METER		= 500.0f;
@@ -60,21 +56,17 @@ bool VRMenuSurfaceTexture::loadTexture( eSurfaceTextureType const type, const VS
 	m_type = type;
 
     if (!imageName.isEmpty()) {
-        VImageManager* imagemanager = new VImageManager();
-        VImage* image = imagemanager->loadImage(imageName);
-        m_width = image->getDimension().Width;
-        m_height = image->getDimension().Height;
-        m_handle = VOpenGLTexture(image, imageName, TextureFlags_o(_NO_DEFAULT )).getTextureName();
-
-        delete imagemanager;
-
-
+        VTexture image{VResource{imageName}};
+        m_handle = image.id();
+        m_width = image.width();
+        m_height = image.height();
 	}
 
-	if ( m_handle == 0 && allowDefault )
-	{
-        m_handle = LoadTextureFromBuffer( imageName.toUtf8().data(), uiDefaultTgaData, uiDefaultTgaSize,
-							TextureFlags_t(), m_width, m_height );
+    if (m_handle == 0 && allowDefault) {
+        VTexture defaultTga("tga", VByteArray(reinterpret_cast<const char *>(uiDefaultTgaData), uiDefaultTgaSize));
+        m_handle = defaultTga.id();
+        m_width = defaultTga.width();
+        m_height = defaultTga.height();
 		vWarn("VRMenuSurfaceTexture::CreateFromImage: failed to load image '" << imageName << "' - default loaded instead!");
 	}
     m_ownsTexture = true;

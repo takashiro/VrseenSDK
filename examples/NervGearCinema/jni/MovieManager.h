@@ -2,7 +2,9 @@
 
 #include "VString.h"
 #include "VArray.h"
-#include "GlTexture.h"
+#include "VTexture.h"
+
+#include <GLES3/gl3.h>
 
 namespace OculusCinema {
 
@@ -35,9 +37,7 @@ public:
 	bool			Is3D;
 	MovieFormat 	Format;
 
-	GLuint			Poster;
-	int				PosterWidth;
-	int				PosterHeight;
+    VTexture Poster;
 
 	VString			Theater;
 	MovieCategory	Category;
@@ -46,7 +46,7 @@ public:
 	bool			AllowTheaterSelection;
 
 
-	MovieDef() : Filename(), Title(), Is3D( false ), Format( VT_2D ), Poster( 0 ), PosterWidth( 0 ), PosterHeight( 0 ),
+    MovieDef() : Filename(), Title(), Is3D( false ), Format( VT_2D ),
 			Theater(), Category( CATEGORY_MYVIDEOS ), IsEncrypted( false ), AllowTheaterSelection( false ) {}
 };
 
