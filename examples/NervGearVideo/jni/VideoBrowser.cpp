@@ -23,6 +23,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "linux/stat.h"
 #include <unistd.h>
 
+#include <VFile.h>
 #include <VPath.h>
 #include <VZipFile.h>
 #include <VImage.h>
@@ -70,7 +71,9 @@ uchar *VideoBrowser::loadThumbnail(const VString &fileName, int &width, int &hei
             orig = TurboJpegLoadFromMemory(reinterpret_cast<const uchar *>(buffer.data()), buffer.length(), &width, &height);
 		}
 	} else if (fileName.endsWith(".pvr")) {
-        orig = LoadPVRBuffer(fileName.toUtf8().data(), width, height );
+        if (VFile::Exists(fileName)) {
+            orig = LoadPVRBuffer(fileName.toUtf8().data(), width, height);
+        }
 	} else {
         orig = TurboJpegLoadFromFile(fileName.toUtf8().data(), &width, &height );
 	}
