@@ -54,7 +54,7 @@ bool VZipFile::contains(const VString &filePath) const
     VByteArray path = filePath.toUtf8();
     const int locateRet = unzLocateFile(d->handle, path.c_str(), 2/* case insensitive */);
     if (locateRet != UNZ_OK) {
-        vInfo("File '" << path << "' not found in apk!");
+        vWarn("File '" << path << "' not found in apk!");
         return false;
     }
 

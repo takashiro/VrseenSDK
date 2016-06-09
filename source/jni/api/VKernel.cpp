@@ -57,7 +57,7 @@ void Java_com_vrseen_nervgear_VrLib_nativeVolumeEvent(JNIEnv *jni, jclass clazz,
 
 JNIEXPORT void Java_com_vrseen_nervgear_VrLib_nativeHeadsetEvent(JNIEnv *jni, jclass clazz, jint state)
 {
-    vInfo("nativeHeadsetEvent(" << state << ")");
+    vInfo("nativeHeadsetEvent(" << state << ").");
     HeadsetPluggedState.setState( ( state == 1 ) );
 }
 
@@ -74,7 +74,7 @@ JNIEXPORT void Java_com_vrseen_nervgear_VrLib_nativeHeadsetEvent(JNIEnv *jni, jc
 // by supporting VR.
 void ovr_OnLoad(JavaVM * JavaVm_, JNIEnv *jni)
 {
-    vInfo("ovr_OnLoad()");
+    vInfo("ovr_OnLoad().");
 
     if ( JavaVm_ == NULL )
     {
@@ -98,7 +98,7 @@ void ovr_OnLoad(JavaVM * JavaVm_, JNIEnv *jni)
         if ( sdkIntFieldID != 0 )
         {
             BuildVersionSDK = jni->GetStaticIntField( versionClass, sdkIntFieldID );
-            vInfo("BuildVersionSDK" << BuildVersionSDK);
+            vInfo("BuildVersionSDK: " << BuildVersionSDK);
         }
         jni->DeleteLocalRef( versionClass );
     }
@@ -146,7 +146,7 @@ static void SetVrSystemPerformance(JNIEnv * VrJni, jclass vrActivityClass, int c
         vWarn("SetVrSystemPerformance: Enter: JNI Exception occurred");
     }
 
-    vInfo("SetVrSystemPerformance:" << cpuLevel << gpuLevel);
+    vInfo("SetVrSystemPerformance: " << cpuLevel << " "<< gpuLevel);
 
     // Get the available clock levels for the device.
     const jmethodID getAvailableClockLevelsId = JniUtils::GetStaticMethodID(VrJni, vrActivityClass, "getAvailableFreqLevels", "(Landroid/app/Activity;)[I");
@@ -156,7 +156,7 @@ static void SetVrSystemPerformance(JNIEnv * VrJni, jclass vrActivityClass, int c
     // Catch Permission denied
     if ( VrJni->ExceptionOccurred() ) {
         VrJni->ExceptionClear();
-        vInfo("SetVrSystemPerformance: JNI Exception occurred, returning");
+        vWarn("SetVrSystemPerformance: JNI Exception occurred, returning.");
         return;
     }
 
@@ -270,15 +270,15 @@ void UpdateHmdInfo()
     device->widthbyPixels = windowSurfaceWidth;
     device->heightbyPixels = windowSurfaceHeight;
 
-    vInfo("hmdInfo.lensSeparation =" << device->lensDistance);
-    vInfo("hmdInfo.widthMeters =" << device->widthbyMeters);
-    vInfo("hmdInfo.heightMeters =" << device->heightbyMeters);
-    vInfo("hmdInfo.widthPixels =" << device->widthbyPixels);
-    vInfo("hmdInfo.heightPixels =" << device->heightbyPixels);
-    vInfo("hmdInfo.eyeTextureResolution[0] =" << device->eyeDisplayResolution[0]);
-    vInfo("hmdInfo.eyeTextureResolution[1] =" << device->eyeDisplayResolution[1]);
-    vInfo("hmdInfo.eyeTextureFov[0] =" << device->eyeDisplayFov[0]);
-    vInfo("hmdInfo.eyeTextureFov[1] =" << device->eyeDisplayFov[1]);
+    vInfo("device->lensDistance =" << device->lensDistance);
+    vInfo("device->widthbyMeters =" << device->widthbyMeters);
+    vInfo("device->heightbyMeters =" << device->heightbyMeters);
+    vInfo("device->widthbyPixels =" << device->widthbyPixels);
+    vInfo("device->heightbyPixels =" << device->heightbyPixels);
+    vInfo("device->eyeDisplayResolution[0] =" << device->eyeDisplayResolution[0]);
+    vInfo("device->eyeDisplayResolution[1] =" << device->eyeDisplayResolution[1]);
+    vInfo("device->eyeDisplayFov[0] =" << device->eyeDisplayFov[0]);
+    vInfo("device->eyeDisplayFov[1] =" << device->eyeDisplayFov[1]);
 }
 
 
@@ -286,7 +286,7 @@ void VKernel::run()
 {
     if(isRunning) return;
 
-    vInfo("---------- VKernel run ----------");
+    vInfo("VKernel::run().");
 #if defined( OVR_BUILD_DEBUG )
     char const * buildConfig = "DEBUG";
 #else
@@ -312,10 +312,10 @@ void VKernel::run()
     Jni->CallStaticVoidMethod( VrLibClass, logApplicationVrType, ActivityObject );
 
     VString currentClassName = JniUtils::GetCurrentActivityName(Jni, ActivityObject);
-    vInfo("ACTIVITY =" << currentClassName);
+    vInfo("ACTIVITY = " << currentClassName);
 
-    vInfo("BUILD =" << VOsBuild::getString(VOsBuild::Display) << buildConfig);
-    vInfo("MODEL =" << VOsBuild::getString(VOsBuild::Model));
+    vInfo("BUILD = " << VOsBuild::getString(VOsBuild::Display) << buildConfig);
+    vInfo("MODEL = " << VOsBuild::getString(VOsBuild::Model));
 
     isRunning = true;
 
@@ -330,7 +330,7 @@ void VKernel::run()
         EGLSurface surface = eglGetCurrentSurface( EGL_DRAW );
         eglQuerySurface( display, surface, EGL_WIDTH, &windowSurfaceWidth );
         eglQuerySurface( display, surface, EGL_HEIGHT, &windowSurfaceHeight );
-        vInfo("Window Surface Size: [" << windowSurfaceWidth << windowSurfaceHeight << "]");
+        vInfo("Window Surface Size: [" << windowSurfaceWidth << " " << windowSurfaceHeight << "]");
     }
 
     // Based on sensor ID and platform, determine the HMD
@@ -361,7 +361,7 @@ void VKernel::run()
     if ( Jni->ExceptionOccurred() )
     {
         Jni->ExceptionClear();
-        vInfo("Cleared JNI exception");
+        vInfo("JNI exceptions were cleared.");
     }
 
     frameSmooth = new VFrameSmooth(asyncSmooth, vApp->vrParms().wantSingleBuffer);
@@ -378,7 +378,7 @@ void VKernel::run()
 
 void VKernel::exit()
 {
-    vInfo("---------- VKernel Exit ----------");
+    vInfo("VKernel::exit().");
 
     if (!isRunning)
     {
@@ -394,7 +394,7 @@ void VKernel::exit()
     Jni->CallStaticVoidMethod( VrLibClass, logApplicationVersionId, ActivityObject );
 
     VString currentClassName = JniUtils::GetCurrentActivityName(Jni, ActivityObject);
-    vInfo("ACTIVITY =" << currentClassName);
+    vInfo("ACTIVITY = " << currentClassName);
 
     delete frameSmooth;
     frameSmooth = NULL;
@@ -427,11 +427,11 @@ void VKernel::destroy(eExitType exitType)
         if ( Jni->ExceptionOccurred() )
         {
             Jni->ExceptionClear();
-            vInfo("Cleared JNI exception");
+            vInfo("JNI exceptions were cleared.");
         }
-        vInfo("Calling activity.finishOnUiThread()");
+        vInfo("Calling activity.finishOnUiThread().");
         Jni->CallStaticVoidMethod( VrLibClass, mid, *static_cast< jobject* >( &ActivityObject ) );
-        vInfo("Returned from activity.finishOnUiThread()");
+        vInfo("Returned from activity.finishOnUiThread().");
     }
     else if ( exitType == EXIT_TYPE_FINISH_AFFINITY )
     {
@@ -444,16 +444,16 @@ void VKernel::destroy(eExitType exitType)
         if ( Jni->ExceptionOccurred() )
         {
             Jni->ExceptionClear();
-            vInfo("Cleared JNI exception");
+            vInfo("JNI exceptions were cleared.");
         }
-        vInfo("Calling activity.finishAffinityOnUiThread()");
+        vInfo("Calling activity.finishAffinityOnUiThread().");
         Jni->CallStaticVoidMethod( VrLibClass, mid, *static_cast< jobject* >( &ActivityObject ) );
-        vInfo("Returned from activity.finishAffinityOnUiThread()");
+        vInfo("Returned from activity.finishAffinityOnUiThread().");
     }
     else if ( exitType == EXIT_TYPE_EXIT )
     {
         exit();
-        vInfo("Calling exitType EXIT_TYPE_EXIT");
+        vInfo("Calling exitType EXIT_TYPE_EXIT.");
     }
 }
 

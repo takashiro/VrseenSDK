@@ -724,7 +724,7 @@ bool VGlShader::Private::CompileShader( const GLuint shader, const char * src )
     glGetShaderiv( shader, GL_COMPILE_STATUS, &r );
     if ( r == GL_FALSE )
     {
-        vInfo( "Compiling shader: "<<src<<"****** failed ******\n" );
+        vWarn( "Compiling shader: "<<src<<"****** failed ******\n" );
         GLchar msg[4096];
         glGetShaderInfoLog( shader, sizeof( msg ), 0, msg );
         vInfo( msg );

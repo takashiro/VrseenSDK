@@ -121,7 +121,7 @@ SceneDef * ModelManager::LoadScene(const VString &sceneFilename, bool useDynamic
     if (loadFromApplicationPackage) {
         const VZipFile &apk = vApp->apkFile();
         if (!apk.contains(sceneFilename)) {
-            vInfo("Scene" << sceneFilename << "not found in application package.  Checking sdcard.");
+            vWarn("Scene" << sceneFilename << "not found in application package.  Checking sdcard.");
             loadFromApplicationPackage = false;
         }
 	}

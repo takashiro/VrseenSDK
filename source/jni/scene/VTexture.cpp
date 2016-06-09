@@ -404,7 +404,7 @@ unsigned char * LoadPVRBuffer( const char * fileName, int & width, int & height 
     fileBuffer.read(reinterpret_cast<std::istream::char_type*>(buffer), fileLength);
     if ( fileLength < ( int )( sizeof( PvrHeader ) ) )
 	{
-		vInfo("Invalid PVR file");
+        vWarn("Invalid PVR file");
         free( (void *)buffer );
         buffer = NULL;
         fileLength = 0;
@@ -414,7 +414,7 @@ unsigned char * LoadPVRBuffer( const char * fileName, int & width, int & height 
     const PvrHeader & header = *( PvrHeader * )buffer;
     if ( header.version != 0x03525650 )
 	{
-		vInfo("Invalid PVR file version");
+        vWarn("Invalid PVR file version");
         free( (void *)buffer );
         buffer = NULL;
         fileLength = 0;
@@ -426,7 +426,7 @@ unsigned char * LoadPVRBuffer( const char * fileName, int & width, int & height 
 	{
         case 578721384203708274ull:	format = Texture_RGBA;		break;
 		default:
-            vInfo("Unknown PVR texture format " << header.pixelFormat << "lu, size " << width << "x" << height);
+		    vWarn("Unknown PVR texture format " << header.pixelFormat << "lu, size " << width << "x" << height);
             free( (void *)buffer );
             buffer = NULL;
             fileLength = 0;
@@ -437,7 +437,7 @@ unsigned char * LoadPVRBuffer( const char * fileName, int & width, int & height 
     const vuint32 startTex = sizeof( PvrHeader ) + header.metaDataSize;
     if ( ( startTex < sizeof( PvrHeader ) ) || ( startTex >= static_cast< size_t >( fileLength ) ) )
 	{
-		vInfo("Invalid PVR header sizes");
+        vWarn("Invalid PVR header sizes");
         free( (void *)buffer );
         buffer = NULL;
         fileLength = 0;
@@ -715,14 +715,14 @@ struct VTexture::Private
         vAssert(width == height);
 
         if (mipCount <= 0) {
-            vInfo("Invalid mip count " << mipCount);
+            vWarn("Invalid mip count " << mipCount);
             return;
         }
 
         // larger than this would require mipSize below to be a larger type
         height = width;
         if (width <= 0 || width > 32768) {
-            vInfo("Invalid texture size (" << width << "x" << height << ")");
+            vWarn("Invalid texture size (" << width << "x" << height << ")");
             return;
         }
 

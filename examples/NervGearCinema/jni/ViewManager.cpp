@@ -34,7 +34,7 @@ void ViewManager::removeView( View * view )
 
 	// view wasn't in the array
 	assert( 1 );
-	vInfo("RemoveView: view not in array");
+	vWarn("RemoveView: view not in array");
 }
 
 void ViewManager::openView( View & view )
