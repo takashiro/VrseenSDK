@@ -49,7 +49,7 @@ public:
 
     void append(E &&element)
     {
-        m_data[m_back] = element;
+        m_data[m_back] = std::move(element);
         forward();
     }
 
@@ -62,7 +62,7 @@ public:
     void prepend(E &&element)
     {
         backward();
-        m_data[m_front] = element;
+        m_data[m_front] = std::move(element);
     }
 
     const E &at(uint index) const { return m_data[(m_front + index) % m_capacity]; }
