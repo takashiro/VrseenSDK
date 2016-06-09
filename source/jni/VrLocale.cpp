@@ -24,7 +24,7 @@ bool VrLocale::GetString(JNIEnv *jni, jobject activityObject, const VString &key
 	// the key itself as the output text.
     if (!key.startsWith(LOCALIZED_KEY_PREFIX)) {
 		out = defaultOut;
-        vInfo("no prefix, localized to '%s'" << out);
+		vWarn("no prefix, localized to '%s'" << out);
 		return true;
 	}
 
@@ -40,7 +40,7 @@ bool VrLocale::GetString(JNIEnv *jni, jobject activityObject, const VString &key
 
             if (out.isEmpty()) {
 				out = defaultOut;
-                vInfo("key not found, localized to " << out);
+				vWarn("key not found, localized to " << out);
 				return false;
 			}
 			return true;
@@ -180,7 +180,7 @@ VString private_GetXliffFormattedString( const VString & inXliffStr, ... )
 			}
 			else
 			{
-                vInfo(inXliffStr << "has invalid xliff format - has unsupported format specifier.");
+			    vWarn(inXliffStr << "has invalid xliff format - has unsupported format specifier.");
 				return inXliffStr;
 			}
 		}

@@ -325,7 +325,7 @@ void Java_com_vrseen_nervgear_VrActivity_nativeSurfaceDestroyed(JNIEnv *jni, jcl
     if (vApp == 0)
     {
         // Android may call surfaceDestroyed() after onDestroy().
-        vInfo("nativeSurfaceChanged was called after onDestroy. We cannot destroy the surface now because we don't have a valid app pointer.");
+        vWarn("nativeSurfaceChanged was called after onDestroy. We cannot destroy the surface now because we don't have a valid app pointer.");
         return;
     }
 

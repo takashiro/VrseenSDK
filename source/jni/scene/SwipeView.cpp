@@ -530,7 +530,7 @@ SwipeAction	SwipeView::Frame( OvrGazeCursor & gazeCursor, BitmapFont const & fon
 			if ( HasMoved )
 			{
                 ret.PlaySndSwipeRelease = true;
-				vInfo("Not tap because HasMoved");
+                vWarn("Not tap because HasMoved");
 			}
 			else
 			{

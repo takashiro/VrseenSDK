@@ -417,7 +417,7 @@ V3Vect<float> USensor::gyrocorrect(const V3Vectf &gyro, const V3Vectf &accel, co
         gyroCorrected += (tiltCorrection * proportionalGain);
         gyro_offset_ -= (tiltCorrection * integralGain * DeltaT);
     } else {
-        vInfo("invalidaccel");
+        vWarn("invalid accel");
     }
 
     return gyroCorrected;

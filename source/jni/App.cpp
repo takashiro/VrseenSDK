@@ -846,7 +846,7 @@ struct App::Private
             }
             else
             {
-                vInfo("Skipping resume because windowSurface not set yet");
+                vWarn("Skipping resume because windowSurface not set yet");
             }
         }
 

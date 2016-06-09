@@ -98,7 +98,7 @@ uchar *VideoBrowser::loadThumbnail(const VString &fileName, int &width, int &hei
 			return outBuffer;
 		}
     } else {
-        vInfo("Error: VideoBrowser::LoadThumbnail failed to load" << fileName);
+        vWarn("Error: VideoBrowser::LoadThumbnail failed to load" << fileName);
 	}
 	return NULL;
 }

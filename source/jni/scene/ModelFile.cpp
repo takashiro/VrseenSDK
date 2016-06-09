@@ -123,7 +123,7 @@ SurfaceDef * ModelFile::FindNamedSurface( const char * name ) const
 			return const_cast<SurfaceDef*>(&sd);
 		}
 	}
-	vInfo("Did not find named surface " << name);
+	vWarn("Did not find named surface " << name);
 	return NULL;
 }
 
@@ -138,7 +138,7 @@ const ModelTexture * ModelFile::FindNamedTexture( const char * name ) const
 			return &st;
 		}
 	}
-	vInfo("Did not find named texture " << name);
+	vWarn("Did not find named texture " << name);
 	return NULL;
 }
 
@@ -153,7 +153,7 @@ const ModelJoint * ModelFile::FindNamedJoint( const char *name ) const
 			return &joint;
 		}
 	}
-	vInfo("Did not find named joint " << name);
+	vWarn("Did not find named joint " << name);
 	return NULL;
 }
 
@@ -168,7 +168,7 @@ const ModelTag * ModelFile::FindNamedTag(const VString &name) const
 			return &tag;
 		}
     }
-    vInfo("Did not find named tag " << name);
+	vWarn("Did not find named tag " << name);
 	return NULL;
 }
 

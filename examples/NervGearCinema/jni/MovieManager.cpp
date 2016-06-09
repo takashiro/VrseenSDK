@@ -198,7 +198,7 @@ void MovieManager::ReadMetaData( MovieDef *movie )
 	}
 	else
 	{
-        vInfo("Error loading metadata for" << filename << ":" << (( error == NULL ) ? "NULL" : error));
+	    vWarn("Error loading metadata for" << filename << ":" << (( error == NULL ) ? "NULL" : error));
 	}
 }
 
@@ -227,7 +227,7 @@ void MovieManager::LoadPoster( MovieDef *movie )
 
 			if ( movie->Poster == 0 )
 			{
-                vInfo("No thumbnail found at" << posterFilename);
+			    vWarn("No thumbnail found at" << posterFilename);
 			}
 #endif
         } else {
@@ -281,7 +281,7 @@ void MovieManager::MoviesInDirectory(VArray<VString> &movies, const VString &dir
 
 	        if ( fstatat( dirfd( dir ), entry->d_name, &st, 0 ) < 0 )
 	        {
-	        	vInfo("fstatat error on" << entry->d_name << ":" << strerror( errno ));
+	            vWarn("fstatat error on" << entry->d_name << ":" << strerror( errno ));
 	            continue;
 	        }
 

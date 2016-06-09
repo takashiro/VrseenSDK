@@ -321,7 +321,7 @@ struct VFrameSmooth::Private
             else
             {
 
-                vInfo("IMG_Context_Priority is not present.");
+                vWarn("IMG_Context_Priority is not present.");
 
                 m_contextPriority = EGL_CONTEXT_PRIORITY_MEDIUM_IMG;
             }
@@ -1370,7 +1370,7 @@ void VFrameSmooth::Private::renderToDisplayBySliced( const double vsyncBase, con
             if ( currentWarpSource.m_texId[eye][0] == 0 )
             {
 
-                vInfo("Nothing valid to draw.");
+                vWarn("Nothing valid to draw.");
 
                 sleepUntilTimePoint( framePointTimeInSeconds( vsyncBase + 1.0f ), false );
                 break;
@@ -1547,7 +1547,7 @@ void VFrameSmooth::Private::smoothInternal( )
     ws.m_gpuSync = m_eglStatus.eglCreateSyncKHR( m_eglStatus.m_display, EGL_SYNC_FENCE_KHR, NULL );
     if ( ws.m_gpuSync == EGL_NO_SYNC_KHR )
     {
-        vInfo( "eglCreateSyncKHR_(): EGL_NO_SYNC_KHR." );
+        vWarn( "eglCreateSyncKHR_(): EGL_NO_SYNC_KHR." );
     }
 
 

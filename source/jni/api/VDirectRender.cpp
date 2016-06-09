@@ -182,7 +182,7 @@ void * VrSurfaceManager::getFrontBufferAddress( const EGLSurface surface )
         return (void *)m_env->CallStaticIntMethod( m_surfaceClass, m_getFrontBufferAddressID, (int)surface );
     }
 
-    vInfo( "Java method getFrontBufferAddress() wasn't found!" );
+    vWarn( "Java method getFrontBufferAddress() wasn't found!" );
     return NULL;
 }
 
@@ -195,7 +195,7 @@ void * VrSurfaceManager::getSurfaceBufferAddress( const EGLSurface surface, int 
         return (void *)m_env->CallStaticIntMethod( m_surfaceClass, m_getSurfaceBufferAddressID, (int)surface, attribs_array, pitch );
     }
 
-    vInfo( "Java method getSurfaceBufferAddress() wasn't found!" );
+    vWarn( "Java method getSurfaceBufferAddress() wasn't found!" );
     return NULL;
 }
 

@@ -571,7 +571,7 @@ bool Oculus360Videos::IsVideoPlaying() const
 	jmethodID methodId = vApp->vrJni()->GetMethodID( MainActivityClass, "isPlaying", "()Z" );
 	if ( !methodId )
 	{
-		vInfo("Couldn't find isPlaying methodID");
+	    vWarn("Couldn't find isPlaying methodID");
 		return false;
 	}
 
@@ -587,7 +587,7 @@ void Oculus360Videos::PauseVideo( bool const force )
 		"pauseMovie", "()V" );
 	if ( !methodId )
 	{
-		vInfo("Couldn't find pauseMovie methodID");
+	    vWarn("Couldn't find pauseMovie methodID");
 		return;
 	}
 
@@ -602,7 +602,7 @@ void Oculus360Videos::StopVideo()
 		"stopMovie", "()V" );
 	if ( !methodId )
 	{
-		vInfo("Couldn't find stopMovie methodID");
+	    vWarn("Couldn't find stopMovie methodID");
 		return;
 	}
 
@@ -622,7 +622,7 @@ void Oculus360Videos::ResumeVideo()
 		"resumeMovie", "()V" );
 	if ( !methodId )
 	{
-		vInfo("Couldn't find resumeMovie methodID");
+	    vWarn("Couldn't find resumeMovie methodID");
 		return;
 	}
 
@@ -643,7 +643,7 @@ void Oculus360Videos::StartVideo( const double nowTime )
 
 		if ( !startMovieMethodId )
 		{
-			vInfo("Couldn't find startMovie methodID");
+		    vWarn("Couldn't find startMovie methodID");
 			return;
 		}
 
@@ -665,7 +665,7 @@ void Oculus360Videos::SeekTo( const int seekPos )
 
 		if ( !seekToMethodId )
 		{
-			vInfo("Couldn't find seekToMethodId methodID");
+		    vWarn("Couldn't find seekToMethodId methodID");
 			return;
 		}
 
@@ -712,7 +712,7 @@ void Oculus360Videos::SetMenuState( const OvrMenuState state )
 		VideoMenuTimeLeft = VideoMenuVisibleTime;
 		break;
 	default:
-		vInfo("360Videos::SetMenuState unknown state:" << static_cast< int >( state ));
+	    vWarn("360Videos::SetMenuState unknown state:" << static_cast< int >( state ));
 		vAssert( false );
 		break;
 	}

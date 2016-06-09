@@ -37,7 +37,7 @@ void * Queue1Thread( void * v )
 	int result = pthread_setname_np( pthread_self(), "FileQueue1" );
 	if ( result != 0 )
 	{
-		vInfo("InitFileQueue: pthread_setname_np failed" << strerror( result ));
+	    vWarn("InitFileQueue: pthread_setname_np failed" << strerror( result ));
 	}
 
 	// Process incoming messages until queue is empty
@@ -123,7 +123,7 @@ void * Queue3Thread( void * v )
 	int result = pthread_setname_np( pthread_self(), "FileQueue3" );
 	if ( result != 0 )
 	{
-		vInfo("InitFileQueue: pthread_setname_np failed" << strerror( result ));
+	    vWarn("InitFileQueue: pthread_setname_np failed" << strerror( result ));
 	}
 
 	// Process incoming messages until queue is empty
