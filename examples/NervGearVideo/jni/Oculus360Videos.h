@@ -69,8 +69,6 @@ public:
 	float				GetFadeLevel()		{ return CurrentFadeLevel; }
 
 private:
-	const char*			MenuStateString( const OvrMenuState state );
-
 	// shared vars
 	jclass				MainActivityClass;	// need to look up from main thread
 	VGlGeometry			Globe;

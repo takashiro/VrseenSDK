@@ -597,9 +597,7 @@ void Oculus360Videos::SeekTo( const int seekPos )
 
 void Oculus360Videos::SetMenuState( const OvrMenuState state )
 {
-	OvrMenuState lastState = MenuState;
-	MenuState = state;
-	vInfo(MenuStateString( lastState ) << "to" << MenuStateString( MenuState ));
+    MenuState = state;
 	switch ( MenuState )
 	{
 	case MENU_NONE:
@@ -632,22 +630,6 @@ void Oculus360Videos::SetMenuState( const OvrMenuState state )
 		vAssert( false );
 		break;
 	}
-}
-
-const char * menuStateNames [ ] =
-{
-	"MENU_NONE",
-	"MENU_BROWSER",
-	"MENU_VIDEO_LOADING",
-	"MENU_VIDEO_READY",
-	"MENU_VIDEO_PLAYING",
-	"NUM_MENU_STATES"
-};
-
-const char* Oculus360Videos::MenuStateString( const OvrMenuState state )
-{
-	vAssert( state >= 0 && state < NUM_MENU_STATES );
-	return menuStateNames[ state ];
 }
 
 void Oculus360Videos::OnVideoActivated( const OvrMetaDatum * videoData )
