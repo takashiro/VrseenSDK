@@ -277,17 +277,13 @@ bool Oculus360Videos::onKeyEvent( const int keyCode, const KeyState::eKeyEventTy
 	if ( ( ( keyCode == AKEYCODE_BACK ) && ( eventType == KeyState::KEY_EVENT_SHORT_PRESS ) ) ||
 		( ( keyCode == KEYCODE_B ) && ( eventType == KeyState::KEY_EVENT_UP ) ) )
 	{
-		if ( MenuState == MENU_VIDEO_LOADING )
-		{
-			return true;
-		}
+        if ( MenuState == MENU_VIDEO_LOADING )
+        {
+            return true;
+        }
 
-        if (!m_videoUrl.isEmpty()) {
-			SetMenuState( MENU_BROWSER );
-			return true;	// consume the key
-		}
 		// if no video is playing (either paused or stopped), let VrLib handle the back key
-	}
+    }
 	else if ( keyCode == AKEYCODE_P && eventType == KeyState::KEY_EVENT_DOWN )
 	{
 		PauseVideo( true );
