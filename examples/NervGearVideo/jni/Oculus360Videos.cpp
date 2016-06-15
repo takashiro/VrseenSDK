@@ -128,7 +128,6 @@ void Java_com_vrseen_nervgear_video_MainActivity_nativeVideoStartError(JNIEnv *,
 Oculus360Videos::Oculus360Videos(JNIEnv *jni, jclass activityClass, jobject activityObject)
     : VMainActivity(jni, activityClass, activityObject)
     , MainActivityClass( GlobalActivityClass )
-	, BackgroundScene( NULL )
 	, VideoWasPlayingWhenPaused( false )
 	, BackgroundTexId( 0 )
     , MetaData( NULL )
@@ -194,15 +193,6 @@ void Oculus360Videos::init(const VString &fromPackage, const VString &launchInte
 	MaterialParms materialParms;
 	materialParms.UseSrgbTextureFormats = ( vApp->vrParms().colorFormat == VColor::COLOR_8888_sRGB );
 
-
-    const VZipFile &apk = vApp->apkFile();
-    void *buffer = nullptr;
-    uint length = 0;
-    apk.read("assets/stars.ovrscene", buffer, length);
-    BackgroundScene = LoadModelFileFromMemory("assets/stars.ovrscene", buffer, length, Scene.GetDefaultGLPrograms(), materialParms);
-
-	Scene.SetWorldModel( *BackgroundScene );
-
 	// Load up meta data from videos directory
 	MetaData = new OvrVideosMetaData();
 	if ( MetaData == NULL )
@@ -254,12 +244,6 @@ void Oculus360Videos::shutdown()
 {
 	// This is called by the VR thread, not the java UI thread.
 	vInfo("--------------- Oculus360Videos OneTimeShutdown ---------------");
-
-	if ( BackgroundScene != NULL )
-	{
-		delete BackgroundScene;
-		BackgroundScene = NULL;
-	}
 
 	if ( MetaData != NULL )
 	{
@@ -468,29 +452,7 @@ VR4Matrixf Oculus360Videos::drawEyeView( const int eye, const float fovDegrees )
 {
     VR4Matrixf mvp = Scene.MvpForEye( eye, fovDegrees );
 
-	if ( MenuState != MENU_VIDEO_PLAYING )
-	{
-		// Draw the ovr scene
-		const float fadeColor = CurrentFadeLevel;
-		ModelDef & def = *const_cast< ModelDef * >( &Scene.WorldModel.Definition->Def );
-		for ( int i = 0; i < def.surfaces.length(); i++ )
-		{
-			SurfaceDef & sd = def.surfaces[ i ];
-			glUseProgram( SingleColorTextureProgram.program );
-
-            glUniformMatrix4fv( SingleColorTextureProgram.uniformModelViewProMatrix, 1, GL_FALSE, mvp.Transposed().M[ 0 ] );
-
-			glActiveTexture( GL_TEXTURE0 );
-			glBindTexture( GL_TEXTURE_2D, sd.materialDef.textures[ 0 ] );
-
-			glUniform4f( SingleColorTextureProgram.uniformColor, fadeColor, fadeColor, fadeColor, 1.0f );
-
-			sd.geo.drawElements();
-
-			glBindTexture( GL_TEXTURE_2D, 0 ); // don't leave it bound
-		}
-	}
-	else if ( ( MenuState == MENU_VIDEO_PLAYING ) && ( MovieTexture != NULL ) )
+    if ( ( MenuState == MENU_VIDEO_PLAYING ) && ( MovieTexture != NULL ) )
 	{
 		// draw animated movie panorama
 		glActiveTexture( GL_TEXTURE0 );
