@@ -85,9 +85,7 @@ private:
 	VGlShader			SingleColorTextureProgram;
 
 	VArray< VString > 	SearchPaths;
-	OvrVideosMetaData *	MetaData;
-	VideoBrowser *		Browser;
-	OvrVideoMenu *		VideoMenu;
+    OvrVideosMetaData *	MetaData;
 	const OvrMetaDatum * ActiveVideo;
 	OvrMenuState		MenuState;
 	SineFader			Fader;

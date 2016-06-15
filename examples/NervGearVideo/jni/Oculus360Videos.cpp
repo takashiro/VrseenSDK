@@ -42,7 +42,6 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "Oculus360Videos.h"
 
 #include <VEyeItem.h>
-#include "gui/GuiSys.h"
 
 #include "gui/Fader.h"
 #include "VDir.h"
@@ -132,9 +131,7 @@ Oculus360Videos::Oculus360Videos(JNIEnv *jni, jclass activityClass, jobject acti
 	, BackgroundScene( NULL )
 	, VideoWasPlayingWhenPaused( false )
 	, BackgroundTexId( 0 )
-	, MetaData( NULL )
-	, Browser( NULL )
-	, VideoMenu( NULL )
+    , MetaData( NULL )
 	, ActiveVideo( NULL )
 	, MenuState( MENU_NONE )
 	, Fader( 1.0f )
@@ -247,45 +244,10 @@ void Oculus360Videos::init(const VString &fromPackage, const VString &launchInte
 	VrLocale::GetString( vApp->vrJni(), vApp->javaObject(), videosLabel, videosLabel, localizedAppName );
     MetaData->renameCategory(VPath(videosDirectory).baseName(), localizedAppName);
 
-	// Start building the VideoMenu
-	VideoMenu = ( OvrVideoMenu * )vApp->guiSys().getMenu( OvrVideoMenu::MENU_NAME );
-	if ( VideoMenu == NULL )
-	{
-		VideoMenu = OvrVideoMenu::Create(
-			vApp, this, vApp->vrMenuMgr(), vApp->defaultFont(), *MetaData, 1.0f, 2.0f );
-		vAssert( VideoMenu );
-
-		vApp->guiSys().addMenu( VideoMenu );
-	}
-
-	VideoMenu->setFlags( VRMenuFlags_t( VRMENU_FLAG_PLACE_ON_HORIZON ) | VRMENU_FLAG_SHORT_PRESS_HANDLED_BY_APP );
-
-	// Start building the FolderView
-	Browser = ( VideoBrowser * )vApp->guiSys().getMenu( OvrFolderBrowser::MENU_NAME );
-	if ( Browser == NULL )
-	{
-		Browser = VideoBrowser::Create(
-			vApp,
-			*MetaData,
-			256, 20.0f,
-			256, 200.0f,
-			7,
-			5.4f );
-		vAssert( Browser );
-
-		vApp->guiSys().addMenu( Browser );
-	}
-
-	Browser->setFlags( VRMenuFlags_t( VRMENU_FLAG_PLACE_ON_HORIZON ) | VRMENU_FLAG_BACK_KEY_EXITS_APP );
-	Browser->setFolderTitleSpacingScale( 0.37f );
-	Browser->setPanelTextSpacingScale( 0.34f );
-	Browser->setScrollBarSpacingScale( 0.9f );
-	Browser->setScrollBarRadiusScale( 1.0f );
-
-	Browser->oneTimeInit();
-	Browser->buildDirtyMenu( *MetaData );
-
 	SetMenuState( MENU_BROWSER );
+
+    const OvrMetaDatum &datum = MetaData->getMetaDatum(1);
+    OnVideoActivated(&datum);
 }
 
 void Oculus360Videos::shutdown()
@@ -549,9 +511,7 @@ VR4Matrixf Oculus360Videos::drawEyeView( const int eye, const float fovDegrees )
         const VR4Matrixf view = Scene.ViewMatrixForEye( 0 ) * VR4Matrixf::RotationY( M_PI / 2 );
         const VR4Matrixf proj = Scene.ProjectionMatrixForEye( 0, fovDegrees );
 
-		const int toggleStereo = VideoMenu->isOpenOrOpening() ? 0 : eye;
-
-        glUniformMatrix4fv( prog.uniformTexMatrix, 1, GL_FALSE, TexmForVideo( toggleStereo ).Transposed().M[ 0 ] );
+        glUniformMatrix4fv( prog.uniformTexMatrix, 1, GL_FALSE, TexmForVideo( eye ).Transposed().M[ 0 ] );
         glUniformMatrix4fv( prog.uniformModelViewProMatrix, 1, GL_FALSE, ( proj * view ).Transposed().M[ 0 ] );
 		Globe.drawElements();
 
@@ -615,8 +575,6 @@ void Oculus360Videos::StopVideo()
 void Oculus360Videos::ResumeVideo()
 {
 	vInfo("ResumeVideo()");
-
-	vApp->guiSys().closeMenu( vApp, Browser, false );
 
 	jmethodID methodId = vApp->vrJni()->GetMethodID( MainActivityClass,
 		"resumeMovie", "()V" );
@@ -686,9 +644,7 @@ void Oculus360Videos::SetMenuState( const OvrMenuState state )
 		break;
 	case MENU_BROWSER:
 		Fader.forceFinish();
-		Fader.reset();
-		vApp->guiSys().closeMenu( vApp, VideoMenu, false );
-		vApp->guiSys().openMenu( vApp, vApp->gazeCursor(), OvrFolderBrowser::MENU_NAME );
+        Fader.reset();
 		if ( ActiveVideo )
 		{
 			StopVideo();
@@ -700,9 +656,7 @@ void Oculus360Videos::SetMenuState( const OvrMenuState state )
 		{
 			delete MovieTexture;
 			MovieTexture = NULL;
-		}
-		vApp->guiSys().closeMenu( vApp, Browser, false );
-		vApp->guiSys().closeMenu( vApp, VideoMenu, false );
+        }
 		Fader.startFadeOut();
 		break;
 	case MENU_VIDEO_READY:
@@ -764,14 +718,11 @@ VR4Matrixf Oculus360Videos::onNewFrame( const VFrame vrFrame )
 		{
 			vApp->playSound( "sv_release_active" );
 			if ( IsVideoPlaying() )
-			{
-				vApp->guiSys().openMenu( vApp, vApp->gazeCursor(), OvrVideoMenu::MENU_NAME );
-				VideoMenu->repositionMenu( vApp );
+            {
 				PauseVideo( false );
 			}
 			else
-			{
-				vApp->guiSys().closeMenu( vApp, VideoMenu, false );
+            {
 				ResumeVideo();
 			}
 		}
@@ -804,9 +755,7 @@ void Oculus360Videos::OnResume()
 {
 	vInfo("Oculus360Videos::OnResume");
 	if ( VideoWasPlayingWhenPaused )
-	{
-		vApp->guiSys().openMenu( vApp, vApp->gazeCursor(), OvrVideoMenu::MENU_NAME );
-		VideoMenu->repositionMenu( vApp );
+    {
 		PauseVideo( false );
 	}
 }
