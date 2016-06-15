@@ -15,7 +15,7 @@ include ../../source/import_vrlib.mk	# import VRLib for this module.  Do NOT cal
 include ../../source/cflags.mk
 
 LOCAL_MODULE    := nervgearvideo		# generate nervgearvideo.so
-LOCAL_SRC_FILES  := Oculus360Videos.cpp VideoBrowser.cpp VideoMenu.cpp VideosMetaData.cpp OVR_TurboJpeg.cpp
+LOCAL_SRC_FILES  := Oculus360Videos.cpp VideosMetaData.cpp OVR_TurboJpeg.cpp
 
 LOCAL_STATIC_LIBRARIES += jpeg
 

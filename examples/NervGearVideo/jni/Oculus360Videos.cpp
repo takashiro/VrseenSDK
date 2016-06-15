@@ -45,8 +45,6 @@ of patent rights can be found in the PATENTS file in the same directory.
 
 #include "gui/Fader.h"
 #include "VDir.h"
-#include "VideoBrowser.h"
-#include "VideoMenu.h"
 #include "VrLocale.h"
 #include "VStandardPath.h"
 #include "VTimer.h"

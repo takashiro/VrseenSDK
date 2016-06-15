@@ -10,8 +10,6 @@ namespace NervGear {
 class OvrVideosMetaData;
 class OvrMetaData;
 struct OvrMetaDatum;
-class VideoBrowser;
-class OvrVideoMenu;
 
 enum Action
 {
