@@ -1,6 +1,7 @@
 #pragma once
 
-#include "VMainActivity.h"
+#include <VMainActivity.h>
+#include <VPath.h>
 
 #include "Fader.h"
 #include "ModelView.h"
@@ -63,7 +64,7 @@ public:
 	void				SetFrameAvailable( bool const a ) { FrameAvailable = a; }
 
 	void				OnVideoActivated( const OvrMetaDatum * videoData );
-	const OvrMetaDatum * GetActiveVideo()	{ return ActiveVideo;  }
+    const VPath &videoUrl() { return m_videoUrl; }
 	float				GetFadeLevel()		{ return CurrentFadeLevel; }
 
 private:
@@ -81,7 +82,7 @@ private:
 
 	VArray< VString > 	SearchPaths;
     OvrVideosMetaData *	MetaData;
-	const OvrMetaDatum * ActiveVideo;
+    VPath m_videoUrl;
 	OvrMenuState		MenuState;
 	SineFader			Fader;
 	const float			FadeOutRate;

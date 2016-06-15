@@ -129,8 +129,7 @@ Oculus360Videos::Oculus360Videos(JNIEnv *jni, jclass activityClass, jobject acti
 	, VideoWasPlayingWhenPaused( false )
 	, BackgroundTexId( 0 )
     , MetaData( NULL )
-	, ActiveVideo( NULL )
-	, MenuState( MENU_NONE )
+    , MenuState( MENU_NONE )
 	, Fader( 1.0f )
 	, FadeOutRate( 1.0f / 0.5f )
 	, VideoMenuVisibleTime( 5.0f )
@@ -283,8 +282,7 @@ bool Oculus360Videos::onKeyEvent( const int keyCode, const KeyState::eKeyEventTy
 			return true;
 		}
 
-		if ( ActiveVideo )
-		{
+        if (!m_videoUrl.isEmpty()) {
 			SetMenuState( MENU_BROWSER );
 			return true;	// consume the key
 		}
@@ -339,7 +337,7 @@ void Oculus360Videos::command(const VEvent &event )
 		// FIXME: this needs to do some parameter magic to fix xliff tags
 		VString message;
 		VrLocale::GetString( vApp->vrJni(), vApp->javaObject(), "@string/playback_failed", "@string/playback_failed", message );
-        VString fileName = ActiveVideo->url.fileName();
+        VString fileName = m_videoUrl.fileName();
         message = VrLocale::GetXliffFormattedString(message, fileName.toLatin1().data());
 		BitmapFont & font = vApp->defaultFont();
 		font.WordWrapText( message, 1.0f );
@@ -549,11 +547,10 @@ void Oculus360Videos::ResumeVideo()
 
 void Oculus360Videos::StartVideo( const double nowTime )
 {
-	if ( ActiveVideo )
-	{
+    if (!m_videoUrl.isEmpty()) {
 		SetMenuState( MENU_VIDEO_LOADING );
-		VideoName = ActiveVideo->url;
-		vInfo("StartVideo(" << ActiveVideo->url << ")");
+        VideoName = m_videoUrl;
+        vInfo("StartVideo(" << m_videoUrl << ")");
 		vApp->playSound( "sv_select" );
 
 		jmethodID startMovieMethodId = vApp->vrJni()->GetMethodID( MainActivityClass,
@@ -565,8 +562,8 @@ void Oculus360Videos::StartVideo( const double nowTime )
 			return;
 		}
 
-		vInfo("moviePath = '" << ActiveVideo->url << "'");
-        jstring jstr = JniUtils::Convert(vApp->vrJni(), ActiveVideo->url);
+        vInfo("moviePath = '" << m_videoUrl << "'");
+        jstring jstr = JniUtils::Convert(vApp->vrJni(), m_videoUrl);
 		vApp->vrJni()->CallVoidMethod( vApp->javaObject(), startMovieMethodId, jstr );
 		vApp->vrJni()->DeleteLocalRef( jstr );
 
@@ -576,8 +573,7 @@ void Oculus360Videos::StartVideo( const double nowTime )
 
 void Oculus360Videos::SeekTo( const int seekPos )
 {
-	if ( ActiveVideo )
-	{
+    if (!m_videoUrl.isEmpty()) {
 		jmethodID seekToMethodId = vApp->vrJni()->GetMethodID( MainActivityClass,
 			"seekToFromNative", "(I)V" );
 
@@ -603,10 +599,9 @@ void Oculus360Videos::SetMenuState( const OvrMenuState state )
 	case MENU_BROWSER:
 		Fader.forceFinish();
         Fader.reset();
-		if ( ActiveVideo )
-		{
+        if (!m_videoUrl.isEmpty()) {
 			StopVideo();
-			ActiveVideo = NULL;
+            m_videoUrl.clear();
 		}
 		break;
 	case MENU_VIDEO_LOADING:
@@ -632,7 +627,7 @@ void Oculus360Videos::SetMenuState( const OvrMenuState state )
 
 void Oculus360Videos::OnVideoActivated( const OvrMetaDatum * videoData )
 {
-	ActiveVideo = videoData;
+    m_videoUrl = videoData->url;
     StartVideo( VTimer::Seconds() );
 }
 
