@@ -11,25 +11,22 @@ import android.view.Surface;
 
 public class PanoVideo {
 	private static final String TAG = "PanoVideo";
-	
+
 	private SurfaceTexture movieTexture = null;
 	private Surface movieSurface = null;
 	private MediaPlayer mediaPlayer = null;
 	private AudioManager audioManager = null;
-	
+
 	private Context context = null;
-	
+
 	public PanoVideo(Context context) {
 		this.context = context;
 		audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
 	}
-	
+
 	public void start(String pathName) {
 		requestAudioFocus();
-		
-		// Have native code pause any playing movie,
-		// allocate a new external texture,
-		// and create a surfaceTexture with it.
+
 		movieTexture = createMovieTexture();
 		movieTexture.setOnFrameAvailableListener(frameAvailableListener);
 		movieSurface = new Surface(movieTexture);
@@ -71,13 +68,13 @@ public class PanoVideo {
 
 	public void stop() {
 		if (mediaPlayer != null) {
-			Log.d(TAG, "movie stopped" );
+			Log.d(TAG, "movie stopped");
 			mediaPlayer.stop();
 		}
 
 		releaseAudioFocus();
 	}
-	
+
 	public boolean isPlaying() {
 		try {
 			if (mediaPlayer != null) {
@@ -89,7 +86,7 @@ public class PanoVideo {
 		}
 		return false;
 	}
-	
+
 	public void pause() {
 		try {
 			if (mediaPlayer != null) {
@@ -99,34 +96,37 @@ public class PanoVideo {
 			Log.d(TAG, "pause(): Caught illegalStateException: " + ise.toString());
 		}
 	}
-	
+
 	public void resume() {
 		try {
 			if (mediaPlayer != null) {
 				mediaPlayer.start();
 				mediaPlayer.setVolume(1.0f, 1.0f);
 			}
-		} catch( IllegalStateException ise ) {
+		} catch (IllegalStateException ise) {
 			Log.d(TAG, "resume(): " + ise.toString());
 		}
 	}
-	
-	AudioManager.OnAudioFocusChangeListener audioFocusChangeLisener = new AudioManager.OnAudioFocusChangeListener(){
+
+	AudioManager.OnAudioFocusChangeListener audioFocusChangeLisener = new AudioManager.OnAudioFocusChangeListener() {
 		public void onAudioFocusChange(int focusChange) {
-			switch( focusChange ) {
+			switch (focusChange) {
 			case AudioManager.AUDIOFOCUS_GAIN:
-				// resume() if coming back from transient loss, raise stream volume if duck applied
+				// resume() if coming back from transient loss, raise stream
+				// volume if duck applied
 				Log.d(TAG, "onAudioFocusChangedListener: AUDIOFOCUS_GAIN");
 				break;
 			case AudioManager.AUDIOFOCUS_LOSS:// focus lost permanently
 				// stop() if isPlaying
 				Log.d(TAG, "onAudioFocusChangedListener: AUDIOFOCUS_LOSS");
 				break;
-			case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:// focus lost temporarily
+			case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:// focus lost
+														// temporarily
 				// pause() if isPlaying
 				Log.d(TAG, "onAudioFocusChangedListener: AUDIOFOCUS_LOSS_TRANSIENT");
 				break;
-			case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:// focus lost temporarily
+			case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:// focus lost
+																	// temporarily
 				// lower stream volume
 				Log.d(TAG, "onAudioFocusChangedListener: AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK");
 				break;
@@ -135,45 +135,47 @@ public class PanoVideo {
 			}
 		}
 	};
-	
-	void requestAudioFocus(){
+
+	void requestAudioFocus() {
 		int result = audioManager.requestAudioFocus(audioFocusChangeLisener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
-		if ( result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED )
-		{
+		if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
 			Log.d(TAG, "startMovie(): GRANTED audio focus");
 		}
 	}
 
-	void releaseAudioFocus(){
+	void releaseAudioFocus() {
 		audioManager.abandonAudioFocus(audioFocusChangeLisener);
 	}
-	
+
 	MediaPlayer.OnErrorListener errorListener = new MediaPlayer.OnErrorListener() {
 		public boolean onError(MediaPlayer mp, int what, int extra) {
-			Log.e( TAG, "MediaPlayer.OnErrorListener - what : " + what + ", extra : " + extra );
+			Log.e(TAG, "MediaPlayer.OnErrorListener - what : " + what + ", extra : " + extra);
 			return false;
 		}
 	};
-	
+
 	native SurfaceTexture createMovieTexture();
-	
+
 	native void onVideoSizeChanged(int width, int height);
+
 	MediaPlayer.OnVideoSizeChangedListener videoSizeChangedListener = new MediaPlayer.OnVideoSizeChangedListener() {
 		@Override
 		public void onVideoSizeChanged(MediaPlayer mp, int width, int height) {
 			PanoVideo.this.onVideoSizeChanged(width, height);
 		}
 	};
-	
+
 	native void onFrameAvailable();
+
 	SurfaceTexture.OnFrameAvailableListener frameAvailableListener = new SurfaceTexture.OnFrameAvailableListener() {
 		@Override
 		public void onFrameAvailable(SurfaceTexture surfaceTexture) {
-			PanoVideo.this.onFrameAvailable();			
+			PanoVideo.this.onFrameAvailable();
 		}
 	};
-	
+
 	native void onCompletion();
+
 	MediaPlayer.OnCompletionListener completionListener = new MediaPlayer.OnCompletionListener() {
 		@Override
 		public void onCompletion(MediaPlayer mp) {

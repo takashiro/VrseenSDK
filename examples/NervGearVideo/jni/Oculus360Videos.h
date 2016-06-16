@@ -16,7 +16,7 @@ enum Action
 	ACT_VIDEOS,
 };
 
-class Oculus360Videos : public NervGear::VMainActivity
+class PanoVideo : public NervGear::VMainActivity
 {
 public:
 
@@ -30,8 +30,8 @@ public:
 		NUM_MENU_STATES
 	};
 
-	Oculus360Videos(JNIEnv *jni, jclass activityClass, jobject activityObject);
-	~Oculus360Videos();
+    PanoVideo(JNIEnv *jni, jclass activityClass, jobject activityObject);
+    ~PanoVideo();
 
 	virtual void		init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI );
 	virtual void		shutdown();

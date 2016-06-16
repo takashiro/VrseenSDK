@@ -52,12 +52,12 @@ void Java_com_vrseen_nervgear_video_MainActivity_nativeSetAppInterface( JNIEnv *
 	GlobalActivityClass = (jclass)jni->NewGlobalRef( clazz );
 
 	vInfo("nativeSetAppInterface");
-    (new Oculus360Videos(jni, clazz, activity))->onCreate(fromPackageName, commandString, uriString );
+    (new PanoVideo(jni, clazz, activity))->onCreate(fromPackageName, commandString, uriString );
 }
 
 void Java_com_vrseen_nervgear_video_PanoVideo_onFrameAvailable(JNIEnv *, jclass)
 {
-    Oculus360Videos * panoVids = ( Oculus360Videos * ) vApp->appInterface();
+    PanoVideo * panoVids = ( PanoVideo * ) vApp->appInterface();
 	panoVids->SetFrameAvailable( true );
 }
 
@@ -92,7 +92,7 @@ void Java_com_vrseen_nervgear_video_PanoVideo_onCompletion(JNIEnv *, jclass)
 
 
 
-Oculus360Videos::Oculus360Videos(JNIEnv *jni, jclass activityClass, jobject activityObject)
+PanoVideo::PanoVideo(JNIEnv *jni, jclass activityClass, jobject activityObject)
     : VMainActivity(jni, activityClass, activityObject)
     , MainActivityClass( GlobalActivityClass )
 	, VideoWasPlayingWhenPaused( false )
@@ -114,11 +114,11 @@ Oculus360Videos::Oculus360Videos(JNIEnv *jni, jclass activityClass, jobject acti
 {
 }
 
-Oculus360Videos::~Oculus360Videos()
+PanoVideo::~PanoVideo()
 {
 }
 
-void Oculus360Videos::init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI)
+void PanoVideo::init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI)
 {
 	vInfo("--------------- Oculus360Videos OneTimeInit ---------------");
 
@@ -159,7 +159,7 @@ void Oculus360Videos::init(const VString &fromPackage, const VString &launchInte
     OnVideoActivated(launchIntentURI);
 }
 
-void Oculus360Videos::shutdown()
+void PanoVideo::shutdown()
 {
 	// This is called by the VR thread, not the java UI thread.
 	vInfo("--------------- Oculus360Videos OneTimeShutdown ---------------");
@@ -177,7 +177,7 @@ void Oculus360Videos::shutdown()
     SingleColorTextureProgram.destroy();
 }
 
-void Oculus360Videos::configureVrMode(VKernel* kernel)
+void PanoVideo::configureVrMode(VKernel* kernel)
 {
 	// We need very little CPU for pano browsing, but a fair amount of GPU.
 	// The CPU clock should ramp up above the minimum when necessary.
@@ -186,7 +186,7 @@ void Oculus360Videos::configureVrMode(VKernel* kernel)
 	kernel->msaa = 1;
 }
 
-bool Oculus360Videos::onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType )
+bool PanoVideo::onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType )
 {
 	if ( ( ( keyCode == AKEYCODE_BACK ) && ( eventType == KeyState::KEY_EVENT_SHORT_PRESS ) ) ||
 		( ( keyCode == KEYCODE_B ) && ( eventType == KeyState::KEY_EVENT_UP ) ) )
@@ -206,7 +206,7 @@ bool Oculus360Videos::onKeyEvent( const int keyCode, const KeyState::eKeyEventTy
 	return false;
 }
 
-void Oculus360Videos::command(const VEvent &event )
+void PanoVideo::command(const VEvent &event )
 {
 	// Always include the space in MatchesHead to prevent problems
 	// with commands with matching prefixes.
@@ -258,7 +258,7 @@ void Oculus360Videos::command(const VEvent &event )
 
 }
 
-VR4Matrixf	Oculus360Videos::TexmForVideo( const int eye )
+VR4Matrixf	PanoVideo::TexmForVideo( const int eye )
 {
     if (m_videoUrl.endsWith("_TB.mp4", false)) {
         // top / bottom stereo panorama
@@ -332,7 +332,7 @@ VR4Matrixf	Oculus360Videos::TexmForVideo( const int eye )
     return VR4Matrixf::Identity();
 }
 
-VR4Matrixf	Oculus360Videos::TexmForBackground( const int eye )
+VR4Matrixf	PanoVideo::TexmForBackground( const int eye )
 {
 	if ( BackgroundWidth == BackgroundHeight )
 	{	// top / bottom stereo panorama
@@ -354,7 +354,7 @@ VR4Matrixf	Oculus360Videos::TexmForBackground( const int eye )
     return VR4Matrixf::Identity();
 }
 
-VR4Matrixf Oculus360Videos::drawEyeView( const int eye, const float fovDegrees )
+VR4Matrixf PanoVideo::drawEyeView( const int eye, const float fovDegrees )
 {
     VR4Matrixf mvp = Scene.MvpForEye( eye, fovDegrees );
 
@@ -389,7 +389,7 @@ VR4Matrixf Oculus360Videos::drawEyeView( const int eye, const float fovDegrees )
 	return mvp;
 }
 
-bool Oculus360Videos::IsVideoPlaying() const
+bool PanoVideo::IsVideoPlaying() const
 {
 	jmethodID methodId = vApp->vrJni()->GetMethodID( MainActivityClass, "isPlaying", "()Z" );
 	if ( !methodId )
@@ -402,7 +402,7 @@ bool Oculus360Videos::IsVideoPlaying() const
 	return isPlaying;
 }
 
-void Oculus360Videos::PauseVideo( bool const force )
+void PanoVideo::PauseVideo( bool const force )
 {
 	vInfo("PauseVideo()");
 
@@ -417,7 +417,7 @@ void Oculus360Videos::PauseVideo( bool const force )
 	vApp->vrJni()->CallVoidMethod( vApp->javaObject(), methodId );
 }
 
-void Oculus360Videos::StopVideo()
+void PanoVideo::StopVideo()
 {
 	vInfo("StopVideo()");
 
@@ -435,7 +435,7 @@ void Oculus360Videos::StopVideo()
 	MovieTexture = NULL;
 }
 
-void Oculus360Videos::ResumeVideo()
+void PanoVideo::ResumeVideo()
 {
 	vInfo("ResumeVideo()");
 
@@ -450,7 +450,7 @@ void Oculus360Videos::ResumeVideo()
 	vApp->vrJni()->CallVoidMethod( vApp->javaObject(), methodId );
 }
 
-void Oculus360Videos::StartVideo( const double nowTime )
+void PanoVideo::StartVideo( const double nowTime )
 {
     if (!m_videoUrl.isEmpty()) {
 		SetMenuState( MENU_VIDEO_LOADING );
@@ -475,7 +475,7 @@ void Oculus360Videos::StartVideo( const double nowTime )
 	}
 }
 
-void Oculus360Videos::SeekTo( const int seekPos )
+void PanoVideo::SeekTo( const int seekPos )
 {
     if (!m_videoUrl.isEmpty()) {
 		jmethodID seekToMethodId = vApp->vrJni()->GetMethodID( MainActivityClass,
@@ -493,7 +493,7 @@ void Oculus360Videos::SeekTo( const int seekPos )
 	}
 }
 
-void Oculus360Videos::SetMenuState( const OvrMenuState state )
+void PanoVideo::SetMenuState( const OvrMenuState state )
 {
     MenuState = state;
 	switch ( MenuState )
@@ -529,13 +529,13 @@ void Oculus360Videos::SetMenuState( const OvrMenuState state )
 	}
 }
 
-void Oculus360Videos::OnVideoActivated(const VString &url)
+void PanoVideo::OnVideoActivated(const VString &url)
 {
     m_videoUrl = url;
     StartVideo(VTimer::Seconds());
 }
 
-VR4Matrixf Oculus360Videos::onNewFrame( const VFrame vrFrame )
+VR4Matrixf PanoVideo::onNewFrame( const VFrame vrFrame )
 {
 	// Disallow player foot movement, but we still want the head model
 	// movement for the swipe view.
@@ -592,7 +592,7 @@ VR4Matrixf Oculus360Videos::onNewFrame( const VFrame vrFrame )
 	return Scene.CenterViewMatrix();
 }
 
-void Oculus360Videos::OnResume()
+void PanoVideo::OnResume()
 {
 	vInfo("Oculus360Videos::OnResume");
 	if ( VideoWasPlayingWhenPaused )
@@ -601,7 +601,7 @@ void Oculus360Videos::OnResume()
 	}
 }
 
-void Oculus360Videos::OnPause()
+void PanoVideo::OnPause()
 {
 	vInfo("Oculus360Videos::OnPause");
 	VideoWasPlayingWhenPaused = IsVideoPlaying();
