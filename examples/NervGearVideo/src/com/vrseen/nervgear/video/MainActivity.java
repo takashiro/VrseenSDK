@@ -6,6 +6,7 @@ import android.content.SharedPreferences.Editor;
 import android.graphics.SurfaceTexture;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
@@ -74,6 +75,9 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 		String commandString = VrLib.getCommandStringFromIntent( intent );
 		String fromPackageNameString = VrLib.getPackageStringFromIntent( intent );
 		String uriString = VrLib.getUriStringFromIntent( intent );
+		if (uriString.isEmpty()) {
+			uriString = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Oculus/360Videos/[Samsung] 360 video demo.mp4";
+		}
 
 		nativeSetAppInterface( this, fromPackageNameString, commandString, uriString );
 

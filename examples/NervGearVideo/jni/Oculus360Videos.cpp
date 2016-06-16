@@ -1,18 +1,3 @@
-/************************************************************************************
-
-Filename    :   Oculus360Videos.cpp
-Content     :
-Created     :
-Authors     :
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-This source code is licensed under the BSD-style license found in the
-LICENSE file in the Oculus360Videos/ directory. An additional grant
-of patent rights can be found in the PATENTS file in the same directory.
-
-*************************************************************************************/
-
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <dirent.h>
@@ -48,13 +33,10 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "VrLocale.h"
 #include "VStandardPath.h"
 #include "VTimer.h"
-#include "VideosMetaData.h"
 #include "VColor.h"
 
 static bool	RetailMode = false;
 
-static const char * videosDirectory = "Oculus/360Videos/";
-static const char * videosLabel = "@string/app_name";
 static const float	FadeOutTime = 0.25f;
 static const float	FadeOverTime = 1.0f;
 
@@ -128,7 +110,6 @@ Oculus360Videos::Oculus360Videos(JNIEnv *jni, jclass activityClass, jobject acti
     , MainActivityClass( GlobalActivityClass )
 	, VideoWasPlayingWhenPaused( false )
 	, BackgroundTexId( 0 )
-    , MetaData( NULL )
     , MenuState( MENU_NONE )
 	, Fader( 1.0f )
 	, FadeOutRate( 1.0f / 0.5f )
@@ -190,64 +171,14 @@ void Oculus360Videos::init(const VString &fromPackage, const VString &launchInte
 	MaterialParms materialParms;
 	materialParms.UseSrgbTextureFormats = ( vApp->vrParms().colorFormat == VColor::COLOR_8888_sRGB );
 
-	// Load up meta data from videos directory
-	MetaData = new OvrVideosMetaData();
-	if ( MetaData == NULL )
-	{
-		vFatal("Oculus360Photos::OneTimeInit failed to create MetaData");
-	}
-
-    VStandardPath::Info pathInfoList[] = {
-        {VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/"},
-        {VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, ""},
-        {VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/"},
-        {VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, ""}
-    };
-
-    const VStandardPath &storagePaths = vApp->storagePaths();
-    for (const VStandardPath::Info &pathInfo : pathInfoList) {
-        VString path = storagePaths.findFolder(pathInfo);
-        if (path.length() > 0 && VFile::IsReadable(path)) {
-            SearchPaths.append(std::move(path));
-        }
-    }
-
-	OvrMetaDataFileExtensions fileExtensions;
-	fileExtensions.goodExtensions.append( ".mp4" );
-	fileExtensions.goodExtensions.append( ".m4v" );
-	fileExtensions.goodExtensions.append( ".3gp" );
-	fileExtensions.goodExtensions.append( ".3g2" );
-	fileExtensions.goodExtensions.append( ".ts" );
-	fileExtensions.goodExtensions.append( ".webm" );
-	fileExtensions.goodExtensions.append( ".mkv" );
-	fileExtensions.goodExtensions.append( ".wmv" );
-	fileExtensions.goodExtensions.append( ".asf" );
-	fileExtensions.goodExtensions.append( ".avi" );
-	fileExtensions.goodExtensions.append( ".flv" );
-
-	MetaData->initFromDirectory( videosDirectory, SearchPaths, fileExtensions );
-
-	VString localizedAppName;
-	VrLocale::GetString( vApp->vrJni(), vApp->javaObject(), videosLabel, videosLabel, localizedAppName );
-    MetaData->renameCategory(VPath(videosDirectory).baseName(), localizedAppName);
-
-	SetMenuState( MENU_BROWSER );
-
-    const OvrMetaDatum &datum = MetaData->getMetaDatum(1);
-    OnVideoActivated(&datum);
+    SetMenuState(MENU_BROWSER);
+    OnVideoActivated(launchIntentURI);
 }
 
 void Oculus360Videos::shutdown()
 {
 	// This is called by the VR thread, not the java UI thread.
 	vInfo("--------------- Oculus360Videos OneTimeShutdown ---------------");
-
-	if ( MetaData != NULL )
-	{
-		delete MetaData;
-		MetaData = NULL;
-	}
-
 	Globe.destroy();
 
     glDeleteTextures(1, &BackgroundTexId);
@@ -620,10 +551,10 @@ void Oculus360Videos::SetMenuState( const OvrMenuState state )
 	}
 }
 
-void Oculus360Videos::OnVideoActivated( const OvrMetaDatum * videoData )
+void Oculus360Videos::OnVideoActivated(const VString &url)
 {
-    m_videoUrl = videoData->url;
-    StartVideo( VTimer::Seconds() );
+    m_videoUrl = url;
+    StartVideo(VTimer::Seconds());
 }
 
 VR4Matrixf Oculus360Videos::onNewFrame( const VFrame vrFrame )

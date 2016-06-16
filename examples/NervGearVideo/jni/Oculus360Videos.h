@@ -6,11 +6,7 @@
 #include "Fader.h"
 #include "ModelView.h"
 
-namespace NervGear {
-
-class OvrVideosMetaData;
-class OvrMetaData;
-struct OvrMetaDatum;
+NV_NAMESPACE_BEGIN
 
 enum Action
 {
@@ -63,7 +59,7 @@ public:
 
 	void				SetFrameAvailable( bool const a ) { FrameAvailable = a; }
 
-	void				OnVideoActivated( const OvrMetaDatum * videoData );
+    void OnVideoActivated(const VString &url);
     const VPath &videoUrl() { return m_videoUrl; }
 	float				GetFadeLevel()		{ return CurrentFadeLevel; }
 
@@ -80,8 +76,6 @@ private:
 	VGlShader			FadedPanoramaProgram;
 	VGlShader			SingleColorTextureProgram;
 
-	VArray< VString > 	SearchPaths;
-    OvrVideosMetaData *	MetaData;
     VPath m_videoUrl;
 	OvrMenuState		MenuState;
 	SineFader			Fader;
@@ -111,4 +105,4 @@ private:
 	void				OnPause();
 };
 
-}
+NV_NAMESPACE_END
