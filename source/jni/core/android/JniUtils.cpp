@@ -11,6 +11,10 @@ namespace JniUtils {
     VString Convert(JNIEnv *jni, jstring jstr)
     {
         VString str;
+        if (jstr == NULL) {
+            return str;
+        }
+
         jsize length = jni->GetStringLength(jstr);
         if (length > 0) {
             str.resize(length);

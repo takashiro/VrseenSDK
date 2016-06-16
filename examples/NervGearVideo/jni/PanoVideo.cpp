@@ -30,16 +30,9 @@ NV_NAMESPACE_BEGIN
 
 extern "C" {
 
-static jclass	GlobalActivityClass;
-void Java_com_vrseen_nervgear_video_MainActivity_nativeSetAppInterface( JNIEnv *jni, jclass clazz, jobject activity,
-		jstring fromPackageName, jstring commandString, jstring uriString )
+void Java_com_vrseen_nervgear_video_PanoVideo_construct(JNIEnv *jni, jclass clazz, jobject activity)
 {
-	// This is called by the java UI thread.
-
-	GlobalActivityClass = (jclass)jni->NewGlobalRef( clazz );
-
-	vInfo("nativeSetAppInterface");
-    (new PanoVideo(jni, clazz, activity))->onCreate(fromPackageName, commandString, uriString );
+    (new PanoVideo(jni, jni->GetObjectClass(activity), activity))->onCreate(nullptr, nullptr, nullptr);
 }
 
 void Java_com_vrseen_nervgear_video_PanoVideo_onStart(JNIEnv *jni, jclass, jstring jpath)

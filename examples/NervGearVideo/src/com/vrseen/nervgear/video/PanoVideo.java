@@ -2,6 +2,7 @@ package com.vrseen.nervgear.video;
 
 import java.io.IOException;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.media.AudioManager;
@@ -17,11 +18,9 @@ public class PanoVideo {
 	private MediaPlayer mediaPlayer = null;
 	private AudioManager audioManager = null;
 
-	private Context context = null;
-
-	public PanoVideo(Context context) {
-		this.context = context;
-		audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+	public PanoVideo(Activity activity) {
+		audioManager = (AudioManager) activity.getSystemService(Context.AUDIO_SERVICE);
+		construct(activity);
 	}
 
 	public void start(String pathName) {
@@ -157,6 +156,8 @@ public class PanoVideo {
 	};
 
 	native SurfaceTexture createMovieTexture();
+	
+	native void construct(Activity activity);
 	
 	native void onStart(String path);
 
