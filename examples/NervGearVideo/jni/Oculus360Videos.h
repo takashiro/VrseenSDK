@@ -93,8 +93,7 @@ private:
 
 	bool				UseSrgb;
 
-	// video vars
-	VString				VideoName;
+    // video vars
 	SurfaceTexture	* 	MovieTexture;
 
 	// Set when MediaPlayer knows what the stream size is.
