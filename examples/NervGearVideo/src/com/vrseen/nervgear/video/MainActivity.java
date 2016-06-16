@@ -39,13 +39,4 @@ public class MainActivity extends VrActivity {
 		video.releaseAudioFocus();
 		super.onDestroy();
 	}
-	
-	public void startMovieFromNative( final String pathName ) {
-		runOnUiThread(new Runnable() {
-			@Override
-    		public void run() {
-				video.start(pathName);
-    		}
-    	});
-	}
 }
