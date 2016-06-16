@@ -4,21 +4,22 @@
 #include <jni.h>
 #include <android/keycodes.h>
 
-#include <VAlgorithm.h>
 #include <VPath.h>
 #include <VZipFile.h>
 #include <VFile.h>
 #include <VResource.h>
-
-#include <fstream>
+#include <VEyeItem.h>
+#include <Fader.h>
+#include <VrLocale.h>
+#include <VTimer.h>
+#include <VColor.h>
+#include <VArray.h>
+#include <VString.h>
+#include <VEglDriver.h>
 
 #include <android/JniUtils.h>
 
-#include "VArray.h"
-#include "VString.h"
-#include "VEglDriver.h"
 #include "SurfaceTexture.h"
-
 #include "VTexture.h"
 #include "BitmapFont.h"
 #include "GazeCursor.h"
@@ -26,20 +27,7 @@
 #include "SwipeView.h"
 #include "PanoVideo.h"
 
-#include <VEyeItem.h>
-
-#include "gui/Fader.h"
-#include "VDir.h"
-#include "VrLocale.h"
-#include "VStandardPath.h"
-#include "VTimer.h"
-#include "VColor.h"
-
-static const float	FadeOutTime = 0.25f;
-static const float	FadeOverTime = 1.0f;
-
-namespace NervGear
-{
+NV_NAMESPACE_BEGIN
 
 extern "C" {
 
@@ -611,4 +599,4 @@ void PanoVideo::OnPause()
 	}
 }
 
-}
+NV_NAMESPACE_END
