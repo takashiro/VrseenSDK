@@ -46,7 +46,7 @@ public:
 	void 				ResumeVideo();
 	bool				IsVideoPlaying() const;
 
-	void 				StartVideo( const double nowTime );
+    void 				StartVideo(const VString &url);
 	void				SeekTo( const int seekPos );
 
 	void 				CloseSwipeView( const VFrame &vrFrame );
@@ -59,7 +59,6 @@ public:
 
 	void				SetFrameAvailable( bool const a ) { FrameAvailable = a; }
 
-    void OnVideoActivated(const VString &url);
     const VPath &videoUrl() { return m_videoUrl; }
 	float				GetFadeLevel()		{ return CurrentFadeLevel; }
 

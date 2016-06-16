@@ -25,6 +25,8 @@ public class PanoVideo {
 	}
 
 	public void start(String pathName) {
+		onStart(pathName);
+		
 		requestAudioFocus();
 
 		movieTexture = createMovieTexture();
@@ -155,6 +157,8 @@ public class PanoVideo {
 	};
 
 	native SurfaceTexture createMovieTexture();
+	
+	native void onStart(String path);
 
 	native void onVideoSizeChanged(int width, int height);
 

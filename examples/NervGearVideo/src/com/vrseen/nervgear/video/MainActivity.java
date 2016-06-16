@@ -31,6 +31,7 @@ public class MainActivity extends VrActivity {
 		nativeSetAppInterface(this, fromPackageNameString, commandString, uriString);
 
 		video = new PanoVideo(this);
+		video.start(uriString);
 	}
 
 	@Override

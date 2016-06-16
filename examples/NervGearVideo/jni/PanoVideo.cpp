@@ -43,6 +43,12 @@ void Java_com_vrseen_nervgear_video_MainActivity_nativeSetAppInterface( JNIEnv *
     (new PanoVideo(jni, clazz, activity))->onCreate(fromPackageName, commandString, uriString );
 }
 
+void Java_com_vrseen_nervgear_video_PanoVideo_onStart(JNIEnv *jni, jclass, jstring jpath)
+{
+    PanoVideo *panoVideo = (PanoVideo *) vApp->appInterface();
+    panoVideo->StartVideo(JniUtils::Convert(jni, jpath));
+}
+
 void Java_com_vrseen_nervgear_video_PanoVideo_onFrameAvailable(JNIEnv *, jclass)
 {
     PanoVideo * panoVids = ( PanoVideo * ) vApp->appInterface();
@@ -142,9 +148,6 @@ void PanoVideo::init(const VString &fromPackage, const VString &launchIntentJSON
 	Scene.Zfar = 200.0f;
 	MaterialParms materialParms;
 	materialParms.UseSrgbTextureFormats = ( vApp->vrParms().colorFormat == VColor::COLOR_8888_sRGB );
-
-    SetMenuState(MENU_BROWSER);
-    OnVideoActivated(launchIntentURI);
 }
 
 void PanoVideo::shutdown()
@@ -392,93 +395,31 @@ bool PanoVideo::IsVideoPlaying() const
 
 void PanoVideo::PauseVideo( bool const force )
 {
-	vInfo("PauseVideo()");
-
-	jmethodID methodId = vApp->vrJni()->GetMethodID( MainActivityClass,
-		"pauseMovie", "()V" );
-	if ( !methodId )
-	{
-		vInfo("Couldn't find pauseMovie methodID");
-		return;
-	}
-
-	vApp->vrJni()->CallVoidMethod( vApp->javaObject(), methodId );
 }
 
 void PanoVideo::StopVideo()
 {
-	vInfo("StopVideo()");
-
-	jmethodID methodId = vApp->vrJni()->GetMethodID( MainActivityClass,
-		"stopMovie", "()V" );
-	if ( !methodId )
-	{
-		vInfo("Couldn't find stopMovie methodID");
-		return;
-	}
-
-	vApp->vrJni()->CallVoidMethod( vApp->javaObject(), methodId );
-
 	delete MovieTexture;
 	MovieTexture = NULL;
+    vWarn("DELETING MOVIE TEXTURE StopVideo()");
 }
 
 void PanoVideo::ResumeVideo()
 {
-	vInfo("ResumeVideo()");
 
-	jmethodID methodId = vApp->vrJni()->GetMethodID( MainActivityClass,
-		"resumeMovie", "()V" );
-	if ( !methodId )
-	{
-		vInfo("Couldn't find resumeMovie methodID");
-		return;
-	}
-
-	vApp->vrJni()->CallVoidMethod( vApp->javaObject(), methodId );
 }
 
-void PanoVideo::StartVideo( const double nowTime )
+void PanoVideo::StartVideo(const VString &url)
 {
+    m_videoUrl = url;
     if (!m_videoUrl.isEmpty()) {
 		SetMenuState( MENU_VIDEO_LOADING );
         vInfo("StartVideo(" << m_videoUrl << ")");
-		vApp->playSound( "sv_select" );
-
-		jmethodID startMovieMethodId = vApp->vrJni()->GetMethodID( MainActivityClass,
-			"startMovieFromNative", "(Ljava/lang/String;)V" );
-
-		if ( !startMovieMethodId )
-		{
-			vInfo("Couldn't find startMovie methodID");
-			return;
-		}
-
-        vInfo("moviePath = '" << m_videoUrl << "'");
-        jstring jstr = JniUtils::Convert(vApp->vrJni(), m_videoUrl);
-		vApp->vrJni()->CallVoidMethod( vApp->javaObject(), startMovieMethodId, jstr );
-		vApp->vrJni()->DeleteLocalRef( jstr );
-
-		vInfo("StartVideo done");
 	}
 }
 
 void PanoVideo::SeekTo( const int seekPos )
 {
-    if (!m_videoUrl.isEmpty()) {
-		jmethodID seekToMethodId = vApp->vrJni()->GetMethodID( MainActivityClass,
-			"seekToFromNative", "(I)V" );
-
-		if ( !seekToMethodId )
-		{
-			vInfo("Couldn't find seekToMethodId methodID");
-			return;
-		}
-
-		vApp->vrJni()->CallVoidMethod( vApp->javaObject(), seekToMethodId, seekPos );
-
-		vInfo("SeekTo" << seekPos << "done");
-	}
 }
 
 void PanoVideo::SetMenuState( const OvrMenuState state )
@@ -515,12 +456,6 @@ void PanoVideo::SetMenuState( const OvrMenuState state )
 		vAssert( false );
 		break;
 	}
-}
-
-void PanoVideo::OnVideoActivated(const VString &url)
-{
-    m_videoUrl = url;
-    StartVideo(VTimer::Seconds());
 }
 
 VR4Matrixf PanoVideo::onNewFrame( const VFrame vrFrame )
