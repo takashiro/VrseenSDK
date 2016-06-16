@@ -44,14 +44,14 @@ void Java_com_vrseen_nervgear_video_MainActivity_nativeSetAppInterface( JNIEnv *
 
 void Java_com_vrseen_nervgear_video_PanoVideo_onStart(JNIEnv *jni, jclass, jstring jpath)
 {
-    PanoVideo *panoVideo = (PanoVideo *) vApp->appInterface();
-    panoVideo->StartVideo(JniUtils::Convert(jni, jpath));
+    PanoVideo *video = (PanoVideo *) vApp->appInterface();
+    video->onStart(JniUtils::Convert(jni, jpath));
 }
 
 void Java_com_vrseen_nervgear_video_PanoVideo_onFrameAvailable(JNIEnv *, jclass)
 {
-    PanoVideo * panoVids = ( PanoVideo * ) vApp->appInterface();
-	panoVids->SetFrameAvailable( true );
+    PanoVideo *video = (PanoVideo *) vApp->appInterface();
+    video->setFrameAvailable(true);
 }
 
 jobject Java_com_vrseen_nervgear_video_PanoVideo_createMovieTexture(JNIEnv *, jclass)
@@ -87,16 +87,15 @@ void Java_com_vrseen_nervgear_video_PanoVideo_onCompletion(JNIEnv *, jclass)
 
 PanoVideo::PanoVideo(JNIEnv *jni, jclass activityClass, jobject activityObject)
     : VMainActivity(jni, activityClass, activityObject)
-	, VideoWasPlayingWhenPaused( false )
-	, BackgroundTexId( 0 )
-    , MenuState( MENU_NONE )
-	, UseSrgb( false )
-	, MovieTexture( NULL )
-	, CurrentVideoWidth( 0 )
-	, CurrentVideoHeight( 480 )
-	, BackgroundWidth( 0 )
-	, BackgroundHeight( 0 )
-	, FrameAvailable( false )
+    , m_videoWasPlayingWhenPaused( false )
+    , m_menuState( MENU_NONE )
+    , m_useSrgb( false )
+    , m_movieTexture( NULL )
+    , m_videoWidth( 0 )
+    , m_videoHeight( 480 )
+    , m_backgroundWidth( 0 )
+    , m_backgroundHeight( 0 )
+    , m_frameAvailable( false )
 {
 }
 
@@ -112,22 +111,22 @@ void PanoVideo::init(const VString &fromPackage, const VString &launchIntentJSON
     vApp->vrParms().commonParameterDepth = VEyeItem::CommonParameter::DepthFormat_16;
 	vApp->vrParms().multisamples = 2;
 
-    PanoramaProgram.initShader(VGlShader::getPanoVertexShaderSource(),VGlShader::getPanoProgramShaderSource()	);
+    m_panoramaProgram.initShader(VGlShader::getPanoVertexShaderSource(),VGlShader::getPanoProgramShaderSource()	);
 
-    FadedPanoramaProgram.initShader(VGlShader::getFadedPanoVertexShaderSource(),VGlShader::getFadedPanoProgramShaderSource());
-    SingleColorTextureProgram.initShader(VGlShader::getSingleTextureVertexShaderSource(),VGlShader::getUniformSingleTextureProgramShaderSource());
+    m_fadedPanoramaProgram.initShader(VGlShader::getFadedPanoVertexShaderSource(),VGlShader::getFadedPanoProgramShaderSource());
+    m_singleColorTextureProgram.initShader(VGlShader::getSingleTextureVertexShaderSource(),VGlShader::getUniformSingleTextureProgramShaderSource());
 
 	// always fall back to valid background
-    if (BackgroundTexId == 0) {
+    if (m_backgroundTexId == 0) {
         VTexture background(VResource("assets/background.jpg"), VTexture::UseSRGB);
-        BackgroundTexId = background.id();
-        vAssert(BackgroundTexId);
-        BackgroundWidth = background.width();
-        BackgroundHeight = background.height();
+        m_backgroundTexId = background.id();
+        vAssert(m_backgroundTexId);
+        m_backgroundWidth = background.width();
+        m_backgroundHeight = background.height();
 	}
 
 	vInfo("Creating Globe");
-    Globe.createSphere();
+    m_globe.createSphere();
 
 	// Stay exactly at the origin, so the panorama globe is equidistant
 	// Don't clear the head model neck length, or swipe view panels feel wrong.
@@ -136,8 +135,8 @@ void PanoVideo::init(const VString &fromPackage, const VString &launchIntentJSON
 	vApp->setViewSettings( viewParms );
 
 	// Optimize for 16 bit depth in a modest theater size
-	Scene.Znear = 0.1f;
-	Scene.Zfar = 200.0f;
+    m_scene.Znear = 0.1f;
+    m_scene.Zfar = 200.0f;
 	MaterialParms materialParms;
 	materialParms.UseSrgbTextureFormats = ( vApp->vrParms().colorFormat == VColor::COLOR_8888_sRGB );
 }
@@ -146,18 +145,18 @@ void PanoVideo::shutdown()
 {
 	// This is called by the VR thread, not the java UI thread.
 	vInfo("--------------- Oculus360Videos OneTimeShutdown ---------------");
-	Globe.destroy();
+    m_globe.destroy();
 
-    glDeleteTextures(1, &BackgroundTexId);
+    glDeleteTextures(1, &m_backgroundTexId);
 
-    if (MovieTexture != NULL) {
-		delete MovieTexture;
-		MovieTexture = NULL;
+    if (m_movieTexture != NULL) {
+        delete m_movieTexture;
+        m_movieTexture = NULL;
 	}
 
-    PanoramaProgram.destroy();
-    FadedPanoramaProgram.destroy();
-    SingleColorTextureProgram.destroy();
+    m_panoramaProgram.destroy();
+    m_fadedPanoramaProgram.destroy();
+    m_singleColorTextureProgram.destroy();
 }
 
 void PanoVideo::configureVrMode(VKernel* kernel)
@@ -174,7 +173,7 @@ bool PanoVideo::onKeyEvent( const int keyCode, const KeyState::eKeyEventType eve
 	if ( ( ( keyCode == AKEYCODE_BACK ) && ( eventType == KeyState::KEY_EVENT_SHORT_PRESS ) ) ||
 		( ( keyCode == KEYCODE_B ) && ( eventType == KeyState::KEY_EVENT_UP ) ) )
 	{
-        if ( MenuState == MENU_VIDEO_LOADING )
+        if ( m_menuState == MENU_VIDEO_LOADING )
         {
             return true;
         }
@@ -183,7 +182,7 @@ bool PanoVideo::onKeyEvent( const int keyCode, const KeyState::eKeyEventType eve
     }
 	else if ( keyCode == AKEYCODE_P && eventType == KeyState::KEY_EVENT_DOWN )
 	{
-		PauseVideo( true );
+        //pause( true );
 	}
 
 	return false;
@@ -195,37 +194,32 @@ void PanoVideo::command(const VEvent &event )
 	// with commands with matching prefixes.
 
     if (event.name == "newVideo") {
-		delete MovieTexture;
-		MovieTexture = new SurfaceTexture( vApp->vrJni() );
-		vInfo("RC_NEW_VIDEO texId" << MovieTexture->textureId);
+        delete m_movieTexture;
+        m_movieTexture = new SurfaceTexture( vApp->vrJni() );
+        vInfo("RC_NEW_VIDEO texId" << m_movieTexture->textureId);
 
         VEventLoop *receiver = static_cast<VEventLoop *>(event.data.toPointer());
-        receiver->post("surfaceTexture", MovieTexture->javaObject);
+        receiver->post("surfaceTexture", m_movieTexture->javaObject);
 
 		// don't draw the screen until we have the new size
-		CurrentVideoWidth = 0;
+        m_videoWidth = 0;
 		return;
 
     } else if (event.name == "completion") {// video complete, return to menu
-		SetMenuState( MENU_BROWSER );
+        setMenuState( MENU_BROWSER );
 		return;
 
     } else if (event.name == "video") {
-        CurrentVideoWidth = event.data.at(0).toInt();
-        CurrentVideoHeight = event.data.at(1).toInt();
+        m_videoWidth = event.data.at(0).toInt();
+        m_videoHeight = event.data.at(1).toInt();
 
-		if ( MenuState != MENU_VIDEO_PLAYING ) // If video is already being played dont change the state to video ready
+        if ( m_menuState != MENU_VIDEO_PLAYING ) // If video is already being played dont change the state to video ready
 		{
-			SetMenuState( MENU_VIDEO_READY );
+            setMenuState( MENU_VIDEO_READY );
 		}
 
 		return;
-    } else if (event.name == "resume") {
-		OnResume();
-		return;	// allow VrLib to handle it, too
-    } else if (event.name == "pause") {
-		OnPause();
-		return;	// allow VrLib to handle it, too
+
     } else if (event.name == "startError") {
 		// FIXME: this needs to do some parameter magic to fix xliff tags
 		VString message;
@@ -235,13 +229,13 @@ void PanoVideo::command(const VEvent &event )
 		BitmapFont & font = vApp->defaultFont();
 		font.WordWrapText( message, 1.0f );
         vApp->text.show(message, 4.5f);
-		SetMenuState( MENU_BROWSER );
+        setMenuState( MENU_BROWSER );
 		return;
 	}
 
 }
 
-VR4Matrixf	PanoVideo::TexmForVideo( const int eye )
+VR4Matrixf	PanoVideo::texmForVideo( const int eye )
 {
     if (m_videoUrl.endsWith("_TB.mp4", false)) {
         // top / bottom stereo panorama
@@ -297,7 +291,7 @@ VR4Matrixf	PanoVideo::TexmForVideo( const int eye )
 	}
 
 	// default to top / bottom stereo
-	if ( CurrentVideoWidth == CurrentVideoHeight )
+    if ( m_videoWidth == m_videoHeight )
 	{	// top / bottom stereo panorama
 		return eye ?
             VR4Matrixf( 1, 0, 0, 0,
@@ -315,9 +309,9 @@ VR4Matrixf	PanoVideo::TexmForVideo( const int eye )
     return VR4Matrixf::Identity();
 }
 
-VR4Matrixf	PanoVideo::TexmForBackground( const int eye )
+VR4Matrixf	PanoVideo::texmForBackground( const int eye )
 {
-	if ( BackgroundWidth == BackgroundHeight )
+    if ( m_backgroundWidth == m_backgroundHeight )
 	{	// top / bottom stereo panorama
 		return eye ?
             VR4Matrixf(
@@ -339,32 +333,32 @@ VR4Matrixf	PanoVideo::TexmForBackground( const int eye )
 
 VR4Matrixf PanoVideo::drawEyeView( const int eye, const float fovDegrees )
 {
-    VR4Matrixf mvp = Scene.MvpForEye( eye, fovDegrees );
+    VR4Matrixf mvp = m_scene.MvpForEye( eye, fovDegrees );
 
-    if ( ( MenuState == MENU_VIDEO_PLAYING ) && ( MovieTexture != NULL ) )
+    if ( ( m_menuState == MENU_VIDEO_PLAYING ) && ( m_movieTexture != NULL ) )
 	{
 		// draw animated movie panorama
 		glActiveTexture( GL_TEXTURE0 );
-		glBindTexture( GL_TEXTURE_EXTERNAL_OES, MovieTexture->textureId );
+        glBindTexture( GL_TEXTURE_EXTERNAL_OES, m_movieTexture->textureId );
 
 		glActiveTexture( GL_TEXTURE1 );
-		glBindTexture( GL_TEXTURE_2D, BackgroundTexId );
+        glBindTexture( GL_TEXTURE_2D, m_backgroundTexId );
 
 		glDisable( GL_DEPTH_TEST );
 		glDisable( GL_CULL_FACE );
 
-		VGlShader & prog = ( BackgroundWidth == BackgroundHeight ) ? FadedPanoramaProgram : PanoramaProgram;
+        VGlShader & prog = ( m_backgroundWidth == m_backgroundHeight ) ? m_fadedPanoramaProgram : m_panoramaProgram;
 
 		glUseProgram( prog.program );
 		glUniform4f( prog.uniformColor, 1.0f, 1.0f, 1.0f, 1.0f );
 
 		// Videos have center as initial focal point - need to rotate 90 degrees to start there
-        const VR4Matrixf view = Scene.ViewMatrixForEye( 0 ) * VR4Matrixf::RotationY( M_PI / 2 );
-        const VR4Matrixf proj = Scene.ProjectionMatrixForEye( 0, fovDegrees );
+        const VR4Matrixf view = m_scene.ViewMatrixForEye( 0 ) * VR4Matrixf::RotationY( M_PI / 2 );
+        const VR4Matrixf proj = m_scene.ProjectionMatrixForEye( 0, fovDegrees );
 
-        glUniformMatrix4fv( prog.uniformTexMatrix, 1, GL_FALSE, TexmForVideo( eye ).Transposed().M[ 0 ] );
+        glUniformMatrix4fv( prog.uniformTexMatrix, 1, GL_FALSE, texmForVideo( eye ).Transposed().M[ 0 ] );
         glUniformMatrix4fv( prog.uniformModelViewProMatrix, 1, GL_FALSE, ( proj * view ).Transposed().M[ 0 ] );
-		Globe.drawElements();
+        m_globe.drawElements();
 
 		glBindTexture( GL_TEXTURE_EXTERNAL_OES, 0 );	// don't leave it bound
 	}
@@ -372,58 +366,40 @@ VR4Matrixf PanoVideo::drawEyeView( const int eye, const float fovDegrees )
 	return mvp;
 }
 
-bool PanoVideo::IsVideoPlaying() const
+void PanoVideo::stop()
 {
-    return true;
-}
-
-void PanoVideo::PauseVideo( bool const force )
-{
-}
-
-void PanoVideo::StopVideo()
-{
-	delete MovieTexture;
-	MovieTexture = NULL;
+    delete m_movieTexture;
+    m_movieTexture = NULL;
     vWarn("DELETING MOVIE TEXTURE StopVideo()");
 }
 
-void PanoVideo::ResumeVideo()
-{
-
-}
-
-void PanoVideo::StartVideo(const VString &url)
+void PanoVideo::onStart(const VString &url)
 {
     m_videoUrl = url;
     if (!m_videoUrl.isEmpty()) {
-		SetMenuState( MENU_VIDEO_LOADING );
+        setMenuState( MENU_VIDEO_LOADING );
         vInfo("StartVideo(" << m_videoUrl << ")");
 	}
 }
 
-void PanoVideo::SeekTo( const int seekPos )
+void PanoVideo::setMenuState( const OvrMenuState state )
 {
-}
-
-void PanoVideo::SetMenuState( const OvrMenuState state )
-{
-    MenuState = state;
-	switch ( MenuState )
+    m_menuState = state;
+    switch ( m_menuState )
 	{
 	case MENU_NONE:
 		break;
     case MENU_BROWSER:
         if (!m_videoUrl.isEmpty()) {
-			StopVideo();
+            stop();
             m_videoUrl.clear();
 		}
 		break;
 	case MENU_VIDEO_LOADING:
-		if ( MovieTexture != NULL )
+        if ( m_movieTexture != NULL )
 		{
-			delete MovieTexture;
-			MovieTexture = NULL;
+            delete m_movieTexture;
+            m_movieTexture = NULL;
         }
 		break;
 	case MENU_VIDEO_READY:
@@ -437,73 +413,72 @@ void PanoVideo::SetMenuState( const OvrMenuState state )
 	}
 }
 
-VR4Matrixf PanoVideo::onNewFrame( const VFrame vrFrame )
+VR4Matrixf PanoVideo::onNewFrame(VFrame vrFrame )
 {
 	// Disallow player foot movement, but we still want the head model
 	// movement for the swipe view.
 	VFrame vrFrameWithoutMove = vrFrame;
 	vrFrameWithoutMove.input.sticks[ 0 ][ 0 ] = 0.0f;
 	vrFrameWithoutMove.input.sticks[ 0 ][ 1 ] = 0.0f;
-    Scene.Frame( vApp->viewSettings(), vrFrameWithoutMove, vApp->kernel()->m_externalVelocity );
+    m_scene.Frame( vApp->viewSettings(), vrFrameWithoutMove, vApp->kernel()->m_externalVelocity );
 
 	// Check for new video frames
 	// latch the latest movie frame to the texture.
-	if ( MovieTexture && CurrentVideoWidth ) {
+    if ( m_movieTexture && m_videoWidth ) {
 		glActiveTexture( GL_TEXTURE0 );
-		MovieTexture->Update();
+        m_movieTexture->Update();
 		glBindTexture( GL_TEXTURE_EXTERNAL_OES, 0 );
-		FrameAvailable = false;
+        m_frameAvailable = false;
 	}
 
-	if ( MenuState != MENU_BROWSER && MenuState != MENU_VIDEO_LOADING )
+    if ( m_menuState != MENU_BROWSER && m_menuState != MENU_VIDEO_LOADING )
 	{
 		if ( vrFrame.input.buttonReleased & ( BUTTON_TOUCH | BUTTON_A ) )
-		{
-			vApp->playSound( "sv_release_active" );
-			if ( IsVideoPlaying() )
+        {
+            /*if ( IsVideoPlaying() )
             {
 				PauseVideo( false );
 			}
 			else
             {
 				ResumeVideo();
-			}
+            }*/
 		}
 	}
 
 	// State transitions
-    if ( ( MenuState == MENU_VIDEO_READY ) &&
-		( MovieTexture != NULL ) )
+    if ( ( m_menuState == MENU_VIDEO_READY ) &&
+        ( m_movieTexture != NULL ) )
 	{
-		SetMenuState( MENU_VIDEO_PLAYING );
+        setMenuState( MENU_VIDEO_PLAYING );
 		vApp->recenterYaw( true );
     }
 
 	// We could disable the srgb convert on the FBO. but this is easier
-	vApp->vrParms().colorFormat = UseSrgb ? VColor::COLOR_8888_sRGB : VColor::COLOR_8888;
+    vApp->vrParms().colorFormat = m_useSrgb ? VColor::COLOR_8888_sRGB : VColor::COLOR_8888;
 
 	// Draw both eyes
-	vApp->drawEyeViewsPostDistorted( Scene.CenterViewMatrix() );
+    vApp->drawEyeViewsPostDistorted( m_scene.CenterViewMatrix() );
 
-	return Scene.CenterViewMatrix();
+    return m_scene.CenterViewMatrix();
 }
 
-void PanoVideo::OnResume()
+void PanoVideo::onResume()
 {
 	vInfo("Oculus360Videos::OnResume");
-	if ( VideoWasPlayingWhenPaused )
+    if ( m_videoWasPlayingWhenPaused )
     {
-		PauseVideo( false );
+        //pause( false );
 	}
 }
 
-void PanoVideo::OnPause()
+void PanoVideo::onPause()
 {
 	vInfo("Oculus360Videos::OnPause");
-	VideoWasPlayingWhenPaused = IsVideoPlaying();
-	if ( VideoWasPlayingWhenPaused )
+    //m_videoWasPlayingWhenPaused = IsVideoPlaying();
+    if ( m_videoWasPlayingWhenPaused )
 	{
-		PauseVideo( false );
+        //pause( false );
 	}
 }
 

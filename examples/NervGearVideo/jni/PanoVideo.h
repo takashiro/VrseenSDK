@@ -24,67 +24,60 @@ public:
     PanoVideo(JNIEnv *jni, jclass activityClass, jobject activityObject);
     ~PanoVideo();
 
-	virtual void		init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI );
-	virtual void		shutdown();
-	virtual void		configureVrMode(VKernel* kernel);
-    virtual VR4Matrixf 	drawEyeView( const int eye, const float fovDegrees );
-    virtual VR4Matrixf 	onNewFrame( VFrame vrFrame );
+    void init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI) override;
+    void shutdown() override;
+    void configureVrMode(VKernel *kernel) override;
+    VR4Matrixf drawEyeView(const int eye, const float fovDegrees) override;
+    VR4Matrixf onNewFrame(VFrame vrFrame) override;
     void command(const VEvent &event) override;
-	virtual bool 		onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType );
+    bool onKeyEvent(int keyCode, const KeyState::eKeyEventType eventType) override;
 
-	void 				StopVideo();
-	void 				PauseVideo( bool const force );
-	void 				ResumeVideo();
-	bool				IsVideoPlaying() const;
+    void stop();
 
-    void 				StartVideo(const VString &url);
-	void				SeekTo( const int seekPos );
+    void onStart(const VString &url);
 
-	void 				CloseSwipeView( const VFrame &vrFrame );
-	void 				OpenSwipeView( const VFrame &vrFrame, bool centerList );
-    VR4Matrixf			TexmForVideo( const int eye );
-    VR4Matrixf			TexmForBackground( const int eye );
+    VR4Matrixf texmForVideo(int eye);
+    VR4Matrixf texmForBackground(int eye);
 
-	void				SetMenuState( const OvrMenuState state );
-	OvrMenuState		GetCurrentState() const				{ return  MenuState; }
+    void setMenuState( const OvrMenuState state);
+    OvrMenuState currentState() const { return m_menuState; }
 
-	void				SetFrameAvailable( bool const a ) { FrameAvailable = a; }
+    void setFrameAvailable(bool available) { m_frameAvailable = available; }
 
     const VPath &videoUrl() { return m_videoUrl; }
 
+    void onResume() override;
+    void onPause() override;
+
 private:
     // shared vars
-	VGlGeometry			Globe;
-    OvrSceneView		Scene;
-	bool				VideoWasPlayingWhenPaused;	// state of video when main activity was paused
+    VGlGeometry m_globe;
+    OvrSceneView m_scene;
+    bool m_videoWasPlayingWhenPaused;	// state of video when main activity was paused
 
-	// panorama vars
-	GLuint				BackgroundTexId;
-	VGlShader			PanoramaProgram;
-	VGlShader			FadedPanoramaProgram;
-	VGlShader			SingleColorTextureProgram;
+    // panorama vars
+    VGlShader m_panoramaProgram;
+    VGlShader m_fadedPanoramaProgram;
+    VGlShader m_singleColorTextureProgram;
 
     VPath m_videoUrl;
-    OvrMenuState		MenuState;
+    OvrMenuState m_menuState;
 
-	bool				UseSrgb;
+    bool m_useSrgb;
 
     // video vars
-	SurfaceTexture	* 	MovieTexture;
+    SurfaceTexture	*m_movieTexture;
 
 	// Set when MediaPlayer knows what the stream size is.
 	// current is the aspect size, texture may be twice as wide or high for 3D content.
-	int					CurrentVideoWidth;	// set to 0 when a new movie is started, don't render until non-0
-	int					CurrentVideoHeight;
+    int m_videoWidth;	// set to 0 when a new movie is started, don't render until non-0
+    int m_videoHeight;
 
-	int					BackgroundWidth;
-	int					BackgroundHeight;
+    GLuint m_backgroundTexId;
+    int m_backgroundWidth;
+    int m_backgroundHeight;
 
-	bool				FrameAvailable;
-
-private:
-	void				OnResume();
-	void				OnPause();
+    bool m_frameAvailable;
 };
 
 NV_NAMESPACE_END
