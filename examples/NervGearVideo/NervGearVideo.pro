@@ -4,15 +4,8 @@ CONFIG -= app_bundle
 CONFIG -= qt
 TARGET = nervgearvideo
 
-SOURCES += \
-    jni/Oculus360Videos.cpp \
-    jni/OVR_TurboJpeg.cpp
-
-HEADERS += \
-    jni/Oculus360Videos.h \
-    jni/OVR_TurboJpeg.h
-
-LIBS += -L"$$PWD/jni/" -ljpeg
+SOURCES += jni/Oculus360Videos.cpp
+HEADERS += jni/Oculus360Videos.h
 
 ANDROID_APP_DIR = $$PWD
 include(../../source/makeApk.pri)
