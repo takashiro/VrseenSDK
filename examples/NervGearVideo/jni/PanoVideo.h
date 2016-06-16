@@ -3,7 +3,6 @@
 #include <VMainActivity.h>
 #include <VPath.h>
 
-#include "Fader.h"
 #include "ModelView.h"
 
 NV_NAMESPACE_BEGIN
@@ -77,7 +76,6 @@ private:
 
     VPath m_videoUrl;
 	OvrMenuState		MenuState;
-	SineFader			Fader;
 	const float			FadeOutRate;
 	const float			VideoMenuVisibleTime;
 	float				CurrentFadeRate;

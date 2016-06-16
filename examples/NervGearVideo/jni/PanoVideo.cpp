@@ -9,7 +9,6 @@
 #include <VFile.h>
 #include <VResource.h>
 #include <VEyeItem.h>
-#include <Fader.h>
 #include <VrLocale.h>
 #include <VTimer.h>
 #include <VColor.h>
@@ -92,8 +91,7 @@ PanoVideo::PanoVideo(JNIEnv *jni, jclass activityClass, jobject activityObject)
 	, VideoWasPlayingWhenPaused( false )
 	, BackgroundTexId( 0 )
     , MenuState( MENU_NONE )
-	, Fader( 1.0f )
-	, FadeOutRate( 1.0f / 0.5f )
+    , FadeOutRate( 1.0f / 0.5f )
 	, VideoMenuVisibleTime( 5.0f )
 	, CurrentFadeRate( FadeOutRate )
 	, CurrentFadeLevel( 1.0f )
@@ -429,9 +427,7 @@ void PanoVideo::SetMenuState( const OvrMenuState state )
 	{
 	case MENU_NONE:
 		break;
-	case MENU_BROWSER:
-		Fader.forceFinish();
-        Fader.reset();
+    case MENU_BROWSER:
         if (!m_videoUrl.isEmpty()) {
 			StopVideo();
             m_videoUrl.clear();
@@ -443,12 +439,10 @@ void PanoVideo::SetMenuState( const OvrMenuState state )
 			delete MovieTexture;
 			MovieTexture = NULL;
         }
-		Fader.startFadeOut();
 		break;
 	case MENU_VIDEO_READY:
 		break;
 	case MENU_VIDEO_PLAYING:
-		Fader.reset();
 		VideoMenuTimeLeft = VideoMenuVisibleTime;
 		break;
 	default:
@@ -493,18 +487,12 @@ VR4Matrixf PanoVideo::onNewFrame( const VFrame vrFrame )
 	}
 
 	// State transitions
-	if ( Fader.fadeState() != Fader::FADE_NONE )
-	{
-		Fader.update( CurrentFadeRate, vrFrame.deltaSeconds );
-	}
-	else if ( ( MenuState == MENU_VIDEO_READY ) &&
-		( Fader.fadeAlpha() == 0.0f ) &&
+    if ( ( MenuState == MENU_VIDEO_READY ) &&
 		( MovieTexture != NULL ) )
 	{
 		SetMenuState( MENU_VIDEO_PLAYING );
 		vApp->recenterYaw( true );
-	}
-	CurrentFadeLevel = Fader.finalAlpha();
+    }
 
 	// We could disable the srgb convert on the FBO. but this is easier
 	vApp->vrParms().colorFormat = UseSrgb ? VColor::COLOR_8888_sRGB : VColor::COLOR_8888;
