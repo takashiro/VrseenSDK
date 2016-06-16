@@ -35,8 +35,6 @@
 #include "VTimer.h"
 #include "VColor.h"
 
-static bool	RetailMode = false;
-
 static const float	FadeOutTime = 0.25f;
 static const float	FadeOverTime = 1.0f;
 
@@ -57,48 +55,37 @@ void Java_com_vrseen_nervgear_video_MainActivity_nativeSetAppInterface( JNIEnv *
     (new Oculus360Videos(jni, clazz, activity))->onCreate(fromPackageName, commandString, uriString );
 }
 
-void Java_com_vrseen_nervgear_video_MainActivity_nativeFrameAvailable(JNIEnv *, jclass)
+void Java_com_vrseen_nervgear_video_PanoVideo_onFrameAvailable(JNIEnv *, jclass)
 {
     Oculus360Videos * panoVids = ( Oculus360Videos * ) vApp->appInterface();
 	panoVids->SetFrameAvailable( true );
 }
 
-jobject Java_com_vrseen_nervgear_video_MainActivity_nativePrepareNewVideo(JNIEnv *, jclass)
+jobject Java_com_vrseen_nervgear_video_PanoVideo_createMovieTexture(JNIEnv *, jclass)
 {
-
 	// set up a message queue to get the return message
 	// TODO: make a class that encapsulates this work
-	VEventLoop	result( 1 );
+    VEventLoop result(1);
     vApp->eventLoop().post("newVideo", &result);
-
 	result.wait();
     VEvent event = result.next();
-	jobject	texobj = nullptr;
     if (event.name == "surfaceTexture") {
-        texobj = static_cast<jobject>(event.data.toPointer());
+        return static_cast<jobject>(event.data.toPointer());
     }
-
-	return texobj;
+    return NULL;
 }
 
-void Java_com_vrseen_nervgear_video_MainActivity_nativeSetVideoSize(JNIEnv *, jclass, int width, int height)
+void Java_com_vrseen_nervgear_video_PanoVideo_onVideoSizeChanged(JNIEnv *, jclass, jint width, jint height)
 {
-	vInfo("nativeSetVideoSizes: width=" << width << "height=" << height);
     VVariantArray args;
     args << width << height;
     vApp->eventLoop().post("video", std::move(args));
 }
 
-void Java_com_vrseen_nervgear_video_MainActivity_nativeVideoCompletion(JNIEnv *, jclass)
+void Java_com_vrseen_nervgear_video_PanoVideo_onCompletion(JNIEnv *, jclass)
 {
 	vInfo("nativeVideoCompletion");
     vApp->eventLoop().post( "completion" );
-}
-
-void Java_com_vrseen_nervgear_video_MainActivity_nativeVideoStartError(JNIEnv *, jclass)
-{
-	vInfo("nativeVideoStartError");
-    vApp->eventLoop().post( "startError" );
 }
 
 } // extern "C"
@@ -133,10 +120,7 @@ Oculus360Videos::~Oculus360Videos()
 
 void Oculus360Videos::init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI)
 {
-
 	vInfo("--------------- Oculus360Videos OneTimeInit ---------------");
-
-    RetailMode = VFile::Exists( "/sdcard/RetailMedia" );
 
 	vApp->vrParms().colorFormat = VColor::COLOR_8888;
     vApp->vrParms().commonParameterDepth = VEyeItem::CommonParameter::DepthFormat_16;
@@ -183,15 +167,14 @@ void Oculus360Videos::shutdown()
 
     glDeleteTextures(1, &BackgroundTexId);
 
-	if ( MovieTexture != NULL )
-	{
+    if (MovieTexture != NULL) {
 		delete MovieTexture;
 		MovieTexture = NULL;
 	}
 
-	PanoramaProgram.destroy();
-	 FadedPanoramaProgram.destroy();
-	 SingleColorTextureProgram.destroy();
+    PanoramaProgram.destroy();
+    FadedPanoramaProgram.destroy();
+    SingleColorTextureProgram.destroy();
 }
 
 void Oculus360Videos::configureVrMode(VKernel* kernel)
@@ -404,11 +387,6 @@ VR4Matrixf Oculus360Videos::drawEyeView( const int eye, const float fovDegrees )
 	}
 
 	return mvp;
-}
-
-float Fade( double now, double start, double length )
-{
-	return NervGear::VAlgorithm::Clamp( ( ( now - start ) / length ), 0.0, 1.0 );
 }
 
 bool Oculus360Videos::IsVideoPlaying() const
