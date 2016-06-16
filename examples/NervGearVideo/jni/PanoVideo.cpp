@@ -24,7 +24,7 @@
 #include "GazeCursor.h"
 #include "App.h"
 #include "SwipeView.h"
-#include "Oculus360Videos.h"
+#include "PanoVideo.h"
 
 #include <VEyeItem.h>
 
