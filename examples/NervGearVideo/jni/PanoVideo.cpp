@@ -87,15 +87,9 @@ void Java_com_vrseen_nervgear_video_PanoVideo_onCompletion(JNIEnv *, jclass)
 
 PanoVideo::PanoVideo(JNIEnv *jni, jclass activityClass, jobject activityObject)
     : VMainActivity(jni, activityClass, activityObject)
-    , MainActivityClass( GlobalActivityClass )
 	, VideoWasPlayingWhenPaused( false )
 	, BackgroundTexId( 0 )
     , MenuState( MENU_NONE )
-    , FadeOutRate( 1.0f / 0.5f )
-	, VideoMenuVisibleTime( 5.0f )
-	, CurrentFadeRate( FadeOutRate )
-	, CurrentFadeLevel( 1.0f )
-	, VideoMenuTimeLeft( 0.0f )
 	, UseSrgb( false )
 	, MovieTexture( NULL )
 	, CurrentVideoWidth( 0 )
@@ -380,15 +374,7 @@ VR4Matrixf PanoVideo::drawEyeView( const int eye, const float fovDegrees )
 
 bool PanoVideo::IsVideoPlaying() const
 {
-	jmethodID methodId = vApp->vrJni()->GetMethodID( MainActivityClass, "isPlaying", "()Z" );
-	if ( !methodId )
-	{
-		vInfo("Couldn't find isPlaying methodID");
-		return false;
-	}
-
-	bool isPlaying = vApp->vrJni()->CallBooleanMethod( vApp->javaObject(), methodId );
-	return isPlaying;
+    return true;
 }
 
 void PanoVideo::PauseVideo( bool const force )
@@ -442,8 +428,7 @@ void PanoVideo::SetMenuState( const OvrMenuState state )
 		break;
 	case MENU_VIDEO_READY:
 		break;
-	case MENU_VIDEO_PLAYING:
-		VideoMenuTimeLeft = VideoMenuVisibleTime;
+    case MENU_VIDEO_PLAYING:
 		break;
 	default:
 		vInfo("Oculus360Videos::SetMenuState unknown state:" << static_cast< int >( state ));

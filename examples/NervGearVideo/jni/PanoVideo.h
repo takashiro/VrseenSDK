@@ -7,14 +7,6 @@
 
 NV_NAMESPACE_BEGIN
 
-enum Action
-{
-	ACT_NONE,
-	ACT_LAUNCHER,
-	ACT_STILLS,
-	ACT_VIDEOS,
-};
-
 class PanoVideo : public NervGear::VMainActivity
 {
 public:
@@ -59,11 +51,9 @@ public:
 	void				SetFrameAvailable( bool const a ) { FrameAvailable = a; }
 
     const VPath &videoUrl() { return m_videoUrl; }
-	float				GetFadeLevel()		{ return CurrentFadeLevel; }
 
 private:
-	// shared vars
-	jclass				MainActivityClass;	// need to look up from main thread
+    // shared vars
 	VGlGeometry			Globe;
     OvrSceneView		Scene;
 	bool				VideoWasPlayingWhenPaused;	// state of video when main activity was paused
@@ -75,12 +65,7 @@ private:
 	VGlShader			SingleColorTextureProgram;
 
     VPath m_videoUrl;
-	OvrMenuState		MenuState;
-	const float			FadeOutRate;
-	const float			VideoMenuVisibleTime;
-	float				CurrentFadeRate;
-	float				CurrentFadeLevel;
-	float				VideoMenuTimeLeft;
+    OvrMenuState		MenuState;
 
 	bool				UseSrgb;
 
