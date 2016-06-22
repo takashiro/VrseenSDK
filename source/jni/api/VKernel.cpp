@@ -29,7 +29,7 @@ static jobject  ActivityObject = NULL;
  */
 
 // This is public for any user.
-JavaVM	* VrLibJavaVM;
+JavaVM *VrLibJavaVM = NULL;
 
 // This needs to be looked up by a thread called directly from java,
 // not a native pthread.
