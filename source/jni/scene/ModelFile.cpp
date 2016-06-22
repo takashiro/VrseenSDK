@@ -14,7 +14,7 @@
 
 #include <sstream>
 
-#include "unzip.h"
+#include "3rdparty/minizip/unzip.h"
 #include "VTexture.h"
 #include "ModelRender.h"
 
