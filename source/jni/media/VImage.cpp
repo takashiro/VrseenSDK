@@ -2,6 +2,7 @@
 
 #include <math.h>
 #include <3rdparty/stb/stb_image.h>
+#include <3rdparty/stb/stb_image_write.h>
 
 NV_NAMESPACE_BEGIN
 
@@ -10,6 +11,7 @@ struct VImage::Private
     uchar *data;
     int width;
     int height;
+    int compress;
 
     Private()
         : data(nullptr)
@@ -27,14 +29,12 @@ struct VImage::Private
 
     void load(const VPath &path)
     {
-        int cmp;
-        data = stbi_load(path.toUtf8().data(), &width, &height, &cmp, 4);
+        data = stbi_load(path.toUtf8().data(), &width, &height, &compress, 4);
     }
 
     void load(const VByteArray &encoded)
     {
-        int cmp;
-        data = stbi_load_from_memory(reinterpret_cast<const uchar *>(encoded.data()), encoded.size(), &width, &height, &cmp, 4);
+        data = stbi_load_from_memory(reinterpret_cast<const uchar *>(encoded.data()), encoded.size(), &width, &height, &compress, 4);
     }
 };
 
@@ -93,6 +93,23 @@ bool VImage::load(const VByteArray &data)
 {
     d->load(data);
     return isValid();
+}
+
+bool VImage::write(const VPath &path) const
+{
+    if (path.endsWith(".png")) {
+        stbi_write_png(path.toUtf8().data(), d->width, d->height, d->compress, d->data, 0);
+        return true;
+    }
+    if (path.endsWith(".bmp")) {
+        stbi_write_bmp(path.toUtf8().data(), d->width, d->height, d->compress, d->data);
+        return true;
+    }
+    if (path.endsWith(".tga")) {
+        stbi_write_tga(path.toUtf8().data(), d->width, d->height, d->compress, d->data);
+        return true;
+    }
+    return false;
 }
 
 bool VImage::isValid() const

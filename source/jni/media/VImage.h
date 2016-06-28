@@ -28,6 +28,8 @@ public:
     bool load(const VPath &path);
     bool load(const VByteArray &data);
 
+    bool write(const VPath &path) const;
+
     bool isValid() const;
 
     int width() const;
