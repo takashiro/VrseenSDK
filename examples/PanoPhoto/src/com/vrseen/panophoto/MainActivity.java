@@ -31,8 +31,7 @@ public class MainActivity extends VrActivity {
 
 	/** Load jni .so on initialization */
 	static {
-		Log.d( TAG, "LoadLibrary" );
-		System.loadLibrary( "nervgearphoto" );
+		System.loadLibrary("panophoto");
 	}
 
 	public static native void nativeSetAppInterface( VrActivity act, String fromPackageNameString, String commandString, String uriString );

@@ -6,7 +6,7 @@ include ../../source/import_vrlib.mk	# import VRLib for this module.  Do NOT cal
 
 include ../../source/cflags.mk
 
-LOCAL_MODULE    := nervgearvideo		# generate nervgearvideo.so
+LOCAL_MODULE    := panovideo
 LOCAL_SRC_FILES  := PanoVideo.cpp
 
 include $(BUILD_SHARED_LIBRARY)			# start building based on everything since CLEAR_VARS

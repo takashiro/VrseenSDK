@@ -11,7 +11,7 @@ public class MainActivity extends VrActivity {
 
 	PanoVideo video = null;
 	static {
-		System.loadLibrary("nervgearvideo");
+		System.loadLibrary("panovideo");
 	}
 
 	protected void onCreate(Bundle savedInstanceState) {

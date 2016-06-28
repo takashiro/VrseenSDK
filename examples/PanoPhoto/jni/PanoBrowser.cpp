@@ -20,7 +20,6 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "BitmapFont.h"
 #include "gui/GuiSys.h"
 #include "PhotosMetaData.h"
-#include "OVR_TurboJpeg.h"
 #include "linux/stat.h"
 
 #include <unistd.h>
@@ -68,9 +67,29 @@ unsigned char * CubeMapVista( const VString &nzName, float const ratio, int & wi
     VString nxName( nzName );
     nxName[len - 5] = 'x';
 
-    nzData = TurboJpegLoadFromFile( nzName.toUtf8().data(), &faceWidth, &faceHeight );
-    pxData = TurboJpegLoadFromFile( pxName.toUtf8().data(), &faceWidth2, &faceHeight2 );
-    nxData = TurboJpegLoadFromFile( nxName.toUtf8().data(), &faceWidth3, &faceHeight3 );
+    {
+        VImage image(nzName);
+        faceWidth = image.width();
+        faceHeight = image.height();
+        nzData = (uchar *) malloc(image.length());
+        memcpy(nzData, image.data(), image.length());
+    }
+
+    {
+        VImage image(pxName);
+        faceWidth2 = image.width();
+        faceHeight2 = image.height();
+        pxData = (uchar *) malloc(image.length());
+        memcpy(pxData, image.data(), image.length());
+    }
+
+    {
+        VImage image(nxName);
+        faceWidth3 = image.width();
+        faceHeight3 = image.height();
+        nxData = (uchar *) malloc(image.length());
+        memcpy(nxData, image.data(), image.length());
+    }
 
 	if ( nzData && pxData && nxData && ( faceWidth & 1 ) == 0 && faceWidth == faceHeight
 		&& faceWidth2 == faceWidth && faceHeight2 == faceHeight
@@ -369,7 +388,11 @@ unsigned char * PanoBrowser::createAndCacheThumbnail(const VString &soureFile, c
     if (soureFile.endsWith("_nz.jpg", false)) {
 		data = CubeMapVista( soureFile, 1.6f, width, height );
     } else {
-        data = TurboJpegLoadFromFile(soureFile.toUtf8().data(), &width, &height);
+        VImage image(soureFile);
+        width = image.width();
+        height = image.height();
+        data = (uchar *) malloc(image.length());
+        memcpy(data, image.data(), image.length());
 	}
 
 	if ( !data )
@@ -416,7 +439,8 @@ unsigned char * PanoBrowser::createAndCacheThumbnail(const VString &soureFile, c
     VDir cacheDir(VPath(cacheDestinationFile).dirPath());
     cacheDir.makeDir();
     if (cacheDir.isWritable()) {
-        WriteJpeg(cacheDestinationFile.toUtf8().data(), outBuffer, outW, outH );
+        VImage image(outBuffer, outW, outH);
+        image.write(cacheDestinationFile);
 	}
 
 	return outBuffer;
@@ -424,7 +448,12 @@ unsigned char * PanoBrowser::createAndCacheThumbnail(const VString &soureFile, c
 
 uchar *PanoBrowser::loadThumbnail(const VString &fileName, int & width, int & height)
 {
-    return TurboJpegLoadFromFile(fileName.toUtf8().data(), &width, &height);
+    VImage image(fileName);
+    width = image.width();
+    height = image.height();
+    uchar *data = (uchar *) malloc(image.length());
+    memcpy(data, image.data(), image.length());
+    return data;
 }
 
 VString PanoBrowser::thumbName( const VString & s )

@@ -16,12 +16,12 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "VThread.h"
 #include "FileLoader.h"
 #include "Oculus360Photos.h"
-#include "turbojpeg.h"
-#include "OVR_TurboJpeg.h"
+
 #include <fstream>
 
-#include <VZipFile.h>
+#include <VImage.h>
 #include <VLog.h>
+#include <VZipFile.h>
 
 namespace NervGear {
 
@@ -172,13 +172,14 @@ void * Queue3Thread( void * v )
 			unsigned * b1 = b[buffCount];
 			int b1len = blen[buffCount];
 
-#if !defined( USE_TURBO_JPEG )
-			int comp;
-			data[buffCount] = stbi_load_from_memory( (const stbi_uc*)b1, b1len, &x, &y, &comp, 4 );
-#else
-			data[buffCount] = TurboJpegLoadFromMemory( (unsigned char*)b1, b1len, &x, &y );
-#endif
-			if ( buffCount == 0 )
+
+            VImage image(VByteArray(reinterpret_cast<const char *>(b1), b1len));
+            x = image.width();
+            y = image.height();
+            data[buffCount] = (uchar *) malloc(image.length());
+            memcpy(data[buffCount], image.data(), image.length());
+
+            if ( buffCount == 0 )
 			{
 				resolutionX = x;
 				resolutionY = y;

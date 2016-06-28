@@ -1,4 +1,5 @@
 TEMPLATE = lib
+TARGET = vrseen
 CONFIG += console
 CONFIG -= app_bundle
 CONFIG -= qt

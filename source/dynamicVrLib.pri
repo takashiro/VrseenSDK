@@ -28,7 +28,7 @@ LIBS += -lz
 # audio
 LIBS += -lOpenSLES
 
-LIBS += -L"$$PWD/libs/" -lNervGear
-ANDROID_EXTRA_LIBS += $$PWD/libs/libNervGear.so
+LIBS += -L"$$PWD/libs/" -lvrseen
+ANDROID_EXTRA_LIBS += $$PWD/libs/libvrseen.so
 
 include(cflags.pri)
