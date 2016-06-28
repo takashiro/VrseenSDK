@@ -52,7 +52,7 @@
 
 NV_NAMESPACE_BEGIN
 
-static const char * activityClassName = "com/vrseen/nervgear/VrActivity";
+static const char * activityClassName = "com/vrseen/VrActivity";
 
 // some parameters from the intent can be empty strings, which cannot be represented as empty strings for sscanf
 // so we encode them as EMPTY_INTENT_STR.
@@ -1288,7 +1288,7 @@ struct App::Private
 
             delete self->dialog.dialogTexture;
             self->dialog.dialogTexture = nullptr;
-            
+
             delete guiSys;
             guiSys = nullptr;
 

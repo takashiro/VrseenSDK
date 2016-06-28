@@ -34,7 +34,7 @@ const char* FolderName[VStandardPath::FolderTypeCount] =
 VStandardPath::VStandardPath( JNIEnv * jni, jobject activityObj )
     : d(new Private)
 {
-    d->vrLibClass = JniUtils::GetGlobalClassReference( jni, "com/vrseen/nervgear/VrLib" );
+    d->vrLibClass = JniUtils::GetGlobalClassReference( jni, "com/vrseen/VrLib" );
 
     // Internal memory
     jmethodID internalRootDirID = JniUtils::GetStaticMethodID( jni, d->vrLibClass, "getInternalStorageRootDir", "()Ljava/lang/String;" );

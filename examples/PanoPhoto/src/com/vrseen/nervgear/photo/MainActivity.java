@@ -21,8 +21,8 @@ import java.net.URL;
 import android.os.Bundle;
 import android.util.Log;
 import android.content.Intent;
-import com.vrseen.nervgear.VrActivity;
-import com.vrseen.nervgear.VrLib;
+import com.vrseen.VrActivity;
+import com.vrseen.VrLib;
 
 public class MainActivity extends VrActivity {
 

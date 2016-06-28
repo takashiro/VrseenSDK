@@ -126,7 +126,7 @@ void EyeRectLandscape( const VDevice *device,int eye,int &x, int &y, int &width,
     y = scissorY;
     width = scissorWidth;
     height = scissorHeight;
-    return;    
+    return;
 }
 
 void EyeRect( const VDevice *device,const int eye,
@@ -142,7 +142,7 @@ void EyeRect( const VDevice *device,const int eye,
 }
 
 VR4Matrixf CalculateTimeWarpMatrix2( const VQuatf &inFrom, const VQuatf &inTo )
-{    
+{
     VQuatf from = inFrom;
     VQuatf to = inTo;
 
@@ -193,7 +193,7 @@ static bool IsContextPriorityExtensionPresent()
 extern "C"
 {
 
-    void Java_com_vrseen_nervgear_VrLib_nativeVsync( JNIEnv *jni, jclass clazz, jlong frameTimeNanos )
+    void Java_com_vrseen_VrLib_nativeVsync( JNIEnv *jni, jclass clazz, jlong frameTimeNanos )
     {
 
         VsyncState	state = UpdatedVsyncState.state();

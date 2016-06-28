@@ -39,7 +39,7 @@ typedef LocklessVar< int, -1> 						volume_t;
 NervGear::VLockless< volume_t >					CurrentVolume;
 extern "C"
 {
-    JNIEXPORT void Java_com_vrseen_nervgear_VrLib_nativeVolumeEvent(JNIEnv *jni, jclass clazz, jint volume)
+    JNIEXPORT void Java_com_vrseen_VrLib_nativeVolumeEvent(JNIEnv *jni, jclass clazz, jint volume)
     {
         //vInfo("nativeVolumeEvent(" << volume << ")");
 

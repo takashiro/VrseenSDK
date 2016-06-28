@@ -315,12 +315,12 @@ NV_USING_NAMESPACE
 extern "C"
 {
 
-void Java_com_vrseen_nervgear_VrActivity_nativeSurfaceChanged(JNIEnv *jni, jclass, jobject surface)
+void Java_com_vrseen_VrActivity_nativeSurfaceChanged(JNIEnv *jni, jclass, jobject surface)
 {
     vApp->eventLoop().send("surfaceChanged", surface ? ANativeWindow_fromSurface(jni, surface) : nullptr);
 }
 
-void Java_com_vrseen_nervgear_VrActivity_nativeSurfaceDestroyed(JNIEnv *jni, jclass clazz)
+void Java_com_vrseen_VrActivity_nativeSurfaceDestroyed(JNIEnv *jni, jclass clazz)
 {
     if (vApp == 0)
     {
@@ -332,7 +332,7 @@ void Java_com_vrseen_nervgear_VrActivity_nativeSurfaceDestroyed(JNIEnv *jni, jcl
     vApp->eventLoop().send("surfaceDestroyed");
 }
 
-void Java_com_vrseen_nervgear_VrActivity_nativePopup(JNIEnv *, jclass,
+void Java_com_vrseen_VrActivity_nativePopup(JNIEnv *, jclass,
         jint width, jint height, jfloat seconds)
 {
     VVariantArray args;
@@ -340,23 +340,23 @@ void Java_com_vrseen_nervgear_VrActivity_nativePopup(JNIEnv *, jclass,
     vApp->eventLoop().post("popup", args);
 }
 
-jobject Java_com_vrseen_nervgear_VrActivity_nativeGetPopupSurfaceTexture(JNIEnv *, jclass)
+jobject Java_com_vrseen_VrActivity_nativeGetPopupSurfaceTexture(JNIEnv *, jclass)
 {
     return vApp->dialogTexture()->javaObject;
 }
 
-void Java_com_vrseen_nervgear_VrActivity_nativePause(JNIEnv *jni, jclass clazz,
+void Java_com_vrseen_VrActivity_nativePause(JNIEnv *jni, jclass clazz,
         jlong appPtr)
 {
     vApp->eventLoop().send("pause");
 }
 
-void Java_com_vrseen_nervgear_VrActivity_nativeResume(JNIEnv *jni, jclass clazz)
+void Java_com_vrseen_VrActivity_nativeResume(JNIEnv *jni, jclass clazz)
 {
     vApp->eventLoop().send("resume");
 }
 
-void Java_com_vrseen_nervgear_VrActivity_nativeDestroy(JNIEnv *, jclass)
+void Java_com_vrseen_VrActivity_nativeDestroy(JNIEnv *, jclass)
 {
     vApp->quit();
     delete vApp;
@@ -366,7 +366,7 @@ void Java_com_vrseen_nervgear_VrActivity_nativeDestroy(JNIEnv *, jclass)
     exit(0);
 }
 
-void Java_com_vrseen_nervgear_VrActivity_nativeJoypadAxis(JNIEnv *jni, jclass clazz,
+void Java_com_vrseen_VrActivity_nativeJoypadAxis(JNIEnv *jni, jclass clazz,
         jfloat lx, jfloat ly, jfloat rx, jfloat ry)
 {
     // Suspend input until OneTimeInit() has finished to avoid overflowing the message queue on long loads.
@@ -377,7 +377,7 @@ void Java_com_vrseen_nervgear_VrActivity_nativeJoypadAxis(JNIEnv *jni, jclass cl
     }
 }
 
-void Java_com_vrseen_nervgear_VrActivity_nativeTouch(JNIEnv *, jclass,
+void Java_com_vrseen_VrActivity_nativeTouch(JNIEnv *, jclass,
         jint action, jfloat x, jfloat y)
 {
     // Suspend input until OneTimeInit() has finished to avoid overflowing the message queue on long loads.
@@ -388,7 +388,7 @@ void Java_com_vrseen_nervgear_VrActivity_nativeTouch(JNIEnv *, jclass,
     }
 }
 
-void Java_com_vrseen_nervgear_VrActivity_nativeKeyEvent(JNIEnv *jni, jclass clazz,
+void Java_com_vrseen_VrActivity_nativeKeyEvent(JNIEnv *jni, jclass clazz,
         jint key, jboolean down, jint repeatCount)
 {
     // Suspend input until OneTimeInit() has finished to avoid overflowing the message queue on long loads.
@@ -399,7 +399,7 @@ void Java_com_vrseen_nervgear_VrActivity_nativeKeyEvent(JNIEnv *jni, jclass claz
     }
 }
 
-void Java_com_vrseen_nervgear_VrActivity_nativeNewIntent(JNIEnv *jni, jclass clazz,
+void Java_com_vrseen_VrActivity_nativeNewIntent(JNIEnv *jni, jclass clazz,
         jstring fromPackageName, jstring command, jstring uriString)
 {
     VString packageName = JniUtils::Convert(jni, fromPackageName);

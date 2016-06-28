@@ -1,4 +1,4 @@
-package com.vrseen.nervgear;
+package com.vrseen;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;

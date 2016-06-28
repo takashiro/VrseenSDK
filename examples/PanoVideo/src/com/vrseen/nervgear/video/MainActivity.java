@@ -5,7 +5,7 @@ import android.os.Environment;
 import android.content.Intent;
 import android.net.Uri;
 
-import com.vrseen.nervgear.VrActivity;
+import com.vrseen.VrActivity;
 
 public class MainActivity extends VrActivity {
 

@@ -1,4 +1,4 @@
-package com.vrseen.nervgear;
+package com.vrseen;
 
 import java.io.IOException;
 import java.util.ArrayList;

@@ -52,10 +52,10 @@ extern "C"
 {
 // The JNIEXPORT macro prevents the functions from ever being stripped out of the library.
 
-void Java_com_vrseen_nervgear_VrLib_nativeVsync( JNIEnv *jni, jclass clazz, jlong frameTimeNanos );
-void Java_com_vrseen_nervgear_VrLib_nativeVolumeEvent(JNIEnv *jni, jclass clazz, jint volume);
+void Java_com_vrseen_VrLib_nativeVsync( JNIEnv *jni, jclass clazz, jlong frameTimeNanos );
+void Java_com_vrseen_VrLib_nativeVolumeEvent(JNIEnv *jni, jclass clazz, jint volume);
 
-JNIEXPORT void Java_com_vrseen_nervgear_VrLib_nativeHeadsetEvent(JNIEnv *jni, jclass clazz, jint state)
+JNIEXPORT void Java_com_vrseen_VrLib_nativeHeadsetEvent(JNIEnv *jni, jclass clazz, jint state)
 {
     vInfo("nativeHeadsetEvent(" << state << ")");
     HeadsetPluggedState.setState( ( state == 1 ) );
@@ -88,7 +88,7 @@ void ovr_OnLoad(JavaVM * JavaVm_, JNIEnv *jni)
 
     VrLibJavaVM = JavaVm_;
 
-    VrLibClass = JniUtils::GetGlobalClassReference( jni, "com/vrseen/nervgear/VrLib" );
+    VrLibClass = JniUtils::GetGlobalClassReference( jni, "com/vrseen/VrLib" );
 
     // Get the BuildVersion SDK
     jclass versionClass = jni->FindClass( "android/os/Build$VERSION" );
@@ -112,9 +112,9 @@ void ovr_OnLoad(JavaVM * JavaVm_, JNIEnv *jni)
         JNINativeMethod	Jnim;
     } gMethods[] =
             {
-                    { VrLibClass, 				{ "nativeVolumeEvent", "(I)V",(void*)Java_com_vrseen_nervgear_VrLib_nativeVolumeEvent } },
-                    { VrLibClass, 				{ "nativeHeadsetEvent", "(I)V",(void*)Java_com_vrseen_nervgear_VrLib_nativeHeadsetEvent } },
-                    { VrLibClass, 				{ "nativeVsync", "(J)V",(void*)Java_com_vrseen_nervgear_VrLib_nativeVsync } },
+                    { VrLibClass, 				{ "nativeVolumeEvent", "(I)V",(void*)Java_com_vrseen_VrLib_nativeVolumeEvent } },
+                    { VrLibClass, 				{ "nativeHeadsetEvent", "(I)V",(void*)Java_com_vrseen_VrLib_nativeHeadsetEvent } },
+                    { VrLibClass, 				{ "nativeVsync", "(J)V",(void*)Java_com_vrseen_VrLib_nativeVsync } },
             };
     const int count = sizeof( gMethods ) / sizeof( gMethods[0] );
 
