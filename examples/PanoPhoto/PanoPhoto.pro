@@ -3,7 +3,7 @@ CONFIG += console
 CONFIG -= app_bundle
 QT -= core
 QT -= gui
-TARGET = panohoto
+TARGET = panophoto
 
 SOURCES += \
     jni/Oculus360Photos.cpp \
