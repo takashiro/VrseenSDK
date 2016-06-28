@@ -162,7 +162,7 @@ void Oculus360Photos::init(const VString &fromPackage, const VString &launchInte
 
 #ifdef ENABLE_MENU
     // meta file used by OvrMetaData
-    const char * relativePath = "Oculus/360Photos/";
+    const char * relativePath = "VRSeen/SDK/360Photos/";
     const char * metaFile = "meta.json";
 
     // Get package name

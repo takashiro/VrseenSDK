@@ -21,7 +21,7 @@ public class MainActivity extends VrActivity {
 		Uri uri = intent.getData();
 		String videoPath = uri != null ? uri.toString() : null;
 		if (videoPath == null || videoPath.isEmpty()) {
-			videoPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Oculus/360Videos/[Samsung] 360 video demo.mp4";
+			videoPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/VRSeen/SDK/360Videos/[Samsung] 360 video demo.mp4";
 		}
 
 		video = new PanoVideo(this);
