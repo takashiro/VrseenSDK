@@ -23,7 +23,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include <VLog.h>
 #include <VZipFile.h>
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 VEventLoop		Queue1( 4000 );	// big enough for all the thumbnails that might be needed
 VEventLoop		Queue3( 1 );
@@ -255,4 +255,4 @@ void InitFileQueue( App * app, Oculus360Photos * photos )
 	}
 }
 
-}	// namespace NervGear
+NV_NAMESPACE_END

@@ -9,7 +9,7 @@
 
 #include "VQuat.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 // Forward-declare our templates.
 template<class T> class VR4Matrix;
@@ -90,8 +90,4 @@ public:
 typedef VPos<float>  VPosf;
 typedef VPos<double> VPosd;
 
-//-------------------------------------------------------------------------------------
-
-
-
-}
+NV_NAMESPACE_END

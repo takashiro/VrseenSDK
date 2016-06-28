@@ -110,9 +110,7 @@ static const bool allowPageSwipes = false;
 
 
 
-namespace NervGear
-{
-
+NV_NAMESPACE_BEGIN
 
 SwipeView::SwipeView() :
 		ClampPanelOffset( true ),
@@ -876,5 +874,5 @@ void SwipeView::Draw( const VR4Matrixf & mvp )
 	glDisable( GL_BLEND );
 }
 
-}	// namespace NervGear
+NV_NAMESPACE_END
 

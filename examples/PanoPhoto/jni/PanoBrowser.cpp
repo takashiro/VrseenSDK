@@ -27,8 +27,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include <VDir.h>
 #include <VImage.h>
 
-namespace NervGear
-{
+NV_NAMESPACE_BEGIN
 
 static const int FAVORITES_FOLDER_INDEX = 0;
 
@@ -488,4 +487,4 @@ bool PanoBrowser::onTouchUpNoFocused()
 	return false;
 }
 
-}
+NV_NAMESPACE_END

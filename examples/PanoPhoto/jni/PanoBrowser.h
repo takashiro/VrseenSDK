@@ -18,100 +18,100 @@ of patent rights can be found in the PATENTS file in the same directory.
 
 #include "gui/FolderBrowser.h"
 
-namespace NervGear
+NV_NAMESPACE_BEGIN
+
+class PanoBrowser : public OvrFolderBrowser
 {
-	class PanoBrowser : public OvrFolderBrowser
-	{
-	public:
-		// only one of these every needs to be created
-		static  PanoBrowser *		Create(
-			App *					app,
-			OvrMetaData &			metaData,
-			unsigned				thumbWidth,
-			float					horizontalPadding,
-			unsigned				thumbHeight,
-			float					verticalPadding,
-			unsigned 				numSwipePanels,
-			float					swipeRadius );
+public:
+    // only one of these every needs to be created
+    static  PanoBrowser *		Create(
+        App *					app,
+        OvrMetaData &			metaData,
+        unsigned				thumbWidth,
+        float					horizontalPadding,
+        unsigned				thumbHeight,
+        float					verticalPadding,
+        unsigned 				numSwipePanels,
+        float					swipeRadius );
 
-		// Swiping when the menu is inactive can cycle through files in
-		// the directory.  Step can be 1 or -1.
-        virtual	const OvrMetaDatum *nextFileInDirectory( const int step );
-        void addToFavorites( const OvrMetaDatum * panoData );
-        void removeFromFavorites( const OvrMetaDatum * panoData );
+    // Swiping when the menu is inactive can cycle through files in
+    // the directory.  Step can be 1 or -1.
+    virtual	const OvrMetaDatum *nextFileInDirectory( const int step );
+    void addToFavorites( const OvrMetaDatum * panoData );
+    void removeFromFavorites( const OvrMetaDatum * panoData );
 
-		// Called when a panel is activated
-        void onPanelActivated( const OvrMetaDatum * panelData ) override;
+    // Called when a panel is activated
+    void onPanelActivated( const OvrMetaDatum * panelData ) override;
 
-		// Called on opening menu - used to rebuild favorites using FavoritesBuffer
-        void onBrowserOpen() override;
+    // Called on opening menu - used to rebuild favorites using FavoritesBuffer
+    void onBrowserOpen() override;
 
-		// Reload FavoritesBuffer with what's currently in favorites folder in FolderBrowser
-		void						ReloadFavoritesBuffer();
+    // Reload FavoritesBuffer with what's currently in favorites folder in FolderBrowser
+    void						ReloadFavoritesBuffer();
 
-		// Called on a background thread
-		//
-		// Create the thumbnail image for the file, which will
-		// be saved out as a _thumb.jpg.
-        unsigned char *createAndCacheThumbnail(const VString &soureFile, const VString &cacheDestinationFile, int & width, int & height ) override;
+    // Called on a background thread
+    //
+    // Create the thumbnail image for the file, which will
+    // be saved out as a _thumb.jpg.
+    unsigned char *createAndCacheThumbnail(const VString &soureFile, const VString &cacheDestinationFile, int & width, int & height ) override;
 
-		// Called on a background thread to load thumbnail
-        uchar *loadThumbnail(const VString &fileName, int &width, int &height) override;
+    // Called on a background thread to load thumbnail
+    uchar *loadThumbnail(const VString &fileName, int &width, int &height) override;
 
-		// Adds thumbnail extension to a file to find/create its thumbnail
-        VString thumbName( const VString & s ) override;
+    // Adds thumbnail extension to a file to find/create its thumbnail
+    VString thumbName( const VString & s ) override;
 
-		// Called when no media found
-        void onMediaNotFound( App * app, VString & title, VString & imageFile, VString & message ) override;
+    // Called when no media found
+    void onMediaNotFound( App * app, VString & title, VString & imageFile, VString & message ) override;
 
-		// Called if touch up is activated without a focused item
-        bool onTouchUpNoFocused() override;
+    // Called if touch up is activated without a focused item
+    bool onTouchUpNoFocused() override;
 
-        int numPanosInActive() const;
+    int numPanosInActive() const;
 
-	protected:
-		// Called from the base class when building category.
-        VString getCategoryTitle(const VString &key, const VString &defaultStr) const override;
+protected:
+    // Called from the base class when building category.
+    VString getCategoryTitle(const VString &key, const VString &defaultStr) const override;
 
-		// Called from the base class when building a panel.
-        VString getPanelTitle( const OvrMetaDatum & panelData ) const override;
+    // Called from the base class when building a panel.
+    VString getPanelTitle( const OvrMetaDatum & panelData ) const override;
 
-	private:
-		PanoBrowser(
-			App * app,
-			OvrMetaData & metaData,
-			float panelWidth,
-			float panelHeight,
-			float radius,
-			unsigned numSwipePanels,
-			unsigned thumbWidth,
-			unsigned thumbHeight )
-			: OvrFolderBrowser( app, metaData, panelWidth, panelHeight, radius, numSwipePanels, thumbWidth, thumbHeight )
-            , m_bufferDirty( false )
-		{
-		}
+private:
+    PanoBrowser(
+        App * app,
+        OvrMetaData & metaData,
+        float panelWidth,
+        float panelHeight,
+        float radius,
+        unsigned numSwipePanels,
+        unsigned thumbWidth,
+        unsigned thumbHeight )
+        : OvrFolderBrowser( app, metaData, panelWidth, panelHeight, radius, numSwipePanels, thumbWidth, thumbHeight )
+        , m_bufferDirty( false )
+    {
+    }
 
-		virtual ~PanoBrowser()
-		{
-		}
+    virtual ~PanoBrowser()
+    {
+    }
 
-		// Favorites buffer - this is built by PanoMenu and used to rebuild Favorite's menu
-		// if an item in it is null, it's been deleted from favorites
-		struct Favorite
-		{
-			Favorite()
-            : data( nullptr )
-            , isFavorite( false )
-			{}
-            const OvrMetaDatum *	data;
-            bool					isFavorite;
-		};
-        VArray< Favorite >	m_favoritesBuffer;
-        bool				m_bufferDirty;
-	};
+    // Favorites buffer - this is built by PanoMenu and used to rebuild Favorite's menu
+    // if an item in it is null, it's been deleted from favorites
+    struct Favorite
+    {
+        Favorite()
+        : data( nullptr )
+        , isFavorite( false )
+        {}
+        const OvrMetaDatum *	data;
+        bool					isFavorite;
+    };
+    VArray< Favorite >	m_favoritesBuffer;
+    bool				m_bufferDirty;
+};
 
-	unsigned char * LoadPageJpg( const char * cbzFileName, int pageNum, int & width, int & height );
+unsigned char * LoadPageJpg( const char * cbzFileName, int pageNum, int & width, int & height );
 
-}
+NV_NAMESPACE_END
 
 #endif	// OVR_PanoSwipeDir_h

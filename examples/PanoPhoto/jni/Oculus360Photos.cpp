@@ -764,7 +764,7 @@ VR4Matrixf Oculus360Photos::drawEyeView( const int eye, const float fovDegrees )
 
 float Fade( double now, double start, double length )
 {
-    return NervGear::VAlgorithm::Clamp( ( ( now - start ) / length ), 0.0, 1.0 );
+    return VAlgorithm::Clamp( ( ( now - start ) / length ), 0.0, 1.0 );
 }
 
 void Oculus360Photos::startBackgroundPanoLoad(const VString &filename)

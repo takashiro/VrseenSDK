@@ -25,7 +25,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "Oculus360Photos.h"
 #include "PhotosMetaData.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 const VRMenuId_t OvrPanoMenu::ID_CENTER_ROOT( 1000 );
 const VRMenuId_t OvrPanoMenu::ID_BROWSER_BUTTON( 1000 + 1011 );
@@ -470,4 +470,4 @@ void OvrPanoMenu::updateButtonsState( const OvrMetaDatum * const ActivePano, boo
 	swipeRight->setFlags( flagsRight );
 }
 
-}
+NV_NAMESPACE_END

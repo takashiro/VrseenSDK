@@ -6,7 +6,7 @@
 #include "Fader.h"
 #include "VLockless.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 class PanoBrowser;
 class OvrPanoMenu;
@@ -152,4 +152,4 @@ private:
     EGLContext			m_eglShareContext;
 };
 
-}
+NV_NAMESPACE_END

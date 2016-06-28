@@ -728,7 +728,7 @@ void VFrameSmooth::Private::smoothThreadInit()
 {
     vInfo("WarpThreadInit()");
 
-    pthread_setname_np( pthread_self(), "NervGear::VFrameSmooth" );
+    pthread_setname_np( pthread_self(), "VFrameSmooth" );
 
 
 

@@ -18,7 +18,7 @@
 #include <VString.h>
 #include <gui/MetaDataManager.h>
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 //==============================================================
 // OvrPhotosMetaDatum
@@ -38,11 +38,11 @@ public:
 
 protected:
     OvrMetaDatum *createMetaDatum(const VString &url) const override;
-	void extractExtendedData( const NervGear::VJson & jsonDatum, OvrMetaDatum & outDatum ) const override;
+    void extractExtendedData( const VJson & jsonDatum, OvrMetaDatum & outDatum ) const override;
 	void extendedDataToJson(const OvrMetaDatum & datum, VJsonObject &outDatumObject ) const override;
 	void swapExtendedData( OvrMetaDatum * left, OvrMetaDatum * right ) const override;
 };
 
-}
+NV_NAMESPACE_END
 
 #endif // OVR_PhotosMetaData_h

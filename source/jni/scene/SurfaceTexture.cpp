@@ -15,7 +15,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "VEglDriver.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 
 SurfaceTexture::SurfaceTexture( JNIEnv * jni_ ) : nanoTimeStamp( 0 ) {
@@ -100,4 +100,4 @@ void SurfaceTexture::Update() {
 }
 
 
-}	// namespace NervGear
+NV_NAMESPACE_END

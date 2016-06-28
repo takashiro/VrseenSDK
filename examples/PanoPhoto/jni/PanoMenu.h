@@ -19,7 +19,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "gui/VRMenu.h"
 #include "gui/Fader.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 class Oculus360Photos;
 class SearchPaths;
@@ -91,6 +91,6 @@ private:
     float					m_buttonCoolDown;
 };
 
-}
+NV_NAMESPACE_END
 
 #endif

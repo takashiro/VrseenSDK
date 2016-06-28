@@ -8,7 +8,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 template<class T> class VSize;
 template<class T> class VRect;
@@ -260,4 +260,5 @@ public:
 
 typedef VPlane<float> VPlanef;
 typedef VPlane<double> VPlaned;
-}
+
+NV_NAMESPACE_END

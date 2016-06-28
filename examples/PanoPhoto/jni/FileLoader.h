@@ -15,7 +15,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 
 #include "VEventLoop.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 class App;
 class Oculus360Photos;
@@ -24,5 +24,5 @@ void InitFileQueue( App * app, Oculus360Photos * photos);
 
 extern VEventLoop		Queue1;
 
-}
+NV_NAMESPACE_END
 

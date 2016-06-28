@@ -7,7 +7,7 @@
 
 NV_NAMESPACE_BEGIN
 
-class PanoVideo : public NervGear::VMainActivity
+class PanoVideo : public VMainActivity
 {
 public:
 
