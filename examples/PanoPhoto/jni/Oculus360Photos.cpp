@@ -40,7 +40,7 @@ static const char * DEFAULT_PANO = "assets/placeholderBackground.jpg";
 
 extern "C" {
 
-void Java_com_vrseen_nervgear_photo_MainActivity_nativeSetAppInterface( JNIEnv *jni, jclass clazz, jobject activity,
+void Java_com_vrseen_panophoto_MainActivity_nativeSetAppInterface( JNIEnv *jni, jclass clazz, jobject activity,
                                                                         jstring fromPackageName, jstring commandString, jstring uriString )
 {
     // This is called by the java UI thread.

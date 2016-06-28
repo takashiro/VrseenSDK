@@ -3,17 +3,17 @@
 
 	<string
       name="app_name"
-      project="oculus-360-photos"
+      project="vrseen-panophoto"
       description="The title of the application, which lets you browse 360 panorama photos"
-      >NervGear Photo</string>
+      >Vrseen PanoPhoto</string>
    	<string
       name="action_settings"
-      project="oculus-360-photos"
+      project="vrseen-panophoto"
       description="The name of the settings menu."
       >Settings</string>
     <string
         name="media_not_found"
-        project="oculus-360-videos"
+        project="vrseen-panophoto"
         description="The message displayed when no media found on the phone."
         >There are no photos on your phone. Please insert the SD card included with your Gear VR.</string>
 

@@ -12,7 +12,7 @@ LICENSE file in the Oculus360Photos/ directory. An additional grant
 of patent rights can be found in the PATENTS file in the same directory.
 
 *************************************************************************************/
-package com.vrseen.nervgear.photo;
+package com.vrseen.panophoto;
 
 import java.io.InputStream;
 import java.net.HttpURLConnection;
