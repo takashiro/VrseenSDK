@@ -226,7 +226,6 @@ HEADERS += \
     jni/scene/ModelView.h \
     jni/scene/SurfaceTexture.h \
     jni/scene/SwipeView.h \
-    jni/scene/VRect.h \
     jni/App.h \
     jni/VrLocale.h \
     jni/vglobal.h \
