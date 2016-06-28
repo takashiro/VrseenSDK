@@ -1,4 +1,4 @@
-package com.vrseen.nervgear.unittest;
+package com.vrseen.unittest;
 
 import android.app.Activity;
 import android.os.Bundle;

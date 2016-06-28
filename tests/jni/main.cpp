@@ -36,7 +36,7 @@ int main()
 #include <jni.h>
 
 extern "C" {
-    jint Java_com_vrseen_nervgear_unittest_MainActivity_exec(JNIEnv *, jclass, jobject)
+    jint Java_com_vrseen_unittest_MainActivity_exec(JNIEnv *, jclass, jobject)
     {
         return main();
     }
