@@ -30,24 +30,24 @@ NV_NAMESPACE_BEGIN
 
 extern "C" {
 
-void Java_com_vrseen_nervgear_video_PanoVideo_construct(JNIEnv *jni, jclass clazz, jobject activity)
+void Java_com_vrseen_panovideo_PanoVideo_construct(JNIEnv *jni, jclass clazz, jobject activity)
 {
     (new PanoVideo(jni, jni->GetObjectClass(activity), activity))->onCreate(nullptr, nullptr, nullptr);
 }
 
-void Java_com_vrseen_nervgear_video_PanoVideo_onStart(JNIEnv *jni, jclass, jstring jpath)
+void Java_com_vrseen_panovideo_PanoVideo_onStart(JNIEnv *jni, jclass, jstring jpath)
 {
     PanoVideo *video = (PanoVideo *) vApp->appInterface();
     video->onStart(JniUtils::Convert(jni, jpath));
 }
 
-void Java_com_vrseen_nervgear_video_PanoVideo_onFrameAvailable(JNIEnv *, jclass)
+void Java_com_vrseen_panovideo_PanoVideo_onFrameAvailable(JNIEnv *, jclass)
 {
     PanoVideo *video = (PanoVideo *) vApp->appInterface();
     video->setFrameAvailable(true);
 }
 
-jobject Java_com_vrseen_nervgear_video_PanoVideo_createMovieTexture(JNIEnv *, jclass)
+jobject Java_com_vrseen_panovideo_PanoVideo_createMovieTexture(JNIEnv *, jclass)
 {
 	// set up a message queue to get the return message
 	// TODO: make a class that encapsulates this work
@@ -61,14 +61,14 @@ jobject Java_com_vrseen_nervgear_video_PanoVideo_createMovieTexture(JNIEnv *, jc
     return NULL;
 }
 
-void Java_com_vrseen_nervgear_video_PanoVideo_onVideoSizeChanged(JNIEnv *, jclass, jint width, jint height)
+void Java_com_vrseen_panovideo_PanoVideo_onVideoSizeChanged(JNIEnv *, jclass, jint width, jint height)
 {
     VVariantArray args;
     args << width << height;
     vApp->eventLoop().post("video", std::move(args));
 }
 
-void Java_com_vrseen_nervgear_video_PanoVideo_onCompletion(JNIEnv *, jclass)
+void Java_com_vrseen_panovideo_PanoVideo_onCompletion(JNIEnv *, jclass)
 {
 	vInfo("nativeVideoCompletion");
     vApp->eventLoop().post( "completion" );

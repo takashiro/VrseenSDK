@@ -1,4 +1,4 @@
-package com.vrseen.nervgear.video;
+package com.vrseen.panovideo;
 
 import android.os.Bundle;
 import android.os.Environment;

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.vrseen.nervgear.video" android:versionCode="1" android:versionName="0.1.0">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.vrseen.panovideo" android:versionCode="1" android:versionName="0.1.0">
   <uses-sdk android:minSdkVersion="19" android:targetSdkVersion="19" />
   <!-- Needed to write thumbs -->
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -19,7 +19,7 @@
     <!-- singleTask launchMode because we never want multiple copies of the app running, -->
     <!-- but we might want to internally spawn other activities -->
     <!-- Theme.DeviceDefault.NoActionBar.Fullscreen gives solid black instead of a (bad stereoscopic) gradient on app transition -->
-    <activity android:name="com.vrseen.nervgear.video.MainActivity" android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" android:label="@string/app_name" android:launchMode="singleTask" android:screenOrientation="landscape" android:configChanges="screenSize|orientation|keyboardHidden|keyboard">
+    <activity android:name="com.vrseen.panovideo.MainActivity" android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" android:label="@string/app_name" android:launchMode="singleTask" android:screenOrientation="landscape" android:configChanges="screenSize|orientation|keyboardHidden|keyboard">
       <!-- this filter lets the apk show up as a launchable icon -->
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />

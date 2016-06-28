@@ -1,4 +1,4 @@
-package com.vrseen.nervgear.video;
+package com.vrseen.panovideo;
 
 import java.io.IOException;
 
