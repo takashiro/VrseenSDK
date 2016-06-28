@@ -5,9 +5,9 @@ NV_ROOT := ../../source/jni
 
 include $(CLEAR_VARS)				# clean everything up to prepare for a module
 
-APP_MODULE := nervgear
+APP_MODULE := vrseen
 
-LOCAL_MODULE    := nervgear			# generate libnervgear.so
+LOCAL_MODULE := vrseen
 
 LOCAL_ARM_MODE  := arm				# full speed arm instead of thumb
 LOCAL_ARM_NEON  := true				# compile with neon support enabled

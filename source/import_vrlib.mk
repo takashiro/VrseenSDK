@@ -18,7 +18,7 @@ LOCAL_PATH := $(call my-dir)
 # NervGear
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := nervgear
+LOCAL_MODULE := vrseen
 
 LOCAL_EXPORT_C_INCLUDES := \
   $(LOCAL_PATH)/jni \
@@ -46,7 +46,7 @@ LOCAL_EXPORT_LDLIBS += -lz
 # audio
 LOCAL_EXPORT_LDLIBS += -lOpenSLES
 
-LOCAL_SRC_FILES := obj/local/armeabi-v7a/libnervgear.a
+LOCAL_SRC_FILES := obj/local/armeabi-v7a/libvrseen.a
 
 LOCAL_STATIC_LIBRARIES := jpeg
 
@@ -56,7 +56,7 @@ include $(CLEAR_VARS)
 
 LOCAL_ARM_MODE  := arm				# full speed arm instead of thumb
 
-LOCAL_STATIC_LIBRARIES := nervgear
+LOCAL_STATIC_LIBRARIES := vrseen
 
 # Restore the local path since we overwrote it when we started
 LOCAL_PATH := $(LOCAL_PATH_TEMP)
