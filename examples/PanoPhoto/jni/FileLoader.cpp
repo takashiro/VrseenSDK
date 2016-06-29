@@ -8,14 +8,14 @@ Authors     :   John Carmack
 Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 This source code is licensed under the BSD-style license found in the
-LICENSE file in the Oculus360Photos/ directory. An additional grant
+LICENSE file in the PanoPhoto/ directory. An additional grant
 of patent rights can be found in the PATENTS file in the same directory.
 
 ************************************************************************************/
 
 #include "VThread.h"
 #include "FileLoader.h"
-#include "Oculus360Photos.h"
+#include "PanoPhoto.h"
 
 #include <fstream>
 
@@ -210,14 +210,14 @@ void * Queue3Thread( void * v )
                 vAssert( data[0] != NULL );
                 VVariantArray args;
                 args << data[0] << resolutionX << resolutionY;
-                ( ( Oculus360Photos * )v )->backgroundMessageQueue().post(event.name, std::move(args));
+                ( ( PanoPhoto * )v )->backgroundMessageQueue().post(event.name, std::move(args));
 			}
 			else
 			{
                 vAssert(numBuffers == 6);
                 VVariantArray args;
                 args << resolutionX << data[0] << data[1] << data[2] << data[3] << data[4] << data[5];
-                ( ( Oculus360Photos * )v )->backgroundMessageQueue().post(event.name, std::move(args));
+                ( ( PanoPhoto * )v )->backgroundMessageQueue().post(event.name, std::move(args));
 			}
 		}
 	}
@@ -226,7 +226,7 @@ void * Queue3Thread( void * v )
 
 static const int NUM_QUEUE_THREADS = 2;
 
-void InitFileQueue( App * app, Oculus360Photos * photos )
+void InitFileQueue( App * app, PanoPhoto * photos )
 {
     // spawn the queue threads
 	void * (*funcs[NUM_QUEUE_THREADS])( void *) = { Queue1Thread, Queue3Thread };

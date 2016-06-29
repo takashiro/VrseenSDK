@@ -8,7 +8,7 @@ Authors     :   Warsam Osman
 Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 This source code is licensed under the BSD-style license found in the
-LICENSE file in the Oculus360Photos/ directory. An additional grant
+LICENSE file in the PanoPhoto/ directory. An additional grant
 of patent rights can be found in the PATENTS file in the same directory.
 
 ************************************************************************************/
@@ -21,7 +21,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 
 NV_NAMESPACE_BEGIN
 
-class Oculus360Photos;
+class PanoPhoto;
 class SearchPaths;
 class OvrPanoMenuRootComponent;
 class OvrAttributionInfo;
@@ -41,7 +41,7 @@ public:
 	// only one of these every needs to be created
 	static  OvrPanoMenu *		Create(
 		App * app,
-		Oculus360Photos * photos,
+		PanoPhoto * photos,
 		OvrVRMenuMgr & menuMgr,
 		BitmapFont const & font,
 		OvrMetaData & metaData,
@@ -51,7 +51,7 @@ public:
     void					updateButtonsState( const OvrMetaDatum * const ActivePano, bool showSwipeOverride = false );
     void					startFadeOut();
 
-    Oculus360Photos *		photos() 					{ return m_photos; }
+    PanoPhoto *		photos() 					{ return m_photos; }
     OvrMetaData & 			metaData() 					{ return m_metaData; }
     menuHandle_t			loadingIconHandle() const	{ return m_loadingIconHandle; }
 
@@ -59,7 +59,7 @@ public:
     bool					interacting() const				{ return focusedHandle().isValid(); }
 
 private:
-	OvrPanoMenu( App * app, Oculus360Photos * photos, OvrVRMenuMgr & menuMgr, BitmapFont const & font,
+	OvrPanoMenu( App * app, PanoPhoto * photos, OvrVRMenuMgr & menuMgr, BitmapFont const & font,
 		OvrMetaData & metaData, float fadeOutTime, float radius );
 
     ~OvrPanoMenu();
@@ -72,7 +72,7 @@ private:
     App *					m_app;
     OvrVRMenuMgr &			m_menuMgr;
     const BitmapFont &		m_font;
-    Oculus360Photos *		m_photos;
+    PanoPhoto *		m_photos;
     OvrMetaData & 			m_metaData;
 
     menuHandle_t			m_loadingIconHandle;

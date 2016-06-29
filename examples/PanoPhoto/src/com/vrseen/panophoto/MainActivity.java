@@ -14,27 +14,21 @@ of patent rights can be found in the PATENTS file in the same directory.
 *************************************************************************************/
 package com.vrseen.panophoto;
 
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-
-import android.os.Bundle;
-import android.util.Log;
 import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.Environment;
+import android.util.Log;
 import com.vrseen.VrActivity;
-import com.vrseen.VrLib;
 
 public class MainActivity extends VrActivity {
 
-	public static final String TAG = "NervGearPhoto";
-
+	PanoPhoto photo = null;
 
 	/** Load jni .so on initialization */
 	static {
 		System.loadLibrary("panophoto");
 	}
-
-	public static native void nativeSetAppInterface( VrActivity act, String fromPackageNameString, String commandString, String uriString );
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
@@ -43,46 +37,13 @@ public class MainActivity extends VrActivity {
 		super.onCreate(savedInstanceState);
 
 		Intent intent = getIntent();
-		String commandString = VrLib.getCommandStringFromIntent( intent );
-		String fromPackageNameString = VrLib.getPackageStringFromIntent( intent );
-		String uriString = VrLib.getUriStringFromIntent( intent );
+		Uri uri = intent.getData();
+		String photoPath = uri != null ? uri.toString() : null;
+		if (photoPath == null || photoPath.isEmpty()) {
+			photoPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/VRSeen/SDK/360Photos/1.jpg";
+		}
 
-		nativeSetAppInterface( this, fromPackageNameString, commandString, uriString );
-	}
-
-	public static byte[] LoadHttpUrl( String str ) {
-		int totalLen = 0;
-
-		byte[] returnBuffer = new byte[totalLen];
-
-		Log.d(TAG, "LoadHttpUrl " + str );
-		try {
-	         URL aURL = new URL( str );
-	         HttpURLConnection conn = (HttpURLConnection)aURL.openConnection();
-	         conn.connect();
-	         InputStream is = conn.getInputStream();
-
-	         byte[]	readbuffer = new byte[0x100000];
-
-	         while( true ) {
-	        	 int count = is.read(readbuffer);
-	        	 if ( count < 0 ) {
-	        		 break;
-	        	 }
-	        	 byte[] tempBuffer = new byte[totalLen + count];
-	        	 System.arraycopy(returnBuffer,  0,  tempBuffer,  0,  totalLen );
-	        	 System.arraycopy(readbuffer,  0, tempBuffer,  totalLen,  count );
-	        	 totalLen += count;
-	        	 returnBuffer = tempBuffer;
-	         }
-
-	         is.close();
-         } catch (Exception e) {
-            Log.v(TAG, "LoadHttpUrl", e);
-         }
-
-		Log.d(TAG, "totalLen " + totalLen );
-
-		return returnBuffer;
+		photo = new PanoPhoto(this);
+		photo.start(photoPath);
 	}
 }

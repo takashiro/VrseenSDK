@@ -8,13 +8,13 @@ Authors     :
 Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 This source code is licensed under the BSD-style license found in the
-LICENSE file in the Oculus360Photos/ directory. An additional grant
+LICENSE file in the PanoPhoto/ directory. An additional grant
 of patent rights can be found in the PATENTS file in the same directory.
 
 *************************************************************************************/
 
 #include "PanoBrowser.h"
-#include "Oculus360Photos.h"
+#include "PanoPhoto.h"
 
 #include "VrLocale.h"
 #include "BitmapFont.h"
@@ -178,7 +178,7 @@ VString PanoBrowser::getPanelTitle( const OvrMetaDatum & panelData ) const
 
 void PanoBrowser::onPanelActivated( const OvrMetaDatum * panelData )
 {
-    Oculus360Photos * photos = ( Oculus360Photos * ) m_app->appInterface();
+    PanoPhoto * photos = ( PanoPhoto * ) m_app->appInterface();
 	vAssert( photos );
 	photos->onPanoActivated( panelData );
 }
@@ -191,7 +191,7 @@ const OvrMetaDatum * PanoBrowser::nextFileInDirectory( const int step )
         const int numFavorites = m_favoritesBuffer.length();
 		// find the current
 		int nextPanelIndex = -1;
-        Oculus360Photos * photos = ( Oculus360Photos * )m_app->appInterface();
+        PanoPhoto * photos = ( PanoPhoto * )m_app->appInterface();
 		vAssert( photos );
 		for ( nextPanelIndex = 0; nextPanelIndex < numFavorites; ++nextPanelIndex )
 		{
@@ -250,7 +250,7 @@ void PanoBrowser::onBrowserOpen()
 
 	if ( m_bufferDirty )
 	{
-        Oculus360Photos * photos = ( Oculus360Photos * )m_app->appInterface();
+        PanoPhoto * photos = ( PanoPhoto * )m_app->appInterface();
 		if ( photos )
 		{
             OvrPhotosMetaData * metaData = photos->metaData();
@@ -288,7 +288,7 @@ void PanoBrowser::onBrowserOpen()
 // Reload with what's currently in favorites folder in FolderBrowser
 void PanoBrowser::ReloadFavoritesBuffer()
 {
-    Oculus360Photos * photos = ( Oculus360Photos * )m_app->appInterface();
+    PanoPhoto * photos = ( PanoPhoto * )m_app->appInterface();
 	if ( photos != NULL )
 	{
         OvrPhotosMetaData * metaData = photos->metaData();
@@ -477,7 +477,7 @@ void PanoBrowser::onMediaNotFound( App * app, VString & title, VString & imageFi
 
 bool PanoBrowser::onTouchUpNoFocused()
 {
-    Oculus360Photos * photos = ( Oculus360Photos * )m_app->appInterface();
+    PanoPhoto * photos = ( PanoPhoto * )m_app->appInterface();
 	vAssert( photos );
     if ( photos->activePano() != NULL && isOpen() && !gazingAtMenu() )
 	{

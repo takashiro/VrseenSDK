@@ -13,7 +13,7 @@ SOURCES += \
     jni/PhotosMetaData.cpp
 
 HEADERS += \
-    jni/Oculus360Photos.h \
+    jni/PanoPhoto.h \
     jni/FileLoader.h \
     jni/PanoBrowser.h \
     jni/PanoMenu.h \

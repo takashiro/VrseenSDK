@@ -8,7 +8,7 @@ Authors     :
 Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 This source code is licensed under the BSD-style license found in the
-LICENSE file in the Oculus360Photos/ directory. An additional grant
+LICENSE file in the PanoPhoto/ directory. An additional grant
 of patent rights can be found in the PATENTS file in the same directory.
 
 *************************************************************************************/
@@ -22,7 +22,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "gui/AnimComponents.h"
 #include "gui/FolderBrowser.h"
 
-#include "Oculus360Photos.h"
+#include "PanoPhoto.h"
 #include "PhotosMetaData.h"
 
 NV_NAMESPACE_BEGIN
@@ -103,7 +103,7 @@ private:
         const float fadeOutAlpha = PanoMenu.fadeAlpha( );
         switch ( PanoMenu.photos()->currentState() )
 		{
-		case Oculus360Photos::MENU_PANO_LOADING:
+		case PanoPhoto::MENU_PANO_LOADING:
             vAssert( PanoMenu.photos() );
             if ( CurrentPano != PanoMenu.photos()->activePano() )
 			{
@@ -113,19 +113,19 @@ private:
 			// Hide attribution
 			attributionFlags |= VRMenuObjectFlags_t( VRMENUOBJECT_DONT_RENDER );
 			break;
-		case Oculus360Photos::MENU_PANO_REOPEN_FADEIN:
-		case Oculus360Photos::MENU_PANO_FADEIN:
+		case PanoPhoto::MENU_PANO_REOPEN_FADEIN:
+		case PanoPhoto::MENU_PANO_FADEIN:
 			// Show attribution
 			attributionFlags &= ~VRMenuObjectFlags_t( VRMENUOBJECT_DONT_RENDER );
 			// Fade in burger
 			selfColor.w = fadeInAlpha;
 			selfTextColor.w = fadeInAlpha;
 			break;
-		case Oculus360Photos::MENU_PANO_FULLY_VISIBLE:
+		case PanoPhoto::MENU_PANO_FULLY_VISIBLE:
 			// Show attribution
 			attributionFlags &= ~VRMenuObjectFlags_t( VRMENUOBJECT_DONT_RENDER );
 			break;
-		case Oculus360Photos::MENU_PANO_FADEOUT:
+		case PanoPhoto::MENU_PANO_FADEOUT:
 			// Fade out burger
 			selfColor.w = fadeOutAlpha;
 			selfTextColor.w = fadeOutAlpha;
@@ -154,13 +154,13 @@ private:
 
 //==============================
 // OvrPanoMenu
-OvrPanoMenu * OvrPanoMenu::Create( App * app, Oculus360Photos * photos, OvrVRMenuMgr & menuMgr,
+OvrPanoMenu * OvrPanoMenu::Create( App * app, PanoPhoto * photos, OvrVRMenuMgr & menuMgr,
 		BitmapFont const & font, OvrMetaData & metaData, float fadeOutTime, float radius )
 {
 	return new OvrPanoMenu( app, photos, menuMgr, font, metaData, fadeOutTime, radius );
 }
 
-OvrPanoMenu::OvrPanoMenu( App * app, Oculus360Photos * photos, OvrVRMenuMgr & menuMgr, BitmapFont const & font,
+OvrPanoMenu::OvrPanoMenu( App * app, PanoPhoto * photos, OvrVRMenuMgr & menuMgr, BitmapFont const & font,
 		OvrMetaData & metaData, float fadeOutTime, float radius )
 	: VRMenu( MENU_NAME )
 	, m_app( app )
@@ -395,7 +395,7 @@ void OvrPanoMenu::onItemEvent_Impl( App * app, VRMenuId_t const itemId, VRMenuEv
 		{
 			if ( itemId.value() == ID_BROWSER_BUTTON.value() )
 			{
-				m_photos->SetMenuState( Oculus360Photos::MENU_BROWSER );
+				m_photos->SetMenuState( PanoPhoto::MENU_BROWSER );
 			}
 			else if ( itemId.value() == ID_FAVORITES_BUTTON.value() )
 			{
