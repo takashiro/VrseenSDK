@@ -12,6 +12,6 @@ LOCAL_ARM_NEON  := true					# compile with neon support enabled
 
 LOCAL_MODULE    := panophoto
 
-LOCAL_SRC_FILES := PanoPhoto.cpp FileLoader.cpp PanoBrowser.cpp PanoMenu.cpp PhotosMetaData.cpp
+LOCAL_SRC_FILES := PanoPhoto.cpp FileLoader.cpp PanoBrowser.cpp PhotosMetaData.cpp
 
 include $(BUILD_SHARED_LIBRARY)			# start building based on everything since CLEAR_VARS

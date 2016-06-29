@@ -19,7 +19,6 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include <android/keycodes.h>
 #include "gui/GuiSys.h"
 #include "PanoBrowser.h"
-#include "PanoMenu.h"
 #include "FileLoader.h"
 #include "core/VTimer.h"
 #include "PhotosMetaData.h"

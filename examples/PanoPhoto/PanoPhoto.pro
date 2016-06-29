@@ -9,14 +9,12 @@ SOURCES += \
     jni/PanoPhoto.cpp \
     jni/FileLoader.cpp \
     jni/PanoBrowser.cpp \
-    jni/PanoMenu.cpp \
     jni/PhotosMetaData.cpp
 
 HEADERS += \
     jni/PanoPhoto.h \
     jni/FileLoader.h \
     jni/PanoBrowser.h \
-    jni/PanoMenu.h \
     jni/PhotosMetaData.h
 
 ANDROID_APP_DIR = $$PWD

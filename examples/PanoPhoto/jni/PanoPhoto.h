@@ -9,7 +9,6 @@
 NV_NAMESPACE_BEGIN
 
 class PanoBrowser;
-class OvrPanoMenu;
 class OvrMetaData;
 struct OvrMetaDatum;
 class OvrPhotosMetaData;
