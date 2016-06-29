@@ -35,9 +35,6 @@ NV_NAMESPACE_BEGIN
 
 static const char * DEFAULT_PANO = "assets/placeholderBackground.jpg";
 
-// Comment out to disable all VRMenus - renders only the startup pano and nothing else
-#define ENABLE_MENU
-
 extern "C" {
 
 void Java_com_vrseen_panophoto_MainActivity_nativeSetAppInterface( JNIEnv *jni, jclass clazz, jobject activity,
@@ -101,9 +98,6 @@ bool Oculus360Photos::DoubleBufferedTextureData::SameSize( const int width, cons
 Oculus360Photos::Oculus360Photos(JNIEnv *jni, jclass activityClass, jobject activityObject)
     : VMainActivity(jni, activityClass, activityObject)
     , m_fader( 0.0f )
-    , m_metaData( NULL )
-    , m_panoMenu( NULL )
-    , m_browser( NULL )
     , m_activePano( NULL )
     , m_currentPanoIsCubeMap( false )
     , m_menuState( MENU_NONE )
@@ -159,110 +153,6 @@ void Oculus360Photos::init(const VString &fromPackage, const VString &launchInte
     m_scene.Zfar = 200.0f;
 
     InitFileQueue( vApp, this );
-
-#ifdef ENABLE_MENU
-    // meta file used by OvrMetaData
-    const char * relativePath = "VRSeen/SDK/360Photos/";
-    const char * metaFile = "meta.json";
-
-    // Get package name
-    const char * packageName = NULL;
-    JNIEnv * jni = vApp->vrJni();
-    jstring result;
-    jmethodID getPackageNameId = jni->GetMethodID( vApp->vrActivityClass(), "getPackageName", "()Ljava/lang/String;" );
-    if ( getPackageNameId != NULL )
-    {
-        result = ( jstring )jni->CallObjectMethod( vApp->javaObject(), getPackageNameId );
-        if ( !jni->ExceptionOccurred() )
-        {
-            jboolean isCopy;
-            packageName = vApp->vrJni()->GetStringUTFChars( result, &isCopy );
-        }
-    }
-    else
-    {
-        vFatal("Oculus360Photos::OneTimeInit getPackageName failed");
-    }
-    vAssert( packageName );
-
-    m_metaData = new OvrPhotosMetaData();
-    if ( m_metaData == NULL )
-    {
-        vFatal("Oculus360Photos::OneTimeInit failed to create MetaData");
-    }
-
-    OvrMetaDataFileExtensions fileExtensions;
-
-    fileExtensions.goodExtensions.append( ".jpg" );
-
-    fileExtensions.badExtensions.append( ".jpg.x" );
-    fileExtensions.badExtensions.append( "_px.jpg" );
-    fileExtensions.badExtensions.append( "_py.jpg" );
-    fileExtensions.badExtensions.append( "_pz.jpg" );
-    fileExtensions.badExtensions.append( "_nx.jpg" );
-    fileExtensions.badExtensions.append( "_ny.jpg" );
-
-    VStandardPath::Info pathInfoList[] = {
-        {VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/"},
-        {VStandardPath::SecondaryExternalStorage, VStandardPath::RootFolder, ""},
-        {VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, "RetailMedia/"},
-        {VStandardPath::PrimaryExternalStorage, VStandardPath::RootFolder, ""}
-    };
-
-    const VStandardPath &storagePaths = vApp->storagePaths();
-    for (const VStandardPath::Info &pathInfo : pathInfoList) {
-        VString path = storagePaths.findFolder(pathInfo);
-        if (path.length() > 0 && VFile::IsReadable(path)) {
-            m_searchPaths.append(std::move(path));
-        }
-    }
-
-    vInfo("360 PHOTOS using" << m_searchPaths.length() << "searchPaths");
-
-    const double startTime = VTimer::Seconds();
-    m_metaData->initFromDirectoryMergeMeta( relativePath, m_searchPaths, fileExtensions, metaFile, packageName );
-    vInfo("META DATA INIT TIME:" << VTimer::Seconds() - startTime);
-
-    jni->ReleaseStringUTFChars( result, packageName );
-
-    // Start building the PanoMenu
-    m_panoMenu = ( OvrPanoMenu * )vApp->guiSys().getMenu( OvrPanoMenu::MENU_NAME );
-    if ( m_panoMenu == NULL )
-    {
-        m_panoMenu = OvrPanoMenu::Create(
-                    vApp, this, vApp->vrMenuMgr(), vApp->defaultFont(), *m_metaData, 2.0f, 2.0f );
-        vAssert( m_panoMenu );
-
-        vApp->guiSys().addMenu( m_panoMenu );
-    }
-
-    m_panoMenu->setFlags( VRMenuFlags_t( VRMENU_FLAG_PLACE_ON_HORIZON ) | VRMENU_FLAG_SHORT_PRESS_HANDLED_BY_APP );
-
-    // Start building the FolderView
-    m_browser = ( PanoBrowser * )vApp->guiSys().getMenu( OvrFolderBrowser::MENU_NAME );
-    if ( m_browser == NULL )
-    {
-        m_browser = PanoBrowser::Create(
-                    vApp,
-                    *m_metaData,
-                    256, 20.0f,
-                    160, 180.0f,
-                    7,
-                    5.3f );
-        vAssert( m_browser );
-
-        vApp->guiSys().addMenu( m_browser );
-    }
-
-    m_browser->setFlags( VRMenuFlags_t( VRMENU_FLAG_PLACE_ON_HORIZON ) | VRMENU_FLAG_BACK_KEY_EXITS_APP );
-    m_browser->setFolderTitleSpacingScale( 0.35f );
-    m_browser->setScrollBarSpacingScale( 0.82f );
-    m_browser->setScrollBarRadiusScale( 0.97f );
-    m_browser->setPanelTextSpacingScale( 0.28f );
-    m_browser->oneTimeInit();
-    m_browser->buildDirtyMenu( *m_metaData );
-    m_browser->ReloadFavoritesBuffer();
-#endif // ENABLE_MENU
 
     //---------------------------------------------------------
     // OpenGL initialization for shared context for
@@ -352,11 +242,6 @@ void Oculus360Photos::shutdown()
     m_shutdownRequest.setState( true );
 
     m_globe.destroy();
-
-    if ( m_metaData )
-    {
-        delete m_metaData;
-    }
 
     m_texturedMvpProgram.destroy();
     m_cubeMapPanoProgram.destroy();
@@ -529,37 +414,6 @@ void Oculus360Photos::configureVrMode(VKernel* kernel) {
     kernel->msaa = 1;
 }
 
-bool Oculus360Photos::onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType )
-{
-#ifdef ENABLE_MENU
-    if ( ( ( keyCode == AKEYCODE_BACK ) && ( eventType == KeyState::KEY_EVENT_SHORT_PRESS ) ) ||
-         ( ( keyCode == KEYCODE_B ) && ( eventType == KeyState::KEY_EVENT_UP ) ) )
-    {
-        if ( m_menuState == MENU_PANO_LOADING )
-        {
-            return true;
-        }
-
-        // hide attribution menu
-        if ( m_panoMenu->isOpen() )
-        {
-            vApp->guiSys().closeMenu( vApp, m_panoMenu, false );
-        }
-
-        // if the menu is closed, open it
-        if ( m_browser->isClosedOrClosing() )
-        {
-            vApp->guiSys().openMenu( vApp, vApp->gazeCursor(), OvrFolderBrowser::MENU_NAME );
-            return true;
-        }
-
-        // back out dir or prompt exit
-        //return Swipe->OnKeyEvent(keyCode, eventType);
-    }
-#endif
-    return false;
-}
-
 void Oculus360Photos::loadRgbaCubeMap( const int resolution, const unsigned char * const rgba[ 6 ], const bool useSrgbFormat )
 {
 
@@ -667,12 +521,6 @@ VR4Matrixf Oculus360Photos::drawEyeView( const int eye, const float fovDegrees )
     const float color = m_currentFadeLevel;
     // Dim pano when browser open
     float fadeColor = color;
-#ifdef ENABLE_MENU
-    if ( m_browser->isOpenOrOpening() || m_menuState == MENU_PANO_LOADING )
-    {
-        fadeColor *= 0.09f;
-    }
-#endif
 
     if ( useOverlay() && m_currentPanoIsCubeMap )
     {
@@ -794,40 +642,15 @@ void Oculus360Photos::SetMenuState( const OvrMenuState state )
     case MENU_BACKGROUND_INIT:
         startBackgroundPanoLoad(m_startupPano);
         break;
-    case MENU_BROWSER:
-#ifdef ENABLE_MENU
-        vApp->guiSys().closeMenu( vApp, m_panoMenu, false );
-        vApp->guiSys().openMenu( vApp, vApp->gazeCursor(), OvrFolderBrowser::MENU_NAME );
-        m_browserOpenTime = 0.0f;
-
-#endif
-        break;
     case MENU_PANO_LOADING:
-#ifdef ENABLE_MENU
-        vApp->guiSys().closeMenu( vApp, m_browser, false );
-        vApp->guiSys().openMenu( vApp, vApp->gazeCursor(), OvrPanoMenu::MENU_NAME );
-#endif
         m_currentFadeRate = m_fadeOutRate;
         m_fader.startFadeOut();
         startBackgroundPanoLoad(m_activePano->url);
 
-#ifdef ENABLE_MENU
-        m_panoMenu->updateButtonsState( m_activePano );
-#endif
         break;
         // pano menu now to fully open
     case MENU_PANO_FADEIN:
     case MENU_PANO_REOPEN_FADEIN:
-#ifdef ENABLE_MENU
-        if ( lastState != MENU_BACKGROUND_INIT )
-        {
-            vApp->guiSys().openMenu( vApp, vApp->gazeCursor(), OvrPanoMenu::MENU_NAME );
-        }
-        else
-        {
-            vApp->guiSys( ).openMenu( vApp, vApp->gazeCursor( ), OvrFolderBrowser::MENU_NAME );
-        }
-#endif
         m_fader.reset();
         m_currentFadeRate = m_fadeInRate;
         m_fader.startFadeIn();
@@ -836,9 +659,6 @@ void Oculus360Photos::SetMenuState( const OvrMenuState state )
         m_panoMenuTimeLeft = m_panoMenuVisibleTime;
         break;
     case MENU_PANO_FADEOUT:
-#ifdef ENABLE_MENU
-        m_panoMenu->startFadeOut();
-#endif
         break;
     default:
         vAssert( false );
@@ -849,7 +669,6 @@ void Oculus360Photos::SetMenuState( const OvrMenuState state )
 void Oculus360Photos::onPanoActivated( const OvrMetaDatum * panoData )
 {
     m_activePano = static_cast< const OvrPhotosMetaDatum * >( panoData );
-    m_browser->ReloadFavoritesBuffer();
     SetMenuState( MENU_PANO_LOADING );
 }
 
@@ -870,48 +689,7 @@ VR4Matrixf Oculus360Photos::onNewFrame( const VFrame vrFrame )
     vrFrameWithoutMove.input.sticks[ 0 ][ 1 ] = 0.0f;
     //m_scene.Frame( vApp->vrViewParms(), vrFrameWithoutMove, vApp->swapParms().ExternalVelocity );
 
-      m_scene.Frame( vApp->viewSettings(), vrFrameWithoutMove, vApp->kernel()->m_externalVelocity );
-
-#ifdef ENABLE_MENU
-    // reopen PanoMenu when in pano
-    if ( m_activePano && m_browser->isClosedOrClosing( ) && ( m_menuState != MENU_PANO_LOADING ) )
-    {
-        // single touch
-        if ( m_menuState > MENU_PANO_FULLY_VISIBLE && vrFrame.input.buttonPressed & ( BUTTON_TOUCH_SINGLE | BUTTON_A ) )
-        {
-            SetMenuState( MENU_PANO_REOPEN_FADEIN );
-        }
-
-        // PanoMenu input - needs to swipe even when PanoMenu is closed and in pano
-        const OvrPhotosMetaDatum * nextPano = NULL;
-
-        if ( vrFrame.input.buttonPressed & ( BUTTON_SWIPE_BACK | BUTTON_DPAD_LEFT | BUTTON_LSTICK_LEFT ) )
-        {
-            nextPano = static_cast< const OvrPhotosMetaDatum * >( m_browser->nextFileInDirectory( -1 ) );
-        }
-        else if ( vrFrame.input.buttonPressed & ( BUTTON_SWIPE_FORWARD | BUTTON_DPAD_RIGHT | BUTTON_LSTICK_RIGHT ) )
-        {
-            nextPano = static_cast< const OvrPhotosMetaDatum * >( m_browser->nextFileInDirectory( 1 ) );
-        }
-
-        if ( nextPano && ( m_activePano != nextPano ) )
-        {
-            m_panoMenu->repositionMenu( vApp );
-            vApp->playSound( "sv_release_active" );
-            setActivePano( nextPano );
-            SetMenuState( MENU_PANO_LOADING );
-        }
-    }
-
-    if ( m_browser->isOpenOrOpening() )
-    {
-        // Close the browser if a Pano is active and not gazing at menu - ie. between panels
-        if ( m_activePano && !m_browser->gazingAtMenu() && vrFrame.input.buttonReleased & ( BUTTON_TOUCH_SINGLE | BUTTON_A ) )
-        {
-            vApp->guiSys().closeMenu( vApp, m_browser, false );
-        }
-    }
-#endif
+    m_scene.Frame( vApp->viewSettings(), vrFrameWithoutMove, vApp->kernel()->m_externalVelocity );
 
     // State transitions
     if ( m_fader.fadeState() != Fader::FADE_NONE )
@@ -930,7 +708,7 @@ VR4Matrixf Oculus360Photos::onNewFrame( const VFrame vrFrame )
 
     if ( m_menuState == MENU_PANO_FULLY_VISIBLE )
     {
-        if ( !m_panoMenu->interacting() )
+        if(true)
         {
             if ( m_panoMenuTimeLeft > 0.0f )
             {
@@ -961,7 +739,6 @@ const char * menuStateNames[] =
 {
     "MENU_NONE",
     "MENU_BACKGROUND_INIT",
-    "MENU_BROWSER",
     "MENU_PANO_LOADING",
     "MENU_PANO_FADEIN",
     "MENU_PANO_REOPEN_FADEIN",
@@ -976,31 +753,9 @@ const char* Oculus360Photos::menuStateString( const OvrMenuState state )
     return menuStateNames[ state ];
 }
 
-int Oculus360Photos::toggleCurrentAsFavorite()
-{
-    // Save MetaData -
-    TagAction result = m_metaData->toggleTag( const_cast< OvrPhotosMetaDatum * >( m_activePano ), "Favorites" );
-
-    switch ( result )
-    {
-    case TAG_ADDED:
-        m_browser->addToFavorites( m_activePano );
-        break;
-    case TAG_REMOVED:
-        m_browser->removeFromFavorites( m_activePano );
-        break;
-    case TAG_ERROR:
-    default:
-        vAssert( false );
-        break;
-    }
-
-    return result;
-}
-
 int Oculus360Photos::numPanosInActiveCategory() const
 {
-    return m_browser->numPanosInActive();
+    return 1;
 }
 
 bool Oculus360Photos::wantSrgbFramebuffer() const
@@ -1010,7 +765,7 @@ bool Oculus360Photos::wantSrgbFramebuffer() const
 
 bool Oculus360Photos::allowPanoInput() const
 {
-    return m_browser->isClosed() && m_menuState == MENU_PANO_FULLY_VISIBLE;
+    return m_menuState == MENU_PANO_FULLY_VISIBLE;
 }
 
 NV_NAMESPACE_END

@@ -71,12 +71,10 @@ public:
     VR4Matrixf 	drawEyeView( const int eye, const float fovDegrees ) override;
     VR4Matrixf 	onNewFrame( VFrame vrFrame ) override;
     void command(const VEvent &event) override;
-    bool 		onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType ) override;
     bool		wantSrgbFramebuffer() const override;
 
     void				onPanoActivated( const OvrMetaDatum * panoData );
-    PanoBrowser *		browser()										{ return m_browser; }
-    OvrPhotosMetaData *	metaData()										{ return m_metaData; }
+    OvrPhotosMetaData *	metaData()										{ return NULL; }
     const OvrPhotosMetaDatum * activePano() const						{ return m_activePano; }
     void				setActivePano( const OvrPhotosMetaDatum * data )	{ vAssert( data );  m_activePano = data; }
     float				fadeLevel() const								{ return m_currentFadeLevel;  }
@@ -85,7 +83,7 @@ public:
 	void				SetMenuState( const OvrMenuState state );
     OvrMenuState		currentState() const								{ return  m_menuState; }
 
-    int					toggleCurrentAsFavorite();
+    int					toggleCurrentAsFavorite(){return 0;}
 
     bool				useOverlay() const;
     bool				allowPanoInput() const;
@@ -108,10 +106,6 @@ private:
     SineFader			m_fader;
 
 	// Pano data and menus
-    VArray< VString > 			m_searchPaths;
-    OvrPhotosMetaData *			m_metaData;
-    OvrPanoMenu *				m_panoMenu;
-    PanoBrowser *				m_browser;
     const OvrPhotosMetaDatum *	m_activePano;
     VString						m_startupPano;
 
