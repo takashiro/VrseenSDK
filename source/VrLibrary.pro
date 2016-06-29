@@ -70,7 +70,6 @@ SOURCES += \
     jni/gui/VolumePopup.cpp \
     jni/gui/ScrollManager.cpp \
     jni/gui/ScrollBarComponent.cpp \
-    jni/gui/ProgressBarComponent.cpp \
     jni/gui/SwipeHintComponent.cpp \
     jni/gui/MetaDataManager.cpp \
     jni/gui/OutOfSpaceMenu.cpp \
@@ -192,7 +191,6 @@ HEADERS += \
     jni/gui/VRMenuObject.h \
     jni/gui/ScrollManager.h \
     jni/gui/ScrollBarComponent.h \
-    jni/gui/ProgressBarComponent.h \
     jni/gui/SwipeHintComponent.h \
     jni/gui/MetaDataManager.h \
     jni/gui/OutOfSpaceMenu.h \

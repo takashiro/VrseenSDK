@@ -86,7 +86,6 @@ LOCAL_SRC_FILES  := \
 	gui/VolumePopup.cpp \
 	gui/ScrollManager.cpp \
 	gui/ScrollBarComponent.cpp \
-	gui/ProgressBarComponent.cpp \
 	gui/SwipeHintComponent.cpp \
 	gui/MetaDataManager.cpp \
 	gui/OutOfSpaceMenu.cpp \
