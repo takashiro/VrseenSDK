@@ -32,7 +32,6 @@ SOURCES += \
     jni/core/VString.cpp \
     jni/core/VThread.cpp \
     jni/core/VTimer.cpp \
-    jni/core/MappedFile.cpp \
     jni/core/VMutex.cpp \
     jni/core/VUserSettings.cpp \
     jni/core/VVariant.cpp \
@@ -140,7 +139,6 @@ HEADERS += \
     jni/core/String_PathUtil.h \
     jni/core/VThread.h \
     jni/core/VTimer.h \
-    jni/core/MappedFile.h \
     jni/core/VMutex.h \
     jni/core/List.h \
     jni/core/VVariant.h \

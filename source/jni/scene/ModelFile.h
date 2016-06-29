@@ -143,17 +143,6 @@ struct ModelGlPrograms
 	const VGlShader * ProgSkinnedReflectionMapped;
 };
 
-// Pass in the programs that will be used for the model materials.
-// Obviously not very general purpose.
-ModelFile * LoadModelFileFromMemory( const char * fileName,
-		const void * buffer, int bufferLength,
-		const ModelGlPrograms & programs,
-		const MaterialParms & materialParms );
-
-ModelFile * LoadModelFile( const char * fileName,
-		const ModelGlPrograms & programs,
-		const MaterialParms & materialParms );
-
 NV_NAMESPACE_END
 
 
