@@ -1419,7 +1419,7 @@ struct App::Private
     }
 };
 
-App *NervGearAppInstance = nullptr;
+App *vAppInstance = nullptr;
 
 App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
     : d(new Private(this))
@@ -1427,8 +1427,8 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
     d->activity = activity;
     d->uiJni = jni;
     vInfo("----------------- AppLocal::AppLocal() -----------------");
-    vAssert(NervGearAppInstance == nullptr);
-    NervGearAppInstance = this;
+    vAssert(vAppInstance == nullptr);
+    vAppInstance = this;
 
     d->kernel = VKernel::instance();
     d->storagePaths = new VStandardPath(jni, activityObject);

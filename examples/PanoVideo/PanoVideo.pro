@@ -2,7 +2,7 @@ TEMPLATE = app
 CONFIG += console
 CONFIG -= app_bundle
 CONFIG -= qt
-TARGET = nervgearvideo
+TARGET = panovideo
 
 SOURCES += jni/PanoVideo.cpp
 HEADERS += jni/PanoVideo.h
