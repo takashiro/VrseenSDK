@@ -30,7 +30,7 @@ void test()
         assert(data == str);
     }
 
-    unlink("test.txt");
+    remove("test.txt");
 
     {
         char bytes[1024];
@@ -60,7 +60,7 @@ void test()
         }
     }
 
-    unlink("test.bin");
+    remove("test.bin");
 }
 
 ADD_TEST(VFile, test)

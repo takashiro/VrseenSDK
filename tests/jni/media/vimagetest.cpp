@@ -10,7 +10,7 @@ namespace {
 
 void test()
 {
-    VImage image("assets/test.bmp");
+    VImage image(VPath("assets/test.bmp"));
     assert(image.isValid());
     assert(image.width() == 1);
     assert(image.height() == 1);
