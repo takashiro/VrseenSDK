@@ -65,7 +65,6 @@ SOURCES += \
     jni/gui/DefaultComponent.cpp \
     jni/gui/TextFade_Component.cpp \
     jni/gui/CollisionPrimitive.cpp \
-    jni/gui/ActionComponents.cpp \
     jni/gui/VolumePopup.cpp \
     jni/gui/ScrollManager.cpp \
     jni/gui/ScrollBarComponent.cpp \
@@ -184,7 +183,6 @@ HEADERS += \
     jni/gui/DefaultComponent.h \
     jni/gui/TextFade_Component.h \
     jni/gui/CollisionPrimitive.h \
-    jni/gui/ActionComponents.h \
     jni/gui/VolumePopup.h \
     jni/gui/VRMenuObject.h \
     jni/gui/ScrollManager.h \

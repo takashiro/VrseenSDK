@@ -81,7 +81,6 @@ LOCAL_SRC_FILES  := \
 	gui/DefaultComponent.cpp \
 	gui/TextFade_Component.cpp \
 	gui/CollisionPrimitive.cpp \
-	gui/ActionComponents.cpp \
 	gui/VolumePopup.cpp \
 	gui/ScrollManager.cpp \
 	gui/ScrollBarComponent.cpp \
