@@ -6,7 +6,7 @@ QT -= gui
 TARGET = panophoto
 
 SOURCES += \
-    jni/Oculus360Photos.cpp \
+    jni/PanoPhoto.cpp \
     jni/FileLoader.cpp \
     jni/PanoBrowser.cpp \
     jni/PanoMenu.cpp \
