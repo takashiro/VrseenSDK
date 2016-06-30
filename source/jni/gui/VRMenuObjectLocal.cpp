@@ -1069,7 +1069,7 @@ VBoxf VRMenuObjectLocal::setTextLocalBounds( BitmapFont const & font ) const
 			int numLines = 0;
 
             font.CalcTextMetrics(m_text, len, m_textMetrics.w, m_textMetrics.h,
-					m_textMetrics.ascent, m_textMetrics.descent, m_textMetrics.fontHeight, lineWidths, MAX_LINES, numLines );
+                    m_textMetrics.ascent, m_textMetrics.descent, m_textMetrics.fontHeight, lineWidths, MAX_LINES, numLines );
 		}
     }
 

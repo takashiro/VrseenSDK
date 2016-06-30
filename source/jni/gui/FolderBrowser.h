@@ -68,7 +68,7 @@ public:
 
     virtual void						oneTimeInit();
     // Builds the menu view using the passed in model. Builds only what's marked dirty - can be called multiple times.
-    virtual void						buildDirtyMenu( OvrMetaData & metaData );
+//    virtual void						buildDirtyMenu( OvrMetaData & metaData );
 	// Swiping when the menu is inactive can cycle through files in
 	// the directory.  Step can be 1 or -1.
     virtual	const OvrMetaDatum *		nextFileInDirectory( const int step );

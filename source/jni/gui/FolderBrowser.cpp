@@ -1157,180 +1157,180 @@ void OvrFolderBrowser::oneTimeInit()
 	rootComp->SetScrollUpHintHandle( scrollUpHintHandle );
 }
 
-void OvrFolderBrowser::buildDirtyMenu( OvrMetaData & metaData )
-{
-	OvrVRMenuMgr & menuManager = m_app->vrMenuMgr();
-	BitmapFont & font = m_app->defaultFont();
-	VRMenuObject * root = menuManager.toObject( rootHandle() );
-	vAssert( root );
+//void OvrFolderBrowser::buildDirtyMenu( OvrMetaData & metaData )
+//{
+//	OvrVRMenuMgr & menuManager = m_app->vrMenuMgr();
+//	BitmapFont & font = m_app->defaultFont();
+//	VRMenuObject * root = menuManager.toObject( rootHandle() );
+//	vAssert( root );
 
-	VArray< VRMenuComponent* > comps;
-	VArray< const VRMenuObjectParms * > parms;
+//	VArray< VRMenuComponent* > comps;
+//	VArray< const VRMenuObjectParms * > parms;
 
-    VArray<OvrMetaData::Category> categories = metaData.categories();
-	const int numCategories = categories.length();
+//    VArray<OvrMetaData::Category> categories = metaData.categories();
+//	const int numCategories = categories.length();
 
-	// load folders and position
-	for ( int catIndex = 0; catIndex < numCategories; ++catIndex )
-	{
-		// Load a category to build swipe folder
-		OvrMetaData::Category & currentCategory = metaData.getCategory( catIndex );
-		if ( currentCategory.dirty ) // Only build if dirty
-		{
-			vInfo("Loading folder" << catIndex << "named" << currentCategory.categoryTag);
-			FolderView * folder = getFolderView( currentCategory.categoryTag );
+//	// load folders and position
+//	for ( int catIndex = 0; catIndex < numCategories; ++catIndex )
+//	{
+//		// Load a category to build swipe folder
+//		OvrMetaData::Category & currentCategory = metaData.getCategory( catIndex );
+//		if ( currentCategory.dirty ) // Only build if dirty
+//		{
+//			vInfo("Loading folder" << catIndex << "named" << currentCategory.categoryTag);
+//			FolderView * folder = getFolderView( currentCategory.categoryTag );
 
-			// if building for the first time
-			if ( folder == NULL )
-			{
-				// Create internal folder struct
-				VString localizedCategoryName;
+//			// if building for the first time
+//			if ( folder == NULL )
+//			{
+//				// Create internal folder struct
+//				VString localizedCategoryName;
 
-				// Get localized tag (folder title)
-                localizedCategoryName = getCategoryTitle(VrLocale::MakeStringId(currentCategory.categoryTag), currentCategory.categoryTag);
+//				// Get localized tag (folder title)
+//                localizedCategoryName = getCategoryTitle(VrLocale::MakeStringId(currentCategory.categoryTag), currentCategory.categoryTag);
 
-				// the localization is now done app-side
-//				VrLocale::GetString( AppPtr->GetVrJni(), AppPtr->GetJavaObject(),
-//					VrLocale::MakeStringIdFromANSI( currentCategory.CategoryTag ), currentCategory.CategoryTag, localizedCategoryName );
+//				// the localization is now done app-side
+////				VrLocale::GetString( AppPtr->GetVrJni(), AppPtr->GetJavaObject(),
+////					VrLocale::MakeStringIdFromANSI( currentCategory.CategoryTag ), currentCategory.CategoryTag, localizedCategoryName );
 
-				folder = new FolderView( localizedCategoryName, currentCategory.categoryTag );
-				m_folders.append( folder );
+//				folder = new FolderView( localizedCategoryName, currentCategory.categoryTag );
+//				m_folders.append( folder );
 
-				buildFolder( currentCategory, folder, metaData, m_foldersRootId, catIndex );
+//				buildFolder( currentCategory, folder, metaData, m_foldersRootId, catIndex );
 
-				updateFolderTitle( folder );
-				folder->maxRotation = calcFolderMaxRotation( folder );
-			}
-			else // already have this folder - rebuild it with the new metadata
-			{
-				VArray< const OvrMetaDatum * > folderMetaData;
-                if ( metaData.getMetaData(currentCategory, folderMetaData ) )
-				{
-					rebuildFolder( metaData, catIndex, folderMetaData );
-				}
-				else
-				{
-					vInfo("Failed to get any metaData for folder" << catIndex << "named" << currentCategory.categoryTag);
-				}
-			}
+//				updateFolderTitle( folder );
+//				folder->maxRotation = calcFolderMaxRotation( folder );
+//			}
+//			else // already have this folder - rebuild it with the new metadata
+//			{
+//				VArray< const OvrMetaDatum * > folderMetaData;
+//                if ( metaData.getMetaData(currentCategory, folderMetaData ) )
+//				{
+//					rebuildFolder( metaData, catIndex, folderMetaData );
+//				}
+//				else
+//				{
+//					vInfo("Failed to get any metaData for folder" << catIndex << "named" << currentCategory.categoryTag);
+//				}
+//			}
 
-			currentCategory.dirty = false;
+//			currentCategory.dirty = false;
 
-			// Set up initial positions - 0 in center, the rest ascending in order below it
-			m_mediaCount += folder->panels.length();
-			VRMenuObject * folderObject = menuManager.toObject( folder->handle );
-			vAssert( folderObject != NULL );
-			folderObject->setLocalPosition( ( DOWN * m_panelHeight * catIndex ) + folderObject->localPosition() );
-		}
-	}
+//			// Set up initial positions - 0 in center, the rest ascending in order below it
+//			m_mediaCount += folder->panels.length();
+//			VRMenuObject * folderObject = menuManager.toObject( folder->handle );
+//			vAssert( folderObject != NULL );
+//			folderObject->setLocalPosition( ( DOWN * m_panelHeight * catIndex ) + folderObject->localPosition() );
+//		}
+//	}
 
-	const VRMenuFontParms fontParms( HORIZONTAL_CENTER, VERTICAL_CENTER, false, false, true, 0.525f, 0.45f, 0.5f );
+//	const VRMenuFontParms fontParms( HORIZONTAL_CENTER, VERTICAL_CENTER, false, false, true, 0.525f, 0.45f, 0.5f );
 
-	// Process any thumb creation commands
-    m_backgroundCommands.post("processCreates", &m_thumbCreateAndLoadCommands);
+//	// Process any thumb creation commands
+//    m_backgroundCommands.post("processCreates", &m_thumbCreateAndLoadCommands);
 
-	// Show no media menu if no media found
-	if ( m_mediaCount == 0 )
-	{
-		VString title;
-		VString imageFile;
-		VString message;
-		onMediaNotFound( m_app, title, imageFile, message );
+//	// Show no media menu if no media found
+//	if ( m_mediaCount == 0 )
+//	{
+//		VString title;
+//		VString imageFile;
+//		VString message;
+//		onMediaNotFound( m_app, title, imageFile, message );
 
-		// Create a folder if we didn't create at least one to display no media info
-		if ( m_folders.length() < 1 )
-		{
-			const VString noMediaTag( "No Media" );
-			const_cast< OvrMetaData & >( metaData ).addCategory( noMediaTag );
-			OvrMetaData::Category & noMediaCategory = metaData.getCategory( 0 );
-			FolderView * noMediaView = new FolderView( noMediaTag, noMediaTag );
-			buildFolder( noMediaCategory, noMediaView, metaData, m_foldersRootId, 0 );
-			m_folders.append( noMediaView );
-		}
+//		// Create a folder if we didn't create at least one to display no media info
+//		if ( m_folders.length() < 1 )
+//		{
+//			const VString noMediaTag( "No Media" );
+//			const_cast< OvrMetaData & >( metaData ).addCategory( noMediaTag );
+//			OvrMetaData::Category & noMediaCategory = metaData.getCategory( 0 );
+//			FolderView * noMediaView = new FolderView( noMediaTag, noMediaTag );
+//			buildFolder( noMediaCategory, noMediaView, metaData, m_foldersRootId, 0 );
+//			m_folders.append( noMediaView );
+//		}
 
-		// Set title
-		const FolderView * folder = getFolderView( 0 );
-		vAssert ( folder != NULL );
-		VRMenuObject * folderTitleObject = menuManager.toObject( folder->titleHandle );
-		vAssert( folderTitleObject != NULL );
-        folderTitleObject->setText(title);
-		VRMenuObjectFlags_t flags = folderTitleObject->flags();
-		flags &= ~VRMenuObjectFlags_t( VRMENUOBJECT_DONT_RENDER );
-		folderTitleObject->setFlags( flags );
+//		// Set title
+//		const FolderView * folder = getFolderView( 0 );
+//		vAssert ( folder != NULL );
+//		VRMenuObject * folderTitleObject = menuManager.toObject( folder->titleHandle );
+//		vAssert( folderTitleObject != NULL );
+//        folderTitleObject->setText(title);
+//		VRMenuObjectFlags_t flags = folderTitleObject->flags();
+//		flags &= ~VRMenuObjectFlags_t( VRMENUOBJECT_DONT_RENDER );
+//		folderTitleObject->setFlags( flags );
 
-		// Add no media panel
-        const V3Vectf dir( FWD );
-        const VPosf panelPose( VQuatf(), dir * m_radius );
-        const V3Vectf panelScale( 1.0f );
-        const VPosf textPose( VQuatf(), V3Vectf( 0.0f, -0.3f, 0.0f ) );
+//		// Add no media panel
+//        const V3Vectf dir( FWD );
+//        const VPosf panelPose( VQuatf(), dir * m_radius );
+//        const V3Vectf panelScale( 1.0f );
+//        const VPosf textPose( VQuatf(), V3Vectf( 0.0f, -0.3f, 0.0f ) );
 
-		VRMenuSurfaceParms panelSurfParms( "panelSurface",
-            imageFile, SURFACE_TEXTURE_DIFFUSE,
-			NULL, SURFACE_TEXTURE_MAX,
-			NULL, SURFACE_TEXTURE_MAX );
+//		VRMenuSurfaceParms panelSurfParms( "panelSurface",
+//            imageFile, SURFACE_TEXTURE_DIFFUSE,
+//			NULL, SURFACE_TEXTURE_MAX,
+//			NULL, SURFACE_TEXTURE_MAX );
 
-		VRMenuObjectParms * p = new VRMenuObjectParms( VRMENU_STATIC, VArray< VRMenuComponent* >(),
-            panelSurfParms, message, panelPose, panelScale, textPose, V3Vectf( 1.3f ), fontParms, VRMenuId_t(),
-			VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_ALL ), VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
+//		VRMenuObjectParms * p = new VRMenuObjectParms( VRMENU_STATIC, VArray< VRMenuComponent* >(),
+//            panelSurfParms, message, panelPose, panelScale, textPose, V3Vectf( 1.3f ), fontParms, VRMenuId_t(),
+//			VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_ALL ), VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 
-		parms.append( p );
-		addItems( menuManager, font, parms, folder->swipeHandle, true ); // PARENT: folder.TitleRootHandle
-		parms.clear();
+//		parms.append( p );
+//		addItems( menuManager, font, parms, folder->swipeHandle, true ); // PARENT: folder.TitleRootHandle
+//		parms.clear();
 
-		m_noMedia = true;
+//		m_noMedia = true;
 
-		// Hide scroll hints while no media
-		VRMenuObject * scrollHintRootObject = menuManager.toObject( m_scrollSuggestionRootHandle );
-		vAssert( scrollHintRootObject  );
-		scrollHintRootObject->setVisible( false );
+//		// Hide scroll hints while no media
+//		VRMenuObject * scrollHintRootObject = menuManager.toObject( m_scrollSuggestionRootHandle );
+//		vAssert( scrollHintRootObject  );
+//		scrollHintRootObject->setVisible( false );
 
-		return;
-	}
+//		return;
+//	}
 
-	if ( 0 ) // DISABLED UP/DOWN wrap indicators
-	{
-		// Show  wrap around indicator if we have more than one non empty folder
-		const FolderView * topFolder = getFolderView( 0 );
-		if( topFolder && ( ( m_folders.length() > 3 ) ||
-			( m_folders.length() == 4 && !topFolder->panels.isEmpty() ) ) )
-		{
-			const char * indicatorLeftIcon = "res/raw/wrap_left.png";
-			VRMenuSurfaceParms indicatorSurfaceParms( "leftSurface",
-					indicatorLeftIcon, SURFACE_TEXTURE_DIFFUSE,
-					NULL, SURFACE_TEXTURE_MAX, NULL, SURFACE_TEXTURE_MAX );
-			// Wrap around indicator - used for indicating all folders/category wrap around.
-			VRMenuId_t indicatorId( uniqueId.Get( 1 ) );
-            VPosf indicatorPos( VQuatf(), FWD * ( m_radius + 0.1f ) + UP * m_panelHeight * 0.0f );
-			VRMenuObjectParms indicatorParms(
-					VRMENU_STATIC,
-					VArray< VRMenuComponent* >(),
-					indicatorSurfaceParms,
-					"",
-					indicatorPos,
-                    V3Vectf( 3.0f ),
-					fontParms,
-					indicatorId,
-					VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_ALL ),
-					VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
+//	if ( 0 ) // DISABLED UP/DOWN wrap indicators
+//	{
+//		// Show  wrap around indicator if we have more than one non empty folder
+//		const FolderView * topFolder = getFolderView( 0 );
+//		if( topFolder && ( ( m_folders.length() > 3 ) ||
+//			( m_folders.length() == 4 && !topFolder->panels.isEmpty() ) ) )
+//		{
+//			const char * indicatorLeftIcon = "res/raw/wrap_left.png";
+//			VRMenuSurfaceParms indicatorSurfaceParms( "leftSurface",
+//					indicatorLeftIcon, SURFACE_TEXTURE_DIFFUSE,
+//					NULL, SURFACE_TEXTURE_MAX, NULL, SURFACE_TEXTURE_MAX );
+//			// Wrap around indicator - used for indicating all folders/category wrap around.
+//			VRMenuId_t indicatorId( uniqueId.Get( 1 ) );
+//            VPosf indicatorPos( VQuatf(), FWD * ( m_radius + 0.1f ) + UP * m_panelHeight * 0.0f );
+//			VRMenuObjectParms indicatorParms(
+//					VRMENU_STATIC,
+//					VArray< VRMenuComponent* >(),
+//					indicatorSurfaceParms,
+//					"",
+//					indicatorPos,
+//                    V3Vectf( 3.0f ),
+//					fontParms,
+//					indicatorId,
+//					VRMenuObjectFlags_t( VRMENUOBJECT_DONT_HIT_ALL ),
+//					VRMenuObjectInitFlags_t( VRMENUOBJECT_INIT_FORCE_POSITION ) );
 
-			parms.append( &indicatorParms );
-			addItems(menuManager, font, parms, rootHandle(), true);
-			menuHandle_t foldersWrapHandle = root->childHandleForId(menuManager, indicatorId);
-			VRMenuObject * wrapIndicatorObject = menuManager.toObject( foldersWrapHandle );
-			NV_UNUSED( wrapIndicatorObject );
-			vAssert( wrapIndicatorObject != NULL );
+//			parms.append( &indicatorParms );
+//			addItems(menuManager, font, parms, rootHandle(), true);
+//			menuHandle_t foldersWrapHandle = root->childHandleForId(menuManager, indicatorId);
+//			VRMenuObject * wrapIndicatorObject = menuManager.toObject( foldersWrapHandle );
+//			NV_UNUSED( wrapIndicatorObject );
+//			vAssert( wrapIndicatorObject != NULL );
 
-			OvrFolderBrowserRootComponent * rootComp = root->GetComponentById<OvrFolderBrowserRootComponent>();
-			vAssert( rootComp );
-			rootComp->SetFoldersWrapHandle( foldersWrapHandle );
-			rootComp->SetFoldersWrapHandleTopPosition( FWD * ( 0.52f * m_radius) + UP * m_panelHeight * 1.0f );
-			rootComp->SetFoldersWrapHandleBottomPosition( FWD * ( 0.52f * m_radius) + DOWN * m_panelHeight * numCategories );
+//			OvrFolderBrowserRootComponent * rootComp = root->GetComponentById<OvrFolderBrowserRootComponent>();
+//			vAssert( rootComp );
+//			rootComp->SetFoldersWrapHandle( foldersWrapHandle );
+//			rootComp->SetFoldersWrapHandleTopPosition( FWD * ( 0.52f * m_radius) + UP * m_panelHeight * 1.0f );
+//			rootComp->SetFoldersWrapHandleBottomPosition( FWD * ( 0.52f * m_radius) + DOWN * m_panelHeight * numCategories );
 
-			wrapIndicatorObject->setVisible( false );
-			parms.clear();
-		}
-	}
-}
+//			wrapIndicatorObject->setVisible( false );
+//			parms.clear();
+//		}
+//	}
+//}
 
 void OvrFolderBrowser::buildFolder( OvrMetaData::Category & category, FolderView * const folder, const OvrMetaData & metaData, VRMenuId_t foldersRootId, int folderIndex )
 {

@@ -17,7 +17,7 @@ public:
     static bool 	GetString(JNIEnv* jni, jobject activityObject, const VString &key, const VString &defaultOut, VString & out );
 
 	// Takes an ANSI string and returns an identifier that can be used as an Android string id.
-    static VString	MakeStringId(const VString &str);
+//    static VString	MakeStringId(const VString &str);
 
 	// Localization : Returns xliff formatted string
 	// These are set to const char * to make sure that's all that's passed in - we support up to 9, add more functions as needed

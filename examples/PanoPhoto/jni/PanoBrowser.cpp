@@ -158,7 +158,8 @@ PanoBrowser * PanoBrowser::Create(
 VString PanoBrowser::getCategoryTitle(const VString &key, const VString &defaultStr) const
 {
 	VString outStr;
-    VrLocale::GetString(  m_app->vrJni(), m_app->javaObject(), key, defaultStr, outStr);
+//    VrLocale::GetString(  m_app->vrJni(), m_app->javaObject(), key, defaultStr, outStr);
+    outStr = defaultStr;
     return outStr;
 }
 
@@ -169,7 +170,8 @@ VString PanoBrowser::getPanelTitle( const OvrMetaDatum & panelData ) const
 	{
 		// look first in our own locale table for titles that were downloaded at run-time.
 		VString outStr;
-        VrLocale::GetString(m_app->vrJni(), m_app->javaObject(), photosDatum->title, photosDatum->title, outStr );
+//        VrLocale::GetString(m_app->vrJni(), m_app->javaObject(), photosDatum->title, photosDatum->title, outStr );
+        outStr = photosDatum->title;
 		return outStr;
 	}
 	return VString();
@@ -466,9 +468,11 @@ VString PanoBrowser::thumbName( const VString & s )
 
 void PanoBrowser::onMediaNotFound( App * app, VString & title, VString & imageFile, VString & message )
 {
-	VrLocale::GetString( app->vrJni(), app->javaObject(), "@string/app_name", "@string/app_name", title );
+//	VrLocale::GetString( app->vrJni(), app->javaObject(), "@string/app_name", "@string/app_name", title );
+    title = "@string/app_name";
 	imageFile = "assets/sdcard.png";
-	VrLocale::GetString( app->vrJni(), app->javaObject(), "@string/media_not_found", "@string/media_not_found", message );
+//	VrLocale::GetString( app->vrJni(), app->javaObject(), "@string/media_not_found", "@string/media_not_found", message );
+    message = "@string/media_not_found";
 	BitmapFont & font = app->defaultFont();
     VArray<VString> wholeStrs;
     wholeStrs.append( "Gear VR" );

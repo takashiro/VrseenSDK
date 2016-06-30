@@ -32,6 +32,7 @@ class OvrVolumePopup;
 class App
 {
 public:
+
     App(JNIEnv *jni, jobject activityObject, VMainActivity *activity);
     virtual ~App();
 

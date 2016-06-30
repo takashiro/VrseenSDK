@@ -64,11 +64,11 @@ namespace NervGear {
 		// Message
 		{
 			VString outOfSpaceMsg;
-			VrLocale::GetString( m_app->vrJni(), m_app->javaObject(),
-					"@string/out_of_memory",
-					"To use this app, please free up at least %dKB of storage space on your phone.",
-					outOfSpaceMsg );
-
+//			VrLocale::GetString( m_app->vrJni(), m_app->javaObject(),
+//					"@string/out_of_memory",
+//					"To use this app, please free up at least %dKB of storage space on your phone.",
+//					outOfSpaceMsg );
+            outOfSpaceMsg = "To use this app, please free up at least %dKB of storage space on your phone.";
 			char charBuff[10];
 			sprintf( charBuff, "%d", memoryInKB );
 			outOfSpaceMsg = VrLocale::GetXliffFormattedString( outOfSpaceMsg, charBuff );

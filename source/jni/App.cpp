@@ -336,8 +336,10 @@ struct App::Private
     {
         defaultFont = BitmapFont::Create();
 
-        VString fontName;
-        VrLocale::GetString(vrJni, javaObject, "@string/font_name", "efigs.fnt", fontName);
+//        VString fontName;
+        VString fontName("efigs.fnt");
+//        VrLocale::GetString(vrJni, javaObject, "@string/font_name", "efigs.fnt", fontName);
+//        fontName = getLocalString("@string/font_name", "efigs.fnt", fontName);
         fontName.prepend("res/raw/");
         if (!defaultFont->Load(packageCodePath, fontName))
         {
@@ -353,7 +355,8 @@ struct App::Private
                     vWarn("Exception occurred in setDefaultLocale");
                 }
                 // re-get the font name for the new locale
-                VrLocale::GetString(vrJni, javaObject, "@string/font_name", "efigs.fnt", fontName);
+//                VrLocale::GetString(vrJni, javaObject, "@string/font_name", "efigs.fnt", fontName);
+                fontName = "efigs.fnt";
                 fontName.prepend("res/raw/");
                 // try to load the font
                 if (!defaultFont->Load(packageCodePath, fontName))

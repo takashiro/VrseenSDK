@@ -58,62 +58,62 @@ bool VrLocale::GetString(JNIEnv *jni, jobject activityObject, const VString &key
 // - Deletes any character that is not a space, letter or number.
 // - Turn spaces into underscores.
 // - Ignore contiguous spaces.
-VString VrLocale::MakeStringId(const VString &str)
-{
-	enum eLastOutputType
-	{
-		LO_LETTER,
-		LO_DIGIT,
-		LO_SPACE,
-		LO_PUNCTUATION,
-		LO_MAX
-	};
-	eLastOutputType lastOutputType = LO_MAX;
-	VString out = LOCALIZED_KEY_PREFIX;
-    int i = 0;
-    int n = str.length();
-    if (str.startsWith(out)) {
-        i += out.length();
-        n -= out.length();
-    }
-    for (; i < n; i++) {
-        char16_t c = str.at(i);
-		if ( ( c >= '0' && c <= '9' ) )
-		{
-			if ( i == 0 )
-			{
-				// string identifiers in Android cannot start with a number because they
-				// are also encoded as Java identifiers, so output an underscore first.
-				out.append( '_' );
-			}
-			out.append( c );
-			lastOutputType = LO_DIGIT;
-		}
-		else if ( ( c >= 'a' && c <= 'z' ) )
-		{
-			// just output the character
-			out.append( c );
-			lastOutputType = LO_LETTER;
-		}
-		else if ( ( c >= 'A' && c <= 'Z' ) )
-		{
-			// just output the character as lowercase
-			out.append( c + 32 );
-			lastOutputType = LO_LETTER;
-		}
-		else if ( c == 0x20 )
-		{
-			if ( lastOutputType != LO_SPACE )
-			{
-				out.append( '_' );
-				lastOutputType = LO_SPACE;
-			}
-			continue;
-		}
-		// ignore everything else
-	}
-	return out;
-}
+//VString VrLocale::MakeStringId(const VString &str)
+//{
+//	enum eLastOutputType
+//	{
+//		LO_LETTER,
+//		LO_DIGIT,
+//		LO_SPACE,
+//		LO_PUNCTUATION,
+//		LO_MAX
+//	};
+//	eLastOutputType lastOutputType = LO_MAX;
+//	VString out = LOCALIZED_KEY_PREFIX;
+//    int i = 0;
+//    int n = str.length();
+//    if (str.startsWith(out)) {
+//        i += out.length();
+//        n -= out.length();
+//    }
+//    for (; i < n; i++) {
+//        char16_t c = str.at(i);
+//		if ( ( c >= '0' && c <= '9' ) )
+//		{
+//			if ( i == 0 )
+//			{
+//				// string identifiers in Android cannot start with a number because they
+//				// are also encoded as Java identifiers, so output an underscore first.
+//				out.append( '_' );
+//			}
+//			out.append( c );
+//			lastOutputType = LO_DIGIT;
+//		}
+//		else if ( ( c >= 'a' && c <= 'z' ) )
+//		{
+//			// just output the character
+//			out.append( c );
+//			lastOutputType = LO_LETTER;
+//		}
+//		else if ( ( c >= 'A' && c <= 'Z' ) )
+//		{
+//			// just output the character as lowercase
+//			out.append( c + 32 );
+//			lastOutputType = LO_LETTER;
+//		}
+//		else if ( c == 0x20 )
+//		{
+//			if ( lastOutputType != LO_SPACE )
+//			{
+//				out.append( '_' );
+//				lastOutputType = LO_SPACE;
+//			}
+//			continue;
+//		}
+//		// ignore everything else
+//	}
+//	return out;
+//}
 
 //==============================
 // Supports up to 9 arguments and %s format only
