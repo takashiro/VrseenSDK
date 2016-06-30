@@ -287,7 +287,7 @@ void VKernel::run()
     if(isRunning) return;
 
     vInfo("---------- VKernel run ----------");
-#if defined( OVR_BUILD_DEBUG )
+#ifdef NDK_DEBUG
     char const * buildConfig = "DEBUG";
 #else
     char const * buildConfig = "RELEASE";

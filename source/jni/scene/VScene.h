@@ -1,7 +1,7 @@
 #pragma once
 
 #include "VColor.h"
-#include "../core/VArray.h"
+#include "VArray.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -21,8 +21,9 @@ public:
 
     void update();
 
-    VItem* addEyeItem(VItem* parent=0);
-    VArray<VItem*> getEyeItemList();
+    VItem *addEyeItem(VItem *parent = 0);
+    VArray<VItem *> getEyeItemList();
+
 private:
     NV_DECLARE_PRIVATE
     NV_DISABLE_COPY(VScene)

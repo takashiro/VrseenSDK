@@ -13,6 +13,7 @@ public:
     ~VResource();
 
     bool exists() const;
+    static bool Exist(const VString &path);
 
     const VPath &path() const;
     VByteArray data() const;
