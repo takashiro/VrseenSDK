@@ -697,7 +697,7 @@ void VRMenuMgrLocal::SubmitForRenderingRecursive( OvrDebugLines & debugLines, Bi
 				sub.color = surf.color() * curColor;
 				sub.offsets = surf.anchorOffsets();
 				sub.fadeDirection = obj->fadeDirection();
-#if defined( OVR_BUILD_DEBUG )
+#ifdef NDK_DEBUG
 				sub.SurfaceName = surf.name();
 #endif
 				curIndex++;

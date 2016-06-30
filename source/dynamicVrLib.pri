@@ -1,5 +1,5 @@
 
-CONFIG(debug, debug|release): DEFINES += OVR_DEBUG=1 NDK_DEBUG=1 OVR_BUILD_DEBUG
+CONFIG(debug, debug|release): DEFINES += NDK_DEBUG=1
 
 DEFINES += NV_NAMESPACE=NervGear
 

@@ -93,7 +93,7 @@ public:
     VRMenuRenderFlags_t			flags;				// various flags
     V2Vectf					offsets;			// offsets based on anchors (width / height * anchor.x / .y)
     V3Vectf					fadeDirection;		// Fades vertices based on direction - default is zero vector which indicates off
-#if defined( OVR_BUILD_DEBUG )
+#ifdef NDK_DEBUG
 	VString						SurfaceName;		// for debugging only
 #endif
 };
