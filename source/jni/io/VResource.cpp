@@ -47,6 +47,12 @@ bool VResource::exists() const
     return d->exists;
 }
 
+bool VResource::Exist(const VString &path)
+{
+    const VZipFile &zip = vApp->apkFile();
+    return zip.contains(path);
+}
+
 const VPath &VResource::path() const
 {
     return d->path;

@@ -1,8 +1,8 @@
 #include "VSoundManager.h"
 
-#include "VZipFile.h"
 #include "VJson.h"
 #include "VLog.h"
+#include "VResource.h"
 #include "VStandardPath.h"
 #include "VModule.h"
 #include "VMap.h"
@@ -61,27 +61,22 @@ struct VSoundManager::Private
         }
     }
 
-    void loadSoundAssetsFromPackage(const VString &url, const VString &jsonFile)
+    void loadSoundAssetsFromPackage(const VString &url, const VString &jsonFilePath)
     {
-        uint bufferLength = 0;
-        void *buffer = nullptr;
-
-        const VZipFile &apk = vApp->apkFile();
-        apk.read(jsonFile, buffer, bufferLength);
-        if (!buffer) {
-            vFatal("OvrSoundManager::LoadSoundAssetsFromPackage failed to read" << jsonFile);
+        VResource jsonFile(jsonFilePath);
+        if (!jsonFile.exists()) {
+            vFatal("VSoundManager::LoadSoundAssetsFromPackage failed to read" << jsonFilePath);
         }
 
-        std::stringstream s;
-        s << reinterpret_cast<char *>(buffer);
-        VJson dataFile;
-        s >> dataFile;
-        if (dataFile.isNull()) {
-            vFatal("OvrSoundManager::LoadSoundAssetsFromPackage failed json parse on" << jsonFile);
+        std::stringstream buffer;
+        buffer << jsonFile.data();
+        VJson data;
+        buffer >> data;
+        if (data.isNull()) {
+            vFatal("OvrSoundManager::LoadSoundAssetsFromPackage failed json parse on" << jsonFilePath);
         }
-        free(buffer);
 
-        loadSoundAssetsFromJsonObject(url, dataFile);
+        loadSoundAssetsFromJsonObject(url, data);
     }
 };
 
@@ -122,11 +117,10 @@ void VSoundManager::loadSoundAssets()
 
     // if that fails, we are in release - load sounds from vrlib/res/raw and the assets folder
     } else {
-        const VZipFile &apk = vApp->apkFile();
-        if (apk.contains(VRLIB_SOUNDS)) {
+        if (VResource::Exist(VRLIB_SOUNDS)) {
             d->loadSoundAssetsFromPackage("res/raw/", VRLIB_SOUNDS);
 		}
-        if (apk.contains(APP_SOUNDS)) {
+        if (VResource::Exist(APP_SOUNDS)) {
             d->loadSoundAssetsFromPackage("", APP_SOUNDS);
 		}
 	}
