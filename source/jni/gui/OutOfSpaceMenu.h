@@ -14,7 +14,7 @@ public:
     static char const *	MENU_NAME;
     static OvrOutOfSpaceMenu * Create( App * app );
 
-    void 	buildMenu( int memoryInKB );
+//    void 	buildMenu( int memoryInKB );
 
 private:
     OvrOutOfSpaceMenu( App * app );

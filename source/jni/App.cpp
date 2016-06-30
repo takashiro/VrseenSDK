@@ -1452,7 +1452,7 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
 	// A difficulty with JNI is that we can't resolve our (non-Android) package
 	// classes on other threads, so lookup everything we need right now.
     d->vrActivityClass = d->getGlobalClassReference(activityClassName);
-    VrLocale::VrActivityClass = d->vrActivityClass;
+//    VrLocale::VrActivityClass = d->vrActivityClass;
 
     d->playSoundPoolSoundMethodId = d->GetMethodID("playSoundPoolSound", "(Ljava/lang/String;)V");
 

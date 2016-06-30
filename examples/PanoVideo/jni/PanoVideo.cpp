@@ -217,9 +217,10 @@ void PanoVideo::command(const VEvent &event )
 		// FIXME: this needs to do some parameter magic to fix xliff tags
 		VString message;
 //		VrLocale::GetString( vApp->vrJni(), vApp->javaObject(), "@string/playback_failed", "@string/playback_failed", message );
-        message = "@string/playback_failed";
-        VString fileName = m_videoUrl.fileName();
-        message = VrLocale::GetXliffFormattedString(message, fileName.toLatin1().data());
+//        message = "@string/playback_failed";
+//        VString fileName = m_videoUrl.fileName();
+//        message = VrLocale::GetXliffFormattedString(message, fileName.toLatin1().data());
+        message = "playback failed";
 		BitmapFont & font = vApp->defaultFont();
 		font.WordWrapText( message, 1.0f );
         vApp->text.show(message, 4.5f);

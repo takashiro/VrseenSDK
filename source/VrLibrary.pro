@@ -96,8 +96,7 @@ SOURCES += \
     jni/scene/ModelView.cpp \
     jni/scene/SurfaceTexture.cpp \
     jni/scene/SwipeView.cpp \
-    jni/App.cpp \
-    jni/VrLocale.cpp
+    jni/App.cpp
 
 
 HEADERS += \
@@ -219,7 +218,6 @@ HEADERS += \
     jni/scene/SurfaceTexture.h \
     jni/scene/SwipeView.h \
     jni/App.h \
-    jni/VrLocale.h \
     jni/vglobal.h \
     jni/Input.h
 
