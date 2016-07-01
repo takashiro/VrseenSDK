@@ -1,0 +1,4 @@
+include ':source'
+include ':tests'
+include ':examples:PanoPhoto'
+include ':examples:PanoVideo'

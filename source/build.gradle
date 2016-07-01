@@ -1,0 +1,79 @@
+apply plugin: 'com.android.model.library'
+
+model {
+    android {
+        compileSdkVersion = 19
+        buildToolsVersion = '24'
+
+        defaultConfig {
+            minSdkVersion.apiLevel = 19
+            targetSdkVersion.apiLevel = 19
+        }
+        ndk {
+            platformVersion = 19
+            moduleName ='vrseen'
+            toolchain = 'gcc'
+            stl = 'gnustl_static'
+
+            cppFlags.add("-I" + file("jni").absolutePath)
+            cppFlags.add("-I" + file("jni/api").absolutePath)
+            cppFlags.add("-I" + file("jni/core").absolutePath)
+            cppFlags.add("-I" + file("jni/gui").absolutePath)
+            cppFlags.add("-I" + file("jni/io").absolutePath)
+            cppFlags.add("-I" + file("jni/media").absolutePath)
+            cppFlags.add("-I" + file("jni/scene").absolutePath)
+
+            cppFlags.add('-DNV_NAMESPACE=NervGear')
+
+            cppFlags.add('-std=c++0x')
+
+            ldLibs.addAll(['log', 'android', 'EGL', 'GLESv3', 'OpenMAXAL', 'OpenSLES', 'z'])
+        }
+
+        sources {
+            main {
+                manifest {
+                    source {
+                        srcDirs = [ "." ]
+                    }
+                }
+
+                jni {
+                    source {
+                        srcDir 'jni'
+                        exclude '3rdparty/minizip/iowin32.c'
+                        exclude '3rdparty/minizip/minizip.c'
+                    }
+
+                    exportedHeaders {
+                        srcDir 'jni'
+                        srcDir 'jni/api'
+                        srcDir 'jni/core'
+                        srcDir 'jni/gui'
+                        srcDir 'jni/media'
+                        srcDir 'jni/io'
+                        srcDir 'jni/scene'
+                    }
+                }
+
+                java {
+                    source {
+                        srcDir 'src'
+                    }
+                }
+
+                res {
+                    source {
+                        srcDir 'res'
+                    }
+                }
+            }
+        }
+        buildTypes {
+            release {
+                minifyEnabled = false
+                proguardFiles.add(file('proguard-rules.txt'))
+            }
+        }
+    }
+}
