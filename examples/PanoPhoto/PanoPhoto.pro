@@ -7,13 +7,11 @@ TARGET = panophoto
 
 SOURCES += \
     jni/PanoPhoto.cpp \
-    jni/FileLoader.cpp \
-    jni/PhotosMetaData.cpp
+    jni/FileLoader.cpp
 
 HEADERS += \
     jni/PanoPhoto.h \
-    jni/FileLoader.h \
-    jni/PhotosMetaData.h
+    jni/FileLoader.h
 
 ANDROID_APP_DIR = $$PWD
 include(../../source/makeApk.pri)

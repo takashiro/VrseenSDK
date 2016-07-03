@@ -8,11 +8,6 @@
 
 NV_NAMESPACE_BEGIN
 
-class OvrMetaData;
-struct OvrMetaDatum;
-class OvrPhotosMetaData;
-struct OvrPhotosMetaDatum;
-
 class PanoPhoto : public VMainActivity
 {
 public:
@@ -72,10 +67,6 @@ public:
     void command(const VEvent &event) override;
     bool		wantSrgbFramebuffer() const override;
 
-    void				onPanoActivated( const OvrMetaDatum * panoData );
-    OvrPhotosMetaData *	metaData()										{ return NULL; }
-    const OvrPhotosMetaDatum * activePano() const						{ return m_activePano; }
-    void				setActivePano( const OvrPhotosMetaDatum * data )	{ vAssert( data );  m_activePano = data; }
     float				fadeLevel() const								{ return m_currentFadeLevel;  }
     int					numPanosInActiveCategory() const;
 
@@ -104,8 +95,7 @@ private:
     OvrSceneView		m_scene;
     SineFader			m_fader;
 
-	// Pano data and menus
-    const OvrPhotosMetaDatum *	m_activePano;
+    // Pano data and menus
     VString						m_PhotoUrl;
 
 	// panorama vars
