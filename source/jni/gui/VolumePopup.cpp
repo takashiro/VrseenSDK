@@ -5,7 +5,6 @@
 #include "VRMenuComponent.h"
 #include "GuiSys.h"
 #include "VRMenuMgr.h"
-#include "DefaultComponent.h"
 #include "BitmapFont.h"
 #include "VAlgorithm.h"
 #include "VZipFile.h"
