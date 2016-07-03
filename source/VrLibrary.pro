@@ -153,7 +153,6 @@ HEADERS += \
     jni/gui/SoundLimiter.h \
     jni/gui/Fader.h \
     jni/gui/CollisionPrimitive.h \
-    jni/gui/ui_default.h \
     jni/gui/KeyState.h \
     jni/io/VBinaryStream.h \
     jni/io/VBuffer.h \
