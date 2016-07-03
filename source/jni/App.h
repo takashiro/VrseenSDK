@@ -18,11 +18,9 @@ class VZipFile;
 
 struct MaterialParms;
 class VRMenuObjectParms;
-class OvrGuiSys;
 class OvrGazeCursor;
 class BitmapFont;
 class BitmapFontSurface;
-class OvrVRMenuMgr;
 class OvrDebugLines;
 class VViewSettings;
 class VStandardPath;
@@ -49,12 +47,10 @@ public:
 
     VEyeItem::Settings &eyeSettings();
 
-    OvrGuiSys &guiSys();
     OvrGazeCursor  &gazeCursor();
     BitmapFont &defaultFont();
     BitmapFontSurface &worldFontSurface();
     BitmapFontSurface &menuFontSurface();
-    OvrVRMenuMgr &vrMenuMgr();
     OvrDebugLines &debugLines();
     const VStandardPath &storagePaths();
 
@@ -78,8 +74,6 @@ public:
     float popupDistance() const;
     void setPopupScale( float const s );
     float popupScale() const;
-
-    bool isGuiOpen() const;
 
     KeyState &backKeyState();
 

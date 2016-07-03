@@ -21,8 +21,6 @@
 #include "GazeCursor.h"
 #include "GazeCursorLocal.h"		// necessary to instantiate the gaze cursor
 #include "VTexture.h"
-#include "GuiSys.h"
-#include "GuiSysLocal.h"		// necessary to instantiate the gui system
 #include "ModelView.h"
 #include "SurfaceTexture.h"
 
@@ -30,7 +28,6 @@
 #include "VDevice.h"
 #include "VFrameSmooth.h"
 #include "VKernel.h"
-#include "VRMenuMgr.h"
 #include "VUserSettings.h"
 
 #include "VZipFile.h"
@@ -248,12 +245,10 @@ struct App::Private
 
     long long recenterYawFrameStart;	// Enables reorient before sensor data is read.  Allows apps to reorient without having invalid orientation information for that frame.
 
-    OvrGuiSys *guiSys;
     OvrGazeCursor *gazeCursor;
     BitmapFont *defaultFont;
     BitmapFontSurface *worldFontSurface;
     BitmapFontSurface *menuFontSurface;
-    OvrVRMenuMgr *vrMenuMgr;
     OvrDebugLines *debugLines;
     KeyState backKeyState;
     VStandardPath *storagePaths;
@@ -302,12 +297,10 @@ struct App::Private
         , touchState(0)
         , enableDebugOptions(false)
         , recenterYawFrameStart(0)
-        , guiSys(nullptr)
         , gazeCursor(nullptr)
         , defaultFont(nullptr)
         , worldFontSurface(nullptr)
         , menuFontSurface(nullptr)
-        , vrMenuMgr(nullptr)
         , debugLines(nullptr)
         , backKeyState(0.25f, 0.75f)
         , storagePaths(nullptr)
@@ -945,9 +938,7 @@ struct App::Private
             scene->addEyeItem();
             scene->addEyeItem();
 
-            guiSys = new OvrGuiSysLocal;
             gazeCursor = new OvrGazeCursorLocal;
-            vrMenuMgr = OvrVRMenuMgr::Create();
             debugLines = OvrDebugLines::Create();
 
             VTexture loadingIcon(VResource("res/raw/loading_indicator.png"), VTexture::NoMipmaps);
@@ -961,10 +952,6 @@ struct App::Private
             debugLines->Init();
 
             gazeCursor->Init();
-
-            vrMenuMgr->init();
-
-            guiSys->init(self, *vrMenuMgr, *defaultFont);
 
             lastTouchpadTime = VTimer::Seconds();
         }
@@ -1124,9 +1111,6 @@ struct App::Private
             // resend any debug lines that have expired
             debugLines->BeginFrame(self->text.vrFrame.id);
 
-            // reset any VR menu submissions from previous frame
-            vrMenuMgr->beginFrame();
-
             frameworkButtonProcessing(self->text.vrFrame.input);
 
             KeyState::eKeyEventType event = backKeyState.Update(VTimer::Seconds());
@@ -1150,13 +1134,8 @@ struct App::Private
                 }
 
                 // let the menu handle it if it's open
-                bool consumedKey = guiSys->onKeyEvent(self, AKEYCODE_BACK, event);
+                bool consumedKey = activity->onKeyEvent(AKEYCODE_BACK, event);
 
-                // pass to the app if nothing handled it before this
-                if (!consumedKey)
-                {
-                    consumedKey = activity->onKeyEvent(AKEYCODE_BACK, event);
-                }
                 // if nothing consumed the key and it's a short-press, exit the application to OculusHome
                 if (!consumedKey)
                 {
@@ -1264,10 +1243,6 @@ struct App::Private
 
             activity->shutdown();
 
-            guiSys->shutdown(*vrMenuMgr);
-
-            vrMenuMgr->shutdown();
-
             gazeCursor->Shutdown();
 
             debugLines->Shutdown();
@@ -1277,13 +1252,8 @@ struct App::Private
             delete self->dialog.dialogTexture;
             self->dialog.dialogTexture = nullptr;
 
-            delete guiSys;
-            guiSys = nullptr;
-
             delete gazeCursor;
             gazeCursor = nullptr;
-
-            OvrVRMenuMgr::Free(vrMenuMgr);
             OvrDebugLines::Free(debugLines);
 
             shutdownGlObjects();
@@ -1324,11 +1294,6 @@ struct App::Private
 
         // the app menu is always the first consumer so it cannot be usurped
         bool consumedKey = false;
-        if (repeatCount == 0)
-        {
-            consumedKey = guiSys->onKeyEvent(self, keyCode, down ? KeyState::KEY_EVENT_DOWN : KeyState::KEY_EVENT_UP);
-        }
-
         // for all other keys, allow VrAppInterface the chance to handle and consume the key first
         if (!consumedKey)
         {
@@ -1521,10 +1486,6 @@ VEyeItem::Settings &App::eyeSettings()
     return VEyeItem::settings;
 }
 
-OvrGuiSys & App::guiSys()
-{
-    return *d->guiSys;
-}
 OvrGazeCursor & App::gazeCursor()
 {
     return *d->gazeCursor;
@@ -1542,10 +1503,6 @@ BitmapFontSurface & App::menuFontSurface()
     return *d->menuFontSurface;
 }   // TODO: this could be in the menu system now
 
-OvrVRMenuMgr & App::vrMenuMgr()
-{
-    return *d->vrMenuMgr;
-}
 OvrDebugLines & App::debugLines()
 {
     return *d->debugLines;
@@ -1553,11 +1510,6 @@ OvrDebugLines & App::debugLines()
 const VStandardPath & App::storagePaths()
 {
     return *d->storagePaths;
-}
-
-bool App::isGuiOpen() const
-{
-    return d->guiSys->isAnyMenuOpen();
 }
 
 bool App::framebufferIsSrgb() const
@@ -1716,8 +1668,6 @@ void App::recenterYaw(const bool showBlack)
 	// undo the yaw
     VR4Matrixf unrotYawMatrix(VQuatf(VAxis_Y, -yaw));
     d->lastViewMatrix = d->lastViewMatrix * unrotYawMatrix;
-
-    guiSys().resetMenuOrientations(this, d->lastViewMatrix);
 }
 
 void App::setRecenterYawFrameStart(const long long frameNumber)
@@ -1750,12 +1700,10 @@ long long App::recenterYawFrameStart() const
 void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const int numPresents )
 {
     // update vr lib systems after the app frame, but before rendering anything
-    guiSys().frame( this, text.vrFrame, vrMenuMgr(), defaultFont(), menuFontSurface(), centerViewMatrix );
     gazeCursor().Frame( centerViewMatrix, text.vrFrame.deltaSeconds );
 
     menuFontSurface().Finish( centerViewMatrix );
     worldFontSurface().Finish( centerViewMatrix );
-    vrMenuMgr().finish( centerViewMatrix );
 
     // Increase the fov by about 10 degrees if we are not holding 60 fps so
     // there is less black pull-in at the edges.
@@ -1788,7 +1736,6 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
             // Call back to the app for drawing.
             const VR4Matrixf mvp = d->activity->drawEyeView(eye, fovDegrees);
 
-            vrMenuMgr().renderSubmitted(mvp.Transposed(), centerViewMatrix);
             menuFontSurface().Render3D(defaultFont(), mvp.Transposed());
             worldFontSurface().Render3D(defaultFont(), mvp.Transposed());
 
