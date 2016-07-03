@@ -23,8 +23,6 @@ model {
             cppFlags.add("-I" + file("jni/media").absolutePath)
             cppFlags.add("-I" + file("jni/scene").absolutePath)
 
-            cppFlags.add('-DNV_NAMESPACE=NervGear')
-
             cppFlags.add('-std=c++0x')
 
             ldLibs.addAll(['log', 'android', 'EGL', 'GLESv3', 'OpenMAXAL', 'OpenSLES', 'z'])

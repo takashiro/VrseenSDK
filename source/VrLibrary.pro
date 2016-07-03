@@ -6,8 +6,6 @@ CONFIG -= qt
 
 CONFIG(debug, debug|release): DEFINES += NDK_DEBUG=1
 
-DEFINES += NV_NAMESPACE=NervGear
-
 INCLUDEPATH += \
     jni \
     jni/api \
