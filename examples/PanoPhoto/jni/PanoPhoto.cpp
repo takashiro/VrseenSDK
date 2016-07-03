@@ -18,7 +18,6 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include "PanoPhoto.h"
 #include <android/keycodes.h>
 #include "gui/GuiSys.h"
-#include "PanoBrowser.h"
 #include "FileLoader.h"
 #include "core/VTimer.h"
 #include "PhotosMetaData.h"
@@ -30,6 +29,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include <VFile.h>
 #include <VLog.h>
 #include <VImage.h>
+#include <GazeCursor.h>
 
 NV_NAMESPACE_BEGIN
 

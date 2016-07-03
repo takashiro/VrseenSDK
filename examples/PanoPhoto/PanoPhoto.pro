@@ -8,13 +8,11 @@ TARGET = panophoto
 SOURCES += \
     jni/PanoPhoto.cpp \
     jni/FileLoader.cpp \
-    jni/PanoBrowser.cpp \
     jni/PhotosMetaData.cpp
 
 HEADERS += \
     jni/PanoPhoto.h \
     jni/FileLoader.h \
-    jni/PanoBrowser.h \
     jni/PhotosMetaData.h
 
 ANDROID_APP_DIR = $$PWD
