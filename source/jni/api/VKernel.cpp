@@ -61,6 +61,11 @@ JNIEXPORT void Java_com_vrseen_VrLib_nativeHeadsetEvent(JNIEnv *jni, jclass claz
     HeadsetPluggedState.setState( ( state == 1 ) );
 }
 
+JNIEXPORT void Java_com_vrseen_VrLib_nativeVolumeEvent(JNIEnv *, jclass, jint volume)
+{
+    NV_UNUSED(volume);
+}
+
 } // extern "C"
 
 // This must be called by a function called directly from a java thread,

@@ -27,7 +27,6 @@
 #include "SurfaceTexture.h"
 
 #include "VBasicmath.h"
-#include "VolumePopup.h"
 #include "VDevice.h"
 #include "VFrameSmooth.h"
 #include "VKernel.h"
@@ -237,8 +236,6 @@ struct App::Private
     VThread *renderThread;
     int vrThreadTid;		// linux tid
 
-    bool showVolumePopup;	// true to show volume popup when volume changes
-
     VViewSettings viewSettings;
 
     float touchpadTimer;
@@ -257,7 +254,6 @@ struct App::Private
     BitmapFontSurface *worldFontSurface;
     BitmapFontSurface *menuFontSurface;
     OvrVRMenuMgr *vrMenuMgr;
-    OvrVolumePopup *volumePopup;
     OvrDebugLines *debugLines;
     KeyState backKeyState;
     VStandardPath *storagePaths;
@@ -300,7 +296,6 @@ struct App::Private
         , framebufferIsProtected(false)
         , renderMonoMode(false)
         , vrThreadTid(0)
-        , showVolumePopup(true)
         , touchpadTimer(0.0f)
         , lastTouchpadTime(0.0f)
         , lastTouchDown(false)
@@ -313,7 +308,6 @@ struct App::Private
         , worldFontSurface(nullptr)
         , menuFontSurface(nullptr)
         , vrMenuMgr(nullptr)
-        , volumePopup(nullptr)
         , debugLines(nullptr)
         , backKeyState(0.25f, 0.75f)
         , storagePaths(nullptr)
@@ -972,8 +966,6 @@ struct App::Private
 
             guiSys->init(self, *vrMenuMgr, *defaultFont);
 
-            volumePopup = OvrVolumePopup::Create(self, *vrMenuMgr, *defaultFont);
-
             lastTouchpadTime = VTimer::Seconds();
         }
 
@@ -994,12 +986,6 @@ struct App::Private
                     break;
                 }
                 command(event);
-            }
-
-            // update volume popup
-            if (showVolumePopup)
-            {
-                volumePopup->checkForVolumeChange(self);
             }
 
             // If we don't have a surface yet, or we are paused, sleep until
@@ -1694,16 +1680,6 @@ void App::setViewSettings(const VViewSettings &settings)
 KeyState & App::backKeyState()
 {
     return d->backKeyState;
-}
-
-void App::setShowVolumePopup(bool const show)
-{
-    d->showVolumePopup = show;
-}
-
-bool App::showVolumePopup() const
-{
-    return d->showVolumePopup;
 }
 
 void App::recenterYaw(const bool showBlack)

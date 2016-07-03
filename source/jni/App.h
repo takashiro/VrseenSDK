@@ -27,7 +27,6 @@ class OvrDebugLines;
 class VViewSettings;
 class VStandardPath;
 class SurfaceTexture;
-class OvrVolumePopup;
 
 class App
 {
@@ -83,9 +82,6 @@ public:
     bool isGuiOpen() const;
 
     KeyState &backKeyState();
-
-    void setShowVolumePopup( bool const show );
-    bool showVolumePopup() const;
 
     JavaVM *javaVM();
     JNIEnv *uiJni();
