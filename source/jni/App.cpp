@@ -31,7 +31,6 @@
 #include "VDevice.h"
 #include "VFrameSmooth.h"
 #include "VKernel.h"
-#include "VrLocale.h"
 #include "VRMenuMgr.h"
 #include "VUserSettings.h"
 
