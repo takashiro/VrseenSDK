@@ -63,7 +63,6 @@ SOURCES += \
     jni/gui/DefaultComponent.cpp \
     jni/gui/CollisionPrimitive.cpp \
     jni/gui/VolumePopup.cpp \
-    jni/gui/SwipeHintComponent.cpp \
     jni/gui/KeyState.cpp \
     jni/io/VBinaryStream.cpp \
     jni/io/VBuffer.cpp \
@@ -174,7 +173,6 @@ HEADERS += \
     jni/gui/CollisionPrimitive.h \
     jni/gui/VolumePopup.h \
     jni/gui/VRMenuObject.h \
-    jni/gui/SwipeHintComponent.h \
     jni/gui/GuiSysLocal.h \
     jni/gui/ui_default.h \
     jni/gui/KeyState.h \
