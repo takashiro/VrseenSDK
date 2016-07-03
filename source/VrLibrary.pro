@@ -59,7 +59,6 @@ SOURCES += \
     jni/gui/SoundLimiter.cpp \
     jni/gui/VRMenu.cpp \
     jni/gui/GuiSys.cpp \
-    jni/gui/FolderBrowser.cpp \
     jni/gui/Fader.cpp \
     jni/gui/DefaultComponent.cpp \
     jni/gui/TextFade_Component.cpp \
@@ -175,7 +174,6 @@ HEADERS += \
     jni/gui/SoundLimiter.h \
     jni/gui/VRMenu.h \
     jni/gui/GuiSys.h \
-    jni/gui/FolderBrowser.h \
     jni/gui/Fader.h \
     jni/gui/DefaultComponent.h \
     jni/gui/TextFade_Component.h \

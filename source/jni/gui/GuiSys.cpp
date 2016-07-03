@@ -24,7 +24,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VRMenuComponent.h"
 #include "SoundLimiter.h"
 #include "VRMenuEventHandler.h"
-#include "FolderBrowser.h"
 #include "VFrame.h"
 #include "DefaultComponent.h"
 
