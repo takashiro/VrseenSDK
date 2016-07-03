@@ -51,7 +51,6 @@ SOURCES += \
     jni/gui/VText.cpp \
     jni/gui/VDialog.cpp \
     jni/gui/VPanel.cpp \
-    jni/gui/SoundLimiter.cpp \
     jni/gui/Fader.cpp \
     jni/gui/CollisionPrimitive.cpp \
     jni/gui/KeyState.cpp \
@@ -150,7 +149,6 @@ HEADERS += \
     jni/gui/VText.h \
     jni/gui/VDialog.h \
     jni/gui/VPanel.h \
-    jni/gui/SoundLimiter.h \
     jni/gui/Fader.h \
     jni/gui/CollisionPrimitive.h \
     jni/gui/KeyState.h \
