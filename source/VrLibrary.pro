@@ -65,7 +65,6 @@ SOURCES += \
     jni/gui/CollisionPrimitive.cpp \
     jni/gui/VolumePopup.cpp \
     jni/gui/ScrollManager.cpp \
-    jni/gui/ScrollBarComponent.cpp \
     jni/gui/SwipeHintComponent.cpp \
     jni/gui/MetaDataManager.cpp \
     jni/gui/OutOfSpaceMenu.cpp \
@@ -181,7 +180,6 @@ HEADERS += \
     jni/gui/VolumePopup.h \
     jni/gui/VRMenuObject.h \
     jni/gui/ScrollManager.h \
-    jni/gui/ScrollBarComponent.h \
     jni/gui/SwipeHintComponent.h \
     jni/gui/MetaDataManager.h \
     jni/gui/OutOfSpaceMenu.h \
