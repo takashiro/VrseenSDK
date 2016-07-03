@@ -87,7 +87,6 @@ SOURCES += \
     jni/scene/ModelTrace.cpp \
     jni/scene/ModelView.cpp \
     jni/scene/SurfaceTexture.cpp \
-    jni/scene/SwipeView.cpp \
     jni/App.cpp
 
 
@@ -200,7 +199,6 @@ HEADERS += \
     jni/scene/ModelTrace.h \
     jni/scene/ModelView.h \
     jni/scene/SurfaceTexture.h \
-    jni/scene/SwipeView.h \
     jni/App.h \
     jni/vglobal.h \
     jni/Input.h
