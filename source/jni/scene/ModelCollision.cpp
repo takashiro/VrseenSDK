@@ -19,7 +19,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VArray.h"
 #include "VString.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 
 
@@ -235,4 +235,4 @@ V3Vectf SlideMove(
 	return eyePos - UpVector * eyeHeight;
 }
 
-}	// namespace NervGear
+NV_NAMESPACE_END

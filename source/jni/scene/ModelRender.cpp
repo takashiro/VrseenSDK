@@ -13,14 +13,13 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include <stdlib.h>
 
-#include "api/VEglDriver.h"
+#include "VEglDriver.h"
 #include "VAlgorithm.h"
 
 #include "VTexture.h"
-#include "../api/VGlShader.h"
+#include "VGlShader.h"
 
-namespace NervGear
-{
+NV_NAMESPACE_BEGIN
 
 void ChangeGpuState( const GpuState oldState, const GpuState newState ) {
 	if ( newState.blendEnable != oldState.blendEnable )
@@ -500,4 +499,4 @@ void ModelState::ClearSurfaceTextureOverload( const int surfaceIndex )
 	}
 }
 
-}	// namespace NervGear
+NV_NAMESPACE_END
