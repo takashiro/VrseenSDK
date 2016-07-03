@@ -61,7 +61,6 @@ SOURCES += \
     jni/gui/GuiSys.cpp \
     jni/gui/Fader.cpp \
     jni/gui/DefaultComponent.cpp \
-    jni/gui/TextFade_Component.cpp \
     jni/gui/CollisionPrimitive.cpp \
     jni/gui/VolumePopup.cpp \
     jni/gui/SwipeHintComponent.cpp \
@@ -172,7 +171,6 @@ HEADERS += \
     jni/gui/GuiSys.h \
     jni/gui/Fader.h \
     jni/gui/DefaultComponent.h \
-    jni/gui/TextFade_Component.h \
     jni/gui/CollisionPrimitive.h \
     jni/gui/VolumePopup.h \
     jni/gui/VRMenuObject.h \

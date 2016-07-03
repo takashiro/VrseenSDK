@@ -7,7 +7,6 @@
 #include "VRMenuMgr.h"
 #include "DefaultComponent.h"
 #include "BitmapFont.h"
-#include "TextFade_Component.h"
 #include "VAlgorithm.h"
 #include "VZipFile.h"
 #include "VLog.h"
