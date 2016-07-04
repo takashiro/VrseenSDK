@@ -353,28 +353,28 @@ void OvrSceneView::UpdateViewMatrix(const VFrame vrFrame )
     }*/
 
 	// Perform player movement.
-	if ( GamepadMove.LengthSq() > 0.0f )
-	{
-        const VR4Matrixf yawRotate = VR4Matrixf::RotationY( EyeYaw );
-        const V3Vectf orientationVector = yawRotate.Transform( GamepadMove );
+//    vInfo("this is gamepadMove");
+//	if ( GamepadMove.LengthSq() > 0.0f )
+//	{
+//        vInfo("gamepadMove is not empty");
+//        const VR4Matrixf yawRotate = VR4Matrixf::RotationY( EyeYaw );
+//        const V3Vectf orientationVector = yawRotate.Transform( GamepadMove );
 
-		// Don't let move get too crazy fast
-		const float moveDistance = std::min<float>( MoveSpeed * (float)dt, 1.0f );
-                vInfo("begin"<<WorldModel.Definition);
-		if ( WorldModel.Definition )
-		{
-         vInfo("this is "<<WorldModel.Definition);
-			FootPos = SlideMove( FootPos, ViewParms.eyeHeight, orientationVector, moveDistance,
-						WorldModel.Definition->Collisions, WorldModel.Definition->GroundCollisions );
-		}
-		else
-		{	// no scene loaded, walk without any collisions
-			CollisionModel collisionModel;
-			CollisionModel groundCollisionModel;
-			FootPos = SlideMove( FootPos, ViewParms.eyeHeight, orientationVector, moveDistance,
-						collisionModel, groundCollisionModel );
-		}
-	}
+//		// Don't let move get too crazy fast
+//		const float moveDistance = std::min<float>( MoveSpeed * (float)dt, 1.0f );
+//		if ( WorldModel.Definition )
+//		{
+//			FootPos = SlideMove( FootPos, ViewParms.eyeHeight, orientationVector, moveDistance,
+//						WorldModel.Definition->Collisions, WorldModel.Definition->GroundCollisions );
+//		}
+//		else
+//		{	// no scene loaded, walk without any collisions
+//			CollisionModel collisionModel;
+//			CollisionModel groundCollisionModel;
+//			FootPos = SlideMove( FootPos, ViewParms.eyeHeight, orientationVector, moveDistance,
+//						collisionModel, groundCollisionModel );
+//		}
+//	}
 
 	// Rotate and position View Camera, using YawPitchRoll in BodyFrame coordinates.
     VR4Matrixf rollPitchYaw = VR4Matrixf::RotationY( EyeYaw )
