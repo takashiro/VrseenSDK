@@ -13,21 +13,21 @@ NV_NAMESPACE_BEGIN
 //-----------------------------------------------------------------------------------
 // ModelInScene
 //
-class ModelInScene
-{
-public:
-			ModelInScene() :
-				Definition( NULL ),
-				DontRenderForClientUid( 0 )
-				{}
+//class ModelInScene
+//{
+//public:
+//			ModelInScene() :
+//				Definition( NULL ),
+//				DontRenderForClientUid( 0 )
+//				{}
 
-	void	SetModelFile( const ModelFile * mf );
-	void	AnimateJoints( const float timeInSeconds );
+//	void	SetModelFile( const ModelFile * mf );
+//	void	AnimateJoints( const float timeInSeconds );
 
-	ModelState			State;		// passed to rendering code
-	const ModelFile	*	Definition;	// will not be freed by OvrSceneView
-	long long			DontRenderForClientUid;	// skip rendering the model if the current scene's client uid matches this
-};
+//	ModelState			State;		// passed to rendering code
+//	const ModelFile	*	Definition;	// will not be freed by OvrSceneView
+//	long long			DontRenderForClientUid;	// skip rendering the model if the current scene's client uid matches this
+//};
 
 //-----------------------------------------------------------------------------------
 // OvrSceneView
@@ -42,15 +42,15 @@ public:
 	// Increasing yaw looks to the left (rotation around Y axis).
 
 	// loads the default GL shader programs
-	ModelGlPrograms GetDefaultGLPrograms();
+//	ModelGlPrograms GetDefaultGLPrograms();
 
 	// Blocking load of a scene from the filesystem.
 	// This model will be freed when a new world model is set.
-    void		LoadWorldModel( const VString &sceneFileName, const MaterialParms & materialParms );
+//    void		LoadWorldModel( const VString &sceneFileName, const MaterialParms & materialParms );
 
 	// Set an already loaded scene, which will not be freed when a new
 	// world model is set.
-	void		SetWorldModel( ModelFile & model );
+//	void		SetWorldModel( ModelFile & model );
 
 	// Allow movement inside the scene based on the joypad.
 	// Sets the timeWarpParms for smooth joypad turning while dropping frames.
@@ -63,8 +63,8 @@ public:
     VR4Matrixf	DrawEyeView( const int eye, const float fovDegrees ) const;
 
 	// Returns the new modelIndex
-	int			AddModel( ModelInScene * model );
-	void		RemoveModelIndex( int index );
+//	int			AddModel( ModelInScene * model );
+//	void		RemoveModelIndex( int index );
 
 	// Systems that want to manage individual surfaces instead of complete models
 	// can add surfaces to this list during Frame().  They will be drawn for
@@ -72,22 +72,22 @@ public:
 //	VArray<DrawSurface> &GetEmitList() { return EmitList; };
 
 	// Passed on to world model
-	SurfaceDef *			FindNamedSurface( const char *name ) const;
-	const ModelTexture *	FindNamedTexture( const char *name ) const;
-	const ModelTag *		FindNamedTag(const VString &name ) const;
-    VBoxf				GetBounds() const;
+//	SurfaceDef *			FindNamedSurface( const char *name ) const;
+//	const ModelTexture *	FindNamedTexture( const char *name ) const;
+//	const ModelTag *		FindNamedTag(const VString &name ) const;
+//    VBoxf				GetBounds() const;
 
 
 	// Derived from state after last Frame()
-    V3Vectf	GetFootPos() const { return FootPos; }
+//    V3Vectf	GetFootPos() const { return FootPos; }
 
 	// WARNING: this does not take into account the head model, it is just footpos + eyeheight
     V3Vectf	CenterEyePos() const;
 
 	// This includes the head/neck model or position tracking.
-    V3Vectf	ShiftedCenterEyePos() const;
+//    V3Vectf	ShiftedCenterEyePos() const;
 
-    V3Vectf	Forward() const;
+//    V3Vectf	Forward() const;
     VR4Matrixf 	CenterViewMatrix() const;
     VR4Matrixf 	ViewMatrixForEye( const int eye ) const;	// includes InterpupillaryDistance
     VR4Matrixf 	MvpForEye( const int eye, const float fovDegrees ) const;
@@ -96,23 +96,23 @@ public:
     static V3Vectf HeadModelOffset(float EyeRoll, float EyePitch, float EyeYaw, float HeadModelDepth, float HeadModelHeight);
 
 	void		UpdateViewMatrix(const VFrame vrFrame );
-	void		UpdateSceneModels( const VFrame vrFrame, const long long supressModelsWithClientId );
+//	void		UpdateSceneModels( const VFrame vrFrame, const long long supressModelsWithClientId );
 
 	// Entries can be NULL.
 	// None of these will be directly freed by OvrSceneView.
-	VArray<ModelInScene *>	Models;
+//	VArray<ModelInScene *>	Models;
 
 	// This is built up out of Models each frame, and used for
 	// rendering both eyes
-	VArray<ModelState>		RenderModels;
+//	VArray<ModelState>		RenderModels;
 
 	// Externally generated surfaces
 //	VArray<DrawSurface>		EmitList;
 
 	// The only ModelInScene that OvrSceneView actually owns.
-	bool					FreeWorldModelOnChange;
-	ModelInScene			WorldModel;
-	long long				SceneId;		// for network identification
+//	bool					FreeWorldModelOnChange;
+//	ModelInScene			WorldModel;
+//	long long				SceneId;		// for network identification
 
 	VGlShader				ProgVertexColor;
 	VGlShader				ProgSingleTexture;
@@ -124,7 +124,7 @@ public:
 	VGlShader				ProgSkinnedReflectionMapped;
 	bool					LoadedPrograms;
 
-	ModelGlPrograms			GlPrograms;
+//	ModelGlPrograms			GlPrograms;
 
 	// Updated each Frame()
 	VViewSettings				ViewParms;
@@ -142,7 +142,7 @@ public:
 
 	// Angle offsets in radians
 	float					YawOffset;		// added on top of the sensor reading
-	float					PitchOffset;	// only applied if the tracking sensor isn't active
+//	float					PitchOffset;	// only applied if the tracking sensor isn't active
 
 	// Applied one frame later to avoid bounce-back from async time warp yaw velocity prediction.
 	float					YawVelocity;

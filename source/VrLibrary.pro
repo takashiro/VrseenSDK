@@ -89,10 +89,6 @@ SOURCES += \
     jni/scene/EyePostRender.cpp \
     jni/scene/GazeCursor.cpp \
     jni/scene/VTexture.cpp \
-    jni/scene/ModelCollision.cpp \
-    jni/scene/ModelFile.cpp \
-    jni/scene/ModelRender.cpp \
-    jni/scene/ModelTrace.cpp \
     jni/scene/ModelView.cpp \
     jni/scene/SurfaceTexture.cpp \
     jni/scene/SwipeView.cpp \
@@ -210,10 +206,6 @@ HEADERS += \
     jni/scene/EyePostRender.h \
     jni/scene/GazeCursor.h \
     jni/scene/GazeCursorLocal.h \
-    jni/scene/ModelCollision.h \
-    jni/scene/ModelFile.h \
-    jni/scene/ModelRender.h \
-    jni/scene/ModelTrace.h \
     jni/scene/ModelView.h \
     jni/scene/SurfaceTexture.h \
     jni/scene/SwipeView.h \
