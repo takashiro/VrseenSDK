@@ -71,6 +71,7 @@ SOURCES += \
     jni/scene/GazeCursor.cpp \
     jni/scene/VTexture.cpp \
     jni/scene/ModelView.cpp \
+    jni/scene/SurfaceTexture.cpp \
     jni/App.cpp
 
 
@@ -166,6 +167,7 @@ HEADERS += \
     jni/scene/GazeCursor.h \
     jni/scene/GazeCursorLocal.h \
     jni/scene/ModelView.h \
+    jni/scene/SurfaceTexture.h \
     jni/App.h \
     jni/vglobal.h \
     jni/Input.h
