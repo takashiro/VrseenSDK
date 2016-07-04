@@ -15,8 +15,6 @@ of patent rights can be found in the PATENTS file in the same directory.
 
 #include "PanoBrowser.h"
 #include "PanoPhoto.h"
-
-#include "VrLocale.h"
 #include "BitmapFont.h"
 #include "gui/GuiSys.h"
 #include "PhotosMetaData.h"

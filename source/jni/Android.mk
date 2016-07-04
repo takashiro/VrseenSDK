@@ -114,7 +114,6 @@ LOCAL_SRC_FILES  := \
 	scene/SurfaceTexture.cpp \
 	scene/SwipeView.cpp \
 	App.cpp \
-	VrLocale.cpp
 
 LOCAL_SRC_FILES += \
 	3rdParty/stb/stb_image.c \

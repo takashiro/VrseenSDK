@@ -22,7 +22,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "DefaultComponent.h"
 #include "VBasicmath.h"
 #include "linux/stat.h"
-#include "VrLocale.h"
 #include "VRMenuObject.h"
 #include "ScrollBarComponent.h"
 #include "SwipeHintComponent.h"

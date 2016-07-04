@@ -9,7 +9,6 @@
 #include <VFile.h>
 #include <VResource.h>
 #include <VEyeItem.h>
-#include <VrLocale.h>
 #include <VTimer.h>
 #include <VColor.h>
 #include <VArray.h>

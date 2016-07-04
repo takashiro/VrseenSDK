@@ -12,7 +12,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "OutOfSpaceMenu.h"
 #include "App.h"
 #include "BitmapFont.h"
-#include "VrLocale.h"
 #include "VRMenuMgr.h"
 
 namespace NervGear {

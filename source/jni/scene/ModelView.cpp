@@ -360,8 +360,10 @@ void OvrSceneView::UpdateViewMatrix(const VFrame vrFrame )
 
 		// Don't let move get too crazy fast
 		const float moveDistance = std::min<float>( MoveSpeed * (float)dt, 1.0f );
+                vInfo("begin"<<WorldModel.Definition);
 		if ( WorldModel.Definition )
 		{
+         vInfo("this is "<<WorldModel.Definition);
 			FootPos = SlideMove( FootPos, ViewParms.eyeHeight, orientationVector, moveDistance,
 						WorldModel.Definition->Collisions, WorldModel.Definition->GroundCollisions );
 		}
