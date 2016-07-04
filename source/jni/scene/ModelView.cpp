@@ -1,14 +1,3 @@
-/************************************************************************************
-
-Filename    :   ModelView.cpp
-Content     :   Basic viewing and movement in a scene.
-Created     :   December 19, 2013
-Authors     :   John Carmack
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
 #include "ModelView.h"
 #include "VAlgorithm.h"
 #include "api/VKernel.h"
@@ -20,64 +9,6 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VLog.h"
 
 NV_NAMESPACE_BEGIN
-
-//void ModelInScene::SetModelFile( const ModelFile * mf )
-//{
-//	Definition = mf;
-//	State.modelDef = mf ? &mf->Def : NULL;
-//	State.Joints.resize( mf->GetJointCount() );
-//};
-
-//void ModelInScene::AnimateJoints( const float timeInSeconds )
-//{
-//	if ( State.Flags.Pause )
-//	{
-//		return;
-//	}
-
-//	for ( int i = 0; i < Definition->GetJointCount(); i++ )
-//	{
-//		const ModelJoint * joint = Definition->GetJoint( i );
-//		if ( joint->animation == MODEL_JOINT_ANIMATION_NONE )
-//		{
-//			continue;
-//		}
-
-//		float time = ( timeInSeconds + joint->timeOffset ) * joint->timeScale;
-
-//		switch( joint->animation )
-//		{
-//			case MODEL_JOINT_ANIMATION_SWAY:
-//			{
-//                time = sinf( time * VConstants<float>::Pi );
-//				// NOTE: fall through
-//			}
-//			case MODEL_JOINT_ANIMATION_ROTATE:
-//			{
-//                const V3Vectf angles = joint->parameters * ( VConstants<float>::VDTR * time );
-//                const VR4Matrixf matrix = joint->transform *
-//                                        VR4Matrixf::RotationY( angles.y ) *
-//                                        VR4Matrixf::RotationX( angles.x ) *
-//                                        VR4Matrixf::RotationZ( angles.z ) *
-//										joint->transform.Inverted();
-//				State.Joints[i] = matrix.Transposed();
-//				break;
-//			}
-//			case MODEL_JOINT_ANIMATION_BOB:
-//			{
-//                const float frac = sinf( time * VConstants<float>::Pi );
-//                const V3Vectf offset = joint->parameters * frac;
-//                const VR4Matrixf matrix = joint->transform *
-//                                        VR4Matrixf::Translation( offset ) *
-//										joint->transform.Inverted();
-//				State.Joints[i] = matrix.Transposed();
-//				break;
-//			}
-//			case MODEL_JOINT_ANIMATION_NONE:
-//				break;
-//		}
-//	}
-//}
 
 //-------------------------------------------------------------------------------------
 // The RHS coordinate system is defines as follows (as seen in perspective view):
@@ -106,106 +37,6 @@ OvrSceneView::OvrSceneView() :
 	FootPos( 0.0f )
 {
 }
-
-//int OvrSceneView::AddModel( ModelInScene * model )
-//{
-//	const int modelsSize = Models.length();
-
-//	// scan for a NULL entry
-//	for ( int i = 0; i < modelsSize; ++i )
-//	{
-//		if ( Models[i] == NULL )
-//		{
-//			Models[i] = model;
-//			return i;
-//		}
-//	}
-
-//	Models.append( model );
-
-//	return Models.length() - 1;
-//}
-
-//void OvrSceneView::RemoveModelIndex( int index )
-//{
-//	Models[index] = NULL;
-//}
-
-//ModelGlPrograms OvrSceneView::GetDefaultGLPrograms()
-//{
-//	ModelGlPrograms programs;
-
-//	if ( !LoadedPrograms )
-//	{
-//        ProgVertexColor				.initShader( VGlShader::getVertexColorVertexShaderSource(), VGlShader::getVertexColorFragmentShaderSource() );
-//        ProgSingleTexture			.initShader( VGlShader::getSingleTextureVertexShaderSource(), VGlShader::getSingleTextureFragmentShaderSource() );
-//        ProgLightMapped				.initShader( VGlShader::getLightMappedVertexShaderSource(), VGlShader::getLightMappedFragmentShaderSource() );
-//        ProgReflectionMapped		.initShader( VGlShader::getReflectionMappedVertexShaderSource(), VGlShader::getReflectionMappedFragmentShaderSource() );
-//        ProgSkinnedVertexColor		.initShader( VGlShader::getVertexColorSkVertexShaderSource(), VGlShader::getVertexColorFragmentShaderSource() );
-//        ProgSkinnedSingleTexture	.initShader( VGlShader::getSingleTextureSkVertexShaderSource(), VGlShader::getSingleTextureFragmentShaderSource() );
-//        ProgSkinnedLightMapped		.initShader( VGlShader::getLightMappedSkVertexShaderSource(), VGlShader::getLightMappedFragmentShaderSource() );
-//        ProgSkinnedReflectionMapped	.initShader( VGlShader::getReflectionMappedSkVertexShaderSource(), VGlShader::getReflectionMappedFragmentShaderSource() );
-//		LoadedPrograms = true;
-//	}
-
-//	programs.ProgVertexColor				= & ProgVertexColor;
-//	programs.ProgSingleTexture				= & ProgSingleTexture;
-//	programs.ProgLightMapped				= & ProgLightMapped;
-//	programs.ProgReflectionMapped			= & ProgReflectionMapped;
-//	programs.ProgSkinnedVertexColor			= & ProgSkinnedVertexColor;
-//	programs.ProgSkinnedSingleTexture		= & ProgSkinnedSingleTexture;
-//	programs.ProgSkinnedLightMapped			= & ProgSkinnedLightMapped;
-//	programs.ProgSkinnedReflectionMapped	= & ProgSkinnedReflectionMapped;
-
-//	return programs;
-//}
-
-//void OvrSceneView::SetWorldModel( ModelFile & world )
-//{
-//    vInfo("OvrSceneView::SetWorldModel(" << world.FileName << ")");
-
-//	if ( FreeWorldModelOnChange && Models.length() > 0 )
-//	{
-//		delete WorldModel.Definition;
-//		FreeWorldModelOnChange = false;
-//	}
-//	Models.clear();
-
-//	WorldModel.SetModelFile( &world );
-//	AddModel( &WorldModel );
-
-//	// Projection matrix
-//	Znear = 0.01f;
-//	Zfar = 2000.0f;
-
-//	// Set the initial player position
-//    FootPos = V3Vectf( 0.0f, 0.0f, 0.0f );
-//	YawOffset = 0;
-
-//    LastHeadModelOffset = V3Vectf( 0.0f, 0.0f, 0.0f );
-//}
-
-//SurfaceDef * OvrSceneView::FindNamedSurface( const char * name ) const
-//{
-//	return ( WorldModel.Definition == NULL ) ? NULL : WorldModel.Definition->FindNamedSurface( name );
-//}
-
-//const ModelTexture * OvrSceneView::FindNamedTexture( const char * name ) const
-//{
-//	return ( WorldModel.Definition == NULL ) ? NULL : WorldModel.Definition->FindNamedTexture( name );
-//}
-
-//const ModelTag * OvrSceneView::FindNamedTag(const VString &name) const
-//{
-//    return ( WorldModel.Definition == NULL ) ? NULL : WorldModel.Definition->FindNamedTag(name);
-//}
-
-//VBoxf OvrSceneView::GetBounds() const
-//{
-//	return ( WorldModel.Definition == NULL ) ?
-//            VBoxf( V3Vectf( 0, 0, 0 ), V3Vectf( 0, 0, 0 ) ) :
-//			WorldModel.Definition->GetBounds();
-//}
 
 VR4Matrixf OvrSceneView::CenterViewMatrix() const
 {
@@ -265,20 +96,12 @@ VR4Matrixf OvrSceneView::DrawEyeView( const int eye, const float fovDegrees ) co
 	return ( projectionMatrix * viewMatrix );
 }
 
-//V3Vectf OvrSceneView::Forward() const
-//{
-//    return V3Vectf( -ViewMatrix.M[2][0], -ViewMatrix.M[2][1], -ViewMatrix.M[2][2] );
-//}
 
 V3Vectf OvrSceneView::CenterEyePos() const
 {
     return V3Vectf( FootPos.x, FootPos.y + ViewParms.eyeHeight, FootPos.z );
 }
 
-//V3Vectf OvrSceneView::ShiftedCenterEyePos() const
-//{
-//	return ShiftedEyePos;
-//}
 
 V3Vectf OvrSceneView::HeadModelOffset( float EyeRoll, float EyePitch, float EyeYaw, float HeadModelDepth, float HeadModelHeight )
 {
@@ -419,21 +242,6 @@ void OvrSceneView::UpdateViewMatrix(const VFrame vrFrame )
 
     ViewMatrix = VR4Matrixf::LookAtRH( ShiftedEyePos, ShiftedEyePos + forward, up );
 }
-
-//void OvrSceneView::UpdateSceneModels( const VFrame vrFrame, const long long supressModelsWithClientId  )
-//{
-//	// Build the packed array of ModelState to pass to the renderer for both eyes
-//	RenderModels.resize( 0 );
-
-//	for ( int i = 0; i < Models.length(); ++i )
-//	{
-//		if ( Models[i] != NULL && Models[i]->DontRenderForClientUid != supressModelsWithClientId )
-//		{
-//            Models[i]->AnimateJoints( vrFrame.pose.timestamp );
-//			RenderModels.append( Models[i]->State );
-//		}
-//	}
-//}
 
 void OvrSceneView::Frame( const VViewSettings viewParms_, const VFrame vrFrame,
 		VR4Matrixf & timeWarpParmsExternalVelocity, const long long supressModelsWithClientId )
