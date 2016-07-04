@@ -16,8 +16,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "VAlgorithm.h"
 #include "VArray.h"
 
-namespace NervGear
-{
+NV_NAMESPACE_BEGIN
 
 bool Intersect_RayBounds( const V3Vectf & rayStart, const V3Vectf & rayDir,
                             const V3Vectf & mins, const V3Vectf & maxs,
@@ -317,4 +316,4 @@ traceResult_t ModelTrace::Trace_Exhaustive( const V3Vectf & start, const V3Vectf
 	return result;
 }
 
-}
+NV_NAMESPACE_END

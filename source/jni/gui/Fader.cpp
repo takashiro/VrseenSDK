@@ -14,7 +14,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "VBasicmath.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 //======================================================================================
 // Fader
@@ -139,4 +139,4 @@ float SineFader::finalAlpha() const
     return ( cos( radians ) + 1.0f ) * 0.5f; // range 0 to 1
 }
 
-} // namespace NervGear
+NV_NAMESPACE_END

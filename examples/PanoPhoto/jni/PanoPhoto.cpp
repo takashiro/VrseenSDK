@@ -17,11 +17,8 @@ of patent rights can be found in the PATENTS file in the same directory.
 
 #include "PanoPhoto.h"
 #include <android/keycodes.h>
-#include "gui/GuiSys.h"
-#include "PanoBrowser.h"
 #include "FileLoader.h"
 #include "core/VTimer.h"
-#include "PhotosMetaData.h"
 
 #include <android/JniUtils.h>
 #include <VZipFile.h>
@@ -30,6 +27,7 @@ of patent rights can be found in the PATENTS file in the same directory.
 #include <VFile.h>
 #include <VLog.h>
 #include <VImage.h>
+#include <GazeCursor.h>
 
 NV_NAMESPACE_BEGIN
 
@@ -102,7 +100,6 @@ bool PanoPhoto::DoubleBufferedTextureData::SameSize( const int width, const int 
 PanoPhoto::PanoPhoto(JNIEnv *jni, jclass activityClass, jobject activityObject)
     : VMainActivity(jni, activityClass, activityObject)
     , m_fader( 0.0f )
-    , m_activePano( NULL )
     , m_currentPanoIsCubeMap( false )
     , m_menuState( MENU_NONE )
     , m_fadeOutRate( 1.0f / 0.45f )
@@ -658,8 +655,7 @@ void PanoPhoto::SetMenuState( const OvrMenuState state )
     case MENU_PANO_LOADING:
         m_currentFadeRate = m_fadeOutRate;
         m_fader.startFadeOut();
-        startBackgroundPanoLoad(m_activePano->url);
-
+        //startBackgroundPanoLoad(m_activePano->url);
         break;
         // pano menu now to fully open
     case MENU_PANO_FADEIN:
@@ -677,12 +673,6 @@ void PanoPhoto::SetMenuState( const OvrMenuState state )
         vAssert( false );
         break;
     }
-}
-
-void PanoPhoto::onPanoActivated( const OvrMetaDatum * panoData )
-{
-    m_activePano = static_cast< const OvrPhotosMetaDatum * >( panoData );
-    SetMenuState( MENU_PANO_LOADING );
 }
 
 VR4Matrixf PanoPhoto::onNewFrame( const VFrame vrFrame )

@@ -15,7 +15,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include "ModelTrace.h"
 #include "DebugLines.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 //==============================
 // OvrCollisionPrimitive::IntersectRayBounds
@@ -182,4 +182,4 @@ void OvrTriCollisionPrimitive::debugRender( OvrDebugLines & debugLines, VPosf & 
 	}
 }
 
-} // namespace NervGear
+NV_NAMESPACE_END

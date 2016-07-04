@@ -15,7 +15,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 
 #include "api/VKernel.h"
 
-namespace NervGear {
+NV_NAMESPACE_BEGIN
 
 char const * KeyState::EventNames[KEY_EVENT_MAX] =
 {
@@ -176,4 +176,4 @@ void KeyState::Reset()
 	}	PendingEvent = KEY_EVENT_NONE;
 }
 
-} // namespace NervGear
+NV_NAMESPACE_END

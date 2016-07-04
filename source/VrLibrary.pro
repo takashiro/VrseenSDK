@@ -6,8 +6,6 @@ CONFIG -= qt
 
 CONFIG(debug, debug|release): DEFINES += NDK_DEBUG=1
 
-DEFINES += NV_NAMESPACE=NervGear
-
 INCLUDEPATH += \
     jni \
     jni/api \
@@ -51,25 +49,8 @@ SOURCES += \
     jni/gui/VText.cpp \
     jni/gui/VDialog.cpp \
     jni/gui/VPanel.cpp \
-    jni/gui/VRMenuComponent.cpp \
-    jni/gui/VRMenuMgr.cpp \
-    jni/gui/VRMenuObjectLocal.cpp \
-    jni/gui/VRMenuEvent.cpp \
-    jni/gui/VRMenuEventHandler.cpp \
-    jni/gui/SoundLimiter.cpp \
-    jni/gui/VRMenu.cpp \
-    jni/gui/GuiSys.cpp \
-    jni/gui/FolderBrowser.cpp \
     jni/gui/Fader.cpp \
-    jni/gui/DefaultComponent.cpp \
-    jni/gui/TextFade_Component.cpp \
     jni/gui/CollisionPrimitive.cpp \
-    jni/gui/VolumePopup.cpp \
-    jni/gui/ScrollManager.cpp \
-    jni/gui/ScrollBarComponent.cpp \
-    jni/gui/SwipeHintComponent.cpp \
-    jni/gui/MetaDataManager.cpp \
-    jni/gui/OutOfSpaceMenu.cpp \
     jni/gui/KeyState.cpp \
     jni/io/VBinaryStream.cpp \
     jni/io/VBuffer.cpp \
@@ -161,28 +142,8 @@ HEADERS += \
     jni/gui/VText.h \
     jni/gui/VDialog.h \
     jni/gui/VPanel.h \
-    jni/gui/VRMenuComponent.h \
-    jni/gui/VRMenuMgr.h \
-    jni/gui/VRMenuObjectLocal.h \
-    jni/gui/VRMenuEvent.h \
-    jni/gui/VRMenuEventHandler.h \
-    jni/gui/SoundLimiter.h \
-    jni/gui/VRMenu.h \
-    jni/gui/GuiSys.h \
-    jni/gui/FolderBrowser.h \
     jni/gui/Fader.h \
-    jni/gui/DefaultComponent.h \
-    jni/gui/TextFade_Component.h \
     jni/gui/CollisionPrimitive.h \
-    jni/gui/VolumePopup.h \
-    jni/gui/VRMenuObject.h \
-    jni/gui/ScrollManager.h \
-    jni/gui/ScrollBarComponent.h \
-    jni/gui/SwipeHintComponent.h \
-    jni/gui/MetaDataManager.h \
-    jni/gui/OutOfSpaceMenu.h \
-    jni/gui/GuiSysLocal.h \
-    jni/gui/ui_default.h \
     jni/gui/KeyState.h \
     jni/io/VBinaryStream.h \
     jni/io/VBuffer.h \

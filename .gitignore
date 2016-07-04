@@ -28,3 +28,6 @@ local.properties
 gradlew
 MYTEMP/
 *.autosave
+*.iml
+gradle/
+gradle.properties

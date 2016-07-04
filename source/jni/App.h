@@ -18,16 +18,13 @@ class VZipFile;
 
 struct MaterialParms;
 class VRMenuObjectParms;
-class OvrGuiSys;
 class OvrGazeCursor;
 class BitmapFont;
 class BitmapFontSurface;
-class OvrVRMenuMgr;
 class OvrDebugLines;
 class VViewSettings;
 class VStandardPath;
 class SurfaceTexture;
-class OvrVolumePopup;
 
 class App
 {
@@ -50,12 +47,10 @@ public:
 
     VEyeItem::Settings &eyeSettings();
 
-    OvrGuiSys &guiSys();
     OvrGazeCursor  &gazeCursor();
     BitmapFont &defaultFont();
     BitmapFontSurface &worldFontSurface();
     BitmapFontSurface &menuFontSurface();
-    OvrVRMenuMgr &vrMenuMgr();
     OvrDebugLines &debugLines();
     const VStandardPath &storagePaths();
 
@@ -80,12 +75,7 @@ public:
     void setPopupScale( float const s );
     float popupScale() const;
 
-    bool isGuiOpen() const;
-
     KeyState &backKeyState();
-
-    void setShowVolumePopup( bool const show );
-    bool showVolumePopup() const;
 
     JavaVM *javaVM();
     JNIEnv *uiJni();

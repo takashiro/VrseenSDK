@@ -1,0 +1,69 @@
+apply plugin: 'com.android.model.application'
+
+model {
+    android {
+        compileSdkVersion = 19
+        buildToolsVersion = '24'
+
+        defaultConfig {
+            applicationId = 'com.vrseen.panophoto'
+            minSdkVersion.apiLevel = 19
+            targetSdkVersion.apiLevel = 19
+        }
+        ndk {
+            platformVersion = 19
+            moduleName ='panophoto'
+            toolchain = 'gcc'
+            stl = 'gnustl_static'
+            cppFlags.add('-std=c++0x')
+            ldLibs.addAll(['log', 'android', 'EGL', 'GLESv3', 'OpenMAXAL', 'OpenSLES', 'z'])
+        }
+        sources {
+            main {
+                manifest {
+                    source {
+                        srcDir '.'
+                    }
+                }
+
+                jni {
+                    source {
+                        srcDir 'jni'
+                    }
+
+                    dependencies {
+                        project ':source' linkage 'static'
+                    }
+                }
+
+                java {
+                    source {
+                        srcDir 'src'
+                    }
+                }
+
+                assets {
+                    source {
+                        srcDir  'assets'
+                    }
+                }
+
+                res {
+                    source {
+                        srcDir 'res'
+                    }
+                }
+            }
+        }
+        buildTypes {
+            release {
+                minifyEnabled = false
+                proguardFiles.add(file('proguard-rules.txt'))
+            }
+        }
+    }
+}
+
+dependencies {
+    compile project(':source')
+}

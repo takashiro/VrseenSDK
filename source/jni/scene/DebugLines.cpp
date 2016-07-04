@@ -116,9 +116,7 @@ public:
 
 private:
 	mutable VGlGeometry				DepthGeo;
-	mutable VGlGeometry				NonDepthGeo;
-//	NervGear::ArrayPOD< DebugLine_t >	DepthTestedLines;
-//	NervGear::ArrayPOD< DebugLine_t >	NonDepthTestedLines;
+    mutable VGlGeometry				NonDepthGeo;
     VArray< DebugLine_t >	DepthTestedLines;
     VArray< DebugLine_t >	NonDepthTestedLines;
 	LineVertex_t *					Vertices;

@@ -22,7 +22,6 @@
 #include "BitmapFont.h"
 #include "GazeCursor.h"
 #include "App.h"
-#include "SwipeView.h"
 #include "PanoVideo.h"
 
 NV_NAMESPACE_BEGIN
