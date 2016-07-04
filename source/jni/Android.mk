@@ -65,28 +65,11 @@ LOCAL_SRC_FILES  := \
 	api/VEglDriver.cpp \
 	api/VGlShader.cpp \
 	api/VRotationSensor.cpp \
-	gui/VRMenuComponent.cpp \
-	gui/VRMenuMgr.cpp \
-	gui/VRMenuObjectLocal.cpp \
-	gui/VRMenuEvent.cpp \
-	gui/VRMenuEventHandler.cpp \
-	gui/SoundLimiter.cpp \
-	gui/VRMenu.cpp \
-	gui/GuiSys.cpp \
 	gui/VText.cpp \
 	gui/VPanel.cpp \
 	gui/VDialog.cpp \
-	gui/FolderBrowser.cpp \
 	gui/Fader.cpp \
-	gui/DefaultComponent.cpp \
-	gui/TextFade_Component.cpp \
 	gui/CollisionPrimitive.cpp \
-	gui/VolumePopup.cpp \
-	gui/ScrollManager.cpp \
-	gui/ScrollBarComponent.cpp \
-	gui/SwipeHintComponent.cpp \
-	gui/MetaDataManager.cpp \
-	gui/OutOfSpaceMenu.cpp \
 	gui/KeyState.cpp \
 	io/VBuffer.cpp \
 	io/VBinaryStream.cpp \
@@ -112,9 +95,7 @@ LOCAL_SRC_FILES  := \
 	scene/ModelTrace.cpp \
 	scene/ModelView.cpp \
 	scene/SurfaceTexture.cpp \
-	scene/SwipeView.cpp \
 	App.cpp \
-	VrLocale.cpp
 
 LOCAL_SRC_FILES += \
 	3rdParty/stb/stb_image.c \
