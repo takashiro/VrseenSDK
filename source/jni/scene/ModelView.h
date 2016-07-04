@@ -69,7 +69,7 @@ public:
 	// Systems that want to manage individual surfaces instead of complete models
 	// can add surfaces to this list during Frame().  They will be drawn for
 	// both eyes, then the list will be cleared.
-	VArray<DrawSurface> &GetEmitList() { return EmitList; };
+//	VArray<DrawSurface> &GetEmitList() { return EmitList; };
 
 	// Passed on to world model
 	SurfaceDef *			FindNamedSurface( const char *name ) const;
@@ -107,7 +107,7 @@ public:
 	VArray<ModelState>		RenderModels;
 
 	// Externally generated surfaces
-	VArray<DrawSurface>		EmitList;
+//	VArray<DrawSurface>		EmitList;
 
 	// The only ModelInScene that OvrSceneView actually owns.
 	bool					FreeWorldModelOnChange;

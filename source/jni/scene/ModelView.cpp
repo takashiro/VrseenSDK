@@ -240,28 +240,28 @@ VR4Matrixf OvrSceneView::DrawEyeView( const int eye, const float fovDegrees ) co
     const VR4Matrixf projectionMatrix = ProjectionMatrixForEye( eye, fovDegrees );
     const VR4Matrixf viewMatrix = ViewMatrixForEye( eye );
 
-	const DrawSurfaceList & surfs = BuildDrawSurfaceList( RenderModels, viewMatrix, projectionMatrix );
-	(void)RenderSurfaceList( surfs );
+//	const DrawSurfaceList & surfs = BuildDrawSurfaceList( RenderModels, viewMatrix, projectionMatrix );
+//	(void)RenderSurfaceList( surfs );
 
 	// TODO: sort the emit surfaces with the model based surfaces
-	if ( EmitList.length() > 0 )
-	{
-		DrawSurfaceList	emits;
-		emits.drawSurfaces = &EmitList[0];
-		emits.numDrawSurfaces = EmitList.length();
-		emits.projectionMatrix = projectionMatrix;
-		emits.viewMatrix = viewMatrix;
+//	if ( EmitList.length() > 0 )
+//	{
+//		DrawSurfaceList	emits;
+//		emits.drawSurfaces = &EmitList[0];
+//		emits.numDrawSurfaces = EmitList.length();
+//		emits.projectionMatrix = projectionMatrix;
+//		emits.viewMatrix = viewMatrix;
 
-        const VR4Matrixf vpMatrix = ( projectionMatrix * viewMatrix ).Transposed();
+//        const VR4Matrixf vpMatrix = ( projectionMatrix * viewMatrix ).Transposed();
 
-		for ( int i = 0 ; i < EmitList.length() ; i++ )
-		{
-			DrawMatrices & matrices = *(DrawMatrices *)EmitList[i].matrices;
-			matrices.Mvp = matrices.Model * vpMatrix;
-		}
+//		for ( int i = 0 ; i < EmitList.length() ; i++ )
+//		{
+//			DrawMatrices & matrices = *(DrawMatrices *)EmitList[i].matrices;
+//			matrices.Mvp = matrices.Model * vpMatrix;
+//		}
 
-		(void)RenderSurfaceList( emits );
-	}
+//		(void)RenderSurfaceList( emits );
+//	}
 
 	return ( projectionMatrix * viewMatrix );
 }
@@ -444,7 +444,7 @@ void OvrSceneView::Frame( const VViewSettings viewParms_, const VFrame vrFrame,
 //	UpdateSceneModels( vrFrame, supressModelsWithClientId );
 
 	// External systems can add surfaces to this list before drawing.
-	EmitList.clear();
+//	EmitList.clear();
 
 	// Set the external velocity matrix so TimeWarp can smoothly rotate the
 	// view even if we are dropping frames.
