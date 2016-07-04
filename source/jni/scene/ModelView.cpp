@@ -441,7 +441,7 @@ void OvrSceneView::Frame( const VViewSettings viewParms_, const VFrame vrFrame,
 {
 	ViewParms = viewParms_;
 	UpdateViewMatrix( vrFrame );
-	UpdateSceneModels( vrFrame, supressModelsWithClientId );
+//	UpdateSceneModels( vrFrame, supressModelsWithClientId );
 
 	// External systems can add surfaces to this list before drawing.
 	EmitList.clear();
