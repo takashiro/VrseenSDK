@@ -89,7 +89,6 @@ LOCAL_SRC_FILES  := \
 	scene/VTexture.cpp \
 	scene/ModelRender.cpp \
 	scene/ModelFile.cpp \
-	scene/ModelCollision.cpp \
 	scene/ModelView.cpp \
 	scene/SurfaceTexture.cpp \
 	App.cpp \

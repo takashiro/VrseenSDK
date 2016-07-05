@@ -5,7 +5,6 @@
 #include "VString.h"	// String
 #include "../api/VGlShader.h"			// VGlShader
 #include "ModelRender.h"		// ModelState
-#include "ModelCollision.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -95,8 +94,8 @@ public:
 	ModelDef					Def;
 
 	// This is used by the movement code
-	CollisionModel				Collisions;
-	CollisionModel				GroundCollisions;
+//	CollisionModel				Collisions;
+//	CollisionModel				GroundCollisions;
 
 	// This is typically used for gaze selection.
 //	ModelTrace					TraceModel;

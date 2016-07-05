@@ -175,8 +175,7 @@ HEADERS += \
     jni/Input.h \
     jni/scene/ModelCollision.h \
     jni/scene/ModelFile.h \
-    jni/scene/ModelRender.h \
-    jni/scene/ModelTrace.h
+    jni/scene/ModelRender.h
 
 include(jni/3rdparty/minizip/minizip.pri)
 include(jni/3rdparty/stb/stb.pri)
