@@ -87,8 +87,6 @@ LOCAL_SRC_FILES  := \
 	scene/EyePostRender.cpp \
 	scene/GazeCursor.cpp \
 	scene/VTexture.cpp \
-	scene/ModelRender.cpp \
-	scene/ModelFile.cpp \
 	scene/ModelView.cpp \
 	scene/SurfaceTexture.cpp \
 	App.cpp \
