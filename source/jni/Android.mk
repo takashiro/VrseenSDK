@@ -47,7 +47,6 @@ LOCAL_SRC_FILES  := \
 	core/VLock.cpp \
 	core/VThread.cpp \
 	core/VTimer.cpp \
-	core/MappedFile.cpp \
 	core/VModule.cpp \
 	core/VMutex.cpp \
 	core/VUserSettings.cpp \
