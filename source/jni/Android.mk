@@ -93,15 +93,15 @@ LOCAL_SRC_FILES  := \
 	App.cpp \
 
 LOCAL_SRC_FILES += \
-	3rdParty/stb/stb_image.c \
-	3rdParty/stb/stb_image_write.c
+	3rdparty/stb/stb_image.c \
+	3rdparty/stb/stb_image_write.c
 
 LOCAL_SRC_FILES += \
-	3rdParty/minizip/ioapi.c \
-	3rdParty/minizip/miniunz.c \
-	3rdParty/minizip/mztools.c \
-	3rdParty/minizip/unzip.c \
-	3rdParty/minizip/zip.c
+	3rdparty/minizip/ioapi.c \
+	3rdparty/minizip/miniunz.c \
+	3rdparty/minizip/mztools.c \
+	3rdparty/minizip/unzip.c \
+	3rdparty/minizip/zip.c
 
 LOCAL_CPPFLAGS += -std=c++0x
 
