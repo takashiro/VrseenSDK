@@ -1,11 +1,16 @@
-language: cpp
+language: android
+android:
+  components:
+    - build-tools-24.0.0
+    - android-19
+    - sys-img-armeabi-v7a-android-19
 sudo: required
 before_install:
-  - sudo apt-get install unzip
   - if [ `uname -m` = x86_64 ]; then wget http://dl.google.com/android/repository/android-ndk-r10e-linux-x86_64.zip -O ndk.zip; else wget http://dl.google.com/android/repository/android-ndk-r10e-linux-x86.zip -O ndk.zip; fi
-  - unzip ndk.zip > /dev/null
+  - unzip -q ndk.zip
   - export ANDROID_NDK_HOME=`pwd`/android-ndk-r10e
   - export PATH=${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools:${ANDROID_NDK_HOME}
+install:
   - cd source
   - ndk-build NDK_DEBUG=1
   - cd ..
@@ -13,9 +18,4 @@ before_install:
   - for subdir in $(ls -p | grep '/'); do cd $subdir && ndk-build NDK_DEBUG=1 && cd ..; done
   - cd ../tests
   - ndk-build NDK_DEBUG=1
-install: true
-before_script: true
 script: true
-after_success: true
-after_failure: true
-after_script: true
