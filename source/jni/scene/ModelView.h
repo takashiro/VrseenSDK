@@ -2,7 +2,6 @@
 
 #include "vglobal.h"
 
-#include "ModelFile.h"
 #include "App.h"		// VrFrame
 #include "DebugLines.h"
 
