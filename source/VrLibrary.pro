@@ -50,7 +50,6 @@ SOURCES += \
     jni/gui/VDialog.cpp \
     jni/gui/VPanel.cpp \
     jni/gui/Fader.cpp \
-    jni/gui/CollisionPrimitive.cpp \
     jni/gui/KeyState.cpp \
     jni/io/VBinaryStream.cpp \
     jni/io/VBuffer.cpp \
@@ -71,11 +70,6 @@ SOURCES += \
     jni/scene/GazeCursor.cpp \
     jni/scene/VTexture.cpp \
     jni/scene/ModelView.cpp \
-    jni/App.cpp \
-    jni/scene/ModelCollision.cpp \
-    jni/scene/ModelFile.cpp \
-    jni/scene/ModelRender.cpp \
-    jni/scene/ModelTrace.cpp
 
 
 HEADERS += \
@@ -147,7 +141,6 @@ HEADERS += \
     jni/gui/VDialog.h \
     jni/gui/VPanel.h \
     jni/gui/Fader.h \
-    jni/gui/CollisionPrimitive.h \
     jni/gui/KeyState.h \
     jni/io/VBinaryStream.h \
     jni/io/VBuffer.h \
@@ -170,6 +163,7 @@ HEADERS += \
     jni/scene/GazeCursor.h \
     jni/scene/GazeCursorLocal.h \
     jni/scene/ModelView.h \
+    jni/scene/SurfaceTexture.h \
     jni/App.h \
     jni/vglobal.h \
     jni/Input.h \

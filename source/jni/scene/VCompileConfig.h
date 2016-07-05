@@ -1,5 +1,0 @@
-#ifndef VCOMPILECONFIG_H
-#define VCOMPILECONFIG_H
-
-#endif // VCOMPILECONFIG_H
-

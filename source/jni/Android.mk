@@ -33,74 +33,28 @@ LOCAL_C_INCLUDES :=  \
 
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_C_INCLUDES)
 
-LOCAL_SRC_FILES  := \
-	core/VConstants.cpp \
-	core/VAtomicInt.cpp \
-	core/VByteArray.cpp \
-	core/VChar.cpp \
-	core/VEventLoop.cpp \
-	core/VJson.cpp \
-	core/VLog.cpp \
-	core/VPath.cpp \
-	core/VString.cpp \
-	core/VSignal.cpp \
-	core/VLock.cpp \
-	core/VThread.cpp \
-	core/VTimer.cpp \
-	core/VModule.cpp \
-	core/VMutex.cpp \
-	core/VUserSettings.cpp \
-	core/VVariant.cpp \
-	core/VWaitCondition.cpp \
-	core/android/JniUtils.cpp \
-	core/android/VOsBuild.cpp \
-	api/VKernel.cpp \
-	api/VDevice.cpp \
-	api/VDirectRender.cpp \
-	api/VLensDistortion.cpp \
-	api/VFrameSmooth.cpp \
-	api/VGlGeometry.cpp \
-	api/VMainActivity.cpp \
-	api/VEglDriver.cpp \
-	api/VGlShader.cpp \
-	api/VRotationSensor.cpp \
-	gui/VText.cpp \
-	gui/VPanel.cpp \
-	gui/VDialog.cpp \
-	gui/Fader.cpp \
-	gui/KeyState.cpp \
-	io/VBuffer.cpp \
-	io/VBinaryStream.cpp \
-	io/VDir.cpp \
-	io/VFile.cpp \
-	io/VIODevice.cpp \
-	io/VResource.cpp \
-	io/VStandardPath.cpp \
-	io/VZipFile.cpp \
-	media/VImage.cpp \
-	media/VSoundManager.cpp \
-	scene/VItem.cpp \
-	scene/VScene.cpp \
-	scene/BitmapFont.cpp \
-	scene/DebugLines.cpp \
-	scene/VEyeItem.cpp \
-	scene/EyePostRender.cpp \
-	scene/GazeCursor.cpp \
-	scene/VTexture.cpp \
-	scene/ModelView.cpp \
-	scene/SurfaceTexture.cpp \
-	App.cpp \
+addsource = $(addprefix $(1)/, $(notdir $(wildcard $(LOCAL_PATH)/$(1)/*.cpp)))
+
+LOCAL_SRC_FILES := \
+	$(call addsource,core) \
+	$(call addsource,core/android) \
+	$(call addsource,api) \
+	$(call addsource,gui) \
+	$(call addsource,io) \
+	$(call addsource,media) \
+	$(call addsource,scene) \
+	App.cpp
 
 LOCAL_SRC_FILES += \
-	3rdParty/stb/stb_image.c \
-	3rdParty/stb/stb_image_write.c
+	3rdparty/stb/stb_image.c \
+	3rdparty/stb/stb_image_write.c
 
 LOCAL_SRC_FILES += \
-	3rdParty/minizip/ioapi.c \
-	3rdParty/minizip/miniunz.c \
-	3rdParty/minizip/mztools.c \
-	3rdParty/minizip/unzip.c \
-	3rdParty/minizip/zip.c
+	3rdparty/minizip/ioapi.c \
+	3rdparty/minizip/miniunz.c \
+	3rdparty/minizip/mztools.c \
+	3rdparty/minizip/unzip.c \
+	3rdparty/minizip/zip.c
 
 LOCAL_CPPFLAGS += -std=c++0x
 

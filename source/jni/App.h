@@ -15,8 +15,6 @@ NV_NAMESPACE_BEGIN
 
 class VMainActivity;
 class VZipFile;
-
-//struct MaterialParms;
 class VRMenuObjectParms;
 class OvrGazeCursor;
 class BitmapFont;
