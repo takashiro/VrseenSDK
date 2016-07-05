@@ -71,7 +71,11 @@ SOURCES += \
     jni/scene/GazeCursor.cpp \
     jni/scene/VTexture.cpp \
     jni/scene/ModelView.cpp \
-    jni/App.cpp
+    jni/App.cpp \
+    jni/scene/ModelCollision.cpp \
+    jni/scene/ModelFile.cpp \
+    jni/scene/ModelRender.cpp \
+    jni/scene/ModelTrace.cpp
 
 
 HEADERS += \
@@ -168,7 +172,11 @@ HEADERS += \
     jni/scene/ModelView.h \
     jni/App.h \
     jni/vglobal.h \
-    jni/Input.h
+    jni/Input.h \
+    jni/scene/ModelCollision.h \
+    jni/scene/ModelFile.h \
+    jni/scene/ModelRender.h \
+    jni/scene/ModelTrace.h
 
 include(jni/3rdparty/minizip/minizip.pri)
 include(jni/3rdparty/stb/stb.pri)

@@ -128,8 +128,8 @@ void PanoVideo::init(const VString &fromPackage, const VString &launchIntentJSON
 	// Optimize for 16 bit depth in a modest theater size
     m_scene.Znear = 0.1f;
     m_scene.Zfar = 200.0f;
-	MaterialParms materialParms;
-	materialParms.UseSrgbTextureFormats = ( vApp->vrParms().colorFormat == VColor::COLOR_8888_sRGB );
+//	MaterialParms materialParms;
+//	materialParms.UseSrgbTextureFormats = ( vApp->vrParms().colorFormat == VColor::COLOR_8888_sRGB );
 }
 
 void PanoVideo::shutdown()

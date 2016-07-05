@@ -68,7 +68,6 @@ LOCAL_SRC_FILES  := \
 	gui/VPanel.cpp \
 	gui/VDialog.cpp \
 	gui/Fader.cpp \
-	gui/CollisionPrimitive.cpp \
 	gui/KeyState.cpp \
 	io/VBuffer.cpp \
 	io/VBinaryStream.cpp \
