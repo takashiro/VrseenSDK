@@ -8,7 +8,6 @@
 #include "VBinaryStream.h"
 #include "VString.h"
 #include "VJson.h"
-#include "MappedFile.h"
 #include "VPath.h"
 #include "VEglDriver.h"
 
