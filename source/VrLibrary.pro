@@ -50,7 +50,6 @@ SOURCES += \
     jni/gui/VDialog.cpp \
     jni/gui/VPanel.cpp \
     jni/gui/Fader.cpp \
-    jni/gui/CollisionPrimitive.cpp \
     jni/gui/KeyState.cpp \
     jni/io/VBinaryStream.cpp \
     jni/io/VBuffer.cpp \
@@ -144,7 +143,6 @@ HEADERS += \
     jni/gui/VDialog.h \
     jni/gui/VPanel.h \
     jni/gui/Fader.h \
-    jni/gui/CollisionPrimitive.h \
     jni/gui/KeyState.h \
     jni/io/VBinaryStream.h \
     jni/io/VBuffer.h \
