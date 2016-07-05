@@ -69,7 +69,6 @@ LOCAL_SRC_FILES  := \
 	gui/VPanel.cpp \
 	gui/VDialog.cpp \
 	gui/Fader.cpp \
-	gui/CollisionPrimitive.cpp \
 	gui/KeyState.cpp \
 	io/VBuffer.cpp \
 	io/VBinaryStream.cpp \
@@ -89,10 +88,6 @@ LOCAL_SRC_FILES  := \
 	scene/EyePostRender.cpp \
 	scene/GazeCursor.cpp \
 	scene/VTexture.cpp \
-	scene/ModelRender.cpp \
-	scene/ModelFile.cpp \
-	scene/ModelCollision.cpp \
-	scene/ModelTrace.cpp \
 	scene/ModelView.cpp \
 	scene/SurfaceTexture.cpp \
 	App.cpp \
