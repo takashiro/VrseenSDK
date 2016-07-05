@@ -6,7 +6,6 @@
 #include "../api/VGlShader.h"			// VGlShader
 #include "ModelRender.h"		// ModelState
 #include "ModelCollision.h"
-#include "ModelTrace.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -100,7 +99,7 @@ public:
 	CollisionModel				GroundCollisions;
 
 	// This is typically used for gaze selection.
-	ModelTrace					TraceModel;
+//	ModelTrace					TraceModel;
 };
 
 struct ModelGlPrograms

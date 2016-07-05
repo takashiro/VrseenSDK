@@ -90,7 +90,6 @@ LOCAL_SRC_FILES  := \
 	scene/ModelRender.cpp \
 	scene/ModelFile.cpp \
 	scene/ModelCollision.cpp \
-	scene/ModelTrace.cpp \
 	scene/ModelView.cpp \
 	scene/SurfaceTexture.cpp \
 	App.cpp \
