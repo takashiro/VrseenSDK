@@ -173,7 +173,6 @@ HEADERS += \
     jni/App.h \
     jni/vglobal.h \
     jni/Input.h \
-    jni/scene/ModelFile.h \
     jni/scene/ModelRender.h
 
 include(jni/3rdparty/minizip/minizip.pri)
