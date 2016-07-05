@@ -3,7 +3,6 @@
 #include "VMainActivity.h"
 
 #include "ModelView.h"
-#include "Fader.h"
 #include "VLockless.h"
 
 NV_NAMESPACE_BEGIN
@@ -15,12 +14,6 @@ public:
 	{
 		MENU_NONE,
 		MENU_BACKGROUND_INIT,
-		MENU_BROWSER,
-		MENU_PANO_LOADING,
-		MENU_PANO_FADEIN,
-		MENU_PANO_REOPEN_FADEIN,
-		MENU_PANO_FULLY_VISIBLE,
-		MENU_PANO_FADEOUT,
 		NUM_MENU_STATES
 	};
 
@@ -67,33 +60,23 @@ public:
     void command(const VEvent &event) override;
     bool		wantSrgbFramebuffer() const override;
 
-    float				fadeLevel() const								{ return m_currentFadeLevel;  }
-    int					numPanosInActiveCategory() const;
-
 	void				SetMenuState( const OvrMenuState state );
     OvrMenuState		currentState() const								{ return  m_menuState; }
 
-    int					toggleCurrentAsFavorite(){return 0;}
-
     bool				useOverlay() const;
-    bool				allowPanoInput() const;
     VEventLoop &		backgroundMessageQueue() { return m_backgroundCommands;  }
 
 private:
 	// Background textures loaded into GL by background thread using shared context
 	static void *		BackgroundGLLoadThread( void * v );
     void				startBackgroundPanoLoad(const VString &filename );
-    const char *		menuStateString( const OvrMenuState state );
-    bool 				loadMetaData( const char * metaFile );
     void				loadRgbaCubeMap( const int resolution, const unsigned char * const rgba[ 6 ], const bool useSrgbFormat );
     void				loadRgbaTexture( const unsigned char * data, int width, int height, const bool useSrgbFormat );
 
 	// shared vars
-    jclass				m_mainActivityClass;	// need to look up from main thread
     VGlGeometry			m_globe;
 
     OvrSceneView		m_scene;
-    SineFader			m_fader;
 
     // Pano data and menus
     VString						m_PhotoUrl;
@@ -105,18 +88,9 @@ private:
 
     VGlShader			m_texturedMvpProgram;
 	VGlShader			m_cubeMapPanoProgram;
-	VGlShader			m_panoramaProgram;
 
     VFrame				m_frameInput;
     OvrMenuState		m_menuState;
-
-    const float			m_fadeOutRate;
-    const float			m_fadeInRate;
-    const float			m_panoMenuVisibleTime;
-    float				m_currentFadeRate;
-    float				m_currentFadeLevel;
-    float				m_panoMenuTimeLeft;
-    float				m_browserOpenTime;
 
     bool				m_useOverlay;				// use the TimeWarp environment overlay
     bool				m_useSrgb;

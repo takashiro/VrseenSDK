@@ -100,16 +100,8 @@ bool PanoPhoto::DoubleBufferedTextureData::SameSize( const int width, const int 
 
 PanoPhoto::PanoPhoto(JNIEnv *jni, jclass activityClass, jobject activityObject)
     : VMainActivity(jni, activityClass, activityObject)
-    , m_fader( 0.0f )
     , m_currentPanoIsCubeMap( false )
     , m_menuState( MENU_NONE )
-    , m_fadeOutRate( 1.0f / 0.45f )
-    , m_fadeInRate( 1.0f / 0.5f )
-    , m_panoMenuVisibleTime( 7.0f )
-    , m_currentFadeRate( m_fadeOutRate )
-    , m_currentFadeLevel( 0.0f )
-    , m_panoMenuTimeLeft( -1.0f )
-    , m_browserOpenTime( 0.0f )
     , m_useOverlay( true )
     , m_useSrgb( true )
     , m_backgroundCommands( 100 )
@@ -136,7 +128,6 @@ void PanoPhoto::init(const VString &fromPackage, const VString &launchIntentJSON
     //-------------------------------------------------------------------------
     m_texturedMvpProgram.initShader(VGlShader::getTexturedMvpVertexShaderSource(),VGlShader::getUniformTextureProgramShaderSource());
     m_cubeMapPanoProgram.initShader(VGlShader::getCubeMapPanoVertexShaderSource(),VGlShader::getCubeMapPanoProgramShaderSource());
-    m_panoramaProgram.initShader(VGlShader::getPanoVertexShaderSource(),VGlShader::getPanoProgramShaderSource() );
 
     // launch cube pano -should always exist!
     m_PhotoUrl = DEFAULT_PANO;
@@ -256,7 +247,6 @@ void PanoPhoto::shutdown()
 
     m_texturedMvpProgram.destroy();
     m_cubeMapPanoProgram.destroy();
-    m_panoramaProgram.destroy();
 
     if ( eglDestroySurface( m_eglDisplay, m_eglPbufferSurface ) == EGL_FALSE )
     {
@@ -397,7 +387,6 @@ void PanoPhoto::command(const VEvent &event )
     if (event.name == "loaded pano") {
         m_backgroundPanoTexData.Swap();
         m_currentPanoIsCubeMap = false;
-        SetMenuState( MENU_PANO_FADEIN );
         vApp->gazeCursor().ClearGhosts();
         return;
     }
@@ -405,7 +394,6 @@ void PanoPhoto::command(const VEvent &event )
     if (event.name == "loaded cube") {
         m_backgroundCubeTexData.Swap();
         m_currentPanoIsCubeMap = true;
-        SetMenuState( MENU_PANO_FADEIN );
         vApp->gazeCursor().ClearGhosts();
         return;
     }
@@ -529,9 +517,9 @@ VR4Matrixf PanoPhoto::drawEyeView( const int eye, const float fovDegrees )
                 m_scene.DrawEyeView( eye, fovDegrees )
               : m_scene.MvpForEye( eye, fovDegrees );
 
-    const float color = m_currentFadeLevel;
+    //const float color = m_currentFadeLevel;
     // Dim pano when browser open
-    float fadeColor = color;
+    float fadeColor = 1.0f;
 
     if ( useOverlay() && m_currentPanoIsCubeMap )
     {
@@ -616,7 +604,7 @@ VR4Matrixf PanoPhoto::drawEyeView( const int eye, const float fovDegrees )
     }
 
 
-   VEglDriver::logErrorsEnum( "draw" );
+   VEglDriver::logErrorsEnum( "photo draw" );
     return view;
 }
 
@@ -643,32 +631,14 @@ void PanoPhoto::startBackgroundPanoLoad(const VString &filename)
 
 void PanoPhoto::SetMenuState( const OvrMenuState state )
 {
-    OvrMenuState lastState = m_menuState;
     m_menuState = state;
-    vInfo(menuStateString( lastState ) << "to" << menuStateString( m_menuState ));
+
     switch ( m_menuState )
     {
     case MENU_NONE:
         break;
     case MENU_BACKGROUND_INIT:
         startBackgroundPanoLoad(m_PhotoUrl);
-        break;
-    case MENU_PANO_LOADING:
-        m_currentFadeRate = m_fadeOutRate;
-        m_fader.startFadeOut();
-        //startBackgroundPanoLoad(m_activePano->url);
-        break;
-        // pano menu now to fully open
-    case MENU_PANO_FADEIN:
-    case MENU_PANO_REOPEN_FADEIN:
-        m_fader.reset();
-        m_currentFadeRate = m_fadeInRate;
-        m_fader.startFadeIn();
-        break;
-    case MENU_PANO_FULLY_VISIBLE:
-        m_panoMenuTimeLeft = m_panoMenuVisibleTime;
-        break;
-    case MENU_PANO_FADEOUT:
         break;
     default:
         vAssert( false );
@@ -688,41 +658,6 @@ VR4Matrixf PanoPhoto::onNewFrame( const VFrame vrFrame )
 
     m_scene.Frame( vApp->viewSettings(), vrFrameWithoutMove, vApp->kernel()->m_externalVelocity );
 
-    // State transitions
-    if ( m_fader.fadeState() != Fader::FADE_NONE )
-    {
-        m_fader.update( m_currentFadeRate, vrFrame.deltaSeconds );
-        if ( m_menuState != MENU_PANO_REOPEN_FADEIN )
-        {
-            m_currentFadeLevel = m_fader.finalAlpha();
-        }
-    }
-    else if ( (m_menuState == MENU_PANO_FADEIN || m_menuState == MENU_PANO_REOPEN_FADEIN ) &&
-              m_fader.fadeAlpha() == 1.0 )
-    {
-        SetMenuState( MENU_PANO_FULLY_VISIBLE );
-    }
-
-    if ( m_menuState == MENU_PANO_FULLY_VISIBLE )
-    {
-        if(true)
-        {
-            if ( m_panoMenuTimeLeft > 0.0f )
-            {
-                m_panoMenuTimeLeft -= vrFrame.deltaSeconds;
-            }
-            else
-            {
-                m_panoMenuTimeLeft = 0.0f;
-                SetMenuState( MENU_PANO_FADEOUT );
-            }
-        }
-        else // Reset PanoMenuTimeLeft
-        {
-            m_panoMenuTimeLeft = m_panoMenuVisibleTime;
-        }
-    }
-
     // We could disable the srgb convert on the FBO. but this is easier
     vApp->vrParms().colorFormat = m_useSrgb ? VColor::COLOR_8888_sRGB : VColor::COLOR_8888;
 
@@ -732,37 +667,9 @@ VR4Matrixf PanoPhoto::onNewFrame( const VFrame vrFrame )
     return m_scene.CenterViewMatrix();
 }
 
-const char * menuStateNames[] =
-{
-    "MENU_NONE",
-    "MENU_BACKGROUND_INIT",
-    "MENU_PANO_LOADING",
-    "MENU_PANO_FADEIN",
-    "MENU_PANO_REOPEN_FADEIN",
-    "MENU_PANO_FULLY_VISIBLE",
-    "MENU_PANO_FADEOUT",
-    "NUM_MENU_STATES"
-};
-
-const char* PanoPhoto::menuStateString( const OvrMenuState state )
-{
-    vAssert( state >= 0 && state < NUM_MENU_STATES );
-    return menuStateNames[ state ];
-}
-
-int PanoPhoto::numPanosInActiveCategory() const
-{
-    return 1;
-}
-
 bool PanoPhoto::wantSrgbFramebuffer() const
 {
     return true;
-}
-
-bool PanoPhoto::allowPanoInput() const
-{
-    return m_menuState == MENU_PANO_FULLY_VISIBLE;
 }
 
 NV_NAMESPACE_END
