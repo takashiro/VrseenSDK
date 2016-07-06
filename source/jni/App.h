@@ -45,7 +45,6 @@ public:
     OvrGazeCursor  &gazeCursor();
     BitmapFont &defaultFont();
     BitmapFontSurface &worldFontSurface();
-    BitmapFontSurface &menuFontSurface();
     const VStandardPath &storagePaths();
 
     bool hasHeadphones() const;

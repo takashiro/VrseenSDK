@@ -245,7 +245,6 @@ struct App::Private
     OvrGazeCursor *gazeCursor;
     BitmapFont *defaultFont;
     BitmapFontSurface *worldFontSurface;
-    BitmapFontSurface *menuFontSurface;
     KeyState backKeyState;
     VStandardPath *storagePaths;
 
@@ -295,7 +294,6 @@ struct App::Private
         , gazeCursor(nullptr)
         , defaultFont(nullptr)
         , worldFontSurface(nullptr)
-        , menuFontSurface(nullptr)
         , backKeyState(0.25f, 0.75f)
         , storagePaths(nullptr)
         , errorTextureSize(0)
@@ -320,17 +318,14 @@ struct App::Private
         }
 
         worldFontSurface = BitmapFontSurface::Create();
-        menuFontSurface = BitmapFontSurface::Create();
 
         worldFontSurface->Init(8192);
-        menuFontSurface->Init(8192);
     }
 
     void shutdownFonts()
     {
         BitmapFont::Free(defaultFont);
         BitmapFontSurface::Free(worldFontSurface);
-        BitmapFontSurface::Free(menuFontSurface);
     }
 
     void pause()
@@ -1432,10 +1427,6 @@ BitmapFontSurface & App::worldFontSurface()
 {
     return *d->worldFontSurface;
 }
-BitmapFontSurface & App::menuFontSurface()
-{
-    return *d->menuFontSurface;
-}   // TODO: this could be in the menu system now
 
 const VStandardPath & App::storagePaths()
 {
@@ -1632,7 +1623,6 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
     // update vr lib systems after the app frame, but before rendering anything
     gazeCursor().Frame( centerViewMatrix, text.vrFrame.deltaSeconds );
 
-    menuFontSurface().Finish( centerViewMatrix );
     worldFontSurface().Finish( centerViewMatrix );
 
     // Increase the fov by about 10 degrees if we are not holding 60 fps so
@@ -1666,7 +1656,6 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
             // Call back to the app for drawing.
             const VR4Matrixf mvp = d->activity->drawEyeView(eye, fovDegrees);
 
-            menuFontSurface().Render3D(defaultFont(), mvp.Transposed());
             worldFontSurface().Render3D(defaultFont(), mvp.Transposed());
 
             glDisable(GL_DEPTH_TEST);
