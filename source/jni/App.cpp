@@ -161,7 +161,6 @@ struct App::Private
 
     JavaVM *javaVM;
 
-    JNIEnv *uiJni;			// for use by the Java UI thread
     JNIEnv *vrJni;			// for use by the VR thread
 
     VString launchIntentURI;			// URI app was launched with
@@ -263,7 +262,6 @@ struct App::Private
         , eventLoop(100)
         , loadingIconTexId(0)
         , javaVM(JniUtils::GetJavaVM())
-        , uiJni(nullptr)
         , vrJni(nullptr)
         , paused(true)
         , popupDistance(2.0f)
@@ -1303,7 +1301,6 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
     : d(new Private(this))
 {
     d->activity = activity;
-    d->uiJni = jni;
     vInfo("----------------- AppLocal::AppLocal() -----------------");
     vAssert(vAppInstance == nullptr);
     vAppInstance = this;
@@ -1322,7 +1319,7 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
 
 	// Default time warp parms
     d->kernel->InitTimeWarpParms();
-    d->javaObject = d->uiJni->NewGlobalRef(activityObject);
+    d->javaObject = jni->NewGlobalRef(activityObject);
 
 	// Get the path to the .apk and package name
     d->packageCodePath = d->activity->getPackageCodePath();
