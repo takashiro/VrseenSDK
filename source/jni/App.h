@@ -19,7 +19,6 @@ class VRMenuObjectParms;
 class OvrGazeCursor;
 class BitmapFont;
 class BitmapFontSurface;
-class OvrDebugLines;
 class VViewSettings;
 class VStandardPath;
 class SurfaceTexture;
@@ -49,7 +48,6 @@ public:
     BitmapFont &defaultFont();
     BitmapFontSurface &worldFontSurface();
     BitmapFontSurface &menuFontSurface();
-    OvrDebugLines &debugLines();
     const VStandardPath &storagePaths();
 
     bool hasHeadphones() const;

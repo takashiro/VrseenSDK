@@ -3,7 +3,6 @@
 #include "vglobal.h"
 
 #include "App.h"		// VrFrame
-#include "DebugLines.h"
 
 #pragma once
 

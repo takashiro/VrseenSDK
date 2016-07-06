@@ -4,8 +4,6 @@
 
 #include "VFrame.h"		// VrFrame, etc
 #include "BitmapFont.h"
-#include "DebugLines.h"
-
 #include "VLog.h"
 
 NV_NAMESPACE_BEGIN

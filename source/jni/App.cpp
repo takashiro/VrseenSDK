@@ -16,7 +16,6 @@
 #include "VTimer.h"
 #include "VAlgorithm.h"
 #include "BitmapFont.h"
-#include "DebugLines.h"
 #include "EyePostRender.h"
 #include "GazeCursor.h"
 #include "GazeCursorLocal.h"		// necessary to instantiate the gaze cursor
@@ -249,7 +248,6 @@ struct App::Private
     BitmapFont *defaultFont;
     BitmapFontSurface *worldFontSurface;
     BitmapFontSurface *menuFontSurface;
-    OvrDebugLines *debugLines;
     KeyState backKeyState;
     VStandardPath *storagePaths;
 
@@ -301,7 +299,6 @@ struct App::Private
         , defaultFont(nullptr)
         , worldFontSurface(nullptr)
         , menuFontSurface(nullptr)
-        , debugLines(nullptr)
         , backKeyState(0.25f, 0.75f)
         , storagePaths(nullptr)
         , errorTextureSize(0)
@@ -939,7 +936,6 @@ struct App::Private
             scene->addEyeItem();
 
             gazeCursor = new OvrGazeCursorLocal;
-            debugLines = OvrDebugLines::Create();
 
             VTexture loadingIcon(VResource("res/raw/loading_indicator.png"), VTexture::NoMipmaps);
             loadingIconTexId = loadingIcon.id();
@@ -948,8 +944,6 @@ struct App::Private
             self->dialog.dialogTexture = new SurfaceTexture(vrJni);
 
             initFonts();
-
-            debugLines->Init();
 
             gazeCursor->Init();
 
@@ -1108,9 +1102,6 @@ struct App::Private
 
             lastVrFrame = self->text.vrFrame;
 
-            // resend any debug lines that have expired
-            debugLines->BeginFrame(self->text.vrFrame.id);
-
             frameworkButtonProcessing(self->text.vrFrame.input);
 
             KeyState::eKeyEventType event = backKeyState.Update(VTimer::Seconds());
@@ -1245,8 +1236,6 @@ struct App::Private
 
             gazeCursor->Shutdown();
 
-            debugLines->Shutdown();
-
             shutdownFonts();
 
             delete self->dialog.dialogTexture;
@@ -1254,7 +1243,6 @@ struct App::Private
 
             delete gazeCursor;
             gazeCursor = nullptr;
-            OvrDebugLines::Free(debugLines);
 
             shutdownGlObjects();
             m_glStatus.eglExit();
@@ -1503,10 +1491,6 @@ BitmapFontSurface & App::menuFontSurface()
     return *d->menuFontSurface;
 }   // TODO: this could be in the menu system now
 
-OvrDebugLines & App::debugLines()
-{
-    return *d->debugLines;
-}
 const VStandardPath & App::storagePaths()
 {
     return *d->storagePaths;
@@ -1756,8 +1740,6 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
             dialog.draw(panel, mvp);
 
             gazeCursor().Render(eye, mvp);
-
-            debugLines().Render(mvp.Transposed());
 
             if (d->showVignette) {
                 // Draw a thin vignette at the edges of the view so clamping will give black
