@@ -315,35 +315,8 @@ struct App::Private
     void initFonts()
     {
         defaultFont = BitmapFont::Create();
-
-//        VString fontName;
-        VString fontName("efigs.fnt");
-//        VrLocale::GetString(vrJni, javaObject, "@string/font_name", "efigs.fnt", fontName);
-//        fontName = getLocalString("@string/font_name", "efigs.fnt", fontName);
-        fontName.prepend("res/raw/");
-        if (!defaultFont->Load(packageCodePath, fontName))
-        {
-            // reset the locale to english and try to load the font again
-            jmethodID setDefaultLocaleId = vrJni->GetMethodID(vrActivityClass, "setDefaultLocale", "()V");
-            if (setDefaultLocaleId != nullptr)
-            {
-                vInfo("AppLocal::Init CallObjectMethod");
-                vrJni->CallVoidMethod(javaObject, setDefaultLocaleId);
-                if (vrJni->ExceptionOccurred())
-                {
-                    vrJni->ExceptionClear();
-                    vWarn("Exception occurred in setDefaultLocale");
-                }
-                // re-get the font name for the new locale
-//                VrLocale::GetString(vrJni, javaObject, "@string/font_name", "efigs.fnt", fontName);
-                fontName = "efigs.fnt";
-                fontName.prepend("res/raw/");
-                // try to load the font
-                if (!defaultFont->Load(packageCodePath, fontName))
-                {
-                    vFatal("Failed to load font for default locale!");
-                }
-            }
+        if (!defaultFont->Load(packageCodePath, "res/raw/efigs.fnt")) {
+            vWarn("default font not found");
         }
 
         worldFontSurface = BitmapFontSurface::Create();
