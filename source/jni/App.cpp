@@ -1206,19 +1206,6 @@ struct App::Private
         }
     }
 
-    jclass getGlobalClassReference(const char * className) const
-    {
-        jclass lc = uiJni->FindClass(className);
-        if (lc == 0) {
-            vFatal("Failed to find class" << className);
-        }
-        // Turn it into a global ref, so we can safely use it in the VR thread
-        jclass gc = (jclass) uiJni->NewGlobalRef(lc);
-        uiJni->DeleteLocalRef(lc);
-        return gc;
-    }
-
-
     void onKeyEvent(const int keyCode, const bool down, const int repeatCount)
     {
         // the back key is special because it has to handle long-press and double-tap
