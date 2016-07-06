@@ -11,7 +11,6 @@ NV_NAMESPACE_BEGIN
 
 struct VDevice::Private
 {
-    JNIEnv *uiJni;
     JNIEnv *vrJni;
     void InitHmdInfo();
 };
@@ -71,7 +70,6 @@ void VDevice::setDoNotDisturbMode(bool enabled)
 VDevice::VDevice()
     : d(new Private)
 {
-    d->uiJni = vApp->uiJni();
     d->vrJni = vApp->vrJni();
 
     lens.initDistortionParmsByMobileType();

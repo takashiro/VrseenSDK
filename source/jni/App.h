@@ -71,7 +71,6 @@ public:
     KeyState &backKeyState();
 
     JavaVM *javaVM();
-    JNIEnv *uiJni();
     JNIEnv *vrJni();
     jobject &javaObject();
     jclass &vrActivityClass();

@@ -1500,11 +1500,6 @@ JavaVM	* App::javaVM()
     return d->javaVM;
 }
 
-JNIEnv * App::uiJni()
-{
-    return d->uiJni;
-}
-
 JNIEnv * App::vrJni()
 {
     return d->vrJni;
