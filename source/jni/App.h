@@ -36,8 +36,6 @@ public:
 
     void drawEyeViewsPostDistorted( VR4Matrixf const & viewMatrix, const int numPresents = 1);
 
-    void playSound( const char * name );
-
     void recenterYaw( const bool showBlack );
     void setRecenterYawFrameStart( const long long frameNumber );
     long long recenterYawFrameStart() const;

@@ -168,8 +168,6 @@ struct App::Private
 
     jclass vrActivityClass;		// must be looked up from main thread or FindClass() will fail
 
-    jmethodID playSoundPoolSoundMethodId;
-
     VString launchIntentURI;			// URI app was launched with
     VString launchIntentJSON;			// extra JSON data app was launched with
     VString launchIntentFromPackage;	// package that sent us the launch intent
@@ -273,7 +271,6 @@ struct App::Private
         , uiJni(nullptr)
         , vrJni(nullptr)
         , vrActivityClass(nullptr)
-        , playSoundPoolSoundMethodId(nullptr)
         , paused(true)
         , popupDistance(2.0f)
         , popupScale(1.0f)
@@ -1392,8 +1389,6 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
     d->vrActivityClass = d->getGlobalClassReference(activityClassName);
 //    VrLocale::VrActivityClass = d->vrActivityClass;
 
-    d->playSoundPoolSoundMethodId = d->GetMethodID("playSoundPoolSound", "(Ljava/lang/String;)V");
-
 	// Get the path to the .apk and package name
     d->packageCodePath = d->activity->getPackageCodePath();
 
@@ -1455,18 +1450,6 @@ bool App::isRunning() const
 VEventLoop &App::eventLoop()
 {
     return d->eventLoop;
-}
-
-void App::playSound(const char *name)
-{
-    d->activity->eventLoop().post([=]{
-        JNIEnv *jni = nullptr;
-        if (d->javaVM->AttachCurrentThread(&jni, 0) == JNI_OK) {
-            jstring cmdString = JniUtils::Convert(jni, name);
-            jni->CallVoidMethod(d->javaObject, d->playSoundPoolSoundMethodId, cmdString);
-            jni->DeleteLocalRef(cmdString);
-        }
-    });
 }
 
 VEyeItem::Settings &App::eyeSettings()
