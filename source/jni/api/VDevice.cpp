@@ -3,16 +3,14 @@
 #include "App.h"
 #include "VLog.h"
 #include "android/VOsBuild.h"
+#include "android/JniUtils.h"
 
 #include <jni.h>
-#include "../core/android/JniUtils.h"
 
 NV_NAMESPACE_BEGIN
 
 struct VDevice::Private
 {
-    JNIEnv *vrJni;
-    void InitHmdInfo();
 };
 
 VDevice *VDevice::instance()
@@ -70,8 +68,6 @@ void VDevice::setDoNotDisturbMode(bool enabled)
 VDevice::VDevice()
     : d(new Private)
 {
-    d->vrJni = vApp->vrJni();
-
     lens.initDistortionParmsByMobileType();
     refreshRate = 60.0f;
     eyeDisplayResolution[0] = 1024;
