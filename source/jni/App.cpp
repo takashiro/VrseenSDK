@@ -46,8 +46,6 @@
 
 NV_NAMESPACE_BEGIN
 
-static const char * activityClassName = "com/vrseen/VrActivity";
-
 // some parameters from the intent can be empty strings, which cannot be represented as empty strings for sscanf
 // so we encode them as EMPTY_INTENT_STR.
 // Because the message queue handling uses sscanf() to parse the message, the JSON text is
@@ -166,8 +164,6 @@ struct App::Private
     JNIEnv *uiJni;			// for use by the Java UI thread
     JNIEnv *vrJni;			// for use by the VR thread
 
-    jclass vrActivityClass;		// must be looked up from main thread or FindClass() will fail
-
     VString launchIntentURI;			// URI app was launched with
     VString launchIntentJSON;			// extra JSON data app was launched with
     VString launchIntentFromPackage;	// package that sent us the launch intent
@@ -269,7 +265,6 @@ struct App::Private
         , javaVM(JniUtils::GetJavaVM())
         , uiJni(nullptr)
         , vrJni(nullptr)
-        , vrActivityClass(nullptr)
         , paused(true)
         , popupDistance(2.0f)
         , popupScale(1.0f)
@@ -1342,11 +1337,6 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
     d->kernel->InitTimeWarpParms();
     d->javaObject = d->uiJni->NewGlobalRef(activityObject);
 
-	// A difficulty with JNI is that we can't resolve our (non-Android) package
-	// classes on other threads, so lookup everything we need right now.
-    d->vrActivityClass = d->getGlobalClassReference(activityClassName);
-//    VrLocale::VrActivityClass = d->vrActivityClass;
-
 	// Get the path to the .apk and package name
     d->packageCodePath = d->activity->getPackageCodePath();
 
@@ -1508,11 +1498,6 @@ JNIEnv * App::vrJni()
 jobject	& App::javaObject()
 {
     return d->javaObject;
-}
-
-jclass & App::vrActivityClass()
-{
-    return d->vrActivityClass;
 }
 
 VKernel* App::kernel()

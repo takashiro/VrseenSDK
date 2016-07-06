@@ -73,7 +73,6 @@ public:
     JavaVM *javaVM();
     JNIEnv *vrJni();
     jobject &javaObject();
-    jclass &vrActivityClass();
 
     VKernel* kernel();
     SurfaceTexture *dialogTexture();
