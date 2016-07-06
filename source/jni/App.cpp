@@ -360,16 +360,6 @@ struct App::Private
         BitmapFontSurface::Free(menuFontSurface);
     }
 
-    // Error checks and exits on failure
-    jmethodID GetMethodID(const char * name, const char *signature) const
-    {
-        jmethodID mid = uiJni->GetMethodID(vrActivityClass, name, signature);
-        if (!mid) {
-            vFatal("couldn't get" << name);
-        }
-        return mid;
-    }
-
     void pause()
     {
         activity->onPause();
