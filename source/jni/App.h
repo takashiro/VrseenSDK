@@ -70,7 +70,6 @@ public:
 
     KeyState &backKeyState();
 
-    JavaVM *javaVM();
     JNIEnv *vrJni();
     jobject &javaObject();
 

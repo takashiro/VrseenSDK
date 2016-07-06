@@ -1483,13 +1483,6 @@ float App::popupScale() const
     return d->popupScale;
 }
 
-
-
-JavaVM	* App::javaVM()
-{
-    return d->javaVM;
-}
-
 JNIEnv * App::vrJni()
 {
     return d->vrJni;
