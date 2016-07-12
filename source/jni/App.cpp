@@ -253,6 +253,8 @@ struct App::Private
     VScene *scene;
     const std::list<VModule *> &modules;
 
+    ovrTimeWarpParms	swapParms;
+
     Private(App *self)
         : self(self)
         , vrThreadSynced(false)
@@ -359,7 +361,8 @@ struct App::Private
     {
         DefaultVrParmsForRenderer(m_glStatus);
 
-        kernel->setSmoothProgram(ChromaticAberrationCorrection(m_glStatus) ? VK_DEFAULT_CB : VK_DEFAULT);
+        //kernel->setSmoothProgram(ChromaticAberrationCorrection(m_glStatus) ? VK_DEFAULT_CB : VK_DEFAULT);
+        swapParms.WarpProgram = ChromaticAberrationCorrection(m_glStatus) ? WP_CHROMATIC : WP_SIMPLE;
         m_glStatus.logExtensions();
 
         self->panel.externalTextureProgram2.initShader( VGlShader::getAdditionalVertexShaderSource(), VGlShader::getAdditionalFragmentShaderSource() );
@@ -567,31 +570,31 @@ struct App::Private
 
             if (input.buttonPressed & BUTTON_B)
             {
-                if (kernel->m_smoothOptions & VK_USE_S)
+                if (swapParms.WarpOptions & SWAP_OPTION_USE_SLICED_WARP)
                 {
-                    kernel->m_smoothOptions &= ~VK_USE_S;
+                    swapParms.WarpOptions &= ~SWAP_OPTION_USE_SLICED_WARP;
                     //self->createToast("eye warp");
                 }
                 else
                 {
-                    kernel->m_smoothOptions |= VK_USE_S;
+                    swapParms.WarpOptions |= SWAP_OPTION_USE_SLICED_WARP;
                     //self->createToast("slice warp");
                 }
             }
 
-            if (kernel->m_smoothOptions & VK_USE_S)
+            if (swapParms.WarpOptions & SWAP_OPTION_USE_SLICED_WARP)
             {
                 extern float calibrateFovScale;
 
                 if (input.buttonPressed & BUTTON_DPAD_LEFT)
                 {
-                    kernel->m_preScheduleSeconds -= 0.001f;
-                    //self->createToast("Schedule: %f",  kernel->m_preScheduleSeconds);
+                    swapParms.PreScheduleSeconds -= 0.001f;
+                    //self->createToast("Schedule: %f",  swapParms.PreScheduleSeconds);
                 }
                 if (input.buttonPressed & BUTTON_DPAD_RIGHT)
                 {
-                    kernel->m_preScheduleSeconds += 0.001f;
-                    //self->createToast("Schedule: %f",  kernel->m_preScheduleSeconds);
+                    swapParms.PreScheduleSeconds += 0.001f;
+                    //self->createToast("Schedule: %f",  swapParms.PreScheduleSeconds);
                 }
                 if (input.buttonPressed & BUTTON_DPAD_UP)
                 {
@@ -937,29 +940,29 @@ struct App::Private
                 }
                 else
                 {
-                    //ovrTimeWarpParms warpSwapMessageParms = kernel->InitTimeWarpParms(WARP_INIT_MESSAGE, errorTexture.texture);
-                    //warpSwapMessageParms.ProgramParms[0] = 0.0f;						// rotation in radians
-                    //warpSwapMessageParms.ProgramParms[1] = 1024.0f / errorTextureSize;	// message size factor
-                    //kernel->doSmooth(&warpSwapMessageParms);
+                    ovrTimeWarpParms warpSwapMessageParms = kernel->InitTimeWarpParms(WARP_INIT_MESSAGE, errorTexture.id());
+                    warpSwapMessageParms.ProgramParms[0] = 0.0f;						// rotation in radians
+                    warpSwapMessageParms.ProgramParms[1] = 1024.0f / errorTextureSize;	// message size factor
+                    kernel->doSmooth(&warpSwapMessageParms);
 
-                    kernel->InitTimeWarpParms();
-                    kernel->setSmoothOption( VK_INHIBIT_SRGB_FB | VK_FLUSH | VK_IMAGE);
-
-                    kernel->setSmoothProgram(VK_LOGO);
-                    float mprogramParms[4];
-                    mprogramParms[0] = 0.0f;		// rotation in radians per second
-                    mprogramParms[1] = 2.0f;
-                    kernel->setProgramParms(mprogramParms);
-                            // icon size factor smaller than fullscreen
-                    for ( int eye = 0; eye < 2; eye++ )
-                    {
-                       kernel->setSmoothEyeTexture(0, eye, 0);
-                       kernel->setSmoothEyeTexture(errorTexture.id(), eye, 1);
-
-                    }
-
-                    kernel->doSmooth();
-                    kernel->setSmoothProgram(VK_DEFAULT);
+//                    kernel->InitTimeWarpParms();
+//                    kernel->setSmoothOption( VK_INHIBIT_SRGB_FB | VK_FLUSH | VK_IMAGE);
+//
+//                    kernel->setSmoothProgram(VK_LOGO);
+//                    float mprogramParms[4];
+//                    mprogramParms[0] = 0.0f;		// rotation in radians per second
+//                    mprogramParms[1] = 2.0f;
+//                    kernel->setProgramParms(mprogramParms);
+//                            // icon size factor smaller than fullscreen
+//                    for ( int eye = 0; eye < 2; eye++ )
+//                    {
+//                       kernel->setSmoothEyeTexture(0, eye, 0);
+//                       kernel->setSmoothEyeTexture(errorTexture.id(), eye, 1);
+//
+//                    }
+//
+//                    kernel->doSmooth();
+//                    kernel->setSmoothProgram(VK_DEFAULT);
 
                 }
                 continue;
@@ -970,27 +973,27 @@ struct App::Private
             {
                 if (activity->showLoadingIcon())
                 {
-                   // const ovrTimeWarpParms warpSwapLoadingIconParms = kernel->InitTimeWarpParms(WARP_INIT_LOADING_ICON, loadingIconTexId);
-                   // kernel->doSmooth(&warpSwapLoadingIconParms);
+                    const ovrTimeWarpParms warpSwapLoadingIconParms = kernel->InitTimeWarpParms(WARP_INIT_LOADING_ICON, loadingIconTexId);
+                    kernel->doSmooth(&warpSwapLoadingIconParms);
 
 
-                    kernel->InitTimeWarpParms();
-                    kernel->setSmoothOption( VK_INHIBIT_SRGB_FB | VK_FLUSH | VK_IMAGE);
-                    kernel->setSmoothProgram(VK_LOGO);
-                    float mprogramParms[4];
-                    mprogramParms[0] = 1.0f;		// rotation in radians per second
-                    mprogramParms[1] = 16.0f;
-                    kernel->setProgramParms(mprogramParms);
-                            // icon size factor smaller than fullscreen
-                    for ( int eye = 0; eye < 2; eye++ )
-                    {
-                       kernel->setSmoothEyeTexture(0,eye, 0);
-                       kernel->setSmoothEyeTexture(loadingIconTexId,eye,1);
-
-                    }
-
-                    kernel->doSmooth();
-                    kernel->setSmoothProgram(VK_DEFAULT);
+//                    kernel->InitTimeWarpParms();
+//                    kernel->setSmoothOption( VK_INHIBIT_SRGB_FB | VK_FLUSH | VK_IMAGE);
+//                    kernel->setSmoothProgram(VK_LOGO);
+//                    float mprogramParms[4];
+//                    mprogramParms[0] = 1.0f;		// rotation in radians per second
+//                    mprogramParms[1] = 16.0f;
+//                    kernel->setProgramParms(mprogramParms);
+//                            // icon size factor smaller than fullscreen
+//                    for ( int eye = 0; eye < 2; eye++ )
+//                    {
+//                       kernel->setSmoothEyeTexture(0,eye, 0);
+//                       kernel->setSmoothEyeTexture(loadingIconTexId,eye,1);
+//
+//                    }
+//
+//                    kernel->doSmooth();
+//                    kernel->setSmoothProgram(VK_DEFAULT);
 
                 }
                 vInfo("launchIntentJSON:" << launchIntentJSON);
@@ -1318,7 +1321,8 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
     d->sensorForNextWarp.z = 0;
 
 	// Default time warp parms
-    d->kernel->InitTimeWarpParms();
+//    d->kernel->InitTimeWarpParms();
+    d->swapParms = d->kernel->InitTimeWarpParms();
     d->javaObject = jni->NewGlobalRef(activityObject);
 
 	// Get the path to the .apk and package name
@@ -1487,6 +1491,16 @@ SurfaceTexture * App::dialogTexture()
     return dialog.dialogTexture;
 }
 
+ovrTimeWarpParms const & App::swapParms() const
+{
+    return d->swapParms;
+}
+
+ovrTimeWarpParms & App::swapParms()
+{
+    return d->swapParms;
+}
+
 const VRotationState &App::sensorForNextWarp() const
 {
     return d->sensorForNextWarp;
@@ -1517,18 +1531,19 @@ void App::recenterYaw(const bool showBlack)
     vInfo("AppLocal::RecenterYaw");
     if (showBlack)
 	{
-        //const ovrTimeWarpParms warpSwapBlackParms = d->kernel->InitTimeWarpParms(WARP_INIT_BLACK);
-        //d->kernel->doSmooth(&warpSwapBlackParms);
-        d->kernel->InitTimeWarpParms();
-        d->kernel->setSmoothOption( VK_INHIBIT_SRGB_FB | VK_FLUSH | VK_IMAGE);
-        d->kernel->setSmoothProgram( VK_DEFAULT);
-        for ( int eye = 0; eye < 2; eye++ )
-        {
-           d->kernel->setSmoothEyeTexture(eye,0,0);		// default replaced with a black texture
-        }
+        const ovrTimeWarpParms warpSwapBlackParms = d->kernel->InitTimeWarpParms(WARP_INIT_BLACK);
+        d->kernel->doSmooth(&warpSwapBlackParms);
+
+//        d->kernel->InitTimeWarpParms();
+//        d->kernel->setSmoothOption( VK_INHIBIT_SRGB_FB | VK_FLUSH | VK_IMAGE);
+//        d->kernel->setSmoothProgram( VK_DEFAULT);
+//        for ( int eye = 0; eye < 2; eye++ )
+//        {
+//           d->kernel->setSmoothEyeTexture(eye,0,0);		// default replaced with a black texture
+//        }
 
 
-        d->kernel->doSmooth();
+//        d->kernel->doSmooth();
 
 
 	}
@@ -1590,7 +1605,7 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
     // Doing this dynamically based just on time causes visible flickering at the
     // periphery when the fov is increased, so only do it if minimumVsyncs is set.
     const float fovDegrees = VDevice::instance()->eyeDisplayFov[0] +
-            ( ( d->kernel->m_minimumVsyncs > 1 ) ? 10.0f : 0.0f ) +
+            ( (d->swapParms.MinimumVsyncs > 1 ) ? 10.0f : 0.0f ) +
             ( ( !d->showVignette ) ? 5.0f : 0.0f );
 
     // DisplayMonoMode uses a single eye rendering for speed improvement
@@ -1647,19 +1662,20 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
         }
     }
 
-    d->kernel->InitTimeWarpParms();
+
     // This eye set is complete, use it now.
     if ( numPresents > 0 )
     {
         for(int eye = 0;eye<numEyes;++eye)
         {
-            d->kernel->m_texMatrix[eye][0] = VR4Matrixf::TanAngleMatrixFromFov( fovDegrees );
-            d->kernel->m_texId[eye][0] = ((VEyeItem*)eyeItemList[d->renderMonoMode ? 0 : eye ])->completedEyes().textures;
-            d->kernel->m_pose[eye][0] = d->sensorForNextWarp;
+            d->swapParms.Images[eye][0].TexCoordsFromTanAngles = VR4Matrixf::TanAngleMatrixFromFov( fovDegrees );
+            d->swapParms.Images[eye][0].TexId = ((VEyeItem*)eyeItemList[d->renderMonoMode ? 0 : eye ])->completedEyes().textures;
+            d->swapParms.Images[eye][0].Pose  = d->sensorForNextWarp;
             // d->kernel->m_smoothProgram = ChromaticAberrationCorrection(glOperation) ? WP_CHROMATIC : WP_SIMPLE;
         }
 
-        d->kernel->doSmooth();
+        //d->kernel->doSmooth();
+        d->kernel->doSmooth(&d->swapParms );
     }
 }
 

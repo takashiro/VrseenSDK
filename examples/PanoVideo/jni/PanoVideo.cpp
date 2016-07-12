@@ -411,7 +411,7 @@ VR4Matrixf PanoVideo::onNewFrame(VFrame vrFrame )
 	VFrame vrFrameWithoutMove = vrFrame;
 	vrFrameWithoutMove.input.sticks[ 0 ][ 0 ] = 0.0f;
 	vrFrameWithoutMove.input.sticks[ 0 ][ 1 ] = 0.0f;
-    m_scene.Frame( vApp->viewSettings(), vrFrameWithoutMove, vApp->kernel()->m_externalVelocity );
+    m_scene.Frame( vApp->viewSettings(), vrFrameWithoutMove,vApp->swapParms().ExternalVelocity );
 
 	// Check for new video frames
 	// latch the latest movie frame to the texture.
