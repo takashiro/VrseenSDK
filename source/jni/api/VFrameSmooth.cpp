@@ -1719,7 +1719,7 @@ void VFrameSmooth::Private::warpSwapInternal( const ovrTimeWarpParms & parms )
     ws.MinimumVsync = m_lastSwapVsyncCount + 2 * minimumVsyncs;	// don't use it if from same frame to avoid problems with very fast frames
     ws.FirstDisplayedVsync[0] = 0;			// will be set when it becomes the currentSource
     ws.FirstDisplayedVsync[1] = 0;			// will be set when it becomes the currentSource
-    ws.disableChromaticCorrection = ( ( m_eglStatus.eglGetGpuType() & NervGear::VEglDriver::GPU_TYPE_MALI_T760_EXYNOS_5433 ) != 0 );
+    ws.disableChromaticCorrection = ( ( m_eglStatus.eglGetGpuType() & VEglDriver::GPU_TYPE_MALI_T760_EXYNOS_5433 ) != 0 );
     ws.WarpParms = parms;
 
     // Default images.

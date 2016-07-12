@@ -436,7 +436,7 @@ void VKernel::destroy(eExitType exitType)
 
 ovrTimeWarpParms  VKernel::InitTimeWarpParms( const ovrWarpInit init, const unsigned int texId)
 {
-    const NervGear::VR4Matrix<float> tanAngleMatrix = NervGear::VR4Matrix<float>::TanAngleMatrixFromFov( 90.0f );
+    const VR4Matrix<float> tanAngleMatrix = VR4Matrix<float>::TanAngleMatrixFromFov( 90.0f );
 
     ovrTimeWarpParms parms;
     memset( &parms, 0, sizeof( parms ) );

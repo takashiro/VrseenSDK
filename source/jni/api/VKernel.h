@@ -125,14 +125,14 @@ typedef struct
     // function into ( TanX, TanY, 1, 1 ) vectors that are transformed
     // by this matrix to get ( S, T, Q, _ ) vectors that are looked
     // up with texture2dproj() to get texels.
-    NervGear::VR4Matrix<float>		TexCoordsFromTanAngles;
+    VR4Matrix<float> TexCoordsFromTanAngles;
 
     // The sensor state for which ModelViewMatrix is correct.
     // It is ok to update the orientation for each eye, which
     // can help minimize black edge pull-in, but the position
     // must remain the same for both eyes, or the position would
     // seem to judder "backwards in time" if a frame is dropped.
-    NervGear::VRotationState	Pose;
+    VRotationState Pose;
 } ovrTimeWarpImage;
 
 static const int	MAX_WARP_EYES = 2;
@@ -154,7 +154,7 @@ typedef struct
     // eye vectors before applying the rest of the time warp.
     // This will only be added when the same ovrTimeWarpParms is used for
     // more than one vsync.
-    NervGear::VR4Matrix<float>					ExternalVelocity;
+    VR4Matrix<float> ExternalVelocity;
 
     // WarpSwap will not return until at least this many vsyncs have
     // passed since the previous WarpSwap returned.
