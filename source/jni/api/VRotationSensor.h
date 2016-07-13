@@ -13,6 +13,9 @@ public:
     void setState(const VRotationState &state);
     VRotationState state() const;
 
+    void recenterYaw();
+    void setYaw(float newYaw);
+
     VRotationState predictState(double timestamp) const;
 
 private:

@@ -13,7 +13,8 @@ NV_NAMESPACE_BEGIN
 struct VRotationSensor::Private
 {
     VLockless<VRotationState> state;
-    VQuatf recenter;
+    VLockless<VQuatf> recenter;
+    VMutex recenterMutex;
     bool initialized;
 
     Private()
@@ -27,11 +28,11 @@ void VRotationSensor::setState(const VRotationState &state)
     if (!d->initialized) {
         float yaw, pitch, roll;
         state.GetEulerAngles<VAxis_Y, VAxis_X, VAxis_Z>(&yaw, &pitch, &roll);
-        d->recenter = VQuatf(VAxis_Y, -yaw);
+        d->recenter.setState(VQuatf(VAxis_Y, -yaw));
         d->initialized = true;
     } else {
         VRotationState recentered = state;
-        VQuatf base = d->recenter * state;
+        VQuatf base = d->recenter.state() * state;
         recentered.w = base.w;
         recentered.x = base.x;
         recentered.y = base.y;
@@ -45,6 +46,46 @@ VRotationState VRotationSensor::state() const
     return d->state.state();
 }
 
+void VRotationSensor::recenterYaw()
+{
+    // get the current state
+    VRotationState state = this->state();
+
+    // get the yaw in the current state
+    float yaw, pitch, roll;
+    state.GetEulerAngles<VAxis_Y, VAxis_X, VAxis_Z>(&yaw, &pitch, &roll);
+
+    // get the pose that adjusts the yaw
+    VQuatf yawAdjustment(VAxis_Y, -yaw);
+    state = yawAdjustment;
+
+    // To allow RecenterYaw() to be called from multiple threads we need a mutex
+    // because LocklessUpdater is only safe for single producer cases.
+    d->recenterMutex.lock();
+    d->state.setState(state);
+    d->recenterMutex.unlock();
+}
+
+void VRotationSensor::setYaw(float newYaw)
+{
+    // get the current state
+    VRotationState state = this->state();
+
+    // get the yaw in the current state
+    float yaw, pitch, roll;
+    state.GetEulerAngles<VAxis_Y, VAxis_X, VAxis_Z>(&yaw, &pitch, &roll);
+
+    // get the pose that adjusts the yaw
+    VQuatf yawAdjustment(VAxis_Y, newYaw - yaw);
+    state = yawAdjustment;
+
+    // To allow SetYaw() to be called from multiple threads we need a mutex
+    // because LocklessUpdater is only safe for single producer cases.
+    d->recenterMutex.lock();
+    d->state.setState(state);
+    d->recenterMutex.unlock();
+}
+
 VRotationSensor *VRotationSensor::instance()
 {
     static VRotationSensor sensor;
@@ -56,11 +97,44 @@ VRotationSensor::~VRotationSensor()
     delete d;
 }
 
+static VQuatf calcPredictedPose(const VRotationState &pose, float predictionDt)
+{
+    float speed = pose.gyro.Length();
+
+    const float slope = 0.2; // The rate at which the dynamic prediction interval varies
+    float candidateDt = slope * speed; // TODO: Replace with smoothstep function
+
+    float dynamicDt = predictionDt;
+
+    // Choose the candidate if it is shorter, to improve stability
+    if (candidateDt < predictionDt)
+        dynamicDt = candidateDt;
+
+    const float MAX_DELTA_TIME = 1.0f / 10.0f;
+    dynamicDt = std::min(std::max(dynamicDt, 0.0f), MAX_DELTA_TIME);
+
+    VQuatf state;
+    if (speed > 0.001)
+        state = pose * VQuatf(pose.gyro, speed * dynamicDt);
+
+    return pose;
+}
+
 VRotationState VRotationSensor::predictState(double timestamp) const
 {
-    NV_UNUSED(timestamp);
+    //lockless state fetch
     VRotationState state = this->state();
-    //state.timestamp = timestamp;
+
+
+    // Delta time from the last processed message
+    double pdt = timestamp - state.timestamp;
+    const VQuatf recenter = d->recenter.state();
+
+    // Do prediction logic
+    VQuatf orientation = recenter * calcPredictedPose(state, pdt);
+    state = orientation;
+    state.timestamp = timestamp;
+
     return state;
 }
 

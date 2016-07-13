@@ -1533,6 +1533,8 @@ void App::recenterYaw(const bool showBlack)
 
 	}
     //d->kernel->ovr_RecenterYaw();
+    VRotationSensor *sensor = VRotationSensor::instance();
+    sensor->recenterYaw();
 
 	// Change lastViewMatrix to mirror what is done to the sensor orientation by ovr_RecenterYaw.
 	// Get the current yaw rotation and cancel it out. This is necessary so that subsystems that
