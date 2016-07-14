@@ -2,6 +2,7 @@
 
 #include "VRotationState.h"
 #include "VMatrix.h"
+#include <jni.h>
 
 enum{
     VK_INHIBIT_SRGB_FB = 1,
@@ -89,6 +90,7 @@ public:
     uint m_planarTexId[2][3][3];
     VR4Matrixf m_texMatrix[2][3];
     VRotationState m_pose[2][3];
+    jobject m_ActivityObject;
 
 private:
     VKernel();

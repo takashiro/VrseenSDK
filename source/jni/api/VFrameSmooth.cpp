@@ -220,6 +220,7 @@ struct VFrameSmooth::Private
             m_hasEXT_sRGB_write_control( false ),
             m_sStartupTid( 0 ),
             m_jni(nullptr),
+			m_ActivityObject(0),
             m_eglMainThreadSurface( 0 ),
             m_eglClientVersion( 0 ),
             m_eglShareContext( 0 ),
@@ -251,7 +252,7 @@ struct VFrameSmooth::Private
         m_async = async;
         m_device = VDevice::instance();
         m_eyeBufferCount.setState( 0 );
-// 初始化smooth线程的gl状态
+// 鍒濆鍖杝mooth绾跨▼鐨刧l鐘舵��
         m_eglStatus.updateDisplay();
 
         m_eglMainThreadSurface = eglGetCurrentSurface( EGL_DRAW );
@@ -419,12 +420,12 @@ struct VFrameSmooth::Private
     void			createFrameworkGraphics();
     void			destroyFrameworkGraphics();
     void			drawFrameworkGraphicsToWindow( const int eye, const int swapOptions);
-    //用于管理同步的函数
+    //鐢ㄤ簬绠＄悊鍚屾鐨勫嚱鏁�
     double			getFractionalVsync();
     double			framePointTimeInSeconds( const double framePoint ) const;
     float 			sleepUntilTimePoint( const double targetSeconds, const bool busyWait );
 
-    // 平滑的参数：
+    // 骞虫粦鐨勫弬鏁帮細
      bool m_async;
      bool testc;
 
@@ -447,7 +448,7 @@ struct VFrameSmooth::Private
      long long			m_firstDisplayedVsync[2];
      bool				m_disableChromaticCorrection;
      EGLSyncKHR			m_gpuSync;
-    //平滑参数结束；
+    //骞虫粦鍙傛暟缁撴潫锛�
     VDevice *m_device;
 
     VGlShader		m_untexturedMvpProgram;
@@ -482,6 +483,9 @@ struct VFrameSmooth::Private
 
 
     JNIEnv *		m_jni;
+
+    //TODO::add temporary
+    jobject 		m_ActivityObject;
 
 
     VLockless<double>		m_lastsmoothTimeInSeconds;
@@ -596,6 +600,12 @@ void VFrameSmooth::setProgramParms( float * proParms)
     }
 }
 
+//TODO
+void VFrameSmooth::setJavaObject(jobject object)
+{
+	d->m_ActivityObject = object;
+}
+
 int VFrameSmooth::threadId() const
 {
     return d->m_smoothThreadTid;
@@ -673,7 +683,15 @@ void VFrameSmooth::Private::threadFunction()
     vInfo("WarpThreadLoop()");
 
     bool removedSchedFifo = false;
-    jobject activityObject = vApp->javaObject();
+
+
+    //TODO
+
+
+    jobject activityObject = m_ActivityObject;
+
+
+
 
     for (double vsync = 0; ; vsync++) {
         const double current = ceil(getFractionalVsync());

@@ -74,3 +74,20 @@ LOCAL_EXPORT_LDLIBS += -lz
 LOCAL_EXPORT_LDLIBS += -lOpenSLES
 
 include $(BUILD_STATIC_LIBRARY)		# start building based on everything since CLEAR_VARS
+
+#--------------------------------------------------------
+# Unity plugin
+#--------------------------------------------------------
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := OculusPlugin
+
+LOCAL_STATIC_LIBRARIES := vrseen
+#LOCAL_STATIC_LIBRARIES += android-ndk-profiler
+
+LOCAL_SRC_FILES  := $(NV_ROOT)/Integrations/UnityPlugin/UnityPlugin.cpp \
+                    $(NV_ROOT)/Integrations/UnityPlugin/MediaSurface.cpp \
+                    $(NV_ROOT)/Integrations/UnityPlugin/SensorPlugin.cpp \
+                    $(NV_ROOT)/Integrations/UnityPlugin/RenderingPlugin.cpp
+
+include $(BUILD_SHARED_LIBRARY)

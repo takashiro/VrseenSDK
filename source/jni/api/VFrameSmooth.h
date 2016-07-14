@@ -22,6 +22,9 @@ public:
     void setSmoothProgram(ushort program);
     void setProgramParms(float *proParms);
 
+    //TODO
+    void setJavaObject(jobject object);
+
     int threadId() const;
     void doSmooth();
 

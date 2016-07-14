@@ -246,6 +246,7 @@ VKernel::VKernel()
    m_programParms[1] =0;
    m_programParms[2] =0;
    m_programParms[3] =0;
+   m_ActivityObject = 0;
 }
 
 void UpdateHmdInfo()
@@ -297,7 +298,17 @@ void VKernel::run()
 #else
     char const * buildConfig = "RELEASE";
 #endif
-    ActivityObject = vApp->javaObject();
+
+
+    	ActivityObject = m_ActivityObject;
+    	vInfo("use the old method");
+
+//    else
+//    {
+//    	ActivityObject = vApp->javaObject();
+//    	vInfo("funking!!");
+//    }
+
     // This returns the existing jni if the caller has already created
     // one, or creates a new one.
     const jint rtn = VrLibJavaVM->AttachCurrentThread( &Jni, 0 );
@@ -369,7 +380,9 @@ void VKernel::run()
         vInfo("Cleared JNI exception");
     }
 
-    frameSmooth = new VFrameSmooth(asyncSmooth, vApp->vrParms().wantSingleBuffer);
+    //TODO
+    frameSmooth = new VFrameSmooth(asyncSmooth, false);
+    frameSmooth->setJavaObject(ActivityObject);
 
     jmethodID setSchedFifoId = JniUtils::GetStaticMethodID(Jni, VrLibClass, "setSchedFifoStatic", "(Landroid/app/Activity;II)I");
     Jni->CallStaticIntMethod(VrLibClass, setSchedFifoId, ActivityObject, gettid(), 1);

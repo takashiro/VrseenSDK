@@ -686,6 +686,7 @@ struct App::Private
 
             // Android doesn't let the non-standard extensions show up in the
             // extension string, so we need to try it blind.
+            vInfo("here is no1");
             windowSurface = eglCreateWindowSurface(m_glStatus.m_display, m_glStatus.m_config,
                     nativeWindow, attribs);
 
@@ -700,7 +701,7 @@ struct App::Private
                 }
                 attribs[numAttribs++] = EGL_NONE;
 
-
+                vInfo("here is no2");
                 windowSurface = eglCreateWindowSurface(m_glStatus.m_display, m_glStatus.m_config,
                         nativeWindow, attribs);
                 if (windowSurface == EGL_NO_SURFACE)
@@ -1248,7 +1249,7 @@ struct App::Private
             {
                 if (repeatCount == 0 && down) // first down only
                 {
-                    //TODO snapshot功能需要修改
+                    //TODO snapshot鍔熻兘闇�瑕佷慨鏀�
                     //eyeTargets->snapshot();
                     //self->createToast("screenshot");
                     return;
