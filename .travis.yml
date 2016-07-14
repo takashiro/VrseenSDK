@@ -12,10 +12,15 @@ before_install:
   - export PATH=${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools:${ANDROID_NDK_HOME}
 install:
   - cd source
-  - ndk-build NDK_DEBUG=1
-  - cd ..
-  - cd examples
-  - for subdir in $(ls -p | grep '/'); do cd $subdir && ndk-build NDK_DEBUG=1 && cd ..; done
+  - ndk-build -j16 APP_CFLAGS=-DNV_NAMESPACE=Vrseen
+  - cd ../examples
+  - for subdir in $(ls -p | grep '/'); do cd $subdir && ndk-build -j16 APP_CFLAGS=-DNV_NAMESPACE=Vrseen && cd ..; done
   - cd ../tests
-  - ndk-build NDK_DEBUG=1
+  - ndk-build -j16 APP_CFLAGS=-DNV_NAMESPACE=Vrseen
+  - cd ../source
+  - ndk-build -B -j16
+  - cd ../examples
+  - for subdir in $(ls -p | grep '/'); do cd $subdir && ndk-build -B -j16 && cd ..; done
+  - cd ../tests
+  - ndk-build -B -j16
 script: true

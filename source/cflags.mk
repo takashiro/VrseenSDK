@@ -5,7 +5,6 @@
 # set, but VRLib's make file cannot include import_vrlib.mk or it would be importing itself.
 
 LOCAL_CFLAGS	:= -DANDROID_NDK
-LOCAL_CFLAGS    += -DNV_NAMESPACE=NervGear
 LOCAL_CFLAGS	+= -Werror			# error on warnings
 LOCAL_CFLAGS	+= -Wall
 LOCAL_CFLAGS	+= -Wextra
