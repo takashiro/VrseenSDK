@@ -12,12 +12,18 @@ public class MainActivity extends Activity {
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		int result = exec();
-		if (result != 0) {
-			Log.e("UnitTest", "Unit Test terminated unexpectedly.");
-		} else {
-			Log.i("UnitTest", "Unit Test succeeded.");
-		}
+		Thread thread = new Thread(){
+			@Override
+			public void run() {
+				int result = exec();
+				if (result != 0) {
+					Log.e("UnitTest", "Unit Test terminated unexpectedly.");
+				} else {
+					Log.i("UnitTest", "Unit Test succeeded.");
+				}
+			}
+		};
+		thread.start();
 		super.onCreate(savedInstanceState);
 	}
 
