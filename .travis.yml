@@ -6,6 +6,9 @@ android:
     - tools
     - build-tools-23.0.3
     - android-19
+    - extra-android-support
+    - extra-android-m2repository
+    - extra-google-m2repository
     - sys-img-armeabi-v7a-android-19
 sudo: required
 before_install:
@@ -17,7 +20,4 @@ before_script:
   - android-wait-for-emulator
   - adb shell input keyevent 82 &
 script:
-  - ./gradlew build
-  - adb install tests/build/outputs/apk/tests-debug.apk
-  - adb shell am start -n com.vrseen.unittest/.MainActivity
-  - adb logcat -d *:F | grep 'vrseen.unittest'
+  - ./gradlew build connectedAndroidTest

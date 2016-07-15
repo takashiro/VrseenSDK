@@ -40,6 +40,11 @@ extern "C" {
     {
         return main();
     }
+
+    jint Java_com_vrseen_SourceTest_exec(JNIEnv *, jclass, jobject)
+    {
+        return main();
+    }
 }
 
 #endif
