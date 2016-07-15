@@ -1,26 +1,13 @@
 language: android
+jdk: oraclejdk7
 android:
   components:
-    - build-tools-24.0.0
+    - platform-tools
+    - tools
+    - build-tools-23.0.3
     - android-19
     - sys-img-armeabi-v7a-android-19
 sudo: required
 before_install:
-  - if [ `uname -m` = x86_64 ]; then wget http://dl.google.com/android/repository/android-ndk-r10e-linux-x86_64.zip -O ndk.zip; else wget http://dl.google.com/android/repository/android-ndk-r10e-linux-x86.zip -O ndk.zip; fi
-  - unzip -q ndk.zip
-  - export ANDROID_NDK_HOME=`pwd`/android-ndk-r10e
-  - export PATH=${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools:${ANDROID_NDK_HOME}
-install:
-  - cd source
-  - ndk-build -j16 APP_CFLAGS=-DNV_NAMESPACE=Vrseen
-  - cd ../examples
-  - for subdir in $(ls -p | grep '/'); do cd $subdir && ndk-build -j16 APP_CFLAGS=-DNV_NAMESPACE=Vrseen && cd ..; done
-  - cd ../tests
-  - ndk-build -j16 APP_CFLAGS=-DNV_NAMESPACE=Vrseen
-  - cd ../source
-  - ndk-build -B -j16
-  - cd ../examples
-  - for subdir in $(ls -p | grep '/'); do cd $subdir && ndk-build -B -j16 && cd ..; done
-  - cd ../tests
-  - ndk-build -B -j16
-script: true
+  - chmod +x travis/before_install.sh
+  - ./travis/before_install.sh

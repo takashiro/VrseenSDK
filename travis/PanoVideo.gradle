@@ -1,0 +1,34 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion = 19
+    buildToolsVersion = '23.0.3'
+
+    defaultConfig {
+        applicationId 'com.vrseen.panovideo'
+        minSdkVersion 19
+        targetSdkVersion 19
+        versionCode 1
+        versionName "0.1"
+    }
+
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDir  'src'
+            jniLibs.srcDir 'libs'
+            assets.srcDir 'assets'
+            res.srcDirs  'res'
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled = false
+            proguardFiles.add(file('proguard-rules.txt'))
+        }
+    }
+}
+
+dependencies {
+    compile project(':source')
+}
