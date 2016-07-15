@@ -61,6 +61,9 @@ void test()
         int timestamp = clock();
         for (int i = 0; i < loopMax; i++) {
             q1.push_back(1);
+            if (q1.size() > 500) {
+                q1.pop_front();
+            }
         }
         int t1 = clock() - timestamp;
 
