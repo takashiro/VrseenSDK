@@ -15,14 +15,14 @@ void test()
 
     const char *str = "this is a test";
     {
-        VFile file("test.txt", VFile::WriteOnly);
+        VFile file("/sdcard/test.txt", VFile::WriteOnly);
         assert(file.isOpen());
         assert(file.openMode() == VFile::WriteOnly);
         file.write(str);
     }
 
     {
-        VFile file("test.txt", VFile::ReadOnly);
+        VFile file("/sdcard/test.txt", VFile::ReadOnly);
         assert(file.isOpen());
         assert(file.openMode() == VFile::ReadOnly);
 
@@ -39,19 +39,19 @@ void test()
         }
 
         {
-            VFile file("test.bin", VFile::WriteOnly);
+            VFile file("/sdcard/test.bin", VFile::WriteOnly);
             assert(file.write(bytes, 512) == 512);
         }
 
         {
-            VFile file("test.bin", VFile::WriteOnly | VFile::Append);
+            VFile file("/sdcard/test.bin", VFile::WriteOnly | VFile::Append);
             assert(file.isOpen());
             assert(file.openMode() & VFile::Append);
             assert(file.write(bytes + 512, 512) == 512);
         }
 
         {
-            VFile file("test.bin", VFile::ReadOnly);
+            VFile file("/sdcard/test.bin", VFile::ReadOnly);
             VByteArray data = file.readAll();
             assert(data.size() == 1024);
             for (uint i = 0; i < 1024; i++) {
