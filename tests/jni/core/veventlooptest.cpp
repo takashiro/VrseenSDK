@@ -8,13 +8,16 @@ namespace {
 
 void test()
 {
-    VEventLoop loop(100);
-    loop.post("test");
+    {
+        VEventLoop loop(100);
+        loop.post("test");
 
-    VEvent event = loop.next();
-    assert(event.name == "test");
+        VEvent event = loop.next();
+        assert(event.name == "test");
+    }
 
     {
+        VEventLoop loop(100);
         std::thread listener([&]{
             loop.wait();
             VEvent event = loop.next();
@@ -25,51 +28,55 @@ void test()
     }
 
     {
-        bool finished = false;
-        std::thread receiver([&]{
-            VString name;
-            forever {
-                loop.wait();
-                finished = true;
-                VEvent event = loop.next();
-                name = event.name;
-            }
-            assert(name == "yunzhe");
-        });
-        receiver.detach();
-
         std::thread sender([&]{
+            VEventLoop loop(100);
+            volatile bool finished = false;
+            std::thread receiver([&]{
+                VString name;
+                forever {
+                        loop.wait();
+                        finished = true;
+                        VEvent event = loop.next();
+                        name = event.name;
+                }
+                assert(name == "yunzhe");
+            });
+            receiver.detach();
+
             loop.send("yunzhe");
             assert(finished);
         });
-        sender.join();
+        sender.detach();
     }
 
     {
-        int result = 0;
-        std::thread worker([&]{
-            forever {
-                VEvent event = loop.next();
-                if (event.name == "quit") {
-                    break;
+        std::thread sender([&]{
+            VEventLoop loop(100);
+            volatile int result = 0;
+            volatile bool stopped = false;
+            std::thread worker([&]{
+                forever {
+                    loop.wait();
+                    VEvent event = loop.next();
+                    if (event.name == "quit") {
+                        stopped = true;
+                        vInfo("stopped");
+                        break;
+                    } else if (event.name == "plus") {
+                        result++;
+                    }
                 }
-                if (event.isExecutable()) {
-                    event.execute();
-                }
-            }
-        });
-        worker.detach();
+            });
+            worker.detach();
 
-        std::thread master([&]{
             for (int i = 0; i < 10; i++) {
-                loop.send([&]{
-                    result++;
-                });
+                loop.post("plus");
             }
             loop.send("quit");
+            assert(stopped);
             assert(result == 10);
         });
-        master.join();
+        sender.detach();
     }
 }
 

@@ -73,7 +73,8 @@ void test()
         s << value;
         VJson json;
         s >> json;
-        assert(abs(json.toDouble() - value) <= 1e-4);
+        double result = json.toDouble();
+        assert(abs(result - value) <= 0.01);
     }
 
     {
