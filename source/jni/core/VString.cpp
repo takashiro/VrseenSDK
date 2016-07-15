@@ -48,10 +48,6 @@ namespace {
     }
 }
 
-VString::VString()
-{
-}
-
 VString::VString(const char *str)
 {
     assign(str);
