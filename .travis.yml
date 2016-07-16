@@ -23,3 +23,5 @@ before_script:
   - adb logcat *:I > logcat.log &
 script:
   - ./gradlew build connectedAndroidTest
+after_failure:
+  - cat logcat.log
