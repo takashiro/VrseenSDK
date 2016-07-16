@@ -38,8 +38,11 @@ ndk-build -B -j16
 cd ..
 
 chmod +x ./gradlew
-mv -f travis/build.gradle build.gradle
-mv -f travis/source.gradle source/build.gradle
-mv -f travis/tests.gradle tests/build.gradle
-mv -f travis/PanoPhoto.gradle examples/PanoPhoto/build.gradle
-mv -f travis/PanoVideo.gradle examples/PanoVideo/build.gradle
+
+cp -f travis/build.gradle build.gradle
+cp -f travis/source.gradle source/build.gradle
+cp -f travis/tests.gradle tests/build.gradle
+for source_file in $(ls travis/examples/*.gradle); do
+    example_name=$(basename $source_file .gradle)
+    cp -f $source_file examples/$example_name/build.gradle
+done
