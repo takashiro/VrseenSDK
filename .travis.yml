@@ -15,10 +15,11 @@ before_install:
   - chmod +x travis/before_install.sh
   - ./travis/before_install.sh
 before_script:
+  - mksdcard -l mySdCard 64M mySdCard.img
   - echo no | android create avd --force -n test -t android-19 --abi armeabi-v7a
-  - emulator -avd test -no-skin -no-audio -no-window &
+  - emulator -avd test -no-skin -no-audio -no-window -sdcard mySdCard.img &
   - android-wait-for-emulator
   - adb shell input keyevent 82 &
-  - adb logcat *:I &
+  - adb logcat *:I > logcat.log &
 script:
   - ./gradlew build connectedAndroidTest
