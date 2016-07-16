@@ -6,8 +6,6 @@
 #include <unistd.h>
 #include <pthread.h>
 
-#include "VLog.h"
-
 NV_NAMESPACE_BEGIN
 
 struct VEventLoop::Private
@@ -74,12 +72,9 @@ struct VEventLoop::Private
 
         pthread_cond_signal(&posted);
         if (synchronized) {
-            vInfo("try waiting...");
             pthread_mutex_lock(&receiveMutex);
-            vInfo("waiting...");
             pthread_cond_wait(&received, &receiveMutex);
             pthread_mutex_unlock(&receiveMutex);
-            vInfo("wait for you!");
         }
 
         return true;
@@ -107,7 +102,6 @@ VEventLoop::~VEventLoop()
 
 void VEventLoop::quit()
 {
-    vInfo("VMessageQueue shutdown");
     d->shutdown = true;
 }
 
@@ -172,7 +166,6 @@ VEvent VEventLoop::next()
     const int index = d->head % d->capacity;
     VEvent event = d->messages[index].event;
     if (d->messages[index].sychronized) {
-        vInfo("hey! I'm coming!");
         pthread_cond_signal(&d->received);
     }
     d->messages[index].sychronized = false;
