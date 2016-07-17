@@ -60,7 +60,6 @@ void test()
                     VEvent event = loop.next();
                     if (event.name == "quit") {
                         stopped = true;
-                        vInfo("stopped");
                         break;
                     } else if (event.name == "plus") {
                         result++;
