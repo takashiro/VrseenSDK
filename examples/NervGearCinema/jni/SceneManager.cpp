@@ -2,18 +2,21 @@
 #include "Native.h"
 #include "SceneManager.h"
 #include "SurfaceTexture.h"
+#include "VAlgorithm.h"
+#include <GazeCursor.h>
 
 #include <VKernel.h>
 #include <VEglDriver.h>
 #include <VTimer.h>
 #include <VLog.h>
 
+NV_USING_NAMESPACE
+
 namespace OculusCinema
 {
 
 SceneManager::SceneManager( CinemaApp &cinema ) :
 	Cinema( cinema ),
-	StaticLighting(),
 	UseOverlay( true ),
 	MovieTexture( NULL ),
 	MovieTextureTimestamp( 0 ),
@@ -40,8 +43,6 @@ SceneManager::SceneManager( CinemaApp &cinema ) :
 	ScreenVignetteSbsTexture( 0 ),
 	SceneProgramIndex( SCENE_PROGRAM_DYNAMIC_ONLY ),
 	Scene(),
-	SceneScreenSurface( NULL ),
-	SceneScreenTag( NULL ),
 	SceneSeatPositions(),
 	SceneSeatCount( 0 ),
 	SeatPosition( 0 ),
@@ -52,6 +53,30 @@ SceneManager::SceneManager( CinemaApp &cinema ) :
 
 {
 	MipMappedMovieTextures[0] = MipMappedMovieTextures[1] = MipMappedMovieTextures[2] = 0;
+
+    SceneScreenBounds = VBoxf(V3Vectf(0.026997, 0.427766, -3.253125),V3Vectf(5.973003 ,4.391771, -3.253125));
+
+    Scene.YawOffset = 0.0f;
+    Scene.Znear = 0.1f;
+    Scene.Zfar = 2000.0f;
+
+    // if no seats, create some at the position of the seats in home_theater
+    for( int seatPos = -1; seatPos <= 2; seatPos++ )
+    {
+        SceneSeatPositions[ SceneSeatCount ].z = 3.6f;
+        SceneSeatPositions[ SceneSeatCount ].x = 3.0f + seatPos * 0.9f - 0.45;
+        SceneSeatPositions[ SceneSeatCount ].y = 0.0f;
+        SceneSeatCount++;
+    }
+
+    for( int seatPos = -1; seatPos <= 1; seatPos++ )
+    {
+        SceneSeatPositions[ SceneSeatCount ].z = 1.8f;
+        SceneSeatPositions[ SceneSeatCount ].x = 3.0f + seatPos * 0.9f;
+        SceneSeatPositions[ SceneSeatCount ].y = -0.3f;
+        SceneSeatCount++;
+    }
+    SetSeat( 1 );
 }
 
 void SceneManager::OneTimeInit( const VString &launchIntent )
@@ -132,175 +157,6 @@ static V3Vectf AnglesForMatrix( const VR4Matrixf &m )
 	angles.x = atan2( viewForward.y, viewUp.y );
 
 	return angles;
-}
-
-//=========================================================================================
-
-// Sets the scene to the given model, sets the material on the
-// model to the current sceneProgram for static / dynamic lighting,
-// and updates:
-// SceneScreenSurface
-// SceneScreenBounds
-// SeatPosition
-void SceneManager::SetSceneModel( const SceneDef &sceneDef )
-{
-    vInfo("SetSceneModel" << sceneDef.SceneModel->FileName);
-
-	VoidedScene = false;
-	UseOverlay = true;
-
-	SceneInfo = sceneDef;
-	Scene.SetWorldModel( *SceneInfo.SceneModel );
-	SceneScreenSurface = const_cast< SurfaceDef * >( Scene.FindNamedSurface( "screen" ) );
-	SceneScreenTag = Scene.FindNamedTag( "screen" );
-
-	SceneScreenMatrix.M[0][0] = -1.0f;
-	SceneScreenMatrix.M[1][0] = 0.0f;
-	SceneScreenMatrix.M[2][0] = 0.0f;
-
-	SceneScreenMatrix.M[0][1] = 0.0f;
-	SceneScreenMatrix.M[1][1] = 1.0f;
-	SceneScreenMatrix.M[2][1] = 0.0f;
-
-	SceneScreenMatrix.M[0][2] = 0.0f;
-	SceneScreenMatrix.M[1][2] = 0.0f;
-	SceneScreenMatrix.M[2][2] = -1.0f;
-
-	for ( SceneSeatCount = 0; SceneSeatCount < MAX_SEATS; SceneSeatCount++ )
-	{
-        VString namedTag;
-        namedTag.sprintf("cameraPos%d", SceneSeatCount + 1);
-        const ModelTag * tag = Scene.FindNamedTag(namedTag);
-		if ( tag == NULL )
-		{
-			break;
-		}
-		SceneSeatPositions[SceneSeatCount] = tag->matrix.GetTranslation();
-        SceneSeatPositions[SceneSeatCount].y -= vApp->viewSettings().eyeHeight;
-	}
-
-	if ( !sceneDef.UseSeats )
-	{
-		SceneSeatPositions[ SceneSeatCount ].z = 0.0f;
-		SceneSeatPositions[ SceneSeatCount ].x = 0.0f;
-		SceneSeatPositions[ SceneSeatCount ].y = 0.0f;
-		SceneSeatCount++;
-		SetSeat( 0 );
-	}
-	else if ( SceneSeatCount > 0 )
-	{
-		SetSeat( 0 );
-	}
-	else
-	{
-		// if no seats, create some at the position of the seats in home_theater
-		for( int seatPos = -1; seatPos <= 2; seatPos++ )
-		{
-			SceneSeatPositions[ SceneSeatCount ].z = 3.6f;
-			SceneSeatPositions[ SceneSeatCount ].x = 3.0f + seatPos * 0.9f - 0.45;
-			SceneSeatPositions[ SceneSeatCount ].y = 0.0f;
-			SceneSeatCount++;
-		}
-
-		for( int seatPos = -1; seatPos <= 1; seatPos++ )
-		{
-			SceneSeatPositions[ SceneSeatCount ].z = 1.8f;
-			SceneSeatPositions[ SceneSeatCount ].x = 3.0f + seatPos * 0.9f;
-			SceneSeatPositions[ SceneSeatCount ].y = -0.3f;
-			SceneSeatCount++;
-		}
-		SetSeat( 1 );
-	}
-
-	Scene.YawOffset = 0.0f;
-	Scene.Znear = 0.1f;
-	Scene.Zfar = 2000.0f;
-
-	ClearGazeCursorGhosts();
-
-	if ( SceneInfo.UseDynamicProgram )
-	{
-		SetSceneProgram( SceneProgramIndex, SCENE_PROGRAM_ADDITIVE );
-
-		if ( SceneScreenSurface )
-		{
-			SceneScreenBounds = SceneScreenSurface->cullingBounds;
-
-			// force to a solid black material that cuts a hole in alpha
-			SceneScreenSurface->materialDef.programObject = Cinema.shaderMgr.ScenePrograms[0].program;
-			SceneScreenSurface->materialDef.uniformMvp = Cinema.shaderMgr.ScenePrograms[0].uniformModelViewProMatrix;
-		}
-	}
-
-	FreeScreenActive = false;
-	if ( SceneInfo.UseFreeScreen )
-	{
-        V3Vectf angles = AnglesForMatrix( Scene.ViewMatrix );
-		angles.x = 0.0f;
-		angles.z = 0.0f;
-		SetFreeScreenAngles( angles );
-		FreeScreenActive = true;
-	}
-}
-
-void SceneManager::SetSceneProgram( const sceneProgram_t opaqueProgram, const sceneProgram_t additiveProgram )
-{
-	if ( !Scene.WorldModel.Definition || !SceneInfo.UseDynamicProgram )
-	{
-		return;
-	}
-
-	const VGlShader & dynamicOnlyProg = Cinema.shaderMgr.ScenePrograms[SCENE_PROGRAM_DYNAMIC_ONLY];
-	const VGlShader & opaqueProg = Cinema.shaderMgr.ScenePrograms[opaqueProgram];
-	const VGlShader & additiveProg = Cinema.shaderMgr.ScenePrograms[additiveProgram];
-	const VGlShader & diffuseProg = Cinema.shaderMgr.ProgSingleTexture;
-
-	vInfo("SetSceneProgram:" << opaqueProgram << "(" << opaqueProg.program << ")," << additiveProgram << "(" << additiveProg.program << ")");
-
-	ModelDef & def = *const_cast< ModelDef * >( &Scene.WorldModel.Definition->Def );
-    for ( int i = 0; i < def.surfaces.length(); i++ )
-	{
-		if ( &def.surfaces[i] == SceneScreenSurface )
-		{
-			continue;
-		}
-
-		MaterialDef & materialDef = def.surfaces[i].materialDef;
-
-		if ( materialDef.gpuState.blendSrc == GL_ONE && materialDef.gpuState.blendDst == GL_ONE )
-		{
-			// Non-modulated additive material.
-			if ( materialDef.textures[1] != 0 )
-			{
-				materialDef.textures[0] = materialDef.textures[1];
-				materialDef.textures[1] = 0;
-			}
-
-			materialDef.programObject = additiveProg.program;
-			materialDef.uniformMvp = additiveProg.uniformModelViewProMatrix;
-		}
-		else if ( materialDef.textures[1] != 0 )
-		{
-			// Modulated material.
-			if ( materialDef.programObject != opaqueProg.program &&
-				( materialDef.programObject == dynamicOnlyProg.program ||
-					opaqueProg.program == dynamicOnlyProg.program ) )
-            {
-                std::swap(materialDef.textures[0], materialDef.textures[1]);
-			}
-
-			materialDef.programObject = opaqueProg.program;
-			materialDef.uniformMvp = opaqueProg.uniformModelViewProMatrix;
-		}
-		else
-		{
-			// Non-modulated diffuse material.
-			materialDef.programObject = diffuseProg.program;
-			materialDef.uniformMvp = diffuseProg.uniformModelViewProMatrix;
-		}
-	}
-
-	SceneProgramIndex = opaqueProgram;
 }
 
 //=========================================================================================
@@ -423,8 +279,6 @@ void SceneManager::ClearMovie()
 {
     Native::StopMovie( vApp );
 
-	SetSceneProgram( SCENE_PROGRAM_DYNAMIC_ONLY, SCENE_PROGRAM_ADDITIVE );
-
 	MovieTextureTimestamp = 0;
 	FrameUpdateNeeded = true;
 	CurrentMovieWidth = 0;
@@ -478,7 +332,7 @@ void SceneManager::ClampScreenToView()
 	{	// screen is a bit above -PI and view is a bit below PI
 		deltaAngles.y += 2 * M_PI;
 	}
-	deltaAngles.y = NervGear::VAlgorithm::Clamp( deltaAngles.y, -( float )M_PI * 0.20f, ( float )M_PI * 0.20f );
+	deltaAngles.y = VAlgorithm::Clamp( deltaAngles.y, -( float )M_PI * 0.20f, ( float )M_PI * 0.20f );
 
 	if ( deltaAngles.x > M_PI )
 	{	// screen is a bit under PI and view is a bit above -PI
@@ -488,7 +342,7 @@ void SceneManager::ClampScreenToView()
 	{	// screen is a bit above -PI and view is a bit below PI
 		deltaAngles.x += 2 * M_PI;
 	}
-	deltaAngles.x = NervGear::VAlgorithm::Clamp( deltaAngles.x, -( float )M_PI * 0.125f, ( float )M_PI * 0.125f );
+	deltaAngles.x = VAlgorithm::Clamp( deltaAngles.x, -( float )M_PI * 0.125f, ( float )M_PI * 0.125f );
 
 	SetFreeScreenAngles( viewAngles + deltaAngles );
 }
@@ -499,23 +353,6 @@ void SceneManager::ClearGazeCursorGhosts()
 	ClearGhostsFrames = 3;
 }
 
-void SceneManager::ToggleLights( const float duration )
-{
-    const double now = VTimer::Seconds();
-	StaticLighting.Set( now, StaticLighting.Value( now ), now + duration, 1.0 - StaticLighting.endValue );
-}
-
-void SceneManager::LightsOn( const float duration )
-{
-    const double now = VTimer::Seconds();
-	StaticLighting.Set( now, StaticLighting.Value( now ), now + duration, 1.0 );
-}
-
-void SceneManager::LightsOff( const float duration )
-{
-    const double now = VTimer::Seconds();
-	StaticLighting.Set( now, StaticLighting.Value( now ), now + duration, 0.0 );
-}
 
 //============================================================================================
 
@@ -664,7 +501,7 @@ bool SceneManager::Command(const VEvent &event)
         vAssert(movie);
 
 		// always use 2d form lobby movies
-		if ( ( movie == NULL ) || SceneInfo.LobbyScreen )
+		if ( ( movie == NULL ))
 		{
 			CurrentMovieFormat = VT_2D;
 		}
@@ -704,7 +541,6 @@ bool SceneManager::Command(const VEvent &event)
 		if ( numberOfPixels > 1920 * 1080 )
 		{
 			vInfo("Oversized movie.  Switching to Void scene to reduce judder");
-			SetSceneModel( *Cinema.modelMgr.VoidScene );
 			UseOverlay = false;
 			VoidedScene = true;
 
@@ -739,8 +575,6 @@ bool SceneManager::Command(const VEvent &event)
 				CurrentMovieHeight = height;
 				break;
 		}
-
-        Cinema.movieLoaded( CurrentMovieWidth, CurrentMovieHeight, MovieDuration );
 
 		// Create the texture that we will mip map from the external image
 		for ( int i = 0 ; i < 3 ; i++ )
@@ -786,78 +620,19 @@ VR4Matrixf SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 	// allow stereo movies to also be played in mono
 	const int stereoEye = ForceMono ? 0 : eye;
 
-	if ( SceneInfo.UseDynamicProgram )
-	{
-		// lights fading in and out, always on if no movie loaded
-		const float cinemaLights = ( ( MovieTextureWidth > 0 ) && !SceneInfo.UseFreeScreen ) ?
-                (float)StaticLighting.Value( VTimer::Seconds() ) : 1.0f;
-
-		if ( cinemaLights <= 0.0f )
-		{
-			if ( SceneProgramIndex != SCENE_PROGRAM_DYNAMIC_ONLY )
-			{
-				// switch to dynamic-only to save GPU
-				SetSceneProgram( SCENE_PROGRAM_DYNAMIC_ONLY, SCENE_PROGRAM_ADDITIVE );
-			}
-		}
-		else if ( cinemaLights >= 1.0f )
-		{
-			if ( SceneProgramIndex != SCENE_PROGRAM_STATIC_ONLY )
-			{
-				// switch to static-only to save GPU
-				SetSceneProgram( SCENE_PROGRAM_STATIC_ONLY, SCENE_PROGRAM_ADDITIVE );
-			}
-		}
-		else
-		{
-			if ( SceneProgramIndex != SCENE_PROGRAM_STATIC_DYNAMIC )
-			{
-				// switch to static+dynamic lighting
-				SetSceneProgram( SCENE_PROGRAM_STATIC_DYNAMIC, SCENE_PROGRAM_ADDITIVE );
-			}
-		}
-
-		glUseProgram( Cinema.shaderMgr.ScenePrograms[SceneProgramIndex].program );
-		glUniform4f( Cinema.shaderMgr.ScenePrograms[SceneProgramIndex].uniformColor, 1.0f, 1.0f, 1.0f, cinemaLights );
-		glUseProgram( Cinema.shaderMgr.ScenePrograms[SCENE_PROGRAM_ADDITIVE].program );
-		glUniform4f( Cinema.shaderMgr.ScenePrograms[SCENE_PROGRAM_ADDITIVE].uniformColor, 1.0f, 1.0f, 1.0f, cinemaLights );
-
-		// Bind the mip mapped movie texture to Texture2 so it can be sampled from the vertex program for scene lighting.
-		glActiveTexture( GL_TEXTURE2 );
-		glBindTexture( GL_TEXTURE_2D, MipMappedMovieTextures[CurrentMipMappedMovieTexture] );
-	}
-
-	const bool drawScreen = ( SceneScreenSurface || SceneInfo.UseFreeScreen || SceneInfo.LobbyScreen ) && MovieTexture && ( CurrentMovieWidth > 0 );
+	const bool drawScreen = (MovieTexture && ( CurrentMovieWidth > 0 ));
 
 	// otherwise cracks would show overlay texture
 	glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
 	glClear( GL_COLOR_BUFFER_BIT );
 
-	if ( !SceneInfo.UseFreeScreen )
-	{
-		Scene.DrawEyeView( eye, fovDegrees );
-	}
+//	Scene.DrawEyeView( eye, fovDegrees );
 
     const VR4Matrixf mvp = Scene.MvpForEye( eye, fovDegrees );
-
 	// draw the screen on top
 	if ( !drawScreen )
 	{
 		return mvp;
-	}
-
-	if ( !SceneInfo.LobbyScreen )
-	{
-		glDisable( GL_DEPTH_TEST );
-	}
-
-	// If we are using the free screen, we still need to draw the surface with black
-	if ( FreeScreenActive && !SceneInfo.UseFreeScreen && SceneScreenSurface )
-	{
-		const VGlShader * prog = &Cinema.shaderMgr.ScenePrograms[0];
-		glUseProgram( prog->program );
-        glUniformMatrix4fv( prog->uniformModelViewProMatrix, 1, GL_FALSE, mvp.Transposed().M[0] );
-        SceneScreenSurface->geo.drawElements();
 	}
 
 	const VGlShader * prog = &Cinema.shaderMgr.MovieExternalUiProgram;
@@ -939,7 +714,7 @@ VR4Matrixf SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 	//
 	// draw the movie texture
 	//
-	if ( !GetUseOverlay() || SceneInfo.LobbyScreen || ( SceneInfo.UseScreenGeometry && ( SceneScreenSurface != NULL ) ) )
+	if ( !GetUseOverlay())
 	{
 		// no overlay
         vApp->kernel()->setSmoothProgram( VK_DEFAULT_CB);
@@ -957,18 +732,10 @@ VR4Matrixf SceneManager::DrawEyeView( const int eye, const float fovDegrees )
         glUniformMatrix4fv( prog->uniformTexMatrix2, 1, GL_FALSE, /* not transposed */
                 VR4Matrixf::Identity().Transposed().M[0] );
 
-		if ( !SceneInfo.LobbyScreen && SceneInfo.UseScreenGeometry && ( SceneScreenSurface != NULL ) )
-		{
-            glUniformMatrix4fv( prog->uniformModelViewProMatrix, 1, GL_FALSE, mvp.Transposed().M[0] );
-            SceneScreenSurface->geo.drawElements();
-		}
-		else
-		{
-            const VR4Matrixf screenModel = ScreenMatrix();
-            const VR4Matrixf screenMvp = mvp * screenModel;
-            glUniformMatrix4fv( prog->uniformModelViewProMatrix, 1, GL_FALSE, screenMvp.Transposed().M[0] );
-            UnitSquare.drawElements();
-		}
+	    const VR4Matrixf screenModel = ScreenMatrix();
+        const VR4Matrixf screenMvp = mvp * screenModel;
+        glUniformMatrix4fv( prog->uniformModelViewProMatrix, 1, GL_FALSE, screenMvp.Transposed().M[0] );
+        UnitSquare.drawElements();
 
 		glBindTexture( GL_TEXTURE_EXTERNAL_OES, 0 );	// don't leave it bound
 	}

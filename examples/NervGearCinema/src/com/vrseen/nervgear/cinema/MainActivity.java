@@ -1,31 +1,27 @@
 package com.vrseen.nervgear.cinema;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.FileOutputStream;
-import java.lang.IllegalStateException;
-import java.lang.IllegalArgumentException;
-import java.lang.System;
-
+import android.content.Context;
 import android.content.SharedPreferences.Editor;
 import android.graphics.Bitmap;
-import android.graphics.SurfaceTexture;
 import android.graphics.Matrix;
+import android.graphics.SurfaceTexture;
+import android.media.AudioManager;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.media.ThumbnailUtils;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
-import android.content.Context;
-import android.media.AudioManager;
-import com.vrseen.nervgear.VrActivity;
-import com.vrseen.nervgear.VrLib;
-import android.content.Intent;
+import com.vrseen.VrActivity;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 		MediaPlayer.OnVideoSizeChangedListener,
@@ -69,12 +65,8 @@ public class MainActivity extends VrActivity implements SurfaceHolder.Callback,
 		Log.d( TAG, "onCreate" );
 		super.onCreate( savedInstanceState );
 
-		Intent intent = getIntent();
-		String commandString = VrLib.getCommandStringFromIntent( intent );
-		String fromPackageNameString = VrLib.getPackageStringFromIntent( intent );
-		String uriString = VrLib.getUriStringFromIntent( intent );
-
-		nativeSetAppInterface( this, fromPackageNameString, commandString, uriString );
+		String uri = Environment.getExternalStorageDirectory().getAbsolutePath()+"/VRSeen/SDK/360Cinema/cinema_test.mp4";
+		nativeSetAppInterface( this, "", "", uri );
 
 		audioManager = ( AudioManager )getSystemService( Context.AUDIO_SERVICE );
 	}

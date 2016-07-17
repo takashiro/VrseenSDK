@@ -3,7 +3,7 @@
 #include "core/VTimer.h"
 
 
-using namespace NervGear;
+NV_USING_NAMESPACE
 
 namespace OculusCinema {
 
@@ -177,9 +177,6 @@ void ShaderManager::OneTimeInit( const VString &launchIntent )
 	ScenePrograms[SCENE_PROGRAM_DYNAMIC_ONLY]	.initShader( SceneDynamicVertexShaderSrc, SceneDynamicFragmentShaderSrc );
 	ScenePrograms[SCENE_PROGRAM_ADDITIVE]		.initShader( SceneStaticVertexShaderSrc, SceneAdditiveFragmentShaderSrc );
 
-	// NOTE: make sure to load with SCENE_PROGRAM_STATIC_DYNAMIC because the textures are initially not swapped
-	DynamicPrograms = ModelGlPrograms( &ScenePrograms[ SCENE_PROGRAM_STATIC_DYNAMIC ] );
-
     ProgVertexColor				.initShader( VGlShader::getVertexColorVertexShaderSource(), VGlShader::getVertexColorFragmentShaderSource() );
     ProgSingleTexture			.initShader( VGlShader::getSingleTextureVertexShaderSource(), VGlShader::getSingleTextureFragmentShaderSource() );
     ProgLightMapped				.initShader( VGlShader::getLightMappedVertexShaderSource(), VGlShader::getLightMappedFragmentShaderSource() );
@@ -189,15 +186,6 @@ void ShaderManager::OneTimeInit( const VString &launchIntent )
     ProgSkinnedLightMapped		.initShader( VGlShader::getLightMappedSkVertexShaderSource(), VGlShader::getLightMappedFragmentShaderSource() );
     ProgSkinnedReflectionMapped	.initShader( VGlShader::getReflectionMappedSkVertexShaderSource(), VGlShader::getReflectionMappedFragmentShaderSource() );
 
-
-	DefaultPrograms.ProgVertexColor				= & ProgVertexColor;
-	DefaultPrograms.ProgSingleTexture			= & ProgSingleTexture;
-	DefaultPrograms.ProgLightMapped				= & ProgLightMapped;
-	DefaultPrograms.ProgReflectionMapped		= & ProgReflectionMapped;
-	DefaultPrograms.ProgSkinnedVertexColor		= & ProgSkinnedVertexColor;
-	DefaultPrograms.ProgSkinnedSingleTexture	= & ProgSkinnedSingleTexture;
-	DefaultPrograms.ProgSkinnedLightMapped		= & ProgSkinnedLightMapped;
-	DefaultPrograms.ProgSkinnedReflectionMapped	= & ProgSkinnedReflectionMapped;
 
     vInfo("ShaderManager::OneTimeInit:" << (VTimer::Seconds() - start) << "seconds");
 }

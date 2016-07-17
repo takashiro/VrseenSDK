@@ -1,7 +1,6 @@
 #pragma once
 
 #include "VGlShader.h"
-#include "ModelFile.h"
 
 NV_USING_NAMESPACE
 
@@ -45,9 +44,6 @@ public:
 	VGlShader				ProgSkinnedReflectionMapped;
 
 	VGlShader				ScenePrograms[ SCENE_PROGRAM_MAX ];
-
-	ModelGlPrograms 		DynamicPrograms;
-	ModelGlPrograms 		DefaultPrograms;
 };
 
 } // namespace OculusCinema

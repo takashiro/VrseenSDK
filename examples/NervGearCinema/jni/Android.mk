@@ -10,32 +10,8 @@ include ../../source/cflags.mk
 LOCAL_MODULE    := cinema				# generate libcinema.so
 LOCAL_SRC_FILES	:= 	CinemaApp.cpp \
 					Native.cpp \
-					View.cpp \
 					SceneManager.cpp \
-					ViewManager.cpp \
 					ShaderManager.cpp \
-					ModelManager.cpp \
-					MovieManager.cpp \
-					MoviePlayerView.cpp \
-					MovieSelectionView.cpp \
-					TheaterSelectionView.cpp \
-					TheaterSelectionComponent.cpp \
-					CarouselBrowserComponent.cpp \
-					MovieCategoryComponent.cpp \
-					MoviePosterComponent.cpp \
-					MovieSelectionComponent.cpp \
-					ResumeMovieView.cpp \
-					ResumeMovieComponent.cpp \
-					SwipeHintComponent.cpp \
-					CinemaStrings.cpp \
-					UI/UITexture.cpp \
-					UI/UIMenu.cpp \
-					UI/UIWidget.cpp \
-					UI/UIContainer.cpp \
-					UI/UILabel.cpp \
-					UI/UIImage.cpp \
-					UI/UIButton.cpp
-
 NDK_MODULE_PATH := ../../Tools/
 $(call import-add-path,$(NDK_MODULE_PATH))
 

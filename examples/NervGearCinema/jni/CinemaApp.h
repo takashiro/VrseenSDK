@@ -1,21 +1,38 @@
 #include "App.h"
 #include "ShaderManager.h"
-#include "ModelManager.h"
 #include "SceneManager.h"
-#include "ViewManager.h"
-#include "MovieManager.h"
-#include "MoviePlayerView.h"
-#include "MovieSelectionView.h"
-#include "TheaterSelectionView.h"
-#include "ResumeMovieView.h"
 
 #include "VMainActivity.h"
 
-using namespace NervGear;
+NV_USING_NAMESPACE
 
 namespace OculusCinema {
 
-class CinemaApp : public NervGear::VMainActivity
+class MovieDef
+{
+public:
+	VString			Filename;
+
+	VString			Title;
+
+	bool			Is3D;
+	MovieFormat 	Format;
+
+//    VTexture Poster;
+
+//	VString			Theater;
+//	MovieCategory	Category;
+
+	bool            IsEncrypted;
+	bool			AllowTheaterSelection;
+
+
+    MovieDef() : Filename(), Title(), Is3D( false ), Format( VT_2D ),
+			IsEncrypted( false ), AllowTheaterSelection( false ) {}
+};
+
+
+class CinemaApp : public VMainActivity
 {
 public:
     CinemaApp(JNIEnv *jni, jclass activityClass, jobject activityObject);
@@ -28,40 +45,16 @@ public:
     void configureVrMode(VKernel* kernel) override;
 
     void command(const VEvent &event) override;
-    bool onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType ) override;
 
 	// Called by App loop
     VR4Matrixf onNewFrame( const VFrame m_vrFrame ) override;
 
-    void			    	setPlaylist( const VArray<const MovieDef *> &playList, const int nextMovie );
     void			    	setMovie( const MovieDef * nextMovie );
-    void 					movieLoaded( const int width, const int height, const int duration );
-
     const MovieDef *		currentMovie() const { return m_currentMovie; }
-    const MovieDef *		nextMovie() const;
-    const MovieDef *		previousMovie() const;
 
-    const SceneDef & 		currentTheater() const;
 
     void 					startMoviePlayback();
-    void 					resumeMovieFromSavedLocation();
-    void					playMovieFromBeginning();
-    void 					resumeOrRestartMovie();
-    void 					theaterSelection();
-    void 					setMovieSelection( bool inLobby );
-    void					movieFinished();
-    void					unableToPlayMovie();
-
-    bool 					allowTheaterSelection() const;
     bool 					isMovieFinished() const;
-
-    VString retailDir(const VString &dir) const;
-    VString externalRetailDir(const VString &dir) const;
-    VString sdcardDir(const VString &dir) const;
-    VString externalSDCardDir(const VString &dir) const;
-    VString externalCacheDir(const VString &dir) const;
-    bool isExternalSDCardDir(const VString &dir ) const;
-
 public:
     double					startTime;
 
@@ -69,19 +62,11 @@ public:
 
     SceneManager			sceneMgr;
     ShaderManager 			shaderMgr;
-    ModelManager 			modelMgr;
-    MovieManager 			movieMgr;
 
     bool					inLobby;
     bool					allowDebugControls;
 
 private:
-    ViewManager				m_viewMgr;
-    MoviePlayerView			m_moviePlayer;
-    MovieSelectionView		m_movieSelectionMenu;
-    TheaterSelectionView	m_theaterSelectionMenu;
-    ResumeMovieView			m_resumeMovieMenu;
-
     VFrame					m_vrFrame;
     int						m_frameCount;
 

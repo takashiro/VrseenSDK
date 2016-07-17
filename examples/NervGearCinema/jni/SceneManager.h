@@ -1,14 +1,21 @@
 #pragma once
-
-#include "MovieManager.h"
 #include "ModelView.h"
-#include "Lerp.h"
 
-using namespace NervGear;
+NV_USING_NAMESPACE
 
 namespace OculusCinema {
 
 class CinemaApp;
+
+enum MovieFormat
+{
+	VT_UNKNOWN,
+	VT_2D,
+	VT_LEFT_RIGHT_3D,			// Left & right are scaled horizontally by 50%.
+	VT_LEFT_RIGHT_3D_FULL,		// Left & right are unscaled.
+	VT_TOP_BOTTOM_3D,			// Top & bottom are scaled vertically by 50%.
+	VT_TOP_BOTTOM_3D_FULL,		// Top & bottom are unscaled.
+};
 
 class SceneManager
 {
@@ -32,11 +39,7 @@ public:
 
 	void				ClearGazeCursorGhosts();  	// clear gaze cursor to avoid seeing it lerp
 
-	void 				ToggleLights( const float duration );
-	void 				LightsOn( const float duration );
-	void 				LightsOff( const float duration );
 
-	void				SetSceneModel( const SceneDef &sceneDef );
 	void				SetSceneProgram( const sceneProgram_t opaqueProgram, const sceneProgram_t additiveProgram );
 
     VPosf				GetScreenPose() const;
@@ -57,8 +60,6 @@ public:
 public:
 	CinemaApp &			Cinema;
 
-	// Allow static lighting to be faded up or down
-	Lerp				StaticLighting;
 
 	bool				UseOverlay;
 
@@ -104,9 +105,6 @@ public:
 	sceneProgram_t		SceneProgramIndex;
 
 	OvrSceneView		Scene;
-	SceneDef			SceneInfo;
-	SurfaceDef *		SceneScreenSurface;		// override this to the movie texture
-	const ModelTag *	SceneScreenTag;			//
 
 	static const int	MAX_SEATS = 8;
     V3Vectf			SceneSeatPositions[MAX_SEATS];
