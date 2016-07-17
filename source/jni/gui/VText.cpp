@@ -15,7 +15,7 @@ VPointTracker::VPointTracker( float const rate) :
 {
 }
 
-void    VPointTracker::Update( double const curFrameTime, V3Vectf const & newPos )
+void    VPointTracker::Update( double const curFrameTime, VVect3f const & newPos )
 {
     double frameDelta = curFrameTime - LastFrameTime;
     LastFrameTime = curFrameTime;
@@ -27,11 +27,11 @@ void    VPointTracker::Update( double const curFrameTime, V3Vectf const & newPos
     }
     else
     {
-        V3Vectf delta = ( newPos - CurPosition ) * rate;
+        VVect3f delta = ( newPos - CurPosition ) * rate;
         if ( delta.length() < 0.001f )
         {
             // don't allow a denormal to propagate from multiplications of very small numbers
-            delta = V3Vectf( 0.0f );
+            delta = VVect3f( 0.0f );
         }
         CurPosition += delta;
     }
@@ -42,18 +42,18 @@ void    VPointTracker::Reset() { FirstFrame = true; }
 
 void    VPointTracker::SetRate( float const r ) { Rate = r; }
 
-V3Vectf const & VPointTracker::GetCurPosition() const { return CurPosition; }
+VVect3f const & VPointTracker::GetCurPosition() const { return CurPosition; }
 
 void VText::show(const VString &text, float duration)
 {
     infoText = text;
     infoTextColor = V4Vectf(1.0f);
-    infoTextOffset = V3Vectf(0.0f, 0.0f, 1.5f);
+    infoTextOffset = VVect3f(0.0f, 0.0f, 1.5f);
     infoTextPointTracker.Reset();
     infoTextEndFrame = vrFrame.id + (long long)(duration * 60.0f) + 1;
 }
 
-void VText::show( float const duration, V3Vectf const & offset, V4Vectf const & color, const char * fmt, ... )
+void VText::show( float const duration, VVect3f const & offset, V4Vectf const & color, const char * fmt, ... )
 {
     char buffer[1024];
     va_list args;

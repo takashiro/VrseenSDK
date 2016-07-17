@@ -81,14 +81,14 @@ static int buttonMappings[] = {
     -1
 };
 
-static V3Vectf ViewOrigin(const VR4Matrixf & view)
+static VVect3f ViewOrigin(const VR4Matrixf & view)
 {
-    return V3Vectf(view.M[0][3], view.M[1][3], view.M[2][3]);
+    return VVect3f(view.M[0][3], view.M[1][3], view.M[2][3]);
 }
 
-static V3Vectf ViewForward(const VR4Matrixf & view)
+static VVect3f ViewForward(const VR4Matrixf & view)
 {
-    return V3Vectf(-view.M[0][2], -view.M[1][2], -view.M[2][2]);
+    return VVect3f(-view.M[0][2], -view.M[1][2], -view.M[2][2]);
 }
 
 // Always make the panel upright, even if the head was tilted when created
@@ -97,13 +97,13 @@ static VR4Matrixf PanelMatrix(const VR4Matrixf & lastViewMatrix, const float pop
 {
     // TODO: this won't be valid until a frame has been rendered
     const VR4Matrixf invView = lastViewMatrix.Inverted();
-    const V3Vectf forward = ViewForward(invView);
-    const V3Vectf levelforward = V3Vectf(forward.x, 0.0f, forward.z).normalized();
+    const VVect3f forward = ViewForward(invView);
+    const VVect3f levelforward = VVect3f(forward.x, 0.0f, forward.z).normalized();
     // TODO: check degenerate case
-    const V3Vectf up(0.0f, 1.0f, 0.0f);
-    const V3Vectf right = levelforward.crossProduct(up);
+    const VVect3f up(0.0f, 1.0f, 0.0f);
+    const VVect3f right = levelforward.crossProduct(up);
 
-    const V3Vectf center = ViewOrigin(invView) + levelforward * popupDistance;
+    const VVect3f center = ViewOrigin(invView) + levelforward * popupDistance;
     const float xScale = (float)width / 768.0f * popupScale;
     const float yScale = (float)height / 768.0f * popupScale;
     const VR4Matrixf panelMatrix = VR4Matrixf(
@@ -1104,9 +1104,9 @@ struct App::Private
                     LastFrameRate = 1.0f / float(interval > 0.000001 ? interval : 0.00001);
                 }
 
-                V3Vectf viewPos = GetViewMatrixPosition(lastViewMatrix);
-                V3Vectf viewFwd = GetViewMatrixForward(lastViewMatrix);
-                V3Vectf newPos = viewPos + viewFwd * 1.5f;
+                VVect3f viewPos = GetViewMatrixPosition(lastViewMatrix);
+                VVect3f viewFwd = GetViewMatrixForward(lastViewMatrix);
+                VVect3f newPos = viewPos + viewFwd * 1.5f;
                 fpsPointTracker.Update(VTimer::Seconds(), newPos);
 
                 fontParms_t fp;
@@ -1124,11 +1124,11 @@ struct App::Private
             // draw info text
             if (self->text.infoTextEndFrame >= self->text.vrFrame.id)
             {
-                V3Vectf viewPos = GetViewMatrixPosition(lastViewMatrix);
-                V3Vectf viewFwd = GetViewMatrixForward(lastViewMatrix);
-                V3Vectf viewUp(0.0f, 1.0f, 0.0f);
-                V3Vectf viewLeft = viewUp.crossProduct(viewFwd);
-                V3Vectf newPos = viewPos + viewFwd * self->text.infoTextOffset.z + viewUp * self->text.infoTextOffset.y + viewLeft * self->text.infoTextOffset.x;
+                VVect3f viewPos = GetViewMatrixPosition(lastViewMatrix);
+                VVect3f viewFwd = GetViewMatrixForward(lastViewMatrix);
+                VVect3f viewUp(0.0f, 1.0f, 0.0f);
+                VVect3f viewLeft = viewUp.crossProduct(viewFwd);
+                VVect3f newPos = viewPos + viewFwd * self->text.infoTextOffset.z + viewUp * self->text.infoTextOffset.y + viewLeft * self->text.infoTextOffset.x;
                 self->text.infoTextPointTracker.Update(VTimer::Seconds(), newPos);
 
                 fontParms_t fp;

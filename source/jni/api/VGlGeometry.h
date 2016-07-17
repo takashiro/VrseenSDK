@@ -9,10 +9,10 @@ NV_NAMESPACE_BEGIN
 
 struct VertexAttribs
 {
-    VArray< V3Vectf > position;
-    VArray< V3Vectf > normal;
-    VArray< V3Vectf > tangent;
-    VArray< V3Vectf > binormal;
+    VArray< VVect3f > position;
+    VArray< VVect3f > normal;
+    VArray< VVect3f > tangent;
+    VArray< VVect3f > binormal;
     VArray< V4Vectf > color;
     VArray< V2Vectf > uvCoordinate0;
     VArray< V2Vectf > uvCoordinate1;

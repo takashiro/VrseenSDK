@@ -27,7 +27,7 @@ public:
     VR4Matrixf	DrawEyeView( const int eye, const float fovDegrees ) const;
 
 	// WARNING: this does not take into account the head model, it is just footpos + eyeheight
-    V3Vectf	CenterEyePos() const;
+    VVect3f	CenterEyePos() const;
 
 	// This includes the head/neck model or position tracking.
 //    V3Vectf	ShiftedCenterEyePos() const;
@@ -38,7 +38,7 @@ public:
     VR4Matrixf 	MvpForEye( const int eye, const float fovDegrees ) const;
     VR4Matrixf 	ProjectionMatrixForEye( const int eye, const float fovDegrees ) const;
 
-    static V3Vectf HeadModelOffset(float EyeRoll, float EyePitch, float EyeYaw, float HeadModelDepth, float HeadModelHeight);
+    static VVect3f HeadModelOffset(float EyeRoll, float EyePitch, float EyeYaw, float HeadModelDepth, float HeadModelHeight);
 
 	void		UpdateViewMatrix(const VFrame vrFrame );
 	VGlShader				ProgVertexColor;
@@ -63,7 +63,7 @@ public:
 	float					Zfar;
 
 	// Position tracking test
-    V3Vectf				ImuToEyeCenter;
+    VVect3f				ImuToEyeCenter;
 
 	// Angle offsets in radians
 	float					YawOffset;		// added on top of the sensor reading
@@ -76,8 +76,8 @@ public:
 	bool					AllowPositionTracking;
 
 	// Allow smooth transition from head model to position tracking experiments
-    V3Vectf				LastHeadModelOffset;
-    V3Vectf				LatchedHeadModelOffset;
+    VVect3f				LastHeadModelOffset;
+    VVect3f				LatchedHeadModelOffset;
 
     // Calculated in Frame()
     VR4Matrixf 				ViewMatrix;
@@ -86,10 +86,10 @@ public:
     float					EyeRoll;        // Roll, only accessible from Sensor.
 
     // Includes the head/neck model or position tracking
-    V3Vectf				ShiftedEyePos;
+    VVect3f				ShiftedEyePos;
 
     // Modified by joypad movement and collision detection
-    V3Vectf				FootPos;
+    VVect3f				FootPos;
 };
 
 NV_NAMESPACE_END

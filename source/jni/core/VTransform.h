@@ -48,7 +48,7 @@ public:
 
 
     VPos() { }
-    VPos(const VQuat<T>& orientation, const V3Vect<T>& pos)
+    VPos(const VQuat<T>& orientation, const VVect3<T>& pos)
         : Orientation(orientation), Position(pos) {  }
     VPos(const VPos& s)
         : Orientation(s.Orientation), Position(s.Position) {  }
@@ -57,17 +57,17 @@ public:
         : Orientation(s.Orientation), Position(s.Position) {  }
 
 
-    V3Vect<T> Rotate(const V3Vect<T>& v) const
+    VVect3<T> Rotate(const VVect3<T>& v) const
     {
         return Orientation.Rotate(v);
     }
 
-    V3Vect<T> Translate(const V3Vect<T>& v) const
+    VVect3<T> Translate(const VVect3<T>& v) const
     {
         return v + Position;
     }
 
-    V3Vect<T> Apply(const V3Vect<T>& v) const
+    VVect3<T> Apply(const VVect3<T>& v) const
     {
         return Translate(Rotate(v));
     }
@@ -84,7 +84,7 @@ public:
     }
 
     VQuat<T>    Orientation;
-    V3Vect<T> Position;
+    VVect3<T> Position;
 };
 
 typedef VPos<float>  VPosf;

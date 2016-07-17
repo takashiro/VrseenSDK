@@ -13,9 +13,9 @@ NV_NAMESPACE_BEGIN
 //  Y - Up
 //  Z - Back
 //  X - Right
-const V3Vectf	UpVector( 0.0f, 1.0f, 0.0f );
-const V3Vectf	ForwardVector( 0.0f, 0.0f, -1.0f );
-const V3Vectf	RightVector( 1.0f, 0.0f, 0.0f );
+const VVect3f	UpVector( 0.0f, 1.0f, 0.0f );
+const VVect3f	ForwardVector( 0.0f, 0.0f, -1.0f );
+const VVect3f	RightVector( 1.0f, 0.0f, 0.0f );
 
 OvrSceneView::OvrSceneView() :
 //	FreeWorldModelOnChange( false ),
@@ -95,20 +95,20 @@ VR4Matrixf OvrSceneView::DrawEyeView( const int eye, const float fovDegrees ) co
 }
 
 
-V3Vectf OvrSceneView::CenterEyePos() const
+VVect3f OvrSceneView::CenterEyePos() const
 {
-    return V3Vectf( FootPos.x, FootPos.y + ViewParms.eyeHeight, FootPos.z );
+    return VVect3f( FootPos.x, FootPos.y + ViewParms.eyeHeight, FootPos.z );
 }
 
 
-V3Vectf OvrSceneView::HeadModelOffset( float EyeRoll, float EyePitch, float EyeYaw, float HeadModelDepth, float HeadModelHeight )
+VVect3f OvrSceneView::HeadModelOffset( float EyeRoll, float EyePitch, float EyeYaw, float HeadModelDepth, float HeadModelHeight )
 {
 	// head-on-a-stick model
     const VR4Matrixf rollPitchYaw = VR4Matrixf::RotationY( EyeYaw )
             * VR4Matrixf::RotationX( EyePitch )
             * VR4Matrixf::RotationZ( EyeRoll );
-    V3Vectf eyeCenterInHeadFrame( 0.0f, HeadModelHeight, -HeadModelDepth );
-    V3Vectf lastHeadModelOffset = rollPitchYaw.Transform( eyeCenterInHeadFrame );
+    VVect3f eyeCenterInHeadFrame( 0.0f, HeadModelHeight, -HeadModelDepth );
+    VVect3f lastHeadModelOffset = rollPitchYaw.Transform( eyeCenterInHeadFrame );
 
 	lastHeadModelOffset.y -= eyeCenterInHeadFrame.y; // Bring the head back down to original height
 
@@ -125,7 +125,7 @@ void OvrSceneView::UpdateViewMatrix(const VFrame vrFrame )
 	const float dt = vrFrame.deltaSeconds;
     //const float yawSpeed = 1.5f;
 
-    V3Vectf GamepadMove;
+    VVect3f GamepadMove;
 
 	// Allow up / down movement if there is no floor collision model
 	if ( vrFrame.input.buttonState & BUTTON_RIGHT_TRIGGER )
@@ -200,9 +200,9 @@ void OvrSceneView::UpdateViewMatrix(const VFrame vrFrame )
     VR4Matrixf rollPitchYaw = VR4Matrixf::RotationY( EyeYaw )
             * VR4Matrixf::RotationX( EyePitch )
             * VR4Matrixf::RotationZ( EyeRoll );
-    const V3Vectf up = rollPitchYaw.Transform( UpVector );
-    const V3Vectf forward = rollPitchYaw.Transform( ForwardVector );
-    const V3Vectf right = rollPitchYaw.Transform( RightVector );
+    const VVect3f up = rollPitchYaw.Transform( UpVector );
+    const VVect3f forward = rollPitchYaw.Transform( ForwardVector );
+    const VVect3f right = rollPitchYaw.Transform( RightVector );
 
 	// Have sensorFusion zero the integration when not using it, so the
 	// first frame is correct.
@@ -214,7 +214,7 @@ void OvrSceneView::UpdateViewMatrix(const VFrame vrFrame )
 	// Calculate the shiftedEyePos
 	ShiftedEyePos = CenterEyePos();
 
-    V3Vectf headModelOffset = HeadModelOffset( EyeRoll, EyePitch, EyeYaw,
+    VVect3f headModelOffset = HeadModelOffset( EyeRoll, EyePitch, EyeYaw,
 			ViewParms.headModelDepth, ViewParms.headModelHeight );
 	if ( useHeadModel )
 	{

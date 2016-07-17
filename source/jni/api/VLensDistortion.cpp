@@ -66,10 +66,10 @@ static float DistortionFnScaleRadiusSquared(const VLensDistortion& lens,float rs
     return scale;
 }
 
-static V3Vectf DistortionFnScaleRadiusSquaredChroma (const VLensDistortion& lens,float rsq)
+static VVect3f DistortionFnScaleRadiusSquaredChroma (const VLensDistortion& lens,float rsq)
 {
     float scale = DistortionFnScaleRadiusSquared (lens, rsq );
-    V3Vectf scaleRGB;
+    VVect3f scaleRGB;
     scaleRGB.x = scale * ( 1.0f + lens.chromaticAberration[0] + rsq * lens.chromaticAberration[1] );     // Red
     scaleRGB.y = scale;                                                                        // Green
     scaleRGB.z = scale * ( 1.0f + lens.chromaticAberration[2] + rsq * lens.chromaticAberration[3] );     // Blue
@@ -90,7 +90,7 @@ static void WarpTexCoordChroma( const VDevice* device, const float in[2],
 
     const float rsq = theta[0] * theta[0] + theta[1] * theta[1];
 
-    const V3Vectf chromaScale = DistortionFnScaleRadiusSquaredChroma (device->lens,rsq);
+    const VVect3f chromaScale = DistortionFnScaleRadiusSquaredChroma (device->lens,rsq);
 
     for ( int i = 0; i < 2; i++ ) {
         red[i] = chromaScale.x * theta[i];

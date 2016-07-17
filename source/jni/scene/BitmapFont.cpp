@@ -224,7 +224,7 @@ public:
 				xyz(0.0f), s(0.0f), t(0.0f), rgba(), fontParms() {
 		}
 
-        V3Vectf xyz;
+        VVect3f xyz;
 		float s;
 		float t;
 		uchar rgba[4];
@@ -241,14 +241,14 @@ public:
 
 	// add text to the VBO that will render in a 2D pass.
     void DrawText3D(BitmapFont const & font, const fontParms_t & flags,
-            const V3Vectf & pos, V3Vectf const & normal, V3Vectf const & up,
+            const VVect3f & pos, VVect3f const & normal, VVect3f const & up,
             float const scale, V4Vectf const & color, const VString &text) override;
     void DrawText3Df(BitmapFont const & font, const fontParms_t & flags,
-            const V3Vectf & pos, V3Vectf const & normal, V3Vectf const & up,
+            const VVect3f & pos, VVect3f const & normal, VVect3f const & up,
             float const scale, V4Vectf const & color, const char *text, ...) override;
 
     virtual void DrawTextBillboarded3D(BitmapFont const & font,
-            fontParms_t const & flags, V3Vectf const & pos, float const scale,
+            fontParms_t const & flags, VVect3f const & pos, float const scale,
             V4Vectf const & color, const VString &text);
 
 	// transform the billboarded font strings
@@ -311,7 +311,7 @@ private:
 		}
 
 		VertexBlockType(BitmapFont const & font, int const numVerts,
-                V3Vectf const & pivot, VQuatf const & rot, bool const billboard,
+                VVect3f const & pivot, VQuatf const & rot, bool const billboard,
 				bool const trackRoll) :
 				Font(&font), NumVerts(numVerts), Pivot(pivot), Rotation(rot), Billboard(
 						billboard), TrackRoll(trackRoll) {
@@ -332,7 +332,7 @@ private:
 		mutable BitmapFont const * Font; // the font used to render text into this vertex block
 		mutable fontVertex_t * Verts; // the vertices
 		mutable int NumVerts; // the number of vertices in the block
-        V3Vectf Pivot; // postion this vertex block can be rotated around
+        VVect3f Pivot; // postion this vertex block can be rotated around
         VQuatf Rotation; // additional rotation to apply
 		bool Billboard; // true to always face the camera
 		bool TrackRoll; // if true, when billboarded, roll with the camera
@@ -1117,8 +1117,8 @@ int32_t ColorToABGR(V4Vectf const & color) {
 //==============================
 // BitmapFontSurfaceLocal::DrawText3D
 void BitmapFontSurfaceLocal::DrawText3D(BitmapFont const & font,
-        fontParms_t const & parms, V3Vectf const & pos,
-        V3Vectf const & normal, V3Vectf const & up, float scale,
+        fontParms_t const & parms, VVect3f const & pos,
+        VVect3f const & normal, VVect3f const & up, float scale,
         V4Vectf const & color, const VString &text) {
     if (text.isEmpty()) {
 		return; // nothing to do here, move along
@@ -1159,11 +1159,11 @@ void BitmapFontSurfaceLocal::DrawText3D(BitmapFont const & font,
     VertexBlockType vb(font, numVerts, pos, VQuatf(), parms.Billboard,
 			parms.TrackRoll);
 
-    V3Vectf const right = up.crossProduct(normal);
-    V3Vectf const r = (parms.Billboard) ? V3Vectf(1.0f, 0.0f, 0.0f) : right;
-    V3Vectf const u = (parms.Billboard) ? V3Vectf(0.0f, 1.0f, 0.0f) : up;
+    VVect3f const right = up.crossProduct(normal);
+    VVect3f const r = (parms.Billboard) ? VVect3f(1.0f, 0.0f, 0.0f) : right;
+    VVect3f const u = (parms.Billboard) ? VVect3f(0.0f, 1.0f, 0.0f) : up;
 
-    V3Vectf curPos(0.0f);
+    VVect3f curPos(0.0f);
 	switch (parms.AlignVert) {
 	case VERTICAL_BASELINE:
 		break;
@@ -1192,7 +1192,7 @@ void BitmapFontSurfaceLocal::DrawText3D(BitmapFont const & font,
 	}
 	}
 
-    V3Vectf basePos = curPos;
+    VVect3f basePos = curPos;
 	switch (parms.AlignHoriz) {
 	case HORIZONTAL_LEFT:
 		break;
@@ -1207,7 +1207,7 @@ void BitmapFontSurfaceLocal::DrawText3D(BitmapFont const & font,
 	}
 	}
 
-    V3Vectf lineInc = u * (fontInfo.FontHeight * yScale);
+    VVect3f lineInc = u * (fontInfo.FontHeight * yScale);
 	float const distanceScale = imageWidth / FontInfoType::DEFAULT_SCALE_FACTOR;
 	const uint8_t fontParms[4] =
 			{
@@ -1295,8 +1295,8 @@ void BitmapFontSurfaceLocal::DrawText3D(BitmapFont const & font,
 //==============================
 // BitmapFontSurfaceLocal::DrawText3Df
 void BitmapFontSurfaceLocal::DrawText3Df(BitmapFont const & font,
-        fontParms_t const & parms, V3Vectf const & pos,
-        V3Vectf const & normal, V3Vectf const & up, float const scale,
+        fontParms_t const & parms, VVect3f const & pos,
+        VVect3f const & normal, VVect3f const & up, float const scale,
         V4Vectf const & color, const char *fmt, ...) {
 	char buffer[256];
 	va_list args;
@@ -1309,12 +1309,12 @@ void BitmapFontSurfaceLocal::DrawText3Df(BitmapFont const & font,
 //==============================
 // BitmapFontSurfaceLocal::DrawTextBillboarded3D
 void BitmapFontSurfaceLocal::DrawTextBillboarded3D(BitmapFont const & font,
-        fontParms_t const & parms, V3Vectf const & pos, float const scale,
+        fontParms_t const & parms, VVect3f const & pos, float const scale,
         V4Vectf const & color, const VString &text) {
 	fontParms_t billboardParms = parms;
 	billboardParms.Billboard = true;
-    DrawText3D(font, billboardParms, pos, V3Vectf(1.0f, 0.0f, 0.0f),
-            V3Vectf(0.0f, -1.0f, 0.0f), scale, color, text);
+    DrawText3D(font, billboardParms, pos, VVect3f(1.0f, 0.0f, 0.0f),
+            VVect3f(0.0f, -1.0f, 0.0f), scale, color, text);
 }
 
 //==============================================================
@@ -1346,7 +1346,7 @@ void BitmapFontSurfaceLocal::Finish(VR4Matrixf const & viewMatrix) {
 	//SPAM( "BitmapFontSurfaceLocal::Finish" );
 
     VR4Matrixf invViewMatrix = viewMatrix.Inverted(); // if the view is never scaled or sheared we could use Transposed() here instead
-    V3Vectf viewPos = invViewMatrix.GetTranslation();
+    VVect3f viewPos = invViewMatrix.GetTranslation();
 
 	// sort vertex blocks indices based on distance to pivot
 	int const MAX_VERTEX_BLOCKS = 256;
@@ -1375,7 +1375,7 @@ void BitmapFontSurfaceLocal::Finish(VR4Matrixf const & viewMatrix) {
 			if (vb.TrackRoll) {
 				transform = invViewMatrix;
 			} else {
-                V3Vectf textNormal = viewPos - vb.Pivot;
+                VVect3f textNormal = viewPos - vb.Pivot;
 				float const len = textNormal.length();
                 if (len < VConstantsf::SmallestNonDenormal) {
 					vb.Free();
@@ -1383,7 +1383,7 @@ void BitmapFontSurfaceLocal::Finish(VR4Matrixf const & viewMatrix) {
 				}
 				textNormal *= 1.0f / len;
                 transform = VR4Matrixf::CreateFromBasisVectors(textNormal,
-                        V3Vectf(0.0f, 1.0f, 0.0f));
+                        VVect3f(0.0f, 1.0f, 0.0f));
 			}
 			transform.SetTranslation(vb.Pivot);
 		} else {
