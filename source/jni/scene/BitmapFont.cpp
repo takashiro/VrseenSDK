@@ -1145,8 +1145,8 @@ void BitmapFontSurfaceLocal::DrawText3D(BitmapFont const & font,
 		return;
 	}
 
-    vAssert(normal.IsNormalized());
-    vAssert(up.IsNormalized());
+    vAssert(normal.isNormalized());
+    vAssert(up.isNormalized());
 
 	const FontInfoType & fontInfo = AsLocal(font).GetFontInfo();
 
@@ -1159,7 +1159,7 @@ void BitmapFontSurfaceLocal::DrawText3D(BitmapFont const & font,
     VertexBlockType vb(font, numVerts, pos, VQuatf(), parms.Billboard,
 			parms.TrackRoll);
 
-    V3Vectf const right = up.Cross(normal);
+    V3Vectf const right = up.crossProduct(normal);
     V3Vectf const r = (parms.Billboard) ? V3Vectf(1.0f, 0.0f, 0.0f) : right;
     V3Vectf const u = (parms.Billboard) ? V3Vectf(0.0f, 1.0f, 0.0f) : up;
 
@@ -1355,7 +1355,7 @@ void BitmapFontSurfaceLocal::Finish(VR4Matrixf const & viewMatrix) {
 	for (int i = 0; i < n; ++i) {
 		vbSort[i].VertexBlockIndex = i;
 		VertexBlockType & vb = VertexBlocks[i];
-		vbSort[i].DistanceSquared = (vb.Pivot - viewPos).LengthSq();
+		vbSort[i].DistanceSquared = (vb.Pivot - viewPos).lengthSquared();
 	}
 
 	qsort(vbSort, n, sizeof(vbSort[0]), VertexBlockSortFn);
@@ -1376,7 +1376,7 @@ void BitmapFontSurfaceLocal::Finish(VR4Matrixf const & viewMatrix) {
 				transform = invViewMatrix;
 			} else {
                 V3Vectf textNormal = viewPos - vb.Pivot;
-				float const len = textNormal.Length();
+				float const len = textNormal.length();
                 if (len < VConstantsf::SmallestNonDenormal) {
 					vb.Free();
 					continue;

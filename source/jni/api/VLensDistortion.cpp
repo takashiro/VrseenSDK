@@ -93,9 +93,9 @@ static void WarpTexCoordChroma( const VDevice* device, const float in[2],
     const V3Vectf chromaScale = DistortionFnScaleRadiusSquaredChroma (device->lens,rsq);
 
     for ( int i = 0; i < 2; i++ ) {
-        red[i] = chromaScale[0] * theta[i];
-        green[i] = chromaScale[1] * theta[i];
-        blue[i] = chromaScale[2] * theta[i];
+        red[i] = chromaScale.x * theta[i];
+        green[i] = chromaScale.y * theta[i];
+        blue[i] = chromaScale.z * theta[i];
     }
 }
 
@@ -170,12 +170,8 @@ VGlGeometry VLensDistortion::createDistortionGrid(const VDevice* device,const in
             for ( int x = 0; x < totalX; x++ )
             {
                 const int vertIndex = (y*totalX+x );
-                V2Vectf	v;
-                for ( int i = 0 ; i < 2; i++ )
-                {
-                    v[i] = fovScale * bufferVerts[vertIndex*6+i];
-                }
-                vertInCursor[ vertIndex ] = VectorHitsCursor( v );
+                V2Vectf	v(fovScale * bufferVerts[vertIndex * 6], fovScale * bufferVerts[vertIndex * 6 + 1]);
+                vertInCursor[ vertIndex ] = VectorHitsCursor(v);
             }
         }
     }

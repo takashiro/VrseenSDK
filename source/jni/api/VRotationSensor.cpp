@@ -1,9 +1,11 @@
 #include "VRotationSensor.h"
 #include "VLockless.h"
 #include "VCircularQueue.h"
-#include "VQuat.h"
 #include "VAlgorithm.h"
+#include "VLog.h"
+#include "VMutex.h"
 #include "VTimer.h"
+#include "VQuat.h"
 
 #include <jni.h>
 #include <fcntl.h>
@@ -99,7 +101,7 @@ VRotationSensor::~VRotationSensor()
 
 static VQuatf calcPredictedPose(const VRotationState &pose, float predictionDt)
 {
-    float speed = pose.gyro.Length();
+    float speed = pose.gyro.length();
 
     const float slope = 0.2; // The rate at which the dynamic prediction interval varies
     float candidateDt = slope * speed; // TODO: Replace with smoothstep function
@@ -482,10 +484,10 @@ void USensor::updateQ(KTrackerMessage *msg) {
     m_state.gyro = gyrocorrect(gyro, accel, DeltaT);
 
     // Update the orientation quaternion based on the corrected angular velocity vector
-    float gyro_length = m_state.gyro.Length();
+    float gyro_length = m_state.gyro.length();
     if (gyro_length != 0.0f) {
         float angle = gyro_length * DeltaT;
-        VQuatf q = m_state * VQuatf(m_state.gyro.Normalized() * sin(angle * 0.5f), angle);
+        VQuatf q = m_state * VQuatf(m_state.gyro.normalized() * sin(angle * 0.5f), angle);
         m_state.w = q.w;
         m_state.x = q.x;
         m_state.y = q.y;
@@ -507,7 +509,7 @@ V3Vect<float> USensor::gyrocorrect(const V3Vectf &gyro, const V3Vectf &accel, co
     V3Vectf gyroCorrected = gyro;
 
     bool EnableGravity = true;
-    bool valid_accel = accel.Length() > 0.001f;
+    bool valid_accel = accel.length() > 0.001f;
 
     if (EnableGravity && valid_accel) {
         gyroCorrected -= gyro_offset_;
@@ -516,22 +518,22 @@ V3Vect<float> USensor::gyrocorrect(const V3Vectf &gyro, const V3Vectf &accel, co
         const float gravityThreshold = 0.1f;
         float proportionalGain = 0.25f, integralGain = 0.0f;
 
-        V3Vectf accel_normalize = accel.Normalized();
-        V3Vectf up_normalize = up.Normalized();
-        V3Vectf correction = accel_normalize.Cross(up_normalize);
-        float cosError = accel_normalize.Dot(up_normalize);
+        V3Vectf accel_normalize = accel.normalized();
+        V3Vectf up_normalize = up.normalized();
+        V3Vectf correction = accel_normalize.crossProduct(up_normalize);
+        float cosError = accel_normalize.dotProduct(up_normalize);
         const float Tolerance = 0.00001f;
         V3Vectf tiltCorrection = correction * sqrtf(2.0f / (1 + cosError + Tolerance));
 
         if (step_ > 5) {
             // Spike detection
-            float tiltAngle = up.Angle(accel);
+            float tiltAngle = up.angleTo(accel);
             tilt_filter_.append(tiltAngle);
             if (tiltAngle > tilt_filter_.mean() + spikeThreshold)
                 proportionalGain = integralGain = 0;
             // Acceleration detection
             const float gravity = 9.8f;
-            if (fabs(accel.Length() / gravity - 1) > gravityThreshold)
+            if (fabs(accel.length() / gravity - 1) > gravityThreshold)
                 integralGain = 0;
         } else {
             // Apply full correction at the startup

@@ -2,7 +2,6 @@
  * By Jogin 2016/3/6
  */
 #include "VConstants.h"
-#include "VVector.h"
 #include "VMatrix.h"
 
 #include <float.h>
@@ -42,24 +41,6 @@ const double VConstants<double>::SingularityRadius	= 0.000000000001; // Use for 
 
 const double VConstants<double>::SmallestNonDenormal	= double( 2.2250738585072014e-308 );	// ( 1ULL << 52 )
 const double VConstants<double>::HugeNumber			= double( 1.3407807929942596e+154 );	// ( ( ( 1023ULL * 3 / 2 ) << 52 ) | ( ( 1 << 52 ) - 1 ) )
-
-template<>
-const V2Vect<float> V2Vect<float>::ZERO = V2Vect<float>();
-
-template<>
-const V2Vect<double> V2Vect<double>::ZERO = V2Vect<double>();
-
-template<>
-const V3Vect<float> V3Vect<float>::ZERO = V3Vect<float>();
-
-template<>
-const V3Vect<double> V3Vect<double>::ZERO = V3Vect<double>();
-
-template<>
-const V4Vect<float> V4Vect<float>::ZERO = V4Vect<float>();
-
-template<>
-const V4Vect<double> V4Vect<double>::ZERO = V4Vect<double>();
 
 template<>
 const VR4Matrix<float> VR4Matrix<float>::IdentityValue = VR4Matrix<float>(1.0f, 0.0f, 0.0f, 0.0f,

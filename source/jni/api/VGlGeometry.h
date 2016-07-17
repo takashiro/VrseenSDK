@@ -1,9 +1,9 @@
 #pragma once
 
-#include "../vglobal.h"
+#include "vglobal.h"
 
-#include "../core/VArray.h"
-#include "../core/VBasicmath.h"
+#include "VArray.h"
+#include "VVect.h"
 
 NV_NAMESPACE_BEGIN
 

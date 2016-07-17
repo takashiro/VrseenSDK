@@ -1,8 +1,11 @@
 #pragma once
 
-#include "vglobal.h"
-#include "VVector.h"
+#include "VVect3.h"
+#include "VVect4.h"
 #include "VTransform.h"
+
+#include "VLog.h"
+
 #include <assert.h>
 #include <stdlib.h>
 #include <math.h>
@@ -636,13 +639,13 @@ public:
        static VR4Matrix LookAtRH(const V3Vect<T>& eye, const V3Vect<T>& at, const V3Vect<T>& up)
        {
    		// FIXME: this fails when looking straight up, should probably at least assert
-           V3Vect<T> z = (eye - at).Normalized();  // Forward
-           V3Vect<T> x = up.Cross(z).Normalized(); // Right
-           V3Vect<T> y = z.Cross(x);
+           V3Vect<T> z = (eye - at).normalized();  // Forward
+           V3Vect<T> x = up.crossProduct(z).normalized(); // Right
+           V3Vect<T> y = z.crossProduct(x);
 
-           VR4Matrix m(x.x,  x.y,  x.z,  -(x.Dot(eye)),
-                     y.x,  y.y,  y.z,  -(y.Dot(eye)),
-                     z.x,  z.y,  z.z,  -(z.Dot(eye)),
+           VR4Matrix m(x.x,  x.y,  x.z,  -(x.dotProduct(eye)),
+                     y.x,  y.y,  y.z,  -(y.dotProduct(eye)),
+                     z.x,  z.y,  z.z,  -(z.dotProduct(eye)),
                      0,    0,    0,    1 );
            return m;
        }
@@ -653,22 +656,22 @@ public:
        static VR4Matrix LookAtLH(const V3Vect<T>& eye, const V3Vect<T>& at, const V3Vect<T>& up)
        {
    		// FIXME: this fails when looking straight up, should probably at least assert
-           V3Vect<T> z = (at - eye).Normalized();  // Forward
-           V3Vect<T> x = up.Cross(z).Normalized(); // Right
-           V3Vect<T> y = z.Cross(x);
+           V3Vect<T> z = (at - eye).normalized();  // Forward
+           V3Vect<T> x = up.crossProduct(z).normalized(); // Right
+           V3Vect<T> y = z.crossProduct(x);
 
-           VR4Matrix m(x.x,  x.y,  x.z,  -(x.Dot(eye)),
-                     y.x,  y.y,  y.z,  -(y.Dot(eye)),
-                     z.x,  z.y,  z.z,  -(z.Dot(eye)),
+           VR4Matrix m(x.x,  x.y,  x.z,  -(x.dotProduct(eye)),
+                     y.x,  y.y,  y.z,  -(y.dotProduct(eye)),
+                     z.x,  z.y,  z.z,  -(z.dotProduct(eye)),
                      0,    0,    0,    1 );
            return m;
        }
 
        static VR4Matrix CreateFromBasisVectors( V3Vect<T> const & zBasis, V3Vect<T> const & up )
        {
-        vAssert( zBasis.IsNormalized() );
-        vAssert( up.IsNormalized() );
-   	    T dot = zBasis.Dot( up );
+        vAssert( zBasis.isNormalized() );
+        vAssert( up.isNormalized() );
+   	    T dot = zBasis.dotProduct( up );
    	    if ( dot < (T)-0.9999 || dot > (T)0.9999 )
    	    {
    		    // z basis cannot be parallel to the specified up
@@ -676,10 +679,10 @@ public:
    		    return VR4Matrix<T>();
    	    }
 
-   	    V3Vect<T> xBasis = up.Cross( zBasis );
-   	    xBasis.Normalize();
+   	    V3Vect<T> xBasis = up.crossProduct( zBasis );
+   	    xBasis.normalize();
 
-   	    V3Vect<T> yBasis = zBasis.Cross( xBasis );
+   	    V3Vect<T> yBasis = zBasis.crossProduct( xBasis );
            // no need to normalize yBasis because xBasis and zBasis must already be orthogonal
 
    	    return VR4Matrix<T>(	xBasis.x, yBasis.x, zBasis.x, (T)0,
@@ -1452,7 +1455,7 @@ inline V3Vectf GetViewMatrixPosition( VR4Matrixf const & m )
 
 inline V3Vectf GetViewMatrixForward( VR4Matrixf const & m )
 {
-    return V3Vectf( -m.M[2][0], -m.M[2][1], -m.M[2][2] ).Normalized();
+    return V3Vectf( -m.M[2][0], -m.M[2][1], -m.M[2][2] ).normalized();
 }
 
 NV_NAMESPACE_END

@@ -1,7 +1,6 @@
 #pragma once
 
-#include "vglobal.h"
-#include "VVector.h"
+#include "VVect2.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -89,8 +88,6 @@ struct VInput
         , swipeFraction(0.0f)
     {
         sticks[0][0] = sticks[0][1] = sticks[1][0] = sticks[1][1] = 0.0f;
-        touch[0] = touch[1] = 0.0f;
-        touchRelative[0] = touchRelative[1] = 0.0f;
     }
 
     // [0][] = left pad

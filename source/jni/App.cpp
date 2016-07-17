@@ -23,7 +23,6 @@
 #include "ModelView.h"
 #include "SurfaceTexture.h"
 
-#include "VBasicmath.h"
 #include "VDevice.h"
 #include "VFrameSmooth.h"
 #include "VKernel.h"
@@ -99,10 +98,10 @@ static VR4Matrixf PanelMatrix(const VR4Matrixf & lastViewMatrix, const float pop
     // TODO: this won't be valid until a frame has been rendered
     const VR4Matrixf invView = lastViewMatrix.Inverted();
     const V3Vectf forward = ViewForward(invView);
-    const V3Vectf levelforward = V3Vectf(forward.x, 0.0f, forward.z).Normalized();
+    const V3Vectf levelforward = V3Vectf(forward.x, 0.0f, forward.z).normalized();
     // TODO: check degenerate case
     const V3Vectf up(0.0f, 1.0f, 0.0f);
-    const V3Vectf right = levelforward.Cross(up);
+    const V3Vectf right = levelforward.crossProduct(up);
 
     const V3Vectf center = ViewOrigin(invView) + levelforward * popupDistance;
     const float xScale = (float)width / 768.0f * popupScale;
@@ -430,7 +429,7 @@ struct App::Private
         lastTouchDown = currentTouchDown;
 
         input.touchRelative = input.touch - touchOrigin;
-        float touchMagnitude = input.touchRelative.Length();
+        float touchMagnitude = input.touchRelative.length();
         input.swipeFraction = touchMagnitude / min_swipe_distance;
 
         switch (touchState)
@@ -449,22 +448,19 @@ struct App::Private
             if (touchMagnitude >= min_swipe_distance)
             {
                 int dir = 0;
-                if (fabs(input.touchRelative[0]) > fabs(input.touchRelative[1]))
+                if (fabs(input.touchRelative.x) > fabs(input.touchRelative.y))
                 {
-                    if (input.touchRelative[0] < 0)
-                    {
+                    if (input.touchRelative.x < 0) {
                         //CreateToast("SWIPE FORWARD");
                         dir = BUTTON_SWIPE_FORWARD | BUTTON_TOUCH_WAS_SWIPE;
-                    }
-                    else
-                    {
+                    } else {
                         //CreateToast("SWIPE BACK");
                         dir = BUTTON_SWIPE_BACK | BUTTON_TOUCH_WAS_SWIPE;
                     }
                 }
                 else
                 {
-                    if (input.touchRelative[1] > 0)
+                    if (input.touchRelative.y > 0)
                     {
                         //CreateToast("SWIPE DOWN");
                         dir = BUTTON_SWIPE_DOWN | BUTTON_TOUCH_WAS_SWIPE;
@@ -631,8 +627,8 @@ struct App::Private
         if (event.name == "touch") {
             vAssert(event.data.isArray());
             int	action = event.data.at(0).toInt();
-            joypad.touch[0] = event.data.at(1).toFloat();
-            joypad.touch[1] = event.data.at(2).toFloat();
+            joypad.touch.x = event.data.at(1).toFloat();
+            joypad.touch.y = event.data.at(2).toFloat();
             if (action == 0) {
                 joypad.buttonState |= BUTTON_TOUCH;
             }
@@ -1131,7 +1127,7 @@ struct App::Private
                 V3Vectf viewPos = GetViewMatrixPosition(lastViewMatrix);
                 V3Vectf viewFwd = GetViewMatrixForward(lastViewMatrix);
                 V3Vectf viewUp(0.0f, 1.0f, 0.0f);
-                V3Vectf viewLeft = viewUp.Cross(viewFwd);
+                V3Vectf viewLeft = viewUp.crossProduct(viewFwd);
                 V3Vectf newPos = viewPos + viewFwd * self->text.infoTextOffset.z + viewUp * self->text.infoTextOffset.y + viewLeft * self->text.infoTextOffset.x;
                 self->text.infoTextPointTracker.Update(VTimer::Seconds(), newPos);
 

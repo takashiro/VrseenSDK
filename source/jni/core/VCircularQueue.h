@@ -1,13 +1,8 @@
-/*
- * VCircularQueueSync.h
- *
- *  Created on: 2016年5月11日
- *      Author: yangkai
- */
-
 #pragma once
 
-#include <VMutex.h>
+#include "vglobal.h"
+
+#include <memory>
 
 NV_NAMESPACE_BEGIN
 

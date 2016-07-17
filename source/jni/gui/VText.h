@@ -1,13 +1,7 @@
-/*
- * VText.h
- *
- *  Created on: 2016年3月30日
- *      Author: yangkai
- */
-
 #pragma once
 #include "VString.h"
-#include "VVector.h"
+#include "VVect3.h"
+#include "VVect4.h"
 #include "VFrame.h"
 NV_NAMESPACE_BEGIN
 class VPointTracker

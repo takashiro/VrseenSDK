@@ -1,10 +1,10 @@
 #pragma once
 
-#include "vglobal.h"
-
-#include "VBasicmath.h"
 #include "VString.h"
 #include "VArray.h"
+#include "VVect.h"
+#include "VMatrix.h"
+
 NV_NAMESPACE_BEGIN
 
 class BitmapFont;

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "vglobal.h"
-#include "VVector.h"
+#include "VVect3.h"
 #include "VConstants.h"
+#include "VLog.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -43,14 +43,14 @@ public:
     VQuat(const V3Vect<T> &axis, T angle)
     {
         // Make sure we don't divide by zero.
-        if (axis.LengthSq() == 0) {
+        if (axis.lengthSquared() == 0) {
             // Assert if the VAxis is zero, but the VAngle isn't
             vAssert(angle == 0);
             x = 0; y = 0; z = 0; w = 1;
             return;
         }
 
-        V3Vect<T> unitVAxis = axis.Normalized();
+        V3Vect<T> unitVAxis = axis.normalized();
         T          sinHalfVAngle = sin(angle * T(0.5));
 
         w = cos(angle * T(0.5));

@@ -28,7 +28,7 @@ void    VPointTracker::Update( double const curFrameTime, V3Vectf const & newPos
     else
     {
         V3Vectf delta = ( newPos - CurPosition ) * rate;
-        if ( delta.Length() < 0.001f )
+        if ( delta.length() < 0.001f )
         {
             // don't allow a denormal to propagate from multiplications of very small numbers
             delta = V3Vectf( 0.0f );

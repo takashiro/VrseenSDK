@@ -238,7 +238,7 @@ public:
 	    // Find the point to VPlane distance. The sign indicates what side of the VPlane the point is on (0 = point on VPlane).
 	    T TestSide(const V3Vect<T>& p) const
 	    {
-	        return (N.Dot(p)) + D;
+	        return (N.dotProduct(p)) + D;
 	    }
 
 	    VPlane<T> Flipped() const

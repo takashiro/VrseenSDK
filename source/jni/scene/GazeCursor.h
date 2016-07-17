@@ -1,9 +1,7 @@
 #pragma once
 
-#include "vglobal.h"
-
 #include "VNumber.h"
-#include "VBasicmath.h"
+#include "VMatrix.h"
 
 NV_NAMESPACE_BEGIN
 
