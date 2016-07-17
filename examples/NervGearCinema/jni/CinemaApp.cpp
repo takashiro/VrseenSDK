@@ -44,6 +44,7 @@ void CinemaApp::init(const VString &fromPackage, const VString &launchIntentJSON
 
     if(!launchIntentURI.isEmpty())
     {
+        inLobby = false;
         MovieDef* movieDef = new MovieDef;
         movieDef->Filename = launchIntentURI;
         setMovie(movieDef);

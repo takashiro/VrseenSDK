@@ -41,7 +41,6 @@ SceneManager::SceneManager( CinemaApp &cinema ) :
 	MipMappedMovieFBOs(),
 	ScreenVignetteTexture( 0 ),
 	ScreenVignetteSbsTexture( 0 ),
-	SceneProgramIndex( SCENE_PROGRAM_DYNAMIC_ONLY ),
 	Scene(),
 	SceneSeatPositions(),
 	SceneSeatCount( 0 ),
@@ -626,14 +625,17 @@ VR4Matrixf SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 	glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
 	glClear( GL_COLOR_BUFFER_BIT );
 
-//	Scene.DrawEyeView( eye, fovDegrees );
+	Scene.DrawEyeView( eye, fovDegrees );
 
     const VR4Matrixf mvp = Scene.MvpForEye( eye, fovDegrees );
+    vInfo("mvp"<<mvp.M[0][3]);
 	// draw the screen on top
 	if ( !drawScreen )
 	{
 		return mvp;
 	}
+
+    glDisable( GL_DEPTH_TEST );
 
 	const VGlShader * prog = &Cinema.shaderMgr.MovieExternalUiProgram;
 	glUseProgram( prog->program );
@@ -716,9 +718,9 @@ VR4Matrixf SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 	//
 	if ( !GetUseOverlay())
 	{
-		// no overlay
-        vApp->kernel()->setSmoothProgram( VK_DEFAULT_CB);
-        vApp->kernel()->setSmoothEyeTexture((unsigned int)0,eye,1);
+        // no overlay
+		vApp->swapParms().WarpProgram = WP_CHROMATIC;
+		vApp->swapParms().Images[eye][1].TexId = 0;
 
 		glActiveTexture( GL_TEXTURE0 );
 		glBindTexture( GL_TEXTURE_EXTERNAL_OES, MovieTexture->textureId );
@@ -726,11 +728,11 @@ VR4Matrixf SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 		glActiveTexture( GL_TEXTURE1 );
 		glBindTexture( GL_TEXTURE_2D, ScreenVignetteTexture );
 
-        glUniformMatrix4fv( prog->uniformTexMatrix, 1, GL_FALSE, /* not transposed */
+		glUniformMatrix4fv( prog->uniformTexMatrix, 1, GL_FALSE, /* not transposed */
 				texMatrix.Transposed().M[0] );
 		// The UI is always identity for now, but we may scale it later
-        glUniformMatrix4fv( prog->uniformTexMatrix2, 1, GL_FALSE, /* not transposed */
-                VR4Matrixf::Identity().Transposed().M[0] );
+		glUniformMatrix4fv( prog->uniformTexMatrix2, 1, GL_FALSE, /* not transposed */
+				VR4Matrixf::Identity().Transposed().M[0] );
 
 	    const VR4Matrixf screenModel = ScreenMatrix();
         const VR4Matrixf screenMvp = mvp * screenModel;
@@ -745,10 +747,10 @@ VR4Matrixf SceneManager::DrawEyeView( const int eye, const float fovDegrees )
         const VR4Matrixf screenModel = ScreenMatrix();
         const VR4Matrixf mv = Scene.ViewMatrixForEye( eye ) * screenModel;
 
-        vApp->kernel()->setSmoothProgram(VK_PLANE_CB);
-        vApp->kernel()->setSmoothEyeTexture( MipMappedMovieTextures[CurrentMipMappedMovieTexture],eye,1);
-        vApp->kernel()->setSmoothPose(vApp->sensorForNextWarp(), eye, 1);
-        vApp->kernel()->setTexMatrix(texMatrix * VR4Matrix<float>::TanAngleMatrixFromUnitSquare( &mv ),eye,1);
+	    vApp->swapParms().WarpProgram = WP_CHROMATIC_MASKED_PLANE;
+		vApp->swapParms().Images[eye][1].TexId = MipMappedMovieTextures[CurrentMipMappedMovieTexture];
+		vApp->swapParms().Images[eye][1].Pose = vApp->sensorForNextWarp();
+		vApp->swapParms().Images[eye][1].TexCoordsFromTanAngles = texMatrix * VR4Matrixf::TanAngleMatrixFromUnitSquare( &mv );
 
 		// explicitly clear a hole in alpha
         const VR4Matrixf screenMvp = mvp * screenModel;
@@ -773,7 +775,7 @@ VR4Matrixf SceneManager::Frame( const VFrame & vrFrame )
 		vrFrameWithoutMove.input.sticks[0][0] = 0.0f;
 		vrFrameWithoutMove.input.sticks[0][1] = 0.0f;
 	}
-    Scene.Frame( vApp->viewSettings(), vrFrameWithoutMove, vApp->kernel()->m_externalVelocity);
+    Scene.Frame( vApp->viewSettings(), vrFrameWithoutMove, vApp->swapParms().ExternalVelocity);
 
 	if ( ClearGhostsFrames > 0 )
 	{
