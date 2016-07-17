@@ -1,8 +1,8 @@
 #pragma once
 
+#include "VConstants.h"
 #include "VVect3.h"
 #include "VVect4.h"
-#include "VTransform.h"
 
 #include "VLog.h"
 
