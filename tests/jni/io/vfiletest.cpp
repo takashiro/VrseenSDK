@@ -1,5 +1,9 @@
 #include "test.h"
 
+#ifdef ANDROID
+#include <VDir.h>
+#endif
+
 #include <VFile.h>
 
 NV_USING_NAMESPACE
@@ -8,6 +12,12 @@ namespace {
 
 void test()
 {
+
+#ifdef ANDROID
+    VDir dir("/sdcard/");
+    assert(dir.reach());
+#endif
+
     {
         VFile file;
         assert(!file.isOpen());
@@ -15,14 +25,14 @@ void test()
 
     const char *str = "this is a test";
     {
-        VFile file("/sdcard/test.txt", VFile::WriteOnly);
+        VFile file("test.txt", VFile::WriteOnly);
         assert(file.isOpen());
         assert(file.openMode() == VFile::WriteOnly);
         file.write(str);
     }
 
     {
-        VFile file("/sdcard/test.txt", VFile::ReadOnly);
+        VFile file("test.txt", VFile::ReadOnly);
         assert(file.isOpen());
         assert(file.openMode() == VFile::ReadOnly);
 
@@ -39,19 +49,19 @@ void test()
         }
 
         {
-            VFile file("/sdcard/test.bin", VFile::WriteOnly);
+            VFile file("test.bin", VFile::WriteOnly);
             assert(file.write(bytes, 512) == 512);
         }
 
         {
-            VFile file("/sdcard/test.bin", VFile::WriteOnly | VFile::Append);
+            VFile file("test.bin", VFile::WriteOnly | VFile::Append);
             assert(file.isOpen());
             assert(file.openMode() & VFile::Append);
             assert(file.write(bytes + 512, 512) == 512);
         }
 
         {
-            VFile file("/sdcard/test.bin", VFile::ReadOnly);
+            VFile file("test.bin", VFile::ReadOnly);
             VByteArray data = file.readAll();
             assert(data.size() == 1024);
             for (uint i = 0; i < 1024; i++) {
