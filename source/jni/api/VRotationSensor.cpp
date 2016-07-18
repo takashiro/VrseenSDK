@@ -162,9 +162,9 @@ struct KTrackerSensorZip {
 };
 
 struct KTrackerMessage {
-    VVect3<float> Acceleration;
-    VVect3<float> RotationRate;
-    VVect3<float> MagneticField;
+    VVect3f Acceleration;
+    VVect3f RotationRate;
+    VVect3f MagneticField;
     float Temperature;
     float TimeDelta;
     double AbsoluteTimeSeconds;
@@ -178,13 +178,13 @@ public:
     bool update(uint8_t *buffer);
     longlong getLatestTime();
     VQuat<float> getSensorQuaternion();
-    VVect3<float> getAngularVelocity();
+    VVect3f getAngularVelocity();
 
 private:
     bool pollSensor(KTrackerSensorZip* data,uint8_t  *buffer);
     void process(KTrackerSensorZip* data);
     void updateQ(KTrackerMessage *msg);
-    VVect3<float> gyrocorrect(const VVect3f &gyro, const VVect3f &accel, const float DeltaT);
+    VVect3f gyrocorrect(const VVect3f &gyro, const VVect3f &accel, const float DeltaT);
 
 private:
     VRotationState m_state;
@@ -194,9 +194,9 @@ private:
     vuint16 last_timestamp_;
     vuint32 full_timestamp_;
     vuint8 last_sample_count_;
-    VVect3<float> last_acceleration_;
-    VVect3<float> last_rotation_rate_;
-    VVect3<float> gyro_offset_;
+    VVect3f last_acceleration_;
+    VVect3f last_rotation_rate_;
+    VVect3f gyro_offset_;
 
     class Filter: public VCircularQueue<float>
     {
@@ -280,7 +280,7 @@ VQuat<float> USensor::getSensorQuaternion()
     return m_state;
 }
 
-VVect3<float> USensor::getAngularVelocity()
+VVect3f USensor::getAngularVelocity()
 {
     return m_state.gyro;
 }
@@ -396,8 +396,8 @@ void USensor::process(KTrackerSensorZip* data) {
     //double absoluteTimeSeconds = 0.0;
 
     if (first_) {
-        last_acceleration_ = VVect3<float>(0, 0, 0);
-        last_rotation_rate_ = VVect3<float>(0, 0, 0);
+        last_acceleration_ = VVect3f(0, 0, 0);
+        last_rotation_rate_ = VVect3f(0, 0, 0);
         first_ = false;
 
         // This is our baseline sensor to host time delta,
@@ -459,9 +459,9 @@ void USensor::process(KTrackerSensorZip* data) {
     }
 
     for (int i = 0; i < iterations; ++i) {
-        sensors.Acceleration = VVect3<float>(data->Samples[i].AccelX,
+        sensors.Acceleration = VVect3f(data->Samples[i].AccelX,
                 data->Samples[i].AccelY, data->Samples[i].AccelZ) * 0.0001f;
-        sensors.RotationRate = VVect3<float>(data->Samples[i].GyroX,
+        sensors.RotationRate = VVect3f(data->Samples[i].GyroX,
                 data->Samples[i].GyroY, data->Samples[i].GyroZ) * 0.0001f;
 
         updateQ(&sensors);
@@ -502,7 +502,7 @@ void USensor::updateQ(KTrackerMessage *msg) {
     }
 }
 
-VVect3<float> USensor::gyrocorrect(const VVect3f &gyro, const VVect3f &accel, const float DeltaT) {
+VVect3f USensor::gyrocorrect(const VVect3f &gyro, const VVect3f &accel, const float DeltaT) {
     // Small preprocessing
     VQuatf Qinv = m_state.Inverted();
     VVect3f up = Qinv.Rotate(VVect3f(0, 1, 0));
@@ -592,7 +592,7 @@ JNIEXPORT jfloatArray JNICALL Java_com_vrseen_sensor_NativeUSensor_getData
     USensor* u_sensor = reinterpret_cast<USensor*>(jk_sensor);
 
     VQuat<float> rotation = u_sensor->getSensorQuaternion();
-    VVect3<float> angular_velocity = u_sensor->getAngularVelocity();
+    VVect3f angular_velocity = u_sensor->getAngularVelocity();
 
     jfloatArray jdata = env->NewFloatArray(7);
     jfloat data[7];

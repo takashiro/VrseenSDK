@@ -36,9 +36,7 @@ void EyePostRender::DrawEyeCalibrationLines( const float bufferFovDegrees, const
 	// Optionally draw thick calibration lines into the texture,
 	// which will be overlayed by the thinner pre-distorted lines
 	// later -- they should match very closely!
-    const VMatrix4f projectionMatrix =
-    //VR4Matrixf::Identity();
-     VMatrix4f::PerspectiveRH( VDegreeToRad( bufferFovDegrees ), 1.0f, 0.01f, 2000.0f );
+    const VMatrix4f projectionMatrix = VMatrix4f::PerspectiveRH(VDegreeToRad(bufferFovDegrees), 1.0f, 0.01f, 2000.0f);
 
 	const VGlShader & prog = UntexturedMvpProgram;
 	glUseProgram( prog.program );

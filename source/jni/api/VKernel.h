@@ -125,7 +125,7 @@ typedef struct
     // function into ( TanX, TanY, 1, 1 ) vectors that are transformed
     // by this matrix to get ( S, T, Q, _ ) vectors that are looked
     // up with texture2dproj() to get texels.
-    VMatrix4<float> TexCoordsFromTanAngles;
+    VMatrix4f TexCoordsFromTanAngles;
 
     // The sensor state for which ModelViewMatrix is correct.
     // It is ok to update the orientation for each eye, which
@@ -154,7 +154,7 @@ typedef struct
     // eye vectors before applying the rest of the time warp.
     // This will only be added when the same ovrTimeWarpParms is used for
     // more than one vsync.
-    VMatrix4<float> ExternalVelocity;
+    VMatrix4f ExternalVelocity;
 
     // WarpSwap will not return until at least this many vsyncs have
     // passed since the previous WarpSwap returned.

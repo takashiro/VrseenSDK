@@ -436,7 +436,7 @@ void VKernel::destroy(eExitType exitType)
 
 ovrTimeWarpParms  VKernel::InitTimeWarpParms( const ovrWarpInit init, const unsigned int texId)
 {
-    const VMatrix4<float> tanAngleMatrix = VMatrix4<float>::TanAngleMatrixFromFov( 90.0f );
+    const VMatrix4f tanAngleMatrix = VMatrix4f::TanAngleMatrixFromFov( 90.0f );
 
     ovrTimeWarpParms parms;
     memset( &parms, 0, sizeof( parms ) );
