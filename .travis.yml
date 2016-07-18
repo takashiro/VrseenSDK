@@ -24,4 +24,4 @@ before_script:
 script:
   - ./gradlew build connectedAndroidTest
 after_failure:
-  - cat logcat.log
+  - ndk-stack -sym tests/obj/local/armeabi-v7a -dump logcat.log
