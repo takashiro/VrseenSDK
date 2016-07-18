@@ -993,7 +993,7 @@ void VFrameSmooth::Private::bindWarpProgram( const warpSource_t & currentWarpSou
     if ( warpProg.uniformTexClamp > 0 )
     {
         // split screen clamping for UE4
-        const V2Vectf clamp( eye * 0.5f, (eye+1)* 0.5f );
+        const VVect2f clamp( eye * 0.5f, (eye+1)* 0.5f );
         glUniform2fv( warpProg.uniformTexClamp, 1, &clamp.x );
     }
     if ( warpProg.uniformRotateScale > 0 )

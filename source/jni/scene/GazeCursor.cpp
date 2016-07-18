@@ -239,7 +239,7 @@ void OvrGazeCursorLocal::Frame( VMatrix4f const & viewMatrix, float const deltaT
 		{
 			TimerEndTime = -1.0;
 			TimerShowTime = -1.0;
-            ColorTableOffset = V2Vectf( 0.0f );
+            ColorTableOffset = VVect2f( 0.0f );
 		}
 		else
 		{
@@ -252,7 +252,7 @@ void OvrGazeCursorLocal::Frame( VMatrix4f const & viewMatrix, float const deltaT
 	}
 	else
 	{
-        ColorTableOffset = V2Vectf( 0.0f );
+        ColorTableOffset = VVect2f( 0.0f );
 	}
 #else
 	// cycling

@@ -109,7 +109,7 @@ private:
     VMatrix4f					CursorScatterTransform[TRAIL_GHOSTS];	// transform for each depth-fail ghost
 	int							CurrentTransform;		// the next CursorTransform[] to fill
     VMatrix4f					TimerTransform;			// current transform of the timing cursor
-    V2Vectf					ColorTableOffset;		// offset into color table for color-cycling effects
+    VVect2f					ColorTableOffset;		// offset into color table for color-cycling effects
 
 	double						TimerShowTime;			// time when the timer cursor should show
 	double						TimerEndTime;			// time when the timer will expire

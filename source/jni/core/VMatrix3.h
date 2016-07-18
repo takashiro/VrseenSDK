@@ -1,6 +1,7 @@
 #pragma once
 
 #include "VQuat.h"
+#include "VVect2.h"
 
 #include <memory.h>
 
@@ -64,12 +65,12 @@ public:
 
     VMatrix3 operator + (const VMatrix3 &matrix) const
     {
-        VR4Matrix<T> result(*this);
+        VMatrix3 result(*this);
         result += matrix;
         return result;
     }
 
-    VMatrix3 &operator += (const VMatrix3&matrix)
+    VMatrix3 &operator += (const VMatrix3 &matrix)
     {
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
@@ -155,10 +156,10 @@ public:
         return *this;
     }
 
-    V2Vect<T> transform(const V2Vect<T> &vect) const
+    VVect2<T> transform(const VVect2<T> &vect) const
     {
         const T rcpZ = T(1) / (cell[2][0] * vect.x + cell[2][1] * vect.y + cell[2][2]);
-        return V2Vect<T>((cell[0][0] * vect.x + cell[0][1] * vect.y + cell[0][2]) * rcpZ,
+        return VVect2<T>((cell[0][0] * vect.x + cell[0][1] * vect.y + cell[0][2]) * rcpZ,
                          (cell[1][0] * vect.x + cell[1][1] * vect.y + cell[1][2]) * rcpZ);
     }
 

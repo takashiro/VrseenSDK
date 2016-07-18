@@ -227,7 +227,7 @@ struct App::Private
     VViewSettings viewSettings;
 
     float touchpadTimer;
-    V2Vectf touchOrigin;
+    VVect2f touchOrigin;
     float lastTouchpadTime;
     bool lastTouchDown;
     int touchState;

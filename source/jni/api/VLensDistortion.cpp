@@ -99,7 +99,7 @@ static void WarpTexCoordChroma( const VDevice* device, const float in[2],
     }
 }
 
-static bool VectorHitsCursor( const V2Vectf & v )
+static bool VectorHitsCursor( const VVect2f & v )
 {
     if ( fabs( v.y ) > 0.017f )
     {
@@ -170,7 +170,7 @@ VGlGeometry VLensDistortion::createDistortionGrid(const VDevice* device,const in
             for ( int x = 0; x < totalX; x++ )
             {
                 const int vertIndex = (y*totalX+x );
-                V2Vectf	v(fovScale * bufferVerts[vertIndex * 6], fovScale * bufferVerts[vertIndex * 6 + 1]);
+                VVect2f	v(fovScale * bufferVerts[vertIndex * 6], fovScale * bufferVerts[vertIndex * 6 + 1]);
                 vertInCursor[ vertIndex ] = VectorHitsCursor(v);
             }
         }

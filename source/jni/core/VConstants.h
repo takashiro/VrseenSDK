@@ -1,7 +1,3 @@
-/* Copyright NVSence
- * By Jogin 2016/3/4
- */
-
 #pragma once
 
 #include "vglobal.h"
@@ -10,29 +6,9 @@
 
 NV_NAMESPACE_BEGIN
 
-template<class T> class VQuat;
-template<class T> class VSize;
-template<class T> class VRect;
-template<class T> class V2Vect;
-template<class T> class V3Vect;
-template<class T> class VR3Matrix;
-template<class T> class VR4Matrix;
-template<class T> class VPos;
-template<class T> class PoseState;
-
-
-//------------------------------------------------------------------------------------//
-// ***** VConstants
-//
-// VConstants class contains constants and functions. This class is a template specialized
-// per type, with VConstants<float> and VConstants<double> being distinct.
 template<class Type>
 class VConstants
 {
-public:
-    // By default, support explicit conversion to float. This allows Vector2<int> to
-    // compile, for example.
-    typedef float VdifFloat; // replace OtherFloatType with VdifFloat
 };
 
 // Single-precision VConstants class.
@@ -85,36 +61,8 @@ public:
 };
 
 
-typedef VConstants<float>  VConstantsf;
+typedef VConstants<float> VConstantsf;
 typedef VConstants<double> VConstantsd;
-
-// Safe reciprocal square root.
-template<class T>
-T VRcpSqrt( const T f ) { return ( f >= VConstants<T>::SmallestNonDenormal ) ? T(1) / sqrt( f ) : VConstants<T>::HugeNumber; }
-
-// Conversion functions between degrees and radians
-template<class T>
-T VRadToDegree(T rads) { return rads * VConstants<T>::VRTD; }
-template<class T>
-T VDegreeToRad(T rads) { return rads * VConstants<T>::VDTR; }
-
-// Numerically stable acos function
-template<class T>
-T VArccos(T val)
-{
-		if (val > T(1))				return T(0);
-		else if (val < T(-1))		return VConstants<T>::Pi;
-		else						return acos(val);
-};
-
-// Numerically stable asin function
-template<class T>
-T VArcsin(T val)
-{
-	if (val > T(1))				return VConstants<T>::Pi/2.0;
-	else if (val < T(-1))		return VConstants<T>::Pi/2.0 * T(3);
-	else						return asin(val);
-}
 
 //-------------------------------------------------------------------------------------
 // ***** Constants for 3D world/axis definitions.
@@ -164,10 +112,10 @@ struct VWorldAxes
     {}
 };
 
-float LinearRangeMapFloat( float inValue, float inStart, float inEnd, float outStart, float outEnd );
-
-bool equal (const float a, const float b, const float tolerance = VConstantsf::Tolerance);
-
-bool iszero (const float a, const float tolerance = VConstantsf::Tolerance);
+// Conversion functions between degrees and radians
+template<class T>
+T VRadToDegree(T rads) { return rads * VConstants<T>::VRTD; }
+template<class T>
+T VDegreeToRad(T rads) { return rads * VConstants<T>::VDTR; }
 
 NV_NAMESPACE_END

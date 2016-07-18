@@ -96,8 +96,8 @@ struct VInput
     // [][1] = -1 = up, 1 = down
     float sticks[2][2];
 
-    V2Vectf touch;
-    V2Vectf touchRelative;
+    VVect2f touch;
+    VVect2f touchRelative;
 
     uint buttonState;
 
