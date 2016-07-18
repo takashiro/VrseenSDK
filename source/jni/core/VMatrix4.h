@@ -10,21 +10,21 @@
 NV_NAMESPACE_BEGIN
 
 template<class T>
-class VR4Matrix
+class VMatrix4
 {
-    static const VR4Matrix IdentityValue;
+    static const VMatrix4 IdentityValue;
 
 public:
     T cell[4][4];
 
     // By default, we construct identity matrix.
-    VR4Matrix()
+    VMatrix4()
     {
         memset(cell, 0, sizeof(cell));
         cell[0][0] = cell[1][1] = cell[2][2] = cell[3][3] = 1;
     }
 
-    VR4Matrix(T m11, T m12, T m13, T m14,
+    VMatrix4(T m11, T m12, T m13, T m14,
               T m21, T m22, T m23, T m24,
               T m31, T m32, T m33, T m34,
               T m41, T m42, T m43, T m44)
@@ -35,7 +35,7 @@ public:
         cell[3][0] = m41; cell[3][1] = m42; cell[3][2] = m43; cell[3][3] = m44;
     }
 
-    VR4Matrix(T m11, T m12, T m13,
+    VMatrix4(T m11, T m12, T m13,
               T m21, T m22, T m23,
               T m31, T m32, T m33)
     {
@@ -45,7 +45,7 @@ public:
         cell[3][0] = 0;   cell[3][1] = 0;   cell[3][2] = 0;   cell[3][3] = 1;
     }
 
-    VR4Matrix(const VQuat<T> &q)
+    VMatrix4(const VQuat<T> &q)
     {
         T ww = q.w * q.w;
         T xx = q.x * q.x;
@@ -110,7 +110,7 @@ public:
     }
 
 
-    bool operator== (const VR4Matrix &matrix) const
+    bool operator== (const VMatrix4 &matrix) const
     {
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
@@ -122,14 +122,14 @@ public:
         return true;
     }
 
-    VR4Matrix operator + (const VR4Matrix &matrix) const
+    VMatrix4 operator + (const VMatrix4 &matrix) const
     {
-        VR4Matrix result(*this);
+        VMatrix4 result(*this);
         result += matrix;
         return result;
     }
 
-    VR4Matrix& operator+= (const VR4Matrix &matrix)
+    VMatrix4& operator+= (const VMatrix4 &matrix)
     {
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
@@ -139,14 +139,14 @@ public:
         return *this;
     }
 
-    VR4Matrix operator - (const VR4Matrix &matrix) const
+    VMatrix4 operator - (const VMatrix4 &matrix) const
     {
-        VR4Matrix result(*this);
+        VMatrix4 result(*this);
         result -= matrix;
         return result;
     }
 
-    VR4Matrix &operator -= (const VR4Matrix &matrix)
+    VMatrix4 &operator -= (const VMatrix4 &matrix)
     {
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
@@ -156,9 +156,9 @@ public:
         return *this;
     }
 
-    VR4Matrix operator * (const VR4Matrix &matrix) const
+    VMatrix4 operator * (const VMatrix4 &matrix) const
     {
-        VR4Matrix result;
+        VMatrix4 result;
         for (int i = 0; i < 4; i++) {
             result.cell[i][0] = cell[i][0] * matrix.cell[0][0] + cell[i][1] * matrix.cell[1][0] + cell[i][2] * matrix.cell[2][0] + cell[i][3] * matrix.cell[3][0];
             result.cell[i][1] = cell[i][0] * matrix.cell[0][1] + cell[i][1] * matrix.cell[1][1] + cell[i][2] * matrix.cell[2][1] + cell[i][3] * matrix.cell[3][1];
@@ -168,20 +168,20 @@ public:
         return result;
     }
 
-    VR4Matrix &operator *= (const VR4Matrix &matrix)
+    VMatrix4 &operator *= (const VMatrix4 &matrix)
     {
         *this = *this * matrix;
         return *this;
     }
 
-    VR4Matrix operator * (T factor) const
+    VMatrix4 operator * (T factor) const
     {
-        VR4Matrix result(*this);
+        VMatrix4 result(*this);
         result *= factor;
         return result;
     }
 
-    VR4Matrix &operator*= (T factor)
+    VMatrix4 &operator*= (T factor)
     {
         for (T (&row)[4] : cell) {
             for (T &value : row) {
@@ -191,14 +191,14 @@ public:
         return *this;
     }
 
-    VR4Matrix operator / (T divisor) const
+    VMatrix4 operator / (T divisor) const
     {
-        VR4Matrix result(*this);
+        VMatrix4 result(*this);
         result /= divisor;
         return result;
     }
 
-    VR4Matrix &operator /= (T factor)
+    VMatrix4 &operator /= (T factor)
     {
         for (T (&row)[4] : cell) {
             for (T &value : row) {
@@ -224,9 +224,9 @@ public:
                          cell[3][0] * vect.x + cell[3][1] * vect.y + cell[3][2] * vect.z + cell[3][3] * vect.w);
     }
 
-    VR4Matrix transposed() const
+    VMatrix4 transposed() const
     {
-        return VR4Matrix(cell[0][0], cell[1][0], cell[2][0], cell[3][0],
+        return VMatrix4(cell[0][0], cell[1][0], cell[2][0], cell[3][0],
                          cell[0][1], cell[1][1], cell[2][1], cell[3][1],
                          cell[0][2], cell[1][2], cell[2][2], cell[3][2],
                          cell[0][3], cell[1][3], cell[2][3], cell[3][3]);
@@ -264,15 +264,15 @@ public:
         return cell[0][0] * cofactor(0, 0) + cell[0][1] * cofactor(0, 1) + cell[0][2] * cofactor(0, 2) + cell[0][3] * cofactor(0, 3);
     }
 
-    VR4Matrix adjugated() const
+    VMatrix4 adjugated() const
     {
-        return VR4Matrix(cofactor(0,0), cofactor(1,0), cofactor(2,0), cofactor(3,0),
+        return VMatrix4(cofactor(0,0), cofactor(1,0), cofactor(2,0), cofactor(3,0),
                          cofactor(0,1), cofactor(1,1), cofactor(2,1), cofactor(3,1),
                          cofactor(0,2), cofactor(1,2), cofactor(2,2), cofactor(3,2),
                          cofactor(0,3), cofactor(1,3), cofactor(2,3), cofactor(3,3));
     }
 
-    VR4Matrix inverted() const { return adjugated() * (1.0f / determinant()); }
+    VMatrix4 inverted() const { return adjugated() * (1.0f / determinant()); }
     void invert() { *this = inverted(); }
 
     // Matrix to Euler Angles conversion
@@ -354,7 +354,7 @@ public:
 
     // Creates a matrix that converts the vertices from one coordinate system
     // to another.
-    static VR4Matrix VAxisConversion(const VWorldAxes &to, const VWorldAxes &from)
+    static VMatrix4 VAxisConversion(const VWorldAxes &to, const VWorldAxes &from)
     {
         // Holds VAxis values from the 'to' structure
         int toArray[3] = {to.XAxis, to.YAxis, to.ZAxis};
@@ -365,7 +365,7 @@ public:
         inv[abs(to.YAxis)] = 1;
         inv[abs(to.ZAxis)] = 2;
 
-        VR4Matrix m(0, 0, 0,
+        VMatrix4 m(0, 0, 0,
                     0, 0, 0,
                     0, 0, 0);
 
@@ -377,9 +377,9 @@ public:
     }
 
     // Creates a matrix for translation by vector
-    static VR4Matrix Translation(const VVect3<T> &v)
+    static VMatrix4 Translation(const VVect3<T> &v)
     {
-        VR4Matrix t;
+        VMatrix4 t;
         t.cell[0][3] = v.x;
         t.cell[1][3] = v.y;
         t.cell[2][3] = v.z;
@@ -387,9 +387,9 @@ public:
     }
 
     // Creates a matrix for translation by vector
-    static VR4Matrix Translation(T x, T y, T z = T(0))
+    static VMatrix4 Translation(T x, T y, T z = T(0))
     {
-        VR4Matrix t;
+        VMatrix4 t;
         t.cell[0][3] = x;
         t.cell[1][3] = y;
         t.cell[2][3] = z;
@@ -410,9 +410,9 @@ public:
     }
 
     // Creates a matrix for scaling by vector
-    static VR4Matrix Scaling(const VVect3<T>& v)
+    static VMatrix4 Scaling(const VVect3<T> &v)
     {
-        VR4Matrix t;
+        VMatrix4 t;
         t.cell[0][0] = v.x;
         t.cell[1][1] = v.y;
         t.cell[2][2] = v.z;
@@ -420,9 +420,9 @@ public:
     }
 
     // Creates a matrix for scaling by vector
-    static VR4Matrix Scaling(T x, T y, T z)
+    static VMatrix4 Scaling(T x, T y, T z)
     {
-        VR4Matrix t;
+        VMatrix4 t;
         t.cell[0][0] = x;
         t.cell[1][1] = y;
         t.cell[2][2] = z;
@@ -430,9 +430,9 @@ public:
     }
 
     // Creates a matrix for scaling by constant
-    static VR4Matrix Scaling(T s)
+    static VMatrix4 Scaling(T s)
     {
-        VR4Matrix t;
+        VMatrix4 t;
         t.cell[0][0] = s;
         t.cell[1][1] = s;
         t.cell[2][2] = s;
@@ -440,7 +440,7 @@ public:
     }
 
        // Simple L1 distance in R^12
-    T distanceTo(const VR4Matrix &m2) const
+    T distanceTo(const VMatrix4 &m2) const
     {
         T d = fabs(cell[0][0] - m2.cell[0][0]) + fabs(cell[0][1] - m2.cell[0][1]);
         d += fabs(cell[0][2] - m2.cell[0][2]) + fabs(cell[0][3] - m2.cell[0][3]);
@@ -455,22 +455,22 @@ public:
 
     // Creates a rotation matrix rotating around the X VAxis by 'angle' radians.
     // Just for quick testing.  Not for final API.  Need to remove case.
-    static VR4Matrix RotationVAxis(VAxis A, T angle, VRotateDirection d, VHandedSystem s)
+    static VMatrix4 RotationVAxis(VAxis A, T angle, VRotateDirection d, VHandedSystem s)
     {
         T sina = s * d *sin(angle);
         T cosa = cos(angle);
 
         switch(A) {
         case VAxis_X:
-            return VR4Matrix(1,  0,     0,
+            return VMatrix4(1,  0,     0,
                              0,  cosa,  -sina,
                              0,  sina,  cosa);
         case VAxis_Y:
-            return VR4Matrix(cosa, 0, sina,
+            return VMatrix4(cosa, 0, sina,
                                 0, 1,    0,
                             -sina, 0, cosa);
         case VAxis_Z:
-            return VR4Matrix(cosa,  -sina,  0,
+            return VMatrix4(cosa,  -sina,  0,
                              sina,  cosa,   0,
                                 0,     0,   1);
         }
@@ -484,11 +484,11 @@ public:
     //                        same as looking down from positive VAxis values towards origin.
     // LHS: Positive angle values rotate clock-wise (CW), while looking in the
     //       negative VAxis direction.
-    static VR4Matrix RotationX(T angle)
+    static VMatrix4 RotationX(T angle)
     {
         T sina = sin(angle);
         T cosa = cos(angle);
-        return VR4Matrix(1,  0,     0,
+        return VMatrix4(1,  0,     0,
                          0,  cosa,  -sina,
                          0,  sina,  cosa);
     }
@@ -500,11 +500,11 @@ public:
     //                        same as looking down from positive VAxis values towards origin.
     //  LHS: Positive angle values rotate clock-wise (CW), while looking in the
     //       negative VAxis direction.
-    static VR4Matrix RotationY(T angle)
+    static VMatrix4 RotationY(T angle)
     {
         T sina = sin(angle);
         T cosa = cos(angle);
-        return VR4Matrix(cosa, 0, sina,
+        return VMatrix4(cosa, 0, sina,
                             0, 1,    0,
                         -sina, 0, cosa);
     }
@@ -516,16 +516,16 @@ public:
     //                        same as looking down from positive VAxis values towards origin.
     //  LHS: Positive angle values rotate clock-wise (CW), while looking in the
     //       negative VAxis direction.
-    static VR4Matrix RotationZ(T angle)
+    static VMatrix4 RotationZ(T angle)
     {
         T sina = sin(angle);
         T cosa = cos(angle);
-        return VR4Matrix(cosa, -sina, 0,
+        return VMatrix4(cosa, -sina, 0,
                          sina,  cosa, 0,
                             0,     0, 1);
     }
 
-    static VR4Matrix RotationVAxisAngle(const VVect3<T> &vAxis, T angle)
+    static VMatrix4 RotationVAxisAngle(const VVect3<T> &vAxis, T angle)
     {
         T x = vAxis.x;
         T y = vAxis.y;
@@ -533,7 +533,7 @@ public:
         T c = cos(angle);
         T s = sin(angle);
         T t = 1 - c;
-        return VR4Matrix(t * x * x + c, t * x * y - z * s, t * x * z + y * s,
+        return VMatrix4(t * x * x + c, t * x * y - z * s, t * x * z + y * s,
                          t * x * y + z * s, t * y * y + c, t * y * z - x * s,
                          y * x * z - y * s, t * y * z + x * s, t * z * z + c);
     }
@@ -542,14 +542,14 @@ public:
     // The resulting matrix points camera from 'eye' towards 'at' direction, with 'up'
     // specifying the up vector. The resulting matrix should be used with PerspectiveRH
     // projection.
-    static VR4Matrix LookAtRH(const VVect3<T>& eye, const VVect3<T>& at, const VVect3<T>& up)
+    static VMatrix4 LookAtRH(const VVect3<T>& eye, const VVect3<T>& at, const VVect3<T>& up)
     {
         // FIXME: this fails when looking straight up, should probably at least assert
         VVect3<T> z = (eye - at).normalized();  // Forward
         VVect3<T> x = up.crossProduct(z).normalized(); // Right
         VVect3<T> y = z.crossProduct(x);
 
-        return VR4Matrix(x.x,  x.y,  x.z,  -(x.dotProduct(eye)),
+        return VMatrix4(x.x,  x.y,  x.z,  -(x.dotProduct(eye)),
                          y.x,  y.y,  y.z,  -(y.dotProduct(eye)),
                          z.x,  z.y,  z.z,  -(z.dotProduct(eye)),
                          0,    0,    0,    1 );
@@ -558,24 +558,24 @@ public:
     // LookAtLH creates a View transformation matrix for left-handed coordinate system.
     // The resulting matrix points camera from 'eye' towards 'at' direction, with 'up'
     // specifying the up vector.
-    static VR4Matrix LookAtLH(const VVect3<T>& eye, const VVect3<T>& at, const VVect3<T>& up)
+    static VMatrix4 LookAtLH(const VVect3<T>& eye, const VVect3<T>& at, const VVect3<T>& up)
     {
         // FIXME: this fails when looking straight up, should probably at least assert
         VVect3<T> z = (at - eye).normalized();  // Forward
         VVect3<T> x = up.crossProduct(z).normalized(); // Right
         VVect3<T> y = z.crossProduct(x);
 
-        return VR4Matrix(x.x,  x.y,  x.z,  -(x.dotProduct(eye)),
+        return VMatrix4(x.x,  x.y,  x.z,  -(x.dotProduct(eye)),
                          y.x,  y.y,  y.z,  -(y.dotProduct(eye)),
                          z.x,  z.y,  z.z,  -(z.dotProduct(eye)),
                          0,    0,    0,    1 );
     }
 
-    static VR4Matrix CreateFromBasisVectors( VVect3<T> const & zBasis, VVect3<T> const & up )
+    static VMatrix4 CreateFromBasisVectors( VVect3<T> const & zBasis, VVect3<T> const & up )
     {
         T dot = zBasis.dotProduct(up);
         if ( dot < (T)-0.9999 || dot > (T)0.9999 ) {
-            return VR4Matrix();
+            return VMatrix4();
         }
 
         VVect3<T> xBasis = up.crossProduct( zBasis );
@@ -584,7 +584,7 @@ public:
         VVect3<T> yBasis = zBasis.crossProduct( xBasis );
            // no need to normalize yBasis because xBasis and zBasis must already be orthogonal
 
-        return VR4Matrix<T>(xBasis.x, yBasis.x, zBasis.x, (T) 0,
+        return VMatrix4<T>(xBasis.x, yBasis.x, zBasis.x, (T) 0,
                             xBasis.y, yBasis.y, zBasis.y, (T) 0,
                             xBasis.z, yBasis.z, zBasis.z, (T) 0,
                                (T) 0,    (T) 0,    (T) 0, (T) 1);
@@ -599,9 +599,9 @@ public:
     //  zfar   - Absolute value of far  Z clipping clipping range (larger then near).
     // Even though RHS usually looks in the direction of negative Z, positive values
     // are expected for znear and zfar.
-    static VR4Matrix PerspectiveRH(T yfov, T aspect, T znear, T zfar)
+    static VMatrix4 PerspectiveRH(T yfov, T aspect, T znear, T zfar)
     {
-        VR4Matrix m;
+        VMatrix4 m;
         T tanHalfFov = tan(yfov * T(0.5f));
 
         m.cell[0][0] = T(1) / (aspect * tanHalfFov);
@@ -625,9 +625,9 @@ public:
     //           Note that xfov = yfov * aspect.
     //  znear  - Absolute value of near Z clipping clipping range.
     //  zfar   - Absolute value of far  Z clipping clipping range (larger then near).
-    static VR4Matrix PerspectiveLH(T yfov, T aspect, T znear, T zfar)
+    static VMatrix4 PerspectiveLH(T yfov, T aspect, T znear, T zfar)
     {
-        VR4Matrix m;
+        VMatrix4 m;
         T tanHalfFov = tan(yfov * T(0.5f));
 
         m.cell[0][0] = T(1) / (aspect * tanHalfFov);
@@ -642,9 +642,9 @@ public:
         return m;
     }
 
-    static VR4Matrix Ortho2D(T width, T height)
+    static VMatrix4 Ortho2D(T width, T height)
     {
-        VR4Matrix m;
+        VMatrix4 m;
         m.cell[0][0] = T(2) / width;
         m.cell[1][1] = T(-2) / height;
         m.cell[0][3] = T(-1);
@@ -654,7 +654,7 @@ public:
     }
 
     // Returns a 3x3 minor of a 4x4 matrix.
-    static T Minor(const VR4Matrix<T> * m, int r0, int r1, int r2, int c0, int c1, int c2)
+    static T Minor(const VMatrix4<T> * m, int r0, int r1, int r2, int c0, int c1, int c2)
     {
         return m->cell[r0][c0] * (m->cell[r1][c1] * m->cell[r2][c2] - m->cell[r2][c1] * m->cell[r1][c2]) -
                m->cell[r0][c1] * (m->cell[r1][c0] * m->cell[r2][c2] - m->cell[r2][c0] * m->cell[r1][c2]) +
@@ -662,13 +662,13 @@ public:
     }
 
     // Returns the inverse of a 4x4 matrix.
-    static VR4Matrix<T> Inverse(const VR4Matrix<T> *m)
+    static VMatrix4<T> Inverse(const VMatrix4<T> *m)
     {
         const float rcpDet = 1.0f / (m->cell[0][0] * Minor(m, 1, 2, 3, 1, 2, 3) -
                                      m->cell[0][1] * Minor(m, 1, 2, 3, 0, 2, 3) +
                                      m->cell[0][2] * Minor(m, 1, 2, 3, 0, 1, 3) -
                                      m->cell[0][3] * Minor(m, 1, 2, 3, 0, 1, 2));
-        VR4Matrix<T> out;
+        VMatrix4<T> out;
         out.cell[0][0] =  Minor(m, 1, 2, 3, 1, 2, 3) * rcpDet;
         out.cell[0][1] = -Minor(m, 0, 2, 3, 1, 2, 3) * rcpDet;
         out.cell[0][2] =  Minor(m, 0, 1, 3, 1, 2, 3) * rcpDet;
@@ -690,11 +690,11 @@ public:
 
     // Convert a standard projection matrix into a TanAngle matrix for
     // the primary time warp surface.
-    static VR4Matrix<T> TanAngleMatrixFromProjection(const VR4Matrix<T> *projection)
+    static VMatrix4<T> TanAngleMatrixFromProjection(const VMatrix4<T> *projection)
     {
         // A projection matrix goes from a view point to NDC, or -1 to 1 space.
         // Scale and bias to convert that to a 0 to 1 space.
-        const VR4Matrix<T> tanAngleMatrix = {
+        const VMatrix4<T> tanAngleMatrix = {
             {
                 {0.5f * projection->cell[0][0], 0.5f * projection->cell[0][1], 0.5f * projection->cell[0][2] - 0.5f, 0.5f * projection->cell[0][3]},
                 {0.5f * projection->cell[1][0], 0.5f * projection->cell[1][1], 0.5f * projection->cell[1][2] - 0.5f, 0.5f * projection->cell[1][3]},
@@ -706,10 +706,10 @@ public:
     }
 
     // Trivial version of TanAngleMatrixFromProjection() for a symmetric field of view.
-    static VR4Matrix<T> TanAngleMatrixFromFov(float fovDegrees)
+    static VMatrix4<T> TanAngleMatrixFromFov(float fovDegrees)
     {
         const float tanHalfFov = tanf(0.5f * fovDegrees * (M_PI / 180.0f));
-        VR4Matrix<T> tanAngleMatrix(0.5f / tanHalfFov, 0.0f, -0.5f, 0.0f,
+        VMatrix4<T> tanAngleMatrix(0.5f / tanHalfFov, 0.0f, -0.5f, 0.0f,
                                     0.0f, 0.5f / tanHalfFov, -0.5f, 0.0f,
                                     0.0f, 0.0f, -1.0f, 0.0f,
                                     0.0f, 0.0f, -1.0f, 0.0f);
@@ -737,10 +737,10 @@ public:
     //
     // The resulting z value should be straight ahead distance to the plane.
     // The x and y values will be pre-multiplied by z for projective texturing.
-    static VR4Matrix<T> TanAngleMatrixFromUnitSquare( const VR4Matrix<T> * modelView )
+    static VMatrix4<T> TanAngleMatrixFromUnitSquare( const VMatrix4<T> * modelView )
     {
-        const VR4Matrix<T> inv = Inverse( modelView );
-        VR4Matrix<T> m;
+        const VMatrix4<T> inv = Inverse( modelView );
+        VMatrix4<T> m;
         m.cell[0][0] = 0.5f * inv.cell[2][0] - 0.5f * (inv.cell[0][0] * inv.cell[2][3] - inv.cell[0][3] * inv.cell[2][0]);
         m.cell[0][1] = 0.5f * inv.cell[2][1] - 0.5f * (inv.cell[0][1] * inv.cell[2][3] - inv.cell[0][3] * inv.cell[2][1]);
         m.cell[0][2] = 0.5f * inv.cell[2][2] - 0.5f * (inv.cell[0][2] * inv.cell[2][3] - inv.cell[0][3] * inv.cell[2][2]);
@@ -760,7 +760,7 @@ public:
     // To reduce judder in FPS style experiences when the application framerate is
     // lower than the vsync rate, the rotation from a joypad can be applied to the
     // view space distorted eye vectors before applying the time warp.
-    VR4Matrix calculateExternalVelocity(float yawRadiansPerSecond) const
+    VMatrix4 calculateExternalVelocity(float yawRadiansPerSecond) const
     {
         const float angle = yawRadiansPerSecond * ( -1.0f / 60.0f );
         const float sinHalfAngle = sinf( angle * 0.5f );
@@ -779,7 +779,7 @@ public:
     VVect3<T> viewForward() const {return VVect3<T>(-cell[2][0], -cell[2][1], -cell[2][2]).normalized(); }
 };
 
-typedef VR4Matrix<float> VR4Matrixf;
-typedef VR4Matrix<double> VR4Matrixd;
+typedef VMatrix4<float> VMatrix4f;
+typedef VMatrix4<double> VMatrix4d;
 
 NV_NAMESPACE_END

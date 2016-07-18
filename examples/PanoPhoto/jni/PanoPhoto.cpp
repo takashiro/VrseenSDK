@@ -497,9 +497,9 @@ void PanoPhoto::loadRgbaTexture( const unsigned char * data, int width, int heig
     VEglDriver::logErrorsEnum( "leave LoadRgbaTexture" );
 }
 
-VR4Matrixf CubeMatrixForViewMatrix( const VR4Matrixf & viewMatrix )
+VMatrix4f CubeMatrixForViewMatrix( const VMatrix4f & viewMatrix )
 {
-    VR4Matrixf m = viewMatrix;
+    VMatrix4f m = viewMatrix;
     // clear translation
     for ( int i = 0; i < 3; i++ )
     {
@@ -508,12 +508,12 @@ VR4Matrixf CubeMatrixForViewMatrix( const VR4Matrixf & viewMatrix )
     return m.inverted();
 }
 
-VR4Matrixf PanoPhoto::drawEyeView( const int eye, const float fovDegrees )
+VMatrix4f PanoPhoto::drawEyeView( const int eye, const float fovDegrees )
 {
     // Don't draw the scene at all if it is faded out
     const bool drawScene = true;
 
-    const VR4Matrixf view = drawScene ?
+    const VMatrix4f view = drawScene ?
                 m_scene.DrawEyeView( eye, fovDegrees )
               : m_scene.MvpForEye( eye, fovDegrees );
 
@@ -527,7 +527,7 @@ VR4Matrixf PanoPhoto::drawEyeView( const int eye, const float fovDegrees )
         glClearColor( 0, 0, 0, 0 );
         glClear( GL_COLOR_BUFFER_BIT );
 
-        const VR4Matrixf	m( CubeMatrixForViewMatrix( m_scene.CenterViewMatrix() ) );
+        const VMatrix4f	m( CubeMatrixForViewMatrix( m_scene.CenterViewMatrix() ) );
         GLuint texId = m_backgroundCubeTexData.GetRenderTexId();
         glBindTexture( GL_TEXTURE_CUBE_MAP, texId );
         glTexParameteri( GL_TEXTURE_CUBE_MAP, VEglDriver::GL_TEXTURE_SRGB_DECODE_EXT,
@@ -647,7 +647,7 @@ void PanoPhoto::SetMenuState( const OvrMenuState state )
     }
 }
 
-VR4Matrixf PanoPhoto::onNewFrame( const VFrame vrFrame )
+VMatrix4f PanoPhoto::onNewFrame( const VFrame vrFrame )
 {
     m_frameInput = vrFrame;
 

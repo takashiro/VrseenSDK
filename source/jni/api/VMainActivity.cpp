@@ -226,10 +226,10 @@ void VMainActivity::onNewIntent(const VString &fromPackageName, const VString &c
     vInfo("VMainActivity::NewIntent - default handler called -" << fromPackageName << command << uri);
 }
 
-VR4Matrixf VMainActivity::onNewFrame(VFrame vrFrame)
+VMatrix4f VMainActivity::onNewFrame(VFrame vrFrame)
 {
     vInfo("VMainActivity::Frame - default handler called");
-    return VR4Matrixf();
+    return VMatrix4f();
 }
 
 void VMainActivity::configureVrMode(VKernel* kernel)
@@ -237,10 +237,10 @@ void VMainActivity::configureVrMode(VKernel* kernel)
     vInfo("VMainActivity::ConfigureVrMode - default handler called");
 }
 
-VR4Matrixf VMainActivity::drawEyeView(const int eye, const float fovDegrees)
+VMatrix4f VMainActivity::drawEyeView(const int eye, const float fovDegrees)
 {
     vInfo("VMainActivity::DrawEyeView - default handler called");
-    return VR4Matrixf();
+    return VMatrix4f();
 }
 
 bool VMainActivity::onKeyEvent(const int keyCode, const KeyState::eKeyEventType eventType)

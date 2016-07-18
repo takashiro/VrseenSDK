@@ -55,10 +55,10 @@ public:
 	virtual void				ClearGhosts();
 
 	// Called once per frame to update logic.
-    virtual	void				Frame( VR4Matrixf const & viewMatrix, float const deltaTime );
+    virtual	void				Frame( VMatrix4f const & viewMatrix, float const deltaTime );
 
 	// Renders the gaze cursor.
-    virtual void				Render( int const eye, VR4Matrixf const & mvp ) const;
+    virtual void				Render( int const eye, VMatrix4f const & mvp ) const;
 
 	// Users should call this function to determine if the gaze cursor is relevant for them.
 	virtual bool				IsActiveForUser( gazeCursorUserId_t const userId ) const;
@@ -105,10 +105,10 @@ private:
 	float						CursorScale;			// scale of the cursor
 	float						DistanceOffset;			// additional distance to offset towards the camera.
 	int							HiddenFrames;			// Hide cursor for a number of frames
-    VR4Matrixf					CursorTransform[TRAIL_GHOSTS];	// transform for each ghost
-    VR4Matrixf					CursorScatterTransform[TRAIL_GHOSTS];	// transform for each depth-fail ghost
+    VMatrix4f					CursorTransform[TRAIL_GHOSTS];	// transform for each ghost
+    VMatrix4f					CursorScatterTransform[TRAIL_GHOSTS];	// transform for each depth-fail ghost
 	int							CurrentTransform;		// the next CursorTransform[] to fill
-    VR4Matrixf					TimerTransform;			// current transform of the timing cursor
+    VMatrix4f					TimerTransform;			// current transform of the timing cursor
     V2Vectf					ColorTableOffset;		// offset into color table for color-cycling effects
 
 	double						TimerShowTime;			// time when the timer cursor should show

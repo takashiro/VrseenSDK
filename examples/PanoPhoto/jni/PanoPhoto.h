@@ -55,8 +55,8 @@ public:
     void onStart(const VString &url);
     void shutdown() override;
     void configureVrMode(VKernel* kernel) override;
-    VR4Matrixf 	drawEyeView( const int eye, const float fovDegrees ) override;
-    VR4Matrixf 	onNewFrame( VFrame vrFrame ) override;
+    VMatrix4f 	drawEyeView( const int eye, const float fovDegrees ) override;
+    VMatrix4f 	onNewFrame( VFrame vrFrame ) override;
     void command(const VEvent &event) override;
     bool		wantSrgbFramebuffer() const override;
 

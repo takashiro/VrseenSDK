@@ -252,11 +252,11 @@ public:
             V4Vectf const & color, const VString &text);
 
 	// transform the billboarded font strings
-    virtual void Finish(VR4Matrixf const & viewMatrix);
+    virtual void Finish(VMatrix4f const & viewMatrix);
 
 	// render the VBO
 	virtual void Render3D(BitmapFont const & font,
-            VR4Matrixf const & worldMVP) const;
+            VMatrix4f const & worldMVP) const;
 
 private:
 	VGlGeometry Geo; // font glyphs
@@ -1340,12 +1340,12 @@ int VertexBlockSortFn(void const * a, void const * b) {
 // transform all vertex blocks into the vertices array so they're ready to be uploaded to the VBO
 // We don't have to do this for each eye because the billboarded surfaces are sorted / aligned
 // based on their distance from / direction to the camera view position and not the camera direction.
-void BitmapFontSurfaceLocal::Finish(VR4Matrixf const & viewMatrix) {
+void BitmapFontSurfaceLocal::Finish(VMatrix4f const & viewMatrix) {
     vAssert(this != NULL);
 
 	//SPAM( "BitmapFontSurfaceLocal::Finish" );
 
-    VR4Matrixf invViewMatrix = viewMatrix.inverted(); // if the view is never scaled or sheared we could use Transposed() here instead
+    VMatrix4f invViewMatrix = viewMatrix.inverted(); // if the view is never scaled or sheared we could use Transposed() here instead
     VVect3f viewPos = invViewMatrix.translation();
 
 	// sort vertex blocks indices based on distance to pivot
@@ -1370,7 +1370,7 @@ void BitmapFontSurfaceLocal::Finish(VR4Matrixf const & viewMatrix) {
 	// the third texture coordinate.
 	for (int i = 0; i < VertexBlocks.length(); ++i) {
 		VertexBlockType & vb = VertexBlocks[vbSort[i].VertexBlockIndex];
-        VR4Matrixf transform;
+        VMatrix4f transform;
 		if (vb.Billboard) {
 			if (vb.TrackRoll) {
 				transform = invViewMatrix;
@@ -1382,7 +1382,7 @@ void BitmapFontSurfaceLocal::Finish(VR4Matrixf const & viewMatrix) {
 					continue;
 				}
 				textNormal *= 1.0f / len;
-                transform = VR4Matrixf::CreateFromBasisVectors(textNormal,
+                transform = VMatrix4f::CreateFromBasisVectors(textNormal,
                         VVect3f(0.0f, 1.0f, 0.0f));
 			}
 			transform.setTranslation(vb.Pivot);
@@ -1423,7 +1423,7 @@ void BitmapFontSurfaceLocal::Finish(VR4Matrixf const & viewMatrix) {
 // render the font surface by transforming each vertex block and copying it into the VBO
 // TODO: once we add support for multiple fonts per surface, this should not take a BitmapFont for input.
 void BitmapFontSurfaceLocal::Render3D(BitmapFont const & font,
-        VR4Matrixf const & worldMVP) const {
+        VMatrix4f const & worldMVP) const {
 
     VEglDriver::logErrorsEnum("BitmapFontSurfaceLocal::Render3D - pre");
 

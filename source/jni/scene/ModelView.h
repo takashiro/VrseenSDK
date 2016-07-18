@@ -21,10 +21,10 @@ public:
 	// Models that have DontRenderForClientUid == supressModelsWithClientId will be skipped
 	// to prevent the client's own head model from drawing in their view.
 	void		Frame(const VViewSettings viewParms_, const VFrame vrFrame,
-            VR4Matrixf & timeWarpParmsExternalVelocity, const long long supressModelsWithClientId = -1 );
+            VMatrix4f & timeWarpParmsExternalVelocity, const long long supressModelsWithClientId = -1 );
 
 	// Issues GL calls and returns the MVP for the eye, as needed by AppInterface DrawEyeVIew
-    VR4Matrixf	DrawEyeView( const int eye, const float fovDegrees ) const;
+    VMatrix4f	DrawEyeView( const int eye, const float fovDegrees ) const;
 
 	// WARNING: this does not take into account the head model, it is just footpos + eyeheight
     VVect3f	CenterEyePos() const;
@@ -33,10 +33,10 @@ public:
 //    V3Vectf	ShiftedCenterEyePos() const;
 
 //    V3Vectf	Forward() const;
-    VR4Matrixf 	CenterViewMatrix() const;
-    VR4Matrixf 	ViewMatrixForEye( const int eye ) const;	// includes InterpupillaryDistance
-    VR4Matrixf 	MvpForEye( const int eye, const float fovDegrees ) const;
-    VR4Matrixf 	ProjectionMatrixForEye( const int eye, const float fovDegrees ) const;
+    VMatrix4f 	CenterViewMatrix() const;
+    VMatrix4f 	ViewMatrixForEye( const int eye ) const;	// includes InterpupillaryDistance
+    VMatrix4f 	MvpForEye( const int eye, const float fovDegrees ) const;
+    VMatrix4f 	ProjectionMatrixForEye( const int eye, const float fovDegrees ) const;
 
     static VVect3f HeadModelOffset(float EyeRoll, float EyePitch, float EyeYaw, float HeadModelDepth, float HeadModelHeight);
 
@@ -80,7 +80,7 @@ public:
     VVect3f				LatchedHeadModelOffset;
 
     // Calculated in Frame()
-    VR4Matrixf 				ViewMatrix;
+    VMatrix4f 				ViewMatrix;
     float					EyeYaw;         // Rotation around Y, CCW positive when looking at RHS (X,Z) plane.
     float					EyePitch;       // Pitch. If sensor is plugged in, only read from sensor.
     float					EyeRoll;        // Roll, only accessible from Sensor.

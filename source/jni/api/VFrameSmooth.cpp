@@ -239,7 +239,7 @@ void EyeRect( const VDevice *device,const int eye,
     height = lHeight;
 }
 
-VR4Matrixf CalculateTimeWarpMatrix2( const VQuatf &inFrom, const VQuatf &inTo )
+VMatrix4f CalculateTimeWarpMatrix2( const VQuatf &inFrom, const VQuatf &inTo )
 {
     // FIXME: this is a horrible hack to fix a zero quaternion that's passed in
     // the night before a demo. This is coming from the sensor pose and needs to
@@ -272,8 +272,8 @@ VR4Matrixf CalculateTimeWarpMatrix2( const VQuatf &inFrom, const VQuatf &inTo )
         }
     }
 
-    VR4Matrixf		lastSensorMatrix = VR4Matrixf( to );
-    VR4Matrixf		lastViewMatrix = VR4Matrixf( from );
+    VMatrix4f		lastSensorMatrix = VMatrix4f( to );
+    VMatrix4f		lastViewMatrix = VMatrix4f( from );
 
     return ( lastSensorMatrix.inverted() * lastViewMatrix ).inverted();
 }
@@ -603,8 +603,8 @@ struct VFrameSmooth::Private
 
     const VGlShader & programForParms( const ovrTimeWarpParms & parms, const bool disableChromaticCorrection ) const;
     void			setWarpState( const warpSource_t & currentWarpSource ) const;
-    void			bindWarpProgram( const warpSource_t & currentWarpSource, const VR4Matrixf timeWarps[2][2],
-                                     const VR4Matrixf rollingWarp, const int eye, const double vsyncBase ) const;
+    void			bindWarpProgram( const warpSource_t & currentWarpSource, const VMatrix4f timeWarps[2][2],
+                                     const VMatrix4f rollingWarp, const int eye, const double vsyncBase ) const;
     void			bindCursorProgram() const;
 
     bool			m_hasEXT_sRGB_write_control;	// extension
@@ -961,11 +961,11 @@ void VFrameSmooth::Private::setWarpState( const warpSource_t & currentWarpSource
 }
 
 void VFrameSmooth::Private::bindWarpProgram( const warpSource_t & currentWarpSource,
-                                     const VR4Matrixf timeWarps[2][2], const VR4Matrixf rollingWarp,
+                                     const VMatrix4f timeWarps[2][2], const VMatrix4f rollingWarp,
                                      const int eye, const double vsyncBase /* for spinner */ ) const
 {
     // TODO: bake this into the buffer objects
-    const VR4Matrixf landscapeOrientationMatrix(
+    const VMatrix4f landscapeOrientationMatrix(
                 1.0f, 0.0f, 0.0f, 0.0f,
                 0.0f, 1.0f, 0.0f, 0.0f,
                 0.0f, 0.0f, 0.0f, 0.0f,
@@ -1007,7 +1007,7 @@ void VFrameSmooth::Private::bindWarpProgram( const warpSource_t & currentWarpSou
 void VFrameSmooth::Private::bindCursorProgram() const
 {
     // TODO: bake this into the buffer objects
-    const VR4Matrixf landscapeOrientationMatrix(
+    const VMatrix4f landscapeOrientationMatrix(
                 1.0f, 0.0f, 0.0f, 0.0f,
                 0.0f, 1.0f, 0.0f, 0.0f,
                 0.0f, 0.0f, 0.0f, 0.0f,
@@ -1022,7 +1022,7 @@ void VFrameSmooth::Private::bindCursorProgram() const
 
     glUniformMatrix4fv( warpProg.uniformModelViewProMatrix, 1, GL_FALSE, landscapeOrientationMatrix.transposed().cell[0] );
 
-    VR4Matrixf identity;
+    VMatrix4f identity;
     glUniformMatrix4fv(warpProg.uniformTexMatrix, 1, GL_FALSE, identity.data());
     glUniformMatrix4fv(warpProg.uniformTexMatrix2, 1, GL_FALSE, identity.data());
 }
@@ -1300,7 +1300,7 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
         }
 
         // Build up the external velocity transform
-        VR4Matrixf velocity;
+        VMatrix4f velocity;
         const int velocitySteps = std::min( 3, (int)((long long)vsyncBase - currentWarpSource.MinimumVsync) );
         for ( int i = 0; i < velocitySteps; i++ )
         {
@@ -1319,36 +1319,36 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
         //
         // In a portrait scanned display, it is beneficial to have the time warp calculated
         // independently for each eye, giving them the same latency profile.
-        VR4Matrixf timeWarps[2][2];
+        VMatrix4f timeWarps[2][2];
         VRotationState sensor[2];
         for ( int scan = 0; scan < 2; scan++ )
         {
             const double vsyncPoint = vsyncBase + swap.predictionPoints[eye][scan];
             const double timePoint = framePointTimeInSeconds( vsyncPoint );
             sensor[scan] = VRotationSensor::instance()->predictState( timePoint );
-            const VR4Matrixf warp = CalculateTimeWarpMatrix2(
+            const VMatrix4f warp = CalculateTimeWarpMatrix2(
                         currentWarpSource.WarpParms.Images[eye][0].Pose,
                     sensor[scan] ) * velocity;
-            timeWarps[0][scan] = VR4Matrixf( currentWarpSource.WarpParms.Images[eye][0].TexCoordsFromTanAngles ) * warp;
+            timeWarps[0][scan] = VMatrix4f( currentWarpSource.WarpParms.Images[eye][0].TexCoordsFromTanAngles ) * warp;
             if ( dualLayer )
             {
                 if ( currentWarpSource.WarpParms.WarpOptions & SWAP_OPTION_FIXED_OVERLAY )
                 {	// locked-to-face HUD
-                    timeWarps[1][scan] = VR4Matrixf( currentWarpSource.WarpParms.Images[eye][1].TexCoordsFromTanAngles );
+                    timeWarps[1][scan] = VMatrix4f( currentWarpSource.WarpParms.Images[eye][1].TexCoordsFromTanAngles );
                 }
                 else
                 {	// locked-to-world surface
-                    const VR4Matrixf warp2 = CalculateTimeWarpMatrix2(
+                    const VMatrix4f warp2 = CalculateTimeWarpMatrix2(
                                 currentWarpSource.WarpParms.Images[eye][1].Pose,
                             sensor[scan]) * velocity;
-                    timeWarps[1][scan] = VR4Matrixf( currentWarpSource.WarpParms.Images[eye][1].TexCoordsFromTanAngles ) * warp2;
+                    timeWarps[1][scan] = VMatrix4f( currentWarpSource.WarpParms.Images[eye][1].TexCoordsFromTanAngles ) * warp2;
                 }
             }
         }
 
         // The pass through camera support needs to know the warping from the head motion
         // across the display scan independent of any layers, which may drop frames.
-        const VR4Matrixf rollingWarp = CalculateTimeWarpMatrix2(
+        const VMatrix4f rollingWarp = CalculateTimeWarpMatrix2(
                     sensor[0],
                 sensor[1]);
 
@@ -1565,7 +1565,7 @@ void VFrameSmooth::Private::warpToScreenSliced( const double vsyncBase, const sw
         }
 
         // Build up the external velocity transform
-        VR4Matrixf velocity;
+        VMatrix4f velocity;
         const int velocitySteps = std::min( 3, (int)((long long)vsyncBase - currentWarpSource.MinimumVsync) );
         for ( int i = 0; i < velocitySteps; i++ )
         {
@@ -1584,7 +1584,7 @@ void VFrameSmooth::Private::warpToScreenSliced( const double vsyncBase, const sw
         //
         // In a portrait scanned display, it is beneficial to have the time warp calculated
         // independently for each eye, giving them the same latency profile.
-        VR4Matrixf timeWarps[2][2];
+        VMatrix4f timeWarps[2][2];
         static VRotationState sensor[2];
         for ( int scan = 0; scan < 2; scan++ )
         {
@@ -1592,7 +1592,7 @@ void VFrameSmooth::Private::warpToScreenSliced( const double vsyncBase, const sw
             // but we only make a new one for the start of the slice when a
             // new eye has just started, otherwise we could get a visible
             // seam at the slice boundary when the prediction changed.
-            static VR4Matrixf	warp;
+            static VMatrix4f	warp;
             if ( scan == 1 || screenSlice == 0 || screenSlice == NUM_SLICES_PER_EYE )
             {
                 // SliceTimes should be the actual time the pixels hit the screen,
@@ -1603,25 +1603,25 @@ void VFrameSmooth::Private::warpToScreenSliced( const double vsyncBase, const sw
                             currentWarpSource.WarpParms.Images[eye][0].Pose,
                         sensor[scan]) * velocity;
             }
-            timeWarps[0][scan] = VR4Matrixf( currentWarpSource.WarpParms.Images[eye][0].TexCoordsFromTanAngles ) * warp;
+            timeWarps[0][scan] = VMatrix4f( currentWarpSource.WarpParms.Images[eye][0].TexCoordsFromTanAngles ) * warp;
             if ( dualLayer )
             {
                 if ( currentWarpSource.WarpParms.WarpOptions & SWAP_OPTION_FIXED_OVERLAY )
                 {	// locked-to-face HUD
-                    timeWarps[1][scan] = VR4Matrixf( currentWarpSource.WarpParms.Images[eye][1].TexCoordsFromTanAngles );
+                    timeWarps[1][scan] = VMatrix4f( currentWarpSource.WarpParms.Images[eye][1].TexCoordsFromTanAngles );
                 }
                 else
                 {	// locked-to-world surface
-                    const VR4Matrixf warp2 = CalculateTimeWarpMatrix2(
+                    const VMatrix4f warp2 = CalculateTimeWarpMatrix2(
                                 currentWarpSource.WarpParms.Images[eye][1].Pose,
                             sensor[scan]) * velocity;
-                    timeWarps[1][scan] = VR4Matrixf( currentWarpSource.WarpParms.Images[eye][1].TexCoordsFromTanAngles ) * warp2;
+                    timeWarps[1][scan] = VMatrix4f( currentWarpSource.WarpParms.Images[eye][1].TexCoordsFromTanAngles ) * warp2;
                 }
             }
         }
         // The pass through camera support needs to know the warping from the head motion
         // across the display scan independent of any layers, which may drop frames.
-        const VR4Matrixf rollingWarp = CalculateTimeWarpMatrix2(
+        const VMatrix4f rollingWarp = CalculateTimeWarpMatrix2(
                     sensor[0],
                 sensor[1]);
 
@@ -1997,7 +1997,7 @@ void VFrameSmooth::Private::drawFrameworkGraphicsToWindow( const int eye,
         const float znear = 0.5f;
         const float zfar = 150.0f;
         // flipped for portrait mode
-        const VR4Matrixf projectionMatrix(
+        const VMatrix4f projectionMatrix(
                     0, 1, 0, 0,
                     -1, 0, 0, 0,
                     0, 0, zfar / (znear - zfar), (zfar * znear) / (znear - zfar),

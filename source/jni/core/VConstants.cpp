@@ -43,12 +43,12 @@ const double VConstants<double>::SmallestNonDenormal	= double( 2.225073858507201
 const double VConstants<double>::HugeNumber			= double( 1.3407807929942596e+154 );	// ( ( ( 1023ULL * 3 / 2 ) << 52 ) | ( ( 1 << 52 ) - 1 ) )
 
 template<>
-const VR4Matrix<float> VR4Matrix<float>::IdentityValue = VR4Matrix<float>(1.0f, 0.0f, 0.0f, 0.0f,
+const VMatrix4<float> VMatrix4<float>::IdentityValue = VMatrix4<float>(1.0f, 0.0f, 0.0f, 0.0f,
                                                                     0.0f, 1.0f, 0.0f, 0.0f,
                                                                     0.0f, 0.0f, 1.0f, 0.0f,
                                                                     0.0f, 0.0f, 0.0f, 1.0f);
 template<>
-const VR4Matrix<double> VR4Matrix<double>::IdentityValue = VR4Matrix<double>(1.0, 0.0, 0.0, 0.0,
+const VMatrix4<double> VMatrix4<double>::IdentityValue = VMatrix4<double>(1.0, 0.0, 0.0, 0.0,
                                                                        0.0, 1.0, 0.0, 0.0,
                                                                        0.0, 0.0, 1.0, 0.0,
                                                                        0.0, 0.0, 0.0, 1.0);

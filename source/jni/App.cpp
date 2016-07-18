@@ -81,22 +81,22 @@ static int buttonMappings[] = {
     -1
 };
 
-static VVect3f ViewOrigin(const VR4Matrixf & view)
+static VVect3f ViewOrigin(const VMatrix4f & view)
 {
     return VVect3f(view.cell[0][3], view.cell[1][3], view.cell[2][3]);
 }
 
-static VVect3f ViewForward(const VR4Matrixf & view)
+static VVect3f ViewForward(const VMatrix4f & view)
 {
     return VVect3f(-view.cell[0][2], -view.cell[1][2], -view.cell[2][2]);
 }
 
 // Always make the panel upright, even if the head was tilted when created
-static VR4Matrixf PanelMatrix(const VR4Matrixf & lastViewMatrix, const float popupDistance,
+static VMatrix4f PanelMatrix(const VMatrix4f & lastViewMatrix, const float popupDistance,
         const float popupScale, const int width, const int height)
 {
     // TODO: this won't be valid until a frame has been rendered
-    const VR4Matrixf invView = lastViewMatrix.inverted();
+    const VMatrix4f invView = lastViewMatrix.inverted();
     const VVect3f forward = ViewForward(invView);
     const VVect3f levelforward = VVect3f(forward.x, 0.0f, forward.z).normalized();
     // TODO: check degenerate case
@@ -106,7 +106,7 @@ static VR4Matrixf PanelMatrix(const VR4Matrixf & lastViewMatrix, const float pop
     const VVect3f center = ViewOrigin(invView) + levelforward * popupDistance;
     const float xScale = (float)width / 768.0f * popupScale;
     const float yScale = (float)height / 768.0f * popupScale;
-    const VR4Matrixf panelMatrix = VR4Matrixf(
+    const VMatrix4f panelMatrix = VMatrix4f(
             xScale * right.x, yScale * up.x, forward.x, center.x,
             xScale * right.y, yScale * up.y, forward.y, center.y,
             xScale * right.z, yScale * up.z, forward.z, center.z,
@@ -190,7 +190,7 @@ struct App::Private
     // Dialogs will be oriented base down in the view when they
     // were generated.
 
-    VR4Matrixf lastViewMatrix;
+    VMatrix4f lastViewMatrix;
 
     ANativeWindow *nativeWindow;
     EGLSurface windowSurface;
@@ -1432,12 +1432,12 @@ const VString &App::packageCodePath() const
     return d->packageCodePath;
 }
 
-VR4Matrixf const & App::lastViewMatrix() const
+VMatrix4f const & App::lastViewMatrix() const
 {
     return d->lastViewMatrix;
 }
 
-void App::setLastViewMatrix(VR4Matrixf const & m)
+void App::setLastViewMatrix(VMatrix4f const & m)
 {
     d->lastViewMatrix = m;
 }
@@ -1557,7 +1557,7 @@ void App::recenterYaw(const bool showBlack)
     d->lastViewMatrix.toEulerAngles< VAxis_Y, VAxis_X, VAxis_Z, VRotate_CCW, VHanded_R >(&yaw, &pitch, &roll);
 
 	// undo the yaw
-    VR4Matrixf unrotYawMatrix(VQuatf(VAxis_Y, -yaw));
+    VMatrix4f unrotYawMatrix(VQuatf(VAxis_Y, -yaw));
     d->lastViewMatrix = d->lastViewMatrix * unrotYawMatrix;
 }
 
@@ -1588,7 +1588,7 @@ long long App::recenterYawFrameStart() const
 //    glOperation.glBindVertexArrayOES_( 0 );
 //}
 
-void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const int numPresents )
+void App::drawEyeViewsPostDistorted( VMatrix4f const & centerViewMatrix, const int numPresents )
 {
     // update vr lib systems after the app frame, but before rendering anything
     gazeCursor().Frame( centerViewMatrix, text.vrFrame.deltaSeconds );
@@ -1624,7 +1624,7 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
             eyeItemList[eye]->paint();
 
             // Call back to the app for drawing.
-            const VR4Matrixf mvp = d->activity->drawEyeView(eye, fovDegrees);
+            const VMatrix4f mvp = d->activity->drawEyeView(eye, fovDegrees);
 
             worldFontSurface().Render3D(defaultFont(), mvp.transposed());
 
@@ -1664,7 +1664,7 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
     {
         for(int eye = 0;eye<numEyes;++eye)
         {
-            d->swapParms.Images[eye][0].TexCoordsFromTanAngles = VR4Matrixf::TanAngleMatrixFromFov( fovDegrees );
+            d->swapParms.Images[eye][0].TexCoordsFromTanAngles = VMatrix4f::TanAngleMatrixFromFov( fovDegrees );
             d->swapParms.Images[eye][0].TexId = ((VEyeItem*)eyeItemList[d->renderMonoMode ? 0 : eye ])->completedEyes().textures;
             d->swapParms.Images[eye][0].Pose  = d->sensorForNextWarp;
             // d->kernel->m_smoothProgram = ChromaticAberrationCorrection(glOperation) ? WP_CHROMATIC : WP_SIMPLE;
@@ -1695,9 +1695,9 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
 //}
 
 // draw a zero to destination alpha
-void App::drawScreenMask(const VR4Matrixf &mvp, const float fadeFracX, const float fadeFracY)
+void App::drawScreenMask(const VMatrix4f &mvp, const float fadeFracX, const float fadeFracY)
 {
-    VR4Matrixf mvpMatrix(mvp);
+    VMatrix4f mvpMatrix(mvp);
 
     glUseProgram(d->overlayScreenFadeMaskProgram.program);
 

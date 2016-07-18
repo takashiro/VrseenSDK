@@ -226,17 +226,17 @@ void PanoVideo::command(const VEvent &event )
 
 }
 
-VR4Matrixf	PanoVideo::texmForVideo( const int eye )
+VMatrix4f	PanoVideo::texmForVideo( const int eye )
 {
     if (m_videoUrl.endsWith("_TB.mp4", false)) {
         // top / bottom stereo panorama
 		return eye ?
-            VR4Matrixf( 1, 0, 0, 0,
+            VMatrix4f( 1, 0, 0, 0,
 			0, 0.5, 0, 0.5,
 			0, 0, 1, 0,
 			0, 0, 0, 1 )
 			:
-            VR4Matrixf( 1, 0, 0, 0,
+            VMatrix4f( 1, 0, 0, 0,
 			0, 0.5, 0, 0,
 			0, 0, 1, 0,
 			0, 0, 0, 1 );
@@ -244,12 +244,12 @@ VR4Matrixf	PanoVideo::texmForVideo( const int eye )
     if (m_videoUrl.endsWith("_BT.mp4", false)) {
         // top / bottom stereo panorama
 		return ( !eye ) ?
-            VR4Matrixf( 1, 0, 0, 0,
+            VMatrix4f( 1, 0, 0, 0,
 			0, 0.5, 0, 0.5,
 			0, 0, 1, 0,
 			0, 0, 0, 1 )
 			:
-            VR4Matrixf( 1, 0, 0, 0,
+            VMatrix4f( 1, 0, 0, 0,
 			0, 0.5, 0, 0,
 			0, 0, 1, 0,
 			0, 0, 0, 1 );
@@ -257,12 +257,12 @@ VR4Matrixf	PanoVideo::texmForVideo( const int eye )
     if (m_videoUrl.endsWith("_LR.mp4", false)) {
         // left / right stereo panorama
 		return eye ?
-            VR4Matrixf( 0.5, 0, 0, 0,
+            VMatrix4f( 0.5, 0, 0, 0,
 			0, 1, 0, 0,
 			0, 0, 1, 0,
 			0, 0, 0, 1 )
 			:
-            VR4Matrixf( 0.5, 0, 0, 0.5,
+            VMatrix4f( 0.5, 0, 0, 0.5,
 			0, 1, 0, 0,
 			0, 0, 1, 0,
 			0, 0, 0, 1 );
@@ -270,12 +270,12 @@ VR4Matrixf	PanoVideo::texmForVideo( const int eye )
     if (m_videoUrl.endsWith("_RL.mp4", false)) {
         // left / right stereo panorama
 		return ( !eye ) ?
-            VR4Matrixf( 0.5, 0, 0, 0,
+            VMatrix4f( 0.5, 0, 0, 0,
 			0, 1, 0, 0,
 			0, 0, 1, 0,
 			0, 0, 0, 1 )
 			:
-            VR4Matrixf( 0.5, 0, 0, 0.5,
+            VMatrix4f( 0.5, 0, 0, 0.5,
 			0, 1, 0, 0,
 			0, 0, 1, 0,
 			0, 0, 0, 1 );
@@ -285,33 +285,33 @@ VR4Matrixf	PanoVideo::texmForVideo( const int eye )
     if ( m_videoWidth == m_videoHeight )
 	{	// top / bottom stereo panorama
 		return eye ?
-            VR4Matrixf( 1, 0, 0, 0,
+            VMatrix4f( 1, 0, 0, 0,
 			0, 0.5, 0, 0.5,
 			0, 0, 1, 0,
 			0, 0, 0, 1 )
 			:
-            VR4Matrixf( 1, 0, 0, 0,
+            VMatrix4f( 1, 0, 0, 0,
 			0, 0.5, 0, 0,
 			0, 0, 1, 0,
 			0, 0, 0, 1 );
 
 		// We may want to support swapping top/bottom
 	}
-    return VR4Matrixf();
+    return VMatrix4f();
 }
 
-VR4Matrixf	PanoVideo::texmForBackground( const int eye )
+VMatrix4f	PanoVideo::texmForBackground( const int eye )
 {
     if ( m_backgroundWidth == m_backgroundHeight )
 	{	// top / bottom stereo panorama
 		return eye ?
-            VR4Matrixf(
+            VMatrix4f(
 			1, 0, 0, 0,
 			0, 0.5, 0, 0.5,
 			0, 0, 1, 0,
 			0, 0, 0, 1 )
 			:
-            VR4Matrixf(
+            VMatrix4f(
 			1, 0, 0, 0,
 			0, 0.5, 0, 0,
 			0, 0, 1, 0,
@@ -319,12 +319,12 @@ VR4Matrixf	PanoVideo::texmForBackground( const int eye )
 
 		// We may want to support swapping top/bottom
 	}
-    return VR4Matrixf();
+    return VMatrix4f();
 }
 
-VR4Matrixf PanoVideo::drawEyeView( const int eye, const float fovDegrees )
+VMatrix4f PanoVideo::drawEyeView( const int eye, const float fovDegrees )
 {
-    VR4Matrixf mvp = m_scene.MvpForEye( eye, fovDegrees );
+    VMatrix4f mvp = m_scene.MvpForEye( eye, fovDegrees );
 
     if ( ( m_menuState == MENU_VIDEO_PLAYING ) && ( m_movieTexture != NULL ) )
 	{
@@ -344,8 +344,8 @@ VR4Matrixf PanoVideo::drawEyeView( const int eye, const float fovDegrees )
 		glUniform4f( prog.uniformColor, 1.0f, 1.0f, 1.0f, 1.0f );
 
 		// Videos have center as initial focal point - need to rotate 90 degrees to start there
-        const VR4Matrixf view = m_scene.ViewMatrixForEye( 0 ) * VR4Matrixf::RotationY( M_PI / 2 );
-        const VR4Matrixf proj = m_scene.ProjectionMatrixForEye( 0, fovDegrees );
+        const VMatrix4f view = m_scene.ViewMatrixForEye( 0 ) * VMatrix4f::RotationY( M_PI / 2 );
+        const VMatrix4f proj = m_scene.ProjectionMatrixForEye( 0, fovDegrees );
 
         glUniformMatrix4fv( prog.uniformTexMatrix, 1, GL_FALSE, texmForVideo( eye ).transposed().cell[ 0 ] );
         glUniformMatrix4fv( prog.uniformModelViewProMatrix, 1, GL_FALSE, ( proj * view ).transposed().cell[ 0 ] );
@@ -404,7 +404,7 @@ void PanoVideo::setMenuState( const OvrMenuState state )
 	}
 }
 
-VR4Matrixf PanoVideo::onNewFrame(VFrame vrFrame )
+VMatrix4f PanoVideo::onNewFrame(VFrame vrFrame )
 {
 	// Disallow player foot movement, but we still want the head model
 	// movement for the swipe view.
