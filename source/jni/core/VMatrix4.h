@@ -2,6 +2,7 @@
 
 #include "VVect3.h"
 #include "VVect4.h"
+#include "VQuat.h"
 
 #include <math.h>
 #include <memory>
@@ -687,35 +688,6 @@ public:
         return out;
     }
 
-    // Returns the 4x4 rotation matrix for the given quaternion.
-    static VR4Matrix<T> CreateFromQuaternion(const VQuat<T> *q)
-    {
-        const float ww = q->w * q->w;
-        const float xx = q->x * q->x;
-        const float yy = q->y * q->y;
-        const float zz = q->z * q->z;
-
-        VR4Matrix<T> out;
-        out.cell[0][0] = ww + xx - yy - zz;
-        out.cell[0][1] = 2 * ( q->x * q->y - q->w * q->z );
-        out.cell[0][2] = 2 * ( q->x * q->z + q->w * q->y );
-        out.cell[0][3] = 0;
-        out.cell[1][0] = 2 * ( q->x * q->y + q->w * q->z );
-        out.cell[1][1] = ww - xx + yy - zz;
-        out.cell[1][2] = 2 * ( q->y * q->z - q->w * q->x );
-        out.cell[1][3] = 0;
-        out.cell[2][0] = 2 * ( q->x * q->z - q->w * q->y );
-        out.cell[2][1] = 2 * ( q->y * q->z + q->w * q->x );
-        out.cell[2][2] = ww - xx - yy + zz;
-        out.cell[2][3] = 0;
-        out.cell[3][0] = 0;
-        out.cell[3][1] = 0;
-        out.cell[3][2] = 0;
-        out.cell[3][3] = 1;
-        return out;
-    }
-
-
     // Convert a standard projection matrix into a TanAngle matrix for
     // the primary time warp surface.
     static VR4Matrix<T> TanAngleMatrixFromProjection(const VR4Matrix<T> *projection)
@@ -788,7 +760,7 @@ public:
     // To reduce judder in FPS style experiences when the application framerate is
     // lower than the vsync rate, the rotation from a joypad can be applied to the
     // view space distorted eye vectors before applying the time warp.
-    static VR4Matrix<T> CalculateExternalVelocity( const VR4Matrix<T> * viewMatrix, const float yawRadiansPerSecond )
+    VR4Matrix calculateExternalVelocity(float yawRadiansPerSecond) const
     {
         const float angle = yawRadiansPerSecond * ( -1.0f / 60.0f );
         const float sinHalfAngle = sinf( angle * 0.5f );
@@ -796,11 +768,11 @@ public:
 
         // Yaw is always going to be around the world Y axis
         VQuat<T> quat;
-        quat.x = viewMatrix->cell[0][1] * sinHalfAngle;
-        quat.y = viewMatrix->cell[1][1] * sinHalfAngle;
-        quat.z = viewMatrix->cell[2][1] * sinHalfAngle;
+        quat.x = cell[0][1] * sinHalfAngle;
+        quat.y = cell[1][1] * sinHalfAngle;
+        quat.z = cell[2][1] * sinHalfAngle;
         quat.w = cosHalfAngle;
-        return CreateFromQuaternion(&quat);
+        return quat;
     }
 
     VVect3<T> viewPosition() const { return inverted().translation(); }

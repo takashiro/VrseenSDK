@@ -254,7 +254,7 @@ void OvrSceneView::Frame( const VViewSettings viewParms_, const VFrame vrFrame,
 	// Set the external velocity matrix so TimeWarp can smoothly rotate the
 	// view even if we are dropping frames.
     const VR4Matrixf localViewMatrix = ViewMatrix;
-    timeWarpParmsExternalVelocity = VR4Matrix<float>::CalculateExternalVelocity( &localViewMatrix, YawVelocity );
+    timeWarpParmsExternalVelocity = localViewMatrix.calculateExternalVelocity(YawVelocity);
 }
 
 NV_NAMESPACE_END
