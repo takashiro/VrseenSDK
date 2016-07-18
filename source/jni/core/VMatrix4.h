@@ -25,9 +25,9 @@ public:
     }
 
     VMatrix4(T m11, T m12, T m13, T m14,
-              T m21, T m22, T m23, T m24,
-              T m31, T m32, T m33, T m34,
-              T m41, T m42, T m43, T m44)
+             T m21, T m22, T m23, T m24,
+             T m31, T m32, T m33, T m34,
+             T m41, T m42, T m43, T m44)
     {
         cell[0][0] = m11; cell[0][1] = m12; cell[0][2] = m13; cell[0][3] = m14;
         cell[1][0] = m21; cell[1][1] = m22; cell[1][2] = m23; cell[1][3] = m24;
@@ -36,8 +36,8 @@ public:
     }
 
     VMatrix4(T m11, T m12, T m13,
-              T m21, T m22, T m23,
-              T m31, T m32, T m33)
+             T m21, T m22, T m23,
+             T m31, T m32, T m33)
     {
         cell[0][0] = m11; cell[0][1] = m12; cell[0][2] = m13; cell[0][3] = 0;
         cell[1][0] = m21; cell[1][1] = m22; cell[1][2] = m23; cell[1][3] = 0;
@@ -80,10 +80,7 @@ public:
         cell[2][0] = v.z;
     }
 
-    VVect3<T> xBasis() const
-    {
-        return VVect3<T>(cell[0][0], cell[1][0], cell[2][0]);
-    }
+    VVect3<T> xBasis() const { return VVect3<T>(cell[0][0], cell[1][0], cell[2][0]); }
 
     void setYBasis(const VVect3<T> &v)
     {
@@ -92,10 +89,7 @@ public:
         cell[2][1] = v.z;
     }
 
-    VVect3<T> yBasis() const
-    {
-        return VVect3<T>(cell[0][1], cell[1][1], cell[2][1]);
-    }
+    VVect3<T> yBasis() const { return VVect3<T>(cell[0][1], cell[1][1], cell[2][1]); }
 
     void setZBasis(const VVect3<T> &v)
     {
@@ -108,7 +102,6 @@ public:
     {
         return VVect3<T>(cell[0][2], cell[1][2], cell[2][2]);
     }
-
 
     bool operator== (const VMatrix4 &matrix) const
     {
@@ -129,7 +122,7 @@ public:
         return result;
     }
 
-    VMatrix4& operator+= (const VMatrix4 &matrix)
+    VMatrix4 &operator += (const VMatrix4 &matrix)
     {
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
@@ -267,9 +260,9 @@ public:
     VMatrix4 adjugated() const
     {
         return VMatrix4(cofactor(0,0), cofactor(1,0), cofactor(2,0), cofactor(3,0),
-                         cofactor(0,1), cofactor(1,1), cofactor(2,1), cofactor(3,1),
-                         cofactor(0,2), cofactor(1,2), cofactor(2,2), cofactor(3,2),
-                         cofactor(0,3), cofactor(1,3), cofactor(2,3), cofactor(3,3));
+                        cofactor(0,1), cofactor(1,1), cofactor(2,1), cofactor(3,1),
+                        cofactor(0,2), cofactor(1,2), cofactor(2,2), cofactor(3,2),
+                        cofactor(0,3), cofactor(1,3), cofactor(2,3), cofactor(3,3));
     }
 
     VMatrix4 inverted() const { return adjugated() * (1.0f / determinant()); }
@@ -440,16 +433,16 @@ public:
     }
 
        // Simple L1 distance in R^12
-    T distanceTo(const VMatrix4 &m2) const
+    T distanceTo(const VMatrix4 &matrix) const
     {
-        T d = fabs(cell[0][0] - m2.cell[0][0]) + fabs(cell[0][1] - m2.cell[0][1]);
-        d += fabs(cell[0][2] - m2.cell[0][2]) + fabs(cell[0][3] - m2.cell[0][3]);
-        d += fabs(cell[1][0] - m2.cell[1][0]) + fabs(cell[1][1] - m2.cell[1][1]);
-        d += fabs(cell[1][2] - m2.cell[1][2]) + fabs(cell[1][3] - m2.cell[1][3]);
-        d += fabs(cell[2][0] - m2.cell[2][0]) + fabs(cell[2][1] - m2.cell[2][1]);
-        d += fabs(cell[2][2] - m2.cell[2][2]) + fabs(cell[2][3] - m2.cell[2][3]);
-        d += fabs(cell[3][0] - m2.cell[3][0]) + fabs(cell[3][1] - m2.cell[3][1]);
-        d += fabs(cell[3][2] - m2.cell[3][2]) + fabs(cell[3][3] - m2.cell[3][3]);
+        T d = abs(cell[0][0] - matrix.cell[0][0]) + abs(cell[0][1] - matrix.cell[0][1]);
+        d += abs(cell[0][2] - matrix.cell[0][2]) + abs(cell[0][3] - matrix.cell[0][3]);
+        d += abs(cell[1][0] - matrix.cell[1][0]) + abs(cell[1][1] - matrix.cell[1][1]);
+        d += abs(cell[1][2] - matrix.cell[1][2]) + abs(cell[1][3] - matrix.cell[1][3]);
+        d += abs(cell[2][0] - matrix.cell[2][0]) + abs(cell[2][1] - matrix.cell[2][1]);
+        d += abs(cell[2][2] - matrix.cell[2][2]) + abs(cell[2][3] - matrix.cell[2][3]);
+        d += abs(cell[3][0] - matrix.cell[3][0]) + abs(cell[3][1] - matrix.cell[3][1]);
+        d += abs(cell[3][2] - matrix.cell[3][2]) + abs(cell[3][3] - matrix.cell[3][3]);
         return d;
     }
 
@@ -462,17 +455,17 @@ public:
 
         switch(A) {
         case VAxis_X:
-            return VMatrix4(1,  0,     0,
-                             0,  cosa,  -sina,
-                             0,  sina,  cosa);
+            return VMatrix4(1, 0,    0,
+                            0, cosa, -sina,
+                            0, sina, cosa);
         case VAxis_Y:
             return VMatrix4(cosa, 0, sina,
-                                0, 1,    0,
-                            -sina, 0, cosa);
+                               0, 1,    0,
+                           -sina, 0, cosa);
         case VAxis_Z:
             return VMatrix4(cosa,  -sina,  0,
-                             sina,  cosa,   0,
-                                0,     0,   1);
+                            sina,  cosa,   0,
+                               0,     0,   1);
         }
     }
 
@@ -653,58 +646,6 @@ public:
         return m;
     }
 
-    // Returns a 3x3 minor of a 4x4 matrix.
-    static T Minor(const VMatrix4<T> * m, int r0, int r1, int r2, int c0, int c1, int c2)
-    {
-        return m->cell[r0][c0] * (m->cell[r1][c1] * m->cell[r2][c2] - m->cell[r2][c1] * m->cell[r1][c2]) -
-               m->cell[r0][c1] * (m->cell[r1][c0] * m->cell[r2][c2] - m->cell[r2][c0] * m->cell[r1][c2]) +
-               m->cell[r0][c2] * (m->cell[r1][c0] * m->cell[r2][c1] - m->cell[r2][c0] * m->cell[r1][c1]);
-    }
-
-    // Returns the inverse of a 4x4 matrix.
-    static VMatrix4<T> Inverse(const VMatrix4<T> *m)
-    {
-        const float rcpDet = 1.0f / (m->cell[0][0] * Minor(m, 1, 2, 3, 1, 2, 3) -
-                                     m->cell[0][1] * Minor(m, 1, 2, 3, 0, 2, 3) +
-                                     m->cell[0][2] * Minor(m, 1, 2, 3, 0, 1, 3) -
-                                     m->cell[0][3] * Minor(m, 1, 2, 3, 0, 1, 2));
-        VMatrix4<T> out;
-        out.cell[0][0] =  Minor(m, 1, 2, 3, 1, 2, 3) * rcpDet;
-        out.cell[0][1] = -Minor(m, 0, 2, 3, 1, 2, 3) * rcpDet;
-        out.cell[0][2] =  Minor(m, 0, 1, 3, 1, 2, 3) * rcpDet;
-        out.cell[0][3] = -Minor(m, 0, 1, 2, 1, 2, 3) * rcpDet;
-        out.cell[1][0] = -Minor(m, 1, 2, 3, 0, 2, 3) * rcpDet;
-        out.cell[1][1] =  Minor(m, 0, 2, 3, 0, 2, 3) * rcpDet;
-        out.cell[1][2] = -Minor(m, 0, 1, 3, 0, 2, 3) * rcpDet;
-        out.cell[1][3] =  Minor(m, 0, 1, 2, 0, 2, 3) * rcpDet;
-        out.cell[2][0] =  Minor(m, 1, 2, 3, 0, 1, 3) * rcpDet;
-        out.cell[2][1] = -Minor(m, 0, 2, 3, 0, 1, 3) * rcpDet;
-        out.cell[2][2] =  Minor(m, 0, 1, 3, 0, 1, 3) * rcpDet;
-        out.cell[2][3] = -Minor(m, 0, 1, 2, 0, 1, 3) * rcpDet;
-        out.cell[3][0] = -Minor(m, 1, 2, 3, 0, 1, 2) * rcpDet;
-        out.cell[3][1] =  Minor(m, 0, 2, 3, 0, 1, 2) * rcpDet;
-        out.cell[3][2] = -Minor(m, 0, 1, 3, 0, 1, 2) * rcpDet;
-        out.cell[3][3] =  Minor(m, 0, 1, 2, 0, 1, 2) * rcpDet;
-        return out;
-    }
-
-    // Convert a standard projection matrix into a TanAngle matrix for
-    // the primary time warp surface.
-    static VMatrix4<T> TanAngleMatrixFromProjection(const VMatrix4<T> *projection)
-    {
-        // A projection matrix goes from a view point to NDC, or -1 to 1 space.
-        // Scale and bias to convert that to a 0 to 1 space.
-        const VMatrix4<T> tanAngleMatrix = {
-            {
-                {0.5f * projection->cell[0][0], 0.5f * projection->cell[0][1], 0.5f * projection->cell[0][2] - 0.5f, 0.5f * projection->cell[0][3]},
-                {0.5f * projection->cell[1][0], 0.5f * projection->cell[1][1], 0.5f * projection->cell[1][2] - 0.5f, 0.5f * projection->cell[1][3]},
-                {0.0f, 0.0f, -1.0f, 0.0f},
-                {0.0f, 0.0f, -1.0f, 0.0f}
-            }
-        };
-        return tanAngleMatrix;
-    }
-
     // Trivial version of TanAngleMatrixFromProjection() for a symmetric field of view.
     static VMatrix4<T> TanAngleMatrixFromFov(float fovDegrees)
     {
@@ -714,46 +655,6 @@ public:
                                     0.0f, 0.0f, -1.0f, 0.0f,
                                     0.0f, 0.0f, -1.0f, 0.0f);
         return tanAngleMatrix;
-    }
-
-    // If a simple quad defined as a -1 to 1 XY unit square is transformed to
-    // the camera view with the given modelView matrix, it can alternately be
-    // drawn as a TimeWarp overlay image to take advantage of the full window
-    // resolution, which is usually higher than the eye buffer textures, and
-    // avoid resampling both into the eye buffer, and again to the screen.
-    // This is used for high quality movie screens and user interface planes.
-    //
-    // Note that this is NOT an MVP matrix -- the "projection" is handled
-    // by the distortion process.
-    //
-    // The exact composition of the overlay image and the base image is
-    // determined by the warpProgram, you may still need to draw the geometry
-    // into the eye buffer to punch a hole in the alpha channel to let the
-    // overlay/underlay show through.
-    //
-    // This utility functions converts a model-view matrix that would normally
-    // draw a -1 to 1 unit square to the view into a TanAngle matrix for an
-    // overlay surface.
-    //
-    // The resulting z value should be straight ahead distance to the plane.
-    // The x and y values will be pre-multiplied by z for projective texturing.
-    static VMatrix4<T> TanAngleMatrixFromUnitSquare( const VMatrix4<T> * modelView )
-    {
-        const VMatrix4<T> inv = Inverse( modelView );
-        VMatrix4<T> m;
-        m.cell[0][0] = 0.5f * inv.cell[2][0] - 0.5f * (inv.cell[0][0] * inv.cell[2][3] - inv.cell[0][3] * inv.cell[2][0]);
-        m.cell[0][1] = 0.5f * inv.cell[2][1] - 0.5f * (inv.cell[0][1] * inv.cell[2][3] - inv.cell[0][3] * inv.cell[2][1]);
-        m.cell[0][2] = 0.5f * inv.cell[2][2] - 0.5f * (inv.cell[0][2] * inv.cell[2][3] - inv.cell[0][3] * inv.cell[2][2]);
-        m.cell[0][3] = 0.0f;
-        m.cell[1][0] = 0.5f * inv.cell[2][0] + 0.5f * (inv.cell[1][0] * inv.cell[2][3] - inv.cell[1][3] * inv.cell[2][0]);
-        m.cell[1][1] = 0.5f * inv.cell[2][1] + 0.5f * (inv.cell[1][1] * inv.cell[2][3] - inv.cell[1][3] * inv.cell[2][1]);
-        m.cell[1][2] = 0.5f * inv.cell[2][2] + 0.5f * (inv.cell[1][2] * inv.cell[2][3] - inv.cell[1][3] * inv.cell[2][2]);
-        m.cell[1][3] = 0.0f;
-        m.cell[2][0] = m.cell[3][0] = inv.cell[2][0];
-        m.cell[2][1] = m.cell[3][1] = inv.cell[2][1];
-        m.cell[2][2] = m.cell[3][2] = inv.cell[2][2];
-        m.cell[2][3] = m.cell[3][3] = 0.0f;
-        return m;
     }
 
     // Utility function to calculate external velocity for smooth stick yaw turning.
