@@ -1,6 +1,7 @@
 #pragma once
 
-#include "vglobal.h"
+#include "VVect3.h"
+#include "VVect4.h"
 
 #include <math.h>
 #include <memory>
