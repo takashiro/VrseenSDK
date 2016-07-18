@@ -45,7 +45,7 @@ void EyePostRender::DrawEyeCalibrationLines( const float bufferFovDegrees, const
 	glLineWidth( 3.0f );
 	glUniform4f( prog.uniformColor, 0, 1-eye, eye, 1 );
     glUniformMatrix4fv( prog.uniformModelViewProMatrix, 1, GL_FALSE /* not transposed */,
-			projectionMatrix.Transposed().M[0] );
+			projectionMatrix.transposed().cell[0] );
 
     VEglDriver::glBindVertexArrayOES( CalibrationLines.vertexArrayObject );
 

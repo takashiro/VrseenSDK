@@ -297,7 +297,7 @@ VR4Matrixf	PanoVideo::texmForVideo( const int eye )
 
 		// We may want to support swapping top/bottom
 	}
-    return VR4Matrixf::Identity();
+    return VR4Matrixf();
 }
 
 VR4Matrixf	PanoVideo::texmForBackground( const int eye )
@@ -319,7 +319,7 @@ VR4Matrixf	PanoVideo::texmForBackground( const int eye )
 
 		// We may want to support swapping top/bottom
 	}
-    return VR4Matrixf::Identity();
+    return VR4Matrixf();
 }
 
 VR4Matrixf PanoVideo::drawEyeView( const int eye, const float fovDegrees )
@@ -347,8 +347,8 @@ VR4Matrixf PanoVideo::drawEyeView( const int eye, const float fovDegrees )
         const VR4Matrixf view = m_scene.ViewMatrixForEye( 0 ) * VR4Matrixf::RotationY( M_PI / 2 );
         const VR4Matrixf proj = m_scene.ProjectionMatrixForEye( 0, fovDegrees );
 
-        glUniformMatrix4fv( prog.uniformTexMatrix, 1, GL_FALSE, texmForVideo( eye ).Transposed().M[ 0 ] );
-        glUniformMatrix4fv( prog.uniformModelViewProMatrix, 1, GL_FALSE, ( proj * view ).Transposed().M[ 0 ] );
+        glUniformMatrix4fv( prog.uniformTexMatrix, 1, GL_FALSE, texmForVideo( eye ).transposed().cell[ 0 ] );
+        glUniformMatrix4fv( prog.uniformModelViewProMatrix, 1, GL_FALSE, ( proj * view ).transposed().cell[ 0 ] );
         m_globe.drawElements();
 
 		glBindTexture( GL_TEXTURE_EXTERNAL_OES, 0 );	// don't leave it bound

@@ -1345,8 +1345,8 @@ void BitmapFontSurfaceLocal::Finish(VR4Matrixf const & viewMatrix) {
 
 	//SPAM( "BitmapFontSurfaceLocal::Finish" );
 
-    VR4Matrixf invViewMatrix = viewMatrix.Inverted(); // if the view is never scaled or sheared we could use Transposed() here instead
-    VVect3f viewPos = invViewMatrix.GetTranslation();
+    VR4Matrixf invViewMatrix = viewMatrix.inverted(); // if the view is never scaled or sheared we could use Transposed() here instead
+    VVect3f viewPos = invViewMatrix.translation();
 
 	// sort vertex blocks indices based on distance to pivot
 	int const MAX_VERTEX_BLOCKS = 256;
@@ -1385,15 +1385,14 @@ void BitmapFontSurfaceLocal::Finish(VR4Matrixf const & viewMatrix) {
                 transform = VR4Matrixf::CreateFromBasisVectors(textNormal,
                         VVect3f(0.0f, 1.0f, 0.0f));
 			}
-			transform.SetTranslation(vb.Pivot);
-		} else {
-			transform.SetIdentity();
-			transform.SetTranslation(vb.Pivot);
+			transform.setTranslation(vb.Pivot);
+        } else {
+			transform.setTranslation(vb.Pivot);
 		}
 
 		for (int j = 0; j < vb.NumVerts; j++) {
 			fontVertex_t const & v = vb.Verts[j];
-			Vertices[CurVertex].xyz = transform.Transform(v.xyz);
+            Vertices[CurVertex].xyz = transform.transform(v.xyz);
 			Vertices[CurVertex].s = v.s;
 			Vertices[CurVertex].t = v.t;
 			*(vuint32*) (&Vertices[CurVertex].rgba[0]) = *(vuint32*) (&v.rgba[0]);
@@ -1447,7 +1446,7 @@ void BitmapFontSurfaceLocal::Render3D(BitmapFont const & font,
 	glUseProgram(AsLocal(font).GetFontProgram().program);
 
     glUniformMatrix4fv(AsLocal(font).GetFontProgram().uniformModelViewProMatrix, 1, GL_FALSE,
-			worldMVP.M[0]);
+			worldMVP.cell[0]);
 
 	float textColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 	glUniform4fv(AsLocal(font).GetFontProgram().uniformColor, 1, textColor);

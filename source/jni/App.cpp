@@ -83,12 +83,12 @@ static int buttonMappings[] = {
 
 static VVect3f ViewOrigin(const VR4Matrixf & view)
 {
-    return VVect3f(view.M[0][3], view.M[1][3], view.M[2][3]);
+    return VVect3f(view.cell[0][3], view.cell[1][3], view.cell[2][3]);
 }
 
 static VVect3f ViewForward(const VR4Matrixf & view)
 {
-    return VVect3f(-view.M[0][2], -view.M[1][2], -view.M[2][2]);
+    return VVect3f(-view.cell[0][2], -view.cell[1][2], -view.cell[2][2]);
 }
 
 // Always make the panel upright, even if the head was tilted when created
@@ -96,7 +96,7 @@ static VR4Matrixf PanelMatrix(const VR4Matrixf & lastViewMatrix, const float pop
         const float popupScale, const int width, const int height)
 {
     // TODO: this won't be valid until a frame has been rendered
-    const VR4Matrixf invView = lastViewMatrix.Inverted();
+    const VR4Matrixf invView = lastViewMatrix.inverted();
     const VVect3f forward = ViewForward(invView);
     const VVect3f levelforward = VVect3f(forward.x, 0.0f, forward.z).normalized();
     // TODO: check degenerate case
@@ -1554,7 +1554,7 @@ void App::recenterYaw(const bool showBlack)
 	float yaw;
 	float pitch;
 	float roll;
-    d->lastViewMatrix.ToEulerAngles< VAxis_Y, VAxis_X, VAxis_Z, VRotate_CCW, VHanded_R >(&yaw, &pitch, &roll);
+    d->lastViewMatrix.toEulerAngles< VAxis_Y, VAxis_X, VAxis_Z, VRotate_CCW, VHanded_R >(&yaw, &pitch, &roll);
 
 	// undo the yaw
     VR4Matrixf unrotYawMatrix(VQuatf(VAxis_Y, -yaw));
@@ -1626,7 +1626,7 @@ void App::drawEyeViewsPostDistorted( VR4Matrixf const & centerViewMatrix, const 
             // Call back to the app for drawing.
             const VR4Matrixf mvp = d->activity->drawEyeView(eye, fovDegrees);
 
-            worldFontSurface().Render3D(defaultFont(), mvp.Transposed());
+            worldFontSurface().Render3D(defaultFont(), mvp.transposed());
 
             glDisable(GL_DEPTH_TEST);
             glDisable(GL_CULL_FACE);
@@ -1701,7 +1701,7 @@ void App::drawScreenMask(const VR4Matrixf &mvp, const float fadeFracX, const flo
 
     glUseProgram(d->overlayScreenFadeMaskProgram.program);
 
-    glUniformMatrix4fv(d->overlayScreenFadeMaskProgram.uniformModelViewProMatrix, 1, GL_FALSE, mvpMatrix.Transposed().M[0]);
+    glUniformMatrix4fv(d->overlayScreenFadeMaskProgram.uniformModelViewProMatrix, 1, GL_FALSE, mvpMatrix.transposed().cell[0]);
 
     if (d->fadedScreenMaskSquare.vertexArrayObject == 0) {
         d->fadedScreenMaskSquare.createScreenQuad( fadeFracX, fadeFracY );

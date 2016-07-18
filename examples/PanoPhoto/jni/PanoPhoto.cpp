@@ -503,9 +503,9 @@ VR4Matrixf CubeMatrixForViewMatrix( const VR4Matrixf & viewMatrix )
     // clear translation
     for ( int i = 0; i < 3; i++ )
     {
-        m.M[ i ][ 3 ] = 0.0f;
+        m.cell[ i ][ 3 ] = 0.0f;
     }
-    return m.Inverted();
+    return m.inverted();
 }
 
 VR4Matrixf PanoPhoto::drawEyeView( const int eye, const float fovDegrees )
@@ -596,7 +596,7 @@ VR4Matrixf PanoPhoto::drawEyeView( const int eye, const float fovDegrees )
 
         glUniform4f( prog.uniformColor, fadeColor, fadeColor, fadeColor, fadeColor );
         glUniformMatrix4fv( prog.uniformModelViewProMatrix, 1, GL_FALSE /* not transposed */,
-                            view.Transposed().M[ 0 ] );
+                            view.transposed().cell[ 0 ] );
 
         m_globe.drawElements();
 

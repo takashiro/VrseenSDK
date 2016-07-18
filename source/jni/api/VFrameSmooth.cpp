@@ -275,7 +275,7 @@ VR4Matrixf CalculateTimeWarpMatrix2( const VQuatf &inFrom, const VQuatf &inTo )
     VR4Matrixf		lastSensorMatrix = VR4Matrixf( to );
     VR4Matrixf		lastViewMatrix = VR4Matrixf( from );
 
-    return ( lastSensorMatrix.Inverted() * lastViewMatrix ).Inverted();
+    return ( lastSensorMatrix.inverted() * lastViewMatrix ).inverted();
 }
 
 // Not in extension string, unfortunately.
@@ -978,17 +978,17 @@ void VFrameSmooth::Private::bindWarpProgram( const warpSource_t & currentWarpSou
     // Set the shader parameters.
     glUniform1f( warpProg.uniformColor, currentWarpSource.WarpParms.ProgramParms[0] );
 
-    glUniformMatrix4fv( warpProg.uniformModelViewProMatrix, 1, GL_FALSE, landscapeOrientationMatrix.Transposed().M[0] );
-    glUniformMatrix4fv( warpProg.uniformTexMatrix, 1, GL_FALSE, timeWarps[0][0].Transposed().M[0] );
-    glUniformMatrix4fv( warpProg.uniformTexMatrix2, 1, GL_FALSE, timeWarps[0][1].Transposed().M[0] );
+    glUniformMatrix4fv( warpProg.uniformModelViewProMatrix, 1, GL_FALSE, landscapeOrientationMatrix.transposed().cell[0] );
+    glUniformMatrix4fv( warpProg.uniformTexMatrix, 1, GL_FALSE, timeWarps[0][0].transposed().cell[0] );
+    glUniformMatrix4fv( warpProg.uniformTexMatrix2, 1, GL_FALSE, timeWarps[0][1].transposed().cell[0] );
     if ( warpProg.uniformTexMatrix3 > 0 )
     {
-        glUniformMatrix4fv( warpProg.uniformTexMatrix3, 1, GL_FALSE, timeWarps[1][0].Transposed().M[0] );
-        glUniformMatrix4fv( warpProg.uniformTexMatrix4, 1, GL_FALSE, timeWarps[1][1].Transposed().M[0] );
+        glUniformMatrix4fv( warpProg.uniformTexMatrix3, 1, GL_FALSE, timeWarps[1][0].transposed().cell[0] );
+        glUniformMatrix4fv( warpProg.uniformTexMatrix4, 1, GL_FALSE, timeWarps[1][1].transposed().cell[0] );
     }
     if ( warpProg.uniformTexMatrix5 > 0 )
     {
-        glUniformMatrix4fv( warpProg.uniformTexMatrix5, 1, GL_FALSE, rollingWarp.Transposed().M[0] );
+        glUniformMatrix4fv( warpProg.uniformTexMatrix5, 1, GL_FALSE, rollingWarp.transposed().cell[0] );
     }
     if ( warpProg.uniformTexClamp > 0 )
     {
@@ -1020,9 +1020,11 @@ void VFrameSmooth::Private::bindCursorProgram() const
     // Set the shader parameters.
     glUniform1f( warpProg.uniformColor, 1.0f );
 
-    glUniformMatrix4fv( warpProg.uniformModelViewProMatrix, 1, GL_FALSE, landscapeOrientationMatrix.Transposed().M[0] );
-    glUniformMatrix4fv( warpProg.uniformTexMatrix, 1, GL_FALSE, VR4Matrixf::Identity().M[0] );
-    glUniformMatrix4fv( warpProg.uniformTexMatrix2, 1, GL_FALSE, VR4Matrixf::Identity().M[0] );
+    glUniformMatrix4fv( warpProg.uniformModelViewProMatrix, 1, GL_FALSE, landscapeOrientationMatrix.transposed().cell[0] );
+
+    VR4Matrixf identity;
+    glUniformMatrix4fv(warpProg.uniformTexMatrix, 1, GL_FALSE, identity.data());
+    glUniformMatrix4fv(warpProg.uniformTexMatrix2, 1, GL_FALSE, identity.data());
 }
 
 int CameraTimeWarpLatency = 4;
@@ -2004,7 +2006,7 @@ void VFrameSmooth::Private::drawFrameworkGraphicsToWindow( const int eye,
         glLineWidth( 2.0f );
         glUniform4f( m_untexturedMvpProgram.uniformColor, 1, 0, 0, 1 );
         glUniformMatrix4fv( m_untexturedMvpProgram.uniformModelViewProMatrix, 1, GL_FALSE,  // not transposed
-                            projectionMatrix.Transposed().M[0] );
+                            projectionMatrix.transposed().cell[0] );
         VEglDriver::glBindVertexArrayOES( m_calibrationLines2.vertexArrayObject );
 
         int width, height;

@@ -449,10 +449,10 @@ ovrTimeWarpParms  VKernel::InitTimeWarpParms( const ovrWarpInit init, const unsi
             parms.Images[eye][i].Pose.w = 1.0f;
         }
     }
-    parms.ExternalVelocity.M[0][0] = 1.0f;
-    parms.ExternalVelocity.M[1][1] = 1.0f;
-    parms.ExternalVelocity.M[2][2] = 1.0f;
-    parms.ExternalVelocity.M[3][3] = 1.0f;
+    parms.ExternalVelocity.cell[0][0] = 1.0f;
+    parms.ExternalVelocity.cell[1][1] = 1.0f;
+    parms.ExternalVelocity.cell[2][2] = 1.0f;
+    parms.ExternalVelocity.cell[3][3] = 1.0f;
     parms.MinimumVsyncs = 1;
     parms.PreScheduleSeconds = 0.014f;
     parms.WarpProgram = WP_SIMPLE;

@@ -108,7 +108,7 @@ VVect3f OvrSceneView::HeadModelOffset( float EyeRoll, float EyePitch, float EyeY
             * VR4Matrixf::RotationX( EyePitch )
             * VR4Matrixf::RotationZ( EyeRoll );
     VVect3f eyeCenterInHeadFrame( 0.0f, HeadModelHeight, -HeadModelDepth );
-    VVect3f lastHeadModelOffset = rollPitchYaw.Transform( eyeCenterInHeadFrame );
+    VVect3f lastHeadModelOffset = rollPitchYaw.transform( eyeCenterInHeadFrame );
 
 	lastHeadModelOffset.y -= eyeCenterInHeadFrame.y; // Bring the head back down to original height
 
@@ -200,9 +200,9 @@ void OvrSceneView::UpdateViewMatrix(const VFrame vrFrame )
     VR4Matrixf rollPitchYaw = VR4Matrixf::RotationY( EyeYaw )
             * VR4Matrixf::RotationX( EyePitch )
             * VR4Matrixf::RotationZ( EyeRoll );
-    const VVect3f up = rollPitchYaw.Transform( UpVector );
-    const VVect3f forward = rollPitchYaw.Transform( ForwardVector );
-    const VVect3f right = rollPitchYaw.Transform( RightVector );
+    const VVect3f up = rollPitchYaw.transform( UpVector );
+    const VVect3f forward = rollPitchYaw.transform( ForwardVector );
+    const VVect3f right = rollPitchYaw.transform( RightVector );
 
 	// Have sensorFusion zero the integration when not using it, so the
 	// first frame is correct.
