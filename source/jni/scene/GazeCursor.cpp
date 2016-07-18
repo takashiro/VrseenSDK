@@ -269,8 +269,8 @@ void OvrGazeCursorLocal::Frame( VR4Matrixf const & viewMatrix, float const delta
 	}
 #endif
 
-    const VVect3f viewPos( GetViewMatrixPosition( viewMatrix ) );
-    const VVect3f viewFwd( GetViewMatrixForward( viewMatrix ) );
+    const VVect3f viewPos = viewMatrix.viewPosition();
+    const VVect3f viewFwd = viewMatrix.viewForward();
 
 //	V3Vectf position = viewPos + viewFwd * ( Info.Distance - DistanceOffset );
     VVect3f position = viewPos + viewFwd * 1.4f; // !@# JDC fixed distance

@@ -802,19 +802,12 @@ public:
         quat.w = cosHalfAngle;
         return CreateFromQuaternion(&quat);
     }
+
+    VVect3<T> viewPosition() const { return inverted().translation(); }
+    VVect3<T> viewForward() const {return VVect3<T>(-cell[2][0], -cell[2][1], -cell[2][2]).normalized(); }
 };
 
-typedef VR4Matrix<float>  VR4Matrixf;
+typedef VR4Matrix<float> VR4Matrixf;
 typedef VR4Matrix<double> VR4Matrixd;
-
-inline VVect3f GetViewMatrixPosition( VR4Matrixf const & m )
-{
-    return m.inverted().translation();
-}
-
-inline VVect3f GetViewMatrixForward( VR4Matrixf const & m )
-{
-    return VVect3f( -m.cell[2][0], -m.cell[2][1], -m.cell[2][2] ).normalized();
-}
 
 NV_NAMESPACE_END

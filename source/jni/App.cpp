@@ -1104,8 +1104,8 @@ struct App::Private
                     LastFrameRate = 1.0f / float(interval > 0.000001 ? interval : 0.00001);
                 }
 
-                VVect3f viewPos = GetViewMatrixPosition(lastViewMatrix);
-                VVect3f viewFwd = GetViewMatrixForward(lastViewMatrix);
+                VVect3f viewPos = lastViewMatrix.viewForward();
+                VVect3f viewFwd = lastViewMatrix.viewForward();
                 VVect3f newPos = viewPos + viewFwd * 1.5f;
                 fpsPointTracker.Update(VTimer::Seconds(), newPos);
 
@@ -1124,8 +1124,8 @@ struct App::Private
             // draw info text
             if (self->text.infoTextEndFrame >= self->text.vrFrame.id)
             {
-                VVect3f viewPos = GetViewMatrixPosition(lastViewMatrix);
-                VVect3f viewFwd = GetViewMatrixForward(lastViewMatrix);
+                VVect3f viewPos = lastViewMatrix.viewPosition();
+                VVect3f viewFwd = lastViewMatrix.viewForward();
                 VVect3f viewUp(0.0f, 1.0f, 0.0f);
                 VVect3f viewLeft = viewUp.crossProduct(viewFwd);
                 VVect3f newPos = viewPos + viewFwd * self->text.infoTextOffset.z + viewUp * self->text.infoTextOffset.y + viewLeft * self->text.infoTextOffset.x;
