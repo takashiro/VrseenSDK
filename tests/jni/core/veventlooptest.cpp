@@ -28,54 +28,44 @@ void test()
     }
 
     {
-        std::thread sender([&]{
-            VEventLoop loop(100);
-            volatile bool finished = false;
-            std::thread receiver([&]{
-                VString name;
-                forever {
-                        loop.wait();
-                        finished = true;
-                        VEvent event = loop.next();
-                        name = event.name;
-                }
-                assert(name == "yunzhe");
-            });
-            receiver.detach();
-
-            loop.send("yunzhe");
-            assert(finished);
+        VEventLoop loop(100);
+        volatile bool finished = false;
+        std::thread receiver([&]{
+            loop.wait();
+            finished = true;
+            VEvent event = loop.next();
+            assert(event.name == "yunzhe");
         });
-        sender.detach();
+        receiver.detach();
+
+        loop.send("yunzhe");
+        assert(finished);
     }
 
     {
-        std::thread sender([&]{
-            VEventLoop loop(100);
-            volatile int result = 0;
-            volatile bool stopped = false;
-            std::thread worker([&]{
-                forever {
-                    loop.wait();
-                    VEvent event = loop.next();
-                    if (event.name == "quit") {
-                        stopped = true;
-                        break;
-                    } else if (event.name == "plus") {
-                        result++;
-                    }
+        VEventLoop loop(100);
+        volatile int result = 0;
+        volatile bool stopped = false;
+        std::thread worker([&]{
+            forever {
+                loop.wait();
+                VEvent event = loop.next();
+                if (event.name == "quit") {
+                    stopped = true;
+                    break;
+                } else if (event.name == "plus") {
+                    result++;
                 }
-            });
-            worker.detach();
-
-            for (int i = 0; i < 10; i++) {
-                loop.post("plus");
             }
-            loop.send("quit");
-            assert(stopped);
-            assert(result == 10);
         });
-        sender.detach();
+        worker.detach();
+
+        for (int i = 0; i < 10; i++) {
+            loop.post("plus");
+        }
+        loop.send("quit");
+        assert(stopped);
+        assert(result == 10);
     }
 }
 
