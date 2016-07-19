@@ -1,9 +1,11 @@
 #include "VRotationSensor.h"
 #include "VLockless.h"
 #include "VCircularQueue.h"
-#include "VQuat.h"
 #include "VAlgorithm.h"
+#include "VLog.h"
+#include "VMutex.h"
 #include "VTimer.h"
+#include "VQuat.h"
 
 #include <jni.h>
 #include <fcntl.h>
@@ -13,7 +15,8 @@ NV_NAMESPACE_BEGIN
 struct VRotationSensor::Private
 {
     VLockless<VRotationState> state;
-    VQuatf recenter;
+    VLockless<VQuatf> recenter;
+    VMutex recenterMutex;
     bool initialized;
 
     Private()
@@ -27,11 +30,11 @@ void VRotationSensor::setState(const VRotationState &state)
     if (!d->initialized) {
         float yaw, pitch, roll;
         state.GetEulerAngles<VAxis_Y, VAxis_X, VAxis_Z>(&yaw, &pitch, &roll);
-        d->recenter = VQuatf(VAxis_Y, -yaw);
+        d->recenter.setState(VQuatf(VAxis_Y, -yaw));
         d->initialized = true;
     } else {
         VRotationState recentered = state;
-        VQuatf base = d->recenter * state;
+        VQuatf base = d->recenter.state() * state;
         recentered.w = base.w;
         recentered.x = base.x;
         recentered.y = base.y;
@@ -45,6 +48,46 @@ VRotationState VRotationSensor::state() const
     return d->state.state();
 }
 
+void VRotationSensor::recenterYaw()
+{
+    // get the current state
+    VRotationState state = this->state();
+
+    // get the yaw in the current state
+    float yaw, pitch, roll;
+    state.GetEulerAngles<VAxis_Y, VAxis_X, VAxis_Z>(&yaw, &pitch, &roll);
+
+    // get the pose that adjusts the yaw
+    VQuatf yawAdjustment(VAxis_Y, -yaw);
+    state = yawAdjustment;
+
+    // To allow RecenterYaw() to be called from multiple threads we need a mutex
+    // because LocklessUpdater is only safe for single producer cases.
+    d->recenterMutex.lock();
+    d->state.setState(state);
+    d->recenterMutex.unlock();
+}
+
+void VRotationSensor::setYaw(float newYaw)
+{
+    // get the current state
+    VRotationState state = this->state();
+
+    // get the yaw in the current state
+    float yaw, pitch, roll;
+    state.GetEulerAngles<VAxis_Y, VAxis_X, VAxis_Z>(&yaw, &pitch, &roll);
+
+    // get the pose that adjusts the yaw
+    VQuatf yawAdjustment(VAxis_Y, newYaw - yaw);
+    state = yawAdjustment;
+
+    // To allow SetYaw() to be called from multiple threads we need a mutex
+    // because LocklessUpdater is only safe for single producer cases.
+    d->recenterMutex.lock();
+    d->state.setState(state);
+    d->recenterMutex.unlock();
+}
+
 VRotationSensor *VRotationSensor::instance()
 {
     static VRotationSensor sensor;
@@ -56,11 +99,44 @@ VRotationSensor::~VRotationSensor()
     delete d;
 }
 
+static VQuatf calcPredictedPose(const VRotationState &pose, float predictionDt)
+{
+    float speed = pose.gyro.length();
+
+    const float slope = 0.2; // The rate at which the dynamic prediction interval varies
+    float candidateDt = slope * speed; // TODO: Replace with smoothstep function
+
+    float dynamicDt = predictionDt;
+
+    // Choose the candidate if it is shorter, to improve stability
+    if (candidateDt < predictionDt)
+        dynamicDt = candidateDt;
+
+    const float MAX_DELTA_TIME = 1.0f / 10.0f;
+    dynamicDt = std::min(std::max(dynamicDt, 0.0f), MAX_DELTA_TIME);
+
+    VQuatf state;
+    if (speed > 0.001)
+        state = pose * VQuatf(pose.gyro, speed * dynamicDt);
+
+    return pose;
+}
+
 VRotationState VRotationSensor::predictState(double timestamp) const
 {
-    NV_UNUSED(timestamp);
+    //lockless state fetch
     VRotationState state = this->state();
-    //state.timestamp = timestamp;
+
+
+    // Delta time from the last processed message
+    double pdt = timestamp - state.timestamp;
+    const VQuatf recenter = d->recenter.state();
+
+    // Do prediction logic
+    VQuatf orientation = recenter * calcPredictedPose(state, pdt);
+    state = orientation;
+    state.timestamp = timestamp;
+
     return state;
 }
 
@@ -86,9 +162,9 @@ struct KTrackerSensorZip {
 };
 
 struct KTrackerMessage {
-    V3Vect<float> Acceleration;
-    V3Vect<float> RotationRate;
-    V3Vect<float> MagneticField;
+    VVect3<float> Acceleration;
+    VVect3<float> RotationRate;
+    VVect3<float> MagneticField;
     float Temperature;
     float TimeDelta;
     double AbsoluteTimeSeconds;
@@ -102,13 +178,13 @@ public:
     bool update(uint8_t *buffer);
     longlong getLatestTime();
     VQuat<float> getSensorQuaternion();
-    V3Vect<float> getAngularVelocity();
+    VVect3<float> getAngularVelocity();
 
 private:
     bool pollSensor(KTrackerSensorZip* data,uint8_t  *buffer);
     void process(KTrackerSensorZip* data);
     void updateQ(KTrackerMessage *msg);
-    V3Vect<float> gyrocorrect(const V3Vectf &gyro, const V3Vectf &accel, const float DeltaT);
+    VVect3<float> gyrocorrect(const VVect3f &gyro, const VVect3f &accel, const float DeltaT);
 
 private:
     VRotationState m_state;
@@ -118,9 +194,9 @@ private:
     vuint16 last_timestamp_;
     vuint32 full_timestamp_;
     vuint8 last_sample_count_;
-    V3Vect<float> last_acceleration_;
-    V3Vect<float> last_rotation_rate_;
-    V3Vect<float> gyro_offset_;
+    VVect3<float> last_acceleration_;
+    VVect3<float> last_rotation_rate_;
+    VVect3<float> gyro_offset_;
 
     class Filter: public VCircularQueue<float>
     {
@@ -204,7 +280,7 @@ VQuat<float> USensor::getSensorQuaternion()
     return m_state;
 }
 
-V3Vect<float> USensor::getAngularVelocity()
+VVect3<float> USensor::getAngularVelocity()
 {
     return m_state.gyro;
 }
@@ -320,8 +396,8 @@ void USensor::process(KTrackerSensorZip* data) {
     //double absoluteTimeSeconds = 0.0;
 
     if (first_) {
-        last_acceleration_ = V3Vect<float>(0, 0, 0);
-        last_rotation_rate_ = V3Vect<float>(0, 0, 0);
+        last_acceleration_ = VVect3<float>(0, 0, 0);
+        last_rotation_rate_ = VVect3<float>(0, 0, 0);
         first_ = false;
 
         // This is our baseline sensor to host time delta,
@@ -383,9 +459,9 @@ void USensor::process(KTrackerSensorZip* data) {
     }
 
     for (int i = 0; i < iterations; ++i) {
-        sensors.Acceleration = V3Vect<float>(data->Samples[i].AccelX,
+        sensors.Acceleration = VVect3<float>(data->Samples[i].AccelX,
                 data->Samples[i].AccelY, data->Samples[i].AccelZ) * 0.0001f;
-        sensors.RotationRate = V3Vect<float>(data->Samples[i].GyroX,
+        sensors.RotationRate = VVect3<float>(data->Samples[i].GyroX,
                 data->Samples[i].GyroY, data->Samples[i].GyroZ) * 0.0001f;
 
         updateQ(&sensors);
@@ -402,16 +478,16 @@ void USensor::process(KTrackerSensorZip* data) {
 
 void USensor::updateQ(KTrackerMessage *msg) {
     // Put the sensor readings into convenient local variables
-    V3Vectf gyro = msg->RotationRate;
-    V3Vectf accel = msg->Acceleration;
+    VVect3f gyro = msg->RotationRate;
+    VVect3f accel = msg->Acceleration;
     const float DeltaT = msg->TimeDelta;
     m_state.gyro = gyrocorrect(gyro, accel, DeltaT);
 
     // Update the orientation quaternion based on the corrected angular velocity vector
-    float gyro_length = m_state.gyro.Length();
+    float gyro_length = m_state.gyro.length();
     if (gyro_length != 0.0f) {
         float angle = gyro_length * DeltaT;
-        VQuatf q = m_state * VQuatf(m_state.gyro.Normalized() * sin(angle * 0.5f), angle);
+        VQuatf q = m_state * VQuatf(m_state.gyro.normalized() * sin(angle * 0.5f), angle);
         m_state.w = q.w;
         m_state.x = q.x;
         m_state.y = q.y;
@@ -426,14 +502,14 @@ void USensor::updateQ(KTrackerMessage *msg) {
     }
 }
 
-V3Vect<float> USensor::gyrocorrect(const V3Vectf &gyro, const V3Vectf &accel, const float DeltaT) {
+VVect3<float> USensor::gyrocorrect(const VVect3f &gyro, const VVect3f &accel, const float DeltaT) {
     // Small preprocessing
     VQuatf Qinv = m_state.Inverted();
-    V3Vectf up = Qinv.Rotate(V3Vectf(0, 1, 0));
-    V3Vectf gyroCorrected = gyro;
+    VVect3f up = Qinv.Rotate(VVect3f(0, 1, 0));
+    VVect3f gyroCorrected = gyro;
 
     bool EnableGravity = true;
-    bool valid_accel = accel.Length() > 0.001f;
+    bool valid_accel = accel.length() > 0.001f;
 
     if (EnableGravity && valid_accel) {
         gyroCorrected -= gyro_offset_;
@@ -442,22 +518,22 @@ V3Vect<float> USensor::gyrocorrect(const V3Vectf &gyro, const V3Vectf &accel, co
         const float gravityThreshold = 0.1f;
         float proportionalGain = 0.25f, integralGain = 0.0f;
 
-        V3Vectf accel_normalize = accel.Normalized();
-        V3Vectf up_normalize = up.Normalized();
-        V3Vectf correction = accel_normalize.Cross(up_normalize);
-        float cosError = accel_normalize.Dot(up_normalize);
+        VVect3f accel_normalize = accel.normalized();
+        VVect3f up_normalize = up.normalized();
+        VVect3f correction = accel_normalize.crossProduct(up_normalize);
+        float cosError = accel_normalize.dotProduct(up_normalize);
         const float Tolerance = 0.00001f;
-        V3Vectf tiltCorrection = correction * sqrtf(2.0f / (1 + cosError + Tolerance));
+        VVect3f tiltCorrection = correction * sqrtf(2.0f / (1 + cosError + Tolerance));
 
         if (step_ > 5) {
             // Spike detection
-            float tiltAngle = up.Angle(accel);
+            float tiltAngle = up.angleTo(accel);
             tilt_filter_.append(tiltAngle);
             if (tiltAngle > tilt_filter_.mean() + spikeThreshold)
                 proportionalGain = integralGain = 0;
             // Acceleration detection
             const float gravity = 9.8f;
-            if (fabs(accel.Length() / gravity - 1) > gravityThreshold)
+            if (fabs(accel.length() / gravity - 1) > gravityThreshold)
                 integralGain = 0;
         } else {
             // Apply full correction at the startup
@@ -516,7 +592,7 @@ JNIEXPORT jfloatArray JNICALL Java_com_vrseen_sensor_NativeUSensor_getData
     USensor* u_sensor = reinterpret_cast<USensor*>(jk_sensor);
 
     VQuat<float> rotation = u_sensor->getSensorQuaternion();
-    V3Vect<float> angular_velocity = u_sensor->getAngularVelocity();
+    VVect3<float> angular_velocity = u_sensor->getAngularVelocity();
 
     jfloatArray jdata = env->NewFloatArray(7);
     jfloat data[7];

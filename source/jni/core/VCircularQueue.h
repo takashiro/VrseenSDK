@@ -1,13 +1,8 @@
-/*
- * VCircularQueueSync.h
- *
- *  Created on: 2016年5月11日
- *      Author: yangkai
- */
-
 #pragma once
 
-#include <VMutex.h>
+#include "vglobal.h"
+
+#include <memory>
 
 NV_NAMESPACE_BEGIN
 
@@ -78,7 +73,10 @@ public:
 private:
     void forward()
     {
-        m_back = (m_back + 1) % m_capacity;
+        m_back++;
+        if (m_back >= m_capacity) {
+            m_back = 0;
+        }
         if (m_size >= m_capacity) {
             m_front = (m_front + 1) % m_capacity;
         } else {

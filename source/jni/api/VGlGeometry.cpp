@@ -202,11 +202,10 @@ void VGlGeometry::createScreenQuad( const float xx, const float yy )
              attribs.uvCoordinate0[index].y = 0.0f;
              // the outer edges will have 0 color
              const float c = ( y <= 1 || y >= 4 || x <= 1 || x >= 4 ) ? 0.0f : 1.0f;
-             for ( int i = 0; i < 3; i++ )
-             {
-                 attribs.color[index][i] = c;
-             }
-             attribs.color[index][3] = 1.0f;	// solid alpha
+             attribs.color[index].x = c;
+             attribs.color[index].y = c;
+             attribs.color[index].z = c;
+             attribs.color[index].w = 1.0f;	// solid alpha
          }
      }
 
@@ -256,14 +255,14 @@ void VGlGeometry::createPlaneQuadGrid( const int horizontal, const int vertical 
             attribs.position[index].y = -1 + yf * 2;
             attribs.uvCoordinate0[index].x = xf;
             attribs.uvCoordinate0[index].y = 1.0 - yf;
-            for ( int i = 0; i < 4; i++ )
-            {
-                attribs.color[index][i] = 1.0f;
-            }
+            attribs.color[index].x = 1.0f;
+            attribs.color[index].y = 1.0f;
+            attribs.color[index].z = 1.0f;
+            attribs.color[index].w = 1.0f;
             // fade to transparent on the outside
             if ( x == 0 || x == horizontal || y == 0 || y == vertical )
             {
-                attribs.color[index][3] = 0.0f;
+                attribs.color[index].w = 0.0f;
             }
         }
     }
@@ -313,14 +312,14 @@ void  VGlGeometry::createCylinder( const float radius, const float height,const 
                attribs.position[index].z = -height + yf * 2 * height;
                attribs.uvCoordinate0[index].x = xf * uScale;
                attribs.uvCoordinate0[index].y = ( 1.0f - yf ) * vScale;
-               for ( int i = 0; i < 4; ++i )
-               {
-                   attribs.color[index][i] = 1.0f;
-               }
+               attribs.color[index].x = 1.0f;
+               attribs.color[index].y = 1.0f;
+               attribs.color[index].z = 1.0f;
+               attribs.color[index].w = 1.0f;
                // fade to transparent on the outside
                if ( y == 0 || y == vertical )
                {
-                   attribs.color[index][3] = 0.0f;
+                   attribs.color[index].w = 0.0f;
                }
            }
        }
@@ -374,11 +373,10 @@ void VGlGeometry::createStylePattern( const float xx, const float yy )
             attribs.uvCoordinate0[index].y = 0.0f;
             // the outer edges will have 0 color
             const float c = ( y <= 1 || y >= 4 || x <= 1 || x >= 4 ) ? 0.0f : 1.0f;
-            for ( int i = 0; i < 3; i++ )
-            {
-                attribs.color[index][i] = c;
-            }
-            attribs.color[index][3] = 1.0f;	// solid alpha
+            attribs.color[index].x = c;
+            attribs.color[index].y = c;
+            attribs.color[index].z = c;
+            attribs.color[index].w = 1.0f;	// solid alpha
         }
     }
 
@@ -461,10 +459,10 @@ void  VGlGeometry::createDome( const float rad, const float uScale, const float 
 
                 attribs.uvCoordinate0[index].x = xf * uScale;
                 attribs.uvCoordinate0[index].y = ( 1.0f - yf ) * vScale;
-                for ( int i = 0; i < 4; i++ )
-                {
-                    attribs.color[index][i] = 1.0f;
-                }
+                attribs.color[index].x = 1.0f;
+                attribs.color[index].y = 1.0f;
+                attribs.color[index].z = 1.0f;
+                attribs.color[index].w = 1.0f;
             }
         }
 
@@ -561,10 +559,10 @@ void  VGlGeometry::createSphere( const float uScale, const float vScale )
                 attribs.uvCoordinate0[index].x = xf * uScale;
             }
             attribs.uvCoordinate0[index].y = ( 1.0 - yf ) * vScale;
-            for ( int i = 0; i < 4; i++ )
-            {
-                attribs.color[index][i] = 1.0f;
-            }
+            attribs.color[index].x = 1.0f;
+            attribs.color[index].y = 1.0f;
+            attribs.color[index].z = 1.0f;
+            attribs.color[index].w = 1.0f;
         }
     }
 
@@ -628,10 +626,10 @@ void  VGlGeometry::createPartSphere( const float fov )
             attribs.uvCoordinate0[index].x = xf - 0.5f;
             attribs.uvCoordinate0[index].y = ( 1.0f - yf ) - 0.5f;
 
-            for ( int i = 0 ; i < 4 ; i++ )
-            {
-                attribs.color[index][i] = 1.0f;
-            }
+            attribs.color[index].x = 1.0f;
+            attribs.color[index].y = 1.0f;
+            attribs.color[index].z = 1.0f;
+            attribs.color[index].w = 1.0f;
         }
     }
 
@@ -682,10 +680,11 @@ void  VGlGeometry::createCalibrationGrid( const int lines, const bool full )
             attribs.position[v1].y = -1 + yf * 2;
             attribs.uvCoordinate0[v1].x = x;
             attribs.uvCoordinate0[v1].y = 1.0f - yf;
-            for ( int i = 0; i < 4; i++ )
-            {
-                attribs.color[v1][i] = 1.0f;
-            }
+
+            attribs.color[v1].x = 1.0f;
+            attribs.color[v1].y = 1.0f;
+            attribs.color[v1].z = 1.0f;
+            attribs.color[v1].w = 1.0f;
 
             // swap y and x to go along y
             const int v2 = 2 * ( y * 2 + x ) + 1;
@@ -694,10 +693,11 @@ void  VGlGeometry::createCalibrationGrid( const int lines, const bool full )
             attribs.position[v2].x = -1 + yf * 2;
             attribs.uvCoordinate0[v2].x = x;
             attribs.uvCoordinate0[v2].y = 1.0f - yf;
-            for ( int i = 0; i < 4; i++ )
-            {
-                attribs.color[v2][i] = 1.0f;
-            }
+
+            attribs.color[v2].x = 1.0f;
+            attribs.color[v2].y = 1.0f;
+            attribs.color[v2].z = 1.0f;
+            attribs.color[v2].w = 1.0f;
 
             if ( !full && y != lines )
             {	// make a short hash instead of a full line
@@ -735,9 +735,9 @@ void  VGlGeometry::createUnitCubeGrid()
     attribs.position.resize( 8 );
 
     for ( int i = 0; i < 8; i++) {
-        attribs.position[i][0] = i & 1;
-        attribs.position[i][1] = ( i & 2 ) >> 1;
-        attribs.position[i][2] = ( i & 4 ) >> 2;
+        attribs.position[i].x = i & 1;
+        attribs.position[i].y = ( i & 2 ) >> 1;
+        attribs.position[i].z = ( i & 4 ) >> 2;
     }
 
     const uint staticIndices[24] = { 0,1, 1,3, 3,2, 2,0, 4,5, 5,7, 7,6, 6,4, 0,4, 1,5, 3,7, 2,6 };

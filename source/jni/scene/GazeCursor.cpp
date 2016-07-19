@@ -269,15 +269,15 @@ void OvrGazeCursorLocal::Frame( VR4Matrixf const & viewMatrix, float const delta
 	}
 #endif
 
-    const V3Vectf viewPos( GetViewMatrixPosition( viewMatrix ) );
-    const V3Vectf viewFwd( GetViewMatrixForward( viewMatrix ) );
+    const VVect3f viewPos( GetViewMatrixPosition( viewMatrix ) );
+    const VVect3f viewFwd( GetViewMatrixForward( viewMatrix ) );
 
 //	V3Vectf position = viewPos + viewFwd * ( Info.Distance - DistanceOffset );
-    V3Vectf position = viewPos + viewFwd * 1.4f; // !@# JDC fixed distance
+    VVect3f position = viewPos + viewFwd * 1.4f; // !@# JDC fixed distance
 	CursorScale = 0.0125f;
 
     VR4Matrixf viewRot = viewMatrix;
-    viewRot.SetTranslation( V3Vectf( 0.0f ) );
+    viewRot.SetTranslation( VVect3f( 0.0f ) );
 
 	// Add one ghost for every four milliseconds.
 	// Assume we are going to be at even multiples of vsync, so we don't need to bother

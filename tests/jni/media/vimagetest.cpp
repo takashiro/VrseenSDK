@@ -10,7 +10,12 @@ namespace {
 
 void test()
 {
-    VImage image(VPath("assets/test.bmp"));
+    uchar *raw = (uchar *) malloc(4);
+    raw[0] = 128;
+    raw[1] = 130;
+    raw[2] = 124;
+    raw[3] = 0;
+    VImage image(raw, 1, 1);
     assert(image.isValid());
     assert(image.width() == 1);
     assert(image.height() == 1);

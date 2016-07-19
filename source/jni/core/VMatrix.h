@@ -1,8 +1,11 @@
 #pragma once
 
-#include "vglobal.h"
-#include "VVector.h"
-#include "VTransform.h"
+#include "VConstants.h"
+#include "VVect3.h"
+#include "VVect4.h"
+
+#include "VLog.h"
+
 #include <assert.h>
 #include <stdlib.h>
 #include <math.h>
@@ -141,37 +144,37 @@ public:
            M[0][3] = M[1][3] = M[2][1] = M[3][0] = 0;
        }
 
-   	void SetXBasis( const V3Vectf & v )
+   	void SetXBasis( const VVect3f & v )
    	{
    		M[0][0] = v.x;
    		M[1][0] = v.y;
    		M[2][0] = v.z;
    	}
-   	V3Vectf GetXBasis() const
+   	VVect3f GetXBasis() const
    	{
-   		return V3Vectf( M[0][0], M[1][0], M[2][0] );
+   		return VVect3f( M[0][0], M[1][0], M[2][0] );
    	}
 
-   	void SetYBasis( const V3Vectf & v )
+   	void SetYBasis( const VVect3f & v )
    	{
    		M[0][1] = v.x;
    		M[1][1] = v.y;
    		M[2][1] = v.z;
    	}
-   	V3Vectf GetYBasis() const
+   	VVect3f GetYBasis() const
    	{
-   		return V3Vectf( M[0][1], M[1][1], M[2][1] );
+   		return VVect3f( M[0][1], M[1][1], M[2][1] );
    	}
 
-   	void SetZBasis( const V3Vectf & v )
+   	void SetZBasis( const VVect3f & v )
    	{
    		M[0][2] = v.x;
    		M[1][2] = v.y;
    		M[2][2] = v.z;
    	}
-   	V3Vectf GetZBasis() const
+   	VVect3f GetZBasis() const
    	{
-   		return V3Vectf( M[0][2], M[1][2], M[2][2] );
+   		return VVect3f( M[0][2], M[1][2], M[2][2] );
    	}
 
 
@@ -274,10 +277,10 @@ public:
            return *this;
        }
 
-       V3Vect<T> Transform(const V3Vect<T>& v) const
+       VVect3<T> Transform(const VVect3<T>& v) const
        {
    		const T rcpW = T(1) / ( M[3][0] * v.x + M[3][1] * v.y + M[3][2] * v.z + M[3][3] );
-           return V3Vect<T>((M[0][0] * v.x + M[0][1] * v.y + M[0][2] * v.z + M[0][3]) * rcpW,
+           return VVect3<T>((M[0][0] * v.x + M[0][1] * v.y + M[0][2] * v.z + M[0][3]) * rcpW,
                              (M[1][0] * v.x + M[1][1] * v.y + M[1][2] * v.z + M[1][3]) * rcpW,
                              (M[2][0] * v.x + M[2][1] * v.y + M[2][2] * v.z + M[2][3]) * rcpW);
        }
@@ -350,7 +353,7 @@ public:
    		VR4Matrix rinv = this->Transposed();
    		rinv.M[3][0] = rinv.M[3][1] = rinv.M[3][2] = 0.0f;
    		// Make the inverse translation matrix
-   		V3Vect<T> tvinv(-M[0][3],-M[1][3],-M[2][3]);
+        VVect3<T> tvinv(-M[0][3],-M[1][3],-M[2][3]);
    		VR4Matrix tinv = VR4Matrix::Translation(tvinv);
    		return rinv * tinv;  // "untranslate", then "unrotate"
    	}
@@ -466,7 +469,7 @@ public:
 
 
    	// Creates a matrix for translation by vector
-       static VR4Matrix Translation(const V3Vect<T>& v)
+       static VR4Matrix Translation(const VVect3<T>& v)
        {
            VR4Matrix t;
            t.M[0][3] = v.x;
@@ -486,20 +489,20 @@ public:
        }
 
    	// Sets the translation part
-       void SetTranslation(const V3Vect<T>& v)
+       void SetTranslation(const VVect3<T>& v)
        {
            M[0][3] = v.x;
            M[1][3] = v.y;
            M[2][3] = v.z;
        }
 
-       V3Vect<T> GetTranslation() const
+       VVect3<T> GetTranslation() const
        {
-           return V3Vect<T>( M[0][3], M[1][3], M[2][3] );
+           return VVect3<T>( M[0][3], M[1][3], M[2][3] );
        }
 
    	// Creates a matrix for scaling by vector
-       static VR4Matrix Scaling(const V3Vect<T>& v)
+       static VR4Matrix Scaling(const VVect3<T>& v)
        {
            VR4Matrix t;
            t.M[0][0] = v.x;
@@ -615,7 +618,7 @@ public:
                           0,     0,      1);
        }
 
-       static VR4Matrix RotationVAxisAngle(const V3Vect<T> &VAxis, T angle) {
+       static VR4Matrix RotationVAxisAngle(const VVect3<T> &VAxis, T angle) {
    	T x = VAxis.x;
    	T y = VAxis.y;
    	T z = VAxis.z;
@@ -633,16 +636,16 @@ public:
        // The resulting matrix points camera from 'eye' towards 'at' direction, with 'up'
        // specifying the up vector. The resulting matrix should be used with PerspectiveRH
        // projection.
-       static VR4Matrix LookAtRH(const V3Vect<T>& eye, const V3Vect<T>& at, const V3Vect<T>& up)
+       static VR4Matrix LookAtRH(const VVect3<T>& eye, const VVect3<T>& at, const VVect3<T>& up)
        {
    		// FIXME: this fails when looking straight up, should probably at least assert
-           V3Vect<T> z = (eye - at).Normalized();  // Forward
-           V3Vect<T> x = up.Cross(z).Normalized(); // Right
-           V3Vect<T> y = z.Cross(x);
+           VVect3<T> z = (eye - at).normalized();  // Forward
+           VVect3<T> x = up.crossProduct(z).normalized(); // Right
+           VVect3<T> y = z.crossProduct(x);
 
-           VR4Matrix m(x.x,  x.y,  x.z,  -(x.Dot(eye)),
-                     y.x,  y.y,  y.z,  -(y.Dot(eye)),
-                     z.x,  z.y,  z.z,  -(z.Dot(eye)),
+           VR4Matrix m(x.x,  x.y,  x.z,  -(x.dotProduct(eye)),
+                     y.x,  y.y,  y.z,  -(y.dotProduct(eye)),
+                     z.x,  z.y,  z.z,  -(z.dotProduct(eye)),
                      0,    0,    0,    1 );
            return m;
        }
@@ -650,25 +653,25 @@ public:
        // LookAtLH creates a View transformation matrix for left-handed coordinate system.
        // The resulting matrix points camera from 'eye' towards 'at' direction, with 'up'
        // specifying the up vector.
-       static VR4Matrix LookAtLH(const V3Vect<T>& eye, const V3Vect<T>& at, const V3Vect<T>& up)
+       static VR4Matrix LookAtLH(const VVect3<T>& eye, const VVect3<T>& at, const VVect3<T>& up)
        {
    		// FIXME: this fails when looking straight up, should probably at least assert
-           V3Vect<T> z = (at - eye).Normalized();  // Forward
-           V3Vect<T> x = up.Cross(z).Normalized(); // Right
-           V3Vect<T> y = z.Cross(x);
+           VVect3<T> z = (at - eye).normalized();  // Forward
+           VVect3<T> x = up.crossProduct(z).normalized(); // Right
+           VVect3<T> y = z.crossProduct(x);
 
-           VR4Matrix m(x.x,  x.y,  x.z,  -(x.Dot(eye)),
-                     y.x,  y.y,  y.z,  -(y.Dot(eye)),
-                     z.x,  z.y,  z.z,  -(z.Dot(eye)),
+           VR4Matrix m(x.x,  x.y,  x.z,  -(x.dotProduct(eye)),
+                     y.x,  y.y,  y.z,  -(y.dotProduct(eye)),
+                     z.x,  z.y,  z.z,  -(z.dotProduct(eye)),
                      0,    0,    0,    1 );
            return m;
        }
 
-       static VR4Matrix CreateFromBasisVectors( V3Vect<T> const & zBasis, V3Vect<T> const & up )
+       static VR4Matrix CreateFromBasisVectors( VVect3<T> const & zBasis, VVect3<T> const & up )
        {
-        vAssert( zBasis.IsNormalized() );
-        vAssert( up.IsNormalized() );
-   	    T dot = zBasis.Dot( up );
+        vAssert( zBasis.isNormalized() );
+        vAssert( up.isNormalized() );
+   	    T dot = zBasis.dotProduct( up );
    	    if ( dot < (T)-0.9999 || dot > (T)0.9999 )
    	    {
    		    // z basis cannot be parallel to the specified up
@@ -676,10 +679,10 @@ public:
    		    return VR4Matrix<T>();
    	    }
 
-   	    V3Vect<T> xBasis = up.Cross( zBasis );
-   	    xBasis.Normalize();
+        VVect3<T> xBasis = up.crossProduct( zBasis );
+   	    xBasis.normalize();
 
-   	    V3Vect<T> yBasis = zBasis.Cross( xBasis );
+        VVect3<T> yBasis = zBasis.crossProduct( xBasis );
            // no need to normalize yBasis because xBasis and zBasis must already be orthogonal
 
    	    return VR4Matrix<T>(	xBasis.x, yBasis.x, zBasis.x, (T)0,
@@ -1126,9 +1129,9 @@ public:
 		return *this;
 	}
 
-	V3Vect<T> operator* (const V3Vect<T> &b) const
+    VVect3<T> operator* (const VVect3<T> &b) const
 	{
-		V3Vect<T> result;
+        VVect3<T> result;
 		result.x = M[0][0]*b.x + M[0][1]*b.y + M[0][2]*b.z;
 		result.y = M[1][0]*b.x + M[1][1]*b.y + M[1][2]*b.z;
 		result.z = M[2][0]*b.x + M[2][1]*b.y + M[2][2]*b.z;
@@ -1158,9 +1161,9 @@ public:
                           (M[1][0] * v.x + M[1][1] * v.y + M[1][2]) * rcpZ);
     }
 
-	V3Vect<T> Transform(const V3Vect<T>& v) const
+    VVect3<T> Transform(const VVect3<T>& v) const
 	{
-		return V3Vect<T>(M[0][0] * v.x + M[0][1] * v.y + M[0][2] * v.z,
+        return VVect3<T>(M[0][0] * v.x + M[0][1] * v.y + M[0][2] * v.z,
 						  M[1][0] * v.x + M[1][1] * v.y + M[1][2] * v.z,
 						  M[2][0] * v.x + M[2][1] * v.y + M[2][2] * v.z);
 	}
@@ -1186,7 +1189,7 @@ public:
 	}
 
 	// M += a*b.t()
-	inline void Rank1Add(const V3Vect<T> &a, const V3Vect<T> &b)
+    inline void Rank1Add(const VVect3<T> &a, const VVect3<T> &b)
 	{
 		M[0][0] += a.x*b.x;		M[0][1] += a.x*b.y;		M[0][2] += a.x*b.z;
 		M[1][0] += a.y*b.x;		M[1][1] += a.y*b.y;		M[1][2] += a.y*b.z;
@@ -1194,21 +1197,21 @@ public:
 	}
 
 	// M -= a*b.t()
-	inline void Rank1Sub(const V3Vect<T> &a, const V3Vect<T> &b)
+    inline void Rank1Sub(const VVect3<T> &a, const VVect3<T> &b)
 	{
 		M[0][0] -= a.x*b.x;		M[0][1] -= a.x*b.y;		M[0][2] -= a.x*b.z;
 		M[1][0] -= a.y*b.x;		M[1][1] -= a.y*b.y;		M[1][2] -= a.y*b.z;
 		M[2][0] -= a.z*b.x;		M[2][1] -= a.z*b.y;		M[2][2] -= a.z*b.z;
 	}
 
-	inline V3Vect<T> Col(int c) const
+    inline VVect3<T> Col(int c) const
 	{
-		return V3Vect<T>(M[0][c], M[1][c], M[2][c]);
+        return VVect3<T>(M[0][c], M[1][c], M[2][c]);
 	}
 
-	inline V3Vect<T> Row(int r) const
+    inline VVect3<T> Row(int r) const
 	{
-        return V3Vect<T>(M[r][0], M[r][1], M[r][2]);
+        return VVect3<T>(M[r][0], M[r][1], M[r][2]);
 	}
 
 	inline T Determinant() const
@@ -1396,7 +1399,7 @@ public:
 	inline T Trace() const { return v[0] + v[3] + v[5]; }
 
 	// M = a*a.t()
-	inline void Rank1(const V3Vect<T> &a)
+    inline void Rank1(const VVect3<T> &a)
 	{
 		v[0] = a.x*a.x; v[1] = a.x*a.y; v[2] = a.x*a.z;
 		v[3] = a.y*a.y; v[4] = a.y*a.z;
@@ -1404,7 +1407,7 @@ public:
 	}
 
 	// M += a*a.t()
-	inline void Rank1Add(const V3Vect<T> &a)
+    inline void Rank1Add(const VVect3<T> &a)
 	{
 		v[0] += a.x*a.x; v[1] += a.x*a.y; v[2] += a.x*a.z;
 		v[3] += a.y*a.y; v[4] += a.y*a.z;
@@ -1412,7 +1415,7 @@ public:
 	}
 
 	// M -= a*a.t()
-	inline void Rank1Sub(const V3Vect<T> &a)
+    inline void Rank1Sub(const VVect3<T> &a)
 	{
 		v[0] -= a.x*a.x; v[1] -= a.x*a.y; v[2] -= a.x*a.z;
 		v[3] -= a.y*a.y; v[4] -= a.y*a.z;
@@ -1445,14 +1448,14 @@ inline VR3Matrix<T> operator*(const VR3Matrix<T>& a, const VSymMat3<T>& b)
 	#undef AJB_ARBC
 }
 
-inline V3Vectf GetViewMatrixPosition( VR4Matrixf const & m )
+inline VVect3f GetViewMatrixPosition( VR4Matrixf const & m )
 {
     return m.Inverted().GetTranslation();
 }
 
-inline V3Vectf GetViewMatrixForward( VR4Matrixf const & m )
+inline VVect3f GetViewMatrixForward( VR4Matrixf const & m )
 {
-    return V3Vectf( -m.M[2][0], -m.M[2][1], -m.M[2][2] ).Normalized();
+    return VVect3f( -m.M[2][0], -m.M[2][1], -m.M[2][2] ).normalized();
 }
 
 NV_NAMESPACE_END

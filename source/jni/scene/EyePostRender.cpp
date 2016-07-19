@@ -1,19 +1,8 @@
-/************************************************************************************
-
-Filename    :   EyePostRender.cpp
-Content     :   Render on top of an eye render, portable between native and Unity.
-Created     :   May 23, 2014
-Authors     :   John Carmack
-
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
-
-*************************************************************************************/
-
 #include "EyePostRender.h"
-#include "VBasicmath.h"
 #include "VAlgorithm.h"
 #include "VArray.h"
-#include "api/VEglDriver.h"
+#include "VEglDriver.h"
+#include "VMatrix.h"
 
 NV_NAMESPACE_BEGIN
 

@@ -76,11 +76,13 @@ public:
     VKernel* kernel();
     SurfaceTexture *dialogTexture();
 
+    const ovrTimeWarpParms &swapParms() const;
+    ovrTimeWarpParms &swapParms();
 
     const VRotationState &sensorForNextWarp() const;
 
     void drawScreenMask( const VR4Matrixf & mvp, const float fadeFracX, const float fadeFracY );
-    void drawBounds( const V3Vectf &mins, const V3Vectf &maxs, const VR4Matrixf &mvp, const V3Vectf &color );
+    void drawBounds( const VVect3f &mins, const VVect3f &maxs, const VR4Matrixf &mvp, const VVect3f &color );
 
     void execute();
     void quit();

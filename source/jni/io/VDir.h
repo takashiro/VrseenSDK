@@ -14,6 +14,8 @@ public:
 
     const VPath &path() const { return m_path; }
 
+    bool reach();
+
     bool exists() const;
     void makeDir();
 

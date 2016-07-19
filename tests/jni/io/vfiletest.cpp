@@ -1,5 +1,9 @@
 #include "test.h"
 
+#ifdef ANDROID
+#include <VDir.h>
+#endif
+
 #include <VFile.h>
 
 NV_USING_NAMESPACE
@@ -8,6 +12,12 @@ namespace {
 
 void test()
 {
+
+#ifdef ANDROID
+    VDir dir("/sdcard/");
+    assert(dir.reach());
+#endif
+
     {
         VFile file;
         assert(!file.isOpen());

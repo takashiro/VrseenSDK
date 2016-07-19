@@ -11,9 +11,9 @@ model {
         }
         ndk {
             platformVersion = 19
-            moduleName ='vrseen'
+            moduleName = 'vrseen'
             toolchain = 'gcc'
-            stl = 'gnustl_static'
+            stl = 'gnustl_shared'
 
             cppFlags.add("-I" + file("jni").absolutePath)
             cppFlags.add("-I" + file("jni/api").absolutePath)
@@ -23,7 +23,7 @@ model {
             cppFlags.add("-I" + file("jni/media").absolutePath)
             cppFlags.add("-I" + file("jni/scene").absolutePath)
 
-            cppFlags.add('-std=c++0x')
+            cppFlags.add('-std=c++11')
 
             ldLibs.addAll(['log', 'android', 'EGL', 'GLESv3', 'OpenMAXAL', 'OpenSLES', 'z'])
         }

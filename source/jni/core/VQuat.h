@@ -1,8 +1,8 @@
 #pragma once
 
-#include "vglobal.h"
-#include "VVector.h"
+#include "VVect3.h"
 #include "VConstants.h"
+#include "VLog.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -40,17 +40,17 @@ public:
     }
 
     // Constructs VQuaternion for rotation around the VAxis by an VAngle.
-    VQuat(const V3Vect<T> &axis, T angle)
+    VQuat(const VVect3<T> &axis, T angle)
     {
         // Make sure we don't divide by zero.
-        if (axis.LengthSq() == 0) {
+        if (axis.lengthSquared() == 0) {
             // Assert if the VAxis is zero, but the VAngle isn't
             vAssert(angle == 0);
             x = 0; y = 0; z = 0; w = 1;
             return;
         }
 
-        V3Vect<T> unitVAxis = axis.Normalized();
+        VVect3<T> unitVAxis = axis.normalized();
         T          sinHalfVAngle = sin(angle * T(0.5));
 
         w = cos(angle * T(0.5));
@@ -144,7 +144,7 @@ public:
     }
 
     // Constructs a VQuaternion that rotates 'from' to line up with 'to'.
-    explicit VQuat(const V3Vect<T> &from, const V3Vect<T> & to)
+    explicit VQuat(const VVect3<T> &from, const VVect3<T> & to)
     {
         const T cx = from.y * to.z - from.z * to.y;
         const T cy = from.z * to.x - from.x * to.z;
@@ -192,7 +192,7 @@ public:
     VQuat &operator/=(T s) { T rcp = T(1)/s; w *= rcp; x *= rcp; y *= rcp; z *= rcp; return *this; }
 
     // Get Imaginary part vector
-    V3Vect<T> Imag() const { return V3Vect<T>(x,y,z); }
+    VVect3<T> Imag() const { return VVect3<T>(x,y,z); }
 
     // Get VQuaternion length.
     T Length() const { return sqrt(LengthSq()); }
@@ -250,7 +250,7 @@ public:
                      w * b.w - x * b.x - y * b.y - z * b.z);
     }
 
-    V3Vect<T> operator* (const V3Vect<T> & v) const
+    VVect3<T> operator* (const VVect3<T> & v) const
     {
             return Rotate(v);
     }
@@ -258,7 +258,7 @@ public:
     // this^p normalized; same as rotating by this p times.
     VQuat PowNormalized(T p) const
     {
-        V3Vect<T> v;
+        VVect3<T> v;
         T          a;
         GetAxisAngle(&v, &a);
         return VQuat(v, a * p);
@@ -274,7 +274,7 @@ public:
 
     // Rotate transforms vector in a manner that matches Matrix rotations (counter-clockwise,
     // assuming negative diVRection of the VAxis). Standard formula: q(t) * V * q(t)^-1.
-    V3Vect<T> Rotate(const V3Vect<T>& v) const
+    VVect3<T> Rotate(const VVect3<T>& v) const
     {
         return ((*this * VQuat<T>(v.x, v.y, v.z, T(0))) * Inverted()).Imag();
     }
@@ -292,10 +292,10 @@ public:
     }
 
     // Compute VAxis and VAngle from VQuaternion
-    void GetAxisAngle(V3Vect<T>* VAxis, T* VAngle) const
+    void GetAxisAngle(VVect3<T>* VAxis, T* VAngle) const
     {
         if ( x*x + y*y + z*z > VConstants<T>::Tolerance * VConstants<T>::Tolerance ) {
-            *VAxis  = V3Vect<T>(x, y, z).Normalized();
+            *VAxis  = VVect3<T>(x, y, z).Normalized();
             *VAngle = 2 * VArccos(w);
              // Reduce the magnitude of the VAngle, if necessary
             if (*VAngle > VConstants<T>::Pi) {
@@ -303,7 +303,7 @@ public:
                 *VAxis = *VAxis * static_cast<T>(-1);
             }
         } else {
-            *VAxis = V3Vect<T>(static_cast<T>(1), static_cast<T>(0), static_cast<T>(0));
+            *VAxis = VVect3<T>(static_cast<T>(1), static_cast<T>(0), static_cast<T>(0));
             *VAngle= 0;
         }
     }
@@ -418,9 +418,9 @@ public:
 
 // allow multiplication in order vector * VQuat (member operator handles VQuat * vector)
 template<class T>
-V3Vect<T> operator*(const V3Vect<T> &v, const VQuat<T> &q)
+VVect3<T> operator*(const VVect3<T> &v, const VQuat<T> &q)
 {
-    return V3Vect<T>(q * v);
+    return VVect3<T>(q * v);
 }
 
 typedef VQuat<float> VQuatf;

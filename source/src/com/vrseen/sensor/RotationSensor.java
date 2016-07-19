@@ -18,7 +18,8 @@ public class RotationSensor {
 	private final RotationSensorListener mListener;						//define rotation sensor listener
 	
 	private final SensorManager mInternalSensorManager;					//define internal sensor manager
-	private final Sensor mInternalSensor;								//define internal sensor
+	private final Sensor mInternalRotationSensor;								//define internal sensor
+	private final Sensor mInternalGyroSensor;
 	private final InternalSensorListener mInternalSensorListener;		//define internal sensor listener
 
 	private final USensor mUSensor;										//define usb sensor
@@ -36,12 +37,20 @@ public class RotationSensor {
 		//mInternalSensor = mInternalSensorManager
 		//		.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR);
 		
-		mInternalSensor = mInternalSensorManager.getDefaultSensor(
+		mInternalRotationSensor = mInternalSensorManager.getDefaultSensor(
                 Sensor.TYPE_ROTATION_VECTOR);
 		
-		if (mInternalSensor != null) {
+		if (mInternalRotationSensor != null) {
 			mInternalSensorManager.registerListener(mInternalSensorListener,
-					mInternalSensor, SensorManager.SENSOR_DELAY_FASTEST); 
+					mInternalRotationSensor, SensorManager.SENSOR_DELAY_FASTEST);
+		}
+
+		mInternalGyroSensor = mInternalSensorManager.getDefaultSensor(
+				Sensor.TYPE_ROTATION_VECTOR);
+
+		if (mInternalGyroSensor != null) {
+			mInternalSensorManager.registerListener(mInternalSensorListener,
+					mInternalGyroSensor, SensorManager.SENSOR_DELAY_FASTEST);
 		}
 		
 		mUSensor = new USensor(context);
@@ -59,9 +68,13 @@ public class RotationSensor {
 	}
 	
 	void onResume() {
-		if (mInternalSensor != null) {
+		if (mInternalRotationSensor != null) {
 			mInternalSensorManager.registerListener(mInternalSensorListener,
-					mInternalSensor, SensorManager.SENSOR_DELAY_FASTEST); 
+					mInternalRotationSensor, SensorManager.SENSOR_DELAY_FASTEST);
+		}
+		if (mInternalGyroSensor != null) {
+			mInternalSensorManager.registerListener(mInternalSensorListener,
+					mInternalGyroSensor, SensorManager.SENSOR_DELAY_FASTEST);
 		}
 		mUSensor.resume();
 	}

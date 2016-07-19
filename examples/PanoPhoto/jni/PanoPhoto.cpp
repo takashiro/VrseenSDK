@@ -533,32 +533,33 @@ VR4Matrixf PanoPhoto::drawEyeView( const int eye, const float fovDegrees )
         glTexParameteri( GL_TEXTURE_CUBE_MAP, VEglDriver::GL_TEXTURE_SRGB_DECODE_EXT,
                          m_useSrgb ? VEglDriver::GL_DECODE_EXT : VEglDriver::GL_SKIP_DECODE_EXT );
         glBindTexture( GL_TEXTURE_CUBE_MAP, 0 );
-/*
+
+
         vApp->swapParms().WarpOptions = ( m_useSrgb ? 0 : SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER );
         vApp->swapParms( ).Images[ eye ][ 1 ].TexId = texId;
         vApp->swapParms().Images[ eye ][ 1 ].TexCoordsFromTanAngles = m;
-        vApp->swapParms().Images[ eye ][ 1 ].Pose = m_frameInput.PoseState;
+        vApp->swapParms().Images[ eye ][ 1 ].Pose = m_frameInput.pose;
         vApp->swapParms().WarpProgram = WP_CHROMATIC_MASKED_CUBE;
         for ( int i = 0; i < 4; i++ )
         {
             vApp->swapParms().ProgramParms[ i ] = fadeColor;
         }
-        */
-        vApp->kernel()->m_smoothOptions = ( m_useSrgb ? 0 : VK_INHIBIT_SRGB_FB );
-        vApp->kernel()->m_texId[ eye ][ 1 ] = texId;
-        vApp->kernel()->m_texMatrix[ eye ][ 1 ] = m;
 
-        VRotationState &pose = vApp->kernel()->m_pose[ eye ][ 1 ];
-        pose = m_frameInput.pose;
-        vApp->kernel()->m_smoothProgram = VK_CUBE_CB;
-        for ( int i = 0; i < 4; i++ )
-        {
-            vApp->kernel()->m_programParms[ i ] = fadeColor;
-        }
+
+//        vApp->kernel()->m_smoothOptions = ( m_useSrgb ? 0 : VK_INHIBIT_SRGB_FB );
+//        vApp->kernel()->m_texId[ eye ][ 1 ] = texId;
+//        vApp->kernel()->m_texMatrix[ eye ][ 1 ] = m;
+//
+//        VRotationState &pose = vApp->kernel()->m_pose[ eye ][ 1 ];
+//        pose = m_frameInput.pose;
+//        vApp->kernel()->m_smoothProgram = VK_CUBE_CB;
+//        for ( int i = 0; i < 4; i++ )
+//        {
+//            vApp->kernel()->m_programParms[ i ] = fadeColor;
+//        }
     }
     else
     {
-        /*
         vApp->swapParms().WarpOptions = m_useSrgb ? 0 : SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER;
         vApp->swapParms().Images[ eye ][ 1 ].TexId = 0;
         vApp->swapParms().WarpProgram = WP_CHROMATIC;
@@ -566,14 +567,14 @@ VR4Matrixf PanoPhoto::drawEyeView( const int eye, const float fovDegrees )
         {
             vApp->swapParms().ProgramParms[ i ] = 1.0f;
         }
-        */
-        vApp->kernel()->m_smoothOptions = m_useSrgb ? 0 : VK_INHIBIT_SRGB_FB;
-        vApp->kernel()->m_texId[ eye ][ 1 ] = 0;
-        vApp->kernel()->m_smoothProgram = VK_DEFAULT_CB;
-        for ( int i = 0; i < 4; i++ )
-        {
-            vApp->kernel()->m_programParms[ i ] = 1.0f;
-        }
+
+//        vApp->kernel()->m_smoothOptions = m_useSrgb ? 0 : VK_INHIBIT_SRGB_FB;
+//        vApp->kernel()->m_texId[ eye ][ 1 ] = 0;
+//        vApp->kernel()->m_smoothProgram = VK_DEFAULT_CB;
+//        for ( int i = 0; i < 4; i++ )
+//        {
+//            vApp->kernel()->m_programParms[ i ] = 1.0f;
+//        }
 
         glActiveTexture( GL_TEXTURE0 );
         if ( m_currentPanoIsCubeMap )
@@ -656,7 +657,7 @@ VR4Matrixf PanoPhoto::onNewFrame( const VFrame vrFrame )
     vrFrameWithoutMove.input.sticks[ 0 ][ 1 ] = 0.0f;
     //m_scene.Frame( vApp->vrViewParms(), vrFrameWithoutMove, vApp->swapParms().ExternalVelocity );
 
-    m_scene.Frame( vApp->viewSettings(), vrFrameWithoutMove, vApp->kernel()->m_externalVelocity );
+    m_scene.Frame( vApp->viewSettings(), vrFrameWithoutMove,  vApp->swapParms().ExternalVelocity );
 
     // We could disable the srgb convert on the FBO. but this is easier
     vApp->vrParms().colorFormat = m_useSrgb ? VColor::COLOR_8888_sRGB : VColor::COLOR_8888;

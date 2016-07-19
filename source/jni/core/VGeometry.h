@@ -21,7 +21,7 @@ class VBox
 public:
 	enum InitType { Init };
 
-	V3Vect<T>	b[2];
+	VVect3<T>	b[2];
 
 	VBox()
 	{
@@ -32,7 +32,7 @@ public:
 		Clear();
 	}
 
-	VBox( const V3Vect<T> & mins, const V3Vect<T> & maxs )
+	VBox( const VVect3<T> & mins, const VVect3<T> & maxs )
 	{
 		b[0] = mins;
 		b[1] = maxs;
@@ -56,7 +56,7 @@ public:
 							b[1].x * s, b[1].y * s, b[1].z * s );
 	}
 
-	VBox operator * ( V3Vect<T> const & s ) const
+	VBox operator * ( VVect3<T> const & s ) const
 	{
 		return VBox<T>(  b[0].x * s.x, b[0].y * s.y, b[0].z * s.z,
 							b[1].x * s.x, b[1].y * s.y, b[1].z * s.z );
@@ -68,7 +68,7 @@ public:
 		b[1].x = b[1].y = b[1].z = -VConstants<T>::MaxValue;
 	}
 
-	void AddPoint( const V3Vect<T> & v )
+	void AddPoint( const VVect3<T> & v )
 	{
 		b[0].x = std::min( b[0].x, v.x );
 		b[0].y = std::min( b[0].y, v.y );
@@ -89,17 +89,17 @@ public:
 						std::max( a.b[1].z, b.b[1].z ) );
 	}
 
-	const V3Vect<T> & GetMins() const { return b[0]; }
-	const V3Vect<T> & GetMaxs() const { return b[1]; }
+	const VVect3<T> & GetMins() const { return b[0]; }
+	const VVect3<T> & GetMaxs() const { return b[1]; }
 
-	V3Vect<T> & GetMins() { return b[0]; }
-	V3Vect<T> & GetMaxs() { return b[1]; }
+	VVect3<T> & GetMins() { return b[0]; }
+	VVect3<T> & GetMaxs() { return b[1]; }
 
-	V3Vect<T>	GetSize() const { return V3Vectf( b[1].x - b[0].x, b[1].y - b[0].y, b[1].z - b[0].z ); }
+	VVect3<T>	GetSize() const { return VVect3f( b[1].x - b[0].x, b[1].y - b[0].y, b[1].z - b[0].z ); }
 
-	V3Vect<T>	GetCenter() const { return V3Vectf( ( b[0].x + b[1].x ) * 0.5f, ( b[0].y + b[1].y ) * 0.5f, ( b[0].z + b[1].z ) * 0.5f ); }
+	VVect3<T>	GetCenter() const { return VVect3f( ( b[0].x + b[1].x ) * 0.5f, ( b[0].y + b[1].y ) * 0.5f, ( b[0].z + b[1].z ) * 0.5f ); }
 
-	void Translate( const V3Vect<T> & t )
+	void Translate( const VVect3<T> & t )
 	{
 		b[0] += t;
 		b[1] += t;
@@ -112,7 +112,7 @@ public:
 				b[0].z > b[1].z;
 	}
 
-	bool Contains(const V3Vect<T> &point, T expand = 0) const
+	bool Contains(const VVect3<T> &point, T expand = 0) const
 	{
 		return point.x >= b[0].x - expand && point.y >= b[0].y - expand && point.z >= b[0].z - expand && point.x <= b[1].x + expand && point.y <= b[1].y + expand && point.z <= b[1].z + expand;
 	}
@@ -121,17 +121,17 @@ public:
 	static VBox Transform( const VPos<T> & VPos, const VBox<T> & inBounds )
 	{
 		const VR3Matrix<T> rotation( VPos.Orientation );
-		const V3Vect<T> center = ( inBounds.b[0] + inBounds.b[1] ) * 0.5f;
-		const V3Vect<T> extents = inBounds.b[1] - center;
-		const V3Vect<T> newCenter = VPos.Position + rotation * center;
-		const V3Vect<T> newExtents(
+		const VVect3<T> center = ( inBounds.b[0] + inBounds.b[1] ) * 0.5f;
+		const VVect3<T> extents = inBounds.b[1] - center;
+		const VVect3<T> newCenter = VPos.Position + rotation * center;
+		const VVect3<T> newExtents(
 			fabs( extents[0] * rotation.M[0][0] ) + fabs( extents[1] * rotation.M[0][1] ) + fabs( extents[2] * rotation.M[0][2] ),
 			fabs( extents[0] * rotation.M[1][0] ) + fabs( extents[1] * rotation.M[1][1] ) + fabs( extents[2] * rotation.M[1][2] ),
 			fabs( extents[0] * rotation.M[2][0] ) + fabs( extents[1] * rotation.M[2][1] ) + fabs( extents[2] * rotation.M[2][2] ) );
 		return VBox<T>( newCenter - newExtents, newCenter + newExtents );
 	}
 
-	static VBox<T> Expand( const VBox<T> & b, const V3Vect<T> & minExpand, const V3Vect<T> & maxExpand )
+	static VBox<T> Expand( const VBox<T> & b, const VVect3<T> & minExpand, const VVect3<T> & maxExpand )
 	{
 		return VBox<T>( b.GetMins() + minExpand, b.GetMaxs() + maxExpand );
 	}
@@ -223,22 +223,22 @@ template<class T>
 class VPlane
 {
 public:
-		V3Vect<T> N;
+		VVect3<T> N;
 	    T          D;
 
 	    VPlane() : D(0) {}
 
 	    // Normals must already be normalized
-	    VPlane(const V3Vect<T>& n, T d) : N(n), D(d) {}
+	    VPlane(const VVect3<T>& n, T d) : N(n), D(d) {}
 	    VPlane(T x, T y, T z, T d) : N(x,y,z), D(d) {}
 
 	    // construct from a point on the VPlane and the normal
-	    VPlane(const V3Vect<T>& p, const V3Vect<T>& n) : N(n), D(-(p * n)) {}
+	    VPlane(const VVect3<T>& p, const VVect3<T>& n) : N(n), D(-(p * n)) {}
 
 	    // Find the point to VPlane distance. The sign indicates what side of the VPlane the point is on (0 = point on VPlane).
-	    T TestSide(const V3Vect<T>& p) const
+	    T TestSide(const VVect3<T>& p) const
 	    {
-	        return (N.Dot(p)) + D;
+	        return (N.dotProduct(p)) + D;
 	    }
 
 	    VPlane<T> Flipped() const

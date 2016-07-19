@@ -17,6 +17,11 @@ VDir::VDir(const VPath &path)
 {
 }
 
+bool VDir::reach()
+{
+    return chdir(m_path.toUtf8().data()) == 0;
+}
+
 bool VDir::exists() const
 {
     return access(m_path.toUtf8().data(), F_OK) == 0;

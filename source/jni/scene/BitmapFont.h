@@ -1,10 +1,10 @@
 #pragma once
 
-#include "vglobal.h"
-
-#include "VBasicmath.h"
 #include "VString.h"
 #include "VArray.h"
+#include "VVect.h"
+#include "VMatrix.h"
+
 NV_NAMESPACE_BEGIN
 
 class BitmapFont;
@@ -81,15 +81,15 @@ public:
 
 	virtual void Init(const int maxVertices) = 0;
 	virtual void DrawText3D(BitmapFont const & font, const fontParms_t & flags,
-            const V3Vectf & pos, V3Vectf const & normal, V3Vectf const & up,
+            const VVect3f & pos, VVect3f const & normal, VVect3f const & up,
             float const scale, V4Vectf const & color, const VString &text) = 0;
 	virtual void DrawText3Df(BitmapFont const & font, const fontParms_t & flags,
-            const V3Vectf & pos, V3Vectf const & normal, V3Vectf const & up,
+            const VVect3f & pos, VVect3f const & normal, VVect3f const & up,
             float const scale, V4Vectf const & color, const char *format,
 			...) = 0;
 
 	virtual void DrawTextBillboarded3D(BitmapFont const & font,
-            fontParms_t const & flags, V3Vectf const & pos, float const scale,
+            fontParms_t const & flags, VVect3f const & pos, float const scale,
             V4Vectf const & color, const VString &text) = 0;
 
     virtual void Finish(VR4Matrixf const & viewMatrix) = 0;

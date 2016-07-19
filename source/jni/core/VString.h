@@ -11,7 +11,7 @@ NV_NAMESPACE_BEGIN
 class VString : public std::u16string
 {
 public:
-    VString();
+    VString() {}
 
     VString(const char *str);
     VString(const char *data, uint length);
