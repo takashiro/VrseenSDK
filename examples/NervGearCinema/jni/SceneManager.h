@@ -1,5 +1,6 @@
 #pragma once
 #include "ModelView.h"
+#include "VGeometry.h"
 
 NV_USING_NAMESPACE
 
@@ -38,9 +39,6 @@ public:
 	void 				PutScreenInFront();
 
 	void				ClearGazeCursorGhosts();  	// clear gaze cursor to avoid seeing it lerp
-
-
-	void				SetSceneProgram( const sceneProgram_t opaqueProgram, const sceneProgram_t additiveProgram );
 
     VPosf				GetScreenPose() const;
     V2Vectf			GetScreenSize() const;
@@ -102,8 +100,6 @@ public:
 	GLuint				ScreenVignetteTexture;
 	GLuint				ScreenVignetteSbsTexture;	// for side by side 3D
 
-	sceneProgram_t		SceneProgramIndex;
-
 	OvrSceneView		Scene;
 
 	static const int	MAX_SEATS = 8;
@@ -115,9 +111,6 @@ public:
     VBoxf			SceneScreenBounds;
 
 	bool 				AllowMove;
-
-	bool				VoidedScene;
-
 private:
 	GLuint 				BuildScreenVignetteTexture( const int horizontalTile ) const;
 	int 				BottomMipLevel( const int width, const int height ) const;

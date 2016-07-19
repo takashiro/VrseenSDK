@@ -58,8 +58,6 @@ public:
 public:
     double					startTime;
 
-    jclass					mainActivityClass;	// need to look up from main thread
-
     SceneManager			sceneMgr;
     ShaderManager 			shaderMgr;
 

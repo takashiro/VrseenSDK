@@ -40,7 +40,9 @@ void CinemaApp::init(const VString &fromPackage, const VString &launchIntentJSON
     vApp->vrParms().multisamples = 2;
 
     Native::OneTimeInit( vApp, javaClass() );
+
     shaderMgr.OneTimeInit( launchIntentURI );
+    sceneMgr.OneTimeInit(launchIntentURI);
 
     if(!launchIntentURI.isEmpty())
     {

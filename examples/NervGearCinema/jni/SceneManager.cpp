@@ -47,8 +47,7 @@ SceneManager::SceneManager( CinemaApp &cinema ) :
 	SeatPosition( 0 ),
 	SceneScreenMatrix(),
 	SceneScreenBounds(),
-	AllowMove( false ),
-	VoidedScene( false )
+	AllowMove( false )
 
 {
 	MipMappedMovieTextures[0] = MipMappedMovieTextures[1] = MipMappedMovieTextures[2] = 0;
@@ -422,34 +421,34 @@ bool SceneManager::ChangeSeats( const VFrame & vrFrame )
 		if ( vrFrame.input.buttonPressed & BUTTON_LSTICK_UP )
 		{
 			changed = true;
-			direction[2] += 1.0f;
+			direction.z += 1.0f;
 		}
 		if ( vrFrame.input.buttonPressed & BUTTON_LSTICK_DOWN )
 		{
 			changed = true;
-			direction[2] -= 1.0f;
+			direction.z -= 1.0f;
 		}
 		if ( vrFrame.input.buttonPressed & BUTTON_LSTICK_RIGHT )
 		{
 			changed = true;
-			direction[0] += 1.0f;
+			direction.x += 1.0f;
 		}
 		if ( vrFrame.input.buttonPressed & BUTTON_LSTICK_LEFT )
 		{
 			changed = true;
-			direction[0] -= 1.0f;
+			direction.x -= 1.0f;
 		}
 
 		if ( changed )
 		{
 			// Find the closest seat in the desired direction away from the current seat.
-			direction.Normalize();
-			const float distance = direction.Dot( Scene.FootPos );
+			direction.normalize();
+			const float distance = direction.dotProduct( Scene.FootPos );
             float bestSeatDistance = VConstants<float>::MaxValue;
 			int bestSeat = -1;
 			for ( int i = 0; i < SceneSeatCount; i++ )
 			{
-				const float d = direction.Dot( SceneSeatPositions[i] ) - distance;
+				const float d = direction.dotProduct( SceneSeatPositions[i] ) - distance;
 				if ( d > 0.01f && d < bestSeatDistance )
 				{
 					bestSeatDistance = d;
@@ -541,7 +540,6 @@ bool SceneManager::Command(const VEvent &event)
 		{
 			vInfo("Oversized movie.  Switching to Void scene to reduce judder");
 			UseOverlay = false;
-			VoidedScene = true;
 
 			// downsize the screen resolution to fit into a 960x540 buffer
 			float aspectRatio = ( float )width / ( float )height;
@@ -628,7 +626,7 @@ VR4Matrixf SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 	Scene.DrawEyeView( eye, fovDegrees );
 
     const VR4Matrixf mvp = Scene.MvpForEye( eye, fovDegrees );
-    vInfo("mvp"<<mvp.M[0][3]);
+
 	// draw the screen on top
 	if ( !drawScreen )
 	{
