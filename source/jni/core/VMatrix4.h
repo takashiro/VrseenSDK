@@ -678,6 +678,25 @@ public:
 
     VVect3<T> viewPosition() const { return inverted().translation(); }
     VVect3<T> viewForward() const {return VVect3<T>(-cell[2][0], -cell[2][1], -cell[2][2]).normalized(); }
+
+    VMatrix4 tanAngleMatrixFromUnitSquare() const
+    {
+        const VMatrix4 inv = inverted();
+        VMatrix4 m;
+        m.cell[0][0] = 0.5f * inv.cell[2][0] - 0.5f * (inv.cell[0][0] * inv.cell[2][3] - inv.cell[0][3] * inv.cell[2][0]);
+        m.cell[0][1] = 0.5f * inv.cell[2][1] - 0.5f * (inv.cell[0][1] * inv.cell[2][3] - inv.cell[0][3] * inv.cell[2][1]);
+        m.cell[0][2] = 0.5f * inv.cell[2][2] - 0.5f * (inv.cell[0][2] * inv.cell[2][3] - inv.cell[0][3] * inv.cell[2][2]);
+        m.cell[0][3] = 0.0f;
+        m.cell[1][0] = 0.5f * inv.cell[2][0] + 0.5f * (inv.cell[1][0] * inv.cell[2][3] - inv.cell[1][3] * inv.cell[2][0]);
+        m.cell[1][1] = 0.5f * inv.cell[2][1] + 0.5f * (inv.cell[1][1] * inv.cell[2][3] - inv.cell[1][3] * inv.cell[2][1]);
+        m.cell[1][2] = 0.5f * inv.cell[2][2] + 0.5f * (inv.cell[1][2] * inv.cell[2][3] - inv.cell[1][3] * inv.cell[2][2]);
+        m.cell[1][3] = 0.0f;
+        m.cell[2][0] = m.cell[3][0] = inv.cell[2][0];
+        m.cell[2][1] = m.cell[3][1] = inv.cell[2][1];
+        m.cell[2][2] = m.cell[3][2] = inv.cell[2][2];
+        m.cell[2][3] = m.cell[3][3] = 0.0f;
+        return m;
+    }
 };
 
 typedef VMatrix4<float> VMatrix4f;

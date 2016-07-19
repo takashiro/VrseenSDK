@@ -11,6 +11,10 @@ public:
     VVect3<T> start;
     VVect3<T> end;
 
+    VRect3()
+    {
+    }
+
     VRect3(T x1, T y1, T z1, T x2, T y2, T z2)
         : start(x1, y1, z1)
         , end(x2, y2, z2)
