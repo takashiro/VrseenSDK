@@ -46,7 +46,7 @@
 		</cconfiguration>
 	</storageModule>
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-		<project id="NervGearCinema.null.207192950" name="NervGearCinema"/>
+		<project id="PanoCinema.null.207192950" name="PanoCinema"/>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="scannerConfiguration">
@@ -57,7 +57,7 @@
 	</storageModule>
 	<storageModule moduleId="refreshScope" versionNumber="2">
 		<configuration configurationName="Default">
-			<resource resourceType="PROJECT" workspacePath="/NervGearCinema"/>
+			<resource resourceType="PROJECT" workspacePath="/PanoCinema"/>
 		</configuration>
 	</storageModule>
 </cproject>

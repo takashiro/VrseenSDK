@@ -8,7 +8,7 @@ TARGET = cinema
 INCLUDEPATH += jni/
 
 SOURCES += \
-    jni/CinemaApp.cpp \
+    jni/PanoCinema.cpp \
     jni/Native.cpp \
     jni/View.cpp \
     jni/SceneManager.cpp \
@@ -37,7 +37,7 @@ SOURCES += \
     jni/UI/UIButton.cpp
 
 HEADERS += \
-    jni/CinemaApp.h \
+    jni/PanoCinema.h \
     jni/Native.h \
     jni/View.h \
     jni/SceneManager.h \

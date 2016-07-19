@@ -4,24 +4,20 @@
 
 NV_USING_NAMESPACE
 
-namespace OculusCinema {
-
-class CinemaApp;
+class PanoCinema;
 
 class ShaderManager
 {
 public:
-							ShaderManager( CinemaApp &cinema );
+							ShaderManager( PanoCinema &cinema );
 
 	void					OneTimeInit(const VString &launchIntent );
 	void					OneTimeShutdown();
 
-	CinemaApp &				Cinema;
+	PanoCinema &				Cinema;
 
 	// Render the external image texture to a conventional texture to allow
 	// mipmap generation.
 	VGlShader				CopyMovieProgram;
 	VGlShader				MovieExternalUiProgram;
 };
-
-} // namespace OculusCinema

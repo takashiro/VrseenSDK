@@ -6,7 +6,6 @@
 
 NV_USING_NAMESPACE
 
-namespace OculusCinema {
 
 class MovieDef
 {
@@ -32,13 +31,16 @@ public:
 };
 
 
-class CinemaApp : public VMainActivity
+class PanoCinema : public VMainActivity
 {
 public:
-    CinemaApp(JNIEnv *jni, jclass activityClass, jobject activityObject);
+    PanoCinema(JNIEnv *jni, jclass activityClass, jobject activityObject);
 
     void init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI ) override;
     void shutdown() override;
+
+    void stop();
+    void onStart(const VString &url);
 
     VR4Matrixf drawEyeView( const int eye, const float fovDegrees ) override;
 
@@ -52,8 +54,6 @@ public:
     void			    	setMovie( const MovieDef * nextMovie );
     const MovieDef *		currentMovie() const { return m_currentMovie; }
 
-
-    void 					startMoviePlayback();
     bool 					isMovieFinished() const;
 public:
     double					startTime;
@@ -75,4 +75,3 @@ private:
     bool					m_movieFinishedPlaying;
 };
 
-} // namespace OculusCinema

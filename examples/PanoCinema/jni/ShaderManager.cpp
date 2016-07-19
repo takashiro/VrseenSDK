@@ -1,11 +1,9 @@
 #include "ShaderManager.h"
-#include "CinemaApp.h"
+#include "PanoCinema.h"
 #include "core/VTimer.h"
 
 
 NV_USING_NAMESPACE
-
-namespace OculusCinema {
 
 //=======================================================================================
 
@@ -63,7 +61,7 @@ const char* movieExternalUiFragmentShaderSource =
 
 //=======================================================================================
 
-ShaderManager::ShaderManager( CinemaApp &cinema ) :
+ShaderManager::ShaderManager( PanoCinema &cinema ) :
 	Cinema( cinema )
 {
 }
@@ -87,5 +85,3 @@ void ShaderManager::OneTimeShutdown()
 	 MovieExternalUiProgram .destroy();
 	 CopyMovieProgram .destroy();
 }
-
-} // namespace OculusCinema

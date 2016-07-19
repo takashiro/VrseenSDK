@@ -8,8 +8,7 @@ include ../../source/import_vrlib.mk		# import VRLib for this module.  Do NOT ca
 include ../../source/cflags.mk
 
 LOCAL_MODULE    := cinema				# generate libcinema.so
-LOCAL_SRC_FILES	:= 	CinemaApp.cpp \
-					Native.cpp \
+LOCAL_SRC_FILES	:= 	PanoCinema.cpp \
 					SceneManager.cpp \
 					ShaderManager.cpp \
 NDK_MODULE_PATH := ../../Tools/

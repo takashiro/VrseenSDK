@@ -4,9 +4,7 @@
 
 NV_USING_NAMESPACE
 
-namespace OculusCinema {
-
-class CinemaApp;
+class PanoCinema;
 
 enum MovieFormat
 {
@@ -21,7 +19,7 @@ enum MovieFormat
 class SceneManager
 {
 public:
-						SceneManager( CinemaApp &app_ );
+						SceneManager( PanoCinema &app_ );
 
     void 				OneTimeInit( const VString &launchIntent );
 	void				OneTimeShutdown();
@@ -56,7 +54,7 @@ public:
 	bool				GetUseOverlay() const;
 
 public:
-	CinemaApp &			Cinema;
+	PanoCinema &			Cinema;
 
 
 	bool				UseOverlay;
@@ -117,5 +115,4 @@ private:
 	void 				ClampScreenToView();
 };
 
-} // namespace OculusCinema
 

@@ -1,5 +1,4 @@
-#include "CinemaApp.h"
-#include "Native.h"
+#include "PanoCinema.h"
 #include "SceneManager.h"
 #include "SurfaceTexture.h"
 #include "VAlgorithm.h"
@@ -12,10 +11,7 @@
 
 NV_USING_NAMESPACE
 
-namespace OculusCinema
-{
-
-SceneManager::SceneManager( CinemaApp &cinema ) :
+SceneManager::SceneManager( PanoCinema &cinema ) :
 	Cinema( cinema ),
 	UseOverlay( true ),
 	MovieTexture( NULL ),
@@ -275,8 +271,6 @@ bool SceneManager::GetUseOverlay() const
 
 void SceneManager::ClearMovie()
 {
-    Native::StopMovie( vApp );
-
 	MovieTextureTimestamp = 0;
 	FrameUpdateNeeded = true;
 	CurrentMovieWidth = 0;
@@ -492,8 +486,8 @@ bool SceneManager::Command(const VEvent &event)
     if (event.name =="video") {
         int width = event.data.at(0).toInt();
         int height = event.data.at(1).toInt();
-        MovieRotation = event.data.at(2).toInt();
-        MovieDuration = event.data.at(3).toInt();
+//        MovieRotation = event.data.at(2).toInt();
+//        MovieDuration = event.data.at(3).toInt();
 
 		const MovieDef *movie = Cinema.currentMovie();
         vAssert(movie);
@@ -615,7 +609,7 @@ bool SceneManager::Command(const VEvent &event)
 VR4Matrixf SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 {
 	// allow stereo movies to also be played in mono
-	const int stereoEye = ForceMono ? 0 : eye;
+//	const int stereoEye = ForceMono ? 0 : eye;
 
 	const bool drawScreen = (MovieTexture && ( CurrentMovieWidth > 0 ));
 
@@ -641,75 +635,75 @@ VR4Matrixf SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 
 	glVertexAttrib4f( 2, 1.0f, 1.0f, 1.0f, 1.0f );	// no color attributes on the surface verts, so force to 1.0
 
-    const VR4Matrixf stretchTop(
-			1, 0, 0, 0,
-			0, 0.5f, 0, 0,
-			0, 0, 1, 0,
-			0, 0, 0, 1 );
-    const VR4Matrixf stretchBottom(
-			1, 0, 0, 0,
-			0, 0.5, 0, 0.5f,
-			0, 0, 1, 0,
-			0, 0, 0, 1 );
-    const VR4Matrixf stretchRight(
-			0.5f, 0, 0, 0.5f,
-			0, 1, 0, 0,
-			0, 0, 1, 0,
-			0, 0, 0, 1 );
-    const VR4Matrixf stretchLeft(
-			0.5f, 0, 0, 0,
-			0, 1, 0, 0,
-			0, 0, 1, 0,
-			0, 0, 0, 1 );
+//    const VR4Matrixf stretchTop(
+//			1, 0, 0, 0,
+//			0, 0.5f, 0, 0,
+//			0, 0, 1, 0,
+//			0, 0, 0, 1 );
+//    const VR4Matrixf stretchBottom(
+//			1, 0, 0, 0,
+//			0, 0.5, 0, 0.5f,
+//			0, 0, 1, 0,
+//			0, 0, 0, 1 );
+//    const VR4Matrixf stretchRight(
+//			0.5f, 0, 0, 0.5f,
+//			0, 1, 0, 0,
+//			0, 0, 1, 0,
+//			0, 0, 0, 1 );
+//    const VR4Matrixf stretchLeft(
+//			0.5f, 0, 0, 0,
+//			0, 1, 0, 0,
+//			0, 0, 1, 0,
+//			0, 0, 0, 1 );
+//
+//    const VR4Matrixf rotate90(
+//			0, 1, 0, 0,
+//			-1, 0, 0, 1,
+//			0, 0, 1, 0,
+//			0, 0, 0, 1 );
+//
+//    const VR4Matrixf rotate180(
+//			-1, 0, 0, 1,
+//			0, -1, 0, 1,
+//			0, 0, 1, 0,
+//			0, 0, 0, 1 );
+//
+//    const VR4Matrixf rotate270(
+//			0, -1, 0, 1,
+//			1, 0, 0, 0,
+//			0, 0, 1, 0,
+//			0, 0, 0, 1 );
 
-    const VR4Matrixf rotate90(
-			0, 1, 0, 0,
-			-1, 0, 0, 1,
-			0, 0, 1, 0,
-			0, 0, 0, 1 );
+    VR4Matrixf texMatrix = VR4Matrixf::Identity();
 
-    const VR4Matrixf rotate180(
-			-1, 0, 0, 1,
-			0, -1, 0, 1,
-			0, 0, 1, 0,
-			0, 0, 0, 1 );
-
-    const VR4Matrixf rotate270(
-			0, -1, 0, 1,
-			1, 0, 0, 0,
-			0, 0, 1, 0,
-			0, 0, 0, 1 );
-
-    VR4Matrixf texMatrix;
-
-	switch ( CurrentMovieFormat )
-	{
-		case VT_LEFT_RIGHT_3D:
-		case VT_LEFT_RIGHT_3D_FULL:
-			texMatrix = ( stereoEye ? stretchRight : stretchLeft );
-			break;
-		case VT_TOP_BOTTOM_3D:
-		case VT_TOP_BOTTOM_3D_FULL:
-			texMatrix = ( stereoEye ? stretchBottom : stretchTop );
-			break;
-		default:
-			switch( MovieRotation )
-			{
-				case 0 :
-                    texMatrix = VR4Matrixf::Identity();
-					break;
-				case 90 :
-					texMatrix = rotate90;
-					break;
-				case 180 :
-					texMatrix = rotate180;
-					break;
-				case 270 :
-					texMatrix = rotate270;
-					break;
-			}
-			break;
-	}
+//	switch ( CurrentMovieFormat )
+//	{
+//		case VT_LEFT_RIGHT_3D:
+//		case VT_LEFT_RIGHT_3D_FULL:
+//			texMatrix = ( stereoEye ? stretchRight : stretchLeft );
+//			break;
+//		case VT_TOP_BOTTOM_3D:
+//		case VT_TOP_BOTTOM_3D_FULL:
+//			texMatrix = ( stereoEye ? stretchBottom : stretchTop );
+//			break;
+//		default:
+//			switch( MovieRotation )
+//			{
+//				case 0 :
+//                    texMatrix = VR4Matrixf::Identity();
+//					break;
+//				case 90 :
+//					texMatrix = rotate90;
+//					break;
+//				case 180 :
+//					texMatrix = rotate180;
+//					break;
+//				case 270 :
+//					texMatrix = rotate270;
+//					break;
+//			}
+//			break;
+//	}
 
 	//
 	// draw the movie texture
@@ -855,5 +849,3 @@ VR4Matrixf SceneManager::Frame( const VFrame & vrFrame )
 
 	return Scene.CenterViewMatrix();
 }
-
-} // namespace OculusCinema
