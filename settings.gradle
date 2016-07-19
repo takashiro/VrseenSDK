@@ -1,4 +1,5 @@
 include ':source'
 include ':tests'
+include ':examples:PanoCinema'
 include ':examples:PanoPhoto'
 include ':examples:PanoVideo'
