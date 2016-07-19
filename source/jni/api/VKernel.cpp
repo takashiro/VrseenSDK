@@ -381,7 +381,7 @@ void VKernel::run()
     }
 
     //TODO
-    frameSmooth = new VFrameSmooth(asyncSmooth, false);
+    frameSmooth = new VFrameSmooth(asyncSmooth, true);
     frameSmooth->setJavaObject(ActivityObject);
 
     jmethodID setSchedFifoId = JniUtils::GetStaticMethodID(Jni, VrLibClass, "setSchedFifoStatic", "(Landroid/app/Activity;II)I");
