@@ -2,6 +2,7 @@
 
 #include "VRotationState.h"
 #include "VMatrix.h"
+#include <jni.h>
 
 enum{
 //    VK_INHIBIT_SRGB_FB = 1,
@@ -196,6 +197,7 @@ public:
     int msaa;
     bool isRunning;
     bool asyncSmooth;
+    jobject m_ActivityObject;
 
     void doSmooth(const ovrTimeWarpParms * parms );
 

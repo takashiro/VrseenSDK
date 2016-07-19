@@ -269,7 +269,15 @@ void VKernel::run()
 #else
     char const * buildConfig = "RELEASE";
 #endif
-    ActivityObject = vApp->javaObject();
+    if (m_activityobject!=null)
+    {
+    	ActivityObject = m_ActivityObject;
+    }
+    else
+    {
+    	ActivityObject = vApp->javaObject();
+    }
+
     // This returns the existing jni if the caller has already created
     // one, or creates a new one.
     const jint rtn = VrLibJavaVM->AttachCurrentThread( &Jni, 0 );
