@@ -6,6 +6,8 @@
 #include <unistd.h>
 #include <pthread.h>
 
+#include <VSemaphore.h>
+
 NV_NAMESPACE_BEGIN
 
 struct VEventLoop::Private
@@ -27,11 +29,7 @@ struct VEventLoop::Private
         pthread_mutexattr_init(&attr);
         pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_ERRORCHECK);
         pthread_mutex_init(&mutex, &attr);
-        pthread_mutex_init(&postMutex, &attr);
-        pthread_mutex_init(&receiveMutex, &attr);
         pthread_mutexattr_destroy(&attr);
-        pthread_cond_init(&posted, NULL);
-        pthread_cond_init(&received, NULL);
     }
 
     bool shutdown;
@@ -48,10 +46,8 @@ struct VEventLoop::Private
     volatile int head;
     volatile int tail;
     pthread_mutex_t mutex;
-    pthread_cond_t posted;
-    pthread_mutex_t postMutex;
-    pthread_cond_t received;
-    pthread_mutex_t receiveMutex;
+    VSemaphore posted;
+    VSemaphore received;
 
     bool post(const VEvent &event, bool synchronized)
     {
@@ -70,11 +66,9 @@ struct VEventLoop::Private
         tail++;
         pthread_mutex_unlock(&mutex);
 
-        pthread_cond_signal(&posted);
+        posted.post();
         if (synchronized) {
-            pthread_mutex_lock(&receiveMutex);
-            pthread_cond_wait(&received, &receiveMutex);
-            pthread_mutex_unlock(&receiveMutex);
+            received.wait();
         }
 
         return true;
@@ -92,10 +86,6 @@ VEventLoop::~VEventLoop()
     delete[] d->messages;
 
     pthread_mutex_destroy(&d->mutex);
-    pthread_mutex_destroy(&d->postMutex);
-    pthread_mutex_destroy(&d->receiveMutex);
-    pthread_cond_destroy(&d->posted);
-    pthread_cond_destroy(&d->received);
 
     delete d;
 }
@@ -166,7 +156,7 @@ VEvent VEventLoop::next()
     const int index = d->head % d->capacity;
     VEvent event = d->messages[index].event;
     if (d->messages[index].sychronized) {
-        pthread_cond_signal(&d->received);
+        d->received.post();
     }
     d->messages[index].sychronized = false;
     d->head++;
@@ -185,9 +175,7 @@ void VEventLoop::wait()
     }
     pthread_mutex_unlock(&d->mutex);
 
-    pthread_mutex_lock(&d->postMutex);
-    pthread_cond_wait(&d->posted, &d->postMutex);
-    pthread_mutex_unlock(&d->postMutex);
+    d->posted.wait();
 }
 
 void VEventLoop::clear()
