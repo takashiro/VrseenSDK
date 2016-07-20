@@ -349,7 +349,9 @@ void VKernel::run()
         vInfo("Cleared JNI exception");
     }
 
-    frameSmooth = new VFrameSmooth(asyncSmooth, vApp->vrParms().wantSingleBuffer);
+    //TODO::need to improve
+    bool wantsinglebuffer = VOsBuild::getString(VOsBuild::Model) == "ZTE A2017";
+    frameSmooth = new VFrameSmooth(asyncSmooth, wantsinglebuffer);
 
     jmethodID setSchedFifoId = JniUtils::GetStaticMethodID(Jni, VrLibClass, "setSchedFifoStatic", "(Landroid/app/Activity;II)I");
     Jni->CallStaticIntMethod(VrLibClass, setSchedFifoId, ActivityObject, gettid(), 1);
