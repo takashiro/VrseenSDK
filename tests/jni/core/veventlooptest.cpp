@@ -1,5 +1,8 @@
 #include "test.h"
+
 #include <VEventLoop.h>
+#include <VSemaphore.h>
+
 #include <thread>
 
 NV_USING_NAMESPACE
@@ -28,30 +31,32 @@ void test()
     }
 
     {
-        VEventLoop *loop = new VEventLoop(100);
+        VSemaphore release;
+        VEventLoop loop(100);
         volatile bool finished = false;
         std::thread receiver([&]{
-            loop->wait();
+            loop.wait();
             finished = true;
-            VEvent event = loop->next();
+            VEvent event = loop.next();
             assert(event.name == "yunzhe");
-            delete loop;
+            release.post();
         });
         receiver.detach();
-
-        loop->send("yunzhe");
+        loop.send("yunzhe");
         assert(finished);
+        release.wait();
     }
 
     {
-        VEventLoop *loop = new VEventLoop(100);
+        VSemaphore release;
+        VEventLoop loop(100);
         volatile int result = 0;
         std::thread worker([&]{
             forever {
-                loop->wait();
-                VEvent event = loop->next();
+                loop.wait();
+                VEvent event = loop.next();
                 if (event.name == "quit") {
-                    delete loop;
+                    release.post();
                     break;
                 } else if (event.name == "plus") {
                     result++;
@@ -61,10 +66,11 @@ void test()
         worker.detach();
 
         for (int i = 0; i < 10; i++) {
-            loop->post("plus");
+            loop.post("plus");
         }
-        loop->send("quit");
+        loop.send("quit");
         assert(result == 10);
+        release.wait();
     }
 }
 
