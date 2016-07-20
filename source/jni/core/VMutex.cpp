@@ -13,9 +13,6 @@ struct VMutex::Private
     pthread_t locker;
 };
 
-static pthread_mutexattr_t RecursiveAttr;
-static bool RecursiveAttrInit = 0;
-
 VMutex::VMutex(bool recursive)
     : d(new Private)
 {
@@ -23,14 +20,13 @@ VMutex::VMutex(bool recursive)
     d->lockCount = 0;
 
     if (d->recursive) {
-        if (!RecursiveAttrInit) {
-            pthread_mutexattr_init(&RecursiveAttr);
-            pthread_mutexattr_settype(&RecursiveAttr, PTHREAD_MUTEX_RECURSIVE);
-            RecursiveAttrInit = 1;
-        }
-        pthread_mutex_init(&d->mutex, &RecursiveAttr);
+        pthread_mutexattr_t attr;
+        pthread_mutexattr_init(&attr);
+        pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+        pthread_mutexattr_destroy(&attr);
+        pthread_mutex_init(&d->mutex, &attr);
     } else {
-        pthread_mutex_init(&d->mutex, 0);
+        pthread_mutex_init(&d->mutex, NULL);
     }
 }
 
