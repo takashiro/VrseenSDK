@@ -377,7 +377,7 @@ void DirectRender::shutdown()
 // Conventionally swapped rendering will return false.
 bool DirectRender::isFrontBuffer() const
 {
-    return m_wantFrontBuffer && m_gvrFrontbufferExtension;
+    return m_wantFrontBuffer;
 }
 
 void DirectRender::beginDirectRendering( int x, int y, int width, int height )
