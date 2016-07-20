@@ -3,7 +3,7 @@
 #include "core/VTimer.h"
 #include <android/JniUtils.h>
 
-NV_NAMESPACE_BEGIN
+NV_USING_NAMESPACE
 
 extern "C" {
 
