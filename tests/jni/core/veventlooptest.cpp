@@ -43,15 +43,14 @@ void test()
     }
 
     {
-        VEventLoop loop(100);
+        VEventLoop *loop = new VEventLoop(100);
         volatile int result = 0;
-        volatile bool stopped = false;
         std::thread worker([&]{
             forever {
-                loop.wait();
-                VEvent event = loop.next();
+                loop->wait();
+                VEvent event = loop->next();
                 if (event.name == "quit") {
-                    stopped = true;
+                    delete loop;
                     break;
                 } else if (event.name == "plus") {
                     result++;
@@ -61,10 +60,9 @@ void test()
         worker.detach();
 
         for (int i = 0; i < 10; i++) {
-            loop.post("plus");
+            loop->post("plus");
         }
-        loop.send("quit");
-        assert(stopped);
+        loop->send("quit");
         assert(result == 10);
     }
 }
