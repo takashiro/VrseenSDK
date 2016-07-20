@@ -73,6 +73,31 @@ struct VEventLoop::Private
 
         return true;
     }
+
+    bool post(VEvent &&event, bool synchronized)
+    {
+        if (shutdown) {
+            return false;
+        }
+
+        pthread_mutex_lock(&mutex);
+        if (tail - head >= capacity) {
+            pthread_mutex_unlock(&mutex);
+            return false;
+        }
+        const int index = tail % capacity;
+        messages[index].event = std::move(event);
+        messages[index].sychronized = synchronized;
+        tail++;
+        pthread_mutex_unlock(&mutex);
+
+        posted.post();
+        if (synchronized) {
+            received.wait();
+        }
+
+        return true;
+    }
 };
 
 VEventLoop::VEventLoop(int capacity)
@@ -100,24 +125,36 @@ void VEventLoop::post(const VEvent &event)
     d->post(event, false);
 }
 
+void VEventLoop::post(VEvent &&event)
+{
+    d->post(std::move(event), false);
+}
+
 void VEventLoop::post(const VString &command, const VVariant &data)
 {
     VEvent event(command);
     event.data = data;
-    d->post(event, false);
+    d->post(std::move(event), false);
+}
+
+void VEventLoop::post(const VString &command, VVariant &&data)
+{
+    VEvent event(command);
+    event.data = std::move(data);
+    d->post(std::move(event), false);
 }
 
 void VEventLoop::post(const char *command)
 {
     VEvent event(command);
-    d->post(event, false);
+    d->post(std::move(event), false);
 }
 
 void VEventLoop::post(const VVariant::Function &func)
 {
     VEvent event;
     event.data = func;
-    d->post(event, false);
+    d->post(std::move(event), false);
 }
 
 void VEventLoop::send(const VEvent &event)
@@ -125,24 +162,36 @@ void VEventLoop::send(const VEvent &event)
     d->post(event, true);
 }
 
+void VEventLoop::send(VEvent &&event)
+{
+    d->post(std::move(event), true);
+}
+
 void VEventLoop::send(const VString &command, const VVariant &data)
 {
     VEvent event(command);
     event.data = data;
-    d->post(event, true);
+    d->post(std::move(event), true);
+}
+
+void VEventLoop::send(const VString &command, VVariant &&data)
+{
+    VEvent event(command);
+    event.data = std::move(data);
+    d->post(std::move(event), true);
 }
 
 void VEventLoop::send(const char *command)
 {
     VEvent event(command);
-    d->post(event, true);
+    d->post(std::move(event), true);
 }
 
 void VEventLoop::send(const VVariant::Function &func)
 {
     VEvent event;
     event.data = func;
-    d->post(event, true);
+    d->post(std::move(event), true);
 }
 
 VEvent VEventLoop::next()
@@ -154,7 +203,7 @@ VEvent VEventLoop::next()
     }
 
     const int index = d->head % d->capacity;
-    VEvent event = d->messages[index].event;
+    VEvent event = std::move(d->messages[index].event);
     if (d->messages[index].sychronized) {
         d->received.post();
     }

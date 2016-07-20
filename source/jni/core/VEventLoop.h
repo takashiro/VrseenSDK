@@ -14,13 +14,17 @@ public:
 
     //Send out an event
     void post(const VEvent &event);
+    void post(VEvent &&event);
     void post(const VString &command, const VVariant &data);
+    void post(const VString &command, VVariant &&data);
     void post(const char *command);
     void post(const VVariant::Function &func);
 
     //Send out an event and wait until it is proceeded
     void send(const VEvent &event);
+    void send(VEvent &&event);
     void send(const VString &command, const VVariant &data);
+    void send(const VString &command, VVariant &&data);
     void send(const char *command);
     void send(const VVariant::Function &func);
 
