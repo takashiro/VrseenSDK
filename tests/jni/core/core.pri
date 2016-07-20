@@ -10,5 +10,6 @@ include(VVariant.pri)
 include(VEventLoop.pri)
 include(VCircularQueue.pri)
 include(VVect.pri)
+include(VSemaphore.pri)
 
 SOURCES += $$NV_ROOT/core/VLog.cpp
