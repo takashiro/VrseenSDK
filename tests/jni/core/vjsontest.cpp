@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <sstream>
+#include <iomanip>
 
 #include <VJson.h>
 
@@ -9,11 +10,6 @@ using namespace std;
 NV_USING_NAMESPACE
 
 namespace {
-
-inline double abs(double num)
-{
-    return num >= 0 ? num : -num;
-}
 
 void test()
 {
@@ -55,7 +51,8 @@ void test()
 
         double pi = 3.14;
         VJson num2(pi);
-        assert(abs(num2.toDouble() - pi) <= 1e-4);
+        double delta = num2.toDouble() - pi;
+        assert(-1e4 <= delta && delta <= 1e-4);
     }
 
     for (int i = 0; i < 10; i++) {
@@ -69,12 +66,16 @@ void test()
 
     for (int i = 0; i < 10000; i++) {
         stringstream s;
-        double value = rand() / 1e6;
-        s << value;
+        double value = (double) (rand() % 1000000) / 1e6;
+        s << setprecision(6) << value;
         VJson json;
-        s >> json;
+        s >> setprecision(6) >> json;
         double result = json.toDouble();
-        assert(abs(result - value) <= 1e-6);
+        double delta = result - value;
+        if (!(-1e-6 <= delta && delta <= 1e-6)) {
+            vInfo("result: " << result << " original:" << value << " delta:" << delta);
+        }
+        assert(-1e-6 <= delta && delta <= 1e-6);
     }
 
     {
