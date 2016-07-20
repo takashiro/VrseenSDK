@@ -17,7 +17,7 @@
 #include "android/JniUtils.h"
 #include "android/VOsBuild.h"
 
-NV_USING_NAMESPACE
+NV_NAMESPACE_BEGIN
 
 // Valid for the thread that called ovr_EnterVrMode
 static JNIEnv	*				Jni;
@@ -513,3 +513,5 @@ void VKernel::doSmooth(const ovrTimeWarpParms * parms )
     if(frameSmooth==NULL||!isRunning) return;
     frameSmooth->doSmooth(*parms);
 }
+
+NV_NAMESPACE_END

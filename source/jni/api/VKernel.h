@@ -3,7 +3,9 @@
 #include "VRotationState.h"
 #include "VMatrix.h"
 
-enum{
+NV_NAMESPACE_BEGIN
+
+enum {
 //    VK_INHIBIT_SRGB_FB = 1,
 //    VK_USE_S = 2,
 //    VK_FLUSH = 4,
@@ -181,9 +183,6 @@ typedef enum
     WARP_INIT_LOADING_ICON,
     WARP_INIT_MESSAGE
 } ovrWarpInit;
-
-NV_NAMESPACE_BEGIN
-
 
 class VKernel
 {
