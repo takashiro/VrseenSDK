@@ -54,6 +54,7 @@ void * Queue1Thread( void * v )
 		}
 		pthread_mutex_unlock( &QueueMutex );
 
+        Queue1.wait();
         VEvent event = Queue1.next();
         VString filename = event.data.toString();
 
