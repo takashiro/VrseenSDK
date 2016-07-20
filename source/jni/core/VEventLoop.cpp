@@ -32,6 +32,12 @@ struct VEventLoop::Private
         pthread_mutexattr_destroy(&attr);
     }
 
+    ~Private()
+    {
+        delete[] messages;
+        pthread_mutex_destroy(&mutex);
+    }
+
     bool shutdown;
     const int capacity;
 
@@ -107,11 +113,6 @@ VEventLoop::VEventLoop(int capacity)
 
 VEventLoop::~VEventLoop()
 {
-    // Free the queue itself.
-    delete[] d->messages;
-
-    pthread_mutex_destroy(&d->mutex);
-
     delete d;
 }
 
