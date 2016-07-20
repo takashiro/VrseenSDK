@@ -67,14 +67,14 @@ void test()
         assert(json.toInt() == value);
     }
 
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 10000; i++) {
         stringstream s;
-        double value = rand() / (double) rand();
+        double value = rand() / 1e6;
         s << value;
         VJson json;
         s >> json;
         double result = json.toDouble();
-        assert(abs(result - value) <= 0.01);
+        assert(abs(result - value) <= 1e-6);
     }
 
     {
