@@ -28,17 +28,18 @@ void test()
     }
 
     {
-        VEventLoop loop(100);
+        VEventLoop *loop = new VEventLoop(100);
         volatile bool finished = false;
         std::thread receiver([&]{
-            loop.wait();
+            loop->wait();
             finished = true;
-            VEvent event = loop.next();
+            VEvent event = loop->next();
             assert(event.name == "yunzhe");
+            delete loop;
         });
         receiver.detach();
 
-        loop.send("yunzhe");
+        loop->send("yunzhe");
         assert(finished);
     }
 
