@@ -375,7 +375,7 @@ void VKernel::exit()
 
     delete frameSmooth;
     frameSmooth = NULL;
-    isRunning  = false;
+    isRunning = false;
 
     getPowerLevelStateID = NULL;
 

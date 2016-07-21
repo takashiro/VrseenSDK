@@ -303,6 +303,7 @@ struct VFrameSmooth::Private
             m_defaultLoadingIconTexId( 0 ),
             m_hasEXT_sRGB_write_control( false ),
             m_sStartupTid( 0 ),
+            m_wantSingleBuffer(wantSingleBuffer),
             m_jni( NULL ),
 //            m_eglDisplay( 0 ),
 //            m_eglPbufferSurface( 0 ),
