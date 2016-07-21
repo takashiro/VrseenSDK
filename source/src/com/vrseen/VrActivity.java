@@ -10,6 +10,8 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 *************************************************************************************/
 package com.vrseen;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -29,6 +31,7 @@ import android.graphics.Canvas;
 import android.graphics.SurfaceTexture;
 import android.media.AudioManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
@@ -232,14 +235,14 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 			if (down) {
 				adjustVolume(1);
 			}
-			return true;
+			return super.dispatchKeyEvent(event);
 		}
 
 		if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
 			if (down) {
 				adjustVolume(-1);
 			}
-			return true;
+			return super.dispatchKeyEvent(event);
 		}
 
 		// Joypads will register as keyboards, but keyboards won't
@@ -300,12 +303,23 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 	/*
 	 * These only happen if the application did not swallow the event.
 	 */
+	private static final int FLING_MIN_DISTANCE = 50;
+
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		// Log.d(TAG, "onKeyDown " + keyCode + ", event = " + event );
-		return super.onKeyDown(keyCode, event);
-	}
+		// TODO Auto-generated method stub
+		if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+//			Toast.makeText(this, "声音+", Toast.LENGTH_SHORT).show();
 
+			return true;
+		} else if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+//			Toast.makeText(this, "声音-", Toast.LENGTH_SHORT).show();
+
+			return true;
+		}else {
+			return super.onKeyDown(keyCode, event);
+		}
+	}
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
 		// Log.d(TAG, "onKeyUp " + keyCode + ", event = " + event );
@@ -348,6 +362,7 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 	private void setDefaultLocale() {
 		setLocale("en");
 	}
+
 
 	@Override
 	protected void onStart() {
