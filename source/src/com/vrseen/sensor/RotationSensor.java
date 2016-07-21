@@ -98,8 +98,17 @@ public class RotationSensor {
 	
 	void onUSensor(long timeStamp, float w, float x, float y, float z,
 			float gyroX, float gyroY, float gyroZ) {
+		if (mCurrentSensor == SensorType.USBHOST) {
+			mListener.onRotationSensor(timeStamp, w, x, y, z, gyroX, gyroY, gyroZ);
+		}
+	}
+
+	void onUSensorAttached() {
 		mCurrentSensor = SensorType.USBHOST;
-		mListener.onRotationSensor(timeStamp, w, x, y, z, gyroX, gyroY, gyroZ);
+	}
+
+	void onUSensorDetached() {
+		mCurrentSensor = SensorType.INTERNAL;
 	}
 	
 	void onUSensorError() {

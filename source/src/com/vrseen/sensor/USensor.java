@@ -117,6 +117,9 @@ public class USensor {
 						if (getEndpoint()) {
 
 							if (GetConnection()) {
+								if (uSensorListener != null) {
+									uSensorListener.onAttached();
+								}
 
 								// buffer = ByteBuffer.allocate(100);
 								SetKeepAlive(10000);
@@ -242,6 +245,9 @@ public class USensor {
 					if (getEndpoint()) {
 
 						if (GetConnection()) {
+							if (uSensorListener != null) {
+								uSensorListener.onAttached();
+							}
 
 							// buffer = ByteBuffer.allocate(100);
 							if(request == null){
@@ -276,11 +282,16 @@ public class USensor {
 		System.out.println("usb dettach" + " " + Vid + " " + Pid);
 
 		if (isValidProduct(Vid, Pid)) {
+			if (uSensorListener != null) {
+				uSensorListener.onDetached();
+			}
 			mConnected = false;
 			//mKeepTimer.cancel();
 			//mKeepTimer.purge();
-			mTimer.cancel();
-			mTimer.purge();
+			if (mTimer != null) {
+				mTimer.cancel();
+				mTimer.purge();
+			}
 
 			uSensorListener.onSensorErrorDetected();
 			System.out.println("UsbDetached");
