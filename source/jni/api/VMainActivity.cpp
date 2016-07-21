@@ -345,8 +345,7 @@ jobject Java_com_vrseen_VrActivity_nativeGetPopupSurfaceTexture(JNIEnv *, jclass
     return vApp->dialogTexture()->javaObject;
 }
 
-void Java_com_vrseen_VrActivity_nativePause(JNIEnv *jni, jclass clazz,
-        jlong appPtr)
+void Java_com_vrseen_VrActivity_nativePause(JNIEnv *jni, jclass clazz)
 {
     vApp->eventLoop().send("pause");
 }
