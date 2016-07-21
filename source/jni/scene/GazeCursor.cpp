@@ -341,7 +341,7 @@ void OvrGazeCursorLocal::Frame( VMatrix4f const & viewMatrix, float const deltaT
 // OvrGazeCursorLocal::Render
 void OvrGazeCursorLocal::Render( int const eye, VMatrix4f const & mvp ) const
 {
-
+    NV_UNUSED(eye);
     VEglDriver::logErrorsEnum( "OvrGazeCursorLocal::Render - pre" );
 
 	//vInfo("OvrGazeCursorLocal::Render");

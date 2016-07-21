@@ -55,7 +55,7 @@ extern "C"
 void Java_com_vrseen_VrLib_nativeVsync( JNIEnv *jni, jclass clazz, jlong frameTimeNanos );
 void Java_com_vrseen_VrLib_nativeVolumeEvent(JNIEnv *jni, jclass clazz, jint volume);
 
-JNIEXPORT void Java_com_vrseen_VrLib_nativeHeadsetEvent(JNIEnv *jni, jclass clazz, jint state)
+JNIEXPORT void Java_com_vrseen_VrLib_nativeHeadsetEvent(JNIEnv *, jclass, jint state)
 {
     vInfo("nativeHeadsetEvent(" << state << ")");
     HeadsetPluggedState.setState( ( state == 1 ) );

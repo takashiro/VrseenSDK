@@ -22,7 +22,7 @@ class SceneManager
 public:
 						SceneManager( PanoCinema &app_ );
 
-    void 				OneTimeInit( const VString &launchIntent );
+    void 				OneTimeInit(const VString &);
 	void				OneTimeShutdown();
 
     VMatrix4f 			DrawEyeView( const int eye, const float fovDegrees );

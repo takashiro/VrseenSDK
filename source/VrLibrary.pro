@@ -37,8 +37,7 @@ HEADERS += \
     jni/App.h \
     jni/vglobal.h
 
-include(jni/3rdparty/minizip/minizip.pri)
-include(jni/3rdparty/stb/stb.pri)
+LIBS += -L$$PWD/jni/3rdparty/
 
 # OpenGL ES 3.0
 LIBS += -lGLESv3
@@ -52,8 +51,11 @@ LIBS += -llog
 LIBS += -landroid
 # For minizip
 LIBS += -lz
+LIBS += -lminizip
 # audio
 LIBS += -lOpenSLES
+# stb
+LIBS += -lstb
 
 linux {
     CONFIG(staticlib) {

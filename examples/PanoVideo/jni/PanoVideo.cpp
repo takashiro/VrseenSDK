@@ -28,7 +28,7 @@ NV_NAMESPACE_BEGIN
 
 extern "C" {
 
-void Java_com_vrseen_panovideo_PanoVideo_construct(JNIEnv *jni, jclass clazz, jobject activity)
+void Java_com_vrseen_panovideo_PanoVideo_construct(JNIEnv *jni, jclass, jobject activity)
 {
     (new PanoVideo(jni, jni->GetObjectClass(activity), activity))->onCreate(nullptr, nullptr, nullptr);
 }
@@ -94,7 +94,7 @@ PanoVideo::~PanoVideo()
 {
 }
 
-void PanoVideo::init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI)
+void PanoVideo::init(const VString &, const VString &, const VString &)
 {
 	vInfo("--------------- Oculus360Videos OneTimeInit ---------------");
 

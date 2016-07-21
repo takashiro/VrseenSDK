@@ -556,14 +556,13 @@ NV_USING_NAMESPACE
 
 extern "C" {
 
-JNIEXPORT jlong JNICALL Java_com_vrseen_sensor_NativeUSensor_ctor
-  (JNIEnv *env, jclass obj)
+JNIEXPORT jlong JNICALL Java_com_vrseen_sensor_NativeUSensor_ctor(JNIEnv *, jclass)
 {
     return reinterpret_cast<jlong>(new USensor());
 }
 
 JNIEXPORT jboolean JNICALL Java_com_vrseen_sensor_NativeUSensor_update
-  (JNIEnv *env, jclass obj, jlong jk_sensor, jbyteArray data)
+  (JNIEnv *env, jclass, jlong jk_sensor, jbyteArray data)
 {
     USensor* u_sensor = reinterpret_cast<USensor*>(jk_sensor);
     jbyte tmp[100];
@@ -580,14 +579,14 @@ JNIEXPORT jboolean JNICALL Java_com_vrseen_sensor_NativeUSensor_update
 }
 
 JNIEXPORT jlong JNICALL Java_com_vrseen_sensor_NativeUSensor_getTimeStamp
-  (JNIEnv *env, jclass obj, jlong jk_sensor)
+  (JNIEnv *, jclass, jlong jk_sensor)
 {
     USensor* u_sensor = reinterpret_cast<USensor*>(jk_sensor);
      return u_sensor->getLatestTime();
 }
 
 JNIEXPORT jfloatArray JNICALL Java_com_vrseen_sensor_NativeUSensor_getData
-  (JNIEnv *env, jclass obj, jlong jk_sensor)
+  (JNIEnv *env, jclass, jlong jk_sensor)
 {
     USensor* u_sensor = reinterpret_cast<USensor*>(jk_sensor);
 

@@ -228,29 +228,34 @@ void VMainActivity::onNewIntent(const VString &fromPackageName, const VString &c
 
 VMatrix4f VMainActivity::onNewFrame(VFrame vrFrame)
 {
+    NV_UNUSED(vrFrame);
     vInfo("VMainActivity::Frame - default handler called");
     return VMatrix4f();
 }
 
 void VMainActivity::configureVrMode(VKernel* kernel)
 {
+    NV_UNUSED(kernel);
     vInfo("VMainActivity::ConfigureVrMode - default handler called");
 }
 
 VMatrix4f VMainActivity::drawEyeView(const int eye, const float fovDegrees)
 {
+    NV_UNUSED(eye, fovDegrees);
     vInfo("VMainActivity::DrawEyeView - default handler called");
     return VMatrix4f();
 }
 
 bool VMainActivity::onKeyEvent(const int keyCode, const KeyState::eKeyEventType eventType)
 {
+    NV_UNUSED(keyCode, eventType);
     vInfo("VMainActivity::OnKeyEvent - default handler called");
     return false;
 }
 
 bool VMainActivity::onVrWarningDismissed(const bool accepted)
 {
+    NV_UNUSED(accepted);
     vInfo("VMainActivity::OnVrWarningDismissed - default handler called");
     return false;
 }
@@ -320,7 +325,7 @@ void Java_com_vrseen_VrActivity_nativeSurfaceChanged(JNIEnv *jni, jclass, jobjec
     vApp->eventLoop().send("surfaceChanged", surface ? ANativeWindow_fromSurface(jni, surface) : nullptr);
 }
 
-void Java_com_vrseen_VrActivity_nativeSurfaceDestroyed(JNIEnv *jni, jclass clazz)
+void Java_com_vrseen_VrActivity_nativeSurfaceDestroyed(JNIEnv *, jclass)
 {
     if (vApp == 0)
     {
@@ -345,12 +350,12 @@ jobject Java_com_vrseen_VrActivity_nativeGetPopupSurfaceTexture(JNIEnv *, jclass
     return vApp->dialogTexture()->javaObject;
 }
 
-void Java_com_vrseen_VrActivity_nativePause(JNIEnv *jni, jclass clazz)
+void Java_com_vrseen_VrActivity_nativePause(JNIEnv *, jclass)
 {
     vApp->eventLoop().send("pause");
 }
 
-void Java_com_vrseen_VrActivity_nativeResume(JNIEnv *jni, jclass clazz)
+void Java_com_vrseen_VrActivity_nativeResume(JNIEnv *, jclass)
 {
     vApp->eventLoop().send("resume");
 }
@@ -365,8 +370,7 @@ void Java_com_vrseen_VrActivity_nativeDestroy(JNIEnv *, jclass)
     exit(0);
 }
 
-void Java_com_vrseen_VrActivity_nativeJoypadAxis(JNIEnv *jni, jclass clazz,
-        jfloat lx, jfloat ly, jfloat rx, jfloat ry)
+void Java_com_vrseen_VrActivity_nativeJoypadAxis(JNIEnv *, jclass, jfloat lx, jfloat ly, jfloat rx, jfloat ry)
 {
     // Suspend input until OneTimeInit() has finished to avoid overflowing the message queue on long loads.
     if (vApp->isRunning()) {
@@ -376,8 +380,7 @@ void Java_com_vrseen_VrActivity_nativeJoypadAxis(JNIEnv *jni, jclass clazz,
     }
 }
 
-void Java_com_vrseen_VrActivity_nativeTouch(JNIEnv *, jclass,
-        jint action, jfloat x, jfloat y)
+void Java_com_vrseen_VrActivity_nativeTouch(JNIEnv *, jclass, jint action, jfloat x, jfloat y)
 {
     // Suspend input until OneTimeInit() has finished to avoid overflowing the message queue on long loads.
     if (vApp->isRunning()) {
@@ -387,8 +390,7 @@ void Java_com_vrseen_VrActivity_nativeTouch(JNIEnv *, jclass,
     }
 }
 
-void Java_com_vrseen_VrActivity_nativeKeyEvent(JNIEnv *jni, jclass clazz,
-        jint key, jboolean down, jint repeatCount)
+void Java_com_vrseen_VrActivity_nativeKeyEvent(JNIEnv *, jclass, jint key, jboolean down, jint repeatCount)
 {
     // Suspend input until OneTimeInit() has finished to avoid overflowing the message queue on long loads.
     if (vApp->isRunning()) {
@@ -398,8 +400,7 @@ void Java_com_vrseen_VrActivity_nativeKeyEvent(JNIEnv *jni, jclass clazz,
     }
 }
 
-void Java_com_vrseen_VrActivity_nativeNewIntent(JNIEnv *jni, jclass clazz,
-        jstring fromPackageName, jstring command, jstring uriString)
+void Java_com_vrseen_VrActivity_nativeNewIntent(JNIEnv *jni, jclass, jstring fromPackageName, jstring command, jstring uriString)
 {
     VString packageName = JniUtils::Convert(jni, fromPackageName);
     VString uri = JniUtils::Convert(jni, uriString);

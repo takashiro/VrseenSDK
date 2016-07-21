@@ -4,9 +4,15 @@ SUBDIRS += \
     PanoPhoto \
     PanoVideo \
     PanoCinema \
-    VrLibrary
+    VrLibrary \
+    minizip \
+    stb
+
+minizip.file = source/jni/3rdparty/minizip/minizip.pro
+stb.file = source/jni/3rdparty/stb/stb.pro
 
 VrLibrary.file = source/VrLibrary.pro
+VrLibrary.depends = minizip stb
 
 PanoPhoto.subdir = examples/PanoPhoto
 PanoPhoto.depends = VrLibrary

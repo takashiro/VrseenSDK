@@ -7,7 +7,7 @@ NV_USING_NAMESPACE
 
 extern "C" {
 
-void Java_com_vrseen_panocinema_PanoCinema_construct(JNIEnv *jni, jclass clazz, jobject activity)
+void Java_com_vrseen_panocinema_PanoCinema_construct(JNIEnv *jni, jclass, jobject activity)
 {
     (new PanoCinema(jni, jni->GetObjectClass(activity), activity))->onCreate(nullptr, nullptr, nullptr);
 }
@@ -75,7 +75,7 @@ PanoCinema::PanoCinema(JNIEnv *jni, jclass activityClass, jobject activityObject
  * OneTimeInit
  *
  */
-void PanoCinema::init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI)
+void PanoCinema::init(const VString &, const VString &, const VString &launchIntentURI)
 {
 	vInfo("--------------- PanoCinema OneTimeInit ---------------");
 

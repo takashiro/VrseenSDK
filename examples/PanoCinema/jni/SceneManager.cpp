@@ -71,7 +71,7 @@ SceneManager::SceneManager( PanoCinema &cinema ) :
     SetSeat( 1 );
 }
 
-void SceneManager::OneTimeInit( const VString &launchIntent )
+void SceneManager::OneTimeInit(const VString &)
 {
 	vInfo("SceneManager::OneTimeInit");
 

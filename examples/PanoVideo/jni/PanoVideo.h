@@ -24,7 +24,7 @@ public:
     PanoVideo(JNIEnv *jni, jclass activityClass, jobject activityObject);
     ~PanoVideo();
 
-    void init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI) override;
+    void init(const VString &, const VString &, const VString &) override;
     void shutdown() override;
     void configureVrMode(VKernel *kernel) override;
     VMatrix4f drawEyeView(const int eye, const float fovDegrees) override;

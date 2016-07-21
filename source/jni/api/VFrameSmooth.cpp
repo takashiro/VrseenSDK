@@ -40,10 +40,10 @@ namespace {
 extern "C"
 {
 
-    void Java_com_vrseen_VrLib_nativeVsync( JNIEnv *jni, jclass clazz, jlong frameTimeNanos )
+    void Java_com_vrseen_VrLib_nativeVsync(JNIEnv *, jclass, jlong frameTimeNanos)
     {
 
-        VsyncState	state = UpdatedVsyncState.state();
+        VsyncState state = UpdatedVsyncState.state();
 
         // Round this, because different phone models have slightly different periods.
         state.vsyncCount += floor( 0.5 + ( frameTimeNanos - state.vsyncBaseNano ) / state.vsyncPeriodNano );
@@ -56,11 +56,19 @@ extern "C"
 
 struct warpSource_t
 {
-    long long			MinimumVsync;				// Never pick up a source if it is from the current vsync.
-    long long			FirstDisplayedVsync[2];		// External velocity is added after this vsync.
+    longlong			MinimumVsync;				// Never pick up a source if it is from the current vsync.
+    longlong			FirstDisplayedVsync[2];		// External velocity is added after this vsync.
     bool				disableChromaticCorrection;	// Disable correction for chromatic aberration.
     EGLSyncKHR			GpuSync;					// When this sync completes, the textures are done rendering.
     ovrTimeWarpParms	WarpParms;					// passed into WarpSwap()
+
+    warpSource_t()
+        : MinimumVsync(0)
+        , FirstDisplayedVsync{0, 0}
+        , disableChromaticCorrection(false)
+        , GpuSync(nullptr)
+    {
+    }
 };
 
 struct swapProgram_t
@@ -301,9 +309,9 @@ struct VFrameSmooth::Private
             m_warpPrograms(),
             m_blackTexId( 0 ),
             m_defaultLoadingIconTexId( 0 ),
+            m_wantSingleBuffer(wantSingleBuffer),
             m_hasEXT_sRGB_write_control( false ),
             m_sStartupTid( 0 ),
-            m_wantSingleBuffer(wantSingleBuffer),
             m_jni( NULL ),
 //            m_eglDisplay( 0 ),
 //            m_eglPbufferSurface( 0 ),
@@ -1183,7 +1191,7 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
     const double vsyncBase = vsyncBase_;
 
     // This will only be updated in SCREENEYE_LEFT
-    warpSource_t currentWarpSource = {};
+    warpSource_t currentWarpSource;
 
     int screenWidth, screenHeight;
     m_screen.getScreenResolution( screenWidth, screenHeight );
@@ -1421,6 +1429,7 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
 
 void VFrameSmooth::Private::warpToScreenSliced( const double vsyncBase, const swapProgram_t & swap )
 {
+    NV_UNUSED(swap);
     // Fetch vsync timing information once, so we don't have to worry
     // about it changing slightly inside a given frame.
     const VsyncState vsyncState = UpdatedVsyncState.state();

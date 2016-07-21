@@ -51,6 +51,7 @@ VMatrix4f OvrSceneView::ProjectionMatrixForEye( const int eye, const float fovDe
 {
 	// We may want to make per-eye projection matrices if we move away from
 	// nearly-centered lenses.
+    NV_UNUSED(eye);
     return VMatrix4f::PerspectiveRH( VDegreeToRad( fovDegrees ), 1.0f, Znear, Zfar );
 }
 
@@ -244,6 +245,7 @@ void OvrSceneView::UpdateViewMatrix(const VFrame vrFrame )
 void OvrSceneView::Frame( const VViewSettings viewParms_, const VFrame vrFrame,
         VMatrix4f & timeWarpParmsExternalVelocity, const long long supressModelsWithClientId )
 {
+    NV_UNUSED(supressModelsWithClientId);
 	ViewParms = viewParms_;
 	UpdateViewMatrix( vrFrame );
 //	UpdateSceneModels( vrFrame, supressModelsWithClientId );

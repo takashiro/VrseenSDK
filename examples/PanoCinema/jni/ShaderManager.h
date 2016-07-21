@@ -11,7 +11,7 @@ class ShaderManager
 public:
 							ShaderManager( PanoCinema &cinema );
 
-	void					OneTimeInit(const VString &launchIntent );
+	void					OneTimeInit(const VString &);
 	void					OneTimeShutdown();
 
 	PanoCinema &				Cinema;

@@ -491,7 +491,9 @@ void  VGlGeometry::createDome( const float rad, const float uScale, const float 
 
 
 void  VGlGeometry::createSkybox( const float length, const float width, const float height )
-{}
+{
+    NV_UNUSED(length, width, height);
+}
 
 
 

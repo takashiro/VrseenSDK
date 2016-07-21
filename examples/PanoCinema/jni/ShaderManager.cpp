@@ -66,7 +66,7 @@ ShaderManager::ShaderManager( PanoCinema &cinema ) :
 {
 }
 
-void ShaderManager::OneTimeInit( const VString &launchIntent )
+void ShaderManager::OneTimeInit(const VString &)
 {
 	vInfo("ShaderManager::OneTimeInit");
 

@@ -36,7 +36,7 @@ static const char * DEFAULT_PANO = "assets/placeholderBackground.jpg";
 
 extern "C" {
 
-void Java_com_vrseen_panophoto_PanoPhoto_construct(JNIEnv *jni, jclass clazz, jobject activity)
+void Java_com_vrseen_panophoto_PanoPhoto_construct(JNIEnv *jni, jclass, jobject activity)
 {
     // This is called by the java UI thread.
     (new PanoPhoto(jni, jni->GetObjectClass(activity), activity))->onCreate(nullptr, nullptr, nullptr);
@@ -120,7 +120,7 @@ PanoPhoto::~PanoPhoto()
 
 //============================================================================================
 
-void PanoPhoto::init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI)
+void PanoPhoto::init(const VString &, const VString &, const VString &)
 {
     // This is called by the VR thread, not the java UI thread.
     vInfo("--------------- PanoPhoto OneTimeInit ---------------");

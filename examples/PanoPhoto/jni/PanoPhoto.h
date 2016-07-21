@@ -51,7 +51,7 @@ public:
     PanoPhoto(JNIEnv *jni, jclass activityClass, jobject activityObject);
 	~PanoPhoto();
 
-    void init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI ) override;
+    void init(const VString &, const VString &, const VString &) override;
     void onStart(const VString &url);
     void shutdown() override;
     void configureVrMode(VKernel* kernel) override;

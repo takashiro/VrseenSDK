@@ -442,6 +442,7 @@ bool FontInfoType::Load(const VZipFile &languagePackageFile, const VString &file
 // FontInfoType::LoadFromBuffer
 bool FontInfoType::LoadFromBuffer(void const * buffer,
 		size_t const bufferSize) {
+    NV_UNUSED(bufferSize);
 	std::stringstream s;
 	s << reinterpret_cast<char const *>(buffer);
 	VJson jsonRoot;

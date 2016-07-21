@@ -54,6 +54,12 @@ public:
     {
         VColor::Format colorFormat;
         GLuint textures;
+
+        CompletedEyes()
+            : colorFormat(VColor::COLOR_8888)
+            , textures(0)
+        {
+        }
     };
 
     VEyeItem();
