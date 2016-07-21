@@ -64,6 +64,9 @@ public class MainActivity extends VrActivity {
 				if (filename.trim().toLowerCase().endsWith("nz.jpg")) {
 					vecFile.add(filename);
 				}
+				else if (!filename.trim().toLowerCase().endsWith("z.jpg")&& !filename.trim().toLowerCase().endsWith("y.jpg")&& !filename.trim().toLowerCase().endsWith("x.jpg")&& filename.trim().toLowerCase().endsWith("jpg")){
+					vecFile.add(filename);
+				}
 			}
 		}
 		String[] newStr =  vecFile.toArray(new String[1]);
