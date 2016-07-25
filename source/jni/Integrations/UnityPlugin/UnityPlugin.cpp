@@ -756,6 +756,7 @@ OCULUS_EXPORT void OVR_GetSensorState( bool monoscopic,
 // This is called by the script thread
 void OVR_TimeWarpEvent( const int viewIndex )
 {
+	vInfo("timewarpevent start");
 	if ( !up.focused || viewIndex < 0 || viewIndex >= up.MAX_VIEWS )
 	{
 		return;
@@ -865,6 +866,7 @@ void OVR_TimeWarpEvent( const int viewIndex )
 		up.countApplicationFrames = 0;
 		up.lastReportTime = timeNow;
 	}
+	vInfo("timewarpevent end");
 }
 
 // Note: These must be kept in sync with the Unity RenderEventType
@@ -964,7 +966,7 @@ OCULUS_EXPORT void UnityRenderEvent( int eventID )
 		OVR_TimeWarpEvent( eventData );
 
 		// Update the movie surface, if active.
-		up.VideoSurface.Update();
+		//up.VideoSurface.Update();
 		break;
 	}
 	case EVENT_PLATFORMUI_GLOBALMENU:

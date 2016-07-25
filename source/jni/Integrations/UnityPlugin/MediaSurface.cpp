@@ -102,6 +102,7 @@ jobject MediaSurface::Bind( int toTexId )
 
 void MediaSurface::Update()
 {
+	vInfo("Update start");
 	if ( !AndroidSurfaceTexture )
 	{
 		vInfo( "!AndroidSurfaceTexture" );
@@ -209,6 +210,8 @@ void MediaSurface::Update()
 	glBindTexture( GL_TEXTURE_2D, TexId );
 	glGenerateMipmap( GL_TEXTURE_2D );
 	glBindTexture( GL_TEXTURE_2D, 0 );
+
+	vInfo("Update end");
 }
 
 NV_NAMESPACE_END
