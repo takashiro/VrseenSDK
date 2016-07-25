@@ -51,12 +51,12 @@ public:
     PanoPhoto(JNIEnv *jni, jclass activityClass, jobject activityObject);
 	~PanoPhoto();
 
-    void init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI ) override;
+    void init(const VString &, const VString &, const VString &) override;
     void onStart(const VString &url);
     void shutdown() override;
     void configureVrMode(VKernel* kernel) override;
-    VR4Matrixf 	drawEyeView( const int eye, const float fovDegrees ) override;
-    VR4Matrixf 	onNewFrame( VFrame vrFrame ) override;
+    VMatrix4f 	drawEyeView( const int eye, const float fovDegrees ) override;
+    VMatrix4f 	onNewFrame( VFrame vrFrame ) override;
     void command(const VEvent &event) override;
     bool		wantSrgbFramebuffer() const override;
 

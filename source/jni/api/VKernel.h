@@ -4,7 +4,9 @@
 #include "VMatrix.h"
 #include <jni.h>
 
-enum{
+NV_NAMESPACE_BEGIN
+
+enum {
 //    VK_INHIBIT_SRGB_FB = 1,
 //    VK_USE_S = 2,
 //    VK_FLUSH = 4,
@@ -126,7 +128,7 @@ typedef struct
     // function into ( TanX, TanY, 1, 1 ) vectors that are transformed
     // by this matrix to get ( S, T, Q, _ ) vectors that are looked
     // up with texture2dproj() to get texels.
-    VR4Matrix<float> TexCoordsFromTanAngles;
+    VMatrix4f TexCoordsFromTanAngles;
 
     // The sensor state for which ModelViewMatrix is correct.
     // It is ok to update the orientation for each eye, which
@@ -155,7 +157,7 @@ typedef struct
     // eye vectors before applying the rest of the time warp.
     // This will only be added when the same ovrTimeWarpParms is used for
     // more than one vsync.
-    VR4Matrix<float> ExternalVelocity;
+    VMatrix4f ExternalVelocity;
 
     // WarpSwap will not return until at least this many vsyncs have
     // passed since the previous WarpSwap returned.
@@ -182,9 +184,6 @@ typedef enum
     WARP_INIT_LOADING_ICON,
     WARP_INIT_MESSAGE
 } ovrWarpInit;
-
-NV_NAMESPACE_BEGIN
-
 
 class VKernel
 {

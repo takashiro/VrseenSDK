@@ -10,7 +10,7 @@ void test()
 {
     {
         //Default constructor
-        V2Vecti v1;
+        VVect2i v1;
         assert(v1.x == 0);
         assert(v1.y == 0);
 
@@ -19,13 +19,13 @@ void test()
         v1.y = rand();
 
         //Copy constructor
-        V2Vecti v2(v1);
+        VVect2i v2(v1);
         assert(v1.x == v2.x);
         assert(v1.y == v2.y);
         assert(v1 == v2);
 
         //1-parameter constructor
-        V2Vecti v3(rand());
+        VVect2i v3(rand());
         assert(v3.x == v3.y);
 
         //Copy assignment operator
@@ -43,22 +43,22 @@ void test()
 
         //Plus operator
         {
-            V2Vecti v4 = v1 + v2;
+            VVect2i v4 = v1 + v2;
             assert(v4.x == v1.x + v2.x);
             assert(v4.y == v1.y + v2.y);
 
-            V2Vecti v5 = v1;
+            VVect2i v5 = v1;
             v5 += v2;
             assert(v4 == v5);
         }
 
         //Minus operator
         {
-            V2Vecti v4 = v1 - v2;
+            VVect2i v4 = v1 - v2;
             assert(v4.x == v1.x - v2.x);
             assert(v4.y == v1.y - v2.y);
 
-            V2Vecti v5 = v1;
+            VVect2i v5 = v1;
             v5 -= v2;
             assert(v4 == v5);
         }
@@ -66,12 +66,12 @@ void test()
         //Scalar *
         {
             int factor = rand();
-            V2Vecti v4 = v2 * factor;
+            VVect2i v4 = v2 * factor;
             assert(v4.x == v2.x * factor);
             assert(v4.y == v2.y * factor);
 
 
-            V2Vecti v5 = v2;
+            VVect2i v5 = v2;
             v5 *= factor;
             assert(v5 == v4);
         }
@@ -79,12 +79,12 @@ void test()
         //Scalar /
         {
             int factor = rand();
-            V2Vecti v4 = v2 / factor;
+            VVect2i v4 = v2 / factor;
             assert(v4.x == v2.x / factor);
             assert(v4.y == v2.y / factor);
 
 
-            V2Vecti v5 = v2;
+            VVect2i v5 = v2;
             v5 /= factor;
             assert(v5 == v4);
         }

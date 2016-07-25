@@ -13,7 +13,7 @@ VDialog::VDialog():dialogStopSeconds(0.0f),
 {
 
 }
-void VDialog::draw( VPanel &panel, const VR4Matrixf & mvp )
+void VDialog::draw( VPanel &panel, const VMatrix4f & mvp )
 {
     // draw the pop-up dialog
     const float now = VTimer::Seconds();
@@ -21,7 +21,7 @@ void VDialog::draw( VPanel &panel, const VR4Matrixf & mvp )
     {
         return;
     }
-    const VR4Matrixf dialogMvp = mvp * dialogMatrix;
+    const VMatrix4f dialogMvp = mvp * dialogMatrix;
 
     const float fadeSeconds = 0.5f;
     const float f = now - ( dialogStopSeconds - fadeSeconds );

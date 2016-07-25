@@ -36,7 +36,7 @@ static const char * DEFAULT_PANO = "assets/placeholderBackground.jpg";
 
 extern "C" {
 
-void Java_com_vrseen_panophoto_PanoPhoto_construct(JNIEnv *jni, jclass clazz, jobject activity)
+void Java_com_vrseen_panophoto_PanoPhoto_construct(JNIEnv *jni, jclass, jobject activity)
 {
     // This is called by the java UI thread.
     (new PanoPhoto(jni, jni->GetObjectClass(activity), activity))->onCreate(nullptr, nullptr, nullptr);
@@ -120,7 +120,7 @@ PanoPhoto::~PanoPhoto()
 
 //============================================================================================
 
-void PanoPhoto::init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI)
+void PanoPhoto::init(const VString &, const VString &, const VString &)
 {
     // This is called by the VR thread, not the java UI thread.
     vInfo("--------------- PanoPhoto OneTimeInit ---------------");
@@ -497,23 +497,23 @@ void PanoPhoto::loadRgbaTexture( const unsigned char * data, int width, int heig
     VEglDriver::logErrorsEnum( "leave LoadRgbaTexture" );
 }
 
-VR4Matrixf CubeMatrixForViewMatrix( const VR4Matrixf & viewMatrix )
+VMatrix4f CubeMatrixForViewMatrix( const VMatrix4f & viewMatrix )
 {
-    VR4Matrixf m = viewMatrix;
+    VMatrix4f m = viewMatrix;
     // clear translation
     for ( int i = 0; i < 3; i++ )
     {
-        m.M[ i ][ 3 ] = 0.0f;
+        m.cell[ i ][ 3 ] = 0.0f;
     }
-    return m.Inverted();
+    return m.inverted();
 }
 
-VR4Matrixf PanoPhoto::drawEyeView( const int eye, const float fovDegrees )
+VMatrix4f PanoPhoto::drawEyeView( const int eye, const float fovDegrees )
 {
     // Don't draw the scene at all if it is faded out
     const bool drawScene = true;
 
-    const VR4Matrixf view = drawScene ?
+    const VMatrix4f view = drawScene ?
                 m_scene.DrawEyeView( eye, fovDegrees )
               : m_scene.MvpForEye( eye, fovDegrees );
 
@@ -527,7 +527,7 @@ VR4Matrixf PanoPhoto::drawEyeView( const int eye, const float fovDegrees )
         glClearColor( 0, 0, 0, 0 );
         glClear( GL_COLOR_BUFFER_BIT );
 
-        const VR4Matrixf	m( CubeMatrixForViewMatrix( m_scene.CenterViewMatrix() ) );
+        const VMatrix4f	m( CubeMatrixForViewMatrix( m_scene.CenterViewMatrix() ) );
         GLuint texId = m_backgroundCubeTexData.GetRenderTexId();
         glBindTexture( GL_TEXTURE_CUBE_MAP, texId );
         glTexParameteri( GL_TEXTURE_CUBE_MAP, VEglDriver::GL_TEXTURE_SRGB_DECODE_EXT,
@@ -596,7 +596,7 @@ VR4Matrixf PanoPhoto::drawEyeView( const int eye, const float fovDegrees )
 
         glUniform4f( prog.uniformColor, fadeColor, fadeColor, fadeColor, fadeColor );
         glUniformMatrix4fv( prog.uniformModelViewProMatrix, 1, GL_FALSE /* not transposed */,
-                            view.Transposed().M[ 0 ] );
+                            view.transposed().cell[ 0 ] );
 
         m_globe.drawElements();
 
@@ -647,7 +647,7 @@ void PanoPhoto::SetMenuState( const OvrMenuState state )
     }
 }
 
-VR4Matrixf PanoPhoto::onNewFrame( const VFrame vrFrame )
+VMatrix4f PanoPhoto::onNewFrame( const VFrame vrFrame )
 {
     m_frameInput = vrFrame;
 

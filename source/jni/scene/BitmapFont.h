@@ -92,10 +92,10 @@ public:
             fontParms_t const & flags, VVect3f const & pos, float const scale,
             V4Vectf const & color, const VString &text) = 0;
 
-    virtual void Finish(VR4Matrixf const & viewMatrix) = 0;
+    virtual void Finish(VMatrix4f const & viewMatrix) = 0;
 
 	virtual void Render3D(BitmapFont const & font,
-            VR4Matrixf const & worldMVP) const = 0;
+            VMatrix4f const & worldMVP) const = 0;
 
 protected:
 	virtual ~BitmapFontSurface() {

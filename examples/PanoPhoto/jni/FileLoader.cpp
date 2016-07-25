@@ -32,7 +32,7 @@ pthread_mutex_t QueueMutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t	QueueWake = PTHREAD_COND_INITIALIZER;
 bool			QueueHasCleared = true;
 
-void * Queue1Thread( void * v )
+void *Queue1Thread(void *)
 {
 	int result = pthread_setname_np( pthread_self(), "FileQueue1" );
 	if ( result != 0 )
@@ -54,6 +54,7 @@ void * Queue1Thread( void * v )
 		}
 		pthread_mutex_unlock( &QueueMutex );
 
+        Queue1.wait();
         VEvent event = Queue1.next();
         VString filename = event.data.toString();
 

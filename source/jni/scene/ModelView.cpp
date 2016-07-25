@@ -36,37 +36,38 @@ OvrSceneView::OvrSceneView() :
 {
 }
 
-VR4Matrixf OvrSceneView::CenterViewMatrix() const
+VMatrix4f OvrSceneView::CenterViewMatrix() const
 {
 	return ViewMatrix;
 }
 
-VR4Matrixf OvrSceneView::ViewMatrixForEye( const int eye ) const
+VMatrix4f OvrSceneView::ViewMatrixForEye( const int eye ) const
 {
 	const float eyeOffset = ( eye ? -1 : 1 ) * 0.5f * ViewParms.interpupillaryDistance;
-    return VR4Matrixf::Translation( eyeOffset, 0.0f, 0.0f ) * ViewMatrix;
+    return VMatrix4f::Translation( eyeOffset, 0.0f, 0.0f ) * ViewMatrix;
 }
 
-VR4Matrixf OvrSceneView::ProjectionMatrixForEye( const int eye, const float fovDegrees ) const
+VMatrix4f OvrSceneView::ProjectionMatrixForEye( const int eye, const float fovDegrees ) const
 {
 	// We may want to make per-eye projection matrices if we move away from
 	// nearly-centered lenses.
-    return VR4Matrixf::PerspectiveRH( VDegreeToRad( fovDegrees ), 1.0f, Znear, Zfar );
+    NV_UNUSED(eye);
+    return VMatrix4f::PerspectiveRH( VDegreeToRad( fovDegrees ), 1.0f, Znear, Zfar );
 }
 
-VR4Matrixf OvrSceneView::MvpForEye( const int eye, const float fovDegrees ) const
+VMatrix4f OvrSceneView::MvpForEye( const int eye, const float fovDegrees ) const
 {
 	return ProjectionMatrixForEye( eye, fovDegrees ) * ViewMatrixForEye( eye );
 }
 
-VR4Matrixf OvrSceneView::DrawEyeView( const int eye, const float fovDegrees ) const
+VMatrix4f OvrSceneView::DrawEyeView( const int eye, const float fovDegrees ) const
 {
 	glEnable( GL_DEPTH_TEST );
 	glEnable( GL_CULL_FACE );
 	glFrontFace( GL_CCW );
 
-    const VR4Matrixf projectionMatrix = ProjectionMatrixForEye( eye, fovDegrees );
-    const VR4Matrixf viewMatrix = ViewMatrixForEye( eye );
+    const VMatrix4f projectionMatrix = ProjectionMatrixForEye( eye, fovDegrees );
+    const VMatrix4f viewMatrix = ViewMatrixForEye( eye );
 
 //	const DrawSurfaceList & surfs = BuildDrawSurfaceList( RenderModels, viewMatrix, projectionMatrix );
 //	(void)RenderSurfaceList( surfs );
@@ -104,11 +105,11 @@ VVect3f OvrSceneView::CenterEyePos() const
 VVect3f OvrSceneView::HeadModelOffset( float EyeRoll, float EyePitch, float EyeYaw, float HeadModelDepth, float HeadModelHeight )
 {
 	// head-on-a-stick model
-    const VR4Matrixf rollPitchYaw = VR4Matrixf::RotationY( EyeYaw )
-            * VR4Matrixf::RotationX( EyePitch )
-            * VR4Matrixf::RotationZ( EyeRoll );
+    const VMatrix4f rollPitchYaw = VMatrix4f::RotationY( EyeYaw )
+            * VMatrix4f::RotationX( EyePitch )
+            * VMatrix4f::RotationZ( EyeRoll );
     VVect3f eyeCenterInHeadFrame( 0.0f, HeadModelHeight, -HeadModelDepth );
-    VVect3f lastHeadModelOffset = rollPitchYaw.Transform( eyeCenterInHeadFrame );
+    VVect3f lastHeadModelOffset = rollPitchYaw.transform( eyeCenterInHeadFrame );
 
 	lastHeadModelOffset.y -= eyeCenterInHeadFrame.y; // Bring the head back down to original height
 
@@ -197,12 +198,12 @@ void OvrSceneView::UpdateViewMatrix(const VFrame vrFrame )
 //	}
 
 	// Rotate and position View Camera, using YawPitchRoll in BodyFrame coordinates.
-    VR4Matrixf rollPitchYaw = VR4Matrixf::RotationY( EyeYaw )
-            * VR4Matrixf::RotationX( EyePitch )
-            * VR4Matrixf::RotationZ( EyeRoll );
-    const VVect3f up = rollPitchYaw.Transform( UpVector );
-    const VVect3f forward = rollPitchYaw.Transform( ForwardVector );
-    const VVect3f right = rollPitchYaw.Transform( RightVector );
+    VMatrix4f rollPitchYaw = VMatrix4f::RotationY( EyeYaw )
+            * VMatrix4f::RotationX( EyePitch )
+            * VMatrix4f::RotationZ( EyeRoll );
+    const VVect3f up = rollPitchYaw.transform( UpVector );
+    const VVect3f forward = rollPitchYaw.transform( ForwardVector );
+    const VVect3f right = rollPitchYaw.transform( RightVector );
 
 	// Have sensorFusion zero the integration when not using it, so the
 	// first frame is correct.
@@ -238,12 +239,13 @@ void OvrSceneView::UpdateViewMatrix(const VFrame vrFrame )
 		ShiftedEyePos += LatchedHeadModelOffset;
 	}
 
-    ViewMatrix = VR4Matrixf::LookAtRH( ShiftedEyePos, ShiftedEyePos + forward, up );
+    ViewMatrix = VMatrix4f::LookAtRH( ShiftedEyePos, ShiftedEyePos + forward, up );
 }
 
 void OvrSceneView::Frame( const VViewSettings viewParms_, const VFrame vrFrame,
-		VR4Matrixf & timeWarpParmsExternalVelocity, const long long supressModelsWithClientId )
+        VMatrix4f & timeWarpParmsExternalVelocity, const long long supressModelsWithClientId )
 {
+    NV_UNUSED(supressModelsWithClientId);
 	ViewParms = viewParms_;
 	UpdateViewMatrix( vrFrame );
 //	UpdateSceneModels( vrFrame, supressModelsWithClientId );
@@ -253,8 +255,8 @@ void OvrSceneView::Frame( const VViewSettings viewParms_, const VFrame vrFrame,
 
 	// Set the external velocity matrix so TimeWarp can smoothly rotate the
 	// view even if we are dropping frames.
-    const VR4Matrixf localViewMatrix = ViewMatrix;
-    timeWarpParmsExternalVelocity = VR4Matrix<float>::CalculateExternalVelocity( &localViewMatrix, YawVelocity );
+    const VMatrix4f localViewMatrix = ViewMatrix;
+    timeWarpParmsExternalVelocity = localViewMatrix.calculateExternalVelocity(YawVelocity);
 }
 
 NV_NAMESPACE_END

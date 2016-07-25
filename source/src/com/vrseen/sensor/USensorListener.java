@@ -7,6 +7,14 @@ public class USensorListener {
         mSensor = sensor;
     }
 
+    void onAttached() {
+        mSensor.onUSensorAttached();
+    }
+
+    void onDetached() {
+        mSensor.onUSensorDetached();
+    }
+
     void onSensorChanged(long timeStamp, float w, float x, float y, float z,
             float gyroX, float gyroY, float gyroZ) {
         mSensor.onUSensor(timeStamp, w, x, y, z, gyroX, gyroY, gyroZ);

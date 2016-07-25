@@ -9,7 +9,7 @@ NV_NAMESPACE_BEGIN
 
 VPointTracker::VPointTracker( float const rate) :
     LastFrameTime( 0.0 ),
-    Rate( 0.1f ),
+    Rate(rate),
     CurPosition( 0.0f ),
     FirstFrame( true )
 {

@@ -6,6 +6,8 @@
 #include <unistd.h>
 #include <pthread.h>
 
+#include <VSemaphore.h>
+
 NV_NAMESPACE_BEGIN
 
 struct VEventLoop::Private
@@ -27,11 +29,13 @@ struct VEventLoop::Private
         pthread_mutexattr_init(&attr);
         pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_ERRORCHECK);
         pthread_mutex_init(&mutex, &attr);
-        pthread_mutex_init(&postMutex, &attr);
-        pthread_mutex_init(&receiveMutex, &attr);
         pthread_mutexattr_destroy(&attr);
-        pthread_cond_init(&posted, NULL);
-        pthread_cond_init(&received, NULL);
+    }
+
+    ~Private()
+    {
+        delete[] messages;
+        pthread_mutex_destroy(&mutex);
     }
 
     bool shutdown;
@@ -48,10 +52,8 @@ struct VEventLoop::Private
     volatile int head;
     volatile int tail;
     pthread_mutex_t mutex;
-    pthread_cond_t posted;
-    pthread_mutex_t postMutex;
-    pthread_cond_t received;
-    pthread_mutex_t receiveMutex;
+    VSemaphore posted;
+    VSemaphore received;
 
     bool post(const VEvent &event, bool synchronized)
     {
@@ -70,11 +72,34 @@ struct VEventLoop::Private
         tail++;
         pthread_mutex_unlock(&mutex);
 
-        pthread_cond_signal(&posted);
+        posted.post();
         if (synchronized) {
-            pthread_mutex_lock(&receiveMutex);
-            pthread_cond_wait(&received, &receiveMutex);
-            pthread_mutex_unlock(&receiveMutex);
+            received.wait();
+        }
+
+        return true;
+    }
+
+    bool post(VEvent &&event, bool synchronized)
+    {
+        if (shutdown) {
+            return false;
+        }
+
+        pthread_mutex_lock(&mutex);
+        if (tail - head >= capacity) {
+            pthread_mutex_unlock(&mutex);
+            return false;
+        }
+        const int index = tail % capacity;
+        messages[index].event = std::move(event);
+        messages[index].sychronized = synchronized;
+        tail++;
+        pthread_mutex_unlock(&mutex);
+
+        posted.post();
+        if (synchronized) {
+            received.wait();
         }
 
         return true;
@@ -88,15 +113,6 @@ VEventLoop::VEventLoop(int capacity)
 
 VEventLoop::~VEventLoop()
 {
-    // Free the queue itself.
-    delete[] d->messages;
-
-    pthread_mutex_destroy(&d->mutex);
-    pthread_mutex_destroy(&d->postMutex);
-    pthread_mutex_destroy(&d->receiveMutex);
-    pthread_cond_destroy(&d->posted);
-    pthread_cond_destroy(&d->received);
-
     delete d;
 }
 
@@ -110,24 +126,36 @@ void VEventLoop::post(const VEvent &event)
     d->post(event, false);
 }
 
+void VEventLoop::post(VEvent &&event)
+{
+    d->post(std::move(event), false);
+}
+
 void VEventLoop::post(const VString &command, const VVariant &data)
 {
     VEvent event(command);
     event.data = data;
-    d->post(event, false);
+    d->post(std::move(event), false);
+}
+
+void VEventLoop::post(const VString &command, VVariant &&data)
+{
+    VEvent event(command);
+    event.data = std::move(data);
+    d->post(std::move(event), false);
 }
 
 void VEventLoop::post(const char *command)
 {
     VEvent event(command);
-    d->post(event, false);
+    d->post(std::move(event), false);
 }
 
 void VEventLoop::post(const VVariant::Function &func)
 {
     VEvent event;
     event.data = func;
-    d->post(event, false);
+    d->post(std::move(event), false);
 }
 
 void VEventLoop::send(const VEvent &event)
@@ -135,24 +163,36 @@ void VEventLoop::send(const VEvent &event)
     d->post(event, true);
 }
 
+void VEventLoop::send(VEvent &&event)
+{
+    d->post(std::move(event), true);
+}
+
 void VEventLoop::send(const VString &command, const VVariant &data)
 {
     VEvent event(command);
     event.data = data;
-    d->post(event, true);
+    d->post(std::move(event), true);
+}
+
+void VEventLoop::send(const VString &command, VVariant &&data)
+{
+    VEvent event(command);
+    event.data = std::move(data);
+    d->post(std::move(event), true);
 }
 
 void VEventLoop::send(const char *command)
 {
     VEvent event(command);
-    d->post(event, true);
+    d->post(std::move(event), true);
 }
 
 void VEventLoop::send(const VVariant::Function &func)
 {
     VEvent event;
     event.data = func;
-    d->post(event, true);
+    d->post(std::move(event), true);
 }
 
 VEvent VEventLoop::next()
@@ -164,9 +204,9 @@ VEvent VEventLoop::next()
     }
 
     const int index = d->head % d->capacity;
-    VEvent event = d->messages[index].event;
+    VEvent event = std::move(d->messages[index].event);
     if (d->messages[index].sychronized) {
-        pthread_cond_signal(&d->received);
+        d->received.post();
     }
     d->messages[index].sychronized = false;
     d->head++;
@@ -185,9 +225,7 @@ void VEventLoop::wait()
     }
     pthread_mutex_unlock(&d->mutex);
 
-    pthread_mutex_lock(&d->postMutex);
-    pthread_cond_wait(&d->posted, &d->postMutex);
-    pthread_mutex_unlock(&d->postMutex);
+    d->posted.wait();
 }
 
 void VEventLoop::clear()

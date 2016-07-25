@@ -17,7 +17,7 @@
 #include "android/JniUtils.h"
 #include "android/VOsBuild.h"
 
-NV_USING_NAMESPACE
+NV_NAMESPACE_BEGIN
 
 // Valid for the thread that called ovr_EnterVrMode
 static JNIEnv	*				Jni;
@@ -55,7 +55,7 @@ extern "C"
 void Java_com_vrseen_VrLib_nativeVsync( JNIEnv *jni, jclass clazz, jlong frameTimeNanos );
 void Java_com_vrseen_VrLib_nativeVolumeEvent(JNIEnv *jni, jclass clazz, jint volume);
 
-JNIEXPORT void Java_com_vrseen_VrLib_nativeHeadsetEvent(JNIEnv *jni, jclass clazz, jint state)
+JNIEXPORT void Java_com_vrseen_VrLib_nativeHeadsetEvent(JNIEnv *, jclass, jint state)
 {
     vInfo("nativeHeadsetEvent(" << state << ")");
     HeadsetPluggedState.setState( ( state == 1 ) );
@@ -385,7 +385,7 @@ void VKernel::exit()
 
     delete frameSmooth;
     frameSmooth = NULL;
-    isRunning  = false;
+    isRunning = false;
 
     getPowerLevelStateID = NULL;
 
@@ -446,7 +446,7 @@ void VKernel::destroy(eExitType exitType)
 
 ovrTimeWarpParms  VKernel::InitTimeWarpParms( const ovrWarpInit init, const unsigned int texId)
 {
-    const VR4Matrix<float> tanAngleMatrix = VR4Matrix<float>::TanAngleMatrixFromFov( 90.0f );
+    const VMatrix4f tanAngleMatrix = VMatrix4f::TanAngleMatrixFromFov( 90.0f );
 
     ovrTimeWarpParms parms;
     memset( &parms, 0, sizeof( parms ) );
@@ -459,10 +459,10 @@ ovrTimeWarpParms  VKernel::InitTimeWarpParms( const ovrWarpInit init, const unsi
             parms.Images[eye][i].Pose.w = 1.0f;
         }
     }
-    parms.ExternalVelocity.M[0][0] = 1.0f;
-    parms.ExternalVelocity.M[1][1] = 1.0f;
-    parms.ExternalVelocity.M[2][2] = 1.0f;
-    parms.ExternalVelocity.M[3][3] = 1.0f;
+    parms.ExternalVelocity.cell[0][0] = 1.0f;
+    parms.ExternalVelocity.cell[1][1] = 1.0f;
+    parms.ExternalVelocity.cell[2][2] = 1.0f;
+    parms.ExternalVelocity.cell[3][3] = 1.0f;
     parms.MinimumVsyncs = 1;
     parms.PreScheduleSeconds = 0.014f;
     parms.WarpProgram = WP_SIMPLE;
@@ -523,3 +523,5 @@ void VKernel::doSmooth(const ovrTimeWarpParms * parms )
     if(frameSmooth==NULL||!isRunning) return;
     frameSmooth->doSmooth(*parms);
 }
+
+NV_NAMESPACE_END

@@ -308,7 +308,7 @@ void VEyeItem::afterPaint()
 
 VEyeItem::CompletedEyes VEyeItem::completedEyes()
 {
-    CompletedEyes	cmp = {};
+    CompletedEyes cmp;
     // The GPU commands are flushed for BufferData[ SwapCount % MAX_EYE_SETS ]
     EyePairs & currentBuffers = d->BufferData[ swapCount % MAX_EYE_SETS ];
 

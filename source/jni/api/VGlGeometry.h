@@ -14,8 +14,8 @@ struct VertexAttribs
     VArray< VVect3f > tangent;
     VArray< VVect3f > binormal;
     VArray< V4Vectf > color;
-    VArray< V2Vectf > uvCoordinate0;
-    VArray< V2Vectf > uvCoordinate1;
+    VArray< VVect2f > uvCoordinate0;
+    VArray< VVect2f > uvCoordinate1;
     VArray< V4Vecti > motionIndices;
     VArray< V4Vectf > motionWeight;
 };

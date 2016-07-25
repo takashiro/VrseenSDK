@@ -29,8 +29,8 @@ public:
     virtual void init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI) = 0;
     virtual void shutdown();
 
-    virtual VR4Matrixf onNewFrame( VFrame vrFrame );
-    virtual VR4Matrixf drawEyeView( const int eye, const float fovDegrees );
+    virtual VMatrix4f onNewFrame( VFrame vrFrame );
+    virtual VMatrix4f drawEyeView( const int eye, const float fovDegrees );
     virtual void configureVrMode(VKernel* kernel);
 
     virtual void onNewIntent(const VString &fromPackageName, const VString &command, const VString &uri);

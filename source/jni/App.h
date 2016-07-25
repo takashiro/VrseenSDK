@@ -34,7 +34,7 @@ public:
 
     VMainActivity *appInterface();
 
-    void drawEyeViewsPostDistorted( VR4Matrixf const & viewMatrix, const int numPresents = 1);
+    void drawEyeViewsPostDistorted( VMatrix4f const & viewMatrix, const int numPresents = 1);
 
     void recenterYaw( const bool showBlack );
     void setRecenterYawFrameStart( const long long frameNumber );
@@ -55,8 +55,8 @@ public:
 
     const VString &packageCodePath() const;
 
-    VR4Matrixf const &lastViewMatrix() const;
-    void setLastViewMatrix( VR4Matrixf const & m );
+    VMatrix4f const &lastViewMatrix() const;
+    void setLastViewMatrix( VMatrix4f const & m );
 
     VEyeItem::Settings &vrParms();
 
@@ -81,8 +81,8 @@ public:
 
     const VRotationState &sensorForNextWarp() const;
 
-    void drawScreenMask( const VR4Matrixf & mvp, const float fadeFracX, const float fadeFracY );
-    void drawBounds( const VVect3f &mins, const VVect3f &maxs, const VR4Matrixf &mvp, const VVect3f &color );
+    void drawScreenMask( const VMatrix4f & mvp, const float fadeFracX, const float fadeFracY );
+    void drawBounds( const VVect3f &mins, const VVect3f &maxs, const VMatrix4f &mvp, const VVect3f &color );
 
     void execute();
     void quit();

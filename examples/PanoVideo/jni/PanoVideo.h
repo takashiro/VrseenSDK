@@ -24,11 +24,11 @@ public:
     PanoVideo(JNIEnv *jni, jclass activityClass, jobject activityObject);
     ~PanoVideo();
 
-    void init(const VString &fromPackage, const VString &launchIntentJSON, const VString &launchIntentURI) override;
+    void init(const VString &, const VString &, const VString &) override;
     void shutdown() override;
     void configureVrMode(VKernel *kernel) override;
-    VR4Matrixf drawEyeView(const int eye, const float fovDegrees) override;
-    VR4Matrixf onNewFrame(VFrame vrFrame) override;
+    VMatrix4f drawEyeView(const int eye, const float fovDegrees) override;
+    VMatrix4f onNewFrame(VFrame vrFrame) override;
     void command(const VEvent &event) override;
     bool onKeyEvent(int keyCode, const KeyState::eKeyEventType eventType) override;
 
@@ -36,8 +36,8 @@ public:
 
     void onStart(const VString &url);
 
-    VR4Matrixf texmForVideo(int eye);
-    VR4Matrixf texmForBackground(int eye);
+    VMatrix4f texmForVideo(int eye);
+    VMatrix4f texmForBackground(int eye);
 
     void setMenuState( const OvrMenuState state);
     OvrMenuState currentState() const { return m_menuState; }

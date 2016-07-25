@@ -6,14 +6,16 @@
  */
 #include "VPanel.h"
 NV_NAMESPACE_BEGIN
-void VPanel::draw( const GLuint externalTextureId, const VR4Matrixf & dialogMvp, const float alpha )
+void VPanel::draw( const GLuint externalTextureId, const VMatrix4f & dialogMvp, const float alpha )
 {
     const VGlShader & prog = externalTextureProgram2;
     glUseProgram( prog.program );
     glUniform4f(prog.uniformColor, 1, 1, 1, alpha );
 
-    glUniformMatrix4fv(prog.uniformTexMatrix, 1, GL_FALSE, VR4Matrixf::Identity().Transposed().M[0]);
-    glUniformMatrix4fv(prog.uniformModelViewProMatrix, 1, GL_FALSE, dialogMvp.Transposed().M[0] );
+    VMatrix4f identity;
+    identity.transpose();
+    glUniformMatrix4fv(prog.uniformTexMatrix, 1, GL_FALSE, identity.data());
+    glUniformMatrix4fv(prog.uniformModelViewProMatrix, 1, GL_FALSE, dialogMvp.transposed().cell[0] );
 
     // It is important that panels write to destination alpha, or they
     // might get covered by an overlay plane/cube in TimeWarp.

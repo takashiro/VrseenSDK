@@ -15,10 +15,10 @@ class VDialog
 {
 public:
     VDialog();
-    VR4Matrixf      dialogMatrix;
+    VMatrix4f      dialogMatrix;
     float           dialogStopSeconds;
     SurfaceTexture * dialogTexture;
 
-    void draw( VPanel &panel, const VR4Matrixf & mvp );
+    void draw( VPanel &panel, const VMatrix4f & mvp );
 };
 NV_NAMESPACE_END
