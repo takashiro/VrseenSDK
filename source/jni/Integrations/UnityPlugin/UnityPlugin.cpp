@@ -81,8 +81,8 @@ public:
 						// Default ovrTimeWarpParms
 						//SwapParms = InitTimeWarpParms();
 						Kernel = VKernel::instance();
-						Kernel->InitTimeWarpParms();
 						hmdInfo = VDevice::instance();
+						SwapParms = Kernel->InitTimeWarpParms();
 
 
 						memset( sensorForView, 0, sizeof( sensorForView ) );
@@ -116,6 +116,7 @@ public:
 	int				renderThreadTid;
 
 	VDevice*		hmdInfo;
+	ovrTimeWarpParms	SwapParms;
 
 
 	// Time and orientation for eye rendering, used as base for time warping.
@@ -250,7 +251,7 @@ OCULUS_EXPORT void OVR_TW_SetDebugMode( int mode, int value )
 OCULUS_EXPORT void OVR_TW_SetMinimumVsyncs( int minimumVsyncs )
 {
 	vInfo( "OVR_TW_SetMinimumVsyncs()"<<minimumVsyncs);
-	up.Kernel->m_minimumVsyncs = minimumVsyncs;
+	up.SwapParms.MinimumVsyncs = minimumVsyncs;
 }
 
 OCULUS_EXPORT void OVR_TW_AllowFovIncrease( bool allow )
@@ -270,18 +271,18 @@ OCULUS_EXPORT void OVR_TW_SetOverlayPlane( int texId, int eye, int program,
 		float m8, float m9, float m10, float m11,
 		float m12, float m13, float m14, float m15 )
 {
-	const VR4Matrixf mv =VR4Matrixf(m0,  m1,  m2,  m3,
+	const VMatrix4f mv =VMatrix4f(m0,  m1,  m2,  m3,
 			 m4,  m5,  m6,  m7,
 			 m8,  m9,  m10,  m11,
 			 m12,  m13,  m14,  m15);
 
 //	LOG( "SetOverlayPlane( %i, %i, %i ) log", texId, eye, program );
 //	LogMatrix( "overlay:", mv );
-	up.Kernel->m_texId[eye][1] = texId;
-	up.Kernel->m_texMatrix[eye][1] = VR4Matrixf::TanAngleMatrixFromUnitSquare(&mv);
+	//up.Kernel->m_texId[eye][1] = texId;
+	//up.Kernel->m_texMatrix[eye][1] = VR4Matrixf::TanAngleMatrixFromUnitSquare(&mv);
 
-	//up.SwapParms.Images[eye][1].TexId = texId;
-	//up.SwapParms.Images[eye][1].TexCoordsFromTanAngles = TanAngleMatrixFromUnitSquare( &mv );
+	up.SwapParms.Images[eye][1].TexId = texId;
+	up.SwapParms.Images[eye][1].TexCoordsFromTanAngles = mv.tanAngleMatrixFromUnitSquare();
 	up.OverlayPlaneProgram = program;
 }
 
@@ -684,7 +685,7 @@ float CalcFovIncrease()
 	// Doing this dynamically based just on time causes visible flickering at the
 	// periphery when the fov is increased, so only do it if minimumVsyncs is set.
 	float fovIncrease = ( up.allowFovIncrease &&
-								 ( up.Kernel->m_minimumVsyncs > 1 )  ) ? 10.0f : 0.0f;
+								 ( up.SwapParms.MinimumVsyncs > 1 )  ) ? 10.0f : 0.0f;
 
 	// Increase the fov when not rendering the vignette to hide
 	// edge artifacts
@@ -775,11 +776,11 @@ void OVR_TimeWarpEvent( const int viewIndex )
 		else
 		{
 			//ovrTimeWarpParms warpSwapMessageParms = InitTimeWarpParms( WARP_INIT_MESSAGE, up.ErrorTexture );
-			up.Kernel->InitTimeWarpParms();
-			up.Kernel->m_programParms[0] = 0.0f;							// rotation in radians
-			up.Kernel->m_programParms[1] = 1024.0f / up.ErrorTextureSize;	// message size factor
+			ovrTimeWarpParms warpSwapMessageParms = up.Kernel->InitTimeWarpParms( WARP_INIT_MESSAGE, up.ErrorTexture );
+			warpSwapMessageParms.ProgramParms[0] = 0.0f;							// rotation in radians
+			warpSwapMessageParms.ProgramParms[1] = 1024.0f / up.ErrorTextureSize;	// message size factor
 			//ovr_WarpSwap( up.OvrMobile, &warpSwapMessageParms );
-			up.Kernel->doSmooth();
+			up.Kernel->doSmooth(&warpSwapMessageParms);
 		}
 		return;
 	}
@@ -791,10 +792,9 @@ void OVR_TimeWarpEvent( const int viewIndex )
 	{
 		GLStateSave glstate;	// restore state on destruction
 
-		//const ovrTimeWarpParms warpSwapLoadingIconParms = InitTimeWarpParms( WARP_INIT_LOADING_ICON );
+		const ovrTimeWarpParms warpSwapLoadingIconParms = up.Kernel->InitTimeWarpParms( WARP_INIT_LOADING_ICON );
 		//ovr_WarpSwap( up.OvrMobile, &warpSwapLoadingIconParms );
-		up.Kernel->InitTimeWarpParms();
-		up.Kernel->doSmooth();
+		up.Kernel->doSmooth(&warpSwapLoadingIconParms);
 	}
 	else
 	{
@@ -810,42 +810,39 @@ void OVR_TimeWarpEvent( const int viewIndex )
 
 		for ( int eye = 0; eye < 2; eye++ )
 		{
-//			up.SwapParms.Images[eye][0].TexCoordsFromTanAngles = TanAngleMatrixFromFov( fovDegrees );
-//			up.SwapParms.Images[eye][0].TexId = up.eyeTextures[up.monoscopic ? 0 : eye];
-//			up.SwapParms.Images[eye][0].Pose = sensor.Predicted;
+			up.SwapParms.Images[eye][0].TexCoordsFromTanAngles = VMatrix4f::TanAngleMatrixFromFov(fovDegrees);
+			up.SwapParms.Images[eye][0].TexId = up.eyeTextures[up.monoscopic ? 0 : eye];
+			up.SwapParms.Images[eye][0].Pose = sensorstate;
 
-			up.Kernel->m_texMatrix[eye][0] = VR4Matrixf::TanAngleMatrixFromFov(fovDegrees);
-			up.Kernel->m_texId[eye][0] = up.eyeTextures[up.monoscopic ? 0 : eye];
-			up.Kernel->m_pose[eye][0] = sensorstate;
 			// Also update the pose on the second image, in case the overlay plane is active
 			//up.SwapParms.Images[eye][1].Pose = sensor.Predicted;
 
-			up.Kernel->m_pose[eye][1] = sensorstate;
+			up.SwapParms.Images[eye][1].Pose = sensorstate;
 		}
 
 		switch( up.OverlayPlaneProgram )
 		{
 		default:
-			//up.SwapParms.WarpProgram = up.HighQualityWarpProgs ? WP_CHROMATIC : WP_SIMPLE;
-			up.Kernel->setSmoothProgram(up.HighQualityWarpProgs ? VK_DEFAULT_CB : VK_DEFAULT);
+			up.SwapParms.WarpProgram = up.HighQualityWarpProgs ? WP_CHROMATIC : WP_SIMPLE;
+			//up.Kernel->setSmoothProgram(up.HighQualityWarpProgs ? VK_DEFAULT_CB : VK_DEFAULT);
 			break;
 		case 1:
-			//up.SwapParms.WarpProgram = up.HighQualityWarpProgs ? WP_MASKED_PLANE : WP_CHROMATIC_MASKED_PLANE;
-			up.Kernel->setSmoothProgram(up.HighQualityWarpProgs ? VK_PLANE_CB : VK_PLANE);
+			up.SwapParms.WarpProgram = up.HighQualityWarpProgs ? WP_MASKED_PLANE : WP_CHROMATIC_MASKED_PLANE;
+			//up.Kernel->setSmoothProgram(up.HighQualityWarpProgs ? VK_PLANE_CB : VK_PLANE);
 			break;
 		case 2:
-			//up.SwapParms.WarpProgram = up.HighQualityWarpProgs ? WP_CHROMATIC_OVERLAY_PLANE : WP_OVERLAY_PLANE;
-			up.Kernel->setSmoothProgram(up.HighQualityWarpProgs ? VK_PLANE_LAYER_CB : VK_PLANE_LAYER);
+			up.SwapParms.WarpProgram = up.HighQualityWarpProgs ? WP_CHROMATIC_OVERLAY_PLANE : WP_OVERLAY_PLANE;
+			//up.Kernel->setSmoothProgram(up.HighQualityWarpProgs ? VK_PLANE_LAYER_CB : VK_PLANE_LAYER);
 			break;
 		case 3:
-			//up.SwapParms.WarpProgram = WP_OVERLAY_PLANE_SHOW_LOD;
-			up.Kernel->setSmoothProgram(VK_PLANE_LOD);
+			up.SwapParms.WarpProgram = WP_OVERLAY_PLANE_SHOW_LOD;
+			//up.Kernel->setSmoothProgram(VK_PLANE_LOD);
 			break;
 		}
 
 		//ovr_WarpSwap( up.OvrMobile, &up.SwapParms );
 
-		up.Kernel->doSmooth();
+		up.Kernel->doSmooth(&up.SwapParms);
 
 		// The overlay must be re-specified every frame.
 		up.OverlayPlaneProgram = 0;
@@ -966,7 +963,7 @@ OCULUS_EXPORT void UnityRenderEvent( int eventID )
 		OVR_TimeWarpEvent( eventData );
 
 		// Update the movie surface, if active.
-		//up.VideoSurface.Update();
+		up.VideoSurface.Update();
 		break;
 	}
 	case EVENT_PLATFORMUI_GLOBALMENU:

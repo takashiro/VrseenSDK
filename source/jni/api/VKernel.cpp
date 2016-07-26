@@ -269,12 +269,14 @@ void VKernel::run()
 #else
     char const * buildConfig = "RELEASE";
 #endif
-    if (m_activityobject!=null)
+    if (m_ActivityObject)
     {
+    	vInfo("Get ActivityObject from Unity!");
     	ActivityObject = m_ActivityObject;
     }
     else
     {
+    	vInfo("Get ActivityObject from Native App!");
     	ActivityObject = vApp->javaObject();
     }
 
