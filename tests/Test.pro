@@ -5,8 +5,6 @@ CONFIG += console c++11
 CONFIG -= app_bundle
 CONFIG -= qt
 
-DEFINES += NV_NAMESPACE=NervGear
-
 NV_ROOT = $PWD/../../source/jni
 
 INCLUDEPATH += \
@@ -17,8 +15,9 @@ INCLUDEPATH += \
     $$NV_ROOT/media
 
 HEADERS += jni/test.h
-SOURCES += jni/main.cpp
 
-include(jni/core/core.pri)
-include(jni/io/io.pri)
-include(jni/media/media.pri)
+SOURCES += \
+    $$files(jni/core/*.cpp) \
+    $$files(jni/io/*.cpp) \
+    $$files(jni/media/*.cpp) \
+    jni/main.cpp
