@@ -242,14 +242,14 @@ public:
 	// add text to the VBO that will render in a 2D pass.
     void DrawText3D(BitmapFont const & font, const fontParms_t & flags,
             const VVect3f & pos, VVect3f const & normal, VVect3f const & up,
-            float const scale, V4Vectf const & color, const VString &text) override;
+            float const scale, VVect4f const & color, const VString &text) override;
     void DrawText3Df(BitmapFont const & font, const fontParms_t & flags,
             const VVect3f & pos, VVect3f const & normal, VVect3f const & up,
-            float const scale, V4Vectf const & color, const char *text, ...) override;
+            float const scale, VVect4f const & color, const char *text, ...) override;
 
     virtual void DrawTextBillboarded3D(BitmapFont const & font,
             fontParms_t const & flags, VVect3f const & pos, float const scale,
-            V4Vectf const & color, const VString &text);
+            VVect4f const & color, const VString &text);
 
 	// transform the billboarded font strings
     virtual void Finish(VMatrix4f const & viewMatrix);
@@ -1109,7 +1109,7 @@ void BitmapFontSurfaceLocal::Init(const int maxVertices) {
 
 //==============================
 // ColorToABGR
-int32_t ColorToABGR(V4Vectf const & color) {
+int32_t ColorToABGR(VVect4f const & color) {
 	// format is ABGR
 	return (ftoi(color.w * 255.0f) << 24) | (ftoi(color.z * 255.0f) << 16)
 			| (ftoi(color.y * 255.0f) << 8) | ftoi(color.x * 255.0f);
@@ -1120,7 +1120,7 @@ int32_t ColorToABGR(V4Vectf const & color) {
 void BitmapFontSurfaceLocal::DrawText3D(BitmapFont const & font,
         fontParms_t const & parms, VVect3f const & pos,
         VVect3f const & normal, VVect3f const & up, float scale,
-        V4Vectf const & color, const VString &text) {
+        VVect4f const & color, const VString &text) {
     if (text.isEmpty()) {
 		return; // nothing to do here, move along
 	}
@@ -1298,7 +1298,7 @@ void BitmapFontSurfaceLocal::DrawText3D(BitmapFont const & font,
 void BitmapFontSurfaceLocal::DrawText3Df(BitmapFont const & font,
         fontParms_t const & parms, VVect3f const & pos,
         VVect3f const & normal, VVect3f const & up, float const scale,
-        V4Vectf const & color, const char *fmt, ...) {
+        VVect4f const & color, const char *fmt, ...) {
 	char buffer[256];
 	va_list args;
 	va_start( args, fmt);
@@ -1311,7 +1311,7 @@ void BitmapFontSurfaceLocal::DrawText3Df(BitmapFont const & font,
 // BitmapFontSurfaceLocal::DrawTextBillboarded3D
 void BitmapFontSurfaceLocal::DrawTextBillboarded3D(BitmapFont const & font,
         fontParms_t const & parms, VVect3f const & pos, float const scale,
-        V4Vectf const & color, const VString &text) {
+        VVect4f const & color, const VString &text) {
 	fontParms_t billboardParms = parms;
 	billboardParms.Billboard = true;
     DrawText3D(font, billboardParms, pos, VVect3f(1.0f, 0.0f, 0.0f),

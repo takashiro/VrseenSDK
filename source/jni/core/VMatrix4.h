@@ -209,9 +209,9 @@ public:
                             (cell[2][0] * vect.x + cell[2][1] * vect.y + cell[2][2] * vect.z + cell[2][3]) * rcpW);
     }
 
-    V4Vect<T> transform(const V4Vect<T> &vect) const
+    VVect4<T> transform(const VVect4<T> &vect) const
     {
-        return V4Vect<T>(cell[0][0] * vect.x + cell[0][1] * vect.y + cell[0][2] * vect.z + cell[0][3] * vect.w,
+        return VVect4<T>(cell[0][0] * vect.x + cell[0][1] * vect.y + cell[0][2] * vect.z + cell[0][3] * vect.w,
                          cell[1][0] * vect.x + cell[1][1] * vect.y + cell[1][2] * vect.z + cell[1][3] * vect.w,
                          cell[2][0] * vect.x + cell[2][1] * vect.y + cell[2][2] * vect.z + cell[2][3] * vect.w,
                          cell[3][0] * vect.x + cell[3][1] * vect.y + cell[3][2] * vect.z + cell[3][3] * vect.w);

@@ -7,7 +7,7 @@
 NV_NAMESPACE_BEGIN
 
 template<class T>
-class V4Vect
+class VVect4
 {
 public:
     T x;
@@ -15,34 +15,34 @@ public:
     T z;
     T w;
 
-    V4Vect() : x(0), y(0), z(0), w(0) {}
-    V4Vect(T x, T y, T z, T w) : x(x), y(y), z(z), w(w) {}
-    V4Vect(T s) : x(s), y(s), z(s), w(s) { }
-    V4Vect(const V4Vect &src) : x(src.x), y(src.y), z(src.z), w(src.w) {}
+    VVect4() : x(0), y(0), z(0), w(0) {}
+    VVect4(T x, T y, T z, T w) : x(x), y(y), z(z), w(w) {}
+    VVect4(T s) : x(s), y(s), z(s), w(s) { }
+    VVect4(const VVect4 &src) : x(src.x), y(src.y), z(src.z), w(src.w) {}
 
-    bool operator == (const V4Vect &vect) const { return x == vect.x && y == vect.y && z == vect.z && w == vect.w; }
-    bool operator != (const V4Vect &vect) const { return x != vect.x || y != vect.y || z != vect.z || w != vect.w; }
+    bool operator == (const VVect4 &vect) const { return x == vect.x && y == vect.y && z == vect.z && w == vect.w; }
+    bool operator != (const VVect4 &vect) const { return x != vect.x || y != vect.y || z != vect.z || w != vect.w; }
 
-    V4Vect operator + (const V4Vect &vect) const { return V4Vect(x + vect.x, y + vect.y, z + vect.z, w + vect.w); }
-    V4Vect &operator += (const V4Vect &vect) { x += vect.x; y += vect.y; z += vect.z; w += vect.w; return *this; }
+    VVect4 operator + (const VVect4 &vect) const { return VVect4(x + vect.x, y + vect.y, z + vect.z, w + vect.w); }
+    VVect4 &operator += (const VVect4 &vect) { x += vect.x; y += vect.y; z += vect.z; w += vect.w; return *this; }
 
-    V4Vect operator - (const V4Vect &vect) const { return V4Vect(x - vect.x, y - vect.y, z - vect.z, w - vect.w); }
-    V4Vect &operator -= (const V4Vect &vect) { x -= vect.x; y -= vect.y; z -= vect.z; w -= vect.w; return *this; }
+    VVect4 operator - (const VVect4 &vect) const { return VVect4(x - vect.x, y - vect.y, z - vect.z, w - vect.w); }
+    VVect4 &operator -= (const VVect4 &vect) { x -= vect.x; y -= vect.y; z -= vect.z; w -= vect.w; return *this; }
 
-    V4Vect operator - () const { return V4Vect(-x, -y, -z, -w); }
+    VVect4 operator - () const { return VVect4(-x, -y, -z, -w); }
 
     // Scalar multiplication/division scales vector.
-    V4Vect operator * (T factor) const { return V4Vect(x * factor, y * factor, z * factor, w * factor); }
-    V4Vect &operator *= (T factor) { x *= factor; y *= factor; z *= factor; w *= factor;return *this; }
+    VVect4 operator * (T factor) const { return VVect4(x * factor, y * factor, z * factor, w * factor); }
+    VVect4 &operator *= (T factor) { x *= factor; y *= factor; z *= factor; w *= factor;return *this; }
 
-    V4Vect operator / (T factor) const { T rcp = T(1) / factor; return V4Vect(x * rcp, y * rcp, z * rcp, w * rcp); }
-    V4Vect &operator /= (T factor) { T rcp = T(1) / factor; x *= rcp; y *= rcp; z *= rcp; w *= rcp; return *this; }
+    VVect4 operator / (T factor) const { T rcp = T(1) / factor; return VVect4(x * rcp, y * rcp, z * rcp, w * rcp); }
+    VVect4 &operator /= (T factor) { T rcp = T(1) / factor; x *= rcp; y *= rcp; z *= rcp; w *= rcp; return *this; }
 
     // Multiply and divide operators do entry-wise VConstants
-    V4Vect operator * (const V4Vect &vect) const { return V4Vect(x * vect.x, y * vect.y, z * vect.z, w * vect.w); }
-    V4Vect operator / (const V4Vect &vect) const { return V4Vect(x / vect.x, y / vect.y, z / vect.z, w / vect.w); }
+    VVect4 operator * (const VVect4 &vect) const { return VVect4(x * vect.x, y * vect.y, z * vect.z, w * vect.w); }
+    VVect4 operator / (const VVect4 &vect) const { return VVect4(x / vect.x, y / vect.y, z / vect.z, w / vect.w); }
 
-    T dotProduct(const V4Vect &vect) const { return x * vect.x + y * vect.y + z * vect.z + w * vect.w; }
+    T dotProduct(const VVect4 &vect) const { return x * vect.x + y * vect.y + z * vect.z + w * vect.w; }
 
     T lengthSquared() const { return (x * x + y * y + z * z + w * w); }
     T length() const { return sqrt(lengthSquared()); }
@@ -54,14 +54,14 @@ public:
     void normalize() { *this /= length(); }
 
     // Returns normalized (unit) version of the vector without modifying itself.
-    V4Vect normalized() const { return *this / length(); }
+    VVect4 normalized() const { return *this / length(); }
 
     T *data() { return &x; }
     const T *data() const { return &x; }
 };
 
-typedef V4Vect<float>  V4Vectf;
-typedef V4Vect<double> V4Vectd;
-typedef V4Vect<int>    V4Vecti;
+typedef VVect4<float>  VVect4f;
+typedef VVect4<double> VVect4d;
+typedef VVect4<int>    VVect4i;
 
 NV_NAMESPACE_END

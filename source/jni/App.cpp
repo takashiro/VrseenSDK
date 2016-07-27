@@ -1116,7 +1116,7 @@ struct App::Private
                 VString temp;
                 temp.sprintf("%.1f fps", LastFrameRate);
                 worldFontSurface->DrawTextBillboarded3D(*defaultFont, fp, fpsPointTracker.GetCurPosition(),
-                        0.8f, V4Vectf(1.0f, 0.0f, 0.0f, 1.0f), temp);
+                        0.8f, VVect4f(1.0f, 0.0f, 0.0f, 1.0f), temp);
 
                 LastFrameTime = currentFrameTime;
             }
