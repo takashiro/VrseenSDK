@@ -383,10 +383,32 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 		super.onConfigurationChanged(newConfig);
 	}
 
+	private void setImmersiveSticky() {
+		getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+				| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+				| View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+				| View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+				| View.SYSTEM_UI_FLAG_FULLSCREEN
+				| View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+	}
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		Log.d(TAG, this + " onCreate()");
 		super.onCreate(savedInstanceState);
+
+		setImmersiveSticky();
+		getWindow()
+				.getDecorView()
+				.setOnSystemUiVisibilityChangeListener(
+						new View.OnSystemUiVisibilityChangeListener() {
+							@Override
+							public void onSystemUiVisibilityChange(int visibility) {
+								if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
+									setImmersiveSticky();
+								}
+							}
+						});
 
 		VrLib.setCurrentLanguage(Locale.getDefault().getLanguage());
 
