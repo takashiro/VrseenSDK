@@ -23,7 +23,6 @@ public:
 
     const Value &value(const Key &key) const
     {
-        static Value defaultValue;
         return contains(key) ? ParentType::at(key) : defaultValue;
     }
 
@@ -34,6 +33,9 @@ public:
     void insert(const Key &key, Value &&value) { ParentType::insert(std::pair<Key, Value>(key, std::move(value))); }
 
     void remove(const Key &key) { ParentType::erase(key); }
+
+private:
+    Value defaultValue;
 };
 
 NV_NAMESPACE_END
