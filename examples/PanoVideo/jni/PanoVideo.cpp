@@ -56,6 +56,7 @@ jobject Java_com_vrseen_panovideo_PanoVideo_createMovieTexture(JNIEnv *, jclass)
     if (event.name == "surfaceTexture") {
         return static_cast<jobject>(event.data.toPointer());
     }
+	vWarn("Failed to create movie texture");
     return NULL;
 }
 
@@ -78,15 +79,16 @@ void Java_com_vrseen_panovideo_PanoVideo_onCompletion(JNIEnv *, jclass)
 
 PanoVideo::PanoVideo(JNIEnv *jni, jclass activityClass, jobject activityObject)
     : VMainActivity(jni, activityClass, activityObject)
-    , m_videoWasPlayingWhenPaused( false )
-    , m_menuState( MENU_NONE )
-    , m_useSrgb( false )
-    , m_movieTexture( NULL )
-    , m_videoWidth( 0 )
-    , m_videoHeight( 480 )
-    , m_backgroundWidth( 0 )
-    , m_backgroundHeight( 0 )
-    , m_frameAvailable( false )
+    , m_videoWasPlayingWhenPaused(false)
+    , m_menuState(MENU_NONE)
+    , m_useSrgb(false)
+    , m_movieTexture(nullptr)
+    , m_videoWidth(0)
+    , m_videoHeight(480)
+    , m_backgroundTexId(0)
+    , m_backgroundWidth(0)
+    , m_backgroundHeight(0)
+    , m_frameAvailable(false)
 {
 }
 
