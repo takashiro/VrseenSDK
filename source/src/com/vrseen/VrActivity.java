@@ -81,6 +81,7 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
     private VrseenDeviceManager mVrseenDeviceManager = null;
     private IVRManager mVrService = null;
     private SoundManager mSoundManager = null;
+	private SurfaceHolder mSurfaceHolder = null;
     
     //TODO Remove the function
     public void playSoundPoolSound(String name) {
@@ -97,6 +98,7 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 			return;
 		}
 		nativeSurfaceChanged(holder.getSurface());
+		mSurfaceHolder = holder;
 	}
 
 	@Override
@@ -463,6 +465,12 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 		super.onPause();
 		nativePause();
 		mVrseenDeviceManager.onPause();
+
+		if(mSurfaceHolder!=null)
+		{
+			surfaceDestroyed(mSurfaceHolder);
+			mSurfaceHolder = null;
+		}
 	}
 
 	@Override
