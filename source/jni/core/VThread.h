@@ -27,14 +27,20 @@ public:
         IdlePriority,
     };
 
-    VThread(uint stackSize = 128 * 1024, int processor = -1);
-    VThread(Function function, void *data = nullptr, uint stackSize = 128 * 1024, int processor = -1, State state = NotRunning);
+    VThread();
+    VThread(Function function, void *data = nullptr);
 
     virtual ~VThread();
 
+    uint stackSize() const;
+    void setStackSize(uint size);
+
+    Priority priority() const;
+    void setPriority(Priority priority);
+
     void setName(const char *name);
 
-    virtual bool start(State initialState = Running);
+    virtual bool start();
     virtual void exit(int exitCode = 0);
 
     bool wait();
@@ -42,17 +48,11 @@ public:
     bool suspend();
     bool resume();
 
-    bool exitFlag() const;
-    void setExitFlag(bool exitFlag);
-
     bool isFinished() const;
     bool isSuspended() const;
     State state() const;
-    int exitCode() const;
     uint id() const;
 
-    static void InitThreadList();
-    static void FinishAllThreads();
     static int CpuCount();
     static int GetOSPriority(Priority priority);
 
@@ -64,7 +64,6 @@ public:
 
 protected:
     virtual int run();
-    virtual void onExit();
 
 private:
     NV_DECLARE_PRIVATE

@@ -1,12 +1,11 @@
 #include "VThread.h"
+#include "VMap.h"
 #include "VMutex.h"
-#include "VWaitCondition.h"
 #include "VLog.h"
 
 #include <atomic>
-#include <set>
-#include <pthread.h>
 #include <unistd.h>
+#include <pthread.h>
 
 NV_NAMESPACE_BEGIN
 
@@ -15,52 +14,35 @@ namespace {
 class VThreadList
 {
 public:
-    void add(VThread *pthread)
+    void add(VThread *thread)
     {
-        VMutex::Locker lock(&m_threadMutex);
-        m_threadSet.insert(pthread);
+        if (thread) {
+            m_mutex.lock();
+            m_pool.insert(thread->id(), thread);
+            m_mutex.unlock();
+        }
     }
 
-    void remove(VThread *pthread)
+    void remove(VThread *thread)
     {
-        VMutex::Locker lock(&m_threadMutex);
-        m_threadSet.erase(pthread);
-        delete pthread;
-        if (m_threadSet.size() == 0)
-            m_threadsEmpty.notify();
+        if (thread) {
+            m_mutex.lock();
+            m_pool.erase(thread->id());
+            m_mutex.unlock();
+        }
     }
-
-    void finishAllThreads()
-    {
-        // Only original root thread can call this.
-        vAssert(pthread_self() == m_rootThreadId);
-
-        VMutex::Locker lock(&m_threadMutex);
-        while (m_threadSet.size() != 0)
-            m_threadsEmpty.wait(&m_threadMutex);
-    }
-
-    VThreadList() { m_rootThreadId = pthread_self(); }
-    ~VThreadList() {}
 
     VThread *find(uint id) const
     {
-        for (VThread *thread : m_threadSet) {
-            if (thread->id() == id) {
-                return thread;
-            }
-        }
-        vWarn("Not in a VThread");
-        return nullptr;
+        m_mutex.lock();
+        VThread *thread = m_pool.value(id);
+        m_mutex.unlock();
+        return thread;
     }
 
 private:
-    std::set<VThread *> m_threadSet;
-    VMutex m_threadMutex;
-    VWaitCondition m_threadsEmpty;
-
-    // Track the root thread that created us.
-    pthread_t m_rootThreadId;
+    VMap<uint, VThread *> m_pool;
+    mutable VMutex m_mutex;
 };
 
 } //anonymous namespace
@@ -71,7 +53,6 @@ struct VThread::Private
     VThread::Function function;
     void *data;
     uint stackSize;
-    int processor;
     VThread::State state;
     VThread::Priority priority;
     int exitCode;
@@ -82,9 +63,7 @@ struct VThread::Private
 
     pthread_t handle;
 
-    static int InitDefaultAttr;
-    static pthread_attr_t DefaultAttr;
-    static VThreadList threadList;
+    static VThreadList pool;
 
     VMutex exitMutex;
 
@@ -93,7 +72,6 @@ struct VThread::Private
         , function(nullptr)
         , data(nullptr)
         , stackSize(128 * 1024)
-        , processor(-1)
         , state(VThread::NotRunning)
         , priority(VThread::NormalPriority)
         , exitCode(0)
@@ -135,30 +113,23 @@ struct VThread::Private
         // d->self->Release();
         // At this point Thread object might be dead; however we can still pass
         // it to RemoveRunningThread since it is only used as a key there.
-        threadList.remove(d->self);
+        pool.remove(d->self);
         return (void *) result;
     }
 };
 
-int VThread::Private::InitDefaultAttr = 0;
-pthread_attr_t VThread::Private::DefaultAttr;
-VThreadList VThread::Private::threadList;
+VThreadList VThread::Private::pool;
 
-VThread::VThread(uint stackSize, int processor)
+VThread::VThread()
     : d(new Private(this))
 {
-    d->stackSize = stackSize;
-    d->processor = processor;
 }
 
-VThread::VThread(VThread::Function function, void *data, uint stackSize, int processor, State state)
+VThread::VThread(VThread::Function function, void *data)
     : d(new Private(this))
 {
     d->function = function;
     d->data = data;
-    d->stackSize = stackSize;
-    d->processor = processor;
-    d->state = state;
 }
 
 VThread::~VThread()
@@ -166,65 +137,61 @@ VThread::~VThread()
     delete d;
 }
 
+uint VThread::stackSize() const
+{
+    return d->stackSize;
+}
+
+void VThread::setStackSize(uint size)
+{
+    d->stackSize = size;
+}
+
+VThread::Priority VThread::priority() const
+{
+    return d->priority;
+}
+
+void VThread::setPriority(VThread::Priority priority)
+{
+    d->priority = priority;
+}
+
 void VThread::setName(const char *name)
 {
     int result = pthread_setname_np(d->handle, name);
-    if ( result != 0) {
+    if (result != 0) {
         vWarn("VThread::setName(\"" << name << "\") failed. Error:" << strerror(result));
     }
 }
 
-bool VThread::start(VThread::State initialState)
+bool VThread::start()
 {
-    if (initialState == NotRunning) {
-        return false;
-    }
     if (state() != NotRunning) {
         vWarn("Thread::Start failed - thread already running" << id());
         return false;
     }
 
-    if (!d->InitDefaultAttr) {
-        pthread_attr_init(&d->DefaultAttr);
-        pthread_attr_setdetachstate(&d->DefaultAttr, PTHREAD_CREATE_DETACHED);
-        pthread_attr_setstacksize(&d->DefaultAttr, 128 * 1024);
-        sched_param sparam;
-        sparam.sched_priority = VThread::GetOSPriority(NormalPriority);
-        pthread_attr_setschedparam(&d->DefaultAttr, &sparam);
-        d->InitDefaultAttr = 1;
-    }
-
     d->exitCode = 0;
     d->suspendCount = 0;
-    d->threadFlags = (initialState == Running) ? 0 : Private::Suspended;
-
-    // AddRef to us until the thread is finished
-    // AddRef();
-    d->threadList.add(this);
+    d->threadFlags = 0;
     d->exitMutex.lock();
 
-    int result;
-    if (d->stackSize != 128 * 1024 || d->priority != NormalPriority) {
-        pthread_attr_t attr;
+    pthread_attr_t attr;
+    pthread_attr_init(&attr);
+    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+    pthread_attr_setstacksize(&attr, d->stackSize);
+    sched_param sparam;
+    sparam.sched_priority = VThread::GetOSPriority(d->priority);
+    pthread_attr_setschedparam(&attr, &sparam);
 
-        pthread_attr_init(&attr);
-        pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-        pthread_attr_setstacksize(&attr, d->stackSize);
-        sched_param sparam;
-        sparam.sched_priority = GetOSPriority(d->priority);
-        pthread_attr_setschedparam(&attr, &sparam);
-        result = pthread_create(&d->handle, &attr, Private::StartFunction, d);
-        pthread_attr_destroy(&attr);
-    } else {
-        result = pthread_create(&d->handle, &d->DefaultAttr, Private::StartFunction, d);
-    }
-
+    int result = pthread_create(&d->handle, &attr, Private::StartFunction, d);
+    pthread_attr_destroy(&attr);
     if (result) {
         d->threadFlags = 0;
-        //Release();
-        d->threadList.remove(this);
         return false;
     }
+
     return true;
 }
 
@@ -235,14 +202,12 @@ int VThread::run()
 
 void VThread::exit(int exitCode)
 {
-    onExit();
-
     // Signal this thread object as done and release it's references.
     d->threadFlags &= ~(uint) Private::Started;
     d->threadFlags |= Private::Finished;
     // Release();
 
-    d->threadList.remove(this);
+    d->pool.remove(this);
 
     d->exitMutex.unlock();
     pthread_exit((void *) exitCode);
@@ -255,10 +220,6 @@ bool VThread::wait()
     return true;
 }
 
-void VThread::onExit()
-{
-}
-
 bool VThread::suspend()
 {
     vWarn("Thread::Suspend - cannot suspend threads on this system");
@@ -269,21 +230,6 @@ bool VThread::resume()
 {
     vWarn("Thread::Suspend - cannot resume threads on this system");
     return 0;
-}
-
-bool VThread::exitFlag() const
-{
-    return (d->threadFlags & Private::Exited) != 0;
-}
-
-void VThread::setExitFlag(bool exitFlag)
-{
-    // The below is atomic since ThreadFlags is AtomicInt.
-    if (exitFlag) {
-        d->threadFlags |= Private::Exited;
-    } else {
-        d->threadFlags &= (uint) ~Private::Exited;
-    }
 }
 
 bool VThread::isFinished() const
@@ -305,24 +251,9 @@ VThread::State VThread::state() const
     return NotRunning;
 }
 
-int VThread::exitCode() const
-{
-    return d->exitCode;
-}
-
 uint VThread::id() const
 {
     return (uint) d->handle;
-}
-
-void VThread::FinishAllThreads()
-{
-    Private::threadList.finishAllThreads();
-}
-
-int VThread::CpuCount()
-{
-    return 1;
 }
 
 int VThread::GetOSPriority(VThread::Priority priority)
@@ -356,7 +287,7 @@ bool VThread::MSleep(uint msecs)
 
 VThread *VThread::currentThread()
 {
-    return Private::threadList.find(currentThreadId());
+    return Private::pool.find(currentThreadId());
 }
 
 uint VThread::currentThreadId()

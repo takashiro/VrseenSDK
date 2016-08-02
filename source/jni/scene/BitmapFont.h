@@ -82,15 +82,15 @@ public:
 	virtual void Init(const int maxVertices) = 0;
 	virtual void DrawText3D(BitmapFont const & font, const fontParms_t & flags,
             const VVect3f & pos, VVect3f const & normal, VVect3f const & up,
-            float const scale, V4Vectf const & color, const VString &text) = 0;
+            float const scale, VVect4f const & color, const VString &text) = 0;
 	virtual void DrawText3Df(BitmapFont const & font, const fontParms_t & flags,
             const VVect3f & pos, VVect3f const & normal, VVect3f const & up,
-            float const scale, V4Vectf const & color, const char *format,
+            float const scale, VVect4f const & color, const char *format,
 			...) = 0;
 
 	virtual void DrawTextBillboarded3D(BitmapFont const & font,
             fontParms_t const & flags, VVect3f const & pos, float const scale,
-            V4Vectf const & color, const VString &text) = 0;
+            VVect4f const & color, const VString &text) = 0;
 
     virtual void Finish(VMatrix4f const & viewMatrix) = 0;
 

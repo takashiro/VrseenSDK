@@ -1,11 +1,7 @@
 #include "VEventLoop.h"
 
-#include <assert.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <pthread.h>
-
+#include <VLog.h>
+#include <VMutex.h>
 #include <VSemaphore.h>
 
 NV_NAMESPACE_BEGIN
@@ -19,23 +15,16 @@ struct VEventLoop::Private
         , head(0)
         , tail(0)
     {
-        assert(capacity > 0);
+        vAssert(capacity > 0);
 
         for (int i = 0; i < capacity; i++) {
             messages[i].sychronized = false;
         }
-
-        pthread_mutexattr_t	attr;
-        pthread_mutexattr_init(&attr);
-        pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_ERRORCHECK);
-        pthread_mutex_init(&mutex, &attr);
-        pthread_mutexattr_destroy(&attr);
     }
 
     ~Private()
     {
         delete[] messages;
-        pthread_mutex_destroy(&mutex);
     }
 
     bool shutdown;
@@ -51,7 +40,7 @@ struct VEventLoop::Private
 
     volatile int head;
     volatile int tail;
-    pthread_mutex_t mutex;
+    VMutex mutex;
     VSemaphore posted;
     VSemaphore received;
 
@@ -61,16 +50,16 @@ struct VEventLoop::Private
             return false;
         }
 
-        pthread_mutex_lock(&mutex);
+        mutex.lock();
         if (tail - head >= capacity) {
-            pthread_mutex_unlock(&mutex);
+            mutex.unlock();
             return false;
         }
         const int index = tail % capacity;
         messages[index].event = event;
         messages[index].sychronized = synchronized;
         tail++;
-        pthread_mutex_unlock(&mutex);
+        mutex.lock();
 
         posted.post();
         if (synchronized) {
@@ -86,16 +75,16 @@ struct VEventLoop::Private
             return false;
         }
 
-        pthread_mutex_lock(&mutex);
+        mutex.lock();
         if (tail - head >= capacity) {
-            pthread_mutex_unlock(&mutex);
+            mutex.unlock();
             return false;
         }
         const int index = tail % capacity;
         messages[index].event = std::move(event);
         messages[index].sychronized = synchronized;
         tail++;
-        pthread_mutex_unlock(&mutex);
+        mutex.unlock();
 
         posted.post();
         if (synchronized) {
@@ -197,9 +186,9 @@ void VEventLoop::send(const VVariant::Function &func)
 
 VEvent VEventLoop::next()
 {
-    pthread_mutex_lock(&d->mutex);
+    d->mutex.lock();
     if (d->tail <= d->head) {
-        pthread_mutex_unlock(&d->mutex);
+        d->mutex.unlock();
         return VEvent();
     }
 
@@ -210,7 +199,7 @@ VEvent VEventLoop::next()
     }
     d->messages[index].sychronized = false;
     d->head++;
-    pthread_mutex_unlock(&d->mutex);
+    d->mutex.unlock();
 
     return event;
 }
@@ -218,12 +207,12 @@ VEvent VEventLoop::next()
 // Returns immediately if there is already a message in the queue.
 void VEventLoop::wait()
 {
-    pthread_mutex_lock(&d->mutex);
+    d->mutex.lock();
     if (d->tail > d->head) {
-        pthread_mutex_unlock(&d->mutex);
+        d->mutex.unlock();
         return;
     }
-    pthread_mutex_unlock(&d->mutex);
+    d->mutex.unlock();
 
     d->posted.wait();
 }

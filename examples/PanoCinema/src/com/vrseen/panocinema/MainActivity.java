@@ -33,4 +33,20 @@ public class MainActivity extends VrActivity {
 		cinema.releaseAudioFocus();
 		super.onDestroy();
 	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		if (cinema != null && cinema.isPlaying()) {
+			cinema.pause();
+		}
+	}
+
+	@Override
+	protected void onResume()  {
+		super.onResume();
+		if (cinema != null && !cinema.isPlaying()) {
+			cinema.resume();
+		}
+	}
 }

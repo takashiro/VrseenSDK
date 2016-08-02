@@ -47,13 +47,13 @@ VVect3f const & VPointTracker::GetCurPosition() const { return CurPosition; }
 void VText::show(const VString &text, float duration)
 {
     infoText = text;
-    infoTextColor = V4Vectf(1.0f);
+    infoTextColor = VVect4f(1.0f);
     infoTextOffset = VVect3f(0.0f, 0.0f, 1.5f);
     infoTextPointTracker.Reset();
     infoTextEndFrame = vrFrame.id + (long long)(duration * 60.0f) + 1;
 }
 
-void VText::show( float const duration, VVect3f const & offset, V4Vectf const & color, const char * fmt, ... )
+void VText::show( float const duration, VVect3f const & offset, VVect4f const & color, const char * fmt, ... )
 {
     char buffer[1024];
     va_list args;

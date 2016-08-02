@@ -1,3 +1,0 @@
-
-SOURCES += \
-    $$PWD/vlisttest.cpp

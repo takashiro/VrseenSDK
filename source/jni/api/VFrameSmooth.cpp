@@ -1008,7 +1008,7 @@ void VFrameSmooth::Private::bindWarpProgram( const warpSource_t & currentWarpSou
     if ( warpProg.uniformRotateScale > 0 )
     {
         const float angle = framePointTimeInSeconds( vsyncBase ) * M_PI * currentWarpSource.WarpParms.ProgramParms[0];
-        const V4Vectf RotateScale( sinf( angle ), cosf( angle ), currentWarpSource.WarpParms.ProgramParms[1], 1.0f );
+        const VVect4f RotateScale( sinf( angle ), cosf( angle ), currentWarpSource.WarpParms.ProgramParms[1], 1.0f );
         glUniform4fv(warpProg.uniformRotateScale, 1, RotateScale.data());
     }
 }

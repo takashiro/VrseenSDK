@@ -31,7 +31,7 @@ class VText
 public:
     VText();
     VString infoText;           // informative text to show in front of the view
-    V4Vectf infoTextColor;      // color of info text
+    VVect4f infoTextColor;      // color of info text
     VVect3f infoTextOffset;     // offset from center of screen in view space
     long long infoTextEndFrame;   // time to stop showing text
     VPointTracker infoTextPointTracker;   // smoothly tracks to text ideal location
@@ -39,7 +39,7 @@ public:
     VFrame vrFrame;
 
     void show(const VString &text, float duration);
-    void show(float const duration, VVect3f const & offset, V4Vectf const &color, const char *fmt, ...);
+    void show(float const duration, VVect3f const & offset, VVect4f const &color, const char *fmt, ...);
 
 };
 NV_NAMESPACE_END

@@ -400,7 +400,7 @@ void OvrGazeCursorLocal::Render( int const eye, VMatrix4f const & mvp ) const
 		{
 			continue;
 		}
-        V4Vectf cursorColor( 1.0f, 1.0f, 1.0f, 0.5 * ( 1.0 - (float)i / TRAIL_GHOSTS ) );
+        VVect4f cursorColor( 1.0f, 1.0f, 1.0f, 0.5 * ( 1.0 - (float)i / TRAIL_GHOSTS ) );
 		glUniform4fv( CursorProgram.uniformColor, 1, &cursorColor.x );
         VMatrix4f cursorMVP = mvp * CursorTransform[index];
         glUniformMatrix4fv( CursorProgram.uniformModelViewProMatrix, 1, GL_FALSE, cursorMVP.transposed().cell[0] );
@@ -417,7 +417,7 @@ void OvrGazeCursorLocal::Render( int const eye, VMatrix4f const & mvp ) const
 		{
 			continue;
 		}
-        V4Vectf cursorColor( 1.0f, 0.0f, 0.0f, 0.15 * ( 1.0 - (float)i / TRAIL_GHOSTS ) );
+        VVect4f cursorColor( 1.0f, 0.0f, 0.0f, 0.15 * ( 1.0 - (float)i / TRAIL_GHOSTS ) );
 		glUniform4fv( CursorProgram.uniformColor, 1, &cursorColor.x );
         VMatrix4f cursorMVP = mvp * CursorScatterTransform[index];
         glUniformMatrix4fv( CursorProgram.uniformModelViewProMatrix, 1, GL_FALSE, cursorMVP.transposed().cell[0] );
@@ -445,7 +445,7 @@ void OvrGazeCursorLocal::Render( int const eye, VMatrix4f const & mvp ) const
         VMatrix4f timerMVP = mvp * TimerTransform;
         glUniformMatrix4fv( TimerProgram.uniformModelViewProMatrix, 1, GL_FALSE, timerMVP.transposed().cell[0] );
 
-        V4Vectf cursorColor( 0.0f, 0.643f, 1.0f, 1.0f );
+        VVect4f cursorColor( 0.0f, 0.643f, 1.0f, 1.0f );
 		glUniform4fv( TimerProgram.uniformColor, 1, &cursorColor.x );
 		glUniform2fv( TimerProgram.uniformColorTableOffset, 1, &ColorTableOffset.x );
 
