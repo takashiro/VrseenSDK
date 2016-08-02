@@ -92,7 +92,7 @@ public:
                                  const int depthBits,
                                  const int samples,
                                  const bool pbuffer );
-    void eglInit( const EGLContext shareContext,
+    bool eglInit( const EGLContext shareContext,
                    const int GlEsVersion,
                    const int red, const int green, const int blue,
                    const int depth, const int multisamples,

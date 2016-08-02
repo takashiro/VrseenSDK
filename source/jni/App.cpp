@@ -1,6 +1,7 @@
 #include "App.h"
 
 #include <android/keycodes.h>
+#include <android/native_window.h>
 #include <math.h>
 #include <jni.h>
 #include <sstream>
@@ -301,7 +302,7 @@ struct App::Private
 
     ~Private()
     {
-        delete scene;
+//        delete scene;
     }
 
     void initFonts()
@@ -869,8 +870,17 @@ struct App::Private
             const int windowDepth = 0;
             const int windowSamples = 0;
             const GLuint contextPriority = EGL_CONTEXT_PRIORITY_MEDIUM_IMG;
-            m_glStatus.eglInit(EGL_NO_CONTEXT, GL_ES_VERSION,
-                    8,8,8, windowDepth, windowSamples, contextPriority);
+            if( !m_glStatus.eglInit(EGL_NO_CONTEXT, GL_ES_VERSION,8,8,8, windowDepth, windowSamples, contextPriority)
+                || m_glStatus.m_glEsVersion <= 2 ) {
+                vFatal("Failed to init egl or egl version is less than 3!");
+//                VString text("Failed to init opengles context!");
+//                extern jclass VrLibClass;
+//                jmethodID showToast = JniUtils::GetStaticMethodID(vrJni, VrLibClass,
+//                                                                  "showToastFromNative",
+//                                                                  "(Landroid/app/Activity;Ljava/lang/String;)I");
+//                vrJni->CallStaticIntMethod(VrLibClass, showToast, javaObject,
+//                                           JniUtils::Convert(vrJni, text));
+            }
 
             // Create our GL data objects
             initGlObjects();
@@ -1144,7 +1154,7 @@ struct App::Private
             if (!readyToExit)
             {
                 lastViewMatrix = activity->onNewFrame(self->text.vrFrame);
-                scene->update();
+//                scene->update();
             }
 
             // MWC demo hack to allow keyboard swipes
@@ -1192,7 +1202,6 @@ struct App::Private
             gazeCursor = nullptr;
 
             shutdownGlObjects();
-            m_glStatus.eglExit();
 
             vInfo("javaVM->DetachCurrentThread");
             const jint rtn = javaVM->DetachCurrentThread();
@@ -1200,6 +1209,11 @@ struct App::Private
             {
                 vInfo("javaVM->DetachCurrentThread returned" << rtn);
             }
+
+            delete scene;
+            scene = nullptr;
+            m_glStatus.eglExit();
+            renderThread->exit();
         }
     }
 

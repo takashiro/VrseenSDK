@@ -388,7 +388,7 @@ EGLConfig VEglDriver::chooseColorConfig( const int redBits,
        return NULL;
   }
 
-void VEglDriver::eglInit( const EGLContext shareContext,
+bool VEglDriver::eglInit( const EGLContext shareContext,
                              const int requestedGlEsVersion,
                              const int redBits, const int greenBits, const int blueBits,
                              const int depthBits, const int multisamples, const GLuint contextPriority )
@@ -397,79 +397,85 @@ void VEglDriver::eglInit( const EGLContext shareContext,
     vInfo("egl init ");
     if (m_context == EGL_NO_CONTEXT)
     {
-        if (m_display == EGL_NO_DISPLAY)
-         m_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-    EGLint majorVersion;
-    EGLint minorVersion;
-    eglInitialize(m_display, &majorVersion, &minorVersion);
-    m_config = chooseColorConfig(redBits, greenBits, blueBits, depthBits, multisamples, true);
-    if (m_config == 0) {
-        vFatal("No acceptable EGL color configs.");
-        return ;
-    }
-
-    for (int version = requestedGlEsVersion ; version >= 2 ; version--)
-    {
-
-        EGLint contextAttribs[] = {
-            EGL_CONTEXT_CLIENT_VERSION, version,
-            EGL_NONE, EGL_NONE,
-            EGL_NONE };
-
-        if (contextPriority != EGL_CONTEXT_PRIORITY_MEDIUM_IMG) {
-            contextAttribs[2] = EGL_CONTEXT_PRIORITY_LEVEL_IMG;
-            contextAttribs[3] = contextPriority;
+        if (m_display == EGL_NO_DISPLAY) {
+            m_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
         }
 
-        m_context = eglCreateContext(m_display,m_config, shareContext, contextAttribs);
-        if (m_context != EGL_NO_CONTEXT) {
-            m_glEsVersion = version;
-            vInfo("glEsVersion:"<< m_glEsVersion);
-            EGLint configIDReadback;
-            if (!eglQueryContext(m_display, m_context, EGL_CONFIG_ID, &configIDReadback)) {
-              vWarn("eglQueryContext EGL_CONFIG_ID failed");
-            }
-            break;
+        EGLint majorVersion;
+        EGLint minorVersion;
+        eglInitialize(m_display, &majorVersion, &minorVersion);
+        m_config = chooseColorConfig(redBits, greenBits, blueBits, depthBits, multisamples, true);
+        if (m_config == 0) {
+            vFatal("No acceptable EGL color configs.");
+            return false;
         }
-    }
-    if (m_context == EGL_NO_CONTEXT) {
-        vWarn("eglCreateContext failed:" << getEglErrorString());
-        return ;
-    }
-    if (m_pbufferSurface == EGL_NO_SURFACE)
-    {
-        const EGLint attrib_list[] =
+
+        for (int version = requestedGlEsVersion ; version >= 2 ; version--)
         {
-        EGL_WIDTH, 16,
-        EGL_HEIGHT, 16,
-        EGL_NONE
-        };
-        m_pbufferSurface = eglCreatePbufferSurface(m_display, m_config, attrib_list);
+
+            EGLint contextAttribs[] = {
+                EGL_CONTEXT_CLIENT_VERSION, version,
+                EGL_NONE, EGL_NONE,
+                EGL_NONE };
+
+            if (contextPriority != EGL_CONTEXT_PRIORITY_MEDIUM_IMG) {
+                contextAttribs[2] = EGL_CONTEXT_PRIORITY_LEVEL_IMG;
+                contextAttribs[3] = contextPriority;
+            }
+
+            m_context = eglCreateContext(m_display,m_config, shareContext, contextAttribs);
+            if (m_context != EGL_NO_CONTEXT) {
+                m_glEsVersion = version;
+                vInfo("glEsVersion:"<< m_glEsVersion);
+                EGLint configIDReadback;
+                if (!eglQueryContext(m_display, m_context, EGL_CONFIG_ID, &configIDReadback)) {
+                  vWarn("eglQueryContext EGL_CONFIG_ID failed");
+                }
+                break;
+            }
+        }
+
+        if (m_context == EGL_NO_CONTEXT) {
+            vWarn("eglCreateContext failed:" << getEglErrorString());
+            return false;
+        }
 
         if (m_pbufferSurface == EGL_NO_SURFACE)
         {
-        vWarn("eglCreatePbufferSurface failed:" << getEglErrorString());
-        eglDestroyContext(m_display, m_context);
-        m_context = EGL_NO_CONTEXT;
-        return ;
+            const EGLint attrib_list[] =
+            {
+            EGL_WIDTH, 16,
+            EGL_HEIGHT, 16,
+            EGL_NONE
+            };
+            m_pbufferSurface = eglCreatePbufferSurface(m_display, m_config, attrib_list);
+
+            if (m_pbufferSurface == EGL_NO_SURFACE)
+            {
+            vWarn("eglCreatePbufferSurface failed:" << getEglErrorString());
+            eglDestroyContext(m_display, m_context);
+            m_context = EGL_NO_CONTEXT;
+            return false;
+            }
         }
-    }
 
-    if (eglMakeCurrent(m_display, m_pbufferSurface, m_pbufferSurface, m_context) == EGL_FALSE)
-    {
-        vWarn("eglMakeCurrent pbuffer failed:" << getEglErrorString());
-        eglDestroySurface(m_display, m_pbufferSurface);
-        eglDestroyContext(m_display, m_context);
-        m_context = EGL_NO_CONTEXT;
-        return ;
-    }
-    m_extensions = reinterpret_cast<const char *>(glGetString(GL_EXTENSIONS));
-    if (NULL == m_extensions) {
-        vInfo("glGetString( GL_EXTENSIONS ) returned NULL");
-    }
+        if (eglMakeCurrent(m_display, m_pbufferSurface, m_pbufferSurface, m_context) == EGL_FALSE)
+        {
+            vWarn("eglMakeCurrent pbuffer failed:" << getEglErrorString());
+            eglDestroySurface(m_display, m_pbufferSurface);
+            eglDestroyContext(m_display, m_context);
+            m_context = EGL_NO_CONTEXT;
+            return false;
+        }
 
-    m_gpuType = eglGetGpuType();
-  }
+        m_extensions = reinterpret_cast<const char *>(glGetString(GL_EXTENSIONS));
+        if (NULL == m_extensions) {
+            vInfo("glGetString( GL_EXTENSIONS ) returned NULL");
+        }
+
+        m_gpuType = eglGetGpuType();
+        return true;
+    }
 }
 
 
