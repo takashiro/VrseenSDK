@@ -28,7 +28,7 @@ model {
 
                 jni {
                     source {
-                        srcDirs = [ 'jni ']
+                        srcDirs = [ 'jni' ]
                     }
 
                     dependencies {
