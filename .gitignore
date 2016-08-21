@@ -31,3 +31,4 @@ MYTEMP/
 *.iml
 gradle/
 gradle.properties
+.vscode/
