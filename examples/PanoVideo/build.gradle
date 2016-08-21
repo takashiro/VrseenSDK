@@ -13,7 +13,6 @@ model {
         ndk {
             platformVersion = 19
             moduleName ='panovideo'
-            toolchain = 'gcc'
             stl = 'gnustl_shared'
             cppFlags.add('-std=c++11')
             ldLibs.addAll(['log', 'android', 'EGL', 'GLESv3', 'OpenMAXAL', 'OpenSLES', 'z'])

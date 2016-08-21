@@ -249,14 +249,14 @@ void VImage::resize(int newWidth, int newHeight, Filter filter)
         const int srcY = (y * d->height * 2 + offsetY) / (newHeight * 2);
         const float fracY = FracFloat(((float) y * d->height * 2.0f + offsetY) / (newHeight * 2.0f));
 
-        float weightsY[4];
+        float weightsY[4] = {0.0};
         FilterWeights(fracY, filter, weightsY);
 
         for (int x = 0; x < newWidth; x++) {
             const int srcX = ( x * d->width * 2 + offsetX ) / ( newWidth * 2 );
             const float fracX = FracFloat(((float) x * d->width * 2.0f + offsetX) / (newWidth * 2.0f));
 
-            float weightsX[4];
+            float weightsX[4] = {0.0};
             FilterWeights(fracX, filter, weightsX);
 
             float fR = 0.0f;

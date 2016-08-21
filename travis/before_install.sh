@@ -1,13 +1,9 @@
 #!/usr/bin/env sh
 
-if [ `uname -m` = x86_64 ]; then
-    wget http://dl.google.com/android/repository/android-ndk-r10e-linux-x86_64.zip -O ndk.zip
-else
-    wget http://dl.google.com/android/repository/android-ndk-r10e-linux-x86.zip -O ndk.zip
-fi
+wget http://dl.google.com/android/repository/android-ndk-r12b-linux-x86_64.zip -O ndk.zip
 unzip -q ndk.zip
 
-export ANDROID_NDK_HOME=`pwd`/android-ndk-r10e
+export ANDROID_NDK_HOME=`pwd`/android-ndk-r12b
 export PATH=${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools:${ANDROID_NDK_HOME}
 
 cd source

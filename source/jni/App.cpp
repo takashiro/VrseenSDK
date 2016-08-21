@@ -1,6 +1,7 @@
 #include "App.h"
 
 #include <android/keycodes.h>
+#include <android/native_window_jni.h>
 #include <math.h>
 #include <jni.h>
 #include <sstream>
@@ -413,15 +414,13 @@ struct App::Private
         bool down = false, up = false;
         bool currentTouchDown = input.buttonState & BUTTON_TOUCH;
 
-        if (currentTouchDown && !lastTouchDown)
-        {
+        if (currentTouchDown && !lastTouchDown) {
             //CreateToast("DOWN");
             down = true;
             touchOrigin = input.touch;
         }
 
-        if (!currentTouchDown && lastTouchDown)
-        {
+        if (!currentTouchDown && lastTouchDown) {
             //CreateToast("UP");
             up = true;
         }

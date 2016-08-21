@@ -12,7 +12,6 @@ model {
         ndk {
             platformVersion = 19
             moduleName = 'vrseen'
-            toolchain = 'gcc'
             stl = 'gnustl_shared'
 
             cppFlags.add("-I" + file("jni").absolutePath)
