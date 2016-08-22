@@ -23,23 +23,5 @@ ndk-build -j16 APP_CFLAGS=-DNV_NAMESPACE=Vrseen
 if [ $? -ne 0 ]; then exit 1; fi
 cd ..
 
-cd ../source
-ndk-build -B -j16
-if [ $? -ne 0 ]; then exit 1; fi
-
-cd ../examples
-for subdir in $(ls -p | grep '/'); do
-    cd $subdir
-    ndk-build -B -j16
-    if [ $? -ne 0 ]; then exit 1; fi
-    cd ..
-done
-
-cd ../tests
-ndk-build -B -j16
-if [ $? -ne 0 ]; then exit 1; fi
-cd ..
-
 chmod +x ./gradlew
-
 echo "ndk.dir=${ANDROID_NDK_HOME}" >> local.properties
