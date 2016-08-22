@@ -21,6 +21,7 @@ done
 cd ../tests
 ndk-build -j16 APP_CFLAGS=-DNV_NAMESPACE=Vrseen
 if [ $? -ne 0 ]; then exit 1; fi
+cd ..
 
 cd ../source
 ndk-build -B -j16
@@ -41,10 +42,4 @@ cd ..
 
 chmod +x ./gradlew
 
-cp -f travis/build.gradle build.gradle
-cp -f travis/source.gradle source/build.gradle
-cp -f travis/tests.gradle tests/build.gradle
-for source_file in $(ls travis/examples/*.gradle); do
-    example_name=$(basename $source_file .gradle)
-    cp -f $source_file examples/$example_name/build.gradle
-done
+echo "ndk.dir=${ANDROID_NDK_HOME}" >> local.properties
