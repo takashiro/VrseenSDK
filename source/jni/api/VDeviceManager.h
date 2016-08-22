@@ -2,8 +2,11 @@
 // Created by vrsuser004 on 2016/8/9.
 //
 
-#ifndef VRSEEN_VDEVICEMANAGER_H
-#define VRSEEN_VDEVICEMANAGER_H
+#pragma once
+
+#include "vglobal.h"
+
+NV_NAMESPACE_BEGIN
 
 class VDeviceManager
 {
@@ -19,4 +22,5 @@ public:
     static VDevice_Type getSupportedVRDeviceType();
 
 };
-#endif //VRSEEN_VDEVICEMANAGER_H
+
+NV_NAMESPACE_END

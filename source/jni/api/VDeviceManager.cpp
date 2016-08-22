@@ -4,6 +4,8 @@
 #include "VDeviceManager.h"
 #include "android/VOsBuild.h"
 
+NV_NAMESPACE_BEGIN
+
 VDeviceManager::VDevice_Type VDeviceManager::getSupportedVRDeviceType() {
     if (VOsBuild::getString(VOsBuild::Model).contains("SM-N910") ||
         VOsBuild::getString(VOsBuild::Model).contains("SM-N916") ||
@@ -23,3 +25,5 @@ VDeviceManager::VDevice_Type VDeviceManager::getSupportedVRDeviceType() {
 
     return VDevice_Type_Unknown;
 }
+
+NV_NAMESPACE_END
