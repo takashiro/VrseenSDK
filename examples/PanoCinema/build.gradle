@@ -18,6 +18,7 @@ model {
             cppFlags.add('-Wall')
             cppFlags.add('-Wextra')
             cppFlags.add('-Werror')
+            cppFlags.add('-Wno-strict-aliasing')
             ldLibs.addAll(['log', 'android', 'EGL', 'GLESv3', 'OpenMAXAL', 'OpenSLES', 'z'])
         }
         sources {
