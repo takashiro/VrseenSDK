@@ -23,6 +23,10 @@ model {
             cppFlags.add("-I" + file("jni/scene").absolutePath)
 
             cppFlags.add('-std=c++11')
+            cppFlags.add('-Wall')
+            cppFlags.add('-Wextra')
+            cppFlags.add('-Werror')
+            cppFlags.add('-Wno-strict-aliasing')
 
             ldLibs.addAll(['log', 'android', 'EGL', 'GLESv3', 'OpenMAXAL', 'OpenSLES', 'z'])
         }

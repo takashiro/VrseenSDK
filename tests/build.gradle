@@ -15,6 +15,9 @@ model {
             moduleName ='unittest'
             stl = 'gnustl_shared'
             cppFlags.add('-std=c++11')
+            cppFlags.add('-Wall')
+            cppFlags.add('-Wextra')
+            cppFlags.add('-Werror')
             ldLibs.addAll(['log', 'android', 'EGL', 'GLESv3', 'OpenMAXAL', 'OpenSLES', 'z'])
 
             cppFlags.add('-I' + file('jni').absolutePath)
