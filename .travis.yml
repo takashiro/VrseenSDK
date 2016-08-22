@@ -23,6 +23,6 @@ before_script:
   - adb logcat *:I | grep "jni/" &
   - adb logcat *:I > logcat.log &
 script:
-  - ./gradlew build connectedAndroidTest
+  - ./gradlew build connectedAndroidTest -x lint
 after_failure:
   - ./android-ndk-r10e/ndk-stack -sym tests/obj/local/armeabi-v7a -dump logcat.log
