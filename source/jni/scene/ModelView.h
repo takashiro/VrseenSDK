@@ -9,12 +9,12 @@
 NV_NAMESPACE_BEGIN
 
 //-----------------------------------------------------------------------------------
-// OvrSceneView
+// VSceneView
 //
-class OvrSceneView
+class VSceneView
 {
 public:
-	OvrSceneView();
+    VSceneView();
 
 	// Allow movement inside the scene based on the joypad.
 	// Sets the timeWarpParms for smooth joypad turning while dropping frames.
@@ -61,6 +61,9 @@ public:
 	// keep the ratio as small as possible.
 	float					Znear;
 	float					Zfar;
+
+	// - Screen aspect ration, which is usually width/height for square pixels.
+	float				aspect;
 
 	// Position tracking test
     VVect3f				ImuToEyeCenter;

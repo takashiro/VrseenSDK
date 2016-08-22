@@ -1,6 +1,9 @@
 package com.vrseen;
 
 import android.app.Activity;
+import android.app.IVRManager;
+import android.app.IVRSeenManager;
+import android.app.IZtevrManager;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -11,6 +14,8 @@ import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.Build;
+import android.text.format.Time;
 import android.util.Log;
 import android.view.Choreographer;
 import android.view.Surface;
@@ -40,6 +45,87 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 
 	public static final String INTENT_KEY_CMD = "intent_cmd";
 	public static final String INTENT_KEY_FROM_PKG = "intent_pkg";
+
+	public enum VRDeviceType
+	{
+		VRDeviceType_Unknown(-1),
+		VRDeviceType_Common(0),
+		VRDeviceType_Sumsung(1),
+		VRDeviceType_ZTE(2),
+		VRDeviceType_VIVO(3)
+		{
+		};
+
+		private int value;
+		private VRDeviceType(int value)
+		{
+			this.value = value;
+		}
+
+		public int getValue()
+		{
+			return value;
+		}
+
+		public static VRDeviceType valueOf(int value)
+		{
+			switch (value)
+			{
+				case -1:
+					return VRDeviceType_Unknown;
+				case 0:
+					return VRDeviceType_Common;
+				case 1:
+					return VRDeviceType_Sumsung;
+				case 2:
+					return VRDeviceType_ZTE;
+				case 3:
+					return VRDeviceType_VIVO;
+				default:
+					return VRDeviceType_Unknown;
+			}
+		}
+	}
+
+	public static VRDeviceType getVRDeviceType() {
+		if ((Build.MODEL.contains("SM-N910"))
+				|| (Build.MODEL.contains("SM-N916"))
+				|| (Build.MODEL.contains("SM-N920"))
+				|| (Build.MODEL.contains("SM-G920"))
+				|| (Build.MODEL.contains("SM-G925"))
+				|| (Build.MODEL.contains("SM-G928"))
+				) {
+			return VRDeviceType.VRDeviceType_Sumsung;
+		}else if(Build.MODEL.contains("ZTE A2017"))
+		{
+			return VRDeviceType.VRDeviceType_ZTE;
+		} else if(Build.MODEL.contains("vivo Xplay5S")) {
+            return VRDeviceType.VRDeviceType_VIVO;
+		}
+		return VRDeviceType.VRDeviceType_Common;
+	}
+
+	public static boolean isSupportedSingleBuffer()
+	{
+		if (       (Build.MODEL.contains("SM-N910"))
+				|| (Build.MODEL.contains("SM-N916"))
+				|| (Build.MODEL.contains("SM-N920"))
+				|| (Build.MODEL.contains("SM-G920"))
+				|| (Build.MODEL.contains("SM-G925"))
+				|| (Build.MODEL.contains("SM-G928"))
+				|| (Build.MODEL.contains("ZTE A2017"))
+				|| (Build.MODEL.contains("vivo Xplay5S"))
+			)
+		{
+			return true;
+		}
+		return false;
+	}
+
+	public static boolean isZteVRDevice()
+	{
+		return Build.MODEL.contains("ZTE A2017");
+	}
 
 	public static String getCommandStringFromIntent( Intent intent ) {
 		String commandStr = "";
@@ -239,52 +325,203 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 		return Settings.Global.getInt( act.getContentResolver(), "vrmode_developer_mode", 0 ) != 0;
 	}
 
-	public static int setSchedFifoStatic( final Activity activity, int tid, int rtPriority ) {
-		Log.d(TAG, "setSchedFifoStatic tid:" + tid + " pto:" + rtPriority );
 
-		android.app.IVRManager vr = (android.app.IVRManager)activity.getSystemService(android.app.IVRManager.VR_MANAGER);
-		if ( vr == null ) {
-			Log.d(TAG, "VRManager was not found" );
-			return -1;
-		}
+	// zx_add_code 2016.8.1
+	public static int vrEnableVRModeStatic(final Activity activity, int mode) {
 
-		try
+		Log.v(TAG, "********vrEnableVRModeStatic******");
+
+		if (VrLib.getVRDeviceType() == VRDeviceType.VRDeviceType_ZTE)
 		{
-			try
-			{
-				if ( vr.setThreadSchedFifo(activity.getPackageName(), android.os.Process.myPid(), tid, rtPriority) ) {
-					Log.d(TAG, "VRManager set thread priority to " + rtPriority );
-					return 0;
+			// use ZTE VR instead, in future we will call buildModelService
+			android.app.IZtevrManager ztevr = (android.app.IZtevrManager) activity
+					.getSystemService(IZtevrManager.VR_MANAGER);
+			if (ztevr == null) {
+				Log.d(TAG, "IZtevrManager not found");
+				return 0;
+			}
+
+			try {
+				if (ztevr.vrenableVRMode(mode)) {
+					Log.d(TAG, "IZtevrManager vrenableVRMode " );
+					if(mode == 1)
+						ScreenBrightnessTool.enterVrMode(activity);
+					else
+						ScreenBrightnessTool.exitVrMode();
+					return 1;
 				} else {
-					Log.d(TAG, "VRManager failed to set thread priority" );
+					Log.d(TAG, "IZtevrManager failed to vrenableVRMode");
 					return -1;
 				}
-			} catch ( NoSuchMethodError e ) {
-				Log.d(TAG, "Thread priority API does not exist");
+			} catch (NoSuchMethodError e) {
+				Log.d(TAG, "vrenableVRMode does not exist");
 				return -2;
 			}
-		} catch( SecurityException s ) {
-			Log.d(TAG, "Thread priority security exception");
+		}else if(VrLib.getVRDeviceType() == VRDeviceType.VRDeviceType_VIVO)
+		{
+			android.app.IVRSeenManager vivovr = (android.app.IVRSeenManager) activity
+					.getSystemService(IVRSeenManager.VR_MANAGER);
+			if (vivovr == null) {
+				Log.d(TAG, "IVRSeenManager not found");
+				return 0;
+			}
 
-    		activity.runOnUiThread( new Runnable()
-    		{
-			 @Override
-    			public void run()
-    			{
-					Toast toast = Toast.makeText( activity.getApplicationContext(),
-							"Security exception: make sure your application is signed for VR.",
-							Toast.LENGTH_LONG );
-					toast.show();
+			try {
+				if (vivovr.vrenableVRMode(mode)) {
+					Log.d(TAG, "IVRSeenManager vrenableVRMode " );
+					if(mode == 1)
+						ScreenBrightnessTool.enterVrMode(activity);
+					else
+						ScreenBrightnessTool.exitVrMode();
+					return 1;
+				} else {
+					Log.d(TAG, "IVRSeenManager failed to vrenableVRMode");
+					return -1;
 				}
-			} );
-			// if we don't wait here, the app can exit before we see the toast
-			long startTime = System.currentTimeMillis();
-			do {
-			} while( System.currentTimeMillis() - startTime < 5000 );
-
-			return -3;
+			} catch (NoSuchMethodError e) {
+				Log.d(TAG, "vrenableVRMode does not exist");
+				return -2;
+			}
 		}
+
+		return -2;
 	}
+
+	public static void destoryScreenBrightnessTool()
+	{
+		ScreenBrightnessTool.destory();
+	}
+
+	public static int setSchedFifoStatic( final Activity activity, int tid, int rtPriority ) {
+        Log.d(TAG, "setSchedFifoStatic tid:" + tid + " pto:" + rtPriority);
+
+        if (VrLib.getVRDeviceType() == VRDeviceType.VRDeviceType_Sumsung) {
+            IVRManager vrmanager = (android.app.IVRManager) activity.getSystemService(android.app.IVRManager.VR_MANAGER);
+            if (vrmanager == null) {
+                Log.d(TAG, "VRManager was not found");
+                return -1;
+            }
+
+            try {
+                try {
+                    if (vrmanager.setThreadSchedFifo(activity.getPackageName(), android.os.Process.myPid(), tid, rtPriority)) {
+                        Log.d(TAG, "VRManager set thread priority to " + rtPriority);
+                        return 1;
+                    } else {
+                        Log.d(TAG, "VRManager failed to set thread priority");
+                        return -1;
+                    }
+                } catch (NoSuchMethodError e) {
+                    Log.d(TAG, "Thread priority API does not exist");
+                    return -2;
+                }
+            } catch (SecurityException s) {
+                Log.d(TAG, "Thread priority security exception");
+                //zx_note 2016.8.2
+//				activity.runOnUiThread( new Runnable()
+//				{
+//					@Override
+//					public void run()
+//					{
+//						Toast toast = Toast.makeText( activity.getApplicationContext(),
+//								"VRManager case unknown error!",
+//								Toast.LENGTH_SHORT );
+//						toast.show();
+//					}
+//				} );
+                // if we don't wait here, the app can exit before we see the toast
+                long startTime = System.currentTimeMillis();
+                do {
+                } while (System.currentTimeMillis() - startTime < 100);
+
+                return -3;
+            }
+        } else if (VrLib.getVRDeviceType() == VRDeviceType.VRDeviceType_ZTE) {
+            IZtevrManager ztevr = (android.app.IZtevrManager) activity.getSystemService(IZtevrManager.VR_MANAGER);
+            if (ztevr == null) {
+                Log.d(TAG, "IZtevrManager was not found");
+                return -1;
+            }
+
+            try {
+                try {
+                    if (ztevr.setThreadSchedFifo(activity.getPackageName(), android.os.Process.myPid(), tid, rtPriority )) {
+                        Log.d(TAG, "IZtevrManager set thread priority to " + rtPriority);
+                        return 1;
+                    } else {
+                        Log.d(TAG, "IZtevrManager failed to set thread priority");
+                        return -1;
+                    }
+                } catch (NoSuchMethodError e) {
+                    Log.d(TAG, "Thread priority API does not exist");
+                    return -2;
+                }
+            } catch (SecurityException s) {
+                Log.d(TAG, "Thread priority security exception");
+                //zx_note 2016.8.2
+//				activity.runOnUiThread( new Runnable()
+//				{
+//					@Override
+//					public void run()
+//					{
+//						Toast toast = Toast.makeText( activity.getApplicationContext(),
+//								"VRManager case unknown error!",
+//								Toast.LENGTH_LONG );
+//						toast.show();
+//					}
+//				} );VO
+                // if we don't wait here, the app can exit before we see the toast
+                long startTime = System.currentTimeMillis();
+                do {
+                } while (System.currentTimeMillis() - startTime < 100);
+
+                return -3;
+            }
+        } else if (VrLib.getVRDeviceType() == VRDeviceType.VRDeviceType_VIVO) {
+            IVRSeenManager vivovr = (android.app.IVRSeenManager) activity.getSystemService(IVRSeenManager.VR_MANAGER);
+            if (vivovr == null) {
+                Log.d(TAG, "IVRSeenManager was not found");
+                return -1;
+            }
+
+            try {
+                try {
+                    if (vivovr.setThreadSchedFifo(activity.getPackageName(), android.os.Process.myPid(), tid, rtPriority)) {
+                        Log.d(TAG, "IVRSeenManager set thread priority to " + rtPriority);
+                        return 1;
+                    } else {
+                        Log.d(TAG, "IVRSeenManager failed to set thread priority");
+                        return -1;
+                    }
+                } catch (NoSuchMethodError e) {
+                    Log.d(TAG, "Thread priority API does not exist");
+                    return -2;
+                }
+            } catch (SecurityException s) {
+                Log.d(TAG, "Thread priority security exception");
+                //zx_note 2016.8.2
+//				activity.runOnUiThread( new Runnable()
+//				{
+//					@Override
+//					public void run()
+//					{
+//						Toast toast = Toast.makeText( activity.getApplicationContext(),
+//								"VRManager case unknown error!",
+//								Toast.LENGTH_LONG );
+//						toast.show();
+//					}
+//				} );
+                // if we don't wait here, the app can exit before we see the toast
+                long startTime = System.currentTimeMillis();
+                do {
+                } while (System.currentTimeMillis() - startTime < 100);
+
+                return -3;
+            }
+        }
+
+        return -1;
+    }
 
 	static int [] defaultClockLevels = { -1, -1, -1, -1 };
 	public static int[] getAvailableFreqLevels(  Activity activity )
@@ -314,42 +551,124 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 	{
 		Log.d(TAG, "setSystemPerformance cpu: " + cpuLevel + " gpu: " + gpuLevel);
 
-		android.app.IVRManager vr = (android.app.IVRManager)activity.getSystemService(android.app.IVRManager.VR_MANAGER);
-		if ( vr == null ) {
-			Log.d(TAG, "VRManager was not found");
-			return defaultClockFreq;
-		}
-
-		// lock the frequency
-		try
+		if(VrLib.getVRDeviceType() == VRDeviceType.VRDeviceType_Sumsung)
 		{
-			int[] values = vr.SetVrClocks( activity.getPackageName(), cpuLevel, gpuLevel );
-			Log.d(TAG, "SetVrClocks: {CPU CLOCK, GPU CLOCK, POWERSAVE CPU CLOCK, POWERSAVE GPU CLOCK}" );
-			for ( int i = 0; i < values.length; i++ ) {
-				Log.d(TAG, "-> " + "/ " + values[i]);
+			android.app.IVRManager vr = (android.app.IVRManager)activity.getSystemService(android.app.IVRManager.VR_MANAGER);
+			if ( vr == null ) {
+				Log.d(TAG, "VRManager was not found");
+				return defaultClockFreq;
 			}
-			return values;
-		} catch( NoSuchMethodError e ) {
-			// G906S api differs from Note4
-			int[] values = { 0, 0, 0, 0 };
-			boolean success = vr.setFreq( activity.getPackageName(), cpuLevel, gpuLevel );
-			Log.d(TAG, "setFreq returned " + success );
-			return values;
-		}
+
+			// lock the frequency
+			try
+			{
+				int[] values = vr.SetVrClocks( activity.getPackageName(), cpuLevel, gpuLevel );
+				Log.d(TAG, "SetVrClocks: {CPU CLOCK, GPU CLOCK, POWERSAVE CPU CLOCK, POWERSAVE GPU CLOCK}" );
+				for ( int i = 0; i < values.length; i++ ) {
+					Log.d(TAG, "-> " + "/ " + values[i]);
+				}
+				return values;
+			} catch( NoSuchMethodError e ) {
+				// G906S api differs from Note4
+				int[] values = { 0, 0, 0, 0 };
+				boolean success = vr.setFreq( activity.getPackageName(), cpuLevel, gpuLevel );
+				Log.d(TAG, "setFreq returned " + success );
+				return values;
+			}
+
+		}else if(VrLib.getVRDeviceType() == VRDeviceType.VRDeviceType_ZTE)
+		{
+			android.app.IZtevrManager ztevr = (android.app.IZtevrManager) activity
+					.getSystemService(IZtevrManager.VR_MANAGER);
+			if (ztevr == null) {
+				Log.d(TAG, "IZtevrManager not found");
+				return defaultClockFreq;
+			}
+
+			// lock the frequency
+			try {
+				int[] values = { 0, 0, 0, 0 };
+				if( cpuLevel <= 1 && gpuLevel <= 1)
+				{
+					ztevr.vrdefaultFreq();
+					Log.v(TAG, "********set to default freq **********");
+				}
+				else
+				{
+					ztevr.vrfullFreq();
+					values[0] = values[1] = values[2] = values[3] = 3;
+					Log.v(TAG, "***********set to full freq **********");
+				}
+				return values;
+			} catch (NoSuchMethodError e) {
+				// G906S api differs from Note4
+				int[] values = { 0, 0, 0, 0 };
+				Log.d(TAG, "failed to set frequency returned ");
+				return values;
+			}
+		} else if(VrLib.getVRDeviceType() == VRDeviceType.VRDeviceType_VIVO)
+        {
+            android.app.IVRSeenManager vivovr = (android.app.IVRSeenManager) activity
+                    .getSystemService(IVRSeenManager.VR_MANAGER);
+            if (vivovr == null) {
+                Log.d(TAG, "IVRSeenManager not found");
+                return defaultClockFreq;
+            }
+
+            // lock the frequency
+            try {
+				int[] values = { 0, 0, 0, 0 };
+				boolean success = vivovr.setFreq( activity.getPackageName(), cpuLevel, gpuLevel );
+				Log.d(TAG, "setFreq returned " + success );
+                return values;
+            } catch (NoSuchMethodError e) {
+                // G906S api differs from Note4
+                int[] values = { 0, 0, 0, 0 };
+                Log.d(TAG, "failed to set frequency returned ");
+                return values;
+            }
+        }
+
+		int[] values = { 0, 0, 0, 0 };
+		return values;
 	}
 
 	public static void releaseSystemPerformanceStatic( Activity activity )
 	{
 		Log.d(TAG, "releaseSystemPerformanceStatic");
 
-		android.app.IVRManager vr = (android.app.IVRManager)activity.getSystemService(android.app.IVRManager.VR_MANAGER);
-		if ( vr == null ) {
-			Log.d(TAG, "VRManager was not found");
-			return;
-		}
+		if(VrLib.getVRDeviceType() == VRDeviceType.VRDeviceType_Sumsung)
+		{
+			android.app.IVRManager vr = (android.app.IVRManager)activity.getSystemService(IVRManager.VR_MANAGER);
+			if ( vr == null ) {
+				Log.d(TAG, "VRManager was not found");
+				return;
+			}
+			// release the frequency locks
+			vr.relFreq( activity.getPackageName() );
+		}else if(VrLib.getVRDeviceType() == VRDeviceType.VRDeviceType_ZTE)
+		{
+			android.app.IZtevrManager ztevr = (android.app.IZtevrManager) activity
+					.getSystemService(IZtevrManager.VR_MANAGER);
+			if (ztevr == null) {
+				Log.d(TAG, "IZtevrManager not found");
+				return;
+			}
 
-		// release the frequency locks
-		vr.relFreq( activity.getPackageName() );
+			ztevr.vrdefaultFreq();
+		} else if(VrLib.getVRDeviceType() == VRDeviceType.VRDeviceType_VIVO)
+        {
+            android.app.IVRSeenManager vivovr = (android.app.IVRSeenManager) activity
+                    .getSystemService(IVRSeenManager.VR_MANAGER);
+            if (vivovr == null) {
+                Log.d(TAG, "IVivoVrManager not found");
+                return;
+            }
+
+			boolean sucess = vivovr.relFreq(activity.getPackageName());//zx_note
+			Log.d(TAG,"vivovr.relFreq return : "+sucess);
+        }
+
 		Log.d(TAG, "Releasing frequency lock");
 	}
 
@@ -357,19 +676,34 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 		//Log.d(TAG, "getPowerLevelState" );
 
 		int level = 0;
+		if(VrLib.getVRDeviceType() == VRDeviceType.VRDeviceType_Sumsung)
+		{
+			android.app.IVRManager vr = (android.app.IVRManager)act.getSystemService(IVRManager.VR_MANAGER);
+			if ( vr == null ) {
+				Log.d(TAG, "VRManager was not found" );
+				return level;
+			}
 
-		android.app.IVRManager vr = (android.app.IVRManager)act.getSystemService(android.app.IVRManager.VR_MANAGER);
-		if ( vr == null ) {
-			Log.d(TAG, "VRManager was not found" );
+			try {
+				level = vr.GetPowerLevelState();
+			} catch (NoSuchMethodError e) {
+				//Log.d( TAG, "getPowerLevelState api does not exist");
+			}
+		}else if(VrLib.getVRDeviceType() == VRDeviceType.VRDeviceType_VIVO)
+		{
+			android.app.IVRSeenManager vivovr = (android.app.IVRSeenManager)act.getSystemService(IVRSeenManager.VR_MANAGER);
+			if ( vivovr == null ) {
+				Log.d(TAG, "IVRSeenManager was not found" );
+				return level;
+			}
+
+			try {
+				level = vivovr.GetPowerLevelState();
+			} catch (NoSuchMethodError e) {
+				//Log.d( TAG, "getPowerLevelState api does not exist");
+			}
 			return level;
 		}
-
-		try {
-			level = vr.GetPowerLevelState();
-		} catch (NoSuchMethodError e) {
-			//Log.d( TAG, "getPowerLevelState api does not exist");
-		}
-
 		return level;
 	}
 
@@ -379,16 +713,21 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 
 		int bright = 50;
 
-		// Get the current system brightness level by way of VrManager
-		android.app.IVRManager vr = (android.app.IVRManager)act.getSystemService(android.app.IVRManager.VR_MANAGER);
-		if ( vr == null ) {
-			Log.d(TAG, "VRManager was not found" );
-			return bright;
+		if(VrLib.getVRDeviceType() == VRDeviceType.VRDeviceType_Sumsung)
+		{
+			// Get the current system brightness level by way of VrManager
+			android.app.IVRManager vr = (android.app.IVRManager)act.getSystemService(IVRManager.VR_MANAGER);
+			if ( vr == null ) {
+				Log.d(TAG, "VRManager was not found" );
+				return bright;
+			}
+
+			String result = vr.getSystemOption( android.app.IVRManager.VR_BRIGHTNESS );
+			bright = Integer.parseInt( result );
+		}else if(VrLib.getVRDeviceType() == VRDeviceType.VRDeviceType_ZTE)
+		{
+
 		}
-
-		String result = vr.getSystemOption( android.app.IVRManager.VR_BRIGHTNESS );
-		bright = Integer.parseInt( result );
-
 		return bright;
 	}
 
@@ -396,14 +735,19 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 	public static void setSystemBrightness( Activity act, int brightness ) {
 		Log.d(TAG, "setSystemBrightness " + brightness );
 		//assert brightness >= 0 && brightness <= 255;
+		if(VrLib.getVRDeviceType() == VRDeviceType.VRDeviceType_Sumsung)
+		{
+			android.app.IVRManager vr = (android.app.IVRManager)act.getSystemService(IVRManager.VR_MANAGER);
+			if ( vr == null ) {
+				Log.d(TAG, "VRManager was not found" );
+				return;
+			}
+			vr.setSystemOption( android.app.IVRManager.VR_BRIGHTNESS, Integer.toString( brightness ));
+		}else if(VrLib.getVRDeviceType() == VRDeviceType.VRDeviceType_ZTE)
+		{
 
-		android.app.IVRManager vr = (android.app.IVRManager)act.getSystemService(android.app.IVRManager.VR_MANAGER);
-		if ( vr == null ) {
-			Log.d(TAG, "VRManager was not found" );
-			return;
 		}
 
-		vr.setSystemOption( android.app.IVRManager.VR_BRIGHTNESS, Integer.toString( brightness ));
 	}
 
 	// Comfort viewing mode is a low blue light mode.
@@ -411,59 +755,84 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 	// Returns true if system comfortable view mode is enabled
 	public static boolean getComfortViewModeEnabled( Activity act ) {
 		Log.d(TAG, "getComfortViewModeEnabled" );
+		if(VrLib.getVRDeviceType() == VRDeviceType.VRDeviceType_Sumsung)
+		{
+			android.app.IVRManager vr = (android.app.IVRManager) act.getSystemService(IVRManager.VR_MANAGER);
+			if ( vr == null ) {
+				Log.d(TAG, "VRManager was not found" );
+				return false;
+			}
 
-		android.app.IVRManager vr = (android.app.IVRManager) act.getSystemService(android.app.IVRManager.VR_MANAGER);
-		if ( vr == null ) {
-			Log.d(TAG, "VRManager was not found" );
-			return false;
+			String result = vr.getSystemOption( android.app.IVRManager.VR_COMFORT_VIEW );
+			return ( result.equals( "1" ) );
+		} else if(VrLib.getVRDeviceType() == VRDeviceType.VRDeviceType_ZTE)
+		{
+
 		}
-		
-		String result = vr.getSystemOption( android.app.IVRManager.VR_COMFORT_VIEW );
-		return ( result.equals( "1" ) );
+		return  false;
 	}
 
 	// Enable system comfort view mode
 	public static void enableComfortViewMode( Activity act, boolean enable ) {
 		Log.d(TAG, "enableComfortableMode " + enable );
 
-		android.app.IVRManager vr = (android.app.IVRManager) act.getSystemService(android.app.IVRManager.VR_MANAGER);
-		if ( vr == null ) {
-			Log.d(TAG, "VRManager was not found" );
-			return;
+		if(VrLib.getVRDeviceType() == VRDeviceType.VRDeviceType_Sumsung)
+		{
+			android.app.IVRManager vr = (android.app.IVRManager) act.getSystemService(IVRManager.VR_MANAGER);
+			if ( vr == null ) {
+				Log.d(TAG, "VRManager was not found" );
+				return;
+			}
+			vr.setSystemOption( android.app.IVRManager.VR_COMFORT_VIEW, enable ? "1" : "0" );
+		}else if(VrLib.getVRDeviceType() == VRDeviceType.VRDeviceType_ZTE)
+		{
+
 		}
 
-		vr.setSystemOption( android.app.IVRManager.VR_COMFORT_VIEW, enable ? "1" : "0" );
 	}
 
 	public static void setDoNotDisturbMode( Activity act, boolean enable )
 	{
 		Log.d( TAG, "setDoNotDisturbMode " + enable );
+		if(VrLib.getVRDeviceType() == VRDeviceType.VRDeviceType_Sumsung)
+		{
+			android.app.IVRManager vr = (android.app.IVRManager) act.getSystemService(android.app.IVRManager.VR_MANAGER);
+			if ( vr == null ) {
+				Log.d(TAG, "VRManager was not found" );
+				return;
+			}
 
-		android.app.IVRManager vr = (android.app.IVRManager) act.getSystemService(android.app.IVRManager.VR_MANAGER);
-		if ( vr == null ) {
-			Log.d(TAG, "VRManager was not found" );
-			return;
+			vr.setSystemOption( android.app.IVRManager.VR_DO_NOT_DISTURB, ( enable ) ? "1" : "0" );
+
+			String result = vr.getSystemOption( android.app.IVRManager.VR_DO_NOT_DISTURB );
+			Log.d( TAG, "result after set = " + result );
+		}else if(VrLib.getVRDeviceType() == VRDeviceType.VRDeviceType_ZTE)
+		{
+
 		}
 
-		vr.setSystemOption( android.app.IVRManager.VR_DO_NOT_DISTURB, ( enable ) ? "1" : "0" );
-
-		String result = vr.getSystemOption( android.app.IVRManager.VR_DO_NOT_DISTURB );
-		Log.d( TAG, "result after set = " + result );
 	}
 
 	public static boolean getDoNotDisturbMode( Activity act )
 	{
 		Log.d( TAG, "getDoNotDisturbMode " );
 
-		android.app.IVRManager vr = (android.app.IVRManager) act.getSystemService(android.app.IVRManager.VR_MANAGER);
-		if ( vr == null ) {
-			Log.d(TAG, "VRManager was not found" );
-			return false;
-		}
+		if(VrLib.getVRDeviceType() == VRDeviceType.VRDeviceType_Sumsung)
+		{
+			android.app.IVRManager vr = (android.app.IVRManager) act.getSystemService(android.app.IVRManager.VR_MANAGER);
+			if ( vr == null ) {
+				Log.d(TAG, "VRManager was not found" );
+				return false;
+			}
+			String result = vr.getSystemOption( android.app.IVRManager.VR_DO_NOT_DISTURB );
+			//Log.d( TAG, "getDoNotDisturb result = " + result );
+			return ( result.equals( "1" ) );
+		}else if(VrLib.getVRDeviceType() == VRDeviceType.VRDeviceType_ZTE)
+		{
 
-		String result = vr.getSystemOption( android.app.IVRManager.VR_DO_NOT_DISTURB );
-		//Log.d( TAG, "getDoNotDisturb result = " + result );
-		return ( result.equals( "1" ) );
+		}
+		return false;
+
 	}
 
 	// Note that displayMetrics changes in landscape vs portrait mode!

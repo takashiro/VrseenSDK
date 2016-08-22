@@ -52,7 +52,7 @@ public:
 private:
     // shared vars
     VGlGeometry m_globe;
-    OvrSceneView m_scene;
+    VSceneView m_scene;
     bool m_videoWasPlayingWhenPaused;	// state of video when main activity was paused
 
     // panorama vars

@@ -1,14 +1,7 @@
 #include "App.h"
 
 #include <android/keycodes.h>
-#include <android/native_window_jni.h>
-#include <math.h>
-#include <jni.h>
-#include <sstream>
-#include <sys/time.h>
-#include <sys/resource.h>
-#include <unistd.h>
-#include <list>
+#include <android/native_window.h>
 
 #include "VModule.h"
 #include "VEglDriver.h"
@@ -17,6 +10,8 @@
 #include "VTimer.h"
 #include "VAlgorithm.h"
 #include "BitmapFont.h"
+
+#include "VDeviceManager.h"
 #include "EyePostRender.h"
 #include "GazeCursor.h"
 #include "GazeCursorLocal.h"		// necessary to instantiate the gaze cursor
@@ -126,10 +121,19 @@ extern void DebugMenuPoses(void * appPtr, const char * cmd);
 static VEyeItem::Settings DefaultVrParmsForRenderer(const VEglDriver & glOperation)
 {
     VEyeItem::settings.resolution = 1024;
-    VEyeItem::settings.multisamples = (glOperation.m_gpuType == VEglDriver::GPU_TYPE_ADRENO_330) ? 2 : 4;
+    VEyeItem::settings.multisamples = (glOperation.m_gpuType == VEglDriver::GPU_TYPE_ADRENO_330) ? 2 : 2;//zx_note :4
     VEyeItem::settings.colorFormat = VColor::COLOR_8888;
     VEyeItem::settings.commonParameterDepth = VEyeItem::CommonParameter::DepthFormat_24;
-    VEyeItem::settings.wantSingleBuffer = VOsBuild::getString(VOsBuild::Model) == "ZTE A2017";
+    VEyeItem::settings.wantSingleBuffer = VDeviceManager::getSupportedVRDeviceType() != VDeviceManager::VDevice_Type_Unknown;
+
+    VEyeItem::settings.wantSingleBuffer = VOsBuild::getString(VOsBuild::Model).contains("ZTE A2017") ||
+                                          VOsBuild::getString(VOsBuild::Model).contains("SM-N910") ||
+                                          VOsBuild::getString(VOsBuild::Model).contains("SM-N916") ||
+                                          VOsBuild::getString(VOsBuild::Model).contains("SM-N920") ||
+                                          VOsBuild::getString(VOsBuild::Model).contains("SM-G920") ||
+                                          VOsBuild::getString(VOsBuild::Model).contains("SM-G925") ||
+                                          VOsBuild::getString(VOsBuild::Model).contains("SM-G928") ||
+                                          VOsBuild::getString(VOsBuild::Model).contains("vivo Xplay5S");
 
     return VEyeItem::settings;
 }
@@ -147,6 +151,7 @@ struct App::Private
     // needs to just return to the primary activity.
     volatile bool vrThreadSynced;
     volatile bool createdSurface;
+    volatile bool surfaceChanged;
     volatile bool readyToExit;		// start exit procedure
     volatile bool running;
 
@@ -200,6 +205,9 @@ struct App::Private
     bool calibrationLinesDrawn;	// after draw, go to static time warp test
     bool showVignette;			// render the vignette
 
+    int  m_width;
+    int  m_height;
+    EGLint m_attribs[100];
     bool framebufferIsSrgb;			// requires KHR_gl_colorspace
     bool framebufferIsProtected;		// requires GPU trust zone extension
 
@@ -237,7 +245,7 @@ struct App::Private
 
     long long recenterYawFrameStart;	// Enables reorient before sensor data is read.  Allows apps to reorient without having invalid orientation information for that frame.
 
-    OvrGazeCursor *gazeCursor;
+    VGazeCursor *gazeCursor;
     BitmapFont *defaultFont;
     BitmapFontSurface *worldFontSurface;
     KeyState backKeyState;
@@ -253,12 +261,13 @@ struct App::Private
     VScene *scene;
     const std::list<VModule *> &modules;
 
-    ovrTimeWarpParms	swapParms;
+    VTimeWarpParms	swapParms;
 
     Private(App *self)
         : self(self)
         , vrThreadSynced(false)
         , createdSurface(false)
+        , surfaceChanged(false)
         , readyToExit(false)
         , running(false)
         , eventLoop(100)
@@ -268,7 +277,7 @@ struct App::Private
         , paused(true)
         , popupDistance(2.0f)
         , popupScale(1.0f)
-        , showFPS(true)
+        , showFPS(false)//zx_note  close fps show
         , dialogWidth(0)
         , dialogHeight(0)
         , nativeWindow(nullptr)
@@ -302,7 +311,7 @@ struct App::Private
 
     ~Private()
     {
-        delete scene;
+//        delete scene;
     }
 
     void initFonts()
@@ -327,9 +336,10 @@ struct App::Private
     {
         activity->onPause();
 
-        for(VModule *module : modules) {
-            module->onPause();
-        }
+        VKernel::instance()->pause();
+//        for(VModule *module : modules) {
+//            module->onPause();
+//        }
     }
 
     void resume()
@@ -339,22 +349,23 @@ struct App::Private
         // Make sure the window surface is current, which it won't be
         // if we were previously in async mode
         // (Not needed now?)
-        if (eglMakeCurrent(m_glStatus.m_display, windowSurface, windowSurface, m_glStatus.m_context) == EGL_FALSE)
-        {
-            vFatal("eglMakeCurrent failed:" << m_glStatus.getEglErrorString());
-        }
+//        if (eglMakeCurrent(m_glStatus.m_display, windowSurface, windowSurface, m_glStatus.m_context) == EGL_FALSE)
+//        {
+//            vFatal("eglMakeCurrent failed:" << m_glStatus.getEglErrorString());
+//        }
 
         // Allow the app to override
         activity->configureVrMode(kernel);
 
         // Clear cursor trails
-        gazeCursor->HideCursorForFrames(10);
+        gazeCursor->HideCursorForFrames(10);//zx_note 2016.8.9 fps不实时
 
         activity->onResume();
 
-        for (VModule *module : modules) {
-            module->onResume();
-        }
+        VKernel::instance()->resume();
+//        for (VModule *module : modules) {
+//            module->onResume();
+//        }
     }
 
     void initGlObjects()
@@ -646,7 +657,7 @@ struct App::Private
             return;
         }
 
-        if (event.name == "surfaceChanged") {
+        if(event.name == "surfaceCreated") {
             vInfo(event.name);
             if (windowSurface != EGL_NO_SURFACE)
             {	// Samsung says this is an Android problem, where surfaces are reported as
@@ -654,38 +665,37 @@ struct App::Private
                 vWarn("Skipping create work because window hasn't been destroyed.");
                 return;
             }
-            nativeWindow = static_cast<ANativeWindow *>(event.data.toPointer());
 
-            EGLint attribs[100];
+            nativeWindow = static_cast<ANativeWindow *>(event.data.toPointer());
             int		numAttribs = 0;
 
             // Set the colorspace on the window
             windowSurface = EGL_NO_SURFACE;
             if (activity->wantSrgbFramebuffer())
             {
-                attribs[numAttribs++] = VEglDriver::EGL_GL_COLORSPACE_KHR;
-                attribs[numAttribs++] = VEglDriver::EGL_GL_COLORSPACE_SRGB_KHR;
+                m_attribs[numAttribs++] = VEglDriver::EGL_GL_COLORSPACE_KHR;
+                m_attribs[numAttribs++] = VEglDriver::EGL_GL_COLORSPACE_SRGB_KHR;
             }
             // Ask for TrustZone rendering support
             if (activity->wantProtectedFramebuffer())
             {
-                attribs[numAttribs++] = EGL_PROTECTED_CONTENT_EXT;
-                attribs[numAttribs++] = EGL_TRUE;
+                m_attribs[numAttribs++] = EGL_PROTECTED_CONTENT_EXT;
+                m_attribs[numAttribs++] = EGL_TRUE;
             }
 
             //use single buffer
             if(self->vrParms().wantSingleBuffer)
             {
-                attribs[numAttribs++] = EGL_RENDER_BUFFER;
-                attribs[numAttribs++] = EGL_SINGLE_BUFFER;
+                m_attribs[numAttribs++] = EGL_RENDER_BUFFER;
+                m_attribs[numAttribs++] = EGL_SINGLE_BUFFER;
             }
 
-            attribs[numAttribs++] = EGL_NONE;
+            m_attribs[numAttribs++] = EGL_NONE;
 
             // Android doesn't let the non-standard extensions show up in the
             // extension string, so we need to try it blind.
             windowSurface = eglCreateWindowSurface(m_glStatus.m_display, m_glStatus.m_config,
-                    nativeWindow, attribs);
+                    nativeWindow, m_attribs);
 
             if (windowSurface == EGL_NO_SURFACE )
             {
@@ -693,14 +703,14 @@ struct App::Private
                 //use single buffer
                 if(self->vrParms().wantSingleBuffer)
                 {
-                    attribs[numAttribs++] = EGL_RENDER_BUFFER;
-                    attribs[numAttribs++] = EGL_SINGLE_BUFFER;
+                    m_attribs[numAttribs++] = EGL_RENDER_BUFFER;
+                    m_attribs[numAttribs++] = EGL_SINGLE_BUFFER;
                 }
-                attribs[numAttribs++] = EGL_NONE;
+                m_attribs[numAttribs++] = EGL_NONE;
 
 
                 windowSurface = eglCreateWindowSurface(m_glStatus.m_display, m_glStatus.m_config,
-                        nativeWindow, attribs);
+                        nativeWindow, m_attribs);
                 if (windowSurface == EGL_NO_SURFACE)
                 {
                     vFatal("eglCreateWindowSurface failed:" << m_glStatus.getEglErrorString());
@@ -714,15 +724,21 @@ struct App::Private
                 framebufferIsProtected = activity->wantProtectedFramebuffer();
             }
 
-            if (eglMakeCurrent(m_glStatus.m_display, windowSurface, windowSurface, m_glStatus.m_context) == EGL_FALSE)
-            {
-                vFatal("eglMakeCurrent failed:" << m_glStatus.getEglErrorString());
-            }
+//            if (eglMakeCurrent(m_glStatus.m_display, windowSurface, windowSurface, m_glStatus.m_context) == EGL_FALSE)
+//            {
+//                vFatal("eglMakeCurrent failed:" << m_glStatus.getEglErrorString());
+//            }
+
+            eglQuerySurface( m_glStatus.m_display, windowSurface, EGL_WIDTH,  &m_width );
+            eglQuerySurface( m_glStatus.m_display, windowSurface, EGL_HEIGHT, &m_height );
 
             createdSurface = true;
 
             // Let the client app setup now
             activity->onWindowCreated();
+
+            // start framesmooth thread
+            VKernel::instance()->enterVrMode();
 
             // Resume
             if (!paused)
@@ -732,11 +748,41 @@ struct App::Private
             return;
         }
 
+        if (event.name == "surfaceChanged") {
+            vInfo(event.name);
+            if (windowSurface == EGL_NO_SURFACE)
+            {	// Samsung says this is an Android problem, where surfaces are reported as
+                // created multiple times.
+                vWarn("Skipping create work because window hasn't been destroyed.");
+                return;
+            }
+
+            if( m_width != event.data.at(0).toInt()
+                || m_height != event.data.at(1).toInt() ) {
+                eglDestroySurface(m_glStatus.m_display, windowSurface);
+                windowSurface = eglCreateWindowSurface(m_glStatus.m_display, m_glStatus.m_config, nativeWindow, m_attribs);
+
+                eglQuerySurface( m_glStatus.m_display, windowSurface, EGL_WIDTH,  &m_width );
+                eglQuerySurface( m_glStatus.m_display, windowSurface, EGL_HEIGHT, &m_height );
+            }
+
+            VKernel::instance()->setSurfaceRevolution(windowSurface);
+
+            surfaceChanged = true;
+//            VKernel::instance()->setSurfaceRevolution(windowSurface);
+            // Let the client app setup now
+//            activity->onWindowCreated();
+            return;
+        }
+
         if (event.name == "surfaceDestroyed") {
             vInfo("surfaceDestroyed");
 
             // Let the client app shutdown first.
             activity->onWindowDestroyed();
+
+            // stop framesmooth thread
+            VKernel::instance()->destroy(EXIT_TYPE_EXIT);
 
             // Handle it ourselves.
             if (eglMakeCurrent(m_glStatus.m_display, m_glStatus.m_pbufferSurface, m_glStatus.m_pbufferSurface,
@@ -755,6 +801,9 @@ struct App::Private
                 ANativeWindow_release(nativeWindow);
                 nativeWindow = nullptr;
             }
+
+            createdSurface = false;
+            surfaceChanged = false;
             return;
         }
 
@@ -831,7 +880,7 @@ struct App::Private
         }
 
         if (event.name == "quit") {
-            kernel->exit();
+            kernel->destroy(EXIT_TYPE_EXIT);
             readyToExit = true;
             vInfo("VrThreadSynced=" << vrThreadSynced << " CreatedSurface=" << createdSurface << " ReadyToExit=" << readyToExit);
         }
@@ -868,8 +917,11 @@ struct App::Private
             const int windowDepth = 0;
             const int windowSamples = 0;
             const GLuint contextPriority = EGL_CONTEXT_PRIORITY_MEDIUM_IMG;
-            m_glStatus.eglInit(EGL_NO_CONTEXT, GL_ES_VERSION,
-                    8,8,8, windowDepth, windowSamples, contextPriority);
+            if( !m_glStatus.eglInit(EGL_NO_CONTEXT, GL_ES_VERSION,8,8,8, windowDepth, windowSamples, contextPriority)
+                || m_glStatus.m_glEsVersion <= 2 )
+            {
+                vFatal("Failed to init egl or egl version is less than 3!");
+            }
 
             // Create our GL data objects
             initGlObjects();
@@ -881,7 +933,7 @@ struct App::Private
             scene->addEyeItem();
             scene->addEyeItem();
 
-            gazeCursor = new OvrGazeCursorLocal;
+            gazeCursor = new VGazeCursorLocal;
 
             VTexture loadingIcon(VResource("res/raw/loading_indicator.png"), VTexture::NoMipmaps);
             loadingIconTexId = loadingIcon.id();
@@ -913,11 +965,12 @@ struct App::Private
                     break;
                 }
                 command(event);
+
             }
 
             // If we don't have a surface yet, or we are paused, sleep until
             // something shows up on the message queue.
-            if (windowSurface == EGL_NO_SURFACE || paused)
+            if ((windowSurface == EGL_NO_SURFACE) || (surfaceChanged == false) || paused)
             {
                 if (!(vrThreadSynced && createdSurface && readyToExit))
                 {
@@ -935,7 +988,7 @@ struct App::Private
                 }
                 else
                 {
-                    ovrTimeWarpParms warpSwapMessageParms = kernel->InitTimeWarpParms(WARP_INIT_MESSAGE, errorTexture.id());
+                    VTimeWarpParms warpSwapMessageParms = kernel->InitTimeWarpParms(WARP_INIT_MESSAGE, errorTexture.id());
                     warpSwapMessageParms.ProgramParms[0] = 0.0f;						// rotation in radians
                     warpSwapMessageParms.ProgramParms[1] = 1024.0f / errorTextureSize;	// message size factor
                     kernel->doSmooth(&warpSwapMessageParms);
@@ -968,7 +1021,7 @@ struct App::Private
             {
                 if (activity->showLoadingIcon())
                 {
-                    const ovrTimeWarpParms warpSwapLoadingIconParms = kernel->InitTimeWarpParms(WARP_INIT_LOADING_ICON, loadingIconTexId);
+                    const VTimeWarpParms warpSwapLoadingIconParms = kernel->InitTimeWarpParms(WARP_INIT_LOADING_ICON, loadingIconTexId);
                     kernel->doSmooth(&warpSwapLoadingIconParms);
 
 
@@ -1103,7 +1156,7 @@ struct App::Private
                     LastFrameRate = 1.0f / float(interval > 0.000001 ? interval : 0.00001);
                 }
 
-                VVect3f viewPos = lastViewMatrix.viewForward();
+                VVect3f viewPos(0.0f,-2.0f,0.0f); //= lastViewMatrix.viewPosition();    //viewForward();
                 VVect3f viewFwd = lastViewMatrix.viewForward();
                 VVect3f newPos = viewPos + viewFwd * 1.5f;
                 fpsPointTracker.Update(VTimer::Seconds(), newPos);
@@ -1143,7 +1196,7 @@ struct App::Private
             if (!readyToExit)
             {
                 lastViewMatrix = activity->onNewFrame(self->text.vrFrame);
-                scene->update();
+//                scene->update();
             }
 
             // MWC demo hack to allow keyboard swipes
@@ -1191,7 +1244,6 @@ struct App::Private
             gazeCursor = nullptr;
 
             shutdownGlObjects();
-            m_glStatus.eglExit();
 
             vInfo("javaVM->DetachCurrentThread");
             const jint rtn = javaVM->DetachCurrentThread();
@@ -1199,6 +1251,11 @@ struct App::Private
             {
                 vInfo("javaVM->DetachCurrentThread returned" << rtn);
             }
+
+            delete scene;
+            scene = nullptr;
+            m_glStatus.eglExit();
+            renderThread->exit();
         }
     }
 
@@ -1388,7 +1445,7 @@ VEyeItem::Settings &App::eyeSettings()
     return VEyeItem::settings;
 }
 
-OvrGazeCursor & App::gazeCursor()
+VGazeCursor & App::gazeCursor()
 {
     return *d->gazeCursor;
 }
@@ -1486,12 +1543,12 @@ SurfaceTexture * App::dialogTexture()
     return dialog.dialogTexture;
 }
 
-ovrTimeWarpParms const & App::swapParms() const
+VTimeWarpParms const & App::swapParms() const
 {
     return d->swapParms;
 }
 
-ovrTimeWarpParms & App::swapParms()
+VTimeWarpParms & App::swapParms()
 {
     return d->swapParms;
 }
@@ -1526,7 +1583,7 @@ void App::recenterYaw(const bool showBlack)
     vInfo("AppLocal::RecenterYaw");
     if (showBlack)
 	{
-        const ovrTimeWarpParms warpSwapBlackParms = d->kernel->InitTimeWarpParms(WARP_INIT_BLACK);
+        const VTimeWarpParms warpSwapBlackParms = d->kernel->InitTimeWarpParms(WARP_INIT_BLACK);
         d->kernel->doSmooth(&warpSwapBlackParms);
 
 //        d->kernel->InitTimeWarpParms();

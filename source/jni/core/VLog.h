@@ -58,7 +58,7 @@ private:
 #  define vInfo(args) { VLog(__FILE__, __LINE__, VLog::Info) << args ; }
 #  define vWarn(args) { VLog(__FILE__, __LINE__, VLog::Warn) << args ; }
 #  define vError(args) { VLog(__FILE__, __LINE__, VLog::Error) << args ; }
-#  define vFatal(args) { VLog(__FILE__, __LINE__, VLog::Verbose) << args; __builtin_trap() ; }
+#  define vFatal(args) { VLog(__FILE__, __LINE__, VLog::Error) << args; __builtin_trap() ; }
 #  define vAssert(expr) { if (!(expr)) { vFatal(#expr); } }
 #else
 #  define vVerbose(args)

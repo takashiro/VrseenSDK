@@ -17,11 +17,11 @@ enum eGazeCursorStateType
 };
 
 //==============================================================
-// OvrGazeCurorInfo
-class OvrGazeCursorInfo
+// VGazeCurorInfo
+class VGazeCursorInfo
 {
 public:
-	OvrGazeCursorInfo() :
+    VGazeCursorInfo() :
 		Distance( FLT_MAX ),
 		State( CURSOR_STATE_NORMAL )
 	{
@@ -40,16 +40,16 @@ public:
 };
 
 //==============================================================
-// OvrGazeCursor
+// VGazeCursor
 //
 // Various systems can utilize the gaze cursor, but only the user that places the
 // gaze cursor closest to the view (i.e. that detected the front-most item) should
 // treat the cursor as active.  All users behind the closest system should act as if
 // the gaze cursor is disabled while they are not closest.
-class OvrGazeCursor
+class VGazeCursor
 {
 public:
-	virtual						~OvrGazeCursor() { }
+	virtual						~VGazeCursor() { }
 
 	// Initialize the gaze cursor system and loads the cursor images from
 	// the application package.
@@ -84,7 +84,7 @@ public:
 	virtual bool				IsActiveForUser( gazeCursorUserId_t const userId ) const = 0;
 
 	// Returns the current info about the gaze cursor.
-	virtual OvrGazeCursorInfo	GetInfo() const = 0;
+    virtual VGazeCursorInfo	GetInfo() const = 0;
 
 	// Force the distance to a specific value -- this will set the distance even if
 	// it is further away than the current distance. Unless your intent is to overload

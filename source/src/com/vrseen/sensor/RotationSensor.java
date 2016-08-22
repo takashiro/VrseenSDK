@@ -5,6 +5,7 @@ package com.vrseen.sensor;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
+import android.util.Log;
 
 public class RotationSensor {
 	private static abstract class SensorType {							//define sensor type
@@ -34,12 +35,12 @@ public class RotationSensor {
 
 		mInternalSensorListener = new InternalSensorListener(this);
 
-		//mInternalSensor = mInternalSensorManager
-		//		.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR);
+//		mInternalSensor = mInternalSensorManager
+//				.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR);
 		
 		mInternalRotationSensor = mInternalSensorManager.getDefaultSensor(
                 Sensor.TYPE_ROTATION_VECTOR);
-		
+
 		if (mInternalRotationSensor != null) {
 			mInternalSensorManager.registerListener(mInternalSensorListener,
 					mInternalRotationSensor, SensorManager.SENSOR_DELAY_FASTEST);
@@ -95,11 +96,12 @@ public class RotationSensor {
 			mListener.onRotationSensor(timeStamp, w, x, y, z, gyroX, gyroY, gyroZ);
 		}
 	}
-	
+	int usbSensorCount = 0;
 	void onUSensor(long timeStamp, float w, float x, float y, float z,
 			float gyroX, float gyroY, float gyroZ) {
 		if (mCurrentSensor == SensorType.USBHOST) {
 			mListener.onRotationSensor(timeStamp, w, x, y, z, gyroX, gyroY, gyroZ);
+			//Log.e("time: "+timeStamp ,"usbsensor count: "+(++usbSensorCount));
 		}
 	}
 

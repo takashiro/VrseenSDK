@@ -209,17 +209,15 @@ void VThread::exit(int exitCode)
 
     d->pool.remove(this);
 
-    pthread_exit((void *) exitCode);
     d->exitMutex.unlock();
+    pthread_exit((void *) exitCode);
 }
 
 bool VThread::wait()
 {
-    bool result = d->exitMutex.tryLock();
-    if (result) {
-        d->exitMutex.unlock();
-    }
-    return result;
+    d->exitMutex.lock();
+    d->exitMutex.unlock();
+    return true;
 }
 
 bool VThread::suspend()

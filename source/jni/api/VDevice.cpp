@@ -76,11 +76,11 @@ VDevice::VDevice()
     eyeDisplayFov[1] = 90.0f;
 
     // Screen params.
-    lensDistance = 0.063f;	// JDC: measured on 8/23/2014
+    lensDistance = 0.059f;
     eyeDisplayFov[0] = 90.0f;
     eyeDisplayFov[1] = 90.0f;
 
-    widthbyMeters = 0.125f;		// not reported correctly by display metrics!
+    widthbyMeters = 0.12f;		// not reported correctly by display metrics!
     heightbyMeters = 0.0707f;
 }
 

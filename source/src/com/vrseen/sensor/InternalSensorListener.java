@@ -4,6 +4,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.util.Log;
 
 public class InternalSensorListener implements SensorEventListener {
 	private RotationSensor mSensor = null;
@@ -20,6 +21,7 @@ public class InternalSensorListener implements SensorEventListener {
 	private float gyroY = 0.0f;
 	private float gyroZ = 0.0f;
 
+	int sensorcount = 0;
 	@Override
 	public void onSensorChanged(SensorEvent event) {
 		// TODO Auto-generated method stub
@@ -32,6 +34,8 @@ public class InternalSensorListener implements SensorEventListener {
 			z = quaternion[3];
 
 			mSensor.onInternalRotationSensor(VrseenTime.getCurrentTime(), w, x, y, z, gyroX, gyroY, gyroZ);
+			//Log.e("","########  Internal sensor chanageed count: "+ (++sensorcount) );
+
 		} else if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
 			gyroX = event.values[0];
 			gyroY = event.values[1];

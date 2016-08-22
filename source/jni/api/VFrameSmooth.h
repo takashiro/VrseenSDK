@@ -9,11 +9,22 @@ NV_NAMESPACE_BEGIN
 class VFrameSmooth
 {
 public:
-    VFrameSmooth(bool async,bool wantSingleBuffer);
+
+    /* When vsync signal comes, there are two directions for hardware to refresh screen */
+    enum HardwareRefreshDirection {
+        HWRD_TB,        /* from top to bottom */
+        HWRD_BT         /* from bottom to top */
+    };
+
+    VFrameSmooth(bool wantSingleBuffer, HardwareRefreshDirection direction);
     ~VFrameSmooth();
 
-    void	doSmooth( const ovrTimeWarpParms & parms );
+    void	doSmooth( const VTimeWarpParms & parms );
     int threadId() const;
+
+    void pause();
+    void setupSurface(EGLSurface surface);
+    void resume();
 private:
     NV_DECLARE_PRIVATE
     NV_DISABLE_COPY(VFrameSmooth)
@@ -21,5 +32,3 @@ private:
 
 
 NV_NAMESPACE_END
-
-

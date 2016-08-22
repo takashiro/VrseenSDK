@@ -76,7 +76,7 @@ private:
 	// shared vars
     VGlGeometry			m_globe;
 
-    OvrSceneView		m_scene;
+    VSceneView		m_scene;
 
     // Pano data and menus
     VString						m_PhotoUrl;

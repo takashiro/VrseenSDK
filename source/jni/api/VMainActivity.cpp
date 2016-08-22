@@ -320,9 +320,16 @@ NV_USING_NAMESPACE
 extern "C"
 {
 
-void Java_com_vrseen_VrActivity_nativeSurfaceChanged(JNIEnv *jni, jclass, jobject surface)
+void Java_com_vrseen_VrActivity_nativeSurfaceCreated(JNIEnv *jni, jclass, jobject surface)
 {
-    vApp->eventLoop().send("surfaceChanged", surface ? ANativeWindow_fromSurface(jni, surface) : nullptr);
+    vApp->eventLoop().send("surfaceCreated", surface ? ANativeWindow_fromSurface(jni, surface) : nullptr);
+}
+
+void Java_com_vrseen_VrActivity_nativeSurfaceChanged(JNIEnv *, jclass, jobject, int width, int height)
+{
+    VVariantArray args;
+    args << width << height;
+    vApp->eventLoop().send("surfaceChanged", args);
 }
 
 void Java_com_vrseen_VrActivity_nativeSurfaceDestroyed(JNIEnv *, jclass)

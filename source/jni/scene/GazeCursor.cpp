@@ -51,8 +51,8 @@ static const char * GazeCursorColorTableFragmentSrc =
 	"}\n";
 
 //==============================
-// OvrGazeCursorLocal::OvrGazeCursorLocal
-OvrGazeCursorLocal::OvrGazeCursorLocal() :
+// VGazeCursorLocal::VGazeCursorLocal
+VGazeCursorLocal::VGazeCursorLocal() :
 	NextUserId( 1 ),
 	CursorRotation( 0.0f ),
     RotationRateRadians( VConstantsf::Pi * 0.5f ),
@@ -73,24 +73,24 @@ OvrGazeCursorLocal::OvrGazeCursorLocal() :
 {
 }
 
-const float	OvrGazeCursorLocal::CURSOR_MAX_DIST = 2.5f;
+const float	VGazeCursorLocal::CURSOR_MAX_DIST = 2.5f;
 
 //==============================
-// OvrGazeCursorLocal::OvrGazeCursorLocal
-OvrGazeCursorLocal::~OvrGazeCursorLocal()
+// VGazeCursorLocal::VGazeCursorLocal
+VGazeCursorLocal::~VGazeCursorLocal()
 {
 }
 
 //==============================
-// OvrGazeCursorLocal::
-void OvrGazeCursorLocal::Init()
+// VGazeCursorLocal::
+void VGazeCursorLocal::Init()
 {
-	vInfo("OvrGazeCursorLocal::Init");
+    vInfo("VGazeCursorLocal::Init");
     vAssert(Initialized == false);
 
 	if ( Initialized )
 	{
-		vInfo("OvrGazeCursorLocal::Init - already initialized!");
+        vInfo("VGazeCursorLocal::Init - already initialized!");
 		return;
     }
     CursorGeometry.createPlaneQuadGrid( 1, 1 );
@@ -129,10 +129,10 @@ void OvrGazeCursorLocal::Init()
 }
 
 //==============================
-// OvrGazeCursorLocal::
-void OvrGazeCursorLocal::Shutdown()
+// VGazeCursorLocal::
+void VGazeCursorLocal::Shutdown()
 {
-	vInfo("OvrGazeCursorLocal::Shutdown");
+    vInfo("VGazeCursorLocal::Shutdown");
     vAssert(Initialized == true);
 
 	for ( int i = 0; i < CURSOR_STATE_MAX; ++i )
@@ -163,21 +163,21 @@ void OvrGazeCursorLocal::Shutdown()
 }
 
 //==============================
-// OvrGazeCursorLocal::GenerateUserId
-gazeCursorUserId_t	OvrGazeCursorLocal::GenerateUserId()
+// VGazeCursorLocal::GenerateUserId
+gazeCursorUserId_t	VGazeCursorLocal::GenerateUserId()
 {
 	return gazeCursorUserId_t( NextUserId++ );
 }
 
 //==============================
-// OvrGazeCursorLocal::UpdateForUser
-void OvrGazeCursorLocal::UpdateForUser( gazeCursorUserId_t const userId, float const d,
+// VGazeCursorLocal::UpdateForUser
+void VGazeCursorLocal::UpdateForUser( gazeCursorUserId_t const userId, float const d,
 										eGazeCursorStateType const state )
 {
-	//vInfo("OvrGazeCursorLocal::UpdateForUser " << userId.Get());
+    //vInfo("VGazeCursorLocal::UpdateForUser " << userId.Get());
 	if ( d < Info.Distance )
 	{
-		//vInfo("OvrGazeCursorLocal::UpdateForUser " << userId.Get() << " - new closest distace " << d);
+        //vInfo("VGazeCursorLocal::UpdateForUser " << userId.Get() << " - new closest distace " << d);
 		Info.Distance = d;
 		Info.UserId = userId;
 		Info.State = state;
@@ -189,8 +189,8 @@ void OvrGazeCursorLocal::UpdateForUser( gazeCursorUserId_t const userId, float c
 }
 
 //==============================
-// OvrGazeCursorLocal::ClearGhosts
-void OvrGazeCursorLocal::ClearGhosts()
+// VGazeCursorLocal::ClearGhosts
+void VGazeCursorLocal::ClearGhosts()
 {
 	CurrentTransform = 0;
 }
@@ -201,17 +201,17 @@ static float frand()
 }
 
 //==============================
-// OvrGazeCursorLocal::BeginFrame
-void OvrGazeCursorLocal::BeginFrame()
+// VGazeCursorLocal::BeginFrame
+void VGazeCursorLocal::BeginFrame()
 {
 	ResetCursor();
 }
 
 //==============================
-// OvrGazeCursorLocal::Frame
-void OvrGazeCursorLocal::Frame( VMatrix4f const & viewMatrix, float const deltaTime )
+// VGazeCursorLocal::Frame
+void VGazeCursorLocal::Frame( VMatrix4f const & viewMatrix, float const deltaTime )
 {
-	//vInfo("OvrGazeCursorLocal::Frame");
+    //vInfo("VGazeCursorLocal::Frame");
 	HiddenFrames -= 1;
 
 	if ( 0 ) //IsActive )
@@ -338,13 +338,13 @@ void OvrGazeCursorLocal::Frame( VMatrix4f const & viewMatrix, float const deltaT
 }
 
 //==============================
-// OvrGazeCursorLocal::Render
-void OvrGazeCursorLocal::Render( int const eye, VMatrix4f const & mvp ) const
+// VGazeCursorLocal::Render
+void VGazeCursorLocal::Render( int const eye, VMatrix4f const & mvp ) const
 {
     NV_UNUSED(eye);
-    VEglDriver::logErrorsEnum( "OvrGazeCursorLocal::Render - pre" );
+    VEglDriver::logErrorsEnum( "VGazeCursorLocal::Render - pre" );
 
-	//vInfo("OvrGazeCursorLocal::Render");
+    //vInfo("VGazeCursorLocal::Render");
 
 	if ( HiddenFrames >= 0 )
 	{
@@ -363,7 +363,7 @@ void OvrGazeCursorLocal::Render( int const eye, VMatrix4f const & mvp ) const
 
 	if ( CursorScale <= 0.0f )
 	{
-		vInfo("OvrGazeCursorLocal::Render - scale 0");
+        vInfo("VGazeCursorLocal::Render - scale 0");
 		return;
 	}
 
@@ -455,48 +455,48 @@ void OvrGazeCursorLocal::Render( int const eye, VMatrix4f const & mvp ) const
 	glDepthMask( GL_TRUE );
 	glDisable( GL_BLEND );
 
-    VEglDriver::logErrorsEnum( "OvrGazeCursorLocal::Render - post" );
+    VEglDriver::logErrorsEnum( "VGazeCursorLocal::Render - post" );
 }
 
 //==============================
-// OvrGazeCursorLocal::IsActiveForUser
-bool OvrGazeCursorLocal::IsActiveForUser( gazeCursorUserId_t const userId ) const
+// VGazeCursorLocal::IsActiveForUser
+bool VGazeCursorLocal::IsActiveForUser( gazeCursorUserId_t const userId ) const
 {
 	return Info.UserId == userId;
 }
 
 //==============================
-// OvrGazeCursorLocal::GetInfo
-OvrGazeCursorInfo OvrGazeCursorLocal::GetInfo() const
+// VGazeCursorLocal::GetInfo
+VGazeCursorInfo VGazeCursorLocal::GetInfo() const
 {
 	return Info;
 }
 
 //==============================
-// OvrGazeCursorLocal::ForceDistance
-void OvrGazeCursorLocal::ForceDistance( gazeCursorUserId_t const userId, float const d )
+// VGazeCursorLocal::ForceDistance
+void VGazeCursorLocal::ForceDistance( gazeCursorUserId_t const userId, float const d )
 {
 	Info.UserId = userId;
 	Info.Distance = d;
 }
 
 //==============================
-// OvrGazeCursorLocal::ForceDistance
-void OvrGazeCursorLocal::SetRotationRate( float const degreesPerSec )
+// VGazeCursorLocal::ForceDistance
+void VGazeCursorLocal::SetRotationRate( float const degreesPerSec )
 {
     RotationRateRadians = degreesPerSec * VConstantsf::VDTR;
 }
 
 //==============================
-// OvrGazeCursorLocal::SetCursorScale
-void OvrGazeCursorLocal::SetCursorScale( float const scale )
+// VGazeCursorLocal::SetCursorScale
+void VGazeCursorLocal::SetCursorScale( float const scale )
 {
 	CursorScale = scale;
 }
 
 //==============================
-// OvrGazeCursorLocal::ResetCursor
-void OvrGazeCursorLocal::ResetCursor()
+// VGazeCursorLocal::ResetCursor
+void VGazeCursorLocal::ResetCursor()
 {
 	Info.Reset( CURSOR_MAX_DIST );
 	IsActive = false;
@@ -504,8 +504,8 @@ void OvrGazeCursorLocal::ResetCursor()
 }
 
 //==============================
-// OvrGazeCursorLocal::StartTimer
-void OvrGazeCursorLocal::StartTimer( float const durationSeconds, float const timeBeforeShowingTimer )
+// VGazeCursorLocal::StartTimer
+void VGazeCursorLocal::StartTimer( float const durationSeconds, float const timeBeforeShowingTimer )
 {
     double curTime = VTimer::Seconds();
 	vInfo("(" << curTime << ") StartTimer = " << durationSeconds);
@@ -514,8 +514,8 @@ void OvrGazeCursorLocal::StartTimer( float const durationSeconds, float const ti
 }
 
 //==============================
-// OvrGazeCursorLocal::CancelTimer
-void OvrGazeCursorLocal::CancelTimer()
+// VGazeCursorLocal::CancelTimer
+void VGazeCursorLocal::CancelTimer()
 {
     double curTime = VTimer::Seconds();
 	vInfo("(" << curTime << ") Cancel Timer");
@@ -524,8 +524,8 @@ void OvrGazeCursorLocal::CancelTimer()
 }
 
 //==============================
-// OvrGazeCursorLocal::TimerActive
-bool OvrGazeCursorLocal::TimerActive() const {
+// VGazeCursorLocal::TimerActive
+bool VGazeCursorLocal::TimerActive() const {
     return TimerEndTime > VTimer::Seconds();
 }
 

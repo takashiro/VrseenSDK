@@ -192,14 +192,52 @@ public class USensor {
 		}
 	}
 
-	private BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
+	private void doReceiveUsbPermission(UsbDevice device) {
+		int Vid;
+		int Pid;
+		Vid = device.getVendorId();
+		Pid = device.getProductId();
+		System.out.println("usb permission" + " " + Vid + " " + Pid);
 
+		usbDevice = device;
+		if (!isValidProduct(Vid, Pid))
+			return;
+		if (!getDeviceInterface())
+			return;
+		if (!getEndpoint())
+			return;
+
+		if (GetConnection()) {
+			if (uSensorListener != null) {
+				uSensorListener.onAttached();
+			}
+			// buffer = ByteBuffer.allocate(100);
+			if(request == null){
+				request = new UsbRequest();
+			}
+			request.initialize(usbDeviceConnection, usbEndpoint);
+
+			mTimer = new Timer();
+			mTimer.scheduleAtFixedRate(new USensorTask(this),
+					0, 2);
+			mConnected = true;
+			System.out.println("permissioned usb device connect true");
+		}
+	}
+	private BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			String actionString = intent.getAction();
 			if (ACTION_USB_PERMISSION.equals(actionString)) {
+				System.out.println("receive usb permission");
 				synchronized (this) {
-
+					UsbDevice device = (UsbDevice)intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+					if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+						System.out.println("usb permission granted notdefault");
+						if (device != null) {
+							doReceiveUsbPermission(device);
+						}
+					}
 				}
 			}else if (UsbManager.ACTION_USB_DEVICE_ATTACHED
 					.equals(actionString)) {
@@ -399,9 +437,9 @@ public class USensor {
 	}
 
 	private void RequestPermission() {
-
 		PendingIntent pIntent = PendingIntent.getBroadcast(mContext, 0,
 				new Intent(ACTION_USB_PERMISSION), 0);
+
 		usbManager.requestPermission(usbDevice, pIntent);
 		System.out.println("request permission");
 
