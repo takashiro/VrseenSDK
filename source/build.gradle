@@ -14,14 +14,6 @@ model {
             moduleName = 'vrseen'
             stl = 'gnustl_shared'
 
-            cppFlags.add("-I" + file("jni").absolutePath)
-            cppFlags.add("-I" + file("jni/api").absolutePath)
-            cppFlags.add("-I" + file("jni/core").absolutePath)
-            cppFlags.add("-I" + file("jni/gui").absolutePath)
-            cppFlags.add("-I" + file("jni/io").absolutePath)
-            cppFlags.add("-I" + file("jni/media").absolutePath)
-            cppFlags.add("-I" + file("jni/scene").absolutePath)
-
             cppFlags.add('-std=c++11')
             cppFlags.add('-Wall')
             cppFlags.add('-Wextra')
