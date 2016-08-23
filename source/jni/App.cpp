@@ -35,6 +35,7 @@
 #include "VRotationSensor.h"
 #include "VResource.h"
 #include "VTexture.h"
+#include "VGui.h"
 
 //#define TEST_TIMEWARP_WATCHDOG
 #define EGL_PROTECTED_CONTENT_EXT 0x32c0
@@ -259,6 +260,7 @@ struct App::Private
     VMainActivity *activity;
     VKernel *kernel;
     VScene *scene;
+    VGui *gui;
     const std::list<VModule *> &modules;
 
     VTimeWarpParms	swapParms;
@@ -305,6 +307,7 @@ struct App::Private
         , javaObject(nullptr)
         , activity(nullptr)
         , scene(new VScene)
+        , gui(nullptr)
         , modules(VModule::List())
     {
     }
@@ -946,6 +949,8 @@ struct App::Private
             gazeCursor->Init();
 
             lastTouchpadTime = VTimer::Seconds();
+
+            gui = new VGui;
         }
 
         // FPS counter information
@@ -1253,6 +1258,8 @@ struct App::Private
 
             delete scene;
             scene = nullptr;
+            delete gui;
+            gui = nullptr;
             m_glStatus.eglExit();
             renderThread->exit();
         }
@@ -1680,7 +1687,7 @@ void App::drawEyeViewsPostDistorted( VMatrix4f const & centerViewMatrix, const i
 
             // Call back to the app for drawing.
             const VMatrix4f mvp = d->activity->drawEyeView(eye, fovDegrees);
-
+            d->gui->update();
             worldFontSurface().Render3D(defaultFont(), mvp.transposed());
 
             glDisable(GL_DEPTH_TEST);
