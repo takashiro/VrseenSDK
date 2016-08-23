@@ -814,13 +814,8 @@ VMatrix4f SceneManager::Frame( const VFrame & vrFrame )
 		glGenerateMipmap( GL_TEXTURE_2D );
 		glBindTexture( GL_TEXTURE_2D, 0 );
 
-
-
         VEglDriver::glFlush();
 	}
-
-	// Generate callbacks into DrawEyeView
-    vApp->drawEyeViewsPostDistorted( Scene.CenterViewMatrix() );
 
 	return Scene.CenterViewMatrix();
 }

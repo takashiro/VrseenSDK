@@ -450,9 +450,6 @@ VMatrix4f PanoVideo::onNewFrame(VFrame vrFrame )
 	// We could disable the srgb convert on the FBO. but this is easier
     vApp->vrParms().colorFormat = m_useSrgb ? VColor::COLOR_8888_sRGB : VColor::COLOR_8888;
 
-	// Draw both eyes
-    vApp->drawEyeViewsPostDistorted( m_scene.CenterViewMatrix() );
-
     return m_scene.CenterViewMatrix();
 }
 

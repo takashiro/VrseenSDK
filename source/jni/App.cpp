@@ -1193,10 +1193,9 @@ struct App::Private
             }
 
             // Main loop logic / draw code
-            if (!readyToExit)
-            {
+            if (!readyToExit) {
                 lastViewMatrix = activity->onNewFrame(self->text.vrFrame);
-//                scene->update();
+                self->drawEyeViewsPostDistorted(lastViewMatrix);
             }
 
             // MWC demo hack to allow keyboard swipes
