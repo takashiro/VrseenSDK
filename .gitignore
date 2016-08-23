@@ -31,3 +31,5 @@ MYTEMP/
 *.iml
 gradle/
 gradle.properties
+*.docx
+*.dotx
