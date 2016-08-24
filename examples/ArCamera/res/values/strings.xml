@@ -9,7 +9,7 @@
       name="app_name"
       project="vrseen-panovideo"
       description="The title of the application, which lets you watch videos that have 360 degrees of view (i.e. you can turn your head in any direction)"
-      >Vrseen PanoVideo</string>
+      >Vrseen ArCamera</string>
   <string
       name="action_settings"
       project="vrseen-panovideo"

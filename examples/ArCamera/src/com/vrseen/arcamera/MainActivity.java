@@ -2,6 +2,7 @@ package com.vrseen.arcamera;
 
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.content.Intent;
 import android.net.Uri;
 
@@ -11,12 +12,11 @@ public class MainActivity extends VrActivity {
 
 	ArCamera video = null;
 	static {
-		System.loadLibrary("panovideo");
+		System.loadLibrary("arcamera");
 	}
 
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
 		Intent intent = getIntent();
 		Uri uri = intent.getData();
 		String videoPath = uri != null ? uri.toString() : null;

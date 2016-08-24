@@ -647,6 +647,15 @@ struct App::Private
             return;
         }
 
+        if ( event.name == "camera")
+        {
+           /* float hfov = event.data.at(0).toFloat();
+            float vfov = event.data.at(1).toFloat();
+            cameraFovHorizontal = hfov;
+            cameraFovVertical = vfov;*/
+            return;
+        }
+
         if (event.name == "surfaceChanged") {
             vInfo(event.name);
             if (windowSurface != EGL_NO_SURFACE)
@@ -1304,6 +1313,7 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
     vAssert(vAppInstance == nullptr);
     vAppInstance = this;
 
+    cameraTexture = new SurfaceTexture( jni );
     d->kernel = VKernel::instance();
     d->storagePaths = new VStandardPath(jni, activityObject);
 
@@ -1729,5 +1739,8 @@ const VZipFile &App::apkFile() const
     static VZipFile current(packageCodePath());
     return current;
 }
-
+SurfaceTexture * App::GetCameraTexture()
+{
+    return cameraTexture;
+}
 NV_NAMESPACE_END

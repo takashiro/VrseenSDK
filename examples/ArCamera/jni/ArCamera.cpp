@@ -26,8 +26,52 @@
 #include "App.h"
 
 NV_NAMESPACE_BEGIN
-
+static const char* cameraVertexShaderSrc =
+        "uniform mat4 Mvpm;\n"
+        "uniform mat4 Texm;\n"
+        "attribute vec4 Position;\n"
+        "attribute vec4 VertexColor;\n"
+        "attribute vec2 TexCoord;\n"
+        "uniform mediump vec4 UniformColor;\n"
+        "varying  highp vec2 oTexCoord;\n"
+        "//varying  lowp vec4 oColor;\n"
+        "void main()\n"
+        "{\n"
+        "   //vec4 top = Texm * Position;\n"
+        "   //vec4 bottom = Mvpm * Position;\n"
+        "   //gl_Position = mix( bottom, top, TexCoord.y );\n"
+        "   gl_Position = Mvpm * Position;\n"
+        "   oTexCoord = TexCoord;\n"
+        "   //oColor = VertexColor * UniformColor;\n"
+        "}\n";
+static const char* cameraFragmentShaderSrc =
+        "#extension GL_OES_EGL_image_external : require\n"
+        "uniform samplerExternalOES Texture0;\n"
+        "uniform lowp vec4 ColorBias;\n"
+        "varying highp vec2 oTexCoord;\n"
+        "//varying lowp vec4 oColor;\n"
+        "void main()\n"
+        "{\n"
+        "   gl_FragColor = ColorBias + texture2D( Texture0, oTexCoord );\n"
+        "}\n";
 extern "C" {
+
+/*jobject Java_com_vrseen_arcamera_ArCamera_nativeGetCameraSurfaceTexture( JNIEnv *jni, jclass clazz,
+        jlong appPtr )
+{
+    LOG( "getCameraSurfaceTexture: %i",
+            (vApp->GetCameraTexture()->textureId ));
+    return vApp->GetCameraTexture()->javaObject;
+}
+
+void Java_com_vrseen_arcamera_ArCamera_nativeSetCameraFov( JNIEnv *jni, jclass clazz,
+        jlong appPtr, jfloat fovHorizontal, jfloat fovVertical )
+{
+    LOG( "nativeSetCameraFov %.2f %.2f", fovHorizontal, fovVertical );
+    VVariantArray args;
+    args << fovHorizontal << fovVertical;
+    vApp->eventLoop().post("video", std::move(args));
+}*/
 
 void Java_com_vrseen_arcamera_ArCamera_construct(JNIEnv *jni, jclass, jobject activity)
 {
@@ -107,7 +151,7 @@ void ArCamera::init(const VString &, const VString &, const VString &)
 
     m_panoramaProgram.initShader(VGlShader::getPanoVertexShaderSource(),VGlShader::getPanoProgramShaderSource()	);
 
-    m_fadedPanoramaProgram.initShader(VGlShader::getFadedPanoVertexShaderSource(),VGlShader::getFadedPanoProgramShaderSource());
+    m_fadedPanoramaProgram.initShader(cameraVertexShaderSrc,cameraFragmentShaderSrc);
     m_singleColorTextureProgram.initShader(VGlShader::getSingleTextureVertexShaderSource(),VGlShader::getUniformSingleTextureProgramShaderSource());
 
 	// always fall back to valid background
@@ -329,9 +373,9 @@ VMatrix4f ArCamera::drawEyeView( const int eye, const float fovDegrees )
 {
     VMatrix4f mvp = m_scene.MvpForEye( eye, fovDegrees );
 
-    if ( ( m_menuState == MENU_VIDEO_PLAYING ) && ( m_movieTexture != NULL ) )
+    if ( ( m_movieTexture != NULL ))
 	{
-		// draw animated movie panorama
+        // draw animated movie panorama
 		glActiveTexture( GL_TEXTURE0 );
         glBindTexture( GL_TEXTURE_EXTERNAL_OES, m_movieTexture->textureId );
 
@@ -341,7 +385,7 @@ VMatrix4f ArCamera::drawEyeView( const int eye, const float fovDegrees )
 		glDisable( GL_DEPTH_TEST );
 		glDisable( GL_CULL_FACE );
 
-        VGlShader & prog = ( m_backgroundWidth == m_backgroundHeight ) ? m_fadedPanoramaProgram : m_panoramaProgram;
+        VGlShader & prog = m_panoramaProgram;
 
 		glUseProgram( prog.program );
 		glUniform4f( prog.uniformColor, 1.0f, 1.0f, 1.0f, 1.0f );
@@ -418,8 +462,8 @@ VMatrix4f ArCamera::onNewFrame(VFrame vrFrame )
 
 	// Check for new video frames
 	// latch the latest movie frame to the texture.
-    if ( m_movieTexture && m_videoWidth ) {
-		glActiveTexture( GL_TEXTURE0 );
+    if ( m_movieTexture) {
+        glActiveTexture( GL_TEXTURE0 );
         m_movieTexture->Update();
 		glBindTexture( GL_TEXTURE_EXTERNAL_OES, 0 );
         m_frameAvailable = false;

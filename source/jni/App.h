@@ -91,11 +91,18 @@ public:
     bool isShowFPS() const;
     void showFPS(bool const show);
 
+    SurfaceTexture * GetCameraTexture();
+
+/*    float           cameraFovHorizontal;
+    float           cameraFovVertical;*/
+
     const VZipFile &apkFile() const;
 
     VText text;
     VPanel panel;
     VDialog dialog;
+
+    SurfaceTexture * cameraTexture;
 
 private:
     NV_DECLARE_PRIVATE

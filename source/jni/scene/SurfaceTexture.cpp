@@ -91,12 +91,16 @@ void SurfaceTexture::SetDefaultBufferSize( int width, int height ) {
 
 void SurfaceTexture::Update() {
     // latch the latest movie frame to the texture
+    vError("mark 00");
     if ( !javaObject ) {
     	return;
     }
 
+   vError("mark 01");
    jni->CallVoidMethod( javaObject, updateTexImageMethodId );
+   vError("mark 02");
    nanoTimeStamp = jni->CallLongMethod( javaObject, getTimestampMethodId );
+   vError("mark 03");
 }
 
 
