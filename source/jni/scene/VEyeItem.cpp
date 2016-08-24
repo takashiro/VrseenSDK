@@ -203,7 +203,7 @@ struct EyeBuffer {
                   bufferParms.resolution);
         glViewport(0, 0, bufferParms.widthScale * bufferParms.resolution,
                    bufferParms.resolution);
-        glClearColor(0, 1, 0, 1);
+        glClearColor(53.0f / 255, 166.0f / 255, 240.0f / 255, 1);
         glClear( GL_COLOR_BUFFER_BIT);
         glBindFramebuffer( GL_FRAMEBUFFER, 0);
     }
@@ -229,7 +229,7 @@ struct VEyeItem::Private
 
 VEyeItem::VEyeItem():discardInsteadOfClear( true ),swapCount( 0 ),d(new Private)
 {
-    
+
 }
 
 VEyeItem::~VEyeItem()
@@ -251,7 +251,7 @@ void VEyeItem::paint()
     {
         vInfo("Reallocating buffers");
         buffers.BufferParms = settings;
-        
+
         if (settings.multisamples > 1 ) {
             buffers.MultisampleMode = MultisampleRenderToTexture;
         } else {
