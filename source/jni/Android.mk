@@ -67,6 +67,7 @@ LOCAL_EXPORT_LDLIBS += -lOpenSLES
 LOCAL_STATIC_LIBRARIES := \
 	minizip \
 	stb \
-	nanovg
+	nanovg \
+	assimp
 
 include $(BUILD_STATIC_LIBRARY)		# start building based on everything since CLEAR_VARS

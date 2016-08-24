@@ -1,0 +1,3 @@
+[submodule "source/jni/3rdparty/assimp"]
+	path = source/jni/3rdparty/assimp
+	url = https://github.com/takashiro/assimp
