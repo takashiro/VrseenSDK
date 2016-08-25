@@ -3,38 +3,8 @@ LOCAL_PATH := $(call my-dir)
 # jni is always prepended to this, unfortunately
 NV_ROOT := ../../source/jni
 
-include $(CLEAR_VARS)
-
-LOCAL_MODULE := minizip
-
-LOCAL_CFLAGS += -Wno-strict-aliasing
-LOCAL_CFLAGS += -Wno-unused-parameter
-LOCAL_CFLAGS += -Wno-missing-field-initializers
-
-LOCAL_SRC_FILES := \
-	3rdparty/minizip/ioapi.c \
-	3rdparty/minizip/miniunz.c \
-	3rdparty/minizip/mztools.c \
-	3rdparty/minizip/unzip.c \
-	3rdparty/minizip/zip.c
-
-include $(BUILD_STATIC_LIBRARY)
-
-
-include $(CLEAR_VARS)
-
-LOCAL_MODULE := stb
-
-LOCAL_CFLAGS += -Wno-strict-aliasing
-LOCAL_CFLAGS += -Wno-unused-parameter
-LOCAL_CFLAGS += -Wno-missing-field-initializers
-
-LOCAL_SRC_FILES := \
-	3rdparty/stb/stb_image.c \
-	3rdparty/stb/stb_image_write.c
-
-include $(BUILD_STATIC_LIBRARY)
-
+include $(LOCAL_PATH)/$(NV_ROOT)/3rdparty/minizip.mk
+include $(LOCAL_PATH)/$(NV_ROOT)/3rdparty/stb.mk
 
 include $(CLEAR_VARS)				# clean everything up to prepare for a module
 
