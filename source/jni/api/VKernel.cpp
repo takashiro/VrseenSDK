@@ -352,8 +352,8 @@ void VKernel::run()
     }
 
     //TODO::need to improve
-    bool wantsinglebuffer = VOsBuild::getString(VOsBuild::Model) == "ZTE A2017";
-    frameSmooth = new VFrameSmooth(asyncSmooth, wantsinglebuffer);
+    //bool wantsinglebuffer = VOsBuild::getString(VOsBuild::Model) == "ZTE A2017";
+    frameSmooth = new VFrameSmooth(asyncSmooth, true);
 
     jmethodID setSchedFifoId = JniUtils::GetStaticMethodID(Jni, VrLibClass, "setSchedFifoStatic", "(Landroid/app/Activity;II)I");
     Jni->CallStaticIntMethod(VrLibClass, setSchedFifoId, ActivityObject, gettid(), 1);

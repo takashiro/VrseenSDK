@@ -10,7 +10,7 @@ public interface IVRManager
 	 * IVRManager vr = (IVRManager)getSystemService( IVRManager.VR_MANAGER );
 	 * {@hide}
 	 */
-	public static String VR_MANAGER = "vr";
+	public static String VR_MANAGER = "vrs";
 	
 	/**
 	 * Option strings used by set and get option methods. VRManager will synchronize and cache global VR user

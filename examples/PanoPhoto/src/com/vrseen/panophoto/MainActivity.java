@@ -41,6 +41,7 @@ public class MainActivity extends VrActivity {
 		String photoPath = uri != null ? uri.toString() : null;
 		if (photoPath == null || photoPath.isEmpty()) {
 			photoPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/VRSeen/SDK/360Photos/1.jpg";
+			//photoPath = "/storage/extSdCard/VRSeen/SDK/360Photos/1.jpg";
 		}
 
 		photo = new PanoPhoto(this);

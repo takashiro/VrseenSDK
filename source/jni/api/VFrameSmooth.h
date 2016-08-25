@@ -14,6 +14,7 @@ public:
 
     void	doSmooth( const ovrTimeWarpParms & parms );
     int threadId() const;
+
 private:
     NV_DECLARE_PRIVATE
     NV_DISABLE_COPY(VFrameSmooth)

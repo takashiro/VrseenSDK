@@ -11,6 +11,7 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 #include <jni.h>
 #include <unistd.h>						// usleep, etc
 #include <sys/syscall.h>
+#include <android/native_window_jni.h>
 
 #include "VEgldriver.h"
 #include "VLog.h"
@@ -151,6 +152,7 @@ public:
 	GLuint			ErrorTexture;
 	int				ErrorTextureSize;
 	double			ErrorMessageEndTime;
+	EGLConfig 		config_list[1024];
 };
 
 UnityPlugin	up;
@@ -158,6 +160,97 @@ UnityPlugin	up;
 extern "C"
 {
 
+
+ANativeWindow* GetNativeWindow( JNIEnv * jni, jobject activity )
+{
+	vInfo("Test do GetNativeWindow!");
+
+//	if(!plugin.isInitialized)
+//	{
+//		LogError("svrapi not initialized yet!");
+//		return;
+//	}
+
+	jclass activityClass = jni->GetObjectClass(activity);
+	if (activityClass == NULL)
+	{
+		vInfo("activityClass == NULL!");
+		return NULL;
+	}
+	vInfo("Test do GetNativeWindow Get mUnityPlayer fid");
+
+	jfieldID fid = jni->GetFieldID(activityClass, "mUnityPlayer", "Lcom/unity3d/player/UnityPlayer;");
+	if (fid == NULL)
+	{
+		vInfo("mUnityPlayer not found!");
+		return NULL;
+	}
+
+	vInfo("Test do GetNativeWindow ");
+	jobject unityPlayerObj = jni->GetObjectField(activity, fid);
+	if(unityPlayerObj == NULL)
+	{
+		vInfo("unityPlayer object not found!");
+		return NULL;
+	}
+
+	vInfo("Test do GetNativeWindow! 3");
+	jclass unityPlayerClass = jni->GetObjectClass(unityPlayerObj);
+	if (unityPlayerClass == NULL)
+	{
+		vInfo("unityPlayer class not found!");
+		return NULL;
+	}
+
+	vInfo("Test do GetNativeWindow! 4");
+	jmethodID mid = jni->GetMethodID(unityPlayerClass, "getChildAt", "(I)Landroid/view/View;");
+	if (mid == NULL)
+	{
+		vInfo("getChildAt methodID not found!");
+		return NULL;
+	}
+
+	vInfo("Test do GetNativeWindow! 5");
+	jboolean param = 0;
+	jobject surfaceViewObj = jni->CallObjectMethod( unityPlayerObj, mid, param);
+	if (surfaceViewObj == NULL)
+	{
+		vInfo("surfaceView object not found!");
+		return NULL;
+	}
+
+	vInfo("Test do GetNativeWindow! 6");
+	jclass surfaceViewClass = jni->GetObjectClass(surfaceViewObj);
+	mid = jni->GetMethodID(surfaceViewClass, "getHolder", "()Landroid/view/SurfaceHolder;");
+	if (mid == NULL)
+	{
+		vInfo("getHolder methodID not found!");
+		return NULL;
+	}
+
+	vInfo("Test do GetNativeWindow! 7");
+	jobject surfaceHolderObj = jni->CallObjectMethod( surfaceViewObj, mid);
+	if (surfaceHolderObj == NULL)
+	{
+		vInfo("surfaceHolder object not found!");
+		return NULL;
+	}
+
+	vInfo("Test do GetNativeWindow! 8");
+	jclass surfaceHolderClass = jni->GetObjectClass(surfaceHolderObj);
+	mid = jni->GetMethodID(surfaceHolderClass, "getSurface", "()Landroid/view/Surface;");
+	if (mid == NULL)
+	{
+		vInfo("getSurface methodID not found!");
+		return NULL;
+	}
+
+	vInfo("GetNativeWindow success!!");
+	jobject surface = jni->CallObjectMethod( surfaceHolderObj, mid);
+	//LOG("EGLTEST nativeWindowSurface2 = %p", surface);
+	ANativeWindow* nativeWindow = ANativeWindow_fromSurface(jni, surface);
+	return nativeWindow;
+}
 
 void OVR_Resume()
 {
@@ -443,7 +536,7 @@ void OVR_InitRenderThread()
 	//GL_FindExtensions();
 
 	//up.VrModeParms.ActivityObject = up.activity;
-	//up.VrModeParms.AsynchronousTimeWarp = true;
+	//up.VrModeParms.AsynchronousTimeWrp = true;
 	//up.VrModeParms.DistortionFileName = NULL;
 	up.Kernel->m_ActivityObject = up.activity;
 
@@ -460,6 +553,18 @@ void OVR_InitRenderThread()
 	up.EyeDecorations.Init();
 
 	up.initialized = true;
+
+	ANativeWindow* nativewindow =	GetNativeWindow(up.jni, up.activity);
+
+	up.Kernel->m_NativeWindow = nativewindow;
+	if (nativewindow == NULL)
+	{
+		vInfo("Can't get the nativewindow!");
+	}
+	else
+	{
+		vInfo("Get nativewindow success!");
+	}
 
 	up.VideoSurface.Init( up.jni );
 
@@ -633,7 +738,7 @@ OCULUS_EXPORT void OVR_ShowLoadingIcon( bool show )
 //---------------------------
 void OVR_CameraEndFrame( ovrEyeType eye, int textureId )
 {
-//	LOG( "%f OVR_CameraEndFrame(%i) : texId:%i", ovr_GetTimeInSeconds(), eye, textureId );
+	vInfo( VTimer::Seconds() << " OVR_CameraEndFrame(" << eye <<") : texId:" << textureId );
 
 	if ( eye < 0 || eye > 1 )
 	{
@@ -790,6 +895,7 @@ void OVR_TimeWarpEvent( const int viewIndex )
 	}
 	else if ( up.showLoadingIcon )
 	{
+		vInfo("OVR_TimeWarp() -- ShowLoading!");
 		GLStateSave glstate;	// restore state on destruction
 
 		const ovrTimeWarpParms warpSwapLoadingIconParms = up.Kernel->InitTimeWarpParms( WARP_INIT_LOADING_ICON );
@@ -841,7 +947,7 @@ void OVR_TimeWarpEvent( const int viewIndex )
 		}
 
 		//ovr_WarpSwap( up.OvrMobile, &up.SwapParms );
-
+		vInfo("OVR_TimeWarp() -- Update eyetexture and dosmooth()");
 		up.Kernel->doSmooth(&up.SwapParms);
 
 		// The overlay must be re-specified every frame.
@@ -960,10 +1066,66 @@ OCULUS_EXPORT void UnityRenderEvent( int eventID )
 	{
 		const int eventData = up.eventData[eventID * 2 + 0] + up.eventData[eventID * 2 + 1];
 		vInfo( "OVR_TimeWarpEvent with view index" <<eventData );
+		EGLSurface windowsurface =  eglGetCurrentSurface( EGL_DRAW );
+		EGLDisplay display = eglGetCurrentDisplay();
+		EGLContext context = eglGetCurrentContext();
+		EGLint res;
+		eglQuerySurface(display, windowsurface, EGL_RENDER_BUFFER, &res);
+
+		if (res == EGL_SINGLE_BUFFER)
+		{
+			vInfo("context : single buffer is used!");
+		}
+		else if (res == EGL_BACK_BUFFER)
+		{
+			vInfo("context : back buffer is used!");
+		}
+		else
+		{
+			vInfo("context : error no buffer is used!");
+		}
+
+		EGLint num_configs;
+		if (eglGetConfigs(display, NULL, 0, &num_configs)==EGL_FALSE)
+			vInfo("get confignum error!");
+
+
+
+		if (eglGetConfigs(display, up.config_list, num_configs, &num_configs)==EGL_FALSE)
+		{
+			vInfo("query config error!");
+		}
+		else
+		{
+			vInfo("configs num : "<< num_configs);
+		}
+
+		if(eglQueryContext(display, context, EGL_RENDER_BUFFER, &res)==EGL_FALSE)
+		{
+			vInfo("query context error!");
+		}
+		else
+		{
+			if (res == EGL_SINGLE_BUFFER)
+			{
+				vInfo("single buffer is used!");
+			}
+			else if (res == EGL_BACK_BUFFER)
+			{
+				vInfo("back buffer is used!");
+			}
+			else
+			{
+				vInfo("error no buffer is used!");
+			}
+		}
+
+
+
 		OVR_TimeWarpEvent( eventData );
 
 		// Update the movie surface, if active.
-		up.VideoSurface.Update();
+		//up.VideoSurface.Update();
 		break;
 	}
 	case EVENT_PLATFORMUI_GLOBALMENU:

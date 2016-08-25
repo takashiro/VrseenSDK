@@ -243,6 +243,7 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 		Log.d(TAG, "setSchedFifoStatic tid:" + tid + " pto:" + rtPriority );
 
 		android.app.IVRManager vr = (android.app.IVRManager)activity.getSystemService(android.app.IVRManager.VR_MANAGER);
+		
 		if ( vr == null ) {
 			Log.d(TAG, "VRManager was not found" );
 			return -1;

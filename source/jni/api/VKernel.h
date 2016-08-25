@@ -3,6 +3,7 @@
 #include "VRotationState.h"
 #include "VMatrix.h"
 #include <jni.h>
+#include <android/native_window_jni.h>
 
 NV_NAMESPACE_BEGIN
 
@@ -197,6 +198,7 @@ public:
     bool isRunning;
     bool asyncSmooth;
     jobject m_ActivityObject;
+    ANativeWindow *m_NativeWindow;
 
     void doSmooth(const ovrTimeWarpParms * parms );
 

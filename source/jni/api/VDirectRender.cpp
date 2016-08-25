@@ -260,6 +260,300 @@ void DirectRender::initForCurrentSurface( JNIEnv * jni, bool wantFrontBuffer_,in
 
     windowSurface = eglGetCurrentSurface( EGL_DRAW );
 
+    EGLint res;
+	eglQuerySurface(m_display, windowSurface, EGL_RENDER_BUFFER, &res);
+
+	if (res == EGL_SINGLE_BUFFER)
+	{
+		vInfo("single buffer is used!");
+	}
+	else if (res == EGL_BACK_BUFFER)
+	{
+		vInfo("back buffer is used!");
+	}
+	else
+	{
+		vInfo("error no buffer is used!");
+	}
+
+	EGLint configID;
+	if ( !eglQueryContext( m_display, m_context, EGL_CONFIG_ID, &configID ) )
+	{
+		vFatal( "eglQueryContext EGL_CONFIG_ID failed" );
+	}
+	EGLConfig eglConfig = m_eglStatus.eglConfigForConfigID(configID );
+	if ( eglConfig == NULL )
+	{
+		vFatal( "EglConfigForConfigID failed" );
+	}
+	  //TODO::Compare the EGLConfig which create the EGLSurface
+		vInfo("<<---EGLConfig attributes list start--->>");
+		EGLint value = 0;
+
+		eglGetConfigAttrib( m_eglStatus.m_display, eglConfig, EGL_ALPHA_SIZE, &value);
+		vInfo("EGL_ALPHA_SIZE : " <<value);
+		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_ALPHA_MASK_SIZE, &value);
+		vInfo("EGL_ALPHA_MASK_SIZE : "<<value);
+
+		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_BIND_TO_TEXTURE_RGB, &value);
+		if (value==EGL_TRUE)
+		{
+			vInfo("EGL_BIND_TO_TEXTURE_RGB : TRUE");
+		}
+		else
+			vInfo("EGL_BIND_TO_TEXTURE_RGB : false");
+
+		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_BIND_TO_TEXTURE_RGBA, &value);
+		if (value==EGL_TRUE)
+		{
+			vInfo("EGL_BIND_TO_TEXTURE_RGBA : TRUE");
+		}
+		else
+			vInfo("EGL_BIND_TO_TEXTURE_RGBA : false");
+
+		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_BLUE_SIZE, &value);
+		vInfo("EGL_BLUE_SIZE : " << value);
+
+		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_BUFFER_SIZE, &value);
+		vInfo("EGL_BUFFER_SIZE : " << value);
+
+		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_COLOR_BUFFER_TYPE, &value);
+		if (value == EGL_RGB_BUFFER)
+		{
+			vInfo("EGL_COLOR_BUFFER_TYPE : EGL_RGB_BUFFER");
+		}
+		else
+		{
+			vInfo("EGL_COLOR_BUFFER_TYPE : EGL_LUMINANCE_BUFFER");
+		}
+
+		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_CONFIG_CAVEAT, &value);
+		if (value == EGL_SLOW_CONFIG)
+		{
+			vInfo("EGL_CONFIG_CAVEAT : EGL_SLOW_CONFIG");
+		}
+		else if (value == EGL_NON_CONFORMANT_CONFIG)
+		{
+			vInfo("EGL_CONFIG_VAVEAT : EGL_NON_CONFORMANT_CONFIG");
+		}
+		else
+		{
+			vInfo("EGL_CONFIG_VAVEAT : EGL_NONE");
+		}
+
+		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_CONFIG_ID, &value);
+		vInfo("EGL_CONFIG_ID : " << value);
+
+		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_CONFORMANT, &value);
+		vInfo("EGL_CONFORMANT : " << value);
+
+		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_DEPTH_SIZE, &value);
+		vInfo("EGL_DEPTH_SIZE : "<< value);
+
+		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_GREEN_SIZE, &value);
+		vInfo("EGL_GREEN_SIZE : " << value);
+
+		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_LEVEL, &value);
+		vInfo("EGL_LEVEL : " << value);
+
+		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_LUMINANCE_SIZE, &value);
+		vInfo("EGL_LUMINANCE_SIZE : " << value);
+
+		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_MAX_PBUFFER_WIDTH, &value);
+		vInfo("EGL_MAX_PBUFFER_WIDTH : " << value);
+
+		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_MAX_PBUFFER_HEIGHT, &value);
+		vInfo("EGL_MAX_PBUFFER_HEIGHT : " << value);
+
+		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_MAX_SWAP_INTERVAL, &value);
+		vInfo("EGL_MAX_SWAP_INTERVAL : " << value);
+
+		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_MIN_SWAP_INTERVAL, &value);
+		vInfo("EGL_MIN_SWAP_INTERVAL : " << value);
+
+		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_NATIVE_RENDERABLE, &value);
+		if(value == EGL_TRUE)
+		{
+			vInfo("EGL_NATIVE_RENDERABLE : TRUE");
+		}
+		else
+		{
+			vInfo("EGL_NATIVE_RENDERABLE : FALSE");
+		}
+
+		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_NATIVE_VISUAL_ID, &value);
+		vInfo("EGL_NATIVE_VISUAL_ID : " << value);
+
+		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_NATIVE_VISUAL_TYPE, &value);
+		vInfo("EGL_NATIVE_VISUAL_TYPE : " << value);
+
+		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_RED_SIZE, &value);
+		vInfo("EGL_RED_SIZE : " << value);
+
+		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_RENDERABLE_TYPE, &value);
+		vInfo("EGL_RENDERABLE_TYPE : " << value);
+
+		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_SAMPLE_BUFFERS, &value);
+		vInfo("EGL_SAMPLE_BUFFERS : " << value);
+
+		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_SAMPLES, &value);
+		vInfo("EGL_SAMPLES : "<< value);
+
+		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_STENCIL_SIZE, &value);
+		vInfo("EGL_STENCIL_SIZE : "<< value);
+
+		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_SURFACE_TYPE, &value);
+		vInfo("EGL_SURFACE_TYPE : "<< value);
+
+		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_TRANSPARENT_TYPE, &value);
+		vInfo("EGL_TRANSPARENT_TYPE £º " <<value);
+
+		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_TRANSPARENT_RED_VALUE, &value);
+		vInfo("EGL_TRANSPARENT_RED_VALUE" << value);
+
+		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_TRANSPARENT_GREEN_VALUE, &value);
+		vInfo("EGL_TRANSPARENT_GREEN_VALUE" << value);
+
+		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_TRANSPARENT_BLUE_VALUE, &value);
+		vInfo("EGL_TRANSPARENT_BLUE_VALUE" << value);
+
+		vInfo("<<---EGLConfig attributes list END--->>");
+		//END THE COMPARE
+
+		//TODO::EGLSurface attributes
+		EGLDisplay tmpdisplay = m_eglStatus.m_display;
+
+		EGLSurface tmpsurface = windowSurface;
+		vInfo("<<---EGLSurface attributes list start--->>");
+		eglQuerySurface(tmpdisplay, tmpsurface, EGL_CONFIG_ID, &value);
+		vInfo("EGL_CONFIG_ID : "<< value);
+
+		eglQuerySurface(tmpdisplay, tmpsurface, EGL_HEIGHT, &value);
+		vInfo("EGL_HEIGHT : " << value);
+
+		eglQuerySurface(tmpdisplay, tmpsurface, EGL_HORIZONTAL_RESOLUTION, &value);
+		vInfo("EGL_HORIZONTAL_RESOLUTION : " << value);
+
+		eglQuerySurface(tmpdisplay, tmpsurface, EGL_LARGEST_PBUFFER, &value);
+		vInfo("EGL_LARGEST_PBUFFER :" << value);
+
+		eglQuerySurface(tmpdisplay, tmpsurface, EGL_MIPMAP_LEVEL, &value);
+		vInfo("EGL_MIPMAP_LEVEL : " << value);
+
+		eglQuerySurface(tmpdisplay, tmpsurface, EGL_MIPMAP_TEXTURE, &value);
+		if (value == EGL_TRUE)
+		{
+			vInfo("EGL_MIPMAP_TEXTURE : TRUE" );
+		}
+		else
+			vInfo("EGL_MIPMAP_TEXTURE : FALSE");
+
+		eglQuerySurface(tmpdisplay, tmpsurface, EGL_MULTISAMPLE_RESOLVE, &value);
+		if (value == EGL_MULTISAMPLE_RESOLVE_DEFAULT )
+		{
+			vInfo("EGL_MULTISAMPLE_RESOLVE : EGL_MULTISAMPLE_RESOLVE_DEFAULT ");
+		}
+		else
+			vInfo("EGL_MULTISAMPLE_RESOLVE : EGL_MULTISAMPLE_RESOLVE_BOX");
+
+		eglQuerySurface(tmpdisplay, tmpsurface, EGL_PIXEL_ASPECT_RATIO, &value);
+		vInfo("EGL_PIXEL_ASPECT_RATIO : " << value);
+
+		eglQuerySurface(tmpdisplay, tmpsurface, EGL_RENDER_BUFFER, &value);
+		if (value == EGL_BACK_BUFFER)
+		{
+			vInfo("EGL_RENDER_BUFFER : EGL_BACK_BUFFER");
+		}
+		else if (value == EGL_SINGLE_BUFFER)
+		{
+			vInfo("EGL_RENDER_BUFFER : EGL_SINGLE_BUFFER");
+		}
+		else
+			vInfo("EGL_RENDER_BUFFER : OTHER_BUFFER");
+
+		eglQuerySurface(tmpdisplay, tmpsurface, EGL_SWAP_BEHAVIOR, &value);
+		if (value == EGL_BUFFER_PRESERVED)
+		{
+			vInfo("EGL_SWAP_BEHAVIOR : EGL_BUFFER_PRESERVED");
+		}
+		else if (value == EGL_BUFFER_DESTROYED)
+		{
+			vInfo("EGL_SWAP_BEHAVIOR : EGL_BUFFER_DESTROYED");
+		}
+
+		eglQuerySurface(tmpdisplay, tmpsurface, EGL_TEXTURE_FORMAT, &value);
+		if(value == EGL_NO_TEXTURE)
+		{
+			vInfo("EGL_TEXTURE_FORMAT : EGL_NO_TEXTURE");
+		}
+		else if (value == EGL_TEXTURE_RGB)
+		{
+			vInfo("EGL_TEXTURE_FORMAT : EGL_TEXTURE_RGB");
+		}
+		else if (value == EGL_TEXTURE_RGBA)
+		{
+			vInfo("EGL_TEXTURE_FORMAT : EGL_TEXTURE_RGBA");
+		}
+
+		eglQuerySurface(tmpdisplay , tmpsurface, EGL_TEXTURE_TARGET, &value);
+		if (value == EGL_NO_TEXTURE)
+		{
+			vInfo("EGL_TEXTURE_TARGET : EGL_NO_TEXTURE");
+		}
+		else if (value == EGL_TEXTURE_2D)
+		{
+			vInfo("EGL_TEXTURE_TARGET : EGL_TEXTURE_2D");
+		}
+
+		eglQuerySurface(tmpdisplay, tmpsurface, EGL_VERTICAL_RESOLUTION, &value);
+		vInfo("EGL_VERTICAL_RESOLUTION : " << value);
+
+		eglQuerySurface(tmpdisplay, tmpsurface, EGL_WIDTH, &value);
+		vInfo("EGL_WIDTH : " << value);
+
+		vInfo("<<---EGLSurface attributes list end--->>");
+
+		vInfo("<<---EGLContext attributes list start-->>");
+
+		EGLContext tmpcontext = eglGetCurrentContext();
+		eglQueryContext(tmpdisplay, tmpcontext, EGL_CONFIG_ID, &value);
+		vInfo("EGL_CONFIG_ID : " << value);
+
+		eglQueryContext(tmpdisplay, tmpcontext, EGL_CONTEXT_CLIENT_TYPE, &value);
+		if (value == EGL_OPENGL_API)
+		{
+			vInfo("EGL_CONTEXT_CLIENT_TYPE : EGL_OPENGL_API");
+		}
+		else if (value == EGL_OPENGL_ES_API)
+		{
+			vInfo("EGL_CONTEXT_CLIENT_TYPE : EGL_OPENGL_ES_API");
+		}
+		else if (value == EGL_OPENVG_API)
+		{
+			vInfo("EGL_CONTEXT_CLIENT_TYPE : EGL_OPENVG_API");
+		}
+
+		eglQueryContext(tmpdisplay, tmpcontext, EGL_CONTEXT_CLIENT_VERSION, &value);
+		vInfo("EGL_CONTEXT_CLIENT_VERSION : "<< value);
+
+		eglQueryContext(tmpdisplay, tmpcontext, EGL_RENDER_BUFFER, &value);
+		if (value == EGL_SINGLE_BUFFER)
+		{
+			vInfo("EGL_RENDER_BUFFER : EGL_SINGLE_BUFFER");
+		}
+		else if (value == EGL_BACK_BUFFER)
+		{
+			vInfo("EGL_RENDER_BUFFER : EGL_SINGLE_BUFFER");
+		}
+		else
+		{
+			vInfo("EGL_RENDER_BUFFER : EGL_NONE");
+		}
+
+		vInfo("<<---EGLContext attributes list end--->>");
+
+
+
     // NOTE: On Mali as well as under Android-L, we need to perform
     // an initial swapbuffers in order for the front-buffer extension
     // to work.
@@ -293,6 +587,291 @@ void DirectRender::initForCurrentSurface( JNIEnv * jni, bool wantFrontBuffer_,in
         m_surfaceManager.init( jni );
 
         m_gvrFrontbufferExtension = m_surfaceManager.setFrontBuffer( windowSurface, m_wantFrontBuffer );
+
+        //TODO::Compare the EGLConfig which create the EGLSurface
+        		vInfo("<<---EGLConfig attributes list start--->>");
+        		EGLint value = 0;
+
+        		eglGetConfigAttrib( m_eglStatus.m_display, eglConfig, EGL_ALPHA_SIZE, &value);
+        		vInfo("EGL_ALPHA_SIZE : " <<value);
+        		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_ALPHA_MASK_SIZE, &value);
+        		vInfo("EGL_ALPHA_MASK_SIZE : "<<value);
+
+        		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_BIND_TO_TEXTURE_RGB, &value);
+        		if (value==EGL_TRUE)
+        		{
+        			vInfo("EGL_BIND_TO_TEXTURE_RGB : TRUE");
+        		}
+        		else
+        			vInfo("EGL_BIND_TO_TEXTURE_RGB : false");
+
+        		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_BIND_TO_TEXTURE_RGBA, &value);
+        		if (value==EGL_TRUE)
+        		{
+        			vInfo("EGL_BIND_TO_TEXTURE_RGBA : TRUE");
+        		}
+        		else
+        			vInfo("EGL_BIND_TO_TEXTURE_RGBA : false");
+
+        		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_BLUE_SIZE, &value);
+        		vInfo("EGL_BLUE_SIZE : " << value);
+
+        		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_BUFFER_SIZE, &value);
+        		vInfo("EGL_BUFFER_SIZE : " << value);
+
+        		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_COLOR_BUFFER_TYPE, &value);
+        		if (value == EGL_RGB_BUFFER)
+        		{
+        			vInfo("EGL_COLOR_BUFFER_TYPE : EGL_RGB_BUFFER");
+        		}
+        		else
+        		{
+        			vInfo("EGL_COLOR_BUFFER_TYPE : EGL_LUMINANCE_BUFFER");
+        		}
+
+        		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_CONFIG_CAVEAT, &value);
+        		if (value == EGL_SLOW_CONFIG)
+        		{
+        			vInfo("EGL_CONFIG_CAVEAT : EGL_SLOW_CONFIG");
+        		}
+        		else if (value == EGL_NON_CONFORMANT_CONFIG)
+        		{
+        			vInfo("EGL_CONFIG_VAVEAT : EGL_NON_CONFORMANT_CONFIG");
+        		}
+        		else
+        		{
+        			vInfo("EGL_CONFIG_VAVEAT : EGL_NONE");
+        		}
+
+        		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_CONFIG_ID, &value);
+        		vInfo("EGL_CONFIG_ID : " << value);
+
+        		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_CONFORMANT, &value);
+        		vInfo("EGL_CONFORMANT : " << value);
+
+        		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_DEPTH_SIZE, &value);
+        		vInfo("EGL_DEPTH_SIZE : "<< value);
+
+        		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_GREEN_SIZE, &value);
+        		vInfo("EGL_GREEN_SIZE : " << value);
+
+        		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_LEVEL, &value);
+        		vInfo("EGL_LEVEL : " << value);
+
+        		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_LUMINANCE_SIZE, &value);
+        		vInfo("EGL_LUMINANCE_SIZE : " << value);
+
+        		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_MAX_PBUFFER_WIDTH, &value);
+        		vInfo("EGL_MAX_PBUFFER_WIDTH : " << value);
+
+        		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_MAX_PBUFFER_HEIGHT, &value);
+        		vInfo("EGL_MAX_PBUFFER_HEIGHT : " << value);
+
+        		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_MAX_SWAP_INTERVAL, &value);
+        		vInfo("EGL_MAX_SWAP_INTERVAL : " << value);
+
+        		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_MIN_SWAP_INTERVAL, &value);
+        		vInfo("EGL_MIN_SWAP_INTERVAL : " << value);
+
+        		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_NATIVE_RENDERABLE, &value);
+        		if(value == EGL_TRUE)
+        		{
+        			vInfo("EGL_NATIVE_RENDERABLE : TRUE");
+        		}
+        		else
+        		{
+        			vInfo("EGL_NATIVE_RENDERABLE : FALSE");
+        		}
+
+        		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_NATIVE_VISUAL_ID, &value);
+        		vInfo("EGL_NATIVE_VISUAL_ID : " << value);
+
+        		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_NATIVE_VISUAL_TYPE, &value);
+        		vInfo("EGL_NATIVE_VISUAL_TYPE : " << value);
+
+        		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_RED_SIZE, &value);
+        		vInfo("EGL_RED_SIZE : " << value);
+
+        		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_RENDERABLE_TYPE, &value);
+        		vInfo("EGL_RENDERABLE_TYPE : " << value);
+
+        		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_SAMPLE_BUFFERS, &value);
+        		vInfo("EGL_SAMPLE_BUFFERS : " << value);
+
+        		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_SAMPLES, &value);
+        		vInfo("EGL_SAMPLES : "<< value);
+
+        		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_STENCIL_SIZE, &value);
+        		vInfo("EGL_STENCIL_SIZE : "<< value);
+
+        		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_SURFACE_TYPE, &value);
+        		vInfo("EGL_SURFACE_TYPE : "<< value);
+
+        		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_TRANSPARENT_TYPE, &value);
+        		vInfo("EGL_TRANSPARENT_TYPE £º " <<value);
+
+        		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_TRANSPARENT_RED_VALUE, &value);
+        		vInfo("EGL_TRANSPARENT_RED_VALUE" << value);
+
+        		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_TRANSPARENT_GREEN_VALUE, &value);
+        		vInfo("EGL_TRANSPARENT_GREEN_VALUE" << value);
+
+        		eglGetConfigAttrib(m_eglStatus.m_display, eglConfig, EGL_TRANSPARENT_BLUE_VALUE, &value);
+        		vInfo("EGL_TRANSPARENT_BLUE_VALUE" << value);
+
+        		vInfo("<<---EGLConfig attributes list END--->>");
+        		//END THE COMPARE
+
+        		//TODO::EGLSurface attributes
+        		EGLDisplay tmpdisplay = m_eglStatus.m_display;
+
+        		EGLSurface tmpsurface = windowSurface;
+
+        		vInfo("<<---EGLSurface attributes list start--->>");
+
+        		eglQuerySurface(tmpdisplay, tmpsurface, EGL_CONFIG_ID, &value);
+        		vInfo("EGL_CONFIG_ID : "<< value);
+
+        		eglQuerySurface(tmpdisplay, tmpsurface, EGL_HEIGHT, &value);
+        		vInfo("EGL_HEIGHT : " << value);
+
+        		eglQuerySurface(tmpdisplay, tmpsurface, EGL_HORIZONTAL_RESOLUTION, &value);
+        		vInfo("EGL_HORIZONTAL_RESOLUTION : " << value);
+
+        		eglQuerySurface(tmpdisplay, tmpsurface, EGL_LARGEST_PBUFFER, &value);
+        		vInfo("EGL_LARGEST_PBUFFER :" << value);
+
+        		eglQuerySurface(tmpdisplay, tmpsurface, EGL_MIPMAP_LEVEL, &value);
+        		vInfo("EGL_MIPMAP_LEVEL : " << value);
+
+        		eglQuerySurface(tmpdisplay, tmpsurface, EGL_MIPMAP_TEXTURE, &value);
+        		if (value == EGL_TRUE)
+        		{
+        			vInfo("EGL_MIPMAP_TEXTURE : TRUE" );
+        		}
+        		else
+        			vInfo("EGL_MIPMAP_TEXTURE : FALSE");
+
+        		eglQuerySurface(tmpdisplay, tmpsurface, EGL_MULTISAMPLE_RESOLVE, &value);
+        		if (value == EGL_MULTISAMPLE_RESOLVE_DEFAULT )
+        		{
+        			vInfo("EGL_MULTISAMPLE_RESOLVE : EGL_MULTISAMPLE_RESOLVE_DEFAULT ");
+        		}
+        		else
+        			vInfo("EGL_MULTISAMPLE_RESOLVE : EGL_MULTISAMPLE_RESOLVE_BOX");
+
+        		eglQuerySurface(tmpdisplay, tmpsurface, EGL_PIXEL_ASPECT_RATIO, &value);
+        		vInfo("EGL_PIXEL_ASPECT_RATIO : " << value);
+
+        		eglQuerySurface(tmpdisplay, tmpsurface, EGL_RENDER_BUFFER, &value);
+        		if (value == EGL_BACK_BUFFER)
+        		{
+        			vInfo("EGL_RENDER_BUFFER : EGL_BACK_BUFFER");
+        		}
+        		else if (value == EGL_SINGLE_BUFFER)
+        		{
+        			vInfo("EGL_RENDER_BUFFER : EGL_SINGLE_BUFFER");
+        		}
+        		else
+        			vInfo("EGL_RENDER_BUFFER : OTHER_BUFFER");
+
+        		eglQuerySurface(tmpdisplay, tmpsurface, EGL_SWAP_BEHAVIOR, &value);
+        		if (value == EGL_BUFFER_PRESERVED)
+        		{
+        			vInfo("EGL_SWAP_BEHAVIOR : EGL_BUFFER_PRESERVED");
+        		}
+        		else if (value == EGL_BUFFER_DESTROYED)
+        		{
+        			vInfo("EGL_SWAP_BEHAVIOR : EGL_BUFFER_DESTROYED");
+        		}
+
+        		eglQuerySurface(tmpdisplay, tmpsurface, EGL_TEXTURE_FORMAT, &value);
+        		if(value == EGL_NO_TEXTURE)
+        		{
+        			vInfo("EGL_TEXTURE_FORMAT : EGL_NO_TEXTURE");
+        		}
+        		else if (value == EGL_TEXTURE_RGB)
+        		{
+        			vInfo("EGL_TEXTURE_FORMAT : EGL_TEXTURE_RGB");
+        		}
+        		else if (value == EGL_TEXTURE_RGBA)
+        		{
+        			vInfo("EGL_TEXTURE_FORMAT : EGL_TEXTURE_RGBA");
+        		}
+
+        		eglQuerySurface(tmpdisplay , tmpsurface, EGL_TEXTURE_TARGET, &value);
+        		if (value == EGL_NO_TEXTURE)
+        		{
+        			vInfo("EGL_TEXTURE_TARGET : EGL_NO_TEXTURE");
+        		}
+        		else if (value == EGL_TEXTURE_2D)
+        		{
+        			vInfo("EGL_TEXTURE_TARGET : EGL_TEXTURE_2D");
+        		}
+
+        		eglQuerySurface(tmpdisplay, tmpsurface, EGL_VERTICAL_RESOLUTION, &value);
+        		vInfo("EGL_VERTICAL_RESOLUTION : " << value);
+
+        		eglQuerySurface(tmpdisplay, tmpsurface, EGL_WIDTH, &value);
+        		vInfo("EGL_WIDTH : " << value);
+
+        		vInfo("<<---EGLSurface attributes list end--->>");
+
+				vInfo("<<---EGLContext attributes list start-->>");
+
+				EGLContext tmpcontext = eglGetCurrentContext();
+				eglQueryContext(tmpdisplay, tmpcontext, EGL_CONFIG_ID, &value);
+				vInfo("EGL_CONFIG_ID : " << value);
+
+				eglQueryContext(tmpdisplay, tmpcontext, EGL_CONTEXT_CLIENT_TYPE, &value);
+				if (value == EGL_OPENGL_API)
+				{
+					vInfo("EGL_CONTEXT_CLIENT_TYPE : EGL_OPENGL_API");
+				}
+				else if (value == EGL_OPENGL_ES_API)
+				{
+					vInfo("EGL_CONTEXT_CLIENT_TYPE : EGL_OPENGL_ES_API");
+				}
+				else if (value == EGL_OPENVG_API)
+				{
+					vInfo("EGL_CONTEXT_CLIENT_TYPE : EGL_OPENVG_API");
+				}
+
+				eglQueryContext(tmpdisplay, tmpcontext, EGL_CONTEXT_CLIENT_VERSION, &value);
+				vInfo("EGL_CONTEXT_CLIENT_VERSION : "<< value);
+
+				eglQueryContext(tmpdisplay, tmpcontext, EGL_RENDER_BUFFER, &value);
+				if (value == EGL_SINGLE_BUFFER)
+				{
+					vInfo("EGL_RENDER_BUFFER : EGL_SINGLE_BUFFER");
+				}
+				else if (value == EGL_BACK_BUFFER)
+				{
+					vInfo("EGL_RENDER_BUFFER : EGL_SINGLE_BUFFER");
+				}
+				else
+				{
+					vInfo("EGL_RENDER_BUFFER : EGL_NONE");
+				}
+
+				vInfo("<<---EGLContext attributes list end--->>");
+
+
+        EGLSurface windowsurface = eglGetCurrentSurface(EGL_DRAW);
+		eglQuerySurface(m_display, windowsurface, EGL_RENDER_BUFFER, &res);
+
+		if (res == EGL_SINGLE_BUFFER)
+		{
+			vInfo("single buffer is used!");
+		}
+		else if (res == EGL_BACK_BUFFER)
+		{
+			vInfo("back buffer is used!");
+		}
+		else
+		{
+			vInfo("error no buffer is used!");
+		}
 
         if(m_gvrFrontbufferExtension) vInfo( "Running with front buffer")
         else vInfo( "Running without front buffer");

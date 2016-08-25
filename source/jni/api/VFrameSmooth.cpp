@@ -22,6 +22,7 @@
 #include "VGlShader.h"
 #include "VKernel.h"
 #include "VDirectRender.h"
+#include <android/native_window_jni.h>
 
 NV_NAMESPACE_BEGIN
 
@@ -194,6 +195,99 @@ swapProgram_t	spSyncFrontBufferPortrait = {
 swapProgram_t	spSyncSwappedBufferPortrait = {
     true,	false, { 0.0, 0.0},	{ {2.0, 2.5}, {2.5, 3.0} }
 };
+
+
+
+ANativeWindow* GetNativeWindow( JNIEnv * jni, jobject activity )
+{
+	vInfo("Test do GetNativeWindow!");
+
+//	if(!plugin.isInitialized)
+//	{
+//		LogError("svrapi not initialized yet!");
+//		return;
+//	}
+
+	jclass activityClass = jni->GetObjectClass(activity);
+	if (activityClass == NULL)
+	{
+		vInfo("activityClass == NULL!");
+		return NULL;
+	}
+	vInfo("Test do GetNativeWindow Get mUnityPlayer fid");
+
+	jfieldID fid = jni->GetFieldID(activityClass, "mUnityPlayer", "Lcom/unity3d/player/UnityPlayer;");
+	if (fid == NULL)
+	{
+		vInfo("mUnityPlayer not found!");
+		return NULL;
+	}
+
+	vInfo("Test do GetNativeWindow ");
+	jobject unityPlayerObj = jni->GetObjectField(activity, fid);
+	if(unityPlayerObj == NULL)
+	{
+		vInfo("unityPlayer object not found!");
+		return NULL;
+	}
+
+	vInfo("Test do GetNativeWindow! 3");
+	jclass unityPlayerClass = jni->GetObjectClass(unityPlayerObj);
+	if (unityPlayerClass == NULL)
+	{
+		vInfo("unityPlayer class not found!");
+		return NULL;
+	}
+
+	vInfo("Test do GetNativeWindow! 4");
+	jmethodID mid = jni->GetMethodID(unityPlayerClass, "getChildAt", "(I)Landroidiew/View;");
+	if (mid == NULL)
+	{
+		vInfo("getChildAt methodID not found!");
+		return NULL;
+	}
+
+	vInfo("Test do GetNativeWindow! 5");
+	jboolean param = 0;
+	jobject surfaceViewObj = jni->CallObjectMethod( unityPlayerObj, mid, param);
+	if (surfaceViewObj == NULL)
+	{
+		vInfo("surfaceView object not found!");
+		return NULL;
+	}
+
+	vInfo("Test do GetNativeWindow! 6");
+	jclass surfaceViewClass = jni->GetObjectClass(surfaceViewObj);
+	mid = jni->GetMethodID(surfaceViewClass, "getHolder", "()Landroidiew/SurfaceHolder;");
+	if (mid == NULL)
+	{
+		vInfo("getHolder methodID not found!");
+		return NULL;
+	}
+
+	vInfo("Test do GetNativeWindow! 7");
+	jobject surfaceHolderObj = jni->CallObjectMethod( surfaceViewObj, mid);
+	if (surfaceHolderObj == NULL)
+	{
+		vInfo("surfaceHolder object not found!");
+		return NULL;
+	}
+
+	vInfo("Test do GetNativeWindow! 8");
+	jclass surfaceHolderClass = jni->GetObjectClass(surfaceHolderObj);
+	mid = jni->GetMethodID(surfaceHolderClass, "getSurface", "()Landroidiew/Surface;");
+	if (mid == NULL)
+	{
+		vInfo("getSurface methodID not found!");
+		return NULL;
+	}
+
+	vInfo("GetNativeWindow success!!");
+	jobject surface = jni->CallObjectMethod( surfaceHolderObj, mid);
+	//LOG("EGLTEST nativeWindowSurface2 = %p", surface);
+	ANativeWindow* nativeWindow = ANativeWindow_fromSurface(jni, surface);
+	return nativeWindow;
+}
 
 
 //=========================================================================================
@@ -375,16 +469,25 @@ struct VFrameSmooth::Private
         // 初始化smooth线程的gl状态
         m_eglStatus.updateDisplay();
 
+
+        JavaVM *javaVM = JniUtils::GetJavaVM();
+        javaVM->AttachCurrentThread(&m_jni, nullptr);
         m_eglMainThreadSurface = eglGetCurrentSurface( EGL_DRAW );
+
         if ( m_eglMainThreadSurface == EGL_NO_SURFACE )
-        {
-            vFatal( "EGL_NO_SURFACE" );
-        }
+		{
+			vFatal( "EGL_NO_SURFACE" );
+		}
+
         m_eglShareContext = eglGetCurrentContext();
+
         if ( m_eglShareContext == EGL_NO_CONTEXT )
         {
-            vFatal( "EGL_NO_CONTEXT" );
+		   vFatal( "EGL_NO_CONTEXT" );
         }
+
+
+
         EGLint configID;
         if ( !eglQueryContext( m_eglStatus.m_display, m_eglShareContext, EGL_CONFIG_ID, &configID ) )
         {
@@ -401,6 +504,7 @@ struct VFrameSmooth::Private
         }
         vInfo( "Current EGL_CONTEXT_CLIENT_VERSION:" << m_eglClientVersion );
 
+
         // It is wasteful for the main config to be anything but a color buffer.
         EGLint depthSize = 0;
         eglGetConfigAttrib( m_eglStatus.m_display, m_eglStatus.m_config, EGL_DEPTH_SIZE, &depthSize );
@@ -415,6 +519,232 @@ struct VFrameSmooth::Private
         {
             vInfo( "Share context eglConfig has" <<samples<< " samples -- should be 0");
         }
+
+        //TODO::Compare the EGLConfig which create the EGLSurface
+        vInfo("<<---EGLConfig attributes list start--->>");
+        EGLint value = 0;
+
+        eglGetConfigAttrib( m_eglStatus.m_display, m_eglStatus.m_config, EGL_ALPHA_SIZE, &value);
+        vInfo("EGL_ALPHA_SIZE : " <<value);
+        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_ALPHA_MASK_SIZE, &value);
+        vInfo("EGL_ALPHA_MASK_SIZE : "<<value);
+
+        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_BIND_TO_TEXTURE_RGB, &value);
+        if (value==EGL_TRUE)
+        {
+        	vInfo("EGL_BIND_TO_TEXTURE_RGB : TRUE");
+        }
+        else
+        	vInfo("EGL_BIND_TO_TEXTURE_RGB : false");
+
+        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_BIND_TO_TEXTURE_RGBA, &value);
+        if (value==EGL_TRUE)
+		{
+			vInfo("EGL_BIND_TO_TEXTURE_RGBA : TRUE");
+		}
+		else
+			vInfo("EGL_BIND_TO_TEXTURE_RGBA : false");
+
+        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_BLUE_SIZE, &value);
+        vInfo("EGL_BLUE_SIZE : " << value);
+
+        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_BUFFER_SIZE, &value);
+        vInfo("EGL_BUFFER_SIZE : " << value);
+
+        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_COLOR_BUFFER_TYPE, &value);
+        if (value == EGL_RGB_BUFFER)
+        {
+        	vInfo("EGL_COLOR_BUFFER_TYPE : EGL_RGB_BUFFER");
+        }
+        else
+        {
+        	vInfo("EGL_COLOR_BUFFER_TYPE : EGL_LUMINANCE_BUFFER");
+        }
+
+        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_CONFIG_CAVEAT, &value);
+        if (value == EGL_SLOW_CONFIG)
+        {
+        	vInfo("EGL_CONFIG_CAVEAT : EGL_SLOW_CONFIG");
+        }
+        else if (value == EGL_NON_CONFORMANT_CONFIG)
+        {
+        	vInfo("EGL_CONFIG_VAVEAT : EGL_NON_CONFORMANT_CONFIG");
+        }
+        else
+        {
+        	vInfo("EGL_CONFIG_VAVEAT : EGL_NONE");
+        }
+
+        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_CONFIG_ID, &value);
+        vInfo("EGL_CONFIG_ID : " << value);
+
+        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_CONFORMANT, &value);
+        vInfo("EGL_CONFORMANT : " << value);
+
+        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_DEPTH_SIZE, &value);
+        vInfo("EGL_DEPTH_SIZE : "<< value);
+
+        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_GREEN_SIZE, &value);
+        vInfo("EGL_GREEN_SIZE : " << value);
+
+        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_LEVEL, &value);
+        vInfo("EGL_LEVEL : " << value);
+
+        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_LUMINANCE_SIZE, &value);
+        vInfo("EGL_LUMINANCE_SIZE : " << value);
+
+        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_MAX_PBUFFER_WIDTH, &value);
+        vInfo("EGL_MAX_PBUFFER_WIDTH : " << value);
+
+        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_MAX_PBUFFER_HEIGHT, &value);
+        vInfo("EGL_MAX_PBUFFER_HEIGHT : " << value);
+
+        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_MAX_SWAP_INTERVAL, &value);
+        vInfo("EGL_MAX_SWAP_INTERVAL : " << value);
+
+        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_MIN_SWAP_INTERVAL, &value);
+        vInfo("EGL_MIN_SWAP_INTERVAL : " << value);
+
+        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_NATIVE_RENDERABLE, &value);
+        if(value == EGL_TRUE)
+        {
+        	vInfo("EGL_NATIVE_RENDERABLE : TRUE");
+        }
+        else
+        {
+        	vInfo("EGL_NATIVE_RENDERABLE : FALSE");
+        }
+
+        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_NATIVE_VISUAL_ID, &value);
+        vInfo("EGL_NATIVE_VISUAL_ID : " << value);
+
+        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_NATIVE_VISUAL_TYPE, &value);
+        vInfo("EGL_NATIVE_VISUAL_TYPE : " << value);
+
+        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_RED_SIZE, &value);
+        vInfo("EGL_RED_SIZE : " << value);
+
+        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_RENDERABLE_TYPE, &value);
+        vInfo("EGL_RENDERABLE_TYPE : " << value);
+
+        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_SAMPLE_BUFFERS, &value);
+        vInfo("EGL_SAMPLE_BUFFERS : " << value);
+
+        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_SAMPLES, &value);
+        vInfo("EGL_SAMPLES : "<< value);
+
+        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_STENCIL_SIZE, &value);
+        vInfo("EGL_STENCIL_SIZE : "<< value);
+
+        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_SURFACE_TYPE, &value);
+        vInfo("EGL_SURFACE_TYPE : "<< value);
+
+        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_TRANSPARENT_TYPE, &value);
+        vInfo("EGL_TRANSPARENT_TYPE ： " <<value);
+
+        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_TRANSPARENT_RED_VALUE, &value);
+        vInfo("EGL_TRANSPARENT_RED_VALUE" << value);
+
+        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_TRANSPARENT_GREEN_VALUE, &value);
+        vInfo("EGL_TRANSPARENT_GREEN_VALUE" << value);
+
+        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_TRANSPARENT_BLUE_VALUE, &value);
+        vInfo("EGL_TRANSPARENT_BLUE_VALUE" << value);
+
+        vInfo("<<---EGLConfig attributes list END--->>");
+        //END THE COMPARE
+
+        //TODO::EGLSurface attributes
+        EGLDisplay tmpdisplay = m_eglStatus.m_display;
+
+        EGLSurface tmpsurface = m_eglMainThreadSurface;
+
+        eglQuerySurface(tmpdisplay, tmpsurface, EGL_CONFIG_ID, &value);
+        vInfo("EGL_CONFIG_ID : "<< value);
+
+        eglQuerySurface(tmpdisplay, tmpsurface, EGL_HEIGHT, &value);
+        vInfo("EGL_HEIGHT : " << value);
+
+        eglQuerySurface(tmpdisplay, tmpsurface, EGL_HORIZONTAL_RESOLUTION, &value);
+        vInfo("EGL_HORIZONTAL_RESOLUTION : " << value);
+
+        eglQuerySurface(tmpdisplay, tmpsurface, EGL_LARGEST_PBUFFER, &value);
+        vInfo("EGL_LARGEST_PBUFFER :" << value);
+
+        eglQuerySurface(tmpdisplay, tmpsurface, EGL_MIPMAP_LEVEL, &value);
+        vInfo("EGL_MIPMAP_LEVEL : " << value);
+
+        eglQuerySurface(tmpdisplay, tmpsurface, EGL_MIPMAP_TEXTURE, &value);
+        if (value == EGL_TRUE)
+        {
+        	vInfo("EGL_MIPMAP_TEXTURE : TRUE" );
+        }
+        else
+        	vInfo("EGL_MIPMAP_TEXTURE : FALSE");
+
+        eglQuerySurface(tmpdisplay, tmpsurface, EGL_MULTISAMPLE_RESOLVE, &value);
+        if (value == EGL_MULTISAMPLE_RESOLVE_DEFAULT )
+        {
+        	vInfo("EGL_MULTISAMPLE_RESOLVE : EGL_MULTISAMPLE_RESOLVE_DEFAULT ");
+        }
+        else
+        	vInfo("EGL_MULTISAMPLE_RESOLVE : EGL_MULTISAMPLE_RESOLVE_BOX");
+
+        eglQuerySurface(tmpdisplay, tmpsurface, EGL_PIXEL_ASPECT_RATIO, &value);
+        vInfo("EGL_PIXEL_ASPECT_RATIO : " << value);
+
+        eglQuerySurface(tmpdisplay, tmpsurface, EGL_RENDER_BUFFER, &value);
+        if (value == EGL_BACK_BUFFER)
+        {
+        	vInfo("EGL_RENDER_BUFFER : EGL_BACK_BUFFER");
+        }
+		else if (value == EGL_SINGLE_BUFFER)
+		{
+			vInfo("EGL_RENDER_BUFFER : EGL_SINGLE_BUFFER");
+		}
+		else
+			vInfo("EGL_RENDER_BUFFER : OTHER_BUFFER");
+
+        eglQuerySurface(tmpdisplay, tmpsurface, EGL_SWAP_BEHAVIOR, &value);
+        if (value == EGL_BUFFER_PRESERVED)
+        {
+        	vInfo("EGL_SWAP_BEHAVIOR : EGL_BUFFER_PRESERVED");
+        }
+        else if (value == EGL_BUFFER_DESTROYED)
+        {
+        	vInfo("EGL_SWAP_BEHAVIOR : EGL_BUFFER_DESTROYED");
+        }
+
+        eglQuerySurface(tmpdisplay, tmpsurface, EGL_TEXTURE_FORMAT, &value);
+        if(value == EGL_NO_TEXTURE)
+        {
+        	vInfo("EGL_TEXTURE_FORMAT : EGL_NO_TEXTURE");
+        }
+        else if (value == EGL_TEXTURE_RGB)
+        {
+        	vInfo("EGL_TEXTURE_FORMAT : EGL_TEXTURE_RGB");
+        }
+        else if (value == EGL_TEXTURE_RGBA)
+        {
+        	vInfo("EGL_TEXTURE_FORMAT : EGL_TEXTURE_RGBA");
+        }
+
+        eglQuerySurface(tmpdisplay , tmpsurface, EGL_TEXTURE_TARGET, &value);
+        if (value == EGL_NO_TEXTURE)
+        {
+        	vInfo("EGL_TEXTURE_TARGET : EGL_NO_TEXTURE");
+        }
+        else if (value == EGL_TEXTURE_2D)
+        {
+        	vInfo("EGL_TEXTURE_TARGET : EGL_TEXTURE_2D");
+        }
+
+        eglQuerySurface(tmpdisplay, tmpsurface, EGL_VERTICAL_RESOLUTION, &value);
+        vInfo("EGL_VERTICAL_RESOLUTION : " << value);
+
+        eglQuerySurface(tmpdisplay, tmpsurface, EGL_WIDTH, &value);
+        vInfo("EGL_WIDTH : " << value);
+
         // See if we have sRGB_write_control extension
         m_hasEXT_sRGB_write_control = m_eglStatus.glIsExtensionString( "GL_EXT_sRGB_write_control");
 
@@ -477,6 +807,26 @@ struct VFrameSmooth::Private
                 vFatal( "eglMakeCurrent: eglMakeCurrent pbuffer failed" );
             }
 
+            EGLSurface tmpSurface = eglGetCurrentSurface(EGL_DRAW);
+
+            vInfo("To compare surface : pbufffersurface : " << m_eglStatus.m_pbufferSurface <<" mainthreadsurface :" <<m_eglMainThreadSurface << " currentsurface : "<<tmpSurface);
+
+            if(eglDestroySurface(m_eglStatus.m_display, m_eglMainThreadSurface) == EGL_FALSE)
+            {
+            	vInfo("Can't destroy mainthreadsurface!");
+            }
+
+            EGLint attribs[100];
+            int nums = 0;
+            attribs[nums++] = EGL_RENDER_BUFFER;
+            attribs[nums++] = EGL_BACK_BUFFER;
+            attribs[nums++] = EGL_NONE;
+
+            m_eglMainThreadSurface = eglCreateWindowSurface(m_eglStatus.m_display, m_eglStatus.m_config, VKernel::instance()->m_NativeWindow, attribs);
+            if (m_eglMainThreadSurface == EGL_NO_SURFACE)
+            {
+            	vInfo("Can't create mainthreadsurface!")
+            }
             // The thread will exit when this is set true.
             m_shutdownRequest.setState( false );
 
@@ -1380,6 +1730,26 @@ void VFrameSmooth::Private::warpToScreen( const double vsyncBase_, const swapPro
         VEglDriver::glBindVertexArrayOES( m_warpMesh.vertexArrayObject );
         const int indexCount = m_warpMesh.indexCount / 2;
         const int indexOffset = eye * indexCount;
+
+        EGLDisplay display = eglGetCurrentDisplay();
+        EGLSurface windowsurface = eglGetCurrentSurface(EGL_DRAW);
+        EGLint res;
+
+        eglQuerySurface(display, windowsurface, EGL_RENDER_BUFFER, &res);
+
+        if (res == EGL_SINGLE_BUFFER)
+		{
+			vInfo("single buffer is used!");
+		}
+		else if (res == EGL_BACK_BUFFER)
+		{
+			vInfo("back buffer is used!");
+		}
+		else
+		{
+			vInfo("error no buffer is used!");
+		}
+
         glDrawElements( GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, (void *)(indexOffset * 2 ) );
 
         // If the gaze cursor is enabled, render those subsets of triangles

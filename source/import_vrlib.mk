@@ -45,7 +45,7 @@ LOCAL_EXPORT_C_INCLUDES := \
   $(LOCAL_PATH)/jni/media \
   $(LOCAL_PATH)/jni/scene \
   $(LOCAL_PATH)/jni/3rdParty/TinyXml \
-  $(LOCAL_PATH)/jni/3rdParty/minizip
+  $(LOCAL_PATH)/jni/3rdParty/minizip 
 
 # OpenGL ES 3.0
 LOCAL_EXPORT_LDLIBS := -lGLESv3
