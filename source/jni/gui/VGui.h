@@ -12,6 +12,12 @@ public:
     VGui();
     ~VGui();
 
+    int viewWidth() const;
+    void setViewWidth(int width);
+
+    int viewHeight() const;
+    void setViewHeight(int height);
+
     void update();
 
     VGraphicsItem *root() const;
