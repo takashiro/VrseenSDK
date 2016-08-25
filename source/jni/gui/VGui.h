@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vglobal.h"
+#include "VColor.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -17,6 +17,9 @@ public:
 
     int viewHeight() const;
     void setViewHeight(int height);
+
+    VColor backgroundColor() const;
+    void setBackgroundColor(const VColor &color);
 
     void update();
 

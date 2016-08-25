@@ -16,10 +16,12 @@ struct VGui::Private
     NVGcontext *vg;
     int viewWidth;
     int viewHeight;
+    VColor backgroundColor;
 
     Private()
         : viewWidth(1024)
         , viewHeight(1024)
+        , backgroundColor(0.0f, 162.0f, 232.0f, 0.0f)
     {
         vg = nvgCreateGLES3(NVG_ANTIALIAS | NVG_STENCIL_STROKES | NVG_DEBUG);
     }
@@ -60,10 +62,20 @@ void VGui::setViewHeight(int height)
     d->viewHeight = height;
 }
 
+VColor VGui::backgroundColor() const
+{
+    return d->backgroundColor;
+}
+
+void VGui::setBackgroundColor(const VColor &color)
+{
+    d->backgroundColor = color;
+}
+
 void VGui::update()
 {
     nvgBeginFrame(d->vg, d->viewWidth, d->viewHeight, 1.0f);
-    glClearColor(0, 162.0f / 255, 232.0f / 255, 0);
+    glClearColor(d->backgroundColor.red / 255.0f, d->backgroundColor.green / 255.0f, d->backgroundColor.blue / 255.0f, d->backgroundColor.alpha / 255.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     d->root.paint(reinterpret_cast<VGuiPainter *>(d->vg));
     nvgEndFrame(d->vg);
