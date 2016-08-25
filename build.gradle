@@ -27,6 +27,8 @@ allprojects {
                 platformVersion = 19
                 stl = 'gnustl_shared'
 
+                abiFilters.add('armeabi-v7a')
+
                 cppFlags.add('-std=c++11')
                 cppFlags.add('-Wall')
                 cppFlags.add('-Wextra')
