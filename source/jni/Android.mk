@@ -3,8 +3,7 @@ LOCAL_PATH := $(call my-dir)
 # jni is always prepended to this, unfortunately
 NV_ROOT := ../../source/jni
 
-include $(LOCAL_PATH)/$(NV_ROOT)/3rdparty/minizip.mk
-include $(LOCAL_PATH)/$(NV_ROOT)/3rdparty/stb.mk
+include $(LOCAL_PATH)/$(NV_ROOT)/3rdparty/*.mk
 
 include $(CLEAR_VARS)				# clean everything up to prepare for a module
 
@@ -65,6 +64,9 @@ LOCAL_EXPORT_LDLIBS += -lz
 # audio
 LOCAL_EXPORT_LDLIBS += -lOpenSLES
 
-LOCAL_STATIC_LIBRARIES := minizip stb
+LOCAL_STATIC_LIBRARIES := \
+	minizip \
+	stb \
+	nanovg
 
 include $(BUILD_STATIC_LIBRARY)		# start building based on everything since CLEAR_VARS
