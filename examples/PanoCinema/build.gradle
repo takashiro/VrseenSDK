@@ -2,24 +2,11 @@ apply plugin: 'com.android.model.application'
 
 model {
     android {
-        compileSdkVersion = 19
-        buildToolsVersion = '23.0.3'
-
         defaultConfig {
             applicationId = 'com.vrseen.panocinema'
-            minSdkVersion.apiLevel = 19
-            targetSdkVersion.apiLevel = 19
         }
         ndk {
-            platformVersion = 19
             moduleName ='panocinema'
-            stl = 'gnustl_shared'
-            cppFlags.add('-std=c++11')
-            cppFlags.add('-Wall')
-            cppFlags.add('-Wextra')
-            cppFlags.add('-Werror')
-            cppFlags.add('-Wno-strict-aliasing')
-            ldLibs.addAll(['log', 'android', 'EGL', 'GLESv3', 'OpenMAXAL', 'OpenSLES', 'z'])
         }
         sources {
             main {
