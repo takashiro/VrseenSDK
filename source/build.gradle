@@ -37,10 +37,10 @@ model {
                     }
 
                     dependencies {
-                        library 'minizip'
-                        library 'stb'
-                        library 'nanovg'
-                        library 'assimp'
+                        library 'minizip' linkage 'static'
+                        library 'stb' linkage 'static'
+                        library 'nanovg' linkage 'static'
+                        library 'assimp' linkage 'static'
                     }
                 }
 
