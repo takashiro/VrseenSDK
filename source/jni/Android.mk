@@ -1,9 +1,6 @@
 LOCAL_PATH := $(call my-dir)
 
-# jni is always prepended to this, unfortunately
-NV_ROOT := ../../source/jni
-
-include $(LOCAL_PATH)/$(NV_ROOT)/3rdparty/*.mk
+include $(LOCAL_PATH)/3rdparty/*.mk
 
 include $(CLEAR_VARS)				# clean everything up to prepare for a module
 
@@ -25,19 +22,19 @@ LOCAL_ARM_NEON  := true				# compile with neon support enabled
 include $(LOCAL_PATH)/../cflags.mk
 
 LOCAL_C_INCLUDES :=  \
-    $(LOCAL_PATH)/$(NV_ROOT) \
-	$(LOCAL_PATH)/$(NV_ROOT)/api \
-	$(LOCAL_PATH)/$(NV_ROOT)/core \
-	$(LOCAL_PATH)/$(NV_ROOT)/gui \
-	$(LOCAL_PATH)/$(NV_ROOT)/io \
-	$(LOCAL_PATH)/$(NV_ROOT)/media \
-	$(LOCAL_PATH)/$(NV_ROOT)/scene
+    $(LOCAL_PATH) \
+	$(LOCAL_PATH)/api \
+	$(LOCAL_PATH)/core \
+	$(LOCAL_PATH)/gui \
+	$(LOCAL_PATH)/io \
+	$(LOCAL_PATH)/media \
+	$(LOCAL_PATH)/scene
 
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_C_INCLUDES)
 
-addsource = $(addprefix $(1)/, $(notdir $(wildcard $(LOCAL_PATH)/$(1)/*.cpp)))
+addsource = $(wildcard $(LOCAL_PATH)/$(1)/*.cpp)
 
-LOCAL_SRC_FILES := \
+FILE_LIST := \
 	$(call addsource,core) \
 	$(call addsource,core/android) \
 	$(call addsource,api) \
@@ -45,9 +42,9 @@ LOCAL_SRC_FILES := \
 	$(call addsource,io) \
 	$(call addsource,media) \
 	$(call addsource,scene) \
-	App.cpp
+	$(LOCAL_PATH)/App.cpp
 
-LOCAL_CPPFLAGS += -std=c++0x
+LOCAL_SRC_FILES := $(FILE_LIST:$(LOCAL_PATH)/%=%)
 
 # OpenGL ES 3.0
 LOCAL_EXPORT_LDLIBS := -lGLESv3

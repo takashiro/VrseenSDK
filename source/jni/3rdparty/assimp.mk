@@ -2,23 +2,22 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE := assimp
 ASSIMP_SRC_DIR = code
-ASSIMP_ROOT_DIR := 3rdparty/assimp
 
-GLOBAL_PATH := $(LOCAL_PATH)
-LOCAL_PATH := $(GLOBAL_PATH)/$(NV_ROOT)/3rdparty/assimp
+ASSIMP_ROOT := $(LOCAL_PATH)/3rdparty/assimp
 
-addsource = $(addprefix ../, $(wildcard $(LOCAL_PATH)/$(1)))
+addsource = $(wildcard $(ASSIMP_ROOT)/$(1))
 
 FILE_LIST := $(call addsource,$(ASSIMP_SRC_DIR)/*.cpp)
 FILE_LIST += $(call addsource,contrib/openddlparser/code/*.cpp)
 FILE_LIST += $(call addsource,contrib/unzip/*.c)
 FILE_LIST += $(call addsource,contrib/poly2tri/poly2tri/*/*.cc)
 
-LOCAL_SRC_FILES := $(FILE_LIST:$(LOCAL_PATH)/%=%)
+FILE_LIST += \
+	$(ASSIMP_ROOT)/contrib/clipper/clipper.cpp \
+	$(ASSIMP_ROOT)/contrib/ConvertUTF/ConvertUTF.c \
+	$(ASSIMP_ROOT)/contrib/irrXML/irrXML.cpp
 
-LOCAL_SRC_FILES += $(ASSIMP_ROOT_DIR)/contrib/clipper/clipper.cpp \
-	$(ASSIMP_ROOT_DIR)/contrib/ConvertUTF/ConvertUTF.c \
-	$(ASSIMP_ROOT_DIR)/contrib/irrXML/irrXML.cpp
+LOCAL_SRC_FILES := $(FILE_LIST:$(LOCAL_PATH)/%=%)
 
 # enables -frtti and -fexceptions
 LOCAL_CPP_FEATURES := exceptions rtti
@@ -108,11 +107,20 @@ ASSIMP_FLAGS_3_1 = $(ASSIMP_FLAGS_3_0) # -DASSIMP_BUILD_BLENDER_DEBUG
 LOCAL_CFLAGS += $(ASSIMP_FLAGS_3_1) -DASSIMP_BUILD_NO_EXPORT -DOPENDDL_NO_USE_CPP11 $(DontBuildImporters)  # $(DontBuildProcess)
 LOCAL_CFLAGS += -Wno-all
 
-LOCAL_C_INCLUDES += $(LOCAL_PATH)/include $(LOCAL_PATH)/$(ASSIMP_SRC_DIR)/BoostWorkaround $(LOCAL_PATH)/contrib/openddlparser/include ./
-LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/include $(LOCAL_PATH)/$(ASSIMP_SRC_DIR)/BoostWorkaround
+LOCAL_C_INCLUDES += \
+	$(ASSIMP_ROOT) \
+	$(ASSIMP_ROOT)/include \
+	$(ASSIMP_ROOT)/$(ASSIMP_SRC_DIR)/BoostWorkaround \
+	$(ASSIMP_ROOT)/contrib/openddlparser/include \
+	.
 
-LOCAL_C_INCLUDES += $(LOCAL_PATH) $(LOCAL_PATH)/contrib/rapidjson/include $(LOCAL_PATH)/../assimp_patch
+LOCAL_EXPORT_C_INCLUDES := \
+	$(ASSIMP_ROOT)/include \
+	$(ASSIMP_ROOT)/$(ASSIMP_SRC_DIR)/BoostWorkaround
 
-LOCAL_PATH := $(GLOBAL_PATH)
+LOCAL_C_INCLUDES += \
+	$(ASSIMP_ROOT) \
+	$(ASSIMP_ROOT)/contrib/rapidjson/include \
+	$(ASSIMP_ROOT)/../assimp_patch
 
 include $(BUILD_STATIC_LIBRARY)
