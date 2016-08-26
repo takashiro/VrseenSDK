@@ -1,55 +1,40 @@
-apply plugin: 'com.android.model.library'
+apply plugin: 'com.android.library'
 
-model {
-    android {
+android {
+    compileSdkVersion 19
+    buildToolsVersion '23.0.3'
+
+    defaultConfig {
         ndk {
-            moduleName = 'vrseen'
+            abiFilters 'armeabi-v7a'
         }
 
-        sources {
-            main {
-                manifest {
-                    source {
-                        srcDirs = [ "." ]
-                    }
-                }
-
-                jni {
-                    source {
-                        srcDir 'jni'
-                        exclude '3rdparty/minizip/iowin32.c'
-                        exclude '3rdparty/minizip/minizip.c'
-                    }
-
-                    exportedHeaders {
-                        srcDir 'jni'
-                        srcDir 'jni/api'
-                        srcDir 'jni/core'
-                        srcDir 'jni/gui'
-                        srcDir 'jni/media'
-                        srcDir 'jni/io'
-                        srcDir 'jni/scene'
-                    }
-                }
-
-                java {
-                    source {
-                        srcDir 'src'
-                    }
-                }
-
-                res {
-                    source {
-                        srcDir 'res'
-                    }
-                }
+        externalNativeBuild {
+            ndkBuild {
+                abiFilters 'armeabi-v7a'
+                arguments 'APP_PLATFORM=android-19'
             }
         }
-        buildTypes {
-            release {
-                minifyEnabled = false
-                proguardFiles.add(file('proguard-rules.txt'))
-            }
+    }
+
+    externalNativeBuild {
+        ndkBuild {
+            path 'jni/Android.mk'
+        }
+    }
+
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDir 'src'
+            res.srcDir 'res'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled = false
+            proguardFiles.add(file('proguard-rules.txt'))
         }
     }
 }

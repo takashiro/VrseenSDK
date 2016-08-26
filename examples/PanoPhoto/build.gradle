@@ -1,55 +1,42 @@
-apply plugin: 'com.android.model.application'
+apply plugin: 'com.android.application'
 
-model {
-    android {
-        defaultConfig {
-            applicationId = 'com.vrseen.panophoto'
-        }
+android {
+    compileSdkVersion 19
+    buildToolsVersion '23.0.3'
+
+    defaultConfig {
+        applicationId = 'com.vrseen.panophoto'
+
         ndk {
-            moduleName ='panophoto'
+            abiFilters 'armeabi-v7a'
         }
-        sources {
-            main {
-                manifest {
-                    source {
-                        srcDir '.'
-                    }
-                }
 
-                jni {
-                    source {
-                        srcDir 'jni'
-                    }
-
-                    dependencies {
-                        project ':source' linkage 'static'
-                    }
-                }
-
-                java {
-                    source {
-                        srcDir 'src'
-                    }
-                }
-
-                assets {
-                    source {
-                        srcDir  'assets'
-                    }
-                }
-
-                res {
-                    source {
-                        srcDir 'res'
-                    }
-                }
+        externalNativeBuild {
+            ndkBuild {
+                abiFilters 'armeabi-v7a'
+                arguments 'APP_PLATFORM=android-19'
             }
         }
-        buildTypes {
-            release {
-                minifyEnabled = false
-                proguardFiles.add(file('proguard-rules.txt'))
-            }
+    }
+
+    externalNativeBuild {
+        ndkBuild {
+            path 'jni/Android.mk'
+        }
+    }
+
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDir 'src'
+            res.srcDir 'res'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled = false
+            proguardFiles.add(file('proguard-rules.txt'))
         }
     }
 }

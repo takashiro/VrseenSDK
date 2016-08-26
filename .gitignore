@@ -32,3 +32,4 @@ MYTEMP/
 gradle/
 gradle.properties
 .vscode/
+.externalNativeBuild/
