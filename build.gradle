@@ -8,6 +8,8 @@ buildscript {
     }
 }
 
+def libPath = file("source/obj/local").absolutePath
+
 allprojects {
     repositories {
         jcenter()
@@ -18,27 +20,27 @@ allprojects {
             libs(PrebuiltLibraries) {
                 assimp {
                     binaries.withType(StaticLibraryBinary) {
-                        staticLibraryFile = file("source/obj/local/${targetPlatform.getName()}/libassimp.a")
+                        staticLibraryFile = file("${libPath}/${targetPlatform.getName()}/libassimp.a")
                     }
 
-                    headers.srcDir 'source/jni/3rdparty/assimp/include'
+                    headers.srcDir 'jni/3rdparty/assimp/include'
                 }
 
                 minizip {
                     binaries.withType(StaticLibraryBinary) {
-                        staticLibraryFile = file("source/obj/local/${targetPlatform.getName()}/libminizip.a")
+                        staticLibraryFile = file("${libPath}/${targetPlatform.getName()}/libminizip.a")
                     }
                 }
 
                 stb {
                     binaries.withType(StaticLibraryBinary) {
-                        staticLibraryFile = file("source/obj/local/${targetPlatform.getName()}/libstb.a")
+                        staticLibraryFile = file("${libPath}/${targetPlatform.getName()}/libstb.a")
                     }
                 }
 
                 nanovg {
                     binaries.withType(StaticLibraryBinary) {
-                        staticLibraryFile = file("source/obj/local/${targetPlatform.getName()}/libnanovg.a")
+                        staticLibraryFile = file("${libPath}/${targetPlatform.getName()}/libnanovg.a")
                     }
                 }
             }
