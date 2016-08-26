@@ -1,7 +1,7 @@
 #pragma once
 
-#include "VMatrix.h"
 #include <jni.h>
+#include "VMatrix.h"
 
 NV_NAMESPACE_BEGIN
 

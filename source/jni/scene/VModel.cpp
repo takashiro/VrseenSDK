@@ -2,6 +2,8 @@
 #include "VGlShader.h"
 #include "VResource.h"
 #include "VGlGeometry.h"
+#include "VMap.h"
+#include "VTexture.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -13,20 +15,20 @@ NV_NAMESPACE_BEGIN
 static const char*  glVertexShader =
         "uniform highp mat4 Mvpm;\n"
         "attribute vec4 Position;\n"
-        "attribute vec4 VertexColor;\n"
-        "uniform mediump vec4 UniformColor;\n"
-        "varying  lowp vec4 oColor;\n"
+        "attribute vec2 TexCoord;\n"
+        "varying  highp vec2 oTexCoord;\n"
         "void main()\n"
         "{\n"
         "    gl_Position = Mvpm * Position;\n"
-        "    oColor =  /* VertexColor */ UniformColor;\n"
+        "    oTexCoord = TexCoord;\n"
         "}\n";
 
 static const char*  glFragmentShader =
-        "varying lowp vec4 oColor;\n"
+        "uniform sampler2D Texture0;\n"
+        "varying highp vec2 oTexCoord;\n"
         "void main()\n"
         "{\n"
-        "    gl_FragColor = oColor;\n"
+        "    gl_FragColor = texture2D( Texture0, oTexCoord );\n"
         "}\n";
 
 struct VModel::Private
@@ -48,6 +50,10 @@ VModel::VModel():d(new Private)
 
 VModel::~VModel()
 {
+    for(unsigned int i = 0,len = d->geos.size();i<len;++i)
+    {
+        d->geos[i].destroy();
+    }
     delete d;
 }
 
@@ -76,31 +82,56 @@ bool VModel::load(VString& path)
         VertexAttribs attribs;
         VArray<unsigned short> indices;
 
-       unsigned int vertexCount = scene->mMeshes[i]->mNumVertices;
+       const aiMesh *mesh = scene->mMeshes[i];
+       unsigned int vertexCount = mesh->mNumVertices;
        attribs.position.resize( vertexCount );
 
         for (unsigned int j = 0; j < vertexCount; j++)
         {
-            const aiVector3D& vector = scene->mMeshes[i]->mVertices[j];
+            const aiVector3D& vector = mesh->mVertices[j];
             attribs.position[j] .x = vector.x;
             attribs.position[j] .y = vector.y;
             attribs.position[j] .z = vector.z;
         }
 
-        unsigned int faceCount = scene->mMeshes[i]->mNumFaces;
+        unsigned int faceCount = mesh->mNumFaces;
         unsigned int index = 0;
         indices.resize( faceCount * 3 );
 
         for (unsigned int j = 0 ; j < faceCount ; j++)
         {
-            const aiFace& face = scene->mMeshes[i]->mFaces[j];
+            const aiFace& face = mesh->mFaces[j];
             indices[index + 0] = face.mIndices[0];
             indices[index + 1] = face.mIndices[1];
             indices[index + 2] = face.mIndices[2];
             index += 3;
         }
 
-       d->geos[i].createGlGeometry(attribs,indices);
+        if (mesh->HasTextureCoords(0))
+        {
+            attribs.uvCoordinate0.resize(vertexCount);
+
+            for (unsigned int j = 0; j < vertexCount; j++)
+            {
+                attribs.uvCoordinate0[j].x = mesh->mTextureCoords[0][j].x;
+                attribs.uvCoordinate0[j].y = mesh->mTextureCoords[0][j].y;
+            }
+
+            aiMaterial *mtl = scene->mMaterials[mesh->mMaterialIndex];
+            aiString textureFilename;
+
+            if (mtl && AI_SUCCESS == mtl->GetTexture(aiTextureType_DIFFUSE, 0, &textureFilename))
+            {
+                VString modelDirectoryName = VPath(path).dirPath();
+                VString textureFullPath = modelDirectoryName + "/" + textureFilename.data;
+
+                VTexture texture;
+                texture.load(VResource(textureFullPath));
+                d->geos[i].textureId = texture.id();
+            }
+        }
+
+        d->geos[i].createGlGeometry(attribs,indices);
     }
 
     return true;
