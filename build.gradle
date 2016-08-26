@@ -14,6 +14,36 @@ allprojects {
     }
 
     model {
+        repositories {
+            libs(PrebuiltLibraries) {
+                assimp {
+                    binaries.withType(StaticLibraryBinary) {
+                        staticLibraryFile = file("source/obj/local/${targetPlatform.getName()}/libassimp.a")
+                    }
+
+                    headers.srcDir 'source/jni/3rdparty/assimp/include'
+                }
+
+                minizip {
+                    binaries.withType(StaticLibraryBinary) {
+                        staticLibraryFile = file("source/obj/local/${targetPlatform.getName()}/libminizip.a")
+                    }
+                }
+
+                stb {
+                    binaries.withType(StaticLibraryBinary) {
+                        staticLibraryFile = file("source/obj/local/${targetPlatform.getName()}/libstb.a")
+                    }
+                }
+
+                nanovg {
+                    binaries.withType(StaticLibraryBinary) {
+                        staticLibraryFile = file("source/obj/local/${targetPlatform.getName()}/libnanovg.a")
+                    }
+                }
+            }
+        }
+
         android {
             compileSdkVersion = 19
             buildToolsVersion = '23.0.3'

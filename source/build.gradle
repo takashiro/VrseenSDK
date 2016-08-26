@@ -19,6 +19,7 @@ model {
                         srcDir 'jni'
                         exclude '3rdparty/minizip/iowin32.c'
                         exclude '3rdparty/minizip/minizip.c'
+                        exclude '3rdparty/assimp/**'
                     }
 
                     exportedHeaders {
@@ -29,6 +30,17 @@ model {
                         srcDir 'jni/media'
                         srcDir 'jni/io'
                         srcDir 'jni/scene'
+
+                        srcDir 'jni/3rdparty/assimp'
+                        srcDir 'jni/3rdparty/assimp/include'
+                        srcDir 'jni/3rdparty/assimp/code'
+                    }
+
+                    dependencies {
+                        library 'minizip'
+                        library 'stb'
+                        library 'nanovg'
+                        library 'assimp'
                     }
                 }
 
