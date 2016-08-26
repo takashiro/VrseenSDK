@@ -74,6 +74,7 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 
 	private static native void nativePopup(int width, int height, float seconds);
 
+	private static native void nativeLoadModel(String fileName);
 	// Pass down to native code so we talk to the right App object,
 	// since there can be at least two with the PlatformUI open.
 	//
@@ -683,5 +684,9 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 			}
 		}
 		return outString;
+	}
+	public void loadModel(String fileName)
+	{
+		nativeLoadModel(fileName);
 	}
 }
