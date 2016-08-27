@@ -1,7 +1,7 @@
 #pragma once
 
-#include "VRect3.h"
-#include "ModelView.h"
+#include <VRect3.h>
+#include <ModelView.h>
 
 NV_USING_NAMESPACE
 
@@ -98,7 +98,7 @@ public:
 	GLuint				ScreenVignetteTexture;
 	GLuint				ScreenVignetteSbsTexture;	// for side by side 3D
 
-	OvrSceneView		Scene;
+	VSceneView		Scene;
 
 	static const int	MAX_SEATS = 8;
     VVect3f SceneSeatPositions[MAX_SEATS];

@@ -50,13 +50,13 @@ void VGlGeometry::createGlGeometry( const VertexAttribs & attribs, const VArray<
     glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer );
 
     VArray< uint8_t > packed;
-    PackVertexAttribute( packed, attribs.position,		VERTEX_POSITION,			GL_FLOAT,	3 );
+    PackVertexAttribute( packed, attribs.position,		VERTEX_POSITION,		GL_FLOAT,	3 );
     PackVertexAttribute( packed, attribs.normal,		VERTEX_NORMAL,			GL_FLOAT,	3 );
     PackVertexAttribute( packed, attribs.tangent,		VERTEX_TANGENT,			GL_FLOAT,	3 );
-    PackVertexAttribute( packed, attribs.binormal,		VERTEX_BINORMAL,			GL_FLOAT,	3 );
+    PackVertexAttribute( packed, attribs.binormal,		VERTEX_BINORMAL,		GL_FLOAT,	3 );
     PackVertexAttribute( packed, attribs.color,			VERTEX_COLOR,			GL_FLOAT,	4 );
-    PackVertexAttribute( packed, attribs.uvCoordinate0,			VERTEX_UVC0,				GL_FLOAT,	2 );
-    PackVertexAttribute( packed, attribs.uvCoordinate1,			VERTEX_UVC1,				GL_FLOAT,	2 );
+    PackVertexAttribute( packed, attribs.uvCoordinate0,	VERTEX_UVC0,			GL_FLOAT,	2 );
+    PackVertexAttribute( packed, attribs.uvCoordinate1,	VERTEX_UVC1,			GL_FLOAT,	2 );
     PackVertexAttribute( packed, attribs.motionIndices,	JOINT_INDICES,	GL_INT,		4 );
     PackVertexAttribute( packed, attribs.motionWeight,	JOINT_WEIGHTS,	GL_FLOAT,	4 );
 
@@ -133,15 +133,15 @@ void VGlGeometry::updateGlGeometry( const VertexAttribs & attribs )
 
     VArray< uint8_t > packed;
 
-    PackVertexAttribute( packed, attribs.position,		VERTEX_POSITION,			GL_FLOAT,	3 );
-    PackVertexAttribute( packed, attribs.normal,		VERTEX_NORMAL,			GL_FLOAT,	3 );
-    PackVertexAttribute( packed, attribs.tangent,		VERTEX_TANGENT,			GL_FLOAT,	3 );
-    PackVertexAttribute( packed, attribs.binormal,		VERTEX_BINORMAL,			GL_FLOAT,	3 );
-    PackVertexAttribute( packed, attribs.color,			VERTEX_COLOR,			GL_FLOAT,	4 );
-    PackVertexAttribute( packed, attribs.uvCoordinate0,			VERTEX_UVC0,				GL_FLOAT,	2 );
-    PackVertexAttribute( packed, attribs.uvCoordinate1,			VERTEX_UVC1,				GL_FLOAT,	2 );
-    PackVertexAttribute( packed, attribs.motionIndices,	JOINT_INDICES,	GL_INT,		4 );
-    PackVertexAttribute( packed, attribs.motionWeight,	JOINT_WEIGHTS,	GL_FLOAT,	4 );
+    PackVertexAttribute( packed, attribs.position,		VERTEX_POSITION,     GL_FLOAT,	3 );
+    PackVertexAttribute( packed, attribs.normal,		VERTEX_NORMAL,		 GL_FLOAT,	3 );
+    PackVertexAttribute( packed, attribs.tangent,		VERTEX_TANGENT,		 GL_FLOAT,	3 );
+    PackVertexAttribute( packed, attribs.binormal,		VERTEX_BINORMAL,	 GL_FLOAT,	3 );
+    PackVertexAttribute( packed, attribs.color,			VERTEX_COLOR,		 GL_FLOAT,	4 );
+    PackVertexAttribute( packed, attribs.uvCoordinate0,	VERTEX_UVC0,	     GL_FLOAT,	2 );
+    PackVertexAttribute( packed, attribs.uvCoordinate1,	VERTEX_UVC1,		 GL_FLOAT,	2 );
+    PackVertexAttribute( packed, attribs.motionIndices,	JOINT_INDICES,	     GL_INT,	4 );
+    PackVertexAttribute( packed, attribs.motionWeight,	JOINT_WEIGHTS,	     GL_FLOAT,	4 );
     glBufferData( GL_ARRAY_BUFFER, packed.size() * sizeof( packed[0] ), packed.data(), GL_STATIC_DRAW );
 }
 

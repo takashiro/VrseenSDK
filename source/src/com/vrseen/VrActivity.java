@@ -52,7 +52,9 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 
 	private static native void nativeNewIntent(String fromPackageName, String command, String uriString);
 
-	private static native void nativeSurfaceChanged(Surface s);
+	private static native void nativeSurfaceCreated(Surface s);
+
+	private static native void nativeSurfaceChanged(Surface s, int w, int h);
 
 	private static native void nativeSurfaceDestroyed();
 
@@ -79,9 +81,8 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 	// appPtr = nativeSetAppInterface( this, ... );
 	
     private VrseenDeviceManager mVrseenDeviceManager = null;
-    private IVRManager mVrService = null;
+    private IVRManager mSumsungVrService = null;
     private SoundManager mSoundManager = null;
-	private SurfaceHolder mSurfaceHolder = null;
     
     //TODO Remove the function
     public void playSoundPoolSound(String name) {
@@ -97,13 +98,14 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 			Log.d(TAG, "Ignoring a surface that is not in landscape mode");
 			return;
 		}
-		nativeSurfaceChanged(holder.getSurface());
-		mSurfaceHolder = holder;
+		nativeSurfaceChanged(holder.getSurface(), width, height);
 	}
 
 	@Override
 	public void surfaceCreated(SurfaceHolder holder) {
 		Log.d(TAG, this + " surfaceCreated()");
+
+		nativeSurfaceCreated(holder.getSurface());
 		// needed for interface, but surfaceChanged() will always be called next
 	}
 
@@ -385,11 +387,33 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 		super.onConfigurationChanged(newConfig);
 	}
 
+	private void setImmersiveSticky() {
+		getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+				| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+				| View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+				| View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+				| View.SYSTEM_UI_FLAG_FULLSCREEN
+				| View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+	}
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		Log.d(TAG, this + " onCreate()");
 		super.onCreate(savedInstanceState);
 
+		setImmersiveSticky();
+		getWindow()
+				.getDecorView()
+				.setOnSystemUiVisibilityChangeListener(
+						new View.OnSystemUiVisibilityChangeListener() {
+							@Override
+							public void onSystemUiVisibilityChange(int visibility) {
+								if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
+									setImmersiveSticky();
+								}
+							}
+						});
+		
 		VrLib.setCurrentLanguage(Locale.getDefault().getLanguage());
 
 		// Create the Sound Manager
@@ -421,10 +445,24 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 		Log.d(TAG, "uri:" + uriString);
 		
 		mVrseenDeviceManager = new VrseenDeviceManager(this);
-		mVrService = (IVRManager) getSystemService(IVRManager.VR_MANAGER);
-		if (mVrService == null) {
-			Log.w(TAG, "VR Service not found");
+
+		switch ( VrLib.getVRDeviceType() )
+		{
+			case VRDeviceType_Common:
+				break;
+			case VRDeviceType_Sumsung:
+			{
+				mSumsungVrService = (IVRManager) getSystemService(IVRManager.VR_MANAGER);
+				if (mSumsungVrService == null) {
+					Log.w(TAG, "Sumsung VR Service not found");
+				}
+			}
+				break;
+			case VRDeviceType_ZTE:
+
+				break;
 		}
+
 
 		SurfaceView sv = new SurfaceView(this);
 		setContentView(sv);
@@ -434,6 +472,7 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 		// Force the screen to stay on, rather than letting it dim and shut off
 		// while the user is watching a movie.
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		getWindow().addFlags( WindowManager.LayoutParams.FLAG_FULLSCREEN );
 
 		// Force screen brightness to stay at maximum
 		WindowManager.LayoutParams params = getWindow().getAttributes();
@@ -465,12 +504,6 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 		super.onPause();
 		nativePause();
 		mVrseenDeviceManager.onPause();
-
-		if(mSurfaceHolder!=null)
-		{
-			surfaceDestroyed(mSurfaceHolder);
-			mSurfaceHolder = null;
-		}
 	}
 
 	@Override

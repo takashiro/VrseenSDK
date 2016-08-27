@@ -4,12 +4,39 @@ buildscript {
        jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle-experimental:0.7.0-alpha4'
+        classpath 'com.android.tools.build:gradle-experimental:0.8.0-beta2'
     }
 }
 
 allprojects {
     repositories {
         jcenter()
+    }
+
+    model {
+        android {
+            compileSdkVersion = 19
+            buildToolsVersion = '23.0.3'
+
+            defaultConfig {
+                minSdkVersion.apiLevel = 19
+                targetSdkVersion.apiLevel = 19
+            }
+
+            ndk {
+                platformVersion = 19
+                stl = 'gnustl_shared'
+
+                abiFilters.add('armeabi-v7a')
+
+                cppFlags.add('-std=c++11')
+                cppFlags.add('-Wall')
+                cppFlags.add('-Wextra')
+                cppFlags.add('-Werror')
+                cppFlags.add('-Wno-strict-aliasing')
+
+                ldLibs.addAll(['log', 'android', 'EGL', 'GLESv3', 'OpenMAXAL', 'OpenSLES', 'z'])
+            }
+        }
     }
 }

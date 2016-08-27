@@ -2,15 +2,15 @@
 
 Filename    :   GazeCursorLocal.h
 Content     :   Global gaze cursor.
-Created     :   June 6, 2014
-Authors     :   Jonathan E. Wright
+Created     :   June 6, 2016
+Authors     :   Zhangxin
 
-Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
+Copyright   :   Copyright 2016 VRSeen VR, LLC. All Rights reserved.
 
 *************************************************************************************/
 
-#if !defined( OVR_GazeCursorLocal_h )
-#define OVR_GazeCursorLocal_h
+#if !defined( V_GazeCursorLocal_h )
+#define V_GazeCursorLocal_h
 
 #include "api/VEglDriver.h"
 
@@ -21,17 +21,17 @@ Copyright   :   Copyright 2014 Oculus VR, LLC. All Rights reserved.
 NV_NAMESPACE_BEGIN
 
 //==============================================================
-// OvrGazeCursorLocal
+// VGazeCursorLocal
 //
 // Private implementation of the gaze cursor interface.
-class OvrGazeCursorLocal : public OvrGazeCursor
+class VGazeCursorLocal : public VGazeCursor
 {
 public:
 	static const float	CURSOR_MAX_DIST;
 	static const int	TRAIL_GHOSTS = 16;
 
-								OvrGazeCursorLocal();
-	virtual						~OvrGazeCursorLocal();
+                                VGazeCursorLocal();
+    virtual						~VGazeCursorLocal();
 
 	// Initialize the gaze cursor system.
 	virtual	void				Init();
@@ -64,7 +64,7 @@ public:
 	virtual bool				IsActiveForUser( gazeCursorUserId_t const userId ) const;
 
 	// Returns the current info about the gaze cursor.
-	virtual OvrGazeCursorInfo	GetInfo() const;
+    virtual VGazeCursorInfo	GetInfo() const;
 
 	// Force the distance to a specific value -- this will set the distance even if
 	// it is further away than the current distance. Unless your intent is to overload
@@ -99,7 +99,7 @@ public:
 
 private:
 	int							NextUserId;				// id of the next user to request an id
-	OvrGazeCursorInfo			Info;					// current cursor info
+    VGazeCursorInfo             Info;					// current cursor info
 	float						CursorRotation;			// current cursor rotation
 	float						RotationRateRadians;	// rotation rate in radians
 	float						CursorScale;			// scale of the cursor
@@ -109,7 +109,7 @@ private:
     VMatrix4f					CursorScatterTransform[TRAIL_GHOSTS];	// transform for each depth-fail ghost
 	int							CurrentTransform;		// the next CursorTransform[] to fill
     VMatrix4f					TimerTransform;			// current transform of the timing cursor
-    VVect2f					ColorTableOffset;		// offset into color table for color-cycling effects
+    VVect2f                     ColorTableOffset;		// offset into color table for color-cycling effects
 
 	double						TimerShowTime;			// time when the timer cursor should show
 	double						TimerEndTime;			// time when the timer will expire

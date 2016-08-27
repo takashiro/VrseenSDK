@@ -1,5 +1,5 @@
 language: android
-jdk: oraclejdk7
+jdk: oraclejdk8
 android:
   components:
     - platform-tools
@@ -18,12 +18,11 @@ before_script:
   - mksdcard -l mySdCard 64M mySdCard.img
   - echo no | android create avd --force -n test -t android-19 --abi armeabi-v7a
   - emulator -avd test -no-skin -no-audio -no-window -sdcard mySdCard.img &
-script:
-  - ./gradlew build
-  - android-wait-for-emulator
+  - android-wait-for-emulator >> /dev/null
   - adb shell input keyevent 82 &
   - adb logcat *:I | grep "jni/" &
   - adb logcat *:I > logcat.log &
-  - ./gradlew connectedAndroidTest
+script:
+  - ./gradlew build connectedAndroidTest -x lint
 after_failure:
   - ./android-ndk-r10e/ndk-stack -sym tests/obj/local/armeabi-v7a -dump logcat.log

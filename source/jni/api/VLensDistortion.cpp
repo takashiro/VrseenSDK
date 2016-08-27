@@ -208,7 +208,7 @@ VGlGeometry VLensDistortion::createDistortionGrid(const VDevice* device,const in
                     const int sx = slice * sliceTess + x;
                     const float	xf = (float)sx / (float)xxGridNum;
                     float * v = &tessVertices[attribCount * ( vertBase + y * (sliceTess+1) + x ) ];
-                    v[0] = -1.0 + eye + xf;
+                    v[0] = -1.0f + eye + xf;
                     v[1] = yf*2.0f - 1.0f;
 
                     // Copy the offsets from the file

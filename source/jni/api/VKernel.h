@@ -1,5 +1,6 @@
 #pragma once
 
+#include <EGL/egl.h>
 #include "VRotationState.h"
 #include "VMatrix.h"
 
@@ -135,7 +136,7 @@ typedef struct
     // must remain the same for both eyes, or the position would
     // seem to judder "backwards in time" if a frame is dropped.
     VRotationState Pose;
-} ovrTimeWarpImage;
+} VTimeWarpImage;
 
 static const int	MAX_WARP_EYES = 2;
 static const int	MAX_WARP_IMAGES = 3;
@@ -144,7 +145,7 @@ typedef struct
 {
     // Images used for each eye.
     // Per eye: 0 = world, 1 = overlay screen, 2 = gaze cursor
-    ovrTimeWarpImage 			Images[MAX_WARP_EYES][MAX_WARP_IMAGES];
+    VTimeWarpImage 			Images[MAX_WARP_EYES][MAX_WARP_IMAGES];
 
     // Combination of ovrTimeWarpOption flags.
     int 						WarpOptions;
@@ -154,7 +155,7 @@ typedef struct
     // lower than the vsync rate.
     // This will be applied to the view space distorted
     // eye vectors before applying the rest of the time warp.
-    // This will only be added when the same ovrTimeWarpParms is used for
+    // This will only be added when the same VTimeWarpParms is used for
     // more than one vsync.
     VMatrix4f ExternalVelocity;
 
@@ -174,7 +175,7 @@ typedef struct
 
     // Program-specific tuning values.
     float						ProgramParms[4];
-} ovrTimeWarpParms;
+} VTimeWarpParms;
 
 typedef enum
 {
@@ -182,23 +183,25 @@ typedef enum
     WARP_INIT_BLACK,
     WARP_INIT_LOADING_ICON,
     WARP_INIT_MESSAGE
-} ovrWarpInit;
+} VWarpInit;
 
 class VKernel
 {
 public:
     static VKernel *instance();
-    void run();
-    void exit();
+    void enterVrMode();
+    void resume();
+    void setSurfaceRevolution(EGLSurface surface);
+    void pause();
+    void leaveVrMode();
     void destroy(eExitType type);
 
     int msaa;
     bool isRunning;
-    bool asyncSmooth;
 
-    void doSmooth(const ovrTimeWarpParms * parms );
+    void doSmooth(const VTimeWarpParms * parms );
 
-    ovrTimeWarpParms  InitTimeWarpParms( const ovrWarpInit init = WARP_INIT_DEFAULT, const unsigned int texId = 0 );
+    VTimeWarpParms  InitTimeWarpParms( const VWarpInit init = WARP_INIT_DEFAULT, const unsigned int texId = 0 );
     int getBuildVersion();
 private:
     VKernel();

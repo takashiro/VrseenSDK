@@ -107,6 +107,8 @@ public:
     }
 };
 
-typedef VPos<vreal> VPosF;
+typedef VPos<float> VPosf;
+typedef VPos<double> VPosd;
+typedef VPos<int> VPosi;
 
 NV_NAMESPACE_END

@@ -33,3 +33,4 @@ gradle/
 gradle.properties
 *.docx
 *.dotx
+.vscode/

@@ -16,7 +16,7 @@ NV_NAMESPACE_BEGIN
 class VMainActivity;
 class VZipFile;
 class VRMenuObjectParms;
-class OvrGazeCursor;
+class VGazeCursor;
 class BitmapFont;
 class BitmapFontSurface;
 class VViewSettings;
@@ -42,7 +42,7 @@ public:
 
     VEyeItem::Settings &eyeSettings();
 
-    OvrGazeCursor  &gazeCursor();
+    VGazeCursor  &gazeCursor();
     BitmapFont &defaultFont();
     BitmapFontSurface &worldFontSurface();
     const VStandardPath &storagePaths();
@@ -76,8 +76,8 @@ public:
     VKernel* kernel();
     SurfaceTexture *dialogTexture();
 
-    const ovrTimeWarpParms &swapParms() const;
-    ovrTimeWarpParms &swapParms();
+    const VTimeWarpParms &swapParms() const;
+    VTimeWarpParms &swapParms();
 
     const VRotationState &sensorForNextWarp() const;
 

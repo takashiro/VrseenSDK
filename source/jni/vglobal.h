@@ -79,3 +79,8 @@ typedef ulonglong vuint64;
 
 #define NV_VERSION_CHECK(major, minor, build, patch) ((major<<24)|(minor<<16)|(build<<8)|patch)
 #define NV_VERSION NV_VERSION_CHECK(NV_MAJOR_VERSION, NV_MINOR_VERSION, NV_BUILD_VERSION, NV_PATCH_VERSION)
+
+const int SCHED_FIFO_PRIORITY_NONE			= 0;
+const int SCHED_FIFO_PRIORITY_VRTHREAD		= 1;
+const int SCHED_FIFO_PRIORITY_DEVICEMNGR	= 2;
+const int SCHED_FIFO_PRIORITY_TIMEWARP		= 3;

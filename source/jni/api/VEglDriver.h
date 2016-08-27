@@ -22,7 +22,7 @@ static const int GL_ES_VERSION = 2;
 #endif
 #include <GLES2/gl2ext.h>
 
-#define EGL_OPENGL_ES3_BIT_KHR      0x0040
+//#define EGL_OPENGL_ES3_BIT_KHR      0x0040
 #define GL_BINNING_CONTROL_HINT_QCOM           0x8FB0
 #define GL_RENDER_DIRECT_TO_FRAMEBUFFER_QCOM   0x8FB3
 
@@ -53,6 +53,7 @@ public:
         GPU_TYPE_ADRENO					= 0x1000,
         GPU_TYPE_ADRENO_330				= 0x1001,
         GPU_TYPE_ADRENO_420				= 0x1002,
+        //GPU_TYPE_ADRENO_530				= 0x1003,//vivo+zte gpu
         GPU_TYPE_MALI					= 0x2000,
         GPU_TYPE_MALI_T760				= 0x2100,
         GPU_TYPE_MALI_T760_EXYNOS_5433	= 0x2101,
@@ -92,7 +93,7 @@ public:
                                  const int depthBits,
                                  const int samples,
                                  const bool pbuffer );
-    void eglInit( const EGLContext shareContext,
+    bool eglInit( const EGLContext shareContext,
                    const int GlEsVersion,
                    const int red, const int green, const int blue,
                    const int depth, const int multisamples,

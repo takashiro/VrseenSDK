@@ -115,11 +115,14 @@ static VQuatf calcPredictedPose(const VRotationState &pose, float predictionDt)
     const float MAX_DELTA_TIME = 1.0f / 10.0f;
     dynamicDt = std::min(std::max(dynamicDt, 0.0f), MAX_DELTA_TIME);
 
-    VQuatf state;
+    VQuatf state = pose;
     if (speed > 0.001)
         state = pose * VQuatf(pose.gyro, speed * dynamicDt);
 
-    return pose;
+    if (state.x == 0 && state.z == 0 && state.y == 0)
+        return pose;
+
+    return state;
 }
 
 VRotationState VRotationSensor::predictState(double timestamp) const

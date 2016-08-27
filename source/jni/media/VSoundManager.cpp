@@ -73,7 +73,7 @@ struct VSoundManager::Private
         VJson data;
         buffer >> data;
         if (data.isNull()) {
-            vFatal("OvrSoundManager::LoadSoundAssetsFromPackage failed json parse on" << jsonFilePath);
+            vFatal("VSoundManager::LoadSoundAssetsFromPackage failed json parse on" << jsonFilePath);
         }
 
         loadSoundAssetsFromJsonObject(url, data);
@@ -109,7 +109,7 @@ void VSoundManager::loadSoundAssets()
 		VJson dataFile;
 		fp >> dataFile;
         if (dataFile.isNull()) {
-            vFatal("OvrSoundManager::LoadSoundAssets failed to load JSON meta file:" << foundPath);
+            vFatal("VSoundManager::LoadSoundAssets failed to load JSON meta file:" << foundPath);
 		}
 
         foundPath.stripTrailing("sound_assets.json");
@@ -143,7 +143,7 @@ bool  VSoundManager::getSound(const VString &soundName, VString & outSound)
         outSound = soundMapping->second;
 		return true;
     } else {
-        vWarn("OvrSoundManager::GetSound failed to find" << soundName);
+        vWarn("VSoundManager::GetSound failed to find" << soundName);
 	}
 	return false;
 }

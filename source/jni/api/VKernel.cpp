@@ -36,13 +36,12 @@ JavaVM *VrLibJavaVM = NULL;
 jclass VrLibClass = NULL;
 
 static jmethodID getPowerLevelStateID = NULL;
-static jmethodID setActivityWindowFullscreenID = NULL;
 static jmethodID notifyMountHandledID = NULL;
 
 static int BuildVersionSDK = 19;		// default supported version for vrlib is KitKat 19
 
-static int windowSurfaceWidth = 2560;	// default to Note4 resolution
-static int windowSurfaceHeight = 1440;	// default to Note4 resolution
+//static int windowSurfaceWidth = 2560;	// default to Note4 resolution
+//static int windowSurfaceHeight = 1440;	// default to Note4 resolution
 
 VLockless<bool> HeadsetPluggedState;
 VLockless<bool> PowerLevelStateThrottled;
@@ -155,57 +154,112 @@ static void SetVrSystemPerformance(JNIEnv * VrJni, jclass vrActivityClass, int c
 
     // Get the available clock levels for the device.
     const jmethodID getAvailableClockLevelsId = JniUtils::GetStaticMethodID(VrJni, vrActivityClass, "getAvailableFreqLevels", "(Landroid/app/Activity;)[I");
-    jintArray jintLevels = (jintArray) VrJni->CallStaticObjectMethod(vrActivityClass, getAvailableClockLevelsId, ActivityObject);
+    if(getAvailableClockLevelsId)
+    {
+        jintArray jintLevels = (jintArray) VrJni->CallStaticObjectMethod(vrActivityClass, getAvailableClockLevelsId, ActivityObject);
 
-    // Move security exception detection to the java IF.
-    // Catch Permission denied
-    if ( VrJni->ExceptionOccurred() ) {
-        VrJni->ExceptionClear();
-        vInfo("SetVrSystemPerformance: JNI Exception occurred, returning");
-        return;
-    }
-
-    vAssert(VrJni->GetArrayLength(jintLevels) == 4);		// {GPU MIN, GPU MAX, CPU MIN, CPU MAX}
-
-    jint * levels = VrJni->GetIntArrayElements(jintLevels, NULL);
-    if (levels != NULL) {
-        // Verify levels are within appropriate range for the device
-        if (cpuLevel < levels[LEVEL_CPU_MIN]) {
-            cpuLevel = levels[LEVEL_CPU_MIN];
-        } else if (cpuLevel > levels[LEVEL_CPU_MAX]) {
-            cpuLevel = levels[LEVEL_CPU_MAX];
-        }
-        if (gpuLevel < levels[LEVEL_GPU_MIN]) {
-            gpuLevel = levels[LEVEL_GPU_MIN];
-        } else if (gpuLevel > levels[LEVEL_GPU_MAX]) {
-            gpuLevel = levels[LEVEL_GPU_MAX];
+        // Move security exception detection to the java IF.
+        // Catch Permission denied
+        if ( VrJni->ExceptionOccurred() ) {
+            VrJni->ExceptionClear();
+            vInfo("SetVrSystemPerformance: JNI Exception occurred, returning");
+            return;
         }
 
-        VrJni->ReleaseIntArrayElements(jintLevels, levels, 0);
-    }
-    VrJni->DeleteLocalRef(jintLevels);
+        vAssert(VrJni->GetArrayLength(jintLevels) == 4);		// {GPU MIN, GPU MAX, CPU MIN, CPU MAX}
 
+        jint * levels = VrJni->GetIntArrayElements(jintLevels, NULL);
+        if (levels != NULL) {
+            // Verify levels are within appropriate range for the device
+            if (cpuLevel < levels[LEVEL_CPU_MIN]) {
+                cpuLevel = levels[LEVEL_CPU_MIN];
+            } else if (cpuLevel > levels[LEVEL_CPU_MAX]) {
+                cpuLevel = levels[LEVEL_CPU_MAX];
+            }
+            if (gpuLevel < levels[LEVEL_GPU_MIN]) {
+                gpuLevel = levels[LEVEL_GPU_MIN];
+            } else if (gpuLevel > levels[LEVEL_GPU_MAX]) {
+                gpuLevel = levels[LEVEL_GPU_MAX];
+            }
+
+            VrJni->ReleaseIntArrayElements(jintLevels, levels, 0);
+        }
+        VrJni->DeleteLocalRef(jintLevels);
+    }
     // Set the fixed cpu and gpu clock levels
     const jmethodID setSystemPerformanceId = JniUtils::GetStaticMethodID(VrJni, vrActivityClass, "setSystemPerformanceStatic", "(Landroid/app/Activity;II)[I");
-    jintArray jintClocks = (jintArray) VrJni->CallStaticObjectMethod(vrActivityClass, setSystemPerformanceId, ActivityObject, cpuLevel, gpuLevel);
+    if(setSystemPerformanceId)
+    {
+        jintArray jintClocks = (jintArray) VrJni->CallStaticObjectMethod(vrActivityClass, setSystemPerformanceId, ActivityObject, cpuLevel, gpuLevel);
 
-    vAssert(VrJni->GetArrayLength(jintClocks) == 4);		//  {CPU CLOCK, GPU CLOCK, POWERSAVE CPU CLOCK, POWERSAVE GPU CLOCK}
+        vAssert(VrJni->GetArrayLength(jintClocks) == 4);		//  {CPU CLOCK, GPU CLOCK, POWERSAVE CPU CLOCK, POWERSAVE GPU CLOCK}
+    }
+
 }
 
-class VKernelModule : public VModule
+static void ReleaseVrSystemPerformance( JNIEnv * VrJni, jclass vrActivityClass, jobject activityObject )
 {
-public:
-    void onPause() override
+    // Clear any previous exceptions.
+    // NOTE: This can be removed once security exception handling is moved to Java IF.
+    if ( VrJni->ExceptionOccurred() )
     {
-        VKernel::instance()->exit();
+        VrJni->ExceptionClear();
+        vWarn( "ReleaseVrSystemPerformance: Enter: JNI Exception occurred" );
     }
 
-    void onResume() override
+    vInfo( "ReleaseVrSystemPerformance" );
+
+    // Release the fixed cpu and gpu clock levels
+    const jmethodID releaseSystemPerformanceId = JniUtils::GetStaticMethodID( VrJni, vrActivityClass,
+                                                                        "releaseSystemPerformanceStatic", "(Landroid/app/Activity;)V" );
+    VrJni->CallStaticVoidMethod( vrActivityClass, releaseSystemPerformanceId, activityObject );
+    if ( VrJni->ExceptionOccurred() )
     {
-        VKernel::instance()->run();
+        VrJni->ExceptionClear();
+        vWarn( "ReleaseVrSystemPerformance: Enter: JNI Exception occurred" );
     }
-};
-NV_ADD_MODULE(VKernelModule)
+}
+
+static void SetSchedFifo( JNIEnv* VrJni, jclass vrActivityClass, jobject activityObject, int tid, int priority )
+{
+    const jmethodID setSchedFifoMethodId = JniUtils::GetStaticMethodID( VrJni, VrLibClass, "setSchedFifoStatic", "(Landroid/app/Activity;II)I" );
+    const int r = VrJni->CallStaticIntMethod( vrActivityClass, setSchedFifoMethodId, activityObject, tid, priority );
+    if ( r >= 0 )
+    {
+        vInfo( "SetSchedFifo tid = "<< tid );
+        vInfo( "SetSchedFifo priority = "<< priority );
+    }
+    else
+    {
+        if(r == -1)
+        {
+            vWarn( "SetSchedFifo VRManager failed "<< tid );
+        }else if(r == -2)
+        {
+            vWarn( "SetSchedFifo API not found "<< tid );
+        }else if(r == -3)
+        {
+            vWarn("SetSchedFifo security exception");
+        }
+
+    }
+
+    if ( priority != 0 )
+    {
+        switch ( r )
+        {
+            case -1: vWarn( "VRManager failed to set thread priority." ); break;
+            case -2: vWarn( "Thread priority API does not exist. Update your device binary." ); break;
+            case -3: vWarn( "Thread priority security exception. Make sure the APK is signed." ); break;
+        }
+    }
+
+    if ( VrJni->ExceptionOccurred() )
+    {
+        VrJni->ExceptionClear();
+        vWarn( "ReleaseVrSystemPerformance: Enter: JNI Exception occurred" );
+    }
+}
 
 VKernel *VKernel::instance()
 {
@@ -216,7 +270,6 @@ VKernel *VKernel::instance()
 VKernel::VKernel()
     : isRunning(false)
 {
-    asyncSmooth = true;
     msaa = 0;
 }
 
@@ -243,10 +296,6 @@ void UpdateHmdInfo()
         device->heightbyMeters = Jni->CallStaticFloatMethod( VrLibClass, getDisplayHeight, ActivityObject );
     }
 
-    // Update the dimensions in pixels directly from the window
-    device->widthbyPixels = windowSurfaceWidth;
-    device->heightbyPixels = windowSurfaceHeight;
-
     vInfo("hmdInfo.lensSeparation =" << device->lensDistance);
     vInfo("hmdInfo.widthMeters =" << device->widthbyMeters);
     vInfo("hmdInfo.heightMeters =" << device->heightbyMeters);
@@ -258,17 +307,38 @@ void UpdateHmdInfo()
     vInfo("hmdInfo.eyeTextureFov[1] =" << device->eyeDisplayFov[1]);
 }
 
+static void vrEnableVRMode(JNIEnv * VrJni,jclass vrActivityClass, int mode )
+{
+    vInfo("Vrmode is set to " << mode);
+    if(!(VOsBuild::getString(VOsBuild::Model) == "ZTE A2017"))
+        return;
 
-void VKernel::run()
+    // Clear any previous exceptions.
+    // NOTE: This can be removed once security exception handling is moved to Java IF.
+    if ( VrJni->ExceptionOccurred() )
+    {
+        VrJni->ExceptionClear();
+        vInfo( "vrEnableVRMode: Enter: JNI Exception" );
+    }
+
+    vInfo( "********vrEnableVRMode***********" );
+    const jmethodID vrEnableVRModeStaticId =
+    JniUtils::GetStaticMethodID( VrJni, vrActivityClass, "vrEnableVRModeStatic", "(Landroid/app/Activity;I)I" );
+
+    VrJni->CallStaticIntMethod( vrActivityClass, vrEnableVRModeStaticId, vApp->javaObject(), mode );
+
+    if ( VrJni->ExceptionOccurred() )
+    {
+        VrJni->ExceptionClear();
+        vInfo( "vrEnableVRMode: Enter: JNI Exception" );
+    }
+}
+
+void VKernel::enterVrMode()
 {
     if(isRunning) return;
 
     vInfo("---------- VKernel run ----------");
-#ifdef NDK_DEBUG
-    char const * buildConfig = "DEBUG";
-#else
-    char const * buildConfig = "RELEASE";
-#endif
     ActivityObject = vApp->javaObject();
     // This returns the existing jni if the caller has already created
     // one, or creates a new one.
@@ -278,62 +348,28 @@ void VKernel::run()
         vFatal("AttachCurrentThread returned" << rtn);
     }
 
-    // log the application name, version, activity, build, model, etc.
-    jmethodID logApplicationNameMethodId = JniUtils::GetStaticMethodID( Jni, VrLibClass, "logApplicationName", "(Landroid/app/Activity;)V" );
-    Jni->CallStaticVoidMethod( VrLibClass, logApplicationNameMethodId, ActivityObject );
-
-    jmethodID logApplicationVersionId = JniUtils::GetStaticMethodID( Jni, VrLibClass, "logApplicationVersion", "(Landroid/app/Activity;)V" );
-    Jni->CallStaticVoidMethod( VrLibClass, logApplicationVersionId, ActivityObject );
-
-    jmethodID logApplicationVrType = JniUtils::GetStaticMethodID( Jni, VrLibClass, "logApplicationVrType", "(Landroid/app/Activity;)V" );
-    Jni->CallStaticVoidMethod( VrLibClass, logApplicationVrType, ActivityObject );
-
-    VString currentClassName = JniUtils::GetCurrentActivityName(Jni, ActivityObject);
-    vInfo("ACTIVITY =" << currentClassName);
-
-    vInfo("BUILD =" << VOsBuild::getString(VOsBuild::Display) << buildConfig);
     vInfo("MODEL =" << VOsBuild::getString(VOsBuild::Model));
 
     isRunning = true;
-
-    // Let GlUtils look up extensions
-
-    VEglDriver::logExtensions();
-
-    // Look up the window surface size (NOTE: This must happen before Direct Render
-    // Mode is initiated and the pbuffer surface is bound).
-    {
-        EGLDisplay display = eglGetDisplay( EGL_DEFAULT_DISPLAY );
-        EGLSurface surface = eglGetCurrentSurface( EGL_DRAW );
-        eglQuerySurface( display, surface, EGL_WIDTH, &windowSurfaceWidth );
-        eglQuerySurface( display, surface, EGL_HEIGHT, &windowSurfaceHeight );
-        vInfo("Window Surface Size: [" << windowSurfaceWidth << windowSurfaceHeight << "]");
-    }
 
     // Based on sensor ID and platform, determine the HMD
     UpdateHmdInfo();
 
     // Start up our vsync callbacks.
-    const jmethodID startVsyncId = JniUtils::GetStaticMethodID( Jni, VrLibClass,
-                                                                "startVsync", "(Landroid/app/Activity;)V" );
+    const jmethodID startVsyncId = JniUtils::GetStaticMethodID( Jni, VrLibClass, "startVsync", "(Landroid/app/Activity;)V" );
     Jni->CallStaticVoidMethod( VrLibClass, startVsyncId, ActivityObject );
 
     // Register our receivers
-    const jmethodID startReceiversId = JniUtils::GetStaticMethodID( Jni, VrLibClass,
-                                                                    "startReceivers", "(Landroid/app/Activity;)V" );
+    const jmethodID startReceiversId = JniUtils::GetStaticMethodID( Jni, VrLibClass, "startReceivers", "(Landroid/app/Activity;)V" );
     Jni->CallStaticVoidMethod( VrLibClass, startReceiversId, ActivityObject );
 
     getPowerLevelStateID = JniUtils::GetStaticMethodID( Jni, VrLibClass, "getPowerLevelState", "(Landroid/app/Activity;)I" );
-    setActivityWindowFullscreenID = JniUtils::GetStaticMethodID( Jni, VrLibClass, "setActivityWindowFullscreen", "(Landroid/app/Activity;)V" );
     notifyMountHandledID = JniUtils::GetStaticMethodID( Jni, VrLibClass, "notifyMountHandled", "(Landroid/app/Activity;)V" );
-
-    // get external storage directory
-    const jmethodID getExternalStorageDirectoryMethodId = JniUtils::GetStaticMethodID( Jni, VrLibClass, "getExternalStorageDirectory", "()Ljava/lang/String;" );
-    jstring externalStorageDirectoryString = (jstring)Jni->CallStaticObjectMethod( VrLibClass, getExternalStorageDirectoryMethodId );
-    Jni->DeleteLocalRef(externalStorageDirectoryString);
 
     //TODO: CPU Level and GPU Level should be read from a config file
     SetVrSystemPerformance(Jni, VrLibClass, 2, 2);
+
+    vrEnableVRMode( Jni, VrLibClass, 1 );
 
     if ( Jni->ExceptionOccurred() )
     {
@@ -341,61 +377,102 @@ void VKernel::run()
         vInfo("Cleared JNI exception");
     }
 
-    frameSmooth = new VFrameSmooth(asyncSmooth, vApp->vrParms().wantSingleBuffer);
-
-    jmethodID setSchedFifoId = JniUtils::GetStaticMethodID(Jni, VrLibClass, "setSchedFifoStatic", "(Landroid/app/Activity;II)I");
-    Jni->CallStaticIntMethod(VrLibClass, setSchedFifoId, ActivityObject, gettid(), 1);
-    Jni->CallStaticIntMethod(VrLibClass, setSchedFifoId, ActivityObject, frameSmooth->threadId(), 3);
-
-    if ( setActivityWindowFullscreenID != NULL)
+    if(frameSmooth == NULL)
     {
-        Jni->CallStaticVoidMethod( VrLibClass, setActivityWindowFullscreenID, ActivityObject );
+        VFrameSmooth::HardwareRefreshDirection direction = (VOsBuild::getString(VOsBuild::Model) == "vivo Xplay5S") ?
+                                                           VFrameSmooth::HWRD_BT : VFrameSmooth::HWRD_TB;
+
+        frameSmooth = new VFrameSmooth(vApp->vrParms().wantSingleBuffer, direction);
+    }
+
+    // The calling thread, which is presumably the eye buffer drawing thread,
+    // will be at the lowest realtime priority.
+    SetSchedFifo( Jni, VrLibClass, ActivityObject, gettid(), SCHED_FIFO_PRIORITY_VRTHREAD );
+//    if ( ovr->Parms.GameThreadTid )
+//    {
+//        SetSchedFifo( Jni, VrLibClass, ActivityObject, ovr->Parms.GameThreadTid, SCHED_FIFO_PRIORITY_VRTHREAD );
+//    }
+//
+//    // The device manager deals with sensor updates, which will happen at 500 hz, and should
+//    // preempt the main thread, but not timewarp or audio mixing.
+//    SetSchedFifo( Jni, VrLibClass, ActivityObject, ovr_GetDeviceManagerThreadTid(), SCHED_FIFO_PRIORITY_DEVICEMNGR );
+
+    // The timewarp thread, if present, will be very high.  It only uses a fraction of
+    // a millisecond of CPU, so it can be even higher than audio threads.
+    if ( frameSmooth->threadId() )
+    {
+        SetSchedFifo( Jni, VrLibClass, ActivityObject, frameSmooth->threadId(), SCHED_FIFO_PRIORITY_TIMEWARP );
     }
 }
 
-void VKernel::exit()
+void VKernel::resume()
+{
+    vInfo("Resume in VKernel!");
+    if(frameSmooth) {
+        frameSmooth->resume();
+        enterVrMode();
+    }
+}
+
+void VKernel::setSurfaceRevolution(EGLSurface surface)
+{
+    if(frameSmooth) {
+        frameSmooth->setupSurface(surface);
+    }
+}
+
+void VKernel::pause()
+{
+    vInfo("Pause in VKernel!");
+    if(frameSmooth)
+    {
+        leaveVrMode();
+        frameSmooth->pause();
+    }
+}
+
+void VKernel::leaveVrMode()
 {
     vInfo("---------- VKernel Exit ----------");
 
     if (!isRunning)
     {
-        vWarn("Skipping ovr_LeaveVrMode: ovr already Destroyed");
+        vWarn("Skipping vkernel_LeaveVrMode: vkernel already Destroyed");
         return;
     }
 
-    // log the application name, version, activity, build, model, etc.
-    jmethodID logApplicationNameMethodId = JniUtils::GetStaticMethodID( Jni, VrLibClass, "logApplicationName", "(Landroid/app/Activity;)V" );
-    Jni->CallStaticVoidMethod( VrLibClass, logApplicationNameMethodId, ActivityObject );
+    // Remove SCHED_FIFO from the remaining threads.
+    SetSchedFifo( Jni, VrLibClass, ActivityObject, gettid(), SCHED_FIFO_PRIORITY_NONE );
+    if (frameSmooth->threadId() )
+    {
+        SetSchedFifo( Jni, VrLibClass, ActivityObject, frameSmooth->threadId(), SCHED_FIFO_PRIORITY_NONE );
+    }
+    //SetSchedFifo( ovr, ovr_GetDeviceManagerThreadTid(), SCHED_FIFO_PRIORITY_NONE );
 
-    jmethodID logApplicationVersionId = JniUtils::GetStaticMethodID( Jni, VrLibClass, "logApplicationVersion", "(Landroid/app/Activity;)V" );
-    Jni->CallStaticVoidMethod( VrLibClass, logApplicationVersionId, ActivityObject );
+    //resume common system setting
+    ReleaseVrSystemPerformance(Jni, VrLibClass, ActivityObject);
 
-    VString currentClassName = JniUtils::GetCurrentActivityName(Jni, ActivityObject);
-    vInfo("ACTIVITY =" << currentClassName);
-
-    delete frameSmooth;
-    frameSmooth = NULL;
-    isRunning = false;
+    vrEnableVRMode(Jni, VrLibClass, 0);
 
     getPowerLevelStateID = NULL;
 
     // Stop our vsync callbacks.
-    const jmethodID stopVsyncId = JniUtils::GetStaticMethodID( Jni, VrLibClass,
-                                                               "stopVsync", "(Landroid/app/Activity;)V" );
+    const jmethodID stopVsyncId = JniUtils::GetStaticMethodID( Jni, VrLibClass, "stopVsync", "(Landroid/app/Activity;)V" );
     Jni->CallStaticVoidMethod( VrLibClass, stopVsyncId, ActivityObject );
 
     // Unregister our receivers
-    const jmethodID stopReceiversId = JniUtils::GetStaticMethodID( Jni, VrLibClass,
-                                                                   "stopReceivers", "(Landroid/app/Activity;)V" );
+    const jmethodID stopReceiversId = JniUtils::GetStaticMethodID( Jni, VrLibClass, "stopReceivers", "(Landroid/app/Activity;)V" );
     Jni->CallStaticVoidMethod( VrLibClass, stopReceiversId, ActivityObject );
+
+    isRunning = false;
 }
 
+//zx_note 2016.8.9  @叶月林修改此处代码
 void VKernel::destroy(eExitType exitType)
 {
+    leaveVrMode();
     if ( exitType == EXIT_TYPE_FINISH )
     {
-        exit();
-
         //	const char * name = "finish";
         const char * name = "finishOnUiThread";
         const jmethodID mid = JniUtils::GetStaticMethodID( Jni, VrLibClass,
@@ -412,8 +489,6 @@ void VKernel::destroy(eExitType exitType)
     }
     else if ( exitType == EXIT_TYPE_FINISH_AFFINITY )
     {
-        exit();
-
         const char * name = "finishAffinityOnUiThread";
         const jmethodID mid = JniUtils::GetStaticMethodID( Jni, VrLibClass,
                                                            name, "(Landroid/app/Activity;)V" );
@@ -429,16 +504,21 @@ void VKernel::destroy(eExitType exitType)
     }
     else if ( exitType == EXIT_TYPE_EXIT )
     {
-        exit();
+        const jmethodID destoryScreenBrightnessToolId = JniUtils::GetStaticMethodID( Jni, VrLibClass, "destoryScreenBrightnessTool", "()V" );
+        Jni->CallStaticVoidMethod( VrLibClass, destoryScreenBrightnessToolId );
+
+        delete frameSmooth;
+        frameSmooth = NULL;
+
         vInfo("Calling exitType EXIT_TYPE_EXIT");
     }
 }
 
-ovrTimeWarpParms  VKernel::InitTimeWarpParms( const ovrWarpInit init, const unsigned int texId)
+VTimeWarpParms  VKernel::InitTimeWarpParms( const VWarpInit init, const unsigned int texId)
 {
     const VMatrix4f tanAngleMatrix = VMatrix4f::TanAngleMatrixFromFov( 90.0f );
 
-    ovrTimeWarpParms parms;
+    VTimeWarpParms parms;
     memset( &parms, 0, sizeof( parms ) );
 
     for ( int eye = 0; eye < MAX_WARP_EYES; eye++ )
@@ -508,7 +588,7 @@ int VKernel::getBuildVersion()
     return BuildVersionSDK;
 }
 
-void VKernel::doSmooth(const ovrTimeWarpParms * parms )
+void VKernel::doSmooth(const VTimeWarpParms * parms )
 {
     if(frameSmooth==NULL||!isRunning) return;
     frameSmooth->doSmooth(*parms);

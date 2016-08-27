@@ -2,21 +2,11 @@ apply plugin: 'com.android.model.application'
 
 model {
     android {
-        compileSdkVersion = 19
-        buildToolsVersion = '24'
-
         defaultConfig {
             applicationId = 'com.vrseen.panovideo'
-            minSdkVersion.apiLevel = 19
-            targetSdkVersion.apiLevel = 19
         }
         ndk {
-            platformVersion = 19
             moduleName ='panovideo'
-            toolchain = 'gcc'
-            stl = 'gnustl_shared'
-            cppFlags.add('-std=c++11')
-            ldLibs.addAll(['log', 'android', 'EGL', 'GLESv3', 'OpenMAXAL', 'OpenSLES', 'z'])
         }
         sources {
             main {

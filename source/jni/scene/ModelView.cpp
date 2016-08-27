@@ -17,13 +17,14 @@ const VVect3f	UpVector( 0.0f, 1.0f, 0.0f );
 const VVect3f	ForwardVector( 0.0f, 0.0f, -1.0f );
 const VVect3f	RightVector( 1.0f, 0.0f, 0.0f );
 
-OvrSceneView::OvrSceneView() :
+VSceneView::VSceneView() :
 //	FreeWorldModelOnChange( false ),
 //	SceneId( 0 ),
 	LoadedPrograms( false ),
 	MoveSpeed( 3.0f ),
 	Znear( 1.0f ),
 	Zfar( 1000.0f ),
+	aspect(1.0f),
 	ImuToEyeCenter( 0.06f, 0.0f, 0.03f ),
 	YawOffset( 0.0f ),
 	YawVelocity( 0.0f ),
@@ -36,31 +37,31 @@ OvrSceneView::OvrSceneView() :
 {
 }
 
-VMatrix4f OvrSceneView::CenterViewMatrix() const
+VMatrix4f VSceneView::CenterViewMatrix() const
 {
 	return ViewMatrix;
 }
 
-VMatrix4f OvrSceneView::ViewMatrixForEye( const int eye ) const
+VMatrix4f VSceneView::ViewMatrixForEye( const int eye ) const
 {
 	const float eyeOffset = ( eye ? -1 : 1 ) * 0.5f * ViewParms.interpupillaryDistance;
     return VMatrix4f::Translation( eyeOffset, 0.0f, 0.0f ) * ViewMatrix;
 }
 
-VMatrix4f OvrSceneView::ProjectionMatrixForEye( const int eye, const float fovDegrees ) const
+VMatrix4f VSceneView::ProjectionMatrixForEye( const int eye, const float fovDegrees ) const
 {
 	// We may want to make per-eye projection matrices if we move away from
 	// nearly-centered lenses.
     NV_UNUSED(eye);
-    return VMatrix4f::PerspectiveRH( VDegreeToRad( fovDegrees ), 1.0f, Znear, Zfar );
+    return VMatrix4f::PerspectiveRH( VDegreeToRad( fovDegrees ), aspect, Znear, Zfar );
 }
 
-VMatrix4f OvrSceneView::MvpForEye( const int eye, const float fovDegrees ) const
+VMatrix4f VSceneView::MvpForEye( const int eye, const float fovDegrees ) const
 {
 	return ProjectionMatrixForEye( eye, fovDegrees ) * ViewMatrixForEye( eye );
 }
 
-VMatrix4f OvrSceneView::DrawEyeView( const int eye, const float fovDegrees ) const
+VMatrix4f VSceneView::DrawEyeView( const int eye, const float fovDegrees ) const
 {
 	glEnable( GL_DEPTH_TEST );
 	glEnable( GL_CULL_FACE );
@@ -96,13 +97,13 @@ VMatrix4f OvrSceneView::DrawEyeView( const int eye, const float fovDegrees ) con
 }
 
 
-VVect3f OvrSceneView::CenterEyePos() const
+VVect3f VSceneView::CenterEyePos() const
 {
     return VVect3f( FootPos.x, FootPos.y + ViewParms.eyeHeight, FootPos.z );
 }
 
 
-VVect3f OvrSceneView::HeadModelOffset( float EyeRoll, float EyePitch, float EyeYaw, float HeadModelDepth, float HeadModelHeight )
+VVect3f VSceneView::HeadModelOffset( float EyeRoll, float EyePitch, float EyeYaw, float HeadModelDepth, float HeadModelHeight )
 {
 	// head-on-a-stick model
     const VMatrix4f rollPitchYaw = VMatrix4f::RotationY( EyeYaw )
@@ -116,7 +117,7 @@ VVect3f OvrSceneView::HeadModelOffset( float EyeRoll, float EyePitch, float EyeY
 	return lastHeadModelOffset;
 }
 
-void OvrSceneView::UpdateViewMatrix(const VFrame vrFrame )
+void VSceneView::UpdateViewMatrix(const VFrame vrFrame )
 {
 	// Experiments with position tracking
 	const bool	useHeadModel = !AllowPositionTracking ||
@@ -145,7 +146,7 @@ void OvrSceneView::UpdateViewMatrix(const VFrame vrFrame )
 	// latency on stick controls to avoid a bounce-back.
 	YawOffset -= YawVelocity * dt;
 
-    /*if ( !( vrFrame.OvrStatus & Status_OrientationTracked ) )
+    /*if ( !( vrFrame.VStatus & Status_OrientationTracked ) )
     {
         PitchOffset -= yawSpeed * vrFrame.Input.sticks[1][1] * dt;
         YawVelocity = yawSpeed * vrFrame.Input.sticks[1][0];
@@ -168,7 +169,7 @@ void OvrSceneView::UpdateViewMatrix(const VFrame vrFrame )
 	// If the sensor isn't plugged in, allow right stick up/down
 	// to adjust pitch, which can be useful for debugging.  Never
 	// do this when head tracking
-    /*if ( !( vrFrame.OvrStatus & Status_OrientationTracked ) )
+    /*if ( !( vrFrame.VStatus & Status_OrientationTracked ) )
 	{
 		EyePitch += PitchOffset;
     }*/
@@ -242,7 +243,7 @@ void OvrSceneView::UpdateViewMatrix(const VFrame vrFrame )
     ViewMatrix = VMatrix4f::LookAtRH( ShiftedEyePos, ShiftedEyePos + forward, up );
 }
 
-void OvrSceneView::Frame( const VViewSettings viewParms_, const VFrame vrFrame,
+void VSceneView::Frame( const VViewSettings viewParms_, const VFrame vrFrame,
         VMatrix4f & timeWarpParmsExternalVelocity, const long long supressModelsWithClientId )
 {
     NV_UNUSED(supressModelsWithClientId);
