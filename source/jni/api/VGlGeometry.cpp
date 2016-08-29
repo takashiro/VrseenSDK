@@ -147,6 +147,9 @@ void VGlGeometry::updateGlGeometry( const VertexAttribs & attribs )
 
 void VGlGeometry::drawElements() const
 {
+    if (textureId) {
+        glBindTexture(GL_TEXTURE_2D,textureId);
+    }
     VEglDriver::glBindVertexArrayOES( vertexArrayObject );
     glDrawElements( GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT , NULL );
 }
@@ -161,11 +164,14 @@ void VGlGeometry::destroy()
       if(vertexBuffer != 0)
     glDeleteBuffers( 1, &vertexBuffer );
 
+    if(textureId!=0) glDeleteTextures(1,&textureId);
+
     indexBuffer = 0;
     vertexBuffer = 0;
     vertexArrayObject = 0;
     vertexCount = 0;
     indexCount = 0;
+    textureId = 0;
 }
 
 
