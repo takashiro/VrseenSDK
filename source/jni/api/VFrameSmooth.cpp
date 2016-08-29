@@ -290,6 +290,90 @@ ANativeWindow* GetNativeWindow( JNIEnv * jni, jobject activity )
 }
 
 
+//ChooseColorConfig
+
+#define EGL_OPENGL_ES3_BIT_KHR      0x0040
+EGLConfig ChooseColorConfigEx2( const EGLDisplay display, const int redBits,
+		const int greeBits, const int blueBits, const int depthBits, const int samples, const bool pbuffer )
+{
+
+	// DumpEglConfigs( display );
+
+	// We do NOT want to use eglChooseConfig, because the Android EGL code pushes in
+	// multisample flags behind our back if the user has selected the "force 4x MSAA"
+	// option in settings, and that is completely wasted for our warp target.
+	static const int MAX_CONFIGS = 1024;
+	EGLConfig 	configs[MAX_CONFIGS];
+	EGLint  	numConfigs = 0;
+
+	if ( EGL_FALSE == eglGetConfigs( display,
+			configs, MAX_CONFIGS, &numConfigs ) ) {
+		vInfo( "eglGetConfigs() failed" );
+		return NULL;
+	}
+	vInfo( "eglGetConfigs() = "<<numConfigs << "configs" );
+
+	// We don't want a depth/stencil buffer
+	const EGLint configAttribs[] = {
+			EGL_BLUE_SIZE,  	blueBits,
+			EGL_GREEN_SIZE, 	greeBits,
+			EGL_RED_SIZE,   	redBits,
+			EGL_DEPTH_SIZE,   	depthBits,
+//			EGL_STENCIL_SIZE,  	0,
+			EGL_SAMPLES,		samples,
+			EGL_NONE
+	};
+
+	// look for OpenGL ES 3.0 configs first, then fall back to 2.0
+	for ( int esVersion = 3 ; esVersion >= 2 ; esVersion-- )
+	{
+		for ( int i = 0; i < numConfigs; i++ )
+		{
+			EGLint	value = 0;
+
+			// EGL_RENDERABLE_TYPE is a bit field
+			eglGetConfigAttrib( display, configs[i], EGL_RENDERABLE_TYPE, &value );
+
+			if ( ( esVersion == 2 ) && ( value & EGL_OPENGL_ES2_BIT ) != EGL_OPENGL_ES2_BIT )
+			{
+				continue;
+			}
+			if ( ( esVersion == 3 ) && ( value & EGL_OPENGL_ES3_BIT_KHR ) != EGL_OPENGL_ES3_BIT_KHR )
+			{
+				continue;
+			}
+
+			// For our purposes, the pbuffer config also needs to be compatible with
+			// normal window rendering so it can share textures with the window context.
+			// I am unsure if it would be portable to always request EGL_PBUFFER_BIT, so
+			// I only do it on request.
+			eglGetConfigAttrib( display, configs[i], EGL_SURFACE_TYPE , &value );
+			const int surfs = EGL_WINDOW_BIT | ( pbuffer ? EGL_PBUFFER_BIT : 0 );
+			if ( ( value & surfs ) != surfs )
+			{
+				continue;
+			}
+
+			int	j = 0;
+			for ( ; configAttribs[j] != EGL_NONE ; j += 2 )
+			{
+				EGLint	value = 0;
+				eglGetConfigAttrib( display, configs[i], configAttribs[j], &value );
+				if ( value != configAttribs[j+1] )
+				{
+					break;
+				}
+			}
+			if ( configAttribs[j] == EGL_NONE )
+			{
+				vInfo( "Got an ES " <<esVersion<< "renderable config: "<<(int)configs[i]);
+				return configs[i];
+			}
+		}
+	}
+	return NULL;
+}
+
 //=========================================================================================
 
 // If lensCentered, the coordinates will be square and extend past the left and
@@ -469,6 +553,11 @@ struct VFrameSmooth::Private
         // 初始化smooth线程的gl状态
         m_eglStatus.updateDisplay();
 
+        //If ANativeWindow exists meaning UnityApp Running!
+        if (VKernel::instance()->m_NativeWindow)
+        {
+        	eglInitialize(m_eglStatus.m_display, NULL, NULL);
+        }
 
         JavaVM *javaVM = JniUtils::GetJavaVM();
         javaVM->AttachCurrentThread(&m_jni, nullptr);
@@ -520,230 +609,9 @@ struct VFrameSmooth::Private
             vInfo( "Share context eglConfig has" <<samples<< " samples -- should be 0");
         }
 
-        //TODO::Compare the EGLConfig which create the EGLSurface
-        vInfo("<<---EGLConfig attributes list start--->>");
-        EGLint value = 0;
 
-        eglGetConfigAttrib( m_eglStatus.m_display, m_eglStatus.m_config, EGL_ALPHA_SIZE, &value);
-        vInfo("EGL_ALPHA_SIZE : " <<value);
-        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_ALPHA_MASK_SIZE, &value);
-        vInfo("EGL_ALPHA_MASK_SIZE : "<<value);
 
-        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_BIND_TO_TEXTURE_RGB, &value);
-        if (value==EGL_TRUE)
-        {
-        	vInfo("EGL_BIND_TO_TEXTURE_RGB : TRUE");
-        }
-        else
-        	vInfo("EGL_BIND_TO_TEXTURE_RGB : false");
 
-        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_BIND_TO_TEXTURE_RGBA, &value);
-        if (value==EGL_TRUE)
-		{
-			vInfo("EGL_BIND_TO_TEXTURE_RGBA : TRUE");
-		}
-		else
-			vInfo("EGL_BIND_TO_TEXTURE_RGBA : false");
-
-        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_BLUE_SIZE, &value);
-        vInfo("EGL_BLUE_SIZE : " << value);
-
-        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_BUFFER_SIZE, &value);
-        vInfo("EGL_BUFFER_SIZE : " << value);
-
-        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_COLOR_BUFFER_TYPE, &value);
-        if (value == EGL_RGB_BUFFER)
-        {
-        	vInfo("EGL_COLOR_BUFFER_TYPE : EGL_RGB_BUFFER");
-        }
-        else
-        {
-        	vInfo("EGL_COLOR_BUFFER_TYPE : EGL_LUMINANCE_BUFFER");
-        }
-
-        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_CONFIG_CAVEAT, &value);
-        if (value == EGL_SLOW_CONFIG)
-        {
-        	vInfo("EGL_CONFIG_CAVEAT : EGL_SLOW_CONFIG");
-        }
-        else if (value == EGL_NON_CONFORMANT_CONFIG)
-        {
-        	vInfo("EGL_CONFIG_VAVEAT : EGL_NON_CONFORMANT_CONFIG");
-        }
-        else
-        {
-        	vInfo("EGL_CONFIG_VAVEAT : EGL_NONE");
-        }
-
-        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_CONFIG_ID, &value);
-        vInfo("EGL_CONFIG_ID : " << value);
-
-        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_CONFORMANT, &value);
-        vInfo("EGL_CONFORMANT : " << value);
-
-        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_DEPTH_SIZE, &value);
-        vInfo("EGL_DEPTH_SIZE : "<< value);
-
-        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_GREEN_SIZE, &value);
-        vInfo("EGL_GREEN_SIZE : " << value);
-
-        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_LEVEL, &value);
-        vInfo("EGL_LEVEL : " << value);
-
-        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_LUMINANCE_SIZE, &value);
-        vInfo("EGL_LUMINANCE_SIZE : " << value);
-
-        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_MAX_PBUFFER_WIDTH, &value);
-        vInfo("EGL_MAX_PBUFFER_WIDTH : " << value);
-
-        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_MAX_PBUFFER_HEIGHT, &value);
-        vInfo("EGL_MAX_PBUFFER_HEIGHT : " << value);
-
-        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_MAX_SWAP_INTERVAL, &value);
-        vInfo("EGL_MAX_SWAP_INTERVAL : " << value);
-
-        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_MIN_SWAP_INTERVAL, &value);
-        vInfo("EGL_MIN_SWAP_INTERVAL : " << value);
-
-        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_NATIVE_RENDERABLE, &value);
-        if(value == EGL_TRUE)
-        {
-        	vInfo("EGL_NATIVE_RENDERABLE : TRUE");
-        }
-        else
-        {
-        	vInfo("EGL_NATIVE_RENDERABLE : FALSE");
-        }
-
-        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_NATIVE_VISUAL_ID, &value);
-        vInfo("EGL_NATIVE_VISUAL_ID : " << value);
-
-        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_NATIVE_VISUAL_TYPE, &value);
-        vInfo("EGL_NATIVE_VISUAL_TYPE : " << value);
-
-        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_RED_SIZE, &value);
-        vInfo("EGL_RED_SIZE : " << value);
-
-        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_RENDERABLE_TYPE, &value);
-        vInfo("EGL_RENDERABLE_TYPE : " << value);
-
-        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_SAMPLE_BUFFERS, &value);
-        vInfo("EGL_SAMPLE_BUFFERS : " << value);
-
-        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_SAMPLES, &value);
-        vInfo("EGL_SAMPLES : "<< value);
-
-        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_STENCIL_SIZE, &value);
-        vInfo("EGL_STENCIL_SIZE : "<< value);
-
-        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_SURFACE_TYPE, &value);
-        vInfo("EGL_SURFACE_TYPE : "<< value);
-
-        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_TRANSPARENT_TYPE, &value);
-        vInfo("EGL_TRANSPARENT_TYPE ： " <<value);
-
-        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_TRANSPARENT_RED_VALUE, &value);
-        vInfo("EGL_TRANSPARENT_RED_VALUE" << value);
-
-        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_TRANSPARENT_GREEN_VALUE, &value);
-        vInfo("EGL_TRANSPARENT_GREEN_VALUE" << value);
-
-        eglGetConfigAttrib(m_eglStatus.m_display, m_eglStatus.m_config, EGL_TRANSPARENT_BLUE_VALUE, &value);
-        vInfo("EGL_TRANSPARENT_BLUE_VALUE" << value);
-
-        vInfo("<<---EGLConfig attributes list END--->>");
-        //END THE COMPARE
-
-        //TODO::EGLSurface attributes
-        EGLDisplay tmpdisplay = m_eglStatus.m_display;
-
-        EGLSurface tmpsurface = m_eglMainThreadSurface;
-
-        eglQuerySurface(tmpdisplay, tmpsurface, EGL_CONFIG_ID, &value);
-        vInfo("EGL_CONFIG_ID : "<< value);
-
-        eglQuerySurface(tmpdisplay, tmpsurface, EGL_HEIGHT, &value);
-        vInfo("EGL_HEIGHT : " << value);
-
-        eglQuerySurface(tmpdisplay, tmpsurface, EGL_HORIZONTAL_RESOLUTION, &value);
-        vInfo("EGL_HORIZONTAL_RESOLUTION : " << value);
-
-        eglQuerySurface(tmpdisplay, tmpsurface, EGL_LARGEST_PBUFFER, &value);
-        vInfo("EGL_LARGEST_PBUFFER :" << value);
-
-        eglQuerySurface(tmpdisplay, tmpsurface, EGL_MIPMAP_LEVEL, &value);
-        vInfo("EGL_MIPMAP_LEVEL : " << value);
-
-        eglQuerySurface(tmpdisplay, tmpsurface, EGL_MIPMAP_TEXTURE, &value);
-        if (value == EGL_TRUE)
-        {
-        	vInfo("EGL_MIPMAP_TEXTURE : TRUE" );
-        }
-        else
-        	vInfo("EGL_MIPMAP_TEXTURE : FALSE");
-
-        eglQuerySurface(tmpdisplay, tmpsurface, EGL_MULTISAMPLE_RESOLVE, &value);
-        if (value == EGL_MULTISAMPLE_RESOLVE_DEFAULT )
-        {
-        	vInfo("EGL_MULTISAMPLE_RESOLVE : EGL_MULTISAMPLE_RESOLVE_DEFAULT ");
-        }
-        else
-        	vInfo("EGL_MULTISAMPLE_RESOLVE : EGL_MULTISAMPLE_RESOLVE_BOX");
-
-        eglQuerySurface(tmpdisplay, tmpsurface, EGL_PIXEL_ASPECT_RATIO, &value);
-        vInfo("EGL_PIXEL_ASPECT_RATIO : " << value);
-
-        eglQuerySurface(tmpdisplay, tmpsurface, EGL_RENDER_BUFFER, &value);
-        if (value == EGL_BACK_BUFFER)
-        {
-        	vInfo("EGL_RENDER_BUFFER : EGL_BACK_BUFFER");
-        }
-		else if (value == EGL_SINGLE_BUFFER)
-		{
-			vInfo("EGL_RENDER_BUFFER : EGL_SINGLE_BUFFER");
-		}
-		else
-			vInfo("EGL_RENDER_BUFFER : OTHER_BUFFER");
-
-        eglQuerySurface(tmpdisplay, tmpsurface, EGL_SWAP_BEHAVIOR, &value);
-        if (value == EGL_BUFFER_PRESERVED)
-        {
-        	vInfo("EGL_SWAP_BEHAVIOR : EGL_BUFFER_PRESERVED");
-        }
-        else if (value == EGL_BUFFER_DESTROYED)
-        {
-        	vInfo("EGL_SWAP_BEHAVIOR : EGL_BUFFER_DESTROYED");
-        }
-
-        eglQuerySurface(tmpdisplay, tmpsurface, EGL_TEXTURE_FORMAT, &value);
-        if(value == EGL_NO_TEXTURE)
-        {
-        	vInfo("EGL_TEXTURE_FORMAT : EGL_NO_TEXTURE");
-        }
-        else if (value == EGL_TEXTURE_RGB)
-        {
-        	vInfo("EGL_TEXTURE_FORMAT : EGL_TEXTURE_RGB");
-        }
-        else if (value == EGL_TEXTURE_RGBA)
-        {
-        	vInfo("EGL_TEXTURE_FORMAT : EGL_TEXTURE_RGBA");
-        }
-
-        eglQuerySurface(tmpdisplay , tmpsurface, EGL_TEXTURE_TARGET, &value);
-        if (value == EGL_NO_TEXTURE)
-        {
-        	vInfo("EGL_TEXTURE_TARGET : EGL_NO_TEXTURE");
-        }
-        else if (value == EGL_TEXTURE_2D)
-        {
-        	vInfo("EGL_TEXTURE_TARGET : EGL_TEXTURE_2D");
-        }
-
-        eglQuerySurface(tmpdisplay, tmpsurface, EGL_VERTICAL_RESOLUTION, &value);
-        vInfo("EGL_VERTICAL_RESOLUTION : " << value);
-
-        eglQuerySurface(tmpdisplay, tmpsurface, EGL_WIDTH, &value);
-        vInfo("EGL_WIDTH : " << value);
 
         // See if we have sRGB_write_control extension
         m_hasEXT_sRGB_write_control = m_eglStatus.glIsExtensionString( "GL_EXT_sRGB_write_control");
@@ -815,18 +683,32 @@ struct VFrameSmooth::Private
             {
             	vInfo("Can't destroy mainthreadsurface!");
             }
+            m_eglMainThreadSurface = EGL_NO_SURFACE;
+
+            EGLConfig config = ChooseColorConfigEx2( m_eglStatus.m_display, 8, 8, 8, 0, 0, true /* pBuffer compatible */ );
+
+            if (config == 0)
+            {
+            	vInfo("Can't get Config!");
+            }
+
+            EGLint format;
+			eglGetConfigAttrib(m_eglStatus.m_display, config, EGL_NATIVE_VISUAL_ID, &format);
+			ANativeWindow_setBuffersGeometry(VKernel::instance()->m_NativeWindow, 0, 0, format);
 
             EGLint attribs[100];
             int nums = 0;
             attribs[nums++] = EGL_RENDER_BUFFER;
-            attribs[nums++] = EGL_BACK_BUFFER;
+            attribs[nums++] = EGL_SINGLE_BUFFER;
             attribs[nums++] = EGL_NONE;
 
-            m_eglMainThreadSurface = eglCreateWindowSurface(m_eglStatus.m_display, m_eglStatus.m_config, VKernel::instance()->m_NativeWindow, attribs);
+            m_eglMainThreadSurface = eglCreateWindowSurface(m_eglStatus.m_display, config, VKernel::instance()->m_NativeWindow, attribs);
             if (m_eglMainThreadSurface == EGL_NO_SURFACE)
             {
             	vInfo("Can't create mainthreadsurface!")
             }
+
+            m_eglStatus.m_config = config;
             // The thread will exit when this is set true.
             m_shutdownRequest.setState( false );
 
@@ -1224,6 +1106,7 @@ void VFrameSmooth::Private::warpThreadInit()
         }
     }
 
+
     // Make the context current on the window, so no more makeCurrent calls will be needed
     vInfo( "eglMakeCurrent on " <<m_eglMainThreadSurface );
     if ( eglMakeCurrent( m_eglStatus.m_display, m_eglMainThreadSurface,
@@ -1232,6 +1115,10 @@ void VFrameSmooth::Private::warpThreadInit()
         vFatal( "eglMakeCurrent failed");
     }
 
+    if (m_wantSingleBuffer)
+    	vInfo("wantsinglebuffer!")
+	else
+		vInfo("no wantsinglebuffer!");
     m_screen.initForCurrentSurface( m_jni, m_wantSingleBuffer,m_buildVersionSDK);
 
     // create the framework graphics on this thread

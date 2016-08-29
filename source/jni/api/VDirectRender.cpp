@@ -586,8 +586,8 @@ void DirectRender::initForCurrentSurface( JNIEnv * jni, bool wantFrontBuffer_,in
     {
         m_surfaceManager.init( jni );
 
-        m_gvrFrontbufferExtension = m_surfaceManager.setFrontBuffer( windowSurface, m_wantFrontBuffer );
-
+        //m_gvrFrontbufferExtension = m_surfaceManager.setFrontBuffer( windowSurface, m_wantFrontBuffer );
+        m_gvrFrontbufferExtension = true;
         //TODO::Compare the EGLConfig which create the EGLSurface
         		vInfo("<<---EGLConfig attributes list start--->>");
         		EGLint value = 0;

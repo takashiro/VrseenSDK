@@ -238,53 +238,122 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 	public static boolean isDeveloperMode( final Activity act ) {
 		return Settings.Global.getInt( act.getContentResolver(), "vrmode_developer_mode", 0 ) != 0;
 	}
+	
+	
+	public static int vrEnableVRModeStatic(final Activity activity, int mode) {
+		Log.v(TAG, "********vrEnableVRModeStatic******");
+
+		// use ZTE VR instead, in future we will call buildModelService
+		android.app.IZtevrManager ztevr = (android.app.IZtevrManager) activity
+				.getSystemService(android.app.IZtevrManager.VR_MANAGER);
+		if (ztevr == null) {
+			Log.d(TAG, "IVRManager not found");
+			return 0;
+		}
+		
+		try {
+			if (ztevr.vrenableVRMode(mode)) {
+				Log.d(TAG, "IVRManager vrenableVRMode " );
+				return 1;
+			} else {
+				Log.d(TAG, "IVRManager failed to vrenableVRMode");
+				return -1;
+			}
+		} catch (NoSuchMethodError e) {
+				Log.d(TAG, "vrenableVRMode does not exist");
+				return -2;
+		}
+	}
 
 	public static int setSchedFifoStatic( final Activity activity, int tid, int rtPriority ) {
 		Log.d(TAG, "setSchedFifoStatic tid:" + tid + " pto:" + rtPriority );
 
-		android.app.IVRManager vr = (android.app.IVRManager)activity.getSystemService(android.app.IVRManager.VR_MANAGER);
+//		android.app.IVRManager vr = (android.app.IVRManager)activity.getSystemService(android.app.IVRManager.VR_MANAGER);
+//		
+//		if ( vr == null ) {
+//			Log.d(TAG, "VRManager was not found" );
+//			return -1;
+//		}
+//
+//		try
+//		{
+//			try
+//			{
+//				if ( vr.setThreadSchedFifo(activity.getPackageName(), android.os.Process.myPid(), tid, rtPriority) ) {
+//					Log.d(TAG, "VRManager set thread priority to " + rtPriority );
+//					return 0;
+//				} else {
+//					Log.d(TAG, "VRManager failed to set thread priority" );
+//					return -1;
+//				}
+//			} catch ( NoSuchMethodError e ) {
+//				Log.d(TAG, "Thread priority API does not exist");
+//				return -2;
+//			}
+//		} catch( SecurityException s ) {
+//			Log.d(TAG, "Thread priority security exception");
+//
+//    		activity.runOnUiThread( new Runnable()
+//    		{
+//			 @Override
+//    			public void run()
+//    			{
+//					Toast toast = Toast.makeText( activity.getApplicationContext(),
+//							"Security exception: make sure your application is signed for VR.",
+//							Toast.LENGTH_LONG );
+//					toast.show();
+//				}
+//			} );
+//			// if we don't wait here, the app can exit before we see the toast
+//			long startTime = System.currentTimeMillis();
+//			do {
+//			} while( System.currentTimeMillis() - startTime < 5000 );
+//
+//			return -3;
+//		}
 		
-		if ( vr == null ) {
-			Log.d(TAG, "VRManager was not found" );
-			return -1;
-		}
-
-		try
-		{
-			try
-			{
-				if ( vr.setThreadSchedFifo(activity.getPackageName(), android.os.Process.myPid(), tid, rtPriority) ) {
-					Log.d(TAG, "VRManager set thread priority to " + rtPriority );
+		// use ZTE VR instead, in future we will call buildModelService
+				android.app.IZtevrManager ztevr = (android.app.IZtevrManager) activity
+						.getSystemService(android.app.IZtevrManager.VR_MANAGER);
+				if (ztevr == null) {
+					Log.d(TAG, "IZtevrManager not found");
 					return 0;
-				} else {
-					Log.d(TAG, "VRManager failed to set thread priority" );
-					return -1;
 				}
-			} catch ( NoSuchMethodError e ) {
-				Log.d(TAG, "Thread priority API does not exist");
-				return -2;
-			}
-		} catch( SecurityException s ) {
-			Log.d(TAG, "Thread priority security exception");
 
-    		activity.runOnUiThread( new Runnable()
-    		{
-			 @Override
-    			public void run()
-    			{
-					Toast toast = Toast.makeText( activity.getApplicationContext(),
-							"Security exception: make sure your application is signed for VR.",
-							Toast.LENGTH_LONG );
-					toast.show();
+				try {
+					try {
+						if (ztevr.setThreadSchedFifo(activity.getPackageName(),
+								android.os.Process.myPid(), tid, rtPriority + 10)) {
+							Log.d(TAG, "IVRSeenManager priority set to " + rtPriority);
+							return 0;
+						} else {
+							Log.d(TAG, "IVRSeenManager failed to set priority");
+							return -1;
+						}
+					} catch (NoSuchMethodError e) {
+						Log.d(TAG, "Thread priority API does not exist");
+						return -2;
+					}
+				} catch (SecurityException s) {
+					Log.d(TAG, "Priority security exception");
+
+					activity.runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							Toast toast = Toast.makeText(
+									activity.getApplicationContext(),
+									"Security exception: make sure your application is signed for VR.",
+									Toast.LENGTH_LONG);
+							toast.show();
+						}
+					});
+					// if we don't wait here, the app can exit before we see the toast
+					long startTime = System.currentTimeMillis();
+					do {
+					} while (System.currentTimeMillis() - startTime < 5000);
+
+					return -3;
 				}
-			} );
-			// if we don't wait here, the app can exit before we see the toast
-			long startTime = System.currentTimeMillis();
-			do {
-			} while( System.currentTimeMillis() - startTime < 5000 );
-
-			return -3;
-		}
 	}
 
 	static int [] defaultClockLevels = { -1, -1, -1, -1 };
@@ -313,45 +382,87 @@ public class VrLib implements android.view.Choreographer.FrameCallback,
 	public static int [] setSystemPerformanceStatic( Activity activity,
 			int cpuLevel, int gpuLevel )
 	{
-		Log.d(TAG, "setSystemPerformance cpu: " + cpuLevel + " gpu: " + gpuLevel);
+//		Log.d(TAG, "setSystemPerformance cpu: " + cpuLevel + " gpu: " + gpuLevel);
+//
+//		android.app.IVRManager vr = (android.app.IVRManager)activity.getSystemService(android.app.IVRManager.VR_MANAGER);
+//		if ( vr == null ) {
+//			Log.d(TAG, "VRManager was not found");
+//			return defaultClockFreq;
+//		}
+//
+//		// lock the frequency
+//		try
+//		{
+//			int[] values = vr.SetVrClocks( activity.getPackageName(), cpuLevel, gpuLevel );
+//			Log.d(TAG, "SetVrClocks: {CPU CLOCK, GPU CLOCK, POWERSAVE CPU CLOCK, POWERSAVE GPU CLOCK}" );
+//			for ( int i = 0; i < values.length; i++ ) {
+//				Log.d(TAG, "-> " + "/ " + values[i]);
+//			}
+//			return values;
+//		} catch( NoSuchMethodError e ) {
+//			// G906S api differs from Note4
+//			int[] values = { 0, 0, 0, 0 };
+//			boolean success = vr.setFreq( activity.getPackageName(), cpuLevel, gpuLevel );
+//			Log.d(TAG, "setFreq returned " + success );
+//			return values;
+//		}
+		// use ZTE VR instead, in future we will call buildModelService
+				Log.v(TAG, "*************set clock************");
+				
+				android.app.IZtevrManager ztevr = (android.app.IZtevrManager) activity
+						.getSystemService(android.app.IZtevrManager.VR_MANAGER);
+				if (ztevr == null) {
+					Log.d(TAG, "IVRSeenManager not found");
+					return defaultClockFreq;
+				}
 
-		android.app.IVRManager vr = (android.app.IVRManager)activity.getSystemService(android.app.IVRManager.VR_MANAGER);
-		if ( vr == null ) {
-			Log.d(TAG, "VRManager was not found");
-			return defaultClockFreq;
-		}
-
-		// lock the frequency
-		try
-		{
-			int[] values = vr.SetVrClocks( activity.getPackageName(), cpuLevel, gpuLevel );
-			Log.d(TAG, "SetVrClocks: {CPU CLOCK, GPU CLOCK, POWERSAVE CPU CLOCK, POWERSAVE GPU CLOCK}" );
-			for ( int i = 0; i < values.length; i++ ) {
-				Log.d(TAG, "-> " + "/ " + values[i]);
-			}
-			return values;
-		} catch( NoSuchMethodError e ) {
-			// G906S api differs from Note4
-			int[] values = { 0, 0, 0, 0 };
-			boolean success = vr.setFreq( activity.getPackageName(), cpuLevel, gpuLevel );
-			Log.d(TAG, "setFreq returned " + success );
-			return values;
-		}
+				// lock the frequency
+				try {
+					int[] values = { 0, 0, 0, 0 };
+					if( cpuLevel <= 1 && gpuLevel <= 1)
+					{
+						ztevr.vrdefaultFreq();
+						Log.v(TAG, "********set to default freq **********");
+					}
+					else
+					{
+						ztevr.vrfullFreq();
+						values[0] = values[1] = values[2] = values[3] = 3;
+						Log.v(TAG, "***********set to full freq **********");
+					}
+					return values;
+				} catch (NoSuchMethodError e) {
+					// G906S api differs from Note4
+					int[] values = { 0, 0, 0, 0 };
+					Log.d(TAG, "failed to set frequency returned ");
+					return values;
+				}
 	}
 
 	public static void releaseSystemPerformanceStatic( Activity activity )
 	{
-		Log.d(TAG, "releaseSystemPerformanceStatic");
-
-		android.app.IVRManager vr = (android.app.IVRManager)activity.getSystemService(android.app.IVRManager.VR_MANAGER);
-		if ( vr == null ) {
-			Log.d(TAG, "VRManager was not found");
-			return;
-		}
-
-		// release the frequency locks
-		vr.relFreq( activity.getPackageName() );
-		Log.d(TAG, "Releasing frequency lock");
+//		Log.d(TAG, "releaseSystemPerformanceStatic");
+//
+//		android.app.IVRManager vr = (android.app.IVRManager)activity.getSystemService(android.app.IVRManager.VR_MANAGER);
+//		if ( vr == null ) {
+//			Log.d(TAG, "VRManager was not found");
+//			return;
+//		}
+//
+//		// release the frequency locks
+//		vr.relFreq( activity.getPackageName() );
+//		Log.d(TAG, "Releasing frequency lock");
+		// use ZTE VR instead, in future we will call buildModelService
+				Log.v(TAG, "*************vrdefaultFreq************");
+				android.app.IZtevrManager ztevr = (android.app.IZtevrManager) activity
+						.getSystemService(android.app.IZtevrManager.VR_MANAGER);
+				if (ztevr == null) {
+					Log.d(TAG, "IVRSeenManager not found");
+					return;
+				}
+				
+				ztevr.vrdefaultFreq();
+				Log.d(TAG, "*******************release to default freq **********");
 	}
 
 	public static int getPowerLevelState( Activity act ) {

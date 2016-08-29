@@ -95,6 +95,9 @@ void ovr_OnLoad(JavaVM * JavaVm_, JNIEnv *jni)
 
     VrLibClass = JniUtils::GetGlobalClassReference( jni, "com/vrseen/VrLib" );
 
+    //zx_note
+	//VKernel::instance()->VrEnableVRModeStaticId = jni->GetMethodID( VrLibClass, "vrEnableVRModeStatic", "(Landroid/app/Activity;I)I");
+
     // Get the BuildVersion SDK
     jclass versionClass = jni->FindClass( "android/os/Build$VERSION" );
     if ( versionClass != 0 )
@@ -190,6 +193,31 @@ static void SetVrSystemPerformance(JNIEnv * VrJni, jclass vrActivityClass, int c
     jintArray jintClocks = (jintArray) VrJni->CallStaticObjectMethod(vrActivityClass, setSystemPerformanceId, ActivityObject, cpuLevel, gpuLevel);
 
     vAssert(VrJni->GetArrayLength(jintClocks) == 4);		//  {CPU CLOCK, GPU CLOCK, POWERSAVE CPU CLOCK, POWERSAVE GPU CLOCK}
+}
+
+//zx_note
+static void vrEnableVRMode(int mode )
+{
+	// Clear any previous exceptions.
+	// NOTE: This can be removed once security exception handling is moved to Java IF.
+
+	if (Jni->ExceptionOccurred() )
+	{
+		Jni->ExceptionClear();
+		vInfo( "vrEnableVRMode: Enter: JNI Exception" );
+	}
+
+	vInfo( "********vrEnableVRMode***********" );
+
+	const jmethodID vrEnableVRModeStaticId =
+			Jni->GetStaticMethodID(VrLibClass, "vrEnableVRModeStatic", "(Landroid/app/Activity;I)I" );
+
+	if (!vrEnableVRModeStaticId)
+	{
+		vInfo("Failed to load MethodID");
+	}
+
+	Jni->CallStaticIntMethod(VrLibClass, vrEnableVRModeStaticId, VKernel::instance()->m_ActivityObject, mode);
 }
 
 class VKernelModule : public VModule
@@ -320,6 +348,7 @@ void VKernel::run()
         vInfo("Window Surface Size: [" << windowSurfaceWidth << windowSurfaceHeight << "]");
     }
 
+
     // Based on sensor ID and platform, determine the HMD
     UpdateHmdInfo();
 
@@ -350,6 +379,7 @@ void VKernel::run()
         Jni->ExceptionClear();
         vInfo("Cleared JNI exception");
     }
+    vrEnableVRMode(1);
 
     //TODO::need to improve
     //bool wantsinglebuffer = VOsBuild::getString(VOsBuild::Model) == "ZTE A2017";
@@ -390,7 +420,7 @@ void VKernel::exit()
     isRunning = false;
 
     getPowerLevelStateID = NULL;
-
+    vrEnableVRMode(0);
     // Stop our vsync callbacks.
     const jmethodID stopVsyncId = JniUtils::GetStaticMethodID( Jni, VrLibClass,
                                                                "stopVsync", "(Landroid/app/Activity;)V" );

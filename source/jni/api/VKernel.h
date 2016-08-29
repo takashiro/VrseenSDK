@@ -199,6 +199,7 @@ public:
     bool asyncSmooth;
     jobject m_ActivityObject;
     ANativeWindow *m_NativeWindow;
+    jmethodID	VrEnableVRModeStaticId;
 
     void doSmooth(const ovrTimeWarpParms * parms );
 
