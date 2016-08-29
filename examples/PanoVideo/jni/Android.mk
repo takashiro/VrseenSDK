@@ -1,12 +1,13 @@
 LOCAL_PATH := $(call my-dir)
 
-include $(CLEAR_VARS)					# clean everything up to prepare for a module
-include ../../source/import_vrlib.mk	# import VRLib for this module.  Do NOT call $(CLEAR_VARS) until after building your module.
-										# use += instead of := when defining the following variables: LOCAL_LDLIBS, LOCAL_CFLAGS, LOCAL_C_INCLUDES, LOCAL_STATIC_LIBRARIES 
+PROJECT_PATH := $(LOCAL_PATH)/../../../
 
-include ../../source/cflags.mk
+include $(CLEAR_VARS)
 
-LOCAL_MODULE    := panovideo
-LOCAL_SRC_FILES  := PanoVideo.cpp
+include $(PROJECT_PATH)/source/import_vrlib.mk
+include $(PROJECT_PATH)/source/cflags.mk
 
-include $(BUILD_SHARED_LIBRARY)			# start building based on everything since CLEAR_VARS
+LOCAL_MODULE := panovideo
+LOCAL_SRC_FILES := PanoVideo.cpp
+
+include $(BUILD_SHARED_LIBRARY)

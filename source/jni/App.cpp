@@ -38,6 +38,7 @@
 #include "VGui.h"
 #include "VGuiText.h"
 #include "VRectangle.h"
+#include "VModel.h"
 
 //#define TEST_TIMEWARP_WATCHDOG
 #define EGL_PROTECTED_CONTENT_EXT 0x32c0
@@ -266,6 +267,7 @@ struct App::Private
     const std::list<VModule *> &modules;
 
     VTimeWarpParms	swapParms;
+    VArray<VModel*> models;
 
     Private(App *self)
         : self(self)
@@ -890,6 +892,14 @@ struct App::Private
             vInfo("VrThreadSynced=" << vrThreadSynced << " CreatedSurface=" << createdSurface << " ReadyToExit=" << readyToExit);
         }
 
+        if(event.name == "loadModel"){
+            VString path = event.data.at(0).toString();
+
+            VModel* model = new VModel;
+            model->load(path);
+
+            models.push_back(model);
+        }
         // Pass it on to the client app.
         activity->command(event);
     }
@@ -1266,8 +1276,14 @@ struct App::Private
 
             delete scene;
             scene = nullptr;
+
             delete gui;
             gui = nullptr;
+
+            for (VModel *model : models) {
+                delete model;
+            }
+
             m_glStatus.eglExit();
             renderThread->exit();
         }
@@ -1697,6 +1713,11 @@ void App::drawEyeViewsPostDistorted( VMatrix4f const & centerViewMatrix, const i
             const VMatrix4f mvp = d->activity->drawEyeView(eye, fovDegrees);
 
             d->gui->update();
+
+            for (VModel *model : d->models) {
+                model->draw(eye, mvp);
+            }
+
             worldFontSurface().Render3D(defaultFont(), mvp.transposed());
 
             glDisable(GL_DEPTH_TEST);
@@ -1768,11 +1789,9 @@ void App::drawEyeViewsPostDistorted( VMatrix4f const & centerViewMatrix, const i
 // draw a zero to destination alpha
 void App::drawScreenMask(const VMatrix4f &mvp, const float fadeFracX, const float fadeFracY)
 {
-    VMatrix4f mvpMatrix(mvp);
-
     glUseProgram(d->overlayScreenFadeMaskProgram.program);
 
-    glUniformMatrix4fv(d->overlayScreenFadeMaskProgram.uniformModelViewProMatrix, 1, GL_FALSE, mvpMatrix.transposed().cell[0]);
+    glUniformMatrix4fv(d->overlayScreenFadeMaskProgram.uniformModelViewProMatrix, 1, GL_FALSE, mvp.transposed().cell[0]);
 
     if (d->fadedScreenMaskSquare.vertexArrayObject == 0) {
         d->fadedScreenMaskSquare.createScreenQuad( fadeFracX, fadeFracY );
@@ -1782,10 +1801,12 @@ void App::drawScreenMask(const VMatrix4f &mvp, const float fadeFracX, const floa
     d->fadedScreenMaskSquare.drawElements();
     glColorMask(1.0f, 1.0f, 1.0f, 1.0f);
 }
+
 bool App::isShowFPS() const
 {
     return d->showFPS;
 }
+
 void App::showFPS(bool const show)
 {
     bool temp = d->showFPS;

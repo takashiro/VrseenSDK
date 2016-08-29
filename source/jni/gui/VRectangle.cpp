@@ -44,9 +44,11 @@ void VRectangle::setColor(const VColor &color)
 
 void VRectangle::paint(VGuiPainter *painter)
 {
+    VPosf pos = globalPos();
+
     NVGcontext *vg = reinterpret_cast<NVGcontext *>(painter);
     nvgBeginPath(vg);
-    nvgRect(vg, 50.0f, 50.0f, 100.0f, 100.0f);
+    nvgRect(vg, pos.x + d->rect.start.x, pos.y + d->rect.start.y, d->rect.end.x, d->rect.end.y);
     nvgFillColor(vg, nvgRGBA(d->color.red, d->color.green, d->color.blue, d->color.alpha));
     nvgFill(vg);
 }

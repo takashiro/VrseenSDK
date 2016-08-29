@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vglobal.h"
+#include "VColor.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -11,6 +11,15 @@ class VGui
 public:
     VGui();
     ~VGui();
+
+    int viewWidth() const;
+    void setViewWidth(int width);
+
+    int viewHeight() const;
+    void setViewHeight(int height);
+
+    VColor backgroundColor() const;
+    void setBackgroundColor(const VColor &color);
 
     void update();
 
