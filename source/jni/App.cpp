@@ -1759,11 +1759,9 @@ void App::drawEyeViewsPostDistorted( VMatrix4f const & centerViewMatrix, const i
 // draw a zero to destination alpha
 void App::drawScreenMask(const VMatrix4f &mvp, const float fadeFracX, const float fadeFracY)
 {
-    VMatrix4f mvpMatrix(mvp);
-
     glUseProgram(d->overlayScreenFadeMaskProgram.program);
 
-    glUniformMatrix4fv(d->overlayScreenFadeMaskProgram.uniformModelViewProMatrix, 1, GL_FALSE, mvpMatrix.transposed().cell[0]);
+    glUniformMatrix4fv(d->overlayScreenFadeMaskProgram.uniformModelViewProMatrix, 1, GL_FALSE, mvp.transposed().cell[0]);
 
     if (d->fadedScreenMaskSquare.vertexArrayObject == 0) {
         d->fadedScreenMaskSquare.createScreenQuad( fadeFracX, fadeFracY );
@@ -1773,10 +1771,12 @@ void App::drawScreenMask(const VMatrix4f &mvp, const float fadeFracX, const floa
     d->fadedScreenMaskSquare.drawElements();
     glColorMask(1.0f, 1.0f, 1.0f, 1.0f);
 }
+
 bool App::isShowFPS() const
 {
     return d->showFPS;
 }
+
 void App::showFPS(bool const show)
 {
     bool temp = d->showFPS;
