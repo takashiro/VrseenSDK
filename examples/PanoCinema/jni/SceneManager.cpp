@@ -42,7 +42,8 @@ SceneManager::SceneManager( PanoCinema &cinema ) :
 	SceneSeatCount( 0 ),
 	SeatPosition( 0 ),
 	SceneScreenMatrix(),
-    SceneScreenBounds(0.026997, 0.427766, -3.253125, 5.973003 ,4.391771, -3.253125),
+//    SceneScreenBounds(0.026997, 0.427766, -3.253125, 5.973003 ,4.391771, -3.253125),
+	SceneScreenBounds(20.605499, -3.161200, -16.684299,20.605499, 15.608700, 16.684299),
 	AllowMove( false )
 
 {
