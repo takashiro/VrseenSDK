@@ -36,6 +36,7 @@
 #include "VResource.h"
 #include "VTexture.h"
 #include "VGui.h"
+#include "VModel.h"
 
 //#define TEST_TIMEWARP_WATCHDOG
 #define EGL_PROTECTED_CONTENT_EXT 0x32c0
@@ -264,6 +265,7 @@ struct App::Private
     const std::list<VModule *> &modules;
 
     VTimeWarpParms	swapParms;
+    VArray<VModel*> models;
 
     Private(App *self)
         : self(self)
@@ -895,6 +897,14 @@ struct App::Private
             vInfo("VrThreadSynced=" << vrThreadSynced << " CreatedSurface=" << createdSurface << " ReadyToExit=" << readyToExit);
         }
 
+        if(event.name == "loadModel"){
+            VString path = event.data.at(0).toString();
+
+            VModel* model = new VModel;
+            model->load(path);
+
+            models.push_back(model);
+        }
         // Pass it on to the client app.
         activity->command(event);
     }
@@ -1265,8 +1275,14 @@ struct App::Private
 
             delete scene;
             scene = nullptr;
+
             delete gui;
             gui = nullptr;
+
+            for (VModel *model : models) {
+                delete model;
+            }
+
             m_glStatus.eglExit();
             renderThread->exit();
         }
@@ -1696,6 +1712,11 @@ void App::drawEyeViewsPostDistorted( VMatrix4f const & centerViewMatrix, const i
             // Call back to the app for drawing.
             const VMatrix4f mvp = d->activity->drawEyeView(eye, fovDegrees);
             d->gui->update();
+
+            for (VModel *model : d->models) {
+                model->draw(eye, mvp);
+            }
+
             worldFontSurface().Render3D(defaultFont(), mvp.transposed());
 
             glDisable(GL_DEPTH_TEST);

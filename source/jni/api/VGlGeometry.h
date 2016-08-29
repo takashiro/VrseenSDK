@@ -30,7 +30,8 @@ public:
             indexBuffer( 0 ),
             vertexArrayObject( 0 ),
             vertexCount( 0 ),
-            indexCount( 0 ) {}
+            indexCount( 0 ),
+            textureId(0) {}
 
 
     VGlGeometry( const VertexAttribs & attribs, const VArray< ushort > & indices ) :
@@ -38,7 +39,8 @@ public:
             indexBuffer( 0 ),
             vertexArrayObject( 0 ),
             vertexCount( 0 ),
-            indexCount( 0 ) { createGlGeometry( attribs, indices ); }
+            indexCount( 0 ),
+            textureId(0) { createGlGeometry( attribs, indices ); }
 
 
 
@@ -64,6 +66,7 @@ public:
     unsigned 	vertexArrayObject;
     int			vertexCount;
     int 		indexCount;
+    unsigned int         textureId;
 };
 
 

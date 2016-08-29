@@ -18,25 +18,25 @@ LOCAL_PATH := $(call my-dir)
 # VrseenSDK dependencies
 
 include $(CLEAR_VARS)
-
 LOCAL_MODULE := minizip
 LOCAL_SRC_FILES := obj/local/armeabi-v7a/libminizip.a
-
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
-
 LOCAL_MODULE := stb
 LOCAL_SRC_FILES := obj/local/armeabi-v7a/libstb.a
-
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
-
 LOCAL_MODULE := nanovg
 LOCAL_SRC_FILES := obj/local/armeabi-v7a/libnanovg.a
-
 include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := assimp
+LOCAL_SRC_FILES := obj/local/armeabi-v7a/libassimp.a
+include $(PREBUILT_STATIC_LIBRARY)
+
 
 # VrseenSDK
 include $(CLEAR_VARS)
@@ -72,10 +72,11 @@ LOCAL_EXPORT_LDLIBS += -lOpenSLES
 LOCAL_SRC_FILES := obj/local/armeabi-v7a/libvrseen.a
 
 LOCAL_STATIC_LIBRARIES := \
-	jpeg \
 	minizip \
 	stb \
-	nanovg
+	nanovg \
+	assimp \
+	jpeg
 
 include $(PREBUILT_STATIC_LIBRARY)
 
