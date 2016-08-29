@@ -10,7 +10,7 @@ NV_NAMESPACE_BEGIN
 class VGuiText: public VGraphicsItem {
 
 public:
-    VGuiText(VGraphicsItem* parent);
+    VGuiText(VGraphicsItem* parent = nullptr);
     ~VGuiText();
 
     VColor textColor() const;
@@ -19,8 +19,7 @@ public:
     VString textValue() const;
     void setTextValue(const VString &text);
 
-
-
+    void initFont(VGuiPainter *painter);
 
 
 protected:
@@ -29,7 +28,6 @@ protected:
 private:
     NV_DECLARE_PRIVATE;
     NV_DISABLE_COPY(VGuiText);
-
 };
 
 NV_NAMESPACE_BEGIN

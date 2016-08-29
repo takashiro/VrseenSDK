@@ -36,6 +36,8 @@
 #include "VResource.h"
 #include "VTexture.h"
 #include "VGui.h"
+#include "VGuiText.h"
+#include "VRectangle.h"
 
 //#define TEST_TIMEWARP_WATCHDOG
 #define EGL_PROTECTED_CONTENT_EXT 0x32c0
@@ -951,6 +953,12 @@ struct App::Private
             lastTouchpadTime = VTimer::Seconds();
 
             gui = new VGui;
+
+            VGuiText *gText = new VGuiText;
+            gText->setTextColor(VColor(100, 100, 0));
+            gText->setTextValue(VString("Hello!"));
+
+            gui->addItem((gText));
         }
 
         // FPS counter information
@@ -1687,6 +1695,7 @@ void App::drawEyeViewsPostDistorted( VMatrix4f const & centerViewMatrix, const i
 
             // Call back to the app for drawing.
             const VMatrix4f mvp = d->activity->drawEyeView(eye, fovDegrees);
+
             d->gui->update();
             worldFontSurface().Render3D(defaultFont(), mvp.transposed());
 
