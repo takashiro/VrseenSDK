@@ -3,16 +3,15 @@ apply plugin: 'com.android.model.application'
 model {
     android {
         compileSdkVersion = 19
-        buildToolsVersion = '24'
 
         defaultConfig {
-            applicationId = 'com.vrseen.panovideo'
+            applicationId = 'com.vrseen.ArCamera'
             minSdkVersion.apiLevel = 19
             targetSdkVersion.apiLevel = 19
         }
         ndk {
             platformVersion = 19
-            moduleName ='panovideo'
+            moduleName ='arcamera'
             toolchain = 'gcc'
             stl = 'gnustl_shared'
             cppFlags.add('-std=c++11')
@@ -33,6 +32,10 @@ model {
 
                     dependencies {
                         project ':source' linkage 'static'
+                        library 'minizip' linkage 'static'
+                        library 'stb' linkage 'static'
+                        library 'nanovg' linkage 'static'
+                        library 'assimp' linkage 'static'
                     }
                 }
 
