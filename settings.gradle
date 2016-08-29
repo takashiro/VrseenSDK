@@ -1,5 +1,6 @@
-include ':source'
+include ':source', ':ArCamera'
 include ':tests'
 include ':examples:PanoCinema'
 include ':examples:PanoPhoto'
 include ':examples:PanoVideo'
+project(':ArCamera').projectDir = new File('examples/ArCamera')
