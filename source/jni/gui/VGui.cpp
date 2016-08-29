@@ -24,18 +24,6 @@ struct VGui::Private
         , backgroundColor(0.0f, 162.0f, 232.0f, 0.0f)
     {
         vg = nvgCreateGLES3(NVG_ANTIALIAS | NVG_STENCIL_STROKES | NVG_DEBUG);
-
-        int fontId = nvgCreateFont(vg, "sans", "/storage/emulated/0/VRSeen/SDK/fonttype/Roboto-Regular.ttf");
-        if (fontId == -1) {
-            printf("error\n");
-            return ;
-        }
-
-        nvgFontSize(vg, 30.0f);
-        nvgFontFace(vg, "sans");
-        nvgFillColor(vg, nvgRGBA(0,255,0,128));
-        nvgStrokeColor(vg, nvgRGBA(0, 255, 128, 128));
-        nvgTextAlign(vg, NVG_ALIGN_CENTER|NVG_ALIGN_MIDDLE);
     }
 
     ~Private()

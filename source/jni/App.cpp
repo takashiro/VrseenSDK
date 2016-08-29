@@ -963,12 +963,6 @@ struct App::Private
             lastTouchpadTime = VTimer::Seconds();
 
             gui = new VGui;
-
-            VGuiText *gText = new VGuiText;
-            gText->setTextColor(VColor(100, 100, 0));
-            gText->setTextValue(VString("Hello!"));
-
-            gui->addItem((gText));
         }
 
         // FPS counter information
