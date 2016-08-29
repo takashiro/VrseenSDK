@@ -34,3 +34,4 @@ gradle.properties
 *.docx
 *.dotx
 .vscode/
+*.zip
