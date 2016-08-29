@@ -213,7 +213,8 @@ VMatrix4f SceneManager::BoundsScreenMatrix(const VRect3f &bounds, const float mo
 		heightScale = widthScale / aspect;
 	}
 
-	const float rotateAngle = ( size.x > size.z ) ? 0.0f : M_PI * 0.5f;
+	float rotateAngle = ( size.x > size.z ) ? 0.0f : M_PI * 0.5f;
+	if(center.x > 0) rotateAngle = -rotateAngle;
 
     return	VMatrix4f::Translation( center ) *
             VMatrix4f::RotationY( rotateAngle ) *
