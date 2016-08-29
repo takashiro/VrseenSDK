@@ -22,7 +22,7 @@ static const int GL_ES_VERSION = 2;
 #endif
 #include <GLES2/gl2ext.h>
 
-//#define EGL_OPENGL_ES3_BIT_KHR      0x0040
+#define EGL_OPENGL_ES3_BIT_KHR      0x0040
 #define GL_BINNING_CONTROL_HINT_QCOM           0x8FB0
 #define GL_RENDER_DIRECT_TO_FRAMEBUFFER_QCOM   0x8FB3
 

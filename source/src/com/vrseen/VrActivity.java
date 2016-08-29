@@ -22,6 +22,7 @@ import android.app.IVRManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.pm.ApplicationInfo;
@@ -75,6 +76,9 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 	private static native void nativePopup(int width, int height, float seconds);
 
 	private static native void nativeLoadModel(String fileName);
+
+	private static native void nativeInitLoadModel(AssetManager assetManager, String pathToInternalDir);
+
 	// Pass down to native code so we talk to the right App object,
 	// since there can be at least two with the PlatformUI open.
 	//
@@ -479,6 +483,11 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 		WindowManager.LayoutParams params = getWindow().getAttributes();
 		params.screenBrightness = 1.0f;
 		getWindow().setAttributes(params);
+
+		// Init loading model module
+		AssetManager assetManager = getAssets();
+		String pathToInternalDir = getFilesDir().getAbsolutePath();
+		nativeInitLoadModel(assetManager,pathToInternalDir);
 	}
 
 	@Override
