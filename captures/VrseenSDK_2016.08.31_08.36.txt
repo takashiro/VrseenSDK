@@ -1,0 +1,1063 @@
+Applications Graphics Acceleration Info:
+Uptime: 5188705 Realtime: 13012768
+
+** Graphics info for pid 1724 [com.meizu.flyme.launcher] **
+
+Recent DisplayList operations
+                  DrawRenderNode
+                  Save
+                  ClipRect
+                  DrawRenderNode
+                    Save
+                    DrawBitmap
+                    RestoreToCount
+                  RestoreToCount
+                DrawRenderNode
+                  DrawRenderNode
+                  Save
+                  ClipRect
+                  DrawRenderNode
+                    Save
+                    DrawBitmap
+                    RestoreToCount
+                  RestoreToCount
+                DrawRenderNode
+                  DrawRenderNode
+                  Save
+                  ClipRect
+                  DrawRenderNode
+                    Save
+                    DrawBitmap
+                    RestoreToCount
+                  RestoreToCount
+          DrawRenderNode
+            DrawRenderNode
+              DrawRenderNode
+                DrawRenderNode
+                DrawRenderNode
+                  Save
+                  ConcatMatrix
+                  Save
+                  DrawBitmap
+                  RestoreToCount
+                  Save
+                  DrawBitmap
+                  RestoreToCount
+              DrawRenderNode
+                DrawRenderNode
+                DrawRenderNode
+                  Save
+                  ConcatMatrix
+                  Save
+                  DrawBitmap
+                  RestoreToCount
+          DrawRenderNode
+            DrawRenderNode
+RestoreToCount
+
+Caches:
+Current memory usage / total memory usage (bytes):
+  TextureCache          6133068 / 50331648
+  LayerCache           12058624 / 33554432 (numLayers = 2)
+    Layer size 1024x1472; isTextureLayer()=0; texid=45 fbo=0; refs=1
+    Layer size 1024x1472; isTextureLayer()=0; texid=70 fbo=0; refs=1
+  Layers total   12058624 (numLayers = 2)
+  RenderBufferCache           0 /  8388608
+  GradientCache               0 /  3145728
+  PathCache                   0 / 33554432
+  TessellationCache           0 /  1048576
+  TextDropShadowCache         0 /  6291456
+  PatchCache                  0 /   131072
+  FontRenderer 0 A8     1048576 /  1048576
+  FontRenderer 0 RGBA         0 /        0
+  FontRenderer 0 total  1048576 /  1048576
+Other:
+  FboCache                    2 /       25
+Total memory usage:
+  19240268 bytes, 18.35 MB
+
+Profile data in ms:
+
+	com.meizu.flyme.launcher/com.meizu.flyme.launcher.Launcher/android.view.ViewRootImpl@314615ba (visibility=0)
+View hierarchy:
+
+  com.meizu.flyme.launcher/com.meizu.flyme.launcher.Launcher/android.view.ViewRootImpl@314615ba
+  145 views, 182.57 kB of display lists
+
+
+Total ViewRootImpl: 1
+Total Views:        145
+Total DisplayList:  182.57 kB
+
+
+** Graphics info for pid 9857 [com.tencent.mm] **
+
+Recent DisplayList operations
+                      DrawPatch
+                    Save
+                    ClipRect
+                    DrawRenderNode
+                      DrawRenderNode
+                        DrawRenderNode
+                          Save
+                          DrawBitmap
+                          RestoreToCount
+                          Save
+                          DrawBitmap
+                          RestoreToCount
+                      DrawRenderNode
+                        Save
+                        ClipRect
+                        DrawText
+                        RestoreToCount
+                    RestoreToCount
+            RestoreToCount
+        DrawRenderNode
+          DrawRenderNode
+            DrawRect
+          DrawRenderNode
+            DrawRenderNode
+              DrawRenderNode
+                Save
+                DrawBitmap
+                RestoreToCount
+              DrawRenderNode
+                DrawRenderNode
+                Save
+                ClipRect
+                DrawRenderNode
+                  Save
+                  DrawBitmap
+                  RestoreToCount
+                RestoreToCount
+            DrawRenderNode
+              DrawRenderNode
+                DrawRenderNode
+                  DrawRenderNode
+                    Save
+                    ClipRect
+                    DrawText
+                    RestoreToCount
+    RestoreToCount
+  DrawRenderNode
+    DrawRenderNode
+      DrawRect
+RestoreToCount
+
+Caches:
+Current memory usage / total memory usage (bytes):
+  TextureCache          1480344 / 50331648
+  LayerCache                  0 / 33554432 (numLayers = 0)
+  Layers total          0 (numLayers = 0)
+  RenderBufferCache           0 /  8388608
+  GradientCache               0 /  3145728
+  PathCache                   0 / 33554432
+  TessellationCache           0 /  1048576
+  TextDropShadowCache         0 /  6291456
+  PatchCache               3008 /   131072
+  FontRenderer 0 A8     1048576 /  1048576
+  FontRenderer 0 RGBA         0 /        0
+  FontRenderer 0 total  1048576 /  1048576
+Other:
+  FboCache                    1 /       25
+Total memory usage:
+  2531928 bytes, 2.41 MB
+
+Profile data in ms:
+
+	com.tencent.mm/com.tencent.mm.ui.LauncherUI/android.view.ViewRootImpl@1b7b69f7 (visibility=8)
+View hierarchy:
+
+  com.tencent.mm/com.tencent.mm.ui.LauncherUI/android.view.ViewRootImpl@1b7b69f7
+  540 views, 467.90 kB of display lists
+
+
+Total ViewRootImpl: 1
+Total Views:        540
+Total DisplayList:  467.90 kB
+
+
+** Graphics info for pid 10245 [com.tencent.mobileqq] **
+
+Recent DisplayList operations
+                  DrawRenderNode
+                    DrawRenderNode
+                      Save
+                      DrawBitmap
+                      RestoreToCount
+                DrawRenderNode
+                  DrawRenderNode
+                    DrawRenderNode
+                    DrawRenderNode
+                    DrawRenderNode
+                    DrawRenderNode
+                      DrawRenderNode
+                        Save
+                        DrawBitmap
+                        RestoreToCount
+                  DrawRenderNode
+                    DrawRenderNode
+                      DrawRenderNode
+                      Save
+                      DrawBitmap
+                      RestoreToCount
+                DrawRenderNode
+                  DrawRenderNode
+                    DrawPatch
+                  DrawRenderNode
+                    Save
+                    ConcatMatrix
+                    Save
+                    DrawBitmap
+                    RestoreToCount
+                  DrawRenderNode
+                    Save
+                    ConcatMatrix
+                    Save
+                    DrawBitmap
+                    RestoreToCount
+                  DrawRenderNode
+                    DrawRenderNode
+                      Save
+                      DrawBitmap
+                      RestoreToCount
+              DrawRenderNode
+                DrawRenderNode
+                  DrawRenderNode
+                    Save
+                    ConcatMatrix
+                    DrawBitmapRect
+                    RestoreToCount
+                DrawRenderNode
+RestoreToCount
+
+Caches:
+Current memory usage / total memory usage (bytes):
+  TextureCache           475092 / 50331648
+  LayerCache                  0 / 33554432 (numLayers = 0)
+  Layers total          0 (numLayers = 0)
+  RenderBufferCache           0 /  8388608
+  GradientCache               0 /  3145728
+  PathCache                   0 / 33554432
+  TessellationCache           0 /  1048576
+  TextDropShadowCache         0 /  6291456
+  PatchCache              82304 /   131072
+  FontRenderer 0 A8     1048576 /  1048576
+  FontRenderer 0 RGBA         0 /        0
+  FontRenderer 0 total  1048576 /  1048576
+Other:
+  FboCache                    0 /       25
+Total memory usage:
+  1605972 bytes, 1.53 MB
+
+Profile data in ms:
+
+	com.tencent.mobileqq/com.tencent.mobileqq.activity.SplashActivity/android.view.ViewRootImpl@26a625e (visibility=8)
+View hierarchy:
+
+  com.tencent.mobileqq/com.tencent.mobileqq.activity.SplashActivity/android.view.ViewRootImpl@26a625e
+  272 views, 228.68 kB of display lists
+
+
+Total ViewRootImpl: 1
+Total Views:        272
+Total DisplayList:  228.68 kB
+
+
+** Graphics info for pid 10294 [com.tencent.mobileqq:MSF] **
+Profile data in ms:
+
+View hierarchy:
+
+
+Total ViewRootImpl: 0
+Total Views:        0
+Total DisplayList:  0.00 kB
+
+
+** Graphics info for pid 10001 [com.tencent.mm:push] **
+Profile data in ms:
+
+View hierarchy:
+
+
+Total ViewRootImpl: 0
+Total Views:        0
+Total DisplayList:  0.00 kB
+
+
+** Graphics info for pid 9977 [com.tencent.mm:exdevice] **
+Profile data in ms:
+
+View hierarchy:
+
+
+Total ViewRootImpl: 0
+Total Views:        0
+Total DisplayList:  0.00 kB
+
+
+** Graphics info for pid 1464 [com.sohu.inputmethod.sogou] **
+
+Recent DisplayList operations
+              DrawBitmap
+              RestoreToCount
+              Save
+              Translate
+              DrawBitmap
+              RestoreToCount
+              Save
+              Translate
+              DrawBitmap
+              RestoreToCount
+              Save
+              Translate
+              DrawBitmap
+              RestoreToCount
+              Save
+              Translate
+              DrawBitmap
+              RestoreToCount
+              Save
+              Translate
+              DrawPatch
+              ClipRect
+              RestoreToCount
+              Save
+              ClipRect
+              RestoreToCount
+        DrawRenderNode
+          DrawRenderNode
+            DrawRenderNode
+              DrawBitmapRect
+            Save
+            Translate
+            DrawPatch
+            ClipRect
+            DrawPatch
+            DrawText
+            DrawPatch
+            DrawText
+            DrawPatch
+            DrawText
+            DrawPatch
+            DrawText
+            RestoreToCount
+            Save
+            DrawBitmap
+            RestoreToCount
+RestoreToCount
+Save
+DrawRenderNode
+RestoreToCount
+
+Caches:
+Current memory usage / total memory usage (bytes):
+  TextureCache                0 / 50331648
+  LayerCache                  0 / 33554432 (numLayers = 0)
+  Layers total          0 (numLayers = 0)
+  RenderBufferCache           0 /  8388608
+  GradientCache               0 /  3145728
+  PathCache                   0 / 33554432
+  TessellationCache           0 /  1048576
+  TextDropShadowCache         0 /  6291456
+  PatchCache               3648 /   131072
+  FontRenderer 0 A8     1048576 /  1048576
+  FontRenderer 0 RGBA         0 /        0
+  FontRenderer 0 total  1048576 /  1048576
+Other:
+  FboCache                    0 /       25
+Total memory usage:
+  1052224 bytes, 1.00 MB
+
+Profile data in ms:
+
+	InputMethod/android.view.ViewRootImpl@9152177 (visibility=8)
+View hierarchy:
+
+  InputMethod/android.view.ViewRootImpl@9152177
+  15 views, 12.07 kB of display lists
+
+
+Total ViewRootImpl: 1
+Total Views:        15
+Total DisplayList:  12.07 kB
+
+
+** Graphics info for pid 12869 [com.meizu.flyme.weather] **
+Profile data in ms:
+
+View hierarchy:
+
+
+Total ViewRootImpl: 0
+Total Views:        0
+Total DisplayList:  0.00 kB
+
+
+** Graphics info for pid 12835 [com.meizu.net.search:HWS] **
+Profile data in ms:
+
+View hierarchy:
+
+
+Total ViewRootImpl: 0
+Total Views:        0
+Total DisplayList:  0.00 kB
+
+
+** Graphics info for pid 1427 [com.meizu.mstore] **
+Profile data in ms:
+
+View hierarchy:
+
+
+Total ViewRootImpl: 0
+Total Views:        0
+Total DisplayList:  0.00 kB
+
+
+** Graphics info for pid 2822 [com.flyme.systemuitools] **
+Profile data in ms:
+
+View hierarchy:
+
+
+Total ViewRootImpl: 0
+Total Views:        0
+Total DisplayList:  0.00 kB
+
+
+** Graphics info for pid 3893 [com.meizu.media.music] **
+Profile data in ms:
+
+View hierarchy:
+
+
+Total ViewRootImpl: 0
+Total Views:        0
+Total DisplayList:  0.00 kB
+
+
+** Graphics info for pid 2426 [com.meizu.flyme.service.find] **
+Profile data in ms:
+
+View hierarchy:
+
+
+Total ViewRootImpl: 0
+Total Views:        0
+Total DisplayList:  0.00 kB
+
+
+** Graphics info for pid 2485 [android.process.media] **
+Profile data in ms:
+
+View hierarchy:
+
+
+Total ViewRootImpl: 0
+Total Views:        0
+Total DisplayList:  0.00 kB
+
+
+** Graphics info for pid 12466 [com.android.mms] **
+Profile data in ms:
+
+View hierarchy:
+
+
+Total ViewRootImpl: 0
+Total Views:        0
+Total DisplayList:  0.00 kB
+
+
+** Graphics info for pid 3591 [com.meizu.media.gallery:backup] **
+Profile data in ms:
+
+View hierarchy:
+
+
+Total ViewRootImpl: 0
+Total Views:        0
+Total DisplayList:  0.00 kB
+
+
+** Graphics info for pid 12600 [com.ticktick.task] **
+
+Recent DisplayList operations
+            DrawRenderNode
+              DrawRenderNode
+              DrawRenderNode
+                DrawRenderNode
+                  DrawRoundRect
+                DrawRenderNode
+                  DrawRenderNode
+                DrawRenderNode
+                DrawRenderNode
+                DrawRenderNode
+                DrawRenderNode
+                  DrawRenderNode
+                  DrawRenderNode
+                    DrawRenderNode
+                    DrawRenderNode
+                    DrawRenderNode
+                      DrawRenderNode
+                        Save
+                        ClipRect
+                        Translate
+                        DrawCircleProps
+                        DrawCircleProps
+                        Translate
+                        RestoreToCount
+                      DrawRenderNode
+                        DrawRenderNode
+                        Save
+                        ClipRect
+                        DrawText
+                        RestoreToCount
+                      DrawRenderNode
+                        DrawRenderNode
+                        Save
+                        ClipRect
+                        DrawText
+                        RestoreToCount
+                    DrawRenderNode
+    RestoreToCount
+RestoreToCount
+Save
+DrawRenderNode
+  DrawRenderNode
+    DrawPatch
+  DrawRenderNode
+    Save
+    ClipRect
+    Translate
+    DrawText
+    RestoreToCount
+RestoreToCount
+
+Caches:
+Current memory usage / total memory usage (bytes):
+  TextureCache              900 / 50331648
+  LayerCache                  0 / 33554432 (numLayers = 0)
+  Layers total          0 (numLayers = 0)
+  RenderBufferCache           0 /  8388608
+  GradientCache               0 /  3145728
+  PathCache                   0 / 33554432
+  TessellationCache           0 /  1048576
+  TextDropShadowCache         0 /  6291456
+  PatchCache                576 /   131072
+  FontRenderer 0 A8     1048576 /  1048576
+  FontRenderer 0 RGBA         0 /        0
+  FontRenderer 0 total  1048576 /  1048576
+Other:
+  FboCache                    0 /       25
+Total memory usage:
+  1050052 bytes, 1.00 MB
+
+Profile data in ms:
+
+View hierarchy:
+
+
+Total ViewRootImpl: 0
+Total Views:        0
+Total DisplayList:  0.00 kB
+
+
+** Graphics info for pid 3707 [com.meizu.media.gallery] **
+Profile data in ms:
+
+View hierarchy:
+
+
+Total ViewRootImpl: 0
+Total Views:        0
+Total DisplayList:  0.00 kB
+
+
+** Graphics info for pid 12669 [com.android.musicfx] **
+Profile data in ms:
+
+View hierarchy:
+
+
+Total ViewRootImpl: 0
+Total Views:        0
+Total DisplayList:  0.00 kB
+
+
+** Graphics info for pid 1940 [com.meizu.safe] **
+Profile data in ms:
+
+View hierarchy:
+
+
+Total ViewRootImpl: 0
+Total Views:        0
+Total DisplayList:  0.00 kB
+
+
+** Graphics info for pid 13097 [com.sohu.inputmethod.sogou:classic] **
+Profile data in ms:
+
+View hierarchy:
+
+
+Total ViewRootImpl: 0
+Total Views:        0
+Total DisplayList:  0.00 kB
+
+
+** Graphics info for pid 2167 [com.meizu.mzsyncservice] **
+Profile data in ms:
+
+View hierarchy:
+
+
+Total ViewRootImpl: 0
+Total Views:        0
+Total DisplayList:  0.00 kB
+
+
+** Graphics info for pid 13042 [com.mediatek.providers.drm] **
+Profile data in ms:
+
+View hierarchy:
+
+
+Total ViewRootImpl: 0
+Total Views:        0
+Total DisplayList:  0.00 kB
+
+
+** Graphics info for pid 12995 [com.meizu.desktopbackup] **
+Profile data in ms:
+
+View hierarchy:
+
+
+Total ViewRootImpl: 0
+Total Views:        0
+Total DisplayList:  0.00 kB
+
+
+** Graphics info for pid 12953 [com.android.email] **
+Profile data in ms:
+
+View hierarchy:
+
+
+Total ViewRootImpl: 0
+Total Views:        0
+Total DisplayList:  0.00 kB
+
+
+** Graphics info for pid 3547 [com.flyme.netadmin] **
+Profile data in ms:
+
+View hierarchy:
+
+
+Total ViewRootImpl: 0
+Total Views:        0
+Total DisplayList:  0.00 kB
+
+
+** Graphics info for pid 2583 [com.meizu.account] **
+Profile data in ms:
+
+View hierarchy:
+
+
+Total ViewRootImpl: 0
+Total Views:        0
+Total DisplayList:  0.00 kB
+
+
+** Graphics info for pid 4227 [com.meizu.cloud:mzservice_v1] **
+Profile data in ms:
+
+View hierarchy:
+
+
+Total ViewRootImpl: 0
+Total Views:        0
+Total DisplayList:  0.00 kB
+
+
+** Graphics info for pid 2211 [sogou.mobile.explorer.hotwords] **
+Profile data in ms:
+
+View hierarchy:
+
+
+Total ViewRootImpl: 0
+Total Views:        0
+Total DisplayList:  0.00 kB
+
+
+** Graphics info for pid 2975 [com.meizu.flyme.update] **
+Profile data in ms:
+
+View hierarchy:
+
+
+Total ViewRootImpl: 0
+Total Views:        0
+Total DisplayList:  0.00 kB
+
+
+** Graphics info for pid 2114 [com.meizu.safe:Remote] **
+Profile data in ms:
+
+View hierarchy:
+
+
+Total ViewRootImpl: 0
+Total Views:        0
+Total DisplayList:  0.00 kB
+
+
+** Graphics info for pid 1507 [com.amap.android.location] **
+Profile data in ms:
+
+View hierarchy:
+
+
+Total ViewRootImpl: 0
+Total Views:        0
+Total DisplayList:  0.00 kB
+
+
+** Graphics info for pid 1702 [com.meizu.experiencedatasync] **
+Profile data in ms:
+
+View hierarchy:
+
+
+Total ViewRootImpl: 0
+Total Views:        0
+Total DisplayList:  0.00 kB
+
+
+** Graphics info for pid 1681 [com.android.phone] **
+
+Recent DisplayList operations
+            DrawRenderNode
+            DrawRenderNode
+            DrawRenderNode
+              DrawRenderNode
+                Save
+                ClipRect
+                Translate
+                DrawCircle
+                Translate
+                RestoreToCount
+              Save
+              ClipRect
+              Translate
+              DrawText
+              RestoreToCount
+  RestoreToCount
+RestoreToCount
+Save
+Translate
+DrawRenderNode
+  DrawRenderNode
+    DrawRoundRect
+  Save
+  ClipRect
+  DrawRenderNode
+    DrawRenderNode
+      DrawRenderNode
+        DrawRenderNode
+        DrawRenderNode
+          DrawPatch
+          DrawRenderNode
+            DrawPatch
+            DrawRenderNode
+            DrawRenderNode
+            DrawRenderNode
+              DrawRenderNode
+                Save
+                ClipRect
+                Translate
+                DrawCircleProps
+                DrawCircleProps
+                Translate
+                RestoreToCount
+              Save
+              ClipRect
+              Translate
+              DrawText
+              RestoreToCount
+  RestoreToCount
+RestoreToCount
+
+Caches:
+Current memory usage / total memory usage (bytes):
+  TextureCache                0 / 50331648
+  LayerCache                  0 / 33554432 (numLayers = 0)
+  Layers total          0 (numLayers = 0)
+  RenderBufferCache           0 /  8388608
+  GradientCache               0 /  3145728
+  PathCache                   0 / 33554432
+  TessellationCache           0 /  1048576
+  TextDropShadowCache         0 /  6291456
+  PatchCache                  0 /   131072
+  FontRenderer 0 A8     1048576 /  1048576
+  FontRenderer 0 RGBA         0 /        0
+  FontRenderer 0 total  1048576 /  1048576
+Other:
+  FboCache                    0 /       25
+Total memory usage:
+  1048576 bytes, 1.00 MB
+
+Profile data in ms:
+
+View hierarchy:
+
+
+Total ViewRootImpl: 0
+Total Views:        0
+Total DisplayList:  0.00 kB
+
+
+** Graphics info for pid 1658 [com.meizu.cloud] **
+Profile data in ms:
+
+View hierarchy:
+
+
+Total ViewRootImpl: 0
+Total Views:        0
+Total DisplayList:  0.00 kB
+
+
+** Graphics info for pid 1637 [com.mediatek.nlpservice] **
+Profile data in ms:
+
+View hierarchy:
+
+
+Total ViewRootImpl: 0
+Total Views:        0
+Total DisplayList:  0.00 kB
+
+
+** Graphics info for pid 1614 [com.android.incallui] **
+
+Recent DisplayList operations
+                  DrawRenderNode
+                    Save
+                    ClipRect
+                    DrawRenderNode
+                      DrawRenderNode
+                        DrawRenderNode
+                        Save
+                        DrawBitmap
+                        RestoreToCount
+                      DrawRenderNode
+                        Save
+                        ClipRect
+                        Translate
+                        DrawText
+                        RestoreToCount
+                    DrawRenderNode
+                      DrawRenderNode
+                        DrawRenderNode
+                        Save
+                        DrawBitmap
+                        RestoreToCount
+                      DrawRenderNode
+                        Save
+                        ClipRect
+                        Translate
+                        DrawText
+                        RestoreToCount
+                    DrawRenderNode
+                      DrawRenderNode
+                        DrawRenderNode
+                        Save
+                        DrawBitmap
+                        RestoreToCount
+                      DrawRenderNode
+                        Save
+                        ClipRect
+                        Translate
+                        DrawText
+                        RestoreToCount
+                    RestoreToCount
+                  DrawRenderNode
+                    DrawRenderNode
+                      DrawRenderNode
+                        DrawBitmapRect
+                      Save
+                      ConcatMatrix
+                      Save
+                      DrawBitmap
+                      RestoreToCount
+RestoreToCount
+
+Caches:
+Current memory usage / total memory usage (bytes):
+  TextureCache           407156 / 50331648
+  LayerCache                  0 / 33554432 (numLayers = 0)
+  Layers total          0 (numLayers = 0)
+  RenderBufferCache           0 /  8388608
+  GradientCache               0 /  3145728
+  PathCache                   0 / 33554432
+  TessellationCache           0 /  1048576
+  TextDropShadowCache         0 /  6291456
+  PatchCache                  0 /   131072
+  FontRenderer 0 A8     1048576 /  1048576
+  FontRenderer 0 RGBA         0 /        0
+  FontRenderer 0 total  1048576 /  1048576
+Other:
+  FboCache                    1 /       25
+Total memory usage:
+  1455732 bytes, 1.39 MB
+
+Profile data in ms:
+
+View hierarchy:
+
+
+Total ViewRootImpl: 0
+Total Views:        0
+Total DisplayList:  0.00 kB
+
+
+** Graphics info for pid 1592 [com.mediatek.bluetooth] **
+Profile data in ms:
+
+View hierarchy:
+
+
+Total ViewRootImpl: 0
+Total Views:        0
+Total DisplayList:  0.00 kB
+
+
+** Graphics info for pid 1563 [com.waves.maxxservice] **
+Profile data in ms:
+
+View hierarchy:
+
+
+Total ViewRootImpl: 0
+Total Views:        0
+Total DisplayList:  0.00 kB
+
+
+** Graphics info for pid 997 [com.android.systemui] **
+
+Recent DisplayList operations
+          DrawRenderNode
+            DrawRenderNode
+              DrawRenderNode
+                DrawRenderNode
+                  Save
+                  Translate
+                  Save
+                  DrawBitmap
+                  RestoreToCount
+        RestoreToCount
+      DrawRenderNode
+        DrawRenderNode
+          DrawRenderNode
+            DrawRenderNode
+              Save
+              ClipRect
+              DrawRenderNode
+                DrawRenderNode
+                  Save
+                  DrawBitmap
+                  RestoreToCount
+                DrawRenderNode
+                  DrawRenderNode
+              RestoreToCount
+            DrawRenderNode
+              Save
+              ClipRect
+              DrawRenderNode
+                DrawRenderNode
+                  Save
+                  DrawBitmap
+                  RestoreToCount
+                DrawRenderNode
+                  DrawRenderNode
+              RestoreToCount
+        DrawRenderNode
+          Save
+          DrawBitmap
+          RestoreToCount
+          DrawPatch
+          Save
+          DrawBitmap
+          RestoreToCount
+        DrawRenderNode
+      RestoreToCount
+    DrawRenderNode
+  DrawRenderNode
+  DrawRenderNode
+    DrawRenderNode
+RestoreToCount
+
+Caches:
+Current memory usage / total memory usage (bytes):
+  TextureCache          2311512 / 50331648
+  LayerCache                  0 / 33554432 (numLayers = 0)
+  Layers total          0 (numLayers = 0)
+  RenderBufferCache           0 /  8388608
+  GradientCache          163840 /  3145728
+  PathCache                   0 / 33554432
+  TessellationCache           0 /  1048576
+  TextDropShadowCache         0 /  6291456
+  PatchCache                768 /   131072
+  FontRenderer 0 A8     1048576 /  1048576
+  FontRenderer 0 RGBA         0 /        0
+  FontRenderer 0 total  1048576 /  1048576
+Other:
+  FboCache                    4 /       25
+Total memory usage:
+  3524696 bytes, 3.36 MB
+
+Profile data in ms:
+
+	StatusBar/android.view.ViewRootImpl@1ca44021 (visibility=0)
+	Heads Up/android.view.ViewRootImpl@1da3d259 (visibility=8)
+	holster/android.view.ViewRootImpl@1ff14c4a (visibility=8)
+View hierarchy:
+
+  StatusBar/android.view.ViewRootImpl@1ca44021
+  441 views, 516.08 kB of display lists
+
+  Heads Up/android.view.ViewRootImpl@1da3d259
+  52 views, 55.25 kB of display lists
+
+  holster/android.view.ViewRootImpl@1ff14c4a
+  121 views, 128.56 kB of display lists
+
+
+Total ViewRootImpl: 3
+Total Views:        614
+Total DisplayList:  699.89 kB
+
+
+** Graphics info for pid 794 [system] **
+Profile data in ms:
+
+	KeyguardScrim/android.view.ViewRootImpl@2de41029 (visibility=8)
+View hierarchy:
+
+  KeyguardScrim/android.view.ViewRootImpl@2de41029
+  1 views, 1.06 kB of display lists
+
+
+Total ViewRootImpl: 1
+Total Views:        1
+Total DisplayList:  1.06 kB
+

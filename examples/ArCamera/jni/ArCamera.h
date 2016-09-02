@@ -21,6 +21,12 @@ public:
 		NUM_MENU_STATES
 	};
 
+	GLuint program;
+	GLuint vao;
+	int numEyes;
+	GLuint fbo1;
+	GLuint *texids;
+	VEyeItem::Settings bufferParms;
     ArCamera(JNIEnv *jni, jclass activityClass, jobject activityObject);
     ~ArCamera();
 
@@ -56,6 +62,7 @@ private:
     bool m_videoWasPlayingWhenPaused;	// state of video when main activity was paused
 
     // panorama vars
+
     VGlShader m_panoramaProgram;
     VGlShader m_fadedPanoramaProgram;
     VGlShader m_singleColorTextureProgram;
