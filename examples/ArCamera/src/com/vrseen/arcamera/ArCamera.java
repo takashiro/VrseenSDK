@@ -16,6 +16,7 @@ public class ArCamera implements android.graphics.SurfaceTexture.OnFrameAvailabl
 	private static final String TAG = "ArCamera";
 
 	private Surface movieSurface = null;
+
 //	private MediaPlayer mediaPlayer = null;
 //	private AudioManager audioManager = null;
 
@@ -125,10 +126,10 @@ public class ArCamera implements android.graphics.SurfaceTexture.OnFrameAvailabl
 			this.hackVerticalFov = true;	// will always be 16:9			
 			
 			// set preview size 
-			parms.setPreviewSize(960, 540); 
-			parms.set("fast-fps-mode", 2); // 2 for 120fps 
-			parms.setPreviewFpsRange(120000, 120000); 
-			
+			parms.setPreviewSize(960, 540);
+			parms.set("fast-fps-mode", 2); // 2 for 120fps
+			parms.setPreviewFpsRange(120000, 120000);
+
 			parms.set("focus-mode", "continuous-video");
 			
 		} else { // not support vr mode }

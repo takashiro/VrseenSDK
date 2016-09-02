@@ -1217,7 +1217,7 @@ struct App::Private
             // Main loop logic / draw code
             if (!readyToExit) {
                 lastViewMatrix = activity->onNewFrame(self->text.vrFrame);
-                self->drawEyeViewsPostDistorted(lastViewMatrix);
+                //self->drawEyeViewsPostDistorted(lastViewMatrix);
             }
 
             // MWC demo hack to allow keyboard swipes
@@ -1389,7 +1389,7 @@ App::App(JNIEnv *jni, jobject activityObject, VMainActivity *activity)
     vAssert(vAppInstance == nullptr);
     vAppInstance = this;
 
-    cameraTexture = new SurfaceTexture( jni );
+    //cameraTexture = new SurfaceTexture( jni );
     d->kernel = VKernel::instance();
     d->storagePaths = new VStandardPath(jni, activityObject);
 
@@ -1673,8 +1673,7 @@ long long App::recenterYawFrameStart() const
 //    glDrawElements(GL_LINES, d->unitCubeLines.indexCount, GL_UNSIGNED_SHORT, NULL);
 //    glOperation.glBindVertexArrayOES_( 0 );
 //}
-
-void App::drawEyeViewsPostDistorted( VMatrix4f const & centerViewMatrix, const int numPresents )
+void App::drawEyeViewsPostDistortedWithoutSmooth(VMatrix4f const & centerViewMatrix, const int numPresents)
 {
     // update vr lib systems after the app frame, but before rendering anything
     gazeCursor().Frame( centerViewMatrix, text.vrFrame.deltaSeconds );
@@ -1760,8 +1759,14 @@ void App::drawEyeViewsPostDistorted( VMatrix4f const & centerViewMatrix, const i
             d->swapParms.Images[eye][0].Pose  = d->sensorForNextWarp;
             // d->kernel->m_smoothProgram = ChromaticAberrationCorrection(glOperation) ? WP_CHROMATIC : WP_SIMPLE;
         }
-
-        //d->kernel->doSmooth();
+    }
+}
+void App::drawEyeViewsPostDistorted( VMatrix4f const & centerViewMatrix, const int numPresents )
+{
+    drawEyeViewsPostDistortedWithoutSmooth( centerViewMatrix, numPresents );
+// This eye set is complete, use it now.
+    if ( numPresents > 0 )
+    {
         d->kernel->doSmooth(&d->swapParms );
     }
 }
@@ -1820,8 +1825,8 @@ const VZipFile &App::apkFile() const
     static VZipFile current(packageCodePath());
     return current;
 }
-SurfaceTexture * App::GetCameraTexture()
+/*SurfaceTexture * App::GetCameraTexture()
 {
     return cameraTexture;
-}
+}*/
 NV_NAMESPACE_END

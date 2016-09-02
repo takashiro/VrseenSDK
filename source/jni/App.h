@@ -91,12 +91,14 @@ public:
     bool isShowFPS() const;
     void showFPS(bool const show);
 
-    SurfaceTexture * GetCameraTexture();
+    //SurfaceTexture * GetCameraTexture();
 
 /*    float           cameraFovHorizontal;
     float           cameraFovVertical;*/
 
     const VZipFile &apkFile() const;
+
+    void drawEyeViewsPostDistortedWithoutSmooth( VMatrix4f const & centerViewMatrix, const int numPresents = 1);
 
     VText text;
     VPanel panel;
