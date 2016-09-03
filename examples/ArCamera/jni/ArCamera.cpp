@@ -199,19 +199,6 @@ jobject Java_com_vrseen_arcamera_ArCamera_createMovieTexture(JNIEnv *, jclass)
     return NULL;
 }
 
-void Java_com_vrseen_arcamera_ArCamera_onVideoSizeChanged(JNIEnv *, jclass, jint width, jint height)
-{
-    VVariantArray args;
-    args << width << height;
-    vApp->eventLoop().post("video", std::move(args));
-}
-
-void Java_com_vrseen_arcamera_ArCamera_onCompletion(JNIEnv *, jclass)
-{
-	vInfo("nativeVideoCompletion");
-    vApp->eventLoop().post( "completion" );
-}
-
 } // extern "C"
 
 

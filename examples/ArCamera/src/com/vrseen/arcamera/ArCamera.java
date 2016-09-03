@@ -4,36 +4,21 @@ import java.io.IOException;
 import java.util.List;
 
 import android.app.Activity;
-import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
 import android.util.Log;
-import android.view.Surface;
 
 public class ArCamera implements android.graphics.SurfaceTexture.OnFrameAvailableListener {
 	private static final String TAG = "ArCamera";
 
-	private Surface movieSurface = null;
-
-//	private MediaPlayer mediaPlayer = null;
-//	private AudioManager audioManager = null;
-
-	//passthrough
 	SurfaceTexture movieTexture;
 	Camera	camera;
 
 	boolean previewStarted;
 
-	long	appPtr = 0;	// this must be cached for the onFrameAvailable callback :(
-	
 	boolean	hackVerticalFov = false;	// 60 fps preview forces 16:9 aspect, but doesn't report it correctly
 	long	startPreviewTime;
-	
-/*	public native SurfaceTexture nativeGetCameraSurfaceTexture(long appPtr);
-	public native void nativeSetCameraFov(long appPtr, float fovHorizontal, float fovVertical);
-	*/
+
 	public void onFrameAvailable(SurfaceTexture surfaceTexture) {
 		if ( camera == null ) {
 			return;
@@ -63,7 +48,7 @@ public class ArCamera implements android.graphics.SurfaceTexture.OnFrameAvailabl
 	public void start() {
 		movieTexture = createMovieTexture();
 		if (movieTexture == null) {
-			Log.e(TAG, "nativeGetCameraSurfaceTexture returned NULL");
+			Log.e(TAG, "createMovieTexture returned NULL");
 			return; // not set up yet
 		}
 		
@@ -90,7 +75,7 @@ public class ArCamera implements android.graphics.SurfaceTexture.OnFrameAvailabl
 			parms.setRecordingHint(true); 
 			this.hackVerticalFov = true;	// will always be 16:9			
 			
-			// set preview size 3333
+			//mark set preview size
 			parms.setPreviewSize(1024, 1024);
 			parms.set("fast-fps-mode", 2); // 2 for 120fps
 			parms.setPreviewFpsRange(120000, 120000);
@@ -105,9 +90,6 @@ public class ArCamera implements android.graphics.SurfaceTexture.OnFrameAvailabl
 			for (int i = 0; i < formats.size(); i++) {
 				Log.v(TAG, "preview format: " + formats.get(i) );
 			}
-		
-			// YV12 format, documented YUV format exposed to software
-//			parms.setPreviewFormat( 842094169 );
 
 			// set the preview size to something small
 			List<Camera.Size> previewSizes = parms.getSupportedPreviewSizes();
@@ -116,16 +98,11 @@ public class ArCamera implements android.graphics.SurfaceTexture.OnFrameAvailabl
 						+ previewSizes.get(i).height);
 			}
 
-			Log.v(TAG, "isAutoExposureLockSupported: " + parms.isAutoExposureLockSupported() );
-			Log.v(TAG, "isAutoWhiteBalanceLockSupported: " + parms.isAutoWhiteBalanceLockSupported() );
-			Log.v(TAG, "minExposureCompensation: " + parms.getMinExposureCompensation() );
-			Log.v(TAG, "maxExposureCompensation: " + parms.getMaxExposureCompensation() );
-			
 			float fovH = parms.getHorizontalViewAngle();
 			float fovV = parms.getVerticalViewAngle();
 			Log.v(TAG, "camera view angles:" + fovH + " " + fovV);
 			
-			 parms.setPreviewSize(800, 480);
+			parms.setPreviewSize(800, 480);
 			List<int[]> fpsRanges = parms.getSupportedPreviewFpsRange();
 			for (int i = 0; i < fpsRanges.size(); i++) 
 			{
@@ -156,7 +133,7 @@ public class ArCamera implements android.graphics.SurfaceTexture.OnFrameAvailabl
 		try {
 			camera.setPreviewTexture(movieTexture);
 		} catch (IOException e) {
-			Log.v(TAG, "startCameraPreviewToTextureId: setPreviewTexture exception");
+			Log.v(TAG, "setPreviewTexture exception");
 		}
 		
 		Log.v(TAG, "camera.startPreview");
@@ -180,113 +157,22 @@ public class ArCamera implements android.graphics.SurfaceTexture.OnFrameAvailabl
 		}
 	}
 
-	public boolean isPlaying() {
-/*		try {
-			if (mediaPlayer != null) {
-				return mediaPlayer.isPlaying();
-			}
-			return false;
-		} catch (IllegalStateException ise) {
-			Log.d(TAG, "isPlaying(): " + ise.toString());
-		}*/
-		return false;
-	}
-
 	public void pause() {
-/*		try {
-			if (mediaPlayer != null) {
-				mediaPlayer.pause();
-			}
-		} catch (IllegalStateException ise) {
-			Log.d(TAG, "pause(): Caught illegalStateException: " + ise.toString());
-		}*/
+		if (camera != null) {
+			camera.stopPreview();
+		}
 	}
 
 	public void resume() {
-/*		try {
-			if (mediaPlayer != null) {
-				mediaPlayer.start();
-				mediaPlayer.setVolume(1.0f, 1.0f);
-			}
-		} catch (IllegalStateException ise) {
-			Log.d(TAG, "resume(): " + ise.toString());
-		}*/
-	}
-
-/*	AudioManager.OnAudioFocusChangeListener audioFocusChangeLisener = new AudioManager.OnAudioFocusChangeListener() {
-		public void onAudioFocusChange(int focusChange) {
-			switch (focusChange) {
-			case AudioManager.AUDIOFOCUS_GAIN:
-				// resume() if coming back from transient loss, raise stream
-				// volume if duck applied
-				Log.d(TAG, "onAudioFocusChangedListener: AUDIOFOCUS_GAIN");
-				break;
-			case AudioManager.AUDIOFOCUS_LOSS:// focus lost permanently
-				// stop() if isPlaying
-				Log.d(TAG, "onAudioFocusChangedListener: AUDIOFOCUS_LOSS");
-				break;
-			case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:// focus lost
-														// temporarily
-				// pause() if isPlaying
-				Log.d(TAG, "onAudioFocusChangedListener: AUDIOFOCUS_LOSS_TRANSIENT");
-				break;
-			case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:// focus lost
-																	// temporarily
-				// lower stream volume
-				Log.d(TAG, "onAudioFocusChangedListener: AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK");
-				break;
-			default:
-				break;
-			}
+		if (camera != null) {
+			camera.startPreview();
 		}
-	};*/
-
-	void requestAudioFocus() {
-/*		int result = audioManager.requestAudioFocus(audioFocusChangeLisener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
-		if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-			Log.d(TAG, "startMovie(): GRANTED audio focus");
-		}*/
 	}
-
-	void releaseAudioFocus() {
-/*		audioManager.abandonAudioFocus(audioFocusChangeLisener);*/
-	}
-
-/*	MediaPlayer.OnErrorListener errorListener = new MediaPlayer.OnErrorListener() {
-		public boolean onError(MediaPlayer mp, int what, int extra) {
-			Log.e(TAG, "MediaPlayer.OnErrorListener - what : " + what + ", extra : " + extra);
-			return false;
-		}
-	};*/
 
 	native SurfaceTexture createMovieTexture();
 	
 	native void construct(Activity activity);
 
-	native void onVideoSizeChanged(int width, int height);
-
-/*	MediaPlayer.OnVideoSizeChangedListener videoSizeChangedListener = new MediaPlayer.OnVideoSizeChangedListener() {
-		@Override
-		public void onVideoSizeChanged(MediaPlayer mp, int width, int height) {
-			ArCamera.this.onVideoSizeChanged(width, height);
-		}
-	};*/
-
 	native void onFrameAvailable();
 
-/*	SurfaceTexture.OnFrameAvailableListener frameAvailableListener = new SurfaceTexture.OnFrameAvailableListener() {
-		@Override
-		public void onFrameAvailable(SurfaceTexture surfaceTexture) {
-			ArCamera.this.onFrameAvailable();
-		}
-	};*/
-
-	native void onCompletion();
-
-/*	MediaPlayer.OnCompletionListener completionListener = new MediaPlayer.OnCompletionListener() {
-		@Override
-		public void onCompletion(MediaPlayer mp) {
-			ArCamera.this.onCompletion();
-		}
-	};*/
 }
