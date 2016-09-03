@@ -1844,7 +1844,17 @@ VGlGeometry CreateTimingGraphGeometry( const int lineVertCount )
 }
 
 
-float calibrateFovScale = 1.0f;	// for interactive tweaking
+float calibrateFovScale = 1.0f;	// for
+
+
+
+
+
+
+
+
+
+// interactive tweaking
 
 // VAO (and FBO) are not shared across different contexts, so this needs
 // to be called by the thread that will be drawing the warp.

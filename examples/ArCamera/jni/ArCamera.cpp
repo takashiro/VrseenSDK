@@ -53,9 +53,32 @@ static const char* cameraFragmentShaderSrc =
         "void main()\n"
         "{\n"
 		"   //gl_FragColor = vec4(1,1,1,1);\n"
-        "gl_FragColor = mix(texture2D( cam_tex, oTexCoord ),texture2D( bg_tex, oTexCoord ),0.2);\n"
+        "gl_FragColor = 0.99*texture2D( cam_tex, oTexCoord ) + 0.01*texture2D( bg_tex, oTexCoord );\n"
 		"//gl_FragColor = texture2D( cam_tex, oTexCoord );\n"
         "}\n";
+const char * panoVertexShaderSource =
+		"uniform highp mat4 Mvpm;\n"
+				"uniform highp mat4 Texm;\n"
+				"attribute vec4 Position;\n"
+				"attribute vec2 TexCoord;\n"
+				"varying  highp vec2 oTexCoord;\n"
+				"void main()\n"
+				"{\n"
+				"   gl_Position = Mvpm * Position;\n"
+				"   oTexCoord = vec2( Texm * vec4( TexCoord, 0, 1 ) );\n"
+				"}\n";
+const char * panoFragmentShaderSource =
+		"//#extension GL_OES_EGL_image_external : require\n"
+				"uniform sampler2D Texture0;\n"
+				"uniform lowp vec4 UniformColor;\n"
+				"uniform lowp vec4 ColorBias;\n"
+				"varying highp vec2 oTexCoord;\n"
+				"void main()\n"
+				"{\n"
+				"//if(oTexCoord[0] < 0.05) gl_FragColor = vec4(1,0,0,1);\n"
+				"//else\n"
+				"	gl_FragColor = texture2D( Texture0, oTexCoord );\n"
+				"}\n";
 extern "C" {
 static GLuint createShader(const char *src,GLuint shaderType){
 	GLuint shader = glCreateShader( shaderType );
@@ -74,10 +97,10 @@ static GLuint createShader(const char *src,GLuint shaderType){
     }
 	return shader;
 }
-static GLuint createProgram(){
+static GLuint createProgram(const char *ver, const char * fag){
 
-	GLuint vshader = createShader(cameraVertexShaderSrc,GL_VERTEX_SHADER);
-	GLuint fshader = createShader(cameraFragmentShaderSrc,GL_FRAGMENT_SHADER);
+	GLuint vshader = createShader(ver,GL_VERTEX_SHADER);
+	GLuint fshader = createShader(fag,GL_FRAGMENT_SHADER);
 	GLuint p = glCreateProgram();
     glAttachShader( p, vshader );
     glAttachShader( p, fshader );
@@ -101,7 +124,7 @@ static GLuint createRect(GLuint p){
     }
             vertices =
             {
-                    { { -1, -1, 0 }, { -1, 1, 0 }, { 1, -1, 0 }, { 1, 1, 0 } },
+                    { { -0.99, -0.99, 0 }, { -0.99, 0.99, 0 }, { 0.99, -0.99, 0 }, { 0.99, 0.99, 0 } },
                     { { 0, 1 }, { 0, 0 }, { 1, 1 }, { 1, 0 } }
             };
     unsigned short indices[6] = { 0, 1, 2, 2, 1, 3 };
@@ -253,9 +276,18 @@ void ArCamera::init(const VString &, const VString &, const VString &)
     m_scene.Znear = 0.1f;
     m_scene.Zfar = 200.0f;
 
-	program = createProgram();
+	program = createProgram(cameraVertexShaderSrc,cameraFragmentShaderSrc);
+	bgProgram = createProgram(panoVertexShaderSource,panoFragmentShaderSource);
+	locMVP = glGetUniformLocation(bgProgram, "Mvpm");
+	locTexMatrix = glGetUniformLocation(bgProgram,"Texm");
+
+
 	vao = createRect(program);
 	numEyes = vApp->renderMonoMode() ? 1 : 2;
+
+	GLint tmp0 ;
+	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &tmp0);
+	backFbo = tmp0;
 
 	glGenFramebuffers(1, &fbo1);
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo1);
@@ -520,8 +552,12 @@ VMatrix4f ArCamera::drawEyeView( const int eye, const float fovDegrees )
     if ( ( m_movieTexture != NULL ))
 	{
         // draw animated movie panorama
+
+/*
 		glActiveTexture( GL_TEXTURE0 );
         glBindTexture( GL_TEXTURE_EXTERNAL_OES, m_movieTexture->textureId );
+
+*/
 
 		glActiveTexture( GL_TEXTURE1 );
         glBindTexture( GL_TEXTURE_2D, m_backgroundTexId );
@@ -529,20 +565,20 @@ VMatrix4f ArCamera::drawEyeView( const int eye, const float fovDegrees )
 		glDisable( GL_DEPTH_TEST );
 		glDisable( GL_CULL_FACE );
 
-        VGlShader & prog = m_panoramaProgram;
+		glUseProgram( bgProgram );
+		//glUseProgram(m_panoramaProgram.program);
 
-		glUseProgram( prog.program );
-		glUniform4f( prog.uniformColor, 1.0f, 1.0f, 1.0f, 1.0f );
-
+		GLint tt = glGetUniformLocation(bgProgram,"Texture0");
+		glUniform1i(tt,1);
 		// Videos have center as initial focal point - need to rotate 90 degrees to start there
         const VMatrix4f view = m_scene.ViewMatrixForEye( 0 ) * VMatrix4f::RotationY( M_PI / 2 );
         const VMatrix4f proj = m_scene.ProjectionMatrixForEye( 0, fovDegrees );
 
-        glUniformMatrix4fv( prog.uniformTexMatrix, 1, GL_FALSE, texmForVideo( eye ).transposed().cell[ 0 ] );
-        glUniformMatrix4fv( prog.uniformModelViewProMatrix, 1, GL_FALSE, ( proj * view ).transposed().cell[ 0 ] );
+        glUniformMatrix4fv( locTexMatrix, 1, GL_FALSE, texmForVideo( eye ).transposed().cell[ 0 ] );
+        glUniformMatrix4fv( locMVP, 1, GL_FALSE, ( proj * view ).transposed().cell[ 0 ] );
         m_globe.drawElements();
 
-		glBindTexture( GL_TEXTURE_EXTERNAL_OES, 0 );	// don't leave it bound
+		//glBindTexture( GL_TEXTURE_EXTERNAL_OES, 0 );	// don't leave it bound
 	}
 
 	return mvp;
@@ -639,7 +675,9 @@ VMatrix4f ArCamera::onNewFrame(VFrame vrFrame ) {
 
 	// Draw both eyes
 //	vApp->drawEyeViewsPostDistorted( m_scene.CenterViewMatrix() );
-	vApp->drawEyeViewsPostDistortedWithoutSmooth(m_scene.CenterViewMatrix());
+	VMatrix4f eyeMvp = vApp->drawEyeViewsFirst(m_scene.CenterViewMatrix());
+
+	vApp->drawEyeViewsSecond(eyeMvp);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo1);
 	glUseProgram( program );
@@ -667,19 +705,18 @@ VMatrix4f ArCamera::onNewFrame(VFrame vrFrame ) {
 					status); // TODO: fall back to something else
 		}
 		glActiveTexture( GL_TEXTURE2 );
-		glBindTexture( GL_TEXTURE_2D, vApp->swapParms().Images[eye][0].TexId );
+		glBindTexture( GL_TEXTURE_2D, vApp->swapParms().Images[eye][0].TexId);
 		VEglDriver::glBindVertexArrayOES( vao );
 		glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_SHORT , NULL );
 		vApp->swapParms().Images[eye][0].TexId = texids[eye];
 		break;
 	}
 	vApp->swapParms().Images[1][0].TexId = texids[0];
-	glActiveTexture(0);
-	glBindTexture( GL_TEXTURE_2D, 0 );
+	glActiveTexture(GL_TEXTURE1);
 	glBindTexture( GL_TEXTURE_EXTERNAL_OES, 0 );
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, backFbo);
 	glUseProgram(0);
-	vApp->kernel()->doSmooth(&(vApp->swapParms()));
+	vApp->kernel()->doSmooth(&vApp->swapParms());
     return m_scene.CenterViewMatrix();
 }
 

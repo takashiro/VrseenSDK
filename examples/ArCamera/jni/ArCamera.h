@@ -22,9 +22,15 @@ public:
 	};
 
 	GLuint program;
+	GLuint bgProgram;
+	GLint locTexMatrix;
+	GLint locMVP;
+
 	GLuint vao;
 	int numEyes;
 	GLuint fbo1;
+	GLuint backFbo;
+
 	GLuint *texids;
 	VEyeItem::Settings bufferParms;
     ArCamera(JNIEnv *jni, jclass activityClass, jobject activityObject);
