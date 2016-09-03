@@ -34,6 +34,8 @@ public:
 
     VMainActivity *appInterface();
 
+    void drawEyeViewsPostDistorted( VMatrix4f const & viewMatrix, const int numPresents = 1);
+
     void recenterYaw( const bool showBlack );
     void setRecenterYawFrameStart( const long long frameNumber );
     long long recenterYawFrameStart() const;
@@ -96,8 +98,8 @@ public:
 
     const VZipFile &apkFile() const;
 
-    VMatrix4f drawEyeViewsFirst( VMatrix4f const & centerViewMatrix);
-    void drawEyeViewsSecond(VMatrix4f mvp, const int numPresents = 1);
+    void drawEyeViewsPostDistorted(VMatrix4f const &centerViewMatrix, VMatrix4f mvp,
+                                       const int numPresents);
 
     VText text;
     VPanel panel;

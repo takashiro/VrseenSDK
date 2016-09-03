@@ -57,7 +57,6 @@ public:
 
 private:
     // shared vars
-    VGlGeometry m_globe;
 	VSceneView m_scene;
     bool m_videoWasPlayingWhenPaused;	// state of video when main activity was paused
 

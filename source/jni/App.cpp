@@ -1217,7 +1217,7 @@ struct App::Private
             // Main loop logic / draw code
             if (!readyToExit) {
                 lastViewMatrix = activity->onNewFrame(self->text.vrFrame);
-                //self->drawEyeViewsPostDistorted(lastViewMatrix);
+                self->drawEyeViewsPostDistorted(lastViewMatrix);
             }
 
             // MWC demo hack to allow keyboard swipes
@@ -1673,50 +1673,21 @@ long long App::recenterYawFrameStart() const
 //    glDrawElements(GL_LINES, d->unitCubeLines.indexCount, GL_UNSIGNED_SHORT, NULL);
 //    glOperation.glBindVertexArrayOES_( 0 );
 //}
-VMatrix4f App::drawEyeViewsFirst(VMatrix4f const & centerViewMatrix)
+
+void App::drawEyeViewsPostDistorted(VMatrix4f const &centerViewMatrix,
+                                    const int numPresents)
 {
     // update vr lib systems after the app frame, but before rendering anything
-    VMatrix4f mvp;
-    gazeCursor().Frame( centerViewMatrix, text.vrFrame.deltaSeconds );
-
-    worldFontSurface().Finish( centerViewMatrix );
 
     // Increase the fov by about 10 degrees if we are not holding 60 fps so
     // there is less black pull-in at the edges.
     //
     // Doing this dynamically based just on time causes visible flickering at the
     // periphery when the fov is increased, so only do it if minimumVsyncs is set.
-    const float fovDegrees = VDevice::instance()->eyeDisplayFov[0] +
-            ( (d->swapParms.MinimumVsyncs > 1 ) ? 10.0f : 0.0f ) +
-            ( ( !d->showVignette ) ? 5.0f : 0.0f );
+    VMatrix4f mvp;
+    gazeCursor().Frame( centerViewMatrix, text.vrFrame.deltaSeconds );
 
-    // DisplayMonoMode uses a single eye rendering for speed improvement
-    // and / or high refresh rate double-scan hardware modes.
-    VArray<VItem*> eyeItemList = d->scene->getEyeItemList();
-    const int numEyes = d->renderMonoMode ? 1 : 2;
-
-    // Flush out and report any errors
-    d->m_glStatus.logErrorsEnum("FrameStart");
-
-    if ( d->drawCalibrationLines && d->calibrationLinesDrawn )
-    {
-        // doing a time warp test, don't generate new images
-        vInfo( "drawCalibrationLines && calibrationLinesDrawn" );
-    }
-    else
-    {
-        for(int eye = 0;eye<numEyes;++eye)
-        {
-            eyeItemList[eye]->paint();
-            // Call back to the app for drawing.
-            mvp = d->activity->drawEyeView(eye, fovDegrees);
-        }
-    }
-    return mvp;
-}
-void App::drawEyeViewsSecond(VMatrix4f mvp,const int numPresents)
-{
-    // update vr lib systems after the app frame, but before rendering anything
+    worldFontSurface().Finish( centerViewMatrix );
 
     // Increase the fov by about 10 degrees if we are not holding 60 fps so
     // there is less black pull-in at the edges.
@@ -1741,6 +1712,9 @@ void App::drawEyeViewsSecond(VMatrix4f mvp,const int numPresents)
     {
         for(int eye = 0;eye<numEyes;++eye)
         {
+            eyeItemList[eye]->paint();
+            // Call back to the app for drawing.
+            mvp = d->activity->drawEyeView(eye, fovDegrees);
             d->gui->update();
 
             for (VModel *model : d->models) {
@@ -1790,7 +1764,7 @@ void App::drawEyeViewsSecond(VMatrix4f mvp,const int numPresents)
             d->swapParms.Images[eye][0].Pose  = d->sensorForNextWarp;
             // d->kernel->m_smoothProgram = ChromaticAberrationCorrection(glOperation) ? WP_CHROMATIC : WP_SIMPLE;
         }
-        //vApp->kernel()->doSmooth(&vApp->swapParms());
+        vApp->kernel()->doSmooth(&vApp->swapParms());
     }
 }
 
