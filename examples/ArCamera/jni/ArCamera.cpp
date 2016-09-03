@@ -227,9 +227,6 @@ void ArCamera::init(const VString &, const VString &, const VString &)
         m_backgroundHeight = background.height();
 	}
 
-	vInfo("Creating Globe");
-    m_globe.createSphere();
-
 	// Stay exactly at the origin, so the panorama globe is equidistant
 	// Don't clear the head model neck length, or swipe view panels feel wrong.
 	VViewSettings viewParms = vApp->viewSettings();
@@ -241,89 +238,13 @@ void ArCamera::init(const VString &, const VString &, const VString &)
     m_scene.Zfar = 200.0f;
 
 	program = createProgram(cameraVertexShaderSrc,cameraFragmentShaderSrc);
-	bgProgram = createProgram(panoVertexShaderSource,panoFragmentShaderSource);
-	locMVP = glGetUniformLocation(bgProgram, "Mvpm");
-	locTexMatrix = glGetUniformLocation(bgProgram,"Texm");
-
 
 	vao = createRect(program);
 	numEyes = vApp->renderMonoMode() ? 1 : 2;
-
-	GLint tmp0 ;
-	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &tmp0);
-	backFbo = tmp0;
-
-	glGenFramebuffers(1, &fbo1);
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo1);
-	texids = new GLuint[numEyes];
-	glGenTextures(numEyes, texids);
-	bufferParms = VEyeItem::settings;
-	glActiveTexture(GL_TEXTURE2);
-	for (int i = 0; i < numEyes; i++) {
-		glBindTexture(GL_TEXTURE_2D, texids[i]);
-		if (bufferParms.colorFormat == VColor::COLOR_565) {
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB,
-						 bufferParms.widthScale * bufferParms.resolution,
-						 bufferParms.resolution, 0,
-						 GL_RGB, GL_UNSIGNED_SHORT_5_6_5, NULL);
-		} else if (bufferParms.colorFormat == VColor::COLOR_5551) {
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB5_A1,
-						 bufferParms.widthScale * bufferParms.resolution,
-						 bufferParms.resolution, 0,
-						 GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, NULL);
-		} else if (bufferParms.colorFormat == VColor::COLOR_8888_sRGB) {
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB8_ALPHA8,
-						 bufferParms.widthScale * bufferParms.resolution,
-						 bufferParms.resolution, 0,
-						 GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-		} else {
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8,
-						 bufferParms.widthScale * bufferParms.resolution,
-						 bufferParms.resolution, 0,
-						 GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-		}
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-		switch (bufferParms.commonParameterTexture) {
-			case VEyeItem::NearestTextureFilter:
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-				vInfo("textureFilter = TEXTURE_FILTER_NEAREST");
-				break;
-			case VEyeItem::BilinearTextureFilter:
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-				vInfo("textureFilter = TEXTURE_FILTER_BILINEAR");
-				break;
-			case VEyeItem::Aniso2TextureFilter:
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 2);
-				vInfo("textureFilter = TEXTURE_FILTER_ANISO_2");
-				break;
-			case VEyeItem::Aniso4TextureFilter:
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4);
-				vInfo("textureFilter = TEXTURE_FILTER_ANISO_4");
-				break;
-			default:
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-				vInfo("textureFilter = TEXTURE_FILTER_BILINEAR");
-				break;
-		}
-	}
 }
 
 void ArCamera::shutdown()
 {
-	// This is called by the VR thread, not the java UI thread.
-	vInfo("--------------- Oculus360Videos OneTimeShutdown ---------------");
-    m_globe.destroy();
-
     glDeleteTextures(1, &m_backgroundTexId);
 
     if (m_movieTexture != NULL) {
@@ -442,40 +363,25 @@ VMatrix4f	ArCamera::texmForBackground( const int eye )
 }
 VMatrix4f ArCamera::drawEyeView( const int eye, const float fovDegrees )
 {
-    VMatrix4f mvp = m_scene.MvpForEye( eye, fovDegrees );
-
-    if ( ( m_movieTexture != NULL ))
-	{
-        // draw animated movie panorama
-
-/*
-		glActiveTexture( GL_TEXTURE0 );
-        glBindTexture( GL_TEXTURE_EXTERNAL_OES, m_movieTexture->textureId );
-
-*/
-
-		glActiveTexture( GL_TEXTURE1 );
-        glBindTexture( GL_TEXTURE_2D, m_backgroundTexId );
-
-		glDisable( GL_DEPTH_TEST );
-		glDisable( GL_CULL_FACE );
-
-		glUseProgram( bgProgram );
-		//glUseProgram(m_panoramaProgram.program);
-
-		GLint tt = glGetUniformLocation(bgProgram,"Texture0");
-		glUniform1i(tt,1);
-		// Videos have center as initial focal point - need to rotate 90 degrees to start there
-        const VMatrix4f view = m_scene.ViewMatrixForEye( 0 ) * VMatrix4f::RotationY( M_PI / 2 );
-        const VMatrix4f proj = m_scene.ProjectionMatrixForEye( 0, fovDegrees );
-
-        glUniformMatrix4fv( locTexMatrix, 1, GL_FALSE, texmForVideo().transposed().cell[ 0 ] );
-        glUniformMatrix4fv( locMVP, 1, GL_FALSE, ( proj * view ).transposed().cell[ 0 ] );
-        m_globe.drawElements();
-
-		//glBindTexture( GL_TEXTURE_EXTERNAL_OES, 0 );	// don't leave it bound
+	NV_UNUSED(eye, fovDegrees);
+	VMatrix4f mvp;
+	if (m_movieTexture) {
+		glActiveTexture(GL_TEXTURE0);
+		m_movieTexture->Update();
+		glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0);
 	}
-
+	glUseProgram( program );
+	glUniform1i(glGetUniformLocation(program,"cam_tex"),1);
+	glClearColor(0, 0, 0, 1);
+	glActiveTexture( GL_TEXTURE1 );
+	glBindTexture( GL_TEXTURE_EXTERNAL_OES, m_movieTexture->textureId );
+	glDisable( GL_DEPTH_TEST );
+	glDisable( GL_CULL_FACE );
+	VEglDriver::glBindVertexArrayOES( vao );
+	glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_SHORT , NULL );
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture( GL_TEXTURE_EXTERNAL_OES, 0 );
+	glUseProgram(0);
 	return mvp;
 }
 
@@ -523,12 +429,6 @@ VMatrix4f ArCamera::onNewFrame(VFrame vrFrame ) {
 	m_scene.Frame(vApp->viewSettings(), vrFrameWithoutMove, vApp->swapParms().ExternalVelocity);
 
 	// Check for new video frames
-	// latch the latest movie frame to the texture.
-	if (m_movieTexture) {
-		glActiveTexture(GL_TEXTURE0);
-		m_movieTexture->Update();
-		glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0);
-	}
 
 	if (m_menuState != MENU_BROWSER && m_menuState != MENU_VIDEO_LOADING) {
 		if (vrFrame.input.buttonReleased & (BUTTON_TOUCH | BUTTON_A)) {
@@ -553,46 +453,6 @@ VMatrix4f ArCamera::onNewFrame(VFrame vrFrame ) {
 	// We could disable the srgb convert on the FBO. but this is easier
 	vApp->vrParms().colorFormat = m_useSrgb ? VColor::COLOR_8888_sRGB : VColor::COLOR_8888;
 
-
-	// Draw both eyes
-//	vApp->drawEyeViewsPostDistorted( m_scene.CenterViewMatrix() );
-	VMatrix4f eyeMvp = vApp->drawEyeViewsFirst(m_scene.CenterViewMatrix());
-
-	vApp->drawEyeViewsSecond(eyeMvp);
-
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo1);
-	glUseProgram( program );
-	glUniform1i(glGetUniformLocation(program,"cam_tex"),1);
-	glScissor(0, 0, bufferParms.widthScale * bufferParms.resolution,
-				  bufferParms.resolution);
-	glViewport(0, 0, bufferParms.widthScale * bufferParms.resolution,
-				   bufferParms.resolution);
-	glClearColor(0, 0, 0, 1);
-	glActiveTexture( GL_TEXTURE1 );
-	glBindTexture( GL_TEXTURE_EXTERNAL_OES, m_movieTexture->textureId );
-	glDisable( GL_DEPTH_TEST );
-	glDisable( GL_CULL_FACE );
-
-	for(int eye = 0;eye<numEyes;++eye)
-	{
-		glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,texids[eye],0);
-		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-		if (status != GL_FRAMEBUFFER_COMPLETE) {
-			vFatal(
-					"render FBO is not complete: " <<
-					status); // TODO: fall back to something else
-		}
-		VEglDriver::glBindVertexArrayOES( vao );
-		glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_SHORT , NULL );
-		vApp->swapParms().Images[eye][0].TexId = texids[eye];
-		break;
-	}
-	vApp->swapParms().Images[1][0].TexId = texids[0];
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture( GL_TEXTURE_EXTERNAL_OES, 0 );
-	glBindFramebuffer(GL_FRAMEBUFFER, backFbo);
-	glUseProgram(0);
-	vApp->kernel()->doSmooth(&vApp->swapParms());
     return m_scene.CenterViewMatrix();
 }
 
