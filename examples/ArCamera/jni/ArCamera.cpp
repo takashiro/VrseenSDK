@@ -178,12 +178,6 @@ void Java_com_vrseen_arcamera_ArCamera_construct(JNIEnv *jni, jclass, jobject ac
     (new ArCamera(jni, jni->GetObjectClass(activity), activity))->onCreate(nullptr, nullptr, nullptr);
 }
 
-void Java_com_vrseen_arcamera_ArCamera_onStart(JNIEnv *jni, jclass, jstring jpath)
-{
-    ArCamera *video = (ArCamera *) vApp->appInterface();
-    video->onStart(JniUtils::Convert(jni, jpath));
-}
-
 void Java_com_vrseen_arcamera_ArCamera_onFrameAvailable(JNIEnv *, jclass)
 {
     ArCamera *video = (ArCamera *) vApp->appInterface();
@@ -450,78 +444,9 @@ void ArCamera::command(const VEvent &event )
 
 }
 
-VMatrix4f	ArCamera::texmForVideo( const int eye )
+VMatrix4f	ArCamera::texmForVideo()
 {
-    if (m_videoUrl.endsWith("_TB.mp4", false)) {
-        // top / bottom stereo panorama
-		return eye ?
-            VMatrix4f( 1, 0, 0, 0,
-			0, 0.5, 0, 0.5,
-			0, 0, 1, 0,
-			0, 0, 0, 1 )
-			:
-            VMatrix4f( 1, 0, 0, 0,
-			0, 0.5, 0, 0,
-			0, 0, 1, 0,
-			0, 0, 0, 1 );
-	}
-    if (m_videoUrl.endsWith("_BT.mp4", false)) {
-        // top / bottom stereo panorama
-		return ( !eye ) ?
-            VMatrix4f( 1, 0, 0, 0,
-			0, 0.5, 0, 0.5,
-			0, 0, 1, 0,
-			0, 0, 0, 1 )
-			:
-            VMatrix4f( 1, 0, 0, 0,
-			0, 0.5, 0, 0,
-			0, 0, 1, 0,
-			0, 0, 0, 1 );
-	}
-    if (m_videoUrl.endsWith("_LR.mp4", false)) {
-        // left / right stereo panorama
-		return eye ?
-            VMatrix4f( 0.5, 0, 0, 0,
-			0, 1, 0, 0,
-			0, 0, 1, 0,
-			0, 0, 0, 1 )
-			:
-            VMatrix4f( 0.5, 0, 0, 0.5,
-			0, 1, 0, 0,
-			0, 0, 1, 0,
-			0, 0, 0, 1 );
-	}
-    if (m_videoUrl.endsWith("_RL.mp4", false)) {
-        // left / right stereo panorama
-		return ( !eye ) ?
-            VMatrix4f( 0.5, 0, 0, 0,
-			0, 1, 0, 0,
-			0, 0, 1, 0,
-			0, 0, 0, 1 )
-			:
-            VMatrix4f( 0.5, 0, 0, 0.5,
-			0, 1, 0, 0,
-			0, 0, 1, 0,
-			0, 0, 0, 1 );
-	}
-
-	// default to top / bottom stereo
-    if ( m_videoWidth == m_videoHeight )
-	{	// top / bottom stereo panorama
-		return eye ?
-            VMatrix4f( 1, 0, 0, 0,
-			0, 0.5, 0, 0.5,
-			0, 0, 1, 0,
-			0, 0, 0, 1 )
-			:
-            VMatrix4f( 1, 0, 0, 0,
-			0, 0.5, 0, 0,
-			0, 0, 1, 0,
-			0, 0, 0, 1 );
-
-		// We may want to support swapping top/bottom
-	}
-    return VMatrix4f();
+	return VMatrix4f();
 }
 
 VMatrix4f	ArCamera::texmForBackground( const int eye )
@@ -574,7 +499,7 @@ VMatrix4f ArCamera::drawEyeView( const int eye, const float fovDegrees )
         const VMatrix4f view = m_scene.ViewMatrixForEye( 0 ) * VMatrix4f::RotationY( M_PI / 2 );
         const VMatrix4f proj = m_scene.ProjectionMatrixForEye( 0, fovDegrees );
 
-        glUniformMatrix4fv( locTexMatrix, 1, GL_FALSE, texmForVideo( eye ).transposed().cell[ 0 ] );
+        glUniformMatrix4fv( locTexMatrix, 1, GL_FALSE, texmForVideo().transposed().cell[ 0 ] );
         glUniformMatrix4fv( locMVP, 1, GL_FALSE, ( proj * view ).transposed().cell[ 0 ] );
         m_globe.drawElements();
 
@@ -591,15 +516,6 @@ void ArCamera::stop()
     vWarn("DELETING MOVIE TEXTURE StopVideo()");
 }
 
-void ArCamera::onStart(const VString &url)
-{
-    m_videoUrl = url;
-    if (!m_videoUrl.isEmpty()) {
-        setMenuState( MENU_VIDEO_LOADING );
-        vInfo("StartVideo(" << m_videoUrl << ")");
-	}
-}
-
 void ArCamera::setMenuState( const OvrMenuState state )
 {
     m_menuState = state;
@@ -608,10 +524,6 @@ void ArCamera::setMenuState( const OvrMenuState state )
 	case MENU_NONE:
 		break;
     case MENU_BROWSER:
-        if (!m_videoUrl.isEmpty()) {
-            stop();
-            m_videoUrl.clear();
-		}
 		break;
 	case MENU_VIDEO_LOADING:
         if ( m_movieTexture != NULL )

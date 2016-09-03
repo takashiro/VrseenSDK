@@ -46,17 +46,13 @@ public:
 
     void stop();
 
-    void onStart(const VString &url);
-
-    VMatrix4f texmForVideo(int eye);
+    VMatrix4f texmForVideo();
     VMatrix4f texmForBackground(int eye);
 
     void setMenuState( const OvrMenuState state);
     OvrMenuState currentState() const { return m_menuState; }
 
     void setFrameAvailable(bool available) { m_frameAvailable = available; }
-
-    const VPath &videoUrl() { return m_videoUrl; }
 
     void onResume() override;
     void onPause() override;
@@ -72,8 +68,6 @@ private:
     VGlShader m_panoramaProgram;
     VGlShader m_fadedPanoramaProgram;
     VGlShader m_singleColorTextureProgram;
-
-    VPath m_videoUrl;
     OvrMenuState m_menuState;
 
     bool m_useSrgb;
