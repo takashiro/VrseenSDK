@@ -11,28 +11,9 @@ class ArCamera : public VMainActivity
 {
 public:
 
-	enum OvrMenuState
-	{
-		MENU_NONE,
-		MENU_BROWSER,
-		MENU_VIDEO_LOADING,
-		MENU_VIDEO_READY,
-		MENU_VIDEO_PLAYING,
-		NUM_MENU_STATES
-	};
-
 	GLuint program;
-	GLuint bgProgram;
-	GLint locTexMatrix;
-	GLint locMVP;
-
 	GLuint vao;
-	int numEyes;
-	GLuint fbo1;
-	GLuint backFbo;
 
-	GLuint *texids;
-	VEyeItem::Settings bufferParms;
     ArCamera(JNIEnv *jni, jclass activityClass, jobject activityObject);
     ~ArCamera();
 
@@ -46,12 +27,6 @@ public:
 
     void stop();
 
-    VMatrix4f texmForVideo();
-    VMatrix4f texmForBackground(int eye);
-
-    void setMenuState( const OvrMenuState state);
-    OvrMenuState currentState() const { return m_menuState; }
-
     void onResume() override;
     void onPause() override;
 
@@ -60,27 +35,10 @@ private:
 	VSceneView m_scene;
     bool m_videoWasPlayingWhenPaused;	// state of video when main activity was paused
 
-    // panorama vars
-
-    VGlShader m_panoramaProgram;
-    VGlShader m_fadedPanoramaProgram;
-    VGlShader m_singleColorTextureProgram;
-    OvrMenuState m_menuState;
-
     bool m_useSrgb;
 
     // video vars
     SurfaceTexture	*m_movieTexture;
-
-	// Set when MediaPlayer knows what the stream size is.
-	// current is the aspect size, texture may be twice as wide or high for 3D content.
-    int m_videoWidth;	// set to 0 when a new movie is started, don't render until non-0
-    int m_videoHeight;
-
-    GLuint m_backgroundTexId;
-    int m_backgroundWidth;
-    int m_backgroundHeight;
-
 };
 
 NV_NAMESPACE_END

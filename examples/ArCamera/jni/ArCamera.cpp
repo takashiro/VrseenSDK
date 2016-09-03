@@ -43,29 +43,7 @@ static const char* cameraFragmentShaderSrc =
         "{\n"
 				"gl_FragColor = texture2D( cam_tex, oTexCoord );\n"
         "}\n";
-const char * panoVertexShaderSource =
-		"uniform highp mat4 Mvpm;\n"
-				"uniform highp mat4 Texm;\n"
-				"attribute vec4 Position;\n"
-				"attribute vec2 TexCoord;\n"
-				"varying  highp vec2 oTexCoord;\n"
-				"void main()\n"
-				"{\n"
-				"   gl_Position = Mvpm * Position;\n"
-				"   oTexCoord = vec2( Texm * vec4( TexCoord, 0, 1 ) );\n"
-				"}\n";
-const char * panoFragmentShaderSource =
-		"//#extension GL_OES_EGL_image_external : require\n"
-				"uniform sampler2D Texture0;\n"
-				"uniform lowp vec4 UniformColor;\n"
-				"uniform lowp vec4 ColorBias;\n"
-				"varying highp vec2 oTexCoord;\n"
-				"void main()\n"
-				"{\n"
-				"//if(oTexCoord[0] < 0.05) gl_FragColor = vec4(1,0,0,1);\n"
-				"//else\n"
-				"	gl_FragColor = texture2D( Texture0, oTexCoord );\n"
-				"}\n";
+
 extern "C" {
 static GLuint createShader(const char *src,GLuint shaderType){
 	GLuint shader = glCreateShader( shaderType );
@@ -192,14 +170,8 @@ jobject Java_com_vrseen_arcamera_ArCamera_createMovieTexture(JNIEnv *, jclass)
 ArCamera::ArCamera(JNIEnv *jni, jclass activityClass, jobject activityObject)
     : VMainActivity(jni, activityClass, activityObject)
     , m_videoWasPlayingWhenPaused(false)
-    , m_menuState(MENU_NONE)
     , m_useSrgb(false)
     , m_movieTexture(nullptr)
-    , m_videoWidth(0)
-    , m_videoHeight(480)
-    , m_backgroundTexId(0)
-    , m_backgroundWidth(0)
-    , m_backgroundHeight(0)
 {
 }
 
@@ -212,20 +184,6 @@ void ArCamera::init(const VString &, const VString &, const VString &)
 	vApp->vrParms().colorFormat = VColor::COLOR_8888;
     vApp->vrParms().commonParameterDepth = VEyeItem::CommonParameter::DepthFormat_16;
 	vApp->vrParms().multisamples = 2;
-
-    m_panoramaProgram.initShader(VGlShader::getPanoVertexShaderSource(),VGlShader::getPanoProgramShaderSource()	);
-
-    m_fadedPanoramaProgram.initShader(cameraVertexShaderSrc,cameraFragmentShaderSrc);
-    m_singleColorTextureProgram.initShader(VGlShader::getSingleTextureVertexShaderSource(),VGlShader::getUniformSingleTextureProgramShaderSource());
-
-	// always fall back to valid background
-    if (m_backgroundTexId == 0) {
-        VTexture background(VResource("assets/background.jpg"), VTexture::UseSRGB);
-        m_backgroundTexId = background.id();
-        vAssert(m_backgroundTexId);
-        m_backgroundWidth = background.width();
-        m_backgroundHeight = background.height();
-	}
 
 	// Stay exactly at the origin, so the panorama globe is equidistant
 	// Don't clear the head model neck length, or swipe view panels feel wrong.
@@ -240,21 +198,14 @@ void ArCamera::init(const VString &, const VString &, const VString &)
 	program = createProgram(cameraVertexShaderSrc,cameraFragmentShaderSrc);
 
 	vao = createRect(program);
-	numEyes = vApp->renderMonoMode() ? 1 : 2;
 }
 
 void ArCamera::shutdown()
 {
-    glDeleteTextures(1, &m_backgroundTexId);
-
     if (m_movieTexture != NULL) {
         delete m_movieTexture;
         m_movieTexture = NULL;
 	}
-
-    m_panoramaProgram.destroy();
-    m_fadedPanoramaProgram.destroy();
-    m_singleColorTextureProgram.destroy();
 }
 
 void ArCamera::configureVrMode(VKernel* kernel)
@@ -271,10 +222,6 @@ bool ArCamera::onKeyEvent( const int keyCode, const KeyState::eKeyEventType even
 	if ( ( ( keyCode == AKEYCODE_BACK ) && ( eventType == KeyState::KEY_EVENT_SHORT_PRESS ) ) ||
 		( ( keyCode == KEYCODE_B ) && ( eventType == KeyState::KEY_EVENT_UP ) ) )
 	{
-        if ( m_menuState == MENU_VIDEO_LOADING )
-        {
-            return true;
-        }
 
 		// if no video is playing (either paused or stopped), let VrLib handle the back key
     }
@@ -299,24 +246,10 @@ void ArCamera::command(const VEvent &event )
         VEventLoop *receiver = static_cast<VEventLoop *>(event.data.toPointer());
         receiver->post("surfaceTexture", m_movieTexture->javaObject);
 
-		// don't draw the screen until we have the new size
-        m_videoWidth = 0;
 		return;
 
     } else if (event.name == "completion") {// video complete, return to menu
-        setMenuState( MENU_BROWSER );
-		return;
-
-    } else if (event.name == "video") {
-        m_videoWidth = event.data.at(0).toInt();
-        m_videoHeight = event.data.at(1).toInt();
-
-        if ( m_menuState != MENU_VIDEO_PLAYING ) // If video is already being played dont change the state to video ready
-		{
-            setMenuState( MENU_VIDEO_READY );
-		}
-
-		return;
+        return;
 
     } else if (event.name == "startError") {
 		// FIXME: this needs to do some parameter magic to fix xliff tags
@@ -329,38 +262,11 @@ void ArCamera::command(const VEvent &event )
 		BitmapFont & font = vApp->defaultFont();
 		font.WordWrapText( message, 1.0f );
         vApp->text.show(message, 4.5f);
-        setMenuState( MENU_BROWSER );
 		return;
 	}
 
 }
 
-VMatrix4f	ArCamera::texmForVideo()
-{
-	return VMatrix4f();
-}
-
-VMatrix4f	ArCamera::texmForBackground( const int eye )
-{
-    if ( m_backgroundWidth == m_backgroundHeight )
-	{	// top / bottom stereo panorama
-		return eye ?
-            VMatrix4f(
-			1, 0, 0, 0,
-			0, 0.5, 0, 0.5,
-			0, 0, 1, 0,
-			0, 0, 0, 1 )
-			:
-            VMatrix4f(
-			1, 0, 0, 0,
-			0, 0.5, 0, 0,
-			0, 0, 1, 0,
-			0, 0, 0, 1 );
-
-		// We may want to support swapping top/bottom
-	}
-    return VMatrix4f();
-}
 VMatrix4f ArCamera::drawEyeView( const int eye, const float fovDegrees )
 {
 	NV_UNUSED(eye, fovDegrees);
@@ -392,34 +298,6 @@ void ArCamera::stop()
     vWarn("DELETING MOVIE TEXTURE StopVideo()");
 }
 
-void ArCamera::setMenuState( const OvrMenuState state )
-{
-    m_menuState = state;
-    switch ( m_menuState )
-	{
-	case MENU_NONE:
-		break;
-    case MENU_BROWSER:
-		break;
-	case MENU_VIDEO_LOADING:
-        if ( m_movieTexture != NULL )
-		{
-            delete m_movieTexture;
-            m_movieTexture = NULL;
-        }
-		break;
-	case MENU_VIDEO_READY:
-		break;
-    case MENU_VIDEO_PLAYING:
-		break;
-	default:
-		vInfo("Oculus360Videos::SetMenuState unknown state:" << static_cast< int >( state ));
-		vAssert( false );
-		break;
-	}
-}
-
-
 VMatrix4f ArCamera::onNewFrame(VFrame vrFrame ) {
 	// Disallow player foot movement, but we still want the head model
 	// movement for the swipe view.
@@ -427,28 +305,6 @@ VMatrix4f ArCamera::onNewFrame(VFrame vrFrame ) {
 	vrFrameWithoutMove.input.sticks[0][0] = 0.0f;
 	vrFrameWithoutMove.input.sticks[0][1] = 0.0f;
 	m_scene.Frame(vApp->viewSettings(), vrFrameWithoutMove, vApp->swapParms().ExternalVelocity);
-
-	// Check for new video frames
-
-	if (m_menuState != MENU_BROWSER && m_menuState != MENU_VIDEO_LOADING) {
-		if (vrFrame.input.buttonReleased & (BUTTON_TOUCH | BUTTON_A)) {
-			/*if ( IsVideoPlaying() )
-            {
-                PauseVideo( false );
-            }
-            else
-            {
-                ResumeVideo();
-            }*/
-		}
-	}
-
-	// State transitions
-	if ((m_menuState == MENU_VIDEO_READY) &&
-		(m_movieTexture != NULL)) {
-		setMenuState(MENU_VIDEO_PLAYING);
-		vApp->recenterYaw(true);
-	}
 
 	// We could disable the srgb convert on the FBO. but this is easier
 	vApp->vrParms().colorFormat = m_useSrgb ? VColor::COLOR_8888_sRGB : VColor::COLOR_8888;
