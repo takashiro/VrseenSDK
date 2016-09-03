@@ -24,8 +24,6 @@ public class ArCamera implements android.graphics.SurfaceTexture.OnFrameAvailabl
 	SurfaceTexture movieTexture;
 	Camera	camera;
 
-	boolean gotFirstFrame;
-
 	boolean previewStarted;
 
 	long	appPtr = 0;	// this must be cached for the onFrameAvailable callback :(
@@ -37,14 +35,9 @@ public class ArCamera implements android.graphics.SurfaceTexture.OnFrameAvailabl
 	public native void nativeSetCameraFov(long appPtr, float fovHorizontal, float fovVertical);
 	*/
 	public void onFrameAvailable(SurfaceTexture surfaceTexture) {
-		if (gotFirstFrame) {
-			return;
-		}
 		if ( camera == null ) {
 			return;
 		}
-		gotFirstFrame = true;
-
 		// Now that there is an image ready, tell native code to display it
 		Camera.Parameters parms = camera.getParameters();
 		float fovH = parms.getHorizontalViewAngle();
@@ -61,40 +54,13 @@ public class ArCamera implements android.graphics.SurfaceTexture.OnFrameAvailabl
 		Log.v(TAG,  "seconds to first frame: " + (now-startPreviewTime) * 10e-10f);
 		onFrameAvailable();
 	}
-
-	public void startExposureLock( long appPtr_, boolean locked ) {
-		//Log.d( TAG, "startExposureLock appPtr_ is " + Long.toHexString( appPtr ) + " : " + Long.toHexString( appPtr_ ) );
-/*		if ( BuildConfig.DEBUG && ( appPtr != appPtr_ ) && ( appPtr != 0 ) )
-		{ 
-			//Log.d( TAG, "startExposureLock: appPtr changed!" );
-			assert false; // if this asserts then the wrong instance is being called
-		} */
-
-		Log.v(TAG, "startExposureLock:" + locked);
-		
-		if ( camera == null ) {
-			return;
-		}
-		
-		// Magic set of parameters from jingoolee@samsung.com
-		Camera.Parameters parms = camera.getParameters();
-
-		parms.setAutoExposureLock( locked );
-		parms.setAutoWhiteBalanceLock( locked );
-		
-		camera.setParameters( parms );
-	}
-
-	//passthrough
 	
 	public ArCamera(Activity activity) {
-//		audioManager = (AudioManager) activity.getSystemService(Context.AUDIO_SERVICE);
 		construct(activity);
 		Log.v(TAG, "New ArCamera");
 	}
 
-	public void start(String pathName) {
-		onStart(pathName);
+	public void start() {
 		movieTexture = createMovieTexture();
 		if (movieTexture == null) {
 			Log.e(TAG, "nativeGetCameraSurfaceTexture returned NULL");
@@ -106,7 +72,6 @@ public class ArCamera implements android.graphics.SurfaceTexture.OnFrameAvailabl
 		startPreviewTime = System.nanoTime();
 		if (camera != null) 
 		{
-			gotFirstFrame = false;
 			camera.startPreview();		
 			previewStarted = true;			
 			return;
@@ -195,7 +160,6 @@ public class ArCamera implements android.graphics.SurfaceTexture.OnFrameAvailabl
 		}
 		
 		Log.v(TAG, "camera.startPreview");
-		gotFirstFrame = false;
 		camera.startPreview();
 		previewStarted = true;
 	}
@@ -298,8 +262,6 @@ public class ArCamera implements android.graphics.SurfaceTexture.OnFrameAvailabl
 	native SurfaceTexture createMovieTexture();
 	
 	native void construct(Activity activity);
-	
-	native void onStart(String path);
 
 	native void onVideoSizeChanged(int width, int height);
 

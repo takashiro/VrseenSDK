@@ -25,7 +25,7 @@ public class MainActivity extends VrActivity {
 		}
 
 		video = new ArCamera(this);
-		video.start(videoPath);
+		video.start();
 	}
 
 	@Override
