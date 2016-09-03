@@ -27,34 +27,21 @@
 
 NV_NAMESPACE_BEGIN
 static const char* cameraVertexShaderSrc =
-        "//uniform mat4 Mvpm;\n"
-        "//uniform mat4 Texm;\n"
         "attribute vec4 Position;\n"
         "attribute vec2 TexCoord;\n"
-        "uniform mediump vec4 UniformColor;\n"
         "varying  highp vec2 oTexCoord;\n"
-        "//varying  lowp vec4 oColor;\n"
         "void main()\n"
         "{\n"
-        "   //vec4 top = Texm * Position;\n"
-        "   //vec4 bottom = Mvpm * Position;\n"
-        "   //gl_Position = mix( bottom, top, TexCoord.y );\n"
         "   gl_Position = Position;\n"
         "   oTexCoord = TexCoord;\n"
-        "   //oColor = VertexColor * UniformColor;\n"
         "}\n";
 static const char* cameraFragmentShaderSrc =
         "#extension GL_OES_EGL_image_external : require\n"
         "uniform samplerExternalOES cam_tex;\n"
-		"uniform sampler2D bg_tex;\n"
-        "uniform lowp vec4 ColorBias;\n"
         "varying highp vec2 oTexCoord;\n"
-        "//varying lowp vec4 oColor;\n"
         "void main()\n"
         "{\n"
-		"   //gl_FragColor = vec4(1,1,1,1);\n"
-        "gl_FragColor = 0.99*texture2D( cam_tex, oTexCoord ) + 0.01*texture2D( bg_tex, oTexCoord );\n"
-		"//gl_FragColor = texture2D( cam_tex, oTexCoord );\n"
+				"gl_FragColor = texture2D( cam_tex, oTexCoord );\n"
         "}\n";
 const char * panoVertexShaderSource =
 		"uniform highp mat4 Mvpm;\n"
@@ -180,8 +167,7 @@ void Java_com_vrseen_arcamera_ArCamera_construct(JNIEnv *jni, jclass, jobject ac
 
 void Java_com_vrseen_arcamera_ArCamera_onFrameAvailable(JNIEnv *, jclass)
 {
-    ArCamera *video = (ArCamera *) vApp->appInterface();
-    video->setFrameAvailable(true);
+
 }
 
 jobject Java_com_vrseen_arcamera_ArCamera_createMovieTexture(JNIEnv *, jclass)
@@ -214,7 +200,6 @@ ArCamera::ArCamera(JNIEnv *jni, jclass activityClass, jobject activityObject)
     , m_backgroundTexId(0)
     , m_backgroundWidth(0)
     , m_backgroundHeight(0)
-    , m_frameAvailable(false)
 {
 }
 
@@ -224,8 +209,6 @@ ArCamera::~ArCamera()
 
 void ArCamera::init(const VString &, const VString &, const VString &)
 {
-	vInfo("--------------- Oculus360Videos OneTimeInit ---------------");
-
 	vApp->vrParms().colorFormat = VColor::COLOR_8888;
     vApp->vrParms().commonParameterDepth = VEyeItem::CommonParameter::DepthFormat_16;
 	vApp->vrParms().multisamples = 2;
@@ -545,7 +528,6 @@ VMatrix4f ArCamera::onNewFrame(VFrame vrFrame ) {
 		glActiveTexture(GL_TEXTURE0);
 		m_movieTexture->Update();
 		glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0);
-		m_frameAvailable = false;
 	}
 
 	if (m_menuState != MENU_BROWSER && m_menuState != MENU_VIDEO_LOADING) {
@@ -580,10 +562,7 @@ VMatrix4f ArCamera::onNewFrame(VFrame vrFrame ) {
 
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo1);
 	glUseProgram( program );
-	GLint x=glGetUniformLocation(program,"cam_tex");
-	glUniform1i(x,1);
-	x=glGetUniformLocation(program,"bg_tex");
-	glUniform1i(x,2);
+	glUniform1i(glGetUniformLocation(program,"cam_tex"),1);
 	glScissor(0, 0, bufferParms.widthScale * bufferParms.resolution,
 				  bufferParms.resolution);
 	glViewport(0, 0, bufferParms.widthScale * bufferParms.resolution,
@@ -603,8 +582,6 @@ VMatrix4f ArCamera::onNewFrame(VFrame vrFrame ) {
 					"render FBO is not complete: " <<
 					status); // TODO: fall back to something else
 		}
-		glActiveTexture( GL_TEXTURE2 );
-		glBindTexture( GL_TEXTURE_2D, vApp->swapParms().Images[eye][0].TexId);
 		VEglDriver::glBindVertexArrayOES( vao );
 		glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_SHORT , NULL );
 		vApp->swapParms().Images[eye][0].TexId = texids[eye];

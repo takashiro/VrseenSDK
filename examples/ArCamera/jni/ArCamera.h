@@ -52,8 +52,6 @@ public:
     void setMenuState( const OvrMenuState state);
     OvrMenuState currentState() const { return m_menuState; }
 
-    void setFrameAvailable(bool available) { m_frameAvailable = available; }
-
     void onResume() override;
     void onPause() override;
 
@@ -84,7 +82,6 @@ private:
     int m_backgroundWidth;
     int m_backgroundHeight;
 
-    bool m_frameAvailable;
 };
 
 NV_NAMESPACE_END
