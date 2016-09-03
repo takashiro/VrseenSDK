@@ -1673,9 +1673,10 @@ long long App::recenterYawFrameStart() const
 //    glDrawElements(GL_LINES, d->unitCubeLines.indexCount, GL_UNSIGNED_SHORT, NULL);
 //    glOperation.glBindVertexArrayOES_( 0 );
 //}
-void App::drawEyeViewsPostDistortedWithoutSmooth(VMatrix4f const & centerViewMatrix, const int numPresents)
+VMatrix4f App::drawEyeViewsFirst(VMatrix4f const & centerViewMatrix)
 {
     // update vr lib systems after the app frame, but before rendering anything
+    VMatrix4f mvp;
     gazeCursor().Frame( centerViewMatrix, text.vrFrame.deltaSeconds );
 
     worldFontSurface().Finish( centerViewMatrix );
@@ -1707,9 +1708,39 @@ void App::drawEyeViewsPostDistortedWithoutSmooth(VMatrix4f const & centerViewMat
         for(int eye = 0;eye<numEyes;++eye)
         {
             eyeItemList[eye]->paint();
-
             // Call back to the app for drawing.
-            const VMatrix4f mvp = d->activity->drawEyeView(eye, fovDegrees);
+            mvp = d->activity->drawEyeView(eye, fovDegrees);
+        }
+    }
+    return mvp;
+}
+void App::drawEyeViewsSecond(VMatrix4f mvp,const int numPresents)
+{
+    // update vr lib systems after the app frame, but before rendering anything
+
+    // Increase the fov by about 10 degrees if we are not holding 60 fps so
+    // there is less black pull-in at the edges.
+    //
+    // Doing this dynamically based just on time causes visible flickering at the
+    // periphery when the fov is increased, so only do it if minimumVsyncs is set.
+    const float fovDegrees = VDevice::instance()->eyeDisplayFov[0] +
+                             ( (d->swapParms.MinimumVsyncs > 1 ) ? 10.0f : 0.0f ) +
+                             ( ( !d->showVignette ) ? 5.0f : 0.0f );
+
+    // DisplayMonoMode uses a single eye rendering for speed improvement
+    // and / or high refresh rate double-scan hardware modes.
+    VArray<VItem*> eyeItemList = d->scene->getEyeItemList();
+    const int numEyes = d->renderMonoMode ? 1 : 2;
+
+    if ( d->drawCalibrationLines && d->calibrationLinesDrawn )
+    {
+        // doing a time warp test, don't generate new images
+        vInfo( "drawCalibrationLines && calibrationLinesDrawn" );
+    }
+    else
+    {
+        for(int eye = 0;eye<numEyes;++eye)
+        {
             d->gui->update();
 
             for (VModel *model : d->models) {
@@ -1759,15 +1790,7 @@ void App::drawEyeViewsPostDistortedWithoutSmooth(VMatrix4f const & centerViewMat
             d->swapParms.Images[eye][0].Pose  = d->sensorForNextWarp;
             // d->kernel->m_smoothProgram = ChromaticAberrationCorrection(glOperation) ? WP_CHROMATIC : WP_SIMPLE;
         }
-    }
-}
-void App::drawEyeViewsPostDistorted( VMatrix4f const & centerViewMatrix, const int numPresents )
-{
-    drawEyeViewsPostDistortedWithoutSmooth( centerViewMatrix, numPresents );
-// This eye set is complete, use it now.
-    if ( numPresents > 0 )
-    {
-        d->kernel->doSmooth(&d->swapParms );
+        //vApp->kernel()->doSmooth(&vApp->swapParms());
     }
 }
 

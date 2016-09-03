@@ -125,8 +125,8 @@ public class ArCamera implements android.graphics.SurfaceTexture.OnFrameAvailabl
 			parms.setRecordingHint(true); 
 			this.hackVerticalFov = true;	// will always be 16:9			
 			
-			// set preview size 
-			parms.setPreviewSize(960, 540);
+			// set preview size 3333
+			parms.setPreviewSize(1024, 1024);
 			parms.set("fast-fps-mode", 2); // 2 for 120fps
 			parms.setPreviewFpsRange(120000, 120000);
 
