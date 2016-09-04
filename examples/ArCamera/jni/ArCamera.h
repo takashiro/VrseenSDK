@@ -30,7 +30,7 @@ public:
 
 private:
 	bool m_isPause;
-	
+
     // video vars
     SurfaceTexture	*m_cameraTexture;
 };
