@@ -29,11 +29,8 @@ public:
     void onPause() override;
 
 private:
-    // shared vars
-	VSceneView m_scene;
-
 	bool m_isPause;
-
+	
     // video vars
     SurfaceTexture	*m_cameraTexture;
 };
