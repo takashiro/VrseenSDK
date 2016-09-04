@@ -63,6 +63,15 @@ public class ArCamera implements android.graphics.SurfaceTexture.OnFrameAvailabl
 
 		camera = Camera.open();
 		Camera.Parameters parms = camera.getParameters();
+		Camera.Size preferredSize = parms.getPreferredPreviewSizeForVideo();
+		Log.i(TAG, "preferredSize: " + preferredSize.width + " x " + preferredSize.height );
+		parms.setPreviewSize(preferredSize.width, preferredSize.height);
+
+		List<int[]> fpsRanges = parms.getSupportedPreviewFpsRange();
+		int[] maxFps = fpsRanges.get(fpsRanges.size() - 1);
+		Log.i(TAG, "fps range: " + maxFps[0] + ","
+				+ maxFps[1]);
+		parms.setPreviewFpsRange(maxFps[0], maxFps[1]);
 		if ("true".equalsIgnoreCase(parms.get("vrmode-supported"))) 
 		{
 			Log.v(TAG, "VR Mode supported!");
@@ -73,45 +82,15 @@ public class ArCamera implements android.graphics.SurfaceTexture.OnFrameAvailabl
 			// true if the apps intend to record videos using MediaRecorder
 			parms.setRecordingHint(true); 
 			this.hackVerticalFov = true;	// will always be 16:9			
-			
-			//mark set preview size
-			parms.setPreviewSize(1024, 1024);
-			parms.set("fast-fps-mode", 2); // 2 for 120fps
-			parms.setPreviewFpsRange(120000, 120000);
 
 			parms.set("focus-mode", "continuous-video");
 			
 		} else { // not support vr mode }
-			Camera.Size preferredSize = parms.getPreferredPreviewSizeForVideo();
-			Log.v(TAG, "preferredSize: " + preferredSize.width + " x " + preferredSize.height );
-			
-			List<Integer> formats = parms.getSupportedPreviewFormats();
-			for (int i = 0; i < formats.size(); i++) {
-				Log.v(TAG, "preview format: " + formats.get(i) );
-			}
-
-			// set the preview size to something small
-			List<Camera.Size> previewSizes = parms.getSupportedPreviewSizes();
-			for (int i = 0; i < previewSizes.size(); i++) {
-				Log.v(TAG, "preview size: " + previewSizes.get(i).width + ","
-						+ previewSizes.get(i).height);
-			}
 
 			float fovH = parms.getHorizontalViewAngle();
 			float fovV = parms.getVerticalViewAngle();
 			Log.v(TAG, "camera view angles:" + fovH + " " + fovV);
-			
-			parms.setPreviewSize(800, 480);
-			List<int[]> fpsRanges = parms.getSupportedPreviewFpsRange();
-			for (int i = 0; i < fpsRanges.size(); i++) 
-			{
-				Log.v(TAG, "fps range: " + fpsRanges.get(i)[0] + ","
-								+ fpsRanges.get(i)[1]);
-			}
-	
-			int[] maxFps = fpsRanges.get(fpsRanges.size() - 1);
 			this.hackVerticalFov = false;
-			parms.setPreviewFpsRange(maxFps[0], maxFps[1]);						
 		}
 		
 		Log.v(TAG, "camera.getVideoStabilization: " + parms.getVideoStabilization() );
@@ -125,7 +104,6 @@ public class ArCamera implements android.graphics.SurfaceTexture.OnFrameAvailabl
 		}
 		Log.v(TAG, "camera.ois: " + parms.get("ois") );
 
-		
 		camera.setParameters(parms);
 		
 		Log.v(TAG, "camera.setPreviewTexture");
