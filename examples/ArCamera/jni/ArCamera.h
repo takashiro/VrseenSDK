@@ -25,20 +25,17 @@ public:
     void command(const VEvent &event) override;
     bool onKeyEvent(int keyCode, const KeyState::eKeyEventType eventType) override;
 
-    void stop();
-
     void onResume() override;
     void onPause() override;
 
 private:
     // shared vars
 	VSceneView m_scene;
-    bool m_videoWasPlayingWhenPaused;	// state of video when main activity was paused
 
-    bool m_useSrgb;
+	bool m_isPause;
 
     // video vars
-    SurfaceTexture	*m_movieTexture;
+    SurfaceTexture	*m_cameraTexture;
 };
 
 NV_NAMESPACE_END

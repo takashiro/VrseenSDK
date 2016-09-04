@@ -11,7 +11,7 @@ import android.util.Log;
 public class ArCamera implements android.graphics.SurfaceTexture.OnFrameAvailableListener {
 	private static final String TAG = "ArCamera";
 
-	SurfaceTexture movieTexture;
+	SurfaceTexture cameraTexture;
 	Camera	camera;
 
 	boolean previewStarted;
@@ -46,13 +46,13 @@ public class ArCamera implements android.graphics.SurfaceTexture.OnFrameAvailabl
 	}
 
 	public void start() {
-		movieTexture = createMovieTexture();
-		if (movieTexture == null) {
-			Log.e(TAG, "createMovieTexture returned NULL");
+		cameraTexture = createCameraTexture();
+		if (cameraTexture == null) {
+			Log.e(TAG, "createCameraTexture returned NULL");
 			return; // not set up yet
 		}
 		
-		movieTexture.setOnFrameAvailableListener(this);
+		cameraTexture.setOnFrameAvailableListener(this);
 
 		startPreviewTime = System.nanoTime();
 		if (camera != null) 
@@ -131,7 +131,7 @@ public class ArCamera implements android.graphics.SurfaceTexture.OnFrameAvailabl
 		
 		Log.v(TAG, "camera.setPreviewTexture");
 		try {
-			camera.setPreviewTexture(movieTexture);
+			camera.setPreviewTexture(cameraTexture);
 		} catch (IOException e) {
 			Log.v(TAG, "setPreviewTexture exception");
 		}
@@ -144,9 +144,9 @@ public class ArCamera implements android.graphics.SurfaceTexture.OnFrameAvailabl
 	public void stop() {
 
 		previewStarted = false;
-		if ( movieTexture != null )
+		if ( cameraTexture != null )
 		{
-			movieTexture.setOnFrameAvailableListener( null );
+			cameraTexture.setOnFrameAvailableListener( null );
 		}
 		if ( camera != null )
 		{
@@ -169,7 +169,7 @@ public class ArCamera implements android.graphics.SurfaceTexture.OnFrameAvailabl
 		}
 	}
 
-	native SurfaceTexture createMovieTexture();
+	native SurfaceTexture createCameraTexture();
 	
 	native void construct(Activity activity);
 
