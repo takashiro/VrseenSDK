@@ -143,11 +143,6 @@ void Java_com_vrseen_arcamera_ArCamera_construct(JNIEnv *jni, jclass, jobject ac
     (new ArCamera(jni, jni->GetObjectClass(activity), activity))->onCreate(nullptr, nullptr, nullptr);
 }
 
-void Java_com_vrseen_arcamera_ArCamera_onFrameAvailable(JNIEnv *, jclass)
-{
-
-}
-
 jobject Java_com_vrseen_arcamera_ArCamera_createCameraTexture(JNIEnv *, jclass)
 {
 	// set up a message queue to get the return message
@@ -180,22 +175,7 @@ ArCamera::~ArCamera()
 
 void ArCamera::init(const VString &, const VString &, const VString &)
 {
-	vApp->vrParms().colorFormat = VColor::COLOR_8888;
-    vApp->vrParms().commonParameterDepth = VEyeItem::CommonParameter::DepthFormat_16;
-	vApp->vrParms().multisamples = 2;
-
-	// Stay exactly at the origin, so the panorama globe is equidistant
-	// Don't clear the head model neck length, or swipe view panels feel wrong.
-	VViewSettings viewParms = vApp->viewSettings();
-	viewParms.eyeHeight = 0.0f;
-	vApp->setViewSettings( viewParms );
-
-	// Optimize for 16 bit depth in a modest theater size
-    m_scene.Znear = 0.1f;
-    m_scene.Zfar = 200.0f;
-
-	program = createProgram(cameraVertexShaderSrc,cameraFragmentShaderSrc);
-
+    program = createProgram(cameraVertexShaderSrc,cameraFragmentShaderSrc);
 	vao = createRect(program);
 }
 
@@ -209,10 +189,6 @@ void ArCamera::shutdown()
 
 void ArCamera::configureVrMode(VKernel* kernel)
 {
-	// We need very little CPU for pano browsing, but a fair amount of GPU.
-	// The CPU clock should ramp up above the minimum when necessary.
-	vInfo("ConfigureClocks: Oculus360Videos only needs minimal clocks");
-	// All geometry is blended, so save power with no MSAA
 	kernel->msaa = 1;
 }
 
@@ -230,7 +206,6 @@ void ArCamera::command(const VEvent &event )
         m_cameraTexture = new SurfaceTexture( vApp->vrJni() );
         VEventLoop *receiver = static_cast<VEventLoop *>(event.data.toPointer());
         receiver->post("surfaceTexture", m_cameraTexture->javaObject);
-		return;
     }
 }
 
@@ -259,17 +234,8 @@ VMatrix4f ArCamera::drawEyeView( const int eye, const float fovDegrees )
 }
 
 VMatrix4f ArCamera::onNewFrame(VFrame vrFrame ) {
-	// Disallow player foot movement, but we still want the head model
-	// movement for the swipe view.
-	VFrame vrFrameWithoutMove = vrFrame;
-	vrFrameWithoutMove.input.sticks[0][0] = 0.0f;
-	vrFrameWithoutMove.input.sticks[0][1] = 0.0f;
-	m_scene.Frame(vApp->viewSettings(), vrFrameWithoutMove, vApp->swapParms().ExternalVelocity);
-
-	// We could disable the srgb convert on the FBO. but this is easier
-	vApp->vrParms().colorFormat = VColor::COLOR_8888;
-
-    return m_scene.CenterViewMatrix();
+    NV_UNUSED(vrFrame);
+    return VMatrix4f();
 }
 
 void ArCamera::onResume()

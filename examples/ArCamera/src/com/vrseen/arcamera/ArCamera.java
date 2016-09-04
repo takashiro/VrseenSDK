@@ -37,7 +37,6 @@ public class ArCamera implements android.graphics.SurfaceTexture.OnFrameAvailabl
 
 		long now = System.nanoTime();
 		Log.v(TAG,  "seconds to first frame: " + (now-startPreviewTime) * 10e-10f);
-		onFrameAvailable();
 	}
 	
 	public ArCamera(Activity activity) {
@@ -172,7 +171,5 @@ public class ArCamera implements android.graphics.SurfaceTexture.OnFrameAvailabl
 	native SurfaceTexture createCameraTexture();
 	
 	native void construct(Activity activity);
-
-	native void onFrameAvailable();
 
 }
