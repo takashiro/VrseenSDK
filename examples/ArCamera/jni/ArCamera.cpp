@@ -206,6 +206,14 @@ void ArCamera::command(const VEvent &event )
         m_cameraTexture = new SurfaceTexture( vApp->vrJni() );
         VEventLoop *receiver = static_cast<VEventLoop *>(event.data.toPointer());
         receiver->post("surfaceTexture", m_cameraTexture->javaObject);
+        return;
+    }
+    if (event.name == "pause") {
+        m_isPause = true;
+        return;
+    }
+    if (event.name == "resume") {
+        m_isPause = false;
     }
 }
 
