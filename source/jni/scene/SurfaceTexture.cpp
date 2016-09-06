@@ -94,7 +94,6 @@ void SurfaceTexture::Update() {
     if ( !javaObject ) {
     	return;
     }
-
    jni->CallVoidMethod( javaObject, updateTexImageMethodId );
    nanoTimeStamp = jni->CallLongMethod( javaObject, getTimestampMethodId );
 }
