@@ -104,6 +104,8 @@ void VRectangle::setColor(const VColor &color)
 
 void VRectangle::paint(VPainter *painter)
 {
+    VGraphicsItem::paint(painter);
+
     glUseProgram(d->shader.program);
     glUniform4f(d->shader.uniformColor, d->color.red / 255.0f, d->color.green / 255.0f, d->color.blue / 255.0f, d->color.alpha / 255.0f);
     const VMatrix4f screenMvp = painter->viewMatrix() * d->transform;
