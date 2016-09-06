@@ -22,6 +22,7 @@ class BitmapFontSurface;
 class VViewSettings;
 class VStandardPath;
 class SurfaceTexture;
+class VGui;
 
 class App
 {
@@ -72,6 +73,8 @@ public:
 
     JNIEnv *vrJni();
     jobject &javaObject();
+
+    VGui *gui() const;
 
     VKernel* kernel();
     SurfaceTexture *dialogTexture();

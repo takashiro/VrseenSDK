@@ -309,7 +309,7 @@ struct App::Private
         , javaObject(nullptr)
         , activity(nullptr)
         , scene(new VScene)
-        , gui(nullptr)
+        , gui(new VGui)
         , modules(VModule::List())
     {
     }
@@ -317,6 +317,7 @@ struct App::Private
     ~Private()
     {
 //        delete scene;
+        delete gui;
     }
 
     void initFonts()
@@ -959,8 +960,6 @@ struct App::Private
             gazeCursor->Init();
 
             lastTouchpadTime = VTimer::Seconds();
-
-            gui = new VGui;
         }
 
         // FPS counter information
@@ -1269,9 +1268,6 @@ struct App::Private
             delete scene;
             scene = nullptr;
 
-            delete gui;
-            gui = nullptr;
-
             for (VModel *model : models) {
                 delete model;
             }
@@ -1553,6 +1549,11 @@ JNIEnv * App::vrJni()
 jobject	& App::javaObject()
 {
     return d->javaObject;
+}
+
+VGui *App::gui() const
+{
+    return d->gui;
 }
 
 VKernel* App::kernel()
