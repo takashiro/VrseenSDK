@@ -2,6 +2,8 @@
 
 #include "VMatrix4.h"
 
+NV_NAMESPACE_BEGIN
+
 class VPainter
 {
     friend class VGui;
@@ -19,3 +21,5 @@ private:
     NV_DECLARE_PRIVATE
     NV_DISABLE_COPY(VPainter)
 };
+
+NV_NAMESPACE_END
