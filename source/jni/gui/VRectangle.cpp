@@ -39,7 +39,7 @@ struct VRectangle::Private
     Private()
     {
         shader.initShader(VertexShaderSource, FragmentShaderSource);
-        geometry.createPlaneQuadGrid( 1, 1 );
+        geometry.createPlaneQuadGrid(1, 1);
     }
 
     ~Private()
@@ -76,22 +76,19 @@ void VRectangle::setRect(const VRect3f &rect)
     float widthScale;
     float heightScale;
     float aspect = 1.0f;
-    if ( screenWidth / screenHeight > aspect )
-    {	// screen is wider than movie, clamp size to height
+    if (screenWidth / screenHeight > aspect) {
+        // screen is wider than movie, clamp size to height
         heightScale = screenHeight * 0.5f;
         widthScale = heightScale * aspect;
-    }
-    else
-    {	// screen is taller than movie, clamp size to width
+    } else {
+        // screen is taller than movie, clamp size to width
         widthScale = screenWidth * 0.5f;
         heightScale = widthScale / aspect;
     }
 
     const float rotateAngle = ( size.x > size.z ) ? 0.0f : (float) M_PI * 0.5f;
 
-    d->transform = VMatrix4f::Translation( center ) *
-              VMatrix4f::RotationY( rotateAngle ) *
-              VMatrix4f::Scaling( widthScale, heightScale, 1.0f );
+    d->transform = VMatrix4f::Translation(center) * VMatrix4f::RotationY(rotateAngle) * VMatrix4f::Scaling(widthScale, heightScale, 1.0f);
 }
 
 VColor VRectangle::color() const
