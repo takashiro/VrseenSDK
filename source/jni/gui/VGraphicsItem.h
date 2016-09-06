@@ -5,7 +5,7 @@
 
 NV_NAMESPACE_BEGIN
 
-class VGuiPainter;
+class VPainter;
 
 class VGraphicsItem
 {
@@ -27,7 +27,7 @@ public:
     VRect3f boundingRect() const;
 
 protected:
-    virtual void paint(VGuiPainter *painter);
+    virtual void paint(VPainter *painter);
 
 private:
     void setParent(VGraphicsItem *parent);

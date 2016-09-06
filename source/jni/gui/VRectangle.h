@@ -18,7 +18,7 @@ public:
     void setColor(const VColor &color);
 
 protected:
-    void paint(VGuiPainter *painter) override;
+    void paint(VPainter *painter) override;
 
 private:
     NV_DECLARE_PRIVATE

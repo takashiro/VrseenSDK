@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vglobal.h"
+#include "VMatrix4.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -12,7 +12,7 @@ public:
     VGui();
     ~VGui();
 
-    void update();
+    void update(const VMatrix4f &mvp);
 
     VGraphicsItem *root() const;
 

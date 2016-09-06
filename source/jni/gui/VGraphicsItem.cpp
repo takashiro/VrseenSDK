@@ -79,7 +79,7 @@ VRect3f VGraphicsItem::boundingRect() const
     return VRect3f();
 }
 
-void VGraphicsItem::paint(VGuiPainter *painter)
+void VGraphicsItem::paint(VPainter *painter)
 {
     for (VGraphicsItem *child : d->children) {
         child->paint(painter);

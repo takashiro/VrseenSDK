@@ -1703,7 +1703,7 @@ void App::drawEyeViewsPostDistorted( VMatrix4f const & centerViewMatrix, const i
 
             // Call back to the app for drawing.
             const VMatrix4f mvp = d->activity->drawEyeView(eye, fovDegrees);
-            d->gui->update();
+            d->gui->update(mvp);
 
             for (VModel *model : d->models) {
                 model->draw(eye, mvp);
