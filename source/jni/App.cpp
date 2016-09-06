@@ -2,6 +2,7 @@
 
 #include <android/keycodes.h>
 #include <android/native_window.h>
+#include <3rdparty/nanovg/nanovg.h>
 
 #include "VModule.h"
 #include "VEglDriver.h"
@@ -36,7 +37,10 @@
 #include "VResource.h"
 #include "VTexture.h"
 #include "VGui.h"
+#include "VGuiText.h"
+#include "VRectangle.h"
 #include "VModel.h"
+#include "VWidget.h"
 
 //#define TEST_TIMEWARP_WATCHDOG
 #define EGL_PROTECTED_CONTENT_EXT 0x32c0
@@ -960,6 +964,8 @@ struct App::Private
             gazeCursor->Init();
 
             lastTouchpadTime = VTimer::Seconds();
+
+            gui->init();
         }
 
         // FPS counter information
@@ -1209,6 +1215,7 @@ struct App::Private
             // Main loop logic / draw code
             if (!readyToExit) {
                 lastViewMatrix = activity->onNewFrame(self->text.vrFrame);
+
                 self->drawEyeViewsPostDistorted(lastViewMatrix);
             }
 
@@ -1698,8 +1705,10 @@ void App::drawEyeViewsPostDistorted( VMatrix4f const & centerViewMatrix, const i
     }
     else
     {
+
         for(int eye = 0;eye<numEyes;++eye)
         {
+            d->gui->prepare();
             eyeItemList[eye]->paint();
 
             // Call back to the app for drawing.
@@ -1711,6 +1720,8 @@ void App::drawEyeViewsPostDistorted( VMatrix4f const & centerViewMatrix, const i
             }
 
             worldFontSurface().Render3D(defaultFont(), mvp.transposed());
+
+            d->gui->commit();
 
             glDisable(GL_DEPTH_TEST);
             glDisable(GL_CULL_FACE);
@@ -1781,11 +1792,9 @@ void App::drawEyeViewsPostDistorted( VMatrix4f const & centerViewMatrix, const i
 // draw a zero to destination alpha
 void App::drawScreenMask(const VMatrix4f &mvp, const float fadeFracX, const float fadeFracY)
 {
-    VMatrix4f mvpMatrix(mvp);
-
     glUseProgram(d->overlayScreenFadeMaskProgram.program);
 
-    glUniformMatrix4fv(d->overlayScreenFadeMaskProgram.uniformModelViewProMatrix, 1, GL_FALSE, mvpMatrix.transposed().cell[0]);
+    glUniformMatrix4fv(d->overlayScreenFadeMaskProgram.uniformModelViewProMatrix, 1, GL_FALSE, mvp.transposed().cell[0]);
 
     if (d->fadedScreenMaskSquare.vertexArrayObject == 0) {
         d->fadedScreenMaskSquare.createScreenQuad( fadeFracX, fadeFracY );
@@ -1795,10 +1804,12 @@ void App::drawScreenMask(const VMatrix4f &mvp, const float fadeFracX, const floa
     d->fadedScreenMaskSquare.drawElements();
     glColorMask(1.0f, 1.0f, 1.0f, 1.0f);
 }
+
 bool App::isShowFPS() const
 {
     return d->showFPS;
 }
+
 void App::showFPS(bool const show)
 {
     bool temp = d->showFPS;

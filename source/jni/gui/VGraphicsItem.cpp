@@ -84,6 +84,13 @@ void VGraphicsItem::setBoundingRect(const VRect3f &rect)
     d->boundingRect = rect;
 }
 
+void VGraphicsItem::init(void *vg)
+{
+    for (VGraphicsItem *child : d->children) {
+        child->init(vg);
+    }
+}
+
 void VGraphicsItem::paint(VPainter *painter)
 {
     for (VGraphicsItem *child : d->children) {

@@ -27,6 +27,8 @@ public:
     VRect3f boundingRect() const;
 
 protected:
+    virtual void init(void *vg);
+
     virtual void onFocus();
     virtual void onBlur();
     virtual void onClick();

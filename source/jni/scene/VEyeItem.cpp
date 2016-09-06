@@ -257,6 +257,7 @@ void VEyeItem::paint()
         } else {
             buffers.MultisampleMode = MultiSampleOff;
         }
+
         VEglDriver::logErrorsEnum( "Before framebuffer creation");
         buffers.eyeBuffer.Allocate(settings, buffers.MultisampleMode );
         VEglDriver::logErrorsEnum( "after framebuffer creation" );

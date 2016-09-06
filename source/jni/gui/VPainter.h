@@ -12,9 +12,11 @@ public:
     VPainter();
     ~VPainter();
 
+    void *nativeContext() const;
     const VMatrix4f &viewMatrix() const;
 
 protected:
+    void setNativeContext(void *context);
     void setViewMatrix(const VMatrix4f &viewMatrix);
 
 private:
