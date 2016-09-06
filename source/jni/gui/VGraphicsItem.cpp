@@ -1,5 +1,6 @@
 #include "VGraphicsItem.h"
 #include "VArray.h"
+#include "VTimer.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -9,6 +10,18 @@ struct VGraphicsItem::Private
     VArray<VGraphicsItem *> children;
     VRect3f boundingRect;
     VPosf pos;
+    bool hasFocus;
+    double focusTimestamp;
+    double clickElapsedTime;
+    bool clicked;
+
+    Private()
+        : hasFocus(false)
+        , focusTimestamp(0.0)
+        , clickElapsedTime(2.0)
+        , clicked(false)
+    {
+    }
 };
 
 VGraphicsItem::VGraphicsItem(VGraphicsItem *parent)
@@ -79,6 +92,16 @@ VRect3f VGraphicsItem::boundingRect() const
     return VRect3f();
 }
 
+double VGraphicsItem::clickElapsedTime() const
+{
+    return d->clickElapsedTime;
+}
+
+void VGraphicsItem::setClickElapsedTime(double elapsed)
+{
+    d->clickElapsedTime = elapsed;
+}
+
 void VGraphicsItem::setBoundingRect(const VRect3f &rect)
 {
     d->boundingRect = rect;
@@ -113,6 +136,40 @@ void VGraphicsItem::onBlur()
 
 void VGraphicsItem::onClick()
 {
+}
+
+void VGraphicsItem::onSensorChanged(const VMatrix4f &mvp)
+{
+    for (VGraphicsItem *child : d->children) {
+        child->onSensorChanged(mvp);
+    }
+
+    VRect3f rect = boundingRect();
+    VVect3f start = mvp.transform(rect.start);
+    VVect3f end = mvp.transform(rect.end);
+
+    bool hovered = start.x <= 0 && start.y <= 0 && end.x >= 0 && end.y >= 0;
+    if (hovered) {
+        if (!d->hasFocus) {
+            d->hasFocus = true;
+            d->focusTimestamp = VTimer::Seconds();
+            onFocus();
+        } else {
+            if (!d->clicked) {
+                double now = VTimer::Seconds();
+                if (now - d->focusTimestamp >= d->clickElapsedTime) {
+                    d->clicked = true;
+                    onClick();
+                }
+            }
+        }
+    } else {
+        if (d->hasFocus) {
+            d->hasFocus = false;
+            d->clicked = false;
+            onBlur();
+        }
+    }
 }
 
 NV_NAMESPACE_END

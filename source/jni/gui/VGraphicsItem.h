@@ -2,6 +2,7 @@
 
 #include "VPos.h"
 #include "VRect3.h"
+#include "VMatrix4.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -26,6 +27,9 @@ public:
 
     VRect3f boundingRect() const;
 
+    double clickElapsedTime() const;
+    void setClickElapsedTime(double elapsed);
+
 protected:
     virtual void init(void *vg);
 
@@ -37,6 +41,7 @@ protected:
     void setBoundingRect(const VRect3f &rect);
 
 private:
+    void onSensorChanged(const VMatrix4f &mvp);
     void setParent(VGraphicsItem *parent);
 
     NV_DECLARE_PRIVATE

@@ -54,6 +54,7 @@ void VGui::prepare()
 
 void VGui::update(const VMatrix4f &mvp)
 {
+    d->root.onSensorChanged(mvp);
     VPainter painter;
     painter.setNativeContext(d->vg);
     painter.setViewMatrix(mvp);

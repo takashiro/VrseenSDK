@@ -68,6 +68,7 @@ VRect3f VRectangle::rect() const
 void VRectangle::setRect(const VRect3f &rect)
 {
     d->rect = rect;
+    setBoundingRect(rect);
 
     const VVect3f size = rect.size();
     const VVect3f center = rect.start + size * 0.5f;
