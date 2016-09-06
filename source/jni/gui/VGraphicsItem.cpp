@@ -79,6 +79,11 @@ VRect3f VGraphicsItem::boundingRect() const
     return VRect3f();
 }
 
+void VGraphicsItem::setBoundingRect(const VRect3f &rect)
+{
+    d->boundingRect = rect;
+}
+
 void VGraphicsItem::paint(VPainter *painter)
 {
     for (VGraphicsItem *child : d->children) {

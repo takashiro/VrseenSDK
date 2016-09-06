@@ -28,6 +28,7 @@ public:
 
 protected:
     virtual void paint(VPainter *painter);
+    void setBoundingRect(const VRect3f &rect);
 
 private:
     void setParent(VGraphicsItem *parent);
