@@ -140,7 +140,8 @@ public:
                            GLbitfield mask,
                            GLenum filter);
    static void  glInvalidateFramebuffer(GLenum target, GLsizei numAttachments, const GLenum* attachments);
-
+   static void  glPushAttrib();
+   static void  glPopAttrib();
 
     int	m_glEsVersion;
     ushort	m_gpuType;

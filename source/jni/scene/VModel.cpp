@@ -3,7 +3,6 @@
 #include "VResource.h"
 #include "VGlGeometry.h"
 #include "VTexture.h"
-#include <jni.h>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -37,7 +36,7 @@ static const char*  glVertexShader =
         "void main()\n"
         "{\n"
         "    gl_Position = Mvpm * Position;\n"
-        "    oTexCoord = TexCoord;\n"
+        "    oTexCoord = vec2(TexCoord.x,1.0-TexCoord.y);\n"
         "}\n";
 
 static const char*  glFragmentShader =
@@ -167,13 +166,18 @@ void VModel::draw(int eye, const VMatrix4f & mvp )
     const VGlShader * shader = &d->loadModelProgram;
 
     glUseProgram(shader->program);
-    glUniform4f(shader->uniformColor, 1, 0, 0, 1);
     glUniformMatrix4fv(shader->uniformModelViewProMatrix, 1, GL_FALSE, mvp.transposed().cell[0]);
+    VEglDriver::glPushAttrib();
+
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc( GL_LEQUAL );
 
     for(unsigned int i = 0,len = d->geos.size();i<len;++i)
     {
         d->geos[i].drawElements();
     }
+
+    VEglDriver::glPopAttrib();
 }
 
 NV_NAMESPACE_END
