@@ -1,6 +1,7 @@
 #pragma once
 
 #include "VColor.h"
+#include "3rdparty/nanovg/nanovg.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -26,6 +27,8 @@ public:
     VGraphicsItem *root() const;
 
     void addItem(VGraphicsItem *item);
+
+    NVGcontext * getNvContext() const;
 
 private:
     NV_DECLARE_PRIVATE

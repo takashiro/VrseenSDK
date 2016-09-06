@@ -1,10 +1,11 @@
 #include "VGui.h"
 #include "VGraphicsItem.h"
 #include "VRectangle.h"
+
 #define NANOVG_GLES3_IMPLEMENTATION
+
 #include <GLES3/gl3.h>
 #include <EGL/egl.h>
-#include "3rdparty/nanovg/nanovg.h"
 #include "3rdparty/nanovg/nanovg_gl.h"
 
 
@@ -52,6 +53,11 @@ void VGui::setViewWidth(int width)
     d->viewWidth = width;
 }
 
+NVGcontext * VGui::getNvContext() const
+{
+    return d->vg;
+}
+
 int VGui::viewHeight() const
 {
     return d->viewHeight;
@@ -74,11 +80,11 @@ void VGui::setBackgroundColor(const VColor &color)
 
 void VGui::update()
 {
-    nvgBeginFrame(d->vg, d->viewWidth, d->viewHeight, 1.0f);
-    glClearColor(d->backgroundColor.red / 255.0f, d->backgroundColor.green / 255.0f, d->backgroundColor.blue / 255.0f, d->backgroundColor.alpha / 255.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+//    nvgBeginFrame(d->vg, d->viewWidth, d->viewHeight, 1.0f);
+//    glClearColor(d->backgroundColor.red / 255.0f, d->backgroundColor.green / 255.0f, d->backgroundColor.blue / 255.0f, d->backgroundColor.alpha / 255.0f);
+//    glClear(GL_COLOR_BUFFER_BIT);
     d->root.paint(reinterpret_cast<VGuiPainter *>(d->vg));
-    nvgEndFrame(d->vg);
+//    nvgEndFrame(d->vg);
 }
 
 VGraphicsItem *VGui::root() const

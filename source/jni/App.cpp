@@ -2,6 +2,7 @@
 
 #include <android/keycodes.h>
 #include <android/native_window.h>
+#include <3rdparty/nanovg/nanovg.h>
 
 #include "VModule.h"
 #include "VEglDriver.h"
@@ -39,6 +40,7 @@
 #include "VGuiText.h"
 #include "VRectangle.h"
 #include "VModel.h"
+#include "VWidget.h"
 
 //#define TEST_TIMEWARP_WATCHDOG
 #define EGL_PROTECTED_CONTENT_EXT 0x32c0
@@ -963,6 +965,10 @@ struct App::Private
             lastTouchpadTime = VTimer::Seconds();
 
             gui = new VGui;
+
+            //init nanovg text font
+            VGuiText *textFont = new VGuiText;
+            textFont->initFont(reinterpret_cast<VGuiPainter *>(gui->getNvContext()));
         }
 
         // FPS counter information
@@ -1212,6 +1218,7 @@ struct App::Private
             // Main loop logic / draw code
             if (!readyToExit) {
                 lastViewMatrix = activity->onNewFrame(self->text.vrFrame);
+
                 self->drawEyeViewsPostDistorted(lastViewMatrix);
             }
 
@@ -1699,14 +1706,18 @@ void App::drawEyeViewsPostDistorted( VMatrix4f const & centerViewMatrix, const i
     }
     else
     {
+
         for(int eye = 0;eye<numEyes;++eye)
         {
+            nvgBeginFrame(d->gui->getNvContext(), 1024, 1024, 1.0f);
             eyeItemList[eye]->paint();
 
             // Call back to the app for drawing.
             const VMatrix4f mvp = d->activity->drawEyeView(eye, fovDegrees);
 
-            d->gui->update();
+            VWidget *widget = new VWidget;
+            widget->drawButton(d->gui->getNvContext(), ICON_LOGIN, "Sign in", 100+138, 100, 100, 30, nvgRGBA(255,0,0,255));
+//            d->gui->update();
 
             for (VModel *model : d->models) {
                 model->draw(eye, mvp);
@@ -1714,6 +1725,7 @@ void App::drawEyeViewsPostDistorted( VMatrix4f const & centerViewMatrix, const i
 
             worldFontSurface().Render3D(defaultFont(), mvp.transposed());
 
+            nvgEndFrame(d->gui->getNvContext());
             glDisable(GL_DEPTH_TEST);
             glDisable(GL_CULL_FACE);
 

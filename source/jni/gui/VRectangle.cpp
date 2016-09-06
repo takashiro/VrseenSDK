@@ -52,5 +52,4 @@ void VRectangle::paint(VGuiPainter *painter)
     nvgFillColor(vg, nvgRGBA(d->color.red, d->color.green, d->color.blue, d->color.alpha));
     nvgFill(vg);
 }
-
 NV_NAMESPACE_END
