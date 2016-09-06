@@ -53,6 +53,11 @@ SceneManager::SceneManager( PanoCinema &cinema ) :
     Scene.Znear = 0.1f;
     Scene.Zfar = 2000.0f;
 
+	SceneSeatPositions[0].x = -3.353f;
+	SceneSeatPositions[0].y = 0.401f;
+	SceneSeatPositions[0].z = -0.000003f;
+	SceneSeatCount++;
+
     // if no seats, create some at the position of the seats in home_theater
     for( int seatPos = -1; seatPos <= 2; seatPos++ )
     {
@@ -69,7 +74,7 @@ SceneManager::SceneManager( PanoCinema &cinema ) :
         SceneSeatPositions[ SceneSeatCount ].y = -0.3f;
         SceneSeatCount++;
     }
-    SetSeat( 1 );
+    SetSeat( 0 );
 }
 
 void SceneManager::OneTimeInit(const VString &)
