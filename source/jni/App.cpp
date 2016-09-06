@@ -37,10 +37,7 @@
 #include "VResource.h"
 #include "VTexture.h"
 #include "VGui.h"
-#include "VGuiText.h"
-#include "VRectangle.h"
 #include "VModel.h"
-#include "VWidget.h"
 
 //#define TEST_TIMEWARP_WATCHDOG
 #define EGL_PROTECTED_CONTENT_EXT 0x32c0
