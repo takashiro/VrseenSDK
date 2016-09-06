@@ -96,4 +96,16 @@ void VGraphicsItem::setParent(VGraphicsItem *parent)
     d->parent = parent;
 }
 
+void VGraphicsItem::onFocus()
+{
+}
+
+void VGraphicsItem::onBlur()
+{
+}
+
+void VGraphicsItem::onClick()
+{
+}
+
 NV_NAMESPACE_END

@@ -27,6 +27,10 @@ public:
     VRect3f boundingRect() const;
 
 protected:
+    virtual void onFocus();
+    virtual void onBlur();
+    virtual void onClick();
+
     virtual void paint(VPainter *painter);
     void setBoundingRect(const VRect3f &rect);
 
