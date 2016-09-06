@@ -27,11 +27,11 @@ struct VColor
     {
     }
 
-    VColor(uint hex)
-        : red((uchar) (hex >> 16))
-        , green((uchar) (hex >> 8))
-        , blue((uchar) hex)
-        , alpha((uchar) (hex >> 24))
+    VColor(uint argb)
+        : red((uchar) (argb >> 16))
+        , green((uchar) (argb >> 8))
+        , blue((uchar) argb)
+        , alpha((uchar) (argb >> 24))
     {
     }
 
