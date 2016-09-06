@@ -21,7 +21,7 @@ public class MainActivity extends VrActivity {
 		Uri uri = intent.getData();
 		String videoPath = uri != null ? uri.toString() : null;
 		if (videoPath == null || videoPath.isEmpty()) {
-			videoPath = Environment.getExternalStorageDirectory().getAbsolutePath()+"/VRSeen/SDK/360Cinema/2D/cinema_test.mp4";
+			videoPath = Environment.getExternalStorageDirectory().getAbsolutePath()+"/VRSeen/SDK/360Cinema/cinema_test.mp4";
 		}
 
 		cinema = new PanoCinema(this);

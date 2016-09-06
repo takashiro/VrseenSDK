@@ -484,21 +484,22 @@ bool SceneManager::Command(const VEvent &event)
 			// if movie format is not set, make some assumptions based on the width and if it's 3D
 			if ( movie->Format == VT_UNKNOWN )
 			{
-				if ( movie->Is3D )
-				{
-					if ( width > height * 3 )
-					{
-						CurrentMovieFormat = VT_LEFT_RIGHT_3D_FULL;
-					}
-					else
+//				if ( movie->Is3D )
+//				{
+					if (width > height && width /2 > height )
 					{
 						CurrentMovieFormat = VT_LEFT_RIGHT_3D;
 					}
-				}
-				else
-				{
-					CurrentMovieFormat = VT_2D;
-				}
+					else if (width < height && width > height/2)
+					{
+						CurrentMovieFormat = VT_TOP_BOTTOM_3D;
+					}
+					else CurrentMovieFormat = VT_2D;
+//				}
+//				else
+//				{
+//					CurrentMovieFormat = VT_2D;
+//				}
 			}
 		}
 
