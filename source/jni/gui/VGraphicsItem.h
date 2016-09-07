@@ -1,6 +1,5 @@
 #pragma once
 
-#include "VPos.h"
 #include "VRect3.h"
 #include "VMatrix4.h"
 #include "VClickEvent.h"
@@ -21,10 +20,10 @@ public:
     void addChild(VGraphicsItem *child);
     void removeChild(VGraphicsItem *child);
 
-    VPosf pos() const;
-    void setPos(const VPosf &pos);
+    const VVect3f &pos() const;
+    void setPos(const VVect3f &pos);
 
-    VPosf globalPos() const;
+    VVect3f globalPos() const;
 
     const VRect3f &boundingRect() const;
 
@@ -34,6 +33,7 @@ public:
     bool hasFocus() const;
 
     const VMatrix4f &transform() const;
+    void updateTransform();
 
 protected:
     virtual void init(void *vg);

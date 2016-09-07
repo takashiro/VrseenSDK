@@ -10,7 +10,7 @@ struct VGraphicsItem::Private
     VGraphicsItem *parent;
     VArray<VGraphicsItem *> children;
     VRect3f boundingRect;
-    VPosf pos;
+    VVect3f pos;
     bool hasFocus;
     double focusTimestamp;
     double stareElapsedTime;
@@ -64,19 +64,20 @@ void VGraphicsItem::removeChild(VGraphicsItem *child)
     d->children.removeOne(child);
 }
 
-VPosf VGraphicsItem::pos() const
+const VVect3f &VGraphicsItem::pos() const
 {
     return d->pos;
 }
 
-void VGraphicsItem::setPos(const VPosf &pos)
+void VGraphicsItem::setPos(const VVect3f &pos)
 {
     d->pos = pos;
+    updateTransform();
 }
 
-VPosf VGraphicsItem::globalPos() const
+VVect3f VGraphicsItem::globalPos() const
 {
-    VPosf pos = d->pos;
+    VVect3f pos = d->pos;
     VGraphicsItem *parent = d->parent;
     while (parent) {
         pos += parent->pos();
@@ -105,10 +106,13 @@ const VMatrix4f &VGraphicsItem::transform() const
     return d->transform;
 }
 
-void VGraphicsItem::setBoundingRect(const VRect3f &rect)
+void VGraphicsItem::updateTransform()
 {
-    d->boundingRect = rect;
+    for (VGraphicsItem *child : d->children) {
+        child->updateTransform();
+    }
 
+    const VRect3f &rect = boundingRect();
     const VVect3f size = rect.size();
     const VVect3f center = rect.start + size * 0.5f;
     const float	 screenHeight = size.y;
@@ -128,7 +132,13 @@ void VGraphicsItem::setBoundingRect(const VRect3f &rect)
 
     const float rotateAngle = (size.x > size.z) ? 0.0f : (float) M_PI * 0.5f;
 
-    d->transform = VMatrix4f::Translation(center) * VMatrix4f::RotationY(rotateAngle) * VMatrix4f::Scaling(widthScale, heightScale, 1.0f);
+    d->transform = VMatrix4f::Translation(globalPos()) * VMatrix4f::Translation(center) * VMatrix4f::RotationY(rotateAngle) * VMatrix4f::Scaling(widthScale, heightScale, 1.0f);
+}
+
+void VGraphicsItem::setBoundingRect(const VRect3f &rect)
+{
+    d->boundingRect = rect;
+    updateTransform();
 }
 
 void VGraphicsItem::init(void *vg)
