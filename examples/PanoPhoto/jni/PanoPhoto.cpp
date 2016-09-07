@@ -594,12 +594,6 @@ VMatrix4f PanoPhoto::drawEyeView( const int eye, const float fovDegrees )
     return view;
 }
 
-
-float Fade( double now, double start, double length )
-{
-    return VAlgorithm::Clamp( ( ( now - start ) / length ), 0.0, 1.0 );
-}
-
 void PanoPhoto::startBackgroundPanoLoad(const VString &filename)
 {
     vInfo("StartBackgroundPanoLoad" << filename);
