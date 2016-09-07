@@ -4,6 +4,8 @@
 #include "VMatrix4.h"
 #include "VClickEvent.h"
 
+#include <functional>
+
 NV_NAMESPACE_BEGIN
 
 class VPainter;
@@ -37,6 +39,11 @@ public:
 
     const VMatrix4f &transform() const;
     void updateTransform();
+
+    void setOnFocusListener(const std::function<void()> &listener);
+    void setOnBlurListener(const std::function<void()> &listener);
+    void setOnStareListener(const std::function<void()> &listener);
+    void setOnClickListener(const std::function<void(const VClickEvent &)> &listener);
 
 protected:
     virtual void init(void *vg);

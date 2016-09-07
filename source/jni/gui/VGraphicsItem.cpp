@@ -18,6 +18,11 @@ struct VGraphicsItem::Private
     VMatrix4f transform;
     bool visible;
 
+    std::function<void()> focusListener;
+    std::function<void()> blurListener;
+    std::function<void()> stareListener;
+    std::function<void(const VClickEvent &)> clickListener;
+
     Private()
         : hasFocus(false)
         , focusTimestamp(0.0)
@@ -174,16 +179,52 @@ void VGraphicsItem::setParent(VGraphicsItem *parent)
     d->parent = parent;
 }
 
+void VGraphicsItem::setOnFocusListener(const std::function<void()> &listener)
+{
+    d->focusListener = listener;
+}
+
+void VGraphicsItem::setOnBlurListener(const std::function<void()> &listener)
+{
+    d->blurListener = listener;
+}
+
+void VGraphicsItem::setOnStareListener(const std::function<void()> &listener)
+{
+    d->stareListener = listener;
+}
+
+void VGraphicsItem::setOnClickListener(const std::function<void(const VClickEvent &)> &listener)
+{
+    d->clickListener = listener;
+}
+
 void VGraphicsItem::onFocus()
 {
+    if (d->focusListener) {
+        d->focusListener();
+    }
 }
 
 void VGraphicsItem::onBlur()
 {
+    if (d->blurListener) {
+        d->blurListener();
+    }
 }
 
 void VGraphicsItem::onStare()
 {
+    if (d->stareListener) {
+        d->stareListener();
+    }
+}
+
+void VGraphicsItem::onClick(const VClickEvent &event)
+{
+    if (d->clickListener) {
+        d->clickListener(event);
+    }
 }
 
 void VGraphicsItem::onSensorChanged(const VMatrix4f &mvp)
@@ -224,11 +265,6 @@ void VGraphicsItem::onSensorChanged(const VMatrix4f &mvp)
 bool VGraphicsItem::hasFocus() const
 {
     return d->hasFocus;
-}
-
-void VGraphicsItem::onClick(const VClickEvent &event)
-{
-    NV_UNUSED(event);
 }
 
 void VGraphicsItem::onKeyEvent(const VClickEvent &event)
