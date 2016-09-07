@@ -45,6 +45,7 @@ struct VPixmap::Private
 
 VPixmap::VPixmap(VGraphicsItem *parent)
     : VGraphicsItem(parent)
+    , d(new Private)
 {
 }
 
