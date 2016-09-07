@@ -192,9 +192,10 @@ void VGraphicsItem::onSensorChanged(const VMatrix4f &mvp)
         child->onSensorChanged(mvp);
     }
 
+    VMatrix4f pos = mvp * VMatrix4f::Translation(globalPos());
     VRect3f rect = boundingRect();
-    VVect3f start = mvp.transform(rect.start);
-    VVect3f end = mvp.transform(rect.end);
+    VVect3f start = pos.transform(rect.start);
+    VVect3f end = pos.transform(rect.end);
 
     bool hovered = start.x <= 0 && start.y <= 0 && end.x >= 0 && end.y >= 0;
     if (hovered) {
