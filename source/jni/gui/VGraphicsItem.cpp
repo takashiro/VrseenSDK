@@ -16,12 +16,14 @@ struct VGraphicsItem::Private
     double stareElapsedTime;
     bool clicked;
     VMatrix4f transform;
+    bool visible;
 
     Private()
         : hasFocus(false)
         , focusTimestamp(0.0)
         , stareElapsedTime(2.0)
         , clicked(false)
+        , visible(true)
     {
     }
 };
@@ -45,6 +47,16 @@ VGraphicsItem::~VGraphicsItem()
         d->parent->removeChild(this);
     }
     delete d;
+}
+
+bool VGraphicsItem::isVisible() const
+{
+    return d->visible;
+}
+
+void VGraphicsItem::setVisible(bool visible)
+{
+    d->visible = visible;
 }
 
 VGraphicsItem *VGraphicsItem::parent() const
@@ -151,7 +163,9 @@ void VGraphicsItem::init(void *vg)
 void VGraphicsItem::paint(VPainter *painter)
 {
     for (VGraphicsItem *child : d->children) {
-        child->paint(painter);
+        if (child->d->visible) {
+            child->paint(painter);
+        }
     }
 }
 

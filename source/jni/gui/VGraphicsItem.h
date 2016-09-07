@@ -23,6 +23,9 @@ public:
     const VVect3f &pos() const;
     void setPos(const VVect3f &pos);
 
+    bool isVisible() const;
+    void setVisible(bool visible);
+
     VVect3f globalPos() const;
 
     const VRect3f &boundingRect() const;
