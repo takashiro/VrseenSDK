@@ -14,6 +14,7 @@ struct VGraphicsItem::Private
     double focusTimestamp;
     double clickElapsedTime;
     bool clicked;
+    VMatrix4f transform;
 
     Private()
         : hasFocus(false)
@@ -83,13 +84,9 @@ VPosf VGraphicsItem::globalPos() const
     return pos;
 }
 
-VRect3f VGraphicsItem::boundingRect() const
+const VRect3f &VGraphicsItem::boundingRect() const
 {
-    if (d->children.isEmpty()) {
-        return d->boundingRect;
-    }
-    //TODO: calculate the bounding rect of all its children
-    return VRect3f();
+    return d->boundingRect;
 }
 
 double VGraphicsItem::clickElapsedTime() const
@@ -102,9 +99,35 @@ void VGraphicsItem::setClickElapsedTime(double elapsed)
     d->clickElapsedTime = elapsed;
 }
 
+const VMatrix4f &VGraphicsItem::transform() const
+{
+    return d->transform;
+}
+
 void VGraphicsItem::setBoundingRect(const VRect3f &rect)
 {
     d->boundingRect = rect;
+
+    const VVect3f size = rect.size();
+    const VVect3f center = rect.start + size * 0.5f;
+    const float	 screenHeight = size.y;
+    const float screenWidth = std::max(size.x, size.z);
+    float widthScale;
+    float heightScale;
+    float aspect = size.x / size.y;
+    if (screenWidth / screenHeight > aspect) {
+        // screen is wider than movie, clamp size to height
+        heightScale = screenHeight * 0.5f;
+        widthScale = heightScale * aspect;
+    } else {
+        // screen is taller than movie, clamp size to width
+        widthScale = screenWidth * 0.5f;
+        heightScale = widthScale / aspect;
+    }
+
+    const float rotateAngle = (size.x > size.z) ? 0.0f : (float) M_PI * 0.5f;
+
+    d->transform = VMatrix4f::Translation(center) * VMatrix4f::RotationY(rotateAngle) * VMatrix4f::Scaling(widthScale, heightScale, 1.0f);
 }
 
 void VGraphicsItem::init(void *vg)

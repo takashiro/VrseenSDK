@@ -25,10 +25,12 @@ public:
 
     VPosf globalPos() const;
 
-    VRect3f boundingRect() const;
+    const VRect3f &boundingRect() const;
 
     double clickElapsedTime() const;
     void setClickElapsedTime(double elapsed);
+
+    const VMatrix4f &transform() const;
 
 protected:
     virtual void init(void *vg);
