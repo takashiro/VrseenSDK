@@ -26,7 +26,7 @@ public:
 	bool			AllowTheaterSelection;
 
 
-    MovieDef() : Filename(), Title(), Is3D( false ), Format( VT_2D ),
+    MovieDef() : Filename(), Title(), Is3D( false ), Format( VT_UNKNOWN ),
 			IsEncrypted( false ), AllowTheaterSelection( false ) {}
 };
 

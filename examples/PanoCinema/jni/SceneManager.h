@@ -113,6 +113,7 @@ private:
 	GLuint 				BuildScreenVignetteTexture( const int horizontalTile ) const;
 	int 				BottomMipLevel( const int width, const int height ) const;
 	void 				ClampScreenToView();
+	VMatrix4f           getTexMatrix(int eye);
 };
 
 

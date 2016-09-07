@@ -11,6 +11,7 @@ FILE_LIST := $(call addsource,$(ASSIMP_SRC_DIR)/*.cpp)
 FILE_LIST += $(call addsource,contrib/openddlparser/code/*.cpp)
 FILE_LIST += $(call addsource,contrib/unzip/*.c)
 FILE_LIST += $(call addsource,contrib/poly2tri/poly2tri/*/*.cc)
+FILE_LIST += $(call addsource,port/AndroidJNI/*.cpp)
 
 FILE_LIST += \
 	$(ASSIMP_ROOT)/contrib/clipper/clipper.cpp \

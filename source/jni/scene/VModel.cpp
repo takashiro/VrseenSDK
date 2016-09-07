@@ -2,7 +2,6 @@
 #include "VGlShader.h"
 #include "VResource.h"
 #include "VGlGeometry.h"
-#include "VMap.h"
 #include "VTexture.h"
 
 #include <assimp/Importer.hpp>
@@ -12,6 +11,23 @@
 
 NV_NAMESPACE_BEGIN
 
+static std::string apkInternalPath;
+static AAssetManager *apkAssetManager = NULL;
+
+extern "C"
+{
+    void Java_com_vrseen_VrActivity_nativeInitLoadModel(JNIEnv *jni, jclass, jobject assetManager, jstring pathToInternalDir)
+    {
+        apkAssetManager = AAssetManager_fromJava(jni, assetManager);
+
+        const char *cPathToInternalDir;
+        cPathToInternalDir = jni->GetStringUTFChars(pathToInternalDir, NULL ) ;
+        apkInternalPath = std::string(cPathToInternalDir);
+        jni->ReleaseStringUTFChars(pathToInternalDir, cPathToInternalDir);
+    }
+}	// extern "C"
+
+
 static const char*  glVertexShader =
         "uniform highp mat4 Mvpm;\n"
         "attribute vec4 Position;\n"
@@ -20,7 +36,7 @@ static const char*  glVertexShader =
         "void main()\n"
         "{\n"
         "    gl_Position = Mvpm * Position;\n"
-        "    oTexCoord = TexCoord;\n"
+        "    oTexCoord = vec2(TexCoord.x,1.0-TexCoord.y);\n"
         "}\n";
 
 static const char*  glFragmentShader =
@@ -42,7 +58,6 @@ struct VModel::Private
     VArray<VGlGeometry> geos;
 };
 
-
 VModel::VModel():d(new Private)
 {
 
@@ -57,22 +72,28 @@ VModel::~VModel()
     delete d;
 }
 
-bool VModel::load(VString& path)
+bool VModel::load(VString& modelPath)
 {
-    VResource modelFile(path);
-    if (!modelFile.exists()) {
-        vWarn("VModel::Load failed to read" << path);
-        return false;
-    }
+//    VResource modelFile(modelPath);
+//    if (!modelFile.exists()) {
+//        vWarn("VModel::Load failed to read" << path);
+//        return false;
+//    }
 
-    Assimp::Importer import;
-    const aiScene* scene = import.ReadFileFromMemory(modelFile.data().data(), modelFile.size(),aiProcessPreset_TargetRealtime_Quality);
+//    Assimp::Importer importer;
+//    const aiScene* scene = importer.ReadFileFromMemory(modelFile.data().data(), modelFile.size(),aiProcessPreset_TargetRealtime_Quality);
+
+    Assimp::Importer importer;
+    Assimp::AndroidJNIIOSystem* ioSystem = new Assimp::AndroidJNIIOSystem(apkAssetManager,apkInternalPath);
+    importer.SetIOHandler(ioSystem);
+    const aiScene* scene = importer.ReadFile(modelPath.toStdString(), aiProcessPreset_TargetRealtime_Quality);
 
     if(!scene)
     {
-        vWarn("VModel::Load " << import.GetErrorString() );
+        vWarn("VModel::Load " << importer.GetErrorString() );
         return false;
     }
+    else vInfo("VModel::Load Success" << modelPath);
 
     unsigned int meshCount = scene->mNumMeshes;
     d->geos.resize(meshCount);
@@ -122,7 +143,8 @@ bool VModel::load(VString& path)
 
             if (mtl && AI_SUCCESS == mtl->GetTexture(aiTextureType_DIFFUSE, 0, &textureFilename))
             {
-                VString modelDirectoryName = VPath(path).dirPath();
+//                VString modelDirectoryName = VPath(modelPath).dirPath();
+                VString modelDirectoryName = "assets";
                 VString textureFullPath = modelDirectoryName + "/" + textureFilename.data;
 
                 VTexture texture;
@@ -144,13 +166,18 @@ void VModel::draw(int eye, const VMatrix4f & mvp )
     const VGlShader * shader = &d->loadModelProgram;
 
     glUseProgram(shader->program);
-    glUniform4f(shader->uniformColor, 1, 0, 0, 1);
     glUniformMatrix4fv(shader->uniformModelViewProMatrix, 1, GL_FALSE, mvp.transposed().cell[0]);
+    VEglDriver::glPushAttrib();
+
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc( GL_LEQUAL );
 
     for(unsigned int i = 0,len = d->geos.size();i<len;++i)
     {
         d->geos[i].drawElements();
     }
+
+    VEglDriver::glPopAttrib();
 }
 
 NV_NAMESPACE_END

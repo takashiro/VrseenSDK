@@ -148,6 +148,7 @@ void VGlGeometry::updateGlGeometry( const VertexAttribs & attribs )
 void VGlGeometry::drawElements() const
 {
     if (textureId) {
+        glActiveTexture( GL_TEXTURE0 );
         glBindTexture(GL_TEXTURE_2D,textureId);
     }
     VEglDriver::glBindVertexArrayOES( vertexArrayObject );

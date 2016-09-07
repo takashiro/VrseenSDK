@@ -730,4 +730,29 @@ void  VEglDriver::glInvalidateFramebuffer(GLenum target, GLsizei numAttachments,
     glInvalidateFramebuffer_(target, numAttachments, attachments);
 }
 
+
+static bool isDepthEnabled = false;
+static bool isCullEnabled = false;
+static bool isBlendEnabled = false;
+static bool isScissorEnabled = false;
+static bool isStencilEnabled = false;
+
+void VEglDriver::glPushAttrib()
+{
+    isDepthEnabled = glIsEnabled(GL_DEPTH_TEST);
+    isCullEnabled = glIsEnabled(GL_CULL_FACE);
+    isBlendEnabled = glIsEnabled(GL_BLEND);
+    isScissorEnabled = glIsEnabled(GL_SCISSOR_TEST);
+    isStencilEnabled = glIsEnabled(GL_STENCIL_TEST);
+}
+
+void VEglDriver::glPopAttrib()
+{
+    isDepthEnabled?glEnable(GL_DEPTH_TEST):glDisable(GL_DEPTH_TEST);
+    isCullEnabled?glEnable(GL_CULL_FACE):glDisable(GL_CULL_FACE);
+    isBlendEnabled?glEnable(GL_BLEND):glDisable(GL_BLEND);
+    isScissorEnabled?glEnable(GL_SCISSOR_TEST):glDisable(GL_SCISSOR_TEST);
+    isStencilEnabled?glEnable(GL_STENCIL_TEST):glDisable(GL_STENCIL_TEST);
+}
+
 NV_NAMESPACE_END

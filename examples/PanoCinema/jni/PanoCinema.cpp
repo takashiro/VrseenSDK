@@ -99,6 +99,7 @@ void PanoCinema::onStart(const VString &url)
         inLobby = false;
         MovieDef* movieDef = new MovieDef;
         movieDef->Filename = url;
+        movieDef->Is3D = movieDef->Filename.contains("/3D/");
         setMovie(movieDef);
 	}
 }
