@@ -15,6 +15,8 @@ public:
 
     void init();
 
+    void onKeyEvent(int keyCode, int repeatCount);
+
     void prepare();
     void update(const VMatrix4f &mvp);
     void commit();

@@ -3,6 +3,7 @@
 #include "VPos.h"
 #include "VRect3.h"
 #include "VMatrix4.h"
+#include "VClickEvent.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -30,6 +31,8 @@ public:
     double stareElapsedTime() const;
     void setStareElapsedTime(double elapsed);
 
+    bool hasFocus() const;
+
     const VMatrix4f &transform() const;
 
 protected:
@@ -38,11 +41,13 @@ protected:
     virtual void onFocus();
     virtual void onBlur();
     virtual void onStare();
+    virtual void onClick(const VClickEvent &event);
 
     virtual void paint(VPainter *painter);
     void setBoundingRect(const VRect3f &rect);
 
 private:
+    void onKeyEvent(const VClickEvent &event);
     void onSensorChanged(const VMatrix4f &mvp);
     void setParent(VGraphicsItem *parent);
 

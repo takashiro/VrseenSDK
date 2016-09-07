@@ -1,6 +1,7 @@
 #include "VGraphicsItem.h"
 #include "VArray.h"
 #include "VTimer.h"
+#include "VClickEvent.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -192,6 +193,26 @@ void VGraphicsItem::onSensorChanged(const VMatrix4f &mvp)
             d->clicked = false;
             onBlur();
         }
+    }
+}
+
+bool VGraphicsItem::hasFocus() const
+{
+    return d->hasFocus;
+}
+
+void VGraphicsItem::onClick(const VClickEvent &event)
+{
+    NV_UNUSED(event);
+}
+
+void VGraphicsItem::onKeyEvent(const VClickEvent &event)
+{
+    for (VGraphicsItem *child : d->children) {
+        child->onKeyEvent(event);
+    }
+    if (hasFocus()) {
+        onClick(event);
     }
 }
 

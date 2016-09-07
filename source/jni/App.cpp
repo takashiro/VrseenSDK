@@ -1283,6 +1283,10 @@ struct App::Private
 
     void onKeyEvent(const int keyCode, const bool down, const int repeatCount)
     {
+        if (down) {
+            gui->onKeyEvent(keyCode, repeatCount);
+        }
+
         // the back key is special because it has to handle long-press and double-tap
         if (keyCode == AKEYCODE_BACK)
         {

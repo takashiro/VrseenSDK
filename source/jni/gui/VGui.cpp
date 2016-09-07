@@ -1,6 +1,7 @@
 #include "VGui.h"
 #include "VGraphicsItem.h"
 #include "VPainter.h"
+#include "VClickEvent.h"
 
 #define NANOVG_GLES3_IMPLEMENTATION
 #include <GLES3/gl3.h>
@@ -104,6 +105,14 @@ VGraphicsItem *VGui::root() const
 void VGui::addItem(VGraphicsItem *item)
 {
     d->root.addChild(item);
+}
+
+void VGui::onKeyEvent(int keyCode, int repeatCount)
+{
+    VClickEvent event;
+    event.key = keyCode;
+    event.repeat = repeatCount;
+    d->root.onKeyEvent(event);
 }
 
 NV_NAMESPACE_END
