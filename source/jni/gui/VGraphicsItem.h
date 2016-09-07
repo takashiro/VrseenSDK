@@ -27,8 +27,8 @@ public:
 
     const VRect3f &boundingRect() const;
 
-    double clickElapsedTime() const;
-    void setClickElapsedTime(double elapsed);
+    double stareElapsedTime() const;
+    void setStareElapsedTime(double elapsed);
 
     const VMatrix4f &transform() const;
 
@@ -37,7 +37,7 @@ protected:
 
     virtual void onFocus();
     virtual void onBlur();
-    virtual void onClick();
+    virtual void onStare();
 
     virtual void paint(VPainter *painter);
     void setBoundingRect(const VRect3f &rect);

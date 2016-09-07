@@ -12,14 +12,14 @@ struct VGraphicsItem::Private
     VPosf pos;
     bool hasFocus;
     double focusTimestamp;
-    double clickElapsedTime;
+    double stareElapsedTime;
     bool clicked;
     VMatrix4f transform;
 
     Private()
         : hasFocus(false)
         , focusTimestamp(0.0)
-        , clickElapsedTime(2.0)
+        , stareElapsedTime(2.0)
         , clicked(false)
     {
     }
@@ -89,14 +89,14 @@ const VRect3f &VGraphicsItem::boundingRect() const
     return d->boundingRect;
 }
 
-double VGraphicsItem::clickElapsedTime() const
+double VGraphicsItem::stareElapsedTime() const
 {
-    return d->clickElapsedTime;
+    return d->stareElapsedTime;
 }
 
-void VGraphicsItem::setClickElapsedTime(double elapsed)
+void VGraphicsItem::setStareElapsedTime(double elapsed)
 {
-    d->clickElapsedTime = elapsed;
+    d->stareElapsedTime = elapsed;
 }
 
 const VMatrix4f &VGraphicsItem::transform() const
@@ -157,7 +157,7 @@ void VGraphicsItem::onBlur()
 {
 }
 
-void VGraphicsItem::onClick()
+void VGraphicsItem::onStare()
 {
 }
 
@@ -180,9 +180,9 @@ void VGraphicsItem::onSensorChanged(const VMatrix4f &mvp)
         } else {
             if (!d->clicked) {
                 double now = VTimer::Seconds();
-                if (now - d->focusTimestamp >= d->clickElapsedTime) {
+                if (now - d->focusTimestamp >= d->stareElapsedTime) {
                     d->clicked = true;
-                    onClick();
+                    onStare();
                 }
             }
         }
