@@ -1,0 +1,63 @@
+apply plugin: 'com.android.model.application'
+
+model {
+    android {
+        defaultConfig {
+            applicationId = 'com.vrseen.vrlauncher'
+        }
+        ndk {
+            moduleName ='vrlauncher'
+        }
+        sources {
+            main {
+                manifest {
+                    source {
+                        srcDir '.'
+                    }
+                }
+
+                jni {
+                    source {
+                        srcDir 'jni'
+                    }
+
+                    dependencies {
+                        project ':source' linkage 'static'
+                        library 'minizip' linkage 'static'
+                        library 'stb' linkage 'static'
+                        library 'nanovg' linkage 'static'
+                        library 'assimp' linkage 'static'
+                    }
+                }
+
+                java {
+                    source {
+                        srcDir 'src'
+                    }
+                }
+
+                assets {
+                    source {
+                        srcDir  'assets'
+                    }
+                }
+
+                res {
+                    source {
+                        srcDir 'res'
+                    }
+                }
+            }
+        }
+        buildTypes {
+            release {
+                minifyEnabled = false
+                proguardFiles.add(file('proguard-rules.txt'))
+            }
+        }
+    }
+}
+
+dependencies {
+    compile project(':source')
+}

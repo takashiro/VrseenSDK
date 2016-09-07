@@ -1,5 +1,6 @@
 include ':source'
 include ':tests'
+include ':examples:VRLauncher'
 include ':examples:PanoCinema'
 include ':examples:PanoPhoto'
 include ':examples:PanoVideo'
