@@ -4,6 +4,7 @@
 #include <android/keycodes.h>
 #include "FileLoader.h"
 #include "core/VTimer.h"
+#include "VTileButton.h"
 
 #include <android/JniUtils.h>
 #include <VZipFile.h>
@@ -13,7 +14,11 @@
 #include <VLog.h>
 #include <VImage.h>
 #include <GazeCursor.h>
+#include <VGui.h>
 #include <VTexture.h>
+#include "VTileButton.h"
+#include <VTexture.h>
+#include <VFile.h>
 
 NV_NAMESPACE_BEGIN
 
@@ -207,6 +212,25 @@ void VRLauncher::init(const VString &, const VString &, const VString &)
     }
 
     // We might want to save the view state and position for perfect recall
+    VString sdcard = "/storage/emulated/0/VRSeen/SDK/VRLauncher/";
+    const char *buttonImages[4] = {"game1.jpg", "game2.jpg", "video1.jpg", "video2.jpg"};
+    VTileButton *buttons[4];
+
+    VGui *gui = vApp->gui();
+    VRect3f buttonSize(-0.8f, -0.6f, 0.0f, 0.8f, 0.6f, 0.0f);
+    for (int i = 0; i < 4; i++){
+        VTileButton *button = new VTileButton;
+        buttons[i] = button;
+        VFile image(sdcard + buttonImages[i], VFile::ReadOnly);
+        button->setRect(buttonSize);
+        button->setImage(image);
+        gui->addItem(button);
+    }
+
+    buttons[0]->setPos(VVect3f(-0.85f, 0.65f, -3.0f));
+    buttons[1]->setPos(VVect3f(-0.85f, -0.65f, -3.0f));
+    buttons[2]->setPos(VVect3f(0.85f, 0.65f, -3.0f));
+    buttons[3]->setPos(VVect3f(0.85f, -0.65f, -3.0f));
 }
 
 //============================================================================================
