@@ -112,7 +112,6 @@ PanoVideo::PanoVideo(JNIEnv *jni, jclass activityClass, jobject activityObject)
     , m_backgroundWidth(0)
     , m_backgroundHeight(0)
     , m_frameAvailable(false)
-	, m_movieFormat(VT_2D)
 {
 	moviebar = nullptr;
 	tag = nullptr;
@@ -162,15 +161,18 @@ void PanoVideo::init(const VString &, const VString &, const VString &)
 	moviebar = new VRectangle();
 	tag = new VRectangle();
 	tag->setColor(VColor(0x00FF0000));
-	tag->setRect(VRect3f(VVect3f(-1.0, -0.6, -3.0), VVect3f(-0.8, -0.3, -3.0)));
+	tag->setRect(VRect3f(VVect3f(-2.0, -0.8, -1.0), VVect3f(-1.8, 0.2, -1.0)));
 
-	tag->setOnClickListener([&](const VClickEvent &event){
-		if (event.repeat == 1)
-			pause = !pause;
-	});
 
-	moviebar->setRect(VRect3f(VVect3f(-1.0, -0.5, -3.0), VVect3f(1.0, -0.4, -3.0)));
+
+
+	moviebar->setRect(VRect3f(VVect3f(-2.0, -0.7, -1.0), VVect3f(2.0, -0.1, -1.0)));
+	moviebar->setPos(VVect3f(0.0, 0.0, 0.0));
 	moviebar->setColor(VColor(0x0000FF00));
+
+	moviebar->setOnFocusListener([&](){
+		pause = true;
+	});
 	gui->addItem(moviebar);
 	gui->addItem(tag);
 }
@@ -255,15 +257,6 @@ void PanoVideo::command(const VEvent &event )
         if ( m_menuState != MENU_VIDEO_PLAYING ) // If video is already being played dont change the state to video ready
 		{
             setMenuState( MENU_VIDEO_READY );
-		}
-
-		if (m_videoWidth/2  > m_videoHeight)
-		{
-			m_movieFormat = VT_LEFT_RIGHT_3D;
-		}
-		else if (m_videoWidth > m_videoHeight/2)
-		{
-			m_movieFormat = VT_TOP_BOTTOM_3D;
 		}
 
 		return;
@@ -408,8 +401,6 @@ VMatrix4f PanoVideo::drawEyeView( const int eye, const float fovDegrees )
 
         glUniformMatrix4fv( prog.uniformTexMatrix, 1, GL_FALSE, texmForVideo( eye ).transposed().cell[ 0 ] );
         glUniformMatrix4fv( prog.uniformModelViewProMatrix, 1, GL_FALSE, ( proj * view ).transposed().cell[ 0 ] );
-		glUniformMatrix4fv( prog.uniformTexMatrix, 1, GL_FALSE, /* not transposed */
-							vApp->appInterface()->getTexMatrix(eye,m_movieFormat).transposed().data());
         m_globe.drawElements();
 
 		glBindTexture( GL_TEXTURE_EXTERNAL_OES, 0 );	// don't leave it bound
