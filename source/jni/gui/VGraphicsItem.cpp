@@ -1,7 +1,8 @@
 #include "VGraphicsItem.h"
 #include "VArray.h"
 #include "VTimer.h"
-#include "VClickEvent.h"
+#include "VTouchEvent.h"
+#include "VKeyEvent.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -21,7 +22,8 @@ struct VGraphicsItem::Private
     std::function<void()> focusListener;
     std::function<void()> blurListener;
     std::function<void()> stareListener;
-    std::function<void(const VClickEvent &)> clickListener;
+    std::function<void(const VTouchEvent &)> touchListener;
+    std::function<void(const VKeyEvent &)> keyPressListener;
 
     Private()
         : hasFocus(false)
@@ -192,9 +194,14 @@ void VGraphicsItem::setOnStareListener(const std::function<void()> &listener)
     d->stareListener = listener;
 }
 
-void VGraphicsItem::setOnClickListener(const std::function<void(const VClickEvent &)> &listener)
+void VGraphicsItem::setOnTouchListener(const std::function<void(const VTouchEvent &)> &listener)
 {
-    d->clickListener = listener;
+    d->touchListener = listener;
+}
+
+void VGraphicsItem::setOnKeyPressListener(const std::function<void(const VKeyEvent &)> &listener)
+{
+    d->keyPressListener = listener;
 }
 
 void VGraphicsItem::onFocus()
@@ -218,10 +225,17 @@ void VGraphicsItem::onStare()
     }
 }
 
-void VGraphicsItem::onClick(const VClickEvent &event)
+void VGraphicsItem::onTouch(const VTouchEvent &event)
 {
-    if (d->clickListener) {
-        d->clickListener(event);
+    if (d->touchListener) {
+        d->touchListener(event);
+    }
+}
+
+void VGraphicsItem::onKeyPress(const VKeyEvent &event)
+{
+    if (d->keyPressListener) {
+        d->keyPressListener(event);
     }
 }
 
@@ -265,13 +279,23 @@ bool VGraphicsItem::hasFocus() const
     return d->hasFocus;
 }
 
-void VGraphicsItem::onKeyEvent(const VClickEvent &event)
+void VGraphicsItem::onTouchEvent(const VTouchEvent &event)
+{
+    for (VGraphicsItem *child : d->children) {
+        child->onTouchEvent(event);
+    }
+    if (hasFocus()) {
+        onTouch(event);
+    }
+}
+
+void VGraphicsItem::onKeyEvent(const VKeyEvent &event)
 {
     for (VGraphicsItem *child : d->children) {
         child->onKeyEvent(event);
     }
     if (hasFocus()) {
-        onClick(event);
+        onKeyPress(event);
     }
 }
 

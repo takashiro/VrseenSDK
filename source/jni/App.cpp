@@ -634,6 +634,8 @@ struct App::Private
         if (event.name == "touch") {
             vAssert(event.data.isArray());
             int	action = event.data.at(0).toInt();
+            float x = event.data.at(1).toFloat();
+            float y = event.data.at(2).toFloat();
             joypad.touch.x = event.data.at(1).toFloat();
             joypad.touch.y = event.data.at(2).toFloat();
             if (action == 0) {
@@ -642,6 +644,7 @@ struct App::Private
             if (action == 1) {
                 joypad.buttonState &= ~BUTTON_TOUCH;
             }
+            gui->onTouchEvent(x, y);
             return;
         }
 

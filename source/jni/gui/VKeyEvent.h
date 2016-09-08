@@ -4,12 +4,12 @@
 
 NV_NAMESPACE_BEGIN
 
-struct VClickEvent
+struct VKeyEvent
 {
     int key;
     int repeat;
 
-    VClickEvent()
+    VKeyEvent()
         : key(0)
         , repeat(0)
     {

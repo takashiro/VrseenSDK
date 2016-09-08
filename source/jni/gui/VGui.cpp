@@ -3,13 +3,14 @@
 #include "VPainter.h"
 #include "VCursor.h"
 #include "VLoading.h"
-#include "VClickEvent.h"
+#include "VKeyEvent.h"
 
 #define NANOVG_GLES3_IMPLEMENTATION
 #include <GLES3/gl3.h>
 #include <EGL/egl.h>
 #include "3rdparty/nanovg/nanovg.h"
 #include "3rdparty/nanovg/nanovg_gl.h"
+#include "VTouchEvent.h"
 
 
 NV_NAMESPACE_BEGIN
@@ -124,9 +125,17 @@ void VGui::addItem(VGraphicsItem *item)
     d->root.addChild(item);
 }
 
+void VGui::onTouchEvent(float x, float y)
+{
+    VTouchEvent event;
+    event.x = x;
+    event.y = y;
+    d->root.onTouchEvent(event);
+}
+
 void VGui::onKeyEvent(int keyCode, int repeatCount)
 {
-    VClickEvent event;
+    VKeyEvent event;
     event.key = keyCode;
     event.repeat = repeatCount;
     d->root.onKeyEvent(event);

@@ -2,7 +2,8 @@
 
 #include "VRect3.h"
 #include "VMatrix4.h"
-#include "VClickEvent.h"
+#include "VTouchEvent.h"
+#include "VKeyEvent.h"
 
 #include <functional>
 
@@ -46,7 +47,8 @@ public:
     void setOnFocusListener(const std::function<void()> &listener);
     void setOnBlurListener(const std::function<void()> &listener);
     void setOnStareListener(const std::function<void()> &listener);
-    void setOnClickListener(const std::function<void(const VClickEvent &)> &listener);
+    void setOnTouchListener(const std::function<void(const VTouchEvent &)> &listener);
+    void setOnKeyPressListener(const std::function<void(const VKeyEvent &)> &listener);
 
 protected:
     virtual void init(void *vg);
@@ -54,13 +56,15 @@ protected:
     virtual void onFocus();
     virtual void onBlur();
     virtual void onStare();
-    virtual void onClick(const VClickEvent &event);
+    virtual void onTouch(const VTouchEvent &event);
+    virtual void onKeyPress(const VKeyEvent &event);
 
     virtual void paint(VPainter *painter);
     void setBoundingRect(const VRect3f &rect);
 
 private:
-    void onKeyEvent(const VClickEvent &event);
+    void onTouchEvent(const VTouchEvent &event);
+    void onKeyEvent(const VKeyEvent &event);
     void onSensorChanged(const VMatrix4f &mvp);
     void setParent(VGraphicsItem *parent);
 
