@@ -147,9 +147,7 @@ void VGraphicsItem::updateTransform()
         heightScale = widthScale / aspect;
     }
 
-    const float rotateAngle = (size.x > size.z) ? 0.0f : (float) M_PI * 0.5f;
-
-    d->transform = VMatrix4f::Translation(globalPos()) * VMatrix4f::Translation(center) * VMatrix4f::RotationY(rotateAngle) * VMatrix4f::Scaling(widthScale, heightScale, 1.0f);
+    d->transform = VMatrix4f::Translation(globalPos()) * VMatrix4f::Translation(center) *  VMatrix4f::Scaling(widthScale, heightScale, 1.0f);
 }
 
 void VGraphicsItem::setBoundingRect(const VRect3f &rect)
