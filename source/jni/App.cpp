@@ -163,8 +163,6 @@ struct App::Private
     VEglDriver m_glStatus;
 
 
-    GLuint loadingIconTexId;
-
     JavaVM *javaVM;
 
     JNIEnv *vrJni;			// for use by the VR thread
@@ -273,7 +271,6 @@ struct App::Private
         , readyToExit(false)
         , running(false)
         , eventLoop(100)
-        , loadingIconTexId(0)
         , javaVM(JniUtils::GetJavaVM())
         , vrJni(nullptr)
         , paused(true)
@@ -941,9 +938,6 @@ struct App::Private
             scene->addEyeItem();
             scene->addEyeItem();
 
-            VTexture loadingIcon(VResource("res/raw/loading_indicator.png"), VTexture::NoMipmaps);
-            loadingIconTexId = loadingIcon.id();
-
             // Create the SurfaceTexture for dialog rendering.
             self->dialog.dialogTexture = new SurfaceTexture(vrJni);
 
@@ -1024,28 +1018,7 @@ struct App::Private
             {
                 if (activity->showLoadingIcon())
                 {
-                    const VTimeWarpParms warpSwapLoadingIconParms = kernel->InitTimeWarpParms(WARP_INIT_LOADING_ICON, loadingIconTexId);
-                    kernel->doSmooth(&warpSwapLoadingIconParms);
-
-
-//                    kernel->InitTimeWarpParms();
-//                    kernel->setSmoothOption( VK_INHIBIT_SRGB_FB | VK_FLUSH | VK_IMAGE);
-//                    kernel->setSmoothProgram(VK_LOGO);
-//                    float mprogramParms[4];
-//                    mprogramParms[0] = 1.0f;		// rotation in radians per second
-//                    mprogramParms[1] = 16.0f;
-//                    kernel->setProgramParms(mprogramParms);
-//                            // icon size factor smaller than fullscreen
-//                    for ( int eye = 0; eye < 2; eye++ )
-//                    {
-//                       kernel->setSmoothEyeTexture(0,eye, 0);
-//                       kernel->setSmoothEyeTexture(loadingIconTexId,eye,1);
-//
-//                    }
-//
-//                    kernel->doSmooth();
-//                    kernel->setSmoothProgram(VK_DEFAULT);
-
+                    gui->showLoading(2);
                 }
                 vInfo("launchIntentJSON:" << launchIntentJSON);
                 vInfo("launchIntentURI:" << launchIntentURI);

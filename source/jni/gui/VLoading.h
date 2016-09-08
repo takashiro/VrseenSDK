@@ -13,8 +13,6 @@ public:
     ~VLoading();
 
     void setDuration(unsigned int duration);
-
-protected:
     void paint(VPainter *painter) override;
 
 private:

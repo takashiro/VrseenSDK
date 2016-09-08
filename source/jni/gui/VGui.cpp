@@ -2,6 +2,7 @@
 #include "VGraphicsItem.h"
 #include "VPainter.h"
 #include "VCursor.h"
+#include "VLoading.h"
 #include "VClickEvent.h"
 
 #define NANOVG_GLES3_IMPLEMENTATION
@@ -21,12 +22,14 @@ struct VGui::Private
     int viewHeight;
     VColor backgroundColor;
     VCursor* cursorItem;
+    VLoading* loadingItem;
 
     Private()
         : viewWidth(1024)
         , viewHeight(1024)
         , backgroundColor(0.0f, 162.0f, 232.0f, 0.0f)
         , cursorItem(NULL)
+        , loadingItem(NULL)
     {
     }
 
@@ -44,6 +47,7 @@ VGui::~VGui()
 {
     delete d;
     if(d->cursorItem) delete d->cursorItem;
+    if(d->loadingItem) delete d->loadingItem;
 }
 
 void VGui::init()
@@ -51,6 +55,11 @@ void VGui::init()
     d->vg = nvgCreateGLES3(NVG_ANTIALIAS | NVG_STENCIL_STROKES | NVG_DEBUG);
     d->root.init(d->vg);
     if(!d->cursorItem) d->cursorItem = new VCursor;
+    if(!d->loadingItem)
+    {
+        d->loadingItem = new VLoading;
+        d->loadingItem->setVisible(false);
+    }
 }
 
 void VGui::prepare()
@@ -65,7 +74,8 @@ void VGui::update(const VMatrix4f &mvp)
     painter.setNativeContext(d->vg);
     painter.setViewMatrix(mvp);
     d->root.paint(&painter);
-    d->cursorItem->paint(&painter);
+    if(d->cursorItem->isVisible()) d->cursorItem->paint(&painter);
+    if(d->loadingItem->isVisible()) d->loadingItem->paint(&painter);
 }
 
 void VGui::commit()
@@ -120,5 +130,17 @@ void VGui::onKeyEvent(int keyCode, int repeatCount)
     event.repeat = repeatCount;
     d->root.onKeyEvent(event);
 }
+
+void VGui::showLoading(uint duration) const
+{
+    d->loadingItem->setDuration(duration);
+    d->loadingItem->setVisible(true);
+}
+
+void VGui::removeLoading() const
+{
+    d->loadingItem->setVisible(false);
+}
+
 
 NV_NAMESPACE_END

@@ -87,7 +87,10 @@ void VLoading::paint(VPainter *painter)
 
     if(d->duration>0)
     {
-        if(d->duration && delta>d->duration) return;
+        if(d->duration && delta>d->duration) {
+            setVisible(false);
+            return;
+        }
         rotateAngle = delta /d->duration * M_PI * 2;
     }
     else  rotateAngle = delta / M_PI * 20;

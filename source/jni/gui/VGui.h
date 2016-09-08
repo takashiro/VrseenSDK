@@ -33,6 +33,9 @@ public:
     VGraphicsItem *root() const;
     void addItem(VGraphicsItem *item);
 
+    void showLoading(uint duration) const;
+    void removeLoading() const;
+
 private:
     NV_DECLARE_PRIVATE
     NV_DISABLE_COPY(VGui)
