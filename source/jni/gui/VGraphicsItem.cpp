@@ -236,7 +236,7 @@ void VGraphicsItem::onSensorChanged(const VMatrix4f &mvp)
     VVect3f start = pos.transform(rect.start);
     VVect3f end = pos.transform(rect.end);
 
-    bool hovered = start.x <= 0 && start.y <= 0 && end.x >= 0 && end.y >= 0;
+    bool hovered = start.x <= 0 && start.y <= 0 && end.x >= 0 && end.y >= 0 && start.z >= -1 && start.z <= 1;
     if (hovered) {
         if (!d->hasFocus) {
             d->hasFocus = true;
@@ -293,7 +293,7 @@ bool VGraphicsItem::needCursor(const VMatrix4f &mvp) const
         VVect3f start = pos.transform(rect.start);
         VVect3f end = pos.transform(rect.end);
 
-        bool bEntered = (start.x>-1&&start.x<1&&start.y>-1&&start.y<1) || (end.x>-1&&end.x<1&&end.y>-1&&end.y<1);
+        bool bEntered = (start.x>-1&&start.x<1&&start.y>-1&&start.y<1&&start.z>-1&&start.z<1) || (end.x>-1&&end.x<1&&end.y>-1&&end.y<1&&end.z>-1&&end.z<1);
         if(bEntered) return true;
     }
 
