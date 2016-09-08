@@ -213,7 +213,7 @@ void VRLauncher::init(const VString &, const VString &, const VString &)
     }
 
     // We might want to save the view state and position for perfect recall
-    VString sdcard = "/storage/emulated/0/VRSeen/SDK/VRLauncher/";
+    VString sdcard = "/storage/emulated/0/VRSeen/SDK/";
     const char *buttonImages[4] = {"game1.jpg", "game2.jpg", "video1.jpg", "video2.jpg"};
     VTileButton *buttons[4];
 
@@ -222,7 +222,7 @@ void VRLauncher::init(const VString &, const VString &, const VString &)
     for (int i = 0; i < 4; i++){
         VTileButton *button = new VTileButton;
         buttons[i] = button;
-        VFile image(sdcard + buttonImages[i], VFile::ReadOnly);
+        VFile image(sdcard + "VRLauncher/" + buttonImages[i], VFile::ReadOnly);
         button->setRect(buttonSize);
         button->setImage(image);
         gui->addItem(button);
@@ -248,6 +248,18 @@ void VRLauncher::init(const VString &, const VString &, const VString &)
         button->setOnBlurListener(hideLoading);
         button->setOnFocusListener(showLoading);
     }
+
+    JNIEnv *jni = vApp->vrJni();
+    jobject activity = vApp->javaObject();
+    jmethodID startApp = jni->GetMethodID(jni->GetObjectClass(activity), "startApp", "(Ljava/lang/String;Ljava/lang/String;)V");
+
+    buttons[2]->setOnStareListener([=](){
+        jni->CallVoidMethod(activity, startApp, JniUtils::Convert(jni, "com.vrseen.panovideo"), JniUtils::Convert(jni, sdcard + "360Videos/[Samsung] 360 video demo.mp4"));
+    });
+
+    buttons[3]->setOnStareListener([=](){
+        jni->CallVoidMethod(activity, startApp, JniUtils::Convert(jni, "com.vrseen.panovideo"), JniUtils::Convert(jni, sdcard + "360Videos/1.mp4"));
+    });
 }
 
 //============================================================================================
