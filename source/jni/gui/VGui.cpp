@@ -24,6 +24,7 @@ struct VGui::Private
     VColor backgroundColor;
     VCursor* cursorItem;
     VLoading* loadingItem;
+    VMatrix4f viewmvp;
 
     Private()
         : viewWidth(1024)
@@ -70,6 +71,7 @@ void VGui::prepare()
 
 void VGui::update(const VMatrix4f &mvp)
 {
+    d->viewmvp = mvp;
     d->root.onSensorChanged(mvp);
     VPainter painter;
     painter.setNativeContext(d->vg);
@@ -145,6 +147,11 @@ void VGui::showLoading(uint duration) const
 {
     d->loadingItem->setDuration(duration);
     d->loadingItem->setVisible(true);
+}
+
+VMatrix4f VGui::getMVP() const
+{
+    return d->viewmvp;
 }
 
 void VGui::removeLoading() const

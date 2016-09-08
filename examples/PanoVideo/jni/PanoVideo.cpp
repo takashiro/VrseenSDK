@@ -86,7 +86,7 @@ void Java_com_vrseen_panovideo_PanoVideo_getCurrentPos(JNIEnv *, jclass, jint cu
 	if (current == movielength)
 		return;
 
-	pv->tag->setRect(VRect3f(VVect3f(-1.0 + ratio*2.0, -0.6, -3.0), VVect3f(-0.8 + ratio * 2.0, -0.3, -3.0)));
+	pv->tag->setRect(VRect3f(VVect3f(-3.0 + ratio*6.0, -1.6, -4.0), VVect3f(-2.8 + ratio * 6.0, -1.1, -4.0)));
 
 }
 
@@ -96,6 +96,15 @@ bool Java_com_vrseen_panovideo_PanoVideo_mediaPause(JNIEnv *, jclass)
 
 	return pv->pause;
 }
+
+void Java_com_vrseen_panovideo_PanoVideo_passjni(JNIEnv* env, jobject jobj)
+{
+	PanoVideo* pv = static_cast<PanoVideo*>(vApp->appInterface());
+
+	pv->m_jni = env;
+	pv->m_obj = jobj;
+}
+
 
 } // extern "C"
 
@@ -160,25 +169,54 @@ void PanoVideo::init(const VString &, const VString &, const VString &)
 	VGui * gui  = vApp->gui();
 	moviebar = new VRectangle();
 	tag = new VRectangle();
-	tag->setColor(VColor(0x00FF0000));
-	tag->setRect(VRect3f(VVect3f(-2.0, -0.8, -1.0), VVect3f(-1.8, 0.2, -1.0)));
+	tag->setColor(VColor(0x0000000));
+	tag->setRect(VRect3f(VVect3f(-3.0, -1.6, -4.0), VVect3f(-2.8, -1.1, -4.0)));
 
-
-
-
-	moviebar->setRect(VRect3f(VVect3f(-2.0, -0.7, -1.0), VVect3f(2.0, -0.1, -1.0)));
+	moviebar->setRect(VRect3f(VVect3f(-3.0, -1.5, -4.0), VVect3f(3.0, -1.2, -4.0)));
 	moviebar->setPos(VVect3f(0.0, 0.0, 0.0));
-	moviebar->setColor(VColor(0x0000FF00));
+	moviebar->setColor(VColor(0x88CCCCCC));
 
-	moviebar->setOnFocusListener([&](){
-		pause = true;
-	});
+	tag->setOnFocusListener([=](){PanoVideo::mediaPause();});
+
+	moviebar->setOnStareListener([this]() {
+		this->movePos(vApp->gui()->getMVP());
+	}
+	);
+
 	gui->addItem(moviebar);
 	gui->addItem(tag);
 }
 
+void PanoVideo::movePos(const VMatrix4f &mvp)
+{
+	VMatrix4f trans =  mvp * moviebar->transform();
+	VVect3f realpos = trans.transform(moviebar->boundingRect().start);
+	float ratio = -realpos.x / (moviebar->boundingRect().end.x - moviebar->boundingRect().start.x);
+
+	JNIEnv * tmpjni = vApp->vrJni();
+	jobject jobj = vApp->javaObject();
+	jmethodID setpos = tmpjni->GetMethodID(tmpjni->GetObjectClass(jobj), "setPos", "(F)V");
+
+	tmpjni->CallVoidMethod(jobj, setpos, ratio);
+}
+
 void PanoVideo::mediaPause()
 {
+	JNIEnv * tmpjni = vApp->vrJni();
+	jobject jobj = vApp->javaObject();
+	jmethodID mediapause = tmpjni->GetMethodID(tmpjni->GetObjectClass(jobj), "Pause", "()V");
+	jmethodID mediaresume = tmpjni->GetMethodID(tmpjni->GetObjectClass(jobj), "Resume", "()V");
+	jmethodID mediaisplaying = tmpjni->GetMethodID(tmpjni->GetObjectClass(jobj), "IsPlaying", "()Z");
+
+
+	if (tmpjni->CallBooleanMethod(jobj, mediaisplaying))
+	{
+		tmpjni->CallVoidMethod(jobj, mediapause);
+	}
+	else
+	{
+		tmpjni->CallVoidMethod(jobj, mediaresume);
+	}
 
 }
 

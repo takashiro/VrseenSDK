@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vglobal.h"
+#include "VMatrix4.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -8,6 +8,7 @@ struct VKeyEvent
 {
     int key;
     int repeat;
+    VMatrix4f viewMatrix;
 
     VKeyEvent()
         : key(0)

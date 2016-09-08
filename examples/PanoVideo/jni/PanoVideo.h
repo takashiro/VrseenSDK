@@ -53,9 +53,15 @@ public:
 
 	void mediaPause();
 
+	void movePos(const VMatrix4f &mvp);
+
 	VRectangle * moviebar;
 	VRectangle * tag;
 	bool pause;
+
+	JNIEnv * m_jni;
+	jobject m_obj;
+
 
 private:
     // shared vars

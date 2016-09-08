@@ -37,6 +37,8 @@ public:
     void showLoading(uint duration) const;
     void removeLoading() const;
 
+    VMatrix4f getMVP() const;
+
 private:
     NV_DECLARE_PRIVATE
     NV_DISABLE_COPY(VGui)

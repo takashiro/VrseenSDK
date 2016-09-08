@@ -27,6 +27,7 @@ public class PanoVideo {
 		onStart(pathName);
 		
 		requestAudioFocus();
+		passjni();
 
 		movieTexture = createMovieTexture();
 		movieTexture.setOnFrameAvailableListener(frameAvailableListener);
@@ -43,6 +44,7 @@ public class PanoVideo {
 		}
 		mediaPlayer.setOnVideoSizeChangedListener(videoSizeChangedListener);
 		mediaPlayer.setOnCompletionListener(completionListener);
+
 		mediaPlayer.setSurface(movieSurface);
 
 		try {
@@ -74,6 +76,16 @@ public class PanoVideo {
 		}
 
 		releaseAudioFocus();
+	}
+
+	public int getDuration()
+	{
+		return mediaPlayer.getDuration();
+	}
+
+	public  void setPos(int cur)
+	{
+		mediaPlayer.seekTo(cur);
 	}
 
 	public boolean isPlaying() {
@@ -155,6 +167,8 @@ public class PanoVideo {
 		}
 	};
 
+	native  void passjni();
+
 	native SurfaceTexture createMovieTexture();
 	
 	native void construct(Activity activity);
@@ -179,13 +193,7 @@ public class PanoVideo {
 		public void onFrameAvailable(SurfaceTexture surfaceTexture) {
 			PanoVideo.this.onFrameAvailable();
 			PanoVideo.this.getCurrentPos(mediaPlayer.getCurrentPosition(), mediaPlayer.getDuration());
-			if (mediaPause())
-				mediaPlayer.pause();
-			else
-			{
-				if (!mediaPlayer.isPlaying())
-					mediaPlayer.start();
-			}
+
 		}
 	};
 

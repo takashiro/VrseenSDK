@@ -49,4 +49,24 @@ public class MainActivity extends VrActivity {
 			video.resume();
 		}
 	}
+
+	public void Pause()
+	{
+		video.pause();
+	}
+
+	public boolean IsPlaying()
+	{
+		return video.isPlaying();
+	}
+
+	public  void Resume()
+	{
+		video.resume();
+	}
+
+	public void setPos(float ratio)
+	{
+		video.setPos((int)(video.getDuration() * ratio));
+	}
 }
