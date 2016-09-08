@@ -32,15 +32,15 @@ struct VLoading::Private
     VTexture texture;
     VGlShader shader;
     VGlGeometry geometry;
-
-    unsigned  int duration;
+    VTexture loadingIcon;
+    uint duration;
 
     Private()
+        : loadingIcon(VResource("res/raw/loading_indicator.png"), VTexture::NoMipmaps)
+        , duration(3)
     {
         shader.initShader(VertexShaderSource, FragmentShaderSource);
         geometry.createPlaneQuadGrid(1, 1);
-
-        duration = 3.0;
     }
 
     ~Private()
@@ -55,7 +55,7 @@ VLoading::VLoading(VGraphicsItem *parent)
         : VPixmap(parent)
         , d(new Private)
 {
-    setBoundingRect(VRect3f(-0.1,-0.1,0,0.1,0.1,0));
+    setBoundingRect(VRect3f(-0.1f, -0.1f, 0, 0.1 ,0.1, 0));
 }
 
 VLoading::VLoading(const VTexture &texture, VGraphicsItem *parent)
@@ -63,7 +63,7 @@ VLoading::VLoading(const VTexture &texture, VGraphicsItem *parent)
         , d(new Private)
 {
     d->texture = texture;
-    setBoundingRect(VRect3f(-0.1,-0.1,0,0.1,0.1,0));
+    setBoundingRect(VRect3f(-0.1f, -0.1f, 0, 0.1, 0.1, 0));
 }
 
 VLoading::~VLoading()
@@ -71,7 +71,7 @@ VLoading::~VLoading()
     delete d;
 }
 
-void VLoading::setDuration(unsigned int duration)
+void VLoading::setDuration(uint duration)
 {
     d->duration = duration;
 }
@@ -100,11 +100,8 @@ void VLoading::paint(VPainter *painter)
     const VMatrix4f screenMvp = transform() * VMatrix4f::RotationZ(-rotateAngle);
     glUniformMatrix4fv(d->shader.uniformModelViewProMatrix, 1, GL_FALSE, screenMvp.transposed().data());
     d->geometry.textureId = d->texture.id();
-
-    if(!d->geometry.textureId)
-    {
-        VTexture loadingIcon(VResource("res/raw/loading_indicator.png"), VTexture::NoMipmaps);
-        d->geometry.textureId = loadingIcon.id();
+    if(!d->geometry.textureId) {
+        d->geometry.textureId = d->loadingIcon.id();
     }
 
     d->geometry.drawElements();
