@@ -24,3 +24,5 @@ private:
     NV_DECLARE_PRIVATE
     NV_DISABLE_COPY(VTileButton)
 };
+
+NV_NAMESPACE_END
