@@ -37,8 +37,6 @@ public:
 	void 				ClearMovie();
 	void 				PutScreenInFront();
 
-	void				ClearGazeCursorGhosts();  	// clear gaze cursor to avoid seeing it lerp
-
     VVect2f			GetScreenSize() const;
 
     void 				SetFreeScreenAngles( const VVect3f &angles );

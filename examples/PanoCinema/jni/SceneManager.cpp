@@ -2,7 +2,6 @@
 #include "SceneManager.h"
 #include "SurfaceTexture.h"
 #include "VAlgorithm.h"
-#include <GazeCursor.h>
 
 #include <VKernel.h>
 #include <VEglDriver.h>
@@ -317,12 +316,6 @@ void SceneManager::ClampScreenToView()
 	deltaAngles.x = VAlgorithm::Clamp( deltaAngles.x, -( float )M_PI * 0.125f, ( float )M_PI * 0.125f );
 
 	SetFreeScreenAngles( viewAngles + deltaAngles );
-}
-
-void SceneManager::ClearGazeCursorGhosts()
-{
-	// clear gaze cursor to avoid seeing it lerp
-	ClearGhostsFrames = 3;
 }
 
 
@@ -678,12 +671,6 @@ VMatrix4f SceneManager::Frame( const VFrame & vrFrame )
 		vrFrameWithoutMove.input.sticks[0][1] = 0.0f;
 	}
     Scene.Frame( vApp->viewSettings(), vrFrameWithoutMove, vApp->swapParms().ExternalVelocity);
-
-	if ( ClearGhostsFrames > 0 )
-	{
-        vApp->gazeCursor().ClearGhosts();
-		ClearGhostsFrames--;
-	}
 
 	// Check for new movie frames
 	// latch the latest movie frame to the texture.

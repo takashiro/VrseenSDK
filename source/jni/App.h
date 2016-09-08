@@ -16,7 +16,6 @@ NV_NAMESPACE_BEGIN
 class VMainActivity;
 class VZipFile;
 class VRMenuObjectParms;
-class VGazeCursor;
 class BitmapFont;
 class BitmapFontSurface;
 class VViewSettings;
@@ -43,7 +42,6 @@ public:
 
     VEyeItem::Settings &eyeSettings();
 
-    VGazeCursor  &gazeCursor();
     BitmapFont &defaultFont();
     BitmapFontSurface &worldFontSurface();
     const VStandardPath &storagePaths();

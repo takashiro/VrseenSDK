@@ -13,7 +13,6 @@
 #include <VFile.h>
 #include <VLog.h>
 #include <VImage.h>
-#include <GazeCursor.h>
 #include <VGui.h>
 #include <VTexture.h>
 #include <VTileButton.h>
@@ -425,14 +424,12 @@ void VRLauncher::command(const VEvent &event )
     if (event.name == "loaded pano") {
         m_backgroundPanoTexData.Swap();
         m_currentPanoIsCubeMap = false;
-        vApp->gazeCursor().ClearGhosts();
         return;
     }
 
     if (event.name == "loaded cube") {
         m_backgroundCubeTexData.Swap();
         m_currentPanoIsCubeMap = true;
-        vApp->gazeCursor().ClearGhosts();
         return;
     }
 }

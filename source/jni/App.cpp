@@ -14,8 +14,6 @@
 
 #include "VDeviceManager.h"
 #include "EyePostRender.h"
-#include "GazeCursor.h"
-#include "GazeCursorLocal.h"		// necessary to instantiate the gaze cursor
 #include "VTexture.h"
 #include "ModelView.h"
 #include "SurfaceTexture.h"
@@ -248,7 +246,6 @@ struct App::Private
 
     long long recenterYawFrameStart;	// Enables reorient before sensor data is read.  Allows apps to reorient without having invalid orientation information for that frame.
 
-    VGazeCursor *gazeCursor;
     BitmapFont *defaultFont;
     BitmapFontSurface *worldFontSurface;
     KeyState backKeyState;
@@ -300,7 +297,6 @@ struct App::Private
         , touchState(0)
         , enableDebugOptions(false)
         , recenterYawFrameStart(0)
-        , gazeCursor(nullptr)
         , defaultFont(nullptr)
         , worldFontSurface(nullptr)
         , backKeyState(0.25f, 0.75f)
@@ -363,9 +359,6 @@ struct App::Private
 
         // Allow the app to override
         activity->configureVrMode(kernel);
-
-        // Clear cursor trails
-        gazeCursor->HideCursorForFrames(10);//zx_note 2016.8.9 fps不实时
 
         activity->onResume();
 
@@ -948,8 +941,6 @@ struct App::Private
             scene->addEyeItem();
             scene->addEyeItem();
 
-            gazeCursor = new VGazeCursorLocal;
-
             VTexture loadingIcon(VResource("res/raw/loading_indicator.png"), VTexture::NoMipmaps);
             loadingIconTexId = loadingIcon.id();
 
@@ -957,8 +948,6 @@ struct App::Private
             self->dialog.dialogTexture = new SurfaceTexture(vrJni);
 
             initFonts();
-
-            gazeCursor->Init();
 
             lastTouchpadTime = VTimer::Seconds();
 
@@ -972,9 +961,6 @@ struct App::Private
         while(!(vrThreadSynced && createdSurface && readyToExit))
         {
             //SPAM("FRAME START");
-
-            gazeCursor->BeginFrame();
-
             // Process incoming messages until queue is empty
             forever {
                 VEvent event = eventLoop.next();
@@ -1128,11 +1114,9 @@ struct App::Private
                 // update the gaze cursor timer
                 if (event == KeyState::KEY_EVENT_DOWN)
                 {
-                    gazeCursor->StartTimer(backKeyState.GetLongPressTime(), backKeyState.GetDoubleTapTime());
                 }
                 else if (event == KeyState::KEY_EVENT_DOUBLE_TAP || event == KeyState::KEY_EVENT_SHORT_PRESS)
                 {
-                    gazeCursor->CancelTimer();
                 }
                 else if (event == KeyState::KEY_EVENT_LONG_PRESS)
                 {
@@ -1250,15 +1234,10 @@ struct App::Private
 
             activity->shutdown();
 
-            gazeCursor->Shutdown();
-
             shutdownFonts();
 
             delete self->dialog.dialogTexture;
             self->dialog.dialogTexture = nullptr;
-
-            delete gazeCursor;
-            gazeCursor = nullptr;
 
             shutdownGlObjects();
 
@@ -1471,10 +1450,6 @@ VEyeItem::Settings &App::eyeSettings()
     return VEyeItem::settings;
 }
 
-VGazeCursor & App::gazeCursor()
-{
-    return *d->gazeCursor;
-}
 BitmapFont & App::defaultFont()
 {
     return *d->defaultFont;
@@ -1678,7 +1653,6 @@ long long App::recenterYawFrameStart() const
 void App::drawEyeViewsPostDistorted( VMatrix4f const & centerViewMatrix, const int numPresents )
 {
     // update vr lib systems after the app frame, but before rendering anything
-    gazeCursor().Frame( centerViewMatrix, text.vrFrame.deltaSeconds );
 
     worldFontSurface().Finish( centerViewMatrix );
 
@@ -1739,8 +1713,6 @@ void App::drawEyeViewsPostDistorted( VMatrix4f const & centerViewMatrix, const i
             }
 
             dialog.draw(panel, mvp);
-
-            gazeCursor().Render(eye, mvp);
 
             if (d->showVignette) {
                 // Draw a thin vignette at the edges of the view so clamping will give black

@@ -12,7 +12,6 @@
 #include <VFile.h>
 #include <VLog.h>
 #include <VImage.h>
-#include <GazeCursor.h>
 #include <VTexture.h>
 
 NV_NAMESPACE_BEGIN
@@ -372,14 +371,12 @@ void PanoPhoto::command(const VEvent &event )
     if (event.name == "loaded pano") {
         m_backgroundPanoTexData.Swap();
         m_currentPanoIsCubeMap = false;
-        vApp->gazeCursor().ClearGhosts();
         return;
     }
 
     if (event.name == "loaded cube") {
         m_backgroundCubeTexData.Swap();
         m_currentPanoIsCubeMap = true;
-        vApp->gazeCursor().ClearGhosts();
         return;
     }
 }

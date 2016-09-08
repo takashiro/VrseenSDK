@@ -22,7 +22,6 @@
 #include "SurfaceTexture.h"
 #include "VTexture.h"
 #include "BitmapFont.h"
-#include "GazeCursor.h"
 #include "App.h"
 
 NV_NAMESPACE_BEGIN
