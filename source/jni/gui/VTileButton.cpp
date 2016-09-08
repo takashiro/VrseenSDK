@@ -61,11 +61,13 @@ void VTileButton::setBackgroundColor(const VColor &color)
 void VTileButton::onFocus()
 {
     d->background->setVisible(true);
+    VGraphicsItem::onFocus();
 }
 
 void VTileButton::onBlur()
 {
     d->background->setVisible(false);
+    VGraphicsItem::onBlur();
 }
 
 NV_NAMESPACE_END
