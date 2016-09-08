@@ -310,8 +310,7 @@ bool VGraphicsItem::needCursor(const VMatrix4f &mvp) const
         if (child->needCursor(mvp)) return true;
     }
 
-    if(d->focusListener || d->blurListener || d->stareListener || d->clickListener)
-    {
+    if(d->focusListener || d->blurListener || d->stareListener || d->keyPressListener || d->touchListener) {
         VMatrix4f pos = isFixed() ? VMatrix4f::Translation(globalPos()):mvp * VMatrix4f::Translation(globalPos());
         VRect3f rect = boundingRect();
         VVect3f start = pos.transform(rect.start);
