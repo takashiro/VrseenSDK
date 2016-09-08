@@ -19,6 +19,7 @@
 #include <VTileButton.h>
 #include <VTexture.h>
 #include <VFile.h>
+#include <VLoading.h>
 
 NV_NAMESPACE_BEGIN
 
@@ -231,6 +232,22 @@ void VRLauncher::init(const VString &, const VString &, const VString &)
     buttons[1]->setPos(VVect3f(-0.85f, -0.65f, -3.0f));
     buttons[2]->setPos(VVect3f(0.85f, 0.65f, -3.0f));
     buttons[3]->setPos(VVect3f(0.85f, -0.65f, -3.0f));
+
+    VLoading *loading = new VLoading;
+    loading->setDuration(0);
+    loading->setVisible(false);
+    gui->addItem(loading);
+
+    auto showLoading = [=](){
+        loading->setVisible(true);
+    };
+    auto hideLoading = [=](){
+        loading->setVisible(false);
+    };
+    for (VTileButton *button : buttons) {
+        button->setOnBlurListener(hideLoading);
+        button->setOnFocusListener(showLoading);
+    }
 }
 
 //============================================================================================
