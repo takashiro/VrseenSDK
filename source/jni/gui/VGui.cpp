@@ -1,6 +1,7 @@
 #include "VGui.h"
 #include "VGraphicsItem.h"
 #include "VPainter.h"
+#include "VCursor.h"
 #include "VClickEvent.h"
 
 #define NANOVG_GLES3_IMPLEMENTATION
@@ -19,11 +20,13 @@ struct VGui::Private
     int viewWidth;
     int viewHeight;
     VColor backgroundColor;
+    VCursor* cursorItem;
 
     Private()
         : viewWidth(1024)
         , viewHeight(1024)
         , backgroundColor(0.0f, 162.0f, 232.0f, 0.0f)
+        , cursorItem(NULL)
     {
     }
 
@@ -40,12 +43,14 @@ VGui::VGui()
 VGui::~VGui()
 {
     delete d;
+    if(d->cursorItem) delete d->cursorItem;
 }
 
 void VGui::init()
 {
     d->vg = nvgCreateGLES3(NVG_ANTIALIAS | NVG_STENCIL_STROKES | NVG_DEBUG);
     d->root.init(d->vg);
+    if(!d->cursorItem) d->cursorItem = new VCursor;
 }
 
 void VGui::prepare()
@@ -60,6 +65,7 @@ void VGui::update(const VMatrix4f &mvp)
     painter.setNativeContext(d->vg);
     painter.setViewMatrix(mvp);
     d->root.paint(&painter);
+    d->cursorItem->paint(&painter);
 }
 
 void VGui::commit()
