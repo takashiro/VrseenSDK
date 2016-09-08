@@ -82,10 +82,15 @@ void VLoading::paint(VPainter *painter)
 
     static double start = VTimer::Seconds();
     double end = VTimer::Seconds();
-    double duration = end - start;
-    if(duration>d->duration) return;
+    double delta = end - start;
+    double rotateAngle = 0;
 
-    double rotateAngle = duration /d->duration * M_PI * 2;
+    if(d->duration>0)
+    {
+        if(d->duration && delta>d->duration) return;
+        rotateAngle = delta /d->duration * M_PI * 2;
+    }
+    else  rotateAngle = delta / M_PI ;
 
     VEglDriver::glPushAttrib();
     glEnable( GL_BLEND );
