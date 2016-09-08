@@ -171,11 +171,21 @@ public class PanoVideo {
 	};
 
 	native void onFrameAvailable();
+	native void getCurrentPos(int cur, int dur);
+	native boolean mediaPause();
 
 	SurfaceTexture.OnFrameAvailableListener frameAvailableListener = new SurfaceTexture.OnFrameAvailableListener() {
 		@Override
 		public void onFrameAvailable(SurfaceTexture surfaceTexture) {
 			PanoVideo.this.onFrameAvailable();
+			PanoVideo.this.getCurrentPos(mediaPlayer.getCurrentPosition(), mediaPlayer.getDuration());
+			if (mediaPause())
+				mediaPlayer.pause();
+			else
+			{
+				if (!mediaPlayer.isPlaying())
+					mediaPlayer.start();
+			}
 		}
 	};
 

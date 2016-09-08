@@ -22,6 +22,7 @@
 #include "BitmapFont.h"
 #include "App.h"
 #include "PanoVideo.h"
+#include "VGui.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -72,8 +73,31 @@ void Java_com_vrseen_panovideo_PanoVideo_onCompletion(JNIEnv *, jclass)
     vApp->eventLoop().post( "completion" );
 }
 
-} // extern "C"
+void Java_com_vrseen_panovideo_PanoVideo_getCurrentPos(JNIEnv *, jclass, jint current, jint movielength)
+{
 
+	int curpos = current;
+	int length = movielength;
+	PanoVideo* pv = static_cast<PanoVideo*>(vApp->appInterface());
+	float ratio = float (curpos) / float(length);
+
+	if (pv->tag == nullptr || pv->moviebar == nullptr)
+		return;
+	if (current == movielength)
+		return;
+
+	pv->tag->setRect(VRect3f(VVect3f(-1.0 + ratio*2.0, -0.6, -3.0), VVect3f(-0.8 + ratio * 2.0, -0.3, -3.0)));
+
+}
+
+bool Java_com_vrseen_panovideo_PanoVideo_mediaPause(JNIEnv *, jclass)
+{
+	PanoVideo* pv = static_cast<PanoVideo*>(vApp->appInterface());
+
+	return pv->pause;
+}
+
+} // extern "C"
 
 
 PanoVideo::PanoVideo(JNIEnv *jni, jclass activityClass, jobject activityObject)
@@ -90,6 +114,9 @@ PanoVideo::PanoVideo(JNIEnv *jni, jclass activityClass, jobject activityObject)
     , m_frameAvailable(false)
 	, m_movieFormat(VT_2D)
 {
+	moviebar = nullptr;
+	tag = nullptr;
+	pause = false;
 }
 
 PanoVideo::~PanoVideo()
@@ -130,6 +157,27 @@ void PanoVideo::init(const VString &, const VString &, const VString &)
 	// Optimize for 16 bit depth in a modest theater size
     m_scene.Znear = 0.1f;
     m_scene.Zfar = 200.0f;
+
+	VGui * gui  = vApp->gui();
+	moviebar = new VRectangle();
+	tag = new VRectangle();
+	tag->setColor(VColor(0x00FF0000));
+	tag->setRect(VRect3f(VVect3f(-1.0, -0.6, -3.0), VVect3f(-0.8, -0.3, -3.0)));
+
+	tag->setOnClickListener([&](const VClickEvent &event){
+		if (event.repeat == 1)
+			pause = !pause;
+	});
+
+	moviebar->setRect(VRect3f(VVect3f(-1.0, -0.5, -3.0), VVect3f(1.0, -0.4, -3.0)));
+	moviebar->setColor(VColor(0x0000FF00));
+	gui->addItem(moviebar);
+	gui->addItem(tag);
+}
+
+void PanoVideo::mediaPause()
+{
+
 }
 
 void PanoVideo::shutdown()

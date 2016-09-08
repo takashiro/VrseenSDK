@@ -2,6 +2,8 @@
 
 #include <VMainActivity.h>
 #include <VPath.h>
+#include "VRectangle.h"
+
 
 #include "ModelView.h"
 
@@ -48,6 +50,12 @@ public:
 
     void onResume() override;
     void onPause() override;
+
+	void mediaPause();
+
+	VRectangle * moviebar;
+	VRectangle * tag;
+	bool pause;
 
 private:
     // shared vars
