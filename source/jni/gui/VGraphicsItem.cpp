@@ -231,7 +231,7 @@ void VGraphicsItem::onSensorChanged(const VMatrix4f &mvp)
         child->onSensorChanged(mvp);
     }
 
-    VMatrix4f pos = mvp * VMatrix4f::Translation(globalPos());
+    VMatrix4f pos = isFixed() ? VMatrix4f::Translation(globalPos()):mvp * VMatrix4f::Translation(globalPos());
     VRect3f rect = boundingRect();
     VVect3f start = pos.transform(rect.start);
     VVect3f end = pos.transform(rect.end);
@@ -273,6 +273,31 @@ void VGraphicsItem::onKeyEvent(const VClickEvent &event)
     if (hasFocus()) {
         onClick(event);
     }
+}
+
+bool VGraphicsItem::isFixed() const
+{
+    return false;
+}
+
+bool VGraphicsItem::needCursor(const VMatrix4f &mvp) const
+{
+    for (VGraphicsItem *child : d->children) {
+        if (child->needCursor(mvp)) return true;
+    }
+
+    if(d->focusListener || d->blurListener || d->stareListener || d->clickListener)
+    {
+        VMatrix4f pos = isFixed() ? VMatrix4f::Translation(globalPos()):mvp * VMatrix4f::Translation(globalPos());
+        VRect3f rect = boundingRect();
+        VVect3f start = pos.transform(rect.start);
+        VVect3f end = pos.transform(rect.end);
+
+        bool bEntered = (start.x>-1&&start.x<1&&start.y>-1&&start.y<1) || (end.x>-1&&end.x<1&&end.y>-1&&end.y<1);
+        if(bEntered) return true;
+    }
+
+    return false;
 }
 
 NV_NAMESPACE_END

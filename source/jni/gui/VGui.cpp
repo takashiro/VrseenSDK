@@ -74,7 +74,8 @@ void VGui::update(const VMatrix4f &mvp)
     painter.setNativeContext(d->vg);
     painter.setViewMatrix(mvp);
     d->root.paint(&painter);
-    if(d->cursorItem->isVisible()) d->cursorItem->paint(&painter);
+
+    if(d->cursorItem->isVisible() && d->root.needCursor(mvp)) d->cursorItem->paint(&painter);
     if(d->loadingItem->isVisible()) d->loadingItem->paint(&painter);
 }
 

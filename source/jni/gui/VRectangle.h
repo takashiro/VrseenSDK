@@ -17,6 +17,8 @@ public:
     VColor color() const;
     void setColor(const VColor &color);
 
+    bool isFixed() const override ;
+
 protected:
     void paint(VPainter *painter) override;
 

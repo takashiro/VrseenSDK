@@ -89,4 +89,10 @@ void VRectangle::paint(VPainter *painter)
     d->geometry.drawElements();
 }
 
+bool VRectangle::isFixed() const
+{
+    return  true;
+}
+
+
 NV_NAMESPACE_END

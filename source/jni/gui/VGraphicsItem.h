@@ -28,6 +28,9 @@ public:
     bool isVisible() const;
     void setVisible(bool visible);
 
+    virtual bool isFixed() const;
+    virtual bool needCursor(const VMatrix4f &mvp) const;
+
     VVect3f globalPos() const;
 
     const VRect3f &boundingRect() const;
