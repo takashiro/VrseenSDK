@@ -94,6 +94,7 @@ PanoPhoto::PanoPhoto(JNIEnv *jni, jclass activityClass, jobject activityObject)
     , m_eglConfig( 0 )
     , m_eglPbufferSurface( 0 )
     , m_eglShareContext( 0 )
+    , m_movieFormat(VT_2D)
 {
     m_shutdownRequest.setState( false );
 }
@@ -282,6 +283,9 @@ void * PanoPhoto::BackgroundGLLoadThread( void * v )
             uchar *data = static_cast<uchar *>(event.data.at(0).toPointer());
             int width = event.data.at(1).toInt();
             int height = event.data.at(2).toInt();
+
+            if(width == height) photos->m_movieFormat = VT_TOP_BOTTOM_3D;
+            else if(width == 4*height) photos->m_movieFormat = VT_LEFT_RIGHT_3D;
 
             const double start = VTimer::Seconds( );
 
@@ -579,6 +583,8 @@ VMatrix4f PanoPhoto::drawEyeView( const int eye, const float fovDegrees )
         glUniform4f( prog.uniformColor, fadeColor, fadeColor, fadeColor, fadeColor );
         glUniformMatrix4fv( prog.uniformModelViewProMatrix, 1, GL_FALSE /* not transposed */,
                             view.transposed().cell[ 0 ] );
+        glUniformMatrix4fv( prog.uniformTexMatrix, 1, GL_FALSE, /* not transposed */
+                            vApp->appInterface()->getTexMatrix(eye,m_movieFormat).transposed().data());
 
         m_globe.drawElements();
 

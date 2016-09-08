@@ -148,19 +148,20 @@ const char * VGlShader::getCubeMapPanoProgramShaderSource()
 const char * VGlShader::getTexturedMvpVertexShaderSource()
 {
     const char * texturedMvpVertexShaderSource =
-"uniform mat4 Mvpm;\n"
-"attribute vec4 Position;\n"
-"attribute vec4 VertexColor;\n"
-"attribute vec2 TexCoord;\n"
-"uniform mediump vec4 UniformColor;\n"
-"varying  lowp vec4 oColor;\n"
-"varying highp vec2 oTexCoord;\n"
-"void main()\n"
-"{\n"
-"   gl_Position = Mvpm * Position;\n"
-"	oTexCoord = TexCoord;\n"
-"   oColor = /* VertexColor * */ UniformColor;\n"
-"}\n";
+        "uniform mat4 Mvpm;\n"
+         "uniform highp mat4 Texm;\n"
+        "attribute vec4 Position;\n"
+        "attribute vec4 VertexColor;\n"
+        "attribute vec2 TexCoord;\n"
+        "uniform mediump vec4 UniformColor;\n"
+        "varying  lowp vec4 oColor;\n"
+        "varying highp vec2 oTexCoord;\n"
+        "void main()\n"
+        "{\n"
+        "   gl_Position = Mvpm * Position;\n"
+        "	oTexCoord = vec2( Texm * vec4(TexCoord,1,1) );\n"
+        "   oColor = /* VertexColor * */ UniformColor;\n"
+        "}\n";
     return texturedMvpVertexShaderSource;
 }
 const char * VGlShader::getHighlightColorVertexShaderSource()

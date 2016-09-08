@@ -107,6 +107,8 @@ private:
     EGLConfig			m_eglConfig;
     EGLSurface			m_eglPbufferSurface;
     EGLContext			m_eglShareContext;
+
+	MovieFormat  m_movieFormat;
 };
 
 NV_NAMESPACE_END

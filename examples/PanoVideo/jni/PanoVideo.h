@@ -78,6 +78,7 @@ private:
     int m_backgroundHeight;
 
     bool m_frameAvailable;
+	MovieFormat  m_movieFormat;
 };
 
 NV_NAMESPACE_END

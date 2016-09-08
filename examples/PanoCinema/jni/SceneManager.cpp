@@ -622,7 +622,7 @@ VMatrix4f SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 		glBindTexture( GL_TEXTURE_2D, ScreenVignetteTexture );
 
 		glUniformMatrix4fv( prog->uniformTexMatrix, 1, GL_FALSE, /* not transposed */
-							getTexMatrix(eye).transposed().data());
+							vApp->appInterface()->getTexMatrix(eye,CurrentMovieFormat).transposed().data());
 		// The UI is always identity for now, but we may scale it later
 
         VMatrix4f identity;
@@ -645,7 +645,7 @@ VMatrix4f SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 	    vApp->swapParms().WarpProgram = WP_CHROMATIC_MASKED_PLANE;
 		vApp->swapParms().Images[eye][1].TexId = MipMappedMovieTextures[CurrentMipMappedMovieTexture];
 		vApp->swapParms().Images[eye][1].Pose = vApp->sensorForNextWarp();
-        vApp->swapParms().Images[eye][1].TexCoordsFromTanAngles = getTexMatrix(eye) * mv.tanAngleMatrixFromUnitSquare();
+        vApp->swapParms().Images[eye][1].TexCoordsFromTanAngles = vApp->appInterface()->getTexMatrix(eye,CurrentMovieFormat) * mv.tanAngleMatrixFromUnitSquare();
 
 		// explicitly clear a hole in alpha
         const VMatrix4f screenMvp = mvp * screenModel;
@@ -740,78 +740,4 @@ VMatrix4f SceneManager::Frame( const VFrame & vrFrame )
 	}
 
 	return Scene.CenterViewMatrix();
-}
-
-VMatrix4f  SceneManager::getTexMatrix(int eye)
-{
-	// allow stereo movies to also be played in mono
-	const int stereoEye = ForceMono ? 0 : eye;
-
-	const VMatrix4f stretchTop(
-			1, 0, 0, 0,
-			0, 0.5f, 0, 0,
-			0, 0, 1, 0,
-			0, 0, 0, 1 );
-	const VMatrix4f stretchBottom(
-			1, 0, 0, 0,
-			0, 0.5, 0, 0.5f,
-			0, 0, 1, 0,
-			0, 0, 0, 1 );
-	const VMatrix4f stretchRight(
-			0.5f, 0, 0, 0.5f,
-			0, 1, 0, 0,
-			0, 0, 1, 0,
-			0, 0, 0, 1 );
-	const VMatrix4f stretchLeft(
-			0.5f, 0, 0, 0,
-			0, 1, 0, 0,
-			0, 0, 1, 0,
-			0, 0, 0, 1 );
-
-	const VMatrix4f rotate90(
-			0, 1, 0, 0,
-			-1, 0, 0, 1,
-			0, 0, 1, 0,
-			0, 0, 0, 1 );
-
-	const VMatrix4f rotate180(
-			-1, 0, 0, 1,
-			0, -1, 0, 1,
-			0, 0, 1, 0,
-			0, 0, 0, 1 );
-
-	const VMatrix4f rotate270(
-			0, -1, 0, 1,
-			1, 0, 0, 0,
-			0, 0, 1, 0,
-			0, 0, 0, 1 );
-
-	VMatrix4f texMatrix;
-
-	switch ( CurrentMovieFormat )
-	{
-		case VT_LEFT_RIGHT_3D:
-		case VT_LEFT_RIGHT_3D_FULL:
-			texMatrix = ( stereoEye ? stretchRight : stretchLeft );
-			break;
-		case VT_TOP_BOTTOM_3D:
-		case VT_TOP_BOTTOM_3D_FULL:
-			texMatrix = ( stereoEye ? stretchBottom : stretchTop );
-			break;
-		default:
-			switch( MovieRotation )
-			{
-				case 90 :
-					texMatrix = rotate90;
-					break;
-				case 180 :
-					texMatrix = rotate180;
-					break;
-				case 270 :
-					texMatrix = rotate270;
-					break;
-			}
-			break;
-	}
-	return  texMatrix;
 }

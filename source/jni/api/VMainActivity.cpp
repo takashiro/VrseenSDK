@@ -313,6 +313,48 @@ VEventLoop &VMainActivity::eventLoop()
     return d->eventLoop;
 }
 
+VMatrix4f VMainActivity::getTexMatrix(int eye,MovieFormat format)
+{
+    const VMatrix4f stretchTop(
+            1, 0, 0, 0,
+            0, 0.5f, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1 );
+    const VMatrix4f stretchBottom(
+            1, 0, 0, 0,
+            0, 0.5, 0, 0.5f,
+            0, 0, 1, 0,
+            0, 0, 0, 1 );
+    const VMatrix4f stretchRight(
+            0.5f, 0, 0, 0.5f,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1 );
+    const VMatrix4f stretchLeft(
+            0.5f, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1 );
+
+    VMatrix4f texMatrix;
+
+    switch ( format )
+    {
+        case VT_LEFT_RIGHT_3D:
+        case VT_LEFT_RIGHT_3D_FULL:
+            texMatrix = ( eye ? stretchRight : stretchLeft );
+            break;
+        case VT_TOP_BOTTOM_3D:
+        case VT_TOP_BOTTOM_3D_FULL:
+            texMatrix = ( eye ? stretchBottom : stretchTop );
+            break;
+        default:
+            break;
+    }
+    return  texMatrix;
+}
+
+
 NV_NAMESPACE_END
 
 NV_USING_NAMESPACE

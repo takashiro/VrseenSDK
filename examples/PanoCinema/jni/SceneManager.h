@@ -2,20 +2,11 @@
 
 #include <VRect3.h>
 #include <ModelView.h>
+#include "VMainActivity.h"
 
 NV_USING_NAMESPACE
 
 class PanoCinema;
-
-enum MovieFormat
-{
-	VT_UNKNOWN,
-	VT_2D,
-	VT_LEFT_RIGHT_3D,			// Left & right are scaled horizontally by 50%.
-	VT_LEFT_RIGHT_3D_FULL,		// Left & right are unscaled.
-	VT_TOP_BOTTOM_3D,			// Top & bottom are scaled vertically by 50%.
-	VT_TOP_BOTTOM_3D_FULL,		// Top & bottom are unscaled.
-};
 
 class SceneManager
 {
@@ -111,7 +102,6 @@ private:
 	GLuint 				BuildScreenVignetteTexture( const int horizontalTile ) const;
 	int 				BottomMipLevel( const int width, const int height ) const;
 	void 				ClampScreenToView();
-	VMatrix4f           getTexMatrix(int eye);
 };
 
 
