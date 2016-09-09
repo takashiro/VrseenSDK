@@ -3,6 +3,8 @@
 #include <VMainActivity.h>
 #include <VPath.h>
 #include "VRectangle.h"
+#include <VProgressBar.h>
+#include <gui/VProgressBar.h>
 
 
 #include "ModelView.h"
@@ -55,12 +57,9 @@ public:
 
 	void movePos(const VMatrix4f &mvp);
 
-	VRectangle * moviebar;
-	VRectangle * tag;
+	VProgressBar * progressBar;
 	bool pause;
 
-	JNIEnv * m_jni;
-	jobject m_obj;
 
 
 private:

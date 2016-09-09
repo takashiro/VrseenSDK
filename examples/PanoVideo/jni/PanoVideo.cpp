@@ -16,6 +16,7 @@
 #include <VEglDriver.h>
 
 #include <android/JniUtils.h>
+#include <gui/VPixmap.h>
 
 #include "SurfaceTexture.h"
 #include "VTexture.h"
@@ -23,6 +24,7 @@
 #include "App.h"
 #include "PanoVideo.h"
 #include "VGui.h"
+#include "VProgressBar.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -78,16 +80,14 @@ void Java_com_vrseen_panovideo_PanoVideo_getCurrentPos(JNIEnv *, jclass, jint cu
 
 	int curpos = current;
 	int length = movielength;
-	PanoVideo* pv = static_cast<PanoVideo*>(vApp->appInterface());
-	float ratio = float (curpos) / float(length);
-
-	if (pv->tag == nullptr || pv->moviebar == nullptr)
-		return;
 	if (current == movielength)
 		return;
+	PanoVideo* pv = static_cast<PanoVideo*>(vApp->appInterface());
 
-	pv->tag->setRect(VRect3f(VVect3f(-3.0 + ratio*6.0, -1.6, -4.0), VVect3f(-2.8 + ratio * 6.0, -1.1, -4.0)));
-
+	if (pv->progressBar == nullptr)
+		return;
+	float ratio = float (curpos) / float(length);
+	pv->progressBar->change(ratio);
 }
 
 bool Java_com_vrseen_panovideo_PanoVideo_mediaPause(JNIEnv *, jclass)
@@ -97,13 +97,6 @@ bool Java_com_vrseen_panovideo_PanoVideo_mediaPause(JNIEnv *, jclass)
 	return pv->pause;
 }
 
-void Java_com_vrseen_panovideo_PanoVideo_passjni(JNIEnv* env, jobject jobj)
-{
-	PanoVideo* pv = static_cast<PanoVideo*>(vApp->appInterface());
-
-	pv->m_jni = env;
-	pv->m_obj = jobj;
-}
 
 
 } // extern "C"
@@ -122,8 +115,7 @@ PanoVideo::PanoVideo(JNIEnv *jni, jclass activityClass, jobject activityObject)
     , m_backgroundHeight(0)
     , m_frameAvailable(false)
 {
-	moviebar = nullptr;
-	tag = nullptr;
+	progressBar = nullptr;
 	pause = false;
 }
 
@@ -166,32 +158,28 @@ void PanoVideo::init(const VString &, const VString &, const VString &)
     m_scene.Znear = 0.1f;
     m_scene.Zfar = 200.0f;
 
+	progressBar = new VProgressBar();
+	progressBar->setRect(VRect3f(VVect3f(-3.0, -1.5, -4.0), VVect3f(3.0, -1.2, -4.0)));
+
+	progressBar->setBarImage(VTexture(VResource("assets/rectangle.png")));
+	progressBar->setTagImage(VTexture(VResource("assets/square.png")));
+	progressBar->setIncImage(VTexture(VResource("assets/rectangle-jindu.png")));
+
+	progressBar->getTag()->setOnFocusListener([=](){PanoVideo::mediaPause();});
+	progressBar->getBar()->setOnStareListener([this]() {
+												  this->movePos(vApp->gui()->getMVP());
+											  });
+
 	VGui * gui  = vApp->gui();
-	moviebar = new VRectangle();
-	tag = new VRectangle();
-	tag->setColor(VColor(0x0000000));
-	tag->setRect(VRect3f(VVect3f(-3.0, -1.6, -4.0), VVect3f(-2.8, -1.1, -4.0)));
 
-	moviebar->setRect(VRect3f(VVect3f(-3.0, -1.5, -4.0), VVect3f(3.0, -1.2, -4.0)));
-	moviebar->setPos(VVect3f(0.0, 0.0, 0.0));
-	moviebar->setColor(VColor(0x88CCCCCC));
-
-	tag->setOnFocusListener([=](){PanoVideo::mediaPause();});
-
-	moviebar->setOnStareListener([this]() {
-		this->movePos(vApp->gui()->getMVP());
-	}
-	);
-
-	gui->addItem(moviebar);
-	gui->addItem(tag);
+	gui->addItem(progressBar);
 }
 
 void PanoVideo::movePos(const VMatrix4f &mvp)
 {
-	VMatrix4f trans =  mvp * moviebar->transform();
-	VVect3f realpos = trans.transform(moviebar->boundingRect().start);
-	float ratio = -realpos.x / (moviebar->boundingRect().end.x - moviebar->boundingRect().start.x);
+	VMatrix4f trans =  mvp * progressBar->getBar()->transform();
+	VVect3f realpos = trans.transform(progressBar->getBar()->boundingRect().start);
+	float ratio = -realpos.x / (trans.transform(progressBar->getBar()->boundingRect().end).x - trans.transform(progressBar->getBar()->boundingRect().start).x);
 
 	JNIEnv * tmpjni = vApp->vrJni();
 	jobject jobj = vApp->javaObject();

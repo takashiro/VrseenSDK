@@ -27,7 +27,6 @@ public class PanoVideo {
 		onStart(pathName);
 		
 		requestAudioFocus();
-		passjni();
 
 		movieTexture = createMovieTexture();
 		movieTexture.setOnFrameAvailableListener(frameAvailableListener);
@@ -167,7 +166,6 @@ public class PanoVideo {
 		}
 	};
 
-	native  void passjni();
 
 	native SurfaceTexture createMovieTexture();
 	

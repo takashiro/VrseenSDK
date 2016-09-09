@@ -1671,6 +1671,8 @@ void App::drawEyeViewsPostDistorted( VMatrix4f const & centerViewMatrix, const i
 
             worldFontSurface().Render3D(defaultFont(), mvp.transposed());
 
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             d->gui->update(mvp);
             d->gui->commit();
 
