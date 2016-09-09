@@ -2,6 +2,7 @@
 #include "VString.h"
 #include "VPainter.h"
 #include "3rdparty/nanovg/nanovg.h"
+#include "VVect2.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -10,6 +11,8 @@ struct VGuiText::Private
     VString text;
     VColor color;
     int fontId;
+
+    VVect2f pos;
 };
 
 VGuiText::VGuiText(VGraphicsItem* parent)
@@ -59,7 +62,7 @@ void VGuiText::paint(VPainter *painter)
 {
     NVGcontext *vg = static_cast<NVGcontext *>(painter->nativeContext());
 
-    nvgFontSize(vg, 200.0f);
+    nvgFontSize(vg, 40.0f);
     nvgFontFace(vg, "sans");
     nvgTextAlign(vg, NVG_ALIGN_CENTER|NVG_ALIGN_MIDDLE);
 
@@ -68,7 +71,15 @@ void VGuiText::paint(VPainter *painter)
     nvgStrokeColor(vg, nvgRGBA(255, 0, 128, 128));
 
     //cannot make the last parament to be nullptr, otherwise this function can not work as it want to be
-    nvgText(vg, 500.0f, 500.0f, reinterpret_cast<const char*>(d->text.c_str()), reinterpret_cast<const char *>(d->text.c_str() + d->text.length()));
+    nvgText(vg, d->pos.x ,d->pos.y, reinterpret_cast<const char*>(d->text.c_str()), reinterpret_cast<const char *>(d->text.c_str() + d->text.length()));
 }
+
+void VGuiText::setPos(float x, float y)
+{
+    d->pos.x = x;
+    d->pos.y = y;
+}
+
+
 NV_NAMESPACE_END
 

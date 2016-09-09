@@ -36,9 +36,11 @@
 #include "VTexture.h"
 #include "VGui.h"
 #include "VModel.h"
+#include "VGuiText.h"
 
 //#define TEST_TIMEWARP_WATCHDOG
 #define EGL_PROTECTED_CONTENT_EXT 0x32c0
+#define SENSOR_TEST
 
 NV_NAMESPACE_BEGIN
 
@@ -262,6 +264,9 @@ struct App::Private
 
     VTimeWarpParms	swapParms;
     VArray<VModel*> models;
+
+    VGuiText* m_text;
+    VGuiText* m_text2;
 
     Private(App *self)
         : self(self)
@@ -948,6 +953,18 @@ struct App::Private
 
             lastTouchpadTime = VTimer::Seconds();
 
+            #ifdef SENSOR_TEST
+            m_text = new VGuiText;
+            m_text->setTextColor(VColor(255,0,0,255));
+            gui->addItem(m_text);
+            m_text->setPos(505.0,100.0);
+
+            m_text2 = new VGuiText;
+            m_text2->setTextColor(VColor(255,0,0,255));
+            gui->addItem(m_text2);
+            m_text2->setPos(503.0,150.0);
+            #endif
+
             gui->init();
         }
 
@@ -1067,6 +1084,24 @@ struct App::Private
             prev = now;
             const double clampedPrediction = std::min(0.1, rawDelta * 2);
             sensorForNextWarp = VRotationSensor::instance()->predictState(now + clampedPrediction);
+
+            if(m_text)
+            {
+                VString info1;
+                info1.sprintf("w:%f x:%f y:%f z:%f",sensorForNextWarp.w,sensorForNextWarp.x,sensorForNextWarp.y,sensorForNextWarp.z);
+                m_text->setTextValue(info1);
+            }
+
+            if(m_text2)
+            {
+                float yaw, pitch, roll;
+                sensorForNextWarp.GetEulerAngles<VAxis_Y, VAxis_X, VAxis_Z>(&yaw, &pitch, &roll);
+
+                VString info2;
+                info2.sprintf("pitch:%f roll:%f raw:%f",pitch,roll,yaw);
+                m_text2->setTextValue(info2);
+            }
+
 
             self->text.vrFrame.pose = sensorForNextWarp;
             self->text.vrFrame.deltaSeconds   = std::min(0.1, rawDelta);

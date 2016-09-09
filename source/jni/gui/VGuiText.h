@@ -21,6 +21,7 @@ public:
 
     void init(void *vg) override;
 
+    void setPos(float x,float y);
 
 protected:
     void paint(VPainter *painter) override;
