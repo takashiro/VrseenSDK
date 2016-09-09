@@ -18,10 +18,17 @@ struct VRotationSensor::Private
     VLockless<VQuatf> recenter;
     VMutex recenterMutex;
     bool initialized;
+    FILE *log;
 
     Private()
         : initialized(false)
     {
+        log = fopen("/storage/emulated/0/VRSeen/sensorlog.txt", "w");
+    }
+
+    ~Private()
+    {
+        fclose(log);
     }
 };
 
@@ -40,6 +47,29 @@ void VRotationSensor::setState(const VRotationState &state)
         recentered.y = base.y;
         recentered.z = base.z;
         d->state.setState(state);
+
+        float yaw, pitch, roll;
+        state.GetEulerAngles<VAxis_Y, VAxis_X, VAxis_Z>(&yaw, &pitch, &roll);
+        if (d->log) {
+            time_t t = time(NULL);
+            struct tm *tm = localtime(&t);
+            static uint count = 1;
+            fprintf(d->log, "%d-%d %d:%d, count: %u, w:%.6f x:%.6f y:%0.6f z:%0.6f roll:%.6f yaw:%.6f pitch:%.6f\n",
+                    tm->tm_mon,
+                    tm->tm_mday,
+                    tm->tm_min,
+                    tm->tm_sec,
+                    count,
+                    state.w,
+                    state.x,
+                    state.y,
+                    state.z,
+                    roll,
+                    yaw,
+                    pitch
+            );
+            count++;
+        }
     }
 }
 
