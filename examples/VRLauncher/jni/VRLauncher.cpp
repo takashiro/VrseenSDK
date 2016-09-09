@@ -19,6 +19,7 @@
 #include <VTexture.h>
 #include <VFile.h>
 #include <VLoading.h>
+#include <VResource.h>
 
 NV_NAMESPACE_BEGIN
 
@@ -213,7 +214,7 @@ void VRLauncher::init(const VString &, const VString &, const VString &)
     }
 
     // We might want to save the view state and position for perfect recall
-    VString sdcard = "/storage/emulated/0/VRSeen/SDK/";
+    VString assets = "assets/";
     const char *buttonImages[4] = {"game1.jpg", "game2.jpg", "video1.jpg", "video2.jpg"};
     VTileButton *buttons[4];
 
@@ -222,7 +223,7 @@ void VRLauncher::init(const VString &, const VString &, const VString &)
     for (int i = 0; i < 4; i++){
         VTileButton *button = new VTileButton;
         buttons[i] = button;
-        VFile image(sdcard + "VRLauncher/" + buttonImages[i], VFile::ReadOnly);
+        VResource image(assets + buttonImages[i]);
         button->setRect(buttonSize);
         button->setImage(image);
         gui->addItem(button);
@@ -244,6 +245,7 @@ void VRLauncher::init(const VString &, const VString &, const VString &)
         button->setOnFocusListener(showLoading);
     }
 
+    VString sdcard = "/storage/emulated/0/VRSeen/SDK/";
     JNIEnv *jni = vApp->vrJni();
     jobject activity = vApp->javaObject();
     jmethodID startApp = jni->GetMethodID(jni->GetObjectClass(activity), "startApp", "(Ljava/lang/String;Ljava/lang/String;)V");
