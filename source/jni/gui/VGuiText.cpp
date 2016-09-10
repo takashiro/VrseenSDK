@@ -52,7 +52,7 @@ void VGuiText::setTextValue(const VString &text)
 void VGuiText::init(void *painter)
 {
     //load font data from apk package, only applied to  PanoPhoto
-    VResource *resLoad = new VResource("assets/Roboto-Regular.ttf");
+    VResource *resLoad = new VResource("res/raw/roboto_regular.ttf");
     uchar *fontData = const_cast<uchar *>(reinterpret_cast<const uchar *>(resLoad->data().c_str()));
     int dataLength = resLoad->length();
 
