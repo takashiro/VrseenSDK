@@ -3,6 +3,7 @@
 #include "VPainter.h"
 #include "3rdparty/nanovg/nanovg.h"
 #include "VVect2.h"
+#include "VResource.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -50,8 +51,14 @@ void VGuiText::setTextValue(const VString &text)
 
 void VGuiText::init(void *painter)
 {
+    //load font data from apk package, only applied to  PanoPhoto
+    VResource *resLoad = new VResource("assets/Roboto-Regular.ttf");
+    uchar *fontData = const_cast<uchar *>(reinterpret_cast<const uchar *>(resLoad->data().c_str()));
+    int dataLength = resLoad->length();
+
     NVGcontext *vg = static_cast<NVGcontext *>(painter);
-    d->fontId = nvgCreateFont(vg, "sans", "/storage/emulated/0/VRSeen/SDK/fonttype/Roboto-Regular.ttf");
+   // d->fontId = nvgCreateFont(vg, "sans", "/storage/emulated/0/VRSeen/SDK/fonttype/Roboto-Regular.ttf");
+    d->fontId = nvgCreateFontMem(vg, "sans", fontData, dataLength, 0);
     if (d->fontId == -1) {
         return ;
     }
