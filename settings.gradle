@@ -1,6 +1,7 @@
-include ':source'
+include ':source', ':VrGallery'
 include ':tests'
 include ':examples:PanoCinema'
 include ':examples:PanoPhoto'
 include ':examples:PanoVideo'
 include ':examples:ArCamera'
+project(':VrGallery').projectDir = new File('examples/VrGallery')

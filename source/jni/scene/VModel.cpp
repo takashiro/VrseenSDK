@@ -16,36 +16,36 @@ static AAssetManager *apkAssetManager = NULL;
 
 extern "C"
 {
-    void Java_com_vrseen_VrActivity_nativeInitLoadModel(JNIEnv *jni, jclass, jobject assetManager, jstring pathToInternalDir)
-    {
-        apkAssetManager = AAssetManager_fromJava(jni, assetManager);
+void Java_com_vrseen_VrActivity_nativeInitLoadModel(JNIEnv *jni, jclass, jobject assetManager, jstring pathToInternalDir)
+{
+    apkAssetManager = AAssetManager_fromJava(jni, assetManager);
 
-        const char *cPathToInternalDir;
-        cPathToInternalDir = jni->GetStringUTFChars(pathToInternalDir, NULL ) ;
-        apkInternalPath = std::string(cPathToInternalDir);
-        jni->ReleaseStringUTFChars(pathToInternalDir, cPathToInternalDir);
-    }
+    const char *cPathToInternalDir;
+    cPathToInternalDir = jni->GetStringUTFChars(pathToInternalDir, NULL ) ;
+    apkInternalPath = std::string(cPathToInternalDir);
+    jni->ReleaseStringUTFChars(pathToInternalDir, cPathToInternalDir);
+}
 }	// extern "C"
 
 
 static const char*  glVertexShader =
         "uniform highp mat4 Mvpm;\n"
-        "attribute vec4 Position;\n"
-        "attribute vec2 TexCoord;\n"
-        "varying  highp vec2 oTexCoord;\n"
-        "void main()\n"
-        "{\n"
-        "    gl_Position = Mvpm * Position;\n"
-        "    oTexCoord = vec2(TexCoord.x,1.0-TexCoord.y);\n"
-        "}\n";
+                "attribute vec4 Position;\n"
+                "attribute vec2 TexCoord;\n"
+                "varying  highp vec2 oTexCoord;\n"
+                "void main()\n"
+                "{\n"
+                "    gl_Position = Mvpm * Position;\n"
+                "    oTexCoord = vec2(TexCoord.x,1.0-TexCoord.y);\n"
+                "}\n";
 
 static const char*  glFragmentShader =
         "uniform sampler2D Texture0;\n"
-        "varying highp vec2 oTexCoord;\n"
-        "void main()\n"
-        "{\n"
-        "    gl_FragColor = texture2D( Texture0, oTexCoord );\n"
-        "}\n";
+                "varying highp vec2 oTexCoord;\n"
+                "void main()\n"
+                "{\n"
+                "    gl_FragColor = texture2D( Texture0, oTexCoord );\n"
+                "}\n";
 
 struct VModel::Private
 {
@@ -103,9 +103,9 @@ bool VModel::load(VString& modelPath)
         VertexAttribs attribs;
         VArray<unsigned short> indices;
 
-       const aiMesh *mesh = scene->mMeshes[i];
-       unsigned int vertexCount = mesh->mNumVertices;
-       attribs.position.resize( vertexCount );
+        const aiMesh *mesh = scene->mMeshes[i];
+        unsigned int vertexCount = mesh->mNumVertices;
+        attribs.position.resize( vertexCount );
 
         for (unsigned int j = 0; j < vertexCount; j++)
         {
