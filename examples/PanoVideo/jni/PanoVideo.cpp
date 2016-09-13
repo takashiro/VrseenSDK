@@ -114,6 +114,7 @@ PanoVideo::PanoVideo(JNIEnv *jni, jclass activityClass, jobject activityObject)
     , m_backgroundWidth(0)
     , m_backgroundHeight(0)
     , m_frameAvailable(false)
+	, m_movieFormat(VT_2D)
 {
 	progressBar = nullptr;
 	pause = false;
@@ -285,6 +286,15 @@ void PanoVideo::command(const VEvent &event )
             setMenuState( MENU_VIDEO_READY );
 		}
 
+		if (m_videoWidth/2  > m_videoHeight)
+		{
+			m_movieFormat = VT_LEFT_RIGHT_3D;
+		}
+		else if (m_videoWidth > m_videoHeight/2)
+		{
+			m_movieFormat = VT_TOP_BOTTOM_3D;
+		}
+
 		return;
 
     } else if (event.name == "startError") {
@@ -425,8 +435,9 @@ VMatrix4f PanoVideo::drawEyeView( const int eye, const float fovDegrees )
         const VMatrix4f view = m_scene.ViewMatrixForEye( 0 ) * VMatrix4f::RotationY( M_PI / 2 );
         const VMatrix4f proj = m_scene.ProjectionMatrixForEye( 0, fovDegrees );
 
-        glUniformMatrix4fv( prog.uniformTexMatrix, 1, GL_FALSE, texmForVideo( eye ).transposed().cell[ 0 ] );
         glUniformMatrix4fv( prog.uniformModelViewProMatrix, 1, GL_FALSE, ( proj * view ).transposed().cell[ 0 ] );
+		glUniformMatrix4fv( prog.uniformTexMatrix, 1, GL_FALSE, /* not transposed */
+							vApp->appInterface()->getTexMatrix(eye,m_movieFormat).transposed().data());
         m_globe.drawElements();
 
 		glBindTexture( GL_TEXTURE_EXTERNAL_OES, 0 );	// don't leave it bound
