@@ -174,6 +174,8 @@ void PanoVideo::init(const VString &, const VString &, const VString &)
 	VGui * gui  = vApp->gui();
 
 	gui->addItem(progressBar);
+
+	vApp->eventLoop().post("activityInitCompleted");
 }
 
 void PanoVideo::movePos(const VMatrix4f &mvp)

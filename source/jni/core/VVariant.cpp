@@ -443,4 +443,9 @@ VVariant &VVariant::operator=(VVariant &&source)
     return *this;
 }
 
+const VVariant::Function& VVariant::toFunction() const {
+    return *m_value.function;
+}
+
+
 NV_NAMESPACE_END

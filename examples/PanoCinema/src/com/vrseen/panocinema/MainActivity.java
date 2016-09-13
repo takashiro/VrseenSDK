@@ -25,7 +25,6 @@ public class MainActivity extends VrActivity {
 		}
 
 		cinema = new PanoCinema(this);
-		loadModel("cinema.obj");
 		cinema.start(videoPath);
 	}
 
