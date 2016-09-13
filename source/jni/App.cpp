@@ -892,7 +892,14 @@ struct App::Private
             model->load(path);
 
             models.push_back(model);
+            return;
         }
+
+        if(event.name == "loadModelCompleted"){
+            VModel::command(event);
+            return;
+        }
+
         // Pass it on to the client app.
         activity->command(event);
     }
