@@ -8,6 +8,7 @@
 #define NANOVG_GLES3_IMPLEMENTATION
 #include <GLES3/gl3.h>
 #include <EGL/egl.h>
+#include <api/VEglDriver.h>
 #include "3rdparty/nanovg/nanovg.h"
 #include "3rdparty/nanovg/nanovg_gl.h"
 #include "VTouchEvent.h"
@@ -76,10 +77,17 @@ void VGui::update(const VMatrix4f &mvp)
     VPainter painter;
     painter.setNativeContext(d->vg);
     painter.setViewMatrix(mvp);
+
+    VEglDriver::glPushAttrib();
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     d->root.paint(&painter);
 
     if(d->cursorItem->isVisible() && d->root.needCursor(mvp)) d->cursorItem->paint(&painter);
     if(d->loadingItem->isVisible()) d->loadingItem->paint(&painter);
+
+    VEglDriver::glPopAttrib();
 }
 
 void VGui::commit()
