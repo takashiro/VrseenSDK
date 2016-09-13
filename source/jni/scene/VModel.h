@@ -10,7 +10,7 @@ class VModel
     public:
         VModel();
         ~VModel();
-        bool load(VString& modelPath);
+        bool loadAsync(VString& modelPath,std::function<void()> completeListener);
         void draw(int eye, const VMatrix4f & mvp );
         static void command(const VEvent &event );
     private:

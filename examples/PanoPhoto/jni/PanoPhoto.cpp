@@ -375,12 +375,14 @@ void PanoPhoto::command(const VEvent &event )
     if (event.name == "loaded pano") {
         m_backgroundPanoTexData.Swap();
         m_currentPanoIsCubeMap = false;
+        vApp->eventLoop().post("activityInitCompleted");
         return;
     }
 
     if (event.name == "loaded cube") {
         m_backgroundCubeTexData.Swap();
         m_currentPanoIsCubeMap = true;
+        vApp->eventLoop().post("activityInitCompleted");
         return;
     }
 }

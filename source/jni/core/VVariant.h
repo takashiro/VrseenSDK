@@ -95,6 +95,7 @@ public:
 
     const VVariantArray &toArray() const;
     const VVariantMap &toMap() const;
+    const Function& toFunction() const;
 
     VVariant &operator[](uint index) { return (*(m_value.array))[index]; }
 

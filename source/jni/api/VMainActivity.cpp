@@ -462,8 +462,9 @@ void Java_com_vrseen_VrActivity_nativeNewIntent(JNIEnv *jni, jclass, jstring fro
 
 void Java_com_vrseen_VrActivity_nativeLoadModel(JNIEnv *jni,jclass,jstring fileName)
 {
+    std::function<void()> completeListener;
     VVariantArray args;
-    args << JniUtils::Convert(jni, fileName);
+    args << JniUtils::Convert(jni, fileName) << completeListener;
     vApp->eventLoop().post("loadModel", args);
 }
 

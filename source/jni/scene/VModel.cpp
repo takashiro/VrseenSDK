@@ -72,6 +72,7 @@ struct VModel::Private
 
     VGlShader loadModelProgram;
     VArray<VGlGeometry> geos;
+    std::function<void()> completeListener;
 
     static void* loadModelAsync(void* param);
 };
@@ -102,7 +103,7 @@ VModel::~VModel()
     }
 }
 
-bool VModel::load(VString& modelPath)
+bool VModel::loadAsync(VString& modelPath,std::function<void()> completeListener)
 {
     if(!loadingThread)
     {
@@ -144,6 +145,7 @@ bool VModel::load(VString& modelPath)
         }
     }
 
+    d->completeListener = completeListener;
     if(!eventLoop) eventLoop = new VEventLoop(10);
     VVariantArray args;
     args<<(void*)d<<modelPath;
@@ -325,6 +327,11 @@ void VModel::command(const VEvent &event )
         }
 
         delete modelMeshes;
+
+        if (d->completeListener) {
+            d->completeListener();
+        }
+
         return;
     }
 }

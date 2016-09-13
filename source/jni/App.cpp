@@ -887,9 +887,10 @@ struct App::Private
 
         if(event.name == "loadModel"){
             VString path = event.data.at(0).toString();
+            std::function<void()> completeListener = event.data.at(1).toFunction();
 
             VModel* model = new VModel;
-            model->load(path);
+            model->loadAsync(path,completeListener);
 
             models.push_back(model);
             return;
@@ -897,6 +898,11 @@ struct App::Private
 
         if(event.name == "loadModelCompleted"){
             VModel::command(event);
+            return;
+        }
+
+        if(event.name == "activityInitCompleted"){
+            if(activity->showLoadingIcon()) gui->removeLoading();
             return;
         }
 
@@ -1028,7 +1034,7 @@ struct App::Private
             {
                 if (activity->showLoadingIcon())
                 {
-                    gui->showLoading(2);
+                    gui->showLoading(0);
                 }
                 vInfo("launchIntentJSON:" << launchIntentJSON);
                 vInfo("launchIntentURI:" << launchIntentURI);

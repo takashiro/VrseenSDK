@@ -88,6 +88,14 @@ void PanoCinema::init(const VString &, const VString &, const VString &launchInt
     shaderMgr.OneTimeInit( launchIntentURI );
     sceneMgr.OneTimeInit(launchIntentURI);
 
+    std::function<void()> hideLoading = [=](){
+        vApp->eventLoop().post("activityInitCompleted");
+    };
+
+    VVariantArray args;
+    args << "cinema.obj" << hideLoading;
+    vApp->eventLoop().post("loadModel", args);
+
     vInfo("PanoCinema::OneTimeInit:" << (VTimer::Seconds() - startTime) << "seconds");
 }
 
