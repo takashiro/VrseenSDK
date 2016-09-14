@@ -11,6 +11,7 @@
 #include "3rdparty/nanovg/nanovg.h"
 #include "3rdparty/nanovg/nanovg_gl.h"
 #include "VTouchEvent.h"
+#include "VResource.h"
 
 
 NV_NAMESPACE_BEGIN
@@ -55,6 +56,18 @@ VGui::~VGui()
 void VGui::init()
 {
     d->vg = nvgCreateGLES3(NVG_ANTIALIAS | NVG_STENCIL_STROKES | NVG_DEBUG);
+
+    //init font;
+    VResource *resLoad = new VResource("res/raw/roboto_regular.ttf");
+    uchar *fontData = const_cast<uchar *>(reinterpret_cast<const uchar *>(resLoad->data().c_str()));
+    int dataLength = resLoad->length();
+    // d->fontId = nvgCreateFont(vg, "sans", "/storage/emulated/0/VRSeen/SDK/fonttype/Roboto-Regular.ttf");
+    int fontId;
+    fontId = nvgCreateFontMem(d->vg, "sans", fontData, dataLength, 0);
+    if (fontId == -1) {
+        return ;
+    }
+
     d->root.init(d->vg);
     if(!d->cursorItem) d->cursorItem = new VCursor;
     if(!d->loadingItem)

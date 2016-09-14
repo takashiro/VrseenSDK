@@ -954,18 +954,17 @@ struct App::Private
             lastTouchpadTime = VTimer::Seconds();
 
             #ifdef SENSOR_TEST
+            gui->init();
             m_text = new VGuiText;
             m_text->setTextColor(VColor(255,0,0,255));
-            gui->addItem(m_text);
             m_text->setPos(505.0,100.0);
+            gui->addItem(m_text);
 
             m_text2 = new VGuiText;
             m_text2->setTextColor(VColor(255,0,0,255));
-            gui->addItem(m_text2);
             m_text2->setPos(503.0,150.0);
+            gui->addItem(m_text2);
             #endif
-
-            gui->init();
         }
 
         // FPS counter information

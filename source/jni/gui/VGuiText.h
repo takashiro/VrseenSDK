@@ -19,7 +19,7 @@ public:
     VString textValue() const;
     void setTextValue(const VString &text);
 
-    void init(void *vg) override;
+//    void init() override;
 
     void setPos(float x,float y);
 
