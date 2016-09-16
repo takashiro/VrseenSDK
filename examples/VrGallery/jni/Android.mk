@@ -11,6 +11,6 @@ LOCAL_ARM_NEON  := true					# compile with neon support enabled
 
 LOCAL_MODULE    := vrgallery
 
-LOCAL_SRC_FILES := VrGallery.cpp FileLoader.cpp
+LOCAL_SRC_FILES := VrGallery.cpp FileLoader.cpp VCylinder.cpp
 
 include $(BUILD_SHARED_LIBRARY)			# start building based on everything since CLEAR_VARS

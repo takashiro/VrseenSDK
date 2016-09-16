@@ -4,6 +4,7 @@
 
 #include "ModelView.h"
 #include "VLockless.h"
+#include "VCylinder.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -66,6 +67,7 @@ public:
     bool				useOverlay() const;
     VEventLoop &		backgroundMessageQueue() { return m_backgroundCommands;  }
 
+	VCylinder *test = nullptr;
 private:
 	// Background textures loaded into GL by background thread using shared context
 	static void *		BackgroundGLLoadThread( void * v );

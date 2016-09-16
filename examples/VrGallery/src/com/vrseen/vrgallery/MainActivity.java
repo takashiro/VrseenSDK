@@ -27,7 +27,7 @@ public class MainActivity extends VrActivity {
 
 	/** Load jni .so on initialization */
 	static {
-		System.loadLibrary("panophoto");
+		System.loadLibrary("vrgallery");
 	}
 
 	@Override

@@ -3,17 +3,17 @@
 
 	<string
       name="app_name"
-      project="vrseen-panophoto"
+      project="vrseen-vrgallery"
       description="The title of the application, which lets you browse 360 panorama photos"
-      >Vrseen PanoPhoto</string>
+      >Vrseen VrGallery</string>
    	<string
       name="action_settings"
-      project="vrseen-panophoto"
+      project="vrseen-vrgallery"
       description="The name of the settings menu."
       >Settings</string>
     <string
         name="media_not_found"
-        project="vrseen-panophoto"
+        project="vrseen-vrgallery"
         description="The message displayed when no media found on the phone."
         >There are no photos on your phone. Please insert the SD card included with your Gear VR.</string>
 

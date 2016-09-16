@@ -3,10 +3,10 @@ apply plugin: 'com.android.model.application'
 model {
     android {
         defaultConfig {
-            applicationId = 'com.vrseen.panophoto'
+            applicationId = 'com.vrseen.vrgallery'
         }
         ndk {
-            moduleName ='panophoto'
+            moduleName ='vrgallery'
         }
         sources {
             main {

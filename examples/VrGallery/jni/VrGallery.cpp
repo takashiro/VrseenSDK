@@ -4,6 +4,7 @@
 #include <android/keycodes.h>
 #include "FileLoader.h"
 #include "core/VTimer.h"
+#include "VCylinder.h"
 
 #include <android/JniUtils.h>
 #include <VZipFile.h>
@@ -206,6 +207,7 @@ void VrGallery::init(const VString &, const VString &, const VString &)
         vInfo("pthread_create returned" << createErr);
     }
 
+    test=new VCylinder();
     // We might want to save the view state and position for perfect recall
 }
 
@@ -501,10 +503,14 @@ VMatrix4f VrGallery::drawEyeView( const int eye, const float fovDegrees )
     const VMatrix4f view = drawScene ?
                 m_scene.DrawEyeView( eye, fovDegrees )
               : m_scene.MvpForEye( eye, fovDegrees );
+    glClearColor(0,0,0,1);
+    glClear(GL_COLOR_BUFFER_BIT);
+    test->setMVP(view.cell);
+    test->draw();
 
     //const float color = m_currentFadeLevel;
     // Dim pano when browser open
-    float fadeColor = 1.0f;
+   /*float fadeColor = 1.0f;
 
     if ( useOverlay() && m_currentPanoIsCubeMap )
     {
@@ -580,7 +586,7 @@ VMatrix4f VrGallery::drawEyeView( const int eye, const float fovDegrees )
         glUseProgram( prog.program );
 
         glUniform4f( prog.uniformColor, fadeColor, fadeColor, fadeColor, fadeColor );
-        glUniformMatrix4fv( prog.uniformModelViewProMatrix, 1, GL_FALSE /* not transposed */,
+        glUniformMatrix4fv( prog.uniformModelViewProMatrix, 1, GL_FALSE ,
                             view.transposed().cell[ 0 ] );
 
         m_globe.drawElements();
@@ -590,7 +596,8 @@ VMatrix4f VrGallery::drawEyeView( const int eye, const float fovDegrees )
     }
 
 
-   VEglDriver::logErrorsEnum( "photo draw" );
+   VEglDriver::logErrorsEnum( "photo draw" );*/
+
     return view;
 }
 
