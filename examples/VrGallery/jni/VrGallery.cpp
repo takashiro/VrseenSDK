@@ -15,7 +15,7 @@
 #include <VImage.h>
 #include <GazeCursor.h>
 #include <VTexture.h>
-
+#define PI 3.14159265359
 NV_NAMESPACE_BEGIN
 
 static const char * DEFAULT_PANO = "assets/placeholderBackground.jpg";
@@ -497,107 +497,97 @@ VMatrix4f CubeMatrixForViewMatrix( const VMatrix4f & viewMatrix )
 
 VMatrix4f VrGallery::drawEyeView( const int eye, const float fovDegrees )
 {
-    // Don't draw the scene at all if it is faded out
-    const bool drawScene = true;
-
-    const VMatrix4f view = drawScene ?
-                m_scene.DrawEyeView( eye, fovDegrees )
-              : m_scene.MvpForEye( eye, fovDegrees );
+    static int count = 0;
+    static VVect2f direc(0, -1);
+    static VVect2f curPos(0,0);
+    const VMatrix4f view = m_scene.DrawEyeView( eye, fovDegrees );
+    VVect2f newDir(view.cell[2][0], view.cell[2][2]);
+    VVect2f newPos(curPos);
+    float r = test->getRatio()/m_count;
+    if (test->getRatio()*direc.angleTo(newDir) < m_sen) {
+        count++;
+        if (count >= m_time) {
+            //转移位置
+            //确定与哪个圆相交，也就是确定r
+       if (fabs(curPos.x) > 1e-8 || fabs(curPos.y) > 1e-8 || fabs(curPos.length() - r) < 1e-8) {
+                float ang = direc.angleTo(curPos);
+                float tmps = PI - asin((curPos.length()-r)/curPos.length());
+                if (ang >= 0 && ang <= PI/2) {
+                    r = curPos.length() + r;
+                    if (r > (test->getRatio() - test->getRatio()/m_count))
+                        r = test->getRatio() - test->getRatio()/m_count;
+                }
+                else if(ang >= (tmps) && ang <= PI) {
+                    r = curPos.length() - r;
+                    if (fabs(r) < 1e-7 || fabs(r - test->getRatio()/m_count) <= 1e-7)
+                        r = test->getRatio()/m_count;
+                }
+                else {
+                    r= curPos.length();
+                }
+            }
+            //计算新位置
+            float a = direc.x/direc.y;
+            float b = curPos.x - direc.x*curPos.y/direc.y;
+            float z0 = (sqrt(a*a*r*r - b*b + r*r) - a*b)/(a*a+1);
+            float x0 = a*z0 + b;
+            float z1 = (-sqrt(a*a*r*r - b*b + r*r) - a*b)/(a*a+1);
+            float x1 = a*z1 + b;
+            if (fabs(x0 - x1) < 1e-8 && fabs(z0 - z1) < 1e-8) {
+                //只有一个交点
+                newPos.x = x0;
+                newPos.y = z0;
+            }
+            else if(((x0 - curPos.x>= 0) == (direc.x >= 0))
+                    && ((z0 - curPos.y >= 0) == (direc.y >= 0))) {
+                //第一个点与方向向量同向，包括第一个点与curPos重合的情况
+                if (((x1 - curPos.x >= 0) == (direc.x >= 0))
+                    && ((z1 - curPos.y >= 0) == (direc.y >= 0))) {
+                    //第二个点与方向向量同向，包括第二个点与curPos重合的情况，两个点不相等
+                    float l0 = VVect2f(x0-curPos.x, z0-curPos.y).length();
+                    float l1 = VVect2f(x1-curPos.x, z1-curPos.y).length();
+                    if (fabs(l0) < 1e-8) {
+                        newPos.x = x1;
+                        newPos.y = z1;
+                    }
+                    else if (fabs(l1) < 1e-8) {
+                        newPos.x = x0;
+                        newPos.y = z0;
+                    }
+                    else if (l0 < l1) {
+                        newPos.x = x0;
+                        newPos.y = z0;
+                    }
+                    else
+                    {
+                        newPos.x = x1;
+                        newPos.y = z1;
+                    }
+                }
+                else {
+                    newPos.x = x0;
+                    newPos.y = z0;
+                }
+            }
+            else {
+                newPos.x = x1;
+                newPos.y = z1;
+            }
+            curPos = newPos;
+            count = 0;
+        }
+    }
+    else {
+        count = 0;
+        direc = newDir;
+    }
     glClearColor(0,0,0,1);
     glClear(GL_COLOR_BUFFER_BIT);
-    test->setMVP(view.cell);
+    VMatrix4f model = VMatrix4f::Scaling(test->getRatio(),1,test->getRatio());
+    model.cell[2][3] = -newPos.y;
+    model.cell[0][3] = -newPos.x;
+    test->setMVP((view*model).cell);
     test->draw();
-
-    //const float color = m_currentFadeLevel;
-    // Dim pano when browser open
-   /*float fadeColor = 1.0f;
-
-    if ( useOverlay() && m_currentPanoIsCubeMap )
-    {
-        // Clear everything to 0 alpha so the overlay plane shows through.
-        glClearColor( 0, 0, 0, 0 );
-        glClear( GL_COLOR_BUFFER_BIT );
-
-        const VMatrix4f	m( CubeMatrixForViewMatrix( m_scene.CenterViewMatrix() ) );
-        GLuint texId = m_backgroundCubeTexData.GetRenderTexId();
-        glBindTexture( GL_TEXTURE_CUBE_MAP, texId );
-        glTexParameteri( GL_TEXTURE_CUBE_MAP, VEglDriver::GL_TEXTURE_SRGB_DECODE_EXT,
-                         m_useSrgb ? VEglDriver::GL_DECODE_EXT : VEglDriver::GL_SKIP_DECODE_EXT );
-        glBindTexture( GL_TEXTURE_CUBE_MAP, 0 );
-
-
-        vApp->swapParms().WarpOptions = ( m_useSrgb ? 0 : SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER );
-        vApp->swapParms( ).Images[ eye ][ 1 ].TexId = texId;
-        vApp->swapParms().Images[ eye ][ 1 ].TexCoordsFromTanAngles = m;
-        vApp->swapParms().Images[ eye ][ 1 ].Pose = m_frameInput.pose;
-        vApp->swapParms().WarpProgram = WP_CHROMATIC_MASKED_CUBE;
-        for ( int i = 0; i < 4; i++ )
-        {
-            vApp->swapParms().ProgramParms[ i ] = fadeColor;
-        }
-
-
-//        vApp->kernel()->m_smoothOptions = ( m_useSrgb ? 0 : VK_INHIBIT_SRGB_FB );
-//        vApp->kernel()->m_texId[ eye ][ 1 ] = texId;
-//        vApp->kernel()->m_texMatrix[ eye ][ 1 ] = m;
-//
-//        VRotationState &pose = vApp->kernel()->m_pose[ eye ][ 1 ];
-//        pose = m_frameInput.pose;
-//        vApp->kernel()->m_smoothProgram = VK_CUBE_CB;
-//        for ( int i = 0; i < 4; i++ )
-//        {
-//            vApp->kernel()->m_programParms[ i ] = fadeColor;
-//        }
-    }
-    else
-    {
-        vApp->swapParms().WarpOptions = m_useSrgb ? 0 : SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER;
-        vApp->swapParms().Images[ eye ][ 1 ].TexId = 0;
-        vApp->swapParms().WarpProgram = WP_CHROMATIC;
-        for ( int i = 0; i < 4; i++ )
-        {
-            vApp->swapParms().ProgramParms[ i ] = 1.0f;
-        }
-
-//        vApp->kernel()->m_smoothOptions = m_useSrgb ? 0 : VK_INHIBIT_SRGB_FB;
-//        vApp->kernel()->m_texId[ eye ][ 1 ] = 0;
-//        vApp->kernel()->m_smoothProgram = VK_DEFAULT_CB;
-//        for ( int i = 0; i < 4; i++ )
-//        {
-//            vApp->kernel()->m_programParms[ i ] = 1.0f;
-//        }
-
-        glActiveTexture( GL_TEXTURE0 );
-        if ( m_currentPanoIsCubeMap )
-        {
-            glBindTexture( GL_TEXTURE_CUBE_MAP, m_backgroundCubeTexData.GetRenderTexId( ) );
-            glTexParameteri( GL_TEXTURE_CUBE_MAP, VEglDriver::GL_TEXTURE_SRGB_DECODE_EXT,
-                             m_useSrgb ? VEglDriver::GL_DECODE_EXT : VEglDriver::GL_SKIP_DECODE_EXT );
-        }
-        else
-        {
-            glBindTexture( GL_TEXTURE_2D, m_backgroundPanoTexData.GetRenderTexId( ) );
-            glTexParameteri( GL_TEXTURE_2D, VEglDriver::GL_TEXTURE_SRGB_DECODE_EXT,
-                             m_useSrgb ? VEglDriver::GL_DECODE_EXT : VEglDriver::GL_SKIP_DECODE_EXT );
-        }
-
-        VGlShader & prog = m_currentPanoIsCubeMap ? m_cubeMapPanoProgram : m_texturedMvpProgram;
-
-        glUseProgram( prog.program );
-
-        glUniform4f( prog.uniformColor, fadeColor, fadeColor, fadeColor, fadeColor );
-        glUniformMatrix4fv( prog.uniformModelViewProMatrix, 1, GL_FALSE ,
-                            view.transposed().cell[ 0 ] );
-
-        m_globe.drawElements();
-
-        glBindTexture( GL_TEXTURE_CUBE_MAP, 0 );
-        glBindTexture( GL_TEXTURE_2D, 0 );
-    }
-
-
-   VEglDriver::logErrorsEnum( "photo draw" );*/
-
     return view;
 }
 

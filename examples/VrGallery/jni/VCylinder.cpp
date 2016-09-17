@@ -42,7 +42,7 @@ static GLuint _createProgram(const char *ver, const char * fag){
     }
     return p;
 }
-void VCylinder::setMVP(const GLfloat m[4][4]) {
+void VCylinder::setMVP(GLfloat m[4][4]) {
     if(m == nullptr)
         return;
     for (int i = 0; i < 4; i++) {
@@ -54,8 +54,13 @@ void VCylinder::setMVP(const GLfloat m[4][4]) {
     glUniformMatrix4fv(m_MvpLoc, 1, false, m_mvp[0]);
     glUseProgram(0);
 }
+float VCylinder::getRatio() {
+    return  m_ratio/(2*PI);
+}
 VCylinder::VCylinder() {
-    m_texture =  VTexture(VResource("assets/han_2.jpg"), VTexture::UseSRGB).id();
+    VTexture t = VTexture(VResource("assets/han.jpg"), VTexture::UseSRGB);
+    m_ratio = (float)t.width() / t.height();
+    m_texture =  t.id();
     createProgram();
     createShape();
     glUseProgram(m_program);

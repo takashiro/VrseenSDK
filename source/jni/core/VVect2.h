@@ -43,7 +43,13 @@ public:
     T angleTo(const VVect2 &vect) const
     {
         T div = lengthSquared() * vect.lengthSquared();
-        T result = acos((dotProduct(vect)) / sqrt(div));
+        T r = dotProduct(vect) / sqrt(div);
+        //防止acos返回NaN
+        if (r > 1.0)
+            r = 1.0;
+        if (r < -1.0)
+            r = -1.0;
+        T result = acos(r);
         return result;
     }
 

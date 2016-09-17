@@ -109,6 +109,10 @@ private:
     EGLConfig			m_eglConfig;
     EGLSurface			m_eglPbufferSurface;
     EGLContext			m_eglShareContext;
+
+	const float m_sen = 1; //盯视一个位置时，允许偏移的弧度长
+	const int m_count = 6; //观看位置的同心圆个数
+	const int m_time = 360; //多久触发事件
 };
 
 NV_NAMESPACE_END
