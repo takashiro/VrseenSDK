@@ -953,8 +953,9 @@ struct App::Private
 
             lastTouchpadTime = VTimer::Seconds();
 
-            #ifdef SENSOR_TEST
             gui->init();
+
+            #ifdef SENSOR_TEST
             m_text = new VGuiText;
             m_text->setTextColor(VColor(255,0,0,255));
             m_text->setPos(505.0,100.0);
