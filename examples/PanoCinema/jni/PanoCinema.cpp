@@ -93,7 +93,7 @@ void PanoCinema::init(const VString &, const VString &, const VString &launchInt
     };
 
     VVariantArray args;
-    args << "cinema.obj" << hideLoading;
+    args << "/mnt/sdcard/VRSeen/SDK/models/158/MG158_52.obj" << hideLoading;
     vApp->eventLoop().post("loadModel", args);
 
     vInfo("PanoCinema::OneTimeInit:" << (VTimer::Seconds() - startTime) << "seconds");

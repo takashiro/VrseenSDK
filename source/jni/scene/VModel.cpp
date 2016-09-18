@@ -2,6 +2,7 @@
 #include "VGlShader.h"
 #include "VResource.h"
 #include "VGlGeometry.h"
+#include "VFile.h"
 #include "VTexture.h"
 #include "App.h"
 
@@ -159,9 +160,10 @@ void VModel::draw(int eye, const VMatrix4f & mvp )
     NV_UNUSED(eye);
 
     const VGlShader * shader = &d->loadModelProgram;
-
+    //hack code,temporary for 158demo branch
+    const VMatrix4f mvp2  = mvp * VMatrix4f::RotationX(-M_PI*0.5);
     glUseProgram(shader->program);
-    glUniformMatrix4fv(shader->uniformModelViewProMatrix, 1, GL_FALSE, mvp.transposed().cell[0]);
+    glUniformMatrix4fv(shader->uniformModelViewProMatrix, 1, GL_FALSE, mvp2.transposed().cell[0]);
     VEglDriver::glPushAttrib();
 
     glEnable(GL_DEPTH_TEST);
@@ -208,9 +210,18 @@ void* VModel::Private::loadModelAsync(void* param)
             VModel::Private * d = static_cast<VModel::Private * >(event.data.at(0).toPointer());
             VString modelPath = event.data.at(1).toString();
 
+//            VResource modelFile(modelPath);
+//            if (!modelFile.exists()) {
+//                vWarn("VModel::Load failed to read" << modelPath);
+//                return false;
+//            }
+//
+//            Assimp::Importer importer;
+//            const aiScene* scene = importer.ReadFileFromMemory(modelFile.data().data(), modelFile.size(),aiProcessPreset_TargetRealtime_Quality);
+
             Assimp::Importer importer;
-            Assimp::AndroidJNIIOSystem* ioSystem = new Assimp::AndroidJNIIOSystem(apkAssetManager,apkInternalPath);
-            importer.SetIOHandler(ioSystem);
+//            Assimp::AndroidJNIIOSystem* ioSystem = new Assimp::AndroidJNIIOSystem(apkAssetManager,apkInternalPath);
+//            importer.SetIOHandler(ioSystem);
             const aiScene* scene = importer.ReadFile(modelPath.toStdString(), aiProcessPreset_TargetRealtime_Quality);
 
             if(!scene)
@@ -265,12 +276,14 @@ void* VModel::Private::loadModelAsync(void* param)
 
                     if (mtl && AI_SUCCESS == mtl->GetTexture(aiTextureType_DIFFUSE, 0, &textureFilename))
                     {
-                        //VString modelDirectoryName = VPath(modelPath).dirPath();
-                        VString modelDirectoryName = "assets";
+                        VString modelDirectoryName = VPath(modelPath).dirPath();
+                        //VString modelDirectoryName = "assets";
                         VString textureFullPath = modelDirectoryName + "/" + textureFilename.data;
+                        textureFullPath.replace('\\','/');
 
                         VTexture texture;
-                        texture.load(VResource(textureFullPath));
+                        VFile textureFile(textureFullPath,VFile::ReadOnly);
+                        texture.load(textureFile);
                         modelMeshes[i].textureId = texture.id();
                     }
                 }
@@ -323,7 +336,7 @@ void VModel::command(const VEvent &event )
         for(int i=0;i<meshCount;++i)
         {
             d->geos[i].createGlGeometry(modelMeshes[i].attribs,modelMeshes[i].indices);
-            d->geos[i].textureId = modelMeshes->textureId;
+            d->geos[i].textureId = modelMeshes[i].textureId;
         }
 
         delete modelMeshes;
