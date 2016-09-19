@@ -141,6 +141,8 @@ public:
    static void  glInvalidateFramebuffer(GLenum target, GLsizei numAttachments, const GLenum* attachments);
    static void  glPushAttrib();
    static void  glPopAttrib();
+    static void  glFramebufferTextureMultiviewOVR(GLenum target, GLenum attachment, GLuint texture, GLint level, GLint baseViewIndex, GLsizei numViews);
+    static void  glFramebufferTextureMultisampleMultiviewOVR(GLenum target, GLenum attachment, GLuint texture, GLint level, GLsizei samples, GLint baseViewIndex, GLsizei numViews);
 
     int	m_glEsVersion;
     ushort	m_gpuType;

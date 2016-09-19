@@ -256,12 +256,13 @@ struct App::Private
     jobject javaObject;
     VMainActivity *activity;
     VKernel *kernel;
-    VScene *scene;
+//    VScene *scene;
     VGui *gui;
     const std::list<VModule *> &modules;
 
     VTimeWarpParms	swapParms;
     VArray<VModel*> models;
+    VEyeItem* eyeItem;
 
     Private(App *self)
         : self(self)
@@ -302,9 +303,10 @@ struct App::Private
         , errorMessageEndTime(-1.0)
         , javaObject(nullptr)
         , activity(nullptr)
-        , scene(new VScene)
+//        , scene(new VScene)
         , gui(new VGui)
         , modules(VModule::List())
+        , eyeItem(nullptr)
     {
     }
 
@@ -951,8 +953,9 @@ struct App::Private
                 module->onStart();
             }
 
-            scene->addEyeItem();
-            scene->addEyeItem();
+//            scene->addEyeItem();
+//            scene->addEyeItem();
+            eyeItem = new VEyeItem;
 
             // Create the SurfaceTexture for dialog rendering.
             self->dialog.dialogTexture = new SurfaceTexture(vrJni);
@@ -1237,8 +1240,11 @@ struct App::Private
                 vInfo("javaVM->DetachCurrentThread returned" << rtn);
             }
 
-            delete scene;
-            scene = nullptr;
+//            delete scene;
+//            scene = nullptr;
+
+            delete eyeItem;
+            eyeItem = nullptr;
 
             for (VModel *model : models) {
                 delete model;
@@ -1656,7 +1662,6 @@ void App::drawEyeViewsPostDistorted( VMatrix4f const & centerViewMatrix, const i
 
     // DisplayMonoMode uses a single eye rendering for speed improvement
     // and / or high refresh rate double-scan hardware modes.
-    VArray<VItem*> eyeItemList = d->scene->getEyeItemList();
     const int numEyes = d->renderMonoMode ? 1 : 2;
 
     // Flush out and report any errors
@@ -1673,7 +1678,7 @@ void App::drawEyeViewsPostDistorted( VMatrix4f const & centerViewMatrix, const i
         for(int eye = 0;eye<numEyes;++eye)
         {
             d->gui->prepare();
-            eyeItemList[eye]->paint();
+            d->eyeItem->paint(eye);
 
             // Call back to the app for drawing.
             const VMatrix4f mvp = d->activity->drawEyeView(eye, fovDegrees);
@@ -1711,7 +1716,7 @@ void App::drawEyeViewsPostDistorted( VMatrix4f const & centerViewMatrix, const i
                 d->eyeDecorations.FillEdge(VEyeItem::settings.resolution, VEyeItem::settings.resolution);
             }
 
-            ((VEyeItem*)eyeItemList[eye])->afterPaint();
+            d->eyeItem->afterPaint(eye);
         }
     }
 
@@ -1722,7 +1727,7 @@ void App::drawEyeViewsPostDistorted( VMatrix4f const & centerViewMatrix, const i
         for(int eye = 0;eye<numEyes;++eye)
         {
             d->swapParms.Images[eye][0].TexCoordsFromTanAngles = VMatrix4f::TanAngleMatrixFromFov( fovDegrees );
-            d->swapParms.Images[eye][0].TexId = ((VEyeItem*)eyeItemList[d->renderMonoMode ? 0 : eye ])->completedEyes().textures;
+            d->swapParms.Images[eye][0].TexId = d->eyeItem->completedEyes(d->renderMonoMode ? 0 : eye ).textures;
             d->swapParms.Images[eye][0].Pose  = d->sensorForNextWarp;
             // d->kernel->m_smoothProgram = ChromaticAberrationCorrection(glOperation) ? WP_CHROMATIC : WP_SIMPLE;
         }
