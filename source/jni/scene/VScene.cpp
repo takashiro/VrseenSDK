@@ -58,19 +58,4 @@ void VScene::update()
     d->rootItem->update();
 }
 
-VItem* VScene::addEyeItem(VItem *parent)
-{
-    if(!parent) parent = d->rootItem;
-    VEyeItem* eyeItem = new VEyeItem();
-    parent->addChild(eyeItem);
-    d->eyeItemList.push_back(eyeItem);
-
-    return eyeItem;
-}
-
-VArray<VItem*> VScene::getEyeItemList()
-{
-    return d->eyeItemList;
-}
-
 NV_NAMESPACE_END

@@ -224,7 +224,7 @@ VEyeItem::Settings VEyeItem::settings;
 
 struct VEyeItem::Private
 {
-    EyePairs     BufferData[MAX_EYE_SETS];
+    EyePairs     BufferData[MAX_EYE_SETS][2];
 };
 
 VEyeItem::VEyeItem():discardInsteadOfClear( true ),swapCount( 0 ),d(new Private)
@@ -237,11 +237,11 @@ VEyeItem::~VEyeItem()
     delete d;
 }
 
-void VEyeItem::paint()
+void VEyeItem::paint(const int eyeNum)
 {
-    swapCount++;
+    if(eyeNum == 0) swapCount++;
 
-    EyePairs & buffers = d->BufferData[ swapCount % MAX_EYE_SETS ];
+    EyePairs & buffers = d->BufferData[ swapCount % MAX_EYE_SETS ][eyeNum];
     if ( buffers.eyeBuffer.Texture == 0
          || buffers.BufferParms.resolution != settings.resolution
          || buffers.BufferParms.multisamples != settings.multisamples
@@ -264,7 +264,7 @@ void VEyeItem::paint()
     }
 
     const int resolution = buffers.BufferParms.resolution;
-    EyePairs & pair = d->BufferData[ swapCount % MAX_EYE_SETS ];
+    EyePairs & pair = d->BufferData[ swapCount % MAX_EYE_SETS ][eyeNum];
     EyeBuffer & eye = pair.eyeBuffer;
 
     glBindFramebuffer( GL_FRAMEBUFFER, eye.RenderFrameBuffer );
@@ -286,9 +286,9 @@ void VEyeItem::paint()
     }
 }
 
-void VEyeItem::afterPaint()
+void VEyeItem::afterPaint(const int eyeNum)
 {
-    EyePairs & pair = d->BufferData[ swapCount % MAX_EYE_SETS ];
+    EyePairs & pair = d->BufferData[ swapCount % MAX_EYE_SETS ][eyeNum];
     EyeBuffer & eye = pair.eyeBuffer;
     int resolution = pair.BufferParms.resolution;
 
@@ -307,11 +307,11 @@ void VEyeItem::afterPaint()
     glFlush();
 }
 
-VEyeItem::CompletedEyes VEyeItem::completedEyes()
+VEyeItem::CompletedEyes VEyeItem::completedEyes(const int eyeNum)
 {
     CompletedEyes cmp;
-    // The GPU commands are flushed for BufferData[ SwapCount % MAX_EYE_SETS ]
-    EyePairs & currentBuffers = d->BufferData[ swapCount % MAX_EYE_SETS ];
+    // The GPU commands are flushed for d->BufferData[ SwapCount % MAX_EYE_SETS ]
+    EyePairs & currentBuffers = d->BufferData[ swapCount % MAX_EYE_SETS ][eyeNum];
 
     EyePairs * buffers = &currentBuffers;
 

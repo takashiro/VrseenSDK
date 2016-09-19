@@ -4,11 +4,10 @@
 
 #include "VEglDriver.h"
 #include "VColor.h"
-#include "VItem.h"
 
 NV_NAMESPACE_BEGIN
 
-class VEyeItem : public VItem
+class VEyeItem
 {
 public:
     enum CommonParameter
@@ -38,12 +37,16 @@ public:
                 , commonParameterDepth(DepthFormat_24)
                 , commonParameterTexture(NearestTextureFilter)
         {
+            useMultiview = VEglDriver::glIsExtensionString("GL_OVR_multiview");
+            if(useMultiview) vInfo("useMultiview true")
+            else vInfo("useMultiview false");
         }
 
         int resolution;
         int widthScale;
         int multisamples;
         bool wantSingleBuffer;
+        bool useMultiview;
 
         VColor::Format colorFormat;
         CommonParameter commonParameterDepth;
@@ -65,10 +68,10 @@ public:
     VEyeItem();
     virtual ~VEyeItem();
 
-    CompletedEyes completedEyes();
+    CompletedEyes completedEyes(const int eyeNum);
 
-    virtual void paint();
-    void afterPaint();
+    void paint(const int eyeNum);
+    void afterPaint(const int eyeNum);
 
     bool discardInsteadOfClear;
     long swapCount;

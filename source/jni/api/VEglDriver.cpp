@@ -755,4 +755,23 @@ void VEglDriver::glPopAttrib()
     isStencilEnabled?glEnable(GL_STENCIL_TEST):glDisable(GL_STENCIL_TEST);
 }
 
+void VEglDriver::glFramebufferTextureMultiviewOVR(GLenum target, GLenum attachment, GLuint texture, GLint level, GLint baseViewIndex, GLsizei numViews)
+{
+    typedef void (GL_APIENTRYP PFNGLFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC) (GLenum target, GLenum attachment, GLuint texture, GLint level, GLint baseViewIndex, GLsizei numViews);
+    PFNGLFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC glFramebufferTextureMultiviewOVR_;
+
+    glFramebufferTextureMultiviewOVR_ = (PFNGLFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC) eglGetProcAddress( "glFramebufferTextureMultiviewOVR" );
+    glFramebufferTextureMultiviewOVR_(target,attachment,texture,level,baseViewIndex,numViews);
+}
+
+void VEglDriver::glFramebufferTextureMultisampleMultiviewOVR(GLenum target, GLenum attachment, GLuint texture, GLint level, GLsizei samples, GLint baseViewIndex, GLsizei numViews)
+{
+    typedef void (GL_APIENTRYP PFNGLFRAMEBUFFERTEXTUREMULTISAMPLEMULTIVIEWOVRPROC)(GLenum target, GLenum attachment, GLuint texture, GLint level, GLsizei samples, GLint baseViewIndex, GLsizei numViews);
+    PFNGLFRAMEBUFFERTEXTUREMULTISAMPLEMULTIVIEWOVRPROC glFramebufferTextureMultisampleMultiviewOVR_;
+
+    glFramebufferTextureMultisampleMultiviewOVR_ = (PFNGLFRAMEBUFFERTEXTUREMULTISAMPLEMULTIVIEWOVRPROC) eglGetProcAddress( "glFramebufferTextureMultisampleMultiviewOVR" );
+    glFramebufferTextureMultisampleMultiviewOVR_(target,attachment,texture,level,samples,baseViewIndex,numViews);
+}
+
+
 NV_NAMESPACE_END

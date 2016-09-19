@@ -21,9 +21,6 @@ public:
 
     void update();
 
-    VItem *addEyeItem(VItem *parent = 0);
-    VArray<VItem *> getEyeItemList();
-
 private:
     NV_DECLARE_PRIVATE
     NV_DISABLE_COPY(VScene)
