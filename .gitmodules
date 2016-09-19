@@ -1,3 +1,6 @@
-[submodule "source/jni/3rdparty/assimp"]
+[submodule "assimp"]
 	path = source/jni/3rdparty/assimp
 	url = https://github.com/takashiro/assimp
+[submodule "freetype2"]
+	path = source/jni/3rdparty/freetype2
+	url = http://git.sv.nongnu.org/r/freetype/freetype2.git
