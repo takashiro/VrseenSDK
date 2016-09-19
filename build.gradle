@@ -43,6 +43,14 @@ allprojects {
                         staticLibraryFile = file("${libPath}/${targetPlatform.getName()}/libnanovg.a")
                     }
                 }
+
+                freetype2 {
+                    binaries.withType(StaticLibraryBinary) {
+                        staticLibraryFile = file("${libPath}/${targetPlatform.getName()}/libfreetype2.a")
+                    }
+
+                    headers.srcDir 'jni/3rdparty/freetype2/include'
+                }
             }
         }
 

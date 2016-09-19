@@ -17,9 +17,7 @@ model {
                 jni {
                     source {
                         srcDir 'jni'
-                        exclude '3rdparty/minizip/iowin32.c'
-                        exclude '3rdparty/minizip/minizip.c'
-                        exclude '3rdparty/assimp/**'
+                        exclude '3rdparty/**'
                     }
 
                     exportedHeaders {
@@ -34,6 +32,7 @@ model {
                         srcDir 'jni/3rdparty/assimp'
                         srcDir 'jni/3rdparty/assimp/include'
                         srcDir 'jni/3rdparty/assimp/code'
+                        srcDir 'jni/3rdparty/freetype2/include'
                     }
 
                     dependencies {
