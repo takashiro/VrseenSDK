@@ -116,6 +116,7 @@ PanoVideo::PanoVideo(JNIEnv *jni, jclass activityClass, jobject activityObject)
     , m_frameAvailable(false)
 {
 	progressBar = nullptr;
+	shadow = nullptr;
 	pause = false;
 }
 
@@ -170,9 +171,16 @@ void PanoVideo::init(const VString &, const VString &, const VString &)
 												  this->movePos(vApp->gui()->getMVP());
 											  });
 
+	shadow = new VShadow();
+	//shadow->setRect(VRect3f(VVect3f(-5.0, -5.0, -3.0), VVect3f(5.0, 5.0, -3.0)));
+	shadow->setColor(VColor(0x44, 0x00, 0x00, 0x55));
+	shadow->setVisible(false);
+
 	VGui * gui  = vApp->gui();
 
 	gui->addItem(progressBar);
+	gui->addItem(shadow);
+
 }
 
 void PanoVideo::movePos(const VMatrix4f &mvp)
@@ -200,10 +208,12 @@ void PanoVideo::mediaPause()
 	if (tmpjni->CallBooleanMethod(jobj, mediaisplaying))
 	{
 		tmpjni->CallVoidMethod(jobj, mediapause);
+		shadow->setVisible(true);
 	}
 	else
 	{
 		tmpjni->CallVoidMethod(jobj, mediaresume);
+		shadow->setVisible(false);
 	}
 
 }

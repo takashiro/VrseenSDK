@@ -5,6 +5,7 @@
 #include "VRectangle.h"
 #include <VProgressBar.h>
 #include <gui/VProgressBar.h>
+#include "VShadow.h"
 
 
 #include "ModelView.h"
@@ -58,6 +59,8 @@ public:
 	void movePos(const VMatrix4f &mvp);
 
 	VProgressBar * progressBar;
+	VShadow * shadow;
+
 	bool pause;
 
 
