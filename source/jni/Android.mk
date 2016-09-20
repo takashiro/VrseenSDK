@@ -65,6 +65,7 @@ LOCAL_STATIC_LIBRARIES := \
 	minizip \
 	stb \
 	nanovg \
-	assimp
+	assimp \
+	freetype2
 
 include $(BUILD_STATIC_LIBRARY)		# start building based on everything since CLEAR_VARS
