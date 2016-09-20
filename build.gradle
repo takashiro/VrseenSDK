@@ -77,6 +77,20 @@ allprojects {
 
                 ldLibs.addAll(['log', 'android', 'EGL', 'GLESv3', 'OpenMAXAL', 'OpenSLES', 'z'])
             }
+
+            sources {
+                main {
+                    jni {
+                        dependencies {
+                            library 'minizip' linkage 'static'
+                            library 'stb' linkage 'static'
+                            library 'nanovg' linkage 'static'
+                            library 'assimp' linkage 'static'
+                            library 'freetype2' linkage 'static'
+                        }
+                    }
+                }
+            }
         }
     }
 }

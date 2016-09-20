@@ -20,13 +20,8 @@ model {
                     source {
                         srcDirs = [ 'jni' ]
                     }
-
                     dependencies {
                         project ':source' linkage 'static'
-                        library 'minizip' linkage 'static'
-                        library 'stb' linkage 'static'
-                        library 'nanovg' linkage 'static'
-                        library 'assimp' linkage 'static'
                     }
                 }
 

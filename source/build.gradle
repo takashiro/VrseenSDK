@@ -34,13 +34,6 @@ model {
                         srcDir 'jni/3rdparty/assimp/code'
                         srcDir 'jni/3rdparty/freetype2/include'
                     }
-
-                    dependencies {
-                        library 'minizip' linkage 'static'
-                        library 'stb' linkage 'static'
-                        library 'nanovg' linkage 'static'
-                        library 'assimp' linkage 'static'
-                    }
                 }
 
                 java {
