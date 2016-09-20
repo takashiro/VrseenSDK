@@ -1,26 +1,92 @@
 #include "VGuiText.h"
-#include "VString.h"
 #include "VPainter.h"
-#include "3rdparty/nanovg/nanovg.h"
+#include "VGlGeometry.h"
+#include "VGlShader.h"
+
+#include "ft2build.h"
+#include FT_FREETYPE_H
 
 NV_NAMESPACE_BEGIN
 
+static const char* VertexShaderSource =
+        "uniform highp mat4 Mvpm;\n"
+                "attribute vec4 Position;\n"
+                "attribute vec2 TexCoord;\n"
+                "varying highp vec2 oTexCoord;\n"
+                "void main()\n"
+                "{\n"
+                "    gl_Position = Mvpm * Position;\n"
+                "    oTexCoord = TexCoord;\n"
+                "}\n";
+
+static const char * FragmentShaderSource =
+        "uniform sampler2D Texture0;\n"
+                "varying highp vec2 oTexCoord;\n"
+                "void main()\n"
+                "{\n"
+                "    gl_FragColor = texture2D(Texture0, oTexCoord);\n"
+                "}\n";
+
 struct VGuiText::Private
 {
-    VString text;
+    VGlShader shader;
+    VGlGeometry geometry;
     VColor color;
-    int fontId;
+    VString text;
+    VVect2f pos;
+    float scale;
+    VertexAttribs vertexs;
+    FT_Library ft;
+    FT_Face face;
+    VArray< ushort > indices;
+
+    Private()
+    {
+        shader.initShader(VertexShaderSource, FragmentShaderSource);
+
+        for (int i = 0; i < 4; ++i) {
+            VVect3f pos(0, 0, 0);
+            VVect4f col(0, 0, 0, 0);
+            vertexs.position.push_back(pos);
+            vertexs.color.push_back(col);
+        }
+
+        vertexs.uvCoordinate0.push_back(VVect2f(0, 0));
+        vertexs.uvCoordinate0.push_back(VVect2f(0, 1));
+        vertexs.uvCoordinate0.push_back(VVect2f(1, 1));
+        vertexs.uvCoordinate0.push_back(VVect2f(1, 0));
+
+        indices.push_back(0);
+        indices.push_back(1);
+        indices.push_back(2);
+        indices.push_back(0);
+        indices.push_back(2);
+        indices.push_back(3);
+
+
+        FT_Init_FreeType(&ft);
+        FT_New_Face(ft, "fonts/arial.ttf", 0, &face);
+        geometry.createGlGeometry(vertexs, indices);
+    }
+
 };
 
 VGuiText::VGuiText(VGraphicsItem* parent)
     : VGraphicsItem(parent)
     ,d(new Private())
 {
+    // Set size to load glyphs as
+    FT_Set_Pixel_Sizes(d->face, 0, 48);
 
+    // Disable byte-alignment restriction
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 }
 
 VGuiText::~VGuiText()
 {
+    // Destroy FreeType once we're finished
+    FT_Done_Face(d->face);
+    FT_Done_FreeType(d->ft);
     delete d;
 }
 
@@ -45,30 +111,84 @@ void VGuiText::setTextValue(const VString &text)
 }
 
 
-void VGuiText::init(void *painter)
+uint VGuiText::generateCharTex(char c)
 {
-    NVGcontext *vg = static_cast<NVGcontext *>(painter);
-    d->fontId = nvgCreateFont(vg, "sans", "/storage/emulated/0/VRSeen/SDK/fonttype/Roboto-Regular.ttf");
-    if (d->fontId == -1) {
-        return ;
-    }
+    FT_Load_Char(d->face, c, FT_LOAD_RENDER);
+
+    GLuint texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            GL_RED,
+            d->face->glyph->bitmap.width,
+            d->face->glyph->bitmap.rows,
+            0,
+            GL_RED,
+            GL_UNSIGNED_BYTE,
+            d->face->glyph->bitmap.buffer
+    );
+
+    // Set texture options
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    return texture;
 }
 
+void VGuiText::updateVertexAttribs(float xpos, float ypos, float w, float h)
+{
+    d->vertexs.position.clear();
+
+    d->vertexs.position.push_back(VVect3f(xpos, ypos + h, 0.0));
+    d->vertexs.position.push_back(VVect3f(xpos, ypos, 0.0));
+    d->vertexs.position.push_back(VVect3f( xpos + w, ypos, 0.0));
+
+    d->vertexs.position.push_back(VVect3f(xpos, ypos + h, 0.0));
+    d->vertexs.position.push_back(VVect3f(xpos + w, ypos, 0.0));
+    d->vertexs.position.push_back(VVect3f(xpos + w, ypos + h, 0.0));
+
+}
 
 void VGuiText::paint(VPainter *painter)
 {
-    NVGcontext *vg = static_cast<NVGcontext *>(painter->nativeContext());
+    VGraphicsItem::paint(painter);
+    int x = d->pos.x;
+    int y = d->pos.y;
+    VEglDriver::glPushAttrib();
+    glEnable( GL_BLEND );
+    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    nvgFontSize(vg, 200.0f);
-    nvgFontFace(vg, "sans");
-    nvgTextAlign(vg, NVG_ALIGN_CENTER|NVG_ALIGN_MIDDLE);
+    glUseProgram(d->shader.program);
+    const VMatrix4f screenMvp = transform();
+    glUniformMatrix4fv(d->shader.uniformModelViewProMatrix, 1, GL_FALSE, screenMvp.transposed().data());
 
-    nvgFontBlur(vg,2);
-    nvgFillColor(vg, nvgRGBA(d->color.red, d->color.green, d->color.blue, d->color.alpha));
-    nvgStrokeColor(vg, nvgRGBA(255, 0, 128, 128));
+    for (auto c: d->text) {
+        uint texId = generateCharTex(c);
 
-    //cannot make the last parament to be nullptr, otherwise this function can not work as it want to be
-    nvgText(vg, 500.0f, 500.0f, reinterpret_cast<const char*>(d->text.c_str()), reinterpret_cast<const char *>(d->text.c_str() + d->text.length()));
+
+
+//        Character character = {
+//               Texture: texture,
+//               Size:  glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
+//               Bearing: glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
+//               Advance: face->glyph->advance.x
+//        };
+
+        float xpos = x + d->face->glyph->bitmap_left * d->scale;
+        float ypos = y - (d->face->glyph->bitmap.rows -  d->face->glyph->bitmap_top) * d->scale;
+        float w = d->face->glyph->bitmap.width * d->scale;
+        float h = d->face->glyph->bitmap.rows * d->scale;
+
+        updateVertexAttribs(xpos, ypos, w, h);
+        d->geometry.updateGlGeometry(d->vertexs);
+        d->geometry.textureId = texId;
+        d->geometry.drawElements();
+    }
+
+    VEglDriver::glPopAttrib();
 }
 NV_NAMESPACE_END
 

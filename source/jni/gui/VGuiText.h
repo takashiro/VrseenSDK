@@ -4,6 +4,7 @@
 #include "VColor.h"
 #include "vglobal.h"
 #include "VString.h"
+#include "VTexture.h"
 
 NV_NAMESPACE_BEGIN
 
@@ -21,9 +22,13 @@ public:
 
     void init(void *vg) override;
 
+    uint generateCharTex(char c);
+
+    void updateVertexAttribs(float xpos, float ypos, float w, float h);
+
 
 protected:
-    void paint(VPainter *painter) override;
+    void paint(VPainter *painter = nullptr) override;
 
 private:
     NV_DECLARE_PRIVATE;

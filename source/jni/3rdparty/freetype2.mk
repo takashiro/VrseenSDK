@@ -32,7 +32,8 @@ FILE_LIST := \
 	$(FREETYPE_ROOT)/src/raster/raster.c \
 	$(FREETYPE_ROOT)/src/sfnt/sfnt.c \
 	$(FREETYPE_ROOT)/src/smooth/smooth.c \
-	$(FREETYPE_ROOT)/src/truetype/truetype.c
+	$(FREETYPE_ROOT)/src/truetype/truetype.c \
+	$(FREETYPE_ROOT)/src/gzip/ftgzip.c
 
 LOCAL_SRC_FILES := $(FILE_LIST:$(LOCAL_PATH)/%=%)
 
