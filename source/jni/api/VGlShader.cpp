@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <scene/VEyeItem.h>
 
 #include "api/VEglDriver.h"
 #include "../core/VLog.h"
@@ -71,7 +72,7 @@ const char * VGlShader::getUniformTextureProgramShaderSource()
             "varying lowp vec4	oColor;\n"
             "void main()\n"
             "{\n"
-            "	gl_FragColor = oColor * texture2D( Texture0, oTexCoord );\n"
+            "	gl_FragColor = oColor * texture( Texture0, oTexCoord );\n"
             "}\n";
 
    return uniformTextureProgramShaderSource;
@@ -148,8 +149,8 @@ const char * VGlShader::getCubeMapPanoProgramShaderSource()
 const char * VGlShader::getTexturedMvpVertexShaderSource()
 {
     const char * texturedMvpVertexShaderSource =
-        "uniform mat4 Mvpm;\n"
-         "uniform highp mat4 Texm;\n"
+        "uniform mat4 Mvpm[NUM_VIEWS];\n"
+        "uniform highp mat4 Texm[NUM_VIEWS];\n"
         "attribute vec4 Position;\n"
         "attribute vec4 VertexColor;\n"
         "attribute vec2 TexCoord;\n"
@@ -158,8 +159,8 @@ const char * VGlShader::getTexturedMvpVertexShaderSource()
         "varying highp vec2 oTexCoord;\n"
         "void main()\n"
         "{\n"
-        "   gl_Position = Mvpm * Position;\n"
-        "	oTexCoord = vec2( Texm * vec4(TexCoord,1,1) );\n"
+        "   gl_Position = Mvpm[VIEW_ID] * Position;\n"
+        "	oTexCoord = vec2( Texm[VIEW_ID] * vec4(TexCoord,1,1) );\n"
         "   oColor = /* VertexColor * */ UniformColor;\n"
         "}\n";
     return texturedMvpVertexShaderSource;
@@ -595,17 +596,27 @@ const char * VGlShader::getAdditionalFragmentShaderSource()
 
 }
 
+static const char * FindShaderVersionEnd(const char *src)
+{
+    if ( src == NULL || strncmp( src, "#version ", 9 ) != 0 )
+    {
+        return src;
+    }
+    while ( *src != 0 && *src != '\n' )
+    {
+        src++;
+    }
+    if ( *src == '\n' )
+    {
+        src++;
+    }
+    return src;
+}
 
 struct VGlShader::Private
 {
-    static bool CompileShader( const GLuint shader, const char * src );
-};
 
-VGlShader::VGlShader(const char * vertexSrc, const char * fragmentSrc)
-{
-    VGlShader();
-    initShader(vertexSrc,fragmentSrc);
-}
+};
 
 VGlShader::~VGlShader()
 {
@@ -615,10 +626,69 @@ VGlShader::~VGlShader()
 GLuint VGlShader::createShader(GLuint shaderType, const char *src)
 {
     GLuint shader = glCreateShader( shaderType );
-    if ( !d->CompileShader(shader, src ) )
+
+    if(shaderType == GL_VERTEX_SHADER)
     {
+        const char * postVersion = FindShaderVersionEnd( src );
+        if(adaptForMultiview)
+        {
+            const char * sources[3] = {"#version 300 es\n",
+                                       ( VEyeItem::settings.useMultiview ) ?
+                                           "#extension GL_OVR_multiview2 : enable\n"
+                                           "#define varying out\n"
+                                           "#define attribute in\n"
+                                           "#define NUM_VIEWS 2\n"
+                                           "layout(num_views=NUM_VIEWS) in;\n"
+                                           "#define VIEW_ID gl_ViewID_OVR\n"
+                                      :    "#define varying out\n"
+                                           "#define attribute in\n"
+                                           "#define NUM_VIEWS 1\n"
+                                           "#define VIEW_ID 0\n"
+                    ,
+                                       postVersion
+            };
+            glShaderSource(shader, 3, sources, 0 );
+        }
+        else glShaderSource( shader, 1, &src, 0 );
+    }
+    else
+    {
+        const char * postVersion = FindShaderVersionEnd( src );
+        if(adaptForMultiview)
+        {
+            const char * sources[3] = {"#version 300 es\n",
+                                       ( VEyeItem::settings.useMultiview ) ?
+                                           "#extension GL_OVR_multiview2 : enable\n"
+                                           "#define varying in\n"
+                                           "#define attribute out\n"
+                                           "#define VIEW_ID gl_ViewID_OVR\n"
+                                           "out vec4 gl_FragColor;\n"
+                                          :  "#define varying in\n"
+                                           "#define attribute out\n"
+                                            "#ifdef varying\n"
+                                           "    out vec4 gl_FragColor;\n"
+                                            "#endif\n"
+                    ,
+                                       postVersion
+            };
+            glShaderSource(shader, 3, sources, 0 );
+        }
+        else glShaderSource( shader, 1, &src, 0 );
+    }
+
+    glCompileShader( shader );
+
+    GLint r;
+    glGetShaderiv( shader, GL_COMPILE_STATUS, &r );
+    if ( r == GL_FALSE )
+    {
+        vInfo( "Compiling shader: "<<src<<"****** failed ******\n" );
+        GLchar msg[4096];
+        glGetShaderInfoLog( shader, sizeof( msg ), 0, msg );
+        vInfo( msg );
         vFatal( "Failed to compile shader,type:"<<shaderType);
     }
+
     return  shader;
 }
 
@@ -715,24 +785,5 @@ void  VGlShader::destroy()
     vertexShader = 0;
     fragmentShader = 0;
 }
-
-bool VGlShader::Private::CompileShader( const GLuint shader, const char * src )
-{
-    glShaderSource( shader, 1, &src, 0 );
-    glCompileShader( shader );
-
-    GLint r;
-    glGetShaderiv( shader, GL_COMPILE_STATUS, &r );
-    if ( r == GL_FALSE )
-    {
-        vInfo( "Compiling shader: "<<src<<"****** failed ******\n" );
-        GLchar msg[4096];
-        glGetShaderInfoLog( shader, sizeof( msg ), 0, msg );
-        vInfo( msg );
-        return false;
-    }
-    return true;
-}
-
 
 NV_NAMESPACE_END

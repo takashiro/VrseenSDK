@@ -5,6 +5,7 @@
  *      Author: yangkai
  */
 
+#include <App.h>
 #include "VDialog.h"
 #include "VTimer.h"
 NV_NAMESPACE_BEGIN
@@ -13,7 +14,7 @@ VDialog::VDialog():dialogStopSeconds(0.0f),
 {
 
 }
-void VDialog::draw( VPanel &panel, const VMatrix4f & mvp )
+void VDialog::draw( VPanel &panel, int eye )
 {
     // draw the pop-up dialog
     const float now = VTimer::Seconds();
@@ -21,7 +22,7 @@ void VDialog::draw( VPanel &panel, const VMatrix4f & mvp )
     {
         return;
     }
-    const VMatrix4f dialogMvp = mvp * dialogMatrix;
+    const VMatrix4f dialogMvp = vApp->getModelViewProMatrix(eye) * dialogMatrix;
 
     const float fadeSeconds = 0.5f;
     const float f = now - ( dialogStopSeconds - fadeSeconds );

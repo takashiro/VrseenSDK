@@ -19,6 +19,6 @@ public:
     float           dialogStopSeconds;
     SurfaceTexture * dialogTexture;
 
-    void draw( VPanel &panel, const VMatrix4f & mvp );
+    void draw( VPanel &panel, int eye);
 };
 NV_NAMESPACE_END

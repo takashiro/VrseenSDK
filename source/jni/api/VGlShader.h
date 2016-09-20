@@ -41,9 +41,31 @@ public:
         uniformTexMatrix5( -1 ),
         uniformColorTableOffset( -1 ),
         uniformFadeDirection( -1 ),
-        uniformJoints( -1 ) {};
-    VGlShader(const char * vertexSrc, const char * fragmentSrc);
+        uniformJoints( -1 ) ,
+        adaptForMultiview(false){};
+    VGlShader(const char * vertexSrc, const char * fragmentSrc):
+        program( 0 ),
+        vertexShader( 0 ),
+        fragmentShader( 0 ),
+        uniformModelViewProMatrix( -1 ),
+        uniformModelMatrix( -1 ),
+        uniformViewMatrix( -1 ),
+        uniformProjectionMatrix( -1 ),
+        uniformColor( -1 ),
+        uniformTexMatrix( -1 ),
+        uniformTexMatrix2( -1 ),
+        uniformTexMatrix3( -1 ),
+        uniformTexMatrix4( -1 ),
+        uniformTexMatrix5( -1 ),
+        uniformColorTableOffset( -1 ),
+        uniformFadeDirection( -1 ),
+        uniformJoints( -1 ) ,
+        adaptForMultiview(false)
+    {
+        initShader(vertexSrc,fragmentSrc);
+    }
     ~VGlShader();
+
     GLuint createShader(GLuint shaderType, const char* src);
     GLuint createProgram(GLuint vertexShader, GLuint fragmentShader);
     GLuint initShader (const char * vertexSrc, const char * fragmentSrc);
@@ -110,6 +132,8 @@ public:
     GLint   uniformColorTableOffset;	// uniform offset
     GLint	uniformFadeDirection;		// uniform FadeDirection
     GLint	uniformJoints;			// uniform Joints
+
+    bool adaptForMultiview;
 private:
     NV_DECLARE_PRIVATE
 };

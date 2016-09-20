@@ -65,6 +65,7 @@ public:
     VEventLoop &eventLoop();
 
     VMatrix4f  getTexMatrix(int eye,MovieFormat format);
+    virtual VMatrix4f  getModelViewProMatrix(int eye) const;
 
 private:
     NV_DECLARE_PRIVATE

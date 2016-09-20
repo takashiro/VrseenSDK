@@ -9,6 +9,7 @@
 #include <GLES3/gl3.h>
 #include <EGL/egl.h>
 #include <api/VEglDriver.h>
+#include <App.h>
 #include "3rdparty/nanovg/nanovg.h"
 #include "3rdparty/nanovg/nanovg_gl.h"
 #include "VTouchEvent.h"
@@ -70,13 +71,13 @@ void VGui::prepare()
     nvgBeginFrame(d->vg, d->viewWidth, d->viewHeight, 1.0f);
 }
 
-void VGui::update(const VMatrix4f &mvp)
+void VGui::update(int eye)
 {
-    d->viewmvp = mvp;
-    d->root.onSensorChanged(mvp);
+    d->viewmvp = vApp->getModelViewProMatrix(eye);
+    d->root.onSensorChanged(d->viewmvp);
     VPainter painter;
     painter.setNativeContext(d->vg);
-    painter.setViewMatrix(mvp);
+    painter.setViewMatrix(d->viewmvp);
 
     VEglDriver::glPushAttrib();
 
@@ -84,7 +85,7 @@ void VGui::update(const VMatrix4f &mvp)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     d->root.paint(&painter);
 
-    if(d->cursorItem->isVisible() && d->root.needCursor(mvp)) d->cursorItem->paint(&painter);
+    if(d->cursorItem->isVisible() && d->root.needCursor(d->viewmvp)) d->cursorItem->paint(&painter);
     if(d->loadingItem->isVisible()) d->loadingItem->paint(&painter);
 
     VEglDriver::glPopAttrib();

@@ -78,7 +78,6 @@ enum VrKernelProgram {
     WP_LOADING_ICON,						// overlay loading icon
     WP_MIDDLE_CLAMP,						// UE4 stereo in a single texture
     WP_OVERLAY_PLANE,						// world shows through transparent parts of overlay plane
-    WP_OVERLAY_PLANE_SHOW_LOD,				// debug tool to color tint based on mip levels
     WP_CAMERA,
 
     // with correction for chromatic aberration
@@ -90,7 +89,6 @@ enum VrKernelProgram {
     WP_CHROMATIC_LOADING_ICON,				// overlay loading icon
     WP_CHROMATIC_MIDDLE_CLAMP,				// UE4 stereo in a single texture
     WP_CHROMATIC_OVERLAY_PLANE,				// world shows through transparent parts of overlay plane
-    WP_CHROMATIC_OVERLAY_PLANE_SHOW_LOD,	// debug tool to color tint based on mip levels
     WP_CHROMATIC_CAMERA,
 
     WP_PROGRAM_MAX

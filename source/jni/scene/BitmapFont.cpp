@@ -44,7 +44,7 @@
 
 NV_NAMESPACE_BEGIN
 
-char const* FontSingleTextureVertexShaderSrc = "uniform mat4 Mvpm;\n"
+char const* FontSingleTextureVertexShaderSrc = "uniform mat4 Mvpm[NUM_VIEWS];\n"
 		"uniform lowp vec4 UniformColor;\n"
 		"attribute vec4 Position;\n"
 		"attribute vec2 TexCoord;\n"
@@ -55,7 +55,7 @@ char const* FontSingleTextureVertexShaderSrc = "uniform mat4 Mvpm;\n"
 		"varying vec4 oFontParms;\n"
 		"void main()\n"
 		"{\n"
-		"    gl_Position = Mvpm * Position;\n"
+		"    gl_Position = Mvpm[VIEW_ID] * Position;\n"
 		"    oTexCoord = TexCoord;\n"
 		"    oColor = UniformColor * VertexColor;\n"
 		"    oFontParms = FontParms;\n"
@@ -71,7 +71,7 @@ char const* SDFFontFragmentShaderSrc =
 				"varying mediump vec4 oFontParms;\n"
 				"void main()\n"
 				"{\n"
-				"    mediump float distance = texture2D( Texture0, oTexCoord ).r;\n"
+				"    mediump float distance = texture( Texture0, oTexCoord ).r;\n"
 				"    mediump float ds = oFontParms.z * 255.0;\n"
 				"	 mediump float dd = fwidth( oTexCoord.x ) * 8.0 * ds;\n"
 				"    mediump float ALPHA_MIN = oFontParms.x - dd;\n"
@@ -256,7 +256,7 @@ public:
 
 	// render the VBO
 	virtual void Render3D(BitmapFont const & font,
-            VMatrix4f const & worldMVP) const;
+			const int eye) const;
 
 private:
 	VGlGeometry Geo; // font glyphs
@@ -755,6 +755,7 @@ bool BitmapFontLocal::Load(const VString &languagePackageName, const VString &fo
 
 	// create the shaders for font rendering if not already created
 	if (FontProgram.vertexShader == 0 || FontProgram.fragmentShader == 0) {
+		FontProgram.adaptForMultiview = true;
 		FontProgram.initShader(FontSingleTextureVertexShaderSrc,
 				SDFFontFragmentShaderSrc); //SingleTextureFragmentShaderSrc );
 	}
@@ -1423,10 +1424,9 @@ void BitmapFontSurfaceLocal::Finish(VMatrix4f const & viewMatrix) {
 // BitmapFontSurfaceLocal::Render3D
 // render the font surface by transforming each vertex block and copying it into the VBO
 // TODO: once we add support for multiple fonts per surface, this should not take a BitmapFont for input.
-void BitmapFontSurfaceLocal::Render3D(BitmapFont const & font,
-        VMatrix4f const & worldMVP) const {
+void BitmapFontSurfaceLocal::Render3D(BitmapFont const & font,const int eye) const {
 
-    VEglDriver::logErrorsEnum("BitmapFontSurfaceLocal::Render3D - pre");
+	VEglDriver::logErrorsEnum("BitmapFontSurfaceLocal::Render3D - pre");
 
 	//SPAM( "BitmapFontSurfaceLocal::Render3D" );
 
@@ -1446,8 +1446,19 @@ void BitmapFontSurfaceLocal::Render3D(BitmapFont const & font,
 
 	glUseProgram(AsLocal(font).GetFontProgram().program);
 
-    glUniformMatrix4fv(AsLocal(font).GetFontProgram().uniformModelViewProMatrix, 1, GL_FALSE,
-			worldMVP.cell[0]);
+	if (vApp->eyeSettings().useMultiview)
+	{
+		VMatrix4f modelViewProMatrix[2];
+		modelViewProMatrix[0] = vApp->getModelViewProMatrix(0).transposed();
+		modelViewProMatrix[1] = vApp->getModelViewProMatrix(1).transposed();
+		glUniformMatrix4fv(AsLocal(font).GetFontProgram().uniformModelViewProMatrix, 2, GL_FALSE,
+						   modelViewProMatrix[0].data());
+	}
+	else
+	{
+		glUniformMatrix4fv(AsLocal(font).GetFontProgram().uniformModelViewProMatrix, 1, GL_FALSE,
+						   vApp->getModelViewProMatrix(eye).transposed().data());
+	}
 
 	float textColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 	glUniform4fv(AsLocal(font).GetFontProgram().uniformColor, 1, textColor);

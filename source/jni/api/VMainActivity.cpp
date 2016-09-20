@@ -354,6 +354,12 @@ VMatrix4f VMainActivity::getTexMatrix(int eye,MovieFormat format)
     return  texMatrix;
 }
 
+VMatrix4f VMainActivity::getModelViewProMatrix(int eye) const
+{
+    NV_UNUSED(eye);
+    return VMatrix4<float>();
+}
+
 
 NV_NAMESPACE_END
 

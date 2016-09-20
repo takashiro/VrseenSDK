@@ -12,6 +12,7 @@
 #include <android/sensor.h>
 #include <sys/time.h>
 #include <sys/resource.h>
+#include <scene/VEyeItem.h>
 
 #include "VMutex.h"
 #include "VWaitCondition.h"
@@ -934,14 +935,18 @@ int CameraTimeWarpLatency = 4;
 bool CameraTimeWarpPause;
 
 static void BindEyeTextures(const warpSource_t &currentWarpSource, const int eye) {
+
+    int GL_TEXTURE_SYMBOL  = VEyeItem::settings.useMultiview?GL_TEXTURE_2D_ARRAY:GL_TEXTURE_2D;
+
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, currentWarpSource.WarpParms.Images[eye][0].TexId);
+    glBindTexture(GL_TEXTURE_SYMBOL, currentWarpSource.WarpParms.Images[eye][0].TexId);
+
     if (currentWarpSource.WarpParms.WarpOptions & SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER) {
-        glTexParameteri(GL_TEXTURE_2D, VEglDriver::GL_TEXTURE_SRGB_DECODE_EXT,
+        glTexParameteri(GL_TEXTURE_SYMBOL, VEglDriver::GL_TEXTURE_SRGB_DECODE_EXT,
                         VEglDriver::GL_SKIP_DECODE_EXT);
     }
     else {
-        glTexParameteri(GL_TEXTURE_2D, VEglDriver::GL_TEXTURE_SRGB_DECODE_EXT,
+        glTexParameteri(GL_TEXTURE_SYMBOL, VEglDriver::GL_TEXTURE_SRGB_DECODE_EXT,
                         VEglDriver::GL_DECODE_EXT);
     }
 
@@ -949,8 +954,6 @@ static void BindEyeTextures(const warpSource_t &currentWarpSource, const int eye
         || currentWarpSource.WarpParms.WarpProgram == WP_CHROMATIC_MASKED_PLANE
         || currentWarpSource.WarpParms.WarpProgram == WP_OVERLAY_PLANE
         || currentWarpSource.WarpParms.WarpProgram == WP_CHROMATIC_OVERLAY_PLANE
-        || currentWarpSource.WarpParms.WarpProgram == WP_OVERLAY_PLANE_SHOW_LOD
-        || currentWarpSource.WarpParms.WarpProgram == WP_CHROMATIC_OVERLAY_PLANE_SHOW_LOD
             ) {
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, currentWarpSource.WarpParms.Images[eye][1].TexId);
@@ -1897,8 +1900,11 @@ void VFrameSmooth::Private::buildWarpProgPair(VrKernelProgram simpleIndex,
                                               const char *chromaticFragment
 ) {
     m_warpPrograms[simpleIndex] = VGlShader(simpleVertex, simpleFragment);
-    m_warpPrograms[simpleIndex + (WP_CHROMATIC - WP_SIMPLE)] = VGlShader(chromaticVertex,
-                                                                         chromaticFragment);
+
+    VGlShader shader;
+    if(simpleIndex + (WP_CHROMATIC - WP_SIMPLE) == WP_CHROMATIC) shader.adaptForMultiview = true;
+    shader.initShader(chromaticVertex, chromaticFragment);
+    m_warpPrograms[simpleIndex + (WP_CHROMATIC - WP_SIMPLE)] = shader;
 }
 
 void VFrameSmooth::Private::buildWarpProgMatchedPair(VrKernelProgram simpleIndex,
@@ -1971,17 +1977,27 @@ void VFrameSmooth::Private::buildWarpProgs() {
                               "	oTexCoord1b = vec2( proj.x * projIZ, proj.y * projIZ );\n"
                               ""
                               "}\n",
-                      "uniform sampler2D Texture0;\n"
-                              "varying highp vec2 oTexCoord1r;\n"
-                              "varying highp vec2 oTexCoord1g;\n"
-                              "varying highp vec2 oTexCoord1b;\n"
+                              "#ifdef VIEW_ID\n"
+                              "  uniform sampler2DArray Texture0;\n"
+                              "#else\n"
+                              "  uniform sampler2D Texture0;\n"
+                              "#endif\n"
+                              "varying highp  vec2 oTexCoord1r;\n"
+                              "varying highp  vec2 oTexCoord1g;\n"
+                              "varying highp  vec2 oTexCoord1b;\n"
                               "void main()\n"
                               "{\n"
-                              "	lowp vec4 color1r = texture2D(Texture0, oTexCoord1r);\n"
-                              "	lowp vec4 color1g = texture2D(Texture0, oTexCoord1g);\n"
-                              "	lowp vec4 color1b = texture2D(Texture0, oTexCoord1b);\n"
-                              "	lowp vec4 color1 = vec4( color1r.x, color1g.y, color1b.z, 1.0 );\n"
-                              "	gl_FragColor = color1;\n"
+                              "#ifdef VIEW_ID\n"
+                              "  lowp vec4 color1r = texture(Texture0, vec3(oTexCoord1r,gl_ViewID_OVR));\n"
+                              "	 lowp vec4 color1g = texture(Texture0, vec3(oTexCoord1g,gl_ViewID_OVR));\n"
+                              "	 lowp vec4 color1b = texture(Texture0, vec3(oTexCoord1b,gl_ViewID_OVR));\n"
+                              "#else\n"
+                              "	 lowp vec4 color1r = texture(Texture0, oTexCoord1r);\n"
+                              "	 lowp vec4 color1g = texture(Texture0, oTexCoord1r);\n"
+                              "	 lowp vec4 color1b = texture(Texture0, oTexCoord1r);\n"
+                              "#endif\n"
+                              "	 vec4 color1 = vec4( color1r.x, color1g.y, color1b.z, 1.0 );\n"
+                              "	 gl_FragColor = color1;\n"
                               "}\n"
     );
 
@@ -2546,65 +2562,6 @@ void VFrameSmooth::Private::buildWarpProgs() {
                               "		gl_FragColor = mix( color0, color1, vec4( color1r.w, color1g.w, color1b.w, 1.0 ) );\n"
                               "	}\n"
                               "}\n"
-    );
-
-
-    // Debug program to color tint the overlay for LOD visualization
-    buildWarpProgMatchedPair(WP_OVERLAY_PLANE_SHOW_LOD,
-                             "#version 300 es\n"
-                                     "uniform mediump mat4 Mvpm;\n"
-                                     "uniform mediump mat4 Texm;\n"
-                                     "uniform mediump mat4 Texm2;\n"
-                                     "uniform mediump mat4 Texm3;\n"
-                                     "uniform mediump mat4 Texm4;\n"
-
-                                     "in vec4 Position;\n"
-                                     "in vec2 TexCoord;\n"
-                                     "in vec2 TexCoord1;\n"
-                                     "out vec2 oTexCoord;\n"
-                                     "out vec3 oTexCoord2;\n"    // Must do the proj in fragment shader or you get wiggles when you view the plane at even modest angles.
-                                     "out float clampVal;\n"
-                                     "void main()\n"
-                                     "{\n"
-                                     "   gl_Position = Mvpm * Position;\n"
-                                     "	vec3 proj;\n"
-                                     "	float projIZ;\n"
-                                     ""
-                                     "   proj = mix( vec3( Texm * vec4(TexCoord,-1,1) ), vec3( Texm2 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
-                                     "	projIZ = 1.0 / max( proj.z, 0.00001 );\n"
-                                     "	oTexCoord = vec2( proj.x * projIZ, proj.y * projIZ );\n"
-                                     ""
-                                     "   oTexCoord2 = mix( vec3( Texm3 * vec4(TexCoord,-1,1) ), vec3( Texm4 * vec4(TexCoord,-1,1) ), TexCoord1.x );\n"
-                                     ""
-                                     // We need to clamp the projected texcoords to keep from getting a mirror
-                                     // image behind the view, and mip mapped edge clamp (I wish we had CLAMP_TO_BORDER)
-                                     // issues far off to the sides.
-                                     "	vec2 clampXY = oTexCoord2.xy / oTexCoord2.z;\n"
-                                     "	clampVal = ( oTexCoord2.z > -0.01 || clampXY.x < -0.1 || clampXY.y < -0.1 || clampXY.x > 1.1 || clampXY.y > 1.1 ) ? 1.0 : 0.0;\n"
-                                     "}\n",
-                             "#version 300 es\n"
-                                     "uniform sampler2D Texture0;\n"
-                                     "uniform sampler2D Texture1;\n"
-                                     "in lowp float clampVal;\n"
-                                     "in highp vec2 oTexCoord;\n"
-                                     "in highp vec3 oTexCoord2;\n"
-                                     "out mediump vec4 fragColor;\n"
-                                     "void main()\n"
-                                     "{\n"
-                                     "	lowp vec4 color0 = texture(Texture0, oTexCoord);\n"
-                                     "	if ( clampVal == 1.0 )\n"
-                                     "	{\n"
-                                     "		fragColor = color0;\n"
-                                     "	} else {\n"
-                                     "		highp vec2 proj = vec2( oTexCoord2.x, oTexCoord2.y ) / oTexCoord2.z;\n"
-                                     "		lowp vec4 color1 = texture(Texture1, proj);\n"
-                                     "		mediump vec2 stepVal = fwidth( proj ) * vec2( textureSize( Texture1, 0 ) );\n"
-                                     "		mediump float w = max( stepVal.x, stepVal.y );\n"
-                                     "		if ( w < 1.0 ) { color1 = mix( color1, vec4( 0.0, 1.0, 0.0, 1.0 ), min( 1.0, 2.0 * ( 1.0 - w ) ) ); }\n"
-                                     "		else { color1 = mix( color1, vec4( 1.0, 0.0, 0.0, 1.0 ), min( 1.0, w - 1.0 ) ); }\n"
-                                     "		fragColor = mix( color0, color1, color1.w );\n"
-                                     "	}\n"
-                                     "}\n"
     );
 
     buildWarpProgMatchedPair(WP_CAMERA,

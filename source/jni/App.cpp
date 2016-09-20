@@ -358,7 +358,8 @@ struct App::Private
 
         // Allow the app to override
         activity->configureVrMode(kernel);
-
+        VEyeItem::settings.useMultiview = VEglDriver::glIsExtensionString("GL_OVR_multiview2");
+        vInfo("useMultiview : "<<VEyeItem::settings.useMultiview);
         activity->onResume();
 
         VKernel::instance()->resume();
@@ -1662,7 +1663,7 @@ void App::drawEyeViewsPostDistorted( VMatrix4f const & centerViewMatrix, const i
 
     // DisplayMonoMode uses a single eye rendering for speed improvement
     // and / or high refresh rate double-scan hardware modes.
-    const int numEyes = d->renderMonoMode ? 1 : 2;
+    const int numEyes = d->renderMonoMode || VEyeItem::settings.useMultiview? 1 : 2;
 
     // Flush out and report any errors
     d->m_glStatus.logErrorsEnum("FrameStart");
@@ -1681,15 +1682,15 @@ void App::drawEyeViewsPostDistorted( VMatrix4f const & centerViewMatrix, const i
             d->eyeItem->paint(eye);
 
             // Call back to the app for drawing.
-            const VMatrix4f mvp = d->activity->drawEyeView(eye, fovDegrees);
+            d->activity->drawEyeView(eye, fovDegrees);
 
             for (VModel *model : d->models) {
-                model->draw(eye, mvp);
+                model->draw(eye);
             }
 
-            worldFontSurface().Render3D(defaultFont(), mvp.transposed());
+            worldFontSurface().Render3D(defaultFont(),eye);
 
-            d->gui->update(mvp);
+            d->gui->update(eye);
             d->gui->commit();
 
             glDisable(GL_DEPTH_TEST);
@@ -1699,6 +1700,7 @@ void App::drawEyeViewsPostDistorted( VMatrix4f const & centerViewMatrix, const i
             // which will be overlayed by the thinner origin cross when
             // distorted to the window.
             if (d->drawCalibrationLines) {
+                //TODO need update when use multiview
                 d->eyeDecorations.DrawEyeCalibrationLines(fovDegrees, eye);
                 d->calibrationLinesDrawn = true;
             }
@@ -1706,7 +1708,7 @@ void App::drawEyeViewsPostDistorted( VMatrix4f const & centerViewMatrix, const i
                 d->calibrationLinesDrawn = false;
             }
 
-            dialog.draw(panel, mvp);
+            dialog.draw(panel,eye);
 
             if (d->showVignette) {
                 // Draw a thin vignette at the edges of the view so clamping will give black
@@ -1724,7 +1726,7 @@ void App::drawEyeViewsPostDistorted( VMatrix4f const & centerViewMatrix, const i
     // This eye set is complete, use it now.
     if ( numPresents > 0 )
     {
-        for(int eye = 0;eye<numEyes;++eye)
+        for(int eye = 0;eye<=1;++eye)
         {
             d->swapParms.Images[eye][0].TexCoordsFromTanAngles = VMatrix4f::TanAngleMatrixFromFov( fovDegrees );
             d->swapParms.Images[eye][0].TexId = d->eyeItem->completedEyes(d->renderMonoMode ? 0 : eye ).textures;
@@ -1791,5 +1793,11 @@ const VZipFile &App::apkFile() const
     static VZipFile current(packageCodePath());
     return current;
 }
+
+VMatrix4f App::getModelViewProMatrix(int eye) const
+{
+    return d->activity->getModelViewProMatrix(eye);
+}
+
 
 NV_NAMESPACE_END

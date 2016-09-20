@@ -11,7 +11,7 @@ class VModel
         VModel();
         ~VModel();
         bool loadAsync(VString& modelPath,std::function<void()> completeListener);
-        void draw(int eye, const VMatrix4f & mvp );
+        void draw(int eye);
         static void command(const VEvent &event );
     private:
         NV_DECLARE_PRIVATE

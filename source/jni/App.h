@@ -92,6 +92,7 @@ public:
     void showFPS(bool const show);
 
     const VZipFile &apkFile() const;
+    VMatrix4f  getModelViewProMatrix(int eye) const;
 
     VText text;
     VPanel panel;
