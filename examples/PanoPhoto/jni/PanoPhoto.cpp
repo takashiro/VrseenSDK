@@ -111,6 +111,7 @@ void PanoPhoto::init(const VString &, const VString &, const VString &)
     vInfo("--------------- PanoPhoto OneTimeInit ---------------");
 
     //-------------------------------------------------------------------------
+    m_texturedMvpProgram.adaptForMultiview = true;
     m_texturedMvpProgram.initShader(VGlShader::getTexturedMvpVertexShaderSource(),VGlShader::getUniformTextureProgramShaderSource());
     m_cubeMapPanoProgram.initShader(VGlShader::getCubeMapPanoVertexShaderSource(),VGlShader::getCubeMapPanoProgramShaderSource());
 
@@ -498,15 +499,8 @@ VMatrix4f CubeMatrixForViewMatrix( const VMatrix4f & viewMatrix )
 
 VMatrix4f PanoPhoto::drawEyeView( const int eye, const float fovDegrees )
 {
-    // Don't draw the scene at all if it is faded out
-    const bool drawScene = true;
+    modelViewProMatrix[eye] = m_scene.MvpForEye( eye, fovDegrees );
 
-    const VMatrix4f view = drawScene ?
-                m_scene.DrawEyeView( eye, fovDegrees )
-              : m_scene.MvpForEye( eye, fovDegrees );
-
-    //const float color = m_currentFadeLevel;
-    // Dim pano when browser open
     float fadeColor = 1.0f;
 
     if ( useOverlay() && m_currentPanoIsCubeMap )
@@ -522,7 +516,6 @@ VMatrix4f PanoPhoto::drawEyeView( const int eye, const float fovDegrees )
                          m_useSrgb ? VEglDriver::GL_DECODE_EXT : VEglDriver::GL_SKIP_DECODE_EXT );
         glBindTexture( GL_TEXTURE_CUBE_MAP, 0 );
 
-
         vApp->swapParms().WarpOptions = ( m_useSrgb ? 0 : SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER );
         vApp->swapParms( ).Images[ eye ][ 1 ].TexId = texId;
         vApp->swapParms().Images[ eye ][ 1 ].TexCoordsFromTanAngles = m;
@@ -532,19 +525,6 @@ VMatrix4f PanoPhoto::drawEyeView( const int eye, const float fovDegrees )
         {
             vApp->swapParms().ProgramParms[ i ] = fadeColor;
         }
-
-
-//        vApp->kernel()->m_smoothOptions = ( m_useSrgb ? 0 : VK_INHIBIT_SRGB_FB );
-//        vApp->kernel()->m_texId[ eye ][ 1 ] = texId;
-//        vApp->kernel()->m_texMatrix[ eye ][ 1 ] = m;
-//
-//        VRotationState &pose = vApp->kernel()->m_pose[ eye ][ 1 ];
-//        pose = m_frameInput.pose;
-//        vApp->kernel()->m_smoothProgram = VK_CUBE_CB;
-//        for ( int i = 0; i < 4; i++ )
-//        {
-//            vApp->kernel()->m_programParms[ i ] = fadeColor;
-//        }
     }
     else
     {
@@ -555,14 +535,6 @@ VMatrix4f PanoPhoto::drawEyeView( const int eye, const float fovDegrees )
         {
             vApp->swapParms().ProgramParms[ i ] = 1.0f;
         }
-
-//        vApp->kernel()->m_smoothOptions = m_useSrgb ? 0 : VK_INHIBIT_SRGB_FB;
-//        vApp->kernel()->m_texId[ eye ][ 1 ] = 0;
-//        vApp->kernel()->m_smoothProgram = VK_DEFAULT_CB;
-//        for ( int i = 0; i < 4; i++ )
-//        {
-//            vApp->kernel()->m_programParms[ i ] = 1.0f;
-//        }
 
         glActiveTexture( GL_TEXTURE0 );
         if ( m_currentPanoIsCubeMap )
@@ -583,10 +555,24 @@ VMatrix4f PanoPhoto::drawEyeView( const int eye, const float fovDegrees )
         glUseProgram( prog.program );
 
         glUniform4f( prog.uniformColor, fadeColor, fadeColor, fadeColor, fadeColor );
-        glUniformMatrix4fv( prog.uniformModelViewProMatrix, 1, GL_FALSE /* not transposed */,
-                            view.transposed().cell[ 0 ] );
-        glUniformMatrix4fv( prog.uniformTexMatrix, 1, GL_FALSE, /* not transposed */
-                            vApp->appInterface()->getTexMatrix(eye,m_movieFormat).transposed().data());
+
+        if(VEyeItem::settings.useMultiview)
+        {
+            modelViewProMatrix[1] = m_scene.MvpForEye( 1, fovDegrees ).transposed();
+            glUniformMatrix4fv(prog.uniformModelViewProMatrix, 2, GL_TRUE, modelViewProMatrix[0].data());
+
+            VMatrix4f texMatrix[2];
+            texMatrix[0] = vApp->appInterface()->getTexMatrix(0,m_movieFormat).transposed();
+            texMatrix[1] = vApp->appInterface()->getTexMatrix(1,m_movieFormat).transposed();
+            glUniformMatrix4fv(prog.uniformTexMatrix, 2, GL_FALSE, texMatrix[0].data());
+        }
+        else
+        {
+            glUniformMatrix4fv( prog.uniformModelViewProMatrix, 1, GL_FALSE /* not transposed */,
+                                modelViewProMatrix[eye].transposed().cell[ 0 ] );
+            glUniformMatrix4fv( prog.uniformTexMatrix, 1, GL_FALSE, /* not transposed */
+                                vApp->appInterface()->getTexMatrix(eye,m_movieFormat).transposed().data());
+        }
 
         m_globe.drawElements();
 
@@ -594,9 +580,8 @@ VMatrix4f PanoPhoto::drawEyeView( const int eye, const float fovDegrees )
         glBindTexture( GL_TEXTURE_2D, 0 );
     }
 
-
-   VEglDriver::logErrorsEnum( "photo draw" );
-    return view;
+    VEglDriver::logErrorsEnum( "photo draw" );
+    return modelViewProMatrix[eye];
 }
 
 void PanoPhoto::startBackgroundPanoLoad(const VString &filename)
@@ -653,5 +638,11 @@ bool PanoPhoto::wantSrgbFramebuffer() const
 {
     return true;
 }
+
+VMatrix4f PanoPhoto::getModelViewProMatrix(int eye) const
+{
+    return modelViewProMatrix[eye];
+}
+
 
 NV_NAMESPACE_END

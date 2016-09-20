@@ -33,13 +33,12 @@ public:
                 , widthScale(1)
                 , multisamples(2)
                 , wantSingleBuffer(true)
+                , useMultiview(false)
                 , colorFormat(VColor::COLOR_8888)
                 , commonParameterDepth(DepthFormat_24)
                 , commonParameterTexture(NearestTextureFilter)
         {
-            useMultiview = VEglDriver::glIsExtensionString("GL_OVR_multiview");
-            if(useMultiview) vInfo("useMultiview true")
-            else vInfo("useMultiview false");
+
         }
 
         int resolution;

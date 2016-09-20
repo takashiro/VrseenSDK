@@ -13,10 +13,13 @@
 
 NV_NAMESPACE_BEGIN
 
+static int GL_TEXTURE_SYMBOL  = GL_TEXTURE_2D;
+static int GL_FRAMEBUFFER_SYMBOL = GL_FRAMEBUFFER;
+
 struct EyeBuffer {
     EyeBuffer() :
             Texture(0), DepthBuffer(0), CommonParameterBuffer(0), MultisampleColorBuffer(
-            0), RenderFrameBuffer(0), ResolveFrameBuffer(0) {
+            0), RenderFrameBuffer(0), ResolveFrameBuffer(0),DepthTexture(0) {
     }
     ~EyeBuffer() {
         Delete();
@@ -33,6 +36,9 @@ struct EyeBuffer {
     GLuint RenderFrameBuffer;
 
     GLuint ResolveFrameBuffer;
+
+    GLuint DepthTexture;
+
     void Delete() {
         if (Texture) {
             glDeleteTextures(1, &Texture);
@@ -54,149 +60,176 @@ struct EyeBuffer {
             glDeleteFramebuffers(1, &ResolveFrameBuffer);
             ResolveFrameBuffer = 0;
         }
+        if(DepthTexture){
+            glDeleteRenderbuffers(1, &DepthTexture);
+            DepthTexture = 0;
+        }
     }
     void Allocate(const VEyeItem::Settings & bufferParms,
                   VEyeItem::CommonParameter multisampleMode) {
         Delete();
 
-        GLenum commonParameterDepth;
-        switch (bufferParms.commonParameterDepth) {
+        GLenum depthFormat;
+        switch (bufferParms.commonParameterDepth)
+        {
             case VEyeItem::DepthFormat_24:
-                commonParameterDepth = GL_DEPTH_COMPONENT24_OES;
+                depthFormat = GL_DEPTH_COMPONENT24_OES;
                 break;
             case VEyeItem::DepthFormat_24_stencil_8:
-                commonParameterDepth = GL_DEPTH24_STENCIL8_OES;
+                depthFormat = GL_DEPTH24_STENCIL8_OES;
                 break;
             default:
-                commonParameterDepth = GL_DEPTH_COMPONENT16;
+                depthFormat = GL_DEPTH_COMPONENT16;
                 break;
         }
+
+        GLenum colorFormat;
+        switch(bufferParms.colorFormat)
+        {
+            case VColor::COLOR_565:
+                colorFormat = GL_RGB;
+                break;
+            case VColor::COLOR_5551:
+                colorFormat = GL_RGB5_A1;
+                break;
+            case VColor::COLOR_8888_sRGB:
+                colorFormat = GL_SRGB8_ALPHA8;
+                break;
+            default:
+                colorFormat = GL_RGBA8;
+                break;
+        }
+
+        GL_TEXTURE_SYMBOL  = bufferParms.useMultiview?GL_TEXTURE_2D_ARRAY:GL_TEXTURE_2D;
+        GL_FRAMEBUFFER_SYMBOL = bufferParms.useMultiview?GL_DRAW_FRAMEBUFFER:GL_FRAMEBUFFER;
+
+        glGenFramebuffers(1, &RenderFrameBuffer);
+        glBindFramebuffer(GL_FRAMEBUFFER_SYMBOL, RenderFrameBuffer);
 
         glGenTextures(1, &Texture);
-        glBindTexture( GL_TEXTURE_2D, Texture);
+        glBindTexture(GL_TEXTURE_SYMBOL, Texture);
 
-        if (bufferParms.colorFormat == VColor::COLOR_565) {
-            glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB,
-                          bufferParms.widthScale * bufferParms.resolution,
-                          bufferParms.resolution, 0,
-                          GL_RGB, GL_UNSIGNED_SHORT_5_6_5, NULL);
-        } else if (bufferParms.colorFormat == VColor::COLOR_5551) {
-            glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB5_A1,
-                          bufferParms.widthScale * bufferParms.resolution,
-                          bufferParms.resolution, 0,
-                          GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, NULL);
-        } else if (bufferParms.colorFormat == VColor::COLOR_8888_sRGB) {
-            glTexImage2D( GL_TEXTURE_2D, 0, GL_SRGB8_ALPHA8,
-                          bufferParms.widthScale * bufferParms.resolution,
-                          bufferParms.resolution, 0,
-                          GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-        } else {
-            glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8,
-                          bufferParms.widthScale * bufferParms.resolution,
-                          bufferParms.resolution, 0,
-                          GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-        }
+        glTexParameteri( GL_TEXTURE_SYMBOL, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri( GL_TEXTURE_SYMBOL, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-        switch (bufferParms.commonParameterTexture) {
+        switch (bufferParms.commonParameterTexture)
+        {
             case VEyeItem::NearestTextureFilter:
-                glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-                glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-                vInfo("textureFilter = TEXTURE_FILTER_NEAREST")
-                        ;
+                glTexParameteri( GL_TEXTURE_SYMBOL, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                glTexParameteri( GL_TEXTURE_SYMBOL, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
                 break;
             case VEyeItem::BilinearTextureFilter:
-                glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                vInfo("textureFilter = TEXTURE_FILTER_BILINEAR")
-                        ;
+                glTexParameteri( GL_TEXTURE_SYMBOL, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                glTexParameteri( GL_TEXTURE_SYMBOL, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
                 break;
             case VEyeItem::Aniso2TextureFilter:
-                glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 2);
-                vInfo("textureFilter = TEXTURE_FILTER_ANISO_2")
-                        ;
+                glTexParameteri( GL_TEXTURE_SYMBOL, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                glTexParameteri( GL_TEXTURE_SYMBOL, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glTexParameterf( GL_TEXTURE_SYMBOL, GL_TEXTURE_MAX_ANISOTROPY_EXT, 2);
                 break;
             case VEyeItem::Aniso4TextureFilter:
-                glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4);
-                vInfo("textureFilter = TEXTURE_FILTER_ANISO_4")
-                        ;
+                glTexParameteri( GL_TEXTURE_SYMBOL, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                glTexParameteri( GL_TEXTURE_SYMBOL, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glTexParameterf( GL_TEXTURE_SYMBOL, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4);
+
                 break;
             default:
-                glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                vInfo("textureFilter = TEXTURE_FILTER_BILINEAR")
-                        ;
+                glTexParameteri( GL_TEXTURE_SYMBOL, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                glTexParameteri( GL_TEXTURE_SYMBOL, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
                 break;
         }
 
-        if (multisampleMode == VEyeItem::MultisampleRenderToTexture) {
-            vInfo(
-                    "Making a " << bufferParms.multisamples << " sample buffer with glFramebufferTexture2DMultisample");
+        if(bufferParms.useMultiview)
+        {
+            glTexStorage3D(GL_TEXTURE_SYMBOL, 1, colorFormat, bufferParms.widthScale * bufferParms.resolution, bufferParms.resolution, 2);
 
-            if (bufferParms.commonParameterDepth
-                != VEyeItem::DepthFormat_0) {
-                glGenRenderbuffers(1, &DepthBuffer);
-                glBindRenderbuffer( GL_RENDERBUFFER, DepthBuffer);
-                VEglDriver::glRenderbufferStorageMultisampleIMG(
-                        GL_RENDERBUFFER, bufferParms.multisamples,
-                        commonParameterDepth,
-                        bufferParms.widthScale * bufferParms.resolution,
-                        bufferParms.resolution);
+            if (multisampleMode == VEyeItem::MultisampleRenderToTexture && VEglDriver::glIsExtensionString("GL_OVR_multiview_multisampled_render_to_texture"))
+            {
+                vInfo("Making a " << bufferParms.multisamples << " sample buffer with glFramebufferTexture2DMultisample");
 
-                glBindRenderbuffer( GL_RENDERBUFFER, 0);
+                //VEglDriver::glFramebufferTextureMultisampleMultiviewOVR(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, RenderFrameBuffer, 0,bufferParms.multisamples,0, 2);
+                VEglDriver::glFramebufferTextureMultiviewOVR(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,Texture, 0, 0, 2);
+
+                if (bufferParms.commonParameterDepth != VEyeItem::DepthFormat_0)
+                {
+                    glGenTextures(1, &DepthTexture);
+                    glBindTexture(GL_TEXTURE_2D_ARRAY, DepthTexture);
+                    //TODO glTexStorage3DMultisample
+                    glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, depthFormat, bufferParms.widthScale * bufferParms.resolution, bufferParms.resolution, 2);
+
+                    VEglDriver::glFramebufferTextureMultiviewOVR(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, DepthTexture, 0, 0, 2);
+
+                    glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+                }
             }
+            else
+            {
+                vInfo("Making a single sample buffer");
 
-            glGenFramebuffers(1, &RenderFrameBuffer);
-            glBindFramebuffer( GL_FRAMEBUFFER, RenderFrameBuffer);
+                VEglDriver::glFramebufferTextureMultiviewOVR(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,Texture, 0, 0, 2);
 
-            VEglDriver::glFramebufferTexture2DMultisampleIMG( GL_FRAMEBUFFER,
-                                                              GL_COLOR_ATTACHMENT0,
-                                                              GL_TEXTURE_2D, Texture, 0, bufferParms.multisamples);
+                if (bufferParms.commonParameterDepth != VEyeItem::DepthFormat_0)
+                {
+                    glGenTextures(1, &DepthTexture);
+                    glBindTexture(GL_TEXTURE_2D_ARRAY, DepthTexture);
+                    glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, depthFormat, bufferParms.widthScale * bufferParms.resolution, bufferParms.resolution, 2);
 
-            if (bufferParms.commonParameterDepth
-                != VEyeItem::DepthFormat_0) {
-                glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-                                           GL_RENDERBUFFER, DepthBuffer);
+                    VEglDriver::glFramebufferTextureMultiviewOVR(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, DepthTexture, 0, 0, 2);
+
+                    glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+                }
             }
-            VEglDriver::logErrorsEnum(
-                    "glRenderbufferStorageMultisampleIMG MSAA");
-        } else {
-            vInfo("Making a single sample buffer");
+        }
+        else
+        {
+            glTexStorage2D(GL_TEXTURE_SYMBOL, 1, colorFormat, bufferParms.widthScale * bufferParms.resolution, bufferParms.resolution);
 
-            if (bufferParms.commonParameterDepth
-                != VEyeItem::DepthFormat_0) {
-                glGenRenderbuffers(1, &DepthBuffer);
-                glBindRenderbuffer( GL_RENDERBUFFER, DepthBuffer);
-                glRenderbufferStorage( GL_RENDERBUFFER, commonParameterDepth,
-                                       bufferParms.resolution, bufferParms.resolution);
+            if (multisampleMode == VEyeItem::MultisampleRenderToTexture)
+            {
+                vInfo("Making a " << bufferParms.multisamples << " sample buffer with glFramebufferTexture2DMultisample");
 
-                glBindRenderbuffer( GL_RENDERBUFFER, 0);
+                if (bufferParms.commonParameterDepth != VEyeItem::DepthFormat_0)
+                {
+                    glGenRenderbuffers(1, &DepthBuffer);
+                    glBindRenderbuffer( GL_RENDERBUFFER, DepthBuffer);
+                    VEglDriver::glRenderbufferStorageMultisampleIMG(
+                            GL_RENDERBUFFER, bufferParms.multisamples,
+                            depthFormat,
+                            bufferParms.widthScale * bufferParms.resolution,
+                            bufferParms.resolution);
+
+                    glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                                               GL_RENDERBUFFER, DepthBuffer);
+                    glBindRenderbuffer( GL_RENDERBUFFER, 0);
+                }
+
+                VEglDriver::glFramebufferTexture2DMultisampleIMG( GL_FRAMEBUFFER,
+                                                                  GL_COLOR_ATTACHMENT0,
+                                                                  GL_TEXTURE_2D, Texture, 0, bufferParms.multisamples);
             }
+            else
+            {
+                vInfo("Making a single sample buffer");
 
-            glGenFramebuffers(1, &RenderFrameBuffer);
-            glBindFramebuffer( GL_FRAMEBUFFER, RenderFrameBuffer);
-            glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                                    GL_TEXTURE_2D, Texture, 0);
+                if (bufferParms.commonParameterDepth != VEyeItem::DepthFormat_0)
+                {
+                    glGenRenderbuffers(1, &DepthBuffer);
+                    glBindRenderbuffer( GL_RENDERBUFFER, DepthBuffer);
+                    glRenderbufferStorage( GL_RENDERBUFFER, depthFormat,
+                                           bufferParms.resolution, bufferParms.resolution);
+                    glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                                               GL_RENDERBUFFER, DepthBuffer);
+                    glBindRenderbuffer( GL_RENDERBUFFER, 0);
+                }
 
-            if (bufferParms.commonParameterDepth
-                != VEyeItem::DepthFormat_0) {
-                glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-                                           GL_RENDERBUFFER, DepthBuffer);
+                glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                        GL_TEXTURE_2D, Texture, 0);
             }
-
-            VEglDriver::logErrorsEnum("NO MSAA");
         }
 
-        GLenum status = glCheckFramebufferStatus( GL_FRAMEBUFFER);
+        GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER_SYMBOL);
         if (status != GL_FRAMEBUFFER_COMPLETE) {
-            vFatal(
-                    "render FBO " << RenderFrameBuffer << " is not complete: " << status); // TODO: fall back to something else
+            vFatal("render FBO " << GL_FRAMEBUFFER_SYMBOL << " is not complete: " << status); // TODO: fall back to something else
         }
 
         glScissor(0, 0, bufferParms.widthScale * bufferParms.resolution,
@@ -205,7 +238,7 @@ struct EyeBuffer {
                    bufferParms.resolution);
         glClearColor(53.0f / 255, 166.0f / 255, 240.0f / 255, 1);
         glClear( GL_COLOR_BUFFER_BIT);
-        glBindFramebuffer( GL_FRAMEBUFFER, 0);
+        glBindFramebuffer( GL_FRAMEBUFFER_SYMBOL, 0);
     }
 };
 
@@ -267,7 +300,7 @@ void VEyeItem::paint(const int eyeNum)
     EyePairs & pair = d->BufferData[ swapCount % MAX_EYE_SETS ][eyeNum];
     EyeBuffer & eye = pair.eyeBuffer;
 
-    glBindFramebuffer( GL_FRAMEBUFFER, eye.RenderFrameBuffer );
+    glBindFramebuffer( GL_FRAMEBUFFER_SYMBOL, eye.RenderFrameBuffer );
     glViewport( 0, 0, resolution, resolution );
     glScissor( 0, 0, resolution, resolution );
     glDepthMask( GL_TRUE );
@@ -311,7 +344,7 @@ VEyeItem::CompletedEyes VEyeItem::completedEyes(const int eyeNum)
 {
     CompletedEyes cmp;
     // The GPU commands are flushed for d->BufferData[ SwapCount % MAX_EYE_SETS ]
-    EyePairs & currentBuffers = d->BufferData[ swapCount % MAX_EYE_SETS ][eyeNum];
+    EyePairs & currentBuffers = d->BufferData[ swapCount % MAX_EYE_SETS ][settings.useMultiview?0:eyeNum];
 
     EyePairs * buffers = &currentBuffers;
 

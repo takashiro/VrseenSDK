@@ -95,7 +95,7 @@ public:
     virtual void Finish(VMatrix4f const & viewMatrix) = 0;
 
 	virtual void Render3D(BitmapFont const & font,
-            VMatrix4f const & worldMVP) const = 0;
+			const int eye) const = 0;
 
 protected:
 	virtual ~BitmapFontSurface() {

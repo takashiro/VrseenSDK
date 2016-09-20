@@ -154,14 +154,14 @@ bool VModel::loadAsync(VString& modelPath,std::function<void()> completeListener
     return true;
 }
 
-void VModel::draw(int eye, const VMatrix4f & mvp )
+void VModel::draw(int eye)
 {
     NV_UNUSED(eye);
 
     const VGlShader * shader = &d->loadModelProgram;
 
     glUseProgram(shader->program);
-    glUniformMatrix4fv(shader->uniformModelViewProMatrix, 1, GL_FALSE, mvp.transposed().cell[0]);
+    glUniformMatrix4fv(shader->uniformModelViewProMatrix, 1, GL_FALSE, vApp->getModelViewProMatrix(eye).transposed().cell[0]);
     VEglDriver::glPushAttrib();
 
     glEnable(GL_DEPTH_TEST);
