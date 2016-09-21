@@ -1903,7 +1903,8 @@ void VFrameSmooth::Private::buildWarpProgPair(VrKernelProgram simpleIndex,
 
     VGlShader shader;
     if(simpleIndex + (WP_CHROMATIC - WP_SIMPLE) == WP_CHROMATIC
-       || simpleIndex + (WP_CHROMATIC - WP_SIMPLE) == WP_CHROMATIC_MASKED_CUBE ) shader.useMultiview = true;
+       || simpleIndex + (WP_CHROMATIC - WP_SIMPLE) == WP_CHROMATIC_MASKED_CUBE
+       || simpleIndex + (WP_CHROMATIC - WP_SIMPLE) == WP_CHROMATIC_MASKED_PLANE      ) shader.useMultiview = true;
     shader.initShader(chromaticVertex, chromaticFragment);
     m_warpPrograms[simpleIndex + (WP_CHROMATIC - WP_SIMPLE)] = shader;
 }
@@ -2071,7 +2072,11 @@ void VFrameSmooth::Private::buildWarpProgs() {
                               "   oTexCoord2b = mix( vec3( Texm3 * vec4(Tangent,-1,1) ), vec3( Texm4 * vec4(Tangent,-1,1) ), TexCoord1.x );\n"
                               ""
                               "}\n",
-                      "uniform sampler2D Texture0;\n"
+                      "#ifdef VIEW_ID\n"
+                              "  uniform sampler2DArray Texture0;\n"
+                              "#else\n"
+                              "  uniform sampler2D Texture0;\n"
+                              "#endif\n"
                               "uniform sampler2D Texture1;\n"
                               "varying highp vec2 oTexCoord;\n"
                               "varying highp vec3 oTexCoord2r;\n"
@@ -2079,7 +2084,11 @@ void VFrameSmooth::Private::buildWarpProgs() {
                               "varying highp vec3 oTexCoord2b;\n"
                               "void main()\n"
                               "{\n"
-                              "	lowp vec4 color0 = texture2D(Texture0, oTexCoord);\n"
+                              "#ifdef VIEW_ID\n"
+                              "	 lowp vec4 color0 = texture2D(Texture0, vec3(oTexCoord,VIEW_ID));\n"
+                              "#else\n"
+                              "	 lowp vec4 color0 = texture2D(Texture0, oTexCoord);\n"
+                              "#endif\n"
                               "	{\n"
                               "		lowp vec4 color1r = texture2DProj(Texture1, oTexCoord2r);\n"
                               "		lowp vec4 color1g = texture2DProj(Texture1, oTexCoord2g);\n"

@@ -99,6 +99,7 @@ void SceneManager::OneTimeShutdown()
 	// Free GL resources
 
     UnitSquare.destroy();
+	fadedScreenMaskSquare.destroy();
 
 	if ( ScreenVignetteTexture != 0 )
 	{
@@ -591,15 +592,12 @@ VMatrix4f SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 	modelViewProMatrix[eye] = Scene.MvpForEye( eye, fovDegrees );
 
 	// draw the screen on top
-	if ( !drawScreen )
-	{
-		return modelViewProMatrix[eye];
-	}
+	if ( !drawScreen ) return modelViewProMatrix[eye];
 
     glDisable( GL_DEPTH_TEST );
 
 	// draw the movie texture
-	if ( !GetUseOverlay())
+	if (!GetUseOverlay())
 	{
         // no overlay
 		vApp->swapParms().WarpProgram = WP_CHROMATIC;
@@ -609,20 +607,13 @@ VMatrix4f SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 		glUseProgram( prog->program );
 		glUniform4f( prog->uniformColor, 1, 1, 1, 0.0f );
 
-		glVertexAttrib4f( 2, 1.0f, 1.0f, 1.0f, 1.0f );	// no color attributes on the surface verts, so force to 1.0
-
 		glActiveTexture( GL_TEXTURE0 );
 		glBindTexture( GL_TEXTURE_EXTERNAL_OES, MovieTexture->textureId );
 
 		glActiveTexture( GL_TEXTURE1 );
 		glBindTexture( GL_TEXTURE_2D, ScreenVignetteTexture );
 
-		// The UI is always identity for now, but we may scale it later
-		VMatrix4f identity;
-		glUniformMatrix4fv( prog->uniformTexMatrix2, 1, GL_FALSE, /* not transposed */
-							identity.transposed().data());
-
-	    const VMatrix4f screenModel = ScreenMatrix();
+		const VMatrix4f screenModel = ScreenMatrix();
 
 		if(VEyeItem::settings.useMultiview)
 		{
@@ -635,7 +626,7 @@ VMatrix4f SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 			VMatrix4f mvp[2];
 			mvp[0] = modelViewProMatrix[0] * screenModel;
 			mvp[1] = modelViewProMatrix[1] * screenModel;
-			glUniformMatrix4fv(prog->uniformModelViewProMatrix, 2, GL_TRUE, modelViewProMatrix[0].data());
+			glUniformMatrix4fv(prog->uniformModelViewProMatrix, 2, GL_TRUE, mvp[0].data());
 		}
 		else
 		{
@@ -665,8 +656,28 @@ VMatrix4f SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 		}
 
 		// explicitly clear a hole in alpha
-        const VMatrix4f screenMvp = modelViewProMatrix[eye] * screenModel;
-        vApp->drawScreenMask( screenMvp, 0.0f, 0.0f );
+		const VGlShader& prog = Cinema.shaderMgr.overlayScreenFadeMaskProgram;
+		glUseProgram(prog.program);
+
+		if(VEyeItem::settings.useMultiview)
+		{
+			modelViewProMatrix[1] = Scene.MvpForEye( 1, fovDegrees );
+			VMatrix4f mvp[2];
+			mvp[0] = modelViewProMatrix[0] * screenModel;
+			mvp[1] = modelViewProMatrix[1] * screenModel;
+			glUniformMatrix4fv(prog.uniformModelViewProMatrix, 2, GL_TRUE, mvp[0].data());
+		}
+		else
+		{
+			const VMatrix4f screenMvp = modelViewProMatrix[eye] * screenModel;
+			glUniformMatrix4fv(prog.uniformModelViewProMatrix, 1, GL_FALSE, screenMvp.transposed().cell[0]);
+		}
+
+		if (fadedScreenMaskSquare.vertexArrayObject == 0) fadedScreenMaskSquare.createScreenQuad(0, 0);
+
+		glColorMask(0.0f, 0.0f, 0.0f, 1.0f);
+		fadedScreenMaskSquare.drawElements();
+		glColorMask(1.0f, 1.0f, 1.0f, 1.0f);
 	}
 
 	// The framework will automatically draw the floating elements on top of us now.

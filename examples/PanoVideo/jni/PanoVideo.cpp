@@ -132,6 +132,7 @@ void PanoVideo::init(const VString &, const VString &, const VString &)
     vApp->vrParms().commonParameterDepth = VEyeItem::CommonParameter::DepthFormat_16;
 	vApp->vrParms().multisamples = 2;
 
+	m_panoramaProgram.useMultiview = true;
     m_panoramaProgram.initShader(VGlShader::getPanoVertexShaderSource(),VGlShader::getPanoProgramShaderSource()	);
 
 //    m_fadedPanoramaProgram.initShader(VGlShader::getFadedPanoVertexShaderSource(),VGlShader::getFadedPanoProgramShaderSource());
@@ -234,7 +235,7 @@ void PanoVideo::configureVrMode(VKernel* kernel)
 	vInfo("ConfigureClocks: Oculus360Videos only needs minimal clocks");
 	// All geometry is blended, so save power with no MSAA
 	kernel->msaa = 1;
-	VEyeItem::settings.useMultiview = false;
+	VEyeItem::settings.useMultiview = true;
 }
 
 bool PanoVideo::onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType )
@@ -324,6 +325,9 @@ VMatrix4f PanoVideo::drawEyeView( const int eye, const float fovDegrees )
 
     if ( ( m_menuState == MENU_VIDEO_PLAYING ) && ( m_movieTexture != NULL ) )
 	{
+		vApp->swapParms().WarpProgram = WP_CHROMATIC;
+		vApp->swapParms().Images[eye][1].TexId = 0;
+
 		// draw animated movie panorama
 		glActiveTexture( GL_TEXTURE0 );
         glBindTexture( GL_TEXTURE_EXTERNAL_OES, m_movieTexture->textureId );

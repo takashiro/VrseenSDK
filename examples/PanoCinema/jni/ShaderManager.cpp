@@ -30,8 +30,8 @@ static const char* copyMovieFragmentShaderSource =
 	"}\n";
 
 static const char* movieUiVertexShaderSrc =
-	"uniform highp mat4 Mvpm;\n"
-	"uniform highp mat4 Texm;\n"
+	"uniform highp mat4 Mvpm[NUM_VIEWS];\n"
+	"uniform highp mat4 Texm[NUM_VIEWS];\n"
 	"attribute vec4 Position;\n"
 	"attribute vec2 TexCoord;\n"
 	"uniform lowp vec4 UniformColor;\n"
@@ -39,8 +39,8 @@ static const char* movieUiVertexShaderSrc =
 	"varying  lowp vec4 oColor;\n"
 	"void main()\n"
 	"{\n"
-	"   gl_Position = Mvpm * Position;\n"
-	"   oTexCoord = vec2( Texm * vec4(TexCoord,1,1) );\n"
+	"   gl_Position = Mvpm[VIEW_ID] * Position;\n"
+	"   oTexCoord = vec2( Texm[VIEW_ID] * vec4(TexCoord,1,1) );\n"
 	"   oColor = UniformColor;\n"
 	"}\n";
 
@@ -72,8 +72,11 @@ void ShaderManager::OneTimeInit(const VString &)
 
     const double start = VTimer::Seconds();
 
+	MovieExternalUiProgram.useMultiview = true;
 	MovieExternalUiProgram 		.initShader( movieUiVertexShaderSrc, movieExternalUiFragmentShaderSource );
 	CopyMovieProgram 			.initShader( copyMovieVertexShaderSrc, copyMovieFragmentShaderSource );
+	overlayScreenFadeMaskProgram.useMultiview = true;
+	overlayScreenFadeMaskProgram.initShader(VGlShader::getUntextureInverseColorVertexShaderSource(),VGlShader::getUntexturedFragmentShaderSource() );
 
     vInfo("ShaderManager::OneTimeInit:" << (VTimer::Seconds() - start) << "seconds");
 }
@@ -84,4 +87,5 @@ void ShaderManager::OneTimeShutdown()
 
 	 MovieExternalUiProgram .destroy();
 	 CopyMovieProgram .destroy();
+	 overlayScreenFadeMaskProgram.destroy();
 }

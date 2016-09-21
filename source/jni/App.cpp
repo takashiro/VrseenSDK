@@ -218,12 +218,10 @@ struct App::Private
 
     VGlShader untexturedMvpProgram;
     VGlShader untexturedScreenSpaceProgram;
-    VGlShader overlayScreenFadeMaskProgram;
     VGlShader overlayScreenDirectProgram;
 
     VGlGeometry unitCubeLines;		// 12 lines that outline a 0 to 1 unit cube, intended to be scaled to cover bounds.
     VGlGeometry unitSquare;			// -1 to 1 in x and Y, 0 to 1 in texcoords
-    VGlGeometry fadedScreenMaskSquare;// faded screen mask for overlay rendering
 
     EyePostRender eyeDecorations;
 
@@ -378,7 +376,6 @@ struct App::Private
 
         untexturedMvpProgram.initShader( VGlShader::getUntextureMvpVertexShaderSource(),VGlShader::getUntexturedFragmentShaderSource()  );
         untexturedScreenSpaceProgram.initShader( VGlShader::getUniformColorVertexShaderSource(), VGlShader::getUntexturedFragmentShaderSource() );
-        overlayScreenFadeMaskProgram.initShader(VGlShader::getUntextureInverseColorVertexShaderSource(),VGlShader::getUntexturedFragmentShaderSource() );
         overlayScreenDirectProgram.initShader(VGlShader::getSingleTextureVertexShaderSource(),VGlShader::getSingleTextureFragmentShaderSource() );
 
 
@@ -393,12 +390,10 @@ struct App::Private
     {
         untexturedMvpProgram.destroy();
         untexturedScreenSpaceProgram.destroy();
-        overlayScreenFadeMaskProgram.destroy();
         overlayScreenDirectProgram.destroy();
 
         unitSquare.destroy();
         unitCubeLines.destroy();
-        fadedScreenMaskSquare.destroy();
 
         eyeDecorations.Shutdown();
     }
@@ -1756,20 +1751,6 @@ void App::drawEyeViewsPostDistorted( VMatrix4f const & centerViewMatrix, const i
 //}
 
 // draw a zero to destination alpha
-void App::drawScreenMask(const VMatrix4f &mvp, const float fadeFracX, const float fadeFracY)
-{
-    glUseProgram(d->overlayScreenFadeMaskProgram.program);
-
-    glUniformMatrix4fv(d->overlayScreenFadeMaskProgram.uniformModelViewProMatrix, 1, GL_FALSE, mvp.transposed().cell[0]);
-
-    if (d->fadedScreenMaskSquare.vertexArrayObject == 0) {
-        d->fadedScreenMaskSquare.createScreenQuad( fadeFracX, fadeFracY );
-    }
-
-    glColorMask(0.0f, 0.0f, 0.0f, 1.0f);
-    d->fadedScreenMaskSquare.drawElements();
-    glColorMask(1.0f, 1.0f, 1.0f, 1.0f);
-}
 
 bool App::isShowFPS() const
 {

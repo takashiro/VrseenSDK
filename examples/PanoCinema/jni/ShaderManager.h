@@ -20,4 +20,5 @@ public:
 	// mipmap generation.
 	VGlShader				CopyMovieProgram;
 	VGlShader				MovieExternalUiProgram;
+	VGlShader 				overlayScreenFadeMaskProgram;
 };
