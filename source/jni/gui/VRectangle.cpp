@@ -11,7 +11,7 @@ static const char* VertexShaderSource =
     "uniform highp mat4 Texm;\n"
     "attribute vec4 Position;\n"
     "attribute vec2 TexCoord;\n"
-    "uniform lowp vec4 UniformColor;\n"
+    "uniform mediump vec4 UniformColor;\n"
     "varying  highp vec2 oTexCoord;\n"
     "varying  lowp vec4 oColor;\n"
     "void main()\n"
