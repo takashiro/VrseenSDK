@@ -9,8 +9,8 @@ NV_NAMESPACE_BEGIN
 
 static const char* VertexShaderSource =
         "uniform highp mat4 Mvpm;\n"
-        "attribute vec4 Position;\n"
-        "attribute vec2 TexCoord;\n"
+        "attribute highp vec4 Position;\n"
+        "attribute highp vec2 TexCoord;\n"
         "varying highp vec2 oTexCoord;\n"
         "void main()\n"
         "{\n"
@@ -23,7 +23,7 @@ static const char * FragmentShaderSource =
         "varying highp vec2 oTexCoord;\n"
         "void main()\n"
         "{\n"
-        "    vec4 color = texture2D(Texture0, oTexCoord);\n"
+        "    highp vec4 color = texture2D(Texture0, oTexCoord);\n"
         "    gl_FragColor = vec4(color.rgb,color.r);\n"
         "}\n";
 
