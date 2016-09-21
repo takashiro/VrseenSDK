@@ -31,13 +31,13 @@ extern "C"
 
 
 static const char*  glVertexShader =
-        "uniform highp mat4 Mvpm;\n"
+        "uniform highp mat4 Mvpm[NUM_VIEWS];\n"
         "attribute vec4 Position;\n"
         "attribute vec2 TexCoord;\n"
         "varying  highp vec2 oTexCoord;\n"
         "void main()\n"
         "{\n"
-        "    gl_Position = Mvpm * Position;\n"
+        "    gl_Position = Mvpm[VIEW_ID] * Position;\n"
         "    oTexCoord = vec2(TexCoord.x,1.0-TexCoord.y);\n"
         "}\n";
 
@@ -67,6 +67,7 @@ struct VModel::Private
 {
     Private()
     {
+        loadModelProgram.useMultiview = true;
         loadModelProgram.initShader(glVertexShader,glFragmentShader);
     }
 
@@ -156,13 +157,19 @@ bool VModel::loadAsync(VString& modelPath,std::function<void()> completeListener
 
 void VModel::draw(int eye)
 {
-    NV_UNUSED(eye);
-
     const VGlShader * shader = &d->loadModelProgram;
 
-    glUseProgram(shader->program);
-    glUniformMatrix4fv(shader->uniformModelViewProMatrix, 1, GL_FALSE, vApp->getModelViewProMatrix(eye).transposed().cell[0]);
     VEglDriver::glPushAttrib();
+    glUseProgram(shader->program);
+
+    if(VEyeItem::settings.useMultiview)
+    {
+        VMatrix4f modelViewProMatrix[2];
+        modelViewProMatrix[0] = vApp->getModelViewProMatrix(0);
+        modelViewProMatrix[1] = vApp->getModelViewProMatrix(1);
+        glUniformMatrix4fv(shader->uniformModelViewProMatrix, 2, GL_TRUE, modelViewProMatrix[0].data());
+    }
+    else glUniformMatrix4fv(shader->uniformModelViewProMatrix, 1, GL_FALSE, vApp->getModelViewProMatrix(eye).transposed().cell[0]);
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc( GL_LEQUAL );

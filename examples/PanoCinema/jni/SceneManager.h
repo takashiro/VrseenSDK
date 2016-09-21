@@ -76,6 +76,7 @@ public:
 	int					ClearGhostsFrames;
 
 	VGlGeometry			UnitSquare;		// -1 to 1
+	VGlGeometry 		fadedScreenMaskSquare;// faded screen mask for overlay rendering
 
 	// We can't directly create a mip map on the OES_external_texture, so
 	// it needs to be copied to a conventional texture.

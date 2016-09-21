@@ -80,7 +80,7 @@ const char * VGlShader::getUniformTextureProgramShaderSource()
 const char * VGlShader::getPanoProgramShaderSource()
 {
              const char * panoProgramSource =
-                     "#extension GL_OES_EGL_image_external : require\n"
+                     "#extension GL_OES_EGL_image_external : enable\n"
                      "uniform samplerExternalOES Texture0;\n"
                      "uniform lowp vec4 UniformColor;\n"
                      "uniform lowp vec4 ColorBias;\n"
@@ -99,15 +99,15 @@ const char * VGlShader::getPanoProgramShaderSource()
 const char * VGlShader::getPanoVertexShaderSource()
 {
              const char * panoVertexShaderSource =
-                     "uniform highp mat4 Mvpm;\n"
-                     "uniform highp mat4 Texm;\n"
+                     "uniform highp mat4 Mvpm[NUM_VIEWS];\n"
+                     "uniform highp mat4 Texm[NUM_VIEWS];\n"
                      "attribute vec4 Position;\n"
                      "attribute vec2 TexCoord;\n"
                      "varying  highp vec2 oTexCoord;\n"
                      "void main()\n"
                      "{\n"
-                     "   gl_Position = Mvpm * Position;\n"
-                     "   oTexCoord = vec2( Texm * vec4( TexCoord, 0, 1 ) );\n"
+                     "   gl_Position = Mvpm[VIEW_ID] * Position;\n"
+                     "   oTexCoord = vec2( Texm[VIEW_ID] * vec4( TexCoord, 0, 1 ) );\n"
                      "}\n";
    return panoVertexShaderSource;
 }
@@ -214,13 +214,13 @@ const char* getDoubletextureTransparentColorVertexShaderSource =
 const char * VGlShader::getUntextureInverseColorVertexShaderSource()
 {
  const char * untextureInverseColorVertexShaderSource =
-"uniform mat4 Mvpm;\n"
+"uniform mat4 Mvpm[NUM_VIEWS];\n"
 "attribute vec4 VertexColor;\n"
 "attribute vec4 Position;\n"
 "varying  lowp vec4 oColor;\n"
 "void main()\n"
 "{\n"
-"   gl_Position = Mvpm * Position;\n"
+"   gl_Position = Mvpm[VIEW_ID] * Position;\n"
 "   oColor = vec4(1.0, 1.0, 1.0, 1.0 - VertexColor.x);\n"
 "}\n";
 
@@ -672,6 +672,7 @@ GLuint VGlShader::createShader(GLuint shaderType, const char *src)
                                       "#endif\n"
                                       "#define texture2D texture\n"
                                       "#define textureCube texture\n"
+                                      "#define texture2DProj textureProj\n"
                               :  "#define varying in\n"
                                       "#define attribute out\n"
                                       "#ifdef varying\n"
@@ -679,6 +680,7 @@ GLuint VGlShader::createShader(GLuint shaderType, const char *src)
                                       "#endif\n"
                                       "#define texture2D texture\n"
                                       "#define textureCube texture\n"
+                                      "#define texture2DProj textureProj\n"
             };
         }
         sources[len++] = postVersion;

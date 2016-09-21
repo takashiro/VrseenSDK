@@ -81,8 +81,6 @@ public:
 
     const VRotationState &sensorForNextWarp() const;
 
-    void drawScreenMask(const VMatrix4f & mvp, const float fadeFracX, const float fadeFracY);
-
     void execute();
     void quit();
 
