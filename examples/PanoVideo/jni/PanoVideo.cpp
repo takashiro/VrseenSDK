@@ -294,7 +294,7 @@ void PanoVideo::command(const VEvent &event )
 		{
 			m_movieFormat = VT_LEFT_RIGHT_3D;
 		}
-		else if (m_videoWidth < m_videoHeight)
+		else if (m_videoWidth/2  < m_videoHeight)
 		{
 			m_movieFormat = VT_TOP_BOTTOM_3D;
 		}

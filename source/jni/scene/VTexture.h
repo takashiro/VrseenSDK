@@ -67,7 +67,7 @@ public:
     void aniso(float maxAniso);
 
     void buildMipmaps();
-
+    void destroy();
 private:
     NV_DECLARE_PRIVATE
 };

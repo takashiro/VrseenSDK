@@ -562,8 +562,7 @@ return  vertexColorFragmentShaderSrc;
  {
 
      const char* additionalVertexShaderSource =
-             "uniform mat4 Mvpm;\n"
-             "uniform mat4 Texm;\n"
+             "uniform mat4 Mvpm[NUM_VIEWS];\n"
              "attribute vec4 Position;\n"
              "attribute vec4 VertexColor;\n"
              "attribute vec2 TexCoord;\n"
@@ -572,8 +571,8 @@ return  vertexColorFragmentShaderSrc;
              "varying  lowp vec4 oColor;\n"
              "void main()\n"
              "{\n"
-             "   gl_Position = Mvpm * Position;\n"
-             "   oTexCoord = vec2(Texm * vec4(TexCoord,1,1));\n"
+             "   gl_Position = Mvpm[VIEW_ID] * Position;\n"
+             "   oTexCoord = TexCoord;\n"
              "   oColor = VertexColor * UniformColor;\n"
              "}\n";
      return additionalVertexShaderSource;
@@ -638,18 +637,12 @@ GLuint VGlShader::createShader(GLuint shaderType, const char *src)
         const char * postVersion = FindShaderVersionEnd( src );
         sources[len++] = version;
 
-//        if(strstr(src, "GL_OES_EGL_image_external") != NULL)
-//        {
-//            const char* vendor = (const char*) glGetString(GL_VENDOR);
-//            if(VEglDriver::glIsExtensionString("GL_OES_EGL_image_external"))
-//            {
-//                if(strcmp(vendor, "Qualcomm") == 0) {
-//                    if(VEglDriver::glIsExtensionString("GL_OES_EGL_image_external_essl3")) sources[len++] = EGL_IMAGE_EXT_ADRENO;
-//                    else VEyeItem::settings.useMultiview = false;
-//                }
-//            }
-//            else VEyeItem::settings.useMultiview = false;
-//        }
+        if(strstr(src, "GL_OES_EGL_image_external") != NULL)
+        {
+            const char* vendor = (const char*) glGetString(GL_VENDOR);
+            if(strcmp(vendor, "Qualcomm") == 0 && VEglDriver::glIsExtensionString("GL_OES_EGL_image_external_essl3")) sources[len++] = EGL_IMAGE_EXT_ADRENO;
+            else VEyeItem::settings.useMultiview = false;
+        }
 
         if(shaderType == GL_VERTEX_SHADER)
         {

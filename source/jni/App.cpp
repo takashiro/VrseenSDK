@@ -376,14 +376,12 @@ struct App::Private
         swapParms.WarpProgram = ChromaticAberrationCorrection(m_glStatus) ? WP_CHROMATIC : WP_SIMPLE;
         m_glStatus.logExtensions();
 
-        self->panel.externalTextureProgram2.initShader( VGlShader::getAdditionalVertexShaderSource(), VGlShader::getAdditionalFragmentShaderSource() );
         untexturedMvpProgram.initShader( VGlShader::getUntextureMvpVertexShaderSource(),VGlShader::getUntexturedFragmentShaderSource()  );
         untexturedScreenSpaceProgram.initShader( VGlShader::getUniformColorVertexShaderSource(), VGlShader::getUntexturedFragmentShaderSource() );
         overlayScreenFadeMaskProgram.initShader(VGlShader::getUntextureInverseColorVertexShaderSource(),VGlShader::getUntexturedFragmentShaderSource() );
         overlayScreenDirectProgram.initShader(VGlShader::getSingleTextureVertexShaderSource(),VGlShader::getSingleTextureFragmentShaderSource() );
 
 
-        self->panel.panelGeometry.createPlaneQuadGrid( 32, 16 );
         unitSquare.createPlaneQuadGrid(1, 1 );
         unitCubeLines.createUnitCubeGrid();
 
@@ -393,13 +391,11 @@ struct App::Private
 
     void shutdownGlObjects()
     {
-        self->panel.externalTextureProgram2.destroy();
         untexturedMvpProgram.destroy();
         untexturedScreenSpaceProgram.destroy();
         overlayScreenFadeMaskProgram.destroy();
         overlayScreenDirectProgram.destroy();
 
-        self->panel.panelGeometry.destroy();
         unitSquare.destroy();
         unitCubeLines.destroy();
         fadedScreenMaskSquare.destroy();
@@ -961,11 +957,7 @@ struct App::Private
             // Create the SurfaceTexture for dialog rendering.
             self->dialog.dialogTexture = new SurfaceTexture(vrJni);
 
-            initFonts();
-
             lastTouchpadTime = VTimer::Seconds();
-
-            gui->init();
         }
 
         // FPS counter information
@@ -1036,14 +1028,19 @@ struct App::Private
             // Let the client app initialize only once by calling OneTimeInit() when the windowSurface is valid.
             if (!running)
             {
+                vInfo("launchIntentJSON:" << launchIntentJSON);
+                vInfo("launchIntentURI:" << launchIntentURI);
+
+                gui->init();
                 if (activity->showLoadingIcon())
                 {
                     gui->showLoading(0);
                 }
-                vInfo("launchIntentJSON:" << launchIntentJSON);
-                vInfo("launchIntentURI:" << launchIntentURI);
 
+                initFonts();
+                self->dialog.init();
                 activity->init(launchIntentFromPackage, launchIntentJSON, launchIntentURI);
+
                 running = true;
             }
 
@@ -1708,7 +1705,7 @@ void App::drawEyeViewsPostDistorted( VMatrix4f const & centerViewMatrix, const i
                 d->calibrationLinesDrawn = false;
             }
 
-            dialog.draw(panel,eye);
+            dialog.draw(eye);
 
             if (d->showVignette) {
                 // Draw a thin vignette at the edges of the view so clamping will give black
