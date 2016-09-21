@@ -66,6 +66,7 @@ public:
     bool useOverlay() const;
     VEventLoop &backgroundMessageQueue() { return m_backgroundCommands;  }
 
+	VMatrix4f  getModelViewProMatrix(int eye) const override ;
 private:
 	// Background textures loaded into GL by background thread using shared context
 	static void *BackgroundGLLoadThread( void * v );
@@ -109,6 +110,7 @@ private:
     EGLContext			m_eglShareContext;
 
 	MovieFormat  m_movieFormat;
+	VMatrix4f modelViewProMatrix[2];
 };
 
 NV_NAMESPACE_END
