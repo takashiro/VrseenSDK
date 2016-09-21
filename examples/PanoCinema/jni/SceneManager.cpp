@@ -588,32 +588,28 @@ VMatrix4f SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 	glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
 	glClear( GL_COLOR_BUFFER_BIT );
 
-	Scene.DrawEyeView( eye, fovDegrees );
-
-    const VMatrix4f mvp = Scene.MvpForEye( eye, fovDegrees );
+	modelViewProMatrix[eye] = Scene.MvpForEye( eye, fovDegrees );
 
 	// draw the screen on top
 	if ( !drawScreen )
 	{
-		return mvp;
+		return modelViewProMatrix[eye];
 	}
 
     glDisable( GL_DEPTH_TEST );
 
-	const VGlShader * prog = &Cinema.shaderMgr.MovieExternalUiProgram;
-	glUseProgram( prog->program );
-	glUniform4f( prog->uniformColor, 1, 1, 1, 0.0f );
-
-	glVertexAttrib4f( 2, 1.0f, 1.0f, 1.0f, 1.0f );	// no color attributes on the surface verts, so force to 1.0
-
-	//
 	// draw the movie texture
-	//
 	if ( !GetUseOverlay())
 	{
         // no overlay
 		vApp->swapParms().WarpProgram = WP_CHROMATIC;
 		vApp->swapParms().Images[eye][1].TexId = 0;
+
+		const VGlShader * prog = &Cinema.shaderMgr.MovieExternalUiProgram;
+		glUseProgram( prog->program );
+		glUniform4f( prog->uniformColor, 1, 1, 1, 0.0f );
+
+		glVertexAttrib4f( 2, 1.0f, 1.0f, 1.0f, 1.0f );	// no color attributes on the surface verts, so force to 1.0
 
 		glActiveTexture( GL_TEXTURE0 );
 		glBindTexture( GL_TEXTURE_EXTERNAL_OES, MovieTexture->textureId );
@@ -621,17 +617,35 @@ VMatrix4f SceneManager::DrawEyeView( const int eye, const float fovDegrees )
 		glActiveTexture( GL_TEXTURE1 );
 		glBindTexture( GL_TEXTURE_2D, ScreenVignetteTexture );
 
-		glUniformMatrix4fv( prog->uniformTexMatrix, 1, GL_FALSE, /* not transposed */
-							vApp->appInterface()->getTexMatrix(eye,CurrentMovieFormat).transposed().data());
 		// The UI is always identity for now, but we may scale it later
-
-        VMatrix4f identity;
+		VMatrix4f identity;
 		glUniformMatrix4fv( prog->uniformTexMatrix2, 1, GL_FALSE, /* not transposed */
-                identity.transposed().data());
+							identity.transposed().data());
 
 	    const VMatrix4f screenModel = ScreenMatrix();
-        const VMatrix4f screenMvp = mvp * screenModel;
-        glUniformMatrix4fv(prog->uniformModelViewProMatrix, 1, GL_FALSE, screenMvp.transposed().data());
+
+		if(VEyeItem::settings.useMultiview)
+		{
+			VMatrix4f texMatrix[2];
+			texMatrix[0] = vApp->appInterface()->getTexMatrix(0,CurrentMovieFormat).transposed();
+			texMatrix[1] = vApp->appInterface()->getTexMatrix(1,CurrentMovieFormat).transposed();
+			glUniformMatrix4fv( prog->uniformTexMatrix, 2, GL_FALSE, texMatrix[0].data());
+
+			modelViewProMatrix[1] = Scene.MvpForEye( 1, fovDegrees );
+			VMatrix4f mvp[2];
+			mvp[0] = modelViewProMatrix[0] * screenModel;
+			mvp[1] = modelViewProMatrix[1] * screenModel;
+			glUniformMatrix4fv(prog->uniformModelViewProMatrix, 2, GL_TRUE, modelViewProMatrix[0].data());
+		}
+		else
+		{
+			glUniformMatrix4fv( prog->uniformTexMatrix, 1, GL_FALSE, /* not transposed */
+								vApp->appInterface()->getTexMatrix(eye,CurrentMovieFormat).transposed().data());
+
+			const VMatrix4f screenMvp = modelViewProMatrix[eye] * screenModel;
+			glUniformMatrix4fv(prog->uniformModelViewProMatrix, 1, GL_FALSE, screenMvp.transposed().data());
+		}
+
         UnitSquare.drawElements();
 
 		glBindTexture( GL_TEXTURE_EXTERNAL_OES, 0 );	// don't leave it bound
@@ -643,17 +657,20 @@ VMatrix4f SceneManager::DrawEyeView( const int eye, const float fovDegrees )
         const VMatrix4f mv = Scene.ViewMatrixForEye( eye ) * screenModel;
 
 	    vApp->swapParms().WarpProgram = WP_CHROMATIC_MASKED_PLANE;
-		vApp->swapParms().Images[eye][1].TexId = MipMappedMovieTextures[CurrentMipMappedMovieTexture];
-		vApp->swapParms().Images[eye][1].Pose = vApp->sensorForNextWarp();
-        vApp->swapParms().Images[eye][1].TexCoordsFromTanAngles = vApp->appInterface()->getTexMatrix(eye,CurrentMovieFormat) * mv.tanAngleMatrixFromUnitSquare();
+		for(int i = eye;i<=(VEyeItem::settings.useMultiview?1:eye);++i)
+		{
+			vApp->swapParms().Images[i][1].TexId = MipMappedMovieTextures[CurrentMipMappedMovieTexture];
+			vApp->swapParms().Images[i][1].Pose = vApp->sensorForNextWarp();
+			vApp->swapParms().Images[i][1].TexCoordsFromTanAngles = vApp->appInterface()->getTexMatrix(eye,CurrentMovieFormat) * mv.tanAngleMatrixFromUnitSquare();
+		}
 
 		// explicitly clear a hole in alpha
-        const VMatrix4f screenMvp = mvp * screenModel;
+        const VMatrix4f screenMvp = modelViewProMatrix[eye] * screenModel;
         vApp->drawScreenMask( screenMvp, 0.0f, 0.0f );
 	}
 
 	// The framework will automatically draw the floating elements on top of us now.
-	return mvp;
+	return modelViewProMatrix[eye];
 }
 
 /*

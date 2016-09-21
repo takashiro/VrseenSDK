@@ -596,6 +596,9 @@ const char * VGlShader::getAdditionalFragmentShaderSource()
 
 }
 
+static const char version[] = "#version 300 es\n";
+static const char EGL_IMAGE_EXT_ADRENO [] = "#extension GL_OES_EGL_image_external_essl3 : require\n";
+
 static const char * FindShaderVersionEnd(const char *src)
 {
     if ( src == NULL || strncmp( src, "#version ", 9 ) != 0 )
@@ -627,54 +630,70 @@ GLuint VGlShader::createShader(GLuint shaderType, const char *src)
 {
     GLuint shader = glCreateShader( shaderType );
 
-    if(shaderType == GL_VERTEX_SHADER)
+    if(useMultiview)
     {
+        const char * sources[5];
+        int len = 0;
+
         const char * postVersion = FindShaderVersionEnd( src );
-        if(useMultiview)
+        sources[len++] = version;
+
+//        if(strstr(src, "GL_OES_EGL_image_external") != NULL)
+//        {
+//            const char* vendor = (const char*) glGetString(GL_VENDOR);
+//            if(VEglDriver::glIsExtensionString("GL_OES_EGL_image_external"))
+//            {
+//                if(strcmp(vendor, "Qualcomm") == 0) {
+//                    if(VEglDriver::glIsExtensionString("GL_OES_EGL_image_external_essl3")) sources[len++] = EGL_IMAGE_EXT_ADRENO;
+//                    else VEyeItem::settings.useMultiview = false;
+//                }
+//            }
+//            else VEyeItem::settings.useMultiview = false;
+//        }
+
+        if(shaderType == GL_VERTEX_SHADER)
         {
-            const char * sources[3] = {"#version 300 es\n",
-                                       ( VEyeItem::settings.useMultiview ) ?
-                                           "#extension GL_OVR_multiview2 : enable\n"
-                                           "#define varying out\n"
-                                           "#define attribute in\n"
-                                           "#define NUM_VIEWS 2\n"
-                                           "layout(num_views=NUM_VIEWS) in;\n"
-                                           "#define VIEW_ID gl_ViewID_OVR\n"
-                                      :    "#define varying out\n"
-                                           "#define attribute in\n"
-                                           "#define NUM_VIEWS 1\n"
-                                           "#define VIEW_ID 0\n"
-                    ,
-                                       postVersion
+
+            sources[len++] = { ( VEyeItem::settings.useMultiview ) ?
+                               "#extension GL_OVR_multiview2 : enable\n"
+                                       "#define NUM_VIEWS 2\n"
+                                       "layout(num_views=NUM_VIEWS) in;\n"
+                                       "#define VIEW_ID gl_ViewID_OVR\n"
+                                       "#define varying out\n"
+                                       "#define attribute in\n"
+                              :  "#define NUM_VIEWS 1\n"
+                                       "#define VIEW_ID 0\n"
+                                       "#define varying out\n"
+                                       "#define attribute in\n"
             };
-            glShaderSource(shader, 3, sources, 0 );
         }
-        else glShaderSource( shader, 1, &src, 0 );
-    }
-    else
-    {
-        const char * postVersion = FindShaderVersionEnd( src );
-        if(useMultiview)
+        else
         {
-            const char * sources[3] = {"#version 300 es\n",
-                                       ( VEyeItem::settings.useMultiview ) ?
-                                           "#extension GL_OVR_multiview2 : enable\n"
-                                           "#define varying in\n"
-                                           "#define attribute out\n"
-                                           "#define VIEW_ID gl_ViewID_OVR\n"
-                                           "out vec4 gl_FragColor;\n"
-                                          :  "#define varying in\n"
-                                           "#define attribute out\n"
-                                            "#ifdef varying\n"
-                                           "    out vec4 gl_FragColor;\n"
-                                            "#endif\n"
-                    ,
-                                       postVersion
+            sources[len++] = {( VEyeItem::settings.useMultiview ) ?
+                              "#extension GL_OVR_multiview2 : enable\n"
+                                      "#define varying in\n"
+                                      "#define attribute out\n"
+                                      "#define VIEW_ID gl_ViewID_OVR\n"
+                                      "#ifdef varying\n"
+                                      "    out vec4 gl_FragColor;\n"
+                                      "#endif\n"
+                                      "#define texture2D texture\n"
+                                      "#define textureCube texture\n"
+                              :  "#define varying in\n"
+                                      "#define attribute out\n"
+                                      "#ifdef varying\n"
+                                      "    out vec4 gl_FragColor;\n"
+                                      "#endif\n"
+                                      "#define texture2D texture\n"
+                                      "#define textureCube texture\n"
             };
-            glShaderSource(shader, 3, sources, 0 );
         }
-        else glShaderSource( shader, 1, &src, 0 );
+        sources[len++] = postVersion;
+        sources[len] = "\0";
+
+        glShaderSource(shader, len, sources, 0 );
     }
+    else glShaderSource( shader, 1, &src, 0 );
 
     glCompileShader( shader );
 

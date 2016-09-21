@@ -134,17 +134,16 @@ void PanoVideo::init(const VString &, const VString &, const VString &)
 
     m_panoramaProgram.initShader(VGlShader::getPanoVertexShaderSource(),VGlShader::getPanoProgramShaderSource()	);
 
-    m_fadedPanoramaProgram.initShader(VGlShader::getFadedPanoVertexShaderSource(),VGlShader::getFadedPanoProgramShaderSource());
-    m_singleColorTextureProgram.initShader(VGlShader::getSingleTextureVertexShaderSource(),VGlShader::getUniformSingleTextureProgramShaderSource());
-
-	// always fall back to valid background
-    if (m_backgroundTexId == 0) {
-        VTexture background(VResource("assets/background.jpg"), VTexture::UseSRGB);
-        m_backgroundTexId = background.id();
-        vAssert(m_backgroundTexId);
-        m_backgroundWidth = background.width();
-        m_backgroundHeight = background.height();
-	}
+//    m_fadedPanoramaProgram.initShader(VGlShader::getFadedPanoVertexShaderSource(),VGlShader::getFadedPanoProgramShaderSource());
+//
+//	// always fall back to valid background
+//    if (m_backgroundTexId == 0) {
+//        VTexture background(VResource("assets/background.jpg"), VTexture::UseSRGB);
+//        m_backgroundTexId = background.id();
+//        vAssert(m_backgroundTexId);
+//        m_backgroundWidth = background.width();
+//        m_backgroundHeight = background.height();
+//	}
 
 	vInfo("Creating Globe");
     m_globe.createSphere();
@@ -217,7 +216,7 @@ void PanoVideo::shutdown()
 	vInfo("--------------- Oculus360Videos OneTimeShutdown ---------------");
     m_globe.destroy();
 
-    glDeleteTextures(1, &m_backgroundTexId);
+//    glDeleteTextures(1, &m_backgroundTexId);
 
     if (m_movieTexture != NULL) {
         delete m_movieTexture;
@@ -225,8 +224,7 @@ void PanoVideo::shutdown()
 	}
 
     m_panoramaProgram.destroy();
-    m_fadedPanoramaProgram.destroy();
-    m_singleColorTextureProgram.destroy();
+//    m_fadedPanoramaProgram.destroy();
 }
 
 void PanoVideo::configureVrMode(VKernel* kernel)
@@ -236,6 +234,7 @@ void PanoVideo::configureVrMode(VKernel* kernel)
 	vInfo("ConfigureClocks: Oculus360Videos only needs minimal clocks");
 	// All geometry is blended, so save power with no MSAA
 	kernel->msaa = 1;
+	VEyeItem::settings.useMultiview = false;
 }
 
 bool PanoVideo::onKeyEvent( const int keyCode, const KeyState::eKeyEventType eventType )
@@ -283,6 +282,9 @@ void PanoVideo::command(const VEvent &event )
         m_videoWidth = event.data.at(0).toInt();
         m_videoHeight = event.data.at(1).toInt();
 
+		vInfo(m_videoWidth);
+		vInfo(m_videoHeight/2);
+
         if ( m_menuState != MENU_VIDEO_PLAYING ) // If video is already being played dont change the state to video ready
 		{
             setMenuState( MENU_VIDEO_READY );
@@ -292,7 +294,7 @@ void PanoVideo::command(const VEvent &event )
 		{
 			m_movieFormat = VT_LEFT_RIGHT_3D;
 		}
-		else if (m_videoWidth > m_videoHeight/2)
+		else if (m_videoWidth < m_videoHeight)
 		{
 			m_movieFormat = VT_TOP_BOTTOM_3D;
 		}
@@ -316,105 +318,9 @@ void PanoVideo::command(const VEvent &event )
 
 }
 
-VMatrix4f	PanoVideo::texmForVideo( const int eye )
-{
-    if (m_videoUrl.endsWith("_TB.mp4", false)) {
-        // top / bottom stereo panorama
-		return eye ?
-            VMatrix4f( 1, 0, 0, 0,
-			0, 0.5, 0, 0.5,
-			0, 0, 1, 0,
-			0, 0, 0, 1 )
-			:
-            VMatrix4f( 1, 0, 0, 0,
-			0, 0.5, 0, 0,
-			0, 0, 1, 0,
-			0, 0, 0, 1 );
-	}
-    if (m_videoUrl.endsWith("_BT.mp4", false)) {
-        // top / bottom stereo panorama
-		return ( !eye ) ?
-            VMatrix4f( 1, 0, 0, 0,
-			0, 0.5, 0, 0.5,
-			0, 0, 1, 0,
-			0, 0, 0, 1 )
-			:
-            VMatrix4f( 1, 0, 0, 0,
-			0, 0.5, 0, 0,
-			0, 0, 1, 0,
-			0, 0, 0, 1 );
-	}
-    if (m_videoUrl.endsWith("_LR.mp4", false)) {
-        // left / right stereo panorama
-		return eye ?
-            VMatrix4f( 0.5, 0, 0, 0,
-			0, 1, 0, 0,
-			0, 0, 1, 0,
-			0, 0, 0, 1 )
-			:
-            VMatrix4f( 0.5, 0, 0, 0.5,
-			0, 1, 0, 0,
-			0, 0, 1, 0,
-			0, 0, 0, 1 );
-	}
-    if (m_videoUrl.endsWith("_RL.mp4", false)) {
-        // left / right stereo panorama
-		return ( !eye ) ?
-            VMatrix4f( 0.5, 0, 0, 0,
-			0, 1, 0, 0,
-			0, 0, 1, 0,
-			0, 0, 0, 1 )
-			:
-            VMatrix4f( 0.5, 0, 0, 0.5,
-			0, 1, 0, 0,
-			0, 0, 1, 0,
-			0, 0, 0, 1 );
-	}
-
-	// default to top / bottom stereo
-    if ( m_videoWidth == m_videoHeight )
-	{	// top / bottom stereo panorama
-		return eye ?
-            VMatrix4f( 1, 0, 0, 0,
-			0, 0.5, 0, 0.5,
-			0, 0, 1, 0,
-			0, 0, 0, 1 )
-			:
-            VMatrix4f( 1, 0, 0, 0,
-			0, 0.5, 0, 0,
-			0, 0, 1, 0,
-			0, 0, 0, 1 );
-
-		// We may want to support swapping top/bottom
-	}
-    return VMatrix4f();
-}
-
-VMatrix4f	PanoVideo::texmForBackground( const int eye )
-{
-    if ( m_backgroundWidth == m_backgroundHeight )
-	{	// top / bottom stereo panorama
-		return eye ?
-            VMatrix4f(
-			1, 0, 0, 0,
-			0, 0.5, 0, 0.5,
-			0, 0, 1, 0,
-			0, 0, 0, 1 )
-			:
-            VMatrix4f(
-			1, 0, 0, 0,
-			0, 0.5, 0, 0,
-			0, 0, 1, 0,
-			0, 0, 0, 1 );
-
-		// We may want to support swapping top/bottom
-	}
-    return VMatrix4f();
-}
-
 VMatrix4f PanoVideo::drawEyeView( const int eye, const float fovDegrees )
 {
-    VMatrix4f mvp = m_scene.MvpForEye( eye, fovDegrees );
+	modelViewProMatrix[eye] = m_scene.MvpForEye( eye, fovDegrees );
 
     if ( ( m_menuState == MENU_VIDEO_PLAYING ) && ( m_movieTexture != NULL ) )
 	{
@@ -422,30 +328,48 @@ VMatrix4f PanoVideo::drawEyeView( const int eye, const float fovDegrees )
 		glActiveTexture( GL_TEXTURE0 );
         glBindTexture( GL_TEXTURE_EXTERNAL_OES, m_movieTexture->textureId );
 
-		glActiveTexture( GL_TEXTURE1 );
-        glBindTexture( GL_TEXTURE_2D, m_backgroundTexId );
+//		glActiveTexture( GL_TEXTURE1 );
+//        glBindTexture( GL_TEXTURE_2D, m_backgroundTexId );
 
 		glDisable( GL_DEPTH_TEST );
 		glDisable( GL_CULL_FACE );
 
-        VGlShader & prog = ( m_backgroundWidth == m_backgroundHeight ) ? m_fadedPanoramaProgram : m_panoramaProgram;
+        VGlShader & prog = m_panoramaProgram;
 
 		glUseProgram( prog.program );
 		glUniform4f( prog.uniformColor, 1.0f, 1.0f, 1.0f, 1.0f );
 
-		// Videos have center as initial focal point - need to rotate 90 degrees to start there
-        const VMatrix4f view = m_scene.ViewMatrixForEye( 0 ) * VMatrix4f::RotationY( M_PI / 2 );
-        const VMatrix4f proj = m_scene.ProjectionMatrixForEye( 0, fovDegrees );
+		if(VEyeItem::settings.useMultiview)
+		{
+			// Videos have center as initial focal point - need to rotate 90 degrees to start there
+			modelViewProMatrix[1] = m_scene.MvpForEye( 1, fovDegrees );
+			VMatrix4f mvp[2];
+			mvp[0] = modelViewProMatrix[0] * VMatrix4f::RotationY( M_PI / 2 );
+			mvp[1] = modelViewProMatrix[1] * VMatrix4f::RotationY( M_PI / 2 );
 
-        glUniformMatrix4fv( prog.uniformModelViewProMatrix, 1, GL_FALSE, ( proj * view ).transposed().cell[ 0 ] );
-		glUniformMatrix4fv( prog.uniformTexMatrix, 1, GL_FALSE, /* not transposed */
-							vApp->appInterface()->getTexMatrix(eye,m_movieFormat).transposed().data());
+			glUniformMatrix4fv(prog.uniformModelViewProMatrix, 2, GL_TRUE, mvp[0].data());
+
+			VMatrix4f texMatrix[2];
+			texMatrix[0] = vApp->appInterface()->getTexMatrix(0,m_movieFormat).transposed();
+			texMatrix[1] = vApp->appInterface()->getTexMatrix(1,m_movieFormat).transposed();
+			glUniformMatrix4fv(prog.uniformTexMatrix, 2, GL_FALSE, texMatrix[0].data());
+		}
+		else
+		{
+			// Videos have center as initial focal point - need to rotate 90 degrees to start there
+			const VMatrix4f mvp = modelViewProMatrix[eye] * VMatrix4f::RotationY( M_PI / 2 );
+
+			glUniformMatrix4fv( prog.uniformModelViewProMatrix, 1, GL_FALSE, mvp.transposed().cell[ 0 ] );
+			glUniformMatrix4fv( prog.uniformTexMatrix, 1, GL_FALSE, /* not transposed */
+								vApp->appInterface()->getTexMatrix(eye,m_movieFormat).transposed().data());
+		}
+
         m_globe.drawElements();
 
 		glBindTexture( GL_TEXTURE_EXTERNAL_OES, 0 );	// don't leave it bound
 	}
 
-	return mvp;
+	return modelViewProMatrix[eye];
 }
 
 void PanoVideo::stop()
@@ -560,5 +484,11 @@ void PanoVideo::onPause()
         //pause( false );
 	}
 }
+
+VMatrix4f PanoVideo::getModelViewProMatrix(int eye) const
+{
+	return modelViewProMatrix[eye];
+}
+
 
 NV_NAMESPACE_END

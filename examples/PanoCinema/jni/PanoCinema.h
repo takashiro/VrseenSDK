@@ -53,8 +53,10 @@ public:
 
     void			    	setMovie( const MovieDef * nextMovie );
     const MovieDef *		currentMovie() const { return m_currentMovie; }
-
     bool 					isMovieFinished() const;
+
+	VMatrix4f  getModelViewProMatrix(int eye) const override ;
+
 public:
     double					startTime;
 

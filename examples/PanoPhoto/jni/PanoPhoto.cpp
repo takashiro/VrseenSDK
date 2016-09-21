@@ -401,6 +401,7 @@ void PanoPhoto::configureVrMode(VKernel* kernel) {
 
     // No hard edged geometry, so no need for MSAA
     kernel->msaa = 1;
+    VEyeItem::settings.useMultiview = true;
 }
 
 void PanoPhoto::loadRgbaCubeMap( const int resolution, const unsigned char * const rgba[ 6 ], const bool useSrgbFormat )
@@ -563,7 +564,7 @@ VMatrix4f PanoPhoto::drawEyeView( const int eye, const float fovDegrees )
         //TODO do not support 3D Cube Pano,need update shader
         if(VEyeItem::settings.useMultiview)
         {
-            modelViewProMatrix[1] = m_scene.MvpForEye( 1, fovDegrees ).transposed();
+            modelViewProMatrix[1] = m_scene.MvpForEye( 1, fovDegrees );
             glUniformMatrix4fv(prog.uniformModelViewProMatrix, 2, GL_TRUE, modelViewProMatrix[0].data());
 
             VMatrix4f texMatrix[2];

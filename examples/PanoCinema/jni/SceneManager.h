@@ -98,6 +98,8 @@ public:
     VRect3f SceneScreenBounds;
 
 	bool 				AllowMove;
+	VMatrix4f modelViewProMatrix[2];
+
 private:
 	GLuint 				BuildScreenVignetteTexture( const int horizontalTile ) const;
 	int 				BottomMipLevel( const int width, const int height ) const;

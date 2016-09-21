@@ -151,6 +151,7 @@ void PanoCinema::configureVrMode(VKernel* kernel)
 	vInfo("ConfigureClocks: Cinema only needs minimal clocks");
 	// Always use 2x MSAA for now
     kernel->msaa= 2;
+    VEyeItem::settings.useMultiview = false;
 }
 
 /*
@@ -177,3 +178,10 @@ VMatrix4f PanoCinema::onNewFrame( const VFrame vrFrame )
 
     return sceneMgr.Frame( vrFrame );
 }
+
+VMatrix4f PanoCinema::getModelViewProMatrix(int eye) const
+{
+    return sceneMgr.modelViewProMatrix[eye];
+}
+
+

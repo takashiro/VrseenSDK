@@ -40,9 +40,6 @@ public:
 
     void onStart(const VString &url);
 
-    VMatrix4f texmForVideo(int eye);
-    VMatrix4f texmForBackground(int eye);
-
     void setMenuState( const OvrMenuState state);
     OvrMenuState currentState() const { return m_menuState; }
 
@@ -56,6 +53,7 @@ public:
 	void mediaPause();
 
 	void movePos(const VMatrix4f &mvp);
+	VMatrix4f  getModelViewProMatrix(int eye) const override ;
 
 	VProgressBar * progressBar;
 	bool pause;
@@ -92,6 +90,8 @@ private:
 
     bool m_frameAvailable;
 	MovieFormat  m_movieFormat;
+
+	VMatrix4f modelViewProMatrix[2];
 };
 
 NV_NAMESPACE_END
