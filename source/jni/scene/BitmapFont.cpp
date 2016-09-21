@@ -755,7 +755,7 @@ bool BitmapFontLocal::Load(const VString &languagePackageName, const VString &fo
 
 	// create the shaders for font rendering if not already created
 	if (FontProgram.vertexShader == 0 || FontProgram.fragmentShader == 0) {
-		FontProgram.adaptForMultiview = true;
+		FontProgram.useMultiview = true;
 		FontProgram.initShader(FontSingleTextureVertexShaderSrc,
 				SDFFontFragmentShaderSrc); //SingleTextureFragmentShaderSrc );
 	}
