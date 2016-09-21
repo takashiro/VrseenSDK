@@ -20,8 +20,6 @@ public:
     VString textValue() const;
     void setTextValue(const VString &text);
 
-    void init(void *vg) override;
-
     uint generateCharTex(char c);
 
     void updateVertexAttribs(float xpos, float ypos, float w, float h);
