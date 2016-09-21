@@ -35,9 +35,10 @@ struct VGuiText::Private
     VString text;
     VVect2f pos;
     float scale;
-    VertexAttribs vertexs;
+
     FT_Library ft;
     FT_Face face;
+    VertexAttribs vertexs;
     VArray< ushort > indices;
 
     Private()
@@ -65,7 +66,7 @@ struct VGuiText::Private
 
 
         FT_Init_FreeType(&ft);
-        FT_New_Face(ft, "fonts/arial.ttf", 0, &face);
+        FT_New_Face(ft, "res/raw/verdana.ttf", 0, &face);
         geometry.createGlGeometry(vertexs, indices);
     }
 
