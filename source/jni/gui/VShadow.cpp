@@ -51,8 +51,8 @@ VShadow::VShadow(VGraphicsItem *parent)
         : VGraphicsItem(parent)
         , d(new Private)
 {
-    //setBoundingRect(VRect3f(-10, -10, -1.5, 10, 10, -1.5));
-
+    setRect(VRect3f(VVect3f(-5.0, -5.0, -1), VVect3f(5.0, 5.0, -1)));
+    setVisible(false);
 }
 
 VShadow::~VShadow()

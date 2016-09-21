@@ -175,24 +175,11 @@ void PanoVideo::init(const VString &, const VString &, const VString &)
 	shadow = new VShadow();
 	shadow->setRect(VRect3f(VVect3f(-5.0, -5.0, -1), VVect3f(5.0, 5.0, -1)));
 	shadow->setColor(VColor(0x44, 0x00, 0x00, 0x55));
-	shadow->setVisible(false);
-
-//	VRectangle * rect = new VRectangle();
-//	rect->setRect(VRect3f(VVect3f(-5.0, -5.0, -6), VVect3f(5.0, 5.0, -6)));
-//	rect->setColor(VColor(0x44, 0x00, 0x00, 0xFF));
-
-	//sphere = new VSphere();
-	//sphere->setRect(VRect3f(VVect3f(-5, -5, -5), VVect3f(5, 5, -5)));
-	//sphere->setPos(VVect3f(0, 0 , 0));
-	//sphere->setColor(VColor(0x99, 0, 0, 0x88));
 
 	VGui * gui  = vApp->gui();
 
 	gui->addItem(shadow);
-	//gui->addItem(rect);
 	gui->addItem(progressBar);
-
-	//gui->addItem(sphere);
 
 
 }
