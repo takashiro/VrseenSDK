@@ -1128,4 +1128,14 @@ void VTexture::buildMipmaps()
     glBindTexture(d->target, 0);
 }
 
+void VTexture::destroy()
+{
+    if(d->id)
+    {
+        glDeleteTextures(1, &d->id);
+        d->id = 0;
+    }
+}
+
+
 NV_NAMESPACE_END

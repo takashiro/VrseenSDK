@@ -1,3 +1,4 @@
+#include <App.h>
 #include "VRectangle.h"
 #include "VGlShader.h"
 #include "VGlGeometry.h"
@@ -7,17 +8,13 @@
 NV_NAMESPACE_BEGIN
 
 static const char* VertexShaderSource =
-    "uniform highp mat4 Mvpm;\n"
-    "uniform highp mat4 Texm;\n"
+    "uniform highp mat4 Mvpm[NUM_VIEWS];\n"
     "attribute vec4 Position;\n"
-    "attribute vec2 TexCoord;\n"
-    "uniform lowp vec4 UniformColor;\n"
-    "varying  highp vec2 oTexCoord;\n"
+    "uniform mediump vec4 UniformColor;\n"
     "varying  lowp vec4 oColor;\n"
     "void main()\n"
     "{\n"
-    "   gl_Position = Mvpm * Position;\n"
-    "   oTexCoord = vec2( Texm * vec4(TexCoord,1,1) );\n"
+    "   gl_Position = Mvpm[VIEW_ID] * Position;\n"
     "   oColor = UniformColor;\n"
     "}\n";
 
@@ -36,6 +33,7 @@ struct VRectangle::Private
 
     Private()
     {
+        shader.useMultiview = true;
         shader.initShader(VertexShaderSource, FragmentShaderSource);
         geometry.createPlaneQuadGrid(1, 1);
     }
@@ -84,8 +82,20 @@ void VRectangle::paint(VPainter *painter)
 
     glUseProgram(d->shader.program);
     glUniform4f(d->shader.uniformColor, d->color.red / 255.0f, d->color.green / 255.0f, d->color.blue / 255.0f, d->color.alpha / 255.0f);
-    const VMatrix4f screenMvp = painter->viewMatrix() * transform();
-    glUniformMatrix4fv(d->shader.uniformModelViewProMatrix, 1, GL_FALSE, screenMvp.transposed().data());
+
+    if(VEyeItem::settings.useMultiview)
+    {
+        VMatrix4f modelViewProMatrix[2];
+        modelViewProMatrix[0] = vApp->getModelViewProMatrix(0)* transform();
+        modelViewProMatrix[1] = vApp->getModelViewProMatrix(1)* transform();
+        glUniformMatrix4fv(d->shader.uniformModelViewProMatrix, 2, GL_TRUE, modelViewProMatrix[0].data());
+    }
+    else
+    {
+        const VMatrix4f screenMvp = painter->viewMatrix() * transform();
+        glUniformMatrix4fv(d->shader.uniformModelViewProMatrix, 1, GL_FALSE, screenMvp.transposed().data());
+    }
+
     d->geometry.drawElements();
 }
 

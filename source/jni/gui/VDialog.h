@@ -6,19 +6,27 @@
  */
 
 #pragma once
+
+#include <api/VGlShader.h>
+#include <api/VGlGeometry.h>
 #include "VMatrix.h"
 #include "vglobal.h"
-#include "VPanel.h"
 #include "scene/SurfaceTexture.h"
 NV_NAMESPACE_BEGIN
 class VDialog
 {
 public:
     VDialog();
+    ~VDialog();
+
+    void init();
     VMatrix4f      dialogMatrix;
     float           dialogStopSeconds;
     SurfaceTexture * dialogTexture;
 
-    void draw( VPanel &panel, int eye);
+    void draw(int eye);
+private:
+    VGlShader       externalTextureProgram2;
+    VGlGeometry     panelGeometry;      // used for dialogs
 };
 NV_NAMESPACE_END

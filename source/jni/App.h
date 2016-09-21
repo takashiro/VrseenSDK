@@ -8,7 +8,6 @@
 #include "VFrame.h"
 #include "VEventLoop.h"
 #include "gui/VText.h"
-#include "gui/VPanel.h"
 #include "gui/VDialog.h"
 
 NV_NAMESPACE_BEGIN
@@ -95,7 +94,6 @@ public:
     VMatrix4f  getModelViewProMatrix(int eye) const;
 
     VText text;
-    VPanel panel;
     VDialog dialog;
 
 private:
