@@ -51,7 +51,7 @@ VShadow::VShadow(VGraphicsItem *parent)
         : VGraphicsItem(parent)
         , d(new Private)
 {
-    setBoundingRect(VRect3f(-5, -5, 0, 5, 5, 0));
+    //setBoundingRect(VRect3f(-10, -10, -1.5, 10, 10, -1.5));
 
 }
 
@@ -84,11 +84,17 @@ void VShadow::paint(VPainter *painter)
 {
     VGraphicsItem::paint(painter);
 
+    VEglDriver::glPushAttrib();
+    glEnable( GL_BLEND );
+    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     glUseProgram(d->shader.program);
     glUniform4f(d->shader.uniformColor, d->color.red / 255.0f, d->color.green / 255.0f, d->color.blue / 255.0f, d->color.alpha / 255.0f);
     const VMatrix4f screenMvp = transform();
     glUniformMatrix4fv(d->shader.uniformModelViewProMatrix, 1, GL_FALSE, screenMvp.transposed().data());
     d->geometry.drawElements();
+
+    VEglDriver::glPopAttrib();
 }
 
 bool VShadow::isFixed() const

@@ -6,6 +6,7 @@
 #include <VProgressBar.h>
 #include <gui/VProgressBar.h>
 #include "VShadow.h"
+#include "VSphere.h"
 
 
 #include "ModelView.h"
@@ -60,6 +61,8 @@ public:
 
 	VProgressBar * progressBar;
 	VShadow * shadow;
+	VSphere *sphere;
+
 
 	bool pause;
 

@@ -7,6 +7,7 @@ import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.opengl.GLES30;
 import android.util.Log;
 import android.view.Surface;
 
@@ -103,6 +104,7 @@ public class PanoVideo {
 		try {
 			if (mediaPlayer != null) {
 				mediaPlayer.pause();
+				
 			}
 		} catch (IllegalStateException ise) {
 			Log.d(TAG, "pause(): Caught illegalStateException: " + ise.toString());

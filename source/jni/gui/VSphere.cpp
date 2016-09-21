@@ -11,65 +11,27 @@
 NV_NAMESPACE_BEGIN
 
 static const char* VertexShaderSource =
-"attribute vec4 position;\n"
-"attribute vec4 inputImpostorSpaceCoordinate;\n"
-"varying mediump vec2 impostorSpaceCoordinate;\n"
-"varying mediump vec3 normalizedViewCoordinate;\n"
-"uniform mat4 modelViewProjMatrix;\n"
-"uniform mediump mat4 orthographicMatrix;\n"
-"uniform mediump float sphereRadius;\n"
-
-"void main()\n"
-"{\n"
-    "vec4 transformedPosition;\n"
-    "transformedPosition = modelViewProjMatrix * position;\n"
-    "impostorSpaceCoordinate = inputImpostorSpaceCoordinate.xy;\n"
-
-    "transformedPosition.xy = transformedPosition.xy + inputImpostorSpaceCoordinate.xy * vec2(sphereRadius);\n"
-    "transformedPosition = transformedPosition * orthographicMatrix;\n"
-
-    "normalizedViewCoordinate = (transformedPosition.xyz + 1.0) / 2.0;\n"
-    "gl_Position = transformedPosition;\n"
-"}";
+                "uniform mat4 Mvpm;\n"
+                "uniform highp mat4 Texm;\n"
+                "attribute vec4 Position;\n"
+                "attribute vec4 VertexColor;\n"
+                "attribute vec2 TexCoord;\n"
+                "uniform mediump vec4 UniformColor;\n"
+                "varying  lowp vec4 oColor;\n"
+                "varying highp vec2 oTexCoord;\n"
+                "void main()\n"
+                "{\n"
+                "   gl_Position = Mvpm * Position;\n"
+                "	oTexCoord = vec2( Texm * vec4(TexCoord,1,1) );\n"
+                "   oColor =    UniformColor;\n"
+                "}\n";
 
 static const char *FragmentShaderSource =
-        "precision mediump float;\n"
-
-        "uniform vec3 lightPosition;\n"
-        "uniform vec3 sphereColor;\n"
-        "uniform mediump float sphereRadius;\n"
-        "uniform sampler2D depthTexture;\n"
-
-        "varying mediump vec2 impostorSpaceCoordinate;\n"
-        "varying mediump vec3 normalizedViewCoordinate;\n"
-
-        "const mediump vec3 oneVector = vec3(1.0, 1.0, 1.0);\n"
-
-        "void main()\n"
-        "{\n"
-        "float distanceFromCenter = length(impostorSpaceCoordinate);\n"
-
-        "if (distanceFromCenter > 1.0)\n"
-        "{\n"
-            "discard;\n"
-        "}\n"
-
-        "float normalizedDepth = sqrt(1.0 - distanceFromCenter * distanceFromCenter);\n"
-
-        "float depthOfFragment = sphereRadius * 0.5 * normalizedDepth;\n"
-        "float currentDepthValue = (normalizedViewCoordinate.z - depthOfFragment - 0.0025);\n"
-        "vec3 normal = vec3(impostorSpaceCoordinate, normalizedDepth);\n"
-        "vec3 finalSphereColor = sphereColor;\n"
-
-        "float lightingIntensity = 0.3 + 0.7 * clamp(dot(lightPosition, normal), 0.0, 1.0);\n"
-        "finalSphereColor *= lightingIntensity;\n"
-
-        "lightingIntensity  = clamp(dot(lightPosition, normal), 0.0, 1.0);\n"
-        "lightingIntensity  = pow(lightingIntensity, 60.0);\n"
-        "finalSphereColor += vec3(0.4, 0.4, 0.4) * lightingIntensity;\n"
-
-        "gl_FragColor = vec4(finalSphereColor, 1.0);\n"
-        "}\n";
+                "uniform mediump vec4 UniformColor;\n"
+                "void main()\n"
+                "{\n"
+                "	gl_FragColor = UniformColor;\n"
+                "}\n";
 
 struct VSphere::Private
 {

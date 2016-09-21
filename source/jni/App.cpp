@@ -1676,7 +1676,7 @@ void App::drawEyeViewsPostDistorted( VMatrix4f const & centerViewMatrix, const i
             d->gui->update(mvp);
             d->gui->commit();
 
-            glDisable(GL_DEPTH_TEST);
+            //glDisable(GL_DEPTH_TEST);
             glDisable(GL_CULL_FACE);
 
             // Optionally draw thick calibration lines into the texture,

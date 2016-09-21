@@ -117,6 +117,7 @@ PanoVideo::PanoVideo(JNIEnv *jni, jclass activityClass, jobject activityObject)
 {
 	progressBar = nullptr;
 	shadow = nullptr;
+	sphere = nullptr;
 	pause = false;
 }
 
@@ -160,7 +161,7 @@ void PanoVideo::init(const VString &, const VString &, const VString &)
     m_scene.Zfar = 200.0f;
 
 	progressBar = new VProgressBar();
-	progressBar->setRect(VRect3f(VVect3f(-3.0, -1.5, -4.0), VVect3f(3.0, -1.2, -4.0)));
+	progressBar->setRect(VRect3f(VVect3f(-1.5, -0.1, -3), VVect3f(1.5, 0.1, -3)));
 
 	progressBar->setBarImage(VTexture(VResource("assets/rectangle.png")));
 	progressBar->setTagImage(VTexture(VResource("assets/square.png")));
@@ -172,14 +173,27 @@ void PanoVideo::init(const VString &, const VString &, const VString &)
 											  });
 
 	shadow = new VShadow();
-	//shadow->setRect(VRect3f(VVect3f(-5.0, -5.0, -3.0), VVect3f(5.0, 5.0, -3.0)));
+	shadow->setRect(VRect3f(VVect3f(-5.0, -5.0, -1), VVect3f(5.0, 5.0, -1)));
 	shadow->setColor(VColor(0x44, 0x00, 0x00, 0x55));
 	shadow->setVisible(false);
 
+//	VRectangle * rect = new VRectangle();
+//	rect->setRect(VRect3f(VVect3f(-5.0, -5.0, -6), VVect3f(5.0, 5.0, -6)));
+//	rect->setColor(VColor(0x44, 0x00, 0x00, 0xFF));
+
+	//sphere = new VSphere();
+	//sphere->setRect(VRect3f(VVect3f(-5, -5, -5), VVect3f(5, 5, -5)));
+	//sphere->setPos(VVect3f(0, 0 , 0));
+	//sphere->setColor(VColor(0x99, 0, 0, 0x88));
+
 	VGui * gui  = vApp->gui();
 
-	gui->addItem(progressBar);
 	gui->addItem(shadow);
+	//gui->addItem(rect);
+	gui->addItem(progressBar);
+
+	//gui->addItem(sphere);
+
 
 }
 
@@ -423,8 +437,9 @@ VMatrix4f PanoVideo::drawEyeView( const int eye, const float fovDegrees )
 		glActiveTexture( GL_TEXTURE1 );
         glBindTexture( GL_TEXTURE_2D, m_backgroundTexId );
 
-		glDisable( GL_DEPTH_TEST );
+		//glDisable( GL_DEPTH_TEST );
 		glDisable( GL_CULL_FACE );
+		glEnable(GL_DEPTH_TEST);
 
         VGlShader & prog = ( m_backgroundWidth == m_backgroundHeight ) ? m_fadedPanoramaProgram : m_panoramaProgram;
 
@@ -437,6 +452,7 @@ VMatrix4f PanoVideo::drawEyeView( const int eye, const float fovDegrees )
 
         glUniformMatrix4fv( prog.uniformTexMatrix, 1, GL_FALSE, texmForVideo( eye ).transposed().cell[ 0 ] );
         glUniformMatrix4fv( prog.uniformModelViewProMatrix, 1, GL_FALSE, ( proj * view ).transposed().cell[ 0 ] );
+		glEnable(GL_DEPTH_TEST);
         m_globe.drawElements();
 
 		glBindTexture( GL_TEXTURE_EXTERNAL_OES, 0 );	// don't leave it bound
