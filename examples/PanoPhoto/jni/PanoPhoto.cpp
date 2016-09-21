@@ -111,7 +111,8 @@ void PanoPhoto::init(const VString &, const VString &, const VString &)
     vInfo("--------------- PanoPhoto OneTimeInit ---------------");
 
     //-------------------------------------------------------------------------
-    m_texturedMvpProgram.adaptForMultiview = true;
+    m_texturedMvpProgram.useMultiview = true;
+    m_cubeMapPanoProgram.useMultiview = true;
     m_texturedMvpProgram.initShader(VGlShader::getTexturedMvpVertexShaderSource(),VGlShader::getUniformTextureProgramShaderSource());
     m_cubeMapPanoProgram.initShader(VGlShader::getCubeMapPanoVertexShaderSource(),VGlShader::getCubeMapPanoProgramShaderSource());
 
@@ -517,9 +518,12 @@ VMatrix4f PanoPhoto::drawEyeView( const int eye, const float fovDegrees )
         glBindTexture( GL_TEXTURE_CUBE_MAP, 0 );
 
         vApp->swapParms().WarpOptions = ( m_useSrgb ? 0 : SWAP_OPTION_INHIBIT_SRGB_FRAMEBUFFER );
-        vApp->swapParms( ).Images[ eye ][ 1 ].TexId = texId;
-        vApp->swapParms().Images[ eye ][ 1 ].TexCoordsFromTanAngles = m;
-        vApp->swapParms().Images[ eye ][ 1 ].Pose = m_frameInput.pose;
+        for(int i = eye;i<=(VEyeItem::settings.useMultiview?1:eye);++i)
+        {
+            vApp->swapParms( ).Images[ i ][ 1 ].TexId = texId;
+            vApp->swapParms().Images[ i ][ 1 ].TexCoordsFromTanAngles = m;
+            vApp->swapParms().Images[ i ][ 1 ].Pose = m_frameInput.pose;
+        }
         vApp->swapParms().WarpProgram = WP_CHROMATIC_MASKED_CUBE;
         for ( int i = 0; i < 4; i++ )
         {
@@ -556,6 +560,7 @@ VMatrix4f PanoPhoto::drawEyeView( const int eye, const float fovDegrees )
 
         glUniform4f( prog.uniformColor, fadeColor, fadeColor, fadeColor, fadeColor );
 
+        //TODO do not support 3D Cube Pano,need update shader
         if(VEyeItem::settings.useMultiview)
         {
             modelViewProMatrix[1] = m_scene.MvpForEye( 1, fovDegrees ).transposed();

@@ -117,14 +117,14 @@ const char * VGlShader::getPanoVertexShaderSource()
 const char * VGlShader::getCubeMapPanoVertexShaderSource()
 {
              const char * cubeMapPanoVertexSource =
-"uniform mat4 Mvpm;\n"
+"uniform mat4 Mvpm[NUM_VIEWS];\n"
 "attribute vec4 Position;\n"
 "uniform mediump vec4 UniformColor;\n"
 "varying  lowp vec4 oColor;\n"
 "varying highp vec3 oTexCoord;\n"
 "void main()\n"
 "{\n"
-"   gl_Position = Mvpm * Position;\n"
+"   gl_Position = Mvpm[VIEW_ID] * Position;\n"
 "	oTexCoord = Position.xyz;\n"
 "   oColor = UniformColor;\n"
 "}\n";
@@ -142,7 +142,7 @@ const char * VGlShader::getCubeMapPanoProgramShaderSource()
             "varying lowp vec4	oColor;\n"
             "void main()\n"
             "{\n"
-            "	gl_FragColor = oColor * textureCube( Texture0, oTexCoord );\n"
+            "	gl_FragColor = oColor * texture( Texture0, oTexCoord );\n"
             "}\n";
    return cubeMapPanoProgramSource;
 }
@@ -630,7 +630,7 @@ GLuint VGlShader::createShader(GLuint shaderType, const char *src)
     if(shaderType == GL_VERTEX_SHADER)
     {
         const char * postVersion = FindShaderVersionEnd( src );
-        if(adaptForMultiview)
+        if(useMultiview)
         {
             const char * sources[3] = {"#version 300 es\n",
                                        ( VEyeItem::settings.useMultiview ) ?
@@ -654,7 +654,7 @@ GLuint VGlShader::createShader(GLuint shaderType, const char *src)
     else
     {
         const char * postVersion = FindShaderVersionEnd( src );
-        if(adaptForMultiview)
+        if(useMultiview)
         {
             const char * sources[3] = {"#version 300 es\n",
                                        ( VEyeItem::settings.useMultiview ) ?

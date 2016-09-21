@@ -1902,7 +1902,8 @@ void VFrameSmooth::Private::buildWarpProgPair(VrKernelProgram simpleIndex,
     m_warpPrograms[simpleIndex] = VGlShader(simpleVertex, simpleFragment);
 
     VGlShader shader;
-    if(simpleIndex + (WP_CHROMATIC - WP_SIMPLE) == WP_CHROMATIC) shader.adaptForMultiview = true;
+    if(simpleIndex + (WP_CHROMATIC - WP_SIMPLE) == WP_CHROMATIC
+       || simpleIndex + (WP_CHROMATIC - WP_SIMPLE) == WP_CHROMATIC_MASKED_CUBE ) shader.useMultiview = true;
     shader.initShader(chromaticVertex, chromaticFragment);
     m_warpPrograms[simpleIndex + (WP_CHROMATIC - WP_SIMPLE)] = shader;
 }
@@ -1988,9 +1989,9 @@ void VFrameSmooth::Private::buildWarpProgs() {
                               "void main()\n"
                               "{\n"
                               "#ifdef VIEW_ID\n"
-                              "  lowp vec4 color1r = texture(Texture0, vec3(oTexCoord1r,gl_ViewID_OVR));\n"
-                              "	 lowp vec4 color1g = texture(Texture0, vec3(oTexCoord1g,gl_ViewID_OVR));\n"
-                              "	 lowp vec4 color1b = texture(Texture0, vec3(oTexCoord1b,gl_ViewID_OVR));\n"
+                              "  lowp vec4 color1r = texture(Texture0, vec3(oTexCoord1r,VIEW_ID));\n"
+                              "	 lowp vec4 color1g = texture(Texture0, vec3(oTexCoord1g,VIEW_ID));\n"
+                              "	 lowp vec4 color1b = texture(Texture0, vec3(oTexCoord1b,VIEW_ID));\n"
                               "#else\n"
                               "	 lowp vec4 color1r = texture(Texture0, oTexCoord1r);\n"
                               "	 lowp vec4 color1g = texture(Texture0, oTexCoord1r);\n"
@@ -2247,7 +2248,11 @@ void VFrameSmooth::Private::buildWarpProgs() {
                               "   oTexCoord2b = mix( vec3( Texm3 * vec4(Tangent,-1,1) ), vec3( Texm4 * vec4(Tangent,-1,1) ), TexCoord1.x );\n"
                               ""
                               "}\n",
-                      "uniform sampler2D Texture0;\n"
+                      "#ifdef VIEW_ID\n"
+                              "  uniform sampler2DArray Texture0;\n"
+                              "#else\n"
+                              "  uniform sampler2D Texture0;\n"
+                              "#endif\n"
                               "uniform samplerCube Texture1;\n"
                               "uniform lowp float UniformColor;\n"
                               "varying highp vec2 oTexCoord;\n"
@@ -2256,10 +2261,14 @@ void VFrameSmooth::Private::buildWarpProgs() {
                               "varying highp vec3 oTexCoord2b;\n"
                               "void main()\n"
                               "{\n"
-                              "	lowp vec4 color0 = texture2D(Texture0, oTexCoord);\n"
-                              "	lowp vec4 color1r = textureCube(Texture1, oTexCoord2r);\n"
-                              "	lowp vec4 color1g = textureCube(Texture1, oTexCoord2g);\n"
-                              "	lowp vec4 color1b = textureCube(Texture1, oTexCoord2b);\n"
+                              "#ifdef VIEW_ID\n"
+                              "	 lowp vec4 color0 = texture(Texture0, vec3(oTexCoord,VIEW_ID));\n"
+                              "#else\n"
+                              "	 lowp vec4 color0 = texture(Texture0, oTexCoord);\n"
+                              "#endif\n"
+                              "	lowp vec4 color1r = texture(Texture1, oTexCoord2r);\n"
+                              "	lowp vec4 color1g = texture(Texture1, oTexCoord2g);\n"
+                              "	lowp vec4 color1b = texture(Texture1, oTexCoord2b);\n"
                               "	lowp vec3 color1 = vec3( color1r.x, color1g.y, color1b.z ) * UniformColor;\n"
                               "	gl_FragColor = vec4( mix( color1, color0.xyz, color0.w ), 1.0);\n"    // pass through destination alpha
                               "}\n"

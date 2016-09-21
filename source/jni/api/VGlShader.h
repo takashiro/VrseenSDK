@@ -42,7 +42,7 @@ public:
         uniformColorTableOffset( -1 ),
         uniformFadeDirection( -1 ),
         uniformJoints( -1 ) ,
-        adaptForMultiview(false){};
+        useMultiview(false){};
     VGlShader(const char * vertexSrc, const char * fragmentSrc):
         program( 0 ),
         vertexShader( 0 ),
@@ -60,7 +60,7 @@ public:
         uniformColorTableOffset( -1 ),
         uniformFadeDirection( -1 ),
         uniformJoints( -1 ) ,
-        adaptForMultiview(false)
+        useMultiview(false)
     {
         initShader(vertexSrc,fragmentSrc);
     }
@@ -133,7 +133,7 @@ public:
     GLint	uniformFadeDirection;		// uniform FadeDirection
     GLint	uniformJoints;			// uniform Joints
 
-    bool adaptForMultiview;
+    bool useMultiview;
 private:
     NV_DECLARE_PRIVATE
 };
