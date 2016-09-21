@@ -358,7 +358,7 @@ struct App::Private
 
         // Allow the app to override
         activity->configureVrMode(kernel);
-        VEyeItem::settings.useMultiview = VEglDriver::glIsExtensionString("GL_OVR_multiview2");
+        VEyeItem::settings.useMultiview &= VEglDriver::glIsExtensionString("GL_OVR_multiview2");
         vInfo("useMultiview : "<<VEyeItem::settings.useMultiview);
         activity->onResume();
 
