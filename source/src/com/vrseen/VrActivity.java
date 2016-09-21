@@ -329,8 +329,6 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 		int action = e.getAction();
 		float x = e.getRawX();
 		float y = e.getRawY();
-		Log.d(TAG, "onTouch dev:" + e.getDeviceId() + " act:" + action + " ind:" + e.getActionIndex() + " @ " + x + ","
-				+ y);
 		nativeTouch(action, x, y);
 		return true;
 	}

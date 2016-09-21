@@ -15,7 +15,7 @@ public:
 
     void init();
 
-    void onTouchEvent(float x, float y);
+    void onTouchEvent(int action, float x, float y);
     void onKeyEvent(int keyCode, int repeatCount);
 
     void prepare();

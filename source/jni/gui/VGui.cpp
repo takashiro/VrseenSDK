@@ -127,9 +127,10 @@ void VGui::addItem(VGraphicsItem *item)
     d->root.addChild(item);
 }
 
-void VGui::onTouchEvent(float x, float y)
+void VGui::onTouchEvent(int action, float x, float y)
 {
     VTouchEvent event;
+    event.action = static_cast<VTouchEvent::Action>(action & 0xFF);
     event.x = x;
     event.y = y;
     d->root.onTouchEvent(event);

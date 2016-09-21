@@ -644,7 +644,7 @@ struct App::Private
             if (action == 1) {
                 joypad.buttonState &= ~BUTTON_TOUCH;
             }
-            gui->onTouchEvent(x, y);
+            gui->onTouchEvent(action, x, y);
             return;
         }
 
