@@ -76,10 +76,6 @@ VGuiText::VGuiText(VGraphicsItem* parent)
     : VGraphicsItem(parent)
     ,d(new Private())
 {
-//    // Set size to load glyphs as
-//    FT_Set_Pixel_Sizes(d->face, 0, 48);
-//    // Disable byte-alignment restriction
-//    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     setBoundingRect(VRect3f(-1.0f, -1.0f, -3.0f, 1.0f, 1.0f, 3.0f));
 }
 
@@ -135,40 +131,41 @@ void VGuiText::updateVertexAttribs(float xpos, float ypos, float w, float h)
 
 }
 
-void VGuiText::paint(VPainter *painter)
-{
+void VGuiText::paint(VPainter *painter) {
     if (FT_Init_FreeType(&(d->ft))) {
         return;
     }
 
     VResource re("res/raw/times.ttf");
-    if (FT_New_Memory_Face(d->ft, reinterpret_cast<const FT_Byte*>(re.data().data()), re.size(), 0, &d->face)){
-        return ;
+    if (FT_New_Memory_Face(d->ft, reinterpret_cast<const FT_Byte *>(re.data().data()), re.size(), 0,
+                           &d->face)) {
+        return;
     }
     // Set size to load glyphs as
     if (FT_Set_Pixel_Sizes(d->face, 0, 48)) {
-        return ;
+        return;
     }
 
 
     // Disable byte-alignment restriction
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-//    float x = 100;
-//    float y = 100;
-    uint texture = generateCharTex('a');
+    uint texture = -1;
+    for (auto c: d->text) {
+        texture = generateCharTex(c);
+    }
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture);
 
     glUseProgram(d->shader.program);
     const VMatrix4f screenMvp = painter->viewMatrix() * transform();
-    glUniformMatrix4fv(d->shader.uniformModelViewProMatrix, 1, GL_FALSE, screenMvp.transposed().data());
-    glUniform4f(d->shader.uniformColor, d->color.red / 255.0f, d->color.green / 255.0f, d->color.blue / 255.0f, d->color.alpha / 255.0f);
+    glUniformMatrix4fv(d->shader.uniformModelViewProMatrix, 1, GL_FALSE,
+                       screenMvp.transposed().data());
+    glUniform4f(d->shader.uniformColor, d->color.red / 255.0f, d->color.green / 255.0f,
+                d->color.blue / 255.0f, d->color.alpha / 255.0f);
     d->geometry.drawElements();
 
     /*GLuint texId;
-    for (auto c: d->text) {
-        texId = generateCharTex(c);
 
 
 
