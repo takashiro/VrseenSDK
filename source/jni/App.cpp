@@ -969,8 +969,8 @@ struct App::Private
             gui->addItem(cursor);
 
             VGuiText *text = new VGuiText();
-            text->setTextColor(VColor(255, 2, 0));
-            text->setTextValue("hello!");
+            text->setTextColor(VColor(255, 0, 0));
+            text->setTextValue("h");
             text->setPos(VVect3f(0, 0, -3.0f));
             gui->addItem(text);
             gui->init();

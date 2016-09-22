@@ -27,7 +27,8 @@ static const char * FragmentShaderSource =
     "uniform lowp vec4 UniformColor;\n"
     "void main()\n"
     "{\n"
-    "    gl_FragColor = vec4(1.0, 1.0, 1.0, texture2D(Texture0, oTexCoord).r + 0.5);\n"
+    "    vec4 sampled = vec4(1.0, 1.0, 1.0, texture2D(Texture0, oTexCoord).r);\n"
+    "    gl_FragColor = UniformColor * sampled;\n"
     "}\n";
 
 struct VGuiText::Private
@@ -76,8 +77,10 @@ VGuiText::VGuiText(VGraphicsItem* parent)
     : VGraphicsItem(parent)
     ,d(new Private())
 {
-    setBoundingRect(VRect3f(-1.0f, -1.0f, -3.0f, 1.0f, 1.0f, 3.0f));
+//    setBoundingRect(VRect3f(-1.0f, -1.0f, -3.0f, 1.0f, 1.0f, -3.0f));
+    setBoundingRect(VRect3f(-0.2f, -0.2f, -3.0, 0.2 ,0.2, -3.0));
 }
+
 
 VGuiText::~VGuiText()
 {
@@ -142,7 +145,7 @@ void VGuiText::paint(VPainter *painter) {
         return;
     }
     // Set size to load glyphs as
-    if (FT_Set_Pixel_Sizes(d->face, 0, 48)) {
+    if (FT_Set_Pixel_Sizes(d->face, 0, 50)) {
         return;
     }
 
@@ -153,17 +156,17 @@ void VGuiText::paint(VPainter *painter) {
     uint texture = -1;
     for (auto c: d->text) {
         texture = generateCharTex(c);
-    }
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture);
 
-    glUseProgram(d->shader.program);
-    const VMatrix4f screenMvp = painter->viewMatrix() * transform();
-    glUniformMatrix4fv(d->shader.uniformModelViewProMatrix, 1, GL_FALSE,
-                       screenMvp.transposed().data());
-    glUniform4f(d->shader.uniformColor, d->color.red / 255.0f, d->color.green / 255.0f,
-                d->color.blue / 255.0f, d->color.alpha / 255.0f);
-    d->geometry.drawElements();
+        glUseProgram(d->shader.program);
+        const VMatrix4f screenMvp = painter->viewMatrix() * transform();
+        glUniformMatrix4fv(d->shader.uniformModelViewProMatrix, 1, GL_FALSE,
+                           screenMvp.transposed().data());
+        glUniform4f(d->shader.uniformColor, d->color.red / 255.0f, d->color.green / 255.0f,
+                    d->color.blue / 255.0f, d->color.alpha / 255.0f);
+        d->geometry.drawElements();
+    }
 
     /*GLuint texId;
 
