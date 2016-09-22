@@ -36,6 +36,10 @@
 #include "VTexture.h"
 #include "VGui.h"
 #include "VModel.h"
+#include "VTileButton.h"
+#include "VRectangle.h"
+#include "VCursor.h"
+#include "VGuiText.h"
 
 //#define TEST_TIMEWARP_WATCHDOG
 #define EGL_PROTECTED_CONTENT_EXT 0x32c0
@@ -961,6 +965,14 @@ struct App::Private
 
             lastTouchpadTime = VTimer::Seconds();
 
+            VCursor *cursor = new VCursor();
+            gui->addItem(cursor);
+
+            VGuiText *text = new VGuiText();
+            text->setTextColor(VColor(255, 2, 0));
+            text->setTextValue("hello!");
+            text->setPos(VVect3f(0, 0, -3.0f));
+            gui->addItem(text);
             gui->init();
         }
 

@@ -1,7 +1,9 @@
+#include <io/VResource.h>
 #include "VGuiText.h"
 #include "VPainter.h"
 #include "VGlGeometry.h"
 #include "VGlShader.h"
+
 
 #include "ft2build.h"
 #include FT_FREETYPE_H
@@ -9,23 +11,24 @@
 NV_NAMESPACE_BEGIN
 
 static const char* VertexShaderSource =
-        "uniform highp mat4 Mvpm;\n"
-                "attribute vec4 Position;\n"
-                "attribute vec2 TexCoord;\n"
-                "varying highp vec2 oTexCoord;\n"
-                "void main()\n"
-                "{\n"
-                "    gl_Position = Mvpm * Position;\n"
-                "    oTexCoord = TexCoord;\n"
-                "}\n";
+    "uniform highp mat4 Mvpm;\n"
+    "attribute vec4 Position;\n"
+    "attribute vec2 TexCoord;\n"
+    "varying highp vec2 oTexCoord;\n"
+    "void main()\n"
+    "{\n"
+    "    gl_Position = Mvpm * Position;\n"
+    "    oTexCoord = TexCoord;\n"
+    "}\n";
 
 static const char * FragmentShaderSource =
-        "uniform sampler2D Texture0;\n"
-                "varying highp vec2 oTexCoord;\n"
-                "void main()\n"
-                "{\n"
-                "    gl_FragColor = texture2D(Texture0, oTexCoord);\n"
-                "}\n";
+    "uniform sampler2D Texture0;\n"
+    "varying highp vec2 oTexCoord;\n"
+    "uniform lowp vec4 UniformColor;\n"
+    "void main()\n"
+    "{\n"
+    "    gl_FragColor = vec4(1.0, 1.0, 1.0, texture2D(Texture0, oTexCoord).r + 0.5);\n"
+    "}\n";
 
 struct VGuiText::Private
 {
@@ -33,7 +36,6 @@ struct VGuiText::Private
     VGlGeometry geometry;
     VColor color;
     VString text;
-    VVect2f pos;
     float scale;
 
     FT_Library ft;
@@ -42,10 +44,11 @@ struct VGuiText::Private
     VArray< ushort > indices;
 
     Private()
+    :scale(1.0f)
     {
         shader.initShader(VertexShaderSource, FragmentShaderSource);
 
-        for (int i = 0; i < 4; ++i) {
+        /*for (int i = 0; i < 4; ++i) {
             VVect3f pos(0, 0, 0);
             VVect4f col(0, 0, 0, 0);
             vertexs.position.push_back(pos);
@@ -62,12 +65,9 @@ struct VGuiText::Private
         indices.push_back(2);
         indices.push_back(0);
         indices.push_back(2);
-        indices.push_back(3);
+        indices.push_back(3);*/
 
-
-        FT_Init_FreeType(&ft);
-        FT_New_Face(ft, "res/raw/verdana.ttf", 0, &face);
-        geometry.createGlGeometry(vertexs, indices);
+        geometry.createPlaneQuadGrid(1, 1);
     }
 
 };
@@ -76,11 +76,11 @@ VGuiText::VGuiText(VGraphicsItem* parent)
     : VGraphicsItem(parent)
     ,d(new Private())
 {
-    // Set size to load glyphs as
-    FT_Set_Pixel_Sizes(d->face, 0, 48);
-
-    // Disable byte-alignment restriction
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+//    // Set size to load glyphs as
+//    FT_Set_Pixel_Sizes(d->face, 0, 48);
+//    // Disable byte-alignment restriction
+//    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    setBoundingRect(VRect3f(-1.0f, -1.0f, -3.0f, 1.0f, 1.0f, 3.0f));
 }
 
 VGuiText::~VGuiText()
@@ -114,60 +114,61 @@ void VGuiText::setTextValue(const VString &text)
 
 uint VGuiText::generateCharTex(char c)
 {
-    FT_Load_Char(d->face, c, FT_LOAD_RENDER);
+    if (FT_Load_Char(d->face, c, FT_LOAD_RENDER)) {
+        return -1;
+    }
 
-    GLuint texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexImage2D(
-            GL_TEXTURE_2D,
-            0,
-            GL_RED,
-            d->face->glyph->bitmap.width,
-            d->face->glyph->bitmap.rows,
-            0,
-            GL_RED,
-            GL_UNSIGNED_BYTE,
-            d->face->glyph->bitmap.buffer
-    );
-
-    // Set texture options
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    return texture;
+    FT_GlyphSlot glyph = d->face->glyph;
+    VTexture texture;
+    texture.loadRed(glyph->bitmap.buffer, glyph->bitmap.width, glyph->bitmap.rows);
+    return texture.id();
 }
 
 void VGuiText::updateVertexAttribs(float xpos, float ypos, float w, float h)
 {
     d->vertexs.position.clear();
 
-    d->vertexs.position.push_back(VVect3f(xpos, ypos + h, 0.0));
-    d->vertexs.position.push_back(VVect3f(xpos, ypos, 0.0));
-    d->vertexs.position.push_back(VVect3f( xpos + w, ypos, 0.0));
-
-    d->vertexs.position.push_back(VVect3f(xpos, ypos + h, 0.0));
-    d->vertexs.position.push_back(VVect3f(xpos + w, ypos, 0.0));
-    d->vertexs.position.push_back(VVect3f(xpos + w, ypos + h, 0.0));
+    d->vertexs.position.push_back(VVect3f(xpos, ypos + h, -3.0));
+    d->vertexs.position.push_back(VVect3f(xpos, ypos, -3.0));
+    d->vertexs.position.push_back(VVect3f( xpos + w, ypos, -3.0));
+    d->vertexs.position.push_back(VVect3f(xpos + w, ypos + h, -3.0));
 
 }
 
 void VGuiText::paint(VPainter *painter)
 {
-    VGraphicsItem::paint(painter);
-    int x = d->pos.x;
-    int y = d->pos.y;
-    VEglDriver::glPushAttrib();
-    glEnable( GL_BLEND );
-    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    if (FT_Init_FreeType(&(d->ft))) {
+        return;
+    }
+
+    VResource re("res/raw/times.ttf");
+    if (FT_New_Memory_Face(d->ft, reinterpret_cast<const FT_Byte*>(re.data().data()), re.size(), 0, &d->face)){
+        return ;
+    }
+    // Set size to load glyphs as
+    if (FT_Set_Pixel_Sizes(d->face, 0, 48)) {
+        return ;
+    }
+
+
+    // Disable byte-alignment restriction
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+//    float x = 100;
+//    float y = 100;
+    uint texture = generateCharTex('a');
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture);
 
     glUseProgram(d->shader.program);
-    const VMatrix4f screenMvp = transform();
+    const VMatrix4f screenMvp = painter->viewMatrix() * transform();
     glUniformMatrix4fv(d->shader.uniformModelViewProMatrix, 1, GL_FALSE, screenMvp.transposed().data());
+    glUniform4f(d->shader.uniformColor, d->color.red / 255.0f, d->color.green / 255.0f, d->color.blue / 255.0f, d->color.alpha / 255.0f);
+    d->geometry.drawElements();
 
+    /*GLuint texId;
     for (auto c: d->text) {
-        uint texId = generateCharTex(c);
+        texId = generateCharTex(c);
 
 
 
@@ -183,13 +184,11 @@ void VGuiText::paint(VPainter *painter)
         float w = d->face->glyph->bitmap.width * d->scale;
         float h = d->face->glyph->bitmap.rows * d->scale;
 
-        updateVertexAttribs(xpos, ypos, w, h);
-        d->geometry.updateGlGeometry(d->vertexs);
+        //updateVertexAttribs(xpos, ypos, w, h);
+        //d->geometry.updateGlGeometry(d->vertexs);
         d->geometry.textureId = texId;
         d->geometry.drawElements();
-    }
-
-    VEglDriver::glPopAttrib();
+    }*/
 }
 NV_NAMESPACE_END
 
