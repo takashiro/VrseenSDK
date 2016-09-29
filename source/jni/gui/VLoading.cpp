@@ -20,6 +20,7 @@ static const char* VertexShaderSource =
         "}\n";
 
 static const char * FragmentShaderSource =
+        "precision mediump float;"
         "uniform sampler2D Texture0;\n"
         "varying highp vec2 oTexCoord;\n"
         "void main()\n"

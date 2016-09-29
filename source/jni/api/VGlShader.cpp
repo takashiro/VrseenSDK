@@ -72,7 +72,7 @@ const char * VGlShader::getUniformTextureProgramShaderSource()
             "varying lowp vec4	oColor;\n"
             "void main()\n"
             "{\n"
-            "	gl_FragColor = oColor * texture( Texture0, oTexCoord );\n"
+            "	gl_FragColor = oColor * texture2D( Texture0, oTexCoord );\n"
             "}\n";
 
    return uniformTextureProgramShaderSource;
@@ -142,7 +142,7 @@ const char * VGlShader::getCubeMapPanoProgramShaderSource()
             "varying lowp vec4	oColor;\n"
             "void main()\n"
             "{\n"
-            "	gl_FragColor = oColor * texture( Texture0, oTexCoord );\n"
+            "	gl_FragColor = oColor * textureCube( Texture0, oTexCoord );\n"
             "}\n";
    return cubeMapPanoProgramSource;
 }
@@ -596,7 +596,7 @@ const char * VGlShader::getAdditionalFragmentShaderSource()
 }
 
 static const char version[] = "#version 300 es\n";
-static const char EGL_IMAGE_EXT_ADRENO [] = "#extension GL_OES_EGL_image_external_essl3 : require\n";
+static const char EGL_IMAGE_EXT_ADRENO [] = "#extension GL_OES_EGL_image_external_essl3 : enable\n";
 
 static const char * FindShaderVersionEnd(const char *src)
 {
@@ -635,13 +635,17 @@ GLuint VGlShader::createShader(GLuint shaderType, const char *src)
         int len = 0;
 
         const char * postVersion = FindShaderVersionEnd( src );
-        sources[len++] = version;
+        if(VEyeItem::settings.useMultiview) sources[len++] = version;
 
         if(strstr(src, "GL_OES_EGL_image_external") != NULL)
         {
-            const char* vendor = (const char*) glGetString(GL_VENDOR);
-            if(strcmp(vendor, "Qualcomm") == 0 && VEglDriver::glIsExtensionString("GL_OES_EGL_image_external_essl3")) sources[len++] = EGL_IMAGE_EXT_ADRENO;
-            else VEyeItem::settings.useMultiview = false;
+             const char* vendor = (const char*) glGetString(GL_VENDOR);
+             if(strcmp(vendor, "Qualcomm") == 0 && VEglDriver::glIsExtensionString("GL_OES_EGL_image_external")) sources[len++] = EGL_IMAGE_EXT_ADRENO;
+             else if(!VEglDriver::glIsExtensionString("GL_OES_EGL_image_external"))
+             {
+                 VEyeItem::settings.useMultiview = false;
+                 len = 0;
+             }
         }
 
         if(shaderType == GL_VERTEX_SHADER)
@@ -656,31 +660,33 @@ GLuint VGlShader::createShader(GLuint shaderType, const char *src)
                                        "#define attribute in\n"
                               :  "#define NUM_VIEWS 1\n"
                                        "#define VIEW_ID 0\n"
-                                       "#define varying out\n"
-                                       "#define attribute in\n"
+                                       "#ifdef in\n"
+                                       "  #define varying out\n"
+                                       "  #define attribute in\n"
+                                       "#endif\n"
             };
         }
         else
         {
             sources[len++] = {( VEyeItem::settings.useMultiview ) ?
                               "#extension GL_OVR_multiview2 : enable\n"
+                                      "#define VIEW_ID gl_ViewID_OVR\n"
                                       "#define varying in\n"
                                       "#define attribute out\n"
-                                      "#define VIEW_ID gl_ViewID_OVR\n"
                                       "#ifdef varying\n"
-                                      "    out vec4 gl_FragColor;\n"
+                                      "   out vec4 gl_FragColor;\n"
                                       "#endif\n"
                                       "#define texture2D texture\n"
                                       "#define textureCube texture\n"
                                       "#define texture2DProj textureProj\n"
-                              :  "#define varying in\n"
-                                      "#define attribute out\n"
-                                      "#ifdef varying\n"
-                                      "    out vec4 gl_FragColor;\n"
+                              :"#ifdef in\n"
+                                      "  #define varying in\n"
+                                      "  #define attribute out\n"
+                                      "  out vec4 gl_FragColor;\n"
+                                      "  #define texture2D texture\n"
+                                      "  #define textureCube texture\n"
+                                      "  #define texture2DProj textureProj\n"
                                       "#endif\n"
-                                      "#define texture2D texture\n"
-                                      "#define textureCube texture\n"
-                                      "#define texture2DProj textureProj\n"
             };
         }
         sources[len++] = postVersion;

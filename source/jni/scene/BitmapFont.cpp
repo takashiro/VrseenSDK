@@ -71,7 +71,7 @@ char const* SDFFontFragmentShaderSrc =
 				"varying mediump vec4 oFontParms;\n"
 				"void main()\n"
 				"{\n"
-				"    mediump float distance = texture( Texture0, oTexCoord ).r;\n"
+				"    mediump float distance = texture2D( Texture0, oTexCoord ).r;\n"
 				"    mediump float ds = oFontParms.z * 255.0;\n"
 				"	 mediump float dd = fwidth( oTexCoord.x ) * 8.0 * ds;\n"
 				"    mediump float ALPHA_MIN = oFontParms.x - dd;\n"

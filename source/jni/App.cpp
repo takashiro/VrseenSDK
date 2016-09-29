@@ -357,7 +357,7 @@ struct App::Private
         // Allow the app to override
         activity->configureVrMode(kernel);
         VEyeItem::settings.useMultiview &= VEglDriver::glIsExtensionString("GL_OVR_multiview2");
-        vInfo("useMultiview : "<<VEyeItem::settings.useMultiview);
+        vInfo("support useMultiview : "<<VEyeItem::settings.useMultiview);
         activity->onResume();
 
         VKernel::instance()->resume();
@@ -1037,6 +1037,7 @@ struct App::Private
                 activity->init(launchIntentFromPackage, launchIntentJSON, launchIntentURI);
 
                 running = true;
+                vInfo("use useMultiview : "<<VEyeItem::settings.useMultiview);
             }
 
             // latch the current joypad state and note transitions

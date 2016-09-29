@@ -147,17 +147,15 @@ struct EyeBuffer {
             {
                 vInfo("Making a " << bufferParms.multisamples << " sample buffer with glFramebufferTexture2DMultisample");
 
-                //VEglDriver::glFramebufferTextureMultisampleMultiviewOVR(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, RenderFrameBuffer, 0,bufferParms.multisamples,0, 2);
-                VEglDriver::glFramebufferTextureMultiviewOVR(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,Texture, 0, 0, 2);
+                VEglDriver::glFramebufferTextureMultisampleMultiviewOVR(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, Texture, 0,bufferParms.multisamples,0, 2);
 
                 if (bufferParms.commonParameterDepth != VEyeItem::DepthFormat_0)
                 {
                     glGenTextures(1, &DepthTexture);
                     glBindTexture(GL_TEXTURE_2D_ARRAY, DepthTexture);
-                    //TODO glTexStorage3DMultisample
                     glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, depthFormat, bufferParms.widthScale * bufferParms.resolution, bufferParms.resolution, 2);
 
-                    VEglDriver::glFramebufferTextureMultiviewOVR(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, DepthTexture, 0, 0, 2);
+                    VEglDriver::glFramebufferTextureMultisampleMultiviewOVR(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, DepthTexture, 0,bufferParms.multisamples,0, 2);
 
                     glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
                 }
