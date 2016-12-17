@@ -161,7 +161,7 @@ void VModel::draw(int eye, const VMatrix4f & mvp )
 
     const VGlShader * shader = &d->loadModelProgram;
     //hack code,temporary for 158demo branch
-    const VMatrix4f mvp2  = mvp * VMatrix4f::RotationX(-M_PI*0.5) * VMatrix4f::Scaling(10.0f,10.0f,10.0f);
+    const VMatrix4f mvp2  = mvp * VMatrix4f::RotationX(-M_PI*0.5) * VMatrix4f::Scaling(100.0f,100.0f,100.0f);
     glUseProgram(shader->program);
     glUniformMatrix4fv(shader->uniformModelViewProMatrix, 1, GL_FALSE, mvp2.transposed().cell[0]);
     VEglDriver::glPushAttrib();

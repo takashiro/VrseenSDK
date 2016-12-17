@@ -52,9 +52,9 @@ SceneManager::SceneManager( PanoCinema &cinema ) :
     Scene.Znear = 0.1f;
     Scene.Zfar = 2000.0f;
 
-	SceneSeatPositions[0].x = -2.88718f;//x
-	SceneSeatPositions[0].y = 2.87909f;//z
-	SceneSeatPositions[0].z = 0.92980f;//y
+	SceneSeatPositions[0].x = 40.0;//x
+	SceneSeatPositions[0].y = 60.0;//z
+	SceneSeatPositions[0].z = 15.0;//y
 
 	SceneSeatCount++;
 
