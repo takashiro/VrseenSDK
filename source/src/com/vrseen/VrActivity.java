@@ -19,9 +19,13 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityGroup;
 import android.app.IVRManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -29,6 +33,7 @@ import android.content.pm.ApplicationInfo;
 import android.graphics.Canvas;
 import android.graphics.SurfaceTexture;
 import android.media.AudioManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -697,5 +702,32 @@ public class VrActivity extends ActivityGroup implements SurfaceHolder.Callback 
 	public void loadModel(String fileName)
 	{
 		nativeLoadModel(fileName);
+	}
+
+	public void startApp(String packageName, String data) {
+		PackageInfo packageinfo = null;
+		try {
+			packageinfo = getPackageManager().getPackageInfo(packageName, 0);
+		} catch (PackageManager.NameNotFoundException e) {
+			e.printStackTrace();
+		}
+		if (packageinfo == null) {
+			return;
+		}
+
+		Intent resolveIntent = new Intent(Intent.ACTION_MAIN, null);
+		resolveIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+		resolveIntent.setPackage(packageinfo.packageName);
+
+		List<ResolveInfo> resolveinfoList = getPackageManager().queryIntentActivities(resolveIntent, 0);
+		ResolveInfo resolveinfo = resolveinfoList.iterator().next();
+		if (resolveinfo != null) {
+			Intent intent = new Intent(Intent.ACTION_MAIN);
+			intent.addCategory(Intent.CATEGORY_LAUNCHER);
+			ComponentName cn = new ComponentName(resolveinfo.activityInfo.packageName, resolveinfo.activityInfo.name);
+			intent.setComponent(cn);
+			intent.setData(Uri.parse(data));
+			startActivity(intent);
+		}
 	}
 }

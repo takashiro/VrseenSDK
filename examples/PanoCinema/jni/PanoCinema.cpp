@@ -2,6 +2,9 @@
 #include "VColor.h"
 #include "core/VTimer.h"
 #include <android/JniUtils.h>
+#include <io/VResource.h>
+#include <gui/VTileButton.h>
+#include <VGui.h>
 
 NV_USING_NAMESPACE
 
@@ -90,6 +93,53 @@ void PanoCinema::init(const VString &, const VString &, const VString &launchInt
 
     std::function<void()> hideLoading = [=](){
         vApp->eventLoop().post("activityInitCompleted");
+
+        // We might want to save the view state and position for perfect recall
+        VString assets = "assets/";
+        const char *buttonImages[4] = {"game1.jpg", "game2.jpg", "video1.jpg", "video2.jpg"};
+        VTileButton *buttons[4];
+
+        VGui *gui = vApp->gui();
+        VRect3f buttonSize(-0.8f, -0.6f, 0.0f, 0.8f, 0.6f, 0.0f);
+        for (int i = 0; i < 4; i++){
+            VTileButton *button = new VTileButton;
+            buttons[i] = button;
+            VResource image(assets + buttonImages[i]);
+            button->setRect(buttonSize);
+            button->setImage(image);
+            gui->addItem(button);
+        }
+
+        VMatrix4f matrix = VMatrix4f::Translation(40.0f,60.0f,15.0f);
+        buttons[0]->setPos(matrix.transform(VVect3f(-0.85f, 0.65f, -3.0f)));
+        buttons[1]->setPos(matrix.transform(VVect3f(-0.85f, -0.65f, -3.0f)));
+        buttons[2]->setPos(matrix.transform(VVect3f(0.85f, 0.65f, -3.0f)));
+        buttons[3]->setPos(matrix.transform(VVect3f(0.85f, -0.65f, -3.0f)));
+
+
+        auto showGuiLoading = [=](){
+            gui->showLoading(0);
+        };
+        auto hideGuiLoading = [=](){
+            gui->removeLoading();
+        };
+        for (VTileButton *button : buttons) {
+            button->setOnBlurListener(hideGuiLoading);
+            button->setOnFocusListener(showGuiLoading);
+        }
+
+        VString sdcard = "/storage/emulated/0/VRSeen/SDK/";
+        JNIEnv *jni = vApp->vrJni();
+        jobject activity = vApp->javaObject();
+        jmethodID startApp = jni->GetMethodID(jni->GetObjectClass(activity), "startApp", "(Ljava/lang/String;Ljava/lang/String;)V");
+
+        buttons[2]->setOnStareListener([=](){
+            jni->CallVoidMethod(activity, startApp, JniUtils::Convert(jni, "com.vrseen.panovideo"), JniUtils::Convert(jni, sdcard + "360Videos/[Samsung] 360 video demo.mp4"));
+        });
+
+        buttons[3]->setOnStareListener([=](){
+            jni->CallVoidMethod(activity, startApp, JniUtils::Convert(jni, "com.vrseen.panovideo"), JniUtils::Convert(jni, sdcard + "360Videos/1.mp4"));
+        });
     };
 
     VVariantArray args;
